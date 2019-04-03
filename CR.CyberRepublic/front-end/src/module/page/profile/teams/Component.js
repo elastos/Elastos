@@ -1,7 +1,7 @@
-import React from 'react';
-import ProfilePage from '../../ProfilePage';
+import React from 'react'
+import ProfilePage from '../../ProfilePage'
 import Navigator from '@/module/page/shared/HomeNavigator/Container'
-import config from '@/config';
+import config from '@/config'
 import _ from 'lodash'
 import './style.scss'
 import '../../admin/admin.scss'
@@ -15,7 +15,7 @@ import Footer from '@/module/layout/Footer/Container'
 import I18N from '@/I18N'
 import {MAX_WIDTH_MOBILE, MIN_WIDTH_PC} from '../../../../config/constant'
 
-const FormItem = Form.Item;
+const FormItem = Form.Item
 
 const FILTERS = {
     ALL: 'all',
@@ -227,7 +227,7 @@ export default class extends ProfilePage {
     }
 
     getListItem(item) {
-        const ownerProfile = item.owner && item.owner.profile || {};
+        const ownerProfile = item.owner && item.owner.profile || {}
         return (
             <div className="list-item">
                 <MediaQuery minWidth={MIN_WIDTH_PC}>
@@ -274,7 +274,7 @@ export default class extends ProfilePage {
                     </List.Item>
                 </MediaQuery>
             </div>
-        );
+        )
     }
 
     getListComponent() {
@@ -319,19 +319,19 @@ export default class extends ProfilePage {
     onSelectFilter(value) {
         switch (value) {
             case FILTERS.ACTIVE:
-                this.setActiveFilter();
-                break;
+                this.setActiveFilter()
+                break
             case FILTERS.APPLIED:
-                this.setAppliedFilter();
-                break;
+                this.setAppliedFilter()
+                break
             case FILTERS.REJECTED:
-                this.setRejectedFilter();
-                break;
+                this.setRejectedFilter()
+                break
             case FILTERS.OWNED:
-                this.setOwnedFilter();
-                break;
+                this.setOwnedFilter()
+                break
             default:
-                this.clearFilters();
+                this.clearFilters()
                 break
         }
     }
@@ -372,7 +372,7 @@ export default class extends ProfilePage {
     }
 
     goCreatepage() {
-        this.props.history.push('/profile/teams/create');
+        this.props.history.push('/profile/teams/create')
     }
 
     linkUserDetail(user) {

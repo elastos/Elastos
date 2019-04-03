@@ -3,8 +3,8 @@ import BaseComponent from '@/model/BaseComponent'
 import {
   Form, Icon, Input, Button, Checkbox,
 } from 'antd'
-import ReCAPTCHA from 'react-google-recaptcha';
-import { RECAPTCHA_KEY } from '@/config/constant';
+import ReCAPTCHA from 'react-google-recaptcha'
+import { RECAPTCHA_KEY } from '@/config/constant'
 import I18N from '@/I18N'
 import _ from 'lodash'
 

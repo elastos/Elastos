@@ -31,7 +31,7 @@ export default createContainer(Component, (state) => {
           returnUrl, parentId, comment, headline)
 
         if (rs) {
-          message.success('Your comment has been posted.');
+          message.success('Your comment has been posted.')
         }
       } catch (err) {
         message.error(err.message)

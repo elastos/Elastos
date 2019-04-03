@@ -1,5 +1,5 @@
 import {TASK_STATUS, TASK_CATEGORY, TASK_TYPE} from '@/constant'
-import React from 'react';
+import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import TeamCreateForm from '@/module/form/TeamCreateForm/Container'
 import { Col, Row, Popconfirm, Divider, Button, Spin, Icon } from 'antd'
@@ -79,7 +79,7 @@ export default class extends BaseComponent {
 
     deleteTeam() {
         this.props.deleteTeam(this.props.team._id).then(() => {
-            this.props.history.goBack();
+            this.props.history.goBack()
         })
     }
 }

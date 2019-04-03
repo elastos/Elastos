@@ -26,7 +26,7 @@ class TaskRedux extends BaseRedux {
       detail: {},
 
       filter: {},
-    };
+    }
   }
 }
 

@@ -11,7 +11,7 @@ import { upload_file } from '@/util'
 import { USER_AVATAR_DEFAULT, LINKIFY_OPTION } from '@/constant'
 import config from '@/config'
 import MediaQuery from 'react-responsive'
-import linkifyStr from 'linkifyjs/string';
+import linkifyStr from 'linkifyjs/string'
 import './style.scss'
 
 const TabPane = Tabs.TabPane
@@ -36,7 +36,7 @@ export default class extends BaseComponent {
   // TODO: add twitter, telegram, linkedIn, FB
   ord_render() {
     if (_.isEmpty(this.props.user) || this.props.user.loading) {
-      return <div className="center"><Spin size="large" /></div>;
+      return <div className="center"><Spin size="large" /></div>
     }
 
     return (
@@ -54,7 +54,7 @@ export default class extends BaseComponent {
           </MediaQuery>
         </div>
       </div>
-    );
+    )
   }
 
   renderMobile() {

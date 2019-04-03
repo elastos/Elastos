@@ -1,5 +1,5 @@
-import React from 'react';
-import StandardPage from '../StandardPage';
+import React from 'react'
+import StandardPage from '../StandardPage'
 import Navigator from '@/module/page/shared/HomeNavigator/Container'
 import TaskCreateForm from '@/module/form/TaskCreateForm/Container'
 import I18N from '@/I18N'

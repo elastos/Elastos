@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import UserContactForm from '@/module/form/UserContactForm/Container'
 import {
@@ -34,7 +34,7 @@ export default class extends BaseComponent {
   }
 
   getCountry(countryCode) {
-    return config.data.mappingCountryCodeToName[countryCode];
+    return config.data.mappingCountryCodeToName[countryCode]
   }
 
   sendMessage(user) {

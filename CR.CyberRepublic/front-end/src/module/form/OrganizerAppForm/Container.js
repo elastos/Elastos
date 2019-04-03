@@ -1,5 +1,5 @@
-import {createContainer, goPath} from "@/util";
-import Component from './Component';
+import {createContainer, goPath} from "@/util"
+import Component from './Component'
 import SubmissionService from '@/service/SubmissionService'
 import CommunityService from '@/service/CommunityService'
 import {message} from 'antd'
@@ -16,9 +16,9 @@ export default createContainer(Component, (state)=>{
     return {
         user_email: state.user.email,
         is_login: state.user.is_login
-    };
+    }
 }, ()=>{
-    const submissionService = new SubmissionService();
+    const submissionService = new SubmissionService()
     const communityService = new CommunityService()
 
     return {
@@ -50,11 +50,11 @@ export default createContainer(Component, (state)=>{
                     devBackground: formData.devBackground,
                     description: formData.description,
                     reason: formData.reason
-                });
+                })
 
                 if (rs) {
-                    message.success('Success - one of the admins will be in touch shortly');
-                    submissionService.path.push('/profile/submissions');
+                    message.success('Success - one of the admins will be in touch shortly')
+                    submissionService.path.push('/profile/submissions')
                 }
             } catch (err) {
                 console.error(err)
@@ -65,5 +65,5 @@ export default createContainer(Component, (state)=>{
         async getCommunityDetail(communityId) {
             return communityService.get(communityId)
         }
-    };
-});
+    }
+})

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import {
     Col,
@@ -161,7 +161,7 @@ class C extends BaseComponent {
 
         if (pictures.length === 0) {
             pictures.push(<img width={IMAGE_SIZE} height={IMAGE_SIZE}
-                src={'/assets/images/Group_1685.12.svg'} key={0} />);
+                src={'/assets/images/Group_1685.12.svg'} key={0} />)
         }
 
         return (

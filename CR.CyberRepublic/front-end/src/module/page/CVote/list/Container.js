@@ -17,15 +17,15 @@ export default createContainer(Component, state => ({
         path: '/api/cvote/list',
         method: 'get',
         data: param,
-      });
+      })
     } else {
       result = await api_request({
         path: '/api/cvote/list_public',
         method: 'get',
         data: param,
-      });
+      })
     }
 
-    return result;
+    return result
   },
 }))

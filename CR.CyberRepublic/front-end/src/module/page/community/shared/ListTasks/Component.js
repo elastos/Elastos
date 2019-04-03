@@ -22,7 +22,7 @@ export default class extends BaseComponent {
             render: (text, record) => (
                 <Button>Accept</Button>
             ),
-        }];
+        }]
 
         const mockData = {
             id: 1,

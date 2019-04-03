@@ -21,7 +21,7 @@ export default createContainer(Component, (state) => {
                 })
 
                 if (rs) {
-                    message.success(I18N.get('developer.form.submission.message.success'));
+                    message.success(I18N.get('developer.form.submission.message.success'))
                 }
             } catch (err) {
                 message.error(err.message)

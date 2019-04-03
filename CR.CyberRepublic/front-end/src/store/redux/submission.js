@@ -26,7 +26,7 @@ class SubmissionRedux extends BaseRedux {
 
       // filter - persistent filter
       filter: {},
-    };
+    }
   }
 }
 

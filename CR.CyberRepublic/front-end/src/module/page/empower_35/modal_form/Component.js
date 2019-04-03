@@ -4,7 +4,7 @@ import { Form, Modal, Input, Button, Row, Col, Upload, Icon } from 'antd'
 import config from '@/config'
 import I18N from '@/I18N'
 const TextArea = Input.TextArea
-import {upload_file} from "@/util";
+import {upload_file} from "@/util"
 
 const FormItem = Form.Item
 
@@ -61,21 +61,21 @@ export default Form.create()(
 
             const attachment_fn = getFieldDecorator('attachment', {
                 rules: []
-            });
+            })
             const p_attachment = {
                 showUploadList: false,
                 customRequest :(info)=>{
                     this.setState({
                         attachment_loading: true
-                    });
+                    })
                     upload_file(info.file).then((d)=>{
-                        const url = d.url;
+                        const url = d.url
                         this.setState({
                             attachment_loading: false,
                             attachment_url : url,
                             attachment_type: d.type,
                             attachment_filename: d.filename,
-                        });
+                        })
 
                         this.props.form.setFieldsValue({
                             filePath: url,
@@ -84,7 +84,7 @@ export default Form.create()(
                         })
                     })
                 }
-            };
+            }
             const attachment_el = (
                 <Upload name="attachment" {...p_attachment}>
                     {
@@ -103,7 +103,7 @@ export default Form.create()(
                         )
                     }
                 </Upload>
-            );
+            )
 
             return {
                 // taskName: taskName_fn(taskName_el),

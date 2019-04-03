@@ -1,5 +1,5 @@
-import {createContainer, goPath} from "@/util";
-import Component from './Component';
+import {createContainer, goPath} from "@/util"
+import Component from './Component'
 import CommunityService from '@/service/CommunityService'
 import _ from 'lodash'
 
@@ -7,9 +7,9 @@ import _ from 'lodash'
 export default createContainer(Component, (state)=>{
     return {
         is_admin: state.user.is_admin
-    };
+    }
 }, ()=>{
-    const communityService = new CommunityService();
+    const communityService = new CommunityService()
 
     return {
         async getAllCommunities() {
@@ -43,5 +43,5 @@ export default createContainer(Component, (state)=>{
                 })
             })
         }
-    };
-});
+    }
+})

@@ -6,9 +6,9 @@ export default createContainer(Component, (state)=>{
         current : {
             id : state.user.current_user_id
         }
-    };
+    }
 }, ()=>{
     return {
 
-    };
-});
+    }
+})

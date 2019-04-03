@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import moment from 'moment'
 import {
@@ -167,8 +167,8 @@ class C extends BaseComponent {
                     detail.descBreakdown, 'task-breakdown')}
 
                 {detail.eventDateRangeStart && generateRow(I18N.get('task.eventStart'),
-                    moment(detail.eventDateRangeStart).format(EVENT_DATE_FORMAT) + ' (' +
-                    detail.eventDateStatus + ')')}
+                    `${moment(detail.eventDateRangeStart).format(EVENT_DATE_FORMAT)  } (${ 
+                    detail.eventDateStatus  })`)}
 
                 {detail.eventDateRangeEnd && generateRow(I18N.get('task.eventEnd'),
                     moment(detail.eventDateRangeEnd).format(EVENT_DATE_FORMAT))}
@@ -229,7 +229,7 @@ class C extends BaseComponent {
         let str = ''
 
         if (this.props.detail.communityParent) {
-            str += this.props.detail.communityParent.name + '/'
+            str += `${this.props.detail.communityParent.name  }/`
         }
         if (this.props.detail.community) {
             str += this.props.detail.community.name
@@ -288,7 +288,7 @@ class C extends BaseComponent {
 
         if (pictures.length === 0) {
             pictures.push(<img width={IMAGE_SIZE} height={IMAGE_SIZE}
-                src={'/assets/images/Group_1685.12.svg'} key={0} />);
+                src={'/assets/images/Group_1685.12.svg'} key={0} />)
         }
 
         return (

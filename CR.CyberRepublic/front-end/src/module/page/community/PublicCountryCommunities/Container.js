@@ -18,7 +18,7 @@ export default createContainer(Component, (state, ownProps) => {
     return {
         currentUser: state.user,
         ...taskState,
-    };
+    }
 }, () => {
 
     const communityService = new CommunityService()

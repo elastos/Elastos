@@ -13,7 +13,7 @@ class PermissionRedux extends BaseRedux {
 
       all_permissions: [],
       all_permissions_total: 0,
-    };
+    }
   }
 }
 

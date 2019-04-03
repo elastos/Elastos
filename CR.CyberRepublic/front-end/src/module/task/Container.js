@@ -38,7 +38,7 @@ export default createContainer(Component, (state) => {
                 await taskService.update(taskId, {
                     status: TASK_STATUS.APPROVED
                 })
-                message.success('Task approved successfully');
+                message.success('Task approved successfully')
             } catch (err) {
                 message.error(err.message)
             }
@@ -51,7 +51,7 @@ export default createContainer(Component, (state) => {
                     status: TASK_STATUS.APPROVED,
                     assignSelf: true
                 })
-                message.success('Task approved and assigned successfully');
+                message.success('Task approved and assigned successfully')
             } catch (err) {
                 message.error(err.message)
             }
@@ -64,7 +64,7 @@ export default createContainer(Component, (state) => {
                     status: TASK_STATUS.SUBMITTED
                 })
 
-                message.success('Task marked as complete');
+                message.success('Task marked as complete')
             } catch (err) {
                 message.error(err.message)
             }
@@ -77,7 +77,7 @@ export default createContainer(Component, (state) => {
                     status: TASK_STATUS.DISTRIBUTED
                 })
 
-                message.success('Task marked as ELA disbursed');
+                message.success('Task marked as ELA disbursed')
             } catch (err) {
                 message.error(err.message)
             }
@@ -91,7 +91,7 @@ export default createContainer(Component, (state) => {
                     status: TASK_STATUS.SUCCESS
                 })
 
-                message.success('Task completion accepted');
+                message.success('Task completion accepted')
             } catch (err) {
                 message.error(err.message)
             }
@@ -103,7 +103,7 @@ export default createContainer(Component, (state) => {
                     archived: true
                 })
 
-                message.success('Task archived');
+                message.success('Task archived')
                 window.history.back()
             } catch (err) {
                 message.error(err.message)
@@ -117,7 +117,7 @@ export default createContainer(Component, (state) => {
                     status: TASK_STATUS.ASSIGNED
                 })
 
-                message.success('Task marked as assigned');
+                message.success('Task marked as assigned')
             } catch (err) {
                 message.error(err.message)
             }

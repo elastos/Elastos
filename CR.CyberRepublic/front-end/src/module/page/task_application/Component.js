@@ -1,5 +1,5 @@
-import React from 'react';
-import StandardPage from '../StandardPage';
+import React from 'react'
+import StandardPage from '../StandardPage'
 import I18N from '@/I18N'
 import Footer from '@/module/layout/Footer/Container'
 

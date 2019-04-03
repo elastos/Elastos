@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import moment from 'moment'
 import {
@@ -179,8 +179,8 @@ class C extends BaseComponent {
                     detail.descBreakdown, 'task-breakdown')}
 
                 {detail.eventDateRangeStart && generateRow(I18N.get('task.eventStart'),
-                    moment(detail.eventDateRangeStart).format(EVENT_DATE_FORMAT) + ' (' +
-                    detail.eventDateStatus + ')')}
+                    `${moment(detail.eventDateRangeStart).format(EVENT_DATE_FORMAT)  } (${ 
+                    detail.eventDateStatus  })`)}
 
                 {detail.eventDateRangeEnd && generateRow(I18N.get('task.eventEnd'),
                     moment(detail.eventDateRangeEnd).format(EVENT_DATE_FORMAT))}
@@ -485,8 +485,8 @@ class C extends BaseComponent {
                         {(candidate.type === TASK_CANDIDATE_TYPE.USER) &&
                         <div>
                             <a onClick={this.linkProfileInfo.bind(this, candidate.user)}>
-                                <Avatar className={'gap-right ' +
-                                    (candidate._id === 'such_fake_id' ? 'avatar-leader' : 'avatar-member')}
+                                <Avatar className={`gap-right ${ 
+                                    candidate._id === 'such_fake_id' ? 'avatar-leader' : 'avatar-member'}`}
                                     src={this.getAvatarWithFallback(candidate.user.profile.avatar)}/>
                                 {this.getUserNameWithFallback(candidate.user)}
                             </a>
@@ -589,8 +589,8 @@ class C extends BaseComponent {
                         {(candidate.type === TASK_CANDIDATE_TYPE.USER) &&
                         <div>
                             <a onClick={this.linkProfileInfo.bind(this, candidate.user)}>
-                                <Avatar className={'gap-right ' +
-                                    (candidate._id === 'such_fake_id' ? 'avatar-leader' : 'avatar-member')}
+                                <Avatar className={`gap-right ${ 
+                                    candidate._id === 'such_fake_id' ? 'avatar-leader' : 'avatar-member'}`}
                                         src={this.getAvatarWithFallback(candidate.user.profile.avatar)}/>
                                 {this.getUserNameWithFallback(candidate.user)}
                             </a>
@@ -803,7 +803,7 @@ class C extends BaseComponent {
     getCommunityDisp() {
         let str = ''
         if (this.props.task.communityParent) {
-            str += this.props.task.communityParent.name + '/'
+            str += `${this.props.task.communityParent.name  }/`
         }
         if (this.props.task.community) {
             str += this.props.task.community.name
@@ -827,15 +827,15 @@ class C extends BaseComponent {
     }
 
     approveUser(taskCandidateId) {
-        this.props.acceptCandidate(taskCandidateId);
+        this.props.acceptCandidate(taskCandidateId)
     }
 
     disapproveUser(taskCandidateId) {
-        this.props.rejectCandidate(taskCandidateId);
+        this.props.rejectCandidate(taskCandidateId)
     }
 
     withdrawApplication(taskCandidateId) {
-        this.props.withdrawCandidate(taskCandidateId);
+        this.props.withdrawCandidate(taskCandidateId)
     }
 
     removeUser(taskCandidateId) {
@@ -854,7 +854,7 @@ class C extends BaseComponent {
     getImageCarousel() {
         const IMAGE_SIZE = 150
 
-        const details = this.props.task;
+        const details = this.props.task
         const carouselImages = []
 
         if (details.thumbnail) {
@@ -869,7 +869,7 @@ class C extends BaseComponent {
 
         if (carouselImages.length === 0) {
             carouselImages.push(<img width={IMAGE_SIZE} height={IMAGE_SIZE}
-                src={'/assets/images/Group_1685.12.svg'} key={0} />);
+                src={'/assets/images/Group_1685.12.svg'} key={0} />)
         }
 
         return (
@@ -885,12 +885,12 @@ class C extends BaseComponent {
 
     getCurrentContributorsData() {
         const detail = this.props.task
-        return _.filter(detail.candidates, { status: TASK_CANDIDATE_STATUS.APPROVED });
+        return _.filter(detail.candidates, { status: TASK_CANDIDATE_STATUS.APPROVED })
     }
 
     getPendingCandidates() {
         const detail = this.props.task
-        return _.filter(detail.candidates, { status: TASK_CANDIDATE_STATUS.PENDING });
+        return _.filter(detail.candidates, { status: TASK_CANDIDATE_STATUS.PENDING })
     }
 
     canApply() {

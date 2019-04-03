@@ -1,14 +1,14 @@
 import React from 'react'
-import Trinity from './trinity.png';
-import App from './app.png';
-import Wallet from './wallet.png';
-import Wallet2 from './wallet2.png';
-import Wallet3 from './wallet3.png';
-import Ditto from './ditto.png';
-import Ditto2 from './ditto2.png';
-import Ditto3 from './ditto3.png';
+import Trinity from './trinity.png'
+import App from './app.png'
+import Wallet from './wallet.png'
+import Wallet2 from './wallet2.png'
+import Wallet3 from './wallet3.png'
+import Ditto from './ditto.png'
+import Ditto2 from './ditto2.png'
+import Ditto3 from './ditto3.png'
 
-import '../../style.scss';
+import '../../style.scss'
 
 export default class extends React.Component {
 

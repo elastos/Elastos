@@ -20,7 +20,7 @@ const FILTERS = {
 
 export default class extends BaseComponent {
   constructor(p) {
-    super(p);
+    super(p)
 
     this.state = {
       list: null,
@@ -39,7 +39,7 @@ export default class extends BaseComponent {
       1: I18N.get('council.voting.type.newMotion'),
       2: I18N.get('council.voting.type.motionAgainst'),
       3: I18N.get('council.voting.type.anythingElse'),
-    };
+    }
 
     const columns = [
       {
@@ -182,17 +182,17 @@ export default class extends BaseComponent {
   }
 
   refetch = async () => {
-    this.ord_loading(true);
+    this.ord_loading(true)
     const { listData, canManage } = this.props
     const param = this.getQuery()
     try {
-      const list = await listData(param, canManage);
-      this.setState({ list });
+      const list = await listData(param, canManage)
+      this.setState({ list })
     } catch (error) {
       // do sth
     }
 
-    this.ord_loading(false);
+    this.ord_loading(false)
   }
 
   onFilterChanged = (value) => {
@@ -218,7 +218,7 @@ export default class extends BaseComponent {
   }
 
   toDetail(id) {
-    this.props.history.push(`/proposals/${id}`);
+    this.props.history.push(`/proposals/${id}`)
   }
 
   voteDataByUser = (data) => {

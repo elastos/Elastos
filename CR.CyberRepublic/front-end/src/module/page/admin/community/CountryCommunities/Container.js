@@ -4,7 +4,7 @@ import CommunityService from '@/service/CommunityService'
 import UserService from '@/service/UserService'
 
 export default createContainer(Component, (state, ownProps) => {
-    return {};
+    return {}
 }, () => {
 
     const communityService = new CommunityService()

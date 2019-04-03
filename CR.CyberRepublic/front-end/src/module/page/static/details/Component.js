@@ -32,7 +32,7 @@ process.env.NODE_ENV === 'production' && Geocode.setApiKey(process.env.GOOGLE_MA
 import moment from 'moment'
 import _ from 'lodash'
 
-const { Meta } = Card;
+const { Meta } = Card
 
 export default class extends EmptyPage {
 
@@ -47,7 +47,7 @@ export default class extends EmptyPage {
     }
 
     async componentDidMount() {
-        this.setState({loading : true});
+        this.setState({loading : true})
         const taskId = this.props.match.params.eventId
         await this.props.getTaskDetail(taskId)
 
@@ -77,7 +77,7 @@ export default class extends EmptyPage {
         if (this.state.hasLocation) {
             Geocode.fromAddress(location).then(
                 async(response) => {
-                    const {lat, lng} = response.results[0].geometry.location;
+                    const {lat, lng} = response.results[0].geometry.location
 
                     this.setState({
                         lat: lat,
@@ -87,7 +87,7 @@ export default class extends EmptyPage {
 
                 },
                 error => {
-                    console.error(error);
+                    console.error(error)
                     this.setState({loading: false})
                 }
             )
@@ -127,9 +127,9 @@ export default class extends EmptyPage {
         let url
 
         if (process.env.NODE_ENV === 'production') {
-            url = 'https://maps.googleapis.com/maps/api/js?key=' + process.env.GOOGLE_MAPS_API_KEY + '&v=3.exp&libraries=geometry,drawing,places';
+            url = `https://maps.googleapis.com/maps/api/js?key=${  process.env.GOOGLE_MAPS_API_KEY  }&v=3.exp&libraries=geometry,drawing,places`
         } else {
-            url = 'https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,drawing,places';
+            url = 'https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,drawing,places'
         }
         const mapElement = (<CustomMapComponent
             isMarkerShown
@@ -143,21 +143,21 @@ export default class extends EmptyPage {
     }
 
     renderEventDetails() {
-        let eventName = this.props.task.name || '';
-        let hostedBy = this.props.task.createdBy ? this.props.task.createdBy.profile.firstName + ' ' +
-            this.props.task.createdBy.profile.lastName : 'unknown user';
-        let hostedByID = this.props.task.createdBy ? this.props.task.createdBy._id : 'not-found';
-        let hostedByAvatar = this.props.task.createdBy ? this.props.task.createdBy.profile.avatar : null;
-        let eventLocation = this.props.task.location || 'TBD';
+        let eventName = this.props.task.name || ''
+        let hostedBy = this.props.task.createdBy ? `${this.props.task.createdBy.profile.firstName  } ${ 
+            this.props.task.createdBy.profile.lastName}` : 'unknown user'
+        let hostedByID = this.props.task.createdBy ? this.props.task.createdBy._id : 'not-found'
+        let hostedByAvatar = this.props.task.createdBy ? this.props.task.createdBy.profile.avatar : null
+        let eventLocation = this.props.task.location || 'TBD'
         let eventDate = this.props.task.eventDateRangeStart ? (
-            moment(this.props.task.eventDateRangeStart).format('MMMM Do YYYY. h:mm a')) : 'TBD';
+            moment(this.props.task.eventDateRangeStart).format('MMMM Do YYYY. h:mm a')) : 'TBD'
         let eventType = this.props.task.type ? (
-            (this.props.task.type[0] + this.props.task.type.toLowerCase().substr(1, this.props.task.type.length))) : '-';
-        let eventInfo = this.props.task.infoLink || '';
+            (this.props.task.type[0] + this.props.task.type.toLowerCase().substr(1, this.props.task.type.length))) : '-'
+        let eventInfo = this.props.task.infoLink || ''
         // descriptionTitle disabled until implemented backend
-        let descriptionTitle = '';
-        let description = this.props.task.description || '';
-        let goals = this.props.task.goals || '';
+        let descriptionTitle = ''
+        let description = this.props.task.description || ''
+        let goals = this.props.task.goals || ''
 
         return (
             <Col sm={{span: 24}} md={{span: 12}} className="d_col_left">
@@ -209,16 +209,16 @@ export default class extends EmptyPage {
                     </div>
                     }
                 </div>
-            </Col>);
+            </Col>)
     }
 
     renderEventActions() {
         let attendance = _.find(this.props.task.candidates, (i) => i.user && i.user._id === this.props.currentUserId)
-        let eventImage = this.props.task.thumbnail || '/assets/images/Elastos_Logo_Temp.png';
-        let shareQuote = this.props.task.name || 'Visit us at elastos.org!';
+        let eventImage = this.props.task.thumbnail || '/assets/images/Elastos_Logo_Temp.png'
+        let shareQuote = this.props.task.name || 'Visit us at elastos.org!'
 
-        const buttonActionLabel = attendance ? 'DEREGISTER' : 'REGISTER';
-        const buttonActionClass = 'actionButton ' + (attendance ? 'actionDeregister' : 'actionRegister');
+        const buttonActionLabel = attendance ? 'DEREGISTER' : 'REGISTER'
+        const buttonActionClass = `actionButton ${  attendance ? 'actionDeregister' : 'actionRegister'}`
         const buttonType = attendance ? 'danger' : 'primary'
         const subscriptionAction = attendance ? this.deregister : this.register
 
@@ -286,15 +286,15 @@ export default class extends EmptyPage {
                     </EmailShareButton>
                 </Row>
             </Col>
-        );
+        )
     }
 
     ord_renderContent () {
         if (this.state.loading) {
             return <div className="center"><Spin size="large"/></div>
         }
-        let communityName = (this.props.task.community && this.props.task.community.name) || 'Elastos Event';
-        let backButton = '< Back';
+        let communityName = (this.props.task.community && this.props.task.community.name) || 'Elastos Event'
+        let backButton = '< Back'
         // TODO: Replace d_row_lower with sensible data
         return (
             <div className="p_EVENT_DETAILS">

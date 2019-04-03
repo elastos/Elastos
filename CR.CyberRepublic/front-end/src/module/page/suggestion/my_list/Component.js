@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import _ from 'lodash'
 import { Spin } from 'antd'
 import I18N from '@/I18N'
@@ -29,7 +29,7 @@ export default class extends BaseComponent {
   }
 
   ord_render() {
-    const { dataList, loading, currentUserId } = this.props;
+    const { dataList, loading, currentUserId } = this.props
     const loadingNode = <div className="center"><Spin size="large" /></div>
     let listNode = loading ? loadingNode : this.renderList()
 

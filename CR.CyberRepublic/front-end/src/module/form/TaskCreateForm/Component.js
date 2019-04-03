@@ -121,10 +121,10 @@ class C extends BaseComponent {
                 if (this.state.editing) {
                     this.props.updateTask(values, this.state).then(() => {
                         this.props.getTaskDetail(this.props.existingTask._id)
-                    });
+                    })
                     this.props.switchEditMode()
                 } else {
-                    this.props.createTask(values, this.state);
+                    this.props.createTask(values, this.state)
                 }
             }
         })
@@ -449,15 +449,15 @@ class C extends BaseComponent {
 
         const thumbnail_fn = getFieldDecorator('thumbnail', {
             rules: []
-        });
+        })
         const p_thumbnail = {
             showUploadList: false,
             customRequest: (info) => {
                 this.setState({
                     thumbnail_loading: true
-                });
+                })
                 upload_file(info.file).then((d) => {
-                    const url = d.url;
+                    const url = d.url
                     this.setState({
                         thumbnail_loading: false,
                         thumbnail_url: url,
@@ -465,10 +465,10 @@ class C extends BaseComponent {
                         thumbnail_filename: d.filename,
 
                         removeThumbnail: false
-                    });
+                    })
                 })
             }
-        };
+        }
         const thumbnail_el = (
             <Upload name="logo" listType="picture" {...p_thumbnail}>
                 {
@@ -481,19 +481,19 @@ class C extends BaseComponent {
                     )
                 }
             </Upload>
-        );
+        )
 
         const attachment_fn = getFieldDecorator('attachment', {
             rules: []
-        });
+        })
         const p_attachment = {
             showUploadList: false,
             customRequest: (info) => {
                 this.setState({
                     attachment_loading: true
-                });
+                })
                 upload_file(info.file).then((d) => {
-                    const url = d.url;
+                    const url = d.url
                     this.setState({
                         attachment_loading: false,
                         attachment_url: url,
@@ -501,10 +501,10 @@ class C extends BaseComponent {
                         attachment_filename: d.filename,
 
                         removeAttachment: false
-                    });
+                    })
                 })
             }
-        };
+        }
         const attachment_el = (
             <Upload name="attachment" {...p_attachment}>
                 {
@@ -523,7 +523,7 @@ class C extends BaseComponent {
                     )
                 }
             </Upload>
-        );
+        )
 
         const specs = [
             {
@@ -998,7 +998,7 @@ class C extends BaseComponent {
                         {!this.props.existingTask &&
                             <Row>
                                 <Col span={12}>
-                                    <Card hoverable className={'feature-box' + (this.state.assignSelf ? ' selected' : '')} onClick={() => { this.setState({assignSelf: true}) }}>
+                                    <Card hoverable className={`feature-box${  this.state.assignSelf ? ' selected' : ''}`} onClick={() => { this.setState({assignSelf: true}) }}>
                                         <div className="title">
                                             <span>{I18N.get('from.TaskCreateForm.label.private')}</span>
                                         </div>
@@ -1011,7 +1011,7 @@ class C extends BaseComponent {
                                     </Card>
                                 </Col>
                                 <Col span={12}>
-                                    <Card hoverable className={'feature-box' + (!this.state.assignSelf ? ' selected' : '')} onClick={() => { this.setState({assignSelf: false}) }}>
+                                    <Card hoverable className={`feature-box${  !this.state.assignSelf ? ' selected' : ''}`} onClick={() => { this.setState({assignSelf: false}) }}>
                                         <div className="title">
                                             <span>{I18N.get('from.TaskCreateForm.label.public')}</span>
                                         </div>

@@ -73,7 +73,7 @@ export default class extends AdminPage {
                 message.success('Add new organizer successfully')
                 this.loadCommunityDetail()
             }).catch((err) => {
-                console.error(err);
+                console.error(err)
                 message.error('Error while add organizer')
             })
         })
@@ -84,9 +84,9 @@ export default class extends AdminPage {
 
     componentDidMount() {
         super.componentDidMount()
-        this.loadCommunities();
-        this.loadCommunityDetail();
-        this.loadSubCommunities();
+        this.loadCommunities()
+        this.loadCommunityDetail()
+        this.loadSubCommunities()
         this.props.getAllUsers().then((result) => {
             this.setState({
                 users: result.list
@@ -111,13 +111,13 @@ export default class extends AdminPage {
                     community
                 })
             })
-        });
+        })
     }
 
     getAvatarUrl(users) {
         const avatarDefault = {
             [USER_GENDER.MALE]: '/assets/images/User_Avatar_Other.png',
-        };
+        }
 
         users.forEach((user) => {
             if (!user.profile.avatar) {
@@ -164,9 +164,9 @@ export default class extends AdminPage {
 
             this.props.getUserByIds(userIds).then((users) => {
                 users = this.getAvatarUrl(users) // Mock avatar url
-                const mappingIdToUserList = _.keyBy(users, '_id');
+                const mappingIdToUserList = _.keyBy(users, '_id')
                 communities.forEach((community) => {
-                    community.leaders = community.leaders || [];
+                    community.leaders = community.leaders || []
                     community.leaderIds.forEach((leaderId) => {
                         if (mappingIdToUserList[leaderId]) {
                             community.leaders.push(mappingIdToUserList[leaderId])
@@ -183,8 +183,8 @@ export default class extends AdminPage {
         this.props.getSubCommunities(parentCommunityId || this.props.match.params['community']).then((subCommunities) => {
             this.convertCommunitiesLeaderIdsToLeaderObjects(subCommunities).then((subCommunities) => {
                 // Check which communities we will use to render
-                const listSubCommunitiesByType = this.getListSubCommunitiesByType(subCommunities, this.props.match.params['region']);
-                const breadcrumbRegions = this.getBreadcrumbRegions(subCommunities);
+                const listSubCommunitiesByType = this.getListSubCommunitiesByType(subCommunities, this.props.match.params['region'])
+                const breadcrumbRegions = this.getBreadcrumbRegions(subCommunities)
 
                 // Update to state
                 this.setState({
@@ -198,16 +198,16 @@ export default class extends AdminPage {
 
     getBreadcrumbRegions(subCommunities) {
         // Filter communities to get breadcrumb regions
-        let breadcrumbRegions = [];
+        let breadcrumbRegions = []
         subCommunities.forEach((community) => {
             breadcrumbRegions.push({
                 name: community.name,
             })
         })
 
-        breadcrumbRegions = _.sortBy(_.uniqBy(breadcrumbRegions, 'name'), 'name');
+        breadcrumbRegions = _.sortBy(_.uniqBy(breadcrumbRegions, 'name'), 'name')
 
-        return breadcrumbRegions;
+        return breadcrumbRegions
     }
 
     // Modal change organizer
@@ -371,7 +371,7 @@ export default class extends AdminPage {
             name: formValues.name,
         }).then(() => {
             message.success('Add new sub community successfully')
-            this.loadSubCommunities();
+            this.loadSubCommunities()
         }).catch(() => {
             message.error('Error while adding new sub community')
         })
@@ -392,15 +392,15 @@ export default class extends AdminPage {
             const communityId = this.getCommunityIdByGeolocation(geolocation)
             this.props.history.push(`/admin/community/${communityId}/country/${geolocation}`)
 
-            this.loadCommunityDetail(communityId);
-            this.loadSubCommunities(communityId);
+            this.loadCommunityDetail(communityId)
+            this.loadSubCommunities(communityId)
         } else {
             this.props.history.push('/admin/community')
         }
     }
 
     getListSubCommunitiesByType(subCommunities, filterRegionName) {
-        let renderCommunities;
+        let renderCommunities
 
         if (filterRegionName) {
             renderCommunities = subCommunities.filter((community) => {
@@ -418,44 +418,44 @@ export default class extends AdminPage {
         }
 
         renderCommunities.forEach((community) => {
-            listSubCommunitiesByType[community.type] = listSubCommunitiesByType[community.type] || [];
-            listSubCommunitiesByType[community.type].push(community);
+            listSubCommunitiesByType[community.type] = listSubCommunitiesByType[community.type] || []
+            listSubCommunitiesByType[community.type].push(community)
         })
 
-        return listSubCommunitiesByType;
+        return listSubCommunitiesByType
     }
 
     handleChangeRegion(region) {
         if (region) {
-            const listSubCommunitiesByType = this.getListSubCommunitiesByType(this.state.subCommunities, region);
+            const listSubCommunitiesByType = this.getListSubCommunitiesByType(this.state.subCommunities, region)
             this.setState({
                 listSubCommunitiesByType
             })
-            this.props.history.push(`/admin/community/${this.props.match.params['community']}/country/${this.props.match.params['country']}/region/${region}`);
+            this.props.history.push(`/admin/community/${this.props.match.params['community']}/country/${this.props.match.params['country']}/region/${region}`)
         } else {
-            this.props.history.push(`/admin/community/${this.props.match.params['community']}/country/${this.props.match.params['country']}`);
+            this.props.history.push(`/admin/community/${this.props.match.params['community']}/country/${this.props.match.params['country']}`)
         }
     }
 
     renderListCountriesEl() {
         if (!this.state.communities) {
-            return null;
+            return null
         }
 
-        const communities = [];
+        const communities = []
         const listCountriesEl = this.state.communities.map((country, index) => {
             if (communities.includes(country.name)) {
-                return null;
+                return null
             }
 
-            communities.push(country.name);
+            communities.push(country.name)
             return (
                 <Select.Option title={country.name} key={index}
                                value={country.name}>{country.name}</Select.Option>
             )
         })
 
-        return listCountriesEl;
+        return listCountriesEl
     }
 
     renderBreadcrumbCountries() {
@@ -520,7 +520,7 @@ export default class extends AdminPage {
             <Row>
                 <Col span={4}
                      className="user-card user-card--without-padding user-card--organizer">
-                    <h5 className="without-padding overflow-ellipsis" title={this.state.community.name + ' Organizers'}>
+                    <h5 className="without-padding overflow-ellipsis" title={`${this.state.community.name  } Organizers`}>
                         Country Organizers
                     </h5>
                     {this.state.community.leaders && this.state.community.leaders.map((leader, index) => {
@@ -532,7 +532,7 @@ export default class extends AdminPage {
                                 cover={<img alt="example" src={leader.profile.avatar}/>}
                             >
                                 <Card.Meta
-                                    title={leader.profile.firstName + ' ' + leader.profile.lastName}
+                                    title={`${leader.profile.firstName  } ${  leader.profile.lastName}`}
                                     description={leader.country}
                                 />
                             </Card>
@@ -554,7 +554,7 @@ export default class extends AdminPage {
                                 <Row>
                                     {this.state.listSubCommunitiesByType[COMMUNITY_TYPE[communityType]].map((community, i) => {
                                         if (!this.state.showAllSubCommunity[COMMUNITY_TYPE[communityType]] && i >= this.state.showMoreMinimum) {
-                                            return;
+                                            return
                                         }
 
                                         return (
@@ -573,7 +573,7 @@ export default class extends AdminPage {
                                                                 {community.name}
                                                             </h5>
                                                             <p>
-                                                                {leader.profile.firstName + ' ' + leader.profile.lastName}<br/>
+                                                                {`${leader.profile.firstName  } ${  leader.profile.lastName}`}<br/>
                                                                 <span class="no-info">{leader.username}</span>
                                                             </p>
                                                         </Card>
@@ -593,7 +593,7 @@ export default class extends AdminPage {
                                                     </Card>
                                                 )}
                                             </Col>
-                                        );
+                                        )
                                     })}
                                 </Row>
 

@@ -1,10 +1,10 @@
 /*global location, analytics*/
-import React from 'react';
-import BasePage from '@/model/BasePage';
-import {Layout} from 'antd';
-import Header from '../layout/Header/Container';
+import React from 'react'
+import BasePage from '@/model/BasePage'
+import {Layout} from 'antd'
+import Header from '../layout/Header/Container'
 import {BackTop} from 'antd'
-import MobileMenu from './mobile/side_menu/Container';
+import MobileMenu from './mobile/side_menu/Container'
 import {spring, presets, Motion} from 'react-motion'
 
 export default class extends BasePage {
@@ -54,7 +54,7 @@ export default class extends BasePage {
                 </Layout.Content>
                 <BackTop/>
             </Layout>
-        );
+        )
     }
 
     ord_animate() {
@@ -63,17 +63,17 @@ export default class extends BasePage {
         return {
             style_fn: (val) => {
                 return {
-                    left: val.left + 'vw'
+                    left: `${val.left  }vw`
                 }
             }
         }
     }
 
     ord_renderContent() {
-        return null;
+        return null
     }
 
     ord_loading(f=false){
-        this.setState({loading : f});
+        this.setState({loading : f})
     }
 }

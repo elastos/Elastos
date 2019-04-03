@@ -1,5 +1,5 @@
-import React from 'react';
-import ProfilePage from '../../ProfilePage';
+import React from 'react'
+import ProfilePage from '../../ProfilePage'
 import Footer from '@/module/layout/Footer/Container'
 import Navigator from '@/module/page/shared/HomeNavigator/Container'
 import _ from 'lodash'
@@ -16,7 +16,7 @@ import moment from 'moment/moment'
 import MediaQuery from 'react-responsive'
 import {MAX_WIDTH_MOBILE, MIN_WIDTH_PC} from "../../../../config/constant"
 
-const FormItem = Form.Item;
+const FormItem = Form.Item
 
 const FILTERS = {
     ALL: 'all',
@@ -395,7 +395,7 @@ export default class extends ProfilePage {
         }
 
         const data = _.map(tasks, (task, id) => {
-            const applicationDeadline = task.applicationDeadline ? new Date(task.applicationDeadline).getTime() : Date.now();
+            const applicationDeadline = task.applicationDeadline ? new Date(task.applicationDeadline).getTime() : Date.now()
             return {
                 href: '',
                 title: task.name,

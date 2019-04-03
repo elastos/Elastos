@@ -16,7 +16,7 @@ class PermissionRoleRedux extends BaseRedux {
 
       // if we select a detail
       detail: {},
-    };
+    }
   }
 }
 

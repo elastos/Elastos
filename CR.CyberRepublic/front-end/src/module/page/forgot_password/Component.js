@@ -1,6 +1,6 @@
-import React from 'react';
-import StandardPage from '../StandardPage';
-import ForgotPasswordForm from '@/module/form/ForgotPasswordForm/Container';
+import React from 'react'
+import StandardPage from '../StandardPage'
+import ForgotPasswordForm from '@/module/form/ForgotPasswordForm/Container'
 import I18N from '@/I18N'
 
 import './style.scss'
@@ -17,6 +17,6 @@ export default class extends StandardPage {
                     <ForgotPasswordForm />
                 </div>
             </div>
-        );
+        )
     }
 }

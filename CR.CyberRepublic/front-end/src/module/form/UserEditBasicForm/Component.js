@@ -37,7 +37,7 @@ class C extends BaseComponent {
           this.props.refetch()
           this.props.switchEditMode()
           message.success(I18N.get('profile.thanksForCompleting'))
-        });
+        })
       }
     })
   }
@@ -73,10 +73,10 @@ class C extends BaseComponent {
         // https://github.com/vazco/uniforms/issues/228
         getPopupContainer={(x) => {
           while (x && x.tagName.toLowerCase() !== 'form') {
-            x = x.parentElement;
+            x = x.parentElement
           }
 
-          return x;
+          return x
         }}
       >
         {_.entries(config.data.mappingRoleToName).map(([key, val]) => (

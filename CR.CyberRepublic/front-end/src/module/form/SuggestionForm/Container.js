@@ -9,7 +9,7 @@ const mapState = state => ({
 })
 
 const mapDispatch = () => {
-  const suggestionService = new SuggestionService();
+  const suggestionService = new SuggestionService()
   return {
     async create(param) {
       return suggestionService.create(param)
@@ -17,7 +17,7 @@ const mapDispatch = () => {
     async update(param) {
       return suggestionService.update(param)
     },
-  };
+  }
 }
 
 export default createContainer(Component, mapState, mapDispatch)

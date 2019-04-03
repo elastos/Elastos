@@ -18,7 +18,7 @@ import {
 
 } from 'antd'
 
-import {upload_file} from "@/util";
+import {upload_file} from "@/util"
 import './style.scss'
 
 const FormItem = Form.Item
@@ -43,7 +43,7 @@ class C extends BaseComponent {
                 }
 
                 try {
-                    await this.props.submitForm(values, this.state);
+                    await this.props.submitForm(values, this.state)
                 } catch (err) {
                     console.error(err)
                     message.error('There was a problem submitting thing, please refresh and try again')
@@ -72,7 +72,7 @@ class C extends BaseComponent {
 
         // name
         const fullLegalName_fn = getFieldDecorator('fullLegalName', {
-            initialValue: this.props.user.profile.firstName + ' ' + this.props.user.profile.lastName,
+            initialValue: `${this.props.user.profile.firstName  } ${  this.props.user.profile.lastName}`,
             rules: [
                 {required: true, message: 'Please input an name'},
                 {min: 6, message: 'name too short'}
@@ -95,15 +95,15 @@ class C extends BaseComponent {
 
         const attachment_fn = getFieldDecorator('attachment', {
             rules: []
-        });
+        })
         const p_attachment = {
             showUploadList: false,
             customRequest :(info)=>{
                 this.setState({
                     attachment_loading: true
-                });
+                })
                 upload_file(info.file).then((d)=>{
-                    const url = d.url;
+                    const url = d.url
                     this.setState({
                         attachment_loading: false,
                         attachment_url : url,
@@ -111,10 +111,10 @@ class C extends BaseComponent {
                         attachment_filename: d.filename,
 
                         removeAttachment: false
-                    });
+                    })
                 })
             }
-        };
+        }
         const attachment_el = (
             <Upload name="attachment" {...p_attachment}>
                 {
@@ -133,7 +133,7 @@ class C extends BaseComponent {
                     )
                 }
             </Upload>
-        );
+        )
 
         return {
             fullLegalName: fullLegalName_fn(fullLegalName_el),

@@ -1,6 +1,6 @@
-import { createContainer } from '@/util';
-import Component from './Component';
-import UserService from '@/service/UserService';
+import { createContainer } from '@/util'
+import Component from './Component'
+import UserService from '@/service/UserService'
 import { message } from 'antd'
 import _ from 'lodash'
 
@@ -13,7 +13,7 @@ export default createContainer(Component, state => ({
   is_admin: state.user.is_admin,
   loading: state.member.loading,
 }), () => {
-  const userService = new UserService();
+  const userService = new UserService()
 
   return {
     async getCurrentUser() {
@@ -78,5 +78,5 @@ export default createContainer(Component, state => ({
         return true
       }
     },
-  };
-});
+  }
+})

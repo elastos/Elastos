@@ -37,7 +37,7 @@ export default class extends BaseComponent {
       'constitution/1',
       'council'
     ], key)) {
-      this.props.history.push('/' + ev.key)
+      this.props.history.push(`/${  ev.key}`)
     }
 
     else if (key === 'logout') {

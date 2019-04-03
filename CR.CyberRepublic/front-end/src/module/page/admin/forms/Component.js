@@ -97,7 +97,7 @@ export default class extends AdminPage {
             title: 'Name',
             dataIndex: 'fullLegalName',
             render: (fullLegalName, record) => {
-                return fullLegalName || (record.createdBy ? (record.createdBy.profile.firstName + ' ' + record.createdBy.profile.lastName) : '')
+                return fullLegalName || (record.createdBy ? (`${record.createdBy.profile.firstName  } ${  record.createdBy.profile.lastName}`) : '')
             }
         }, {
             title: 'Campaign',

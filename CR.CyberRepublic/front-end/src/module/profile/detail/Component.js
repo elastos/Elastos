@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import UserContactForm from '@/module/form/UserContactForm/Container'
 import ProfilePopup from '@/module/profile/OverviewPopup/Container'
@@ -16,7 +16,7 @@ import './style.scss'
 import config from '@/config'
 import MediaQuery from 'react-responsive'
 import _ from 'lodash'
-import linkifyStr from 'linkifyjs/string';
+import linkifyStr from 'linkifyjs/string'
 
 const TabPane = Tabs.TabPane
 const dateTimeFormat = 'MMM D, YYYY - h:mma (Z [GMT])'

@@ -1,6 +1,6 @@
-import React from 'react';
+import React from 'react'
 import _ from 'lodash'
-import { Popover, Icon } from 'antd';
+import { Popover, Icon } from 'antd'
 import URI from 'urijs'
 import I18N from '@/I18N'
 import { loginRedirectWithQuery } from '@/util'

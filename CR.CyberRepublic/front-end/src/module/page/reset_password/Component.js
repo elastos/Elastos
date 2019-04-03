@@ -1,6 +1,6 @@
-import React from 'react';
-import StandardPage from '../StandardPage';
-import ResetPasswordForm from '@/module/form/ResetPasswordForm/Container';
+import React from 'react'
+import StandardPage from '../StandardPage'
+import ResetPasswordForm from '@/module/form/ResetPasswordForm/Container'
 import I18N from '@/I18N'
 
 import './style.scss'
@@ -17,6 +17,6 @@ export default class extends StandardPage {
                     <ResetPasswordForm />
                 </div>
             </div>
-        );
+        )
     }
 }

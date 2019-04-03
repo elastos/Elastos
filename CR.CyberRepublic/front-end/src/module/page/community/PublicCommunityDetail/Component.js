@@ -37,7 +37,7 @@ export default class extends StandardPage {
     }
 
     componentDidMount() {
-        this.loadCommunities();
+        this.loadCommunities()
         this.props.getSocialEvents()
         this.loadCommunityDetail()
         this.loadSubCommunities()
@@ -69,7 +69,7 @@ export default class extends StandardPage {
         if (!this.props.match.params['region']) {
             const listApiCalls = [
                 this.props.getCommunityMembers(communityId || this.props.match.params['community']) // Get member of community
-            ];
+            ]
 
             // Get members of each sub community
             this.state.subCommunities.forEach((subCommunity) => {
@@ -83,7 +83,7 @@ export default class extends StandardPage {
                     keyValueMembersWithoutSubCommunity
                 })
 
-                let communityMembers = [];
+                let communityMembers = []
                 apiResponses.forEach((apiResponse) => {
                     communityMembers.push(...apiResponse)
                 })
@@ -114,15 +114,15 @@ export default class extends StandardPage {
                     community
                 })
             })
-        });
+        })
     }
 
     loadSubCommunities(communityId) {
         this.props.getSubCommunities(communityId || this.props.match.params['community']).then((subCommunities) => {
             this.convertCommunitiesLeaderIdsToLeaderObjects(subCommunities).then((subCommunities) => {
                 // Check which communities we will use to render
-                const breadcrumbRegions = this.getBreadcrumbRegions(subCommunities);
-                const listSubCommunitiesByType = this.getListSubCommunitiesByType(subCommunities, this.props.match.params['region']);
+                const breadcrumbRegions = this.getBreadcrumbRegions(subCommunities)
+                const listSubCommunitiesByType = this.getListSubCommunitiesByType(subCommunities, this.props.match.params['region'])
                 // Update to state
                 this.setState({
                     subCommunities,
@@ -139,7 +139,7 @@ export default class extends StandardPage {
     getAvatarUrl(users) {
         const avatarDefault = {
             [USER_GENDER.MALE]: '/assets/images/User_Avatar_Other.png',
-        };
+        }
 
         users.forEach((user) => {
             if (!user.profile.avatar) {
@@ -186,9 +186,9 @@ export default class extends StandardPage {
 
             this.props.getUserByIds(userIds).then((users) => {
                 users = this.getAvatarUrl(users) // Mock avatar url
-                const mappingIdToUserList = _.keyBy(users, '_id');
+                const mappingIdToUserList = _.keyBy(users, '_id')
                 communities.forEach((community) => {
-                    community.leaders = community.leaders || [];
+                    community.leaders = community.leaders || []
                     community.leaderIds.forEach((leaderId) => {
                         if (mappingIdToUserList[leaderId]) {
                             community.leaders.push(mappingIdToUserList[leaderId])
@@ -203,16 +203,16 @@ export default class extends StandardPage {
 
     getBreadcrumbRegions(subCommunities) {
         // Filter communities to get breadcrumb regions
-        let breadcrumbRegions = [];
+        let breadcrumbRegions = []
         subCommunities.forEach((community) => {
             breadcrumbRegions.push({
                 name: community.name,
             })
         })
 
-        breadcrumbRegions = _.sortBy(_.uniqBy(breadcrumbRegions, 'name'), 'name');
+        breadcrumbRegions = _.sortBy(_.uniqBy(breadcrumbRegions, 'name'), 'name')
 
-        return breadcrumbRegions;
+        return breadcrumbRegions
     }
 
     getCommunityIdByGeolocation(geolocation) {
@@ -238,7 +238,7 @@ export default class extends StandardPage {
     }
 
     getListSubCommunitiesByType(subCommunities, filterRegionName) {
-        let renderCommunities;
+        let renderCommunities
 
         if (filterRegionName) {
             renderCommunities = subCommunities.filter((community) => {
@@ -256,22 +256,22 @@ export default class extends StandardPage {
         }
 
         renderCommunities.forEach((community) => {
-            listSubCommunitiesByType[community.type] = listSubCommunitiesByType[community.type] || [];
-            listSubCommunitiesByType[community.type].push(community);
+            listSubCommunitiesByType[community.type] = listSubCommunitiesByType[community.type] || []
+            listSubCommunitiesByType[community.type].push(community)
         })
 
-        return listSubCommunitiesByType;
+        return listSubCommunitiesByType
     }
 
     handleChangeRegion(region) {
         if (region) {
-            const listSubCommunitiesByType = this.getListSubCommunitiesByType(this.state.subCommunities, region);
+            const listSubCommunitiesByType = this.getListSubCommunitiesByType(this.state.subCommunities, region)
             this.setState({
                 listSubCommunitiesByType
             })
 
-            const isChangeRegion = !!this.props.match.params['region'];
-            this.props.history.push(`/community/${this.props.match.params['community']}/country/${this.props.match.params['country']}/region/${region}`);
+            const isChangeRegion = !!this.props.match.params['region']
+            this.props.history.push(`/community/${this.props.match.params['community']}/country/${this.props.match.params['country']}/region/${region}`)
 
             if (isChangeRegion) {
                 setTimeout(() => {
@@ -279,12 +279,12 @@ export default class extends StandardPage {
                 }, 100)
             }
         } else {
-            this.props.history.push(`/community/${this.props.match.params['community']}/country/${this.props.match.params['country']}`);
+            this.props.history.push(`/community/${this.props.match.params['community']}/country/${this.props.match.params['country']}`)
         }
     }
 
     getMemberCommunityId() {
-        let communityId;
+        let communityId
 
         if (!this.props.match.params['region']) {
             communityId = this.props.match.params.community
@@ -295,7 +295,7 @@ export default class extends StandardPage {
             })
 
             if (!selectedSubCommunity) {
-                return;
+                return
             }
 
             communityId = selectedSubCommunity._id
@@ -478,7 +478,7 @@ export default class extends StandardPage {
             communities = this.state.communityMembersClone
         } else {
             communities = _.filter(this.state.communityMembersClone, (community) => {
-                return community.profile.firstName.toLowerCase().indexOf(value.toLowerCase()) > -1 || community.profile.lastName.toLowerCase().indexOf(value.toLowerCase()) > -1;
+                return community.profile.firstName.toLowerCase().indexOf(value.toLowerCase()) > -1 || community.profile.lastName.toLowerCase().indexOf(value.toLowerCase()) > -1
             })
         }
 
@@ -507,7 +507,7 @@ export default class extends StandardPage {
                                                 <Avatar size="large" icon="user" src={item.profile.avatar}/>
                                             </td>
                                             <td className="member-name">
-                                                <a onClick={() => {this.props.history.push('/member/' + item._id)}}>
+                                                <a onClick={() => {this.props.history.push(`/member/${  item._id}`)}}>
                                                     {item.username}
                                                 </a>
                                             </td>
@@ -576,22 +576,22 @@ export default class extends StandardPage {
     }
 
     checkShouldDisplayApplyOrganizer() {
-        let shouldDisplayApplyOrganizer = false;
+        let shouldDisplayApplyOrganizer = false
 
-        const currentUserId = '5b0ff56f41xx716853f41de884';
+        const currentUserId = '5b0ff56f41xx716853f41de884'
         if (currentUserId) {
             if (!this.state.community || !this.state.community.leaders) {
-                shouldDisplayApplyOrganizer = true;
+                shouldDisplayApplyOrganizer = true
             } else {
                 const existedLeader = _.find(this.state.community.leaders, {
                     _id: currentUserId,
-                });
+                })
 
-                shouldDisplayApplyOrganizer = !existedLeader;
+                shouldDisplayApplyOrganizer = !existedLeader
             }
         }
 
-        return shouldDisplayApplyOrganizer;
+        return shouldDisplayApplyOrganizer
     }
 
     ord_renderContent () {
@@ -599,7 +599,7 @@ export default class extends StandardPage {
         // const menuListRegionsEl = this.renderBreadcrumbRegions()
         // const tabSubCommunities = this.renderTabSubCommunities()
 
-        const shouldDisplayButtonApplyOrganizer = this.checkShouldDisplayApplyOrganizer();
+        const shouldDisplayButtonApplyOrganizer = this.checkShouldDisplayApplyOrganizer()
 
         return (
             <div className="p_Community">
@@ -614,7 +614,7 @@ export default class extends StandardPage {
                                         <Row>
                                             <Col span={24}>
                                                 <h3 className="without-padding overflow-ellipsis">
-                                                    {config.data.mappingCountryCodeToName[this.props.match.params['country']] + ' Organizers'}
+                                                    {`${config.data.mappingCountryCodeToName[this.props.match.params['country']]  } Organizers`}
                                                 </h3>
                                             </Col>
                                         </Row>

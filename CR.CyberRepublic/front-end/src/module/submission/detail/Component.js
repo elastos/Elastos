@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import moment from 'moment'
 import Comments from '@/module/common/comments/Container'
@@ -175,7 +175,7 @@ export default class extends BaseComponent {
     }
 
     getUpperLeftBox() {
-        const submission = this.props.submission;
+        const submission = this.props.submission
         return (
             <div className="left-container">
                 <div className="pictures-container">
@@ -189,13 +189,13 @@ export default class extends BaseComponent {
     }
 
     getUpperRightBox() {
-        const { description, title, createdBy, createdAt, community } = this.props.submission;
-        const name = community ? community.name : null;
-        const type = community ? community.type : null;
-        const profile = createdBy && createdBy.profile ? createdBy.profile : null;
-        const leaderImage = profile ? profile.avatar : '';
-        const leaderName = createdBy.profile ? (`${profile.firstName} ${profile.lastName}`) : '';
-        const createdDate = moment(createdAt).format('MMM D, YYYY');
+        const { description, title, createdBy, createdAt, community } = this.props.submission
+        const name = community ? community.name : null
+        const type = community ? community.type : null
+        const profile = createdBy && createdBy.profile ? createdBy.profile : null
+        const leaderImage = profile ? profile.avatar : ''
+        const leaderName = createdBy.profile ? (`${profile.firstName} ${profile.lastName}`) : ''
+        const createdDate = moment(createdAt).format('MMM D, YYYY')
 
         return (
             <div>

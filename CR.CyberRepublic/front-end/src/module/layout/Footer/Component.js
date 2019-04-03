@@ -1,9 +1,9 @@
-import React from 'react';
-import BaseComponent from '@/model/BaseComponent';
+import React from 'react'
+import BaseComponent from '@/model/BaseComponent'
 import { Col, Row, Avatar } from 'antd'
 import I18N from '@/I18N'
 
-import { CR_LINKS, ELASTOS_LINKS } from "@/constant";
+import { CR_LINKS, ELASTOS_LINKS } from "@/constant"
 
 import './style.scss'
 
@@ -69,6 +69,6 @@ export default class extends BaseComponent {
                     </Row>
                 </div>
             </div>
-        );
+        )
     }
 }

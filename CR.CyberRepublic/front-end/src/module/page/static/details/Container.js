@@ -10,10 +10,10 @@ export default createContainer(Component, (state, ownProps) => {
     }
 }, () => {
 
-    const taskService = new TaskService();
+    const taskService = new TaskService()
     return {
         async getTaskDetail(taskId) {
-            return taskService.get(taskId);
+            return taskService.get(taskId)
         },
 
         resetTaskDetail() {

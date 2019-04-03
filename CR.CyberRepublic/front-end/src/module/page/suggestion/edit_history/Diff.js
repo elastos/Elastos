@@ -16,7 +16,7 @@ const fnMap = {
   words: jsdiff.diffWords,
   sentences: jsdiff.diffSentences,
   json: jsdiff.diffJson,
-};
+}
 
 const StyledSpan = styled.span`
   > * {
@@ -28,7 +28,7 @@ const StyledSpan = styled.span`
 export default ({ type, inputA, inputB }) => {
   const diffA = inputA ? turndownService.turndown(inputA) : ''
   const diffB = inputB ? turndownService.turndown(inputB) : ''
-  const diff = fnMap[type || 'chars'](diffA, diffB);
+  const diff = fnMap[type || 'chars'](diffA, diffB)
   const result = diff.map((part, index) => {
     const spanStyle = {}
     if (part.added || part.removed) {
@@ -41,10 +41,10 @@ export default ({ type, inputA, inputB }) => {
 
     return <StyledSpan key={index} highlight={part.added || part.removed} style={spanStyle} dangerouslySetInnerHTML={{ __html: converter.makeHtml(part.value) }} />
     // return <span key={index} style={spanStyle}>{part.value}</span>
-  });
+  })
   return (
     <div className="diff-result">
       {result}
     </div>
-  );
+  )
 }

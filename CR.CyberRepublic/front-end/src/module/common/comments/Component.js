@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import {
   Form, Col, Row, List, Avatar, Icon, Divider, Button, Input, Mention, Modal,
@@ -14,7 +14,7 @@ import ProfilePopup from '@/module/profile/OverviewPopup/Container'
 import Translation from '@/module/common/Translation/Container'
 import MediaQuery from 'react-responsive'
 import { USER_AVATAR_DEFAULT, LINKIFY_OPTION } from '@/constant'
-import linkifyStr from 'linkifyjs/string';
+import linkifyStr from 'linkifyjs/string'
 
 const TextArea = Input.TextArea
 const FormItem = Form.Item
@@ -214,7 +214,7 @@ class C extends BaseComponent {
             </Button>
           </FormItem>
         </Form>
-      ) : null;
+      ) : null
   }
 
   getModelId() {
@@ -355,7 +355,7 @@ class C extends BaseComponent {
     })
 
     // Show in reverse chronological order
-    commentItems && commentItems.reverse();
+    commentItems && commentItems.reverse()
 
     return (
       <List

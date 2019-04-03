@@ -14,7 +14,7 @@ export default createContainer(Component, (state) => {
     }
 }, () => {
     const userService = new UserService()
-    const submissionService = new SubmissionService();
+    const submissionService = new SubmissionService()
 
     return {
         async getEmpowerUsers() {
@@ -27,7 +27,7 @@ export default createContainer(Component, (state) => {
 
             await submissionService.create({
 
-                title: state.applyEmpowerType + ' Empower35 Ambassador Application',
+                title: `${state.applyEmpowerType  } Empower35 Ambassador Application`,
                 type: SUBMISSION_TYPE.EMPOWER_35,
                 campaign: state.applyEmpowerType,
 
