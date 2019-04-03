@@ -5,11 +5,11 @@ import TeamService from '@/service/TeamService'
 import _ from 'lodash'
 
 export default createContainer(Component, (state) => {
-    return {
-        ...state
-    }
+  return {
+    ...state
+  }
 
 }, () => {
-    return {
-    }
+  return {
+  }
 })

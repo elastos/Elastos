@@ -6,7 +6,7 @@ import MediaQuery from 'react-responsive'
 import moment from 'moment/moment'
 import Comments from '@/module/common/comments/Container'
 import Footer from '@/module/layout/Footer/Container'
-import BackLink from "@/module/shared/BackLink/Component"
+import BackLink from '@/module/shared/BackLink/Component'
 import Translation from '@/module/common/Translation/Container'
 import SuggestionForm from '@/module/form/SuggestionForm/Container'
 import ProposalForm from '@/module/page/CVote/create/Container'
@@ -310,7 +310,7 @@ export default class extends StandardPage {
       <Comments
         type="suggestion"
         suggestion={detail}
-        canPost
+        canPost={true}
         model={detail._id}
         returnUrl={`/suggestion/${detail._id}`}
       />

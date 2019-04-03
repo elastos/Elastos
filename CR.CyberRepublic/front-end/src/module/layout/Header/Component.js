@@ -40,13 +40,13 @@ export default class extends BaseComponent {
       >
         {this.state.completing
       && (
-      <UserEditForm
-        user={this.props.user}
-        switchEditMode={this.onCompleteProfileModalCancel.bind(this)}
-        completing
-      />
+        <UserEditForm
+          user={this.props.user}
+          switchEditMode={this.onCompleteProfileModalCancel.bind(this)}
+          completing={true}
+        />
       )
-      }
+        }
       </Modal>
     )
   }
@@ -83,16 +83,16 @@ export default class extends BaseComponent {
         }
         {!isLogin
           && (
-          <Menu.Item key="register">
-            {I18N.get('0202')}
-          </Menu.Item>
+            <Menu.Item key="register">
+              {I18N.get('0202')}
+            </Menu.Item>
           )
         }
         {isLogin
           && (
-          <Menu.Item key="logout">
-            {I18N.get('0204')}
-          </Menu.Item>
+            <Menu.Item key="logout">
+              {I18N.get('0204')}
+            </Menu.Item>
           )
         }
       </Menu>
@@ -109,7 +109,7 @@ export default class extends BaseComponent {
               format="png"
               basePath="/assets/images/flags"
               pngSize={24}
-              shiny
+              shiny={true}
               alt="English"
             />
             <span className="language-us">English</span>
@@ -122,7 +122,7 @@ export default class extends BaseComponent {
               format="png"
               basePath="/assets/images/flags"
               pngSize={24}
-              shiny
+              shiny={true}
               alt="English"
             />
             <span className="language-cn">简体中文</span>
@@ -139,7 +139,7 @@ export default class extends BaseComponent {
             format="png"
             basePath="/assets/images/flags"
             pngSize={24}
-            shiny
+            shiny={true}
             alt="English"
           />
         </a>
@@ -181,11 +181,11 @@ export default class extends BaseComponent {
 
         {this.props.isLogin
       && (
-      <Menu.Item key="logout">
-        {I18N.get('0204')}
-      </Menu.Item>
+        <Menu.Item key="logout">
+          {I18N.get('0204')}
+        </Menu.Item>
       )
-      }
+        }
       </Menu>
     )
   }
@@ -223,7 +223,7 @@ export default class extends BaseComponent {
         <Menu className="c_Header_Menu c_Side_Menu pull-right">
           <Menu.Item className="c_MenuItem help no-margin" key="help">
             <MediaQuery minWidth={MIN_WIDTH_PC}>
-              <Dropdown overlay={helpDropdown} style="margin-top: 24px;">
+              <Dropdown overlay={helpDropdown} style={{marginTop: '24px'}}>
                 <a className="ant-dropdown-link">
                   <svg width="14" height="11" viewBox="0 0 14 11" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path fillRule="evenodd" clipRule="evenodd" d="M0 0H14V1H0V0ZM0 5H14V6H0V5ZM14 10H0V11H14V10Z" fill="black" />
@@ -299,7 +299,7 @@ export default class extends BaseComponent {
                 {I18N.get('0201')}
               </Menu.Item>
             )
-        }
+          }
         </Menu>
         <div className="clearfix" />
         {!this.state.dismissed && !this.isPermanentlyDismissed()

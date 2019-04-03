@@ -3,10 +3,10 @@ import Component from './Component'
 import _ from 'lodash'
 
 export default createContainer(Component, (state) => {
-    return {
-        ...state
-    }
+  return {
+    ...state
+  }
 }, () => {
-    return {
-    }
+  return {
+  }
 })

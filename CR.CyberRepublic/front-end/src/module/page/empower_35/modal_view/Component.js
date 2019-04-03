@@ -1,10 +1,10 @@
-
+import React from 'react'
 import { Form, Modal, Select, Button } from 'antd'
 
 export default class ModalEmpowerView extends Modal {
-    render() {
-        return <Modal>
-
-        </Modal>
-    }
+  render() {
+    return (
+      <Modal />
+    )
+  }
 }

@@ -110,7 +110,7 @@ class C extends BaseComponent {
       initialValue: edit ? I18N.get(`cvoteStatus.${data.status}`) : I18N.get(`cvoteStatus.${CVOTE_STATUS_TEXT.DRAFT}`),
     })
     const status_el = (
-      <Select disabled />
+      <Select disabled={true} />
     )
 
     const content_fn = getFieldDecorator('content', {
@@ -207,7 +207,7 @@ class C extends BaseComponent {
           </Row>
           <Row gutter={16} type="flex" justify="space-between">
             <Col sm={24} md={11} lg={11}>
-              <FormItem disabled label={I18N.get('from.CVoteForm.label.voteStatus')} {...formItemLayout}>{formProps.status}</FormItem>
+              <FormItem disabled={true} label={I18N.get('from.CVoteForm.label.voteStatus')} {...formItemLayout}>{formProps.status}</FormItem>
             </Col>
           </Row>
 

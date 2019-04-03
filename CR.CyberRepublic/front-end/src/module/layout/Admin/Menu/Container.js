@@ -4,19 +4,19 @@ import UserService from '@/service/UserService'
 import { message } from 'antd'
 
 export default createContainer(Component, (state) => {
-    return {
-        isLogin: state.user.is_login,
-        profile: state.user.profile
-    }
+  return {
+    isLogin: state.user.is_login,
+    profile: state.user.profile
+  }
 }, () => {
-    const userService = new UserService()
-    return {
-        async logout () {
-            const rs = await userService.logout()
-            if (rs) {
-                message.success('logout success')
-                userService.path.push('/login')
-            }
-        }
+  const userService = new UserService()
+  return {
+    async logout () {
+      const rs = await userService.logout()
+      if (rs) {
+        message.success('logout success')
+        userService.path.push('/login')
+      }
     }
+  }
 })

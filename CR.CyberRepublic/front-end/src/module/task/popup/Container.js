@@ -4,32 +4,32 @@ import Component from './Component'
 import _ from 'lodash'
 
 export default createContainer(Component, (state) => {
-    let page
+  let page
 
-    if (/^\/admin/.test(state.router.location.pathname)) {
-        page = 'ADMIN'
-    } else if (/^\/profile/.test(state.router.location.pathname)) {
-        page = 'LEADER'
-    }
+  if (/^\/admin/.test(state.router.location.pathname)) {
+    page = 'ADMIN'
+  } else if (/^\/profile/.test(state.router.location.pathname)) {
+    page = 'LEADER'
+  }
 
-    return {
-        ...state.task,
-        page,
-        currentUserId: state.user.current_user_id,
-        currentUserAvatar: state.user.profile.avatar,
-        is_admin: state.user.is_admin,
-        loading: state.task.loading
-    }
+  return {
+    ...state.task,
+    page,
+    currentUserId: state.user.current_user_id,
+    currentUserAvatar: state.user.profile.avatar,
+    is_admin: state.user.is_admin,
+    loading: state.task.loading
+  }
 }, () => {
-    const taskService = new TaskService()
+  const taskService = new TaskService()
 
-    return {
-        async getTaskDetail(taskId) {
-            return taskService.get(taskId)
-        },
+  return {
+    async getTaskDetail(taskId) {
+      return taskService.get(taskId)
+    },
 
-        resetTaskDetail() {
-            return taskService.resetTaskDetail()
-        }
+    resetTaskDetail() {
+      return taskService.resetTaskDetail()
     }
+  }
 })

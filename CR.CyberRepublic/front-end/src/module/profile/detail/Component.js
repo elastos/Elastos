@@ -74,11 +74,11 @@ export default class extends BaseComponent {
         >
           { this.state.showUserInfo
             && (
-            <ProfilePopup
-              close={this.handleCancelProfilePopup.bind(this)}
-              member={this.state.showUserInfo}
-              showSendMessage
-            />
+              <ProfilePopup
+                close={this.handleCancelProfilePopup.bind(this)}
+                member={this.state.showUserInfo}
+                showSendMessage={true}
+              />
             )
           }
         </Modal>
@@ -104,9 +104,9 @@ export default class extends BaseComponent {
             <Comments
               type="user"
               reduxType="member"
-              canPost
+              canPost={true}
               model={this.props.member}
-              headlines
+              headlines={true}
               returnUrl={`/member/${this.props.member._id}`}
               header={I18N.get('comments.posts')}
             />
@@ -194,9 +194,9 @@ export default class extends BaseComponent {
             <Comments
               type="user"
               reduxType="member"
-              canPost
+              canPost={true}
               model={this.props.member}
-              headlines
+              headlines={true}
               returnUrl={`/member/${this.props.member._id}`}
               header={I18N.get('comments.posts')}
             />
@@ -270,7 +270,7 @@ export default class extends BaseComponent {
           : isFollowing
             ? <Icon type="star" />
             : <Icon type="star-o" />
-                }
+        }
       </a>
     )
   }
@@ -297,38 +297,24 @@ export default class extends BaseComponent {
     )
   }
 
-  renderSkillsets(isMobile) {
-    return (
-      <div className="skillset-container">
-        {_.map(this.props.member.profile.skillset || [], skillset => (
-          <div key={skillset}>
-                        +
-            {' '}
-            {I18N.get(`user.skillset.${skillset}`)}
-          </div>
-        ))}
-      </div>
-    )
-  }
-
   renderProfession(isMobile) {
     return (
       <div className="profession-container">
         {this.props.member.profile.profession
           && (
-          <div>
-            {I18N.get(`profile.profession.${this.props.member.profile.profession}`)}
-          </div>
+            <div>
+              {I18N.get(`profile.profession.${this.props.member.profile.profession}`)}
+            </div>
           )
         }
         {!_.isEmpty(this.props.member.profile.portfolio)
           && (
-          <div className="portfolio-container">
-            <a href={this.props.member.profile.portfolio} target="_blank" className="link-container">
-              <Icon type="link" />
-            </a>
-            {I18N.get('profile.portfolio')}
-          </div>
+            <div className="portfolio-container">
+              <a href={this.props.member.profile.portfolio} target="_blank" className="link-container">
+                <Icon type="link" />
+              </a>
+              {I18N.get('profile.portfolio')}
+            </div>
           )
         }
       </div>
@@ -403,7 +389,7 @@ export default class extends BaseComponent {
               {I18N.get('profile.detail.requiredlogin')}
             </div>
           ) : <UserContactForm recipient={this.props.member} />
-                }
+          }
         </Col>
       </Row>
     )

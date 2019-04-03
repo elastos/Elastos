@@ -5,23 +5,23 @@ import {TASK_TYPE, TASK_CATEGORY} from '@/constant'
 import _ from 'lodash'
 
 export default createContainer(Component, (state) => {
-    return {
-        ...state.task
-    }
+  return {
+    ...state.task
+  }
 }, () => {
-    const taskService = new TaskService()
+  const taskService = new TaskService()
 
-    return {
-        async getTasks(filters) {
-            return taskService.index({
-                ...filters,
-                type: TASK_TYPE.PROJECT,
-                category: TASK_CATEGORY.CR100
-            })
-        },
+  return {
+    async getTasks(filters) {
+      return taskService.index({
+        ...filters,
+        type: TASK_TYPE.PROJECT,
+        category: TASK_CATEGORY.CR100
+      })
+    },
 
-        resetTasks () {
-            return taskService.resetAllTasks()
-        }
+    resetTasks () {
+      return taskService.resetAllTasks()
     }
+  }
 })

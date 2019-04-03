@@ -5,20 +5,20 @@ import { message } from 'antd/lib/index'
 
 export default createContainer(Component, (state) => {
 
-    return {
-        submission: state.submission.detail,
-        loading: state.submission.loading
-    }
+  return {
+    submission: state.submission.detail,
+    loading: state.submission.loading
+  }
 }, () => {
-    const submissionService = new SubmissionService()
+  const submissionService = new SubmissionService()
 
-    return {
-        async getSubmissionDetail (submissionId) {
-            return submissionService.get(submissionId)
-        },
+  return {
+    async getSubmissionDetail (submissionId) {
+      return submissionService.get(submissionId)
+    },
 
-        async resetSubmissionDetail () {
-            return submissionService.resetSubmissionDetail()
-        }
+    async resetSubmissionDetail () {
+      return submissionService.resetSubmissionDetail()
     }
+  }
 })

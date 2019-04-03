@@ -67,12 +67,6 @@ import PublicCommunityDetailPage from '@/module/page/community/PublicCommunityDe
 
 import TaskCreatePage from '@/module/page/task_create/Container'
 
-// internal forms
-import FormOrganizerApp from '@/module/page/form_ext/organizer_app/Container'
-import FormAnniversaryApp from '@/module/page/form_ext/anni2018_app/Container'
-import FormAnniversaryVideo from '@/module/page/form_ext/anni2018_video/Container'
-
-
 // external forms
 import FormTraining1Page from '@/module/page/form_ext/training_1/Container'
 
@@ -338,23 +332,6 @@ export default [
   {
     path: '/form/training1',
     page: FormTraining1Page,
-  },
-  /*
-    ********************************************************************************
-    * Internal Forms
-    ********************************************************************************
-      */
-  {
-    path: '/form/organizer',
-    page: FormOrganizerApp,
-  },
-  {
-    path: '/form/anniversary2018',
-    page: FormAnniversaryApp,
-  },
-  {
-    path: '/form/anniversaryVideo2018',
-    page: FormAnniversaryVideo,
   },
   /*
     ********************************************************************************

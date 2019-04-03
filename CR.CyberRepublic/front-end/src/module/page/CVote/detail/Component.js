@@ -1,19 +1,19 @@
 import React from 'react'
-import StandardPage from '../../StandardPage'
 import {
   Form, Spin, Button, Input, message, Modal, Icon,
 } from 'antd'
 import { Link } from 'react-router-dom'
 import I18N from '@/I18N'
 import _ from 'lodash'
+import StandardPage from '../../StandardPage'
 import { LANGUAGES } from '@/config/constant'
 import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
 import MetaComponent from '@/module/shared/meta/Container'
 import VoteResultComponent from '../common/vote_result/Component'
 import EditForm from '../edit/Container'
 import Footer from '@/module/layout/Footer/Container'
-import BackLink from "@/module/shared/BackLink/Component"
-import CRPopover from "@/module/shared/Popover/Component"
+import BackLink from '@/module/shared/BackLink/Component'
+import CRPopover from '@/module/shared/Popover/Component'
 
 import { Title, Label } from './style'
 import './style.scss'

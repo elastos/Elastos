@@ -30,8 +30,8 @@ export const Btn = styled(Button)`
   margin-left: 10px;
   background: ${props => (props.type === 'default' && '#fff')
     || (props.type === 'danger' && '#BE1313')
-  };
+};
   color: ${props => (props.type === 'default' && 'rgba(3, 30, 40, 0.3)')
     || (props.type === 'danger' && '#fff')
-  };
+};
 `

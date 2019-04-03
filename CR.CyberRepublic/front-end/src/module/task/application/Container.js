@@ -6,64 +6,64 @@ import { message } from 'antd/lib/index'
 
 
 export default createContainer(Component, (state) => {
-    return {
-        userId: state.user.current_user_id,
-        is_login: state.user.is_login,
-        is_admin: state.user.is_admin
-    }
+  return {
+    userId: state.user.current_user_id,
+    is_login: state.user.is_login,
+    is_admin: state.user.is_admin
+  }
 }, () => {
 
-    const teamService = new TeamService()
-    const taskService = new TaskService()
+  const teamService = new TeamService()
+  const taskService = new TaskService()
 
-    return {
-        async listTeamsOwned(userId) {
-            try {
-                const result = await teamService.index({
-                    owner: userId
-                })
+  return {
+    async listTeamsOwned(userId) {
+      try {
+        const result = await teamService.index({
+          owner: userId
+        })
 
-                return result
-            } catch (err) {
-                console.error(err)
-                message.error(err.message)
-            }
-        },
+        return result
+      } catch (err) {
+        console.error(err)
+        message.error(err.message)
+      }
+    },
 
-        async getTaskDetail(taskId) {
-            return taskService.get(taskId)
-        },
+    async getTaskDetail(taskId) {
+      return taskService.get(taskId)
+    },
 
-        async markVisited (taskCandidateId, owner) {
-            return taskService.markVisited(taskCandidateId, owner)
-        },
+    async markVisited (taskCandidateId, owner) {
+      return taskService.markVisited(taskCandidateId, owner)
+    },
 
-        resetTaskDetail() {
-            return taskService.resetTaskDetail()
-        },
+    resetTaskDetail() {
+      return taskService.resetTaskDetail()
+    },
 
-        async markComplete(taskCandidateId) {
-            return taskService.markComplete(taskCandidateId)
-        },
+    async markComplete(taskCandidateId) {
+      return taskService.markComplete(taskCandidateId)
+    },
 
-        async pullCandidate(taskId, taskCandidateId) {
-            try {
-                const result = await taskService.pullCandidate(taskId, taskCandidateId)
-                return result
-            } catch (err) {
-                console.error(err)
-                message.error(err.message)
-            }
-        },
+    async pullCandidate(taskId, taskCandidateId) {
+      try {
+        const result = await taskService.pullCandidate(taskId, taskCandidateId)
+        return result
+      } catch (err) {
+        console.error(err)
+        message.error(err.message)
+      }
+    },
 
-        async acceptCandidate(taskCandidateId) {
-            try {
-                const result = await taskService.acceptCandidate(taskCandidateId)
-                return result
-            } catch (err) {
-                console.error(err)
-                message.error(err.message)
-            }
-        }
+    async acceptCandidate(taskCandidateId) {
+      try {
+        const result = await taskService.acceptCandidate(taskCandidateId)
+        return result
+      } catch (err) {
+        console.error(err)
+        message.error(err.message)
+      }
     }
+  }
 })

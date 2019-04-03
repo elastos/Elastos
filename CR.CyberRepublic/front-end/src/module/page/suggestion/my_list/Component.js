@@ -73,7 +73,7 @@ export default class extends BaseComponent {
     )
   }
 
-  renderMetaNode = data => <MetaContainer data={data} hideAuthor />
+  renderMetaNode = data => <MetaContainer data={data} hideAuthor={true} />
 
   /**
    * Builds the query from the current state

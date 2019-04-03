@@ -160,18 +160,22 @@ export default class extends StandardPage {
         <h2 className="title komu-a cr-title-with-icon">{this.props.header || I18N.get('suggestion.title').toUpperCase()}</h2>
 
         <p style={{width: '60%', paddingBottom: '60px'}}>
-          {I18N.get('suggestion.intro.1')}<Link to="/proposals">{I18N.get('suggestion.intro.1.proposals')}</Link>{I18N.get('suggestion.intro.1.1')}
+          {I18N.get('suggestion.intro.1')}
+          <Link to="/proposals">{I18N.get('suggestion.intro.1.proposals')}</Link>
+          {I18N.get('suggestion.intro.1.1')}
           <br/>
           <br/>
-          {I18N.get('suggestion.intro.3')}{localStorage.getItem('lang') === 'en' ?
-          <a href="https://www.cyberrepublic.org/docs/#/guide/suggestions" target="_blank">https://www.cyberrepublic.org/docs/#/guide/suggestions</a> :
-          <a href="https://www.cyberrepublic.org/docs/#/zh/guide/suggestions" target="_blank">https://www.cyberrepublic.org/docs/#/zh/guide/suggestions</a>
+          {I18N.get('suggestion.intro.3')}
+          {localStorage.getItem('lang') === 'en' ?
+            <a href="https://www.cyberrepublic.org/docs/#/guide/suggestions" target="_blank">https://www.cyberrepublic.org/docs/#/guide/suggestions</a> :
+            <a href="https://www.cyberrepublic.org/docs/#/zh/guide/suggestions" target="_blank">https://www.cyberrepublic.org/docs/#/zh/guide/suggestions</a>
           }
           <br/>
           <br/>
-          {I18N.get('suggestion.intro.2')}{localStorage.getItem('lang') === 'en' ?
-          <a target="_blank" href="https://blog.cyberrepublic.org/2019/01/23/crc-suggestions-launch-empower35-crcles-update">{I18N.get('suggestion.intro.2.blog')}</a> :
-          <a target="_blank" href="https://blog.cyberrepublic.org/zh/2019/01/23/%E5%85%B3%E4%BA%8Ecr%E5%85%B1%E8%AF%86%E5%AE%9A%E4%B9%89%EF%BC%8C%E4%B8%8A%E7%BA%BF%E5%BB%BA%E8%AE%AE%E9%A1%B5%E9%9D%A2%E4%BB%A5%E5%8F%8Aempower35-crcles%E7%9A%84%E6%9B%B4%E6%96%B0/">{I18N.get('suggestion.intro.2.blog')}</a>
+          {I18N.get('suggestion.intro.2')}
+          {localStorage.getItem('lang') === 'en' ?
+            <a target="_blank" href="https://blog.cyberrepublic.org/2019/01/23/crc-suggestions-launch-empower35-crcles-update">{I18N.get('suggestion.intro.2.blog')}</a> :
+            <a target="_blank" href="https://blog.cyberrepublic.org/zh/2019/01/23/%E5%85%B3%E4%BA%8Ecr%E5%85%B1%E8%AF%86%E5%AE%9A%E4%B9%89%EF%BC%8C%E4%B8%8A%E7%BA%BF%E5%BB%BA%E8%AE%AE%E9%A1%B5%E9%9D%A2%E4%BB%A5%E5%8F%8Aempower35-crcles%E7%9A%84%E6%9B%B4%E6%96%B0/">{I18N.get('suggestion.intro.2.blog')}</a>
           }
         </p>
       </div>

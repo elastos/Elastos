@@ -5,22 +5,23 @@ import { Form } from 'antd'
 import './style.scss'
 
 class C extends BaseComponent {
-    ord_states() {
-    }
-    async componentDidMount() {
-        const teamId = this.props.match.params.teamId
-        await this.props.getTeamDetail(teamId)
-    }
+  ord_states() {
+  }
 
-    componentWillUnmount() {
-        this.props.resetTeamDetail()
-    }
+  async componentDidMount() {
+    const teamId = this.props.match.params.teamId
+    await this.props.getTeamDetail(teamId)
+  }
 
-    ord_render () {
-        return (
-            <TeamDetail team={this.props.detail}/>
-        )
-    }
+  componentWillUnmount() {
+    this.props.resetTeamDetail()
+  }
+
+  ord_render () {
+    return (
+      <TeamDetail team={this.props.detail}/>
+    )
+  }
 }
 
 export default Form.create()(C)

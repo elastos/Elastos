@@ -7,32 +7,32 @@ import _ from 'lodash'
 import {USER_ROLE, TASK_STATUS, TASK_CANDIDATE_STATUS, TASK_TYPE, TASK_CATEGORY} from '@/constant'
 
 export default createContainer(Component, (state) => {
-    const currentUserId = state.user.current_user_id
+  const currentUserId = state.user.current_user_id
 
-    let page = 'PUBLIC' // default
+  let page = 'PUBLIC' // default
 
-    if (/^\/admin/.test(state.router.location.pathname)) {
-        page = 'ADMIN'
-    } else if (/^\/profile/.test(state.router.location.pathname)) {
-        page = 'LEADER'
-    }
+  if (/^\/admin/.test(state.router.location.pathname)) {
+    page = 'ADMIN'
+  } else if (/^\/profile/.test(state.router.location.pathname)) {
+    page = 'LEADER'
+  }
 
-    return {
-        ...state.task,
-        ...state.team,
-        page,
-        currentUserId,
-        is_leader: state.user.role === USER_ROLE.LEADER,
-        is_admin: state.user.is_admin,
-        loading: state.task.loading || state.team.loading
-    }
+  return {
+    ...state.task,
+    ...state.team,
+    page,
+    currentUserId,
+    is_leader: state.user.role === USER_ROLE.LEADER,
+    is_admin: state.user.is_admin,
+    loading: state.task.loading || state.team.loading
+  }
 }, () => {
 
-    const taskService = new TaskService()
+  const taskService = new TaskService()
 
-    return {
+  return {
 
-        /**
+    /**
          * We are querying tasks:
          *
          * 1. owner of
@@ -41,31 +41,31 @@ export default createContainer(Component, (state) => {
          *
          * @returns {Promise<*>}
          */
-        async getTasks(query) {
-            return taskService.index({
-                type: TASK_TYPE.PROJECT,
-                ...query,
-            })
-        },
+    async getTasks(query) {
+      return taskService.index({
+        type: TASK_TYPE.PROJECT,
+        ...query,
+      })
+    },
 
-        async loadMoreProjects(query) {
-            return taskService.loadMore({
-                type: TASK_TYPE.PROJECT,
-                ...query,
-            })
-        },
+    async loadMoreProjects(query) {
+      return taskService.loadMore({
+        type: TASK_TYPE.PROJECT,
+        ...query,
+      })
+    },
 
-        resetTasks () {
-            return taskService.resetAllTasks()
-        },
+    resetTasks () {
+      return taskService.resetAllTasks()
+    },
 
-        async setFilter(options) {
+    async setFilter(options) {
 
-        },
+    },
 
-        async getUserTeams(currentUserId) {
-            const teamService = new TeamService()
-            return teamService.getUserTeams(currentUserId)
-        }
+    async getUserTeams(currentUserId) {
+      const teamService = new TeamService()
+      return teamService.getUserTeams(currentUserId)
     }
+  }
 })

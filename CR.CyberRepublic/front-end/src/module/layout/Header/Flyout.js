@@ -38,7 +38,7 @@ export default class extends BaseComponent {
               {I18N.get('0201')}
             </Menu.Item>
           )
-                }
+        }
       </Menu>
     )
 

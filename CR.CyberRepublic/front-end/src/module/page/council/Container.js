@@ -5,8 +5,6 @@ import { USER_ROLE } from '@/constant'
 // import SubmissionService from '@/service/SubmissionService'
 // import _ from 'lodash'
 
-import { SUBMISSION_TYPE, USER_EMPOWER_TYPE } from '@/constant'
-
 export default createContainer(Component, state => ({
   user: state.user,
   is_login: state.user.is_login,

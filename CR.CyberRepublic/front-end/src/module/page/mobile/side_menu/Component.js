@@ -1,10 +1,9 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 
-import { Row, Col, Icon, Menu } from 'antd'
+import { Row, Col, Icon, Menu, Modal } from 'antd'
 
 import './style'
-import { Modal } from 'antd/lib/index'
 import _ from 'lodash'
 import I18N from '@/I18N'
 
@@ -37,10 +36,8 @@ export default class extends BaseComponent {
       'constitution/1',
       'council'
     ], key)) {
-      this.props.history.push(`/${  ev.key}`)
-    }
-
-    else if (key === 'logout') {
+      this.props.history.push(`/${ev.key}`)
+    } else if (key === 'logout') {
       Modal.confirm({
         title: I18N.get('logout.title'),
         content: '',
@@ -58,6 +55,7 @@ export default class extends BaseComponent {
 
     } else if (key === 'blog') {
 
+      // eslint-disable-next-line no-undef
       analytics.track('BLOG_CLICKED', {
         url: location.href
       })
@@ -72,17 +70,19 @@ export default class extends BaseComponent {
 
     } else if (key === 'forum') {
 
+      // eslint-disable-next-line no-undef
       analytics.track('FORUM_CLICKED', {
         url: location.href
       })
       if (!isLogin) {
         this.props.history.push('/login?MSG_CODE=1')
       } else {
-        let forumLink = `${process.env.FORUM_URL}/login`
+        const forumLink = `${process.env.FORUM_URL}/login`
         window.open(forumLink, '_blank')
       }
     } else if (key === 'docs') {
 
+      // eslint-disable-next-line no-undef
       analytics.track('DOCS_CLICKED', {
         url: location.href
       })
@@ -116,8 +116,8 @@ export default class extends BaseComponent {
         <Row>
           <Col className="menuContainer">
             <Menu
-            onClick={this.handleMenuClick.bind(this)}
-            mode="inline"
+              onClick={this.handleMenuClick.bind(this)}
+              mode="inline"
             >
               <Menu.Item key="landing">
                 {I18N.get('0012')}
@@ -164,37 +164,37 @@ export default class extends BaseComponent {
         <Row>
           <Col className="menuContainer">
             <Menu
-            onClick={this.handleMenuClick.bind(this)}
-            mode="inline"
+              onClick={this.handleMenuClick.bind(this)}
+              mode="inline"
             >
-              {isLogin &&
+              {isLogin && (
               <Menu.Item key="profile/info">
                 {I18N.get('0104')}
               </Menu.Item>
-              }
-              {!isLogin &&
+              )}
+              {!isLogin && (
               <Menu.Item key="login">
                 {I18N.get('0201')}
               </Menu.Item>
-              }
-              {!isLogin &&
+              )}
+              {!isLogin && (
               <Menu.Item key="register">
                 {I18N.get('0202')}
               </Menu.Item>
-              }
-              {isLogin &&
+              )}
+              {isLogin && (
               <Menu.Item key="logout">
                 {I18N.get('0204')}
               </Menu.Item>
-              }
+              )}
             </Menu>
           </Col>
         </Row>
         <Row>
           <Col className="menuContainer">
             <Menu
-            onClick={this.handleMenuClick.bind(this)}
-            mode="inline"
+              onClick={this.handleMenuClick.bind(this)}
+              mode="inline"
             >
               {/*
                           <Menu.Item key="help">

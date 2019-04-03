@@ -7,8 +7,7 @@
     "build:production": "rimraf dist && NODE_ENV=production webpack --mode production --config ./webpack/webpack.prod.js --colors --progress",
     "build:staging": "rimraf dist && NODE_ENV=staging webpack --mode development --config ./webpack/webpack.prod.js --colors --progress",
     "build:dev": "rimraf dist && NODE_ENV=dev webpack --mode development --config ./webpack/webpack.prod.js --colors --progress",
-    "lint": "eslint ./src/**/**.js",
-    "lintfix": "node_modules/.bin/eslint --fix ",
+    "lint": "eslint src --quiet",
     "test": "NODE_ENV=development jest --config jest/jest.conf.js --coverage"
   },
   "author": "liyangwood@gmail.com",

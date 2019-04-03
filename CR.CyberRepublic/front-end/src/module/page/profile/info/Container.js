@@ -5,7 +5,7 @@ import { message } from 'antd/lib/index'
 
 export default createContainer(Component, (state) => {
 
-    return {
-        user: state.user
-    }
+  return {
+    user: state.user
+  }
 })

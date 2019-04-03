@@ -120,11 +120,11 @@ export default class extends BaseComponent {
       >
         { this.state.editing
           && (
-          <UserEditForm
-            user={this.props.user}
-            switchEditMode={this.switchEditMode.bind(this, false)}
-            completing={false}
-          />
+            <UserEditForm
+              user={this.props.user}
+              switchEditMode={this.switchEditMode.bind(this, false)}
+              completing={false}
+            />
           )
         }
       </Modal>
@@ -326,24 +326,24 @@ export default class extends BaseComponent {
       <div className="profession-container">
         {this.props.user.profile.profession
           && (
-          <div>
-            {I18N.get(`profile.profession.${this.props.user.profile.profession}`)}
-          </div>
+            <div>
+              {I18N.get(`profile.profession.${this.props.user.profile.profession}`)}
+            </div>
           )
         }
         {!_.isEmpty(this.props.user.profile.portfolio)
           && (
-          <div className="portfolio-container">
-            <a href={this.getFullUrl(this.props.user.profile.portfolio)} target="_blank" className="link-container">
-              <Icon type="link" />
-              {' '}
-              <span>
+            <div className="portfolio-container">
+              <a href={this.getFullUrl(this.props.user.profile.portfolio)} target="_blank" className="link-container">
+                <Icon type="link" />
                 {' '}
-                {I18N.get('profile.portfolio')}
-                {' '}
-              </span>
-            </a>
-          </div>
+                <span>
+                  {' '}
+                  {I18N.get('profile.portfolio')}
+                  {' '}
+                </span>
+              </a>
+            </div>
           )
         }
       </div>

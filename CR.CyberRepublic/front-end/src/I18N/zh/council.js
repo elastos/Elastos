@@ -112,7 +112,7 @@ export default {
         `,
 
     2: `
-        <center>第一章	 总则</center>
+        <center>第一章   总则</center>
         <strong> 1 过渡期</strong>
          
         <ol>
@@ -138,7 +138,7 @@ export default {
         <strong>3 选举</strong>
         Elastos社区共治委员会是通过社区投票选出的。投票过程将在Elastos社区投票规则中定义。
         
-        <center>第二章	结构和程序</center>
+        <center>第二章  结构和程序</center>
         
         <strong>4 结构</strong>
         <ol>
@@ -238,7 +238,7 @@ export default {
         `,
 
     3: `
-        <center>第一章	</center>
+        <center>第一章  </center>
 
         <strong> 1 过渡期</strong>
         <ol>
@@ -262,7 +262,7 @@ export default {
         
         <strong>3 管理</strong>
         整个投票过程在Elastos Blockchain上进行，并向社区开放。      
-        <center>第二章 	社区建议和意见</center>
+        <center>第二章   社区建议和意见</center>
 
         <strong>4 社区建议</strong>
         制定社区成员建议和意见的过程应在过渡期间结束时确定。
@@ -275,7 +275,7 @@ export default {
         <strong>7 提案程序</strong>
         提案由共治委员会发起，同步公开、透明。
       
-        <center>第四章 投票	</center>
+        <center>第四章 投票  </center>
 
         <strong>8 投票类型 </strong>
         <ol>
@@ -343,7 +343,7 @@ export default {
         `,
 
     4: `
-        <center> 第一章	 总则</center>
+        <center> 第一章   总则</center>
         <strong> 1 过渡期</strong>
          
         <ol>
@@ -368,7 +368,7 @@ export default {
         
         <strong>3 利益冲突 </strong>
         就本政策而言，亦来云社区共治委员会成员在行使权力，职责或职能以提供机会进一步扩展其私人利益或其亲属朋友的利益进一步不当行为时，会产生利益冲突。
-        <center>第二章	 亦来云社区共治委员会委员的职责</center>
+        <center>第二章   亦来云社区共治委员会委员的职责</center>
 
         <strong>4 基本职责</strong>
         <ol>

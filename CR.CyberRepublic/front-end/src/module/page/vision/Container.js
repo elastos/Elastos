@@ -5,17 +5,17 @@ import {TASK_TYPE, TASK_CATEGORY} from '@/constant'
 import _ from 'lodash'
 
 export default createContainer(Component, (state) => {
-    return {
-        ...state.task
-    }
+  return {
+    ...state.task
+  }
 }, () => {
-    const userService = new UserService()
+  const userService = new UserService()
 
-    return {
-        async getEmpowerUsers() {
-            return userService.getAll({
-                empower: JSON.stringify({$exists: true})
-            })
-        }
+  return {
+    async getEmpowerUsers() {
+      return userService.getAll({
+        empower: JSON.stringify({$exists: true})
+      })
     }
+  }
 })

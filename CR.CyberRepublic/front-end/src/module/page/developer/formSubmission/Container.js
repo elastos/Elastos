@@ -5,27 +5,27 @@ import { message } from 'antd'
 import I18N from '@/I18N'
 
 export default createContainer(Component, (state) => {
-    return {
-        ...state
-    }
+  return {
+    ...state
+  }
 }, () => {
-    const submissionService = new SubmissionService()
+  const submissionService = new SubmissionService()
 
-    return {
-        async createSubmission (type, title, description) {
-            try {
-                const rs = await submissionService.create({
-                    type,
-                    title,
-                    description
-                })
+  return {
+    async createSubmission (type, title, description) {
+      try {
+        const rs = await submissionService.create({
+          type,
+          title,
+          description
+        })
 
-                if (rs) {
-                    message.success(I18N.get('developer.form.submission.message.success'))
-                }
-            } catch (err) {
-                message.error(err.message)
-            }
+        if (rs) {
+          message.success(I18N.get('developer.form.submission.message.success'))
         }
+      } catch (err) {
+        message.error(err.message)
+      }
     }
+  }
 })

@@ -178,7 +178,9 @@ class C extends BaseComponent {
             <a onClick={() => {
               this.setState({showRules: !this.state.showRules})
             }}>
-              {I18N.get('suggestion.rules.rulesAndGuidelines')} <Icon type="question-circle"/>
+              {I18N.get('suggestion.rules.rulesAndGuidelines')}
+              {' '}
+              <Icon type="question-circle"/>
             </a>
           </h5>
         </Col>
@@ -223,8 +225,10 @@ class C extends BaseComponent {
 
         <Button class="pull-right" onClick={() => {
           this.setState({showRules: false})
-        }}>{I18N.get('suggestion.back')}</Button>
-        <div class="clearfix">
+        }}>
+          {I18N.get('suggestion.back')}
+        </Button>
+        <div className="clearfix">
           <br/>
         </div>
       </div>

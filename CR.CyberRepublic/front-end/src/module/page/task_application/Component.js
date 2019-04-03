@@ -14,32 +14,30 @@ import {TASK_CATEGORY} from '@/constant'
 
 export default class extends StandardPage {
 
-    componentDidMount() {
-        const taskId = this.props.match.params.taskId
-        this.props.getTaskDetail(taskId)
-    }
+  componentDidMount() {
+    const taskId = this.props.match.params.taskId
+    this.props.getTaskDetail(taskId)
+  }
 
-    componentWillUnmount() {
-        this.props.resetTaskDetail()
-    }
+  componentWillUnmount() {
+    this.props.resetTaskDetail()
+  }
 
-    ord_renderContent () {
-        const candidate = (!_.isEmpty(this.props.task.candidates) &&
+  ord_renderContent () {
+    const candidate = (!_.isEmpty(this.props.task.candidates) &&
             this.props.task.candidates.find((candidate) => {
-                return candidate.user._id === this.props.match.params.applicantId
+              return candidate.user._id === this.props.match.params.applicantId
             }))
-        const detailLink = `/task-detail/${this.props.task._id}`
+    const detailLink = `/task-detail/${this.props.task._id}`
 
-        return (
-            <div className="p_TaskApplication">
-                <div className="ebp-header-divider">
-
-                </div>
-                <div className="ebp-page">
-                    <TaskApplicationDetail task={this.props.task} applicantId={this.props.match.params.applicantId}/>
-                </div>
-                <Footer />
-            </div>
-        )
-    }
+    return (
+      <div className="p_TaskApplication">
+        <div className="ebp-header-divider" />
+        <div className="ebp-page">
+          <TaskApplicationDetail task={this.props.task} applicantId={this.props.match.params.applicantId}/>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
 }

@@ -4,8 +4,7 @@ import {
   Form, Col, Row, List, Avatar, Icon, Divider, Button, Input, Mention, Modal,
 } from 'antd'
 import config from '@/config'
-import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC } from '@/config/constant'
-import { MAX_LENGTH_COMMENT } from '@/config/constant'
+import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC, MAX_LENGTH_COMMENT } from '@/config/constant'
 import './style.scss'
 import moment from 'moment'
 import _ from 'lodash'
@@ -107,7 +106,7 @@ class C extends BaseComponent {
     })
     const comment_el = (
       <Mention
-        multiLines
+        multiLines={true}
         style={{ width: '100%', height: 100 }}
         suggestions={allUsers}
         notFoundContent={I18N.get('mentions.notFound')}
@@ -186,9 +185,9 @@ class C extends BaseComponent {
         <Form onSubmit={this.handleSubmit.bind(this)} className="c_commentForm">
           { this.props.headlines
             && (
-            <FormItem>
-              {p.headline}
-            </FormItem>
+              <FormItem>
+                {p.headline}
+              </FormItem>
             )
           }
           <MediaQuery minWidth={MIN_WIDTH_PC}>
@@ -355,7 +354,9 @@ class C extends BaseComponent {
     })
 
     // Show in reverse chronological order
-    commentItems && commentItems.reverse()
+    if (commentItems) {
+      commentItems.reverse()
+    }
 
     return (
       <List
@@ -372,9 +373,9 @@ class C extends BaseComponent {
             <div className="comment-content pull-left">
               { item.headline
                 && (
-                <h4>
-                  {item.headline}
-                </h4>
+                  <h4>
+                    {item.headline}
+                  </h4>
                 )
               }
               <h5>

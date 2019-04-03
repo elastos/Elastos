@@ -1,7 +1,7 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import { Col, Row, Icon, Divider, Button, Spin } from 'antd'
-
+import _ from 'lodash'
 import SubmissionDetail from './detail/Container'
 
 import {TASK_STATUS} from '@/constant'
@@ -18,22 +18,22 @@ import './style.scss'
  */
 export default class extends BaseComponent {
 
-    renderMain() {
-        return (
-            <div className="c_SubmissionDetail">
-                {this.renderDetail()}
-            </div>
-        )
-    }
+  renderMain() {
+    return (
+      <div className="c_SubmissionDetail">
+        {this.renderDetail()}
+      </div>
+    )
+  }
 
-    renderDetail() {
-        return <SubmissionDetail submission={this.props.submission} page={this.props.page}/>
-    }
+  renderDetail() {
+    return <SubmissionDetail submission={this.props.submission} page={this.props.page}/>
+  }
 
-    ord_render () {
-        return (_.isEmpty(this.props.submission) || this.props.submission.loading ?
-            <div class="center"><Spin size="large" /></div> :
-            this.renderMain()
-        )
-    }
+  ord_render () {
+    return (_.isEmpty(this.props.submission) || this.props.submission.loading ?
+      <div className="center"><Spin size="large" /></div> :
+      this.renderMain()
+    )
+  }
 }
