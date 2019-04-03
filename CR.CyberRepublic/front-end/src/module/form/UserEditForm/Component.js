@@ -147,7 +147,7 @@ class C extends BaseComponent {
         initialValue: user.username,
       })
       const username_el = (
-        <Input disabled />
+        <Input disabled={true} />
       )
 
       const role_fn = getFieldDecorator('role', {
@@ -156,11 +156,11 @@ class C extends BaseComponent {
       })
       const role_el = (
         <Select
-          showSearch
+          showSearch={true}
           filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
           placeholder="Role"
-                // Fix select dropdowns in modals
-                // https://github.com/vazco/uniforms/issues/228
+          // Fix select dropdowns in modals
+          // https://github.com/vazco/uniforms/issues/228
           getPopupContainer={(x) => {
             while (x && x.tagName.toLowerCase() !== 'form') {
               x = x.parentElement
@@ -255,7 +255,7 @@ class C extends BaseComponent {
       const skillset_el = (
         <TreeSelect
           treeData={skillsets}
-          treeCheckable
+          treeCheckable={true}
           searchPlaceholder={I18N.get('select.placeholder')}
           getPopupContainer={(x) => {
             while (x && x.tagName.toLowerCase() !== 'form') {
@@ -276,8 +276,8 @@ class C extends BaseComponent {
       const profession_el = (
         <Select
           placeholder={I18N.get('select.placeholder')}
-                // Fix select dropdowns in modals
-                // https://github.com/vazco/uniforms/issues/228
+          // Fix select dropdowns in modals
+          // https://github.com/vazco/uniforms/issues/228
           getPopupContainer={(x) => {
             while (x && x.tagName.toLowerCase() !== 'form') {
               x = x.parentElement
@@ -301,7 +301,7 @@ class C extends BaseComponent {
       })
       const country_el = (
         <Select
-          showSearch
+          showSearch={true}
           suffixIcon={<img className="circle-down-arrow" src="/assets/images/emp35/down_arrow.png" />}
           filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
           placeholder="Country"
@@ -558,23 +558,23 @@ class C extends BaseComponent {
           </FormItem>
           {!this.isCompleteProfileMode()
             && (
-            <FormItem label={I18N.get('from.UserEditForm.label.password')} {...formItemLayout}>
-              {p.password}
-            </FormItem>
+              <FormItem label={I18N.get('from.UserEditForm.label.password')} {...formItemLayout}>
+                {p.password}
+              </FormItem>
             )
           }
           {!this.isCompleteProfileMode()
             && (
-            <FormItem label={I18N.get('from.UserEditForm.label.confirm')} {...formItemLayout}>
-              {p.passwordConfirm}
-            </FormItem>
+              <FormItem label={I18N.get('from.UserEditForm.label.confirm')} {...formItemLayout}>
+                {p.passwordConfirm}
+              </FormItem>
             )
           }
           {this.props.is_admin
             && (
-            <FormItem label={I18N.get('user.edit.form.role')} {...formItemLayout}>
-              {p.role}
-            </FormItem>
+              <FormItem label={I18N.get('user.edit.form.role')} {...formItemLayout}>
+                {p.role}
+              </FormItem>
             )
           }
           <FormItem label={I18N.get('from.UserEditForm.label.gender')} {...formItemLayout}>
@@ -670,9 +670,9 @@ class C extends BaseComponent {
         <div>
           {this.state.section > 1
             && (
-            <Button onClick={this.prevSection.bind(this)} loading={this.props.loading}>
-              {I18N.get('profile.previous')}
-            </Button>
+              <Button onClick={this.prevSection.bind(this)} loading={this.props.loading}>
+                {I18N.get('profile.previous')}
+              </Button>
             )
           }
           {this.state.section > 3

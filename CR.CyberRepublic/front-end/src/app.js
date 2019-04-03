@@ -7,9 +7,9 @@ import { Provider } from 'react-redux'
 import { ConnectedRouter } from 'react-router-redux'
 import store from '@/store'
 import config from '@/config'
-import { api_request, permissions } from './util'
 import AutoLinks from 'quill-auto-links'
 import { Quill } from 'react-quill'
+import { api_request, permissions } from './util'
 
 import './boot'
 import './style/index.scss'
@@ -24,11 +24,11 @@ const App = () => (
     <Helmet>
       <meta name="cr-env" content={process.env.NODE_ENV} />
       <meta name="cr-version-number" content={process.env.CR_VERSION ? `${process.env.CR_VERSION}` : 'unknown'} />
-      {process.env.NODE_ENV === 'production' && <script defer src="/assets/js/rollbar_prod.js" />}
-      {process.env.NODE_ENV === 'staging' && <script defer src="/assets/js/rollbar_staging.js" />}
-      {process.env.NODE_ENV === 'production' && <script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.GA_ID}`} />}
+      {process.env.NODE_ENV === 'production' && <script defer={true} src="/assets/js/rollbar_prod.js" />}
+      {process.env.NODE_ENV === 'staging' && <script defer={true} src="/assets/js/rollbar_staging.js" />}
+      {process.env.NODE_ENV === 'production' && <script async={true} src={`https://www.googletagmanager.com/gtag/js?id=${process.env.GA_ID}`} />}
       {process.env.NODE_ENV === 'production' && <script>{`window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${process.env.GA_ID}');`}</script>}
-      {window.location.pathname === '/' && <script defer src="/assets/js/elastos.js" />}
+      {window.location.pathname === '/' && <script defer={true} src="/assets/js/elastos.js" />}
       {/*
       <script>{
           (function() {
@@ -43,7 +43,7 @@ const App = () => (
           const props = _.omit(item, ['page', 'path', 'type'])
           const R = item.type || Route
           return (
-            <R path={item.path} key={i} exact component={item.page} {...props} />
+            <R path={item.path} key={i} exact={true} component={item.page} {...props} />
           )
         })
       }

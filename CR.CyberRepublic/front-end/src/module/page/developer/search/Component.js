@@ -10,18 +10,16 @@ import moment from 'moment/moment'
 import I18N from '@/I18N'
 
 export default class extends StandardPage {
-    ord_renderContent () {
-        return (
-            <div className="p_DeveloperSearch">
-                <div className="ebp-header-divider">
-
-                </div>
-                <div className="ebp-wrap">
-                    <Row className="d_row">
-                        <Search/>
-                    </Row>
-                </div>
-            </div>
-        )
-    }
+  ord_renderContent () {
+    return (
+      <div className="p_DeveloperSearch">
+        <div className="ebp-header-divider" />
+        <div className="ebp-wrap">
+          <Row className="d_row">
+            <Search/>
+          </Row>
+        </div>
+      </div>
+    )
+  }
 }

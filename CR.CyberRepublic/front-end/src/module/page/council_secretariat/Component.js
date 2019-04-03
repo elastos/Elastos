@@ -57,7 +57,7 @@ export default class extends StandardPage {
         <Row className="members">
           <Col lg={8} md={8} sm={24} className="member">
             <div className="small-rect">
-              <Avatar src={"/assets/images/council/council-kevin.jpeg"} shape="square" size={220} icon="user" />
+              <Avatar src="/assets/images/council/council-kevin.jpeg" shape="square" size={220} icon="user" />
             </div>
             <div className="big-rect">
               <div className="content">
@@ -68,7 +68,7 @@ export default class extends StandardPage {
           </Col>
           <Col lg={8} md={8} sm={24} className="member">
             <div className="small-rect">
-                <Avatar src={"/assets/images/council/council-yipeng.jpeg"} shape="square" size={220} icon="user" />
+              <Avatar src="/assets/images/council/council-yipeng.jpeg" shape="square" size={220} icon="user" />
             </div>
 
             <div className="big-rect">
@@ -80,7 +80,7 @@ export default class extends StandardPage {
           </Col>
           <Col lg={8} md={8} sm={24} className="member">
             <div className="small-rect">
-              <Avatar src={"/assets/images/council/council-feng.jpeg"} shape="square" size={220} icon="user" />
+              <Avatar src="/assets/images/council/council-feng.jpeg" shape="square" size={220} icon="user" />
             </div>
 
             <div className="big-rect">
@@ -105,7 +105,7 @@ export default class extends StandardPage {
         <Row className="members">
           <Col lg={8} md={8} sm={24} className="member">
             <div className="small-rect">
-              <Avatar src={"/assets/images/council/secretary-rebecca.jpeg"} shape="square" size={220} icon="user" />
+              <Avatar src="/assets/images/council/secretary-rebecca.jpeg" shape="square" size={220} icon="user" />
             </div>
 
             <div className="big-rect">

@@ -37,10 +37,8 @@ export default class extends BaseComponent {
       'constitution/1',
       'council'
     ], key)) {
-      this.props.history.push(`/${  ev.key}`)
-    }
-
-    else if (key === 'logout') {
+      this.props.history.push(`/${ev.key}`)
+    } else if (key === 'logout') {
       Modal.confirm({
         title: I18N.get('logout.title'),
         content: '',
@@ -78,7 +76,7 @@ export default class extends BaseComponent {
       if (!isLogin) {
         this.props.history.push('/login?MSG_CODE=1')
       } else {
-        let forumLink = `${process.env.FORUM_URL}/login`
+        const forumLink = `${process.env.FORUM_URL}/login`
         window.open(forumLink, '_blank')
       }
     } else if (key === 'docs') {
@@ -116,8 +114,8 @@ export default class extends BaseComponent {
         <Row>
           <Col className="menuContainer">
             <Menu
-            onClick={this.handleMenuClick.bind(this)}
-            mode="inline"
+              onClick={this.handleMenuClick.bind(this)}
+              mode="inline"
             >
               <Menu.Item key="landing">
                 {I18N.get('0012')}
@@ -164,37 +162,37 @@ export default class extends BaseComponent {
         <Row>
           <Col className="menuContainer">
             <Menu
-            onClick={this.handleMenuClick.bind(this)}
-            mode="inline"
+              onClick={this.handleMenuClick.bind(this)}
+              mode="inline"
             >
-              {isLogin &&
+              {isLogin && (
               <Menu.Item key="profile/info">
                 {I18N.get('0104')}
               </Menu.Item>
-              }
-              {!isLogin &&
+              )}
+              {!isLogin && (
               <Menu.Item key="login">
                 {I18N.get('0201')}
               </Menu.Item>
-              }
-              {!isLogin &&
+              )}
+              {!isLogin && (
               <Menu.Item key="register">
                 {I18N.get('0202')}
               </Menu.Item>
-              }
-              {isLogin &&
+              )}
+              {isLogin && (
               <Menu.Item key="logout">
                 {I18N.get('0204')}
               </Menu.Item>
-              }
+              )}
             </Menu>
           </Col>
         </Row>
         <Row>
           <Col className="menuContainer">
             <Menu
-            onClick={this.handleMenuClick.bind(this)}
-            mode="inline"
+              onClick={this.handleMenuClick.bind(this)}
+              mode="inline"
             >
               {/*
                           <Menu.Item key="help">

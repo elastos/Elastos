@@ -3,7 +3,7 @@ import _ from 'lodash'
 import { Spin } from 'antd'
 import moment from 'moment/moment'
 import I18N from '@/I18N'
-import BackLink from "@/module/shared/BackLink/Component"
+import BackLink from '@/module/shared/BackLink/Component'
 import StandardPage from '../../StandardPage'
 import Diff from './Diff'
 

@@ -44,8 +44,8 @@ export default class extends BaseComponent {
         onCancel={this.showTranslate}
         footer={null}
         width="70%"
-        closable
-        centered
+        closable={true}
+        centered={true}
         style={{ minWidth: 400 }}
       >
         <ModalBody>

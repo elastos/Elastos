@@ -66,7 +66,7 @@ class C extends BaseComponent {
     })
     const role_el = (
       <Select
-        showSearch
+        showSearch={true}
         filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
         placeholder="Role"
         // Fix select dropdowns in modals
@@ -124,7 +124,7 @@ class C extends BaseComponent {
   renderHeader() {
     return (
       <h3 className="uef-header cr-title-with-bg">
-          {I18N.get('profile.editBasicProfile')}
+        {I18N.get('profile.editBasicProfile')}
       </h3>
     )
   }

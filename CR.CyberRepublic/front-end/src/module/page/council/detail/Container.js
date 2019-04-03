@@ -5,9 +5,9 @@ import {TASK_TYPE, TASK_CATEGORY} from '@/constant'
 import _ from 'lodash'
 
 export default createContainer(Component, (state, p) => {
-    return {
-        id : p.match.params.id
-    }
+  return {
+    id: p.match.params.id
+  }
 }, () => {
-    return {}
+  return {}
 })

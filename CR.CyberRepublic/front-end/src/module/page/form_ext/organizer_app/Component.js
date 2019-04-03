@@ -6,23 +6,21 @@ import OrganizerAppForm from '@/module/form/OrganizerAppForm/Container'
 
 export default class extends StandardPage {
 
-    ord_renderContent () {
+  ord_renderContent () {
 
-        return (
-            <div className="p_Social">
-                <div className="ebp-header-divider">
-
-                </div>
-                <div className="ebp-page-title">
-                    <h3>
-                        {I18N.get('formext.anni2018.organizer.title')}
-                    </h3>
-                </div>
-                <div className="ebp-page">
-                    <OrganizerAppForm campaign="organizerApp"/>
-                </div>
-                <Footer />
-            </div>
-        )
-    }
+    return (
+      <div className="p_Social">
+        <div className="ebp-header-divider" />
+        <div className="ebp-page-title">
+          <h3>
+            {I18N.get('formext.anni2018.organizer.title')}
+          </h3>
+        </div>
+        <div className="ebp-page">
+          <OrganizerAppForm campaign="organizerApp"/>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
 }

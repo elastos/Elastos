@@ -7,23 +7,23 @@ import UserService from '@/service/UserService'
 let userService
 
 export default createContainer(Component, (state) => {
-    return {
-        users: state.member.users,
-        users_total: state.member.users_total,
-        loading: state.member.users_loading
-    }
+  return {
+    users: state.member.users,
+    users_total: state.member.users_total,
+    loading: state.member.users_loading
+  }
 }, () => {
-    userService = userService || new UserService()
+  userService = userService || new UserService()
 
-    return {
-        async listUsers (query) {
-            try {
-                return await userService.getAll(query)
-            } catch (err) {
-                console.error(err)
-                message.error(err.message)
-            }
-        }
-
+  return {
+    async listUsers (query) {
+      try {
+        return await userService.getAll(query)
+      } catch (err) {
+        console.error(err)
+        message.error(err.message)
+      }
     }
+
+  }
 })

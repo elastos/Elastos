@@ -120,7 +120,7 @@ export default {
         `,
 
     2: `
-        <center>Chapter I	 General Principles</center>
+        <center>Chapter I   General Principles</center>
         <strong>1 Interim Period</strong>
         <ol>
             <li>This is an Alpha version of this document.</li>
@@ -144,7 +144,7 @@ export default {
         <strong>3 Selection</strong>
         The Cyber Republic Council of the Elastos community is selected by community voting. The voting process will be defined in the Elastos Community Voting Rules
         
-        <center>Chapter II 	Structure and Procedure</center>
+        <center>Chapter II   Structure and Procedure</center>
         
         <strong>4 Structure</strong>
         <ol>
@@ -246,7 +246,7 @@ export default {
         `,
 
     3: `
-        <center>Chapter I	 General Principles</center>
+        <center>Chapter I   General Principles</center>
 
         <strong>1 Interim Period</strong>
         <ol>
@@ -271,12 +271,12 @@ export default {
         <strong>3 Administration</strong>
         The entire voting process takes places on Elastos Blockchain and is open to the community. 
         
-        <center>Chapter II 	Community Proposals and Opinions</center>
+        <center>Chapter II   Community Proposals and Opinions</center>
 
         <strong>4 Community Proposals</strong>
         The process for making community members proposals shall be defined by the end of the Interim Period.
 
-        <center>Chapter III	Proposals</center>
+        <center>Chapter III  Proposals</center>
         <strong>5 Fee</strong>
         There may be an ELA fee associated with making a proposal, however this is to be finalized by the end of the Interim Period.
         <strong>6 Content</strong>
@@ -284,7 +284,7 @@ export default {
         <strong>7 Proposal Procedure</strong>
         Proposals are to be raised by Cyber Republic Council and are published to the entire community.
       
-        <center>Chapter IV	Voting</center>
+        <center>Chapter IV  Voting</center>
 
         <strong>8 Voting Types </strong>
         <ol>
@@ -353,7 +353,7 @@ export default {
         `,
 
     4: `
-        <center>Chapter I	 General Principles</center>
+        <center>Chapter I   General Principles</center>
         <strong>1 Interim Period</strong>
         <ol>
             <li>This is an Alpha version of this document.</li>
@@ -378,7 +378,7 @@ export default {
         <strong>3 Conflict of Interest </strong>
         For the purposes of this Policy, a Cyber Republic Council Member is in a conflict of interest when he or she exercises an official power, duty or function that provides an opportunity to further their private interests or those of their relatives or friends or to improperly further another person’s private interests.
 
-        <center>Chapter II	 Duties of Cyber Republic Council Members</center>
+        <center>Chapter II   Duties of Cyber Republic Council Members</center>
 
         <strong>4 General Duty</strong>
         <ol>

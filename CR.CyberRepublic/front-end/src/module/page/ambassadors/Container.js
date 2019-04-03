@@ -6,39 +6,40 @@ import {TASK_TYPE, TASK_CATEGORY} from '@/constant'
 import _ from 'lodash'
 
 import {SUBMISSION_TYPE} from '@/constant'
+
 export default createContainer(Component, (state) => {
-    return {
-        ...state.task,
-        user: state.user,
-        is_login: state.user.is_login
-    }
+  return {
+    ...state.task,
+    user: state.user,
+    is_login: state.user.is_login
+  }
 }, () => {
-    const userService = new UserService()
-    const submissionService = new SubmissionService()
+  const userService = new UserService()
+  const submissionService = new SubmissionService()
 
-    return {
-        async getEmpowerUsers() {
-            return userService.getAll({
-                empower: JSON.stringify({$exists: true})
-            })
-        },
+  return {
+    async getEmpowerUsers() {
+      return userService.getAll({
+        empower: JSON.stringify({$exists: true})
+      })
+    },
 
-        async empowerApply(formData, state) {
+    async empowerApply(formData, state) {
 
-            await submissionService.create({
+      await submissionService.create({
 
-                title: `${state.applyEmpowerType  } Empower35 Ambassador Application`,
-                type: SUBMISSION_TYPE.EMPOWER_35,
-                campaign: state.applyEmpowerType,
+        title: `${state.applyEmpowerType} Empower35 Ambassador Application`,
+        type: SUBMISSION_TYPE.EMPOWER_35,
+        campaign: state.applyEmpowerType,
 
-                reason: formData.applyReason,
-                suitedReason: formData.suitedReason,
+        reason: formData.applyReason,
+        suitedReason: formData.suitedReason,
 
-                attachment: formData.filePath,
-                attachmentFilename: formData.fileName,
-                attachmentType: formData.fileType,
+        attachment: formData.filePath,
+        attachmentFilename: formData.fileName,
+        attachmentType: formData.fileType,
 
-            })
-        }
+      })
     }
+  }
 })
