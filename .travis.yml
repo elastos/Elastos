@@ -19,7 +19,7 @@ install:
   - cd $TRAVIS_BUILD_DIR
 
 script:
-  - xcodebuild -list -project ElastosCarrier.xcodeproj
+  - xcodebuild -list -project ElastosCarrierSDK.xcodeproj
   # default build release
-  - xcodebuild -scheme ElastosCarrier build
+  - xcodebuild -scheme ElastosCarrierSDK build
   #- ./docs.sh
