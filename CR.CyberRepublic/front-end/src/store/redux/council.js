@@ -10,7 +10,7 @@ class CouncilRedux extends BaseRedux {
       loading: false,
       tab: null,
       filter: {},
-    };
+    }
   }
 }
 

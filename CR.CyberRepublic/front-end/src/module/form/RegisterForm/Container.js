@@ -28,7 +28,7 @@ export default createContainer(Component, (state) => {
                     const registerRedirect = sessionStorage.getItem('registerRedirect')
 
                     if (registerRedirect) {
-                        return true;
+                        return true
                     } else {
                         this.history.push('/crcles')
                     }

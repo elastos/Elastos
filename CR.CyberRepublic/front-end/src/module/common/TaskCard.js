@@ -1,17 +1,17 @@
-import React from 'react';
-import BaseComponent from '@/model/BaseComponent';
+import React from 'react'
+import BaseComponent from '@/model/BaseComponent'
 
-import { Card, Icon, Avatar } from 'antd';
-import {DEFAULT_IMAGE} from "../../constant";
+import { Card, Icon, Avatar } from 'antd'
+import {DEFAULT_IMAGE} from "../../constant"
 
-const { Meta } = Card;
+const { Meta } = Card
 
 export default class extends BaseComponent {
 
     ord_render(){
-        const {thumbnail, name, reward} = this.props;
-        console.log(this.props);
-        const desc = reward ? `Ela : ${reward.ela / 1000} | VotePower : ${reward.votePower}` : 'no reward';
+        const {thumbnail, name, reward} = this.props
+        console.log(this.props)
+        const desc = reward ? `Ela : ${reward.ela / 1000} | VotePower : ${reward.votePower}` : 'no reward'
         return (
             <Card onClick={this.click.bind(this)}
                 style={{cursor:'pointer'}}
@@ -22,10 +22,10 @@ export default class extends BaseComponent {
                     description={desc}
                 />
             </Card>
-        );
+        )
     }
     click(){
-        const {_id} = this.props;
-        alert(_id);
+        const {_id} = this.props
+        alert(_id)
     }
 }

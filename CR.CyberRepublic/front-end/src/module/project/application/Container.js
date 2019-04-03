@@ -26,7 +26,7 @@ export default createContainer(Component, (state) => {
         },
 
         resetTeams() {
-            return teamService.resetAllTeams();
+            return teamService.resetAllTeams()
         }
     }
 })

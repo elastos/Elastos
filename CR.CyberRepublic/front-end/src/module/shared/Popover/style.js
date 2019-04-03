@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 import { Icon, Input, Button, Popover } from 'antd'
 
-const { TextArea } = Input;
+const { TextArea } = Input
 
 export const StyledPopover = styled(Popover)`
   background: #F6F9FD;

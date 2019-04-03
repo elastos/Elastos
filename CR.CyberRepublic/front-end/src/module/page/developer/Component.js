@@ -311,7 +311,7 @@ export default class extends StandardPage {
                 render: user => {
                     return (
                         <div>
-                            <Avatar className={'gap-right ' + (user.role === 'LEADER' ? 'avatar-leader' : 'avatar-member')}
+                            <Avatar className={`gap-right ${  user.role === 'LEADER' ? 'avatar-leader' : 'avatar-member'}`}
                                 src={this.getAvatarWithFallback(user.profile.avatar)}/>
                             {this.getUserNameWithFallback(user)}
                         </div>

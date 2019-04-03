@@ -7,7 +7,7 @@ import moment from 'moment/moment'
 import {MAX_WIDTH_MOBILE, MIN_WIDTH_PC} from '../../../../config/constant'
 import _ from 'lodash'
 
-const Option = Select.Option;
+const Option = Select.Option
 
 export default class extends EmptyPage {
 
@@ -28,12 +28,12 @@ export default class extends EmptyPage {
         this.props.getAllCommunities().then((communityTrees) => {
             this.setState({
                 communityTrees
-            });
+            })
         })
     }
 
     navigateToEvent(socialEventID) {
-        this.props.history.push(`/events/${socialEventID}`);
+        this.props.history.push(`/events/${socialEventID}`)
     }
 
     handleMonthChange(month) {
@@ -43,27 +43,27 @@ export default class extends EmptyPage {
     }
 
     renderMonthsAsBar() {
-        let months = moment.months();
-        let monthsElements = [];
+        let months = moment.months()
+        let monthsElements = []
 
         for (let i = 0; i < months.length; i++) {
-            let idx = (i === this.state.activeMonth && months[i].length === 4) ? 4 : 3;
-            let monthClass = i === this.state.activeMonth ? 'ebp-events-month ebp-events-active-month' : 'ebp-events-month';
+            let idx = (i === this.state.activeMonth && months[i].length === 4) ? 4 : 3
+            let monthClass = i === this.state.activeMonth ? 'ebp-events-month ebp-events-active-month' : 'ebp-events-month'
             monthsElements.push(
                 <span className={monthClass} key={i} onClick={this.handleMonthChange.bind(this, i)}>
                     {months[i].substr(0, idx)}
                 </span>
-            );
+            )
         }
-        return monthsElements;
+        return monthsElements
     }
 
     renderMonthsAsDropDown() {
-        let months = moment.months();
+        let months = moment.months()
 
-        let options = [];
+        let options = []
         for (let i = 0; i < months.length; i++) {
-            options.push(<Option value={i} key={i}>{months[i]}</Option>);
+            options.push(<Option value={i} key={i}>{months[i]}</Option>)
         }
 
         return (
@@ -78,7 +78,7 @@ export default class extends EmptyPage {
                 filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}>
                 {options}
             </Select>
-        );
+        )
     }
 
     renderCommunityDropDown() {
@@ -88,13 +88,13 @@ export default class extends EmptyPage {
             options={this.state.communityTrees}
             placeholder="Filter by community"
             onChange={this.handleOnChangeFilter.bind(this)}
-            changeOnSelect />);
+            changeOnSelect />)
     }
 
     onFavoriteFilterChange(value) {
         this.setState({
             showFavoritesOnly: value.target.checked
-        });
+        })
     }
 
     renderFavoritesFilter() {
@@ -102,7 +102,7 @@ export default class extends EmptyPage {
             <Checkbox className="favorites-filter" onChange={(e) => this.onFavoriteFilterChange(e)}>
                 Show only favorites (<Icon className="star" type="star" />)
             </Checkbox>
-        );
+        )
     }
 
     handleOnChangeFilter(value) {
@@ -120,23 +120,23 @@ export default class extends EmptyPage {
     }
 
     animateStar(socialEventId) {
-        let favorites = this.state.favorites;
-        let found = favorites.find((item) => item.key === socialEventId);
+        let favorites = this.state.favorites
+        let found = favorites.find((item) => item.key === socialEventId)
 
         if (found) {
-            let idx = favorites.indexOf(found);
-            favorites[idx].value = !favorites[idx].value;
+            let idx = favorites.indexOf(found)
+            favorites[idx].value = !favorites[idx].value
         } else {
             favorites.push({
                 key: socialEventId,
                 value: true
             }
-            );
+            )
         }
 
         this.setState({
             favorites: favorites
-        });
+        })
     }
 
     getStarActiveClass() {
@@ -149,19 +149,19 @@ export default class extends EmptyPage {
                 onClick={() => this.handleRegisterUser(socialEventId)}>
                 <span>Register</span>
             </Button>
-        );
+        )
         const unregister = (
             <Button className="events-card-button-unregister" loading={this.props.loading}
                 onClick={() => this.handleUnregisterUser(candidate, socialEventId)}>
                 <span className="going-text">Going</span>
                 <span className="cancel-text">Cancel?</span>
             </Button>
-        );
+        )
 
         if (!candidate) {
-            return register;
+            return register
         }
-        return unregister;
+        return unregister
     }
 
     renderDetails(socialEventId) {
@@ -169,27 +169,27 @@ export default class extends EmptyPage {
             <div className="events-card-details-button">
                 <Button onClick={() => this.navigateToEvent(socialEventId)}>Find out more</Button>
             </div>
-        );
+        )
     }
 
     // Disabled until hash-tags implemented backend
     renderHashTags(hashTags) {
-        let elements = [];
+        let elements = []
         for (let i = 0; i < hashTags.length; i++) {
-            elements.push(<Tag key={i}>{hashTags[i]}</Tag>);
+            elements.push(<Tag key={i}>{hashTags[i]}</Tag>)
         }
-        return elements;
+        return elements
     }
 
     renderEventCard(socialEvent) {
         let candidate = socialEvent.candidates
-            ? socialEvent.candidates.find((user) => user.user && user.user._id === this.props.currentUserId) : null;
-        let hashTags = ['#4ever', '#elastos'];
+            ? socialEvent.candidates.find((user) => user.user && user.user._id === this.props.currentUserId) : null
+        let hashTags = ['#4ever', '#elastos']
         let image = socialEvent.thumbnail ? socialEvent.thumbnail
-            : '/assets/images/Elastos_Logo_Temp.png';
-        let date = socialEvent.eventDateRangeStart ? moment(socialEvent.eventDateRangeStart).format('MMMM Do YYYY - h:mma') : 'TBD';
-        let community = socialEvent.location || 'Location TBD';
-        let svgStarClass = this.state.favorites.find((item) => item.key === socialEvent._id && item.value) ? this.getStarActiveClass() : 'star-poly';
+            : '/assets/images/Elastos_Logo_Temp.png'
+        let date = socialEvent.eventDateRangeStart ? moment(socialEvent.eventDateRangeStart).format('MMMM Do YYYY - h:mma') : 'TBD'
+        let community = socialEvent.location || 'Location TBD'
+        let svgStarClass = this.state.favorites.find((item) => item.key === socialEvent._id && item.value) ? this.getStarActiveClass() : 'star-poly'
 
         return (
             <Card
@@ -227,42 +227,42 @@ export default class extends EmptyPage {
 
             if (this.state.showFavoritesOnly &&
                 !this.state.favorites.find((favorite) => favorite.key === item._id && favorite.value)) {
-                return false;
+                return false
             }
 
             // event must have a date to be shown
             let dateValid = item.eventDateRangeStart
-                ? new Date(item.eventDateRangeStart).getMonth() === this.state.activeMonth : false;
+                ? new Date(item.eventDateRangeStart).getMonth() === this.state.activeMonth : false
 
             if (this.state.filterCommunity.length === 0) {
-                return dateValid;
+                return dateValid
             }
             else if (!item.community) {
-                return dateValid && this.state.filterCommunity.length === 0;
+                return dateValid && this.state.filterCommunity.length === 0
             }
 
-            let communityValid = false;
+            let communityValid = false
             if (this.state.filterCommunity.length > 1) {
                 if (item.community._id === this.state.filterCommunity[1]) {
-                    communityValid = true;
-                    return dateValid && communityValid;
+                    communityValid = true
+                    return dateValid && communityValid
                 }
-                return false;
+                return false
             } else if (this.state.filterCommunity[0] === item.community._id) {
-                communityValid = true;
+                communityValid = true
             } else {
-                let found = this.state.communityTrees.find((community) => community.value === this.state.filterCommunity[0]);
+                let found = this.state.communityTrees.find((community) => community.value === this.state.filterCommunity[0])
                 if (found && found.children) {
                     for (let j = 0; j < found.children.length; j++) {
                         if (found.children[j].value === item.community._id) {
-                            communityValid = true;
-                            return dateValid && communityValid;
+                            communityValid = true
+                            return dateValid && communityValid
                         }
                     }
                 }
             }
-            return dateValid && communityValid;
-        });
+            return dateValid && communityValid
+        })
 
         socialEvents.sort((a, b) => {
             return moment(a.eventDateRangeStart) - moment(b.eventDateRangeStart)
@@ -272,12 +272,12 @@ export default class extends EmptyPage {
     }
 
     renderEventCards(socialEvents) {
-        let eventCards = [];
-        const filteredSocialEvents = this.getFilteredEvents(socialEvents);
+        let eventCards = []
+        const filteredSocialEvents = this.getFilteredEvents(socialEvents)
         for (let i = 0; i < filteredSocialEvents.length; i++) {
-            eventCards.push(this.renderEventCard(filteredSocialEvents[i]));
+            eventCards.push(this.renderEventCard(filteredSocialEvents[i]))
         }
-        return eventCards;
+        return eventCards
     }
 
     ord_renderContent () {

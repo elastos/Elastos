@@ -9,7 +9,7 @@ class CommunityRedux extends BaseRedux {
     return {
       loading: false,
       my_communities: [],
-    };
+    }
   }
 }
 

@@ -16,20 +16,20 @@ export default Form.create()(
                 wrapperCol: {span: 18}
             }
 
-            let contextTitle;
+            let contextTitle
             switch (communityType) {
                 case COMMUNITY_TYPE.STATE:
-                    contextTitle = 'Add states / provinces';
-                    break;
+                    contextTitle = 'Add states / provinces'
+                    break
                 case COMMUNITY_TYPE.CITY:
-                    contextTitle = 'Add city';
-                    break;
+                    contextTitle = 'Add city'
+                    break
                 case COMMUNITY_TYPE.REGION:
-                    contextTitle = 'Add region';
-                    break;
+                    contextTitle = 'Add region'
+                    break
                 default:
-                    contextTitle = 'Add school';
-                    break;
+                    contextTitle = 'Add school'
+                    break
             }
 
             const footerModal = (

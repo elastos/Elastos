@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import TeamDetail from '@/module/team/Container'
 import { Form } from 'antd'

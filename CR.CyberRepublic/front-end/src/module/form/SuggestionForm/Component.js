@@ -13,12 +13,12 @@ import {
 import moment from 'moment/moment'
 import I18N from '@/I18N'
 import ReactQuill from 'react-quill'
-import { TOOLBAR_OPTIONS } from '@/config/constant'
+import {TOOLBAR_OPTIONS} from '@/config/constant'
 import Translation from '@/module/common/Translation/Container'
 import sanitizeHtml from 'sanitize-html'
 
 import './style.scss'
-import { StyledFormDesc } from './style'
+import {StyledFormDesc} from './style'
 
 const FormItem = Form.Item
 
@@ -33,6 +33,7 @@ class C extends BaseComponent {
       showRules: false,
     }
   }
+
   //   componentDidMount() {
   //     // TOTO: get council members used for mentions
   //   }
@@ -40,7 +41,7 @@ class C extends BaseComponent {
   handleSubmit(e) {
     e.preventDefault()
 
-    const { form, onFormSubmit, data } = this.props
+    const {form, onFormSubmit, data} = this.props
 
     form.validateFields(async (err, values) => {
       if (!err) {
@@ -69,66 +70,66 @@ class C extends BaseComponent {
   }
 
   getInputProps() {
-    const { getFieldDecorator } = this.props.form
-    const { data } = this.props
+    const {getFieldDecorator} = this.props.form
+    const {data} = this.props
 
-    const input_el = <Input size="large" />
+    const input_el = <Input size="large"/>
     const textarea_el = (
       <ReactQuill
         modules={{
           toolbar: TOOLBAR_OPTIONS,
           autoLinks: true,
         }}
-        style={{ backgroundColor: 'white' }}
+        style={{backgroundColor: 'white'}}
       />
     )
-    const benefits_el = <Input.TextArea />
-    const funding_el = <Input size="large" />
-    const timeline_el = <DatePicker size="large" placeholder="" style={{ width: '100%' }} />
-    const link_el = <Input size="large" />
+    const benefits_el = <Input.TextArea/>
+    const funding_el = <Input size="large"/>
+    const timeline_el = <DatePicker size="large" placeholder="" style={{width: '100%'}}/>
+    const link_el = <Input size="large"/>
 
     const title_fn = getFieldDecorator('title', {
       rules: [
-        { required: true, message: I18N.get('suggestion.create.error.required') },
-        { min: 4, message: I18N.get('suggestion.create.error.tooShort') },
+        {required: true, message: I18N.get('suggestion.create.error.required')},
+        {min: 4, message: I18N.get('suggestion.create.error.tooShort')},
       ],
       initialValue: _.get(data, 'title', ''),
     })
 
     const description_fn = getFieldDecorator('description', {
       rules: [
-        { required: true, message: I18N.get('suggestion.create.error.required') },
-        { min: 20, message: I18N.get('suggestion.create.error.tooShort') },
+        {required: true, message: I18N.get('suggestion.create.error.required')},
+        {min: 20, message: I18N.get('suggestion.create.error.tooShort')},
       ],
       initialValue: _.get(data, 'desc', ''),
     })
 
     const benefits_fn = getFieldDecorator('benefits', {
       rules: [
-        { required: true, message: I18N.get('suggestion.create.error.required') },
-        { min: 20, message: I18N.get('suggestion.create.error.tooShort') },
+        {required: true, message: I18N.get('suggestion.create.error.required')},
+        {min: 20, message: I18N.get('suggestion.create.error.tooShort')},
       ],
       initialValue: _.get(data, 'benefits', ''),
     })
 
     const funding_fn = getFieldDecorator('funding', {
       rules: [
-        { required: false },
+        {required: false},
       ],
       initialValue: _.get(data, 'funding', ''),
     })
 
     const timeline_fn = getFieldDecorator('timeline', {
       rules: [
-        { required: false },
+        {required: false},
       ],
       initialValue: _.get(data, 'timeline') ? moment(_.get(data, 'timeline')) : undefined,
     })
 
     const link_fn = getFieldDecorator('link', {
       rules: [
-        { type: 'url' },
-        { required: false },
+        {type: 'url'},
+        {required: false},
       ],
       initialValue: _.get(data, 'link', ''),
     })
@@ -144,7 +145,7 @@ class C extends BaseComponent {
   }
 
   renderTranslationBtn() {
-    const { title, description, benefits } = this.props.form.getFieldsValue(['title', 'description', 'benefits'])
+    const {title, description, benefits} = this.props.form.getFieldsValue(['title', 'description', 'benefits'])
     const text = `
       <h1>${title}</h1>
       <h4>${I18N.get('suggestion.form.fields.desc')}</h4>
@@ -155,7 +156,7 @@ class C extends BaseComponent {
 
     return (
       <div>
-        <Translation text={text} />
+        <Translation text={text}/>
       </div>
     )
   }
@@ -174,7 +175,9 @@ class C extends BaseComponent {
         </Col>
         <Col span={6}>
           <h5 className="alignRight">
-            <a onClick={() => {this.setState({showRules: !this.state.showRules})}}>
+            <a onClick={() => {
+              this.setState({showRules: !this.state.showRules})
+            }}>
               {I18N.get('suggestion.rules.rulesAndGuidelines')} <Icon type="question-circle"/>
             </a>
           </h5>
@@ -218,7 +221,9 @@ class C extends BaseComponent {
           {I18N.get('suggestion.rules.infoRequest')}
         </p>
 
-        <Button class="pull-right" onClick={() => {this.setState({showRules: false})}}>{I18N.get('suggestion.back')}</Button>
+        <Button class="pull-right" onClick={() => {
+          this.setState({showRules: false})
+        }}>{I18N.get('suggestion.back')}</Button>
         <div class="clearfix">
           <br/>
         </div>
@@ -289,10 +294,11 @@ class C extends BaseComponent {
       <div className="c_SuggestionForm">
         {headerNode}
         {this.state.showRules ?
-          rulesNode :
-          <Form onSubmit={this.handleSubmit.bind(this)} className="d_SuggestionForm">
-            {formContent}
-          </Form>
+          rulesNode : (
+            <Form onSubmit={this.handleSubmit.bind(this)} className="d_SuggestionForm">
+              {formContent}
+            </Form>
+          )
         }
       </div>
     )

@@ -1,8 +1,8 @@
-import BaseRedux from '@/model/BaseRedux';
+import BaseRedux from '@/model/BaseRedux'
 
 class TeamRedux extends BaseRedux {
   defineTypes() {
-    return ['team'];
+    return ['team']
   }
 
   defineDefaultState() {

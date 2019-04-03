@@ -27,31 +27,31 @@ export default createContainer(Component, state => ({
       path: '/api/cvote/create',
       method: 'post',
       data: param,
-    });
-    return rs;
+    })
+    return rs
   },
   async updateCVote(param) {
     const rs = await api_request({
       path: '/api/cvote/update',
       method: 'post',
       data: param,
-    });
-    return rs;
+    })
+    return rs
   },
   async finishCVote(param) {
     const rs = await api_request({
       path: '/api/cvote/finish',
       method: 'get',
       data: param,
-    });
-    return rs;
+    })
+    return rs
   },
   async updateNotes(param) {
     const rs = await api_request({
       path: '/api/cvote/update_notes',
       method: 'post',
       data: param,
-    });
-    return rs;
+    })
+    return rs
   },
 }))

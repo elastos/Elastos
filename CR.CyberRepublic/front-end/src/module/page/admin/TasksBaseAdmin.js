@@ -37,7 +37,7 @@ export default class extends AdminPage {
         await this.setState({
             filteredInfo: filters,
             pagination: pagination
-        });
+        })
 
         this.saveFilter()
     }
@@ -65,7 +65,7 @@ export default class extends AdminPage {
     }
 
     ord_renderContent () {
-        let { filteredInfo } = this.state;
+        let { filteredInfo } = this.state
 
         let taskData = this.ord_getAllTasks()
 
@@ -83,7 +83,7 @@ export default class extends AdminPage {
             taskData = taskData.filter((task) => task.status === this.state.statusFilter)
         }
 
-        filteredInfo = filteredInfo || {};
+        filteredInfo = filteredInfo || {}
 
         const columns = [{
             title: 'Name',
@@ -110,11 +110,11 @@ export default class extends AdminPage {
             key: 'community',
             render: (community, data) => {
                 if (!community) {
-                    return null;
+                    return null
                 }
 
                 if (data.communityParent) {
-                    let nameParent = data.communityParent.name;
+                    let nameParent = data.communityParent.name
                     return (<p>{nameParent}/{community.name}</p>)
                 } else {
                     return (<p>{community.name}</p>)

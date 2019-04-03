@@ -92,11 +92,11 @@ export default createContainer(Component, (state) => {
                     }
                 })
 
-                const rs = await taskService.create(createObj);
+                const rs = await taskService.create(createObj)
 
                 if (rs) {
-                    message.success('Task created successfully');
-                    taskService.path.push(`/profile/task-detail/${rs._id}`);
+                    message.success('Task created successfully')
+                    taskService.path.push(`/profile/task-detail/${rs._id}`)
                 }
             } catch (err) {
                 // message.error('There was an error creating this task')
@@ -194,10 +194,10 @@ export default createContainer(Component, (state) => {
                     })
                 }
 
-                const rs = await taskService.update(taskId, updateObj);
+                const rs = await taskService.update(taskId, updateObj)
 
                 if (rs) {
-                    message.success('Task updated successfully');
+                    message.success('Task updated successfully')
 
                     st.editing = false
                     // this.setState({editing: false})
@@ -251,5 +251,5 @@ export default createContainer(Component, (state) => {
                 })
             })
         }
-    };
-});
+    }
+})

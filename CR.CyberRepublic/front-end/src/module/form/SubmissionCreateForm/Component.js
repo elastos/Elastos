@@ -25,20 +25,20 @@ class C extends BaseComponent {
 
         this.props.form.validateFields(async (err, values) => {
             if (!err) {
-                this.setState({ loading: true });
+                this.setState({ loading: true })
 
                 const createParams = {...values}
 
-                await this.props.create(createParams);
+                await this.props.create(createParams)
 
-                this.setState({loading: false});
-                this.props.history.push('/profile/submissions');
+                this.setState({loading: false})
+                this.props.history.push('/profile/submissions')
             }
         })
     }
 
     getInputProps () {
-        const {getFieldDecorator} = this.props.form;
+        const {getFieldDecorator} = this.props.form
 
         const input_el = (
             <Input size="large"/>

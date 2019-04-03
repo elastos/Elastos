@@ -1,5 +1,5 @@
-import React from 'react';
-import ProfilePage from '../../ProfilePage';
+import React from 'react'
+import ProfilePage from '../../ProfilePage'
 import Footer from '@/module/layout/Footer/Container'
 import Navigator from '@/module/page/shared/HomeNavigator/Container'
 import _ from 'lodash'
@@ -11,7 +11,7 @@ import { Col, Row, Icon, Select, Form, Tooltip, Badge, Breadcrumb, Button, Table
 import moment from 'moment/moment'
 import {MAX_WIDTH_MOBILE, MIN_WIDTH_PC} from "../../../../config/constant"
 
-const FormItem = Form.Item;
+const FormItem = Form.Item
 
 import MediaQuery from 'react-responsive'
 
@@ -19,11 +19,11 @@ const FILTERS = {
     ALL: 'all',
     CREATED: 'created',
     SUBSCRIBED: 'subscribed'
-};
+}
 
 export default class extends ProfilePage {
     constructor(props) {
-        super(props);
+        super(props)
 
         this.state = {
             showMobile: false,
@@ -76,7 +76,7 @@ export default class extends ProfilePage {
     }
 
     ord_renderContent () {
-        const submissionsAllData = this.props.all_submissions;
+        const submissionsAllData = this.props.all_submissions
         const submissionsOwnedData = this.props.owned_submissions
         const submissionsSubscribedData = this.props.subscribed_submissions
 
@@ -211,14 +211,14 @@ export default class extends ProfilePage {
     onSelectFilter(value) {
         switch (value) {
             case FILTERS.CREATED:
-                this.setCreatedFilter();
-                break;
+                this.setCreatedFilter()
+                break
             case FILTERS.SUBSCRIBED:
-                this.setSubscribedFilter();
-                break;
+                this.setSubscribedFilter()
+                break
             default:
-                this.clearFilters();
-                break;
+                this.clearFilters()
+                break
         }
     }
 
@@ -239,6 +239,6 @@ export default class extends ProfilePage {
     }
 
     goCreatepage() {
-        this.props.history.push('/profile/submissions/create');
+        this.props.history.push('/profile/submissions/create')
     }
 }

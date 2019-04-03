@@ -1,7 +1,7 @@
-import React from 'react';
+import React from 'react'
 import _ from 'lodash'
 import { Row, Col, Spin, Button, Modal } from 'antd'
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom'
 import MediaQuery from 'react-responsive'
 import moment from 'moment/moment'
 import Comments from '@/module/common/comments/Container'

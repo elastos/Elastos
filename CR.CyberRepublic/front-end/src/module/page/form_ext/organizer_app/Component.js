@@ -1,6 +1,6 @@
-import React from 'react';
-import I18N from '@/I18N';
-import StandardPage from '../../StandardPage';
+import React from 'react'
+import I18N from '@/I18N'
+import StandardPage from '../../StandardPage'
 import Footer from '@/module/layout/Footer/Container'
 import OrganizerAppForm from '@/module/form/OrganizerAppForm/Container'
 

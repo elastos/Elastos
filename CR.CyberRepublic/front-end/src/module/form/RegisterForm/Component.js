@@ -79,11 +79,11 @@ class C extends BaseComponent {
         // Generate a random six digit code
         const min = 100000
         const max = 1000000
-        return Math.round(Math.random() * (max - min) + min);
+        return Math.round(Math.random() * (max - min) + min)
     }
 
     checkEmail(rule, value, callback, source, options) {
-        const emailRegex = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+        const emailRegex = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)
 
         if (value && emailRegex.test(value)) {
             this.props.checkEmail(value).then((isExist) => {

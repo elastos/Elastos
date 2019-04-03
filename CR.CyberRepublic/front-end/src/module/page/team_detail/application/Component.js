@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import moment from 'moment'
 import {
@@ -20,7 +20,7 @@ import {
     Upload,
     Badge
 } from 'antd'
-import {upload_file} from "@/util";
+import {upload_file} from "@/util"
 import { TASK_CANDIDATE_STATUS, TASK_CANDIDATE_TYPE, TEAM_USER_STATUS, USER_AVATAR_DEFAULT } from '@/constant'
 import Comments from '@/module/common/comments/Container'
 import I18N from '@/I18N'

@@ -29,7 +29,7 @@ export default class extends StandardPage {
             'en',
             'zh'
         ], key)) {
-            this.props.changeLanguage(e.key);
+            this.props.changeLanguage(e.key)
         }
     }
 

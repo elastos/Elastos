@@ -31,9 +31,9 @@ export default class extends StandardPage {
 
     buildCircle(circle = {}) {
         const member = !!_.find(this.props.myCircles, { _id: circle._id })
-        const mainClassName = 'emp35-circle-item ' + (member
+        const mainClassName = `emp35-circle-item ${  member
             ? 'member'
-            : '')
+            : ''}`
 
         return (
             <div className={mainClassName}>
@@ -54,7 +54,7 @@ export default class extends StandardPage {
                         <div className="indicator">{circle.tasks.count}</div>
                         {circle.tasks.budget.usd > 0
                             ? <div className="indicator no-margin">{numeral(circle.tasks.budget.usd / 100).format('($0a)')}</div>
-                            : <div className="indicator no-margin">{numeral(circle.tasks.budget.ela / 1000).format('(0a)') + ' ELA'}</div>
+                            : <div className="indicator no-margin">{`${numeral(circle.tasks.budget.ela / 1000).format('(0a)')  } ELA`}</div>
                         }
                     </div>
                     : null
@@ -68,7 +68,7 @@ export default class extends StandardPage {
                 <span className="title"
                     onClick={() => this.props.history.push(`/crcles-detail/${circle._id}`)}>{this.props.language === 'zh' && !_.isEmpty(circle.name_zh) ? circle.name_zh : circle.name}</span>
             </div>
-        );
+        )
     }
 
     buildCirclesWorker(circles, grid) {
@@ -89,7 +89,7 @@ export default class extends StandardPage {
     }
 
     buildCircles(query) {
-        const circles = this.props.all_circles || {};
+        const circles = this.props.all_circles || {}
         const queriedCircles = _.filter(_.values(circles), query)
         return this.buildCirclesWorker(queriedCircles, 6)
     }

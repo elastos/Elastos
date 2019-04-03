@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import { TASK_CANDIDATE_STATUS, TEAM_USER_STATUS, USER_AVATAR_DEFAULT, TASK_AVATAR_DEFAULT } from '@/constant'
 import {Avatar, Button, Col, Form, Icon, Popconfirm, Row, Spin, Table, Input, Modal} from 'antd'
@@ -11,8 +11,8 @@ import './style.scss'
 import _ from 'lodash'
 import I18N from '@/I18N'
 
-const FormItem = Form.Item;
-const { TextArea } = Input;
+const FormItem = Form.Item
+const { TextArea } = Input
 
 class C extends BaseComponent {
     ord_states() {
@@ -194,7 +194,7 @@ class C extends BaseComponent {
             render: candidate => {
                 return (
                     <div key={candidate._id}>
-                        <Avatar className={'gap-right ' + (candidate.role === 'LEADER' ? 'avatar-leader' : 'avatar-member')}
+                        <Avatar className={`gap-right ${  candidate.role === 'LEADER' ? 'avatar-leader' : 'avatar-member'}`}
                             src={this.getAvatarWithFallback(candidate.user.profile.avatar)}/>
                         <a className="row-name-link" onClick={this.linkProfileInfo.bind(this, candidate.user)}>
                             {this.getUserNameWithFallback(candidate.user)}</a>

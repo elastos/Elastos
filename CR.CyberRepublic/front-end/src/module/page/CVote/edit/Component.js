@@ -7,8 +7,8 @@ import { Container } from './style'
 
 export default class extends BaseComponent {
   constructor(p) {
-    super(p);
-    this.state.data = null;
+    super(p)
+    this.state.data = null
   }
 
   ord_render() {
@@ -22,11 +22,11 @@ export default class extends BaseComponent {
           onCancel={this.props.onCancel}
         />
       </Container>
-    );
+    )
   }
 
   async componentDidMount() {
-    const data = await this.props.getData(this.props.match.params.id);
-    this.setState({ data });
+    const data = await this.props.getData(this.props.match.params.id)
+    this.setState({ data })
   }
 }

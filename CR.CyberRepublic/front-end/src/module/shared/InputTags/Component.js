@@ -1,6 +1,6 @@
-import React from 'react';
-import { Tag, Input, Tooltip, Icon } from 'antd';
-import BaseComponent from '@/model/BaseComponent';
+import React from 'react'
+import { Tag, Input, Tooltip, Icon } from 'antd'
+import BaseComponent from '@/model/BaseComponent'
 
 export default class extends BaseComponent {
     ord_states(){
@@ -8,53 +8,53 @@ export default class extends BaseComponent {
             tags : [],
             inputVisable : false,
             inputValue : ''
-        };
+        }
     }
 
     handleInputChange(e){
-        this.setState({ inputValue: e.target.value });
+        this.setState({ inputValue: e.target.value })
     }
     handleInputConfirm(){
-        const state = this.state;
-        const inputValue = state.inputValue;
-        let tags = state.tags;
+        const state = this.state
+        const inputValue = state.inputValue
+        let tags = state.tags
         if (inputValue && tags.indexOf(inputValue) === -1) {
-            tags = [...tags, inputValue];
+            tags = [...tags, inputValue]
         }
-        console.log(tags);
+        console.log(tags)
         this.setState({
             tags,
             inputVisible: false,
             inputValue: '',
-        });
+        })
     }
 
     handleClose(removeTag){
-        const tags = this.state.tags.filter(tag => tag !== removeTag);
-        console.log(tags);
-        this.setState({ tags });
+        const tags = this.state.tags.filter(tag => tag !== removeTag)
+        console.log(tags)
+        this.setState({ tags })
     }
 
     showInput(){
-        this.setState({ inputVisible: true }, () => this.input.focus());
+        this.setState({ inputVisible: true }, () => this.input.focus())
     }
 
     saveInputRef(input){
-        this.input = input;
+        this.input = input
     }
 
     ord_render(){
-        const { tags, inputVisible, inputValue } = this.state;
+        const { tags, inputVisible, inputValue } = this.state
         return (
             <div>
                 {tags.map((tag, index) => {
-                    const isLongTag = tag.length > 20;
+                    const isLongTag = tag.length > 20
                     const tagElem = (
                         <Tag key={tag} closable={true} afterClose={() => this.handleClose(tag)}>
                             {isLongTag ? `${tag.slice(0, 20)}...` : tag}
                         </Tag>
-                    );
-                    return isLongTag ? <Tooltip title={tag} key={tag}>{tagElem}</Tooltip> : tagElem;
+                    )
+                    return isLongTag ? <Tooltip title={tag} key={tag}>{tagElem}</Tooltip> : tagElem
                 })}
                 {inputVisible && (
                     <Input
@@ -77,10 +77,10 @@ export default class extends BaseComponent {
                     </Tag>
                 )}
             </div>
-        );
+        )
     }
 
     getValue(){
-        return this.state.tags;
+        return this.state.tags
     }
 }

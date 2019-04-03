@@ -108,7 +108,7 @@ export default class extends StandardPage {
                             <div key={ind} className="c_project">
                                 <div className="project-icon">
                                     <div className="base-icon"/>
-                                    <a href={'/project-detail/' + project._id}>
+                                    <a href={`/project-detail/${  project._id}`}>
                                         <img className="overlay-icon" src={project.thumbnail}/>
                                     </a>
                                 </div>

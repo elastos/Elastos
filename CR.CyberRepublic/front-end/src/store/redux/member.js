@@ -13,7 +13,7 @@ class MemberRedux extends BaseRedux {
       users: [],
       users_loading: false,
       users_total: 0,
-    };
+    }
   }
 }
 

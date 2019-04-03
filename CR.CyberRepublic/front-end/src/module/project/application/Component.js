@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import moment from 'moment'
 import _ from 'lodash'
@@ -8,8 +8,8 @@ import Comments from '@/module/common/comments/Container'
 import './style.scss'
 import I18N from '@/I18N'
 
-const { TextArea } = Input;
-const Option = Select.Option;
+const { TextArea } = Input
+const Option = Select.Option
 const dateTimeFormat = 'MMM D, YYYY - h:mma (Z [GMT])'
 
 export default class extends BaseComponent {
@@ -27,7 +27,7 @@ export default class extends BaseComponent {
     }
 
     componentWillUnmount() {
-        this.props.resetTeams();
+        this.props.resetTeams()
     }
 
     ord_render () {
@@ -65,7 +65,7 @@ export default class extends BaseComponent {
             ? '$me'
             : applicant && applicant.team && applicant.team._id
 
-        const elem = [];
+        const elem = []
         elem.push(
             <Option value="$me" key="$me">
                 {I18N.get('task.soloApply')} (Solo)

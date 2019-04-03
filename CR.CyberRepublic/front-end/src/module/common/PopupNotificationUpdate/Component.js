@@ -1,9 +1,9 @@
-import React from 'react';
-import BaseComponent from '@/model/BaseComponent';
+import React from 'react'
+import BaseComponent from '@/model/BaseComponent'
 
-import {Modal, Row, Col, Form} from 'antd';
+import {Modal, Row, Col, Form} from 'antd'
 import I18N from '@/I18N'
-import './style.scss';
+import './style.scss'
 
 class C extends BaseComponent {
 
@@ -14,8 +14,8 @@ class C extends BaseComponent {
     }
 
     async componentDidMount() {
-        await this.props.getCurrentUser();
-        this.updateModalVisibility();
+        await this.props.getCurrentUser()
+        this.updateModalVisibility()
     }
 
     updateModalVisibility() {
@@ -44,7 +44,7 @@ class C extends BaseComponent {
      */
     ord_render() {
 
-        let lang = localStorage.getItem('lang') || 'en';
+        let lang = localStorage.getItem('lang') || 'en'
 
         return (
             <Modal
@@ -78,7 +78,7 @@ class C extends BaseComponent {
                     </Col>
                 </Row>
             </Modal>
-        );
+        )
     }
 
     handleCancel() {

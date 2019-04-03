@@ -21,7 +21,7 @@ export default createContainer(Component, (state) => {
     }
 }, () => {
     // const userService = new UserService()
-    const submissionService = new SubmissionService();
+    const submissionService = new SubmissionService()
     const teamService = new TeamService()
 
     return {

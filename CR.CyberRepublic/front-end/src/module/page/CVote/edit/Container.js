@@ -9,6 +9,6 @@ export default createContainer(Component, state => ({
       path: `/api/cvote/get/${id}`,
     })
 
-    return d;
+    return d
   },
 }))

@@ -1,7 +1,7 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import {Form, Icon, Input, Button} from 'antd'
-import {MIN_LENGTH_PASSWORD} from '@/config/constant';
+import {MIN_LENGTH_PASSWORD} from '@/config/constant'
 import I18N from '@/I18N'
 
 import './style.scss'

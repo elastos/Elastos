@@ -2,7 +2,7 @@ import styled from 'styled-components'
 import { getSassColor } from '@/util/styled-components'
 
 // Extract Sass variables into a JS object
-const styleObj = require('sass-extract-loader!@/style/color.scss');
+const styleObj = require('sass-extract-loader!@/style/color.scss')
 
 export const Container = styled.div`
   background: ${getSassColor(styleObj, '$bg_lighter_gray')};

@@ -1,5 +1,5 @@
-import BaseRedux from '@/model/BaseRedux';
-import I18N from '@/I18N';
+import BaseRedux from '@/model/BaseRedux'
+import I18N from '@/I18N'
 
 class LanguageRedux extends BaseRedux {
   defineTypes() {
@@ -9,7 +9,7 @@ class LanguageRedux extends BaseRedux {
   defineDefaultState() {
     return {
       language: I18N.getLang(),
-    };
+    }
   }
 }
 

@@ -33,7 +33,7 @@
     "no-nested-ternary": 0,
     "import/no-dynamic-require": 0,
     "global-require": 0,
-    "max-len": [1,100],
+    "max-len": [1,150],
     "padded-blocks": 0,
     "no-console": 1,
     "consistent-return": 1,

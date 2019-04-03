@@ -37,6 +37,11 @@ export const Desc = styled.div`
 
 export const DescBody = styled.div`
   font-weight: 200;
+  
+  p {
+    padding-bottom: 0;
+    margin-bottom: 12px;
+  }
 `
 
 // export const StyledLink = styled.div`

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import _ from 'lodash'
 import { Spin } from 'antd'
 import moment from 'moment/moment'

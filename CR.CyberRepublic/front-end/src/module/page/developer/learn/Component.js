@@ -17,40 +17,40 @@ import moment from 'moment'
 // /////////////////
 // Content
 // /////////////////
-import IntroductionDetail from './detail/GettingStarted/Introduction/Component';
-import BasicsDetail from './detail/GettingStarted/Basics/Component';
-import BlockchainArchitectureDetail from './detail/GettingStarted/BlockchainArchitecture/Component';
-import ComponentAssemblyRuntimeDetail from './detail/GettingStarted/ComponentAssemblyRuntime/Component';
-import ResourcesDetail from './detail/GettingStarted/Resources/Component';
+import IntroductionDetail from './detail/GettingStarted/Introduction/Component'
+import BasicsDetail from './detail/GettingStarted/Basics/Component'
+import BlockchainArchitectureDetail from './detail/GettingStarted/BlockchainArchitecture/Component'
+import ComponentAssemblyRuntimeDetail from './detail/GettingStarted/ComponentAssemblyRuntime/Component'
+import ResourcesDetail from './detail/GettingStarted/Resources/Component'
 
-import MiningTestnetWalletDemoDetail from './detail/Tutorials/MiningTestnetWalletDemo/Component';
-import CarrierChatAppDetail from './detail/Tutorials/CarrierDemo/Component';
+import MiningTestnetWalletDemoDetail from './detail/Tutorials/MiningTestnetWalletDemo/Component'
+import CarrierChatAppDetail from './detail/Tutorials/CarrierDemo/Component'
 
-import BlockchainSmartContractsDetail from './detail/TheFourPillars/BlockchainSmartContracts/Component';
-import ElastosCarrierDetail from './detail/TheFourPillars/ElastosCarrier/Component';
-import ElastosRuntimeDetail from './detail/TheFourPillars/ElastosRuntime/Component';
-import ElastosSDKDetail from './detail/TheFourPillars/ElastosSDK/Component';
+import BlockchainSmartContractsDetail from './detail/TheFourPillars/BlockchainSmartContracts/Component'
+import ElastosCarrierDetail from './detail/TheFourPillars/ElastosCarrier/Component'
+import ElastosRuntimeDetail from './detail/TheFourPillars/ElastosRuntime/Component'
+import ElastosSDKDetail from './detail/TheFourPillars/ElastosSDK/Component'
 
-import EndToEndDemoDApp from './detail/SmartwebAlpha/EndToEndDemoDApp/Component';
+import EndToEndDemoDApp from './detail/SmartwebAlpha/EndToEndDemoDApp/Component'
 
 // /////////////////
 // Constant
 // /////////////////
 
-const TabPane = Tabs.TabPane;
-const TreeNode = Tree.TreeNode;
+const TabPane = Tabs.TabPane
+const TreeNode = Tree.TreeNode
 
 // /////////////////
 // Data: Dummy
 // /////////////////
-const DEFAULT_ID = '1-1';
+const DEFAULT_ID = '1-1'
 const TABS = [
     { id: 1, title: 'Getting Started' },
     { id: 2, title: 'Tutorials' },
     { id: 3, title: 'Smart Contracts' },
     { id: 4, title: 'The Four Pillars' },
     { id: 5, title: 'Smartweb Alpha' }
-];
+]
 const CONTENTS = [
     {
         tabID: 1,
@@ -162,36 +162,36 @@ const CONTENTS = [
 // Function:
 // /////////////////
 
-const isEmpty = ([first, ...rest]) => first === undefined;
+const isEmpty = ([first, ...rest]) => first === undefined
 
 // TopicDetail: displays the detail of a topic
 class TopicDetail extends React.Component {
 
     getTopicContent() {
-        const selectedKey = parseInt((this.props.selectedTopic || DEFAULT_ID).split('-').pop());
-        const contents = this.props.paneContent ? this.props.paneContent.content : [];
-        const topicContent = this.getTopicChild(contents, selectedKey);
-        return topicContent ? topicContent.detail : null;
+        const selectedKey = parseInt((this.props.selectedTopic || DEFAULT_ID).split('-').pop())
+        const contents = this.props.paneContent ? this.props.paneContent.content : []
+        const topicContent = this.getTopicChild(contents, selectedKey)
+        return topicContent ? topicContent.detail : null
     }
 
     getTopicChild(children, id) {
-        let result = null;
+        let result = null
 
         children.some((child, key) => {
             if (child.id === id) {
-                result = child;
+                result = child
             } else if (child.children) {
                 result = this.getTopicChild(child.children, id)
             }
             if (result) {
-                return true;
+                return true
             }
-        });
-        return result;
+        })
+        return result
     }
 
     render() {
-        const Content = this.getTopicContent();
+        const Content = this.getTopicContent()
         return (
             <div>
                 <article>
@@ -209,15 +209,15 @@ class TopicDetail extends React.Component {
                     </Row>
                 </footer>
             </div>
-        );
+        )
     }
 }
 
 // Topics: produces cateogries and topics
 class Topics extends React.Component {
     constructor(p) {
-        super(p);
-        this.p = p;
+        super(p)
+        this.p = p
     }
 
     buildTreeNodes(paneContent) {
@@ -225,30 +225,30 @@ class Topics extends React.Component {
         // consumes a node data
         // produces a leafnode
         const buildLeafNode = (n) =>
-            (<TreeNode title={n.topic} key={paneContent.tabID + '-' + n.id} />);
+            (<TreeNode title={n.topic} key={`${paneContent.tabID  }-${  n.id}`} />)
 
         const buildNodeNode = (n) => {
-            const childNodes = n.children.map(el => buildLeafNode(el));
+            const childNodes = n.children.map(el => buildLeafNode(el))
             return (<TreeNode title={n.topic} key={n.id}>
                 {childNodes}
-            </TreeNode>);
+            </TreeNode>)
         }
 
         return paneContent.content.map(el => {
-            return isEmpty(el.children) ? buildLeafNode(el) : buildNodeNode(el);
-        });
+            return isEmpty(el.children) ? buildLeafNode(el) : buildNodeNode(el)
+        })
 
     }
 
     render() {
-        const paneContent = this.p.paneContent;
+        const paneContent = this.p.paneContent
         return (
             <div>
                 <Tree defaultSelectedKeys={[DEFAULT_ID]} onSelect={this.p.onTopicSelect} showLine defaultExpandAll >
                     {this.buildTreeNodes(paneContent)}
                 </Tree>
             </div>
-        );
+        )
     }
 }
 
@@ -258,28 +258,28 @@ class Topics extends React.Component {
 class LearningContent extends React.Component {
 
     constructor(p) {
-        super(p);
-        this.p = p;
+        super(p)
+        this.p = p
         this.state = {
             selectedTopic: DEFAULT_ID
-        };
+        }
     }
 
     // getContentByTabID: consumes tabID, content
     // produces the content for tabID
     getContentByTabID(tabID, contents) {
-        return contents.find(el => el.tabID === tabID);
+        return contents.find(el => el.tabID === tabID)
     }
 
     onTopicSelect = (selectionInfo, b, c, d) => {
-        const selection = selectionInfo && selectionInfo.length > 0 ? selectionInfo[0] : '';
+        const selection = selectionInfo && selectionInfo.length > 0 ? selectionInfo[0] : ''
         if (selection) {
             this.setState({selectedTopic: selection})
         }
     }
 
     render() {
-        const paneContent = this.getContentByTabID(this.p.tab.id, CONTENTS);
+        const paneContent = this.getContentByTabID(this.p.tab.id, CONTENTS)
         return (
             <Row gutter={16}>
                 <MediaQuery minWidth={MIN_WIDTH_PC}>
@@ -291,7 +291,7 @@ class LearningContent extends React.Component {
                     <Col span={24}><TopicDetail paneContent={paneContent} selectedTopic={this.state.selectedTopic} /></Col>
                 </MediaQuery>
             </Row>
-        );
+        )
     }
 }
 
@@ -299,8 +299,8 @@ class LearningContent extends React.Component {
 class OptionTab extends React.Component {
 
     constructor(p) {
-        super(p);
-        this.p = p;
+        super(p)
+        this.p = p
     }
 
     // buildTab consumes a list of tab-setting objects;
@@ -310,7 +310,7 @@ class OptionTab extends React.Component {
             <TabPane tab={el.title} key={(i + 1).toString()}>
                 <LearningContent tab={el} />
             </TabPane>
-        );
+        )
     }
 
     render() {
@@ -318,7 +318,7 @@ class OptionTab extends React.Component {
             <Tabs defaultActiveKey={this.p.defaultActiveKey} type={'card'}>
                 {this.buildTab(this.p.tabs)}
             </Tabs>
-        );
+        )
     }
 }
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import {message, Col, Row, Tag, Carousel, Avatar, Button, Spin,
     Table, Input, Form, Divider, Popconfirm, Modal} from 'antd'
@@ -43,7 +43,7 @@ class C extends BaseComponent {
     }
 
     renderUpperLeftBox() {
-        const details = this.props.detail;
+        const details = this.props.detail
 
         let carouselImages = []
         for (let i of details.pictures) {
@@ -51,7 +51,7 @@ class C extends BaseComponent {
         }
 
         if (carouselImages.length === 0) {
-            carouselImages.push(<img src={'/assets/images/Group_1685.12.svg'} key={0} />);
+            carouselImages.push(<img src={'/assets/images/Group_1685.12.svg'} key={0} />)
         }
 
         let domains = []
@@ -148,7 +148,7 @@ class C extends BaseComponent {
             render: candidate => {
                 return (
                     <div key={candidate._id}>
-                        <Avatar className={'gap-right ' + (candidate.role === 'LEADER' ? 'avatar-leader' : 'avatar-member')}
+                        <Avatar className={`gap-right ${  candidate.role === 'LEADER' ? 'avatar-leader' : 'avatar-member'}`}
                             src={candidate.user.profile.avatar}/>
                         <a className="row-name-link" onClick={this.linkProfileInfo.bind(this, candidate.user._id)}>
                             {this.getUserNameWithFallback(candidate.user)}</a>

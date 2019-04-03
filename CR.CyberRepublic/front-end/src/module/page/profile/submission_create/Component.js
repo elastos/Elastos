@@ -1,5 +1,5 @@
-import React from 'react';
-import ProfilePage from '../../ProfilePage';
+import React from 'react'
+import ProfilePage from '../../ProfilePage'
 import Navigator from '@/module/page/shared/HomeNavigator/Container'
 import I18N from '@/I18N'
 import SubmissionCreateForm from '@/module/form/SubmissionCreateForm/Container'

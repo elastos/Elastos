@@ -2,7 +2,7 @@ import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import {Form, Icon, Input, Button} from 'antd'
 import ReCAPTCHA from 'react-google-recaptcha'
-import {RECAPTCHA_KEY} from '@/config/constant';
+import {RECAPTCHA_KEY} from '@/config/constant'
 import I18N from '@/I18N'
 
 import './style.scss'

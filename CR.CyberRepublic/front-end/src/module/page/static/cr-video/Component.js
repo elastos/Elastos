@@ -134,8 +134,8 @@ export default class extends StandardPage {
                                     url: location.href
                                 })}>
                                     <a onClick={() => {
-                                        const win = window.open('https://twitter.com/share?ref_src=twsrc%5Etfw', 'ShareOnWitter', this.getWindowOptions());
-                                        win.opener = null;
+                                        const win = window.open('https://twitter.com/share?ref_src=twsrc%5Etfw', 'ShareOnWitter', this.getWindowOptions())
+                                        win.opener = null
                                     }}>
                                         <i className="fab fa-twitter fa-2x"></i>
                                     </a>
@@ -149,7 +149,7 @@ export default class extends StandardPage {
                                             method: 'share',
                                             display: 'popup',
                                             href: 'https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.facebook.com%2FElastosCyberRepublic%2F&amp;src=sdkpreparse'
-                                        }, function(response) { });
+                                        }, function(response) { })
                                     }}>
                                         <i className="fab fa-facebook fa-2x"></i>
                                     </a>
@@ -172,18 +172,18 @@ export default class extends StandardPage {
     }
 
     getWindowOptions() {
-        const width = 500;
-        const height = 350;
-        const left = (window.innerWidth / 2) - (width / 2);
-        const top = (window.innerHeight / 2) - (height / 2);
+        const width = 500
+        const height = 350
+        const left = (window.innerWidth / 2) - (width / 2)
+        const top = (window.innerHeight / 2) - (height / 2)
 
         return [
             'resizable,scrollbars,status',
-            'height=' + height,
-            'width=' + width,
-            'left=' + left,
-            'top=' + top
-        ].join();
+            `height=${  height}`,
+            `width=${  width}`,
+            `left=${  left}`,
+            `top=${  top}`
+        ].join()
     };
 
     buildHeader() {

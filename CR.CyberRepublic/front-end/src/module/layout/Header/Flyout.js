@@ -4,7 +4,7 @@ import {
   Layout, Menu, Input, Row, Col,
 } from 'antd'
 import I18N from '@/I18N'
-import './style.scss';
+import './style.scss'
 
 const { Header } = Layout
 

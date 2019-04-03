@@ -1,5 +1,5 @@
-import React from 'react';
-import ProfilePage from '../../ProfilePage';
+import React from 'react'
+import ProfilePage from '../../ProfilePage'
 import Footer from '@/module/layout/Footer/Container'
 import Navigator from '@/module/page/shared/HomeNavigator/Container'
 import _ from 'lodash'
@@ -17,7 +17,7 @@ import I18N from '@/I18N'
 import {MAX_WIDTH_MOBILE, MIN_WIDTH_PC} from '../../../../config/constant'
 import ProfilePopup from '@/module/profile/OverviewPopup/Container'
 
-const FormItem = Form.Item;
+const FormItem = Form.Item
 
 const FILTERS = {
     ALL: 'all',
@@ -203,7 +203,7 @@ export default class extends ProfilePage {
         }
 
         const data = _.map(tasks, (task, id) => {
-            const applicationDeadline = task.applicationDeadline ? new Date(task.applicationDeadline).getTime() : Date.now();
+            const applicationDeadline = task.applicationDeadline ? new Date(task.applicationDeadline).getTime() : Date.now()
             return {
                 href: '',
                 title: task.name,
@@ -464,20 +464,20 @@ export default class extends ProfilePage {
     onSelectFilter(value) {
         switch (value) {
             case FILTERS.ACTIVE:
-                this.setActiveFilter();
-                break;
+                this.setActiveFilter()
+                break
             case FILTERS.APPLIED:
-                this.setAppliedFilter();
-                break;
+                this.setAppliedFilter()
+                break
             case FILTERS.SUBSCRIBED:
-                this.setSubscribedFilter();
-                break;
+                this.setSubscribedFilter()
+                break
             case FILTERS.OWNED:
-                this.setOwnedFilter();
-                break;
+                this.setOwnedFilter()
+                break
             default:
-                this.clearFilters();
-                break;
+                this.clearFilters()
+                break
         }
     }
 

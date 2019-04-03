@@ -1,6 +1,6 @@
 import {TASK_STATUS, TASK_CATEGORY, TASK_TYPE, TASK_CANDIDATE_STATUS} from '@/constant'
 
-import React from 'react';
+import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import TaskCreateForm from '@/module/form/TaskCreateForm/Container'
 import { Col, Icon, Popconfirm, Menu, Button, Spin, Dropdown } from 'antd'
@@ -196,7 +196,7 @@ export default class extends BaseComponent {
     getCommunityDisp() {
         let str = ''
         if (this.props.task.communityParent) {
-            str += this.props.task.communityParent.name + '/'
+            str += `${this.props.task.communityParent.name  }/`
         }
         if (this.props.task.community) {
             str += this.props.task.community.name
@@ -246,7 +246,7 @@ export default class extends BaseComponent {
         switch (o.key) {
             case 'archive':
                 await this.props.archive(taskId)
-                break;
+                break
         }
     }
 

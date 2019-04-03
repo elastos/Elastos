@@ -1,6 +1,6 @@
-import React from 'react';
-import StandardPage from '../StandardPage';
-import RegisterForm from '@/module/form/RegisterForm/Container';
+import React from 'react'
+import StandardPage from '../StandardPage'
+import RegisterForm from '@/module/form/RegisterForm/Container'
 
 import './style.scss'
 
@@ -19,6 +19,6 @@ export default class extends StandardPage {
                 <br/>
                 <br/>
             </div>
-        );
+        )
     }
 }

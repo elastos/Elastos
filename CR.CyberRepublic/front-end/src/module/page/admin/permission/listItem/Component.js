@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import _ from 'lodash'
 import { Spin, Switch } from 'antd'
 import I18N from '@/I18N'
@@ -8,7 +8,7 @@ import { ListItem } from './style'
 
 export default class extends BaseComponent {
   ord_render() {
-    const { permission } = this.props;
+    const { permission } = this.props
     const desc = <div className="desc">{permission.desc}</div>
     const switchNode = this.renderSwitch(permission)
     return (

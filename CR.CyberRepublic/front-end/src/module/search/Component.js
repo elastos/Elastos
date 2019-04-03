@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import {
     Col, Row, Icon, Input, Button, List, Checkbox, Radio, Select,
@@ -20,10 +20,10 @@ import moment from 'moment'
 import ProfilePopup from '@/module/profile/OverviewPopup/Container'
 import URI from 'urijs'
 
-const CheckboxGroup = Checkbox.Group;
-const RadioGroup = Radio.Group;
-const TreeNode = TreeSelect.TreeNode;
-const Option = Select.Option;
+const CheckboxGroup = Checkbox.Group
+const RadioGroup = Radio.Group
+const TreeNode = TreeSelect.TreeNode
+const Option = Select.Option
 
 export default class extends BaseComponent {
     constructor (props) {
@@ -499,7 +499,7 @@ export default class extends BaseComponent {
                 <TreeNode value={option.value} title={option.label} key={option.value}/>
             )
         })
-        return elements;
+        return elements
     }
 
     getCategoryTree(categoryOptions) {
@@ -509,7 +509,7 @@ export default class extends BaseComponent {
                 <TreeNode value={option.value} title={option.label} key={option.value}/>
             )
         })
-        return elements;
+        return elements
     }
 
     getCircleTree() {
@@ -898,7 +898,7 @@ export default class extends BaseComponent {
 
         if (pictures.length === 0) {
             pictures.push(<img width={IMAGE_SIZE} height={IMAGE_SIZE}
-                src={'/assets/images/Group_1685.12.svg'} key={0} />);
+                src={'/assets/images/Group_1685.12.svg'} key={0} />)
         }
 
         return (
@@ -968,7 +968,7 @@ export default class extends BaseComponent {
                 }
             })
             : _.map(entities, (task, id) => {
-                const applicationDeadline = task.applicationDeadline ? new Date(task.applicationDeadline).getTime() : null;
+                const applicationDeadline = task.applicationDeadline ? new Date(task.applicationDeadline).getTime() : null
                 return {
                     href: '',
                     title: task.name,

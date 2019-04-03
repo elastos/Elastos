@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import moment from 'moment'
 import {
@@ -137,10 +137,10 @@ class C extends BaseComponent {
                 // https://github.com/vazco/uniforms/issues/228
                 getPopupContainer={x => {
                     while (x && x.tagName.toLowerCase() !== 'form') {
-                        x = x.parentElement;
+                        x = x.parentElement
                     }
 
-                    return x;
+                    return x
                 }}>
                 <Select.Option value="$me">
                     Apply as myself

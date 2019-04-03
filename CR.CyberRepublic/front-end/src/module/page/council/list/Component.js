@@ -18,11 +18,11 @@ export default class extends BaseComponent {
                     </div>
                 </div>
             </div>
-        );
+        )
     }
 
     renderList(){
-        const listData = this.getListData();
+        const listData = this.getListData()
         const p_list = {
             itemLayout : 'horizontal',
             // size : 'small',
@@ -32,7 +32,7 @@ export default class extends BaseComponent {
             // renderItem : ()=>{
 
             // }
-        };
+        }
 
         return (
             <div className="d_list">
@@ -50,7 +50,7 @@ export default class extends BaseComponent {
 
                 <h4 style={{marginTop:24}}>{I18N.get('council.list.proposals')} <a href="mailto:council@cyberrepublic.org">council@cyberrepublic.org</a></h4>
             </div>
-        );
+        )
     }
 
     getListData(){
@@ -85,10 +85,10 @@ export default class extends BaseComponent {
                 description : I18N.get('council.desc.5'),
                 date : '09/13/2018'
             }
-        ];
+        ]
     }
 
     toDetail(path){
-        this.props.history.push(path);
+        this.props.history.push(path)
     }
 }

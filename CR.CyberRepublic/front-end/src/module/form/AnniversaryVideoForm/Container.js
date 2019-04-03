@@ -1,5 +1,5 @@
-import {createContainer, goPath} from "@/util";
-import Component from './Component';
+import {createContainer, goPath} from "@/util"
+import Component from './Component'
 import SubmissionService from '@/service/SubmissionService'
 import {message} from 'antd'
 import _ from 'lodash'
@@ -15,9 +15,9 @@ export default createContainer(Component, (state)=>{
     return {
         user: state.user,
         is_login: state.user.is_login
-    };
+    }
 }, () => {
-    const submissionService = new SubmissionService();
+    const submissionService = new SubmissionService()
 
     return {
         async submitForm(formData, st){
@@ -38,16 +38,16 @@ export default createContainer(Component, (state)=>{
                     attachment: st.attachment_url,
                     attachmentFilename: st.attachment_filename,
                     attachmentType: st.attachment_type
-                });
+                })
 
                 if (rs) {
-                    message.success('Success');
-                    submissionService.path.push('/profile/submissions');
+                    message.success('Success')
+                    submissionService.path.push('/profile/submissions')
                 }
             } catch (err) {
                 console.error(err)
                 message.error(err.message) // TODO: add rollbar?
             }
         }
-    };
-});
+    }
+})

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import moment from 'moment'
 
@@ -46,7 +46,7 @@ export default class extends BaseComponent {
     }
 
     async componentDidMount() {
-        this.setState({loading : true});
+        this.setState({loading : true})
         const teamsOwned = await this.props.listTeamsOwned(this.props.userId)
 
         this.setState({
@@ -563,7 +563,7 @@ export default class extends BaseComponent {
     getCommunityDisp() {
         let str = ''
         if (this.props.task.communityParent) {
-            str += this.props.task.communityParent.name + '/'
+            str += `${this.props.task.communityParent.name  }/`
         }
         if (this.props.task.community) {
             str += this.props.task.community.name

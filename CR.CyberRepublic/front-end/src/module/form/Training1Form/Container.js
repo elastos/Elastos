@@ -1,5 +1,5 @@
-import {createContainer, goPath} from "@/util";
-import Component from './Component';
+import {createContainer, goPath} from "@/util"
+import Component from './Component'
 import SubmissionService from '@/service/SubmissionService'
 import {message} from 'antd'
 import _ from 'lodash'
@@ -12,9 +12,9 @@ message.config({
 
 
 export default createContainer(Component, (state)=>{
-    return {};
+    return {}
 }, ()=>{
-    const submissionService = new SubmissionService();
+    const submissionService = new SubmissionService()
 
     return {
         async submitForm(formData, st){
@@ -43,16 +43,16 @@ export default createContainer(Component, (state)=>{
                     devBackground: formData.devBackground,
                     description: formData.description,
                     reason: formData.reason
-                });
+                })
 
                 if (rs) {
-                    message.success('Submitted successfully');
-                    submissionService.path.push('/');
+                    message.success('Submitted successfully')
+                    submissionService.path.push('/')
                 }
             } catch (err) {
                 console.error(err)
                 message.error(err.message) // TODO: add rollbar?
             }
         }
-    };
-});
+    }
+})

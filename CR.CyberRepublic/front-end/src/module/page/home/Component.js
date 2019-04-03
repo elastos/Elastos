@@ -1,5 +1,5 @@
-import React from 'react';
-import StandardPage from '../StandardPage';
+import React from 'react'
+import StandardPage from '../StandardPage'
 import Footer from '@/module/layout/Footer/Container'
 import I18N from '@/I18N'
 import _ from 'lodash'
@@ -34,10 +34,10 @@ export default class extends StandardPage {
     }
 
     ord_renderContent() {
-        const selectedBox = this.state.selectedBox;
-        const title = I18N.get('home.box_' + (selectedBox + 1).toString() + '.title')
-        const description1 = I18N.get('home.explanation_' + (selectedBox + 1).toString() + '.part_1')
-        const description2 = I18N.get('home.explanation_' + (selectedBox + 1).toString() + '.part_2')
+        const selectedBox = this.state.selectedBox
+        const title = I18N.get(`home.box_${  (selectedBox + 1).toString()  }.title`)
+        const description1 = I18N.get(`home.explanation_${  (selectedBox + 1).toString()  }.part_1`)
+        const description2 = I18N.get(`home.explanation_${  (selectedBox + 1).toString()  }.part_2`)
 
         return (
             <div className="c_Home">
@@ -49,35 +49,35 @@ export default class extends StandardPage {
                     <div className="small-square"></div>
                 </div>
                 <Row className="top-section" type="flex" justify="center" gutter={32}>
-                    <Col className={'box-wrap ' + (selectedBox === 0 ? 'selected-box' : '') } xs={24} sm={24} md={24} lg={8} onClick={this.switchToBox.bind(this, 0)}>
+                    <Col className={`box-wrap ${  selectedBox === 0 ? 'selected-box' : ''}` } xs={24} sm={24} md={24} lg={8} onClick={this.switchToBox.bind(this, 0)}>
                         <div className={'box box-hover'}>
                             <h3>{I18N.get('home.box_1.title')}</h3>
-                            <p className={"synthese" + (selectedBox === 0 ? ' selected-text' : 0)}>{I18N.get('home.box_1.description')}</p>
+                            <p className={`synthese${  selectedBox === 0 ? ' selected-text' : 0}`}>{I18N.get('home.box_1.description')}</p>
                         </div>
                         <div className="container">
-                            <div className={"cuttoff-box" + (selectedBox === 0 ? '' : ' cutoff-box-hidden')}></div>
+                            <div className={`cuttoff-box${  selectedBox === 0 ? '' : ' cutoff-box-hidden'}`}></div>
                         </div>
-                        <img className={"arrow" + (selectedBox === 0 ? '' : ' arrow-hidden')} src="/assets/images/emp35/down_arrow.png"/>
+                        <img className={`arrow${  selectedBox === 0 ? '' : ' arrow-hidden'}`} src="/assets/images/emp35/down_arrow.png"/>
                     </Col>
-                    <Col className={'box-wrap ' + (selectedBox === 1 ? 'selected-box' : '') } xs={24} sm={24} md={24} lg={8} onClick={this.switchToBox.bind(this, 1)}>
+                    <Col className={`box-wrap ${  selectedBox === 1 ? 'selected-box' : ''}` } xs={24} sm={24} md={24} lg={8} onClick={this.switchToBox.bind(this, 1)}>
                         <div className={'box box-hover'}>
                             <h3>{I18N.get('home.box_2.title')}</h3>
-                            <p className={"synthese" + (selectedBox === 1 ? ' selected-text' : '')}>{I18N.get('home.box_2.description')}</p>
+                            <p className={`synthese${  selectedBox === 1 ? ' selected-text' : ''}`}>{I18N.get('home.box_2.description')}</p>
                         </div>
                         <div className="container">
-                            <div className={"cuttoff-box" + (selectedBox === 1 ? '' : ' cutoff-box-hidden')}></div>
+                            <div className={`cuttoff-box${  selectedBox === 1 ? '' : ' cutoff-box-hidden'}`}></div>
                         </div>
-                        <img className={"arrow" + (selectedBox === 1 ? '' : ' arrow-hidden')} src="/assets/images/emp35/down_arrow.png"/>
+                        <img className={`arrow${  selectedBox === 1 ? '' : ' arrow-hidden'}`} src="/assets/images/emp35/down_arrow.png"/>
                     </Col>
-                    <Col className={'box-wrap ' + (selectedBox === 2 ? 'selected-box' : '') } xs={24} sm={24} md={24} lg={8} onClick={this.switchToBox.bind(this, 2)}>
+                    <Col className={`box-wrap ${  selectedBox === 2 ? 'selected-box' : ''}` } xs={24} sm={24} md={24} lg={8} onClick={this.switchToBox.bind(this, 2)}>
                         <div className={'box box-hover'}>
                             <h3>{I18N.get('home.box_3.title')}</h3>
-                            <p className={"synthese" + (selectedBox === 2 ? ' selected-text' : '')}>{I18N.get('home.box_3.description')}</p>
+                            <p className={`synthese${  selectedBox === 2 ? ' selected-text' : ''}`}>{I18N.get('home.box_3.description')}</p>
                         </div>
                         <div className="container">
-                            <div className={"cuttoff-box" + (selectedBox === 2 ? '' : ' cutoff-box-hidden')}></div>
+                            <div className={`cuttoff-box${  selectedBox === 2 ? '' : ' cutoff-box-hidden'}`}></div>
                         </div>
-                        <img className={"arrow" + (selectedBox === 2 ? '' : ' arrow-hidden')} src="/assets/images/emp35/down_arrow.png"/>
+                        <img className={`arrow${  selectedBox === 2 ? '' : ' arrow-hidden'}`} src="/assets/images/emp35/down_arrow.png"/>
                     </Col>
                 </Row>
                 {selectedBox !== 2 ? (
@@ -155,6 +155,6 @@ export default class extends StandardPage {
                 </div>
                 <Footer/>
             </div>
-        );
+        )
     }
 }

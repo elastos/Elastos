@@ -1,12 +1,12 @@
-import { createContainer } from '@/util';
-import Component from './Component';
-import UserService from '@/service/UserService';
+import { createContainer } from '@/util'
+import Component from './Component'
+import UserService from '@/service/UserService'
 
 export default createContainer(Component, state => ({
   is_admin: state.user.is_admin,
   loading: state.member.loading,
 }), () => {
-  const userService = new UserService();
+  const userService = new UserService()
 
   return {
     async updateUser(formData, state) {
@@ -29,5 +29,5 @@ export default createContainer(Component, state => ({
       const userId = this.user.current_user_id || this.user._id
       return userService.update(userId, doc)
     },
-  };
-});
+  }
+})

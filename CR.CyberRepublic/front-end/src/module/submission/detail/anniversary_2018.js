@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import {upload_file} from "@/util"
 import { Col, Row, Upload, Button, Icon, message, Popconfirm, Divider } from 'antd'
 import SubmissionService from '@/service/SubmissionService'
@@ -32,9 +32,9 @@ export default function() {
         customRequest :(info)=>{
             this.setState({
                 attachment_loading: true
-            });
+            })
             upload_file(info.file).then(async (d)=>{
-                const url = d.url;
+                const url = d.url
                 this.setState({
                     attachment_loading: false,
                     attachment_url : url,
@@ -42,7 +42,7 @@ export default function() {
                     attachment_filename: d.filename,
 
                     removeAttachment: false
-                });
+                })
 
                 // do the upload immediately
                 try {
@@ -68,7 +68,7 @@ export default function() {
                 }
             })
         }
-    };
+    }
 
     return <div>
         <Row>

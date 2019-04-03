@@ -8,7 +8,7 @@ import {
 
 } from 'antd'
 
-import {upload_file} from "@/util";
+import {upload_file} from "@/util"
 import I18N from '@/I18N'
 import './style.scss'
 
@@ -49,8 +49,8 @@ class C extends BaseComponent {
             <TextArea rows={4} name="message" placeholder={I18N.get('from.UserContactForm.placeholder.message')}></TextArea>
         )
 
-        const name = this.props.recipient.profile.firstName + ' ' + this.props.recipient.profile.lastName
-        const defaultSubject = 'Cyber Republic - Message from ' + name
+        const name = `${this.props.recipient.profile.firstName  } ${  this.props.recipient.profile.lastName}`
+        const defaultSubject = `Cyber Republic - Message from ${  name}`
         return {
             subject: subject_fn(subject_el) || defaultSubject,
             message: message_fn(message_el)

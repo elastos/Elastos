@@ -1,5 +1,5 @@
-import {createContainer, goPath} from "@/util";
-import Component from './Component';
+import {createContainer, goPath} from "@/util"
+import Component from './Component'
 import SubmissionService from '@/service/SubmissionService'
 import UserService from '@/service/UserService'
 import {message} from 'antd'
@@ -16,9 +16,9 @@ export default createContainer(Component, (state)=>{
     return {
         user: state.user,
         is_login: state.user.is_login
-    };
+    }
 }, () => {
-    const submissionService = new SubmissionService();
+    const submissionService = new SubmissionService()
     const userService = new UserService()
 
     return {
@@ -78,7 +78,7 @@ export default createContainer(Component, (state)=>{
                         passportUpload: st.passport_url,
                         passportFilename: st.passport_filename,
                         passportUploadType: st.passport_type
-                    });
+                    })
                 }
 
                 if (formData.walletAddress) {
@@ -90,13 +90,13 @@ export default createContainer(Component, (state)=>{
                 }
 
                 if (rs) {
-                    message.success('Success');
-                    submissionService.path.push('/form/anniversary2018');
+                    message.success('Success')
+                    submissionService.path.push('/form/anniversary2018')
                 }
             } catch (err) {
                 console.error(err)
                 message.error(err.message) // TODO: add rollbar?
             }
         }
-    };
-});
+    }
+})

@@ -1,14 +1,14 @@
-import React from 'react';
-import ProfilePage from '../../ProfilePage';
+import React from 'react'
+import ProfilePage from '../../ProfilePage'
 import Navigator from '@/module/page/shared/HomeNavigator/Container'
-import config from '@/config';
+import config from '@/config'
 import TeamCreateForm from '@/module/form/TeamCreateForm/Container'
 import I18N from '@/I18N'
 import '../../admin/admin.scss'
 
 import { Col, Row, Icon, Form, Input, Button, Divider, Table } from 'antd'
-import moment from "moment/moment";
-const FormItem = Form.Item;
+import moment from "moment/moment"
+const FormItem = Form.Item
 
 export default class extends ProfilePage {
     ord_states(){
@@ -16,7 +16,7 @@ export default class extends ProfilePage {
             loading : true,
             total : 0,
             list : []
-        };
+        }
     }
     ord_renderContent () {
 
@@ -50,7 +50,7 @@ export default class extends ProfilePage {
 
 
     async componentDidMount(){
-        await super.componentDidMount();
+        await super.componentDidMount()
 
 
     }

@@ -1,17 +1,17 @@
 import React from 'react'
-import StandardPage from '../StandardPage';
-import Footer from '@/module/layout/Footer/Container';
-import { Spin } from 'antd';
-import URI from 'urijs';
+import StandardPage from '../StandardPage'
+import Footer from '@/module/layout/Footer/Container'
+import { Spin } from 'antd'
+import URI from 'urijs'
 
-import './style.scss';
+import './style.scss'
 
 export default class extends StandardPage {
     ord_states() {
         return {
             loading: false,
             loadingError: false
-        };
+        }
     }
 
     ord_renderContent () {
@@ -56,11 +56,11 @@ export default class extends StandardPage {
      * @returns {Promise<void>}
      */
     async componentDidMount() {
-        const params = new URI(this.props.location.search || '').search(true);
-        const { SSO_URL, FORUM_URL } = process.env;
-        let loginStr;
+        const params = new URI(this.props.location.search || '').search(true)
+        const { SSO_URL, FORUM_URL } = process.env
+        let loginStr
 
-        this.setState({ loading: true });
+        this.setState({ loading: true })
 
         // called sso/login with improper params, should never happen
         if (!params.sso || !params.sig) {
@@ -71,11 +71,11 @@ export default class extends StandardPage {
         }
 
         try {
-            const result = await this.props.getLoginStr(params);
-            loginStr = SSO_URL + '?' + result.url;
+            const result = await this.props.getLoginStr(params)
+            loginStr = `${SSO_URL  }?${  result.url}`
             // console.log('loginstr: ', loginStr, SSO_URL, FORUM_URL);
 
-            window.location.href = loginStr;
+            window.location.href = loginStr
 
         } catch (err) {
 

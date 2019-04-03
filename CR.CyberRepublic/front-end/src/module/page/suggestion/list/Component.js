@@ -7,7 +7,7 @@ import {
 import URI from 'urijs'
 import I18N from '@/I18N'
 import { loginRedirectWithQuery } from '@/util'
-import StandardPage from '../../StandardPage';
+import StandardPage from '../../StandardPage'
 import Footer from '@/module/layout/Footer/Container'
 import MySuggestion from '../my_list/Container'
 import SuggestionForm from '@/module/form/SuggestionForm/Container'
@@ -141,7 +141,7 @@ export default class extends StandardPage {
   }
 
   showCreateForm = () => {
-    const { isLogin, history } = this.props;
+    const { isLogin, history } = this.props
     const { showForm } = this.state
     if (!isLogin) {
       const query = { create: true }
@@ -229,7 +229,7 @@ export default class extends StandardPage {
   }
 
   renderList() {
-    const { dataList, loading } = this.props;
+    const { dataList, loading } = this.props
     const loadingNode = <div className="center"><Spin size="large" /></div>
     const paginationNode = this.renderPagination()
     let result = loadingNode

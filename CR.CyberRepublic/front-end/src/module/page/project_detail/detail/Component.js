@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import moment from 'moment'
 import {
@@ -20,7 +20,7 @@ import {
     Upload,
     Badge
 } from 'antd'
-import {upload_file} from '@/util';
+import {upload_file} from '@/util'
 import { TASK_CANDIDATE_STATUS, TASK_CANDIDATE_TYPE, TEAM_USER_STATUS, USER_AVATAR_DEFAULT } from '@/constant'
 import Comments from '@/module/common/comments/Container'
 import LoginOrRegisterForm from '@/module/form/LoginOrRegisterForm/Container'
@@ -328,7 +328,7 @@ class C extends BaseComponent {
 
     getCurrentContributors() {
         const detail = this.props.detail
-        const applicants = _.filter(detail.candidates, { status: TASK_CANDIDATE_STATUS.APPROVED });
+        const applicants = _.filter(detail.candidates, { status: TASK_CANDIDATE_STATUS.APPROVED })
         if (this.props.detail.createdBy) {
             applicants.unshift({
                 _id: 'such_fake_id',
@@ -346,7 +346,7 @@ class C extends BaseComponent {
                         {(candidate.type === TASK_CANDIDATE_TYPE.USER) &&
                         <div>
                             <a onClick={this.linkProfileInfo.bind(this, candidate.user)}>
-                                <Avatar className={'gap-right ' + (candidate._id === 'such_fake_id' ? 'avatar-leader' : 'avatar-member')}
+                                <Avatar className={`gap-right ${  candidate._id === 'such_fake_id' ? 'avatar-leader' : 'avatar-member'}`}
                                     src={this.getCandidateAvatar(candidate)}/>
                                 {this.getCandidateDisplayName(candidate)}
                             </a>
@@ -451,7 +451,7 @@ class C extends BaseComponent {
 
     getCurrentApplicantsData() {
         const detail = this.props.detail
-        return  _.filter(detail.candidates, { status: TASK_CANDIDATE_STATUS.PENDING });
+        return  _.filter(detail.candidates, { status: TASK_CANDIDATE_STATUS.PENDING })
     }
 
     getCurrentApplicants() {
@@ -564,7 +564,7 @@ class C extends BaseComponent {
     }
 
     linkToProjectTask(id) {
-        this.props.history.replace('/project-detail/' + id)
+        this.props.history.replace(`/project-detail/${  id}`)
     }
 
     getProjectSlider() {
@@ -574,13 +574,13 @@ class C extends BaseComponent {
             return (
                 <div key={task.dAppId} className='halign-wrapper full-width full-height'>
                     <div className='slider-project-icon'>
-                        <div className={'project-icon ' + (isActive ? 'active' : '')}
+                        <div className={`project-icon ${  isActive ? 'active' : ''}`}
                             onClick={this.linkToProjectTask.bind(this, task._id)}>
                             <span className="project-number komu-a">{task.dAppId}</span>
                             <div className='base-icon'/>
                             <img className='project-avatar' src={task.thumbnail}/>
                         </div>
-                        <div className={'project-name ' + (isActive ? 'active' : '')}
+                        <div className={`project-name ${  isActive ? 'active' : ''}`}
                             onClick={this.linkToProjectTask.bind(this, task._id)}>
                             {task.name}
                         </div>
@@ -693,7 +693,7 @@ class C extends BaseComponent {
 
     getHeader() {
         const project = _.find(_.values(this.props.all_tasks), { _id: this.props.taskId })
-        const dAppId = project ? ('#' + project.dAppId + '-') : ''
+        const dAppId = project ? (`#${  project.dAppId  }-`) : ''
 
         return (
             <div className="project-header">

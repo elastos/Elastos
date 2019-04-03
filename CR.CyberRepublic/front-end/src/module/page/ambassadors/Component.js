@@ -265,7 +265,7 @@ export default class extends StandardPage {
                 message.success(I18N.get('training.thanksForApplying'))
 
             }).catch((err) => {
-                console.error(err);
+                console.error(err)
                 message.error(I18N.get('training.applyError'))
             })
         })

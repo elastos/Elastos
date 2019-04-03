@@ -3,8 +3,8 @@ import BaseComponent from '@/model/BaseComponent'
 import { Menu, SubMenu } from 'antd'
 import MediaQuery from "react-responsive"
 import I18N from '@/I18N'
-import { Link } from 'react-router-dom';
-import { Affix, Radio, Badge, Tooltip } from 'antd';
+import { Link } from 'react-router-dom'
+import { Affix, Radio, Badge, Tooltip } from 'antd'
 import './style.scss'
 import {MAX_WIDTH_MOBILE, MIN_WIDTH_PC} from "../../../../config/constant"
 
@@ -13,7 +13,7 @@ export default class extends BaseComponent {
     ord_states() {
         return {
             navItem: 1
-        };
+        }
     }
 
     handlePageChange(value) {

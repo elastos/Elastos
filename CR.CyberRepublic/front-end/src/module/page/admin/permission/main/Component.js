@@ -29,7 +29,7 @@ export default class extends AdminPage {
   }
 
   ord_renderContent() {
-    const { dataList, loading, loadingForRole, currentUserId } = this.props;
+    const { dataList, loading, loadingForRole, currentUserId } = this.props
     const loadingNode = <div className="center"><Spin size="large" /></div>
     let listNode = loading || loadingForRole ? loadingNode : this.renderTabs()
 

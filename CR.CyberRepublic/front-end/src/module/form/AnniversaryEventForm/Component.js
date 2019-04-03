@@ -18,7 +18,7 @@ import {
 
 } from 'antd'
 
-import {upload_file} from "@/util";
+import {upload_file} from "@/util"
 import './style.scss'
 import moment from 'moment/moment'
 
@@ -38,7 +38,7 @@ class C extends BaseComponent {
         this.props.form.validateFields((err, values) => {
 
             if (!err) {
-                this.props.submitForm(values, this.state);
+                this.props.submitForm(values, this.state)
             }
         })
     }
@@ -149,7 +149,7 @@ class C extends BaseComponent {
 
         // name
         const fullLegalName_fn = getFieldDecorator('fullLegalName', {
-            initialValue: this.state.fullLegalName || this.props.user.profile.firstName + ' ' + this.props.user.profile.lastName,
+            initialValue: this.state.fullLegalName || `${this.props.user.profile.firstName  } ${  this.props.user.profile.lastName}`,
             rules: [
                 {required: true, message: 'Please input an name'},
                 {min: 6, message: 'name too short'}
@@ -173,15 +173,15 @@ class C extends BaseComponent {
 
         const attachment_fn = getFieldDecorator('attachment', {
             rules: []
-        });
+        })
         const p_attachment = {
             showUploadList: false,
             customRequest :(info)=>{
                 this.setState({
                     attachment_loading: true
-                });
+                })
                 upload_file(info.file).then((d)=>{
-                    const url = d.url;
+                    const url = d.url
                     this.setState({
                         attachment_loading: false,
                         attachment_url : url,
@@ -189,10 +189,10 @@ class C extends BaseComponent {
                         attachment_filename: d.filename,
 
                         removeAttachment: false
-                    });
+                    })
                 })
             }
-        };
+        }
         const attachment_el = (
             <Upload name="attachment" {...p_attachment}>
                 {
@@ -211,19 +211,19 @@ class C extends BaseComponent {
                     )
                 }
             </Upload>
-        );
+        )
 
         const passport_fn = getFieldDecorator('passport', {
             rules: []
-        });
+        })
         const p_passport= {
             showUploadList: false,
             customRequest :(info)=>{
                 this.setState({
                     passport_loading: true
-                });
+                })
                 upload_file(info.file).then((d)=>{
-                    const url = d.url;
+                    const url = d.url
                     this.setState({
                         passport_loading: false,
                         passport_url : url,
@@ -231,10 +231,10 @@ class C extends BaseComponent {
                         passport_filename: d.filename,
 
                         removePassport: false
-                    });
+                    })
                 })
             }
-        };
+        }
         const passport_el = (
             <Upload name="passport" {...p_passport}>
                 {
@@ -253,7 +253,7 @@ class C extends BaseComponent {
                     )
                 }
             </Upload>
-        );
+        )
 
         return {
             readRules: readRules_fn(readRules_el),

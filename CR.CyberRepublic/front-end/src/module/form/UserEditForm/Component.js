@@ -65,7 +65,7 @@ class C extends BaseComponent {
     }
 
     checkEmail(rule, value, callback, source, options) {
-      const emailRegex = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+      const emailRegex = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)
 
       if (this.props.is_admin && value && emailRegex.test(value) && this.props.user.email !== value) {
         this.props.checkEmail(value).then((isExist) => {
@@ -163,10 +163,10 @@ class C extends BaseComponent {
                 // https://github.com/vazco/uniforms/issues/228
           getPopupContainer={(x) => {
             while (x && x.tagName.toLowerCase() !== 'form') {
-              x = x.parentElement;
+              x = x.parentElement
             }
 
-            return x;
+            return x
           }}
         >
           {_.entries(config.data.mappingRoleToName).map(([key, val]) => (
@@ -234,7 +234,7 @@ class C extends BaseComponent {
       const gender_fn = getFieldDecorator('gender', {
         rules: [],
         initialValue: user.profile.gender,
-      });
+      })
       const gender_el = (
         <RadioGroup>
           <Radio key={USER_GENDER.MALE} value={USER_GENDER.MALE}>
@@ -259,10 +259,10 @@ class C extends BaseComponent {
           searchPlaceholder={I18N.get('select.placeholder')}
           getPopupContainer={(x) => {
             while (x && x.tagName.toLowerCase() !== 'form') {
-              x = x.parentElement;
+              x = x.parentElement
             }
 
-            return x;
+            return x
           }}
         />
       )
@@ -280,10 +280,10 @@ class C extends BaseComponent {
                 // https://github.com/vazco/uniforms/issues/228
           getPopupContainer={(x) => {
             while (x && x.tagName.toLowerCase() !== 'form') {
-              x = x.parentElement;
+              x = x.parentElement
             }
 
-            return x;
+            return x
           }}
         >
 
@@ -309,10 +309,10 @@ class C extends BaseComponent {
           // https://github.com/vazco/uniforms/issues/228
           getPopupContainer={(x) => {
             while (x && x.tagName.toLowerCase() !== 'form') {
-              x = x.parentElement;
+              x = x.parentElement
             }
 
-            return x;
+            return x
           }}
         >
           {_.entries(config.data.mappingCountryCodeToName).map(([key, val]) => (

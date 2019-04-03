@@ -17,7 +17,7 @@ import {
 
 } from 'antd'
 
-import {upload_file} from "@/util";
+import {upload_file} from "@/util"
 import I18N from '@/I18N'
 import './style.scss'
 
@@ -35,7 +35,7 @@ class C extends BaseComponent {
         e.preventDefault()
         this.props.form.validateFields((err, values) => {
             if (!err) {
-                this.props.submitForm(values, this.state);
+                this.props.submitForm(values, this.state)
             }
         })
     }
@@ -187,24 +187,24 @@ class C extends BaseComponent {
         // attachment
         const attachment_fn = getFieldDecorator('attachment', {
             rules: []
-        });
+        })
         const p_attachment = {
             showUploadList: false,
             customRequest :(info)=>{
                 this.setState({
                     attachment_loading: true
-                });
+                })
                 upload_file(info.file).then((d)=>{
-                    const url = d.url;
+                    const url = d.url
                     this.setState({
                         attachment_loading: false,
                         attachment_url : url,
                         attachment_type: d.type,
                         attachment_filename: d.filename
-                    });
+                    })
                 })
             }
-        };
+        }
         const attachment_el = (
             <Upload name="attachment" {...p_attachment}>
                 {
@@ -220,7 +220,7 @@ class C extends BaseComponent {
                     )
                 }
             </Upload>
-        );
+        )
 
 
         return {

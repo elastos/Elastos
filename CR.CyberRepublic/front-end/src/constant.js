@@ -79,7 +79,7 @@ export const USER_GENDER = {
 export const TEAM_ROLE = {
     MEMBER : 'MEMBER',
     OWNER : 'OWNER'
-};
+}
 
 export const TASK_CATEGORY = {
     GENERAL: 'GENERAL',
@@ -224,7 +224,7 @@ export const CVOTE_RESULT = {
   REJECT: 'reject',
   ABSTENTION: 'abstention',
   UNDECIDED: 'undecided',
-};
+}
 
 // export const CVOTE_RESULT_TEXT = {
 //   undefined: 'Undecided',

@@ -28,7 +28,7 @@ export default class extends BaseComponent {
                                 </div>
                                 <div className="event-title">{event.name}</div>
                                 <div className="event-description">{event.description}</div>
-                                <div className="event-meta">{mockData.date} / {mockData.time} / {mockData.hour} <Link to={'/task-detail/' + event._id}>{I18N.get('community.link.toevent')}</Link></div>
+                                <div className="event-meta">{mockData.date} / {mockData.time} / {mockData.hour} <Link to={`/task-detail/${  event._id}`}>{I18N.get('community.link.toevent')}</Link></div>
                             </div>
                         </Col>
                     )

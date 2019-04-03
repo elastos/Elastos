@@ -20,29 +20,29 @@ export default class extends StandardPage {
                     </div>
                 </div>
             </div>
-        );
+        )
     }
 
     renderTitle(){
-        const id = this.props.id;
-        const title = I18N.get('council.list.'+id);
+        const id = this.props.id
+        const title = I18N.get(`council.list.${id}`)
         return (
             <div>
                 <h2 style={{paddingBottom:0}}>{title}</h2>
                 <h3 style={{paddingTop:0}}>{I18N.get('council.0003')}</h3>
             </div>
             
-        );
+        )
     }
 
     renderContent(){
-        const id = this.props.id;
-        const content = I18N.get('council.article.'+id);
+        const id = this.props.id
+        const content = I18N.get(`council.article.${id}`)
         return (
             <p className="f_box" dangerouslySetInnerHTML={{__html : content}}>
                 
             </p>
-        );
+        )
     }
     
 }

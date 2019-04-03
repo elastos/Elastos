@@ -1,11 +1,11 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import StandardPage from '../../StandardPage';
+import StandardPage from '../../StandardPage'
 import { DEFAULT_IMAGE, USER_GENDER } from '@/constant'
 import I18N from '@/I18N'
 
 import { Table, Card, Select, Col, Row, Breadcrumb, Icon, Button, Input } from 'antd'
-const Search = Input.Search;
+const Search = Input.Search
 
 import config from '@/config'
 import Footer from '@/module/layout/Footer/Container'
@@ -27,7 +27,7 @@ export default class extends StandardPage {
 
     async componentDidMount() {
         await this.props.getSocialEvents()
-        await this.loadCommunities();
+        await this.loadCommunities()
         await this.redirectToCountry()
     }
 
@@ -96,7 +96,7 @@ export default class extends StandardPage {
     getAvatarUrl(users) {
         const avatarDefault = {
             [USER_GENDER.MALE]: '/assets/images/User_Avatar_Other.png'
-        };
+        }
 
         users.forEach((user) => {
             if (!user.profile.avatar) {
@@ -167,7 +167,7 @@ export default class extends StandardPage {
     }
 
     renderBreadcrumbCountries() {
-        const geolocationKeys = _.keyBy(this.state.communities, 'geolocation');
+        const geolocationKeys = _.keyBy(this.state.communities, 'geolocation')
         const listCountriesEl = Object.keys(geolocationKeys).map((geolocation, index) => {
             return (
                 <Select.Option title={config.data.mappingCountryCodeToName[geolocation]} key={index}
@@ -195,8 +195,8 @@ export default class extends StandardPage {
                 <div key={index}>
                     {community.leaders && community.leaders.map((leader) => {
                         return (
-                            <Col md={{span:12}} md={{span: 3}} key={index + '-' + leader._id} className="user-card public-communities-page">
-                                <Link to={'/community/' + community._id  + '/country/' + community.geolocation}>
+                            <Col md={{span:12}} md={{span: 3}} key={`${index  }-${  leader._id}`} className="user-card public-communities-page">
+                                <Link to={`/community/${  community._id   }/country/${  community.geolocation}`}>
                                     <Card
                                         key={index}
                                         cover={<img src={leader.profile.avatar}/>}
@@ -218,7 +218,7 @@ export default class extends StandardPage {
 
                     {(!community.leaders || community.leaders.length === 0) && (
                         <Col md={{span:12}} md={{span: 3}} key={index} className="user-card public-communities-page">
-                            <Link to={'/community/' + community._id  + '/country/' + community.geolocation}>
+                            <Link to={`/community/${  community._id   }/country/${  community.geolocation}`}>
                                 <Card
                                     key={index}
                                     cover={<img src={DEFAULT_IMAGE.UNSET_LEADER}/>}
