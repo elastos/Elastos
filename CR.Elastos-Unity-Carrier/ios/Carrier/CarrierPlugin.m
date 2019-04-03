@@ -394,6 +394,119 @@ RCT_EXPORT_METHOD
   }
 }
 
+RCT_EXPORT_METHOD
+(addService: (NSString *)cid :(NSString *)friendId :(NSString *)serviceName :(NSString *)host :(NSString *)port :(RCTResponseSenderBlock)callback){
+    Carrier *carrier = [self getCarrier:cid];
+    RN_SESSION *_rn = [carrier getRNSessionInstance];
+    NSError *error = nil;
+    [_rn addService:friendId serviceName:serviceName host:host port:port error:&error];
+    if(error){
+        callback(@[[self create_error:error]]);
+    }
+    else{
+        callback(@[NULL_ERR, OK]);
+    }
+}
+RCT_EXPORT_METHOD
+(removeService: (NSString *)cid :(NSString *)friendId :(NSString *)serviceName :(RCTResponseSenderBlock)callback){
+    Carrier *carrier = [self getCarrier:cid];
+    RN_SESSION *_rn = [carrier getRNSessionInstance];
+    
+    [_rn removeService:friendId serviceName:serviceName];
+    callback(@[NULL_ERR, OK]);
+}
+RCT_EXPORT_METHOD
+(openPortFowarding: (NSString *)cid :(NSString *)friendId :(NSString *)serviceName :(NSString *)host :(NSString *)port :(RCTResponseSenderBlock)callback){
+    Carrier *carrier = [self getCarrier:cid];
+    RN_SESSION *_rn = [carrier getRNSessionInstance];
+    NSError *error = nil;
+    NSNumber *rs = [_rn openPortFowarding:friendId serviceName:serviceName host:host port:port error:&error];
+    if(error){
+        callback(@[[self create_error:error]]);
+    }
+    else{
+        callback(@[NULL_ERR, rs]);
+    }
+}
+RCT_EXPORT_METHOD
+(closePortForwarding: (NSString *)cid :(NSString *)friendId :(NSNumber *)portForwardingId :(RCTResponseSenderBlock)callback){
+    Carrier *carrier = [self getCarrier:cid];
+    RN_SESSION *_rn = [carrier getRNSessionInstance];
+    NSError *error = nil;
+    [_rn closePortForwarding:friendId portForwardingId:portForwardingId error:&error];
+    if(error){
+        callback(@[[self create_error:error]]);
+    }
+    else{
+        callback(@[NULL_ERR, OK]);
+    }
+}
+RCT_EXPORT_METHOD
+(openChannel: (NSString *)cid :(NSString *)friendId :(NSString *)cookie :(RCTResponseSenderBlock)callback){
+    Carrier *carrier = [self getCarrier:cid];
+    RN_SESSION *_rn = [carrier getRNSessionInstance];
+    NSError *error = nil;
+    NSNumber *rs = [_rn openChannel:friendId cookie:cookie error:&error];
+    if(error){
+        callback(@[[self create_error:error]]);
+    }
+    else{
+        callback(@[NULL_ERR, rs]);
+    }
+}
+RCT_EXPORT_METHOD
+(closeChannel: (NSString *)cid :(NSString *)friendId :(NSNumber *)channelId :(RCTResponseSenderBlock)callback){
+    Carrier *carrier = [self getCarrier:cid];
+    RN_SESSION *_rn = [carrier getRNSessionInstance];
+    NSError *error = nil;
+    [_rn closeChannel:friendId channelId:channelId error:&error];
+    if(error){
+        callback(@[[self create_error:error]]);
+    }
+    else{
+        callback(@[NULL_ERR, OK]);
+    }
+}
+RCT_EXPORT_METHOD
+(writeChannel: (NSString *)cid :(NSString *)friendId :(NSNumber *)channelId :(NSString *)data :(RCTResponseSenderBlock)callback){
+    Carrier *carrier = [self getCarrier:cid];
+    RN_SESSION *_rn = [carrier getRNSessionInstance];
+    NSError *error = nil;
+    NSNumber *rs = [_rn writeChannel:friendId channelId:channelId data:data error:&error];
+    if(error){
+        callback(@[[self create_error:error]]);
+    }
+    else{
+        callback(@[NULL_ERR, rs]);
+    }
+}
+RCT_EXPORT_METHOD
+(pendChannel: (NSString *)cid :(NSString *)friendId :(NSNumber *)channelId :(RCTResponseSenderBlock)callback){
+    Carrier *carrier = [self getCarrier:cid];
+    RN_SESSION *_rn = [carrier getRNSessionInstance];
+    NSError *error = nil;
+    [_rn pendChannel:friendId channel:channelId error:&error];
+    if(error){
+        callback(@[[self create_error:error]]);
+    }
+    else{
+        callback(@[NULL_ERR, OK]);
+    }
+}
+RCT_EXPORT_METHOD
+(resumeChannel: (NSString *)cid :(NSString *)friendId :(NSNumber *)channelId :(RCTResponseSenderBlock)callback){
+    Carrier *carrier = [self getCarrier:cid];
+    RN_SESSION *_rn = [carrier getRNSessionInstance];
+    NSError *error = nil;
+    [_rn resumeChannel:friendId channel:channelId error:&error];
+    if(error){
+        callback(@[[self create_error:error]]);
+    }
+    else{
+        callback(@[NULL_ERR, OK]);
+    }
+}
+
 
 -(CarrierSendEvent) carrierCallback : (NSDictionary *)config{
   __weak __typeof(self) weakSelf = self;

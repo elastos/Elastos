@@ -84,6 +84,39 @@ NS_ASSUME_NONNULL_BEGIN
 -(void) close: (NSString *)friendId
       error: (NSError *__autoreleasing  _Nullable * _Nullable)error;
 
+-(BOOL) addService: (NSString *)friendId
+       serviceName: (NSString *)serviceName
+              host: (NSString *)host
+              port: (NSString *)port
+             error: (NSError *__autoreleasing  _Nullable * _Nullable)error;
+-(void) removeService: (NSString *)friendId
+          serviceName: (NSString *)serviceName;
+
+-(NSNumber *) openPortFowarding: (NSString *)friendId
+                    serviceName: (NSString *)serviceName
+                           host: (NSString *)host
+                           port: (NSString *)port
+                           error: (NSError *__autoreleasing  _Nullable * _Nullable)error;
+-(BOOL) closePortForwarding: (NSString *)friendId
+           portForwardingId: (NSNumber *)pid
+                      error: (NSError *__autoreleasing  _Nullable * _Nullable)error;
+-(NSNumber *) openChannel: (NSString *)friendId
+                   cookie: (NSString *)cookie
+                    error: (NSError * _Nullable * _Nullable)error;
+-(BOOL) closeChannel: (NSString *)friendId
+           channelId: (NSNumber *)channelId
+               error:(NSError * _Nullable * _Nullable)error;
+-(NSNumber *)writeChannel: (NSString *)friendId
+                channelId: (NSNumber *)channelId
+                     data: (NSString *)data
+                    error: (NSError * _Nullable * _Nullable)error;
+-(BOOL) pendChannel: (NSString *)friendId
+            channel: (NSNumber *)channelId
+              error:(NSError * _Nullable * _Nullable)error;
+-(BOOL) resumeChannel: (NSString *)friendId
+              channel: (NSNumber *)channelId
+                error: (NSError * _Nullable * _Nullable)error;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -196,22 +196,35 @@ const Carrier = class {
     return exec('closeSession', this.id, friendId);
   }
 
-  // TODO
-  
-  addService(){}
-  removeService(){}
-  openPortFowarding(){}
-  closePortForwarding(){}
-  openChannel(){}
-  closeChannel(){}
-  writeChannel(){}
-  pendChannel(){}
-  resumeChannel(){}
-  
+  addService(friendId, serviceName, host, port){
+    return exec('addService', this.id, friendId, serviceName, host, port);
+  }
 
-  
+  removeService(friendId, serviceName){
+    return exec('removeService', this.id, friendId, serviceName);
+  }
 
-  
+  openPortFowarding(friendId, serviceName, host, port){
+    return exec('openPortFowarding', this.id, friendId, serviceName, host, port);
+  }
+  closePortForwarding(friendId, portForwardingId){
+    return exec('closePortForwarding', this.id, friendId, portForwardingId);
+  }
+  openChannel(friendId, cookie){
+    return exec('openChannel', this.id, friendId, cookie);
+  }
+  closeChannel(friendId, channelId){
+    return exec('closeChannel', this.id, friendId, channelId);
+  }
+  writeChannel(friendId, channelId, data){
+    return exec('writeChannel', this.id, friendId, channelId, data)
+  }
+  pendChannel(friendId, channelId){
+    return exec('pendChannel', this.id, friendId, channelId);
+  }
+  resumeChannel(friendId, channelId){
+    return exec('resumeChannel', this.id, friendId, channelId);
+  }
 
   test(){
     NativeCarrier.test();

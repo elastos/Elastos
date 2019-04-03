@@ -150,6 +150,95 @@
   [FriendSessionStream removeByFriendId:friendId];
 }
 
+-(BOOL) addService: (NSString *)friendId
+       serviceName: (NSString *)serviceName
+              host: (NSString *)host
+              port: (NSString *)port
+              error: (NSError *__autoreleasing  _Nullable * _Nullable)error
+{
+    FriendSessionStream *fss = [FriendSessionStream getInstanceByFriendId:friendId];
+    if(fss == nil){
+        NSDictionary *dict = @{NSLocalizedDescriptionKey:@"session not start"};
+        *error = [NSError errorWithDomain:NSCustomErrorDomain code:10001 userInfo:dict];
+        return NO;
+    }
+    BOOL flag = [fss.session addServiceWithName: serviceName protocol:1 host:host port:port error:error];
+    return flag;
+}
+-(void) removeService: (NSString *)friendId
+          serviceName: (NSString *)serviceName
+{
+    FriendSessionStream *fss = [FriendSessionStream getInstanceByFriendId:friendId];
+    [fss.session removeServiceWithName: serviceName];
+}
+-(NSNumber *) openPortFowarding: (NSString *)friendId
+                    serviceName: (NSString *)serviceName
+                           host: (NSString *)host
+                           port: (NSString *)port
+                          error: (NSError *__autoreleasing  _Nullable * _Nullable)error
+{
+    FriendSessionStream *fss = [FriendSessionStream getInstanceByFriendId:friendId];
+    
+    NSNumber *rs = [fss.stream openPortForwardingForService:serviceName withProtocol:1 host:host port:port error:error];
+    return rs;
+}
+-(BOOL) closePortForwarding: (NSString *)friendId
+           portForwardingId: (NSNumber *)pid
+                      error: (NSError *__autoreleasing  _Nullable * _Nullable)error
+{
+    FriendSessionStream *fss = [FriendSessionStream getInstanceByFriendId:friendId];
+    if(fss == nil){
+        NSDictionary *dict = @{NSLocalizedDescriptionKey:@"session not start"};
+        *error = [NSError errorWithDomain:NSCustomErrorDomain code:10001 userInfo:dict];
+        return NO;
+    }
+    
+    BOOL flag = [fss.stream closePortForwarding: pid error:error];
+    return flag;
+}
+
+-(NSNumber *) openChannel: (NSString *)friendId
+                   cookie: (NSString *)cookie
+                    error: (NSError * _Nullable * _Nullable)error
+{
+    FriendSessionStream *fss = [FriendSessionStream getInstanceByFriendId:friendId];
+    NSNumber *rs = [fss.stream openChannelWithCookie: cookie error:error];
+    return rs;
+}
+-(BOOL) closeChannel: (NSString *)friendId
+           channelId: (NSNumber *)channelId
+               error:(NSError * _Nullable * _Nullable)error
+{
+    FriendSessionStream *fss = [FriendSessionStream getInstanceByFriendId:friendId];
+    BOOL flag = [fss.stream closeChannel: channelId error:error];
+    return flag;
+}
+-(NSNumber *)writeChannel: (NSString *)friendId
+                channelId: (NSNumber *)channelId
+                     data: (NSString *)data
+                    error: (NSError * _Nullable * _Nullable)error
+{
+    FriendSessionStream *fss = [FriendSessionStream getInstanceByFriendId:friendId];
+    NSNumber *rs = [fss.stream writeChannel: channelId data:[data dataUsingEncoding:NSUTF8StringEncoding] error:error];
+    return rs;
+}
+-(BOOL) pendChannel: (NSString *)friendId
+            channel: (NSNumber *)channelId
+              error:(NSError * _Nullable * _Nullable)error
+{
+    FriendSessionStream *fss = [FriendSessionStream getInstanceByFriendId:friendId];
+    BOOL flag = [fss.stream pendChannel: channelId error:error];
+    return flag;
+}
+-(BOOL) resumeChannel: (NSString *)friendId
+              channel: (NSNumber *)channelId
+                error: (NSError * _Nullable * _Nullable)error
+{
+    FriendSessionStream *fss = [FriendSessionStream getInstanceByFriendId:friendId];
+    BOOL flag = [fss.stream resumeChannel: channelId error:error];
+    return flag;
+}
+
 
 #pragma mark - ELACarrierStreamDelegate
 -(void) carrierStream:(ELACarrierStream *)stream

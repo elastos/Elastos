@@ -169,6 +169,106 @@ public class RN_SESSION extends AbstractStreamHandler implements SessionRequestC
         }
     }
 
+
+    public void addService(String friendId, String serviceName, String host, String port){
+        util.log(String.format("[ addService ] => %s, %s, %s, %s", friendId, serviceName, host, port));
+        FriendSessionStream fss = getFriendSessionByFriendId(friendId);
+        try{
+            Session session = fss.getSession();
+            session.addService(serviceName, PortForwardingProtocol.TCP, host, port);
+        }catch(ElastosException e){
+            util.error("[ addService ]");
+        }
+    }
+    public void removeService(String friendId, String serviceName){
+        util.log(String.format("[ removeService ] => %s, %s", friendId, serviceName));
+        FriendSessionStream fss = getFriendSessionByFriendId(friendId);
+        Session session = fss.getSession();
+        session.removeService(serviceName);
+    }
+
+    public int openPortFowarding(String friendId, String serviceName, String host, String port){
+        util.log(String.format("[ openPortFowarding ] => %s, %s, %s, %s", friendId, serviceName, host, port));
+        FriendSessionStream fss = getFriendSessionByFriendId(friendId);
+        try{
+            Stream stream = fss.getStream();
+            int rs = stream.openPortFowarding(serviceName, PortForwardingProtocol.TCP, host, port);
+            return rs;
+        }catch(ElastosException e) {
+            util.error("[ openPortFowarding ]");
+            return -1;
+        }
+    }
+    public void closePortForwarding(String friendId, int portForwardingId){
+        util.log(String.format("[ closePortForwarding ] => %s, %d", friendId, portForwardingId));
+        FriendSessionStream fss = getFriendSessionByFriendId(friendId);
+        try{
+            Stream stream = fss.getStream();
+            stream.closePortForwarding(portForwardingId);
+        }catch(ElastosException e){
+            util.error("[ closePortForwarding ]");
+        }
+
+    }
+
+    public int openChannel(String friendId, String cookie){
+        util.log(String.format("[ openChannel ] => %s, %s", friendId, cookie));
+        FriendSessionStream fss = getFriendSessionByFriendId(friendId);
+        try{
+            Stream stream = fss.getStream();
+            return stream.openChannel(cookie);
+        }catch(ElastosException e){
+            util.error("[ openChannel ]");
+            return -1;
+        }
+    }
+
+    public void closeChannel(String friendId, int channelId){
+        util.log(String.format("[ closeChannel ] => %s, %d", friendId, channelId));
+        FriendSessionStream fss = getFriendSessionByFriendId(friendId);
+        try{
+            Stream stream = fss.getStream();
+            stream.closeChannel(channelId);
+        }catch(ElastosException e){
+            util.error("[ closeChannel ]");
+        }
+    }
+
+    public int writeChannel(String friendId, int channelId, String data){
+        util.log(String.format("[ writeChannel ] => %s, %d, %s", friendId, channelId, data));
+        FriendSessionStream fss = getFriendSessionByFriendId(friendId);
+        byte[] bindary = data.getBytes();
+        try{
+            Stream stream = fss.getStream();
+            int rs = stream.writeData(channelId, bindary);
+            return rs;
+        }catch(ElastosException e){
+            util.error("[ writeChannel ]");
+            return -1;
+        }
+    }
+    public void pendChannel(String friendId, int channelId){
+        util.log(String.format("[ pendChannel ] => %s, %d", friendId, channelId));
+        FriendSessionStream fss = getFriendSessionByFriendId(friendId);
+        try{
+            Stream stream = fss.getStream();
+            stream.pendChannel(channelId);
+        }catch(ElastosException e){
+            util.error("[ pendChannel ]");
+        }
+    }
+    public void resumeChannel(String friendId, int channelId){
+        util.log(String.format("[ resumeChannel ] => %s, %d", friendId, channelId));
+        FriendSessionStream fss = getFriendSessionByFriendId(friendId);
+        try{
+            Stream stream = fss.getStream();
+            stream.resumeChannel(channelId);
+        }catch(ElastosException e){
+            util.error("[ resumeChannel ]");
+        }
+    }
+
+
     @Override
     public void onCompletion(Session session, int status, String reason, String sdp) {
         util.log(String.format("[ onCompletion ] => status=%s, reason=%s, sdp=%s", status, reason, sdp));
