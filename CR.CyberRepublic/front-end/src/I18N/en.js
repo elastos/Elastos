@@ -279,7 +279,8 @@ const en = {
   'suggestion.form.fields.benefits': 'Benefits to Elastos Community/Ecosystem ',
   'suggestion.form.fields.funding': 'Funding Estimated (USD)',
   'suggestion.form.fields.timeline': 'Timeline Suggested',
-  'suggestion.form.fields.links': 'Links (Split By Comma)',
+  'suggestion.form.fields.links': 'Links',
+  'suggestion.form.fields.linksSplit': 'Links (Split By Comma)',
 
   suggestion: {
     modal: {

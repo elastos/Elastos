@@ -269,7 +269,7 @@ class C extends BaseComponent {
             </FormItem>
           </Col>
         </Row>
-        <FormItem className="form-item" label={I18N.get('suggestion.form.fields.links')} {...formItemLayout}>
+        <FormItem className="form-item" label={I18N.get('suggestion.form.fields.linksSplit')} {...formItemLayout}>
           {p.link}
         </FormItem>
         <FormItem className="form-item">

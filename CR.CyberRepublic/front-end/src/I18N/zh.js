@@ -279,7 +279,8 @@ const zh = {
   'suggestion.form.fields.benefits': '对于亦来云社区/生态的价值',
   'suggestion.form.fields.funding': '预算（USD）',
   'suggestion.form.fields.timeline': '启动时间',
-  'suggestion.form.fields.links': '相关链接 (逗号分隔)',
+  'suggestion.form.fields.links': '相关链接',
+  'suggestion.form.fields.linksSplit': '相关链接 (逗号分隔)',
 
   suggestion: {
     modal: {
