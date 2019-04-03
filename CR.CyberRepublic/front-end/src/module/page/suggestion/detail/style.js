@@ -35,6 +35,10 @@ export const Desc = styled.div`
   margin-top: 30px;
 `
 
+export const DescBody = styled.div`
+  font-weight: 200;
+`
+
 // export const StyledLink = styled.div`
 //   color: ${text.lightGray};
 //   margin-top: ${gap.gap_2};

@@ -31,11 +31,7 @@ docker-compose up -d
 swagger doc is running on **http://localhost:9001**
 
 
-## command
-```
-# unit test
-npm test
+## testing
 
-# tslint validate
-npm run tslint
-```
+### Currently tests must be `runInBand`
+
