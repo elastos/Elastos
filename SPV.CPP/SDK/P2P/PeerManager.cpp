@@ -1245,7 +1245,7 @@ namespace Elastos {
 
 			FireTxStatusUpdate();
 			if (pubTx.HasCallback()) pubTx.FireCallback(code, reason);
-			if (code != 0x12) {
+			if (code != 0x12 && reason.find("Duplicate") == std::string::npos) {
 				_wallet->RemoveTransaction(pubTx.GetTransaction()->GetHash());
 			}
 		}
@@ -2018,7 +2018,7 @@ namespace Elastos {
 						PeerListCount(_txRequests, hash) == 0) {
 						peer->info("removing tx unconfirmed at: {}, txHash: {}", _lastBlock->GetHeight(), hash.GetHex());
 						assert(tx[i - 1]->GetBlockHeight() == TX_UNCONFIRMED);
-						_wallet->RemoveTransaction(hash);
+//						_wallet->RemoveTransaction(hash);
 					} else if (!isPublishing && PeerListCount(_txRelays, hash) < _maxConnectCount) {
 						// set timestamp 0 to mark as unverified
 						_wallet->UpdateTransactions({hash}, TX_UNCONFIRMED, 0);
