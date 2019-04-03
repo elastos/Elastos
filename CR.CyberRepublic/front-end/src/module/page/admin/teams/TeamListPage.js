@@ -110,7 +110,7 @@ export default createContainer(Component, (state) => {
 
   return {
     async index(query) {
-      return await teamService.index(query)
+      await teamService.index(query)
     }
   }
 })

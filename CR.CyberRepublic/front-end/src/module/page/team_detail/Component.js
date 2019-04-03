@@ -1,11 +1,9 @@
 import React from 'react'
-import StandardPage from '../StandardPage'
 import Footer from '@/module/layout/Footer/Container'
 import TeamDetail from './detail/Container'
-import I18N from '@/I18N'
 import './style.scss'
-import _ from 'lodash'
-import { Row, Breadcrumb, Icon } from 'antd'
+
+import StandardPage from '../StandardPage'
 
 export default class extends StandardPage {
   ord_renderContent () {

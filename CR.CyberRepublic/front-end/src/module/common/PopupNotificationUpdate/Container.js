@@ -16,6 +16,7 @@ export default createContainer(Component, (state) => {
       try {
         await userService.getCurrentUser()
       } catch (err) {
+        console.log(err)
       }
     },
 

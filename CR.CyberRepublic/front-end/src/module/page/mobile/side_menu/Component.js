@@ -1,10 +1,9 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 
-import { Row, Col, Icon, Menu } from 'antd'
+import { Row, Col, Icon, Menu, Modal } from 'antd'
 
 import './style'
-import { Modal } from 'antd/lib/index'
 import _ from 'lodash'
 import I18N from '@/I18N'
 
@@ -56,6 +55,7 @@ export default class extends BaseComponent {
 
     } else if (key === 'blog') {
 
+      // eslint-disable-next-line no-undef
       analytics.track('BLOG_CLICKED', {
         url: location.href
       })
@@ -70,6 +70,7 @@ export default class extends BaseComponent {
 
     } else if (key === 'forum') {
 
+      // eslint-disable-next-line no-undef
       analytics.track('FORUM_CLICKED', {
         url: location.href
       })
@@ -81,6 +82,7 @@ export default class extends BaseComponent {
       }
     } else if (key === 'docs') {
 
+      // eslint-disable-next-line no-undef
       analytics.track('DOCS_CLICKED', {
         url: location.href
       })

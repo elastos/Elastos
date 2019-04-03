@@ -2,6 +2,7 @@ import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import { Form, Modal, Select, Button, Input } from 'antd'
 import config from '@/config'
+import _ from 'lodash'
 
 const TextArea = Input.TextArea
 

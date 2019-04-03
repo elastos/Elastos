@@ -1,10 +1,10 @@
 import React from 'react'
-import StandardPage from '../StandardPage'
 import Footer from '@/module/layout/Footer/Container'
-
 import './style.scss'
 
 import { Col, Row, Icon, Form, Input, Button, Dropdown } from 'antd'
+
+import StandardPage from '../StandardPage'
 
 const FormItem = Form.Item
 

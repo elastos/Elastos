@@ -2,6 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { DEFAULT_IMAGE, USER_GENDER } from '@/constant'
 import I18N from '@/I18N'
+import _ from 'lodash'
 
 import { Table, Card, Select, Col, Row, Breadcrumb, Icon, Button, Input } from 'antd'
 
@@ -198,7 +199,7 @@ export default class extends StandardPage {
           <div key={index}>
             {community.leaders && community.leaders.map((leader) => {
               return (
-                <Col md={{span: 12}} md={{span: 3}} key={`${index}-${leader._id}`} className="user-card public-communities-page">
+                <Col xs={{span: 12}} md={{span: 3}} key={`${index}-${leader._id}`} className="user-card public-communities-page">
                   <Link to={`/community/${community._id}/country/${community.geolocation}`}>
                     <Card
                       key={index}
@@ -220,7 +221,7 @@ export default class extends StandardPage {
             })}
 
             {(!community.leaders || community.leaders.length === 0) && (
-              <Col md={{span: 12}} md={{span: 3}} key={index} className="user-card public-communities-page">
+              <Col xs={{span: 12}} md={{span: 3}} key={index} className="user-card public-communities-page">
                 <Link to={`/community/${community._id}/country/${community.geolocation}`}>
                   <Card
                     key={index}

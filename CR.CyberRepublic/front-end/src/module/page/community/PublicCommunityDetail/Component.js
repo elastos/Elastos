@@ -5,7 +5,6 @@ import { Button, Card, Col, Select, Row, Icon, message, Divider, Breadcrumb, Tab
 import config from '@/config'
 import { DEFAULT_IMAGE, USER_GENDER } from '@/constant'
 import Footer from '@/module/layout/Footer/Container'
-import _ from 'lodash'
 import Promise from 'bluebird'
 import MediaQuery from 'react-responsive'
 import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC } from '@/config/constant'
@@ -451,7 +450,7 @@ export default class extends StandardPage {
             <Row>
               {this.state.community.leaders && this.state.community.leaders.length ? this.state.community.leaders.map((leader, index) => {
                 return (
-                  <Col md={{span: 12}} md={{span: 4}} key={index} className="user-card">
+                  <Col xs={{span: 12}} md={6} key={index} className="user-card">
                     <Card
                       key={index}
                       cover={<img src={leader.profile.avatar}/>}
@@ -622,7 +621,7 @@ export default class extends StandardPage {
               <div className="ebp-page-content">
                 <MediaQuery minWidth={MIN_WIDTH_PC}>
                   <Row>
-                    <Col md={{span: 24}} md={{span: 18}}
+                    <Col xs={{span: 24}} md={{span: 18}}
                       className="community-left-column">
                       <Row>
                         <Col span={24}>
@@ -635,7 +634,7 @@ export default class extends StandardPage {
                       <br/>
                       {shouldDisplayButtonApplyOrganizer && <Button onClick={this.applyOrganizer.bind(this)}>{I18N.get('community.applytobeorganizer')}</Button>}
                     </Col>
-                    <Col md={{span: 24}} md={{span: 6}}
+                    <Col xs={{span: 24}} md={{span: 6}}
                       className="community-right-column">
                       <div>
                         <h4 className="without-padding">{I18N.get('circle.members')}</h4>

@@ -1,12 +1,12 @@
 import React from 'react'
-import StandardPage from '../StandardPage'
 import Footer from '@/module/layout/Footer/Container'
 import I18N from '@/I18N'
-import ModalEmpowerForm from './modal_form/Component'
 import './style.scss'
 import { Col, Row, Spin, Button, Modal, message } from 'antd'
 import LoginOrRegisterForm from '@/module/form/LoginOrRegisterForm/Container'
 import _ from 'lodash'
+
+import StandardPage from '../StandardPage'
 
 export default class extends StandardPage {
 

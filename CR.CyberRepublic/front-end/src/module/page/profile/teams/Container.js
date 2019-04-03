@@ -23,7 +23,7 @@ export default createContainer(Component, (state) => {
     },
 
     async loadMoreTeams(filters) {
-      return await teamService.loadMore({
+      await teamService.loadMore({
         ...filters,
         type: TEAM_TYPE.TEAM
       })

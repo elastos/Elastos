@@ -1,8 +1,7 @@
 /* global location, analytics */
 import React from 'react'
 import BasePage from '@/model/BasePage'
-import {Layout} from 'antd'
-import {BackTop} from 'antd'
+import {Layout, BackTop} from 'antd'
 import {spring, presets, Motion} from 'react-motion'
 import Header from '../layout/Header/Container'
 import MobileMenu from './mobile/side_menu/Container'

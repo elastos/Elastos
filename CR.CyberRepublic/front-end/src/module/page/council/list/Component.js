@@ -41,7 +41,7 @@ export default class extends BaseComponent {
           <List.Item key={item.title} >
             <List.Item.Meta
               title={(
-                <a href="javascript:void(0)" onClick={this.toDetail.bind(this, `/council/detail/${item.id}`)} className="f_h4">
+                <a href="#" onClick={this.toDetail.bind(this, `/council/detail/${item.id}`)} className="f_h4">
 #
                   {item.id}
                   {' '}

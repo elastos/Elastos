@@ -4,7 +4,7 @@ import _ from 'lodash'
 import I18N from '@/I18N'
 import './style.scss'
 import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC } from '@/config/constant'
-import { CR_LINKS } from '@/constant'
+import { CR_LINKS, USER_LANGUAGE } from '@/constant'
 import Video from '@/module/shared/video/Container'
 import { Modal, Menu, Dropdown, Col, Row, List, Button, Select } from 'antd'
 import Footer from '@/module/layout/Footer/Container'
@@ -12,7 +12,6 @@ import moment from 'moment/moment'
 import MediaQuery from 'react-responsive'
 import Flag from 'react-flags'
 import Data from '@/config/data'
-import {USER_LANGUAGE} from '@/constant'
 
 export default class extends StandardPage {
   constructor(props) {
@@ -166,7 +165,7 @@ export default class extends StandardPage {
               <div className="arrow sized"><img src="assets/images/arrow.svg"/></div>
               <a href="/developer" />
             </div>
-            <div className="cta-btn" style={{cursor: 'pointer'}} style={{marginRight: '24px'}}>
+            <div className="cta-btn" style={{cursor: 'pointer', marginRight: '24px'}}>
               <p style={{paddingTop: '24px'}}>
                 {I18N.get('landing.playVideo')}
                 {' '}

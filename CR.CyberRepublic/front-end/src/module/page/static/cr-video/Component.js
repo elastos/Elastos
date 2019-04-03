@@ -308,7 +308,6 @@ export default class extends StandardPage {
 |
             <a target="_blank" onClick={() => analytics.track('GUIDE_CLICKED', {
               url: location.href,
-              url: location.href,
               name: 'Non-Developer Guide to Elastos',
               link: 'https://github.com/elastos/Elastos/wiki/A-Non-Developer-Guide-to-Elastos',
               linkText: I18N.get('cr-video.q3.link.3')

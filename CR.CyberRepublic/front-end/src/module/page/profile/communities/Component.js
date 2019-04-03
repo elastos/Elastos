@@ -2,12 +2,11 @@ import React from 'react'
 import Navigator from '@/module/page/shared/HomeNavigator/Container'
 import Footer from '@/module/layout/Footer/Container'
 import I18N from '@/I18N'
-import { message } from 'antd'
 import config from '@/config'
 import './style.scss'
 import '../../admin/admin.scss'
 
-import { Col, Row, Icon, Form, Breadcrumb, Button, Table, Divider } from 'antd'
+import { Col, Row, Icon, Form, Breadcrumb, Button, Table, Divider, message } from 'antd'
 import moment from 'moment/moment'
 
 import MediaQuery from 'react-responsive'

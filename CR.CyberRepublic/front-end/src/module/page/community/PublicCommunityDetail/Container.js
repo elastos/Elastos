@@ -3,6 +3,7 @@ import Component from './Component'
 import CommunityService from '@/service/CommunityService'
 import UserService from '@/service/UserService'
 import TaskService from '@/service/TaskService'
+import _ from 'lodash'
 import {TASK_CATEGORY, TASK_TYPE} from '@/constant'
 
 export default createContainer(Component, (state, ownProps) => {

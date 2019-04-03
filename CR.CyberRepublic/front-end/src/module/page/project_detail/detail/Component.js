@@ -80,6 +80,7 @@ class C extends BaseComponent {
       const itemIndex = Math.max(_.indexOf(allTasks,
         _.find(allTasks, { _id: this.props.taskId })), 0)
 
+      // eslint-disable-next-line react/no-did-update-set-state
       this.setState({
         activeSliderItemIndex: itemIndex
       })

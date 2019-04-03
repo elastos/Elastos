@@ -68,7 +68,7 @@ export default class extends StandardPage {
 
   componentDidMount() {
     this.setState({loading: true})
-    this.props.fetchTaskList().then(() => {
+    this.props.fetchTaskList().then((d) => {
 
       this.setState({
         loading: false,

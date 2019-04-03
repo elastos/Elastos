@@ -26,6 +26,7 @@
     "react/prop-types": 1,
     "react/forbid-prop-types": 0,
     "react/require-default-props": 0,
+    "react/no-multi-comp": 1,
 
     "react/jsx-filename-extension": [0, { "extensions": [".js", ".jsx"] }],
     "react/jsx-no-bind": 0,
@@ -50,6 +51,9 @@
     "jsx-a11y/label-has-for": 1,
     "jsx-a11y/label-has-associated-control": 1,
     "jsx-a11y/no-noninteractive-element-interactions": 1,
+    "jsx-a11y/anchor-has-content": 1,
+    "jsx-a11y/media-has-caption": 1,
+    "jsx-a11y/heading-has-content": 1,
 
     "semi": [2, "never"],
     "camelcase": [0, { "properties": "never" }],
@@ -89,7 +93,11 @@
     "no-empty-function": 1,
     "radix": 1,
     "no-plusplus": 0,
-    "no-unused-expressions": 1
+    "no-unused-expressions": 1,
+    "no-shadow": 1,
+    "array-callback-return": 1,
+
+    "import/no-webpack-loader-syntax": 0
   }
 }
 

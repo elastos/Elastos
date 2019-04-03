@@ -297,20 +297,6 @@ export default class extends BaseComponent {
     )
   }
 
-  renderSkillsets(isMobile) {
-    return (
-      <div className="skillset-container">
-        {_.map(this.props.member.profile.skillset || [], skillset => (
-          <div key={skillset}>
-                        +
-            {' '}
-            {I18N.get(`user.skillset.${skillset}`)}
-          </div>
-        ))}
-      </div>
-    )
-  }
-
   renderProfession(isMobile) {
     return (
       <div className="profession-container">

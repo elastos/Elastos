@@ -2,8 +2,6 @@ import {createContainer} from '@/util'
 import UserService from '@/service/UserService'
 import Component from './Component'
 import SubmissionService from '@/service/SubmissionService'
-import {TASK_TYPE, TASK_CATEGORY} from '@/constant'
-import _ from 'lodash'
 
 import {SUBMISSION_TYPE} from '@/constant'
 

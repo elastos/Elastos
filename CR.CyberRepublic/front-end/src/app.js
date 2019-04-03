@@ -101,6 +101,7 @@ if (sessionStorage.getItem('api-token')) {
       // Segment - pass identify
       const userProfile = data.profile
 
+      // eslint-disable-next-line no-undef
       analytics.identify(data._id, {
         id: data._id,
         title: data.role,

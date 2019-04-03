@@ -65,6 +65,7 @@ class C extends BaseComponent {
     }
 
     checkEmail(rule, value, callback, source, options) {
+      // eslint-disable-next-line no-useless-escape
       const emailRegex = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)
 
       if (this.props.is_admin && value && emailRegex.test(value) && this.props.user.email !== value) {

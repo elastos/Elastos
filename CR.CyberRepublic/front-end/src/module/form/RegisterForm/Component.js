@@ -23,6 +23,7 @@ class C extends BaseComponent {
     handleSubmit(e) {
       e.preventDefault()
 
+      // eslint-disable-next-line no-undef
       analytics.track('REGISTRATION', {
         action: 'registration submit button clicked',
         url: location.href
@@ -32,6 +33,7 @@ class C extends BaseComponent {
         if (!err) {
           if (this.state.requestedCode) {
 
+            // eslint-disable-next-line no-undef
             analytics.track('REGISTRATION', {
               action: 'registration successful',
               url: location.href,
@@ -52,6 +54,7 @@ class C extends BaseComponent {
               })
           } else {
 
+            // eslint-disable-next-line no-undef
             analytics.track('REGISTRATION', {
               action: 'sent registration code',
               url: location.href,
@@ -83,6 +86,7 @@ class C extends BaseComponent {
     }
 
     checkEmail(rule, value, callback, source, options) {
+      // eslint-disable-next-line no-useless-escape
       const emailRegex = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)
 
       if (value && emailRegex.test(value)) {

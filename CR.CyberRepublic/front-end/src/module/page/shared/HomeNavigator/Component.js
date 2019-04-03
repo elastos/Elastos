@@ -1,12 +1,15 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
-import { Menu, SubMenu } from 'antd'
 import MediaQuery from 'react-responsive'
 import I18N from '@/I18N'
 import { Link } from 'react-router-dom'
-import { Affix, Radio, Badge, Tooltip } from 'antd'
+import { Menu, Affix, Radio, Badge, Tooltip } from 'antd'
 import './style.scss'
+
+import _ from 'lodash'
+
 import {MAX_WIDTH_MOBILE, MIN_WIDTH_PC} from '../../../../config/constant'
+
 
 export default class extends BaseComponent {
 

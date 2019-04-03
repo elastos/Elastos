@@ -1,15 +1,13 @@
 import React from 'react'
-import ProfilePage from '../../ProfilePage'
-
 import SubmissionDetail from '@/module/submission/Container'
 import Navigator from '@/module/page/shared/HomeNavigator/Container'
-import I18N from '@/I18N'
-import config from '@/config'
 
 import './style.scss'
 import '../../admin/admin.scss'
 
 import { Col, Row, Breadcrumb, Icon } from 'antd'
+
+import ProfilePage from '../../ProfilePage'
 
 export default class extends ProfilePage {
 

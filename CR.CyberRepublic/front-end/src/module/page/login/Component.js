@@ -1,9 +1,10 @@
 import React from 'react'
-import StandardPage from '../StandardPage'
 import LoginOrRegisterForm from '@/module/form/LoginOrRegisterForm/Container'
 
 import './style.scss'
 import URI from 'urijs'
+
+import StandardPage from '../StandardPage'
 
 const MSG_CODE = {
   1: 'Please login or create a Cyber Republic account to access the forums'
