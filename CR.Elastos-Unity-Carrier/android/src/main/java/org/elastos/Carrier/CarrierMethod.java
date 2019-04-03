@@ -77,6 +77,12 @@ public class CarrierMethod extends ReactContextBaseJavaModule
     }
 
     @ReactMethod
+    public static void isValidId(String nodeId, Callback cb){
+        Boolean f = Carrier.isValidId(nodeId);
+        cb.invoke(null, f);
+    }
+
+    @ReactMethod
     public static void isValidAddress(String address, Callback cb){
         Boolean f = Carrier.isValidAddress(address);
         cb.invoke(null, f);
@@ -100,6 +106,16 @@ public class CarrierMethod extends ReactContextBaseJavaModule
             cb.invoke(null, _carrier.getAddress());
         }catch(ElastosException e){
             util.error("[getAddress] "+e.toString());
+            cb.invoke(e.toString(), null);
+        }
+    }
+    @ReactMethod
+    public void getNodeId(String name, Callback cb){
+        Carrier _carrier = getInstanceByName(name);
+        try{
+            cb.invoke(null, _carrier.getNodeId());
+        }catch(ElastosException e){
+            util.error("[getNodeId] "+e.toString());
             cb.invoke(e.toString(), null);
         }
     }
@@ -327,27 +343,74 @@ public class CarrierMethod extends ReactContextBaseJavaModule
     }
 
     @ReactMethod
-    public void addService(String name, Callback cb){
-        // TODO
-        cb.invoke(null, "coming soon");
+    public void addService(String name, String friendId, String serviceName, String host, String port, Callback cb){
+        RN_SESSION _rs = getByName(name).getRNSessionInstance();
+        _rs.addService(friendId, serviceName, host, port);
+
+        cb.invoke(null, ok);
     }
 
     @ReactMethod
-    public void removeService(String name, Callback cb){
-        // TODO
-        cb.invoke(null, "coming soon");
+    public void removeService(String name, String friendId, String serviceName, Callback cb){
+        RN_SESSION _rs = getByName(name).getRNSessionInstance();
+        _rs.removeService(friendId, serviceName);
+
+        cb.invoke(null, ok);
     }
 
     @ReactMethod
-    public void openPortFowarding(String name, Callback cb){
-        // TODO
-        cb.invoke(null, "coming soon");
+    public void openPortFowarding(String name, String friendId, String serviceName, String host, String port, Callback cb){
+        RN_SESSION _rs = getByName(name).getRNSessionInstance();
+        int rs = _rs.openPortFowarding(friendId, serviceName, host, port);
+        cb.invoke(null, rs);
     }
 
     @ReactMethod
-    public void closePortForwarding(String name, Callback cb){
-        // TODO
-        cb.invoke(null, "coming soon");
+    public void closePortForwarding(String name, String friendId, int portForwardingId, Callback cb){
+        RN_SESSION _rs = getByName(name).getRNSessionInstance();
+        _rs.closePortForwarding(friendId, portForwardingId);
+
+        cb.invoke(null, ok);
+    }
+
+    @ReactMethod
+    public void openChannel(String name, String friendId, String cookie, Callback cb){
+        RN_SESSION _rs = getByName(name).getRNSessionInstance();
+        int rs = _rs.openChannel(friendId, cookie);
+
+        cb.invoke(null, rs);
+    }
+
+    @ReactMethod
+    public void closeChannel(String name, String friendId, int channelId, Callback cb){
+        RN_SESSION _rs = getByName(name).getRNSessionInstance();
+        _rs.closeChannel(friendId, channelId);
+
+        cb.invoke(null, ok);
+    }
+
+    @ReactMethod
+    public void writeChannel(String name, String friendId, int channelId, String data, Callback cb){
+        RN_SESSION _rs = getByName(name).getRNSessionInstance();
+        int rs = _rs.writeChannel(friendId, channelId, data);
+
+        cb.invoke(null, rs);
+    }
+
+    @ReactMethod
+    public void pendChannel(String name, String friendId, int channelId, Callback cb){
+        RN_SESSION _rs = getByName(name).getRNSessionInstance();
+        _rs.pendChannel(friendId, channelId);
+
+        cb.invoke(null, ok);
+    }
+
+    @ReactMethod
+    public void resumeChannel(String name, String friendId, int channelId, Callback cb){
+        RN_SESSION _rs = getByName(name).getRNSessionInstance();
+        _rs.resumeChannel(friendId, channelId);
+
+        cb.invoke(null, ok);
     }
 
 
