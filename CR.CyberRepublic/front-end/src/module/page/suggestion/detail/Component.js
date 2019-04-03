@@ -192,16 +192,16 @@ export default class extends StandardPage {
   }
 
   renderLinkNode() {
-    const { detail } = this.props
+    const { link } = this.props.detail
 
-    if (_.isEmpty(detail.link)) {
+    if (_.isEmpty(link || _.isEmpty(_.get(link, '[0]')))) {
       return null
     }
 
     return (
       <Desc>
         <h4>{I18N.get('suggestion.form.fields.links')}</h4>
-        <a href={detail.link} target="_blank">{detail.link}</a>
+        {_.map(link, href => <div><a href={href} target="_blank" rel="noopener noreferrer">{href}</a></div>)}
       </Desc>
     )
   }

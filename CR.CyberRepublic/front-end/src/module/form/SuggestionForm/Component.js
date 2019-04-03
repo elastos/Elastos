@@ -58,7 +58,7 @@ class C extends BaseComponent {
           param.timeline = values.timeline
         }
         if (!_.isEmpty(values.link)) {
-          param.link = values.link
+          param.link = _.map(_.split(values.link, ','), value => _.trim(value))
         }
         if (_.get(data, '_id')) {
           param.id = _.get(data, '_id')
@@ -127,10 +127,10 @@ class C extends BaseComponent {
 
     const link_fn = getFieldDecorator('link', {
       rules: [
-        { type: 'url' },
+        // { type: 'url' },
         { required: false },
       ],
-      initialValue: _.get(data, 'link', ''),
+      initialValue: _.join(_.get(data, 'link', ''), ','),
     })
 
     return {
