@@ -95,6 +95,7 @@ export default class extends StandardPage {
     const metaNode = this.renderMetaNode()
     const titleNode = this.renderTitleNode()
     const labelNode = this.renderLabelNode()
+    const tagsNode = this.renderTagsNode()
     const descNode = this.renderDescNode()
     const benefitsNode = this.renderBenefitsNode()
     const fundingNode = this.renderFundingNode()
@@ -105,6 +106,7 @@ export default class extends StandardPage {
         {metaNode}
         {titleNode}
         {labelNode}
+        {tagsNode}
         {descNode}
         {benefitsNode}
         {fundingNode}
@@ -140,6 +142,20 @@ export default class extends StandardPage {
         {` (${I18N.get(`cvoteStatus.${status}`)})`}
       </Label>
     )
+  }
+
+  renderTagsNode() {
+    const tags = _.get(this.props.detail, 'tags')
+    if (_.isEmpty(tags)) return null
+    const res = _.map(tags, (tag) => {
+      const { type, _id } = tag
+      return (
+        <Label key={_id}>
+          {I18N.get(`suggestion.tag.type.${type}`)}
+        </Label>
+      )
+    })
+    return res
   }
 
   renderDescNode() {
@@ -201,7 +217,7 @@ export default class extends StandardPage {
     return (
       <Desc>
         <h4>{I18N.get('suggestion.form.fields.links')}</h4>
-        {_.map(link, href => <div><a href={href} target="_blank" rel="noopener noreferrer">{href}</a></div>)}
+        {_.map(link, href => <div key={href}><a href={href} target="_blank" rel="noopener noreferrer">{href}</a></div>)}
       </Desc>
     )
   }
@@ -245,7 +261,7 @@ export default class extends StandardPage {
   }
 
   renderCouncilActionsNode() {
-    const { consider, needMoreInfo, isCouncil, detail } = this.props
+    const { isCouncil, detail } = this.props
     const { _id, displayId, title, desc, benefits, funding, timeline, link } = detail
     const proposalContent = `
       ${desc ? `<p><strong>${I18N.get('suggestion.form.fields.desc')}:</strong></p><p>${desc}</p>` : ''}

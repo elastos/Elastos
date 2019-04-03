@@ -28,6 +28,8 @@ export const Title = styled.div`
 export const Label = styled.span`
   background: #F2F6FB;
   padding: 3px 10px;
+  margin-right: 10px;
+  word-break: keep-all;
 `
 
 export const Desc = styled.div`

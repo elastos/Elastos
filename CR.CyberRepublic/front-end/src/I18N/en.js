@@ -287,6 +287,12 @@ const en = {
       confirm: 'Confirm',
       cancel: 'Cancel',
     },
+    tag: {
+      type: {
+        UNDER_CONSIDERATION: 'Under Consideration of Council',
+        INFO_NEEDED: 'More info needed for Council',
+      },
+    },
   },
 
   // Suggestion Button Text

@@ -287,6 +287,12 @@ const zh = {
       confirm: '确认',
       cancel: '取消',
     },
+    tag: {
+      type: {
+        UNDER_CONSIDERATION: '审议中',
+        INFO_NEEDED: '需更多信息',
+      },
+    },
   },
 
   // Suggestion Button Text
