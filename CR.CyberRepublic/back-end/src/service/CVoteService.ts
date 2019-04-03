@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 import { constant } from '../constant';
 import { permissions } from '../utility';
 import * as moment from 'moment';
-import { mail } from '../utility'
+import { mail, user as userUtil } from '../utility'
 
 let tm = null;
 
@@ -15,17 +15,6 @@ const restrictedFields = {
     'createdAt',
     'proposedAt',
   ]
-}
-
-const formatUsername = (user) => {
-  const firstName = user.profile && user.profile.firstName
-  const lastName = user.profile && user.profile.lastName
-
-  if (_.isEmpty(firstName) && _.isEmpty(lastName)) {
-      return user.username
-  }
-
-  return [firstName, lastName].join(' ')
 }
 
 export default class extends Base {
@@ -121,7 +110,7 @@ export default class extends Base {
     const recVariables = _.zipObject(toMails, _.map(toUsers, (user) => {
       return {
         _id: user._id,
-        username: formatUsername(user)
+        username: userUtil.formatUsername(user)
       }
     }))
 
@@ -159,7 +148,7 @@ export default class extends Base {
     const recVariables = _.zipObject(toMails, _.map(toUsers, (user) => {
       return {
         _id: user._id,
-        username: formatUsername(user)
+        username: userUtil.formatUsername(user)
       }
     }))
 
@@ -204,7 +193,7 @@ export default class extends Base {
           `
           const mailObj = {
             to: result.votedBy.email,
-            toName: formatUsername(result.votedBy),
+            toName: userUtil.formatUsername(result.votedBy),
             subject,
             body,
           }

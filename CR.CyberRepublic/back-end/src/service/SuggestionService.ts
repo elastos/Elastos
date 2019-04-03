@@ -1,7 +1,7 @@
 import Base from './Base'
 import * as _ from 'lodash'
 import { constant } from '../constant'
-import { validate } from '../utility'
+import { validate, mail, user as userUtil } from '../utility'
 
 const emptyDoc = {
   title: '',
@@ -225,6 +225,88 @@ export default class extends Base {
   /**
    * Council only
    */
+  private async notifySubscribers(suggestionId: String) {
+    const db_user = this.getDBModel('User');
+    const currentUserId = _.get(this.currentUser, '_id')
+    const councilMember = await db_user.findById(currentUserId)
+    const suggestion = await this.model.getDBInstance().findById(suggestionId)
+    .populate('subscribers.user', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+    .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+
+    // get users: creator and subscribers
+    const toUsers = _.map(suggestion.subscribers, 'user') || []
+    toUsers.push(suggestion.createdBy)
+    const toMails = _.map(toUsers, 'email')
+
+    const subject = 'The suggestion is under consideration of Council.'
+    const body = `
+      <p>Council member ${userUtil.formatUsername(councilMember)} has marked this suggestion ${suggestion.title} as "Under Consideration"</p>
+      <br />
+      <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/suggestion/${suggestion._id}">${process.env.SERVER_URL}/suggestion/${suggestion._id}</a></p>
+      <br /> <br />
+      <p>Thanks</p>
+      <p>Cyber Republic</p>
+    `
+
+    const recVariables = _.zipObject(toMails, _.map(toUsers, (user) => {
+      return {
+        _id: user._id,
+        username: userUtil.formatUsername(user)
+      }
+    }))
+
+    const mailObj = {
+      to: toMails,
+      // toName: ownerToName,
+      subject,
+      body,
+      recVariables,
+    }
+
+    mail.send(mailObj)
+  }
+
+  private async notifyOwner(suggestionId: String, desc: String) {
+    const db_user = this.getDBModel('User');
+    const currentUserId = _.get(this.currentUser, '_id')
+    const councilMember = await db_user.findById(currentUserId)
+    const suggestion = await this.model.getDBInstance().findById(suggestionId)
+    .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+
+    // get users: creator and subscribers
+    const toUsers = [suggestion.createdBy]
+    const toMails = _.map(toUsers, 'email')
+
+    const subject = 'Your suggestion needs more info for Council.'
+    const body = `
+      <p>Council member ${userUtil.formatUsername(councilMember)} has marked your suggestion ${suggestion.title} as "Need more information".</p>
+      <br />
+      <p>"${desc}"</p>
+      <br />
+      <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/suggestion/${suggestion._id}">${process.env.SERVER_URL}/suggestion/${suggestion._id}</a></p>
+      <br /> <br />
+      <p>Thanks</p>
+      <p>Cyber Republic</p>
+    `
+
+    const recVariables = _.zipObject(toMails, _.map(toUsers, (user) => {
+      return {
+        _id: user._id,
+        username: userUtil.formatUsername(user)
+      }
+    }))
+
+    const mailObj = {
+      to: toMails,
+      // toName: ownerToName,
+      subject,
+      body,
+      recVariables,
+    }
+
+    mail.send(mailObj)
+  }
+
   public async addTag(param: any): Promise<Document> {
     const { id: _id, type, desc } = param
     const currDoc = await this.model.getDBInstance().findById(_id)
@@ -245,6 +327,11 @@ export default class extends Base {
     }
 
     await this.model.findOneAndUpdate({ _id }, updateObject)
+    if (type === constant.SUGGESTION_TAG_TYPE.UNDER_CONSIDERATION) {
+      this.notifySubscribers(_id)
+    } else if (type === constant.SUGGESTION_TAG_TYPE.INFO_NEEDED) {
+      this.notifyOwner(_id, desc)
+    }
     return this.model.findById(_id)
   }
 
