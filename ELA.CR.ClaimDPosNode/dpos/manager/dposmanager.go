@@ -164,7 +164,8 @@ func (d *DPOSManager) GetArbitrators() state.Arbitrators {
 }
 
 func (d *DPOSManager) Recover() {
-	if !d.isCurrentArbiter() {
+	if !d.isCurrentArbiter() ||
+		blockchain.DefaultLedger.Blockchain.GetHeight() < d.chainParams.CRCOnlyDPOSHeight{
 		return
 	}
 
