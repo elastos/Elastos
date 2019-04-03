@@ -416,7 +416,7 @@ RCT_EXPORT_METHOD
     callback(@[NULL_ERR, OK]);
 }
 RCT_EXPORT_METHOD
-(methodopenPortFowarding: (NSString *)cid :(NSString *)friendId :(NSString *)serviceName :(NSString *)host :(NSString *)port :(RCTResponseSenderBlock)callback){
+(openPortFowarding: (NSString *)cid :(NSString *)friendId :(NSString *)serviceName :(NSString *)host :(NSString *)port :(RCTResponseSenderBlock)callback){
     Carrier *carrier = [self getCarrier:cid];
     RN_SESSION *_rn = [carrier getRNSessionInstance];
     NSError *error = nil;
