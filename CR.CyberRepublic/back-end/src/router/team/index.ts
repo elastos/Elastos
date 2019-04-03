@@ -1,10 +1,10 @@
-import Base from '../Base';
+import Base from '../Base'
 
-import create from './create';
-import update from './update';
-import add_candidate from './add_candidate';
-import action from './action';
-import get from './get';
+import create from './create'
+import update from './update'
+import add_candidate from './add_candidate'
+import action from './action'
+import get from './get'
 import list from './list'
 import comment from './comment'
 
@@ -45,4 +45,4 @@ export default Base.setRouter([
         router : comment,
         method : 'post'
     },
-]);
+])

@@ -1,6 +1,6 @@
-import {Schema} from 'mongoose';
-import {CommentSchema} from './CommentSchema';
-import {SubscriberSchema} from './SubscriberSchema';
+import {Schema} from 'mongoose'
+import {CommentSchema} from './CommentSchema'
+import {SubscriberSchema} from './SubscriberSchema'
 
 const communityProps = {
     community : {
@@ -72,5 +72,5 @@ export const Submission = {
     ...communityProps,
 
     archived: Boolean
-};
+}
 

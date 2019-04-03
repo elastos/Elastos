@@ -1,12 +1,12 @@
-import Base from './Base';
-import { Document } from 'mongoose';
-import * as _ from 'lodash';
-import { constant } from '../constant';
-import { permissions } from '../utility';
-import * as moment from 'moment';
+import Base from './Base'
+import { Document } from 'mongoose'
+import * as _ from 'lodash'
+import { constant } from '../constant'
+import { permissions } from '../utility'
+import * as moment from 'moment'
 import { mail, user as userUtil } from '../utility'
 
-let tm = null;
+let tm = undefined
 
 const restrictedFields = {
   update: [
@@ -127,9 +127,9 @@ export default class extends Base {
   }
 
   private async notifyCouncil(cvote: any) {
-    const db_user = this.getDBModel('User');
+    const db_user = this.getDBModel('User')
     const currentUserId = _.get(this.currentUser, '_id')
-    const councilMembers = await db_user.find({ role: constant.USER_ROLE.COUNCIL });
+    const councilMembers = await db_user.find({ role: constant.USER_ROLE.COUNCIL })
     const toUsers = _.filter(councilMembers, user => !user._id.equals(currentUserId))
     const toMails = _.map(toUsers, 'email')
 
@@ -221,15 +221,15 @@ export default class extends Base {
    */
   public async list(param): Promise<Document> {
 
-    const db_cvote = this.getDBModel('CVote');
-    const db_user = this.getDBModel('User');
+    const db_cvote = this.getDBModel('CVote')
+    const db_user = this.getDBModel('User')
     const currentUserId = _.get(this.currentUser, '_id')
     const userRole = _.get(this.currentUser, 'role')
-    const query: any = {};
+    const query: any = {}
 
     if (!param.published) {
       if (!this.isLoggedIn() || !this.canManageProposal()) {
-        throw 'cvoteservice.list - unpublished proposals only visible to council/secretary';
+        throw 'cvoteservice.list - unpublished proposals only visible to council/secretary'
       } else if (param.voteResult === constant.CVOTE_RESULT.UNDECIDED && permissions.isCouncil(userRole)) {
         query.voteResult = {
           $elemMatch: {
@@ -253,16 +253,16 @@ export default class extends Base {
     const list = await db_cvote.list(query, {
       vid: -1,
       // createdAt: -1
-    }, 100);
+    }, 100)
 
     for (const item of list) {
       if (item.createdBy) {
-        const u = await db_user.findOne({ _id: item.createdBy });
-        item.createdBy = u.username;
+        const u = await db_user.findOne({ _id: item.createdBy })
+        item.createdBy = u.username
       }
     }
 
-    return list;
+    return list
   }
 
   /**
@@ -277,16 +277,16 @@ export default class extends Base {
     const { _id, published, notes, content, isConflict, proposedBy, title, type } = param
 
     if (!this.currentUser || !this.currentUser._id) {
-      throw 'cvoteservice.update - invalid current user';
+      throw 'cvoteservice.update - invalid current user'
     }
 
     if (!this.canManageProposal()) {
       throw 'cvoteservice.update - not council'
     }
 
-    const cur = await db_cvote.findOne({ _id });
+    const cur = await db_cvote.findOne({ _id })
     if (!cur) {
-      throw 'cvoteservice.update - invalid proposal id';
+      throw 'cvoteservice.update - invalid proposal id'
     }
 
     const doc: any = {}
@@ -331,16 +331,16 @@ export default class extends Base {
   }
 
   public async finishById(id): Promise<any> {
-    const db_cvote = this.getDBModel('CVote');
-    const cur = await db_cvote.findOne({ _id: id });
+    const db_cvote = this.getDBModel('CVote')
+    const cur = await db_cvote.findOne({ _id: id })
     if (!cur) {
-      throw 'invalid proposal id';
+      throw 'invalid proposal id'
     }
     if (!this.canManageProposal()) {
       throw 'cvoteservice.finishById - not council'
     }
     if (_.includes([constant.CVOTE_STATUS.FINAL], cur.status)) {
-      throw 'proposal already completed.';
+      throw 'proposal already completed.'
     }
 
     const rs = await db_cvote.update({ _id: id }, {
@@ -349,7 +349,7 @@ export default class extends Base {
       }
     })
 
-    return rs;
+    return rs
   }
 
   public async getById(id): Promise<any> {
@@ -357,27 +357,27 @@ export default class extends Base {
     const rs = await db_cvote.getDBInstance().findOne({ _id: id })
       .populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR)
       .populate('reference', constant.DB_SELECTED_FIELDS.SUGGESTION.ID)
-    return rs;
+    return rs
   }
 
   public async getNewVid() {
-    const db_cvote = this.getDBModel('CVote');
-    const n = await db_cvote.count({});
-    return n + 1;
+    const db_cvote = this.getDBModel('CVote')
+    const n = await db_cvote.count({})
+    return n + 1
   }
 
   public isExpired(data: any, extraTime = 0): Boolean {
-    const ct = moment(data.proposedAt || data.createdAt).valueOf();
+    const ct = moment(data.proposedAt || data.createdAt).valueOf()
     if (Date.now() - ct - extraTime > constant.CVOTE_EXPIRATION) {
-      return true;
+      return true
     }
-    return false;
+    return false
   }
 
   // proposal active/passed
   public isActive(data): Boolean {
     const supportNum = _.countBy(data.voteResult, 'value').support || 0
-    return supportNum > data.voteResult.length * 0.5;
+    return supportNum > data.voteResult.length * 0.5
   }
 
   public async vote(param): Promise<Document> {
@@ -386,7 +386,7 @@ export default class extends Base {
     const cur = await db_cvote.findOne({ _id })
     const votedBy = _.get(this.currentUser, '_id')
     if (!cur) {
-      throw 'invalid proposal id';
+      throw 'invalid proposal id'
     }
 
     await db_cvote.update(
@@ -409,22 +409,22 @@ export default class extends Base {
       }
     )
 
-    return await this.getById(_id);
+    return await this.getById(_id)
   }
 
   public async updateNote(param): Promise<Document> {
-    const db_cvote = this.getDBModel('CVote');
+    const db_cvote = this.getDBModel('CVote')
     const { _id, notes } = param
 
-    const cur = await db_cvote.findOne({ _id });
+    const cur = await db_cvote.findOne({ _id })
     if (!cur) {
-      throw 'invalid proposal id';
+      throw 'invalid proposal id'
     }
     if (!this.canManageProposal()) {
       throw 'cvoteservice.updateNote - not council'
     }
     if (this.currentUser.role !== constant.USER_ROLE.SECRETARY) {
-      throw 'only secretary could update notes';
+      throw 'only secretary could update notes'
     }
 
     const rs = await db_cvote.update({ _id }, {
@@ -433,26 +433,26 @@ export default class extends Base {
       }
     })
 
-    return await this.getById(_id);
+    return await this.getById(_id)
   }
 
   private async eachJob() {
-    const db_cvote = this.getDBModel('CVote');
+    const db_cvote = this.getDBModel('CVote')
     const list = await db_cvote.find({
       status: constant.CVOTE_STATUS.PROPOSED
-    });
-    const idsDeferred = [];
-    const idsActive = [];
+    })
+    const idsDeferred = []
+    const idsActive = []
 
     _.each(list, (item) => {
       if (this.isExpired(item)) {
         if (this.isActive(item)) {
-          idsActive.push(item._id);
+          idsActive.push(item._id)
         } else {
-          idsDeferred.push(item._id);
+          idsDeferred.push(item._id)
         }
       }
-    });
+    })
 
     await db_cvote.update({
       _id: {
@@ -460,26 +460,26 @@ export default class extends Base {
       }
     }, {
         status: constant.CVOTE_STATUS.DEFERRED
-      });
+      })
     await db_cvote.update({
       _id: {
         $in: idsActive
       }
     }, {
       status: constant.CVOTE_STATUS.ACTIVE
-    });
+    })
 
     this.notifyCouncilToVote()
   }
 
   public cronjob() {
     if (tm) {
-      return false;
+      return false
     }
     tm = setInterval(() => {
-      console.log('---------------- start cvote cronjob -------------');
-      this.eachJob();
-    }, 1000 * 60);
+      console.log('---------------- start cvote cronjob -------------')
+      this.eachJob()
+    }, 1000 * 60)
   }
 
   private canManageProposal() {

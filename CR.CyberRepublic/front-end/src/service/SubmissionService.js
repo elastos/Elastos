@@ -1,5 +1,4 @@
 import BaseService from '../model/BaseService'
-import _ from 'lodash'
 import { api_request } from '@/util'
 
 export default class extends BaseService {
@@ -8,9 +7,9 @@ export default class extends BaseService {
       path: '/api/submission/list',
       method: 'get',
       data: filter,
-    });
+    })
 
-    return result;
+    return result
   }
 
   async index(qry) {
@@ -49,7 +48,7 @@ export default class extends BaseService {
   }
 
   async getExistingSubmission(campaign) {
-    return await api_request({
+    await api_request({
       path: `/api/submission/campaign/${campaign}`,
       method: 'get',
     })
@@ -86,7 +85,7 @@ export default class extends BaseService {
       data: doc,
     })
 
-    return res;
+    return res
   }
 
   async archive(submissionId) {
@@ -95,7 +94,7 @@ export default class extends BaseService {
       method: 'delete',
     })
 
-    return res;
+    return res
   }
 
   async resetAllSubmissions() {

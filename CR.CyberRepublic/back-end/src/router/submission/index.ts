@@ -1,13 +1,13 @@
-import Base from '../Base';
+import Base from '../Base'
 
-import get from './get';
-import create from './create';
-import list from './list';
-import update from './update';
-import archive from './archive';
-import comment from './comment';
-import subscribe from './subscribe';
-import unsubscribe from './unsubscribe';
+import get from './get'
+import create from './create'
+import list from './list'
+import update from './update'
+import archive from './archive'
+import comment from './comment'
+import subscribe from './subscribe'
+import unsubscribe from './unsubscribe'
 
 export default Base.setRouter([
 
@@ -56,4 +56,4 @@ export default Base.setRouter([
         router : unsubscribe,
         method : 'post'
     }
-]);
+])

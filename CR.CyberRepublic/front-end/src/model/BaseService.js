@@ -1,5 +1,5 @@
-/*global AbortController*/
-import store from '@/store';
+/* global AbortController */
+import store from '@/store'
 
 export default class {
   constructor() {

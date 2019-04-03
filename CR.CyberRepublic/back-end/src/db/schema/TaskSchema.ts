@@ -1,5 +1,5 @@
 import {Schema} from 'mongoose'
-import {ELA, VotePower} from "./UserSchema"
+import {ELA, VotePower} from './UserSchema'
 import {constant} from '../../constant'
 import {CommentSchema} from './CommentSchema'
 import {SubscriberSchema} from './SubscriberSchema'
@@ -9,7 +9,7 @@ import {PictureSchema} from './PictureSchema'
 export const TaskOutput = {
     description: String,
     images : [String]
-};
+}
 
 /**
  * Some Tasks request an upfront ELA transfer
@@ -36,7 +36,7 @@ export const TaskReward = {
 
     elaPerUsd: Number,
     isUsd: Boolean
-};
+}
 
 // if any extra costs were incurred, they can be added here and will be
 // deliberated on for the
@@ -50,7 +50,7 @@ export const TaskAdjustments = {
 
     elaPerUsd: Number,
     isUsd: Boolean
-};
+}
 
 export const TaskCandidate = {
     // constants.TASK_CANDIDATE_TYPE - PERSON, TEAM
@@ -89,7 +89,7 @@ export const TaskCandidate = {
     comments: [[CommentSchema]],
     lastSeenByOwner: Date,
     lastSeenByCandidate: Date
-};
+}
 
 export const TaskActivity = {
     type : {
@@ -153,7 +153,7 @@ export const Task = {
 
     },
 
-    // for events this should be set, or if null assume online
+    // for events this should be set, or if undefined assume online
     community: {type: Schema.Types.ObjectId, ref: 'community'},
     communityParent: {type: Schema.Types.ObjectId, ref: 'community'},
 
@@ -250,10 +250,10 @@ export const Task = {
     dAppId: Number,
     archived: Boolean,
     circle: {type: Schema.Types.ObjectId, ref: 'team'}
-};
+}
 
 
 export const Task_Candidate = {
     ...TaskCandidate,
     task : {type: Schema.Types.ObjectId, ref: 'task'}
-};
+}

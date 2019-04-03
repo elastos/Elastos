@@ -1,5 +1,5 @@
-import Base from '../Base';
-import ping from './ping';
+import Base from '../Base'
+import ping from './ping'
 
 export default Base.setRouter([
     {
@@ -7,4 +7,4 @@ export default Base.setRouter([
         router : ping,
         method : 'get'
     }
-]);
+])

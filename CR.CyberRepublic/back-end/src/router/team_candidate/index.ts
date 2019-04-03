@@ -1,6 +1,6 @@
-import Base from '../Base';
+import Base from '../Base'
 
-import comment from './comment';
+import comment from './comment'
 
 export default Base.setRouter([
     {
@@ -8,4 +8,4 @@ export default Base.setRouter([
         router : comment,
         method : 'post'
     }
-]);
+])

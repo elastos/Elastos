@@ -1,12 +1,12 @@
-import Base from './Base';
-import {Document, Types} from 'mongoose';
-import * as _ from 'lodash';
-import {constant} from '../constant';
-import {validate, utilCrypto, mail} from '../utility';
+import Base from './Base'
+import {Document, Types} from 'mongoose'
+import * as _ from 'lodash'
+import {constant} from '../constant'
+import {validate, utilCrypto, mail} from '../utility'
 import * as moment from 'moment'
 // import UserService from "./UserService";
 
-const ObjectId = Types.ObjectId;
+const ObjectId = Types.ObjectId
 
 const restrictedFields = {
     update: [
@@ -111,9 +111,9 @@ export default class extends Base {
     }
 
     public async markCandidateVisited(param): Promise<Document> {
-        const {taskCandidateId, owner} = param;
+        const {taskCandidateId, owner} = param
 
-        const db_task_candidate = this.getDBModel('Task_Candidate');
+        const db_task_candidate = this.getDBModel('Task_Candidate')
         const updateObj = owner
             ? {lastSeenByOwner: new Date()}
             : {lastSeenByCandidate: new Date()}
@@ -125,7 +125,7 @@ export default class extends Base {
 
     // unused
     public async markComplete(param): Promise<Document> {
-        const {taskCandidateId} = param;
+        const {taskCandidateId} = param
 
         const db_task_candidate = this.getDBModel('Task_Candidate')
         const updateObj = {complete: true}
@@ -136,11 +136,11 @@ export default class extends Base {
     }
 
     public async list(param): Promise<Document> {
-        const db_task = this.getDBModel('Task');
-        const db_task_candidate = this.getDBModel('Task_Candidate');
-        const db_user = this.getDBModel('User');
-        const db_team = this.getDBModel('Team');
-        const db_user_team = this.getDBModel('User_Team');
+        const db_task = this.getDBModel('Task')
+        const db_task_candidate = this.getDBModel('Task_Candidate')
+        const db_user = this.getDBModel('User')
+        const db_team = this.getDBModel('Team')
+        const db_user_team = this.getDBModel('User_Team')
 
         const cursor = db_task.getDBInstance().find(_.omit(param, ['results', 'page', 'sortBy', 'sortOrder']))
 
@@ -244,14 +244,14 @@ export default class extends Base {
             attachment, attachmentType, attachmentFilename, isUsd, readDisclaimer,
 
             domain, recruitedSkillsets, pictures, pitch, bidding, referenceBid
-        } = param;
-        this.validate_name(name);
-        this.validate_description(description);
-        this.validate_type(type);
+        } = param
+        this.validate_name(name)
+        this.validate_description(description)
+        this.validate_type(type)
         // this.validate_reward_ela(reward_ela);
         // this.validate_reward_votePower(reward_votePower);
 
-        let status = constant.TASK_STATUS.CREATED;
+        let status = constant.TASK_STATUS.CREATED
 
         if (rewardUpfront.ela > 0 || reward.ela > 0 || rewardUpfront.usd > 0 || reward.usd > 0) {
             // there is ELA / USD involved so we start in PENDING unless we are an admin
@@ -295,13 +295,13 @@ export default class extends Base {
             assignSelf: assignSelf,
             status: status,
             createdBy: this.currentUser._id
-        };
+        }
         if (community) {
-            doc['community'] = community;
+            doc['community'] = community
         }
 
         if (communityParent) {
-            doc['communityParent'] = communityParent;
+            doc['communityParent'] = communityParent
         }
 
         if (assignSelf) {
@@ -311,10 +311,10 @@ export default class extends Base {
             doc.candidateSltLimit = 1
         }
 
-        const db_task = this.getDBModel('Task');
+        const db_task = this.getDBModel('Task')
 
         // console.log('create task => ', doc);
-        const task = await db_task.save(doc);
+        const task = await db_task.save(doc)
 
         this.sendCreateEmail(this.currentUser, task)
 
@@ -325,7 +325,7 @@ export default class extends Base {
 
         if (circle) {
             // Notify all users of the corresponding circle about the new task.
-            this.sendNewCircleTaskNotification(circle, task);
+            this.sendNewCircleTaskNotification(circle, task)
         }
 
         return task
@@ -346,7 +346,7 @@ export default class extends Base {
         // not really assigning fields,
         const {
             taskId, rewardUpfront, reward
-        } = param;
+        } = param
 
         // we need to set this for the end of the fn so we have the updated task
         let sendTaskPendingRequiredApprovalEmail = false
@@ -370,8 +370,8 @@ export default class extends Base {
         }
 
         // start logic
-        const db_task = this.getDBModel('Task');
-        const db_user = this.getDBModel('User');
+        const db_task = this.getDBModel('Task')
+        const db_user = this.getDBModel('User')
 
         // get current
         const task = await db_task.findById(taskId)
@@ -492,7 +492,7 @@ export default class extends Base {
 
         await db_task.update({_id: taskId}, updateObj)
 
-        let updatedTask = await db_task.findById(taskId);
+        let updatedTask = await db_task.findById(taskId)
 
         // post update checks
         // TODO: if reward changed to 0, force status to CREATED
@@ -515,7 +515,7 @@ export default class extends Base {
      * @returns {Promise<boolean>}
      */
     public async remove(param): Promise<boolean> {
-        return true;
+        return true
     }
 
     /**
@@ -525,21 +525,21 @@ export default class extends Base {
      * @returns {Promise<boolean>}
      */
     public async approve(param): Promise<any> {
-        const {id} = param;
+        const {id} = param
 
-        const role = this.currentUser.role;
+        const role = this.currentUser.role
         if (!_.includes([constant.USER_ROLE.ADMIN, constant.USER_ROLE.COUNCIL], role)) {
             throw 'Access Denied'
         }
 
-        const db_task = this.getDBModel('Task');
+        const db_task = this.getDBModel('Task')
         const rs = await db_task.update({_id: id}, {
             $set: {
                 status: constant.TASK_STATUS.APPROVED
             }
-        });
-        console.log('approve task =>', rs);
-        return rs;
+        })
+        console.log('approve task =>', rs)
+        return rs
     }
 
     public async updateCandidate(param): Promise<boolean> {
@@ -587,7 +587,7 @@ export default class extends Base {
             .populate('team', sanitize)
 
         if (taskCandidate.team) {
-            const db_team = this.getDBModel('Team');
+            const db_team = this.getDBModel('Team')
             await db_team.db.populate(taskCandidate.team, {
                 path: 'owner',
                 select: sanitize
@@ -606,57 +606,57 @@ export default class extends Base {
     *
     * */
     public async addCandidate(param): Promise<boolean> {
-        const {teamId, userId, taskId, applyMsg, assignSelf, attachment, attachmentFilename, bid} = param;
+        const {teamId, userId, taskId, applyMsg, assignSelf, attachment, attachmentFilename, bid} = param
         const doc: any = {
             task: taskId,
             applyMsg,
             attachment,
             attachmentFilename,
             bid
-        };
-        const db_user = this.getDBModel('User');
+        }
+        const db_user = this.getDBModel('User')
 
         if (teamId) {
-            doc.team = teamId;
-            const db_team = this.getDBModel('Team');
-            const team = await db_team.findOne({_id: teamId});
+            doc.team = teamId
+            const db_team = this.getDBModel('Team')
+            const team = await db_team.findOne({_id: teamId})
             if (!team) {
-                throw 'invalid team id';
+                throw 'invalid team id'
             }
-            doc.type = constant.TASK_CANDIDATE_TYPE.TEAM;
+            doc.type = constant.TASK_CANDIDATE_TYPE.TEAM
         }
         else if (userId) {
-            doc.user = userId;
-            const user = await db_user.findOne({_id: userId});
+            doc.user = userId
+            const user = await db_user.findOne({_id: userId})
             if (!user) {
-                throw 'invalid user id';
+                throw 'invalid user id'
             }
-            doc.type = constant.TASK_CANDIDATE_TYPE.USER;
+            doc.type = constant.TASK_CANDIDATE_TYPE.USER
         }
         else {
-            throw 'no user id and team id';
+            throw 'no user id and team id'
         }
 
-        const db_tc = this.getDBModel('Task_Candidate');
+        const db_tc = this.getDBModel('Task_Candidate')
         if (await db_tc.findOne(doc)) {
-            throw 'candidate already exists';
+            throw 'candidate already exists'
         }
 
-        doc.status = constant.TASK_CANDIDATE_STATUS.PENDING;
+        doc.status = constant.TASK_CANDIDATE_STATUS.PENDING
 
         // if we are assigning ourselves we automatically set to APPROVED
         if (assignSelf) {
-            doc.status = constant.TASK_CANDIDATE_STATUS.APPROVED;
+            doc.status = constant.TASK_CANDIDATE_STATUS.APPROVED
         }
 
-        const db_task = this.getDBModel('Task');
-        const task = await db_task.findOne({_id: taskId});
+        const db_task = this.getDBModel('Task')
+        const task = await db_task.findOne({_id: taskId})
         if (!task) {
-            throw 'invalid task id';
+            throw 'invalid task id'
         }
 
-        console.log('add task candidate =>', doc);
-        const taskCandidate = await db_tc.save(doc);
+        console.log('add task candidate =>', doc)
+        const taskCandidate = await db_tc.save(doc)
 
         // add the candidate to the task too
         if (task.candidates && task.candidates.length) {
@@ -701,38 +701,38 @@ export default class extends Base {
     }
 
     public async register(param): Promise<boolean> {
-        const {userId, taskId} = param;
+        const {userId, taskId} = param
         const doc: any = {
             task: taskId,
             category: constant.TASK_CANDIDATE_CATEGORY.RSVP,
             status: constant.TASK_CANDIDATE_STATUS.APPROVED
-        };
-        const db_user = this.getDBModel('User');
+        }
+        const db_user = this.getDBModel('User')
 
         if (userId) {
-            doc.user = userId;
-            const user = await db_user.findOne({_id: userId});
+            doc.user = userId
+            const user = await db_user.findOne({_id: userId})
             if (!user) {
-                throw 'invalid user id';
+                throw 'invalid user id'
             }
-            doc.type = constant.TASK_CANDIDATE_TYPE.USER;
+            doc.type = constant.TASK_CANDIDATE_TYPE.USER
         } else {
-            throw 'no user id';
+            throw 'no user id'
         }
 
-        const db_tc = this.getDBModel('Task_Candidate');
+        const db_tc = this.getDBModel('Task_Candidate')
         if (await db_tc.findOne(doc)) {
-            throw 'candidate already exists';
+            throw 'candidate already exists'
         }
 
-        const db_task = this.getDBModel('Task');
-        const task = await db_task.findOne({_id: taskId});
+        const db_task = this.getDBModel('Task')
+        const task = await db_task.findOne({_id: taskId})
         if (!task) {
-            throw 'invalid task id';
+            throw 'invalid task id'
         }
 
-        console.log('register task candidate =>', doc);
-        const taskCandidate = await db_tc.save(doc);
+        console.log('register task candidate =>', doc)
+        const taskCandidate = await db_tc.save(doc)
 
         // add the candidate to the task too
         if (task.candidates && task.candidates.length) {
@@ -788,11 +788,11 @@ export default class extends Base {
             _id: taskCandidateId
         }
 
-        await db_tc.remove(doc);
+        await db_tc.remove(doc)
 
-        task = await db_task.findOne({_id: taskId});
+        task = await db_task.findOne({_id: taskId})
         if (!task) {
-            throw 'invalid task id';
+            throw 'invalid task id'
         }
 
         const result = await db_task.db.update({
@@ -803,7 +803,7 @@ export default class extends Base {
             }
         })
 
-        console.log('remove task candidate =>', doc);
+        console.log('remove task candidate =>', doc)
 
         return result
 
@@ -868,11 +868,11 @@ export default class extends Base {
             _id: taskCandidateId
         }
 
-        await db_tc.remove(doc);
+        await db_tc.remove(doc)
 
-        task = await db_task.findOne({_id: taskId});
+        task = await db_task.findOne({_id: taskId})
         if (!task) {
-            throw 'invalid task id';
+            throw 'invalid task id'
         }
 
         const result = await db_task.db.update({
@@ -883,7 +883,7 @@ export default class extends Base {
             }
         })
 
-        console.log('remove task candidate =>', doc);
+        console.log('remove task candidate =>', doc)
 
         return result
     }
@@ -894,8 +894,8 @@ export default class extends Base {
      *
      */
     public async acceptCandidate(param): Promise<boolean> {
-        const db_task = this.getDBModel('Task');
-        const db_tc = this.getDBModel('Task_Candidate');
+        const db_task = this.getDBModel('Task')
+        const db_tc = this.getDBModel('Task_Candidate')
 
         let doc = await db_tc.findById(param.taskCandidateId)
         let task = await db_task.getDBInstance().findOne({_id: doc.task})
@@ -910,7 +910,7 @@ export default class extends Base {
             _id: param.taskCandidateId
         }, {
             status: constant.TASK_CANDIDATE_STATUS.APPROVED
-        });
+        })
 
         doc = await db_tc.getDBInstance().findById(param.taskCandidateId)
             .populate('user')
@@ -1008,22 +1008,22 @@ export default class extends Base {
 
     public validate_name(name) {
         if (!validate.valid_string(name, 4)) {
-            throw 'invalid task name';
+            throw 'invalid task name'
         }
     }
 
     public validate_description(description) {
         if (!validate.valid_string(description, 1)) {
-            throw 'invalid task description';
+            throw 'invalid task description'
         }
     }
 
     public validate_type(type) {
         if (!type) {
-            throw 'task type is empty';
+            throw 'task type is empty'
         }
         if (!_.includes(constant.TASK_TYPE, type)) {
-            throw 'task type is not valid';
+            throw 'task type is not valid'
         }
     }
 
@@ -1082,7 +1082,7 @@ export default class extends Base {
      */
     public async sendCreateEmail(curUser, task) {
 
-        let subject = 'New Task Created: ' + task.name;
+        let subject = 'New Task Created: ' + task.name
         let body = `${this.currentUser.profile.firstName} ${this.currentUser.profile.lastName} has created the task ${task.name}`
 
         if (task.status === constant.TASK_STATUS.PENDING) {
@@ -1110,7 +1110,7 @@ export default class extends Base {
 
     public async sendTaskPendingEmail(curUser, task) {
 
-        let subject = 'Task ELA Reward Changed: ' + task.name;
+        let subject = 'Task ELA Reward Changed: ' + task.name
         let body = `${this.currentUser.profile.firstName} ${this.currentUser.profile.lastName} has changed the ELA reward for task ${task.name}`
 
         if (task.status === constant.TASK_STATUS.PENDING) {
@@ -1140,7 +1140,7 @@ export default class extends Base {
             return
         }
 
-        let subject = 'Task ' + task.name + ' Marked as Complete';
+        let subject = 'Task ' + task.name + ' Marked as Complete'
 
         let body = `${this.currentUser.profile.firstName} ${this.currentUser.profile.lastName} has marked the task ${task.name} as complete.
             <br/>
@@ -1239,19 +1239,19 @@ export default class extends Base {
     }
 
     public async sendNewCircleTaskNotification(id, task) {
-        const db_team = this.getDBModel('Team');
+        const db_team = this.getDBModel('Team')
         const db_user = this.getDBModel('User')
-        const db_user_team = this.getDBModel('User_Team');
+        const db_user_team = this.getDBModel('User_Team')
 
         const team = await db_team.findOne({
             _id: id,
             type: constant.TEAM_TYPE.CRCLE
-        });
+        })
 
         if (team) {
-            const userTeams = await db_user_team.find({_id: {$in: team.members}});
-            const users = await db_user.find({_id: {$in: _.map(userTeams, 'user')}});
-            const to = _.map(users, 'email');
+            const userTeams = await db_user_team.find({_id: {$in: team.members}})
+            const users = await db_user.find({_id: {$in: _.map(userTeams, 'user')}})
+            const to = _.map(users, 'email')
 
             const formatUsername = (user) => {
                 const firstName = user.profile && user.profile.firstName
@@ -1289,7 +1289,7 @@ export default class extends Base {
                 subject: subject,
                 body: body,
                 recVariables
-            });
+            })
         }
     }
 
@@ -1334,7 +1334,7 @@ export default class extends Base {
     }
 
     protected async getAdminUsers() {
-        const db_user = this.getDBModel('User');
+        const db_user = this.getDBModel('User')
 
         return db_user.find({
             role: constant.USER_ROLE.ADMIN,

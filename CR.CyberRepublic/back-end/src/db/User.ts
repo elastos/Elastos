@@ -1,5 +1,5 @@
-import Base from './Base';
-import {User} from './schema/UserSchema';
+import Base from './Base'
+import {User} from './schema/UserSchema'
 
 /**
  * We never return password and salt, please note this is only provided
@@ -10,7 +10,7 @@ import {User} from './schema/UserSchema';
  */
 export default class extends Base {
     protected getSchema(){
-        return User;
+        return User
     }
     protected getName(){
         return 'users'
@@ -19,6 +19,6 @@ export default class extends Base {
         return {
             password : false,
             salt : false
-        };
+        }
     }
 }

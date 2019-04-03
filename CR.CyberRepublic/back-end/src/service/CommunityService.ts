@@ -1,8 +1,8 @@
-import Base from './Base';
-import {Document} from 'mongoose';
-import * as _ from 'lodash';
-import {constant} from '../constant';
-import {validate} from '../utility';
+import Base from './Base'
+import {Document} from 'mongoose'
+import * as _ from 'lodash'
+import {constant} from '../constant'
+import {validate} from '../utility'
 
 export default class extends Base {
 
@@ -14,11 +14,11 @@ export default class extends Base {
      * @returns {Promise<"mongoose".Document>}
      */
     public async create(param): Promise<Document> {
-        const db_community = this.getDBModel('Community');
+        const db_community = this.getDBModel('Community')
 
         // validate
-        this.validate_name(param.name);
-        const {name, parentCommunityId, geolocation, type, leaderIds} = param;
+        this.validate_name(param.name)
+        const {name, parentCommunityId, geolocation, type, leaderIds} = param
 
         const doc = {
             name,
@@ -26,10 +26,10 @@ export default class extends Base {
             geolocation,
             type,
             leaderIds: this.param_leaderIds(leaderIds),
-            createdBy: this.currentUser ? this.currentUser._id : null
-        };
+            createdBy: this.currentUser ? this.currentUser._id : undefined
+        }
 
-        return await db_community.save(doc);
+        return await db_community.save(doc)
     }
 
     /**
@@ -39,11 +39,11 @@ export default class extends Base {
      * @returns {Promise<boolean>}
      */
     public async update(param): Promise<boolean> {
-        const db_community = this.getDBModel('Community');
+        const db_community = this.getDBModel('Community')
 
-        //validate
-        this.validate_name(param.name);
-        const {_id, name, parentCommunityId, geolocation, type, leaderIds} = param;
+        // validate
+        this.validate_name(param.name)
+        const {_id, name, parentCommunityId, geolocation, type, leaderIds} = param
 
         const doc = {
             $set : {
@@ -53,9 +53,9 @@ export default class extends Base {
                 type,
                 leaderIds : this.param_leaderIds(leaderIds)
             }
-        };
+        }
 
-        return await db_community.update({_id : _id}, doc);
+        return await db_community.update({_id : _id}, doc)
     }
 
     /**
@@ -65,15 +65,15 @@ export default class extends Base {
      * @returns {Promise<"mongoose".Document>}
      */
     public async index(param): Promise<[Document]> {
-        const db_community = this.getDBModel('Community');
-        const db_user_community = this.getDBModel('User_Community');
+        const db_community = this.getDBModel('Community')
+        const db_user_community = this.getDBModel('User_Community')
 
-        const query:any = param.query || {};
+        const query: any = param.query || {}
 
         if (param.communityHasUser) {
 
-            if (param.communityHasUser === 'null') {
-                param.communityHasUser = null
+            if (param.communityHasUser === 'undefined') {
+                param.communityHasUser = undefined
             }
 
             const userCommunities = await db_user_community.find({
@@ -93,8 +93,8 @@ export default class extends Base {
      * @returns {Promise<"mongoose".Document>}
      */
     public async get(communityId): Promise<Document> {
-        const db_community = this.getDBModel('Community');
-        return await db_community.findById(communityId);
+        const db_community = this.getDBModel('Community')
+        return await db_community.findById(communityId)
     }
 
     /**
@@ -104,10 +104,10 @@ export default class extends Base {
      * @returns {Promise<"mongoose".Document>}
      */
     public async listMember(param): Promise<Document[]>{
-        const {communityId} = param;
-        const db_user_community = this.getDBModel('User_Community');
+        const {communityId} = param
+        const db_user_community = this.getDBModel('User_Community')
 
-        return await db_user_community.find({communityId});
+        return await db_user_community.find({communityId})
     }
 
     /**
@@ -117,19 +117,19 @@ export default class extends Base {
      * @returns {Promise<"mongoose".Document>}
      */
     public async listCommunity(param): Promise<Document[]>{
-        const {userId} = param;
-        const db_user_community = this.getDBModel('User_Community');
+        const {userId} = param
+        const db_user_community = this.getDBModel('User_Community')
 
-        return await db_user_community.find({userId});
+        return await db_user_community.find({userId})
     }
 
     public async findCommunities(query): Promise<Document[]>{
-        const db_community = this.getDBModel('Community');
+        const db_community = this.getDBModel('Community')
         return await db_community.find({
             '_id' : {
                 $in : query.communityIds
             }
-        });
+        })
     }
 
     /**
@@ -142,13 +142,13 @@ export default class extends Base {
      * @returns {Promise<boolean>}
      */
     public async addMember(param): Promise<boolean> {
-        const {userId, communityId} = param;
+        const {userId, communityId} = param
 
-        const db_user_community = this.getDBModel('User_Community');
+        const db_user_community = this.getDBModel('User_Community')
         const tmp = await db_user_community.findOne({
             userId: userId,
             communityId: communityId
-        });
+        })
 
         if (tmp) {
             return
@@ -157,9 +157,9 @@ export default class extends Base {
         await db_user_community.save({
             userId,
             communityId
-        });
+        })
 
-        return true;
+        return true
     }
 
     /**
@@ -169,23 +169,23 @@ export default class extends Base {
      * @returns {Promise<boolean>}
      */
     public async removeMember(param): Promise<boolean> {
-        const {userId, communityId} = param;
+        const {userId, communityId} = param
 
-        const db_user_community = this.getDBModel('User_Community');
+        const db_user_community = this.getDBModel('User_Community')
         const tmp = await db_user_community.findOne({
             userId,
             communityId
-        });
+        })
         if (!tmp) {
-            throw 'user is not exist';
+            throw 'user is not exist'
         }
 
         await db_user_community.findOneAndDelete({
             userId: userId,
             communityId: communityId
-        });
+        })
 
-        return true;
+        return true
     }
 
     /**
@@ -195,23 +195,23 @@ export default class extends Base {
      * @returns {Promise<boolean>}
      */
      public async removeCommunity(communityId): Promise<boolean> {
-        const db_community = this.getDBModel('Community');
-        await db_community.findByIdAndDelete(communityId);
+        const db_community = this.getDBModel('Community')
+        await db_community.findByIdAndDelete(communityId)
 
-        return true;
+        return true
     }
 
     public validate_name(name){
         if(!validate.valid_string(name, 2)){
-            throw 'invalid community name';
+            throw 'invalid community name'
         }
     }
 
     public param_leaderIds(leaderIds: string){
-        let rs = [];
+        let rs = []
         if(leaderIds){
-            rs = leaderIds.split(",");
+            rs = leaderIds.split(',')
         }
-        return rs;
+        return rs
     }
 }

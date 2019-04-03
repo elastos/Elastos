@@ -1,4 +1,4 @@
-import {Schema} from 'mongoose';
+import {Schema} from 'mongoose'
 
 
 
@@ -17,7 +17,7 @@ export const Community = {
     leaderIds: [Schema.Types.ObjectId],
 
     createdBy: Schema.Types.ObjectId
-};
+}
 
 export const User_Community = {
     userId : {
@@ -28,4 +28,4 @@ export const User_Community = {
         required : true,
         type : Schema.Types.ObjectId
     }
-};
+}

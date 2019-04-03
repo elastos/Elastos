@@ -1,4 +1,4 @@
-import {Schema} from 'mongoose';
+import {Schema} from 'mongoose'
 
 /**
  * This collection is for all transactions involving ELA
@@ -53,4 +53,4 @@ export const Transaction = {
 
 
     createdBy: Schema.Types.ObjectId
-};
+}

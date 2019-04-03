@@ -1,4 +1,4 @@
-import {Schema} from 'mongoose';
+import {Schema} from 'mongoose'
 
 
 export const Log = {
@@ -8,4 +8,4 @@ export const Log = {
     }
 
 
-};
+}

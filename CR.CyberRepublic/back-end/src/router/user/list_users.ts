@@ -1,29 +1,29 @@
-import Base from '../Base';
-import UserService from '../../service/UserService';
-import {constant} from '../../constant';
+import Base from '../Base'
+import UserService from '../../service/UserService'
+import {constant} from '../../constant'
 
 export default class extends Base {
-    protected needLogin = false;
+    protected needLogin = false
     async action(){
 
-        const userIds = this.getParam('userIds');
+        const userIds = this.getParam('userIds')
 
         if (userIds) {
-            return await this.show(userIds);
+            return await this.show(userIds)
         } else {
-            return await this.listUser(this.getParam());
+            return await this.listUser(this.getParam())
         }
     }
 
     async show(userIds) {
-        const userService = this.buildService(UserService);
+        const userService = this.buildService(UserService)
 
-        const arrayIds = this.getUserIds(userIds);
+        const arrayIds = this.getUserIds(userIds)
         const users = await userService.findUsers({
             userIds : arrayIds
-        });
+        })
 
-        return this.result(1, users);
+        return this.result(1, users)
     }
 
     /**
@@ -32,17 +32,17 @@ export default class extends Base {
      */
     async listUser(query) {
 
-        const userService = this.buildService(UserService);
-        const users = await userService.findAll(query);
+        const userService = this.buildService(UserService)
+        const users = await userService.findAll(query)
 
-        return this.result(1, users);
+        return this.result(1, users)
     }
 
     getUserIds(userIds: string) {
-        let rs = [];
+        let rs = []
         if(userIds){
-            rs = userIds.split(',');
+            rs = userIds.split(',')
         }
-        return rs;
+        return rs
     }
 }

@@ -1,10 +1,10 @@
-import Base from '../Base';
-import TaskService from '../../service/TaskService';
-import * as _ from 'lodash';
-import {constant} from '../../constant';
-import {Types} from 'mongoose';
-import TeamService from "../../service/TeamService";
-const ObjectId = Types.ObjectId;
+import Base from '../Base'
+import TaskService from '../../service/TaskService'
+import * as _ from 'lodash'
+import {constant} from '../../constant'
+import {Types} from 'mongoose'
+import TeamService from '../../service/TeamService'
+const ObjectId = Types.ObjectId
 
 export default class extends Base{
 
@@ -21,12 +21,12 @@ export default class extends Base{
      * @returns {Promise<["mongoose".Document]>}
      */
     public async action(){
-        const taskService = this.buildService(TaskService);
+        const taskService = this.buildService(TaskService)
 
-        const param = this.getParam();
+        const param = this.getParam()
         const query: any = {
             archived: {$ne: true}
-        };
+        }
 
         if (param.search) {
             query.name = { $regex: _.trim(param.search), $options: 'i' }
@@ -101,7 +101,7 @@ export default class extends Base{
             const currentUserId = new ObjectId(param.profileListFor)
 
             const db_tc = await taskService.getDBModel('Task_Candidate')
-            let listObj:any = {
+            let listObj: any = {
                 user: param.profileListFor
             }
 
@@ -152,11 +152,11 @@ export default class extends Base{
             }
 
             if (!param.taskHasUserStatus && !param.subscribed) {
-                query.$or.push({subscribers: {$all: [{"$elemMatch": {user: currentUserId}}] }})
+                query.$or.push({subscribers: {$all: [{'$elemMatch': {user: currentUserId}}] }})
             }
 
             if (param.subscribed) {
-                query.subscribers = {$all: [{"$elemMatch": {user: currentUserId}}]}
+                query.subscribers = {$all: [{'$elemMatch': {user: currentUserId}}]}
             }
 
             query.status = {$in: [

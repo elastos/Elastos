@@ -43,7 +43,7 @@ beforeAll(async ()=>{
 
     // create a test user as member role
     const userService = new UserService(DB, {
-        user: null
+        user: undefined
     })
     const organizer = await userService.registerNewUser(global.DB.ORGANIZER_USER)
     testData.admin = await userService.getDBModel('User').findOne({ role: constant.USER_ROLE.ADMIN });

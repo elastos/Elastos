@@ -1,8 +1,8 @@
-import Base from './Base';
-import {Document} from 'mongoose';
-import * as _ from 'lodash';
-import {constant} from '../constant';
-import {validate, utilCrypto} from '../utility';
+import Base from './Base'
+import {Document} from 'mongoose'
+import * as _ from 'lodash'
+import {constant} from '../constant'
+import {validate, utilCrypto} from '../utility'
 
 export default class extends Base {
 
@@ -13,7 +13,7 @@ export default class extends Base {
      * @returns {Promise<"mongoose".Document>}
      */
     public async create(param): Promise<Document> {
-        return null
+        return undefined
     }
 
     /**
@@ -23,10 +23,10 @@ export default class extends Base {
      * @returns {Promise<boolean>}
      */
     public async update(param): Promise<boolean> {
-        return null
+        return undefined
     }
 
     public async index(param): Promise<[Document]> {
-        return null
+        return undefined
     }
 }

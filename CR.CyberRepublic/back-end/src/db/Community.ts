@@ -1,16 +1,16 @@
-import Base from './Base';
-import {Community} from './schema/CommunitySchema';
+import Base from './Base'
+import {Community} from './schema/CommunitySchema'
 
 export default class extends Base {
     protected getSchema(){
-        return Community;
+        return Community
     }
     protected getName(){
-        return 'community';
+        return 'community'
     }
     protected rejectFields(){
         return {
 
-        };
+        }
     }
 }

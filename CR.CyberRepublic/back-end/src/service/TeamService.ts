@@ -1,13 +1,13 @@
-import Base from './Base';
-import {Document, Types} from 'mongoose';
-import * as _ from 'lodash';
-import {validate, mail} from '../utility';
-import {constant} from '../constant';
-import LogService from './LogService';
-import {DataList} from './interface';
+import Base from './Base'
+import {Document, Types} from 'mongoose'
+import * as _ from 'lodash'
+import {validate, mail} from '../utility'
+import {constant} from '../constant'
+import LogService from './LogService'
+import {DataList} from './interface'
 
 const sanitize = '-password -salt -email'
-const ObjectId = Types.ObjectId;
+const ObjectId = Types.ObjectId
 
 const restrictedFields = {
     update: [
@@ -19,19 +19,19 @@ const restrictedFields = {
 
 
 export default class extends Base {
-    private model;
-    private ut_model;
+    private model
+    private ut_model
     protected init(){
-        this.model = this.getDBModel('Team');
-        this.ut_model = this.getDBModel("User_Team");
+        this.model = this.getDBModel('Team')
+        this.ut_model = this.getDBModel('User_Team')
     }
 
     public async create(param): Promise<Document>{
-        const db_team = this.getDBModel('Team');
-        const db_user_team = this.getDBModel('User_Team');
+        const db_team = this.getDBModel('Team')
+        const db_user_team = this.getDBModel('User_Team')
 
         // validate
-        this.validate_name(param.name);
+        this.validate_name(param.name)
 
         const doc = {
             name: param.name,
@@ -46,10 +46,10 @@ export default class extends Base {
             recruitedSkillsets: param.recruitedSkillsets,
             owner: this.currentUser,
             pictures: param.pictures
-        };
+        }
 
-        console.log('create team => ', doc);
-        const res = await db_team.save(doc);
+        console.log('create team => ', doc)
+        const res = await db_team.save(doc)
         const team = await db_team.findOne({_id: res._id})
 
         // save to user team
@@ -58,10 +58,10 @@ export default class extends Base {
             team: res,
             status: constant.TEAM_USER_STATUS.NORMAL,
             role: constant.TEAM_ROLE.LEADER
-        };
+        }
 
-        console.log('create user_team => ', doc_user_team);
-        const res1 = await db_user_team.save(doc_user_team);
+        console.log('create user_team => ', doc_user_team)
+        const res1 = await db_user_team.save(doc_user_team)
 
         team.members = [ res1._id ]
         await team.save()
@@ -103,9 +103,9 @@ export default class extends Base {
             },
             recruitedSkillsets: param.recruitedSkillsets,
             pictures: param.pictures
-        };
+        }
 
-        this.validate_name(doc.name);
+        this.validate_name(doc.name)
 
         await db_team.update({_id: teamId}, doc)
 
@@ -198,8 +198,8 @@ export default class extends Base {
             ? constant.TEAM_USER_STATUS.NORMAL
             : constant.TEAM_USER_STATUS.PENDING
 
-        console.log('add team candidate =>', doc);
-        const teamCandidate = await db_ut.save(doc);
+        console.log('add team candidate =>', doc)
+        const teamCandidate = await db_ut.save(doc)
 
         // add the candidate to the team too
         team.members = team.members || []
@@ -380,9 +380,9 @@ export default class extends Base {
     *
     * */
     public async show(param): Promise<Document>{
-        const {teamId, status} = param;
-        const db_team = this.getDBModel('Team');
-        const db_user = this.getDBModel('User');
+        const {teamId, status} = param
+        const db_team = this.getDBModel('Team')
+        const db_user = this.getDBModel('User')
 
         const team = await db_team.getDBInstance().findOne({_id : teamId})
             .populate('members', sanitize)
@@ -430,7 +430,7 @@ export default class extends Base {
     public async list(param): Promise<DataList>{
         const db_team = this.getDBModel('Team')
         const db_user = this.getDBModel('User')
-        const query:any = {}
+        const query: any = {}
 
         if (param.archived) {
             query.archived = param.archived
@@ -458,7 +458,7 @@ export default class extends Base {
 
         if (param.teamHasUser) {
             const db_user_team = this.getDBModel('User_Team')
-            let listObj:any = {
+            let listObj: any = {
                 user: param.teamHasUser
             }
 
@@ -475,7 +475,7 @@ export default class extends Base {
         }
 
         if (param.type) {
-            query.type = param.type;
+            query.type = param.type
         }
 
         const cursor = db_team.getDBInstance().find(query)
@@ -536,9 +536,9 @@ export default class extends Base {
     }
 
     public async listMember(param): Promise<Document[]>{
-        const {teamId} = param;
-        const db_team = this.getDBModel('Team');
-        const aggregate = db_team.getAggregate();
+        const {teamId} = param
+        const db_team = this.getDBModel('Team')
+        const aggregate = db_team.getAggregate()
 
         const rs = await aggregate.match({_id : Types.ObjectId(teamId)})
             .unwind('$members')
@@ -555,35 +555,35 @@ export default class extends Base {
                     $push : '$members'
                 }
             })
-            .project({'list.user.password' : 0, 'list._id' : 0});
+            .project({'list.user.password' : 0, 'list._id' : 0})
 
-        return rs[0].list;
+        return rs[0].list
     }
 
     public validate_name(name){
         if(!validate.valid_string(name, 4)){
-            throw 'invalid team name';
+            throw 'invalid team name'
         }
     }
     public param_metadata(meta: string){
-        const rs = {};
+        const rs = {}
         if(meta){
-            const list = meta.split(',');
+            const list = meta.split(',')
 
             _.each(list, (str)=>{
-                const tmp = str.split('|');
+                const tmp = str.split('|')
                 if(tmp.length === 2){
-                    rs[tmp[0]] = tmp[1];
+                    rs[tmp[0]] = tmp[1]
                 }
-            });
+            })
         }
-        return rs;
+        return rs
     }
     public param_tags(tags: string){
-        let rs = [];
+        let rs = []
         if(tags){
-            rs = tags.split(',');
+            rs = tags.split(',')
         }
-        return rs;
+        return rs
     }
 }

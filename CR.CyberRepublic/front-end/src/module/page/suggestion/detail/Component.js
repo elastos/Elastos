@@ -18,7 +18,7 @@ import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
 import MySuggestion from '../my_list/Container'
 
-import { Container, Title, Label, Desc, BtnGroup, StyledButton } from './style'
+import { Container, Title, Label, Desc, BtnGroup, StyledButton, DescBody } from './style'
 
 const { TextArea } = Input;
 
@@ -53,7 +53,7 @@ export default class extends StandardPage {
     const ownerActionsNode = this.renderOwnerActionsNode()
     const councilActionsNode = this.renderCouncilActionsNode()
     const editForm = this.renderEditForm()
-    const mySuggestionNode = <MySuggestion />
+    // const mySuggestionNode = <MySuggestion />
     const commentNode = this.renderCommentNode()
     return (
       <div>
@@ -67,7 +67,7 @@ export default class extends StandardPage {
               {ownerActionsNode}
               {councilActionsNode}
             </div>
-            <div>{mySuggestionNode}</div>
+            {/* <div>{mySuggestionNode}</div> */}
             <div style={{ marginTop: 60 }}>{commentNode}</div>
           </MediaQuery>
           <MediaQuery minWidth={LG_WIDTH + 1}>
@@ -81,7 +81,7 @@ export default class extends StandardPage {
                 {councilActionsNode}
                 <div style={{ marginTop: 60 }}>{commentNode}</div>
               </Col>
-              <Col span={9}>{mySuggestionNode}</Col>
+              {/* <Col span={9}>{mySuggestionNode}</Col> */}
             </Row>
           </MediaQuery>
           {editForm}
@@ -163,7 +163,7 @@ export default class extends StandardPage {
     return (
       <Desc>
         <h4>{I18N.get('suggestion.form.fields.suggestion')}</h4>
-        <div dangerouslySetInnerHTML={{ __html: detail.desc }} />
+        <DescBody dangerouslySetInnerHTML={{ __html: detail.desc }} />
       </Desc>
     )
   }
@@ -176,7 +176,7 @@ export default class extends StandardPage {
     return (
       <Desc>
         <h4>{I18N.get('suggestion.form.fields.benefits')}</h4>
-        <div>{detail.benefits}</div>
+        <DescBody>{detail.benefits}</DescBody>
       </Desc>
     )
   }

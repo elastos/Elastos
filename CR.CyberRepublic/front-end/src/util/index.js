@@ -1,9 +1,9 @@
-import { connect } from 'react-redux';
-import _ from 'lodash';
-import { withRouter } from 'react-router';
-import { api_request, upload_file } from './request';
+import { connect } from 'react-redux'
+import _ from 'lodash'
+import { withRouter } from 'react-router'
+import { api_request, upload_file } from './request'
 import { loginRedirectWithQuery } from './login'
-import * as permissions from './permissions';
+import * as permissions from './permissions'
 
 /**
  * Helper for React-Redux connect
@@ -16,21 +16,21 @@ export const createContainer = (component, mapState, mapDispatch = _.noop()) => 
   const tmp_mapState = (state, ownProps) => {
     const s = {
       lang: state.language.language,
-    };
+    }
 
-    return _.merge(s, mapState(state, ownProps));
-  };
-  return withRouter(connect(tmp_mapState, mapDispatch)(component));
-};
+    return _.merge(s, mapState(state, ownProps))
+  }
+  return withRouter(connect(tmp_mapState, mapDispatch)(component))
+}
 
 export const constant = (moduleName, detailArray) => {
-  const result = {};
+  const result = {}
   _.each(detailArray, (detail) => {
-    result[detail] = `${moduleName}/${detail}`;
-  });
+    result[detail] = `${moduleName}/${detail}`
+  })
 
-  return result;
-};
+  return result
+}
 
 export {
   api_request,

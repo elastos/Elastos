@@ -16,7 +16,7 @@ beforeAll(async ()=>{
     // DB = await db.create()
 
     // communityService = new CommunityService(DB, {
-    //     user: null
+    //     user: undefined
     // })
 })
 
