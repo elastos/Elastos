@@ -1,6 +1,6 @@
-import Base from '../Base';
+import Base from '../Base'
 
-import file from './file';
+import file from './file'
 
 
 export default Base.setRouter([
@@ -9,4 +9,4 @@ export default Base.setRouter([
         router : file,
         method : 'post'
     }
-]);
+])

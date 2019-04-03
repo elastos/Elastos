@@ -1,6 +1,6 @@
-import {Schema} from 'mongoose';
-import {ELA, VotePower} from "./UserSchema";
-import {constant} from '../../constant';
+import {Schema} from 'mongoose'
+import {ELA, VotePower} from './UserSchema'
+import {constant} from '../../constant'
 
 export const PictureSchema = {
     thumbUrl: String,

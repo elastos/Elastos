@@ -1,6 +1,6 @@
 import BaseService from '../model/BaseService'
 import _ from 'lodash'
-import { api_request, permissions } from '@/util';
+import { api_request, permissions } from '@/util'
 
 export default class extends BaseService {
   async login(username, password, persist) {
@@ -14,7 +14,7 @@ export default class extends BaseService {
         username,
         password,
       },
-    });
+    })
     const is_admin = permissions.isAdmin(res.user.role)
     const is_leader = permissions.isLeader(res.user.role)
     const is_council = permissions.isCouncil(res.user.role)
@@ -36,7 +36,7 @@ export default class extends BaseService {
     this.dispatch(userRedux.actions.subscribers_update(_.values(res.user.subscribers)))
     this.dispatch(userRedux.actions.current_user_id_update(res.user._id))
     this.dispatch(userRedux.actions.popup_update_update(res.user.popupUpdate))
-    sessionStorage.setItem('api-token', res['api-token']);
+    sessionStorage.setItem('api-token', res['api-token'])
 
     if (persist) {
       localStorage.setItem('api-token', res['api-token'])
@@ -57,24 +57,24 @@ export default class extends BaseService {
      * @returns {Promise<void>}
      */
   async checkUsername(username) {
-    return await api_request({
+    await api_request({
       path: '/api/user/check-username',
       method: 'post',
       data: {
         username,
       },
-    });
+    })
   }
 
   async register(username, password, profile) {
-    const res = await api_request({
+    await api_request({
       path: '/api/user/register',
       method: 'post',
       data: Object.assign(profile, {
         username,
         password,
       }),
-    });
+    })
 
     return this.login(username, password)
   }
@@ -229,7 +229,7 @@ export default class extends BaseService {
     const result = await api_request({
       path: `/api/user/${ids}/users`,
       method: 'get',
-    });
+    })
 
     return result
   }
@@ -248,7 +248,7 @@ export default class extends BaseService {
         method: 'get',
         data: query,
         signal: this.getAbortSignal(path),
-      });
+      })
 
       await this.dispatch(memberRedux.actions.users_update(result.list))
       await this.dispatch(memberRedux.actions.users_total_update(result.total))
@@ -261,7 +261,7 @@ export default class extends BaseService {
   }
 
   async sendEmail(fromUserId, toUserId, formData) {
-    return await api_request({
+    await api_request({
       path: '/api/user/send-email',
       method: 'post',
       data: {
@@ -273,7 +273,7 @@ export default class extends BaseService {
   }
 
   async sendRegistrationCode(email, code) {
-    return await api_request({
+    await api_request({
       path: '/api/user/send-code',
       method: 'post',
       data: {
@@ -284,7 +284,7 @@ export default class extends BaseService {
   }
 
   async sendConfirmationEmail(email) {
-    return await api_request({
+    await api_request({
       path: '/api/user/send-confirm',
       method: 'post',
       data: {
@@ -294,7 +294,7 @@ export default class extends BaseService {
   }
 
   async checkEmail(email) {
-    return await api_request({
+    await api_request({
       path: '/api/user/check-email',
       method: 'post',
       data: {

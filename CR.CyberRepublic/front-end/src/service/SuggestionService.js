@@ -1,7 +1,7 @@
-import BaseService from '../model/BaseService'
 import _ from 'lodash'
 import { api_request } from '@/util'
-import { message } from 'antd';
+import { message } from 'antd'
+import BaseService from '../model/BaseService'
 
 export default class extends BaseService {
   constructor() {
@@ -112,6 +112,24 @@ export default class extends BaseService {
     this.dispatch(this.selfRedux.actions.loading_update(true))
 
     const path = `${this.prefixPath}/${doc.id}/update`
+    let res
+    try {
+      res = await api_request({
+        path,
+        method: 'post',
+        data: doc,
+      })
+    } catch (error) {
+      this.dispatch(this.selfRedux.actions.loading_update(false))
+      message.error('Error happened, please try again later or contact admin.')
+    }
+    return res
+  }
+
+  async addTag(doc) {
+    this.dispatch(this.selfRedux.actions.loading_update(true))
+
+    const path = `${this.prefixPath}/${doc.id}/addtag`
     let res
     try {
       res = await api_request({

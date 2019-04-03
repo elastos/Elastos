@@ -1,11 +1,11 @@
-import Base from './Base';
-import {Document} from 'mongoose';
-import {constant} from '../constant';
+import Base from './Base'
+import {Document} from 'mongoose'
+import {constant} from '../constant'
 
 export default class extends Base {
-    private model;
+    private model
     protected init(){
-        this.model = this.getDBModel('Log');
+        this.model = this.getDBModel('Log')
     }
     public async applyToAddTeam(
         teamId: string,
@@ -17,6 +17,6 @@ export default class extends Base {
             memberId,
             reason,
             type : constant.LOG_TYPE.APPLY_TEAM
-        });
+        })
     }
 }

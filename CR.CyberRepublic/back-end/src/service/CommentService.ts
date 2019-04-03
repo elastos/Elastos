@@ -1,8 +1,8 @@
-import Base from './Base';
-import {Document} from 'mongoose';
-import * as _ from 'lodash';
-import {constant} from '../constant';
-import {mail} from '../utility';
+import Base from './Base'
+import {Document} from 'mongoose'
+import * as _ from 'lodash'
+import {constant} from '../constant'
+import {mail} from '../utility'
 
 const sanitize = '-password -salt -email -resetToken'
 const sanitizeWithEmail = '-password -salt -resetToken'
@@ -48,7 +48,7 @@ export default class extends Base {
             }
 
             if (commentable.createdBy) {
-                this.sendNotificationEmail(type, param, createdBy, commentable.createdBy, null, returnUrl, commentable.name)
+                this.sendNotificationEmail(type, param, createdBy, commentable.createdBy, undefined, returnUrl, commentable.name)
 
                 if (!_.map(commentable.subscribers, (sub) => sub.user._id.toString()).includes(this.currentUser._id.toString())) {
 
@@ -60,7 +60,7 @@ export default class extends Base {
                     }
                 }
             } else if (commentable.owner) {
-                this.sendNotificationEmail(type, param, createdBy, commentable.owner, null, returnUrl, commentable.name)
+                this.sendNotificationEmail(type, param, createdBy, commentable.owner, undefined, returnUrl, commentable.name)
             } else if (type === 'Task_Candidate') {
                 commentable = await db_commentable.getDBInstance().findOne({_id: id})
                     .populate('createdBy')
@@ -70,7 +70,7 @@ export default class extends Base {
                 const task = await db_task.getDBInstance().findOne({_id: commentable.task.toString()})
                     .populate('createdBy')
 
-                this.sendNotificationEmail('Application', param, createdBy, task.createdBy, commentable.user, returnUrl, null)
+                this.sendNotificationEmail('Application', param, createdBy, task.createdBy, commentable.user, returnUrl, undefined)
             } else if (type === 'User_Team') {
                 commentable = await db_commentable.getDBInstance().findOne({_id: id})
                     .populate('user')
@@ -79,10 +79,10 @@ export default class extends Base {
                 const team = await db_team.getDBInstance().findOne({_id: commentable.team})
                     .populate('owner')
 
-                this.sendNotificationEmail('Application', param, createdBy, team.owner, commentable.user, returnUrl, null)
+                this.sendNotificationEmail('Application', param, createdBy, team.owner, commentable.user, returnUrl, undefined)
             } else if (type === 'User') {
                 commentable = await db_commentable.getDBInstance().findOne({_id: id})
-                this.sendNotificationEmail('Profile', param, createdBy, commentable, null, returnUrl, null)
+                this.sendNotificationEmail('Profile', param, createdBy, commentable, undefined, returnUrl, undefined)
             }
 
             return await db_commentable.update({_id: id}, updateObj)
@@ -147,7 +147,7 @@ export default class extends Base {
 
     public async sendNotificationEmail(type, param, curUser, owner, notifier, returnUrl, name) {
         if (curUser.current_user_id === owner._id.toString() && !notifier) {
-            return; // Dont notify about own comments
+            return // Dont notify about own comments
         }
 
         const {
@@ -201,10 +201,10 @@ export default class extends Base {
         for (let mention of mentions) {
             const username = mention.replace('@', '')
             const db_user = this.getDBModel('User')
-            const user = await db_user.findOne({username});
+            const user = await db_user.findOne({username})
 
             if (curUser.current_user_id === user._id) {
-                return; // Dont notify about own comments
+                return // Dont notify about own comments
             }
 
             let ownerTo = user.email
@@ -250,7 +250,7 @@ export default class extends Base {
 
         for (let subscriber of subscribers) {
             if (curUser.current_user_id === subscriber.user._id) {
-                return; // Dont notify about own comments
+                return // Dont notify about own comments
             }
 
             let ownerTo = subscriber.user.email

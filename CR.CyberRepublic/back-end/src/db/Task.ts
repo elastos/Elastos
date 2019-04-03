@@ -1,9 +1,9 @@
-import Base from './Base';
-import {Task} from './schema/TaskSchema';
+import Base from './Base'
+import {Task} from './schema/TaskSchema'
 
 export default class extends Base {
     protected getSchema(){
-        return Task;
+        return Task
     }
     protected getName(){
         return 'task'

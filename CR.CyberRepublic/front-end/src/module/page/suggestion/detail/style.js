@@ -28,11 +28,17 @@ export const Title = styled.div`
 export const Label = styled.span`
   background: #F2F6FB;
   padding: 3px 10px;
+  margin-right: 10px;
+  word-break: keep-all;
 `
 
 export const Desc = styled.div`
   color: black;
   margin-top: 30px;
+`
+
+export const DescBody = styled.div`
+  font-weight: 200;
 `
 
 // export const StyledLink = styled.div`

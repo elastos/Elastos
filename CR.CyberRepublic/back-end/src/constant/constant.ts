@@ -1,12 +1,12 @@
-import * as _ from 'lodash';
+import * as _ from 'lodash'
 
 const create = (constant_list: string[]): any => {
-    const map = {};
+    const map = {}
     _.each(constant_list, (key)=>{
-        map[key] = key;
-    });
+        map[key] = key
+    })
 
-    return map;
+    return map
 }
 
 export const USER_ROLE = {
@@ -129,15 +129,15 @@ export const TASK_CANDIDATE_CATEGORY = {
 }
 
 // ACTIVE === PASSED, currently 'published' flag is used for 'DRAFT'
-export const CVOTE_STATUS = create(['DRAFT', 'PROPOSED', 'ACTIVE', 'REJECT', 'FINAL', 'DEFERRED']);
+export const CVOTE_STATUS = create(['DRAFT', 'PROPOSED', 'ACTIVE', 'REJECT', 'FINAL', 'DEFERRED'])
 export const CVOTE_RESULT = {
     SUPPORT: 'support',
     REJECT: 'reject',
     ABSTENTION: 'abstention',
     UNDECIDED: 'undecided',
-};
+}
 // expiration period: 7 days
-export const CVOTE_EXPIRATION = 1000*60*60*24*7;
+export const CVOTE_EXPIRATION = 1000*60*60*24*7
 
 export const ONE_DAY = 1000 * 60 * 60 * 24
 
@@ -173,6 +173,8 @@ export const USER_PROFESSION = create(['ENGINEERING', 'COMPUTER_SCIENCE', 'PRODU
 export const SUGGESTION_STATUS = create(['ACTIVE', 'ABUSED', 'ARCHIVED'])
 
 export const SUGGESTION_ABUSED_STATUS = create(['REPORTED', 'HANDLED'])
+
+export const SUGGESTION_TAG_TYPE = create(['UNDER_CONSIDERATION', 'INFO_NEEDED'])
 
 // DB sensitive data we do not want to explosure
 export const DB_EXCLUDED_FIELDS = {

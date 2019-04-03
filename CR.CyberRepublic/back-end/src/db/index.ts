@@ -1,6 +1,6 @@
-import DB from './DB';
+import DB from './DB'
 
-let db: DB;
+let db: DB
 
 /**
  * Ensure we initialize the db session only once,
@@ -9,10 +9,10 @@ let db: DB;
 export default class {
     static async create(){
         if(!db){
-            db = new DB();
-            await db.start();
+            db = new DB()
+            await db.start()
         }
-        return db;
+        return db
     }
 
 }

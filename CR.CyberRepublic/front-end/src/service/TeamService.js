@@ -83,7 +83,7 @@ export default class extends BaseService {
       data: {
         teamHasUser: userId,
       },
-    });
+    })
 
     this.dispatch(teamRedux.actions.all_teams_reset())
     this.dispatch(teamRedux.actions.all_teams_update(result.list))
@@ -115,7 +115,7 @@ export default class extends BaseService {
       path: '/api/team/update',
       method: 'post',
       data: param,
-    });
+    })
 
     const detail = {
       ...this.store.getState().team.detail,
@@ -137,14 +137,14 @@ export default class extends BaseService {
       path: '/api/team/create',
       method: 'post',
       data: param,
-    });
+    })
 
     const allTeams = this.store.getState().team.all_teams || []
     allTeams[_.size(_.values(allTeams))] = result
     this.dispatch(teamRedux.actions.loading_update(false))
     this.dispatch(teamRedux.actions.all_teams_update(allTeams))
 
-    return result;
+    return result
   }
 
   resetAllTeams() {
@@ -269,7 +269,7 @@ export default class extends BaseService {
     const teamRedux = this.store.getRedux('team')
     this.dispatch(teamRedux.actions.loading_update(true))
 
-    const result = await api_request({
+    await api_request({
       path: '/api/team/action/delete',
       method: 'post',
       data: {

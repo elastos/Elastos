@@ -12,7 +12,7 @@ export const getPermissionIndex = (role: string) => [
   USER_ROLE.SECRETARY,
   USER_ROLE.COUNCIL,
   SUPER_ADMIN,
-].indexOf(role);
+].indexOf(role)
 
 export const checkPermissions = (userRole: string, role: string) => getPermissionIndex(userRole) >= getPermissionIndex(role)
 

@@ -1,10 +1,10 @@
-import Base from './Base';
-import {Log} from './schema/LogSchema';
-import * as mongoose from "mongoose";
+import Base from './Base'
+import {Log} from './schema/LogSchema'
+import * as mongoose from 'mongoose'
 
 export default class extends Base {
     protected getSchema(){
-        return Log;
+        return Log
     }
     protected getName(){
         return 'logs'

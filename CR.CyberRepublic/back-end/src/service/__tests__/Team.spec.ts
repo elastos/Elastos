@@ -15,7 +15,7 @@ beforeAll(async ()=>{
 
     // // create a test user as member role
     // const userService = new UserService(DB, {
-    //     user: null
+    //     user: undefined
     // });
     // user.member = await userService.registerNewUser(global.DB.MEMBER_USER);
     // user.admin = await userService.getDBModel('User').findOne(global.DB.ADMIN_USER);
@@ -39,7 +39,7 @@ describe('test for team', ()=>{
         //     ...global.DB.TEAM_UPDATE,
         //     id : team._id
         // });
-        // expect(rs1.name).not.toBeNull();
+        // expect(rs1.name).not.toBeundefined();
 
     });
 });

@@ -1,4 +1,4 @@
-import * as constant from './constant';
+import * as constant from './constant'
 
 export {
     constant

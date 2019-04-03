@@ -1,7 +1,7 @@
 import * as uuid from 'uuid'
-import { expect } from 'chai'
-import { constant } from '../../constant';
-import { mail } from '../../utility'
+import {expect} from 'chai'
+import {constant} from '../../constant';
+import {mail} from '../../utility'
 import db from '../../db'
 import '../../config'
 import SuggestionService from '../SuggestionService'
@@ -35,7 +35,7 @@ beforeAll(async () => {
   const userService = new UserService(DB, {
     user: undefined,
   })
-  user.admin = await userService.getDBModel('User').findOne({ role: constant.USER_ROLE.ADMIN })
+  user.admin = await userService.getDBModel('User').findOne({role: constant.USER_ROLE.ADMIN})
   user.member = await userService.registerNewUser(global.DB.MEMBER_USER)
   const council = await userService.registerNewUser(global.DB.COUNCIL_USER)
   // added COUNCIL role to council
@@ -47,12 +47,12 @@ beforeAll(async () => {
     userId: council._id,
     role: constant.USER_ROLE.COUNCIL
   })
-  user.council = await userService.getDBModel('User').findOne({ _id: council._id })
+  user.council = await userService.getDBModel('User').findOne({_id: council._id})
 
   // service setup
-  service.member = new SuggestionService(DB, { user: user.member })
-  service.council = new SuggestionService(DB, { user: user.council })
-  service.admin = new SuggestionService(DB, { user: user.admin })
+  service.member = new SuggestionService(DB, {user: user.member})
+  service.council = new SuggestionService(DB, {user: user.council})
+  service.admin = new SuggestionService(DB, {user: user.admin})
 })
 
 describe('Tests for CVote', () => {

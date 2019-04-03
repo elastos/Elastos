@@ -30,12 +30,13 @@ beforeAll(async ()=>{
     await DB.getModel('User').remove({
         username: global.DB.COUNCIL_USER.username
     })
+
     await DB.getModel('Task').remove({})
     await DB.getModel('CVote').remove({})
 
     // create a test user as member role
     const userService = new UserService(DB, {
-        user: null
+        user: undefined
     })
     user.admin = await userService.getDBModel('User').findOne({ role : constant.USER_ROLE.ADMIN })
     user.member = await userService.registerNewUser(global.DB.MEMBER_USER)

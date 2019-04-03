@@ -1,4 +1,4 @@
-import Base from './Base';
+import Base from './Base'
 
 export default class extends Base {
     protected getSchema(){
@@ -6,10 +6,10 @@ export default class extends Base {
             name : String,
             age : Number,
             time : Date
-        };
+        }
     }
     protected getName(){
-        return 'Test';
+        return 'Test'
     }
 
 }
