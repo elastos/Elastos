@@ -49,6 +49,7 @@ type network struct {
 	messageQueue chan *messageItem
 	quit         chan bool
 
+	badNetworkChan           chan bool
 	changeViewChan           chan bool
 	blockReceivedChan        chan blockItem
 	confirmReceivedChan      chan *payload.Confirm
@@ -79,6 +80,8 @@ func (n *network) Start() {
 				n.processMessage(msgItem)
 			case <-n.changeViewChan:
 				n.changeView()
+			case <-n.badNetworkChan:
+				n.badNetwork()
 			case blockItem := <-n.blockReceivedChan:
 				n.blockReceived(blockItem.Block, blockItem.Confirmed)
 			case confirm := <-n.confirmReceivedChan:
@@ -181,7 +184,7 @@ func (n *network) PostConfirmReceivedTask(p *payload.Confirm) {
 
 func (n *network) notifyFlag(flag p2p.NotifyFlag) {
 	if flag == p2p.NFBadNetwork {
-		n.listener.OnBadNetwork()
+		n.badNetworkChan <- true
 	}
 }
 
@@ -290,6 +293,10 @@ func (n *network) processMessage(msgItem *messageItem) {
 	}
 }
 
+func (n *network) badNetwork() {
+	n.listener.OnBadNetwork()
+}
+
 func (n *network) changeView() {
 	n.listener.OnChangeView()
 }
@@ -323,6 +330,7 @@ func NewDposNetwork(pid peer.PID, listener manager.NetworkEventListener,
 		messageQueue:             make(chan *messageItem, 10000), //todo config handle capacity though config file
 		quit:                     make(chan bool),
 		changeViewChan:           make(chan bool),
+		badNetworkChan:           make(chan bool),
 		blockReceivedChan:        make(chan blockItem, 10),        //todo config handle capacity though config file
 		confirmReceivedChan:      make(chan *payload.Confirm, 10), //todo config handle capacity though config file
 		illegalBlocksEvidence:    make(chan *payload.DPOSIllegalBlocks),
