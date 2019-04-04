@@ -1,4 +1,4 @@
-# Elastos Local PrivateNet - v0.1
+# Elastos Local PrivateNet - v0.2
 
 ## We are currently updating to the new version to support the DPoS Supernodes
 
