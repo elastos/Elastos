@@ -10,7 +10,7 @@ install:
   - glide install
 script:
   - go test -v -short ./...
-  - make cli
+  - make
   - ./util.sh test
 deploy:
   provider: releases
