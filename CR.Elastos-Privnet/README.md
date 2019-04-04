@@ -7,7 +7,7 @@ the new DPoS nodes and possibly the ETH sidechain.
 
 ### This is official but unsupported and ALPHA version
 
-These executables are built from repos at [https://github.com/elastos](https://github.com/elastos 
+These executables are built from repos at [https://github.com/elastos](https://github.com/elastos)
 which we use to compile the executables into the right environment. Only the executables can be found here.
 
 #### These executables are purpose built for the docker images herein, if you want to use them directly, you may need to build from source
