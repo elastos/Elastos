@@ -18,8 +18,6 @@ package core
 
 import (
 	"fmt"
-	"math/big"
-
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/common"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/consensus"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/consensus/misc"
@@ -28,6 +26,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/core/vm"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/ethdb"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/params"
+	"math/big"
 )
 
 // BlockGen creates blocks for testing.

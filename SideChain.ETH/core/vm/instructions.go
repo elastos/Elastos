@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/spv"
+
 	"math/big"
 
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/common"
@@ -968,3 +969,16 @@ func opSpvPayLoadCode(pc *uint64, interpreter *EVMInterpreter, contract *Contrac
 	interpreter.intPool.put(memOffset, codeOffset, length)
 	return nil, nil
 }
+
+// to judge an address is an arbiter lidongqing add
+func opSpvIsArbiter(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+	fmt.Println("lidongqing niubi")
+	var isArbiter = big.NewInt(0)
+	address := stack.pop()
+	if address != nil {
+		spv.AddrIsArbiter(address)
+	}
+	stack.push(isArbiter)
+	return nil, nil
+}
+

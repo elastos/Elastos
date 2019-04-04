@@ -178,6 +178,7 @@ func ecrecover(header *types.Header, sigcache *lru.ARCCache) (common.Address, er
 	if address, known := sigcache.Get(hash); known {
 		return address.(common.Address), nil
 	}
+
 	// Retrieve the signature from the header extra-data
 	if len(header.Extra) < extraSeal {
 		return common.Address{}, errMissingSignature
@@ -195,6 +196,8 @@ func ecrecover(header *types.Header, sigcache *lru.ARCCache) (common.Address, er
 	sigcache.Add(hash, signer)
 	return signer, nil
 }
+
+
 
 // Clique is the proof-of-authority consensus engine proposed to support the
 // Ethereum testnet following the Ropsten attacks.
@@ -432,6 +435,7 @@ func (c *Clique) snapshot(chain consensus.ChainReader, number uint64, hash commo
 		headers = append(headers, header)
 		number, hash = number-1, header.ParentHash
 	}
+
 	// Previous snapshot found, apply any pending headers on top of it
 	for i := 0; i < len(headers)/2; i++ {
 		headers[i], headers[len(headers)-1-i] = headers[len(headers)-1-i], headers[i]
@@ -636,6 +640,7 @@ func (c *Clique) Seal(chain consensus.ChainReader, block *types.Block, results c
 			}
 		}
 	}
+
 	// Sweet, the protocol permits us to sign the block, wait for our time
 	delay := time.Unix(header.Time.Int64(), 0).Sub(time.Now()) // nolint: gosimple
 	if header.Difficulty.Cmp(diffNoTurn) == 0 {

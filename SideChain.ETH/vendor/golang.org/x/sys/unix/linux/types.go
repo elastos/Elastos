@@ -36,6 +36,7 @@ package unix
 #include <sys/resource.h>
 #include <sys/select.h>
 #include <sys/signal.h>
+#include <sys/signalfd.h>
 #include <sys/statfs.h>
 #include <sys/statvfs.h>
 #include <sys/sysinfo.h>
@@ -46,6 +47,8 @@ package unix
 #include <sys/user.h>
 #include <sys/utsname.h>
 #include <sys/wait.h>
+#include <linux/errqueue.h>
+#include <linux/fanotify.h>
 #include <linux/filter.h>
 #include <linux/icmpv6.h>
 #include <linux/if_pppox.h>
@@ -229,8 +232,8 @@ struct sockaddr_rc {
 // copied from /usr/include/linux/un.h
 struct my_sockaddr_un {
 	sa_family_t sun_family;
-#if defined(__ARM_EABI__) || defined(__powerpc64__)
-	// on ARM char is by default unsigned
+#if defined(__ARM_EABI__) || defined(__powerpc64__) || defined(__riscv)
+	// on some platforms char is unsigned by default
 	signed char sun_path[108];
 #else
 	char sun_path[108];
@@ -328,7 +331,8 @@ struct perf_event_attr_go {
 	__s32 clockid;
 	__u64 sample_regs_intr;
 	__u32 aux_watermark;
-	__u32 __reserved_2;
+	__u16 sample_max_stack;
+	__u16 __reserved_2;
 };
 
 // ustat is deprecated and glibc 2.28 removed ustat.h. Provide the type here for
@@ -491,6 +495,8 @@ type Ucred C.struct_ucred
 
 type TCPInfo C.struct_tcp_info
 
+type CanFilter C.struct_can_filter
+
 const (
 	SizeofSockaddrInet4     = C.sizeof_struct_sockaddr_in
 	SizeofSockaddrInet6     = C.sizeof_struct_sockaddr_in6
@@ -520,6 +526,7 @@ const (
 	SizeofICMPv6Filter      = C.sizeof_struct_icmp6_filter
 	SizeofUcred             = C.sizeof_struct_ucred
 	SizeofTCPInfo           = C.sizeof_struct_tcp_info
+	SizeofCanFilter         = C.sizeof_struct_can_filter
 )
 
 // Netlink routing and interface messages
@@ -657,6 +664,7 @@ const (
 	SizeofIfAddrmsg      = C.sizeof_struct_ifaddrmsg
 	SizeofRtMsg          = C.sizeof_struct_rtmsg
 	SizeofRtNexthop      = C.sizeof_struct_rtnexthop
+	SizeofNdUseroptmsg   = C.sizeof_struct_nduseroptmsg
 )
 
 type NlMsghdr C.struct_nlmsghdr
@@ -676,6 +684,8 @@ type IfAddrmsg C.struct_ifaddrmsg
 type RtMsg C.struct_rtmsg
 
 type RtNexthop C.struct_rtnexthop
+
+type NdUseroptmsg C.struct_nduseroptmsg
 
 // Linux socket filter
 
@@ -748,7 +758,7 @@ const (
 
 type Sigset_t C.sigset_t
 
-const RNDGETENTCNT = C.RNDGETENTCNT
+type SignalfdSiginfo C.struct_signalfd_siginfo
 
 const PERF_IOC_FLAG_GROUP = C.PERF_IOC_FLAG_GROUP
 
@@ -922,6 +932,7 @@ const (
 	PERF_COUNT_SW_ALIGNMENT_FAULTS = C.PERF_COUNT_SW_ALIGNMENT_FAULTS
 	PERF_COUNT_SW_EMULATION_FAULTS = C.PERF_COUNT_SW_EMULATION_FAULTS
 	PERF_COUNT_SW_DUMMY            = C.PERF_COUNT_SW_DUMMY
+	PERF_COUNT_SW_BPF_OUTPUT       = C.PERF_COUNT_SW_BPF_OUTPUT
 
 	PERF_SAMPLE_IP           = C.PERF_SAMPLE_IP
 	PERF_SAMPLE_TID          = C.PERF_SAMPLE_TID
@@ -943,21 +954,38 @@ const (
 	PERF_SAMPLE_BRANCH_ANY_CALL   = C.PERF_SAMPLE_BRANCH_ANY_CALL
 	PERF_SAMPLE_BRANCH_ANY_RETURN = C.PERF_SAMPLE_BRANCH_ANY_RETURN
 	PERF_SAMPLE_BRANCH_IND_CALL   = C.PERF_SAMPLE_BRANCH_IND_CALL
+	PERF_SAMPLE_BRANCH_ABORT_TX   = C.PERF_SAMPLE_BRANCH_ABORT_TX
+	PERF_SAMPLE_BRANCH_IN_TX      = C.PERF_SAMPLE_BRANCH_IN_TX
+	PERF_SAMPLE_BRANCH_NO_TX      = C.PERF_SAMPLE_BRANCH_NO_TX
+	PERF_SAMPLE_BRANCH_COND       = C.PERF_SAMPLE_BRANCH_COND
+	PERF_SAMPLE_BRANCH_CALL_STACK = C.PERF_SAMPLE_BRANCH_CALL_STACK
+	PERF_SAMPLE_BRANCH_IND_JUMP   = C.PERF_SAMPLE_BRANCH_IND_JUMP
+	PERF_SAMPLE_BRANCH_CALL       = C.PERF_SAMPLE_BRANCH_CALL
+	PERF_SAMPLE_BRANCH_NO_FLAGS   = C.PERF_SAMPLE_BRANCH_NO_FLAGS
+	PERF_SAMPLE_BRANCH_NO_CYCLES  = C.PERF_SAMPLE_BRANCH_NO_CYCLES
+	PERF_SAMPLE_BRANCH_TYPE_SAVE  = C.PERF_SAMPLE_BRANCH_TYPE_SAVE
 
 	PERF_FORMAT_TOTAL_TIME_ENABLED = C.PERF_FORMAT_TOTAL_TIME_ENABLED
 	PERF_FORMAT_TOTAL_TIME_RUNNING = C.PERF_FORMAT_TOTAL_TIME_RUNNING
 	PERF_FORMAT_ID                 = C.PERF_FORMAT_ID
 	PERF_FORMAT_GROUP              = C.PERF_FORMAT_GROUP
 
-	PERF_RECORD_MMAP       = C.PERF_RECORD_MMAP
-	PERF_RECORD_LOST       = C.PERF_RECORD_LOST
-	PERF_RECORD_COMM       = C.PERF_RECORD_COMM
-	PERF_RECORD_EXIT       = C.PERF_RECORD_EXIT
-	PERF_RECORD_THROTTLE   = C.PERF_RECORD_THROTTLE
-	PERF_RECORD_UNTHROTTLE = C.PERF_RECORD_UNTHROTTLE
-	PERF_RECORD_FORK       = C.PERF_RECORD_FORK
-	PERF_RECORD_READ       = C.PERF_RECORD_READ
-	PERF_RECORD_SAMPLE     = C.PERF_RECORD_SAMPLE
+	PERF_RECORD_MMAP            = C.PERF_RECORD_MMAP
+	PERF_RECORD_LOST            = C.PERF_RECORD_LOST
+	PERF_RECORD_COMM            = C.PERF_RECORD_COMM
+	PERF_RECORD_EXIT            = C.PERF_RECORD_EXIT
+	PERF_RECORD_THROTTLE        = C.PERF_RECORD_THROTTLE
+	PERF_RECORD_UNTHROTTLE      = C.PERF_RECORD_UNTHROTTLE
+	PERF_RECORD_FORK            = C.PERF_RECORD_FORK
+	PERF_RECORD_READ            = C.PERF_RECORD_READ
+	PERF_RECORD_SAMPLE          = C.PERF_RECORD_SAMPLE
+	PERF_RECORD_MMAP2           = C.PERF_RECORD_MMAP2
+	PERF_RECORD_AUX             = C.PERF_RECORD_AUX
+	PERF_RECORD_ITRACE_START    = C.PERF_RECORD_ITRACE_START
+	PERF_RECORD_LOST_SAMPLES    = C.PERF_RECORD_LOST_SAMPLES
+	PERF_RECORD_SWITCH          = C.PERF_RECORD_SWITCH
+	PERF_RECORD_SWITCH_CPU_WIDE = C.PERF_RECORD_SWITCH_CPU_WIDE
+	PERF_RECORD_NAMESPACES      = C.PERF_RECORD_NAMESPACES
 
 	PERF_CONTEXT_HV     = C.PERF_CONTEXT_HV
 	PERF_CONTEXT_KERNEL = C.PERF_CONTEXT_KERNEL
@@ -970,6 +998,7 @@ const (
 	PERF_FLAG_FD_NO_GROUP = C.PERF_FLAG_FD_NO_GROUP
 	PERF_FLAG_FD_OUTPUT   = C.PERF_FLAG_FD_OUTPUT
 	PERF_FLAG_PID_CGROUP  = C.PERF_FLAG_PID_CGROUP
+	PERF_FLAG_FD_CLOEXEC  = C.PERF_FLAG_FD_CLOEXEC
 )
 
 // Platform ABI and calling convention
@@ -1106,6 +1135,9 @@ const (
 	SizeofTpacketHdr  = C.sizeof_struct_tpacket_hdr
 	SizeofTpacket2Hdr = C.sizeof_struct_tpacket2_hdr
 	SizeofTpacket3Hdr = C.sizeof_struct_tpacket3_hdr
+
+	SizeofTpacketStats   = C.sizeof_struct_tpacket_stats
+	SizeofTpacketStatsV3 = C.sizeof_struct_tpacket_stats_v3
 )
 
 // netfilter
@@ -1640,7 +1672,9 @@ const (
 	NCSI_CHANNEL_ATTR_VLAN_ID       = C.NCSI_CHANNEL_ATTR_VLAN_ID
 )
 
-// SO_TIMESTAMPING flags
+// Timestamping
+
+type ScmTimestamping C.struct_scm_timestamping
 
 const (
 	SOF_TIMESTAMPING_TX_HARDWARE  = C.SOF_TIMESTAMPING_TX_HARDWARE
@@ -1661,4 +1695,18 @@ const (
 
 	SOF_TIMESTAMPING_LAST = C.SOF_TIMESTAMPING_LAST
 	SOF_TIMESTAMPING_MASK = C.SOF_TIMESTAMPING_MASK
+
+	SCM_TSTAMP_SND   = C.SCM_TSTAMP_SND
+	SCM_TSTAMP_SCHED = C.SCM_TSTAMP_SCHED
+	SCM_TSTAMP_ACK   = C.SCM_TSTAMP_ACK
 )
+
+// Socket error queue
+
+type SockExtendedErr C.struct_sock_extended_err
+
+// Fanotify
+
+type FanotifyEventMetadata C.struct_fanotify_event_metadata
+
+type FanotifyResponse C.struct_fanotify_response

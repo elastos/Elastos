@@ -246,9 +246,6 @@ func AddrIsArbiter(address *big.Int) int8 {
 	return -1
 }
 
-//Service
-var spvService *Service
-
 func GetCurrentProducers() [][]byte {
 	var arbiters [][]byte
 	if spvService == nil || spvService.DPOSSPVService == nil {
@@ -287,3 +284,7 @@ func GetProducersByHeight(height uint32) [][]byte {
 	}
 	return arbiters
 }
+
+//Service
+var spvService *Service
+

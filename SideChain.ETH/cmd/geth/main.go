@@ -20,6 +20,7 @@ package main
 import (
 	"bytes"
 	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"math"
@@ -32,11 +33,10 @@ import (
 	"time"
 
 	"github.com/elastic/gosigar"
-	elacommon "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/accounts"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/accounts/keystore"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/cmd/utils"
-	common "github.com/elastos/Elastos.ELA.SideChain.ETH/common"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/common"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/console"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/eth"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/ethclient"
@@ -46,6 +46,8 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/metrics"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/node"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/spv"
+	elacom "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"golang.org/x/crypto/ripemd160"
 	"gopkg.in/urfave/cli.v1"
 )
@@ -264,7 +266,7 @@ func init() {
 }
 
 func main() {
-	if err := app.Run(os.Args); err != nil {
+	if err := app.Run(setDefaultSettings(os.Args)); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
@@ -296,19 +298,19 @@ func calculateGenesisAddress(genesisBlockHash string) (string, error) {
 	if strings.HasPrefix(genesisBlockHash, "0x") {
 		genesisBlockHash = genesisBlockHash[2:]
 	}
-	genesisBlockBytes, err := elacommon.HexStringToBytes(genesisBlockHash)
+	genesisBlockBytes, err := hex.DecodeString(genesisBlockHash)
 	if err != nil {
 		return "", errors.New("genesis block hash to bytes failed")
 	}
-	reversedGenesisBlockBytes := elacommon.BytesReverse(genesisBlockBytes)
-	reversedGenesisBlockStr := elacommon.BytesToHexString(reversedGenesisBlockBytes)
+	reversedGenesisBlockBytes := elacom.BytesReverse(genesisBlockBytes)
+	reversedGenesisBlockStr := elacom.BytesToHexString(reversedGenesisBlockBytes)
 
 	fmt.Println("genesis program hash:", reversedGenesisBlockStr)
 
 	buf := new(bytes.Buffer)
 	buf.WriteByte(byte(len(reversedGenesisBlockBytes)))
 	buf.Write(reversedGenesisBlockBytes)
-	buf.WriteByte(byte(elacommon.CROSSCHAIN))
+	buf.WriteByte(byte(elacom.CROSSCHAIN))
 
 	sum168 := func(prefix byte, code []byte) []byte {
 		hash := sha256.Sum256(code)
@@ -317,7 +319,7 @@ func calculateGenesisAddress(genesisBlockHash string) (string, error) {
 		return md160.Sum([]byte{prefix})
 	}
 
-	genesisProgramHash, err := elacommon.Uint168FromBytes(sum168(elacommon.PrefixCrossChain, buf.Bytes()))
+	genesisProgramHash, err := elacom.Uint168FromBytes(sum168(byte(contract.PrefixCrossChain), buf.Bytes()))
 	if err != nil {
 		return "", errors.New("genesis block bytes to program hash failed")
 	}
@@ -340,13 +342,12 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 	// Start up the node itself
 	utils.StartNode(stack)
 
-
 	// prepare the SPV service config parameters
 	spvCfg := &spv.Config{
-		DataDir: ctx.GlobalString(utils.DataDirFlag.Name),
-		Magic: spv.Parameters.SpvMagic,
-		Foundation: spv.Parameters.MainChainFoundationAddress,
-		SeedList: spv.Parameters.SpvSeedList,
+		DataDir:     ctx.GlobalString(utils.DataDirFlag.Name),
+		Magic:       spv.Parameters.SpvMagic,
+		Foundation:  spv.Parameters.MainChainFoundationAddress,
+		SeedList:    spv.Parameters.SpvSeedList,
 		DefaultPort: spv.Parameters.NodePort,
 	}
 
@@ -365,7 +366,7 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 		var fullnode *eth.Ethereum
 		var lightnode *les.LightEthereum
 		var ghash common.Hash
-		
+
 		// light node and full node are different types of node services
 		if ctx.GlobalString(utils.SyncModeFlag.Name) == "light" {
 			if err := stack.Service(&lightnode); err != nil {
@@ -389,6 +390,7 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 		}
 	}
 
+	// lidongqing add 注销掉spv模块启动的代码
 	// start the SPV service
 	fmt.Printf("Starting SPV service with config: %+v \n", *spvCfg)
 	if spvService, err := spv.NewService(spvCfg); err != nil {
@@ -398,7 +400,7 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 		fmt.Println("Mainchain SPV module started successfully!")
 	}
 
-	// Unlock any account specifically requested
+	// Unlock any account  requested
 	ks := stack.AccountManager().Backends(keystore.KeyStoreType)[0].(*keystore.KeyStore)
 
 	passwords := utils.MakePasswordList(ctx)
@@ -474,4 +476,74 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 			utils.Fatalf("Failed to start mining: %v", err)
 		}
 	}
+}
+
+// Determine whether to complete the initialization command lidongqing
+func isNeedFixCmd(args []string) bool {
+	for _, arg := range args {
+		if strings.Contains("account attach bug console copydb dump dumpconfig export export-preimages import import-preimages init js license makecache makedag monitor removedb version wallet help h", arg) {
+			return false
+		}
+	}
+	return true
+}
+
+// Is contains cmd lidongqing
+func isContainsCmd(args []string, cmd string) bool {
+	for _, arg := range args {
+		if cmd == arg {
+			return true
+		}
+	}
+	return false
+}
+
+// Set default settings lidongqing add
+func setDefaultSettings(args []string) []string {
+	if isNeedFixCmd(args) {
+		if !isContainsCmd(args, "--datadir") {
+			args = append(args, "--datadir")
+			args = append(args, "./data")
+		}
+
+		if !isContainsCmd(args, "--bootnodes") {
+			args = append(args, "--bootnodes")
+			args = append(args, "enode://61e87a7cb756b8b05763a1ec208437a06e18f9fabc10e8b2a9dcf97d891a324fad39de8d2595f2dfcccd772fc0c4f2193a828d610795588d4767e27c6cc5e9e1@52.81.82.85:30301")
+		}
+
+		if !isContainsCmd(args, "--port") {
+			args = append(args, "--port")
+			args = append(args, "6066")
+		}
+
+		if !isContainsCmd(args, "--rpc") {
+			args = append(args, "--rpc")
+		}
+
+		if !isContainsCmd(args, "--rpccorsdomain") {
+			args = append(args, "--rpccorsdomain")
+			args = append(args, "*")
+		}
+
+		if !isContainsCmd(args, "--rpcaddr") {
+			args = append(args, "--rpcaddr")
+			args = append(args, "0.0.0.0")
+		}
+
+		if !isContainsCmd(args, "--rpcport") {
+			args = append(args, "--rpcport")
+			args = append(args, "6666")
+		}
+
+		if !isContainsCmd(args, "--rpcapi") {
+			args = append(args, "--rpcapi")
+			args = append(args, "personal,db,eth,net,web3,txpool,miner")
+		}
+
+		if !isContainsCmd(args, "--networkid") {
+			args = append(args, "--networkid")
+			args = append(args, "6666")
+		}
+	}
+	return args
 }

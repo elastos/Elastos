@@ -304,7 +304,6 @@ func (s *Snapshot) apply(headers []*types.Header) (*Snapshot, error) {
 		snap.sigcache.Add(elaHeight,elaHeight);
 	}
 
-
 	snap.Number += uint64(len(headers))
 	snap.Hash = headers[len(headers)-1].Hash()
 

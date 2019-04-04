@@ -65,7 +65,6 @@ func (n *BlockNonce) UnmarshalText(input []byte) error {
 }
 
 //go:generate gencodec -type Header -field-override headerMarshaling -out gen_header_json.go
-
 // Header represents a block header in the Ethereum blockchain.
 type Header struct {
 	ParentHash  common.Hash    `json:"parentHash"       gencodec:"required"`
@@ -83,6 +82,9 @@ type Header struct {
 	Extra       []byte         `json:"extraData"        gencodec:"required"`
 	MixDigest   common.Hash    `json:"mixHash"          gencodec:"required"`
 	Nonce       BlockNonce     `json:"nonce"            gencodec:"required"`
+
+	// add New ElaHeight lidongqing add
+	ElaHeight   *big.Int       `json:"elaHeight"        gencodec:"required"`
 }
 
 // field type overrides for gencodec

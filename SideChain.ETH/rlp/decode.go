@@ -791,6 +791,10 @@ func (s *Stream) ListEnd() error {
 // to by val. Please see the documentation for the Decode function
 // to learn about the decoding rules.
 func (s *Stream) Decode(val interface{}) error {
+
+
+
+
 	if val == nil {
 		return errDecodeIntoNil
 	}

@@ -217,10 +217,11 @@ const (
 	SELFDESTRUCT = 0xff
 )
 
-// 0xdd - 0xde opcodes used for ela
+// 0xdd - 0xdf opcodes used for spv
 const (
 	SPVPAYLOADSIZE = 0xdd
 	SPVPAYLOADCOPY = 0xde
+	SPVISARBITER = 0xdf
 )
 
 // Since the opcodes aren't all in order we can't use a regular slice.
@@ -390,6 +391,7 @@ var opCodeToString = map[OpCode]string{
 
 	SPVPAYLOADSIZE: "SPVPAYLOADSIZE",
 	SPVPAYLOADCOPY: "SPVPAYLOADCOPY",
+	SPVISARBITER: "SPVISARBITER",
 }
 
 func (op OpCode) String() string {
@@ -543,6 +545,7 @@ var stringToOp = map[string]OpCode{
 	"SELFDESTRUCT":   SELFDESTRUCT,
 	"SPVPAYLOADSIZE": SPVPAYLOADSIZE,
 	"SPVPAYLOADCOPY": SPVPAYLOADCOPY,
+	"SPVISARBITER": SPVISARBITER,
 }
 
 // StringToOp finds the opcode whose name is stored in `str`.

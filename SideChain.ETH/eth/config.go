@@ -34,6 +34,7 @@ import (
 )
 
 // DefaultConfig contains default settings for use on the Ethereum main net.
+// Modify networkId and the default one is 1 lidongqing add
 var DefaultConfig = Config{
 	SyncMode: downloader.FastSync,
 	Ethash: ethash.Config{

@@ -1,3 +1,24 @@
+v1.6.6 [2019-02-28]
+-------------------
+
+### Bugfixes
+
+-	[#10951](https://github.com/influxdata/influxdb/pull/10951): Marked functions that always return floats as always returning floats.
+-	[#11003](https://github.com/influxdata/influxdb/pull/11003): Fix Cardinality estimation error.
+-	[#11909](https://github.com/influxdata/influxdb/pull/11909): Update tagKeyValue mutex to write lock.
+
+v1.6.5 [2019-01-09]
+-------------------
+
+### Bugfixes
+
+-	[#10425](https://github.com/influxdata/influxdb/pull/10425): Fix panic in IndexSet.
+-	[#10426](https://github.com/influxdata/influxdb/pull/10426): fix(tsdb): copy measurement names when expression is provided.
+-	[#10556](https://github.com/influxdata/influxdb/pull/10556): Drop NaN values when writing back points.
+-	[#10558](https://github.com/influxdata/influxdb/pull/10558): Pass the query authorizer to subqueries.
+-	[#10576](https://github.com/influxdata/influxdb/pull/10576): Update Go runtime to 1.10.6
+-	[#10585](https://github.com/influxdata/influxdb/pull/10585): Limit database and retention policy names to 255 characters.
+
 v1.6.4 [2018-10-23]
 -------------------
 
@@ -35,7 +56,7 @@ v1.6.2 [2018-08-27]
 
 ### Features
 
--	[#10191](https://github.com/influxdata/influxdb/pull/10191): Code Issues 759 Pull requests 37 Projects 0 Wiki Insights Settings Reduce allocations in TSI TagSets implementation.
+-	[#10191](https://github.com/influxdata/influxdb/pull/10191): Reduce allocations in TSI TagSets implementation.
 
 ### Bugfixes
 
