@@ -49,7 +49,7 @@ export default class extends StandardPage {
           <CRCDesc>
             Elastos has already made concrete steps towards a true Decentralized Autonomous Organization (DAO). The community has the power to
             elect and fund projects they deem beneficial to the Elastos ecosystem, to date we have already funded over 100k USD in projects.
-            A new council will be elected by August 2019 and the Cyber Republic will be officially launched, any member of the community can be candidate.
+            A new council will be elected by August 2019 and the Cyber Republic will be officially launched, any member of the community can be a candidate.
             <CRCLIst>
               <li>
                 <b>August 2018</b> - At the Elastos First Anniversary Event, 16 million ELA was transferred to Cyber Republic (CR).
@@ -68,6 +68,14 @@ export default class extends StandardPage {
           </CRCDesc>
 
           <CommunityImg src={images.CommunityPowerImg}/>
+
+          <br/>
+          <br/>
+          <br/>
+
+          <CRCTitle>
+            Have a Project or Idea? <a href="/suggestions">Submit Your Suggestion Here</a>
+          </CRCTitle>
         </MainContainer>
       </ContainerMid>
       {this.renderWhatIsCR()}
@@ -374,7 +382,12 @@ const CRCTitle = styled.div`
   color: #ccc;
   font-family: komu-a, Synthese, sans-serif;
   font-size: 48px;
-  text-align: center; 
+  text-align: center;
+  
+  > a {
+    font-family: komu-a, Synthese, sans-serif;
+    font-size: 48px;
+  } 
 `
 
 const CRCDesc = styled.div`
