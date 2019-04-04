@@ -206,7 +206,7 @@ func FindPayloadByTransactionHash(transactionHash string) string {
 
 }
 
-// Get Ela Chain Height lidongqing add
+// Get Ela Chain Height 
 func GetElaChainHeight() *big.Int {
 	var elaHeight = big.NewInt(-1)
 	if spvService == nil || spvService.DPOSSPVService == nil {
@@ -217,7 +217,7 @@ func GetElaChainHeight() *big.Int {
 	return elaHeight
 }
 
-// Until Get Ela Chain Height lidongqing add
+// Until Get Ela Chain Height 
 func UntilGetElaChainHeight() *big.Int {
 	for {
 		elaHeight := GetElaChainHeight()
@@ -229,7 +229,7 @@ func UntilGetElaChainHeight() *big.Int {
 	}
 }
 
-// Determine whether an address is an arbiter lidongqing add
+// Determine whether an address is an arbiter 
 func AddrIsArbiter(address *big.Int) int8 {
 	if spvService == nil || spvService.DPOSSPVService == nil {
 		fmt.Println("spv service initiation does not finish yet !")

@@ -29,10 +29,10 @@ import (
 
 const (
 
-	//DefaultHTTPHost is localhost lidongqing add
+	//DefaultHTTPHost is localhost 
 	DefaultHTTPHost = "localhost" // Default host interface for the HTTP RPC server
 
-	//DefaultHTTPPort is 8545 lidongqing add
+	//DefaultHTTPPort is 8545 
 	DefaultHTTPPort = 8545        // Default TCP port for the HTTP RPC server
 
 	DefaultWSHost   = "localhost" // Default host interface for the websocket RPC server
@@ -55,12 +55,12 @@ var DefaultConfig = Config{
 	},
 }
 
-// Default data dir lidongqing add
+// Default data dir 
 func defaultDataDir() string {
 	return "./data"
 }
 
-// modify datadir lidongqing add
+// modify datadir 
 // DefaultDataDir is the default data directory to use for the databases and other
 // persistence requirements.
 func DefaultDataDir() string {
@@ -79,7 +79,7 @@ func DefaultDataDir() string {
 	return ""
 }
 
-// modify datadir lidongqing add
+// modify datadir 
 func homeDir() string {
 	if home := os.Getenv("HOME"); home != "" {
 		return home

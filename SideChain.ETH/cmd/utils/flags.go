@@ -686,10 +686,10 @@ func setBootstrapNodes(ctx *cli.Context, cfg *p2p.Config) {
 	fmt.Println(ctx.GlobalBool(TestnetFlag.Name))
 	fmt.Println(ctx.GlobalBool(RinkebyFlag.Name))
 
-	// Original codes backup lidongqing add
+	// Original codes backup 
 	urls := params.MainnetBootnodes
 
-	// Default using RinkebyBootnodes lidongqing add
+	// Default using RinkebyBootnodes 
 	//urls := params.RinkebyBootnodes
 
 	switch {

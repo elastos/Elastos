@@ -390,7 +390,7 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 		}
 	}
 
-	// lidongqing add 注销掉spv模块启动的代码
+	//  注销掉spv模块启动的代码
 	// start the SPV service
 	fmt.Printf("Starting SPV service with config: %+v \n", *spvCfg)
 	if spvService, err := spv.NewService(spvCfg); err != nil {
@@ -498,7 +498,7 @@ func isContainsCmd(args []string, cmd string) bool {
 	return false
 }
 
-// Set default settings lidongqing add
+// Set default settings
 func setDefaultSettings(args []string) []string {
 	if isNeedFixCmd(args) {
 		if !isContainsCmd(args, "--datadir") {

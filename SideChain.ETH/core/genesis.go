@@ -161,11 +161,11 @@ func SetupGenesisBlock(db ethdb.Database, genesis *Genesis) (*params.ChainConfig
 	if (stored == common.Hash{}) {
 		if genesis == nil {
 
-			// Original codes backup lidongqing add
+			// Original codes backup 
 			//log.Info("Writing default main-net genesis block")
 			//genesis = DefaultGenesisBlock()
 
-			// New genesis block lidongqing add
+			// New genesis block 
 			log.Info("Writing default Rinkeby genesis block")
 			genesis = DefaultRinkebyGenesisBlock()
 
@@ -336,21 +336,21 @@ func DefaultRinkebyGenesisBlock() *Genesis {
 	return &Genesis{
 		Config:     params.RinkebyChainConfig,
 
-		// default Timestamp is 1492009146 (lidongqing add)
+		// default Timestamp is 1492009146 ()
 		Timestamp:  0x5bda9da6,
 
 		//0x0000000000000000000000000000000000000000000000000000000000000000840534b46b3b3bf8c1c3e4c7d34bc86933de78148bf2e42de44c50e2966a98ddc0e2a79ce0e949f5d9758863f280c25b0d1f2f81705e3725ccd5ac49fd7f1f6e2c5157a33dda2e91f58f32862f864d700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-		// default hexutil.MustDecode is 0x52657370656374206d7920617574686f7269746168207e452e436172746d616e42eb768f2244c8811c63729a21a3569731535f067ffc57839b00206d1ad20c69a1981b489f772031b279182d99e65703f0076e4812653aab85fca0f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 (lidongqing add)
+		// default hexutil.MustDecode is 0x52657370656374206d7920617574686f7269746168207e452e436172746d616e42eb768f2244c8811c63729a21a3569731535f067ffc57839b00206d1ad20c69a1981b489f772031b279182d99e65703f0076e4812653aab85fca0f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 ()
 		ExtraData:  hexutil.MustDecode("0x0000000000000000000000000000000000000000000000000000000000000000774ce29b6d80b6abafaec9825940ca18e6b70f160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
 
-		// default GasLimit is 4700000 (lidongqing add)
+		// default GasLimit is 4700000 ()
 		GasLimit:   0x87b760,
 		Difficulty: big.NewInt(1),
 
-		// Original codes backup lidongqing add
+		// Original codes backup 
 		// Alloc:      decodePrealloc(rinkebyAllocData),
 
-		// init GenesisAlloc lidongqing add
+		// init GenesisAlloc 
 		Alloc: GenesisAlloc{common.HexToAddress("0x0000000000000000000000000000000000000000"): {Balance: convertBigIntData("1")},
 			common.HexToAddress("0x491bC043672B9286fA02FA7e0d6A3E5A0384A31A"): {Balance: convertBigIntData("1000000000000000000000")},
 			common.HexToAddress("0x8bf2e42de44c50e2966a98ddc0e2a79ce0e949f5"): {Balance: convertBigIntData("1000000000000000000000")},
@@ -361,7 +361,7 @@ func DefaultRinkebyGenesisBlock() *Genesis {
 	}
 }
 
-// Convert a string to an int lidongqing add
+// Convert a string to an int 
 func convertBigIntData(intNumber string) *big.Int {
 	number, err := big.NewInt(0).SetString(intNumber, 10)
 	if !err {

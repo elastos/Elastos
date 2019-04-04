@@ -46,7 +46,7 @@ func AzureBlobstoreUpload(path string, name string, config AzureBlobstoreConfig)
 	}
 
 	// Create an authenticated client against the Azure cloud
-	// Resolve the problem of unnable to compilation due to Azure cloud vendor lidongqing add
+	// Resolve the problem of unnable to compilation due to Azure cloud vendor 
 	credential, err := azblob.NewSharedKeyCredential(config.Account, config.Token)
 	if err != nil { fmt.Sprintf("%s %s", "Azure Error Info :  ",err) }
 
@@ -74,7 +74,7 @@ func AzureBlobstoreUpload(path string, name string, config AzureBlobstoreConfig)
 func AzureBlobstoreList(config AzureBlobstoreConfig) ([]azblob.BlobItem, error) {
 
 	// Create an authenticated client against the Azure cloud
-	// Resolve the problem of unnable to compilation due to Azure cloud vendor lidongqing add
+	// Resolve the problem of unnable to compilation due to Azure cloud vendor 
 	credential, err := azblob.NewSharedKeyCredential(config.Account, config.Token)
 	if err != nil { fmt.Sprintf("%s %s", "Azure Error Info :  ",err) }
 
@@ -106,7 +106,7 @@ func AzureBlobstoreDelete(config AzureBlobstoreConfig, blobs []azblob.BlobItem) 
 	}
 
 	// Create an authenticated client against the Azure cloud
-	// Resolve the problem of unnable to compilation due to Azure cloud vendor lidongqing add
+	// Resolve the problem of unnable to compilation due to Azure cloud vendor 
 	credential, err := azblob.NewSharedKeyCredential(config.Account, config.Token)
 	if err != nil { fmt.Sprintf("%s %s", "Azure Error Info :  ",err) }
 

@@ -82,23 +82,23 @@ var (
 	// RinkebyChainConfig contains the chain parameters to run a node on the Rinkeby test network.
 	RinkebyChainConfig = &ChainConfig{
 
-		//default ChainID is 4 (lidongqing add)
+		//default ChainID is 4 ()
 		ChainID:             big.NewInt(6666),
 		HomesteadBlock:      big.NewInt(1),
 		DAOForkBlock:        nil,
 		DAOForkSupport:      true,
 		EIP150Block:         big.NewInt(2),
 
-		//default EIP150Hash is 0x9b095b36c15eaf13044373aef8ee0bd3a382a5abb92e402afa44b8249c3a90e9 (lidongqing add)
+		//default EIP150Hash is 0x9b095b36c15eaf13044373aef8ee0bd3a382a5abb92e402afa44b8249c3a90e9 ()
 		EIP150Hash:          common.HexToHash("0x0000000000000000000000000000000000000000000000000000000000000000"),
 		EIP155Block:         big.NewInt(3),
 		EIP158Block:         big.NewInt(3),
 
-		//default ByzantiumBlock is 4 (lidongqing add)
+		//default ByzantiumBlock is 4 ()
 		ByzantiumBlock:      big.NewInt(4),
 		ConstantinopleBlock: nil,
 
-		//default Clique setting (lidongqing add)
+		//default Clique setting ()
 		//Clique: &CliqueConfig{
 		//	Period: 15,
 		//	Epoch:  30000,

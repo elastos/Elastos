@@ -970,7 +970,7 @@ func opSpvPayLoadCode(pc *uint64, interpreter *EVMInterpreter, contract *Contrac
 	return nil, nil
 }
 
-// to judge an address is an arbiter lidongqing add
+// to judge an address is an arbiter 
 func opSpvIsArbiter(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 	fmt.Println("lidongqing niubi")
 	var isArbiter = big.NewInt(0)

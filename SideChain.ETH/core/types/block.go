@@ -83,7 +83,7 @@ type Header struct {
 	MixDigest   common.Hash    `json:"mixHash"          gencodec:"required"`
 	Nonce       BlockNonce     `json:"nonce"            gencodec:"required"`
 
-	// add New ElaHeight lidongqing add
+	// add New ElaHeight 
 	ElaHeight   *big.Int       `json:"elaHeight"        gencodec:"required"`
 }
 

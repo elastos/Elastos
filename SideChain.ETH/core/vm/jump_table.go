@@ -146,7 +146,7 @@ func newByzantiumInstructionSet() [256]operation {
 		valid:         true,
 	}
 
-	//lidongqing add
+	//
 	instructionSet[SPVISARBITER] = operation{
 		execute:       opSpvIsArbiter,
 		gasCost:       constGasFunc(GasQuickStep),
