@@ -1,7 +1,0 @@
-{
-  "name": "Token Sidechain Pre-Loaded Wallet",
-  "description": "Pre-loaded transferred ELA from the mainchain to token sidechain wallet",
-  "privateKey": "F7215F1F14628F62D1F6B7FF2B7DB8AB5803429FD498124C9FED6A193CF43AD3",
-  "publicKey": "0218BD9BE8E526B7A007194398B078822515CB27D5703618A15B2CFC02A7E313DB",
-  "address": "EXsaApogiq8DUfBvgh3jBcmNCVq3JTpH31",
-}

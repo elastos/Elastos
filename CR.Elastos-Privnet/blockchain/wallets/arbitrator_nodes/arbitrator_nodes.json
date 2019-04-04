@@ -1,0 +1,98 @@
+{
+    "arbitrator_origin_1": {
+        "name": "CRC Arbitrator Origin 1",
+        "file": "keystore-origin-1.dat",
+        "description": "This is what will be used for mining addresses for different sidechains",
+        "passwordforkeystore": "123",
+        "main": {
+            "privateKey": "945106ec78a51451850e638ab07d2e29333e0a54a88e92cd73c2521a8dec5f11",
+            "publicKey": "02f3876d0973210d5af7eb44cc11029eb63a102e424f0dc235c60adb80265e426e",
+            "address": "EeMAuMv7ZDmxGVwtjDZdpryCpwYXog7Ygp"
+        },
+        "did_mining_address": { 
+            "privateKey": "885a258ad2665054991fe2e6e3ce0203c023889dc9d1028087a24947774c1df0",
+            "publicKey": "039fae04d07113a94276cc2f968f61dcf8b1852a4036fca70de80f5db04e0c4149",
+            "address": "EJNz7ZEMWvSm1qMSedcTgGxytrCqx6wcYw"           
+        }
+    },
+    "arbitrator_origin_2": {
+        "name": "CRC Arbitrator Origin 2",
+        "file": "keystore-origin-2.dat",
+        "description": "This is what will be used for mining addresses for different sidechains",
+        "passwordforkeystore": "123",
+        "main": {
+            "privateKey": "d74d62ddc473b69872889bcaa1179eba6ffa1a44813f21006dd0d5bc4400b99f",
+            "publicKey": "03c96f2469b43dd8d0e6fa3041a6cee727e0a3a6658a9c28d91e547d11ba8014a1",
+            "address": "EdPn6RwkqaSqfW13XGUsHBUfMAhCvpa6mt"
+        },
+        "did_mining_address": {
+            "privateKey": "49d8458d341905c8e090ce9fb03f98da4363b87f400304e13caaa8a03c09ab98",
+            "publicKey": "03383ed5e5af99178654bcfab29b30d0600c1f565fa64ad316d98f24ae5589bcb1",
+            "address": "EZ9kswa9Yg1ovBbFS9gnULZhdp6HCjPV5D"           
+        }
+    },
+    "arbitrator_crc_1": {
+        "name": "CRC Arbitrator Wallet 1",
+        "file": "keystore-crc-1.dat",
+        "description": "This is what will be used for mining addresses for different sidechains",
+        "passwordforkeystore": "123",
+        "main": {
+            "privateKey": "f210b605fe2afd2e8159d767021a2c3ae195c1f8c5ca45bf73203dc6ce08ade2",
+            "publicKey": "02eae9164bd143eb988fcd4b7a3c9c04a44eb9a009f73e7615e80a5e8ce1e748b8",
+            "address": "EMrBVazWL1aNXWgRE9RmHy3NwBLvzLaV3U"
+        },
+        "did_mining_address": {
+            "privateKey": "a13fbccb0b9f05f838fe930f277a2e6932c1ad1a90706c4c2bf892e7158c9507",
+            "publicKey": "03e6697e8a9dc97e0c629093c941d158ac1a3a842768e64437172d576078609511",
+            "address": "EVmYKcJUotTqbMwe1BSexycS1dA99mbVnu"           
+        }
+    },
+    "arbitrator_crc_2": {
+        "name": "CRC Arbitrator Wallet 2",
+        "file": "keystore-crc-2.dat",
+        "description": "This is what will be used for mining addresses for different sidechains",
+        "passwordforkeystore": "123",
+        "main": {
+            "privateKey": "f9395b41a84f01890f00ce79b520ba61c8bb60761f20a73696ba7cb1064d4bcf",
+            "publicKey": "0294d85959f746b8e6e579458b41eea05afeae50f5a37a037de601673cb24133d9",
+            "address": "EMrr31fEQKurv6tQ5JKKnGwvpGfUnWuhjw"
+        },
+        "did_mining_address": {
+            "privateKey": "0421500de79a43f386dec54d817080de01dc2677b1be5397d297eb585fa7b445",
+            "publicKey": "020b249369421e5c823ec6cce002653c9d15af1411013bc01718ee970d958b89f0",
+            "address": "EVoer15TemB76jaQgamrV3d1HmwmtpV25a"           
+        }
+    },
+    "arbitrator_crc_3": {
+        "name": "CRC Arbitrator Wallet 3",
+        "file": "keystore-crc-3.dat",
+        "description": "This is what will be used for mining addresses for different sidechains",
+        "passwordforkeystore": "123",
+        "main": {
+            "privateKey": "93e16af2cf35f3bfb07e24885bfc894f61f69056353fc0027ae73161597f340c",
+            "publicKey": "03b0a3a16edfba8d9c1fed9094431c9f24c78b8ceb04b4b6eeb7706f1686b83499",
+            "address": "EMshpz5diQFcv9ksbW1rpHm6XMBe6UGm6K"
+        },
+        "did_mining_address": {
+            "privateKey": "99fc7641cc7015df7d928d1173a87e767ad829c507e8a360978c74e7330065aa",
+            "publicKey": "0350efc1819e287672c70c20cb253041547346e08ad3316f7a4945f1553087724e",
+            "address": "EVr2s6QA96LmqbVfjMAKfuvYDjBuw7xSHf"           
+        }
+    },
+    "arbitrator_crc_4": {
+        "name": "CRC Arbitrator Wallet 4",
+        "file": "keystore-crc-4.dat",
+        "description": "This is what will be used for mining addresses for different sidechains",
+        "passwordforkeystore": "123",
+        "main": {
+            "privateKey": "ee7e7c2d24e9f85e60d0fc376ee2c8694cf3f5a236ea501682f7410877a7fbbc",
+            "publicKey": "0222461ae6c9671cad288f10469f9fd759912f257c64524367dc12c40c2bb4046d",
+            "address": "EMtDtQtWbGrrqbeAp75u3eFHgF1b2QPk97"
+        },
+        "did_mining_address": {
+            "privateKey": "1008598b722344a5490ec9ea2243576d5eb36878977a091ca9436930625e2687",
+            "publicKey": "0308a86f42d0b34d2121a6caa3566e0cc15c6850752542916caaadd7f9d420d974",
+            "address": "EYCve83BuPcuoUcJfNdxqTiPTf7cD9vq8N"           
+        }
+    }
+}

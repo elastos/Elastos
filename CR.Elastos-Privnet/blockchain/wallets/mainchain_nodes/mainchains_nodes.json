@@ -1,0 +1,51 @@
+{
+    "mainchain_normal_1": {
+        "name": "Main chain Normal Node 1",
+        "description": "This is what will be used for connecting mainchain node to arbitrator node for supernode",
+        "privateKey": "6a456358f56cec16dcf7d18118b6ce03edc688ff69f523ad60639c4a7a852536",
+        "publicKey": "0300698a05d91bd540e4cc24ab7b6a178ed641301027ef04dd45bfa6296d71bdae",
+        "address": "ERsByY45EUFt91UNHa8LWbKZGiFQQwgncV",
+        "passwordforkeystore": "123"
+    },
+    "mainchain_normal_2": {
+        "name": "Main chain Normal Node 2",
+        "description": "This is what will be used for connecting mainchain node to arbitrator node for supernode",
+        "privateKey": "0cb78698184f9b6dbec1bc6de88b7a40922b761662e3ae4ee81d3caa15f8cca1",
+        "publicKey": "034b2a7333a2e3dc97ffdeca801bfa2c90b6826f6ac0fd95b55445c57343fbedaa",
+        "address": "EYE7eARqDSNqcxocavBzCzVycdTrrqE2dU",
+        "passwordforkeystore": "123"
+    },
+    "mainchain_crc_1": {
+        "name": "Main chain CRC Node 1",
+        "description": "This is what will be used for connecting mainchain node to arbitrator node for supernode",
+        "privateKey": "f210b605fe2afd2e8159d767021a2c3ae195c1f8c5ca45bf73203dc6ce08ade2",
+        "publicKey": "02eae9164bd143eb988fcd4b7a3c9c04a44eb9a009f73e7615e80a5e8ce1e748b8",
+        "address": "EMrBVazWL1aNXWgRE9RmHy3NwBLvzLaV3U",
+        "passwordforkeystore": "123"
+    },
+    "mainchain_crc_2": {
+        "name": "Main chain CRC Node 2",
+        "description": "This is what will be used for connecting mainchain node to arbitrator node for supernode",
+        "privateKey": "f9395b41a84f01890f00ce79b520ba61c8bb60761f20a73696ba7cb1064d4bcf",
+        "publicKey": "0294d85959f746b8e6e579458b41eea05afeae50f5a37a037de601673cb24133d9",
+        "address": "EMrr31fEQKurv6tQ5JKKnGwvpGfUnWuhjw",
+        "passwordforkeystore": "123"
+    },
+    "mainchain_crc_3": {
+        "name": "Main chain CRC Node 1",
+        "description": "This is what will be used for connecting mainchain node to arbitrator node for supernode",
+        "privateKey": "93e16af2cf35f3bfb07e24885bfc894f61f69056353fc0027ae73161597f340c",
+        "publicKey": "03b0a3a16edfba8d9c1fed9094431c9f24c78b8ceb04b4b6eeb7706f1686b83499",
+        "address": "EMshpz5diQFcv9ksbW1rpHm6XMBe6UGm6K",
+        "passwordforkeystore": "123"
+    },
+    "mainchain_crc_4": {
+        "name": "Main chain CRC Node 2",
+        "description": "This is what will be used for connecting mainchain node to arbitrator node for supernode",
+        "privateKey": "ee7e7c2d24e9f85e60d0fc376ee2c8694cf3f5a236ea501682f7410877a7fbbc",
+        "publicKey": "0222461ae6c9671cad288f10469f9fd759912f257c64524367dc12c40c2bb4046d",
+        "address": "EMtDtQtWbGrrqbeAp75u3eFHgF1b2QPk97",
+        "passwordforkeystore": "123"
+    }
+  }
+  
