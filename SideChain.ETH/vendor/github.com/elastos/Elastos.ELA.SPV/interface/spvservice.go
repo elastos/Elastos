@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"math"
 	"os"
 	"time"
 
@@ -15,9 +16,12 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/elanet/filter"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
 const (
@@ -36,7 +40,8 @@ type spvservice struct {
 	listeners map[common.Uint256]TransactionListener
 }
 
-func newSpvService(cfg *Config) (*spvservice, error) {
+// NewSPVService creates a new SPV service instance.
+func NewSPVService(cfg *Config) (SPVService, error) {
 	if cfg.Foundation == "" {
 		cfg.Foundation = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
 	}
@@ -78,16 +83,20 @@ func newSpvService(cfg *Config) (*spvservice, error) {
 	chainStore := database.NewChainDB(headerStore, service)
 
 	serviceCfg := &sdk.Config{
-		DataDir:        dataDir,
-		Magic:          cfg.Magic,
-		SeedList:       cfg.SeedList,
-		DefaultPort:    cfg.DefaultPort,
-		MaxPeers:       cfg.MaxConnections,
+		DataDir:     dataDir,
+		Magic:       cfg.Magic,
+		SeedList:    cfg.SeedList,
+		DefaultPort: cfg.DefaultPort,
+		MaxPeers:    cfg.MaxConnections,
+		CandidateFlags: []uint64{
+			uint64(pact.SFNodeNetwork),
+			uint64(pact.SFNodeBloom),
+		},
 		GenesisHeader:  GenesisHeader(foundation),
 		ChainStore:     chainStore,
 		NewTransaction: newTransaction,
 		NewBlockHeader: newBlockHeader,
-		GetFilterData:  service.GetFilterData,
+		GetTxFilter:    service.GetFilter,
 		StateNotifier:  service,
 	}
 
@@ -117,7 +126,7 @@ func (s *spvservice) SubmitTransactionReceipt(notifyId, txHash common.Uint256) e
 	return s.db.Que().Del(&notifyId, &txHash)
 }
 
-func (s *spvservice) VerifyTransaction(proof bloom.MerkleProof, tx core.Transaction) error {
+func (s *spvservice) VerifyTransaction(proof bloom.MerkleProof, tx types.Transaction) error {
 	// Get Header from main chain
 	header, err := s.headers.Get(&proof.BlockHash)
 	if err != nil {
@@ -154,17 +163,17 @@ func (s *spvservice) VerifyTransaction(proof bloom.MerkleProof, tx core.Transact
 	return nil
 }
 
-func (s *spvservice) SendTransaction(tx core.Transaction) error {
+func (s *spvservice) SendTransaction(tx types.Transaction) error {
 	return s.IService.SendTransaction(iutil.NewTx(&tx))
 }
 
-func (s *spvservice) GetTransaction(txId *common.Uint256) (*core.Transaction, error) {
+func (s *spvservice) GetTransaction(txId *common.Uint256) (*types.Transaction, error) {
 	utx, err := s.db.Txs().Get(txId)
 	if err != nil {
 		return nil, err
 	}
 
-	var tx core.Transaction
+	var tx types.Transaction
 	err = tx.Deserialize(bytes.NewReader(utx.RawData))
 	if err != nil {
 		return nil, err
@@ -177,17 +186,29 @@ func (s *spvservice) GetTransactionIds(height uint32) ([]*common.Uint256, error)
 	return s.db.Txs().GetIds(height)
 }
 
-func (s *spvservice) HeaderStore() database.Headers {
+func (s *spvservice) HeaderStore() store.HeaderStore {
 	return s.headers
 }
 
-func (s *spvservice) GetFilterData() ([]*common.Uint168, []*util.OutPoint) {
-	ops, err := s.db.Ops().GetAll()
-	if err != nil {
-		log.Error("[SPV_SERVICE] GetData error ", err)
-	}
+func (s *spvservice) IsCurrent() bool {
+	return s.IService.IsCurrent()
+}
 
-	return s.db.Addrs().GetAll(), ops
+func (s *spvservice) GetHeight() uint32 {
+	best, err := s.headers.GetBest()
+	if err != nil {
+		return 0
+	}
+	return best.Height
+}
+
+func (s *spvservice) GetFilter() *msg.TxFilterLoad {
+	addrs := s.db.Addrs().GetAll()
+	f := bloom.NewFilter(uint32(len(addrs)), math.MaxUint32, 0)
+	for _, address := range addrs {
+		f.Add(address.Bytes())
+	}
+	return f.ToTxFilterMsg(filter.FTBloom)
 }
 
 func (s *spvservice) putTx(batch store.DataBatch, utx util.Transaction,
@@ -386,7 +407,7 @@ func (s *spvservice) BlockCommitted(block *util.Block) {
 			continue
 		}
 
-		var tx core.Transaction
+		var tx types.Transaction
 		err = tx.Deserialize(bytes.NewReader(utx.RawData))
 		if err != nil {
 			continue
@@ -429,7 +450,7 @@ func (s *spvservice) Close() error {
 }
 
 func (s *spvservice) queueMessageByListener(
-	listener TransactionListener, tx *core.Transaction, height uint32) {
+	listener TransactionListener, tx *types.Transaction, height uint32) {
 	// skip unpacked transaction
 	if height == 0 {
 		return
@@ -449,7 +470,7 @@ func (s *spvservice) queueMessageByListener(
 }
 
 func (s *spvservice) notifyTransaction(notifyId common.Uint256,
-	proof bloom.MerkleProof, tx core.Transaction,
+	proof bloom.MerkleProof, tx types.Transaction,
 	confirmations uint32) (TransactionListener, bool) {
 
 	listener, ok := s.listeners[notifyId]
@@ -494,11 +515,25 @@ func getListenerKey(listener TransactionListener) common.Uint256 {
 	return sha256.Sum256(buf.Bytes())
 }
 
-func getConfirmations(tx core.Transaction) uint32 {
+func getConfirmations(tx types.Transaction) uint32 {
 	// TODO user can set confirmations attribute in transaction,
 	// if the confirmation attribute is set, use it instead of default value
-	if tx.TxType == core.CoinBase {
+	if tx.TxType == types.CoinBase {
 		return 100
 	}
 	return DefaultConfirmations
+}
+
+func newBlockHeader() util.BlockHeader {
+	return iutil.NewHeader(&types.Header{})
+}
+
+func newTransaction() util.Transaction {
+	return iutil.NewTx(&types.Transaction{})
+}
+
+// GenesisHeader creates a specific genesis header by the given
+// foundation address.
+func GenesisHeader(foundation *common.Uint168) util.BlockHeader {
+	return iutil.NewHeader(&config.GenesisBlock(foundation).Header)
 }

@@ -3,7 +3,7 @@ package util
 import (
 	"io"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type BlockHeader interface {

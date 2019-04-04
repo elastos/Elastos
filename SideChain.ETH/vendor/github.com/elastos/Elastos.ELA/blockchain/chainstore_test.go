@@ -1,45 +1,24 @@
 package blockchain
 
 import (
-	"container/list"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"testing"
 
-	ela "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/stretchr/testify/assert"
 )
 
 var testChainStore *ChainStore
 var sidechainTxHash common.Uint256
 
-func newTestChainStore() (*ChainStore, error) {
-	// TODO: read config file decide which db to use.
-	st, err := NewLevelDB("Chain_UnitTest")
-	if err != nil {
-		return nil, err
-	}
-
-	store := &ChainStore{
-		IStore:             st,
-		headerIndex:        map[uint32]common.Uint256{},
-		headerCache:        map[common.Uint256]*ela.Header{},
-		headerIdx:          list.New(),
-		currentBlockHeight: 0,
-		storedHeaderCount:  0,
-		taskCh:             make(chan persistTask, TaskChanCap),
-		quit:               make(chan chan bool, 1),
-	}
-
-	go store.loop()
-	store.NewBatch()
-
-	return store, nil
-}
-
 func TestChainStoreInit(t *testing.T) {
 	// Get new chainstore
-	var err error
-	testChainStore, err = newTestChainStore()
+	temp, err := NewChainStore("Chain_UnitTest", config.DefaultParams.GenesisBlock)
+	testChainStore = temp.(*ChainStore)
+	testChainStore.NewBatch()
 	if err != nil {
 		t.Error("Create chainstore failed")
 	}
@@ -69,12 +48,9 @@ func TestChainStore_PersisSidechainTx(t *testing.T) {
 	testChainStore.BatchCommit()
 
 	// 3. Verify PersistSidechainTx
-	exist, err := testChainStore.GetSidechainTx(sidechainTxHash)
+	_, err = testChainStore.GetSidechainTx(sidechainTxHash)
 	if err != nil {
 		t.Error("Not found the sidechain Tx")
-	}
-	if exist != ValueExist {
-		t.Error("Sidechian Tx matched wrong value")
 	}
 }
 
@@ -84,24 +60,21 @@ func TestChainStore_RollbackSidechainTx(t *testing.T) {
 	}
 
 	// 1. The sidechain Tx hash should exist in DB.
-	exist, err := testChainStore.GetSidechainTx(sidechainTxHash)
+	_, err := testChainStore.GetSidechainTx(sidechainTxHash)
 	if err != nil {
 		t.Error("Not found the sidechain Tx")
 	}
-	if exist != ValueExist {
-		t.Error("Sidechian Tx matched wrong value")
-	}
 
 	// 2. Run Rollback
-	err = testChainStore.RollbackSidechainTx(sidechainTxHash)
+	err = testChainStore.rollbackSidechainTx(sidechainTxHash)
 	if err != nil {
 		t.Error("Rollback the sidechain Tx failed")
 	}
 
-	// Need batch commit here because RollbackSidechainTx use BatchDelete
+	// Need batch commit here because rollbackSidechainTx use BatchDelete
 	testChainStore.BatchCommit()
 
-	// 3. Verify RollbackSidechainTx
+	// 3. Verify rollbackSidechainTx
 	_, err = testChainStore.GetSidechainTx(sidechainTxHash)
 	if err == nil {
 		t.Error("Found the sidechain Tx which should been deleted")
@@ -126,12 +99,9 @@ func TestChainStore_IsSidechainTxHashDuplicate(t *testing.T) {
 	testChainStore.BatchCommit()
 
 	// 3. Verify PersistSidechainTx
-	exist, err := testChainStore.GetSidechainTx(sidechainTxHash)
+	_, err = testChainStore.GetSidechainTx(sidechainTxHash)
 	if err != nil {
 		t.Error("Not found the sidechain Tx")
-	}
-	if exist != ValueExist {
-		t.Error("Sidechian Tx matched wrong value")
 	}
 
 	// 4. Run IsSidechainTxHashDuplicate
@@ -141,12 +111,75 @@ func TestChainStore_IsSidechainTxHashDuplicate(t *testing.T) {
 	}
 }
 
+func TestCheckAssetPrecision(t *testing.T) {
+	originalStore := DefaultLedger.Store
+	DefaultLedger.Store = testChainStore
+
+	assetStr := "b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3"
+	defaultAsset, _ := common.Uint256FromHexString(assetStr)
+
+	// normal transaction
+	tx := buildTx()
+	for _, output := range tx.Outputs {
+		output.AssetID = *defaultAsset
+		output.ProgramHash = common.Uint168{}
+	}
+	err := checkAssetPrecision(tx)
+	assert.NoError(t, err)
+
+	// asset not exist
+	for _, output := range tx.Outputs {
+		output.AssetID = common.EmptyHash
+		output.ProgramHash = common.Uint168{}
+	}
+	err = checkAssetPrecision(tx)
+	assert.EqualError(t, err, "The asset not exist in local blockchain.")
+
+	// register asset
+	asset := payload.Asset{
+		Name:      "TEST",
+		Precision: 0x04,
+		AssetType: 0x00,
+	}
+	register := &types.Transaction{
+		TxType:         types.RegisterAsset,
+		PayloadVersion: 0,
+		Payload: &payload.RegisterAsset{
+			Asset:  asset,
+			Amount: 0 * 100000000,
+		},
+	}
+	testChainStore.NewBatch()
+	testChainStore.PersistAsset(register.Hash(), asset)
+	testChainStore.BatchCommit()
+
+	// valid precision
+	for _, output := range tx.Outputs {
+		output.AssetID = register.Hash()
+		output.ProgramHash = common.Uint168{}
+		output.Value = 123456780000
+	}
+	err = checkAssetPrecision(tx)
+	assert.NoError(t, err)
+
+	// invalid precision
+	for _, output := range tx.Outputs {
+		output.AssetID = register.Hash()
+		output.ProgramHash = common.Uint168{}
+		output.Value = 12345678000
+	}
+	err = checkAssetPrecision(tx)
+	assert.EqualError(t, err, "The precision of asset is incorrect.")
+
+	DefaultLedger.Store = originalStore
+}
+
 func TestChainStoreDone(t *testing.T) {
 	if testChainStore == nil {
 		t.Error("Chainstore init failed")
 	}
 
-	err := testChainStore.RollbackSidechainTx(sidechainTxHash)
+	err := testChainStore.rollbackSidechainTx(sidechainTxHash)
 	if err != nil {
 		t.Error("Rollback the sidechain Tx failed")
 	}

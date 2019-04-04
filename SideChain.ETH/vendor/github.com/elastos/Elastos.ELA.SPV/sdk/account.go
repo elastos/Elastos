@@ -1,8 +1,9 @@
 package sdk
 
 import (
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract"
+	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 /*
@@ -22,15 +23,12 @@ type Account struct {
 
 // Create an account instance with private key and public key
 func NewAccount(privateKey []byte, publicKey *crypto.PublicKey) (*Account, error) {
-	signatureRedeemScript, err := crypto.CreateStandardRedeemScript(publicKey)
+	contract, err := contract.CreateStandardContract(publicKey)
 	if err != nil {
 		return nil, err
 	}
 
-	programHash, err := crypto.ToProgramHash(signatureRedeemScript)
-	if err != nil {
-		return nil, err
-	}
+	programHash := contract.ToProgramHash()
 
 	address, err := programHash.ToAddress()
 	if err != nil {
@@ -40,7 +38,7 @@ func NewAccount(privateKey []byte, publicKey *crypto.PublicKey) (*Account, error
 	return &Account{
 		privateKey:   privateKey,
 		publicKey:    publicKey,
-		redeemScript: signatureRedeemScript,
+		redeemScript: contract.Code,
 		programHash:  programHash,
 		address:      address,
 	}, nil

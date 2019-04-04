@@ -2,22 +2,28 @@ package blockchain
 
 import (
 	"bytes"
-	"container/list"
 	"errors"
-	"sync"
+	"path/filepath"
+	"sync/atomic"
 	"time"
 
-	. "github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA/events"
-	"github.com/elastos/Elastos.ELA/log"
-
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/log"
+	. "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
-const ValueNone = 0
-const ValueExist = 1
+const (
+	TaskChanCap = 4
+)
 
-const TaskChanCap = 4
+type ProducerState byte
+
+type ProducerInfo struct {
+	Payload   *payload.ProducerInfo
+	RegHeight uint32
+	Vote      Fixed64
+}
 
 type persistTask interface{}
 
@@ -27,8 +33,9 @@ type rollbackBlockTask struct {
 }
 
 type persistBlockTask struct {
-	block *Block
-	reply chan bool
+	block   *Block
+	confirm *payload.Confirm
+	reply   chan bool
 }
 
 type ChainStore struct {
@@ -37,35 +44,26 @@ type ChainStore struct {
 	taskCh chan persistTask
 	quit   chan chan bool
 
-	mu          sync.RWMutex // guard the following var
-	headerIndex map[uint32]Uint256
-	headerCache map[Uint256]*Header
-	headerIdx   *list.List
-
 	currentBlockHeight uint32
-	storedHeaderCount  uint32
 }
 
-func NewChainStore() (IChainStore, error) {
-	st, err := NewLevelDB("Chain")
+func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
+	db, err := NewLevelDB(filepath.Join(dataDir, "chain"))
 	if err != nil {
 		return nil, err
 	}
 
-	store := &ChainStore{
-		IStore:             st,
-		headerIndex:        map[uint32]Uint256{},
-		headerCache:        map[Uint256]*Header{},
-		headerIdx:          list.New(),
-		currentBlockHeight: 0,
-		storedHeaderCount:  0,
-		taskCh:             make(chan persistTask, TaskChanCap),
-		quit:               make(chan chan bool, 1),
+	s := &ChainStore{
+		IStore:      db,
+		taskCh:      make(chan persistTask, TaskChanCap),
+		quit:        make(chan chan bool, 1),
 	}
 
-	go store.loop()
+	go s.taskHandler()
 
-	return store, nil
+	s.init(genesisBlock)
+
+	return s, nil
 }
 
 func (c *ChainStore) Close() {
@@ -75,14 +73,14 @@ func (c *ChainStore) Close() {
 	c.IStore.Close()
 }
 
-func (c *ChainStore) loop() {
+func (c *ChainStore) taskHandler() {
 	for {
 		select {
 		case t := <-c.taskCh:
 			now := time.Now()
 			switch task := t.(type) {
 			case *persistBlockTask:
-				c.handlePersistBlockTask(task.block)
+				c.handlePersistBlockTask(task.block, task.confirm)
 				task.reply <- true
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
 				log.Debugf("handle block exetime: %g num transactions:%d", tcall, len(task.block.Transactions))
@@ -100,22 +98,8 @@ func (c *ChainStore) loop() {
 	}
 }
 
-// can only be invoked by backend write goroutine
-func (c *ChainStore) clearCache(b *Block) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	for e := c.headerIdx.Front(); e != nil; e = e.Next() {
-		n := e.Value.(Header)
-		h := n.Hash()
-		if h.IsEqual(b.Hash()) {
-			c.headerIdx.Remove(e)
-		}
-	}
-}
-
-func (c *ChainStore) InitWithGenesisBlock(genesisBlock *Block) (uint32, error) {
-	prefix := []byte{byte(CFG_Version)}
+func (c *ChainStore) init(genesisBlock *Block) error {
+	prefix := []byte{byte(CFGVersion)}
 	version, err := c.Get(prefix)
 	if err != nil {
 		version = []byte{0x00}
@@ -132,75 +116,45 @@ func (c *ChainStore) InitWithGenesisBlock(genesisBlock *Block) (uint32, error) {
 
 		err := c.BatchCommit()
 		if err != nil {
-			return 0, err
+			return err
 		}
 
 		// persist genesis block
-		err = c.persist(genesisBlock)
+		err = c.persist(genesisBlock, nil)
 		if err != nil {
-			return 0, err
+			return err
 		}
 
 		// put version to db
 		err = c.Put(prefix, []byte{0x01})
 		if err != nil {
-			return 0, err
+			return err
 		}
 	}
 
 	// GenesisBlock should exist in chain
 	// Or the bookkeepers are not consistent with the chain
 	hash := genesisBlock.Hash()
-	if !c.IsBlockInStore(hash) {
-		return 0, errors.New("genesis block is not consistent with the chain")
+	if !c.IsBlockInStore(&hash) {
+		return errors.New("genesis block is not consistent with the chain")
 	}
-	DefaultLedger.Blockchain.GenesisHash = hash
-	//c.headerIndex[0] = hash
 
 	// Get Current Block
-	currentBlockPrefix := []byte{byte(SYS_CurrentBlock)}
+	currentBlockPrefix := []byte{byte(SYSCurrentBlock)}
 	data, err := c.Get(currentBlockPrefix)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	r := bytes.NewReader(data)
 	var blockHash Uint256
 	blockHash.Deserialize(r)
 	c.currentBlockHeight, err = ReadUint32(r)
-	endHeight := c.currentBlockHeight
-
-	startHeight := uint32(0)
-	if endHeight > MinMemoryNodes {
-		startHeight = endHeight - MinMemoryNodes
-	}
-
-	for start := startHeight; start <= endHeight; start++ {
-		hash, err := c.GetBlockHash(start)
-		if err != nil {
-			return 0, err
-		}
-		header, err := c.GetHeader(hash)
-		if err != nil {
-			return 0, err
-		}
-		node, err := DefaultLedger.Blockchain.LoadBlockNode(header, &hash)
-		if err != nil {
-			return 0, err
-		}
-
-		// This node is now the end of the best chain.
-		DefaultLedger.Blockchain.BestChain = node
-
-	}
-	//c.ledger.Blockchain.DumpState()
-
-	return c.currentBlockHeight, nil
-
+	return err
 }
 
 func (c *ChainStore) IsTxHashDuplicate(txhash Uint256) bool {
-	prefix := []byte{byte(DATA_Transaction)}
+	prefix := []byte{byte(DATATransaction)}
 	_, err := c.Get(append(prefix, txhash.Bytes()...))
 	if err != nil {
 		return false
@@ -210,7 +164,7 @@ func (c *ChainStore) IsTxHashDuplicate(txhash Uint256) bool {
 }
 
 func (c *ChainStore) IsSidechainTxHashDuplicate(sidechainTxHash Uint256) bool {
-	prefix := []byte{byte(IX_SideChain_Tx)}
+	prefix := []byte{byte(IXSideChainTx)}
 	_, err := c.Get(append(prefix, sidechainTxHash.Bytes()...))
 	if err != nil {
 		return false
@@ -224,7 +178,7 @@ func (c *ChainStore) IsDoubleSpend(txn *Transaction) bool {
 		return false
 	}
 
-	unspentPrefix := []byte{byte(IX_Unspent)}
+	unspentPrefix := []byte{byte(IXUnspent)}
 	for i := 0; i < len(txn.Inputs); i++ {
 		txID := txn.Inputs[i].Previous.TxID
 		unspentValue, err := c.Get(append(unspentPrefix, txID.Bytes()...))
@@ -251,7 +205,7 @@ func (c *ChainStore) IsDoubleSpend(txn *Transaction) bool {
 
 func (c *ChainStore) GetBlockHash(height uint32) (Uint256, error) {
 	queryKey := new(bytes.Buffer)
-	queryKey.WriteByte(byte(DATA_BlockHash))
+	queryKey.WriteByte(byte(DATABlockHash))
 	err := WriteUint32(queryKey, height)
 
 	if err != nil {
@@ -268,20 +222,6 @@ func (c *ChainStore) GetBlockHash(height uint32) (Uint256, error) {
 	}
 
 	return *blockHash256, nil
-}
-
-func (c *ChainStore) getHeaderWithCache(hash Uint256) *Header {
-	for e := c.headerIdx.Front(); e != nil; e = e.Next() {
-		n := e.Value.(Header)
-		eh := n.Hash()
-		if eh.IsEqual(hash) {
-			return &n
-		}
-	}
-
-	h, _ := c.GetHeader(hash)
-
-	return h
 }
 
 func (c *ChainStore) GetCurrentBlockHash() Uint256 {
@@ -305,7 +245,7 @@ func (c *ChainStore) RollbackBlock(blockHash Uint256) error {
 func (c *ChainStore) GetHeader(hash Uint256) (*Header, error) {
 	var h = new(Header)
 
-	prefix := []byte{byte(DATA_Header)}
+	prefix := []byte{byte(DATAHeader)}
 	data, err := c.Get(append(prefix, hash.Bytes()...))
 	//log.Debug( "Get Header Data: %x\n",  data )
 	if err != nil {
@@ -329,7 +269,7 @@ func (c *ChainStore) GetHeader(hash Uint256) (*Header, error) {
 	return h, err
 }
 
-func (c *ChainStore) PersistAsset(assetID Uint256, asset Asset) error {
+func (c *ChainStore) PersistAsset(assetID Uint256, asset payload.Asset) error {
 	w := new(bytes.Buffer)
 
 	asset.Serialize(w)
@@ -337,7 +277,7 @@ func (c *ChainStore) PersistAsset(assetID Uint256, asset Asset) error {
 	// generate key
 	assetKey := new(bytes.Buffer)
 	// add asset prefix.
-	assetKey.WriteByte(byte(ST_Info))
+	assetKey.WriteByte(byte(STInfo))
 	// contact asset id
 	if err := assetID.Serialize(assetKey); err != nil {
 		return err
@@ -350,9 +290,9 @@ func (c *ChainStore) PersistAsset(assetID Uint256, asset Asset) error {
 	return nil
 }
 
-func (c *ChainStore) GetAsset(hash Uint256) (*Asset, error) {
-	asset := new(Asset)
-	prefix := []byte{byte(ST_Info)}
+func (c *ChainStore) GetAsset(hash Uint256) (*payload.Asset, error) {
+	asset := new(payload.Asset)
+	prefix := []byte{byte(STInfo)}
 	data, err := c.Get(append(prefix, hash.Bytes()...))
 	if err != nil {
 		return nil, err
@@ -366,25 +306,25 @@ func (c *ChainStore) GetAsset(hash Uint256) (*Asset, error) {
 }
 
 func (c *ChainStore) PersistSidechainTx(sidechainTxHash Uint256) {
-	key := []byte{byte(IX_SideChain_Tx)}
+	key := []byte{byte(IXSideChainTx)}
 	key = append(key, sidechainTxHash.Bytes()...)
 
 	// PUT VALUE
-	c.BatchPut(key, []byte{byte(ValueExist)})
+	c.BatchPut(key, []byte{0})
 }
 
 func (c *ChainStore) GetSidechainTx(sidechainTxHash Uint256) (byte, error) {
-	key := []byte{byte(IX_SideChain_Tx)}
+	key := []byte{byte(IXSideChainTx)}
 	data, err := c.Get(append(key, sidechainTxHash.Bytes()...))
 	if err != nil {
-		return ValueNone, err
+		return 0, err
 	}
 
 	return data[0], nil
 }
 
 func (c *ChainStore) GetTransaction(txID Uint256) (*Transaction, uint32, error) {
-	key := append([]byte{byte(DATA_Transaction)}, txID.Bytes()...)
+	key := append([]byte{byte(DATATransaction)}, txID.Bytes()...)
 	value, err := c.Get(key)
 	if err != nil {
 		return nil, 0, err
@@ -433,17 +373,16 @@ func (c *ChainStore) GetTxReference(tx *Transaction) (map[*Input]*Output, error)
 	return reference, nil
 }
 
-func (c *ChainStore) PersistTransaction(tx *Transaction, height uint32) error {
+func (c *ChainStore) persistTransaction(tx *Transaction, height uint32) error {
 	// generate key with DATA_Transaction prefix
 	key := new(bytes.Buffer)
 	// add transaction header prefix.
-	key.WriteByte(byte(DATA_Transaction))
+	key.WriteByte(byte(DATATransaction))
 	// get transaction hash
 	hash := tx.Hash()
 	if err := hash.Serialize(key); err != nil {
 		return err
 	}
-	log.Debugf("transaction header + hash: %x", key)
 
 	// generate value
 	value := new(bytes.Buffer)
@@ -453,7 +392,6 @@ func (c *ChainStore) PersistTransaction(tx *Transaction, height uint32) error {
 	if err := tx.Serialize(value); err != nil {
 		return err
 	}
-	log.Debugf("transaction tx data: %x", value)
 
 	// put value
 	c.BatchPut(key.Bytes(), value.Bytes())
@@ -462,32 +400,41 @@ func (c *ChainStore) PersistTransaction(tx *Transaction, height uint32) error {
 
 func (c *ChainStore) GetBlock(hash Uint256) (*Block, error) {
 	var b = new(Block)
-	prefix := []byte{byte(DATA_Header)}
-	bHash, err := c.Get(append(prefix, hash.Bytes()...))
+	prefix := []byte{byte(DATAHeader)}
+	data, err := c.Get(append(prefix, hash.Bytes()...))
 	if err != nil {
 		return nil, err
 	}
 
-	reader := bytes.NewReader(bHash)
+	r := bytes.NewReader(data)
 
 	// first 8 bytes is sys_fee
-	_, err = ReadUint64(reader)
+	_, err = ReadUint64(r)
 	if err != nil {
 		return nil, err
 	}
 
 	// Deserialize block data
-	if err := b.FromTrimmedData(reader); err != nil {
+	if err := b.Header.Deserialize(r); err != nil {
 		return nil, err
 	}
 
-	// Deserialize transaction
-	for i, txn := range b.Transactions {
-		tmp, _, err := c.GetTransaction(txn.Hash())
+	//Transactions
+	count, err := ReadUint32(r)
+	if err != nil {
+		return nil, err
+	}
+	b.Transactions = make([]*Transaction, count)
+	for i := range b.Transactions {
+		var hash Uint256
+		if err := hash.Deserialize(r); err != nil {
+			return nil, err
+		}
+		tx, _, err := c.GetTransaction(hash)
 		if err != nil {
 			return nil, err
 		}
-		b.Transactions[i] = tmp
+		b.Transactions[i] = tx
 	}
 
 	return b, nil
@@ -501,62 +448,45 @@ func (c *ChainStore) rollback(b *Block) error {
 	c.RollbackUnspendUTXOs(b)
 	c.RollbackUnspend(b)
 	c.RollbackCurrentBlock(b)
+	c.RollbackConfirm(b)
 	c.BatchCommit()
 
-	DefaultLedger.Blockchain.UpdateBestHeight(b.Header.Height - 1)
-	c.mu.Lock()
-	c.currentBlockHeight = b.Header.Height - 1
-	c.mu.Unlock()
-
-	DefaultLedger.Blockchain.BCEvents.Notify(events.EventRollbackTransaction, b)
+	atomic.StoreUint32(&c.currentBlockHeight, b.Height-1)
 
 	return nil
 }
 
-func (c *ChainStore) persist(b *Block) error {
+func (c *ChainStore) persist(b *Block, confirm *payload.Confirm) error {
 	c.NewBatch()
-	if err := c.PersistTrimmedBlock(b); err != nil {
+	if err := c.persistTrimmedBlock(b); err != nil {
 		return err
 	}
-	if err := c.PersistBlockHash(b); err != nil {
+	if err := c.persistBlockHash(b); err != nil {
 		return err
 	}
 	if err := c.PersistTransactions(b); err != nil {
 		return err
 	}
-	if err := c.PersistUnspendUTXOs(b); err != nil {
+	if err := c.persistUnspendUTXOs(b); err != nil {
 		return err
 	}
-	if err := c.PersistUnspend(b); err != nil {
+	if err := c.persistUnspend(b); err != nil {
 		return err
 	}
-	if err := c.PersistCurrentBlock(b); err != nil {
+	if err := c.persistCurrentBlock(b); err != nil {
+		return err
+	}
+	if err := c.persistConfirm(confirm); err != nil {
 		return err
 	}
 	return c.BatchCommit()
 }
 
-// can only be invoked by backend write goroutine
-func (c *ChainStore) addHeader(header *Header) {
-
-	log.Debugf("addHeader(), Height=%d", header.Height)
-
-	hash := header.Hash()
-
-	c.mu.Lock()
-	c.headerCache[header.Hash()] = header
-	c.headerIndex[header.Height] = hash
-	c.headerIdx.PushBack(*header)
-	c.mu.Unlock()
-
-	log.Debug("[addHeader]: finish, header height:", header.Height)
-}
-
-func (c *ChainStore) SaveBlock(b *Block) error {
+func (c *ChainStore) SaveBlock(b *Block, confirm *payload.Confirm) error {
 	log.Debug("SaveBlock()")
 
 	reply := make(chan bool)
-	c.taskCh <- &persistBlockTask{block: b, reply: reply}
+	c.taskCh <- &persistBlockTask{block: b, confirm: confirm, reply: reply}
 	<-reply
 
 	return nil
@@ -571,27 +501,48 @@ func (c *ChainStore) handleRollbackBlockTask(blockHash Uint256) {
 	c.rollback(block)
 }
 
-func (c *ChainStore) handlePersistBlockTask(b *Block) {
+func (c *ChainStore) handlePersistBlockTask(b *Block, confirm *payload.Confirm) {
 	if b.Header.Height <= c.currentBlockHeight {
 		return
 	}
 
-	c.persistBlock(b)
-	c.clearCache(b)
+	c.persistBlock(b, confirm)
 }
 
-func (c *ChainStore) persistBlock(block *Block) {
-	err := c.persist(block)
+func (c *ChainStore) persistBlock(block *Block, confirm *payload.Confirm) {
+	err := c.persist(block, confirm)
 	if err != nil {
 		log.Fatal("[persistBlocks]: error to persist block:", err.Error())
 		return
 	}
 
-	DefaultLedger.Blockchain.UpdateBestHeight(block.Header.Height)
-	c.mu.Lock()
-	c.currentBlockHeight = block.Header.Height
-	c.mu.Unlock()
-	DefaultLedger.Blockchain.BCEvents.Notify(events.EventBlockPersistCompleted, block)
+	atomic.StoreUint32(&c.currentBlockHeight, block.Height)
+}
+
+func (c *ChainStore) persistConfirm(confirm *payload.Confirm) error {
+	if confirm == nil {
+		return nil
+	}
+	if err := c.PersistConfirm(confirm); err != nil {
+		log.Fatal("[persistConfirm]: error to persist confirm:", err.Error())
+		return err
+	}
+	return nil
+}
+
+func (c *ChainStore) GetConfirm(hash Uint256) (*payload.Confirm, error) {
+	var confirm = new(payload.Confirm)
+	prefix := []byte{byte(DATAConfirm)}
+	confirmBytes, err := c.Get(append(prefix, hash.Bytes()...))
+	if err != nil {
+		return nil, err
+	}
+
+	if err = confirm.Deserialize(bytes.NewReader(confirmBytes)); err != nil {
+		return nil, err
+	}
+
+	return confirm, nil
 }
 
 func (c *ChainStore) GetUnspent(txID Uint256, index uint16) (*Output, error) {
@@ -608,7 +559,7 @@ func (c *ChainStore) GetUnspent(txID Uint256, index uint16) (*Output, error) {
 }
 
 func (c *ChainStore) ContainsUnspent(txID Uint256, index uint16) (bool, error) {
-	unspentPrefix := []byte{byte(IX_Unspent)}
+	unspentPrefix := []byte{byte(IXUnspent)}
 	unspentValue, err := c.Get(append(unspentPrefix, txID.Bytes()...))
 
 	if err != nil {
@@ -629,41 +580,12 @@ func (c *ChainStore) ContainsUnspent(txID Uint256, index uint16) (bool, error) {
 	return false, nil
 }
 
-func (c *ChainStore) RemoveHeaderListElement(hash Uint256) {
-	for e := c.headerIdx.Front(); e != nil; e = e.Next() {
-		n := e.Value.(Header)
-		h := n.Hash()
-		if h.IsEqual(hash) {
-			c.headerIdx.Remove(e)
-		}
-	}
-}
-
 func (c *ChainStore) GetHeight() uint32 {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-
-	return c.currentBlockHeight
+	return atomic.LoadUint32(&c.currentBlockHeight)
 }
 
-func (c *ChainStore) IsBlockInStore(hash Uint256) bool {
-	var b = new(Block)
-	prefix := []byte{byte(DATA_Header)}
-	blockData, err := c.Get(append(prefix, hash.Bytes()...))
-	if err != nil {
-		return false
-	}
-
-	r := bytes.NewReader(blockData)
-
-	// first 8 bytes is sys_fee
-	_, err = ReadUint64(r)
-	if err != nil {
-		return false
-	}
-
-	// Deserialize block data
-	err = b.FromTrimmedData(r)
+func (c *ChainStore) IsBlockInStore(hash *Uint256) bool {
+	b, err := c.GetBlock(*hash)
 	if err != nil {
 		return false
 	}
@@ -676,7 +598,7 @@ func (c *ChainStore) IsBlockInStore(hash Uint256) bool {
 }
 
 func (c *ChainStore) GetUnspentElementFromProgramHash(programHash Uint168, assetid Uint256, height uint32) ([]*UTXO, error) {
-	prefix := []byte{byte(IX_Unspent_UTXO)}
+	prefix := []byte{byte(IXUnspentUTXO)}
 	prefix = append(prefix, programHash.Bytes()...)
 	prefix = append(prefix, assetid.Bytes()...)
 
@@ -712,7 +634,7 @@ func (c *ChainStore) GetUnspentElementFromProgramHash(programHash Uint168, asset
 func (c *ChainStore) GetUnspentFromProgramHash(programHash Uint168, assetid Uint256) ([]*UTXO, error) {
 	unspents := make([]*UTXO, 0)
 
-	key := []byte{byte(IX_Unspent_UTXO)}
+	key := []byte{byte(IXUnspentUTXO)}
 	key = append(key, programHash.Bytes()...)
 	key = append(key, assetid.Bytes()...)
 	iter := c.NewIterator(key)
@@ -741,7 +663,7 @@ func (c *ChainStore) GetUnspentFromProgramHash(programHash Uint168, assetid Uint
 func (c *ChainStore) GetUnspentsFromProgramHash(programHash Uint168) (map[Uint256][]*UTXO, error) {
 	uxtoUnspents := make(map[Uint256][]*UTXO)
 
-	prefix := []byte{byte(IX_Unspent_UTXO)}
+	prefix := []byte{byte(IXUnspentUTXO)}
 	key := append(prefix, programHash.Bytes()...)
 	iter := c.NewIterator(key)
 	for iter.Next() {
@@ -778,7 +700,7 @@ func (c *ChainStore) GetUnspentsFromProgramHash(programHash Uint168) (map[Uint25
 }
 
 func (c *ChainStore) PersistUnspentWithProgramHash(programHash Uint168, assetid Uint256, height uint32, unspents []*UTXO) error {
-	prefix := []byte{byte(IX_Unspent_UTXO)}
+	prefix := []byte{byte(IXUnspentUTXO)}
 	prefix = append(prefix, programHash.Bytes()...)
 	prefix = append(prefix, assetid.Bytes()...)
 	key := bytes.NewBuffer(prefix)
@@ -803,10 +725,10 @@ func (c *ChainStore) PersistUnspentWithProgramHash(programHash Uint168, assetid 
 	return nil
 }
 
-func (c *ChainStore) GetAssets() map[Uint256]*Asset {
-	assets := make(map[Uint256]*Asset)
+func (c *ChainStore) GetAssets() map[Uint256]*payload.Asset {
+	assets := make(map[Uint256]*payload.Asset)
 
-	iter := c.NewIterator([]byte{byte(ST_Info)})
+	iter := c.NewIterator([]byte{byte(STInfo)})
 	for iter.Next() {
 		rk := bytes.NewReader(iter.Key())
 
@@ -816,7 +738,7 @@ func (c *ChainStore) GetAssets() map[Uint256]*Asset {
 		assetid.Deserialize(rk)
 		log.Debugf("[GetAssets] assetid: %x", assetid.Bytes())
 
-		asset := new(Asset)
+		asset := new(payload.Asset)
 		r := bytes.NewReader(iter.Value())
 		asset.Deserialize(r)
 

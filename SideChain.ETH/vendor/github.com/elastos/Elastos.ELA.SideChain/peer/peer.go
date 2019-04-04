@@ -7,11 +7,11 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain/pact"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/server"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/p2p"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
+	"github.com/elastos/Elastos.ELA/p2p/peer"
+	"github.com/elastos/Elastos.ELA/p2p/server"
 )
 
 const (
@@ -423,8 +423,8 @@ cleanup:
 }
 
 func (p *Peer) sendMessage(msg outMsg) {
-	p.SendMessage(msg.msg, msg.doneChan)
 	p.stallControl <- stallControlMsg{sccSendMessage, msg.msg}
+	p.SendMessage(msg.msg, msg.doneChan)
 }
 
 // queueHandler handles the queuing of outgoing data for the peer. This runs as

@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/elastos/Elastos.ELA.Utility/signal"
+	"github.com/elastos/Elastos.ELA/utils/signal"
 )
 
 func main() {
@@ -11,7 +11,7 @@ func main() {
 	interrupt := signal.NewInterrupt()
 
 	// Create the SPV wallet instance.
-	w, err := NewWallet()
+	w, err := NewWallet(dataDir)
 	if err != nil {
 		waltlog.Error("Initiate SPV service failed,", err)
 		os.Exit(0)

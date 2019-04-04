@@ -4,7 +4,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/wallet/store/headers"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/store/sqlite"
 
-	"github.com/elastos/Elastos.ELA.Utility/elalog"
+	"github.com/elastos/Elastos.ELA/utils/elalog"
 )
 
 // UseLogger uses a specified Logger to output package logging info.

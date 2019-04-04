@@ -2,18 +2,21 @@ package spv
 
 import (
 	"bytes"
+	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/elastos/Elastos.ELA.SideChain/types"
-	"path/filepath"
-
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	spv "github.com/elastos/Elastos.ELA.SPV/interface"
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA/core"
-
+	"github.com/elastos/Elastos.ELA.SideChain/types"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
+	core "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/utils/signal"
 	"github.com/syndtr/goleveldb/leveldb"
+	"math/big"
+	"path/filepath"
 	"strings"
+	"time"
 )
 
 const (
@@ -45,22 +48,28 @@ type Config struct {
 }
 
 type Service struct {
-	spv.SPVService
+	spv.DPOSSPVService
 }
 
 func NewService(cfg *Config) (*Service, error) {
-	spvCfg := spv.Config{
-		DataDir:        cfg.DataDir,
-		Magic:          cfg.Magic,
-		Foundation:     cfg.Foundation,
-		SeedList:       cfg.SeedList,
-		DefaultPort:    cfg.DefaultPort,
-		MinOutbound:    minConnections,
-		MaxConnections: maxConnections,
-		OnRollback:     nil, // Not implemented yet
+	chainParams := config.DefaultParams.TestNet()
+	spvCfg := spv.DPOSConfig{
+		Config: spv.Config{
+			DataDir:        cfg.DataDir,
+			Magic:          chainParams.Magic,
+			Foundation:     "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
+			SeedList:       chainParams.SeedList,
+			DefaultPort:    chainParams.DefaultPort,
+			MinOutbound:    8,
+			MaxConnections: 100,
+		},
+		ChainParams: chainParams,
+		//可以有回调机制，在任何arbiters发生改变的时候，将arbiters信息推过来（需要实现该接口）
 	}
+	dataDir = cfg.DataDir
 	initLog(cfg.DataDir)
-	service, err := spv.NewSPVService(&spvCfg)
+
+	service, err := spv.NewDPOSSPVService(&spvCfg, signal.NewInterrupt().C)
 	if err != nil {
 		return nil, err
 	}
@@ -69,12 +78,13 @@ func NewService(cfg *Config) (*Service, error) {
 		address: cfg.GenesisAddress,
 		service: service,
 	})
+
 	if err != nil {
 		return nil, err
 	}
 
-	dataDir = cfg.DataDir
-	return &Service{SPVService: service}, nil
+	spvService = &Service{ service}
+	return &Service{DPOSSPVService: service}, nil
 }
 
 func (s *Service) VerifyTransaction(tx *types.Transaction) error {
@@ -99,7 +109,7 @@ func (s *Service) VerifyTransaction(tx *types.Transaction) error {
 			return errors.New("[VerifyTransaction] RechargeToSideChain mainChainTransaction deserialize failed")
 		}
 
-		if err := s.SPVService.VerifyTransaction(*proof, *mainChainTransaction); err != nil {
+		if err := s.DPOSSPVService.VerifyTransaction(*proof, *mainChainTransaction); err != nil {
 			return errors.New("[VerifyTransaction] SPV module verify transaction failed.")
 		}
 
@@ -128,14 +138,14 @@ func (s *Service) VerifyElaHeader(hash *common.Uint256) error {
 
 type listener struct {
 	address string
-	service spv.SPVService
+	service spv.DPOSSPVService
 }
 
 func (l *listener) Address() string {
 	return l.address
 }
 
-func (l *listener) Type() core.TransactionType {
+func (l *listener) Type() core.TxType {
 	return core.TransferCrossChainAsset
 }
 
@@ -152,8 +162,8 @@ func (l *listener) Notify(id common.Uint256, proof bloom.MerkleProof, tx core.Tr
 	fmt.Println("----------------------------------------------------------------------------------------")
 	fmt.Println(string(tx.String()))
 	fmt.Println("----------------------------------------------------------------------------------------")
+	fmt.Println(AddrIsArbiter(big.NewInt(111)))
 	fmt.Println(" ")
-
 	savePayloadInfo(tx)
 	defer l.service.SubmitTransactionReceipt(id, tx.Hash())
 }
@@ -164,7 +174,7 @@ func savePayloadInfo(elaTx core.Transaction) error {
 		fmt.Println(err)
 	}
 	defer db.Close()
-	err = db.Put([]byte(elaTx.Hash().String()), []byte(common.BytesToHexString(elaTx.Payload.Data(elaTx.PayloadVersion))), nil)
+	err = db.Put([]byte(elaTx.Hash().String()), []byte(hex.EncodeToString(elaTx.Payload.Data(elaTx.PayloadVersion))), nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -194,4 +204,86 @@ func FindPayloadByTransactionHash(transactionHash string) string {
 
 	return string(v)
 
+}
+
+// Get Ela Chain Height lidongqing add
+func GetElaChainHeight() *big.Int {
+	var elaHeight = big.NewInt(-1)
+	if spvService == nil || spvService.DPOSSPVService == nil {
+		fmt.Println("spv service initiation does not finish yet !")
+	} else {
+		elaHeight = big.NewInt(int64(spvService.DPOSSPVService.GetHeight()))
+	}
+	return elaHeight
+}
+
+// Until Get Ela Chain Height lidongqing add
+func UntilGetElaChainHeight() *big.Int {
+	for {
+		elaHeight := GetElaChainHeight()
+		if elaHeight = GetElaChainHeight(); elaHeight.Cmp(big.NewInt(-1)) != 0  {
+			return elaHeight
+		}
+		fmt.Println("can not get elas height, because ela height interface has no any response !")
+		time.Sleep(time.Millisecond*1000)
+	}
+}
+
+// Determine whether an address is an arbiter lidongqing add
+func AddrIsArbiter(address *big.Int) int8 {
+	if spvService == nil || spvService.DPOSSPVService == nil {
+		fmt.Println("spv service initiation does not finish yet !")
+	} else {
+		fmt.Println("---------------------------------------------------------------")
+		fmt.Println(spvService.DPOSSPVService.GetHeight())
+		arbiters := spvService.DPOSSPVService.GetProducersByHeight(spvService.DPOSSPVService.GetHeight())
+		fmt.Println("---------------------------------------------------------------")
+		fmt.Println(arbiters)
+		fmt.Println("---------------------------------------------------------------")
+		fmt.Println(address)
+		fmt.Println("---------------------------------------------------------------")
+	}
+	return -1
+}
+
+//Service
+var spvService *Service
+
+func GetCurrentProducers() [][]byte {
+	var arbiters [][]byte
+	if spvService == nil || spvService.DPOSSPVService == nil {
+		fmt.Println("spv service initiation does not finish yet !")
+	} else {
+		arbiters := spvService.DPOSSPVService.GetProducersByHeight(GetCurrentElaHeight())
+		fmt.Println("---------------------------------------------------------------")
+		fmt.Println(arbiters)
+	}
+
+	return arbiters
+}
+
+func GetCurrentElaHeight() uint32 {
+	var height uint32
+	if spvService == nil || spvService.DPOSSPVService == nil {
+		fmt.Println("spv service initiation does not finish yet !")
+	} else {
+		height = spvService.DPOSSPVService.GetHeight()
+		fmt.Println("----GetCurrentElaHeight-----------------------------------------------------------")
+		fmt.Println(height)
+	}
+
+	return height
+}
+
+func GetProducersByHeight(height uint32) [][]byte {
+	var arbiters [][]byte
+
+	if spvService == nil || spvService.DPOSSPVService == nil {
+		fmt.Println("spv service initiation does not finish yet !")
+	} else {
+		arbiters := spvService.DPOSSPVService.GetProducersByHeight(height)
+		fmt.Println("---------------------------------------------------------------")
+		fmt.Println(arbiters)
+	}
+	return arbiters
 }

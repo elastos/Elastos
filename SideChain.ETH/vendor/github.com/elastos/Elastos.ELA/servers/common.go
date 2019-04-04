@@ -1,8 +1,10 @@
 package servers
 
 import (
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	. "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/common"
+	. "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
 const TlsPort = 443
@@ -19,11 +21,27 @@ type InputInfo struct {
 }
 
 type OutputInfo struct {
-	Value      string `json:"value"`
-	Index      uint32 `json:"n"`
-	Address    string `json:"address"`
-	AssetID    string `json:"assetid"`
-	OutputLock uint32 `json:"outputlock"`
+	Value         string            `json:"value"`
+	Index         uint32            `json:"n"`
+	Address       string            `json:"address"`
+	AssetID       string            `json:"assetid"`
+	OutputLock    uint32            `json:"outputlock"`
+	OutputType    uint32            `json:"type"`
+	OutputPayload OutputPayloadInfo `json:"payload"`
+}
+
+type OutputPayloadInfo interface{}
+
+type DefaultOutputInfo struct{}
+
+type VoteContentInfo struct {
+	VoteType       outputpayload.VoteType `json:"votetype"`
+	CandidatesInfo []string               `json:"candidates"`
+}
+
+type VoteOutputInfo struct {
+	Version  byte              `json:"version"`
+	Contents []VoteContentInfo `json:"contents"`
 }
 
 type ProgramInfo struct {
@@ -32,23 +50,23 @@ type ProgramInfo struct {
 }
 
 type TransactionInfo struct {
-	TxID          string       `json:"txid"`
-	Hash          string       `json:"hash"`
-	Size          uint32       `json:"size"`
-	VSize         uint32       `json:"vsize"`
-	Version       uint32       `json:"version"`
-	LockTime      uint32       `json:"locktime"`
-	Inputs        []InputInfo  `json:"vin"`
-	Outputs       []OutputInfo `json:"vout"`
-	BlockHash     string       `json:"blockhash"`
-	Confirmations uint32       `json:"confirmations"`
-	Time          uint32       `json:"time"`
-	BlockTime      uint32          `json:"blocktime"`
-	TxType         TransactionType `json:"type"`
-	PayloadVersion byte            `json:"payloadversion"`
-	Payload        PayloadInfo     `json:"payload"`
-	Attributes     []AttributeInfo `json:"attributes"`
-	Programs       []ProgramInfo   `json:"programs"`
+	TxID           string             `json:"txid"`
+	Hash           string             `json:"hash"`
+	Size           uint32             `json:"size"`
+	VSize          uint32             `json:"vsize"`
+	Version        TransactionVersion `json:"version"`
+	LockTime       uint32             `json:"locktime"`
+	Inputs         []InputInfo        `json:"vin"`
+	Outputs        []OutputInfo       `json:"vout"`
+	BlockHash      string             `json:"blockhash"`
+	Confirmations  uint32             `json:"confirmations"`
+	Time           uint32             `json:"time"`
+	BlockTime      uint32             `json:"blocktime"`
+	TxType         TxType             `json:"type"`
+	PayloadVersion byte               `json:"payloadversion"`
+	Payload        PayloadInfo        `json:"payload"`
+	Attributes     []AttributeInfo    `json:"attributes"`
+	Programs       []ProgramInfo      `json:"programs"`
 }
 
 type BlockInfo struct {
@@ -74,34 +92,44 @@ type BlockInfo struct {
 	MinerInfo         string        `json:"minerinfo"`
 }
 
-type NodeState struct {
-	Compile     string // The compile version of this server node
-	ID          uint64 // The nodes's id
-	HexID       string // The nodes's id in hex format
-	Height      uint64 // The ServerNode latest block height
-	Version     uint32 // The network protocol the ServerNode used
-	Services    uint64 // The services the local node supplied
-	Relay       bool   // The relay capability of the ServerNode (merge into capbility flag)
-	TxnCnt      uint64 // The transactions be transmit by
-	RxTxnCnt    uint64 // The transaction received by this ServerNode
-	Port        uint16 // The nodes's port
-	PRCPort     uint16 // The RPC service prot
-	RestPort    uint16 // The RESTful service port
-	WSPort      uint16 // The webservcie port
-	OpenPort    uint16 // The open service port
-	OpenService bool   // If open service is enabled
-	Neighbors   []Neighbor
+type VoteInfo struct {
+	Signer string `json:"signer"`
+	Accept bool   `json:"accept"`
 }
 
-type Neighbor struct {
-	ID         uint64 // The neighbor ID
-	HexID      string // The neighbor ID in hex format
-	Height     uint64 // The neighbor height
-	Services   uint64 // The services the neighbor node supplied
-	Relay      bool   // If this neighbor relay block and transactions
-	External   bool   // If this neighbor is an external node
-	State      string // The state of this neighbor node
-	NetAddress string // The tcp address of this neighbor node
+type ConfirmInfo struct {
+	BlockHash  string     `json:"blockhash"`
+	Sponsor    string     `json:"sponsor"`
+	ViewOffset uint32     `json:"viewoffset"`
+	Votes      []VoteInfo `json:"votes"`
+}
+
+type ServerInfo struct {
+	Compile   string      `json:"compile"`   // The compile version of this server node
+	Height    uint32      `json:"height"`    // The ServerNode latest block height
+	Version   uint32      `json:"version"`   // The network protocol the ServerNode used
+	Services  string      `json:"services"`  // The services the server supports
+	Port      uint16      `json:"port"`      // The nodes's port
+	RPCPort   uint16      `json:"rpcport"`   // The RPC service port
+	RestPort  uint16      `json:"restport"`  // The RESTful service port
+	WSPort    uint16      `json:"wsport"`    // The webservcie port
+	Neighbors []*PeerInfo `json:"neighbors"` // The connected neighbor peers.
+}
+
+type PeerInfo struct {
+	NetAddress     string `json:"netaddress"`
+	Services       string `json:"services"`
+	RelayTx        bool   `json:"relaytx"`
+	LastSend       string `json:"lastsend"`
+	LastRecv       string `json:"lastrecv"`
+	ConnTime       string `json:"conntime"`
+	TimeOffset     int64  `json:"timeoffset"`
+	Version        uint32 `json:"version"`
+	Inbound        bool   `json:"inbound"`
+	StartingHeight uint32 `json:"startingheight"`
+	LastBlock      uint32 `json:"lastblock"`
+	LastPingTime   string `json:"lastpingtime"`
+	LastPingMicros int64  `json:"lastpingmicros"`
 }
 
 type ArbitratorGroupInfo struct {
@@ -116,7 +144,7 @@ type CoinbaseInfo struct {
 }
 
 type RegisterAssetInfo struct {
-	Asset      Asset
+	Asset      payload.Asset
 	Amount     string
 	Controller string
 }
@@ -140,12 +168,38 @@ type WithdrawFromSideChainInfo struct {
 	SideChainTransactionHashes []string
 }
 
+type ProducerInfo struct {
+	OwnerPublicKey string `json:"ownerpublickey"`
+	NodePublicKey  string `json:"nodepublickey"`
+	NickName       string `json:"nickname"`
+	Url            string `json:"url"`
+	Location       uint64 `json:"location"`
+	NetAddress     string `json:"netaddress"`
+	Signature      string `json:"signature"`
+}
+
+type CancelProducerInfo struct {
+	OwnerPublicKey string `json:"ownerpublickey"`
+	Signature      string `json:"signature"`
+}
+
 type UTXOInfo struct {
-	AssetID       string `json:"assetid"`
+	TxType        byte   `json:"txtype"`
 	TxID          string `json:"txid"`
+	AssetID       string `json:"assetid"`
 	VOut          uint32 `json:"vout"`
 	Address       string `json:"address"`
 	Amount        string `json:"amount"`
-	Confirmations uint32 `json:"confirmations"`
 	OutputLock    uint32 `json:"outputlock"`
+	Confirmations uint32 `json:"confirmations"`
+}
+
+type SidechainIllegalDataInfo struct {
+	IllegalType         uint8
+	Height              uint32
+	IllegalSigner       string
+	Evidence            string
+	CompareEvidence     string
+	GenesisBlockAddress string
+	Signs               []string
 }

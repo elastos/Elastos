@@ -2,21 +2,20 @@ package sdk
 
 import (
 	"fmt"
-	"math/rand"
 	"os"
 	"time"
 
 	"github.com/elastos/Elastos.ELA.SPV/blockchain"
-	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	speer "github.com/elastos/Elastos.ELA.SPV/peer"
 	"github.com/elastos/Elastos.ELA.SPV/sync"
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/server"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
+	"github.com/elastos/Elastos.ELA/p2p"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
+	"github.com/elastos/Elastos.ELA/p2p/peer"
+	"github.com/elastos/Elastos.ELA/p2p/server"
 )
 
 const (
@@ -24,6 +23,12 @@ const (
 	TxExpireTime          = time.Hour * 24
 	TxRebroadcastDuration = time.Minute * 15
 )
+
+// newPeerMsg represents a new peer connected.
+type newPeerMsg *peer.Peer
+
+// donePeerMsg represents a peer disconnected.
+type donePeerMsg *peer.Peer
 
 type sendTxMsg struct {
 	tx     util.Transaction
@@ -48,8 +53,7 @@ type service struct {
 	cfg         Config
 	syncManager *sync.SyncManager
 
-	newPeers  chan *peer.Peer
-	donePeers chan *peer.Peer
+	peerQueue chan interface{}
 	txQueue   chan interface{}
 	quit      chan struct{}
 	// The following chans are used to sync blockmanager and server.
@@ -68,8 +72,7 @@ func newService(cfg *Config) (*service, error) {
 	// Create SPV service instance
 	service := &service{
 		cfg:            *cfg,
-		newPeers:       make(chan *peer.Peer, cfg.MaxPeers),
-		donePeers:      make(chan *peer.Peer, cfg.MaxPeers),
+		peerQueue:      make(chan interface{}, cfg.MaxPeers),
 		txQueue:        make(chan interface{}, 3),
 		quit:           make(chan struct{}),
 		txProcessed:    make(chan struct{}, 1),
@@ -82,7 +85,7 @@ func newService(cfg *Config) (*service, error) {
 	}
 
 	// Create sync manager instance.
-	syncCfg := sync.NewDefaultConfig(chain, service.updateFilter)
+	syncCfg := sync.NewDefaultConfig(chain, cfg.CandidateFlags, cfg.GetTxFilter)
 	syncCfg.MaxPeers = maxPeers
 	if cfg.StateNotifier != nil {
 		syncCfg.TransactionAnnounce = cfg.StateNotifier.TransactionAnnounce
@@ -105,8 +108,8 @@ func newService(cfg *Config) (*service, error) {
 
 	serverCfg := server.NewDefaultConfig(
 		cfg.Magic,
-		p2p.EIP001Version,
-		OpenService,
+		pact.EBIP001Version,
+		0,
 		cfg.DefaultPort,
 		cfg.SeedList,
 		nil,
@@ -133,22 +136,6 @@ func newService(cfg *Config) (*service, error) {
 func (s *service) start() {
 	go s.peerHandler()
 	go s.txHandler()
-}
-
-func (s *service) updateFilter() *bloom.Filter {
-	addresses, outpoints := s.cfg.GetFilterData()
-	elements := uint32(len(addresses) + len(outpoints))
-
-	filter := bloom.NewFilter(elements, rand.Uint32(), 0)
-	for _, address := range addresses {
-		filter.Add(address.Bytes())
-	}
-
-	for _, op := range outpoints {
-		filter.Add(op.Bytes())
-	}
-
-	return filter
 }
 
 func (s *service) makeEmptyMessage(cmd string) (p2p.Message, error) {
@@ -179,13 +166,11 @@ func (s *service) makeEmptyMessage(cmd string) (p2p.Message, error) {
 }
 
 func (s *service) newPeer(peer server.IPeer) {
-	log.Debugf("server new peer %v", peer)
-	s.newPeers <- peer.ToPeer()
+	s.peerQueue <- newPeerMsg(peer.ToPeer())
 }
 
 func (s *service) donePeer(peer server.IPeer) {
-	log.Debugf("server done peer %v", peer)
-	s.donePeers <- peer.ToPeer()
+	s.peerQueue <- donePeerMsg(peer.ToPeer())
 }
 
 // peerHandler handles new peers and done peers from P2P server.
@@ -196,28 +181,9 @@ func (s *service) peerHandler() {
 out:
 	for {
 		select {
-		case p := <-s.newPeers:
-			// Create spv peer warpper for the new peer.
-			sp := speer.NewPeer(p,
-				&speer.Config{
-					OnInv:      s.onInv,
-					OnTx:       s.onTx,
-					OnBlock:    s.onBlock,
-					OnNotFound: s.onNotFound,
-					OnReject:   s.onReject,
-				})
-
-			peers[p] = sp
-			s.syncManager.NewPeer(sp)
-
-		case p := <-s.donePeers:
-			sp, ok := peers[p]
-			if !ok {
-				log.Errorf("unknown done peer %v", p)
-				continue
-			}
-
-			s.syncManager.DonePeer(sp)
+		// Deal with peer messages.
+		case p := <-s.peerQueue:
+			s.handlePeerMsg(peers, p)
 
 		case <-s.quit:
 			break out
@@ -229,11 +195,39 @@ out:
 cleanup:
 	for {
 		select {
-		case <-s.newPeers:
-		case <-s.donePeers:
+		case <-s.peerQueue:
 		default:
 			break cleanup
 		}
+	}
+}
+
+// handlePeerMsg deals with adding and removing peer message.
+func (s *service) handlePeerMsg(peers map[*peer.Peer]*speer.Peer, p interface{}) {
+	switch p := p.(type) {
+	case newPeerMsg:
+		// Create spv peer warpper for the new peer.
+		sp := speer.NewPeer(p,
+			&speer.Config{
+				OnInv:      s.onInv,
+				OnTx:       s.onTx,
+				OnBlock:    s.onBlock,
+				OnNotFound: s.onNotFound,
+				OnReject:   s.onReject,
+			})
+		sp.Start()
+
+		peers[p] = sp
+		s.syncManager.NewPeer(sp)
+
+	case donePeerMsg:
+		sp, ok := peers[p]
+		if !ok {
+			log.Errorf("unknown done peer %v", p)
+			return
+		}
+
+		s.syncManager.DonePeer(sp)
 	}
 }
 
@@ -418,11 +412,18 @@ func (s *service) onTx(sp *speer.Peer, msgTx util.Transaction) {
 }
 
 func (s *service) onNotFound(sp *speer.Peer, notFound *msg.NotFound) {
-	// Every thing we requested was came from this connected peer, so
-	// no reason it said I have some data you don't have and when you
-	// come to get it, it say oh I didn't have it.
-	log.Warnf("Peer %s is sending us notFound -- disconnecting", sp)
-	sp.Disconnect()
+	// Some times when we com to get a transaction, it has been cleared from
+	// peer's mempool, so we get this notfound message, in that case, we just
+	// ignore it.  But if we come to get blocks and get this message, then the
+	// peer is misbehaving, we disconnect it.
+	for _, iv := range notFound.InvList {
+		if iv.Type == msg.InvTypeTx {
+			continue
+		}
+
+		log.Warnf("Peer %s is sending us notFound -- disconnecting", sp)
+		sp.Disconnect()
+	}
 }
 
 func (s *service) onReject(sp *speer.Peer, reject *msg.Reject) {
@@ -438,11 +439,8 @@ func (s *service) IsCurrent() bool {
 }
 
 func (s *service) UpdateFilter() {
-	// Update bloom filter
-	filter := s.updateFilter()
-
 	// Broadcast filterload message to connected peers.
-	s.IServer.BroadcastMessage(filter.GetFilterLoadMsg())
+	s.IServer.BroadcastMessage(s.cfg.GetTxFilter())
 }
 
 func (s *service) Start() {

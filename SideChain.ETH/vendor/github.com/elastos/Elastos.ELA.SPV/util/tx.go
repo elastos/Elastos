@@ -5,8 +5,8 @@ import (
 	"io"
 	"time"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 )
 
 // Tx is a data structure used in database.
@@ -70,7 +70,7 @@ func (t *Tx) Deserialize(r io.Reader) error {
 	}
 	t.Timestamp = time.Unix(int64(timestamp), 0)
 
-	t.RawData, err = common.ReadVarBytes(r, msg.MaxBlockSize,
+	t.RawData, err = common.ReadVarBytes(r, pact.MaxBlockSize,
 		"Tx RawData")
 	return err
 }

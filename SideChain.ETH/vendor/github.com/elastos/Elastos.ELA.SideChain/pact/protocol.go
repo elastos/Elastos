@@ -19,28 +19,28 @@ const (
 	// SFNodeNetwork is a flag used to indicate a peer is a full node.
 	SFNodeNetwork ServiceFlag = 1 << iota
 
-	// SFNodeBloom is a flag used to indicate a peer supports bloom
-	// filtering.
-	SFNodeBloom
-
 	// SFTxFiltering is a flag used to indicate a peer supports transaction
 	// filtering.
 	SFTxFiltering
+
+	// SFNodeBloom is a flag used to indicate a peer supports bloom
+	// filtering.
+	SFNodeBloom
 )
 
 // Map of service flags back to their constant names for pretty printing.
 var sfStrings = map[ServiceFlag]string{
 	SFNodeNetwork: "SFNodeNetwork",
-	SFNodeBloom:   "SFNodeBloom",
 	SFTxFiltering: "SFTxFiltering",
+	SFNodeBloom:   "SFNodeBloom",
 }
 
 // orderedSFStrings is an ordered list of service flags from highest to
 // lowest.
 var orderedSFStrings = []ServiceFlag{
 	SFNodeNetwork,
-	SFNodeBloom,
 	SFTxFiltering,
+	SFNodeBloom,
 }
 
 // String returns the ServiceFlag in human-readable form.

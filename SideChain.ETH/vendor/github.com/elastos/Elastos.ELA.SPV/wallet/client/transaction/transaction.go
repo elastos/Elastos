@@ -12,9 +12,9 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SPV/wallet/client"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/urfave/cli"
 )
 
@@ -26,7 +26,7 @@ func CreateTransaction(c *cli.Context, wallet *client.Wallet) error {
 	return output(txn)
 }
 
-func createTransaction(c *cli.Context, wallet *client.Wallet) (*core.Transaction, error) {
+func createTransaction(c *cli.Context, wallet *client.Wallet) (*types.Transaction, error) {
 	feeStr := c.String("fee")
 	if feeStr == "" {
 		return nil, errors.New("use --fee to specify transfer fee")
@@ -45,7 +45,7 @@ func createTransaction(c *cli.Context, wallet *client.Wallet) (*core.Transaction
 		}
 	}
 
-	var tx *core.Transaction
+	var tx *types.Transaction
 
 	multiOutput := c.String("file")
 	if multiOutput != "" {
@@ -91,7 +91,7 @@ func createTransaction(c *cli.Context, wallet *client.Wallet) (*core.Transaction
 	return tx, nil
 }
 
-func createMultiOutputTransaction(c *cli.Context, wallet *client.Wallet, path, from string, fee *common.Fixed64) (*core.Transaction, error) {
+func createMultiOutputTransaction(c *cli.Context, wallet *client.Wallet, path, from string, fee *common.Fixed64) (*types.Transaction, error) {
 	if _, err := os.Stat(path); err != nil {
 		return nil, errors.New("invalid multi output file path")
 	}
@@ -117,7 +117,7 @@ func createMultiOutputTransaction(c *cli.Context, wallet *client.Wallet, path, f
 	}
 
 	lockStr := c.String("lock")
-	var tx *core.Transaction
+	var tx *types.Transaction
 	if lockStr == "" {
 		tx, err = wallet.CreateMultiOutputTransaction(from, fee, multiOutput...)
 		if err != nil {
@@ -151,7 +151,7 @@ func SignTransaction(password []byte, context *cli.Context, wallet *client.Walle
 	return output(txn)
 }
 
-func signTransaction(password []byte, wallet *client.Wallet, tx *core.Transaction) (*core.Transaction, error) {
+func signTransaction(password []byte, wallet *client.Wallet, tx *types.Transaction) (*types.Transaction, error) {
 	haveSign, needSign, err := crypto.GetSignStatus(tx.Programs[0].Code, tx.Programs[0].Parameter)
 	if haveSign == needSign {
 		return nil, errors.New("transaction was fully signed, no need more sign")
@@ -168,7 +168,7 @@ func signTransaction(password []byte, wallet *client.Wallet, tx *core.Transactio
 func SendTransaction(password []byte, context *cli.Context, wallet *client.Wallet) error {
 	content, err := getContent(context)
 
-	var tx *core.Transaction
+	var tx *types.Transaction
 	if content == nil {
 		// Create transaction with command line arguments
 		tx, err = createTransaction(context, wallet)
@@ -181,7 +181,7 @@ func SendTransaction(password []byte, context *cli.Context, wallet *client.Walle
 			return err
 		}
 	} else {
-		tx = new(core.Transaction)
+		tx = new(types.Transaction)
 		data, err := common.HexStringToBytes(*content)
 		if err != nil {
 			return fmt.Errorf("Deseralize transaction file failed, error %s", err.Error())
@@ -234,7 +234,7 @@ func getContent(context *cli.Context) (*string, error) {
 	return &content, nil
 }
 
-func getTransaction(context *cli.Context) (*core.Transaction, error) {
+func getTransaction(context *cli.Context) (*types.Transaction, error) {
 	content, err := getContent(context)
 	if err != nil {
 		return nil, err
@@ -245,7 +245,7 @@ func getTransaction(context *cli.Context) (*core.Transaction, error) {
 		return nil, errors.New("decode transaction content failed")
 	}
 
-	var txn core.Transaction
+	var txn types.Transaction
 	err = txn.Deserialize(bytes.NewReader(rawData))
 	if err != nil {
 		return nil, errors.New("deserialize transaction failed")
@@ -254,7 +254,7 @@ func getTransaction(context *cli.Context) (*core.Transaction, error) {
 	return &txn, nil
 }
 
-func output(tx *core.Transaction) error {
+func output(tx *types.Transaction) error {
 	// Serialise transaction content
 	buf := new(bytes.Buffer)
 	tx.Serialize(buf)

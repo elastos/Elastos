@@ -3,13 +3,14 @@ package headers
 import (
 	"encoding/hex"
 	"fmt"
+	"path/filepath"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA.SPV/database"
 	"github.com/elastos/Elastos.ELA.SPV/util"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/sutil"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
@@ -29,8 +30,8 @@ var (
 	BKTChainTip = []byte("B")
 )
 
-func NewDatabase() (*Database, error) {
-	db, err := leveldb.OpenFile("header", nil)
+func NewDatabase(dataDir string) (*Database, error) {
+	db, err := leveldb.OpenFile(filepath.Join(dataDir, "header"), nil)
 	if err != nil {
 		return nil, err
 	}

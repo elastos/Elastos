@@ -4,7 +4,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
 // PeerNotifier exposes methods to notify peers of status changes to

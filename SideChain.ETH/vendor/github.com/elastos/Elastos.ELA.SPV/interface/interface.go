@@ -2,10 +2,11 @@ package _interface
 
 import (
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
-	"github.com/elastos/Elastos.ELA.SPV/database"
+	"github.com/elastos/Elastos.ELA.SPV/interface/store"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/core/types"
 )
 
 // SPV service config
@@ -55,19 +56,26 @@ type SPVService interface {
 
 	// To verify if a transaction is valid
 	// This method is useful when receive a transaction from other peer
-	VerifyTransaction(bloom.MerkleProof, core.Transaction) error
+	VerifyTransaction(bloom.MerkleProof, types.Transaction) error
 
 	// Send a transaction to the P2P network
-	SendTransaction(core.Transaction) error
+	SendTransaction(types.Transaction) error
 
 	// GetTransaction query a transaction by it's hash.
-	GetTransaction(txId *common.Uint256) (*core.Transaction, error)
+	GetTransaction(txId *common.Uint256) (*types.Transaction, error)
 
 	// GetTransactionIds query all transaction hashes on the given block height.
 	GetTransactionIds(height uint32) ([]*common.Uint256, error)
 
 	// Get headers database
-	HeaderStore() database.Headers
+	HeaderStore() store.HeaderStore
+
+	// IsCurrent returns if the SPV service synced to best height with the main
+	// blockchain.
+	IsCurrent() bool
+
+	// GetHeight returns the current main chain height.
+	GetHeight() uint32
 
 	// Start the SPV service
 	Start()
@@ -77,6 +85,27 @@ type SPVService interface {
 
 	// ClearData delete all data stores data including HeaderStore and DataStore.
 	ClearData() error
+}
+
+// DPOSConfig extends the SPV service config and add DPOS parameters.
+type DPOSConfig struct {
+	Config
+
+	// ChainParams indicates the block chain parameters.
+	ChainParams *config.Params
+
+	// OnProducersChanged method will be invoked when current producers changed.
+	OnProducersChanged func(sideProducerIDs [][]byte)
+}
+
+// DPOSSPVService extents the SPVService and implement DPOS consensus support.
+type DPOSSPVService interface {
+	// Extends the original SPVService interface.
+	SPVService
+
+	// GetProducersByHeight returns the side chain block producer IDs on the
+	// specific height.
+	GetProducersByHeight(height uint32) [][]byte
 }
 
 const (
@@ -97,7 +126,7 @@ type TransactionListener interface {
 	Address() string
 
 	// Type() indicates which transaction type this listener are interested
-	Type() core.TransactionType
+	Type() types.TxType
 
 	// Flags control the notification actions by the given flag
 	Flags() uint64
@@ -105,9 +134,5 @@ type TransactionListener interface {
 	// Notify() is the method to callback the received transaction
 	// with the merkle tree proof to verify it, the notifyId is key of this
 	// notify message and it must be submitted with the receipt together.
-	Notify(notifyId common.Uint256, proof bloom.MerkleProof, tx core.Transaction)
-}
-
-func NewSPVService(config *Config) (SPVService, error) {
-	return newSpvService(config)
+	Notify(notifyId common.Uint256, proof bloom.MerkleProof, tx types.Transaction)
 }

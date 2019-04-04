@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bytes"
 	"crypto/rand"
 	"crypto/sha256"
 	"errors"
@@ -8,8 +9,8 @@ import (
 	"sync"
 
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 const (
@@ -152,10 +153,10 @@ func (store *Keystore) verifyPassword(password []byte) error {
 	if err != nil {
 		return err
 	}
-	if common.IsEqualBytes(origin, passwordHash[:]) {
-		return nil
+	if !bytes.Equal(origin, passwordHash[:]) {
+		return errors.New("password wrong")
 	}
-	return errors.New("password wrong")
+	return nil
 }
 
 func (store *Keystore) ChangePassword(oldPassword, newPassword []byte) error {

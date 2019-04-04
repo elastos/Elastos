@@ -11,29 +11,31 @@ import (
 	"strings"
 	"sync"
 
-	. "github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/errors"
-	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/servers"
 )
 
 const (
-	Api_Getconnectioncount  = "/api/v1/node/connectioncount"
-	Api_GetNodeState        = "/api/v1/node/state"
-	Api_GetblockTxsByHeight = "/api/v1/block/transactions/height/:height"
-	Api_Getblockbyheight    = "/api/v1/block/details/height/:height"
-	Api_Getblockbyhash      = "/api/v1/block/details/hash/:hash"
-	Api_Getblockheight      = "/api/v1/block/height"
-	Api_Getblockhash        = "/api/v1/block/hash/:height"
-	Api_Gettransaction      = "/api/v1/transaction/:hash"
-	Api_Getasset            = "/api/v1/asset/:hash"
-	Api_GetBalanceByAddr    = "/api/v1/asset/balances/:addr"
-	Api_GetBalancebyAsset   = "/api/v1/asset/balance/:addr/:assetid"
-	Api_GetUTXObyAsset      = "/api/v1/asset/utxo/:addr/:assetid"
-	Api_GetUTXObyAddr       = "/api/v1/asset/utxos/:addr"
-	Api_SendRawTransaction  = "/api/v1/transaction"
-	Api_GetTransactionPool  = "/api/v1/transactionpool"
-	Api_Restart             = "/api/v1/restart"
+	ApiGetConnectionCount  = "/api/v1/node/connectioncount"
+	ApiGetNodeState        = "/api/v1/node/state"
+	ApiGetBlockTxsByHeight = "/api/v1/block/transactions/height/:height"
+	ApiGetBlockByHeight    = "/api/v1/block/details/height/:height"
+	ApiGetBlockByHash      = "/api/v1/block/details/hash/:hash"
+	ApiGetConfirmByHeight  = "/api/v1/confirm/details/height/:height"
+	ApiGetConfirmByHash    = "/api/v1/confirm/details/hash/:hash"
+	ApiGetBlockHeight      = "/api/v1/block/height"
+	ApiGetBlockHash        = "/api/v1/block/hash/:height"
+	ApiGetTransaction      = "/api/v1/transaction/:hash"
+	ApiGetAsset            = "/api/v1/asset/:hash"
+	ApiGetBalanceByAddr    = "/api/v1/asset/balances/:addr"
+	ApiGetBalanceByAsset   = "/api/v1/asset/balance/:addr/:assetid"
+	ApiGetUTXOByAsset      = "/api/v1/asset/utxo/:addr/:assetid"
+	ApiGetUTXOByAddr       = "/api/v1/asset/utxos/:addr"
+	ApiSendRawTransaction  = "/api/v1/transaction"
+	ApiGetTransactionPool  = "/api/v1/transactionpool"
+	ApiRestart             = "/api/v1/restart"
 )
 
 type Action struct {
@@ -70,11 +72,11 @@ func InitRestServer() ApiServer {
 }
 
 func (rt *restServer) Start() {
-	if Parameters.HttpRestPort == 0 {
+	if config.Parameters.HttpRestPort == 0 {
 		log.Fatal("Not configure HttpRestPort port ")
 	}
 
-	if Parameters.HttpRestPort%1000 == servers.TlsPort {
+	if config.Parameters.HttpRestPort%1000 == servers.TlsPort {
 		var err error
 		rt.listener, err = rt.initTlsListen()
 		if err != nil {
@@ -82,7 +84,7 @@ func (rt *restServer) Start() {
 		}
 	} else {
 		var err error
-		rt.listener, err = net.Listen("tcp", ":"+strconv.Itoa(Parameters.HttpRestPort))
+		rt.listener, err = net.Listen("tcp", ":"+strconv.Itoa(config.Parameters.HttpRestPort))
 		if err != nil {
 			log.Fatal("net.Listen: ", err.Error())
 		}
@@ -98,25 +100,27 @@ func (rt *restServer) Start() {
 func (rt *restServer) initializeMethod() {
 
 	getMethodMap := map[string]Action{
-		Api_Getconnectioncount:  {name: "getconnectioncount", handler: servers.GetConnectionCount},
-		Api_GetNodeState:        {name: "getnodestate", handler: servers.GetNodeState},
-		Api_GetblockTxsByHeight: {name: "getblocktransactionsbyheight", handler: servers.GetTransactionsByHeight},
-		Api_Getblockbyheight:    {name: "getblockbyheight", handler: servers.GetBlockByHeight},
-		Api_Getblockbyhash:      {name: "getblockbyhash", handler: servers.GetBlockByHash},
-		Api_Getblockheight:      {name: "getblockheight", handler: servers.GetBlockHeight},
-		Api_Getblockhash:        {name: "getblockhash", handler: servers.GetBlockHash},
-		Api_GetTransactionPool:  {name: "gettransactionpool", handler: servers.GetTransactionPool},
-		Api_Gettransaction:      {name: "gettransaction", handler: servers.GetTransactionByHash},
-		Api_Getasset:            {name: "getasset", handler: servers.GetAssetByHash},
-		Api_GetUTXObyAddr:       {name: "getutxobyaddr", handler: servers.GetUnspends},
-		Api_GetUTXObyAsset:      {name: "getutxobyasset", handler: servers.GetUnspendOutput},
-		Api_GetBalanceByAddr:    {name: "getbalancebyaddr", handler: servers.GetBalanceByAddr},
-		Api_GetBalancebyAsset:   {name: "getbalancebyasset", handler: servers.GetBalanceByAsset},
-		Api_Restart:             {name: "restart", handler: rt.Restart},
+		ApiGetConnectionCount:  {name: "getconnectioncount", handler: servers.GetConnectionCount},
+		ApiGetNodeState:        {name: "getnodestate", handler: servers.GetNodeState},
+		ApiGetBlockTxsByHeight: {name: "getblocktransactionsbyheight", handler: servers.GetTransactionsByHeight},
+		ApiGetBlockByHeight:    {name: "getblockbyheight", handler: servers.GetBlockByHeight},
+		ApiGetBlockByHash:      {name: "getblockbyhash", handler: servers.GetBlockByHash},
+		ApiGetConfirmByHeight:  {name: "getconfirmbyheight", handler: servers.GetConfirmByHeight},
+		ApiGetConfirmByHash:    {name: "getconfirmbyhash", handler: servers.GetConfirmByHeight},
+		ApiGetBlockHeight:      {name: "getblockheight", handler: servers.GetBlockHeight},
+		ApiGetBlockHash:        {name: "getblockhash", handler: servers.GetBlockHash},
+		ApiGetTransactionPool:  {name: "gettransactionpool", handler: servers.GetTransactionPool},
+		ApiGetTransaction:      {name: "gettransaction", handler: servers.GetTransactionByHash},
+		ApiGetAsset:            {name: "getasset", handler: servers.GetAssetByHash},
+		ApiGetUTXOByAddr:       {name: "getutxobyaddr", handler: servers.GetUnspends},
+		ApiGetUTXOByAsset:      {name: "getutxobyasset", handler: servers.GetUnspendOutput},
+		ApiGetBalanceByAddr:    {name: "getbalancebyaddr", handler: servers.GetBalanceByAddr},
+		ApiGetBalanceByAsset:   {name: "getbalancebyasset", handler: servers.GetBalanceByAsset},
+		ApiRestart:             {name: "restart", handler: rt.Restart},
 	}
 
 	postMethodMap := map[string]Action{
-		Api_SendRawTransaction: {name: "sendrawtransaction", handler: servers.SendRawTransaction},
+		ApiSendRawTransaction: {name: "sendrawtransaction", handler: servers.SendRawTransaction},
 	}
 	rt.postMap = postMethodMap
 	rt.getMap = getMethodMap
@@ -124,75 +128,85 @@ func (rt *restServer) initializeMethod() {
 
 func (rt *restServer) getPath(url string) string {
 
-	if strings.Contains(url, strings.TrimRight(Api_GetblockTxsByHeight, ":height")) {
-		return Api_GetblockTxsByHeight
-	} else if strings.Contains(url, strings.TrimRight(Api_Getblockbyheight, ":height")) {
-		return Api_Getblockbyheight
-	} else if strings.Contains(url, strings.TrimRight(Api_Getblockbyhash, ":hash")) {
-		return Api_Getblockbyhash
-	} else if strings.Contains(url, strings.TrimRight(Api_Getblockhash, ":height")) {
-		return Api_Getblockhash
-	} else if strings.Contains(url, strings.TrimRight(Api_Gettransaction, ":hash")) {
-		return Api_Gettransaction
-	} else if strings.Contains(url, strings.TrimRight(Api_GetBalanceByAddr, ":addr")) {
-		return Api_GetBalanceByAddr
-	} else if strings.Contains(url, strings.TrimRight(Api_GetBalancebyAsset, ":addr/:assetid")) {
-		return Api_GetBalancebyAsset
-	} else if strings.Contains(url, strings.TrimRight(Api_GetUTXObyAddr, ":addr")) {
-		return Api_GetUTXObyAddr
-	} else if strings.Contains(url, strings.TrimRight(Api_GetUTXObyAsset, ":addr/:assetid")) {
-		return Api_GetUTXObyAsset
-	} else if strings.Contains(url, strings.TrimRight(Api_Getasset, ":hash")) {
-		return Api_Getasset
+	if strings.Contains(url, strings.TrimRight(ApiGetBlockTxsByHeight, ":height")) {
+		return ApiGetBlockTxsByHeight
+	} else if strings.Contains(url, strings.TrimRight(ApiGetBlockByHeight, ":height")) {
+		return ApiGetBlockByHeight
+	} else if strings.Contains(url, strings.TrimRight(ApiGetBlockByHash, ":hash")) {
+		return ApiGetBlockByHash
+	} else if strings.Contains(url, strings.TrimRight(ApiGetConfirmByHeight, ":height")) {
+		return ApiGetConfirmByHeight
+	} else if strings.Contains(url, strings.TrimRight(ApiGetConfirmByHash, ":hash")) {
+		return ApiGetConfirmByHash
+	} else if strings.Contains(url, strings.TrimRight(ApiGetBlockHash, ":height")) {
+		return ApiGetBlockHash
+	} else if strings.Contains(url, strings.TrimRight(ApiGetTransaction, ":hash")) {
+		return ApiGetTransaction
+	} else if strings.Contains(url, strings.TrimRight(ApiGetBalanceByAddr, ":addr")) {
+		return ApiGetBalanceByAddr
+	} else if strings.Contains(url, strings.TrimRight(ApiGetBalanceByAsset, ":addr/:assetid")) {
+		return ApiGetBalanceByAsset
+	} else if strings.Contains(url, strings.TrimRight(ApiGetUTXOByAddr, ":addr")) {
+		return ApiGetUTXOByAddr
+	} else if strings.Contains(url, strings.TrimRight(ApiGetUTXOByAsset, ":addr/:assetid")) {
+		return ApiGetUTXOByAsset
+	} else if strings.Contains(url, strings.TrimRight(ApiGetAsset, ":hash")) {
+		return ApiGetAsset
 	}
 	return url
 }
 
 func (rt *restServer) getParams(r *http.Request, url string, req map[string]interface{}) map[string]interface{} {
 	switch url {
-	case Api_Getconnectioncount:
+	case ApiGetConnectionCount:
 
-	case Api_GetNodeState:
+	case ApiGetNodeState:
 
-	case Api_GetblockTxsByHeight:
+	case ApiGetBlockTxsByHeight:
 		req["height"] = getParam(r, "height")
 
-	case Api_Getblockbyheight:
+	case ApiGetBlockByHeight:
 		req["height"] = getParam(r, "height")
 
-	case Api_Getblockbyhash:
+	case ApiGetBlockByHash:
 		req["blockhash"] = getParam(r, "hash")
 
-	case Api_Getblockheight:
-
-	case Api_GetTransactionPool:
-
-	case Api_Getblockhash:
+	case ApiGetConfirmByHeight:
 		req["height"] = getParam(r, "height")
 
-	case Api_Gettransaction:
+	case ApiGetConfirmByHash:
+		req["blockhash"] = getParam(r, "hash")
+
+	case ApiGetBlockHeight:
+
+	case ApiGetTransactionPool:
+
+	case ApiGetBlockHash:
+		req["height"] = getParam(r, "height")
+
+	case ApiGetTransaction:
 		req["hash"] = getParam(r, "hash")
 
-	case Api_Getasset:
+	case ApiGetAsset:
 		req["hash"] = getParam(r, "hash")
 
-	case Api_GetBalancebyAsset:
+	case ApiGetBalanceByAsset:
 		req["addr"] = getParam(r, "addr")
 		req["assetid"] = getParam(r, "assetid")
 
-	case Api_GetBalanceByAddr:
+	case ApiGetBalanceByAddr:
 		req["addr"] = getParam(r, "addr")
 
-	case Api_GetUTXObyAddr:
+	case ApiGetUTXOByAddr:
 		req["addr"] = getParam(r, "addr")
 
-	case Api_GetUTXObyAsset:
+	case ApiGetUTXOByAsset:
 		req["addr"] = getParam(r, "addr")
 		req["assetid"] = getParam(r, "assetid")
 
-	case Api_Restart:
+	case ApiRestart:
 
-	case Api_SendRawTransaction:
+	case ApiSendRawTransaction:
 
 	}
 	return req
@@ -287,8 +301,8 @@ func (rt *restServer) Restart(cmd servers.Params) map[string]interface{} {
 
 func (rt *restServer) initTlsListen() (net.Listener, error) {
 
-	CertPath := Parameters.RestCertPath
-	KeyPath := Parameters.RestKeyPath
+	CertPath := config.Parameters.RestCertPath
+	KeyPath := config.Parameters.RestKeyPath
 
 	// load cert
 	cert, err := tls.LoadX509KeyPair(CertPath, KeyPath)
@@ -301,8 +315,8 @@ func (rt *restServer) initTlsListen() (net.Listener, error) {
 		Certificates: []tls.Certificate{cert},
 	}
 
-	log.Info("TLS listen port is ", strconv.Itoa(Parameters.HttpRestPort))
-	listener, err := tls.Listen("tcp", ":"+strconv.Itoa(Parameters.HttpRestPort), tlsConfig)
+	log.Info("TLS listen port is ", strconv.Itoa(config.Parameters.HttpRestPort))
+	listener, err := tls.Listen("tcp", ":"+strconv.Itoa(config.Parameters.HttpRestPort), tlsConfig)
 	if err != nil {
 		log.Error(err)
 		return nil, err

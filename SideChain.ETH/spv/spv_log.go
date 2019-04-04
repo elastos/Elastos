@@ -12,12 +12,10 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/sync"
 	"github.com/elastos/Elastos.ELA.SPV/wallet"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/store"
-
-	"github.com/elastos/Elastos.ELA.Utility/elalog"
-	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/addrmgr"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/connmgr"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/server"
+	"github.com/elastos/Elastos.ELA/p2p/addrmgr"
+	"github.com/elastos/Elastos.ELA/p2p/connmgr"
+	"github.com/elastos/Elastos.ELA/p2p/server"
+	"github.com/elastos/Elastos.ELA/utils/elalog"
 )
 
 const LogPath = "./logs-spv/"
@@ -38,14 +36,13 @@ func initLog(dataDir string) {
 		backend = elalog.NewBackend(io.MultiWriter(os.Stdout, fileWriter),
 			elalog.Llongfile)
 
-		admrlog = backend.Logger("ADMR", elalog.LevelOff)
-		cmgrlog = backend.Logger("CMGR", elalog.LevelOff)
+		admrlog = backend.Logger("ADMR", level)
+		cmgrlog = backend.Logger("CMGR", level)
 		bcdblog = backend.Logger("BCDB", level)
 		synclog = backend.Logger("SYNC", level)
 		peerlog = backend.Logger("PEER", level)
-		spvslog = backend.Logger("SPVS", elalog.LevelInfo)
-		srvrlog = backend.Logger("SRVR", level)
-		rpcslog = backend.Logger("RPCS", level)
+		spvslog = backend.Logger("SPVS", level)
+		srvrlog = backend.Logger("SRVR", elalog.LevelOff)
 		waltlog = backend.Logger("WALT", level)
 	)
 
@@ -53,7 +50,6 @@ func initLog(dataDir string) {
 	connmgr.UseLogger(cmgrlog)
 	blockchain.UseLogger(bcdblog)
 	sdk.UseLogger(spvslog)
-	jsonrpc.UseLogger(rpcslog)
 	peer.UseLogger(peerlog)
 	server.UseLogger(srvrlog)
 	store.UseLogger(bcdblog)

@@ -3,6 +3,7 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
+	"path/filepath"
 	"sync"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -10,7 +11,6 @@ import (
 
 const (
 	DriverName = "sqlite3"
-	DBName     = "./spv_wallet.db"
 )
 
 // Ensure database implement DataStore interface
@@ -27,8 +27,8 @@ type database struct {
 	stxos *stxos
 }
 
-func NewDatabase() (*database, error) {
-	db, err := sql.Open(DriverName, DBName)
+func NewDatabase(dataDir string) (*database, error) {
+	db, err := sql.Open(DriverName, filepath.Join(dataDir, "wallet.db"))
 	if err != nil {
 		fmt.Println("Open sqlite db error:", err)
 		return nil, err

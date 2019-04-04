@@ -26,6 +26,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/ethdb"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/params"
 	lru "github.com/hashicorp/golang-lru"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/spv"
 )
 
 // Vote represents a single vote that an authorized signer made to modify the
@@ -286,6 +287,24 @@ func (s *Snapshot) apply(headers []*types.Header) (*Snapshot, error) {
 			delete(snap.Tally, header.Coinbase)
 		}
 	}
+
+	//look up current height of ela chain,if it is unchecked up before,withdraw the producers of current height
+	// then update snapshot of side chain.
+	elaHeight := spv.GetCurrentElaHeight();
+	if _,ok := snap.sigcache.Get(elaHeight); !ok {
+		arbiters := spv.GetCurrentProducers()
+		for _,arbiter := range arbiters{
+			arbiterAddr := common.BytesToAddress(arbiter)
+			if _,ok := snap.Signers[arbiterAddr]; !ok{
+
+				snap.Signers[arbiterAddr] = struct{}{}
+			}
+		}
+
+		snap.sigcache.Add(elaHeight,elaHeight);
+	}
+
+
 	snap.Number += uint64(len(headers))
 	snap.Hash = headers[len(headers)-1].Hash()
 

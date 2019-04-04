@@ -17,9 +17,9 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/server"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/crypto"
+	"github.com/elastos/Elastos.ELA/p2p/server"
 )
 
 const (
@@ -450,8 +450,8 @@ func GenerateBlockTransactions(cfg *Config, msgBlock *types.Block, coinBaseTx *t
 			continue
 		}
 
-		fee := cfg.TxFeeHelper.GetTxFee(tx, cfg.ChainParams.ElaAssetId)
-		if fee != tx.Fee {
+		fee, err := cfg.TxFeeHelper.GetTxFee(tx, cfg.ChainParams.ElaAssetId)
+		if err != nil || fee != tx.Fee {
 			continue
 		}
 		msgBlock.Transactions = append(msgBlock.Transactions, tx)

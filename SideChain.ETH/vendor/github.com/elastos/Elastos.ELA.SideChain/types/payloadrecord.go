@@ -4,7 +4,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 const RecordPayloadVersion byte = 0x00

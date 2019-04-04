@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 )
 
 // Header is a data structure stored in database.
@@ -87,9 +87,9 @@ func (h *Header) Deserialize(b []byte) error {
 	if err != nil {
 		return err
 	}
-	if count > msg.MaxTxPerBlock {
+	if count > pact.MaxTxPerBlock {
 		str := fmt.Sprintf("too many transactions to fit into a block "+
-			"[count %d, max %d]", count, msg.MaxTxPerBlock)
+			"[count %d, max %d]", count, pact.MaxTxPerBlock)
 		return common.FuncError("Header.Deserialize", str)
 	}
 
@@ -103,7 +103,7 @@ func (h *Header) Deserialize(b []byte) error {
 		h.Hashes = append(h.Hashes, hash)
 	}
 
-	h.Flags, err = common.ReadVarBytes(r, msg.MaxTxPerBlock,
+	h.Flags, err = common.ReadVarBytes(r, pact.MaxTxPerBlock,
 		"header merkle proof flags")
 	if err != nil {
 		return err

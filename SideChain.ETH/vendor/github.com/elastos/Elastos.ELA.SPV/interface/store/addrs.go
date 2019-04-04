@@ -5,7 +5,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/util"
 )

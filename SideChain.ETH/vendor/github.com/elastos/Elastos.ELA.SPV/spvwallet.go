@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"time"
 
+	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	"github.com/elastos/Elastos.ELA.SPV/database"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/util"
@@ -13,11 +13,12 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/wallet/store/sqlite"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/sutil"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
-	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
-	httputil "github.com/elastos/Elastos.ELA.Utility/http/util"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/elanet/filter"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
+	"github.com/elastos/Elastos.ELA/utils/http"
+	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
 )
 
 const (
@@ -61,7 +62,7 @@ func (w *spvwallet) putTx(batch sqlite.DataBatch, utx util.Transaction,
 		// Filter address
 		if w.getAddrFilter().ContainAddr(output.ProgramHash) {
 			var lockTime = output.OutputLock
-			if tx.TxType == core.CoinBase {
+			if tx.TxType == types.CoinBase {
 				lockTime = height + 100
 			}
 			utxo := sutil.NewUTXO(txId, height, index, output.Value, lockTime, output.ProgramHash)
@@ -182,7 +183,7 @@ func (w *spvwallet) Close() error {
 	return w.db.Close()
 }
 
-func (w *spvwallet) GetFilterData() ([]*common.Uint168, []*util.OutPoint) {
+func (w *spvwallet) GetFilter() *msg.TxFilterLoad {
 	utxos, err := w.db.UTXOs().GetAll()
 	if err != nil {
 		waltlog.Debugf("GetAll UTXOs error: %v", err)
@@ -199,7 +200,20 @@ func (w *spvwallet) GetFilterData() ([]*common.Uint168, []*util.OutPoint) {
 		outpoints = append(outpoints, stxo.Op)
 	}
 
-	return w.getAddrFilter().GetAddrs(), outpoints
+	addrs := w.getAddrFilter().GetAddrs()
+
+	elements := uint32(len(addrs) + len(outpoints))
+
+	f := bloom.NewFilter(elements, 0, 0)
+	for _, addr := range addrs {
+		f.Add(addr.Bytes())
+	}
+
+	for _, op := range outpoints {
+		f.Add(op.Bytes())
+	}
+
+	return f.ToTxFilterMsg(filter.FTBloom)
 }
 
 func (w *spvwallet) NotifyNewAddress(hash []byte) {
@@ -261,7 +275,7 @@ func (w *spvwallet) BlockCommitted(block *util.Block) {
 }
 
 // Functions for RPC service.
-func (w *spvwallet) notifyNewAddress(params httputil.Params) (interface{}, error) {
+func (w *spvwallet) notifyNewAddress(params http.Params) (interface{}, error) {
 	addrStr, ok := params.String("addr")
 	if !ok {
 		return nil, ErrInvalidParameter
@@ -283,7 +297,7 @@ func (w *spvwallet) notifyNewAddress(params httputil.Params) (interface{}, error
 	return nil, nil
 }
 
-func (w *spvwallet) sendTransaction(params httputil.Params) (interface{}, error) {
+func (w *spvwallet) sendTransaction(params http.Params) (interface{}, error) {
 	data, ok := params.String("data")
 	if !ok {
 		return nil, ErrInvalidParameter
@@ -303,14 +317,14 @@ func (w *spvwallet) sendTransaction(params httputil.Params) (interface{}, error)
 	return nil, w.SendTransaction(tx)
 }
 
-func NewWallet() (*spvwallet, error) {
+func NewWallet(dataDir string) (*spvwallet, error) {
 	// Initialize headers db
-	headers, err := headers.NewDatabase()
+	headers, err := headers.NewDatabase(dataDir)
 	if err != nil {
 		return nil, err
 	}
 
-	db, err := sqlite.NewDatabase()
+	db, err := sqlite.NewDatabase(dataDir)
 	if err != nil {
 		return nil, err
 	}
@@ -323,15 +337,15 @@ func NewWallet() (*spvwallet, error) {
 	// Initialize spv service
 	w.IService, err = sdk.NewService(
 		&sdk.Config{
-			Magic:          config.Magic,
-			SeedList:       config.SeedList,
-			DefaultPort:    config.DefaultPort,
+			Magic:          cfg.Magic,
+			SeedList:       cfg.SeedList,
+			DefaultPort:    cfg.DefaultPort,
 			MaxPeers:       MaxPeers,
 			GenesisHeader:  GenesisHeader(),
 			ChainStore:     chainStore,
 			NewTransaction: newTransaction,
 			NewBlockHeader: sutil.NewEmptyHeader,
-			GetFilterData:  w.GetFilterData,
+			GetTxFilter:    w.GetFilter,
 			StateNotifier:  &w,
 		})
 	if err != nil {
@@ -340,7 +354,7 @@ func NewWallet() (*spvwallet, error) {
 
 	s := jsonrpc.NewServer(&jsonrpc.Config{
 		Path:      "/spvwallet",
-		ServePort: config.JsonRpcPort,
+		ServePort: cfg.JsonRpcPort,
 	})
 	s.RegisterAction("notifynewaddress", w.notifyNewAddress, "addr")
 	s.RegisterAction("sendrawtransaction", w.sendTransaction, "data")
@@ -350,81 +364,11 @@ func NewWallet() (*spvwallet, error) {
 }
 
 func newTransaction() util.Transaction {
-	return sutil.NewTx(&core.Transaction{})
+	return sutil.NewTx(&types.Transaction{})
 }
 
 // GenesisHeader creates a specific genesis header by the given
 // foundation address.
 func GenesisHeader() util.BlockHeader {
-	// Genesis time
-	genesisTime := time.Date(2017, time.December, 22, 10, 0, 0, 0, time.UTC)
-
-	// header
-	header := core.Header{
-		Version:    core.BlockVersion,
-		Previous:   common.EmptyHash,
-		MerkleRoot: common.EmptyHash,
-		Timestamp:  uint32(genesisTime.Unix()),
-		Bits:       0x1d03ffff,
-		Nonce:      core.GenesisNonce,
-		Height:     uint32(0),
-	}
-
-	// ELA coin
-	elaCoin := &core.Transaction{
-		TxType:         core.RegisterAsset,
-		PayloadVersion: 0,
-		Payload: &core.PayloadRegisterAsset{
-			Asset: core.Asset{
-				Name:      "ELA",
-				Precision: 0x08,
-				AssetType: 0x00,
-			},
-			Amount:     0 * 100000000,
-			Controller: common.Uint168{},
-		},
-		Attributes: []*core.Attribute{},
-		Inputs:     []*core.Input{},
-		Outputs:    []*core.Output{},
-		Programs:   []*core.Program{},
-	}
-
-	coinBase := &core.Transaction{
-		TxType:         core.CoinBase,
-		PayloadVersion: core.PayloadCoinBaseVersion,
-		Payload:        new(core.PayloadCoinBase),
-		Inputs: []*core.Input{
-			{
-				Previous: core.OutPoint{
-					TxID:  common.EmptyHash,
-					Index: 0x0000,
-				},
-				Sequence: 0x00000000,
-			},
-		},
-		Attributes: []*core.Attribute{},
-		LockTime:   0,
-		Programs:   []*core.Program{},
-	}
-
-	coinBase.Outputs = []*core.Output{
-		{
-			AssetID:     elaCoin.Hash(),
-			Value:       3300 * 10000 * 100000000,
-			ProgramHash: *config.foundation,
-		},
-	}
-
-	nonce := []byte{0x4d, 0x65, 0x82, 0x21, 0x07, 0xfc, 0xfd, 0x52}
-	txAttr := core.NewAttribute(core.Nonce, nonce)
-	coinBase.Attributes = append(coinBase.Attributes, &txAttr)
-
-	transactions := []*core.Transaction{coinBase, elaCoin}
-	hashes := make([]common.Uint256, 0, len(transactions))
-	for _, tx := range transactions {
-		hashes = append(hashes, tx.Hash())
-	}
-	header.MerkleRoot, _ = crypto.ComputeRoot(hashes)
-
-	return sutil.NewHeader(&header)
+	return sutil.NewHeader(&cfg.genesisBlock.Header)
 }

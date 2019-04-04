@@ -8,12 +8,12 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/wallet/client/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/client/wallet"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/urfave/cli"
 )
 
-func RunClient(version, rpcUrl string, assetId common.Uint256) {
-	client.Setup(rpcUrl, assetId)
+func RunClient(version, dataDir, rpcUrl string, assetId common.Uint256) {
+	client.Setup(dataDir, rpcUrl, assetId)
 
 	app := cli.NewApp()
 	app.Name = "ELASTOS SPV WALLET"

@@ -3,13 +3,13 @@ package sutil
 import (
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core/types"
 )
 
 var _ util.Transaction = (*Tx)(nil)
 
 type Tx struct {
-	*core.Transaction
+	*types.Transaction
 }
 
 func (tx *Tx) MatchFilter(bf util.Filter) bool {
@@ -46,6 +46,6 @@ func (tx *Tx) MatchFilter(bf util.Filter) bool {
 	return false
 }
 
-func NewTx(tx *core.Transaction) *Tx {
+func NewTx(tx *types.Transaction) *Tx {
 	return &Tx{tx}
 }

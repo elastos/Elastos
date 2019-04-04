@@ -7,24 +7,26 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/wallet/store/sqlite"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/sutil"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
-func New() (*database, error) {
-	dataStore, err := sqlite.NewDatabase()
+func New(dataDir string) (*database, error) {
+	dataStore, err := sqlite.NewDatabase(dataDir)
 	if err != nil {
 		return nil, err
 	}
 
 	return &database{
-		lock:           new(sync.RWMutex),
-		store:          dataStore,
+		lock:    new(sync.RWMutex),
+		dataDir: dataDir,
+		store:   dataStore,
 	}, nil
 }
 
 type database struct {
-	lock           *sync.RWMutex
-	store          sqlite.DataStore
+	lock    *sync.RWMutex
+	dataDir string
+	store   sqlite.DataStore
 }
 
 func (d *database) AddAddress(address *common.Uint168, script []byte, addrType int) error {
@@ -80,7 +82,7 @@ func (d *database) Clear() error {
 	d.lock.Lock()
 	defer d.lock.Unlock()
 
-	headers, err := headers.NewDatabase()
+	headers, err := headers.NewDatabase(d.dataDir)
 	if err != nil {
 		return err
 	}

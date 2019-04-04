@@ -1,13 +1,14 @@
 package bloom
 
 import (
+	"bytes"
 	"math"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
 const (
@@ -241,4 +242,11 @@ func (bf *Filter) AddOutPoint(outpoint *util.OutPoint) {
 
 func (bf *Filter) GetFilterLoadMsg() *msg.FilterLoad {
 	return bf.msg
+}
+
+// ToTxFilterMsg parse the bloom filter into a *msg.TxFilterLoad instance.
+func (bf *Filter) ToTxFilterMsg(typ uint8) *msg.TxFilterLoad {
+	buf := new(bytes.Buffer)
+	bf.msg.Serialize(buf)
+	return &msg.TxFilterLoad{Type: typ, Data: buf.Bytes()}
 }

@@ -3,19 +3,20 @@ package auxpow
 import (
 	"io"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/auxpow"
-	ela "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/common"
+	ela "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
 type SideAuxPow struct {
-	SideAuxMerkleBranch []Uint256
+	SideAuxMerkleBranch []common.Uint256
 	SideAuxMerkleIndex  int
 	SideAuxBlockTx      ela.Transaction
 	MainBlockHeader     ela.Header
 }
 
-func NewSideAuxPow(sideAuxMerkleBranch []Uint256,
+func NewSideAuxPow(sideAuxMerkleBranch []common.Uint256,
 	sideAuxMerkleIndex int,
 	sideAuxBlockTx ela.Transaction,
 	mainBlockHeader ela.Header) *SideAuxPow {
@@ -34,7 +35,7 @@ func (sap *SideAuxPow) Serialize(w io.Writer) error {
 		return err
 	}
 
-	err = WriteUint32(w, uint32(len(sap.SideAuxMerkleBranch)))
+	err = common.WriteUint32(w, uint32(len(sap.SideAuxMerkleBranch)))
 	if err != nil {
 		return err
 	}
@@ -46,7 +47,7 @@ func (sap *SideAuxPow) Serialize(w io.Writer) error {
 		}
 	}
 
-	err = WriteUint32(w, uint32(sap.SideAuxMerkleIndex))
+	err = common.WriteUint32(w, uint32(sap.SideAuxMerkleIndex))
 	if err != nil {
 		return err
 	}
@@ -60,14 +61,14 @@ func (sap *SideAuxPow) Deserialize(r io.Reader) error {
 		return err
 	}
 
-	count, err := ReadUint32(r)
+	count, err := common.ReadUint32(r)
 	if err != nil {
 		return err
 	}
 
-	sap.SideAuxMerkleBranch = make([]Uint256, 0, count)
+	sap.SideAuxMerkleBranch = make([]common.Uint256, 0, count)
 	for i := uint32(0); i < count; i++ {
-		var branch Uint256
+		var branch common.Uint256
 		err = branch.Deserialize(r)
 		if err != nil {
 			return err
@@ -75,7 +76,7 @@ func (sap *SideAuxPow) Deserialize(r io.Reader) error {
 		sap.SideAuxMerkleBranch = append(sap.SideAuxMerkleBranch, branch)
 	}
 
-	index, err := ReadUint32(r)
+	index, err := common.ReadUint32(r)
 	if err != nil {
 		return err
 	}
@@ -84,7 +85,7 @@ func (sap *SideAuxPow) Deserialize(r io.Reader) error {
 	return sap.MainBlockHeader.Deserialize(r)
 }
 
-func (sap *SideAuxPow) SideAuxPowCheck(hashAuxBlock Uint256) bool {
+func (sap *SideAuxPow) SideAuxPowCheck(hashAuxBlock common.Uint256) bool {
 	mainBlockHeader := sap.MainBlockHeader
 	mainBlockHeaderHash := mainBlockHeader.Hash()
 	if !mainBlockHeader.AuxPow.Check(&mainBlockHeaderHash, auxpow.AuxPowChainID) {
@@ -96,9 +97,9 @@ func (sap *SideAuxPow) SideAuxPowCheck(hashAuxBlock Uint256) bool {
 		return false
 	}
 
-	payloadData := sap.SideAuxBlockTx.Payload.Data(ela.SideChainPowPayloadVersion)
+	payloadData := sap.SideAuxBlockTx.Payload.Data(payload.SideChainPowVersion)
 	payloadHashData := payloadData[0:32]
-	payloadHash, err := Uint256FromBytes(payloadHashData)
+	payloadHash, err := common.Uint256FromBytes(payloadHashData)
 	if err != nil {
 		return false
 	}

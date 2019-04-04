@@ -138,9 +138,16 @@ func init() {
 		}
 	} else {
 		config.ConfigFile.Magic = 20181206
-		config.ConfigFile.SpvMagic = 20180627
-		config.ConfigFile.SpvSeedList = []string{"node-regtest-002.elastos.org:22866", "node-regtest-003.elastos.org:22866", "node-regtest-004.elastos.org:22866"}
-		config.ConfigFile.NodePort = 21608
+		//config.ConfigFile.SpvMagic = 2018002
+		//config.ConfigFile.SpvSeedList = []string{
+		//	"node-regtest-102.eadd.co",
+		//	"node-regtest-103.eadd.co",
+		//	"node-regtest-104.eadd.co",
+		//	"node-regtest-105.eadd.co",
+		//	"node-regtest-106.eadd.co",
+		//	"node-regtest-107.eadd.co",
+		//}
+		//config.ConfigFile.NodePort = 22338
 		config.ConfigFile.Version = 23
 		config.ConfigFile.PowConfiguration.ActiveNet = "MainNet"
 		config.ConfigFile.PowConfiguration.PayToAddr = "ELVzVKcEYyV1B4YpdWDJFUcfiAYynD4Cpb"
@@ -149,7 +156,7 @@ func init() {
 		config.ConfigFile.PowConfiguration.MinTxFee = 100
 		config.ConfigFile.MinCrossChainTxFee = 10000
 		config.ConfigFile.ExchangeRate = 1.0
-		config.ConfigFile.SpvPrintLevel = 1
+		config.ConfigFile.SpvPrintLevel = 0
 		config.ConfigFile.MaxPerLogSize = 0
 		config.ConfigFile.MaxLogsSize = 0
 		config.ConfigFile.MainChainFoundationAddress = "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3"

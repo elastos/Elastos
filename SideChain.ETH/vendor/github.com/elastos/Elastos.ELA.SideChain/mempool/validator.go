@@ -13,10 +13,11 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 	"github.com/elastos/Elastos.ELA.SideChain/vm"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
-	"github.com/elastos/Elastos.ELA/bloom"
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract"
+	core "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/elanet/bloom"
 )
 
 var zeroHash = common.Uint256{}
@@ -231,8 +232,8 @@ func (v *Validator) checkOutputProgramHash(programHash common.Uint168) bool {
 		return true
 	}
 
-	switch programHash[0] {
-	case common.PrefixStandard, common.PrefixMultisig, common.PrefixCrossChain:
+	switch contract.PrefixType(programHash[0]) {
+	case contract.PrefixStandard, contract.PrefixMultiSig, contract.PrefixCrossChain:
 		return true
 	}
 
@@ -344,11 +345,6 @@ func (v *Validator) checkAttributeProgram(txn *types.Transaction) error {
 			str := fmt.Sprint("[checkAttributeProgram] invalid program parameter nil")
 			return ruleError(ErrAttributeProgram, str)
 		}
-		_, err := crypto.ToProgramHash(program.Code)
-		if err != nil {
-			str := fmt.Sprintf("[checkAttributeProgram] invalid program code %x", program.Code)
-			return ruleError(ErrAttributeProgram, str)
-		}
 	}
 	return nil
 }
@@ -378,26 +374,26 @@ func (v *Validator) checkTransactionDoubleSpend(txn *types.Transaction) error {
 	return nil
 }
 
-func (v *Validator) checkTransactionSignature(txn *types.Transaction) error {
-	if txn.IsRechargeToSideChainTx() {
-		if err := v.spvService.VerifyTransaction(txn); err != nil {
+func (v *Validator) checkTransactionSignature(tx *types.Transaction) error {
+	if tx.IsRechargeToSideChainTx() {
+		if err := v.spvService.VerifyTransaction(tx); err != nil {
 			return ruleError(ErrTransactionSignature, err.Error())
 		}
 		return nil
 	}
 
-	hashes, err := v.TxProgramHashes(txn)
+	hashes, err := v.TxProgramHashes(tx)
 	if err != nil {
 		return ruleError(ErrTransactionSignature, err.Error())
 	}
 
 	// Sort first
-	common.SortProgramHashes(hashes)
-	if err := SortPrograms(txn.Programs); err != nil {
+	common.SortProgramHashByCodeHash(hashes)
+	if err := SortPrograms(tx.Programs); err != nil {
 		return ruleError(ErrTransactionSignature, err.Error())
 	}
 
-	if err := RunPrograms(txn, hashes, txn.Programs); err != nil {
+	if err := RunPrograms(tx, hashes, tx.Programs); err != nil {
 		return ruleError(ErrTransactionSignature, err.Error())
 	}
 
@@ -478,9 +474,9 @@ func (v *Validator) checkRechargeToSideChainTransaction(txn *types.Transaction) 
 		return ruleError(ErrRechargeToSideChain, str)
 	}
 
-	payloadObj, ok := mainChainTransaction.Payload.(*core.PayloadTransferCrossChainAsset)
+	payloadObj, ok := mainChainTransaction.Payload.(*payload.TransferCrossChainAsset)
 	if !ok {
-		str := fmt.Sprint("[checkRechargeToSideChainTransaction] Invalid payload core.PayloadTransferCrossChainAsset")
+		str := fmt.Sprint("[checkRechargeToSideChainTransaction] Invalid PayloadTransferCrossChainAsset")
 		return ruleError(ErrRechargeToSideChain, str)
 	}
 
@@ -591,7 +587,7 @@ func (v *Validator) checkTransferCrossChainAssetTransaction(txn *types.Transacti
 			str := fmt.Sprint("[checkTransferCrossChainAssetTransaction] Invalid transaction cross chain address")
 			return ruleError(ErrCrossChain, str)
 		}
-		if !bytes.Equal(programHash[0:1], []byte{common.PrefixStandard}) && !bytes.Equal(programHash[0:1], []byte{common.PrefixMultisig}) {
+		if !bytes.Equal(programHash[0:1], []byte{byte(contract.PrefixStandard)}) && !bytes.Equal(programHash[0:1], []byte{byte(contract.PrefixMultiSig)}) {
 			str := fmt.Sprint("[checkTransferCrossChainAssetTransaction] Invalid transaction cross chain address")
 			return ruleError(ErrCrossChain, str)
 		}
@@ -641,7 +637,7 @@ func GenesisToProgramHash(genesisHash *common.Uint256) (*common.Uint168, error) 
 	buf.Write(genesisHash.Bytes())
 	buf.WriteByte(byte(common.CROSSCHAIN))
 
-	return crypto.ToProgramHash(buf.Bytes())
+	return common.ToProgramHash(byte(contract.PrefixCrossChain), buf.Bytes()), nil
 }
 
 func (v *Validator) TxProgramHashes(tx *types.Transaction) ([]common.Uint168, error) {
@@ -689,16 +685,13 @@ func RunPrograms(tx *types.Transaction, hashes []common.Uint168, programs []*typ
 	}
 
 	for i := 0; i < len(programs); i++ {
-		programHash, err := crypto.ToProgramHash(programs[i].Code)
-		if err != nil {
-			return err
-		}
+		codeHash := common.ToCodeHash(programs[i].Code)
 
-		if !hashes[i].IsEqual(*programHash) {
-			return errors.New("The data hashes is different with corresponding program code.")
+		if !hashes[i].ToCodeHash().IsEqual(*codeHash) {
+			return errors.New("The data hashe is different from corresponding program code.")
 		}
 		//execute program on VM
-		se := vm.NewExecutionEngine(types.GetDataContainer(programHash, tx),
+		se := vm.NewExecutionEngine(types.GetDataContainer(&hashes[i], tx),
 			new(vm.CryptoECDsa), vm.MAXSTEPS, nil, nil)
 		se.LoadScript(programs[i].Code, false)
 		se.LoadScript(programs[i].Parameter, true)
@@ -722,11 +715,6 @@ func RunPrograms(tx *types.Transaction, hashes []common.Uint168, programs []*typ
 }
 
 func SortPrograms(programs []*types.Program) (err error) {
-	defer func() {
-		if code := recover(); code != nil {
-			err = fmt.Errorf("invalid program code %x", code)
-		}
-	}()
 	sort.Sort(byHash(programs))
 	return err
 }
@@ -736,13 +724,7 @@ type byHash []*types.Program
 func (p byHash) Len() int      { return len(p) }
 func (p byHash) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
 func (p byHash) Less(i, j int) bool {
-	hashi, err := crypto.ToProgramHash(p[i].Code)
-	if err != nil {
-		panic(p[i].Code)
-	}
-	hashj, err := crypto.ToProgramHash(p[j].Code)
-	if err != nil {
-		panic(p[j].Code)
-	}
+	hashi := common.ToCodeHash(p[i].Code)
+	hashj := common.ToCodeHash(p[j].Code)
 	return hashi.Compare(*hashj) < 0
 }

@@ -5,7 +5,7 @@ import (
 	"math/big"
 	"time"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 func (b *BlockChain) CalcCurrentDifficulty(currentBits uint32) string {
@@ -117,7 +117,7 @@ func BigToCompact(n *big.Int) uint32 {
 	return compact
 }
 
-func HashToBig(hash *Uint256) *big.Int {
+func HashToBig(hash *common.Uint256) *big.Int {
 	// A Hash is in little-endian, but the big package wants the bytes in
 	// big-endian, so reverse them.
 	buf := *hash
