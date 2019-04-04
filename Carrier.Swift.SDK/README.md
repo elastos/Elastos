@@ -46,7 +46,7 @@ After importing dependencies from Carrier native, you need Apple Xcode to open t
 
 ### 4. Output
 
-Use Apple Xcode to generate **ElastosCarrier.framework**.
+Use Apple Xcode to generate **ElastosCarrierSDK.framework**.
 
 ## Tests
 
@@ -54,7 +54,8 @@ TODO.
 
 ## CocoaPods
 
-The distribution has been published to CocoaPods platform. So, the simple way to use **ElastosCarrier.framework** is just to add the following line to your **Podfile**:
+### 1. Pod install
+The distribution has been published to CocoaPods platform. So, the simple way to use **ElastosCarrierSDK.framework** is just to add the following line to your **Podfile**:
 
 ```
   pod 'ElastosCarrierSDK'
@@ -65,11 +66,19 @@ Then run the command below to install it before open your iOS workspace:
 $ pod install
 ```
 
+### 2. Add shell script for codesign
+
+In the project navigator, select the tab **Build Phases**  in the specific  **TARGET" ** item. Then click **+** button on the right-top corner to choose **New Run Script Phase** and expand it to add shell script as below:
+
+```
+ "${SRCROOT}/Pods/ElastosCarrierSDK/ElastosCarrier-framework/CocoaPods/codesigncarrierframework.sh"
+```
+
 ## Build Docs
 
 ### 1. Swift APIs Docs
 
-Run following script command to generate swift APIs docuement with appledoc tool:
+Run following script command to generate swift APIs document with appledoc tool:
 
 ```shell
 $ ./docs.sh
