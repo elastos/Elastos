@@ -3,6 +3,7 @@
 
 .c_Header {
   height: auto !important;
+  // border-bottom: 2px solid #011748;
 
   .fill-profile-toast {
     background: $cr_dark_color;
@@ -101,5 +102,11 @@
     font-family: Microsoft YaHei;
     line-height: normal;
     font-size: 11px;
+  }
+}
+
+.ant-menu-vertical .ant-menu-item.mobile-language-dropdown {
+  @media only screen and (min-width: $mobile-width) {
+    display: none;
   }
 }
