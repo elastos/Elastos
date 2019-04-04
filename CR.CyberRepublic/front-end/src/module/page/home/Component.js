@@ -5,8 +5,10 @@ import _ from 'lodash'
 import styled from 'styled-components'
 import './style.scss'
 import MediaQuery from 'react-responsive'
-
 import { Row, Col, Button } from 'antd'
+
+
+import {LG_WIDTH} from '../../../config/constant'
 import StandardPage from '../StandardPage'
 
 import { images } from './images'
@@ -39,7 +41,40 @@ export default class extends StandardPage {
 
   ord_renderContent() {
     return <div className="c_Home">
-      {this.renderMain()}
+      <MediaQuery minWidth={LG_WIDTH}>
+        {this.renderDesktop()}
+      </MediaQuery>
+      <MediaQuery maxWidth={LG_WIDTH}>
+        <CRLogoMobContainer>
+          <CRLogo src={images.CRLogo} />
+          <CRLogoMobText>
+            ELASTOS COMMUNITY<br/>
+            <br/>
+            <a target="_blank" href="https://www.elastos.org">Powered by the Elastos Blockchain</a>
+          </CRLogoMobText>
+        </CRLogoMobContainer>
+
+        <InfoRowMob>
+          <InfoImgContainerCR>
+            <InfoImg src={images.CREcosystemFundImg} style={{height: '80px'}}/>
+          </InfoImgContainerCR>
+          <InfoDesc>Ecosystem Fund<br/>Project Funding</InfoDesc>
+        </InfoRowMob>
+
+        <InfoRowMob>
+          <InfoImgContainerCR>
+            <InfoImg src={images.CRGovernanceImg} style={{height: '80px'}}/>
+          </InfoImgContainerCR>
+          <InfoDesc>Community<br/>Governance</InfoDesc>
+        </InfoRowMob>
+
+        <InfoRowMob>
+          <InfoImgContainerCR>
+            <InfoImg src={images.CRDPoSImg} style={{height: '80px'}}/>
+          </InfoImgContainerCR>
+          <InfoDesc>DPoS Supernodes</InfoDesc>
+        </InfoRowMob>
+      </MediaQuery>
       <ContainerMid className="mid-section">
         <MainContainer>
           <CRCTitle>
@@ -59,10 +94,10 @@ export default class extends StandardPage {
               </li>
               <li>
                 <b>February 2019</b> - Further refinements to the CRC were made giving the community a way to propose Suggestions and the Council to fund projects.
-                You can read more about the funding workflow at <a href="https://www.cyberrepublic.org/docs/#/overview/crc" target="_blank">https://www.cyberrepublic.org/docs/#/overview/crc</a>.
+                You can read more about the funding workflow at <a href="https://www.cyberrepublic.org/docs/#/overview/crc" target="_blank">our documentation site</a>.
               </li>
               <li>
-                <b>March 2019</b> - The first Marketing and Development projects were funded for over 100k USD, see all our proposals and voting process at <a href="/proposals">https://www.cyberrepublic.org/proposals</a>.
+                <b>March 2019</b> - The first Marketing and Development projects were funded for over 100k USD, see all our proposals and voting process at <a href="/proposals">our proposals page</a>.
               </li>
             </CRCLIst>
           </CRCDesc>
@@ -74,7 +109,7 @@ export default class extends StandardPage {
           <br/>
 
           <CRCTitle>
-            Have a Project or Idea? <a href="/suggestions">Submit Your Suggestion Here</a>
+            Have a Project or Idea? <a href="/suggestion">Submit Your Suggestion Here</a>
           </CRCTitle>
         </MainContainer>
       </ContainerMid>
@@ -82,11 +117,14 @@ export default class extends StandardPage {
     </div>
   }
 
-  renderMain() {
+  renderDesktop() {
     return <MainContainer>
       <ElaContainer>
         <LogoContainer>
-          <ElaLogo src={images.ElaLogo}/>
+          {/* Be nice if this opened a modal explaining Elastos first */}
+          <a target="_blank" href="https://www.elastos.org">
+            <ElaLogo src={images.ElaLogo}/>
+          </a>
         </LogoContainer>
         <Row>
           <InfoCol span={8}>
@@ -150,10 +188,12 @@ export default class extends StandardPage {
         <div className="decoration-1">
           <img className="upper-left" src="/assets/images/training_mini_connector.png"/>
         </div>
-        <div className="decoration-square">
-          <div className="big-square" />
-          <div className="small-square" />
-        </div>
+        <MediaQuery minWidth={LG_WIDTH}>
+          <div className="decoration-square">
+            <div className="big-square" />
+            <div className="small-square" />
+          </div>
+        </MediaQuery>
         <Row className="top-section" type="flex" justify="center" gutter={32}>
           <Col className={`box-wrap ${selectedBox === 0 ? 'selected-box' : ''}`} xs={24} sm={24} md={24} lg={8} onClick={this.switchToBox.bind(this, 0)}>
             <div className="box box-hover">
@@ -375,7 +415,7 @@ const ClearFix = styled.div`
 const CommunityImg = styled.img`
   width: 80%;
   margin: 0 auto;
-  display: block;  
+  display: block;
 `
 
 const CRCTitle = styled.div`
@@ -383,28 +423,55 @@ const CRCTitle = styled.div`
   font-family: komu-a, Synthese, sans-serif;
   font-size: 48px;
   text-align: center;
-  
+
   > a {
     font-family: komu-a, Synthese, sans-serif;
     font-size: 48px;
-  } 
+  }
 `
 
 const CRCDesc = styled.div`
   text-align: left;
   width: 70%;
   margin: 25px auto;
+
+  @media only screen and (max-width: ${LG_WIDTH}px) {
+    width: 90%;
+  }
 `
 
 const CRCLIst = styled.ul`
   font-weight: 200;
-  margin: 24px 0 48px 24px;   
-  
+  margin: 24px 0 48px 24px;
+
   > li {
     margin: 16px 0;
-    
+
     > b {
       font-weight: 400;
     }
   }
+`
+
+const CRLogoMobText = styled.div`
+  position: absolute;
+  left: 50%;
+  bottom: 0px;
+  margin-left: -118px;
+  font-weight: 200;
+  line-height: 1;
+  
+  text-align: center;
+`
+
+const InfoRowMob = styled.div`
+  margin-top: 24px;
+  padding: 36px 0 12px 0;
+  border-top: 2px solid #e0e0e0;
+  text-align: center;
+`
+
+const CRLogoMobContainer = styled.div`
+  position: relative;
+  padding-bottom: 24px;
 `

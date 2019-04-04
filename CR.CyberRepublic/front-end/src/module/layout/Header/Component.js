@@ -215,7 +215,12 @@ export default class extends BaseComponent {
           mode="horizontal"
         >
           <Menu.Item className="c_MenuItem logo" key="landing">
-            <img src="/assets/images/logo.svg" alt="Cyber Republic" />
+            <MediaQuery minWidth={MIN_WIDTH_PC}>
+              <img src="/assets/images/logo.svg" alt="Cyber Republic" />
+            </MediaQuery>
+            <MediaQuery maxWidth={MAX_WIDTH_MOBILE}>
+              <img src="/assets/images/logo-mark.svg" alt="Cyber Republic"/>
+            </MediaQuery>
             {/* <div className="alpha-tag dsk">ALPHA</div> */}
           </Menu.Item>
         </Menu>
@@ -233,7 +238,7 @@ export default class extends BaseComponent {
             </MediaQuery>
           </Menu.Item>
           <Menu.Item className="c_MenuItem mobile" key="mobileMenu" onClick={this.props.toggleMobileMenu}>
-            <Icon type="menu-fold" />
+            <Icon type="menu-fold" style={{fontSize: '24px'}}/>
           </Menu.Item>
           <Menu.Item className="mobile-language-dropdown" style={{ marginTop: 13 }}>
             <MediaQuery maxWidth={MAX_WIDTH_MOBILE}>

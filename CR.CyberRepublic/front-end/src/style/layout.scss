@@ -39,6 +39,10 @@
   .c_Header_Menu.ant-menu {
     padding-top: 0;
     height: 110px;
+
+    @media only screen and (max-width: $mobile-width) {
+      height: 80px;
+    }
   }
 
   .c_Side_Menu {
@@ -77,6 +81,15 @@
       > img {
         margin-top: 8px;
         height: 60px;
+      }
+
+      @media only screen and (max-width: $mobile-width) {
+
+        padding-top: 12px;
+
+        > img {
+          height: 45px;
+        }
       }
     }
 

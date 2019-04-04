@@ -9,7 +9,7 @@ import '../../admin/admin.scss'
 import { Col, Row, Icon, Select, Form, Tooltip, Badge, Breadcrumb, Button, Table } from 'antd'
 import moment from 'moment/moment'
 import MediaQuery from 'react-responsive'
-import {MAX_WIDTH_MOBILE, MIN_WIDTH_PC} from '../../../../config/constant'
+import {MAX_WIDTH_MOBILE, MIN_WIDTH_PC} from '@/config/constant'
 
 import ProfilePage from '../../ProfilePage'
 
