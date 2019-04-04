@@ -1,0 +1,18 @@
+{
+  "did": {
+    "name": "DID Sidechain Pre-Loaded Wallet",
+    "description": "Pre-loaded transferred ELA from the mainchain to DID sidechain wallet: 10,000 DID ELA",
+    "privateKey": "1d5fdc0ad6b0b90e212042f850c0ab1e7d9fafcbd7a89e6da8ff64e8e5c490d2",
+    "publicKey": "03848390f4a687c247f4f662364c142a060ad10a03749178268decf9461b3c0fa5",
+    "address": "EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3",
+    "passwordforkeystore": "elastos"
+  },
+  "token": {
+    "name": "Token Sidechain Pre-Loaded Wallet(NOT PRELOADED YET)",
+    "description": "Pre-loaded transferred ELA from the mainchain to Token sidechain wallet: 10,000 TOKEN ELA",
+    "privateKey": "0ab62bd345baca1c775bc2c20924f2411f0500c219d30148816536e397106bcb",
+    "publicKey": "03ffe3021db71a9a40100c37fbe0774434c74b3efc6343bc16f9afa4fc9f4fc39e",
+    "address": "EUscMawPCr8uFxKDtVxaq93Wbjm1DdtzeW",
+    "passwordforkeystore": "elastos"
+  }
+}

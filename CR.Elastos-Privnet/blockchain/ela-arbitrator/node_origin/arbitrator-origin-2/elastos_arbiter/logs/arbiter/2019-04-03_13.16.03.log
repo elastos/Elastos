@@ -1,0 +1,302 @@
+2019/04/03 13:16:03.181314 [1;35m[INF][m GID 1, Init wallet.
+2019/04/03 13:16:03.201640 [1;35m[INF][m GID 1, Arbiter version:  v0.1.0
+2019/04/03 13:16:03.203483 [1;35m[INF][m GID 1, 1. Init chain utxo cache.
+2019/04/03 13:16:03.247579 [1;35m[INF][m GID 1, 2. Init finished transaction cache.
+2019/04/03 13:16:03.248043 [1;35m[INF][m GID 1, 3. Start arbitrator P2P networks.
+2019/04/03 13:16:03.248548 [1;35m[INF][m GID 1, 4. Init configurations.
+2019/04/03 13:16:03.271019 [1;35m[INF][m GID 8, currentHeight: 143  chainHeight: 144
+2019/04/03 13:16:03.271536 [1;35m[INF][m GID 1, [arbitrator] Main chain height:  255
+2019/04/03 13:16:03.302054 [1;35m[INF][m GID 1, [processBlock] block height: 255 current height: 255
+2019/04/03 13:16:03.302373 [1;35m[INF][m GID 1, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  255
+2019/04/03 13:16:03.312403 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  144
+2019/04/03 13:16:03.346239 [1;35m[INF][m GID 1, 5. Start arbitrator spv module.
+2019/04/03 13:16:03.346303 [1;35m[INF][m GID 1, [StartSpvModule] new spv service: &{elastos_arbiter/data/spv 7630401 ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw [127.0.0.1:11338] 11338 1 3 <nil>}
+2019/04/03 13:16:03.417922 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: EZ9kswa9Yg1ovBbFS9gnULZhdp6HCjPV5D
+2019/04/03 13:16:03.418178 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ
+2019/04/03 13:16:03.418339 [1;35m[INF][m GID 1, 6. Start arbitrator group monitor.
+2019/04/03 13:16:03.418366 [1;35m[INF][m GID 1, 7. Start servers.
+2019/04/03 13:16:03.418424 [1;35m[INF][m GID 1, 8. Start check and remove cross chain transactions from db.
+2019/04/03 13:16:03.418463 [1;35m[INF][m GID 1, 9. Start side chain account divide.
+2019/04/03 13:16:03.419449 [1;35m[INF][m GID 102, Check and remove cross chain transactions from dbcache finished
+2019/04/03 13:16:11.412764 [1;35m[INF][m GID 8, currentHeight: 144  chainHeight: 145
+2019/04/03 13:16:11.416035 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  145
+2019/04/03 13:16:15.496453 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  256
+2019/04/03 13:16:15.499263 [1;35m[INF][m GID 100, [processBlock] block height: 256 current height: 256
+2019/04/03 13:16:15.499802 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  256
+2019/04/03 13:16:16.429431 [1;35m[INF][m GID 8, currentHeight: 145  chainHeight: 146
+2019/04/03 13:16:16.435002 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  146
+2019/04/03 13:16:17.435910 [1;35m[INF][m GID 8, currentHeight: 146  chainHeight: 147
+2019/04/03 13:16:17.439010 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  147
+2019/04/03 13:16:25.450238 [1;35m[INF][m GID 8, currentHeight: 147  chainHeight: 148
+2019/04/03 13:16:25.453598 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  148
+2019/04/03 13:16:28.616041 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  257
+2019/04/03 13:16:28.619615 [1;35m[INF][m GID 100, [processBlock] block height: 257 current height: 257
+2019/04/03 13:16:28.619882 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  257
+2019/04/03 13:16:31.638369 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  258
+2019/04/03 13:16:31.639339 [1;35m[INF][m GID 100, [processBlock] block height: 258 current height: 258
+2019/04/03 13:16:31.639623 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  258
+2019/04/03 13:16:32.489601 [1;35m[INF][m GID 8, currentHeight: 148  chainHeight: 149
+2019/04/03 13:16:32.511590 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  149
+2019/04/03 13:16:33.673532 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  259
+2019/04/03 13:16:33.677419 [1;35m[INF][m GID 100, [processBlock] block height: 259 current height: 259
+2019/04/03 13:16:33.680697 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  259
+2019/04/03 13:16:34.530515 [1;35m[INF][m GID 8, currentHeight: 149  chainHeight: 150
+2019/04/03 13:16:34.543519 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  150
+2019/04/03 13:16:39.556745 [1;35m[INF][m GID 8, currentHeight: 150  chainHeight: 151
+2019/04/03 13:16:39.571454 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  151
+2019/04/03 13:16:47.051269 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  260
+2019/04/03 13:16:47.052064 [1;35m[INF][m GID 100, [processBlock] block height: 260 current height: 260
+2019/04/03 13:16:47.052272 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  260
+2019/04/03 13:16:47.582178 [1;35m[INF][m GID 8, currentHeight: 151  chainHeight: 152
+2019/04/03 13:16:47.585325 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  152
+2019/04/03 13:16:50.590706 [1;35m[INF][m GID 8, currentHeight: 152  chainHeight: 153
+2019/04/03 13:16:50.608144 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  153
+2019/04/03 13:16:52.082739 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  261
+2019/04/03 13:16:52.083748 [1;35m[INF][m GID 100, [processBlock] block height: 261 current height: 261
+2019/04/03 13:16:52.084094 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  261
+2019/04/03 13:16:52.639191 [1;35m[INF][m GID 8, currentHeight: 153  chainHeight: 154
+2019/04/03 13:16:52.647888 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  154
+2019/04/03 13:16:53.129406 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  262
+2019/04/03 13:16:53.130265 [1;35m[INF][m GID 100, [processBlock] block height: 262 current height: 262
+2019/04/03 13:16:53.130537 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  262
+2019/04/03 13:16:57.669693 [1;35m[INF][m GID 8, currentHeight: 154  chainHeight: 155
+2019/04/03 13:16:57.683584 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  155
+2019/04/03 13:17:00.145984 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  263
+2019/04/03 13:17:00.147745 [1;35m[INF][m GID 100, [processBlock] block height: 263 current height: 263
+2019/04/03 13:17:00.148011 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  263
+2019/04/03 13:17:00.715794 [1;35m[INF][m GID 8, currentHeight: 155  chainHeight: 156
+2019/04/03 13:17:00.720320 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  156
+2019/04/03 13:17:01.721000 [1;35m[INF][m GID 8, currentHeight: 156  chainHeight: 157
+2019/04/03 13:17:01.749400 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  157
+2019/04/03 13:17:03.419779 [1;35m[INF][m GID 102, Check and remove cross chain transactions from dbcache finished
+2019/04/03 13:17:03.421079 [1;35m[INF][m GID 103, Warning side chain mining account:  EZ9kswa9Yg1ovBbFS9gnULZhdp6HCjPV5D: 0 
+2019/04/03 13:17:05.682404 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  264
+2019/04/03 13:17:05.685284 [1;35m[INF][m GID 100, [processBlock] block height: 264 current height: 264
+2019/04/03 13:17:05.685764 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  264
+2019/04/03 13:17:09.771034 [1;35m[INF][m GID 8, currentHeight: 157  chainHeight: 158
+2019/04/03 13:17:09.782114 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  158
+2019/04/03 13:17:11.760656 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  265
+2019/04/03 13:17:11.761519 [1;35m[INF][m GID 100, [processBlock] block height: 265 current height: 265
+2019/04/03 13:17:11.762686 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  265
+2019/04/03 13:17:13.782430 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  266
+2019/04/03 13:17:13.783235 [1;35m[INF][m GID 100, [processBlock] block height: 266 current height: 266
+2019/04/03 13:17:13.783438 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  266
+2019/04/03 13:17:15.816015 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  267
+2019/04/03 13:17:15.818735 [1;35m[INF][m GID 100, [processBlock] block height: 267 current height: 267
+2019/04/03 13:17:15.818961 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  267
+2019/04/03 13:17:17.826717 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  268
+2019/04/03 13:17:17.827492 [1;35m[INF][m GID 100, [processBlock] block height: 268 current height: 268
+2019/04/03 13:17:17.827733 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  268
+2019/04/03 13:17:20.838131 [1;35m[INF][m GID 8, currentHeight: 158  chainHeight: 159
+2019/04/03 13:17:20.840867 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  159
+2019/04/03 13:17:26.023354 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  269
+2019/04/03 13:17:26.030153 [1;35m[INF][m GID 100, [processBlock] block height: 269 current height: 269
+2019/04/03 13:17:26.030377 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  269
+2019/04/03 13:17:29.113124 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  270
+2019/04/03 13:17:29.115140 [1;35m[INF][m GID 100, [processBlock] block height: 270 current height: 270
+2019/04/03 13:17:29.115428 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  270
+2019/04/03 13:17:30.052555 [1;35m[INF][m GID 8, currentHeight: 159  chainHeight: 160
+2019/04/03 13:17:30.065399 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  160
+2019/04/03 13:17:35.203523 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  271
+2019/04/03 13:17:35.205726 [1;35m[INF][m GID 100, [processBlock] block height: 271 current height: 271
+2019/04/03 13:17:35.205941 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  271
+2019/04/03 13:17:36.085502 [1;35m[INF][m GID 8, currentHeight: 160  chainHeight: 161
+2019/04/03 13:17:36.102249 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  161
+2019/04/03 13:17:40.244875 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  272
+2019/04/03 13:17:40.245994 [1;35m[INF][m GID 100, [processBlock] block height: 272 current height: 272
+2019/04/03 13:17:40.246596 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  272
+2019/04/03 13:17:42.262396 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  273
+2019/04/03 13:17:42.264186 [1;35m[INF][m GID 100, [processBlock] block height: 273 current height: 273
+2019/04/03 13:17:42.264654 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  273
+2019/04/03 13:17:48.180383 [1;35m[INF][m GID 8, currentHeight: 161  chainHeight: 162
+2019/04/03 13:17:48.310572 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  274
+2019/04/03 13:17:48.311234 [1;35m[INF][m GID 100, [processBlock] block height: 274 current height: 274
+2019/04/03 13:17:48.311449 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  274
+2019/04/03 13:17:51.983805 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  162
+2019/04/03 13:17:52.986001 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  275
+2019/04/03 13:17:52.987578 [1;35m[INF][m GID 100, [processBlock] block height: 275 current height: 275
+2019/04/03 13:17:52.987911 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  275
+2019/04/03 13:17:54.582378 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  276
+2019/04/03 13:17:54.585632 [1;35m[INF][m GID 100, [processBlock] block height: 276 current height: 276
+2019/04/03 13:17:54.585902 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  276
+2019/04/03 13:17:55.991017 [1;35m[INF][m GID 8, currentHeight: 162  chainHeight: 163
+2019/04/03 13:17:56.700655 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  163
+2019/04/03 13:18:03.420453 [1;35m[INF][m GID 102, Check and remove cross chain transactions from dbcache finished
+2019/04/03 13:18:03.433396 [1;35m[INF][m GID 103, Warning side chain mining account:  EZ9kswa9Yg1ovBbFS9gnULZhdp6HCjPV5D: 0 
+2019/04/03 13:18:06.743232 [1;35m[INF][m GID 8, currentHeight: 163  chainHeight: 164
+2019/04/03 13:18:06.747596 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  164
+2019/04/03 13:18:09.608072 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  277
+2019/04/03 13:18:09.608880 [1;35m[INF][m GID 100, [processBlock] block height: 277 current height: 277
+2019/04/03 13:18:09.609195 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  277
+2019/04/03 13:18:11.622394 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  278
+2019/04/03 13:18:11.625258 [1;35m[INF][m GID 100, [processBlock] block height: 278 current height: 278
+2019/04/03 13:18:11.625514 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  278
+2019/04/03 13:18:11.755987 [1;35m[INF][m GID 8, currentHeight: 164  chainHeight: 166
+2019/04/03 13:18:11.769703 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  166
+2019/04/03 13:18:21.928639 [1;35m[INF][m GID 8, currentHeight: 166  chainHeight: 167
+2019/04/03 13:18:21.941039 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  279
+2019/04/03 13:18:21.941701 [1;35m[INF][m GID 100, [processBlock] block height: 279 current height: 279
+2019/04/03 13:18:21.942008 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  279
+2019/04/03 13:18:21.949258 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  167
+2019/04/03 13:18:25.980584 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  280
+2019/04/03 13:18:25.981454 [1;35m[INF][m GID 100, [processBlock] block height: 280 current height: 280
+2019/04/03 13:18:25.981666 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  280
+2019/04/03 13:18:26.999833 [1;35m[INF][m GID 8, currentHeight: 167  chainHeight: 168
+2019/04/03 13:18:27.003133 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  168
+2019/04/03 13:18:32.065541 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  281
+2019/04/03 13:18:32.073962 [1;35m[INF][m GID 100, [processBlock] block height: 281 current height: 281
+2019/04/03 13:18:32.074404 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  281
+2019/04/03 13:18:33.033563 [1;35m[INF][m GID 8, currentHeight: 168  chainHeight: 169
+2019/04/03 13:18:33.040718 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  169
+2019/04/03 13:18:39.132108 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  282
+2019/04/03 13:18:39.132983 [1;35m[INF][m GID 100, [processBlock] block height: 282 current height: 282
+2019/04/03 13:18:39.133416 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  282
+2019/04/03 13:18:45.170294 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  283
+2019/04/03 13:18:45.171222 [1;35m[INF][m GID 100, [processBlock] block height: 283 current height: 283
+2019/04/03 13:18:45.191792 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  283
+2019/04/03 13:18:48.242541 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  284
+2019/04/03 13:18:48.243641 [1;35m[INF][m GID 100, [processBlock] block height: 284 current height: 284
+2019/04/03 13:18:48.243875 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  284
+2019/04/03 13:18:49.169302 [1;35m[INF][m GID 8, currentHeight: 169  chainHeight: 170
+2019/04/03 13:18:49.195255 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  170
+2019/04/03 13:18:51.217908 [1;35m[INF][m GID 8, currentHeight: 170  chainHeight: 171
+2019/04/03 13:18:51.234649 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  171
+2019/04/03 13:18:54.321528 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  285
+2019/04/03 13:18:54.322347 [1;35m[INF][m GID 100, [processBlock] block height: 285 current height: 285
+2019/04/03 13:18:54.322641 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  285
+2019/04/03 13:18:55.247972 [1;35m[INF][m GID 8, currentHeight: 171  chainHeight: 172
+2019/04/03 13:18:55.279424 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  172
+2019/04/03 13:18:56.281331 [1;35m[INF][m GID 8, currentHeight: 172  chainHeight: 173
+2019/04/03 13:18:56.307118 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  173
+2019/04/03 13:18:58.325064 [1;35m[INF][m GID 8, currentHeight: 173  chainHeight: 174
+2019/04/03 13:18:58.357538 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  174
+2019/04/03 13:18:58.369800 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  286
+2019/04/03 13:18:58.370460 [1;35m[INF][m GID 100, [processBlock] block height: 286 current height: 286
+2019/04/03 13:18:58.370747 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  286
+2019/04/03 13:19:02.394877 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  287
+2019/04/03 13:19:02.397554 [1;35m[INF][m GID 100, [processBlock] block height: 287 current height: 287
+2019/04/03 13:19:02.397803 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  287
+2019/04/03 13:19:03.421042 [1;35m[INF][m GID 102, Check and remove cross chain transactions from dbcache finished
+2019/04/03 13:19:03.446972 [1;35m[INF][m GID 103, Warning side chain mining account:  EZ9kswa9Yg1ovBbFS9gnULZhdp6HCjPV5D: 0 
+2019/04/03 13:19:04.402227 [1;35m[INF][m GID 8, currentHeight: 174  chainHeight: 175
+2019/04/03 13:19:04.415695 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  288
+2019/04/03 13:19:04.416403 [1;35m[INF][m GID 100, [processBlock] block height: 288 current height: 288
+2019/04/03 13:19:04.416678 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  288
+2019/04/03 13:19:04.428170 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  175
+2019/04/03 13:19:07.445135 [1;35m[INF][m GID 8, currentHeight: 175  chainHeight: 176
+2019/04/03 13:19:07.453094 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  176
+2019/04/03 13:19:13.851611 [1;35m[INF][m GID 127, [Notify-Deposit] find deposit transaction and add into channel, transaction hash: f24aea6e60f9f6765aa51775d92c99cb60c387a7a025ff2f211c9bcd8385b23d
+2019/04/03 13:19:13.851636 [1;35m[INF][m GID 98, [DepositListener] len tasks: 1
+2019/04/03 13:19:13.851661 [1;35m[INF][m GID 98, [Notify-Process] deal with 1 transactions
+2019/04/03 13:19:13.862923 [1;33m[WRN][m GID 98, [Notify-Process] i am not onduty
+2019/04/03 13:19:14.469877 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  289
+2019/04/03 13:19:14.480528 [1;35m[INF][m GID 100, [processBlock] block height: 289 current height: 289
+2019/04/03 13:19:14.480862 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  289
+2019/04/03 13:19:16.481263 [1;35m[INF][m GID 8, currentHeight: 176  chainHeight: 177
+2019/04/03 13:19:16.491250 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  290
+2019/04/03 13:19:16.493491 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  177
+2019/04/03 13:19:16.502866 [1;35m[INF][m GID 100, [processBlock] block height: 290 current height: 290
+2019/04/03 13:19:16.503175 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  290
+2019/04/03 13:19:26.610872 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  291
+2019/04/03 13:19:26.611689 [1;35m[INF][m GID 100, [processBlock] block height: 291 current height: 291
+2019/04/03 13:19:26.611904 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  291
+2019/04/03 13:19:31.673354 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  292
+2019/04/03 13:19:31.674006 [1;35m[INF][m GID 100, [processBlock] block height: 292 current height: 292
+2019/04/03 13:19:31.674257 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  292
+2019/04/03 13:19:32.531940 [1;35m[INF][m GID 8, currentHeight: 177  chainHeight: 178
+2019/04/03 13:19:32.556868 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  178
+2019/04/03 13:19:43.594211 [1;35m[INF][m GID 8, currentHeight: 178  chainHeight: 179
+2019/04/03 13:19:43.604956 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  179
+2019/04/03 13:19:46.610314 [1;35m[INF][m GID 8, currentHeight: 179  chainHeight: 180
+2019/04/03 13:19:46.629628 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  180
+2019/04/03 13:19:47.738293 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  293
+2019/04/03 13:19:47.740827 [1;35m[INF][m GID 100, [processBlock] block height: 293 current height: 293
+2019/04/03 13:19:47.741227 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  293
+2019/04/03 13:19:50.766544 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  294
+2019/04/03 13:19:50.767286 [1;35m[INF][m GID 100, [processBlock] block height: 294 current height: 294
+2019/04/03 13:19:50.767554 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  294
+2019/04/03 13:19:54.818653 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  295
+2019/04/03 13:19:54.820324 [1;35m[INF][m GID 100, [processBlock] block height: 295 current height: 295
+2019/04/03 13:19:54.820609 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  295
+2019/04/03 13:19:57.877356 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  296
+2019/04/03 13:19:57.878183 [1;35m[INF][m GID 100, [processBlock] block height: 296 current height: 296
+2019/04/03 13:19:57.878410 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  296
+2019/04/03 13:19:58.789072 [1;35m[INF][m GID 8, currentHeight: 180  chainHeight: 181
+2019/04/03 13:19:58.794637 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  181
+2019/04/03 13:20:00.805067 [1;35m[INF][m GID 8, currentHeight: 181  chainHeight: 182
+2019/04/03 13:20:00.823590 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  182
+2019/04/03 13:20:00.933064 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  297
+2019/04/03 13:20:00.933801 [1;35m[INF][m GID 100, [processBlock] block height: 297 current height: 297
+2019/04/03 13:20:00.934089 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  297
+2019/04/03 13:20:03.449744 [1;35m[INF][m GID 103, Warning side chain mining account:  EZ9kswa9Yg1ovBbFS9gnULZhdp6HCjPV5D: 0 
+2019/04/03 13:20:03.455794 [1;35m[INF][m GID 102, Check and remove cross chain transactions from dbcache finished
+2019/04/03 13:20:03.830244 [1;35m[INF][m GID 8, currentHeight: 182  chainHeight: 183
+2019/04/03 13:20:03.857037 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  183
+2019/04/03 13:20:04.962907 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  298
+2019/04/03 13:20:04.963868 [1;35m[INF][m GID 100, [processBlock] block height: 298 current height: 298
+2019/04/03 13:20:04.964093 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  298
+2019/04/03 13:20:05.864398 [1;35m[INF][m GID 8, currentHeight: 183  chainHeight: 184
+2019/04/03 13:20:05.882701 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  184
+2019/04/03 13:20:09.000869 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  299
+2019/04/03 13:20:09.002352 [1;35m[INF][m GID 100, [processBlock] block height: 299 current height: 299
+2019/04/03 13:20:09.002561 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  299
+2019/04/03 13:20:09.931694 [1;35m[INF][m GID 8, currentHeight: 184  chainHeight: 185
+2019/04/03 13:20:09.947185 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  185
+2019/04/03 13:20:14.972648 [1;35m[INF][m GID 8, currentHeight: 185  chainHeight: 186
+2019/04/03 13:20:14.989900 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  186
+2019/04/03 13:20:18.998791 [1;35m[INF][m GID 8, currentHeight: 186  chainHeight: 187
+2019/04/03 13:20:19.017341 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  187
+2019/04/03 13:20:23.039457 [1;35m[INF][m GID 8, currentHeight: 187  chainHeight: 188
+2019/04/03 13:20:23.068456 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  300
+2019/04/03 13:20:23.069535 [1;35m[INF][m GID 100, [processBlock] block height: 300 current height: 300
+2019/04/03 13:20:23.069863 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  300
+2019/04/03 13:20:23.078640 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  188
+2019/04/03 13:20:29.100851 [1;35m[INF][m GID 8, currentHeight: 188  chainHeight: 189
+2019/04/03 13:20:29.118076 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  189
+2019/04/03 13:20:30.103693 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  301
+2019/04/03 13:20:30.104827 [1;35m[INF][m GID 100, [processBlock] block height: 301 current height: 301
+2019/04/03 13:20:30.105094 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  301
+2019/04/03 13:20:32.148640 [1;35m[INF][m GID 8, currentHeight: 189  chainHeight: 190
+2019/04/03 13:20:32.160692 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  190
+2019/04/03 13:20:35.169557 [1;35m[INF][m GID 8, currentHeight: 190  chainHeight: 191
+2019/04/03 13:20:35.184616 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  191
+2019/04/03 13:20:36.132492 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  302
+2019/04/03 13:20:36.135596 [1;35m[INF][m GID 100, [processBlock] block height: 302 current height: 302
+2019/04/03 13:20:36.135917 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  302
+2019/04/03 13:20:41.201909 [1;35m[INF][m GID 8, currentHeight: 191  chainHeight: 192
+2019/04/03 13:20:41.209939 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  192
+2019/04/03 13:20:42.211651 [1;35m[INF][m GID 8, currentHeight: 192  chainHeight: 193
+2019/04/03 13:20:42.228562 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  193
+2019/04/03 13:20:43.222713 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  303
+2019/04/03 13:20:43.250163 [1;35m[INF][m GID 100, [processBlock] block height: 303 current height: 303
+2019/04/03 13:20:43.250509 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  303
+2019/04/03 13:20:47.234574 [1;35m[INF][m GID 8, currentHeight: 193  chainHeight: 194
+2019/04/03 13:20:47.277366 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  194
+2019/04/03 13:20:50.308100 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  304
+2019/04/03 13:20:50.311712 [1;35m[INF][m GID 100, [processBlock] block height: 304 current height: 304
+2019/04/03 13:20:50.312081 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  304
+2019/04/03 13:20:58.335647 [1;35m[INF][m GID 8, currentHeight: 194  chainHeight: 195
+2019/04/03 13:20:58.354960 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  195
+2019/04/03 13:20:59.373000 [1;35m[INF][m GID 100, [arbitrator] Main chain height:  305
+2019/04/03 13:20:59.373754 [1;35m[INF][m GID 100, [processBlock] block height: 305 current height: 305
+2019/04/03 13:20:59.374126 [1;35m[INF][m GID 100, Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] SetLastUsedUtxoHeight  305
+2019/04/03 13:21:00.365178 [1;35m[INF][m GID 8, currentHeight: 195  chainHeight: 196
+2019/04/03 13:21:00.370899 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  196
+2019/04/03 13:21:00.387787 [1;35m[INF][m GID 100, [SyncFromMainNode] rpc get current height failed
+2019/04/03 13:21:00.387867 [1;31m[ERR][m GID 100, Arbitrator group sync error:  Post http://127.0.0.1:11336: dial tcp 127.0.0.1:11336: connect: connection refused
+2019/04/03 13:21:01.388395 [1;35m[INF][m GID 100, [SyncFromMainNode] rpc get current height failed
+2019/04/03 13:21:01.388448 [1;31m[ERR][m GID 100, Arbitrator group sync error:  Post http://127.0.0.1:11336: dial tcp 127.0.0.1:11336: connect: connection refused
+2019/04/03 13:21:02.377821 [1;35m[INF][m GID 8, currentHeight: 196  chainHeight: 197
+2019/04/03 13:21:02.380927 [1;35m[INF][m GID 8,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  197
+2019/04/03 13:21:02.391469 [1;35m[INF][m GID 100, [SyncFromMainNode] rpc get current height failed
+2019/04/03 13:21:02.391577 [1;31m[ERR][m GID 100, Arbitrator group sync error:  Post http://127.0.0.1:11336: dial tcp 127.0.0.1:11336: connect: connection refused
+2019/04/03 13:21:03.392363 [1;35m[INF][m GID 100, [SyncFromMainNode] rpc get current height failed
+2019/04/03 13:21:03.392459 [1;31m[ERR][m GID 100, Arbitrator group sync error:  Post http://127.0.0.1:11336: dial tcp 127.0.0.1:11336: connect: connection refused
+2019/04/03 13:21:03.450887 [1;31m[ERR][m GID 103, Check side chain pow err get EZ9kswa9Yg1ovBbFS9gnULZhdp6HCjPV5D UTXOs failed
+2019/04/03 13:21:03.456420 [1;35m[INF][m GID 102, Check and remove cross chain transactions from dbcache finished
+2019/04/03 13:21:04.394171 [1;35m[INF][m GID 100, [SyncFromMainNode] rpc get current height failed
+2019/04/03 13:21:04.394292 [1;31m[ERR][m GID 100, Arbitrator group sync error:  Post http://127.0.0.1:11336: dial tcp 127.0.0.1:11336: connect: connection refused
+2019/04/03 13:21:05.396006 [1;35m[INF][m GID 100, [SyncFromMainNode] rpc get current height failed
+2019/04/03 13:21:05.396067 [1;31m[ERR][m GID 100, Arbitrator group sync error:  Post http://127.0.0.1:11336: dial tcp 127.0.0.1:11336: connect: connection refused
+2019/04/03 13:21:06.396495 [1;35m[INF][m GID 100, [SyncFromMainNode] rpc get current height failed
+2019/04/03 13:21:06.396561 [1;31m[ERR][m GID 100, Arbitrator group sync error:  Post http://127.0.0.1:11336: dial tcp 127.0.0.1:11336: connect: connection refused
