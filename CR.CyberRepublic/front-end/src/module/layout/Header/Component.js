@@ -257,16 +257,8 @@ export default class extends BaseComponent {
           mode="horizontal"
         >
 
-          <Menu.Item className="c_MenuItem link" key="landing">
-            {I18N.get('0012')}
-          </Menu.Item>
-
           <Menu.Item className="c_MenuItem link" key="council">
             {I18N.get('navigation.council')}
-          </Menu.Item>
-
-          <Menu.Item className="c_MenuItem link" key="constitution/1">
-            {I18N.get('navigation.constitution')}
           </Menu.Item>
 
           <Menu.Item className="c_MenuItem link" key="suggestion">
@@ -275,6 +267,10 @@ export default class extends BaseComponent {
 
           <Menu.Item className="c_MenuItem link" key="proposals">
             {I18N.get('council.voting.proposalList')}
+          </Menu.Item>
+
+          <Menu.Item className="c_MenuItem link" key="supernodes">
+            {I18N.get('navigation.supernodes')}
           </Menu.Item>
 
           <Menu.Item className="c_MenuItem link" key="forum">
@@ -369,6 +365,7 @@ export default class extends BaseComponent {
       'crcles',
       'ambassadors',
       'social',
+      'supernodes',
       'leader',
       'community',
       'proposals',

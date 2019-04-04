@@ -18,11 +18,12 @@
 }
 
 .c_Header.ant-layout-header {
-  background: #fff;
+  background: #fbfbfb;
   height: $header_height;
   padding: 0;
   text-align: center;
   box-shadow: none;
+  border-bottom: 1px solid $bg_light_gray;
 
   .c_Affix_Menu {
     .c_Affix_Menu_Item {
@@ -68,6 +69,7 @@
     line-height: 20px;
     margin: -1px 0 0 0;
     font-weight: 200;
+    text-transform: uppercase;
 
     &.logo {
       padding-top: 24px;

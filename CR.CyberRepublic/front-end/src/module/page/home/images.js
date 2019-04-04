@@ -15,6 +15,8 @@ import SepGreyImg from '@/assets/images/home/sep-grey.png'
 import SepBlueImg from '@/assets/images/home/sep-blue.png'
 import SepCenterImg from '@/assets/images/home/sep-center.png'
 
+import CommunityPowerImg from '@/assets/images/home/community-power.png'
+
 export const images = {
   ElaLogo,
   CRLogo,
@@ -29,5 +31,7 @@ export const images = {
 
   SepGreyImg,
   SepBlueImg,
-  SepCenterImg
+  SepCenterImg,
+
+  CommunityPowerImg
 }

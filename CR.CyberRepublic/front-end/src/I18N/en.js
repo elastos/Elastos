@@ -35,6 +35,7 @@ const en = {
   'navigation.council': 'Council',
   'navigation.constitution': 'Constitution',
   'navigation.docs': 'Docs',
+  'navigation.supernodes': 'Supernodes',
 
   '0200': 'Profile',
   '0201': 'Login',

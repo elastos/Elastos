@@ -42,7 +42,32 @@ export default class extends StandardPage {
       {this.renderMain()}
       <ContainerMid className="mid-section">
         <MainContainer>
-          TODO
+          <CRCTitle>
+            Cyber Republic Consensus (CRC)
+          </CRCTitle>
+
+          <CRCDesc>
+            Elastos has already made concrete steps towards a true Decentralized Autonomous Organization (DAO). The community has the power to
+            elect and fund projects they deem beneficial to the Elastos ecosystem, to date we have already funded over 100k USD in projects.
+            A new council will be elected by August 2019 and the Cyber Republic will be officially launched, any member of the community can be candidate.
+            <CRCLIst>
+              <li>
+                <b>August 2018</b> - At the Elastos First Anniversary Event, 16 million ELA was transferred to Cyber Republic (CR).
+              </li>
+              <li>
+                <b>December 2018</b> - The first draft of the CR Constitution was submitted for community review - <a href="/constitution/1">read it here</a>.
+              </li>
+              <li>
+                <b>February 2019</b> - Further refinements to the CRC were made giving the community a way to propose Suggestions and the Council to fund projects.
+                You can read more about the funding workflow at <a href="https://www.cyberrepublic.org/docs/#/overview/crc" target="_blank">https://www.cyberrepublic.org/docs/#/overview/crc</a>.
+              </li>
+              <li>
+                <b>March 2019</b> - The first Marketing and Development projects were funded for over 100k USD, see all our proposals and voting process at <a href="/proposals">https://www.cyberrepublic.org/proposals</a>.
+              </li>
+            </CRCLIst>
+          </CRCDesc>
+
+          <CommunityImg src={images.CommunityPowerImg}/>
         </MainContainer>
       </ContainerMid>
       {this.renderWhatIsCR()}
@@ -239,12 +264,12 @@ const TriColTitle = styled.h3`
 `
 
 const TriColDesc = styled.p`
-  font-weight: 200;    
+  font-weight: 200;
   font-size: 18px;
 `
 
 const MainContainer = styled.div`
-  max-width: 1200px;  
+  max-width: 1200px;
   margin: 0 auto;
   text-align: center;
 `
@@ -256,7 +281,7 @@ const LogoContainer = styled.div`
 const ElaContainer = styled.div`
   width: 50%;
   float: left;
-  
+
   background-image: url(${images.SepCenterImg});
   background-repeat: no-repeat;
   background-size: contain;
@@ -306,15 +331,17 @@ const InfoImgContainerCR = styled.div`
 
 const InfoColCR = styled(InfoCol)`
   background-image: url(${images.SepBlueImg});
-  padding: 0 0 51px 0;
+  padding: 0 0 30px 0;
 `
 
 const InfoColCRMid = styled(InfoColCR)`
   background: none;
+  padding: 0 0 55px 0;
 `
 
 const InfoColCRRight = styled(InfoColCR)`
   background-position: center left;
+  padding: 0 0 55px 0;
 `
 
 const InfoImg = styled.img`
@@ -330,8 +357,41 @@ const InfoDesc = styled.div`
 const ContainerMid = styled.div`
   margin-top: 25px;
   padding: 50px 0;
+  color: #fff;
 `
 
 const ClearFix = styled.div`
-  clear: both;  
+  clear: both;
+`
+
+const CommunityImg = styled.img`
+  width: 80%;
+  margin: 0 auto;
+  display: block;  
+`
+
+const CRCTitle = styled.div`
+  color: #ccc;
+  font-family: komu-a, Synthese, sans-serif;
+  font-size: 48px;
+  text-align: center; 
+`
+
+const CRCDesc = styled.div`
+  text-align: left;
+  width: 70%;
+  margin: 25px auto;
+`
+
+const CRCLIst = styled.ul`
+  font-weight: 200;
+  margin: 24px 0 48px 24px;   
+  
+  > li {
+    margin: 16px 0;
+    
+    > b {
+      font-weight: 400;
+    }
+  }
 `

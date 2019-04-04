@@ -35,6 +35,7 @@ const zh = {
   'navigation.council': '委员会',
   'navigation.constitution': '章程',
   'navigation.docs': '文档',
+  'navigation.supernodes': 'Supernodes',
 
   '0200': '简介',
   '0201': '登录',
