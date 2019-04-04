@@ -30,11 +30,11 @@ type TxPool struct {
 //1.check  2.check with ledger(db) 3.check with pool
 func (mp *TxPool) AppendToTxPool(tx *Transaction) error {
 	mp.Lock()
+	defer mp.Unlock()
 	code := mp.appendToTxPool(tx)
 	if code != Success {
 		return code
 	}
-	mp.Unlock()
 
 	go events.Notify(events.ETTransactionAccepted, tx)
 	return nil
