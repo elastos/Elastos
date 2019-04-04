@@ -28,15 +28,16 @@ type TxPool struct {
 
 //append transaction to txnpool when check ok.
 //1.check  2.check with ledger(db) 3.check with pool
-func (mp *TxPool) AppendToTxnPool(tx *Transaction) ErrCode {
+func (mp *TxPool) AppendToTxPool(tx *Transaction) error {
 	mp.Lock()
 	code := mp.appendToTxPool(tx)
-	if code == Success {
-		go events.Notify(events.ETTransactionAccepted, tx)
+	if code != Success {
+		return code
 	}
 	mp.Unlock()
 
-	return code
+	go events.Notify(events.ETTransactionAccepted, tx)
+	return nil
 }
 
 func (mp *TxPool) appendToTxPool(tx *Transaction) ErrCode {
@@ -78,14 +79,6 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) ErrCode {
 	mp.txnList[txHash] = tx
 
 	return Success
-}
-
-func (mp *TxPool) AppendToTxPool(txn *Transaction) error {
-	code := mp.AppendToTxnPool(txn)
-	if code != Success {
-		return errors.New(code.Message())
-	}
-	return nil
 }
 
 // HaveTransaction returns if a transaction is in transaction pool by the given
@@ -531,10 +524,10 @@ func (mp *TxPool) delSidechainTx(hash Uint256) {
 
 func (mp *TxPool) MaybeAcceptTransaction(tx *Transaction) error {
 	mp.Lock()
-	errCode := mp.appendToTxPool(tx)
+	code := mp.appendToTxPool(tx)
 	mp.Unlock()
-	if errCode != Success {
-		return fmt.Errorf("verify failed with error %s", errCode.Message())
+	if code != Success {
+		return code
 	}
 	return nil
 }

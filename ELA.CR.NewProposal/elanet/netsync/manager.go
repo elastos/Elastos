@@ -306,8 +306,10 @@ func (sm *SyncManager) handleTxMsg(tmsg *txMsg) {
 		sm.rejectedTxns[txHash] = struct{}{}
 		sm.limitMap(sm.rejectedTxns, maxRejectedTxns)
 
-		peer.PushRejectMsg(p2p.CmdTx, msg.RejectInvalid, err.Error(),
-			&txHash, false)
+		// Convert the error into an appropriate reject message and
+		// send it.
+		code, reason := mempool.ErrToRejectErr(err)
+		peer.PushRejectMsg(p2p.CmdTx, code, reason, &txHash, false)
 		return
 	}
 
