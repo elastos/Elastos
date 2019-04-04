@@ -1,4 +1,5 @@
 import React from 'react'
+import ReactDOMServer from 'react-dom/server'
 import _ from 'lodash'
 import { Row, Col, Spin, Button, Modal, Input } from 'antd'
 import { Link } from 'react-router-dom'
@@ -262,14 +263,21 @@ export default class extends StandardPage {
 
   renderCouncilActionsNode() {
     const { isCouncil, detail } = this.props
-    const { _id, displayId, title, desc, benefits, funding, timeline, link } = detail
+    const { _id, displayId, title } = detail
+    const descNode = this.renderDescNode()
+    const benefitsNode = this.renderBenefitsNode()
+    const fundingNode = this.renderFundingNode()
+    const timelineNode = this.renderTimelineNode()
+    const linkNode = this.renderLinkNode()
+
     const proposalContent = `
-      ${desc ? `<p><strong>${I18N.get('suggestion.form.fields.desc')}:</strong></p><p>${desc}</p>` : ''}
-      ${benefits ? `<p><strong>${I18N.get('suggestion.form.fields.benefits')}:</strong></p><p>${benefits}</p>` : ''}
-      ${funding ? `<p><strong>${I18N.get('suggestion.form.fields.funding')}:</strong></p><p>${funding}</p>` : ''}
-      ${timeline ? `<p><strong>${I18N.get('suggestion.form.fields.timeline')}:</strong></p><p>${moment(detail.timeline).format('MMM D, YYYY')}</p>` : ''}
-      ${link ? `<p><strong>${I18N.get('suggestion.form.fields.links')}:</strong></p><p><a href=${link} target="_blank">${link}</a></p>` : ''}
+      ${ReactDOMServer.renderToString(descNode)}
+      ${ReactDOMServer.renderToString(benefitsNode)}
+      ${ReactDOMServer.renderToString(fundingNode)}
+      ${ReactDOMServer.renderToString(timelineNode)}
+      ${ReactDOMServer.renderToString(linkNode)}
     `
+
     const props = {
       data: {
         title,
