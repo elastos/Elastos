@@ -1,6 +1,4 @@
-# Elastos Local PrivateNet - v0.2
-
-## We are currently updating to the new version to support the DPoS Supernodes
+# Elastos Local PrivateNet - v0.2 
 
 If you are starting to set this up now it's recommended that you wait until the new version which will have
 the new DPoS nodes and possibly the ETH sidechain.
