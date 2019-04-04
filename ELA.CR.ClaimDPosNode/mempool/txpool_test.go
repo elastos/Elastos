@@ -290,7 +290,7 @@ func TestTxPool_AppendToTxnPool(t *testing.T) {
 		"0a3c1d258040000000000000000129e9cf1c5f336fcf3a6c954444ed482c5d916e5" +
 		"06dd00000000")
 	tx.Deserialize(bytes.NewReader(txBytes))
-	errCode := txPool.AppendToTxnPool(tx)
+	errCode := txPool.AppendToTxPool(tx)
 	assert.Equal(t, errCode, errors.ErrIneffectiveCoinbase)
 
 }

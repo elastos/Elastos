@@ -9,7 +9,6 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	dmsg "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
-	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
@@ -150,7 +149,7 @@ func (i *IllegalBehaviorMonitor) sendIllegalProposalTransaction(
 		Fee:            0,
 	}
 
-	if code := i.manager.AppendToTxnPool(tx); code == errors.Success {
+	if err := i.manager.AppendToTxnPool(tx); err == nil {
 		i.manager.Broadcast(msg.NewTx(tx))
 	}
 }
@@ -170,7 +169,7 @@ func (i *IllegalBehaviorMonitor) SendSidechainIllegalEvidenceTransaction(
 		Fee:            0,
 	}
 
-	if code := i.manager.AppendToTxnPool(tx); code == errors.Success {
+	if err := i.manager.AppendToTxnPool(tx); err == nil {
 		i.manager.Broadcast(msg.NewTx(tx))
 	}
 }
@@ -190,7 +189,7 @@ func (i *IllegalBehaviorMonitor) sendIllegalVoteTransaction(
 		Fee:            0,
 	}
 
-	if code := i.manager.AppendToTxnPool(tx); code == errors.Success {
+	if err := i.manager.AppendToTxnPool(tx); err == nil {
 		i.manager.Broadcast(msg.NewTx(tx))
 	}
 }
