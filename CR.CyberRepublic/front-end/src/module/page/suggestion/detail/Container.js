@@ -37,6 +37,9 @@ export default createContainer(Component, (state) => {
     async update(param) {
       return service.update(param)
     },
+    async addTag(param) {
+      return service.addTag(param)
+    },
     resetDetail() {
       return service.resetDetail()
     },

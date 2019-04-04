@@ -280,6 +280,21 @@ const zh = {
   'suggestion.form.fields.funding': '预算（USD）',
   'suggestion.form.fields.timeline': '启动时间',
   'suggestion.form.fields.links': '相关链接',
+  'suggestion.form.fields.linksSplit': '相关链接 (逗号分隔)',
+
+  suggestion: {
+    modal: {
+      addTagComment: '添加评论',
+      confirm: '确认',
+      cancel: '取消',
+    },
+    tag: {
+      type: {
+        UNDER_CONSIDERATION: '审议中',
+        INFO_NEEDED: '需更多信息',
+      },
+    },
+  },
 
   // Suggestion Button Text
   'suggestion.btnText.edit': '编辑',

@@ -1,6 +1,7 @@
 import React from 'react'
+import ReactDOMServer from 'react-dom/server'
 import _ from 'lodash'
-import { Row, Col, Spin, Button, Modal } from 'antd'
+import { Row, Col, Spin, Button, Modal, Input } from 'antd'
 import { Link } from 'react-router-dom'
 import MediaQuery from 'react-responsive'
 import moment from 'moment/moment'
@@ -12,13 +13,15 @@ import SuggestionForm from '@/module/form/SuggestionForm/Container'
 import ProposalForm from '@/module/page/CVote/create/Container'
 import I18N from '@/I18N'
 import { LG_WIDTH } from '@/config/constant'
-import { CVOTE_STATUS } from '@/constant'
+import { CVOTE_STATUS, SUGGESTION_TAG_TYPE } from '@/constant'
 import StandardPage from '../../StandardPage'
 import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
 import MySuggestion from '../my_list/Container'
 
 import { Container, Title, Label, Desc, BtnGroup, StyledButton, DescBody } from './style'
+
+const { TextArea } = Input;
 
 export default class extends StandardPage {
   constructor(props) {
@@ -93,6 +96,7 @@ export default class extends StandardPage {
     const metaNode = this.renderMetaNode()
     const titleNode = this.renderTitleNode()
     const labelNode = this.renderLabelNode()
+    const tagsNode = this.renderTagsNode()
     const descNode = this.renderDescNode()
     const benefitsNode = this.renderBenefitsNode()
     const fundingNode = this.renderFundingNode()
@@ -103,6 +107,7 @@ export default class extends StandardPage {
         {metaNode}
         {titleNode}
         {labelNode}
+        {tagsNode}
         {descNode}
         {benefitsNode}
         {fundingNode}
@@ -138,6 +143,20 @@ export default class extends StandardPage {
         {` (${I18N.get(`cvoteStatus.${status}`)})`}
       </Label>
     )
+  }
+
+  renderTagsNode() {
+    const tags = _.get(this.props.detail, 'tags')
+    if (_.isEmpty(tags)) return null
+    const res = _.map(tags, (tag) => {
+      const { type, _id } = tag
+      return (
+        <Label key={_id}>
+          {I18N.get(`suggestion.tag.type.${type}`)}
+        </Label>
+      )
+    })
+    return res
   }
 
   renderDescNode() {
@@ -190,16 +209,16 @@ export default class extends StandardPage {
   }
 
   renderLinkNode() {
-    const { detail } = this.props
+    const { link } = this.props.detail
 
-    if (_.isEmpty(detail.link)) {
+    if (_.isEmpty(link || _.isEmpty(_.get(link, '[0]')))) {
       return null
     }
 
     return (
       <Desc>
         <h4>{I18N.get('suggestion.form.fields.links')}</h4>
-        <a href={detail.link} target="_blank">{detail.link}</a>
+        {_.map(link, href => <div key={href}><a href={href} target="_blank" rel="noopener noreferrer">{href}</a></div>)}
       </Desc>
     )
   }
@@ -243,15 +262,22 @@ export default class extends StandardPage {
   }
 
   renderCouncilActionsNode() {
-    const { consider, needMoreInfo, isCouncil, detail } = this.props
-    const { _id, displayId, title, desc, benefits, funding, timeline, link } = detail
+    const { isCouncil, detail } = this.props
+    const { _id, displayId, title } = detail
+    const descNode = this.renderDescNode()
+    const benefitsNode = this.renderBenefitsNode()
+    const fundingNode = this.renderFundingNode()
+    const timelineNode = this.renderTimelineNode()
+    const linkNode = this.renderLinkNode()
+
     const proposalContent = `
-      ${desc ? `<p><strong>${I18N.get('suggestion.form.fields.desc')}:</strong></p><p>${desc}</p>` : ''}
-      ${benefits ? `<p><strong>${I18N.get('suggestion.form.fields.benefits')}:</strong></p><p>${benefits}</p>` : ''}
-      ${funding ? `<p><strong>${I18N.get('suggestion.form.fields.funding')}:</strong></p><p>${funding}</p>` : ''}
-      ${timeline ? `<p><strong>${I18N.get('suggestion.form.fields.timeline')}:</strong></p><p>${moment(detail.timeline).format('MMM D, YYYY')}</p>` : ''}
-      ${link ? `<p><strong>${I18N.get('suggestion.form.fields.links')}:</strong></p><p><a href=${link} target="_blank">${link}</a></p>` : ''}
+      ${ReactDOMServer.renderToString(descNode)}
+      ${ReactDOMServer.renderToString(benefitsNode)}
+      ${ReactDOMServer.renderToString(fundingNode)}
+      ${ReactDOMServer.renderToString(timelineNode)}
+      ${ReactDOMServer.renderToString(linkNode)}
     `
+
     const props = {
       data: {
         title,
@@ -267,16 +293,16 @@ export default class extends StandardPage {
     const res = isCouncil && (
       <BtnGroup>
         <Row type="flex" justify="start">
-          {/* <Col xs={24} sm={8}>
-            <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={consider}>
+          <Col xs={24} sm={8}>
+            <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={this.consider}>
               {I18N.get('suggestion.btnText.consider')}
             </StyledButton>
           </Col>
           <Col xs={24} sm={8}>
-            <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={needMoreInfo}>
+            <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={this.showAddTagModal}>
               {I18N.get('suggestion.btnText.needMoreInfo')}
             </StyledButton>
-          </Col> */}
+          </Col>
           <Col xs={24} sm={8}>
             {createFormBtn}
           </Col>
@@ -297,6 +323,49 @@ export default class extends StandardPage {
         returnUrl={`/suggestion/${detail._id}`}
       />
     )
+  }
+
+  consider = async () => {
+    const { _id } = this.props.detail
+    try {
+      await this.props.addTag({
+        id: _id,
+        type: SUGGESTION_TAG_TYPE.UNDER_CONSIDERATION,
+      })
+      this.refetch()
+    } catch (error) {
+      // console.log(error)
+    }
+  }
+
+  needMoreInfo = async () => {
+    const { comment } = this.state
+    const { _id } = this.props.detail
+    try {
+      await this.props.addTag({
+        id: _id,
+        type: SUGGESTION_TAG_TYPE.INFO_NEEDED,
+        desc: comment,
+      })
+      // this.showAddTagModal()
+      this.refetch()
+    } catch (error) {
+      // console.log(error)
+    }
+  }
+
+  showAddTagModal = () => {
+    Modal.confirm({
+      title: I18N.get('suggestion.modal.addTagComment'),
+      content: <TextArea onChange={this.onCommentChanged} />,
+      okText: I18N.get('suggestion.modal.confirm'),
+      cancelText: I18N.get('suggestion.modal.cancel'),
+      onOk: () => this.needMoreInfo(),
+    })
+  }
+
+  onCommentChanged = (e) => {
+    this.setState({ comment: e.target.value })
   }
 
   onFormSubmit = async (param) => {

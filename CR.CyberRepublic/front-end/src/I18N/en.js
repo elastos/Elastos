@@ -280,6 +280,21 @@ const en = {
   'suggestion.form.fields.funding': 'Funding Estimated (USD)',
   'suggestion.form.fields.timeline': 'Timeline Suggested',
   'suggestion.form.fields.links': 'Links',
+  'suggestion.form.fields.linksSplit': 'Links (Split By Comma)',
+
+  suggestion: {
+    modal: {
+      addTagComment: 'Add Comment',
+      confirm: 'Confirm',
+      cancel: 'Cancel',
+    },
+    tag: {
+      type: {
+        UNDER_CONSIDERATION: 'Under Consideration of Council',
+        INFO_NEEDED: 'More info needed for Council',
+      },
+    },
+  },
 
   // Suggestion Button Text
   'suggestion.btnText.edit': 'Edit Suggestion',

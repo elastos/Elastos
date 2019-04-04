@@ -3,6 +3,7 @@ import create from './create'
 import update from './update'
 import list from './list'
 import show from './show'
+import addTag from './addTag'
 import like from './like'
 import dislike from './dislike'
 import reportabuse from './reportabuse'
@@ -32,6 +33,11 @@ export default Base.setRouter([
   {
     path: '/:id/update',
     router: update,
+    method: 'post',
+  },
+  {
+    path: '/:id/addtag',
+    router: addTag,
     method: 'post',
   },
   {

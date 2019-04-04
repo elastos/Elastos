@@ -59,7 +59,7 @@ class C extends BaseComponent {
           param.timeline = values.timeline
         }
         if (!_.isEmpty(values.link)) {
-          param.link = values.link
+          param.link = _.map(_.split(values.link, ','), value => _.trim(value))
         }
         if (_.get(data, '_id')) {
           param.id = _.get(data, '_id')
@@ -128,10 +128,10 @@ class C extends BaseComponent {
 
     const link_fn = getFieldDecorator('link', {
       rules: [
-        {type: 'url'},
-        {required: false},
+        // { type: 'url' },
+        { required: false },
       ],
-      initialValue: _.get(data, 'link', ''),
+      initialValue: _.join(_.get(data, 'link', ''), ','),
     })
 
     return {
@@ -273,7 +273,7 @@ class C extends BaseComponent {
             </FormItem>
           </Col>
         </Row>
-        <FormItem className="form-item" label={I18N.get('suggestion.form.fields.links')} {...formItemLayout}>
+        <FormItem className="form-item" label={I18N.get('suggestion.form.fields.linksSplit')} {...formItemLayout}>
           {p.link}
         </FormItem>
         <FormItem className="form-item">
