@@ -35,7 +35,7 @@ const zh = {
   'navigation.council': '委员会',
   'navigation.constitution': '章程',
   'navigation.docs': '文档',
-  'navigation.supernodes': 'Supernodes',
+  'navigation.supernodes': 'DPOS超级节点',
 
   '0200': '简介',
   '0201': '登录',
@@ -138,6 +138,41 @@ const zh = {
   'home.explanation_3.box_4.title': '亦来云Cyber Republic委员会利益冲突政策',
   'home.explanation_3.box_4.text': 'Cyber Republic委员会成员必须全心全意地致力于Cyber Republic及其子社区的宣传推广。他们目前担任的其他职位可能不应与之产生冲突。',
   'home.explanation_3.date': '',
+
+  'home.mob.logo.title': '亦来云社区',
+  'home.mob.logo.subtitle': '亦来云区块链驱动的',
+
+  'home.hero.ela.blockchain': '区块链开发核心',
+  'home.hero.ela.application.1': '应用SDK',
+  'home.hero.ela.application.2': '开发者API',
+  'home.hero.ela.sidechain': '侧链整合',
+
+  'home.hero.cr.fund.1': '生态系统基金',
+  'home.hero.cr.fund.2': '项目资金',
+  'home.hero.cr.community': '社区管理',
+  'home.hero.cr.supernodes': 'DPOS超级节点',
+
+  'home.crc.title': 'CR 共识（CRC）',
+
+  'home.crc.desc': 'Elastos一直脚踏实地的前进，努力成为一个去中心化的自治组织。社区如果发现对Elastos生态系统有益的项目，社区有权力对其投票选择并提供资助。迄今为止我们已经为项目提供了超过10万美元的资金。新的理事会将于2019年8月前选举产生，CR将正式启动，社区的任何成员都可以成为理事会候选人。',
+
+  'home.crc.list.1.date': '2018年8月',
+  'home.crc.list.1.text': '在Elastos一周年纪念活动中，1600万ELA转移到了Cyber Republic（CR）名下。\n',
+
+  'home.crc.list.2.date': '2018年12月',
+  'home.crc.list.2.text': '公约草案第一稿已提交社区审查',
+  'home.crc.list.2.link': '请在此处阅读',
+
+  'home.crc.list.3.date': '2019年2月',
+  'home.crc.list.3.text': '为完善社区提出建议和理事会资助项目的流程，进一步改进了CR共识。想了解更多流程信息，',
+  'home.crc.list.3.link': '请参考链接',
+
+  'home.crc.list.4.date': '2019年3月',
+  'home.crc.list.4.text': '资助第一个营销开发项目，资金超过10万美元。想了解所有提案和投票流程，',
+  'home.crc.list.4.link': '请参考链接',
+
+  'home.crc.submit-suggestion.1': '您有任何项目或想法，',
+  'home.crc.submit-suggestion.2': '请在此提交您的建议',
 
   // Pop-up Announcement
   'popup.changes.title': 'Cyber Republic的重要公告',

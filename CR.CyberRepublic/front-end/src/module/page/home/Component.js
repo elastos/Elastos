@@ -9,6 +9,7 @@ import { Row, Col, Button } from 'antd'
 
 
 import {LG_WIDTH} from '../../../config/constant'
+import { USER_LANGUAGE } from '@/constant'
 import StandardPage from '../StandardPage'
 
 import { images } from './images'
@@ -47,10 +48,10 @@ export default class extends StandardPage {
       <MediaQuery maxWidth={LG_WIDTH}>
         <CRLogoMobContainer>
           <CRLogo src={images.CRLogo} />
-          <CRLogoMobText>
-            ELASTOS COMMUNITY<br/>
+          <CRLogoMobText style={{marginLeft: I18N.getLang() === USER_LANGUAGE.zh ? '-66px' : '-118px'}}>
+            {I18N.get('home.mob.logo.title')}<br/>
             <br/>
-            <a target="_blank" href="https://www.elastos.org">Powered by the Elastos Blockchain</a>
+            <a target="_blank" href="https://www.elastos.org">{I18N.get('home.mob.logo.subtitle')}</a>
           </CRLogoMobText>
         </CRLogoMobContainer>
 
@@ -58,58 +59,55 @@ export default class extends StandardPage {
           <InfoImgContainerCR>
             <InfoImg src={images.CREcosystemFundImg} style={{height: '80px'}}/>
           </InfoImgContainerCR>
-          <InfoDesc>Ecosystem Fund<br/>Project Funding</InfoDesc>
+          <InfoDesc>{I18N.get('home.hero.cr.fund.1')}<br/>{I18N.get('home.hero.cr.fund.2')}</InfoDesc>
         </InfoRowMob>
 
         <InfoRowMob>
           <InfoImgContainerCR>
             <InfoImg src={images.CRGovernanceImg} style={{height: '80px'}}/>
           </InfoImgContainerCR>
-          <InfoDesc>Community<br/>Governance</InfoDesc>
+          <InfoDesc>{I18N.get('home.hero.cr.community')}</InfoDesc>
         </InfoRowMob>
 
         <InfoRowMob>
           <InfoImgContainerCR>
             <InfoImg src={images.CRDPoSImg} style={{height: '80px'}}/>
           </InfoImgContainerCR>
-          <InfoDesc>DPoS Supernodes</InfoDesc>
+          <InfoDesc>{I18N.get('home.hero.cr.supernodes')}</InfoDesc>
         </InfoRowMob>
       </MediaQuery>
       <ContainerMid className="mid-section">
         <MainContainer>
           <CRCTitle>
-            Cyber Republic Consensus (CRC)
+            {I18N.get('home.crc.title')}
           </CRCTitle>
 
           <CRCDesc>
-            Elastos has already made concrete steps towards a true Decentralized Autonomous Organization (DAO). The community has the power to
-            elect and fund projects they deem beneficial to the Elastos ecosystem, to date we have already funded over 100k USD in projects.
-            A new council will be elected by August 2019 and the Cyber Republic will be officially launched, any member of the community can be a candidate.
+            {I18N.get('home.crc.desc')}
             <CRCLIst>
               <li>
-                <b>August 2018</b> - At the Elastos First Anniversary Event, 16 million ELA was transferred to Cyber Republic (CR).
+                <b>{I18N.get('home.crc.list.1.date')}</b> - {I18N.get('home.crc.list.1.text')}
               </li>
               <li>
-                <b>December 2018</b> - The first draft of the CR Constitution was submitted for community review - <a href="/constitution/1">read it here</a>.
+                <b>{I18N.get('home.crc.list.2.date')}</b> - {I18N.get('home.crc.list.2.text')} - <a href="/constitution/1">{I18N.get('home.crc.list.2.link')}</a>.
               </li>
               <li>
-                <b>February 2019</b> - Further refinements to the CRC were made giving the community a way to propose Suggestions and the Council to fund projects.
-                You can read more about the funding workflow at <a href="https://www.cyberrepublic.org/docs/#/overview/crc" target="_blank">our documentation site</a>.
+                <b>{I18N.get('home.crc.list.3.date')}</b> - {I18N.get('home.crc.list.3.text')} <a href="https://www.cyberrepublic.org/docs/#/overview/crc" target="_blank">{I18N.get('home.crc.list.3.link')}</a>.
               </li>
               <li>
-                <b>March 2019</b> - The first Marketing and Development projects were funded for over 100k USD, see all our proposals and voting process at <a href="/proposals">our proposals page</a>.
+                <b>{I18N.get('home.crc.list.4.date')}</b> - {I18N.get('home.crc.list.4.text')} <a href="/proposals">{I18N.get('home.crc.list.4.link')}</a>.
               </li>
             </CRCLIst>
           </CRCDesc>
 
-          <CommunityImg src={images.CommunityPowerImg}/>
+          <CommunityImg src={I18N.getLang() === USER_LANGUAGE.zh ? images.CommunityPowerZhImg : images.CommunityPowerImg}/>
 
           <br/>
           <br/>
           <br/>
 
           <CRCTitle>
-            Have a Project or Idea? <a href="/suggestion">Submit Your Suggestion Here</a>
+            {I18N.get('home.crc.submit-suggestion.1')} <a href="/suggestion">{I18N.get('home.crc.submit-suggestion.2')}</a>
           </CRCTitle>
         </MainContainer>
       </ContainerMid>
@@ -131,20 +129,20 @@ export default class extends StandardPage {
             <InfoImgContainer>
               <InfoImg src={images.ElaBlockchainImg}/>
             </InfoImgContainer>
-            <InfoDesc>Core Blockchain Development</InfoDesc>
+            <InfoDesc>{I18N.get('home.hero.ela.blockchain')}</InfoDesc>
           </InfoCol>
           <InfoColMid span={8} style={{paddingTop: '20px'}}>
             <InfoImgContainer style={{height: '70px'}}>
               <InfoImg src={images.ElaApplicationImg} style={{height: '50px'}}/>
             </InfoImgContainer>
-            <InfoDesc>Application SDKs<br/>Developer APIs</InfoDesc>
+            <InfoDesc>{I18N.get('home.hero.ela.application.1')}<br/>{I18N.get('home.hero.ela.application.2')}</InfoDesc>
           </InfoColMid>
           {/* Moving this up a bit */}
           <InfoColRight span={8} style={{paddingTop: '10px'}}>
             <InfoImgContainer style={{height: '80px'}}>
               <InfoImg src={images.ElaSidechainImg} style={{paddingLeft: '12px', height: '75px', paddingBottom: '15px'}}/>
             </InfoImgContainer>
-            <InfoDesc>Sidechain Integrations<br/>(ETH, NEO, DID)</InfoDesc>
+            <InfoDesc>{I18N.get('home.hero.ela.sidechain')}<br/>(ETH, NEO, DID)</InfoDesc>
           </InfoColRight>
         </Row>
       </ElaContainer>
@@ -157,19 +155,19 @@ export default class extends StandardPage {
             <InfoImgContainerCR>
               <InfoImg src={images.CREcosystemFundImg} style={{height: '80px'}}/>
             </InfoImgContainerCR>
-            <InfoDesc>Ecosystem Fund<br/>Project Funding</InfoDesc>
+            <InfoDesc>{I18N.get('home.hero.cr.fund.1')}<br/>{I18N.get('home.hero.cr.fund.2')}</InfoDesc>
           </InfoColCR>
           <InfoColCRMid span={8}>
             <InfoImgContainerCR>
               <InfoImg src={images.CRGovernanceImg} style={{height: '80px'}}/>
             </InfoImgContainerCR>
-            <InfoDesc>Community Governance</InfoDesc>
+            <InfoDesc>{I18N.get('home.hero.cr.community')}</InfoDesc>
           </InfoColCRMid>
           <InfoColCRRight span={7}>
             <InfoImgContainerCR style={{height: '110px'}}>
               <InfoImg src={images.CRDPoSImg} style={{marginTop: '-20px', height: '100px'}}/>
             </InfoImgContainerCR>
-            <InfoDesc>DPoS Supernodes</InfoDesc>
+            <InfoDesc>{I18N.get('home.hero.cr.supernodes')}</InfoDesc>
           </InfoColCRRight>
         </Row>
       </CRContainer>
@@ -413,9 +411,13 @@ const ClearFix = styled.div`
 `
 
 const CommunityImg = styled.img`
-  width: 80%;
+  width: 70%;
   margin: 0 auto;
   display: block;
+  
+  @media only screen and (max-width: ${LG_WIDTH}px) {
+    width: 95%;
+  }
 `
 
 const CRCTitle = styled.div`
@@ -457,7 +459,6 @@ const CRLogoMobText = styled.div`
   position: absolute;
   left: 50%;
   bottom: 0px;
-  margin-left: -118px;
   font-weight: 200;
   line-height: 1;
   

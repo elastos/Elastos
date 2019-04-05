@@ -139,6 +139,41 @@ const en = {
   'home.explanation_3.box_4.text': 'Members of the Cyber Republic Council must be dedicated fully to the propagation of the Cyber Republic and its sub-communities. Other positions they presently hold may not create conflicting incentives thereof.',
   'home.explanation_3.date': '',
 
+  'home.mob.logo.title': 'ELASTOS COMMUNITY',
+  'home.mob.logo.subtitle': 'Powered by the Elastos Blockchain',
+
+  'home.hero.ela.blockchain': 'Core Blockchain Development',
+  'home.hero.ela.application.1': 'Application SDKs',
+  'home.hero.ela.application.2': 'Developer APIs',
+  'home.hero.ela.sidechain': 'Sidechain Integrations',
+
+  'home.hero.cr.fund.1': 'Ecosystem Fund',
+  'home.hero.cr.fund.2': 'Project Funding',
+  'home.hero.cr.community': 'Community Governance',
+  'home.hero.cr.supernodes': 'DPoS Supernodes',
+
+  'home.crc.title': 'Cyber Republic Consensus (CRC)',
+
+  'home.crc.desc': 'Elastos has already made concrete steps towards a true Decentralized Autonomous Organization (DAO). The community has the power to elect and fund projects they deem beneficial to the Elastos ecosystem, to date we have already funded over 100k USD in projects. A new council will be elected by August 2019 and the Cyber Republic will be officially launched, any member of the community can be a candidate.',
+
+  'home.crc.list.1.date': 'August 2018',
+  'home.crc.list.1.text': 'At the Elastos First Anniversary Event, 16 million ELA was transferred to Cyber Republic (CR).',
+
+  'home.crc.list.2.date': 'December 2018',
+  'home.crc.list.2.text': 'The first draft of the CR Constitution was submitted for community review',
+  'home.crc.list.2.link': 'read it here',
+
+  'home.crc.list.3.date': 'February 2019',
+  'home.crc.list.3.text': 'Further refinements to the CRC were made giving the community a way to propose Suggestions and the Council to fund projects. You can read more about the funding workflow at',
+  'home.crc.list.3.link': 'our documentation site',
+
+  'home.crc.list.4.date': 'March 2019',
+  'home.crc.list.4.text': 'The first Marketing and Development projects were funded for over 100k USD, see all our proposals and voting process at',
+  'home.crc.list.4.link': 'our proposals page',
+
+  'home.crc.submit-suggestion.1': 'Have a Project or Idea?',
+  'home.crc.submit-suggestion.2': 'Submit Your Suggestion Here',
+
   // Pop-up Announcement
   'popup.changes.title': 'Important CR Announcement',
   'popup.changes.2018-12-26.1': 'After in-depth discussions by the Council and Elastos members, we will be revising the website in the near future to better embody the concept of openness, transparency and community autonomy in Cyber Republic.',

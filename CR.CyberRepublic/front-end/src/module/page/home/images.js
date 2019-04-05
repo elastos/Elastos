@@ -16,6 +16,7 @@ import SepBlueImg from '@/assets/images/home/sep-blue.png'
 import SepCenterImg from '@/assets/images/home/sep-center.png'
 
 import CommunityPowerImg from '@/assets/images/home/community-power.png'
+import CommunityPowerZhImg from '@/assets/images/home/community-power.zh.png'
 
 export const images = {
   ElaLogo,
@@ -33,5 +34,6 @@ export const images = {
   SepBlueImg,
   SepCenterImg,
 
-  CommunityPowerImg
+  CommunityPowerImg,
+  CommunityPowerZhImg
 }
