@@ -11,7 +11,9 @@ $color_background: #F6F9FD;
     padding-top: 100px;
     max-width: 1200px;
     margin: 0 auto !important;
-
+    @media only screen and (max-width: $lg-width) {
+      padding-top: 0;
+    }
     .box-wrap {
       position: relative;
 
