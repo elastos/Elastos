@@ -73,64 +73,6 @@ services:
       - blockchain
     tty: true
 
-  ela-sidechain-did-1:
-    container_name: ela-sidechain-did-1
-    image: ela-sidechain-did-1
-    depends_on:
-      - ela-mainchain-normal-1
-      - ela-mainchain-crc-1
-    build:
-      context: ela-sidechain/did/did-1
-    ports:
-      - 10604-10608:10604-10608
-    networks:
-      - blockchain
-    tty: true 
-
-  ela-sidechain-did-2:
-    container_name: ela-sidechain-did-2
-    image: ela-sidechain-did-2
-    depends_on:
-      - ela-mainchain-normal-1
-      - ela-mainchain-crc-1
-      - ela-sidechain-did-1
-    build:
-      context: ela-sidechain/did/did-2
-    ports:
-      - 11604-11608:11604-11608
-    networks:
-      - blockchain
-    tty: true 
-
-  ela-sidechain-did-3:
-    container_name: ela-sidechain-did-3
-    image: ela-sidechain-did-3
-    depends_on:
-      - ela-mainchain-normal-1
-      - ela-mainchain-crc-1
-      - ela-sidechain-did-1
-    build:
-      context: ela-sidechain/did/did-3
-    ports:
-      - 12604-12608:12604-12608
-    networks:
-      - blockchain
-    tty: true 
-
-  ela-sidechain-did-4:
-    container_name: ela-sidechain-did-4
-    image: ela-sidechain-did-4
-    depends_on:
-      - ela-mainchain-normal-1
-      - ela-mainchain-crc-1
-      - ela-sidechain-did-1
-    build:
-      context: ela-sidechain/did/did-4
-    ports:
-      - 13604-13608:13604-13608
-    networks:
-      - blockchain
-    tty: true 
 
   ela-arbitrator-origin-1:
     container_name: ela-arbitrator-origin-1
@@ -221,6 +163,124 @@ services:
     networks:
       - blockchain
     tty: true
+
+  ela-sidechain-did-1:
+    container_name: ela-sidechain-did-1
+    image: ela-sidechain-did-1
+    depends_on:
+      - ela-mainchain-normal-1
+      - ela-mainchain-crc-1
+    build:
+      context: ela-sidechain/did/did-1
+    ports:
+      - 10604-10608:10604-10608
+    networks:
+      - blockchain
+    tty: true 
+
+  ela-sidechain-did-2:
+    container_name: ela-sidechain-did-2
+    image: ela-sidechain-did-2
+    depends_on:
+      - ela-mainchain-normal-1
+      - ela-mainchain-crc-1
+      - ela-sidechain-did-1
+    build:
+      context: ela-sidechain/did/did-2
+    ports:
+      - 11604-11608:11604-11608
+    networks:
+      - blockchain
+    tty: true 
+
+  ela-sidechain-did-3:
+    container_name: ela-sidechain-did-3
+    image: ela-sidechain-did-3
+    depends_on:
+      - ela-mainchain-normal-1
+      - ela-mainchain-crc-1
+      - ela-sidechain-did-1
+    build:
+      context: ela-sidechain/did/did-3
+    ports:
+      - 12604-12608:12604-12608
+    networks:
+      - blockchain
+    tty: true 
+
+  ela-sidechain-did-4:
+    container_name: ela-sidechain-did-4
+    image: ela-sidechain-did-4
+    depends_on:
+      - ela-mainchain-normal-1
+      - ela-mainchain-crc-1
+      - ela-sidechain-did-1
+    build:
+      context: ela-sidechain/did/did-4
+    ports:
+      - 13604-13608:13604-13608
+    networks:
+      - blockchain
+    tty: true 
+
+  ela-sidechain-token-1:
+    container_name: ela-sidechain-token-1
+    image: ela-sidechain-token-1
+    depends_on:
+      - ela-mainchain-normal-1
+      - ela-mainchain-crc-1
+    build:
+      context: ela-sidechain/token/token-1
+    ports:
+      - 10614-10618:10614-10618
+    networks:
+      - blockchain
+    tty: true 
+
+  ela-sidechain-token-2:
+    container_name: ela-sidechain-token-2
+    image: ela-sidechain-token-2
+    depends_on:
+      - ela-mainchain-normal-1
+      - ela-mainchain-crc-1
+      - ela-sidechain-token-1
+    build:
+      context: ela-sidechain/token/token-2
+    ports:
+      - 11614-11618:11614-11618
+    networks:
+      - blockchain
+    tty: true 
+
+  ela-sidechain-token-3:
+    container_name: ela-sidechain-token-3
+    image: ela-sidechain-token-3
+    depends_on:
+      - ela-mainchain-normal-1
+      - ela-mainchain-crc-1
+      - ela-sidechain-token-1
+    build:
+      context: ela-sidechain/token/token-3
+    ports:
+      - 12614-12618:12614-12618
+    networks:
+      - blockchain
+    tty: true 
+
+  ela-sidechain-token-4:
+    container_name: ela-sidechain-token-4
+    image: ela-sidechain-token-4
+    depends_on:
+      - ela-mainchain-normal-1
+      - ela-mainchain-crc-1
+      - ela-sidechain-token-1
+    build:
+      context: ela-sidechain/token/token-4
+    ports:
+      - 13614-13618:13614-13618
+    networks:
+      - blockchain
+    tty: true 
 
   ela-wallet-service:
     container_name: ela-wallet-service
@@ -319,5 +379,3 @@ services:
 
 networks:
   blockchain:
-  hive:
-
