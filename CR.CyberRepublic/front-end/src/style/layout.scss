@@ -18,15 +18,16 @@
 }
 
 .c_Header.ant-layout-header {
-  background: #fff;
+  background: #fbfbfb;
   height: $header_height;
   padding: 0;
   text-align: center;
   box-shadow: none;
+  border-bottom: 1px solid $bg_light_gray;
 
   .c_Affix_Menu {
     .c_Affix_Menu_Item {
-      width: 156;
+      width: 156px;
       height: 74px;
       position: absolute;
       &.hidden {
@@ -37,7 +38,11 @@
 
   .c_Header_Menu.ant-menu {
     padding-top: 0;
-    height: 137px;
+    height: 110px;
+
+    @media only screen and (max-width: $mobile-width) {
+      height: 80px;
+    }
   }
 
   .c_Side_Menu {
@@ -67,6 +72,8 @@
     padding-top: 48px;
     line-height: 20px;
     margin: -1px 0 0 0;
+    font-weight: 200;
+    text-transform: uppercase;
 
     &.logo {
       padding-top: 24px;
@@ -74,6 +81,15 @@
       > img {
         margin-top: 8px;
         height: 60px;
+      }
+
+      @media only screen and (max-width: $mobile-width) {
+
+        padding-top: 12px;
+
+        > img {
+          height: 45px;
+        }
       }
     }
 

@@ -96,6 +96,7 @@
     "no-unused-expressions": 1,
     "no-shadow": 1,
     "array-callback-return": 1,
+    "no-return-assign": 1,
 
     "import/no-webpack-loader-syntax": 0
   }
