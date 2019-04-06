@@ -25,14 +25,11 @@ type Config struct {
 	// PID is the public key id of this server.
 	PID peer.PID
 
+	// EnableHub indicates whether or not to enable the hub service.
+	EnableHub bool
+
 	// MagicNumber is the peer-to-peer network ID to connect to.
 	MagicNumber uint32
-
-	// ProtocolVersion represent the protocol version you are supporting.
-	ProtocolVersion uint32
-
-	// Services represent which services you are supporting.
-	Services uint64
 
 	// DefaultPort defines the default peer-to-peer port for the network.
 	DefaultPort uint16

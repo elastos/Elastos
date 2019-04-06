@@ -313,9 +313,8 @@ func NewDposNetwork(account account.Account,
 	copy(pid[:], account.PublicKeyBytes())
 	server, err := p2p.NewServer(&p2p.Config{
 		PID:              pid,
+		EnableHub:        true,
 		MagicNumber:      config.Parameters.ArbiterConfiguration.Magic,
-		ProtocolVersion:  config.Parameters.ArbiterConfiguration.ProtocolVersion,
-		Services:         config.Parameters.ArbiterConfiguration.Services,
 		DefaultPort:      config.Parameters.ArbiterConfiguration.NodePort,
 		MakeEmptyMessage: makeEmptyMessage,
 		HandleMessage:    network.handleMessage,
