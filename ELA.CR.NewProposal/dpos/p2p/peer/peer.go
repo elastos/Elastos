@@ -63,11 +63,9 @@ type StatsSnap struct {
 	ID             uint64
 	PID            string
 	Addr           string
-	Services       uint64
 	LastSend       time.Time
 	LastRecv       time.Time
 	ConnTime       time.Time
-	Version        uint32
 	Inbound        bool
 	LastPingTime   time.Time
 	LastPingMicros int64
@@ -79,9 +77,8 @@ type MessageFunc func(peer *Peer, msg p2p.Message)
 // Config is a descriptor which specifies the peer instance configuration.
 type Config struct {
 	PID              PID
+	Target           [16]byte
 	Magic            uint32
-	ProtocolVersion  uint32
-	Services         uint64
 	Port             uint16
 	PingInterval     time.Duration
 	Sign             func(data []byte) []byte
@@ -89,15 +86,6 @@ type Config struct {
 	PongNonce        func(pid PID) uint64
 	MakeEmptyMessage func(cmd string) (p2p.Message, error)
 	MessageFunc      MessageFunc
-}
-
-// minUint32 is a helper function to return the minimum of two uint32s.
-// This avoids a math import and the need to cast to floats.
-func minUint32(a, b uint32) uint32 {
-	if a < b {
-		return a
-	}
-	return b
 }
 
 // newNetAddress attempts to extract the IP address and port from the passed
@@ -147,14 +135,11 @@ type Peer struct {
 	inbound      bool
 	messageFuncs []MessageFunc
 
-	flagsMtx           sync.Mutex // protects the peer flags below
-	id                 uint64
-	na                 *p2p.NetAddress
-	pk                 *crypto.PublicKey
-	pid                PID
-	services           uint64
-	advertisedProtoVer uint32 // protocol version advertised by remote
-	protocolVersion    uint32 // negotiated protocol version
+	flagsMtx sync.Mutex // protects the peer flags below
+	id       uint64
+	na       *p2p.NetAddress
+	pk       *crypto.PublicKey
+	pid      PID
 
 	// These fields keep track of statistics for the peer and are protected
 	// by the statsMtx mutex.
@@ -202,8 +187,6 @@ func (p *Peer) StatsSnapshot() *StatsSnap {
 	id := p.id
 	pid := p.pid
 	addr := p.addr
-	services := p.services
-	protocolVersion := p.advertisedProtoVer
 	p.flagsMtx.Unlock()
 
 	// Get a copy of all relevant flags and stats.
@@ -211,11 +194,9 @@ func (p *Peer) StatsSnapshot() *StatsSnap {
 		ID:             id,
 		PID:            hex.EncodeToString(pid[:]),
 		Addr:           addr,
-		Services:       services,
 		LastSend:       p.LastSend(),
 		LastRecv:       p.LastRecv(),
 		ConnTime:       p.timeConnected,
-		Version:        protocolVersion,
 		Inbound:        p.inbound,
 		LastPingMicros: p.lastPingMicros,
 		LastPingTime:   p.lastPingTime,
@@ -285,17 +266,6 @@ func (p *Peer) Inbound() bool {
 	return p.inbound
 }
 
-// Services returns the services flag of the remote peer.
-//
-// This function is safe for concurrent access.
-func (p *Peer) Services() uint64 {
-	p.flagsMtx.Lock()
-	services := p.services
-	p.flagsMtx.Unlock()
-
-	return services
-}
-
 // LastPingTime returns the last ping time of the remote peer.
 //
 // This function is safe for concurrent access.
@@ -316,17 +286,6 @@ func (p *Peer) LastPingMicros() int64 {
 	p.statsMtx.RUnlock()
 
 	return lastPingMicros
-}
-
-// ProtocolVersion returns the negotiated peer protocol version.
-//
-// This function is safe for concurrent access.
-func (p *Peer) ProtocolVersion() uint32 {
-	p.flagsMtx.Lock()
-	protocolVersion := p.protocolVersion
-	p.flagsMtx.Unlock()
-
-	return protocolVersion
 }
 
 // LastSend returns the last send time of the peer.
@@ -718,14 +677,8 @@ func (p *Peer) readRemoteVersionMsg() ([]byte, error) {
 	// Negotiate the protocol version and set the services to what the remote
 	// peer advertised.
 	p.flagsMtx.Lock()
-	p.advertisedProtoVer = uint32(verMsg.Version)
-	p.protocolVersion = minUint32(p.protocolVersion, p.advertisedProtoVer)
-	log.Debugf("Negotiated protocol version %d for peer %s",
-		p.protocolVersion, p)
-
 	p.pk = pk
 	p.pid = verMsg.PID
-	p.services = verMsg.Services
 	p.flagsMtx.Unlock()
 
 	p.handleMessage(p, verMsg)
@@ -758,12 +711,11 @@ func (p *Peer) readRemoteVerAckMsg(nonce []byte) error {
 // writeLocalVersionMsg writes our version message to the remote peer.
 func (p *Peer) writeLocalVersionMsg() ([]byte, error) {
 	// Create a 32 bytes nonce value
-	nonce := [32]byte{}
+	var nonce [16]byte
 	rand.Read(nonce[:])
 
 	// Version message.
-	localVerMsg := msg.NewVersion(p.cfg.ProtocolVersion, p.cfg.Services,
-		p.cfg.Port, p.cfg.PID, nonce)
+	localVerMsg := msg.NewVersion(p.cfg.PID, p.cfg.Target, nonce, p.cfg.Port)
 
 	return nonce[:], p.writeMessage(localVerMsg)
 }
@@ -865,7 +817,7 @@ func (p *Peer) AssociateConnection(conn net.Conn) {
 		// Set up a NetAddress for the peer to be used with AddrManager.  We
 		// only do this inbound because outbound set this up at connection time
 		// and no point recomputing.
-		na, err := newNetAddress(p.conn.RemoteAddr(), p.services)
+		na, err := newNetAddress(p.conn.RemoteAddr(), 0)
 		if err != nil {
 			log.Errorf("Cannot create remote net address: %v", err)
 			p.Disconnect()
@@ -910,8 +862,6 @@ func newPeerBase(origCfg *Config, inbound bool) *Peer {
 		outQuit:         make(chan struct{}),
 		quit:            make(chan struct{}),
 		cfg:             cfg, // Copy so caller can't mutate.
-		services:        cfg.Services,
-		protocolVersion: cfg.ProtocolVersion,
 	}
 	p.AddMessageFunc(cfg.MessageFunc)
 	return &p
@@ -938,8 +888,7 @@ func NewOutboundPeer(cfg *Config, addr string) (*Peer, error) {
 		return nil, err
 	}
 
-	p.na = p2p.NewNetAddressIPPort(net.ParseIP(host), uint16(port),
-		cfg.Services)
+	p.na = p2p.NewNetAddressIPPort(net.ParseIP(host), uint16(port), 0)
 
 	return p, nil
 }

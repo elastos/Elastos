@@ -32,8 +32,6 @@ func TestNotifier(t *testing.T) {
 	server, err := NewServer(&Config{
 		PID:             pid,
 		MagicNumber:     123123,
-		ProtocolVersion: 0,
-		Services:        0,
 		DefaultPort:     20338,
 		Sign: func(nonce []byte) []byte {
 			sign, _ := crypto.Sign(priKey, nonce)

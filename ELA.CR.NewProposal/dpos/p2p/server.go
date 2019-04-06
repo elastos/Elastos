@@ -15,6 +15,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/dpos/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/connmgr"
+	"github.com/elastos/Elastos.ELA/dpos/p2p/hub"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 
@@ -124,6 +125,7 @@ type server struct {
 	startupTime   int64
 
 	cfg         Config
+	hubService  *hub.Hub
 	addrManager *addrmgr.AddrManager
 	connManager *connmgr.ConnManager
 	peerQueue   chan interface{}
@@ -498,8 +500,6 @@ func newPeerConfig(sp *serverPeer) *peer.Config {
 	return &peer.Config{
 		PID:              sp.server.cfg.PID,
 		Magic:            sp.server.cfg.MagicNumber,
-		ProtocolVersion:  sp.server.cfg.ProtocolVersion,
-		Services:         sp.server.cfg.Services,
 		Port:             sp.server.cfg.DefaultPort,
 		PingInterval:     sp.server.cfg.PingInterval,
 		Sign:             sp.server.cfg.Sign,
@@ -520,6 +520,16 @@ func newPeerConfig(sp *serverPeer) *peer.Config {
 // instance, associates it with the connection, and starts a goroutine to wait
 // for disconnection.
 func (s *server) inboundPeerConnected(conn net.Conn) {
+	// If hub service is enabled, intercept the connection.
+	if s.hubService != nil {
+		conn = s.hubService.Intercept(conn)
+	}
+
+	// If the connection has been intercepted, do nothing.
+	if conn == nil {
+		return
+	}
+
 	sp := newServerPeer(s)
 	sp.Peer = peer.NewInboundPeer(newPeerConfig(sp))
 	sp.AssociateConnection(conn)
@@ -533,7 +543,9 @@ func (s *server) inboundPeerConnected(conn net.Conn) {
 // manager of the attempt.
 func (s *server) outboundPeerConnected(c *connmgr.ConnReq, conn net.Conn) {
 	sp := newServerPeer(s)
-	p, err := peer.NewOutboundPeer(newPeerConfig(sp), c.Addr.String())
+	cfg := newPeerConfig(sp)
+	cfg.Target = hub.PIDTo16(c.PID)
+	p, err := peer.NewOutboundPeer(cfg, c.Addr.String())
 	if err != nil {
 		log.Debugf("Cannot create outbound peer %s: %v", c.Addr, err)
 		s.connManager.Disconnect(c.ID())
@@ -811,9 +823,16 @@ func NewServer(origCfg *Config) (*server, error) {
 		return nil, err
 	}
 
+	admgr := addrmgr.New(cfg.DataDir)
+	var hubService *hub.Hub
+	if cfg.EnableHub {
+		hubService = hub.New(cfg.MagicNumber, cfg.PID, admgr)
+	}
+
 	s := server{
 		cfg:         cfg,
-		addrManager: addrmgr.New(cfg.DataDir),
+		hubService:  hubService,
+		addrManager: admgr,
 		peerQueue:   make(chan interface{}, maxPeers),
 		query:       make(chan interface{}, maxPeers),
 		broadcast:   make(chan broadcastMsg, maxPeers),

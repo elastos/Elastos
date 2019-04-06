@@ -25,8 +25,6 @@ var Template = Configuration{
 		Magic:                    7630403,
 		IPAddress:                "localhost",
 		NodePort:                 30338,
-		ProtocolVersion:          0,
-		Services:                 0,
 		PrintLevel:               1,
 		SignTolerance:            5,
 		MaxLogsSize:              0,
