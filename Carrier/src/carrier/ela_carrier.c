@@ -1392,6 +1392,9 @@ static void notify_connection_cb(bool connected, void *context)
             w->callbacks.ready(w, w->context);
     }
 
+    if (connected)
+        notify_crawl_offline_msg(w->dstorectx);
+
     w->connection_status = (connected ? ElaConnectionStatus_Connected :
                                         ElaConnectionStatus_Disconnected);
 

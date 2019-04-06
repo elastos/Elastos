@@ -20,14 +20,11 @@
  * SOFTWARE.
  */
 #include <string.h>
-#include <vlog.h>
-#include <crypto.h>
-#include <base58.h>
 #include <pthread.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#include <rc_mem.h>
+#include <crystal.h>
 #include <hive/c-api.h>
 #include <stdio.h>
 #include <limits.h>
@@ -36,9 +33,6 @@
     #include <malloc.h>
     #endif
     #include <io.h>
-    #define PATH_MAX _MAX_PATH
-    #define access _access
-    #define F_OK (0)
 #else
     #ifdef HAVE_ALLOCA_H
     #include <alloca.h>
@@ -52,8 +46,14 @@
 struct DStoreWrapper {
     ElaCarrier *carrier;
     DStoreOnMsgCallback cb;
-    pthread_t worker;
     DStoreC *dstore;
+    enum {
+        DSTORE_STATE_CRAWL,
+        DSTORE_STATE_IDLE,
+        DSTORE_STATE_STOP
+    } state;
+    pthread_mutex_t lock;
+    pthread_cond_t cond;
 };
 
 static inline uint8_t *compute_nonce(const char *dstore_key)
@@ -189,8 +189,19 @@ static bool check_offline_msg_cb(uint32_t friend_number,
 static void * crawl_offline_msg(void *arg)
 {
     DStoreWrapper *ctx = (DStoreWrapper *)arg;
+
+crawl:
+    pthread_mutex_lock(&ctx->lock);
+    while (ctx->state == DSTORE_STATE_IDLE)
+        pthread_cond_wait(&ctx->cond, &ctx->lock);
+    if (ctx->state == DSTORE_STATE_STOP) {
+        deref(ctx);
+        return NULL;
+    }
+    ctx->state = DSTORE_STATE_IDLE;
+    pthread_mutex_unlock(&ctx->lock);
     dht_get_friends(&ctx->carrier->dht, check_offline_msg_cb, ctx);
-    return NULL;
+    goto crawl;
 }
 
 static void DStoreWrapperDestroy(void *arg)
@@ -201,6 +212,8 @@ static void DStoreWrapperDestroy(void *arg)
         dstore_destroy(ctx->dstore);
         ctx->dstore = NULL;
     }
+    pthread_mutex_destroy(&ctx->lock);
+    pthread_cond_destroy(&ctx->cond);
 }
 
 DStoreWrapper *dstore_wrapper_create(ElaCarrier *w, DStoreOnMsgCallback cb)
@@ -208,6 +221,7 @@ DStoreWrapper *dstore_wrapper_create(ElaCarrier *w, DStoreOnMsgCallback cb)
     DStoreWrapper *ctx;
     int rc;
     char conf_cache[PATH_MAX];
+    pthread_t worker;
 
     ctx = rc_zalloc(sizeof(DStoreWrapper), DStoreWrapperDestroy);
     if (!ctx)
@@ -256,6 +270,9 @@ DStoreWrapper *dstore_wrapper_create(ElaCarrier *w, DStoreOnMsgCallback cb)
         }
     }
 
+    pthread_mutex_init(&ctx->lock, NULL);
+    pthread_cond_init(&ctx->cond, NULL);
+
     ctx->dstore = dstore_create(conf_cache);
     if (!ctx->dstore) {
         deref(ctx);
@@ -265,18 +282,36 @@ DStoreWrapper *dstore_wrapper_create(ElaCarrier *w, DStoreOnMsgCallback cb)
     ctx->carrier = w;
     ctx->cb = cb;
 
-    rc = pthread_create(&ctx->worker, NULL, crawl_offline_msg, ctx);
+    ref(ctx);
+    rc = pthread_create(&worker, NULL, crawl_offline_msg, ctx);
     if (rc != 0) {
+        deref(ctx);
         deref(ctx);
         return NULL;
     }
+    pthread_detach(worker);
 
     return ctx;
 }
 
+void notify_crawl_offline_msg(DStoreWrapper *ctx)
+{
+    pthread_mutex_lock(&ctx->lock);
+    if (ctx->state == DSTORE_STATE_IDLE)
+        ctx->state = DSTORE_STATE_CRAWL;
+    pthread_mutex_unlock(&ctx->lock);
+    pthread_cond_signal(&ctx->cond);
+}
+
 void dstore_wrapper_destroy(DStoreWrapper *ctx)
 {
-    // worker should be started, so join for exiting.
-    pthread_join(ctx->worker, NULL);
+    pthread_mutex_lock(&ctx->lock);
+    if (ctx->state == DSTORE_STATE_STOP) {
+        pthread_mutex_unlock(&ctx->lock);
+        return;
+    }
+    ctx->state = DSTORE_STATE_STOP;
+    pthread_mutex_unlock(&ctx->lock);
+    pthread_cond_signal(&ctx->cond);
     deref(ctx);
 }
