@@ -46,8 +46,6 @@ func mockRemotePeer(pid peer.PID, priKey []byte, port uint16,
 	cfg := &peer.Config{
 		PID:             pid,
 		Magic:           123123,
-		ProtocolVersion: 0,
-		Services:        0,
 		PingInterval:    defaultPingInterval,
 		Sign: func(nonce []byte) []byte {
 			sign, _ := crypto.Sign(priKey, nonce)
@@ -97,8 +95,6 @@ func mockInboundPeer(addr PeerAddr, priKey []byte, pc chan<- *peer.Peer,
 	cfg := &peer.Config{
 		PID:             addr.PID,
 		Magic:           123123,
-		ProtocolVersion: 0,
-		Services:        0,
 		PingInterval:    defaultPingInterval,
 		Sign: func(nonce []byte) []byte {
 			sign, _ := crypto.Sign(priKey, nonce)
@@ -156,8 +152,6 @@ func TestServerConnections(t *testing.T) {
 		cfgs = append(cfgs, Config{
 			PID:             pid,
 			MagicNumber:     123123,
-			ProtocolVersion: 0,
-			Services:        0,
 			DefaultPort:     uint16(port),
 			Sign: func(nonce []byte) []byte {
 				sign, _ := crypto.Sign(priKey, nonce)
@@ -239,8 +233,6 @@ func TestServer_ConnectPeers(t *testing.T) {
 	server, err := NewServer(&Config{
 		PID:             pid,
 		MagicNumber:     123123,
-		ProtocolVersion: 0,
-		Services:        0,
 		DefaultPort:     20338,
 		Sign: func(nonce []byte) []byte {
 			sign, _ := crypto.Sign(priKey, nonce)
@@ -452,8 +444,6 @@ func TestServer_PeersReconnect(t *testing.T) {
 	server, err := NewServer(&Config{
 		PID:             pid,
 		MagicNumber:     123123,
-		ProtocolVersion: 0,
-		Services:        0,
 		DefaultPort:     20338,
 		Sign: func(nonce []byte) []byte {
 			sign, _ := crypto.Sign(priKey, nonce)
@@ -512,8 +502,6 @@ func TestServer_BroadcastMessage(t *testing.T) {
 	server, err := NewServer(&Config{
 		PID:             pid,
 		MagicNumber:     123123,
-		ProtocolVersion: 0,
-		Services:        0,
 		DefaultPort:     20338,
 		Sign: func(nonce []byte) []byte {
 			sign, _ := crypto.Sign(priKey, nonce)
@@ -610,8 +598,6 @@ func TestServer_DumpPeersInfo(t *testing.T) {
 	server, err := NewServer(&Config{
 		PID:             pid,
 		MagicNumber:     123123,
-		ProtocolVersion: 0,
-		Services:        0,
 		DefaultPort:     20338,
 		Sign: func(nonce []byte) []byte {
 			sign, _ := crypto.Sign(priKey, nonce)

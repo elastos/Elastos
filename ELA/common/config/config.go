@@ -103,8 +103,6 @@ type ArbiterConfiguration struct {
 	Magic                    uint32         `json:"Magic"`
 	IPAddress                string         `json:"IPAddress"`
 	NodePort                 uint16         `json:"NodePort"`
-	ProtocolVersion          uint32         `json:"ProtocolVersion"`
-	Services                 uint64         `json:"Services"`
 	PrintLevel               uint8          `json:"PrintLevel"`
 	SignTolerance            uint64         `json:"SignTolerance"`
 	MaxLogsSize              int64          `json:"MaxLogsSize"`
