@@ -16,9 +16,9 @@ ExternalProject_Add(
     Elastos.NET.Hive.Native.SDK
 
     PREFIX ${CARRIER_DEPS_BUILD_PREFIX}
-    URL "https://github.com/elastos/Elastos.NET.Hive.Native.SDK/archive/feat_migrate_extenal_json.zip"
-    URL_HASH SHA256=814982e26d8c6b67e7516e28a0354685d3f88afa63862cb22c6a314dab6c09b7
-    DOWNLOAD_NAME "Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json.zip"
+    URL "https://github.com/elastos/Elastos.NET.Hive.Native.SDK/archive/dev-master.zip"
+    URL_HASH SHA256=f3c441ee2b5426ec9bba08b5fc4ce5aa4f34ff97f5b1a08984d0cb3e5382ba82
+    DOWNLOAD_NAME "Elastos.NET.Hive.Native.SDK-dev-master.zip"
     DOWNLOAD_DIR ${CARRIER_DEPS_TARBALL_DIR}
     DOWNLOAD_NO_PROGRESS 1
 

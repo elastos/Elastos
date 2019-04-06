@@ -1,6 +1,6 @@
-diff -ruN Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json/CMakeLists.txt Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json-mod/CMakeLists.txt
---- Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json/CMakeLists.txt	2019-02-27 01:34:58.000000000 +0800
-+++ Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json-mod/CMakeLists.txt	2019-03-11 11:45:40.000000000 +0800
+diff -ruN Elastos.NET.Hive.Native.SDK-dev-master/CMakeLists.txt Elastos.NET.Hive.Native.SDK-dev-master-mod/CMakeLists.txt
+--- Elastos.NET.Hive.Native.SDK-dev-master/CMakeLists.txt	2019-04-03 03:06:00.000000000 +0800
++++ Elastos.NET.Hive.Native.SDK-dev-master-mod/CMakeLists.txt	2019-04-09 19:41:53.000000000 +0800
 @@ -20,6 +20,7 @@
  # Find curl
  find_package(CURL REQUIRED)
@@ -13,24 +13,30 @@ diff -ruN Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json/CMakeLists.txt E
  endif()
  
  # Samples
+-add_subdirectory(samples)
 +if(BUILD_SAMPLE)
- add_subdirectory(samples)
++    add_subdirectory(samples)
 +endif()
-diff -ruN Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json/include/hive/nlohmann/json.hpp Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json-mod/include/hive/nlohmann/json.hpp
---- Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json/include/hive/nlohmann/json.hpp	2019-02-27 01:34:58.000000000 +0800
-+++ Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json-mod/include/hive/nlohmann/json.hpp	2019-03-11 11:24:36.000000000 +0800
-@@ -125,7 +125,7 @@
+diff -ruN Elastos.NET.Hive.Native.SDK-dev-master/include/hive/nlohmann/json.hpp Elastos.NET.Hive.Native.SDK-dev-master-mod/include/hive/nlohmann/json.hpp
+--- Elastos.NET.Hive.Native.SDK-dev-master/include/hive/nlohmann/json.hpp	2019-04-03 03:06:00.000000000 +0800
++++ Elastos.NET.Hive.Native.SDK-dev-master-mod/include/hive/nlohmann/json.hpp	2019-04-09 19:42:42.000000000 +0800
+@@ -121,11 +121,11 @@
+ // exclude unsupported compilers
+ #if defined(__clang__)
+     #if (__clang_major__ * 10000 + __clang_minor__ * 100 + __clang_patchlevel__) < 30400
+-        #error "unsupported Clang version - see https://github.com/nlohmann/json#supported-compilers"
++        // #error "unsupported Clang version - see https://github.com/nlohmann/json#supported-compilers"
      #endif
  #elif defined(__GNUC__) && !(defined(__ICC) || defined(__INTEL_COMPILER))
      #if (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) < 40900
 -        #error "unsupported GCC version - see https://github.com/nlohmann/json#supported-compilers"
-+        //#error "unsupported GCC version - see https://github.com/nlohmann/json#supported-compilers"
++        // #error "unsupported GCC version - see https://github.com/nlohmann/json#supported-compilers"
      #endif
  #endif
  
-diff -ruN Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json/src/c-api/dstorec.cc Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json-mod/src/c-api/dstorec.cc
---- Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json/src/c-api/dstorec.cc	2019-02-27 01:34:58.000000000 +0800
-+++ Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json-mod/src/c-api/dstorec.cc	2019-03-11 11:24:36.000000000 +0800
+diff -ruN Elastos.NET.Hive.Native.SDK-dev-master/src/c-api/dstorec.cc Elastos.NET.Hive.Native.SDK-dev-master-mod/src/c-api/dstorec.cc
+--- Elastos.NET.Hive.Native.SDK-dev-master/src/c-api/dstorec.cc	2019-04-03 03:06:00.000000000 +0800
++++ Elastos.NET.Hive.Native.SDK-dev-master-mod/src/c-api/dstorec.cc	2019-04-09 19:41:53.000000000 +0800
 @@ -17,7 +17,7 @@
      auto ds = new DStore{host_rand, 9095};
  
@@ -40,3 +46,27 @@ diff -ruN Elastos.NET.Hive.Native.SDK-feat_migrate_extenal_json/src/c-api/dstore
      ds->set_sender_UID(uid);
  
      return reinterpret_cast<DStoreC *>(ds);
+diff -ruN Elastos.NET.Hive.Native.SDK-dev-master/src/message.cc Elastos.NET.Hive.Native.SDK-dev-master-mod/src/message.cc
+--- Elastos.NET.Hive.Native.SDK-dev-master/src/message.cc	2019-04-03 03:06:00.000000000 +0800
++++ Elastos.NET.Hive.Native.SDK-dev-master-mod/src/message.cc	2019-04-09 19:41:53.000000000 +0800
+@@ -422,7 +422,7 @@
+   if (needResolve) {
+     try {
+       node.NameResolve("/ipns/" + peerId, &result);
+-      rootPath = result["Path"];
++      rootPath = result["Path"].get<std::string>();
+     } catch (const std::exception& e) {
+       if (debugLog) {
+         std::cerr << "NameResolve: " << e.what() << std::endl;
+diff -ruN Elastos.NET.Hive.Native.SDK-dev-master/src/node.cc Elastos.NET.Hive.Native.SDK-dev-master-mod/src/node.cc
+--- Elastos.NET.Hive.Native.SDK-dev-master/src/node.cc	2019-04-03 03:06:00.000000000 +0800
++++ Elastos.NET.Hive.Native.SDK-dev-master-mod/src/node.cc	2019-04-09 19:41:53.000000000 +0800
+@@ -491,7 +491,7 @@
+         ":\n" + input.dump());
+   }
+ 
+-  *property_value = input[property_name];
++  *property_value = input[property_name].get<PropertyType>();
+ }
+ 
+ std::string Node::MakeUrl(
