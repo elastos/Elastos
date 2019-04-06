@@ -40,172 +40,328 @@ await carrier.start();
 
 ## API List
 
-### static getVersion
-* return current Carrier version
 ```
-Carrier.getVersion();
-```
+  /*
+   * @brief: get current carrier version
+   * @return: (string) current verison
+   */
+  static getVersion(){
+    return exec('getVersion');
+  }
 
-### static isValidAddress(address)
-* check address is valid for carrier node or not.
-* return boolean.
-```
-Carrier.isValidAddress('Xm4WXfsSbAHhwiAe6tdo3oxhH93p8jb6Kata9ywyohkjssBMAH8n') // true
-Carrier.isValidAddress('abcde') //false
-```
+  /*
+   * @brief: check given address is a valid carrier address or not
+   * @return: (boolean) true or false.
+   */
+  static isValidAddress(address){
+    return exec('isValidAddress', address);
+  }
 
-### getAddress
-* return current instance address
-```
-const address = await carrier.getAddress();
-```
+  /*
+   * @brief: check given nodeId is a valid carrier node id or not
+   * @return: (boolean) true or false.
+   */
+  static isValidId(nodeId){
+    return exec('isValidId', nodeId);
+  }
 
-### getSelfInfo
-* return current node profile info.
-```
-const selfInfo = await carrier.getSelfInfo();
-/*
- userId: 'EzhQQz9X3nR6NYb2makCpmZjnuiFsD11CGuak9FnE8hf',
- gender: 'male',
- region: 'China',
- phone: '123456789',
- email: 'carrier@elastos.org',
- description: 'I am a node for Elastos carrier',
- name: 'new world',
- */
-```
+  /*
+   * @brief: connect the local node to carrier network.
+   * @return: ok
+   * @error: if connect failure, throw an error here.
+   */
+  start(){
+    return exec('createObject', this.config);
+  }
 
-### setSelfInfo(info)
-* set self profile info for current node.
-```
-await carrier.setSelfInfo({
-    gender: 'male',
-    region: 'China',
-    phone: '123456789',
-    email: 'carrier@elastos.org',
-    description: 'I am a node for Elastos carrier',
-    name: 'new world',
-});
-```
+  /*
+   * @brief: get current node address
+   * @return: (string) node address
+   */
+  getAddress(){
+    return exec('getAddress', this.id);
+  }
 
-### setSelfPresence(presence)
-* set self presence status
-```
-// presence status
-{
-    'ONLINE' : 0,
-    'AWAY' : 1,
-    'BUSY' : 2
-}
+  /*
+   * @brief: get current node id.
+   * @return: (string) node id.
+   */
+  getNodeId(){
+    return exec('getNodeId', this.id);
+  }
 
-await carrier.setSelfPresence(Carrier.config.PRESENCE_STATUS.AWAY);
-```
+  /*
+   * @brief: get current node profile
+   * @return: (json) node profile
+   * @formatter: userId, gender, region, phone, email, description, name
+   */
+  getSelfInfo(){
+    return exec('getSelfInfo', this.id);
+  }
 
-### addFriend(address, msg)
-* pair with new carrier node as friend.
-* return boolean.
-```
-await carrier.addFriend('Dg3h2TecXGzBU5NruvdYaMJoCdxGc3etPmJ6GVynKpLUm1whnQyE', 'hello');
-```
+  /*
+   * @brief: set value to node profile
+   * @param: (json)info
+   * @formatter: userId, gender, region, phone, email, description, name
+   * @return: ok
+   * @error: throw an error if failure
+   */
+  setSelfInfo(info){
+    const user_info = _.extend({
+      name : '',
+      description : '',
+      email : '',
+      phone : '',
+      gender : '',
+      region : ''
+    }, info);
+    return exec('setSelfInfo', this.id, user_info);
+  }
 
-### acceptFriend(userId)
-* accpet pair request from another carrier node.
-* userId is friend node userId, not address.
-* return boolean
-```
-this.carrier.acceptFriend('4ni3UKYY9xHDcodNaP1edAWDGuF5cmWTU8QWH4JnNfwV');
-```
+  /*
+   * @brief: set current node presence status
+   * @param: (number)presence, 0:online, 1:away, 2:busy
+   * @return: ok
+   * @error: throw an error if failure
+   */
+  setSelfPresence(presence){
+    return exec('setSelfPresence', this.id, presence);
+  }
 
-### getFriendInfo(userId)
-* return friend node info
-```
-const friendInfo = await carrier.getFriendInfo('4ni3UKYY9xHDcodNaP1edAWDGuF5cmWTU8QWH4JnNfwV');
+  /*
+   * @brief: compare with a node address as friend
+   * @param: (string) address, node address
+   * @param: (string) msg, hello message
+   * @return: ok
+   */
+  addFriend(address, msg){
+    return exec('addFriend', this.id, address, msg);
+  }
 
-/*
- gender: 'male',
- region: 'China',
- phone: '123456789',
- email: 'carrier@elastos.org',
- description: 'I am a node for Elastos carrier',
- name: 'new world',
- label: 'friend',
- status: 0,
- presence: 0
- */
-```
+  /*
+   * @brief: accept the friend compare request
+   * @param: (string) friend userId
+   * @return: ok
+   */
+  acceptFriend(userId){
+    return exec('acceptFriend', this.id, userId);
+  }
 
-### removeFriend(userId)
-* remove friend.
-```
-await carrier.removeFriend('4ni3UKYY9xHDcodNaP1edAWDGuF5cmWTU8QWH4JnNfwV');
-```
+  /*
+   * @brief: get friend info
+   * @param: friend user id
+   * @return: json (friendInfo)
+   */
+  getFriendInfo(friendId){
+    return exec('getFriendInfo', this.id, friendId);
+  }
 
-### getFriendList
-* return current node friends list<FriendInfo>
-* return data structure is friend info.
-```
-const friendList = await carrier.getFriendList();
-```
+  /*
+   * @brief: send message to friend node
+   * @param: friend userId
+   * @param: friend message
+   * @return: ok
+   */
+  sendMessage(friendId, msg){
+    return exec('sendFriendMessageTo', this.id, friendId, msg);
+  }
 
-### setLabel(friendId, label)
-* set friend label
-```
-await carrier.setLabel('4ni3UKYY9xHDcodNaP1edAWDGuF5cmWTU8QWH4JnNfwV', 'label')
-```
+  /*
+   * @brief: remove friend from friend list
+   * @param: friend userId
+   * @return: ok
+   */
+  removeFriend(friendId){
+    return exec('removeFriend', this.id, friendId);
+  }
 
-### sendMessage(friendId, message)
-* send a message to friend.
-* return boolean
-```
-await carrier.sendMessage('4ni3UKYY9xHDcodNaP1edAWDGuF5cmWTU8QWH4JnNfwV', 'hello world');
-```
+  /*
+   * @brief: set label for a friend
+   * @param: friend userId
+   * @param: friend label
+   * @return: ok
+   */
+  setLabel(friendId, label){
+    return exec('setLabel', this.id, friendId, label);
+  }
 
-### close
-* close carrier node
+  /*
+   * @brief: get friends info list
+   * @return: (json array) friends info
+   */
+  getFriendList(){
+    return exec('getFriendList', this.id);
+  }
+  
+  /*
+   * @brief: close carrier
+   * @return: ok
+   */
+  close(){
+    return exec('close', this.id);
+  }
 
-### clean
-* remove carrier node file from device. that means the node will be gone.
+  /*
+   * @brief: clean carrier
+   * @return: ok
+   */
+  clean(){
+    return exec('clean', this.id);
+  }
 
-### createSession(friendId, streamType, streamMode)
-```
-await this.carrier.createSession(
-    '4ni3UKYY9xHDcodNaP1edAWDGuF5cmWTU8QWH4JnNfwV',
-    Carrier.config.STREAM_TYPE.TEXT,
-    Carrier.config.STREAM_MODE.RELIABLE
-);
-```
+  /*
+   * @brief: create carrier session
+   * @param: friend userId
+   * @param: (enum) STREAM_STATE
+   * @param: (enum) STREAM_MODE
+   * @return: ok
+   */
+  createSession(friendId, streamType, streamMode){
+    return exec('createSession', this.id, friendId, streamType, streamMode);
+  }
 
-### sessionRequest(friendId)
-* send session request to friendId
-```
-await this.carrier.sessionRequest('4ni3UKYY9xHDcodNaP1edAWDGuF5cmWTU8QWH4JnNfwV')
-```
+  /*
+   * @brief: request to connect as session
+   * @param: friend userId
+   * @return: ok
+   */
+  sessionRequest(friendId){
+    return exec('sessionRequest', this.id, friendId);
+  }
 
-### sessionReplyRequest(friendId, status, reason)
-* accept or refuse session request
-* status=0 accept, status=1 refuse.
-* if refuse. reason is avaiable.
-```
-await this.carrier.sessionReplyRequest('4ni3UKYY9xHDcodNaP1edAWDGuF5cmWTU8QWH4JnNfwV', 0, null);
-```
+  /*
+   * @brief: reply the session request
+   * @param: friend userId
+   * @param: accept or refuse
+   * @param: if refuse, here is the reason
+   * @return: ok
+   */
+  sessionReplyRequest(friendId, status, reason){
+    return exec('sessionReplyRequest', this.id, friendId, status, reason);
+  }
 
-### writeStream(streamIdOrFriendId, data)
-* write data to stream
-* streamId or friendId both available.
-```
-await this.carrier.writeStream('4ni3UKYY9xHDcodNaP1edAWDGuF5cmWTU8QWH4JnNfwV', 'stream data ...');
-```
+  /*
+   * @brief: send data to the session stream
+   * @param: stream id or friend userId
+   * @param: (string) data string.
+   * @return: ok
+   */
+  writeStream(streamIdOrFriendId, data){
+    return exec('writeStream', this.id, streamIdOrFriendId, data);
+  }
 
-### removeStream(friendId)
-* remove stream from session
-```
-await this.carrier.removeStream('4ni3UKYY9xHDcodNaP1edAWDGuF5cmWTU8QWH4JnNfwV');
-```
+  /*
+   * @brief: remove the session stream for friend node
+   * @param: friend userId
+   * @return: ok
+   */
+  removeStream(friendId){
+    return exec('removeStream', this.id, friendId);
+  }
 
-### closeSession(friendId)
-* close session
-```
-await this.carrier.closeSession('4ni3UKYY9xHDcodNaP1edAWDGuF5cmWTU8QWH4JnNfwV');
+  /*
+   * @brief: close the session for friend node
+   * @param: friend userId
+   * @return: ok
+   */
+  closeSession(friendId){
+    return exec('closeSession', this.id, friendId);
+  }
+
+  /*
+   * @brief: add session service to friend node
+   * @param: friend userId
+   * @param: service name
+   * @param: target host name
+   * @param: host port
+   * @return: ok
+   */
+  addService(friendId, serviceName, host, port){
+    return exec('addService', this.id, friendId, serviceName, host, port);
+  }
+
+  /*
+   * @brief: remove session service
+   * @param: friend userId
+   * @param: service name 
+   * @return: ok
+   */
+  removeService(friendId, serviceName){
+    return exec('removeService', this.id, friendId, serviceName);
+  }
+
+  /*
+   * @brief: connect the server with carrier port forwarding
+   * @param: friend userId
+   * @param: service name
+   * @param: server host or ip address
+   * @param: server port
+   * @return: (Number) port forwarding id
+   */
+  openPortFowarding(friendId, serviceName, host, port){
+    return exec('openPortFowarding', this.id, friendId, serviceName, host, port);
+  }
+
+  /*
+   * @brief: close the server connection with carrier port forwaring
+   * @param: friend userId
+   * @param: port forwarding id
+   * @return: ok
+   */
+  closePortForwarding(friendId, portForwardingId){
+    return exec('closePortForwarding', this.id, friendId, portForwardingId);
+  }
+
+  /*
+   * @brief: open the channel for friend node.
+   * @param: friend userId
+   * @param: (string)cookie string
+   * @return: (Number)channel id
+   */
+  openChannel(friendId, cookie){
+    return exec('openChannel', this.id, friendId, cookie);
+  }
+
+  /*
+   * @brief: close the channel with channel id
+   * @param: friend userId
+   * @param: channel id
+   * @return: ok
+   */
+  closeChannel(friendId, channelId){
+    return exec('closeChannel', this.id, friendId, channelId);
+  }
+
+  /*
+   * @brief: send data to the friend channel
+   * @param: friend userId
+   * @param: channel id
+   * @param: data string
+   * @return: (Number) data size
+   */
+  writeChannel(friendId, channelId, data){
+    return exec('writeChannel', this.id, friendId, channelId, data)
+  }
+
+  /*
+   * @brief: pend the channel with channel id
+   * @param: friend userId
+   * @param: channel id
+   * @return: ok
+   */
+  pendChannel(friendId, channelId){
+    return exec('pendChannel', this.id, friendId, channelId);
+  }
+
+  /*
+   * @brief: resume the channel with channel id
+   * @param: friend userId
+   * @param: channel id
+   * @return: ok
+   */
+  resumeChannel(friendId, channelId){
+    return exec('resumeChannel', this.id, friendId, channelId);
+  }
 ```
 
 ## Plugin configuration
