@@ -191,3 +191,10 @@ ExternalProject_Add_Step(
         -DINT_DIST_DIR=${CARRIER_INT_DIST_DIR}
         -P "${CMAKE_CURRENT_LIST_DIR}/pjsip_install.cmake"
 )
+
+if(ENABLE_STATIC)
+    export_static_library(pj)
+    export_static_library(pjlib-util)
+    export_static_library(pjnath)
+    export_static_library(pjmedia)
+endif()

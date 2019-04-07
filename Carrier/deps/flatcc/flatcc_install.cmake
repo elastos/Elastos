@@ -10,8 +10,7 @@ if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
             /y)
     else()
         set(INSTALL_CMD
-            ln
-            -sf
+            cp
             "libflatccrt_d.a"
             "libflatccrt.a")
     endif()

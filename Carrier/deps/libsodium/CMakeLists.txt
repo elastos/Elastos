@@ -52,3 +52,7 @@ ExternalProject_Add(
     BUILD_COMMAND ${BUILD_CMD} ${BUILD_ARGS}
     INSTALL_COMMAND ${INSTALL_CMD} ${INSTALL_ARGS}
 )
+
+if(ENABLE_STATIC)
+    export_static_library(sodium)
+endif()

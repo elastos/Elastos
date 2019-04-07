@@ -39,3 +39,7 @@ ExternalProject_Add_Step(
         -DINT_DIST_DIR=${CARRIER_INT_DIST_DIR}
         -P "${CMAKE_CURRENT_LIST_DIR}/flatcc_install.cmake"
 )
+
+if(ENABLE_STATIC)
+    export_static_library(flatccrt)
+endif()

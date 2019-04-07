@@ -69,8 +69,7 @@ else()
         "srtp")
 
     foreach(_LIB ${PJ_LIBS})
-        execute_process(COMMAND ln
-            -sf
+        execute_process(COMMAND cp
             lib${_LIB}-${PJLIB_SUFFIX}.a
             lib${_LIB}.a)
     endforeach()

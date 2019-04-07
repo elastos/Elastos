@@ -27,3 +27,7 @@ ExternalProject_Add(
         -DBUILD_CARRIER=ON
         ${CMAKE_ARGS_INIT}
 )
+
+if(ENABLE_STATIC)
+    export_static_library(toxcore)
+endif()

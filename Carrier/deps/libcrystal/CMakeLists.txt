@@ -23,22 +23,10 @@ ExternalProject_Add(
         ${CMAKE_ARGS_INIT}
 )
 
+if(ENABLE_STATIC)
+    export_static_library(crystal)
+endif()
+
 if(ENABLE_SHARED)
-    if(WIN32)
-        set(INSTALL_DESTINATION bin)
-    else()
-        set(INSTALL_DESTINATION lib)
-    endif()
-
-    string(CONCAT SHARED_LIBRARY_NAME
-        "${CARRIER_INT_DIST_DIR}/${INSTALL_DESTINATION}/"
-        "${CMAKE_SHARED_LIBRARY_PREFIX}"
-        "crystal"
-        "${CMAKE_SHARED_LIBRARY_SUFFIX}")
-
-    file(RELATIVE_PATH SHARED_LIBRARY_NAME ${CMAKE_CURRENT_LIST_DIR}
-        ${SHARED_LIBRARY_NAME})
-
-    install(PROGRAMS "${SHARED_LIBRARY_NAME}"
-        DESTINATION ${INSTALL_DESTINATION})
+    export_shared_library(crystal)
 endif()

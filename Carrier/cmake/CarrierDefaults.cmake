@@ -102,3 +102,39 @@ function(set_win_build_options build_options suffix)
     set(${build_options} "${_BUILD_OPTIONS}" PARENT_SCOPE)
 endfunction()
 endif()
+
+function(export_static_library MODULE_NAME)
+    set(_INSTALL_DESTINATION lib)
+
+    string(CONCAT STATIC_LIBRARY_NAME
+        "${CARRIER_INT_DIST_DIR}/${_INSTALL_DESTINATION}/"
+        "${CMAKE_STATIC_LIBRARY_PREFIX}"
+        "${MODULE_NAME}"
+        "${CMAKE_STATIC_LIBRARY_SUFFIX}")
+
+    file(RELATIVE_PATH STATIC_LIBRARY_NAME ${CMAKE_CURRENT_LIST_DIR}
+        ${STATIC_LIBRARY_NAME})
+
+    install(FILES "${STATIC_LIBRARY_NAME}"
+        DESTINATION ${_INSTALL_DESTINATION})
+endfunction()
+
+function(export_shared_library MODULE_NAME)
+    if(WIN32)
+        set(_INSTALL_DESTINATION bin)
+    else()
+        set(_INSTALL_DESTINATION lib)
+    endif()
+
+    string(CONCAT SHARED_LIBRARY_NAME
+        "${CARRIER_INT_DIST_DIR}/${_INSTALL_DESTINATION}/"
+        "${CMAKE_SHARED_LIBRARY_PREFIX}"
+        "${MODULE_NAME}"
+        "${CMAKE_SHARED_LIBRARY_SUFFIX}")
+
+    file(RELATIVE_PATH SHARED_LIBRARY_NAME ${CMAKE_CURRENT_LIST_DIR}
+        ${SHARED_LIBRARY_NAME})
+
+    install(PROGRAMS "${SHARED_LIBRARY_NAME}"
+        DESTINATION ${_INSTALL_DESTINATION})
+endfunction()
