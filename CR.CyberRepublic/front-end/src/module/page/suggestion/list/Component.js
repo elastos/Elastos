@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import _ from 'lodash'
+import styled from 'styled-components'
 import {
   Pagination, Modal, Button, Col, Row, Select, Spin,
 } from 'antd'
@@ -13,6 +14,9 @@ import MySuggestion from '../my_list/Container'
 import SuggestionForm from '@/module/form/SuggestionForm/Container'
 import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
+import suggestionImg from '@/assets/images/SuggestionToProposal.png'
+import suggestionZhImg from '@/assets/images/SuggestionToProposal.zh.png'
+import { breakPoint } from '@/constants/breakPoint'
 
 import MediaQuery from 'react-responsive'
 import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC, LG_WIDTH } from '@/config/constant'
@@ -20,18 +24,22 @@ import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC, LG_WIDTH } from '@/config/constant'
 import './style.scss'
 
 const SORT_BY = {
-  likesNum: 'likesNum',
-  viewsNum: 'viewsNum',
-  activeness: 'activeness',
   createdAt: 'createdAt',
-
+  likesNum: 'likesNum',
+  activeness: 'activeness',
+  viewsNum: 'viewsNum'
 }
+const DEFAULT_SORT = SORT_BY.createdAt
+
+// this is used by the CSS too - TODO: move everything to styled-components
+const SIDE_PADDING = '108px'
 
 /**
  * This uses new features such as infinite scroll and pagination, therefore
  * we do some different things such as only loading the data from the server
  */
 export default class extends StandardPage {
+
   constructor(props) {
     super(props)
 
@@ -67,13 +75,15 @@ export default class extends StandardPage {
 
     return (
       <div>
-        <div className="p_SuggestionList">
+        <div className="suggestion-header">
           {headerNode}
+        </div>
+        <SuggestionContainer className="p_SuggestionList">
           <MediaQuery maxWidth={LG_WIDTH}>
             <Row>
               <Col>
                 {addButtonNode}
-                {mySuggestionNode}
+                {/* mySuggestionNode */}
               </Col>
             </Row>
             <Row>
@@ -94,14 +104,14 @@ export default class extends StandardPage {
               <Col span={8}>{addButtonNode}</Col>
             </Row>
             <Row gutter={24}>
-              <Col span={16}>
+              <Col span={24}>
                 {listNode}
               </Col>
-              <Col span={8}>{mySuggestionNode}</Col>
+              {/* <Col span={8}>{mySuggestionNode}</Col> */}
             </Row>
           </MediaQuery>
           {createForm}
-        </div>
+        </SuggestionContainer>
         <Footer />
       </div>
     )
@@ -157,44 +167,51 @@ export default class extends StandardPage {
   renderHeader() {
     return (
       <div>
-        <h2 className="title komu-a cr-title-with-icon">{this.props.header || I18N.get('suggestion.title').toUpperCase()}</h2>
+        <SuggestionContainer className="title komu-a cr-title-with-icon">{this.props.header || I18N.get('suggestion.title').toUpperCase()}</SuggestionContainer>
 
-        <p style={{width: '60%', paddingBottom: '60px'}}>
-          {I18N.get('suggestion.intro.1')}
-          <Link to="/proposals">{I18N.get('suggestion.intro.1.proposals')}</Link>
-          {I18N.get('suggestion.intro.1.1')}
-          <br/>
-          <br/>
-          {I18N.get('suggestion.intro.3')}
-          {localStorage.getItem('lang') === 'en' ?
-            <a href="https://www.cyberrepublic.org/docs/#/guide/suggestions" target="_blank">https://www.cyberrepublic.org/docs/#/guide/suggestions</a> :
-            <a href="https://www.cyberrepublic.org/docs/#/zh/guide/suggestions" target="_blank">https://www.cyberrepublic.org/docs/#/zh/guide/suggestions</a>
-          }
-          <br/>
-          <br/>
-          {I18N.get('suggestion.intro.2')}
-          {localStorage.getItem('lang') === 'en' ?
-            <a target="_blank" href="https://blog.cyberrepublic.org/2019/01/23/crc-suggestions-launch-empower35-crcles-update">{I18N.get('suggestion.intro.2.blog')}</a> :
-            <a target="_blank" href="https://blog.cyberrepublic.org/zh/2019/01/23/%E5%85%B3%E4%BA%8Ecr%E5%85%B1%E8%AF%86%E5%AE%9A%E4%B9%89%EF%BC%8C%E4%B8%8A%E7%BA%BF%E5%BB%BA%E8%AE%AE%E9%A1%B5%E9%9D%A2%E4%BB%A5%E5%8F%8Aempower35-crcles%E7%9A%84%E6%9B%B4%E6%96%B0/">{I18N.get('suggestion.intro.2.blog')}</a>
-          }
-        </p>
+        <HeaderDiagramContainer>
+          <SuggestionContainer>
+            <img src={I18N.getLang() === 'zh' ? suggestionZhImg : suggestionImg}/>
+          </SuggestionContainer>
+        </HeaderDiagramContainer>
+
+        <SuggestionContainer>
+          <HeaderDesc>
+            {I18N.get('suggestion.intro.1')}
+            <Link to="/proposals">{I18N.get('suggestion.intro.1.proposals')}</Link>
+            {I18N.get('suggestion.intro.1.1')}
+            <br/>
+            <br/>
+            {I18N.get('suggestion.intro.3')}
+            {localStorage.getItem('lang') === 'en' ?
+              <a href="https://www.cyberrepublic.org/docs/#/guide/suggestions" target="_blank">https://www.cyberrepublic.org/docs/#/guide/suggestions</a> :
+              <a href="https://www.cyberrepublic.org/docs/#/zh/guide/suggestions" target="_blank">https://www.cyberrepublic.org/docs/#/zh/guide/suggestions</a>
+            }
+          </HeaderDesc>
+        </SuggestionContainer>
       </div>
     )
   }
 
+  // list header
   renderHeaderActions() {
     const SORT_BY_TEXT = {
+      createdAt: I18N.get('suggestion.new'),
       likesNum: I18N.get('suggestion.likes'),
-      viewsNum: I18N.get('suggestion.views'),
+      viewsNum: I18N.get('suggestion.mostViews'),
       activeness: I18N.get('suggestion.activeness'),
-      createdAt: I18N.get('suggestion.dateAdded'),
     }
-    const sortBy = this.props.sortBy || SORT_BY.likesNum
+    const sortBy = this.props.sortBy || DEFAULT_SORT
     return (
       <div className="header-actions-container">
+        <div>
+          <h2 className="title komu-a">{I18N.get('suggestion.listTitle').toUpperCase()}</h2>
+        </div>
         <MediaQuery maxWidth={LG_WIDTH}>
+          {I18N.get('suggestion.sort')}: &nbsp;
           <Select
             name="type"
+            style={{width: 200}}
             onChange={this.onSortByChanged}
             value={sortBy}
           >
@@ -206,6 +223,7 @@ export default class extends StandardPage {
           </Select>
         </MediaQuery>
         <MediaQuery minWidth={LG_WIDTH + 1}>
+          {I18N.get('suggestion.sort')}: &nbsp;
           <Button.Group className="filter-group">
             {_.map(SORT_BY, value => (
               <Button
@@ -224,11 +242,11 @@ export default class extends StandardPage {
 
   renderAddButton() {
     return (
-      <div className="pull-left filter-group btn-create-suggestion">
+      <AddButtonContainer className="pull-right filter-group btn-create-suggestion">
         <Button onClick={this.showCreateForm}>
           {I18N.get('suggestion.add')}
         </Button>
-      </div>
+      </AddButtonContainer>
     )
   }
 
@@ -248,9 +266,6 @@ export default class extends StandardPage {
     return (
       <div>
         <div className="list-container">
-          <div>
-            <h2 className="title komu-a">{I18N.get('suggestion.listTitle').toUpperCase()}</h2>
-          </div>
           {result}
         </div>
         {paginationNode}
@@ -299,7 +314,7 @@ export default class extends StandardPage {
    * Builds the query from the current state
    */
   getQuery = () => {
-    const sortBy = this.props.sortBy || SORT_BY.likesNum
+    const sortBy = this.props.sortBy || DEFAULT_SORT
     const { page, results } = this.state
     const query = {
       page,
@@ -344,3 +359,35 @@ export default class extends StandardPage {
     this.props.history.push(`/suggestion/${id}`)
   }
 }
+
+const HeaderDiagramContainer = styled.div`
+  background-color: #162f45;
+  padding-bottom: 36px;
+  img {
+    max-height: 250px;
+    
+    @media only screen and (max-width: ${breakPoint.lg}) {
+      width: 100%;
+    }
+  }
+`
+
+const HeaderDesc = styled.div`
+  width: 60%;
+  font-weight: 200;
+  padding: 24px 0;
+`
+
+
+const SuggestionContainer = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  
+  @media only screen and (max-width: ${breakPoint.xl}) {
+    margin: 0 5%;
+  }
+`
+
+const AddButtonContainer = styled.div`
+  padding-top: 24px;  
+`

@@ -5,15 +5,20 @@ import styled from 'styled-components'
 import { Button } from 'antd'
 
 export const Container = styled.div`
-  padding-left: 100px;
-  margin: 80px auto 0;
+  max-width: 1200px;
+  margin: 80px auto;
+
+  @media only screen and (max-width: ${breakPoint.xl}) {
+    margin-left: 108px;
+    margin-right: 5%;
+  }
 
   @media only screen and (max-width: ${breakPoint.lg}) {
     margin-left: 5%;
-    margin-right: 5%;
+     
   }
   @media only screen and (max-width: ${breakPoint.mobile}) {
-    padding: 0;
+    
     width: 90vw;
   }
 `

@@ -74,7 +74,7 @@ export default class extends StandardPage {
           <MediaQuery minWidth={LG_WIDTH + 1}>
             <BackLink link="/suggestion" />
             <Row gutter={24}>
-              <Col span={15}>
+              <Col span={24}>
                 {detailNode}
                 {translationBtn}
                 {actionsNode}
@@ -251,8 +251,8 @@ export default class extends StandardPage {
   }
 
   renderOwnerActionsNode() {
-    const { detail, currentUserId } = this.props
-    const isOwner = currentUserId === _.get(detail, 'createdBy._id')
+    const { detail, currentUserId, isAdmin } = this.props
+    const isOwner = currentUserId === _.get(detail, 'createdBy._id') || isAdmin
     const res = isOwner && (
       <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={this.showEditForm}>
         {I18N.get('suggestion.btnText.edit')}

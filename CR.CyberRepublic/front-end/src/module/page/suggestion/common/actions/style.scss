@@ -2,13 +2,14 @@
 @import "@/style/color";
 
 .c_SuggestionActions {
-  margin-top: 27px;
-  margin-bottom: 50px;
+
+  margin: 27px 0;
   color: $text_lighter_gray;
   display: flex;
   align-items: center;
   align-content: center;
   justify-content: space-between;
+
   .cr-icon-group {
     > span {
       line-height: 16px;
