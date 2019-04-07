@@ -1,5 +1,5 @@
 import { breakPoint } from '@/constants/breakPoint'
-import { text, bg } from '@/constants/color'
+import { text, bg, primary } from '@/constants/color'
 import { gap } from '@/constants/variable'
 import styled from 'styled-components'
 import { Button } from 'antd'
@@ -51,6 +51,9 @@ export const Label = styled.span`
 
 export const LabelPointer = styled(Label)`
   cursor: pointer;
+  &:hover {
+    background-color: ${primary.light};
+  }
 `
 
 export const DescLabel = styled.h4`

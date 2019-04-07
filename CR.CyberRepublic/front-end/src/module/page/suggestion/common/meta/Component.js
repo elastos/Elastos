@@ -56,10 +56,10 @@ export default ({ data, hideAuthor, postedByText }) => {
             return (
               type === SUGGESTION_TAG_TYPE.INFO_NEEDED ?
               <StatusBadge key={_id}>
-                Needs More Info
+                {I18N.get('suggestion.btnText.needMoreInfo')}
               </StatusBadge> :
               <StatusBadgeGood key={_id}>
-                Under Consideration
+                {I18N.get('suggestion.btnText.consider')}
               </StatusBadgeGood>
             )
           }) : ''

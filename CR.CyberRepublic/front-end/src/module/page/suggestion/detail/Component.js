@@ -186,9 +186,9 @@ export default class extends StandardPage {
             ]}
           >
             <div style={{fontWeight: 200, paddingBottom: '18px'}}>
-              Please update the Suggestion with the requested info and notify the council/community through a comment
+              {I18N.get('suggestion.modal.pleaseUpdate')}
             </div>
-            Comments from Council:<br/>
+            {I18N.get('suggestion.modal.commentsFromCouncil')}<br/>
             <CouncilComments>
               {desc}
             </CouncilComments>
@@ -342,7 +342,7 @@ export default class extends StandardPage {
         <Row type="flex" justify="start">
           <Col xs={24} sm={8}>
             <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={this.consider}>
-              {I18N.get('suggestion.btnText.consider')}
+              {I18N.get('suggestion.btnText.markConsider')}
             </StyledButton>
           </Col>
           <Col xs={24} sm={8}>
