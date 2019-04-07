@@ -11,6 +11,9 @@ const SuggestionCore = {
     // minlength: 1,
     // maxLength: 150,
   },
+  shortDesc: {
+    type: String
+  },
   desc: {
     type: String,
     // required: true,

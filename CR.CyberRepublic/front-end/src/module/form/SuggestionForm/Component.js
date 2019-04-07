@@ -47,6 +47,7 @@ class C extends BaseComponent {
       if (!err) {
         const param = {
           title: values.title,
+          shortDesc: values.shortDesc,
           desc: sanitizeHtml(values.description, {
             allowedTags: sanitizeHtml.defaults.allowedTags.concat(['u', 's']),
           }),
@@ -74,6 +75,7 @@ class C extends BaseComponent {
     const {data} = this.props
 
     const input_el = <Input size="large"/>
+    const shortDesc_el = <Input size="large"/>
     const textarea_el = (
       <ReactQuill
         modules={{
@@ -94,6 +96,14 @@ class C extends BaseComponent {
         {min: 4, message: I18N.get('suggestion.create.error.tooShort')},
       ],
       initialValue: _.get(data, 'title', ''),
+    })
+
+    const shortDesc_fn = getFieldDecorator('shortDesc', {
+      rules: [
+        {required: true, message: I18N.get('suggestion.create.error.required')},
+        {min: 20, message: I18N.get('suggestion.create.error.tooShort')},
+      ],
+      initialValue: _.get(data, 'shortDesc', ''),
     })
 
     const description_fn = getFieldDecorator('description', {
@@ -136,6 +146,7 @@ class C extends BaseComponent {
 
     return {
       title: title_fn(input_el),
+      shortDesc: shortDesc_fn(shortDesc_el),
       description: description_fn(textarea_el),
       benefits: benefits_fn(benefits_el),
       funding: funding_fn(funding_el),
@@ -254,6 +265,9 @@ class C extends BaseComponent {
       <div>
         <FormItem className="form-item" label={I18N.get('suggestion.form.fields.subject')} {...formItemLayout}>
           {p.title}
+        </FormItem>
+        <FormItem className="form-item" label={I18N.get('suggestion.form.fields.shortDesc')} {...formItemLayout}>
+          {p.shortDesc}
         </FormItem>
         <FormItem className="form-desc" label={I18N.get('suggestion.form.fields.desc')} {...formItemLayout}>
           {p.description}

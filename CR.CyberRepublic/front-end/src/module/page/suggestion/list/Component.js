@@ -17,6 +17,7 @@ import MetaContainer from '../common/meta/Container'
 import suggestionImg from '@/assets/images/SuggestionToProposal.png'
 import suggestionZhImg from '@/assets/images/SuggestionToProposal.zh.png'
 import { breakPoint } from '@/constants/breakPoint'
+import { text, bg } from '@/constants/color'
 
 import MediaQuery from 'react-responsive'
 import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC, LG_WIDTH } from '@/config/constant'
@@ -277,11 +278,14 @@ export default class extends StandardPage {
     const href = `/suggestion/${data._id}`
     const actionsNode = this.renderActionsNode(data)
     const metaNode = this.renderMetaNode(data)
-    const title = <Link to={href} className="title-link">{data.title}</Link>
+    const title = <ItemTitle to={href} className="title-link">{data.title}</ItemTitle>
     return (
       <div key={data._id} className="item-container">
         {metaNode}
         {title}
+        <ShortDesc>
+          {data.shortDesc}
+        </ShortDesc>
         {actionsNode}
       </div>
     )
@@ -370,6 +374,31 @@ const HeaderDiagramContainer = styled.div`
       width: 100%;
     }
   }
+`
+
+const ItemTitle = styled(Link)`
+  font-size: 20px;
+  color: ${text.newGray};
+  transition: all 0.3s;
+  font-weight: 400;
+  text-decoration: none;
+  margin-top: 8px;
+  margin-bottom: 4px;
+  display: block;
+  &:hover {
+    color: $link_color;
+  }
+  
+  background-color: ${bg.blue};
+  
+  padding: 4px 8px;
+  border: 1px solid #e4effd;
+  border-radius: 4px;
+`
+
+const ShortDesc = styled.div`
+  font-weight: 200;
+  padding: 4px 8px 0; 
 `
 
 const HeaderDesc = styled.div`

@@ -1,10 +1,11 @@
 import Base from './Base'
 import * as _ from 'lodash'
 import { constant } from '../constant'
-import { validate, mail, user as userUtil } from '../utility'
+import { validate, mail, user as userUtil, permissions } from '../utility'
 
 const emptyDoc = {
   title: '',
+  shortDesc: '',
   desc: '',
   benefits: '',
   funding: '',
@@ -20,13 +21,14 @@ export default class extends Base {
 
   public async create(param: any): Promise<Document> {
     // get param
-    const { title, desc, benefits, funding, timeline, link, } = param
+    const { title, shortDesc, desc, benefits, funding, timeline, link, } = param
     // validation
     this.validateTitle(title)
     this.validateDesc(desc)
 
     const docCore: any = {
       title,
+      shortDesc,
       desc,
       benefits,
       // funding,
@@ -43,7 +45,7 @@ export default class extends Base {
       docCore.link = link
     }
 
-    console.log('docCore is: ', docCore)
+    // console.log('docCore is: ', docCore)
 
     // build document object
     const doc = {
@@ -57,7 +59,7 @@ export default class extends Base {
 
   public async update(param: any): Promise<Document> {
     // get param
-    const { id, title, desc, benefits, funding, timeline, link } = param
+    const { id, title, shortDesc, desc, benefits, funding, timeline, link } = param
     const userId = _.get(this.currentUser, '_id')
     const currDoc = await this.model.getDBInstance().findById(id)
 
@@ -65,7 +67,7 @@ export default class extends Base {
       throw 'Current document does not exist'
     }
 
-    if (!userId.equals(_.get(currDoc, 'createdBy'))) {
+    if (!userId.equals(_.get(currDoc, 'createdBy')) && !permissions.isAdmin(_.get(this.currentUser, 'role'))) {
       throw 'Only owner can edit suggestion'
     }
 
@@ -76,6 +78,7 @@ export default class extends Base {
     // build document object
     const doc: any = {
       title,
+      shortDesc,
       desc,
       benefits,
       funding,
@@ -92,6 +95,7 @@ export default class extends Base {
     } else {
       const firstHistoryItem = {
         title: currDoc.title,
+        shortDesc: currDoc.shortDesc,
         desc: currDoc.desc,
         benefits: currDoc.benefits,
         funding: currDoc.funding,
@@ -110,6 +114,7 @@ export default class extends Base {
     const cursor = this.model.getDBInstance()
       .find(query)
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+      .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
     const totalCursor = this.model.getDBInstance().find(query).count()
 
     if (param.sortBy) {

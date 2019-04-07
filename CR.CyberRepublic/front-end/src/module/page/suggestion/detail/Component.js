@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import _ from 'lodash'
-import { Row, Col, Spin, Button, Modal, Input } from 'antd'
+import { Row, Col, Spin, Divider, Modal, Input, Button } from 'antd'
 import { Link } from 'react-router-dom'
 import MediaQuery from 'react-responsive'
 import moment from 'moment/moment'
@@ -19,7 +19,7 @@ import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
 import MySuggestion from '../my_list/Container'
 
-import { Container, Title, Label, Desc, BtnGroup, StyledButton, DescBody } from './style'
+import { Container, Title, ShortDesc, DescLabel, Label, LabelPointer, Desc, BtnGroup, StyledButton, DescBody, CouncilComments } from './style'
 
 const { TextArea } = Input;
 
@@ -32,6 +32,7 @@ export default class extends StandardPage {
       isDropdownActionOpen: false,
       showMobile: false,
       showForm: false,
+      needsInfoVisible: false
     }
   }
 
@@ -95,6 +96,7 @@ export default class extends StandardPage {
   renderDetail() {
     const metaNode = this.renderMetaNode()
     const titleNode = this.renderTitleNode()
+    const shortDescNode = this.renderShortDescNode()
     const labelNode = this.renderLabelNode()
     const tagsNode = this.renderTagsNode()
     const descNode = this.renderDescNode()
@@ -106,9 +108,12 @@ export default class extends StandardPage {
       <div>
         {metaNode}
         {titleNode}
-        {labelNode}
+        {/* labelNode */}
         {tagsNode}
+        {shortDescNode}
+        <Divider/>
         {descNode}
+        <Divider/>
         {benefitsNode}
         {fundingNode}
         {timelineNode}
@@ -126,6 +131,15 @@ export default class extends StandardPage {
     const { detail } = this.props
     return (
       <Title>{detail.title}</Title>
+    )
+  }
+
+  renderShortDescNode() {
+    const { detail } = this.props
+    return (
+      <ShortDesc>
+        {detail.shortDesc}
+      </ShortDesc>
     )
   }
 
@@ -149,21 +163,54 @@ export default class extends StandardPage {
     const tags = _.get(this.props.detail, 'tags')
     if (_.isEmpty(tags)) return null
     const res = _.map(tags, (tag) => {
-      const { type, _id } = tag
+      const { type, _id, desc } = tag
       return (
-        <Label key={_id}>
-          {I18N.get(`suggestion.tag.type.${type}`)}
-        </Label>
+        <div key={_id} >
+          {
+            type === SUGGESTION_TAG_TYPE.INFO_NEEDED &&
+              <LabelPointer type={type} data-desc={desc.replace(/(['"])/g, '\\$1')}
+                            onClick={() => this.setState({needsInfoVisible: true})}>
+                {I18N.get(`suggestion.tag.type.${type}`)}
+              </LabelPointer>/* :
+              <Label type={type}>
+                {I18N.get(`suggestion.tag.type.${type}`)}
+              </Label>
+              */
+          }
+          <Modal
+            title={I18N.get(`suggestion.tag.type.${type}`)}
+            visible={this.state.needsInfoVisible}
+            onCancel={this.closeNeedsInfoModal.bind(this)}
+            footer={[
+              <Button key="close" onClick={this.closeNeedsInfoModal.bind(this)}>Close</Button>
+            ]}
+          >
+            <div style={{fontWeight: 200, paddingBottom: '18px'}}>
+              Please update the Suggestion with the requested info and notify the council/community through a comment
+            </div>
+            Comments from Council:<br/>
+            <CouncilComments>
+              {desc}
+            </CouncilComments>
+          </Modal>
+        </div>
       )
     })
     return res
+  }
+
+  closeNeedsInfoModal() {
+    this.setState({
+      needsInfoVisible: false
+
+    })
   }
 
   renderDescNode() {
     const { detail } = this.props
     return (
       <Desc>
-        <h4>{I18N.get('suggestion.form.fields.suggestion')}</h4>
+        <DescLabel>{I18N.get('suggestion.form.fields.fullDesc')}</DescLabel>
         <DescBody dangerouslySetInnerHTML={{ __html: detail.desc }} />
       </Desc>
     )
@@ -176,7 +223,7 @@ export default class extends StandardPage {
     }
     return (
       <Desc>
-        <h4>{I18N.get('suggestion.form.fields.benefits')}</h4>
+        <DescLabel>{I18N.get('suggestion.form.fields.benefits')}</DescLabel>
         <DescBody>{detail.benefits}</DescBody>
       </Desc>
     )
@@ -189,7 +236,7 @@ export default class extends StandardPage {
     }
     return (
       <Desc>
-        <h4>{I18N.get('suggestion.form.fields.funding')}</h4>
+        <DescLabel>{I18N.get('suggestion.form.fields.funding')}</DescLabel>
         <div>{detail.funding}</div>
       </Desc>
     )
@@ -202,7 +249,7 @@ export default class extends StandardPage {
     }
     return (
       <Desc>
-        <h4>{I18N.get('suggestion.form.fields.timeline')}</h4>
+        <DescLabel>{I18N.get('suggestion.form.fields.timeline')}</DescLabel>
         <div>{moment(detail.timeline).format('MMM D, YYYY')}</div>
       </Desc>
     )
@@ -217,7 +264,7 @@ export default class extends StandardPage {
 
     return (
       <Desc>
-        <h4>{I18N.get('suggestion.form.fields.links')}</h4>
+        <DescLabel>{I18N.get('suggestion.form.fields.links')}</DescLabel>
         {_.map(link, href => <div key={href}><a href={href} target="_blank" rel="noopener noreferrer">{href}</a></div>)}
       </Desc>
     )

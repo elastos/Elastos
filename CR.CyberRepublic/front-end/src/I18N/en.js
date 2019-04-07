@@ -313,9 +313,11 @@ const en = {
   'suggestion.form.fields.suggestion': 'Suggestion',
   'suggestion.form.fields.subject': 'Subject',
   'suggestion.form.fields.desc': 'Description',
+  'suggestion.form.fields.shortDesc': 'Short Description',
+  'suggestion.form.fields.fullDesc': 'Full Description',
   'suggestion.form.fields.benefits': 'Benefits to Elastos Community/Ecosystem ',
   'suggestion.form.fields.funding': 'Funding Estimated (USD)',
-  'suggestion.form.fields.timeline': 'Timeline Suggested',
+  'suggestion.form.fields.timeline': 'Expected Completion',
   'suggestion.form.fields.links': 'Links',
   'suggestion.form.fields.linksSplit': 'Links (Split By Comma)',
 
@@ -324,19 +326,21 @@ const en = {
       addTagComment: 'Add Comment',
       confirm: 'Confirm',
       cancel: 'Cancel',
+      pleaseUpdate: 'Please update the Suggestion with the requested info and notify the council/community through a comment.',
+      commentsFromCouncil: 'Comments from Council:'
     },
     tag: {
       type: {
         UNDER_CONSIDERATION: 'Under Consideration of Council',
-        INFO_NEEDED: 'More info needed for Council',
+        INFO_NEEDED: 'More Info Required',
       },
     },
   },
 
   // Suggestion Button Text
   'suggestion.btnText.edit': 'Edit Suggestion',
-  'suggestion.btnText.consider': 'Consider',
-  'suggestion.btnText.needMoreInfo': 'Need More Info',
+  'suggestion.btnText.consider': 'Mark as Under Consideration',
+  'suggestion.btnText.needMoreInfo': 'Needs More Info',
   'suggestion.btnText.makeIntoProposal': 'Make into Proposal',
 
   // suggestion error

@@ -5,6 +5,7 @@ import CVoteForm from '@/module/form/CVoteForm/Container'
 import I18N from '@/I18N'
 
 import { Container } from './style'
+import { StyledButton } from '../../suggestion/detail/style'
 
 export default class extends BaseComponent {
   constructor(props) {
@@ -18,9 +19,9 @@ export default class extends BaseComponent {
     const { className, btnStyle, btnText } = this.props
     const classNameLocal = `cr-btn cr-btn-primary ${className}`
     const createBtn = (
-      <Button onClick={this.switchCreateMode} className={classNameLocal} style={btnStyle}>
+      <StyledButton onClick={this.switchCreateMode} className={classNameLocal} style={btnStyle}>
         {btnText || I18N.get('from.CVoteForm.button.add')}
-      </Button>
+      </StyledButton>
     )
     const form = this.renderForm()
     return (
