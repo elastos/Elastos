@@ -73,6 +73,10 @@ export const DescBody = styled.div`
     padding-bottom: 0;
     margin-bottom: 12px;
   }
+  
+  ul {
+    margin-left: 24px;s
+  }
 `
 
 export const CouncilComments = styled.div`
