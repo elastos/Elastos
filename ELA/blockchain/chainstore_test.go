@@ -185,4 +185,5 @@ func TestChainStoreDone(t *testing.T) {
 	}
 
 	testChainStore.BatchCommit()
+	testChainStore.Close()
 }
