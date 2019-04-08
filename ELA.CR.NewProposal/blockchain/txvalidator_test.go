@@ -48,7 +48,7 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	FoundationAddress = *foundation
 	s.foundationAddress = FoundationAddress
 
-	chainStore, err := NewChainStore("Chain_UnitTest1",
+	chainStore, err := NewChainStore("Chain_UnitTest",
 		config.DefaultParams.GenesisBlock)
 	if err != nil {
 		s.Error(err)
