@@ -102,6 +102,7 @@ class C extends BaseComponent {
       rules: [
         {required: true, message: I18N.get('suggestion.create.error.required')},
         {min: 20, message: I18N.get('suggestion.create.error.tooShort')},
+        {max: 255, message: I18N.get('from.OrganizerAppForm.field.max')},
       ],
       initialValue: _.get(data, 'shortDesc', ''),
     })
