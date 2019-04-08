@@ -17,7 +17,7 @@ var eventStore *DposStore
 func TestEventStore_Open(t *testing.T) {
 	log.Init(0, 20, 100)
 
-	store, err := NewDposStore("Dpos_Test")
+	store, err := NewDposStore("Chain_UnitTest")
 	if err != nil {
 		t.Error("open database failed:", err.Error())
 	}
