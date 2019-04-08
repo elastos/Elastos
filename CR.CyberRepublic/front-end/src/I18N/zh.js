@@ -276,9 +276,10 @@ const zh = {
   'suggestion.sort': '排序方式',
   'suggestion.likes': '点赞量',
   'suggestion.views': '浏览',
+  'suggestion.mostViews': '最多浏览',
   'suggestion.activeness': '活跃度',
   'suggestion.owner': '提议人',
-  'suggestion.dateAdded': '添加日期',
+  'suggestion.new': '最新',
   'suggestion.postedBy': '发布者',
   'suggestion.follow': '关注',
   'suggestion.reportAbuse': '举报',
@@ -312,6 +313,8 @@ const zh = {
   'suggestion.form.fields.suggestion': '建议',
   'suggestion.form.fields.subject': '标题',
   'suggestion.form.fields.desc': '描述',
+  'suggestion.form.fields.shortDesc': '概述',
+  'suggestion.form.fields.fullDesc': '完整描述',
   'suggestion.form.fields.benefits': '对于亦来云社区/生态的价值',
   'suggestion.form.fields.funding': '预算（USD）',
   'suggestion.form.fields.timeline': '启动时间',
@@ -323,6 +326,8 @@ const zh = {
       addTagComment: '添加评论',
       confirm: '确认',
       cancel: '取消',
+      pleaseUpdate: '请使用所需信息更新建议，并通过评论通知委员/社区。',
+      commentsFromCouncil: '委员的评论：'
     },
     tag: {
       type: {
@@ -335,6 +340,7 @@ const zh = {
   // Suggestion Button Text
   'suggestion.btnText.edit': '编辑',
   'suggestion.btnText.consider': '考虑',
+  'suggestion.btnText.markConsider': '考虑',
   'suggestion.btnText.needMoreInfo': '需要更多信息',
   'suggestion.btnText.makeIntoProposal': '形成提案',
 

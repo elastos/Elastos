@@ -5,6 +5,7 @@
   display: flex;
   flex: 0 80px;
   color: rgba(3, 30, 40, 0.4);
+
   > span {
     &:not(:last-child):after {
       content: "\A";

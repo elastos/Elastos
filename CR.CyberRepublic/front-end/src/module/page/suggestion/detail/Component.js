@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import _ from 'lodash'
-import { Row, Col, Spin, Button, Modal, Input } from 'antd'
+import { Row, Col, Spin, Divider, Modal, Input, Button } from 'antd'
 import { Link } from 'react-router-dom'
 import MediaQuery from 'react-responsive'
 import moment from 'moment/moment'
@@ -19,7 +19,7 @@ import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
 import MySuggestion from '../my_list/Container'
 
-import { Container, Title, Label, Desc, BtnGroup, StyledButton, DescBody } from './style'
+import { Container, Title, ShortDesc, DescLabel, Label, LabelPointer, Desc, BtnGroup, StyledButton, DescBody, CouncilComments } from './style'
 
 const { TextArea } = Input;
 
@@ -32,6 +32,7 @@ export default class extends StandardPage {
       isDropdownActionOpen: false,
       showMobile: false,
       showForm: false,
+      needsInfoVisible: false
     }
   }
 
@@ -74,7 +75,7 @@ export default class extends StandardPage {
           <MediaQuery minWidth={LG_WIDTH + 1}>
             <BackLink link="/suggestion" />
             <Row gutter={24}>
-              <Col span={15}>
+              <Col span={24}>
                 {detailNode}
                 {translationBtn}
                 {actionsNode}
@@ -95,6 +96,7 @@ export default class extends StandardPage {
   renderDetail() {
     const metaNode = this.renderMetaNode()
     const titleNode = this.renderTitleNode()
+    const shortDescNode = this.renderShortDescNode()
     const labelNode = this.renderLabelNode()
     const tagsNode = this.renderTagsNode()
     const descNode = this.renderDescNode()
@@ -106,9 +108,12 @@ export default class extends StandardPage {
       <div>
         {metaNode}
         {titleNode}
-        {labelNode}
+        {/* labelNode */}
         {tagsNode}
+        {shortDescNode}
+        <Divider/>
         {descNode}
+        <Divider/>
         {benefitsNode}
         {fundingNode}
         {timelineNode}
@@ -126,6 +131,15 @@ export default class extends StandardPage {
     const { detail } = this.props
     return (
       <Title>{detail.title}</Title>
+    )
+  }
+
+  renderShortDescNode() {
+    const { detail } = this.props
+    return (
+      <ShortDesc>
+        {detail.shortDesc}
+      </ShortDesc>
     )
   }
 
@@ -149,21 +163,54 @@ export default class extends StandardPage {
     const tags = _.get(this.props.detail, 'tags')
     if (_.isEmpty(tags)) return null
     const res = _.map(tags, (tag) => {
-      const { type, _id } = tag
+      const { type, _id, desc } = tag
       return (
-        <Label key={_id}>
-          {I18N.get(`suggestion.tag.type.${type}`)}
-        </Label>
+        <div key={_id} >
+          {
+            type === SUGGESTION_TAG_TYPE.INFO_NEEDED &&
+              <LabelPointer type={type} data-desc={desc.replace(/(['"])/g, '\\$1')}
+                            onClick={() => this.setState({needsInfoVisible: true})}>
+                {I18N.get(`suggestion.tag.type.${type}`)}
+              </LabelPointer>/* :
+              <Label type={type}>
+                {I18N.get(`suggestion.tag.type.${type}`)}
+              </Label>
+              */
+          }
+          <Modal
+            title={I18N.get(`suggestion.tag.type.${type}`)}
+            visible={this.state.needsInfoVisible}
+            onCancel={this.closeNeedsInfoModal.bind(this)}
+            footer={[
+              <Button key="close" onClick={this.closeNeedsInfoModal.bind(this)}>Close</Button>
+            ]}
+          >
+            <div style={{fontWeight: 200, paddingBottom: '18px'}}>
+              {I18N.get('suggestion.modal.pleaseUpdate')}
+            </div>
+            {I18N.get('suggestion.modal.commentsFromCouncil')}<br/>
+            <CouncilComments>
+              {desc}
+            </CouncilComments>
+          </Modal>
+        </div>
       )
     })
     return res
+  }
+
+  closeNeedsInfoModal() {
+    this.setState({
+      needsInfoVisible: false
+
+    })
   }
 
   renderDescNode() {
     const { detail } = this.props
     return (
       <Desc>
-        <h4>{I18N.get('suggestion.form.fields.suggestion')}</h4>
+        <DescLabel>{I18N.get('suggestion.form.fields.fullDesc')}</DescLabel>
         <DescBody dangerouslySetInnerHTML={{ __html: detail.desc }} />
       </Desc>
     )
@@ -176,7 +223,7 @@ export default class extends StandardPage {
     }
     return (
       <Desc>
-        <h4>{I18N.get('suggestion.form.fields.benefits')}</h4>
+        <DescLabel>{I18N.get('suggestion.form.fields.benefits')}</DescLabel>
         <DescBody>{detail.benefits}</DescBody>
       </Desc>
     )
@@ -189,7 +236,7 @@ export default class extends StandardPage {
     }
     return (
       <Desc>
-        <h4>{I18N.get('suggestion.form.fields.funding')}</h4>
+        <DescLabel>{I18N.get('suggestion.form.fields.funding')}</DescLabel>
         <div>{detail.funding}</div>
       </Desc>
     )
@@ -202,7 +249,7 @@ export default class extends StandardPage {
     }
     return (
       <Desc>
-        <h4>{I18N.get('suggestion.form.fields.timeline')}</h4>
+        <DescLabel>{I18N.get('suggestion.form.fields.timeline')}</DescLabel>
         <div>{moment(detail.timeline).format('MMM D, YYYY')}</div>
       </Desc>
     )
@@ -217,7 +264,7 @@ export default class extends StandardPage {
 
     return (
       <Desc>
-        <h4>{I18N.get('suggestion.form.fields.links')}</h4>
+        <DescLabel>{I18N.get('suggestion.form.fields.links')}</DescLabel>
         {_.map(link, href => <div key={href}><a href={href} target="_blank" rel="noopener noreferrer">{href}</a></div>)}
       </Desc>
     )
@@ -251,8 +298,8 @@ export default class extends StandardPage {
   }
 
   renderOwnerActionsNode() {
-    const { detail, currentUserId } = this.props
-    const isOwner = currentUserId === _.get(detail, 'createdBy._id')
+    const { detail, currentUserId, isAdmin } = this.props
+    const isOwner = currentUserId === _.get(detail, 'createdBy._id') || isAdmin
     const res = isOwner && (
       <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={this.showEditForm}>
         {I18N.get('suggestion.btnText.edit')}
@@ -295,7 +342,7 @@ export default class extends StandardPage {
         <Row type="flex" justify="start">
           <Col xs={24} sm={8}>
             <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={this.consider}>
-              {I18N.get('suggestion.btnText.consider')}
+              {I18N.get('suggestion.btnText.markConsider')}
             </StyledButton>
           </Col>
           <Col xs={24} sm={8}>
