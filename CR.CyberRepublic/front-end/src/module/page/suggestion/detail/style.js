@@ -74,8 +74,13 @@ export const DescBody = styled.div`
     margin-bottom: 12px;
   }
   
-  ul {
-    margin-left: 24px;s
+  ul, ol {
+    margin-left: 24px;
+    
+    > li {
+      padding-left: 4px;
+      font-weight: 200;
+    }
   }
 `
 

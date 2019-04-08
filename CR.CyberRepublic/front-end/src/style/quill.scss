@@ -38,14 +38,17 @@
     padding-bottom: 0;
     margin-bottom: 12px;
   }
-  ul, ul li, ol li {
+  ul, ol, ul li, ol li {
     padding-left: 0;
+    font-weight: 200;
   }
-  ul {
+  ul, ol {
     margin-left: 24px;
   }
   ul li {
     list-style-type: disc;
+    padding-left: 4px;
+
     &:before {
       content: "";
     }
