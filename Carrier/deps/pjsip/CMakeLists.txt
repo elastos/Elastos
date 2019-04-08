@@ -193,7 +193,13 @@ ExternalProject_Add_Step(
 )
 
 if(ENABLE_STATIC)
-    export_static_library(pj)
+    if(WIN32)
+        set(_PJLIB_NAME pjlib)
+    else()
+        set(_PJLIB_NAME pj)
+    endif()
+
+    export_static_library(${_PJLIB_NAME})
     export_static_library(pjlib-util)
     export_static_library(pjnath)
     export_static_library(pjmedia)

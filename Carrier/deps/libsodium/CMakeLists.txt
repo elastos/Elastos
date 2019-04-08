@@ -54,5 +54,11 @@ ExternalProject_Add(
 )
 
 if(ENABLE_STATIC)
-    export_static_library(sodium)
+    if(WIN32)
+        set(_LIBNAME libsodium)
+    else()
+        set(_LIBNAME sodium)
+    endif()
+
+    export_static_library(${_LIBNAME})
 endif()
