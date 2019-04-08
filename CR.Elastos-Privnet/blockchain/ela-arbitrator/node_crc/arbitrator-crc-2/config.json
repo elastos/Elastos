@@ -15,6 +15,19 @@
                 "MiningAddr":"EVoer15TemB76jaQgamrV3d1HmwmtpV25a",
                 "PayToAddr":"EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U",
                 "ExchangeRate":1.0
+            },
+            {
+                "Rpc":{
+                    "HttpJsonPort":11616,
+                    "IpAddress":"ela-sidechain-token-2",
+                    "Pass":"",
+                    "User":""
+                },
+                "GenesisBlock":"b569111dfb5e12d40be5cf09e42f7301128e9ac7ab3c6a26f24e77872b9a730e",
+                "PowChain":true,
+                "MiningAddr":"EVoer15TemB76jaQgamrV3d1HmwmtpV25a",
+                "PayToAddr":"EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U",
+                "ExchangeRate":1.0
             }
         ],
         "HttpJsonPort":13536,

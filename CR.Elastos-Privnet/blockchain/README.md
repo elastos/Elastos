@@ -1,7 +1,7 @@
 ## General Info
 
 - Prerequisite basic knowledge of docker is expected  
-- After starting, the miners will automatically start running, about 20 containers are created for blockchain, 2 containers for hive and 0 for carrier so expect some performance hit to your computer
+- After starting, the miners will automatically start running and about 24 containers are created
 - Pre-mined 600 ELA on Mainchain miner reward address, 40,000 ELA on one mainchain address, 50,000 ELA on another mainchain address and 10,000 ELA on DID sidechain address. For more, see [Wallets](#Wallets)
 
 
@@ -12,7 +12,7 @@ These are located in the `wallets` folder:
 - `foundation.json` - This is where the genesis block's 33 million ELA is created(Note some ELA have been taken out of this account to other addresses for testing purposes)
 - `mainchain-miner-reward.json` - This is where the mining rewards from mainchain go
 - `preload/mainchains.json` - This is where the two mainchain addresses are located with 40,000 ELA and 50,000 ELA respectively
-- `preload/sidechains.json` - This is where the DID and Token sidechain addresses are located with 10,000 DID ELA and 0 TOKEN ELA respectively
+- `preload/sidechains.json` - This is where the DID and Token sidechain addresses are located with 10,000 DID ELA and 10,000 TOKEN ELA respectively(Token sidechain address doesn't have any ELA yet)
 - `mainchain_nodes/mainchains_nodes.json` - This is where all the public and private keys are located for all the mainchain nodes
 - `arbitrator_nodes/arbitrator_nodes.json` - This is where all the public and private keys are located for all the arbitrator nodes along with their corresponding sidechains' public, private keys and ELA addresses that are used for mininig purposes
 
@@ -21,7 +21,7 @@ These are located in the `wallets` folder:
 - Elastos.ELA: tag v0.3.0 c4325c50db67b79e65398ac7515b4f1dc4aa6d73
 - Elastos.ELA.Arbiter: tag v.0.1.0 69f003f3f2a95aadba41918ca0be6e57265ec2ef
 - Elastos.ELA.SideChain.ID: tag v0.1.0 d8a60dafa7b64b9595b5ad0fcd498370773d7f73
-- Elastos.ELA.SideChain.Token: tag v0.1.0 717a9ffd4ad9771ff5c537f43b6b7bebee1ecac4
+- Elastos.ELA.SideChain.Token: tag v0.1.0 eddb117e7a0dadea59f14f5f7969d4c7bc521fd6
 - Elastos.ORG.Wallet.Service: master 18b4ba061f5054019704ff78934bec529cabed75
 - Elastos.ORG.DID.Service: master 8784b182debc4cbd22b607850b261aef7557b8ac
 - Elastos.ORG.API.Misc: master 4818a285e313641aae7c9d06ebba471304a8d404
@@ -52,6 +52,13 @@ These are located in the `wallets` folder:
 - DID sidechain node 2: 11606-11608
 - DID sidechain node 3: 12606-12608
 - DID sidechain node 4: 13606-13608
+
+### Token Sidechain nodes
+
+- Token sidechain node 1: 10614-10618
+- Token sidechain node 2: 11614-11618
+- Token sidechain node 3: 12614-12618
+- Token sidechain node 4: 13614-13618
 
 ### Restful Services
 
