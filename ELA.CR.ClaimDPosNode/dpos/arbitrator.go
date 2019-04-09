@@ -15,6 +15,7 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/dpos/store"
+	"github.com/elastos/Elastos.ELA/elanet"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p"
@@ -26,6 +27,7 @@ type Config struct {
 	Params            config.ArbiterConfiguration
 	Arbitrators       state.Arbitrators
 	Store             store.IDposStore
+	Server            elanet.Server
 	TxMemPool         *mempool.TxPool
 	BlockMemPool      *mempool.BlockPool
 	ChainParams       *config.Params
@@ -141,6 +143,7 @@ func NewArbitrator(account account.Account, cfg Config) (*Arbitrator, error) {
 		PublicKey:   account.PublicKeyBytes(),
 		Arbitrators: cfg.Arbitrators,
 		ChainParams: cfg.ChainParams,
+		Server:      cfg.Server,
 	})
 
 	network, err := NewDposNetwork(account, dposManager)

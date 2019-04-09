@@ -1200,7 +1200,7 @@ func ListProducers(param Params) map[string]interface{} {
 		limit = math.MaxInt64
 	}
 
-	producers := Chain.GetState().GetProducers()
+	producers := Chain.GetState().GetAllProducers()
 	sort.Slice(producers, func(i, j int) bool {
 		return producers[i].Votes() > producers[j].Votes()
 	})

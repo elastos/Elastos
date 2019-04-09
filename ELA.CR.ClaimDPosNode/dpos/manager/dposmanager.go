@@ -15,6 +15,7 @@ import (
 	dpeer "github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/dpos/store"
+	"github.com/elastos/Elastos.ELA/elanet"
 	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p"
@@ -83,6 +84,7 @@ type DPOSManagerConfig struct {
 	PublicKey   []byte
 	Arbitrators state.Arbitrators
 	ChainParams *config.Params
+	Server      elanet.Server
 }
 
 type DPOSManager struct {
@@ -99,6 +101,7 @@ type DPOSManager struct {
 	blockPool   *mempool.BlockPool
 	txPool      *mempool.TxPool
 	chainParams *config.Params
+	server      elanet.Server
 	broadcast   func(p2p.Message)
 
 	notHandledProposal   map[string]struct{}
@@ -120,6 +123,7 @@ func NewManager(cfg DPOSManagerConfig) *DPOSManager {
 		blockCache:  &ConsensusBlockCache{},
 		arbitrators: cfg.Arbitrators,
 		chainParams: cfg.ChainParams,
+		server:      cfg.Server,
 	}
 	m.blockCache.Reset()
 
@@ -164,17 +168,15 @@ func (d *DPOSManager) GetArbitrators() state.Arbitrators {
 }
 
 func (d *DPOSManager) Recover() {
-	if !d.isCurrentArbiter() {
-		return
-	}
-
-	d.changeHeight()
 	for {
-
-		log.Info("Recover when start")
-		if d.recoverAbnormalState(true) {
-			log.Info("Recover finished")
-			return
+		if d.server.IsCurrent() {
+			if !d.isCurrentArbiter() {
+				return
+			}
+			d.changeHeight()
+			if d.recoverAbnormalState(true) {
+				return
+			}
 		}
 
 		time.Sleep(time.Second)
@@ -222,11 +224,12 @@ func (d *DPOSManager) OnProposalReceived(id dpeer.PID, p *payload.DPOSProposal) 
 		pubKey := common.BytesToHexString(id[:])
 		d.notHandledProposal[pubKey] = struct{}{}
 		if d.arbitrators.HasArbitersMinorityCount(len(d.notHandledProposal)) {
-			log.Info("[OnVoteAccepted] has minority not handled votes, need recover")
+			log.Info("[OnProposalReceived] has minority not handled votes, need recover")
 			if d.recoverAbnormalState(false) {
-				log.Info("[OnVoteAccepted] recover start")
+				log.Info("[OnProposalReceived] recover start")
+			} else {
+				log.Error("[OnProposalReceived] has no active peers recover failed")
 			}
-			log.Error("[OnVoteAccepted] has no active peers recover failed")
 		}
 	}
 }

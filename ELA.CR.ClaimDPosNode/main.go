@@ -149,6 +149,7 @@ func main() {
 			ChainParams:       activeNetParams,
 			Arbitrators:       arbiters,
 			Store:             dposStore,
+			Server:            server,
 			TxMemPool:         txMemPool,
 			BlockMemPool:      blockMemPool,
 			Broadcast: func(msg p2p.Message) {
