@@ -25,10 +25,16 @@ const (
 )
 
 // newPeerMsg represents a new peer connected.
-type newPeerMsg *peer.Peer
+type newPeerMsg struct {
+	*peer.Peer
+	reply chan struct{}
+}
 
 // donePeerMsg represents a peer disconnected.
-type donePeerMsg *peer.Peer
+type donePeerMsg struct {
+	*peer.Peer
+	reply chan struct{}
+}
 
 type sendTxMsg struct {
 	tx     util.Transaction
@@ -166,11 +172,15 @@ func (s *service) makeEmptyMessage(cmd string) (p2p.Message, error) {
 }
 
 func (s *service) newPeer(peer server.IPeer) {
-	s.peerQueue <- newPeerMsg(peer.ToPeer())
+	reply := make(chan struct{})
+	s.peerQueue <- newPeerMsg{Peer: peer.ToPeer(), reply: reply}
+	<-reply
 }
 
 func (s *service) donePeer(peer server.IPeer) {
-	s.peerQueue <- donePeerMsg(peer.ToPeer())
+	reply := make(chan struct{})
+	s.peerQueue <- donePeerMsg{Peer: peer.ToPeer(), reply: reply}
+	<-reply
 }
 
 // peerHandler handles new peers and done peers from P2P server.
@@ -203,11 +213,11 @@ cleanup:
 }
 
 // handlePeerMsg deals with adding and removing peer message.
-func (s *service) handlePeerMsg(peers map[*peer.Peer]*speer.Peer, p interface{}) {
-	switch p := p.(type) {
+func (s *service) handlePeerMsg(peers map[*peer.Peer]*speer.Peer, msg interface{}) {
+	switch msg := msg.(type) {
 	case newPeerMsg:
 		// Create spv peer warpper for the new peer.
-		sp := speer.NewPeer(p,
+		sp := speer.NewPeer(msg.Peer,
 			&speer.Config{
 				OnInv:      s.onInv,
 				OnTx:       s.onTx,
@@ -215,19 +225,21 @@ func (s *service) handlePeerMsg(peers map[*peer.Peer]*speer.Peer, p interface{})
 				OnNotFound: s.onNotFound,
 				OnReject:   s.onReject,
 			})
-		sp.Start()
 
-		peers[p] = sp
+		peers[msg.Peer] = sp
 		s.syncManager.NewPeer(sp)
+		msg.reply <- struct{}{}
 
 	case donePeerMsg:
-		sp, ok := peers[p]
+		sp, ok := peers[msg.Peer]
 		if !ok {
-			log.Errorf("unknown done peer %v", p)
+			log.Errorf("unknown done peer %v", msg.Peer)
+			msg.reply <- struct{}{}
 			return
 		}
 
 		s.syncManager.DonePeer(sp)
+		msg.reply <- struct{}{}
 	}
 }
 

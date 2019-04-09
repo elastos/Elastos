@@ -129,7 +129,7 @@ func TestNewSPVService(t *testing.T) {
 	synclog := backend.Logger("SYNC", elalog.LevelDebug)
 	peerlog := backend.Logger("PEER", elalog.LevelDebug)
 	spvslog := backend.Logger("SPVS", elalog.LevelDebug)
-	srvrlog := backend.Logger("SRVR", elalog.LevelDebug)
+	srvrlog := backend.Logger("SRVR", elalog.LevelOff)
 	listlog := backend.Logger("RPCS", elalog.LevelDebug)
 
 	addrmgr.UseLogger(admrlog)
@@ -142,16 +142,16 @@ func TestNewSPVService(t *testing.T) {
 	sync.UseLogger(synclog)
 
 	seedList := []string{
-		"node-testnet-001.elastos.org:21866",
-		"node-testnet-002.elastos.org:21866",
-		"node-testnet-003.elastos.org:21866",
+		"node-mainnet-002.elastos.org:20338",
+		"node-mainnet-003.elastos.org:20338",
+		"node-mainnet-004.elastos.org:20338",
 	}
 
 	config := &Config{
-		Magic:          2018001,
-		Foundation:     "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
+		Magic:          2017001,
+		Foundation:     "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
 		SeedList:       seedList,
-		DefaultPort:    22866,
+		DefaultPort:    20338,
 		MinOutbound:    8,
 		MaxConnections: 100,
 	}
