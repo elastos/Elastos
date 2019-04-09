@@ -1,0 +1,32 @@
+version : "3.2"
+services:
+
+  ela-hive-ipfs-peer:
+    container_name: ela-hive-ipfs-peer
+    image: ela-hive-ipfs-peer
+    build:
+      context: ela-hive/hive-ipfs
+      dockerfile: Dockerfile
+    ports:
+      - 9093:8080 
+    networks:
+      - hive
+    tty: true
+
+  ela-hive-cluster:
+    container_name: ela-hive-cluster
+    image: ela-hive-cluster
+    depends_on:
+      - ela-hive-ipfs-peer
+    build:
+      context: ela-hive/hive-cluster
+      dockerfile: Dockerfile
+    ports:
+      - 9094-9096:9094-9096
+    networks:
+      - hive
+    tty: true
+
+networks:
+  hive:
+

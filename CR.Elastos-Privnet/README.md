@@ -12,7 +12,7 @@ which we use to compile the executables into the right environment. Only the exe
 
 ## Building from Source
 
-Basically we both don't advise this and although most repos are public, some are still private as we do internal security audits.
+Basically we don't advise this and although most repos are public, some are still private as we do internal security audits.
 Therefore, you wouldn't be able to build it anyway unless you are a partner and request access.
 
 Here's a taste of how this build process looks from scratch [https://www.cyberrepublic.org/experimental-docs](https://www.cyberrepublic.org/experimental-docs) 
@@ -22,3 +22,9 @@ Here's a taste of how this build process looks from scratch [https://www.cyberre
 - Docker Engine 18.09.2
 - Docker Compose 1.23.2
 - Docker Machine 0.16.1
+
+## What you will find on Elastos PrivNet
+
+- [Elastos Blockchain - Main chain, Arbitrator, DID Sidechain, Token Sidechain](./blockchain)
+- [Elastos Hive - Decentralized and Distributed Storage](./hive)
+- [Elastos Carrier - Decentralized peer to peer end-to-end encrypted network](./carrier)
