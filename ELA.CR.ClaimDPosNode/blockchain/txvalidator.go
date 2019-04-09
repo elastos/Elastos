@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"sort"
 	"strconv"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -1194,7 +1193,12 @@ func CheckSidechainIllegalEvidence(p *payload.SidechainIllegalData) error {
 		return err
 	}
 
+	if !DefaultLedger.Arbitrators.IsArbitrator(p.IllegalSigner) {
+		return errors.New("illegal signer is not one of current arbitrators")
+	}
+
 	_, err = common.Uint168FromAddress(p.GenesisBlockAddress)
+	// todo check genesis block when sidechain registered in the future
 	if err != nil {
 		return err
 	}
@@ -1203,12 +1207,8 @@ func CheckSidechainIllegalEvidence(p *payload.SidechainIllegalData) error {
 		return errors.New("insufficient signs count")
 	}
 
-	if p.Evidence.DataHash.Compare(p.CompareEvidence.DataHash) > 0 {
+	if p.Evidence.DataHash.Compare(p.CompareEvidence.DataHash) >= 0 {
 		return errors.New("evidence order error")
-	}
-
-	if err := checkSignersInOrder(p.Signs); err != nil {
-		return err
 	}
 
 	//todo get arbitrators by payload.Height and verify each sign in signs
@@ -1230,10 +1230,6 @@ func CheckInactiveArbitrators(txn *Transaction,
 
 	if _, exists := arbitrators[common.BytesToHexString(p.Sponsor)]; !exists {
 		return errors.New("sponsor is not belong to arbitrators")
-	}
-
-	if err := checkSignersInOrder(p.Arbitrators); err != nil {
-		return err
 	}
 
 	if len(p.Arbitrators) > int(inactiveArbitratorsCount) {
@@ -1278,7 +1274,8 @@ func checkInactiveArbitratorsSignatures(program *program.Program,
 	}
 
 	for _, pk := range publicKeys {
-		if _, exists := arbitrators[common.BytesToHexString(pk)]; !exists {
+		str := common.BytesToHexString(pk[1:])
+		if _, exists := arbitrators[str]; !exists {
 			return errors.New("invalid multi sign public key")
 		}
 	}
@@ -1312,12 +1309,16 @@ func CheckDPOSIllegalProposals(d *payload.DPOSIllegalProposals) error {
 		return errors.New("should be same sponsor")
 	}
 
-	if d.Evidence.Proposal.ViewOffset != d.Evidence.Proposal.ViewOffset {
+	if d.Evidence.Proposal.ViewOffset != d.CompareEvidence.Proposal.ViewOffset {
 		return errors.New("should in same view")
 	}
-	if !IsProposalValid(&d.Evidence.Proposal) ||
-		!IsProposalValid(&d.CompareEvidence.Proposal) {
-		return errors.New("proposal should be valid")
+
+	if err := ProposalCheck(&d.Evidence.Proposal); err != nil {
+		return err
+	}
+
+	if err := ProposalCheck(&d.CompareEvidence.Proposal); err != nil {
+		return err
 	}
 
 	return nil
@@ -1326,11 +1327,11 @@ func CheckDPOSIllegalProposals(d *payload.DPOSIllegalProposals) error {
 func CheckDPOSIllegalVotes(d *payload.DPOSIllegalVotes) error {
 
 	if err := validateVoteEvidence(&d.Evidence); err != nil {
-		return nil
+		return err
 	}
 
 	if err := validateVoteEvidence(&d.CompareEvidence); err != nil {
-		return nil
+		return err
 	}
 
 	if d.Evidence.BlockHeight != d.CompareEvidence.BlockHeight {
@@ -1357,11 +1358,21 @@ func CheckDPOSIllegalVotes(d *payload.DPOSIllegalVotes) error {
 	if d.Evidence.Proposal.ViewOffset != d.CompareEvidence.Proposal.ViewOffset {
 		return errors.New("should in same view")
 	}
-	if !IsProposalValid(&d.Evidence.Proposal) ||
-		!IsProposalValid(&d.CompareEvidence.Proposal) ||
-		!IsVoteValid(&d.Evidence.Vote) ||
-		!IsVoteValid(&d.CompareEvidence.Vote) {
-		return errors.New("votes and related proposals should be valid")
+
+	if err := ProposalCheck(&d.Evidence.Proposal); err != nil {
+		return err
+	}
+
+	if err := ProposalCheck(&d.CompareEvidence.Proposal); err != nil {
+		return err
+	}
+
+	if err := VoteCheck(&d.Evidence.Vote); err != nil {
+		return err
+	}
+
+	if err := VoteCheck(&d.CompareEvidence.Vote); err != nil {
+		return err
 	}
 
 	return nil
@@ -1395,6 +1406,8 @@ func CheckDPOSIllegalBlocks(d *payload.DPOSIllegalBlocks) error {
 		if err := checkDPOSElaIllegalBlockSigners(d, confirm, compareConfirm); err != nil {
 			return err
 		}
+	} else {
+		return errors.New("unknown coin type")
 	}
 
 	return nil
@@ -1405,19 +1418,12 @@ func checkDPOSElaIllegalBlockSigners(
 	compareConfirm *payload.Confirm) error {
 
 	signers := d.Evidence.Signers
-	if err := checkSignersInOrder(signers); err != nil {
-		return err
-	}
-
 	compareSigners := d.CompareEvidence.Signers
-	if err := checkSignersInOrder(compareSigners); err != nil {
-		return err
-	}
 
-	if len(signers) <= int(DefaultLedger.Arbitrators.GetArbitersMajorityCount()) ||
-		len(compareSigners) <= int(DefaultLedger.Arbitrators.GetArbitersMajorityCount()) {
-		return errors.New("signers count less than DPOS required majority" +
-			" count")
+	if len(signers) != len(confirm.Votes) ||
+		len(compareSigners) != len(compareConfirm.Votes) {
+		return errors.New("signers count it not match the count of " +
+			"confirm votes")
 	}
 
 	arbitratorsSet := make(map[string]interface{})
@@ -1445,7 +1451,7 @@ func checkDPOSElaIllegalBlockSigners(
 	}
 
 	compareConfirmSigners := getConfirmSigners(compareConfirm)
-	for _, v := range signers {
+	for _, v := range compareSigners {
 		if _, ok := compareConfirmSigners[common.BytesToHexString(v)]; !ok {
 			return errors.New("signers and confirm votes do not match")
 		}
@@ -1521,10 +1527,6 @@ func checkDPOSElaIllegalBlockHeaders(d *payload.DPOSIllegalBlocks) (*Header,
 	}
 
 	if header.Height != d.BlockHeight || compareHeader.Height != d.BlockHeight {
-		return nil, nil, errors.New("block data is illegal")
-	}
-
-	if header.Height != compareHeader.Height {
 		return nil, nil, errors.New("block header height should be same")
 	}
 
@@ -1572,6 +1574,10 @@ func validateProposalEvidence(evidence *payload.ProposalEvidence) error {
 		return errors.New("proposal hash and block should match")
 	}
 
+	if err := ProposalCheck(&evidence.Proposal); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -1580,28 +1586,13 @@ func validateVoteEvidence(evidence *payload.VoteEvidence) error {
 		return err
 	}
 
-	if evidence.Proposal.Hash().IsEqual(evidence.Vote.ProposalHash) {
+	if !evidence.Proposal.Hash().IsEqual(evidence.Vote.ProposalHash) {
 		return errors.New("vote and proposal should match")
 	}
 
-	return nil
-}
-
-func checkSignersInOrder(signers [][]byte) error {
-	var signersStr []string
-	for _, signer := range signers {
-		signersStr = append(signersStr, common.BytesToHexString(signer))
+	if err := VoteCheck(&evidence.Vote); err != nil {
+		return err
 	}
 
-	var signersCompare []string
-	signersCompare = append(signersCompare, signersStr...)
-
-	sort.Strings(signersStr)
-
-	for i := 0; i < len(signersStr); i++ {
-		if signersStr[i] != signersCompare[i] {
-			return errors.New("signers have not been ordered")
-		}
-	}
 	return nil
 }
