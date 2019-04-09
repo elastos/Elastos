@@ -904,7 +904,7 @@ namespace Elastos {
 			int willSave = 0, willReconnect = 0, txError = 0;
 			TransactionPeerList *peerList;
 			std::vector<PublishedTransaction> pubTx;
-			int reconnectSeconds = 60;
+			int reconnectSeconds = 30;
 
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
