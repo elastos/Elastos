@@ -1,6 +1,10 @@
 package mempool
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/elastos/Elastos.ELA/p2p/msg"
+)
 
 var ErrBreak = fmt.Errorf("break out from here")
 
@@ -72,4 +76,68 @@ func (e RuleError) Error() string {
 // ruleError creates an RuleError given a set of arguments.
 func ruleError(c ErrorCode, desc string) RuleError {
 	return RuleError{ErrorCode: c, Description: desc}
+}
+
+// extractRejectCode attempts to return a relevant reject code for a given error
+// by examining the error for known types.  It will return true if a code
+// was successfully extracted.
+func extractRejectCode(err error) (msg.RejectCode, bool) {
+	// Pull the underlying error out of a RuleError.
+	ruleErr, ok := err.(RuleError)
+	if !ok {
+		return msg.RejectInvalid, false
+	}
+
+	var code = msg.RejectInvalid
+	switch ruleErr.ErrorCode {
+	case ErrUTXOLocked:
+	case ErrInvalidInput:
+	case ErrInvalidOutput:
+	case ErrAssetPrecision:
+	case ErrTransactionBalance:
+		code = msg.RejectInsufficientFee
+
+	case ErrAttributeProgram:
+	case ErrTransactionSignature:
+	case ErrTransactionPayload:
+	case ErrDoubleSpend:
+	case ErrTxHashDuplicate:
+		fallthrough
+	case ErrMainchainTxDuplicate:
+		code = msg.RejectDuplicate
+
+	case ErrUnknownReferedTx:
+	case ErrInvalidReferedTx:
+	case ErrIneffectiveCoinbase:
+	case ErrRechargeToSideChain:
+	case ErrCrossChain:
+	case ErrTransactionSize:
+	}
+
+	return code, false
+}
+
+// ErrToRejectErr examines the underlying type of the error and returns a reject
+// code and string appropriate to be sent in a wire.MsgReject message.
+func ErrToRejectErr(err error) (msg.RejectCode, string) {
+	// Return the reject code along with the error text if it can be
+	// extracted from the error.
+	rejectCode, found := extractRejectCode(err)
+	if found {
+		return rejectCode, err.Error()
+	}
+
+	// Return a generic rejected string if there is no error.  This really
+	// should not happen unless the code elsewhere is not setting an error
+	// as it should be, but it's best to be safe and simply return a generic
+	// string rather than allowing the following code that dereferences the
+	// err to panic.
+	if err == nil {
+		return msg.RejectInvalid, "rejected"
+	}
+
+	// When the underlying error is not one of the above cases, just return
+	// wire.RejectInvalid with a generic rejected string plus the error
+	// text.
+	return msg.RejectInvalid, "rejected: " + err.Error()
 }
