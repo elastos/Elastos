@@ -234,6 +234,30 @@ func (s *State) GetProducers() []*Producer {
 	return producers
 }
 
+// GetAllProducers returns all producers including pending, active, canceled, illegal and inactive producers.
+func (s *State) GetAllProducers() []*Producer {
+	s.mtx.RLock()
+	producers := make([]*Producer, 0, len(s.pendingProducers)+
+		len(s.activityProducers))
+	for _, producer := range s.pendingProducers {
+		producers = append(producers, producer)
+	}
+	for _, producer := range s.activityProducers {
+		producers = append(producers, producer)
+	}
+	for _, producer := range s.inactiveProducers {
+		producers = append(producers, producer)
+	}
+	for _, producer := range s.canceledProducers {
+		producers = append(producers, producer)
+	}
+	for _, producer := range s.illegalProducers {
+		producers = append(producers, producer)
+	}
+	s.mtx.RUnlock()
+	return producers
+}
+
 func (s *State) getProducers() []*Producer {
 	producers := make([]*Producer, 0, len(s.activityProducers))
 	for _, producer := range s.activityProducers {
@@ -854,7 +878,7 @@ func (s *State) countArbitratorsInactivity(height uint32,
 	// so they will not be inactive
 	for k, v := range changingArbiters {
 		key := k // avoiding pass iterator to closure
-		producer, ok := s.activityProducers[ key ]
+		producer, ok := s.activityProducers[key]
 		if !ok {
 			continue
 		}
