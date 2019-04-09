@@ -19,7 +19,6 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -899,6 +898,33 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutputs() {
 	s.Error(checkVoteProducerOutputs(outputs, references, producers))
 }
 
+func (s *txValidatorTestSuite) TestCheckOutputProgramHash() {
+	programHash := common.Uint168{}
+
+	// empty program hash should pass
+	s.NoError(checkOutputProgramHash(88813, programHash))
+
+	// prefix standard program hash should pass
+	programHash[0] = uint8(contract.PrefixStandard)
+	s.NoError(checkOutputProgramHash(88813, programHash))
+
+	// prefix multisig program hash should pass
+	programHash[0] = uint8(contract.PrefixMultiSig)
+	s.NoError(checkOutputProgramHash(88813, programHash))
+
+	// prefix crosschain program hash should pass
+	programHash[0] = uint8(contract.PrefixCrossChain)
+	s.NoError(checkOutputProgramHash(88813, programHash))
+
+	// other prefix program hash should not pass
+	programHash[0] = 0x34
+	s.Error(checkOutputProgramHash(88813, programHash))
+
+	// other prefix program hash should pass in old version
+	programHash[0] = 0x34
+	s.NoError(checkOutputProgramHash(88811, programHash))
+}
+
 func TestTxValidatorSuite(t *testing.T) {
 	suite.Run(t, new(txValidatorTestSuite))
 }
@@ -923,31 +949,4 @@ func newCoinBaseTransaction(coinBasePayload *payload.CoinBase,
 		LockTime:   currentHeight,
 		Programs:   []*program.Program{},
 	}
-}
-
-func TestCheckOutputProgramHash(t *testing.T) {
-	programHash := common.Uint168{}
-
-	// empty program hash should pass
-	assert.NoError(t, checkOutputProgramHash(88813, programHash))
-
-	// prefix standard program hash should pass
-	programHash[0] = uint8(contract.PrefixStandard)
-	assert.NoError(t, checkOutputProgramHash(88813, programHash))
-
-	// prefix multisig program hash should pass
-	programHash[0] = uint8(contract.PrefixMultiSig)
-	assert.NoError(t, checkOutputProgramHash(88813, programHash))
-
-	// prefix crosschain program hash should pass
-	programHash[0] = uint8(contract.PrefixCrossChain)
-	assert.NoError(t, checkOutputProgramHash(88813, programHash))
-
-	// other prefix program hash should not pass
-	programHash[0] = 0x34
-	assert.Error(t, checkOutputProgramHash(88813, programHash))
-
-	// other prefix program hash should pass in old version
-	programHash[0] = 0x34
-	assert.NoError(t, checkOutputProgramHash(88811, programHash))
 }

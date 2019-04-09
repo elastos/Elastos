@@ -19,8 +19,13 @@ func ConfirmSanityCheck(confirm *payload.Confirm) error {
 
 	proposalHash := confirm.Proposal.Hash()
 	for _, vote := range confirm.Votes {
+		if !vote.Accept {
+			return errors.New("[ConfirmSanityCheck] confirm contains " +
+				"reject vote")
+		}
+
 		if !proposalHash.IsEqual(vote.ProposalHash) {
-			return errors.New("[ConfirmSanityCheck] confirm contain " +
+			return errors.New("[ConfirmSanityCheck] confirm contains " +
 				"invalid vote")
 		}
 
@@ -91,18 +96,16 @@ func checkBlockWithConfirmation(block *Block, confirm *payload.Confirm) error {
 	return nil
 }
 
-func IsProposalValid(proposal *payload.DPOSProposal) bool {
+func ProposalCheck(proposal *payload.DPOSProposal) error {
 	if err := ProposalSanityCheck(proposal); err != nil {
-		log.Warn("[ProposalSanityCheck] error: ", err.Error())
-		return false
+		return err
 	}
 
 	if err := ProposalContextCheck(proposal); err != nil {
-		log.Warn("[ProposalContextCheck] error: ", err.Error())
-		return false
+		return err
 	}
 
-	return true
+	return nil
 }
 
 func ProposalSanityCheck(proposal *payload.DPOSProposal) error {
@@ -133,18 +136,17 @@ func ProposalContextCheck(proposal *payload.DPOSProposal) error {
 	return nil
 }
 
-func IsVoteValid(vote *payload.DPOSProposalVote) bool {
+func VoteCheck(vote *payload.DPOSProposalVote) error {
 	if err := VoteSanityCheck(vote); err != nil {
-		log.Warn("[VoteSanityCheck] error: ", err.Error())
-		return false
+		return err
 	}
 
 	if err := VoteContextCheck(vote); err != nil {
 		log.Warn("[VoteContextCheck] error: ", err.Error())
-		return false
+		return err
 	}
 
-	return true
+	return nil
 }
 
 func VoteSanityCheck(vote *payload.DPOSProposalVote) error {
