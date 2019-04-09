@@ -146,13 +146,38 @@ These are located in the `wallets` folder:
     The service for mainchain is running on port 8093 and for DID sidechain is running on port 8094
     
     ```
-    curl http://localhost:8093/api/1/ping
+    curl http://localhost:8093/api/1/history/EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY 
     ```
     
     Should return
     
     ```
-    {"result":"pong 1.0.1","status":200}
+    {
+      "result": {
+        "History": [
+          {
+            "Address": "EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY",
+            "Txid": "aed4761bbb2f43a08c4e5db99f667d3768066a12a7b72e57ad8f157369d9e620",
+            "Type": "income",
+            "Value": 5000000000000,
+            "CreateTime": 1554311860,
+            "Height": 273,
+            "Fee": 0,
+            "Inputs": [
+              "EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr"
+            ],
+            "Outputs": [
+              "EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY",
+              "EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr"
+            ],
+            "TxType": "TransferAsset",
+            "Memo": ""
+          }
+        ],
+        "TotalNum": 1
+      },
+      "status": 200
+    }
     ```
 
     ```
