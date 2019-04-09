@@ -1,6 +1,8 @@
 package state
 
 import (
+	"bytes"
+
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -11,6 +13,7 @@ func NewArbitratorsMock(arbitersByte [][]byte, changeCount, majorityCount int) *
 	return &ArbitratorsMock{
 		CurrentArbitrators:          arbitersByte,
 		CurrentCandidates:           make([][]byte, 0),
+		CRCArbitrators:              make([][]byte, 0),
 		NextArbitrators:             make([][]byte, 0),
 		NextCandidates:              make([][]byte, 0),
 		CurrentOwnerProgramHashes:   make([]*common.Uint168, 0),
@@ -27,6 +30,7 @@ func NewArbitratorsMock(arbitersByte [][]byte, changeCount, majorityCount int) *
 //mock object of arbitrators
 type ArbitratorsMock struct {
 	CurrentArbitrators          [][]byte
+	CRCArbitrators              [][]byte
 	CurrentCandidates           [][]byte
 	NextArbitrators             [][]byte
 	NextCandidates              [][]byte
@@ -81,11 +85,21 @@ func (a *ArbitratorsMock) GetNeedConnectArbiters() []peer.PID {
 }
 
 func (a *ArbitratorsMock) IsArbitrator(pk []byte) bool {
-	panic("implement me")
+	for _, v := range a.CurrentArbitrators {
+		if bytes.Equal(v, pk) {
+			return true
+		}
+	}
+	return false
 }
 
 func (a *ArbitratorsMock) IsCRCArbitrator(pk []byte) bool {
-	panic("implement me")
+	for _, v := range a.CRCArbitrators {
+		if bytes.Equal(v, pk) {
+			return true
+		}
+	}
+	return false
 }
 
 func (a *ArbitratorsMock) GetLastConfirmedBlockTimeStamp() uint32 {

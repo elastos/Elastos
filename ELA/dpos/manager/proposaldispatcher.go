@@ -69,8 +69,8 @@ func (p *ProposalDispatcher) ProcessVote(v *payload.DPOSProposalVote,
 	log.Info("[ProcessVote] start")
 	defer log.Info("[ProcessVote] end")
 
-	if !blockchain.IsVoteValid(v) {
-		log.Info("Invalid vote")
+	if err := blockchain.VoteCheck(v); err != nil {
+		log.Warn("Invalid vote: ", err.Error())
 		return false, false
 	}
 
@@ -205,8 +205,8 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 	log.Info("[ProcessProposal] start")
 	defer log.Info("[ProcessProposal] end")
 
-	if ok := blockchain.IsProposalValid(d); !ok {
-		log.Warn("invalid proposal.")
+	if err := blockchain.ProposalCheck(d); err != nil {
+		log.Warn("invalid proposal: ", err.Error())
 		return false, true
 	}
 
