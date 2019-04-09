@@ -29,5 +29,4 @@ USER elauser
 
 EXPOSE 8093
 
-# These scripts also initialize the DB
 CMD sh -c "sh ./deploy.sh && /bin/sh"

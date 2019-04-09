@@ -24,7 +24,7 @@ These are located in the `wallets` folder:
 - Elastos.ELA.SideChain.Token: tag v0.1.0 eddb117e7a0dadea59f14f5f7969d4c7bc521fd6
 - Elastos.ORG.Wallet.Service: master 18b4ba061f5054019704ff78934bec529cabed75
 - Elastos.ORG.DID.Service: master 8784b182debc4cbd22b607850b261aef7557b8ac
-- Elastos.ORG.API.Misc: master 4818a285e313641aae7c9d06ebba471304a8d404
+- Elastos.ORG.API.Misc: master 4b10e0e26414fc176fb254676123ae8705ddb89c
 
 ## Containers that are run
 
@@ -136,11 +136,11 @@ These are located in the `wallets` folder:
     curl http://localhost:10604/api/v1/asset/balances/EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3
     ```
 
-    You should now see 10006 ELA in the DID Sidechain wallet:
+    You should now see 10005 ELA in the DID Sidechain wallet:
     ```
-    {"result":"10006","status":200}
+    {"result":"10005","status":200}
     ```
-    
+
 7. Verify that the API Misc works [Elastos.ORG.Misc.API](https://github.com/elastos/Elastos.ORG.API.Misc)
 
     The service for mainchain is running on port 8093 and for DID sidechain is running on port 8094
@@ -251,9 +251,7 @@ Don't be alarmed. Just wait a couple of minutes and try again.
 
 ### Retrieving the DID info must be on the Misc.API DID Sidechain - port 8094
 
-NOTE: This is currently NOT functional. Please wait patiently until this is fixed in the near future
-
-This is currently undocumented in the DID service docs because it's broken, so you need to use Misc.API for DID sidechain which should be running on port `8094`.
+Even if you use DID.Service to store DID property, you need to use Misc.API for DID sidechain to retrieve the DID property which should be running on port `8094`.
 
 The API call should be `http://localhost:8094/api/1/did/{did}/{key}`
 

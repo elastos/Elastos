@@ -37,6 +37,7 @@ mysql -h ela-mysql -P 3306 -u elastos --password="12345678" -D chain_did < ./sql
 mysql -h ela-mysql -P 3306 -u elastos --password="12345678" -D chain_did < ./sql-init/chain_chain_did_property.sql
 mysql -h ela-mysql -P 3306 -u elastos --password="12345678" -D chain_did < ./sql-init/chain_chain_cmc_price.sql
 mysql -h ela-mysql -P 3306 -u elastos --password="12345678" -D chain_did < ./sql-init/chain_chain_vote_info.sql
+mysql -h ela-mysql -P 3306 -u elastos --password="12345678" -D chain_did < ./sql-init/chain_chain_producer_info.sql
 
 print_progress "\nELA API Misc TEST"
 
