@@ -370,5 +370,5 @@ func newTransaction() util.Transaction {
 // GenesisHeader creates a specific genesis header by the given
 // foundation address.
 func GenesisHeader() util.BlockHeader {
-	return sutil.NewHeader(&types.DPOSHeader{Header: cfg.genesisBlock.Header})
+	return sutil.NewHeader(&cfg.genesisBlock.Header)
 }

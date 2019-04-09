@@ -194,7 +194,7 @@ func (s *spvservice) GetFilter() *msg.TxFilterLoad {
 	for _, address := range addrs {
 		f.Add(address.Bytes())
 	}
-	return f.ToTxFilterMsg(filter.FTDPOS)
+	return f.ToTxFilterMsg(filter.FTBloom)
 }
 
 func (s *spvservice) putTx(batch store.DataBatch, utx util.Transaction,

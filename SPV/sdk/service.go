@@ -24,6 +24,12 @@ const (
 	TxRebroadcastDuration = time.Minute * 15
 )
 
+// newPeerMsg represents a new peer connected.
+type newPeerMsg *peer.Peer
+
+// donePeerMsg represents a peer disconnected.
+type donePeerMsg *peer.Peer
+
 type sendTxMsg struct {
 	tx     util.Transaction
 	expire time.Time
@@ -47,8 +53,7 @@ type service struct {
 	cfg         Config
 	syncManager *sync.SyncManager
 
-	newPeers  chan *peer.Peer
-	donePeers chan *peer.Peer
+	peerQueue chan interface{}
 	txQueue   chan interface{}
 	quit      chan struct{}
 	// The following chans are used to sync blockmanager and server.
@@ -67,8 +72,7 @@ func newService(cfg *Config) (*service, error) {
 	// Create SPV service instance
 	service := &service{
 		cfg:            *cfg,
-		newPeers:       make(chan *peer.Peer, cfg.MaxPeers),
-		donePeers:      make(chan *peer.Peer, cfg.MaxPeers),
+		peerQueue:      make(chan interface{}, cfg.MaxPeers),
 		txQueue:        make(chan interface{}, 3),
 		quit:           make(chan struct{}),
 		txProcessed:    make(chan struct{}, 1),
@@ -162,13 +166,11 @@ func (s *service) makeEmptyMessage(cmd string) (p2p.Message, error) {
 }
 
 func (s *service) newPeer(peer server.IPeer) {
-	log.Debugf("server new peer %v", peer)
-	s.newPeers <- peer.ToPeer()
+	s.peerQueue <- newPeerMsg(peer.ToPeer())
 }
 
 func (s *service) donePeer(peer server.IPeer) {
-	log.Debugf("server done peer %v", peer)
-	s.donePeers <- peer.ToPeer()
+	s.peerQueue <- donePeerMsg(peer.ToPeer())
 }
 
 // peerHandler handles new peers and done peers from P2P server.
@@ -179,28 +181,9 @@ func (s *service) peerHandler() {
 out:
 	for {
 		select {
-		case p := <-s.newPeers:
-			// Create spv peer warpper for the new peer.
-			sp := speer.NewPeer(p,
-				&speer.Config{
-					OnInv:      s.onInv,
-					OnTx:       s.onTx,
-					OnBlock:    s.onBlock,
-					OnNotFound: s.onNotFound,
-					OnReject:   s.onReject,
-				})
-
-			peers[p] = sp
-			s.syncManager.NewPeer(sp)
-
-		case p := <-s.donePeers:
-			sp, ok := peers[p]
-			if !ok {
-				log.Errorf("unknown done peer %v", p)
-				continue
-			}
-
-			s.syncManager.DonePeer(sp)
+		// Deal with peer messages.
+		case p := <-s.peerQueue:
+			s.handlePeerMsg(peers, p)
 
 		case <-s.quit:
 			break out
@@ -212,11 +195,39 @@ out:
 cleanup:
 	for {
 		select {
-		case <-s.newPeers:
-		case <-s.donePeers:
+		case <-s.peerQueue:
 		default:
 			break cleanup
 		}
+	}
+}
+
+// handlePeerMsg deals with adding and removing peer message.
+func (s *service) handlePeerMsg(peers map[*peer.Peer]*speer.Peer, p interface{}) {
+	switch p := p.(type) {
+	case newPeerMsg:
+		// Create spv peer warpper for the new peer.
+		sp := speer.NewPeer(p,
+			&speer.Config{
+				OnInv:      s.onInv,
+				OnTx:       s.onTx,
+				OnBlock:    s.onBlock,
+				OnNotFound: s.onNotFound,
+				OnReject:   s.onReject,
+			})
+		sp.Start()
+
+		peers[p] = sp
+		s.syncManager.NewPeer(sp)
+
+	case donePeerMsg:
+		sp, ok := peers[p]
+		if !ok {
+			log.Errorf("unknown done peer %v", p)
+			return
+		}
+
+		s.syncManager.DonePeer(sp)
 	}
 }
 
