@@ -1,10 +1,8 @@
 package sdk
 
 import (
-	"bytes"
-	"errors"
-
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
@@ -25,12 +23,12 @@ type Account struct {
 
 // Create an account instance with private key and public key
 func NewAccount(privateKey []byte, publicKey *crypto.PublicKey) (*Account, error) {
-	redeemScript, err := createCheckSigRedeemScript(publicKey)
+	contract, err := contract.CreateStandardContract(publicKey)
 	if err != nil {
 		return nil, err
 	}
 
-	programHash := common.ToProgramHash(common.PrefixStandard, redeemScript)
+	programHash := contract.ToProgramHash()
 
 	address, err := programHash.ToAddress()
 	if err != nil {
@@ -40,7 +38,7 @@ func NewAccount(privateKey []byte, publicKey *crypto.PublicKey) (*Account, error
 	return &Account{
 		privateKey:   privateKey,
 		publicKey:    publicKey,
-		redeemScript: redeemScript,
+		redeemScript: contract.Code,
 		programHash:  programHash,
 		address:      address,
 	}, nil
@@ -78,17 +76,4 @@ func (a *Account) Sign(data []byte) ([]byte, error) {
 		return nil, err
 	}
 	return signature, nil
-}
-
-func createCheckSigRedeemScript(publicKey *crypto.PublicKey) ([]byte, error) {
-	content, err := publicKey.EncodePoint(true)
-	if err != nil {
-		return nil, errors.New("create standard redeem script, encode public key failed")
-	}
-	buf := new(bytes.Buffer)
-	buf.WriteByte(byte(len(content)))
-	buf.Write(content)
-	buf.WriteByte(byte(common.STANDARD))
-
-	return buf.Bytes(), nil
 }

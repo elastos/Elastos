@@ -31,5 +31,5 @@ func (h *Header) PowHash() common.Uint256 {
 }
 
 func NewHeader(orgHeader *types.Header) util.BlockHeader {
-	return &Header{Header: orgHeader}
+	return &Header{orgHeader}
 }

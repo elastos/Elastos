@@ -1,7 +1,7 @@
 package peer
 
 import (
-	"github.com/elastos/Elastos.ELA.Utility/elalog"
+	"github.com/elastos/Elastos.ELA/utils/elalog"
 	"github.com/elastos/Elastos.ELA/p2p/peer"
 )
 

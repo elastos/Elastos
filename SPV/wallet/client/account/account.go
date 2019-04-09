@@ -58,16 +58,16 @@ func addMultiSignAccount(context *cli.Context, wallet *client.Wallet, content st
 		return errors.New(fmt.Sprint("multi sign account require at lest ", MinMultiSignKeys, " public keys"))
 	}
 
-	// Get M value
-	M := context.Int("m")
-	if M == 0 { // Use default M greater than half
-		M = len(publicKeys)/2 + 1
+	// Get m value
+	m := context.Int("m")
+	if m == 0 { // Use default m greater than half
+		m = len(publicKeys)/2 + 1
 	}
-	if M < len(publicKeys)/2+1 || M > len(publicKeys) {
+	if m < len(publicKeys)/2+1 || m > len(publicKeys) {
 		return errors.New("M must be greater than half number of public keys, less than number of public keys")
 	}
 
-	programHash, err := wallet.AddMultiSignAccount(uint(M), publicKeys...)
+	programHash, err := wallet.AddMultiSignAccount(m, publicKeys...)
 	if err != nil {
 		return err
 	}

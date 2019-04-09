@@ -1,9 +1,9 @@
 package sdk
 
 import (
-	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	"github.com/elastos/Elastos.ELA.SPV/database"
 	"github.com/elastos/Elastos.ELA.SPV/util"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
 /*
@@ -70,6 +70,9 @@ type Config struct {
 	// The max peer connections.
 	MaxPeers int
 
+	// CandidateFlags defines flags needed for a sync candidate.
+	CandidateFlags []uint64
+
 	// GenesisHeader is the
 	GenesisHeader util.BlockHeader
 
@@ -82,8 +85,8 @@ type Config struct {
 	// NewBlockHeader create a new block header instance.
 	NewBlockHeader func() util.BlockHeader
 
-	// GetFilter() returns a transaction filter like a bloom filter or others.
-	GetFilter func() *bloom.Filter
+	// GetTxFilter() returns a transaction filter like a bloom filter or others.
+	GetTxFilter func() *msg.TxFilterLoad
 
 	// StateNotifier is an optional config, if you don't want to receive state changes of transactions
 	// or blocks, just keep it blank.

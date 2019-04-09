@@ -2,8 +2,8 @@ package sync
 
 import (
 	"github.com/elastos/Elastos.ELA.SPV/blockchain"
-	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	"github.com/elastos/Elastos.ELA.SPV/util"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
 const (
@@ -12,19 +12,20 @@ const (
 
 // Config is a configuration struct used to initialize a new SyncManager.
 type Config struct {
-	Chain *blockchain.BlockChain
+	Chain          *blockchain.BlockChain
+	MaxPeers       int
+	CandidateFlags []uint64
 
-	MaxPeers int
-
-	UpdateFilter        func() *bloom.Filter
+	GetTxFilter         func() *msg.TxFilterLoad
 	TransactionAnnounce func(tx util.Transaction)
 }
 
-func NewDefaultConfig(chain *blockchain.BlockChain,
-	updateFilter func() *bloom.Filter) *Config {
+func NewDefaultConfig(chain *blockchain.BlockChain, candidateFlags []uint64,
+	getTxFilter func() *msg.TxFilterLoad) *Config {
 	return &Config{
-		Chain:        chain,
-		MaxPeers:     defaultMaxPeers,
-		UpdateFilter: updateFilter,
+		Chain:          chain,
+		CandidateFlags: candidateFlags,
+		MaxPeers:       defaultMaxPeers,
+		GetTxFilter:    getTxFilter,
 	}
 }
