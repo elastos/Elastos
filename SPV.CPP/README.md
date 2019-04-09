@@ -410,6 +410,14 @@ $ git submodule update --force --recursive
 ```
 
 ### Build on Ubuntu/MacOS
+For MacOS, you need to run command below to use toolchain of xcode
+```shell
+$ sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+$ xcrun -find clang
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
+```
+
+And then, build
 ```shell
 $ cd /home/xxx/dev/Elastos.ELA.SPV.Cpp
 $ mkdir cmake-build
@@ -437,7 +445,7 @@ $ make -j 8
    $ cd /Users/xxx/dev/Elastos.ELA.SPV.Cpp
    $ mkdir cmake-build-simulator
    $ cd cmake-build-simulator
-   $ cmake -DSPV_PLATFORM=IOS -DIOS_PLATFORM=SIMULATOR -DCMAKE_INSTALL_PREFIX=$SOMEWHERE/spvsdk/ios/simulator ..
+   $ cmake -DSPV_PLATFORM=IOS -DIOS_PLATFORM=SIMULATOR ..
    $ make -j 8 && make install
    ```
    x86_64
@@ -445,7 +453,7 @@ $ make -j 8
    $ cd /Users/xxx/dev/Elastos.ELA.SPV.Cpp
    $ mkdir cmake-build-simulator64
    $ cd cmake-build-simulator64
-   $ cmake -DSPV_PLATFORM=IOS -DIOS_PLATFORM=SIMULATOR64 -DCMAKE_INSTALL_PREFIX=$SOMEWHERE/spvsdk/ios/simulator64 ..
+   $ cmake -DSPV_PLATFORM=IOS -DIOS_PLATFORM=SIMULATOR64 ..
    $ make -j 8 && make install
    ```
 
@@ -467,7 +475,7 @@ Set **CMAKE_ANDROID_ARCH_ABI** properly to fit your need
 $ cd /Users/xxx/dev/Elastos.ELA.SPV.Cpp
 $ mkdir cmake-build-ndk
 $ cd cmake-build-ndk
-$ cmake -DSPV_PLATFORM=Android -DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a -DCMAKE_INSTALL_PREFIX=$SOMEWHERE/spvsdk/android/armeabi-v7a ..
+$ cmake -DSPV_PLATFORM=Android -DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a ..
 $ make -j 8 && make install
 ```
 
