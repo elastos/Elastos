@@ -18,13 +18,13 @@ These are located in the `wallets` folder:
 
 ## Repos used to build 
 
-- Elastos.ELA: tag v0.3.0 c4325c50db67b79e65398ac7515b4f1dc4aa6d73
-- Elastos.ELA.Arbiter: tag v.0.1.0 69f003f3f2a95aadba41918ca0be6e57265ec2ef
-- Elastos.ELA.SideChain.ID: tag v0.1.0 d8a60dafa7b64b9595b5ad0fcd498370773d7f73
-- Elastos.ELA.SideChain.Token: tag v0.1.0 eddb117e7a0dadea59f14f5f7969d4c7bc521fd6
-- Elastos.ORG.Wallet.Service: master 18b4ba061f5054019704ff78934bec529cabed75
-- Elastos.ORG.DID.Service: master 8784b182debc4cbd22b607850b261aef7557b8ac
-- Elastos.ORG.API.Misc: master 4b10e0e26414fc176fb254676123ae8705ddb89c
+- [Elastos.ELA](https://github.com/elastos/Elastos.ELA): Mar 28, 2019: tag v0.3.0 c4325c50db67b79e65398ac7515b4f1dc4aa6d73
+- [Elastos.ELA.Arbiter](https://github.com/elastos/Elastos.ELA.Arbiter): Mar 29, 2019: tag v.0.1.0 69f003f3f2a95aadba41918ca0be6e57265ec2ef
+- [Elastos.ELA.SideChain.ID](https://github.com/elastos/Elastos.ELA.Sidechain.ID): Mar 27, 2019: tag v0.1.0 d8a60dafa7b64b9595b5ad0fcd498370773d7f73
+- [Elastos.ELA.SideChain.Token](https://github.com/elastos/Elastos.ELA.SideChain.Token): Mar 28, 2019: tag v0.1.0 eddb117e7a0dadea59f14f5f7969d4c7bc521fd6
+- [Elastos.ORG.Wallet.Service](https://github.com/elastos/Elastos.ORG.Wallet.Service): Apr 9, 2019: master 78768f4b368379cca75ea9f410865fccc5f92227
+- [Elastos.ORG.DID.Service](https://github.com/elastos/Elastos.ORG.DID.Service): Feb 21, 2019: master 8784b182debc4cbd22b607850b261aef7557b8ac
+- [Elastos.ORG.API.Misc](https://github.com/elastos/Elastos.ORG.API.Misc): Apr 8, 2019: master 4b10e0e26414fc176fb254676123ae8705ddb89c
 
 ## Containers that are run
 
