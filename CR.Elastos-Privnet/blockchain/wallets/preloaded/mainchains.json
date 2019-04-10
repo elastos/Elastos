@@ -9,7 +9,7 @@
     },
     "mainchain_2": {
         "name": "Main chain Wallet 2",
-        "description": "Pre-loaded transferred ELA: 50,000 ELA",
+        "description": "Pre-loaded transferred ELA: 40,000 ELA",
         "privateKey": "ff6dc625cf986eae4365f69c30035608fa47518e5ada4ad99b7cbc5df7683c30",
         "publicKey": "03521eb1f20fcb7a792aeed2f747f278ae7d7b38474ee571375ebe1abb3fa2cbbb",
         "address": "EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY",
