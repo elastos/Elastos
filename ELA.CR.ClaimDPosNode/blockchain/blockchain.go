@@ -733,11 +733,14 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 
 		// roll back state about the last block before disconnect
 		if block.Height-1 >= b.chainParams.VoteStartHeight {
-			err = b.state.RollbackTo(block.Height - 1)
+			err = DefaultLedger.Arbitrators.RollbackTo(block.Height - 1)
 			if err != nil {
 				return err
 			}
 		}
+
+		log.Info("disconnect block:", block.Height)
+		DefaultLedger.Arbitrators.DumpInfo()
 
 		err = b.disconnectBlock(n, block, confirm)
 		if err != nil {
@@ -751,6 +754,8 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 		block := b.blockCache[*n.Hash]
 		confirm := b.confirmCache[*n.Hash]
 
+
+		log.Info("connect block:", block.Height)
 		err := b.connectBlock(n, block, confirm)
 		if err != nil {
 			return err
