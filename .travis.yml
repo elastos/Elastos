@@ -116,14 +116,12 @@ script:
   - cd $TRAVIS_BUILD_DIR/build && mkdir ${BUILD_ENV}_$BUILD_TYPE && cd ${BUILD_ENV}_$BUILD_TYPE
   - if [[ "$ANDROID_ABI" == "" ]]; then
       if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-        export OUTPUT_TYPE=so;
         if [[ "$RASPBERRRIPI" == "" ]]; then
           cmake -DCMAKE_INSTALL_PREFIX=dist -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_DOCS=$ENABLE_DOCS ../.. ;
         else
           cmake -DCMAKE_INSTALL_PREFIX=dist -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=../../cmake/RPiToolchain.cmake ../.. ;
         fi
       else
-        export OUTPUT_TYPE=dylib;
         if [[ "$PLATFORM" == "" ]]; then
           cmake -DCMAKE_INSTALL_PREFIX=dist -DCMAKE_BUILD_TYPE=BUILD_VER ../.. ;
         else
@@ -144,7 +142,7 @@ script:
 after_success:
   - if [[ "$TRAVIS_TAG" != "" ]]; then
       cd $TRAVIS_BUILD_DIR/build/${BUILD_ENV}_$BUILD_TYPE/dist;
-      tar -czf $TRAVIS_TAG-$BUILD_ENV-$(date +'%Y%m%d').tar.gz include lib/*.$OUTPUT_TYPE;
+      tar -czf $TRAVIS_TAG-$BUILD_ENV-$(date +'%Y%m%d').tar.gz include lib;
       if [[ "$ENABLE_DOCS" != "" ]]; then
         tar -czf $TRAVIS_TAG-$BUILD_ENV-docs-$(date +'%Y%m%d').tar.gz  -C share/elastos/carrier html;
       fi;
