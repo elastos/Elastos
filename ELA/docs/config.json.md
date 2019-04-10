@@ -27,7 +27,6 @@
       "127.0.0.1:40338"
     ],
     "HttpInfoPort": 10333,  //Local web portal port number. User can go to http://127.0.0.1:10333/info to access the web UI
-    "HttpInfoStart": true,  //true to start the webUI, false to disable
     "HttpRestPort": 10334,  //Restful port number
     "HttpWsPort": 10335,    //Websocket port number
     "WsHeartbeatInterval": 60,

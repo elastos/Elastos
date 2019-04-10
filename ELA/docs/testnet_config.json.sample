@@ -2,7 +2,6 @@
   "Configuration": {
     "ActiveNet": "testnet",
     "HttpInfoPort": 21333,
-    "HttpInfoStart": true,
     "HttpRestPort": 21334,
     "HttpWsPort": 21335,
     "HttpJsonPort": 21336,
