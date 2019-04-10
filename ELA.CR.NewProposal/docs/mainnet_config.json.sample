@@ -2,7 +2,6 @@
   "Configuration": {
     "ActiveNet": "mainnet",
     "HttpInfoPort": 20333,
-    "HttpInfoStart": true,
     "HttpRestPort": 20334,
     "HttpWsPort": 20335,
     "HttpJsonPort": 20336,
