@@ -289,9 +289,9 @@ func geth(ctx *cli.Context) error {
 	return nil
 }
 
-// calculate the ELA mainchain address from the sidechain (ie. this chain) 
+// calculate the ELA mainchain address from the sidechain (ie. this chain)
 // genesis block hash for corresponding crosschain transactions
-// refer to https://github.com/elastos/Elastos.ELA.Client/blob/dev/cli/wallet/wallet.go 
+// refer to https://github.com/elastos/Elastos.ELA.Client/blob/dev/cli/wallet/wallet.go
 // for the original ELA-CLI implementation
 func calculateGenesisAddress(genesisBlockHash string) (string, error) {
 	// unlike Ethereum, the ELA hash values do not contain 0x prefix
@@ -352,9 +352,9 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 	}
 
 	// prepare to start the SPV module
-	// if --spvmoniaddr commandline parameter is present, use the parameter value 
+	// if --spvmoniaddr commandline parameter is present, use the parameter value
 	// as the ELA mainchain address for the SPV module to monitor on
-	// if no --spvmoniaddr commandline parameter is provided, use the sidechain genesis block hash 
+	// if no --spvmoniaddr commandline parameter is provided, use the sidechain genesis block hash
 	// to generate the corresponding ELA mainchain address for the SPV module to monitor on
 	if ctx.GlobalString(utils.SpvMonitoringAddrFlag.Name) != "" {
 		// --spvmoniaddr parameter is provided, set the SPV monitor address accordingly
@@ -504,45 +504,6 @@ func setDefaultSettings(args []string) []string {
 		if !isContainsCmd(args, "--datadir") {
 			args = append(args, "--datadir")
 			args = append(args, "./data")
-		}
-
-		if !isContainsCmd(args, "--bootnodes") {
-			args = append(args, "--bootnodes")
-			args = append(args, "enode://61e87a7cb756b8b05763a1ec208437a06e18f9fabc10e8b2a9dcf97d891a324fad39de8d2595f2dfcccd772fc0c4f2193a828d610795588d4767e27c6cc5e9e1@52.81.82.85:30301")
-		}
-
-		if !isContainsCmd(args, "--port") {
-			args = append(args, "--port")
-			args = append(args, "6066")
-		}
-
-		if !isContainsCmd(args, "--rpc") {
-			args = append(args, "--rpc")
-		}
-
-		if !isContainsCmd(args, "--rpccorsdomain") {
-			args = append(args, "--rpccorsdomain")
-			args = append(args, "*")
-		}
-
-		if !isContainsCmd(args, "--rpcaddr") {
-			args = append(args, "--rpcaddr")
-			args = append(args, "0.0.0.0")
-		}
-
-		if !isContainsCmd(args, "--rpcport") {
-			args = append(args, "--rpcport")
-			args = append(args, "6666")
-		}
-
-		if !isContainsCmd(args, "--rpcapi") {
-			args = append(args, "--rpcapi")
-			args = append(args, "personal,db,eth,net,web3,txpool,miner")
-		}
-
-		if !isContainsCmd(args, "--networkid") {
-			args = append(args, "--networkid")
-			args = append(args, "6666")
 		}
 	}
 	return args
