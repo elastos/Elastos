@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"math"
+	mrand "math/rand"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -193,7 +194,31 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
 	s.EqualError(err, "asset ID in output is invalid")
 
+	// should only have one special output
+	tx.Version = types.TxVersion09
+	tx.Outputs = []*types.Output{}
+	address := common.Uint168{}
+	address[0] = byte(contract.PrefixStandard)
+	appendSpecial := func() []*types.Output {
+		return append(tx.Outputs, &types.Output{
+			Type:        types.OTVote,
+			AssetID:     config.ELAAssetID,
+			ProgramHash: address,
+			Value:       common.Fixed64(mrand.Int63()),
+			OutputLock:  mrand.Uint32(),
+			Payload: &outputpayload.VoteOutput{
+				Contents: []outputpayload.VoteContent{},
+			},
+		})
+	}
+	tx.Outputs = appendSpecial()
+	s.NoError(s.Chain.checkTransactionOutput(s.HeightVersion1, tx))
+	tx.Outputs = appendSpecial() // add another special output here
+	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
+	s.EqualError(err, "special output count should less equal than 1")
+
 	// invalid program hash
+	tx.Version = types.TxVersionDefault
 	tx.Outputs = randomOutputs()
 	for _, output := range tx.Outputs {
 		output.AssetID = config.ELAAssetID
@@ -201,6 +226,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 		address[0] = 0x23
 		output.ProgramHash = address
 	}
+	s.NoError(s.Chain.checkTransactionOutput(s.HeightVersion1, tx))
 }
 
 func (s *txValidatorTestSuite) TestCheckAmountPrecision() {
