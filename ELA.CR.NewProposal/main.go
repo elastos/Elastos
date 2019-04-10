@@ -97,10 +97,11 @@ func main() {
 	blockMemPool.Chain = chain
 
 	server, err := elanet.NewServer(dataDir, &elanet.Config{
-		Chain:        chain,
-		ChainParams:  activeNetParams,
-		TxMemPool:    txMemPool,
-		BlockMemPool: blockMemPool,
+		Chain:          chain,
+		ChainParams:    activeNetParams,
+		PermanentPeers: cfg.PermanentPeers,
+		TxMemPool:      txMemPool,
+		BlockMemPool:   blockMemPool,
 	})
 	if err != nil {
 		printErrorAndExit(err)
