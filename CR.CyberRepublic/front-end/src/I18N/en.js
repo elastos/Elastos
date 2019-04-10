@@ -775,8 +775,8 @@ const en = {
   'council.voting.modal.complete': 'Are you sure to complete this proposal?',
   'council.voting.modal.updateNotes': 'Notes from Secretary',
   'council.voting.modal.voteYes': 'Are you sure to Vote Yes?',
-  'council.voting.modal.voteAbstention': 'Are you sure to Abstain?',
-  'council.voting.modal.voteNo': 'Reason for Opposing',
+  'council.voting.modal.voteAbstain': 'Are you sure to Abstain?',
+  'council.voting.modal.voteReason': 'Reason',
   'council.voting.modal.confirm': 'Submit',
   'council.voting.modal.cancel': 'Cancel',
 

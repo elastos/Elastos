@@ -40,7 +40,9 @@ class C extends StandardPage {
       language: LANGUAGES.english, // language for this specifc form only
       data: undefined,
       reason: '',
-      visible: false,
+      visibleYes: false,
+      visibleOppose: false,
+      visibleAbstain: false,
       editing: false,
     }
 
@@ -209,8 +211,17 @@ class C extends StandardPage {
     const canVote = isCouncil && status === CVOTE_STATUS.PROPOSED
 
     if (!canVote) return null
-    const { visible } = this.state
-    const opposeBtn = (
+    const { visibleYes, visibleOppose, visibleAbstain } = this.state
+    const btnYes = (
+      <Button
+        type="primary"
+        icon="check-circle"
+        onClick={this.showVoteYesModal}
+      >
+        {I18N.get('council.voting.btnText.yes')}
+      </Button>
+    )
+    const btnOppose = (
       <Button
         type="danger"
         icon="close-circle"
@@ -219,31 +230,45 @@ class C extends StandardPage {
         {I18N.get('council.voting.btnText.no')}
       </Button>
     )
+    const btnAbstain = (
+      <Button
+        icon="stop"
+        onClick={this.showVoteAbstainModal}
+      >
+        {I18N.get('council.voting.btnText.abstention')}
+      </Button>
+    )
 
-    const opposePopOver = (
+    const popOverYes = (
       <CRPopover
-        triggeredBy={opposeBtn}
-        visible={visible}
+        triggeredBy={btnYes}
+        visible={visibleYes}
+        onToggle={this.showVoteYesModal}
+        onSubmit={this.voteYes}
+      />
+    )
+    const popOverOppose = (
+      <CRPopover
+        triggeredBy={btnOppose}
+        visible={visibleOppose}
         onToggle={this.showVoteOpposeModal}
         onSubmit={this.voteOppose}
       />
     )
+    const popOverAbstain = (
+      <CRPopover
+        triggeredBy={btnAbstain}
+        visible={visibleAbstain}
+        onToggle={this.showVoteAbstainModal}
+        onSubmit={this.voteAbstain}
+      />
+    )
+
     return (
       <div className="vote-btn-group">
-        <Button
-          type="primary"
-          icon="check-circle"
-          onClick={this.showVoteYesModal}
-        >
-          {I18N.get('council.voting.btnText.yes')}
-        </Button>
-        {opposePopOver}
-        <Button
-          icon="stop"
-          onClick={this.showVoteAbstentionModal}
-        >
-          {I18N.get('council.voting.btnText.abstention')}
-        </Button>
+        {popOverYes}
+        {popOverOppose}
+        {popOverAbstain}
       </div>
     )
   }
@@ -398,12 +423,14 @@ class C extends StandardPage {
     }
   }
 
-  voteYes = () => {
-    this.vote({ value: CVOTE_RESULT.SUPPORT })
+  voteYes = ({ reason }) => {
+    this.vote({ value: CVOTE_RESULT.SUPPORT, reason })
+    this.setState({ reason: '' })
   }
 
-  voteAbstention = () => {
-    this.vote({ value: CVOTE_RESULT.ABSTENTION })
+  voteAbstain = ({ reason }) => {
+    this.vote({ value: CVOTE_RESULT.ABSTENTION, reason })
+    this.setState({ reason: '' })
   }
 
   voteOppose = ({ reason }) => {
@@ -412,26 +439,18 @@ class C extends StandardPage {
   }
 
   showVoteYesModal = () => {
-    Modal.confirm({
-      title: I18N.get('council.voting.modal.voteYes'),
-      okText: I18N.get('council.voting.modal.confirm'),
-      cancelText: I18N.get('council.voting.modal.cancel'),
-      onOk: () => this.voteYes(),
-    })
+    const { visibleYes } = this.state
+    this.setState({ visibleYes: !visibleYes })
   }
 
-  showVoteAbstentionModal = () => {
-    Modal.confirm({
-      title: I18N.get('council.voting.modal.voteAbstention'),
-      okText: I18N.get('council.voting.modal.confirm'),
-      cancelText: I18N.get('council.voting.modal.cancel'),
-      onOk: () => this.voteAbstention(),
-    })
+  showVoteAbstainModal = () => {
+    const { visibleAbstain } = this.state
+    this.setState({ visibleAbstain: !visibleAbstain })
   }
 
   showVoteOpposeModal = () => {
-    const { visible } = this.state
-    this.setState({ visible: !visible })
+    const { visibleOppose } = this.state
+    this.setState({ visibleOppose: !visibleOppose })
   }
 
   completeProposal = () => {
