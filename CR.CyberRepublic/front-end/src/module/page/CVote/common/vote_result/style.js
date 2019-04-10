@@ -20,7 +20,8 @@ export const Label = styled.div`
 export const List = styled.div`
   position: relative;
   padding: 40px;
-  display: ${props => (props.type === CVOTE_RESULT.REJECT ? 'block' : 'flex')};
+  /* display: ${props => (props.type === CVOTE_RESULT.REJECT ? 'block' : 'flex')}; */
+  display: block;
   align-items: center;
   box-sizing: border-box;
   height: 100%;
@@ -50,7 +51,7 @@ export const Avatar = styled.img`
   margin-bottom: 15px;
 `
 
-export const RejectRow = styled.div`
+export const ResultRow = styled.div`
   display: flex;
   margin-bottom: 30px;
 `
