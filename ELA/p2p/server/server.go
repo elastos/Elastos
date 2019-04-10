@@ -814,7 +814,7 @@ func (s *server) peerHandler() {
 		outboundGroups:  make(map[string]int),
 	}
 
-	// Startup persistent peers.
+	// Connect seed peers first.
 	for _, addr := range s.cfg.SeedPeers {
 		netAddr, err := addrStringToNetAddr(addr)
 		if err != nil {
@@ -827,10 +827,19 @@ func (s *server) peerHandler() {
 			continue
 		}
 
-		go s.connManager.Connect(&connmgr.ConnReq{
-			Addr:      netAddr,
-			Permanent: true,
-		})
+		go s.connManager.Connect(&connmgr.ConnReq{Addr: netAddr})
+	}
+
+	// Connect permanent peers if there are.  Permanent peers will not added to
+	// AddrManager so they won't be relayed.
+	for _, addr := range s.cfg.PermanentPeers {
+		netAddr, err := addrStringToNetAddr(addr)
+		if err != nil {
+			continue
+		}
+
+		go s.connManager.Connect(&connmgr.ConnReq{Addr: netAddr,
+			Permanent: true})
 	}
 
 	go s.connManager.Start()
