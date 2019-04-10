@@ -139,7 +139,7 @@ type State struct {
 	illegalProducers  map[string]*Producer
 	votes             map[string]*types.Output
 	nicknames         map[string]struct{}
-	specialTxHashes   map[string]struct{}
+	specialTxHashes   map[common.Uint256]struct{}
 	preBlockArbiters  map[string]struct{}
 	history           *history
 
@@ -389,9 +389,16 @@ func (s *State) ProducerExists(publicKey []byte) bool {
 
 // SpecialTxExists returns if a special tx (typically means illegal and
 // inactive tx) is exists by it's hash
-func (s *State) SpecialTxExists(hash *common.Uint256) bool {
+func (s *State) SpecialTxExists(tx *types.Transaction) bool {
+	illegalData, ok := tx.Payload.(payload.DPOSIllegalData)
+	if !ok {
+		log.Error("special tx payload cast failed, tx:", tx.Hash())
+		return false
+	}
+
+	hash := illegalData.Hash()
 	s.mtx.RLock()
-	_, ok := s.specialTxHashes[hash.String()]
+	_, ok = s.specialTxHashes[hash]
 	s.mtx.RUnlock()
 	return ok
 }
@@ -725,10 +732,17 @@ func (s *State) processEmergencyInactiveArbitrators(
 
 // recordSpecialTx record hash of a special tx
 func (s *State) recordSpecialTx(tx *types.Transaction, height uint32) {
+	illegalData, ok := tx.Payload.(payload.DPOSIllegalData)
+	if !ok {
+		log.Error("special tx payload cast failed, tx:", tx.Hash())
+		return
+	}
+
+	hash := illegalData.Hash()
 	s.history.append(height, func() {
-		s.specialTxHashes[tx.Hash().String()] = struct{}{}
+		s.specialTxHashes[hash] = struct{}{}
 	}, func() {
-		delete(s.specialTxHashes, tx.Hash().String())
+		delete(s.specialTxHashes, hash)
 	})
 }
 
@@ -997,7 +1011,7 @@ func NewState(chainParams *config.Params, getArbiters func() [][]byte) *State {
 		illegalProducers:  make(map[string]*Producer),
 		votes:             make(map[string]*types.Output),
 		nicknames:         make(map[string]struct{}),
-		specialTxHashes:   make(map[string]struct{}),
+		specialTxHashes:   make(map[common.Uint256]struct{}),
 		preBlockArbiters:  make(map[string]struct{}),
 		history:           newHistory(maxHistoryCapacity),
 	}
