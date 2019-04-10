@@ -1040,9 +1040,6 @@ static void ela_destroy(void *argv)
     if (w->friend_events)
         deref(w->friend_events);
 
-    if (w->dstorectx)
-        dstore_wrapper_destroy(w->dstorectx);
-
     pthread_mutex_destroy(&w->ext_mutex);
 
     dht_kill(&w->dht);
@@ -1394,10 +1391,9 @@ static void notify_connection_cb(bool connected, void *context)
         w->is_ready = true;
         if (w->callbacks.ready)
             w->callbacks.ready(w, w->context);
-    }
-
-    if (w->dstorectx && connected)
+    } else if (connected && w->dstorectx) {
         notify_crawl_offline_msg(w->dstorectx);
+    }
 
     w->connection_status = (connected ? ElaConnectionStatus_Connected :
                                         ElaConnectionStatus_Disconnected);

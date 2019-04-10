@@ -195,6 +195,7 @@ crawl:
     while (ctx->state == DSTORE_STATE_IDLE)
         pthread_cond_wait(&ctx->cond, &ctx->lock);
     if (ctx->state == DSTORE_STATE_STOP) {
+        pthread_mutex_unlock(&ctx->lock);
         deref(ctx);
         return NULL;
     }
