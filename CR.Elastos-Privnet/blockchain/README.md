@@ -390,171 +390,171 @@ The Elastos.ORG.Wallet.Service currently only supports main chain and DID sidech
 
 1. Download and Clone the repository at: https://github.com/elastos/Elastos.ELA.Client onto your $GOPATH/src/github.com/elastos directory
 
-  ```
-  $ echo $GOPATH
-  ```
+    ```
+    $ echo $GOPATH
+    ```
 
-  Should return your $GOPATH dir
-  
-  ```
-  /home/kpachhai/dev
-  ```
+    Should return your $GOPATH dir
+    
+    ```
+    /home/kpachhai/dev
+    ```
 
-  Then, clone the repository
+    Then, clone the repository
 
-  ```
-  $ git clone https://github.com/elastos/Elastos.ELA.Client
-  ```
+    ```
+    $ git clone https://github.com/elastos/Elastos.ELA.Client
+    ```
 
-  Should return
+    Should return
 
-  ```
-  Cloning into 'Elastos.ELA.Client'...
-  remote: Enumerating objects: 31, done.
-  remote: Counting objects: 100% (31/31), done.
-  remote: Compressing objects: 100% (22/22), done.
-  remote: Total 1258 (delta 11), reused 12 (delta 9), pack-reused 1227
-  Receiving objects: 100% (1258/1258), 227.58 KiB | 3.08 MiB/s, done.
-  Resolving deltas: 100% (757/757), done.
-  ```
+    ```
+    Cloning into 'Elastos.ELA.Client'...
+    remote: Enumerating objects: 31, done.
+    remote: Counting objects: 100% (31/31), done.
+    remote: Compressing objects: 100% (22/22), done.
+    remote: Total 1258 (delta 11), reused 12 (delta 9), pack-reused 1227
+    Receiving objects: 100% (1258/1258), 227.58 KiB | 3.08 MiB/s, done.
+    Resolving deltas: 100% (757/757), done.
+    ```
 
 2. Build the ela-cli client
 
-  ```
-  $ cd Elastos.ELA.Client/
-  $ git checkout dev
-  $ rm -rf vendor glide.lock
-  $ glide cc && glide update && glide install
-  $ make
-  ```
+    ```
+    $ cd Elastos.ELA.Client/
+    $ git checkout dev
+    $ rm -rf vendor glide.lock
+    $ glide cc && glide update && glide install
+    $ make
+    ```
 
 3. Configure ela-cli config file
 
-  Create a file called "cli-config.json" and put the following content in that file:
+    Create a file called "cli-config.json" and put the following content in that file:
 
-  ```
-  {
-    "Host": "127.0.0.1:10336",
-    "DepositAddress":"XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4"
-  }
-  ```
+    ```
+    {
+      "Host": "127.0.0.1:10336",
+      "DepositAddress":"XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4"
+    }
+    ```
 
-  This just means that we're connecting to one of our main chain nodes that's running locally at 127.0.0.1:10336(this is our ela-mainchain-normal-1 docker container that's running our main chain node and port 10336 is HttpJsonPort). The DepositAddress parameter is the deposit address of the sidechain genesis block.
+    This just means that we're connecting to one of our main chain nodes that's running locally at 127.0.0.1:10336(this is our ela-mainchain-normal-1 docker container that's running our main chain node and port 10336 is HttpJsonPort). The DepositAddress parameter is the deposit address of the sidechain genesis block.
 
-  You can get genesis block hash for token sidechain doing the following:
+    You can get genesis block hash for token sidechain doing the following:
 
-  ```
-  $ curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getblockhash","params":{"height":1}}' http://localhost:10616
-  ``
+    ```
+    $ curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getblockhash","params":{"height":1}}' http://localhost:10616
+    ```
 
-  Should return
+    Should return
 
-  ```
-  {
-  "id": null,
-  "jsonrpc": "2.0",
-  "result": "b569111dfb5e12d40be5cf09e42f7301128e9ac7ab3c6a26f24e77872b9a730e",
-  "error": null
-  }
-  ```
+    ```
+    {
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": "b569111dfb5e12d40be5cf09e42f7301128e9ac7ab3c6a26f24e77872b9a730e",
+    "error": null
+    }
+    ```
 
-  Or, you can also check out one of the arbitrators config.json file to see what the genesis block hash is for any of the sidechains at ela-arbitrator/node_crc/arbitrator-crc-1/config.json
+    Or, you can also check out one of the arbitrators config.json file to see what the genesis block hash is for any of the sidechains at ela-arbitrator/node_crc/arbitrator-crc-1/config.json
 
-  And then, plug in the genesis block hash into ela-cli command
+    And then, plug in the genesis block hash into ela-cli command
 
-  ```
-  $ ./ela-cli wallet -g b569111dfb5e12d40be5cf09e42f7301128e9ac7ab3c6a26f24e77872b9a730e
-  ```
+    ```
+    $ ./ela-cli wallet -g b569111dfb5e12d40be5cf09e42f7301128e9ac7ab3c6a26f24e77872b9a730e
+    ```
 
-  Should return
+    Should return
 
-  ```
-  genesis program hash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5
-  genesis address:  XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4
-  ```
+    ```
+    genesis program hash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5
+    genesis address:  XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4
+    ```
 
-  So, you plug in the genesis address "XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4" onto the cli-config.json file for "DepositAddress" parameter. This is what allows us to transfer assets from main chain to any of the sidechains. If you want to transfer to DID sidechain, you just plug in the deposit address for the DID sidechain instead.
+    So, you plug in the genesis address "XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4" onto the cli-config.json file for "DepositAddress" parameter. This is what allows us to transfer assets from main chain to any of the sidechains. If you want to transfer to DID sidechain, you just plug in the deposit address for the DID sidechain instead.
 
 4. Create a new wallet using ela-cli client for testing purposes
 
-  Note that the ela-cli built using elastos/Elastos.ELA.Client and elastos/Elastos.ELA are not compatible at this point so we'll need to create a new wallet and transfer some ELA to this address and then we can use that new wallet to transfer ELA to our token sidechain address
+    Note that the ela-cli built using elastos/Elastos.ELA.Client and elastos/Elastos.ELA are not compatible at this point so we'll need to create a new wallet and transfer some ELA to this address and then we can use that new wallet to transfer ELA to our token sidechain address
 
-  ```
-  $ ./ela-cli wallet --create
-  ```
+    ```
+    $ ./ela-cli wallet --create
+    ```
 
-  Enter your desired password. I put "elastos" as my password
-  
-  Should return something like
+    Enter your desired password. I put "elastos" as my password
+    
+    Should return something like
 
-  ```
-  ADDRESS                            PUBLIC KEY                      ------------------------------------------------------------------
-  ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC 028656f59c88f18bf38f8b3cd85d725fc0ffcf7cd38a5b18e3d2dc623041d2998e
-  ------------------------------------------------------------------
-  ```
+    ```
+    ADDRESS                            PUBLIC KEY                      ------------------------------------------------------------------
+    ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC 028656f59c88f18bf38f8b3cd85d725fc0ffcf7cd38a5b18e3d2dc623041d2998e
+    ------------------------------------------------------------------
+    ```
 
 5. Transfer ELA from one of your pre-loaded mainchain wallet to this newly created wallet
 
-  ```
-  $ curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr","privateKey": "a24ee48f308189d46a5f050f326e76779b6508d8c8aaf51a7152b903b9f42f80"}],"receiver": [{"address": "ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC","amount": "10100"}]}' localhost:8091/api/1/transfer
-  ```
+    ```
+    $ curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr","privateKey": "a24ee48f308189d46a5f050f326e76779b6508d8c8aaf51a7152b903b9f42f80"}],"receiver": [{"address": "ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC","amount": "10100"}]}' localhost:8091/api/1/transfer
+    ```
 
-  Should return something like
+    Should return something like
 
-  ```{"result":"dc6089a4bea1e0797e9039bfcb31d41311956c1b0cdd780bbc1764c04558aba6","status":200}
-  ```
+    ```{"result":"dc6089a4bea1e0797e9039bfcb31d41311956c1b0cdd780bbc1764c04558aba6","status":200}
+    ```
 
-  Check whether the ELA got transferred successfully
+    Check whether the ELA got transferred successfully
 
-  ```
-  $ ./ela-cli wallet -l
-  ```
+    ```
+    $ ./ela-cli wallet -l
+    ```
 
-  Should return
+    Should return
 
-  ```
-  354 / 354 [============================================] 100.00% 8s
-  2 / 2 [================================================] 100.00% 0s
-  INDEX|ADDRESS|BALANCE|(LOCKED)|TYPE
-  ------------------------------------------ 
-  1|ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC|10100|(0)|MASTER
-  ------------------------------------------
-  ```
+    ```
+    354 / 354 [============================================] 100.00% 8s
+    2 / 2 [================================================] 100.00% 0s
+    INDEX|ADDRESS|BALANCE|(LOCKED)|TYPE
+    ------------------------------------------ 
+    1|ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC|10100|(0)|MASTER
+    ------------------------------------------
+    ```
 
 6. Transfer ELA from main chain to token sidechain
 
-  ```
-  $ ./ela-cli wallet -t create --from ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC --deposit ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC --amount 50 --fee 0.0001
-  $ ./ela-cli wallet -t sign -p elastos --file to_be_signed.txn
-  $ ./ela-cli wallet -t send --file ready_to_send.txn
-  ```
+    ```
+    $ ./ela-cli wallet -t create --from ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC --deposit ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC --amount 50 --fee 0.0001
+    $ ./ela-cli wallet -t sign -p elastos --file to_be_signed.txn
+    $ ./ela-cli wallet -t send --file ready_to_send.txn
+    ```
 
-  Should return the transaction hash if successfull
+    Should return the transaction hash if successfull
 
-  ```
-  d56c5df3c05af4c583a84d6bf10de3bd6403d456545d4bd462b45b1c74611c3b
-  ```
+    ```
+    d56c5df3c05af4c583a84d6bf10de3bd6403d456545d4bd462b45b1c74611c3b
+    ```
 
-  Wait around 12 blocks so this transaction is confirmed and added to the blockchain. And then check whether the ELA was transferred successfully
+    Wait around 12 blocks so this transaction is confirmed and added to the blockchain. And then check whether the ELA was transferred successfully
 
-  ```
-  $ curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC"}}' http://localhost:10616 
-  ```
+    ```
+    $ curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC"}}' http://localhost:10616 
+    ```
 
-  Should return
+    Should return
 
-  ```
-  {
-  "id": null,
-  "jsonrpc": "2.0",
-  "result": {
-    "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0": "49.99990000"
-  },
-  "error": null
-  }
-  ```
+    ```
+    {
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+      "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0": "49.99990000"
+    },
+    "error": null
+    }
+    ```
 
-  As you can see, we now have around 50 ELA that was transferred to our token sidechain address
+    As you can see, we now have around 50 ELA that was transferred to our token sidechain address
 
 ### Create a fungible token 
 
