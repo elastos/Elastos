@@ -888,6 +888,7 @@ func NewServer(dataDir string, cfg *Config) (*server, error) {
 	)
 	svrCfg.DataDir = dataDir
 	svrCfg.NAFilter = &naFilter{}
+	svrCfg.PermanentPeers = cfg.PermanentPeers
 
 	s := server{
 		chain:        cfg.Chain,
