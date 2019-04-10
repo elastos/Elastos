@@ -438,6 +438,7 @@ func (b *BlockChain) checkTransactionOutput(blockHeight uint32,
 		return errors.New("transaction has no outputs")
 	}
 	// check if output address is valid
+	specialOutputCount := 0
 	for _, output := range txn.Outputs {
 		if output.AssetID != config.ELAAssetID {
 			return errors.New("asset ID in output is invalid")
@@ -453,10 +454,16 @@ func (b *BlockChain) checkTransactionOutput(blockHeight uint32,
 		}
 
 		if txn.Version >= TxVersion09 {
+			if output.Type != OTNone {
+				specialOutputCount++
+			}
 			if err := checkOutputPayload(txn.TxType, output); err != nil {
 				return err
 			}
 		}
+	}
+	if specialOutputCount > 1 {
+		return errors.New("special output count should less equal than 1")
 	}
 
 	return nil
