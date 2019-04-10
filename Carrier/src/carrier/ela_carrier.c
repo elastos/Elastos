@@ -1040,6 +1040,9 @@ static void ela_destroy(void *argv)
     if (w->friend_events)
         deref(w->friend_events);
 
+    if (w->dstorectx)
+        dstore_wrapper_destroy(w->dstorectx);
+
     pthread_mutex_destroy(&w->ext_mutex);
 
     dht_kill(&w->dht);
@@ -1322,7 +1325,8 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
         w->context = context;
     }
 
-    w->dstorectx = dstore_wrapper_create(w, &notify_offline_msg);
+    if (w->pref.hive_bootstraps_size)
+        w->dstorectx = dstore_wrapper_create(w, &notify_offline_msg);
 
     vlogI("Carrier: Carrier node created.");
 
@@ -1392,7 +1396,7 @@ static void notify_connection_cb(bool connected, void *context)
             w->callbacks.ready(w, w->context);
     }
 
-    if (connected)
+    if (w->dstorectx && connected)
         notify_crawl_offline_msg(w->dstorectx);
 
     w->connection_status = (connected ? ElaConnectionStatus_Connected :
