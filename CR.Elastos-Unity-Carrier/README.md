@@ -35,7 +35,7 @@ For plugin JS side, integrate with Jest to mock and test.
 ```
 npm test
 ```
-!('./doc/jest.png')
+![](./doc/jest.png)
 
 
 ## Usage
