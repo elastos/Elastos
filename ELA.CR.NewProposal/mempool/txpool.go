@@ -24,6 +24,7 @@ type TxPool struct {
 	sidechainTxList map[Uint256]*Transaction // sidechain tx pool
 	ownerPublicKeys map[string]struct{}
 	nodePublicKeys  map[string]struct{}
+	specialTxList   map[Uint256]struct{} 	// specialTxList holds the payload hashes of all illegal transactions and inactive arbitrators transactions
 }
 
 //append transaction to txnpool when check ok.
@@ -193,6 +194,14 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 					}
 					mp.delOwnerPublicKey(BytesToHexString(cpPayload.OwnerPublicKey))
 				}
+				if tx.IsIllegalTypeTx() || tx.IsInactiveArbitrators() {
+					illegalData, ok := tx.Payload.(payload.DPOSIllegalData)
+					if !ok {
+						log.Error("cancel producer payload cast failed, tx:", tx.Hash())
+					}
+					hash := illegalData.Hash()
+					mp.delSpecialTx(&hash)
+				}
 
 				deleteCount++
 			}
@@ -308,6 +317,16 @@ func (mp *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 			log.Warn(err)
 			return ErrProducerProcessing
 		}
+	} else if txn.IsIllegalTypeTx() || txn.IsInactiveArbitrators() {
+		illegalData, ok := txn.Payload.(payload.DPOSIllegalData)
+		if !ok {
+			log.Error("special tx payload cast failed, tx:", txn.Hash())
+		}
+		hash := illegalData.Hash()
+		if err := mp.verifyDuplicateSpecialTx(&hash); err != nil {
+			log.Warn(err)
+			return ErrProducerProcessing
+		}
 	}
 
 	// check if the transaction includes double spent UTXO inputs
@@ -416,6 +435,23 @@ func (mp *TxPool) addNodePublicKey(nodePublicKey string) {
 
 func (mp *TxPool) delNodePublicKey(nodePublicKey string) {
 	delete(mp.nodePublicKeys, nodePublicKey)
+}
+
+func (mp *TxPool) addSpecialTx(hash *Uint256) {
+	mp.specialTxList[*hash] = struct{}{}
+}
+
+func (mp *TxPool) delSpecialTx(hash *Uint256) {
+	delete(mp.specialTxList, *hash)
+}
+
+func (mp *TxPool) verifyDuplicateSpecialTx(hash *Uint256) error {
+	if _, ok := mp.specialTxList[*hash]; ok {
+		return errors.New("this special tx has being processed")
+	}
+	mp.addSpecialTx(hash)
+
+	return nil
 }
 
 // check and replace the duplicate sidechainpow tx
@@ -565,5 +601,6 @@ func NewTxPool() *TxPool {
 		sidechainTxList: make(map[Uint256]*Transaction),
 		ownerPublicKeys: make(map[string]struct{}),
 		nodePublicKeys:  make(map[string]struct{}),
+		specialTxList:   make(map[Uint256]struct{}),
 	}
 }
