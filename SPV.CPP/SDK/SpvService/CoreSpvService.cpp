@@ -32,8 +32,10 @@ namespace Elastos {
 			_earliestPeerTime = earliestPeerTime;
 			_reconnectSeconds = reconnectSeconds;
 
+			std::vector<TransactionPtr>  txs = loadTransactions();
+
 			if (_wallet == nullptr) {
-				_wallet = WalletPtr(new TransactionHub(loadAssets(), loadTransactions(), _subAccount, createWalletListener()));
+				_wallet = WalletPtr(new TransactionHub(loadAssets(), txs, _subAccount, createWalletListener()));
 			}
 
 			if (_peerManager == nullptr) {
@@ -46,6 +48,12 @@ namespace Elastos {
 						loadPeers(),
 						createPeerManagerListener(),
 						_pluginTypes));
+			}
+
+			for (size_t i = 0; i < txs.size(); ++i) {
+				if (txs[i]->GetBlockHeight() == TX_UNCONFIRMED) {
+					_peerManager->PublishTransaction(txs[i]);
+				}
 			}
 		}
 

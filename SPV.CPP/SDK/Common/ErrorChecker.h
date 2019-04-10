@@ -65,8 +65,9 @@ namespace Elastos {
 				AlreadySigned = 20046,
 				EncryptError = 20047,
 				VerifyError = 20048,
-				InvalidLocalStore = 20049,
-				MasterWalletNotExist = 20050,
+				TxPending = 20049,
+				InvalidLocalStore = 20050,
+				MasterWalletNotExist = 20051,
 				Other = 29999,
 			} Code;
 		}
