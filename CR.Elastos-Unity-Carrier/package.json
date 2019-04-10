@@ -29,7 +29,9 @@
     "url": "https://github.com/cyber-republic/react-native-elastos-carrier/issues"
   },
   "homepage": "https://github.com/cyber-republic/react-native-elastos-carrier#readme",
-  "scripts": {},
+  "scripts": {
+    "test": "cd example && npm test && cd .."
+  },
   "dependencies": {
     "lodash": "^4.17.11"
   },

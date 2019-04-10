@@ -30,6 +30,14 @@ flatDir{
 ```
 under allprojects repositories block.
 
+### Unit test with Jest
+For plugin JS side, integrate with Jest to mock and test. 
+```
+npm test
+```
+!('./doc/jest.png')
+
+
 ## Usage
 ```
 const carrier = new Carrier('app_name', {
