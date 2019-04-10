@@ -35,7 +35,7 @@ For plugin JS side, integrate with Jest to mock and test.
 ```
 npm test
 ```
-<img src="./doc/jest.png" width="100" />
+<img src="./doc/jest.png" width="300" />
 
 
 ## Usage
