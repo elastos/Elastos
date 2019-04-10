@@ -2,7 +2,7 @@
 
 - Prerequisite basic knowledge of docker is expected  
 - After starting, the miners will automatically start running and about 24 containers are created
-- Pre-mined 600 ELA on Mainchain miner reward address, 40,000 ELA on one mainchain address, 50,000 ELA on another mainchain address and 10,000 ELA on DID sidechain address. For more, see [Wallets](#Wallets)
+- Pre-mined 600 ELA on Mainchain miner reward address, 40,000 ELA on one mainchain address, 40,000 ELA on another mainchain address, 10,000 ELA on DID sidechain address and 10,000 ELA on Token sidechain address. For more, see [Wallets](#Wallets)
 
 
 ## Wallets
@@ -11,8 +11,8 @@ These are located in the `wallets` folder:
 
 - `foundation.json` - This is where the genesis block's 33 million ELA is created(Note some ELA have been taken out of this account to other addresses for testing purposes)
 - `mainchain-miner-reward.json` - This is where the mining rewards from mainchain go
-- `preload/mainchains.json` - This is where the two mainchain addresses are located with 40,000 ELA and 50,000 ELA respectively
-- `preload/sidechains.json` - This is where the DID and Token sidechain addresses are located with 10,000 DID ELA and 10,000 TOKEN ELA respectively(Token sidechain address doesn't have any ELA yet)
+- `preload/mainchains.json` - This is where the two mainchain addresses are located with 40,000 ELA and 40,000 ELA respectively
+- `preload/sidechains.json` - This is where the DID and Token sidechain addresses are located with 10,000 DID ELA and 10,000 TOKEN ELA respectively
 - `mainchain_nodes/mainchains_nodes.json` - This is where all the public and private keys are located for all the mainchain nodes
 - `arbitrator_nodes/arbitrator_nodes.json` - This is where all the public and private keys are located for all the arbitrator nodes along with their corresponding sidechains' public, private keys and ELA addresses that are used for mininig purposes
 
@@ -109,7 +109,7 @@ These are located in the `wallets` folder:
     {"result":"40099.99979900","status":200}
     ```
     
-5. Verify the DID Service is running by checking the pre-loaded DID sidechain wallet:
+5. Verify the DID Service is running by checking the pre-loaded DID sidechain wallet
 
     ```
     curl http://localhost:8092/api/1/balance/EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3
@@ -119,8 +119,87 @@ These are located in the `wallets` folder:
     ```
     {"result":"10000","status":200}
     ```
-    
-6. Verify that cross-chain mainchain to sidechain transfers work
+
+6. Verify that all the appropriate addresses are pre-loaded with ELA in them
+
+    Foundation Address - Main chain:
+    ```
+    $ curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw"}}' http://localhost:10336 | jq .
+    ```
+
+    Should return
+    ```
+    {
+      "error": null,
+      "id": null,
+      "jsonrpc": "2.0",
+      "result": "32901156.96360410"
+    }
+    ```
+
+    Pre-loaded Main chain Address 1:
+    ```
+    $ curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr"}}' http://localhost:10336 
+    ```
+
+    Should return
+    ```
+    {
+      "error": null,
+      "id": null,
+      "jsonrpc": "2.0",
+      "result": "40099.99979900"
+    }
+    ```
+
+    Pre-loaded Main chain Address 2:
+    ```
+    $ curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY"}}' http://localhost:10336 
+    ```
+
+    Should return
+    ```
+    {
+      "error": null,
+      "id": null,
+      "jsonrpc": "2.0",
+      "result": "39899.99999900"
+    }
+    ```
+
+    Pre-loaded DID Sidechain Address:
+    ```
+    $ curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3"}}' http://localhost:10606 
+    ```
+
+    Should return
+    ```
+    {
+      "id": null,
+      "jsonrpc": "2.0",
+      "result": "10000",
+      "error": null
+    }  
+    ```
+
+    Pre-loaded Token Sidechain Address:
+    ```
+    $ curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"EUscMawPCr8uFxKDtVxaq93Wbjm1DdtzeW"}}' http://localhost:10616
+    ```
+
+    Should return
+    ```
+    {
+      "id": null,
+      "jsonrpc": "2.0",
+      "result": {
+        "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0": "9999.99990000"
+      },
+      "error": null
+    }
+    ```
+
+7. Verify that cross-chain mainchain to sidechain transfers work
 
     ```
     curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr","privateKey": "a24ee48f308189d46a5f050f326e76779b6508d8c8aaf51a7152b903b9f42f80"}],"receiver": [{"address": "EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3","amount": "5"}]}' localhost:8091/api/1/cross/m2d/transfer
@@ -131,7 +210,7 @@ These are located in the `wallets` folder:
     {"result":"2ac2828b55972cfa63b927f0b42af2c7460e2d618b0df326a6067cbdd2d9147f","status":200}
     ```
     
-    In a minute or two, you can also see the new ELA on your receiver address, it should be greater than the initial 10000
+    After about 12 blocks, you can also see the new ELA on your receiver address, it should be greater than the initial 10000
     ```
     curl http://localhost:10604/api/v1/asset/balances/EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3
     ```
@@ -141,7 +220,7 @@ These are located in the `wallets` folder:
     {"result":"10005","status":200}
     ```
 
-7. Verify that the API Misc works [Elastos.ORG.Misc.API](https://github.com/elastos/Elastos.ORG.API.Misc)
+8. Verify that the API Misc works [Elastos.ORG.Misc.API](https://github.com/elastos/Elastos.ORG.API.Misc)
 
     The service for mainchain is running on port 8093 and for DID sidechain is running on port 8094
     
@@ -304,6 +383,184 @@ Would return something like
 ```
 
 ## TOKEN Sidechain Testing
+
+## Transfer ELA from main chain to Token Sidechain
+
+The Elastos.ORG.Wallet.Service currently only supports main chain and DID sidechain so we cannot use it to transfer ELA from main chain to token sidechain so, we'll need to resort to using some command line tools to perform this testing.
+
+1. Download and Clone the repository at: https://github.com/elastos/Elastos.ELA.Client onto your $GOPATH/src/github.com/elastos directory
+
+  ```
+  $ echo $GOPATH
+  ```
+
+  Should return your $GOPATH dir
+  
+  ```
+  /home/kpachhai/dev
+  ```
+
+  Then, clone the repository
+
+  ```
+  $ git clone https://github.com/elastos/Elastos.ELA.Client
+  ```
+
+  Should return
+
+  ```
+  Cloning into 'Elastos.ELA.Client'...
+  remote: Enumerating objects: 31, done.
+  remote: Counting objects: 100% (31/31), done.
+  remote: Compressing objects: 100% (22/22), done.
+  remote: Total 1258 (delta 11), reused 12 (delta 9), pack-reused 1227
+  Receiving objects: 100% (1258/1258), 227.58 KiB | 3.08 MiB/s, done.
+  Resolving deltas: 100% (757/757), done.
+  ```
+
+2. Build the ela-cli client
+
+  ```
+  $ cd Elastos.ELA.Client/
+  $ git checkout dev
+  $ rm -rf vendor glide.lock
+  $ glide cc && glide update && glide install
+  $ make
+  ```
+
+3. Configure ela-cli config file
+
+  Create a file called "cli-config.json" and put the following content in that file:
+
+  ```
+  {
+    "Host": "127.0.0.1:10336",
+    "DepositAddress":"XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4"
+  }
+  ```
+
+  This just means that we're connecting to one of our main chain nodes that's running locally at 127.0.0.1:10336(this is our ela-mainchain-normal-1 docker container that's running our main chain node and port 10336 is HttpJsonPort). The DepositAddress parameter is the deposit address of the sidechain genesis block.
+
+  You can get genesis block hash for token sidechain doing the following:
+
+  ```
+  $ curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getblockhash","params":{"height":1}}' http://localhost:10616
+  ``
+
+  Should return
+
+  ```
+  {
+  "id": null,
+  "jsonrpc": "2.0",
+  "result": "b569111dfb5e12d40be5cf09e42f7301128e9ac7ab3c6a26f24e77872b9a730e",
+  "error": null
+  }
+  ```
+
+  Or, you can also check out one of the arbitrators config.json file to see what the genesis block hash is for any of the sidechains at ela-arbitrator/node_crc/arbitrator-crc-1/config.json
+
+  And then, plug in the genesis block hash into ela-cli command
+
+  ```
+  $ ./ela-cli wallet -g b569111dfb5e12d40be5cf09e42f7301128e9ac7ab3c6a26f24e77872b9a730e
+  ```
+
+  Should return
+
+  ```
+  genesis program hash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5
+  genesis address:  XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4
+  ```
+
+  So, you plug in the genesis address "XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4" onto the cli-config.json file for "DepositAddress" parameter. This is what allows us to transfer assets from main chain to any of the sidechains. If you want to transfer to DID sidechain, you just plug in the deposit address for the DID sidechain instead.
+
+4. Create a new wallet using ela-cli client for testing purposes
+
+  Note that the ela-cli built using elastos/Elastos.ELA.Client and elastos/Elastos.ELA are not compatible at this point so we'll need to create a new wallet and transfer some ELA to this address and then we can use that new wallet to transfer ELA to our token sidechain address
+
+  ```
+  $ ./ela-cli wallet --create
+  ```
+
+  Enter your desired password. I put "elastos" as my password
+  
+  Should return something like
+
+  ```
+  ADDRESS                            PUBLIC KEY                      ------------------------------------------------------------------
+  ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC 028656f59c88f18bf38f8b3cd85d725fc0ffcf7cd38a5b18e3d2dc623041d2998e
+  ------------------------------------------------------------------
+  ```
+
+5. Transfer ELA from one of your pre-loaded mainchain wallet to this newly created wallet
+
+  ```
+  $ curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr","privateKey": "a24ee48f308189d46a5f050f326e76779b6508d8c8aaf51a7152b903b9f42f80"}],"receiver": [{"address": "ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC","amount": "10100"}]}' localhost:8091/api/1/transfer
+  ```
+
+  Should return something like
+
+  ```{"result":"dc6089a4bea1e0797e9039bfcb31d41311956c1b0cdd780bbc1764c04558aba6","status":200}
+  ```
+
+  Check whether the ELA got transferred successfully
+
+  ```
+  $ ./ela-cli wallet -l
+  ```
+
+  Should return
+
+  ```
+  354 / 354 [============================================] 100.00% 8s
+  2 / 2 [================================================] 100.00% 0s
+  INDEX|ADDRESS|BALANCE|(LOCKED)|TYPE
+  ------------------------------------------ 
+  1|ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC|10100|(0)|MASTER
+  ------------------------------------------
+  ```
+
+6. Transfer ELA from main chain to token sidechain
+
+  ```
+  $ ./ela-cli wallet -t create --from ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC --deposit ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC --amount 50 --fee 0.0001
+  $ ./ela-cli wallet -t sign -p elastos --file to_be_signed.txn
+  $ ./ela-cli wallet -t send --file ready_to_send.txn
+  ```
+
+  Should return the transaction hash if successfull
+
+  ```
+  d56c5df3c05af4c583a84d6bf10de3bd6403d456545d4bd462b45b1c74611c3b
+  ```
+
+  Wait around 12 blocks so this transaction is confirmed and added to the blockchain. And then check whether the ELA was transferred successfully
+
+  ```
+  $ curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC"}}' http://localhost:10616 
+  ```
+
+  Should return
+
+  ```
+  {
+  "id": null,
+  "jsonrpc": "2.0",
+  "result": {
+    "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0": "49.99990000"
+  },
+  "error": null
+  }
+  ```
+
+  As you can see, we now have around 50 ELA that was transferred to our token sidechain address
+
+### Create a fungible token 
+
+COMING SOON
+
+### Create a non-fungible token
 
 COMING SOON
 

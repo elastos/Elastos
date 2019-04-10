@@ -8,7 +8,7 @@
     "passwordforkeystore": "elastos"
   },
   "token": {
-    "name": "Token Sidechain Pre-Loaded Wallet(NOT PRELOADED YET)",
+    "name": "Token Sidechain Pre-Loaded Wallet",
     "description": "Pre-loaded transferred ELA from the mainchain to Token sidechain wallet: 10,000 TOKEN ELA",
     "privateKey": "0ab62bd345baca1c775bc2c20924f2411f0500c219d30148816536e397106bcb",
     "publicKey": "03ffe3021db71a9a40100c37fbe0774434c74b3efc6343bc16f9afa4fc9f4fc39e",

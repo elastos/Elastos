@@ -18,3 +18,13 @@
 13:15:58.427550 db@open done T·38.048732ms
 13:21:04.666035 db@close closing
 13:21:04.666069 db@close done T·33.52µs
+=============== Apr 10, 2019 (UTC) ===============
+15:42:44.854227 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+15:42:44.930873 version@stat F·[1] S·241B[241B] Sc·[0.25]
+15:42:44.987012 db@open opening
+15:42:44.987160 journal@recovery F·1
+15:42:44.988732 journal@recovery recovering @3
+15:42:45.136770 memdb@flush created L0@5 N·10 S·632B "O\xf2J..=\x00\x00,v6":"U\x00\x00..\x85\xb2=,v8"
+15:42:45.138303 version@stat F·[2] S·873B[873B] Sc·[0.50]
+15:42:45.499733 db@janitor F·4 G·0
+15:42:45.499755 db@open done T·512.728232ms
