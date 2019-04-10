@@ -117,6 +117,7 @@ namespace Elastos {
 			_votedBalance = 0;
 			_depositBalance = 0;
 			_spentOutputs.Clear();
+			_pendingSpentOutputs.Clear();
 			_invalidTx.Clear();
 			_subAccount->ClearUsedAddresses();
 		}
@@ -141,6 +142,11 @@ namespace Elastos {
 
 					if (isInvalid) {
 						_invalidTx.Insert(tx);
+					} else {
+						// add inputs to spent output set
+						for (j = 0; j < tx->GetInputs().size(); j++) {
+							_pendingSpentOutputs.AddByTxInput(tx->GetInputs()[j], 0, 0);
+						}
 					}
 					continue;
 				}
@@ -172,6 +178,13 @@ namespace Elastos {
 							}
 						}
 					}
+				}
+			}
+
+			for (j = _pendingSpentOutputs.size(); j > 0; j--) {
+				if (!_utxos.Contains(_pendingSpentOutputs[j - 1])) {
+					// Remove pending receive utxo
+					_pendingSpentOutputs.RemoveAt(j - 1);
 				}
 			}
 
@@ -251,6 +264,11 @@ namespace Elastos {
 					if (_spentOutputs.Contains(_utxos[i]))
 						continue;
 
+					if (_pendingSpentOutputs.Contains(_utxos[i])) {
+						Log::info("utxo: '{}' n: '{}' is pending", _utxos[i].hash.GetHex(), _utxos[i].n);
+						continue;
+					}
+
 					const TransactionPtr txInput = _allTx.Get(_utxos[i].hash);
 					if (!txInput || _utxos[i].n >= txInput->GetOutputs().size())
 						continue;
@@ -275,6 +293,11 @@ namespace Elastos {
 			for (i = 0; i < _utxos.size() && totalInputAmount < totalOutputAmount + fee; ++i) {
 				if (_spentOutputs.Contains(_utxos[i]))
 					continue;
+
+				if (_pendingSpentOutputs.Contains(_utxos[i])) {
+					Log::info("utxo: '{}' n: '{}' is pending", _utxos[i].hash.GetHex(), _utxos[i].n);
+					continue;
+				}
 
 				const TransactionPtr txInput = _allTx.Get(_utxos[i].hash);
 				if (!txInput || _utxos[i].n >= txInput->GetOutputs().size())
@@ -319,8 +342,13 @@ namespace Elastos {
 
 			if (txn) {
 				ErrorChecker::CheckLogic(txn->GetOutputs().size() < 1, Error::CreateTransaction, "No output in tx");
-				ErrorChecker::CheckLogic(totalInputAmount < totalOutputAmount + fee, Error::BalanceNotEnough,
-										 "Available balance is not enough");
+				if (totalInputAmount < totalOutputAmount) {
+					if (_pendingSpentOutputs.size() > 0) {
+						ErrorChecker::ThrowLogicException(Error::TxPending, "Last transaction is pending");
+					} else {
+						ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "Available balance is not enough");
+					}
+				}
 				txn->SetFee(fee);
 				if (totalInputAmount > totalOutputAmount + fee) {
 					uint256 assetID = txn->GetOutputs()[0].GetAssetId();
@@ -371,6 +399,11 @@ namespace Elastos {
 					continue;
 				}
 
+				if (_pendingSpentOutputs.Contains(_utxos[i])) {
+					Log::info("utxo: '{}' n: '{}' is pending", _utxos[i].hash.GetHex(), _utxos[i].n);
+					continue;
+				}
+
 				const TransactionPtr txInput = _allTx.Get(_utxos[i].hash);
 				if (!txInput || _utxos[i].n >= txInput->GetOutputs().size())
 					continue;
@@ -410,8 +443,13 @@ namespace Elastos {
 			}
 			_lockable->Unlock();
 
-			ErrorChecker::CheckLogic(totalInputAmount < totalOutputAmount + fee, Error::BalanceNotEnough,
-									 "Available balance is not enough");
+			if (totalInputAmount < totalOutputAmount) {
+				if (_pendingSpentOutputs.size() > 0) {
+					ErrorChecker::ThrowLogicException(Error::TxPending, "Last transaction is pending");
+				} else {
+					ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "Available balance is not enough");
+				}
+			}
 
 			newChangeAmount = totalInputAmount - totalOutputAmount - fee;
 			if (newChangeAmount > 0) {
