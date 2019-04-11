@@ -22,7 +22,7 @@ var accountCommand = []cli.Command{
 		Category: "Account",
 		Name:     "create",
 		Aliases:  []string{"c"},
-		Usage:    "Create a account",
+		Usage:    "Create an account",
 		Flags: []cli.Flag{
 			AccountWalletFlag,
 			AccountPasswordFlag,

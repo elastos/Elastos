@@ -65,7 +65,7 @@ func NewCommand() *cli.Command {
 	return &cli.Command{
 		Name:        "mine",
 		Usage:       "Toggle cpu mining or manual mine",
-		Description: "With ela-cli mine, you can toggle cpu mining, or manual mine blocks.",
+		Description: "With ela-cli mine, you can toggle cpu mining or discrete mining.",
 		ArgsUsage:   "[args]",
 		Flags: []cli.Flag{
 			cli.StringFlag{
