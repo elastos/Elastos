@@ -12,6 +12,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/crypto"
+	"github.com/elastos/Elastos.ELA/utils"
 
 	"github.com/urfave/cli"
 )
@@ -129,7 +130,7 @@ func createAccount(c *cli.Context) error {
 	var p []byte
 	if password == "" {
 		var err error
-		p, err = cmdcom.GetConfirmedPassword()
+		p, err = utils.GetConfirmedPassword()
 		if err != nil {
 			return err
 		}
@@ -156,7 +157,7 @@ func accountInfo(c *cli.Context) error {
 	pwd := []byte(pwdHex)
 	if pwdHex == "" {
 		var err error
-		pwd, err = cmdcom.GetPassword()
+		pwd, err = utils.GetPassword()
 		if err != nil {
 			return err
 		}
@@ -193,7 +194,7 @@ func addAccount(c *cli.Context) error {
 	pwd := []byte(pwdHex)
 	if pwdHex == "" {
 		var err error
-		pwd, err = cmdcom.GetPassword()
+		pwd, err = utils.GetPassword()
 		if err != nil {
 			return err
 		}
@@ -221,7 +222,7 @@ func addMultiSigAccount(c *cli.Context) error {
 	pwd := []byte(pwdHex)
 	if pwdHex == "" {
 		var err error
-		pwd, err = cmdcom.GetPassword()
+		pwd, err = utils.GetPassword()
 		if err != nil {
 			return err
 		}
@@ -263,7 +264,7 @@ func delAccount(c *cli.Context) error {
 	pwd := []byte(pwdHex)
 	if pwdHex == "" {
 		var err error
-		pwd, err = cmdcom.GetPassword()
+		pwd, err = utils.GetPassword()
 		if err != nil {
 			return err
 		}
@@ -312,7 +313,7 @@ func importAccount(c *cli.Context) error {
 	if _, err := os.Open(walletPath); os.IsNotExist(err) {
 		// create a keystore file
 		if pwdHex == "" {
-			pwd, err = cmdcom.GetConfirmedPassword()
+			pwd, err = utils.GetConfirmedPassword()
 			if err != nil {
 				return err
 			}
@@ -324,7 +325,7 @@ func importAccount(c *cli.Context) error {
 	} else {
 		// append to keystore file
 		if pwdHex == "" {
-			pwd, err = cmdcom.GetPassword()
+			pwd, err = utils.GetPassword()
 			if err != nil {
 				return err
 			}
@@ -353,7 +354,7 @@ func exportAccount(c *cli.Context) error {
 	pwd := []byte(pwdHex)
 	if pwdHex == "" {
 		var err error
-		pwd, err = cmdcom.GetPassword()
+		pwd, err = utils.GetPassword()
 		if err != nil {
 			return err
 		}

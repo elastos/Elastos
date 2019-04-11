@@ -6,12 +6,48 @@ import (
 	"strconv"
 
 	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/utils/http"
+	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
 
 	"github.com/urfave/cli"
 )
 
-func LocalServer() string {
-	return "http://localhost" + ":" + strconv.Itoa(config.Template.HttpJsonPort)
+const (
+	DefaultConfigPath = "./config.json"
+	DefaultDataDir    = "./elastos"
+)
+
+var (
+	rpcPort     = strconv.Itoa(config.Template.HttpJsonPort)
+	rpcUser     = ""
+	rpcPassword = ""
+)
+
+func SetRpcConfig(c *cli.Context) {
+	port := c.String("rpcport")
+	if port != "" {
+		rpcPort = port
+	}
+	user := c.String("rpcuser")
+	if user != "" {
+		rpcUser = user
+	}
+	password := c.String("rpcpassword")
+	if password != "" {
+		rpcPassword = password
+	}
+}
+
+func localServer() string {
+	return "http://localhost:" + rpcPort
+}
+
+func RPCCall(method string, params http.Params) (interface{}, error) {
+	req := jsonrpc.Request{
+		Method: method,
+		Params: params,
+	}
+	return jsonrpc.Call(localServer(), req, rpcUser, rpcPassword)
 }
 
 func PrintError(c *cli.Context, err error, cmd string) {

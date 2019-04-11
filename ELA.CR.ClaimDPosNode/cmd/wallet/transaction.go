@@ -13,8 +13,8 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/crypto"
+	"github.com/elastos/Elastos.ELA/utils"
 	"github.com/elastos/Elastos.ELA/utils/http"
-	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
 
 	"github.com/urfave/cli"
 )
@@ -126,7 +126,7 @@ func signTx(c *cli.Context) error {
 	pwd := []byte(pwdHex)
 	if pwdHex == "" {
 		var err error
-		pwd, err = cmdcom.GetPassword()
+		pwd, err = utils.GetPassword()
 		if err != nil {
 			return err
 		}
@@ -186,7 +186,7 @@ func sendTx(c *cli.Context) error {
 		return err
 	}
 
-	result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "sendrawtransaction", http.Params{"data": txHex})
+	result, err := cmdcom.RPCCall("sendrawtransaction", http.Params{"data": txHex})
 	if err != nil {
 		return err
 	}

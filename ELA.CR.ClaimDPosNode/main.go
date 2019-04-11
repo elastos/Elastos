@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -29,6 +28,7 @@ import (
 	"github.com/elastos/Elastos.ELA/servers/httpnodeinfo"
 	"github.com/elastos/Elastos.ELA/servers/httprestful"
 	"github.com/elastos/Elastos.ELA/servers/httpwebsocket"
+	"github.com/elastos/Elastos.ELA/utils"
 	"github.com/elastos/Elastos.ELA/utils/elalog"
 	"github.com/elastos/Elastos.ELA/utils/signal"
 )
@@ -62,7 +62,7 @@ func main() {
 
 	var act account.Account
 	if config.Parameters.EnableArbiter {
-		password, err := cmdcom.GetFlagPassword()
+		password, err := utils.GetFlagPassword()
 		if err != nil {
 			printErrorAndExit(err)
 		}
