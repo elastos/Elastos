@@ -35,15 +35,15 @@ namespace Elastos {
 		}
 
 		void from_json(const nlohmann::json &j, CoinInfo &p) {
-			p._chainId = j["ChainID"];
-			p._earliestPeerTime = j["EarliestPeerTime"];
-			p._index = j["Index"];
-			p._walletType = (SubWalletType) j["WalletType"];
-			p._minFee = j["MinFee"];
-			p._feePerKb = j["FeePerKB"];
-			p._reconnectSeconds = j["ReconnectSeconds"];
+			p._chainId = j["ChainID"].get<std::string>();
+			p._earliestPeerTime = j["EarliestPeerTime"].get<uint32_t>();
+			p._index = j["Index"].get<uint32_t>();
+			p._walletType = (SubWalletType) j["WalletType"].get<int>();
+			p._minFee = j["MinFee"].get<uint64_t>();
+			p._feePerKb = j["FeePerKB"].get<uint64_t>();
+			p._reconnectSeconds = j["ReconnectSeconds"].get<uint32_t>();
 			if (j.find("EnableP2P") != j.end())
-				p._enableP2P = j["EnableP2P"];
+				p._enableP2P = j["EnableP2P"].get<bool>();
 			if (j.find("VisibleAssets") != j.end()) {
 				p.VisibleAssetsFromJson(j["VisibleAssets"]);
 			} else

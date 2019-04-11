@@ -24,7 +24,7 @@ namespace Elastos {
 		void from_json(const nlohmann::json &j, ElaWebWalletJson &p) {
 			from_json(j, dynamic_cast<BitcoreWalletClientJson &>(p));
 			if (j.find("mnemonic") != j.end())
-				p._mnemonic = j["mnemonic"];
+				p._mnemonic = j["mnemonic"].get<std::string>();
 		}
 	}
 }

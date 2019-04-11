@@ -17,8 +17,8 @@ namespace Elastos {
 		}
 
 		void from_json(const nlohmann::json &j, PublicKeyRing &p) {
-			p._xPubKey = j["xPubKey"];
-			p._requestPubKey = j["requestPubKey"];
+			p._xPubKey = j["xPubKey"].get<std::string>();
+			p._requestPubKey = j["requestPubKey"].get<std::string>();
 		}
 
 

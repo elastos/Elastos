@@ -289,21 +289,21 @@ namespace Elastos {
 			try {
 				if (j.find("publicKeyRing") != j.end()) {
 					// new version of localstore
-					p._xPrivKey = j["xPrivKey"];
-					p._mnemonic = j["mnemonic"];
-					p._xPubKey = j["xPubKey"];
-					p._requestPrivKey = j["requestPrivKey"];
-					p._requestPubKey = j["requestPubKey"];
+					p._xPrivKey = j["xPrivKey"].get<std::string>();
+					p._mnemonic = j["mnemonic"].get<std::string>();
+					p._xPubKey = j["xPubKey"].get<std::string>();
+					p._requestPrivKey = j["requestPrivKey"].get<std::string>();
+					p._requestPubKey = j["requestPubKey"].get<std::string>();
 					p._publicKeyRing = j["publicKeyRing"].get<std::vector<PublicKeyRing>>();
-					p._m = j["m"];
-					p._n = j["n"];
-					p._mnemonicHasPassphrase = j["mnemonicHasPassphrase"];
-					p._derivationStrategy = j["derivationStrategy"];
-					p._account = j["account"];
-					p._passphrase = j["passphrase"];
-					p._ownerPubKey = j["ownerPubKey"];
-					p._singleAddress = j["singleAddress"];
-					p._readonly = j["readonly"];
+					p._m = j["m"].get<int>();
+					p._n = j["n"].get<int>();
+					p._mnemonicHasPassphrase = j["mnemonicHasPassphrase"].get<bool>();
+					p._derivationStrategy = j["derivationStrategy"].get<std::string>();
+					p._account = j["account"].get<int>();
+					p._passphrase = j["passphrase"].get<std::string>();
+					p._ownerPubKey = j["ownerPubKey"].get<std::string>();
+					p._singleAddress = j["singleAddress"].get<bool>();
+					p._readonly = j["readonly"].get<bool>();
 					p._subWalletsInfoList = j["coinInfo"].get<std::vector<CoinInfo>>();
 				} else {
 					// old version of localstore
@@ -347,11 +347,11 @@ namespace Elastos {
 
 						if (jaccount.find("InnerAccount") != jaccount.end()) {
 							nlohmann::json innerAccount = jaccount["InnerAccount"];
-							p._requestPubKey = innerAccount["PublicKey"];
+							p._requestPubKey = innerAccount["PublicKey"].get<std::string>();
 							p._publicKeyRing.emplace_back(p._requestPubKey);
 
-							p._mnemonic = innerAccount["Mnemonic"];
-							p._passphrase = innerAccount["PhrasePassword"];
+							p._mnemonic = innerAccount["Mnemonic"].get<std::string>();
+							p._passphrase = innerAccount["PhrasePassword"].get<std::string>();
 
 							bytes_t bytes;
 							bytes.setBase64(p._passphrase);
@@ -374,8 +374,8 @@ namespace Elastos {
 					} else {
 						// 2. standard hd
 						p._readonly = false;
-						p._mnemonic = jaccount["Mnemonic"];
-						p._passphrase = jaccount["PhrasePassword"];
+						p._mnemonic = jaccount["Mnemonic"].get<std::string>();
+						p._passphrase = jaccount["PhrasePassword"].get<std::string>();
 
 						bytes.setBase64(p._passphrase);
 						if (bytes.size() <= 8) {
@@ -386,7 +386,7 @@ namespace Elastos {
 						}
 
 						p._m = p._n = 1;
-						p._requestPubKey = jaccount["PublicKey"];
+						p._requestPubKey = jaccount["PublicKey"].get<std::string>();
 						if (!p._xPubKey.empty())
 							p._publicKeyRing.emplace_back(p._requestPubKey, p._xPubKey);
 						else
@@ -394,9 +394,9 @@ namespace Elastos {
 
 						nlohmann::json votePubkey = j["VotePublicKey"];
 						if (votePubkey.is_object() && votePubkey["ELA"].get<std::string>() != "") {
-							p._ownerPubKey = votePubkey["ELA"];
+							p._ownerPubKey = votePubkey["ELA"].get<std::string>();
 						}
-						p._singleAddress = j["IsSingleAddress"];
+						p._singleAddress = j["IsSingleAddress"].get<bool>();
 					}
 				}
 			} catch (const nlohmann::detail::exception &e) {

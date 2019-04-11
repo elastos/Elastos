@@ -51,13 +51,13 @@ namespace Elastos {
 
 			if (j.find("PhrasePassword") != j.end()) {
 				p._old = true;
-				p._passphrase = j["PhrasePassword"];
+				p._passphrase = j["PhrasePassword"].get<std::string>();
 				if (!p._passphrase.empty())
 					p.SetHasPassPhrase(true);
 			}
 
 			if (j.find("SingleAddress") != j.end()) {
-				p._singleAddress = j["SingleAddress"];
+				p._singleAddress = j["SingleAddress"].get<bool>();
 			}
 		}
 
