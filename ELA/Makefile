@@ -8,6 +8,9 @@ all:
 cli:
 	$(BUILD) -o ela-cli cmd/config.go cmd/ela-cli.go
 
+dns:
+	$(BUILD) -o ela-dns elanet/dns/main/main.go
+
 format:
 	go fmt ./*
 
