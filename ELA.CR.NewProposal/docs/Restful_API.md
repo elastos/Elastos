@@ -487,14 +487,14 @@
 
     The generation of the data parameter value (the signed transaction data) in this interface can be done in two ways:
 
-    1. Use the [Elastos.ELA.Client](https://github.com/elastos/Elastos.ELA.Client) command line tool, examples are as follows
+    1. Use the [ela-cli](https://github.com/elastos/Elastos.ELA/blob/master/docs/cli_user_guide_CN.md) command line tool, examples are as follows
     ```bash
-    ./ela-cli wallet -t create --from EdAEC51BmmzJFHUdMJ6bR5fZB4oo919E8n --amount 10 --fee 0.001 --to EZmpNht7UAHtpqVBMDfPRDtQCmAY6eYjgV
+    ./ela-cli wallet buildtx --from EdAEC51BmmzJFHUdMJ6bR5fZB4oo919E8n --to EgKxcDE1kfEXbpXzwL8eavk6XxMyGEqXmC --amount 10 --fee 0.01
     ```
 
     Please replace the parameter values of `--from` and `--to` in the example with the actual ELA Address.
     ```bash
-    ./ela-cli wallet -t sign --file to_be_signed.txn
+    ./ela-cli wallet signtx -f to_be_signed.txn
     ```
 
     Here you need to enter the password of your local wallet. The long string of hexadecimal characters returned by this command is the signed transaction data.

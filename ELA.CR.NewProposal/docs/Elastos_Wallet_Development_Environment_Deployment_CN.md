@@ -148,9 +148,8 @@
 
    * 链节点和命令行客户端代码和编译方法以及配置和命令行参数可以参考:
 
-     * [Elastos.ELA](../README.md)
-
-     * [Elastos.ELA.Client](https://github.com/elastos/Elastos.ELA.Client/blob/master/README.md)
+     * [ela](../README.md)
+     * [ela-cli](https://github.com/elastos/Elastos.ELA/blob/master/docs/cli_user_guide_CN.md)
 
    **`Dockerfile文件内容如下`**
 
