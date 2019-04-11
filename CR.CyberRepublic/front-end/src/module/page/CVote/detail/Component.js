@@ -279,7 +279,7 @@ class C extends StandardPage {
     const isSelf = currentUserId === createdBy
     const isCompleted = status === CVOTE_STATUS.FINAL
     const canManage = isSecretary || isCouncil
-    const canEdit = _.includes([CVOTE_STATUS.DRAFT, CVOTE_STATUS.PROPOSED], status)
+    const canEdit = _.includes([CVOTE_STATUS.DRAFT], status)
     const canComplete = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.REJECT, CVOTE_STATUS.DEFERRED], status)
 
     if (!canManage || isCompleted) return null
