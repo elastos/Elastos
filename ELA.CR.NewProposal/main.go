@@ -182,7 +182,7 @@ func main() {
 		go httprestful.StartServer()
 	}
 	if config.Parameters.HttpWsStart {
-		go httpwebsocket.StartServer()
+		go httpwebsocket.Start()
 	}
 	if config.Parameters.HttpInfoStart {
 		go httpnodeinfo.StartServer()
