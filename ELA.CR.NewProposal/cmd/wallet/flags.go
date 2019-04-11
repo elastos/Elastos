@@ -19,11 +19,11 @@ var (
 	}
 	AccountMultiMFlag = cli.IntFlag{
 		Name:  "m",
-		Usage: "Min signature `<number>` of multi signature address",
+		Usage: "min signature `<number>` of multi signature address",
 	}
 	AccountMultiPubKeyFlag = cli.StringFlag{
 		Name:  "pubkeys, pks",
-		Usage: "Public key list of multi signature address, separate public keys with comma `,`",
+		Usage: "public key list of multi signature address, separate public keys with comma `,`",
 	}
 
 	// Transaction flags

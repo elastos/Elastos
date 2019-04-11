@@ -10,13 +10,18 @@ import (
 )
 
 // Call is a util method to send a JSON-RPC request to server.
-func Call(url string, req Request) (interface{}, error) {
-	data, err := json.Marshal(req)
+func Call(url string, reqData Request, rpcUser string, rpcPassword string) (interface{}, error) {
+	data, err := json.Marshal(reqData)
 	if err != nil {
 		return nil, err
 	}
-
-	resp, err := http.Post(url, "application/json", bytes.NewReader(data))
+	req, err := http.NewRequest("POST", url, bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.SetBasicAuth(rpcUser, rpcPassword)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -39,13 +44,12 @@ func Call(url string, req Request) (interface{}, error) {
 	return ret.Result, nil
 }
 
-// CallParams is a util method to send a JSON-RPC request to server.
 func CallParams(url, method string, params htp.Params) (interface{}, error) {
 	req := Request{
 		Method: method,
 		Params: params,
 	}
-	return Call(url, req)
+	return Call(url, req, "", "")
 }
 
 // CallArray is a util method to send a JSON-RPC request to server.
@@ -54,5 +58,5 @@ func CallArray(url, method string, params ...interface{}) (interface{}, error) {
 		Method: method,
 		Params: params,
 	}
-	return Call(url, req)
+	return Call(url, req, "", "")
 }

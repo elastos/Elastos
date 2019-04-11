@@ -3,24 +3,21 @@ package api
 import (
 	"bytes"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	clicom "github.com/elastos/Elastos.ELA/cmd/common"
+	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
-	"github.com/elastos/Elastos.ELA/core/types"
 	dlog "github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/state"
-	"github.com/elastos/Elastos.ELA/servers"
 	"github.com/elastos/Elastos.ELA/utils/http"
-	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA/utils/signal"
+
 	"github.com/yuin/gopher-lua"
 )
 
@@ -39,7 +36,6 @@ var exports = map[string]lua.LGFunction{
 	"hex_reverse":       hexReverse,
 	"send_tx":           sendTx,
 	"get_asset_id":      getAssetID,
-	"get_utxo":          getUTXO,
 	"set_arbitrators":   setArbitrators,
 	"init_ledger":       initLedger,
 	"close_store":       closeStore,
@@ -85,7 +81,7 @@ func sendTx(L *lua.LState) int {
 	}
 	txHex := hex.EncodeToString(buffer.Bytes())
 
-	result, err := jsonrpc.CallParams(clicom.LocalServer(), "sendrawtransaction", http.Params{
+	result, err := cmdcom.RPCCall("sendrawtransaction", http.Params{
 		"data": txHex,
 	})
 	if err != nil {
@@ -100,37 +96,6 @@ func sendTx(L *lua.LState) int {
 
 func getAssetID(L *lua.LState) int {
 	L.Push(lua.LString("a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0"))
-	return 1
-}
-
-func getUTXO(L *lua.LState) int {
-	from := L.ToString(1)
-	result, err := jsonrpc.CallParams(clicom.LocalServer(), "listunspent", http.Params{
-		"addresses": []string{from},
-	})
-	if err != nil {
-		return 0
-	}
-	data, err := json.Marshal(result)
-	if err != nil {
-		return 0
-	}
-	var utxos []servers.UTXOInfo
-	err = json.Unmarshal(data, &utxos)
-
-	var availabelUtxos []servers.UTXOInfo
-	for _, utxo := range utxos {
-		if types.TxType(utxo.TxType) == types.CoinBase && utxo.Confirmations < 100 {
-			continue
-		}
-		availabelUtxos = append(availabelUtxos, utxo)
-	}
-
-	ud := L.NewUserData()
-	ud.Value = availabelUtxos
-	L.SetMetatable(ud, L.GetTypeMetatable(luaClientTypeName))
-	L.Push(ud)
-
 	return 1
 }
 

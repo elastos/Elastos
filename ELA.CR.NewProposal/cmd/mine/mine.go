@@ -8,7 +8,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/utils/http"
-	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
 
 	"github.com/urfave/cli"
 )
@@ -35,7 +34,7 @@ func miningAction(c *cli.Context) error {
 			boolAction = false
 		}
 
-		result, err := jsonrpc.CallParams(common.LocalServer(), "togglemining", http.Params{"mining": boolAction})
+		result, err := common.RPCCall("togglemining", http.Params{"mining": boolAction})
 		if err != nil {
 			fmt.Println("[toggle] mining falied:", err)
 			return err
@@ -50,7 +49,7 @@ func miningAction(c *cli.Context) error {
 		if err != nil || number < 1 {
 			return errors.New("[number] must be a positive integer")
 		}
-		result, err := jsonrpc.CallParams(common.LocalServer(), "discretemining", http.Params{"count": number})
+		result, err := common.RPCCall("discretemining", http.Params{"count": number})
 		if err != nil {
 			return err
 		}
@@ -65,7 +64,7 @@ func miningAction(c *cli.Context) error {
 func NewCommand() *cli.Command {
 	return &cli.Command{
 		Name:        "mine",
-		Usage:       "toggle cpu mining or manual mine",
+		Usage:       "Toggle cpu mining or manual mine",
 		Description: "With ela-cli mine, you can toggle cpu mining, or manual mine blocks.",
 		ArgsUsage:   "[args]",
 		Flags: []cli.Flag{
@@ -79,8 +78,5 @@ func NewCommand() *cli.Command {
 			},
 		},
 		Action: miningAction,
-		OnUsageError: func(c *cli.Context, err error, isSubcommand bool) error {
-			return cli.NewExitError(err, 1)
-		},
 	}
 }

@@ -15,7 +15,6 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/servers"
 	"github.com/elastos/Elastos.ELA/utils/http"
-	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
 )
 
 func FormatOutput(o []byte) error {
@@ -80,7 +79,7 @@ func ShowAccountBalance(walletPath string) error {
 }
 
 func getAddressUTXOs(address string) ([]servers.UTXOInfo, []servers.UTXOInfo, error) {
-	result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "listunspent", http.Params{
+	result, err := cmdcom.RPCCall("listunspent", http.Params{
 		"addresses": []string{address},
 	})
 	if err != nil {

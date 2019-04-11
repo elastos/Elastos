@@ -115,7 +115,7 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 	isCheckAuthOk := checkAuth(r)
 	if !isCheckAuthOk {
 		log.Warn("client authenticate failed")
-		http.Error(w, "client authenticate failed", http.StatusUnauthorized)
+		RPCError(w, http.StatusUnauthorized, InternalError, "client authenticate failed")
 		return
 	}
 
