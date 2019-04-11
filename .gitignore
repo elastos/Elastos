@@ -4,6 +4,10 @@
 *.orig
 *.rej
 *.json
+*.db
+*.dat
+*.txn
+*.log
 /glide.lock
 /vendor/*
 Chain_WhiteBox/
@@ -14,6 +18,4 @@ Dpos_Data/
 elastos/
 /ela
 /ela-cli
-*.db
-*.dat
-*.txn
+/ela-dns
