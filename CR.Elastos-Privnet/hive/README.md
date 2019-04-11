@@ -5,8 +5,8 @@
 
 ## Repos used to build 
 
-- Elastos.NET.Hive.IPFS: dev-master 6a5e24032b0d0c79e06a103f1b4078a648fa0e2e
-- Elastos.NET.Hive.Cluster: dev-master 390b912df5cf496b7c9e6e5d3f6e0fb897a76db1
+- [Elastos.NET.Hive.IPFS](https://github.com/elastos/Elastos.NET.Hive.IPFS): Feb 25, 2019: dev-master 6a5e24032b0d0c79e06a103f1b4078a648fa0e2e
+- [Elastos.NET.Hive.Cluster](https://github.com/elastos/Elastos.NET.Hive.Cluster): Mar 20, 2019: dev-master a7cfc19921e33f1d6529b523c8bf5ba310de4a83
 
 ## Containers that are run
 
