@@ -24,6 +24,15 @@ func main() {
 	app.UsageText = "ela-cli [global options] command [command options] [args]"
 	app.HideHelp = false
 	app.HideVersion = false
+	app.Flags = []cli.Flag{
+		cmdcom.RPCUserFlag,
+		cmdcom.RPCPasswordFlag,
+		cmdcom.RPCPortFlag,
+	}
+	app.Before = func(c *cli.Context) error {
+		cmdcom.SetRpcConfig(c)
+		return nil
+	}
 	//commands
 	app.Commands = []cli.Command{
 		*wallet.NewCommand(),

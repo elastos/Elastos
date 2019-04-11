@@ -7,14 +7,13 @@ import (
 	"fmt"
 	"os"
 
-	clicom "github.com/elastos/Elastos.ELA/cmd/common"
+	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common"
 	pg "github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/servers"
 	"github.com/elastos/Elastos.ELA/utils/http"
-	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
 
 	"github.com/yuin/gopher-lua"
 )
@@ -207,7 +206,7 @@ func transactionAppendEnough(L *lua.LState) int {
 	from := L.ToString(2)
 	totalAmount := L.ToInt64(3)
 
-	result, err := jsonrpc.CallParams(clicom.LocalServer(), "listunspent", http.Params{
+	result, err := cmdcom.RPCCall("listunspent", http.Params{
 		"addresses": []string{from},
 	})
 	if err != nil {
