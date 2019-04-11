@@ -15,7 +15,6 @@ install:
   - cd $TRAVIS_BUILD_DIR/NativeDistributions
   - ls -l
   - tar -zxf /tmp/*${BUILD_ENV}-*.tar.gz
-  - mv lib libs
   - cd $TRAVIS_BUILD_DIR
 
 script:
