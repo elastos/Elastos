@@ -40,10 +40,10 @@
 
    * 链节点和命令行客户端代码和编译方法以及配置和命令行参数可以参考：
 
-     * [Elastos.ELA](https://github.com/elastos/Elastos.ELA/blob/master/README.md)
-     * [Elastos.ELA.Client](https://github.com/elastos/Elastos.ELA.Client/blob/master/README.md)
+     * [ela](https://github.com/elastos/Elastos.ELA/blob/master/README.md)
+     * [ela-cli](https://github.com/elastos/Elastos.ELA/blob/master/docs/cli_user_guide_CN.md)
 
-2. 默认情况下分配给你的节点服务器会连接到一个专门用于开发的一组节点服务器，自动挖矿并且把所获取的币发送到本地的钱包中；你可以参考 [Elastos.ELA.Client](https://github.com/elastos/Elastos.ELA.Client/blob/master/README.md) 中的相关查询命令进行查询或者其他操作。
+2. 默认情况下分配给你的节点服务器会连接到一个专门用于开发的一组节点服务器，自动挖矿并且把所获取的币发送到本地的钱包中；你可以参考 ela-cli 中的相关查询命令进行查询或者其他操作。
 
    备注：部分命令行操作需要提供一个钱包密码，默认是 `elastos`。
 

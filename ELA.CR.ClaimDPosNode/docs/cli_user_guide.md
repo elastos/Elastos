@@ -1,8 +1,8 @@
-# ELA CLI 使用说明
+# ELA CLI Instruction
 
-[[English](cli_user_guide.md)|中文]
+[English|[中文](cli_user_guide_CN.md)]
 
-ela-cli 是 ELA 节点的命令行客户端，用于管理钱包账户，发送交易以及查询节点信息等。
+ela-cli is an ELA node command line client for managing user wallets, sending transactions, and getting blockchain information.
 
 ```
 NAME:
@@ -30,26 +30,26 @@ GLOBAL OPTIONS:
    --version, -v        print the version
 ```
 
-#### RPC 参数配置
+#### RPC Client Parameters
 
 --rpcport
-rpcport 参数用指定 rpc 服务器绑定的端口号。默认值为20336。
+The rpcport parameter specifies the port number to which the RPC server is bound. The default value is 20336.
 
 --rpcuser
 
-rpcuser 参数用于指定 rpc 服务器 BasicAuth 用户名。默认值为空。
+The rpcuser parameter is used to set the username of the BasicAuth. The default value is "".
 
 --rpcpassword
 
-rpcpassword 参数用于指定 rpc 服务器 BasicAuth 密码。默认值为空
+The rpcpassword parameter is used to set the password of the BasicAuth. The default value is "".
 
-例如查询节点区块高度：
+For example, getting the current height of blockchain.
 
 ```
-./ela-cli --rpcport 11336 --rpcuser user1 --rpcpassword pwd1 info getcurrentheight
+./ela-cli --rpcport 20336 --rpcuser user1 --rpcpassword pwd1 info getcurrentheight
 ```
 
-返回如下：
+Result:
 
 ```
 301
@@ -57,10 +57,10 @@ rpcpassword 参数用于指定 rpc 服务器 BasicAuth 密码。默认值为空
 
 ####
 
-## 1. 钱包管理
+## 1. Wallet Management
 
-钱包管理命令可以用来添加、查看、修改、删除、导入账户等功能。
-使用 `./ela-cli wallet -h` 命令可以查看钱包管理命令的帮助信息。
+Wallet management commands can be used to add, view, modify, delete, and import account.
+You can use `./ela-cli wallet -h` command to view help information of wallet management command.
 
 ```
 NAME:
@@ -92,23 +92,25 @@ OPTIONS:
    --help, -h  show help
 ```
 
-#### 指定钱包
+--wallet <file>, -w <file>
 
---wallet <file>, -w <file> 用于指定 keystore 文件路径。默认值为 `./keystore.dat` 。
+The wallet parameter specifies the wallet path. The default value is "./keystore.dat".
 
-#### 指定密码
+--password <value>, -p <value>
 
---password <value>, -p <value> 用于指定 keystore 密码。也可以根据提示再输入密码。
+The password parameter is used to specify the account password. You can also enter a password when prompted.
 
-### 1.1 创建钱包
+### 1.1 Create Wallet
 
-创建账户命令用于创建一个单签账户，并将私钥加密存储在 keystore 文件中。每个 keystore 文件都有一个**主账户**，一般情况下是第一个被添加上账户。主账户不能被删除。
+The create account command is used to create a standard account and store the private key encryption in the keystore file. Each wallet has a default account, which is generally the first account added. The default account cannot be deleted.
+
+Command:
 
 ```
 ./ela-cli wallet create -p 123
 ```
 
-返回如下：
+Result:
 
 ```
 ADDRESS                            PUBLIC KEY
@@ -117,15 +119,13 @@ ESVMKLVB1j1KQR8TYP7YbksHpNSHg5NZ8i 032d3d0e8125ac6215c237605486c9fbd4eb764f52f89
 ---------------------------------- ------------------------------------------------------------------
 ```
 
-### 1.2 查看公钥
-
-查询 keystore 文件中所有账户地址及其公钥。
+### 1.2 View Public Key
 
 ```
 ./ela-cli wallet account -p 123
 ```
 
-返回如下：
+Result:
 
 ```
 ADDRESS                            PUBLIC KEY
@@ -134,15 +134,13 @@ ESVMKLVB1j1KQR8TYP7YbksHpNSHg5NZ8i 032d3d0e8125ac6215c237605486c9fbd4eb764f52f89
 ---------------------------------- ------------------------------------------------------------------
 ```
 
-### 1.3 查询余额
-
-查询 keystore 文件中所有账户余额。
+### 1.3 Check Balance
 
 ```
 ./ela-cli wallet balance
 ```
 
-返回如下：
+Result:
 
 ```
 INDEX                            ADDRESS BALANCE                           (LOCKED)
@@ -153,13 +151,13 @@ INDEX                            ADDRESS BALANCE                           (LOCK
 ----- ---------------------------------- ------------------------------------------
 ```
 
-### 1.4 添加单签账户
+### 1.4 Add Standard Account
 
 ```
 ./ela-cli wallet add
 ```
 
-返回如下：
+Result:
 
 ```
 ADDRESS                            PUBLIC KEY
@@ -168,41 +166,45 @@ ET15giWpFNSYcTKVbj3s18TsR6i8MBnkvk 031c862055158e50dd6e2cf6bb33f869aaac42c5e6def
 ---------------------------------- ------------------------------------------------------------------
 ```
 
-### 1.5 添加多签账户
+### 1.5 Add Multi-Signature Account
 
-添加多签账户需要指定公钥列表pks，以及最少签名数 m。
+Adding multi-signature account requires specifying the public key list `pks`, and a minimum number of signatures `m`.
 
--- pks <pubkey list> 用于设定公钥列表，公钥之间以 `,` 分开。
+-- pks <pubkey list>
 
--- m <value>, -m <value> 用于设定最少签名数量。无符号整型。
+The pks parameter is used to set the list of public keys separated by commas.
 
-生成一个 3/4 签名的多签账户：
+-- m <value>, -m <value>
+
+The m parameter is used to set the minimum number of signatures.
+
+For example, generate a 2-of-3 multi-signature account:
 
 ```
 ./ela-cli wallet addmultisig -m 3 --pks 0325406f4abc3d41db929f26cf1a419393ed1fe5549ff18f6c579ff0c3cbb714c8,0353059bf157d3eaca184cc10a80f10baf10676c4a39695a9a092fa3c2934818bd,03fd77d569f766638677755e8a71c7c085c51b675fbf7459ca1094b29f62f0b27d,0353059bf157d3eaca184cc10a80f10baf10676c4a39695a9a092fa3c2934818bd
 ```
 
-根据提示，输入 keystore 文件密码。
+Enter a password when prompted.
 
-返回如下：
+Result:
 
 ```
 8PT1XBZboe17rq71Xq1CvMEs8HdKmMztcP
 ```
 
-此时`8PT1XBZboe17rq71Xq1CvMEs8HdKmMztcP` 被加入到指定 keystore 文件中。
+At this point, `8PT1XBZboe17rq71Xq1CvMEs8HdKmMztcP` is added to the specified keystore file.
 
-### 1.6 删除账户
+### 1.6 Delete Account
 
-主账户不可被删除。
+The default account cannot be deleted.
 
-查看 keystore 中账户情况：
+View account:
 
 ```
 ./ela-cli wallet account
 ```
 
-返回如下：
+Result:
 
 ```
 ADDRESS                            PUBLIC KEY
@@ -213,13 +215,13 @@ EJMzC16Eorq9CuFCGtyMrq4Jmgw9jYCHQR 034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddb
 ---------------------------------- ------------------------------------------------------------------
 ```
 
-删除账户：
+Delete Account:
 
 ```
 ./ela-cli wallet delete ET15giWpFNSYcTKVbj3s18TsR6i8MBnkvk
 ```
 
-返回如下：
+Result:
 
 ```
 ADDRESS                            PUBLIC KEY
@@ -228,15 +230,15 @@ EJMzC16Eorq9CuFCGtyMrq4Jmgw9jYCHQR 034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddb
 ---------------------------------- ------------------------------------------------------------------
 ```
 
-### 1.7 导出账户
-
-导出账户命令用于导出某个 keystore 文件中所有账户的私钥。
+### 1.7 Export Account
 
 ```
 ./ela-cli wallet export
 ```
 
-根据提示输入密码，返回如下：
+Enter a password when prompted.
+
+Result:
 
 ```
 ADDRESS                            PRIVATE KEY
@@ -245,15 +247,15 @@ EJMzC16Eorq9CuFCGtyMrq4Jmgw9jYCHQR c779d181658b112b584ce21c9ea3c23d2be0689550d79
 ---------------------------------- ------------------------------------------------------------------
 ```
 
-### 1.8 导入账户
-
-导入账户命令用于导入私钥至 keystore 文件中。可用 -w 指定 keystore 文件。
+### 1.8 Import Account
 
 ```
 ./ela-cli wallet import b2fe3300e44b27b199d97af43ed3e82df4670db66727732ba8d9442ce680da35 -w keystore1.dat
 ```
 
-根据提示输入密码，返回如下：
+Enter a password when prompted.
+
+Result:
 
 ```
 ADDRESS                            PUBLIC KEY
@@ -262,29 +264,29 @@ EQJP3XT7rshteqE1D3u9nBqXL7xQrfzVh1 03f69479d0f6aa11aae5fbe5e5bfca201d717d9fa97a4
 ---------------------------------- ------------------------------------------------------------------
 ```
 
-### 1.9 生成押金地址
+### 1.9 Generate Deposit Address
 
-生成押金地址命令可由指定地址生成对应的押金地址。
+Generate a deposit address from a standard address:
 
 ```
 ./ela-cli wallet depositaddr EJMzC16Eorq9CuFCGtyMrq4Jmgw9jYCHQR
 ```
 
-返回如下：
+Result:
 
 ```
 DVgnDnVfPVuPa2y2E4JitaWjWgRGJDuyrD
 ```
 
-### 1.10 生成冻结地址
+### 1.10 Generate Cross Chain Address
 
-通过侧链创世块哈希，生成对应侧链的冻结地址。
+Generate a cross chain address from a side chain genesis block hash:
 
 ```
 ./ela-cli wallet crosschainaddr 56be936978c261b2e649d58dbfaf3f23d4a868274f5522cd2adb4308a955c4a3
 ```
 
-返回如下：
+Result:
 
 ```
 XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ
@@ -292,65 +294,75 @@ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ
 
 
 
-### 2.1 构造交易
+### 2.1 Build Transaction
 
-构造交易命令 buildtx 用于构造转账交易的内容，构造出来的交易在发送到 ela 节点前，还需要用的私钥签名。
+Build transaction command can build transaction raw data. Note that before sending to ela node, the transaction should be signed by the private key.
 
--- from <address> 参数用于设定花费地址。默认值为 keystore.dat 中主地址。
+--from
+The from parameter specifies the transfer-out account address. The default value is the default account of the keystore file.
 
--- to <address> 参数用于设定收款地址。
+--to
+The to parameter specifies the transfer-in account address.
 
--- amount <amount> 参数用于设定转账金额。浮点类型。
+--amount
+The amount parameter specifies the transfer amount.
 
--- fee <fee> 参数用于设定交易的手续费。浮点类型。
+--fee
 
-#### 2.1.1 构造单签交易
+The fee parameter specifies the transfer fee cost.
+
+#### 2.1.1 Build standard signature transaction
 
 ```
 ./ela-cli wallet buildtx --to EJbTbWd8a9rdutUfvBxhcrvEeNy21tW1Ee --amount 0.1 --fee 0.01
 ```
 
-返回如下：
+Result:
 
 ```
 Hex:  090200010013373934373338313938363837333037373435330139eaa4137a047cdaac7112fe04617902e3b17c1685029d259d93c77680c950f30100ffffffff02b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3809698000000000000000000210fcd528848be05f8cffe5d99896c44bdeec7050200b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a36ea2d2090000000000000000210d4109bf00e6d782db40ab183491c03cf4d6a37a000000000001002321034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16cac
 File:  to_be_signed.txn
 ```
 
-#### 2.1.2 构造多签交易
+#### 2.1.2 Build multi-signature transaction
 
-from 地址需要存在于所指定的 keystore 文件中。
+The from address must exist in the keystore file.
+
+Command:
 
 ```
 ./ela-cli wallet buildtx --from 8PT1XBZboe17rq71Xq1CvMEs8HdKmMztcP --to EQJP3XT7rshteqE1D3u9nBqXL7xQrfzVh1 --amount 0.51 --fee 0.001
 ```
 
-返回如下：
+Result:
 
 ```
-Hex:  0902000100133334393234313234323933333338333335313701737a31035ebe8dfe3c58c7b9ff7eb13485387cd2010d894f39bf670ccd1f62180000ffffffff02b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3c0320a030000000000000000214e6334d41d86e3c3a32698bdefe974d6960346b300b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3a0108f380000000000000000125bc115b91913c9c6347f0e0e3ba3b75c80b94811000000000001008b53210325406f4abc3d41db929f26cf1a419393ed1fe5549ff18f6c579ff0c3cbb714c8210353059bf157d3eaca184cc10a80f10baf10676c4a39695a9a092fa3c2934818bd210353059bf157d3eaca184cc10a80f10baf10676c4a39695a9a092fa3c2934818bd2103fd77d569f766638677755e8a71c7c085c51b675fbf7459ca1094b29f62f0b27d54ae
+Hex:
+0902000100133334393234313234323933333338333335313701737a31035ebe8dfe3c58c7b9ff7eb13485387cd2010d894f39bf670ccd1f62180000ffffffff02b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3c0320a030000000000000000214e6334d41d86e3c3a32698bdefe974d6960346b300b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3a0108f380000000000000000125bc115b91913c9c6347f0e0e3ba3b75c80b94811000000000001008b53210325406f4abc3d41db929f26cf1a419393ed1fe5549ff18f6c579ff0c3cbb714c8210353059bf157d3eaca184cc10a80f10baf10676c4a39695a9a092fa3c2934818bd210353059bf157d3eaca184cc10a80f10baf10676c4a39695a9a092fa3c2934818bd2103fd77d569f766638677755e8a71c7c085c51b675fbf7459ca1094b29f62f0b27d54ae
 File:  to_be_signed.txn
 ```
 
-### 2.2 对交易签名
+### 2.2 Sign To Transaction
 
-使用 buildtx 命令构造的交易，需要通过花费地址的私钥签名后，才是有效的交易。
+The transaction build by buildtx command, should be signed before sending to ela node.
 
--- hex <value> 用于设定待签名交易的 hex 字符串。
+--hex
 
--- file <file> 用于设定待签名交易 hex 字符串所在的文件路径。-- file 与 -- hex 选一种方式即可。
+The hex parameter is used to specify the raw transaction hex string which to be signed.
 
-#### 2.2.1 单签
+--file, -f
 
-指定构造好的单签交易：
+The file parameter is used to specify the raw transaction file which to be signed.
+
+#### 2.2.1 Standard Signature
 
 ```
 ./ela-cli wallet signtx -f to_be_signed.txn
 ```
 
-根据提示，输入 keystore 密码。
+Enter a password when prompted.
 
-返回如下：
+Result:
 
 ```
 [ 1 / 1 ] Transaction successfully signed
@@ -358,15 +370,15 @@ Hex:  090200010013373934373338313938363837333037373435330139eaa4137a047cdaac7112
 File:  ready_to_send.txn
 ```
 
-#### 2.2.2 多签
+#### 2.2.2 Multi Signature
 
-指定构造好的多签交易，附加第一个签名：
+Attach the first signature:
 
 ```
 ./ela-cli wallet signtx -f to_be_signed.txn -w keystore1.dat
 ```
 
-返回如下：
+Result:
 
 ```
 [ 1 / 3 ] Transaction successfully signed
@@ -374,13 +386,13 @@ Hex:  0902000100133334393234313234323933333338333335313701737a31035ebe8dfe3c58c7
 File:  to_be_signed_1_of_3.txn
 ```
 
-附加第二个签名：
+Attach the second signature:
 
 ```
 ./ela-cli wallet signtx -f to_be_signed_1_of_3.txn -w keystore2.dat
 ```
 
-返回如下：
+Result:
 
 ```
 [ 2 / 3 ] Transaction successfully signed
@@ -388,13 +400,13 @@ Hex:  0902000100133334393234313234323933333338333335313701737a31035ebe8dfe3c58c7
 File:  to_be_signed_2_of_3.txn
 ```
 
-附加第三个签名：
+Attach the third signature:
 
 ```
 ./ela-cli wallet signtx -f to_be_signed_2_of_3.txn -w keystore3.dat
 ```
 
-返回如下：
+Result:
 
 ```
 [ 3 / 3 ] Transaction successfully signed
@@ -402,29 +414,27 @@ Hex:  0902000100133334393234313234323933333338333335313701737a31035ebe8dfe3c58c7
 File:  ready_to_send.txn
 ```
 
-### 2.3 发送交易
-
-发送交易命令可以将已签名完成的交易发送至 ela 节点。
+### 2.3 Send transaction
 
 ```
 ./ela-cli wallet sendtx -f ready_to_send.txn
 ```
 
-返回如下：
+Result:
 
 ```
 5b9673a813b90dd73f6d21f478736c7e08bba114c3772618fca232341af683b5
 ```
 
-### 2.4 查看交易
+### 2.4 Show Transaction
 
-查看交易命令可以解析原始交易字节中的内容。可使用 --hex 或 --file 指定原始交易。
+The showtx command parses the contents from the raw transaction. You can specify the raw transaction by --hex or --file parameters.
 
 ```
 ./ela-cli wallet showtx --hex 0902000100123132333835343835313135373533343433340139eaa4137a047cdaac7112fe04617902e3b17c1685029d259d93c77680c950f30100ffffffff02b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a380778e06000000000000000012e194f97570ada85ec5df31e7c192edf1e3fc199900b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a36ec1dc030000000000000000210d4109bf00e6d782db40ab183491c03cf4d6a37a0000000000014140433f2f2fa7390db75af3a3288943ce178f9373b2362a3b09530dd30fbb50fa5f007716bf07abd7ee0281d422f3615b474ed332ba63fe7209f611e547d68e4c0f2321034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16cac
 ```
 
-返回如下：
+Result:
 
 ```
 Transaction: {
@@ -463,7 +473,7 @@ Transaction: {
 
 
 
-## 3.信息查询
+## 3. Get Blockchian Information
 
 ```
 NAME:
@@ -487,25 +497,25 @@ OPTIONS:
    --help, -h  show help
 ```
 
-### 3.1 查看节点连接数
+### 3.1 Get Connections Count
 
 ```
 ./ela-cli info getconnectioncount
 ```
 
-返回连接数：
+Result:
 
 ```
 1
 ```
 
-### 3.2 查看邻居节点
+### 3.2 Get Neighbors Information
 
 ```
 ./ela-cli info getneighbors
 ```
 
-返回邻居节点信息：
+Result:
 
 ```
 [
@@ -513,13 +523,13 @@ OPTIONS:
 ]
 ```
 
-### 3.3 查看节点状态
+### 3.3 Get Node State
 
 ```
 ./ela-cli info getnodestate
 ```
 
-返回节点状态列表：
+Result:
 
 ```
 [
@@ -542,53 +552,51 @@ OPTIONS:
 ]
 ```
 
-### 3.4 获取节点当前高度
+### 3.4 Get Current Height
 
 ```
 ./ela-cli info getcurrentheight
 ```
 
-返回节点当前高度：
+Result:
 
 ```
 395
 ```
 
-### 3.5 获取最高区块hash
+### 3.5 Get Best Block Hash
 
 ```
 ./ela-cli info getbestblockhash
 ```
 
-返回最高块 hash：
+Result:
 
 ```
 "0affad77eacef8d5e69bebd1edd24b43ca8d8948dade9e23b14a9d8ceca060e6"
 ```
 
-### 3.6 获取区块 hash
-
-获取块高为 100 的区块 hash
+### 3.6 Get Block Hash By Height
 
 ```
 ./ela-cli info getblockhash 100
 ```
 
-返回区块 hash：
+Result:
 
 ```
 "1c1e1c22ce891184d390def30a9b8f15f355c05a7bd6e7e7912b571141e01415"
 ```
 
-### 3.7 获取区块信息
+### 3.7 Get Block Information
 
-通过区块 hash 获取区块信息：
+Get block information by hash:
 
 ```
 ./ela-cli info getblock 1c1e1c22ce891184d390def30a9b8f15f355c05a7bd6e7e7912b571141e01415
 ```
 
-返回如下：
+Result:
 
 ```
 {
@@ -676,13 +684,13 @@ OPTIONS:
 }
 ```
 
-通过区块高度过去区块信息：
+Get block information by height:
 
 ```
 ./ela-cli info getblock 100
 ```
 
-返回如下：
+Result:
 
 ```
 {
@@ -770,25 +778,25 @@ OPTIONS:
 }
 ```
 
-### 3.8 获取原始交易信息
+### 3.8 Get Raw Transaction
 
 ```
 ./ela-cli info getrawtransaction 17296308c322aee00274da494e0b9a08423b65d170bd2235c3b658f7030fd9b9
 ```
 
-返回如下：
+Result：
 
 ```
 "0902000100133233313431363030303939333439323932373506f9a9deeaf33bde5646567b129c8da3fee08db6210a8d17f359caf6e3b353bf320100ffffffff01ac3c65375d4f0f882a7b76639e3408c1b1fa39731ace92a352e1b650ce35a20100ffffffffe85c7e34e11fd8e1257333d509fc1828f8feef1120b0822940be9c88ee58c31d0100ffffffffdce53502041b2a22a354ffbf03d1c0aed9ff44f731aec4d3a2376c84cbc5696b0100ffffffff8234bf50743e34707a48d9c0cc31ccef29c6f3013b44170ee73835099e3574c60100ffffffffcb1210fe4fbd42cd71c4a5ce46a7862e3e4e557cc5ee6c1d3189208525ecf6de0100ffffffff02b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a300ca9a3b0000000000000000125bc115b91913c9c6347f0e0e3ba3b75c80b9481100b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3d4d634030000000000000000210d4109bf00e6d782db40ab183491c03cf4d6a37a00000000000141403c72d894b0138348a7640f689b0c4003f1a91969e1b1a1f767303f0fda8226fee42f4b15ac650a8df31a68000fc979036a29dec4383be0571f7bf1bcf3c1cd842321034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16cac"
 ```
 
-### 3.9 查看交易池
+### 3.9 Get Transaction Pool Information
 
 ```
 ./ela-cli info getrawmempool
 ```
 
-返回如下：
+Result:
 
 ```
 [
@@ -876,7 +884,7 @@ OPTIONS:
 
 
 
-## 4.挖矿
+## 4. Mining
 
 ```
 NAME:
@@ -893,39 +901,41 @@ OPTIONS:
    --number value, -n value  user --number [number] to mine the given number of blocks
 ```
 
-### 4.1 开启cpu挖矿
+### 4.1 Start CPU Mining
 
 ```
 ./ela-cli mine -t start
 ```
 
-返回如下：
+Result:
 
 ```
 mining started
 ```
 
-### 4.2 关闭cpu挖矿
+### 4.2 Stop CPU Mining
 
 ```
 ./ela-cli mine -t stop
 ```
 
-返回如下：
+Result:
 
 ```
 mining stopped
 ```
 
-### 4.3 离散挖矿
+### 4.3 Discrete Mining
 
-使用 `-n` 指定要挖的区块数量
+-n
+
+The n parameter is used to specify the number of blocks to want mine
 
 ```
 ./ela-cli mine -n 1
 ```
 
-返回如下：
+Result:
 
 ```
 [e9c1d12d5f4e7679737d1d348e53ce20fc6966e156d0a40d10e3fcf39c94c2f2]
@@ -933,7 +943,7 @@ mining stopped
 
 
 
-## 5.回滚
+## 5. Rollback Block
 
 ```
 NAME:
@@ -949,13 +959,13 @@ OPTIONS:
    --height value  the final height after rollback (default: 0)
 ```
 
-使用 `--height` 指定回滚后最高区块位置
+The height parameter is used to set the final height after rollback.
 
 ```bash
 ./ela-cli rollback --height 20
 ```
 
-返回如下：
+Result:
 ```
 current height is 22
 blockhash before rollback: 74858bcb065e89840f27b28a9ff44757eb904f1a7d135206d83b674b9b68fd4e
