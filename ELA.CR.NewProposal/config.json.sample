@@ -7,8 +7,11 @@
       "127.0.0.1:30338"
     ],
     "HttpInfoPort": 20333,
+    "HttpInfoStart": true,
     "HttpRestPort": 20334,
+    "HttpRestStart": true,
     "HttpWsPort": 20335,
+    "HttpWsStart": true,
     "HttpJsonPort": 20336,
     "NodePort": 20338,
     "PrintLevel": 0,

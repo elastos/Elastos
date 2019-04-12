@@ -28,8 +28,11 @@
       "127.0.0.1:40338"    
     ],
     "HttpInfoPort": 20333,        // Local web portal port number. User can go to http://127.0.0.1:10333/info to access the web UI
+    "HttpInfoStart": true,        // Whether to enable the HTTPInfo service
     "HttpRestPort": 20334,        // Restful port number
+    "HttpRestStart": true,        // Whether to enable the REST service
     "HttpWsPort": 20335,          // Websocket port number
+    "HttpWsStart": true,          // Whether to enable the WebSocket service
     "HttpJsonPort": 20336,        // RPC port number
     "NodePort": 20338,            // P2P port number
     "PrintLevel": 0,              // Log level. Level 0 is the highest, 5 is the lowest
