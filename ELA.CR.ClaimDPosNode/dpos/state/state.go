@@ -719,9 +719,9 @@ func (s *State) processEmergencyInactiveArbitrators(
 
 	addEmergencyInactiveArbitrator := func(key string, producer *Producer) {
 		s.history.append(height, func() {
-			s.setInactiveProducer(producer, key, height)
+			s.setInactiveProducer(producer, key, height, true)
 		}, func() {
-			s.revertSettingInactiveProducer(producer, key, height)
+			s.revertSettingInactiveProducer(producer, key, height, true)
 		})
 	}
 
@@ -841,27 +841,36 @@ func (s *State) ProcessSpecialTxPayload(p types.Payload) {
 
 // setInactiveProducer set active producer to inactive state
 func (s *State) setInactiveProducer(producer *Producer, key string,
-	height uint32) {
+	height uint32, emergency bool) {
 	producer.inactiveSince = height
 	producer.state = Inactivate
 	s.inactiveProducers[key] = producer
 	delete(s.activityProducers, key)
 
-	producer.penalty += s.chainParams.InactivePenalty
+	if !emergency {
+		producer.penalty += s.chainParams.InactivePenalty
+	} else {
+		producer.penalty += s.chainParams.EmergencyInactivePenalty
+	}
 }
 
 // revertSettingInactiveProducer revert operation about setInactiveProducer
 func (s *State) revertSettingInactiveProducer(producer *Producer, key string,
-	height uint32) {
+	height uint32, emergency bool) {
 	producer.inactiveSince = 0
 	producer.state = Activate
 	s.activityProducers[key] = producer
 	delete(s.inactiveProducers, key)
 
-	if producer.penalty < s.chainParams.InactivePenalty {
+	penalty := s.chainParams.InactivePenalty
+	if emergency {
+		penalty = s.chainParams.EmergencyInactivePenalty
+	}
+
+	if producer.penalty < penalty {
 		producer.penalty = common.Fixed64(0)
 	} else {
-		producer.penalty -= s.chainParams.InactivePenalty
+		producer.penalty -= penalty
 	}
 }
 
@@ -923,7 +932,7 @@ func (s *State) tryRevertInactivity(key string, producer *Producer,
 	}
 
 	if producer.state == Inactivate {
-		s.revertSettingInactiveProducer(producer, key, height)
+		s.revertSettingInactiveProducer(producer, key, height, false)
 		producer.inactiveCountingHeight = startHeight
 	}
 }
@@ -940,7 +949,7 @@ func (s *State) tryUpdateInactivity(key string, producer *Producer,
 	}
 
 	if height-producer.inactiveCountingHeight >= s.chainParams.MaxInactiveRounds {
-		s.setInactiveProducer(producer, key, height)
+		s.setInactiveProducer(producer, key, height, false)
 		producer.inactiveCountingHeight = 0
 	}
 }
