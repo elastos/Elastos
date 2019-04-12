@@ -5,10 +5,10 @@ import (
 	"errors"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
-	"github.com/elastos/Elastos.ELA/dpos/log"
 )
 
 func ConfirmSanityCheck(confirm *payload.Confirm) error {

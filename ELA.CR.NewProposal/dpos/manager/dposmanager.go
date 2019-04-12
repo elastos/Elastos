@@ -16,7 +16,6 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/dpos/store"
 	"github.com/elastos/Elastos.ELA/elanet"
-	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
@@ -147,8 +146,8 @@ func (d *DPOSManager) Initialize(handler *DPOSHandlerSwitch,
 	d.statusMap = make(map[uint32]map[string]*dmsg.ConsensusStatus)
 }
 
-func (d *DPOSManager) AppendToTxnPool(txn *types.Transaction) errors.ErrCode {
-	return d.txPool.AppendToTxnPool(txn)
+func (d *DPOSManager) AppendToTxnPool(txn *types.Transaction) error {
+	return d.txPool.AppendToTxPool(txn)
 }
 
 func (d *DPOSManager) Broadcast(msg p2p.Message) {

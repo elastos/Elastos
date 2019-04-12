@@ -2,9 +2,11 @@
   "Configuration": {
     "ActiveNet": "testnet",
     "HttpInfoPort": 21333,
-    "HttpInfoStart": true,
+    "HttpInfoStart": false,
     "HttpRestPort": 21334,
+    "HttpRestStart": false,
     "HttpWsPort": 21335,
+    "HttpWsStart": false,
     "HttpJsonPort": 21336,
     "NodePort": 21338,
     "PrintLevel": 1,
