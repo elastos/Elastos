@@ -18,14 +18,15 @@ class Component extends React.Component {
     const { reason } = this.state
     onToggle()
     onSubmit({ reason })
+    this.setState({ reason: '' })
   }
 
   render() {
-    const { triggeredBy, onToggle, visible } = this.props
+    const { triggeredBy, onToggle, visible, title } = this.props
     const content = (
       <Container>
         <CloseIcon type="close" onClick={onToggle} />
-        <Title>{I18N.get('council.voting.modal.voteNo')}</Title>
+        <Title>{title || I18N.get('council.voting.modal.voteReason')}</Title>
         <StyledTextArea onChange={this.onReasonChanged} />
         <Footer>
           <Btn type="default" onClick={onToggle}>
@@ -46,6 +47,7 @@ class Component extends React.Component {
 }
 
 const propTypes = {
+  title: PropTypes.string,
   triggeredBy: PropTypes.node.isRequired,
   onToggle: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,

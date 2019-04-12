@@ -775,8 +775,8 @@ const zh = {
   'council.voting.modal.complete': '您确定要完成此提案吗？',
   'council.voting.modal.updateNotes': '秘书处记录',
   'council.voting.modal.voteYes': '您确定要投赞成票吗？',
-  'council.voting.modal.voteAbstention': '您确定要弃权吗？',
-  'council.voting.modal.voteNo': '反对的理由',
+  'council.voting.modal.voteAbstain': '您确定要弃权吗？',
+  'council.voting.modal.voteReason': '理由',
   'council.voting.modal.confirm': '提交',
   'council.voting.modal.cancel': '取消',
 

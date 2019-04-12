@@ -231,6 +231,7 @@ export default class extends Base {
       if (!this.isLoggedIn() || !this.canManageProposal()) {
         throw 'cvoteservice.list - unpublished proposals only visible to council/secretary'
       } else if (param.voteResult === constant.CVOTE_RESULT.UNDECIDED && permissions.isCouncil(userRole)) {
+        // get unvoted by current council
         query.voteResult = {
           $elemMatch: {
             value: constant.CVOTE_RESULT.UNDECIDED,
@@ -239,12 +240,6 @@ export default class extends Base {
         }
         query.published = true
         query.status = constant.CVOTE_STATUS.PROPOSED
-      } else {
-        // only owner can list his own proposal
-        query.$or = [
-          { createdBy: currentUserId, published: false },
-          { published: true },
-        ]
       }
     } else {
       query.published = param.published
@@ -258,7 +253,7 @@ export default class extends Base {
     for (const item of list) {
       if (item.createdBy) {
         const u = await db_user.findOne({ _id: item.createdBy })
-        item.createdBy = u.username
+        if (!_.isEmpty) item.createdBy = u.username
       }
     }
 
