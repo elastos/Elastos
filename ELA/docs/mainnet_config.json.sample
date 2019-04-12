@@ -2,8 +2,11 @@
   "Configuration": {
     "ActiveNet": "mainnet",
     "HttpInfoPort": 20333,
+    "HttpInfoStart": false,
     "HttpRestPort": 20334,
+    "HttpRestStart": false,
     "HttpWsPort": 20335,
+    "HttpWsStart": false,
     "HttpJsonPort": 20336,
     "NodePort": 20338,
     "PrintLevel": 1,
