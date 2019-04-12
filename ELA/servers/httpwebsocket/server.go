@@ -316,14 +316,11 @@ func (s *Server) PushResult(action string, v interface{}) {
 		log.Error("Websocket PushResult:", err)
 		return
 	}
-	s.broadcast(data)
-}
 
-func (s *Server) broadcast(data []byte) error {
+	// Broadcast message to all connected clients.
 	s.sessions.Foreach(func(v *session) {
 		v.Send(data)
 	})
-	return nil
 }
 
 func (s *Server) initTlsListen() (net.Listener, error) {

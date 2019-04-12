@@ -9,6 +9,7 @@ import (
 )
 
 type session struct {
+	mtx        sync.Mutex
 	id         int64
 	conn       *websocket.Conn
 	lastActive time.Time
@@ -18,7 +19,11 @@ func (s *session) Send(data []byte) error {
 	if s.conn == nil {
 		return errors.New("WebSocket is null")
 	}
-	return s.conn.WriteMessage(websocket.TextMessage, data)
+
+	s.mtx.Lock()
+	err := s.conn.WriteMessage(websocket.TextMessage, data)
+	s.mtx.Unlock()
+	return err
 }
 
 type sessions struct {
