@@ -8,7 +8,6 @@ import:
   vcs: git
 - package: github.com/gorilla/websocket
 - package: github.com/urfave/cli
-- package: github.com/pborman/uuid
 - package: github.com/howeyc/gopass
 - package: github.com/itchyny/base58-go
 - package: github.com/stretchr/testify
