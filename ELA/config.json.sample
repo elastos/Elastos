@@ -68,9 +68,9 @@
       ],
       "NormalArbitratorsCount": 24,
       "CandidatesCount": 72,
-      "EmergencyInactivePenalty": 50000000000,
+      "EmergencyInactivePenalty": 10000000000,
       "MaxInactiveRounds": 1440,
-      "InactivePenalty": 10000000000,
+      "InactivePenalty": 50000000000,
       "InactiveEliminateCount": 12,
       "EnableEventRecord": false,
       "PreConnectOffset": 360

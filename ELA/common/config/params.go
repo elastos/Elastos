@@ -112,8 +112,8 @@ var DefaultParams = Params{
 	CRCOnlyDPOSHeight:        343400,
 	PublicDPOSHeight:         1108812, //fixme edit height later
 	MaxInactiveRounds:        720 * 2,
-	InactivePenalty:          100 * 100000000,
-	EmergencyInactivePenalty: 500 * 100000000,
+	InactivePenalty:          500 * 100000000,
+	EmergencyInactivePenalty: 100 * 100000000,
 	InactiveEliminateCount:   12,
 	GeneralArbiters:          24,
 	CandidateArbiters:        72,
