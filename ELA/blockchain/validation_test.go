@@ -157,7 +157,7 @@ func TestCheckMultiSigSignature(t *testing.T) {
 	assert.Equal(t, "the encodeData format is error", err.Error())
 
 	// invalid signature length not match
-	err = checkMultiSigSignatures(program.Program{Code: fakeCode, Parameter: signature[math.Intn(64):]}, data)
+	err = checkMultiSigSignatures(program.Program{Code: fakeCode, Parameter: signature[1+math.Intn(64):]}, data)
 	assert.Error(t, err, "[CheckMultisigSignature] invalid signature length not match")
 	assert.Equal(t, "invalid multi sign signatures, length not match", err.Error())
 
