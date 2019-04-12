@@ -39,7 +39,7 @@ if(ENABLE_APPS)
 endif()
 
 if(ENABLE_TESTS)
-    add_subdirectory(tests)
+    add_subdirectory(tests/apitests)
 endif()
 
 if(ENABLE_DOCS AND (${CMAKE_SYSTEM_NAME} STREQUAL "Linux"))

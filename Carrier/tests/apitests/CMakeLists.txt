@@ -114,16 +114,16 @@ include_directories(
     .
     include
     api
-    ../src/carrier
-    ../src/session
-    ../src/filetransfer
+    ../../src/carrier
+    ../../src/session
+    ../../src/filetransfer
     ${CARRIER_INT_DIST_DIR}/include)
 
 link_directories(
     ${CARRIER_INT_DIST_DIR}/lib
-    ${CMAKE_CURRENT_BINARY_DIR}/../src/carrier
-    ${CMAKE_CURRENT_BINARY_DIR}/../src/session
-    ${CMAKE_CURRENT_BINARY_DIR}/../src/filetransfer)
+    ${CMAKE_CURRENT_BINARY_DIR}/../../src/carrier
+    ${CMAKE_CURRENT_BINARY_DIR}/../../src/session
+    ${CMAKE_CURRENT_BINARY_DIR}/../../src/filetransfer)
 
 add_executable(elatests
     ${SRC}
