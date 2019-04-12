@@ -4,9 +4,8 @@
 
 #include "VersionMessage.h"
 
-#include <BRTransaction.h>
-
 #include <sys/time.h>
+#include <support/BRKey.h>
 
 #define ENABLED_SERVICES   0ULL  // we don't provide full blocks to remote nodes
 #define PROTOCOL_VERSION   70013

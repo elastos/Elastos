@@ -7,8 +7,6 @@
 
 #include "ELAMessageSerializable.h"
 
-#include <BRInt.h>
-
 #include <boost/shared_ptr.hpp>
 
 namespace Elastos {

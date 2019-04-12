@@ -11,7 +11,7 @@
 #include <Common/Log.h>
 #include <Common/Utils.h>
 
-#include <BRMerkleBlock.h>
+#include <bitcoin/BRMerkleBlock.h>
 
 using namespace Elastos::ElaWallet;
 

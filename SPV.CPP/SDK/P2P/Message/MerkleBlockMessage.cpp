@@ -13,10 +13,6 @@
 #include <Plugin/Registry.h>
 #include <Plugin/Block/MerkleBlock.h>
 
-#include <BRMerkleBlock.h>
-#include <BRArray.h>
-#include <BRMerkleBlock.h>
-
 #include <boost/scoped_ptr.hpp>
 
 namespace Elastos {

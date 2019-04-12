@@ -11,9 +11,6 @@
 #include <Common/Log.h>
 #include <Common/Utils.h>
 
-#include <BRTransaction.h>
-#include <BRArray.h>
-
 namespace Elastos {
 	namespace ElaWallet {
 

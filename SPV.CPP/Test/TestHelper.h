@@ -269,7 +269,7 @@ namespace Elastos {
 				bytes_t script = getRandBytes(25);
 				bytes_t signature = getRandBytes(28);
 				BRTransactionAddInput(tx, getRandUInt256(), i, rand(),
-									  &script[0], script.size(), &signature[0], signature.size(), rand());
+									  &script[0], script.size(), &signature[0], signature.size(), nullptr, 0, rand());
 			}
 			for (size_t i = 0; i < 4; ++i) {
 				bytes_t script = getRandBytes(25);
@@ -281,7 +281,7 @@ namespace Elastos {
 			auxPow.SetBTCTransaction(tx);
 
 			// init merkle block
-			BRMerkleBlock *block = BRMerkleBlockNew(nullptr);
+			BRMerkleBlock *block = BRMerkleBlockNew();
 			block->blockHash = getRandUInt256();
 			block->version = rand();
 			block->prevBlock = getRandUInt256();
@@ -331,12 +331,12 @@ namespace Elastos {
 			BRTransaction *txn = auxPowVerify.GetBTCTransaction();
 			if (checkAll) {
 				REQUIRE(origTxn->blockHeight == txn->blockHeight);
-				REQUIRE(UInt256Eq(&origTxn->txHash, &txn->txHash));
+				REQUIRE(UInt256Eq(origTxn->txHash, txn->txHash));
 			}
 			REQUIRE(origTxn->version == txn->version);
 			REQUIRE(origTxn->inCount == txn->inCount);
 			for (size_t i = 0; i < txn->inCount; ++i) {
-				REQUIRE(UInt256Eq(&origTxn->inputs[i].txHash, &txn->inputs[i].txHash));
+				REQUIRE(UInt256Eq(origTxn->inputs[i].txHash, txn->inputs[i].txHash));
 				REQUIRE(origTxn->inputs[i].index == txn->inputs[i].index);
 				if (checkAll) {
 					REQUIRE(0 == strcmp(origTxn->inputs[i].address, txn->inputs[i].address));
@@ -367,11 +367,11 @@ namespace Elastos {
 			BRMerkleBlock *origBlock = auxPow.GetParBlockHeader();
 			BRMerkleBlock *blockVerify = auxPowVerify.GetParBlockHeader();
 			if (checkAll) {
-				REQUIRE(UInt256Eq(&origBlock->blockHash, &blockVerify->blockHash));
+				REQUIRE(UInt256Eq(origBlock->blockHash, blockVerify->blockHash));
 			}
 			REQUIRE(origBlock->version == blockVerify->version);
-			REQUIRE(UInt256Eq(&origBlock->prevBlock, &blockVerify->prevBlock));
-			REQUIRE(UInt256Eq(&origBlock->merkleRoot, &blockVerify->merkleRoot));
+			REQUIRE(UInt256Eq(origBlock->prevBlock, blockVerify->prevBlock));
+			REQUIRE(UInt256Eq(origBlock->merkleRoot, blockVerify->merkleRoot));
 			REQUIRE(origBlock->timestamp == blockVerify->timestamp);
 			REQUIRE(origBlock->target == blockVerify->target);
 			REQUIRE(origBlock->nonce == blockVerify->nonce);
@@ -379,7 +379,7 @@ namespace Elastos {
 				REQUIRE(origBlock->totalTx == blockVerify->totalTx);
 				REQUIRE(origBlock->hashesCount == blockVerify->hashesCount);
 				for (size_t i = 0; i < origBlock->hashesCount; ++i) {
-					REQUIRE(UInt256Eq(origBlock->hashes + i, blockVerify->hashes + i));
+					REQUIRE(UInt256Eq(origBlock->hashes[i], blockVerify->hashes[i]));
 				}
 				REQUIRE(origBlock->flagsLen == blockVerify->flagsLen);
 				for (size_t i = 0; i < origBlock->flagsLen; ++i) {
@@ -431,7 +431,7 @@ namespace Elastos {
 				bytes_t script = getRandBytes(25);
 				bytes_t signature = getRandBytes(35);
 				BRTransactionAddInput(tx, getRandUInt256(), (uint32_t) rand(), (uint64_t) rand(), &script[0],
-									  script.size(), &signature[0], signature.size(), (uint32_t) rand());
+									  script.size(), &signature[0], signature.size(), nullptr, 0, (uint32_t) rand());
 			}
 			for (size_t i = 0; i < 10; ++i) {
 				bytes_t script = getRandBytes(25);

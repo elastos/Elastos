@@ -7,8 +7,6 @@
 #include <catch.hpp>
 #include "TestHelper.h"
 
-#include <BRMerkleBlock.h>
-#include <BRTransaction.h>
 #include <Plugin/Block/AuxPow.h>
 #include <Common/Log.h>
 

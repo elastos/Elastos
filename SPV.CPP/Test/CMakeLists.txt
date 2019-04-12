@@ -18,7 +18,7 @@ endif()
 include_directories(
 	../Interface
 	../SDK
-	../Core
+	../ThirdParty/breadwallet-core
 	${CMAKE_BINARY_DIR}
 	${PROJECT_INT_DIST_DIR}/include
 	${PROJECT_INT_DIST_DIR}/include/catch2

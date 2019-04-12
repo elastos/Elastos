@@ -10,8 +10,8 @@
 #include <Plugin/Transaction/Transaction.h>
 #include <Plugin/Interface/ELAMessageSerializable.h>
 
-#include <BRTransaction.h>
-#include <BRMerkleBlock.h>
+#include <bitcoin/BRTransaction.h>
+#include <bitcoin/BRMerkleBlock.h>
 
 #include <vector>
 

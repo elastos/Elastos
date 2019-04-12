@@ -8,8 +8,6 @@
 #include <Common/ByteStream.h>
 #include <Common/Log.h>
 
-#include <BRMerkleBlock.h>
-
 namespace Elastos {
 	namespace ElaWallet {
 

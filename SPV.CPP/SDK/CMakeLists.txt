@@ -1,15 +1,17 @@
 include(ProjectDefaults)
 
 file(GLOB_RECURSE SPVSDK_SOURCE_FILES "*.cpp" "*.c")
-aux_source_directory(../Core/bcash SPVCORE_BCASH_SOURCE_FILES)
-aux_source_directory(../Core/ SPVCORE_SOURCE_FILES)
+file(GLOB_RECURSE BRETH_SOURCE_FILES
+	"../ThirdParty/breadwallet-core/bitcoin/*.c"
+#	"../ThirdParty/breadwallet-core/ethereum/*.c"
+	"../ThirdParty/breadwallet-core/support/*.c")
+
 set(SPVSDK_SOURCE_FILES
 	${SPVSDK_SOURCE_FILES}
-	${SPVCORE_BCASH_SOURCE_FILES}
-	${SPVCORE_SOURCE_FILES})
+	${BRETH_SOURCE_FILES})
 
-set(SPVSDK_DEPENDS boost libressl libfruit libsqlite json libspdlog)
-set(LIBS boost_filesystem boost_system boost_thread crypto ssl fruit sqlite3 spdlog)
+set(SPVSDK_DEPENDS boost libressl libfruit libsqlite json libspdlog secp256k1)
+set(LIBS boost_filesystem boost_system boost_thread crypto ssl fruit sqlite3 spdlog resolv)
 if(ANDROID)
 	set(LIBS ${LIBS} log)
 endif()
@@ -18,9 +20,12 @@ add_custom_target(libspvsdk)
 
 include_directories(
 	.
-	../Core
+	../ThirdParty/breadwallet-core
 	../Interface
 	${CMAKE_CURRENT_BINARY_DIR}/..
+	${CMAKE_CURRENT_BINARY_DIR}/../ThirdParty/secp256k1/${PROJECT_DEPS_BUILD_PREFIX}/src
+	${CMAKE_CURRENT_BINARY_DIR}/../ThirdParty/secp256k1/${PROJECT_DEPS_BUILD_PREFIX}/src/secp256k1
+	${CMAKE_CURRENT_BINARY_DIR}/../ThirdParty/secp256k1/${PROJECT_DEPS_BUILD_PREFIX}/src/secp256k1/src
 	${PROJECT_INT_DIST_DIR}/include)
 
 link_directories(

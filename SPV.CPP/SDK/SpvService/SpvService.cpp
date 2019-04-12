@@ -7,18 +7,10 @@
 
 #include <Common/Log.h>
 #include <Common/Utils.h>
-#include <Plugin/Block/MerkleBlock.h>
-#include <Plugin/Registry.h>
 #include <Plugin/Transaction/Asset.h>
-#include <Plugin/Transaction/TransactionInput.h>
 #include <Plugin/Transaction/TransactionOutput.h>
 #include <Wallet/UTXO.h>
 #include <Database/DatabaseManager.h>
-
-#include <BRMerkleBlock.h>
-#include <BRTransaction.h>
-
-#include <boost/thread.hpp>
 
 #define BACKGROUND_THREAD_COUNT 1
 

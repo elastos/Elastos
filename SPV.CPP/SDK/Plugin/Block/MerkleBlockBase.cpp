@@ -4,8 +4,6 @@
 
 #include "MerkleBlockBase.h"
 
-#include <BRCrypto.h>
-
 #include <Common/ByteStream.h>
 #include <Common/Utils.h>
 #include <Common/hash.h>

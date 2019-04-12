@@ -8,9 +8,6 @@
 #include <Common/Log.h>
 #include <Common/hash.h>
 
-#include <BRMerkleBlock.h>
-#include <BRTransaction.h>
-
 #include <stdlib.h>
 
 namespace Elastos {
@@ -18,7 +15,7 @@ namespace Elastos {
 
 		AuxPow::AuxPow() {
 			_parCoinBaseTx = BRTransactionNew();
-			_parBlockHeader = BRMerkleBlockNew(nullptr);
+			_parBlockHeader = BRMerkleBlockNew();
 			_auxMerkleIndex = 0;
 			_parMerkleIndex = 0;
 			_parentHash = 0;
@@ -28,7 +25,7 @@ namespace Elastos {
 			if (_parCoinBaseTx != nullptr)
 				BRTransactionFree(_parCoinBaseTx);
 			if (_parBlockHeader)
-				BRMerkleBlockFree(nullptr, _parBlockHeader);
+				BRMerkleBlockFree(_parBlockHeader);
 		}
 
 		void AuxPow::Serialize(ByteStream &ostream) const {
@@ -197,7 +194,7 @@ namespace Elastos {
 			}
 
 			BRTransactionAddInput(tx, txHash, index, 0, nullptr, 0,
-								  signature.size() > 0 ? &signature[0] : nullptr, signature.size(), sequence);
+								  signature.size() > 0 ? &signature[0] : nullptr, signature.size(), nullptr, 0, sequence);
 			return true;
 		}
 
@@ -283,7 +280,7 @@ namespace Elastos {
 
 		void AuxPow::SetParBlockHeader(BRMerkleBlock *block) {
 			if (_parBlockHeader != nullptr)
-				BRMerkleBlockFree(nullptr, _parBlockHeader);
+				BRMerkleBlockFree(_parBlockHeader);
 			_parBlockHeader = block;
 		}
 

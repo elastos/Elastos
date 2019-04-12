@@ -12,7 +12,6 @@
 #include <Common/Utils.h>
 #include <P2P/PeerManager.h>
 
-#include <BRArray.h>
 #include <float.h>
 
 #define MAX_BLOCKS_COUNT 100  //note max blocks count is 500 in btc while 100 in ela

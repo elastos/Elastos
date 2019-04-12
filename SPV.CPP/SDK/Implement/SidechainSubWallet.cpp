@@ -28,8 +28,6 @@
 #include <WalletCore/CoinInfo.h>
 #include <Plugin/Transaction/TransactionOutput.h>
 
-#include <BRAddress.h>
-
 #include <vector>
 #include <map>
 

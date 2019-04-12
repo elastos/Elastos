@@ -6,7 +6,6 @@
 
 #include <Common/Log.h>
 #include <P2P/Peer.h>
-#include <BRArray.h>
 
 #include <sys/time.h>
 
