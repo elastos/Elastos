@@ -179,6 +179,11 @@ func (sp *serverPeer) OnVersion(_ *peer.Peer, v *msg.Version) {
 
 		addrManager.AddAddress(v.PID, na)
 	}
+
+	// Add the remote peer time as a sample for creating an offset against
+	// the local clock to keep the network time in sync.
+	sp.server.cfg.TimeSource.AddTimeSample(sp.Addr(), v.Timestamp)
+
 	// Add valid peer to the server.
 	sp.server.AddPeer(sp)
 }
