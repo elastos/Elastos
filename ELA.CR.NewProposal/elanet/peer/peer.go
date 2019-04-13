@@ -47,6 +47,9 @@ var (
 )
 
 type Listeners struct {
+	// OnVersion is invoked when a peer receives a version message.
+	OnVersion func(p *Peer, msg *msg.Version)
+
 	// OnMemPool is invoked when a peer receives a mempool message.
 	OnMemPool func(p *Peer, msg *msg.MemPool)
 
@@ -638,13 +641,7 @@ func New(orgPeer server.IPeer, listeners *Listeners) *Peer {
 		p.stallControl <- stallControlMsg{sccHandlerStart, m}
 		switch m := m.(type) {
 		case *msg.Version:
-			// Disconnect full node peers that do not support DPOS protocol.
-			if m.Relay && p.ProtocolVersion() < pact.DPOSStartVersion {
-				p.Disconnect()
-				return
-			}
-
-			p.SetDisableRelayTx(!m.Relay)
+			listeners.OnVersion(p, m)
 
 		case *msg.MemPool:
 			listeners.OnMemPool(p, m)

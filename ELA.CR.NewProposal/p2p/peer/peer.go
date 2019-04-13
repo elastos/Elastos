@@ -794,7 +794,7 @@ func (p *Peer) handleRemoteVersionMsg(msg *msg.Version) error {
 	p.statsMtx.Lock()
 	p.height = uint32(msg.Height)
 	p.startingHeight = p.height
-	p.timeOffset = int64(msg.TimeStamp) - time.Now().Unix()
+	p.timeOffset = msg.Timestamp.Unix() - time.Now().Unix()
 	p.statsMtx.Unlock()
 
 	// Negotiate the protocol version.

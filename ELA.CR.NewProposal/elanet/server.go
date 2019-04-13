@@ -110,6 +110,25 @@ func newServerPeer(s *server) *serverPeer {
 	}
 }
 
+// OnVersion is invoked when a peer receives a version message and is
+// used to negotiate the protocol version details as well as kick start
+// the communications.
+func (sp *serverPeer) OnVersion(_ *peer.Peer, m *msg.Version) {
+	// Disconnect full node peers that do not support DPOS protocol.
+	if m.Relay && sp.ProtocolVersion() < pact.DPOSStartVersion {
+		sp.Disconnect()
+		return
+	}
+
+	// Add the remote peer time as a sample for creating an offset against
+	// the local clock to keep the network time in sync.
+	sp.server.chain.TimeSource.AddTimeSample(sp.Addr(), m.Timestamp)
+
+	// Choose whether or not to relay transactions before a filter command
+	// is received.
+	sp.SetDisableRelayTx(!m.Relay)
+}
+
 // OnMemPool is invoked when a peer receives a mempool message.
 // It creates and sends an inventory message with the contents of the memory
 // pool up to the maximum inventory allowed per message.  When the peer has a
@@ -785,6 +804,7 @@ func (s *server) handlePeerMsg(peers map[svr.IPeer]*serverPeer, p interface{}) {
 	case newPeerMsg:
 		sp := newServerPeer(s)
 		sp.Peer = peer.New(p, &peer.Listeners{
+			OnVersion:      sp.OnVersion,
 			OnMemPool:      sp.OnMemPool,
 			OnTx:           sp.OnTx,
 			OnBlock:        sp.OnBlock,
