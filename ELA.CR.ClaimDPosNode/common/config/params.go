@@ -60,18 +60,18 @@ var DefaultParams = Params{
 	DefaultPort: 20338,
 
 	SeedList: []string{
-		"node-mainnet-002.elastos.org",
-		"node-mainnet-003.elastos.org",
-		"node-mainnet-004.elastos.org",
-		"node-mainnet-006.elastos.org",
-		"node-mainnet-007.elastos.org",
-		"node-mainnet-014.elastos.org",
-		"node-mainnet-015.elastos.org",
-		"node-mainnet-016.elastos.org",
-		"node-mainnet-017.elastos.org",
-		"node-mainnet-022.elastos.org",
-		"node-mainnet-021.elastos.org",
-		"node-mainnet-023.elastos.org",
+		"node-mainnet-002.elastos.org:20338",
+		"node-mainnet-003.elastos.org:20338",
+		"node-mainnet-004.elastos.org:20338",
+		"node-mainnet-006.elastos.org:20338",
+		"node-mainnet-007.elastos.org:20338",
+		"node-mainnet-014.elastos.org:20338",
+		"node-mainnet-015.elastos.org:20338",
+		"node-mainnet-016.elastos.org:20338",
+		"node-mainnet-017.elastos.org:20338",
+		"node-mainnet-022.elastos.org:20338",
+		"node-mainnet-021.elastos.org:20338",
+		"node-mainnet-023.elastos.org:20338",
 	},
 
 	Foundation:   mainNetFoundation,
@@ -127,12 +127,12 @@ func (p *Params) TestNet() *Params {
 	copy.DefaultPort = 21338
 
 	copy.SeedList = []string{
-		"node-testnet-002.elastos.org",
-		"node-testnet-003.elastos.org",
-		"node-testnet-004.elastos.org",
-		"node-testnet-005.elastos.org",
-		"node-testnet-006.elastos.org",
-		"node-testnet-007.elastos.org",
+		"node-testnet-002.elastos.org:21338",
+		"node-testnet-003.elastos.org:21338",
+		"node-testnet-004.elastos.org:21338",
+		"node-testnet-005.elastos.org:21338",
+		"node-testnet-006.elastos.org:21338",
+		"node-testnet-007.elastos.org:21338",
 	}
 
 	copy.Foundation = testNetFoundation
@@ -173,12 +173,12 @@ func (p *Params) RegNet() *Params {
 	copy.DefaultPort = 22338
 
 	copy.SeedList = []string{
-		"node-regtest-102.eadd.co",
-		"node-regtest-103.eadd.co",
-		"node-regtest-104.eadd.co",
-		"node-regtest-105.eadd.co",
-		"node-regtest-106.eadd.co",
-		"node-regtest-107.eadd.co",
+		"node-regtest-102.eadd.co:22338",
+		"node-regtest-103.eadd.co:22338",
+		"node-regtest-104.eadd.co:22338",
+		"node-regtest-105.eadd.co:22338",
+		"node-regtest-106.eadd.co:22338",
+		"node-regtest-107.eadd.co:22338",
 	}
 
 	copy.Foundation = testNetFoundation

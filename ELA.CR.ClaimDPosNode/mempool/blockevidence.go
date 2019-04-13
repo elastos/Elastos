@@ -58,11 +58,7 @@ func (bm *BlockPool) getConfirmSigners(confirm *payload.Confirm) ([][]byte, erro
 
 func (bm *BlockPool) CheckConfirmedBlockOnFork(height uint32, block *types.Block) error {
 	// main version >= H2
-	if height >= bm.chainParams.CRCOnlyDPOSHeight {
-		if !bm.IsCurrent() {
-			return nil
-		}
-
+	if height >= bm.chainParams.PublicDPOSHeight {
 		hash, err := bm.Store.GetBlockHash(block.Height)
 		if err != nil {
 			return err

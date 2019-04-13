@@ -41,11 +41,13 @@ func (f *naFilter) Filter(na *p2p.NetAddress) bool {
 // newPeerMsg represent a new connected peer.
 type newPeerMsg struct {
 	svr.IPeer
+	reply chan struct{}
 }
 
 // donePeerMsg represent a disconnected peer.
 type donePeerMsg struct {
 	svr.IPeer
+	reply chan struct{}
 }
 
 // relayMsg packages an inventory vector along with the newly discovered
@@ -797,22 +799,24 @@ func (s *server) handlePeerMsg(peers map[svr.IPeer]*serverPeer, p interface{}) {
 			OnReject:       sp.OnReject,
 			OnDAddr:        s.routes.QueueDAddr,
 		})
-		sp.Start()
 
 		peers[p.IPeer] = sp
 		s.routes.NewPeer(sp.Peer)
 		s.syncManager.NewPeer(sp.Peer)
+		p.reply <- struct{}{}
 
 	case donePeerMsg:
 		sp, ok := peers[p.IPeer]
 		if !ok {
 			log.Errorf("unknown done peer %v", p)
+			p.reply <- struct{}{}
 			return
 		}
 
 		delete(peers, p.IPeer)
 		s.routes.DonePeer(sp.Peer)
 		s.syncManager.DonePeer(sp.Peer)
+		p.reply <- struct{}{}
 	}
 }
 
@@ -823,12 +827,16 @@ func (s *server) Services() pact.ServiceFlag {
 
 // NewPeer adds a new peer that has already been connected to the server.
 func (s *server) NewPeer(p svr.IPeer) {
-	s.peerQueue <- newPeerMsg{p}
+	reply := make(chan struct{})
+	s.peerQueue <- newPeerMsg{p, reply}
+	<-reply
 }
 
 // DonePeer removes a peer that has already been connected to the server by ip.
 func (s *server) DonePeer(p svr.IPeer) {
-	s.peerQueue <- donePeerMsg{p}
+	reply := make(chan struct{})
+	s.peerQueue <- donePeerMsg{p, reply}
+	<-reply
 }
 
 // RelayInventory relays the passed inventory vector to all connected peers
@@ -890,6 +898,7 @@ func NewServer(dataDir string, cfg *Config) (*server, error) {
 	)
 	svrCfg.DataDir = dataDir
 	svrCfg.NAFilter = &naFilter{}
+	svrCfg.PermanentPeers = cfg.PermanentPeers
 
 	s := server{
 		chain:        cfg.Chain,

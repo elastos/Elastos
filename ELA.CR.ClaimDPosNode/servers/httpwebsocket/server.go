@@ -8,17 +8,17 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
-	. "github.com/elastos/Elastos.ELA/core/types"
-	. "github.com/elastos/Elastos.ELA/errors"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
-	. "github.com/elastos/Elastos.ELA/servers"
+	"github.com/elastos/Elastos.ELA/servers"
 
 	"github.com/gorilla/websocket"
-	"github.com/pborman/uuid"
 )
 
 const (
@@ -26,7 +26,7 @@ const (
 	sessionTimeout = time.Minute
 )
 
-var instance *WebSocketServer
+var instance *Server
 
 var (
 	PushBlockFlag    = true
@@ -35,60 +35,59 @@ var (
 	PushNewTxsFlag   = true
 )
 
-type Handler func(Params) map[string]interface{}
+type Handler func(servers.Params) map[string]interface{}
 
-type WebSocketServer struct {
+type Server struct {
 	sync.RWMutex
 	*http.Server
 	net.Listener
 	websocket.Upgrader
 
-	SessionList *SessionList
-	ActionMap   map[string]Handler
+	connCount int64
+	sessions  *sessions
+	handlers  map[string]Handler
 }
 
-func StartServer() {
+func Start() {
 	events.Subscribe(func(e *events.Event) {
 		switch e.Type {
 		case events.ETBlockConnected:
 			SendBlock2WSclient(e.Data)
 
 		case events.ETTransactionAccepted:
-			SendTransaction2WSclient(e.Data)
-
+			SendTx2Client(e.Data)
 		}
 	})
 
-	instance = &WebSocketServer{
-		Upgrader:    websocket.Upgrader{},
-		SessionList: &SessionList{OnlineList: make(map[string]*Session)},
+	instance = &Server{
+		Upgrader: websocket.Upgrader{},
+		sessions: &sessions{},
 	}
 	instance.Start()
-
 }
 
-func (server *WebSocketServer) Start() {
-	server.initializeMethods()
-	server.Upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+func (s *Server) Start() {
+	s.initMethods()
+	s.Upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
-	if config.Parameters.HttpWsPort%1000 == TlsPort {
+	if config.Parameters.HttpWsPort%1000 == servers.TlsPort {
 		var err error
-		server.Listener, err = server.initTlsListen()
+		s.Listener, err = s.initTlsListen()
 		if err != nil {
 			log.Error("Https Cert: ", err.Error())
 		}
 	} else {
 		var err error
-		server.Listener, err = net.Listen("tcp", ":"+strconv.Itoa(config.Parameters.HttpWsPort))
+		s.Listener, err = net.Listen("tcp", ":"+strconv.Itoa(config.Parameters.HttpWsPort))
 		if err != nil {
 			log.Fatal("net.Listen: ", err.Error())
 		}
 	}
 	var done = make(chan bool)
-	go server.checkSessionsTimeout(done)
+	go s.sessionHandler(done)
 
-	server.Server = &http.Server{Handler: http.HandlerFunc(server.webSocketHandler)}
-	err := server.Serve(server.Listener)
+	s.Server = &http.Server{Handler: http.HandlerFunc(s.Handler)}
+	err := s.Serve(s.Listener)
 
 	done <- true
 	if err != nil {
@@ -96,84 +95,81 @@ func (server *WebSocketServer) Start() {
 	}
 }
 
-func (server *WebSocketServer) initializeMethods() {
-	server.ActionMap = map[string]Handler{
-		"getconnectioncount": GetConnectionCount,
-		"getblockbyheight":   GetBlockByHeight,
-		"getblockbyhash":     GetBlockByHash,
-		"getblockheight":     GetBlockHeight,
-		"gettransaction":     GetTransactionByHash,
-		"getasset":           GetAssetByHash,
-		"getunspendoutput":   GetUnspendOutput,
-		"sendrawtransaction": SendRawTransaction,
-		"heartbeat":          server.heartBeat,
-		"getsessioncount":    server.getSessionCount,
+func (s *Server) initMethods() {
+	s.handlers = map[string]Handler{
+		"getconnectioncount": servers.GetConnectionCount,
+		"getblockbyheight":   servers.GetBlockByHeight,
+		"getblockbyhash":     servers.GetBlockByHash,
+		"getblockheight":     servers.GetBlockHeight,
+		"gettransaction":     servers.GetTransactionByHash,
+		"getasset":           servers.GetAssetByHash,
+		"getunspendoutput":   servers.GetUnspendOutput,
+		"sendrawtransaction": servers.SendRawTransaction,
+		"heartbeat":          s.heartBeat,
+		"getsessioncount":    s.getSessionCount,
 	}
 }
 
-func (server *WebSocketServer) heartBeat(cmd Params) map[string]interface{} {
-	return ResponsePack(Success, "123")
+func (s *Server) heartBeat(cmd servers.Params) map[string]interface{} {
+	return servers.ResponsePack(errors.Success, "123")
 }
 
-func (server *WebSocketServer) getSessionCount(cmd Params) map[string]interface{} {
-	return ResponsePack(Success, len(server.SessionList.OnlineList))
+func (s *Server) getSessionCount(cmd servers.Params) map[string]interface{} {
+	return servers.ResponsePack(errors.Success, s.sessions.Count())
 }
 
-func (server *WebSocketServer) Stop() {
-	server.Shutdown(context.Background())
+func (s *Server) Stop() {
+	s.Shutdown(context.Background())
 	log.Info("Close websocket ")
 }
 
-func (server *WebSocketServer) checkSessionsTimeout(done chan bool) {
+func (s *Server) sessionHandler(done chan bool) {
 	ticker := time.NewTicker(sessionTimeout)
 	defer ticker.Stop()
 	for {
 		select {
 		case <-ticker.C:
-			var closeList []*Session
-			server.SessionList.ForEachSession(func(v *Session) {
-				if v.SessionTimeoverCheck() {
-					resp := ResponsePack(SessionExpired, "")
-					server.response(v.SessionID, resp)
-					closeList = append(closeList, v)
+			now := time.Now()
+			s.sessions.Foreach(func(v *session) {
+				if v.lastActive.Add(sessionTimeout).After(now) {
+					return
 				}
+
+				resp := servers.ResponsePack(errors.SessionExpired, "")
+				s.response(v, resp)
+				s.sessions.Delete(v)
 			})
-			for _, s := range closeList {
-				server.SessionList.CloseSession(s)
-			}
+
 		case <-done:
 			return
 		}
 	}
-
 }
 
-//webSocketHandler
-func (server *WebSocketServer) webSocketHandler(w http.ResponseWriter, r *http.Request) {
-	wsConn, err := server.Upgrader.Upgrade(w, r, nil)
-
+func (s *Server) Handler(w http.ResponseWriter, r *http.Request) {
+	conn, err := s.Upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Error("websocket Upgrader: ", err)
 		return
 	}
-	defer wsConn.Close()
+	defer conn.Close()
 
-	newSession := &Session{
-		Connection: wsConn,
-		LastActive: time.Now().Unix(),
-		SessionID:  uuid.NewUUID().String(),
+	ss := &session{
+		id:         atomic.AddInt64(&s.connCount, 1),
+		conn:       conn,
+		lastActive: time.Now(),
 	}
-	server.SessionList.OnlineList[newSession.SessionID] = newSession
+	s.sessions.Store(ss.id, ss)
 
 	defer func() {
-		server.SessionList.CloseSession(newSession)
+		s.sessions.Delete(ss)
 	}()
 
 	for {
-		_, bysMsg, err := wsConn.ReadMessage()
+		_, bysMsg, err := conn.ReadMessage()
 		if err == nil {
-			if server.OnDataHandle(newSession, bysMsg, r) {
-				newSession.LastActive = time.Now().Unix()
+			if s.handle(ss, bysMsg, r) {
+				ss.lastActive = time.Now()
 			}
 			continue
 		}
@@ -185,7 +181,7 @@ func (server *WebSocketServer) webSocketHandler(w http.ResponseWriter, r *http.R
 	}
 }
 
-func (server *WebSocketServer) IsValidMsg(action string, reqMsg map[string]interface{}) bool {
+func (s *Server) IsValidMsg(action string, reqMsg map[string]interface{}) bool {
 	valid := true
 	switch action {
 	case "getblockbyheight":
@@ -210,53 +206,52 @@ func (server *WebSocketServer) IsValidMsg(action string, reqMsg map[string]inter
 	return valid
 }
 
-func (server *WebSocketServer) OnDataHandle(currentSession *Session, bysMsg []byte, r *http.Request) bool {
-
+func (s *Server) handle(ss *session, bysMsg []byte, r *http.Request) bool {
 	var req = make(map[string]interface{})
 
 	if err := json.Unmarshal(bysMsg, &req); err != nil {
-		resp := ResponsePack(IllegalDataFormat, "")
-		server.response(currentSession.SessionID, resp)
+		resp := servers.ResponsePack(errors.IllegalDataFormat, "")
+		s.response(ss, resp)
 		log.Error("websocket OnDataHandle:", err)
 		return false
 	}
-	actionName, ok := req["action"].(string)
+	action, ok := req["action"].(string)
 	if !ok {
-		resp := ResponsePack(InvalidMethod, "")
-		server.response(currentSession.SessionID, resp)
+		resp := servers.ResponsePack(errors.InvalidMethod, "")
+		s.response(ss, resp)
 		return false
 	}
-	action, ok := server.ActionMap[actionName]
+	handler, ok := s.handlers[action]
 	if !ok {
-		resp := ResponsePack(InvalidMethod, "")
-		server.response(currentSession.SessionID, resp)
+		resp := servers.ResponsePack(errors.InvalidMethod, "")
+		s.response(ss, resp)
 		return false
 	}
-	if !server.IsValidMsg(actionName, req) {
-		resp := ResponsePack(InvalidParams, "")
-		server.response(currentSession.SessionID, resp)
+	if !s.IsValidMsg(action, req) {
+		resp := servers.ResponsePack(errors.InvalidParams, "")
+		s.response(ss, resp)
 		return true
 	}
 
-	resp := action(req)
-	resp["Action"] = actionName
+	resp := handler(req)
+	resp["Action"] = action
 
-	server.response(currentSession.SessionID, resp)
+	s.response(ss, resp)
 
 	return true
 }
 
-func (server *WebSocketServer) response(sessionID string, resp map[string]interface{}) {
-	resp["Desc"] = ErrMap[resp["Error"].(ErrCode)]
+func (s *Server) response(ss *session, resp map[string]interface{}) {
+	resp["Desc"] = errors.ErrMap[resp["Error"].(errors.ErrCode)]
 	data, err := json.Marshal(resp)
 	if err != nil {
 		log.Error("Websocket response:", err)
 		return
 	}
-	server.SessionList.OnlineList[sessionID].Send(data)
+	ss.Send(data)
 }
 
-func SendTransaction2WSclient(v interface{}) {
+func SendTx2Client(v interface{}) {
 	if PushNewTxsFlag {
 		go func() {
 			instance.PushResult("sendnewtransaction", v)
@@ -282,12 +277,12 @@ func SendBlock2WSclient(v interface{}) {
 	}
 }
 
-func (server *WebSocketServer) PushResult(action string, v interface{}) {
+func (s *Server) PushResult(action string, v interface{}) {
 	var result interface{}
 	switch action {
 	case "sendblock", "sendrawblock":
-		if block, ok := v.(*Block); ok {
-			result = GetBlockInfo(block, true)
+		if block, ok := v.(*types.Block); ok {
+			result = servers.GetBlockInfo(block, true)
 		}
 		//case "sendrawblock":
 		//	if block, ok := v.(*Block); ok {
@@ -296,18 +291,18 @@ func (server *WebSocketServer) PushResult(action string, v interface{}) {
 		//		result = BytesToHexString(w.Bytes())
 		//	}
 	case "sendblocktransactions":
-		if block, ok := v.(*Block); ok {
-			result = GetBlockTransactions(block)
+		if block, ok := v.(*types.Block); ok {
+			result = servers.GetBlockTransactions(block)
 		}
 	case "sendnewtransaction":
-		if tx, ok := v.(*Transaction); ok {
-			result = GetTransactionInfo(nil, tx)
+		if tx, ok := v.(*types.Transaction); ok {
+			result = servers.GetTransactionInfo(nil, tx)
 		}
 	default:
 		log.Error("httpwebsocket/server.go in pushresult function: unknown action")
 	}
 
-	resp := ResponsePack(Success, result)
+	resp := servers.ResponsePack(errors.Success, result)
 	resp["Action"] = action
 
 	data, err := json.Marshal(resp)
@@ -315,17 +310,14 @@ func (server *WebSocketServer) PushResult(action string, v interface{}) {
 		log.Error("Websocket PushResult:", err)
 		return
 	}
-	server.broadcast(data)
-}
 
-func (server *WebSocketServer) broadcast(data []byte) error {
-	server.SessionList.ForEachSession(func(v *Session) {
+	// Broadcast message to all connected clients.
+	s.sessions.Foreach(func(v *session) {
 		v.Send(data)
 	})
-	return nil
 }
 
-func (server *WebSocketServer) initTlsListen() (net.Listener, error) {
+func (s *Server) initTlsListen() (net.Listener, error) {
 
 	CertPath := config.Parameters.RestCertPath
 	KeyPath := config.Parameters.RestKeyPath
