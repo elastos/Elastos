@@ -429,12 +429,13 @@ func (s *State) IsDPOSTransaction(tx *types.Transaction) bool {
 			}
 		}
 
-		// Cancel votes.
-		for _, input := range tx.Inputs {
-			_, ok := s.votes[input.ReferKey()]
-			if ok {
-				return true
-			}
+	}
+
+	// Cancel votes.
+	for _, input := range tx.Inputs {
+		_, ok := s.votes[input.ReferKey()]
+		if ok {
+			return true
 		}
 	}
 
@@ -552,6 +553,8 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 	case types.ReturnDepositCoin:
 		s.returnDeposit(tx, height)
 	}
+
+	s.processCancelVotes(tx, height)
 }
 
 // registerProducer handles the register producer transaction.
@@ -633,8 +636,9 @@ func (s *State) processVotes(tx *types.Transaction, height uint32) {
 			}
 		}
 	}
+}
 
-	// Cancel votes.
+func (s *State) processCancelVotes(tx *types.Transaction, height uint32) {
 	for _, input := range tx.Inputs {
 		output, ok := s.votes[input.ReferKey()]
 		if ok {

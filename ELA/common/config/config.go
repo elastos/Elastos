@@ -75,10 +75,13 @@ type Configuration struct {
 	Magic                uint32               `json:"Magic"`
 	Version              int                  `json:"Version"`
 	SeedList             []string             `json:"SeedList"`
+	PermanentPeers       []string             `json:"PermanentPeers"`
 	HttpInfoPort         uint16               `json:"HttpInfoPort"`
 	HttpInfoStart        bool                 `json:"HttpInfoStart"`
 	HttpRestPort         int                  `json:"HttpRestPort"`
+	HttpRestStart        bool                 `json:"HttpRestStart"`
 	HttpWsPort           int                  `json:"HttpWsPort"`
+	HttpWsStart          bool                 `json:"HttpWsStart"`
 	HttpJsonPort         int                  `json:"HttpJsonPort"`
 	NodePort             uint16               `json:"NodePort"`
 	PrintLevel           uint8                `json:"PrintLevel"`

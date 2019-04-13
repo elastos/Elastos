@@ -38,24 +38,32 @@ func TestHandlePeerMsg(t *testing.T) {
 	}
 
 	// New peers should be added.
+	reply := make(chan struct{}, 1)
 	p1, p2, p3 := mockPeer(), mockPeer(), mockPeer()
-	s.handlePeerMsg(peers, newPeerMsg{p1})
-	s.handlePeerMsg(peers, newPeerMsg{p2})
+	s.handlePeerMsg(peers, newPeerMsg{p1, reply})
+	<-reply
+	s.handlePeerMsg(peers, newPeerMsg{p2, reply})
+	<-reply
+
 	assert.Equal(t, 2, len(peers))
 
 	// Unknown done peer should not change peers.
-	s.handlePeerMsg(peers, donePeerMsg{p3})
+	s.handlePeerMsg(peers, donePeerMsg{p3, reply})
+	<-reply
 	assert.Equal(t, 2, len(peers))
 
 	// p1 should be removed.
-	s.handlePeerMsg(peers, donePeerMsg{p1})
+	s.handlePeerMsg(peers, donePeerMsg{p1, reply})
+	<-reply
 	assert.Equal(t, 1, len(peers))
 
 	// Same peer can not be removed twice.
-	s.handlePeerMsg(peers, donePeerMsg{p1})
+	s.handlePeerMsg(peers, donePeerMsg{p1, reply})
+	<-reply
 	assert.Equal(t, 1, len(peers))
 
 	// New peer can be added.
-	s.handlePeerMsg(peers, newPeerMsg{p3})
+	s.handlePeerMsg(peers, newPeerMsg{p3, reply})
+	<-reply
 	assert.Equal(t, 2, len(peers))
 }

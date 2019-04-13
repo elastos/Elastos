@@ -641,8 +641,8 @@ func SendRawTransaction(param Params) map[string]interface{} {
 		return ResponsePack(InvalidTransaction, err.Error())
 	}
 
-	if errCode := VerifyAndSendTx(&txn); errCode != Success {
-		return ResponsePack(errCode, errCode.Message())
+	if err := VerifyAndSendTx(&txn); err != nil {
+		return ResponsePack(err.(ErrCode), err.Error())
 	}
 
 	return ResponsePack(Success, ToReversedString(txn.Hash()))
@@ -1458,11 +1458,11 @@ func getOutputPayloadInfo(op OutputPayload) OutputPayloadInfo {
 	return nil
 }
 
-func VerifyAndSendTx(tx *Transaction) ErrCode {
+func VerifyAndSendTx(tx *Transaction) error {
 	// if transaction is verified unsuccessfully then will not put it into transaction pool
-	if errCode := TxMemPool.AppendToTxnPool(tx); errCode != Success {
-		log.Info("[httpjsonrpc] VerifyTransaction failed when AppendToTxnPool. Errcode:", errCode)
-		return errCode
+	if err := TxMemPool.AppendToTxPool(tx); err != nil {
+		log.Info("[httpjsonrpc] VerifyTransaction failed when AppendToTxnPool. Errcode:", err)
+		return err
 	}
 
 	// Relay tx inventory to other peers.
@@ -1470,7 +1470,7 @@ func VerifyAndSendTx(tx *Transaction) ErrCode {
 	iv := msg.NewInvVect(msg.InvTypeTx, &txHash)
 	Server.RelayInventory(iv, tx)
 
-	return Success
+	return nil
 }
 
 func ResponsePack(errCode ErrCode, result interface{}) map[string]interface{} {
