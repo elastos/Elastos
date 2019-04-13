@@ -1,12 +1,6 @@
-package p2p
+package dtime
 
-import (
-	"github.com/elastos/Elastos.ELA/dpos/dtime"
-	"github.com/elastos/Elastos.ELA/dpos/p2p/addrmgr"
-	"github.com/elastos/Elastos.ELA/dpos/p2p/connmgr"
-	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
-	"github.com/elastos/Elastos.ELA/utils/elalog"
-)
+import "github.com/elastos/Elastos.ELA/utils/elalog"
 
 // log is a logger that is initialized with no output filters.  This
 // means the package will not perform any logging by default until the caller
@@ -29,8 +23,4 @@ func DisableLog() {
 // using elalog.
 func UseLogger(logger elalog.Logger) {
 	log = logger
-	dtime.UseLogger(logger)
-	addrmgr.UseLogger(logger)
-	connmgr.UseLogger(logger)
-	peer.UseLogger(logger)
 }

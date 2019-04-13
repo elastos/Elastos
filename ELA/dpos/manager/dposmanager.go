@@ -9,6 +9,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/dpos/dtime"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	dp2p "github.com/elastos/Elastos.ELA/dpos/p2p"
 	dmsg "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
@@ -83,6 +84,7 @@ type DPOSManagerConfig struct {
 	PublicKey   []byte
 	Arbitrators state.Arbitrators
 	ChainParams *config.Params
+	TimeSource  dtime.MedianTimeSource // TODO use for consensus.
 	Server      elanet.Server
 }
 

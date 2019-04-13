@@ -10,6 +10,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/account"
+	"github.com/elastos/Elastos.ELA/dpos/dtime"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/manager"
 	"github.com/elastos/Elastos.ELA/dpos/p2p"
@@ -293,7 +294,7 @@ func (n *network) getCurrentHeight(pid peer.PID) uint64 {
 	return uint64(blockchain.DefaultLedger.Blockchain.GetHeight())
 }
 
-func NewDposNetwork(account account.Account,
+func NewDposNetwork(account account.Account, medianTime dtime.MedianTimeSource,
 	listener manager.NetworkEventListener) (*network, error) {
 	network := &network{
 		listener:                 listener,
@@ -316,6 +317,7 @@ func NewDposNetwork(account account.Account,
 		EnableHub:        true,
 		MagicNumber:      config.Parameters.ArbiterConfiguration.Magic,
 		DefaultPort:      config.Parameters.ArbiterConfiguration.NodePort,
+		TimeSource:       medianTime,
 		MakeEmptyMessage: makeEmptyMessage,
 		HandleMessage:    network.handleMessage,
 		PingNonce:        network.getCurrentHeight,

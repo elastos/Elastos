@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/crypto"
+	"github.com/elastos/Elastos.ELA/dpos/dtime"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/p2p"
@@ -44,9 +45,9 @@ func mockRemotePeer(pid peer.PID, priKey []byte, port uint16,
 
 	// Configure peer to act as a simnet node that offers no services.
 	cfg := &peer.Config{
-		PID:             pid,
-		Magic:           123123,
-		PingInterval:    defaultPingInterval,
+		PID:          pid,
+		Magic:        123123,
+		PingInterval: defaultPingInterval,
 		Sign: func(nonce []byte) []byte {
 			sign, _ := crypto.Sign(priKey, nonce)
 			return sign
@@ -93,9 +94,9 @@ func mockInboundPeer(addr PeerAddr, priKey []byte, pc chan<- *peer.Peer,
 	mc chan<- p2p.Message) error {
 	// Configure peer to act as a simnet node that offers no services.
 	cfg := &peer.Config{
-		PID:             addr.PID,
-		Magic:           123123,
-		PingInterval:    defaultPingInterval,
+		PID:          addr.PID,
+		Magic:        123123,
+		PingInterval: defaultPingInterval,
 		Sign: func(nonce []byte) []byte {
 			sign, _ := crypto.Sign(priKey, nonce)
 			return sign
@@ -150,9 +151,10 @@ func TestServerConnections(t *testing.T) {
 		port := 40000 + i
 
 		cfgs = append(cfgs, Config{
-			PID:             pid,
-			MagicNumber:     123123,
-			DefaultPort:     uint16(port),
+			PID:         pid,
+			MagicNumber: 123123,
+			DefaultPort: uint16(port),
+			TimeSource:  dtime.NewMedianTime(),
 			Sign: func(nonce []byte) []byte {
 				sign, _ := crypto.Sign(priKey, nonce)
 				return sign
@@ -231,9 +233,10 @@ func TestServer_ConnectPeers(t *testing.T) {
 	peerList := make([]peer.PID, 0, 100)
 	addrList := make(map[peer.PID]string)
 	server, err := NewServer(&Config{
-		PID:             pid,
-		MagicNumber:     123123,
-		DefaultPort:     20338,
+		PID:         pid,
+		MagicNumber: 123123,
+		DefaultPort: 20338,
+		TimeSource:  dtime.NewMedianTime(),
 		Sign: func(nonce []byte) []byte {
 			sign, _ := crypto.Sign(priKey, nonce)
 			return sign
@@ -442,9 +445,10 @@ func TestServer_PeersReconnect(t *testing.T) {
 	peerList := make([]peer.PID, 0, 100)
 	addrList := make(map[peer.PID]string)
 	server, err := NewServer(&Config{
-		PID:             pid,
-		MagicNumber:     123123,
-		DefaultPort:     20338,
+		PID:         pid,
+		MagicNumber: 123123,
+		DefaultPort: 20338,
+		TimeSource:  dtime.NewMedianTime(),
 		Sign: func(nonce []byte) []byte {
 			sign, _ := crypto.Sign(priKey, nonce)
 			return sign
@@ -500,9 +504,10 @@ func TestServer_BroadcastMessage(t *testing.T) {
 	peerList := make([]peer.PID, 0, 100)
 	addrList := make(map[peer.PID]string)
 	server, err := NewServer(&Config{
-		PID:             pid,
-		MagicNumber:     123123,
-		DefaultPort:     20338,
+		PID:         pid,
+		MagicNumber: 123123,
+		DefaultPort: 20338,
+		TimeSource:  dtime.NewMedianTime(),
 		Sign: func(nonce []byte) []byte {
 			sign, _ := crypto.Sign(priKey, nonce)
 			return sign
@@ -596,9 +601,10 @@ func TestServer_DumpPeersInfo(t *testing.T) {
 	peerList := make([]peer.PID, 0, 20)
 	addrList := make(map[peer.PID]string)
 	server, err := NewServer(&Config{
-		PID:             pid,
-		MagicNumber:     123123,
-		DefaultPort:     20338,
+		PID:         pid,
+		MagicNumber: 123123,
+		DefaultPort: 20338,
+		TimeSource:  dtime.NewMedianTime(),
 		Sign: func(nonce []byte) []byte {
 			sign, _ := crypto.Sign(priKey, nonce)
 			return sign
@@ -621,7 +627,7 @@ func TestServer_DumpPeersInfo(t *testing.T) {
 		priKeys = append(priKeys, priKey)
 		ePubKey, _ := pubKey.EncodePoint(true)
 		copy(pid[:], ePubKey)
-		port := 20000 + i
+		port := 20100 + i
 		peerList = append(peerList, pid)
 		addrList[pid] = fmt.Sprintf("127.0.0.1:%d", port)
 		server.AddAddr(pid, addrList[pid])
@@ -636,7 +642,7 @@ func TestServer_DumpPeersInfo(t *testing.T) {
 		priKey, pubKey, _ := crypto.GenerateKeyPair()
 		ePubKey, _ := pubKey.EncodePoint(true)
 		copy(pid[:], ePubKey)
-		port := 20010 + i
+		port := 20110 + i
 		peerList = append(peerList, pid)
 		err := mockRemotePeer(pid, priKey, port, peerChan, msgChan)
 		if !assert.NoError(t, err) {
