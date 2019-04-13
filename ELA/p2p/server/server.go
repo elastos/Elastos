@@ -176,6 +176,18 @@ func (sp *serverPeer) pushAddrMsg(addresses []*p2p.NetAddress) {
 	sp.addKnownAddresses(known)
 }
 
+// AssociateConnection associates the given conn to the peer.   Calling this
+// function when the peer is already connected will have no effect.
+func (sp *serverPeer) AssociateConnection(conn net.Conn) {
+	// Notify the new peer before starting the protocol negotiate, so the upper
+	// layer can receive version message and deal with it.
+	if sp.server.cfg.OnNewPeer != nil {
+		sp.server.cfg.OnNewPeer(sp)
+	}
+
+	sp.Peer.AssociateConnection(conn)
+}
+
 // OnVersion is invoked when a peer receives a version message and is
 // used to negotiate the protocol version details as well as kick start
 // the communications.
@@ -221,11 +233,6 @@ func (sp *serverPeer) OnVersion(_ *peer.Peer, v *msg.Version) {
 
 	// Add valid peer to the server.
 	sp.server.AddPeer(sp)
-
-	// Signal the new peer.
-	if sp.server.cfg.OnNewPeer != nil {
-		sp.server.cfg.OnNewPeer(sp)
-	}
 }
 
 // OnGetAddr is invoked when a peer receives a getaddr message and is used
@@ -785,12 +792,13 @@ func (s *server) outboundPeerConnected(c *connmgr.ConnReq, conn net.Conn) {
 // done along with other performing other desirable cleanup.
 func (s *server) peerDoneHandler(sp *serverPeer) {
 	sp.WaitForDisconnect()
-	s.peerQueue <- donePeerMsg(sp)
 
-	// Only tell sync manager we are gone if we ever told it we existed.
-	if sp.VersionKnown() && s.cfg.OnDonePeer != nil {
+	// Tell the upper layer we have done with the peer.
+	if s.cfg.OnDonePeer != nil {
 		s.cfg.OnDonePeer(sp)
 	}
+
+	s.peerQueue <- donePeerMsg(sp)
 }
 
 // peerHandler is used to handle peer operations such as adding and removing
