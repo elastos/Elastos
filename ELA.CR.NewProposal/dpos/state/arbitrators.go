@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"math"
 	"sort"
-	"strconv"
 	"strings"
 	"sync"
 
@@ -220,14 +220,12 @@ func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
 		}
 	case normalChange:
 		if err := a.clearingDPOSReward(block, true); err != nil {
-			panic("normal change fail when clear DPOS reward: " +
-				" transaction, height: " + strconv.FormatUint(uint64(
-				block.Height), 10))
+			panic(fmt.Sprintf("normal change fail when clear DPOS reward: "+
+				" transaction, height: %d", block.Height))
 		}
 		if err := a.NormalChange(block.Height); err != nil {
-			panic("normal change fail when finding an inactive arbitrators" +
-				" transaction, height: " + strconv.FormatUint(uint64(
-				block.Height), 10))
+			panic(fmt.Sprintf("normal change fail when finding an"+
+				" inactive arbitrators transaction, height: %d", block.Height))
 		}
 	case none:
 		a.accumulateReward(block)
@@ -333,7 +331,7 @@ func (a *arbitrators) DecreaseChainHeight(height uint32) {
 	defer a.mtx.Unlock()
 
 	if a.dutyIndex == 0 {
-		//todo complete me
+		a.dutyIndex = len(a.currentArbitrators) - 1
 	} else {
 		a.dutyIndex--
 	}
@@ -729,7 +727,7 @@ func (a *arbitrators) getBlockDPOSReward(block *types.Block) common.Fixed64 {
 		totalTxFx += tx.Fee
 	}
 
-	return common.Fixed64(math.Ceil(float64(totalTxFx +
+	return common.Fixed64(math.Ceil(float64(totalTxFx+
 		a.chainParams.RewardPerBlock) * 0.35))
 }
 

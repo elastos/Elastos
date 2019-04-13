@@ -8,49 +8,50 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type Session struct {
-	sync.Mutex
-	Connection *websocket.Conn
-	LastActive int64
-	SessionID  string
+type session struct {
+	mtx        sync.Mutex
+	id         int64
+	conn       *websocket.Conn
+	lastActive time.Time
 }
 
-type SessionList struct {
-	sync.RWMutex
-	OnlineList map[string]*Session //key is SessionID
-}
-
-const SessionTimeOut int64 = 120
-
-func (s *Session) Send(data []byte) error {
-	if s.Connection == nil {
+func (s *session) Send(data []byte) error {
+	if s.conn == nil {
 		return errors.New("WebSocket is null")
 	}
-	//https://godoc.org/github.com/gorilla/websocket
-	s.Lock()
-	defer s.Unlock()
-	return s.Connection.WriteMessage(websocket.TextMessage, data)
+
+	s.mtx.Lock()
+	err := s.conn.WriteMessage(websocket.TextMessage, data)
+	s.mtx.Unlock()
+	return err
 }
 
-func (s *Session) SessionTimeoverCheck() bool {
-	nCurTime := time.Now().Unix()
-	if nCurTime-s.LastActive > SessionTimeOut { //sec
+type sessions struct {
+	sync.Map
+}
+
+func (ss *sessions) Load(id int64) (*session, bool) {
+	v, ok := ss.Map.Load(id)
+	return v.(*session), ok
+}
+
+func (ss *sessions) Delete(s *session) {
+	s.conn.Close()
+	ss.Map.Delete(s.id)
+}
+
+func (ss *sessions) Count() int {
+	count := 0
+	ss.Map.Range(func(k, v interface{}) bool {
+		count++
 		return true
-	} else {
-		return false
-	}
+	})
+	return count
 }
 
-func (sl *SessionList) CloseSession(session *Session) {
-	delete(sl.OnlineList, session.SessionID)
-	session.Connection.Close()
-	session.SessionID = ""
-}
-
-func (sl *SessionList) ForEachSession(visit func(*Session)) {
-	sl.RLock()
-	defer sl.RUnlock()
-	for _, v := range sl.OnlineList {
-		visit(v)
-	}
+func (ss *sessions) Foreach(f func(*session)) {
+	ss.Map.Range(func(k, v interface{}) bool {
+		f(v.(*session))
+		return true
+	})
 }
