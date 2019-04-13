@@ -9,6 +9,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/account"
+	"github.com/elastos/Elastos.ELA/dpos/dtime"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/manager"
 	dp2p "github.com/elastos/Elastos.ELA/dpos/p2p"
@@ -139,14 +140,16 @@ func NewArbitrator(account account.Account, cfg Config) (*Arbitrator, error) {
 	log.Init(cfg.Params.PrintLevel, cfg.Params.MaxPerLogSize,
 		cfg.Params.MaxLogsSize)
 
+	medianTime := dtime.NewMedianTime()
 	dposManager := manager.NewManager(manager.DPOSManagerConfig{
 		PublicKey:   account.PublicKeyBytes(),
 		Arbitrators: cfg.Arbitrators,
 		ChainParams: cfg.ChainParams,
+		TimeSource:  medianTime,
 		Server:      cfg.Server,
 	})
 
-	network, err := NewDposNetwork(account, dposManager)
+	network, err := NewDposNetwork(account, medianTime, dposManager)
 	if err != nil {
 		log.Error("Init p2p network error")
 		return nil, err

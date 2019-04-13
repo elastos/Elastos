@@ -4,6 +4,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/dpos/dtime"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/p2p"
 )
@@ -33,6 +34,10 @@ type Config struct {
 
 	// DefaultPort defines the default peer-to-peer port for the network.
 	DefaultPort uint16
+
+	// TimeSource defines the median time source to use for things such as
+	// view changing.
+	TimeSource dtime.MedianTimeSource
 
 	// ConnectTimeout is the duration before we timeout a dial to peer.
 	ConnectTimeout time.Duration
