@@ -23,7 +23,7 @@ type PeerMock interface {
 
 func NewPeerMock(params *config.Params) PeerMock {
 	p := &peerMock{
-		TxPool:    mempool.NewTxPool(),
+		TxPool:    mempool.NewTxPool(params),
 		BlockPool: mempool.NewBlockPool(params),
 		relayList: make([]p2p.Message, 0),
 	}
