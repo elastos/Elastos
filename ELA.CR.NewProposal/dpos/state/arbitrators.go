@@ -166,7 +166,7 @@ func (a *arbitrators) DecreaseChainHeight(height uint32) {
 	defer a.mtx.Unlock()
 
 	if a.dutyIndex == 0 {
-		//todo complete me
+		a.dutyIndex = len(a.currentArbitrators) - 1
 	} else {
 		a.dutyIndex--
 	}

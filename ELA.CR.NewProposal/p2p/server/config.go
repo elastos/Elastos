@@ -33,6 +33,9 @@ type Config struct {
 	// SeedPeers are the peers to connect with at startup.
 	SeedPeers []string
 
+	// PermanentPeers are the peers need to be connected permanently.
+	PermanentPeers []string
+
 	// ListenAddrs are the addresses listen on to accept peer connections.
 	ListenAddrs []string
 

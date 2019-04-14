@@ -5,7 +5,6 @@ var Template = Configuration{
 	Version:            23,
 	SeedList:           []string{"127.0.0.1:30338"},
 	HttpInfoPort:       20333,
-	HttpInfoStart:      true,
 	HttpRestPort:       20334,
 	HttpWsPort:         20335,
 	HttpJsonPort:       20336,

@@ -733,11 +733,14 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 
 		// roll back state about the last block before disconnect
 		if block.Height-1 >= b.chainParams.VoteStartHeight {
-			err = b.state.RollbackTo(block.Height - 1)
+			err = DefaultLedger.Arbitrators.RollbackTo(block.Height - 1)
 			if err != nil {
 				return err
 			}
 		}
+
+		log.Info("disconnect block:", block.Height)
+		DefaultLedger.Arbitrators.DumpInfo()
 
 		err = b.disconnectBlock(n, block, confirm)
 		if err != nil {
@@ -751,6 +754,8 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 		block := b.blockCache[*n.Hash]
 		confirm := b.confirmCache[*n.Hash]
 
+
+		log.Info("connect block:", block.Height)
 		err := b.connectBlock(n, block, confirm)
 		if err != nil {
 			return err
@@ -912,12 +917,12 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 	// Connect the passed block to the chain while respecting proper chain
 	// selection according to the chain with the most proof of work.  This
 	// also handles validation of the transaction scripts.
-	inMainChain, err := b.connectBestChain(newNode, block, confirm)
+	inMainChain, reorganized, err := b.connectBestChain(newNode, block, confirm)
 	if err != nil {
 		return false, err
 	}
 
-	if inMainChain && (block.Height >= b.chainParams.VoteStartHeight ||
+	if inMainChain && !reorganized && (block.Height >= b.chainParams.VoteStartHeight ||
 		// In case of VoteStartHeight larger than (CRCOnlyDPOSHeight-PreConnectOffset)
 		block.Height == b.chainParams.CRCOnlyDPOSHeight-b.chainParams.
 			PreConnectOffset) {
@@ -942,7 +947,7 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 	return inMainChain, nil
 }
 
-func (b *BlockChain) connectBestChain(node *BlockNode, block *Block, confirm *payload.Confirm) (bool, error) {
+func (b *BlockChain) connectBestChain(node *BlockNode, block *Block, confirm *payload.Confirm) (bool, bool, error) {
 	// We haven't selected a best chain yet or we are extending the main
 	// (best) chain with a new block.  This is the most common case.
 
@@ -960,7 +965,7 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *Block, confirm *pa
 		// Connect the block to the main chain.
 		err := b.connectBlock(node, block, confirm)
 		if err != nil {
-			return false, err
+			return false, false, err
 		}
 
 		// Connect the parent node to this node.
@@ -968,7 +973,7 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *Block, confirm *pa
 			node.Parent.Children = append(node.Parent.Children, node)
 		}
 
-		return true, nil
+		return true, false, nil
 	}
 
 	// We're extending (or creating) a side chain which may or may not
@@ -1008,7 +1013,7 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *Block, confirm *pa
 				node.Hash.Bytes(), fork.Height, fork.Hash.Bytes())
 		}
 
-		return false, nil
+		return false, false, nil
 	}
 
 	// We're extending (or creating) a side chain and the cumulative work
@@ -1022,7 +1027,7 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *Block, confirm *pa
 	// forbid reorganize if detaching nodes more than irreversibleHeight
 	if block.Height > b.chainParams.CRCOnlyDPOSHeight &&
 		detachNodes.Len() > irreversibleHeight {
-		return false, nil
+		return false, false, nil
 	}
 	//for e := detachNodes.Front(); e != nil; e = e.Next() {
 	//	n := e.Value.(*BlockNode)
@@ -1038,10 +1043,10 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *Block, confirm *pa
 	log.Infof("REORGANIZE: Block %v is causing a reorganize.", node.Hash)
 	err := b.reorganizeChain(detachNodes, attachNodes)
 	if err != nil {
-		return false, err
+		return false, false, err
 	}
 
-	return true, nil
+	return true, true, nil
 }
 
 // ReorganizeChain reorganize chain by specify a block, this method shall not

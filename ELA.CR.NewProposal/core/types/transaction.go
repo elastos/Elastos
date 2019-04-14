@@ -254,7 +254,7 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 
 	err = tx.Payload.Deserialize(r, tx.PayloadVersion)
 	if err != nil {
-		return errors.New("deserialize Payload failed")
+		return errors.New("deserialize Payload failed: " + err.Error())
 	}
 	// attributes
 	count, err := common.ReadVarUint(r, 0)

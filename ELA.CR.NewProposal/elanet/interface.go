@@ -17,6 +17,9 @@ type Config struct {
 	// ChainParams is the initial parameters to start the blockchain.
 	ChainParams *config.Params
 
+	// PermanentPeers are the peers need to be connected permanently.
+	PermanentPeers []string
+
 	// TxMemPool is the transaction mempool.
 	TxMemPool *mempool.TxPool
 
