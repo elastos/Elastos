@@ -75,6 +75,6 @@ var ErrMap = map[ErrCode]string{
 	ErrIneffectiveCoinbase:    "INTERNAL ERROR, ErrIneffectiveCoinbase",
 }
 
-func (code ErrCode) Message() string {
+func (code ErrCode) Error() string {
 	return ErrMap[code]
 }

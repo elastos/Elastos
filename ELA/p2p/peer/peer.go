@@ -763,6 +763,7 @@ func (p *Peer) Disconnect() {
 	if atomic.LoadInt32(&p.connected) != 0 {
 		p.conn.Close()
 	}
+	atomic.StoreInt32(&p.started, 0)
 	close(p.quit)
 }
 
@@ -895,8 +896,8 @@ func (p *Peer) negotiateOutboundProtocol() error {
 	return p.readRemoteVersionMsg()
 }
 
-// negotiateProtocol negotiates the peer-to-peer network protocol.
-func (p *Peer) negotiateProtocol() error {
+// start begins processing input and output messages.
+func (p *Peer) start() error {
 	negotiateErr := make(chan error, 1)
 	go func() {
 		if p.inbound {
@@ -917,21 +918,16 @@ func (p *Peer) negotiateProtocol() error {
 	}
 	log.Debugf("Connected to %s", p.Addr())
 
-	return p.writeMessage(&msg.VerAck{})
-}
-
-// Start begins processing input and output messages.
-func (p *Peer) Start() {
-	if !atomic.CompareAndSwapInt32(&p.started, 0, 1) {
-		log.Warnf("%s already started", p)
-		return
-	}
-
 	// The protocol has been negotiated successfully so start processing input
 	// and output messages.
+	atomic.StoreInt32(&p.started, 1)
 	go p.inHandler()
 	go p.outHandler()
 	go p.pingHandler()
+
+	// Send our verack message now that the IO processing machinery has started.
+	p.SendMessage(&msg.VerAck{}, nil)
+	return nil
 }
 
 // AssociateConnection associates the given conn to the peer.   Calling this
@@ -961,7 +957,7 @@ func (p *Peer) AssociateConnection(conn net.Conn) {
 	}
 
 	go func() {
-		if err := p.negotiateProtocol(); err != nil {
+		if err := p.start(); err != nil {
 			log.Debugf("Cannot negotiate peer %v: %v", p, err)
 			p.Disconnect()
 		}

@@ -218,12 +218,12 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 	if p.processingProposal != nil && d.Hash().IsEqual(
 		p.processingProposal.Hash()) {
 		log.Info("already processing proposal")
-		return true, false
+		return true, true
 	}
 
 	if _, err := blockchain.DefaultLedger.Blockchain.GetBlockByHash(d.BlockHash); err == nil {
 		log.Info("already exist block in block chain")
-		return true, false
+		return true, true
 	}
 
 	if d.ViewOffset != p.cfg.Consensus.GetViewOffset() {

@@ -38,7 +38,7 @@ func TestErrCode_Message(t *testing.T) {
 		InternalError,
 	}
 	for _, errorCode := range errorCodeArray {
-		message := errorCode.Message()
+		message := errorCode.Error()
 		if message == "" {
 			t.Error(errorCode, "Should have message")
 		}
