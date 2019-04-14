@@ -56,6 +56,7 @@ type arbitrators struct {
 
 	nextArbitrators             [][]byte
 	nextCandidates              [][]byte
+	crcArbiters                 [][]byte
 	crcArbitratorsProgramHashes map[common.Uint168]interface{}
 	crcArbitratorsNodePublicKey map[string]*Producer
 	accumulativeReward          common.Fixed64
@@ -413,6 +414,14 @@ func (a *arbitrators) GetNextArbitrators() [][]byte {
 func (a *arbitrators) GetNextCandidates() [][]byte {
 	a.mtx.Lock()
 	result := a.nextCandidates
+	a.mtx.Unlock()
+
+	return result
+}
+
+func (a *arbitrators) GetCRCArbiters() [][]byte {
+	a.mtx.Lock()
+	result := a.crcArbiters
 	a.mtx.Unlock()
 
 	return result
@@ -789,6 +798,7 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
 
 	crcNodeMap := make(map[string]*Producer)
 	crcArbitratorsProgramHashes := make(map[common.Uint168]interface{})
+	crcArbiters := make([][]byte, len(chainParams.CRCArbiters))
 	for _, v := range chainParams.CRCArbiters {
 		pubKey, err := hex.DecodeString(v.PublicKey)
 		if err != nil {
@@ -798,6 +808,7 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
 		if err != nil {
 			return nil, err
 		}
+		crcArbiters = append(crcArbiters, pubKey)
 		crcArbitratorsProgramHashes[*hash] = nil
 		crcNodeMap[v.PublicKey] = &Producer{ // here need crc NODE public key
 			info: payload.ProducerInfo{
@@ -819,6 +830,7 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
 		currentOwnerProgramHashes:   originArbitersProgramHashes,
 		nextArbitrators:             originArbiters,
 		nextCandidates:              make([][]byte, 0),
+		crcArbiters:                 crcArbiters,
 		crcArbitratorsNodePublicKey: crcNodeMap,
 		crcArbitratorsProgramHashes: crcArbitratorsProgramHashes,
 		accumulativeReward:          common.Fixed64(0),

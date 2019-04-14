@@ -85,7 +85,7 @@ func TestTxPoolInit(t *testing.T) {
 	//	Store:            dposStore,
 	//})
 
-	txPool = NewTxPool()
+	txPool = NewTxPool(&config.DefaultParams)
 }
 
 func TestTxPool_VerifyDuplicateSidechainTx(t *testing.T) {
@@ -296,7 +296,7 @@ func TestTxPool_AppendToTxnPool(t *testing.T) {
 }
 
 func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
-	txPool = NewTxPool()
+	txPool = NewTxPool(&config.DefaultParams)
 	var input *types.Input
 	var inputTxID common.Uint256
 	inputTxIDBytes, _ := hex.DecodeString("b07c062090c44682e29832f1993d4a0f47e49a148d8b0e07d739a32670ff3a95")
@@ -404,7 +404,7 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	rand.Read(sideBlockHash5[:])
 	fmt.Println("sideBlockHash5:", sideBlockHash5)
 
-	txPool = NewTxPool()
+	txPool = NewTxPool(&config.DefaultParams)
 	//two mock transactions again, they have some identical sidechain hashes
 	tx3 := new(types.Transaction)
 	tx3.TxType = types.WithdrawFromSideChain
@@ -498,7 +498,7 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 
 	/*------------------------------------------------------------*/
 	/* check double spend and duplicate txs */
-	txPool = NewTxPool()
+	txPool = NewTxPool(&config.DefaultParams)
 
 	txPool.addToTxList(tx4)
 	for _, v := range tx4.Inputs {

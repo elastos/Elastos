@@ -158,6 +158,10 @@ func (a *ArbitratorsMock) GetNextCandidates() [][]byte {
 	return a.NextCandidates
 }
 
+func (a *ArbitratorsMock) GetCRCArbiters() [][]byte {
+	return a.CRCArbitrators
+}
+
 func (a *ArbitratorsMock) GetDutyChangedCount() int {
 	return a.DutyChangedCount
 }
