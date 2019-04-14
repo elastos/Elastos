@@ -97,10 +97,11 @@ func main() {
 	blockMemPool.Chain = chain
 
 	server, err := elanet.NewServer(dataDir, &elanet.Config{
-		Chain:        chain,
-		ChainParams:  activeNetParams,
-		TxMemPool:    txMemPool,
-		BlockMemPool: blockMemPool,
+		Chain:          chain,
+		ChainParams:    activeNetParams,
+		PermanentPeers: cfg.PermanentPeers,
+		TxMemPool:      txMemPool,
+		BlockMemPool:   blockMemPool,
 	})
 	if err != nil {
 		printErrorAndExit(err)
@@ -177,8 +178,12 @@ func main() {
 
 	log.Info("Start services")
 	go httpjsonrpc.StartRPCServer()
-	go httprestful.StartServer()
-	go httpwebsocket.StartServer()
+	if config.Parameters.HttpRestStart {
+		go httprestful.StartServer()
+	}
+	if config.Parameters.HttpWsStart {
+		go httpwebsocket.Start()
+	}
 	if config.Parameters.HttpInfoStart {
 		go httpnodeinfo.StartServer()
 	}

@@ -361,6 +361,40 @@ func (s *server) handlePeerMsg(state *peerState, sp interface{}) {
 	}
 }
 
+// clearDisconnected remove the disconnected peers from peer state, returns
+// if peers have been removed.
+func clearDisconnected(state *peerState) int {
+	var cleared int
+	// Clear disconnected persistent peers
+	for id, p := range state.persistentPeers {
+		if p.Connected() {
+			continue
+		}
+		delete(state.persistentPeers, id)
+		cleared++
+	}
+
+	// Clear disconnected outbound peers
+	for id, p := range state.outboundPeers {
+		if p.Connected() {
+			continue
+		}
+		delete(state.outboundPeers, id)
+		cleared++
+	}
+
+	// Clear disconnected inbound peers
+	for id, p := range state.inboundPeers {
+		if p.Connected() {
+			continue
+		}
+		delete(state.inboundPeers, id)
+		cleared++
+	}
+
+	return cleared
+}
+
 // handleAddPeerMsg deals with adding new peers.  It is invoked from the
 // peerHandler goroutine.
 func (s *server) handleAddPeerMsg(state *peerState, sp *serverPeer) bool {
@@ -394,14 +428,36 @@ func (s *server) handleAddPeerMsg(state *peerState, sp *serverPeer) bool {
 		delete(state.banned, host)
 	}
 
-	// TODO: Check for max peers from a single IP.
-
 	// Limit max number of total peers.
 	if state.Count() >= s.cfg.MaxPeers {
-		log.Infof("Max peers reached [%d] - disconnecting peer %s", s.cfg.MaxPeers, sp)
-		sp.Disconnect()
-		// TODO: how to handle permanent peers here?
-		// they should be rescheduled.
+		cleared := clearDisconnected(state)
+		if cleared > 0 {
+			log.Debugf("Clear %d peers from state", cleared)
+			return true
+		}
+
+		if !sp.persistent {
+			log.Infof("Max peers reached [%d] - disconnecting peer %s",
+				s.cfg.MaxPeers, sp)
+			sp.Disconnect()
+			return false
+		}
+
+		// If this is a permanent peer, disconnect a inbound or outbound peer
+		// to let the peer come in.
+		if len(state.inboundPeers) > 0 {
+			for _, p := range state.inboundPeers {
+				p.Disconnect()
+				return true
+			}
+		}
+		if len(state.outboundPeers) > 0 {
+			for _, p := range state.outboundPeers {
+				p.Disconnect()
+				return true
+			}
+		}
+
 		return false
 	}
 
@@ -704,8 +760,8 @@ func (s *server) inboundPeerConnected(conn net.Conn) {
 	sp := newServerPeer(s, false)
 	sp.isWhitelisted = s.cfg.inWhitelist(conn.RemoteAddr())
 	sp.Peer = peer.NewInboundPeer(newPeerConfig(sp))
-	go s.peerDoneHandler(sp)
 	sp.AssociateConnection(conn)
+	go s.peerDoneHandler(sp)
 }
 
 // outboundPeerConnected is invoked by the connection manager when a new
@@ -723,8 +779,8 @@ func (s *server) outboundPeerConnected(c *connmgr.ConnReq, conn net.Conn) {
 	sp.Peer = p
 	sp.connReq = c
 	sp.isWhitelisted = s.cfg.inWhitelist(conn.RemoteAddr())
-	go s.peerDoneHandler(sp)
 	sp.AssociateConnection(conn)
+	go s.peerDoneHandler(sp)
 	s.addrManager.Attempt(sp.NA())
 }
 
@@ -758,7 +814,7 @@ func (s *server) peerHandler() {
 		outboundGroups:  make(map[string]int),
 	}
 
-	// Startup persistent peers.
+	// Connect seed peers first.
 	for _, addr := range s.cfg.SeedPeers {
 		netAddr, err := addrStringToNetAddr(addr)
 		if err != nil {
@@ -771,10 +827,19 @@ func (s *server) peerHandler() {
 			continue
 		}
 
-		go s.connManager.Connect(&connmgr.ConnReq{
-			Addr:      netAddr,
-			Permanent: true,
-		})
+		go s.connManager.Connect(&connmgr.ConnReq{Addr: netAddr})
+	}
+
+	// Connect permanent peers if there are.  Permanent peers will not added to
+	// AddrManager so they won't be relayed.
+	for _, addr := range s.cfg.PermanentPeers {
+		netAddr, err := addrStringToNetAddr(addr)
+		if err != nil {
+			continue
+		}
+
+		go s.connManager.Connect(&connmgr.ConnReq{Addr: netAddr,
+			Permanent: true})
 	}
 
 	go s.connManager.Start()
