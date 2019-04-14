@@ -167,6 +167,12 @@ func (s *State) getProducerKey(publicKey []byte) string {
 // owner public key, if no matches return nil.
 func (s *State) getProducer(publicKey []byte) *Producer {
 	key := s.getProducerKey(publicKey)
+	return s.getProducerByOwnerPublicKey(key)
+}
+
+// getProducer returns a producer with the producer's owner public key,
+// if no matches return nil.
+func (s *State) getProducerByOwnerPublicKey(key string) *Producer {
 	if producer, ok := s.activityProducers[key]; ok {
 		return producer
 	}
@@ -385,6 +391,24 @@ func (s *State) ProducerExists(publicKey []byte) bool {
 	producer := s.getProducer(publicKey)
 	s.mtx.RUnlock()
 	return producer != nil
+}
+
+// ProducerExists returns if a producer is exists by it's owner public key.
+func (s *State) ProducerOwnerPublicKeyExists(publicKey []byte) bool {
+	s.mtx.RLock()
+	key := hex.EncodeToString(publicKey)
+	producer := s.getProducerByOwnerPublicKey(key)
+	s.mtx.RUnlock()
+	return producer != nil
+}
+
+// ProducerExists returns if a producer is exists by it's node public key.
+func (s *State) ProducerNodePublicKeyExists(publicKey []byte) bool {
+	s.mtx.RLock()
+	key := hex.EncodeToString(publicKey)
+	_, ok := s.nodeOwnerKeys[key]
+	s.mtx.RUnlock()
+	return ok
 }
 
 // SpecialTxExists returns if a special tx (typically means illegal and

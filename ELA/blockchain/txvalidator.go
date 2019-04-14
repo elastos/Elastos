@@ -908,12 +908,12 @@ func (b *BlockChain) checkRegisterProducerTransaction(txn *Transaction) error {
 	}
 
 	// check duplication of node.
-	if b.state.ProducerExists(info.NodePublicKey) {
+	if b.state.ProducerNodePublicKeyExists(info.NodePublicKey) {
 		return fmt.Errorf("producer already registered")
 	}
 
 	// check duplication of owner.
-	if b.state.ProducerExists(info.OwnerPublicKey) {
+	if b.state.ProducerOwnerPublicKeyExists(info.OwnerPublicKey) {
 		return fmt.Errorf("producer owner already registered")
 	}
 
@@ -1086,7 +1086,7 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 
 	// check node public key duplication
 	if !bytes.Equal(info.NodePublicKey, producer.Info().NodePublicKey) &&
-		b.state.ProducerExists(info.NodePublicKey) {
+		b.state.ProducerNodePublicKeyExists(info.NodePublicKey) {
 		return fmt.Errorf("producer %s already exist",
 			hex.EncodeToString(info.NodePublicKey))
 	}
