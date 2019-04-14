@@ -92,7 +92,7 @@ func main() {
 	}
 	defer dposStore.Close()
 
-	txMemPool := mempool.NewTxPool()
+	txMemPool := mempool.NewTxPool(activeNetParams)
 	blockMemPool := mempool.NewBlockPool(activeNetParams)
 	blockMemPool.Store = chainStore
 

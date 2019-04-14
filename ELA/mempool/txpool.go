@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"sort"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -18,13 +19,15 @@ import (
 )
 
 type TxPool struct {
+	chainParams *config.Params
+
 	sync.RWMutex
 	txnList         map[Uint256]*Transaction // transaction which have been verifyed will put into this map
 	inputUTXOList   map[string]*Transaction  // transaction which pass the verify will add the UTXO to this map
 	sidechainTxList map[Uint256]*Transaction // sidechain tx pool
 	ownerPublicKeys map[string]struct{}
 	nodePublicKeys  map[string]struct{}
-	specialTxList   map[Uint256]struct{} 	// specialTxList holds the payload hashes of all illegal transactions and inactive arbitrators transactions
+	specialTxList   map[Uint256]struct{} // specialTxList holds the payload hashes of all illegal transactions and inactive arbitrators transactions
 }
 
 //append transaction to txnpool when check ok.
@@ -502,11 +505,22 @@ func (mp *TxPool) cleanSidechainTx(txs []*Transaction) {
 
 // clean the sidechainpow tx pool
 func (mp *TxPool) cleanSideChainPowTx() {
-	arbitrator := blockchain.DefaultLedger.Arbitrators.GetOnDutyArbitrator()
+	var arbiter []byte
+	height := blockchain.DefaultLedger.Blockchain.GetHeight()
+	if height < mp.chainParams.CRCOnlyDPOSHeight-1 {
+		arbiter = blockchain.DefaultLedger.Arbitrators.GetOnDutyArbitrator()
+	} else {
+		crcArbiters := blockchain.DefaultLedger.Arbitrators.GetCRCArbiters()
+		sort.Slice(crcArbiters, func(i, j int) bool {
+			return bytes.Compare(crcArbiters[i], crcArbiters[j]) < 0
+		})
+		ondutyIndex := int(height-mp.chainParams.CRCOnlyDPOSHeight+1) % len(crcArbiters)
+		arbiter = crcArbiters[ondutyIndex]
+	}
 
 	for hash, txn := range mp.txnList {
 		if txn.IsSideChainPowTx() {
-			if err := blockchain.CheckSideChainPowConsensus(txn, arbitrator); err != nil {
+			if err := blockchain.CheckSideChainPowConsensus(txn, arbiter); err != nil {
 				// delete tx
 				delete(mp.txnList, hash)
 				//delete utxo map
@@ -587,8 +601,9 @@ func (mp *TxPool) RemoveTransaction(txn *Transaction) {
 	mp.Unlock()
 }
 
-func NewTxPool() *TxPool {
+func NewTxPool(params *config.Params) *TxPool {
 	return &TxPool{
+		chainParams:     params,
 		inputUTXOList:   make(map[string]*Transaction),
 		txnList:         make(map[Uint256]*Transaction),
 		sidechainTxList: make(map[Uint256]*Transaction),

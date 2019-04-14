@@ -795,13 +795,18 @@ func (b *BlockChain) checkWithdrawFromSideChainTransaction(txn *Transaction, ref
 }
 
 func (b *BlockChain) checkCrossChainArbitrators(publicKeys [][]byte) error {
-	arbitrators := DefaultLedger.Arbitrators.GetArbitrators()
-	if len(arbitrators) != len(publicKeys) {
+	arbiters := make([][]byte, 0)
+	if DefaultLedger.Blockchain.GetHeight() < b.chainParams.CRCOnlyDPOSHeight - 1 {
+		arbiters = DefaultLedger.Arbitrators.GetArbitrators()
+	} else {
+		arbiters = DefaultLedger.Arbitrators.GetCRCArbiters()
+	}
+	if len(arbiters) != len(publicKeys) {
 		return errors.New("invalid arbitrator count")
 	}
 
 	arbitratorsMap := make(map[string]interface{})
-	for _, arbitrator := range arbitrators {
+	for _, arbitrator := range arbiters {
 		found := false
 		for _, pk := range publicKeys {
 			if bytes.Equal(arbitrator, pk[1:]) {
