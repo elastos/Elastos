@@ -101,6 +101,7 @@ var MainNetParams = config.Params{
 	MinCrossChainTxFee: 10000,
 
 	SpvParams: MainNetSpvParams,
+	CheckPowHeaderHeight: 160340,
 }
 
 // TestNetParams defines the network parameters for the test network.
@@ -120,4 +121,5 @@ var TestNetParams = config.Params{
 	Foundation: testNetFoundation,
 
 	SpvParams: TestNetSpvParams,
+	CheckPowHeaderHeight: 160340,
 }
