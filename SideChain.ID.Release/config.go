@@ -61,6 +61,7 @@ type config struct {
 			Pass        string
 			WhiteIPList []string
 		}
+		CheckPowHeaderHeight uint32
 	}
 }
 
@@ -188,7 +189,9 @@ func loadNewConfig() (*appConfig, error) {
 	if len(config.MainChainFoundationAddress) > 0 {
 		activeNetParams.SpvParams.Foundation = config.MainChainFoundationAddress
 	}
-
+	if config.CheckPowHeaderHeight > 0 {
+		activeNetParams.CheckPowHeaderHeight = config.CheckPowHeaderHeight
+	}
 	if powCfg.InstantBlock {
 		// generate block instantly
 		activeNetParams.PowLimitBits = 0x207fffff
