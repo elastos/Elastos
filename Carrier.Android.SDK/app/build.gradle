@@ -29,7 +29,7 @@ android {
     }
     sourceSets {
         main {
-            jniLibs.srcDirs = ['native-dist/libs']
+            jniLibs.srcDirs = ['native-dist/lib']
         }
     }
     externalNativeBuild {

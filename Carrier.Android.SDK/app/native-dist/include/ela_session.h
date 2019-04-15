@@ -63,6 +63,7 @@ extern "C" {
 #define ELA_MAX_USER_DATA_LEN   2048
 
 typedef struct ElaSession ElaSession;
+typedef ptrdiff_t       ssize_t;
 
 /**
  * \~English
