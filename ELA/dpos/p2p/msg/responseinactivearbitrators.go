@@ -7,7 +7,7 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
-const ResponseInactiveArbitratorsLength = 32 + 33 + 64
+const ResponseInactiveArbitratorsLength = 32 + 33 + 64 + 8*2
 
 type ResponseInactiveArbitrators struct {
 	TxHash common.Uint256

@@ -405,6 +405,8 @@ func (p *ProposalDispatcher) OnIllegalBlocksTxReceived(i *payload.DPOSIllegalBlo
 
 func (p *ProposalDispatcher) OnInactiveArbitratorsReceived(
 	tx *types.Transaction) {
+	log.Info("[OnInactiveArbitratorsReceived] received inactive tx")
+
 	if !p.IsViewChangedTimeOut() {
 		log.Warn("[OnInactiveArbitratorsReceived] received inactive" +
 			" arbitrators transaction when normal view changing")
@@ -430,7 +432,8 @@ func (p *ProposalDispatcher) OnInactiveArbitratorsReceived(
 		}
 	}
 
-	if !p.currentInactiveArbitratorTx.Hash().IsEqual(tx.Hash()) {
+	if p.currentInactiveArbitratorTx == nil ||
+		!p.currentInactiveArbitratorTx.Hash().IsEqual(tx.Hash()) {
 		p.currentInactiveArbitratorTx = tx
 	}
 
@@ -444,10 +447,14 @@ func (p *ProposalDispatcher) OnInactiveArbitratorsReceived(
 			" error, details: ", err.Error())
 	}
 	p.cfg.Network.BroadcastMessage(response)
+
+	log.Info("[OnInactiveArbitratorsReceived] response inactive tx sign")
 }
 
 func (p *ProposalDispatcher) OnResponseInactiveArbitratorsReceived(
 	txHash *common.Uint256, signer []byte, sign []byte) {
+	log.Info("[OnResponseInactiveArbitratorsReceived] collect transaction" +
+		" signs")
 
 	if !p.currentInactiveArbitratorTx.Hash().IsEqual(*txHash) {
 		log.Warn("[OnResponseInactiveArbitratorsReceived] unknown " +
@@ -486,6 +493,8 @@ func (p *ProposalDispatcher) OnResponseInactiveArbitratorsReceived(
 }
 
 func (p *ProposalDispatcher) tryEnterEmergencyState(signCount int) bool {
+	log.Info("[tryEnterEmergencyState] current sign count: ", signCount)
+
 	minSignCount := int(float64(p.cfg.Arbitrators.GetArbitersCount()) * 0.5)
 	if signCount > minSignCount {
 		p.illegalMonitor.AddEvidence(p.currentInactiveArbitratorTx.
@@ -507,6 +516,9 @@ func (p *ProposalDispatcher) tryEnterEmergencyState(signCount int) bool {
 		p.cfg.Manager.GetBlockCache().Reset()
 
 		p.inactiveCountDown.SetEliminated()
+
+		log.Info("[tryEnterEmergencyState] successfully entered emergency" +
+			" state")
 		return true
 	}
 
