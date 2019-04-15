@@ -1,3 +1,5 @@
+import java.util.function.BooleanSupplier
+
 apply plugin: 'com.android.library'
 
 android {
@@ -37,24 +39,18 @@ android {
             path "src/main/cpp/CMakeLists.txt"
         }
     }
-
-    /*libraryVariants.all { variant ->
-        def manifestParser = new com.android.builder.core.DefaultManifestParser(
-                android.sourceSets.main.manifest.srcFile)
-        def packageName = manifestParser.getPackage()
-        def newName = packageName + '-' + variant.buildType.name + '.aar'
-
-        def originalFile = variant.outputs[0].outputFile
-        variant.outputs[0].outputFile = new File(originalFile.parent, newName)
-
-    }*/
-
     android.libraryVariants.all { variant ->
         variant.outputs.all {
-            outputFileName = "org.elastos.carrier" + '-' + variant.buildType.name + '.aar'
+            def manifestParser = new com.android.builder.core.DefaultManifestParser(
+                    android.sourceSets.main.manifest.srcFile, new BooleanSupplier() {
+                @Override
+                boolean getAsBoolean() {
+                    return true
+                }
+            }, null)
+            outputFileName = manifestParser.getPackage() + "-${buildType.name}.aar"
         }
     }
-
 }
 
 dependencies {
