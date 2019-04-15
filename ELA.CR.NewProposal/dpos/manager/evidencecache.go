@@ -29,7 +29,7 @@ func (e *evidenceCache) IsBlockValid(block *types.Block) bool {
 			v.Type() == payload.InactiveArbitrator {
 			tolerance = 0
 		}
-		if v.GetBlockHeight()+tolerance < block.Height {
+		if v.GetBlockHeight()+tolerance <= block.Height {
 			necessaryEvidences[k] = nil
 		}
 	}
