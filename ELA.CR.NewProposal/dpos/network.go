@@ -337,6 +337,8 @@ func makeEmptyMessage(cmd string) (message elap2p.Message, err error) {
 	switch cmd {
 	case elap2p.CmdBlock:
 		message = elamsg.NewBlock(&types.Block{})
+	case elap2p.CmdTx:
+		message = elamsg.NewTx(&types.Transaction{})
 	case msg.CmdAcceptVote:
 		message = &msg.Vote{Command: msg.CmdAcceptVote}
 	case msg.CmdReceivedProposal:
@@ -363,6 +365,8 @@ func makeEmptyMessage(cmd string) (message elap2p.Message, err error) {
 		message = &msg.IllegalVotes{}
 	case msg.CmdSidechainIllegalData:
 		message = &msg.SidechainIllegalData{}
+	case msg.CmdResponseInactiveArbitrators:
+		message = &msg.ResponseInactiveArbitrators{}
 	default:
 		return nil, errors.New("Received unsupported message, CMD " + cmd)
 	}

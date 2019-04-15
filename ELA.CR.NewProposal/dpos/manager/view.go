@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 )
@@ -48,7 +49,8 @@ func (v *view) ChangeView(viewOffset *uint32, now time.Time) {
 		currentArbiter := v.arbitrators.GetNextOnDutyArbitrator(*viewOffset)
 
 		v.isDposOnDuty = bytes.Equal(currentArbiter, v.publicKey)
-		log.Info("current onduty arbiter:", currentArbiter)
+		log.Info("current onduty arbiter:",
+			common.BytesToHexString(currentArbiter))
 
 		v.listener.OnViewChanged(v.isDposOnDuty)
 	}
