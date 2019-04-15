@@ -110,6 +110,14 @@ func newServerPeer(s *server) *serverPeer {
 	}
 }
 
+// handleDisconnect handles peer disconnects and remove the peer from
+// SyncManager and Routes.
+func (sp *serverPeer) handleDisconnect() {
+	sp.WaitForDisconnect()
+	sp.server.routes.DonePeer(sp.Peer)
+	sp.server.syncManager.DonePeer(sp.Peer)
+}
+
 // OnVersion is invoked when a peer receives a version message and is
 // used to negotiate the protocol version details as well as kick start
 // the communications.
@@ -124,9 +132,18 @@ func (sp *serverPeer) OnVersion(_ *peer.Peer, m *msg.Version) {
 	// the local clock to keep the network time in sync.
 	sp.server.chain.TimeSource.AddTimeSample(sp.Addr(), m.Timestamp)
 
+	// Signal the routes this peer is a new sync candidate.
+	sp.server.routes.NewPeer(sp.Peer)
+
+	// Signal the sync manager this peer is a new sync candidate.
+	sp.server.syncManager.NewPeer(sp.Peer)
+
 	// Choose whether or not to relay transactions before a filter command
 	// is received.
 	sp.SetDisableRelayTx(!m.Relay)
+
+	// Handle peer disconnect.
+	go sp.handleDisconnect()
 }
 
 // OnMemPool is invoked when a peer receives a mempool message.
@@ -750,7 +767,7 @@ func (s *server) handleRelayInvMsg(peers map[svr.IPeer]*serverPeer, rmsg relayMs
 		// Queue the inventory to be relayed with the next batch.
 		// It will be ignored if the peer is already known to
 		// have the inventory.
-		go sp.QueueInventory(rmsg.invVect)
+		sp.QueueInventory(rmsg.invVect)
 	}
 }
 
@@ -821,21 +838,10 @@ func (s *server) handlePeerMsg(peers map[svr.IPeer]*serverPeer, p interface{}) {
 		})
 
 		peers[p.IPeer] = sp
-		s.routes.NewPeer(sp.Peer)
-		s.syncManager.NewPeer(sp.Peer)
 		p.reply <- struct{}{}
 
 	case donePeerMsg:
-		sp, ok := peers[p.IPeer]
-		if !ok {
-			log.Errorf("unknown done peer %v", p)
-			p.reply <- struct{}{}
-			return
-		}
-
 		delete(peers, p.IPeer)
-		s.routes.DonePeer(sp.Peer)
-		s.syncManager.DonePeer(sp.Peer)
 		p.reply <- struct{}{}
 	}
 }
