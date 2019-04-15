@@ -2,6 +2,7 @@ package peer
 
 import (
 	"bytes"
+	"container/list"
 	"crypto/rand"
 	"encoding/binary"
 	"encoding/hex"
@@ -27,8 +28,8 @@ const (
 	// peer that hasn't completed the initial version negotiation.
 	negotiateTimeout = 5 * time.Second
 
-	// writeTimeout is the duration of write message before we time out a peer.
-	writeTimeout = 5 * time.Second
+	// outputBufferSize is the number of elements the output channels use.
+	outputBufferSize = 50
 )
 
 var (
@@ -123,7 +124,6 @@ type Peer struct {
 	lastRecv   int64
 	lastSend   int64
 	connected  int32
-	started    int32
 	disconnect int32
 
 	conn net.Conn
@@ -149,10 +149,13 @@ type Peer struct {
 	lastPingTime   time.Time // Time we sent last ping.
 	lastPingMicros int64     // Time for last ping to return.
 
-	sendQueue chan outMsg
-	inQuit    chan struct{}
-	outQuit   chan struct{}
-	quit      chan struct{}
+	outputQueue   chan outMsg
+	sendQueue     chan outMsg
+	sendDoneQueue chan struct{}
+	inQuit        chan struct{}
+	queueQuit     chan struct{}
+	outQuit       chan struct{}
+	quit          chan struct{}
 }
 
 // AddMessageFunc add a new message handler for the peer.
@@ -326,7 +329,7 @@ func (p *Peer) TimeConnected() time.Time {
 
 // handlePingMsg is invoked when a peer receives a ping message.
 func (p *Peer) handlePingMsg(ping *msg.Ping) {
-	p.SendMessage(msg.NewPong(p.cfg.PongNonce(p.pid)), nil)
+	p.QueueMessage(msg.NewPong(p.cfg.PongNonce(p.pid)), nil)
 }
 
 // handlePongMsg is invoked when a peer receives a pong message.
@@ -398,18 +401,8 @@ func (p *Peer) writeMessage(msg p2p.Message) error {
 		return fmt.Sprintf("Sending %v%s to %s", msg.CMD(), summary, p)
 	}))
 
-	// Handle write message timeout.
-	doneChan := make(chan error)
-	go func() {
-		doneChan <- p2p.WriteMessage(p.conn, p.cfg.Magic, msg)
-	}()
-
-	select {
-	case err := <-doneChan:
-		return err
-	case <-time.After(writeTimeout):
-	}
-	return fmt.Errorf("sending %s to %s timeout", msg.CMD(), p)
+	// Write the message to the peer.
+	return p2p.WriteMessage(p.conn, p.cfg.Magic, msg)
 }
 
 // shouldHandleIOError returns whether or not the passed error, which is
@@ -466,7 +459,7 @@ out:
 				rejectMsg := msg.NewReject("malformed", msg.RejectMalformed, errMsg)
 				// Send the message and block until it has been sent before returning.
 				doneChan := make(chan error, 1)
-				p.SendMessage(rejectMsg, doneChan)
+				p.QueueMessage(rejectMsg, doneChan)
 				<-doneChan
 			}
 			break out
@@ -480,7 +473,7 @@ out:
 			rejectMsg := msg.NewReject(m.CMD(), msg.RejectDuplicate, "duplicate version message")
 			// Send the message and block until it has been sent before returning.
 			doneChan := make(chan error, 1)
-			p.SendMessage(rejectMsg, doneChan)
+			p.QueueMessage(rejectMsg, doneChan)
 			<-doneChan
 			break out
 
@@ -513,6 +506,84 @@ out:
 	p.Disconnect()
 
 	close(p.inQuit)
+}
+
+// queueHandler handles the queuing of outgoing data for the peer. This runs as
+// a muxer for various sources of input so we can ensure that server and peer
+// handlers will not block on us sending a message.  That data is then passed on
+// to outHandler to be actually written.
+func (p *Peer) queueHandler() {
+	pendingMsgs := list.New()
+
+	// We keep the waiting flag so that we know if we have a message queued
+	// to the outHandler or not.  We could use the presence of a head of
+	// the list for this but then we have rather racy concerns about whether
+	// it has gotten it at cleanup time - and thus who sends on the
+	// message's done channel.  To avoid such confusion we keep a different
+	// flag and pendingMsgs only contains messages that we have not yet
+	// passed to outHandler.
+	waiting := false
+
+	// To avoid duplication below.
+	queuePacket := func(msg outMsg, list *list.List, waiting bool) bool {
+		if !waiting {
+			p.sendQueue <- msg
+		} else {
+			list.PushBack(msg)
+		}
+		// we are always waiting now.
+		return true
+	}
+out:
+	for {
+		select {
+		case msg := <-p.outputQueue:
+			waiting = queuePacket(msg, pendingMsgs, waiting)
+
+		// This channel is notified when a message has been sent across
+		// the network socket.
+		case <-p.sendDoneQueue:
+			// No longer waiting if there are no more messages
+			// in the pending messages queue.
+			next := pendingMsgs.Front()
+			if next == nil {
+				waiting = false
+				continue
+			}
+
+			// Notify the outHandler about the next item to
+			// asynchronously send.
+			val := pendingMsgs.Remove(next)
+			p.sendQueue <- val.(outMsg)
+
+		case <-p.quit:
+			break out
+		}
+	}
+
+	// Drain any wait channels before we go away so we don't leave something
+	// waiting for us.
+	for e := pendingMsgs.Front(); e != nil; e = pendingMsgs.Front() {
+		val := pendingMsgs.Remove(e)
+		msg := val.(outMsg)
+		if msg.doneChan != nil {
+			msg.doneChan <- nil
+		}
+	}
+cleanup:
+	for {
+		select {
+		case msg := <-p.outputQueue:
+			if msg.doneChan != nil {
+				msg.doneChan <- nil
+			}
+			// Just drain channel
+		// sendDoneQueue is buffered so doesn't need draining.
+		default:
+			break cleanup
+		}
+	}
+	close(p.queueQuit)
 }
 
 // outHandler handles all outgoing messages for the peer.  It must be run as a
@@ -552,11 +623,14 @@ out:
 			if smsg.doneChan != nil {
 				smsg.doneChan <- nil
 			}
+			p.sendDoneQueue <- struct{}{}
 
 		case <-p.quit:
 			break out
 		}
 	}
+
+	<-p.queueQuit
 
 	// Drain any wait channels before going away so there is nothing left
 	// waiting on this goroutine.
@@ -585,7 +659,7 @@ out:
 	for {
 		select {
 		case <-pingTicker.C:
-			p.SendMessage(msg.NewPing(p.cfg.PingNonce(p.pid)), nil)
+			p.QueueMessage(msg.NewPing(p.cfg.PingNonce(p.pid)), nil)
 
 		case <-p.quit:
 			break out
@@ -593,11 +667,14 @@ out:
 	}
 }
 
-func (p *Peer) SendMessage(msg p2p.Message, doneChan chan<- error) {
+// QueueMessage adds the passed bitcoin message to the peer send queue.
+//
+// This function is safe for concurrent access.
+func (p *Peer) QueueMessage(msg p2p.Message, doneChan chan<- error) {
 	// Avoid risk of deadlock if goroutine already exited.  The goroutine
 	// we will be sending to hangs around until it knows for a fact that
 	// it is marked as disconnected and *then* it drains the channels.
-	if !p.Connected() || atomic.LoadInt32(&p.started) == 0 {
+	if !p.Connected() {
 		if doneChan != nil {
 			go func() {
 				doneChan <- ErrPeerDisconnected
@@ -605,7 +682,7 @@ func (p *Peer) SendMessage(msg p2p.Message, doneChan chan<- error) {
 		}
 		return
 	}
-	p.sendQueue <- outMsg{msg: msg, doneChan: doneChan}
+	p.outputQueue <- outMsg{msg: msg, doneChan: doneChan}
 }
 
 // Connected returns whether or not the peer is currently connected.
@@ -628,21 +705,6 @@ func (p *Peer) Disconnect() {
 		p.conn.Close()
 	}
 	close(p.quit)
-}
-
-// InQuit returns the signal chan of message inHandler quit.
-func (p *Peer) InQuit() <-chan struct{} {
-	return p.inQuit
-}
-
-// OutQuit returns the signal chan of message outHandler quit.
-func (p *Peer) OutQuit() <-chan struct{} {
-	return p.outQuit
-}
-
-// Quit returns the signal chan of peer quit.
-func (p *Peer) Quit() <-chan struct{} {
-	return p.quit
 }
 
 // readRemoteVersionMsg waits for the next message to arrive from the remote
@@ -792,8 +854,8 @@ func (p *Peer) start() error {
 
 	// The protocol has been negotiated successfully so start processing input
 	// and output messages.
-	atomic.AddInt32(&p.started, 1)
 	go p.inHandler()
+	go p.queueHandler()
 	go p.outHandler()
 	go p.pingHandler()
 
@@ -855,13 +917,16 @@ func newPeerBase(origCfg *Config, inbound bool) *Peer {
 	cfg := *origCfg // Copy to avoid mutating caller.
 
 	p := Peer{
-		id:              RandomUint64(),
-		inbound:         inbound,
-		sendQueue:       make(chan outMsg, 1), // nonblocking sync
-		inQuit:          make(chan struct{}),
-		outQuit:         make(chan struct{}),
-		quit:            make(chan struct{}),
-		cfg:             cfg, // Copy so caller can't mutate.
+		id:            RandomUint64(),
+		inbound:       inbound,
+		outputQueue:   make(chan outMsg, outputBufferSize),
+		sendQueue:     make(chan outMsg, 1),   // nonblocking sync
+		sendDoneQueue: make(chan struct{}, 1), // nonblocking sync
+		inQuit:        make(chan struct{}),
+		queueQuit:     make(chan struct{}),
+		outQuit:       make(chan struct{}),
+		quit:          make(chan struct{}),
+		cfg:           cfg, // Copy so caller can't mutate.
 	}
 	p.AddMessageFunc(cfg.MessageFunc)
 	return &p
