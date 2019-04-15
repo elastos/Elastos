@@ -1222,7 +1222,9 @@ namespace Elastos {
 				if (tx) {
 					if (RemovePeerFromList(peer, txHash, _txRelays) && tx->GetBlockHeight() == TX_UNCONFIRMED) {
 						// set timestamp 0 to mark tx as unverified
-						_wallet->UpdateTransactions({txHash}, TX_UNCONFIRMED, 0);
+						if (code != 0x12 && reason.find("Duplicate") == std::string::npos &&
+							reason.find("duplicate") == std::string::npos)
+							_wallet->UpdateTransactions({txHash}, TX_UNCONFIRMED, 0);
 					}
 
 					// if we get rejected for any reason other than double-spend, the peer is likely misconfigured
@@ -1245,7 +1247,8 @@ namespace Elastos {
 
 			FireTxStatusUpdate();
 			if (pubTx.HasCallback()) pubTx.FireCallback(code, reason);
-			if (code != 0x12 && reason.find("Duplicate") == std::string::npos) {
+			if (code != 0x12 && reason.find("Duplicate") == std::string::npos &&
+				reason.find("duplicate") == std::string::npos) {
 				_wallet->RemoveTransaction(pubTx.GetTransaction()->GetHash());
 			}
 		}
@@ -1902,8 +1905,8 @@ namespace Elastos {
 						SyncStopped();
 					}
 
-					ResendUnconfirmedTx(peer);
-//					requestUnrelayedTx(peer);
+//					ResendUnconfirmedTx(peer);
+					RequestUnrelayedTx(peer);
 					peer->SendMessage(MSG_GETADDR, Message::DefaultParam);
 				}
 
@@ -1956,6 +1959,10 @@ namespace Elastos {
 
 			if (!txHashes.empty()) {
 				GetDataParameter getDataParameter(txHashes, {});
+				peer->info("request unrelayed {} tx", txHashes.size());
+				for (size_t i = 0; i < txHashes.size(); ++i) {
+					peer->info("tx[{}] {}", i, txHashes[i].GetHex());
+				}
 				peer->SendMessage(MSG_GETDATA, getDataParameter);
 
 				if ((peer->GetPeerInfo().Flags & PEER_FLAG_SYNCED) == 0) {
@@ -2000,31 +2007,31 @@ namespace Elastos {
 
 			// don't remove transactions until we're connected to maxConnectCount peers, and all peers have finished
 			// relaying their mempools
-			if (count >= _maxConnectCount) {
-				uint256 hash;
-				std::vector<TransactionPtr> tx = _wallet->TxUnconfirmedBefore(TX_UNCONFIRMED);
-
-				for (size_t i = tx.size(); i > 0; i--) {
-					hash = tx[i - 1]->GetHash();
-					isPublishing = false;
-
-					for (size_t j = _publishedTx.size(); !isPublishing && j > 0; j--) {
-						if (_publishedTx[j - 1].GetTransaction()->IsEqual(tx[i - 1].get()) &&
-							_publishedTx[j - 1].HasCallback())
-							isPublishing = true;
-					}
-
-					if (!isPublishing && PeerListCount(_txRelays, hash) == 0 &&
-						PeerListCount(_txRequests, hash) == 0) {
-						peer->info("removing tx unconfirmed at: {}, txHash: {}", _lastBlock->GetHeight(), hash.GetHex());
-						assert(tx[i - 1]->GetBlockHeight() == TX_UNCONFIRMED);
+//			if (count >= _maxConnectCount) {
+//				uint256 hash;
+//				std::vector<TransactionPtr> tx = _wallet->TxUnconfirmedBefore(TX_UNCONFIRMED);
+//
+//				for (size_t i = tx.size(); i > 0; i--) {
+//					hash = tx[i - 1]->GetHash();
+//					isPublishing = false;
+//
+//					for (size_t j = _publishedTx.size(); !isPublishing && j > 0; j--) {
+//						if (_publishedTx[j - 1].GetTransaction()->IsEqual(tx[i - 1].get()) &&
+//							_publishedTx[j - 1].HasCallback())
+//							isPublishing = true;
+//					}
+//
+//					if (!isPublishing && PeerListCount(_txRelays, hash) == 0 &&
+//						PeerListCount(_txRequests, hash) == 0) {
+//						peer->info("removing tx unconfirmed at: {}, txHash: {}", _lastBlock->GetHeight(), hash.GetHex());
+//						assert(tx[i - 1]->GetBlockHeight() == TX_UNCONFIRMED);
 //						_wallet->RemoveTransaction(hash);
-					} else if (!isPublishing && PeerListCount(_txRelays, hash) < _maxConnectCount) {
+//					} else if (!isPublishing && PeerListCount(_txRelays, hash) < _maxConnectCount) {
 						// set timestamp 0 to mark as unverified
-						_wallet->UpdateTransactions({hash}, TX_UNCONFIRMED, 0);
-					}
-				}
-			}
+//						_wallet->UpdateTransactions({hash}, TX_UNCONFIRMED, 0);
+//					}
+//				}
+//			}
 		}
 
 		size_t PeerManager::PeerListCount(const std::vector<TransactionPeerList> &list, const uint256 &txhash) {
