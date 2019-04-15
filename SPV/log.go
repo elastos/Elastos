@@ -36,9 +36,8 @@ var (
 	bcdblog = backend.Logger("BCDB", level)
 	synclog = backend.Logger("SYNC", level)
 	peerlog = backend.Logger("PEER", level)
-	spvslog = backend.Logger("SPVS", elalog.LevelInfo)
-	srvrlog = backend.Logger("SRVR", level)
-	rpcslog = backend.Logger("RPCS", level)
+	spvslog = backend.Logger("SPVS", level)
+	srvrlog = backend.Logger("SRVR", elalog.LevelInfo)
 	waltlog = backend.Logger("WALT", level)
 )
 
