@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -23,12 +24,14 @@ type BlockValidateAction struct {
 
 type Validator struct {
 	chain                *BlockChain
+	spvService           *spv.Service
 	checkSanityFunctions []*BlockValidateAction
 }
 
-func NewValidator(chain *BlockChain) *Validator {
+func NewValidator(chain *BlockChain, spv *spv.Service) *Validator {
 	v := &Validator{
-		chain: chain,
+		chain:      chain,
+		spvService: spv,
 	}
 	v.RegisterFunc(ValidateFuncNames.CheckHeader, v.checkHeader)
 	v.RegisterFunc(ValidateFuncNames.CheckTransactionsCount, v.checkTransactionsCount)
@@ -105,11 +108,13 @@ func (v *Validator) checkHeader(params ...interface{}) (err error) {
 	timeSource := AssertMedianTimeSource(params[2])
 	header := block.Header
 
-	// A block's main chain block header must contain in spv module
-	//mainChainBlockHash := header.SideAuxPow.MainBlockHeader.Hash()
-	//if err := spv.VerifyElaHeader(&mainChainBlockHash); err != nil {
-	//	return err
-	//}
+	if header.Height >= v.chain.chainParams.CheckPowHeaderHeight {
+		// A block's main chain block header must contain in spv module
+		mainChainBlockHash := header.SideAuxPow.MainBlockHeader.Hash()
+		if err := v.spvService.VerifyElaHeader(&mainChainBlockHash); err != nil {
+			return err
+		}
+	}
 
 	if !header.SideAuxPow.SideAuxPowCheck(header.Hash()) {
 		return errors.New("[powCheckHeader] block check proof is failed")
