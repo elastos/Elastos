@@ -809,7 +809,10 @@ func (s *State) processIllegalEvidence(payloadData types.Payload,
 
 	// Set illegal producers to FoundBad state
 	for _, pk := range illegalProducers {
-		key := hex.EncodeToString(pk)
+		key, ok := s.nodeOwnerKeys[hex.EncodeToString(pk)]
+		if !ok {
+			continue
+		}
 		if producer, ok := s.activityProducers[key]; ok {
 			s.history.append(height, func() {
 				producer.state = FoundBad
