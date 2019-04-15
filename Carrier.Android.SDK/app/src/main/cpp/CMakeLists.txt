@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.4.1)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
 set(carrier_include_DIR ${CMAKE_SOURCE_DIR}/../../../native-dist/include)
-set(carrier_library_DIR ${CMAKE_SOURCE_DIR}/../../../native-dist/libs)
+set(carrier_library_DIR ${CMAKE_SOURCE_DIR}/../../../native-dist/lib)
 
 include_directories(${carrier_include_DIR})
 link_directories(${carrier_library_DIR}/${ANDROID_ABI})

@@ -3,7 +3,7 @@
 SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd -P )"
 SCRIPT_DIRNAME="$(basename "${SCRIPT_PATH}")"
 
-LIBPATH=${SCRIPT_PATH}/../app/native-dist/libs
+LIBPATH=${SCRIPT_PATH}/../app/native-dist/lib
 
 HOST="$(uname -s)"
 

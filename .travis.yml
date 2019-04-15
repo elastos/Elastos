@@ -35,6 +35,11 @@ matrix:
 before_install:
   - echo no | android create avd --force -n test -t $API_LEVEL --abi $ANDROID_ABI
   - emulator -avd test -no-skin -no-window &
+  # Update Gradle to 4.10.1 
+  - wget http://services.gradle.org/distributions/gradle-4.10.1-all.zip
+  - unzip -q gradle-4.10.1-all.zip
+  - export GRADLE_HOME=$PWD/gradle-4.10.1
+  - export PATH=$GRADLE_HOME/bin:$PATH
 
 install:
   - echo y | sdkmanager 'cmake;3.6.4111459'
