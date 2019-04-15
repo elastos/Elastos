@@ -298,7 +298,7 @@ func (s *server) handleBroadcastMsg(state *peerState, bmsg *broadcastMsg) {
 	})
 
 	for _, sp := range groups {
-		go sp.SendMessage(bmsg.message, nil)
+		sp.QueueMessage(bmsg.message, nil)
 	}
 }
 
@@ -392,7 +392,7 @@ func (s *server) handleQuery(state *peerState, querymsg interface{}) {
 		done := make(chan error, 1)
 		state.forAllPeers(func(sp *serverPeer) {
 			if !sent && sp.PID().Equal(msg.pid) {
-				sp.SendMessage(msg.msg, done)
+				sp.QueueMessage(msg.msg, done)
 				if err := <-done; err == nil {
 					sent = true
 				}
