@@ -80,6 +80,10 @@ type Params struct {
 
 	// SpvParams defines the parameters used by side chain SPV module.
 	SpvParams SpvParams
+
+	// CheckPowHeaderHeight defines the height where stating check if pow is coming
+	// from main chain
+	CheckPowHeaderHeight uint32
 }
 
 type SpvParams struct {
