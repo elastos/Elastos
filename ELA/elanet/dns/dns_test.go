@@ -46,9 +46,6 @@ func mockInboundPeer(port int, pc chan *peer.Peer,
 		MessageFunc: func(peer *peer.Peer, m p2p.Message) {
 			switch m := m.(type) {
 			case *msg.VerAck:
-				done := make(chan struct{})
-				peer.SendMessage(&msg.GetAddr{}, done)
-				<-done
 				pc <- peer
 
 			case *msg.Addr:

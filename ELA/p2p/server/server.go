@@ -215,7 +215,7 @@ func (sp *serverPeer) OnVersion(_ *peer.Peer, v *msg.Version) {
 
 		// Request known addresses if the server address manager needs more.
 		if addrManager.NeedMoreAddresses() {
-			sp.SendMessage(new(msg.GetAddr), nil)
+			sp.QueueMessage(&msg.GetAddr{}, nil)
 		}
 
 		// Mark the address as a known good address.
@@ -548,7 +548,7 @@ func (s *server) handleBroadcastMsg(state *peerState, bmsg *broadcastMsg) {
 			}
 		}
 
-		go sp.SendMessage(bmsg.message, nil)
+		sp.QueueMessage(bmsg.message, nil)
 	})
 }
 
