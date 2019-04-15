@@ -639,7 +639,7 @@ func (p *ProposalDispatcher) CreateInactiveArbitrators() (
 	inactivePayload := &payload.InactiveArbitrators{
 		Sponsor:     p.cfg.Manager.GetPublicKey(),
 		Arbitrators: [][]byte{},
-		BlockHeight: p.CurrentHeight(),
+		BlockHeight: blockchain.DefaultLedger.Blockchain.GetHeight()+1,
 	}
 	inactiveArbitrators := p.eventAnalyzer.ParseInactiveArbitrators()
 	for _, v := range inactiveArbitrators {
