@@ -117,7 +117,6 @@ type ArbiterConfiguration struct {
 	EmergencyInactivePenalty common.Fixed64 `json:"EmergencyInactivePenalty"`
 	MaxInactiveRounds        uint32         `json:"MaxInactiveRounds"`
 	InactivePenalty          common.Fixed64 `json:"InactivePenalty"`
-	InactiveEliminateCount   uint32         `json:"InactiveEliminateCount"`
 	EnableEventRecord        bool           `json:"EnableEventRecord"`
 	PreConnectOffset         uint32         `json:"PreConnectOffset"`
 }

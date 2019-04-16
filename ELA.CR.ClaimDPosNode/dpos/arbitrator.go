@@ -80,8 +80,8 @@ func (a *Arbitrator) OnInactiveArbitratorsTxReceived(
 		isEmergencyCandidate := false
 
 		candidates := a.cfg.Arbitrators.GetCandidates()
-		for i := 0; i < len(candidates) && i < int(a.cfg.Params.
-			InactiveEliminateCount); i++ {
+		inactiveEliminateCount := a.cfg.Arbitrators.GetArbitersCount() / 3
+		for i := 0; i < len(candidates) && i < inactiveEliminateCount; i++ {
 			if bytes.Equal(candidates[i], a.dposManager.GetPublicKey()) {
 				isEmergencyCandidate = true
 			}
@@ -187,7 +187,6 @@ func NewArbitrator(account account.Account, cfg Config) (*Arbitrator, error) {
 			ChainParams:  cfg.ChainParams,
 			TimeSource:   medianTime,
 			EventStoreAnalyzerConfig: store.EventStoreAnalyzerConfig{
-				InactiveEliminateCount: cfg.ChainParams.InactiveEliminateCount,
 				Store:                  cfg.Store,
 				Arbitrators:            cfg.Arbitrators,
 			},

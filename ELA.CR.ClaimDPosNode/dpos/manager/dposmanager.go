@@ -72,7 +72,7 @@ type NetworkEventListener interface {
 	OnConfirmReceived(p *payload.Confirm)
 	OnIllegalBlocksTxReceived(i *payload.DPOSIllegalBlocks)
 	OnSidechainIllegalEvidenceReceived(s *payload.SidechainIllegalData)
-	OnInactiveArbitratorsReceived(tx *types.Transaction)
+	OnInactiveArbitratorsReceived(id dpeer.PID, tx *types.Transaction)
 	OnResponseInactiveArbitratorsReceived(txHash *common.Uint256,
 		Signer []byte, Sign []byte)
 }
@@ -499,13 +499,13 @@ func (d *DPOSManager) OnSidechainIllegalEvidenceReceived(s *payload.SidechainIll
 	d.illegalMonitor.SendSidechainIllegalEvidenceTransaction(s)
 }
 
-func (d *DPOSManager) OnInactiveArbitratorsReceived(tx *types.Transaction) {
-	if err := blockchain.CheckInactiveArbitrators(tx,
-		d.chainParams.InactiveEliminateCount); err != nil {
+func (d *DPOSManager) OnInactiveArbitratorsReceived(id dpeer.PID,
+	tx *types.Transaction) {
+	if err := blockchain.CheckInactiveArbitrators(tx); err != nil {
 		log.Info("[OnIllegalProposalReceived] received error evidence: ", err)
 		return
 	}
-	d.dispatcher.OnInactiveArbitratorsReceived(tx)
+	d.dispatcher.OnInactiveArbitratorsReceived(id, tx)
 }
 
 func (d *DPOSManager) OnResponseInactiveArbitratorsReceived(
