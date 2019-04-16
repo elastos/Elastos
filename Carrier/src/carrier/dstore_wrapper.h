@@ -31,10 +31,10 @@ typedef void (*DStoreOnMsgCallback)(ElaCarrier *carrier,
                                     const char *from,
                                     const uint8_t *message, size_t len);
 
-void notify_crawl_offline_msg(DStoreWrapper *ds);
 DStoreWrapper *dstore_wrapper_create(ElaCarrier *w, DStoreOnMsgCallback cb);
 void dstore_wrapper_destroy(DStoreWrapper *ds);
 
+void notify_crawl_offline_msg(DStoreWrapper *ds);
 ssize_t dstore_send_msg(DStoreWrapper *, const char *to, const void *, size_t);
 
 #endif //__DSOTRE_WRAPPER_H__

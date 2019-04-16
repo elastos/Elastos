@@ -19,39 +19,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#include <stdio.h>
 #include <string.h>
+#include <limits.h>
 #include <pthread.h>
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#endif
+#ifdef HAVE_ALLOCA_H
+#include <alloca.h>
+#endif
+#if defined(_WIN32) || defined(_WIN64)
+#include <io.h>
+#endif
+
 #include <crystal.h>
 #include <hive/c-api.h>
-#include <stdio.h>
-#include <limits.h>
-#if defined(_WIN32) || defined(_WIN64)
-    #ifdef HAVE_MALLOC_H
-    #include <malloc.h>
-    #endif
-    #include <io.h>
-#else
-    #ifdef HAVE_ALLOCA_H
-    #include <alloca.h>
-    #endif
-#endif
+
 #include "dht.h"
 #include "ela_carrier.h"
 #include "ela_carrier_impl.h"
 #include "dstore_wrapper.h"
 
+enum {
+    DSTORE_STATE_CRAWL,
+    DSTORE_STATE_IDLE,
+    DSTORE_STATE_STOP
+};
+
 struct DStoreWrapper {
     ElaCarrier *carrier;
     DStoreOnMsgCallback cb;
     DStoreC *dstore;
-    enum {
-        DSTORE_STATE_CRAWL,
-        DSTORE_STATE_IDLE,
-        DSTORE_STATE_STOP
-    } state;
+    int state;
     pthread_mutex_t lock;
     pthread_cond_t cond;
 };
@@ -186,23 +190,89 @@ static bool check_offline_msg_cb(uint32_t friend_number,
     return true;
 }
 
+static int redeem_dstore_file(ElaCarrier *w,
+                             char *conf_path, size_t length,
+                             DStoreWrapper *ctxt)
+{
+    FILE *fp;
+    size_t nwr;
+    const char *conf_str = NULL;
+    int i;
+    int rc;
+
+    rc = snprintf(conf_path, length, "%s/dstore_ache.conf", w->pref.data_location);
+    if (rc < 0 || rc >= (int)length)
+        return -1;
+
+    if (!access(conf_path, F_OK))
+        return 0;
+
+    for (i = 0; i < w->pref.hive_bootstraps_size && !conf_str; ++i) {
+        if (w->pref.hive_bootstraps[i].ipv4[0])
+            conf_str = hive_generate_conf(w->pref.hive_bootstraps[i].ipv4,
+                                          w->pref.hive_bootstraps[i].port);
+
+        if (!conf_str && w->pref.hive_bootstraps[i].ipv6[0])
+            conf_str = hive_generate_conf(w->pref.hive_bootstraps[i].ipv6,
+                                          w->pref.hive_bootstraps[i].port);
+    }
+
+    if (!conf_str) {
+        vlogE("Carrier: Generating dstore bootstrap seeds error");
+        return -1;
+    }
+
+    fp = fopen(conf_path, "w");
+    if (!fp)
+        return -1;
+
+    nwr = fwrite(conf_str, strlen(conf_str), 1, fp);
+    fclose(fp);
+    free((void *)conf_str);
+    return (nwr != 1) ? -1 : 0;
+}
+
 static void * crawl_offline_msg(void *arg)
 {
     DStoreWrapper *ctx = (DStoreWrapper *)arg;
+    ElaCarrier *w = ctx->carrier;
+    int rc;
+    char conf_path[PATH_MAX];
 
-crawl:
-    pthread_mutex_lock(&ctx->lock);
-    while (ctx->state == DSTORE_STATE_IDLE)
-        pthread_cond_wait(&ctx->cond, &ctx->lock);
-    if (ctx->state == DSTORE_STATE_STOP) {
+    rc = redeem_dstore_file(w, conf_path, sizeof(conf_path), ctx);
+    if (rc < 0) {
+        pthread_mutex_lock(&ctx->lock);
+        ctx->state = DSTORE_STATE_STOP;
         pthread_mutex_unlock(&ctx->lock);
         deref(ctx);
         return NULL;
     }
-    ctx->state = DSTORE_STATE_IDLE;
-    pthread_mutex_unlock(&ctx->lock);
-    dht_get_friends(&ctx->carrier->dht, check_offline_msg_cb, ctx);
-    goto crawl;
+
+    ctx->dstore = dstore_create(conf_path);
+    if (!ctx->dstore) {
+        pthread_mutex_lock(&ctx->lock);
+        ctx->state = DSTORE_STATE_STOP;
+        pthread_mutex_unlock(&ctx->lock);
+        deref(ctx);
+        return NULL;
+    }
+
+    while (true) {
+        pthread_mutex_lock(&ctx->lock);
+        while (ctx->state == DSTORE_STATE_IDLE)
+            pthread_cond_wait(&ctx->cond, &ctx->lock);
+        if (ctx->state == DSTORE_STATE_STOP) {
+            pthread_mutex_unlock(&ctx->lock);
+            deref(ctx);
+            return NULL;
+        }
+
+        ctx->state = DSTORE_STATE_IDLE;
+        pthread_mutex_unlock(&ctx->lock);
+        dht_get_friends(&ctx->carrier->dht, check_offline_msg_cb, ctx);
+    }
+
+    return NULL;
 }
 
 static void DStoreWrapperDestroy(void *arg)
@@ -221,64 +291,14 @@ DStoreWrapper *dstore_wrapper_create(ElaCarrier *w, DStoreOnMsgCallback cb)
 {
     DStoreWrapper *ctx;
     int rc;
-    char conf_cache[PATH_MAX];
     pthread_t worker;
 
     ctx = rc_zalloc(sizeof(DStoreWrapper), DStoreWrapperDestroy);
     if (!ctx)
         return NULL;
 
-    rc = snprintf(conf_cache, sizeof(conf_cache), "%s/dstore_cache.conf",
-                  w->pref.data_location);
-    if (rc >= sizeof(conf_cache)) {
-        deref(ctx);
-        return NULL;
-    }
-
-    if (access(conf_cache, F_OK)) {
-        FILE *fp = fopen(conf_cache, "w");
-        if (!fp) {
-            deref(ctx);
-            return NULL;
-        }
-
-        const char *conf_str = NULL;
-        int i;
-        for (i = 0; i < w->pref.hive_bootstraps_size && !conf_str; ++i) {
-            if (w->pref.hive_bootstraps[i].ipv4[0]) {
-                conf_str = hive_generate_conf(w->pref.hive_bootstraps[i].ipv4,
-                                              w->pref.hive_bootstraps[i].port);
-            }
-            if (!conf_str && w->pref.hive_bootstraps[i].ipv6[0]) {
-                conf_str = hive_generate_conf(w->pref.hive_bootstraps[i].ipv6,
-                                              w->pref.hive_bootstraps[i].port);
-            }
-        }
-        if (!conf_str) {
-            deref(ctx);
-            fclose(fp);
-            remove(conf_cache);
-            return NULL;
-        }
-
-        size_t nwr = fwrite(conf_str, strlen(conf_str), 1, fp);
-        fclose(fp);
-        free((void *)conf_str);
-        if (nwr != 1) {
-            remove(conf_cache);
-            deref(ctx);
-            return NULL;
-        }
-    }
-
     pthread_mutex_init(&ctx->lock, NULL);
     pthread_cond_init(&ctx->cond, NULL);
-
-    ctx->dstore = dstore_create(conf_cache);
-    if (!ctx->dstore) {
-        deref(ctx);
-        return NULL;
-    }
 
     ctx->carrier = w;
     ctx->cb = cb;
@@ -287,21 +307,11 @@ DStoreWrapper *dstore_wrapper_create(ElaCarrier *w, DStoreOnMsgCallback cb)
     rc = pthread_create(&worker, NULL, crawl_offline_msg, ctx);
     if (rc != 0) {
         deref(ctx);
-        deref(ctx);
         return NULL;
     }
     pthread_detach(worker);
 
     return ctx;
-}
-
-void notify_crawl_offline_msg(DStoreWrapper *ctx)
-{
-    pthread_mutex_lock(&ctx->lock);
-    if (ctx->state == DSTORE_STATE_IDLE)
-        ctx->state = DSTORE_STATE_CRAWL;
-    pthread_mutex_unlock(&ctx->lock);
-    pthread_cond_signal(&ctx->cond);
 }
 
 void dstore_wrapper_destroy(DStoreWrapper *ctx)
@@ -315,4 +325,13 @@ void dstore_wrapper_destroy(DStoreWrapper *ctx)
     pthread_mutex_unlock(&ctx->lock);
     pthread_cond_signal(&ctx->cond);
     deref(ctx);
+}
+
+void notify_crawl_offline_msg(DStoreWrapper *ctx)
+{
+    pthread_mutex_lock(&ctx->lock);
+    if (ctx->state == DSTORE_STATE_IDLE)
+        ctx->state = DSTORE_STATE_CRAWL;
+    pthread_mutex_unlock(&ctx->lock);
+    pthread_cond_signal(&ctx->cond);
 }

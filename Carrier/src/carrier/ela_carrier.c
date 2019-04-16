@@ -2996,18 +2996,22 @@ int ela_send_friend_message(ElaCarrier *w, const char *to, const void *msg,
     if (!rc) {
         free(data);
         return 0;
-    } else if (!w->dstorectx) {
+    }
+
+    if (!w->dstorectx) {
         free(data);
         ela_set_error(rc);
         return -1;
     }
 
-    ssize_t ret = dstore_send_msg(w->dstorectx, to, data, data_len);
+    rc = (ssize_t)dstore_send_msg(w->dstorectx, to, data, data_len);
     free(data);
-    if (ret < 0) {
+
+    if (rc < 0) {
         ela_set_error(rc);
         return -1;
     }
+
     return 0;
 }
 

@@ -1157,8 +1157,8 @@ int dht_friend_message(DHT *dht, uint32_t friend_number, const uint8_t *data,
     tox_friend_send_message(tox, friend_number, TOX_MESSAGE_TYPE_NORMAL,
                             data, length, &error);
     if (error != TOX_ERR_FRIEND_SEND_MESSAGE_OK) {
-        vlogW("DHT: send friend message to %u error (%d).", friend_number,
-              error);
+        //vlogW("DHT: send friend message to %u error (%d).", friend_number,
+        //      error);
         return __dht_friend_send_msg_error(error);
     }
 
