@@ -1495,7 +1495,7 @@ const zh = {
         title: 'SECRETARIAT - OPEN POSITIONS',
         jobDesc: 'JOB DESCRIPTION',
         howtoApply: {
-          title: 'HOW TO APPLE',
+          title: 'HOW TO APPLY',
           desc: 'Apply for it via email: secretariat@cyberrepublic.org',
         },
         viewMore: 'View More',

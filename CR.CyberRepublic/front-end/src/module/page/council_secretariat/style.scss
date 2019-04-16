@@ -22,7 +22,7 @@ $maxWithContent: 860px;
   }
 
   %team-dark {
-    background-color: $bg_dark;
+    background-color: $bg_navy;
 
     .row-positions {
       margin-top: 24px;
@@ -34,7 +34,14 @@ $maxWithContent: 860px;
     max-width: $maxWithContent;
     margin: 0 auto;
     padding-top: 142px;
-
+    @media only screen and (max-width: $mobile-width) {
+      margin-left: 20px;
+    }
+    .ant-tabs-nav-container-scrolling {
+      @media only screen and (max-width: $mobile-width) {
+        padding-left: 0;
+      }
+    }
     .incumbent {
       margin-top: 20px;
 
@@ -43,10 +50,13 @@ $maxWithContent: 860px;
         line-height: normal;
         font-size: 48px;
         color: #1DE9B6;
+        @media only screen and (max-width: $mobile-width) {
+          font-size: 36px;
+        }
 
         .title_1st {
           color: #7E96BE;
-          font-size: 48px;
+          font-size: inherit;
           font-family: "komu-a",sans-serif;
 
           .line{
@@ -78,9 +88,13 @@ $maxWithContent: 860px;
         font-weight: bold;
         margin-top: 10px;
         margin-left: 40px;
+        @media only screen and (max-width: $mobile-width) {
+          font-size: 36px;
+          margin-left: 0;
+        }
 
         .title_1st {
-          font-size: 36px;
+          font-size: inherit;
           color: #1DE9B6;
           font-family: "komu-a",sans-serif;
 
@@ -99,7 +113,8 @@ $maxWithContent: 860px;
         margin-left: 40px;
 
         @media only screen and (max-width: $mobile-width) {
-          margin-right: 0px;
+          margin-left: 0;
+          margin-right: 0;
         }
       }
     }
@@ -158,6 +173,7 @@ $maxWithContent: 860px;
 
     @media only screen and (max-width: $mobile-width) {
       width: 100%;
+      padding-left: 20px;
     }
 
     .title {
@@ -167,6 +183,10 @@ $maxWithContent: 860px;
       color: #1DE9B6;
       margin-left: 90px;
       padding-top: 50px;
+      @media only screen and (max-width: $mobile-width) {
+        margin-left: 0;
+        font-size: 36px;
+      }
     }
 
     .view-rule {
@@ -176,6 +196,10 @@ $maxWithContent: 860px;
       color: #F6F9FD;
       opacity: 0.9;
       margin-left: 10%;
+      @media only screen and (max-width: $mobile-width) {
+        margin-left: 0;
+        font-size: 14px;
+      }
     }
 
     .click-here {
@@ -200,11 +224,11 @@ $maxWithContent: 860px;
 
   .ebp-wrap {
     padding: 0;
-    background-color: #031E28;
+    background-color: $bg_navy;
 
-    @media only screen and (max-width: $mobile-width) {
-      padding-left: 20px;
-    }
+    // @media only screen and (max-width: $mobile-width) {
+    //   padding-left: 20px;
+    // }
   }
 
   .lower-section {
@@ -227,13 +251,9 @@ $maxWithContent: 860px;
   ************************************************************************
    */
   .cs-background {
-    background-color: #031E28;
-    min-height: 750px;
+    background-color: $bg_navy;
+    min-height: 550px;
     position: relative;
-
-    @media only screen and (max-width: $mobile-width) {
-      min-height: 550px;
-    }
 
     .circle-container {
       position: absolute;

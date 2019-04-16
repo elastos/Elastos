@@ -5,7 +5,9 @@ import { Col, Row, Avatar, Tabs, Divider } from 'antd'
 import styled from 'styled-components'
 import StandardPage from '../StandardPage'
 import PersonCard from './PersonCard'
+import BGImg from './BGImg'
 import { text, border } from '@/constants/color'
+import { breakPoint } from '@/constants/breakPoint'
 import './style.scss'
 
 const TabPane = Tabs.TabPane
@@ -135,10 +137,10 @@ export default class extends StandardPage {
           {/* <span className="title_1st"><Divider className="line" type="vertical" />1ST</span> */}
         </div>
         <Row className="members">
-          <PersonCard title={I18N.get('cs.secretariat.positions.position_1.title')} desc={I18N.get('cs.secretariat.positions.position_1.desc')} link="/position/secretariat" />
-          <PersonCard title={I18N.get('cs.secretariat.positions.position_2.title')} desc={I18N.get('cs.secretariat.positions.position_2.desc')} link="/position/secretariat" />
-          <PersonCard title={I18N.get('cs.secretariat.positions.position_3.title')} desc={I18N.get('cs.secretariat.positions.position_3.desc')} link="/position/secretariat" />
-          <PersonCard title={I18N.get('cs.secretariat.positions.position_4.title')} desc={I18N.get('cs.secretariat.positions.position_4.desc')} link="/position/secretariat" />
+          <PersonCard title={I18N.get('cs.secretariat.positions.position_1.title')} desc={I18N.get('cs.secretariat.positions.position_1.desc')} link="/position/secretariat/1" />
+          <PersonCard title={I18N.get('cs.secretariat.positions.position_2.title')} desc={I18N.get('cs.secretariat.positions.position_2.desc')} link="/position/secretariat/2" />
+          <PersonCard title={I18N.get('cs.secretariat.positions.position_3.title')} desc={I18N.get('cs.secretariat.positions.position_3.desc')} link="/position/secretariat/3" />
+          <PersonCard title={I18N.get('cs.secretariat.positions.position_4.title')} desc={I18N.get('cs.secretariat.positions.position_4.desc')} link="/position/secretariat/4" />
         </Row>
       </div>
     )
@@ -147,23 +149,7 @@ export default class extends StandardPage {
   buildContent() {
     return (
       <div className="cs-background">
-        <div className="circle-container">
-          <img className="circle" src="assets/images/council_circle.png" />
-        </div>
-        <div className="circle-top1">
-          <img className="circle" src="assets/images/council_circle.png" />
-        </div>
-        <div className="circle-top2">
-          <img className="circle" src="assets/images/council_circle.png" />
-        </div>
-        <div className="right-box-container">
-          <div className="small-box" />
-          <div className="box" />
-          <img src="assets/images/training_green_slashed_box.png" />
-        </div>
-        <div className="connector-container">
-          <img src="assets/images/council_connector.png" />
-        </div>
+        <BGImg />
         <div className="container">
           <div className="rect-container">
             <div className="rect" />
@@ -186,12 +172,17 @@ const StyledTabs = styled(Tabs)`
     :first-child:after {
       content: '';
       background-color: ${border.middleGray};
-      height: 40px;
-      width: 1px;
       display: block;
       position: absolute;
+      width: 1px;
+      height: 40px;
       top: 22px;
       left: 165px;
+      @media only screen and (max-width: ${breakPoint.mobile}) {
+        height: 32px;
+        top: 15px;
+        left: 128px;
+      }
     }
   }
   .ant-tabs-nav .ant-tabs-tab-active {
@@ -204,6 +195,9 @@ const StyledTabs = styled(Tabs)`
 const TabTitle = styled.div`
   font-family: "komu-a",sans-serif;
   font-size: 64px;
+  @media only screen and (max-width: ${breakPoint.mobile}) {
+    font-size: 48px;
+  }
 `
 // .title-council {
 //   line-height: normal;

@@ -4,6 +4,7 @@ import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
 import { Col, Avatar } from 'antd'
 import styled from 'styled-components'
+import { Link } from 'react-router-dom'
 
 import './style.scss'
 
@@ -22,7 +23,7 @@ export default class extends BaseComponent {
               <Title className="name">{title}</Title>
               <Intro>{desc}</Intro>
             </Desc>
-            <ViewMore href={link}>
+            <ViewMore to={link}>
               {I18N.get('cs.secretariat.positions.viewMore')}
               <Arrow src="/assets/images/arrow.svg" />
             </ViewMore>
@@ -48,7 +49,7 @@ const Intro = styled.span`
   opacity: 0.9;
 `
 
-const ViewMore = styled.a`
+const ViewMore = styled(Link)`
   display: block;
   margin-top: 15px;
   color: white;
