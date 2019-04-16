@@ -151,6 +151,7 @@ func main() {
 		Chain:                     chain,
 		TxMemPool:                 txPool,
 		TxFeeHelper:               txFeeHelper,
+		Validator:                 txValidator,
 		CreateCoinBaseTx:          pow.CreateCoinBaseTx,
 		GenerateBlock:             pow.GenerateBlock,
 		GenerateBlockTransactions: pow.GenerateBlockTransactions,
