@@ -217,28 +217,20 @@ func (s *service) handlePeerMsg(peers map[*peer.Peer]*speer.Peer, msg interface{
 	switch msg := msg.(type) {
 	case newPeerMsg:
 		// Create spv peer warpper for the new peer.
-		sp := speer.NewPeer(msg.Peer,
-			&speer.Config{
-				OnInv:      s.onInv,
-				OnTx:       s.onTx,
-				OnBlock:    s.onBlock,
-				OnNotFound: s.onNotFound,
-				OnReject:   s.onReject,
-			})
+		sp := speer.NewPeer(msg.Peer, &speer.Config{
+			OnVersion:  s.onVersion,
+			OnInv:      s.onInv,
+			OnTx:       s.onTx,
+			OnBlock:    s.onBlock,
+			OnNotFound: s.onNotFound,
+			OnReject:   s.onReject,
+		})
 
 		peers[msg.Peer] = sp
-		s.syncManager.NewPeer(sp)
 		msg.reply <- struct{}{}
 
 	case donePeerMsg:
-		sp, ok := peers[msg.Peer]
-		if !ok {
-			log.Errorf("unknown done peer %v", msg.Peer)
-			msg.reply <- struct{}{}
-			return
-		}
-
-		s.syncManager.DonePeer(sp)
+		delete(peers, msg.Peer)
 		msg.reply <- struct{}{}
 	}
 }
@@ -390,6 +382,24 @@ func (s *service) SendTransaction(tx util.Transaction) error {
 
 	s.txQueue <- &sendTxMsg{tx: tx}
 	return nil
+}
+
+// handleDisconnect handles peer disconnects and remove the peer from
+// SyncManager.
+func (s *service) handleDisconnect(sp *speer.Peer) {
+	sp.WaitForDisconnect()
+	s.syncManager.DonePeer(sp)
+}
+
+// OnVersion is invoked when a peer receives a version message and is
+// used to negotiate the protocol version details as well as kick start
+// the communications.
+func (s *service) onVersion(sp *speer.Peer, m *msg.Version) {
+	// Signal the sync manager this peer is a new sync candidate.
+	s.syncManager.NewPeer(sp)
+
+	// Handle peer disconnect.
+	go s.handleDisconnect(sp)
 }
 
 func (s *service) onInv(sp *speer.Peer, inv *msg.Inv) {
