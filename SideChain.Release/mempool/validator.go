@@ -250,7 +250,7 @@ func (v *Validator) checkTransactionUTXOLock(txn *types.Transaction) error {
 	}
 	references, err := v.db.GetTxReference(txn)
 	if err != nil {
-		str := fmt.Sprint("[checkTransactionUTXOLock] GetReference failed: %s", err)
+		str := fmt.Sprintf("[checkTransactionUTXOLock] GetReference failed: %s", err)
 		return ruleError(ErrUTXOLocked, str)
 	}
 	for input, output := range references {
@@ -681,14 +681,14 @@ func RunPrograms(tx *types.Transaction, hashes []common.Uint168, programs []*typ
 		return errors.New("invalid data content nil transaction")
 	}
 	if len(hashes) != len(programs) {
-		return errors.New("The number of data hashes is different with number of programs.")
+		return errors.New("number of data hashes is different with number of programs")
 	}
 
 	for i := 0; i < len(programs); i++ {
 		codeHash := common.ToCodeHash(programs[i].Code)
 
 		if !hashes[i].ToCodeHash().IsEqual(*codeHash) {
-			return errors.New("The data hashe is different from corresponding program code.")
+			return errors.New("data hash is different from corresponding program code")
 		}
 		//execute program on VM
 		se := vm.NewExecutionEngine(types.GetDataContainer(&hashes[i], tx),
@@ -698,16 +698,16 @@ func RunPrograms(tx *types.Transaction, hashes []common.Uint168, programs []*typ
 		se.Execute()
 
 		if se.GetState() != vm.HALT {
-			return errors.New("[VM] Finish State not equal to HALT.")
+			return errors.New("[VM] Finish State not equal to HALT")
 		}
 
 		if se.GetEvaluationStack().Count() != 1 {
-			return errors.New("[VM] Execute Engine Stack Count Error.")
+			return errors.New("[VM] Execute Engine Stack Count Error")
 		}
 
 		success := se.GetExecuteResult()
 		if !success {
-			return errors.New("[VM] Check Sig FALSE.")
+			return errors.New("[VM] Check Sig FALSE")
 		}
 	}
 
