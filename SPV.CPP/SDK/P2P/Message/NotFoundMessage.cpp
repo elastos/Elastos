@@ -19,7 +19,7 @@ namespace Elastos {
 		}
 
 		bool NotFoundMessage::Accept(const bytes_t &msg) {
-			ByteStream stream;
+			ByteStream stream(msg);
 			uint32_t count = 0;
 
 			if (!stream.ReadUint32(count)) {
