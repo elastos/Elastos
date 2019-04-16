@@ -108,6 +108,32 @@ func newServerPeer(s *server) *serverPeer {
 	}
 }
 
+// handleDisconnect handles peer disconnects and remove the peer from
+// SyncManager and Routes.
+func (sp *serverPeer) handleDisconnect() {
+	sp.WaitForDisconnect()
+	sp.server.syncManager.DonePeer(sp.Peer)
+}
+
+// OnVersion is invoked when a peer receives a version message and is
+// used to negotiate the protocol version details as well as kick start
+// the communications.
+func (sp *serverPeer) OnVersion(_ *peer.Peer, m *msg.Version) {
+	// Add the remote peer time as a sample for creating an offset against
+	// the local clock to keep the network time in sync.
+	sp.server.chain.TimeSource.AddTimeSample(sp.Addr(), m.Timestamp)
+
+	// Signal the sync manager this peer is a new sync candidate.
+	sp.server.syncManager.NewPeer(sp.Peer)
+
+	// Choose whether or not to relay transactions before a filter command
+	// is received.
+	sp.SetDisableRelayTx(!m.Relay)
+
+	// Handle peer disconnect.
+	go sp.handleDisconnect()
+}
+
 // OnMemPool is invoked when a peer receives a mempool message.
 // It creates and sends an inventory message with the contents of the memory
 // pool up to the maximum inventory allowed per message.  When the peer has a
@@ -688,6 +714,7 @@ func (s *server) handlePeerMsg(peers map[p2psvr.IPeer]*serverPeer, p interface{}
 	case newPeerMsg:
 		sp := newServerPeer(s)
 		sp.Peer = peer.New(p, &peer.Listeners{
+			OnVersion:      sp.OnVersion,
 			OnMemPool:      sp.OnMemPool,
 			OnTx:           sp.OnTx,
 			OnBlock:        sp.OnBlock,
@@ -703,19 +730,10 @@ func (s *server) handlePeerMsg(peers map[p2psvr.IPeer]*serverPeer, p interface{}
 		})
 
 		peers[p.IPeer] = sp
-		s.syncManager.NewPeer(sp.Peer)
 		p.reply <- struct{}{}
 
 	case donePeerMsg:
-		sp, ok := peers[p.IPeer]
-		if !ok {
-			log.Errorf("unknown done peer %v", p)
-			p.reply <- struct{}{}
-			return
-		}
-
 		delete(peers, p.IPeer)
-		s.syncManager.DonePeer(sp.Peer)
 		p.reply <- struct{}{}
 	}
 }
