@@ -1,22 +1,18 @@
 import React from 'react'
 import Footer from '@/module/layout/Footer/Container'
-import { TEAM_TYPE, TEAM_SUBCATEGORY } from '@/constant'
 import I18N from '@/I18N'
-import './style.scss'
-import { Col, Row, Avatar } from 'antd'
-import _ from 'lodash'
-import numeral from 'numeral'
+import { Col, Row, Avatar, Tabs, Divider } from 'antd'
+import styled from 'styled-components'
 import StandardPage from '../StandardPage'
+import PersonCard from './PersonCard'
+import BGImg from './BGImg'
+import { text, border } from '@/constants/color'
+import { breakPoint } from '@/constants/breakPoint'
+import './style.scss'
+
+const TabPane = Tabs.TabPane
 
 export default class extends StandardPage {
-  ord_props() {
-    return {
-    }
-  }
-
-  componentWillUnmount() {
-  }
-
   linkToRule() {
     this.props.history.push('/constitution/1')
   }
@@ -52,7 +48,7 @@ export default class extends StandardPage {
       <div className="incumbent">
         <div className="title">
           {I18N.get('cs.incumbent')}
-          {/* <span className="title_1st"><Divider className="line" type="vertical" />1ST</span> */}
+          <span className="title_1st"><Divider style={{ backgroundColor: '#7E96BE' }} className="line" type="vertical" />1ST</span>
         </div>
         <Row className="members">
           <Col lg={8} md={8} sm={24} className="member">
@@ -117,17 +113,35 @@ export default class extends StandardPage {
           </Col>
         </Row>
         {/* <div className="title">{I18N.get('cs.secretariat.staff')}<span className="title_1st"><Divider className="line" type="vertical" />1ST</span></div>
-                <Row className="members">
-                    <Col lg={8} md={8} sm={24} className="member">
-                        <div className="small-rect"></div>
-                        <div className="big-rect">
-                            <div className="content">
-                                <h3 className="name">Kevin Zhang</h3>
-                                <span className="self-intro">Kevin is a dedicated industry leader, he is a advisor of BTC, Kevin is a dedicated industry leader, he is a advisor of BTC lorem ipsum dolor sit</span>
-                            </div>
-                        </div>
-                    </Col>
-                </Row> */}
+          <Row className="members">
+              <Col lg={8} md={8} sm={24} className="member">
+                  <div className="small-rect"></div>
+                  <div className="big-rect">
+                      <div className="content">
+                          <h3 className="name">Kevin Zhang</h3>
+                          <span className="self-intro">Kevin is a dedicated industry leader, he is a advisor of BTC, Kevin is a dedicated industry leader, he is a advisor of BTC lorem ipsum dolor sit</span>
+                      </div>
+                  </div>
+              </Col>
+          </Row> */}
+        {this.buildPositions()}
+      </div>
+    )
+  }
+
+  buildPositions() {
+    return (
+      <div className="positions">
+        <div className="title">
+          {I18N.get('cs.secretariat.positions.title')}
+          {/* <span className="title_1st"><Divider className="line" type="vertical" />1ST</span> */}
+        </div>
+        <Row className="members">
+          <PersonCard title={I18N.get('cs.secretariat.positions.position_1.title')} desc={I18N.get('cs.secretariat.positions.position_1.desc')} link="/position/secretariat/1" />
+          <PersonCard title={I18N.get('cs.secretariat.positions.position_2.title')} desc={I18N.get('cs.secretariat.positions.position_2.desc')} link="/position/secretariat/2" />
+          <PersonCard title={I18N.get('cs.secretariat.positions.position_3.title')} desc={I18N.get('cs.secretariat.positions.position_3.desc')} link="/position/secretariat/3" />
+          <PersonCard title={I18N.get('cs.secretariat.positions.position_4.title')} desc={I18N.get('cs.secretariat.positions.position_4.desc')} link="/position/secretariat/4" />
+        </Row>
       </div>
     )
   }
@@ -135,33 +149,67 @@ export default class extends StandardPage {
   buildContent() {
     return (
       <div className="cs-background">
-        <div className="circle-container">
-          <img className="circle" src="assets/images/council_circle.png" />
-        </div>
-        <div className="circle-top1">
-          <img className="circle" src="assets/images/council_circle.png" />
-        </div>
-        <div className="circle-top2">
-          <img className="circle" src="assets/images/council_circle.png" />
-        </div>
-        <div className="right-box-container">
-          <div className="small-box" />
-          <div className="box" />
-          <img src="assets/images/training_green_slashed_box.png" />
-        </div>
-        <div className="connector-container">
-          <img src="assets/images/council_connector.png" />
-        </div>
+        <BGImg />
         <div className="container">
           <div className="rect-container">
             <div className="rect" />
-            <div className="title-council">{I18N.get('cs.council')}</div>
-            {this.buildIncumbent()}
-            <div className="title-secretariat">{I18N.get('cs.secretariat')}</div>
-            {this.buildSecretariat()}
+            <StyledTabs defaultActiveKey="1" tabBarStyle={{ borderBottom: 'none', color: text.middleGray }}>
+              <TabPane tab={<TabTitle>{I18N.get('cs.council')}</TabTitle>} key="1">{this.buildIncumbent()}</TabPane>
+              <TabPane tab={<TabTitle>{I18N.get('cs.secretariat.title')}</TabTitle>} key="2">{this.buildSecretariat()}</TabPane>
+            </StyledTabs>
           </div>
         </div>
       </div>
     )
   }
 }
+
+const StyledTabs = styled(Tabs)`
+  .ant-tabs-nav .ant-tabs-tab {
+    border-bottom: none;
+    color: ${text.middleGray};
+    padding: 0;
+    :first-child:after {
+      content: '';
+      background-color: ${border.middleGray};
+      display: block;
+      position: absolute;
+      width: 1px;
+      height: 40px;
+      top: 22px;
+      left: 165px;
+      @media only screen and (max-width: ${breakPoint.mobile}) {
+        height: 32px;
+        top: 15px;
+        left: 128px;
+      }
+    }
+  }
+  .ant-tabs-nav .ant-tabs-tab-active {
+    color: ${text.green};
+  }
+  .ant-tabs-ink-bar {
+    display: none!important;
+  }
+`
+const TabTitle = styled.div`
+  font-family: "komu-a",sans-serif;
+  font-size: 64px;
+  @media only screen and (max-width: ${breakPoint.mobile}) {
+    font-size: 48px;
+  }
+`
+// .title-council {
+//   line-height: normal;
+//   color: #1DE9B6;
+// }
+
+// .title-secretariat {
+//   clear: left;
+//   font-family: "komu-a",sans-serif;
+//   line-height: normal;
+//   font-size: 56px;
+//   color: #1DE9B6;
+//   margin-top: 35px;
+//   margin-bottom: 50px;
+// }
