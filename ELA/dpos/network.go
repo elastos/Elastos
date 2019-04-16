@@ -252,7 +252,7 @@ func (n *network) processMessage(msgItem *messageItem) {
 		msgTx, processed := m.(*elamsg.Tx)
 		if processed {
 			if tx, ok := msgTx.Serializable.(*types.Transaction); ok && tx.IsInactiveArbitrators() {
-				n.listener.OnInactiveArbitratorsReceived(tx)
+				n.listener.OnInactiveArbitratorsReceived(msgItem.ID, tx)
 			}
 		}
 	case msg.CmdResponseInactiveArbitrators:

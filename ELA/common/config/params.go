@@ -121,7 +121,6 @@ var DefaultParams = Params{
 	MaxInactiveRounds:        720 * 2,
 	InactivePenalty:          500 * 100000000,
 	EmergencyInactivePenalty: 100 * 100000000,
-	InactiveEliminateCount:   12,
 	GeneralArbiters:          24,
 	CandidateArbiters:        72,
 	PreConnectOffset:         360,
@@ -330,9 +329,6 @@ type Params struct {
 
 	// InactivePenalty defines the penalty amount the producer takes.
 	InactivePenalty common.Fixed64
-
-	// InactiveEliminateCount defines arbitrators count should be eliminated
-	InactiveEliminateCount uint32
 
 	// EmergencyInactivePenalty defines the penalty amount the emergency
 	// producer takes.

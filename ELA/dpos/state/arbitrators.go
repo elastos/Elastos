@@ -117,7 +117,7 @@ func (a *arbitrators) ProcessSpecialTxPayload(p types.Payload,
 		return errors.New("[ProcessSpecialTxPayload] invalid payload type")
 	}
 
-	a.State.ProcessSpecialTxPayload(p)
+	a.State.ProcessSpecialTxPayload(p, height)
 	return a.ForceChange(height)
 }
 
@@ -188,7 +188,8 @@ func (a *arbitrators) ForceChange(height uint32) error {
 	a.mtx.Unlock()
 
 	if a.started {
-		events.Notify(events.ETDirectPeersChanged, a.GetNeedConnectArbiters())
+		go events.Notify(events.ETDirectPeersChanged,
+			a.GetNeedConnectArbiters())
 	}
 
 	return nil
@@ -736,7 +737,7 @@ func (a *arbitrators) getBlockDPOSReward(block *types.Block) common.Fixed64 {
 		totalTxFx += tx.Fee
 	}
 
-	return common.Fixed64(math.Ceil(float64(totalTxFx+
+	return common.Fixed64(math.Ceil(float64(totalTxFx +
 		a.chainParams.RewardPerBlock) * 0.35))
 }
 

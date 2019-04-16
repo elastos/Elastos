@@ -44,6 +44,7 @@ type ProposalDispatcher struct {
 
 	inactiveCountDown           ViewChangesCountDown
 	currentInactiveArbitratorTx *types.Transaction
+	signedTxs                   map[common.Uint256]interface{}
 
 	eventAnalyzer  *store.EventStoreAnalyzer
 	illegalMonitor *IllegalBehaviorMonitor
@@ -139,6 +140,7 @@ func (p *ProposalDispatcher) StartProposal(b *types.Block) {
 		Result:       false,
 	}
 	p.cfg.EventMonitor.OnProposalArrived(&proposalEvent)
+	p.eventAnalyzer.IncreaseLastConsensusViewCount()
 	p.acceptProposal(proposal)
 }
 
@@ -177,6 +179,7 @@ func (p *ProposalDispatcher) FinishProposal() bool {
 		Result:    result,
 	}
 	p.cfg.EventMonitor.OnProposalFinished(&proposalEvent)
+	p.eventAnalyzer.IncreaseLastConsensusViewCount()
 	p.FinishConsensus()
 
 	return true
@@ -197,6 +200,9 @@ func (p *ProposalDispatcher) CleanProposals(changeView bool) {
 	if !changeView {
 		p.inactiveCountDown.Reset()
 		p.currentInactiveArbitratorTx = nil
+		p.signedTxs = map[common.Uint256]interface{}{}
+
+		p.eventAnalyzer.Clear()
 	}
 }
 
@@ -403,8 +409,14 @@ func (p *ProposalDispatcher) OnIllegalBlocksTxReceived(i *payload.DPOSIllegalBlo
 	p.inactiveCountDown.SetEliminated()
 }
 
-func (p *ProposalDispatcher) OnInactiveArbitratorsReceived(
+func (p *ProposalDispatcher) OnInactiveArbitratorsReceived(id peer.PID,
 	tx *types.Transaction) {
+	if _, ok := p.signedTxs[tx.Hash()]; ok ||
+		p.currentInactiveArbitratorTx != nil {
+		log.Warn("[OnInactiveArbitratorsReceived] already processed")
+		return
+	}
+
 	log.Info("[OnInactiveArbitratorsReceived] received inactive tx")
 
 	if !p.IsViewChangedTimeOut() {
@@ -414,10 +426,6 @@ func (p *ProposalDispatcher) OnInactiveArbitratorsReceived(
 	}
 
 	inactivePayload := tx.Payload.(*payload.InactiveArbitrators)
-	if !p.cfg.Consensus.IsArbitratorOnDuty(inactivePayload.Sponsor) {
-		log.Warn("[OnInactiveArbitratorsReceived] sender is not on duty")
-		return
-	}
 
 	inactiveArbitratorsMap := make(map[string]interface{})
 	for _, v := range p.eventAnalyzer.ParseInactiveArbitrators() {
@@ -432,10 +440,7 @@ func (p *ProposalDispatcher) OnInactiveArbitratorsReceived(
 		}
 	}
 
-	if p.currentInactiveArbitratorTx == nil ||
-		!p.currentInactiveArbitratorTx.Hash().IsEqual(tx.Hash()) {
-		p.currentInactiveArbitratorTx = tx
-	}
+	p.signedTxs[tx.Hash()] = nil
 
 	response := &dmsg.ResponseInactiveArbitrators{
 		TxHash: tx.Hash(),
@@ -446,7 +451,9 @@ func (p *ProposalDispatcher) OnInactiveArbitratorsReceived(
 		log.Warn("[OnInactiveArbitratorsReceived] sign response message"+
 			" error, details: ", err.Error())
 	}
-	p.cfg.Network.BroadcastMessage(response)
+	if err := p.cfg.Network.SendMessageToPeer(id, response); err != nil {
+		log.Warn("[OnInactiveArbitratorsReceived] send msg error: ", err)
+	}
 
 	log.Info("[OnInactiveArbitratorsReceived] response inactive tx sign")
 }
@@ -456,7 +463,8 @@ func (p *ProposalDispatcher) OnResponseInactiveArbitratorsReceived(
 	log.Info("[OnResponseInactiveArbitratorsReceived] collect transaction" +
 		" signs")
 
-	if !p.currentInactiveArbitratorTx.Hash().IsEqual(*txHash) {
+	if p.currentInactiveArbitratorTx == nil ||
+		!p.currentInactiveArbitratorTx.Hash().IsEqual(*txHash) {
 		log.Warn("[OnResponseInactiveArbitratorsReceived] unknown " +
 			"inactive arbitrators transaction")
 		return
@@ -603,6 +611,7 @@ func (p *ProposalDispatcher) acceptProposal(d *payload.DPOSProposal) {
 	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(vote.Signer),
 		ReceivedTime: p.cfg.TimeSource.AdjustedTime(), Result: true, RawData: vote}
 	p.cfg.EventMonitor.OnVoteArrived(&voteEvent)
+	p.eventAnalyzer.AppendConsensusVoteEvent(&voteEvent)
 }
 
 func (p *ProposalDispatcher) rejectProposal(d *payload.DPOSProposal) {
@@ -630,6 +639,7 @@ func (p *ProposalDispatcher) rejectProposal(d *payload.DPOSProposal) {
 	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(vote.Signer),
 		ReceivedTime: p.cfg.TimeSource.AdjustedTime(), Result: false, RawData: vote}
 	p.cfg.EventMonitor.OnVoteArrived(&voteEvent)
+	p.eventAnalyzer.AppendConsensusVoteEvent(&voteEvent)
 }
 
 func (p *ProposalDispatcher) setProcessingProposal(d *payload.DPOSProposal) {
@@ -724,8 +734,8 @@ func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (
 		rejectedVotes:      make(map[common.Uint256]*payload.DPOSProposalVote),
 		pendingProposals:   make(map[common.Uint256]*payload.DPOSProposal),
 		pendingVotes:       make(map[common.Uint256]*payload.DPOSProposalVote),
+		signedTxs:          make(map[common.Uint256]interface{}),
 		eventAnalyzer: store.NewEventStoreAnalyzer(store.EventStoreAnalyzerConfig{
-			InactiveEliminateCount: cfg.InactiveEliminateCount,
 			Store:                  cfg.Store,
 			Arbitrators:            cfg.Arbitrators,
 		}),

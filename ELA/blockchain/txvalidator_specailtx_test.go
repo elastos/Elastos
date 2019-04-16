@@ -639,7 +639,6 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckSidechainIllegalEvidence() {
 }
 
 func (s *txValidatorSpecialTxTestSuite) TestCheckInactiveArbitrators() {
-	const InactiveEliminateCount = 2
 	p := &payload.InactiveArbitrators{
 		Sponsor: randomPublicKey(),
 	}
@@ -653,7 +652,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckInactiveArbitrators() {
 		},
 	}
 
-	s.EqualError(CheckInactiveArbitrators(tx, InactiveEliminateCount),
+	s.EqualError(CheckInactiveArbitrators(tx),
 		"sponsor is not belong to arbitrators")
 
 	// correct sponsor
@@ -661,30 +660,28 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckInactiveArbitrators() {
 	for i := 0; i < 3; i++ { // add more than InactiveEliminateCount arbiters
 		p.Arbitrators = append(p.Arbitrators, s.arbitrators.CurrentArbitrators[i])
 	}
-	s.EqualError(CheckInactiveArbitrators(tx, InactiveEliminateCount),
-		"number of arbitrators must less equal than 2")
+	s.EqualError(CheckInactiveArbitrators(tx),
+		"number of arbitrators must less equal than 1")
 
 	// correct number of Arbitrators
 	p.Arbitrators = make([][]byte, 0)
-	for i := 3; i < 5; i++ {
-		p.Arbitrators = append(p.Arbitrators, randomPublicKey())
-	}
-	s.EqualError(CheckInactiveArbitrators(tx, InactiveEliminateCount),
+	p.Arbitrators = append(p.Arbitrators, randomPublicKey())
+	s.EqualError(CheckInactiveArbitrators(tx),
 		"inactive arbitrator is not belong to arbitrators")
 
 	// correct "Arbitrators" to be current arbitrators
 	p.Arbitrators = make([][]byte, 0)
-	for i := 3; i < 5; i++ {
+	for i := 4; i < 5; i++ {
 		p.Arbitrators = append(p.Arbitrators, s.arbitrators.CurrentArbitrators[i])
 	}
-	s.EqualError(CheckInactiveArbitrators(tx, InactiveEliminateCount),
+	s.EqualError(CheckInactiveArbitrators(tx),
 		"invalid multi sign script code")
 
 	// let "Arbitrators" has CRC arbitrators
 	s.arbitrators.CRCArbitrators = [][]byte{
-		s.arbitrators.CurrentArbitrators[3],
+		s.arbitrators.CurrentArbitrators[4],
 	}
-	s.EqualError(CheckInactiveArbitrators(tx, InactiveEliminateCount),
+	s.EqualError(CheckInactiveArbitrators(tx),
 		"inactive arbiters should not include CRC")
 
 	// set invalid redeem script
@@ -697,13 +694,13 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckInactiveArbitrators() {
 	pkBuf, _ := pk.EncodePoint(true)
 	arbitrators = append(arbitrators, pkBuf)
 	tx.Programs[0].Code = s.createArbitratorsRedeemScript(arbitrators)
-	s.EqualError(CheckInactiveArbitrators(tx, InactiveEliminateCount),
+	s.EqualError(CheckInactiveArbitrators(tx),
 		"invalid multi sign public key")
 
 	// correct redeem script
 	tx.Programs[0].Code = s.createArbitratorsRedeemScript(
 		s.arbitrators.CurrentArbitrators)
-	s.NoError(CheckInactiveArbitrators(tx, InactiveEliminateCount))
+	s.NoError(CheckInactiveArbitrators(tx))
 }
 
 func TestTxValidatorSpecialTxSuite(t *testing.T) {
