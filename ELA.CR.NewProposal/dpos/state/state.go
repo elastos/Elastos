@@ -750,7 +750,12 @@ func (s *State) processEmergencyInactiveArbitrators(
 	}
 
 	for _, v := range inactivePayload.Arbitrators {
-		key := hex.EncodeToString(v)
+		nodeKey := hex.EncodeToString(v)
+		key, ok := s.nodeOwnerKeys[nodeKey]
+		if !ok {
+			continue
+		}
+
 		if p, ok := s.activityProducers[key]; ok {
 			addEmergencyInactiveArbitrator(key, p)
 		}
@@ -852,7 +857,7 @@ func (s *State) processIllegalEvidence(payloadData types.Payload,
 // ProcessIllegalBlockEvidence takes a illegal block payload and change the
 // producers state immediately.  This is a spacial case that can be handled
 // before it packed into a block.
-func (s *State) ProcessSpecialTxPayload(p types.Payload) {
+func (s *State) ProcessSpecialTxPayload(p types.Payload, height uint32) {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 
@@ -863,7 +868,7 @@ func (s *State) ProcessSpecialTxPayload(p types.Payload) {
 	}
 
 	// Commit changes here if no errors found.
-	s.history.commit(0)
+	s.history.commit(height)
 }
 
 // setInactiveProducer set active producer to inactive state

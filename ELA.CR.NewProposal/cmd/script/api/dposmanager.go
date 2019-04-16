@@ -93,9 +93,8 @@ func newDposManager(L *lua.LState) int {
 		ChainParams:  &config.DefaultParams,
 		TimeSource:   medianTime,
 		EventStoreAnalyzerConfig: store.EventStoreAnalyzerConfig{
-			InactiveEliminateCount: config.Parameters.ArbiterConfiguration.InactiveEliminateCount,
-			Store:                  nil,
-			Arbitrators:            a,
+			Store:       nil,
+			Arbitrators: a,
 		},
 	})
 	mockManager.Handler.Initialize(mockManager.Dispatcher, mockManager.Consensus)

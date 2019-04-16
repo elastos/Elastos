@@ -102,6 +102,7 @@ func (h *DPOSHandlerSwitch) ProcessProposal(id peer.PID, p *payload.DPOSProposal
 		Result:       false,
 	}
 	h.cfg.Monitor.OnProposalArrived(&proposalEvent)
+	h.proposalDispatcher.eventAnalyzer.IncreaseLastConsensusViewCount()
 
 	return handled
 }
@@ -143,6 +144,7 @@ func (h *DPOSHandlerSwitch) ProcessAcceptVote(id peer.PID, p *payload.DPOSPropos
 	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(p.Signer),
 		ReceivedTime: h.cfg.TimeSource.AdjustedTime(), Result: true, RawData: p}
 	h.cfg.Monitor.OnVoteArrived(&voteEvent)
+	h.proposalDispatcher.eventAnalyzer.AppendConsensusVoteEvent(&voteEvent)
 
 	return succeed, finished
 }
@@ -153,6 +155,7 @@ func (h *DPOSHandlerSwitch) ProcessRejectVote(id peer.PID, p *payload.DPOSPropos
 	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(p.Signer),
 		ReceivedTime: h.cfg.TimeSource.AdjustedTime(), Result: false, RawData: p}
 	h.cfg.Monitor.OnVoteArrived(&voteEvent)
+	h.proposalDispatcher.eventAnalyzer.AppendConsensusVoteEvent(&voteEvent)
 
 	return succeed, finished
 }
