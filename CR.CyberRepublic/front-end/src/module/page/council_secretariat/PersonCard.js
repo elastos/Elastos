@@ -18,9 +18,14 @@ export default class extends BaseComponent {
 
         <div className="big-rect">
           <div className="content">
-            <h3 className="name">{title}</h3>
-            <span className="self-intro">{desc}</span>
-            <div><ViewMore href={link}>{I18N.get('cs.secretariat.positions.viewMore')}</ViewMore></div>
+            <Desc>
+              <Title className="name">{title}</Title>
+              <Intro>{desc}</Intro>
+            </Desc>
+            <ViewMore href={link}>
+              {I18N.get('cs.secretariat.positions.viewMore')}
+              <Arrow src="/assets/images/arrow.svg" />
+            </ViewMore>
           </div>
         </div>
       </Col>
@@ -28,7 +33,28 @@ export default class extends BaseComponent {
   }
 }
 
+const Desc = styled.div`
+  min-height: 120px;
+`
+
+const Title = styled.h3`
+  font-size: 28px;
+  color: #FFFFFF;
+`
+
+const Intro = styled.span`
+  font-size: 13px;
+  color: #F6F9FD;
+  opacity: 0.9;
+`
+
 const ViewMore = styled.a`
+  display: block;
+  margin-top: 15px;
   color: white;
-  background-image
+`
+
+const Arrow = styled.img`
+  width: 10px;
+  margin-left: 10px;
 `

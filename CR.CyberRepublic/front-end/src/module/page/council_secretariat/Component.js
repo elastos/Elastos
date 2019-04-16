@@ -136,6 +136,9 @@ export default class extends StandardPage {
         </div>
         <Row className="members">
           <PersonCard title={I18N.get('cs.secretariat.positions.position_1.title')} desc={I18N.get('cs.secretariat.positions.position_1.desc')} link="/position/secretariat" />
+          <PersonCard title={I18N.get('cs.secretariat.positions.position_2.title')} desc={I18N.get('cs.secretariat.positions.position_2.desc')} link="/position/secretariat" />
+          <PersonCard title={I18N.get('cs.secretariat.positions.position_3.title')} desc={I18N.get('cs.secretariat.positions.position_3.desc')} link="/position/secretariat" />
+          <PersonCard title={I18N.get('cs.secretariat.positions.position_4.title')} desc={I18N.get('cs.secretariat.positions.position_4.desc')} link="/position/secretariat" />
         </Row>
       </div>
     )
