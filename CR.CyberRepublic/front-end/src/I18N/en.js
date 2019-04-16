@@ -1484,23 +1484,64 @@ const en = {
   'user.skillset.PRESENTATION': 'Business Presentations',
 
   // Council & Secretariat
-  'cs.incumbent': 'INCUMBENT',
-  'cs.council': 'COUNCIL',
-  'cs.secretariat': 'SECRETARIAT',
-  'cs.secretariat.general': 'SECRETARIAT GENERAL',
-  'cs.secretariat.staff': 'SECRETARIAT STAFF',
-  'cs.rule.tile': 'Rules For Council',
-  'cs.rule.show.click': 'Click',
-  'cs.rule.show.here': 'here',
-  'cs.rule.show.view': 'to view the rules for council',
-  'cs.kevin.name': 'Kevin Zhang',
-  'cs.kevin.intro': 'Head of Elastos Global Adoption Team, based in Silicon Valley',
-  'cs.yipeng.name': 'Yipeng Su',
-  'cs.yipeng.intro': 'Chief Architect of Elastos Foundation, based in Beijing',
-  'cs.feng.name': 'Feng Zhang',
-  'cs.feng.intro': 'Lawyer, Founder of Digital-Era Blockchain Service Alliance, Co-Founder of Bit University, based in Shanghai',
-  'cs.rebecca.name': 'Rebecca Zhu',
-  'cs.rebecca.intro': 'Project Director of Elastos Foundation, based in Beijing',
+  cs: {
+    incumbent: 'INCUMBENT',
+    council: 'COUNCIL',
+    secretariat: {
+      title: 'SECRETARIAT',
+      general: 'SECRETARIAT GENERAL',
+      staff: 'SECRETARIAT STAFF',
+      positions: {
+        title: 'SECRETARIAT - OPEN POSITIONS',
+        jobDesc: 'JOB DESCRIPTION',
+        howtoApply: {
+          title: 'HOW TO APPLE',
+          desc: 'Apply for it via email: secretariat@cyberrepublic.org',
+        },
+        viewMore: 'View More',
+        position_1: {
+          title: 'Technology and Development Advisor',
+          desc: '',
+        },
+        position_2: {
+          title: 'Investment Advisor',
+          desc: '',
+        },
+        position_3: {
+          title: 'BD/PR Advisor',
+          desc: 'Provide professional advice to the council members regarding the proposals.',
+        },
+        position_4: {
+          title: 'Project Manager',
+          desc: 'Proposal execution, manage the project to ensure the proposal is executed successfully.',
+        },
+      },
+    },
+    rule: {
+      tile: 'Rules For Council',
+      show: {
+        click: 'Click',
+        here: 'here',
+        view: 'to view the rules for council',
+      }
+    },
+    kevin: {
+      name: 'Kevin Zhang',
+      intro: 'Head of Elastos Global Adoption Team, based in Silicon Valley',
+    },
+    yipeng: {
+      name: 'Yipeng Su',
+      intro: 'Chief Architect of Elastos Foundation, based in Beijing',
+    },
+    feng: {
+      name: 'Feng Zhang',
+      intro: 'Lawyer, Founder of Digital-Era Blockchain Service Alliance, Co-Founder of Bit University, based in Shanghai',
+    },
+    rebecca: {
+      name: 'Rebecca Zhu',
+      intro: 'Project Director of Elastos Foundation, based in Beijing',
+    },
+  },
 
   // ConstitutionNavigator
   'counstitution.menu1': '01 Elastos Cyber Republic Constitution',

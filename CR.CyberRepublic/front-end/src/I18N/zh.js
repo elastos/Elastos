@@ -1484,23 +1484,64 @@ const zh = {
   'user.skillset.PRESENTATION': '商务演示',
 
   // Council & Secretariat
-  'cs.incumbent': '现任委员',
-  'cs.council': '委员会',
-  'cs.secretariat': '秘书处',
-  'cs.secretariat.general': '秘书长',
-  'cs.secretariat.staff': '秘书处成员',
-  'cs.rule.tile': '委员会规则',
-  'cs.rule.show.click': '点击',
-  'cs.rule.show.here': '这里',
-  'cs.rule.show.view': '查阅委员会规则',
-  'cs.kevin.name': '张戈',
-  'cs.kevin.intro': '亦来云全球推广负责人, 常驻硅谷',
-  'cs.yipeng.name': '苏翼鹏',
-  'cs.yipeng.intro': '亦来云基金会首席架构师, 常驻北京',
-  'cs.feng.name': '张烽',
-  'cs.feng.intro': '律师、数字时代区块链服务联盟创始人、比特大学联合创始人，常驻上海',
-  'cs.rebecca.name': '朱凤',
-  'cs.rebecca.intro': '亦来云基金会项目总监，常驻北京',
+  cs: {
+    incumbent: '现任委员',
+    council: '委员会',
+    secretariat: {
+      title: '秘书处',
+      general: '秘书长',
+      staff: '秘书处成员',
+      positions: {
+        title: 'SECRETARIAT - OPEN POSITIONS',
+        jobDesc: 'JOB DESCRIPTION',
+        howtoApply: {
+          title: 'HOW TO APPLE',
+          desc: 'Apply for it via email: secretariat@cyberrepublic.org',
+        },
+        viewMore: 'View More',
+        position_1: {
+          title: 'Technology and Development Advisor',
+          desc: '',
+        },
+        position_2: {
+          title: 'Investment Advisor',
+          desc: '',
+        },
+        position_3: {
+          title: 'BD/PR Advisor',
+          desc: 'Provide professional advice to the council members regarding the proposals.',
+        },
+        position_4: {
+          title: 'Project Manager',
+          desc: 'Proposal execution, manage the project to ensure the proposal is executed successfully.',
+        },
+      },
+    },
+    rule: {
+      tile: '委员会规则',
+      show: {
+        click: '点击',
+        here: '这里',
+        view: '查阅委员会规则',
+      },
+    },
+    kevin: {
+      name: '张戈',
+      intro: '亦来云全球推广负责人, 常驻硅谷',
+    },
+    yipeng: {
+      name: '苏翼鹏',
+      intro: '亦来云基金会首席架构师, 常驻北京',
+    },
+    feng: {
+      name: '张烽',
+      intro: '律师、数字时代区块链服务联盟创始人、比特大学联合创始人，常驻上海',
+    },
+    rebecca: {
+      name: '朱凤',
+      intro: '亦来云基金会项目总监，常驻北京',
+    },
+  },
 
   // ConstitutionNavigator
   'counstitution.menu1': '01 亦来云Cyber Republic章程',

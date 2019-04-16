@@ -1,22 +1,16 @@
 import React from 'react'
 import Footer from '@/module/layout/Footer/Container'
-import { TEAM_TYPE, TEAM_SUBCATEGORY } from '@/constant'
 import I18N from '@/I18N'
-import './style.scss'
-import { Col, Row, Avatar } from 'antd'
-import _ from 'lodash'
-import numeral from 'numeral'
+import { Col, Row, Avatar, Tabs, Divider } from 'antd'
+import styled from 'styled-components'
 import StandardPage from '../StandardPage'
+import PersonCard from './PersonCard'
+import { text, border } from '@/constants/color'
+import './style.scss'
+
+const TabPane = Tabs.TabPane
 
 export default class extends StandardPage {
-  ord_props() {
-    return {
-    }
-  }
-
-  componentWillUnmount() {
-  }
-
   linkToRule() {
     this.props.history.push('/constitution/1')
   }
@@ -52,7 +46,7 @@ export default class extends StandardPage {
       <div className="incumbent">
         <div className="title">
           {I18N.get('cs.incumbent')}
-          {/* <span className="title_1st"><Divider className="line" type="vertical" />1ST</span> */}
+          <span className="title_1st"><Divider style={{ backgroundColor: '#7E96BE' }} className="line" type="vertical" />1ST</span>
         </div>
         <Row className="members">
           <Col lg={8} md={8} sm={24} className="member">
@@ -117,17 +111,32 @@ export default class extends StandardPage {
           </Col>
         </Row>
         {/* <div className="title">{I18N.get('cs.secretariat.staff')}<span className="title_1st"><Divider className="line" type="vertical" />1ST</span></div>
-                <Row className="members">
-                    <Col lg={8} md={8} sm={24} className="member">
-                        <div className="small-rect"></div>
-                        <div className="big-rect">
-                            <div className="content">
-                                <h3 className="name">Kevin Zhang</h3>
-                                <span className="self-intro">Kevin is a dedicated industry leader, he is a advisor of BTC, Kevin is a dedicated industry leader, he is a advisor of BTC lorem ipsum dolor sit</span>
-                            </div>
-                        </div>
-                    </Col>
-                </Row> */}
+          <Row className="members">
+              <Col lg={8} md={8} sm={24} className="member">
+                  <div className="small-rect"></div>
+                  <div className="big-rect">
+                      <div className="content">
+                          <h3 className="name">Kevin Zhang</h3>
+                          <span className="self-intro">Kevin is a dedicated industry leader, he is a advisor of BTC, Kevin is a dedicated industry leader, he is a advisor of BTC lorem ipsum dolor sit</span>
+                      </div>
+                  </div>
+              </Col>
+          </Row> */}
+        {this.buildPositions()}
+      </div>
+    )
+  }
+
+  buildPositions() {
+    return (
+      <div className="positions">
+        <div className="title">
+          {I18N.get('cs.secretariat.positions.title')}
+          {/* <span className="title_1st"><Divider className="line" type="vertical" />1ST</span> */}
+        </div>
+        <Row className="members">
+          <PersonCard title={I18N.get('cs.secretariat.positions.position_1.title')} desc={I18N.get('cs.secretariat.positions.position_1.desc')} link="/position/secretariat" />
+        </Row>
       </div>
     )
   }
@@ -155,13 +164,55 @@ export default class extends StandardPage {
         <div className="container">
           <div className="rect-container">
             <div className="rect" />
-            <div className="title-council">{I18N.get('cs.council')}</div>
-            {this.buildIncumbent()}
-            <div className="title-secretariat">{I18N.get('cs.secretariat')}</div>
-            {this.buildSecretariat()}
+            <StyledTabs defaultActiveKey="1" tabBarStyle={{ borderBottom: 'none', color: text.middleGray }}>
+              <TabPane tab={<TabTitle>{I18N.get('cs.council')}</TabTitle>} key="1">{this.buildIncumbent()}</TabPane>
+              <TabPane tab={<TabTitle>{I18N.get('cs.secretariat.title')}</TabTitle>} key="2">{this.buildSecretariat()}</TabPane>
+            </StyledTabs>
           </div>
         </div>
       </div>
     )
   }
 }
+
+const StyledTabs = styled(Tabs)`
+  .ant-tabs-nav .ant-tabs-tab {
+    border-bottom: none;
+    color: ${text.middleGray};
+    padding: 0;
+    :first-child:after {
+      content: '';
+      background-color: ${border.middleGray};
+      height: 40px;
+      width: 1px;
+      display: block;
+      position: absolute;
+      top: 22px;
+      left: 165px;
+    }
+  }
+  .ant-tabs-nav .ant-tabs-tab-active {
+    color: ${text.green};
+  }
+  .ant-tabs-ink-bar {
+    display: none!important;
+  }
+`
+const TabTitle = styled.div`
+  font-family: "komu-a",sans-serif;
+  font-size: 64px;
+`
+// .title-council {
+//   line-height: normal;
+//   color: #1DE9B6;
+// }
+
+// .title-secretariat {
+//   clear: left;
+//   font-family: "komu-a",sans-serif;
+//   line-height: normal;
+//   font-size: 56px;
+//   color: #1DE9B6;
+//   margin-top: 35px;
+//   margin-bottom: 50px;
+// }

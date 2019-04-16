@@ -35,25 +35,8 @@ $maxWithContent: 860px;
     margin: 0 auto;
     padding-top: 142px;
 
-    .title-council {
-      font-family: "komu-a",sans-serif;
-      line-height: normal;
-      font-size: 96px;
-      color: #1DE9B6;
-    }
-
-    .title-secretariat {
-      clear: left;
-      font-family: "komu-a",sans-serif;
-      line-height: normal;
-      font-size: 48px;
-      color: #1DE9B6;
-      margin-top: 35px;
-      margin-bottom: 50px;
-    }
-
     .incumbent {
-      margin-top: 72px;
+      margin-top: 20px;
 
       .title {
         font-family: "komu-a",sans-serif;
@@ -67,8 +50,8 @@ $maxWithContent: 860px;
           font-family: "komu-a",sans-serif;
 
           .line{
-            height: 38px;
-            margin-top: -5px;
+            height: 30px;
+            margin-top: 4px;
             margin-left: 30px;
             margin-right: 30px;
           }
@@ -85,7 +68,8 @@ $maxWithContent: 860px;
       }
     }
 
-    .secretariat {
+    .secretariat, .positions {
+      margin-top: 20px;
       .title {
         font-family: "komu-a",sans-serif;
         line-height: normal;
@@ -181,7 +165,7 @@ $maxWithContent: 860px;
       line-height: normal;
       font-size: 48px;
       color: #1DE9B6;
-      margin-left: 10%;
+      margin-left: 90px;
       padding-top: 50px;
     }
 
