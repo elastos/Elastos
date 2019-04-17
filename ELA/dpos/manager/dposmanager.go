@@ -84,7 +84,7 @@ type DPOSManagerConfig struct {
 	PublicKey   []byte
 	Arbitrators state.Arbitrators
 	ChainParams *config.Params
-	TimeSource  dtime.MedianTimeSource // TODO use for consensus.
+	TimeSource  dtime.MedianTimeSource
 	Server      elanet.Server
 }
 
@@ -102,6 +102,7 @@ type DPOSManager struct {
 	blockPool   *mempool.BlockPool
 	txPool      *mempool.TxPool
 	chainParams *config.Params
+	timeSource  dtime.MedianTimeSource
 	server      elanet.Server
 	broadcast   func(p2p.Message)
 
@@ -124,6 +125,7 @@ func NewManager(cfg DPOSManagerConfig) *DPOSManager {
 		blockCache:  &ConsensusBlockCache{},
 		arbitrators: cfg.Arbitrators,
 		chainParams: cfg.ChainParams,
+		timeSource:  cfg.TimeSource,
 		server:      cfg.Server,
 	}
 	m.blockCache.Reset()

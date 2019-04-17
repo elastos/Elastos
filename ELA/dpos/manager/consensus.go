@@ -78,7 +78,7 @@ func (c *Consensus) StartConsensus(b *types.Block) {
 	log.Info("[StartConsensus] consensus start")
 	defer log.Info("[StartConsensus] consensus end")
 
-	now := time.Now()
+	now := c.manager.timeSource.AdjustedTime()
 	c.manager.GetBlockCache().Reset()
 	c.SetRunning()
 
@@ -87,7 +87,7 @@ func (c *Consensus) StartConsensus(b *types.Block) {
 
 	viewEvent := log.ViewEvent{
 		OnDutyArbitrator: common.BytesToHexString(c.GetOnDutyArbitrator()),
-		StartTime:        time.Now(),
+		StartTime:        now,
 		Offset:           c.GetViewOffset(),
 		Height:           b.Height,
 	}
@@ -103,12 +103,12 @@ func (c *Consensus) ProcessBlock(b *types.Block) {
 }
 
 func (c *Consensus) ChangeView() {
-	c.currentView.ChangeView(&c.viewOffset)
+	c.currentView.ChangeView(&c.viewOffset, c.manager.timeSource.AdjustedTime())
 }
 
 func (c *Consensus) TryChangeView() bool {
 	if c.IsRunning() {
-		return c.currentView.TryChangeView(&c.viewOffset)
+		return c.currentView.TryChangeView(&c.viewOffset, c.manager.timeSource.AdjustedTime())
 	}
 	return false
 }
