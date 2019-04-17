@@ -2,6 +2,8 @@ package manager
 
 import (
 	"bytes"
+	"sort"
+	"sync"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -106,8 +108,10 @@ type DPOSManager struct {
 	server      elanet.Server
 	broadcast   func(p2p.Message)
 
-	notHandledProposal   map[string]struct{}
 	neededMajorityStatus int
+	mtx                  sync.Mutex
+	waitRecover          chan struct{}
+	notHandledProposal   map[string]struct{}
 	statusMap            map[uint32]map[string]*dmsg.ConsensusStatus
 }
 
@@ -177,7 +181,7 @@ func (d *DPOSManager) Recover() {
 				return
 			}
 			d.changeHeight()
-			if d.recoverAbnormalState(true) {
+			if d.recoverAbnormalState() {
 				return
 			}
 		}
@@ -206,8 +210,10 @@ func (d *DPOSManager) ProcessHigherBlock(b *types.Block) {
 	//d.network.BroadcastMessage(dmsg.NewInventory(b.Hash()))
 
 	if d.handler.TryStartNewConsensus(b) {
+		d.mtx.Lock()
 		d.notHandledProposal = make(map[string]struct{})
 		d.statusMap = make(map[uint32]map[string]*dmsg.ConsensusStatus)
+		d.mtx.Unlock()
 	}
 }
 
@@ -225,10 +231,14 @@ func (d *DPOSManager) OnProposalReceived(id dpeer.PID, p *payload.DPOSProposal) 
 
 	if !d.handler.ProcessProposal(id, p) {
 		pubKey := common.BytesToHexString(id[:])
+		d.mtx.Lock()
 		d.notHandledProposal[pubKey] = struct{}{}
-		if d.arbitrators.HasArbitersMinorityCount(len(d.notHandledProposal)) {
+		count := len(d.notHandledProposal)
+		d.mtx.Unlock()
+
+		if d.arbitrators.HasArbitersMinorityCount(count) {
 			log.Info("[OnProposalReceived] has minority not handled votes, need recover")
-			if d.recoverAbnormalState(false) {
+			if d.recoverAbnormalState() {
 				log.Info("[OnProposalReceived] recover start")
 			} else {
 				log.Error("[OnProposalReceived] has no active peers recover failed")
@@ -307,23 +317,22 @@ func (d *DPOSManager) OnResponseConsensus(id dpeer.PID, status *dmsg.ConsensusSt
 		return
 	}
 	log.Info("[OnResponseConsensus] collect recover status")
+	d.mtx.Lock()
 	if _, ok := d.statusMap[status.ViewOffset]; !ok {
 		d.statusMap[status.ViewOffset] = make(map[string]*dmsg.ConsensusStatus)
 	}
 	d.statusMap[status.ViewOffset][common.BytesToHexString(id[:])] = status
-	if len(d.statusMap[status.ViewOffset]) >= d.neededMajorityStatus {
-		log.Infof("[OnResponseConsensus] recover received %d status at "+
-			"viewoffset:%d", len(d.statusMap[status.ViewOffset]), status.ViewOffset)
-		d.handler.RecoverAbnormal(status)
-		d.notHandledProposal = make(map[string]struct{})
-		d.statusMap = make(map[uint32]map[string]*dmsg.ConsensusStatus)
+
+	if len(d.statusMap[status.ViewOffset]) >= d.neededMajorityStatus && d.waitRecover != nil {
+		d.waitRecover <- struct{}{}
 	}
+	d.mtx.Unlock()
 }
 
 func (d *DPOSManager) OnBadNetwork() {
 	if d.isCurrentArbiter() {
 		log.Warn("[OnBadNetwork] found network bad")
-		if d.recoverAbnormalState(false) {
+		if d.recoverAbnormalState() {
 			log.Info("[OnBadNetwork] start recover")
 			return
 		}
@@ -333,21 +342,90 @@ func (d *DPOSManager) OnBadNetwork() {
 	}
 }
 
-func (d *DPOSManager) recoverAbnormalState(firstRecover bool) bool {
+func (d *DPOSManager) recoverAbnormalState() bool {
 	if arbiters := d.arbitrators.GetArbitrators(); len(arbiters) != 0 {
 		if peers := d.network.GetActivePeers(); len(peers) == 0 {
 			log.Error("[recoverAbnormalState] can not find active peer")
 			return false
 		}
-		if firstRecover {
-			d.neededMajorityStatus = 1
-		} else {
-			d.neededMajorityStatus = len(arbiters)/3 + 1
-		}
+		d.neededMajorityStatus = len(arbiters)/2 + 1
+		d.waitRecover = make(chan struct{}, 1)
 		d.handler.RequestAbnormalRecovering()
+		go d.waitForRecover()
 		return true
 	}
 	return false
+}
+
+func (d *DPOSManager) waitForRecover() {
+	ticker := time.NewTicker(time.Second * 2)
+	defer ticker.Stop()
+
+out:
+	for {
+		select {
+		case <-ticker.C:
+			break out
+
+		case <-d.waitRecover:
+			break out
+		}
+	}
+
+	d.mtx.Lock()
+	defer d.mtx.Unlock()
+	close(d.waitRecover)
+	d.waitRecover = nil
+
+	if len(d.statusMap) == 0 {
+		log.Warn("wait for recover finished, but not received status")
+		return
+	}
+
+	var maxCount int
+	var maxCountMinViewOffset uint32
+	for k, v := range d.statusMap {
+		if maxCount < len(v) {
+			maxCount = len(v)
+			maxCountMinViewOffset = k
+		} else if maxCount == len(v) && maxCountMinViewOffset > k {
+			maxCountMinViewOffset = k
+		}
+	}
+	var status *dmsg.ConsensusStatus
+	startTimes := make([]int64, 0)
+	for _, v := range d.statusMap[maxCountMinViewOffset] {
+		if status == nil {
+			status = v
+		}
+		startTimes = append(startTimes, v.ViewStartTime.UnixNano())
+	}
+	sort.Slice(startTimes, func(i, j int) bool {
+		return startTimes[i] < startTimes[j]
+	})
+	medianTime := medianOf(startTimes)
+	status.ViewStartTime = dtime.Int64ToTime(medianTime)
+
+	log.Infof("[OnResponseConsensus] recover received %d status at "+
+		"viewoffset:%d", len(d.statusMap[status.ViewOffset]), status.ViewOffset)
+	d.handler.RecoverAbnormal(status)
+
+	d.notHandledProposal = make(map[string]struct{})
+	d.statusMap = make(map[uint32]map[string]*dmsg.ConsensusStatus)
+}
+
+func medianOf(nums []int64) int64 {
+	l := len(nums)
+
+	if l == 0 {
+		return 0
+	}
+
+	if l%2 == 0 {
+		return (nums[l/2] + nums[l/2-1]) / 2
+	}
+
+	return nums[l/2]
 }
 
 func (d *DPOSManager) OnChangeView() {
