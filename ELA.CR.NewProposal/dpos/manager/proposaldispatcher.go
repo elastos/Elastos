@@ -16,6 +16,7 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	dmsg "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
+	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/dpos/store"
 )
 
@@ -503,8 +504,9 @@ func (p *ProposalDispatcher) OnResponseInactiveArbitratorsReceived(
 func (p *ProposalDispatcher) tryEnterEmergencyState(signCount int) bool {
 	log.Info("[tryEnterEmergencyState] current sign count: ", signCount)
 
-	minSignCount := int(float64(p.cfg.Arbitrators.GetArbitersCount()) * 0.5)
-	if signCount > minSignCount {
+	minSignCount := int(float64(len(p.cfg.Arbitrators.GetCRCArbiters())) *
+		state.MajoritySignRatioNumerator / state.MajoritySignRatioDenominator)
+	if signCount >= minSignCount {
 		p.illegalMonitor.AddEvidence(p.currentInactiveArbitratorTx.
 			Payload.(*payload.InactiveArbitrators))
 		p.cfg.Manager.AppendToTxnPool(p.currentInactiveArbitratorTx)
@@ -711,7 +713,7 @@ func (p *ProposalDispatcher) CreateInactiveArbitrators() (
 func (p *ProposalDispatcher) createArbitratorsRedeemScript() ([]byte, error) {
 
 	var pks []*crypto.PublicKey
-	for _, v := range p.cfg.Arbitrators.GetArbitrators() {
+	for _, v := range p.cfg.Arbitrators.GetCRCArbiters() {
 		pk, err := crypto.DecodePoint(v)
 		if err != nil {
 			return nil, err
@@ -719,9 +721,10 @@ func (p *ProposalDispatcher) createArbitratorsRedeemScript() ([]byte, error) {
 		pks = append(pks, pk)
 	}
 
-	arbitratorsCount := len(p.cfg.Arbitrators.GetArbitrators())
-	minSignCount := int(float64(arbitratorsCount) * 0.5)
-	return contract.CreateMultiSigRedeemScript(minSignCount+1, pks)
+	arbitratorsCount := len(p.cfg.Arbitrators.GetCRCArbiters())
+	minSignCount := int(float64(arbitratorsCount) *
+		state.MajoritySignRatioNumerator / state.MajoritySignRatioNumerator)
+	return contract.CreateMultiSigRedeemScript(minSignCount, pks)
 }
 
 func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (
@@ -736,8 +739,8 @@ func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (
 		pendingVotes:       make(map[common.Uint256]*payload.DPOSProposalVote),
 		signedTxs:          make(map[common.Uint256]interface{}),
 		eventAnalyzer: store.NewEventStoreAnalyzer(store.EventStoreAnalyzerConfig{
-			Store:                  cfg.Store,
-			Arbitrators:            cfg.Arbitrators,
+			Store:       cfg.Store,
+			Arbitrators: cfg.Arbitrators,
 		}),
 	}
 	p.inactiveCountDown = ViewChangesCountDown{

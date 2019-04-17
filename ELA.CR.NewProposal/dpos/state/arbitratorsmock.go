@@ -20,6 +20,7 @@ func NewArbitratorsMock(arbitersByte [][]byte, changeCount, majorityCount int) *
 		CandidateOwnerProgramHashes: make([]*common.Uint168, 0),
 		OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
 		ArbitersRoundReward:         make(map[common.Uint168]common.Fixed64),
+		CRCArbitratorsMap:           make(map[string]*Producer),
 		TotalVotesInRound:           0,
 		DutyChangedCount:            0,
 		MajorityCount:               majorityCount,
@@ -38,6 +39,7 @@ type ArbitratorsMock struct {
 	CandidateOwnerProgramHashes []*common.Uint168
 	ArbitersRoundReward         map[common.Uint168]common.Fixed64
 	OwnerVotesInRound           map[common.Uint168]common.Fixed64
+	CRCArbitratorsMap           map[string]*Producer
 	TotalVotesInRound           common.Fixed64
 	DutyChangedCount            int
 	MajorityCount               int
@@ -115,7 +117,7 @@ func (a *ArbitratorsMock) GetCRCProducer(publicKey []byte) *Producer {
 }
 
 func (a *ArbitratorsMock) GetCRCArbitrators() map[string]*Producer {
-	panic("implement me")
+	return a.CRCArbitratorsMap
 }
 
 func (a *ArbitratorsMock) IsCRCArbitratorNodePublicKey(nodePublicKeyHex string) bool {

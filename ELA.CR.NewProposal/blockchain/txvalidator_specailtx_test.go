@@ -645,7 +645,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckInactiveArbitrators() {
 	tx := &types.Transaction{
 		Payload: p,
 		Programs: []*program.Program{
-			&program.Program{
+			{
 				Code:      randomPublicKey(),
 				Parameter: randomSignature(),
 			},
@@ -686,6 +686,15 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckInactiveArbitrators() {
 
 	// set invalid redeem script
 	s.arbitrators.CRCArbitrators = [][]byte{}
+	for i := 0; i < 5; i++ {
+		_, pk, _ := crypto.GenerateKeyPair()
+		pkBuf, _ := pk.EncodePoint(true)
+		s.arbitrators.CRCArbitrators = append(s.arbitrators.CRCArbitrators, pkBuf)
+	}
+	s.arbitrators.CRCArbitratorsMap = map[string]*state.Producer{}
+	for _, v := range s.arbitrators.CRCArbitrators {
+		s.arbitrators.CRCArbitratorsMap[common.BytesToHexString(v)] = nil
+	}
 	var arbitrators [][]byte
 	for i := 0; i < 4; i++ {
 		arbitrators = append(arbitrators, s.arbitrators.CurrentArbitrators[i])
@@ -699,7 +708,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckInactiveArbitrators() {
 
 	// correct redeem script
 	tx.Programs[0].Code = s.createArbitratorsRedeemScript(
-		s.arbitrators.CurrentArbitrators)
+		s.arbitrators.CRCArbitrators)
 	s.NoError(CheckInactiveArbitrators(tx))
 }
 

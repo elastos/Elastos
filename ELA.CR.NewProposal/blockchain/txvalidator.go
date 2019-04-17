@@ -1268,16 +1268,14 @@ func CheckInactiveArbitrators(txn *Transaction) error {
 		}
 	}
 
-	if err := checkInactiveArbitratorsSignatures(txn.Programs[0],
-		arbitrators); err != nil {
+	if err := checkInactiveArbitratorsSignatures(txn.Programs[0]); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func checkInactiveArbitratorsSignatures(program *program.Program,
-	arbitrators map[string]interface{}) error {
+func checkInactiveArbitratorsSignatures(program *program.Program) error {
 
 	code := program.Code
 	// Get N parameter
@@ -1285,9 +1283,11 @@ func checkInactiveArbitratorsSignatures(program *program.Program,
 	// Get M parameter
 	m := int(code[0]) - crypto.PUSH1 + 1
 
-	crcArbitratorsCount := len(arbitrators)
-	minSignCount := int(float64(crcArbitratorsCount) * 0.5)
-	if m < 1 || m > n || n != crcArbitratorsCount || m <= minSignCount {
+	crcArbitrators := DefaultLedger.Arbitrators.GetCRCArbitrators()
+	crcArbitratorsCount := len(crcArbitrators)
+	minSignCount := int(float64(crcArbitratorsCount) *
+		state.MajoritySignRatioNumerator / state.MajoritySignRatioDenominator)
+	if m < 1 || m > n || n != crcArbitratorsCount || m < minSignCount {
 		return errors.New("invalid multi sign script code")
 	}
 	publicKeys, err := crypto.ParseMultisigScript(code)
@@ -1297,7 +1297,7 @@ func checkInactiveArbitratorsSignatures(program *program.Program,
 
 	for _, pk := range publicKeys {
 		str := common.BytesToHexString(pk[1:])
-		if _, exists := arbitrators[str]; !exists {
+		if _, exists := crcArbitrators[str]; !exists {
 			return errors.New("invalid multi sign public key")
 		}
 	}
