@@ -22,7 +22,7 @@ class Component extends React.Component {
   }
 
   render() {
-    const { triggeredBy, onToggle, visible, title } = this.props
+    const { triggeredBy, onToggle, visible, title, btnType } = this.props
     const content = (
       <Container>
         <CloseIcon type="close" onClick={onToggle} />
@@ -32,7 +32,7 @@ class Component extends React.Component {
           <Btn type="default" onClick={onToggle}>
             {I18N.get('council.voting.modal.cancel')}
           </Btn>
-          <Btn type="danger" onClick={this.onSubmit}>
+          <Btn type={btnType || 'default'} onClick={this.onSubmit}>
             {I18N.get('council.voting.modal.confirm')}
           </Btn>
         </Footer>

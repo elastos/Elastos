@@ -245,6 +245,7 @@ class C extends StandardPage {
         visible={visibleYes}
         onToggle={this.showVoteYesModal}
         onSubmit={this.voteYes}
+        btnType="primary"
       />
     )
     const popOverOppose = (
@@ -253,6 +254,7 @@ class C extends StandardPage {
         visible={visibleOppose}
         onToggle={this.showVoteOpposeModal}
         onSubmit={this.voteOppose}
+        btnType="danger"
       />
     )
     const popOverAbstain = (
