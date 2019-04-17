@@ -14,6 +14,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/account"
+	"github.com/elastos/Elastos.ELA/dpos/dtime"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	. "github.com/elastos/Elastos.ELA/dpos/manager"
 	"github.com/elastos/Elastos.ELA/dpos/store"
@@ -58,8 +59,9 @@ func newDposManager(L *lua.LState) int {
 		return 0
 	}
 
+	medianTime := dtime.NewMedianTime()
 	pub, _ := common.HexStringToBytes(arbitratorsPublicKeys[index])
-	dposManager := NewManager(DPOSManagerConfig{PublicKey: pub, Arbitrators: a})
+	dposManager := NewManager(DPOSManagerConfig{TimeSource: medianTime, PublicKey: pub, Arbitrators: a})
 	mockManager := &manager{
 		DPOSManager: dposManager,
 	}
@@ -75,9 +77,10 @@ func newDposManager(L *lua.LState) int {
 	mockManager.EventMonitor.RegisterListener(&log.EventLogs{})
 
 	mockManager.Handler = NewHandler(DPOSHandlerConfig{
-		Network: n,
-		Manager: dposManager,
-		Monitor: mockManager.EventMonitor,
+		Network:    n,
+		Manager:    dposManager,
+		Monitor:    mockManager.EventMonitor,
+		TimeSource: medianTime,
 	})
 
 	mockManager.Consensus = NewConsensus(dposManager, time.Duration(config.Parameters.ArbiterConfiguration.SignTolerance)*time.Second, mockManager.Handler)
@@ -88,10 +91,11 @@ func newDposManager(L *lua.LState) int {
 		Manager:      dposManager,
 		Account:      mockManager.Account,
 		ChainParams:  &config.DefaultParams,
+		TimeSource:   medianTime,
 		EventStoreAnalyzerConfig: store.EventStoreAnalyzerConfig{
 			InactiveEliminateCount: config.Parameters.ArbiterConfiguration.InactiveEliminateCount,
-			Store:       nil,
-			Arbitrators: a,
+			Store:                  nil,
+			Arbitrators:            a,
 		},
 	})
 	mockManager.Handler.Initialize(mockManager.Dispatcher, mockManager.Consensus)
