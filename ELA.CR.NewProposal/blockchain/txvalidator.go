@@ -1259,7 +1259,8 @@ func CheckInactiveArbitrators(txn *Transaction) error {
 			strconv.FormatUint(uint64(inactiveArbitratorsCount), 10))
 	}
 	for _, v := range p.Arbitrators {
-		if _, exists := arbitrators[common.BytesToHexString(v)]; !exists {
+		if _, exists := arbitrators[common.BytesToHexString(v)]; !exists &&
+			!DefaultLedger.Arbitrators.IsInactiveProducer(v) {
 			return errors.New("inactive arbitrator is not belong to " +
 				"arbitrators")
 		}

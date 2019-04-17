@@ -31,6 +31,10 @@ const (
 	// majority signatures.
 	MajoritySignRatioDenominator = float64(3)
 
+	// MaxNormalInactiveChangesCount defines the max count arbitrators can
+	// change when more than 1/3 arbiters don't sign cause to confirm fail
+	MaxNormalInactiveChangesCount = 3
+
 	none         = ChangeType(0x00)
 	updateNext   = ChangeType(0x01)
 	normalChange = ChangeType(0x02)
@@ -63,6 +67,8 @@ type arbitrators struct {
 	finalRoundChange            common.Fixed64
 	arbitersRoundReward         map[common.Uint168]common.Fixed64
 	illegalBlocksPayloadHashes  map[common.Uint256]interface{}
+	inactiveMode                bool
+	inactiveTxs                 map[common.Uint256]interface{}
 }
 
 func (a *arbitrators) Start() {
@@ -74,6 +80,7 @@ func (a *arbitrators) Start() {
 func (a *arbitrators) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	a.State.ProcessBlock(block, confirm)
 	a.IncreaseChainHeight(block)
+	a.inactiveTxs = make(map[common.Uint256]interface{})
 }
 
 func (a *arbitrators) CheckDPOSIllegalTx(block *types.Block) error {
@@ -113,6 +120,7 @@ func (a *arbitrators) ProcessSpecialTxPayload(p types.Payload,
 		a.illegalBlocksPayloadHashes[obj.Hash()] = nil
 		a.mtx.Unlock()
 	case *payload.InactiveArbitrators:
+		a.inactiveTxs[obj.Hash()] = nil
 	default:
 		return errors.New("[ProcessSpecialTxPayload] invalid payload type")
 	}
@@ -438,6 +446,10 @@ func (a *arbitrators) IsCRCArbitrator(pk []byte) bool {
 	return ok
 }
 
+func (a *arbitrators) IsInactiveProducer(pk []byte) bool {
+	return a.State.IsInactiveProducer(pk)
+}
+
 func (a *arbitrators) GetCRCProducer(publicKey []byte) *Producer {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
@@ -549,22 +561,24 @@ func (a *arbitrators) changeCurrentArbitrators() error {
 }
 
 func (a *arbitrators) updateNextArbitrators(height uint32) error {
-	var crcCount int
+	a.inactiveModeSwitch()
+
 	a.nextArbitrators = make([][]byte, 0)
 	for _, v := range a.crcArbitratorsNodePublicKey {
-		if !a.isInactiveProducer(v.info.NodePublicKey) {
-			a.nextArbitrators = append(a.nextArbitrators, v.info.NodePublicKey)
-		} else {
-			crcCount++
+		a.nextArbitrators = append(a.nextArbitrators, v.info.NodePublicKey)
+	}
+
+	count := 0
+
+	if !a.inactiveMode {
+		count = a.chainParams.GeneralArbiters
+		producers, err := a.GetNormalArbitratorsDesc(height, count, a.State.getProducers())
+		if err != nil {
+			return err
 		}
-	}
-	count := a.chainParams.GeneralArbiters + crcCount
-	producers, err := a.GetNormalArbitratorsDesc(height, count, a.State.getProducers())
-	if err != nil {
-		return err
-	}
-	for _, v := range producers {
-		a.nextArbitrators = append(a.nextArbitrators, v)
+		for _, v := range producers {
+			a.nextArbitrators = append(a.nextArbitrators, v)
+		}
 	}
 
 	candidates, err := a.GetCandidatesDesc(height, count, a.State.getProducers())
@@ -574,6 +588,16 @@ func (a *arbitrators) updateNextArbitrators(height uint32) error {
 	a.nextCandidates = candidates
 
 	return nil
+}
+
+func (a *arbitrators) inactiveModeSwitch() {
+	if len(a.inactiveTxs) > MaxNormalInactiveChangesCount {
+		a.inactiveMode = true
+	}
+
+	if false { //todo complete the condition
+		a.inactiveMode = false
+	}
 }
 
 func (a *arbitrators) GetCandidatesDesc(height uint32, startIndex int,
@@ -799,7 +823,7 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
 
 	crcNodeMap := make(map[string]*Producer)
 	crcArbitratorsProgramHashes := make(map[common.Uint168]interface{})
-	crcArbiters := make([][]byte, len(chainParams.CRCArbiters))
+	crcArbiters := make([][]byte, 0, len(chainParams.CRCArbiters))
 	for _, v := range chainParams.CRCArbiters {
 		pubKey, err := hex.DecodeString(v.PublicKey)
 		if err != nil {
@@ -838,6 +862,8 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
 		finalRoundChange:            common.Fixed64(0),
 		arbitersRoundReward:         nil,
 		illegalBlocksPayloadHashes:  make(map[common.Uint256]interface{}),
+		inactiveTxs:                 make(map[common.Uint256]interface{}),
+		inactiveMode:                false,
 	}
 	a.State = NewState(chainParams, a.GetArbitrators)
 

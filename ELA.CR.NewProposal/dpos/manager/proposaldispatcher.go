@@ -412,8 +412,7 @@ func (p *ProposalDispatcher) OnIllegalBlocksTxReceived(i *payload.DPOSIllegalBlo
 
 func (p *ProposalDispatcher) OnInactiveArbitratorsReceived(id peer.PID,
 	tx *types.Transaction) {
-	if _, ok := p.signedTxs[tx.Hash()]; ok ||
-		p.currentInactiveArbitratorTx != nil {
+	if _, ok := p.signedTxs[tx.Hash()]; ok {
 		log.Warn("[OnInactiveArbitratorsReceived] already processed")
 		return
 	}
@@ -525,6 +524,7 @@ func (p *ProposalDispatcher) tryEnterEmergencyState(signCount int) bool {
 		// arbitrators tx
 		p.cfg.Manager.GetBlockCache().Reset()
 
+		p.currentInactiveArbitratorTx = nil
 		p.inactiveCountDown.SetEliminated()
 
 		log.Info("[tryEnterEmergencyState] successfully entered emergency" +
