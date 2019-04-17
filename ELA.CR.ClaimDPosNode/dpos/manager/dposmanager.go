@@ -191,13 +191,11 @@ func (d *DPOSManager) Recover() {
 }
 
 func (d *DPOSManager) isCurrentArbiter() bool {
-	arbiters := d.arbitrators.GetArbitrators()
-	for _, a := range arbiters {
-		if bytes.Equal(a, d.publicKey) {
-			return true
-		}
-	}
-	return false
+	return d.arbitrators.IsArbitrator(d.publicKey)
+}
+
+func (d *DPOSManager) isCRCArbiter() bool {
+	return d.arbitrators.IsCRCArbitrator(d.publicKey)
 }
 
 func (d *DPOSManager) ProcessHigherBlock(b *types.Block) {
@@ -501,6 +499,9 @@ func (d *DPOSManager) OnSidechainIllegalEvidenceReceived(s *payload.SidechainIll
 
 func (d *DPOSManager) OnInactiveArbitratorsReceived(id dpeer.PID,
 	tx *types.Transaction) {
+	if !d.isCRCArbiter() {
+		return
+	}
 	if err := blockchain.CheckInactiveArbitrators(tx); err != nil {
 		log.Info("[OnIllegalProposalReceived] received error evidence: ", err)
 		return
@@ -510,6 +511,9 @@ func (d *DPOSManager) OnInactiveArbitratorsReceived(id dpeer.PID,
 
 func (d *DPOSManager) OnResponseInactiveArbitratorsReceived(
 	txHash *common.Uint256, signers []byte, signs []byte) {
+	if !d.isCRCArbiter() || !d.arbitrators.IsCRCArbitrator(signers) {
+		return
+	}
 	d.dispatcher.OnResponseInactiveArbitratorsReceived(txHash, signers, signs)
 }
 

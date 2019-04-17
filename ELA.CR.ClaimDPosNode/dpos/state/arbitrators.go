@@ -23,13 +23,13 @@ import (
 type ChangeType byte
 
 const (
-	// majoritySignRatioNumerator defines the ratio numerator to achieve
+	// MajoritySignRatioNumerator defines the ratio numerator to achieve
 	// majority signatures.
-	majoritySignRatioNumerator = float64(2)
+	MajoritySignRatioNumerator = float64(2)
 
-	// majoritySignRatioDenominator defines the ratio denominator to achieve
+	// MajoritySignRatioDenominator defines the ratio denominator to achieve
 	// majority signatures.
-	majoritySignRatioDenominator = float64(3)
+	MajoritySignRatioDenominator = float64(3)
 
 	none         = ChangeType(0x00)
 	updateNext   = ChangeType(0x01)
@@ -488,7 +488,7 @@ func (a *arbitrators) GetArbitersCount() int {
 func (a *arbitrators) GetArbitersMajorityCount() int {
 	a.mtx.Lock()
 	minSignCount := int(float64(len(a.currentArbitrators)) *
-		majoritySignRatioNumerator / majoritySignRatioDenominator)
+		MajoritySignRatioNumerator / MajoritySignRatioDenominator)
 	a.mtx.Unlock()
 	return minSignCount
 }
