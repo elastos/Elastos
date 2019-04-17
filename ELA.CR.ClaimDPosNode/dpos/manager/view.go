@@ -38,10 +38,10 @@ func (v *view) ResetView(t time.Time) {
 	v.viewStartTime = t
 }
 
-func (v *view) ChangeView(viewOffset *uint32) {
-	offset, offsetTime := v.CalculateOffsetTime(v.viewStartTime)
+func (v *view) ChangeView(viewOffset *uint32, now time.Time) {
+	offset, offsetTime := v.calculateOffsetTime(v.viewStartTime, now)
 	*viewOffset += uint32(offset)
-	v.viewStartTime = time.Now().Add(-offsetTime)
+	v.viewStartTime = now.Add(-offsetTime)
 	log.Info("[ChangeView] current view offset:", *viewOffset)
 
 	if offset > 0 {
@@ -54,20 +54,18 @@ func (v *view) ChangeView(viewOffset *uint32) {
 	}
 }
 
-func (v *view) CalculateOffsetTime(startTime time.Time) (uint32, time.Duration) {
-	duration := time.Now().Sub(startTime)
+func (v *view) calculateOffsetTime(startTime time.Time, now time.Time) (uint32, time.Duration) {
+	duration := now.Sub(startTime)
 	offset := duration / v.signTolerance
 	offsetTime := duration % v.signTolerance
 
 	return uint32(offset), offsetTime
 }
 
-func (v *view) TryChangeView(viewOffset *uint32) bool {
-
-	now := time.Now()
+func (v *view) TryChangeView(viewOffset *uint32, now time.Time) bool {
 	if now.After(v.viewStartTime.Add(v.signTolerance)) {
 		log.Info("[TryChangeView] succeed")
-		v.ChangeView(viewOffset)
+		v.ChangeView(viewOffset, now)
 		return true
 	}
 	return false

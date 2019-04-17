@@ -173,6 +173,7 @@ func NewArbitrator(account account.Account, cfg Config) (*Arbitrator, error) {
 		Manager:     dposManager,
 		Monitor:     eventMonitor,
 		Arbitrators: cfg.Arbitrators,
+		TimeSource:  medianTime,
 	})
 
 	consensus := manager.NewConsensus(dposManager, time.Duration(cfg.Params.SignTolerance)*time.Second, dposHandlerSwitch)
@@ -184,6 +185,7 @@ func NewArbitrator(account account.Account, cfg Config) (*Arbitrator, error) {
 			Manager:      dposManager,
 			Account:      account,
 			ChainParams:  cfg.ChainParams,
+			TimeSource:   medianTime,
 			EventStoreAnalyzerConfig: store.EventStoreAnalyzerConfig{
 				InactiveEliminateCount: cfg.ChainParams.InactiveEliminateCount,
 				Store:                  cfg.Store,
