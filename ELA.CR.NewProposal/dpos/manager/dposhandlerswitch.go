@@ -2,12 +2,12 @@ package manager
 
 import (
 	"bytes"
-	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/dpos/dtime"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
@@ -29,6 +29,7 @@ type DPOSHandlerConfig struct {
 	Manager     *DPOSManager
 	Monitor     *log.EventMonitor
 	Arbitrators state.Arbitrators
+	TimeSource  dtime.MedianTimeSource
 }
 
 type DPOSHandlerSwitch struct {
@@ -95,7 +96,7 @@ func (h *DPOSHandlerSwitch) ProcessProposal(id peer.PID, p *payload.DPOSProposal
 	proposalEvent := log.ProposalEvent{
 		Sponsor:      common.BytesToHexString(p.Sponsor),
 		BlockHash:    p.BlockHash,
-		ReceivedTime: time.Now(),
+		ReceivedTime: h.cfg.TimeSource.AdjustedTime(),
 		ProposalHash: p.Hash(),
 		RawData:      p,
 		Result:       false,
@@ -110,7 +111,7 @@ func (h *DPOSHandlerSwitch) ChangeView(firstBlockHash *common.Uint256) {
 
 	viewEvent := log.ViewEvent{
 		OnDutyArbitrator: common.BytesToHexString(h.consensus.GetOnDutyArbitrator()),
-		StartTime:        time.Now(),
+		StartTime:        h.cfg.TimeSource.AdjustedTime(),
 		Offset:           h.consensus.GetViewOffset(),
 		Height:           h.proposalDispatcher.CurrentHeight(),
 	}
@@ -125,7 +126,7 @@ func (h *DPOSHandlerSwitch) TryStartNewConsensus(b *types.Block) bool {
 
 	if h.proposalDispatcher.IsProcessingBlockEmpty() {
 		if h.currentHandler.TryStartNewConsensus(b) {
-			c := log.ConsensusEvent{StartTime: time.Now(), Height: b.Height,
+			c := log.ConsensusEvent{StartTime: h.cfg.TimeSource.AdjustedTime(), Height: b.Height,
 				RawData: &b.Header}
 			h.cfg.Monitor.OnConsensusStarted(&c)
 			return true
@@ -140,7 +141,7 @@ func (h *DPOSHandlerSwitch) ProcessAcceptVote(id peer.PID, p *payload.DPOSPropos
 	succeed, finished := h.currentHandler.ProcessAcceptVote(id, p)
 
 	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(p.Signer),
-		ReceivedTime: time.Now(), Result: true, RawData: p}
+		ReceivedTime: h.cfg.TimeSource.AdjustedTime(), Result: true, RawData: p}
 	h.cfg.Monitor.OnVoteArrived(&voteEvent)
 
 	return succeed, finished
@@ -150,7 +151,7 @@ func (h *DPOSHandlerSwitch) ProcessRejectVote(id peer.PID, p *payload.DPOSPropos
 	succeed, finished := h.currentHandler.ProcessRejectVote(id, p)
 
 	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(p.Signer),
-		ReceivedTime: time.Now(), Result: false, RawData: p}
+		ReceivedTime: h.cfg.TimeSource.AdjustedTime(), Result: false, RawData: p}
 	h.cfg.Monitor.OnVoteArrived(&voteEvent)
 
 	return succeed, finished

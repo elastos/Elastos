@@ -3,8 +3,6 @@ package manager
 import (
 	"bytes"
 	"errors"
-	"time"
-
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
@@ -14,6 +12,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/account"
+	"github.com/elastos/Elastos.ELA/dpos/dtime"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	dmsg "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
@@ -28,6 +27,7 @@ type ProposalDispatcherConfig struct {
 	Manager      *DPOSManager
 	Account      account.Account
 	ChainParams  *config.Params
+	TimeSource   dtime.MedianTimeSource
 }
 
 type ProposalDispatcher struct {
@@ -133,7 +133,7 @@ func (p *ProposalDispatcher) StartProposal(b *types.Block) {
 	proposalEvent := log.ProposalEvent{
 		Sponsor:      common.BytesToHexString(proposal.Sponsor),
 		BlockHash:    proposal.BlockHash,
-		ReceivedTime: time.Now(),
+		ReceivedTime: p.cfg.TimeSource.AdjustedTime(),
 		ProposalHash: proposal.Hash(),
 		RawData:      proposal,
 		Result:       false,
@@ -173,7 +173,7 @@ func (p *ProposalDispatcher) FinishProposal() bool {
 	proposalEvent := log.ProposalEvent{
 		Sponsor:   common.BytesToHexString(proposal),
 		BlockHash: blockHash,
-		EndTime:   time.Now(),
+		EndTime:   p.cfg.TimeSource.AdjustedTime(),
 		Result:    result,
 	}
 	p.cfg.EventMonitor.OnProposalFinished(&proposalEvent)
@@ -325,7 +325,7 @@ func (p *ProposalDispatcher) FinishConsensus() {
 		log.Info("[FinishConsensus] start")
 		defer log.Info("[FinishConsensus] end")
 
-		c := log.ConsensusEvent{EndTime: time.Now(), Height: p.CurrentHeight()}
+		c := log.ConsensusEvent{EndTime: p.cfg.TimeSource.AdjustedTime(), Height: p.CurrentHeight()}
 		p.cfg.EventMonitor.OnConsensusFinished(&c)
 		p.cfg.Consensus.SetReady()
 		p.CleanProposals(false)
@@ -405,8 +405,6 @@ func (p *ProposalDispatcher) OnIllegalBlocksTxReceived(i *payload.DPOSIllegalBlo
 
 func (p *ProposalDispatcher) OnInactiveArbitratorsReceived(
 	tx *types.Transaction) {
-	var err error
-
 	if !p.IsViewChangedTimeOut() {
 		log.Warn("[OnInactiveArbitratorsReceived] received inactive" +
 			" arbitrators transaction when normal view changing")
@@ -440,6 +438,7 @@ func (p *ProposalDispatcher) OnInactiveArbitratorsReceived(
 		TxHash: tx.Hash(),
 		Signer: p.cfg.Manager.GetPublicKey(),
 	}
+	var err error
 	if response.Sign, err = p.cfg.Account.SignTx(tx); err != nil {
 		log.Warn("[OnInactiveArbitratorsReceived] sign response message"+
 			" error, details: ", err.Error())
@@ -590,7 +589,7 @@ func (p *ProposalDispatcher) acceptProposal(d *payload.DPOSProposal) {
 	log.Info("[acceptProposal] send acc_vote msg:", dmsg.GetMessageHash(voteMsg).String())
 
 	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(vote.Signer),
-		ReceivedTime: time.Now(), Result: true, RawData: vote}
+		ReceivedTime: p.cfg.TimeSource.AdjustedTime(), Result: true, RawData: vote}
 	p.cfg.EventMonitor.OnVoteArrived(&voteEvent)
 }
 
@@ -617,7 +616,7 @@ func (p *ProposalDispatcher) rejectProposal(d *payload.DPOSProposal) {
 	p.cfg.Network.BroadcastMessage(msg)
 
 	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(vote.Signer),
-		ReceivedTime: time.Now(), Result: false, RawData: vote}
+		ReceivedTime: p.cfg.TimeSource.AdjustedTime(), Result: false, RawData: vote}
 	p.cfg.EventMonitor.OnVoteArrived(&voteEvent)
 }
 
@@ -639,7 +638,7 @@ func (p *ProposalDispatcher) CreateInactiveArbitrators() (
 	inactivePayload := &payload.InactiveArbitrators{
 		Sponsor:     p.cfg.Manager.GetPublicKey(),
 		Arbitrators: [][]byte{},
-		BlockHeight: blockchain.DefaultLedger.Blockchain.GetHeight()+1,
+		BlockHeight: blockchain.DefaultLedger.Blockchain.GetHeight() + 1,
 	}
 	inactiveArbitrators := p.eventAnalyzer.ParseInactiveArbitrators()
 	for _, v := range inactiveArbitrators {
