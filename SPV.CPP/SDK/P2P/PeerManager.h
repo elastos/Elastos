@@ -119,8 +119,6 @@ namespace Elastos {
 
 			void SetSyncSucceeded(bool succeeded);
 
-			bool IsReconnectEnable() const;
-
 			void SetReconnectEnableStatus(bool status);
 
 			void SetFixedPeer(uint128 address, uint16_t port);
@@ -273,7 +271,7 @@ namespace Elastos {
 
 		private:
 			int _isConnected, _connectFailureCount, _misbehavinCount, _dnsThreadCount, _maxConnectCount, _reconnectTaskCount;
-			bool _syncSucceeded, _needGetAddr;
+			bool _syncSucceeded, _needGetAddr, _enableReconnectTask;
 
 			std::vector<PeerInfo> _peers;
 			std::vector<PeerInfo> _fiexedPeers;

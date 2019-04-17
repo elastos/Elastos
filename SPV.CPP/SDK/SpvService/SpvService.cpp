@@ -52,6 +52,8 @@ namespace Elastos {
 		}
 
 		void SpvService::Start() {
+			getPeerManager()->SetReconnectEnableStatus(true);
+
 			_reconnectExecutor.Execute(Runnable([this]() -> void {
 				try {
 					getPeerManager()->Connect();
@@ -72,6 +74,7 @@ namespace Elastos {
 			}
 
 			getPeerManager()->SetReconnectTaskCount(0);
+			getPeerManager()->SetReconnectEnableStatus(false);
 
 			getPeerManager()->Disconnect();
 

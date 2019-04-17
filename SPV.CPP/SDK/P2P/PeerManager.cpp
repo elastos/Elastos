@@ -123,6 +123,7 @@ namespace Elastos {
 				_chainParams(params),
 
 				_syncSucceeded(false),
+				_enableReconnectTask(true),
 
 				_isConnected(0),
 				_connectFailureCount(0),
@@ -238,6 +239,12 @@ namespace Elastos {
 			lock.unlock();
 		}
 
+		void PeerManager::SetReconnectEnableStatus(bool status) {
+			lock.lock();
+			_enableReconnectTask = status;
+			lock.unlock();
+		}
+
 		void PeerManager::Connect() {
 			lock.lock();
 //			if (_connectFailureCount >= MAX_CONNECT_FAILURES) _connectFailureCount = 0; //this is a manual retry
@@ -307,7 +314,7 @@ namespace Elastos {
 				boost::mutex::scoped_lock scoped_lock(lock);
 				peerCount = _connectedPeers.size();
 				dnsThreadCount = this->_dnsThreadCount;
-				if (_reconnectTaskCount == 0)
+				if (!_enableReconnectTask)
 					_connectFailureCount = MAX_CONNECT_FAILURES; // prevent futher automatic reconnect attempts
 
 				for (size_t i = peerCount; i > 0; i--) {
@@ -905,6 +912,7 @@ namespace Elastos {
 			TransactionPeerList *peerList;
 			std::vector<PublishedTransaction> pubTx;
 			int reconnectSeconds = 30;
+			bool enableReconnect = true;
 
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
@@ -953,6 +961,7 @@ namespace Elastos {
 					_needGetAddr = true;
 					peer->warn("sync failed");
 				} else if (_connectFailureCount < MAX_CONNECT_FAILURES && _reconnectTaskCount == 0) {
+					peer->info("will reconnect");
 					willReconnect = 1;
 				}
 
@@ -982,6 +991,8 @@ namespace Elastos {
 						}
 					}
 				}
+
+				enableReconnect = _enableReconnectTask;
 			}
 
 			if (willReconnect == 0) {
@@ -992,7 +1003,7 @@ namespace Elastos {
 
 			if (willSave) FireSavePeers(true, {});
 			if (willSave) FireSyncStopped(error);
-			if (willReconnect) FireSyncIsInactive(reconnectSeconds);
+			if (enableReconnect && willReconnect) FireSyncIsInactive(reconnectSeconds);
 			FireTxStatusUpdate();
 		}
 
