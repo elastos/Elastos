@@ -7,13 +7,13 @@ import (
 const (
 	// firstTimeoutFactor specified the factor first dynamic change
 	// arbitrators in one consensus
-	// (timeout will occurred in about 1 hour)
-	firstTimeoutFactor = uint32(20)
+	// (timeout will occurred in about 9 minutes)
+	firstTimeoutFactor = uint32(3)
 
 	// othersTimeoutFactor specified the factor after first dynamic change
 	// arbitrators in one consensus
-	// (timeout will occurred in about 12 hours)
-	othersTimeoutFactor = uint32(240)
+	// (timeout will occurred in about 1 hours)
+	othersTimeoutFactor = uint32(20)
 )
 
 type ViewChangesCountDown struct {
