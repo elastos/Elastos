@@ -46,6 +46,10 @@ type ArbitratorsMock struct {
 	FinalRoundChange            common.Fixed64
 }
 
+func (a *ArbitratorsMock) IsInactiveProducer(pk []byte) bool {
+	return false
+}
+
 func (a *ArbitratorsMock) CheckDPOSIllegalTx(block *types.Block) error {
 	return nil
 }
