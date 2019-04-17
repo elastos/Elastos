@@ -30,9 +30,9 @@ var Template = Configuration{
 		MaxPerLogSize:            0,
 		NormalArbitratorsCount:   5,
 		CandidatesCount:          0,
-		EmergencyInactivePenalty: 100 * 100000000,
+		EmergencyInactivePenalty: 0, //there will be no penalty in this version
 		MaxInactiveRounds:        720 * 2,
-		InactivePenalty:          500 * 100000000,
+		InactivePenalty:          0, //there will be no penalty in this version
 		EnableEventRecord:        false,
 		PreConnectOffset:         360,
 	},
