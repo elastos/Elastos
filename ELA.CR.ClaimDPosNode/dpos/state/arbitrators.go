@@ -82,6 +82,10 @@ func (a *arbitrators) Start() {
 	a.mtx.Unlock()
 }
 
+func (a *arbitrators) IsInactiveMode() bool {
+	return a.inactiveMode
+}
+
 func (a *arbitrators) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	a.State.ProcessBlock(block, confirm)
 	a.IncreaseChainHeight(block)

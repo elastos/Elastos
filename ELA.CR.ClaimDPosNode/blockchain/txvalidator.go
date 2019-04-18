@@ -1206,6 +1206,10 @@ func checkUpdateVersionTransaction(txn *Transaction) error {
 		return errors.New("invalid payload")
 	}
 
+	if !DefaultLedger.Arbitrators.IsInactiveMode() {
+		return errors.New("can't activate when chain is not on inactive mode")
+	}
+
 	return checkCRCArbitratorsSignatures(txn.Programs[0])
 }
 
