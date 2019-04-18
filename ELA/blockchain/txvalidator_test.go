@@ -477,7 +477,7 @@ func (s *txValidatorTestSuite) TestCheckDestructionAddress() {
 	}
 
 	err := checkDestructionAddress(reference)
-	s.EqualError(err, fmt.Sprintf("cannot use utxo in the Elastos foundation destruction address"))
+	s.EqualError(err, fmt.Sprintf("cannot use utxo from the destruction address"))
 }
 
 func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {

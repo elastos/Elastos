@@ -223,7 +223,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 		return ErrTransactionSignature
 	}
 
-	if err := checkTransactionCoinbaseOutputLock(txn); err != nil {
+	if err := checkInvalidUTXO(txn); err != nil {
 		log.Warn("[CheckTransactionCoinbaseLock]", err)
 		return ErrIneffectiveCoinbase
 	}
@@ -283,18 +283,14 @@ func getProducerPublicKeys(producers []*state.Producer) [][]byte {
 
 func checkDestructionAddress(references map[*Input]*Output) error {
 	for _, output := range references {
-		// this uint168 code
-		// is the program hash of the Elastos foundation destruction address ELANULLXXXXXXXXXXXXXXXXXXXXXYvs3rr
-		// we allow no output from destruction address.
-		// So add a check here in case someone crack the private key of this address.
-		if output.ProgramHash == common.Uint168([21]uint8{33, 32, 254, 229, 215, 235, 62, 92, 125, 49, 151, 254, 207, 108, 13, 227, 15, 136, 154, 206, 247}) {
-			return errors.New("cannot use utxo in the Elastos foundation destruction address")
+		if output.ProgramHash == config.DestructionAddress {
+			return errors.New("cannot use utxo from the destruction address")
 		}
 	}
 	return nil
 }
 
-func checkTransactionCoinbaseOutputLock(txn *Transaction) error {
+func checkInvalidUTXO(txn *Transaction) error {
 	type lockTxInfo struct {
 		isCoinbaseTx bool
 		locktime     uint32
@@ -314,18 +310,23 @@ func checkTransactionCoinbaseOutputLock(txn *Transaction) error {
 			referTxn, _, err = DefaultLedger.Store.GetTransaction(referHash)
 			// TODO
 			// we have executed DefaultLedger.Store.GetTxReference(txn) before.
-			//So if we can't find referTxn here, there must be a data inconsistent problem,
-			// because we do not add lock correctly.This problem will be fixed later on.
+			// So if we can't find referTxn here, there must be a data inconsistent problem,
+			// because we do not add lock correctly. This problem will be fixed later on.
 			if err != nil {
-				return errors.New("[CheckTransactionCoinbaseOutputLock] get tx reference failed:" + err.Error())
+				return errors.New("[checkInvalidUTXO] get tx reference failed:" + err.Error())
 			}
 			lockHeight = referTxn.LockTime
 			isCoinbase = referTxn.IsCoinBaseTx()
 			transactionCache[referHash] = lockTxInfo{isCoinbase, lockHeight}
+
+			// check new sideChainPow
+			if referTxn.IsNewSideChainPowTx() {
+				return errors.New("cannot spend the utxo from a new sideChainPow tx")
+			}
 		}
 
 		if isCoinbase && currentHeight-lockHeight < config.Parameters.ChainParam.CoinbaseLockTime {
-			return errors.New("cannot unlock coinbase transaction output")
+			return errors.New("the utxo of coinbase is locking")
 		}
 	}
 	return nil
@@ -796,7 +797,7 @@ func (b *BlockChain) checkWithdrawFromSideChainTransaction(txn *Transaction, ref
 
 func (b *BlockChain) checkCrossChainArbitrators(publicKeys [][]byte) error {
 	arbiters := make([][]byte, 0)
-	if DefaultLedger.Blockchain.GetHeight() < b.chainParams.CRCOnlyDPOSHeight - 1 {
+	if DefaultLedger.Blockchain.GetHeight() < b.chainParams.CRCOnlyDPOSHeight-1 {
 		arbiters = DefaultLedger.Arbitrators.GetArbitrators()
 	} else {
 		arbiters = DefaultLedger.Arbitrators.GetCRCArbiters()

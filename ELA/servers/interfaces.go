@@ -1004,6 +1004,9 @@ func ListUnspent(param Params) map[string]interface{} {
 			if utxoType == "normal" && tx.Version >= TxVersion09 && tx.Outputs[unspent.Index].Type == OTVote {
 				continue
 			}
+			if unspent.Value == 0 {
+				continue
+			}
 			result = append(result, UTXOInfo{
 				TxType:        byte(tx.TxType),
 				TxID:          ToReversedString(unspent.TxID),

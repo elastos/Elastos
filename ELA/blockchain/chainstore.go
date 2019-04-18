@@ -54,9 +54,9 @@ func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
 	}
 
 	s := &ChainStore{
-		IStore:      db,
-		taskCh:      make(chan persistTask, TaskChanCap),
-		quit:        make(chan chan bool, 1),
+		IStore: db,
+		taskCh: make(chan persistTask, TaskChanCap),
+		quit:   make(chan chan bool, 1),
 	}
 
 	go s.taskHandler()
@@ -710,16 +710,19 @@ func (c *ChainStore) PersistUnspentWithProgramHash(programHash Uint168, assetid 
 		return err
 	}
 
-	if len(unspents) == 0 {
-		c.BatchDelete(key.Bytes())
-		return nil
-	}
-
+	storeCount := 0
 	listnum := len(unspents)
 	w := new(bytes.Buffer)
 	WriteVarUint(w, uint64(listnum))
 	for i := 0; i < listnum; i++ {
-		unspents[i].Serialize(w)
+		if unspents[i].Value > 0 {
+			storeCount++
+			unspents[i].Serialize(w)
+		}
+	}
+	if storeCount == 0 {
+		c.BatchDelete(key.Bytes())
+		return nil
 	}
 
 	// BATCH PUT VALUE
