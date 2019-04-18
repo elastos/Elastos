@@ -272,9 +272,9 @@ func (s *transactionSuite) TestCancelProducer_SerializeDeserialize() {
 func (s *transactionSuite) TestActivateProducer_SerializeDeserialize() {
 	txn := randomOldVersionTransaction(false, byte(ActivateProducer),
 		s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
-	txn.Payload = &payload.ProcessProducer{
-		OwnerPublicKey: []byte(strconv.FormatUint(rand.Uint64(), 10)),
-		Signature:      randomSignature(),
+	txn.Payload = &payload.ActivateProducer{
+		NodePublicKey: []byte(strconv.FormatUint(rand.Uint64(), 10)),
+		Signature:     randomSignature(),
 	}
 
 	serializedData := new(bytes.Buffer)
@@ -286,10 +286,10 @@ func (s *transactionSuite) TestActivateProducer_SerializeDeserialize() {
 	assertOldVersionTxEqual(false, &s.Suite, txn, txn2, s.InputNum,
 		s.OutputNum, s.AttrNum, s.ProgramNum)
 
-	p1 := txn.Payload.(*payload.ProcessProducer)
-	p2 := txn2.Payload.(*payload.ProcessProducer)
+	p1 := txn.Payload.(*payload.ActivateProducer)
+	p2 := txn2.Payload.(*payload.ActivateProducer)
 
-	s.True(bytes.Equal(p1.OwnerPublicKey, p2.OwnerPublicKey))
+	s.True(bytes.Equal(p1.NodePublicKey, p2.NodePublicKey))
 	s.True(bytes.Equal(p1.Signature, p2.Signature))
 }
 

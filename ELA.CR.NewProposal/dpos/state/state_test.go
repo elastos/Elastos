@@ -56,8 +56,8 @@ func mockCancelProducerTx(publicKey []byte) *types.Transaction {
 func mockActivateProducerTx(publicKey []byte) *types.Transaction {
 	return &types.Transaction{
 		TxType: types.ActivateProducer,
-		Payload: &payload.ProcessProducer{
-			OwnerPublicKey: publicKey,
+		Payload: &payload.ActivateProducer{
+			NodePublicKey: publicKey,
 		},
 	}
 }

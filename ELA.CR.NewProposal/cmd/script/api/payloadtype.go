@@ -397,9 +397,9 @@ func RegisterActivateProducerType(L *lua.LState) {
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), activateProducerMethods))
 }
 
-func checkActivateProducer(L *lua.LState, idx int) *payload.ProcessProducer {
+func checkActivateProducer(L *lua.LState, idx int) *payload.ActivateProducer {
 	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*payload.ProcessProducer); ok {
+	if v, ok := ud.Value.(*payload.ActivateProducer); ok {
 		return v
 	}
 	L.ArgError(1, "ActivateProducer expected")
