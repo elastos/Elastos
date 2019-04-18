@@ -39,7 +39,7 @@ const (
 	InactiveRecoveringHeightLimit = 720
 )
 
-// CheckTransactionSanity verifys received single transaction
+// CheckTransactionSanity verifies received single transaction
 func (b *BlockChain) CheckTransactionSanity(blockHeight uint32, txn *Transaction) ErrCode {
 	if err := checkTransactionSize(txn); err != nil {
 		log.Warn("[CheckTransactionSize],", err)
@@ -84,7 +84,7 @@ func (b *BlockChain) CheckTransactionSanity(blockHeight uint32, txn *Transaction
 	return Success
 }
 
-// CheckTransactionContext verifys a transaction with history transaction in ledger
+// CheckTransactionContext verifies a transaction with history transaction in ledger
 func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transaction) ErrCode {
 	// check if duplicated with transaction in ledger
 	if exist := b.db.IsTxHashDuplicate(txn.Hash()); exist {
@@ -145,7 +145,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 		}
 
 	case UpdateVersion:
-		if err := checkUpdateVersionTransaction(txn); err != nil {
+		if err := b.checkUpdateVersionTransaction(txn); err != nil {
 			log.Warn("[checkUpdateVersionTransaction],", err)
 			return ErrTransactionPayload
 		} else {
@@ -1208,14 +1208,15 @@ func (b *BlockChain) checkInactiveArbitratorsTransaction(
 	return CheckInactiveArbitrators(txn)
 }
 
-func checkUpdateVersionTransaction(txn *Transaction) error {
-	_, ok := txn.Payload.(*payload.UpdateVersion)
+func (b *BlockChain) checkUpdateVersionTransaction(txn *Transaction) error {
+	payload, ok := txn.Payload.(*payload.UpdateVersion)
 	if !ok {
 		return errors.New("invalid payload")
 	}
 
-	if !DefaultLedger.Arbitrators.IsInactiveMode() {
-		return errors.New("can't activate when chain is not on inactive mode")
+	if payload.EndHeight <= payload.StartHeight ||
+		payload.StartHeight < b.GetHeight() {
+		return errors.New("invalid update version height")
 	}
 
 	return checkCRCArbitratorsSignatures(txn.Programs[0])
