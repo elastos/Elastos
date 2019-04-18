@@ -29,10 +29,10 @@ class Component extends React.Component {
         <Title>{title || I18N.get('council.voting.modal.voteReason')}</Title>
         <StyledTextArea onChange={this.onReasonChanged} />
         <Footer>
-          <Btn type="default" onClick={onToggle}>
+          <Btn type="default" onClick={onToggle} style={{ borderRadius: 0 }}>
             {I18N.get('council.voting.modal.cancel')}
           </Btn>
-          <Btn type={btnType || 'default'} onClick={this.onSubmit}>
+          <Btn type={btnType || 'default'} colored={true} onClick={this.onSubmit} style={{ borderRadius: 0 }}>
             {I18N.get('council.voting.modal.confirm')}
           </Btn>
         </Footer>
