@@ -557,11 +557,10 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 			height)
 
 	case types.CancelProducer:
-		s.cancelProducer(tx.Payload.(*payload.ProcessProducer),
-			height)
+		s.cancelProducer(tx.Payload.(*payload.ProcessProducer), height)
 
 	case types.ActivateProducer:
-		s.activateProducer(tx.Payload.(*payload.ProcessProducer), height)
+		s.activateProducer(tx.Payload.(*payload.ActivateProducer), height)
 
 	case types.TransferAsset:
 		s.processVotes(tx, height)
@@ -643,8 +642,12 @@ func (s *State) cancelProducer(payload *payload.ProcessProducer, height uint32) 
 }
 
 // activateProducer handles the activate producer transaction.
-func (s *State) activateProducer(p *payload.ProcessProducer, height uint32) {
-	producer := s.getProducer(p.OwnerPublicKey)
+func (s *State) activateProducer(p *payload.ActivateProducer, height uint32) {
+	producer := s.getProducer(p.NodePublicKey)
+	if producer == nil {
+		log.Error("can't find producer to activate")
+		return
+	}
 	s.history.append(height, func() {
 		producer.activateRequestHeight = height
 	}, func() {
