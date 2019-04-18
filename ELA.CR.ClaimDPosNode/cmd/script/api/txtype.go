@@ -59,6 +59,8 @@ func newTransaction(L *lua.LState) int {
 		pload, _ = ud.Value.(*payload.ProducerInfo)
 	case *payload.ProcessProducer:
 		pload, _ = ud.Value.(*payload.ProcessProducer)
+	case *payload.ActivateProducer:
+		pload, _ = ud.Value.(*payload.ActivateProducer)
 	case *payload.ReturnDepositCoin:
 		pload, _ = ud.Value.(*payload.ReturnDepositCoin)
 	case *payload.DPOSIllegalProposals:

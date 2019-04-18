@@ -183,6 +183,11 @@ type CancelProducerInfo struct {
 	Signature      string `json:"signature"`
 }
 
+type ActivateProducerInfo struct {
+	NodePublicKey string `json:"nodepublickey"`
+	Signature     string `json:"signature"`
+}
+
 type UTXOInfo struct {
 	TxType        byte   `json:"txtype"`
 	TxID          string `json:"txid"`

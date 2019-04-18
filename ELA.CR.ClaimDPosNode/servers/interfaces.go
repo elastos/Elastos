@@ -1435,6 +1435,11 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
 		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
+	case *payload.ActivateProducer:
+		obj := new(ActivateProducerInfo)
+		obj.NodePublicKey = common.BytesToHexString(object.NodePublicKey)
+		obj.Signature = common.BytesToHexString(object.Signature)
+		return obj
 	}
 	return nil
 }

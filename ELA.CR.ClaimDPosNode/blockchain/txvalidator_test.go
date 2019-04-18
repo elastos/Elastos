@@ -761,8 +761,8 @@ func (s *txValidatorTestSuite) TestCheckActivateProducerTransaction() {
 
 	txn := new(types.Transaction)
 	txn.TxType = types.ActivateProducer
-	activatePayload := &payload.ProcessProducer{
-		OwnerPublicKey: publicKey1,
+	activatePayload := &payload.ActivateProducer{
+		NodePublicKey: publicKey1,
 	}
 	txn.Payload = activatePayload
 
@@ -771,11 +771,11 @@ func (s *txValidatorTestSuite) TestCheckActivateProducerTransaction() {
 		Parameter: nil,
 	}}
 
-	activatePayload.OwnerPublicKey = errPublicKey
+	activatePayload.NodePublicKey = errPublicKey
 	s.EqualError(s.Chain.checkActivateProducerTransaction(txn, 0),
 		"invalid public key in payload")
 
-	activatePayload.OwnerPublicKey = publicKey2
+	activatePayload.NodePublicKey = publicKey2
 	s.EqualError(s.Chain.checkActivateProducerTransaction(txn, 0),
 		"invalid signature in payload")
 }

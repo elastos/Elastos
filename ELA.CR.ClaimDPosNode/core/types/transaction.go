@@ -445,7 +445,7 @@ func GetPayload(txType TxType) (Payload, error) {
 	case ReturnDepositCoin:
 		p = new(payload.ReturnDepositCoin)
 	case ActivateProducer:
-		p = new(payload.ProcessProducer)
+		p = new(payload.ActivateProducer)
 	case IllegalProposalEvidence:
 		p = new(payload.DPOSIllegalProposals)
 	case IllegalVoteEvidence:

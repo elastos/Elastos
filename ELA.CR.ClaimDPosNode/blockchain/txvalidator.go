@@ -371,7 +371,8 @@ func checkTransactionInput(txn *Transaction) error {
 	}
 
 	if txn.IsIllegalTypeTx() || txn.IsInactiveArbitrators() ||
-		txn.IsNewSideChainPowTx() || txn.IsUpdateVersion() {
+		txn.IsNewSideChainPowTx() || txn.IsUpdateVersion() ||
+		txn.IsActivateProducerTx() {
 		if len(txn.Inputs) != 0 {
 			return errors.New("no cost transactions must has no input")
 		}
@@ -437,7 +438,7 @@ func (b *BlockChain) checkTransactionOutput(blockHeight uint32,
 	}
 
 	if txn.IsIllegalTypeTx() || txn.IsInactiveArbitrators() ||
-		txn.IsUpdateVersion() {
+		txn.IsUpdateVersion() || txn.IsActivateProducerTx() {
 		if len(txn.Outputs) != 0 {
 			return errors.New("Illegal transactions should have no output")
 		}
@@ -645,11 +646,8 @@ func checkAttributeProgram(tx *Transaction) error {
 			return errors.New("transaction should have no programs")
 		}
 		return nil
-	case IllegalSidechainEvidence:
-		fallthrough
-	case IllegalProposalEvidence:
-		fallthrough
-	case IllegalVoteEvidence:
+	case IllegalSidechainEvidence, IllegalProposalEvidence, IllegalVoteEvidence,
+		ActivateProducer:
 		if len(tx.Programs) != 0 || len(tx.Attributes) != 0 {
 			return errors.New("illegal proposal and vote transactions should have no attributes and programs")
 		}
@@ -736,6 +734,7 @@ func checkTransactionPayload(txn *Transaction) error {
 	case *payload.TransferCrossChainAsset:
 	case *payload.ProducerInfo:
 	case *payload.ProcessProducer:
+	case *payload.ActivateProducer:
 	case *payload.ReturnDepositCoin:
 	case *payload.DPOSIllegalProposals:
 	case *payload.DPOSIllegalVotes:
@@ -1014,7 +1013,38 @@ func (b *BlockChain) checkProcessProducer(txn *Transaction) (
 	}
 
 	producer := b.state.GetProducer(processProducer.OwnerPublicKey)
-	if producer == nil {
+	if producer == nil || !bytes.Equal(producer.OwnerPublicKey(),
+		processProducer.OwnerPublicKey) {
+		return nil, errors.New("getting unknown producer")
+	}
+	return producer, nil
+}
+
+func (b *BlockChain) checkActivateProducer(txn *Transaction) (
+	*state.Producer, error) {
+	processProducer, ok := txn.Payload.(*payload.ActivateProducer)
+	if !ok {
+		return nil, errors.New("invalid payload")
+	}
+
+	// check signature
+	publicKey, err := DecodePoint(processProducer.NodePublicKey)
+	if err != nil {
+		return nil, errors.New("invalid public key in payload")
+	}
+	signedBuf := new(bytes.Buffer)
+	err = processProducer.SerializeUnsigned(signedBuf, payload.ProcessProducerVersion)
+	if err != nil {
+		return nil, err
+	}
+	err = Verify(*publicKey, signedBuf.Bytes(), processProducer.Signature)
+	if err != nil {
+		return nil, errors.New("invalid signature in payload")
+	}
+
+	producer := b.state.GetProducer(processProducer.NodePublicKey)
+	if producer == nil || !bytes.Equal(producer.NodePublicKey(),
+		processProducer.NodePublicKey) {
 		return nil, errors.New("getting unknown producer")
 	}
 	return producer, nil
@@ -1036,7 +1066,7 @@ func (b *BlockChain) checkCancelProducerTransaction(txn *Transaction) error {
 
 func (b *BlockChain) checkActivateProducerTransaction(txn *Transaction,
 	height uint32) error {
-	producer, err := b.checkProcessProducer(txn)
+	producer, err := b.checkActivateProducer(txn)
 	if err != nil {
 		return err
 	}
