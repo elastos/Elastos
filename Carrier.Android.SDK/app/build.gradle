@@ -1,6 +1,7 @@
 import java.util.function.BooleanSupplier
 
 apply plugin: 'com.android.library'
+apply plugin: 'guru.stefma.bintrayrelease'
 
 android {
     compileSdkVersion 28
@@ -61,4 +62,15 @@ dependencies {
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
+}
+
+version = "5.2.2"
+group = "org.elastos"
+androidArtifact {
+    artifactId = "carrier"
+}
+publish {
+    userOrg = 'elastos'
+    desc = 'Elastos Carrier SDK'
+    website = 'https://github.com/elastos/Elastos.NET.Carrier.Android.SDK'
 }
