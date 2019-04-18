@@ -227,6 +227,49 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 		output.ProgramHash = address
 	}
 	s.NoError(s.Chain.checkTransactionOutput(s.HeightVersion1, tx))
+
+	// new sideChainPow
+	tx = &types.Transaction{
+		TxType: 0x05,
+		Outputs: []*types.Output{
+			{
+				Value: 0,
+				Type:  0,
+			},
+		},
+	}
+	s.NoError(s.Chain.checkTransactionOutput(s.HeightVersion1, tx))
+
+	tx.Outputs = []*types.Output{
+		{
+			Value: 0,
+			Type:  0,
+		},
+		{
+			Value: 0,
+			Type:  0,
+		},
+	}
+	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
+	s.EqualError(err, "new sideChainPow tx must have only one output")
+
+	tx.Outputs = []*types.Output{
+		{
+			Value: 100,
+			Type:  0,
+		},
+	}
+	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
+	s.EqualError(err, "the value of new sideChainPow tx output must be 0")
+
+	tx.Outputs = []*types.Output{
+		{
+			Value: 0,
+			Type:  1,
+		},
+	}
+	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
+	s.EqualError(err, "the type of new sideChainPow tx output must be OTNone")
 }
 
 func (s *txValidatorTestSuite) TestCheckAmountPrecision() {
@@ -417,7 +460,7 @@ func (s *txValidatorTestSuite) TestCheckSideChainPowConsensus() {
 	buf := new(bytes.Buffer)
 	txn.Payload.Serialize(buf, payload.SideChainPowVersion)
 	signature, _ := crypto.Sign(privateKey1, buf.Bytes()[0:68])
-	txn.Payload.(*payload.SideChainPow).SignedData = signature
+	txn.Payload.(*payload.SideChainPow).Signature = signature
 
 	//4. Run CheckSideChainPowConsensus
 	s.NoError(CheckSideChainPowConsensus(txn, arbitrator1), "TestCheckSideChainPowConsensus failed.")
