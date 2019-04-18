@@ -422,13 +422,13 @@ func (b *BlockChain) checkTransactionOutput(blockHeight uint32,
 
 	if txn.IsNewSideChainPowTx() {
 		if len(txn.Outputs) != 1 {
-			return errors.New("sideChainPow tx must has only one output")
+			return errors.New("new sideChainPow tx must have only one output")
 		}
 		if txn.Outputs[0].Value != 0 {
-			return errors.New("the value of sideChainPow tx output must be 0")
+			return errors.New("the value of new sideChainPow tx output must be 0")
 		}
 		if txn.Outputs[0].Type != OTNone {
-			return errors.New("the type of sideChainPow tx output must be OTNone")
+			return errors.New("the type of new sideChainPow tx output must be OTNone")
 		}
 
 		return nil
@@ -755,7 +755,7 @@ func CheckSideChainPowConsensus(txn *Transaction, arbitrator []byte) error {
 		return err
 	}
 
-	err = Verify(*publicKey, buf.Bytes()[0:68], payloadSideChainPow.SignedData)
+	err = Verify(*publicKey, buf.Bytes()[0:68], payloadSideChainPow.Signature)
 	if err != nil {
 		return errors.New("Arbitrator is not matched. " + err.Error())
 	}

@@ -123,7 +123,7 @@ func (s *transactionSuite) TestSideChainPow_SerializeDeserialize() {
 		SideBlockHash:   *randomUint256(),
 		SideGenesisHash: *randomUint256(),
 		BlockHeight:     rand.Uint32(),
-		SignedData:      []byte(strconv.FormatUint(rand.Uint64(), 10)),
+		Signature:       []byte(strconv.FormatUint(rand.Uint64(), 10)),
 	}
 
 	serializedData := new(bytes.Buffer)
@@ -140,7 +140,7 @@ func (s *transactionSuite) TestSideChainPow_SerializeDeserialize() {
 	s.True(p1.SideBlockHash.IsEqual(p2.SideBlockHash))
 	s.True(p1.SideGenesisHash.IsEqual(p2.SideGenesisHash))
 	s.Equal(p1.BlockHeight, p2.BlockHeight)
-	s.True(bytes.Equal(p1.SignedData, p2.SignedData))
+	s.True(bytes.Equal(p1.Signature, p2.Signature))
 }
 
 func (s *transactionSuite) TestWithdrawFromSideChain_SerializeDeserialize() {

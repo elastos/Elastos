@@ -21,6 +21,7 @@ const (
 	luaCancelProducerName    = "cancelproducer"
 	luaActivateProducerName  = "activateproducer"
 	luaReturnDepositCoinName = "returndepositcoin"
+	luaSideChainPowName      = "sidechainpow"
 )
 
 func RegisterCoinBaseType(L *lua.LState) {
@@ -412,6 +413,82 @@ var activateProducerMethods = map[string]lua.LGFunction{
 // Getter and setter for the Person#Name
 func activateProducerGet(L *lua.LState) int {
 	p := checkActivateProducer(L, 1)
+	fmt.Println(p)
+
+	return 0
+}
+
+func RegisterSidechainPowType(L *lua.LState) {
+	mt := L.NewTypeMetatable(luaSideChainPowName)
+	L.SetGlobal("sidechainpow", mt)
+	// static attributes
+	L.SetField(mt, "new", L.NewFunction(newSideChainPow))
+	// methods
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), returnSideChainPowMethods))
+}
+
+// Constructor
+func newSideChainPow(L *lua.LState) int {
+	sideBlockHashStr := L.ToString(1)
+	sideGenesisHashStr := L.ToString(2)
+	blockHeight := L.ToInt(3)
+	client := checkClient(L, 4)
+
+	sideBlockHash, err := common.Uint256FromHexString(sideBlockHashStr)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	sideGenesisHash, err := common.Uint256FromHexString(sideGenesisHashStr)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	sideChainPow := &payload.SideChainPow{
+		SideBlockHash:   *sideBlockHash,
+		SideGenesisHash: *sideGenesisHash,
+		BlockHeight:     uint32(blockHeight),
+	}
+
+	spSignBuf := new(bytes.Buffer)
+	err = sideChainPow.SerializeUnsigned(spSignBuf, payload.SideChainPowVersion)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	acc := client.GetMainAccount()
+	spSig, err := crypto.Sign(acc.PrivKey(), spSignBuf.Bytes())
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	sideChainPow.Signature = spSig
+
+	ud := L.NewUserData()
+	ud.Value = sideChainPow
+	L.SetMetatable(ud, L.GetTypeMetatable(luaSideChainPowName))
+	L.Push(ud)
+
+	return 1
+}
+
+func checkSideChainPow(L *lua.LState, idx int) *payload.SideChainPow {
+	ud := L.CheckUserData(idx)
+	if v, ok := ud.Value.(*payload.SideChainPow); ok {
+		return v
+	}
+	L.ArgError(1, "SideChainPow expected")
+	return nil
+}
+
+var returnSideChainPowMethods = map[string]lua.LGFunction{
+	"get": returnSideChainPowGet,
+}
+
+// Getter and setter for the Person#Name
+func returnSideChainPowGet(L *lua.LState) int {
+	p := checkSideChainPow(L, 1)
 	fmt.Println(p)
 
 	return 0

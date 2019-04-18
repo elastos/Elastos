@@ -207,6 +207,7 @@ func RegisterDataType(L *lua.LState) int {
 	RegisterIllegalVotesType(L)
 	RegisterIllegalBlocksType(L)
 	RegisterStringsType(L)
+	RegisterSidechainPowType(L)
 
 	return 0
 }
