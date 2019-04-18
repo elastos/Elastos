@@ -464,8 +464,8 @@ func (a *arbitrators) IsCRCArbitrator(pk []byte) bool {
 	return ok
 }
 
-func (a *arbitrators) IsInactiveProducer(pk []byte) bool {
-	return a.State.IsInactiveProducer(pk)
+func (a *arbitrators) IsDisabledProducer(pk []byte) bool {
+	return a.State.IsInactiveProducer(pk) || a.State.IsIllegalProducer(pk)
 }
 
 func (a *arbitrators) GetCRCProducer(publicKey []byte) *Producer {

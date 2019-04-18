@@ -1283,7 +1283,7 @@ func CheckInactiveArbitrators(txn *Transaction) error {
 	}
 	for _, v := range p.Arbitrators {
 		if _, exists := arbitrators[common.BytesToHexString(v)]; !exists &&
-			!DefaultLedger.Arbitrators.IsInactiveProducer(v) {
+			!DefaultLedger.Arbitrators.IsDisabledProducer(v) {
 			return errors.New("inactive arbitrator is not belong to " +
 				"arbitrators")
 		}
@@ -1478,13 +1478,15 @@ func checkDPOSElaIllegalBlockSigners(
 	}
 
 	for _, v := range signers {
-		if _, ok := arbitratorsSet[common.BytesToHexString(v)]; !ok {
+		if _, ok := arbitratorsSet[common.BytesToHexString(v)]; !ok &&
+			!DefaultLedger.Arbitrators.IsDisabledProducer(v) {
 			return errors.New("invalid signers within evidence")
 		}
 	}
 
 	for _, v := range compareSigners {
-		if _, ok := arbitratorsSet[common.BytesToHexString(v)]; !ok {
+		if _, ok := arbitratorsSet[common.BytesToHexString(v)]; !ok &&
+			!DefaultLedger.Arbitrators.IsDisabledProducer(v) {
 			return errors.New("invalid signers within evidence")
 		}
 	}
