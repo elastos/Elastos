@@ -35,6 +35,10 @@ const (
 	// change when more than 1/3 arbiters don't sign cause to confirm fail
 	MaxNormalInactiveChangesCount = 3
 
+	// ActivateArbitratorsEffectiveTime defines the height after that normal
+	// arbitrators will participate in DPOS again
+	ActivateArbitratorsEffectiveHeight = 6
+
 	none         = ChangeType(0x00)
 	updateNext   = ChangeType(0x01)
 	normalChange = ChangeType(0x02)
@@ -69,6 +73,7 @@ type arbitrators struct {
 	illegalBlocksPayloadHashes  map[common.Uint256]interface{}
 	inactiveMode                bool
 	inactiveTxs                 map[common.Uint256]interface{}
+	activateHeight              uint32
 }
 
 func (a *arbitrators) Start() {
@@ -80,7 +85,16 @@ func (a *arbitrators) Start() {
 func (a *arbitrators) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	a.State.ProcessBlock(block, confirm)
 	a.IncreaseChainHeight(block)
+
 	a.inactiveTxs = make(map[common.Uint256]interface{})
+	if a.inactiveMode {
+		for _, tx := range block.Transactions {
+			if tx.IsInactiveArbitrators() {
+				a.activateHeight = block.Height
+				break
+			}
+		}
+	}
 }
 
 func (a *arbitrators) CheckDPOSIllegalTx(block *types.Block) error {
@@ -561,7 +575,7 @@ func (a *arbitrators) changeCurrentArbitrators() error {
 }
 
 func (a *arbitrators) updateNextArbitrators(height uint32) error {
-	a.inactiveModeSwitch()
+	a.inactiveModeSwitch(height)
 
 	a.nextArbitrators = make([][]byte, 0)
 	for _, v := range a.crcArbitratorsNodePublicKey {
@@ -590,13 +604,15 @@ func (a *arbitrators) updateNextArbitrators(height uint32) error {
 	return nil
 }
 
-func (a *arbitrators) inactiveModeSwitch() {
+func (a *arbitrators) inactiveModeSwitch(height uint32) {
 	if len(a.inactiveTxs) > MaxNormalInactiveChangesCount {
 		a.inactiveMode = true
 	}
 
-	if false { //todo complete the condition
+	if a.activateHeight != 0 &&
+		height-a.activateHeight >= ActivateArbitratorsEffectiveHeight {
 		a.inactiveMode = false
+		a.activateHeight = 0
 	}
 }
 
@@ -863,6 +879,7 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
 		arbitersRoundReward:         nil,
 		illegalBlocksPayloadHashes:  make(map[common.Uint256]interface{}),
 		inactiveTxs:                 make(map[common.Uint256]interface{}),
+		activateHeight:              0,
 		inactiveMode:                false,
 	}
 	a.State = NewState(chainParams, a.GetArbitrators)
