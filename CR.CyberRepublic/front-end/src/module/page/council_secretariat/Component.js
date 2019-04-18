@@ -177,11 +177,10 @@ const StyledTabs = styled(Tabs)`
       width: 1px;
       height: 40px;
       top: 22px;
-      left: 165px;
+      left: calc(100% + 16px);
       @media only screen and (max-width: ${breakPoint.mobile}) {
         height: 32px;
         top: 15px;
-        left: 128px;
       }
     }
   }
