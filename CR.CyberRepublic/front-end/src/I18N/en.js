@@ -1501,11 +1501,11 @@ const en = {
         viewMore: 'View More',
         position_1: {
           title: 'Technology and Development Advisor',
-          desc: '',
+          desc: 'Provide professional advice to the council members regarding the proposals.',
         },
         position_2: {
           title: 'Investment Advisor',
-          desc: '',
+          desc: 'Provide professional advice to the council members regarding the proposals.',
         },
         position_3: {
           title: 'BD/PR Advisor',
