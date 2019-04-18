@@ -891,6 +891,7 @@ func TestState_IsDPOSTransaction(t *testing.T) {
 func TestState_InactiveProducer_Normal(t *testing.T) {
 	arbitrators := &ArbitratorsMock{}
 	state := NewState(&config.DefaultParams, arbitrators.GetArbitrators)
+	state.chainParams.InactivePenalty = 50
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
@@ -1133,6 +1134,91 @@ func TestState_InactiveProducer_RecoverFromInactiveState(t *testing.T) {
 	}
 	state.ProcessBlock(mockBlock(uint32(currentHeight)), nil)
 	if !assert.Equal(t, 0, len(state.GetInactiveProducers())) {
+		t.FailNow()
+	}
+}
+
+func TestState_InactiveProducer_DuringUpdateVersion(t *testing.T) {
+	arbitrators := &ArbitratorsMock{}
+	state := NewState(&config.DefaultParams, arbitrators.GetArbitrators)
+	state.chainParams.InactivePenalty = 50
+
+	// Create 10 producers info.
+	producers := make([]*payload.ProducerInfo, 10)
+	for i, p := range producers {
+		p = &payload.ProducerInfo{
+			OwnerPublicKey: make([]byte, 33),
+			NodePublicKey:  make([]byte, 33),
+		}
+		for j := range p.OwnerPublicKey {
+			p.OwnerPublicKey[j] = byte(i)
+		}
+		rand.Read(p.NodePublicKey)
+		p.NickName = fmt.Sprintf("Producer-%d", i+1)
+		producers[i] = p
+	}
+
+	// Register each producer on one height.
+	for i, p := range producers {
+		tx := mockRegisterProducerTx(p)
+		state.ProcessBlock(mockBlock(uint32(i+1), tx), nil)
+	}
+
+	// At this point, we have 5 pending, 5 active and 10 in total producers.
+	if !assert.Equal(t, 5, len(state.GetPendingProducers())) {
+		t.FailNow()
+	}
+	if !assert.Equal(t, 5, len(state.GetActiveProducers())) {
+		t.FailNow()
+	}
+	if !assert.Equal(t, 10, len(state.GetProducers())) {
+		t.FailNow()
+	}
+
+	currentHeight := 11
+	state.ProcessBlock(mockBlock(uint32(currentHeight), &types.Transaction{
+		TxType: types.UpdateVersion,
+		Payload: &payload.UpdateVersion{
+			StartHeight: uint32(currentHeight) + 1,
+			EndHeight:   uint32(currentHeight) + 3*4 + 1,
+		},
+	}), nil)
+
+	// arbitrators should set inactive after continuous three blocks
+	arbitrators.CurrentArbitrators = [][]byte{
+		producers[0].NodePublicKey,
+		producers[1].NodePublicKey,
+		producers[2].NodePublicKey,
+		producers[3].NodePublicKey,
+		producers[4].NodePublicKey,
+	}
+
+	currentHeight++
+	config.DefaultParams.PublicDPOSHeight = 11
+	config.DefaultParams.MaxInactiveRounds = 10
+
+	// simulate producers[0] do not sign for continuous 11 blocks
+	for round := 0; round < 3; round++ {
+		for arIndex := 1; arIndex <= 4; arIndex++ {
+			state.ProcessBlock(mockBlock(uint32(currentHeight)),
+				&payload.Confirm{
+					Proposal: payload.DPOSProposal{
+						Sponsor: producers[arIndex].NodePublicKey,
+					},
+				})
+			currentHeight++
+		}
+	}
+
+	// only producer[0] will be inactive
+	if !assert.Equal(t, 1, len(state.GetInactiveProducers())) ||
+		!assert.True(t, state.isInactiveProducer(producers[0].NodePublicKey)) {
+		t.FailNow()
+	}
+
+	// check penalty
+	inactiveProducer := state.GetProducer(producers[0].NodePublicKey)
+	if !assert.Equal(t, inactiveProducer.Penalty(), common.Fixed64(0)) {
 		t.FailNow()
 	}
 }

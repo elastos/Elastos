@@ -130,18 +130,20 @@ type State struct {
 	getArbiters func() [][]byte
 	chainParams *config.Params
 
-	mtx               sync.RWMutex
-	nodeOwnerKeys     map[string]string // NodePublicKey as key, OwnerPublicKey as value
-	pendingProducers  map[string]*Producer
-	activityProducers map[string]*Producer
-	inactiveProducers map[string]*Producer
-	canceledProducers map[string]*Producer
-	illegalProducers  map[string]*Producer
-	votes             map[string]*types.Output
-	nicknames         map[string]struct{}
-	specialTxHashes   map[common.Uint256]struct{}
-	preBlockArbiters  map[string]struct{}
-	history           *history
+	mtx                sync.RWMutex
+	nodeOwnerKeys      map[string]string // NodePublicKey as key, OwnerPublicKey as value
+	pendingProducers   map[string]*Producer
+	activityProducers  map[string]*Producer
+	inactiveProducers  map[string]*Producer
+	canceledProducers  map[string]*Producer
+	illegalProducers   map[string]*Producer
+	votes              map[string]*types.Output
+	nicknames          map[string]struct{}
+	specialTxHashes    map[common.Uint256]struct{}
+	preBlockArbiters   map[string]struct{}
+	versionStartHeight uint32
+	versionEndHeight   uint32
+	history            *history
 
 	// snapshots is the data set of DPOS state snapshots, it takes a snapshot of
 	// state every 12 blocks, and keeps at most 9 newest snapshots in memory.
@@ -576,6 +578,9 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 
 	case types.ReturnDepositCoin:
 		s.returnDeposit(tx, height)
+
+	case types.UpdateVersion:
+		s.updateVersion(tx, height)
 	}
 
 	s.processCancelVotes(tx, height)
@@ -718,6 +723,7 @@ func (s *State) processVoteCancel(output *types.Output, height uint32) {
 	}
 }
 
+// returnDeposit change producer state to ReturnedDeposit
 func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 
 	returnAction := func(producer *Producer) {
@@ -734,6 +740,26 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 			returnAction(producer)
 		}
 	}
+}
+
+// updateVersion record the update period during that inactive arbitrators
+// will not need to pay the penalty
+func (s *State) updateVersion(tx *types.Transaction, height uint32) {
+	p, ok := tx.Payload.(*payload.UpdateVersion)
+	if !ok {
+		log.Error("tx payload cast failed, tx:", tx.Hash())
+		return
+	}
+
+	start := p.StartHeight
+	end := p.EndHeight
+	s.history.append(height, func() {
+		s.versionStartHeight = start
+		s.versionEndHeight = end
+	}, func() {
+		s.versionStartHeight = 0
+		s.versionEndHeight = 0
+	})
 }
 
 // processEmergencyInactiveArbitrators change producer state according to
@@ -879,10 +905,12 @@ func (s *State) setInactiveProducer(producer *Producer, key string,
 	s.inactiveProducers[key] = producer
 	delete(s.activityProducers, key)
 
-	if !emergency {
-		producer.penalty += s.chainParams.InactivePenalty
-	} else {
-		producer.penalty += s.chainParams.EmergencyInactivePenalty
+	if height < s.versionStartHeight || height >= s.versionEndHeight {
+		if !emergency {
+			producer.penalty += s.chainParams.InactivePenalty
+		} else {
+			producer.penalty += s.chainParams.EmergencyInactivePenalty
+		}
 	}
 }
 
@@ -894,15 +922,17 @@ func (s *State) revertSettingInactiveProducer(producer *Producer, key string,
 	s.activityProducers[key] = producer
 	delete(s.inactiveProducers, key)
 
-	penalty := s.chainParams.InactivePenalty
-	if emergency {
-		penalty = s.chainParams.EmergencyInactivePenalty
-	}
+	if height < s.versionStartHeight || height >= s.versionEndHeight {
+		penalty := s.chainParams.InactivePenalty
+		if emergency {
+			penalty = s.chainParams.EmergencyInactivePenalty
+		}
 
-	if producer.penalty < penalty {
-		producer.penalty = common.Fixed64(0)
-	} else {
-		producer.penalty -= penalty
+		if producer.penalty < penalty {
+			producer.penalty = common.Fixed64(0)
+		} else {
+			producer.penalty -= penalty
+		}
 	}
 }
 
@@ -1046,18 +1076,20 @@ func copyMap(dst map[string]*Producer, src map[string]*Producer) {
 // NewState returns a new State instance.
 func NewState(chainParams *config.Params, getArbiters func() [][]byte) *State {
 	return &State{
-		chainParams:       chainParams,
-		getArbiters:       getArbiters,
-		nodeOwnerKeys:     make(map[string]string),
-		pendingProducers:  make(map[string]*Producer),
-		activityProducers: make(map[string]*Producer),
-		inactiveProducers: make(map[string]*Producer),
-		canceledProducers: make(map[string]*Producer),
-		illegalProducers:  make(map[string]*Producer),
-		votes:             make(map[string]*types.Output),
-		nicknames:         make(map[string]struct{}),
-		specialTxHashes:   make(map[common.Uint256]struct{}),
-		preBlockArbiters:  make(map[string]struct{}),
-		history:           newHistory(maxHistoryCapacity),
+		chainParams:        chainParams,
+		getArbiters:        getArbiters,
+		nodeOwnerKeys:      make(map[string]string),
+		pendingProducers:   make(map[string]*Producer),
+		activityProducers:  make(map[string]*Producer),
+		inactiveProducers:  make(map[string]*Producer),
+		canceledProducers:  make(map[string]*Producer),
+		illegalProducers:   make(map[string]*Producer),
+		votes:              make(map[string]*types.Output),
+		nicknames:          make(map[string]struct{}),
+		specialTxHashes:    make(map[common.Uint256]struct{}),
+		preBlockArbiters:   make(map[string]struct{}),
+		versionStartHeight: 0,
+		versionEndHeight:   0,
+		history:            newHistory(maxHistoryCapacity),
 	}
 }

@@ -10,6 +10,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/auxpow"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -24,6 +25,7 @@ type txValidatorSpecialTxTestSuite struct {
 	originalLedger     *Ledger
 	arbitrators        *state.ArbitratorsMock
 	arbitratorsPriKeys [][]byte
+	Chain              *BlockChain
 }
 
 func (s *txValidatorSpecialTxTestSuite) SetupSuite() {
@@ -57,11 +59,23 @@ func (s *txValidatorSpecialTxTestSuite) SetupSuite() {
 		s.arbitratorsPriKeys = append(s.arbitratorsPriKeys, a)
 	}
 
+	chainStore, err := NewChainStore("Chain_UnitTest",
+		config.DefaultParams.GenesisBlock)
+	if err != nil {
+		s.Error(err)
+	}
+	s.Chain, err = New(chainStore, &config.DefaultParams,
+		state.NewState(&config.DefaultParams, nil))
+	if err != nil {
+		s.Error(err)
+	}
+
 	s.originalLedger = DefaultLedger
 	DefaultLedger = &Ledger{Arbitrators: s.arbitrators}
 }
 
 func (s *txValidatorSpecialTxTestSuite) TearDownSuite() {
+	s.Chain.db.Close()
 	DefaultLedger = s.originalLedger
 }
 
@@ -724,16 +738,23 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckUpdateVersion() {
 
 	// set payload of invalid type
 	tx.Payload = &payload.InactiveArbitrators{}
-	s.EqualError(checkUpdateVersionTransaction(tx), "invalid payload")
+	s.EqualError(s.Chain.checkUpdateVersionTransaction(tx),
+		"invalid payload")
 
 	// set inactive mode off
-	tx.Payload = &payload.UpdateVersion{}
-	s.arbitrators.InactiveMode = false
-	s.EqualError(checkUpdateVersionTransaction(tx),
-		"can't activate when chain is not on inactive mode")
+	p := &payload.UpdateVersion{}
+	tx.Payload = p
+	s.EqualError(s.Chain.checkUpdateVersionTransaction(tx),
+		"invalid update version height")
+
+	// let EndHeight less than StartHeight
+	p.StartHeight = 10
+	p.EndHeight = p.StartHeight - 5
+	s.EqualError(s.Chain.checkUpdateVersionTransaction(tx),
+		"invalid update version height")
 
 	// set invalid redeem script
-	s.arbitrators.InactiveMode = true
+	p.EndHeight = p.StartHeight + 5
 	s.arbitrators.CRCArbitrators = [][]byte{}
 	for i := 0; i < 5; i++ {
 		_, pk, _ := crypto.GenerateKeyPair()
@@ -752,13 +773,13 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckUpdateVersion() {
 	pkBuf, _ := pk.EncodePoint(true)
 	arbitrators = append(arbitrators, pkBuf)
 	tx.Programs[0].Code = s.createArbitratorsRedeemScript(arbitrators)
-	s.EqualError(checkUpdateVersionTransaction(tx),
+	s.EqualError(s.Chain.checkUpdateVersionTransaction(tx),
 		"invalid multi sign public key")
 
 	// correct redeem script
 	tx.Programs[0].Code = s.createArbitratorsRedeemScript(
 		s.arbitrators.CRCArbitrators)
-	s.NoError(checkUpdateVersionTransaction(tx))
+	s.NoError(s.Chain.checkUpdateVersionTransaction(tx))
 }
 
 func TestTxValidatorSpecialTxSuite(t *testing.T) {
