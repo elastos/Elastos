@@ -355,6 +355,11 @@ func (tx *Transaction) IsUpdateVersion() bool {
 	return tx.TxType == UpdateVersion
 }
 
+func (tx *Transaction) IsProducerRelatedTx() bool {
+	return tx.TxType == RegisterProducer || tx.TxType == UpdateProducer ||
+		tx.TxType == ActivateProducer || tx.TxType == CancelProducer
+}
+
 func (tx *Transaction) IsUpdateProducerTx() bool {
 	return tx.TxType == UpdateProducer
 }
