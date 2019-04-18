@@ -2,6 +2,19 @@
 
 Home of cyberrepublic.org code
 
+## How to run
+### Frontend
+```shell
+npm i
+npm start
+```
+
+### Backend
+```shell
+npm i
+npm start
+```
+
 ## Frontend Eslint
 We are using airbnb's elint rules plus little customizations which can be found in `.eslintrc` file
 
