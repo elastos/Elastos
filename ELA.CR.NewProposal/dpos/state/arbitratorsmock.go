@@ -52,7 +52,7 @@ func (a *ArbitratorsMock) IsInactiveMode() bool {
 	return a.InactiveMode
 }
 
-func (a *ArbitratorsMock) IsInactiveProducer(pk []byte) bool {
+func (a *ArbitratorsMock) IsDisabledProducer(pk []byte) bool {
 	return false
 }
 

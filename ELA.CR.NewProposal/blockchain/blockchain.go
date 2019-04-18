@@ -762,7 +762,6 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 		block := b.blockCache[*n.Hash]
 		confirm := b.confirmCache[*n.Hash]
 
-
 		log.Info("connect block:", block.Height)
 		err := b.connectBlock(n, block, confirm)
 		if err != nil {
@@ -803,7 +802,9 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block, confirm *pay
 	}
 
 	// Rollback state memory DB
-	b.state.RollbackTo(block.Height - 1)
+	if err := DefaultLedger.Arbitrators.RollbackTo(block.Height - 1); err != nil {
+		return err
+	}
 
 	// Put block in the side chain cache.
 	node.InMainChain = false
