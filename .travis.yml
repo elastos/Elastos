@@ -4,21 +4,18 @@ osx_image: xcode10
 matrix:
   include:
   - os: osx
-    env: BUILD_ENV=arm64 BUILD_TYPE=Release
+    env: BUILD_ENV=arm64 BUILD_TYPE=Release SDK=iphoneos12.0
+
+  - os: osx
+    env: BUILD_ENV=x64 BUILD_TYPE=Release SDK=iphonesimulator12.0
 
 install:
   #- brew install appledoc
-  - cd /tmp
-  - curl https://github.com/elastos/Elastos.NET.Carrier.Native.SDK/releases/tag/internal-test | grep -e "/elastos.*ios_"${BUILD_ENV}".*gz" -o >packages.txt
-  - sed -i 'bak' 's/^/https:\/\/github.com/g' packages.txt
-  - wget -i packages.txt
-  - cd $TRAVIS_BUILD_DIR/NativeDistributions
-  - ls -l
-  - tar -zxf /tmp/*${BUILD_ENV}-*.tar.gz
-  - cd $TRAVIS_BUILD_DIR
+  - .script/download_libs.sh ${BUILD_ENV}
 
 script:
+  # - xcodebuild -showsdks
   - xcodebuild -list -project ElastosCarrierSDK.xcodeproj
   # default build release
-  - xcodebuild -scheme ElastosCarrierSDK build
+  - xcodebuild -scheme ElastosCarrierSDK build -sdk ${SDK}
   #- ./docs.sh
