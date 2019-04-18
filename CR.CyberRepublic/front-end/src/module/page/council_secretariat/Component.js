@@ -48,7 +48,7 @@ export default class extends StandardPage {
       <div className="incumbent">
         <div className="title">
           {I18N.get('cs.incumbent')}
-          <span className="title_1st"><Divider style={{ backgroundColor: '#7E96BE' }} className="line" type="vertical" />1ST</span>
+          {/* <span className="title_1st"><Divider style={{ backgroundColor: '#7E96BE' }} className="line" type="vertical" />1ST</span> */}
         </div>
         <Row className="members">
           <Col lg={8} md={8} sm={24} className="member">
