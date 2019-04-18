@@ -44,8 +44,17 @@ const (
 	normalChange = ChangeType(0x02)
 )
 
+type inactiveState struct {
+	mtx              sync.Mutex
+	inactiveMode     bool
+	inactiveTxs      map[common.Uint256]interface{}
+	inactivateHeight uint32
+	activateHeight   uint32
+}
+
 type arbitrators struct {
 	*State
+	*inactiveState
 	chainParams   *config.Params
 	bestHeight    func() uint32
 	bestBlock     func() (*types.Block, error)
@@ -71,9 +80,6 @@ type arbitrators struct {
 	finalRoundChange            common.Fixed64
 	arbitersRoundReward         map[common.Uint168]common.Fixed64
 	illegalBlocksPayloadHashes  map[common.Uint256]interface{}
-	inactiveMode                bool
-	inactiveTxs                 map[common.Uint256]interface{}
-	activateHeight              uint32
 }
 
 func (a *arbitrators) Start() {
@@ -82,23 +88,10 @@ func (a *arbitrators) Start() {
 	a.mtx.Unlock()
 }
 
-func (a *arbitrators) IsInactiveMode() bool {
-	return a.inactiveMode
-}
-
 func (a *arbitrators) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	a.State.ProcessBlock(block, confirm)
 	a.IncreaseChainHeight(block)
-
-	a.inactiveTxs = make(map[common.Uint256]interface{})
-	if a.inactiveMode {
-		for _, tx := range block.Transactions {
-			if tx.IsInactiveArbitrators() {
-				a.activateHeight = block.Height
-				break
-			}
-		}
-	}
+	a.inactiveState.ProcessBlock(block)
 }
 
 func (a *arbitrators) CheckDPOSIllegalTx(block *types.Block) error {
@@ -138,7 +131,7 @@ func (a *arbitrators) ProcessSpecialTxPayload(p types.Payload,
 		a.illegalBlocksPayloadHashes[obj.Hash()] = nil
 		a.mtx.Unlock()
 	case *payload.InactiveArbitrators:
-		a.inactiveTxs[obj.Hash()] = nil
+		a.AddInactivePayload(obj)
 	default:
 		return errors.New("[ProcessSpecialTxPayload] invalid payload type")
 	}
@@ -148,11 +141,14 @@ func (a *arbitrators) ProcessSpecialTxPayload(p types.Payload,
 }
 
 func (a *arbitrators) RollbackTo(height uint32) error {
+	if height > a.history.height {
+		return fmt.Errorf("can't rollback to height: %d", height)
+	}
+
 	if err := a.State.RollbackTo(height); err != nil {
 		return err
 	}
-	a.DecreaseChainHeight(height)
-	return nil
+	return a.DecreaseChainHeight(height)
 }
 
 func (a *arbitrators) GetDutyIndexByHeight(height uint32) (index int) {
@@ -354,15 +350,21 @@ func (a *arbitrators) distributeDPOSReward(reward common.Fixed64) error {
 	return nil
 }
 
-func (a *arbitrators) DecreaseChainHeight(height uint32) {
-	a.mtx.Lock()
-	defer a.mtx.Unlock()
+func (a *arbitrators) DecreaseChainHeight(height uint32) error {
+	a.inactiveState.RollbackTo(height)
 
-	if a.dutyIndex == 0 {
-		a.dutyIndex = len(a.currentArbitrators) - 1
+	heightOffset := int(a.history.height - height)
+	if a.dutyIndex == 0 || a.dutyIndex < heightOffset {
+		if err := a.ForceChange(height); err != nil {
+			return err
+		}
+
+		a.dutyIndex = a.GetArbitersCount() - heightOffset + a.dutyIndex
 	} else {
-		a.dutyIndex--
+		a.dutyIndex = a.dutyIndex - heightOffset
 	}
+
+	return nil
 }
 
 func (a *arbitrators) GetNeedConnectArbiters() []peer.PID {
@@ -579,7 +581,7 @@ func (a *arbitrators) changeCurrentArbitrators() error {
 }
 
 func (a *arbitrators) updateNextArbitrators(height uint32) error {
-	a.inactiveModeSwitch(height)
+	a.InactiveModeSwitch(height)
 
 	a.nextArbitrators = make([][]byte, 0)
 	for _, v := range a.crcArbitratorsNodePublicKey {
@@ -588,7 +590,7 @@ func (a *arbitrators) updateNextArbitrators(height uint32) error {
 
 	count := 0
 
-	if !a.inactiveMode {
+	if !a.IsInactiveMode() {
 		count = a.chainParams.GeneralArbiters
 		producers, err := a.GetNormalArbitratorsDesc(height, count, a.State.getProducers())
 		if err != nil {
@@ -606,18 +608,6 @@ func (a *arbitrators) updateNextArbitrators(height uint32) error {
 	a.nextCandidates = candidates
 
 	return nil
-}
-
-func (a *arbitrators) inactiveModeSwitch(height uint32) {
-	if len(a.inactiveTxs) > MaxNormalInactiveChangesCount {
-		a.inactiveMode = true
-	}
-
-	if a.activateHeight != 0 &&
-		height-a.activateHeight >= ActivateArbitratorsEffectiveHeight {
-		a.inactiveMode = false
-		a.activateHeight = 0
-	}
 }
 
 func (a *arbitrators) GetCandidatesDesc(height uint32, startIndex int,
@@ -818,6 +808,70 @@ func (a *arbitrators) getArbitersInfoWithoutOnduty(title string, arbiters [][]by
 	return info, params
 }
 
+func (i *inactiveState) IsInactiveMode() bool {
+	i.mtx.Lock()
+	result := i.inactiveMode
+	i.mtx.Unlock()
+
+	return result
+}
+
+func (i *inactiveState) ProcessBlock(block *types.Block) {
+	i.mtx.Lock()
+	defer i.mtx.Unlock()
+
+	i.inactiveTxs = make(map[common.Uint256]interface{})
+	if i.inactiveMode {
+		for _, tx := range block.Transactions {
+			if tx.IsInactiveArbitrators() {
+				i.activateHeight = block.Height
+				break
+			}
+		}
+	}
+}
+
+func (i *inactiveState) RollbackTo(height uint32) {
+	i.mtx.Lock()
+	defer i.mtx.Unlock()
+
+	// if rollback to the height before inactive mode was set,
+	// then reset inactive related state
+	if height < i.inactivateHeight {
+		i.inactivateHeight = 0
+		i.inactiveMode = false
+	}
+
+	// if rollback to the height before activate arbitrators tx appended to
+	// block chain, then reset activate related state
+	if height < i.activateHeight {
+		i.activateHeight = 0
+	}
+}
+
+func (i *inactiveState) InactiveModeSwitch(height uint32) {
+	i.mtx.Lock()
+	defer i.mtx.Unlock()
+
+	if len(i.inactiveTxs) > MaxNormalInactiveChangesCount {
+		i.inactiveMode = true
+		i.inactivateHeight = height
+	}
+
+	if i.activateHeight != 0 &&
+		height-i.activateHeight >= ActivateArbitratorsEffectiveHeight {
+		i.inactiveMode = false
+		i.activateHeight = 0
+		i.inactivateHeight = 0
+	}
+}
+
+func (i *inactiveState) AddInactivePayload(p *payload.InactiveArbitrators) {
+	i.mtx.Lock()
+	i.inactiveTxs[p.Hash()] = nil
+	i.mtx.Unlock()
+}
+
 func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
 	bestBlock func() (*types.Block, error)) (*arbitrators, error) {
 
@@ -882,9 +936,12 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
 		finalRoundChange:            common.Fixed64(0),
 		arbitersRoundReward:         nil,
 		illegalBlocksPayloadHashes:  make(map[common.Uint256]interface{}),
-		inactiveTxs:                 make(map[common.Uint256]interface{}),
-		activateHeight:              0,
-		inactiveMode:                false,
+		inactiveState: &inactiveState{
+			inactiveTxs:      make(map[common.Uint256]interface{}),
+			activateHeight:   0,
+			inactivateHeight: 0,
+			inactiveMode:     false,
+		},
 	}
 	a.State = NewState(chainParams, a.GetArbitrators)
 
