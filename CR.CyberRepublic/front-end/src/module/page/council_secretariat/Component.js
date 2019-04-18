@@ -137,10 +137,10 @@ export default class extends StandardPage {
           {/* <span className="title_1st"><Divider className="line" type="vertical" />1ST</span> */}
         </div>
         <Row className="members">
-          <PersonCard title={I18N.get('cs.secretariat.positions.position_1.title')} desc={I18N.get('cs.secretariat.positions.position_1.desc')} link="/position/secretariat/1" />
-          <PersonCard title={I18N.get('cs.secretariat.positions.position_2.title')} desc={I18N.get('cs.secretariat.positions.position_2.desc')} link="/position/secretariat/2" />
-          <PersonCard title={I18N.get('cs.secretariat.positions.position_3.title')} desc={I18N.get('cs.secretariat.positions.position_3.desc')} link="/position/secretariat/3" />
-          <PersonCard title={I18N.get('cs.secretariat.positions.position_4.title')} desc={I18N.get('cs.secretariat.positions.position_4.desc')} link="/position/secretariat/4" />
+          <PersonCard title={I18N.get('cs.secretariat.positions.position_1.title')} link="/position/secretariat/1" />
+          <PersonCard title={I18N.get('cs.secretariat.positions.position_2.title')} link="/position/secretariat/2" />
+          <PersonCard title={I18N.get('cs.secretariat.positions.position_3.title')} link="/position/secretariat/3" />
+          <PersonCard title={I18N.get('cs.secretariat.positions.position_4.title')} link="/position/secretariat/4" />
         </Row>
       </div>
     )
