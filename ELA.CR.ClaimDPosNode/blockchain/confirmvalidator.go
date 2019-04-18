@@ -70,26 +70,67 @@ func checkBlockWithConfirmation(block *Block, confirm *payload.Confirm) error {
 			"confirmation validate failed")
 	}
 
-	var inactivePayload *payload.InactiveArbitrators
-	for _, tx := range block.Transactions {
-		if tx.IsInactiveArbitrators() {
-			inactivePayload = tx.Payload.(*payload.InactiveArbitrators)
-			break
-		}
+	if err := preProcessSpecialTx(block); err != nil {
+		return nil
 	}
 
 	if err := ConfirmContextCheck(confirm); err != nil {
 		// rollback to the state before this method
-		if e := DefaultLedger.Blockchain.state.RollbackTo(block.
+		if e := DefaultLedger.Arbitrators.RollbackTo(block.
 			Height - 1); e != nil {
 			panic("rollback fail when check block with confirmation")
 		}
 		return err
-	} else if inactivePayload != nil {
-		if err := DefaultLedger.Arbitrators.ProcessSpecialTxPayload(
-			inactivePayload, block.Height); err != nil {
-			panic("force change fail when finding an inactive arbitrators" +
-				" transaction")
+	}
+
+	return nil
+}
+
+func preProcessSpecialTx(block *Block) error {
+	illegalBlocks := make([]*payload.DPOSIllegalBlocks, 0)
+	inactivePayloads := make([]*payload.InactiveArbitrators, 0)
+	for _, tx := range block.Transactions {
+		switch tx.TxType {
+		case InactiveArbitrators:
+			if err := CheckInactiveArbitrators(tx); err != nil {
+				return err
+			}
+			if err := checkTransactionSignature(tx, map[*Input]*Output{});
+				err != nil {
+				return err
+			}
+
+			inactivePayloads = append(inactivePayloads,
+				tx.Payload.(*payload.InactiveArbitrators))
+		case IllegalBlockEvidence:
+			p, ok := tx.Payload.(*payload.DPOSIllegalBlocks)
+			if !ok {
+				return errors.New("invalid payload")
+			}
+			if err := CheckDPOSIllegalBlocks(p); err != nil {
+				return err
+			}
+
+			illegalBlocks = append(illegalBlocks, p)
+		}
+	}
+
+	if len(illegalBlocks) != 0 {
+		for _, v := range illegalBlocks {
+			if err := DefaultLedger.Arbitrators.ProcessSpecialTxPayload(
+				v, block.Height); err != nil {
+				return errors.New("force change fail when finding an " +
+					"inactive arbitrators transaction")
+			}
+		}
+	}
+	if len(inactivePayloads) != 0 {
+		for _, v := range inactivePayloads {
+			if err := DefaultLedger.Arbitrators.ProcessSpecialTxPayload(
+				v, block.Height); err != nil {
+				return errors.New("force change fail when finding an " +
+					"inactive arbitrators transaction")
+			}
 		}
 	}
 
