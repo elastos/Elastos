@@ -726,9 +726,14 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckUpdateVersion() {
 	tx.Payload = &payload.InactiveArbitrators{}
 	s.EqualError(checkUpdateVersionTransaction(tx), "invalid payload")
 
+	// set inactive mode off
 	tx.Payload = &payload.UpdateVersion{}
+	s.arbitrators.InactiveMode = false
+	s.EqualError(checkUpdateVersionTransaction(tx),
+		"can't activate when chain is not on inactive mode")
 
 	// set invalid redeem script
+	s.arbitrators.InactiveMode = true
 	s.arbitrators.CRCArbitrators = [][]byte{}
 	for i := 0; i < 5; i++ {
 		_, pk, _ := crypto.GenerateKeyPair()

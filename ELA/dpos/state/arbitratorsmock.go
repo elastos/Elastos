@@ -25,6 +25,7 @@ func NewArbitratorsMock(arbitersByte [][]byte, changeCount, majorityCount int) *
 		DutyChangedCount:            0,
 		MajorityCount:               majorityCount,
 		FinalRoundChange:            0,
+		InactiveMode:                false,
 	}
 }
 
@@ -44,6 +45,11 @@ type ArbitratorsMock struct {
 	DutyChangedCount            int
 	MajorityCount               int
 	FinalRoundChange            common.Fixed64
+	InactiveMode                bool
+}
+
+func (a *ArbitratorsMock) IsInactiveMode() bool {
+	return a.InactiveMode
 }
 
 func (a *ArbitratorsMock) IsInactiveProducer(pk []byte) bool {
