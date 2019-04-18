@@ -712,6 +712,50 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckInactiveArbitrators() {
 	s.NoError(CheckInactiveArbitrators(tx))
 }
 
+func (s *txValidatorSpecialTxTestSuite) TestCheckUpdateVersion() {
+	tx := &types.Transaction{
+		Programs: []*program.Program{
+			{
+				Code:      randomPublicKey(),
+				Parameter: randomSignature(),
+			},
+		},
+	}
+
+	// set payload of invalid type
+	tx.Payload = &payload.InactiveArbitrators{}
+	s.EqualError(checkUpdateVersionTransaction(tx), "invalid payload")
+
+	tx.Payload = &payload.UpdateVersion{}
+
+	// set invalid redeem script
+	s.arbitrators.CRCArbitrators = [][]byte{}
+	for i := 0; i < 5; i++ {
+		_, pk, _ := crypto.GenerateKeyPair()
+		pkBuf, _ := pk.EncodePoint(true)
+		s.arbitrators.CRCArbitrators = append(s.arbitrators.CRCArbitrators, pkBuf)
+	}
+	s.arbitrators.CRCArbitratorsMap = map[string]*state.Producer{}
+	for _, v := range s.arbitrators.CRCArbitrators {
+		s.arbitrators.CRCArbitratorsMap[common.BytesToHexString(v)] = nil
+	}
+	var arbitrators [][]byte
+	for i := 0; i < 4; i++ {
+		arbitrators = append(arbitrators, s.arbitrators.CurrentArbitrators[i])
+	}
+	_, pk, _ := crypto.GenerateKeyPair()
+	pkBuf, _ := pk.EncodePoint(true)
+	arbitrators = append(arbitrators, pkBuf)
+	tx.Programs[0].Code = s.createArbitratorsRedeemScript(arbitrators)
+	s.EqualError(checkUpdateVersionTransaction(tx),
+		"invalid multi sign public key")
+
+	// correct redeem script
+	tx.Programs[0].Code = s.createArbitratorsRedeemScript(
+		s.arbitrators.CRCArbitrators)
+	s.NoError(checkUpdateVersionTransaction(tx))
+}
+
 func TestTxValidatorSpecialTxSuite(t *testing.T) {
 	suite.Run(t, new(txValidatorSpecialTxTestSuite))
 }

@@ -238,11 +238,11 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 	txs := pow.txMemPool.GetTxsInPool()
 	sort.Slice(txs, func(i, j int) bool {
 		if txs[i].IsIllegalTypeTx() || txs[i].IsInactiveArbitrators() ||
-			txs[i].IsSideChainPowTx() {
+			txs[i].IsSideChainPowTx() || txs[i].IsUpdateVersion() {
 			return true
 		}
 		if txs[j].IsIllegalTypeTx() || txs[j].IsInactiveArbitrators() ||
-			txs[j].IsSideChainPowTx() {
+			txs[j].IsSideChainPowTx() || txs[j].IsUpdateVersion() {
 			return false
 		}
 		return txs[i].FeePerKB > txs[j].FeePerKB
