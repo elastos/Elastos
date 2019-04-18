@@ -1399,7 +1399,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.BlockHeight = object.BlockHeight
 		obj.SideBlockHash = object.SideBlockHash.String()
 		obj.SideGenesisHash = object.SideGenesisHash.String()
-		obj.SignedData = common.BytesToHexString(object.SignedData)
+		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
 	case *payload.WithdrawFromSideChain:
 		obj := new(WithdrawFromSideChainInfo)
