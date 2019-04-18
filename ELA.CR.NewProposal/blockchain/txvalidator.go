@@ -136,6 +136,14 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 			return Success
 		}
 
+	case UpdateVersion:
+		if err := checkUpdateVersionTransaction(txn); err != nil {
+			log.Warn("[checkUpdateVersionTransaction],", err)
+			return ErrTransactionPayload
+		} else {
+			return Success
+		}
+
 	case SideChainPow:
 		arbitrator := DefaultLedger.Arbitrators.GetOnDutyArbitrator()
 		if err := CheckSideChainPowConsensus(txn, arbitrator); err != nil {
@@ -354,7 +362,8 @@ func checkTransactionInput(txn *Transaction) error {
 		return nil
 	}
 
-	if txn.IsIllegalTypeTx() || txn.IsInactiveArbitrators() || txn.IsNewSideChainPowTx() {
+	if txn.IsIllegalTypeTx() || txn.IsInactiveArbitrators() ||
+		txn.IsNewSideChainPowTx() || txn.IsUpdateVersion() {
 		if len(txn.Inputs) != 0 {
 			return errors.New("no cost transactions must has no input")
 		}
@@ -419,7 +428,8 @@ func (b *BlockChain) checkTransactionOutput(blockHeight uint32,
 		return nil
 	}
 
-	if txn.IsIllegalTypeTx() || txn.IsInactiveArbitrators() {
+	if txn.IsIllegalTypeTx() || txn.IsInactiveArbitrators() ||
+		txn.IsUpdateVersion() {
 		if len(txn.Outputs) != 0 {
 			return errors.New("Illegal transactions should have no output")
 		}
@@ -643,7 +653,7 @@ func checkAttributeProgram(tx *Transaction) error {
 		if len(tx.Attributes) != 0 {
 			return errors.New("illegal block transactions should have no programs")
 		}
-	case InactiveArbitrators:
+	case InactiveArbitrators, UpdateVersion:
 		if len(tx.Programs) != 1 {
 			return errors.New("inactive arbitrators transactions should have one and only one program")
 		}
@@ -1190,6 +1200,15 @@ func (b *BlockChain) checkInactiveArbitratorsTransaction(
 	return CheckInactiveArbitrators(txn)
 }
 
+func checkUpdateVersionTransaction(txn *Transaction) error {
+	_, ok := txn.Payload.(*payload.UpdateVersion)
+	if !ok {
+		return errors.New("invalid payload")
+	}
+
+	return checkCRCArbitratorsSignatures(txn.Programs[0])
+}
+
 func (b *BlockChain) checkSidechainIllegalEvidenceTransaction(txn *Transaction) error {
 	p, ok := txn.Payload.(*payload.SidechainIllegalData)
 	if !ok {
@@ -1269,14 +1288,14 @@ func CheckInactiveArbitrators(txn *Transaction) error {
 		}
 	}
 
-	if err := checkInactiveArbitratorsSignatures(txn.Programs[0]); err != nil {
+	if err := checkCRCArbitratorsSignatures(txn.Programs[0]); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func checkInactiveArbitratorsSignatures(program *program.Program) error {
+func checkCRCArbitratorsSignatures(program *program.Program) error {
 
 	code := program.Code
 	// Get N parameter

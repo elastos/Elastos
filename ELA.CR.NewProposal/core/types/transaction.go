@@ -42,6 +42,8 @@ const (
 	IllegalBlockEvidence     TxType = 0x10
 	IllegalSidechainEvidence TxType = 0x11
 	InactiveArbitrators      TxType = 0x12
+
+	UpdateVersion TxType = 0x13
 )
 
 func (self TxType) Name() string {
@@ -84,6 +86,8 @@ func (self TxType) Name() string {
 		return "IllegalSidechainEvidence"
 	case InactiveArbitrators:
 		return "InactiveArbitrators"
+	case UpdateVersion:
+		return "UpdateVersion"
 	default:
 		return "Unknown"
 	}
@@ -347,6 +351,10 @@ func (tx *Transaction) IsInactiveArbitrators() bool {
 	return tx.TxType == InactiveArbitrators
 }
 
+func (tx *Transaction) IsUpdateVersion() bool {
+	return tx.TxType == UpdateVersion
+}
+
 func (tx *Transaction) IsUpdateProducerTx() bool {
 	return tx.TxType == UpdateProducer
 }
@@ -443,6 +451,8 @@ func GetPayload(txType TxType) (Payload, error) {
 		p = new(payload.SidechainIllegalData)
 	case InactiveArbitrators:
 		p = new(payload.InactiveArbitrators)
+	case UpdateVersion:
+		p = new(payload.UpdateVersion)
 	default:
 		return nil, errors.New("[Transaction], invalid transaction type.")
 	}
