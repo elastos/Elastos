@@ -407,7 +407,7 @@ func (p *ProposalDispatcher) IsViewChangedTimeOut() bool {
 }
 
 func (p *ProposalDispatcher) OnIllegalBlocksTxReceived(i *payload.DPOSIllegalBlocks) {
-	p.inactiveCountDown.SetEliminated()
+	p.inactiveCountDown.SetEliminated(i.Hash())
 }
 
 func (p *ProposalDispatcher) OnInactiveArbitratorsReceived(id peer.PID,
@@ -506,8 +506,8 @@ func (p *ProposalDispatcher) tryEnterEmergencyState(signCount int) bool {
 	minSignCount := int(float64(len(p.cfg.Arbitrators.GetCRCArbiters())) *
 		state.MajoritySignRatioNumerator / state.MajoritySignRatioDenominator)
 	if signCount >= minSignCount {
-		p.illegalMonitor.AddEvidence(p.currentInactiveArbitratorTx.
-			Payload.(*payload.InactiveArbitrators))
+		payload := p.currentInactiveArbitratorTx.Payload.(*payload.InactiveArbitrators)
+		p.illegalMonitor.AddEvidence(payload)
 		p.cfg.Manager.AppendToTxnPool(p.currentInactiveArbitratorTx)
 
 		if err := p.cfg.Arbitrators.ProcessSpecialTxPayload(
@@ -517,15 +517,7 @@ func (p *ProposalDispatcher) tryEnterEmergencyState(signCount int) bool {
 				" error: ", err.Error())
 			return false
 		}
-
-		p.illegalMonitor.SetInactiveArbitratorsTxHash(p.
-			currentInactiveArbitratorTx.Hash())
-		// we should clear existing blocks because they do not have inactive
-		// arbitrators tx
-		p.cfg.Manager.GetBlockCache().Reset()
-
-		p.currentInactiveArbitratorTx = nil
-		p.inactiveCountDown.SetEliminated()
+		p.cfg.Manager.clearInactiveData(payload)
 
 		log.Info("[tryEnterEmergencyState] successfully entered emergency" +
 			" state")

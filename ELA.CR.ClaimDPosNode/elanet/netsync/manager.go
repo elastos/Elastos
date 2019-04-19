@@ -704,6 +704,10 @@ func (sm *SyncManager) handleBlockchainEvents(event *events.Event) {
 			sm.chain.ProcessIllegalBlock(tx.Payload.(*payload.DPOSIllegalBlocks))
 		}
 
+		if tx.IsInactiveArbitrators() {
+			sm.chain.ProcessInactiveArbiter(tx.Payload.(*payload.InactiveArbitrators))
+		}
+
 		if tx.IsIllegalTypeTx() || tx.IsInactiveArbitrators() {
 			// Relay tx inventory to other peers.
 			txHash := tx.Hash()

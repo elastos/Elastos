@@ -239,6 +239,13 @@ func (b *BlockChain) ProcessIllegalBlock(payload *payload.DPOSIllegalBlocks) {
 	}
 }
 
+func (b *BlockChain) ProcessInactiveArbiter(payload *payload.InactiveArbitrators) {
+	if err := DefaultLedger.Arbitrators.ProcessSpecialTxPayload(payload,
+		b.BestChain.Height); err != nil {
+		log.Error("process illegal block error: ", err)
+	}
+}
+
 type OrphanBlock struct {
 	Block      *Block
 	Expiration time.Time

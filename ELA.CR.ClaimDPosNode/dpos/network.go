@@ -48,6 +48,7 @@ type network struct {
 	confirmReceivedChan      chan *payload.Confirm
 	illegalBlocksEvidence    chan *payload.DPOSIllegalBlocks
 	sidechainIllegalEvidence chan *payload.SidechainIllegalData
+	inactiveArbiters         chan *payload.InactiveArbitrators
 }
 
 func (n *network) Initialize(dnConfig manager.DPOSNetworkConfig) {
@@ -75,6 +76,8 @@ func (n *network) Start() {
 				n.confirmReceived(confirm)
 			case evidence := <-n.illegalBlocksEvidence:
 				n.illegalBlocksReceived(evidence)
+			case evidence := <-n.inactiveArbiters:
+				n.inactiveArbitersAccepeted(evidence)
 			case sidechainEvidence := <-n.sidechainIllegalEvidence:
 				n.sidechainIllegalEvidenceReceived(sidechainEvidence)
 			case <-n.quit:
@@ -141,12 +144,16 @@ func (n *network) PostBlockReceivedTask(b *types.Block, confirmed bool) {
 	n.blockReceivedChan <- blockItem{b, confirmed}
 }
 
-func (n *network) PostIllegalBlocksTask(i *payload.DPOSIllegalBlocks) {
-	n.illegalBlocksEvidence <- i
+func (n *network) PostIllegalBlocksTask(p *payload.DPOSIllegalBlocks) {
+	n.illegalBlocksEvidence <- p
 }
 
-func (n *network) PostSidechainIllegalDataTask(s *payload.SidechainIllegalData) {
-	n.sidechainIllegalEvidence <- s
+func (n *network) PostSidechainIllegalDataTask(p *payload.SidechainIllegalData) {
+	n.sidechainIllegalEvidence <- p
+}
+
+func (n *network) PostInactiveArbitersTask(p *payload.InactiveArbitrators) {
+	n.inactiveArbiters <- p
 }
 
 func (n *network) PostConfirmReceivedTask(p *payload.Confirm) {
@@ -284,6 +291,10 @@ func (n *network) illegalBlocksReceived(i *payload.DPOSIllegalBlocks) {
 	n.listener.OnIllegalBlocksTxReceived(i)
 }
 
+func (n *network) inactiveArbitersAccepeted(p *payload.InactiveArbitrators) {
+	n.listener.OnInactiveArbitratorsAccepted(p)
+}
+
 func (n *network) sidechainIllegalEvidenceReceived(
 	s *payload.SidechainIllegalData) {
 	n.BroadcastMessage(&msg.SidechainIllegalData{Data: *s})
@@ -298,14 +309,20 @@ func NewDposNetwork(account account.Account, medianTime dtime.MedianTimeSource,
 	listener manager.NetworkEventListener) (*network, error) {
 	network := &network{
 		listener:                 listener,
+		proposalDispatcher:       nil,
+		peersLock:                sync.Mutex{},
+		store:                    nil,
+		publicKey:                nil,
+		p2pServer:                nil,
 		messageQueue:             make(chan *messageItem, 10000), //todo config handle capacity though config file
 		quit:                     make(chan bool),
-		changeViewChan:           make(chan bool),
 		badNetworkChan:           make(chan bool),
+		changeViewChan:           make(chan bool),
 		blockReceivedChan:        make(chan blockItem, 10),        //todo config handle capacity though config file
 		confirmReceivedChan:      make(chan *payload.Confirm, 10), //todo config handle capacity though config file
 		illegalBlocksEvidence:    make(chan *payload.DPOSIllegalBlocks),
 		sidechainIllegalEvidence: make(chan *payload.SidechainIllegalData),
+		inactiveArbiters:         make(chan *payload.InactiveArbitrators),
 	}
 
 	notifier := p2p.NewNotifier(p2p.NFNetStabled|p2p.NFBadNetwork, network.notifyFlag)

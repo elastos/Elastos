@@ -208,6 +208,8 @@ func (a *arbitrators) ForceChange(height uint32) error {
 			a.GetNeedConnectArbiters())
 	}
 
+	a.DumpInfo()
+
 	return nil
 }
 
@@ -273,6 +275,9 @@ func (a *arbitrators) accumulateReward(block *types.Block) {
 
 func (a *arbitrators) clearingDPOSReward(block *types.Block,
 	smoothClearing bool) error {
+		if smoothClearing && a.inactiveState.InactivePayloadsLength() > 1 {
+			return nil
+		}
 
 	dposReward := a.getBlockDPOSReward(block)
 	if block.Height+1 <= a.State.chainParams.PublicDPOSHeight {
@@ -768,7 +773,7 @@ func (a *arbitrators) getBlockDPOSReward(block *types.Block) common.Fixed64 {
 		totalTxFx += tx.Fee
 	}
 
-	return common.Fixed64(math.Ceil(float64(totalTxFx +
+	return common.Fixed64(math.Ceil(float64(totalTxFx+
 		a.chainParams.RewardPerBlock) * 0.35))
 }
 
@@ -829,7 +834,7 @@ func (i *inactiveState) InactiveModeSwitch(height uint32,
 	isAbleToRecover func() bool) (bool, bool) {
 
 	i.mtx.Lock()
-	if len(i.inactiveTxs) > MaxNormalInactiveChangesCount {
+	if len(i.inactiveTxs) >= MaxNormalInactiveChangesCount {
 		i.inactiveMode = true
 		i.inactivateHeight = height
 		i.mtx.Unlock()
@@ -850,6 +855,14 @@ func (i *inactiveState) InactiveModeSwitch(height uint32,
 	}
 
 	return false, false
+}
+
+func (i *inactiveState) InactivePayloadsLength() int {
+	i.mtx.Lock()
+	result := len(i.inactiveTxs)
+	i.mtx.Unlock()
+
+	return result
 }
 
 func (i *inactiveState) AddInactivePayload(p *payload.InactiveArbitrators) {
