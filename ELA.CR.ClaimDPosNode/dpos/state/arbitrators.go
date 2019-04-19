@@ -35,10 +35,6 @@ const (
 	// change when more than 1/3 arbiters don't sign cause to confirm fail
 	MaxNormalInactiveChangesCount = 3
 
-	// ActivateArbitratorsEffectiveTime defines the height after that normal
-	// arbitrators will participate in DPOS again
-	ActivateArbitratorsEffectiveHeight = 6
-
 	none         = ChangeType(0x00)
 	updateNext   = ChangeType(0x01)
 	normalChange = ChangeType(0x02)
@@ -49,7 +45,6 @@ type inactiveState struct {
 	inactiveMode     bool
 	inactiveTxs      map[common.Uint256]interface{}
 	inactivateHeight uint32
-	activateHeight   uint32
 }
 
 type arbitrators struct {
@@ -91,7 +86,6 @@ func (a *arbitrators) Start() {
 func (a *arbitrators) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	a.State.ProcessBlock(block, confirm)
 	a.IncreaseChainHeight(block)
-	a.inactiveState.ProcessBlock(block)
 }
 
 func (a *arbitrators) CheckDPOSIllegalTx(block *types.Block) error {
@@ -581,7 +575,10 @@ func (a *arbitrators) changeCurrentArbitrators() error {
 }
 
 func (a *arbitrators) updateNextArbitrators(height uint32) error {
-	a.InactiveModeSwitch(height)
+	_, recover := a.InactiveModeSwitch(height, a.IsAbleToRecover)
+	if recover {
+		a.LeaveEmergency()
+	}
 
 	a.nextArbitrators = make([][]byte, 0)
 	for _, v := range a.crcArbitratorsNodePublicKey {
@@ -816,21 +813,6 @@ func (i *inactiveState) IsInactiveMode() bool {
 	return result
 }
 
-func (i *inactiveState) ProcessBlock(block *types.Block) {
-	i.mtx.Lock()
-	defer i.mtx.Unlock()
-
-	i.inactiveTxs = make(map[common.Uint256]interface{})
-	if i.inactiveMode {
-		for _, tx := range block.Transactions {
-			if tx.IsInactiveArbitrators() {
-				i.activateHeight = block.Height
-				break
-			}
-		}
-	}
-}
-
 func (i *inactiveState) RollbackTo(height uint32) {
 	i.mtx.Lock()
 	defer i.mtx.Unlock()
@@ -841,29 +823,33 @@ func (i *inactiveState) RollbackTo(height uint32) {
 		i.inactivateHeight = 0
 		i.inactiveMode = false
 	}
-
-	// if rollback to the height before activate arbitrators tx appended to
-	// block chain, then reset activate related state
-	if height < i.activateHeight {
-		i.activateHeight = 0
-	}
 }
 
-func (i *inactiveState) InactiveModeSwitch(height uint32) {
-	i.mtx.Lock()
-	defer i.mtx.Unlock()
+func (i *inactiveState) InactiveModeSwitch(height uint32,
+	isAbleToRecover func() bool) (bool, bool) {
 
+	i.mtx.Lock()
 	if len(i.inactiveTxs) > MaxNormalInactiveChangesCount {
 		i.inactiveMode = true
 		i.inactivateHeight = height
+		i.mtx.Unlock()
+
+		return true, false
 	}
 
-	if i.activateHeight != 0 &&
-		height-i.activateHeight >= ActivateArbitratorsEffectiveHeight {
+	isInactive := i.inactiveMode
+	i.mtx.Unlock()
+
+	if isInactive && isAbleToRecover() {
+		i.mtx.Lock()
 		i.inactiveMode = false
-		i.activateHeight = 0
 		i.inactivateHeight = 0
+		i.mtx.Unlock()
+
+		return false, true
 	}
+
+	return false, false
 }
 
 func (i *inactiveState) AddInactivePayload(p *payload.InactiveArbitrators) {
@@ -938,7 +924,6 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
 		illegalBlocksPayloadHashes:  make(map[common.Uint256]interface{}),
 		inactiveState: &inactiveState{
 			inactiveTxs:      make(map[common.Uint256]interface{}),
-			activateHeight:   0,
 			inactivateHeight: 0,
 			inactiveMode:     false,
 		},

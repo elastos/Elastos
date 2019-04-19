@@ -130,20 +130,22 @@ type State struct {
 	getArbiters func() [][]byte
 	chainParams *config.Params
 
-	mtx                sync.RWMutex
-	nodeOwnerKeys      map[string]string // NodePublicKey as key, OwnerPublicKey as value
-	pendingProducers   map[string]*Producer
-	activityProducers  map[string]*Producer
-	inactiveProducers  map[string]*Producer
-	canceledProducers  map[string]*Producer
-	illegalProducers   map[string]*Producer
-	votes              map[string]*types.Output
-	nicknames          map[string]struct{}
-	specialTxHashes    map[common.Uint256]struct{}
-	preBlockArbiters   map[string]struct{}
-	versionStartHeight uint32
-	versionEndHeight   uint32
-	history            *history
+	mtx               sync.RWMutex
+	nodeOwnerKeys     map[string]string // NodePublicKey as key, OwnerPublicKey as value
+	pendingProducers  map[string]*Producer
+	activityProducers map[string]*Producer
+	inactiveProducers map[string]*Producer
+	canceledProducers map[string]*Producer
+	illegalProducers  map[string]*Producer
+	votes             map[string]*types.Output
+	nicknames         map[string]struct{}
+	specialTxHashes   map[common.Uint256]struct{}
+	preBlockArbiters  map[string]struct{}
+	history           *history
+
+	emergencyInactiveArbiters map[string]struct{}
+	versionStartHeight        uint32
+	versionEndHeight          uint32
 
 	// snapshots is the data set of DPOS state snapshots, it takes a snapshot of
 	// state every 12 blocks, and keeps at most 9 newest snapshots in memory.
@@ -376,6 +378,31 @@ func (s *State) IsIllegalProducer(publicKey []byte) bool {
 	_, ok := s.illegalProducers[s.getProducerKey(publicKey)]
 	s.mtx.RUnlock()
 	return ok
+}
+
+// IsAbleToRecover returns if most of the emergency arbiters have activated
+// and able to work again
+func (s *State) IsAbleToRecover() bool {
+	activatedNum := 0
+
+	s.mtx.RLock()
+	totalNum := len(s.emergencyInactiveArbiters)
+	for k := range s.emergencyInactiveArbiters {
+		if _, ok := s.inactiveProducers[k]; !ok {
+			activatedNum++
+		}
+	}
+	s.mtx.RUnlock()
+
+	return totalNum == 0 || float64(activatedNum)/float64(totalNum) >
+		MajoritySignRatioNumerator/MajoritySignRatioDenominator
+}
+
+// LeaveEmergency will reset emergencyInactiveArbiters variable
+func (s *State) LeaveEmergency() {
+	s.mtx.Lock()
+	s.emergencyInactiveArbiters = map[string]struct{}{}
+	s.mtx.Unlock()
 }
 
 // NicknameExists returns if a nickname is exists.
@@ -773,8 +800,10 @@ func (s *State) processEmergencyInactiveArbitrators(
 	addEmergencyInactiveArbitrator := func(key string, producer *Producer) {
 		s.history.append(height, func() {
 			s.setInactiveProducer(producer, key, height, true)
+			s.emergencyInactiveArbiters[key] = struct{}{}
 		}, func() {
 			s.revertSettingInactiveProducer(producer, key, height, true)
+			delete(s.emergencyInactiveArbiters, key)
 		})
 	}
 
@@ -789,7 +818,6 @@ func (s *State) processEmergencyInactiveArbitrators(
 			addEmergencyInactiveArbitrator(key, p)
 		}
 	}
-
 }
 
 // recordSpecialTx record hash of a special tx
@@ -1079,20 +1107,21 @@ func copyMap(dst map[string]*Producer, src map[string]*Producer) {
 // NewState returns a new State instance.
 func NewState(chainParams *config.Params, getArbiters func() [][]byte) *State {
 	return &State{
-		chainParams:        chainParams,
-		getArbiters:        getArbiters,
-		nodeOwnerKeys:      make(map[string]string),
-		pendingProducers:   make(map[string]*Producer),
-		activityProducers:  make(map[string]*Producer),
-		inactiveProducers:  make(map[string]*Producer),
-		canceledProducers:  make(map[string]*Producer),
-		illegalProducers:   make(map[string]*Producer),
-		votes:              make(map[string]*types.Output),
-		nicknames:          make(map[string]struct{}),
-		specialTxHashes:    make(map[common.Uint256]struct{}),
-		preBlockArbiters:   make(map[string]struct{}),
-		versionStartHeight: 0,
-		versionEndHeight:   0,
-		history:            newHistory(maxHistoryCapacity),
+		chainParams:               chainParams,
+		getArbiters:               getArbiters,
+		nodeOwnerKeys:             make(map[string]string),
+		pendingProducers:          make(map[string]*Producer),
+		activityProducers:         make(map[string]*Producer),
+		inactiveProducers:         make(map[string]*Producer),
+		canceledProducers:         make(map[string]*Producer),
+		illegalProducers:          make(map[string]*Producer),
+		votes:                     make(map[string]*types.Output),
+		nicknames:                 make(map[string]struct{}),
+		specialTxHashes:           make(map[common.Uint256]struct{}),
+		preBlockArbiters:          make(map[string]struct{}),
+		emergencyInactiveArbiters: make(map[string]struct{}),
+		versionStartHeight:        0,
+		versionEndHeight:          0,
+		history:                   newHistory(maxHistoryCapacity),
 	}
 }
