@@ -732,8 +732,16 @@ func newPeerConfig(sp *serverPeer) *peer.Config {
 		HostToNetAddress: sp.server.addrManager.HostToNetAddress,
 		MakeEmptyMessage: sp.server.cfg.MakeEmptyMessage,
 		BestHeight:       sp.server.cfg.BestHeight,
-		IsSelfConnection: func(nonce uint64) bool {
-			return sp.server.sentNonces.Exists(nonce)
+		IsSelfConnection: func(ip net.IP, port int, nonce uint64) bool {
+			exists := sp.server.sentNonces.Exists(nonce)
+
+			// If we found a self connection, tell the ConnManager the addr so
+			// it can avoid to connect to self again.
+			if exists {
+				addr := net.JoinHostPort(ip.String(), strconv.Itoa(port))
+				sp.server.connManager.OnSelfConnection(addr)
+			}
+			return exists
 		},
 		GetVersionNonce: func() uint64 {
 			nonce := uint64(rand.Int63())

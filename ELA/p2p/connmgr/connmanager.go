@@ -178,6 +178,7 @@ type ConnManager struct {
 	wg             sync.WaitGroup
 	failedAttempts uint64
 	addresses      sync.Map
+	selfAddr       string
 	requests       chan interface{}
 	quit           chan struct{}
 }
@@ -428,8 +429,17 @@ func (cm *ConnManager) Connect(c *ConnReq) {
 		}
 	}
 
-	// Do not connect to same address.
 	addr := c.Addr.String()
+	// Do not connect to self.
+	if addr == cm.selfAddr {
+		select {
+		case cm.requests <- handleDisconnected{c.id, false}:
+		case <-cm.quit:
+		}
+		return
+	}
+
+	// Do not connect to the same address.
 	if _, ok := cm.addresses.LoadOrStore(addr, addr); ok {
 		cm.handleFailedConn(c)
 		return
@@ -450,6 +460,12 @@ func (cm *ConnManager) Connect(c *ConnReq) {
 	case cm.requests <- handleConnected{c, conn}:
 	case <-cm.quit:
 	}
+}
+
+// OnSelfConnection tells the ConnManager a connected address is self connection
+// so the ConnManager can avoid to connect to the address again.
+func (cm *ConnManager) OnSelfConnection(addr string) {
+	cm.selfAddr = addr
 }
 
 // Disconnect disconnects the connection corresponding to the given connection
