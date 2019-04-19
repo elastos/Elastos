@@ -213,7 +213,7 @@ func TestPeerConnection(t *testing.T) {
 		BestHeight: func() uint64 {
 			return 0
 		},
-		IsSelfConnection: func(nonce uint64) bool {
+		IsSelfConnection: func(ip net.IP, port int, nonce uint64) bool {
 			return false
 		},
 		GetVersionNonce: func() uint64 {
@@ -231,7 +231,7 @@ func TestPeerConnection(t *testing.T) {
 		BestHeight: func() uint64 {
 			return 0
 		},
-		IsSelfConnection: func(nonce uint64) bool {
+		IsSelfConnection: func(ip net.IP, port int, nonce uint64) bool {
 			return false
 		},
 		GetVersionNonce: func() uint64 {
@@ -350,7 +350,7 @@ func TestUnsupportedVersionPeer(t *testing.T) {
 		BestHeight: func() uint64 {
 			return 0
 		},
-		IsSelfConnection: func(nonce uint64) bool {
+		IsSelfConnection: func(ip net.IP, port int, nonce uint64) bool {
 			return nonce == verNonce
 		},
 		GetVersionNonce: func() uint64 {
