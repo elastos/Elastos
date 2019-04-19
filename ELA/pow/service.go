@@ -161,8 +161,7 @@ func (pow *Service) AssignCoinbaseTxRewards(block *types.Block, totalReward comm
 		rewardDposArbiter := common.Fixed64(math.Ceil(float64(totalReward) * 0.35))
 		rewardMergeMiner := common.Fixed64(totalReward) - rewardCyberRepublic - rewardDposArbiter
 
-		if rewards := pow.arbiters.GetArbitersRoundReward();
-			rewards != nil && len(rewards) > 0 {
+		if rewards := pow.arbiters.GetArbitersRoundReward(); rewards != nil && len(rewards) > 0 {
 
 			var dposChange common.Fixed64
 			var err error

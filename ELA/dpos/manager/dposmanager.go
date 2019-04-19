@@ -75,6 +75,7 @@ type NetworkEventListener interface {
 	OnInactiveArbitratorsReceived(id dpeer.PID, tx *types.Transaction)
 	OnResponseInactiveArbitratorsReceived(txHash *common.Uint256,
 		Signer []byte, Sign []byte)
+	OnInactiveArbitratorsAccepted(p *payload.InactiveArbitrators)
 }
 
 type AbnormalRecovering interface {
@@ -439,8 +440,21 @@ func (d *DPOSManager) OnBlockReceived(b *types.Block, confirmed bool) {
 	if confirmed {
 		d.ConfirmBlock()
 		d.changeHeight()
+		d.clearEvidence(b)
 		log.Info("[OnBlockReceived] received confirmed block")
 		return
+	}
+
+	for _, tx := range b.Transactions {
+		if tx.IsInactiveArbitrators() {
+			p := tx.Payload.(*payload.InactiveArbitrators)
+			if err := d.arbitrators.ProcessSpecialTxPayload(p,
+				blockchain.DefaultLedger.Blockchain.GetHeight()); err != nil {
+				log.Errorf("process special tx payload err: %s", err.Error())
+				return
+			}
+			d.clearInactiveData(p)
+		}
 	}
 
 	if !d.isCurrentArbiter() {
@@ -497,6 +511,36 @@ func (d *DPOSManager) OnSidechainIllegalEvidenceReceived(s *payload.SidechainIll
 	d.illegalMonitor.SendSidechainIllegalEvidenceTransaction(s)
 }
 
+func (d *DPOSManager) OnInactiveArbitratorsAccepted(p *payload.InactiveArbitrators) {
+	d.arbitrators.ProcessSpecialTxPayload(p, blockchain.DefaultLedger.Blockchain.GetHeight())
+	d.clearInactiveData(p)
+}
+
+func (d *DPOSManager) clearInactiveData(p *payload.InactiveArbitrators) {
+	d.illegalMonitor.AddEvidence(p)
+	d.illegalMonitor.SetInactiveArbitratorsTxHash(p.Hash())
+	d.dispatcher.currentInactiveArbitratorTx = nil
+	d.dispatcher.eventAnalyzer.Clear()
+	d.dispatcher.inactiveCountDown.SetEliminated(p.Hash())
+
+	var blocks []*types.Block
+	for _, v := range d.blockCache.ConsensusBlocks {
+		if d.illegalMonitor.IsBlockValid(v) {
+			blocks = append(blocks, v)
+		}
+	}
+	d.blockCache.Reset()
+	for _, b := range blocks {
+		d.blockCache.AddValue(b.Hash(), b)
+	}
+
+	if d.arbitrators.IsInactiveMode() {
+		d.dispatcher.FinishConsensus()
+	}
+
+	log.Info("clearInactiveData finished:", len(d.blockCache.ConsensusBlocks))
+}
+
 func (d *DPOSManager) OnInactiveArbitratorsReceived(id dpeer.PID,
 	tx *types.Transaction) {
 	if !d.isCRCArbiter() {
@@ -527,6 +571,14 @@ func (d *DPOSManager) OnRequestProposal(id dpeer.PID, hash common.Uint256) {
 
 func (d *DPOSManager) changeHeight() {
 	d.changeOnDuty()
+}
+
+func (d *DPOSManager) clearEvidence(b *types.Block) {
+	for _, tx := range b.Transactions {
+		if tx.IsIllegalTypeTx() || tx.IsInactiveArbitrators() {
+			d.illegalMonitor.evidenceCache.TryDelete(tx.Payload.(payload.DPOSIllegalData).Hash())
+		}
+	}
 }
 
 func (d *DPOSManager) changeOnDuty() {
