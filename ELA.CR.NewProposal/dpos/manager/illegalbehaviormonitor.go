@@ -21,7 +21,7 @@ type IllegalBehaviorMonitor struct {
 	evidenceCache evidenceCache
 	manager       *DPOSManager
 
-	inactiveArbitratorsTxHash *common.Uint256
+	inactiveArbitratorsPayloadHash *common.Uint256
 }
 
 func (i *IllegalBehaviorMonitor) AddEvidence(evidence payload.DPOSIllegalData) {
@@ -30,14 +30,15 @@ func (i *IllegalBehaviorMonitor) AddEvidence(evidence payload.DPOSIllegalData) {
 
 func (i *IllegalBehaviorMonitor) SetInactiveArbitratorsTxHash(
 	hash common.Uint256) {
-	i.inactiveArbitratorsTxHash = &hash
+	i.inactiveArbitratorsPayloadHash = &hash
 }
 
 func (i *IllegalBehaviorMonitor) IsBlockValid(block *types.Block) bool {
-	if i.inactiveArbitratorsTxHash != nil {
+	if i.inactiveArbitratorsPayloadHash != nil {
 		hasInactiveArbitratorsTx := false
 		for _, tx := range block.Transactions {
-			if tx.Hash().IsEqual(*i.inactiveArbitratorsTxHash) {
+			if tx.IsInactiveArbitrators() &&
+				tx.Payload.(*payload.InactiveArbitrators).Hash().IsEqual(*i.inactiveArbitratorsPayloadHash) {
 				hasInactiveArbitratorsTx = true
 			}
 		}
@@ -65,7 +66,7 @@ func (i *IllegalBehaviorMonitor) Reset(changeView bool) {
 			i.evidenceCache.Reset(i.dispatcher.processingBlock)
 		}
 
-		i.inactiveArbitratorsTxHash = nil
+		i.inactiveArbitratorsPayloadHash = nil
 	}
 }
 

@@ -124,6 +124,18 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 		if blockTx.TxType == CoinBase {
 			continue
 		}
+
+		if blockTx.IsIllegalTypeTx() || blockTx.IsInactiveArbitrators() {
+			illegalData, ok := blockTx.Payload.(payload.DPOSIllegalData)
+			if !ok {
+				log.Error("cancel producer payload cast failed, tx:", blockTx.Hash())
+			}
+			hash := illegalData.Hash()
+			mp.delSpecialTx(&hash)
+			deleteCount++
+			continue
+		}
+
 		inputUtxos, err := blockchain.DefaultLedger.Store.GetTxReference(blockTx)
 		if err != nil {
 			log.Info(fmt.Sprintf("Transaction =%x not Exist in Pool when delete.", blockTx.Hash()), err)
@@ -189,14 +201,6 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 						log.Error("cancel producer payload cast failed, tx:", tx.Hash())
 					}
 					mp.delOwnerPublicKey(BytesToHexString(cpPayload.OwnerPublicKey))
-				}
-				if tx.IsIllegalTypeTx() || tx.IsInactiveArbitrators() {
-					illegalData, ok := tx.Payload.(payload.DPOSIllegalData)
-					if !ok {
-						log.Error("cancel producer payload cast failed, tx:", tx.Hash())
-					}
-					hash := illegalData.Hash()
-					mp.delSpecialTx(&hash)
 				}
 
 				deleteCount++

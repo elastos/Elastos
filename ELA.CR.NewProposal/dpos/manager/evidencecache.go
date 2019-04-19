@@ -58,6 +58,12 @@ func (e *evidenceCache) Reset(block *types.Block) {
 	}
 }
 
+func (e *evidenceCache) TryDelete(hash common.Uint256) {
+	if _, hasEvidence := e.evidences[hash]; hasEvidence {
+		delete(e.evidences, hash)
+	}
+}
+
 func (e *evidenceCache) tryGetEvidenceHash(tx *types.Transaction) (common.Uint256, bool) {
 	var hash common.Uint256
 	result := true

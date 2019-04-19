@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"strconv"
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
@@ -94,7 +93,8 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 
 	// check to ensure only producer related tx existing in current block
 	// when inactive mode is on
-	if DefaultLedger.Arbitrators.IsInactiveMode() && !txn.IsProducerRelatedTx() {
+	if DefaultLedger.Arbitrators.IsInactiveMode() && !txn.IsProducerRelatedTx() &&
+		!txn.IsInactiveArbitrators() && !txn.IsIllegalTypeTx() {
 		log.Warn("[CheckTransactionContext] only producer related tx is" +
 			" allowed when inactive mode is on")
 		return ErrTransactionPayload
@@ -1315,11 +1315,6 @@ func CheckInactiveArbitrators(txn *Transaction) error {
 		return errors.New("sponsor is not belong to arbitrators")
 	}
 
-	inactiveArbitratorsCount := len(arbitrators) / 3
-	if len(p.Arbitrators) > inactiveArbitratorsCount {
-		return errors.New("number of arbitrators must less equal than " +
-			strconv.FormatUint(uint64(inactiveArbitratorsCount), 10))
-	}
 	for _, v := range p.Arbitrators {
 		if _, exists := arbitrators[common.BytesToHexString(v)]; !exists &&
 			!DefaultLedger.Arbitrators.IsDisabledProducer(v) {

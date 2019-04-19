@@ -92,8 +92,12 @@ func (a *Arbitrator) OnInactiveArbitratorsTxReceived(
 				blockchain.DefaultLedger.Blockchain.GetHeight()); err != nil {
 				log.Error("[OnInactiveArbitratorsTxReceived] force change "+
 					"arbitrators error: ", err)
+				return
 			}
+			a.dposManager.OnBadNetwork()
 		}
+	} else {
+		a.network.PostInactiveArbitersTask(p)
 	}
 }
 
@@ -187,8 +191,8 @@ func NewArbitrator(account account.Account, cfg Config) (*Arbitrator, error) {
 			ChainParams:  cfg.ChainParams,
 			TimeSource:   medianTime,
 			EventStoreAnalyzerConfig: store.EventStoreAnalyzerConfig{
-				Store:                  cfg.Store,
-				Arbitrators:            cfg.Arbitrators,
+				Store:       cfg.Store,
+				Arbitrators: cfg.Arbitrators,
 			},
 		})
 	dposHandlerSwitch.Initialize(proposalDispatcher, consensus)

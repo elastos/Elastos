@@ -233,6 +233,6 @@ func (h *DPOSHandlerSwitch) OnViewChanged(isOnDuty bool) {
 		log.Warn("[OnViewChanged] firstBlockHash is nil")
 		return
 	}
-	log.Info("OnViewChanged, onduty, getBlock from first block hash:", firstBlockHash)
+	log.Info("OnViewChanged, getBlock from first block hash:", firstBlockHash, "onduty:", isOnDuty)
 	h.ChangeView(&firstBlockHash)
 }

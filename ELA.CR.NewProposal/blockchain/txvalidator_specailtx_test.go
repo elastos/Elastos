@@ -674,8 +674,6 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckInactiveArbitrators() {
 	for i := 0; i < 3; i++ { // add more than InactiveEliminateCount arbiters
 		p.Arbitrators = append(p.Arbitrators, s.arbitrators.CurrentArbitrators[i])
 	}
-	s.EqualError(CheckInactiveArbitrators(tx),
-		"number of arbitrators must less equal than 1")
 
 	// correct number of Arbitrators
 	p.Arbitrators = make([][]byte, 0)
