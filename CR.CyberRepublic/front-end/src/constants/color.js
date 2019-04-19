@@ -14,14 +14,21 @@ export const bg = {
   navy: '#173045',
   obsidian: '#0F2631',
   obsidianTransparent: 'rgba(15,38,49,0.27)',
+  middleGreen: '#22384C',
 }
 export const text = {
-  primaryDark: '#031E28',
+  primaryDark: primary.dark,
   default: '#333',
+  green: '#1DE9B6',
   lightGray: 'rgba(0, 0, 0, 0.45)',
   lighterGray: 'rgba(3, 30, 40, 0.3)',
+  middleGray: '#737E90',
   darkGray: '#545454',
   newGray: '#434D72',
   link: primary.default,
   linkHover: '#388582',
+}
+
+export const border = {
+  middleGray: '#7E96BE',
 }

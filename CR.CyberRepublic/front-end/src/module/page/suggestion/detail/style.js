@@ -15,10 +15,10 @@ export const Container = styled.div`
 
   @media only screen and (max-width: ${breakPoint.lg}) {
     margin-left: 5%;
-     
+
   }
   @media only screen and (max-width: ${breakPoint.mobile}) {
-    
+
     width: 90vw;
   }
 `
@@ -31,7 +31,7 @@ export const Title = styled.div`
  `
 
 export const ShortDesc = styled.div`
-  font-weight: 200;
+  /* font-weight: 200; */
   color: ${text.darkGray};
   padding: 12px 8px 0;
 `
@@ -41,12 +41,12 @@ export const Label = styled.span`
   background: ${bg.blue};
   margin-right: 10px;
   word-break: keep-all;
-  
+
   padding: 4px 8px;
   color: ${text.newGray};
   border: 1px solid #e4effd;
   border-radius: 4px;
-  
+
 `
 
 export const LabelPointer = styled(Label)`
@@ -66,27 +66,27 @@ export const Desc = styled.div`
 `
 
 export const DescBody = styled.div`
-  font-weight: 200;
+  /* font-weight: 200; */
   color: ${text.darkGray};
-  
+
   p {
     padding-bottom: 0;
     margin-bottom: 12px;
   }
-  
+
   ul, ol {
     margin-left: 24px;
-    
+
     > li {
       padding-left: 4px;
-      font-weight: 200;
+      /* font-weight: 200; */
     }
   }
 `
 
 export const CouncilComments = styled.div`
   padding: 8px;
-  font-weight: 200;
+  /* font-weight: 200; */
 `
 
 // export const StyledLink = styled.div`
@@ -101,7 +101,7 @@ export const BtnGroup = styled.div`
 export const StyledButton = styled(Button)`
   width: 200px;
   height: 44px !important;
-  
+
   > span {
     font-size: 12px !important;
     line-height: 12px !important;

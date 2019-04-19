@@ -211,7 +211,7 @@ export default class extends StandardPage {
     return (
       <Desc>
         <DescLabel>{I18N.get('suggestion.form.fields.fullDesc')}</DescLabel>
-        <DescBody dangerouslySetInnerHTML={{ __html: detail.desc }} />
+        <DescBody className="ql-editor" dangerouslySetInnerHTML={{ __html: detail.desc }} />
       </Desc>
     )
   }

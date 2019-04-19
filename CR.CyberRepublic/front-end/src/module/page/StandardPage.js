@@ -48,7 +48,7 @@ export default class extends BasePage {
         </Motion>
         )}
         <Header toggleMobileMenu={this.toggleMobileMenu.bind(this)}/>
-        <Layout.Content>
+        <Layout.Content className="c_Content">
           {this.ord_renderContent()}
         </Layout.Content>
         <BackTop/>

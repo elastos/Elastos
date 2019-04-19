@@ -8,7 +8,7 @@ class CouncilRedux extends BaseRedux {
   defineDefaultState() {
     return {
       loading: false,
-      tab: null,
+      tab: 'COUNCIL',
       filter: {},
     }
   }

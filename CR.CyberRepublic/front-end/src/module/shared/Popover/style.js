@@ -26,12 +26,16 @@ export const Footer = styled.div`
   margin-top: 20px;
 `
 export const Btn = styled(Button)`
-  border-radius: 0;
   margin-left: 10px;
-  background: ${props => (props.type === 'default' && '#fff')
-    || (props.type === 'danger' && '#BE1313')
-};
-  color: ${props => (props.type === 'default' && 'rgba(3, 30, 40, 0.3)')
-    || (props.type === 'danger' && '#fff')
-};
+  background-color: ${props => (props.type === 'default' && '#fff!important')
+    || (props.type === 'danger' && '#BE1313!important')
+    || (props.type === 'primary' && '#008D85!important')
+  };
+
+  border-color: ${props => (props.type === 'default' && props.colored && '#66bda3!important')
+  };
+
+color: ${props => (props.type === 'default' && props.colored && '#66bda3!important')
+    || (props.type === 'danger' && '#fff!important')
+  };
 `

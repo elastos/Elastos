@@ -38,7 +38,7 @@ const zh = {
   'navigation.supernodes': 'DPOS超级节点',
 
   '0200': '简介',
-  '0201': '登录',
+  '0201': '登录/注册',
   '0202': '注册',
   '0203': '管理员',
   '0204': '登出',
@@ -1484,23 +1484,64 @@ const zh = {
   'user.skillset.PRESENTATION': '商务演示',
 
   // Council & Secretariat
-  'cs.incumbent': '现任委员',
-  'cs.council': '委员会',
-  'cs.secretariat': '秘书处',
-  'cs.secretariat.general': '秘书长',
-  'cs.secretariat.staff': '秘书处成员',
-  'cs.rule.tile': '委员会规则',
-  'cs.rule.show.click': '点击',
-  'cs.rule.show.here': '这里',
-  'cs.rule.show.view': '查阅委员会规则',
-  'cs.kevin.name': '张戈',
-  'cs.kevin.intro': '亦来云全球推广负责人, 常驻硅谷',
-  'cs.yipeng.name': '苏翼鹏',
-  'cs.yipeng.intro': '亦来云基金会首席架构师, 常驻北京',
-  'cs.feng.name': '张烽',
-  'cs.feng.intro': '律师、数字时代区块链服务联盟创始人、比特大学联合创始人，常驻上海',
-  'cs.rebecca.name': '朱凤',
-  'cs.rebecca.intro': '亦来云基金会项目总监，常驻北京',
+  cs: {
+    incumbent: '现任委员',
+    council: '委员会',
+    secretariat: {
+      title: '秘书处',
+      general: '秘书长',
+      staff: '秘书处成员',
+      positions: {
+        title: '秘书处——开放职位',
+        jobDesc: '工作职责描述',
+        howtoApply: {
+          title: '如何申请',
+          desc: '请发申请邮件至: secretariat@cyberrepublic.org',
+        },
+        viewMore: '查看更多',
+        position_1: {
+          title: '科技及开发顾问',
+          desc: '针对提案为委员会成员提供专业的建议。',
+        },
+        position_2: {
+          title: '投资顾问',
+          desc: '针对提案为委员会成员提供专业的建议。',
+        },
+        position_3: {
+          title: 'BD/PR顾问',
+          desc: '针对提案为委员会成员提供专业的建议。',
+        },
+        position_4: {
+          title: '项目经理',
+          desc: '负责提案的执行，管理项目并保证提案得到成功实施。',
+        },
+      },
+    },
+    rule: {
+      tile: '委员会规则',
+      show: {
+        click: '点击',
+        here: '这里',
+        view: '查阅委员会规则',
+      },
+    },
+    kevin: {
+      name: '张戈',
+      intro: '亦来云全球推广负责人, 常驻硅谷',
+    },
+    yipeng: {
+      name: '苏翼鹏',
+      intro: '亦来云基金会首席架构师, 常驻北京',
+    },
+    feng: {
+      name: '张烽',
+      intro: '律师、数字时代区块链服务联盟创始人、比特大学联合创始人，常驻上海',
+    },
+    rebecca: {
+      name: '朱凤',
+      intro: '亦来云基金会项目总监，常驻北京',
+    },
+  },
 
   // ConstitutionNavigator
   'counstitution.menu1': '01 亦来云Cyber Republic章程',

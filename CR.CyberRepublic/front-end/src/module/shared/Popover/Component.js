@@ -22,17 +22,17 @@ class Component extends React.Component {
   }
 
   render() {
-    const { triggeredBy, onToggle, visible, title } = this.props
+    const { triggeredBy, onToggle, visible, title, btnType } = this.props
     const content = (
       <Container>
         <CloseIcon type="close" onClick={onToggle} />
         <Title>{title || I18N.get('council.voting.modal.voteReason')}</Title>
         <StyledTextArea onChange={this.onReasonChanged} />
         <Footer>
-          <Btn type="default" onClick={onToggle}>
+          <Btn type="default" onClick={onToggle} style={{ borderRadius: 0 }}>
             {I18N.get('council.voting.modal.cancel')}
           </Btn>
-          <Btn type="danger" onClick={this.onSubmit}>
+          <Btn type={btnType || 'default'} colored={true} onClick={this.onSubmit} style={{ borderRadius: 0 }}>
             {I18N.get('council.voting.modal.confirm')}
           </Btn>
         </Footer>

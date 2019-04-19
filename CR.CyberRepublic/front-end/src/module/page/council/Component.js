@@ -14,8 +14,6 @@ export default class extends StandardPage {
 
     this.state = {
 
-      // save the page you are on
-      subpage: this.props.council.tab || 'list',
       loading: false,
     }
   }
@@ -27,9 +25,5 @@ export default class extends StandardPage {
         <Footer />
       </div>
     )
-  }
-
-  async tabChange(activeKey) {
-    return this.props.changeTab(activeKey)
   }
 }

@@ -176,6 +176,13 @@
   }
 }
 
+.c_Content.ant-layout-content {
+  padding-top: 110px;
+  @media only screen and (max-width: $mobile-width) {
+    padding-top: 80px;
+  }
+}
+
 .c_Header_Admin{
   background: #F7F8FC;
   height: 90px;

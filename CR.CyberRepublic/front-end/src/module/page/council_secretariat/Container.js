@@ -1,8 +1,15 @@
 import { createContainer } from '@/util'
 import Component from './Component'
-import { TASK_TYPE, TASK_CATEGORY } from '@/constant'
-import _ from 'lodash'
+import CouncilService from '@/service/CouncilService'
 
 export default createContainer(Component, state => ({
-}), () => ({
-}))
+  council: state.council,
+}), () => {
+  const councilService = new CouncilService()
+
+  return {
+    async changeTab(tabKey) {
+      return councilService.changeTab(tabKey)
+    },
+  }
+})
