@@ -509,11 +509,24 @@ func setDefaultSettings(args []string) []string {
 		if isContainsCmd(args, "--testnet") {
 			args = append(args, "--networkid")
 			args = append(args, "2")
-		}
 
-		if isContainsCmd(args, "--rinkeby") {
+			if !isContainsCmd(args, "--bootnodes") {
+				args = append(args, "--bootnodes")
+				args = append(args, "enode://ec8a4e686c19702ae3dae0b362bb8d6ad390f40c7eb1bb8bc0a22d506fb09c34efbe7baa492e8ba6ea6d5be238d7a478aede8f8b4f968686eeca562d9ac63fdb@52.81.82.85:30301")
+			}
+		} else if isContainsCmd(args, "--rinkeby") {
 			args = append(args, "--networkid")
 			args = append(args, "3")
+
+			if !isContainsCmd(args, "--bootnodes") {
+				args = append(args, "--bootnodes")
+				args = append(args, "enode://ec8a4e686c19702ae3dae0b362bb8d6ad390f40c7eb1bb8bc0a22d506fb09c34efbe7baa492e8ba6ea6d5be238d7a478aede8f8b4f968686eeca562d9ac63fdb@52.81.82.85:30301")
+			}
+		} else {
+			if !isContainsCmd(args, "--bootnodes") {
+				args = append(args, "--bootnodes")
+				args = append(args, "enode://ec8a4e686c19702ae3dae0b362bb8d6ad390f40c7eb1bb8bc0a22d506fb09c34efbe7baa492e8ba6ea6d5be238d7a478aede8f8b4f968686eeca562d9ac63fdb@52.81.82.85:30301")
+			}
 		}
 	}
 	return args
