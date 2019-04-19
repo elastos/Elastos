@@ -26,7 +26,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/ethdb"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/params"
 	lru "github.com/hashicorp/golang-lru"
-	"github.com/elastos/Elastos.ELA.SideChain.ETH/spv"
+	//"github.com/elastos/Elastos.ELA.SideChain.ETH/spv"
 )
 
 // Vote represents a single vote that an authorized signer made to modify the
