@@ -19,7 +19,6 @@ package miner
 import (
 	"bytes"
 	"errors"
-	"github.com/elastos/Elastos.ELA.SideChain.ETH/spv"
 	"math/big"
 	"sync"
 	"sync/atomic"
