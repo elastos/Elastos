@@ -7,43 +7,63 @@
 .ql-editor{
   min-height: 100px !important;
   padding: 25px;
-  h1, h2, h3 {
+  h1, h2, h3, h4, h5, h6 {
     margin: 0;
+    color: rgba(0, 0, 0, 0.85);
+    font-family: sans-serif;
+  }
+  h1, h2 {
     padding: $gap_2 0;
   }
-  h4, h5, h6 {
-    margin: 0;
+  h3, h4, h5, h6 {
     padding: $gap_1 0;
   }
+  // h1 {
+  //   font-size: 40px;
+  // }
+  // h2 {
+  //   font-size: 36px;
+  // }
+  // h4 {
+  //   font-size: 18px;
+  // }
+  // h5 {
+  //   font-size: 14px;
+  //   color: $cr_light_color;
+  // }
   h1 {
-    font-size: 40px;
+    font-size: 2em;
   }
   h2 {
-    font-size: 36px;
+    font-size: 1.5em;
   }
   h3 {
-    font-size: 24px;
-    padding: $gap_1 0;
+    font-size: 1.17em;
   }
   h4 {
-    font-size: 18px;
+    font-size: 1em;
   }
   h5 {
-    font-size: 14px;
-    color: $cr_light_color;
+    font-size: 0.83em;
+  }
+  h6 {
+    font-size: 0.67em;
   }
   p {
     margin: 0;
-    font-weight: 200;
+    // font-weight: 200;
     padding-bottom: 0;
     margin-bottom: 12px;
   }
   ul, ol, ul li, ol li {
     padding-left: 0;
-    font-weight: 200;
+    // font-weight: 200;
   }
   ul, ol {
     margin-left: 24px;
+  }
+  ul li, ol li {
+    margin-bottom: 12px;
   }
   ul li {
     list-style-type: disc;
@@ -52,6 +72,9 @@
     &:before {
       content: "";
     }
+  }
+  blockquote {
+    padding-left: 16px;
   }
 }
 
@@ -123,5 +146,5 @@
 }
 
 .ql-snow a {
-    color: $primary_color;
-  }
+  color: $primary_color;
+}

@@ -190,7 +190,7 @@ class C extends StandardPage {
 
   renderContent() {
     const { content } = this.state.data
-    return <div className="content" dangerouslySetInnerHTML={{ __html: content }} />
+    return <div className="content ql-editor" dangerouslySetInnerHTML={{ __html: content }} />
   }
 
   renderNotes() {
