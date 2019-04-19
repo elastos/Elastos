@@ -387,9 +387,11 @@ func (r *Routes) handleDAddr(s *state, p *peer.Peer, m *msg.DAddr) {
 
 	// Append received addr into state.
 	if err := r.appendAddr(s, m); err != nil {
-		log.Warnf("Got invalid addr %s from %s -- disconnecting",
-			err, p)
-		p.Disconnect()
+		log.Warnf("Append addr from %s failed,", p, err)
+
+		// Peers may have disagree with the current producers, so some times we
+		// receive addresses that not in the producers list.  We do not
+		// disconnect the peer even the address not in producers list.
 		return
 	}
 
