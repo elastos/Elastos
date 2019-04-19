@@ -505,6 +505,16 @@ func setDefaultSettings(args []string) []string {
 			args = append(args, "--datadir")
 			args = append(args, "./data")
 		}
+
+		if isContainsCmd(args, "--testnet") {
+			args = append(args, "--networkid")
+			args = append(args, "2")
+		}
+
+		if isContainsCmd(args, "--rinkeby") {
+			args = append(args, "--networkid")
+			args = append(args, "3")
+		}
 	}
 	return args
 }

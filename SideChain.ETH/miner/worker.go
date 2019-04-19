@@ -836,10 +836,10 @@ func (w *worker) commitNewWork(interrupt *int32, noempty bool, timestamp int64) 
 	}
 
 	num := parent.Number()
-	var elaHeight = big.NewInt(0)
-	if num.Cmp(big.NewInt(0)) != 0 {
-		elaHeight = spv.UntilGetElaChainHeight()
-	}
+	var elaHeight uint32 = 0
+	//if num.Cmp(big.NewInt(0)) != 0 {
+	//	elaHeight = spv.UntilGetElaChainHeight()
+	//}
 	header := &types.Header{
 		ParentHash: parent.Hash(),
 		Number:     num.Add(num, common.Big1),

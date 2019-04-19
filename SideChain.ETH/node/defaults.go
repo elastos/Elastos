@@ -51,7 +51,6 @@ var DefaultConfig = Config{
 	},
 }
 
-// modify datadir
 // DefaultDataDir is the default data directory to use for the databases and other
 // persistence requirements.
 func DefaultDataDir() string {
