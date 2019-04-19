@@ -25,7 +25,7 @@ func getNonce() uint64 {
 	return nonce
 }
 
-func haveNonce(nonce uint64) bool {
+func haveNonce(ip net.IP, port int, nonce uint64) bool {
 	_, ok := nonces.Load(nonce)
 	return ok
 }

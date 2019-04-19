@@ -100,7 +100,7 @@ type Config struct {
 	HostToNetAddress HostToNetAddrFunc
 	MakeEmptyMessage func(cmd string) (p2p.Message, error)
 	BestHeight       func() uint64
-	IsSelfConnection func(nonce uint64) bool
+	IsSelfConnection func(ip net.IP, port int, nonce uint64) bool
 	GetVersionNonce  func() uint64
 	MessageFunc      MessageFunc
 }
@@ -923,7 +923,7 @@ func (p *Peer) Disconnect() {
 // is not compatible with ours.
 func (p *Peer) handleRemoteVersionMsg(msg *msg.Version) error {
 	// Detect self connections.
-	if p.cfg.IsSelfConnection(msg.Nonce) {
+	if p.cfg.IsSelfConnection(p.na.IP, int(msg.Port), msg.Nonce) {
 		return errors.New("disconnecting peer connected to self")
 	}
 
