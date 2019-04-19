@@ -220,8 +220,7 @@ func GetElaChainHeight() *big.Int {
 // Until Get Ela Chain Height 
 func UntilGetElaChainHeight() *big.Int {
 	for {
-		elaHeight := GetElaChainHeight()
-		if elaHeight = GetElaChainHeight(); elaHeight.Cmp(big.NewInt(-1)) != 0  {
+		if elaHeight := GetElaChainHeight(); elaHeight.Cmp(big.NewInt(-1)) != 0  {
 			return elaHeight
 		}
 		fmt.Println("can not get elas height, because ela height interface has no any response !")
