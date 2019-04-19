@@ -38,7 +38,7 @@ const en = {
   'navigation.supernodes': 'Supernodes',
 
   '0200': 'Profile',
-  '0201': 'Login',
+  '0201': 'Login/Register',
   '0202': 'Register',
   '0203': 'Admin',
   '0204': 'Logout',

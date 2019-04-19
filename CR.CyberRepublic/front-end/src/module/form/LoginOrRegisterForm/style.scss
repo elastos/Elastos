@@ -4,7 +4,7 @@
 
 .c_LoginOrRegister {
     display: flex;
-    max-width: 400px;
+    width: 350px;
     margin: 0 auto;
 
     .hide-tabbar {
@@ -43,12 +43,9 @@
             margin: 0;
             font-size: 54px;
             font-weight: 500;
-            color: $bg_light_gray;
+            color: $text_lighter_gray;
             text-transform: uppercase;
-
-            &:first-child {
-                border-right: 1px solid $bg_navy;
-            }
+            border-bottom: 2px solid $text_lighter_gray;
 
             &:not(:first-child) {
                 padding-left: $gap_1;
@@ -60,6 +57,7 @@
 
             &.ant-tabs-tab-active {
                 color: $bg_navy;
+                border-bottom: 8px solid #66bda3;
             }
         }
     }
