@@ -290,19 +290,19 @@ func (s *Snapshot) apply(headers []*types.Header) (*Snapshot, error) {
 
 	//look up current height of ela chain,if it is unchecked up before,withdraw the producers of current height
 	// then update snapshot of side chain.
-	elaHeight := spv.GetCurrentElaHeight();
-	if _,ok := snap.sigcache.Get(elaHeight); !ok {
-		arbiters := spv.GetCurrentProducers()
-		for _,arbiter := range arbiters{
-			arbiterAddr := common.BytesToAddress(arbiter)
-			if _,ok := snap.Signers[arbiterAddr]; !ok{
-
-				snap.Signers[arbiterAddr] = struct{}{}
-			}
-		}
-
-		snap.sigcache.Add(elaHeight,elaHeight);
-	}
+	//elaHeight := spv.GetCurrentElaHeight();
+	//if _,ok := snap.sigcache.Get(elaHeight); !ok {
+	//	arbiters := spv.GetCurrentProducers()
+	//	for _,arbiter := range arbiters{
+	//		arbiterAddr := common.BytesToAddress(arbiter)
+	//		if _,ok := snap.Signers[arbiterAddr]; !ok{
+	//
+	//			snap.Signers[arbiterAddr] = struct{}{}
+	//		}
+	//	}
+	//
+	//	snap.sigcache.Add(elaHeight,elaHeight);
+	//}
 
 	snap.Number += uint64(len(headers))
 	snap.Hash = headers[len(headers)-1].Hash()
