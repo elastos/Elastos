@@ -78,6 +78,11 @@
   }
 }
 
+.ql-toolbar.ql-snow + .ql-container.ql-snow {
+  max-height: 600px;
+  overflow: scroll;
+}
+
 .ql-snow.ql-toolbar button:hover,
 .ql-snow .ql-toolbar button:hover,
 .ql-snow.ql-toolbar button.ql-active,
