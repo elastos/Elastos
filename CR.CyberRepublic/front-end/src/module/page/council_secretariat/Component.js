@@ -13,6 +13,11 @@ import './style.scss'
 const TabPane = Tabs.TabPane
 
 export default class extends StandardPage {
+  state = {
+    // save the page you are on
+    tab: this.props.council.tab || '1',
+  }
+
   linkToRule() {
     this.props.history.push('/constitution/1')
   }
@@ -147,20 +152,26 @@ export default class extends StandardPage {
   }
 
   buildContent() {
+    const { tab } = this.props.council
+    const tabBarStyle = { borderBottom: 'none', color: text.middleGray }
     return (
       <div className="cs-background">
         <BGImg />
         <div className="container">
           <div className="rect-container">
             <div className="rect" />
-            <StyledTabs defaultActiveKey="1" tabBarStyle={{ borderBottom: 'none', color: text.middleGray }}>
-              <TabPane tab={<TabTitle>{I18N.get('cs.council')}</TabTitle>} key="1">{this.buildIncumbent()}</TabPane>
-              <TabPane tab={<TabTitle>{I18N.get('cs.secretariat.title')}</TabTitle>} key="2">{this.buildSecretariat()}</TabPane>
+            <StyledTabs defaultActiveKey="COUNCIL" activeKey={tab} onChange={this.tabChange} tabBarStyle={tabBarStyle}>
+              <TabPane tab={<TabTitle>{I18N.get('cs.council')}</TabTitle>} key="COUNCIL">{this.buildIncumbent()}</TabPane>
+              <TabPane tab={<TabTitle>{I18N.get('cs.secretariat.title')}</TabTitle>} key="SECRETARIAT">{this.buildSecretariat()}</TabPane>
             </StyledTabs>
           </div>
         </div>
       </div>
     )
+  }
+
+  tabChange = (activeKey) => {
+    return this.props.changeTab(activeKey)
   }
 }
 

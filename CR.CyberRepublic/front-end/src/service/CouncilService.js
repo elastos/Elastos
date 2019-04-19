@@ -1,6 +1,6 @@
 import BaseService from '../model/BaseService'
 
-const councilTabKeys = ['board', 'list', 'vote']
+const councilTabKeys = ['COUNCIL', 'SECRETARIAT']
 
 export default class extends BaseService {
   async changeTab(tabKey) {
@@ -11,7 +11,5 @@ export default class extends BaseService {
     const councilRedux = this.store.getRedux('council')
 
     await this.dispatch(councilRedux.actions.tab_update(tabKey))
-
-    return 1
   }
 }
