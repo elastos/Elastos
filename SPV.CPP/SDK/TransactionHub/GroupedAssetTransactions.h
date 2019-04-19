@@ -31,46 +31,18 @@ namespace Elastos {
 			};
 
 		public:
-			class Listener {
-			public:
-				virtual void balanceChanged(const uint256 &asset, uint64_t balance) = 0;
-
-				virtual void onTxAdded(const TransactionPtr &transaction) = 0;
-
-				virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) = 0;
-
-				virtual void onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser,
-							bool recommendRescan) = 0;
-			};
-
-		public:
-			AssetTransactions(GroupedAssetTransactions *parent, Lockable *lockable, const SubAccountPtr &subAccount,
-							  const std::vector<std::string> &listeningAddrs,
-							  const boost::shared_ptr<Listener> &listener);
+			AssetTransactions(GroupedAssetTransactions *parent, Lockable *lockable,
+							  const Asset &asset,
+							  const SubAccountPtr &subAccount,
+							  const std::vector<std::string> &listeningAddrs);
 
 			AssetTransactions(const AssetTransactions &proto);
 
 			AssetTransactions &operator=(const AssetTransactions &proto);
 
-			bool HasTransactions() const;
-
-			const std::vector<TransactionPtr> &GetTransactions() const;
-
-			bool Exist(const TransactionPtr &tx);
-
-			bool Exist(const uint256 &hash);
-
-			const TransactionPtr GetExistTransaction(const uint256 &hash) const;
-
-			void SortTransaction();
-
-			void Append(const TransactionPtr &transaction);
-
-			void BatchSet(const boost::function<void(const TransactionPtr &)> &fun);
-
 			const std::vector<UTXO> &GetUTXOs() const;
 
-			uint64_t GetBalance(BalanceType type = Default) const;
+			BigInt GetBalance(BalanceType type = Total) const;
 
 			uint64_t GetFeePerKb() const;
 
@@ -88,43 +60,20 @@ namespace Elastos {
 
 			void UpdateTxFee(TransactionPtr &tx, uint64_t fee, const Address &fromAddress);
 
-			std::vector<TransactionPtr> TxUnconfirmedBefore(uint32_t blockHeight);
+			Asset GetAsset();
 
-			void SetTxUnconfirmedAfter(uint32_t blockHeight);
-
-			bool TransactionIsValid(const TransactionPtr &tx);
-
-			bool RegisterTransaction(const TransactionPtr &tx);
-
-			void RemoveTransaction(const uint256 &txHash);
-
-			uint64_t AmountSentByTx(const TransactionPtr &tx);
-
-			bool WalletContainsTx(const TransactionPtr &tx);
-
-			void UpdateTransactions(const std::vector<uint256> &txHashes, uint32_t blockHeight, uint32_t timestamp);
-
-		protected:
-			void balanceChanged(const uint256 &asset, uint64_t balance);
-
-			void txAdded(const TransactionPtr &tx);
-
-			void txUpdated(const std::vector<uint256> &txHashes, uint32_t blockHeight, uint32_t timestamp);
-
-			void txDeleted(const uint256 &txHash, const uint256 &assetID, bool notifyUser, bool recommendRescan);
+			void AddUTXO(const UTXO &o);
 
 		private:
-			typedef ElementSet<TransactionPtr> TransactionSet;
-			std::vector<TransactionPtr> _transactions;
-			uint64_t _balance, _votedBalance, _lockedBalance, _depositBalance, _feePerKb;
+			BigInt _balance, _votedBalance, _lockedBalance, _depositBalance;
+			uint64_t _feePerKb;
 			UTXOList _utxos, _utxosLocked;
-			UTXOList _spentOutputs, _pendingSpentOutputs;
-			TransactionSet _allTx, _invalidTx;
 
 			Lockable *_lockable;
 			SubAccountPtr _subAccount;
 			std::vector<std::string> _listeningAddrs;
-			boost::weak_ptr<Listener> _listener;
+
+			Asset _asset;
 
 			GroupedAssetTransactions *_parent;
 		};
@@ -133,14 +82,24 @@ namespace Elastos {
 
 		class GroupedAssetTransactions {
 		public:
+			class Listener {
+			public:
+				virtual void balanceChanged(const uint256 &asset, const BigInt &balance) = 0;
+
+				virtual void onTxAdded(const TransactionPtr &transaction) = 0;
+
+				virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) = 0;
+
+				virtual void onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) = 0;
+			};
+
+		public:
 			GroupedAssetTransactions(TransactionHub *parent, const std::vector<Asset> &assetArray,
 									 const std::vector<TransactionPtr> &txns,
 									 const SubAccountPtr &subAccount,
-									 const boost::shared_ptr<AssetTransactions::Listener> &listener);
+									 const boost::shared_ptr<Listener> &listener);
 
 			void InitListeningAddresses(const std::vector<std::string> &addrs);
-
-			std::vector<TransactionPtr> GetTransactions(const uint256 &assetID) const;
 
 			std::vector<TransactionPtr> GetAllTransactions() const;
 
@@ -150,13 +109,15 @@ namespace Elastos {
 
 			void Append(const TransactionPtr &transaction);
 
-			bool Empty() const;
+			void BatchSet(const boost::function<void(const TransactionPtr &)> &fun);
+
+			void SortTransaction();
 
 			void ForEach(const boost::function<void(const uint256 &, const AssetTransactionsPtr &)> &fun);
 
-			void BatchSet(const boost::function<void(const TransactionPtr &)> &fun);
+			void RegisterAssets(const std::vector<Asset> &assetArray);
 
-			void UpdateAssets(const std::vector<Asset> &assetArray);
+			bool GetAsset(const uint256 &assetID, Asset &asset) const;
 
 			AssetTransactionsPtr &operator[](const uint256 &assetID);
 
@@ -167,33 +128,58 @@ namespace Elastos {
 
 			void UpdateTxFee(TransactionPtr &tx, uint64_t fee, const Address &fromAddress);
 
-			TransactionPtr TransactionForHash(const uint256 &txHash);
+			std::vector<TransactionPtr> TxUnconfirmedBefore(uint32_t blockHeight);
 
-			TransactionPtr TransactionForHash(const uint256 &transactionHash, const uint256 &assetID);
+			void SetTxUnconfirmedAfter(uint32_t blockHeight);
+
+			bool TransactionIsValid(const TransactionPtr &tx);
 
 			bool RegisterTransaction(const TransactionPtr &tx);
 
 			void RemoveTransaction(const uint256 &txHash);
 
+			BigInt AmountSentByTx(const TransactionPtr &tx);
+
+			TransactionPtr TransactionForHash(const uint256 &txHash) const;
+
 			void UpdateTransactions(const std::vector<uint256> &txHashes, uint32_t blockHeight, uint32_t timestamp);
 
-			void SetTxUnconfirmedAfter(uint32_t blockHeight);
-
 			bool WalletContainsTx(const TransactionPtr &tx);
-
-			bool WalletExistTx(const TransactionPtr &tx);
 
 			void InitWithTransactions(const std::vector<TransactionPtr> &txArray);
 
 			nlohmann::json GetAllSupportedAssets() const;
 
-			bool ContainsAsset(const std::string &assetID);
+			bool ContainsAsset(const uint256 &assetID) const;
 
-			bool ContainsAsset(const uint256 &assetID);
+			uint32_t GetBlockHeight() const {
+				return _blockHeight;
+			}
 
-			uint32_t GetBlockHeight() const;
+			const UTXOList &GetSpentOutputs() const {
+				return _spentOutputs;
+			}
 
-			void SetBlockHeight(uint32_t height);
+			const UTXOList &GetSpendingOutputs() const {
+				return _spendingOutputs;
+			}
+
+			void SetBlockHeight(uint32_t height) {
+				_blockHeight = height;
+			}
+
+			void CleanBalance();
+
+			void UpdateBalance();
+
+		protected:
+			void balanceChanged(const uint256 &asset, const BigInt &balance);
+
+			void txAdded(const TransactionPtr &tx);
+
+			void txUpdated(const std::vector<uint256> &txHashes, uint32_t blockHeight, uint32_t timestamp);
+
+			void txDeleted(const uint256 &txHash, bool notifyUser, bool recommendRescan);
 
 		private:
 			uint256 GetUniqueAssetID(const std::vector<TransactionOutput> &outputs) const;
@@ -202,11 +188,16 @@ namespace Elastos {
 			typedef std::map<uint256, AssetTransactionsPtr> AssetTransactionMap;
 			mutable AssetTransactionMap _groupedTransactions;
 
+			typedef ElementSet<TransactionPtr> TransactionSet;
+			std::vector<TransactionPtr> _transactions;
+			TransactionSet _allTx, _invalidTx;
+			UTXOList _spentOutputs, _spendingOutputs;
+
 			uint32_t _blockHeight;
 			TransactionHub *_parent;
 			SubAccountPtr _subAccount;
 			std::vector<std::string> _listeningAddrs;
-			boost::shared_ptr<AssetTransactions::Listener> _listener;
+			boost::weak_ptr<Listener> _listener;
 		};
 
 	}

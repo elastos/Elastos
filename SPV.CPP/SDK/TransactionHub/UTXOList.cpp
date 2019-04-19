@@ -6,6 +6,7 @@
 
 #include <SDK/Plugin/Transaction/TransactionInput.h>
 #include <SDK/Common/ErrorChecker.h>
+#include <SDK/Common/BigInt.h>
 
 #include <boost/bind.hpp>
 
@@ -44,12 +45,12 @@ namespace Elastos {
 			_utxos.clear();
 		}
 
-		void UTXOList::AddByTxInput(const TransactionInput &input, uint64_t amount, uint32_t confirms) {
+		void UTXOList::AddByTxInput(const TransactionInput &input, const BigInt &amount, uint32_t confirms) {
 			_utxos.emplace_back(input.GetTransctionHash(), input.GetIndex(), amount, confirms);
 		}
 
-		void UTXOList::AddUTXO(const uint256 &hash, uint32_t index, uint64_t amount, uint32_t confirms) {
-			_utxos.emplace_back(hash, index, amount, confirms);
+		void UTXOList::AddUTXO(const UTXO &o) {
+			_utxos.push_back(o);
 		}
 
 		void UTXOList::RemoveAt(size_t index) {
@@ -61,8 +62,8 @@ namespace Elastos {
 			return o1.amount <= o2.amount;
 		}
 
-		void UTXOList::SortBaseOnOutputAmount(uint64_t totalOutputAmount, uint64_t feePerKB) {
-			uint64_t Threshold = totalOutputAmount * 2 + feePerKB;
+		void UTXOList::SortBaseOnOutputAmount(const BigInt &totalOutputAmount, uint64_t feePerKB) {
+			BigInt Threshold = totalOutputAmount * 2 + feePerKB;
 			size_t ThresholdIndex = 0;
 
 			std::sort(_utxos.begin(), _utxos.end(),

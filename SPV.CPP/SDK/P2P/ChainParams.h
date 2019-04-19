@@ -45,13 +45,19 @@ namespace Elastos {
 
 			void MainNetIDChainParamsInit();
 
+			void MainNetTokenChainParamsInit();
+
 			void TestNetMainChainParamsInit();
 
 			void TestNetIDChainParamsInit();
 
+			void TestNetTokenChainParamsInit();
+
 			void RegNetMainChainParamsInit();
 
 			void RegNetIDChainParamsInit();
+
+			void RegNetTokenChainParamsInit();
 
 			void MainNetParamsInit(SubWalletType type);
 

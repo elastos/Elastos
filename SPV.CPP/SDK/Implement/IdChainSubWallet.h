@@ -36,8 +36,6 @@ namespace Elastos {
 
 			virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp);
 
-			virtual void onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan);
-
 		};
 
 	}

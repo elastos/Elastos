@@ -153,12 +153,14 @@ namespace Elastos {
 			pnt.bytes(a);
 			bn = pnt.getCoordX();
 			assert(bn != nullptr);
-			BigInt bigIntA = bn;
+			BigInt bigIntA;
+			bigIntA.setRaw(bn);
 
 			pnt.bytes(b);
 			bn = pnt.getCoordX();
 			assert(bn != nullptr);
-			BigInt bigIntB = bn;
+			BigInt bigIntB;
+			bigIntB.setRaw(bn);
 
 			return bigIntA <= bigIntB;
 		}

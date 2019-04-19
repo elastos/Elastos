@@ -9,6 +9,7 @@
 #include <SDK/Plugin/Transaction/Payload/OutputPayload/IOutputPayload.h>
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/WalletCore/BIPs/Address.h>
+#include <SDK/Common/BigInt.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -31,10 +32,12 @@ namespace Elastos {
 
 			TransactionOutput(const TransactionOutput &output);
 
-			TransactionOutput(uint64_t amount, const Address &toAddress, const uint256 &assetID = Asset::GetELAAssetID(),
+			TransactionOutput &operator=(const TransactionOutput &tx);
+
+			TransactionOutput(const BigInt &amount, const Address &toAddress, const uint256 &assetID = Asset::GetELAAssetID(),
 							  Type type = Default, const OutputPayloadPtr &payload = nullptr);
 
-			TransactionOutput(uint64_t amount, const uint168 &programHash, const uint256 &assetID = Asset::GetELAAssetID(),
+			TransactionOutput(const BigInt &amount, const uint168 &programHash, const uint256 &assetID = Asset::GetELAAssetID(),
 							  Type type = Default, const OutputPayloadPtr &payload = nullptr);
 
 			~TransactionOutput();
@@ -51,9 +54,9 @@ namespace Elastos {
 
 			Address GetAddress() const;
 
-			uint64_t GetAmount() const;
+			const BigInt &GetAmount() const;
 
-			void SetAmount(uint64_t amount);
+			void SetAmount(const BigInt &amount);
 
 			const uint256 &GetAssetId() const;
 
@@ -90,7 +93,7 @@ namespace Elastos {
 			size_t GetSize() const;
 
 		private:
-			uint64_t _amount;
+			BigInt _amount; // to support token chain
 			uint256 _assetId;
 			uint32_t _outputLock;
 			uint168 _programHash;

@@ -24,6 +24,6 @@
     "MinFee": 10000,
     "ReconnectSeconds": 300,
     "PluginType": "Token",
-    "GenesisAddress" : ""
+    "GenesisAddress" : "XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4"
   }
 }

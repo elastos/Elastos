@@ -238,6 +238,34 @@ namespace Elastos {
 			_targetTimePerBlock = 120;
 		}
 
+		void ChainParams::MainNetTokenChainParamsInit() {
+			_dnsSeeds.emplace_back("node-mainnet-002.elastos.org");
+			_dnsSeeds.emplace_back("node-mainnet-003.elastos.org");
+			_dnsSeeds.emplace_back("node-mainnet-004.elastos.org");
+			_dnsSeeds.emplace_back("node-mainnet-005.elastos.org");
+			_dnsSeeds.emplace_back("node-mainnet-006.elastos.org");
+			_dnsSeeds.emplace_back("node-mainnet-007.elastos.org");
+			_dnsSeeds.emplace_back("node-mainnet-008.elastos.org");
+			_dnsSeeds.emplace_back("node-mainnet-009.elastos.org");
+			_checkpoints.emplace_back(0,      "b569111dfb5e12d40be5cf09e42f7301128e9ac7ab3c6a26f24e77872b9a730e", 1551744000, 486801407);
+			_checkpoints.emplace_back(2016,   "0949da8d34d37f632873d6ecec64ebe340787443438ac164920bfb9cf3650360", 1551995934, 504001839);
+			_checkpoints.emplace_back(4032,   "215e27cca0a758d2ee945ca11bc22a1c3b3bf2f2ddcaf167c45d84360e89c0f5", 1552260265, 504117745);
+			_checkpoints.emplace_back(6048,   "15a8d8a9e58d64d70c606e39311445a4dafcf38d66cc8009c1bac77004161d18", 1552507087, 504126382);
+			_checkpoints.emplace_back(8064,   "ca8df7f2004dc5ff3b500967a24fc1f1d709ff804119ea86f9fc05d85de9dec6", 1552812350, 504906547);
+			_checkpoints.emplace_back(10080,  "58b25e8f4aed9346b8e23b224242ddb2f42d8d6c7d00077beaf97684ca02474e", 1553562824, 520236599);
+			_checkpoints.emplace_back(12096,  "34c72c0de800ef4d7d9ff21ece83ba20285a94452271f04e1686ef51b94e84d4", 1553952619, 520563544);
+			_checkpoints.emplace_back(14112,  "b952635276e1c5ea326021687eef0a5adc389cbaef627c0cb5f0be60037bf5f6", 1554221590, 520741881);
+			_checkpoints.emplace_back(16128,  "9be174adcaef6c7f6a1bb4a4e43c8bfd3922c9598d6508a6e0ac17fdd688d452", 1554431091, 520593990);
+			_checkpoints.emplace_back(18144,  "8af5a645c8da42a84824f5a9ffe05ba283070303defc851ed3013288e2e52a91", 1554662463, 520448351);
+			_checkpoints.emplace_back(20160,  "0898c4287ea0c23f9079d495d2594246a852ce1f6b800adb1d594599978cd0b4", 1554877734, 520360576);
+			_checkpoints.emplace_back(22176,  "ed6509ea794b8e35c38d2c5d4de6ed756ac3b5be012f8ff998a1a98020f926f3", 1555144521, 520410302);
+			_standardPort = 20618;
+			_magicNumber = 2019004;
+			_services = 0;
+			_targetTimeSpan = 86400;
+			_targetTimePerBlock = 120;
+		}
+
 		// test net
 		void ChainParams::TestNetMainChainParamsInit() {
 			_dnsSeeds.emplace_back("node-testnet-002.elastos.org");
@@ -349,6 +377,22 @@ namespace Elastos {
 			_targetTimePerBlock = 120;
 		}
 
+		void ChainParams::TestNetTokenChainParamsInit() {
+			_dnsSeeds.emplace_back("node-testnet-002.elastos.org");
+			_dnsSeeds.emplace_back("node-testnet-003.elastos.org");
+			_dnsSeeds.emplace_back("node-testnet-004.elastos.org");
+			_dnsSeeds.emplace_back("node-testnet-005.elastos.org");
+			_dnsSeeds.emplace_back("node-testnet-006.elastos.org");
+			_dnsSeeds.emplace_back("node-testnet-007.elastos.org");
+			_dnsSeeds.emplace_back("node-testnet-011.elastos.org");
+			_checkpoints.emplace_back(0,      "b569111dfb5e12d40be5cf09e42f7301128e9ac7ab3c6a26f24e77872b9a730e", 1551744000, 486801407);
+			_standardPort = 21618;
+			_magicNumber = 2019104;
+			_services = 0;
+			_targetTimeSpan = 86400;
+			_targetTimePerBlock = 120;
+		}
+
 		// reg net (reg test)
 		void ChainParams::RegNetMainChainParamsInit() {
 			_dnsSeeds.emplace_back("node-regtest-102.eadd.co");
@@ -438,11 +482,28 @@ namespace Elastos {
 			_targetTimePerBlock = 120;
 		}
 
+		void ChainParams::RegNetTokenChainParamsInit() {
+			_dnsSeeds.emplace_back("node-regtest-102.eadd.co");
+			_dnsSeeds.emplace_back("node-regtest-103.eadd.co");
+			_dnsSeeds.emplace_back("node-regtest-104.eadd.co");
+			_dnsSeeds.emplace_back("node-regtest-105.eadd.co");
+			_dnsSeeds.emplace_back("node-regtest-106.eadd.co");
+			_dnsSeeds.emplace_back("node-regtest-107.eadd.co");
+			_checkpoints.emplace_back(0,      "b569111dfb5e12d40be5cf09e42f7301128e9ac7ab3c6a26f24e77872b9a730e", 1551744000, 486801407);
+			_standardPort = 22618;
+			_magicNumber = 2019204;
+			_services = 0;
+			_targetTimeSpan = 86400;
+			_targetTimePerBlock = 120;
+		}
+
 		void ChainParams::MainNetParamsInit(SubWalletType type) {
 			if (type == Mainchain || type == Normal) {
 				MainNetMainChainParamsInit();
 			} else if (type == Idchain) {
 				MainNetIDChainParamsInit();
+			} else if (type == Tokenchain) {
+				MainNetTokenChainParamsInit();
 			} else {
 				ErrorChecker::CheckCondition(true, Error::InvalidCoinType,
 											 "Unsupport coin type in coin config");
@@ -454,6 +515,8 @@ namespace Elastos {
 				TestNetMainChainParamsInit();
 			} else if (type == Idchain) {
 				TestNetIDChainParamsInit();
+			} else if (type == Tokenchain) {
+				TestNetTokenChainParamsInit();
 			} else {
 				ErrorChecker::CheckCondition(true, Error::InvalidCoinType,
 											 "Unsupport coin type in coin config");
@@ -465,6 +528,8 @@ namespace Elastos {
 				RegNetMainChainParamsInit();
 			} else if (type == Idchain) {
 				RegNetIDChainParamsInit();
+			} else if (type == Tokenchain) {
+				RegNetTokenChainParamsInit();
 			} else {
 				ErrorChecker::CheckCondition(true, Error::InvalidCoinType,
 											 "Unsupport coin type in coin config");

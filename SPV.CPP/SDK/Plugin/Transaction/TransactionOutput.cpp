@@ -19,29 +19,36 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		TransactionOutput::TransactionOutput() :
-				_amount(0),
 				_outputLock(0),
 				_outputType(Type::Default) {
+			_amount.setWord(0);
 			_payload = GeneratePayload(_outputType);
 		}
 
 		TransactionOutput::TransactionOutput(const TransactionOutput &output) {
-			_amount = output.GetAmount();
-			_assetId = output.GetAssetId();
-			_programHash = output.GetProgramHash();
-			_outputLock = output.GetOutputLock();
-			_outputType = output.GetType();
-			_payload = GeneratePayload(_outputType);
-			*_payload = *output.GetPayload();
+			this->operator=(output);
 		}
 
-		TransactionOutput::TransactionOutput(uint64_t a, const Address &addr, const uint256 &assetID,
+		TransactionOutput &TransactionOutput::operator=(const TransactionOutput &o) {
+			_amount = o._amount;
+			_assetId = o._assetId;
+			_programHash = o._programHash;
+			_outputLock = o._outputLock;
+			_outputType = o._outputType;
+			_payload = GeneratePayload(o._outputType);
+			*_payload = *o._payload;
+			return *this;
+		}
+
+		TransactionOutput::TransactionOutput(const BigInt &a, const Address &addr, const uint256 &assetID,
 											 Type type, const OutputPayloadPtr &payload) :
-			_amount(a),
 			_outputLock(0),
 			_outputType(type) {
+
 			_assetId = assetID;
+			_amount = a;
 			_programHash = addr.ProgramHash();
+
 			if (payload == nullptr) {
 				_payload = GeneratePayload(_outputType);
 			} else {
@@ -49,13 +56,15 @@ namespace Elastos {
 			}
 		}
 
-		TransactionOutput::TransactionOutput(uint64_t a, const uint168 &programHash, const uint256 &assetID,
+		TransactionOutput::TransactionOutput(const BigInt &a, const uint168 &programHash, const uint256 &assetID,
 											 Type type, const OutputPayloadPtr &payload) :
-			_amount(a),
 			_outputLock(0),
 			_outputType(type) {
+
 			_assetId = assetID;
+			_amount = a;
 			_programHash = programHash;
+
 			if (payload == nullptr) {
 				_payload = GeneratePayload(_outputType);
 			} else {
@@ -70,17 +79,24 @@ namespace Elastos {
 			return Address(_programHash);
 		}
 
-		uint64_t TransactionOutput::GetAmount() const {
+		const BigInt &TransactionOutput::GetAmount() const {
 			return _amount;
 		}
 
-		void TransactionOutput::SetAmount(uint64_t a) {
+		void TransactionOutput::SetAmount(const BigInt &a) {
 			_amount = a;
 		}
 
 		void TransactionOutput::Serialize(ByteStream &ostream) const {
 			ostream.WriteBytes(_assetId);
-			ostream.WriteUint64(_amount);
+
+			if (_assetId == Asset::GetELAAssetID()) {
+				uint64_t amount = _amount.getWord();
+				ostream.WriteUint64(amount);
+			} else {
+				ostream.WriteVarBytes(_amount.getBytes(true));
+			}
+
 			ostream.WriteUint32(_outputLock);
 			ostream.WriteBytes(_programHash);
 		}
@@ -91,9 +107,20 @@ namespace Elastos {
 				return false;
 			}
 
-			if (!istream.ReadUint64(_amount)) {
-				Log::error("deserialize output _amount error");
-				return false;
+			if (_assetId == Asset::GetELAAssetID()) {
+				uint64_t amount;
+				if (!istream.ReadUint64(amount)) {
+					Log::error("deserialize output amount error");
+					return false;
+				}
+				_amount.setWord(amount);
+			} else {
+				bytes_t bytes;
+				if (!istream.ReadVarBytes(bytes)) {
+					Log::error("deserialize output BN amount error");
+					return false;
+				}
+				_amount.setBytes(bytes, true);
 			}
 
 			if (!istream.ReadUint32(_outputLock)) {
@@ -213,16 +240,18 @@ namespace Elastos {
 		nlohmann::json TransactionOutput::ToJson() const {
 			nlohmann::json j;
 
-			j["Amount"] = _amount;
+			j["Amount"] = _amount.getDec();
 			j["AssetId"] = _assetId.GetHex();
 			j["OutputLock"] = _outputLock;
 			j["ProgramHash"] = _programHash.GetHex();
 			j["Address"] = Address(_programHash).String();
+
 			return j;
 		}
 
 		void TransactionOutput::FromJson(const nlohmann::json &j) {
-			_amount = j["Amount"].get<uint64_t>();
+
+			_amount.setDec(j["Amount"].get<std::string>());
 			_assetId.SetHex(j["AssetId"].get<std::string>());
 			_outputLock = j["OutputLock"].get<uint32_t>();
 			_programHash.SetHex(j["ProgramHash"].get<std::string>());

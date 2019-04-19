@@ -69,6 +69,8 @@ namespace Elastos {
 
 			void VisibleAssetsFromJson(const nlohmann::json &j);
 
+			void SetVisibleAsset(const uint256 &assetID);
+
 		private:
 			TO_JSON(CoinInfo);
 

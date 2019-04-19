@@ -65,7 +65,7 @@ namespace Elastos {
 			return _peerManager;
 		}
 
-		void CoreSpvService::balanceChanged(const uint256 &asset, uint64_t balance) {
+		void CoreSpvService::balanceChanged(const uint256 &asset, const BigInt &balance) {
 
 		}
 
@@ -441,11 +441,11 @@ namespace Elastos {
 			}));
 		}
 
-		WrappedExceptionTransactionHubListener::WrappedExceptionTransactionHubListener(AssetTransactions::Listener *listener) :
+		WrappedExceptionTransactionHubListener::WrappedExceptionTransactionHubListener(GroupedAssetTransactions::Listener *listener) :
 				_listener(listener) {
 		}
 
-		void WrappedExceptionTransactionHubListener::balanceChanged(const uint256 &asset, uint64_t balance) {
+		void WrappedExceptionTransactionHubListener::balanceChanged(const uint256 &asset, const BigInt &balance) {
 			try {
 				_listener->balanceChanged(asset, balance);
 			}
@@ -459,7 +459,7 @@ namespace Elastos {
 
 		void WrappedExceptionTransactionHubListener::onTxAdded(const TransactionPtr &transaction) {
 			try {
-				return _listener->onTxAdded(transaction);
+				_listener->onTxAdded(transaction);
 			}
 			catch (std::exception ex) {
 				Log::error("Wallet callback (onTxAdded) error: {}", ex.what());
@@ -483,11 +483,11 @@ namespace Elastos {
 			}
 		}
 
-		void WrappedExceptionTransactionHubListener::onTxDeleted(
-				const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan) {
+		void WrappedExceptionTransactionHubListener::onTxDeleted(const std::string &hash, bool notifyUser,
+																 bool recommendRescan) {
 
 			try {
-				_listener->onTxDeleted(hash, assetID, notifyUser, recommendRescan);
+				_listener->onTxDeleted(hash, notifyUser, recommendRescan);
 			}
 			catch (std::exception ex) {
 				Log::error("Wallet callback (onTxDeleted) error: {}", ex.what());
@@ -498,13 +498,13 @@ namespace Elastos {
 		}
 
 		WrappedExecutorTransactionHubListener::WrappedExecutorTransactionHubListener(
-				AssetTransactions::Listener *listener,
+				GroupedAssetTransactions::Listener *listener,
 				Executor *executor) :
 				_listener(listener),
 				_executor(executor) {
 		}
 
-		void WrappedExecutorTransactionHubListener::balanceChanged(const uint256 &asset, uint64_t balance) {
+		void WrappedExecutorTransactionHubListener::balanceChanged(const uint256 &asset, const BigInt &balance) {
 			_executor->Execute(Runnable([this, asset, balance]() -> void {
 				try {
 					_listener->balanceChanged(asset, balance);
@@ -548,10 +548,10 @@ namespace Elastos {
 		}
 
 		void WrappedExecutorTransactionHubListener::onTxDeleted(
-				const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan) {
-			_executor->Execute(Runnable([this, hash, assetID, notifyUser, recommendRescan]() -> void {
+				const std::string &hash, bool notifyUser, bool recommendRescan) {
+			_executor->Execute(Runnable([this, hash, notifyUser, recommendRescan]() -> void {
 				try {
-					_listener->onTxDeleted(hash, assetID, notifyUser, recommendRescan);
+					_listener->onTxDeleted(hash, notifyUser, recommendRescan);
 				}
 				catch (std::exception ex) {
 					Log::error("Wallet callback (onTxDeleted) error: {}", ex.what());

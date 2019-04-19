@@ -13,6 +13,7 @@
 #include <Interface/IMainchainSubWallet.h>
 #include <Interface/IIdChainSubWallet.h>
 #include <Interface/ISidechainSubWallet.h>
+#include <Interface/ITokenchainSubWallet.h>
 #include <Interface/IIdAgent.h>
 #include <spdlog/logger.h>
 #include <spdlog/spdlog.h>
@@ -20,9 +21,11 @@
 using namespace Elastos::ElaWallet;
 
 static std::string memo = "";
+static std::string separator = "===========================================================";
 static const std::string gMasterWalletID = "WalletID";
 static const std::string gMainchainSubWalletID = "ELA";
-static const std::string gSidechainSubWalletID = "IdChain";
+static const std::string gIDchainSubWalletID = "IdChain";
+static const std::string gTokenchainSubWalletID = "TokenChain";
 static const std::string rootPath = "Data";
 static const std::string payPasswd = "s12345678";
 static uint64_t feePerKB = 10000;
@@ -30,6 +33,9 @@ static uint64_t feePerKB = 10000;
 static std::shared_ptr<spdlog::logger> logger = spdlog::stdout_color_mt("sample");;
 static bool IDChainSyncSucceed = false;
 static bool ELASyncSucceed = false;
+static bool TokenSyncSucceed = false;
+
+MasterWalletManager *manager = nullptr;
 
 class SubWalletCallback : public ISubWalletCallback {
 public:
@@ -53,8 +59,10 @@ public:
 			if (_walletID.find(gMainchainSubWalletID) != std::string::npos) {
 
 				ELASyncSucceed = true;
-			} else if (_walletID.find(gSidechainSubWalletID) != std::string::npos) {
+			} else if (_walletID.find(gIDchainSubWalletID) != std::string::npos) {
 				IDChainSyncSucceed = true;
+			} else if (_walletID.find(gTokenchainSubWalletID) != std::string::npos) {
+				TokenSyncSucceed = true;
 			}
 		}
 	}
@@ -63,7 +71,7 @@ public:
 		logger->debug("{} OnBlockSyncStopped", _walletID);
 	}
 
-	virtual void OnBalanceChanged(const std::string &asset, uint64_t balance) {
+	virtual void OnBalanceChanged(const std::string &asset, const std::string &balance) {
 		logger->debug("{} OnBalanceChanged ----> {} = {}", _walletID, asset, balance);
 	}
 
@@ -80,14 +88,14 @@ private:
 
 };
 
-static IMasterWallet *NewWalletWithMnemonic(MasterWalletManager *manager) {
+static IMasterWallet *NewWalletWithMnemonic() {
 	const std::string phrasePassword = "";
 	const std::string mnemonic = manager->GenerateMnemonic("english");
 	logger->debug("mnemonic -> {}", mnemonic);
 	return manager->CreateMasterWallet(gMasterWalletID, mnemonic, phrasePassword, payPasswd, false);
 }
 
-static IMasterWallet *ImportWalletWithMnemonic(MasterWalletManager *manager) {
+static IMasterWallet *ImportWalletWithMnemonic() {
 	const std::string phrasePassword = "";
 	const std::string mnemonic =
 		"闲 齿 兰 丹 请 毛 训 胁 浇 摄 县 诉";
@@ -95,7 +103,7 @@ static IMasterWallet *ImportWalletWithMnemonic(MasterWalletManager *manager) {
 	return manager->ImportWalletWithMnemonic(gMasterWalletID, mnemonic, phrasePassword, payPasswd, false);
 }
 
-static IMasterWallet *ImportWalletWithKeystore(MasterWalletManager *manager) {
+static IMasterWallet *ImportWalletWithKeystore() {
 	const std::string backupPasswd = "heropoon";
 	nlohmann::json keystore = nlohmann::json::parse(
 		"{\"iv\":\"kha3Vctm00fA1hjOdP0YQA==\",\"v\":1,\"iter\":10000,\"ks\":128,\"ts\":64,\"mode\":\"ccm\","
@@ -121,7 +129,7 @@ static IMasterWallet *ImportWalletWithKeystore(MasterWalletManager *manager) {
 	return manager->ImportWalletWithKeystore(gMasterWalletID, keystore, backupPasswd, payPasswd);
 }
 
-static IMasterWallet *NewReadOnlyMultiSignWallet(MasterWalletManager *manager) {
+static IMasterWallet *NewReadOnlyMultiSignWallet() {
 	nlohmann::json coSigners = nlohmann::json::parse(
 		"[\"03FC8B9408A7C5AE6F8109BA97CE5429C1CD1F09C0655E4EC05FC0649754E4FB6C\","
 		" \"02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5\","
@@ -130,7 +138,7 @@ static IMasterWallet *NewReadOnlyMultiSignWallet(MasterWalletManager *manager) {
 	return manager->CreateMultiSignMasterWallet(gMasterWalletID, coSigners, 3);
 }
 
-static IMasterWallet *NewMultiSignWalletWithMnemonic(MasterWalletManager *manager) {
+static IMasterWallet *NewMultiSignWalletWithMnemonic() {
 	const std::string mnemonic =
 		"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 	const std::string phrasePassword = "";
@@ -142,7 +150,7 @@ static IMasterWallet *NewMultiSignWalletWithMnemonic(MasterWalletManager *manage
 	return manager->CreateMultiSignMasterWallet(gMasterWalletID, mnemonic, phrasePassword, payPasswd, coSigners, 3);
 }
 
-static IMasterWallet *NewMultiSignWalletWithPrvKey(MasterWalletManager *manager) {
+static IMasterWallet *NewMultiSignWalletWithPrvKey() {
 	nlohmann::json coSigners = nlohmann::json::parse(
 		"[\"02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5\","
 		" \"02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D\","
@@ -151,8 +159,7 @@ static IMasterWallet *NewMultiSignWalletWithPrvKey(MasterWalletManager *manager)
 	return manager->CreateMultiSignMasterWallet(gMasterWalletID, privKey, payPasswd, coSigners, 3);
 }
 
-static ISubWallet *GetSubWallet(MasterWalletManager *manager,
-						 const std::string &masterWalletID, const std::string &subWalletID) {
+static ISubWallet *GetSubWallet(const std::string &masterWalletID, const std::string &subWalletID) {
 	IMasterWallet *masterWallet = manager->GetWallet(masterWalletID);
 	if (nullptr == masterWallet) {
 		return nullptr;
@@ -175,24 +182,32 @@ static void PublishTransaction(ISubWallet *subWallet, const nlohmann::json &tx) 
 	logger->debug("published tx result -> {}", result.dump());
 }
 
-static void Transafer(MasterWalletManager *manager,
-			   const std::string &masterWalletID, const std::string &subWalletID,
-			   const std::string &from, const std::string &to, uint64_t amount) {
+static void Transafer(const std::string &masterWalletID, const std::string &subWalletID,
+					  const std::string &from, const std::string &to, uint64_t amount,
+					  const std::string &assetID = "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0") {
+	nlohmann::json tx;
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
 
-	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, subWalletID);
+	if (subWalletID == gTokenchainSubWalletID) {
+		ITokenchainSubWallet *tokenSubWallet = dynamic_cast<ITokenchainSubWallet *>(subWallet);
+		tx = tokenSubWallet->CreateTransaction(from, to, std::to_string(amount), memo, assetID, "transafer remark");
+	} else {
+		tx = subWallet->CreateTransaction(from, to, amount, memo, "transafer remark");
+	}
 
-	nlohmann::json tx = subWallet->CreateTransaction(from, to, amount, memo, "transafer remark");
-
+	logger->debug("tx after created = {}", tx.dump());
 	uint64_t fee = subWallet->CalculateTransactionFee(tx, feePerKB);
+	logger->debug("fee = {}", fee);
+
 	tx = subWallet->UpdateTransactionFee(tx, fee, from);
+	logger->debug("tx after fee = {}", tx.dump());
 
 	PublishTransaction(subWallet, tx);
 }
 
-static void Vote(MasterWalletManager *manager,
-				 const std::string &masterWalletID, const std::string &subWalletID,
+static void Vote(const std::string &masterWalletID, const std::string &subWalletID,
 				 uint64_t stake, const nlohmann::json &publicKeys) {
-	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, subWalletID);
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
 
 	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
 	if (mainchainSubWallet == nullptr) {
@@ -210,9 +225,8 @@ static void Vote(MasterWalletManager *manager,
 	PublishTransaction(mainchainSubWallet, tx);
 }
 
-static void RegisterProducer(MasterWalletManager *manager,
-							 const std::string &masterWalletID, const std::string &subWalletID) {
-	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, subWalletID);
+static void RegisterProducer(const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
 
 	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
 	if (mainchainSubWallet == nullptr) {
@@ -239,9 +253,8 @@ static void RegisterProducer(MasterWalletManager *manager,
 	PublishTransaction(mainchainSubWallet, tx);
 }
 
-static void UpdateProducer(MasterWalletManager *manager,
-						   const std::string &masterWalletID, const std::string &subWalletID) {
-	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, subWalletID);
+static void UpdateProducer(const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
 
 	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
 	if (mainchainSubWallet == nullptr) {
@@ -267,9 +280,8 @@ static void UpdateProducer(MasterWalletManager *manager,
 	PublishTransaction(mainchainSubWallet, tx);
 }
 
-static void CancelProducer(MasterWalletManager *manager,
-						   const std::string &masterWalletID, const std::string &subWalletID) {
-	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, subWalletID);
+static void CancelProducer(const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
 
 	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
 	if (mainchainSubWallet == nullptr) {
@@ -289,9 +301,8 @@ static void CancelProducer(MasterWalletManager *manager,
 	PublishTransaction(mainchainSubWallet, tx);
 }
 
-static void GetRegisteredProducerInfo(MasterWalletManager *manager,
-									  const std::string &masterWalletID, const std::string &subWalletID) {
-	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, subWalletID);
+static void GetRegisteredProducerInfo(const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
 
 	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
 	if (mainchainSubWallet == nullptr) {
@@ -303,16 +314,15 @@ static void GetRegisteredProducerInfo(MasterWalletManager *manager,
 	logger->debug("registered producer info = {}", info.dump());
 }
 
-static void GetVotedList(MasterWalletManager *manager,
-						 const std::string &masterWalletID, const std::string &subWalletID) {
-	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, subWalletID);
+static void GetVotedList(const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
 	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
 
 	logger->debug("voted list = {}", mainchainSubWallet->GetVotedProducerList().dump());
 }
 
-static void RetrieveDeposit(MasterWalletManager *manager, const std::string &masterWalletID, const std::string &subWalletID) {
-	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, subWalletID);
+static void RetrieveDeposit(const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
 
 	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
 	if (mainchainSubWallet == nullptr) {
@@ -325,11 +335,10 @@ static void RetrieveDeposit(MasterWalletManager *manager, const std::string &mas
 	PublishTransaction(mainchainSubWallet, tx);
 }
 
-static void Deposit(MasterWalletManager *manager,
-					const std::string &fromMasterWalletID, const std::string &fromSubWalletID,
+static void Deposit(const std::string &fromMasterWalletID, const std::string &fromSubWalletID,
 					const std::string &toMasterWalletID, const std::string &toSubWalletID,
 					const std::string &from, const std::string &sidechainAddress, uint64_t amount) {
-	ISubWallet *fromSubWallet = GetSubWallet(manager, fromMasterWalletID, fromSubWalletID);
+	ISubWallet *fromSubWallet = GetSubWallet(fromMasterWalletID, fromSubWalletID);
 	if (fromSubWallet == nullptr) {
 		logger->error("[{}:{}] subWallet not found", fromMasterWalletID, fromSubWalletID);
 		return ;
@@ -341,7 +350,7 @@ static void Deposit(MasterWalletManager *manager,
 		return ;
 	}
 
-	ISubWallet *toSubWallet = GetSubWallet(manager, toMasterWalletID, toSubWalletID);
+	ISubWallet *toSubWallet = GetSubWallet(toMasterWalletID, toSubWalletID);
 	if (toSubWallet == nullptr) {
 		logger->error("[{}:{}] subWallet not found", toMasterWalletID, toSubWalletID);
 		return;
@@ -366,10 +375,9 @@ static void Deposit(MasterWalletManager *manager,
 	PublishTransaction(fromSubWallet, tx);
 }
 
-static void Withdraw(MasterWalletManager *manager,
-					const std::string &fromMasterWalletID, const std::string &fromSubWalletID,
+static void Withdraw(const std::string &fromMasterWalletID, const std::string &fromSubWalletID,
 					const std::string &from, const std::string &mainchainAddress, uint64_t amount) {
-	ISubWallet *fromSubWallet = GetSubWallet(manager, fromMasterWalletID, fromSubWalletID);
+	ISubWallet *fromSubWallet = GetSubWallet(fromMasterWalletID, fromSubWalletID);
 	if (fromSubWallet == nullptr) {
 		logger->error("[{}:{}] subWallet not found", fromMasterWalletID, fromSubWalletID);
 		return ;
@@ -391,8 +399,7 @@ static void Withdraw(MasterWalletManager *manager,
 	PublishTransaction(sidechainSubWallet, tx);
 }
 
-static void RegisterID(MasterWalletManager *manager,
-					   const std::string &masterWalletID, const std::string &DIDSubWalletID) {
+static void RegisterID(const std::string &masterWalletID, const std::string &DIDSubWalletID) {
 	IMasterWallet *masterWalelt = manager->GetWallet(masterWalletID);
 	if (masterWalelt == nullptr) {
 		logger->error("[{}] master wallet not found", masterWalletID);
@@ -405,7 +412,7 @@ static void RegisterID(MasterWalletManager *manager,
 		return ;
 	}
 
-	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, DIDSubWalletID);
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, DIDSubWalletID);
 	IIdChainSubWallet *DIDSubWallet = dynamic_cast<IIdChainSubWallet *>(subWallet);
 	if (DIDSubWallet == nullptr) {
 		logger->error("[{}:{}] is not instance of IIdChainSubWallet", masterWalletID, DIDSubWalletID);
@@ -435,20 +442,21 @@ static void RegisterID(MasterWalletManager *manager,
 	PublishTransaction(subWallet, tx);
 }
 
-static void InitWallets(MasterWalletManager *manager) {
+static void InitWallets() {
 	std::vector<IMasterWallet *> masterWallets = manager->GetAllMasterWallets();
 	if (masterWallets.size() == 0) {
 		IMasterWallet *masterWallet = nullptr;
-		masterWallet = ImportWalletWithKeystore(manager);
+//		masterWallet = ImportWalletWithKeystore();
 		if (masterWallet == nullptr) {
-//			masterWallet = ImportWalletWithMnemonic(manager);
-			masterWallet = NewWalletWithMnemonic(manager);
-//			masterWallet = NewReadOnlyMultiSignWallet(manager);
-//			masterWallet = NewMultiSignWalletWithMnemonic(manager);
-//			masterWallet = NewMultiSignWalletWithPrvKey(manager);
+			masterWallet = ImportWalletWithMnemonic();
+//			masterWallet = NewWalletWithMnemonic();
+//			masterWallet = NewReadOnlyMultiSignWallet();
+//			masterWallet = NewMultiSignWalletWithMnemonic();
+//			masterWallet = NewMultiSignWalletWithPrvKey();
 
 			masterWallet->CreateSubWallet(gMainchainSubWalletID);
-			masterWallet->CreateSubWallet(gSidechainSubWalletID);
+			masterWallet->CreateSubWallet(gIDchainSubWalletID);
+			masterWallet->CreateSubWallet(gTokenchainSubWalletID);
 		}
 		masterWallets.push_back(masterWallet);
 	}
@@ -466,9 +474,8 @@ static void InitWallets(MasterWalletManager *manager) {
 	}
 }
 
-static void GetAllTxSummary(MasterWalletManager *manager,
-							const std::string &masterWalletID, const std::string &subWalletID) {
-	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, subWalletID);
+static void GetAllTxSummary(const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
 	nlohmann::json txSummary = subWallet->GetAllTransaction(0, 500, "");
 	logger->debug("[{}:{}] all tx -> {}", masterWalletID, subWalletID, txSummary.dump());
 
@@ -479,105 +486,152 @@ static void GetAllTxSummary(MasterWalletManager *manager,
 	}
 }
 
-static void GetBalance(MasterWalletManager *manager,
-					   const std::string &masterWalletID, const std::string &subWalletID) {
-	ISubWallet *subWallet = GetSubWallet(manager, masterWalletID, subWalletID);
+static void GetBalance(const std::string &masterWalletID, const std::string &subWalletID,
+					   const std::string &assetID = "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0") {
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
 
-	logger->debug("{}:{} balance -> {}", masterWalletID, subWalletID, subWallet->GetBalance());
-	logger->debug("{}:{} balance info -> {}", masterWalletID, subWalletID, subWallet->GetBalanceInfo().dump());
+	if (subWalletID == gTokenchainSubWalletID) {
+		ITokenchainSubWallet *tokenSubWallet = dynamic_cast<ITokenchainSubWallet *>(subWallet);
+		logger->debug("{}:{} balance -> {}", masterWalletID, subWalletID, tokenSubWallet->GetBalance(assetID));
+		logger->debug("{}:{} balance info {}", masterWalletID, subWalletID, tokenSubWallet->GetBalanceInfo(assetID).dump());
+	} else {
+		logger->debug("{}:{} balance -> {}", masterWalletID, subWalletID, subWallet->GetBalance());
+		logger->debug("{}:{} balance info -> {}", masterWalletID, subWalletID, subWallet->GetBalanceInfo().dump());
+	}
+}
+
+static void GetAllSupportedAssets(const std::string &masterWalletID,
+								  const std::string &subWalletID) {
+
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
+	ITokenchainSubWallet *tokenSubWallet = dynamic_cast<ITokenchainSubWallet *>(subWallet);
+	logger->debug("{}:{} supported assets -> {}", masterWalletID, subWalletID, tokenSubWallet->GetAllSupportedAssets().dump());
+}
+
+static void ELATest() {
+	static bool transferDone = true, depositDone = true;
+	static bool voteDone = true, registerProducer = true, updateProducer = true, cancelProducer = true, retrieveDeposit = true;
+
+	logger->debug("ELA {}", separator);
+	GetAllTxSummary(gMasterWalletID, gMainchainSubWalletID);
+	GetBalance(gMasterWalletID, gMainchainSubWalletID);
+	GetVotedList(gMasterWalletID, gMainchainSubWalletID);
+	GetRegisteredProducerInfo(gMasterWalletID, gMainchainSubWalletID);
+
+	if (!transferDone) {
+		Transafer(gMasterWalletID, gMainchainSubWalletID,
+				  "", "EYMVuGs1FscpgmghSzg243R6PzPiszrgj7", 100000000);
+		transferDone = true;
+	}
+
+	if (!depositDone) {
+		Deposit(gMasterWalletID, gMainchainSubWalletID, gMasterWalletID, gIDchainSubWalletID,
+				"", "EYMVuGs1FscpgmghSzg243R6PzPiszrgj7", 100000000);
+		depositDone = true;
+	}
+
+	if (!voteDone) {
+		Vote(gMasterWalletID, gMainchainSubWalletID, 100000000,
+			 {"03b273e27a6820b55fe5a6b7a445814f7c1db300e961661aaed3a06cbdfd3dca5d"});
+		voteDone = true;
+	}
+
+	if (!registerProducer) {
+		RegisterProducer(gMasterWalletID, gMainchainSubWalletID);
+		registerProducer = true;
+	}
+
+	if (!updateProducer) {
+		UpdateProducer(gMasterWalletID, gMainchainSubWalletID);
+		updateProducer = true;
+	}
+
+	if (!cancelProducer) {
+		CancelProducer(gMasterWalletID, gMainchainSubWalletID);
+		cancelProducer = true;
+	}
+
+	if (!retrieveDeposit) {
+		RetrieveDeposit(gMasterWalletID, gMainchainSubWalletID);
+		retrieveDeposit = true;
+	}
+
+	logger->debug("ELA {}", separator);
+}
+
+static void TokenTest() {
+	static bool transferDone = true, withdrawDone = true;
+
+	logger->debug("token {}", separator);
+	GetAllTxSummary(gMasterWalletID, gTokenchainSubWalletID);
+	GetBalance(gMasterWalletID, gTokenchainSubWalletID);
+	GetAllSupportedAssets(gMasterWalletID, gTokenchainSubWalletID);
+
+	if (!transferDone) {
+		Transafer(gMasterWalletID, gTokenchainSubWalletID,
+				  "", "EYMVuGs1FscpgmghSzg243R6PzPiszrgj7", 100000000);
+		transferDone = true;
+	}
+	if (!withdrawDone) {
+		Withdraw(gMasterWalletID, gTokenchainSubWalletID,
+				 "", "EYMVuGs1FscpgmghSzg243R6PzPiszrgj7", 100000000);
+		withdrawDone = true;
+	}
+	logger->debug("token {}", separator);
+}
+
+static void DIDTest() {
+	static bool transferDone = true, withdrawDone = true, registerID = true;
+
+	logger->debug("DID {}", separator);
+	GetAllTxSummary(gMasterWalletID, gIDchainSubWalletID);
+	GetBalance(gMasterWalletID, gIDchainSubWalletID);
+
+	if (!transferDone) {
+		Transafer(gMasterWalletID, gIDchainSubWalletID,
+				  "", "EYMVuGs1FscpgmghSzg243R6PzPiszrgj7", 100000000);
+		transferDone = true;
+	}
+
+	if (!withdrawDone) {
+		Withdraw(gMasterWalletID, gIDchainSubWalletID,
+				 "", "EYMVuGs1FscpgmghSzg243R6PzPiszrgj7", 100000000);
+		withdrawDone = true;
+	}
+
+	if (!registerID) {
+		RegisterID(gMasterWalletID, gIDchainSubWalletID);
+		registerID = true;
+	}
+	logger->debug("DID {}", separator);
 }
 
 int main(int argc, char *argv[]) {
-
-	bool transferDone = true, depositDone = true, withdrawDone = true, registerID = true;
-	bool voteDone = true, registerProducer = true, updateProducer = true, cancelProducer = true, retrieveDeposit = true;
-
 	logger->set_level(spdlog::level::level_enum::debug);
 	logger->set_pattern("%m-%d %T.%e %P %t %^%L%$ %n %v");
 
-	MasterWalletManager *manager = new MasterWalletManager(rootPath);
+	manager = new MasterWalletManager(rootPath);
 	if (manager == nullptr) {
 		logger->error("MasterWalletManager init fail");
 		return -1;
 	}
 
-	InitWallets(manager);
-
+	InitWallets();
 
 	while(1) {
 		if (ELASyncSucceed) {
-			sleep(20);
-			GetAllTxSummary(manager, gMasterWalletID, gMainchainSubWalletID);
-			GetBalance(manager, gMasterWalletID, gMainchainSubWalletID);
-
-			if (!transferDone) {
-				Transafer(manager, gMasterWalletID, gMainchainSubWalletID,
-						  "", "EYMVuGs1FscpgmghSzg243R6PzPiszrgj7", 100000000);
-				transferDone = true;
-			}
-
-			if (!depositDone) {
-				Deposit(manager, gMasterWalletID, gMainchainSubWalletID, gMasterWalletID, gSidechainSubWalletID,
-						"", "EYMVuGs1FscpgmghSzg243R6PzPiszrgj7", 100000000);
-				depositDone = true;
-			}
-
-			if (!voteDone) {
-				Vote(manager, gMasterWalletID, gMainchainSubWalletID, 100000000,
-					 {"03b273e27a6820b55fe5a6b7a445814f7c1db300e961661aaed3a06cbdfd3dca5d"});
-				voteDone = true;
-			}
-
-			if (!registerProducer) {
-				RegisterProducer(manager, gMasterWalletID, gMainchainSubWalletID);
-				registerProducer = true;
-			}
-
-			if (!updateProducer) {
-				UpdateProducer(manager, gMasterWalletID, gMainchainSubWalletID);
-				updateProducer = true;
-			}
-
-			if (!cancelProducer) {
-				CancelProducer(manager, gMasterWalletID, gMainchainSubWalletID);
-				cancelProducer = true;
-			}
-
-			if (!retrieveDeposit) {
-				RetrieveDeposit(manager, gMasterWalletID, gMainchainSubWalletID);
-				retrieveDeposit = true;
-			}
-
-			GetVotedList(manager, gMasterWalletID, gMainchainSubWalletID);
-			GetRegisteredProducerInfo(manager, gMasterWalletID, gMainchainSubWalletID);
-			sleep(60);
+			ELATest();
 		}
+
+		if (TokenSyncSucceed) {
+			TokenTest();
+		}
+
 		if (IDChainSyncSucceed) {
-			sleep(10);
-			GetAllTxSummary(manager, gMasterWalletID, gSidechainSubWalletID);
-			GetBalance(manager, gMasterWalletID, gSidechainSubWalletID);
-
-			if (!transferDone) {
-				Transafer(manager, gMasterWalletID, gSidechainSubWalletID,
-						  "", "EYMVuGs1FscpgmghSzg243R6PzPiszrgj7", 100000000);
-				transferDone = true;
-			}
-
-			if (!withdrawDone) {
-				Withdraw(manager, gMasterWalletID, gSidechainSubWalletID,
-						 "", "EYMVuGs1FscpgmghSzg243R6PzPiszrgj7", 100000000);
-				withdrawDone = true;
-			}
-
-			if (!registerID) {
-				RegisterID(manager, gMasterWalletID, gSidechainSubWalletID);
-				registerID = true;
-			}
-
-			sleep(60);
-		} else {
-			sleep(1);
+			DIDTest();
 		}
+
+		sleep(60);
 	}
 
 	return 0;

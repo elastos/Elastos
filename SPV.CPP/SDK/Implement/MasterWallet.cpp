@@ -7,6 +7,7 @@
 #include "MainchainSubWallet.h"
 #include "SubWallet.h"
 #include "MasterWallet.h"
+#include "TokenchainSubWallet.h"
 
 #include <SDK/Plugin/Transaction/Payload/PayloadRegisterIdentification.h>
 #include <SDK/Common/Utils.h>
@@ -339,6 +340,8 @@ namespace Elastos {
 					return new SidechainSubWallet(fixedInfo, chainParams, config.PluginType, parent);
 				case Idchain:
 					return new IdChainSubWallet(fixedInfo, chainParams, config.PluginType, parent);
+				case Tokenchain:
+					return new TokenchainSubWallet(fixedInfo, chainParams, config.PluginType, parent);
 				case Normal:
 				default:
 					return new SubWallet(fixedInfo, chainParams, config.PluginType, parent);

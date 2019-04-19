@@ -2,7 +2,6 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "SubWalletCallback.h"
 #include "IdChainSubWallet.h"
 #include "MasterWallet.h"
 
@@ -78,9 +77,7 @@ namespace Elastos {
 							  [&transaction, &txHash](ISubWalletCallback *callback) {
 								  const PayloadRegisterIdentification *payload = static_cast<const PayloadRegisterIdentification *>(
 									  transaction->GetPayload());
-								  callback->OnTransactionStatusChanged(txHash,
-										  SubWalletCallback::convertToString(SubWalletCallback::Added),
-																	   payload->ToJson(0), 0);
+								  callback->OnTransactionStatusChanged(txHash, "Added", payload->ToJson(0), 0);
 							  });
 			} else {
 				SubWallet::onTxAdded(transaction);
@@ -94,32 +91,15 @@ namespace Elastos {
 				uint32_t confirm = blockHeight >= transaction->GetBlockHeight() ? blockHeight -
 					transaction->GetBlockHeight() + 1 : 0;
 
-				std::string reversedId(hash.rbegin(), hash.rend());
 				std::for_each(_callbacks.begin(), _callbacks.end(),
-							  [&reversedId, &confirm, &transaction, this](ISubWalletCallback *callback) {
+							  [&hash, &confirm, &transaction, this](ISubWalletCallback *callback) {
 
 								  const PayloadRegisterIdentification *payload = static_cast<const PayloadRegisterIdentification *>(
 									  transaction->GetPayload());
-								  callback->OnTransactionStatusChanged(reversedId, SubWalletCallback::convertToString(
-										  SubWalletCallback::Updated), payload->ToJson(0), confirm);
+								  callback->OnTransactionStatusChanged(hash, "Updated", payload->ToJson(0), confirm);
 							  });
 			} else {
 				SubWallet::onTxUpdated(hash, blockHeight, timeStamp);
-			}
-		}
-
-		void IdChainSubWallet::onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser,
-										   bool recommendRescan) {
-			TransactionPtr transaction = _walletManager->getWallet()->TransactionForHash(uint256(hash));
-			if (transaction != nullptr && transaction->GetTransactionType() == Transaction::RegisterIdentification) {
-				std::for_each(_callbacks.begin(), _callbacks.end(),
-							  [&hash, &notifyUser, &recommendRescan, &transaction, this](
-									  ISubWalletCallback *callback) {
-
-								  callback->OnTxDeleted(hash, notifyUser, recommendRescan);
-							  });
-			} else {
-				SubWallet::onTxDeleted(hash, assetID, notifyUser, recommendRescan);
 			}
 		}
 

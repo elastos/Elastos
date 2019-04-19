@@ -19,6 +19,8 @@ namespace Elastos {
 					return Sidechain;
 				else if (str == "Idchain")
 					return Idchain;
+				else if (str == "Tokenchain")
+					return Tokenchain;
 				else
 					return Normal;
 			}

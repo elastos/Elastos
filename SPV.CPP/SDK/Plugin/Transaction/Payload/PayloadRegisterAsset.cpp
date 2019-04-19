@@ -11,9 +11,12 @@ namespace Elastos {
 
 		PayloadRegisterAsset::PayloadRegisterAsset() :
 				_amount(0) {
-			_asset.SetName("ELA");
-			_asset.SetPrecision(0x08);
-			_asset.SetAssetType(Asset::AssetType::Token);
+		}
+
+		PayloadRegisterAsset::PayloadRegisterAsset(const Asset &asset, uint64_t amount, const uint168 &controller) :
+			_amount(amount),
+			_asset(asset) {
+			_controller = controller;
 		}
 
 		PayloadRegisterAsset::PayloadRegisterAsset(const PayloadRegisterAsset &payload) {
@@ -24,40 +27,12 @@ namespace Elastos {
 
 		}
 
-		void PayloadRegisterAsset::SetAsset(const Asset &asset) {
-			_asset = asset;
-		}
-
-		Asset PayloadRegisterAsset::GetAsset() const {
-			return _asset;
-		}
-
-		void PayloadRegisterAsset::SetAmount(uint64_t amount) {
-			_amount = amount;
-		}
-
-		uint64_t PayloadRegisterAsset::GetAmount() const {
-			return _amount;
-		}
-
-		void PayloadRegisterAsset::SetController(const uint168 &controller) {
-			_controller = controller;
-		}
-
-		const uint168 &PayloadRegisterAsset::GetController() const {
-			return _controller;
-		}
-
 		bool PayloadRegisterAsset::IsValid() const {
-			if(_asset.GetPrecision() < Asset::MinPrecidion || _asset.GetPrecision() > Asset::MinPrecidion) {
-				return false;
-			}
-			return _amount % (uint64_t)pow(10, 8 - _asset.GetPrecision()) != 0;
+			return (_asset.GetPrecision() <= Asset::MaxPrecision);
 		}
 
 		void PayloadRegisterAsset::Serialize(ByteStream &ostream, uint8_t version) const {
 			_asset.Serialize(ostream);
-
 			ostream.WriteBytes(&_amount, sizeof(_amount));
 			ostream.WriteBytes(_controller);
 		}

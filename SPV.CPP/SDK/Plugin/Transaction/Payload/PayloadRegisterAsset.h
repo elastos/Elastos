@@ -16,21 +16,35 @@ namespace Elastos {
 		public:
 			PayloadRegisterAsset();
 
+			PayloadRegisterAsset(const Asset &asset, uint64_t amount, const uint168 &controller);
+
 			PayloadRegisterAsset(const PayloadRegisterAsset &payload);
 
 			~PayloadRegisterAsset();
 
-			void SetAsset(const Asset &asset);
+			void SetAsset(const Asset &asset) {
+				_asset = asset;
+			}
 
-			Asset GetAsset() const;
+			const Asset &GetAsset() const {
+				return _asset;
+			}
 
-			void SetAmount(uint64_t amount);
+			void SetAmount(uint64_t amount) {
+				_amount = amount;
+			}
 
-			uint64_t GetAmount() const;
+			uint64_t GetAmount() const {
+				return _amount;
+			}
 
-			void SetController(const uint168 &controller);
+			void SetController(const uint168 &controller) {
+				_controller = controller;
+			}
 
-			const uint168 &GetController() const;
+			const uint168 &GetController() const {
+				return _controller;
+			}
 
 			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 

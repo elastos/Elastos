@@ -24,7 +24,7 @@ namespace Elastos {
 
 		class Transaction;
 
-		class SubWallet : public virtual ISubWallet, public AssetTransactions::Listener, public PeerManager::Listener {
+		class SubWallet : public virtual ISubWallet, public GroupedAssetTransactions::Listener, public PeerManager::Listener {
 		public:
 			typedef boost::shared_ptr<SpvService> WalletManagerPtr;
 
@@ -105,20 +105,19 @@ namespace Elastos {
 					const std::string &message,
 					const std::string &signature);
 
-			virtual nlohmann::json GetAssetDetails(
+			virtual nlohmann::json GetAssetInfo(
 					const std::string &assetID) const;
 
 			virtual std::string GetPublicKey() const;
 
 		protected: //implement Wallet::Listener
-			virtual void balanceChanged(const uint256 &asset, uint64_t balance);
+			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
 
 			virtual void onTxAdded(const TransactionPtr &transaction);
 
 			virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp);
 
-			virtual void
-			onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan);
+			virtual void onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan);
 
 		protected: //implement PeerManager::Listener
 			virtual void syncStarted();
@@ -158,7 +157,7 @@ namespace Elastos {
 			virtual TransactionPtr CreateTx(
 				const std::string &fromAddress,
 				const std::string &toAddress,
-				uint64_t amount,
+				const BigInt &amount,
 				const uint256 &assetID,
 				const std::string &memo,
 				const std::string &remark,

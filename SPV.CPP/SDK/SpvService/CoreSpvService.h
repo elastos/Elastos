@@ -18,7 +18,7 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class CoreSpvService :
-				public AssetTransactions::Listener,
+				public GroupedAssetTransactions::Listener,
 				public PeerManager::Listener {
 
 		public:
@@ -33,7 +33,7 @@ namespace Elastos {
 			virtual const PeerManagerPtr &getPeerManager();
 
 		public: //override from Wallet
-			virtual void balanceChanged(const uint256 &asset, uint64_t balance);
+			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
 
 			// func txAdded(_ tx: BRTxRef)
 			virtual void onTxAdded(const TransactionPtr &transaction);
@@ -87,7 +87,7 @@ namespace Elastos {
 
 			virtual const PeerManagerListenerPtr &createPeerManagerListener();
 
-			typedef boost::shared_ptr<AssetTransactions::Listener> WalletListenerPtr;
+			typedef boost::shared_ptr<GroupedAssetTransactions::Listener> WalletListenerPtr;
 
 			virtual const WalletListenerPtr &createWalletListener();
 
@@ -175,37 +175,37 @@ namespace Elastos {
 		};
 
 		class WrappedExceptionTransactionHubListener :
-				public AssetTransactions::Listener {
+				public GroupedAssetTransactions::Listener {
 		public:
-			WrappedExceptionTransactionHubListener(AssetTransactions::Listener *listener);
+			WrappedExceptionTransactionHubListener(GroupedAssetTransactions::Listener *listener);
 
-			virtual void balanceChanged(const uint256 &asset, uint64_t balance);
+			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
 
 			virtual void onTxAdded(const TransactionPtr &transaction);
 
 			virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp);
 
-			virtual void onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan);
+			virtual void onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan);
 
 		private:
-			AssetTransactions::Listener *_listener;
+			GroupedAssetTransactions::Listener *_listener;
 		};
 
 		class WrappedExecutorTransactionHubListener :
-				public AssetTransactions::Listener {
+				public GroupedAssetTransactions::Listener {
 		public:
-			WrappedExecutorTransactionHubListener(AssetTransactions::Listener *listener, Executor *executor);
+			WrappedExecutorTransactionHubListener(GroupedAssetTransactions::Listener *listener, Executor *executor);
 
-			virtual void balanceChanged(const uint256 &asset, uint64_t balance);
+			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
 
 			virtual void onTxAdded(const TransactionPtr &transaction);
 
 			virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp);
 
-			virtual void onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan);
+			virtual void onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan);
 
 		private:
-			AssetTransactions::Listener *_listener;
+			GroupedAssetTransactions::Listener *_listener;
 			Executor *_executor;
 		};
 

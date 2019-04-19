@@ -52,7 +52,7 @@ namespace Elastos {
 		}
 
 		Transaction::Transaction(const Transaction &tx) {
-			operator=(tx);
+			this->operator=(tx);
 		}
 
 		Transaction &Transaction::operator=(const Transaction &orig) {
@@ -598,7 +598,8 @@ namespace Elastos {
 		}
 
 		uint64_t Transaction::GetTxFee(const boost::shared_ptr<TransactionHub> &wallet) {
-			uint64_t fee = 0, inputAmount = 0, outputAmount = 0;
+			uint64_t fee = 0;
+			BigInt inputAmount(0), outputAmount(0);
 
 			for (size_t i = 0; i < _inputs.size(); ++i) {
 				const TransactionPtr &tx = wallet->TransactionForHash(_inputs[i].GetTransctionHash());
@@ -611,7 +612,7 @@ namespace Elastos {
 			}
 
 			if (inputAmount >= outputAmount)
-				fee = inputAmount - outputAmount;
+				fee = (inputAmount - outputAmount).getWord();
 
 			return fee;
 		}
@@ -624,13 +625,15 @@ namespace Elastos {
 			nlohmann::json summary, outputPayload;
 			std::vector<nlohmann::json> outputPayloads;
 			std::string direction = "Received";
-			uint64_t inputAmount = 0, outputAmount = 0, changeAmount = 0, fee = 0;
+			BigInt inputAmount(0), outputAmount(0), changeAmount(0);
+			uint64_t fee = 0;
+			std::map<std::string, BigInt>::iterator it;
 
-			std::map<std::string, uint64_t> inputList;
+			std::map<std::string, BigInt> inputList;
 			for (size_t i = 0; i < _inputs.size(); i++) {
 				TransactionPtr tx = wallet->TransactionForHash(_inputs[i].GetTransctionHash());
 				if (tx) {
-					uint64_t spentAmount = tx->GetOutputs()[_inputs[i].GetIndex()].GetAmount();
+					const BigInt &spentAmount = tx->GetOutputs()[_inputs[i].GetIndex()].GetAmount();
 					addr = tx->GetOutputs()[_inputs[i].GetIndex()].GetAddress().String();
 
 					if (detail) {
@@ -649,14 +652,19 @@ namespace Elastos {
 				}
 			}
 
-			std::map<std::string, uint64_t> outputList;
+			nlohmann::json inputJson;
+			for (it = inputList.begin(); it != inputList.end(); ++it) {
+				inputJson[it->first] = it->second.getDec();
+			}
+
+			std::map<std::string, BigInt> outputList;
 			for (size_t i = 0; i < _outputs.size(); ++i) {
-				uint64_t oAmount = _outputs[i].GetAmount();
+				const BigInt &oAmount = _outputs[i].GetAmount();
 				addr = _outputs[i].GetAddress().String();
 
 				if (_outputs[i].GetType() == TransactionOutput::VoteOutput) {
 					outputPayload = _outputs[i].GetPayload()->ToJson();
-					outputPayload["Amount"] = oAmount;
+					outputPayload["Amount"] = oAmount.getDec();
 					outputPayloads.push_back(outputPayload);
 				}
 
@@ -679,12 +687,22 @@ namespace Elastos {
 				}
 			}
 
+			nlohmann::json outputJson;
+			for (it = outputList.begin(); it != outputList.end(); ++it) {
+				outputJson[it->first] = it->second.getDec();
+			}
+
 			if (direction != "Deposit" && direction == "Sent" && outputAmount == 0) {
 				direction = "Moved";
 			}
 
-			fee = inputAmount > (outputAmount + changeAmount) ? inputAmount - outputAmount - changeAmount : 0;
-			uint64_t amount = 0;
+			if (inputAmount > (outputAmount + changeAmount)) {
+				fee = (inputAmount - outputAmount - changeAmount).getWord();
+			} else {
+				fee = 0;
+			}
+
+			BigInt amount(0);
 			if (direction == "Received") {
 				amount = changeAmount;
 			} else if (direction == "Sent") {
@@ -704,14 +722,14 @@ namespace Elastos {
 			summary["ConfirmStatus"] = confirms <= 6 ? std::to_string(confirms) : "6+";
 			summary["Timestamp"] = GetTimestamp();
 			summary["Direction"] = direction;
-			summary["Amount"] = amount;
+			summary["Amount"] = amount.getDec();
 			summary["Type"] = GetTransactionType();
 			summary["Height"] = GetBlockHeight();
 			if (detail) {
 				summary["Fee"] = fee;
 				summary["Remark"] = GetRemark();
-				summary["Inputs"] = inputList;
-				summary["Outputs"] = outputList;
+				summary["Inputs"] = inputJson;
+				summary["Outputs"] = outputJson;
 				summary["Payload"] = _payload->ToJson(_payloadVersion);
 				summary["OutputPayload"] = outputPayloads;
 

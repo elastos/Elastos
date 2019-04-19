@@ -43,7 +43,7 @@ namespace Elastos {
 
 			size_t GetAllTransactionsCount();
 
-			void RegisterWalletListener(AssetTransactions::Listener *listener);
+			void RegisterWalletListener(GroupedAssetTransactions::Listener *listener);
 
 			void RegisterPeerManagerListener(PeerManager::Listener *listener);
 
@@ -51,16 +51,14 @@ namespace Elastos {
 
 			virtual const WalletPtr &getWallet();
 
-			Asset FindAsset(const std::string &assetID) const;
-
 		public:
-			virtual void balanceChanged(const uint256 &asset, uint64_t balance);
+			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
 
 			virtual void onTxAdded(const TransactionPtr &tx);
 
 			virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp);
 
-			virtual void onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan);
+			virtual void onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan);
 
 		public:
 			virtual void syncStarted();
@@ -102,7 +100,7 @@ namespace Elastos {
 
 			void ResetReconnect();
 
-			void UpdateAssets();
+			void InstallAssets();
 
 		private:
 			DatabaseManager _databaseManager;
@@ -113,7 +111,7 @@ namespace Elastos {
 			boost::asio::io_service _reconnectService;
 			boost::shared_ptr<boost::asio::deadline_timer> _reconnectTimer;
 
-			std::vector<AssetTransactions::Listener *> _walletListeners;
+			std::vector<GroupedAssetTransactions::Listener *> _walletListeners;
 			std::vector<PeerManager::Listener *> _peerManagerListeners;
 		};
 

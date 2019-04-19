@@ -12,7 +12,8 @@ namespace Elastos {
 			Normal = 0,
 			Mainchain,
 			Sidechain,
-			Idchain
+			Idchain,
+			Tokenchain,
 		};
 
 	}

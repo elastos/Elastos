@@ -10,6 +10,8 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+#define TOKEN_ASSET_PRECISION "1000000000000000000"
+
 		class Asset :
 				public ELAMessageSerializable {
 		public:
@@ -21,32 +23,58 @@ namespace Elastos {
 				Unspent = 0x00,
 				Balance = 0x01,
 			};
-			const static short maxPrecision = 8;
-			const static short MinPrecidion = 0;
+			const static uint8_t MaxPrecision = 18;
 		public:
 			Asset();
 
+			Asset(const std::string &name, const std::string &desc, uint8_t precision,
+				  AssetType assetType = Token, AssetRecordType recordType = Unspent);
+
+			Asset(const Asset &asset);
+
 			~Asset();
 
-			void SetName(const std::string &name);
+			Asset &operator=(const Asset &asset);
 
-			std::string GetName() const;
+			void SetName(const std::string &name) {
+				_name = name;
+			}
 
-			void SetDescription(const std::string &desc);
+			const std::string &GetName() const {
+				return _name;
+			}
 
-			std::string GetDescription() const;
+			void SetDescription(const std::string &desc) {
+				_description = desc;
+			}
 
-			void SetAssetType(Asset::AssetType type);
+			const std::string &GetDescription() const {
+				return _description;
+			}
 
-			Asset::AssetType GetAssetType() const;
+			void SetAssetType(Asset::AssetType type) {
+				_assetType = type;
+			}
 
-			void SetAssetRecordType(Asset::AssetRecordType type);
+			Asset::AssetType GetAssetType() const {
+				return _assetType;
+			}
 
-			Asset::AssetRecordType GetAssetRecordType() const;
+			void SetAssetRecordType(Asset::AssetRecordType type) {
+				_recordType = type;
+			}
 
-			void SetPrecision(uint8_t precision);
+			Asset::AssetRecordType GetAssetRecordType() const {
+				return _recordType;
+			}
 
-			uint8_t GetPrecision() const;
+			void SetPrecision(uint8_t precision) {
+				_precision = precision;
+			}
+
+			uint8_t GetPrecision() const {
+				return _precision;
+			}
 
 			virtual void Serialize(ByteStream &ostream) const;
 

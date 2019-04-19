@@ -229,9 +229,9 @@ namespace Elastos {
 			/**
 			 * Get an asset details by specified asset ID
 			 * @param assetID asset hex code from asset hash.
-			 * @return details about asset in json format.
+			 * @return asset info in json format.
 			 */
-			virtual nlohmann::json GetAssetDetails(
+			virtual nlohmann::json GetAssetInfo(
 					const std::string &assetID) const = 0;
 
 			/**

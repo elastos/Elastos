@@ -36,7 +36,8 @@ namespace Elastos {
 
 			for (size_t i = 0; i < tx.size(); i++) {
 				if (tx[i]->IsSigned()) {
-					AddUsedAddrs(tx[i]);
+					for (size_t j = 0; j < tx[i]->GetOutputs().size(); ++j)
+						AddUsedAddrs(tx[i]->GetOutputs()[j].GetAddress());
 				}
 			}
 
@@ -56,12 +57,8 @@ namespace Elastos {
 			return _depositAddress == address;
 		}
 
-		void SubAccount::AddUsedAddrs(const TransactionPtr &tx) {
-			if (tx && !_parent->SingleAddress()) {
-				for (size_t j = 0; j < tx->GetOutputs().size(); j++) {
-					_usedAddrs.insert(tx->GetOutputs()[j].GetAddress());
-				}
-			}
+		void SubAccount::AddUsedAddrs(const Address &address) {
+			_usedAddrs.insert(address);
 		}
 
 		size_t SubAccount::GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool containInternal) const {

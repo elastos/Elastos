@@ -1970,7 +1970,7 @@ namespace Elastos {
 
 			if (!txHashes.empty()) {
 				GetDataParameter getDataParameter(txHashes, {});
-				peer->info("request unrelayed {} tx", txHashes.size());
+				peer->info("request unrelayed tx {}", txHashes.size());
 				for (size_t i = 0; i < txHashes.size(); ++i) {
 					peer->info("tx[{}] {}", i, txHashes[i].GetHex());
 				}

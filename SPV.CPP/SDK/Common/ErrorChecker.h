@@ -7,6 +7,7 @@
 
 #include "Log.h"
 #include "CommonConfig.h"
+#include "BigInt.h"
 
 #include <string>
 #include <boost/filesystem.hpp>
@@ -68,6 +69,7 @@ namespace Elastos {
 				TxPending = 20049,
 				InvalidLocalStore = 20050,
 				MasterWalletNotExist = 20051,
+				InvalidAsset = 20052,
 				Other = 29999,
 			} Code;
 		}
@@ -89,11 +91,11 @@ namespace Elastos {
 				return j;
 			}
 
-			static nlohmann::json MakeErrorJson(Error::Code err, const std::string &msg, uint64_t data) {
+			static nlohmann::json MakeErrorJson(Error::Code err, const std::string &msg, const BigInt &data) {
 				nlohmann::json j;
 				j["Code"] = err;
 				j["Message"] = msg;
-				j["Data"] = data;
+				j["Data"] = data.getDec();
 				return j;
 			}
 
@@ -128,7 +130,7 @@ namespace Elastos {
 				}
 			}
 
-			static void CheckCondition(bool condition, Error::Code err, const std::string &msg, uint64_t data,
+			static void CheckCondition(bool condition, Error::Code err, const std::string &msg, const BigInt &data,
 									   Exception::Type type = Exception::LogicError) {
 				if (condition) {
 					nlohmann::json errJson = MakeErrorJson(err, msg, data);

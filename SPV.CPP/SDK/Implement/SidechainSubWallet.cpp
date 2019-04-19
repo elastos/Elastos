@@ -4,7 +4,6 @@
 
 #include "SidechainSubWallet.h"
 
-#include <SDK/Common/Utils.h>
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadTransferCrossChainAsset.h>
 
@@ -58,51 +57,6 @@ namespace Elastos {
 
 		std::string SidechainSubWallet::GetGenesisAddress() const {
 			return _info.GetGenesisAddress();
-		}
-
-		nlohmann::json SidechainSubWallet::GetBasicInfo() const {
-			nlohmann::json j;
-			j["Type"] = "Sidechain";
-			j["Account"] = _subAccount->GetBasicInfo();
-			return j;
-		}
-
-		nlohmann::json
-		SidechainSubWallet::CreateTransaction(const std::string &fromAddress, const std::string &toAddress,
-											  uint64_t amount, const std::string &assetID, const std::string &memo,
-											  const std::string &remark) {
-			uint256 asset = uint256(assetID);
-			TransactionPtr tx = CreateTx(fromAddress, toAddress, amount, asset, memo, remark);
-			return tx->ToJson();
-		}
-
-		nlohmann::json SidechainSubWallet::GetBalanceInfo(const std::string &assetID) const {
-			return _walletManager->getWallet()->GetBalanceInfo();
-		}
-
-		uint64_t SidechainSubWallet::GetBalance(const std::string &assetID) const {
-			return _walletManager->getWallet()->GetBalance(uint256(assetID), AssetTransactions::Total);
-		}
-
-		uint64_t SidechainSubWallet::GetBalanceWithAddress(const std::string &assetID, const std::string &address) const {
-			return _walletManager->getWallet()->GetBalanceWithAddress(uint256(assetID), address, AssetTransactions::Total);
-		}
-
-		nlohmann::json SidechainSubWallet::GetAllSupportedAssets() const {
-			return _walletManager->getWallet()->GetAllSupportedAssets();
-		}
-
-		nlohmann::json SidechainSubWallet::GetAllVisibleAssets() const {
-			return _info.VisibleAssetsToJson();
-		}
-
-		void SidechainSubWallet::SetVisibleAssets(const nlohmann::json &assets) {
-			nlohmann::json existAssets;
-			std::for_each(assets.begin(), assets.end(), [&existAssets, this](const nlohmann::json &asset){
-				if (_walletManager->getWallet()->ContainsAsset(asset.get<std::string>()))
-					existAssets.push_back(asset);
-			});
-			_info.VisibleAssetsFromJson(existAssets);
 		}
 
 	}

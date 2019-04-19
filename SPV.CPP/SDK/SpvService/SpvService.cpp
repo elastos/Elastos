@@ -105,9 +105,9 @@ namespace Elastos {
 		}
 
 		//override Wallet listener
-		void SpvService::balanceChanged(const uint256 &asset, uint64_t balance) {
+		void SpvService::balanceChanged(const uint256 &asset, const BigInt &balance) {
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&asset, &balance](AssetTransactions::Listener *listener) {
+						  [&asset, &balance](GroupedAssetTransactions::Listener *listener) {
 							  listener->balanceChanged(asset, balance);
 						  });
 		}
@@ -126,21 +126,8 @@ namespace Elastos {
 									   tx->GetRemark(), txHash);
 			_databaseManager.PutTransaction(ISO, txEntity);
 
-			if (tx->GetTransactionType() == Transaction::RegisterAsset) {
-				PayloadRegisterAsset *registerAsset = static_cast<PayloadRegisterAsset *>(tx->GetPayload());
-
-				Asset asset = registerAsset->GetAsset();
-				std::string assetID = asset.GetHash().GetHex();
-				ByteStream stream;
-				asset.Serialize(stream);
-				AssetEntity assetEntity(assetID, registerAsset->GetAmount(), stream.GetBytes(), txHash);
-				_databaseManager.PutAsset(ISO, assetEntity);
-
-				UpdateAssets();
-			}
-
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&tx](AssetTransactions::Listener *listener) {
+						  [&tx](GroupedAssetTransactions::Listener *listener) {
 							  listener->onTxAdded(tx);
 						  });
 		}
@@ -153,23 +140,32 @@ namespace Elastos {
 			txEntity.txHash = hash;
 			_databaseManager.UpdateTransaction(ISO, txEntity);
 
+			TransactionPtr tx = _wallet->TransactionForHash(uint256(hash));
+			if (tx != nullptr && blockHeight != TX_UNCONFIRMED && tx->GetTransactionType() == Transaction::RegisterAsset) {
+				PayloadRegisterAsset *registerAsset = static_cast<PayloadRegisterAsset *>(tx->GetPayload());
+
+				Asset asset = registerAsset->GetAsset();
+				std::string assetID = asset.GetHash().GetHex();
+				ByteStream stream;
+				asset.Serialize(stream);
+				AssetEntity assetEntity(assetID, registerAsset->GetAmount(), stream.GetBytes(), hash);
+				_databaseManager.PutAsset(ISO, assetEntity);
+
+				_wallet->RegisterAssets({asset});
+			}
+
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&hash, blockHeight, timeStamp](AssetTransactions::Listener *listener) {
+						  [&hash, blockHeight, timeStamp](GroupedAssetTransactions::Listener *listener) {
 							  listener->onTxUpdated(hash, blockHeight, timeStamp);
 						  });
 		}
 
-		void SpvService::onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser,
-										bool recommendRescan) {
+		void SpvService::onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) {
 			_databaseManager.DeleteTxByHash(ISO, hash);
-			if (!assetID.empty()) {
-				_databaseManager.DeleteAsset(ISO, assetID);
-				UpdateAssets();
-			}
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&hash, &assetID, notifyUser, recommendRescan](AssetTransactions::Listener *listener) {
-							  listener->onTxDeleted(hash, assetID, notifyUser, recommendRescan);
+						  [&hash, notifyUser, recommendRescan](GroupedAssetTransactions::Listener *listener) {
+							  listener->onTxDeleted(hash, notifyUser, recommendRescan);
 						  });
 		}
 
@@ -416,7 +412,7 @@ namespace Elastos {
 			return _walletListener;
 		}
 
-		void SpvService::RegisterWalletListener(AssetTransactions::Listener *listener) {
+		void SpvService::RegisterWalletListener(GroupedAssetTransactions::Listener *listener) {
 			_walletListeners.push_back(listener);
 		}
 
@@ -452,7 +448,7 @@ namespace Elastos {
 					boost::bind(&PeerManager::AsyncConnect, _peerManager.get(), boost::asio::placeholders::error));
 		}
 
-		void SpvService::UpdateAssets() {
+		void SpvService::InstallAssets() {
 			std::vector<AssetEntity> assets = _databaseManager.GetAllAssets(ISO);
 			std::vector<Asset> assetArray;
 			std::for_each(assets.begin(), assets.end(), [this, &assetArray](const AssetEntity &entity) {
@@ -466,25 +462,7 @@ namespace Elastos {
 				}
 			});
 
-			_wallet->UpdateAssets(assetArray);
-		}
-
-		Asset SpvService::FindAsset(const std::string &assetID) const {
-			AssetEntity assetEntity;
-			Asset asset;
-			if (!_databaseManager.GetAssetDetails(ISO, assetID, assetEntity)) {
-				Log::warn("{} Asset {} not found", _peerManager->GetID(), assetID);
-				return asset;
-			}
-
-			ByteStream stream(assetEntity.Asset);
-			if (!asset.Deserialize(stream)) {
-				Log::error("{} Asset {} deserialize fail", _peerManager->GetID(), assetID);
-				return Asset();
-			}
-			asset.SetHash(uint256(assetEntity.AssetID));
-
-			return asset;
+			_wallet->RegisterAssets(assetArray);
 		}
 
 	}

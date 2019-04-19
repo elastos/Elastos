@@ -5,7 +5,6 @@
 #include "CoinInfo.h"
 
 #include <SDK/Common/Utils.h>
-#include <SDK/Plugin/Transaction/Asset.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -44,20 +43,14 @@ namespace Elastos {
 			p._reconnectSeconds = j["ReconnectSeconds"].get<uint32_t>();
 			if (j.find("EnableP2P") != j.end())
 				p._enableP2P = j["EnableP2P"].get<bool>();
-			if (j.find("VisibleAssets") != j.end()) {
+			if (j.find("VisibleAssets") != j.end())
 				p.VisibleAssetsFromJson(j["VisibleAssets"]);
-			} else
-				p._visibleAssets = {Asset::GetELAAssetID()};
 		}
 
 		nlohmann::json CoinInfo::VisibleAssetsToJson() const {
-			std::vector<std::string> assets;
-			std::for_each(_visibleAssets.begin(), _visibleAssets.end(), [&assets](const uint256 &asset) {
-				assets.push_back(asset.GetHex());
-			});
 			nlohmann::json j;
-			std::for_each(assets.begin(), assets.end(), [&j](const std::string &asset) {
-				j.push_back(asset);
+			std::for_each(_visibleAssets.begin(), _visibleAssets.end(), [&j](const uint256 &asset) {
+				j.push_back(asset.GetHex());
 			});
 			return j;
 		}
@@ -68,6 +61,18 @@ namespace Elastos {
 			std::for_each(assets.begin(), assets.end(), [this](const std::string &assetStr) {
 				_visibleAssets.emplace_back(assetStr);
 			});
+		}
+
+		void CoinInfo::SetVisibleAsset(const uint256 &assetID) {
+			bool found = false;
+
+			for (size_t i = 0; i < _visibleAssets.size(); ++i) {
+				if (_visibleAssets[i] == assetID)
+					found = true;
+			}
+
+			if (!found)
+				_visibleAssets.push_back(assetID);
 		}
 
 	}

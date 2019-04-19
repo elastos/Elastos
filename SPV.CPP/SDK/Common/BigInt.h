@@ -39,21 +39,17 @@ namespace Elastos {
 
         public:
             // Allocation & Assignment
-            BigInt() { this->allocate(); }
+            BigInt() { this->allocate(); this->setWord(0); }
             BigInt(const BigInt& bigint)
             {
                 if (!(this->bn = BN_dup(bigint.bn))) throw std::runtime_error("BIGNUM allocation error.");
                 if (!(this->ctx = BN_CTX_new())) { BN_free(this->bn); throw std::runtime_error("BIGNUM allocation error."); }
             }
-            BigInt(BIGNUM *bn)
-            {
-                this->bn = bn;
-                if (!(this->ctx = BN_CTX_new())) { BN_free(this->bn); throw std::runtime_error("BIGNUM allocation error."); }
-            }
+
             BigInt(BN_ULONG num)
             {
                 this->allocate();
-                this->setWord(num);
+                this->operator=(num);
             }
             BigInt(const std::vector<unsigned char>& bytes, bool bigEndian = false)
             {
@@ -89,13 +85,9 @@ namespace Elastos {
                 return *this;
             }
 
-            BigInt& operator=(BIGNUM *bn)
+            BigInt& operator=(BN_ULONG num)
             {
-                if (this->bn) {
-                    if (this->autoclear) BN_clear_free(this->bn);
-                    else BN_free(this->bn);
-                }
-                this->bn = bn;
+                this->setWord(num);
                 return *this;
             }
 
@@ -143,6 +135,15 @@ namespace Elastos {
             // Accessor Methods
             BN_ULONG getWord() const { return BN_get_word(this->bn); }
             void setWord(BN_ULONG num) { if (!BN_set_word(this->bn, num)) throw std::runtime_error("BN_set_word error."); }
+
+            void setRaw(BIGNUM *bn)
+            {
+                if (this->bn) {
+                    if (this->autoclear) BN_clear_free(this->bn);
+                    else BN_free(this->bn);
+                }
+                this->bn = bn;
+            }
 
             std::vector<unsigned char> getBytes(bool bigEndian = false) const
             {
