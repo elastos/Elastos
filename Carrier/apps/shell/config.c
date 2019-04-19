@@ -35,7 +35,6 @@
 #include <libconfig.h>
 #include <crystal.h>
 
-
 #include "config.h"
 
 static void config_destructor(void *p)
@@ -123,6 +122,8 @@ ShellConfig *load_config(const char *config_file)
     ShellConfig *config;
     config_t cfg;
     config_setting_t *setting;
+    char *include_dir;
+    char *ch;
     const char *stropt;
     char number[64];
     int intopt;
@@ -130,7 +131,33 @@ ShellConfig *load_config(const char *config_file)
     int i;
     int rc;
 
+    if (!config_file || !*config_file)
+        return NULL;
+
     config_init(&cfg);
+
+    include_dir = strdup(config_file);
+    if (!include_dir)
+        return NULL;
+
+#if defined(_WIN32) || defined(_WIN64)
+    ch = strrchr(include_dir, '\\');
+    if (!ch) {
+#endif
+    ch = strrchr(include_dir, '/');
+#if defined(_WIN32) || defined(_WIN64)
+    }
+#endif
+
+    if (ch) {
+        *++ch = 0;
+        if (strlen(include_dir) > 1)
+            *--ch = 0;
+
+        config_set_include_dir(&cfg, (const char *)include_dir);
+    } else {
+        config_set_include_dir(&cfg, ".");
+    }
 
     rc = config_read_file(&cfg, config_file);
     if (!rc) {

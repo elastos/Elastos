@@ -108,3 +108,6 @@ install(TARGETS fileonce
 
 install(FILES fileonce.conf
         DESTINATION "etc/carrier")
+
+install(FILES bootstraps.conf
+        DESTINATION "etc/carrier")

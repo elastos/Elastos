@@ -93,3 +93,6 @@ install(FILES server.conf
 install(FILES client.conf
     DESTINATION "etc/carrier"
     RENAME "elapfd-client.conf")
+
+install(FILES bootstraps.conf
+        DESTINATION "etc/carrier")

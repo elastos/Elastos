@@ -113,3 +113,7 @@ install(TARGETS elafile
 
 install(FILES elafile.conf
         DESTINATION "etc/carrier")
+
+
+install(FILES bootstraps.conf
+        DESTINATION "etc/carrier")

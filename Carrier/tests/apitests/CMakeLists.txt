@@ -141,3 +141,6 @@ install(TARGETS elatests
 
 install(FILES tests.conf
     DESTINATION "etc/carrier")
+
+install(FILES bootstraps.conf
+        DESTINATION "etc/carrier")

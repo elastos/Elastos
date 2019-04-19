@@ -98,3 +98,6 @@ install(TARGETS elaspeedtest
 install(FILES speedtest.conf
         DESTINATION "etc/carrier"
         RENAME "elaspeedtest.conf")
+
+install(FILES bootstraps.conf
+        DESTINATION "etc/carrier")

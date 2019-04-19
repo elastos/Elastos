@@ -115,5 +115,7 @@ install(TARGETS elashell
     LIBRARY DESTINATION "lib")
 
 install(FILES elashell.conf
-        DESTINATION "etc/carrier"
-        RENAME "elashell.conf")
+        DESTINATION "etc/carrier")
+
+install(FILES bootstraps.conf
+        DESTINATION "etc/carrier")
