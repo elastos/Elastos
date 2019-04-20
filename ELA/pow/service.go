@@ -161,7 +161,7 @@ func (pow *Service) AssignCoinbaseTxRewards(block *types.Block, totalReward comm
 		rewardDposArbiter := common.Fixed64(math.Ceil(float64(totalReward) * 0.35))
 		rewardMergeMiner := common.Fixed64(totalReward) - rewardCyberRepublic - rewardDposArbiter
 
-		if rewards := pow.arbiters.GetArbitersRoundReward(); rewards != nil && len(rewards) > 0 {
+		if rewards := pow.arbiters.GetArbitersRoundReward(); len(rewards) > 0 {
 
 			var dposChange common.Fixed64
 			var err error
@@ -235,15 +235,20 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 	txCount := 1
 	totalTxFee := common.Fixed64(0)
 	txs := pow.txMemPool.GetTxsInPool()
-	sort.Slice(txs, func(i, j int) bool {
-		if txs[i].IsIllegalTypeTx() || txs[i].IsInactiveArbitrators() ||
-			txs[i].IsSideChainPowTx() || txs[i].IsUpdateVersion() ||
-			txs[i].IsActivateProducerTx() {
+	isHighPriority := func(tx *types.Transaction) bool {
+		if tx.IsIllegalTypeTx() || tx.IsInactiveArbitrators() ||
+			tx.IsSideChainPowTx() || tx.IsUpdateVersion() ||
+			tx.IsActivateProducerTx() {
 			return true
 		}
-		if txs[j].IsIllegalTypeTx() || txs[j].IsInactiveArbitrators() ||
-			txs[j].IsSideChainPowTx() || txs[j].IsUpdateVersion() ||
-			txs[j].IsActivateProducerTx() {
+		return false
+	}
+
+	sort.Slice(txs, func(i, j int) bool {
+		if isHighPriority(txs[i]) {
+			return true
+		}
+		if isHighPriority(txs[j]) {
 			return false
 		}
 		return txs[i].FeePerKB > txs[j].FeePerKB

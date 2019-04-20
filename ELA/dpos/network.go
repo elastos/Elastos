@@ -309,11 +309,6 @@ func NewDposNetwork(account account.Account, medianTime dtime.MedianTimeSource,
 	listener manager.NetworkEventListener) (*network, error) {
 	network := &network{
 		listener:                 listener,
-		proposalDispatcher:       nil,
-		peersLock:                sync.Mutex{},
-		store:                    nil,
-		publicKey:                nil,
-		p2pServer:                nil,
 		messageQueue:             make(chan *messageItem, 10000), //todo config handle capacity though config file
 		quit:                     make(chan bool),
 		badNetworkChan:           make(chan bool),

@@ -42,8 +42,7 @@ const (
 	IllegalBlockEvidence     TxType = 0x10
 	IllegalSidechainEvidence TxType = 0x11
 	InactiveArbitrators      TxType = 0x12
-
-	UpdateVersion TxType = 0x13
+	UpdateVersion            TxType = 0x13
 )
 
 func (self TxType) Name() string {
