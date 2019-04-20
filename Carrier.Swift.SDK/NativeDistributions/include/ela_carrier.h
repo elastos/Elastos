@@ -26,6 +26,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdarg.h>
+#include <stdlib.h>
 
 #if defined(__APPLE__)
 #pragma GCC diagnostic push
@@ -197,6 +198,27 @@ typedef struct BootstrapNode {
     const char *public_key;
 } BootstrapNode;
 
+typedef struct HiveBootstrapNode {
+    /**
+     * \~English
+     * The ip address supported with ipv4 protocol.
+     */
+    const char *ipv4;
+
+    /**
+     * \~English
+     * The ip address supported with ipv6 protocol.
+     */
+    const char *ipv6;
+
+    /**
+     * \~English
+     * The ip port.
+     * The default value is 9094.
+     */
+    const char *port;
+} HiveBootstrapNode;
+
 /**
  * \~English
  * ElaOptions defines several settings that control the way the Carrier
@@ -227,7 +249,7 @@ typedef struct ElaOptions {
 
     /**
      * \~English
-     * The total number of bootstrap nodes to connect.
+     * The total number of DHT bootstrap nodes to connect.
      * There must have at least one bootstrap node for the very first time
      * to create carrier instance.
      */
@@ -235,9 +257,23 @@ typedef struct ElaOptions {
 
     /**
      * \~English
-     * The array of bootstrap nodes.
+     * The array of DHT bootstrap nodes.
      */
     BootstrapNode *bootstraps;
+
+    /**
+     * \~English
+     * The total number of Hive bootstrap nodes to connect.
+     * There must have at least one bootstrap node for the very first time
+     * to create carrier instance.
+     */
+    size_t hive_bootstraps_size;
+
+    /**
+     * \~English
+     * The array of Hive bootstrap nodes.
+     */
+    HiveBootstrapNode *hive_bootstraps;
 } ElaOptions;
 
 /**
