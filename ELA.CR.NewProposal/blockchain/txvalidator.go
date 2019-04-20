@@ -91,8 +91,8 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 		return ErrTransactionDuplicate
 	}
 
-	// check to ensure only producer related tx existing in current block
-	// when inactive mode is on
+	// check to ensure only producer related txs and DPOS related txs existing
+	// in current block when inactive mode is on
 	if DefaultLedger.Arbitrators.IsInactiveMode() && !txn.IsProducerRelatedTx() &&
 		!txn.IsInactiveArbitrators() && !txn.IsIllegalTypeTx() {
 		log.Warn("[CheckTransactionContext] only producer related tx is" +
@@ -116,41 +116,36 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 		if err := b.checkIllegalVotesTransaction(txn); err != nil {
 			log.Warn("[CheckIllegalVotesTransaction],", err)
 			return ErrTransactionPayload
-		} else {
-			return Success
 		}
+		return Success
 
 	case IllegalBlockEvidence:
 		if err := b.checkIllegalBlocksTransaction(txn); err != nil {
 			log.Warn("[CheckIllegalBlocksTransaction],", err)
 			return ErrTransactionPayload
-		} else {
-			return Success
 		}
+		return Success
 
 	case IllegalSidechainEvidence:
 		if err := b.checkSidechainIllegalEvidenceTransaction(txn); err != nil {
 			log.Warn("[CheckSidechainIllegalEvidenceTransaction],", err)
 			return ErrTransactionPayload
-		} else {
-			return Success
 		}
+		return Success
 
 	case InactiveArbitrators:
 		if err := b.checkInactiveArbitratorsTransaction(txn); err != nil {
 			log.Warn("[CheckInactiveArbitrators],", err)
 			return ErrTransactionPayload
-		} else {
-			return Success
 		}
+		return Success
 
 	case UpdateVersion:
 		if err := b.checkUpdateVersionTransaction(txn); err != nil {
 			log.Warn("[checkUpdateVersionTransaction],", err)
 			return ErrTransactionPayload
-		} else {
-			return Success
 		}
+		return Success
 
 	case SideChainPow:
 		arbitrator := DefaultLedger.Arbitrators.GetOnDutyArbitrator()
