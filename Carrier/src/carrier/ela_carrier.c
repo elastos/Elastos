@@ -1117,18 +1117,18 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
 
     w->pref.udp_enabled = opts->udp_enabled;
     w->pref.data_location = strdup(opts->persistent_location);
-    w->pref.dht_bootstraps_size = opts->dht_bootstraps_size;
+    w->pref.dht_bootstraps_size = opts->bootstraps_size;
 
     w->pref.dht_bootstraps = (DhtBootstrapNodeBuf *)calloc(1, sizeof(DhtBootstrapNodeBuf)
-                         * opts->dht_bootstraps_size);
+                         * opts->bootstraps_size);
     if (!w->pref.dht_bootstraps) {
         deref(w);
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return NULL;
     }
 
-    for (i = 0; i < opts->dht_bootstraps_size; i++) {
-        DhtBootstrapNode *b = &opts->dht_bootstraps[i];
+    for (i = 0; i < opts->bootstraps_size; i++) {
+        BootstrapNode *b = &opts->bootstraps[i];
         DhtBootstrapNodeBuf *bi = &w->pref.dht_bootstraps[i];
         char *endptr = NULL;
         ssize_t len;

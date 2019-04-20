@@ -623,17 +623,17 @@ int main(int argc, char *argv[])
 
     opts.udp_enabled = config->udp_enabled;
     opts.persistent_location = config->datadir;
-    opts.dht_bootstraps_size = config->bootstraps_size;
-    opts.dht_bootstraps = (DhtBootstrapNode *)calloc(1, sizeof(DhtBootstrapNode) * opts.dht_bootstraps_size);
-    if (!opts.dht_bootstraps) {
+    opts.bootstraps_size = config->bootstraps_size;
+    opts.bootstraps = (BootstrapNode *)calloc(1, sizeof(BootstrapNode) * opts.bootstraps_size);
+    if (!opts.bootstraps) {
         fprintf(stderr, "out of memory.");
         deref(config);
         return -1;
     }
 
     for (i = 0 ; i < (int)config->bootstraps_size; i++) {
-        DhtBootstrapNode *b = &opts.dht_bootstraps[i];
-        DhtBootstrapNode *node = config->bootstraps[i];
+        BootstrapNode *b = &opts.bootstraps[i];
+        BootstrapNode *node = config->bootstraps[i];
 
         b->ipv4 = node->ipv4;
         b->ipv6 = node->ipv6;
@@ -655,7 +655,7 @@ int main(int argc, char *argv[])
     ela_log_init(config->loglevel, config->logfile, NULL);
 
     carrier = ela_new(&opts, &callbacks, config);
-    free(opts.dht_bootstraps);
+    free(opts.bootstraps);
 
     if (!carrier) {
         fprintf(stderr, "Can not create Carrier instance (%08X).\n",

@@ -36,7 +36,7 @@ typedef struct {
     char *datadir;
 
     int dht_bootstraps_size;
-    DhtBootstrapNode **dht_bootstraps;
+    BootstrapNode **dht_bootstraps;
 
     int hive_bootstraps_size;
     HiveBootstrapNode **hive_bootstraps;

@@ -46,7 +46,7 @@ typedef struct TestConfig {
     } robot;
 
     int bootstraps_size;
-    DhtBootstrapNode **bootstraps;
+    BootstrapNode **bootstraps;
 } TestConfig;
 
 extern TestConfig global_config;

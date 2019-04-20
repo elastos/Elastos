@@ -72,7 +72,7 @@ static void config_destructor(void *p)
 
 static void dht_bootstrap_destructor(void *p)
 {
-    DhtBootstrapNode *node = (DhtBootstrapNode *)p;
+    BootstrapNode *node = (BootstrapNode *)p;
 
     if (!node)
         return;
@@ -172,9 +172,9 @@ ShellConfig *load_config(const char *config_file)
         config->datadir = strdup(path);
     }
 
-    setting = config_lookup(&cfg, "dht_bootstraps");
+    setting = config_lookup(&cfg, "bootstraps");
     if (!setting) {
-        fprintf(stderr, "Missing dht_bootstraps section.\n");
+        fprintf(stderr, "Missing bootstraps section.\n");
         config_destroy(&cfg);
         deref(config);
         return NULL;
@@ -182,15 +182,15 @@ ShellConfig *load_config(const char *config_file)
 
     entries = config_setting_length(setting);
     if (entries <= 0) {
-        fprintf(stderr, "Empty dht_bootstraps option.\n");
+        fprintf(stderr, "Empty bootstraps option.\n");
         config_destroy(&cfg);
         deref(config);
         return NULL;
     }
 
     config->dht_bootstraps_size = entries;
-    config->dht_bootstraps = (DhtBootstrapNode **)calloc(1, config->dht_bootstraps_size *
-                                                  sizeof(DhtBootstrapNode *));
+    config->dht_bootstraps = (BootstrapNode **)calloc(1, config->dht_bootstraps_size *
+                                                  sizeof(BootstrapNode *));
     if (!config->dht_bootstraps) {
         fprintf(stderr, "Out of memory.\n");
         config_destroy(&cfg);
@@ -199,9 +199,9 @@ ShellConfig *load_config(const char *config_file)
     }
 
     for (i = 0; i < entries; i++) {
-        DhtBootstrapNode *node;
+        BootstrapNode *node;
 
-        node = rc_zalloc(sizeof(DhtBootstrapNode), dht_bootstrap_destructor);
+        node = rc_zalloc(sizeof(BootstrapNode), dht_bootstrap_destructor);
         if (!node) {
             fprintf(stderr, "Out of memory.\n");
             config_destroy(&cfg);

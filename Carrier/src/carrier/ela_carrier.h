@@ -169,7 +169,7 @@ typedef struct ElaCarrier ElaCarrier;
  * to connect with. The bootstrap nodes help Carrier nodes be connected to
  * the others with more higher possibilities.
  */
-typedef struct DhtBootstrapNode {
+typedef struct BootstrapNode {
     /**
      * \~English
      * The ip address supported with ipv4 protocol.
@@ -196,7 +196,7 @@ typedef struct DhtBootstrapNode {
      * The length of public key is about 45 bytes.
      */
     const char *public_key;
-} DhtBootstrapNode;
+} BootstrapNode;
 
 typedef struct HiveBootstrapNode {
     /**
@@ -253,13 +253,13 @@ typedef struct ElaOptions {
      * There must have at least one bootstrap node for the very first time
      * to create carrier instance.
      */
-    size_t dht_bootstraps_size;
+    size_t bootstraps_size;
 
     /**
      * \~English
      * The array of DHT bootstrap nodes.
      */
-    DhtBootstrapNode *dht_bootstraps;
+    BootstrapNode *bootstraps;
 
     /**
      * \~English

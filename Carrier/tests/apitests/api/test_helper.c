@@ -294,8 +294,8 @@ int test_suite_init_ext(TestContext *context, bool udp_disabled)
     ElaOptions opts = {
         .udp_enabled = !udp_disabled,
         .persistent_location = datadir,
-        .dht_bootstraps_size = global_config.bootstraps_size,
-        .dht_bootstraps = NULL,
+        .bootstraps_size = global_config.bootstraps_size,
+        .bootstraps = NULL,
         .hive_bootstraps_size = 0,
         .hive_bootstraps = NULL
     };
@@ -303,15 +303,15 @@ int test_suite_init_ext(TestContext *context, bool udp_disabled)
 
     sprintf(datadir, "%s/tests", global_config.data_location);
 
-    opts.dht_bootstraps = (DhtBootstrapNode *)calloc(1, sizeof(DhtBootstrapNode) * opts.dht_bootstraps_size);
-    if (!opts.dht_bootstraps) {
+    opts.bootstraps = (BootstrapNode *)calloc(1, sizeof(BootstrapNode) * opts.bootstraps_size);
+    if (!opts.bootstraps) {
         vlogE("Error: out of memory.");
         return -1;
     }
 
-    for (i = 0 ; i < (int)opts.dht_bootstraps_size; i++) {
-        DhtBootstrapNode *b = &opts.dht_bootstraps[i];
-        DhtBootstrapNode *node = global_config.bootstraps[i];
+    for (i = 0 ; i < (int)opts.bootstraps_size; i++) {
+        BootstrapNode *b = &opts.bootstraps[i];
+        BootstrapNode *node = global_config.bootstraps[i];
 
         b->ipv4 = node->ipv4;
         b->ipv6 = node->ipv6;
@@ -320,7 +320,7 @@ int test_suite_init_ext(TestContext *context, bool udp_disabled)
     }
 
     wctxt->carrier = ela_new(&opts, &callbacks, wctxt);
-    free(opts.dht_bootstraps);
+    free(opts.bootstraps);
 
     if (!wctxt->carrier) {
         vlogE("Error: Carrier new error (0x%x)", ela_get_error());

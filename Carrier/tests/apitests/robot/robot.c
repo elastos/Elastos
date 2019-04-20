@@ -448,8 +448,8 @@ int robot_main(int argc, char *argv[])
 
     ElaOptions opts = {
         .udp_enabled     = global_config.udp_enabled,
-        .dht_bootstraps      = NULL,
-        .dht_bootstraps_size = global_config.bootstraps_size,
+        .bootstraps      = NULL,
+        .bootstraps_size = global_config.bootstraps_size,
         .persistent_location = datadir,
         .hive_bootstraps_size = 0,
         .hive_bootstraps = NULL
@@ -457,15 +457,15 @@ int robot_main(int argc, char *argv[])
 
     sprintf(datadir, "%s/robot", global_config.data_location);
 
-    opts.dht_bootstraps = (DhtBootstrapNode *)calloc(1, sizeof(DhtBootstrapNode) * opts.dht_bootstraps_size);
-    if (!opts.dht_bootstraps) {
+    opts.bootstraps = (BootstrapNode *)calloc(1, sizeof(BootstrapNode) * opts.bootstraps_size);
+    if (!opts.bootstraps) {
         vlogE("Error: out of memory.");
         return -1;
     }
 
-    for (i = 0 ; i < (int)opts.dht_bootstraps_size; i++) {
-        DhtBootstrapNode *b = &opts.dht_bootstraps[i];
-        DhtBootstrapNode *node = global_config.bootstraps[i];
+    for (i = 0 ; i < (int)opts.bootstraps_size; i++) {
+        BootstrapNode *b = &opts.bootstraps[i];
+        BootstrapNode *node = global_config.bootstraps[i];
 
         b->ipv4 = node->ipv4;
         b->ipv6 = node->ipv6;
@@ -477,7 +477,7 @@ int robot_main(int argc, char *argv[])
         return -1;
 
     w = ela_new(&opts, &callbacks, &test_context);
-    free(opts.dht_bootstraps);
+    free(opts.bootstraps);
 
     if (!w) {
         write_ack("failed\n");
