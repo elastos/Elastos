@@ -40,7 +40,7 @@ func (c *ViewChangesCountDown) SetEliminated(hash common.Uint256) {
 
 func (c *ViewChangesCountDown) IsTimeOut() bool {
 	if c.dispatcher.CurrentHeight() <=
-		c.dispatcher.cfg.ChainParams.PublicDPOSHeight {
+		c.dispatcher.cfg.ChainParams.PublicDPOSHeight || c.arbitrators.IsInactiveMode() {
 		return false
 	}
 
