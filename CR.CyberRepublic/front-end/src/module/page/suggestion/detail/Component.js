@@ -309,7 +309,7 @@ export default class extends StandardPage {
   }
 
   renderCouncilActionsNode() {
-    const { isCouncil, detail } = this.props
+    const { isCouncil, isAdmin, detail } = this.props
     const { _id, displayId, title } = detail
     const descNode = this.renderDescNode()
     const benefitsNode = this.renderBenefitsNode()
@@ -336,23 +336,32 @@ export default class extends StandardPage {
       btnText: I18N.get('suggestion.btnText.makeIntoProposal'),
       btnStyle: { width: 200 },
     }
-    const createFormBtn = <ProposalForm {...props} />
-    const res = isCouncil && (
+    const considerBtn = isCouncil && (
+      <Col xs={24} sm={8}>
+        <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={this.consider}>
+          {I18N.get('suggestion.btnText.markConsider')}
+        </StyledButton>
+      </Col>
+    )
+    const needMoreInfoBtn = (isCouncil || isAdmin) && (
+      <Col xs={24} sm={8}>
+        <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={this.showAddTagModal}>
+          {I18N.get('suggestion.btnText.needMoreInfo')}
+        </StyledButton>
+      </Col>
+    )
+    const createFormBtn = isCouncil && (
+      <Col xs={24} sm={8}>
+        <ProposalForm {...props} />
+      </Col>
+    )
+
+    const res = (
       <BtnGroup>
         <Row type="flex" justify="start">
-          <Col xs={24} sm={8}>
-            <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={this.consider}>
-              {I18N.get('suggestion.btnText.markConsider')}
-            </StyledButton>
-          </Col>
-          <Col xs={24} sm={8}>
-            <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={this.showAddTagModal}>
-              {I18N.get('suggestion.btnText.needMoreInfo')}
-            </StyledButton>
-          </Col>
-          <Col xs={24} sm={8}>
-            {createFormBtn}
-          </Col>
+          {considerBtn}
+          {needMoreInfoBtn}
+          {createFormBtn}
         </Row>
       </BtnGroup>
     )
