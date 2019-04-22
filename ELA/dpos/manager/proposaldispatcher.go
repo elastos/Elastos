@@ -332,6 +332,7 @@ func (p *ProposalDispatcher) FinishConsensus() {
 		log.Info("[FinishConsensus] start")
 		defer log.Info("[FinishConsensus] end")
 
+		p.cfg.Manager.changeOnDuty()
 		c := log.ConsensusEvent{EndTime: p.cfg.TimeSource.AdjustedTime(), Height: p.CurrentHeight()}
 		p.cfg.EventMonitor.OnConsensusFinished(&c)
 		p.cfg.Consensus.SetReady()
@@ -519,8 +520,8 @@ func (p *ProposalDispatcher) tryEnterEmergencyState(signCount int) bool {
 		}
 		p.cfg.Manager.clearInactiveData(payload)
 
-		log.Info("[tryEnterEmergencyState] successfully entered emergency" +
-			" state")
+		log.Info("[tryEnterEmergencyState] successfully entered emergency"+
+			" state ", payload.Hash())
 		return true
 	}
 

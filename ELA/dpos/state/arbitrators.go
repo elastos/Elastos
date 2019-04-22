@@ -73,6 +73,7 @@ type arbitrators struct {
 	crcArbitratorsNodePublicKey map[string]*Producer
 	accumulativeReward          common.Fixed64
 	finalRoundChange            common.Fixed64
+	clearingHeight              uint32
 	arbitersRoundReward         map[common.Uint168]common.Fixed64
 	illegalBlocksPayloadHashes  map[common.Uint256]interface{}
 }
@@ -275,9 +276,9 @@ func (a *arbitrators) accumulateReward(block *types.Block) {
 
 func (a *arbitrators) clearingDPOSReward(block *types.Block,
 	smoothClearing bool) error {
-		if smoothClearing && a.inactiveState.InactivePayloadsLength() > 1 {
-			return nil
-		}
+	if !smoothClearing && block.Height == a.clearingHeight {
+		return nil
+	}
 
 	dposReward := a.getBlockDPOSReward(block)
 	if block.Height+1 <= a.State.chainParams.PublicDPOSHeight {
@@ -294,6 +295,8 @@ func (a *arbitrators) clearingDPOSReward(block *types.Block,
 		return err
 	}
 	a.accumulativeReward = dposReward
+
+	a.clearingHeight = block.Height
 
 	return nil
 }
@@ -855,14 +858,6 @@ func (i *inactiveState) InactiveModeSwitch(height uint32,
 	}
 
 	return false, false
-}
-
-func (i *inactiveState) InactivePayloadsLength() int {
-	i.mtx.Lock()
-	result := len(i.inactiveTxs)
-	i.mtx.Unlock()
-
-	return result
 }
 
 func (i *inactiveState) AddInactivePayload(p *payload.InactiveArbitrators) {
