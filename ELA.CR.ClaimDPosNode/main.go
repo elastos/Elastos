@@ -115,16 +115,14 @@ func main() {
 	ledger.Blockchain = chain // fixme
 	blockMemPool.Chain = chain
 
-	routesCfg := &routes.Config{}
+	routesCfg := &routes.Config{TimeSource: chain.TimeSource}
 	if act != nil {
 		routesCfg.PID = act.PublicKeyBytes()
 		routesCfg.Addr = fmt.Sprintf("%s:%d",
 			cfg.ArbiterConfiguration.IPAddress,
 			cfg.ArbiterConfiguration.NodePort)
 		routesCfg.Sign = act.Sign
-		routesCfg.TimeSource = chain.TimeSource
 	}
-	routes := routes.New(routesCfg)
 
 	server, err := elanet.NewServer(dataDir, &elanet.Config{
 		Chain:          chain,
@@ -132,7 +130,7 @@ func main() {
 		PermanentPeers: cfg.PermanentPeers,
 		TxMemPool:      txMemPool,
 		BlockMemPool:   blockMemPool,
-		Routes:         routes,
+		Routes:         routes.New(routesCfg),
 	})
 	if err != nil {
 		printErrorAndExit(err)
