@@ -127,7 +127,7 @@ Wait for all the import processes to finish.
 
 ### 3. Import Shared Native Libraries
 
-In the Project View on the left side, navigate to the directory **"app/native-dist/libs"** .
+In the Project View on the left side, navigate to the directory **"app/native-dist/lib"** .
 
 Under the native-dist folder, create a new folder with the name of the target architecture such as armeabi-v7a, arm64-v8a,
 x86, x86-64 or all of them, depending on which are relevant for your needs.
@@ -142,7 +142,7 @@ app/native-dist
    |--include
        |--ela_carrier.h
        |--ela_session.h
-   |--libs
+   |--lib
        |--armeabi-v7a
           |--libcrystal.so
           |--libelacarrier.so
