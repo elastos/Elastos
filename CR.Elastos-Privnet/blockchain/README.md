@@ -18,7 +18,7 @@ These are located in the `wallets` folder:
 
 ## Repos used to build 
 
-- [Elastos.ELA](https://github.com/elastos/Elastos.ELA): Apr 22, 2019: release_v0.3.2 20ca10882fbdc005c705bebc9dcce2767514f611
+- [Elastos.ELA](https://github.com/elastos/Elastos.ELA): Apr 12, 2019: tag v0.3.1 a974e079fd6b50f9fa70d93b5647d8a7303dfa08
 - [Elastos.ELA.Arbiter](https://github.com/elastos/Elastos.ELA.Arbiter): Apr 4, 2019: release_v0.1.1 758efcdad3266a054bbc823aa87d22cb8343d5e9
 - [Elastos.ELA.SideChain.ID](https://github.com/elastos/Elastos.ELA.Sidechain.ID): Apr 12, 2019: release_v0.1.1 fc639ea4e19324f70981c82a4548ef8ee3b4bce5
 - [Elastos.ELA.SideChain.Token](https://github.com/elastos/Elastos.ELA.SideChain.Token): Apr 12, 2019: release_v0.1.1 ebd23319c29cfb6c85a1671c39314bd2c45a602d
