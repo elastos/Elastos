@@ -348,9 +348,11 @@ func (d *DPOSManager) recoverAbnormalState() bool {
 			return false
 		}
 		d.neededMajorityStatus = len(arbiters)/2 + 1
-		d.waitRecover = make(chan struct{}, 1)
-		d.handler.RequestAbnormalRecovering()
-		go d.waitForRecover()
+		if d.waitRecover == nil {
+			d.waitRecover = make(chan struct{}, 1)
+			d.handler.RequestAbnormalRecovering()
+			go d.waitForRecover()
+		}
 		return true
 	}
 	return false
