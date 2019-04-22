@@ -1,7 +1,6 @@
-# Elastos Local PrivateNet - v0.2 
+# Elastos Local PrivateNet - v0.3 
 
-If you are starting to set this up now it's recommended that you wait until the new version which will have
-the new DPoS nodes and possibly the ETH sidechain.
+This version supports the entirety of AuxPoW+DPoS(2 CRC supernodes and 2 DPoS supernodes)
 
 ### This is official but unsupported and ALPHA version
 

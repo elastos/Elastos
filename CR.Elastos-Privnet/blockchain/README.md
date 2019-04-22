@@ -18,13 +18,13 @@ These are located in the `wallets` folder:
 
 ## Repos used to build 
 
-- [Elastos.ELA](https://github.com/elastos/Elastos.ELA): Mar 28, 2019: tag v0.3.0 c4325c50db67b79e65398ac7515b4f1dc4aa6d73
-- [Elastos.ELA.Arbiter](https://github.com/elastos/Elastos.ELA.Arbiter): Mar 29, 2019: tag v.0.1.0 69f003f3f2a95aadba41918ca0be6e57265ec2ef
-- [Elastos.ELA.SideChain.ID](https://github.com/elastos/Elastos.ELA.Sidechain.ID): Mar 27, 2019: tag v0.1.0 d8a60dafa7b64b9595b5ad0fcd498370773d7f73
-- [Elastos.ELA.SideChain.Token](https://github.com/elastos/Elastos.ELA.SideChain.Token): Mar 28, 2019: tag v0.1.0 eddb117e7a0dadea59f14f5f7969d4c7bc521fd6
-- [Elastos.ORG.Wallet.Service](https://github.com/elastos/Elastos.ORG.Wallet.Service): Apr 9, 2019: master 78768f4b368379cca75ea9f410865fccc5f92227
+- [Elastos.ELA](https://github.com/elastos/Elastos.ELA): Apr 22, 2019: release_v0.3.2 20ca10882fbdc005c705bebc9dcce2767514f611
+- [Elastos.ELA.Arbiter](https://github.com/elastos/Elastos.ELA.Arbiter): Apr 4, 2019: release_v0.1.1 758efcdad3266a054bbc823aa87d22cb8343d5e9
+- [Elastos.ELA.SideChain.ID](https://github.com/elastos/Elastos.ELA.Sidechain.ID): Apr 12, 2019: release_v0.1.1 fc639ea4e19324f70981c82a4548ef8ee3b4bce5
+- [Elastos.ELA.SideChain.Token](https://github.com/elastos/Elastos.ELA.SideChain.Token): Apr 12, 2019: release_v0.1.1 ebd23319c29cfb6c85a1671c39314bd2c45a602d
+- [Elastos.ORG.Wallet.Service](https://github.com/elastos/Elastos.ORG.Wallet.Service): Apr 15, 2019: master 47ca5e2ef167680c73da5377f3526477d63e8b1a
 - [Elastos.ORG.DID.Service](https://github.com/elastos/Elastos.ORG.DID.Service): Feb 21, 2019: master 8784b182debc4cbd22b607850b261aef7557b8ac
-- [Elastos.ORG.API.Misc](https://github.com/elastos/Elastos.ORG.API.Misc): Apr 8, 2019: master 4b10e0e26414fc176fb254676123ae8705ddb89c
+- [Elastos.ORG.API.Misc](https://github.com/elastos/Elastos.ORG.API.Misc): Apr 22, 2019: master d06114b77b789bbd7a769221ff3fa6bddfd8edbe
 
 ## Containers that are run
 
@@ -34,8 +34,8 @@ These are located in the `wallets` folder:
 - Normal node 2: 11333-11338
 - CRC node 1: 10023-10028, 10078
 - CRC node 2: 10123-10128, 10178
-- CRC node 3: 10223-10228, 10278
-- CRC node 4: 10323-10328, 10378
+- Elected node 1: 10223-10228, 10278
+- Elected node 2: 10323-10328, 10378
 
 ### Arbitrator nodes
 
@@ -43,8 +43,8 @@ These are located in the `wallets` folder:
 - Origin node 2: 11536,11538
 - CRC node 1: 12536,12538
 - CRC node 2: 13536,13538
-- CRC node 3: 14536,14538
-- CRC node 4: 15536,15538
+- Elected node 1: 14536,14538
+- Elected node 2: 15536,15538
 
 ### DID Sidechain nodes
 
