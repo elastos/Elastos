@@ -129,8 +129,10 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 			illegalData, ok := blockTx.Payload.(payload.DPOSIllegalData)
 			if !ok {
 				log.Error("cancel producer payload cast failed, tx:", blockTx.Hash())
+				continue
 			}
 			hash := illegalData.Hash()
+			delete(mp.txnList, blockTx.Hash())
 			mp.delSpecialTx(&hash)
 			deleteCount++
 			continue
