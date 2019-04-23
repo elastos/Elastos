@@ -30,7 +30,7 @@ import (
 
 var (
 	Compile   string
-	Config    *config.ConfigParams
+	Config    *config.Configuration
 	Chain     *blockchain.BlockChain
 	Store     blockchain.IChainStore
 	TxMemPool *mempool.TxPool

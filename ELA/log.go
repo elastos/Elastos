@@ -156,17 +156,17 @@ func newProgress(w io.Writer) *progress {
 // means the package will not perform any logging by default until the caller
 // requests it.
 var (
-	logger = log.NewDefault(cfg.PrintLevel, cfg.MaxPerLogSize, cfg.MaxLogsSize)
-	pgBar  = newProgress(logger.Writer())
-	level  = elalog.Level(cfg.PrintLevel)
+	logger = log.NewDefault(uint8(cfg.PrintLevel), cfg.MaxPerLogSize,
+		cfg.MaxLogsSize)
+	pgBar = newProgress(logger.Writer())
 
 	admrlog = wrap(logger, elalog.LevelOff)
 	cmgrlog = wrap(logger, elalog.LevelOff)
-	synclog = wrap(logger, level)
-	peerlog = wrap(logger, level)
-	routlog = wrap(logger, level)
-	elanlog = wrap(logger, level)
-	statlog = wrap(logger, level)
+	synclog = wrap(logger, cfg.PrintLevel)
+	peerlog = wrap(logger, cfg.PrintLevel)
+	routlog = wrap(logger, cfg.PrintLevel)
+	elanlog = wrap(logger, cfg.PrintLevel)
+	statlog = wrap(logger, cfg.PrintLevel)
 )
 
 // The default amount of logging is none.

@@ -1,10 +1,9 @@
 ﻿{
   "Configuration": {
     "ActiveNet": "main",
-    "Magic": 7630401,
-    "Version": 23,
+    "Magic": 2017001,
     "SeedList": [
-      "127.0.0.1:30338"
+      "127.0.0.1:20338"
     ],
     "HttpInfoPort": 20333,
     "HttpInfoStart": true,
@@ -32,11 +31,11 @@
         "127.0.0.1"
       ]
     },
-    "EnableArbiter": false,
-    "ArbiterConfiguration": {
-      "Magic": 7630403,
+    "DPoSConfiguration": {
+      "EnableArbiter": false,
+      "Magic": 2019000,
       "IPAddress": "192.168.0.1",
-      "NodePort": 30338,
+      "DPoSPort": 20339,
       "PrintLevel": 1,
       "SignTolerance": 5,
       "MaxLogsSize": 0,
@@ -49,22 +48,10 @@
         "02e34e47a06955ef1ec0d325c9edada34a0df6e519530344cc85f5942d061223b3"
       ],
       "CRCArbiters": [
-        {
-          "PublicKey": "02eae9164bd143eb988fcd4b7a3c9c04a44eb9a009f73e7615e80a5e8ce1e748b8",
-          "NetAddress": "127.0.0.1:10078"
-        },
-        {
-          "PublicKey": "0294d85959f746b8e6e579458b41eea05afeae50f5a37a037de601673cb24133d9",
-          "NetAddress": "127.0.0.1:10178"
-        },
-        {
-          "PublicKey": "03b0a3a16edfba8d9c1fed9094431c9f24c78b8ceb04b4b6eeb7706f1686b83499",
-          "NetAddress": "127.0.0.1:10278"
-        },
-        {
-          "PublicKey": "0222461ae6c9671cad288f10469f9fd759912f257c64524367dc12c40c2bb4046d",
-          "NetAddress": "127.0.0.1:10378"
-        }
+        "02eae9164bd143eb988fcd4b7a3c9c04a44eb9a009f73e7615e80a5e8ce1e748b8",
+        "0294d85959f746b8e6e579458b41eea05afeae50f5a37a037de601673cb24133d9",
+        "03b0a3a16edfba8d9c1fed9094431c9f24c78b8ceb04b4b6eeb7706f1686b83499",
+        "0222461ae6c9671cad288f10469f9fd759912f257c64524367dc12c40c2bb4046d"
       ],
       "NormalArbitratorsCount": 24,
       "CandidatesCount": 72,

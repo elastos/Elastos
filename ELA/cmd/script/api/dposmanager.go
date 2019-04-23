@@ -83,7 +83,7 @@ func newDposManager(L *lua.LState) int {
 		TimeSource: medianTime,
 	})
 
-	mockManager.Consensus = NewConsensus(dposManager, time.Duration(config.Parameters.ArbiterConfiguration.SignTolerance)*time.Second, mockManager.Handler)
+	mockManager.Consensus = NewConsensus(dposManager, 5*time.Second, mockManager.Handler)
 	mockManager.Dispatcher, mockManager.IllegalMonitor = NewDispatcherAndIllegalMonitor(ProposalDispatcherConfig{
 		EventMonitor: mockManager.EventMonitor,
 		Consensus:    mockManager.Consensus,

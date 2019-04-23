@@ -25,7 +25,7 @@ import (
 type Config struct {
 	EnableEventLog    bool
 	EnableEventRecord bool
-	Params            config.ArbiterConfiguration
+	Params            *config.DPoSConfiguration
 	Arbitrators       state.Arbitrators
 	Store             store.IDposStore
 	Server            elanet.Server

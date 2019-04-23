@@ -3,12 +3,9 @@ package common
 import (
 	"fmt"
 	"os"
-	"strconv"
 
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/utils/http"
 	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
-
 	"github.com/urfave/cli"
 )
 
@@ -18,7 +15,7 @@ const (
 )
 
 var (
-	rpcPort     = strconv.Itoa(config.Template.HttpJsonPort)
+	rpcPort     = "20336"
 	rpcUser     = ""
 	rpcPassword = ""
 )

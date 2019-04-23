@@ -220,7 +220,7 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 		Previous:   *pow.chain.BestChain.Hash,
 		MerkleRoot: common.EmptyHash,
 		Timestamp:  uint32(pow.chain.MedianAdjustedTime().Unix()),
-		Bits:       config.Parameters.ChainParam.PowLimitBits,
+		Bits:       pow.chainParams.PowLimitBits,
 		Height:     nextBlockHeight,
 		Nonce:      0,
 	}

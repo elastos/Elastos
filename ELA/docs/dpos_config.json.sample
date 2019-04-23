@@ -1,10 +1,8 @@
-{
+﻿{
   "Configuration": {
-    "ActiveNet": "testnet",
-    "PowConfiguration": {
-      "PayToAddr": "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
-      "MinerInfo": "ELA",
-      "MinTxFee": 100
+    "DPoSConfiguration": {
+      "EnableArbiter": true,
+      "IPAddress": "192.168.0.1"
     },
     "RpcConfiguration": {
       "User": "User",

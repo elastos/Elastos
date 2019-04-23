@@ -37,24 +37,16 @@ const (
 )
 
 func TestCheckBlockSanity(t *testing.T) {
-	config.Parameters = config.ConfigParams{Configuration: &config.Template}
-	log.NewDefault(
-		config.Parameters.PrintLevel,
-		config.Parameters.MaxPerLogSize,
-		config.Parameters.MaxLogsSize,
-	)
-	foundation, err := common.Uint168FromAddress("8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta")
-	if !assert.NoError(t, err) {
-		return
-	}
-	FoundationAddress = *foundation
-	chainStore, err := NewChainStore("Chain_UnitTest", config.DefaultParams.GenesisBlock)
+	log.NewDefault(0, 0, 0)
+	params := &config.DefaultParams
+	FoundationAddress = params.Foundation
+	chainStore, err := NewChainStore("Chain_UnitTest", params.GenesisBlock)
 	if err != nil {
 		t.Error(err.Error())
 	}
 	defer chainStore.Close()
 
-	chain, _ := New(chainStore, &config.DefaultParams, state.NewState(&config.DefaultParams, nil))
+	chain, _ := New(chainStore, params, state.NewState(params, nil))
 	if DefaultLedger == nil {
 		DefaultLedger = &Ledger{
 			Blockchain: chain,
