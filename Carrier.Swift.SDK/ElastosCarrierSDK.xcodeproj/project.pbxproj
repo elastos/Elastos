@@ -21,6 +21,46 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		116061DB2268AB4A00BDCB9F /* ElastosCarrierSDK_macOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 116061D92268AB4A00BDCB9F /* ElastosCarrierSDK_macOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		116061DF2268AB6900BDCB9F /* CFileTransfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15B21BD43CF00AF4FE3 /* CFileTransfer.swift */; };
+		116061E02268AB6E00BDCB9F /* CCarrier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497F32003779300420421 /* CCarrier.swift */; };
+		116061E12268AB7100BDCB9F /* CSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497F22003779300420421 /* CSession.swift */; };
+		116061E22268AB7800BDCB9F /* ela_filetransfer.h in Headers */ = {isa = PBXBuildFile; fileRef = A35CE15921BD42B200AF4FE3 /* ela_filetransfer.h */; };
+		116061E32268AB7C00BDCB9F /* ela_carrier.h in Headers */ = {isa = PBXBuildFile; fileRef = A3B497D62003759400420421 /* ela_carrier.h */; };
+		116061E42268AB8000BDCB9F /* ela_session.h in Headers */ = {isa = PBXBuildFile; fileRef = A3B497D52003759400420421 /* ela_session.h */; };
+		116061E52268AB9300BDCB9F /* CarrierError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B498162003B3AE00420421 /* CarrierError.swift */; };
+		116061E62268AB9800BDCB9F /* CarrierGroupDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15421BBCDD200AF4FE3 /* CarrierGroupDelegate.swift */; };
+		116061E72268AB9C00BDCB9F /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15121BB4F3B00AF4FE3 /* Group.swift */; };
+		116061E82268ABA000BDCB9F /* GroupPeer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15021BB4F3B00AF4FE3 /* GroupPeer.swift */; };
+		116061E92268ABA300BDCB9F /* BootstrapNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A360377F20161AAF001A666E /* BootstrapNode.swift */; };
+		116061EA2268ABA700BDCB9F /* PresenceStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B4981820045F0A00420421 /* PresenceStatus.swift */; };
+		116061EB2268ABAA00BDCB9F /* Callbacks.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497E22003763500420421 /* Callbacks.swift */; };
+		116061EC2268ABAD00BDCB9F /* ConnectionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497E32003763500420421 /* ConnectionStatus.swift */; };
+		116061ED2268ABB000BDCB9F /* FriendInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497DF2003763500420421 /* FriendInfo.swift */; };
+		116061EE2268ABB400BDCB9F /* LogLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497DE2003763500420421 /* LogLevel.swift */; };
+		116061EF2268ABB900BDCB9F /* UserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497E12003763500420421 /* UserInfo.swift */; };
+		116061F02268ABBC00BDCB9F /* Carrier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497E72003763500420421 /* Carrier.swift */; };
+		116061F12268ABC100BDCB9F /* CarrierDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497E62003763500420421 /* CarrierDelegate.swift */; };
+		116061F22268ABC600BDCB9F /* CarrierOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497E42003763500420421 /* CarrierOptions.swift */; };
+		116061F32268ABCB00BDCB9F /* AddressInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497FD2003B3A400420421 /* AddressInfo.swift */; };
+		116061F42268ABD000BDCB9F /* CloseReason.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497FE2003B3A400420421 /* CloseReason.swift */; };
+		116061F52268ABDB00BDCB9F /* NetworkTopology.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B498072003B3A400420421 /* NetworkTopology.swift */; };
+		116061F62268ABDE00BDCB9F /* PortForwardingProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497FC2003B3A400420421 /* PortForwardingProtocol.swift */; };
+		116061F72268ABE200BDCB9F /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B498052003B3A400420421 /* Session.swift */; };
+		116061F82268ABE700BDCB9F /* SessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497FF2003B3A400420421 /* SessionManager.swift */; };
+		116061F92268ABEB00BDCB9F /* Stream.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B498002003B3A400420421 /* Stream.swift */; };
+		116061FA2268ABF300BDCB9F /* StreamDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B498012003B3A400420421 /* StreamDelegate.swift */; };
+		116061FB2268ABF700BDCB9F /* StreamState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B498042003B3A400420421 /* StreamState.swift */; };
+		116061FC2268ABFA00BDCB9F /* StreamType.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B498062003B3A400420421 /* StreamType.swift */; };
+		116061FD2268ABFE00BDCB9F /* TransportInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B498022003B3A400420421 /* TransportInfo.swift */; };
+		116061FE2268AC0400BDCB9F /* FileTransferConnectionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE16321BE45F300AF4FE3 /* FileTransferConnectionState.swift */; };
+		116061FF2268AC0700BDCB9F /* FileTransferDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE16121BE41E500AF4FE3 /* FileTransferDelegate.swift */; };
+		116062002268AC0B00BDCB9F /* FileTransfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15F21BE413000AF4FE3 /* FileTransfer.swift */; };
+		116062012268AC0F00BDCB9F /* FileTransferInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15D21BE0D7200AF4FE3 /* FileTransferInfo.swift */; };
+		116062022268AC1300BDCB9F /* FileTransferManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15721BD428B00AF4FE3 /* FileTransferManager.swift */; };
+		116062032268AC1800BDCB9F /* Base58.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497F82003B39800420421 /* Base58.swift */; };
+		116062042268AC1C00BDCB9F /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497F72003B39800420421 /* Log.swift */; };
+		116062052268AC2000BDCB9F /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497F62003B39800420421 /* String.swift */; };
 		A35CE15221BB4F3C00AF4FE3 /* GroupPeer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15021BB4F3B00AF4FE3 /* GroupPeer.swift */; };
 		A35CE15321BB4F3C00AF4FE3 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15121BB4F3B00AF4FE3 /* Group.swift */; };
 		A35CE15521BBCDD200AF4FE3 /* CarrierGroupDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15421BBCDD200AF4FE3 /* CarrierGroupDelegate.swift */; };
@@ -63,6 +103,18 @@
 		A3B498142003B3A500420421 /* NetworkTopology.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B498072003B3A400420421 /* NetworkTopology.swift */; };
 		A3B498172003B3AF00420421 /* CarrierError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B498162003B3AE00420421 /* CarrierError.swift */; };
 		A3B4981920045F0A00420421 /* PresenceStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B4981820045F0A00420421 /* PresenceStatus.swift */; };
+		A3F4A0A9226F1C6300146D25 /* libpjmedia.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A09E226F1C6300146D25 /* libpjmedia.a */; };
+		A3F4A0AA226F1C6300146D25 /* libflatccrt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A09F226F1C6300146D25 /* libflatccrt.a */; };
+		A3F4A0AB226F1C6300146D25 /* libtoxcore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A0226F1C6300146D25 /* libtoxcore.a */; };
+		A3F4A0AC226F1C6300146D25 /* libelafiletrans.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A1226F1C6300146D25 /* libelafiletrans.a */; };
+		A3F4A0AD226F1C6300146D25 /* libelasession.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A2226F1C6300146D25 /* libelasession.a */; };
+		A3F4A0AE226F1C6300146D25 /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A3226F1C6300146D25 /* libsodium.a */; };
+		A3F4A0AF226F1C6300146D25 /* libcrystal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A4226F1C6300146D25 /* libcrystal.a */; };
+		A3F4A0B0226F1C6300146D25 /* libelacarrier.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A5226F1C6300146D25 /* libelacarrier.a */; };
+		A3F4A0B1226F1C6300146D25 /* libpjlib-util.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A6226F1C6300146D25 /* libpjlib-util.a */; };
+		A3F4A0B2226F1C6300146D25 /* libpj.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A7226F1C6300146D25 /* libpj.a */; };
+		A3F4A0B3226F1C6300146D25 /* libpjnath.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A8226F1C6300146D25 /* libpjnath.a */; };
+		A3F4A0B5226F1CFD00146D25 /* libsrtp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0B4226F1CFD00146D25 /* libsrtp.a */; };
 		A3FB995E225ED83400C4361A /* libcrystal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3D41F4B225B7C330000D1A7 /* libcrystal.a */; };
 		A3FB995F225ED83400C4361A /* libelacarrier.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3D41F48225B7C320000D1A7 /* libelacarrier.a */; };
 		A3FB9960225ED83400C4361A /* libelafiletrans.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3D41F4E225B7C330000D1A7 /* libelafiletrans.a */; };
@@ -87,6 +139,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		116061D72268AB4A00BDCB9F /* ElastosCarrierSDK_macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ElastosCarrierSDK_macOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		116061D92268AB4A00BDCB9F /* ElastosCarrierSDK_macOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ElastosCarrierSDK_macOS.h; sourceTree = "<group>"; };
+		116061DA2268AB4A00BDCB9F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A35CE15021BB4F3B00AF4FE3 /* GroupPeer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GroupPeer.swift; path = Carrier/GroupPeer.swift; sourceTree = "<group>"; };
 		A35CE15121BB4F3B00AF4FE3 /* Group.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Group.swift; path = Carrier/Group.swift; sourceTree = "<group>"; };
 		A35CE15421BBCDD200AF4FE3 /* CarrierGroupDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CarrierGroupDelegate.swift; path = Carrier/CarrierGroupDelegate.swift; sourceTree = "<group>"; };
@@ -154,9 +209,40 @@
 		A3D8BBAB225887DF00FE2962 /* libelafiletrans.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libelafiletrans.a; path = NativeDistributions/lib/libelafiletrans.a; sourceTree = "<group>"; };
 		A3D8BBAC225887E000FE2962 /* libelacarrier.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libelacarrier.a; path = NativeDistributions/lib/libelacarrier.a; sourceTree = "<group>"; };
 		A3D8BBAD225887E000FE2962 /* libelasession.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libelasession.a; path = NativeDistributions/lib/libelasession.a; sourceTree = "<group>"; };
+		A3F4A09E226F1C6300146D25 /* libpjmedia.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpjmedia.a; path = NativeDistributions/lib/macosx/libpjmedia.a; sourceTree = "<group>"; };
+		A3F4A09F226F1C6300146D25 /* libflatccrt.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libflatccrt.a; path = NativeDistributions/lib/macosx/libflatccrt.a; sourceTree = "<group>"; };
+		A3F4A0A0226F1C6300146D25 /* libtoxcore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtoxcore.a; path = NativeDistributions/lib/macosx/libtoxcore.a; sourceTree = "<group>"; };
+		A3F4A0A1226F1C6300146D25 /* libelafiletrans.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libelafiletrans.a; path = NativeDistributions/lib/macosx/libelafiletrans.a; sourceTree = "<group>"; };
+		A3F4A0A2226F1C6300146D25 /* libelasession.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libelasession.a; path = NativeDistributions/lib/macosx/libelasession.a; sourceTree = "<group>"; };
+		A3F4A0A3226F1C6300146D25 /* libsodium.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsodium.a; path = NativeDistributions/lib/macosx/libsodium.a; sourceTree = "<group>"; };
+		A3F4A0A4226F1C6300146D25 /* libcrystal.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrystal.a; path = NativeDistributions/lib/macosx/libcrystal.a; sourceTree = "<group>"; };
+		A3F4A0A5226F1C6300146D25 /* libelacarrier.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libelacarrier.a; path = NativeDistributions/lib/macosx/libelacarrier.a; sourceTree = "<group>"; };
+		A3F4A0A6226F1C6300146D25 /* libpjlib-util.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libpjlib-util.a"; path = "NativeDistributions/lib/macosx/libpjlib-util.a"; sourceTree = "<group>"; };
+		A3F4A0A7226F1C6300146D25 /* libpj.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpj.a; path = NativeDistributions/lib/macosx/libpj.a; sourceTree = "<group>"; };
+		A3F4A0A8226F1C6300146D25 /* libpjnath.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpjnath.a; path = NativeDistributions/lib/macosx/libpjnath.a; sourceTree = "<group>"; };
+		A3F4A0B4226F1CFD00146D25 /* libsrtp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsrtp.a; path = NativeDistributions/lib/macosx/libsrtp.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		116061D42268AB4A00BDCB9F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A3F4A0B5226F1CFD00146D25 /* libsrtp.a in Frameworks */,
+				A3F4A0A9226F1C6300146D25 /* libpjmedia.a in Frameworks */,
+				A3F4A0AA226F1C6300146D25 /* libflatccrt.a in Frameworks */,
+				A3F4A0AB226F1C6300146D25 /* libtoxcore.a in Frameworks */,
+				A3F4A0AC226F1C6300146D25 /* libelafiletrans.a in Frameworks */,
+				A3F4A0AD226F1C6300146D25 /* libelasession.a in Frameworks */,
+				A3F4A0AE226F1C6300146D25 /* libsodium.a in Frameworks */,
+				A3F4A0AF226F1C6300146D25 /* libcrystal.a in Frameworks */,
+				A3F4A0B0226F1C6300146D25 /* libelacarrier.a in Frameworks */,
+				A3F4A0B1226F1C6300146D25 /* libpjlib-util.a in Frameworks */,
+				A3F4A0B2226F1C6300146D25 /* libpj.a in Frameworks */,
+				A3F4A0B3226F1C6300146D25 /* libpjnath.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A3B497B32003736200420421 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -186,6 +272,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		116061D82268AB4A00BDCB9F /* ElastosCarrierSDK_macOS */ = {
+			isa = PBXGroup;
+			children = (
+				116061D92268AB4A00BDCB9F /* ElastosCarrierSDK_macOS.h */,
+				116061DA2268AB4A00BDCB9F /* Info.plist */,
+			);
+			path = ElastosCarrierSDK_macOS;
+			sourceTree = "<group>";
+		};
 		A35CE15621BD428B00AF4FE3 /* FileTransfer */ = {
 			isa = PBXGroup;
 			children = (
@@ -201,6 +296,18 @@
 		A38A7CC0214B6A9D0010D5EB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				A3F4A0B4226F1CFD00146D25 /* libsrtp.a */,
+				A3F4A0A4226F1C6300146D25 /* libcrystal.a */,
+				A3F4A0A5226F1C6300146D25 /* libelacarrier.a */,
+				A3F4A0A1226F1C6300146D25 /* libelafiletrans.a */,
+				A3F4A0A2226F1C6300146D25 /* libelasession.a */,
+				A3F4A09F226F1C6300146D25 /* libflatccrt.a */,
+				A3F4A0A7226F1C6300146D25 /* libpj.a */,
+				A3F4A0A6226F1C6300146D25 /* libpjlib-util.a */,
+				A3F4A09E226F1C6300146D25 /* libpjmedia.a */,
+				A3F4A0A8226F1C6300146D25 /* libpjnath.a */,
+				A3F4A0A3226F1C6300146D25 /* libsodium.a */,
+				A3F4A0A0226F1C6300146D25 /* libtoxcore.a */,
 				A3D41F4B225B7C330000D1A7 /* libcrystal.a */,
 				A3D41F48225B7C320000D1A7 /* libelacarrier.a */,
 				A3D41F4E225B7C330000D1A7 /* libelafiletrans.a */,
@@ -233,6 +340,7 @@
 				A3B497D22003755700420421 /* NativeDistributions */,
 				A3B497B92003736300420421 /* ElastosCarrier */,
 				A3B497C42003736300420421 /* ElastosCarrierTests */,
+				116061D82268AB4A00BDCB9F /* ElastosCarrierSDK_macOS */,
 				A3B497B82003736200420421 /* Products */,
 				A38A7CC0214B6A9D0010D5EB /* Frameworks */,
 			);
@@ -243,6 +351,7 @@
 			children = (
 				A3B497B72003736200420421 /* ElastosCarrierSDK.framework */,
 				A3B497C02003736300420421 /* ElastosCarrierSDKTests.xctest */,
+				116061D72268AB4A00BDCB9F /* ElastosCarrierSDK_macOS.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -350,6 +459,17 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		116061D22268AB4A00BDCB9F /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				116061E42268AB8000BDCB9F /* ela_session.h in Headers */,
+				116061E22268AB7800BDCB9F /* ela_filetransfer.h in Headers */,
+				116061DB2268AB4A00BDCB9F /* ElastosCarrierSDK_macOS.h in Headers */,
+				116061E32268AB7C00BDCB9F /* ela_carrier.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A3B497B42003736200420421 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -364,6 +484,24 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		116061D62268AB4A00BDCB9F /* ElastosCarrierSDK_macOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 116061DE2268AB4A00BDCB9F /* Build configuration list for PBXNativeTarget "ElastosCarrierSDK_macOS" */;
+			buildPhases = (
+				116061D22268AB4A00BDCB9F /* Headers */,
+				116061D32268AB4A00BDCB9F /* Sources */,
+				116061D42268AB4A00BDCB9F /* Frameworks */,
+				116061D52268AB4A00BDCB9F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ElastosCarrierSDK_macOS;
+			productName = ElastosCarrierSDK_macOS;
+			productReference = 116061D72268AB4A00BDCB9F /* ElastosCarrierSDK_macOS.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 		A3B497B62003736200420421 /* ElastosCarrierSDK */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A3B497CB2003736300420421 /* Build configuration list for PBXNativeTarget "ElastosCarrierSDK" */;
@@ -409,6 +547,10 @@
 				LastUpgradeCheck = 1020;
 				ORGANIZATIONNAME = org.elastos;
 				TargetAttributes = {
+					116061D62268AB4A00BDCB9F = {
+						CreatedOnToolsVersion = 10.2;
+						ProvisioningStyle = Automatic;
+					};
 					11B4508C22657F35000ACB08 = {
 						CreatedOnToolsVersion = 10.2;
 						ProvisioningStyle = Automatic;
@@ -441,11 +583,19 @@
 				A3B497B62003736200420421 /* ElastosCarrierSDK */,
 				A3B497BF2003736300420421 /* ElastosCarrierSDKTests */,
 				11B4508C22657F35000ACB08 /* ElastosCarrierSDKFramework */,
+				116061D62268AB4A00BDCB9F /* ElastosCarrierSDK_macOS */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		116061D52268AB4A00BDCB9F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A3B497BE2003736300420421 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -476,6 +626,49 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		116061D32268AB4A00BDCB9F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				116061E02268AB6E00BDCB9F /* CCarrier.swift in Sources */,
+				116061F82268ABE700BDCB9F /* SessionManager.swift in Sources */,
+				116062012268AC0F00BDCB9F /* FileTransferInfo.swift in Sources */,
+				116061E82268ABA000BDCB9F /* GroupPeer.swift in Sources */,
+				116061EC2268ABAD00BDCB9F /* ConnectionStatus.swift in Sources */,
+				116061F12268ABC100BDCB9F /* CarrierDelegate.swift in Sources */,
+				116061E92268ABA300BDCB9F /* BootstrapNode.swift in Sources */,
+				116061EA2268ABA700BDCB9F /* PresenceStatus.swift in Sources */,
+				116061FF2268AC0700BDCB9F /* FileTransferDelegate.swift in Sources */,
+				116061E12268AB7100BDCB9F /* CSession.swift in Sources */,
+				116061F42268ABD000BDCB9F /* CloseReason.swift in Sources */,
+				116061F22268ABC600BDCB9F /* CarrierOptions.swift in Sources */,
+				116061EE2268ABB400BDCB9F /* LogLevel.swift in Sources */,
+				116061FA2268ABF300BDCB9F /* StreamDelegate.swift in Sources */,
+				116061DF2268AB6900BDCB9F /* CFileTransfer.swift in Sources */,
+				116061EB2268ABAA00BDCB9F /* Callbacks.swift in Sources */,
+				116061FE2268AC0400BDCB9F /* FileTransferConnectionState.swift in Sources */,
+				116061E72268AB9C00BDCB9F /* Group.swift in Sources */,
+				116062002268AC0B00BDCB9F /* FileTransfer.swift in Sources */,
+				116061E62268AB9800BDCB9F /* CarrierGroupDelegate.swift in Sources */,
+				116061E52268AB9300BDCB9F /* CarrierError.swift in Sources */,
+				116061F62268ABDE00BDCB9F /* PortForwardingProtocol.swift in Sources */,
+				116062042268AC1C00BDCB9F /* Log.swift in Sources */,
+				116061F52268ABDB00BDCB9F /* NetworkTopology.swift in Sources */,
+				116061FB2268ABF700BDCB9F /* StreamState.swift in Sources */,
+				116061F02268ABBC00BDCB9F /* Carrier.swift in Sources */,
+				116061FC2268ABFA00BDCB9F /* StreamType.swift in Sources */,
+				116061F92268ABEB00BDCB9F /* Stream.swift in Sources */,
+				116062032268AC1800BDCB9F /* Base58.swift in Sources */,
+				116061FD2268ABFE00BDCB9F /* TransportInfo.swift in Sources */,
+				116062052268AC2000BDCB9F /* String.swift in Sources */,
+				116061F72268ABE200BDCB9F /* Session.swift in Sources */,
+				116061EF2268ABB900BDCB9F /* UserInfo.swift in Sources */,
+				116061F32268ABCB00BDCB9F /* AddressInfo.swift in Sources */,
+				116062022268AC1300BDCB9F /* FileTransferManager.swift in Sources */,
+				116061ED2268ABB000BDCB9F /* FriendInfo.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A3B497B22003736200420421 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -538,6 +731,65 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		116061DC2268AB4A00BDCB9F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = LFU7T9UYL5;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_VERSION = A;
+				INFOPLIST_FILE = ElastosCarrierSDK_macOS/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/NativeDistributions/lib/macosx";
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "elastos.ElastosCarrierSDK-macOS";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_VERSION = 4.2;
+				VALID_ARCHS = x86_64;
+			};
+			name = Debug;
+		};
+		116061DD2268AB4A00BDCB9F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = LFU7T9UYL5;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_VERSION = A;
+				INFOPLIST_FILE = ElastosCarrierSDK_macOS/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/NativeDistributions/lib/macosx";
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "elastos.ElastosCarrierSDK-macOS";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_VERSION = 4.2;
+				VALID_ARCHS = x86_64;
+			};
+			name = Release;
+		};
 		11B4508E22657F35000ACB08 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -779,6 +1031,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		116061DE2268AB4A00BDCB9F /* Build configuration list for PBXNativeTarget "ElastosCarrierSDK_macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				116061DC2268AB4A00BDCB9F /* Debug */,
+				116061DD2268AB4A00BDCB9F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		11B4508D22657F35000ACB08 /* Build configuration list for PBXAggregateTarget "ElastosCarrierSDKFramework" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
