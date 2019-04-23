@@ -11,6 +11,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	core "github.com/elastos/Elastos.ELA/core/types"
+	com "github.com/elastos/Elastos.ELA.SideChain.ETH/common"
 	"github.com/elastos/Elastos.ELA/utils/signal"
 	"github.com/syndtr/goleveldb/leveldb"
 	"math/big"
@@ -282,6 +283,10 @@ func GetProducersByHeight(height uint32) [][]byte {
 		fmt.Println(arbiters)
 	}
 	return arbiters
+}
+
+func GetSubContractAddress() com.Address {
+	return com.HexToAddress("0x491bC043672B9286fA02FA7e0d6A3E5A0384A31A")
 }
 
 //Service

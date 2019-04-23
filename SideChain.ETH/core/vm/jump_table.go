@@ -154,6 +154,13 @@ func newByzantiumInstructionSet() [256]operation {
 		valid:         true,
 	}
 
+	instructionSet[GETSUBCONTRACTADDRESS] = operation{
+		execute:       getSubContractAddress,
+		gasCost:       constGasFunc(GasQuickStep),
+		validateStack: makeStackFunc(0, 1),
+		valid:         true,
+	}
+
 	return instructionSet
 }
 

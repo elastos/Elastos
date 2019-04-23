@@ -982,3 +982,10 @@ func opSpvIsArbiter(pc *uint64, interpreter *EVMInterpreter, contract *Contract,
 	return nil, nil
 }
 
+func getSubContractAddress(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+	address :=	spv.GetSubContractAddress()
+
+	stack.push(address.Big())
+	return nil, nil
+}
+
