@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import _ from 'lodash'
 import styled from 'styled-components'
 import {
-  Pagination, Modal, Button, Col, Row, Select, Spin,
+  Pagination, Modal, Button, Col, Row, Select, Spin, Switch,
 } from 'antd'
 import URI from 'urijs'
 import I18N from '@/I18N'
@@ -18,6 +18,7 @@ import suggestionImg from '@/assets/images/SuggestionToProposal.png'
 import suggestionZhImg from '@/assets/images/SuggestionToProposal.zh.png'
 import { breakPoint } from '@/constants/breakPoint'
 import { text, bg } from '@/constants/color'
+import { SUGGESTION_TAG_TYPE } from '@/constant'
 
 import MediaQuery from 'react-responsive'
 import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC, LG_WIDTH } from '@/config/constant'
@@ -70,7 +71,8 @@ export default class extends StandardPage {
     const headerNode = this.renderHeader()
     const addButtonNode = this.renderAddButton()
     const actionsNode = this.renderHeaderActions()
-    const mySuggestionNode = this.renderMySuggestion()
+    const filterNode = this.renderFilters()
+    // const mySuggestionNode = this.renderMySuggestion()
     const createForm = this.renderCreateForm()
     const listNode = this.renderList()
 
@@ -89,12 +91,8 @@ export default class extends StandardPage {
             </Row>
             <Row>
               <Col>
-                <br />
-              </Col>
-            </Row>
-            <Row>
-              <Col>
                 {actionsNode}
+                {filterNode}
                 {listNode}
               </Col>
             </Row>
@@ -103,6 +101,11 @@ export default class extends StandardPage {
             <Row gutter={24}>
               <Col span={16}>{actionsNode}</Col>
               <Col span={8}>{addButtonNode}</Col>
+            </Row>
+            <Row gutter={24}>
+              <Col span={24}>
+                {filterNode}
+              </Col>
             </Row>
             <Row gutter={24}>
               <Col span={24}>
@@ -251,6 +254,39 @@ export default class extends StandardPage {
     )
   }
 
+  renderFilters() {
+    const { tagsExcluded: {
+      infoNeeded,
+      underConsideration
+    }} = this.props
+    return (
+      <Row>
+        <Col sm={10} xs={24}>
+          <Switch defaultChecked={!underConsideration} onChange={this.onUnderConsiderationChange} />
+          <SwitchText>{I18N.get('suggestion.tag.type.UNDER_CONSIDERATION')}</SwitchText>
+        </Col>
+        <Col sm={10} xs={24}>
+          <Switch defaultChecked={!infoNeeded} onChange={this.onInfoNeededChange} />
+          <SwitchText>{I18N.get('suggestion.tag.type.INFO_NEEDED')}</SwitchText>
+        </Col>
+      </Row>
+    )
+  }
+
+  onInfoNeededChange = async (checked) => {
+    const { onTagsExcludedChanged, tagsExcluded } = this.props
+    tagsExcluded.infoNeeded = !checked
+    await onTagsExcludedChanged(tagsExcluded)
+    await this.refetch()
+  }
+
+  onUnderConsiderationChange = async (checked) => {
+    const { onTagsExcludedChanged, tagsExcluded } = this.props
+    tagsExcluded.underConsideration = !checked
+    await onTagsExcludedChanged(tagsExcluded)
+    await this.refetch()
+  }
+
   renderList() {
     const { dataList, loading } = this.props
     const loadingNode = <div className="center"><Spin size="large" /></div>
@@ -324,6 +360,25 @@ export default class extends StandardPage {
       page,
       results,
     }
+    const { tagsExcluded: {
+      infoNeeded,
+      underConsideration
+    }} = this.props
+    let excluded = ''
+    if (infoNeeded) {
+      excluded = SUGGESTION_TAG_TYPE.INFO_NEEDED
+    }
+    if (underConsideration) {
+      if (_.isEmpty(excluded)) {
+        excluded = SUGGESTION_TAG_TYPE.UNDER_CONSIDERATION
+      } else {
+        excluded = `${excluded},${SUGGESTION_TAG_TYPE.UNDER_CONSIDERATION}`
+      }
+    }
+    if (!_.isEmpty(excluded)) {
+      query.tagsExcluded = excluded
+    }
+
     // TODO
     if (sortBy) {
       query.sortBy = sortBy
@@ -369,7 +424,7 @@ const HeaderDiagramContainer = styled.div`
   padding-bottom: 36px;
   img {
     max-height: 250px;
-    
+
     @media only screen and (max-width: ${breakPoint.lg}) {
       width: 100%;
     }
@@ -388,9 +443,9 @@ const ItemTitle = styled(Link)`
   &:hover {
     color: $link_color;
   }
-  
+
   background-color: ${bg.blue};
-  
+
   padding: 4px 8px;
   border: 1px solid #e4effd;
   border-radius: 4px;
@@ -398,7 +453,7 @@ const ItemTitle = styled(Link)`
 
 const ShortDesc = styled.div`
   font-weight: 200;
-  padding: 4px 8px 0; 
+  padding: 4px 8px 0;
 `
 
 const HeaderDesc = styled.div`
@@ -411,12 +466,17 @@ const HeaderDesc = styled.div`
 const SuggestionContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  
+
   @media only screen and (max-width: ${breakPoint.xl}) {
     margin: 0 5%;
   }
 `
 
 const AddButtonContainer = styled.div`
-  padding-top: 24px;  
+  padding-top: 24px;
 `
+
+const SwitchText = styled.span`
+  margin-left: 10px;
+`
+

@@ -29,6 +29,11 @@ class SuggestionRedux extends BaseRedux {
       detail: {},
       sortBy: null,
       filter: {},
+      // filter on list
+      tags_excluded: {
+        infoNeeded: true,
+        underConsideration: true,
+      },
       edit_history: [],
     }
   }

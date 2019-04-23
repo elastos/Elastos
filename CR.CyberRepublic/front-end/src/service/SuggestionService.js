@@ -18,6 +18,10 @@ export default class extends BaseService {
     this.dispatch(this.selfRedux.actions.sortBy_update(sortBy))
   }
 
+  async saveTagsExcluded(tagsExcluded) {
+    this.dispatch(this.selfRedux.actions.tags_excluded_update(tagsExcluded))
+  }
+
   async saveEditHistory(editHistory) {
     this.dispatch(this.selfRedux.actions.edit_history_update(editHistory))
   }
