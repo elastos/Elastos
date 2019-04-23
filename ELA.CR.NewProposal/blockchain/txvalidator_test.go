@@ -487,6 +487,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 	txn.TxType = types.RegisterProducer
 	rpPayload := &payload.ProducerInfo{
 		OwnerPublicKey: publicKey1,
+		NodePublicKey:  publicKey1,
 		NickName:       "nickname 1",
 		Url:            "http://www.elastos_test.com",
 		Location:       1,
@@ -516,13 +517,22 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 	err = s.Chain.checkRegisterProducerTransaction(txn)
 	s.NoError(err)
 
-	// Give an invalid public key in payload
+	// Give an invalid owner public key in payload
 	txn.Payload.(*payload.ProducerInfo).OwnerPublicKey = errPublicKey
 	err = s.Chain.checkRegisterProducerTransaction(txn)
-	s.EqualError(err, "invalid public key in payload")
+	s.EqualError(err, "invalid owner public key in payload")
+
+	// check node public when block height is higher than h2
+	originHeight := config.DefaultParams.PublicDPOSHeight
+	config.DefaultParams.PublicDPOSHeight = 0
+	txn.Payload.(*payload.ProducerInfo).NodePublicKey = errPublicKey
+	err = s.Chain.checkRegisterProducerTransaction(txn)
+	s.EqualError(err, "invalid node public key in payload")
+	config.DefaultParams.PublicDPOSHeight = originHeight
 
 	// Invalidates the signature in payload
 	txn.Payload.(*payload.ProducerInfo).OwnerPublicKey = publicKey2
+	txn.Payload.(*payload.ProducerInfo).NodePublicKey = publicKey2
 	err = s.Chain.checkRegisterProducerTransaction(txn)
 	s.EqualError(err, "invalid signature in payload")
 
@@ -673,6 +683,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 	txn.TxType = types.RegisterProducer
 	updatePayload := &payload.ProducerInfo{
 		OwnerPublicKey: publicKey1,
+		NodePublicKey:  publicKey1,
 		NickName:       "",
 		Url:            "",
 		Location:       1,
@@ -699,9 +710,17 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 
 	updatePayload.Url = "www.elastos.org"
 	updatePayload.OwnerPublicKey = errPublicKey
-	s.EqualError(s.Chain.checkUpdateProducerTransaction(txn), "invalid public key in payload")
+	s.EqualError(s.Chain.checkUpdateProducerTransaction(txn), "invalid owner public key in payload")
+
+	// check node public when block height is higher than h2
+	originHeight := config.DefaultParams.PublicDPOSHeight
+	config.DefaultParams.PublicDPOSHeight = 0
+	updatePayload.NodePublicKey = errPublicKey
+	s.EqualError(s.Chain.checkUpdateProducerTransaction(txn), "invalid node public key in payload")
+	config.DefaultParams.PublicDPOSHeight = originHeight
 
 	updatePayload.OwnerPublicKey = publicKey2
+	updatePayload.NodePublicKey = publicKey1
 	s.EqualError(s.Chain.checkUpdateProducerTransaction(txn), "invalid signature in payload")
 
 	updatePayload.OwnerPublicKey = publicKey1
