@@ -1,17 +1,21 @@
 package wallet
 
 import (
+	"bytes"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math/rand"
+	"strconv"
+
 	"github.com/elastos/Elastos.ELA/account"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	pg "github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
-	"math/rand"
-	"strconv"
+	"github.com/elastos/Elastos.ELA/utils"
 
 	"github.com/urfave/cli"
 )
@@ -46,36 +50,83 @@ func CreateTransaction(c *cli.Context) error {
 	}
 
 	var txn *types.Transaction
-	var to string
-	standard := c.String("to")
-	deposit := c.String("deposit")
-	if deposit != "" {
-		// TODO fix cross chain tx
-		//to = config.Params().DepositAddress
-		//txn, err = wallet.CreateCrossChainTransaction(from, to, deposit, amount, fee)
-		//if err != nil {
-		//	return errors.New("create transaction failed: " + err.Error())
-		//}
-	} else if standard != "" {
-		to = standard
-		lockStr := c.String("lock")
-		if lockStr == "" {
-			txn, err = createTransaction(walletPath, from, fee, uint32(0), &Transfer{to, amount})
-			if err != nil {
-				return errors.New("create transaction failed: " + err.Error())
-			}
-		} else {
-			lock, err := strconv.ParseUint(lockStr, 10, 32)
-			if err != nil {
-				return errors.New("invalid lock height")
-			}
-			txn, err = createTransaction(walletPath, from, fee, uint32(lock), &Transfer{to, amount})
-			if err != nil {
-				return errors.New("create transaction failed: " + err.Error())
-			}
+	to := c.String("to")
+	lockStr := c.String("lock")
+
+	if lockStr == "" {
+		txn, err = createTransaction(walletPath, from, fee, uint32(0), &Transfer{to, amount})
+		if err != nil {
+			return errors.New("create transaction failed: " + err.Error())
 		}
 	} else {
-		return errors.New("use --to or --deposit to specify receiver address")
+		lock, err := strconv.ParseUint(lockStr, 10, 32)
+		if err != nil {
+			return errors.New("invalid lock height")
+		}
+		txn, err = createTransaction(walletPath, from, fee, uint32(lock), &Transfer{to, amount})
+		if err != nil {
+			return errors.New("create transaction failed: " + err.Error())
+		}
+	}
+
+	output(0, 1, txn)
+
+	return nil
+}
+
+func CreateActivateProducerTransaction(c *cli.Context) error {
+	walletPath := c.String("wallet")
+	pwdHex := c.String("password")
+
+	pwd := []byte(pwdHex)
+	if pwdHex == "" {
+		var err error
+		pwd, err = utils.GetPassword()
+		if err != nil {
+			return err
+		}
+	}
+
+	client, err := account.Open(walletPath, pwd)
+	if err != nil {
+		return err
+	}
+
+	nodePublicKeyStr := c.String("nodepublickey")
+	nodePublicKey, err := common.HexStringToBytes(nodePublicKeyStr)
+	if err != nil {
+		return err
+	}
+
+	codeHash, err := contract.PublicKeyToStandardCodeHash(nodePublicKey)
+	if err != nil {
+		return err
+	}
+
+	apPayload := &payload.ActivateProducer{
+		NodePublicKey: nodePublicKey,
+	}
+	buf := new(bytes.Buffer)
+	apPayload.SerializeUnsigned(buf, payload.ActivateProducerVersion)
+	acc := client.GetAccountByCodeHash(*codeHash)
+	if acc == nil {
+		return errors.New("no available account in wallet")
+	}
+	signature, err := acc.Sign(buf.Bytes())
+	if err != nil {
+		return err
+	}
+	apPayload.Signature = signature
+
+	txn := &types.Transaction{
+		Version:    types.TxVersion09,
+		TxType:     types.ActivateProducer,
+		Payload:    apPayload,
+		Attributes: nil,
+		Inputs:     nil,
+		Outputs:    nil,
+		Programs:   []*pg.Program{},
+		LockTime:   0,
 	}
 
 	output(0, 0, txn)
@@ -189,28 +240,22 @@ func createTransaction(walletPath string, from string, fee *common.Fixed64, lock
 	if err != nil {
 		return nil, err
 	}
-
-	return newTransaction(redeemScript, txInputs, txOutputs, types.TransferAsset), nil
-}
-
-func newTransaction(redeemScript []byte, inputs []*types.Input, outputs []*types.Output, txType types.TxType) *types.Transaction {
-	txPayload := &payload.TransferAsset{}
 	txAttr := types.NewAttribute(types.Nonce, []byte(strconv.FormatInt(rand.Int63(), 10)))
-	attributes := make([]*types.Attribute, 0)
-	attributes = append(attributes, &txAttr)
-	var program = &pg.Program{
+	txAttributes := make([]*types.Attribute, 0)
+	txAttributes = append(txAttributes, &txAttr)
+	var txProgram = &pg.Program{
 		Code:      redeemScript,
 		Parameter: nil,
 	}
 
 	return &types.Transaction{
 		Version:    types.TxVersion09,
-		TxType:     txType,
-		Payload:    txPayload,
-		Attributes: attributes,
-		Inputs:     inputs,
-		Outputs:    outputs,
-		Programs:   []*pg.Program{program},
+		TxType:     types.TransferAsset,
+		Payload:    &payload.TransferAsset{},
+		Attributes: txAttributes,
+		Inputs:     txInputs,
+		Outputs:    txOutputs,
+		Programs:   []*pg.Program{txProgram},
 		LockTime:   0,
-	}
+	}, nil
 }

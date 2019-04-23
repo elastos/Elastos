@@ -147,7 +147,7 @@ func output(haveSign, needSign int, txn *types.Transaction) error {
 	// Output to file
 	fileName := "to_be_signed" // Create transaction file name
 
-	if haveSign == 0 {
+	if haveSign == 0 && needSign > 0 {
 		//	Transaction created do nothing
 	} else if needSign > haveSign {
 		fileName = fmt.Sprint(fileName, "_", haveSign, "_of_", needSign)
