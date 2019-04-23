@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos"
@@ -61,7 +60,7 @@ func main() {
 	var interrupt = signal.NewInterrupt()
 
 	var act account.Account
-	if config.Parameters.EnableArbiter {
+	if cfg.DPoSConfiguration.EnableArbiter {
 		password, err := utils.GetFlagPassword()
 		if err != nil {
 			printErrorAndExit(err)
@@ -119,8 +118,8 @@ func main() {
 	if act != nil {
 		routesCfg.PID = act.PublicKeyBytes()
 		routesCfg.Addr = fmt.Sprintf("%s:%d",
-			cfg.ArbiterConfiguration.IPAddress,
-			cfg.ArbiterConfiguration.NodePort)
+			cfg.DPoSConfiguration.IPAddress,
+			cfg.DPoSConfiguration.DPoSPort)
 		routesCfg.Sign = act.Sign
 	}
 
@@ -144,7 +143,7 @@ func main() {
 		arbitrator, err = dpos.NewArbitrator(act, dpos.Config{
 			EnableEventLog:    true,
 			EnableEventRecord: false,
-			Params:            cfg.ArbiterConfiguration,
+			Params:            &cfg.DPoSConfiguration,
 			ChainParams:       activeNetParams,
 			Arbitrators:       arbiters,
 			Store:             dposStore,
@@ -197,14 +196,16 @@ func main() {
 	defer server.Stop()
 
 	log.Info("Start services")
-	go httpjsonrpc.StartRPCServer()
-	if config.Parameters.HttpRestStart {
+	if !cfg.DisableRPC {
+		go httpjsonrpc.StartRPCServer()
+	}
+	if cfg.HttpRestStart {
 		go httprestful.StartServer()
 	}
-	if config.Parameters.HttpWsStart {
+	if cfg.HttpWsStart {
 		go httpwebsocket.Start()
 	}
-	if config.Parameters.HttpInfoStart {
+	if cfg.HttpInfoStart {
 		go httpnodeinfo.StartServer()
 	}
 
@@ -215,7 +216,7 @@ func main() {
 		return
 	}
 	log.Info("Start consensus")
-	if config.Parameters.PowConfiguration.AutoMining {
+	if cfg.PowConfiguration.AutoMining {
 		log.Info("Start POW Services")
 		go servers.Pow.Start()
 	}

@@ -34,26 +34,18 @@ type txValidatorTestSuite struct {
 }
 
 func (s *txValidatorTestSuite) SetupSuite() {
-	config.Parameters = config.ConfigParams{Configuration: &config.Template}
-	log.NewDefault(
-		config.Parameters.PrintLevel,
-		config.Parameters.MaxPerLogSize,
-		config.Parameters.MaxLogsSize,
-	)
+	log.NewDefault(0, 0, 0)
 
-	foundation, err := common.Uint168FromAddress("8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta")
-	if err != nil {
-		s.Error(err)
-	}
-	FoundationAddress = *foundation
-	s.foundationAddress = FoundationAddress
+	params := &config.DefaultParams
+	FoundationAddress = params.Foundation
+	s.foundationAddress = params.Foundation
 
 	chainStore, err := NewChainStore("Chain_UnitTest",
-		config.DefaultParams.GenesisBlock)
+		params.GenesisBlock)
 	if err != nil {
 		s.Error(err)
 	}
-	s.Chain, err = New(chainStore, &config.DefaultParams, state.NewState(&config.DefaultParams, nil))
+	s.Chain, err = New(chainStore, params, state.NewState(params, nil))
 	if err != nil {
 		s.Error(err)
 	}
@@ -406,12 +398,12 @@ func (s *txValidatorTestSuite) TestCheckTransactionBalance() {
 	references := map[*types.Input]*types.Output{
 		&types.Input{}: {Value: outputValue1},
 	}
-	s.EqualError(checkTransactionFee(tx, references), "transaction fee not enough")
+	s.EqualError(s.Chain.checkTransactionFee(tx, references), "transaction fee not enough")
 
 	references = map[*types.Input]*types.Output{
-		&types.Input{}: {Value: outputValue1 + common.Fixed64(config.Parameters.PowConfiguration.MinTxFee)},
+		&types.Input{}: {Value: outputValue1 + s.Chain.chainParams.MinTransactionFee},
 	}
-	s.NoError(checkTransactionFee(tx, references))
+	s.NoError(s.Chain.checkTransactionFee(tx, references))
 
 	// multiple output
 
@@ -425,12 +417,12 @@ func (s *txValidatorTestSuite) TestCheckTransactionBalance() {
 	references = map[*types.Input]*types.Output{
 		&types.Input{}: {Value: outputValue1 + outputValue2},
 	}
-	s.EqualError(checkTransactionFee(tx, references), "transaction fee not enough")
+	s.EqualError(s.Chain.checkTransactionFee(tx, references), "transaction fee not enough")
 
 	references = map[*types.Input]*types.Output{
-		&types.Input{}: {Value: outputValue1 + outputValue2 + common.Fixed64(config.Parameters.PowConfiguration.MinTxFee)},
+		&types.Input{}: {Value: outputValue1 + outputValue2 + s.Chain.chainParams.MinTransactionFee},
 	}
-	s.NoError(checkTransactionFee(tx, references))
+	s.NoError(s.Chain.checkTransactionFee(tx, references))
 }
 
 func (s *txValidatorTestSuite) TestCheckSideChainPowConsensus() {

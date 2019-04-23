@@ -1,26 +1,29 @@
-# Config.json explanation
+# config.json explanation
 
-## In most cases, you only need to modify
+## Configuration free
+- `config.json` file is optional, you can run a `ela` node without a `config.json` file.
+-  By default JSON-RPC is enabled on `localhost:20336`.
 
-- AutoMining、
-- PayToAddr、
-- Magic、
-- SeedList、
-- HttpInfoPort、
-- HttpRestPort、
-- HttpWsPort、
-- HttpJsonPort、
-- NodePort，
-- ActiveNet  //for reduce the mining blocks interval
-- RpcConfiguration //for limit ip to use rpc interface
+## Change active network
+Just modify the `ActiveNet` parameter in the `config.json` file.
+```json
+{
+  "Configuration": {
+    "ActiveNet": "testnet"
+  }
+}
+```
+Default config for `testnet`
+- Peer-to-Peer network connect to ELA `testnet`.
+- JSON-RPC is enabled on `localhost:21336`.
+
 ## Inline Explanation
 
-```JSON
+```json5
 {
   "Configuration": {
     "ActiveNet": "mainnet",  // Network type. Choices: mainnet testnet and regnet
-    "Magic": 20180312,        // Magic Number：Segregation for different subnet. No matter the port number, as long as the magic number not matching, nodes cannot talk to each others
-    "Version": 23,           // Version number
+    "Magic": 20180312,       // Magic Number：Segregation for different subnet. No matter the port number, as long as the magic number not matching, nodes cannot talk to each others
     "SeedList": [            // SeedList. Other nodes will look up this seed list to connect to any of those seed in order to get all nodes addresses
       "127.0.0.1:30338"
     ],
@@ -34,6 +37,7 @@
     "HttpWsPort": 20335,          // Websocket port number
     "HttpWsStart": true,          // Whether to enable the WebSocket service
     "HttpJsonPort": 20336,        // RPC port number
+    "DisableRPC": false,          // Disable the RPC service
     "NodePort": 20338,            // P2P port number
     "PrintLevel": 0,              // Log level. Level 0 is the highest, 5 is the lowest
     "MaxLogsSize": 0,             // Max total logs size in MB
@@ -53,16 +57,16 @@
         "127.0.0.1"
       ]
     },
-    "EnableArbiter": false,    // Normal ela node can be false, producer node need to be true
-    "ArbiterConfiguration": {
-      "PublicKey": "",         // The hex string of publickey
-      "Magic": 20180313,        // The magic number of arbiters network
-      "NodePort": 30338,       // The node prot of arbiters network
-      "PrintLevel": 0,         // Log level. Level 0 is the highest, 5 is the lowest
-      "SignTolerance": 5,      // The time interval of consensus in seconds
-      "MaxLogsSize": 0,        // Max total logs size in MB
-      "MaxPerLogSize": 0,      // Max per log file size in MB
-      "OriginArbiters": [      // The publickey list of arbiters before CRCOnlyDPOSHeight
+    "DPoSConfiguration": {
+      "EnableArbiter": false,     // EnableArbiter enables the arbiter service.
+      "Magic": 2019000,           // The magic number of DPoS network
+      "IPAddress": "192.168.0.1", // The public network IP address of the node.
+      "DPoSPort": 20339,          // The node prot of DPoS network
+      "PrintLevel": 0,            // Log level. Level 0 is the highest, 5 is the lowest
+      "SignTolerance": 5,         // The time interval of consensus in seconds
+      "MaxLogsSize": 0,           // Max total logs size in MB
+      "MaxPerLogSize": 0,         // Max per log file size in MB
+      "OriginArbiters": [         // The publickey list of arbiters before CRCOnlyDPOSHeight
         "02f3876d0973210d5af7eb44cc11029eb63a102e424f0dc235c60adb80265e426e",
         "03c96f2469b43dd8d0e6fa3041a6cee727e0a3a6658a9c28d91e547d11ba8014a1",
         "036d25d54fb7a40bc7c3e836a26c9e30d5294bc46f6918ad61d0937960f13307bc",
@@ -70,22 +74,10 @@
         "02e34e47a06955ef1ec0d325c9edada34a0df6e519530344cc85f5942d061223b3"
       ],
       "CRCArbiters": [         // The crc arbiters after CRCOnlyDPOSHeight 
-        {
-          "PublicKey": "02eae9164bd143eb988fcd4b7a3c9c04a44eb9a009f73e7615e80a5e8ce1e748b8",
-          "NetAddress": "127.0.0.1:10078"
-        },
-        {
-          "PublicKey": "0294d85959f746b8e6e579458b41eea05afeae50f5a37a037de601673cb24133d9",
-          "NetAddress": "127.0.0.1:10178"
-        },
-        {
-          "PublicKey": "03b0a3a16edfba8d9c1fed9094431c9f24c78b8ceb04b4b6eeb7706f1686b83499",
-          "NetAddress": "127.0.0.1:10278"
-        },
-        {
-          "PublicKey": "0222461ae6c9671cad288f10469f9fd759912f257c64524367dc12c40c2bb4046d",
-          "NetAddress": "127.0.0.1:10378"
-        }
+        "02eae9164bd143eb988fcd4b7a3c9c04a44eb9a009f73e7615e80a5e8ce1e748b8",
+        "0294d85959f746b8e6e579458b41eea05afeae50f5a37a037de601673cb24133d9",
+        "03b0a3a16edfba8d9c1fed9094431c9f24c78b8ceb04b4b6eeb7706f1686b83499",
+        "0222461ae6c9671cad288f10469f9fd759912f257c64524367dc12c40c2bb4046d",
       ],
       "NormalArbitratorsCount": 24,             // The count of voted arbiters
       "CandidatesCount": 72,                    // The count of candidates
@@ -101,5 +93,4 @@
     "PublicDPOSHeight": 1108812    //The height start DPOS by CRCProducers and voted producers 
   }
 }
-
 ```
