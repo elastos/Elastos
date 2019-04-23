@@ -26,6 +26,10 @@ namespace Elastos {
 
 			virtual Key DeriveVoteKey(const std::string &payPasswd);
 
+			virtual size_t TxInternalChainIndex(const TransactionPtr &tx) const;
+
+			virtual size_t TxExternalChainIndex(const TransactionPtr &tx) const;
+
 		private:
 			MultiSignAccount *_multiSignAccount;
 		};

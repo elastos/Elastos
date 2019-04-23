@@ -84,5 +84,22 @@ namespace Elastos {
 			return rootKey.getChild("44'/0'/1'/0/0");
 		}
 
+		size_t StandardSingleSubAccount::TxInternalChainIndex(const TransactionPtr &tx) const {
+			for (size_t i = 0; i < tx->GetOutputs().size(); ++i) {
+				if (tx->GetOutputs()[i].GetAddress() == _address)
+					return 0;
+			}
+
+			return -1;
+		}
+
+		size_t StandardSingleSubAccount::TxExternalChainIndex(const TransactionPtr &tx) const {
+			for (size_t i = 0; i < tx->GetOutputs().size(); ++i) {
+				if (tx->GetOutputs()[i].GetAddress() == _address)
+					return 0;
+			}
+
+			return -1;
+		}
 	}
 }

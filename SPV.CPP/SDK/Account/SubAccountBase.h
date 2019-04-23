@@ -34,6 +34,10 @@ namespace Elastos {
 
 			virtual bool FindKey(Key &key, const bytes_t &pubKey, const std::string &payPasswd);
 
+			virtual size_t TxInternalChainIndex(const TransactionPtr &tx) const;
+
+			virtual size_t TxExternalChainIndex(const TransactionPtr &tx) const;
+
 		protected:
 			mutable Address _depositAddress;
 			bytes_t _votePublicKey;

@@ -225,5 +225,27 @@ namespace Elastos {
 			return rootKey.getChild("44'/0'/1'/0/0");
 		}
 
+		size_t HDSubAccount::TxInternalChainIndex(const TransactionPtr &tx) const {
+			for (size_t i = internalChain.size(); i > 0; --i) {
+				for (size_t o = 0; o < tx->GetOutputs().size(); o++) {
+					if (internalChain[i] == tx->GetOutputs()[o].GetAddress())
+						return i - 1;
+				}
+			}
+
+			return -1;
+		}
+
+		size_t HDSubAccount::TxExternalChainIndex(const TransactionPtr &tx) const {
+			for (size_t i = externalChain.size(); i > 0; --i) {
+				for (size_t o = 0; o < tx->GetOutputs().size(); ++o) {
+					if (externalChain[i] == tx->GetOutputs()[o].GetAddress())
+						return i - 1;
+				}
+			}
+
+			return -1;
+		}
+
 	}
 }

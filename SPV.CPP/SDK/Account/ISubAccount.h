@@ -72,6 +72,10 @@ namespace Elastos {
 
 			virtual bytes_t GetVotePublicKey() const = 0;
 
+			virtual size_t TxInternalChainIndex(const TransactionPtr &tx) const = 0;
+
+			virtual size_t TxExternalChainIndex(const TransactionPtr &tx) const = 0;
+
 		};
 
 		typedef boost::shared_ptr<ISubAccount> SubAccountPtr;

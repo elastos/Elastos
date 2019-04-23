@@ -61,9 +61,11 @@ namespace Elastos {
 
 			const TransactionPtr GetExistTransaction(const uint256 &hash) const;
 
-			void SortTransaction();
+			bool TxIsAscending(const TransactionPtr &tx1, const TransactionPtr &tx2) const;
 
-			void Append(const TransactionPtr &transaction);
+			int TxCompare(const TransactionPtr &tx1, const TransactionPtr &tx2) const;
+
+			void InsertTx(const TransactionPtr &tx);
 
 			void BatchSet(const boost::function<void(const TransactionPtr &)> &fun);
 
@@ -147,7 +149,7 @@ namespace Elastos {
 
 			std::vector<UTXO> GetAllUTXOs() const;
 
-			void Append(const TransactionPtr &transaction);
+			void InsertTx(const TransactionPtr &transaction);
 
 			bool Empty() const;
 

@@ -107,5 +107,13 @@ namespace Elastos {
 			return false;
 		}
 
+		size_t SubAccountBase::TxInternalChainIndex(const TransactionPtr &tx) const {
+			return -1;
+		}
+
+		size_t SubAccountBase::TxExternalChainIndex(const TransactionPtr &tx) const {
+			return -1;
+		}
+
 	}
 }
