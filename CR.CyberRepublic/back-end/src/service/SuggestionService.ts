@@ -110,16 +110,22 @@ export default class extends Base {
   }
 
   public async list(param: any): Promise<Object> {
-    const query = _.omit(param, ['results', 'page', 'sortBy', 'sortOrder', 'filter', 'profileListFor', 'search'])
+    const query = _.omit(param, ['results', 'page', 'sortBy', 'sortOrder', 'filter', 'profileListFor', 'search', 'tagsExcluded'])
+    const { sortBy, sortOrder, tagsExcluded } = param
+
+    if (!_.isEmpty(tagsExcluded)) {
+      query['tags.type'] = { $nin: tagsExcluded.split(',') }
+    }
+
     const cursor = this.model.getDBInstance()
       .find(query)
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
       .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
     const totalCursor = this.model.getDBInstance().find(query).count()
 
-    if (param.sortBy) {
+    if (sortBy) {
       const sortObject = {}
-      sortObject[param.sortBy] = _.get(constant.SORT_ORDER, param.sortOrder, constant.SORT_ORDER.DESC)
+      sortObject[sortBy] = _.get(constant.SORT_ORDER, sortOrder, constant.SORT_ORDER.DESC)
       cursor.sort(sortObject)
     }
 
