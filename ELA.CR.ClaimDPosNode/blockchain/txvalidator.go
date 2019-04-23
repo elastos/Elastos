@@ -220,7 +220,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 		return ErrUTXOLocked
 	}
 
-	if err := checkTransactionFee(txn, references); err != nil {
+	if err := b.checkTransactionFee(txn, references); err != nil {
 		log.Warn("[CheckTransactionFee],", err)
 		return ErrTransactionBalance
 	}
@@ -240,7 +240,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 		return ErrTransactionSignature
 	}
 
-	if err := checkInvalidUTXO(txn); err != nil {
+	if err := b.checkInvalidUTXO(txn); err != nil {
 		log.Warn("[CheckTransactionCoinbaseLock]", err)
 		return ErrIneffectiveCoinbase
 	}
@@ -307,7 +307,7 @@ func checkDestructionAddress(references map[*Input]*Output) error {
 	return nil
 }
 
-func checkInvalidUTXO(txn *Transaction) error {
+func (b *BlockChain) checkInvalidUTXO(txn *Transaction) error {
 	type lockTxInfo struct {
 		isCoinbaseTx bool
 		locktime     uint32
@@ -342,7 +342,7 @@ func checkInvalidUTXO(txn *Transaction) error {
 			}
 		}
 
-		if isCoinbase && currentHeight-lockHeight < config.Parameters.ChainParam.CoinbaseLockTime {
+		if isCoinbase && currentHeight-lockHeight < b.chainParams.CoinbaseMaturity {
 			return errors.New("the utxo of coinbase is locking")
 		}
 	}
@@ -618,7 +618,7 @@ func checkAssetPrecision(txn *Transaction) error {
 	return nil
 }
 
-func checkTransactionFee(tx *Transaction, references map[*Input]*Output) error {
+func (b *BlockChain) checkTransactionFee(tx *Transaction, references map[*Input]*Output) error {
 	var outputValue common.Fixed64
 	var inputValue common.Fixed64
 	for _, output := range tx.Outputs {
@@ -627,7 +627,7 @@ func checkTransactionFee(tx *Transaction, references map[*Input]*Output) error {
 	for _, reference := range references {
 		inputValue += reference.Value
 	}
-	if inputValue < common.Fixed64(config.Parameters.PowConfiguration.MinTxFee)+outputValue {
+	if inputValue < b.chainParams.MinTransactionFee+outputValue {
 		return fmt.Errorf("transaction fee not enough")
 	}
 	return nil
@@ -894,7 +894,7 @@ func (b *BlockChain) checkTransferCrossChainAssetTransaction(txn *Transaction, r
 	//check cross chain amount in payload
 	for i := 0; i < len(payloadObj.CrossChainAmounts); i++ {
 		if payloadObj.CrossChainAmounts[i] < 0 || payloadObj.CrossChainAmounts[i] >
-			txn.Outputs[payloadObj.OutputIndexes[i]].Value-common.Fixed64(b.chainParams.MinCrossChainTxFee) {
+			txn.Outputs[payloadObj.OutputIndexes[i]].Value-b.chainParams.MinCrossChainTxFee {
 			return errors.New("Invalid transaction cross chain amount")
 		}
 	}
@@ -910,7 +910,7 @@ func (b *BlockChain) checkTransferCrossChainAssetTransaction(txn *Transaction, r
 		totalOutput += output.Value
 	}
 
-	if totalInput-totalOutput < common.Fixed64(b.chainParams.MinCrossChainTxFee) {
+	if totalInput-totalOutput < b.chainParams.MinCrossChainTxFee {
 		return errors.New("Invalid transaction fee")
 	}
 	return nil
@@ -1176,8 +1176,7 @@ func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction,
 		penalty += p.Penalty()
 	}
 
-	if inputValue-penalty < common.Fixed64(
-		b.chainParams.MinTransactionFee)+outputValue {
+	if inputValue-penalty < b.chainParams.MinTransactionFee+outputValue {
 		return fmt.Errorf("overspend deposit")
 	}
 

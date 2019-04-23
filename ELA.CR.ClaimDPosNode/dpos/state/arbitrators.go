@@ -892,8 +892,8 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
 	crcNodeMap := make(map[string]*Producer)
 	crcArbitratorsProgramHashes := make(map[common.Uint168]interface{})
 	crcArbiters := make([][]byte, 0, len(chainParams.CRCArbiters))
-	for _, v := range chainParams.CRCArbiters {
-		pubKey, err := hex.DecodeString(v.PublicKey)
+	for _, pk := range chainParams.CRCArbiters {
+		pubKey, err := hex.DecodeString(pk)
 		if err != nil {
 			return nil, err
 		}
@@ -903,11 +903,10 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
 		}
 		crcArbiters = append(crcArbiters, pubKey)
 		crcArbitratorsProgramHashes[*hash] = nil
-		crcNodeMap[v.PublicKey] = &Producer{ // here need crc NODE public key
+		crcNodeMap[pk] = &Producer{ // here need crc NODE public key
 			info: payload.ProducerInfo{
 				OwnerPublicKey: pubKey,
 				NodePublicKey:  pubKey,
-				NetAddress:     v.NetAddress,
 			},
 			activateRequestHeight: math.MaxUint32,
 		}
