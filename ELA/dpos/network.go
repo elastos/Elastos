@@ -44,6 +44,7 @@ type network struct {
 
 	badNetworkChan           chan bool
 	changeViewChan           chan bool
+	recoverTimeoutChan       chan bool
 	blockReceivedChan        chan blockItem
 	confirmReceivedChan      chan *payload.Confirm
 	illegalBlocksEvidence    chan *payload.DPOSIllegalBlocks
@@ -70,6 +71,8 @@ func (n *network) Start() {
 				n.changeView()
 			case <-n.badNetworkChan:
 				n.badNetwork()
+			case <-n.recoverTimeoutChan:
+				n.recoverTimeout()
 			case blockItem := <-n.blockReceivedChan:
 				n.blockReceived(blockItem.Block, blockItem.Confirmed)
 			case confirm := <-n.confirmReceivedChan:
@@ -138,6 +141,10 @@ func (n *network) GetActivePeers() []p2p.Peer {
 
 func (n *network) PostChangeViewTask() {
 	n.changeViewChan <- true
+}
+
+func (n *network) RecoverTimeout() {
+	n.recoverTimeoutChan <- true
 }
 
 func (n *network) PostBlockReceivedTask(b *types.Block, confirmed bool) {
@@ -275,6 +282,10 @@ func (n *network) badNetwork() {
 	n.listener.OnBadNetwork()
 }
 
+func (n *network) recoverTimeout() {
+	n.listener.OnRecoverTimeout()
+}
+
 func (n *network) changeView() {
 	n.listener.OnChangeView()
 }
@@ -313,6 +324,7 @@ func NewDposNetwork(account account.Account, medianTime dtime.MedianTimeSource,
 		quit:                     make(chan bool),
 		badNetworkChan:           make(chan bool),
 		changeViewChan:           make(chan bool),
+		recoverTimeoutChan:       make(chan bool),
 		blockReceivedChan:        make(chan blockItem, 10),        //todo config handle capacity though config file
 		confirmReceivedChan:      make(chan *payload.Confirm, 10), //todo config handle capacity though config file
 		illegalBlocksEvidence:    make(chan *payload.DPOSIllegalBlocks),

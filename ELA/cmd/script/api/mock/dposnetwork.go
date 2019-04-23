@@ -58,6 +58,10 @@ type network struct {
 	messageList []messageItem
 }
 
+func (n *network) RecoverTimeout() {
+	panic("implement me")
+}
+
 func (n *network) DumpMessages(level uint32) string {
 	result := ""
 
