@@ -946,10 +946,18 @@ func (b *BlockChain) checkRegisterProducerTransaction(txn *Transaction) error {
 		return fmt.Errorf("nick name %s already inuse", info.NickName)
 	}
 
+	// check node public key
+	if b.GetHeight() >= b.chainParams.PublicDPOSHeight {
+		_, err := DecodePoint(info.NodePublicKey)
+		if err != nil {
+			return errors.New("invalid node public key in payload")
+		}
+	}
+
 	// check signature
 	publicKey, err := DecodePoint(info.OwnerPublicKey)
 	if err != nil {
-		return errors.New("invalid public key in payload")
+		return errors.New("invalid owner public key in payload")
 	}
 	signedBuf := new(bytes.Buffer)
 	err = info.SerializeUnsigned(signedBuf, payload.ProducerInfoVersion)
@@ -1113,10 +1121,18 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 		return err
 	}
 
+	// check node public key
+	if b.GetHeight() >= b.chainParams.PublicDPOSHeight {
+		_, err := DecodePoint(info.NodePublicKey)
+		if err != nil {
+			return errors.New("invalid node public key in payload")
+		}
+	}
+
 	// check signature
 	publicKey, err := DecodePoint(info.OwnerPublicKey)
 	if err != nil {
-		return errors.New("invalid public key in payload")
+		return errors.New("invalid owner public key in payload")
 	}
 	signedBuf := new(bytes.Buffer)
 	err = info.SerializeUnsigned(signedBuf, payload.ProducerInfoVersion)
