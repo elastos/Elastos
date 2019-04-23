@@ -644,7 +644,7 @@ func checkAttributeProgram(tx *Transaction) error {
 	case IllegalSidechainEvidence, IllegalProposalEvidence, IllegalVoteEvidence,
 		ActivateProducer:
 		if len(tx.Programs) != 0 || len(tx.Attributes) != 0 {
-			return errors.New("illegal proposal and vote transactions should have no attributes and programs")
+			return errors.New("zero cost tx should have no attributes and programs")
 		}
 		return nil
 	case IllegalBlockEvidence:
@@ -1017,29 +1017,29 @@ func (b *BlockChain) checkProcessProducer(txn *Transaction) (
 
 func (b *BlockChain) checkActivateProducer(txn *Transaction) (
 	*state.Producer, error) {
-	processProducer, ok := txn.Payload.(*payload.ActivateProducer)
+	activateProducer, ok := txn.Payload.(*payload.ActivateProducer)
 	if !ok {
 		return nil, errors.New("invalid payload")
 	}
 
 	// check signature
-	publicKey, err := DecodePoint(processProducer.NodePublicKey)
+	publicKey, err := DecodePoint(activateProducer.NodePublicKey)
 	if err != nil {
 		return nil, errors.New("invalid public key in payload")
 	}
 	signedBuf := new(bytes.Buffer)
-	err = processProducer.SerializeUnsigned(signedBuf, payload.ProcessProducerVersion)
+	err = activateProducer.SerializeUnsigned(signedBuf, payload.ActivateProducerVersion)
 	if err != nil {
 		return nil, err
 	}
-	err = Verify(*publicKey, signedBuf.Bytes(), processProducer.Signature)
+	err = Verify(*publicKey, signedBuf.Bytes(), activateProducer.Signature)
 	if err != nil {
 		return nil, errors.New("invalid signature in payload")
 	}
 
-	producer := b.state.GetProducer(processProducer.NodePublicKey)
+	producer := b.state.GetProducer(activateProducer.NodePublicKey)
 	if producer == nil || !bytes.Equal(producer.NodePublicKey(),
-		processProducer.NodePublicKey) {
+		activateProducer.NodePublicKey) {
 		return nil, errors.New("getting unknown producer")
 	}
 	return producer, nil

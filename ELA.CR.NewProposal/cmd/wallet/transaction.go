@@ -33,7 +33,8 @@ var txCommand = []cli.Command{
 			//TransactionLockFlag,
 			AccountWalletFlag,
 		},
-		Action: buildTx,
+		Subcommands: buildTxCommand,
+		Action:      buildTx,
 	},
 	{
 		Category:    "Transaction",
@@ -68,6 +69,36 @@ var txCommand = []cli.Command{
 			TransactionFileFlag,
 		},
 		Action: showTx,
+	},
+}
+
+var buildTxCommand = []cli.Command{
+	{
+		Name:  "activate",
+		Usage: "Build a tx to activate producer which have been inactivated",
+		Flags: []cli.Flag{
+			AccountWalletFlag,
+			AccountPasswordFlag,
+			TransactionNodePublicKeyFlag,
+		},
+		Action: func(c *cli.Context) error {
+			if c.NumFlags() == 0 {
+				cli.ShowSubcommandHelp(c)
+				return nil
+			}
+			if err := CreateActivateProducerTransaction(c); err != nil {
+				fmt.Println("error:", err)
+				os.Exit(1)
+			}
+			return nil
+		},
+	},
+	{
+		Name:  "vote",
+		Usage: "Vote for candidates using ELA",
+		Action: func(c *cli.Context) error {
+			return nil
+		},
 	},
 }
 
