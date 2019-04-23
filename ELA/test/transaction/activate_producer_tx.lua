@@ -9,37 +9,15 @@ local pubkey = wallet:get_publickey()
 print(addr)
 print(pubkey)
 
--- asset_id
-local asset_id = m.get_asset_id()
-
--- fee
-local fee = 0.001
-
 -- deposit params
-local own_publickey = "034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16c"
+local node_publickey = "032895050b7de1a9cf43416e6e5310f8e909249dcd9c4166159b04a343f7f141b5"
 
 -- activate producer payload: publickey, wallet
-local ap_payload = activateproducer.new(own_publickey, wallet)
+local ap_payload = activateproducer.new(node_publickey, wallet)
 print(ap_payload:get())
 
 -- transaction: version, txType, payloadVersion, payload, locktime
-local tx = transaction.new(9, 0x0a, 0, ap_payload, 0)
-
--- input: from, amount + fee
-local charge = tx:appendenough(addr, fee * 100000000)
-print(charge)
-
--- outputpayload
-local default_output = defaultoutput.new()
-
--- output: asset_id, value, recipient, output_paload_type, outputpaload
-local charge_output = output.new(asset_id, charge, addr, 0, default_output)
-tx:appendtxout(charge_output)
--- print(charge_output:get())
-
--- sign
-tx:sign(wallet)
-print(tx:get())
+local tx = transaction.new(9, 0x0d, 0, ap_payload, 0)
 
 -- send
 local hash = tx:hash()

@@ -55,4 +55,8 @@ var (
 		Name:  "file, f",
 		Usage: "the file path to specify a transaction file path with the hex string content to be sign",
 	}
+	TransactionNodePublicKeyFlag = cli.StringFlag{
+		Name:  "nodepublickey",
+		Usage: "the node public key of an arbitrator which have been inactivated",
+	}
 )
