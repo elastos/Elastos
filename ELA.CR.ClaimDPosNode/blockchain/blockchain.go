@@ -123,6 +123,7 @@ func New(db IChainStore, chainParams *config.Params, state *state.State) (*Block
 func (b *BlockChain) InitProducerState(interrupt <-chan struct{},
 	start func(total uint32), increase func()) (err error) {
 	bestHeight := b.db.GetHeight()
+	log.Info("current block height ->", bestHeight)
 	arbiters := DefaultLedger.Arbitrators
 	done := make(chan struct{})
 	go func() {
