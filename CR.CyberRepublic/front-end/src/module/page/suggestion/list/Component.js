@@ -105,15 +105,13 @@ export default class extends StandardPage {
                 <br />
               </Col>
             </Row>
-            {this.state.showArchived === false ?
-              <Row>
-                <Col>
-                  {actionsNode}
-                  {listNode}
-                </Col>
-              </Row> :
-              <Row/>
-            }
+            <Row>
+              <Col>
+                {actionsNode}
+                {listNode}
+              </Col>
+            </Row> :
+            <Row/>
           </MediaQuery>
           <MediaQuery minWidth={LG_WIDTH + 1}>
             <Row gutter={24}>
@@ -128,20 +126,12 @@ export default class extends StandardPage {
                 {filterNode}
               </Col>
             </Row>
-            {this.state.showArchived === false ?
-              <Row gutter={24}>
-                <Col span={24}>
-                  {listNode}
-                </Col>
-                {/* <Col span={8}>{mySuggestionNode}</Col> */}
-              </Row> :
-              <Row gutter={24}>
-                <Col span={24}>
-                  {archivedNode}
-                </Col>
-                {/* <Col span={8}>{mySuggestionNode}</Col> */}
-              </Row>
-            }
+            <Row gutter={24}>
+              <Col span={24}>
+                {listNode}
+              </Col>
+              {/* <Col span={8}>{mySuggestionNode}</Col> */}
+            </Row>
           </MediaQuery>
           {createForm}
         </SuggestionContainer>
@@ -197,8 +187,8 @@ export default class extends StandardPage {
     })
   }
 
-  toggleArchivedList = () => {
-    this.setState(prevState => ({
+  toggleArchivedList = async () => {
+    await this.setState(prevState => ({
       showArchived: !prevState.showArchived,
 
       // go back to page 1 on toggle
