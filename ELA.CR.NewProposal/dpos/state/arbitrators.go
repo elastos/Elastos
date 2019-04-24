@@ -237,7 +237,7 @@ func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
 	switch changeType {
 	case updateNext:
 		if err := a.updateNextArbitrators(versionHeight); err != nil {
-			log.Error("[IncreaseChainHeight] update next arbiters error: ", err)
+			panic(fmt.Sprintf("[IncreaseChainHeight] update next arbiters at height: %d, error: %s", block.Height, err))
 		}
 	case normalChange:
 		if err := a.clearingDPOSReward(block, true); err != nil {
