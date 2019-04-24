@@ -20,9 +20,9 @@ import (
 	"github.com/urfave/cli"
 )
 
-type Transfer struct {
-	Address string
-	Amount  *common.Fixed64
+type OutputInfo struct {
+	Recipient string
+	Amount    *common.Fixed64
 }
 
 func CreateTransaction(c *cli.Context) error {
@@ -40,7 +40,7 @@ func CreateTransaction(c *cli.Context) error {
 
 	from := c.String("from")
 
-	outputs := make([]*Transfer, 0)
+	outputs := make([]*OutputInfo, 0)
 	to := c.String("to")
 	amountStr := c.String("amount")
 	toMany := c.String("tomany")
@@ -59,12 +59,14 @@ func CreateTransaction(c *cli.Context) error {
 		if amountStr == "" {
 			return errors.New("use --amount to specify transfer amount")
 		}
-
 		amount, err := common.StringToFixed64(amountStr)
 		if err != nil {
 			return errors.New("invalid transaction amount")
 		}
-		outputs = []*Transfer{{to, amount}}
+		if to == "" {
+			return errors.New("use --to to specify recipient")
+		}
+		outputs = []*OutputInfo{{to, amount}}
 	}
 
 	lockStr := c.String("lock")
@@ -77,7 +79,7 @@ func CreateTransaction(c *cli.Context) error {
 	}
 
 	var txn *types.Transaction
-	txn, err = createTransaction(walletPath, from, fee, uint32(lock), outputs...)
+	txn, err = createTransaction(walletPath, from, *fee, uint32(lock), outputs...)
 	if err != nil {
 		return errors.New("create transaction failed: " + err.Error())
 	}
@@ -85,6 +87,204 @@ func CreateTransaction(c *cli.Context) error {
 	output(0, 1, txn)
 
 	return nil
+}
+
+func getSender(walletPath string, from string) (*account.AccountData, error) {
+	var sender *account.AccountData
+	mainAccount, err := account.GetWalletMainAccountData(walletPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if from == "" {
+		from = mainAccount.Address
+		sender = mainAccount
+	} else if from != mainAccount.Address {
+		storeAccounts, err := account.GetWalletAccountData(walletPath)
+		if err != nil {
+			return nil, err
+		}
+		for _, acc := range storeAccounts {
+			if from == acc.Address {
+				sender = &acc
+				break
+			}
+		}
+		if sender == nil {
+			return nil, errors.New(from + " is not local account")
+		}
+	}
+
+	return sender, nil
+}
+
+func createInputs(sender *account.AccountData, txOutputs []*types.Output, totalAmount common.Fixed64) ([]*types.Input, error) {
+	availableUTXOs, _, err := getAddressUTXOs(sender.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	var txInputs []*types.Input
+	for _, utxo := range availableUTXOs {
+		txIDReverse, _ := hex.DecodeString(utxo.TxID)
+		txID, _ := common.Uint256FromBytes(common.BytesReverse(txIDReverse))
+		input := &types.Input{
+			Previous: types.OutPoint{
+				TxID:  *txID,
+				Index: uint16(utxo.VOut),
+			},
+			Sequence: 4294967295,
+		}
+		txInputs = append(txInputs, input)
+		amount, err := common.StringToFixed64(utxo.Amount)
+		if err != nil {
+			return nil, err
+		}
+		programHash, err := common.Uint168FromAddress(sender.Address)
+		if err != nil {
+			return nil, err
+		}
+		if *amount < totalAmount {
+			totalAmount -= *amount
+		} else if *amount == totalAmount {
+			totalAmount = 0
+			break
+		} else if *amount > totalAmount {
+			change := &types.Output{
+				AssetID:     *account.SystemAssetID,
+				Value:       *amount - totalAmount,
+				OutputLock:  uint32(0),
+				ProgramHash: *programHash,
+				Type:        types.OTNone,
+				Payload:     &outputpayload.DefaultOutput{},
+			}
+			txOutputs = append(txOutputs, change)
+			totalAmount = 0
+			break
+		}
+	}
+	if totalAmount > 0 {
+		return nil, errors.New("[Wallet], Available token is not enough")
+	}
+
+	return txInputs, nil
+}
+
+func createNormalOutputs(outputs []*OutputInfo, fee common.Fixed64, lockedUntil uint32) ([]*types.Output, common.Fixed64, error) {
+	var totalAmount = common.Fixed64(0) // The total amount will be spend
+	var txOutputs []*types.Output       // The outputs in transaction
+	totalAmount += fee                  // Add transaction fee
+
+	for _, output := range outputs {
+		recipient, err := common.Uint168FromAddress(output.Recipient)
+		if err != nil {
+			return nil, 0, errors.New(fmt.Sprint("invalid receiver address: ", output.Recipient, ", error: ", err))
+		}
+
+		txOutput := &types.Output{
+			AssetID:     *account.SystemAssetID,
+			ProgramHash: *recipient,
+			Value:       *output.Amount,
+			OutputLock:  lockedUntil,
+			Type:        types.OTNone,
+			Payload:     &outputpayload.DefaultOutput{},
+		}
+		totalAmount += *output.Amount
+		txOutputs = append(txOutputs, txOutput)
+	}
+
+	return txOutputs, totalAmount, nil
+}
+
+func createVoteOutputs(output *OutputInfo, candidateList []string) ([]*types.Output, error) {
+	var txOutputs []*types.Output
+	recipient, err := common.Uint168FromAddress(output.Recipient)
+	if err != nil {
+		return nil, errors.New(fmt.Sprint("invalid receiver address: ", output.Recipient, ", error: ", err))
+	}
+
+	// create vote output payload
+	var candidates [][]byte
+	for _, candidateHex := range candidateList {
+		candidateBytes, err := common.HexStringToBytes(candidateHex)
+		if err != nil {
+			return nil, err
+		}
+		candidates = append(candidates, candidateBytes)
+	}
+	voteContent := outputpayload.VoteContent{
+		VoteType:   outputpayload.Delegate,
+		Candidates: candidates,
+	}
+	voteOutput := outputpayload.VoteOutput{
+		Version: 0,
+		Contents: []outputpayload.VoteContent{
+			voteContent,
+		},
+	}
+
+	txOutput := &types.Output{
+		AssetID:     *account.SystemAssetID,
+		ProgramHash: *recipient,
+		Value:       *output.Amount,
+		OutputLock:  0,
+		Type:        types.OTVote,
+		Payload:     &voteOutput,
+	}
+	txOutputs = append(txOutputs, txOutput)
+
+	return txOutputs, nil
+}
+
+func createTransaction(walletPath string, from string, fee common.Fixed64, lockedUntil uint32, outputs ...*OutputInfo) (*types.Transaction, error) {
+	// check output
+	if len(outputs) == 0 {
+		return nil, errors.New("invalid transaction target")
+	}
+
+	// get sender in wallet by from address
+	sender, err := getSender(walletPath, from)
+	if err != nil {
+		return nil, err
+	}
+
+	// create outputs
+	txOutputs, totalAmount, err := createNormalOutputs(outputs, fee, lockedUntil)
+	if err != nil {
+		return nil, err
+	}
+
+	// create inputs
+	txInputs, err := createInputs(sender, txOutputs, totalAmount)
+	if err != nil {
+		return nil, err
+	}
+
+	redeemScript, err := common.HexStringToBytes(sender.RedeemScript)
+	if err != nil {
+		return nil, err
+	}
+	// create attributes
+	txAttr := types.NewAttribute(types.Nonce, []byte(strconv.FormatInt(rand.Int63(), 10)))
+	txAttributes := make([]*types.Attribute, 0)
+	txAttributes = append(txAttributes, &txAttr)
+
+	// create program
+	var txProgram = &pg.Program{
+		Code:      redeemScript,
+		Parameter: nil,
+	}
+
+	return &types.Transaction{
+		Version:    types.TxVersion09,
+		TxType:     types.TransferAsset,
+		Payload:    &payload.TransferAsset{},
+		Attributes: txAttributes,
+		Inputs:     txInputs,
+		Outputs:    txOutputs,
+		Programs:   []*pg.Program{txProgram},
+		LockTime:   0,
+	}, nil
 }
 
 func CreateActivateProducerTransaction(c *cli.Context) error {
@@ -147,121 +347,75 @@ func CreateActivateProducerTransaction(c *cli.Context) error {
 	return nil
 }
 
-func createTransaction(walletPath string, from string, fee *common.Fixed64, lockedUntil uint32, outputs ...*Transfer) (*types.Transaction, error) {
-	// Check output
-	if len(outputs) == 0 {
-		return nil, errors.New("[Wallet], Invalid transaction target")
-	}
+func CreateVoteTransaction(c *cli.Context) error {
+	walletPath := c.String("wallet")
 
-	// Check from address
-	var usingAccount *account.AccountData
-	mainAccount, err := account.GetWalletMainAccountData(walletPath)
+	feeStr := c.String("fee")
+	if feeStr == "" {
+		return errors.New("use --fee to specify transfer fee")
+	}
+	fee, err := common.StringToFixed64(feeStr)
 	if err != nil {
-		return nil, err
+		return errors.New("invalid transaction fee")
 	}
 
-	if from == "" {
-		from = mainAccount.Address
-		usingAccount = mainAccount
-	} else if from != mainAccount.Address {
-		storeAccounts, err := account.GetWalletAccountData(walletPath)
-		if err != nil {
-			return nil, err
-		}
-		for _, acc := range storeAccounts {
-			if from == acc.Address {
-				usingAccount = &acc
-				break
-			}
-		}
-		if usingAccount == nil {
-			return nil, errors.New(from + " is not local account")
-		}
+	// calculate total amount
+	amountStr := c.String("amount")
+	if amountStr == "" {
+		return errors.New("use --amount to specify transfer amount")
 	}
-
-	spender, err := common.Uint168FromAddress(from)
+	amount, err := common.StringToFixed64(amountStr)
 	if err != nil {
-		return nil, errors.New(fmt.Sprint("[Wallet], Invalid spender address: ", from, ", error: ", err))
+		return errors.New("invalid transaction amount")
 	}
+	totalAmount := *fee + *amount
 
-	// Create transaction outputs
-	var totalOutputAmount = common.Fixed64(0) // The total amount will be spend
-	var txOutputs []*types.Output             // The outputs in transaction
-	totalOutputAmount += *fee                 // Add transaction fee
-
-	for _, output := range outputs {
-		receiver, err := common.Uint168FromAddress(output.Address)
-		if err != nil {
-			return nil, errors.New(fmt.Sprint("[Wallet], Invalid receiver address: ", output.Address, ", error: ", err))
-		}
-
-		txOutput := &types.Output{
-			AssetID:     *account.SystemAssetID,
-			ProgramHash: *receiver,
-			Value:       *output.Amount,
-			OutputLock:  lockedUntil,
-			Type:        types.OTNone,
-			Payload:     &outputpayload.DefaultOutput{},
-		}
-		totalOutputAmount += *output.Amount
-		txOutputs = append(txOutputs, txOutput)
-	}
-
-	availableUTXOs, _, err := getAddressUTXOs(from)
+	// get sender from wallet by from address
+	from := c.String("from")
+	sender, err := getSender(walletPath, from)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	// Create transaction inputs
-	var txInputs []*types.Input // The inputs in transaction
-	for _, utxo := range availableUTXOs {
-		txIDReverse, _ := hex.DecodeString(utxo.TxID)
-		txID, _ := common.Uint256FromBytes(common.BytesReverse(txIDReverse))
-		input := &types.Input{
-			Previous: types.OutPoint{
-				TxID:  *txID,
-				Index: uint16(utxo.VOut),
-			},
-			Sequence: 4294967295,
-		}
-		txInputs = append(txInputs, input)
-		amount, _ := common.StringToFixed64(utxo.Amount)
-		if *amount < totalOutputAmount {
-			totalOutputAmount -= *amount
-		} else if *amount == totalOutputAmount {
-			totalOutputAmount = 0
-			break
-		} else if *amount > totalOutputAmount {
-			change := &types.Output{
-				AssetID:     *account.SystemAssetID,
-				Value:       *amount - totalOutputAmount,
-				OutputLock:  uint32(0),
-				ProgramHash: *spender,
-				Type:        types.OTNone,
-				Payload:     &outputpayload.DefaultOutput{},
-			}
-			txOutputs = append(txOutputs, change)
-			totalOutputAmount = 0
-			break
-		}
-	}
-	if totalOutputAmount > 0 {
-		return nil, errors.New("[Wallet], Available token is not enough")
-	}
-
-	redeemScript, err := common.HexStringToBytes(usingAccount.RedeemScript)
+	// get candidate list from file
+	candidatePath := c.String("for")
+	candidateList, err := parseCandidates(candidatePath)
 	if err != nil {
-		return nil, err
+		return err
 	}
+
+	// create outputs
+	txOutputs, err := createVoteOutputs(&OutputInfo{
+		Recipient: sender.Address,
+		Amount:    amount,
+	}, candidateList)
+	if err != nil {
+		return err
+	}
+
+	// create inputs
+	txInputs, err := createInputs(sender, txOutputs, totalAmount)
+	if err != nil {
+		return err
+	}
+
+	redeemScript, err := common.HexStringToBytes(sender.RedeemScript)
+	if err != nil {
+		return err
+	}
+
+	// create attributes
 	txAttr := types.NewAttribute(types.Nonce, []byte(strconv.FormatInt(rand.Int63(), 10)))
 	txAttributes := make([]*types.Attribute, 0)
 	txAttributes = append(txAttributes, &txAttr)
+
+	// create program
 	var txProgram = &pg.Program{
 		Code:      redeemScript,
 		Parameter: nil,
 	}
 
-	return &types.Transaction{
+	txn := &types.Transaction{
 		Version:    types.TxVersion09,
 		TxType:     types.TransferAsset,
 		Payload:    &payload.TransferAsset{},
@@ -270,5 +424,9 @@ func createTransaction(walletPath string, from string, fee *common.Fixed64, lock
 		Outputs:    txOutputs,
 		Programs:   []*pg.Program{txProgram},
 		LockTime:   0,
-	}, nil
+	}
+
+	output(0, 1, txn)
+
+	return nil
 }

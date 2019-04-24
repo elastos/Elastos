@@ -78,9 +78,9 @@ var buildTxCommand = []cli.Command{
 		Name:  "activate",
 		Usage: "Build a tx to activate producer which have been inactivated",
 		Flags: []cli.Flag{
+			TransactionNodePublicKeyFlag,
 			AccountWalletFlag,
 			AccountPasswordFlag,
-			TransactionNodePublicKeyFlag,
 		},
 		Action: func(c *cli.Context) error {
 			if c.NumFlags() == 0 {
@@ -97,10 +97,22 @@ var buildTxCommand = []cli.Command{
 	{
 		Name:  "vote",
 		Usage: "Build a tx to vote for candidates using ELA",
+		Flags: []cli.Flag{
+			TransactionForFlag,
+			TransactionAmountFlag,
+			TransactionFromFlag,
+			TransactionFeeFlag,
+			AccountWalletFlag,
+			AccountPasswordFlag,
+		},
 		Action: func(c *cli.Context) error {
 			if c.NumFlags() == 0 {
 				cli.ShowSubcommandHelp(c)
 				return nil
+			}
+			if err := CreateVoteTransaction(c); err != nil {
+				fmt.Println("error:", err)
+				os.Exit(1)
 			}
 			return nil
 		},
