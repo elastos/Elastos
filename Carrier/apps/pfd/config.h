@@ -26,6 +26,7 @@
 #include <ela_carrier.h>
 #include <ela_session.h>
 #include <crystal.h>
+
 #define MODE_CLIENT     1
 #define MODE_SERVER     2
 
@@ -43,15 +44,7 @@ typedef struct {
 } PFUser;
 
 typedef struct {
-    bool udp_enabled;
-
-    size_t bootstraps_size;
-    BootstrapNode **bootstraps;
-
-    int loglevel;
-    char *logfile;
-
-    char *datadir;
+    ElaOptions ela_options;
 
     int mode;
     int options;
@@ -62,6 +55,7 @@ typedef struct {
     hashtable_t *users;
 } PFConfig;
 
-PFConfig *load_config(const char *config_file);
+PFConfig *load_config(const char *config_file, PFConfig *config);
+void free_config(PFConfig *config);
 
 #endif /* __ELA_PFD_CONFIG_H__ */

@@ -34,6 +34,12 @@ set(ENABLE_DOCS FALSE CACHE BOOL "Build APIs documentation")
 add_subdirectory(deps)
 add_subdirectory(src)
 
+if(ENABLE_APPS OR ENABLE_TESTS)
+    add_submodule(checkconfig
+        DIRECTORY config
+        DEPENDS libcrystal libconfig ela-carrier ela-session)
+endif()
+
 if(ENABLE_APPS)
     add_subdirectory(apps)
 endif()

@@ -29,6 +29,7 @@ if(HAVE_SYS_RESOURCE_H)
 endif()
 
 set(SRC
+    ../../config/carrier_config.c
     config.c
     pfd.c)
 
@@ -39,6 +40,7 @@ endif()
 include_directories(
     ../../src/carrier
     ../../src/session
+    ../../config
     ${CARRIER_INT_DIST_DIR}/include)
 
 link_directories(
@@ -93,6 +95,3 @@ install(FILES server.conf
 install(FILES client.conf
     DESTINATION "etc/carrier"
     RENAME "elapfd-client.conf")
-
-install(FILES bootstraps.conf
-        DESTINATION "etc/carrier")

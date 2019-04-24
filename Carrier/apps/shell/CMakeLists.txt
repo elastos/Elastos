@@ -44,6 +44,11 @@ if(HAVE_SYS_SELECT_H)
     add_definitions(-DHAVE_SYS_SELECT_H=1)
 endif()
 
+check_include_file(direct.h HAVE_DIRECT_H)
+if(HAVE_DIRECT_H)
+    add_definitions(-DHAVE_DIRECT_H=1)
+endif()
+
 check_include_file(winsock2.h HAVE_WINSOCK2_H)
 if(HAVE_WINSOCK2_H)
     add_definitions(-DHAVE_WINSOCK2_H=1)
@@ -56,7 +61,7 @@ endif()
 
 set(SRC
     shell.c
-    config.c)
+    ../../config/carrier_config.c)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set(SYSTEM_LIBS pthread)
@@ -65,6 +70,7 @@ endif()
 include_directories(
     ../../src/carrier
     ../../src/session
+    ../../config
     ${CARRIER_INT_DIST_DIR}/include)
 
 link_directories(
@@ -113,9 +119,3 @@ install(TARGETS elashell
     RUNTIME DESTINATION "bin"
     ARCHIVE DESTINATION "lib"
     LIBRARY DESTINATION "lib")
-
-install(FILES elashell.conf
-        DESTINATION "etc/carrier")
-
-install(FILES bootstraps.conf
-        DESTINATION "etc/carrier")

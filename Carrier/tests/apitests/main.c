@@ -45,6 +45,7 @@
 #include <winsock2.h>
 #endif
 
+#include "carrier_config.h"
 #include "config.h"
 
 #define MODE_UNKNOWN    0
@@ -56,7 +57,7 @@ static int mode = MODE_UNKNOWN;
 
 #define CONFIG_NAME   "tests.conf"
 
-static const char *config_files[] = {
+static const char *default_config_files[] = {
     "./"CONFIG_NAME,
     "../etc/carrier/"CONFIG_NAME,
 #if !defined(_WIN32) && !defined(_WIN64)
@@ -103,33 +104,23 @@ static void signal_handler(int signum)
     exit(-1);
 }
 
-static void log_init(int mode)
-{
-    char filename[PATH_MAX];
-    char *log_file;
-    int level;
-
-    if (mode == MODE_CASES) {
-        sprintf(filename, "%s/tests.log", global_config.data_location);
-        log_file = filename;
-        level = global_config.tests.loglevel;
-    } else if (mode == MODE_ROBOT) {
-        sprintf(filename, "%s/robot.log", global_config.data_location);
-        log_file = filename;
-        level = global_config.robot.loglevel;
-    } else {
-        log_file = NULL;
-        level = VLOG_INFO;
-    }
-
-    vlog_init(level, log_file, NULL);
-}
-
 static void usage(void)
 {
     printf("Carrier API unit tests.\n");
     printf("\n");
-    printf("Usage: elatests [--cases | --robot] -c CONFIG\n");
+    printf("Usage: elatests [OPTION]...\n");
+    printf("\n");
+    printf("First run options:\n");
+    printf("      --cases               Run test cases only in manual mode.\n");
+    printf("      --robot               Run robot only in manual mode.\n");
+    printf("  -c, --config=CONFIG_FILE  Set config file path.\n");
+    printf("      --udp-enabled=0|1     Enable UDP, override the option in config.\n");
+    printf("      --log-level=LEVEL     Log level(0-7), override the option in config.\n");
+    printf("      --log-file=FILE       Log file name, override the option in config.\n");
+    printf("      --data-dir=PATH       Data location, override the option in config.\n");
+    printf("\n");
+    printf("Debugging options:\n");
+    printf("      --debug               Wait for debugger attach after start.\n");
     printf("\n");
 }
 
@@ -169,8 +160,12 @@ int main(int argc, char *argv[])
     struct option options[] = {
         { "cases",          no_argument,        NULL, 1 },
         { "robot",          no_argument,        NULL, 2 },
-        { "debug",          no_argument,        NULL, 3 },
         { "config",         required_argument,  NULL, 'c' },
+        { "udp-enabled",    required_argument,  NULL, 3 },
+        { "log-level",      required_argument,  NULL, 4 },
+        { "log-file",       required_argument,  NULL, 5 },
+        { "data-dir",       required_argument,  NULL, 6 },
+        { "debug",          no_argument,        NULL, 7 },
         { "help",           no_argument,        NULL, 'h' },
         { NULL,             0,                  NULL, 0 }
     };
@@ -199,6 +194,12 @@ int main(int argc, char *argv[])
             break;
 
         case 3:
+        case 4:
+        case 5:
+        case 6:
+            break;
+
+        case 7:
             debug = 1;
             break;
 
@@ -226,21 +227,23 @@ int main(int argc, char *argv[])
         return -1;
 #endif
 
-    config_file = get_config_path(config_file, config_files);
-
-    if (!config_file) {
-        printf("Error: Missing config file.\n");
-        usage();
-        return -1;
-     }
-
     if (mode == MODE_UNKNOWN)
         mode = MODE_LAUNCHER;
 
     // The primary job: load configuration file
-    load_config(config_file);
+    config_file = get_config_file(config_file, default_config_files);
+    if (!config_file) {
+        fprintf(stderr, "Error: Missing config file.\n");
+        usage();
+        return -1;
+    }
 
-    log_init(mode);
+    if (!load_config(config_file, &global_config)) {
+        fprintf(stderr, "Loading configure failed !\n");
+        return -1;
+    }
+
+    carrier_config_update(&global_config.shared_options, argc, argv);
 
     switch (mode) {
     case MODE_CASES:
@@ -257,6 +260,8 @@ int main(int argc, char *argv[])
         rc = launcher_main(argc, argv);
         break;
     }
+
+    free_config(&global_config);
 
 #if defined(_WIN32) || defined(_WIN64)
     WSACleanup();

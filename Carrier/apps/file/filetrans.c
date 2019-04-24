@@ -64,11 +64,23 @@
 #include <ela_carrier.h>
 #include <ela_filetransfer.h>
 
-#include "config.h"
+#include "carrier_config.h"
 
 #define EFRIEND      ELA_GENERAL_ERROR(ELAERR_ALREADY_EXIST)
 #define ELIMITS      ELA_GENERAL_ERROR(ELAERR_LIMIT_EXCEEDED)
 #define TAG          "Elafile: "
+
+#define CONFIG_NAME   "carrier.conf"
+
+static const char *default_config_files[] = {
+    "./"CONFIG_NAME,
+    "../etc/carrier/"CONFIG_NAME,
+#if !defined(_WIN32) && !defined(_WIN64)
+    "/usr/local/etc/carrier/"CONFIG_NAME,
+    "/etc/carrier/"CONFIG_NAME,
+#endif
+    NULL
+};
 
 const char *hello_pin = "elafile_greetings";
 
@@ -138,11 +150,6 @@ static void console_prompt(void)
 {
     fprintf(stdout, "# ");
     fflush(stdout);
-}
-
-static void logging(const char *fmt, va_list args)
-{
-    //DO NOTHING.
 }
 
 static int file_context_init(filectx_t *fctx)
@@ -1048,6 +1055,10 @@ static void usage(void)
     printf("\n");
     printf("First run options:\n");
     printf("  -c, --config=CONFIG_FILE      Set config file path.\n");
+    printf("      --udp-enabled=0|1         Enable UDP, override the option in config.\n");
+    printf("      --log-level=LEVEL         Log level(0-7), override the option in config.\n");
+    printf("      --log-file=FILE           Log file name, override the option in config.\n");
+    printf("      --data-dir=PATH           Data location, override the option in config.\n");
     printf("  -t, --target=USERID           Set target friend to transfer files.\n");
     printf("  -s, --store=FILE_PATH         Set directory path to store files.\n");
     printf("\n");
@@ -1078,8 +1089,7 @@ void signal_handler(int signum)
 int main(int argc, char *argv[])
 {
     filectx_t fctx;
-    filecfg_t *cfg;
-    char path[2048] = {0};
+    const char *config_file;
     ElaCarrier *w;
     ElaOptions opts;
     int wait_for_attach = 0;
@@ -1095,7 +1105,11 @@ int main(int argc, char *argv[])
         { "config",         required_argument,  NULL,   'c' },
         { "target",         required_argument,  NULL,   't' },
         { "store",          required_argument,  NULL,   's' },
-        { "debug",          no_argument,        NULL,    2  },
+        { "udp-enabled",    required_argument,  NULL,   1   },
+        { "log-level",      required_argument,  NULL,   2   },
+        { "log-file",       required_argument,  NULL,   3   },
+        { "data-dir",       required_argument,  NULL,   4   },
+        { "debug",          no_argument,        NULL,   5   },
         { "help",           no_argument,        NULL,   'h' },
         { NULL,             0,                  NULL,    0  }
     };
@@ -1115,7 +1129,7 @@ int main(int argc, char *argv[])
     while ((opt = getopt_long(argc, argv, "c:t:s:h?", options, &idx)) != -1) {
         switch (opt) {
         case 'c':
-            strcpy(path, optarg);
+            config_file = optarg;
             break;
 
         case 't':
@@ -1132,7 +1146,13 @@ int main(int argc, char *argv[])
             fctx.receiver = true;
             break;
 
+        case 1:
         case 2:
+        case 3:
+        case 4:
+            break;
+
+        case 5:
             wait_for_attach = 1;
             break;
 
@@ -1154,9 +1174,6 @@ int main(int argc, char *argv[])
 #endif
     }
 
-    if (!*fctx.default_path)
-        sprintf(fctx.default_path, "%s/.elafile", getenv("HOME"));
-
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
     signal(SIGSEGV, signal_handler);
@@ -1167,22 +1184,22 @@ int main(int argc, char *argv[])
 
     srand((unsigned)time(NULL));
 
-    if (!*path) {
-        realpath(argv[0], path);
-        strcat(path, ".conf");
-    }
-
-    rc = stat(path, &st);
-    if (rc < 0) {
-        fprintf(stderr, "config file (%s) not exist.\n", path);
+    config_file = get_config_file(config_file, default_config_files);
+    if (!config_file) {
+        fprintf(stderr, "Error: Missing config file.\n");
+        usage();
         return -1;
     }
 
-    cfg = load_config(path);
-    if (!cfg) {
+    if (!carrier_config_load(config_file, NULL, &opts)) {
         fprintf(stderr, "loading configure failed !\n");
         return -1;
     }
+
+    carrier_config_update(&opts, argc, argv);
+
+    if (!*fctx.default_path)
+        sprintf(fctx.default_path, "%s/receivedfiles", opts.persistent_location);
 
 #if !defined(_WIN32) && !defined(_WIN64)
     rc = fcntl(0, F_SETFL, O_NONBLOCK);
@@ -1192,28 +1209,6 @@ int main(int argc, char *argv[])
      }
 #endif
 
-    ela_log_init(cfg->loglevel, cfg->logfile, logging);
-
-    opts.udp_enabled = cfg->udp_enabled;
-    opts.persistent_location = cfg->datadir;
-    opts.bootstraps_size = cfg->bootstraps_size;
-    opts.bootstraps = (BootstrapNode *)calloc(1, sizeof(BootstrapNode) * opts.bootstraps_size);
-    if (!opts.bootstraps) {
-        vlogE("Out of memory.");
-        deref(cfg);
-        return -1;
-    }
-
-    for (i = 0 ; i < cfg->bootstraps_size; i++) {
-        BootstrapNode *b = &opts.bootstraps[i];
-        BootstrapNode *node = cfg->bootstraps[i];
-
-        b->ipv4 = node->ipv4;
-        b->ipv6 = node->ipv6;
-        b->port = node->port;
-        b->public_key = node->public_key;
-    }
-
     memset(&callbacks, 0, sizeof(callbacks));
     callbacks.idle = idle_callback;
     callbacks.connection_status = connection_callback;
@@ -1221,9 +1216,7 @@ int main(int argc, char *argv[])
     callbacks.friend_request = friend_request_callback;
 
     w = ela_new(&opts, &callbacks, &fctx);
-    deref(cfg);
-    free(opts.bootstraps);
-
+    carrier_config_free(&opts);
     if (!w) {
         vlogE("Creating carrier instance error (0x%x).", ela_get_error());
         return -1;

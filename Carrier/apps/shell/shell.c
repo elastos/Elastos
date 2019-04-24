@@ -79,11 +79,11 @@
 #include <ela_carrier.h>
 #include <ela_session.h>
 
-#include "config.h"
+#include "carrier_config.h"
 
-#define CONFIG_NAME   "elashell.conf"
+#define CONFIG_NAME   "carrier.conf"
 
-static const char *config_files[] = {
+static const char *default_config_files[] = {
     "./"CONFIG_NAME,
     "../etc/carrier/"CONFIG_NAME,
 #if !defined(_WIN32) && !defined(_WIN64)
@@ -2205,6 +2205,10 @@ static void usage(void)
     printf("\n");
     printf("First run options:\n");
     printf("  -c, --config=CONFIG_FILE  Set config file path.\n");
+    printf("      --udp-enabled=0|1     Enable UDP, override the option in config.\n");
+    printf("      --log-level=LEVEL     Log level(0-7), override the option in config.\n");
+    printf("      --log-file=FILE       Log file name, override the option in config.\n");
+    printf("      --data-dir=PATH       Data location, override the option in config.\n");
     printf("\n");
     printf("Debugging options:\n");
     printf("      --debug               Wait for debugger attach after start.\n");
@@ -2232,32 +2236,8 @@ void signal_handler(int signum)
     exit(-1);
 }
 
-const char *get_config_path(const char *config_file, const char *config_files[])
-{
-    const char **file = config_file ? &config_file : config_files;
-
-    for (; *file; ) {
-        int fd = open(*file, O_RDONLY);
-        if (fd < 0) {
-            if (*file == config_file)
-                file = config_files;
-            else
-                file++;
-
-            continue;
-        }
-
-        close(fd);
-
-        return *file;
-    }
-
-    return NULL;
-}
-
 int main(int argc, char *argv[])
 {
-    ShellConfig *cfg;
     const char *config_file = NULL;
     ElaCarrier *w;
     ElaOptions opts;
@@ -2271,7 +2251,11 @@ int main(int argc, char *argv[])
     int idx;
     struct option options[] = {
         { "config",         required_argument,  NULL, 'c' },
-        { "debug",          no_argument,        NULL, 2 },
+        { "udp-enabled",    required_argument,  NULL, 1 },
+        { "log-level",      required_argument,  NULL, 2 },
+        { "log-file",       required_argument,  NULL, 3 },
+        { "data-dir",       required_argument,  NULL, 4 },
+        { "debug",          no_argument,        NULL, 5 },
         { "help",           no_argument,        NULL, 'h' },
         { NULL,             0,                  NULL, 0 }
     };
@@ -2282,14 +2266,19 @@ int main(int argc, char *argv[])
 
     memset(&opts, 0, sizeof(opts));
 
-    while ((opt = getopt_long(argc, argv, "c:h?",
-            options, &idx)) != -1) {
+    while ((opt = getopt_long(argc, argv, "c:h?", options, &idx)) != -1) {
         switch (opt) {
         case 'c':
             config_file = optarg;
             break;
 
+        case 1:
         case 2:
+        case 3:
+        case 4:
+            break;
+
+        case 5:
             wait_for_attach = 1;
             break;
 
@@ -2319,44 +2308,25 @@ int main(int argc, char *argv[])
     signal(SIGHUP, signal_handler);
 #endif
 
-    config_file = get_config_path(config_file, config_files);
-
+    config_file = get_config_file(config_file, default_config_files);
     if (!config_file) {
         fprintf(stderr, "Error: Missing config file.\n");
         usage();
         return -1;
     }
 
-    cfg = load_config(config_file);
-    if (!cfg) {
+    if (!carrier_config_load(config_file, NULL, &opts)) {
         fprintf(stderr, "loading configure failed !\n");
         return -1;
     }
 
+    carrier_config_update(&opts, argc, argv);
+
+    opts.log_printer = log_print;
+    strcpy(default_data_location, opts.persistent_location);
+
     init_screen();
     history_load();
-
-    ela_log_init(cfg->loglevel, cfg->logfile, log_print);
-
-    opts.udp_enabled = cfg->udp_enabled;
-    opts.persistent_location = cfg->datadir;
-    opts.bootstraps_size = cfg->dht_bootstraps_size;
-    opts.bootstraps = (BootstrapNode *)calloc(1, sizeof(BootstrapNode) * opts.bootstraps_size);
-    if (!opts.bootstraps) {
-        fprintf(stderr, "out of memory.");
-        deref(cfg);
-        return -1;
-    }
-
-    for (i = 0 ; i < cfg->dht_bootstraps_size; i++) {
-        BootstrapNode *b = &opts.bootstraps[i];
-        BootstrapNode *node = cfg->dht_bootstraps[i];
-
-        b->ipv4 = node->ipv4;
-        b->ipv6 = node->ipv6;
-        b->port = node->port;
-        b->public_key = node->public_key;
-    }
 
     opts.hive_bootstraps_size = cfg->hive_bootstraps_size;
     if (opts.hive_bootstraps_size > 0) {
@@ -2398,10 +2368,7 @@ int main(int argc, char *argv[])
     callbacks.group_callbacks.peer_list_changed = group_peer_list_changed_callback;
 
     w = ela_new(&opts, &callbacks, NULL);
-    deref(cfg);
-    free(opts.bootstraps);
-    free(opts.hive_bootstraps);
-
+    carrier_config_free(&opts);
     if (!w) {
         output("Error create carrier instance: 0x%x\n", ela_get_error());
         output("Press any key to quit...");

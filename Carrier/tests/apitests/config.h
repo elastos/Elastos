@@ -29,11 +29,12 @@
 #include "ela_carrier.h"
 
 #define CARRIER_MAX_SERVER_URI_LEN 127
+
 typedef struct TestConfig {
+    ElaOptions shared_options;
+
     int shuffle;
     int log2file;
-    char data_location[PATH_MAX];
-    bool udp_enabled;
 
     struct {
         int loglevel;
@@ -44,13 +45,11 @@ typedef struct TestConfig {
         char port[32];
         int loglevel;
     } robot;
-
-    int bootstraps_size;
-    BootstrapNode **bootstraps;
 } TestConfig;
 
 extern TestConfig global_config;
 
-void load_config(const char *config_file);
+TestConfig *load_config(const char *config_file, TestConfig *config);
+void free_config(TestConfig *config);
 
 #endif /* __TEST_CONFIG_H__ */

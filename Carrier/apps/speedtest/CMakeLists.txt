@@ -49,7 +49,12 @@ if(HAVE_SIGACTION)
     add_definitions(-DHAVE_SIGACTION=1)
 endif()
 
-set(SRC speedtest.c config.c md5.c)
+check_include_file(direct.h HAVE_DIRECT_H)
+if(HAVE_DIRECT_H)
+    add_definitions(-DHAVE_DIRECT_H=1)
+endif()
+
+set(SRC speedtest.c md5.c ../../config/carrier_config.c)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set(SYSTEM_LIBS pthread)
@@ -58,6 +63,7 @@ endif()
 include_directories(
         ../../src/carrier
         ../../src/session
+        ../../config
         ${CARRIER_INT_DIST_DIR}/include)
 
 link_directories(
@@ -94,10 +100,3 @@ install(TARGETS elaspeedtest
         RUNTIME DESTINATION "bin"
         ARCHIVE DESTINATION "lib"
         LIBRARY DESTINATION "lib")
-
-install(FILES speedtest.conf
-        DESTINATION "etc/carrier"
-        RENAME "elaspeedtest.conf")
-
-install(FILES bootstraps.conf
-        DESTINATION "etc/carrier")

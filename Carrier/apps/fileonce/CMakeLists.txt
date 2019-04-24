@@ -44,9 +44,14 @@ if(HAVE_FCNTL_H)
     add_definitions(-DHAVE_FCNTL_H=1)
 endif()
 
+check_include_file(direct.h HAVE_DIRECT_H)
+if(HAVE_DIRECT_H)
+    add_definitions(-DHAVE_DIRECT_H=1)
+endif()
+
 set(SRC
     fileonce.c
-    config.c)
+    ../../config/carrier_config.c)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set(SYSTEM_LIBS pthread)
@@ -55,6 +60,7 @@ endif()
 include_directories(
         ../../src/carrier
         ../../src/filetransfer
+        ../../config
         ${CARRIER_INT_DIST_DIR}/include)
 
 link_directories(
@@ -105,9 +111,3 @@ install(TARGETS fileonce
         RUNTIME DESTINATION "bin"
         ARCHIVE DESTINATION "lib"
         LIBRARY DESTINATION "lib")
-
-install(FILES fileonce.conf
-        DESTINATION "etc/carrier")
-
-install(FILES bootstraps.conf
-        DESTINATION "etc/carrier")

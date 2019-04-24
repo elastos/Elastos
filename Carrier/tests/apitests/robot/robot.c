@@ -442,43 +442,28 @@ int robot_main(int argc, char *argv[])
 {
     ElaCarrier *w;
     char datadir[PATH_MAX];
+    char logfile[PATH_MAX];
     size_t i;
     pthread_t tid;
     char *cmd;
 
-    ElaOptions opts = {
-        .udp_enabled     = global_config.udp_enabled,
-        .bootstraps      = NULL,
-        .bootstraps_size = global_config.bootstraps_size,
-        .persistent_location = datadir,
-        .hive_bootstraps_size = 0,
-        .hive_bootstraps = NULL
-    };
+    ElaOptions opts = global_config.shared_options;
+    opts.log_level = global_config.robot.loglevel;
 
-    sprintf(datadir, "%s/robot", global_config.data_location);
+    opts.persistent_location = datadir;
+    sprintf(datadir, "%s/robot", global_config.shared_options.persistent_location);
 
-    opts.bootstraps = (BootstrapNode *)calloc(1, sizeof(BootstrapNode) * opts.bootstraps_size);
-    if (!opts.bootstraps) {
-        vlogE("Error: out of memory.");
-        return -1;
-    }
-
-    for (i = 0 ; i < (int)opts.bootstraps_size; i++) {
-        BootstrapNode *b = &opts.bootstraps[i];
-        BootstrapNode *node = global_config.bootstraps[i];
-
-        b->ipv4 = node->ipv4;
-        b->ipv6 = node->ipv6;
-        b->port = node->port;
-        b->public_key = node->public_key;
+    if (global_config.log2file) {
+        opts.log_file = logfile;
+        sprintf(logfile, "%s/robot/robot.log", global_config.shared_options.persistent_location);
+    } else {
+        opts.log_file = NULL;
     }
 
     if (start_cmd_listener(global_config.robot.host, global_config.robot.port) < 0)
         return -1;
 
     w = ela_new(&opts, &callbacks, &test_context);
-    free(opts.bootstraps);
-
     if (!w) {
         write_ack("failed\n");
         vlogE("Carrier new error (0x%x)", ela_get_error());

@@ -18,9 +18,9 @@ add_submodule(elafile
     DIRECTORY file
     DEPENDS ${DEPEND_MODULES} ela-filetransfer)
 
-#add_submodule(fileonce
-#    DIRECTORY fileonce
-#    DEPENDS ${DEPEND_MODULES} ela-filetransfer)
+# add_submodule(fileonce
+#     DIRECTORY fileonce
+#     DEPENDS ${DEPEND_MODULES} ela-filetransfer)
 
 add_submodule(elaerr
     DIRECTORY errstr

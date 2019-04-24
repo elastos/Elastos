@@ -46,11 +46,12 @@
 #include <io.h>
 #endif
 
+#include "carrier_config.h"
 #include "config.h"
 
 #define CONFIG_NAME   "elapfd.conf"
 
-static const char *config_files[] = {
+static const char *default_config_files[] = {
     "./"CONFIG_NAME,
     "../etc/carrier/"CONFIG_NAME,
 #if !defined(_WIN32) && !defined(_WIN64)
@@ -60,7 +61,7 @@ static const char *config_files[] = {
     NULL
 };
 
-static PFConfig *config;
+static PFConfig config;
 
 static ElaCarrier *carrier;
 
@@ -122,7 +123,7 @@ static void delete_session(ElaSession *ws)
 
     SessionEntry *entry = hashtable_remove(sessions, ws, sizeof(ElaSession *));
     if (entry) {
-        if (config->mode == MODE_CLIENT) {
+        if (config.mode == MODE_CLIENT) {
             cli_session = NULL;
             cli_streamid = -1;
         }
@@ -161,15 +162,15 @@ static void carrier_ready(ElaCarrier *w, void *context)
     vlogI("User ID: %s", ela_get_userid(w, uid, sizeof(uid)));
     vlogI("Address: %s", ela_get_address(w, addr, sizeof(addr)));
 
-    if (config->mode == MODE_SERVER)
+    if (config.mode == MODE_SERVER)
         return; // Server mode: do nothing.
 
-    const char *friendid = config->serverid;
+    const char *friendid = config.serverid;
 
     if (!ela_is_friend(w, friendid)) {
         vlogI("Portforwarding server not friend yet, send friend request...");
 
-        rc = ela_add_friend(w, config->server_address, "Elastos Carrier PFD/C");
+        rc = ela_add_friend(w, config.server_address, "Elastos Carrier PFD/C");
         if (rc < 0) {
             vlogE("Add portforwarding server as friend failed (0x%8X)",
                   ela_get_error());
@@ -187,10 +188,10 @@ static void carrier_ready(ElaCarrier *w, void *context)
 static void friend_connection(ElaCarrier *w, const char *friendid,
                               ElaConnectionStatus status, void *context)
 {
-    if (config->mode == MODE_SERVER)
+    if (config.mode == MODE_SERVER)
         return; // Server mode: do nothing.
 
-    if (strcmp(friendid, config->serverid) != 0)
+    if (strcmp(friendid, config.serverid) != 0)
         return; // Ignore uninterested peer
 
     peer_connection_changed(status);
@@ -203,8 +204,8 @@ static void friend_request(ElaCarrier *w, const char *userid,
     int rc;
     int status = -1;
 
-    if (config->mode == MODE_SERVER &&
-            hashtable_exist(config->users, userid, strlen(userid))) {
+    if (config.mode == MODE_SERVER &&
+            hashtable_exist(config.users, userid, strlen(userid))) {
         status = 0;
     }
 
@@ -287,14 +288,14 @@ static void stream_state_changed(ElaSession *ws, int stream,
         vlogI("Session to %s closed %s.", peer,
               state == ElaStreamState_closed ? "normally" : "on connection error");
 
-        if (config->mode == MODE_SERVER && exist_session(ws))
+        if (config.mode == MODE_SERVER && exist_session(ws))
             free(ela_session_get_userdata(ws));
 
         delete_session(ws);
         return;
     }
 
-    if (config->mode == MODE_CLIENT) {
+    if (config.mode == MODE_CLIENT) {
         if (state == ElaStreamState_initialized) {
             rc = ela_session_request(ws, NULL, session_request_complete, NULL);
             if (rc < 0) {
@@ -306,7 +307,7 @@ static void stream_state_changed(ElaSession *ws, int stream,
         } else if (state == ElaStreamState_connected) {
             hashtable_iterator_t it;
 
-            hashtable_iterate(config->services, &it);
+            hashtable_iterate(config.services, &it);
             while (hashtable_iterator_has_next(&it)) {
                 PFService *svc;
                 hashtable_iterator_next(&it, NULL, NULL, (void **)&svc);
@@ -358,7 +359,7 @@ static void session_request_callback(ElaCarrier *w, const char *from, const char
     char *p;
     int i;
     int rc;
-    int options = config->options;
+    int options = config.options;
 
     ElaStreamCallbacks stream_callbacks;
 
@@ -370,7 +371,7 @@ static void session_request_callback(ElaCarrier *w, const char *from, const char
         return;
     }
 
-    if (config->mode == MODE_CLIENT) {
+    if (config.mode == MODE_CLIENT) {
         // Client mode: just refuse the request.
         vlogI("Refuse session request from %s.", from);
         ela_session_reply_request(ws, NULL, -1, "Refuse");
@@ -388,7 +389,7 @@ static void session_request_callback(ElaCarrier *w, const char *from, const char
     } else
         strcpy(userid, from);
 
-    user = (PFUser *)hashtable_get(config->users, userid, strlen(userid));
+    user = (PFUser *)hashtable_get(config.users, userid, strlen(userid));
     if (user == NULL) {
         // Not in allowed user list. Refuse session request.
         vlogI("Refuse session request from %s.", from);
@@ -398,7 +399,7 @@ static void session_request_callback(ElaCarrier *w, const char *from, const char
     }
 
     for (i = 0; user->services[i] != NULL; i++) {
-        PFService *svc = (PFService *)hashtable_get(config->services,
+        PFService *svc = (PFService *)hashtable_get(config.services,
                             user->services[i], strlen(user->services[i]));
 
         rc = ela_session_add_service(ws, svc->name,
@@ -431,13 +432,13 @@ static void session_request_callback(ElaCarrier *w, const char *from, const char
 static void setup_portforwardings(void)
 {
     ElaStreamCallbacks stream_callbacks;
-    int options = config->options;
+    int options = config.options;
 
     // May be previous session not closed properly.
     if (cli_session != NULL)
         delete_session(cli_session);
 
-    cli_session = ela_session_new(carrier, config->serverid);
+    cli_session = ela_session_new(carrier, config.serverid);
     if (cli_session == NULL) {
         vlogE("Create session to portforwarding server failed(%08X).", ela_get_error());
         return;
@@ -475,10 +476,7 @@ static void stop(void)
         carrier = NULL;
     }
 
-    if (config) {
-        deref(config);
-        config = NULL;
-    }
+    free_config(&config);
 }
 
 static void signal_handler(int signum)
@@ -553,9 +551,25 @@ const char *get_config_path(const char *config_file, const char *config_files[])
     return NULL;
 }
 
+static void usage(void)
+{
+    printf("Carrier portforwarding utility.\n");
+    printf("Usage: elapfd [OPTION]...\n");
+    printf("\n");
+    printf("First run options:\n");
+    printf("  -c, --config=CONFIG_FILE  Set config file path.\n");
+    printf("      --udp-enabled=0|1     Enable UDP, override the option in config.\n");
+    printf("      --log-level=LEVEL     Log level(0-7), override the option in config.\n");
+    printf("      --log-file=FILE       Log file name, override the option in config.\n");
+    printf("      --data-dir=PATH       Data location, override the option in config.\n");
+    printf("\n");
+    printf("Debugging options:\n");
+    printf("      --debug               Wait for debugger attach after start.\n");
+    printf("\n");
+}
+
 int main(int argc, char *argv[])
 {
-    ElaOptions opts;
     ElaCallbacks callbacks;
     const char *config_file = NULL;
     int wait_for_attach = 0;
@@ -577,7 +591,11 @@ int main(int argc, char *argv[])
 
     struct option options[] = {
         { "config",         required_argument,  NULL, 'c' },
-        { "debug",          no_argument,        NULL, 1 },
+        { "udp-enabled",    required_argument,  NULL, 1 },
+        { "log-level",      required_argument,  NULL, 2 },
+        { "log-file",       required_argument,  NULL, 3 },
+        { "data-dir",       required_argument,  NULL, 4 },
+        { "debug",          no_argument,        NULL, 5 },
         { "help",           no_argument,        NULL, 'h' },
         { NULL,             0,                  NULL, 0 }
     };
@@ -587,14 +605,21 @@ int main(int argc, char *argv[])
         case 'c':
             config_file = optarg;
             break;
+
         case 1:
+        case 2:
+        case 3:
+        case 4:
+            break;
+
+        case 5:
             wait_for_attach = 1;
             break;
 
         case 'h':
         case '?':
         default:
-            printf("\nUSAGE: elapfd [-c CONFIG_FILE]\n\n");
+            usage();
             exit(-1);
         }
     }
@@ -605,45 +630,22 @@ int main(int argc, char *argv[])
         getchar();
     }
 
-    config_file = get_config_path(config_file, config_files);
-
+    config_file = get_config_path(config_file, default_config_files);
     if (!config_file) {
         printf("Error: Missing config file.\n");
         printf("\nUSAGE: elapfd [-c CONFIG_FILE]\n\n");
         return -1;
     }
 
-    config = load_config(config_file);
-    if (!config) {
+    if (!load_config(config_file, &config)) {
         return -1;
     }
 
-    // Initialize carrier options.
-    memset(&opts, 0, sizeof(opts));
-
-    opts.udp_enabled = config->udp_enabled;
-    opts.persistent_location = config->datadir;
-    opts.bootstraps_size = config->bootstraps_size;
-    opts.bootstraps = (BootstrapNode *)calloc(1, sizeof(BootstrapNode) * opts.bootstraps_size);
-    if (!opts.bootstraps) {
-        fprintf(stderr, "out of memory.");
-        deref(config);
-        return -1;
-    }
-
-    for (i = 0 ; i < (int)config->bootstraps_size; i++) {
-        BootstrapNode *b = &opts.bootstraps[i];
-        BootstrapNode *node = config->bootstraps[i];
-
-        b->ipv4 = node->ipv4;
-        b->ipv6 = node->ipv6;
-        b->port = node->port;
-        b->public_key = node->public_key;
-    }
+    carrier_config_update(&config.ela_options, argc, argv);
 
     sessions = hashtable_create(16, 1, session_hash_code, session_hash_compare);
     if (!sessions) {
-        deref(config);
+        free_config(&config);
         return -1;
     }
 
@@ -652,11 +654,7 @@ int main(int argc, char *argv[])
     callbacks.friend_connection = friend_connection;
     callbacks.friend_request = friend_request;
 
-    ela_log_init(config->loglevel, config->logfile, NULL);
-
-    carrier = ela_new(&opts, &callbacks, config);
-    free(opts.bootstraps);
-
+    carrier = ela_new(&config.ela_options, &callbacks, &config);
     if (!carrier) {
         fprintf(stderr, "Can not create Carrier instance (%08X).\n",
                 ela_get_error());

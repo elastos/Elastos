@@ -60,7 +60,8 @@ set(SRC
     api/test_helper.c
     api/tests.c
     robot/cmd.c
-    robot/robot.c)
+    robot/robot.c
+    ../../config/carrier_config.c)
 
 add_definitions(-DLIBCONFIG_STATIC)
 
@@ -117,6 +118,7 @@ include_directories(
     ../../src/carrier
     ../../src/session
     ../../src/filetransfer
+    ../../config
     ${CARRIER_INT_DIST_DIR}/include)
 
 link_directories(
@@ -141,6 +143,3 @@ install(TARGETS elatests
 
 install(FILES tests.conf
     DESTINATION "etc/carrier")
-
-install(FILES bootstraps.conf
-        DESTINATION "etc/carrier")

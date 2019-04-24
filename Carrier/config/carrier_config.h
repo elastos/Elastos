@@ -20,26 +20,22 @@
  * SOFTWARE.
  */
 
-#ifndef __SPEEDTEST__CONFIG_H__
-#define __SPEEDTEST__CONFIG_H__
-
-#include <stdbool.h>
-#include <crystal.h>
+#ifndef __CARRIER_CONFIG_H__
+#define __CARRIER_CONFIG_H__
 
 #include <ela_carrier.h>
 
-typedef struct {
-    bool udp_enabled;
+ElaOptions *carrier_config_load(const char *config_file,
+            int (*extra_config_handle)(void *cfg, ElaOptions *options),
+            ElaOptions *options);
 
-    int loglevel;
-    char *logfile;
+ElaOptions *carrier_config_copy(ElaOptions *dest, ElaOptions *src);
 
-    char *datadir;
+void carrier_config_update(ElaOptions *options, int argc, char *argv[]);
 
-    int bootstraps_size;
-    BootstrapNode **bootstraps;
-} SpeedtestConfig;
+void carrier_config_free(ElaOptions *options);
 
-SpeedtestConfig *load_config(const char *config_file);
+const char *get_config_file(const char *config_file,
+            const char *default_config_files[]);
 
-#endif /* __SPEEDTEST_CONFIG_H__ */
+#endif /* __CARRIER_CONFIG_H__ */

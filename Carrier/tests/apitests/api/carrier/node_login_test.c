@@ -81,7 +81,8 @@ int node_login_test_suite_init(void)
     int rc;
     char path[128] = {0};
 
-    snprintf(path, 128, "%s/tests/.carrier.pref", global_config.data_location);
+    snprintf(path, 128, "%s/tests/.carrier.pref",
+            global_config.shared_options.persistent_location);
     unlink(path);
 
     rc = test_suite_init_ext(&test_context, true);
@@ -97,7 +98,8 @@ int node_login_test_suite_cleanup(void)
 
     test_suite_cleanup(&test_context);
 
-    snprintf(path, 128, "%s/tests/.carrier.pref", global_config.data_location);
+    snprintf(path, 128, "%s/tests/.carrier.pref",
+            global_config.shared_options.persistent_location);
     unlink(path);
 
     return 0;

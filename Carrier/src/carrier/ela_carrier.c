@@ -1112,6 +1112,8 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
         return NULL;
     }
 
+    ela_log_init(opts->log_level, opts->log_file, opts->log_printer);
+
     w = (ElaCarrier *)rc_zalloc(sizeof(ElaCarrier), ela_destroy);
     if (!w) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));

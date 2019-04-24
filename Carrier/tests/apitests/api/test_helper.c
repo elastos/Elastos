@@ -291,37 +291,24 @@ int test_suite_init_ext(TestContext *context, bool udp_disabled)
 {
     CarrierContext *wctxt = context->carrier;
     char datadir[PATH_MAX];
-    ElaOptions opts = {
-        .udp_enabled = !udp_disabled,
-        .persistent_location = datadir,
-        .bootstraps_size = global_config.bootstraps_size,
-        .bootstraps = NULL,
-        .hive_bootstraps_size = 0,
-        .hive_bootstraps = NULL
-    };
+    char logfile[PATH_MAX];
     int i = 0;
 
-    sprintf(datadir, "%s/tests", global_config.data_location);
+    ElaOptions opts = global_config.shared_options;
+    opts.udp_enabled = !udp_disabled;
+    opts.log_level = global_config.tests.loglevel;
 
-    opts.bootstraps = (BootstrapNode *)calloc(1, sizeof(BootstrapNode) * opts.bootstraps_size);
-    if (!opts.bootstraps) {
-        vlogE("Error: out of memory.");
-        return -1;
-    }
+    opts.persistent_location = datadir;
+    sprintf(datadir, "%s/tests", global_config.shared_options.persistent_location);
 
-    for (i = 0 ; i < (int)opts.bootstraps_size; i++) {
-        BootstrapNode *b = &opts.bootstraps[i];
-        BootstrapNode *node = global_config.bootstraps[i];
-
-        b->ipv4 = node->ipv4;
-        b->ipv6 = node->ipv6;
-        b->port = node->port;
-        b->public_key = node->public_key;
+    if (global_config.log2file) {
+        opts.log_file = logfile;
+        sprintf(logfile, "%s/tests/tests.log", global_config.shared_options.persistent_location);
+    } else {
+        opts.log_file = NULL;
     }
 
     wctxt->carrier = ela_new(&opts, &callbacks, wctxt);
-    free(opts.bootstraps);
-
     if (!wctxt->carrier) {
         vlogE("Error: Carrier new error (0x%x)", ela_get_error());
         return -1;
@@ -338,7 +325,7 @@ int test_suite_init_ext(TestContext *context, bool udp_disabled)
 
 int test_suite_init(TestContext *context)
 {
-	return test_suite_init_ext(context, !global_config.udp_enabled);
+	return test_suite_init_ext(context, !global_config.shared_options.udp_enabled);
 }
 
 int test_suite_cleanup(TestContext *context)
