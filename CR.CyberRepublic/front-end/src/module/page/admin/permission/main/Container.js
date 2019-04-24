@@ -41,6 +41,12 @@ const mapDispatch = () => {
   const permissionRoleService = new PermissionRoleService()
 
   return {
+    async create(param) {
+      return service.create(param)
+    },
+    async update(param) {
+      return service.update(param)
+    },
     async getList(query) {
       return service.list({
         ...query,

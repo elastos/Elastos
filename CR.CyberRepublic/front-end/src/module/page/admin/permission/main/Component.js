@@ -1,12 +1,13 @@
 import React from 'react'
 import _ from 'lodash'
 import {
-  Col, Row, Spin, Tabs,
+  Col, Row, Spin, Tabs, Modal, Button,
 } from 'antd'
 import I18N from '@/I18N'
 import AdminPage from '../../BaseAdmin'
 import Footer from '@/module/layout/Footer/Container'
 import Navigator from '@/module/page/shared/HomeNavigator/Container'
+import PermissionForm from '@/module/form/PermissionForm/Container'
 import List from '../list/Container'
 import {
   USER_ROLE_TO_TEXT,
@@ -18,6 +19,10 @@ import '@/module/page/admin/admin.scss'
 const TabPane = Tabs.TabPane
 
 export default class extends AdminPage {
+  state = {
+    showForm: false,
+  }
+
   componentDidMount() {
     super.componentDidMount()
 
@@ -38,6 +43,8 @@ export default class extends AdminPage {
     }
 
     const headerNode = this.renderHeader()
+    const createBtn = this.renderCreateButton()
+    const createForm = this.renderCreateForm()
     return (
       <div>
         <div className="p_AdminPermissionList ebp-wrap">
@@ -47,7 +54,9 @@ export default class extends AdminPage {
             </Col>
             <Col sm={24} md={20} className="c_ProfileContainer admin-right-column wrap-box-user">
               {headerNode}
+              {createBtn}
               {listNode}
+              {createForm}
             </Col>
           </Row>
         </div>
@@ -112,6 +121,55 @@ export default class extends AdminPage {
     return (
       <h2 className="title komu-a cr-title-with-icon">{this.props.header || I18N.get('permission.title').toUpperCase()}</h2>
     )
+  }
+
+  renderCreateButton() {
+    return (
+      <div>
+        <Button onClick={this.showCreateForm}>
+          Create Permission
+        </Button>
+        <span style={{ marginLeft: '10px' }}>(Require server to restart to take effect)</span>
+      </div>
+    )
+  }
+
+  onFormSubmit = async (param) => {
+    try {
+      await this.props.create(param)
+      // this.showCreateForm()
+      this.refetch()
+    } catch (error) {
+      // console.log(error)
+    }
+  }
+
+  renderCreateForm = () => {
+    const props = {
+      onFormCancel: this.showCreateForm,
+      onFormSubmit: this.onFormSubmit,
+    }
+
+    return (
+      <Modal
+        className="project-detail-nobar"
+        maskClosable={false}
+        visible={this.state.showForm}
+        onOk={this.showCreateForm}
+        onCancel={this.showCreateForm}
+        footer={null}
+        width="70%"
+      >
+        <PermissionForm {...props} />
+      </Modal>
+    )
+  }
+
+  showCreateForm = () => {
+    const { showForm } = this.state
+    this.setState({
+      showForm: !showForm,
+    })
   }
 
   /**
