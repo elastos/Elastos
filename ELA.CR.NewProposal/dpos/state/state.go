@@ -809,6 +809,9 @@ func (s *State) processEmergencyInactiveArbitrators(
 		if p, ok := s.activityProducers[key]; ok {
 			addEmergencyInactiveArbitrator(key, p)
 		}
+		if p, ok := s.inactiveProducers[key]; ok {
+			addEmergencyInactiveArbitrator(key, p)
+		}
 	}
 }
 

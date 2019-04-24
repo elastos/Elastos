@@ -242,11 +242,11 @@ func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
 	case normalChange:
 		if err := a.clearingDPOSReward(block, true); err != nil {
 			panic(fmt.Sprintf("normal change fail when clear DPOS reward: "+
-				" transaction, height: %d", block.Height))
+				" transaction, height: %d, error: %s", block.Height, err))
 		}
 		if err := a.NormalChange(block.Height); err != nil {
-			panic(fmt.Sprintf("normal change fail when finding an"+
-				" inactive arbitrators transaction, height: %d", block.Height))
+			panic(fmt.Sprintf("normal change fail at height: %d, error: %s",
+				block.Height, err))
 		}
 	case none:
 		a.accumulateReward(block)
