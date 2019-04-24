@@ -18,6 +18,10 @@ export default class extends BaseService {
     this.dispatch(this.selfRedux.actions.sortBy_update(sortBy))
   }
 
+  async saveTagsIncluded(tagsIncluded) {
+    this.dispatch(this.selfRedux.actions.tags_included_update(tagsIncluded))
+  }
+
   async saveEditHistory(editHistory) {
     this.dispatch(this.selfRedux.actions.edit_history_update(editHistory))
   }
@@ -193,7 +197,6 @@ export default class extends BaseService {
     return res
   }
 
-  // ADMIN ONLY
   async abuse(id) {
     const path = `${this.prefixPath}/${id}/abuse`
 

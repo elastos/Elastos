@@ -52,6 +52,16 @@
     stroke: currentColor;
     stroke-width: 3;
   }
+
+  .archive-icon svg {
+    zoom: 0.8;
+    > path {
+      stroke: currentColor;
+      stroke-width: 3;
+      fill: currentColor;
+    }
+  }
+
   .selected {
     color: black;
     // svg {

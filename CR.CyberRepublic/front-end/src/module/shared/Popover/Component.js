@@ -32,7 +32,7 @@ class Component extends React.Component {
           <Btn type="default" onClick={onToggle} style={{ borderRadius: 0 }}>
             {I18N.get('council.voting.modal.cancel')}
           </Btn>
-          <Btn type={btnType || 'default'} colored={true} onClick={this.onSubmit} style={{ borderRadius: 0 }}>
+          <Btn type={btnType || 'default'} colored="true" onClick={this.onSubmit} style={{ borderRadius: 0 }}>
             {I18N.get('council.voting.modal.confirm')}
           </Btn>
         </Footer>

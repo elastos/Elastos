@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import _ from 'lodash'
 import styled from 'styled-components'
 import {
-  Pagination, Modal, Button, Col, Row, Select, Spin,
+  Pagination, Modal, Button, Col, Row, Select, Spin, Switch,
 } from 'antd'
 import URI from 'urijs'
 import I18N from '@/I18N'
@@ -18,6 +18,11 @@ import suggestionImg from '@/assets/images/SuggestionToProposal.png'
 import suggestionZhImg from '@/assets/images/SuggestionToProposal.zh.png'
 import { breakPoint } from '@/constants/breakPoint'
 import { text, bg } from '@/constants/color'
+import { SUGGESTION_TAG_TYPE } from '@/constant'
+
+import {
+  SUGGESTION_STATUS,
+} from '@/constant'
 
 import MediaQuery from 'react-responsive'
 import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC, LG_WIDTH } from '@/config/constant'
@@ -49,6 +54,7 @@ export default class extends StandardPage {
     // we use the props from the redux store if its retained
     this.state = {
       showForm: uri.hasQuery('create'),
+      showArchived: false,
       isDropdownActionOpen: false,
       showMobile: false,
       page: 1,
@@ -69,10 +75,13 @@ export default class extends StandardPage {
   ord_renderContent() {
     const headerNode = this.renderHeader()
     const addButtonNode = this.renderAddButton()
+    const viewArchivedButtonNode = this.renderArchivedButton()
     const actionsNode = this.renderHeaderActions()
-    const mySuggestionNode = this.renderMySuggestion()
+    const filterNode = this.renderFilters()
+    // const mySuggestionNode = this.renderMySuggestion()
     const createForm = this.renderCreateForm()
     const listNode = this.renderList()
+    const archivedNode = this.renderArchivedList()
 
     return (
       <div>
@@ -81,12 +90,16 @@ export default class extends StandardPage {
         </div>
         <SuggestionContainer className="p_SuggestionList">
           <MediaQuery maxWidth={LG_WIDTH}>
-            <Row>
-              <Col>
-                {addButtonNode}
-                {/* mySuggestionNode */}
-              </Col>
-            </Row>
+            {this.state.showArchived === false ?
+              <Row>
+                <Col>
+                  {addButtonNode}
+                  {viewArchivedButtonNode}
+                  {/* mySuggestionNode */}
+                </Col>
+              </Row> :
+              <Row/>
+            }
             <Row>
               <Col>
                 <br />
@@ -97,12 +110,21 @@ export default class extends StandardPage {
                 {actionsNode}
                 {listNode}
               </Col>
-            </Row>
+            </Row> :
+            <Row/>
           </MediaQuery>
           <MediaQuery minWidth={LG_WIDTH + 1}>
             <Row gutter={24}>
               <Col span={16}>{actionsNode}</Col>
-              <Col span={8}>{addButtonNode}</Col>
+              <Col span={8}>
+                {addButtonNode}
+                {viewArchivedButtonNode}
+              </Col>
+            </Row>
+            <Row gutter={24}>
+              <Col span={24}>
+                {filterNode}
+              </Col>
             </Row>
             <Row gutter={24}>
               <Col span={24}>
@@ -165,6 +187,19 @@ export default class extends StandardPage {
     })
   }
 
+  toggleArchivedList = async () => {
+    await this.setState(prevState => ({
+      showArchived: !prevState.showArchived,
+
+      // go back to page 1 on toggle
+      page: 1,
+      results: 10,
+      total: 0
+    }))
+
+    this.refetch()
+  }
+
   renderHeader() {
     return (
       <div>
@@ -206,37 +241,13 @@ export default class extends StandardPage {
     return (
       <div className="header-actions-container">
         <div>
-          <h2 className="title komu-a">{I18N.get('suggestion.listTitle').toUpperCase()}</h2>
+          <h2 className="title komu-a">
+            {this.state.showArchived === false ?
+              I18N.get('suggestion.listTitle').toUpperCase() :
+              I18N.get('suggestion.archived').toUpperCase()
+            }
+          </h2>
         </div>
-        <MediaQuery maxWidth={LG_WIDTH}>
-          {I18N.get('suggestion.sort')}: &nbsp;
-          <Select
-            name="type"
-            style={{width: 200}}
-            onChange={this.onSortByChanged}
-            value={sortBy}
-          >
-            {_.map(SORT_BY, value => (
-              <Select.Option key={value} value={value}>
-                {SORT_BY_TEXT[value]}
-              </Select.Option>
-            ))}
-          </Select>
-        </MediaQuery>
-        <MediaQuery minWidth={LG_WIDTH + 1}>
-          {I18N.get('suggestion.sort')}: &nbsp;
-          <Button.Group className="filter-group">
-            {_.map(SORT_BY, value => (
-              <Button
-                key={value}
-                onClick={() => this.onSortByChanged(value)}
-                className={(sortBy === value && 'cr-strikethrough') || ''}
-              >
-                {SORT_BY_TEXT[value]}
-              </Button>
-            ))}
-          </Button.Group>
-        </MediaQuery>
       </div>
     )
   }
@@ -249,6 +260,52 @@ export default class extends StandardPage {
         </Button>
       </AddButtonContainer>
     )
+  }
+
+  renderArchivedButton() {
+    return (
+      <AddButtonContainer className="pull-right filter-group btn-view-archived">
+        <Button onClick={this.toggleArchivedList}>
+          {this.state.showArchived === false ?
+            I18N.get('suggestion.viewArchived') :
+            I18N.get('suggestion.viewAll')
+          }
+        </Button>
+      </AddButtonContainer>
+    )
+  }
+
+  renderFilters() {
+    const { tagsIncluded: {
+      infoNeeded,
+      underConsideration
+    }} = this.props
+    return (
+      <Row>
+        <Col sm={10} xs={24}>
+          <Switch defaultChecked={underConsideration} onChange={this.onUnderConsiderationChange} />
+          <SwitchText>{I18N.get('suggestion.tag.type.UNDER_CONSIDERATION')}</SwitchText>
+        </Col>
+        <Col sm={10} xs={24}>
+          <Switch defaultChecked={infoNeeded} onChange={this.onInfoNeededChange} />
+          <SwitchText>{I18N.get('suggestion.tag.type.INFO_NEEDED')}</SwitchText>
+        </Col>
+      </Row>
+    )
+  }
+
+  onInfoNeededChange = async (checked) => {
+    const { onTagsIncludedChanged, tagsIncluded } = this.props
+    tagsIncluded.infoNeeded = checked
+    await onTagsIncludedChanged(tagsIncluded)
+    await this.refetch()
+  }
+
+  onUnderConsiderationChange = async (checked) => {
+    const { onTagsIncludedChanged, tagsIncluded } = this.props
+    tagsIncluded.underConsideration = checked
+    await onTagsIncludedChanged(tagsIncluded)
+    await this.refetch()
   }
 
   renderList() {
@@ -274,9 +331,13 @@ export default class extends StandardPage {
     )
   }
 
+  renderArchivedList() {
+
+  }
+
   renderItem = (data) => {
     const href = `/suggestion/${data._id}`
-    const actionsNode = this.renderActionsNode(data)
+    const actionsNode = this.renderActionsNode(data, this.refetch)
     const metaNode = this.renderMetaNode(data)
     const title = <ItemTitle to={href} className="title-link">{data.title}</ItemTitle>
     return (
@@ -305,7 +366,7 @@ export default class extends StandardPage {
 
   renderMetaNode = detail => <MetaContainer data={detail} />
 
-  renderActionsNode = detail => <ActionsContainer data={detail} />
+  renderActionsNode = (detail, refetch) => <ActionsContainer data={detail} listRefetch={refetch}/>
 
   renderMySuggestion = () => <MySuggestion />
 
@@ -321,9 +382,29 @@ export default class extends StandardPage {
     const sortBy = this.props.sortBy || DEFAULT_SORT
     const { page, results } = this.state
     const query = {
+      status: this.state.showArchived ? SUGGESTION_STATUS.ARCHIVED : SUGGESTION_STATUS.ACTIVE,
       page,
       results,
     }
+    const { tagsIncluded: {
+      infoNeeded,
+      underConsideration
+    }} = this.props
+    let included = ''
+    if (infoNeeded) {
+      included = SUGGESTION_TAG_TYPE.INFO_NEEDED
+    }
+    if (underConsideration) {
+      if (_.isEmpty(included)) {
+        included = SUGGESTION_TAG_TYPE.UNDER_CONSIDERATION
+      } else {
+        included = `${included},${SUGGESTION_TAG_TYPE.UNDER_CONSIDERATION}`
+      }
+    }
+    if (!_.isEmpty(included)) {
+      query.tagsIncluded = included
+    }
+
     // TODO
     if (sortBy) {
       query.sortBy = sortBy
@@ -369,7 +450,7 @@ const HeaderDiagramContainer = styled.div`
   padding-bottom: 36px;
   img {
     max-height: 250px;
-    
+
     @media only screen and (max-width: ${breakPoint.lg}) {
       width: 100%;
     }
@@ -388,9 +469,9 @@ const ItemTitle = styled(Link)`
   &:hover {
     color: $link_color;
   }
-  
+
   background-color: ${bg.blue};
-  
+
   padding: 4px 8px;
   border: 1px solid #e4effd;
   border-radius: 4px;
@@ -398,7 +479,7 @@ const ItemTitle = styled(Link)`
 
 const ShortDesc = styled.div`
   font-weight: 200;
-  padding: 4px 8px 0; 
+  padding: 4px 8px 0;
 `
 
 const HeaderDesc = styled.div`
@@ -411,12 +492,17 @@ const HeaderDesc = styled.div`
 const SuggestionContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  
+
   @media only screen and (max-width: ${breakPoint.xl}) {
     margin: 0 5%;
   }
 `
 
 const AddButtonContainer = styled.div`
-  padding-top: 24px;  
+  padding-top: 24px;
 `
+
+const SwitchText = styled.span`
+  margin-left: 10px;
+`
+

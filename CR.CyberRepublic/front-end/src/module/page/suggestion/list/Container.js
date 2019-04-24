@@ -2,7 +2,7 @@ import {
   createContainer,
 } from '@/util'
 import {
-  SUGGESTION_STATUS,
+  SUGGESTION_STATUS
 } from '@/constant'
 import SuggestionService from '@/service/SuggestionService'
 import CommentService from '@/service/CommentService'
@@ -14,6 +14,7 @@ const mapState = (state) => {
 
   const suggestionState = {
     ...state.suggestion,
+    tagsIncluded: state.suggestion.tags_included,
     dataList: state.suggestion.all_suggestions,
     total: state.suggestion.all_suggestions_total,
     currentUserId,
@@ -33,18 +34,26 @@ const mapDispatch = () => {
       return service.saveSortBy(sortBy)
     },
 
+    async onTagsIncludedChanged(tagsIncluded) {
+      return service.saveTagsIncluded(tagsIncluded)
+    },
+
     async getList(query) {
-      return service.list({
-        status: SUGGESTION_STATUS.ACTIVE,
-        ...query,
-      })
+
+      query = Object.assign({
+        status: SUGGESTION_STATUS.ACTIVE
+      }, query)
+
+      return service.list(query)
     },
 
     async loadMore(query) {
-      return service.loadMore({
-        status: SUGGESTION_STATUS.ACTIVE,
-        ...query,
-      })
+
+      query = Object.assign({
+        status: SUGGESTION_STATUS.ACTIVE
+      }, query)
+
+      return service.loadMore(query)
     },
 
     resetAll() {

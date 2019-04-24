@@ -4,15 +4,15 @@ import _ from 'lodash'
 import I18N from '@/I18N'
 import styled from 'styled-components'
 import { bg, primary } from '@/constants/color'
-import { CVOTE_STATUS, SUGGESTION_TAG_TYPE } from '@/constant'
+import { CVOTE_STATUS, SUGGESTION_TAG_TYPE, SUGGESTION_STATUS } from '@/constant'
 
-import {Link} from "react-router-dom"
+import {Link} from 'react-router-dom'
 
 import './style.scss'
 
 export default ({ data, hideAuthor, postedByText }) => {
 
-  const { displayId, createdAt, tags, reference } = data
+  const { displayId, createdAt, tags, reference, status } = data
   let name = `${_.get(data, 'createdBy.profile.firstName', '')} ${_.get(data, 'createdBy.profile.lastName', '')}`
   if (name === ' ') {
     name = _.get(data, 'createdBy.username')
@@ -59,7 +59,7 @@ export default ({ data, hideAuthor, postedByText }) => {
                 {I18N.get('suggestion.btnText.needMoreInfo')}
               </StatusBadge> :
               <StatusBadgeGood key={_id}>
-                {I18N.get('suggestion.btnText.consider')}
+                {I18N.get('suggestion.tag.type.UNDER_CONSIDERATION')}
               </StatusBadgeGood>
             )
           }) : ''
@@ -70,6 +70,11 @@ export default ({ data, hideAuthor, postedByText }) => {
             <Link to={`/proposals/${referenceId}`}>{linkText}</Link>
             {` (${I18N.get(`cvoteStatus.${referenceStatus}`)})`}
           </StatusBadge>
+        }
+        {
+          status === SUGGESTION_STATUS.ARCHIVED && <StatusBadgeBad>
+            {I18N.get('suggestion.archived')}
+          </StatusBadgeBad>
         }
       </RightBox>
       <ClearFix/>
@@ -101,6 +106,11 @@ const StatusBadge = styled.div`
 const StatusBadgeGood = styled(StatusBadge)`
   background-color: ${primary.default};
   border: 1px solid ${primary.light};
+`
+
+const StatusBadgeBad = styled(StatusBadge)`
+  background-color: ${primary.danger};
+  border: 1px solid ${bg.gray};
 `
 
 

@@ -3,6 +3,7 @@ import {
 } from '@/util'
 import {
   SUGGESTION_STATUS,
+  USER_ROLE
 } from '@/constant'
 import SuggestionService from '@/service/SuggestionService'
 import CommentService from '@/service/CommentService'
@@ -14,6 +15,8 @@ const mapState = (state) => {
   const suggestionState = {
     ...state.suggestion,
     currentUserId,
+    isAdmin: state.user.role === USER_ROLE.ADMIN,
+    isCouncil: state.user.role === USER_ROLE.COUNCIL,
     isLogin: state.user.is_login,
   }
 
@@ -39,6 +42,9 @@ const mapDispatch = () => {
     },
     async reportAbuse(id) {
       return service.reportAbuse(id)
+    },
+    async markArchived(id) {
+      return service.archive(id)
     },
     async subscribe(id) {
       return commentService.subscribeWithoutRedux('suggestion', id)

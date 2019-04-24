@@ -72,7 +72,7 @@ import FormTraining1Page from '@/module/page/form_ext/training_1/Container'
 
 // council
 import CouncilSecretariatPage from '../module/page/council_secretariat/Container'
-import SecretariatPositionPage from '../module/page/council_secretariat/SecretariatPosition'
+import SecretariatPositionPage from '../module/page/council_secretariat/SecretariatPosition/Container'
 import CouncilPage from '../module/page/council/Container'
 import CouncilListPage from '../module/page/council/list/Container'
 import CouncilDetailPage from '../module/page/council/detail/Container'

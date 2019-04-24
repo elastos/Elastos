@@ -7,8 +7,8 @@ import I18N from '@/I18N'
 import styled from 'styled-components'
 import { breakPoint } from '@/constants/breakPoint'
 import { text, bg } from '@/constants/color'
-import StandardPage from '../StandardPage'
-import BGImg from './BGImg'
+import StandardPage from '../../StandardPage'
+import BGImg from '../BGImg'
 
 export default class extends StandardPage {
   ord_renderContent() {

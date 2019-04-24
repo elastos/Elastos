@@ -13,6 +13,11 @@ const emptyDoc = {
   link: [],
 }
 
+const listExlucdedFields = [
+  constant.SUGGESTION_TAG_TYPE.UNDER_CONSIDERATION,
+  constant.SUGGESTION_TAG_TYPE.INFO_NEEDED
+]
+
 export default class extends Base {
   private model: any
   protected init() {
@@ -110,16 +115,24 @@ export default class extends Base {
   }
 
   public async list(param: any): Promise<Object> {
-    const query = _.omit(param, ['results', 'page', 'sortBy', 'sortOrder', 'filter', 'profileListFor', 'search'])
+    const query = _.omit(param, ['results', 'page', 'sortBy', 'sortOrder', 'filter', 'profileListFor', 'search', 'tagsIncluded'])
+    const { sortBy, sortOrder, tagsIncluded } = param
+
+    if (!_.isEmpty(tagsIncluded)) {
+      query['tags.type'] = { $in: tagsIncluded.split(',') }
+    } else {
+      query['tags.type'] = { $nin: listExlucdedFields }
+    }
+
     const cursor = this.model.getDBInstance()
       .find(query)
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
       .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
     const totalCursor = this.model.getDBInstance().find(query).count()
 
-    if (param.sortBy) {
+    if (sortBy) {
       const sortObject = {}
-      sortObject[param.sortBy] = _.get(constant.SORT_ORDER, param.sortOrder, constant.SORT_ORDER.DESC)
+      sortObject[sortBy] = _.get(constant.SORT_ORDER, sortOrder, constant.SORT_ORDER.DESC)
       cursor.sort(sortObject)
     }
 
@@ -340,9 +353,6 @@ export default class extends Base {
     return this.model.findById(_id)
   }
 
-  /**
-   * Admin only
-   */
   public async abuse(param: any): Promise<Document> {
     const { id: _id } = param
     const updateObject = {
@@ -353,7 +363,11 @@ export default class extends Base {
     return this.model.findById(_id)
   }
 
+  /**
+   * Admin only
+   */
   public async archive(param: any): Promise<Document> {
+
     const { id: _id } = param
     const updateObject = {
       status: constant.SUGGESTION_STATUS.ARCHIVED,
