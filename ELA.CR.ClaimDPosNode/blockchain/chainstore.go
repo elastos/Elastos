@@ -467,7 +467,7 @@ func (c *ChainStore) persist(b *Block, confirm *payload.Confirm) error {
 	if err := c.PersistTransactions(b); err != nil {
 		return err
 	}
-	if err := c.persistUnspendUTXOs(b); err != nil {
+	if err := c.persistUTXOs(b); err != nil {
 		return err
 	}
 	if err := c.persistUnspend(b); err != nil {
