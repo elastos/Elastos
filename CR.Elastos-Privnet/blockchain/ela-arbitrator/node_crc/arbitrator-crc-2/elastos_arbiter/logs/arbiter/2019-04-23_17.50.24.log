@@ -1,0 +1,496 @@
+2019/04/23 17:50:24.231279 [1;35m[INF][m GID 1, Init wallet.
+2019/04/23 17:50:24.366379 [1;35m[INF][m GID 1, Arbiter version:  v0.1.0-6-g758e
+2019/04/23 17:50:24.366457 [1;35m[INF][m GID 1, 1. Init chain utxo cache.
+2019/04/23 17:50:24.367542 [1;35m[INF][m GID 1, 2. Init finished transaction cache.
+2019/04/23 17:50:24.367833 [1;35m[INF][m GID 1, 3. Start arbitrator P2P networks.
+2019/04/23 17:50:24.370754 [1;35m[INF][m GID 1, 4. Init configurations.
+2019/04/23 17:50:24.377468 [1;35m[INF][m GID 47, currentHeight: 162  chainHeight: 164
+2019/04/23 17:50:24.377807 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:50:24.378946 [1;35m[INF][m GID 1, [arbitrator] Main chain height:  309
+2019/04/23 17:50:24.389185 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:50:24.402355 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  164
+2019/04/23 17:50:24.402939 [1;35m[INF][m GID 1, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 17:50:24.403422 [1;35m[INF][m GID 1, [SyncMainChainCachedTxs] start
+2019/04/23 17:50:24.404296 [1;35m[INF][m GID 1, [SyncMainChainCachedTxs] end
+2019/04/23 17:50:24.404425 [1;33m[WRN][m GID 1, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 17:50:24.404480 [1;35m[INF][m GID 1, 5. Start arbitrator spv module.
+2019/04/23 17:50:24.404532 [1;35m[INF][m GID 1, [StartSpvModule] new spv service: &{elastos_arbiter/data/spv 20190131 ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw [127.0.0.1:10215] 10215 1 3 <nil>}
+2019/04/23 17:50:24.404851 [1;35m[INF][m GID 68, [SendCachedWithdrawTxs] start
+2019/04/23 17:50:24.404944 [1;35m[INF][m GID 68, No cached withdraw transaction need to send
+2019/04/23 17:50:24.405032 [1;35m[INF][m GID 68, [SendCachedWithdrawTxs] end
+2019/04/23 17:50:24.405069 [1;35m[INF][m GID 69, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:50:24.405174 [1;35m[INF][m GID 69, [sideChainPowTransfer] start
+2019/04/23 17:50:24.457890 [1;35m[INF][m GID 69, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 5dff6b9a9976da63aa7934a14efdf05a3c73a36519c88252b408aa908f1cfce6
+2019/04/23 17:50:24.519014 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: ENTmN8H9WEQjiR5aZyHHSErUDb24PtgeKf
+2019/04/23 17:50:24.519166 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ
+2019/04/23 17:50:24.519285 [1;35m[INF][m GID 1, 6. Start arbitrator group monitor.
+2019/04/23 17:50:24.519308 [1;35m[INF][m GID 1, 7. Start servers.
+2019/04/23 17:50:24.519325 [1;35m[INF][m GID 1, 8. Start check and remove cross chain transactions from db.
+2019/04/23 17:50:24.519343 [1;35m[INF][m GID 1, 9. Start side chain account divide.
+2019/04/23 17:50:24.522278 [1;35m[INF][m GID 82, Check and remove cross chain transactions from dbcache finished
+2019/04/23 17:50:24.526611 [1;33m[WRN][m GID 69, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:50:27.571540 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  310
+2019/04/23 17:50:27.611565 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 17:50:34.589046 [1;35m[INF][m GID 47, currentHeight: 164  chainHeight: 165
+2019/04/23 17:50:34.606585 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:50:34.618471 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  165
+2019/04/23 17:50:46.786153 [1;35m[INF][m GID 47, currentHeight: 165  chainHeight: 166
+2019/04/23 17:50:46.786621 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:50:46.854608 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  166
+2019/04/23 17:50:49.037283 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  311
+2019/04/23 17:50:54.905501 [1;35m[INF][m GID 47, currentHeight: 166  chainHeight: 167
+2019/04/23 17:50:54.924974 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:50:54.952868 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  167
+2019/04/23 17:50:55.152936 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  312
+2019/04/23 17:51:00.257810 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  313
+2019/04/23 17:51:00.272168 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 17:51:00.272255 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] start
+2019/04/23 17:51:00.272343 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] end
+2019/04/23 17:51:00.272370 [1;33m[WRN][m GID 80, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 17:51:00.272394 [1;35m[INF][m GID 370, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:51:00.272439 [1;35m[INF][m GID 370, [sideChainPowTransfer] start
+2019/04/23 17:51:00.272412 [1;35m[INF][m GID 337, [SendCachedWithdrawTxs] start
+2019/04/23 17:51:00.272926 [1;35m[INF][m GID 337, No cached withdraw transaction need to send
+2019/04/23 17:51:00.272956 [1;35m[INF][m GID 337, [SendCachedWithdrawTxs] end
+2019/04/23 17:51:00.272856 [1;35m[INF][m GID 370, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: a284eae3db05f80a59d4dbb2a496ee5a4d474cc2357ba526a663285f4690ba0a
+2019/04/23 17:51:00.273352 [1;33m[WRN][m GID 370, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:51:06.392912 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  314
+2019/04/23 17:51:06.398342 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 17:51:16.555783 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  315
+2019/04/23 17:51:18.632505 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  316
+2019/04/23 17:51:24.524328 [1;35m[INF][m GID 82, Check and remove cross chain transactions from dbcache finished
+2019/04/23 17:51:24.526777 [1;35m[INF][m GID 83, Warning side chain mining account:  ENTmN8H9WEQjiR5aZyHHSErUDb24PtgeKf: 0 
+2019/04/23 17:51:28.098705 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  317
+2019/04/23 17:51:28.117211 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 17:51:28.117377 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] start
+2019/04/23 17:51:28.117674 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] end
+2019/04/23 17:51:28.117750 [1;33m[WRN][m GID 80, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 17:51:28.117794 [1;35m[INF][m GID 483, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:51:28.117925 [1;35m[INF][m GID 483, [sideChainPowTransfer] start
+2019/04/23 17:51:28.117870 [1;35m[INF][m GID 482, [SendCachedWithdrawTxs] start
+2019/04/23 17:51:28.118262 [1;35m[INF][m GID 482, No cached withdraw transaction need to send
+2019/04/23 17:51:28.118325 [1;35m[INF][m GID 482, [SendCachedWithdrawTxs] end
+2019/04/23 17:51:28.118769 [1;35m[INF][m GID 483, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 1eb1057412d26f637a2319000360aab3fb68f4d5dc7a7260f056a14b28d93708
+2019/04/23 17:51:28.119320 [1;33m[WRN][m GID 483, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:51:30.368178 [1;35m[INF][m GID 47, currentHeight: 167  chainHeight: 168
+2019/04/23 17:51:30.385787 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:51:30.413383 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  168
+2019/04/23 17:51:30.413451 [1;35m[INF][m GID 47, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:51:30.413478 [1;35m[INF][m GID 47, [sideChainPowTransfer] start
+2019/04/23 17:51:30.430316 [1;35m[INF][m GID 47, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 7b6f2c6d42a2c5f181dbca76907cba31cdc92a68a9de0a7e163d48cf7615f9ed
+2019/04/23 17:51:30.436161 [1;33m[WRN][m GID 47, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:51:30.436192 [1;35m[INF][m GID 47, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:51:33.259560 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  318
+2019/04/23 17:51:33.295470 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 17:51:34.558101 [1;35m[INF][m GID 47, currentHeight: 168  chainHeight: 169
+2019/04/23 17:51:34.562916 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:51:34.587709 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  169
+2019/04/23 17:51:39.345258 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  319
+2019/04/23 17:51:41.637907 [1;35m[INF][m GID 47, currentHeight: 169  chainHeight: 170
+2019/04/23 17:51:41.639496 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:51:41.652522 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  170
+2019/04/23 17:51:49.555073 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  320
+2019/04/23 17:51:54.711928 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  321
+2019/04/23 17:51:54.724969 [1;35m[INF][m GID 47, currentHeight: 170  chainHeight: 171
+2019/04/23 17:51:54.725628 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:51:54.742778 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  171
+2019/04/23 17:51:54.745987 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 17:51:54.746071 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] start
+2019/04/23 17:51:54.746251 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] end
+2019/04/23 17:51:54.746297 [1;33m[WRN][m GID 80, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 17:51:54.746327 [1;35m[INF][m GID 610, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:51:54.746389 [1;35m[INF][m GID 610, [sideChainPowTransfer] start
+2019/04/23 17:51:54.746353 [1;35m[INF][m GID 593, [SendCachedWithdrawTxs] start
+2019/04/23 17:51:54.747161 [1;35m[INF][m GID 593, No cached withdraw transaction need to send
+2019/04/23 17:51:54.747192 [1;35m[INF][m GID 593, [SendCachedWithdrawTxs] end
+2019/04/23 17:51:54.747061 [1;35m[INF][m GID 610, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 8999cbe1588c336fdb85bf6b4ddaa3aa408db0734b806b5aca34fc151beaf80e
+2019/04/23 17:51:54.777583 [1;33m[WRN][m GID 610, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:51:59.820983 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  322
+2019/04/23 17:51:59.856833 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 17:52:02.762497 [1;35m[INF][m GID 47, currentHeight: 171  chainHeight: 172
+2019/04/23 17:52:02.763838 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:52:02.777332 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  172
+2019/04/23 17:52:05.935008 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  323
+2019/04/23 17:52:16.934900 [1;35m[INF][m GID 47, currentHeight: 172  chainHeight: 173
+2019/04/23 17:52:16.935582 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:52:16.939859 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  173
+2019/04/23 17:52:19.965008 [1;35m[INF][m GID 47, currentHeight: 173  chainHeight: 174
+2019/04/23 17:52:19.965233 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:52:19.968089 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  174
+2019/04/23 17:52:20.216373 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  324
+2019/04/23 17:52:22.237390 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  325
+2019/04/23 17:52:22.242732 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 17:52:22.242806 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] start
+2019/04/23 17:52:22.242896 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] end
+2019/04/23 17:52:22.242920 [1;33m[WRN][m GID 80, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 17:52:22.242941 [1;35m[INF][m GID 717, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:52:22.242964 [1;35m[INF][m GID 717, [sideChainPowTransfer] start
+2019/04/23 17:52:22.243038 [1;35m[INF][m GID 716, [SendCachedWithdrawTxs] start
+2019/04/23 17:52:22.243117 [1;35m[INF][m GID 716, No cached withdraw transaction need to send
+2019/04/23 17:52:22.243143 [1;35m[INF][m GID 716, [SendCachedWithdrawTxs] end
+2019/04/23 17:52:22.290514 [1;35m[INF][m GID 717, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: c05c56ba409e8ef632df0a653dfe2c1118fc14bd276ab74ab2e3e4f187c930a7
+2019/04/23 17:52:22.299764 [1;33m[WRN][m GID 717, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:52:24.524898 [1;35m[INF][m GID 82, Check and remove cross chain transactions from dbcache finished
+2019/04/23 17:52:24.560727 [1;35m[INF][m GID 83, Warning side chain mining account:  ENTmN8H9WEQjiR5aZyHHSErUDb24PtgeKf: 0 
+2019/04/23 17:52:25.260331 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  326
+2019/04/23 17:52:25.265087 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 17:52:28.987826 [1;35m[INF][m GID 47, currentHeight: 174  chainHeight: 175
+2019/04/23 17:52:28.988154 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:52:28.991484 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  175
+2019/04/23 17:52:31.994940 [1;35m[INF][m GID 47, currentHeight: 175  chainHeight: 176
+2019/04/23 17:52:32.012081 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:52:32.017407 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  176
+2019/04/23 17:52:32.721604 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  327
+2019/04/23 17:52:37.793120 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  328
+2019/04/23 17:52:38.183456 [1;35m[INF][m GID 47, currentHeight: 176  chainHeight: 177
+2019/04/23 17:52:38.183673 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:52:38.196043 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  177
+2019/04/23 17:52:43.921520 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  329
+2019/04/23 17:52:43.925565 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 17:52:43.925637 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] start
+2019/04/23 17:52:43.925748 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] end
+2019/04/23 17:52:43.925815 [1;33m[WRN][m GID 80, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 17:52:43.925891 [1;35m[INF][m GID 821, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:52:43.925949 [1;35m[INF][m GID 821, [sideChainPowTransfer] start
+2019/04/23 17:52:43.926059 [1;35m[INF][m GID 820, [SendCachedWithdrawTxs] start
+2019/04/23 17:52:43.926180 [1;35m[INF][m GID 820, No cached withdraw transaction need to send
+2019/04/23 17:52:43.926241 [1;35m[INF][m GID 820, [SendCachedWithdrawTxs] end
+2019/04/23 17:52:43.950081 [1;35m[INF][m GID 821, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 90fbe0dc99a4fc344395e0a2c255dc0b5b6a983eab9021315c986d64ab2d9bb9
+2019/04/23 17:52:43.962292 [1;33m[WRN][m GID 821, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:52:55.163217 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  330
+2019/04/23 17:52:55.177349 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 17:53:02.248334 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  331
+2019/04/23 17:53:12.467969 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  332
+2019/04/23 17:53:20.576394 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  333
+2019/04/23 17:53:20.579639 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 17:53:20.579691 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] start
+2019/04/23 17:53:20.579784 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] end
+2019/04/23 17:53:20.579834 [1;33m[WRN][m GID 80, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 17:53:20.579858 [1;35m[INF][m GID 999, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:53:20.579882 [1;35m[INF][m GID 999, [sideChainPowTransfer] start
+2019/04/23 17:53:20.579961 [1;35m[INF][m GID 998, [SendCachedWithdrawTxs] start
+2019/04/23 17:53:20.580059 [1;35m[INF][m GID 998, No cached withdraw transaction need to send
+2019/04/23 17:53:20.580081 [1;35m[INF][m GID 998, [SendCachedWithdrawTxs] end
+2019/04/23 17:53:20.580381 [1;35m[INF][m GID 999, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 06a5837ad7d59647871ad111cc9ac86202b89006eab5ebd1f2982cf785a99135
+2019/04/23 17:53:20.580905 [1;33m[WRN][m GID 999, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:53:22.692445 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  334
+2019/04/23 17:53:22.742927 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 17:53:24.525625 [1;35m[INF][m GID 82, Check and remove cross chain transactions from dbcache finished
+2019/04/23 17:53:24.590961 [1;35m[INF][m GID 83, Warning side chain mining account:  ENTmN8H9WEQjiR5aZyHHSErUDb24PtgeKf: 0 
+2019/04/23 17:53:26.769987 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  335
+2019/04/23 17:53:31.896665 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  336
+2019/04/23 17:53:34.967460 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  337
+2019/04/23 17:53:34.971341 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 17:53:34.971372 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] start
+2019/04/23 17:53:34.971446 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] end
+2019/04/23 17:53:34.971470 [1;33m[WRN][m GID 80, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 17:53:34.971489 [1;35m[INF][m GID 1053, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:53:34.971512 [1;35m[INF][m GID 1053, [sideChainPowTransfer] start
+2019/04/23 17:53:34.971591 [1;35m[INF][m GID 1052, [SendCachedWithdrawTxs] start
+2019/04/23 17:53:34.971652 [1;35m[INF][m GID 1052, No cached withdraw transaction need to send
+2019/04/23 17:53:34.971694 [1;35m[INF][m GID 1052, [SendCachedWithdrawTxs] end
+2019/04/23 17:53:34.971944 [1;35m[INF][m GID 1053, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 63abd7f03587c23b3c844931e3d769ecb8d7d1eca2084e22665975a5065c5f39
+2019/04/23 17:53:34.972855 [1;33m[WRN][m GID 1053, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:53:36.996018 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  338
+2019/04/23 17:53:37.008794 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 17:53:43.069647 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  339
+2019/04/23 17:54:00.435886 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  340
+2019/04/23 17:54:04.280306 [1;35m[INF][m GID 47, currentHeight: 177  chainHeight: 178
+2019/04/23 17:54:04.283517 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:54:04.298381 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  178
+2019/04/23 17:54:06.594160 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  341
+2019/04/23 17:54:06.606776 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 17:54:06.606811 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] start
+2019/04/23 17:54:06.606921 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] end
+2019/04/23 17:54:06.606948 [1;33m[WRN][m GID 80, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 17:54:06.606965 [1;35m[INF][m GID 1204, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:54:06.607001 [1;35m[INF][m GID 1204, [sideChainPowTransfer] start
+2019/04/23 17:54:06.607074 [1;35m[INF][m GID 1203, [SendCachedWithdrawTxs] start
+2019/04/23 17:54:06.607149 [1;35m[INF][m GID 1203, No cached withdraw transaction need to send
+2019/04/23 17:54:06.607181 [1;35m[INF][m GID 1203, [SendCachedWithdrawTxs] end
+2019/04/23 17:54:06.615472 [1;35m[INF][m GID 1204, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 2071d71fb49c85e8243c8d3c04a276bc02daf155e5959d3f668ca0df5df5fec1
+2019/04/23 17:54:06.616002 [1;33m[WRN][m GID 1204, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:54:12.766920 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  342
+2019/04/23 17:54:12.777538 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 17:54:16.826694 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  343
+2019/04/23 17:54:24.526082 [1;35m[INF][m GID 82, Check and remove cross chain transactions from dbcache finished
+2019/04/23 17:54:24.670224 [1;35m[INF][m GID 83, Warning side chain mining account:  ENTmN8H9WEQjiR5aZyHHSErUDb24PtgeKf: 0 
+2019/04/23 17:54:27.576927 [1;35m[INF][m GID 47, currentHeight: 178  chainHeight: 179
+2019/04/23 17:54:27.577369 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:54:27.584905 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  179
+2019/04/23 17:54:34.072603 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  344
+2019/04/23 17:54:42.223012 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  345
+2019/04/23 17:54:42.247479 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 17:54:42.247516 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] start
+2019/04/23 17:54:42.247647 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] end
+2019/04/23 17:54:42.247688 [1;33m[WRN][m GID 80, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 17:54:42.247711 [1;35m[INF][m GID 1343, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:54:42.247734 [1;35m[INF][m GID 1343, [sideChainPowTransfer] start
+2019/04/23 17:54:42.247855 [1;35m[INF][m GID 1342, [SendCachedWithdrawTxs] start
+2019/04/23 17:54:42.247920 [1;35m[INF][m GID 1342, No cached withdraw transaction need to send
+2019/04/23 17:54:42.247939 [1;35m[INF][m GID 1342, [SendCachedWithdrawTxs] end
+2019/04/23 17:54:42.257453 [1;35m[INF][m GID 1343, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 3a17f492e20a91b7eac0ffb11df30c0eb8a14377ac6a49d3a0d7ecbe0b1d9a71
+2019/04/23 17:54:42.364615 [1;33m[WRN][m GID 1343, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:54:48.332496 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  346
+2019/04/23 17:54:48.337296 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 17:55:00.505956 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  347
+2019/04/23 17:55:06.014758 [1;35m[INF][m GID 47, currentHeight: 179  chainHeight: 180
+2019/04/23 17:55:06.033471 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:55:06.063023 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  180
+2019/04/23 17:55:24.527321 [1;35m[INF][m GID 82, Check and remove cross chain transactions from dbcache finished
+2019/04/23 17:55:24.673212 [1;35m[INF][m GID 83, Warning side chain mining account:  ENTmN8H9WEQjiR5aZyHHSErUDb24PtgeKf: 0 
+2019/04/23 17:55:24.938070 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  348
+2019/04/23 17:55:30.141641 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  349
+2019/04/23 17:55:30.211930 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 17:55:30.211991 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] start
+2019/04/23 17:55:30.212105 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] end
+2019/04/23 17:55:30.212129 [1;33m[WRN][m GID 80, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 17:55:30.212165 [1;35m[INF][m GID 1549, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:55:30.212191 [1;35m[INF][m GID 1549, [sideChainPowTransfer] start
+2019/04/23 17:55:30.212278 [1;35m[INF][m GID 1548, [SendCachedWithdrawTxs] start
+2019/04/23 17:55:30.212380 [1;35m[INF][m GID 1548, No cached withdraw transaction need to send
+2019/04/23 17:55:30.212401 [1;35m[INF][m GID 1548, [SendCachedWithdrawTxs] end
+2019/04/23 17:55:30.233129 [1;35m[INF][m GID 1549, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: f5e5a1de2976fa0ddb30347e8198cc8fb432bd3f3a4dd31b6f3408f4e310fa92
+2019/04/23 17:55:30.239146 [1;33m[WRN][m GID 1549, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:55:32.297749 [1;35m[INF][m GID 47, currentHeight: 180  chainHeight: 181
+2019/04/23 17:55:32.298445 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:55:32.311699 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  181
+2019/04/23 17:55:32.311752 [1;35m[INF][m GID 47, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:55:32.311774 [1;35m[INF][m GID 47, [sideChainPowTransfer] start
+2019/04/23 17:55:32.313258 [1;35m[INF][m GID 47, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 53a6fb663b0bfbb62ad267c4681be11c1a291fe87983c6d13cbbe4d0f452d2db
+2019/04/23 17:55:32.313781 [1;33m[WRN][m GID 47, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:55:32.313805 [1;35m[INF][m GID 47, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:55:41.558908 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  350
+2019/04/23 17:55:41.562239 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 17:55:53.793438 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  351
+2019/04/23 17:55:57.869577 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  352
+2019/04/23 17:56:01.935197 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  353
+2019/04/23 17:56:01.938822 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 17:56:01.938855 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] start
+2019/04/23 17:56:01.938957 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] end
+2019/04/23 17:56:01.938983 [1;33m[WRN][m GID 80, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 17:56:01.939018 [1;35m[INF][m GID 1707, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:56:01.939043 [1;35m[INF][m GID 1707, [sideChainPowTransfer] start
+2019/04/23 17:56:01.939114 [1;35m[INF][m GID 1706, [SendCachedWithdrawTxs] start
+2019/04/23 17:56:01.939203 [1;35m[INF][m GID 1706, No cached withdraw transaction need to send
+2019/04/23 17:56:01.939246 [1;35m[INF][m GID 1706, [SendCachedWithdrawTxs] end
+2019/04/23 17:56:01.939535 [1;35m[INF][m GID 1707, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 998fc18694d58aeb50d01bc2e659c630de1a1efaa561188a0c6d77acbe10e60b
+2019/04/23 17:56:01.940133 [1;33m[WRN][m GID 1707, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:56:09.680483 [1;35m[INF][m GID 47, currentHeight: 181  chainHeight: 182
+2019/04/23 17:56:09.681082 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:56:09.685900 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  182
+2019/04/23 17:56:09.685963 [1;35m[INF][m GID 47, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:56:09.686007 [1;35m[INF][m GID 47, [sideChainPowTransfer] start
+2019/04/23 17:56:09.686406 [1;35m[INF][m GID 47, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 4e3ec563066174a73e951ad4268ab53f3b420f731e7b3dc85bed0b94b4bd4d62
+2019/04/23 17:56:09.721575 [1;33m[WRN][m GID 47, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:56:09.721624 [1;35m[INF][m GID 47, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:56:10.745844 [1;35m[INF][m GID 47, currentHeight: 182  chainHeight: 183
+2019/04/23 17:56:10.783999 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:56:10.813987 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  183
+2019/04/23 17:56:10.814061 [1;35m[INF][m GID 47, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:56:10.814097 [1;35m[INF][m GID 47, [sideChainPowTransfer] start
+2019/04/23 17:56:10.824638 [1;35m[INF][m GID 47, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 7d380284cc9bb31af447a4f98995ec85d88061ef2855b20033b13005cca708ff
+2019/04/23 17:56:10.848645 [1;33m[WRN][m GID 47, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:56:10.848699 [1;35m[INF][m GID 47, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:56:12.164949 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  354
+2019/04/23 17:56:12.205498 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 17:56:24.527697 [1;35m[INF][m GID 82, Check and remove cross chain transactions from dbcache finished
+2019/04/23 17:56:24.679561 [1;35m[INF][m GID 83, Warning side chain mining account:  ENTmN8H9WEQjiR5aZyHHSErUDb24PtgeKf: 0 
+2019/04/23 17:56:28.417334 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  355
+2019/04/23 17:56:30.973303 [1;35m[INF][m GID 47, currentHeight: 183  chainHeight: 184
+2019/04/23 17:56:30.974316 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:56:30.987323 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  184
+2019/04/23 17:56:37.613532 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  356
+2019/04/23 17:56:42.661694 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  357
+2019/04/23 17:56:42.665130 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 17:56:42.665166 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] start
+2019/04/23 17:56:42.665260 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] end
+2019/04/23 17:56:42.665285 [1;33m[WRN][m GID 80, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 17:56:42.665305 [1;35m[INF][m GID 1872, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:56:42.665328 [1;35m[INF][m GID 1872, [sideChainPowTransfer] start
+2019/04/23 17:56:42.665402 [1;35m[INF][m GID 1871, [SendCachedWithdrawTxs] start
+2019/04/23 17:56:42.665465 [1;35m[INF][m GID 1871, No cached withdraw transaction need to send
+2019/04/23 17:56:42.665485 [1;35m[INF][m GID 1871, [SendCachedWithdrawTxs] end
+2019/04/23 17:56:42.671430 [1;35m[INF][m GID 1872, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 21f616daf58b589201fc4476c3693d25c6edf31990cf8000d02f02a4f65e9e75
+2019/04/23 17:56:42.672054 [1;33m[WRN][m GID 1872, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:56:50.737196 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  358
+2019/04/23 17:56:50.742514 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 17:56:58.921126 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  359
+2019/04/23 17:56:59.236881 [1;35m[INF][m GID 47, currentHeight: 184  chainHeight: 185
+2019/04/23 17:56:59.248789 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:56:59.269448 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  185
+2019/04/23 17:57:01.971569 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  360
+2019/04/23 17:57:24.529048 [1;35m[INF][m GID 82, Check and remove cross chain transactions from dbcache finished
+2019/04/23 17:57:24.712792 [1;35m[INF][m GID 83, Warning side chain mining account:  ENTmN8H9WEQjiR5aZyHHSErUDb24PtgeKf: 0 
+2019/04/23 17:57:26.265833 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  361
+2019/04/23 17:57:26.276311 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 17:57:26.276367 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] start
+2019/04/23 17:57:26.276493 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] end
+2019/04/23 17:57:26.276520 [1;33m[WRN][m GID 80, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 17:57:26.276541 [1;35m[INF][m GID 2084, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:57:26.276564 [1;35m[INF][m GID 2084, [sideChainPowTransfer] start
+2019/04/23 17:57:26.276645 [1;35m[INF][m GID 2083, [SendCachedWithdrawTxs] start
+2019/04/23 17:57:26.276717 [1;35m[INF][m GID 2083, No cached withdraw transaction need to send
+2019/04/23 17:57:26.276738 [1;35m[INF][m GID 2083, [SendCachedWithdrawTxs] end
+2019/04/23 17:57:26.346655 [1;35m[INF][m GID 2084, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 91c3644cd7d1a9612b33b0533e97d83d36651ae53bac97180331c2984ddd9a5e
+2019/04/23 17:57:26.363104 [1;33m[WRN][m GID 2084, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:57:37.553723 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  362
+2019/04/23 17:57:37.558799 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 17:57:42.612379 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  363
+2019/04/23 17:57:45.799038 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  364
+2019/04/23 17:57:52.908456 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  365
+2019/04/23 17:57:52.911842 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 17:57:52.911900 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] start
+2019/04/23 17:57:52.912003 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] end
+2019/04/23 17:57:52.912054 [1;33m[WRN][m GID 80, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 17:57:52.912083 [1;35m[INF][m GID 2187, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:57:52.912115 [1;35m[INF][m GID 2187, [sideChainPowTransfer] start
+2019/04/23 17:57:52.912208 [1;35m[INF][m GID 2186, [SendCachedWithdrawTxs] start
+2019/04/23 17:57:52.912290 [1;35m[INF][m GID 2186, No cached withdraw transaction need to send
+2019/04/23 17:57:52.912315 [1;35m[INF][m GID 2186, [SendCachedWithdrawTxs] end
+2019/04/23 17:57:52.912805 [1;35m[INF][m GID 2187, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: c8d6b869490fe3f9f2f9a6d6223a016e2f7d5a5f94985a110b4e63de5a9aabf2
+2019/04/23 17:57:52.916631 [1;33m[WRN][m GID 2187, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:57:57.000954 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  366
+2019/04/23 17:57:57.006968 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 17:57:57.786623 [1;35m[INF][m GID 47, currentHeight: 185  chainHeight: 186
+2019/04/23 17:57:57.787407 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:57:57.794734 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  186
+2019/04/23 17:58:01.132029 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  367
+2019/04/23 17:58:07.205693 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  368
+2019/04/23 17:58:22.446414 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  369
+2019/04/23 17:58:22.451055 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 17:58:22.451089 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] start
+2019/04/23 17:58:22.451190 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] end
+2019/04/23 17:58:22.451235 [1;33m[WRN][m GID 80, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 17:58:22.451256 [1;35m[INF][m GID 2312, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:58:22.451279 [1;35m[INF][m GID 2312, [sideChainPowTransfer] start
+2019/04/23 17:58:22.451363 [1;35m[INF][m GID 2311, [SendCachedWithdrawTxs] start
+2019/04/23 17:58:22.451429 [1;35m[INF][m GID 2311, No cached withdraw transaction need to send
+2019/04/23 17:58:22.451449 [1;35m[INF][m GID 2311, [SendCachedWithdrawTxs] end
+2019/04/23 17:58:22.451850 [1;35m[INF][m GID 2312, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 614e6f278b05acde1046dfab96962f655fea03532320a87aaae55f69cdb8c829
+2019/04/23 17:58:22.452412 [1;33m[WRN][m GID 2312, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:58:24.530083 [1;35m[INF][m GID 82, Check and remove cross chain transactions from dbcache finished
+2019/04/23 17:58:24.720714 [1;35m[INF][m GID 83, Warning side chain mining account:  ENTmN8H9WEQjiR5aZyHHSErUDb24PtgeKf: 0 
+2019/04/23 17:58:27.541144 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  370
+2019/04/23 17:58:27.571163 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 17:58:34.703065 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  371
+2019/04/23 17:58:48.957461 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  372
+2019/04/23 17:58:57.270502 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  373
+2019/04/23 17:58:57.300764 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 17:58:57.300799 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] start
+2019/04/23 17:58:57.300944 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] end
+2019/04/23 17:58:57.300972 [1;33m[WRN][m GID 80, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 17:58:57.300991 [1;35m[INF][m GID 2483, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:58:57.301026 [1;35m[INF][m GID 2483, [sideChainPowTransfer] start
+2019/04/23 17:58:57.301113 [1;35m[INF][m GID 2482, [SendCachedWithdrawTxs] start
+2019/04/23 17:58:57.301177 [1;35m[INF][m GID 2482, No cached withdraw transaction need to send
+2019/04/23 17:58:57.301198 [1;35m[INF][m GID 2482, [SendCachedWithdrawTxs] end
+2019/04/23 17:58:57.342108 [1;35m[INF][m GID 2483, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 09ac9cd9a2aca7168e6931db91c6e908f403fe1d3d920a32f904a20315a9bef5
+2019/04/23 17:58:57.346135 [1;33m[WRN][m GID 2483, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:59:00.317299 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  374
+2019/04/23 17:59:00.320325 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 17:59:06.414139 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  375
+2019/04/23 17:59:18.604819 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  376
+2019/04/23 17:59:21.618852 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  377
+2019/04/23 17:59:21.635266 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 17:59:21.635340 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] start
+2019/04/23 17:59:21.635443 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] end
+2019/04/23 17:59:21.635473 [1;33m[WRN][m GID 80, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 17:59:21.635510 [1;35m[INF][m GID 2594, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:59:21.635534 [1;35m[INF][m GID 2594, [sideChainPowTransfer] start
+2019/04/23 17:59:21.635627 [1;35m[INF][m GID 2593, [SendCachedWithdrawTxs] start
+2019/04/23 17:59:21.635694 [1;35m[INF][m GID 2593, No cached withdraw transaction need to send
+2019/04/23 17:59:21.635713 [1;35m[INF][m GID 2593, [SendCachedWithdrawTxs] end
+2019/04/23 17:59:21.636041 [1;35m[INF][m GID 2594, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 0e532b601459b95b1de9ee5ea7e4802722969f409c411346bc6d6d1582f52543
+2019/04/23 17:59:21.653694 [1;33m[WRN][m GID 2594, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:59:24.530685 [1;35m[INF][m GID 82, Check and remove cross chain transactions from dbcache finished
+2019/04/23 17:59:24.744870 [1;35m[INF][m GID 83, Warning side chain mining account:  ENTmN8H9WEQjiR5aZyHHSErUDb24PtgeKf: 0 
+2019/04/23 17:59:27.717308 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  378
+2019/04/23 17:59:27.729938 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 17:59:31.876855 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  379
+2019/04/23 17:59:35.614476 [1;35m[INF][m GID 47, currentHeight: 186  chainHeight: 187
+2019/04/23 17:59:35.614787 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:59:35.626878 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  187
+2019/04/23 17:59:40.970161 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  380
+2019/04/23 17:59:43.727873 [1;35m[INF][m GID 47, currentHeight: 187  chainHeight: 188
+2019/04/23 17:59:43.729571 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:59:43.737680 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  188
+2019/04/23 17:59:47.086740 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  381
+2019/04/23 17:59:47.093471 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 17:59:47.093536 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] start
+2019/04/23 17:59:47.093630 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] end
+2019/04/23 17:59:47.093666 [1;33m[WRN][m GID 80, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 17:59:47.093689 [1;35m[INF][m GID 2687, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:59:47.093712 [1;35m[INF][m GID 2687, [sideChainPowTransfer] start
+2019/04/23 17:59:47.093788 [1;35m[INF][m GID 2686, [SendCachedWithdrawTxs] start
+2019/04/23 17:59:47.093866 [1;35m[INF][m GID 2686, No cached withdraw transaction need to send
+2019/04/23 17:59:47.093886 [1;35m[INF][m GID 2686, [SendCachedWithdrawTxs] end
+2019/04/23 17:59:47.094295 [1;35m[INF][m GID 2687, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 74ab705e8205e871d64e45018ff8a1e3054ba4cf5d017d5cb8eb4ccd31e07c20
+2019/04/23 17:59:47.097629 [1;33m[WRN][m GID 2687, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:59:49.895156 [1;35m[INF][m GID 47, currentHeight: 188  chainHeight: 189
+2019/04/23 17:59:49.895423 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 17:59:49.899502 [1;35m[INF][m GID 47,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  189
+2019/04/23 17:59:49.899550 [1;35m[INF][m GID 47, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:59:49.899583 [1;35m[INF][m GID 47, [sideChainPowTransfer] start
+2019/04/23 17:59:49.899939 [1;35m[INF][m GID 47, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 6c4fef69fd52a9d3825b3cdb6dd37ea8183141d70819e07762f60f4fd2dfbe16
+2019/04/23 17:59:49.928268 [1;33m[WRN][m GID 47, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 17:59:49.928300 [1;35m[INF][m GID 47, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 17:59:59.261581 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  382
+2019/04/23 17:59:59.264651 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 18:00:09.388413 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  383
+2019/04/23 18:00:19.963100 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  384
+2019/04/23 18:00:24.531184 [1;35m[INF][m GID 82, Check and remove cross chain transactions from dbcache finished
+2019/04/23 18:00:24.754555 [1;35m[INF][m GID 83, Warning side chain mining account:  ENTmN8H9WEQjiR5aZyHHSErUDb24PtgeKf: 0 
+2019/04/23 18:00:30.313138 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  385
+2019/04/23 18:00:30.316360 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 18:00:30.316394 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] start
+2019/04/23 18:00:30.316482 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] end
+2019/04/23 18:00:30.316507 [1;33m[WRN][m GID 80, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 18:00:30.316584 [1;35m[INF][m GID 2879, [SendCachedWithdrawTxs] start
+2019/04/23 18:00:30.316653 [1;35m[INF][m GID 2879, No cached withdraw transaction need to send
+2019/04/23 18:00:30.316669 [1;35m[INF][m GID 2879, [SendCachedWithdrawTxs] end
+2019/04/23 18:00:30.325028 [1;35m[INF][m GID 2880, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 18:00:30.325078 [1;35m[INF][m GID 2880, [sideChainPowTransfer] start
+2019/04/23 18:00:30.365490 [1;35m[INF][m GID 2880, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: d2fda09cdcfcd0c617aef4d11bbb5fb0bbbb2a1b867b440705c2335164678417
+2019/04/23 18:00:30.375357 [1;33m[WRN][m GID 2880, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 18:00:48.507020 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  386
+2019/04/23 18:00:48.525652 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 18:00:53.616899 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  387
+2019/04/23 18:00:59.658239 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  388
+2019/04/23 18:01:06.740872 [1;35m[INF][m GID 80, [arbitrator] Main chain height:  389
+2019/04/23 18:01:06.745174 [1;35m[INF][m GID 80, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 18:01:06.745213 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] start
+2019/04/23 18:01:06.745327 [1;35m[INF][m GID 80, [SyncMainChainCachedTxs] end
+2019/04/23 18:01:06.745352 [1;33m[WRN][m GID 80, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 18:01:06.745374 [1;35m[INF][m GID 3034, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 18:01:06.745393 [1;35m[INF][m GID 3034, [sideChainPowTransfer] start
+2019/04/23 18:01:06.745498 [1;35m[INF][m GID 3033, [SendCachedWithdrawTxs] start
+2019/04/23 18:01:06.745578 [1;35m[INF][m GID 3033, No cached withdraw transaction need to send
+2019/04/23 18:01:06.745599 [1;35m[INF][m GID 3033, [SendCachedWithdrawTxs] end
+2019/04/23 18:01:06.791187 [1;35m[INF][m GID 3034, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 82ff5a86316819aa7e9a2a9e08588e5e26daf16c0ce5bfe3e0a127c9106083aa
+2019/04/23 18:01:06.796122 [1;33m[WRN][m GID 3034, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 18:01:16.043508 [1;32m[DBG][m GID 80, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 18:01:16.043584 [1;35m[INF][m GID 80, [SyncFromMainNode] rpc get current height failed
+2019/04/23 18:01:16.043605 [1;31m[ERR][m GID 80, Arbitrator group sync error:  Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 18:01:17.044346 [1;32m[DBG][m GID 80, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 18:01:17.044514 [1;35m[INF][m GID 80, [SyncFromMainNode] rpc get current height failed
+2019/04/23 18:01:17.044538 [1;31m[ERR][m GID 80, Arbitrator group sync error:  Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 18:01:18.044952 [1;32m[DBG][m GID 80, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 18:01:18.044997 [1;35m[INF][m GID 80, [SyncFromMainNode] rpc get current height failed
+2019/04/23 18:01:18.045034 [1;31m[ERR][m GID 80, Arbitrator group sync error:  Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 18:01:19.045841 [1;32m[DBG][m GID 80, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 18:01:19.045903 [1;35m[INF][m GID 80, [SyncFromMainNode] rpc get current height failed
+2019/04/23 18:01:19.045925 [1;31m[ERR][m GID 80, Arbitrator group sync error:  Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 18:01:19.468832 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10134: dial tcp 127.0.0.1:10134: connect: connection refused
+2019/04/23 18:01:20.046695 [1;32m[DBG][m GID 80, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 18:01:20.046758 [1;35m[INF][m GID 80, [SyncFromMainNode] rpc get current height failed
+2019/04/23 18:01:20.046779 [1;31m[ERR][m GID 80, Arbitrator group sync error:  Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 18:01:20.470085 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10134: dial tcp 127.0.0.1:10134: connect: connection refused
+2019/04/23 18:01:21.047468 [1;32m[DBG][m GID 80, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 18:01:21.047512 [1;35m[INF][m GID 80, [SyncFromMainNode] rpc get current height failed
+2019/04/23 18:01:21.047528 [1;31m[ERR][m GID 80, Arbitrator group sync error:  Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 18:01:21.470530 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10134: dial tcp 127.0.0.1:10134: connect: connection refused
+2019/04/23 18:01:22.047896 [1;32m[DBG][m GID 80, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 18:01:22.047937 [1;35m[INF][m GID 80, [SyncFromMainNode] rpc get current height failed
+2019/04/23 18:01:22.047988 [1;31m[ERR][m GID 80, Arbitrator group sync error:  Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 18:01:22.470995 [1;32m[DBG][m GID 47, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10134: dial tcp 127.0.0.1:10134: connect: connection refused

@@ -1,0 +1,1197 @@
+2019/04/23 20:31:42.138788 [1;35m[INF][m GID 1, Node version: v0.3.1-dirty
+2019/04/23 20:31:42.138948 [1;35m[INF][m GID 1, go version go1.11.5 linux/amd64
+2019/04/23 20:31:42.202439 [1;35m[INF][m GID 1, Start the manager
+[ ========== BLOCKCHAIN INITIALIZE STARTED ========== ]
+ 0 / 370 [------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------]   0.00% 371 / 370 [=======================================================================================================================================================================================================================================================] 100.27% 0s
+[ ========== BLOCKCHAIN INITIALIZE FINISHED ========== ]
+2019/04/23 20:31:42.245977 [1;35m[INF][m GID 1, Start the P2P networks
+2019/04/23 20:31:42.246042 [1;35m[INF][m GID 1, Start services
+2019/04/23 20:31:42.248343 [1;35m[INF][m GID 69, New valid peer 127.0.0.1:10515 (outbound)
+2019/04/23 20:31:42.248611 [1;35m[INF][m GID 69, Syncing to block height 470 from peer 127.0.0.1:10515
+2019/04/23 20:31:42.248632 [1;35m[INF][m GID 69, New valid peer 127.0.0.1:10015 (outbound)
+2019/04/23 20:31:43.670042 [1;35m[INF][m GID 69, New valid peer 127.0.0.1:38000 (inbound)
+2019/04/23 20:31:44.189682 [1;35m[INF][m GID 69, New valid peer 127.0.0.1:38024 (inbound)
+2019/04/23 20:31:45.026639 [1;35m[INF][m GID 69, New valid peer 127.0.0.1:38032 (inbound)
+2019/04/23 20:31:45.931480 [1;35m[INF][m GID 69, New valid peer 127.0.0.1:38070 (inbound)
+2019/04/23 20:31:46.011405 [1;35m[INF][m GID 69, New valid peer 127.0.0.1:38082 (inbound)
+2019/04/23 20:31:46.776503 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 81c8b55b7aeba995b8a7aed271852f7412a5cc7d646fe490ff7a4634ec6f3e0a
+2019/04/23 20:31:47.248509 [1;35m[INF][m GID 69, New valid peer 127.0.0.1:10215 (outbound)
+2019/04/23 20:31:47.248611 [1;35m[INF][m GID 69, New valid peer 127.0.0.1:10315 (outbound)
+2019/04/23 20:31:47.248836 [1;35m[INF][m GID 1, Start consensus
+2019/04/23 20:31:47.248857 [1;35m[INF][m GID 1, Start POW Services
+2019/04/23 20:31:47.248952 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:31:47.251416 [1;35m[INF][m GID 69, New valid peer 127.0.0.1:10115 (outbound)
+2019/04/23 20:31:47.532121 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 0258dc84692330f3b4f3c238c7c692c54fd8c80006fd2a47f1f4d8a595973bc9
+2019/04/23 20:31:47.621138 [1;35m[INF][m GID 69, New valid peer 127.0.0.1:38122 (inbound)
+2019/04/23 20:31:48.157000 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 77c219ad836755cf099851b65c541c83b1f61ad21cad89b8f36db039b0ff4ee7
+2019/04/23 20:31:49.473025 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: f5c680b00e1f0e1308525ccf7d7ea618d03a8e2a7e80ba5186df527796fe09f6
+2019/04/23 20:31:51.995781 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 81c8b55b7aeba995b8a7aed271852f7412a5cc7d646fe490ff7a4634ec6f3e0a
+2019/04/23 20:31:51.995828 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 471
+2019/04/23 20:31:52.030112 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 5
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216   true
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+2     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:31:52.249772 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:31:52.249863 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:31:53.791999 [1;35m[INF][m GID 399, <================Solved Block==============>
+2019/04/23 20:31:53.798991 [1;35m[INF][m GID 399, [ConfirmBlock] block hash: 85c1af9e79cf764f508636789ff145d9d32eb60294883d2cb3ff539a82009fc4
+2019/04/23 20:31:53.800543 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:31:54.045287 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 85c1af9e79cf764f508636789ff145d9d32eb60294883d2cb3ff539a82009fc4
+2019/04/23 20:31:54.064246 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 472
+2019/04/23 20:31:57.252372 [1;35m[INF][m GID 69, New valid peer 127.0.0.1:10415 (outbound)
+2019/04/23 20:31:58.810429 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:31:58.810594 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:32:03.839371 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:32:03.844198 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:32:08.847708 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:32:08.847856 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:32:13.870173 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:32:13.870428 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:32:17.924976 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 112ccb6ef151edc292d861cdf439bb2a1cb9a064a81335f5c6d48cc7c63e68e8
+2019/04/23 20:32:18.095169 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 112ccb6ef151edc292d861cdf439bb2a1cb9a064a81335f5c6d48cc7c63e68e8
+2019/04/23 20:32:18.095362 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 473
+2019/04/23 20:32:18.096467 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 1
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                         true
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+2     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+3     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+4     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:32:18.874502 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:32:18.874641 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:32:23.909934 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:32:23.910104 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:32:28.926033 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:32:28.928770 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:32:30.028506 [1;35m[INF][m GID 69, Lost peer 127.0.0.1:38032 (inbound)
+2019/04/23 20:32:32.281418 [1;35m[INF][m GID 69, Lost peer 127.0.0.1:10215 (outbound)
+2019/04/23 20:32:33.979866 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:32:33.981005 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:32:35.078488 [1;35m[INF][m GID 69, New valid peer 127.0.0.1:38746 (inbound)
+2019/04/23 20:32:37.303380 [1;35m[INF][m GID 69, New valid peer 127.0.0.1:10215 (outbound)
+2019/04/23 20:32:38.992516 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:32:39.030500 [1;35m[INF][m GID 399, difficulty:  520095999
+2019-04-23 20:32:42.268 [INF] STAT: -> 473 [472 127.0.0.1:38000 (inbound), 472 127.0.0.1:38024 (inbound), 473 127.0.0.1:38746 (inbound), 472 127.0.0.1:38070 (inbound), 472 127.0.0.1:38082 (inbound), 472 127.0.0.1:38122 (inbound), 472 127.0.0.1:10015 (outbound), 472 127.0.0.1:10515 (outbound), 473 127.0.0.1:10215 (outbound), 472 127.0.0.1:10315 (outbound), 472 127.0.0.1:10115 (outbound), 473 127.0.0.1:10415 (outbound)]
+2019/04/23 20:32:43.074707 [1;35m[INF][m GID 399, <================Solved Block==============>
+2019/04/23 20:32:43.074910 [1;35m[INF][m GID 399, [ConfirmBlock] block hash: e56c1ecf866a24fbac0d7c22463cc99c7b02abdf44dbfc859ed79b9bcd44039d
+2019/04/23 20:32:43.100692 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:32:43.329329 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: e56c1ecf866a24fbac0d7c22463cc99c7b02abdf44dbfc859ed79b9bcd44039d
+2019/04/23 20:32:43.334665 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 474
+2019/04/23 20:32:43.350068 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 2
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                         true
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+2     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+3     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+4     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:32:43.381694 [1;35m[INF][m GID 40, [ConfirmBlock] block hash: e56c1ecf866a24fbac0d7c22463cc99c7b02abdf44dbfc859ed79b9bcd44039d
+2019/04/23 20:32:43.381750 [1;35m[INF][m GID 40, [ConfirmBlock] block height: 474
+2019/04/23 20:32:48.113251 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:32:48.113373 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:32:53.132191 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:32:53.132372 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:32:55.300781 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: aad109bd0b6644bbf7119d561978a3d8a2b4c97178be5160c3d486df80174a5f
+2019/04/23 20:32:55.579149 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: aad109bd0b6644bbf7119d561978a3d8a2b4c97178be5160c3d486df80174a5f
+2019/04/23 20:32:55.590502 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 475
+2019/04/23 20:32:55.603469 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 3
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416   true
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+2     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+3     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+4     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:32:55.630640 [1;35m[INF][m GID 40, [ConfirmBlock] block hash: aad109bd0b6644bbf7119d561978a3d8a2b4c97178be5160c3d486df80174a5f
+2019/04/23 20:32:55.648663 [1;35m[INF][m GID 40, [ConfirmBlock] block height: 475
+2019/04/23 20:32:58.151837 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:32:58.151975 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:33:03.156674 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:33:03.156802 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:33:04.295457 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 43592738f79883ce06bbaed1ecd61c65366eea3cc1d10636b669f42fc75ffccb
+2019/04/23 20:33:04.408747 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 43592738f79883ce06bbaed1ecd61c65366eea3cc1d10636b669f42fc75ffccb
+2019/04/23 20:33:04.408784 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 476
+2019/04/23 20:33:04.409101 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 4
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316   true
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+2     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+3     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+4     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:33:08.163416 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:33:08.163722 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:33:13.163907 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:33:13.171091 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:33:18.190052 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:33:18.193177 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:33:23.220488 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:33:23.220784 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:33:25.509397 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: e953f381dd4f32360c6a866eddbd3a74d1d4e82baa356d67471105f7c6f1d3e4
+2019/04/23 20:33:25.811543 [1;35m[INF][m GID 40, [ConfirmBlock] block hash: e953f381dd4f32360c6a866eddbd3a74d1d4e82baa356d67471105f7c6f1d3e4
+2019/04/23 20:33:25.811583 [1;35m[INF][m GID 40, [ConfirmBlock] block height: 477
+2019/04/23 20:33:25.811924 [1;35m[INF][m GID 40, 
+CURRENT ARBITERS
+DUTYINDEX: 5
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216   true
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+2     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+3     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+4     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:33:25.927087 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: e953f381dd4f32360c6a866eddbd3a74d1d4e82baa356d67471105f7c6f1d3e4
+2019/04/23 20:33:25.927213 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 477
+2019/04/23 20:33:28.296374 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:33:28.296967 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:33:30.544576 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 310d30bf6af91fd28a49ae93269e42dc941a233c39cf7017b79faa3a7025672b
+2019/04/23 20:33:31.023270 [1;35m[INF][m GID 40, [ConfirmBlock] block hash: 310d30bf6af91fd28a49ae93269e42dc941a233c39cf7017b79faa3a7025672b
+2019/04/23 20:33:31.023318 [1;35m[INF][m GID 40, [ConfirmBlock] block height: 478
+2019/04/23 20:33:31.037637 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 310d30bf6af91fd28a49ae93269e42dc941a233c39cf7017b79faa3a7025672b
+2019/04/23 20:33:31.037701 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 478
+2019/04/23 20:33:33.385932 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:33:33.386077 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:33:36.884611 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 051069df5975e63c879243e79ea5c9beb78d0e88038bc5da5fc086a7f976ab55
+2019/04/23 20:33:37.240182 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 051069df5975e63c879243e79ea5c9beb78d0e88038bc5da5fc086a7f976ab55
+2019/04/23 20:33:37.305965 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 479
+2019/04/23 20:33:37.307632 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 1
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                         true
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:33:37.310943 [1;35m[INF][m GID 40, [ConfirmBlock] block hash: 051069df5975e63c879243e79ea5c9beb78d0e88038bc5da5fc086a7f976ab55
+2019/04/23 20:33:37.311022 [1;35m[INF][m GID 40, [ConfirmBlock] block height: 479
+2019/04/23 20:33:38.438467 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:33:38.438586 [1;35m[INF][m GID 399, difficulty:  520095999
+2019-04-23 20:33:42.252 [INF] STAT: -> 479 [476 127.0.0.1:38082 (inbound), 476 127.0.0.1:38122 (inbound), 476 127.0.0.1:38000 (inbound), 476 127.0.0.1:38024 (inbound), 478 127.0.0.1:38746 (inbound), 476 127.0.0.1:38070 (inbound), 476 127.0.0.1:10015 (outbound), 479 127.0.0.1:10515 (outbound), 479 127.0.0.1:10215 (outbound), 476 127.0.0.1:10315 (outbound), 476 127.0.0.1:10115 (outbound), 477 127.0.0.1:10415 (outbound)]
+2019/04/23 20:33:43.473104 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:33:43.473245 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:33:48.498130 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:33:48.498276 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:33:50.464917 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 0bd88404954f188fcaf47d3f7877077d07ad338c07ca18d8b60f60845c8dd5db
+2019/04/23 20:33:50.667885 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 0bd88404954f188fcaf47d3f7877077d07ad338c07ca18d8b60f60845c8dd5db
+2019/04/23 20:33:50.676031 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 480
+2019/04/23 20:33:50.677178 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 2
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                         true
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:33:50.694118 [1;35m[INF][m GID 40, [ConfirmBlock] block hash: 0bd88404954f188fcaf47d3f7877077d07ad338c07ca18d8b60f60845c8dd5db
+2019/04/23 20:33:50.722586 [1;35m[INF][m GID 40, [ConfirmBlock] block height: 480
+2019/04/23 20:33:53.558072 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:33:53.559302 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:33:56.495219 [1;35m[INF][m GID 399, <================Solved Block==============>
+2019/04/23 20:33:56.495572 [1;35m[INF][m GID 399, [ConfirmBlock] block hash: 599ec376db8012f615f27c99ebfb478c7463cad5c8c018ffca84c33586d899e9
+2019/04/23 20:33:56.497096 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:33:56.630619 [1;35m[INF][m GID 442, 127.0.0.1:38122 (inbound) sent a reject message Code: REJECT_INVALID, Hash 599ec376db8012f615f27c99ebfb478c7463cad5c8c018ffca84c33586d899e9, Reason: Rejected block 599ec376db8012f615f27c99ebfb478c7463cad5c8c018ffca84c33586d899e9 from 127.0.0.1:10615 (outbound): duplicate block in pool
+2019/04/23 20:33:56.664440 [1;35m[INF][m GID 394, 127.0.0.1:10315 (outbound) sent a reject message Code: REJECT_INVALID, Hash 599ec376db8012f615f27c99ebfb478c7463cad5c8c018ffca84c33586d899e9, Reason: Rejected block 599ec376db8012f615f27c99ebfb478c7463cad5c8c018ffca84c33586d899e9 from 127.0.0.1:49818 (inbound): duplicate block in pool
+2019/04/23 20:33:56.793576 [1;35m[INF][m GID 40, [ConfirmBlock] block hash: 599ec376db8012f615f27c99ebfb478c7463cad5c8c018ffca84c33586d899e9
+2019/04/23 20:33:56.794016 [1;35m[INF][m GID 40, [ConfirmBlock] block height: 481
+2019/04/23 20:33:56.985803 [1;35m[INF][m GID 40, 
+CURRENT ARBITERS
+DUTYINDEX: 3
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416   true
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:33:57.028872 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 599ec376db8012f615f27c99ebfb478c7463cad5c8c018ffca84c33586d899e9
+2019/04/23 20:33:57.028934 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 481
+2019/04/23 20:34:01.505723 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:34:01.505962 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:34:06.528635 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:34:06.528778 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:34:11.537878 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:34:11.538591 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:34:14.016880 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: c5137b9f3dde745a1f54a9d496625f9549053b68861d1789be8c38c0fe2b9339
+2019/04/23 20:34:14.297864 [1;35m[INF][m GID 40, [ConfirmBlock] block hash: c5137b9f3dde745a1f54a9d496625f9549053b68861d1789be8c38c0fe2b9339
+2019/04/23 20:34:14.297914 [1;35m[INF][m GID 40, [ConfirmBlock] block height: 482
+2019/04/23 20:34:14.298733 [1;35m[INF][m GID 40, 
+CURRENT ARBITERS
+DUTYINDEX: 4
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316   true
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:34:14.303821 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: c5137b9f3dde745a1f54a9d496625f9549053b68861d1789be8c38c0fe2b9339
+2019/04/23 20:34:14.444795 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 482
+2019/04/23 20:34:16.553413 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:34:16.553548 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:34:19.473028 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 2ece35b8dad254ef936d6d14bbcaf72174338bde083f954b5da0fa35b3a89dda
+2019/04/23 20:34:19.941419 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 2ece35b8dad254ef936d6d14bbcaf72174338bde083f954b5da0fa35b3a89dda
+2019/04/23 20:34:19.941468 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 483
+2019/04/23 20:34:19.941831 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 5
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216   true
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:34:21.478714 [1;35m[INF][m GID 399, <================Solved Block==============>
+2019/04/23 20:34:21.480196 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:34:26.498676 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:34:26.502374 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:34:27.415445 [1;35m[INF][m GID 399, <================Solved Block==============>
+2019/04/23 20:34:27.415612 [1;35m[INF][m GID 399, [ConfirmBlock] block hash: d9a5c2d58cd16577a0ed16604cf162bc05b89165ca32223b5a93fe4a977dee32
+2019/04/23 20:34:27.415793 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:34:27.651264 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: d9a5c2d58cd16577a0ed16604cf162bc05b89165ca32223b5a93fe4a977dee32
+2019/04/23 20:34:27.694365 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 484
+2019/04/23 20:34:27.709041 [1;35m[INF][m GID 40, [ConfirmBlock] block hash: d9a5c2d58cd16577a0ed16604cf162bc05b89165ca32223b5a93fe4a977dee32
+2019/04/23 20:34:27.709131 [1;35m[INF][m GID 40, [ConfirmBlock] block height: 484
+2019/04/23 20:34:32.421238 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:34:32.421657 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:34:35.339690 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 92db0fb8bdd954d241fcb66798dfc4570d27ef1e7562ba337f382b3c3a53c755
+2019/04/23 20:34:35.430148 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 92db0fb8bdd954d241fcb66798dfc4570d27ef1e7562ba337f382b3c3a53c755
+2019/04/23 20:34:35.453120 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 485
+2019/04/23 20:34:35.486188 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 1
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                         true
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:34:37.475709 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:34:37.475982 [1;35m[INF][m GID 399, difficulty:  520095999
+2019-04-23 20:34:42.248 [INF] STAT: -> 485 [482 127.0.0.1:38070 (inbound), 482 127.0.0.1:38082 (inbound), 482 127.0.0.1:38122 (inbound), 481 127.0.0.1:38000 (inbound), 481 127.0.0.1:38024 (inbound), 484 127.0.0.1:38746 (inbound), 481 127.0.0.1:10015 (outbound), 485 127.0.0.1:10515 (outbound), 485 127.0.0.1:10215 (outbound), 482 127.0.0.1:10315 (outbound), 482 127.0.0.1:10115 (outbound), 483 127.0.0.1:10415 (outbound)]
+2019/04/23 20:34:42.508066 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:34:42.509006 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:34:47.517909 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:34:47.518079 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:34:51.964485 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 014ec3f39fdb797960be6ae795a1db54bc7b46ed318b6ee8c9451e5046533b14
+2019/04/23 20:34:52.078056 [1;35m[INF][m GID 40, [ConfirmBlock] block hash: 014ec3f39fdb797960be6ae795a1db54bc7b46ed318b6ee8c9451e5046533b14
+2019/04/23 20:34:52.078131 [1;35m[INF][m GID 40, [ConfirmBlock] block height: 486
+2019/04/23 20:34:52.079560 [1;35m[INF][m GID 40, 
+CURRENT ARBITERS
+DUTYINDEX: 2
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                         true
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:34:52.520847 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:34:52.521019 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:34:57.473830 [1;35m[INF][m GID 399, <================Solved Block==============>
+2019/04/23 20:34:57.474165 [1;35m[INF][m GID 399, [ConfirmBlock] block hash: 746719503820eb0b191dc68da0c424c9c3b534e76853e976af16b8702e9a3e2e
+2019/04/23 20:34:57.474485 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:34:57.890600 [1;35m[INF][m GID 40, [ConfirmBlock] block hash: 746719503820eb0b191dc68da0c424c9c3b534e76853e976af16b8702e9a3e2e
+2019/04/23 20:34:57.890703 [1;35m[INF][m GID 40, [ConfirmBlock] block height: 487
+2019/04/23 20:34:57.891892 [1;35m[INF][m GID 40, 
+CURRENT ARBITERS
+DUTYINDEX: 3
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416   true
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:35:02.476643 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:35:02.476756 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:35:05.930011 [1;35m[INF][m GID 399, <================Solved Block==============>
+2019/04/23 20:35:05.930194 [1;35m[INF][m GID 399, [ConfirmBlock] block hash: 132ed96142aa1ef2ccb87d99bfe5e7d7275ff2c76d71d7b38d9ec27d595219ee
+2019/04/23 20:35:05.931080 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:35:06.048582 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 983ba3dc2252b60bdcc30a8e8d109cf73007a4e99908f5b85e979785adbd728a
+2019/04/23 20:35:06.196305 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 132ed96142aa1ef2ccb87d99bfe5e7d7275ff2c76d71d7b38d9ec27d595219ee
+2019/04/23 20:35:06.196373 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 488
+2019/04/23 20:35:06.196768 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 4
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316   true
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:35:10.947998 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:35:10.948135 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:35:16.009769 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:35:16.014620 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:35:16.097762 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 0f4c45ad33a74fdbd1b4476fbafd79c4cf11491fd3d1e2346dedaf12a2abdd22
+2019/04/23 20:35:16.498321 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 0f4c45ad33a74fdbd1b4476fbafd79c4cf11491fd3d1e2346dedaf12a2abdd22
+2019/04/23 20:35:16.498399 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 489
+2019/04/23 20:35:16.499705 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 5
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216   true
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:35:21.050976 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:35:21.051187 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:35:26.098176 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:35:26.098334 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:35:31.113145 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:35:31.113266 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:35:35.365353 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 01813e085f4bda7d2845725b230a6c5cf3ad4afae617d81475d4cba40c9de7b6
+2019/04/23 20:35:35.535538 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 01813e085f4bda7d2845725b230a6c5cf3ad4afae617d81475d4cba40c9de7b6
+2019/04/23 20:35:35.651695 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 490
+2019/04/23 20:35:35.671263 [1;35m[INF][m GID 40, [ConfirmBlock] block hash: 01813e085f4bda7d2845725b230a6c5cf3ad4afae617d81475d4cba40c9de7b6
+2019/04/23 20:35:35.671311 [1;35m[INF][m GID 40, [ConfirmBlock] block height: 490
+2019/04/23 20:35:36.140138 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:35:36.140767 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:35:39.883574 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: f0a6e8e83de10235e1e06add9f84ece08f2b27f82b1d2a47515483e21b6e1a3f
+2019/04/23 20:35:40.092980 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: f0a6e8e83de10235e1e06add9f84ece08f2b27f82b1d2a47515483e21b6e1a3f
+2019/04/23 20:35:40.171471 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 491
+2019/04/23 20:35:40.172889 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 1
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                         true
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:35:41.152434 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:35:41.157370 [1;35m[INF][m GID 399, difficulty:  520095999
+2019-04-23 20:35:42.250 [INF] STAT: -> 491 [488 127.0.0.1:38000 (inbound), 488 127.0.0.1:38024 (inbound), 489 127.0.0.1:38746 (inbound), 488 127.0.0.1:38070 (inbound), 488 127.0.0.1:38082 (inbound), 489 127.0.0.1:38122 (inbound), 488 127.0.0.1:10015 (outbound), 488 127.0.0.1:10515 (outbound), 490 127.0.0.1:10215 (outbound), 489 127.0.0.1:10315 (outbound), 489 127.0.0.1:10115 (outbound), 489 127.0.0.1:10415 (outbound)]
+2019/04/23 20:35:46.170795 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:35:46.195137 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:35:51.287604 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:35:51.287786 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:35:56.301266 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:35:56.301488 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:35:58.613414 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 6c55fed9f59d0254f77da48255d21e8fc1e3c6b178181fe4dcee2f6074ce9c96
+2019/04/23 20:35:58.743756 [1;35m[INF][m GID 40, [ConfirmBlock] block hash: 6c55fed9f59d0254f77da48255d21e8fc1e3c6b178181fe4dcee2f6074ce9c96
+2019/04/23 20:35:58.743816 [1;35m[INF][m GID 40, [ConfirmBlock] block height: 492
+2019/04/23 20:35:58.747004 [1;35m[INF][m GID 40, 
+CURRENT ARBITERS
+DUTYINDEX: 2
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                         true
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:35:58.827647 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 6c55fed9f59d0254f77da48255d21e8fc1e3c6b178181fe4dcee2f6074ce9c96
+2019/04/23 20:35:58.827691 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 492
+2019/04/23 20:36:01.301842 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:36:01.307368 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:36:06.312756 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:36:06.313213 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:36:10.779932 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 8e89d735e21c716d01a45334e6d32ec5cd26b2bb61afe4c4dec6176fa17afd92
+2019/04/23 20:36:11.067642 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 8e89d735e21c716d01a45334e6d32ec5cd26b2bb61afe4c4dec6176fa17afd92
+2019/04/23 20:36:11.080288 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 493
+2019/04/23 20:36:11.080787 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 3
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416   true
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:36:11.332204 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:36:11.332343 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:36:14.837341 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: e27118057131dd16c47af64502cb8c514fa4a05fd7b28491a4b6a348dae14dd1
+2019/04/23 20:36:14.911981 [1;35m[INF][m GID 40, [ConfirmBlock] block hash: e27118057131dd16c47af64502cb8c514fa4a05fd7b28491a4b6a348dae14dd1
+2019/04/23 20:36:14.968360 [1;35m[INF][m GID 40, [ConfirmBlock] block height: 494
+2019/04/23 20:36:14.969162 [1;35m[INF][m GID 40, 
+CURRENT ARBITERS
+DUTYINDEX: 4
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316   true
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:36:15.034568 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: e27118057131dd16c47af64502cb8c514fa4a05fd7b28491a4b6a348dae14dd1
+2019/04/23 20:36:15.035129 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 494
+2019/04/23 20:36:15.741765 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 6f3d2f417b7fa3818ed3c2e7a9842f6ccc6d9b2eb9092e342510604f43001793
+2019/04/23 20:36:15.916677 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 6f3d2f417b7fa3818ed3c2e7a9842f6ccc6d9b2eb9092e342510604f43001793
+2019/04/23 20:36:15.916735 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 495
+2019/04/23 20:36:15.960421 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 5
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216   true
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:36:16.028101 [1;35m[INF][m GID 40, [ConfirmBlock] block hash: 6f3d2f417b7fa3818ed3c2e7a9842f6ccc6d9b2eb9092e342510604f43001793
+2019/04/23 20:36:16.098686 [1;35m[INF][m GID 40, [ConfirmBlock] block height: 495
+2019/04/23 20:36:16.402142 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:36:16.402318 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:36:21.434987 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:36:21.435103 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:36:26.484452 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:36:26.485266 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:36:31.534337 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:36:31.534501 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:36:36.539249 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:36:36.539399 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:36:41.547396 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:36:41.547546 [1;35m[INF][m GID 399, difficulty:  520095999
+2019-04-23 20:36:42.358 [INF] STAT: -> 495 [493 127.0.0.1:38024 (inbound), 495 127.0.0.1:38746 (inbound), 495 127.0.0.1:38070 (inbound), 495 127.0.0.1:38082 (inbound), 495 127.0.0.1:38122 (inbound), 493 127.0.0.1:38000 (inbound), 495 127.0.0.1:10015 (outbound), 493 127.0.0.1:10515 (outbound), 495 127.0.0.1:10215 (outbound), 495 127.0.0.1:10315 (outbound), 495 127.0.0.1:10115 (outbound), 495 127.0.0.1:10415 (outbound)]
+2019/04/23 20:36:46.052336 [1;35m[INF][m GID 69, Lost peer 127.0.0.1:38070 (inbound)
+2019/04/23 20:36:46.103718 [1;35m[INF][m GID 69, Lost peer 127.0.0.1:38082 (inbound)
+2019/04/23 20:36:46.548771 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:36:46.549893 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:36:47.298292 [1;35m[INF][m GID 69, Lost peer 127.0.0.1:10115 (outbound)
+2019/04/23 20:36:47.298466 [1;35m[INF][m GID 69, Lost peer 127.0.0.1:10315 (outbound)
+2019/04/23 20:36:47.640988 [1;35m[INF][m GID 69, Lost peer 127.0.0.1:38122 (inbound)
+2019/04/23 20:36:50.110707 [1;35m[INF][m GID 69, Lost peer 127.0.0.1:38746 (inbound)
+2019/04/23 20:36:51.061258 [1;35m[INF][m GID 69, New valid peer 127.0.0.1:40572 (inbound)
+2019/04/23 20:36:51.553306 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:36:51.553636 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:36:51.670018 [1;35m[INF][m GID 399, <================Solved Block==============>
+2019/04/23 20:36:51.706869 [1;35m[INF][m GID 399, [ConfirmBlock] block hash: 344471706214cbc1d3b7f9293f2d787c64d232869f8216e110e23be152fef5a1
+2019/04/23 20:36:51.709891 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:36:51.866901 [1;35m[INF][m GID 665, 127.0.0.1:10415 (outbound) sent a reject message Code: REJECT_INVALID, Hash 344471706214cbc1d3b7f9293f2d787c64d232869f8216e110e23be152fef5a1, Reason: Rejected block 344471706214cbc1d3b7f9293f2d787c64d232869f8216e110e23be152fef5a1 from 127.0.0.1:50308 (inbound): duplicate block in pool
+2019/04/23 20:36:51.922398 [1;35m[INF][m GID 40, [ConfirmBlock] block hash: 344471706214cbc1d3b7f9293f2d787c64d232869f8216e110e23be152fef5a1
+2019/04/23 20:36:51.922441 [1;35m[INF][m GID 40, [ConfirmBlock] block height: 496
+2019/04/23 20:36:52.200186 [1;35m[INF][m GID 399, <================Solved Block==============>
+2019/04/23 20:36:52.211357 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:36:52.316577 [1;35m[INF][m GID 69, Lost peer 127.0.0.1:10215 (outbound)
+2019/04/23 20:36:52.324345 [1;35m[INF][m GID 69, New valid peer 127.0.0.1:10315 (outbound)
+2019/04/23 20:36:52.396322 [1;35m[INF][m GID 69, New valid peer 127.0.0.1:10115 (outbound)
+2019/04/23 20:36:52.709945 [1;35m[INF][m GID 69, New valid peer 127.0.0.1:40596 (inbound)
+2019/04/23 20:36:54.123444 [1;35m[INF][m GID 399, <================Solved Block==============>
+2019/04/23 20:36:54.138685 [1;35m[INF][m GID 399, [ConfirmBlock] block hash: aa85a0c1419d6ea05fe9608d8f69f4566d4520480bd8d8e15d9c99955a108c2f
+2019/04/23 20:36:54.169109 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:36:54.473616 [1;35m[INF][m GID 40, [ConfirmBlock] block hash: aa85a0c1419d6ea05fe9608d8f69f4566d4520480bd8d8e15d9c99955a108c2f
+2019/04/23 20:36:54.473665 [1;35m[INF][m GID 40, [ConfirmBlock] block height: 497
+2019/04/23 20:36:54.522855 [1;35m[INF][m GID 40, 
+CURRENT ARBITERS
+DUTYINDEX: 1
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                         true
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:36:54.598917 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: aa85a0c1419d6ea05fe9608d8f69f4566d4520480bd8d8e15d9c99955a108c2f
+2019/04/23 20:36:54.625016 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 497
+2019/04/23 20:36:55.252571 [1;35m[INF][m GID 69, New valid peer 127.0.0.1:40618 (inbound)
+2019/04/23 20:36:56.905594 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 7e8f4a9e8bbd453b2f5992cc8cc04cfaab5a9084c4d0508ba7e04ba02279c630
+2019/04/23 20:36:56.945392 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 7e8f4a9e8bbd453b2f5992cc8cc04cfaab5a9084c4d0508ba7e04ba02279c630
+2019/04/23 20:36:56.945433 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 498
+2019/04/23 20:36:56.965158 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 2
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                         true
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:36:57.325594 [1;35m[INF][m GID 69, New valid peer 127.0.0.1:10215 (outbound)
+2019/04/23 20:36:59.177581 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:36:59.181939 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:37:03.369020 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 39ef686fb3317f88d2bf00fb11cebd1fc04d3a6cdaa0b5be13a77d8395324588
+2019/04/23 20:37:03.581746 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 39ef686fb3317f88d2bf00fb11cebd1fc04d3a6cdaa0b5be13a77d8395324588
+2019/04/23 20:37:03.582607 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 499
+2019/04/23 20:37:03.583790 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 3
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416   true
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:37:04.194846 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:37:04.194968 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:37:07.904953 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: df7146469f2a97e91f8957819f03d3230717bac1b4b986e9f027716a8522f24d
+2019/04/23 20:37:08.158559 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: df7146469f2a97e91f8957819f03d3230717bac1b4b986e9f027716a8522f24d
+2019/04/23 20:37:08.158618 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 500
+2019/04/23 20:37:08.183076 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 4
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316   true
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:37:09.201673 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:37:09.203443 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:37:10.136108 [1;35m[INF][m GID 399, <================Solved Block==============>
+2019/04/23 20:37:10.164948 [1;35m[INF][m GID 399, [ConfirmBlock] block hash: c1b1377e7e59a101753ef48f2d3db23612ac30cafdd66c9ed4201765ee2747bc
+2019/04/23 20:37:10.165076 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:37:10.371000 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: c1b1377e7e59a101753ef48f2d3db23612ac30cafdd66c9ed4201765ee2747bc
+2019/04/23 20:37:10.371816 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 501
+2019/04/23 20:37:10.464633 [1;35m[INF][m GID 5548, 127.0.0.1:10115 (outbound) sent a reject message Code: REJECT_INVALID, Hash c1b1377e7e59a101753ef48f2d3db23612ac30cafdd66c9ed4201765ee2747bc, Reason: Rejected block c1b1377e7e59a101753ef48f2d3db23612ac30cafdd66c9ed4201765ee2747bc from 127.0.0.1:46234 (inbound): duplicate block in pool
+2019/04/23 20:37:10.465117 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 5
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216   true
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:37:10.489868 [1;35m[INF][m GID 40, [ConfirmBlock] block hash: c1b1377e7e59a101753ef48f2d3db23612ac30cafdd66c9ed4201765ee2747bc
+2019/04/23 20:37:10.490772 [1;35m[INF][m GID 40, [ConfirmBlock] block height: 501
+2019/04/23 20:37:15.178025 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:37:15.207288 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:37:16.146400 [1;35m[INF][m GID 69, New valid peer 127.0.0.1:40752 (inbound)
+2019/04/23 20:37:20.248765 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:37:20.250511 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:37:25.267070 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:37:25.267330 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:37:30.332435 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:37:30.332563 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:37:35.365801 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:37:35.365964 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:37:37.302128 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: d5cf6dbe8b3fb9139bb79a3433280b14ff35fabd998b5b9f235e0d80736f5c95
+2019/04/23 20:37:37.584688 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: d5cf6dbe8b3fb9139bb79a3433280b14ff35fabd998b5b9f235e0d80736f5c95
+2019/04/23 20:37:37.584781 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 502
+2019/04/23 20:37:39.717697 [1;35m[INF][m GID 399, <================Solved Block==============>
+2019/04/23 20:37:39.726150 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:37:41.794656 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: aa4a36b0b15afb73a1a8028f4ce58a13f533b805efc42c5ac6fc8d2f15414ef4
+2019/04/23 20:37:42.052401 [1;35m[INF][m GID 40, [ConfirmBlock] block hash: aa4a36b0b15afb73a1a8028f4ce58a13f533b805efc42c5ac6fc8d2f15414ef4
+2019/04/23 20:37:42.054037 [1;35m[INF][m GID 40, [ConfirmBlock] block height: 503
+2019/04/23 20:37:42.114096 [1;35m[INF][m GID 40, 
+CURRENT ARBITERS
+DUTYINDEX: 1
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                         true
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+2     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+3     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+4     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:37:42.115829 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: aa4a36b0b15afb73a1a8028f4ce58a13f533b805efc42c5ac6fc8d2f15414ef4
+2019/04/23 20:37:42.115896 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 503
+2019-04-23 20:37:42.250 [INF] STAT: -> 503 [501 127.0.0.1:40572 (inbound), 501 127.0.0.1:40596 (inbound), 501 127.0.0.1:40618 (inbound), 501 127.0.0.1:40752 (inbound), 501 127.0.0.1:38000 (inbound), 501 127.0.0.1:38024 (inbound), 501 127.0.0.1:10015 (outbound), 501 127.0.0.1:10515 (outbound), 501 127.0.0.1:10315 (outbound), 501 127.0.0.1:10115 (outbound), 501 127.0.0.1:10215 (outbound), 501 127.0.0.1:10415 (outbound)]
+2019/04/23 20:37:44.782509 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:37:44.782707 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:37:49.793535 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:37:49.796053 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:37:53.717492 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 6bd0416c5dac8fcba9f216ea74d8c977a0c1f7892cace5e48199e2186962fe9c
+2019/04/23 20:37:53.988455 [1;35m[INF][m GID 40, [ConfirmBlock] block hash: 6bd0416c5dac8fcba9f216ea74d8c977a0c1f7892cace5e48199e2186962fe9c
+2019/04/23 20:37:54.073865 [1;35m[INF][m GID 40, [ConfirmBlock] block height: 504
+2019/04/23 20:37:54.074872 [1;35m[INF][m GID 40, 
+CURRENT ARBITERS
+DUTYINDEX: 2
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                         true
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a       127.0.0.1:10316
+2     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7       127.0.0.1:10416
+3     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450       127.0.0.1:10116
+4     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08       127.0.0.1:10216
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/23 20:37:54.077895 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 6bd0416c5dac8fcba9f216ea74d8c977a0c1f7892cace5e48199e2186962fe9c
+2019/04/23 20:37:54.077939 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 504
+2019/04/23 20:37:54.807285 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:37:54.807381 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:37:59.840383 [1;35m[INF][m GID 399, five second countdown ends. Re-generate block.
+2019/04/23 20:37:59.840484 [1;35m[INF][m GID 399, difficulty:  520095999
+2019/04/23 20:38:00.915528 [1;35m[INF][m GID 69, Lost peer 127.0.0.1:10015 (outbound)
+2019/04/23 20:38:00.918602 [1;35m[INF][m GID 69, Lost peer 127.0.0.1:38024 (inbound)
+2019/04/23 20:38:02.300566 [1;35m[INF][m GID 69, Lost peer 127.0.0.1:10515 (outbound)
+2019/04/23 20:38:02.300694 [1;35m[INF][m GID 69, Syncing to block height 504 from peer 127.0.0.1:40618
+2019/04/23 20:38:02.314478 [1;35m[INF][m GID 69, Lost peer 127.0.0.1:40572 (inbound)

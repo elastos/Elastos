@@ -1,42 +1,53 @@
 {
-  "Configuration":{
-      "FoundationAddress":"ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw",
-      "SpvMagic":7630401,
-      "MinCrossChainTxFee":10000,
-      "MainChainFoundationAddress":"ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw",
-      "Version":23,
-      "PowConfiguration":{
-          "InstantBlock":false,
-          "AutoMining":true,
-          "PayToAddr":"EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U",
-          "MinTxFee":100,
-          "MinerInfo":"ELA"
-      },
-      "ExchangeRate":1.0,
-      "PrintLevel":1,
-      "RpcConfiguration":{
-          "WhiteIPList":[
-              "0.0.0.0"
-          ],
-          "Pass":"",
-          "User":""
-      },
-      "NodePort":11618,
-      "DisableTxFilters":true,
-      "SeedList":[
-          "ela-sidechain-token-1:10618",
-          "ela-sidechain-token-2:11618"
-      ],
-      "SpvSeedList":[
-          "ela-mainchain-normal-1:10338",
-          "ela-mainchain-normal-2:11338",
-          "ela-mainchain-crc-1:10028",
-          "ela-mainchain-crc-2:10128",
-          "ela-mainchain-crc-3:10228",
-          "ela-mainchain-crc-4:10328"
-      ],
-      "HttpWsPort":11615,
-      "HttpJsonPort":11616,
-      "Magic":7630405
-  }
+    "Configuration": {
+        "Magic": 20190401,
+        "SpvMagic": 20190131,
+        "SeedList": [
+            "ela-sidechain-token-1:10045",
+            "ela-sidechain-token-2:10145",
+            "ela-sidechain-token-3:10245",
+            "ela-sidechain-token-4:10345"
+        ],
+        "SpvSeedList": [
+            "ela-mainchain-normal-1:10015",
+            "ela-mainchain-crc-1:10115",
+            "ela-mainchain-crc-2:10215",
+            "ela-mainchain-crc-3:10315",
+            "ela-mainchain-crc-4:10415"
+        ],
+        "ExchangeRate": 1.0,
+        "MinCrossChainTxFee": 10000,
+        "HttpRestPort": 10142,
+        "HttpWsPort": 10143,
+        "HttpJsonPort": 10144,
+        "NodePort": 10145,
+        "PrintLevel": 1,
+        "MaxLogsSize": 0,
+        "MaxPerLogSize": 0,
+        "DisableTxFilters": true,
+        "MainChainFoundationAddress": "ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw",
+        "FoundationAddress": "ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw",
+        "PowConfiguration": {
+            "PayToAddr": "EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U",
+            "AutoMining": true,
+            "MinerInfo": "TOKEN",
+            "MinTxFee": 100,
+            "InstantBlock": false
+        },
+        "RpcConfiguration": {
+            "User": "",
+            "Pass": "",
+            "WhiteIPList": [
+                "0.0.0.0"
+            ]
+        },
+        "PermanentPeers": [
+            "ela-sidechain-token-1:10045",
+            "ela-sidechain-token-2:10145",
+            "ela-sidechain-token-3:10245",
+            "ela-sidechain-token-4:10345"
+        ],
+        "HttpInfoPort": 10141,
+        "MainChainDefaultPort": 10215
+    }
 }

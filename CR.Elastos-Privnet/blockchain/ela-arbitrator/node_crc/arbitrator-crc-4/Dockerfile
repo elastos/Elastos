@@ -17,7 +17,6 @@ RUN apk update \
 
 USER elauser
 
-EXPOSE 15536
-EXPOSE 15538
+EXPOSE 10824-10825
 
 ENTRYPOINT ["/bin/sh", "-c", "./arbiter -p 123"]

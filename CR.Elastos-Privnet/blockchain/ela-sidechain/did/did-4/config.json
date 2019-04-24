@@ -1,46 +1,53 @@
 {
-    "Configuration":{
-        "FoundationAddress":"ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw",
-        "SpvMagic":7630401,
-        "MinCrossChainTxFee":10000,
-        "MainChainFoundationAddress":"ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw",
-        "Version":23,
-        "PowConfiguration":{
-            "InstantBlock":false,
-            "AutoMining":true,
-            "PayToAddr":"EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U",
-            "MinTxFee":100,
-            "MinerInfo":"ELA"
+    "Configuration": {
+        "Magic": 20190331,
+        "SpvMagic": 20190131,
+        "SeedList": [
+            "ela-sidechain-did-1:10035",
+            "ela-sidechain-did-2:10135",
+            "ela-sidechain-did-3:10235",
+            "ela-sidechain-did-4:10335"
+        ],
+        "SpvSeedList": [
+            "ela-mainchain-normal-1:10015",
+            "ela-mainchain-crc-1:10115",
+            "ela-mainchain-crc-2:10215",
+            "ela-mainchain-crc-3:10315",
+            "ela-mainchain-crc-4:10415"
+        ],
+        "ExchangeRate": 1.0,
+        "MinCrossChainTxFee": 10000,
+        "HttpRestPort": 10332,
+        "HttpWsPort": 10333,
+        "HttpJsonPort": 10334,
+        "NodePort": 10335,
+        "PrintLevel": 1,
+        "MaxLogsSize": 0,
+        "MaxPerLogSize": 0,
+        "DisableTxFilters": true,
+        "MainChainFoundationAddress": "ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw",
+        "FoundationAddress": "ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw",
+        "PowConfiguration": {
+            "PayToAddr": "EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U",
+            "AutoMining": true,
+            "MinerInfo": "DID",
+            "MinTxFee": 100,
+            "InstantBlock": false
         },
-        "ExchangeRate":1.0,
-        "PrintLevel":1,
-        "HttpRestPort":13604,
-        "RpcConfiguration":{
-            "WhiteIPList":[
+        "RpcConfiguration": {
+            "User": "",
+            "Pass": "",
+            "WhiteIPList": [
                 "0.0.0.0"
-            ],
-            "Pass":"",
-            "User":""
+            ]
         },
-        "NodePort":13608,
-        "DisableTxFilters":true,
-        "SeedList":[
-            "ela-sidechain-did-1:10608",
-            "ela-sidechain-did-2:11608",
-            "ela-sidechain-did-3:12608",
-            "ela-sidechain-did-4:13608"
+        "PermanentPeers": [
+            "ela-sidechain-did-1:10035",
+            "ela-sidechain-did-2:10135",
+            "ela-sidechain-did-3:10235",
+            "ela-sidechain-did-4:10335"
         ],
-        "SpvSeedList":[
-            "ela-mainchain-normal-1:10338",
-            "ela-mainchain-normal-2:11338",
-            "ela-mainchain-crc-1:10028",
-            "ela-mainchain-crc-2:10128",
-            "ela-mainchain-crc-3:10228",
-            "ela-mainchain-crc-4:10328"
-        ],
-        "HttpWsPort":13605,
-        "MainChainDefaultPort":13338,
-        "HttpJsonPort":13606,
-        "Magic":7630404
+        "HttpInfoPort": 10331,
+        "MainChainDefaultPort": 10415
     }
 }

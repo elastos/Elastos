@@ -1,0 +1,97 @@
+2019/04/23 20:06:00.932179 [1;35m[INF][m GID 1, Init wallet.
+2019/04/23 20:06:01.041249 [1;35m[INF][m GID 1, Arbiter version:  v0.1.0-6-g758e
+2019/04/23 20:06:01.041340 [1;35m[INF][m GID 1, 1. Init chain utxo cache.
+2019/04/23 20:06:01.053983 [1;35m[INF][m GID 1, 2. Init finished transaction cache.
+2019/04/23 20:06:01.054367 [1;35m[INF][m GID 1, 3. Start arbitrator P2P networks.
+2019/04/23 20:06:01.054618 [1;35m[INF][m GID 1, 4. Init configurations.
+2019/04/23 20:06:01.062852 [1;35m[INF][m GID 1, 5. Start arbitrator spv module.
+2019/04/23 20:06:01.062915 [1;35m[INF][m GID 1, [StartSpvModule] new spv service: &{elastos_arbiter/data/spv 20190131 ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw [127.0.0.1:10015] 10015 1 3 <nil>}
+2019/04/23 20:06:01.140606 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG
+2019/04/23 20:06:01.140689 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ
+2019/04/23 20:06:01.140765 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J
+2019/04/23 20:06:01.140885 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4
+2019/04/23 20:06:01.145112 [1;35m[INF][m GID 1, 6. Start arbitrator group monitor.
+2019/04/23 20:06:01.145132 [1;35m[INF][m GID 1, 7. Start servers.
+2019/04/23 20:06:01.145150 [1;35m[INF][m GID 1, 8. Start check and remove cross chain transactions from db.
+2019/04/23 20:06:01.145166 [1;35m[INF][m GID 1, 9. Start side chain account divide.
+2019/04/23 20:06:01.147308 [1;35m[INF][m GID 89, Check and remove cross chain transactions from dbcache finished
+2019/04/23 20:06:04.276501 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  439
+2019/04/23 20:06:06.163268 [1;35m[INF][m GID 48, currentHeight: 245  chainHeight: 246
+2019/04/23 20:06:06.181925 [1;35m[INF][m GID 48,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  246
+2019/04/23 20:06:28.860837 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  440
+2019/04/23 20:06:33.488614 [1;35m[INF][m GID 48, currentHeight: 246  chainHeight: 247
+2019/04/23 20:06:33.491938 [1;35m[INF][m GID 48,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  247
+2019/04/23 20:06:39.091314 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  441
+2019/04/23 20:06:47.629912 [1;35m[INF][m GID 48, currentHeight: 247  chainHeight: 248
+2019/04/23 20:06:47.633322 [1;35m[INF][m GID 48,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  248
+2019/04/23 20:06:48.699994 [1;35m[INF][m GID 48, currentHeight: 248  chainHeight: 249
+2019/04/23 20:06:48.703275 [1;35m[INF][m GID 48,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  249
+2019/04/23 20:06:50.297868 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  442
+2019/04/23 20:06:55.400970 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  443
+2019/04/23 20:07:01.146018 [1;35m[INF][m GID 90, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 
+2019/04/23 20:07:01.148959 [1;35m[INF][m GID 89, Check and remove cross chain transactions from dbcache finished
+2019/04/23 20:07:06.620067 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  444
+2019/04/23 20:07:12.053226 [1;35m[INF][m GID 48, currentHeight: 249  chainHeight: 250
+2019/04/23 20:07:12.091830 [1;35m[INF][m GID 48,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  250
+2019/04/23 20:07:13.937067 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  445
+2019/04/23 20:07:31.336795 [1;35m[INF][m GID 48, currentHeight: 250  chainHeight: 251
+2019/04/23 20:07:31.349066 [1;35m[INF][m GID 48,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  251
+2019/04/23 20:07:41.509935 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  446
+2019/04/23 20:08:01.149155 [1;35m[INF][m GID 90, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 
+2019/04/23 20:08:01.149202 [1;35m[INF][m GID 89, Check and remove cross chain transactions from dbcache finished
+2019/04/23 20:08:01.286954 [1;35m[INF][m GID 669, [Notify-Deposit] find deposit transaction and add into channel, transaction hash: 16497f376b61de4c9aeca4c6ac38ac8f22d41ae277a0d72852360768f8a2cba2
+2019/04/23 20:08:01.287038 [1;35m[INF][m GID 83, [DepositListener] len tasks: 1
+2019/04/23 20:08:01.287066 [1;35m[INF][m GID 83, [Notify-Process] deal with 1 transactions
+2019/04/23 20:08:01.290217 [1;33m[WRN][m GID 83, [Notify-Process] i am not onduty
+2019/04/23 20:08:01.988391 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  447
+2019/04/23 20:08:04.064252 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  448
+2019/04/23 20:08:07.732562 [1;35m[INF][m GID 48, currentHeight: 251  chainHeight: 252
+2019/04/23 20:08:07.812918 [1;35m[INF][m GID 48,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  252
+2019/04/23 20:08:12.180344 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  449
+2019/04/23 20:08:16.268919 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  450
+2019/04/23 20:08:23.323095 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  451
+2019/04/23 20:08:27.412003 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  452
+2019/04/23 20:08:33.603287 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  453
+2019/04/23 20:08:42.841269 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  454
+2019/04/23 20:08:46.911015 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  455
+2019/04/23 20:08:48.940751 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  456
+2019/04/23 20:08:50.596912 [1;35m[INF][m GID 48, currentHeight: 252  chainHeight: 253
+2019/04/23 20:08:50.600901 [1;35m[INF][m GID 48,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  253
+2019/04/23 20:08:56.069876 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  457
+2019/04/23 20:09:01.178517 [1;35m[INF][m GID 89, Check and remove cross chain transactions from dbcache finished
+2019/04/23 20:09:01.214678 [1;35m[INF][m GID 90, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 
+2019/04/23 20:09:02.252412 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  458
+2019/04/23 20:09:05.851065 [1;35m[INF][m GID 48, currentHeight: 253  chainHeight: 254
+2019/04/23 20:09:05.854486 [1;35m[INF][m GID 48,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  254
+2019/04/23 20:09:08.433587 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  459
+2019/04/23 20:09:15.518561 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  460
+2019/04/23 20:09:26.767228 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  461
+2019/04/23 20:09:27.873677 [1;35m[INF][m GID 87, [arbitrator] Main chain height:  462
+2019/04/23 20:09:31.885311 [1;35m[INF][m GID 87, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:31.885372 [1;31m[ERR][m GID 87, Arbitrator group sync error:  Post http://127.0.0.1:10014: dial tcp 127.0.0.1:10014: connect: connection refused
+2019/04/23 20:09:32.885867 [1;35m[INF][m GID 87, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:32.885907 [1;31m[ERR][m GID 87, Arbitrator group sync error:  Post http://127.0.0.1:10014: dial tcp 127.0.0.1:10014: connect: connection refused
+2019/04/23 20:09:33.891035 [1;35m[INF][m GID 87, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:33.891118 [1;31m[ERR][m GID 87, Arbitrator group sync error:  Post http://127.0.0.1:10014: dial tcp 127.0.0.1:10014: connect: connection refused
+2019/04/23 20:09:34.891593 [1;35m[INF][m GID 87, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:34.891633 [1;31m[ERR][m GID 87, Arbitrator group sync error:  Post http://127.0.0.1:10014: dial tcp 127.0.0.1:10014: connect: connection refused
+2019/04/23 20:09:35.892339 [1;35m[INF][m GID 87, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:35.892390 [1;31m[ERR][m GID 87, Arbitrator group sync error:  Post http://127.0.0.1:10014: dial tcp 127.0.0.1:10014: connect: connection refused
+2019/04/23 20:09:36.892938 [1;35m[INF][m GID 87, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:36.892982 [1;31m[ERR][m GID 87, Arbitrator group sync error:  Post http://127.0.0.1:10014: dial tcp 127.0.0.1:10014: connect: connection refused
+2019/04/23 20:09:37.154921 [1;35m[INF][m GID 48, currentHeight: 254  chainHeight: 255
+2019/04/23 20:09:37.161008 [1;35m[INF][m GID 48,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  255
+2019/04/23 20:09:37.893437 [1;35m[INF][m GID 87, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:37.893507 [1;31m[ERR][m GID 87, Arbitrator group sync error:  Post http://127.0.0.1:10014: dial tcp 127.0.0.1:10014: connect: connection refused
+2019/04/23 20:09:38.894599 [1;35m[INF][m GID 87, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:38.894639 [1;31m[ERR][m GID 87, Arbitrator group sync error:  Post http://127.0.0.1:10014: dial tcp 127.0.0.1:10014: connect: connection refused
+2019/04/23 20:09:39.895393 [1;35m[INF][m GID 87, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:39.895444 [1;31m[ERR][m GID 87, Arbitrator group sync error:  Post http://127.0.0.1:10014: dial tcp 127.0.0.1:10014: connect: connection refused
+2019/04/23 20:09:40.896259 [1;35m[INF][m GID 87, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:40.896322 [1;31m[ERR][m GID 87, Arbitrator group sync error:  Post http://127.0.0.1:10014: dial tcp 127.0.0.1:10014: connect: connection refused
+2019/04/23 20:09:41.904553 [1;35m[INF][m GID 87, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:41.904591 [1;31m[ERR][m GID 87, Arbitrator group sync error:  Post http://127.0.0.1:10014: dial tcp 127.0.0.1:10014: connect: connection refused
+2019/04/23 20:09:42.904899 [1;35m[INF][m GID 87, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:42.904978 [1;31m[ERR][m GID 87, Arbitrator group sync error:  Post http://127.0.0.1:10014: dial tcp 127.0.0.1:10014: connect: connection refused
+2019/04/23 20:09:43.906953 [1;35m[INF][m GID 87, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:43.907011 [1;31m[ERR][m GID 87, Arbitrator group sync error:  Post http://127.0.0.1:10014: dial tcp 127.0.0.1:10014: connect: connection refused

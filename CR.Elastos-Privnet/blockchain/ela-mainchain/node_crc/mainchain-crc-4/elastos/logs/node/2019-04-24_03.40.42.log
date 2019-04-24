@@ -1,0 +1,734 @@
+2019/04/24 03:40:42.479459 [1;35m[INF][m GID 1, Node version: 
+2019/04/24 03:40:42.486116 [1;35m[INF][m GID 1, go version go1.11.5 linux/amd64
+2019/04/24 03:40:42.846027 [1;35m[INF][m GID 1, Start the manager
+[ ========== BLOCKCHAIN INITIALIZE STARTED ========== ]
+ 0 / 404    0.00% 405 / 404  100.25% 0s
+[ ========== BLOCKCHAIN INITIALIZE FINISHED ========== ]
+2019/04/24 03:40:43.061611 [1;35m[INF][m GID 1, Start the P2P networks
+2019/04/24 03:40:43.069544 [1;35m[INF][m GID 1, Start services
+2019/04/24 03:40:43.125203 [1;35m[INF][m GID 95, New valid peer 172.18.0.2:59006 (inbound)
+2019/04/24 03:40:43.125373 [1;35m[INF][m GID 95, Syncing to block height 504 from peer 172.18.0.2:59006
+2019/04/24 03:40:43.127397 [1;35m[INF][m GID 95, New valid peer 172.18.0.3:10015 (outbound)
+2019/04/24 03:40:43.127538 [1;35m[INF][m GID 95, New valid peer 172.18.0.5:10315 (outbound)
+2019/04/24 03:40:43.129474 [1;35m[INF][m GID 95, New valid peer 172.18.0.6:10215 (outbound)
+2019/04/24 03:40:43.145074 [1;35m[INF][m GID 95, New valid peer 172.18.0.7:10515 (outbound)
+2019/04/24 03:40:43.185310 [1;35m[INF][m GID 95, New valid peer 172.18.0.2:10115 (outbound)
+2019/04/24 03:40:43.515144 [1;35m[INF][m GID 95, New valid peer 172.18.0.5:38338 (inbound)
+2019/04/24 03:40:44.284323 [1;35m[INF][m GID 95, New valid peer 172.18.0.3:37338 (inbound)
+2019/04/24 03:40:44.571199 [1;35m[INF][m GID 95, New valid peer 172.18.0.9:52246 (inbound)
+2019/04/24 03:40:45.426014 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: ab0247527ff00e5950c790339c04699b7a15c1ffe723961760573b55ec758d87
+2019/04/24 03:40:45.499804 [1;35m[INF][m GID 95, Rejected block ab0247527ff00e5950c790339c04699b7a15c1ffe723961760573b55ec758d87 from 172.18.0.2:10115 (outbound): duplicate block in pool
+2019/04/24 03:40:45.624154 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: ab0247527ff00e5950c790339c04699b7a15c1ffe723961760573b55ec758d87
+2019/04/24 03:40:45.624239 [1;35m[INF][m GID 95, [ConfirmBlock] block height: 505
+2019/04/24 03:40:45.625329 [1;35m[INF][m GID 95, 
+CURRENT ARBITERS
+DUTYINDEX: 3
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416   true
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216
+2     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/24 03:40:46.356390 [1;35m[INF][m GID 95, New valid peer 172.18.0.6:58566 (inbound)
+2019/04/24 03:40:47.504451 [1;35m[INF][m GID 95, New valid peer 172.18.0.7:38078 (inbound)
+2019/04/24 03:40:48.081910 [1;35m[INF][m GID 1, Start consensus
+2019/04/24 03:40:48.084155 [1;35m[INF][m GID 1, Start POW Services
+2019/04/24 03:40:48.084325 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:40:48.262683 [1;35m[INF][m GID 95, New valid peer 172.18.0.9:10615 (outbound)
+2019/04/24 03:40:50.229288 [1;35m[INF][m GID 95, New valid peer 172.18.0.10:41722 (inbound)
+2019/04/24 03:40:51.716994 [1;35m[INF][m GID 95, New valid peer 172.18.0.16:38442 (inbound)
+2019/04/24 03:40:51.930806 [1;35m[INF][m GID 95, New valid peer 172.18.0.12:41378 (inbound)
+2019/04/24 03:40:53.246389 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:40:53.247906 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:40:58.401458 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:40:58.411248 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:40:58.869085 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: fa065c8a40de445ef7ab2830d55645d3ab2692da16f328317a9ffb643a9eaf31
+2019/04/24 03:40:59.134702 [1;33m[WRN][m GID 303, [CheckTransactionCoinbaseLock] cannot unlock coinbase transaction output
+2019/04/24 03:40:59.419979 [1;33m[WRN][m GID 303, [TxPool CheckTransactionContext] failed 28d63e90ca164218098a83f4d1fa8be61335a7310065015ce95504b830c56762
+2019/04/24 03:40:59.679608 [1;35m[INF][m GID 303, [httpjsonrpc] VerifyTransaction failed when AppendToTxnPool. Errcode: INTERNAL ERROR, ErrIneffectiveCoinbase
+2019/04/24 03:41:00.625054 [1;35m[INF][m GID 95, New valid peer 172.18.0.13:36152 (inbound)
+2019/04/24 03:41:00.678946 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: fa065c8a40de445ef7ab2830d55645d3ab2692da16f328317a9ffb643a9eaf31
+2019/04/24 03:41:00.683815 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 506
+2019/04/24 03:41:00.730164 [1;35m[INF][m GID 95, New valid peer 172.18.0.19:33714 (inbound)
+2019/04/24 03:41:01.078978 [1;35m[INF][m GID 62, 
+CURRENT ARBITERS
+DUTYINDEX: 4
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316   true
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216
+2     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/24 03:41:01.146060 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: fa065c8a40de445ef7ab2830d55645d3ab2692da16f328317a9ffb643a9eaf31
+2019/04/24 03:41:01.147770 [1;35m[INF][m GID 95, [ConfirmBlock] block height: 506
+2019/04/24 03:41:01.721696 [1;35m[INF][m GID 95, Lost peer 172.18.0.19:33714 (inbound)
+2019/04/24 03:41:01.851145 [1;35m[INF][m GID 95, New valid peer 172.18.0.14:57748 (inbound)
+2019/04/24 03:41:02.696303 [1;35m[INF][m GID 95, New valid peer 172.18.0.17:58656 (inbound)
+2019/04/24 03:41:03.327562 [1;35m[INF][m GID 95, New valid peer 172.18.0.18:36298 (inbound)
+2019/04/24 03:41:03.412990 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:41:03.413889 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:41:05.732037 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: b9d17d01d81857191cb8bd6e5524c172d3cdfd21e7274cf6acecf01e4a20d375
+2019/04/24 03:41:05.978011 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: b9d17d01d81857191cb8bd6e5524c172d3cdfd21e7274cf6acecf01e4a20d375
+2019/04/24 03:41:05.978769 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 507
+2019/04/24 03:41:05.979772 [1;35m[INF][m GID 62, 
+CURRENT ARBITERS
+DUTYINDEX: 5
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216   true
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216
+2     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/24 03:41:08.288396 [1;35m[INF][m GID 95, New valid peer 172.18.0.23:57872 (inbound)
+2019/04/24 03:41:08.454961 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:41:08.459451 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:41:11.964114 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: ac89ccc83e11eb96521c89600598def706144e66c6c9da04be4c50cb6a60919c
+2019/04/24 03:41:12.155369 [1;35m[INF][m GID 95, Rejected block ac89ccc83e11eb96521c89600598def706144e66c6c9da04be4c50cb6a60919c from 172.18.0.9:10615 (outbound): duplicate block in pool
+2019/04/24 03:41:12.621708 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: ac89ccc83e11eb96521c89600598def706144e66c6c9da04be4c50cb6a60919c
+2019/04/24 03:41:12.623823 [1;35m[INF][m GID 95, [ConfirmBlock] block height: 508
+2019/04/24 03:41:13.478368 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:41:13.523787 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:41:18.719624 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:41:18.727745 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:41:23.731091 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:41:23.731378 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:41:28.743935 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:41:28.744260 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:41:33.821597 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:41:33.821910 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:41:36.931581 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: 49d06bb5339aa352999e8cc9ca413308ae9f95cd45c7a0120449ce68f888b25b
+2019/04/24 03:41:37.224677 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 49d06bb5339aa352999e8cc9ca413308ae9f95cd45c7a0120449ce68f888b25b
+2019/04/24 03:41:37.230599 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 509
+2019/04/24 03:41:37.257705 [1;35m[INF][m GID 62, 
+CURRENT ARBITERS
+DUTYINDEX: 1
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                         true
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/24 03:41:37.325246 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: 49d06bb5339aa352999e8cc9ca413308ae9f95cd45c7a0120449ce68f888b25b
+2019/04/24 03:41:37.330108 [1;35m[INF][m GID 95, [ConfirmBlock] block height: 509
+2019/04/24 03:41:38.836917 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:41:38.837166 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:41:41.813547 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: 2d6763bc1cb1dfcfd545d9780c88da0e5b4ac4ab146e4b73099eb3cb2359aebf
+2019/04/24 03:41:41.997041 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 2d6763bc1cb1dfcfd545d9780c88da0e5b4ac4ab146e4b73099eb3cb2359aebf
+2019/04/24 03:41:41.998593 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 510
+2019/04/24 03:41:42.001939 [1;35m[INF][m GID 62, 
+CURRENT ARBITERS
+DUTYINDEX: 2
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                         true
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/24 03:41:42.050910 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: 2d6763bc1cb1dfcfd545d9780c88da0e5b4ac4ab146e4b73099eb3cb2359aebf
+2019/04/24 03:41:42.051221 [1;35m[INF][m GID 95, [ConfirmBlock] block height: 510
+2019-04-24 03:41:43.192 [INF] STAT: -> 510 [508 172.18.0.16:38442 (inbound), 508 172.18.0.14:57748 (inbound), 508 172.18.0.17:58656 (inbound), 508 172.18.0.5:38338 (inbound), 508 172.18.0.3:37338 (inbound), 508 172.18.0.12:41378 (inbound), 508 172.18.0.13:36152 (inbound), 508 172.18.0.9:52246 (inbound), 508 172.18.0.6:58566 (inbound), 508 172.18.0.10:41722 (inbound), 508 172.18.0.18:36298 (inbound), 509 172.18.0.23:57872 (inbound), 508 172.18.0.2:59006 (inbound), 508 172.18.0.7:38078 (inbound), 508 172.18.0.3:10015 (outbound), 508 172.18.0.5:10315 (outbound), 508 172.18.0.6:10215 (outbound), 508 172.18.0.7:10515 (outbound), 508 172.18.0.2:10115 (outbound), 508 172.18.0.9:10615 (outbound)]
+2019/04/24 03:41:43.845145 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:41:43.846129 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:41:48.848116 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:41:48.848364 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:41:53.864729 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:41:53.865152 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:41:58.886451 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:41:58.887312 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:42:00.873674 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: 2b82538e5a63afa84b13518c59b931ae60c85c878a3bbcadb26a07d37ec04977
+2019/04/24 03:42:01.223793 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: 2b82538e5a63afa84b13518c59b931ae60c85c878a3bbcadb26a07d37ec04977
+2019/04/24 03:42:01.224054 [1;35m[INF][m GID 95, [ConfirmBlock] block height: 511
+2019/04/24 03:42:01.225297 [1;35m[INF][m GID 95, 
+CURRENT ARBITERS
+DUTYINDEX: 3
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416   true
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/24 03:42:01.260577 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 2b82538e5a63afa84b13518c59b931ae60c85c878a3bbcadb26a07d37ec04977
+2019/04/24 03:42:01.263584 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 511
+2019/04/24 03:42:03.957888 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:42:03.965126 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:42:08.971610 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:42:08.972100 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:42:09.351452 [1;33m[WRN][m GID 951, [CheckTransactionCoinbaseLock] cannot unlock coinbase transaction output
+2019/04/24 03:42:09.428866 [1;33m[WRN][m GID 951, [TxPool CheckTransactionContext] failed 5b7a38624cbfea3b5f4d673b452902b3c50c9ad389c820363ddee893fc337acc
+2019/04/24 03:42:09.429073 [1;35m[INF][m GID 951, [httpjsonrpc] VerifyTransaction failed when AppendToTxnPool. Errcode: INTERNAL ERROR, ErrIneffectiveCoinbase
+2019/04/24 03:42:13.205183 [1;35m[INF][m GID 95, Lost peer 172.18.0.2:59006 (inbound)
+2019/04/24 03:42:13.209357 [1;35m[INF][m GID 95, Syncing to block height 511 from peer 172.18.0.3:10015
+2019/04/24 03:42:13.260702 [1;35m[INF][m GID 95, Lost peer 172.18.0.2:10115 (outbound)
+2019/04/24 03:42:14.036072 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:42:14.036247 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:42:18.367119 [1;35m[INF][m GID 95, New valid peer 172.18.0.2:60208 (inbound)
+2019/04/24 03:42:19.048764 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:42:19.049795 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:42:24.086151 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:42:24.152378 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:42:28.597469 [1;35m[INF][m GID 95, New valid peer 172.18.0.2:10115 (outbound)
+2019/04/24 03:42:29.246797 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:42:29.247109 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:42:31.500409 [1;35m[INF][m GID 95, Lost peer 172.18.0.6:58566 (inbound)
+2019/04/24 03:42:32.606168 [1;35m[INF][m GID 95, Lost peer 172.18.0.7:38078 (inbound)
+2019/04/24 03:42:33.295961 [1;35m[INF][m GID 95, Lost peer 172.18.0.9:10615 (outbound)
+2019/04/24 03:42:34.328949 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:42:34.329218 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:42:36.746359 [1;35m[INF][m GID 95, New valid peer 172.18.0.6:59740 (inbound)
+2019/04/24 03:42:36.771080 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: 91f16c89d553098f12d572144130e2a2eb517c0b4ec371ccc99b0d1a989700ac
+2019/04/24 03:42:37.262439 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 91f16c89d553098f12d572144130e2a2eb517c0b4ec371ccc99b0d1a989700ac
+2019/04/24 03:42:37.262544 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 512
+2019/04/24 03:42:37.265500 [1;35m[INF][m GID 62, 
+CURRENT ARBITERS
+DUTYINDEX: 4
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316   true
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/24 03:42:37.640769 [1;35m[INF][m GID 95, New valid peer 172.18.0.7:39242 (inbound)
+2019/04/24 03:42:38.440791 [1;35m[INF][m GID 95, New valid peer 172.18.0.9:10615 (outbound)
+2019/04/24 03:42:39.484710 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:42:39.485574 [1;35m[INF][m GID 461, difficulty:  520095999
+2019-04-24 03:42:43.182 [INF] STAT: -> 512 [512 172.18.0.7:39242 (inbound), 511 172.18.0.9:52246 (inbound), 511 172.18.0.6:59740 (inbound), 511 172.18.0.12:41378 (inbound), 511 172.18.0.13:36152 (inbound), 511 172.18.0.10:41722 (inbound), 511 172.18.0.18:36298 (inbound), 511 172.18.0.2:60208 (inbound), 512 172.18.0.23:57872 (inbound), 511 172.18.0.17:58656 (inbound), 511 172.18.0.5:38338 (inbound), 511 172.18.0.3:37338 (inbound), 511 172.18.0.16:38442 (inbound), 511 172.18.0.14:57748 (inbound), 512 172.18.0.3:10015 (outbound), 512 172.18.0.5:10315 (outbound), 512 172.18.0.6:10215 (outbound), 511 172.18.0.7:10515 (outbound), 512 172.18.0.9:10615 (outbound), 511 172.18.0.2:10115 (outbound)]
+2019/04/24 03:42:44.494300 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:42:44.538348 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:42:49.569844 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:42:49.570174 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:42:54.570648 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:42:54.571591 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:42:57.405418 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: 39611d089adb21a727733e7d4901c87b69d26dabc851db82cf7b97b579ea24d7
+2019/04/24 03:42:57.512750 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 39611d089adb21a727733e7d4901c87b69d26dabc851db82cf7b97b579ea24d7
+2019/04/24 03:42:57.603987 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 513
+2019/04/24 03:42:57.665011 [1;35m[INF][m GID 62, 
+CURRENT ARBITERS
+DUTYINDEX: 5
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216   true
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/24 03:42:57.713613 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: 39611d089adb21a727733e7d4901c87b69d26dabc851db82cf7b97b579ea24d7
+2019/04/24 03:42:57.723717 [1;35m[INF][m GID 95, [ConfirmBlock] block height: 513
+2019/04/24 03:42:59.720991 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:42:59.721362 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:43:02.984439 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: 8cf1ec18d4bd9c5e457671cae296ef1849efad3f197512ee2ab9e9f0f250b8e3
+2019/04/24 03:43:03.081783 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 8cf1ec18d4bd9c5e457671cae296ef1849efad3f197512ee2ab9e9f0f250b8e3
+2019/04/24 03:43:03.128981 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 514
+2019/04/24 03:43:03.190475 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: 8cf1ec18d4bd9c5e457671cae296ef1849efad3f197512ee2ab9e9f0f250b8e3
+2019/04/24 03:43:03.190618 [1;35m[INF][m GID 95, [ConfirmBlock] block height: 514
+2019/04/24 03:43:04.829325 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:43:04.835391 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:43:09.799920 [1;33m[WRN][m GID 951, [CheckTransactionCoinbaseLock] cannot unlock coinbase transaction output
+2019/04/24 03:43:09.800185 [1;33m[WRN][m GID 951, [TxPool CheckTransactionContext] failed 32acc5695f7e7eb44dc96b11ae4cd63bf09791b6c5a08921147820e6036053b4
+2019/04/24 03:43:09.800307 [1;35m[INF][m GID 951, [httpjsonrpc] VerifyTransaction failed when AppendToTxnPool. Errcode: INTERNAL ERROR, ErrIneffectiveCoinbase
+2019/04/24 03:43:09.855221 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:43:09.855888 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:43:11.632049 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: f26b827e9f78c278f9c5098d99c13e8f28011563918701d9459c6d490b2a07dd
+2019/04/24 03:43:11.840482 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: f26b827e9f78c278f9c5098d99c13e8f28011563918701d9459c6d490b2a07dd
+2019/04/24 03:43:11.840988 [1;35m[INF][m GID 95, [ConfirmBlock] block height: 515
+2019/04/24 03:43:11.850359 [1;35m[INF][m GID 95, 
+CURRENT ARBITERS
+DUTYINDEX: 1
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                         true
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216
+2     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/24 03:43:14.858464 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:43:14.859034 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:43:19.873783 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:43:19.876193 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:43:23.801296 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: bda12ecdd823f98ddda00ec672d9dac35b3afcc1b0e224f69242d574de1421b8
+2019/04/24 03:43:24.102754 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: bda12ecdd823f98ddda00ec672d9dac35b3afcc1b0e224f69242d574de1421b8
+2019/04/24 03:43:24.108659 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 516
+2019/04/24 03:43:24.195597 [1;35m[INF][m GID 62, 
+CURRENT ARBITERS
+DUTYINDEX: 2
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                         true
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216
+2     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/24 03:43:24.228532 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: bda12ecdd823f98ddda00ec672d9dac35b3afcc1b0e224f69242d574de1421b8
+2019/04/24 03:43:24.229434 [1;35m[INF][m GID 95, [ConfirmBlock] block height: 516
+2019/04/24 03:43:24.895862 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:43:24.911237 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:43:29.936319 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:43:29.936654 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:43:30.638524 [1;35m[INF][m GID 461, <================Solved Block==============>
+2019/04/24 03:43:30.641479 [1;35m[INF][m GID 461, [ConfirmBlock] block hash: 8c9a8fa50d256b8ed0f9d9680954c3c64130ed32e389903dee62591dee12c3d2
+2019/04/24 03:43:30.644161 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:43:30.928288 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 8c9a8fa50d256b8ed0f9d9680954c3c64130ed32e389903dee62591dee12c3d2
+2019/04/24 03:43:30.932274 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 517
+2019/04/24 03:43:30.937017 [1;35m[INF][m GID 62, 
+CURRENT ARBITERS
+DUTYINDEX: 3
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416   true
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216
+2     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/24 03:43:35.697995 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:43:35.699318 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:43:38.069248 [1;35m[INF][m GID 461, <================Solved Block==============>
+2019/04/24 03:43:38.069642 [1;35m[INF][m GID 461, [ConfirmBlock] block hash: 594d79df6b7110e60dc3b01657ec52d99d94be5769e700954210348597c44a3e
+2019/04/24 03:43:38.073032 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:43:38.302064 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 594d79df6b7110e60dc3b01657ec52d99d94be5769e700954210348597c44a3e
+2019/04/24 03:43:38.304052 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 518
+2019/04/24 03:43:38.307217 [1;35m[INF][m GID 2472, 172.18.0.9:10615 (outbound) sent a reject message Code: REJECT_INVALID, Hash 594d79df6b7110e60dc3b01657ec52d99d94be5769e700954210348597c44a3e, Reason: Rejected block 594d79df6b7110e60dc3b01657ec52d99d94be5769e700954210348597c44a3e from 172.18.0.8:36764 (inbound): duplicate block in pool
+2019/04/24 03:43:38.337900 [1;35m[INF][m GID 62, 
+CURRENT ARBITERS
+DUTYINDEX: 4
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316   true
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216
+2     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/24 03:43:38.416345 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: 594d79df6b7110e60dc3b01657ec52d99d94be5769e700954210348597c44a3e
+2019/04/24 03:43:38.418688 [1;35m[INF][m GID 95, [ConfirmBlock] block height: 518
+2019-04-24 03:43:43.129 [INF] STAT: -> 518 [515 172.18.0.2:60208 (inbound), 517 172.18.0.23:57872 (inbound), 515 172.18.0.5:38338 (inbound), 515 172.18.0.3:37338 (inbound), 515 172.18.0.16:38442 (inbound), 517 172.18.0.14:57748 (inbound), 517 172.18.0.17:58656 (inbound), 515 172.18.0.9:52246 (inbound), 517 172.18.0.6:59740 (inbound), 515 172.18.0.12:41378 (inbound), 516 172.18.0.13:36152 (inbound), 517 172.18.0.7:39242 (inbound), 515 172.18.0.10:41722 (inbound), 517 172.18.0.18:36298 (inbound), 515 172.18.0.3:10015 (outbound), 515 172.18.0.5:10315 (outbound), 515 172.18.0.6:10215 (outbound), 515 172.18.0.7:10515 (outbound), 518 172.18.0.9:10615 (outbound), 516 172.18.0.2:10115 (outbound)]
+2019/04/24 03:43:43.129773 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:43:43.170858 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:43:48.190223 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:43:48.190836 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:43:49.214985 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 64b3b969e965a8a312973911af1049045a270a8e4c8348a6079cf68451799c58
+2019/04/24 03:43:49.285592 [1;35m[INF][m GID 95, Rejected block 64b3b969e965a8a312973911af1049045a270a8e4c8348a6079cf68451799c58 from 172.18.0.5:38338 (inbound): duplicate block in pool
+2019/04/24 03:43:49.509513 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: 64b3b969e965a8a312973911af1049045a270a8e4c8348a6079cf68451799c58
+2019/04/24 03:43:49.509675 [1;35m[INF][m GID 95, [ConfirmBlock] block height: 519
+2019/04/24 03:43:49.510797 [1;35m[INF][m GID 95, 
+CURRENT ARBITERS
+DUTYINDEX: 5
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216   true
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216
+2     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/24 03:43:53.194588 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:43:53.195143 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:43:58.208095 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:43:58.208488 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:44:03.226806 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:44:03.234547 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:44:08.267008 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:44:08.267303 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:44:09.908772 [1;33m[WRN][m GID 951, [CheckTransactionCoinbaseLock] cannot unlock coinbase transaction output
+2019/04/24 03:44:09.912599 [1;33m[WRN][m GID 951, [TxPool CheckTransactionContext] failed ad32eb7d899a87b56f6293da91f0d585bf577e3d71563c5dde85d4d083c2c796
+2019/04/24 03:44:09.914274 [1;35m[INF][m GID 951, [httpjsonrpc] VerifyTransaction failed when AppendToTxnPool. Errcode: INTERNAL ERROR, ErrIneffectiveCoinbase
+2019/04/24 03:44:11.905153 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: d2519fafae1c2bee2e5209f5feba6c40b2eb97c71acc48471c072a38a4954e5c
+2019/04/24 03:44:11.935918 [1;35m[INF][m GID 95, Rejected block d2519fafae1c2bee2e5209f5feba6c40b2eb97c71acc48471c072a38a4954e5c from 172.18.0.3:37338 (inbound): duplicate block in pool
+2019/04/24 03:44:12.182908 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: d2519fafae1c2bee2e5209f5feba6c40b2eb97c71acc48471c072a38a4954e5c
+2019/04/24 03:44:12.182969 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 520
+2019/04/24 03:44:12.435687 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: d2519fafae1c2bee2e5209f5feba6c40b2eb97c71acc48471c072a38a4954e5c
+2019/04/24 03:44:12.435779 [1;35m[INF][m GID 95, [ConfirmBlock] block height: 520
+2019/04/24 03:44:13.306557 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:44:13.306690 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:44:15.637635 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: 6ae6b5bb66489d6d2feee7710e175e4b6a4747a033dce5a375b59cc1f2dbc293
+2019/04/24 03:44:15.871263 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 6ae6b5bb66489d6d2feee7710e175e4b6a4747a033dce5a375b59cc1f2dbc293
+2019/04/24 03:44:15.883176 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 521
+2019/04/24 03:44:15.968102 [1;35m[INF][m GID 62, 
+CURRENT ARBITERS
+DUTYINDEX: 1
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                         true
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/24 03:44:18.309276 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:44:18.309556 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:44:23.310638 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:44:23.314025 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:44:28.077851 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: 51bf0dd12c748914d88bbd9cae867133e6d2016c8f48b3276071c5709f809737
+2019/04/24 03:44:28.305296 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: 51bf0dd12c748914d88bbd9cae867133e6d2016c8f48b3276071c5709f809737
+2019/04/24 03:44:28.308642 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 522
+2019/04/24 03:44:28.321684 [1;35m[INF][m GID 62, 
+CURRENT ARBITERS
+DUTYINDEX: 2
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                         true
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416  false
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/24 03:44:28.337472 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:44:28.361101 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:44:28.386017 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: 51bf0dd12c748914d88bbd9cae867133e6d2016c8f48b3276071c5709f809737
+2019/04/24 03:44:28.386674 [1;35m[INF][m GID 95, [ConfirmBlock] block height: 522
+2019/04/24 03:44:33.423948 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:44:33.429113 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:44:37.263897 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: c436d73a5f7d75c4351230b33759eb376bfcd7b8d292e66acb5e3bbf730a28c3
+2019/04/24 03:44:37.716740 [1;35m[INF][m GID 62, [ConfirmBlock] block hash: c436d73a5f7d75c4351230b33759eb376bfcd7b8d292e66acb5e3bbf730a28c3
+2019/04/24 03:44:37.765275 [1;35m[INF][m GID 62, [ConfirmBlock] block height: 523
+2019/04/24 03:44:37.818385 [1;35m[INF][m GID 62, 
+CURRENT ARBITERS
+DUTYINDEX: 3
+INDEX                                                          PUBLICKEY            NETADDRESS ONDUTY
+----- ------------------------------------------------------------------ --------------------- ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                        false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                        false
+3     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416   true
+4     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316  false
+5     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216  false
+6     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116  false
+----- ------------------------------------------------------------------ --------------------- ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ela-mainchain-crc-1:10116
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ela-mainchain-crc-2:10216
+3     032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ela-mainchain-crc-3:10316
+4     02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ela-mainchain-crc-4:10416
+5     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556                      
+6     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25                      
+----- ------------------------------------------------------------------ ---------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY            NETADDRESS
+----- ------------------------------------------------------------------ ---------------------
+----- ------------------------------------------------------------------ ---------------------
+2019/04/24 03:44:37.843360 [1;35m[INF][m GID 95, [ConfirmBlock] block hash: c436d73a5f7d75c4351230b33759eb376bfcd7b8d292e66acb5e3bbf730a28c3
+2019/04/24 03:44:37.844898 [1;35m[INF][m GID 95, [ConfirmBlock] block height: 523
+2019/04/24 03:44:38.461261 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:44:38.461415 [1;35m[INF][m GID 461, difficulty:  520095999
+2019-04-24 03:44:43.121 [INF] STAT: -> 523 [522 172.18.0.14:57748 (inbound), 522 172.18.0.17:58656 (inbound), 520 172.18.0.5:38338 (inbound), 520 172.18.0.3:37338 (inbound), 521 172.18.0.16:38442 (inbound), 522 172.18.0.13:36152 (inbound), 523 172.18.0.7:39242 (inbound), 520 172.18.0.9:52246 (inbound), 522 172.18.0.6:59740 (inbound), 521 172.18.0.12:41378 (inbound), 521 172.18.0.10:41722 (inbound), 522 172.18.0.18:36298 (inbound), 521 172.18.0.2:60208 (inbound), 523 172.18.0.23:57872 (inbound), 520 172.18.0.3:10015 (outbound), 520 172.18.0.5:10315 (outbound), 520 172.18.0.6:10215 (outbound), 520 172.18.0.7:10515 (outbound), 523 172.18.0.9:10615 (outbound), 522 172.18.0.2:10115 (outbound)]
+2019/04/24 03:44:43.463743 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:44:43.463936 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:44:48.465591 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:44:48.466849 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:44:53.471630 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:44:53.472630 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:44:58.221072 [1;35m[INF][m GID 95, Lost peer 172.18.0.5:10315 (outbound)
+2019/04/24 03:44:58.588112 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:44:58.588536 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:44:58.619893 [1;35m[INF][m GID 95, Lost peer 172.18.0.5:38338 (inbound)
+2019/04/24 03:44:58.763186 [1;35m[INF][m GID 95, Lost peer 172.18.0.2:10115 (outbound)
+2019/04/24 03:45:03.608573 [1;35m[INF][m GID 461, five second countdown ends. Re-generate block.
+2019/04/24 03:45:03.608836 [1;35m[INF][m GID 461, difficulty:  520095999
+2019/04/24 03:45:03.626924 [1;35m[INF][m GID 95, New valid peer 172.18.0.5:40884 (inbound)
+2019/04/24 03:45:03.813988 [1;35m[INF][m GID 95, New valid peer 172.18.0.2:10115 (outbound)

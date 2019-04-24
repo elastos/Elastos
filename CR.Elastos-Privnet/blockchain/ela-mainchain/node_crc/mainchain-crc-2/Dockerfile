@@ -17,7 +17,6 @@ RUN apk update \
 
 USER elauser
 
-EXPOSE 10123-10128
-EXPOSE 10178
+EXPOSE 10211-10216
 
 ENTRYPOINT ["/bin/sh", "-c", "./ela -p 123"]
