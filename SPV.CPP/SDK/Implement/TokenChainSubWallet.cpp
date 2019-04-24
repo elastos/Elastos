@@ -40,31 +40,62 @@ namespace Elastos {
 				const std::string &memo,
 				const std::string &remark) {
 
-			BigInt bnAmount;
-			bnAmount.setWord(1000000000);
-			TransactionPtr tx = CreateTx("", CreateAddress(), bnAmount, Asset::GetELAAssetID(), memo, remark);
-
-			Asset asset(name, description, precision);
+			ErrorChecker::CheckParam(_walletManager->getWallet()->AssetNameExist(name), Error::InvalidArgument,
+									 "asset name already registered");
 			Address address(registerToAddress);
+			ErrorChecker::CheckParam(!address.Valid(), Error::InvalidArgument, "invalid address");
+			ErrorChecker::CheckParam(precision > Asset::MaxPrecision, Error::InvalidArgument, "precision too large");
+
+			AssetPtr asset(new Asset(name, description, precision));
 			PayloadPtr payload = PayloadPtr(new PayloadRegisterAsset(asset, registerAmount, address.ProgramHash()));
+
+			TransactionPtr tx = CreateTx("", CreateAddress(), BigInt(1000000000 - 10000), Asset::GetELAAssetID(), memo, remark);
+
 			tx->SetTransactionType(Transaction::RegisterAsset, payload);
 
 			BigInt assetAmount(registerAmount);
 			assetAmount *= BigInt(TOKEN_ASSET_PRECISION, 10);
-			tx->AddOutput(TransactionOutput(assetAmount, address.ProgramHash(), asset.GetHash()));
+			tx->AddOutput(TransactionOutput(assetAmount, address.ProgramHash(), asset->GetHash()));
+
+			if (tx->GetOutputs().size() > 0)
+				tx->GetOutputs().erase(tx->GetOutputs().begin());
 
 			return tx->ToJson();
 		}
 
 		nlohmann::json
 		TokenchainSubWallet::CreateTransaction(const std::string &fromAddress, const std::string &toAddress,
-											  const std::string &amount, const std::string &assetID,
+											   const std::string &amount, const std::string &assetID,
 											   const std::string &memo, const std::string &remark) {
 			uint256 asset = uint256(assetID);
+
+			AssetPtr assetInfo = _walletManager->getWallet()->GetAsset(asset);
+			ErrorChecker::CheckParam(assetInfo == nullptr, Error::InvalidArgument, "asset not found: " + assetID);
+
+			uint8_t invalidPrecision = Asset::MaxPrecision - assetInfo->GetPrecision();
+			assert(invalidPrecision < Asset::MaxPrecision);
+			BigInt bn(1);
+			for (size_t i = 0; i < invalidPrecision; ++i)
+				bn *= 10;
+
 			BigInt bnAmount;
 			bnAmount.setDec(amount);
+
+			ErrorChecker::CheckParam((bnAmount % bn) != 0, Error::InvalidArgument, "amount exceed max presicion");
 			TransactionPtr tx = CreateTx(fromAddress, toAddress, bnAmount, asset, memo, remark);
+
 			return tx->ToJson();
+		}
+
+		uint64_t TokenchainSubWallet::CalculateTransactionFee(const nlohmann::json &txJson,
+															  uint64_t feePerKb) {
+			TransactionPtr tx(new Transaction());
+			tx->FromJson(txJson);
+
+			if (tx->GetTransactionType() == Transaction::RegisterAsset)
+				return std::max(tx->CalculateFee(feePerKb), uint64_t(1000000000));
+
+			return SubWallet::CalculateTxFee(tx, feePerKb);
 		}
 
 		nlohmann::json TokenchainSubWallet::GetBalanceInfo(const std::string &assetID) const {
@@ -72,42 +103,15 @@ namespace Elastos {
 		}
 
 		std::string TokenchainSubWallet::GetBalance(const std::string &assetID) const {
-			return _walletManager->getWallet()->GetBalance(uint256(assetID), AssetTransactions::Total).getDec();
+			return _walletManager->getWallet()->GetBalance(uint256(assetID), GroupedAsset::Total).getDec();
 		}
 
 		std::string TokenchainSubWallet::GetBalanceWithAddress(const std::string &assetID, const std::string &address) const {
-			return _walletManager->getWallet()->GetBalanceWithAddress(uint256(assetID), address, AssetTransactions::Total).getDec();
+			return _walletManager->getWallet()->GetBalanceWithAddress(uint256(assetID), address, GroupedAsset::Total).getDec();
 		}
 
-		nlohmann::json TokenchainSubWallet::GetAllSupportedAssets() const {
-			return _walletManager->getWallet()->GetAllSupportedAssets();
-		}
-
-		nlohmann::json TokenchainSubWallet::GetAllVisibleAssets() const {
-			return _info.VisibleAssetsToJson();
-		}
-
-		void TokenchainSubWallet::SetVisibleAssets(const nlohmann::json &assets) {
-			ErrorChecker::CheckJsonArray(assets, 1, "assets");
-			for (nlohmann::json::const_iterator it = assets.cbegin(); it != assets.cend(); ++it) {
-				ErrorChecker::CheckParam(!(*it).is_string(), Error::InvalidAsset, "invalid asset array");
-				std::string assetID = (*it).get<std::string>();
-				uint256 asset(assetID);
-				if (!_walletManager->getWallet()->ContainsAsset(asset)) {
-					ErrorChecker::ThrowParamException(Error::InvalidAsset, "asset not found: " + assetID);
-				}
-			}
-
-			_info.VisibleAssetsFromJson(assets);
-		}
-
-		void TokenchainSubWallet::SetVisibleAsset(const std::string &assetID) {
-			uint256 asset(assetID);
-			if (!_walletManager->getWallet()->ContainsAsset(asset)) {
-				ErrorChecker::ThrowParamException(Error::InvalidAsset, "asset not found: " + assetID);
-			}
-
-			_info.SetVisibleAsset(asset);
+		nlohmann::json TokenchainSubWallet::GetAllAssets() const {
+			return _walletManager->getWallet()->GetAllAssets();
 		}
 
 	}

@@ -51,6 +51,9 @@ namespace Elastos {
 			virtual void OnTxPublished(const std::string &hash, const nlohmann::json &result) = 0;
 
 			virtual void OnTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) = 0;
+
+			virtual void OnAssetRegistered(const std::string &asset, const nlohmann::json &info) = 0;
+
 		};
 
 	}

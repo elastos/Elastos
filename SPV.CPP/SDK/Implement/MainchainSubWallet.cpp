@@ -293,7 +293,7 @@ namespace Elastos {
 
 		nlohmann::json MainchainSubWallet::GetVotedProducerList() const {
 			WalletPtr wallet = _walletManager->getWallet();
-			std::vector<UTXO> utxos = wallet->GetAllUTXOsSafe();
+			std::vector<UTXO> utxos = wallet->GetAllUTXO();
 			nlohmann::json j;
 			std::map<std::string, uint64_t> votedList;
 

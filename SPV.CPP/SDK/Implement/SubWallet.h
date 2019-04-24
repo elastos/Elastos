@@ -24,7 +24,7 @@ namespace Elastos {
 
 		class Transaction;
 
-		class SubWallet : public virtual ISubWallet, public GroupedAssetTransactions::Listener, public PeerManager::Listener {
+		class SubWallet : public virtual ISubWallet, public Wallet::Listener, public PeerManager::Listener {
 		public:
 			typedef boost::shared_ptr<SpvService> WalletManagerPtr;
 
@@ -115,9 +115,11 @@ namespace Elastos {
 
 			virtual void onTxAdded(const TransactionPtr &transaction);
 
-			virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp);
+			virtual void onTxUpdated(const uint256 &hash, uint32_t blockHeight, uint32_t timeStamp);
 
-			virtual void onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan);
+			virtual void onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
+
+			virtual void onAssetRegistered(const AssetPtr &asset, uint64_t amount, const uint168 &controller);
 
 		protected: //implement PeerManager::Listener
 			virtual void syncStarted();
@@ -163,14 +165,14 @@ namespace Elastos {
 				const std::string &remark,
 				bool useVotedUTXO = false) const;
 
+			virtual uint64_t CalculateTxFee(const TransactionPtr &tx, uint64_t feePerKB) const;
+
 			virtual void publishTransaction(const TransactionPtr &transaction);
 
 			bool filterByAddressOrTxId(const TransactionPtr &transaction, const std::string &addressOrTxid) const;
 
-			virtual void fireTransactionStatusChanged(const std::string &txid,
-													  const std::string &status,
-													  const nlohmann::json &desc,
-													  uint32_t confirms);
+			virtual void fireTransactionStatusChanged(const uint256 &txid, const std::string &status,
+													  const nlohmann::json &desc, uint32_t confirms);
 
 			const CoinInfo &getCoinInfo();
 
@@ -181,7 +183,7 @@ namespace Elastos {
 			CoinInfo _info;
 			SubAccountPtr _subAccount;
 
-			typedef std::map<std::string, TransactionPtr> TransactionMap;
+			typedef std::map<uint256, TransactionPtr> TransactionMap;
 			TransactionMap _confirmingTxs;
 			uint32_t _syncStartHeight;
 		};

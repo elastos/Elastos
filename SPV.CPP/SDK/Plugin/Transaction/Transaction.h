@@ -19,7 +19,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class TransactionHub;
+		class Wallet;
 
 		class Transaction :
 				public ELAMessageSerializable {
@@ -68,7 +68,7 @@ namespace Elastos {
 
 			uint64_t CalculateFee(uint64_t feePerKb);
 
-			uint64_t GetTxFee(const boost::shared_ptr<TransactionHub> &wallet);
+			uint64_t GetTxFee(const boost::shared_ptr<Wallet> &wallet);
 
 			bool IsRegistered() const;
 
@@ -114,8 +114,6 @@ namespace Elastos {
 
 			void SetTimestamp(uint32_t timestamp);
 
-			void RemoveChangeOutput();
-
 			size_t GetSize();
 
 			nlohmann::json GetSignedInfo() const;
@@ -152,7 +150,7 @@ namespace Elastos {
 
 			void SetRemark(const std::string &remark);
 
-			nlohmann::json GetSummary(const boost::shared_ptr<TransactionHub> &wallet, uint32_t confirms, bool detail);
+			nlohmann::json GetSummary(const boost::shared_ptr<Wallet> &wallet, uint32_t confirms, bool detail);
 
 			uint8_t	GetPayloadVersion() const;
 

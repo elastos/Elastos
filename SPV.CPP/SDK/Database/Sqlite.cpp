@@ -46,11 +46,14 @@ namespace Elastos {
 		}
 
 		bool Sqlite::BeginTransaction(SqliteTransactionType type) {
-			return exec("BEGIN " + GetTxTypeString(type) + ";", nullptr, nullptr);
+			_lockMutex.lock();
+			return exec("BEGIN " + GetTxTypeString(type) + " TRANSACTION;", nullptr, nullptr);
 		}
 
 		bool Sqlite::EndTransaction() {
-			return exec("COMMIT;", nullptr, nullptr);
+			bool result = exec("COMMIT;", nullptr, nullptr);
+			_lockMutex.unlock();
+			return result;
 		}
 
 		bool Sqlite::Prepare(const std::string &sql, sqlite3_stmt **ppStmt, const char **pzTail) {

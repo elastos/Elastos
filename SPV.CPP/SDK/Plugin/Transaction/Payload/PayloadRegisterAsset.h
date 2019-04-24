@@ -6,27 +6,29 @@
 #define __ELASTOS_SDK_PAYLOADREGISTERASSET_H__
 
 #include "IPayload.h"
-#include <SDK/Plugin/Transaction/Asset.h>
 
 namespace Elastos {
 	namespace ElaWallet {
+
+		class Asset;
+		typedef boost::shared_ptr<Asset> AssetPtr;
 
 		class PayloadRegisterAsset :
 				public IPayload {
 		public:
 			PayloadRegisterAsset();
 
-			PayloadRegisterAsset(const Asset &asset, uint64_t amount, const uint168 &controller);
+			PayloadRegisterAsset(const AssetPtr &asset, uint64_t amount, const uint168 &controller);
 
 			PayloadRegisterAsset(const PayloadRegisterAsset &payload);
 
 			~PayloadRegisterAsset();
 
-			void SetAsset(const Asset &asset) {
+			void SetAsset(const AssetPtr &asset) {
 				_asset = asset;
 			}
 
-			const Asset &GetAsset() const {
+			const AssetPtr &GetAsset() const {
 				return _asset;
 			}
 
@@ -61,7 +63,7 @@ namespace Elastos {
 			PayloadRegisterAsset &operator=(const PayloadRegisterAsset &payload);
 
 		private:
-			Asset _asset;
+			AssetPtr _asset;
 			uint64_t _amount;
 			uint168 _controller;
 		};

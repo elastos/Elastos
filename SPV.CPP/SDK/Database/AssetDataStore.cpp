@@ -13,11 +13,13 @@ namespace Elastos {
 		AssetDataStore::AssetDataStore(Sqlite *sqlite) :
 				TableBase(sqlite) {
 			InitializeTable(ASSET_DATABASE_CREATE);
+			InitializeTable("drop table if exists " + ASSET_OLD_TABLE_NAME + ";");
 		}
 
 		AssetDataStore::AssetDataStore(SqliteTransactionType type, Sqlite *sqlite) :
 				TableBase(type, sqlite) {
 			InitializeTable(ASSET_DATABASE_CREATE);
+			InitializeTable("drop table if exists " + ASSET_OLD_TABLE_NAME + ";");
 		}
 
 		AssetDataStore::~AssetDataStore() {
@@ -97,8 +99,7 @@ namespace Elastos {
 				ss << "SELECT "
 				   << ASSET_COLUMN_ID << ", "
 				   << ASSET_AMOUNT << ", "
-				   << ASSET_BUFF << ", "
-				   << ASSET_TXHASH
+				   << ASSET_BUFF
 				   << " FROM " << ASSET_TABLE_NAME
 				   << " WHERE " << ASSET_ISO << " = '" << iso << "';";
 
@@ -115,7 +116,6 @@ namespace Elastos {
 					size_t len = (size_t) _sqlite->ColumnBytes(stmt, 2);
 
 					asset.Asset.assign(pdata, pdata + len);
-					asset.TxHash = _sqlite->ColumnText(stmt, 3);
 
 					assets.push_back(asset);
 				}
@@ -130,8 +130,7 @@ namespace Elastos {
 
 			ss << "SELECT "
 				<< ASSET_AMOUNT << ", "
-				<< ASSET_BUFF   << ", "
-				<< ASSET_TXHASH
+				<< ASSET_BUFF
 				<< " FROM " << ASSET_TABLE_NAME
 				<< " WHERE " << ASSET_ISO << " = '" << iso << "' "
 				<< " AND " << ASSET_COLUMN_ID << " = '" << assetID << "';";
@@ -150,7 +149,6 @@ namespace Elastos {
 				size_t len = (size_t) _sqlite->ColumnBytes(stmt, 1);
 
 				asset.Asset.assign(pdata, pdata + len);
-				asset.TxHash = _sqlite->ColumnText(stmt, 2);
 			}
 
 			return found;
@@ -163,9 +161,8 @@ namespace Elastos {
 				<< ASSET_COLUMN_ID << ","
 				<< ASSET_AMOUNT    << ","
 				<< ASSET_BUFF      << ","
-				<< ASSET_TXHASH    << ","
 				<< ASSET_ISO
-				<< ") VALUES (?, ?, ?, ?, ?);";
+				<< ") VALUES (?, ?, ?, ?);";
 
 			sqlite3_stmt *stmt;
 			ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
@@ -174,8 +171,7 @@ namespace Elastos {
 			_sqlite->BindText(stmt, 1, asset.AssetID, nullptr);
 			_sqlite->BindInt64(stmt, 2, asset.Amount);
 			_sqlite->BindBlob(stmt, 3, asset.Asset, nullptr);
-			_sqlite->BindText(stmt, 4, asset.TxHash, nullptr);
-			_sqlite->BindText(stmt, 5, iso, nullptr);
+			_sqlite->BindText(stmt, 4, iso, nullptr);
 
 			_sqlite->Step(stmt);
 
@@ -189,8 +185,7 @@ namespace Elastos {
 
 			ss << "UPDATE " << ASSET_TABLE_NAME << " SET "
 				<< ASSET_AMOUNT << " = ?, "
-				<< ASSET_BUFF   << " = ?, "
-				<< ASSET_TXHASH << " = ? "
+				<< ASSET_BUFF   << " = ? "
 				<< " WHERE " << ASSET_ISO << " = '" << iso << "'"
 				<< " AND " << ASSET_COLUMN_ID << " = '" << asset.AssetID << "';";
 
@@ -200,7 +195,6 @@ namespace Elastos {
 
 			_sqlite->BindInt64(stmt, 1, asset.Amount);
 			_sqlite->BindBlob(stmt, 2, asset.Asset, nullptr);
-			_sqlite->BindText(stmt, 3, asset.TxHash, nullptr);
 
 			_sqlite->Step(stmt);
 

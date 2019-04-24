@@ -16,17 +16,15 @@ namespace Elastos {
 
 			}
 
-			AssetEntity(const std::string &assetID, uint64_t amount, const bytes_t &Asset, const std::string &txHash) :
+			AssetEntity(const std::string &assetID, uint64_t amount, const bytes_t &Asset) :
 					AssetID(assetID),
 					Amount(amount),
-					TxHash(txHash),
 					Asset(Asset) {
 			}
 
 			std::string AssetID;
 			uint64_t Amount;
 			bytes_t Asset;
-			std::string TxHash;
 		};
 
 		class AssetDataStore : public TableBase {
@@ -60,18 +58,17 @@ namespace Elastos {
 			/*
 			 * asset data table
 			 */
-			const std::string ASSET_TABLE_NAME = "assetTable";
+			const std::string ASSET_OLD_TABLE_NAME = "assetTable";
+			const std::string ASSET_TABLE_NAME = "registeredAssetTable";
 			const std::string ASSET_COLUMN_ID = "_id";
 			const std::string ASSET_AMOUNT = "assetAmount";
 			const std::string ASSET_BUFF = "assetBuff";
-			const std::string ASSET_TXHASH = "assetTxHash";
 			const std::string ASSET_ISO = "assetISO";
 
 			const std::string ASSET_DATABASE_CREATE = "create table if not exists " + ASSET_TABLE_NAME + " (" +
 				ASSET_COLUMN_ID + " text not null, " +
 				ASSET_AMOUNT + " bigint, " +
 				ASSET_BUFF + " blob, " +
-				ASSET_TXHASH + " text not null, " +
 				ASSET_ISO + " text DEFAULT 'ELA');";
 		};
 

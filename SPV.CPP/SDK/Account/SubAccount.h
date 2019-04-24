@@ -8,12 +8,14 @@
 #include "Account.h"
 
 #include <SDK/Common/Lockable.h>
-#include <SDK/Plugin/Transaction/Transaction.h>
 
 #include <set>
 
 namespace Elastos {
 	namespace ElaWallet {
+
+		class Transaction;
+		typedef boost::shared_ptr<Transaction> TransactionPtr;
 
 		class SubAccount {
 		public:
@@ -47,8 +49,11 @@ namespace Elastos {
 
 			bytes_t GetRedeemScript(const Address &addr) const;
 
-			const AccountPtr &Parent() const { return _parent; }
+			size_t InternalChainIndex(const TransactionPtr &tx) const;
 
+			size_t ExternalChainIndex(const TransactionPtr &tx) const;
+
+			const AccountPtr &Parent() const { return _parent; }
 		private:
 			uint32_t _coinIndex;
 			std::vector<Address> _internalChain, _externalChain;

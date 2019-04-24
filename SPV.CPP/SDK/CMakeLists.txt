@@ -10,7 +10,7 @@ file(GLOB_RECURSE SPVSDK_SOURCE_FILES
 	"P2P/*.cpp"
 	"Plugin/*.cpp"
 	"SpvService/*.cpp"
-	"TransactionHub/*.cpp")
+	"Wallet/*.cpp")
 
 set(
 	SPVSDK_SOURCE_FILES

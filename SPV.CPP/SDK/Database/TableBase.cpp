@@ -26,9 +26,7 @@ namespace Elastos {
 		}
 
 		bool TableBase::DoTransaction(const boost::function<void()> &fun) const {
-#ifdef SQLITE_MUTEX_LOCK_ON
-			boost::mutex::scoped_lock lock(_lockMutex);
-#endif
+
 			bool result = true;
 			_sqlite->BeginTransaction(_txType);
 			try {
@@ -48,9 +46,6 @@ namespace Elastos {
 		}
 
 		void TableBase::InitializeTable(const std::string &constructScript) {
-#ifdef SQLITE_MUTEX_LOCK_ON
-			boost::mutex::scoped_lock lock(_lockMutex);
-#endif
 			_sqlite->BeginTransaction(_txType);
 			_sqlite->exec(constructScript, nullptr, nullptr);
 			_sqlite->EndTransaction();

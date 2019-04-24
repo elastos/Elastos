@@ -33,6 +33,15 @@ namespace Elastos {
 			return false;
 		}
 
+		bool UTXOList::Contains(const TransactionInput &input) const {
+			for (size_t i = 0; i < _utxos.size(); ++i) {
+				if (input.GetTransctionHash() == _utxos[i].hash && _utxos[i].n == input.GetIndex())
+					return true;
+			}
+
+			return false;
+		}
+
 		UTXO &UTXOList::operator[](size_t i) {
 			return _utxos[i];
 		}

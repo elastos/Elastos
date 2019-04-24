@@ -4,9 +4,7 @@
 #include "Asset.h"
 
 #include <SDK/Common/Log.h>
-#include <SDK/Plugin/Transaction/Transaction.h>
-
-#include <Core/BRCrypto.h>
+#include <SDK/Common/hash.h>
 
 #include <cstring>
 
@@ -17,7 +15,7 @@ namespace Elastos {
 
 		Asset::Asset() :
 			Asset("ELA", "", 8, AssetType::Token, AssetRecordType::Unspent) {
-
+			_hash = GetELAAssetID();
 		}
 
 		Asset::Asset(const std::string &name, const std::string &desc, uint8_t precision,
@@ -45,7 +43,6 @@ namespace Elastos {
 			this->_assetType = asset._assetType;
 			this->_recordType = asset._recordType;
 			this->_hash = asset._hash;
-			this->_elaAsset = asset._elaAsset;
 			return *this;
 		}
 
@@ -83,6 +80,13 @@ namespace Elastos {
 				return false;
 			}
 
+			if (_name == "ELA") {
+				_hash = Asset::GetELAAssetID();
+			} else {
+				_hash = 0;
+				GetHash();
+			}
+
 			return true;
 		}
 
@@ -104,18 +108,23 @@ namespace Elastos {
 			_precision = j["Precision"].get<uint8_t>();
 			_assetType = j["AssetType"].get<AssetType>();
 			_recordType = j["RecordType"].get<AssetRecordType>();
+
+			if (_name == "ELA") {
+				_hash = Asset::GetELAAssetID();
+			} else {
+				_hash = 0;
+				GetHash();
+			}
 		}
 
 		const uint256 &Asset::GetELAAssetID() {
 			if (_elaAsset == 0) {
-				Transaction elaCoin;
-				elaCoin.SetTransactionType(Transaction::RegisterAsset);
-				_elaAsset = elaCoin.GetHash();
+				_elaAsset = uint256("a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0");
 			}
 			return _elaAsset;
 		}
 
-		uint256 &Asset::GetHash() const {
+		const uint256 &Asset::GetHash() const {
 			if (_hash == 0) {
 				ByteStream stream;
 				Serialize(stream);

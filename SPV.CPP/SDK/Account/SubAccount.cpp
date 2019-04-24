@@ -4,10 +4,11 @@
 
 #include "SubAccount.h"
 
-#include <SDK/TransactionHub/TransactionHub.h>
+#include <SDK/Wallet/Wallet.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ErrorChecker.h>
+#include <SDK/Plugin/Transaction/Transaction.h>
 
 #include <Core/BRCrypto.h>
 
@@ -94,9 +95,13 @@ namespace Elastos {
 		}
 
 		std::vector<Address> SubAccount::UnusedAddresses(uint32_t gapLimit, bool internal) {
+			std::vector<Address> addrs;
+			_lock->Lock();
 			if (_parent->SingleAddress()) {
 				if (_parent->GetSignType() == Account::MultiSign) {
-					return {_parent->GetAddress()};
+					addrs = {_parent->GetAddress()};
+					_lock->Unlock();
+					return addrs;
 				}
 
 				if (_externalChain.empty()) {
@@ -104,7 +109,9 @@ namespace Elastos {
 					_externalChain.push_back(Address(PrefixStandard, pubkey));
 					_allAddrs.insert(_externalChain[0]);
 				}
-				return _externalChain;
+				addrs = _externalChain;
+				_lock->Unlock();
+				return addrs;
 			}
 
 			size_t i, j = 0, count, startCount;
@@ -112,7 +119,6 @@ namespace Elastos {
 
 			assert(gapLimit > 0);
 
-			_lock->Lock();
 			std::vector<Address> &addrChain = internal ? _internalChain : _externalChain;
 			i = count = startCount = addrChain.size();
 
@@ -121,7 +127,6 @@ namespace Elastos {
 
 			HDKeychain mpk = _parent->MasterPubKey();
 
-			std::vector<Address> addrs;
 			while (i + gapLimit > count) { // generate new addresses up to gapLimit
 				bytes_t pubKey = mpk.getChild(chain).getChild(count).pubkey();
 
@@ -295,6 +300,42 @@ namespace Elastos {
 																	 addr.String());
 
 			return Address(PrefixStandard, pubKey).RedeemScript();
+		}
+
+		size_t SubAccount::InternalChainIndex(const TransactionPtr &tx) const {
+			if (_parent->GetSignType() == Account::MultiSign) {
+				for (size_t i = 0; i < tx->GetOutputs().size(); ++i) {
+					if (tx->GetOutputs()[i].GetAddress() == _parent->GetAddress())
+						return 0;
+				}
+			}
+
+			for (size_t i = _internalChain.size(); i > 0; i--) {
+				for (size_t j = 0; j < tx->GetOutputs().size(); j++) {
+					if (tx->GetOutputs()[j].GetAddress() == _internalChain[i - 1])
+						return i - 1;
+				}
+			}
+
+			return -1;
+		}
+
+		size_t SubAccount::ExternalChainIndex(const TransactionPtr &tx) const {
+			if (_parent->GetSignType() == Account::MultiSign) {
+				for (size_t i = 0; i < tx->GetOutputs().size(); ++i) {
+					if (tx->GetOutputs()[i].GetAddress() == _parent->GetAddress())
+						return 0;
+				}
+			}
+
+			for (size_t i = _externalChain.size(); i > 0; i--) {
+				for (size_t j = 0; j < tx->GetOutputs().size(); j++) {
+					if (tx->GetOutputs()[j].GetAddress() == _externalChain[i - 1])
+						return i - 1;
+				}
+			}
+
+			return -1;
 		}
 
 	}

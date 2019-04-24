@@ -84,7 +84,7 @@ namespace Elastos {
 
 			virtual void FromJson(const nlohmann::json &jsonData);
 
-			virtual uint256 &GetHash() const;
+			const uint256 &GetHash() const;
 
 			void SetHash(const uint256 &hash);
 
@@ -101,6 +101,8 @@ namespace Elastos {
 
 			static uint256 _elaAsset;
 		};
+
+		typedef boost::shared_ptr<Asset> AssetPtr;
 	}
 }
 

@@ -39,6 +39,8 @@ namespace Elastos {
 
 			bool Contains(const uint256 &hash, uint32_t n) const;
 
+			bool Contains(const TransactionInput &input) const;
+
 			UTXO &operator[](size_t i);
 
 			size_t size() const;

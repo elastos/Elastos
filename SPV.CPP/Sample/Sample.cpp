@@ -83,6 +83,10 @@ public:
 		logger->debug("{} OnTxDeleted ----> hash = {}, notifyUser = {}, recommendRescan = {}", _walletID, hash, notifyUser, recommendRescan);
 	}
 
+	virtual void OnAssetRegistered(const std::string &asset, const nlohmann::json &info) {
+		logger->debug("{} OnAssetRegistered ----> asset = {}, info = {}", _walletID, asset, info.dump());
+	}
+
 private:
 	std::string _walletID;
 
@@ -177,6 +181,7 @@ static ISubWallet *GetSubWallet(const std::string &masterWalletID, const std::st
 
 static void PublishTransaction(ISubWallet *subWallet, const nlohmann::json &tx) {
 	nlohmann::json signedTx = subWallet->SignTransaction(tx, payPasswd);
+	logger->debug("tx after signed -> {}", signedTx.dump());
 
 	nlohmann::json result = subWallet->PublishTransaction(signedTx);
 	logger->debug("published tx result -> {}", result.dump());
@@ -190,7 +195,7 @@ static void Transafer(const std::string &masterWalletID, const std::string &subW
 
 	if (subWalletID == gTokenchainSubWalletID) {
 		ITokenchainSubWallet *tokenSubWallet = dynamic_cast<ITokenchainSubWallet *>(subWallet);
-		tx = tokenSubWallet->CreateTransaction(from, to, std::to_string(amount), memo, assetID, "transafer remark");
+		tx = tokenSubWallet->CreateTransaction(from, to, std::to_string(amount), assetID, memo, "transafer remark");
 	} else {
 		tx = subWallet->CreateTransaction(from, to, amount, memo, "transafer remark");
 	}
@@ -500,12 +505,10 @@ static void GetBalance(const std::string &masterWalletID, const std::string &sub
 	}
 }
 
-static void GetAllSupportedAssets(const std::string &masterWalletID,
-								  const std::string &subWalletID) {
-
+static void GetAllAssets(const std::string &masterWalletID, const std::string &subWalletID) {
 	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
 	ITokenchainSubWallet *tokenSubWallet = dynamic_cast<ITokenchainSubWallet *>(subWallet);
-	logger->debug("{}:{} supported assets -> {}", masterWalletID, subWalletID, tokenSubWallet->GetAllSupportedAssets().dump());
+	logger->debug("{}:{} supported assets -> {}", masterWalletID, subWalletID, tokenSubWallet->GetAllAssets().dump());
 }
 
 static void ELATest() {
@@ -559,17 +562,41 @@ static void ELATest() {
 	logger->debug("ELA {}", separator);
 }
 
+static void RegisterAsset() {
+	ISubWallet *subWallet = GetSubWallet(gMasterWalletID, gTokenchainSubWalletID);
+
+	ITokenchainSubWallet *tokenSubWallet = dynamic_cast<ITokenchainSubWallet *>(subWallet);
+	nlohmann::json tx = tokenSubWallet->CreateRegisterAssetTransaction("Poon",
+				"Description: test spv interface",
+				"EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv",
+				1000000000000000, 10, "", "spv register asset");
+	logger->debug("tx after created = {}", tx.dump());
+
+	uint64_t fee = subWallet->CalculateTransactionFee(tx, feePerKB);
+	logger->debug("fee = {}", fee);
+
+	tx = subWallet->UpdateTransactionFee(tx, fee, "");
+	logger->debug("tx after fee = {}", tx.dump());
+
+	PublishTransaction(subWallet, tx);
+}
+
 static void TokenTest() {
-	static bool transferDone = true, withdrawDone = true;
+	static bool transferDone = true, withdrawDone = true, registerDone = true;
 
 	logger->debug("token {}", separator);
 	GetAllTxSummary(gMasterWalletID, gTokenchainSubWalletID);
 	GetBalance(gMasterWalletID, gTokenchainSubWalletID);
-	GetAllSupportedAssets(gMasterWalletID, gTokenchainSubWalletID);
+	GetAllAssets(gMasterWalletID, gTokenchainSubWalletID);
+
+	if (!registerDone) {
+		RegisterAsset();
+		registerDone = true;
+	}
 
 	if (!transferDone) {
 		Transafer(gMasterWalletID, gTokenchainSubWalletID,
-				  "", "EYMVuGs1FscpgmghSzg243R6PzPiszrgj7", 100000000);
+				  "", "EYMVuGs1FscpgmghSzg243R6PzPiszrgj7", 100000000, "c1e10619c17d9091fc2d0b0d741e68396e751e4a3c603d3efb7a04c0038b1238");
 		transferDone = true;
 	}
 	if (!withdrawDone) {

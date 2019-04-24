@@ -84,10 +84,9 @@ namespace Elastos {
 			}
 		}
 
-		void IdChainSubWallet::onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
-			TransactionPtr transaction = _walletManager->getWallet()->TransactionForHash(uint256(hash));
+		void IdChainSubWallet::onTxUpdated(const uint256 &hash, uint32_t blockHeight, uint32_t timeStamp) {
+			TransactionPtr transaction = _walletManager->getWallet()->TransactionForHash(hash);
 			if (transaction != nullptr && transaction->GetTransactionType() == Transaction::RegisterIdentification) {
-
 				uint32_t confirm = blockHeight >= transaction->GetBlockHeight() ? blockHeight -
 					transaction->GetBlockHeight() + 1 : 0;
 
@@ -96,7 +95,7 @@ namespace Elastos {
 
 								  const PayloadRegisterIdentification *payload = static_cast<const PayloadRegisterIdentification *>(
 									  transaction->GetPayload());
-								  callback->OnTransactionStatusChanged(hash, "Updated", payload->ToJson(0), confirm);
+								  callback->OnTransactionStatusChanged(hash.GetHex(), "Updated", payload->ToJson(0), confirm);
 							  });
 			} else {
 				SubWallet::onTxUpdated(hash, blockHeight, timeStamp);

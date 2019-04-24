@@ -18,7 +18,7 @@
 #include "Payload/PayloadReturnDepositCoin.h"
 
 #include <SDK/Common/Utils.h>
-#include <SDK/TransactionHub/TransactionHub.h>
+#include <SDK/Wallet/Wallet.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ErrorChecker.h>
 
@@ -218,12 +218,6 @@ namespace Elastos {
 
 		void Transaction::SetTimestamp(uint32_t t) {
 			_timestamp = t;
-		}
-
-		void Transaction::RemoveChangeOutput() {
-			if (_outputs.size() > 1) {
-				_outputs.erase(_outputs.begin() + _outputs.size() - 1);
-			}
 		}
 
 		size_t Transaction::GetSize() {
@@ -597,7 +591,7 @@ namespace Elastos {
 			return ((GetSize() + 999) / 1000) * feePerKb;
 		}
 
-		uint64_t Transaction::GetTxFee(const boost::shared_ptr<TransactionHub> &wallet) {
+		uint64_t Transaction::GetTxFee(const boost::shared_ptr<Wallet> &wallet) {
 			uint64_t fee = 0;
 			BigInt inputAmount(0), outputAmount(0);
 

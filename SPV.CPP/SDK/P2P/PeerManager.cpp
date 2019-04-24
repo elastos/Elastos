@@ -18,6 +18,7 @@
 #include <SDK/Common/Log.h>
 #include <SDK/WalletCore/BIPs/Base58.h>
 #include <SDK/WalletCore/BIPs/BloomFilter.h>
+#include <SDK/Wallet/Wallet.h>
 
 #include <netdb.h>
 #include <netinet/in.h>
@@ -649,7 +650,7 @@ namespace Elastos {
 			Address voteDepositAddress = _wallet->GetVoteDepositAddress();
 			std::vector<Address> addrs;
 			_wallet->GetAllAddresses(addrs, 0, size_t(-1), true);
-			std::vector<UTXO> utxos = _wallet->GetAllUTXOsSafe();
+			std::vector<UTXO> utxos = _wallet->GetAllUTXO();
 			uint32_t blockHeight = (_lastBlock->GetHeight() > 100) ? _lastBlock->GetHeight() - 100 : 0;
 
 			std::vector<TransactionPtr> transactions = _wallet->TxUnconfirmedBefore(blockHeight);
@@ -1101,7 +1102,7 @@ namespace Elastos {
 						peer->ScheduleDisconnect(PROTOCOL_TIMEOUT);
 					}
 
-					if (_syncSucceeded && _wallet->GetTransactionAmountSent(tx) > 0 &&
+					if (_syncSucceeded && _wallet->AmountSentByTx(tx) > 0 &&
 						_wallet->TransactionIsValid(tx)) {
 						AddTxToPublishList(tx, Peer::PeerPubTxCallback());  // add valid send tx to mempool
 					}
@@ -1529,10 +1530,10 @@ namespace Elastos {
 				}
 
 				if (secondFeePerKb * 3 / 2 > DEFAULT_FEE_PER_KB && secondFeePerKb * 3 / 2 <= MAX_FEE_PER_KB &&
-					secondFeePerKb * 3 / 2 > _wallet->GetFeePerKb(Asset::GetELAAssetID())) {
+					secondFeePerKb * 3 / 2 > _wallet->GetFeePerKb()) {
 					peer->info("increasing feePerKb to {} based on feefilter messages from peers",
 							   secondFeePerKb * 3 / 2);
-					_wallet->SetFeePerKb(Asset::GetELAAssetID(), secondFeePerKb * 3 / 2);
+					_wallet->SetFeePerKb(secondFeePerKb * 3 / 2);
 				}
 			}
 		}

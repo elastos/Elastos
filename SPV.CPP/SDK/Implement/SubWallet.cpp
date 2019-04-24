@@ -47,7 +47,7 @@ namespace Elastos {
 			WalletPtr wallet = _walletManager->getWallet();
 			wallet->SetWalletID(_parent->GetId() + ":" + GetChainId());
 			if (info.GetFeePerKb() > 0) {
-				wallet->SetFeePerKb(Asset::GetELAAssetID(), info.GetFeePerKb());
+				wallet->SetFeePerKb(info.GetFeePerKb());
 			}
 		}
 
@@ -68,7 +68,7 @@ namespace Elastos {
 		}
 
 		uint64_t SubWallet::GetBalance(BalanceType type) const {
-			return _walletManager->getWallet()->GetBalance(Asset::GetELAAssetID(), AssetTransactions::BalanceType(type)).getWord();
+			return _walletManager->getWallet()->GetBalance(Asset::GetELAAssetID(), GroupedAsset::BalanceType(type)).getWord();
 		}
 
 		std::string SubWallet::CreateAddress() {
@@ -92,7 +92,8 @@ namespace Elastos {
 		}
 
 		uint64_t SubWallet::GetBalanceWithAddress(const std::string &address, BalanceType type) const {
-			return _walletManager->getWallet()->GetBalanceWithAddress(Asset::GetELAAssetID(), address, AssetTransactions::BalanceType(type)).getWord();
+			return _walletManager->getWallet()->GetBalanceWithAddress(Asset::GetELAAssetID(), address,
+																	  GroupedAsset::BalanceType(type)).getWord();
 		}
 
 		void SubWallet::AddCallback(ISubWalletCallback *subCallback) {
@@ -136,13 +137,17 @@ namespace Elastos {
 			}
 			tx->SetRemark(remark);
 
-			tx->AddAttribute(Attribute(Attribute::Nonce, bytes_t(std::to_string(std::rand()))));
+			tx->AddAttribute(Attribute(Attribute::Nonce, bytes_t(std::to_string((std::rand() & 0xFFFFFFFF)))));
 			if (!memo.empty()) {
 				tx->AddAttribute(Attribute(Attribute::Memo, bytes_t(memo)));
 			}
 
 			return tx;
 		};
+
+		uint64_t SubWallet::CalculateTxFee(const TransactionPtr &tx, uint64_t feePerKB) const {
+			return std::max(tx->CalculateFee(feePerKB), _info.GetMinFee());
+		}
 
 		nlohmann::json SubWallet::CreateTransaction(const std::string &fromAddress, const std::string &toAddress,
 													uint64_t amount, const std::string &memo,
@@ -205,10 +210,10 @@ namespace Elastos {
 			return _parent->CheckSign(publicKey, message, signature);
 		}
 
-		uint64_t SubWallet::CalculateTransactionFee(const nlohmann::json &rawTransaction, uint64_t feePerKb) {
-			TransactionPtr transaction(new Transaction());
-			transaction->FromJson(rawTransaction);
-			return std::max(transaction->CalculateFee(feePerKb), _info.GetMinFee());
+		uint64_t SubWallet::CalculateTransactionFee(const nlohmann::json &txJson, uint64_t feePerKb) {
+			TransactionPtr tx(new Transaction());
+			tx->FromJson(txJson);
+			return CalculateTxFee(tx, feePerKb);
 		}
 
 		void SubWallet::balanceChanged(const uint256 &assetID, const BigInt &balance) {
@@ -222,18 +227,18 @@ namespace Elastos {
 			if (transaction == nullptr)
 				return;
 
-			std::string txHash = transaction->GetHash().GetHex();
+			const uint256 &txHash = transaction->GetHash();
 			_confirmingTxs[txHash] = transaction;
 
 			if (transaction->GetTransactionType() != Transaction::CoinBase && _walletManager->getPeerManager()->SyncSucceeded()) {
 				fireTransactionStatusChanged(txHash, "Added",
 											 transaction->ToJson(), 0);
 			} else {
-				Log::debug("{} onTxAdded: {}", _walletManager->getWallet()->GetWalletID(), txHash);
+				Log::debug("{} onTxAdded: {}", _walletManager->getWallet()->GetWalletID(), txHash.GetHex());
 			}
 		}
 
-		void SubWallet::onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
+		void SubWallet::onTxUpdated(const uint256 &hash, uint32_t blockHeight, uint32_t timeStamp) {
 			if (_walletManager->GetAllTransactionsCount() == 1) {
 				_info.SetEaliestPeerTime(timeStamp);
 				_parent->Save();
@@ -246,17 +251,26 @@ namespace Elastos {
 			uint32_t txBlockHeight = _confirmingTxs[hash]->GetBlockHeight();
 			uint32_t confirm = txBlockHeight != TX_UNCONFIRMED &&
 								blockHeight >= txBlockHeight ? blockHeight - txBlockHeight + 1 : 0;
-			if (_confirmingTxs[hash]->GetTransactionType() != Transaction::CoinBase && _walletManager->getPeerManager()->SyncSucceeded()) {
+			if (_confirmingTxs[hash]->GetTransactionType() != Transaction::CoinBase &&
+				_walletManager->getPeerManager()->SyncSucceeded()) {
 				fireTransactionStatusChanged(hash, "Updated", _confirmingTxs[hash]->ToJson(), confirm);
 			} else {
-				Log::debug("{} onTxUpdated: {}, confirm: {}", _walletManager->getWallet()->GetWalletID(), hash, confirm);
+				Log::debug("{} onTxUpdated: {}, confirm: {}", _walletManager->getWallet()->GetWalletID(),
+						   hash.GetHex(), confirm);
 			}
 		}
 
-		void SubWallet::onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) {
+		void SubWallet::onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [&hash, &notifyUser, &recommendRescan](ISubWalletCallback *callback) {
-				callback->OnTxDeleted(hash, notifyUser, recommendRescan);
+				callback->OnTxDeleted(hash.GetHex(), notifyUser, recommendRescan);
+			});
+		}
+
+		void SubWallet::onAssetRegistered(const AssetPtr &asset, uint64_t amount, const uint168 &controller) {
+			std::for_each(_callbacks.begin(), _callbacks.end(),
+						  [&asset, &amount, &controller](ISubWalletCallback *callback) {
+							  callback->OnAssetRegistered(asset->GetHash().GetHex(), asset->ToJson());
 			});
 		}
 
@@ -392,16 +406,16 @@ namespace Elastos {
 			}
 		}
 
-		void SubWallet::fireTransactionStatusChanged(const std::string &txid, const std::string &status,
+		void SubWallet::fireTransactionStatusChanged(const uint256 &txid, const std::string &status,
 													 const nlohmann::json &desc, uint32_t confirms) {
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [&txid, &status, &desc, confirms](ISubWalletCallback *callback) {
-							  callback->OnTransactionStatusChanged(txid, status, desc, confirms);
+							  callback->OnTransactionStatusChanged(txid.GetHex(), status, desc, confirms);
 						  });
 		}
 
 		const CoinInfo &SubWallet::getCoinInfo() {
-			_info.SetFeePerKb(_walletManager->getWallet()->GetFeePerKb(Asset::GetELAAssetID()));
+			_info.SetFeePerKb(_walletManager->getWallet()->GetFeePerKb());
 			return _info;
 		}
 
@@ -435,13 +449,12 @@ namespace Elastos {
 		nlohmann::json SubWallet::GetAssetInfo(const std::string &assetID) const {
 			nlohmann::json info;
 
-			Asset asset;
-			bool installed = _walletManager->getWallet()->GetAsset(uint256(assetID), asset);
-			info["Registered"] = installed;
-			if (installed)
-				info["info"] = asset.ToJson();
+			AssetPtr asset = _walletManager->getWallet()->GetAsset(uint256(assetID));
+			info["Registered"] = (asset != nullptr);
+			if (asset != nullptr)
+				info["Info"] = asset->ToJson();
 			else
-				info["info"] = {};
+				info["Info"] = {};
 
 			return info;
 		}

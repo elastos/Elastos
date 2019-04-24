@@ -94,7 +94,7 @@ namespace Elastos {
 				uint64_t amount = _amount.getWord();
 				ostream.WriteUint64(amount);
 			} else {
-				ostream.WriteVarBytes(_amount.getBytes(true));
+				ostream.WriteVarBytes(_amount.getHexBytes());
 			}
 
 			ostream.WriteUint32(_outputLock);
@@ -120,7 +120,7 @@ namespace Elastos {
 					Log::error("deserialize output BN amount error");
 					return false;
 				}
-				_amount.setBytes(bytes, true);
+				_amount.setHexBytes(bytes);
 			}
 
 			if (!istream.ReadUint32(_outputLock)) {

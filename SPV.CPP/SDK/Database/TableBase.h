@@ -9,7 +9,7 @@
 #include <Config.h>
 
 #include <boost/function.hpp>
-#include <boost/thread/mutex.hpp>
+
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -30,7 +30,6 @@ namespace Elastos {
 		protected:
 			Sqlite *_sqlite;
 			SqliteTransactionType _txType;
-			mutable boost::mutex _lockMutex;
 		};
 
 	}

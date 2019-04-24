@@ -5,18 +5,20 @@
 #include "PayloadRegisterAsset.h"
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
+#include <SDK/Plugin/Transaction/Asset.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		PayloadRegisterAsset::PayloadRegisterAsset() :
-				_amount(0) {
+				_amount(0),
+				_asset(new Asset()) {
 		}
 
-		PayloadRegisterAsset::PayloadRegisterAsset(const Asset &asset, uint64_t amount, const uint168 &controller) :
+		PayloadRegisterAsset::PayloadRegisterAsset(const AssetPtr &asset, uint64_t amount, const uint168 &controller) :
 			_amount(amount),
-			_asset(asset) {
-			_controller = controller;
+			_asset(asset),
+			_controller(controller) {
 		}
 
 		PayloadRegisterAsset::PayloadRegisterAsset(const PayloadRegisterAsset &payload) {
@@ -28,17 +30,17 @@ namespace Elastos {
 		}
 
 		bool PayloadRegisterAsset::IsValid() const {
-			return (_asset.GetPrecision() <= Asset::MaxPrecision);
+			return (_asset->GetPrecision() <= Asset::MaxPrecision);
 		}
 
 		void PayloadRegisterAsset::Serialize(ByteStream &ostream, uint8_t version) const {
-			_asset.Serialize(ostream);
+			_asset->Serialize(ostream);
 			ostream.WriteBytes(&_amount, sizeof(_amount));
 			ostream.WriteBytes(_controller);
 		}
 
 		bool PayloadRegisterAsset::Deserialize(const ByteStream &istream, uint8_t version) {
-			if (!_asset.Deserialize(istream)) {
+			if (!_asset->Deserialize(istream)) {
 				Log::error("Payload register asset deserialize asset fail");
 				return false;
 			}
@@ -59,7 +61,7 @@ namespace Elastos {
 		nlohmann::json PayloadRegisterAsset::ToJson(uint8_t version) const {
 			nlohmann::json j;
 
-			j["Asset"] = _asset.ToJson();
+			j["Asset"] = _asset->ToJson();
 			j["Amount"] = _amount;
 			j["Controller"] = _controller.GetHex();
 
@@ -67,7 +69,7 @@ namespace Elastos {
 		}
 
 		void PayloadRegisterAsset::FromJson(const nlohmann::json &j, uint8_t version) {
-			_asset.FromJson(j["Asset"]);
+			_asset->FromJson(j["Asset"]);
 			_amount = j["Amount"].get<uint64_t>();
 			_controller.SetHex(j["Controller"].get<std::string>());
 		}

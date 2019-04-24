@@ -9,7 +9,6 @@
 #include "TransactionPeerList.h"
 #include "PublishedTransaction.h"
 
-#include <SDK/TransactionHub/TransactionHub.h>
 #include <SDK/Common/Lockable.h>
 #include <SDK/WalletCore/BIPs/BloomFilter.h>
 #include <SDK/P2P/ChainParams.h>
@@ -27,6 +26,9 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		class Wallet;
+
+		typedef boost::shared_ptr<Wallet> WalletPtr;
 		typedef ElementSet<MerkleBlockPtr> BlockSet;
 
 		class PeerManager :

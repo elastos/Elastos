@@ -145,15 +145,35 @@ namespace Elastos {
                 this->bn = bn;
             }
 
-            std::vector<unsigned char> getBytes(bool bigEndian = false) const
+            bytes_t getHexBytes(bool littleEndian = false) const
             {
-                std::vector<unsigned char> bytes;
+                bytes_t bytes;
+                bytes.resize(BN_num_bytes(this->bn));
+                char *hex = BN_bn2hex(this->bn);
+                if (!hex) throw std::runtime_error("BN_bn2hex error.");
+
+                bytes.setHex(std::string(hex));
+
+                OPENSSL_free(hex);
+
+                if (littleEndian) reverse(bytes.begin(), bytes.end());
+                return bytes;
+            }
+            void setHexBytes(bytes_t bytes, bool littleEndian = false)
+            {
+                if (littleEndian) reverse(bytes.begin(), bytes.end());
+                BN_hex2bn(&this->bn, bytes.getHex().c_str());
+            }
+
+            bytes_t getBytes(bool bigEndian = false) const
+            {
+                bytes_t bytes;
                 bytes.resize(BN_num_bytes(this->bn));
                 BN_bn2bin(this->bn, &bytes[0]);
                 if (bigEndian) reverse(bytes.begin(), bytes.end());
                 return bytes;
             }
-            void setBytes(std::vector<unsigned char> bytes, bool bigEndian = false)
+            void setBytes(bytes_t bytes, bool bigEndian = false)
             {
                 if (bigEndian) reverse(bytes.begin(), bytes.end());
                 BN_bin2bn(&bytes[0], bytes.size(), this->bn);

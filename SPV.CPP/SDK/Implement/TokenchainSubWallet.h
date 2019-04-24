@@ -38,13 +38,11 @@ namespace Elastos {
 				const std::string &memo,
 				const std::string &remark);
 
-			virtual nlohmann::json GetAllSupportedAssets() const;
+			virtual uint64_t CalculateTransactionFee(
+				const nlohmann::json &rawTransaction,
+				uint64_t feePerKb);
 
-			virtual nlohmann::json GetAllVisibleAssets() const;
-
-			virtual void SetVisibleAssets(const nlohmann::json &assets);
-
-			virtual void SetVisibleAsset(const std::string &assetID);
+			virtual nlohmann::json GetAllAssets() const;
 
 		protected:
 			friend class MasterWallet;
