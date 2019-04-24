@@ -1,12 +1,13 @@
 package wallet
 
 import (
-	"bufio"
 	"bytes"
+	"encoding/csv"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -178,7 +179,7 @@ func output(haveSign, needSign int, txn *types.Transaction) error {
 	return nil
 }
 
-func parseMultiOutput(path string) ([]*Transfer, error) {
+func parseMultiOutput(path string) ([]*OutputInfo, error) {
 	if _, err := os.Stat(path); err != nil {
 		return nil, errors.New("invalid multi output file path")
 	}
@@ -187,22 +188,54 @@ func parseMultiOutput(path string) ([]*Transfer, error) {
 		return nil, errors.New("open multi output file failed")
 	}
 
-	scanner := bufio.NewScanner(file)
-	var multiOutput []*Transfer
-	for scanner.Scan() {
-		columns := strings.Split(scanner.Text(), ",")
-		if len(columns) < 2 {
-			return nil, errors.New(fmt.Sprint("invalid multi output line:", columns))
+	var multiOutput []*OutputInfo
+	r := csv.NewReader(file)
+	for {
+		record, err := r.Read()
+		if err == io.EOF {
+			break
 		}
-		amountStr := strings.TrimSpace(columns[1])
+		if err != nil {
+			return nil, errors.New(fmt.Sprint("invalid multi output data:", err.Error()))
+		}
+
+		amountStr := strings.TrimSpace(record[1])
 		amount, err := common.StringToFixed64(amountStr)
 		if err != nil {
 			return nil, errors.New("invalid multi output transaction amount: " + amountStr)
 		}
-		address := strings.TrimSpace(columns[0])
-		multiOutput = append(multiOutput, &Transfer{address, amount})
+		address := strings.TrimSpace(record[0])
+		multiOutput = append(multiOutput, &OutputInfo{address, amount})
 		fmt.Println("Multi output address:", address, ", amount:", amountStr)
 	}
 
 	return multiOutput, nil
+}
+
+func parseCandidates(path string) ([]string, error) {
+	if _, err := os.Stat(path); err != nil {
+		return nil, errors.New("invalid candidates file path")
+	}
+	file, err := os.OpenFile(path, os.O_RDONLY, 0666)
+	if err != nil {
+		return nil, errors.New("open candidates file failed")
+	}
+
+	var candidates []string
+	r := csv.NewReader(file)
+	for {
+		record, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, errors.New(fmt.Sprint("invalid candidate data:", err.Error()))
+		}
+
+		candidate := strings.TrimSpace(record[0])
+		candidates = append(candidates, candidate)
+		fmt.Println("candidate:", candidate)
+	}
+
+	return candidates, nil
 }

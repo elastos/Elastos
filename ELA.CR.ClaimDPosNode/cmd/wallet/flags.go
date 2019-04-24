@@ -10,7 +10,7 @@ var (
 	// Account flags
 	AccountWalletFlag = cli.StringFlag{
 		Name:  "wallet, w",
-		Usage: "wallet `<file>` path, ",
+		Usage: "wallet `<file>` path",
 		Value: account.KeystoreFileName,
 	}
 	AccountPasswordFlag = cli.StringFlag{
@@ -29,7 +29,7 @@ var (
 	// Transaction flags
 	TransactionFromFlag = cli.StringFlag{
 		Name:  "from",
-		Usage: "the spend `<address>` of the transaction",
+		Usage: "the sender `<address>` of the transaction",
 	}
 	TransactionToFlag = cli.StringFlag{
 		Name:  "to",
@@ -62,5 +62,9 @@ var (
 	TransactionNodePublicKeyFlag = cli.StringFlag{
 		Name:  "nodepublickey",
 		Usage: "the node public key of an arbitrator which have been inactivated",
+	}
+	TransactionForFlag = cli.StringFlag{
+		Name:  "for",
+		Usage: "the `<file>` path that holds the list of candidates",
 	}
 )
