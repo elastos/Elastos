@@ -189,7 +189,6 @@ func (p *ProposalDispatcher) FinishProposal() bool {
 func (p *ProposalDispatcher) CleanProposals(changeView bool) {
 	log.Info("Clean proposals")
 
-	//todo clear pending proposals that are lower than current consensus height
 	p.illegalMonitor.Reset(changeView)
 
 	p.processingBlock = nil
@@ -202,6 +201,7 @@ func (p *ProposalDispatcher) CleanProposals(changeView bool) {
 		p.inactiveCountDown.Reset()
 		p.currentInactiveArbitratorTx = nil
 		p.signedTxs = map[common.Uint256]interface{}{}
+		p.pendingProposals = make(map[common.Uint256]*payload.DPOSProposal)
 
 		p.eventAnalyzer.Clear()
 	}
