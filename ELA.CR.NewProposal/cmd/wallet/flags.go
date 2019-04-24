@@ -33,7 +33,11 @@ var (
 	}
 	TransactionToFlag = cli.StringFlag{
 		Name:  "to",
-		Usage: "the receive `<address>` of the transaction",
+		Usage: "the recipient `<address>` of the transaction",
+	}
+	TransactionToManyFlag = cli.StringFlag{
+		Name:  "tomany",
+		Usage: "the `<file>` path that contains multi-recipients and amount",
 	}
 	TransactionAmountFlag = cli.StringFlag{
 		Name:  "amount",

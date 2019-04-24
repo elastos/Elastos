@@ -39,34 +39,47 @@ func CreateTransaction(c *cli.Context) error {
 	}
 
 	from := c.String("from")
-	amountStr := c.String("amount")
-	if amountStr == "" {
-		return errors.New("use --amount to specify transfer amount")
-	}
 
-	amount, err := common.StringToFixed64(amountStr)
-	if err != nil {
-		return errors.New("invalid transaction amount")
-	}
-
-	var txn *types.Transaction
+	outputs := make([]*Transfer, 0)
 	to := c.String("to")
-	lockStr := c.String("lock")
-
-	if lockStr == "" {
-		txn, err = createTransaction(walletPath, from, fee, uint32(0), &Transfer{to, amount})
+	amountStr := c.String("amount")
+	toMany := c.String("tomany")
+	if toMany != "" {
+		if to != "" {
+			return errors.New("'--to' cannot be specified when specify '--tomany' option")
+		}
+		if amountStr != "" {
+			return errors.New("'--amount' cannot be specified when specify '--tomany' option")
+		}
+		outputs, err = parseMultiOutput(toMany)
 		if err != nil {
-			return errors.New("create transaction failed: " + err.Error())
+			return err
 		}
 	} else {
-		lock, err := strconv.ParseUint(lockStr, 10, 32)
+		if amountStr == "" {
+			return errors.New("use --amount to specify transfer amount")
+		}
+
+		amount, err := common.StringToFixed64(amountStr)
+		if err != nil {
+			return errors.New("invalid transaction amount")
+		}
+		outputs = []*Transfer{{to, amount}}
+	}
+
+	lockStr := c.String("lock")
+	lock := uint64(0)
+	if lockStr != "" {
+		lock, err = strconv.ParseUint(lockStr, 10, 32)
 		if err != nil {
 			return errors.New("invalid lock height")
 		}
-		txn, err = createTransaction(walletPath, from, fee, uint32(lock), &Transfer{to, amount})
-		if err != nil {
-			return errors.New("create transaction failed: " + err.Error())
-		}
+	}
+
+	var txn *types.Transaction
+	txn, err = createTransaction(walletPath, from, fee, uint32(lock), outputs...)
+	if err != nil {
+		return errors.New("create transaction failed: " + err.Error())
 	}
 
 	output(0, 1, txn)

@@ -1,9 +1,11 @@
 package wallet
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -174,4 +176,33 @@ func output(haveSign, needSign int, txn *types.Transaction) error {
 	fmt.Println("File: ", fileName)
 
 	return nil
+}
+
+func parseMultiOutput(path string) ([]*Transfer, error) {
+	if _, err := os.Stat(path); err != nil {
+		return nil, errors.New("invalid multi output file path")
+	}
+	file, err := os.OpenFile(path, os.O_RDONLY, 0666)
+	if err != nil {
+		return nil, errors.New("open multi output file failed")
+	}
+
+	scanner := bufio.NewScanner(file)
+	var multiOutput []*Transfer
+	for scanner.Scan() {
+		columns := strings.Split(scanner.Text(), ",")
+		if len(columns) < 2 {
+			return nil, errors.New(fmt.Sprint("invalid multi output line:", columns))
+		}
+		amountStr := strings.TrimSpace(columns[1])
+		amount, err := common.StringToFixed64(amountStr)
+		if err != nil {
+			return nil, errors.New("invalid multi output transaction amount: " + amountStr)
+		}
+		address := strings.TrimSpace(columns[0])
+		multiOutput = append(multiOutput, &Transfer{address, amount})
+		fmt.Println("Multi output address:", address, ", amount:", amountStr)
+	}
+
+	return multiOutput, nil
 }

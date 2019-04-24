@@ -28,6 +28,7 @@ var txCommand = []cli.Command{
 		Flags: []cli.Flag{
 			TransactionFromFlag,
 			TransactionToFlag,
+			TransactionToManyFlag,
 			TransactionAmountFlag,
 			TransactionFeeFlag,
 			//TransactionLockFlag,
@@ -95,8 +96,12 @@ var buildTxCommand = []cli.Command{
 	},
 	{
 		Name:  "vote",
-		Usage: "Vote for candidates using ELA",
+		Usage: "Build a tx to vote for candidates using ELA",
 		Action: func(c *cli.Context) error {
+			if c.NumFlags() == 0 {
+				cli.ShowSubcommandHelp(c)
+				return nil
+			}
 			return nil
 		},
 	},
