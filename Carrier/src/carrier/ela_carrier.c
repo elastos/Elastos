@@ -2929,7 +2929,9 @@ int ela_send_friend_message(ElaCarrier *w, const char *to, const void *msg,
                             size_t len)
 {
     char *addr, *userid, *ext_name;
+    FriendInfo *fi;
     uint32_t friend_number;
+    bool friend_oneline = false;
     int rc;
     ElaCP *cp;
     uint8_t *data;
@@ -2971,10 +2973,14 @@ int ela_send_friend_message(ElaCarrier *w, const char *to, const void *msg,
         return -1;
     }
 
-    if (!friends_exist(w->friends, friend_number)) {
+    fi = friends_get(w->friends, friend_number);
+    if (!fi) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_EXIST));
         return -1;
     }
+
+    friend_oneline = (fi->info.status == ElaConnectionStatus_Connected);
+    deref(fi);
 
     cp = elacp_create(ELACP_TYPE_MESSAGE, ext_name);
     if (!cp) {
@@ -2992,10 +2998,12 @@ int ela_send_friend_message(ElaCarrier *w, const char *to, const void *msg,
         return -1;
     }
 
-    rc = dht_friend_message(&w->dht, friend_number, data, data_len);
-    if (!rc) {
-        free(data);
-        return 0;
+    if (friend_oneline) {
+        rc = dht_friend_message(&w->dht, friend_number, data, data_len);
+        if (!rc) {
+            free(data);
+            return 0;
+        }
     }
 
     if (!w->dstorectx) {

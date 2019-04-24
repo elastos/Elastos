@@ -84,8 +84,8 @@ ssize_t dstore_send_msg(DStoreWrapper *ctx, const char *friendid,
     int rc;
 
     if (!ctx->dstore) {
-        vlogE("Carrier: DStore is not ready.");
-        return ELA_GENERAL_ERROR(ELAERR_WRONG_STATE);
+        vlogE("Carrier: Dstore channel is not ready.");
+        return ELA_GENERAL_ERROR(ELAERR_NOT_READY);
     }
 
     len = base58_decode(friendid, strlen(friendid), peer_pk, sizeof(peer_pk));
