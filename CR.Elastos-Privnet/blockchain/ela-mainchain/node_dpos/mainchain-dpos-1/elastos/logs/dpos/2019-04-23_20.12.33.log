@@ -1,0 +1,693 @@
+2019/04/23 20:12:33.274401 [1;35m[INF][m GID 1, ID: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/04/23 20:12:33.274901 [1;35m[INF][m GID 1, [UpdatePeers] peers: 6  height:  462
+2019/04/23 20:12:33.274933 [1;31m[ERR][m GID 1, self not in direct peers list
+2019/04/23 20:12:33.276534 [1;35m[INF][m GID 41, Server listening on [::]:10516
+2019/04/23 20:12:33.276656 [1;35m[INF][m GID 40, Server listening on 0.0.0.0:10516
+2019/04/23 20:12:33.280469 [1;35m[INF][m GID 50, [UpdatePeers] peers: 6  height:  462
+2019/04/23 20:12:33.284491 [1;33m[WRN][m GID 50, [OnPeersChanged] update peers error:  self not in direct peers list
+2019/04/23 20:12:33.287454 [1;35m[INF][m GID 50, [UpdatePeers] peers: 4  height:  462
+2019/04/23 20:12:33.287882 [1;33m[WRN][m GID 50, [OnPeersChanged] update peers error:  self not in direct peers list
+2019/04/23 20:12:33.324467 [1;35m[INF][m GID 50, [UpdatePeers] peers: 6  height:  462
+2019/04/23 20:12:33.324544 [1;35m[INF][m GID 50, peer[ 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ] addr: 127.0.0.1:10316  pid: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a
+2019/04/23 20:12:33.324576 [1;35m[INF][m GID 50, peer[ 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ] addr: 127.0.0.1:10416  pid: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7
+2019/04/23 20:12:33.324603 [1;35m[INF][m GID 50, peer[ 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556 ] addr:   pid: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/04/23 20:12:33.324629 [1;35m[INF][m GID 50, peer[ 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25 ] addr:   pid: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/04/23 20:12:33.324653 [1;35m[INF][m GID 50, peer[ 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ] addr: 127.0.0.1:10116  pid: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/04/23 20:12:33.324681 [1;35m[INF][m GID 50, peer[ 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ] addr: 127.0.0.1:10216  pid: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/04/23 20:12:33.324747 [1;31m[ERR][m GID 31, parse peer address :10516 failed, lookup : no such host
+2019/04/23 20:12:33.325791 [1;35m[INF][m GID 50, [UpdatePeers] peers: 6  height:  462
+2019/04/23 20:12:33.325835 [1;35m[INF][m GID 50, peer[ 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556 ] addr:   pid: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/04/23 20:12:33.325861 [1;35m[INF][m GID 50, peer[ 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25 ] addr:   pid: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/04/23 20:12:33.325887 [1;35m[INF][m GID 50, peer[ 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ] addr: 127.0.0.1:10116  pid: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/04/23 20:12:33.325912 [1;35m[INF][m GID 50, peer[ 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ] addr: 127.0.0.1:10216  pid: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/04/23 20:12:33.325936 [1;35m[INF][m GID 50, peer[ 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ] addr: 127.0.0.1:10316  pid: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a
+2019/04/23 20:12:33.325961 [1;35m[INF][m GID 50, peer[ 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ] addr: 127.0.0.1:10416  pid: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7
+2019/04/23 20:12:33.326894 [1;35m[INF][m GID 50, [UpdatePeers] peers: 6  height:  462
+2019/04/23 20:12:33.326933 [1;35m[INF][m GID 50, peer[ 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25 ] addr:   pid: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/04/23 20:12:33.326960 [1;35m[INF][m GID 50, peer[ 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ] addr: 127.0.0.1:10316  pid: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a
+2019/04/23 20:12:33.326998 [1;35m[INF][m GID 50, peer[ 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ] addr: 127.0.0.1:10416  pid: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7
+2019/04/23 20:12:33.327024 [1;35m[INF][m GID 50, peer[ 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ] addr: 127.0.0.1:10116  pid: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/04/23 20:12:33.327048 [1;35m[INF][m GID 50, peer[ 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ] addr: 127.0.0.1:10216  pid: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/04/23 20:12:33.327073 [1;35m[INF][m GID 50, peer[ 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556 ] addr:   pid: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/04/23 20:12:33.332032 [1;35m[INF][m GID 50, [UpdatePeers] peers: 6  height:  462
+2019/04/23 20:12:33.336256 [1;35m[INF][m GID 50, peer[ 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ] addr: 127.0.0.1:10116  pid: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/04/23 20:12:33.336344 [1;35m[INF][m GID 50, peer[ 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ] addr: 127.0.0.1:10216  pid: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/04/23 20:12:33.336382 [1;35m[INF][m GID 50, peer[ 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ] addr: 127.0.0.1:10316  pid: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a
+2019/04/23 20:12:33.336410 [1;35m[INF][m GID 50, peer[ 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ] addr: 127.0.0.1:10416  pid: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7
+2019/04/23 20:12:33.336438 [1;35m[INF][m GID 50, peer[ 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556 ] addr:   pid: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/04/23 20:12:33.336467 [1;35m[INF][m GID 50, peer[ 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25 ] addr:   pid: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/04/23 20:12:33.337173 [1;35m[INF][m GID 50, [UpdatePeers] peers: 6  height:  462
+2019/04/23 20:12:33.337217 [1;35m[INF][m GID 50, peer[ 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ] addr: 127.0.0.1:10116  pid: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/04/23 20:12:33.337246 [1;35m[INF][m GID 50, peer[ 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ] addr: 127.0.0.1:10216  pid: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/04/23 20:12:33.337272 [1;35m[INF][m GID 50, peer[ 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ] addr: 127.0.0.1:10316  pid: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a
+2019/04/23 20:12:33.337300 [1;35m[INF][m GID 50, peer[ 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556 ] addr:   pid: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/04/23 20:12:33.337327 [1;35m[INF][m GID 50, peer[ 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25 ] addr:   pid: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/04/23 20:12:33.337355 [1;35m[INF][m GID 50, peer[ 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ] addr: 127.0.0.1:10416  pid: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7
+2019/04/23 20:12:33.337977 [1;35m[INF][m GID 50, [UpdatePeers] peers: 6  height:  462
+2019/04/23 20:12:33.338026 [1;35m[INF][m GID 50, peer[ 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ] addr: 127.0.0.1:10216  pid: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/04/23 20:12:33.338084 [1;35m[INF][m GID 50, peer[ 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ] addr: 127.0.0.1:10316  pid: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a
+2019/04/23 20:12:33.338124 [1;35m[INF][m GID 50, peer[ 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ] addr: 127.0.0.1:10416  pid: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7
+2019/04/23 20:12:33.338177 [1;35m[INF][m GID 50, peer[ 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ] addr: 127.0.0.1:10116  pid: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/04/23 20:12:33.338210 [1;35m[INF][m GID 50, peer[ 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556 ] addr:   pid: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/04/23 20:12:33.338237 [1;35m[INF][m GID 50, peer[ 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25 ] addr:   pid: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/04/23 20:12:33.339002 [1;35m[INF][m GID 50, [UpdatePeers] peers: 6  height:  462
+2019/04/23 20:12:33.339053 [1;35m[INF][m GID 50, peer[ 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ] addr: 127.0.0.1:10416  pid: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7
+2019/04/23 20:12:33.339079 [1;35m[INF][m GID 50, peer[ 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ] addr: 127.0.0.1:10116  pid: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/04/23 20:12:33.339104 [1;35m[INF][m GID 50, peer[ 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ] addr: 127.0.0.1:10216  pid: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/04/23 20:12:33.339128 [1;35m[INF][m GID 50, peer[ 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ] addr: 127.0.0.1:10316  pid: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a
+2019/04/23 20:12:33.339152 [1;35m[INF][m GID 50, peer[ 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556 ] addr:   pid: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/04/23 20:12:33.339177 [1;35m[INF][m GID 50, peer[ 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25 ] addr:   pid: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/04/23 20:12:33.339723 [1;35m[INF][m GID 50, [UpdatePeers] peers: 6  height:  462
+2019/04/23 20:12:33.339753 [1;35m[INF][m GID 50, peer[ 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ] addr: 127.0.0.1:10316  pid: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a
+2019/04/23 20:12:33.339780 [1;35m[INF][m GID 50, peer[ 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ] addr: 127.0.0.1:10416  pid: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7
+2019/04/23 20:12:33.339860 [1;35m[INF][m GID 50, peer[ 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556 ] addr:   pid: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/04/23 20:12:33.339886 [1;35m[INF][m GID 50, peer[ 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25 ] addr:   pid: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/04/23 20:12:33.339910 [1;35m[INF][m GID 50, peer[ 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ] addr: 127.0.0.1:10116  pid: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/04/23 20:12:33.339935 [1;35m[INF][m GID 50, peer[ 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ] addr: 127.0.0.1:10216  pid: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/04/23 20:12:33.340484 [1;35m[INF][m GID 50, [UpdatePeers] peers: 6  height:  462
+2019/04/23 20:12:33.340553 [1;35m[INF][m GID 50, peer[ 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ] addr: 127.0.0.1:10116  pid: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/04/23 20:12:33.340588 [1;35m[INF][m GID 50, peer[ 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ] addr: 127.0.0.1:10216  pid: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/04/23 20:12:33.340613 [1;35m[INF][m GID 50, peer[ 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ] addr: 127.0.0.1:10316  pid: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a
+2019/04/23 20:12:33.340637 [1;35m[INF][m GID 50, peer[ 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ] addr: 127.0.0.1:10416  pid: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7
+2019/04/23 20:12:33.340662 [1;35m[INF][m GID 50, peer[ 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556 ] addr:   pid: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/04/23 20:12:33.340686 [1;35m[INF][m GID 50, peer[ 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25 ] addr:   pid: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/04/23 20:12:33.340920 [1;35m[INF][m GID 61, [onDutyArbitratorChanged] not onduty
+2019/04/23 20:12:33.340946 [1;35m[INF][m GID 61, Recover when start
+2019/04/23 20:12:33.340967 [1;31m[ERR][m GID 61, [recoverAbnormalState] can not find active peer
+2019/04/23 20:12:34.344877 [1;35m[INF][m GID 61, Recover when start
+2019/04/23 20:12:34.344957 [1;31m[ERR][m GID 61, [recoverAbnormalState] can not find active peer
+2019/04/23 20:12:35.345107 [1;35m[INF][m GID 61, Recover when start
+2019/04/23 20:12:35.345168 [1;31m[ERR][m GID 61, [recoverAbnormalState] can not find active peer
+2019/04/23 20:12:36.355516 [1;35m[INF][m GID 61, Recover when start
+2019/04/23 20:12:36.355582 [1;31m[ERR][m GID 61, [recoverAbnormalState] can not find active peer
+2019/04/23 20:12:37.356958 [1;35m[INF][m GID 61, Recover when start
+2019/04/23 20:12:37.357030 [1;31m[ERR][m GID 61, [recoverAbnormalState] can not find active peer
+2019/04/23 20:12:38.363638 [1;35m[INF][m GID 61, Recover when start
+2019/04/23 20:12:38.363760 [1;35m[INF][m GID 61, [RequestAbnormalRecovering] broadcast message to peers
+2019/04/23 20:12:38.363788 [1;35m[INF][m GID 61, [BroadcastMessage] msg: req_con
+2019/04/23 20:12:38.363811 [1;35m[INF][m GID 61, Recover finished
+2019/04/23 20:12:38.364788 [1;35m[INF][m GID 32, [OnResponseConsensus] status: {0 0 1754-08-30 17:47:39.128654848 -0456 LMT [] [] [] []}
+2019/04/23 20:12:38.364824 [1;35m[INF][m GID 32, [OnResponseConsensus] collect recover status
+2019/04/23 20:12:38.364857 [1;35m[INF][m GID 32, [OnResponseConsensus] recover received 1 status at viewoffset:0
+2019/04/23 20:12:38.364889 [1;35m[INF][m GID 32, [RecoverFromConsensusStatus] status.ConsensusStatus: 0
+2019/04/23 20:12:38.682817 [1;35m[INF][m GID 32, [HelpToRecoverAbnormal] peer id: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/04/23 20:12:38.682855 [1;35m[INF][m GID 32, [CollectConsensusStatus] status.ConsensusStatus: 0
+2019/04/23 20:12:44.095732 [1;35m[INF][m GID 42, [OnBlockReceived] listener received block
+2019/04/23 20:12:44.096306 [1;35m[INF][m GID 32, [OnBlockReceived] start
+2019/04/23 20:12:44.098573 [1;35m[INF][m GID 32, [Normal][OnBlockReceived] received first unsigned block, start consensus
+2019/04/23 20:12:44.098607 [1;35m[INF][m GID 32, [StartConsensus] consensus start
+2019/04/23 20:12:44.098657 [1;35m[INF][m GID 32, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-04-23 20:12:44.098622345 -0400 EDT m=+10.917651577, Offset: 0, Height: 462
+2019/04/23 20:12:44.098681 [1;35m[INF][m GID 32, [StartConsensus] consensus end
+2019/04/23 20:12:44.098705 [1;35m[INF][m GID 32, [OnConsensusStarted] StartTime: 2019-04-23 20:12:44.098688786 -0400 EDT m=+10.917718118, Height: 463
+2019/04/23 20:12:44.098723 [1;35m[INF][m GID 32, [OnBlockReceived] end
+2019/04/23 20:12:44.151088 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:12:44.151207 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:12:44.151305 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:12:44.151557 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, ProposalHash: 1cc71191483c382e1ffb54cb0a8d7a326c59786245a80612effe78c68c47344d, ReceivedTime: 2019-04-23 20:12:44.151316809 -0400 EDT m=+10.970346046, Result: true
+2019/04/23 20:12:44.151583 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:12:44.151727 [1;35m[INF][m GID 32, [OnProposalReceived] started
+2019/04/23 20:12:44.151755 [1;35m[INF][m GID 32, [Normal][ProcessProposal] start
+2019/04/23 20:12:44.152770 [1;35m[INF][m GID 32, [ProcessProposal] start
+2019/04/23 20:12:44.154928 [1;35m[INF][m GID 32, [TryStartSpeculatingProposal] start
+2019/04/23 20:12:44.154962 [1;35m[INF][m GID 32, [TryStartSpeculatingProposal] end
+2019/04/23 20:12:44.155010 [1;35m[INF][m GID 32, [acceptProposal] start
+2019/04/23 20:12:44.155043 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:12:44.155197 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:12:44.155227 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:12:44.155257 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:12:44.155284 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:12:44.155350 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:12:44.155572 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:12:44.155628 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:12:44.155660 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:12:44.155687 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:12:44.155714 [1;35m[INF][m GID 32, [BroadcastMessage] msg: acc_vote
+2019/04/23 20:12:44.155772 [1;35m[INF][m GID 32, [acceptProposal] send acc_vote msg: c9d8198b7b2053358577ed79f2a442e92d7503e28c3929b5779edf522235819f
+2019/04/23 20:12:44.155810 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, ProposalHash: 1cc71191483c382e1ffb54cb0a8d7a326c59786245a80612effe78c68c47344d, ReceivedTime: 2019-04-23 20:12:44.155783363 -0400 EDT m=+10.974812602, Result: true
+2019/04/23 20:12:44.155913 [1;35m[INF][m GID 32, [acceptProposal] end
+2019/04/23 20:12:44.155943 [1;35m[INF][m GID 32, [ProcessProposal] end
+2019/04/23 20:12:44.155966 [1;35m[INF][m GID 32, [Normal][ProcessProposal] end
+2019/04/23 20:12:44.157161 [1;35m[INF][m GID 32, [OnProposalArrived] Sponsor: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, BlockHash: 660980c13391ea4b6b636c3a01171a0c83a490cfa83dfe62a7b7e0bd11fee7f2, ReceivedTime: 2019-04-23 20:12:44.15664706 -0400 EDT m=+10.975676302, Result: false, ViewOffset: 0, ProposalHash: 1cc71191483c382e1ffb54cb0a8d7a326c59786245a80612effe78c68c47344d
+2019/04/23 20:12:44.157730 [1;35m[INF][m GID 32, [OnProposalReceived] end
+2019/04/23 20:12:44.187738 [1;35m[INF][m GID 42, [OnConfirmReceived] listener received confirm
+2019/04/23 20:12:44.187779 [1;35m[INF][m GID 42, [OnBlockReceived] listener received block
+2019/04/23 20:12:44.188185 [1;35m[INF][m GID 32, [OnConfirmReceived] started, hash: 660980c13391ea4b6b636c3a01171a0c83a490cfa83dfe62a7b7e0bd11fee7f2
+2019/04/23 20:12:44.188237 [1;35m[INF][m GID 32, [FinishConsensus] start
+2019/04/23 20:12:44.188288 [1;35m[INF][m GID 32, [OnConsensusFinished] EndTime: 2019-04-23 20:12:44.188247229 -0400 EDT m=+11.007276467, Height: 463
+2019/04/23 20:12:44.188333 [1;35m[INF][m GID 32, Clean proposals
+2019/04/23 20:12:44.188356 [1;35m[INF][m GID 32, [FinishConsensus] end
+2019/04/23 20:12:44.188374 [1;35m[INF][m GID 32, [onDutyArbitratorChanged] not onduty
+2019/04/23 20:12:44.188391 [1;35m[INF][m GID 32, [OnConfirmReceived] end
+2019/04/23 20:12:44.188405 [1;35m[INF][m GID 32, [OnBlockReceived] start
+2019/04/23 20:12:44.188444 [1;35m[INF][m GID 32, [onDutyArbitratorChanged] not onduty
+2019/04/23 20:12:44.188468 [1;35m[INF][m GID 32, [OnBlockReceived] received confirmed block
+2019/04/23 20:12:44.188485 [1;35m[INF][m GID 32, [OnBlockReceived] end
+2019/04/23 20:12:49.049264 [1;35m[INF][m GID 32, [OnProposalReceived] started
+2019/04/23 20:12:49.049303 [1;35m[INF][m GID 32, [Normal][ProcessProposal] start
+2019/04/23 20:12:49.049342 [1;35m[INF][m GID 32, [ProcessProposal] start
+2019/04/23 20:12:49.049597 [1;35m[INF][m GID 32, received pending proposal
+2019/04/23 20:12:49.049644 [1;35m[INF][m GID 32, [ProcessProposal] end
+2019/04/23 20:12:49.049668 [1;35m[INF][m GID 32, [Normal][ProcessProposal] end
+2019/04/23 20:12:49.049704 [1;35m[INF][m GID 32, [OnProposalArrived] Sponsor: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, BlockHash: fa9d0c82b77a1c57f8df702a1d10809f2bf0daec6e0ee8a20eb79576cd800cec, ReceivedTime: 2019-04-23 20:12:49.04967648 -0400 EDT m=+15.868705712, Result: false, ViewOffset: 0, ProposalHash: 1fec5a5565712331b2fcd104e7c9625e07d6c5b5a9afa6c35e8eab0530cd229a
+2019/04/23 20:12:49.049737 [1;35m[INF][m GID 32, [OnProposalReceived] end
+2019/04/23 20:12:49.049758 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:12:49.049780 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:12:49.049802 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:12:49.049828 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, ProposalHash: 1fec5a5565712331b2fcd104e7c9625e07d6c5b5a9afa6c35e8eab0530cd229a, ReceivedTime: 2019-04-23 20:12:49.049809711 -0400 EDT m=+15.868838944, Result: true
+2019/04/23 20:12:49.049847 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:12:49.049953 [1;35m[INF][m GID 32, [ProcessBlock] received block: fa9d0c82b77a1c57f8df702a1d10809f2bf0daec6e0ee8a20eb79576cd800cec
+2019/04/23 20:12:49.104497 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/04/23 20:12:49.104545 [1;35m[INF][m GID 32, [OnBlockReceived] start
+2019/04/23 20:12:49.104575 [1;35m[INF][m GID 32, [Normal][OnBlockReceived] received first unsigned block, start consensus
+2019/04/23 20:12:49.104603 [1;35m[INF][m GID 32, [StartConsensus] consensus start
+2019/04/23 20:12:49.104640 [1;35m[INF][m GID 32, [ProcessProposal] start
+2019/04/23 20:12:49.104830 [1;35m[INF][m GID 32, [TryStartSpeculatingProposal] start
+2019/04/23 20:12:49.118548 [1;35m[INF][m GID 32, [TryStartSpeculatingProposal] end
+2019/04/23 20:12:49.118730 [1;35m[INF][m GID 32, [acceptProposal] start
+2019/04/23 20:12:49.118923 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:12:49.135364 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:12:49.135404 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:12:49.135438 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:12:49.135467 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:12:49.135498 [1;35m[INF][m GID 32, [BroadcastMessage] msg: acc_vote
+2019/04/23 20:12:49.135530 [1;35m[INF][m GID 32, [acceptProposal] send acc_vote msg: b86b7d7b791d8164fc5bfe26d9d75462a1cc7b74e193fc04f46cc5a0dab1c902
+2019/04/23 20:12:49.135569 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, ProposalHash: 1fec5a5565712331b2fcd104e7c9625e07d6c5b5a9afa6c35e8eab0530cd229a, ReceivedTime: 2019-04-23 20:12:49.135539419 -0400 EDT m=+15.954568651, Result: true
+2019/04/23 20:12:49.135641 [1;35m[INF][m GID 32, [acceptProposal] end
+2019/04/23 20:12:49.135674 [1;35m[INF][m GID 32, [ProcessProposal] end
+2019/04/23 20:12:49.135706 [1;35m[INF][m GID 32, [OnViewStarted] OnDutyArbitrator: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, StartTime: 2019-04-23 20:12:49.135685249 -0400 EDT m=+15.954714481, Offset: 0, Height: 464
+2019/04/23 20:12:49.135730 [1;35m[INF][m GID 32, [StartConsensus] consensus end
+2019/04/23 20:12:49.135754 [1;35m[INF][m GID 32, [OnConsensusStarted] StartTime: 2019-04-23 20:12:49.135738099 -0400 EDT m=+15.954767329, Height: 464
+2019/04/23 20:12:49.135781 [1;35m[INF][m GID 32, [OnBlockReceived] end
+2019/04/23 20:12:49.135803 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:12:49.135826 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:12:49.135849 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:12:49.135994 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:12:49.136021 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:12:49.136046 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:12:49.136069 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:12:49.136090 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:12:49.136116 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, ProposalHash: 1fec5a5565712331b2fcd104e7c9625e07d6c5b5a9afa6c35e8eab0530cd229a, ReceivedTime: 2019-04-23 20:12:49.136098357 -0400 EDT m=+15.955127588, Result: true
+2019/04/23 20:12:49.136135 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:12:49.136155 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:12:49.136177 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:12:49.136200 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:12:49.136339 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:12:49.136365 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:12:49.136390 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:12:49.136413 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:12:49.136434 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:12:49.136459 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, ProposalHash: 1fec5a5565712331b2fcd104e7c9625e07d6c5b5a9afa6c35e8eab0530cd229a, ReceivedTime: 2019-04-23 20:12:49.136442256 -0400 EDT m=+15.955471487, Result: true
+2019/04/23 20:12:49.136478 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:12:49.136497 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:12:49.136520 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:12:49.136542 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:12:49.136720 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:12:49.136751 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:12:49.136775 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:12:49.136798 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:12:49.136820 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:12:49.136845 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, ProposalHash: 1fec5a5565712331b2fcd104e7c9625e07d6c5b5a9afa6c35e8eab0530cd229a, ReceivedTime: 2019-04-23 20:12:49.13682793 -0400 EDT m=+15.955857162, Result: true
+2019/04/23 20:12:49.136865 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:12:49.187741 [1;35m[INF][m GID 42, [OnConfirmReceived] listener received confirm
+2019/04/23 20:12:49.187816 [1;35m[INF][m GID 42, [OnBlockReceived] listener received block
+2019/04/23 20:12:49.188750 [1;35m[INF][m GID 32, [OnConfirmReceived] started, hash: fa9d0c82b77a1c57f8df702a1d10809f2bf0daec6e0ee8a20eb79576cd800cec
+2019/04/23 20:12:49.188921 [1;35m[INF][m GID 32, [FinishConsensus] start
+2019/04/23 20:12:49.189385 [1;35m[INF][m GID 32, [OnConsensusFinished] EndTime: 2019-04-23 20:12:49.189362548 -0400 EDT m=+16.008391784, Height: 464
+2019/04/23 20:12:49.189412 [1;35m[INF][m GID 32, Clean proposals
+2019/04/23 20:12:49.189448 [1;35m[INF][m GID 32, [FinishConsensus] end
+2019/04/23 20:12:49.189470 [1;35m[INF][m GID 32, [onDutyArbitratorChanged] not onduty
+2019/04/23 20:12:49.189490 [1;35m[INF][m GID 32, [OnConfirmReceived] end
+2019/04/23 20:12:49.189553 [1;35m[INF][m GID 32, [OnBlockReceived] start
+2019/04/23 20:12:49.189577 [1;35m[INF][m GID 32, [onDutyArbitratorChanged] not onduty
+2019/04/23 20:12:49.189594 [1;35m[INF][m GID 32, [OnBlockReceived] received confirmed block
+2019/04/23 20:12:49.189624 [1;35m[INF][m GID 32, [OnBlockReceived] end
+2019/04/23 20:12:59.663933 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:12:59.664017 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:12:59.664078 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:12:59.664145 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, ProposalHash: d76a2d2b09488450a52f11f127946faa173762152a2c4dd8b5f8becac4280a8d, ReceivedTime: 2019-04-23 20:12:59.664093349 -0400 EDT m=+26.483122578, Result: true
+2019/04/23 20:12:59.664203 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:12:59.664354 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:12:59.664410 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:12:59.664457 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:12:59.664516 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, ProposalHash: d76a2d2b09488450a52f11f127946faa173762152a2c4dd8b5f8becac4280a8d, ReceivedTime: 2019-04-23 20:12:59.664468834 -0400 EDT m=+26.483498063, Result: true
+2019/04/23 20:12:59.664545 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:12:59.664785 [1;35m[INF][m GID 32, [OnProposalReceived] started
+2019/04/23 20:12:59.664849 [1;35m[INF][m GID 32, [Normal][ProcessProposal] start
+2019/04/23 20:12:59.664887 [1;35m[INF][m GID 32, [ProcessProposal] start
+2019/04/23 20:12:59.667648 [1;35m[INF][m GID 32, received pending proposal
+2019/04/23 20:12:59.667708 [1;35m[INF][m GID 32, [ProcessProposal] end
+2019/04/23 20:12:59.667738 [1;35m[INF][m GID 32, [Normal][ProcessProposal] end
+2019/04/23 20:12:59.667770 [1;35m[INF][m GID 32, [OnProposalArrived] Sponsor: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, BlockHash: 038a2710b010b4a921a61b742d88366a615f9d0d8b8d1033505362ff363df921, ReceivedTime: 2019-04-23 20:12:59.667746614 -0400 EDT m=+26.486775844, Result: false, ViewOffset: 0, ProposalHash: d76a2d2b09488450a52f11f127946faa173762152a2c4dd8b5f8becac4280a8d
+2019/04/23 20:12:59.667817 [1;35m[INF][m GID 32, [OnProposalReceived] end
+2019/04/23 20:12:59.667871 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:12:59.667899 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:12:59.667921 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:12:59.667976 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, ProposalHash: d76a2d2b09488450a52f11f127946faa173762152a2c4dd8b5f8becac4280a8d, ReceivedTime: 2019-04-23 20:12:59.667929657 -0400 EDT m=+26.486958888, Result: true
+2019/04/23 20:12:59.667999 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:12:59.680773 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:12:59.680811 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:12:59.680835 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:12:59.680866 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, ProposalHash: d76a2d2b09488450a52f11f127946faa173762152a2c4dd8b5f8becac4280a8d, ReceivedTime: 2019-04-23 20:12:59.680843172 -0400 EDT m=+26.499872402, Result: true
+2019/04/23 20:12:59.680886 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:12:59.709728 [1;35m[INF][m GID 42, [OnBlockReceived] listener received block
+2019/04/23 20:12:59.712442 [1;35m[INF][m GID 32, [OnBlockReceived] start
+2019/04/23 20:12:59.712498 [1;35m[INF][m GID 32, [Normal][OnBlockReceived] received first unsigned block, start consensus
+2019/04/23 20:12:59.712532 [1;35m[INF][m GID 32, [StartConsensus] consensus start
+2019/04/23 20:12:59.712567 [1;35m[INF][m GID 32, [ProcessProposal] start
+2019/04/23 20:12:59.712744 [1;35m[INF][m GID 32, [TryStartSpeculatingProposal] start
+2019/04/23 20:12:59.712775 [1;35m[INF][m GID 32, [TryStartSpeculatingProposal] end
+2019/04/23 20:12:59.712806 [1;35m[INF][m GID 32, [acceptProposal] start
+2019/04/23 20:12:59.712897 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:12:59.713061 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:12:59.713095 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:12:59.713126 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:12:59.713154 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:12:59.713182 [1;35m[INF][m GID 32, [BroadcastMessage] msg: acc_vote
+2019/04/23 20:12:59.713212 [1;35m[INF][m GID 32, [acceptProposal] send acc_vote msg: e691888c0b10704610cecad68384bb2caaa8c9d8986e656e5acbff00f2f0a285
+2019/04/23 20:12:59.713249 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, ProposalHash: d76a2d2b09488450a52f11f127946faa173762152a2c4dd8b5f8becac4280a8d, ReceivedTime: 2019-04-23 20:12:59.713220694 -0400 EDT m=+26.532249934, Result: true
+2019/04/23 20:12:59.713277 [1;35m[INF][m GID 32, [acceptProposal] end
+2019/04/23 20:12:59.713303 [1;35m[INF][m GID 32, [ProcessProposal] end
+2019/04/23 20:12:59.713331 [1;35m[INF][m GID 32, [OnViewStarted] OnDutyArbitrator: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, StartTime: 2019-04-23 20:12:59.713311681 -0400 EDT m=+26.532340912, Offset: 0, Height: 465
+2019/04/23 20:12:59.713353 [1;35m[INF][m GID 32, [StartConsensus] consensus end
+2019/04/23 20:12:59.713377 [1;35m[INF][m GID 32, [OnConsensusStarted] StartTime: 2019-04-23 20:12:59.713360913 -0400 EDT m=+26.532390144, Height: 465
+2019/04/23 20:12:59.713394 [1;35m[INF][m GID 32, [OnBlockReceived] end
+2019/04/23 20:12:59.748100 [1;35m[INF][m GID 32, [ProcessBlock] received block: 038a2710b010b4a921a61b742d88366a615f9d0d8b8d1033505362ff363df921
+2019/04/23 20:12:59.756046 [1;31m[ERR][m GID 32, [OnBlock] err:  duplicate block in pool
+2019/04/23 20:12:59.995620 [1;35m[INF][m GID 42, [OnConfirmReceived] listener received confirm
+2019/04/23 20:12:59.995666 [1;35m[INF][m GID 42, [OnBlockReceived] listener received block
+2019/04/23 20:12:59.995910 [1;35m[INF][m GID 32, [OnConfirmReceived] started, hash: 038a2710b010b4a921a61b742d88366a615f9d0d8b8d1033505362ff363df921
+2019/04/23 20:12:59.995961 [1;35m[INF][m GID 32, [FinishConsensus] start
+2019/04/23 20:12:59.995994 [1;35m[INF][m GID 32, [OnConsensusFinished] EndTime: 2019-04-23 20:12:59.995973189 -0400 EDT m=+26.815002421, Height: 465
+2019/04/23 20:12:59.996016 [1;35m[INF][m GID 32, Clean proposals
+2019/04/23 20:12:59.996064 [1;35m[INF][m GID 32, [FinishConsensus] end
+2019/04/23 20:12:59.996088 [1;35m[INF][m GID 32, [onDutyArbitratorChanged] not onduty
+2019/04/23 20:12:59.996106 [1;35m[INF][m GID 32, [OnConfirmReceived] end
+2019/04/23 20:12:59.996123 [1;35m[INF][m GID 32, [OnBlockReceived] start
+2019/04/23 20:12:59.996174 [1;35m[INF][m GID 32, [onDutyArbitratorChanged] not onduty
+2019/04/23 20:12:59.996195 [1;35m[INF][m GID 32, [OnBlockReceived] received confirmed block
+2019/04/23 20:12:59.996240 [1;35m[INF][m GID 32, [OnBlockReceived] end
+2019/04/23 20:13:18.048098 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:13:18.048161 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:13:18.048212 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:13:18.048272 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, ProposalHash: f48036d6aa987c8538aa341af85c51775c0093fbe0e6272a4133bfd056c75ca8, ReceivedTime: 2019-04-23 20:13:18.048223572 -0400 EDT m=+44.867252803, Result: true
+2019/04/23 20:13:18.048295 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:13:18.048324 [1;35m[INF][m GID 32, [OnProposalReceived] started
+2019/04/23 20:13:18.048373 [1;35m[INF][m GID 32, [Normal][ProcessProposal] start
+2019/04/23 20:13:18.048401 [1;35m[INF][m GID 32, [ProcessProposal] start
+2019/04/23 20:13:18.048639 [1;35m[INF][m GID 32, received pending proposal
+2019/04/23 20:13:18.048694 [1;35m[INF][m GID 32, [ProcessProposal] end
+2019/04/23 20:13:18.048721 [1;35m[INF][m GID 32, [Normal][ProcessProposal] end
+2019/04/23 20:13:18.048752 [1;35m[INF][m GID 32, [OnProposalArrived] Sponsor: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, BlockHash: 0264226d7888685b242f3f781e6856af5e9cdccc7e740ad932e7e4a17c71fc51, ReceivedTime: 2019-04-23 20:13:18.048729396 -0400 EDT m=+44.867758629, Result: false, ViewOffset: 0, ProposalHash: f48036d6aa987c8538aa341af85c51775c0093fbe0e6272a4133bfd056c75ca8
+2019/04/23 20:13:18.048795 [1;35m[INF][m GID 32, [OnProposalReceived] end
+2019/04/23 20:13:18.072529 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:13:18.072570 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:13:18.072594 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:13:18.072625 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, ProposalHash: f48036d6aa987c8538aa341af85c51775c0093fbe0e6272a4133bfd056c75ca8, ReceivedTime: 2019-04-23 20:13:18.072602278 -0400 EDT m=+44.891631511, Result: true
+2019/04/23 20:13:18.072645 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:13:18.086047 [1;35m[INF][m GID 32, [ProcessBlock] received block: 0264226d7888685b242f3f781e6856af5e9cdccc7e740ad932e7e4a17c71fc51
+2019/04/23 20:13:18.086243 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/04/23 20:13:18.086264 [1;35m[INF][m GID 32, [OnBlockReceived] start
+2019/04/23 20:13:18.086290 [1;35m[INF][m GID 32, [Normal][OnBlockReceived] received first unsigned block, start consensus
+2019/04/23 20:13:18.086313 [1;35m[INF][m GID 32, [StartConsensus] consensus start
+2019/04/23 20:13:18.086346 [1;35m[INF][m GID 32, [ProcessProposal] start
+2019/04/23 20:13:18.086567 [1;35m[INF][m GID 32, [TryStartSpeculatingProposal] start
+2019/04/23 20:13:18.086602 [1;35m[INF][m GID 32, [TryStartSpeculatingProposal] end
+2019/04/23 20:13:18.086633 [1;35m[INF][m GID 32, [acceptProposal] start
+2019/04/23 20:13:18.086705 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:13:18.086969 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:13:18.088160 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:13:18.088271 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:13:18.088542 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:13:18.088605 [1;35m[INF][m GID 32, [BroadcastMessage] msg: acc_vote
+2019/04/23 20:13:18.088662 [1;35m[INF][m GID 32, [acceptProposal] send acc_vote msg: 4997ae406ddb80ab5dfefbc8c5b46a683eda7b8a51f915ba36a024f929b88d42
+2019/04/23 20:13:18.088707 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, ProposalHash: f48036d6aa987c8538aa341af85c51775c0093fbe0e6272a4133bfd056c75ca8, ReceivedTime: 2019-04-23 20:13:18.088677057 -0400 EDT m=+44.907706295, Result: true
+2019/04/23 20:13:18.088830 [1;35m[INF][m GID 32, [acceptProposal] end
+2019/04/23 20:13:18.088944 [1;35m[INF][m GID 32, [ProcessProposal] end
+2019/04/23 20:13:18.089040 [1;35m[INF][m GID 32, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-04-23 20:13:18.089018382 -0400 EDT m=+44.908047614, Offset: 0, Height: 466
+2019/04/23 20:13:18.089170 [1;35m[INF][m GID 32, [StartConsensus] consensus end
+2019/04/23 20:13:18.089253 [1;35m[INF][m GID 32, [OnConsensusStarted] StartTime: 2019-04-23 20:13:18.089233939 -0400 EDT m=+44.908263170, Height: 466
+2019/04/23 20:13:18.089356 [1;35m[INF][m GID 32, [OnBlockReceived] end
+2019/04/23 20:13:18.089573 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:13:18.089628 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:13:18.089677 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:13:18.089850 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:13:18.090138 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:13:18.090177 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:13:18.090232 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:13:18.090260 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:13:18.090308 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, ProposalHash: f48036d6aa987c8538aa341af85c51775c0093fbe0e6272a4133bfd056c75ca8, ReceivedTime: 2019-04-23 20:13:18.090287719 -0400 EDT m=+44.909316952, Result: true
+2019/04/23 20:13:18.090337 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:13:18.251454 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:13:18.251587 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:13:18.294553 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:13:18.305264 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:13:18.305367 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:13:18.305430 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:13:18.305466 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:13:18.305521 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:13:18.305567 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, ProposalHash: f48036d6aa987c8538aa341af85c51775c0093fbe0e6272a4133bfd056c75ca8, ReceivedTime: 2019-04-23 20:13:18.305538742 -0400 EDT m=+45.124567973, Result: true
+2019/04/23 20:13:18.305620 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:13:18.306318 [1;35m[INF][m GID 42, [OnConfirmReceived] listener received confirm
+2019/04/23 20:13:18.306400 [1;35m[INF][m GID 42, [OnBlockReceived] listener received block
+2019/04/23 20:13:18.364191 [1;35m[INF][m GID 32, [OnConfirmReceived] started, hash: 0264226d7888685b242f3f781e6856af5e9cdccc7e740ad932e7e4a17c71fc51
+2019/04/23 20:13:18.364247 [1;35m[INF][m GID 32, [FinishConsensus] start
+2019/04/23 20:13:18.364282 [1;35m[INF][m GID 32, [OnConsensusFinished] EndTime: 2019-04-23 20:13:18.364259551 -0400 EDT m=+45.183288785, Height: 466
+2019/04/23 20:13:18.364330 [1;35m[INF][m GID 32, Clean proposals
+2019/04/23 20:13:18.364354 [1;35m[INF][m GID 32, [FinishConsensus] end
+2019/04/23 20:13:18.364375 [1;35m[INF][m GID 32, [onDutyArbitratorChanged] not onduty
+2019/04/23 20:13:18.364413 [1;35m[INF][m GID 32, [OnConfirmReceived] end
+2019/04/23 20:13:18.364453 [1;35m[INF][m GID 32, [OnBlockReceived] start
+2019/04/23 20:13:18.364477 [1;35m[INF][m GID 32, [onDutyArbitratorChanged] not onduty
+2019/04/23 20:13:18.364515 [1;35m[INF][m GID 32, [OnBlockReceived] received confirmed block
+2019/04/23 20:13:18.364536 [1;35m[INF][m GID 32, [OnBlockReceived] end
+2019/04/23 20:13:21.833403 [1;35m[INF][m GID 32, [OnProposalReceived] started
+2019/04/23 20:13:21.833472 [1;35m[INF][m GID 32, [Normal][ProcessProposal] start
+2019/04/23 20:13:21.833532 [1;35m[INF][m GID 32, [ProcessProposal] start
+2019/04/23 20:13:21.833817 [1;35m[INF][m GID 32, received pending proposal
+2019/04/23 20:13:21.833878 [1;35m[INF][m GID 32, [ProcessProposal] end
+2019/04/23 20:13:21.833906 [1;35m[INF][m GID 32, [Normal][ProcessProposal] end
+2019/04/23 20:13:21.833947 [1;35m[INF][m GID 32, [OnProposalArrived] Sponsor: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, BlockHash: 65602408f1f48855fa78346a3df980919694a336218c6d0d7771866be8e998e3, ReceivedTime: 2019-04-23 20:13:21.833918723 -0400 EDT m=+48.652947955, Result: false, ViewOffset: 0, ProposalHash: f611a303f19037f386954800abdb76dab67ade72a5b711e53ebabb77b5cdb3b1
+2019/04/23 20:13:21.834006 [1;35m[INF][m GID 32, [OnProposalReceived] end
+2019/04/23 20:13:21.834034 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:13:21.834058 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:13:21.834119 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:13:21.834151 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, ProposalHash: f611a303f19037f386954800abdb76dab67ade72a5b711e53ebabb77b5cdb3b1, ReceivedTime: 2019-04-23 20:13:21.834131018 -0400 EDT m=+48.653160250, Result: true
+2019/04/23 20:13:21.834200 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:13:21.860612 [1;35m[INF][m GID 32, [ProcessBlock] received block: 65602408f1f48855fa78346a3df980919694a336218c6d0d7771866be8e998e3
+2019/04/23 20:13:21.880284 [1;35m[INF][m GID 32, [OnBlockReceived] listener received block
+2019/04/23 20:13:21.880316 [1;35m[INF][m GID 32, [OnBlockReceived] start
+2019/04/23 20:13:21.880351 [1;35m[INF][m GID 32, [Normal][OnBlockReceived] received first unsigned block, start consensus
+2019/04/23 20:13:21.880374 [1;35m[INF][m GID 32, [StartConsensus] consensus start
+2019/04/23 20:13:21.880413 [1;35m[INF][m GID 32, [ProcessProposal] start
+2019/04/23 20:13:21.880609 [1;35m[INF][m GID 32, [TryStartSpeculatingProposal] start
+2019/04/23 20:13:21.880641 [1;35m[INF][m GID 32, [TryStartSpeculatingProposal] end
+2019/04/23 20:13:21.880676 [1;35m[INF][m GID 32, [acceptProposal] start
+2019/04/23 20:13:21.880752 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:13:21.880911 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:13:21.880948 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:13:21.880997 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:13:21.881030 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:13:21.881060 [1;35m[INF][m GID 32, [BroadcastMessage] msg: acc_vote
+2019/04/23 20:13:21.881096 [1;35m[INF][m GID 32, [acceptProposal] send acc_vote msg: 2c2e57b767f0a98da86aae61c5d710625745588dfa3b42bf1f3b267a55cbad10
+2019/04/23 20:13:21.881135 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, ProposalHash: f611a303f19037f386954800abdb76dab67ade72a5b711e53ebabb77b5cdb3b1, ReceivedTime: 2019-04-23 20:13:21.881105206 -0400 EDT m=+48.700134437, Result: true
+2019/04/23 20:13:21.881168 [1;35m[INF][m GID 32, [acceptProposal] end
+2019/04/23 20:13:21.881194 [1;35m[INF][m GID 32, [ProcessProposal] end
+2019/04/23 20:13:21.881227 [1;35m[INF][m GID 32, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-04-23 20:13:21.881203631 -0400 EDT m=+48.700232862, Offset: 0, Height: 467
+2019/04/23 20:13:21.881251 [1;35m[INF][m GID 32, [StartConsensus] consensus end
+2019/04/23 20:13:21.881278 [1;35m[INF][m GID 32, [OnConsensusStarted] StartTime: 2019-04-23 20:13:21.881261524 -0400 EDT m=+48.700290755, Height: 467
+2019/04/23 20:13:21.881296 [1;35m[INF][m GID 32, [OnBlockReceived] end
+2019/04/23 20:13:21.971904 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:13:21.971942 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:13:21.972010 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:13:21.972175 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:13:21.972203 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:13:21.972228 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:13:21.972251 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:13:21.972272 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:13:21.972302 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, ProposalHash: f611a303f19037f386954800abdb76dab67ade72a5b711e53ebabb77b5cdb3b1, ReceivedTime: 2019-04-23 20:13:21.972279704 -0400 EDT m=+48.791308940, Result: true
+2019/04/23 20:13:21.972329 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:13:21.978943 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:13:21.978975 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:13:21.979014 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:13:21.979172 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:13:21.979198 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:13:21.979223 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:13:21.979246 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:13:21.979268 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:13:21.979297 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, ProposalHash: f611a303f19037f386954800abdb76dab67ade72a5b711e53ebabb77b5cdb3b1, ReceivedTime: 2019-04-23 20:13:21.97927624 -0400 EDT m=+48.798305471, Result: true
+2019/04/23 20:13:21.979316 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:13:22.154584 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:13:22.164331 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:13:22.166825 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:13:22.169390 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:13:22.172489 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:13:22.172574 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:13:22.172649 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:13:22.172715 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:13:22.172789 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, ProposalHash: f611a303f19037f386954800abdb76dab67ade72a5b711e53ebabb77b5cdb3b1, ReceivedTime: 2019-04-23 20:13:22.172759522 -0400 EDT m=+48.991788754, Result: true
+2019/04/23 20:13:22.172865 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:13:22.248108 [1;35m[INF][m GID 42, [UpdatePeers] peers: 6  height:  467
+2019/04/23 20:13:22.248208 [1;35m[INF][m GID 42, peer[ 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ] addr: 127.0.0.1:10416  pid: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7
+2019/04/23 20:13:22.248279 [1;35m[INF][m GID 42, peer[ 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556 ] addr:   pid: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/04/23 20:13:22.248347 [1;35m[INF][m GID 42, peer[ 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25 ] addr:   pid: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/04/23 20:13:22.248392 [1;35m[INF][m GID 42, peer[ 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ] addr: 127.0.0.1:10116  pid: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/04/23 20:13:22.248454 [1;35m[INF][m GID 42, peer[ 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ] addr: 127.0.0.1:10216  pid: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/04/23 20:13:22.248522 [1;35m[INF][m GID 42, peer[ 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ] addr: 127.0.0.1:10316  pid: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a
+2019/04/23 20:13:22.248827 [1;35m[INF][m GID 42, [OnConfirmReceived] listener received confirm
+2019/04/23 20:13:22.248872 [1;35m[INF][m GID 42, [OnBlockReceived] listener received block
+2019/04/23 20:13:22.249709 [1;35m[INF][m GID 32, [OnConfirmReceived] started, hash: 65602408f1f48855fa78346a3df980919694a336218c6d0d7771866be8e998e3
+2019/04/23 20:13:22.251440 [1;35m[INF][m GID 32, [FinishConsensus] start
+2019/04/23 20:13:22.265562 [1;35m[INF][m GID 32, [OnConsensusFinished] EndTime: 2019-04-23 20:13:22.265519115 -0400 EDT m=+49.084548354, Height: 467
+2019/04/23 20:13:22.285531 [1;35m[INF][m GID 32, Clean proposals
+2019/04/23 20:13:22.285605 [1;35m[INF][m GID 32, [FinishConsensus] end
+2019/04/23 20:13:22.285661 [1;35m[INF][m GID 32, [onDutyArbitratorChanged] onduty
+2019/04/23 20:13:22.285719 [1;35m[INF][m GID 32, [OnConfirmReceived] end
+2019/04/23 20:13:22.285750 [1;35m[INF][m GID 32, [OnBlockReceived] start
+2019/04/23 20:13:22.285777 [1;35m[INF][m GID 32, [onDutyArbitratorChanged] onduty
+2019/04/23 20:13:22.285826 [1;35m[INF][m GID 32, [OnBlockReceived] received confirmed block
+2019/04/23 20:13:22.285866 [1;35m[INF][m GID 32, [OnBlockReceived] end
+2019/04/23 20:13:27.894951 [1;35m[INF][m GID 42, [OnBlockReceived] listener received block
+2019/04/23 20:13:28.017960 [1;35m[INF][m GID 32, [OnBlockReceived] start
+2019/04/23 20:13:28.018039 [1;35m[INF][m GID 32, [OnDuty][OnBlockReceived] received first unsigned block, start consensus
+2019/04/23 20:13:28.018064 [1;35m[INF][m GID 32, [StartConsensus] consensus start
+2019/04/23 20:13:28.018125 [1;35m[INF][m GID 32, [OnViewStarted] OnDutyArbitrator: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, StartTime: 2019-04-23 20:13:28.018098693 -0400 EDT m=+54.837127924, Offset: 0, Height: 467
+2019/04/23 20:13:28.018152 [1;35m[INF][m GID 32, [StartConsensus] consensus end
+2019/04/23 20:13:28.018194 [1;35m[INF][m GID 32, [StartProposal] start
+2019/04/23 20:13:28.018284 [1;35m[INF][m GID 32, [StartProposal] sponsor: [2 28 250 222 62 221 208 87 216 202 23 128 87 168 140 70 84 177 92 26 218 126 233 171 101 81 127 0 190 182 151 117 86]
+2019/04/23 20:13:28.018334 [1;35m[INF][m GID 32, [StartProposal] send proposal message finished, Proposal Hash:  a732e45bf0b014f873e1f2cb02f717dce55ffbeac266793dca77ccaa3595b7f5
+2019/04/23 20:13:28.018361 [1;35m[INF][m GID 32, [BroadcastMessage] msg: proposal
+2019/04/23 20:13:28.018394 [1;35m[INF][m GID 32, [OnProposalArrived] Sponsor: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, BlockHash: 5af7e545f4d64722d96a35cc41b0e3b97532a2f56cebf0094d829b7f120605db, ReceivedTime: 2019-04-23 20:13:28.018369746 -0400 EDT m=+54.837398977, Result: false, ViewOffset: 0, ProposalHash: cbf0948116a58c438246f0a39bae701016430bb4ed6df4e92db6d4d7f63e03ee
+2019/04/23 20:13:28.018440 [1;35m[INF][m GID 32, [acceptProposal] start
+2019/04/23 20:13:28.018501 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:13:28.018672 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:13:28.018722 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:13:28.018751 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:13:28.018775 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:13:28.018819 [1;35m[INF][m GID 32, [BroadcastMessage] msg: acc_vote
+2019/04/23 20:13:28.018848 [1;35m[INF][m GID 32, [acceptProposal] send acc_vote msg: af3ddfc2333778e7faeae080ec07cffb98268da5b53a59de746c006e1adecf24
+2019/04/23 20:13:28.018878 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, ProposalHash: cbf0948116a58c438246f0a39bae701016430bb4ed6df4e92db6d4d7f63e03ee, ReceivedTime: 2019-04-23 20:13:28.018856671 -0400 EDT m=+54.837885903, Result: true
+2019/04/23 20:13:28.018922 [1;35m[INF][m GID 32, [acceptProposal] end
+2019/04/23 20:13:28.018947 [1;35m[INF][m GID 32, [StartProposal] end
+2019/04/23 20:13:28.018972 [1;35m[INF][m GID 32, [OnConsensusStarted] StartTime: 2019-04-23 20:13:28.018955337 -0400 EDT m=+54.837984572, Height: 468
+2019/04/23 20:13:28.019010 [1;35m[INF][m GID 32, [OnBlockReceived] end
+2019/04/23 20:13:28.059616 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:13:28.059687 [1;35m[INF][m GID 32, [Onduty-ProcessAcceptVote] start
+2019/04/23 20:13:28.059713 [1;35m[INF][m GID 32, [OnVoteReceived] Received needed sign, collect it
+2019/04/23 20:13:28.059737 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:13:28.059950 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:13:28.059996 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:13:28.060023 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:13:28.060046 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:13:28.060068 [1;35m[INF][m GID 32, [Onduty-ProcessAcceptVote] end
+2019/04/23 20:13:28.060100 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, ProposalHash: cbf0948116a58c438246f0a39bae701016430bb4ed6df4e92db6d4d7f63e03ee, ReceivedTime: 2019-04-23 20:13:28.06007688 -0400 EDT m=+54.879106110, Result: true
+2019/04/23 20:13:28.060119 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:13:28.074494 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:13:28.074622 [1;35m[INF][m GID 32, [Onduty-ProcessAcceptVote] start
+2019/04/23 20:13:28.074649 [1;35m[INF][m GID 32, [OnVoteReceived] Received needed sign, collect it
+2019/04/23 20:13:28.074673 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:13:28.074966 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:13:28.075022 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:13:28.075049 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:13:28.075072 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:13:28.075094 [1;35m[INF][m GID 32, [Onduty-ProcessAcceptVote] end
+2019/04/23 20:13:28.075125 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, ProposalHash: cbf0948116a58c438246f0a39bae701016430bb4ed6df4e92db6d4d7f63e03ee, ReceivedTime: 2019-04-23 20:13:28.07510259 -0400 EDT m=+54.894131821, Result: true
+2019/04/23 20:13:28.075144 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:13:28.218765 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:13:28.218814 [1;35m[INF][m GID 32, [Onduty-ProcessAcceptVote] start
+2019/04/23 20:13:28.218848 [1;35m[INF][m GID 32, [OnVoteReceived] Received needed sign, collect it
+2019/04/23 20:13:28.218905 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:13:28.219154 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:13:28.219295 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:13:28.219338 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:13:28.219371 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:13:28.219434 [1;35m[INF][m GID 32, [Onduty-ProcessAcceptVote] end
+2019/04/23 20:13:28.219506 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, ProposalHash: cbf0948116a58c438246f0a39bae701016430bb4ed6df4e92db6d4d7f63e03ee, ReceivedTime: 2019-04-23 20:13:28.219450216 -0400 EDT m=+55.038479456, Result: true
+2019/04/23 20:13:28.219574 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:13:28.304309 [1;35m[INF][m GID 42, [OnConfirmReceived] listener received confirm
+2019/04/23 20:13:28.346006 [1;35m[INF][m GID 42, [OnBlockReceived] listener received block
+2019/04/23 20:13:28.346731 [1;35m[INF][m GID 32, [OnConfirmReceived] started, hash: 5af7e545f4d64722d96a35cc41b0e3b97532a2f56cebf0094d829b7f120605db
+2019/04/23 20:13:28.426287 [1;35m[INF][m GID 32, [FinishConsensus] start
+2019/04/23 20:13:28.428617 [1;35m[INF][m GID 32, [OnConsensusFinished] EndTime: 2019-04-23 20:13:28.428586406 -0400 EDT m=+55.247615643, Height: 468
+2019/04/23 20:13:28.428707 [1;35m[INF][m GID 32, Clean proposals
+2019/04/23 20:13:28.428780 [1;35m[INF][m GID 32, [FinishConsensus] end
+2019/04/23 20:13:28.434619 [1;35m[INF][m GID 32, [onDutyArbitratorChanged] not onduty
+2019/04/23 20:13:28.435363 [1;35m[INF][m GID 32, [OnConfirmReceived] end
+2019/04/23 20:13:28.435433 [1;35m[INF][m GID 32, [OnBlockReceived] start
+2019/04/23 20:13:28.435952 [1;35m[INF][m GID 32, [onDutyArbitratorChanged] not onduty
+2019/04/23 20:13:28.441300 [1;35m[INF][m GID 32, [OnBlockReceived] received confirmed block
+2019/04/23 20:13:28.441386 [1;35m[INF][m GID 32, [OnBlockReceived] end
+2019/04/23 20:13:28.441494 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:13:28.448963 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:13:28.449017 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:13:28.449603 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, ProposalHash: cbf0948116a58c438246f0a39bae701016430bb4ed6df4e92db6d4d7f63e03ee, ReceivedTime: 2019-04-23 20:13:28.449573949 -0400 EDT m=+55.268603180, Result: true
+2019/04/23 20:13:28.449627 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:13:32.583874 [1;35m[INF][m GID 42, [OnBlockReceived] listener received block
+2019/04/23 20:13:32.583942 [1;35m[INF][m GID 32, [OnBlockReceived] start
+2019/04/23 20:13:32.583972 [1;35m[INF][m GID 32, [Normal][OnBlockReceived] received first unsigned block, start consensus
+2019/04/23 20:13:32.584024 [1;35m[INF][m GID 32, [StartConsensus] consensus start
+2019/04/23 20:13:32.584067 [1;35m[INF][m GID 32, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-04-23 20:13:32.584041292 -0400 EDT m=+59.403070522, Offset: 0, Height: 468
+2019/04/23 20:13:32.584132 [1;35m[INF][m GID 32, [StartConsensus] consensus end
+2019/04/23 20:13:32.584212 [1;35m[INF][m GID 32, [OnConsensusStarted] StartTime: 2019-04-23 20:13:32.584143558 -0400 EDT m=+59.403172795, Height: 469
+2019/04/23 20:13:32.584235 [1;35m[INF][m GID 32, [OnBlockReceived] end
+2019/04/23 20:13:32.657813 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:13:32.658935 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:13:32.659027 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:13:32.659146 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, ProposalHash: f3dab3e0950ecf4b57ed4a80d97e689180036858ee8307b45ac4ff80143102f3, ReceivedTime: 2019-04-23 20:13:32.659121093 -0400 EDT m=+59.478150324, Result: true
+2019/04/23 20:13:32.659205 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:13:32.659535 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:13:32.659593 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:13:32.659674 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:13:32.661459 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, ProposalHash: f3dab3e0950ecf4b57ed4a80d97e689180036858ee8307b45ac4ff80143102f3, ReceivedTime: 2019-04-23 20:13:32.661435488 -0400 EDT m=+59.480464722, Result: true
+2019/04/23 20:13:32.661521 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:13:32.661569 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:13:32.661622 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:13:32.663241 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:13:32.663839 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, ProposalHash: f3dab3e0950ecf4b57ed4a80d97e689180036858ee8307b45ac4ff80143102f3, ReceivedTime: 2019-04-23 20:13:32.663746189 -0400 EDT m=+59.482775430, Result: true
+2019/04/23 20:13:32.663881 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:13:32.664691 [1;35m[INF][m GID 32, [OnProposalReceived] started
+2019/04/23 20:13:32.664760 [1;35m[INF][m GID 32, [Normal][ProcessProposal] start
+2019/04/23 20:13:32.664787 [1;35m[INF][m GID 32, [ProcessProposal] start
+2019/04/23 20:13:32.664988 [1;35m[INF][m GID 32, [TryStartSpeculatingProposal] start
+2019/04/23 20:13:32.665315 [1;35m[INF][m GID 32, [TryStartSpeculatingProposal] end
+2019/04/23 20:13:32.665346 [1;35m[INF][m GID 32, [acceptProposal] start
+2019/04/23 20:13:32.665382 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:13:32.665533 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:13:32.665849 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:13:32.665925 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:13:32.665973 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:13:32.666004 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:13:32.666216 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:13:32.666297 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:13:32.666329 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:13:32.666357 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:13:32.666385 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:13:32.666529 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:13:32.666559 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:13:32.666589 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:13:32.666616 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:13:32.666683 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:13:32.666862 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:13:32.666904 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:13:32.666934 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:13:32.666960 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:13:32.666987 [1;35m[INF][m GID 32, [BroadcastMessage] msg: acc_vote
+2019/04/23 20:13:32.667017 [1;35m[INF][m GID 32, [acceptProposal] send acc_vote msg: 3fbeccded023b1b3e18b9b91530b7789eaefa521ddeebdac3de2a9cb859d6526
+2019/04/23 20:13:32.667050 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, ProposalHash: f3dab3e0950ecf4b57ed4a80d97e689180036858ee8307b45ac4ff80143102f3, ReceivedTime: 2019-04-23 20:13:32.667025073 -0400 EDT m=+59.486054306, Result: true
+2019/04/23 20:13:32.667077 [1;35m[INF][m GID 32, [acceptProposal] end
+2019/04/23 20:13:32.667101 [1;35m[INF][m GID 32, [ProcessProposal] end
+2019/04/23 20:13:32.667124 [1;35m[INF][m GID 32, [Normal][ProcessProposal] end
+2019/04/23 20:13:32.667153 [1;35m[INF][m GID 32, [OnProposalArrived] Sponsor: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, BlockHash: 5ae6a086a81d42e033ed29c78acb3f8cb9074a08abde0d632f35c531dc4d1949, ReceivedTime: 2019-04-23 20:13:32.667132464 -0400 EDT m=+59.486161695, Result: false, ViewOffset: 0, ProposalHash: f3dab3e0950ecf4b57ed4a80d97e689180036858ee8307b45ac4ff80143102f3
+2019/04/23 20:13:32.667173 [1;35m[INF][m GID 32, [OnProposalReceived] end
+2019/04/23 20:13:32.667325 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:13:32.670644 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:13:32.670689 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:13:32.670919 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:13:32.681546 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:13:32.681576 [1;35m[INF][m GID 32, Collect majority signs, finish proposal.
+2019/04/23 20:13:32.681603 [1;35m[INF][m GID 32, [FinishProposal] start
+2019/04/23 20:13:32.681640 [1;35m[INF][m GID 32, [TryAppendAndBroadcastConfirmBlockMsg] append confirm.
+2019/04/23 20:13:32.722893 [1;35m[INF][m GID 32, [OnConfirmReceived] listener received confirm
+2019/04/23 20:13:32.723042 [1;35m[INF][m GID 32, [OnProposalFinished] Sponsor: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, BlockHash: 5ae6a086a81d42e033ed29c78acb3f8cb9074a08abde0d632f35c531dc4d1949, EndTime: 2019-04-23 20:13:32.722990065 -0400 EDT m=+59.542019295, Result: true, ViewOffset: 0, ProposalHash: 0000000000000000000000000000000000000000000000000000000000000000
+2019/04/23 20:13:32.735295 [1;35m[INF][m GID 32, [FinishConsensus] start
+2019/04/23 20:13:32.735600 [1;35m[INF][m GID 32, [OnConsensusFinished] EndTime: 2019-04-23 20:13:32.73556628 -0400 EDT m=+59.554595516, Height: 469
+2019/04/23 20:13:32.736242 [1;35m[INF][m GID 32, Clean proposals
+2019/04/23 20:13:32.736317 [1;35m[INF][m GID 32, [FinishConsensus] end
+2019/04/23 20:13:32.736376 [1;35m[INF][m GID 32, [FinishProposal] end
+2019/04/23 20:13:32.736749 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:13:32.736809 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:13:32.736864 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:13:32.736921 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, ProposalHash: f3dab3e0950ecf4b57ed4a80d97e689180036858ee8307b45ac4ff80143102f3, ReceivedTime: 2019-04-23 20:13:32.736899792 -0400 EDT m=+59.555929022, Result: true
+2019/04/23 20:13:32.736983 [1;35m[INF][m GID 32, [onDutyArbitratorChanged] not onduty
+2019/04/23 20:13:32.737160 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:13:32.737213 [1;35m[INF][m GID 32, [OnConfirmReceived] started, hash: 5ae6a086a81d42e033ed29c78acb3f8cb9074a08abde0d632f35c531dc4d1949
+2019/04/23 20:13:32.737269 [1;35m[INF][m GID 32, [onDutyArbitratorChanged] not onduty
+2019/04/23 20:13:32.737309 [1;35m[INF][m GID 32, [OnConfirmReceived] end
+2019/04/23 20:13:32.738158 [1;35m[INF][m GID 32, [OnProposalReceived] started
+2019/04/23 20:13:32.738202 [1;35m[INF][m GID 32, [Normal][ProcessProposal] start
+2019/04/23 20:13:32.738230 [1;35m[INF][m GID 32, [ProcessProposal] start
+2019/04/23 20:13:32.738422 [1;35m[INF][m GID 32, already exist block in block chain
+2019/04/23 20:13:32.738466 [1;35m[INF][m GID 32, [ProcessProposal] end
+2019/04/23 20:13:32.738497 [1;35m[INF][m GID 32, [Normal][ProcessProposal] end
+2019/04/23 20:13:32.738527 [1;35m[INF][m GID 32, [OnProposalArrived] Sponsor: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, BlockHash: 5ae6a086a81d42e033ed29c78acb3f8cb9074a08abde0d632f35c531dc4d1949, ReceivedTime: 2019-04-23 20:13:32.738505707 -0400 EDT m=+59.557534938, Result: false, ViewOffset: 0, ProposalHash: f3dab3e0950ecf4b57ed4a80d97e689180036858ee8307b45ac4ff80143102f3
+2019/04/23 20:13:32.738547 [1;35m[INF][m GID 32, [OnProposalReceived] end
+2019/04/23 20:13:34.061935 [1;35m[INF][m GID 42, [OnBlockReceived] listener received block
+2019/04/23 20:13:34.062061 [1;35m[INF][m GID 32, [OnBlockReceived] start
+2019/04/23 20:13:34.062117 [1;35m[INF][m GID 32, [Normal][OnBlockReceived] received first unsigned block, start consensus
+2019/04/23 20:13:34.062141 [1;35m[INF][m GID 32, [StartConsensus] consensus start
+2019/04/23 20:13:34.062179 [1;35m[INF][m GID 32, [OnViewStarted] OnDutyArbitrator: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, StartTime: 2019-04-23 20:13:34.062154127 -0400 EDT m=+60.881183357, Offset: 0, Height: 469
+2019/04/23 20:13:34.062203 [1;35m[INF][m GID 32, [StartConsensus] consensus end
+2019/04/23 20:13:34.062226 [1;35m[INF][m GID 32, [OnConsensusStarted] StartTime: 2019-04-23 20:13:34.062210507 -0400 EDT m=+60.881239740, Height: 470
+2019/04/23 20:13:34.062244 [1;35m[INF][m GID 32, [OnBlockReceived] end
+2019/04/23 20:13:34.078852 [1;35m[INF][m GID 32, [OnProposalReceived] started
+2019/04/23 20:13:34.079171 [1;35m[INF][m GID 32, [Normal][ProcessProposal] start
+2019/04/23 20:13:34.079245 [1;35m[INF][m GID 32, [ProcessProposal] start
+2019/04/23 20:13:34.081750 [1;35m[INF][m GID 32, [TryStartSpeculatingProposal] start
+2019/04/23 20:13:34.104906 [1;35m[INF][m GID 32, [TryStartSpeculatingProposal] end
+2019/04/23 20:13:34.105088 [1;35m[INF][m GID 32, [acceptProposal] start
+2019/04/23 20:13:34.135890 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:13:34.187118 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:13:34.187173 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:13:34.187217 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:13:34.187245 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:13:34.187273 [1;35m[INF][m GID 32, [BroadcastMessage] msg: acc_vote
+2019/04/23 20:13:34.187337 [1;35m[INF][m GID 32, [acceptProposal] send acc_vote msg: ed59a44f13d7e724aeb456dcc5366709f52d6bd4fc40326d7cd00ee2ebd87184
+2019/04/23 20:13:34.187381 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, ProposalHash: bbe3fb7c7e833a4d6e5e18fdf82721876edadd82e75bcd23845d1bf380254380, ReceivedTime: 2019-04-23 20:13:34.187351292 -0400 EDT m=+61.006380531, Result: true
+2019/04/23 20:13:34.187409 [1;35m[INF][m GID 32, [acceptProposal] end
+2019/04/23 20:13:34.187434 [1;35m[INF][m GID 32, [ProcessProposal] end
+2019/04/23 20:13:34.187458 [1;35m[INF][m GID 32, [Normal][ProcessProposal] end
+2019/04/23 20:13:34.187488 [1;35m[INF][m GID 32, [OnProposalArrived] Sponsor: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, BlockHash: 40e287f229f3eb2184aba6344f29d656be9fd004ad5af9c7a734ae008eecebad, ReceivedTime: 2019-04-23 20:13:34.187466823 -0400 EDT m=+61.006496063, Result: false, ViewOffset: 0, ProposalHash: bbe3fb7c7e833a4d6e5e18fdf82721876edadd82e75bcd23845d1bf380254380
+2019/04/23 20:13:34.187509 [1;35m[INF][m GID 32, [OnProposalReceived] end
+2019/04/23 20:13:34.187568 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:13:34.187592 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:13:34.187616 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:13:34.187766 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:13:34.187793 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:13:34.187818 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:13:34.187841 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:13:34.187863 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:13:34.187890 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, ProposalHash: bbe3fb7c7e833a4d6e5e18fdf82721876edadd82e75bcd23845d1bf380254380, ReceivedTime: 2019-04-23 20:13:34.187871484 -0400 EDT m=+61.006900723, Result: true
+2019/04/23 20:13:34.187909 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:13:34.187928 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:13:34.187950 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:13:34.187973 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:13:34.188115 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:13:34.188141 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:13:34.188166 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:13:34.188189 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:13:34.188211 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:13:34.188236 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, ProposalHash: bbe3fb7c7e833a4d6e5e18fdf82721876edadd82e75bcd23845d1bf380254380, ReceivedTime: 2019-04-23 20:13:34.188218869 -0400 EDT m=+61.007248101, Result: true
+2019/04/23 20:13:34.188256 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:13:34.207926 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:13:34.208327 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:13:34.209131 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:13:34.209373 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:13:34.209411 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:13:34.209448 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:13:34.209481 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:13:34.209514 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:13:34.215493 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, ProposalHash: bbe3fb7c7e833a4d6e5e18fdf82721876edadd82e75bcd23845d1bf380254380, ReceivedTime: 2019-04-23 20:13:34.215442754 -0400 EDT m=+61.034471996, Result: true
+2019/04/23 20:13:34.215542 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:13:34.215627 [1;35m[INF][m GID 32, [OnVoteReceived] started
+2019/04/23 20:13:34.215676 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] start
+2019/04/23 20:13:34.215704 [1;35m[INF][m GID 32, [ProcessVote] start
+2019/04/23 20:13:34.215859 [1;35m[INF][m GID 32, [countAcceptedVote] start
+2019/04/23 20:13:34.215934 [1;35m[INF][m GID 32, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 20:13:34.215964 [1;35m[INF][m GID 32, Collect majority signs, finish proposal.
+2019/04/23 20:13:34.216012 [1;35m[INF][m GID 32, [FinishProposal] start
+2019/04/23 20:13:34.275050 [1;35m[INF][m GID 32, [TryAppendAndBroadcastConfirmBlockMsg] append confirm.
+2019/04/23 20:13:34.318626 [1;35m[INF][m GID 32, [OnConfirmReceived] listener received confirm
+2019/04/23 20:13:34.318678 [1;35m[INF][m GID 32, [OnProposalFinished] Sponsor: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, BlockHash: 40e287f229f3eb2184aba6344f29d656be9fd004ad5af9c7a734ae008eecebad, EndTime: 2019-04-23 20:13:34.318646256 -0400 EDT m=+61.137675488, Result: true, ViewOffset: 0, ProposalHash: 0000000000000000000000000000000000000000000000000000000000000000
+2019/04/23 20:13:34.318708 [1;35m[INF][m GID 32, [FinishConsensus] start
+2019/04/23 20:13:34.318741 [1;35m[INF][m GID 32, [OnConsensusFinished] EndTime: 2019-04-23 20:13:34.31871697 -0400 EDT m=+61.137746205, Height: 470
+2019/04/23 20:13:34.318770 [1;35m[INF][m GID 32, Clean proposals
+2019/04/23 20:13:34.318896 [1;35m[INF][m GID 32, [FinishConsensus] end
+2019/04/23 20:13:34.318960 [1;35m[INF][m GID 32, [FinishProposal] end
+2019/04/23 20:13:34.339553 [1;35m[INF][m GID 32, [countAcceptedVote] end
+2019/04/23 20:13:34.340093 [1;35m[INF][m GID 32, [ProcessVote] end
+2019/04/23 20:13:34.340199 [1;35m[INF][m GID 32, [Normal-ProcessAcceptVote] end
+2019/04/23 20:13:34.340522 [1;35m[INF][m GID 32, [OnVoteArrived] Signer: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, ProposalHash: bbe3fb7c7e833a4d6e5e18fdf82721876edadd82e75bcd23845d1bf380254380, ReceivedTime: 2019-04-23 20:13:34.340213352 -0400 EDT m=+61.159242590, Result: true
+2019/04/23 20:13:34.341816 [1;35m[INF][m GID 32, [onDutyArbitratorChanged] not onduty
+2019/04/23 20:13:34.344212 [1;35m[INF][m GID 32, [OnVoteReceived] end
+2019/04/23 20:13:34.344321 [1;35m[INF][m GID 32, [OnConfirmReceived] started, hash: 40e287f229f3eb2184aba6344f29d656be9fd004ad5af9c7a734ae008eecebad
+2019/04/23 20:13:34.344413 [1;35m[INF][m GID 32, [onDutyArbitratorChanged] not onduty
+2019/04/23 20:13:34.344501 [1;35m[INF][m GID 32, [OnConfirmReceived] end

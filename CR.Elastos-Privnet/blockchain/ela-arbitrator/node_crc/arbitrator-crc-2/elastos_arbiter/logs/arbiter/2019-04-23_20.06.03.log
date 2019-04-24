@@ -1,0 +1,445 @@
+2019/04/23 20:06:03.240380 [1;35m[INF][m GID 1, Init wallet.
+2019/04/23 20:06:03.308152 [1;35m[INF][m GID 1, Arbiter version:  v0.1.0-6-g758e
+2019/04/23 20:06:03.332814 [1;35m[INF][m GID 1, 1. Init chain utxo cache.
+2019/04/23 20:06:03.360563 [1;35m[INF][m GID 1, 2. Init finished transaction cache.
+2019/04/23 20:06:03.361055 [1;35m[INF][m GID 1, 3. Start arbitrator P2P networks.
+2019/04/23 20:06:03.361311 [1;35m[INF][m GID 1, 4. Init configurations.
+2019/04/23 20:06:03.367030 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:03.373569 [1;32m[DBG][m GID 1, github.com/elastos/Elastos.ELA.Arbiter/arbitration/mainchain.(*MainChainImpl).SyncChainData mainchainImpl.go:221 No need sync, chain height: 438 current height: 438
+2019/04/23 20:06:03.373916 [1;35m[INF][m GID 1, 5. Start arbitrator spv module.
+2019/04/23 20:06:03.373955 [1;35m[INF][m GID 1, [StartSpvModule] new spv service: &{elastos_arbiter/data/spv 20190131 ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw [127.0.0.1:10215] 10215 1 3 <nil>}
+2019/04/23 20:06:03.463001 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: ENTmN8H9WEQjiR5aZyHHSErUDb24PtgeKf
+2019/04/23 20:06:03.463125 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ
+2019/04/23 20:06:03.463184 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: EHnxz2oRXehfAy5QrCH7gqZtUZQPx7hprH
+2019/04/23 20:06:03.463282 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4
+2019/04/23 20:06:03.463352 [1;35m[INF][m GID 1, 6. Start arbitrator group monitor.
+2019/04/23 20:06:03.463380 [1;35m[INF][m GID 1, 7. Start servers.
+2019/04/23 20:06:03.463396 [1;35m[INF][m GID 1, 8. Start check and remove cross chain transactions from db.
+2019/04/23 20:06:03.463411 [1;35m[INF][m GID 1, 9. Start side chain account divide.
+2019/04/23 20:06:03.464093 [1;35m[INF][m GID 88, Check and remove cross chain transactions from dbcache finished
+2019/04/23 20:06:04.370978 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:04.524916 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  439
+2019/04/23 20:06:05.377789 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:06.379110 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:06.404749 [1;35m[INF][m GID 39, currentHeight: 245  chainHeight: 246
+2019/04/23 20:06:06.405242 [1;32m[DBG][m GID 39, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 20:06:06.408533 [1;35m[INF][m GID 39,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  246
+2019/04/23 20:06:07.380313 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:08.381062 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:09.392225 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:10.394045 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:11.396778 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:12.405123 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:13.405998 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:14.406944 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:15.407725 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:16.409257 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:17.410794 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:18.411630 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:19.412826 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:20.414437 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:21.415651 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:22.416868 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:23.418714 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:24.420494 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:25.421604 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:26.422698 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:27.428317 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:28.429138 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:29.020283 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  440
+2019/04/23 20:06:29.430188 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:30.432697 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:31.434375 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:32.435717 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:33.436612 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:33.746296 [1;35m[INF][m GID 39, currentHeight: 246  chainHeight: 247
+2019/04/23 20:06:33.780861 [1;32m[DBG][m GID 39, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 20:06:33.792783 [1;35m[INF][m GID 39,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  247
+2019/04/23 20:06:34.437643 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:35.442096 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:36.443716 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:37.447281 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:38.451942 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:39.226329 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  441
+2019/04/23 20:06:39.250269 [1;35m[INF][m GID 86, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 20:06:39.250368 [1;35m[INF][m GID 86, [SyncMainChainCachedTxs] start
+2019/04/23 20:06:39.250537 [1;35m[INF][m GID 86, [SyncMainChainCachedTxs] end
+2019/04/23 20:06:39.250614 [1;33m[WRN][m GID 86, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 20:06:39.250658 [1;35m[INF][m GID 471, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/04/23 20:06:39.250791 [1;35m[INF][m GID 471, [sideChainPowTransfer] start
+2019/04/23 20:06:39.250679 [1;35m[INF][m GID 469, [SendCachedWithdrawTxs] start
+2019/04/23 20:06:39.251155 [1;35m[INF][m GID 469, No cached withdraw transaction need to send
+2019/04/23 20:06:39.251198 [1;35m[INF][m GID 469, [SendCachedWithdrawTxs] end
+2019/04/23 20:06:39.250689 [1;35m[INF][m GID 468, [SendCachedWithdrawTxs] start
+2019/04/23 20:06:39.251285 [1;35m[INF][m GID 468, No cached withdraw transaction need to send
+2019/04/23 20:06:39.251303 [1;35m[INF][m GID 468, [SendCachedWithdrawTxs] end
+2019/04/23 20:06:39.250752 [1;35m[INF][m GID 470, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 20:06:39.251399 [1;35m[INF][m GID 470, [sideChainPowTransfer] start
+2019/04/23 20:06:39.252055 [1;32m[DBG][m GID 471, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:39.252182 [1;31m[ERR][m GID 471, [sideChainPowTransfer] create aux block failed: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:39.252201 [1;33m[WRN][m GID 471, Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:39.259088 [1;35m[INF][m GID 470, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: d51eef4e2db60c837ef87f802fc33ab2c5fe1f7ae564d1697a11f81f91ce1bd5
+2019/04/23 20:06:39.295477 [1;33m[WRN][m GID 470, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 20:06:39.453255 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:40.454890 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:41.456072 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:42.457411 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:43.458819 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:44.461326 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:45.462569 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:46.464310 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:47.465136 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:48.050351 [1;35m[INF][m GID 39, currentHeight: 247  chainHeight: 248
+2019/04/23 20:06:48.057152 [1;32m[DBG][m GID 39, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 20:06:48.065827 [1;35m[INF][m GID 39,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  248
+2019/04/23 20:06:48.065889 [1;35m[INF][m GID 39, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 20:06:48.065912 [1;35m[INF][m GID 39, [sideChainPowTransfer] start
+2019/04/23 20:06:48.066430 [1;35m[INF][m GID 39, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 6052734a9ba68eb54cfff8832584507576fdf0c6ae69c3b317f514c12030d5aa
+2019/04/23 20:06:48.070940 [1;33m[WRN][m GID 39, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 20:06:48.070992 [1;35m[INF][m GID 39, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 20:06:48.466033 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:49.072713 [1;35m[INF][m GID 39, currentHeight: 248  chainHeight: 249
+2019/04/23 20:06:49.073025 [1;32m[DBG][m GID 39, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 20:06:49.076390 [1;35m[INF][m GID 39,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  249
+2019/04/23 20:06:49.076441 [1;35m[INF][m GID 39, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 20:06:49.076615 [1;35m[INF][m GID 39, [sideChainPowTransfer] start
+2019/04/23 20:06:49.077325 [1;35m[INF][m GID 39, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: e9cfedf8fe1d90b1c6b7e20ee575e0fcb1b2b1168d9a6ab2de4ce3a893a93e8a
+2019/04/23 20:06:49.099242 [1;33m[WRN][m GID 39, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 20:06:49.099271 [1;35m[INF][m GID 39, [SyncSideChain] Start side chain mining, genesis address: [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 20:06:49.356496 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  442
+2019/04/23 20:06:49.359683 [1;35m[INF][m GID 86, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 20:06:49.467191 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:50.468474 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:51.471748 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:52.472893 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:53.476504 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:54.471107 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  443
+2019/04/23 20:06:54.477539 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:55.485863 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:56.497993 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:57.502559 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:58.503528 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:06:59.504404 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:00.511064 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:01.512665 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:02.514483 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:03.464417 [1;35m[INF][m GID 88, Check and remove cross chain transactions from dbcache finished
+2019/04/23 20:07:03.466015 [1;35m[INF][m GID 89, Warning side chain mining account:  ENTmN8H9WEQjiR5aZyHHSErUDb24PtgeKf: 0 EHnxz2oRXehfAy5QrCH7gqZtUZQPx7hprH: 0 
+2019/04/23 20:07:03.515588 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:03.537043 [1;32m[DBG][m GID 89, github.com/elastos/Elastos.ELA.Arbiter/sideauxpow.divideTransfer autodivide.go:89 Divide transaction successfully signed:  1 1
+2019/04/23 20:07:04.524233 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:05.526459 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:06.529360 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:06.781532 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  444
+2019/04/23 20:07:07.530456 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:08.531382 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:09.532286 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:10.533839 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:11.534740 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:12.350691 [1;35m[INF][m GID 39, currentHeight: 249  chainHeight: 250
+2019/04/23 20:07:12.353247 [1;32m[DBG][m GID 39, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 20:07:12.365395 [1;35m[INF][m GID 39,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  250
+2019/04/23 20:07:12.546077 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:13.547118 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:13.829652 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  445
+2019/04/23 20:07:14.548060 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:15.548800 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:16.549547 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:17.550826 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:18.551752 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:19.552913 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:20.555221 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:21.556053 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:22.559619 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:23.560789 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:24.561664 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:25.563894 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:26.564802 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:27.567724 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:28.569153 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:29.570723 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:30.571576 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:31.572290 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:31.603752 [1;35m[INF][m GID 39, currentHeight: 250  chainHeight: 251
+2019/04/23 20:07:31.604015 [1;32m[DBG][m GID 39, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 20:07:31.607505 [1;35m[INF][m GID 39,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  251
+2019/04/23 20:07:32.572999 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:33.575522 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:34.578567 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:35.579219 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:36.580248 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:37.583200 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:38.584458 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:39.585609 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:40.586903 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:41.279549 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  446
+2019/04/23 20:07:41.589466 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:42.593670 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:43.594655 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:44.595389 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:45.596367 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:46.603830 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:47.605100 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:48.609209 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:49.610164 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:50.611133 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:51.612279 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:52.613513 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:53.614625 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:54.615479 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:55.622892 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:56.624040 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:57.625379 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:58.626255 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:07:59.627647 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:00.629857 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:01.357755 [1;35m[INF][m GID 134, [Notify-Deposit] find deposit transaction and add into channel, transaction hash: 16497f376b61de4c9aeca4c6ac38ac8f22d41ae277a0d72852360768f8a2cba2
+2019/04/23 20:08:01.357829 [1;35m[INF][m GID 82, [DepositListener] len tasks: 1
+2019/04/23 20:08:01.357922 [1;35m[INF][m GID 82, [Notify-Process] deal with 1 transactions
+2019/04/23 20:08:01.365262 [1;33m[WRN][m GID 82, [Notify-Process] i am not onduty
+2019/04/23 20:08:01.630700 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:01.770206 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  447
+2019/04/23 20:08:01.772891 [1;35m[INF][m GID 86, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 20:08:01.772947 [1;35m[INF][m GID 86, [SyncMainChainCachedTxs] start
+2019/04/23 20:08:01.773032 [1;35m[INF][m GID 86, [SyncMainChainCachedTxs] end
+2019/04/23 20:08:01.773056 [1;35m[INF][m GID 1076, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/04/23 20:08:01.773078 [1;35m[INF][m GID 1076, [sideChainPowTransfer] start
+2019/04/23 20:08:01.773596 [1;32m[DBG][m GID 1076, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:01.773624 [1;31m[ERR][m GID 1076, [sideChainPowTransfer] create aux block failed: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:01.773641 [1;33m[WRN][m GID 1076, Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:01.773658 [1;35m[INF][m GID 1041, [SendCachedWithdrawTxs] start
+2019/04/23 20:08:01.773843 [1;35m[INF][m GID 1041, No cached withdraw transaction need to send
+2019/04/23 20:08:01.773862 [1;35m[INF][m GID 1041, [SendCachedWithdrawTxs] end
+2019/04/23 20:08:01.773747 [1;35m[INF][m GID 1074, [SendCachedWithdrawTxs] start
+2019/04/23 20:08:01.773910 [1;35m[INF][m GID 1074, No cached withdraw transaction need to send
+2019/04/23 20:08:01.773937 [1;35m[INF][m GID 1074, [SendCachedWithdrawTxs] end
+2019/04/23 20:08:01.773760 [1;35m[INF][m GID 1075, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 20:08:01.773973 [1;35m[INF][m GID 1075, [sideChainPowTransfer] start
+2019/04/23 20:08:01.789490 [1;35m[INF][m GID 1040, [Rpc-sendtransactioninfo] Deposit transaction to side chain： 127.0.0.1 : 10134
+2019/04/23 20:08:01.789927 [1;35m[INF][m GID 1040, [Rpc-sendtransactioninfo] Deposit transaction finished
+2019/04/23 20:08:01.790001 [1;35m[INF][m GID 1040, response: {0 2.0 00a2e29d72b9a58fdb1e386d752539c95bb42790e687bc72aaadb49682027879 <nil>}
+2019/04/23 20:08:01.790032 [1;35m[INF][m GID 1040, Send deposit transaction succeed, move to finished db, main chain tx hash: 16497f376b61de4c9aeca4c6ac38ac8f22d41ae277a0d72852360768f8a2cba2
+2019/04/23 20:08:01.790051 [1;35m[INF][m GID 1040, Send deposit transaction succeed, move to finished db, side chain tx hash: 00a2e29d72b9a58fdb1e386d752539c95bb42790e687bc72aaadb49682027879
+2019/04/23 20:08:01.791264 [1;35m[INF][m GID 1075, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 833fffe28875441d730e5bee982cadee9d7abefda82759f2d33da6e42fa95335
+2019/04/23 20:08:01.791772 [1;33m[WRN][m GID 1075, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 20:08:02.632263 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:03.469240 [1;35m[INF][m GID 88, Check and remove cross chain transactions from dbcache finished
+2019/04/23 20:08:03.633682 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:03.657779 [1;35m[INF][m GID 89, Warning side chain mining account:  ENTmN8H9WEQjiR5aZyHHSErUDb24PtgeKf: 0 EHnxz2oRXehfAy5QrCH7gqZtUZQPx7hprH: 0 
+2019/04/23 20:08:03.679658 [1;32m[DBG][m GID 89, github.com/elastos/Elastos.ELA.Arbiter/sideauxpow.divideTransfer autodivide.go:89 Divide transaction successfully signed:  1 1
+2019/04/23 20:08:03.898599 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  448
+2019/04/23 20:08:03.901684 [1;35m[INF][m GID 86, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 20:08:04.634885 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:05.635703 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:06.637200 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:07.130093 [1;35m[INF][m GID 39, currentHeight: 251  chainHeight: 252
+2019/04/23 20:08:07.130350 [1;32m[DBG][m GID 39, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 20:08:07.194980 [1;35m[INF][m GID 39,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  252
+2019/04/23 20:08:07.639311 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:08.641128 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:09.641986 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:10.643335 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:11.644372 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:11.997031 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  449
+2019/04/23 20:08:12.645177 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:13.646420 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:14.647819 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:15.649408 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:16.650197 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:17.089065 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  450
+2019/04/23 20:08:17.652854 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:18.655119 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:19.655930 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:20.656926 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:21.658446 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:22.659548 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:23.279404 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  451
+2019/04/23 20:08:23.660715 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:24.662286 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:25.663900 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:26.666822 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:27.336674 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  452
+2019/04/23 20:08:27.667984 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:28.668797 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:29.669716 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:30.671173 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:31.672779 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:32.673720 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:33.498860 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  453
+2019/04/23 20:08:33.503133 [1;35m[INF][m GID 86, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 20:08:33.503167 [1;35m[INF][m GID 86, [SyncMainChainCachedTxs] start
+2019/04/23 20:08:33.503273 [1;35m[INF][m GID 86, [SyncMainChainCachedTxs] end
+2019/04/23 20:08:33.503297 [1;33m[WRN][m GID 86, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 20:08:33.503314 [1;35m[INF][m GID 1324, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/04/23 20:08:33.503348 [1;35m[INF][m GID 1324, [sideChainPowTransfer] start
+2019/04/23 20:08:33.503741 [1;35m[INF][m GID 1322, [SendCachedWithdrawTxs] start
+2019/04/23 20:08:33.504037 [1;35m[INF][m GID 1323, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 20:08:33.504075 [1;35m[INF][m GID 1323, [sideChainPowTransfer] start
+2019/04/23 20:08:33.504150 [1;35m[INF][m GID 1322, No cached withdraw transaction need to send
+2019/04/23 20:08:33.504175 [1;35m[INF][m GID 1322, [SendCachedWithdrawTxs] end
+2019/04/23 20:08:33.504212 [1;35m[INF][m GID 1321, [SendCachedWithdrawTxs] start
+2019/04/23 20:08:33.504253 [1;32m[DBG][m GID 1324, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:33.504296 [1;31m[ERR][m GID 1324, [sideChainPowTransfer] create aux block failed: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:33.504316 [1;33m[WRN][m GID 1324, Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:33.504349 [1;35m[INF][m GID 1321, No cached withdraw transaction need to send
+2019/04/23 20:08:33.504402 [1;35m[INF][m GID 1321, [SendCachedWithdrawTxs] end
+2019/04/23 20:08:33.504806 [1;35m[INF][m GID 1323, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 4fc89ea116045b220004b344c5e3812b5de40a424bb4cb800807fdfb2c65d7a0
+2019/04/23 20:08:33.505204 [1;33m[WRN][m GID 1323, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 20:08:33.674902 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:34.675906 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:35.676973 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:36.677924 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:37.679047 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:38.685726 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:39.687363 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:40.689559 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:41.690639 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:42.561454 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  454
+2019/04/23 20:08:42.564427 [1;35m[INF][m GID 86, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 20:08:42.692106 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:43.697960 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:44.698922 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:45.699908 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:46.631514 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  455
+2019/04/23 20:08:46.701691 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:47.703322 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:48.650926 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  456
+2019/04/23 20:08:48.704311 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:49.705819 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:50.706873 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:51.002922 [1;35m[INF][m GID 39, currentHeight: 252  chainHeight: 253
+2019/04/23 20:08:51.003216 [1;32m[DBG][m GID 39, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 20:08:51.006376 [1;35m[INF][m GID 39,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  253
+2019/04/23 20:08:51.711177 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:52.712394 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:53.715168 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:54.717242 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:55.718616 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:56.719676 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:56.786756 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  457
+2019/04/23 20:08:57.721105 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:58.722363 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:08:59.723296 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:00.724498 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:01.725272 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:01.983539 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  458
+2019/04/23 20:09:02.726418 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:03.470128 [1;35m[INF][m GID 88, Check and remove cross chain transactions from dbcache finished
+2019/04/23 20:09:03.716352 [1;35m[INF][m GID 89, Warning side chain mining account:  ENTmN8H9WEQjiR5aZyHHSErUDb24PtgeKf: 0 EHnxz2oRXehfAy5QrCH7gqZtUZQPx7hprH: 0 
+2019/04/23 20:09:03.727329 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:03.733425 [1;32m[DBG][m GID 89, github.com/elastos/Elastos.ELA.Arbiter/sideauxpow.divideTransfer autodivide.go:89 Divide transaction successfully signed:  1 1
+2019/04/23 20:09:04.728926 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:05.729931 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:06.176614 [1;35m[INF][m GID 39, currentHeight: 253  chainHeight: 254
+2019/04/23 20:09:06.179807 [1;32m[DBG][m GID 39, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 20:09:06.182880 [1;35m[INF][m GID 39,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  254
+2019/04/23 20:09:06.732415 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:07.733577 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:08.134295 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  459
+2019/04/23 20:09:08.137996 [1;35m[INF][m GID 86, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/23 20:09:08.138031 [1;35m[INF][m GID 86, [SyncMainChainCachedTxs] start
+2019/04/23 20:09:08.138107 [1;35m[INF][m GID 86, [SyncMainChainCachedTxs] end
+2019/04/23 20:09:08.138130 [1;33m[WRN][m GID 86, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/23 20:09:08.138155 [1;35m[INF][m GID 1582, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/04/23 20:09:08.138177 [1;35m[INF][m GID 1582, [sideChainPowTransfer] start
+2019/04/23 20:09:08.138350 [1;35m[INF][m GID 1580, [SendCachedWithdrawTxs] start
+2019/04/23 20:09:08.138412 [1;35m[INF][m GID 1580, No cached withdraw transaction need to send
+2019/04/23 20:09:08.138472 [1;35m[INF][m GID 1580, [SendCachedWithdrawTxs] end
+2019/04/23 20:09:08.138514 [1;35m[INF][m GID 1579, [SendCachedWithdrawTxs] start
+2019/04/23 20:09:08.138649 [1;35m[INF][m GID 1579, No cached withdraw transaction need to send
+2019/04/23 20:09:08.138524 [1;35m[INF][m GID 1581, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/23 20:09:08.138730 [1;35m[INF][m GID 1581, [sideChainPowTransfer] start
+2019/04/23 20:09:08.138704 [1;35m[INF][m GID 1579, [SendCachedWithdrawTxs] end
+2019/04/23 20:09:08.138905 [1;32m[DBG][m GID 1582, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:08.138952 [1;31m[ERR][m GID 1582, [sideChainPowTransfer] create aux block failed: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:08.138980 [1;33m[WRN][m GID 1582, Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:08.144602 [1;35m[INF][m GID 1581, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 2c58a4f80a2b6b3ca28eb4c6531bd1d2eeffb35868a822dce709cdc039c5996c
+2019/04/23 20:09:08.153635 [1;33m[WRN][m GID 1581, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/23 20:09:08.734497 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:09.735874 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:10.736854 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:11.737924 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:12.739229 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:13.741733 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:14.743302 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:15.230965 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  460
+2019/04/23 20:09:15.233970 [1;35m[INF][m GID 86, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/23 20:09:15.744309 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:16.745664 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:17.746944 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:18.749034 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:19.750501 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:20.751835 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:21.753782 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:22.754586 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:23.755527 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:24.759883 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:25.761027 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:26.579541 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  461
+2019/04/23 20:09:26.762121 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:27.618302 [1;35m[INF][m GID 86, [arbitrator] Main chain height:  462
+2019/04/23 20:09:27.763773 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:28.377571 [1;35m[INF][m GID 39, currentHeight: 254  chainHeight: 255
+2019/04/23 20:09:28.377985 [1;32m[DBG][m GID 39, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 20:09:28.381746 [1;35m[INF][m GID 39,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  255
+2019/04/23 20:09:28.764964 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:29.404092 [1;35m[INF][m GID 39, currentHeight: 255  chainHeight: 256
+2019/04/23 20:09:29.405134 [1;32m[DBG][m GID 39, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 20:09:29.408334 [1;35m[INF][m GID 39,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  256
+2019/04/23 20:09:29.766561 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:30.767575 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:31.768263 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:32.769310 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:33.770647 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:34.772037 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:35.773059 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:36.714294 [1;32m[DBG][m GID 86, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 20:09:36.714346 [1;35m[INF][m GID 86, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:36.714371 [1;31m[ERR][m GID 86, Arbitrator group sync error:  Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 20:09:36.774171 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:37.715538 [1;32m[DBG][m GID 86, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 20:09:37.715600 [1;35m[INF][m GID 86, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:37.715624 [1;31m[ERR][m GID 86, Arbitrator group sync error:  Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 20:09:37.775188 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:38.724790 [1;32m[DBG][m GID 86, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 20:09:38.724836 [1;35m[INF][m GID 86, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:38.724863 [1;31m[ERR][m GID 86, Arbitrator group sync error:  Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 20:09:38.776921 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:39.725970 [1;32m[DBG][m GID 86, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 20:09:39.726030 [1;35m[INF][m GID 86, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:39.726050 [1;31m[ERR][m GID 86, Arbitrator group sync error:  Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 20:09:39.777690 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:40.730681 [1;32m[DBG][m GID 86, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 20:09:40.730754 [1;35m[INF][m GID 86, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:40.730774 [1;31m[ERR][m GID 86, Arbitrator group sync error:  Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 20:09:40.778606 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:41.731620 [1;32m[DBG][m GID 86, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 20:09:41.731715 [1;35m[INF][m GID 86, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:41.731741 [1;31m[ERR][m GID 86, Arbitrator group sync error:  Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 20:09:41.780396 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:42.532805 [1;32m[DBG][m GID 39, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10134: dial tcp 127.0.0.1:10134: connect: connection refused
+2019/04/23 20:09:42.732482 [1;32m[DBG][m GID 86, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 20:09:42.732543 [1;35m[INF][m GID 86, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:42.732564 [1;31m[ERR][m GID 86, Arbitrator group sync error:  Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 20:09:42.798235 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:43.533194 [1;32m[DBG][m GID 39, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10134: dial tcp 127.0.0.1:10134: connect: connection refused
+2019/04/23 20:09:43.733140 [1;32m[DBG][m GID 86, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 20:09:43.733200 [1;35m[INF][m GID 86, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:43.733221 [1;31m[ERR][m GID 86, Arbitrator group sync error:  Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 20:09:43.800077 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:44.534363 [1;32m[DBG][m GID 39, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10134: dial tcp 127.0.0.1:10134: connect: connection refused
+2019/04/23 20:09:44.734053 [1;32m[DBG][m GID 86, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 20:09:44.734107 [1;35m[INF][m GID 86, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:44.734127 [1;31m[ERR][m GID 86, Arbitrator group sync error:  Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 20:09:44.801061 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:45.535314 [1;32m[DBG][m GID 39, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10134: dial tcp 127.0.0.1:10134: connect: connection refused
+2019/04/23 20:09:45.734832 [1;32m[DBG][m GID 86, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 20:09:45.734922 [1;35m[INF][m GID 86, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:45.734964 [1;31m[ERR][m GID 86, Arbitrator group sync error:  Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 20:09:45.802836 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:46.535994 [1;32m[DBG][m GID 39, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10134: dial tcp 127.0.0.1:10134: connect: connection refused
+2019/04/23 20:09:46.740791 [1;32m[DBG][m GID 86, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 20:09:46.740949 [1;35m[INF][m GID 86, [SyncFromMainNode] rpc get current height failed
+2019/04/23 20:09:46.740992 [1;31m[ERR][m GID 86, Arbitrator group sync error:  Post http://127.0.0.1:10214: dial tcp 127.0.0.1:10214: connect: connection refused
+2019/04/23 20:09:46.805123 [1;32m[DBG][m GID 40, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-1:10144: dial tcp: lookup ela-sidechain-token-1: Temporary failure in name resolution
+2019/04/23 20:09:47.536738 [1;32m[DBG][m GID 39, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10134: dial tcp 127.0.0.1:10134: connect: connection refused

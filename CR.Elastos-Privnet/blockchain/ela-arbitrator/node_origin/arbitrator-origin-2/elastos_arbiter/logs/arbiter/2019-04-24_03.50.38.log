@@ -1,0 +1,258 @@
+2019/04/24 03:50:38.305099 [1;35m[INF][m GID 1, Init wallet.
+2019/04/24 03:50:38.451961 [1;35m[INF][m GID 1, Arbiter version:  
+2019/04/24 03:50:38.453684 [1;35m[INF][m GID 1, 1. Init chain utxo cache.
+2019/04/24 03:50:38.804868 [1;35m[INF][m GID 1, 2. Init finished transaction cache.
+2019/04/24 03:50:38.900035 [1;35m[INF][m GID 1, 3. Start arbitrator P2P networks.
+2019/04/24 03:50:38.923268 [1;35m[INF][m GID 1, 4. Init configurations.
+2019/04/24 03:50:38.938348 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:50:39.040520 [1;35m[INF][m GID 1, [arbitrator] Main chain height:  524
+2019/04/24 03:50:39.174612 [1;35m[INF][m GID 1, 5. Start arbitrator spv module.
+2019/04/24 03:50:39.174697 [1;35m[INF][m GID 1, [StartSpvModule] new spv service: &{elastos_arbiter/data/spv 20190131 ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw [ela-mainchain-dpos-2:10615] 10615 1 3 <nil>}
+2019/04/24 03:50:39.429423 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: EL8Zg6LiLPaC9eDQYre3syTqv2vBBig9Nd
+2019/04/24 03:50:39.437377 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ
+2019/04/24 03:50:39.437474 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: EXPtrFJSC689BEq8xfM6EBqoXJaNGmWSkc
+2019/04/24 03:50:39.437563 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4
+2019/04/24 03:50:39.437623 [1;35m[INF][m GID 1, 6. Start arbitrator group monitor.
+2019/04/24 03:50:39.437666 [1;35m[INF][m GID 1, 7. Start servers.
+2019/04/24 03:50:39.437690 [1;35m[INF][m GID 1, 8. Start check and remove cross chain transactions from db.
+2019/04/24 03:50:39.437710 [1;35m[INF][m GID 1, 9. Start side chain account divide.
+2019/04/24 03:50:39.438637 [1;35m[INF][m GID 116, Check and remove cross chain transactions from dbcache finished
+2019/04/24 03:50:39.938815 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:50:40.940492 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:50:41.944525 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:50:42.523307 [1;35m[INF][m GID 114, [arbitrator] Main chain height:  525
+2019/04/24 03:50:42.944823 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:50:43.953029 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:50:44.203727 [1;35m[INF][m GID 58, currentHeight: 291  chainHeight: 292
+2019/04/24 03:50:44.232777 [1;32m[DBG][m GID 58, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/24 03:50:44.314616 [1;35m[INF][m GID 58,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  292
+2019/04/24 03:50:44.955157 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:50:45.960390 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:50:46.694530 [1;35m[INF][m GID 114, [arbitrator] Main chain height:  526
+2019/04/24 03:50:46.961334 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:50:47.964118 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:50:48.965273 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:50:49.965880 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:50:50.966922 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:50:51.968153 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:50:52.969391 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:50:53.971472 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:50:54.972965 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:50:55.973947 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:50:56.800256 [1;35m[INF][m GID 114, [arbitrator] Main chain height:  527
+2019/04/24 03:50:56.974435 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:50:57.974997 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:50:58.975370 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:50:59.976010 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:00.976376 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:01.903482 [1;35m[INF][m GID 114, [arbitrator] Main chain height:  528
+2019/04/24 03:51:01.981278 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:02.981722 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:03.982224 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:04.983234 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:05.983985 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:06.984305 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:07.984867 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:08.996745 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:09.997879 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:11.003273 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:11.046666 [1;35m[INF][m GID 114, [arbitrator] Main chain height:  529
+2019/04/24 03:51:12.004002 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:13.004631 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:14.012621 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:15.013492 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:16.014292 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:17.014589 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:18.015364 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:19.016277 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:20.016930 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:21.017569 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:22.018816 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:23.025764 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:24.026204 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:24.240898 [1;35m[INF][m GID 58, currentHeight: 292  chainHeight: 293
+2019/04/24 03:51:24.270158 [1;32m[DBG][m GID 58, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/24 03:51:24.313129 [1;35m[INF][m GID 58,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  293
+2019/04/24 03:51:25.028844 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:26.030396 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:27.031036 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:28.031384 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:28.541169 [1;35m[INF][m GID 114, [arbitrator] Main chain height:  530
+2019/04/24 03:51:29.031730 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:30.032942 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:31.035296 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:32.035936 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:33.036244 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:34.036737 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:35.037315 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:36.038120 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:37.041343 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:38.042112 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:39.042788 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:39.469916 [1;35m[INF][m GID 116, Check and remove cross chain transactions from dbcache finished
+2019/04/24 03:51:39.652737 [1;35m[INF][m GID 117, Warning side chain mining account:  EL8Zg6LiLPaC9eDQYre3syTqv2vBBig9Nd: 0 EXPtrFJSC689BEq8xfM6EBqoXJaNGmWSkc: 0 
+2019/04/24 03:51:40.043464 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:41.050547 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:42.052371 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:43.052770 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:44.053419 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:45.053992 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:45.876541 [1;35m[INF][m GID 114, [arbitrator] Main chain height:  531
+2019/04/24 03:51:46.054731 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:47.055153 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:48.056876 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:48.945688 [1;35m[INF][m GID 114, [arbitrator] Main chain height:  532
+2019/04/24 03:51:49.057142 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:49.645669 [1;35m[INF][m GID 58, currentHeight: 293  chainHeight: 294
+2019/04/24 03:51:49.654063 [1;32m[DBG][m GID 58, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/24 03:51:49.668973 [1;35m[INF][m GID 58,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  294
+2019/04/24 03:51:50.060384 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:51.061637 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:52.062203 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:53.063199 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:54.064064 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:55.064686 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:56.065249 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:57.065666 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:57.107646 [1;35m[INF][m GID 114, [arbitrator] Main chain height:  533
+2019/04/24 03:51:58.067803 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:51:59.068839 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:00.069382 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:01.070799 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:02.071215 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:03.071956 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:04.072939 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:05.075150 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:05.303687 [1;35m[INF][m GID 114, [arbitrator] Main chain height:  534
+2019/04/24 03:52:06.076232 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:07.076651 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:08.077736 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:09.078523 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:10.079074 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:11.079769 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:12.084655 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:13.092783 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:14.093384 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:15.094815 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:16.095640 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:17.096619 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:18.096995 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:19.097652 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:20.098119 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:21.098641 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:22.099507 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:23.101621 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:24.102392 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:25.108934 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:26.109944 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:27.113601 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:28.128529 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:29.129635 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:30.130061 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:31.130348 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:32.131454 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:33.131779 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:33.325325 [1;35m[INF][m GID 58, currentHeight: 294  chainHeight: 295
+2019/04/24 03:52:33.327022 [1;32m[DBG][m GID 58, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/24 03:52:33.330844 [1;35m[INF][m GID 58,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  295
+2019/04/24 03:52:34.132741 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:34.868447 [1;35m[INF][m GID 114, [arbitrator] Main chain height:  535
+2019/04/24 03:52:35.133417 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:36.144334 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:37.145026 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:38.146238 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:39.012264 [1;35m[INF][m GID 114, [arbitrator] Main chain height:  536
+2019/04/24 03:52:39.146858 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:39.470649 [1;35m[INF][m GID 116, Check and remove cross chain transactions from dbcache finished
+2019/04/24 03:52:39.731910 [1;35m[INF][m GID 117, Warning side chain mining account:  EL8Zg6LiLPaC9eDQYre3syTqv2vBBig9Nd: 0 EXPtrFJSC689BEq8xfM6EBqoXJaNGmWSkc: 0 
+2019/04/24 03:52:40.148168 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:41.148719 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:42.149732 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:43.150161 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:44.151421 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:44.518645 [1;35m[INF][m GID 58, currentHeight: 295  chainHeight: 296
+2019/04/24 03:52:44.520566 [1;32m[DBG][m GID 58, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/24 03:52:44.546436 [1;35m[INF][m GID 58,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  296
+2019/04/24 03:52:45.152034 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:46.157235 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:46.293412 [1;35m[INF][m GID 114, [arbitrator] Main chain height:  537
+2019/04/24 03:52:47.158268 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:48.160305 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:49.161330 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:50.162301 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:51.163039 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:52.163373 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:53.163948 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:54.164206 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:55.165545 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:56.166395 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:57.167230 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:58.169001 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:52:58.490409 [1;35m[INF][m GID 114, [arbitrator] Main chain height:  538
+2019/04/24 03:52:59.174859 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:00.177163 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:01.179398 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:02.180225 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:03.180497 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:04.180867 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:05.182051 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:06.182710 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:07.186888 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:08.187399 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:09.189996 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:10.192235 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:11.194048 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:12.194728 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:13.313993 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:13.327756 [1;35m[INF][m GID 58, currentHeight: 296  chainHeight: 297
+2019/04/24 03:53:13.329916 [1;32m[DBG][m GID 58, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/24 03:53:13.599301 [1;35m[INF][m GID 58,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  297
+2019/04/24 03:53:14.020560 [1;35m[INF][m GID 114, [arbitrator] Main chain height:  539
+2019/04/24 03:53:14.330105 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:15.333702 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:16.344914 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:17.346002 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:18.347854 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:19.348731 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:20.349002 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:21.350165 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:22.350617 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:23.351460 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:24.351806 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:25.353893 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:26.354769 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:27.355652 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:28.356049 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:28.509018 [1;35m[INF][m GID 114, [arbitrator] Main chain height:  540
+2019/04/24 03:53:29.356439 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:30.357272 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:31.358023 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:32.359145 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:33.362175 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:34.371781 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:35.376812 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:35.679463 [1;35m[INF][m GID 114, [arbitrator] Main chain height:  541
+2019/04/24 03:53:36.377540 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:37.378466 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:38.378826 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:38.390192 [1;35m[INF][m GID 58, currentHeight: 297  chainHeight: 298
+2019/04/24 03:53:38.390932 [1;32m[DBG][m GID 58, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/24 03:53:38.393491 [1;35m[INF][m GID 58,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  298
+2019/04/24 03:53:39.379346 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:39.477260 [1;35m[INF][m GID 116, Check and remove cross chain transactions from dbcache finished
+2019/04/24 03:53:39.834338 [1;35m[INF][m GID 117, Warning side chain mining account:  EL8Zg6LiLPaC9eDQYre3syTqv2vBBig9Nd: 0 EXPtrFJSC689BEq8xfM6EBqoXJaNGmWSkc: 0 
+2019/04/24 03:53:40.379798 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:41.380451 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:42.380765 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:43.382658 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:44.388634 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:45.390822 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:46.393496 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:47.418414 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:48.419062 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:49.419418 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:50.051506 [1;35m[INF][m GID 114, [arbitrator] Main chain height:  542
+2019/04/24 03:53:50.420150 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:51.422437 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:52.429988 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host
+2019/04/24 03:53:53.432579 [1;32m[DBG][m GID 59, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://ela-sidechain-token-:10144: dial tcp: lookup ela-sidechain-token-: no such host

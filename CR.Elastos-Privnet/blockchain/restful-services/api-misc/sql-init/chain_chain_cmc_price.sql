@@ -63,4 +63,4 @@ CREATE TABLE `chain_cmc_price` (
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2019-02-25 18:07:06
-CREATE INDEX idx_chain_cmc_price ON chain.chain_cmc_price (symbol);
+CREATE INDEX idx_chain_cmc_price ON chain_cmc_price (symbol);

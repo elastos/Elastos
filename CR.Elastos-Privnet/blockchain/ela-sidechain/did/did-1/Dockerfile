@@ -17,6 +17,6 @@ RUN apk update \
 
 USER elauser
 
-EXPOSE 10604-10608
+EXPOSE 10031-10035
 
 ENTRYPOINT ["/bin/sh", "-c", "./did"]

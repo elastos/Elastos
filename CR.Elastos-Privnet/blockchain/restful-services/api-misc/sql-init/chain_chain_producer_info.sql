@@ -53,4 +53,4 @@ CREATE TABLE `chain_producer_info` (
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2019-04-02 15:52:47
-CREATE INDEX idx_chain_producer_info ON chain.chain_producer_info (ownerpublickey);
+CREATE INDEX idx_chain_producer_info ON chain_producer_info (ownerpublickey);

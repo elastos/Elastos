@@ -1,0 +1,7 @@
+2019/04/23 14:49:18.506546 [1;35m[INF][m GID 1, ID: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/04/23 14:49:18.510956 [1;35m[INF][m GID 1, [UpdatePeers] peers: 0  height:  0
+2019/04/23 14:49:18.511789 [1;31m[ERR][m GID 1, self not in direct peers list
+2019/04/23 14:49:18.511224 [1;35m[INF][m GID 53, Server listening on [::]:10116
+2019/04/23 14:49:18.511223 [1;35m[INF][m GID 52, Server listening on 0.0.0.0:10116
+2019/04/23 14:59:46.247465 [1;32m[DBG][m GID 12466, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).readRemoteVersionMsg peer.go:690 Read message failed, [P2P] invalid message header
+2019/04/23 14:59:46.247972 [1;32m[DBG][m GID 12465, runtime.goexit asm_amd64.s:1333 Cannot start peer 127.0.0.1:58012 (inbound): [P2P] invalid message header

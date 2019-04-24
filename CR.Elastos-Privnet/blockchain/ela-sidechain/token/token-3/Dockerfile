@@ -23,6 +23,6 @@ RUN apk update \
 
 USER elauser
 
-EXPOSE 12614-12618
+EXPOSE 10241-10245
 
 ENTRYPOINT ["/bin/sh", "-c", "./token"]

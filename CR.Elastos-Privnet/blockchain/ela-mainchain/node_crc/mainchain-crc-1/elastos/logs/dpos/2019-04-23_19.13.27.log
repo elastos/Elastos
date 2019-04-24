@@ -1,0 +1,1373 @@
+2019/04/23 19:13:27.744670 [1;35m[INF][m GID 1, ID: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/04/23 19:13:27.755539 [1;32m[DBG][m GID 1, github.com/elastos/Elastos.ELA/dpos/store.(*DposStore).StartEventRecord eventstore.go:197 create ConsensusEvent table Connect failed: already exist table: ConsensusEvent
+2019/04/23 19:13:27.762775 [1;32m[DBG][m GID 1, github.com/elastos/Elastos.ELA/dpos/store.(*DposStore).StartEventRecord eventstore.go:201 create ProposalEvent table failed: already exist table: ProposalEvent
+2019/04/23 19:13:27.762949 [1;32m[DBG][m GID 1, github.com/elastos/Elastos.ELA/dpos/store.(*DposStore).StartEventRecord eventstore.go:205 create VoteEvent table failed: already exist table: VoteEvent
+2019/04/23 19:13:27.763110 [1;32m[DBG][m GID 1, github.com/elastos/Elastos.ELA/dpos/store.(*DposStore).StartEventRecord eventstore.go:209 create ViewEvent table failed: already exist table: ViewEvent
+2019/04/23 19:13:27.763611 [1;35m[INF][m GID 1, [UpdatePeers] peers: 6  height:  389
+2019/04/23 19:13:27.764209 [1;35m[INF][m GID 1, peer[ 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ] addr: 127.0.0.1:10116  pid: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/04/23 19:13:27.764238 [1;35m[INF][m GID 1, peer[ 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ] addr: 127.0.0.1:10216  pid: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/04/23 19:13:27.764259 [1;35m[INF][m GID 1, peer[ 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ] addr: 127.0.0.1:10316  pid: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a
+2019/04/23 19:13:27.764279 [1;35m[INF][m GID 1, peer[ 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ] addr: 127.0.0.1:10416  pid: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7
+2019/04/23 19:13:27.764298 [1;35m[INF][m GID 1, peer[ 02677bd3dc8ea4a9ab22f8ba5c5348fc1ce4ba5f1810e8ec8603d5bd927b630b3e ] address empty
+2019/04/23 19:13:27.764317 [1;35m[INF][m GID 1, peer[ 0232d3172b7fc139b7605b83cd27e3c6f64fde1e71da2489764723639a6d40b5b9 ] address empty
+2019/04/23 19:13:27.764822 [1;32m[DBG][m GID 53, runtime.goexit asm_amd64.s:1333 Attempting to connect to 127.0.0.1:10416 (reqid 1)
+2019/04/23 19:13:27.763865 [1;35m[INF][m GID 38, Server listening on [::]:10116
+2019/04/23 19:13:27.763894 [1;35m[INF][m GID 37, Server listening on 0.0.0.0:10116
+2019/04/23 19:13:27.764841 [1;32m[DBG][m GID 51, runtime.goexit asm_amd64.s:1333 Attempting to connect to 127.0.0.1:10216 (reqid 2)
+2019/04/23 19:13:27.764856 [1;32m[DBG][m GID 52, runtime.goexit asm_amd64.s:1333 Attempting to connect to 127.0.0.1:10316 (reqid 3)
+2019/04/23 19:13:27.765185 [1;32m[DBG][m GID 36, runtime.goexit asm_amd64.s:1333 Failed to connect to 127.0.0.1:10416 (reqid 1): dial tcp 127.0.0.1:10416: connect: connection refused
+2019/04/23 19:13:27.765492 [1;32m[DBG][m GID 36, github.com/elastos/Elastos.ELA/dpos/p2p/connmgr.(*ConnManager).connHandler connmanager.go:307 Retrying connection to 127.0.0.1:10416 (reqid 1) in 5s
+2019/04/23 19:13:27.765581 [1;32m[DBG][m GID 36, runtime.goexit asm_amd64.s:1333 Failed to connect to 127.0.0.1:10216 (reqid 2): dial tcp 127.0.0.1:10216: connect: connection refused
+2019/04/23 19:13:27.765607 [1;32m[DBG][m GID 36, github.com/elastos/Elastos.ELA/dpos/p2p/connmgr.(*ConnManager).connHandler connmanager.go:307 Retrying connection to 127.0.0.1:10216 (reqid 2) in 5s
+2019/04/23 19:13:27.765634 [1;32m[DBG][m GID 36, runtime.goexit asm_amd64.s:1333 Failed to connect to 127.0.0.1:10316 (reqid 3): dial tcp 127.0.0.1:10316: connect: connection refused
+2019/04/23 19:13:27.765655 [1;32m[DBG][m GID 36, github.com/elastos/Elastos.ELA/dpos/p2p/connmgr.(*ConnManager).connHandler connmanager.go:307 Retrying connection to 127.0.0.1:10316 (reqid 3) in 5s
+2019/04/23 19:13:27.785634 [1;35m[INF][m GID 56, [UpdatePeers] peers: 6  height:  389
+2019/04/23 19:13:27.785721 [1;35m[INF][m GID 56, peer[ 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ] addr: 127.0.0.1:10316  pid: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a
+2019/04/23 19:13:27.785788 [1;35m[INF][m GID 56, peer[ 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ] addr: 127.0.0.1:10416  pid: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7
+2019/04/23 19:13:27.785840 [1;35m[INF][m GID 56, peer[ 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ] addr: 127.0.0.1:10116  pid: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/04/23 19:13:27.785873 [1;35m[INF][m GID 56, peer[ 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ] addr: 127.0.0.1:10216  pid: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/04/23 19:13:27.785922 [1;35m[INF][m GID 56, peer[ 02677bd3dc8ea4a9ab22f8ba5c5348fc1ce4ba5f1810e8ec8603d5bd927b630b3e ] address empty
+2019/04/23 19:13:27.785954 [1;35m[INF][m GID 56, peer[ 0232d3172b7fc139b7605b83cd27e3c6f64fde1e71da2489764723639a6d40b5b9 ] address empty
+2019/04/23 19:13:27.786857 [1;35m[INF][m GID 56, [UpdatePeers] peers: 4  height:  389
+2019/04/23 19:13:27.787486 [1;35m[INF][m GID 56, peer[ 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7 ] addr: 127.0.0.1:10416  pid: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7
+2019/04/23 19:13:27.787641 [1;35m[INF][m GID 56, peer[ 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450 ] addr: 127.0.0.1:10116  pid: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/04/23 19:13:27.787785 [1;35m[INF][m GID 56, peer[ 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08 ] addr: 127.0.0.1:10216  pid: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/04/23 19:13:27.787894 [1;35m[INF][m GID 56, peer[ 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a ] addr: 127.0.0.1:10316  pid: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a
+2019/04/23 19:13:27.811583 [1;35m[INF][m GID 43, [onDutyArbitratorChanged] not onduty
+2019/04/23 19:13:27.816089 [1;35m[INF][m GID 43, Recover when start
+2019/04/23 19:13:27.816113 [1;31m[ERR][m GID 43, [recoverAbnormalState] can not find active peer
+2019/04/23 19:13:28.816627 [1;35m[INF][m GID 43, Recover when start
+2019/04/23 19:13:28.816803 [1;31m[ERR][m GID 43, [recoverAbnormalState] can not find active peer
+2019/04/23 19:13:29.092380 [1;32m[DBG][m GID 221, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).readRemoteVersionMsg peer.go:690 Received version from 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:29.092512 [1;32m[DBG][m GID 221, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).negotiateInboundProtocol peer.go:777 Negotiated protocol version 0 for peer 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:29.092935 [1;32m[DBG][m GID 221, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).writeLocalVersionMsg peer.go:764 Sending version to 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:29.092968 [1;32m[DBG][m GID 50, github.com/elastos/Elastos.ELA/dpos/p2p.(*server).handlePeerMsg server.go:602 New peer 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:29.093254 [1;32m[DBG][m GID 221, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).writeLocalVerAckMsg peer.go:770 Sending verack to 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:29.094614 [1;32m[DBG][m GID 221, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).readRemoteVerAckMsg peer.go:736 Received verack from 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:29.094731 [1;32m[DBG][m GID 220, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).AssociateConnection.func1 peer.go:877 Connected to 127.0.0.1:41782
+2019/04/23 19:13:29.117458 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received req_con from 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:29.117505 [1;35m[INF][m GID 54, [HelpToRecoverAbnormal] peer id: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/04/23 19:13:29.117529 [1;35m[INF][m GID 54, [CollectConsensusStatus] status.ConsensusStatus: 0
+2019/04/23 19:13:29.118889 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending res_con to 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:29.817551 [1;35m[INF][m GID 43, Recover when start
+2019/04/23 19:13:29.817765 [1;35m[INF][m GID 43, [RequestAbnormalRecovering] broadcast message to peers
+2019/04/23 19:13:29.817854 [1;35m[INF][m GID 43, [BroadcastMessage] msg: req_con
+2019/04/23 19:13:29.817916 [1;35m[INF][m GID 43, Recover finished
+2019/04/23 19:13:29.817984 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending req_con to 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:29.818677 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received res_con from 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:29.818785 [1;35m[INF][m GID 54, [OnResponseConsensus] status: {0 0 1754-08-30 17:47:39.128654848 -0456 LMT [] [] [] []}
+2019/04/23 19:13:29.818818 [1;35m[INF][m GID 54, [OnResponseConsensus] collect recover status
+2019/04/23 19:13:29.818858 [1;35m[INF][m GID 54, [OnResponseConsensus] recover received 1 status at viewoffset:0
+2019/04/23 19:13:29.818927 [1;35m[INF][m GID 54, [RecoverFromConsensusStatus] status.ConsensusStatus: 0
+2019/04/23 19:13:30.589716 [1;32m[DBG][m GID 248, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).readRemoteVersionMsg peer.go:690 Received version from 127.0.0.1:41812 (inbound)
+2019/04/23 19:13:30.589833 [1;32m[DBG][m GID 248, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).negotiateInboundProtocol peer.go:777 Negotiated protocol version 0 for peer 127.0.0.1:41812 (inbound)
+2019/04/23 19:13:30.589880 [1;32m[DBG][m GID 248, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).writeLocalVersionMsg peer.go:764 Sending version to 127.0.0.1:41812 (inbound)
+2019/04/23 19:13:30.590011 [1;32m[DBG][m GID 248, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).writeLocalVerAckMsg peer.go:770 Sending verack to 127.0.0.1:41812 (inbound)
+2019/04/23 19:13:30.590068 [1;32m[DBG][m GID 50, github.com/elastos/Elastos.ELA/dpos/p2p.(*server).handlePeerMsg server.go:602 New peer 127.0.0.1:41812 (inbound)
+2019/04/23 19:13:30.590751 [1;32m[DBG][m GID 248, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).readRemoteVerAckMsg peer.go:736 Received verack from 127.0.0.1:41812 (inbound)
+2019/04/23 19:13:30.590900 [1;32m[DBG][m GID 247, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).AssociateConnection.func1 peer.go:877 Connected to 127.0.0.1:41812
+2019/04/23 19:13:30.616549 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received req_con from 127.0.0.1:41812 (inbound)
+2019/04/23 19:13:30.616627 [1;35m[INF][m GID 54, [HelpToRecoverAbnormal] peer id: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a
+2019/04/23 19:13:30.616653 [1;35m[INF][m GID 54, [CollectConsensusStatus] status.ConsensusStatus: 0
+2019/04/23 19:13:30.616685 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending res_con to 127.0.0.1:41812 (inbound)
+2019/04/23 19:13:31.904689 [1;32m[DBG][m GID 280, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).readRemoteVersionMsg peer.go:690 Received version from 127.0.0.1:41844 (inbound)
+2019/04/23 19:13:31.904794 [1;32m[DBG][m GID 280, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).negotiateInboundProtocol peer.go:777 Negotiated protocol version 0 for peer 127.0.0.1:41844 (inbound)
+2019/04/23 19:13:31.904831 [1;32m[DBG][m GID 280, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).writeLocalVersionMsg peer.go:764 Sending version to 127.0.0.1:41844 (inbound)
+2019/04/23 19:13:31.905031 [1;32m[DBG][m GID 280, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).writeLocalVerAckMsg peer.go:770 Sending verack to 127.0.0.1:41844 (inbound)
+2019/04/23 19:13:31.905086 [1;32m[DBG][m GID 50, github.com/elastos/Elastos.ELA/dpos/p2p.(*server).handlePeerMsg server.go:602 New peer 127.0.0.1:41844 (inbound)
+2019/04/23 19:13:31.910687 [1;32m[DBG][m GID 280, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).readRemoteVerAckMsg peer.go:736 Received verack from 127.0.0.1:41844 (inbound)
+2019/04/23 19:13:31.910823 [1;32m[DBG][m GID 279, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).AssociateConnection.func1 peer.go:877 Connected to 127.0.0.1:41844
+2019/04/23 19:13:31.974438 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received req_con from 127.0.0.1:41844 (inbound)
+2019/04/23 19:13:31.974491 [1;35m[INF][m GID 54, [HelpToRecoverAbnormal] peer id: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7
+2019/04/23 19:13:31.974517 [1;35m[INF][m GID 54, [CollectConsensusStatus] status.ConsensusStatus: 0
+2019/04/23 19:13:31.974569 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending res_con to 127.0.0.1:41844 (inbound)
+2019/04/23 19:13:32.766438 [1;32m[DBG][m GID 309, github.com/elastos/Elastos.ELA/dpos/p2p/connmgr.(*ConnManager).handleFailedConn.func1 connmanager.go:186 Attempting to connect to 127.0.0.1:10416 (reqid 4)
+2019/04/23 19:13:32.766475 [1;32m[DBG][m GID 311, github.com/elastos/Elastos.ELA/dpos/p2p/connmgr.(*ConnManager).handleFailedConn.func1 connmanager.go:186 Attempting to connect to 127.0.0.1:10316 (reqid 5)
+2019/04/23 19:13:32.766492 [1;32m[DBG][m GID 310, github.com/elastos/Elastos.ELA/dpos/p2p/connmgr.(*ConnManager).handleFailedConn.func1 connmanager.go:186 Attempting to connect to 127.0.0.1:10216 (reqid 6)
+2019/04/23 19:13:32.767204 [1;32m[DBG][m GID 36, runtime.goexit asm_amd64.s:1333 Connected to 127.0.0.1:10416 (reqid 4)
+2019/04/23 19:13:32.767761 [1;32m[DBG][m GID 36, runtime.goexit asm_amd64.s:1333 Connected to 127.0.0.1:10316 (reqid 5)
+2019/04/23 19:13:32.767818 [1;32m[DBG][m GID 314, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).writeLocalVersionMsg peer.go:764 Sending version to 127.0.0.1:10416 (outbound)
+2019/04/23 19:13:32.767997 [1;32m[DBG][m GID 318, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).writeLocalVersionMsg peer.go:764 Sending version to 127.0.0.1:10316 (outbound)
+2019/04/23 19:13:32.768668 [1;32m[DBG][m GID 318, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).readRemoteVersionMsg peer.go:690 Received version from 127.0.0.1:10316 (outbound)
+2019/04/23 19:13:32.768762 [1;32m[DBG][m GID 318, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).negotiateOutboundProtocol peer.go:803 Negotiated protocol version 0 for peer 127.0.0.1:10316 (outbound)
+2019/04/23 19:13:32.768797 [1;32m[DBG][m GID 50, github.com/elastos/Elastos.ELA/dpos/p2p.(*server).handlePeerMsg server.go:602 New peer 127.0.0.1:10316 (outbound)
+2019/04/23 19:13:32.769160 [1;32m[DBG][m GID 314, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).readRemoteVersionMsg peer.go:690 Received version from 127.0.0.1:10416 (outbound)
+2019/04/23 19:13:32.769268 [1;32m[DBG][m GID 314, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).negotiateOutboundProtocol peer.go:803 Negotiated protocol version 0 for peer 127.0.0.1:10416 (outbound)
+2019/04/23 19:13:32.769269 [1;32m[DBG][m GID 36, runtime.goexit asm_amd64.s:1333 Connected to 127.0.0.1:10216 (reqid 6)
+2019/04/23 19:13:32.769336 [1;32m[DBG][m GID 318, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).readRemoteVerAckMsg peer.go:736 Received verack from 127.0.0.1:10316 (outbound)
+2019/04/23 19:13:32.769540 [1;32m[DBG][m GID 303, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).writeLocalVersionMsg peer.go:764 Sending version to 127.0.0.1:10216 (outbound)
+2019/04/23 19:13:32.769306 [1;32m[DBG][m GID 50, github.com/elastos/Elastos.ELA/dpos/p2p.(*server).handlePeerMsg server.go:602 New peer 127.0.0.1:10416 (outbound)
+2019/04/23 19:13:32.769741 [1;32m[DBG][m GID 314, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).readRemoteVerAckMsg peer.go:736 Received verack from 127.0.0.1:10416 (outbound)
+2019/04/23 19:13:32.770226 [1;32m[DBG][m GID 314, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).writeLocalVerAckMsg peer.go:770 Sending verack to 127.0.0.1:10416 (outbound)
+2019/04/23 19:13:32.770413 [1;32m[DBG][m GID 313, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).AssociateConnection.func1 peer.go:877 Connected to 127.0.0.1:10416
+2019/04/23 19:13:32.770732 [1;32m[DBG][m GID 303, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).readRemoteVersionMsg peer.go:690 Received version from 127.0.0.1:10216 (outbound)
+2019/04/23 19:13:32.770841 [1;32m[DBG][m GID 303, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).negotiateOutboundProtocol peer.go:803 Negotiated protocol version 0 for peer 127.0.0.1:10216 (outbound)
+2019/04/23 19:13:32.770943 [1;32m[DBG][m GID 303, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).readRemoteVerAckMsg peer.go:736 Received verack from 127.0.0.1:10216 (outbound)
+2019/04/23 19:13:32.771141 [1;32m[DBG][m GID 303, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).writeLocalVerAckMsg peer.go:770 Sending verack to 127.0.0.1:10216 (outbound)
+2019/04/23 19:13:32.771785 [1;32m[DBG][m GID 302, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).AssociateConnection.func1 peer.go:877 Connected to 127.0.0.1:10216
+2019/04/23 19:13:32.771288 [1;32m[DBG][m GID 50, github.com/elastos/Elastos.ELA/dpos/p2p.(*server).handlePeerMsg server.go:602 New peer 127.0.0.1:10216 (outbound)
+2019/04/23 19:13:32.772354 [1;32m[DBG][m GID 318, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).writeLocalVerAckMsg peer.go:770 Sending verack to 127.0.0.1:10316 (outbound)
+2019/04/23 19:13:32.772428 [1;32m[DBG][m GID 317, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).AssociateConnection.func1 peer.go:877 Connected to 127.0.0.1:10316
+2019/04/23 19:13:38.190009 [1;35m[INF][m GID 46, [OnBlockReceived] listener received block
+2019/04/23 19:13:38.190085 [1;35m[INF][m GID 54, [OnBlockReceived] start
+2019/04/23 19:13:38.190133 [1;35m[INF][m GID 54, [Normal][OnBlockReceived] received first unsigned block, start consensus
+2019/04/23 19:13:38.190161 [1;35m[INF][m GID 54, [StartConsensus] consensus start
+2019/04/23 19:13:38.190221 [1;35m[INF][m GID 54, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-04-23 19:13:38.190179943 -0400 EDT m=+10.541808138, Offset: 0, Height: 389
+2019/04/23 19:13:38.190261 [1;35m[INF][m GID 54, [StartConsensus] consensus end
+2019/04/23 19:13:38.190286 [1;35m[INF][m GID 54, [OnConsensusStarted] StartTime: 2019-04-23 19:13:38.190269757 -0400 EDT m=+10.541897968, Height: 390
+2019/04/23 19:13:38.190305 [1;35m[INF][m GID 54, [OnBlockReceived] end
+2019/04/23 19:13:38.190539 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:38.190577 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received proposal from 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:38.190603 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:13:38.190626 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:13:38.190656 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending req_pro to 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:38.190721 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:13:38.190798 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, ProposalHash: c8bdb716bb5b498994a9063dc55e4968d0bc03ef199d3956cb06c83802053001, ReceivedTime: 2019-04-23 19:13:38.190733627 -0400 EDT m=+10.542361831, Result: true
+2019/04/23 19:13:38.190847 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:13:38.190887 [1;35m[INF][m GID 54, [OnProposalReceived] started
+2019/04/23 19:13:38.190914 [1;35m[INF][m GID 54, [Normal][ProcessProposal] start
+2019/04/23 19:13:38.190940 [1;35m[INF][m GID 54, [ProcessProposal] start
+2019/04/23 19:13:38.191119 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] start
+2019/04/23 19:13:38.191148 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] end
+2019/04/23 19:13:38.191190 [1;35m[INF][m GID 54, [acceptProposal] start
+2019/04/23 19:13:38.191221 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:13:38.191368 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:13:38.191400 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:13:38.191442 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:13:38.191471 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:13:38.224231 [1;32m[DBG][m GID 326, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received proposal from 127.0.0.1:10216 (outbound)
+2019/04/23 19:13:38.227941 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41844 (inbound)
+2019/04/23 19:13:38.227992 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:13:38.228179 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:13:38.228213 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:13:38.228243 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:13:38.228272 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:13:38.228450 [1;35m[INF][m GID 54, [BroadcastMessage] msg: acc_vote
+2019/04/23 19:13:38.228482 [1;35m[INF][m GID 54, [acceptProposal] send acc_vote msg: d7227fe333202e68d92b641c6c6386f03aaa43f6c29577d937cdfe829912738b
+2019/04/23 19:13:38.228520 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, ProposalHash: c8bdb716bb5b498994a9063dc55e4968d0bc03ef199d3956cb06c83802053001, ReceivedTime: 2019-04-23 19:13:38.228491647 -0400 EDT m=+10.580119842, Result: true
+2019/04/23 19:13:38.228548 [1;35m[INF][m GID 54, [acceptProposal] end
+2019/04/23 19:13:38.228574 [1;35m[INF][m GID 54, [ProcessProposal] end
+2019/04/23 19:13:38.228711 [1;35m[INF][m GID 54, [Normal][ProcessProposal] end
+2019/04/23 19:13:38.228743 [1;35m[INF][m GID 54, [OnProposalArrived] Sponsor: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, BlockHash: 58e0bb58773ae191bcbe221d7176bef5dd4bfc1f18a8b1090b7158b6180dd7a4, ReceivedTime: 2019-04-23 19:13:38.228721753 -0400 EDT m=+10.580349954, Result: false, ViewOffset: 0, ProposalHash: c8bdb716bb5b498994a9063dc55e4968d0bc03ef199d3956cb06c83802053001
+2019/04/23 19:13:38.228765 [1;35m[INF][m GID 54, [OnProposalReceived] end
+2019/04/23 19:13:38.228917 [1;35m[INF][m GID 54, [OnProposalReceived] started
+2019/04/23 19:13:38.228943 [1;35m[INF][m GID 54, [Normal][ProcessProposal] start
+2019/04/23 19:13:38.228968 [1;35m[INF][m GID 54, [ProcessProposal] start
+2019/04/23 19:13:38.229115 [1;35m[INF][m GID 54, already processing proposal
+2019/04/23 19:13:38.229285 [1;35m[INF][m GID 54, [ProcessProposal] end
+2019/04/23 19:13:38.229365 [1;35m[INF][m GID 54, [Normal][ProcessProposal] end
+2019/04/23 19:13:38.229451 [1;35m[INF][m GID 54, [OnProposalArrived] Sponsor: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, BlockHash: 58e0bb58773ae191bcbe221d7176bef5dd4bfc1f18a8b1090b7158b6180dd7a4, ReceivedTime: 2019-04-23 19:13:38.229428202 -0400 EDT m=+10.581056402, Result: false, ViewOffset: 0, ProposalHash: c8bdb716bb5b498994a9063dc55e4968d0bc03ef199d3956cb06c83802053001
+2019/04/23 19:13:38.229528 [1;35m[INF][m GID 54, [OnProposalReceived] end
+2019/04/23 19:13:38.229549 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:13:38.229642 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:13:38.229667 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:13:38.229902 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:13:38.230131 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:13:38.230213 [1;35m[INF][m GID 54, Collect majority signs, finish proposal.
+2019/04/23 19:13:38.230301 [1;35m[INF][m GID 54, [FinishProposal] start
+2019/04/23 19:13:38.230389 [1;35m[INF][m GID 54, [TryAppendAndBroadcastConfirmBlockMsg] append confirm.
+2019/04/23 19:13:38.231404 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10216 (outbound)
+2019/04/23 19:13:38.235866 [1;35m[INF][m GID 54, [OnConfirmReceived] listener received confirm
+2019/04/23 19:13:38.235956 [1;35m[INF][m GID 54, [OnProposalFinished] Sponsor: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, BlockHash: 58e0bb58773ae191bcbe221d7176bef5dd4bfc1f18a8b1090b7158b6180dd7a4, EndTime: 2019-04-23 19:13:38.235880699 -0400 EDT m=+10.587508894, Result: true, ViewOffset: 0, ProposalHash: 0000000000000000000000000000000000000000000000000000000000000000
+2019/04/23 19:13:38.236197 [1;35m[INF][m GID 54, [FinishConsensus] start
+2019/04/23 19:13:38.236302 [1;35m[INF][m GID 54, [OnConsensusFinished] EndTime: 2019-04-23 19:13:38.236214398 -0400 EDT m=+10.587842593, Height: 390
+2019/04/23 19:13:38.236404 [1;35m[INF][m GID 54, Clean proposals
+2019/04/23 19:13:38.236494 [1;35m[INF][m GID 54, [FinishConsensus] end
+2019/04/23 19:13:38.236664 [1;35m[INF][m GID 54, [FinishProposal] end
+2019/04/23 19:13:38.236848 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:13:38.236889 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:13:38.236990 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:13:38.237105 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, ProposalHash: c8bdb716bb5b498994a9063dc55e4968d0bc03ef199d3956cb06c83802053001, ReceivedTime: 2019-04-23 19:13:38.237083408 -0400 EDT m=+10.588711605, Result: true
+2019/04/23 19:13:38.240371 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] onduty
+2019/04/23 19:13:38.240410 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:13:38.240436 [1;35m[INF][m GID 54, [OnConfirmReceived] started, hash: 58e0bb58773ae191bcbe221d7176bef5dd4bfc1f18a8b1090b7158b6180dd7a4
+2019/04/23 19:13:38.240464 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] onduty
+2019/04/23 19:13:38.240579 [1;35m[INF][m GID 54, [OnConfirmReceived] end
+2019/04/23 19:13:38.231509 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10316 (outbound)
+2019/04/23 19:13:38.231565 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10416 (outbound)
+2019/04/23 19:13:38.263701 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41812 (inbound)
+2019/04/23 19:13:38.264004 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:13:38.265747 [1;35m[INF][m GID 54, [Onduty-ProcessAcceptVote] start
+2019/04/23 19:13:38.265849 [1;35m[INF][m GID 54, [Onduty-ProcessAcceptVote] end
+2019/04/23 19:13:38.356211 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, ProposalHash: c8bdb716bb5b498994a9063dc55e4968d0bc03ef199d3956cb06c83802053001, ReceivedTime: 2019-04-23 19:13:38.356171225 -0400 EDT m=+10.707799448, Result: true
+2019/04/23 19:13:38.356243 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:13:39.096328 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:39.127307 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:39.137629 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:39.137683 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:40.592129 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41812 (inbound)
+2019/04/23 19:13:40.593273 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41812 (inbound)
+2019/04/23 19:13:40.593317 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41812 (inbound)
+2019/04/23 19:13:40.595366 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41812 (inbound)
+2019/04/23 19:13:41.971245 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41844 (inbound)
+2019/04/23 19:13:41.971422 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41844 (inbound)
+2019/04/23 19:13:41.971609 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41844 (inbound)
+2019/04/23 19:13:41.982937 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41844 (inbound)
+2019/04/23 19:13:42.321724 [1;35m[INF][m GID 46, [OnBlockReceived] listener received block
+2019/04/23 19:13:42.335875 [1;35m[INF][m GID 54, [OnBlockReceived] start
+2019/04/23 19:13:42.336347 [1;35m[INF][m GID 54, [OnDuty][OnBlockReceived] received first unsigned block, start consensus
+2019/04/23 19:13:42.336824 [1;35m[INF][m GID 54, [StartConsensus] consensus start
+2019/04/23 19:13:42.336876 [1;35m[INF][m GID 54, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-04-23 19:13:42.336847191 -0400 EDT m=+14.688475386, Offset: 0, Height: 390
+2019/04/23 19:13:42.338572 [1;35m[INF][m GID 54, [StartConsensus] consensus end
+2019/04/23 19:13:42.338695 [1;35m[INF][m GID 54, [StartProposal] start
+2019/04/23 19:13:42.352547 [1;35m[INF][m GID 54, [StartProposal] sponsor: [3 134 32 109 29 68 47 92 141 220 201 174 69 171 133 217 33 182 173 227 161 132 244 59 124 207 109 224 47 60 160 180 80]
+2019/04/23 19:13:42.372364 [1;35m[INF][m GID 54, [StartProposal] send proposal message finished, Proposal Hash:  0a87d9e25d86e41e437164a97d635824f07c21214bd6369de5228383b9616248
+2019/04/23 19:13:42.386374 [1;35m[INF][m GID 54, [BroadcastMessage] msg: proposal
+2019/04/23 19:13:42.386424 [1;35m[INF][m GID 54, [OnProposalArrived] Sponsor: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, BlockHash: 77d4ed080ee40ee50f590bce6080725db80173b72e3deb6956893eae91ae8809, ReceivedTime: 2019-04-23 19:13:42.38638996 -0400 EDT m=+14.738018156, Result: false, ViewOffset: 0, ProposalHash: b0931fbf744e15b5eb85be75357f843a8110b44fc377bdc05a9e5b63c2079bc2
+2019/04/23 19:13:42.386467 [1;35m[INF][m GID 54, [acceptProposal] start
+2019/04/23 19:13:42.386631 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:13:42.386862 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:13:42.386902 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:13:42.387016 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:13:42.387054 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:13:42.387131 [1;35m[INF][m GID 54, [BroadcastMessage] msg: acc_vote
+2019/04/23 19:13:42.387161 [1;35m[INF][m GID 54, [acceptProposal] send acc_vote msg: ba405b36ceb85b130d5850fad3353f51a72bfa170e31ed50569ccfd32b3ae9a8
+2019/04/23 19:13:42.387193 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, ProposalHash: b0931fbf744e15b5eb85be75357f843a8110b44fc377bdc05a9e5b63c2079bc2, ReceivedTime: 2019-04-23 19:13:42.387170701 -0400 EDT m=+14.738798897, Result: true
+2019/04/23 19:13:42.387222 [1;35m[INF][m GID 54, [acceptProposal] end
+2019/04/23 19:13:42.387245 [1;35m[INF][m GID 54, [StartProposal] end
+2019/04/23 19:13:42.387270 [1;35m[INF][m GID 54, [OnConsensusStarted] StartTime: 2019-04-23 19:13:42.38725317 -0400 EDT m=+14.738881366, Height: 391
+2019/04/23 19:13:42.387289 [1;35m[INF][m GID 54, [OnBlockReceived] end
+2019/04/23 19:13:42.387337 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10416 (outbound)
+2019/04/23 19:13:42.387470 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending proposal to 127.0.0.1:10216 (outbound)
+2019/04/23 19:13:42.387799 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending proposal to 127.0.0.1:10316 (outbound)
+2019/04/23 19:13:42.388408 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending proposal to 127.0.0.1:10416 (outbound)
+2019/04/23 19:13:42.388852 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10216 (outbound)
+2019/04/23 19:13:42.426612 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10316 (outbound)
+2019/04/23 19:13:42.431437 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41844 (inbound)
+2019/04/23 19:13:42.431512 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:13:42.431564 [1;35m[INF][m GID 54, [Onduty-ProcessAcceptVote] start
+2019/04/23 19:13:42.431592 [1;35m[INF][m GID 54, [OnVoteReceived] Received needed sign, collect it
+2019/04/23 19:13:42.431616 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:13:42.431822 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:13:42.431882 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:13:42.431911 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:13:42.431935 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:13:42.431983 [1;35m[INF][m GID 54, [Onduty-ProcessAcceptVote] end
+2019/04/23 19:13:42.432019 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, ProposalHash: b0931fbf744e15b5eb85be75357f843a8110b44fc377bdc05a9e5b63c2079bc2, ReceivedTime: 2019-04-23 19:13:42.43199548 -0400 EDT m=+14.783623681, Result: true
+2019/04/23 19:13:42.432063 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:13:42.432106 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received req_pro from 127.0.0.1:10416 (outbound)
+2019/04/23 19:13:42.432206 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending proposal to 127.0.0.1:41844 (inbound)
+2019/04/23 19:13:42.470914 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41812 (inbound)
+2019/04/23 19:13:42.470981 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:13:42.471007 [1;35m[INF][m GID 54, [Onduty-ProcessAcceptVote] start
+2019/04/23 19:13:42.471031 [1;35m[INF][m GID 54, [OnVoteReceived] Received needed sign, collect it
+2019/04/23 19:13:42.471055 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:13:42.471226 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:13:42.471253 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:13:42.471279 [1;35m[INF][m GID 54, Collect majority signs, finish proposal.
+2019/04/23 19:13:42.471305 [1;35m[INF][m GID 54, [FinishProposal] start
+2019/04/23 19:13:42.471337 [1;35m[INF][m GID 54, [TryAppendAndBroadcastConfirmBlockMsg] append confirm.
+2019/04/23 19:13:42.472847 [1;35m[INF][m GID 54, [OnConfirmReceived] listener received confirm
+2019/04/23 19:13:42.484886 [1;35m[INF][m GID 54, [OnProposalFinished] Sponsor: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, BlockHash: 77d4ed080ee40ee50f590bce6080725db80173b72e3deb6956893eae91ae8809, EndTime: 2019-04-23 19:13:42.484832485 -0400 EDT m=+14.836460703, Result: true, ViewOffset: 0, ProposalHash: 0000000000000000000000000000000000000000000000000000000000000000
+2019/04/23 19:13:42.502868 [1;35m[INF][m GID 54, [FinishConsensus] start
+2019/04/23 19:13:42.502937 [1;35m[INF][m GID 54, [OnConsensusFinished] EndTime: 2019-04-23 19:13:42.502887205 -0400 EDT m=+14.854515403, Height: 391
+2019/04/23 19:13:42.503420 [1;35m[INF][m GID 54, Clean proposals
+2019/04/23 19:13:42.503453 [1;35m[INF][m GID 54, [FinishConsensus] end
+2019/04/23 19:13:42.503481 [1;35m[INF][m GID 54, [FinishProposal] end
+2019/04/23 19:13:42.503509 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:13:42.503535 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:13:42.503560 [1;35m[INF][m GID 54, [Onduty-ProcessAcceptVote] end
+2019/04/23 19:13:42.503591 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, ProposalHash: b0931fbf744e15b5eb85be75357f843a8110b44fc377bdc05a9e5b63c2079bc2, ReceivedTime: 2019-04-23 19:13:42.503570925 -0400 EDT m=+14.855199121, Result: true
+2019/04/23 19:13:42.503618 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] not onduty
+2019/04/23 19:13:42.503639 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:13:42.503662 [1;35m[INF][m GID 54, [OnConfirmReceived] started, hash: 77d4ed080ee40ee50f590bce6080725db80173b72e3deb6956893eae91ae8809
+2019/04/23 19:13:42.503684 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] not onduty
+2019/04/23 19:13:42.503703 [1;35m[INF][m GID 54, [OnConfirmReceived] end
+2019/04/23 19:13:42.624027 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:42.624111 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:13:42.624151 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:13:42.624185 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:13:42.624221 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, ProposalHash: b0931fbf744e15b5eb85be75357f843a8110b44fc377bdc05a9e5b63c2079bc2, ReceivedTime: 2019-04-23 19:13:42.624198592 -0400 EDT m=+14.975826796, Result: true
+2019/04/23 19:13:42.624241 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:13:42.799697 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10216 (outbound)
+2019/04/23 19:13:42.799803 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10316 (outbound)
+2019/04/23 19:13:42.799896 [1;32m[DBG][m GID 326, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10216 (outbound)
+2019/04/23 19:13:42.799933 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10416 (outbound)
+2019/04/23 19:13:42.799981 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10216 (outbound)
+2019/04/23 19:13:42.800034 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10416 (outbound)
+2019/04/23 19:13:42.800061 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10416 (outbound)
+2019/04/23 19:13:42.800111 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10316 (outbound)
+2019/04/23 19:13:42.800147 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10316 (outbound)
+2019/04/23 19:13:42.800492 [1;32m[DBG][m GID 326, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10216 (outbound)
+2019/04/23 19:13:43.080993 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10316 (outbound)
+2019/04/23 19:13:43.098714 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10416 (outbound)
+2019/04/23 19:13:44.384958 [1;35m[INF][m GID 46, [OnBlockReceived] listener received block
+2019/04/23 19:13:44.385083 [1;35m[INF][m GID 54, [OnBlockReceived] start
+2019/04/23 19:13:44.385114 [1;35m[INF][m GID 54, [Normal][OnBlockReceived] received first unsigned block, start consensus
+2019/04/23 19:13:44.385137 [1;35m[INF][m GID 54, [StartConsensus] consensus start
+2019/04/23 19:13:44.385174 [1;35m[INF][m GID 54, [OnViewStarted] OnDutyArbitrator: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, StartTime: 2019-04-23 19:13:44.385150806 -0400 EDT m=+16.736779003, Offset: 0, Height: 391
+2019/04/23 19:13:44.385198 [1;35m[INF][m GID 54, [StartConsensus] consensus end
+2019/04/23 19:13:44.385223 [1;35m[INF][m GID 54, [OnConsensusStarted] StartTime: 2019-04-23 19:13:44.385207091 -0400 EDT m=+16.736835287, Height: 392
+2019/04/23 19:13:44.385242 [1;35m[INF][m GID 54, [OnBlockReceived] end
+2019/04/23 19:13:44.518004 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41812 (inbound)
+2019/04/23 19:13:44.518836 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:13:44.519004 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:13:44.519083 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending req_pro to 127.0.0.1:41812 (inbound)
+2019/04/23 19:13:44.519224 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:13:44.519621 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, ProposalHash: 837ec914c8f29e8156eb291c116e52dd38fbfa98042edef60d257638d556a96d, ReceivedTime: 2019-04-23 19:13:44.519588154 -0400 EDT m=+16.871216352, Result: true
+2019/04/23 19:13:44.519680 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:13:44.518052 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received proposal from 127.0.0.1:41844 (inbound)
+2019/04/23 19:13:44.520098 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41844 (inbound)
+2019/04/23 19:13:44.518118 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:44.520295 [1;35m[INF][m GID 54, [OnProposalReceived] started
+2019/04/23 19:13:44.520389 [1;35m[INF][m GID 54, [Normal][ProcessProposal] start
+2019/04/23 19:13:44.520452 [1;35m[INF][m GID 54, [ProcessProposal] start
+2019/04/23 19:13:44.520701 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] start
+2019/04/23 19:13:44.520767 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] end
+2019/04/23 19:13:44.520833 [1;35m[INF][m GID 54, [acceptProposal] start
+2019/04/23 19:13:44.520898 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:13:44.521096 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:13:44.521163 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:13:44.521230 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:13:44.521292 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:13:44.521459 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:13:44.521648 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:13:44.521729 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:13:44.521794 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:13:44.521856 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:13:44.521918 [1;35m[INF][m GID 54, [BroadcastMessage] msg: acc_vote
+2019/04/23 19:13:44.521984 [1;35m[INF][m GID 54, [acceptProposal] send acc_vote msg: 83a160e0513b2efcaba2b5f7d70ead75bcee9a45f80d2f69e62be416f465731e
+2019/04/23 19:13:44.522687 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10316 (outbound)
+2019/04/23 19:13:44.525959 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10416 (outbound)
+2019/04/23 19:13:44.526107 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10216 (outbound)
+2019/04/23 19:13:44.526216 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, ProposalHash: 837ec914c8f29e8156eb291c116e52dd38fbfa98042edef60d257638d556a96d, ReceivedTime: 2019-04-23 19:13:44.522024522 -0400 EDT m=+16.873652718, Result: true
+2019/04/23 19:13:44.526259 [1;35m[INF][m GID 54, [acceptProposal] end
+2019/04/23 19:13:44.526293 [1;35m[INF][m GID 54, [ProcessProposal] end
+2019/04/23 19:13:44.526325 [1;35m[INF][m GID 54, [Normal][ProcessProposal] end
+2019/04/23 19:13:44.526367 [1;35m[INF][m GID 54, [OnProposalArrived] Sponsor: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, BlockHash: 0b3aa5aeef0625dcc598eaa9f67dd78512fa210c8aa5bba18c4684f66b2500e2, ReceivedTime: 2019-04-23 19:13:44.526339204 -0400 EDT m=+16.877967399, Result: false, ViewOffset: 0, ProposalHash: 837ec914c8f29e8156eb291c116e52dd38fbfa98042edef60d257638d556a96d
+2019/04/23 19:13:44.526395 [1;35m[INF][m GID 54, [OnProposalReceived] end
+2019/04/23 19:13:44.526423 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:13:44.526454 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:13:44.526485 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:13:44.526650 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:13:44.526706 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:13:44.526796 [1;35m[INF][m GID 54, Collect majority signs, finish proposal.
+2019/04/23 19:13:44.530613 [1;35m[INF][m GID 54, [FinishProposal] start
+2019/04/23 19:13:44.530665 [1;35m[INF][m GID 54, [TryAppendAndBroadcastConfirmBlockMsg] append confirm.
+2019/04/23 19:13:44.536429 [1;35m[INF][m GID 54, [OnConfirmReceived] listener received confirm
+2019/04/23 19:13:44.536485 [1;35m[INF][m GID 54, [OnProposalFinished] Sponsor: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, BlockHash: 0b3aa5aeef0625dcc598eaa9f67dd78512fa210c8aa5bba18c4684f66b2500e2, EndTime: 2019-04-23 19:13:44.536450043 -0400 EDT m=+16.888078244, Result: true, ViewOffset: 0, ProposalHash: 0000000000000000000000000000000000000000000000000000000000000000
+2019/04/23 19:13:44.536522 [1;35m[INF][m GID 54, [FinishConsensus] start
+2019/04/23 19:13:44.536564 [1;35m[INF][m GID 54, [OnConsensusFinished] EndTime: 2019-04-23 19:13:44.536535857 -0400 EDT m=+16.888164053, Height: 392
+2019/04/23 19:13:44.536600 [1;35m[INF][m GID 54, Clean proposals
+2019/04/23 19:13:44.536637 [1;35m[INF][m GID 54, [FinishConsensus] end
+2019/04/23 19:13:44.536670 [1;35m[INF][m GID 54, [FinishProposal] end
+2019/04/23 19:13:44.536702 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:13:44.536734 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:13:44.537464 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:13:44.537504 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, ProposalHash: 837ec914c8f29e8156eb291c116e52dd38fbfa98042edef60d257638d556a96d, ReceivedTime: 2019-04-23 19:13:44.537480173 -0400 EDT m=+16.889108370, Result: true
+2019/04/23 19:13:44.537542 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] not onduty
+2019/04/23 19:13:44.537569 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:13:44.537599 [1;35m[INF][m GID 54, [OnConfirmReceived] started, hash: 0b3aa5aeef0625dcc598eaa9f67dd78512fa210c8aa5bba18c4684f66b2500e2
+2019/04/23 19:13:44.537627 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] not onduty
+2019/04/23 19:13:44.537652 [1;35m[INF][m GID 54, [OnConfirmReceived] end
+2019/04/23 19:13:44.537679 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:13:44.537709 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:13:44.537739 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:13:44.537775 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, ProposalHash: 837ec914c8f29e8156eb291c116e52dd38fbfa98042edef60d257638d556a96d, ReceivedTime: 2019-04-23 19:13:44.537753127 -0400 EDT m=+16.889381321, Result: true
+2019/04/23 19:13:44.537802 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:13:44.557323 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received proposal from 127.0.0.1:10316 (outbound)
+2019/04/23 19:13:44.557361 [1;35m[INF][m GID 54, [OnProposalReceived] started
+2019/04/23 19:13:44.557389 [1;35m[INF][m GID 54, [Normal][ProcessProposal] start
+2019/04/23 19:13:44.557446 [1;35m[INF][m GID 54, [ProcessProposal] start
+2019/04/23 19:13:44.557638 [1;35m[INF][m GID 54, already exist block in block chain
+2019/04/23 19:13:44.557670 [1;35m[INF][m GID 54, [ProcessProposal] end
+2019/04/23 19:13:44.557699 [1;35m[INF][m GID 54, [Normal][ProcessProposal] end
+2019/04/23 19:13:44.557734 [1;35m[INF][m GID 54, [OnProposalArrived] Sponsor: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, BlockHash: 0b3aa5aeef0625dcc598eaa9f67dd78512fa210c8aa5bba18c4684f66b2500e2, ReceivedTime: 2019-04-23 19:13:44.557710451 -0400 EDT m=+16.909338647, Result: false, ViewOffset: 0, ProposalHash: 837ec914c8f29e8156eb291c116e52dd38fbfa98042edef60d257638d556a96d
+2019/04/23 19:13:44.557757 [1;35m[INF][m GID 54, [OnProposalReceived] end
+2019/04/23 19:13:49.108495 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:49.114823 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:49.115009 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:49.115133 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:50.591015 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41812 (inbound)
+2019/04/23 19:13:50.601323 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41812 (inbound)
+2019/04/23 19:13:50.601430 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41812 (inbound)
+2019/04/23 19:13:50.601480 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41812 (inbound)
+2019/04/23 19:13:51.925742 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41844 (inbound)
+2019/04/23 19:13:51.975918 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41844 (inbound)
+2019/04/23 19:13:51.975985 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41844 (inbound)
+2019/04/23 19:13:52.003334 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41844 (inbound)
+2019/04/23 19:13:52.771194 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10416 (outbound)
+2019/04/23 19:13:52.771442 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10416 (outbound)
+2019/04/23 19:13:52.771484 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10416 (outbound)
+2019/04/23 19:13:52.771510 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10416 (outbound)
+2019/04/23 19:13:52.773014 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10216 (outbound)
+2019/04/23 19:13:52.773909 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10316 (outbound)
+2019/04/23 19:13:52.831824 [1;32m[DBG][m GID 326, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10216 (outbound)
+2019/04/23 19:13:52.832918 [1;32m[DBG][m GID 326, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10216 (outbound)
+2019/04/23 19:13:52.833902 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10316 (outbound)
+2019/04/23 19:13:52.841638 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10316 (outbound)
+2019/04/23 19:13:52.842536 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10316 (outbound)
+2019/04/23 19:13:52.843655 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10216 (outbound)
+2019/04/23 19:13:59.095394 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:59.157699 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:59.157899 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41782 (inbound)
+2019/04/23 19:13:59.157998 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:00.647242 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:00.647760 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:00.647830 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:00.656092 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:01.926539 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:02.001904 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:02.001960 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:02.002093 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:02.770866 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:02.772771 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:02.772903 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:02.776066 [1;32m[DBG][m GID 326, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:02.776103 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:02.776204 [1;32m[DBG][m GID 326, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:02.778353 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:02.778389 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:02.778414 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:02.877969 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:02.878053 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:02.878083 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:03.497266 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received proposal from 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:03.497355 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:03.497473 [1;35m[INF][m GID 54, [OnProposalReceived] started
+2019/04/23 19:14:03.497534 [1;35m[INF][m GID 54, [Normal][ProcessProposal] start
+2019/04/23 19:14:03.497562 [1;35m[INF][m GID 54, [ProcessProposal] start
+2019/04/23 19:14:03.497774 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending getblock to 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:03.498102 [1;35m[INF][m GID 54, received pending proposal
+2019/04/23 19:14:03.498132 [1;35m[INF][m GID 54, [ProcessProposal] end
+2019/04/23 19:14:03.498193 [1;35m[INF][m GID 54, [Normal][ProcessProposal] end
+2019/04/23 19:14:03.498232 [1;35m[INF][m GID 54, [OnProposalArrived] Sponsor: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, BlockHash: 8e84b4f259ff1e067681cecf99dd78706140da2c36d5182ac622d012e674f80a, ReceivedTime: 2019-04-23 19:14:03.498204035 -0400 EDT m=+35.849832230, Result: false, ViewOffset: 0, ProposalHash: c7a2626821646bff17059b4baa0b9dde035a20a3685c99feab2f622e61ac2144
+2019/04/23 19:14:03.498256 [1;35m[INF][m GID 54, [OnProposalReceived] end
+2019/04/23 19:14:03.498277 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:14:03.498301 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:14:03.499209 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:14:03.499240 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, ProposalHash: c7a2626821646bff17059b4baa0b9dde035a20a3685c99feab2f622e61ac2144, ReceivedTime: 2019-04-23 19:14:03.499220019 -0400 EDT m=+35.850848215, Result: true
+2019/04/23 19:14:03.499262 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:14:03.523803 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received block from 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:03.527629 [1;35m[INF][m GID 54, [ProcessBlock] received block: 8e84b4f259ff1e067681cecf99dd78706140da2c36d5182ac622d012e674f80a
+2019/04/23 19:14:03.527740 [1;35m[INF][m GID 46, [OnBlockReceived] listener received block
+2019/04/23 19:14:03.527910 [1;31m[ERR][m GID 54, [OnBlock] err:  duplicate block in pool
+2019/04/23 19:14:03.527949 [1;35m[INF][m GID 54, [OnBlockReceived] start
+2019/04/23 19:14:03.527992 [1;35m[INF][m GID 54, [Normal][OnBlockReceived] received first unsigned block, start consensus
+2019/04/23 19:14:03.528031 [1;35m[INF][m GID 54, [StartConsensus] consensus start
+2019/04/23 19:14:03.528086 [1;35m[INF][m GID 54, [ProcessProposal] start
+2019/04/23 19:14:03.528483 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] start
+2019/04/23 19:14:03.528543 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] end
+2019/04/23 19:14:03.528593 [1;35m[INF][m GID 54, [acceptProposal] start
+2019/04/23 19:14:03.528703 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:03.528942 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:03.528991 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:03.529878 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:03.529927 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:03.529973 [1;35m[INF][m GID 54, [BroadcastMessage] msg: acc_vote
+2019/04/23 19:14:03.530022 [1;35m[INF][m GID 54, [acceptProposal] send acc_vote msg: 9c641fbcef3beadcf5fa43a70cb3a7c96ff2f10bc7190ddeb8bf3b8bdce55da0
+2019/04/23 19:14:03.530081 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, ProposalHash: c7a2626821646bff17059b4baa0b9dde035a20a3685c99feab2f622e61ac2144, ReceivedTime: 2019-04-23 19:14:03.530037797 -0400 EDT m=+35.881666014, Result: true
+2019/04/23 19:14:03.530354 [1;35m[INF][m GID 54, [acceptProposal] end
+2019/04/23 19:14:03.534185 [1;35m[INF][m GID 54, [ProcessProposal] end
+2019/04/23 19:14:03.534224 [1;35m[INF][m GID 54, [OnViewStarted] OnDutyArbitrator: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, StartTime: 2019-04-23 19:14:03.534201093 -0400 EDT m=+35.885829295, Offset: 0, Height: 393
+2019/04/23 19:14:03.534249 [1;35m[INF][m GID 54, [StartConsensus] consensus end
+2019/04/23 19:14:03.534275 [1;35m[INF][m GID 54, [OnConsensusStarted] StartTime: 2019-04-23 19:14:03.534258448 -0400 EDT m=+35.885886644, Height: 393
+2019/04/23 19:14:03.534297 [1;35m[INF][m GID 54, [OnBlockReceived] end
+2019/04/23 19:14:03.532054 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:03.532072 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:03.532084 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:03.557181 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:03.558289 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:14:03.595625 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:14:03.595668 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:03.595859 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:03.595929 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:03.595967 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:03.595999 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:03.596028 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:14:03.596072 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, ProposalHash: c7a2626821646bff17059b4baa0b9dde035a20a3685c99feab2f622e61ac2144, ReceivedTime: 2019-04-23 19:14:03.596042039 -0400 EDT m=+35.947670239, Result: true
+2019/04/23 19:14:03.596100 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:14:03.596183 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:03.596223 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:14:03.596253 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:14:03.596283 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:03.596460 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:03.596498 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:03.596531 [1;35m[INF][m GID 54, Collect majority signs, finish proposal.
+2019/04/23 19:14:03.596563 [1;35m[INF][m GID 54, [FinishProposal] start
+2019/04/23 19:14:03.596611 [1;35m[INF][m GID 54, [TryAppendAndBroadcastConfirmBlockMsg] append confirm.
+2019/04/23 19:14:03.695660 [1;35m[INF][m GID 54, [OnConfirmReceived] listener received confirm
+2019/04/23 19:14:03.695702 [1;35m[INF][m GID 54, [OnProposalFinished] Sponsor: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, BlockHash: 8e84b4f259ff1e067681cecf99dd78706140da2c36d5182ac622d012e674f80a, EndTime: 2019-04-23 19:14:03.695674815 -0400 EDT m=+36.047303010, Result: true, ViewOffset: 0, ProposalHash: 0000000000000000000000000000000000000000000000000000000000000000
+2019/04/23 19:14:03.695731 [1;35m[INF][m GID 54, [FinishConsensus] start
+2019/04/23 19:14:03.695763 [1;35m[INF][m GID 54, [OnConsensusFinished] EndTime: 2019-04-23 19:14:03.695740074 -0400 EDT m=+36.047368269, Height: 393
+2019/04/23 19:14:03.695792 [1;35m[INF][m GID 54, Clean proposals
+2019/04/23 19:14:03.695853 [1;35m[INF][m GID 54, [FinishConsensus] end
+2019/04/23 19:14:03.695886 [1;35m[INF][m GID 54, [FinishProposal] end
+2019/04/23 19:14:03.695913 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:03.695937 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:03.695959 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:14:03.695986 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, ProposalHash: c7a2626821646bff17059b4baa0b9dde035a20a3685c99feab2f622e61ac2144, ReceivedTime: 2019-04-23 19:14:03.695968059 -0400 EDT m=+36.047596255, Result: true
+2019/04/23 19:14:03.696010 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] not onduty
+2019/04/23 19:14:03.696029 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:14:03.696049 [1;35m[INF][m GID 54, [OnConfirmReceived] started, hash: 8e84b4f259ff1e067681cecf99dd78706140da2c36d5182ac622d012e674f80a
+2019/04/23 19:14:03.696070 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] not onduty
+2019/04/23 19:14:03.696088 [1;35m[INF][m GID 54, [OnConfirmReceived] end
+2019/04/23 19:14:09.095657 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:09.112751 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:09.112847 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:09.114450 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:10.591545 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:10.593097 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:10.741014 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:10.746185 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:11.959673 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:11.959912 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:11.961741 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:12.007341 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:12.770823 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:12.772637 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:12.772825 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:12.773101 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:12.773148 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:12.773174 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:12.801326 [1;32m[DBG][m GID 326, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:12.852392 [1;32m[DBG][m GID 326, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:12.831543 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:12.854190 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:12.855546 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:12.856511 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:15.291085 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:15.291135 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:14:15.291192 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:14:15.291245 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:14:15.291312 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, ProposalHash: bf6ea1e33434c03f9035c830adf578d5f846e3a64f5b347268bd83d606e9469e, ReceivedTime: 2019-04-23 19:14:15.291266296 -0400 EDT m=+47.642894497, Result: true
+2019/04/23 19:14:15.291366 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:14:15.291449 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received proposal from 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:15.291485 [1;35m[INF][m GID 54, [OnProposalReceived] started
+2019/04/23 19:14:15.291514 [1;35m[INF][m GID 54, [Normal][ProcessProposal] start
+2019/04/23 19:14:15.291541 [1;35m[INF][m GID 54, [ProcessProposal] start
+2019/04/23 19:14:15.291745 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending getblock to 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:15.293919 [1;35m[INF][m GID 54, received pending proposal
+2019/04/23 19:14:15.293955 [1;35m[INF][m GID 54, [ProcessProposal] end
+2019/04/23 19:14:15.294003 [1;35m[INF][m GID 54, [Normal][ProcessProposal] end
+2019/04/23 19:14:15.294046 [1;35m[INF][m GID 54, [OnProposalArrived] Sponsor: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, BlockHash: 2903bc0e408f444ec6e7110c759f621e8693d527e279e955b93677d473f513fa, ReceivedTime: 2019-04-23 19:14:15.294021184 -0400 EDT m=+47.645649385, Result: false, ViewOffset: 0, ProposalHash: bf6ea1e33434c03f9035c830adf578d5f846e3a64f5b347268bd83d606e9469e
+2019/04/23 19:14:15.294074 [1;35m[INF][m GID 54, [OnProposalReceived] end
+2019/04/23 19:14:15.294381 [1;32m[DBG][m GID 326, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received block from 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:15.294421 [1;35m[INF][m GID 54, [ProcessBlock] received block: 2903bc0e408f444ec6e7110c759f621e8693d527e279e955b93677d473f513fa
+2019/04/23 19:14:15.294919 [1;35m[INF][m GID 54, [OnBlockReceived] listener received block
+2019/04/23 19:14:15.295032 [1;35m[INF][m GID 54, [OnBlockReceived] start
+2019/04/23 19:14:15.295098 [1;35m[INF][m GID 54, [Normal][OnBlockReceived] received first unsigned block, start consensus
+2019/04/23 19:14:15.295177 [1;35m[INF][m GID 54, [StartConsensus] consensus start
+2019/04/23 19:14:15.295316 [1;35m[INF][m GID 54, [ProcessProposal] start
+2019/04/23 19:14:15.295527 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] start
+2019/04/23 19:14:15.295786 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] end
+2019/04/23 19:14:15.295950 [1;35m[INF][m GID 54, [acceptProposal] start
+2019/04/23 19:14:15.296074 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:15.296352 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:15.296650 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:15.296742 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:15.296868 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:15.296990 [1;35m[INF][m GID 54, [BroadcastMessage] msg: acc_vote
+2019/04/23 19:14:15.297025 [1;35m[INF][m GID 54, [acceptProposal] send acc_vote msg: bdd9851a375f0f33d2e09226c2fc4e683e3fa22d7da7845a0722d1cb6f5ff94f
+2019/04/23 19:14:15.297107 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, ProposalHash: bf6ea1e33434c03f9035c830adf578d5f846e3a64f5b347268bd83d606e9469e, ReceivedTime: 2019-04-23 19:14:15.297077502 -0400 EDT m=+47.648705699, Result: true
+2019/04/23 19:14:15.297208 [1;35m[INF][m GID 54, [acceptProposal] end
+2019/04/23 19:14:15.297389 [1;35m[INF][m GID 54, [ProcessProposal] end
+2019/04/23 19:14:15.297425 [1;35m[INF][m GID 54, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-04-23 19:14:15.297400915 -0400 EDT m=+47.649029110, Offset: 0, Height: 394
+2019/04/23 19:14:15.297450 [1;35m[INF][m GID 54, [StartConsensus] consensus end
+2019/04/23 19:14:15.297486 [1;35m[INF][m GID 54, [OnConsensusStarted] StartTime: 2019-04-23 19:14:15.297465962 -0400 EDT m=+47.649094158, Height: 394
+2019/04/23 19:14:15.297568 [1;35m[INF][m GID 54, [OnBlockReceived] end
+2019/04/23 19:14:15.340425 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:15.340525 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:15.346894 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:15.372902 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:15.372965 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:14:15.372993 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:14:15.373077 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:15.373250 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:15.374513 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:15.375810 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:15.375872 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:15.375947 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:14:15.376011 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, ProposalHash: bf6ea1e33434c03f9035c830adf578d5f846e3a64f5b347268bd83d606e9469e, ReceivedTime: 2019-04-23 19:14:15.37598922 -0400 EDT m=+47.727617416, Result: true
+2019/04/23 19:14:15.376057 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:14:15.383013 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:15.383119 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:14:15.383151 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:14:15.383221 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:15.383429 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:15.383467 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:15.383495 [1;35m[INF][m GID 54, Collect majority signs, finish proposal.
+2019/04/23 19:14:15.383526 [1;35m[INF][m GID 54, [FinishProposal] start
+2019/04/23 19:14:15.383561 [1;35m[INF][m GID 54, [TryAppendAndBroadcastConfirmBlockMsg] append confirm.
+2019/04/23 19:14:15.402506 [1;35m[INF][m GID 54, [OnConfirmReceived] listener received confirm
+2019/04/23 19:14:15.402550 [1;35m[INF][m GID 54, [OnProposalFinished] Sponsor: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, BlockHash: 2903bc0e408f444ec6e7110c759f621e8693d527e279e955b93677d473f513fa, EndTime: 2019-04-23 19:14:15.402521237 -0400 EDT m=+47.754149432, Result: true, ViewOffset: 0, ProposalHash: 0000000000000000000000000000000000000000000000000000000000000000
+2019/04/23 19:14:15.402578 [1;35m[INF][m GID 54, [FinishConsensus] start
+2019/04/23 19:14:15.402610 [1;35m[INF][m GID 54, [OnConsensusFinished] EndTime: 2019-04-23 19:14:15.402586596 -0400 EDT m=+47.754214791, Height: 394
+2019/04/23 19:14:15.402638 [1;35m[INF][m GID 54, Clean proposals
+2019/04/23 19:14:15.402666 [1;35m[INF][m GID 54, [FinishConsensus] end
+2019/04/23 19:14:15.402745 [1;35m[INF][m GID 54, [FinishProposal] end
+2019/04/23 19:14:15.402774 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:15.402798 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:15.402820 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:14:15.402847 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, ProposalHash: bf6ea1e33434c03f9035c830adf578d5f846e3a64f5b347268bd83d606e9469e, ReceivedTime: 2019-04-23 19:14:15.402828912 -0400 EDT m=+47.754457106, Result: true
+2019/04/23 19:14:15.402874 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] onduty
+2019/04/23 19:14:15.402894 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:14:15.402914 [1;35m[INF][m GID 54, [OnConfirmReceived] started, hash: 2903bc0e408f444ec6e7110c759f621e8693d527e279e955b93677d473f513fa
+2019/04/23 19:14:15.402934 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] onduty
+2019/04/23 19:14:15.402951 [1;35m[INF][m GID 54, [OnConfirmReceived] end
+2019/04/23 19:14:19.106933 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:19.107546 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:19.108387 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:19.266929 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:20.593362 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:20.699003 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:20.703450 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:20.705027 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:21.444587 [1;35m[INF][m GID 46, [OnBlockReceived] listener received block
+2019/04/23 19:14:21.445453 [1;35m[INF][m GID 54, [OnBlockReceived] start
+2019/04/23 19:14:21.445488 [1;35m[INF][m GID 54, [OnDuty][OnBlockReceived] received first unsigned block, start consensus
+2019/04/23 19:14:21.445525 [1;35m[INF][m GID 54, [StartConsensus] consensus start
+2019/04/23 19:14:21.445565 [1;35m[INF][m GID 54, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-04-23 19:14:21.445540803 -0400 EDT m=+53.797169005, Offset: 0, Height: 394
+2019/04/23 19:14:21.445588 [1;35m[INF][m GID 54, [StartConsensus] consensus end
+2019/04/23 19:14:21.445607 [1;35m[INF][m GID 54, [StartProposal] start
+2019/04/23 19:14:21.449026 [1;35m[INF][m GID 54, [StartProposal] sponsor: [3 134 32 109 29 68 47 92 141 220 201 174 69 171 133 217 33 182 173 227 161 132 244 59 124 207 109 224 47 60 160 180 80]
+2019/04/23 19:14:21.451949 [1;35m[INF][m GID 54, [StartProposal] send proposal message finished, Proposal Hash:  5dbd704a6f918f60bb7593e9d9c09af031edc6862d290a6636e88d4db66380bc
+2019/04/23 19:14:21.451976 [1;35m[INF][m GID 54, [BroadcastMessage] msg: proposal
+2019/04/23 19:14:21.452010 [1;35m[INF][m GID 54, [OnProposalArrived] Sponsor: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, BlockHash: bb64b5a1757bc6dbf1f36926af9380b249adc8027500a4a34c695ff07b946a57, ReceivedTime: 2019-04-23 19:14:21.451986571 -0400 EDT m=+53.803614766, Result: false, ViewOffset: 0, ProposalHash: eb5f2e4dde309471da7b70f686f6a0f096d8bdcefd51075589dbfb7157f01c67
+2019/04/23 19:14:21.452036 [1;35m[INF][m GID 54, [acceptProposal] start
+2019/04/23 19:14:21.452097 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:21.452246 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:21.452274 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:21.452301 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:21.452331 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:21.452356 [1;35m[INF][m GID 54, [BroadcastMessage] msg: acc_vote
+2019/04/23 19:14:21.452383 [1;35m[INF][m GID 54, [acceptProposal] send acc_vote msg: 93275406a358ace1a5971a30d7364fa5639b4ddb2d90acfef030d01b9605b0fb
+2019/04/23 19:14:21.452430 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, ProposalHash: eb5f2e4dde309471da7b70f686f6a0f096d8bdcefd51075589dbfb7157f01c67, ReceivedTime: 2019-04-23 19:14:21.452406948 -0400 EDT m=+53.804035152, Result: true
+2019/04/23 19:14:21.487680 [1;35m[INF][m GID 54, [acceptProposal] end
+2019/04/23 19:14:21.463141 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:21.463162 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending proposal to 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:21.463173 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending proposal to 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:21.490947 [1;35m[INF][m GID 54, [StartProposal] end
+2019/04/23 19:14:21.491182 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending proposal to 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:21.491746 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:21.492096 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:21.492372 [1;35m[INF][m GID 54, [OnConsensusStarted] StartTime: 2019-04-23 19:14:21.49234972 -0400 EDT m=+53.843977916, Height: 395
+2019/04/23 19:14:21.494741 [1;35m[INF][m GID 54, [OnBlockReceived] end
+2019/04/23 19:14:21.503527 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:21.503567 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:14:21.503592 [1;35m[INF][m GID 54, [Onduty-ProcessAcceptVote] start
+2019/04/23 19:14:21.503616 [1;35m[INF][m GID 54, [OnVoteReceived] Received needed sign, collect it
+2019/04/23 19:14:21.503655 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:21.503887 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:21.503918 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:21.503945 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:21.503968 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:21.503990 [1;35m[INF][m GID 54, [Onduty-ProcessAcceptVote] end
+2019/04/23 19:14:21.504020 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, ProposalHash: eb5f2e4dde309471da7b70f686f6a0f096d8bdcefd51075589dbfb7157f01c67, ReceivedTime: 2019-04-23 19:14:21.503998495 -0400 EDT m=+53.855626691, Result: true
+2019/04/23 19:14:21.504040 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:14:21.556538 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:21.556578 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:14:21.556600 [1;35m[INF][m GID 54, [Onduty-ProcessAcceptVote] start
+2019/04/23 19:14:21.556625 [1;35m[INF][m GID 54, [OnVoteReceived] Received needed sign, collect it
+2019/04/23 19:14:21.556646 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:21.556921 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:21.556958 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:21.556998 [1;35m[INF][m GID 54, Collect majority signs, finish proposal.
+2019/04/23 19:14:21.557025 [1;35m[INF][m GID 54, [FinishProposal] start
+2019/04/23 19:14:21.557060 [1;35m[INF][m GID 54, [TryAppendAndBroadcastConfirmBlockMsg] append confirm.
+2019/04/23 19:14:21.645598 [1;35m[INF][m GID 54, [OnConfirmReceived] listener received confirm
+2019/04/23 19:14:21.645685 [1;35m[INF][m GID 54, [OnProposalFinished] Sponsor: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, BlockHash: bb64b5a1757bc6dbf1f36926af9380b249adc8027500a4a34c695ff07b946a57, EndTime: 2019-04-23 19:14:21.645647312 -0400 EDT m=+53.997275512, Result: true, ViewOffset: 0, ProposalHash: 0000000000000000000000000000000000000000000000000000000000000000
+2019/04/23 19:14:21.645744 [1;35m[INF][m GID 54, [FinishConsensus] start
+2019/04/23 19:14:21.645791 [1;35m[INF][m GID 54, [OnConsensusFinished] EndTime: 2019-04-23 19:14:21.645762413 -0400 EDT m=+53.997390608, Height: 395
+2019/04/23 19:14:21.645989 [1;35m[INF][m GID 54, Clean proposals
+2019/04/23 19:14:21.646027 [1;35m[INF][m GID 54, [FinishConsensus] end
+2019/04/23 19:14:21.646090 [1;35m[INF][m GID 54, [FinishProposal] end
+2019/04/23 19:14:21.646150 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:21.646210 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:21.646245 [1;35m[INF][m GID 54, [Onduty-ProcessAcceptVote] end
+2019/04/23 19:14:21.646303 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, ProposalHash: eb5f2e4dde309471da7b70f686f6a0f096d8bdcefd51075589dbfb7157f01c67, ReceivedTime: 2019-04-23 19:14:21.646259353 -0400 EDT m=+53.997887553, Result: true
+2019/04/23 19:14:21.646355 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] not onduty
+2019/04/23 19:14:21.646415 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:14:21.646446 [1;35m[INF][m GID 54, [OnConfirmReceived] started, hash: bb64b5a1757bc6dbf1f36926af9380b249adc8027500a4a34c695ff07b946a57
+2019/04/23 19:14:21.646474 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] not onduty
+2019/04/23 19:14:21.646527 [1;35m[INF][m GID 54, [OnConfirmReceived] end
+2019/04/23 19:14:21.749560 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:21.749661 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:14:21.749692 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:14:21.749717 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:14:21.749753 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, ProposalHash: eb5f2e4dde309471da7b70f686f6a0f096d8bdcefd51075589dbfb7157f01c67, ReceivedTime: 2019-04-23 19:14:21.749726779 -0400 EDT m=+54.101354973, Result: true
+2019/04/23 19:14:21.749774 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:14:21.914081 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:21.990767 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:21.990867 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:21.997350 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:22.786324 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:22.786791 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:22.786878 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:22.786943 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:22.787003 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:22.797790 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:22.807437 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:22.807506 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:22.807534 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:22.832492 [1;32m[DBG][m GID 326, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:22.832949 [1;32m[DBG][m GID 326, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:22.832984 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:24.168333 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received proposal from 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:24.168406 [1;35m[INF][m GID 54, [OnProposalReceived] started
+2019/04/23 19:14:24.168441 [1;35m[INF][m GID 54, [Normal][ProcessProposal] start
+2019/04/23 19:14:24.168487 [1;35m[INF][m GID 54, [ProcessProposal] start
+2019/04/23 19:14:24.169051 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending getblock to 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:24.169190 [1;35m[INF][m GID 54, received pending proposal
+2019/04/23 19:14:24.169258 [1;35m[INF][m GID 54, [ProcessProposal] end
+2019/04/23 19:14:24.169318 [1;35m[INF][m GID 54, [Normal][ProcessProposal] end
+2019/04/23 19:14:24.169392 [1;35m[INF][m GID 54, [OnProposalArrived] Sponsor: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, BlockHash: c68afd46413f2360727764768e487d22e8103713dba618ec2e4dd7999be2b435, ReceivedTime: 2019-04-23 19:14:24.169336773 -0400 EDT m=+56.520964966, Result: false, ViewOffset: 0, ProposalHash: 906893c1dabc70697fcc7e72e030cdb4db1cab5def8285a72c826e3efaef9bd4
+2019/04/23 19:14:24.169467 [1;35m[INF][m GID 54, [OnProposalReceived] end
+2019/04/23 19:14:24.222395 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received block from 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:24.222463 [1;35m[INF][m GID 54, [ProcessBlock] received block: c68afd46413f2360727764768e487d22e8103713dba618ec2e4dd7999be2b435
+2019/04/23 19:14:24.222663 [1;35m[INF][m GID 54, [OnBlockReceived] listener received block
+2019/04/23 19:14:24.222679 [1;35m[INF][m GID 54, [OnBlockReceived] start
+2019/04/23 19:14:24.222703 [1;35m[INF][m GID 54, [Normal][OnBlockReceived] received first unsigned block, start consensus
+2019/04/23 19:14:24.222722 [1;35m[INF][m GID 54, [StartConsensus] consensus start
+2019/04/23 19:14:24.222753 [1;35m[INF][m GID 54, [ProcessProposal] start
+2019/04/23 19:14:24.222917 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] start
+2019/04/23 19:14:24.222943 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] end
+2019/04/23 19:14:24.222971 [1;35m[INF][m GID 54, [acceptProposal] start
+2019/04/23 19:14:24.223036 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:24.223197 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:24.223246 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:24.223274 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:24.223301 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:24.223327 [1;35m[INF][m GID 54, [BroadcastMessage] msg: acc_vote
+2019/04/23 19:14:24.223355 [1;35m[INF][m GID 54, [acceptProposal] send acc_vote msg: fd88371c1689252fa9134f2830659552e7efb4b702fce6371bb0aa39609a8490
+2019/04/23 19:14:24.223390 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, ProposalHash: 906893c1dabc70697fcc7e72e030cdb4db1cab5def8285a72c826e3efaef9bd4, ReceivedTime: 2019-04-23 19:14:24.223360728 -0400 EDT m=+56.574988929, Result: true
+2019/04/23 19:14:24.223415 [1;35m[INF][m GID 54, [acceptProposal] end
+2019/04/23 19:14:24.223439 [1;35m[INF][m GID 54, [ProcessProposal] end
+2019/04/23 19:14:24.223464 [1;35m[INF][m GID 54, [OnViewStarted] OnDutyArbitrator: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, StartTime: 2019-04-23 19:14:24.223444686 -0400 EDT m=+56.575072881, Offset: 0, Height: 396
+2019/04/23 19:14:24.223483 [1;35m[INF][m GID 54, [StartConsensus] consensus end
+2019/04/23 19:14:24.223504 [1;35m[INF][m GID 54, [OnConsensusStarted] StartTime: 2019-04-23 19:14:24.223488734 -0400 EDT m=+56.575116929, Height: 396
+2019/04/23 19:14:24.223519 [1;35m[INF][m GID 54, [OnBlockReceived] end
+2019/04/23 19:14:24.223777 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:24.224325 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:24.224374 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:24.224638 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:24.224664 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:14:24.224688 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:14:24.224712 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:24.224857 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:24.224950 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:24.225007 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:24.225055 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:24.225081 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:14:24.225109 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, ProposalHash: 906893c1dabc70697fcc7e72e030cdb4db1cab5def8285a72c826e3efaef9bd4, ReceivedTime: 2019-04-23 19:14:24.225089361 -0400 EDT m=+56.576717562, Result: true
+2019/04/23 19:14:24.225152 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:14:24.337793 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:24.337909 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:14:24.337970 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:14:24.338023 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:24.338230 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:24.338267 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:24.338320 [1;35m[INF][m GID 54, Collect majority signs, finish proposal.
+2019/04/23 19:14:24.338357 [1;35m[INF][m GID 54, [FinishProposal] start
+2019/04/23 19:14:24.339779 [1;35m[INF][m GID 54, [TryAppendAndBroadcastConfirmBlockMsg] append confirm.
+2019/04/23 19:14:24.359360 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:24.359880 [1;35m[INF][m GID 54, [OnConfirmReceived] listener received confirm
+2019/04/23 19:14:24.359919 [1;35m[INF][m GID 54, [OnProposalFinished] Sponsor: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, BlockHash: c68afd46413f2360727764768e487d22e8103713dba618ec2e4dd7999be2b435, EndTime: 2019-04-23 19:14:24.359892144 -0400 EDT m=+56.711520345, Result: true, ViewOffset: 0, ProposalHash: 0000000000000000000000000000000000000000000000000000000000000000
+2019/04/23 19:14:24.359947 [1;35m[INF][m GID 54, [FinishConsensus] start
+2019/04/23 19:14:24.359980 [1;35m[INF][m GID 54, [OnConsensusFinished] EndTime: 2019-04-23 19:14:24.359956038 -0400 EDT m=+56.711584233, Height: 396
+2019/04/23 19:14:24.360008 [1;35m[INF][m GID 54, Clean proposals
+2019/04/23 19:14:24.360036 [1;35m[INF][m GID 54, [FinishConsensus] end
+2019/04/23 19:14:24.360062 [1;35m[INF][m GID 54, [FinishProposal] end
+2019/04/23 19:14:24.360086 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:24.360110 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:24.360132 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:14:24.360159 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, ProposalHash: 906893c1dabc70697fcc7e72e030cdb4db1cab5def8285a72c826e3efaef9bd4, ReceivedTime: 2019-04-23 19:14:24.360141455 -0400 EDT m=+56.711769656, Result: true
+2019/04/23 19:14:24.360182 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] not onduty
+2019/04/23 19:14:24.360201 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:14:24.360221 [1;35m[INF][m GID 54, [OnConfirmReceived] started, hash: c68afd46413f2360727764768e487d22e8103713dba618ec2e4dd7999be2b435
+2019/04/23 19:14:24.360240 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] not onduty
+2019/04/23 19:14:24.360258 [1;35m[INF][m GID 54, [OnConfirmReceived] end
+2019/04/23 19:14:24.360277 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:14:24.360300 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:14:24.360322 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:14:24.360347 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, ProposalHash: 906893c1dabc70697fcc7e72e030cdb4db1cab5def8285a72c826e3efaef9bd4, ReceivedTime: 2019-04-23 19:14:24.360330831 -0400 EDT m=+56.711959027, Result: true
+2019/04/23 19:14:24.360367 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:14:29.095253 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:29.125375 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:29.133079 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:29.138759 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:30.668031 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:30.668207 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:30.668275 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:30.668770 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:30.834106 [1;35m[INF][m GID 46, [OnBlockReceived] listener received block
+2019/04/23 19:14:30.834292 [1;35m[INF][m GID 54, [OnBlockReceived] start
+2019/04/23 19:14:30.834346 [1;35m[INF][m GID 54, [Normal][OnBlockReceived] received first unsigned block, start consensus
+2019/04/23 19:14:30.834372 [1;35m[INF][m GID 54, [StartConsensus] consensus start
+2019/04/23 19:14:30.834409 [1;35m[INF][m GID 54, [OnViewStarted] OnDutyArbitrator: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, StartTime: 2019-04-23 19:14:30.834385704 -0400 EDT m=+63.186013900, Offset: 0, Height: 396
+2019/04/23 19:14:30.834454 [1;35m[INF][m GID 54, [StartConsensus] consensus end
+2019/04/23 19:14:30.834483 [1;35m[INF][m GID 54, [OnConsensusStarted] StartTime: 2019-04-23 19:14:30.834465829 -0400 EDT m=+63.186094024, Height: 397
+2019/04/23 19:14:30.834501 [1;35m[INF][m GID 54, [OnBlockReceived] end
+2019/04/23 19:14:30.839064 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:30.839100 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received proposal from 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:30.839146 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:14:30.839173 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:14:30.839207 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending req_pro to 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:30.839282 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:14:30.839337 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, ProposalHash: 6d667457d5bbc80f3d159873947a8e819a63cb094d6c7a5ae12f78b72ab52023, ReceivedTime: 2019-04-23 19:14:30.839294034 -0400 EDT m=+63.190922228, Result: true
+2019/04/23 19:14:30.839360 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:14:30.839381 [1;35m[INF][m GID 54, [OnProposalReceived] started
+2019/04/23 19:14:30.840053 [1;35m[INF][m GID 54, [Normal][ProcessProposal] start
+2019/04/23 19:14:30.840085 [1;35m[INF][m GID 54, [ProcessProposal] start
+2019/04/23 19:14:30.840277 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] start
+2019/04/23 19:14:30.846862 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] end
+2019/04/23 19:14:30.846924 [1;35m[INF][m GID 54, [acceptProposal] start
+2019/04/23 19:14:30.846973 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:30.847136 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:30.847167 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:30.847211 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:30.847240 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:30.847311 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:30.847469 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:30.847500 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:30.847544 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:30.847572 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:30.847600 [1;35m[INF][m GID 54, [BroadcastMessage] msg: acc_vote
+2019/04/23 19:14:30.847641 [1;35m[INF][m GID 54, [acceptProposal] send acc_vote msg: c659b1113da744f77c89d4316c91a87453e00efb96c43d8fb0ead740f3a37f21
+2019/04/23 19:14:30.847679 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, ProposalHash: 6d667457d5bbc80f3d159873947a8e819a63cb094d6c7a5ae12f78b72ab52023, ReceivedTime: 2019-04-23 19:14:30.847650594 -0400 EDT m=+63.199278788, Result: true
+2019/04/23 19:14:30.847706 [1;35m[INF][m GID 54, [acceptProposal] end
+2019/04/23 19:14:30.847742 [1;35m[INF][m GID 54, [ProcessProposal] end
+2019/04/23 19:14:30.847775 [1;35m[INF][m GID 54, [Normal][ProcessProposal] end
+2019/04/23 19:14:30.847827 [1;35m[INF][m GID 54, [OnProposalArrived] Sponsor: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, BlockHash: 0b90990f782a7929f675881573fd8905aeda3a6059da4b81981029eb8c7e9c7b, ReceivedTime: 2019-04-23 19:14:30.847783782 -0400 EDT m=+63.199411978, Result: false, ViewOffset: 0, ProposalHash: 6d667457d5bbc80f3d159873947a8e819a63cb094d6c7a5ae12f78b72ab52023
+2019/04/23 19:14:30.847851 [1;35m[INF][m GID 54, [OnProposalReceived] end
+2019/04/23 19:14:30.847887 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:30.847953 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:30.858918 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:30.859021 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received proposal from 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:30.859082 [1;35m[INF][m GID 54, [OnProposalReceived] started
+2019/04/23 19:14:30.859111 [1;35m[INF][m GID 54, [Normal][ProcessProposal] start
+2019/04/23 19:14:30.859157 [1;35m[INF][m GID 54, [ProcessProposal] start
+2019/04/23 19:14:30.859318 [1;35m[INF][m GID 54, already processing proposal
+2019/04/23 19:14:30.859375 [1;35m[INF][m GID 54, [ProcessProposal] end
+2019/04/23 19:14:30.859405 [1;35m[INF][m GID 54, [Normal][ProcessProposal] end
+2019/04/23 19:14:30.859437 [1;35m[INF][m GID 54, [OnProposalArrived] Sponsor: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, BlockHash: 0b90990f782a7929f675881573fd8905aeda3a6059da4b81981029eb8c7e9c7b, ReceivedTime: 2019-04-23 19:14:30.859413637 -0400 EDT m=+63.211041839, Result: false, ViewOffset: 0, ProposalHash: 6d667457d5bbc80f3d159873947a8e819a63cb094d6c7a5ae12f78b72ab52023
+2019/04/23 19:14:30.859487 [1;35m[INF][m GID 54, [OnProposalReceived] end
+2019/04/23 19:14:30.895194 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:30.937867 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:14:30.937912 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:14:30.937942 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:30.938160 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:30.942401 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:30.942440 [1;35m[INF][m GID 54, Collect majority signs, finish proposal.
+2019/04/23 19:14:30.942532 [1;35m[INF][m GID 54, [FinishProposal] start
+2019/04/23 19:14:30.942599 [1;35m[INF][m GID 54, [TryAppendAndBroadcastConfirmBlockMsg] append confirm.
+2019/04/23 19:14:30.944001 [1;35m[INF][m GID 54, [OnConfirmReceived] listener received confirm
+2019/04/23 19:14:30.944069 [1;35m[INF][m GID 54, [OnProposalFinished] Sponsor: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, BlockHash: 0b90990f782a7929f675881573fd8905aeda3a6059da4b81981029eb8c7e9c7b, EndTime: 2019-04-23 19:14:30.944039597 -0400 EDT m=+63.295667795, Result: true, ViewOffset: 0, ProposalHash: 0000000000000000000000000000000000000000000000000000000000000000
+2019/04/23 19:14:30.944102 [1;35m[INF][m GID 54, [FinishConsensus] start
+2019/04/23 19:14:30.944155 [1;35m[INF][m GID 54, [OnConsensusFinished] EndTime: 2019-04-23 19:14:30.944110523 -0400 EDT m=+63.295738720, Height: 397
+2019/04/23 19:14:30.944188 [1;35m[INF][m GID 54, Clean proposals
+2019/04/23 19:14:30.944241 [1;35m[INF][m GID 54, [FinishConsensus] end
+2019/04/23 19:14:30.944272 [1;35m[INF][m GID 54, [FinishProposal] end
+2019/04/23 19:14:30.944297 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:30.944365 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:30.944392 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:14:30.944440 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, ProposalHash: 6d667457d5bbc80f3d159873947a8e819a63cb094d6c7a5ae12f78b72ab52023, ReceivedTime: 2019-04-23 19:14:30.944420415 -0400 EDT m=+63.296048613, Result: true
+2019/04/23 19:14:30.944479 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] not onduty
+2019/04/23 19:14:30.944529 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:14:30.944554 [1;35m[INF][m GID 54, [OnConfirmReceived] started, hash: 0b90990f782a7929f675881573fd8905aeda3a6059da4b81981029eb8c7e9c7b
+2019/04/23 19:14:30.944596 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] not onduty
+2019/04/23 19:14:30.944617 [1;35m[INF][m GID 54, [OnConfirmReceived] end
+2019/04/23 19:14:30.963135 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:30.968779 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:14:30.968953 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:14:30.968992 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:14:30.974200 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, ProposalHash: 6d667457d5bbc80f3d159873947a8e819a63cb094d6c7a5ae12f78b72ab52023, ReceivedTime: 2019-04-23 19:14:30.974170572 -0400 EDT m=+63.325798792, Result: true
+2019/04/23 19:14:30.974273 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:14:31.929847 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:31.929949 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:31.932236 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:31.933392 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:32.770718 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:32.772598 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:32.772937 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:32.772981 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:32.773006 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:32.778404 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:32.783008 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:32.783082 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:32.783111 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:32.848583 [1;32m[DBG][m GID 326, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:32.849129 [1;32m[DBG][m GID 326, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:32.849162 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:39.099690 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:39.107949 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:39.113004 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:39.135634 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:40.591276 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:40.591886 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:40.591951 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:40.592290 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:41.929606 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:41.929708 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:41.929786 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:41.965506 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:42.808741 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:42.808968 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:42.809204 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:42.809627 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:42.809890 [1;32m[DBG][m GID 326, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:42.809931 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:42.810253 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:42.810426 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:42.810571 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:42.810710 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:42.870173 [1;32m[DBG][m GID 326, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:42.896594 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:43.770856 [1;35m[INF][m GID 46, [OnBlockReceived] listener received block
+2019/04/23 19:14:43.770905 [1;35m[INF][m GID 54, [OnBlockReceived] start
+2019/04/23 19:14:43.770935 [1;35m[INF][m GID 54, [Normal][OnBlockReceived] received first unsigned block, start consensus
+2019/04/23 19:14:43.770958 [1;35m[INF][m GID 54, [StartConsensus] consensus start
+2019/04/23 19:14:43.770996 [1;35m[INF][m GID 54, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-04-23 19:14:43.770972867 -0400 EDT m=+76.122601060, Offset: 0, Height: 397
+2019/04/23 19:14:43.771020 [1;35m[INF][m GID 54, [StartConsensus] consensus end
+2019/04/23 19:14:43.771045 [1;35m[INF][m GID 54, [OnConsensusStarted] StartTime: 2019-04-23 19:14:43.771029273 -0400 EDT m=+76.122657468, Height: 398
+2019/04/23 19:14:43.771064 [1;35m[INF][m GID 54, [OnBlockReceived] end
+2019/04/23 19:14:43.771102 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received proposal from 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:43.771141 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:43.771202 [1;35m[INF][m GID 54, [OnProposalReceived] started
+2019/04/23 19:14:43.771230 [1;35m[INF][m GID 54, [Normal][ProcessProposal] start
+2019/04/23 19:14:43.771257 [1;35m[INF][m GID 54, [ProcessProposal] start
+2019/04/23 19:14:43.771433 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] start
+2019/04/23 19:14:43.771462 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] end
+2019/04/23 19:14:43.771492 [1;35m[INF][m GID 54, [acceptProposal] start
+2019/04/23 19:14:43.771559 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:43.771738 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:43.771772 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:43.771879 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:43.771913 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:43.771942 [1;35m[INF][m GID 54, [BroadcastMessage] msg: acc_vote
+2019/04/23 19:14:43.771972 [1;35m[INF][m GID 54, [acceptProposal] send acc_vote msg: 615f551e2905a2085333843a89a8e05980d7c2fa3ed2e6fe3ba14d6d823addf6
+2019/04/23 19:14:43.772028 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, ProposalHash: 851ff5321101fb915be18ab13540177f497192a6ec658f8d5f778c491bc5dd86, ReceivedTime: 2019-04-23 19:14:43.772002094 -0400 EDT m=+76.123630290, Result: true
+2019/04/23 19:14:43.773561 [1;35m[INF][m GID 54, [acceptProposal] end
+2019/04/23 19:14:43.773669 [1;35m[INF][m GID 54, [ProcessProposal] end
+2019/04/23 19:14:43.773467 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:43.773483 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:43.773523 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:43.785839 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:43.859813 [1;35m[INF][m GID 54, [Normal][ProcessProposal] end
+2019/04/23 19:14:43.871456 [1;35m[INF][m GID 54, [OnProposalArrived] Sponsor: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, BlockHash: a17ab83360a6abc62600b393bdb293904f21102dab1e2a2928f25ab23182324e, ReceivedTime: 2019-04-23 19:14:43.871320965 -0400 EDT m=+76.222949174, Result: false, ViewOffset: 0, ProposalHash: 851ff5321101fb915be18ab13540177f497192a6ec658f8d5f778c491bc5dd86
+2019/04/23 19:14:43.875121 [1;35m[INF][m GID 54, [OnProposalReceived] end
+2019/04/23 19:14:43.876579 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:14:43.891254 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:14:43.891294 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:43.891459 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:43.891487 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:43.891514 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:43.891538 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:43.891561 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:14:43.891593 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, ProposalHash: 851ff5321101fb915be18ab13540177f497192a6ec658f8d5f778c491bc5dd86, ReceivedTime: 2019-04-23 19:14:43.891570655 -0400 EDT m=+76.243198850, Result: true
+2019/04/23 19:14:43.891614 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:14:43.891635 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:14:43.891658 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:14:43.891682 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:43.891827 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:43.891855 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:43.891880 [1;35m[INF][m GID 54, Collect majority signs, finish proposal.
+2019/04/23 19:14:43.891906 [1;35m[INF][m GID 54, [FinishProposal] start
+2019/04/23 19:14:43.891941 [1;35m[INF][m GID 54, [TryAppendAndBroadcastConfirmBlockMsg] append confirm.
+2019/04/23 19:14:43.894523 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:43.902240 [1;35m[INF][m GID 54, [OnConfirmReceived] listener received confirm
+2019/04/23 19:14:43.902331 [1;35m[INF][m GID 54, [OnProposalFinished] Sponsor: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, BlockHash: a17ab83360a6abc62600b393bdb293904f21102dab1e2a2928f25ab23182324e, EndTime: 2019-04-23 19:14:43.9022925 -0400 EDT m=+76.253920700, Result: true, ViewOffset: 0, ProposalHash: 0000000000000000000000000000000000000000000000000000000000000000
+2019/04/23 19:14:43.902422 [1;35m[INF][m GID 54, [FinishConsensus] start
+2019/04/23 19:14:43.902498 [1;35m[INF][m GID 54, [OnConsensusFinished] EndTime: 2019-04-23 19:14:43.902466406 -0400 EDT m=+76.254094607, Height: 398
+2019/04/23 19:14:43.902537 [1;35m[INF][m GID 54, Clean proposals
+2019/04/23 19:14:43.902603 [1;35m[INF][m GID 54, [FinishConsensus] end
+2019/04/23 19:14:43.902668 [1;35m[INF][m GID 54, [FinishProposal] end
+2019/04/23 19:14:43.902714 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:43.902777 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:43.902840 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:14:43.902881 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, ProposalHash: 851ff5321101fb915be18ab13540177f497192a6ec658f8d5f778c491bc5dd86, ReceivedTime: 2019-04-23 19:14:43.902856839 -0400 EDT m=+76.254485040, Result: true
+2019/04/23 19:14:43.902940 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] onduty
+2019/04/23 19:14:43.902969 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:14:43.903026 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:14:43.903064 [1;35m[INF][m GID 54, [Onduty-ProcessAcceptVote] start
+2019/04/23 19:14:43.903124 [1;35m[INF][m GID 54, [Onduty-ProcessAcceptVote] end
+2019/04/23 19:14:43.903163 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, ProposalHash: 851ff5321101fb915be18ab13540177f497192a6ec658f8d5f778c491bc5dd86, ReceivedTime: 2019-04-23 19:14:43.903140365 -0400 EDT m=+76.254768565, Result: true
+2019/04/23 19:14:43.903220 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:14:43.903250 [1;35m[INF][m GID 54, [OnConfirmReceived] started, hash: a17ab83360a6abc62600b393bdb293904f21102dab1e2a2928f25ab23182324e
+2019/04/23 19:14:43.903306 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] onduty
+2019/04/23 19:14:43.903334 [1;35m[INF][m GID 54, [OnConfirmReceived] end
+2019/04/23 19:14:49.160436 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:49.160899 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:49.161163 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:49.161851 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:49.613529 [1;35m[INF][m GID 364, [OnBlockReceived] listener received block
+2019/04/23 19:14:49.704281 [1;35m[INF][m GID 54, [OnBlockReceived] start
+2019/04/23 19:14:49.704339 [1;35m[INF][m GID 54, [OnDuty][OnBlockReceived] received first unsigned block, start consensus
+2019/04/23 19:14:49.704645 [1;35m[INF][m GID 54, [StartConsensus] consensus start
+2019/04/23 19:14:49.704696 [1;35m[INF][m GID 54, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-04-23 19:14:49.704667741 -0400 EDT m=+82.056295937, Offset: 0, Height: 398
+2019/04/23 19:14:49.704720 [1;35m[INF][m GID 54, [StartConsensus] consensus end
+2019/04/23 19:14:49.704743 [1;35m[INF][m GID 54, [StartProposal] start
+2019/04/23 19:14:49.704830 [1;35m[INF][m GID 54, [StartProposal] sponsor: [3 134 32 109 29 68 47 92 141 220 201 174 69 171 133 217 33 182 173 227 161 132 244 59 124 207 109 224 47 60 160 180 80]
+2019/04/23 19:14:49.704860 [1;35m[INF][m GID 54, [StartProposal] send proposal message finished, Proposal Hash:  468c781255d040b7e1b434c196a0c9ac8991b304ff70084302784504edacb482
+2019/04/23 19:14:49.704885 [1;35m[INF][m GID 54, [BroadcastMessage] msg: proposal
+2019/04/23 19:14:49.704917 [1;35m[INF][m GID 54, [OnProposalArrived] Sponsor: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, BlockHash: a716b6177b7286850f8e5446779e4e750e1ae6d87edccc6859692a6be7207b9b, ReceivedTime: 2019-04-23 19:14:49.70489439 -0400 EDT m=+82.056522585, Result: false, ViewOffset: 0, ProposalHash: ae5a3a89517e7a4fa8c02a18fe815f1bf45f113afe68cf7a35362ff55695756c
+2019/04/23 19:14:49.704942 [1;35m[INF][m GID 54, [acceptProposal] start
+2019/04/23 19:14:49.705000 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:49.705150 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:49.705181 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:49.705208 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:49.705232 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:49.705257 [1;35m[INF][m GID 54, [BroadcastMessage] msg: acc_vote
+2019/04/23 19:14:49.705283 [1;35m[INF][m GID 54, [acceptProposal] send acc_vote msg: 813fdcae3656392c040a430efd1887df80c74d8d7525e3b7c03c966e71d5ac86
+2019/04/23 19:14:49.705331 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, ProposalHash: ae5a3a89517e7a4fa8c02a18fe815f1bf45f113afe68cf7a35362ff55695756c, ReceivedTime: 2019-04-23 19:14:49.705308237 -0400 EDT m=+82.056936441, Result: true
+2019/04/23 19:14:49.705380 [1;35m[INF][m GID 54, [acceptProposal] end
+2019/04/23 19:14:49.705412 [1;35m[INF][m GID 54, [StartProposal] end
+2019/04/23 19:14:49.723598 [1;35m[INF][m GID 54, [OnConsensusStarted] StartTime: 2019-04-23 19:14:49.723531818 -0400 EDT m=+82.075160033, Height: 399
+2019/04/23 19:14:49.723661 [1;35m[INF][m GID 54, [OnBlockReceived] end
+2019/04/23 19:14:49.707872 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:49.723863 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending proposal to 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:49.707886 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending proposal to 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:49.724998 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:49.707898 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending proposal to 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:49.725420 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:49.728732 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received getblock from 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:49.728890 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending block to 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:49.732935 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received getblock from 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:49.736502 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending block to 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:49.738261 [1;32m[DBG][m GID 326, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received getblock from 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:49.738298 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending block to 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:49.781131 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:49.781204 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:14:49.781239 [1;35m[INF][m GID 54, [Onduty-ProcessAcceptVote] start
+2019/04/23 19:14:49.781283 [1;35m[INF][m GID 54, [OnVoteReceived] Received needed sign, collect it
+2019/04/23 19:14:49.781315 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:49.781505 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:49.781552 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:49.781586 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:49.781617 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:49.781647 [1;35m[INF][m GID 54, [Onduty-ProcessAcceptVote] end
+2019/04/23 19:14:49.781708 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, ProposalHash: ae5a3a89517e7a4fa8c02a18fe815f1bf45f113afe68cf7a35362ff55695756c, ReceivedTime: 2019-04-23 19:14:49.781676978 -0400 EDT m=+82.133305175, Result: true
+2019/04/23 19:14:49.781737 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:14:49.810457 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:49.810510 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:14:49.810542 [1;35m[INF][m GID 54, [Onduty-ProcessAcceptVote] start
+2019/04/23 19:14:49.810568 [1;35m[INF][m GID 54, [OnVoteReceived] Received needed sign, collect it
+2019/04/23 19:14:49.810592 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:49.810755 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:49.810782 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:49.810808 [1;35m[INF][m GID 54, Collect majority signs, finish proposal.
+2019/04/23 19:14:49.810835 [1;35m[INF][m GID 54, [FinishProposal] start
+2019/04/23 19:14:49.810867 [1;35m[INF][m GID 54, [TryAppendAndBroadcastConfirmBlockMsg] append confirm.
+2019/04/23 19:14:49.812169 [1;35m[INF][m GID 54, [OnConfirmReceived] listener received confirm
+2019/04/23 19:14:49.812227 [1;35m[INF][m GID 54, [OnProposalFinished] Sponsor: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, BlockHash: a716b6177b7286850f8e5446779e4e750e1ae6d87edccc6859692a6be7207b9b, EndTime: 2019-04-23 19:14:49.812198197 -0400 EDT m=+82.163826402, Result: true, ViewOffset: 0, ProposalHash: 0000000000000000000000000000000000000000000000000000000000000000
+2019/04/23 19:14:49.812257 [1;35m[INF][m GID 54, [FinishConsensus] start
+2019/04/23 19:14:49.812323 [1;35m[INF][m GID 54, [OnConsensusFinished] EndTime: 2019-04-23 19:14:49.812265915 -0400 EDT m=+82.163894116, Height: 399
+2019/04/23 19:14:49.812375 [1;35m[INF][m GID 54, Clean proposals
+2019/04/23 19:14:49.812404 [1;35m[INF][m GID 54, [FinishConsensus] end
+2019/04/23 19:14:49.812492 [1;35m[INF][m GID 54, [FinishProposal] end
+2019/04/23 19:14:49.814666 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:49.814697 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:49.814720 [1;35m[INF][m GID 54, [Onduty-ProcessAcceptVote] end
+2019/04/23 19:14:49.814789 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, ProposalHash: ae5a3a89517e7a4fa8c02a18fe815f1bf45f113afe68cf7a35362ff55695756c, ReceivedTime: 2019-04-23 19:14:49.814766874 -0400 EDT m=+82.166395069, Result: true
+2019/04/23 19:14:49.814875 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] not onduty
+2019/04/23 19:14:49.814911 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:14:49.814961 [1;35m[INF][m GID 54, [OnConfirmReceived] started, hash: a716b6177b7286850f8e5446779e4e750e1ae6d87edccc6859692a6be7207b9b
+2019/04/23 19:14:49.814986 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] not onduty
+2019/04/23 19:14:49.815004 [1;35m[INF][m GID 54, [OnConfirmReceived] end
+2019/04/23 19:14:50.591239 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:50.592631 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:50.592746 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:50.594072 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:51.911213 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:51.941124 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:51.955035 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:51.983210 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:52.770901 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:52.772783 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:52.774385 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:52.774744 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:52.774861 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:52.774962 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:52.775228 [1;32m[DBG][m GID 326, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:52.775341 [1;32m[DBG][m GID 326, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:52.775443 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:52.830109 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:52.830214 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:52.830287 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:56.546343 [1;35m[INF][m GID 364, [OnBlockReceived] listener received block
+2019/04/23 19:14:56.546722 [1;35m[INF][m GID 54, [OnBlockReceived] start
+2019/04/23 19:14:56.546773 [1;35m[INF][m GID 54, [Normal][OnBlockReceived] received first unsigned block, start consensus
+2019/04/23 19:14:56.546802 [1;35m[INF][m GID 54, [StartConsensus] consensus start
+2019/04/23 19:14:56.546842 [1;35m[INF][m GID 54, [OnViewStarted] OnDutyArbitrator: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, StartTime: 2019-04-23 19:14:56.546819378 -0400 EDT m=+88.898447574, Offset: 0, Height: 399
+2019/04/23 19:14:56.546869 [1;35m[INF][m GID 54, [StartConsensus] consensus end
+2019/04/23 19:14:56.546899 [1;35m[INF][m GID 54, [OnConsensusStarted] StartTime: 2019-04-23 19:14:56.546881266 -0400 EDT m=+88.898509460, Height: 400
+2019/04/23 19:14:56.546934 [1;35m[INF][m GID 54, [OnBlockReceived] end
+2019/04/23 19:14:56.596715 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:56.596795 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:14:56.596852 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:14:56.596922 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending req_pro to 127.0.0.1:41812 (inbound)
+2019/04/23 19:14:56.596986 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:14:56.597051 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, ProposalHash: 16c18a0982169dc67de65e2766701476adfcd86c83f10352edccb2a80d6db81c, ReceivedTime: 2019-04-23 19:14:56.597028007 -0400 EDT m=+88.948656208, Result: true
+2019/04/23 19:14:56.597075 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:14:56.597108 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:56.597186 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received proposal from 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:56.597213 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:14:56.597267 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:14:56.597295 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending req_pro to 127.0.0.1:41844 (inbound)
+2019/04/23 19:14:56.597387 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:14:56.597449 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, ProposalHash: 16c18a0982169dc67de65e2766701476adfcd86c83f10352edccb2a80d6db81c, ReceivedTime: 2019-04-23 19:14:56.597429293 -0400 EDT m=+88.949057489, Result: true
+2019/04/23 19:14:56.597473 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:14:56.597525 [1;35m[INF][m GID 54, [OnProposalReceived] started
+2019/04/23 19:14:56.597553 [1;35m[INF][m GID 54, [Normal][ProcessProposal] start
+2019/04/23 19:14:56.597578 [1;35m[INF][m GID 54, [ProcessProposal] start
+2019/04/23 19:14:56.597797 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] start
+2019/04/23 19:14:56.597863 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] end
+2019/04/23 19:14:56.597896 [1;35m[INF][m GID 54, [acceptProposal] start
+2019/04/23 19:14:56.597955 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:56.598108 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:56.598175 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:56.598210 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:56.598280 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:56.598351 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:56.598500 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:56.598562 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:56.598597 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:56.598654 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:56.598726 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:14:56.598907 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:14:56.604258 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:14:56.604319 [1;35m[INF][m GID 54, Collect majority signs, finish proposal.
+2019/04/23 19:14:56.604353 [1;35m[INF][m GID 54, [FinishProposal] start
+2019/04/23 19:14:56.604417 [1;35m[INF][m GID 54, [TryAppendAndBroadcastConfirmBlockMsg] append confirm.
+2019/04/23 19:14:56.646925 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:56.603245 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received proposal from 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:56.604218 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received proposal from 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:56.704428 [1;35m[INF][m GID 54, [OnConfirmReceived] listener received confirm
+2019/04/23 19:14:56.704478 [1;35m[INF][m GID 54, [OnProposalFinished] Sponsor: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, BlockHash: dc916a6f7c26801adae241a7653fa22936317a6ca57b4f4f1e891c8bf4ec7400, EndTime: 2019-04-23 19:14:56.704446762 -0400 EDT m=+89.056074961, Result: true, ViewOffset: 0, ProposalHash: 0000000000000000000000000000000000000000000000000000000000000000
+2019/04/23 19:14:56.707503 [1;35m[INF][m GID 54, [FinishConsensus] start
+2019/04/23 19:14:56.707549 [1;35m[INF][m GID 54, [OnConsensusFinished] EndTime: 2019-04-23 19:14:56.707518695 -0400 EDT m=+89.059146890, Height: 400
+2019/04/23 19:14:56.711552 [1;35m[INF][m GID 54, Clean proposals
+2019/04/23 19:14:56.711625 [1;35m[INF][m GID 54, [FinishConsensus] end
+2019/04/23 19:14:56.711661 [1;35m[INF][m GID 54, [FinishProposal] end
+2019/04/23 19:14:56.711693 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:14:56.711722 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:14:56.711753 [1;35m[INF][m GID 54, [BroadcastMessage] msg: acc_vote
+2019/04/23 19:14:56.711823 [1;35m[INF][m GID 54, [acceptProposal] send acc_vote msg: 39017533eb7d4e284899a6791836af44ccba92e93652ceda278700fbd1702657
+2019/04/23 19:14:56.711865 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, ProposalHash: 16c18a0982169dc67de65e2766701476adfcd86c83f10352edccb2a80d6db81c, ReceivedTime: 2019-04-23 19:14:56.711839192 -0400 EDT m=+89.063467387, Result: true
+2019/04/23 19:14:56.711895 [1;35m[INF][m GID 54, [acceptProposal] end
+2019/04/23 19:14:56.711923 [1;35m[INF][m GID 54, [ProcessProposal] end
+2019/04/23 19:14:56.712090 [1;35m[INF][m GID 54, [Normal][ProcessProposal] end
+2019/04/23 19:14:56.712133 [1;35m[INF][m GID 54, [OnProposalArrived] Sponsor: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, BlockHash: dc916a6f7c26801adae241a7653fa22936317a6ca57b4f4f1e891c8bf4ec7400, ReceivedTime: 2019-04-23 19:14:56.712109126 -0400 EDT m=+89.063737328, Result: false, ViewOffset: 0, ProposalHash: 16c18a0982169dc67de65e2766701476adfcd86c83f10352edccb2a80d6db81c
+2019/04/23 19:14:56.712157 [1;35m[INF][m GID 54, [OnProposalReceived] end
+2019/04/23 19:14:56.712180 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:14:56.712206 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:14:56.712230 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:14:56.712258 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, ProposalHash: 16c18a0982169dc67de65e2766701476adfcd86c83f10352edccb2a80d6db81c, ReceivedTime: 2019-04-23 19:14:56.712240302 -0400 EDT m=+89.063868497, Result: true
+2019/04/23 19:14:56.712280 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:14:56.712301 [1;35m[INF][m GID 54, [OnConfirmReceived] started, hash: dc916a6f7c26801adae241a7653fa22936317a6ca57b4f4f1e891c8bf4ec7400
+2019/04/23 19:14:56.712324 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] not onduty
+2019/04/23 19:14:56.712426 [1;35m[INF][m GID 54, [OnConfirmReceived] end
+2019/04/23 19:14:56.712450 [1;35m[INF][m GID 54, [OnProposalReceived] started
+2019/04/23 19:14:56.712475 [1;35m[INF][m GID 54, [Normal][ProcessProposal] start
+2019/04/23 19:14:56.712501 [1;35m[INF][m GID 54, [ProcessProposal] start
+2019/04/23 19:14:56.720883 [1;35m[INF][m GID 54, already exist block in block chain
+2019/04/23 19:14:56.716545 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10216 (outbound)
+2019/04/23 19:14:56.716559 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10316 (outbound)
+2019/04/23 19:14:56.716572 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10416 (outbound)
+2019/04/23 19:14:56.721440 [1;35m[INF][m GID 54, [ProcessProposal] end
+2019/04/23 19:14:56.772481 [1;35m[INF][m GID 54, [Normal][ProcessProposal] end
+2019/04/23 19:14:56.772521 [1;35m[INF][m GID 54, [OnProposalArrived] Sponsor: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, BlockHash: dc916a6f7c26801adae241a7653fa22936317a6ca57b4f4f1e891c8bf4ec7400, ReceivedTime: 2019-04-23 19:14:56.772492458 -0400 EDT m=+89.124120650, Result: false, ViewOffset: 0, ProposalHash: 16c18a0982169dc67de65e2766701476adfcd86c83f10352edccb2a80d6db81c
+2019/04/23 19:14:56.772545 [1;35m[INF][m GID 54, [OnProposalReceived] end
+2019/04/23 19:14:56.772572 [1;35m[INF][m GID 54, [OnProposalReceived] started
+2019/04/23 19:14:56.772601 [1;35m[INF][m GID 54, [Normal][ProcessProposal] start
+2019/04/23 19:14:56.772630 [1;35m[INF][m GID 54, [ProcessProposal] start
+2019/04/23 19:14:56.772813 [1;35m[INF][m GID 54, already exist block in block chain
+2019/04/23 19:14:56.773007 [1;35m[INF][m GID 54, [ProcessProposal] end
+2019/04/23 19:14:56.774707 [1;35m[INF][m GID 54, [Normal][ProcessProposal] end
+2019/04/23 19:14:56.774875 [1;35m[INF][m GID 54, [OnProposalArrived] Sponsor: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, BlockHash: dc916a6f7c26801adae241a7653fa22936317a6ca57b4f4f1e891c8bf4ec7400, ReceivedTime: 2019-04-23 19:14:56.774825817 -0400 EDT m=+89.126454020, Result: false, ViewOffset: 0, ProposalHash: 16c18a0982169dc67de65e2766701476adfcd86c83f10352edccb2a80d6db81c
+2019/04/23 19:14:56.775352 [1;35m[INF][m GID 54, [OnProposalReceived] end
+2019/04/23 19:14:59.095693 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:59.100070 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:59.109141 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41782 (inbound)
+2019/04/23 19:14:59.109195 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41782 (inbound)
+2019/04/23 19:15:00.594835 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41812 (inbound)
+2019/04/23 19:15:00.595209 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41812 (inbound)
+2019/04/23 19:15:00.595254 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41812 (inbound)
+2019/04/23 19:15:00.595609 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41812 (inbound)
+2019/04/23 19:15:01.182545 [1;35m[INF][m GID 46, [OnBlockReceived] listener received block
+2019/04/23 19:15:01.183110 [1;35m[INF][m GID 54, [OnBlockReceived] start
+2019/04/23 19:15:01.183564 [1;35m[INF][m GID 54, [Normal][OnBlockReceived] received first unsigned block, start consensus
+2019/04/23 19:15:01.183624 [1;35m[INF][m GID 54, [StartConsensus] consensus start
+2019/04/23 19:15:01.183682 [1;35m[INF][m GID 54, [OnViewStarted] OnDutyArbitrator: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, StartTime: 2019-04-23 19:15:01.183642728 -0400 EDT m=+93.535270924, Offset: 0, Height: 400
+2019/04/23 19:15:01.183709 [1;35m[INF][m GID 54, [StartConsensus] consensus end
+2019/04/23 19:15:01.183766 [1;35m[INF][m GID 54, [OnConsensusStarted] StartTime: 2019-04-23 19:15:01.183747652 -0400 EDT m=+93.535375853, Height: 401
+2019/04/23 19:15:01.183786 [1;35m[INF][m GID 54, [OnBlockReceived] end
+2019/04/23 19:15:01.199815 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received proposal from 127.0.0.1:41812 (inbound)
+2019/04/23 19:15:01.199922 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41812 (inbound)
+2019/04/23 19:15:01.200056 [1;35m[INF][m GID 54, [OnProposalReceived] started
+2019/04/23 19:15:01.200148 [1;35m[INF][m GID 54, [Normal][ProcessProposal] start
+2019/04/23 19:15:01.200176 [1;35m[INF][m GID 54, [ProcessProposal] start
+2019/04/23 19:15:01.200426 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] start
+2019/04/23 19:15:01.200646 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] end
+2019/04/23 19:15:01.200713 [1;35m[INF][m GID 54, [ProcessProposal] end
+2019/04/23 19:15:01.200774 [1;35m[INF][m GID 54, [Normal][ProcessProposal] end
+2019/04/23 19:15:01.200919 [1;35m[INF][m GID 54, [OnProposalArrived] Sponsor: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, BlockHash: 59df122916e447f5ec2d211d2cf25e42334ab7f5b004738bade287a916b1a466, ReceivedTime: 2019-04-23 19:15:01.200893815 -0400 EDT m=+93.552522021, Result: false, ViewOffset: 0, ProposalHash: a9a5e3b821317f472654e30dcb34c30b26e370edca660aa113107aa6586feaaa
+2019/04/23 19:15:01.200941 [1;35m[INF][m GID 54, [OnProposalReceived] end
+2019/04/23 19:15:01.200962 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:15:01.201142 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:15:01.201177 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending req_pro to 127.0.0.1:41812 (inbound)
+2019/04/23 19:15:01.201256 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:15:01.201302 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, ProposalHash: a9a5e3b821317f472654e30dcb34c30b26e370edca660aa113107aa6586feaaa, ReceivedTime: 2019-04-23 19:15:01.201281109 -0400 EDT m=+93.552909310, Result: true
+2019/04/23 19:15:01.201387 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:15:01.202212 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41844 (inbound)
+2019/04/23 19:15:01.202241 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:15:01.202264 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:15:01.202287 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending req_pro to 127.0.0.1:41844 (inbound)
+2019/04/23 19:15:01.202334 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:15:01.202363 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, ProposalHash: a9a5e3b821317f472654e30dcb34c30b26e370edca660aa113107aa6586feaaa, ReceivedTime: 2019-04-23 19:15:01.202344901 -0400 EDT m=+93.553973096, Result: true
+2019/04/23 19:15:01.202383 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:15:01.202520 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received proposal from 127.0.0.1:10416 (outbound)
+2019/04/23 19:15:01.202549 [1;35m[INF][m GID 54, [OnProposalReceived] started
+2019/04/23 19:15:01.202572 [1;35m[INF][m GID 54, [Normal][ProcessProposal] start
+2019/04/23 19:15:01.202597 [1;35m[INF][m GID 54, [ProcessProposal] start
+2019/04/23 19:15:01.202778 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] start
+2019/04/23 19:15:01.202862 [1;33m[WRN][m GID 54, [TryStartSpeculatingProposal] processingBlock is not nil
+2019/04/23 19:15:01.202890 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] end
+2019/04/23 19:15:01.202919 [1;35m[INF][m GID 54, [ProcessProposal] end
+2019/04/23 19:15:01.202943 [1;35m[INF][m GID 54, [Normal][ProcessProposal] end
+2019/04/23 19:15:01.202972 [1;35m[INF][m GID 54, [OnProposalArrived] Sponsor: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, BlockHash: 59df122916e447f5ec2d211d2cf25e42334ab7f5b004738bade287a916b1a466, ReceivedTime: 2019-04-23 19:15:01.202951913 -0400 EDT m=+93.554580108, Result: false, ViewOffset: 0, ProposalHash: a9a5e3b821317f472654e30dcb34c30b26e370edca660aa113107aa6586feaaa
+2019/04/23 19:15:01.202993 [1;35m[INF][m GID 54, [OnProposalReceived] end
+2019/04/23 19:15:01.204413 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received proposal from 127.0.0.1:10316 (outbound)
+2019/04/23 19:15:01.204481 [1;35m[INF][m GID 54, [OnProposalReceived] started
+2019/04/23 19:15:01.204529 [1;35m[INF][m GID 54, [Normal][ProcessProposal] start
+2019/04/23 19:15:01.204565 [1;35m[INF][m GID 54, [ProcessProposal] start
+2019/04/23 19:15:01.204824 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] start
+2019/04/23 19:15:01.204865 [1;33m[WRN][m GID 54, [TryStartSpeculatingProposal] processingBlock is not nil
+2019/04/23 19:15:01.204892 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] end
+2019/04/23 19:15:01.204933 [1;35m[INF][m GID 54, [ProcessProposal] end
+2019/04/23 19:15:01.204976 [1;35m[INF][m GID 54, [Normal][ProcessProposal] end
+2019/04/23 19:15:01.205008 [1;35m[INF][m GID 54, [OnProposalArrived] Sponsor: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, BlockHash: 59df122916e447f5ec2d211d2cf25e42334ab7f5b004738bade287a916b1a466, ReceivedTime: 2019-04-23 19:15:01.204987438 -0400 EDT m=+93.556615634, Result: false, ViewOffset: 0, ProposalHash: a9a5e3b821317f472654e30dcb34c30b26e370edca660aa113107aa6586feaaa
+2019/04/23 19:15:01.205029 [1;35m[INF][m GID 54, [OnProposalReceived] end
+2019/04/23 19:15:01.231423 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41782 (inbound)
+2019/04/23 19:15:01.248644 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:15:01.250556 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:15:01.250804 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending req_pro to 127.0.0.1:41782 (inbound)
+2019/04/23 19:15:01.319356 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:15:01.319527 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, ProposalHash: a9a5e3b821317f472654e30dcb34c30b26e370edca660aa113107aa6586feaaa, ReceivedTime: 2019-04-23 19:15:01.319500963 -0400 EDT m=+93.671129159, Result: true
+2019/04/23 19:15:01.319575 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:15:01.376840 [1;35m[INF][m GID 46, [OnConfirmReceived] listener received confirm
+2019/04/23 19:15:01.376895 [1;35m[INF][m GID 46, [OnBlockReceived] listener received block
+2019/04/23 19:15:01.377469 [1;35m[INF][m GID 54, [OnConfirmReceived] started, hash: 59df122916e447f5ec2d211d2cf25e42334ab7f5b004738bade287a916b1a466
+2019/04/23 19:15:01.377509 [1;35m[INF][m GID 54, [FinishConsensus] start
+2019/04/23 19:15:01.377566 [1;35m[INF][m GID 54, [OnConsensusFinished] EndTime: 2019-04-23 19:15:01.377522086 -0400 EDT m=+93.729150296, Height: 401
+2019/04/23 19:15:01.377599 [1;35m[INF][m GID 54, Clean proposals
+2019/04/23 19:15:01.377625 [1;35m[INF][m GID 54, [FinishConsensus] end
+2019/04/23 19:15:01.382453 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] not onduty
+2019/04/23 19:15:01.382524 [1;35m[INF][m GID 54, [OnConfirmReceived] end
+2019/04/23 19:15:01.382557 [1;35m[INF][m GID 54, [OnBlockReceived] start
+2019/04/23 19:15:01.382588 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] not onduty
+2019/04/23 19:15:01.382637 [1;35m[INF][m GID 54, [OnBlockReceived] received confirmed block
+2019/04/23 19:15:01.382667 [1;35m[INF][m GID 54, [OnBlockReceived] end
+2019/04/23 19:15:01.911355 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41844 (inbound)
+2019/04/23 19:15:01.970013 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41844 (inbound)
+2019/04/23 19:15:01.970108 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41844 (inbound)
+2019/04/23 19:15:01.970248 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41844 (inbound)
+2019/04/23 19:15:02.771922 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10416 (outbound)
+2019/04/23 19:15:02.772355 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10216 (outbound)
+2019/04/23 19:15:02.772426 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10416 (outbound)
+2019/04/23 19:15:02.772706 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10316 (outbound)
+2019/04/23 19:15:02.772783 [1;32m[DBG][m GID 326, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10216 (outbound)
+2019/04/23 19:15:02.777556 [1;32m[DBG][m GID 326, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10216 (outbound)
+2019/04/23 19:15:02.777608 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10216 (outbound)
+2019/04/23 19:15:02.850692 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10416 (outbound)
+2019/04/23 19:15:02.851869 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10316 (outbound)
+2019/04/23 19:15:02.852740 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10316 (outbound)
+2019/04/23 19:15:02.854385 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10416 (outbound)
+2019/04/23 19:15:02.854526 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10316 (outbound)
+2019/04/23 19:15:09.104062 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41782 (inbound)
+2019/04/23 19:15:09.133924 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41782 (inbound)
+2019/04/23 19:15:09.134005 [1;32m[DBG][m GID 223, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41782 (inbound)
+2019/04/23 19:15:09.153419 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41782 (inbound)
+2019/04/23 19:15:10.632893 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41812 (inbound)
+2019/04/23 19:15:10.633130 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41812 (inbound)
+2019/04/23 19:15:10.633175 [1;32m[DBG][m GID 258, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41812 (inbound)
+2019/04/23 19:15:10.634015 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41812 (inbound)
+2019/04/23 19:15:11.152834 [1;35m[INF][m GID 46, [OnBlockReceived] listener received block
+2019/04/23 19:15:11.153050 [1;35m[INF][m GID 54, [OnBlockReceived] start
+2019/04/23 19:15:11.153109 [1;35m[INF][m GID 54, [Normal][OnBlockReceived] received first unsigned block, start consensus
+2019/04/23 19:15:11.153134 [1;35m[INF][m GID 54, [StartConsensus] consensus start
+2019/04/23 19:15:11.153171 [1;35m[INF][m GID 54, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-04-23 19:15:11.153147832 -0400 EDT m=+103.504776027, Offset: 0, Height: 401
+2019/04/23 19:15:11.153195 [1;35m[INF][m GID 54, [StartConsensus] consensus end
+2019/04/23 19:15:11.153220 [1;35m[INF][m GID 54, [OnConsensusStarted] StartTime: 2019-04-23 19:15:11.153203733 -0400 EDT m=+103.504831928, Height: 402
+2019/04/23 19:15:11.153238 [1;35m[INF][m GID 54, [OnBlockReceived] end
+2019/04/23 19:15:11.205252 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received proposal from 127.0.0.1:41782 (inbound)
+2019/04/23 19:15:11.205334 [1;35m[INF][m GID 54, [OnProposalReceived] started
+2019/04/23 19:15:11.205385 [1;35m[INF][m GID 54, [Normal][ProcessProposal] start
+2019/04/23 19:15:11.205415 [1;35m[INF][m GID 54, [ProcessProposal] start
+2019/04/23 19:15:11.205611 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] start
+2019/04/23 19:15:11.205662 [1;35m[INF][m GID 54, [TryStartSpeculatingProposal] end
+2019/04/23 19:15:11.205696 [1;35m[INF][m GID 54, [acceptProposal] start
+2019/04/23 19:15:11.205768 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:15:11.205941 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:15:11.205993 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:15:11.206027 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:15:11.206054 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:15:11.206110 [1;35m[INF][m GID 54, [BroadcastMessage] msg: acc_vote
+2019/04/23 19:15:11.206145 [1;35m[INF][m GID 54, [acceptProposal] send acc_vote msg: ebab56e2e2db381d52d09380a6d7a8522a01fea49ac251be4f51574e2a46caca
+2019/04/23 19:15:11.206181 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, ProposalHash: 490038efbf1d9b67f29b14683a873e5d4ce3b170891abb6fa94416e998275a28, ReceivedTime: 2019-04-23 19:15:11.206154021 -0400 EDT m=+103.557782216, Result: true
+2019/04/23 19:15:11.206230 [1;35m[INF][m GID 54, [acceptProposal] end
+2019/04/23 19:15:11.206259 [1;35m[INF][m GID 54, [ProcessProposal] end
+2019/04/23 19:15:11.206283 [1;35m[INF][m GID 54, [Normal][ProcessProposal] end
+2019/04/23 19:15:11.206335 [1;35m[INF][m GID 54, [OnProposalArrived] Sponsor: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, BlockHash: ffd9da5a9092dd9b6847e12ca6ec5cdc6e62deddc52285cc3bb8fb067bd01546, ReceivedTime: 2019-04-23 19:15:11.206291365 -0400 EDT m=+103.557919561, Result: false, ViewOffset: 0, ProposalHash: 490038efbf1d9b67f29b14683a873e5d4ce3b170891abb6fa94416e998275a28
+2019/04/23 19:15:11.206359 [1;35m[INF][m GID 54, [OnProposalReceived] end
+2019/04/23 19:15:11.206400 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41844 (inbound)
+2019/04/23 19:15:11.206448 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:15:11.206475 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:15:11.206519 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:15:11.206667 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:15:11.206715 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:15:11.206744 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:15:11.206790 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:15:11.206815 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:15:11.206863 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7, ProposalHash: 490038efbf1d9b67f29b14683a873e5d4ce3b170891abb6fa94416e998275a28, ReceivedTime: 2019-04-23 19:15:11.206824226 -0400 EDT m=+103.558452422, Result: true
+2019/04/23 19:15:11.206887 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:15:11.206918 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10416 (outbound)
+2019/04/23 19:15:11.206995 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10216 (outbound)
+2019/04/23 19:15:11.207041 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending acc_vote to 127.0.0.1:10316 (outbound)
+2019/04/23 19:15:11.245954 [1;32m[DBG][m GID 222, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41782 (inbound)
+2019/04/23 19:15:11.246073 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:15:11.246132 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] start
+2019/04/23 19:15:11.246168 [1;35m[INF][m GID 54, [ProcessVote] start
+2019/04/23 19:15:11.246971 [1;35m[INF][m GID 54, [countAcceptedVote] start
+2019/04/23 19:15:11.247035 [1;35m[INF][m GID 54, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/04/23 19:15:11.247113 [1;35m[INF][m GID 54, Collect majority signs, finish proposal.
+2019/04/23 19:15:11.247175 [1;35m[INF][m GID 54, [FinishProposal] start
+2019/04/23 19:15:11.247225 [1;35m[INF][m GID 54, [TryAppendAndBroadcastConfirmBlockMsg] append confirm.
+2019/04/23 19:15:11.279915 [1;35m[INF][m GID 54, [OnConfirmReceived] listener received confirm
+2019/04/23 19:15:11.281357 [1;35m[INF][m GID 54, [OnProposalFinished] Sponsor: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, BlockHash: ffd9da5a9092dd9b6847e12ca6ec5cdc6e62deddc52285cc3bb8fb067bd01546, EndTime: 2019-04-23 19:15:11.279966991 -0400 EDT m=+103.631595195, Result: true, ViewOffset: 0, ProposalHash: 0000000000000000000000000000000000000000000000000000000000000000
+2019/04/23 19:15:11.281547 [1;35m[INF][m GID 54, [FinishConsensus] start
+2019/04/23 19:15:11.281624 [1;35m[INF][m GID 54, [OnConsensusFinished] EndTime: 2019-04-23 19:15:11.281567527 -0400 EDT m=+103.633195732, Height: 402
+2019/04/23 19:15:11.281698 [1;35m[INF][m GID 54, Clean proposals
+2019/04/23 19:15:11.281833 [1;35m[INF][m GID 54, [FinishConsensus] end
+2019/04/23 19:15:11.281928 [1;35m[INF][m GID 54, [FinishProposal] end
+2019/04/23 19:15:11.281967 [1;35m[INF][m GID 54, [countAcceptedVote] end
+2019/04/23 19:15:11.282021 [1;35m[INF][m GID 54, [ProcessVote] end
+2019/04/23 19:15:11.282112 [1;35m[INF][m GID 54, [Normal-ProcessAcceptVote] end
+2019/04/23 19:15:11.282178 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, ProposalHash: 490038efbf1d9b67f29b14683a873e5d4ce3b170891abb6fa94416e998275a28, ReceivedTime: 2019-04-23 19:15:11.282125904 -0400 EDT m=+103.633754108, Result: true
+2019/04/23 19:15:11.282213 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] onduty
+2019/04/23 19:15:11.282337 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:15:11.282372 [1;35m[INF][m GID 54, [OnConfirmReceived] started, hash: ffd9da5a9092dd9b6847e12ca6ec5cdc6e62deddc52285cc3bb8fb067bd01546
+2019/04/23 19:15:11.282399 [1;35m[INF][m GID 54, [onDutyArbitratorChanged] onduty
+2019/04/23 19:15:11.283001 [1;35m[INF][m GID 54, [OnConfirmReceived] end
+2019/04/23 19:15:11.311189 [1;32m[DBG][m GID 177, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received acc_vote from 127.0.0.1:41812 (inbound)
+2019/04/23 19:15:11.331950 [1;35m[INF][m GID 54, [OnVoteReceived] started
+2019/04/23 19:15:11.332115 [1;35m[INF][m GID 54, [Onduty-ProcessAcceptVote] start
+2019/04/23 19:15:11.332204 [1;35m[INF][m GID 54, [Onduty-ProcessAcceptVote] end
+2019/04/23 19:15:11.332296 [1;35m[INF][m GID 54, [OnVoteArrived] Signer: 032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a, ProposalHash: 490038efbf1d9b67f29b14683a873e5d4ce3b170891abb6fa94416e998275a28, ReceivedTime: 2019-04-23 19:15:11.332226553 -0400 EDT m=+103.683854761, Result: true
+2019/04/23 19:15:11.332353 [1;35m[INF][m GID 54, [OnVoteReceived] end
+2019/04/23 19:15:11.920597 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:41844 (inbound)
+2019/04/23 19:15:11.920745 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:41844 (inbound)
+2019/04/23 19:15:11.921371 [1;32m[DBG][m GID 281, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:41844 (inbound)
+2019/04/23 19:15:11.922908 [1;32m[DBG][m GID 282, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:41844 (inbound)
+2019/04/23 19:15:12.772461 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10416 (outbound)
+2019/04/23 19:15:12.772874 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10216 (outbound)
+2019/04/23 19:15:12.773309 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending ping to 127.0.0.1:10316 (outbound)
+2019/04/23 19:15:12.780554 [1;32m[DBG][m GID 326, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10216 (outbound)
+2019/04/23 19:15:12.780709 [1;32m[DBG][m GID 326, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10216 (outbound)
+2019/04/23 19:15:12.780782 [1;32m[DBG][m GID 327, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10216 (outbound)
+2019/04/23 19:15:12.780929 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10316 (outbound)
+2019/04/23 19:15:12.780996 [1;32m[DBG][m GID 321, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10316 (outbound)
+2019/04/23 19:15:12.781041 [1;32m[DBG][m GID 338, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10316 (outbound)
+2019/04/23 19:15:12.783924 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received ping from 127.0.0.1:10416 (outbound)
+2019/04/23 19:15:12.784001 [1;32m[DBG][m GID 323, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).outHandler peer.go:572 Sending pong to 127.0.0.1:10416 (outbound)
+2019/04/23 19:15:12.784823 [1;32m[DBG][m GID 322, github.com/elastos/Elastos.ELA/dpos/p2p/peer.(*Peer).inHandler peer.go:484 Received pong from 127.0.0.1:10416 (outbound)
