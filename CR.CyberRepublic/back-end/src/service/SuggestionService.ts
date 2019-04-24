@@ -13,6 +13,11 @@ const emptyDoc = {
   link: [],
 }
 
+const listExlucdedFields = [
+  constant.SUGGESTION_TAG_TYPE.UNDER_CONSIDERATION,
+  constant.SUGGESTION_TAG_TYPE.INFO_NEEDED
+]
+
 export default class extends Base {
   private model: any
   protected init() {
@@ -110,11 +115,13 @@ export default class extends Base {
   }
 
   public async list(param: any): Promise<Object> {
-    const query = _.omit(param, ['results', 'page', 'sortBy', 'sortOrder', 'filter', 'profileListFor', 'search', 'tagsExcluded'])
-    const { sortBy, sortOrder, tagsExcluded } = param
+    const query = _.omit(param, ['results', 'page', 'sortBy', 'sortOrder', 'filter', 'profileListFor', 'search', 'tagsIncluded'])
+    const { sortBy, sortOrder, tagsIncluded } = param
 
-    if (!_.isEmpty(tagsExcluded)) {
-      query['tags.type'] = { $nin: tagsExcluded.split(',') }
+    if (!_.isEmpty(tagsIncluded)) {
+      query['tags.type'] = { $in: tagsIncluded.split(',') }
+    } else {
+      query['tags.type'] = { $nin: listExlucdedFields }
     }
 
     const cursor = this.model.getDBInstance()

@@ -335,7 +335,7 @@ const zh = {
     tag: {
       type: {
         UNDER_CONSIDERATION: '审议中',
-        INFO_NEEDED: '需更多信息',
+        INFO_NEEDED: '需要更多信息',
       },
     },
   },

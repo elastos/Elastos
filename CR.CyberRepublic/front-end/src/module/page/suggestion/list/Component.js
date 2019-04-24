@@ -276,18 +276,18 @@ export default class extends StandardPage {
   }
 
   renderFilters() {
-    const { tagsExcluded: {
+    const { tagsIncluded: {
       infoNeeded,
       underConsideration
     }} = this.props
     return (
       <Row>
         <Col sm={10} xs={24}>
-          <Switch defaultChecked={!underConsideration} onChange={this.onUnderConsiderationChange} />
+          <Switch defaultChecked={underConsideration} onChange={this.onUnderConsiderationChange} />
           <SwitchText>{I18N.get('suggestion.tag.type.UNDER_CONSIDERATION')}</SwitchText>
         </Col>
         <Col sm={10} xs={24}>
-          <Switch defaultChecked={!infoNeeded} onChange={this.onInfoNeededChange} />
+          <Switch defaultChecked={infoNeeded} onChange={this.onInfoNeededChange} />
           <SwitchText>{I18N.get('suggestion.tag.type.INFO_NEEDED')}</SwitchText>
         </Col>
       </Row>
@@ -295,16 +295,16 @@ export default class extends StandardPage {
   }
 
   onInfoNeededChange = async (checked) => {
-    const { onTagsExcludedChanged, tagsExcluded } = this.props
-    tagsExcluded.infoNeeded = !checked
-    await onTagsExcludedChanged(tagsExcluded)
+    const { onTagsIncludedChanged, tagsIncluded } = this.props
+    tagsIncluded.infoNeeded = checked
+    await onTagsIncludedChanged(tagsIncluded)
     await this.refetch()
   }
 
   onUnderConsiderationChange = async (checked) => {
-    const { onTagsExcludedChanged, tagsExcluded } = this.props
-    tagsExcluded.underConsideration = !checked
-    await onTagsExcludedChanged(tagsExcluded)
+    const { onTagsIncludedChanged, tagsIncluded } = this.props
+    tagsIncluded.underConsideration = checked
+    await onTagsIncludedChanged(tagsIncluded)
     await this.refetch()
   }
 
@@ -386,23 +386,23 @@ export default class extends StandardPage {
       page,
       results,
     }
-    const { tagsExcluded: {
+    const { tagsIncluded: {
       infoNeeded,
       underConsideration
     }} = this.props
-    let excluded = ''
+    let included = ''
     if (infoNeeded) {
-      excluded = SUGGESTION_TAG_TYPE.INFO_NEEDED
+      included = SUGGESTION_TAG_TYPE.INFO_NEEDED
     }
     if (underConsideration) {
-      if (_.isEmpty(excluded)) {
-        excluded = SUGGESTION_TAG_TYPE.UNDER_CONSIDERATION
+      if (_.isEmpty(included)) {
+        included = SUGGESTION_TAG_TYPE.UNDER_CONSIDERATION
       } else {
-        excluded = `${excluded},${SUGGESTION_TAG_TYPE.UNDER_CONSIDERATION}`
+        included = `${included},${SUGGESTION_TAG_TYPE.UNDER_CONSIDERATION}`
       }
     }
-    if (!_.isEmpty(excluded)) {
-      query.tagsExcluded = excluded
+    if (!_.isEmpty(included)) {
+      query.tagsIncluded = included
     }
 
     // TODO

@@ -14,7 +14,7 @@ const mapState = (state) => {
 
   const suggestionState = {
     ...state.suggestion,
-    tagsExcluded: state.suggestion.tags_excluded,
+    tagsIncluded: state.suggestion.tags_included,
     dataList: state.suggestion.all_suggestions,
     total: state.suggestion.all_suggestions_total,
     currentUserId,
@@ -34,8 +34,8 @@ const mapDispatch = () => {
       return service.saveSortBy(sortBy)
     },
 
-    async onTagsExcludedChanged(tagsExcluded) {
-      return service.saveTagsExcluded(tagsExcluded)
+    async onTagsIncludedChanged(tagsIncluded) {
+      return service.saveTagsIncluded(tagsIncluded)
     },
 
     async getList(query) {

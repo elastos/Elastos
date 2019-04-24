@@ -59,7 +59,7 @@ export default ({ data, hideAuthor, postedByText }) => {
                 {I18N.get('suggestion.btnText.needMoreInfo')}
               </StatusBadge> :
               <StatusBadgeGood key={_id}>
-                {I18N.get('suggestion.btnText.consider')}
+                {I18N.get('suggestion.tag.type.UNDER_CONSIDERATION')}
               </StatusBadgeGood>
             )
           }) : ''
