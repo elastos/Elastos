@@ -6,12 +6,12 @@ diff -ruN Elastos.NET.Hive.Native.SDK-dev-master/CMakeLists.txt Elastos.NET.Hive
  find_package(CURL REQUIRED)
  include_directories(${CURL_INCLUDE_DIRS})
 +add_definitions(-DCURL_STATICLIB)
- 
+
  # Find "JSON for Modern C++" (nlohmann/json.hpp)
  include_directories("include/hive")
 @@ -78,4 +79,6 @@
  endif()
- 
+
  # Samples
 -add_subdirectory(samples)
 +if(BUILD_SAMPLE)
@@ -33,18 +33,18 @@ diff -ruN Elastos.NET.Hive.Native.SDK-dev-master/include/hive/nlohmann/json.hpp 
 +        // #error "unsupported GCC version - see https://github.com/nlohmann/json#supported-compilers"
      #endif
  #endif
- 
+
 diff -ruN Elastos.NET.Hive.Native.SDK-dev-master/src/c-api/dstorec.cc Elastos.NET.Hive.Native.SDK-dev-master-mod/src/c-api/dstorec.cc
 --- Elastos.NET.Hive.Native.SDK-dev-master/src/c-api/dstorec.cc	2019-04-03 03:06:00.000000000 +0800
 +++ Elastos.NET.Hive.Native.SDK-dev-master-mod/src/c-api/dstorec.cc	2019-04-09 19:41:53.000000000 +0800
 @@ -17,7 +17,7 @@
      auto ds = new DStore{host_rand, 9095};
- 
+
      // Please replace this line
 -    std::string uid = "uid-00ec6a5e-a36d-4313-a579-5ce46be3eadb";
-+    std::string uid = "uid-b19ee72b-cf64-47b0-8c05-22365d052f5d";
++    std::string uid = "uid-2041b18e-ca86-4962-9a21-d477f7f627ce";
      ds->set_sender_UID(uid);
- 
+
      return reinterpret_cast<DStoreC *>(ds);
 diff -ruN Elastos.NET.Hive.Native.SDK-dev-master/src/message.cc Elastos.NET.Hive.Native.SDK-dev-master-mod/src/message.cc
 --- Elastos.NET.Hive.Native.SDK-dev-master/src/message.cc	2019-04-03 03:06:00.000000000 +0800
@@ -64,9 +64,9 @@ diff -ruN Elastos.NET.Hive.Native.SDK-dev-master/src/node.cc Elastos.NET.Hive.Na
 @@ -491,7 +491,7 @@
          ":\n" + input.dump());
    }
- 
+
 -  *property_value = input[property_name];
 +  *property_value = input[property_name].get<PropertyType>();
  }
- 
+
  std::string Node::MakeUrl(
