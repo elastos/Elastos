@@ -248,6 +248,35 @@ export default class extends StandardPage {
             }
           </h2>
         </div>
+        <MediaQuery maxWidth={LG_WIDTH}>
+          {I18N.get('suggestion.sort')}: &nbsp;
+          <Select
+            name="type"
+            style={{width: 200}}
+            onChange={this.onSortByChanged}
+            value={sortBy}
+          >
+            {_.map(SORT_BY, value => (
+              <Select.Option key={value} value={value}>
+                {SORT_BY_TEXT[value]}
+              </Select.Option>
+            ))}
+          </Select>
+        </MediaQuery>
+        <MediaQuery minWidth={LG_WIDTH + 1}>
+          {I18N.get('suggestion.sort')}: &nbsp;
+          <Button.Group className="filter-group">
+            {_.map(SORT_BY, value => (
+              <Button
+                key={value}
+                onClick={() => this.onSortByChanged(value)}
+                className={(sortBy === value && 'cr-strikethrough') || ''}
+              >
+                {SORT_BY_TEXT[value]}
+              </Button>
+            ))}
+          </Button.Group>
+        </MediaQuery>
       </div>
     )
   }
