@@ -83,6 +83,11 @@ ssize_t dstore_send_msg(DStoreWrapper *ctx, const char *friendid,
     char *key;
     int rc;
 
+    if (!ctx->dstore) {
+        vlogE("Carrier: DStore is not ready.");
+        return ELA_GENERAL_ERROR(ELAERR_WRONG_STATE);
+    }
+
     len = base58_decode(friendid, strlen(friendid), peer_pk, sizeof(peer_pk));
     if (len != sizeof(peer_pk))  {
         vlogE("Carrier: Decode friendid %s error.", friendid);
@@ -200,7 +205,7 @@ static int redeem_dstore_file(ElaCarrier *w,
     int i;
     int rc;
 
-    rc = snprintf(conf_path, length, "%s/dstore_ache.conf", w->pref.data_location);
+    rc = snprintf(conf_path, length, "%s/dstore_cache.conf", w->pref.data_location);
     if (rc < 0 || rc >= (int)length)
         return -1;
 
@@ -232,7 +237,7 @@ static int redeem_dstore_file(ElaCarrier *w,
     return (nwr != 1) ? -1 : 0;
 }
 
-static void * crawl_offline_msg(void *arg)
+static void *crawl_offline_msg(void *arg)
 {
     DStoreWrapper *ctx = (DStoreWrapper *)arg;
     ElaCarrier *w = ctx->carrier;
