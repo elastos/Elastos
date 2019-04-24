@@ -36,6 +36,9 @@ set(HIVE_DEPS
 
 if(WIN32)
     set(HIVE_DEPS ${HIVE_DEPS} zlib1 ws2_32)
+elseif(ANDROID)
+    set(HIVE_DEPS ${HIVE_DEPS} z
+        ${CMAKE_ANDROID_NDK}/sources/cxx-stl/llvm-libc++/libs/${CMAKE_ANDROID_ARCH_ABI}/libc++_static.a)
 else()
     set(HIVE_DEPS ${HIVE_DEPS} z stdc++)
 endif()
