@@ -76,8 +76,8 @@ install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       if [[ "$ENABLE_DOCS" != "" ]]; then
         sudo apt-get update;
-        sudo apt-get install python3.4;
-        sudo ln -s -f /usr/bin/python3.4 /usr/bin/python;
+        sudo apt-get install python3.5;
+        sudo ln -s -f /usr/bin/python3.5 /usr/bin/python;
         sudo apt-get install doxygen  graphviz;
         curl -L -o /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py;
         sudo python /tmp/get-pip.py;
