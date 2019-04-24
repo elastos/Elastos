@@ -416,7 +416,7 @@ func (d *DPOSManager) OnBlockReceived(b *types.Block, confirmed bool) {
 	if confirmed {
 		d.ConfirmBlock()
 		d.changeHeight()
-		d.clearEvidence(b)
+		d.dispatcher.illegalMonitor.CleanByBlock(b)
 		log.Info("[OnBlockReceived] received confirmed block")
 		return
 	}
@@ -547,14 +547,6 @@ func (d *DPOSManager) OnRequestProposal(id dpeer.PID, hash common.Uint256) {
 
 func (d *DPOSManager) changeHeight() {
 	d.changeOnDuty()
-}
-
-func (d *DPOSManager) clearEvidence(b *types.Block) {
-	for _, tx := range b.Transactions {
-		if tx.IsIllegalTypeTx() || tx.IsInactiveArbitrators() {
-			d.illegalMonitor.evidenceCache.TryDelete(tx.Payload.(payload.DPOSIllegalData).Hash())
-		}
-	}
 }
 
 func (d *DPOSManager) changeOnDuty() {

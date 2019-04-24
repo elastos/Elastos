@@ -70,6 +70,19 @@ func (i *IllegalBehaviorMonitor) Reset(changeView bool) {
 	}
 }
 
+func (i *IllegalBehaviorMonitor) CleanByBlock(b *types.Block) {
+	for _, tx := range b.Transactions {
+		if tx.IsIllegalTypeTx() || tx.IsInactiveArbitrators() {
+			hash := tx.Payload.(payload.DPOSIllegalData).Hash()
+			i.evidenceCache.TryDelete(hash)
+
+			if tx.IsIllegalProposalTx() {
+				delete(i.cachedProposals, hash)
+			}
+		}
+	}
+}
+
 func (i *IllegalBehaviorMonitor) IsLegalProposal(p *payload.DPOSProposal) (*payload.DPOSProposal, bool) {
 	if i.isProposalsIllegal(p, i.dispatcher.processingProposal) {
 		return i.dispatcher.processingProposal, false
