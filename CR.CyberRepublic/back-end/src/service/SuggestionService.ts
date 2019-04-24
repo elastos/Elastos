@@ -346,9 +346,6 @@ export default class extends Base {
     return this.model.findById(_id)
   }
 
-  /**
-   * Admin only
-   */
   public async abuse(param: any): Promise<Document> {
     const { id: _id } = param
     const updateObject = {
@@ -359,7 +356,11 @@ export default class extends Base {
     return this.model.findById(_id)
   }
 
+  /**
+   * Admin only
+   */
   public async archive(param: any): Promise<Document> {
+
     const { id: _id } = param
     const updateObject = {
       status: constant.SUGGESTION_STATUS.ARCHIVED,

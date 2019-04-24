@@ -6,7 +6,7 @@ import styled from 'styled-components'
 import { bg, primary } from '@/constants/color'
 import { CVOTE_STATUS, SUGGESTION_TAG_TYPE } from '@/constant'
 
-import {Link} from "react-router-dom"
+import {Link} from 'react-router-dom'
 
 import './style.scss'
 

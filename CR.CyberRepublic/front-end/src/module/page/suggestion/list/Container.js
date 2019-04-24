@@ -39,17 +39,21 @@ const mapDispatch = () => {
     },
 
     async getList(query) {
-      return service.list({
-        status: SUGGESTION_STATUS.ACTIVE,
-        ...query,
-      })
+
+      query = Object.assign({
+        status: SUGGESTION_STATUS.ACTIVE
+      }, query)
+
+      return service.list(query)
     },
 
     async loadMore(query) {
-      return service.loadMore({
-        status: SUGGESTION_STATUS.ACTIVE,
-        ...query,
-      })
+
+      query = Object.assign({
+        status: SUGGESTION_STATUS.ACTIVE
+      }, query)
+
+      return service.loadMore(query)
     },
 
     resetAll() {

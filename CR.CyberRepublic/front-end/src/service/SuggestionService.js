@@ -197,7 +197,6 @@ export default class extends BaseService {
     return res
   }
 
-  // ADMIN ONLY
   async abuse(id) {
     const path = `${this.prefixPath}/${id}/abuse`
 

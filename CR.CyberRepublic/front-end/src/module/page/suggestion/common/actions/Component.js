@@ -4,7 +4,7 @@ import { Popover, Icon } from 'antd'
 import URI from 'urijs'
 import I18N from '@/I18N'
 import { loginRedirectWithQuery } from '@/util'
-import { SUGGESTION_ABUSED_STATUS } from '@/constant'
+import { SUGGESTION_ABUSED_STATUS, SUGGESTION_STATUS } from '@/constant'
 import BaseComponent from '@/model/BaseComponent'
 
 import { ReactComponent as LikeIcon } from '@/assets/images/icon-like.svg'
@@ -12,6 +12,7 @@ import { ReactComponent as DislikeIcon } from '@/assets/images/icon-dislike.svg'
 import { ReactComponent as CommentIcon } from '@/assets/images/icon-comment.svg'
 import { ReactComponent as FollowIcon } from '@/assets/images/icon-follow.svg'
 import { ReactComponent as FlagIcon } from '@/assets/images/icon-flag.svg'
+import { ReactComponent as ArchiveIcon } from '@/assets/images/icon-archive.svg'
 
 import './style.scss'
 
@@ -25,11 +26,13 @@ const IconText = ({
 )
 
 export default class extends BaseComponent {
+
   constructor(props) {
+
     super(props)
     const {
       currentUserId, data: {
-        likesNum, dislikesNum, likes, dislikes, subscribers, abusedStatus,
+        likesNum, dislikesNum, likes, dislikes, subscribers, abusedStatus, status
       },
     } = this.props
     const isLiked = _.includes(likes, currentUserId)
@@ -37,15 +40,19 @@ export default class extends BaseComponent {
     const isSubscribed = _.findIndex(subscribers,
       subscriber => subscriber.user === currentUserId) !== -1
     const isAbused = abusedStatus === SUGGESTION_ABUSED_STATUS.REPORTED
+    const isArchived = status === SUGGESTION_STATUS.ARCHIVED
 
     this.state = {
       isLiked,
       isDisliked,
       isSubscribed,
       isAbused,
+      isArchived,
       likesNum,
-      dislikesNum,
+      dislikesNum
     }
+
+    this.listRefetch = props.listRefetch
   }
 
   componentDidMount() {
@@ -109,7 +116,7 @@ export default class extends BaseComponent {
   }
 
   renderPopover() {
-    const { isSubscribed, isAbused } = this.state
+    const { isSubscribed, isAbused, isArchived } = this.state
     const content = (
       <div className="popover-actions">
         <IconText
@@ -130,6 +137,12 @@ export default class extends BaseComponent {
           onClick={() => this.handleClick('isAbused')}
           className={`abuse-icon ${isAbused ? 'selected' : ''}`}
         />
+        <IconText
+          component={!!ArchiveIcon && <ArchiveIcon />}
+          text={I18N.get('suggestion.archive')}
+          onClick={() => this.handleClick('isArchived')}
+          className={`archive-icon ${isArchived ? 'selected' : ''}`}
+        />
       </div>
     )
     return (
@@ -140,8 +153,10 @@ export default class extends BaseComponent {
   }
 
   getActionParams(action) {
+
+    // these are the actual action calls on Container
     const {
-      like, dislike, subscribe, unsubscribe, reportAbuse, data: { _id },
+      like, dislike, subscribe, unsubscribe, reportAbuse, markArchived, data: { _id },
     } = this.props
     const unsubOrSub = this.state.isSubscribed ? unsubscribe : subscribe
     const actionMapping = {
@@ -149,6 +164,7 @@ export default class extends BaseComponent {
       isDisliked: dislike,
       isSubscribed: unsubOrSub,
       isAbused: reportAbuse,
+      isArchived: markArchived
     }
     const params = {
       callback: actionMapping[action],
@@ -166,10 +182,12 @@ export default class extends BaseComponent {
 
   // use setState to change UI state for better UX
   handleClick = async (action) => {
+
+    // callback is a function defined in getActionParams
     const { callback, param, state } = this.getActionParams(action)
     const { refetch, isLogin, history } = this.props
     const {
-      isLiked, isDisliked, isAbused, likesNum, dislikesNum,
+      isLiked, isDisliked, isAbused, likesNum, dislikesNum, isArchived
     } = this.state
 
     if (!isLogin) {
@@ -194,6 +212,8 @@ export default class extends BaseComponent {
           this.setState({ likesNum: isLiked ? likesNum - 1 : likesNum + 1 })
         } else if (state === 'isDisliked') {
           this.setState({ dislikesNum: isDisliked ? dislikesNum - 1 : dislikesNum + 1 })
+        } else if (state === 'isArchived') {
+          this.listRefetch()
         }
 
         this.setState({ [state]: !this.state[state] })

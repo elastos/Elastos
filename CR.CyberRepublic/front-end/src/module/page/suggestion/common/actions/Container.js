@@ -40,6 +40,9 @@ const mapDispatch = () => {
     async reportAbuse(id) {
       return service.reportAbuse(id)
     },
+    async markArchived(id) {
+      return service.archive(id)
+    },
     async subscribe(id) {
       return commentService.subscribeWithoutRedux('suggestion', id)
     },

@@ -20,6 +20,10 @@ import { breakPoint } from '@/constants/breakPoint'
 import { text, bg } from '@/constants/color'
 import { SUGGESTION_TAG_TYPE } from '@/constant'
 
+import {
+  SUGGESTION_STATUS,
+} from '@/constant'
+
 import MediaQuery from 'react-responsive'
 import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC, LG_WIDTH } from '@/config/constant'
 
@@ -50,6 +54,7 @@ export default class extends StandardPage {
     // we use the props from the redux store if its retained
     this.state = {
       showForm: uri.hasQuery('create'),
+      showArchived: false,
       isDropdownActionOpen: false,
       showMobile: false,
       page: 1,
@@ -70,11 +75,13 @@ export default class extends StandardPage {
   ord_renderContent() {
     const headerNode = this.renderHeader()
     const addButtonNode = this.renderAddButton()
+    const viewArchivedButtonNode = this.renderArchivedButton()
     const actionsNode = this.renderHeaderActions()
     const filterNode = this.renderFilters()
     // const mySuggestionNode = this.renderMySuggestion()
     const createForm = this.renderCreateForm()
     const listNode = this.renderList()
+    const archivedNode = this.renderArchivedList()
 
     return (
       <div>
@@ -83,36 +90,58 @@ export default class extends StandardPage {
         </div>
         <SuggestionContainer className="p_SuggestionList">
           <MediaQuery maxWidth={LG_WIDTH}>
+            {this.state.showArchived === false ?
+              <Row>
+                <Col>
+                  {addButtonNode}
+                  {viewArchivedButtonNode}
+                  {/* mySuggestionNode */}
+                </Col>
+              </Row> :
+              <Row/>
+            }
             <Row>
               <Col>
-                {addButtonNode}
-                {/* mySuggestionNode */}
+                <br />
               </Col>
             </Row>
-            <Row>
-              <Col>
-                {actionsNode}
-                {filterNode}
-                {listNode}
-              </Col>
-            </Row>
+            {this.state.showArchived === false ?
+              <Row>
+                <Col>
+                  {actionsNode}
+                  {listNode}
+                </Col>
+              </Row> :
+              <Row/>
+            }
           </MediaQuery>
           <MediaQuery minWidth={LG_WIDTH + 1}>
             <Row gutter={24}>
               <Col span={16}>{actionsNode}</Col>
-              <Col span={8}>{addButtonNode}</Col>
+              <Col span={8}>
+                {addButtonNode}
+                {viewArchivedButtonNode}
+              </Col>
             </Row>
             <Row gutter={24}>
               <Col span={24}>
                 {filterNode}
               </Col>
             </Row>
-            <Row gutter={24}>
-              <Col span={24}>
-                {listNode}
-              </Col>
-              {/* <Col span={8}>{mySuggestionNode}</Col> */}
-            </Row>
+            {this.state.showArchived === false ?
+              <Row gutter={24}>
+                <Col span={24}>
+                  {listNode}
+                </Col>
+                {/* <Col span={8}>{mySuggestionNode}</Col> */}
+              </Row> :
+              <Row gutter={24}>
+                <Col span={24}>
+                  {archivedNode}
+                </Col>
+                {/* <Col span={8}>{mySuggestionNode}</Col> */}
+              </Row>
+            }
           </MediaQuery>
           {createForm}
         </SuggestionContainer>
@@ -168,6 +197,19 @@ export default class extends StandardPage {
     })
   }
 
+  toggleArchivedList = () => {
+    this.setState(prevState => ({
+      showArchived: !prevState.showArchived,
+
+      // go back to page 1 on toggle
+      page: 1,
+      results: 10,
+      total: 0
+    }))
+
+    this.refetch()
+  }
+
   renderHeader() {
     return (
       <div>
@@ -209,37 +251,13 @@ export default class extends StandardPage {
     return (
       <div className="header-actions-container">
         <div>
-          <h2 className="title komu-a">{I18N.get('suggestion.listTitle').toUpperCase()}</h2>
+          <h2 className="title komu-a">
+            {this.state.showArchived === false ?
+              I18N.get('suggestion.listTitle').toUpperCase() :
+              I18N.get('suggestion.archived').toUpperCase()
+            }
+          </h2>
         </div>
-        <MediaQuery maxWidth={LG_WIDTH}>
-          {I18N.get('suggestion.sort')}: &nbsp;
-          <Select
-            name="type"
-            style={{width: 200}}
-            onChange={this.onSortByChanged}
-            value={sortBy}
-          >
-            {_.map(SORT_BY, value => (
-              <Select.Option key={value} value={value}>
-                {SORT_BY_TEXT[value]}
-              </Select.Option>
-            ))}
-          </Select>
-        </MediaQuery>
-        <MediaQuery minWidth={LG_WIDTH + 1}>
-          {I18N.get('suggestion.sort')}: &nbsp;
-          <Button.Group className="filter-group">
-            {_.map(SORT_BY, value => (
-              <Button
-                key={value}
-                onClick={() => this.onSortByChanged(value)}
-                className={(sortBy === value && 'cr-strikethrough') || ''}
-              >
-                {SORT_BY_TEXT[value]}
-              </Button>
-            ))}
-          </Button.Group>
-        </MediaQuery>
       </div>
     )
   }
@@ -249,6 +267,19 @@ export default class extends StandardPage {
       <AddButtonContainer className="pull-right filter-group btn-create-suggestion">
         <Button onClick={this.showCreateForm}>
           {I18N.get('suggestion.add')}
+        </Button>
+      </AddButtonContainer>
+    )
+  }
+
+  renderArchivedButton() {
+    return (
+      <AddButtonContainer className="pull-right filter-group btn-view-archived">
+        <Button onClick={this.toggleArchivedList}>
+          {this.state.showArchived === false ?
+            I18N.get('suggestion.viewArchived') :
+            I18N.get('suggestion.viewAll')
+          }
         </Button>
       </AddButtonContainer>
     )
@@ -310,9 +341,13 @@ export default class extends StandardPage {
     )
   }
 
+  renderArchivedList() {
+
+  }
+
   renderItem = (data) => {
     const href = `/suggestion/${data._id}`
-    const actionsNode = this.renderActionsNode(data)
+    const actionsNode = this.renderActionsNode(data, this.refetch)
     const metaNode = this.renderMetaNode(data)
     const title = <ItemTitle to={href} className="title-link">{data.title}</ItemTitle>
     return (
@@ -341,7 +376,7 @@ export default class extends StandardPage {
 
   renderMetaNode = detail => <MetaContainer data={detail} />
 
-  renderActionsNode = detail => <ActionsContainer data={detail} />
+  renderActionsNode = (detail, refetch) => <ActionsContainer data={detail} listRefetch={refetch}/>
 
   renderMySuggestion = () => <MySuggestion />
 
@@ -357,6 +392,7 @@ export default class extends StandardPage {
     const sortBy = this.props.sortBy || DEFAULT_SORT
     const { page, results } = this.state
     const query = {
+      status: this.state.showArchived ? SUGGESTION_STATUS.ARCHIVED : SUGGESTION_STATUS.ACTIVE,
       page,
       results,
     }

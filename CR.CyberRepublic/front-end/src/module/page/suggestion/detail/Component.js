@@ -21,7 +21,7 @@ import MySuggestion from '../my_list/Container'
 
 import { Container, Title, ShortDesc, DescLabel, Label, LabelPointer, Desc, BtnGroup, StyledButton, DescBody, CouncilComments } from './style'
 
-const { TextArea } = Input;
+const { TextArea } = Input
 
 export default class extends StandardPage {
   constructor(props) {
