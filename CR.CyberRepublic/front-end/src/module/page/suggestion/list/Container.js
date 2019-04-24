@@ -2,7 +2,7 @@ import {
   createContainer,
 } from '@/util'
 import {
-  SUGGESTION_STATUS,
+  SUGGESTION_STATUS
 } from '@/constant'
 import SuggestionService from '@/service/SuggestionService'
 import CommentService from '@/service/CommentService'

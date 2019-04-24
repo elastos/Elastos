@@ -3,6 +3,7 @@ import _ from 'lodash'
 import { api_request, permissions } from '@/util'
 
 export default class extends BaseService {
+
   async login(username, password, persist) {
     const userRedux = this.store.getRedux('user')
 
@@ -15,6 +16,12 @@ export default class extends BaseService {
         password,
       },
     })
+
+    if (!res) {
+      // TODO: rethink if we want to hardcode the error msg here or let the caller handle it
+      throw new Error('Error logging in, please check your username and password')
+    }
+
     const is_admin = permissions.isAdmin(res.user.role)
     const is_leader = permissions.isLeader(res.user.role)
     const is_council = permissions.isCouncil(res.user.role)

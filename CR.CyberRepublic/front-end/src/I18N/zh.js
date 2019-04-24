@@ -305,6 +305,7 @@ const zh = {
   'suggestion.created': '创建的',
   'suggestion.archived': '归档的',
   'suggestion.archive': '归档',
+  'suggestion.unarchive': '取消归档',
   'suggestion.search': '搜索',
   'suggestion.cancel': '取消',
   'suggestion.submit': '提交',

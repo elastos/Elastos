@@ -305,6 +305,7 @@ const en = {
   'suggestion.created': 'Created',
   'suggestion.archived': 'Archived',
   'suggestion.archive': 'Archive',
+  'suggestion.unarchive': 'Unarchive',
   'suggestion.search': 'Search',
   'suggestion.cancel': 'Cancel',
   'suggestion.submit': 'Submit',

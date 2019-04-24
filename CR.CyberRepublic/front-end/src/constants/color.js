@@ -3,6 +3,10 @@ export const primary = {
   default: '#43af92',
   light: '#64bebb',
   dark: '#031E28',
+
+  danger: '#dc3545',
+  warning: '#ffc107',
+  success: '#28a745'
 }
 
 export const bg = {

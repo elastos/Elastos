@@ -14,6 +14,11 @@ import _ from 'lodash'
 *
 * TODO: add limit to qry
 * TODO: doesn't this exist already somewhere?
+*
+* TODO: review how we can handle errors gracefully
+*
+* - Ideally we want to always return something to caller, and cleanly package the error into the returned object
+* - Also we want to differentiate between HTTP errors and back-end errors
 * */
 export const api_request = (opts = {}) => {
   const apiToken = sessionStorage.getItem('api-token')
@@ -85,10 +90,13 @@ export const api_request = (opts = {}) => {
     if (opts.error) {
       opts.error(data)
     }
-    throw new Error(data.error)
+
+    // TODO: this isn't elegant, nothing is returned to the caller so there is no graceful error
+    console.error(data.error)
 
   }).catch((err) => {
-    console.log(err)
+    // then we have this so the first then block can come straight here I guess?
+    console.error(err)
   })
 }
 
