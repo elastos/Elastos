@@ -36,21 +36,13 @@ contract CrossChainPayload {
 
     function sendPayload(bytes32 _txhash) public {
         require(!txProcessed[_txhash]);
-
         deserialize(getPayload(_txhash), _txhash);
         for (uint256 i = 0; i < num[_txhash]; i++) {
             addrs[_txhash][i].transfer(amounts[_txhash][i]);
             emit PayloadSent(_txhash, addrs[_txhash][i], amounts[_txhash][i], msg.sender);
         }
         txProcessed[_txhash] = true;
-
         emit TxProcessed(_txhash, msg.sender);
-    }
-
-    function  getSubContractAddress() public view returns (address addr){
-        assembly{
-            addr := getsubcontractaddress()
-        }
     }
 
     function getPayload(bytes32 _txhash) private view returns (bytes memory _payload) {
