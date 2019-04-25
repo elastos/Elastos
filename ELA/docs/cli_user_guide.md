@@ -12,7 +12,7 @@ USAGE:
    ela-cli [global options] command [command options] [args]
 
 VERSION:
-   v0.2.2-377-gf8fd
+   v0.3.1-129-gd74b
 
 COMMANDS:
      wallet    Wallet operations
@@ -33,15 +33,16 @@ GLOBAL OPTIONS:
 #### RPC Client Parameters
 
 --rpcport
-The rpcport parameter specifies the port number to which the RPC server is bound. The default value is 20336.
+
+The `rpcport` parameter specifies the port number to which the RPC server is bound. The default value is 20336.
 
 --rpcuser
 
-The rpcuser parameter is used to set the username of the BasicAuth. The default value is "".
+The `rpcuser` parameter is used to set the username of the BasicAuth. The default value is "".
 
 --rpcpassword
 
-The rpcpassword parameter is used to set the password of the BasicAuth. The default value is "".
+The `rpcpassword` parameter is used to set the password of the BasicAuth. The default value is "".
 
 For example, getting the current height of blockchain.
 
@@ -55,7 +56,7 @@ Result:
 301
 ```
 
-####
+
 
 ## 1. Wallet Management
 
@@ -94,11 +95,11 @@ OPTIONS:
 
 --wallet <file>, -w <file>
 
-The wallet parameter specifies the wallet path. The default value is "./keystore.dat".
+The `wallet` parameter specifies the wallet path. The default value is "./keystore.dat".
 
 --password <value>, -p <value>
 
-The password parameter is used to specify the account password. You can also enter a password when prompted.
+The `password` parameter is used to specify the account password. You can also enter a password when prompted.
 
 ### 1.1 Create Wallet
 
@@ -172,11 +173,11 @@ Adding multi-signature account requires specifying the public key list `pks`, an
 
 -- pks <pubkey list>
 
-The pks parameter is used to set the list of public keys separated by commas.
+The `pks` parameter is used to set the list of public keys separated by commas.
 
 -- m <value>, -m <value>
 
-The m parameter is used to set the minimum number of signatures.
+The `m` parameter is used to set the minimum number of signatures.
 
 For example, generate a 2-of-3 multi-signature account:
 
@@ -299,17 +300,21 @@ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ
 Build transaction command can build transaction raw data. Note that before sending to ela node, the transaction should be signed by the private key.
 
 --from
-The from parameter specifies the transfer-out account address. The default value is the default account of the keystore file.
+The `from` parameter specifies the transfer-out account address. The default value is the default account of the keystore file.
 
 --to
-The to parameter specifies the transfer-in account address.
+The `to` parameter specifies the transfer-in account address.
+
+-- tomany
+
+The `tomany` parameter specifies the file which saves multiple outputs.
 
 --amount
-The amount parameter specifies the transfer amount.
+The `amount` parameter specifies the transfer amount.
 
 --fee
 
-The fee parameter specifies the transfer fee cost.
+The `fee` parameter specifies the transfer fee cost.
 
 #### 2.1.1 Build standard signature transaction
 
@@ -342,17 +347,129 @@ Hex:
 File:  to_be_signed.txn
 ```
 
+#### 2.1.3 Build multi-output transaction
+
+To build a multi-output transaction, you need to prepare a file in CSV format that specifies the recipient's address and amount. For example: addresses.csv
+
+```
+EY55SertfPSAiLxgYGQDUdxQW6eDZjbNbX,0.001
+Eeqn3kNwbnAsu1wnHNoSDbD8t8oq58pubN,0.002
+EXWWrRQxG2sH5U8wYD6jHizfGdDUzM4vGt,0.003
+```
+
+The first column is the recipient's address and the second column is the amount. (note that the above is sample data, and you need to fill in your own data when sending the real transaction)
+
+Specify the addresses.csv file with the `—tomany` parameter.
+
+```
+./ela-cli wallet buildtx --tomany addresses.csv --fee 0.001
+```
+
+Result：
+
+```
+Multi output address: EY55SertfPSAiLxgYGQDUdxQW6eDZjbNbX , amount: 0.001
+Multi output address: Eeqn3kNwbnAsu1wnHNoSDbD8t8oq58pubN , amount: 0.002
+Multi output address: EXWWrRQxG2sH5U8wYD6jHizfGdDUzM4vGt , amount: 0.003
+Hex:  09020001001235353938383739333333353636383730383501b9932e31681c63ce0425eecb50c2dfc8298bb3e1bcf31b1db648c11f65fd2caf0000ffffffff03b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3a0860100000000000000000021a3a01cc2e25b0178010f5d7707930b7e41359d7e00b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3400d0300000000000000000021ede51096266b26ca8695c5452d4d209760385c3600b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3e09304000000000000000000219d7798bd544db55cd40ed3d5ba55793be4db170a00000000000100232103c5b92b875b9820aba064dd1c93007c8a971fc43d318f7dc7fd6ea1509a424195ac
+File:  to_be_signed.txn
+```
+
+#### 2.1.4 Build special transaction
+
+##### 2.1.4.1 Build activation transaction
+
+```
+NAME:
+   ela-cli wallet buildtx activate - Build a tx to activate producer which have been inactivated
+
+USAGE:
+   ela-cli wallet buildtx activate [command options] [arguments...]
+
+OPTIONS:
+   --nodepublickey value       the node public key of an arbitrator which have been inactivated
+   --wallet <file>, -w <file>  wallet <file> path (default: "keystore.dat")
+   --password value, -p value  wallet password
+```
+
+The `nodepublickey` parameter is used to specify the node public key of an arbiter.
+
+The account associated with node publickey must exist in the specified keystore file.
+
+```
+./ela-cli wallet buildtx activate --nodepublickey 032895050b7de1a9cf43416e6e5310f8e909249dcd9c4166159b04a343f7f141b5
+```
+
+You need to enter a password to sign the payload of the transaction.
+
+Result:
+
+```
+Hex:  090d0021032895050b7de1a9cf43416e6e5310f8e909249dcd9c4166159b04a343f7f141b540b78018ce13a67366aab73584c66237a5345420049d141f1ba84876d0c015345cc6e503b2a3cd7c9b20e7677e8e0f8f5bb2bf311c480a9aba1eed217501d3e2ab0000000000000000
+File:  ready_to_send.txn
+```
+
+##### 2.1.4.2 Build Voting transaction
+
+```
+NAME:
+   ela-cli wallet buildtx vote - Build a tx to vote for candidates using ELA
+
+USAGE:
+   ela-cli wallet buildtx vote [command options] [arguments...]
+
+OPTIONS:
+   --for <file>                the <file> path that holds the list of candidates
+   --amount <amount>           the transfer <amount> of the transaction
+   --from <address>            the sender <address> of the transaction
+   --fee <fee>                 the transfer <fee> of the transaction
+   --wallet <file>, -w <file>  wallet <file> path (default: "keystore.dat")
+   --password value, -p value  wallet password
+```
+
+--for
+
+The `for` parameter is used to specify the file which saves multiple candidates' public key.
+
+--amount
+
+The `amount` parameter is used to specify the number of votes.
+
+To build a voting transaction, you need to prepare a file that specifies the candidates' public key.
+
+For example: candidates.csv
+
+```
+033b4606d3cec58a01a09da325f5849754909fec030e4cf626e6b4104328599fc7
+032895050b7de1a9cf43416e6e5310f8e909249dcd9c4166159b04a343f7f141b5
+```
+
+Vote 1 ELA for each of the above candidates.
+
+```
+./ela-cli wallet buildtx vote --for candidates.csv --amount 1 --fee 0.1
+```
+
+Result:
+
+```
+candidate: 033b4606d3cec58a01a09da325f5849754909fec030e4cf626e6b4104328599fc7
+candidate: 032895050b7de1a9cf43416e6e5310f8e909249dcd9c4166159b04a343f7f141b5
+Hex:  0902000100133931333133393830343439313038373335313101b9932e31681c63ce0425eecb50c2dfc8298bb3e1bcf31b1db648c11f65fd2caf0000ffffffff01b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a300e1f5050000000000000000214cbc08129018f205d99007d8b57be7600c772afe010001000221033b4606d3cec58a01a09da325f5849754909fec030e4cf626e6b4104328599fc721032895050b7de1a9cf43416e6e5310f8e909249dcd9c4166159b04a343f7f141b5000000000100232103c5b92b875b9820aba064dd1c93007c8a971fc43d318f7dc7fd6ea1509a424195ac
+File:  to_be_signed.txn
+```
+
 ### 2.2 Sign To Transaction
 
 The transaction build by buildtx command, should be signed before sending to ela node.
 
 --hex
 
-The hex parameter is used to specify the raw transaction hex string which to be signed.
+The `hex` parameter is used to specify the raw transaction hex string which to be signed.
 
 --file, -f
 
-The file parameter is used to specify the raw transaction file which to be signed.
+The `file` parameter is used to specify the raw transaction file which to be signed.
 
 #### 2.2.1 Standard Signature
 
@@ -428,7 +545,7 @@ Result:
 
 ### 2.4 Show Transaction
 
-The showtx command parses the contents from the raw transaction. You can specify the raw transaction by --hex or --file parameters.
+The showtx command parses the contents from the raw transaction. You can specify the raw transaction by `hex` or `file` parameters.
 
 ```
 ./ela-cli wallet showtx --hex 0902000100123132333835343835313135373533343433340139eaa4137a047cdaac7112fe04617902e3b17c1685029d259d93c77680c950f30100ffffffff02b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a380778e06000000000000000012e194f97570ada85ec5df31e7c192edf1e3fc199900b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a36ec1dc030000000000000000210d4109bf00e6d782db40ab183491c03cf4d6a37a0000000000014140433f2f2fa7390db75af3a3288943ce178f9373b2362a3b09530dd30fbb50fa5f007716bf07abd7ee0281d422f3615b474ed332ba63fe7209f611e547d68e4c0f2321034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16cac
@@ -929,7 +1046,7 @@ mining stopped
 
 -n
 
-The n parameter is used to specify the number of blocks to want mine
+The `n` parameter is used to specify the number of blocks to want mine
 
 ```
 ./ela-cli mine -n 1

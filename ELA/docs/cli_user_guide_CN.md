@@ -12,7 +12,7 @@ USAGE:
    ela-cli [global options] command [command options] [args]
 
 VERSION:
-   v0.2.2-377-gf8fd
+   v0.3.1-129-gd74b
 
 COMMANDS:
      wallet    Wallet operations
@@ -32,16 +32,11 @@ GLOBAL OPTIONS:
 
 #### RPC 参数配置
 
---rpcport
-rpcport 参数用指定 rpc 服务器绑定的端口号。默认值为20336。
+--rpcport 用指定 rpc 服务器绑定的端口号。默认值为20336。
 
---rpcuser
+--rpcuser 用于指定 rpc 服务器 BasicAuth 用户名。默认值为空。
 
-rpcuser 参数用于指定 rpc 服务器 BasicAuth 用户名。默认值为空。
-
---rpcpassword
-
-rpcpassword 参数用于指定 rpc 服务器 BasicAuth 密码。默认值为空
+--rpcpassword 用于指定 rpc 服务器 BasicAuth 密码。默认值为空
 
 例如查询节点区块高度：
 
@@ -55,7 +50,7 @@ rpcpassword 参数用于指定 rpc 服务器 BasicAuth 密码。默认值为空
 301
 ```
 
-####
+
 
 ## 1. 钱包管理
 
@@ -296,13 +291,15 @@ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ
 
 构造交易命令 buildtx 用于构造转账交易的内容，构造出来的交易在发送到 ela 节点前，还需要用的私钥签名。
 
--- from <address> 参数用于设定花费地址。默认值为 keystore.dat 中主地址。
+-- from <address> 用于设定花费地址。默认值为 keystore.dat 中主地址。
 
--- to <address> 参数用于设定收款地址。
+-- to <address> 用于设定收款地址。
 
--- amount <amount> 参数用于设定转账金额。浮点类型。
+-- tomany <file> 用于设定保存多输出的文件。
 
--- fee <fee> 参数用于设定交易的手续费。浮点类型。
+-- amount <amount> 用于设定转账金额。浮点类型。
+
+-- fee <fee> 用于设定交易的手续费。浮点类型。
 
 #### 2.1.1 构造单签交易
 
@@ -329,6 +326,110 @@ from 地址需要存在于所指定的 keystore 文件中。
 
 ```
 Hex:  0902000100133334393234313234323933333338333335313701737a31035ebe8dfe3c58c7b9ff7eb13485387cd2010d894f39bf670ccd1f62180000ffffffff02b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3c0320a030000000000000000214e6334d41d86e3c3a32698bdefe974d6960346b300b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3a0108f380000000000000000125bc115b91913c9c6347f0e0e3ba3b75c80b94811000000000001008b53210325406f4abc3d41db929f26cf1a419393ed1fe5549ff18f6c579ff0c3cbb714c8210353059bf157d3eaca184cc10a80f10baf10676c4a39695a9a092fa3c2934818bd210353059bf157d3eaca184cc10a80f10baf10676c4a39695a9a092fa3c2934818bd2103fd77d569f766638677755e8a71c7c085c51b675fbf7459ca1094b29f62f0b27d54ae
+File:  to_be_signed.txn
+```
+
+#### 2.1.3 构造多输出交易
+
+构造多输出交易需要准备一个 csv 格式的文件，用于指定接收人地址及金额。例如：addresses.csv
+
+```
+EY55SertfPSAiLxgYGQDUdxQW6eDZjbNbX,0.001
+Eeqn3kNwbnAsu1wnHNoSDbD8t8oq58pubN,0.002
+EXWWrRQxG2sH5U8wYD6jHizfGdDUzM4vGt,0.003
+```
+
+第一列为接收人地址，第二列为金额。（注意以上为样例数据，发送真实交易时要填写自己的数据）
+
+使用 `--tomany` 参数指定 addresses.csv 文件。
+
+```
+./ela-cli wallet buildtx --tomany addresses.csv --fee 0.001
+```
+
+返回如下：
+
+```
+Multi output address: EY55SertfPSAiLxgYGQDUdxQW6eDZjbNbX , amount: 0.001
+Multi output address: Eeqn3kNwbnAsu1wnHNoSDbD8t8oq58pubN , amount: 0.002
+Multi output address: EXWWrRQxG2sH5U8wYD6jHizfGdDUzM4vGt , amount: 0.003
+Hex:  09020001001235353938383739333333353636383730383501b9932e31681c63ce0425eecb50c2dfc8298bb3e1bcf31b1db648c11f65fd2caf0000ffffffff03b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3a0860100000000000000000021a3a01cc2e25b0178010f5d7707930b7e41359d7e00b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3400d0300000000000000000021ede51096266b26ca8695c5452d4d209760385c3600b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3e09304000000000000000000219d7798bd544db55cd40ed3d5ba55793be4db170a00000000000100232103c5b92b875b9820aba064dd1c93007c8a971fc43d318f7dc7fd6ea1509a424195ac
+File:  to_be_signed.txn
+```
+
+#### 2.1.4 构造特殊交易
+
+##### 2.1.4.1 构造激活交易
+
+```
+NAME:
+   ela-cli wallet buildtx activate - Build a tx to activate producer which have been inactivated
+
+USAGE:
+   ela-cli wallet buildtx activate [command options] [arguments...]
+
+OPTIONS:
+   --nodepublickey value       the node public key of an arbitrator which have been inactivated
+   --wallet <file>, -w <file>  wallet <file> path (default: "keystore.dat")
+   --password value, -p value  wallet password
+```
+
+--nodepublickey 用于设定仲裁人节点的 node publickkey
+
+node publickey 对应的账户必须存在于指定的 keystore 文件中。
+
+```
+./ela-cli wallet buildtx activate --nodepublickey 032895050b7de1a9cf43416e6e5310f8e909249dcd9c4166159b04a343f7f141b5
+```
+
+需要输入密码，对交易 payload 签名。返回如下：
+
+```
+Hex:  090d0021032895050b7de1a9cf43416e6e5310f8e909249dcd9c4166159b04a343f7f141b540b78018ce13a67366aab73584c66237a5345420049d141f1ba84876d0c015345cc6e503b2a3cd7c9b20e7677e8e0f8f5bb2bf311c480a9aba1eed217501d3e2ab0000000000000000
+File:  ready_to_send.txn
+```
+
+##### 2.1.4.2 构造投票交易
+
+```
+NAME:
+   ela-cli wallet buildtx vote - Build a tx to vote for candidates using ELA
+
+USAGE:
+   ela-cli wallet buildtx vote [command options] [arguments...]
+
+OPTIONS:
+   --for <file>                the <file> path that holds the list of candidates
+   --amount <amount>           the transfer <amount> of the transaction
+   --from <address>            the sender <address> of the transaction
+   --fee <fee>                 the transfer <fee> of the transaction
+   --wallet <file>, -w <file>  wallet <file> path (default: "keystore.dat")
+   --password value, -p value  wallet password
+```
+
+--for 用于指定保存候选人的文件
+
+--amount 用于指定投票数，单位为 ELA
+
+构造投票交易需要准备一个 csv 文件，指定候选人公钥。例如：candidates.csv
+
+```
+033b4606d3cec58a01a09da325f5849754909fec030e4cf626e6b4104328599fc7
+032895050b7de1a9cf43416e6e5310f8e909249dcd9c4166159b04a343f7f141b5
+```
+
+例如为上面的候选人各投1 ELA。
+
+```
+./ela-cli wallet buildtx vote --for candidates.csv --amount 1 --fee 0.1
+```
+
+返回如下：
+
+```
+candidate: 033b4606d3cec58a01a09da325f5849754909fec030e4cf626e6b4104328599fc7
+candidate: 032895050b7de1a9cf43416e6e5310f8e909249dcd9c4166159b04a343f7f141b5
+Hex:  0902000100133931333133393830343439313038373335313101b9932e31681c63ce0425eecb50c2dfc8298bb3e1bcf31b1db648c11f65fd2caf0000ffffffff01b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a300e1f5050000000000000000214cbc08129018f205d99007d8b57be7600c772afe010001000221033b4606d3cec58a01a09da325f5849754909fec030e4cf626e6b4104328599fc721032895050b7de1a9cf43416e6e5310f8e909249dcd9c4166159b04a343f7f141b5000000000100232103c5b92b875b9820aba064dd1c93007c8a971fc43d318f7dc7fd6ea1509a424195ac
 File:  to_be_signed.txn
 ```
 
