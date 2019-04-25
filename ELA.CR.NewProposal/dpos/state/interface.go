@@ -19,7 +19,6 @@ type Arbitrators interface {
 	GetCandidates() [][]byte
 	GetNextArbitrators() [][]byte
 	GetNextCandidates() [][]byte
-	GetCRCArbiters() [][]byte
 	GetNeedConnectArbiters() []peer.PID
 	GetDutyIndexByHeight(height uint32) int
 	GetDutyIndex() int
@@ -27,10 +26,10 @@ type Arbitrators interface {
 	GetFinalRoundChange() common.Fixed64
 	IsInactiveMode() bool
 
+	GetCRCArbiters() [][]byte
 	GetCRCProducer(publicKey []byte) *Producer
 	GetCRCArbitrators() map[string]*Producer
 	IsCRCArbitrator(pk []byte) bool
-	IsCRCArbitratorNodePublicKey(nodePublicKeyHex string) bool
 	IsDisabledProducer(pk []byte) bool
 
 	GetOnDutyArbitrator() []byte
