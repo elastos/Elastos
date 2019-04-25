@@ -17,4 +17,4 @@ npm test
 ```
 * Build example.app with xcode and replace the ./apps/example.app with build result.
 * run **npm run autotest:ios**
-<img src="./autotest.png" width="400" />
+<img src="./autotest.png" width="auto" />
