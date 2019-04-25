@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node node_modules/react-native/local-cli/cli.js start",
-    "test": "jest"
+    "test": "jest",
+    "ios.app": "./node_modules/.bin/wdio ./config/wdio.ios.app.conf.js"
   },
   "dependencies": {
     "lodash": "^4.17.11",
@@ -14,7 +15,13 @@
     "react-native-elastos-carrier": "file:../"
   },
   "devDependencies": {
+    "@wdio/cli": "^5.7.15",
+    "@wdio/local-runner": "^5.7.15",
+    "@wdio/appium-service": "^5.7.9",
+    "@wdio/mocha-framework": "^5.7.14",
+    "@wdio/selenium-standalone-service": "^5.7.8",
     "babel-eslint": "7.2.3",
+    "babel-preset-react-native": "5.0.0",
     "eslint": "4.4.1",
     "eslint-plugin-flowtype": "2.35.0",
     "eslint-plugin-import": "2.7.0",
@@ -28,11 +35,30 @@
     "jest": "23.4.2",
     "prettier": "1.5.3",
     "react-test-renderer": "16.4.1",
-    "babel-preset-react-native": "4.0.0"
+    "wdio-html-reporter": "^1.0.2",
+    "webdriverio": "^5.7.15",
+    "@babel/cli": "^7.4.3",
+    "@babel/core": "^7.4.3",
+    "@babel/preset-env": "^7.4.3",
+    "@babel/register": "^7.4.0",
+    "@babel/traverse": "^7.4.3",
+    "@babel/types": "^7.4.0",
+    "@wdio/jasmine-framework": "^5.7.8",
+    "@wdio/sauce-service": "^5.7.8",
+    "@wdio/spec-reporter": "^5.7.9",
+    "@wdio/sync": "^5.7.9",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-node": "^7.0.1",
+    "eslint-plugin-promise": "^4.1.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "eslint-plugin-wdio": "^5.7.8",
+    "node-fetch": "^2.3.0"
   },
   "jest": {
     "preset": "react-native",
-    "setupFiles": ["./test/setup.js"],
+    "setupFiles": [
+      "./test/setup.js"
+    ],
     "globals": {
       "__DEV__": true
     },
