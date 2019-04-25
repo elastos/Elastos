@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import _ from 'lodash'
-import { Row, Col, Spin, Divider, Modal, Input, Button } from 'antd'
+import { Row, Col, Spin, Divider, Modal, Input, Button, Icon } from 'antd'
 import { Link } from 'react-router-dom'
 import MediaQuery from 'react-responsive'
 import moment from 'moment/moment'
@@ -19,7 +19,11 @@ import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
 import MySuggestion from '../my_list/Container'
 
-import { Container, Title, ShortDesc, DescLabel, Label, LabelPointer, Desc, BtnGroup, StyledButton, DescBody, CouncilComments } from './style'
+import { ReactComponent as CommentIcon } from '@/assets/images/icon-info.svg'
+
+import { Container, Title, ShortDesc, DescLabel, Label, LabelPointer, Desc, BtnGroup, StyledButton, DescBody, CouncilComments, IconWrap } from './style'
+
+import './style.scss'
 
 const { TextArea } = Input
 
@@ -59,7 +63,7 @@ export default class extends StandardPage {
     const commentNode = this.renderCommentNode()
     return (
       <div>
-        <Container>
+        <Container className="c_SuggestionDetail">
           <MediaQuery maxWidth={LG_WIDTH}>
             <div><BackLink link="/suggestion" style={{ position: 'relative', left: 0, marginBottom: 15 }} /></div>
             <div>
@@ -170,12 +174,11 @@ export default class extends StandardPage {
             type === SUGGESTION_TAG_TYPE.INFO_NEEDED &&
               <LabelPointer type={type} data-desc={desc.replace(/(['"])/g, '\\$1')}
                             onClick={() => this.setState({needsInfoVisible: true})}>
-                {I18N.get(`suggestion.tag.type.${type}`)}
-              </LabelPointer>/* :
-              <Label type={type}>
-                {I18N.get(`suggestion.tag.type.${type}`)}
-              </Label>
-              */
+                {I18N.get(`suggestion.tag.type.${type}`)} &nbsp;
+                <IconWrap>
+                  <CommentIcon className="more-info-icon"/>
+                </IconWrap>
+              </LabelPointer>
           }
           <Modal
             title={I18N.get(`suggestion.tag.type.${type}`)}
