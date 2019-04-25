@@ -5,12 +5,45 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 // These variables are the chain consensus parameters for each default
 // network.
 var (
+	// zeroHash represents a hash with all '0' value.
+	zeroHash = common.Uint256{}
+
+	// elaAsset is the transaction that create and register the ELA coin.
+	elaAsset = types.Transaction{
+		TxType:         types.RegisterAsset,
+		PayloadVersion: 0,
+		Payload: &payload.RegisterAsset{
+			Asset: payload.Asset{
+				Name:      "ELA",
+				Precision: 0x08,
+				AssetType: 0x00,
+			},
+			Amount:     0 * 100000000,
+			Controller: common.Uint168{},
+		},
+		Attributes: []*types.Attribute{},
+		Inputs:     []*types.Input{},
+		Outputs:    []*types.Output{},
+		Programs:   []*program.Program{},
+	}
+
+	// attrNonce represents the nonce attribute used in the genesis coinbase
+	// transaction.
+	attrNonce = types.NewAttribute(types.Nonce,
+		[]byte{77, 101, 130, 33, 7, 252, 253, 82})
+
+	// genesisTime indicates the time when ELA genesis block created.
+	genesisTime, _ = time.Parse(time.RFC3339, "2017-12-22T10:00:00Z")
+
 	// originIssuanceAmount is the origin issuance ELA amount.
 	originIssuanceAmount = 3300 * 10000 * 100000000
 
@@ -53,7 +86,11 @@ var (
 		0x6c, 0x58, 0xdf, 0x68, 0xeb, 0x11, 0xce,
 	}
 
-	// "ELANULLXXXXXXXXXXXXXXXXXXXXXYvs3rr"
+	// ELAAssetID represents the asset ID of ELA coin.
+	ELAAssetID = elaAsset.Hash()
+
+	// DestructionAddress indicates the "ELANULLXXXXXXXXXXXXXXXXXXXXXYvs3rr"
+	// destruction address.
 	DestructionAddress = common.Uint168{
 		0x21, 0x20, 0xfe, 0xe5, 0xd7, 0xeb, 0x3e,
 		0x5c, 0x7d, 0x31, 0x97, 0xfe, 0xcf, 0x6c,
@@ -232,7 +269,6 @@ func (p *Params) InstantBlock() *Params {
 	copy.PowLimitBits = 0x207fffff
 	copy.TargetTimespan = 10 * time.Second
 	copy.TargetTimePerBlock = 1 * time.Second
-	copy.RewardPerBlock = rewardPerBlock(2 * time.Minute)
 	return &copy
 }
 
@@ -348,8 +384,57 @@ type Params struct {
 	EmergencyInactivePenalty common.Fixed64
 }
 
+// rewardPerBlock calculates the reward for each block by a specified time
+// duration.
 func rewardPerBlock(targetTimePerBlock time.Duration) common.Fixed64 {
 	blockGenerateInterval := int64(targetTimePerBlock / time.Second)
 	generatedBlocksPerYear := 365 * 24 * 60 * 60 / blockGenerateInterval
 	return common.Fixed64(float64(inflationPerYear) / float64(generatedBlocksPerYear))
+}
+
+// GenesisBlock creates a genesis block by the specified foundation address.
+// The genesis block goes different because the foundation address in each
+// network is different.
+func GenesisBlock(foundation *common.Uint168) *types.Block {
+	coinBase := types.Transaction{
+		Version:        0,
+		TxType:         types.CoinBase,
+		PayloadVersion: payload.CoinBaseVersion,
+		Payload:        &payload.CoinBase{},
+		Attributes:     []*types.Attribute{&attrNonce},
+		Inputs: []*types.Input{
+			{
+				Previous: types.OutPoint{
+					TxID:  zeroHash,
+					Index: 0x0000,
+				},
+				Sequence: 0x00000000,
+			},
+		},
+		Outputs: []*types.Output{
+			{
+				AssetID:     ELAAssetID,
+				Value:       3300 * 10000 * 100000000,
+				ProgramHash: *foundation,
+			},
+		},
+		LockTime: 0,
+		Programs: []*program.Program{},
+	}
+
+	merkleRoot, _ := crypto.ComputeRoot([]common.Uint256{coinBase.Hash(),
+		ELAAssetID})
+
+	return &types.Block{
+		Header: types.Header{
+			Version:    0,
+			Previous:   zeroHash,
+			MerkleRoot: merkleRoot,
+			Timestamp:  uint32(genesisTime.Unix()),
+			Bits:       0x1d03ffff,
+			Nonce:      2083236893,
+			Height:     0,
+		},
+		Transactions: []*types.Transaction{&coinBase, &elaAsset},
+	}
 }
