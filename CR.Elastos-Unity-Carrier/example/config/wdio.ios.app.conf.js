@@ -16,7 +16,7 @@ config.specs = [
 config.capabilities = [
     {
         // The defaults you need to have in your config
-        deviceName: 'iPhone 6',
+        deviceName: 'iPhone XR',
         platformName: 'iOS',
         platformVersion: '12.1',
         orientation: 'PORTRAIT',
