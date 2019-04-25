@@ -128,7 +128,14 @@ export default class extends Base {
     }
 
     if (referenceStatus === 'true') {
-      query.$or = [{reference: {$exists: true, $ne: []}}, {'tags.type': qryTagsType}]
+
+      // if we have another tag selected we only want that tag and referenced suggestions
+      if (!_.isEmpty(tagsIncluded)) {
+        query.$or = [{reference: {$exists: true, $ne: []}}, {'tags.type': qryTagsType}]
+      } else {
+        // this is the only filter selected and we only want to show referenced ones
+        query.reference = {$exists: true, $ne: []}
+      }
 
     } else {
       query.$and = [
