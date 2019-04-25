@@ -33,33 +33,36 @@ class App extends Component{
     return (
       <Root>
       <Container style={styles.container}>
-        <Text style={styles.log}>{this.state.log.join('\n')}</Text>
+        <Text style={styles.log} testID={'log'}>{this.state.log.join('\n')}</Text>
+        <Button style={styles.btn} testID={'log:clear'} danger onPress={this.testFn.bind(this, 'clearLog')}>
+          <Text>clear log</Text>
+        </Button>
         {/* <Text style={styles.error}>{this.state.error}</Text> */}
         
 
         <Content>
-          <Button style={styles.btn} primary onPress={this.testFn.bind(this, 'getVersion')}>
+          <Button style={styles.btn} testID={'btn:getVersion'} primary onPress={this.testFn.bind(this, 'getVersion')}>
             <Text>getVersion</Text>
           </Button>
-          <Button style={styles.btn} success onPress={this.testFn.bind(this, 'isValidAddress')}>
+          <Button style={styles.btn} testID={'btn:isValidAddress'} success onPress={this.testFn.bind(this, 'isValidAddress')}>
             <Text>isValidAddress</Text>
           </Button>
-          <Button style={styles.btn} primary onPress={this.testFn.bind(this, 'isValidId')}>
+          <Button style={styles.btn} testID={'btn:isValidId'} primary onPress={this.testFn.bind(this, 'isValidId')}>
             <Text>isValidId</Text>
           </Button>
           
 
-          <Button style={styles.btn} success onPress={this.testFn.bind(this, 'getAddress')}>
+          <Button style={styles.btn} testID={'btn:getAddress'} success onPress={this.testFn.bind(this, 'getAddress')}>
             <Text>getAddress</Text>
           </Button>
-          <Button style={styles.btn} primary onPress={this.testFn.bind(this, 'getNodeId')}>
+          <Button style={styles.btn} testID={'btn:getNodeId'} primary onPress={this.testFn.bind(this, 'getNodeId')}>
             <Text>getNodeId</Text>
           </Button>
 
-          <Button style={styles.btn} success onPress={this.testFn.bind(this, 'setSelfInfo')}>
+          <Button style={styles.btn} testID={'btn:setSelfInfo'} success onPress={this.testFn.bind(this, 'setSelfInfo')}>
             <Text>setSelfInfo</Text>
           </Button>
-          <Button style={styles.btn} primary onPress={this.testFn.bind(this, 'getSelfInfo')}>
+          <Button style={styles.btn} testID={'btn:getSelfInfo'} primary onPress={this.testFn.bind(this, 'getSelfInfo')}>
             <Text>getSelfInfo</Text>
           </Button>
           
@@ -119,7 +122,7 @@ class App extends Component{
       case 'isValidAddress':
         // tmp = await this.openPrompt('Enter an address');
         rs = await Carrier.isValidAddress(targetAddress);
-        rs = tmp + ' is a valid address => '+rs.toString();
+        rs = targetAddress + ' is a valid address => '+rs.toString();
         break;
       case 'isValidId':
         rs = await Carrier.isValidId(target);
@@ -222,6 +225,10 @@ class App extends Component{
         }catch(e){
           this.setError(e);
         }
+        break;
+      case 'clearLog':
+        rs = null;
+        this.setState({log : ['']});
         break;
     }
     if(rs || _.isString(rs)){
