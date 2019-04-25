@@ -174,7 +174,7 @@ export const SUGGESTION_STATUS = create(['ACTIVE', 'ABUSED', 'ARCHIVED'])
 
 export const SUGGESTION_ABUSED_STATUS = create(['REPORTED', 'HANDLED'])
 
-export const SUGGESTION_TAG_TYPE = create(['UNDER_CONSIDERATION', 'INFO_NEEDED'])
+export const SUGGESTION_TAG_TYPE = create(['UNDER_CONSIDERATION', 'INFO_NEEDED', 'ADDED_TO_PROPOSAL'])
 
 // DB sensitive data we do not want to explosure
 export const DB_EXCLUDED_FIELDS = {

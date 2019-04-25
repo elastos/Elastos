@@ -334,8 +334,9 @@ const en = {
     },
     tag: {
       type: {
-        UNDER_CONSIDERATION: 'Under Consideration of Council',
+        UNDER_CONSIDERATION: 'Under Council Consideration',
         INFO_NEEDED: 'More Info Required',
+        ADDED_TO_PROPOSAL: 'Added to Proposal'
       },
     },
   },

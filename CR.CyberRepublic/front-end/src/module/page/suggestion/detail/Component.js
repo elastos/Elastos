@@ -336,7 +336,7 @@ export default class extends StandardPage {
       btnText: I18N.get('suggestion.btnText.makeIntoProposal'),
       btnStyle: { width: 200 },
     }
-    const considerBtn = isCouncil && (
+    const considerBtn = (isCouncil || isAdmin) && (
       <Col xs={24} sm={8}>
         <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={this.consider}>
           {I18N.get('suggestion.btnText.markConsider')}

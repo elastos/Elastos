@@ -15,6 +15,7 @@ const mapState = (state) => {
   const suggestionState = {
     ...state.suggestion,
     tagsIncluded: state.suggestion.tags_included,
+    referenceStatus: state.suggestion.reference_status,
     dataList: state.suggestion.all_suggestions,
     total: state.suggestion.all_suggestions_total,
     currentUserId,
@@ -36,6 +37,10 @@ const mapDispatch = () => {
 
     async onTagsIncludedChanged(tagsIncluded) {
       return service.saveTagsIncluded(tagsIncluded)
+    },
+
+    async onReferenceStatusChanged(referenceStatus) {
+      return service.saveReferenceStatus(referenceStatus)
     },
 
     async getList(query) {

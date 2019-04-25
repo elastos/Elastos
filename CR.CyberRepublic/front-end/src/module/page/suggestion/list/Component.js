@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import {Link} from 'react-router-dom'
 import _ from 'lodash'
 import styled from 'styled-components'
 import {
@@ -7,7 +7,7 @@ import {
 } from 'antd'
 import URI from 'urijs'
 import I18N from '@/I18N'
-import { loginRedirectWithQuery } from '@/util'
+import {loginRedirectWithQuery} from '@/util'
 import StandardPage from '../../StandardPage'
 import Footer from '@/module/layout/Footer/Container'
 import MySuggestion from '../my_list/Container'
@@ -16,16 +16,16 @@ import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
 import suggestionImg from '@/assets/images/SuggestionToProposal.png'
 import suggestionZhImg from '@/assets/images/SuggestionToProposal.zh.png'
-import { breakPoint } from '@/constants/breakPoint'
-import { text, bg } from '@/constants/color'
-import { SUGGESTION_TAG_TYPE } from '@/constant'
+import {breakPoint} from '@/constants/breakPoint'
+import {text, bg} from '@/constants/color'
+import {SUGGESTION_TAG_TYPE} from '@/constant'
 
 import {
   SUGGESTION_STATUS,
 } from '@/constant'
 
 import MediaQuery from 'react-responsive'
-import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC, LG_WIDTH } from '@/config/constant'
+import {MAX_WIDTH_MOBILE, MIN_WIDTH_PC, LG_WIDTH} from '@/config/constant'
 
 import './style.scss'
 
@@ -55,6 +55,9 @@ export default class extends StandardPage {
     this.state = {
       showForm: uri.hasQuery('create'),
       showArchived: false,
+
+      // named status since we eventually want to use a struct of statuses to filter on
+      referenceStatus: false,
       isDropdownActionOpen: false,
       showMobile: false,
       page: 1,
@@ -102,12 +105,13 @@ export default class extends StandardPage {
             }
             <Row>
               <Col>
-                <br />
+                <br/>
               </Col>
             </Row>
             <Row>
               <Col>
                 {actionsNode}
+                {filterNode}
                 {listNode}
               </Col>
             </Row> :
@@ -135,7 +139,7 @@ export default class extends StandardPage {
           </MediaQuery>
           {createForm}
         </SuggestionContainer>
-        <Footer />
+        <Footer/>
       </div>
     )
   }
@@ -166,19 +170,19 @@ export default class extends StandardPage {
         footer={null}
         width="70%"
       >
-        { this.state.showForm
-          && <SuggestionForm {...props} />
+        {this.state.showForm
+        && <SuggestionForm {...props} />
         }
       </Modal>
     )
   }
 
   showCreateForm = () => {
-    const { isLogin, history } = this.props
-    const { showForm } = this.state
+    const {isLogin, history} = this.props
+    const {showForm} = this.state
     if (!isLogin) {
-      const query = { create: true }
-      loginRedirectWithQuery({ query })
+      const query = {create: true}
+      loginRedirectWithQuery({query})
       history.push('/login')
       return
     }
@@ -203,7 +207,8 @@ export default class extends StandardPage {
   renderHeader() {
     return (
       <div>
-        <SuggestionContainer className="title komu-a cr-title-with-icon">{this.props.header || I18N.get('suggestion.title').toUpperCase()}</SuggestionContainer>
+        <SuggestionContainer
+          className="title komu-a cr-title-with-icon">{this.props.header || I18N.get('suggestion.title').toUpperCase()}</SuggestionContainer>
 
         <HeaderDiagramContainer>
           <SuggestionContainer>
@@ -220,8 +225,10 @@ export default class extends StandardPage {
             <br/>
             {I18N.get('suggestion.intro.3')}
             {localStorage.getItem('lang') === 'en' ?
-              <a href="https://www.cyberrepublic.org/docs/#/guide/suggestions" target="_blank">https://www.cyberrepublic.org/docs/#/guide/suggestions</a> :
-              <a href="https://www.cyberrepublic.org/docs/#/zh/guide/suggestions" target="_blank">https://www.cyberrepublic.org/docs/#/zh/guide/suggestions</a>
+              <a href="https://www.cyberrepublic.org/docs/#/guide/suggestions"
+                 target="_blank">https://www.cyberrepublic.org/docs/#/guide/suggestions</a> :
+              <a href="https://www.cyberrepublic.org/docs/#/zh/guide/suggestions"
+                 target="_blank">https://www.cyberrepublic.org/docs/#/zh/guide/suggestions</a>
             }
           </HeaderDesc>
         </SuggestionContainer>
@@ -305,46 +312,65 @@ export default class extends StandardPage {
   }
 
   renderFilters() {
-    const { tagsIncluded: {
-      infoNeeded,
-      underConsideration
-    }} = this.props
+
+    const {
+      tagsIncluded: {
+        infoNeeded,
+        underConsideration
+      }
+    } = this.props
+
     return (
       <Row>
-        <Col sm={10} xs={24}>
-          <Switch defaultChecked={underConsideration} onChange={this.onUnderConsiderationChange} />
+        <Col sm={24} md={8}>
+          <Switch defaultChecked={underConsideration} onChange={this.onUnderConsiderationChange}/>
           <SwitchText>{I18N.get('suggestion.tag.type.UNDER_CONSIDERATION')}</SwitchText>
         </Col>
-        <Col sm={10} xs={24}>
-          <Switch defaultChecked={infoNeeded} onChange={this.onInfoNeededChange} />
+        <Col sm={24} md={8}>
+          <Switch defaultChecked={infoNeeded} onChange={this.onInfoNeededChange}/>
           <SwitchText>{I18N.get('suggestion.tag.type.INFO_NEEDED')}</SwitchText>
+        </Col>
+        <Col sm={24} md={8}>
+          <Switch defaultChecked={this.state.referenceStatus} onChange={this.onReferenceStatusChange}/>
+          <SwitchText>{I18N.get('suggestion.tag.type.ADDED_TO_PROPOSAL')}</SwitchText>
         </Col>
       </Row>
     )
   }
 
   onInfoNeededChange = async (checked) => {
-    const { onTagsIncludedChanged, tagsIncluded } = this.props
+    const {onTagsIncludedChanged, tagsIncluded} = this.props
     tagsIncluded.infoNeeded = checked
     await onTagsIncludedChanged(tagsIncluded)
     await this.refetch()
   }
 
   onUnderConsiderationChange = async (checked) => {
-    const { onTagsIncludedChanged, tagsIncluded } = this.props
+    const {onTagsIncludedChanged, tagsIncluded} = this.props
     tagsIncluded.underConsideration = checked
     await onTagsIncludedChanged(tagsIncluded)
     await this.refetch()
   }
 
+  // checked = boolean
+  onReferenceStatusChange = async (checked) => {
+
+    const {onReferenceStatusChanged} = this.props
+
+    // the first onReferenceStatusChanged is the props fn from Container
+    await this.setState({referenceStatus: checked})
+    await onReferenceStatusChanged(checked)
+    await this.refetch()
+  }
+
   renderList() {
-    const { dataList, loading } = this.props
-    const loadingNode = <div className="center"><Spin size="large" /></div>
+    const {dataList, loading} = this.props
+    const loadingNode = <div className="center"><Spin size="large"/></div>
     const paginationNode = this.renderPagination()
     let result = loadingNode
     if (!loading) {
       if (_.isEmpty(dataList)) {
-        result = <div className="center">{I18N.get('suggestion.nodata')}</div>
+        result = <NoData>{I18N.get('suggestion.nodata')}</NoData>
       } else {
         result = _.map(dataList, data => this.renderItem(data))
       }
@@ -382,22 +408,22 @@ export default class extends StandardPage {
   }
 
   renderPagination() {
-    const { total } = this.props
-    const { results, page } = this.state
+    const {total} = this.props
+    const {results, page} = this.state
     const props = {
       pageSize: results,
       total,
       current: page,
       onChange: this.loadPage,
     }
-    return <Pagination {...props} className="cr-pagination" />
+    return <Pagination {...props} className="cr-pagination"/>
   }
 
-  renderMetaNode = detail => <MetaContainer data={detail} />
+  renderMetaNode = detail => <MetaContainer data={detail}/>
 
   renderActionsNode = (detail, refetch) => <ActionsContainer data={detail} listRefetch={refetch}/>
 
-  renderMySuggestion = () => <MySuggestion />
+  renderMySuggestion = () => <MySuggestion/>
 
   onSortByChanged = async (sortBy) => {
     await this.props.onSortByChanged(sortBy)
@@ -409,17 +435,20 @@ export default class extends StandardPage {
    */
   getQuery = () => {
     const sortBy = this.props.sortBy || DEFAULT_SORT
-    const { page, results } = this.state
+    const {page, results, referenceStatus} = this.state
     const query = {
       status: this.state.showArchived ? SUGGESTION_STATUS.ARCHIVED : SUGGESTION_STATUS.ACTIVE,
       page,
-      results,
+      results
     }
-    const { tagsIncluded: {
-      infoNeeded,
-      underConsideration
-    }} = this.props
+    const {
+      tagsIncluded: {
+        infoNeeded,
+        underConsideration
+      }
+    } = this.props
     let included = ''
+
     if (infoNeeded) {
       included = SUGGESTION_TAG_TYPE.INFO_NEEDED
     }
@@ -430,9 +459,13 @@ export default class extends StandardPage {
         included = `${included},${SUGGESTION_TAG_TYPE.UNDER_CONSIDERATION}`
       }
     }
+
     if (!_.isEmpty(included)) {
       query.tagsIncluded = included
     }
+
+    // sending a boolean to be handled by the backend
+    query.referenceStatus = referenceStatus
 
     // TODO
     if (sortBy) {
@@ -457,21 +490,22 @@ export default class extends StandardPage {
       results: this.state.results,
     }
 
-    this.setState({ loadingMore: true })
+    this.setState({loadingMore: true})
 
     try {
       await this.props.loadMore(query)
-      this.setState({ page })
+      this.setState({page})
     } catch (e) {
       // Do not update page in state if the call fails
     }
 
-    this.setState({ loadingMore: false })
+    this.setState({loadingMore: false})
   }
 
   gotoDetail(id) {
     this.props.history.push(`/suggestion/${id}`)
   }
+
 }
 
 const HeaderDiagramContainer = styled.div`
@@ -517,7 +551,6 @@ const HeaderDesc = styled.div`
   padding: 24px 0;
 `
 
-
 const SuggestionContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
@@ -535,3 +568,7 @@ const SwitchText = styled.span`
   margin-left: 10px;
 `
 
+const NoData = styled.div`
+  text-align: center;
+  padding: 25px 0;
+`
