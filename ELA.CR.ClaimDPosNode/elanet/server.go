@@ -759,7 +759,7 @@ func (s *server) handleRelayInvMsg(peers map[svr.IPeer]*serverPeer, rmsg relayMs
 				invVect := *rmsg.invVect
 				invVect.Type = msg.InvTypeBlock
 
-				go sp.QueueInventory(&invVect)
+				sp.QueueInventory(&invVect)
 				continue
 			}
 		}
