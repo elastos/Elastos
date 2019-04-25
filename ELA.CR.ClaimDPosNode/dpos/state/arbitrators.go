@@ -597,7 +597,7 @@ func (a *arbitrators) updateNextArbitrators(height uint32) error {
 
 	if !a.IsInactiveMode() {
 		count = a.chainParams.GeneralArbiters
-		producers, err := a.GetNormalArbitratorsDesc(height, count, a.State.getProducers())
+		producers, err := a.GetNormalArbitratorsDesc(height, count, a.State.GetActiveProducers())
 		if err != nil {
 			return err
 		}
@@ -606,7 +606,7 @@ func (a *arbitrators) updateNextArbitrators(height uint32) error {
 		}
 	}
 
-	candidates, err := a.GetCandidatesDesc(height, count, a.State.getProducers())
+	candidates, err := a.GetCandidatesDesc(height, count, a.State.GetActiveProducers())
 	if err != nil {
 		return err
 	}

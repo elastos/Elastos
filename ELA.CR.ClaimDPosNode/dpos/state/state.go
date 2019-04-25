@@ -268,14 +268,6 @@ func (s *State) GetAllProducers() []*Producer {
 	return producers
 }
 
-func (s *State) getProducers() []*Producer {
-	producers := make([]*Producer, 0, len(s.activityProducers))
-	for _, producer := range s.activityProducers {
-		producers = append(producers, producer)
-	}
-	return producers
-}
-
 // GetPendingProducers returns all producers that in pending state.
 func (s *State) GetPendingProducers() []*Producer {
 	s.mtx.RLock()
