@@ -371,22 +371,26 @@ func (p *ProposalDispatcher) CollectConsensusStatus(height uint32, status *dmsg.
 func (p *ProposalDispatcher) RecoverFromConsensusStatus(status *dmsg.ConsensusStatus) error {
 	p.acceptVotes = make(map[common.Uint256]*payload.DPOSProposalVote)
 	for _, v := range status.AcceptVotes {
-		p.acceptVotes[v.Hash()] = &v
+		vote := v
+		p.acceptVotes[v.Hash()] = &vote
 	}
 
 	p.rejectedVotes = make(map[common.Uint256]*payload.DPOSProposalVote)
 	for _, v := range status.RejectedVotes {
-		p.rejectedVotes[v.Hash()] = &v
+		vote := v
+		p.rejectedVotes[v.Hash()] = &vote
 	}
 
 	p.pendingProposals = make(map[common.Uint256]*payload.DPOSProposal)
 	for _, v := range status.PendingProposals {
-		p.pendingProposals[v.Hash()] = &v
+		vote := v
+		p.pendingProposals[v.Hash()] = &vote
 	}
 
 	p.pendingVotes = make(map[common.Uint256]*payload.DPOSProposalVote)
 	for _, v := range status.PendingVotes {
-		p.pendingVotes[v.Hash()] = &v
+		vote := v
+		p.pendingVotes[v.Hash()] = &vote
 	}
 
 	return nil
