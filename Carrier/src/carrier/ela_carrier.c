@@ -1190,7 +1190,6 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
         HiveBootstrapNode *b = &opts->hive_bootstraps[i];
         HiveBootstrapNodeBuf *bi = &w->pref.hive_bootstraps[i];
         char *endptr = NULL;
-        ssize_t len;
 
         if (b->ipv4 && strlen(b->ipv4) > MAX_IPV4_ADDRESS_LEN) {
             vlogE("Carrier: Hive bootstrap ipv4 address (%s) too long", b->ipv4);
@@ -2931,7 +2930,7 @@ int ela_send_friend_message(ElaCarrier *w, const char *to, const void *msg,
     char *addr, *userid, *ext_name;
     FriendInfo *fi;
     uint32_t friend_number;
-    bool friend_oneline = false;
+    bool friend_online = false;
     int rc;
     ElaCP *cp;
     uint8_t *data;
@@ -2979,7 +2978,7 @@ int ela_send_friend_message(ElaCarrier *w, const char *to, const void *msg,
         return -1;
     }
 
-    friend_oneline = (fi->info.status == ElaConnectionStatus_Connected);
+    friend_online = (fi->info.status == ElaConnectionStatus_Connected);
     deref(fi);
 
     cp = elacp_create(ELACP_TYPE_MESSAGE, ext_name);
@@ -2998,7 +2997,7 @@ int ela_send_friend_message(ElaCarrier *w, const char *to, const void *msg,
         return -1;
     }
 
-    if (friend_oneline) {
+    if (friend_online) {
         rc = dht_friend_message(&w->dht, friend_number, data, data_len);
         if (!rc) {
             free(data);
