@@ -17,7 +17,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/elanet/filter"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
@@ -42,20 +41,11 @@ type spvservice struct {
 
 // NewSPVService creates a new SPV service instance.
 func NewSPVService(cfg *Config) (SPVService, error) {
-	if cfg.Foundation == "" {
-		cfg.Foundation = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
-	}
-
-	foundation, err := common.Uint168FromAddress(cfg.Foundation)
-	if err != nil {
-		return nil, fmt.Errorf("Parse foundation address error %s", err)
-	}
-
 	dataDir := defaultDataDir
 	if len(cfg.DataDir) > 0 {
 		dataDir = cfg.DataDir
 	}
-	_, err = os.Stat(dataDir)
+	_, err := os.Stat(dataDir)
 	if os.IsNotExist(err) {
 		err := os.MkdirAll(dataDir, os.ModePerm)
 		if err != nil {
@@ -82,17 +72,18 @@ func NewSPVService(cfg *Config) (SPVService, error) {
 
 	chainStore := database.NewChainDB(headerStore, service)
 
+	params := cfg.ChainParams
 	serviceCfg := &sdk.Config{
 		DataDir:     dataDir,
-		Magic:       cfg.Magic,
-		SeedList:    cfg.SeedList,
-		DefaultPort: cfg.DefaultPort,
+		Magic:       params.Magic,
+		SeedList:    params.SeedList,
+		DefaultPort: params.DefaultPort,
 		MaxPeers:    cfg.MaxConnections,
 		CandidateFlags: []uint64{
 			uint64(pact.SFNodeNetwork),
 			uint64(pact.SFNodeBloom),
 		},
-		GenesisHeader:  GenesisHeader(foundation),
+		GenesisHeader:  GenesisHeader(params.GenesisBlock),
 		ChainStore:     chainStore,
 		NewTransaction: newTransaction,
 		NewBlockHeader: newBlockHeader,
@@ -534,6 +525,6 @@ func newTransaction() util.Transaction {
 
 // GenesisHeader creates a specific genesis header by the given
 // foundation address.
-func GenesisHeader(foundation *common.Uint168) util.BlockHeader {
-	return iutil.NewHeader(&config.GenesisBlock(foundation).Header)
+func GenesisHeader(genesisBlock *types.Block) util.BlockHeader {
+	return iutil.NewHeader(&genesisBlock.Header)
 }

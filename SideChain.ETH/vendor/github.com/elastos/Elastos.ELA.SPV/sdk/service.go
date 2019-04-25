@@ -108,7 +108,7 @@ func newService(cfg *Config) (*service, error) {
 
 	serverCfg := server.NewDefaultConfig(
 		cfg.Magic,
-		pact.EBIP001Version,
+		pact.DPOSStartVersion,
 		0,
 		cfg.DefaultPort,
 		cfg.SeedList,

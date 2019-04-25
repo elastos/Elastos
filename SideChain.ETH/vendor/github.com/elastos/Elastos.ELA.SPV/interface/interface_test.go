@@ -14,6 +14,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/wallet/store"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA/p2p/connmgr"
@@ -141,22 +142,13 @@ func TestNewSPVService(t *testing.T) {
 	store.UseLogger(bcdblog)
 	sync.UseLogger(synclog)
 
-	seedList := []string{
-		"node-testnet-001.elastos.org:21866",
-		"node-testnet-002.elastos.org:21866",
-		"node-testnet-003.elastos.org:21866",
-	}
-
-	config := &Config{
-		Magic:          2018001,
-		Foundation:     "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
-		SeedList:       seedList,
-		DefaultPort:    22866,
+	cfg := &Config{
+		ChainParams:    config.DefaultParams.TestNet(),
 		MinOutbound:    8,
 		MaxConnections: 100,
 	}
 
-	service, err := NewSPVService(config)
+	service, err := NewSPVService(cfg)
 	if err != nil {
 		t.Errorf("NewSPVService error %s", err.Error())
 	}

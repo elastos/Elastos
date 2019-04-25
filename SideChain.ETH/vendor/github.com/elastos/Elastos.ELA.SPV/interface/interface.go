@@ -14,18 +14,8 @@ type Config struct {
 	// DataDir is the data path to store db files peer addresses etc.
 	DataDir string
 
-	// The magic number that specify which network to connect.
-	Magic uint32
-
-	// The foundation address of the genesis block, which is different between
-	// MainNet, TestNet, RegNet etc.
-	Foundation string
-
-	// The public seed peers addresses.
-	SeedList []string
-
-	// DefaultPort is the default port for public peers provide services.
-	DefaultPort uint16
+	// The chain parameters within network settings.
+	ChainParams *config.Params
 
 	// The minimum target outbound connections.
 	MinOutbound int
@@ -90,9 +80,6 @@ type SPVService interface {
 // DPOSConfig extends the SPV service config and add DPOS parameters.
 type DPOSConfig struct {
 	Config
-
-	// ChainParams indicates the block chain parameters.
-	ChainParams *config.Params
 
 	// OnProducersChanged method will be invoked when current producers changed.
 	OnProducersChanged func(sideProducerIDs [][]byte)

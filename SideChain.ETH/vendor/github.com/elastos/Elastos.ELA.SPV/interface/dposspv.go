@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"math"
 	"os"
 
@@ -27,13 +26,31 @@ import (
 // Ensure dposspv implement the DPOSSPVService interface.
 var _ DPOSSPVService = (*dposspv)(nil)
 
+type data struct {
+	lastBlock     *iutil.DHeader
+	lastProducers map[string]struct{}
+}
+
 // dposspv is the implementation of DPOSSPVService interface.
 type dposspv struct {
 	spvservice
 	arbiters           state.Arbitrators
 	db                 store.DPOSStore
-	lastProducers      map[string]struct{}
+	queue              chan interface{}
+	quit               chan struct{}
 	onProducersChanged func(sideProducerIDs [][]byte)
+}
+
+// Start starts the DPOS SPV service.
+func (d *dposspv) Start() {
+	d.spvservice.Start()
+	go d.blockHandler()
+}
+
+// Stop stops the DPOS SPV service.
+func (d *dposspv) Stop() {
+	d.spvservice.Stop()
+	close(d.quit)
 }
 
 // Overwrite to return DPOS type filter.
@@ -56,74 +73,57 @@ func (d *dposspv) DelTxs(height uint32) error {
 
 // TransactionAnnounce will be invoked when received a new announced transaction.
 func (d *dposspv) TransactionAnnounce(tx util.Transaction) {
-	// Handle transactions that will change block producers immediately.
-	current := d.GetHeight()
-	payload := tx.(*iutil.Tx).Payload
-	err := d.arbiters.ProcessSpecialTxPayload(payload, current)
-	if err != nil {
-		log.Errorf("precess special tx failed, %s", err)
-	}
-
-	// Update side producers by available main chain producers.
-	d.archiveProducers(current, nil)
-
-	// Notify side producers change.
-	pubKeys, changed := d.isProducersChanged(current)
-	if changed && d.onProducersChanged != nil {
-		d.onProducersChanged(pubKeys)
-	}
+	// Put new transaction into queue.
+	d.queue <- tx
 }
 
-// archiveProducers archive the current producers.
-func (d *dposspv) archiveProducers(height uint32, blockHash *common.Uint256) {
-	crcs := d.arbiters.GetCRCArbitrators()
-	producers := d.arbiters.GetArbitrators()
-	candidates := d.arbiters.GetCandidates()
-
-	pubKeys := make([][]byte, 0, len(crcs)+len(producers)+len(candidates))
-	for _, crc := range crcs {
-		pubKeys = append(pubKeys, crc.NodePublicKey())
-	}
-	log.Debugf("CRCs: %v", crcs)
-	for _, p := range producers {
-		pubKeys = append(pubKeys, p)
-	}
-	log.Debugf("Current: %v", producers)
-	for _, c := range candidates {
-		pubKeys = append(pubKeys, c)
-	}
-	log.Debugf("Candidates: %v", candidates)
-
-	// Archive the block producers on the specific height.
-	err := d.db.Archive(pubKeys, height, blockHash)
+func (d *dposspv) blockHandler() {
+	// Restore data from database.
+	header, err := d.headers.GetBest()
 	if err != nil {
-		log.Errorf("archive producers failed, %v", err)
+		panic(err)
 	}
-}
 
-// isProducersChanged returns the current side producer public keys and if they
-// have changed.
-func (d *dposspv) isProducersChanged(height uint32) ([][]byte, bool) {
-	pubKeys, _ := d.db.GetProducers(height)
-	if len(d.lastProducers) != len(pubKeys) {
-		return pubKeys, true
+	data := &data{
+		lastBlock:     header.BlockHeader.(*iutil.DHeader),
+		lastProducers: make(map[string]struct{}),
 	}
-	for _, pubKey := range pubKeys {
-		_, ok := d.lastProducers[hex.EncodeToString(pubKey)]
-		if ok {
-			continue
+	ids, _ := d.db.GetProducers(header.Height)
+	for _, id := range ids {
+		data.lastProducers[hex.EncodeToString(id)] = struct{}{}
+	}
+
+out:
+	for {
+		select {
+		case msg := <-d.queue:
+			switch msg := msg.(type) {
+			case *util.Block:
+				d.handleBlock(data, msg)
+
+			case util.Transaction:
+				d.handleTx(data, msg)
+			}
+
+		case <-d.quit:
+			break out
 		}
-		return pubKeys, true
 	}
-	return pubKeys, false
 }
 
-// Overwrite to process arbiters by transactions.
-func (d *dposspv) BlockCommitted(block *util.Block) {
-	// Call supper class first.
-	d.spvservice.BlockCommitted(block)
+func (d *dposspv) handleBlock(data *data, block *util.Block) {
+	// Ignore non-continuous block.
+	if block.Height != data.lastBlock.Height+1 {
+		log.Debugf("received non-continuous block %d, expecting %d",
+			block.Height, data.lastBlock.Height+1)
+		return
+	}
 
-	var header = block.BlockHeader.(*iutil.DHeader)
+	// Update last block.
+	header := block.BlockHeader.(*iutil.DHeader)
+	data.lastBlock = header
+
+	// Update mapping with mapping transaction payloads.
 	blk := &types.Block{Header: header.Header}
 	blk.Transactions = make([]*types.Transaction, 0, len(block.Transactions))
 	for _, tx := range block.Transactions {
@@ -161,10 +161,79 @@ func (d *dposspv) BlockCommitted(block *util.Block) {
 	}
 
 	// Notify side producers change.
-	pubKeys, changed := d.isProducersChanged(block.Height)
+	pubKeys, changed := d.isProducersChanged(data, block.Height)
 	if changed && d.onProducersChanged != nil {
 		d.onProducersChanged(pubKeys)
 	}
+}
+
+func (d *dposspv) handleTx(data *data, tx util.Transaction) {
+	// Handle transactions that will change block producers immediately.
+	current := d.GetHeight()
+	payload := tx.(*iutil.Tx).Payload
+	err := d.arbiters.ProcessSpecialTxPayload(payload, current)
+	if err != nil {
+		log.Errorf("precess special tx failed, %s", err)
+	}
+
+	// Update side producers by available main chain producers.
+	d.archiveProducers(current, nil)
+
+	// Notify side producers change.
+	pubKeys, changed := d.isProducersChanged(data, current)
+	if changed && d.onProducersChanged != nil {
+		d.onProducersChanged(pubKeys)
+	}
+}
+
+// archiveProducers archive the current producers.
+func (d *dposspv) archiveProducers(height uint32, blockHash *common.Uint256) {
+	crcs := d.arbiters.GetCRCArbitrators()
+	producers := d.arbiters.GetArbitrators()
+	candidates := d.arbiters.GetCandidates()
+
+	pubKeys := make([][]byte, 0, len(crcs)+len(producers)+len(candidates))
+	for _, crc := range crcs {
+		pubKeys = append(pubKeys, crc.NodePublicKey())
+	}
+	for _, p := range producers {
+		pubKeys = append(pubKeys, p)
+	}
+	for _, c := range candidates {
+		pubKeys = append(pubKeys, c)
+	}
+
+	// Archive the block producers on the specific height.
+	err := d.db.Archive(pubKeys, height, blockHash)
+	if err != nil {
+		log.Errorf("archive producers failed, %v", err)
+	}
+}
+
+// isProducersChanged returns the current side producer public keys and if they
+// have changed.
+func (d *dposspv) isProducersChanged(data *data, height uint32) ([][]byte, bool) {
+	pubKeys, _ := d.db.GetProducers(height)
+	if len(data.lastProducers) != len(pubKeys) {
+		return pubKeys, true
+	}
+	for _, pubKey := range pubKeys {
+		_, ok := data.lastProducers[hex.EncodeToString(pubKey)]
+		if ok {
+			continue
+		}
+		return pubKeys, true
+	}
+	return pubKeys, false
+}
+
+// Overwrite to process arbiters by transactions.
+func (d *dposspv) BlockCommitted(block *util.Block) {
+	// Call supper class first.
+	d.spvservice.BlockCommitted(block)
+
+	// Put block into handle queue.
+	d.queue <- block
 }
 
 // GetProducersByHeight returns the side chain block producer IDs on the
@@ -176,20 +245,11 @@ func (d *dposspv) GetProducersByHeight(height uint32) [][]byte {
 
 // NewDPOSSPVService creates a new DPOSSPVService instance.
 func NewDPOSSPVService(cfg *DPOSConfig, interrupt <-chan struct{}) (DPOSSPVService, error) {
-	if cfg.Foundation == "" {
-		cfg.Foundation = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
-	}
-
-	foundation, err := common.Uint168FromAddress(cfg.Foundation)
-	if err != nil {
-		return nil, fmt.Errorf("Parse foundation address error %s", err)
-	}
-
 	dataDir := defaultDataDir
 	if len(cfg.DataDir) > 0 {
 		dataDir = cfg.DataDir
 	}
-	_, err = os.Stat(dataDir)
+	_, err := os.Stat(dataDir)
 	if os.IsNotExist(err) {
 		err := os.MkdirAll(dataDir, os.ModePerm)
 		if err != nil {
@@ -227,23 +287,25 @@ func NewDPOSSPVService(cfg *DPOSConfig, interrupt <-chan struct{}) (DPOSSPVServi
 		},
 		arbiters:           arbiters,
 		db:                 dposStore,
-		lastProducers:      make(map[string]struct{}),
+		queue:              make(chan interface{}, 1),
+		quit:               make(chan struct{}),
 		onProducersChanged: cfg.OnProducersChanged,
 	}
 
 	chainStore := database.NewChainDB(headerStore, service)
 
+	params := cfg.ChainParams
 	serviceCfg := &sdk.Config{
 		DataDir:     dataDir,
-		Magic:       cfg.Magic,
-		SeedList:    cfg.SeedList,
-		DefaultPort: cfg.DefaultPort,
+		Magic:       params.Magic,
+		SeedList:    params.SeedList,
+		DefaultPort: params.DefaultPort,
 		MaxPeers:    cfg.MaxConnections,
 		CandidateFlags: []uint64{
 			uint64(pact.SFNodeNetwork),
 			uint64(pact.SFNodeBloom),
 		},
-		GenesisHeader:  GenesisDHeader(foundation),
+		GenesisHeader:  GenesisDHeader(params.GenesisBlock),
 		ChainStore:     chainStore,
 		NewTransaction: newTransaction,
 		NewBlockHeader: newDBlockHeader,
@@ -299,12 +361,6 @@ func NewDPOSSPVService(cfg *DPOSConfig, interrupt <-chan struct{}) (DPOSSPVServi
 		return nil, fmt.Errorf("initialize DPOS SPV service interrupted")
 	}
 
-	// Initialize last producers.
-	ids, _ := dposStore.GetProducers(bestHeight)
-	for _, id := range ids {
-		service.lastProducers[hex.EncodeToString(id)] = struct{}{}
-	}
-
 	service.IService, err = sdk.NewService(serviceCfg)
 	if err != nil {
 		return nil, err
@@ -319,7 +375,6 @@ func newDBlockHeader() util.BlockHeader {
 
 // GenesisHeader creates a specific genesis header by the given
 // foundation address.
-func GenesisDHeader(foundation *common.Uint168) util.BlockHeader {
-	return iutil.NewDHeader(&types.DPOSHeader{
-		Header: config.GenesisBlock(foundation).Header})
+func GenesisDHeader(genesisBlock *types.Block) util.BlockHeader {
+	return iutil.NewDHeader(&types.DPOSHeader{Header: genesisBlock.Header})
 }
