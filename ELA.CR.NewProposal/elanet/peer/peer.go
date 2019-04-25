@@ -16,7 +16,7 @@ import (
 const (
 	// trickleInterval is the min time between attempts to send an
 	// inv message to a peer.
-	trickleInterval = 10 * time.Second
+	trickleInterval = 5 * time.Second
 
 	// outputBufferSize is the number of elements the output channels use.
 	outputBufferSize = 50
@@ -92,14 +92,6 @@ type Listeners struct {
 
 	// OnDAddr is invoked when a peer receives a daddr message.
 	OnDAddr func(p *Peer, msg *msg.DAddr)
-}
-
-// outMsg is used to house a message to be sent along with a channel to signal
-// when the message has been sent (or won't be sent due to things such as
-// shutdown)
-type outMsg struct {
-	msg      p2p.Message
-	doneChan chan<- struct{}
 }
 
 type Peer struct {
