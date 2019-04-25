@@ -38,7 +38,7 @@
 		2DF0FFEE2056DD460020B375 /* libReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DAD3EA31DF850E9000B6D8A /* libReact.a */; };
 		394F486922717DB900B5CB95 /* index.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = 394F484222717DB900B5CB95 /* index.jsbundle */; };
 		395031DC21B10D6500101E8A /* libCarrier.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 394AA34621A3DC0D00987B5A /* libCarrier.a */; };
-		396A3B322271853B00E0B0BB /* ElastosCarrier.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 396A3B0B2271853B00E0B0BB /* ElastosCarrier.framework */; };
+		396A3CA222719B1100E0B0BB /* ElastosCarrier.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 396A3B0B2271853B00E0B0BB /* ElastosCarrier.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		4A054F0DFB4B49A7AAD5B5D8 /* MaterialIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 306E361C7D3041A99404A1FC /* MaterialIcons.ttf */; };
 		832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 832341B51AAA6A8300B99B32 /* libRCTText.a */; };
 		95BBE211A11543378CFAABB9 /* Zocial.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6100D298D4EF4BC4803379F2 /* Zocial.ttf */; };
@@ -339,6 +339,20 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		396A3CA322719B1100E0B0BB /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				396A3CA222719B1100E0B0BB /* ElastosCarrier.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		008F07F21AC5B25A0029DE68 /* main.jsbundle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
 		00C302A71ABCB8CE00DB3ED1 /* RCTActionSheet.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTActionSheet.xcodeproj; path = "../node_modules/react-native/Libraries/ActionSheetIOS/RCTActionSheet.xcodeproj"; sourceTree = "<group>"; };
@@ -397,7 +411,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				396A3B322271853B00E0B0BB /* ElastosCarrier.framework in Frameworks */,
 				395031DC21B10D6500101E8A /* libCarrier.a in Frameworks */,
 				ADBDB9381DFEBF1600ED6528 /* libRCTBlob.a in Frameworks */,
 				11D1A2F320CAFA9E000508D9 /* libRCTAnimation.a in Frameworks */,
@@ -713,6 +726,7 @@
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
+				396A3CA322719B1100E0B0BB /* Embed Frameworks */,
 			);
 			buildRules = (
 			);

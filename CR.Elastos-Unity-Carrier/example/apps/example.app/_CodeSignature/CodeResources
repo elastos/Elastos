@@ -6,7 +6,7 @@
 	<dict>
 		<key>Base.lproj/LaunchScreen.nib</key>
 		<data>
-		1opLAZQiX4Q6HUQwXx3XIRGrItU=
+		cYFNm0CHidB1B8SMqXfSNiLqbck=
 		</data>
 		<key>Entypo.ttf</key>
 		<data>
@@ -24,34 +24,17 @@
 		<data>
 		SyvObHkkk6SlcWtv7C2+/olJLD8=
 		</data>
-		<key>Frameworks/XCTest.framework/Info.plist</key>
+		<key>Frameworks/ElastosCarrier.framework/ElastosCarrier</key>
 		<data>
-		DQ4GPJ7FuM6H+FaCC/2wxhPSGCQ=
+		Tuv/Cms0svHhZPTZA2iHKO/0TMk=
 		</data>
-		<key>Frameworks/XCTest.framework/XCTest</key>
+		<key>Frameworks/ElastosCarrier.framework/Info.plist</key>
 		<data>
-		HK6asLJ70IK7E4e83e8R1gxACHo=
+		dl/gDXjepNwh2p8R3hCRPlMlvrw=
 		</data>
-		<key>Frameworks/XCTest.framework/_CodeSignature/CodeResources</key>
+		<key>Frameworks/ElastosCarrier.framework/_CodeSignature/CodeResources</key>
 		<data>
-		/8LQToTPOL9FsEsYDaACQ21Day0=
-		</data>
-		<key>Frameworks/XCTest.framework/en.lproj/InfoPlist.strings</key>
-		<dict>
-			<key>hash</key>
-			<data>
-			TuBj57ZP6zBqcL9HttO2Rucaw9E=
-			</data>
-			<key>optional</key>
-			<true/>
-		</dict>
-		<key>Frameworks/XCTest.framework/version.plist</key>
-		<data>
-		P6P66kW7+LvLIo4WHjXGltpT8CA=
-		</data>
-		<key>Frameworks/libXCTestBundleInject.dylib</key>
-		<data>
-		xKX69bDGMJa2TcU/BC9ypZ06rsI=
+		bKYCD+VTUKjEozWb/hIHtm5sZn4=
 		</data>
 		<key>Frameworks/libswiftCore.dylib</key>
 		<data>
@@ -87,7 +70,7 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		ECaiLLzuksZZnMMJV0en/LyGVK8=
+		34eiDq3iBhQNbl3fJZJXDc9Mt5Q=
 		</data>
 		<key>Ionicons.ttf</key>
 		<data>
@@ -109,26 +92,6 @@
 		<data>
 		n57qDP4tZfLD1rCS43W0B4LQjzE=
 		</data>
-		<key>PlugIns/exampleTests.xctest.dSYM/Contents/Info.plist</key>
-		<data>
-		hRLQDASi0V+IZMK8eLmks4GQugE=
-		</data>
-		<key>PlugIns/exampleTests.xctest.dSYM/Contents/Resources/DWARF/exampleTests</key>
-		<data>
-		9s0z93vI7mUtLtw0QkPioi/Y9zs=
-		</data>
-		<key>PlugIns/exampleTests.xctest/Info.plist</key>
-		<data>
-		LDZyfj8APahMGrkf782U0H13Iks=
-		</data>
-		<key>PlugIns/exampleTests.xctest/_CodeSignature/CodeResources</key>
-		<data>
-		fgvygIGCD8BW+ozcWMN3fvj/VJI=
-		</data>
-		<key>PlugIns/exampleTests.xctest/exampleTests</key>
-		<data>
-		WVv8GJQSrfe78WZVpN+cFh6mLCQ=
-		</data>
 		<key>Roboto.ttf</key>
 		<data>
 		HR1B/K3Fcd7LZEQhG3mTuZzpJuI=
@@ -145,6 +108,10 @@
 		<data>
 		C9pZx7zT05J94EfgkYdaRCi/0as=
 		</data>
+		<key>index.jsbundle</key>
+		<data>
+		hGiutzoSWz5btiSuUKO1+Jf/bng=
+		</data>
 		<key>libswiftRemoteMirror.dylib</key>
 		<data>
 		s7ona7AnRrumtUKclaVHhamjsDg=
@@ -160,11 +127,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			1opLAZQiX4Q6HUQwXx3XIRGrItU=
+			cYFNm0CHidB1B8SMqXfSNiLqbck=
 			</data>
 			<key>hash2</key>
 			<data>
-			Dz1liKzs1BQrlGLKgbvfj+t6AosfpnqYDfDoIM8ZX2Y=
+			QZJ43yny0rzrswXMfnVxe3HJwf5BW92q3go/TE+XtMQ=
 			</data>
 		</dict>
 		<key>Entypo.ttf</key>
@@ -211,72 +178,37 @@
 			fh3QPdTOkLZYBSVUzXRZ3xZxZxc4mlUvpMbVal+JM+Y=
 			</data>
 		</dict>
-		<key>Frameworks/XCTest.framework/Info.plist</key>
+		<key>Frameworks/ElastosCarrier.framework/ElastosCarrier</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			DQ4GPJ7FuM6H+FaCC/2wxhPSGCQ=
+			Tuv/Cms0svHhZPTZA2iHKO/0TMk=
 			</data>
 			<key>hash2</key>
 			<data>
-			VfVpYXVjG5OK2j8J39CP2mIMg1P5eFaYkRIJ/Hb2RSQ=
+			l0olGKVkzd1GTQl2aZ6irS0NMtjVihrvTwKMbnxMEoI=
 			</data>
 		</dict>
-		<key>Frameworks/XCTest.framework/XCTest</key>
+		<key>Frameworks/ElastosCarrier.framework/Info.plist</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			HK6asLJ70IK7E4e83e8R1gxACHo=
+			dl/gDXjepNwh2p8R3hCRPlMlvrw=
 			</data>
 			<key>hash2</key>
 			<data>
-			olgg9NXiZ2M1ifvjBR8uTJxtXlM5EacLdDrNxfmImoY=
+			u2qEMr0dEs+sDvZ2yDXquVlBwUdbDBax1AINncwirYQ=
 			</data>
 		</dict>
-		<key>Frameworks/XCTest.framework/_CodeSignature/CodeResources</key>
+		<key>Frameworks/ElastosCarrier.framework/_CodeSignature/CodeResources</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			/8LQToTPOL9FsEsYDaACQ21Day0=
+			bKYCD+VTUKjEozWb/hIHtm5sZn4=
 			</data>
 			<key>hash2</key>
 			<data>
-			C7sJpbu4qpi8/rH5JYpdQYncotP69JQ9Fiu8jrHXYvU=
-			</data>
-		</dict>
-		<key>Frameworks/XCTest.framework/en.lproj/InfoPlist.strings</key>
-		<dict>
-			<key>hash</key>
-			<data>
-			TuBj57ZP6zBqcL9HttO2Rucaw9E=
-			</data>
-			<key>hash2</key>
-			<data>
-			89RGkjZaKuewYnjpzwhIswhqfrU8+pcEXqM/DHVrUmo=
-			</data>
-			<key>optional</key>
-			<true/>
-		</dict>
-		<key>Frameworks/XCTest.framework/version.plist</key>
-		<dict>
-			<key>hash</key>
-			<data>
-			P6P66kW7+LvLIo4WHjXGltpT8CA=
-			</data>
-			<key>hash2</key>
-			<data>
-			2BV684CZjHtMZHxSiwC5qc/DGXv9WIOWUc9dEU/Q1pw=
-			</data>
-		</dict>
-		<key>Frameworks/libXCTestBundleInject.dylib</key>
-		<dict>
-			<key>hash</key>
-			<data>
-			xKX69bDGMJa2TcU/BC9ypZ06rsI=
-			</data>
-			<key>hash2</key>
-			<data>
-			jJ/zKe1SwWk9KkZ4MXV01NPW4QiHpU1aZhpfTDknkp0=
+			4qPotjAL5Ol/fcH1qqmH+I3/ey+W0Gt1p33scf2oYxw=
 			</data>
 		</dict>
 		<key>Frameworks/libswiftCore.dylib</key>
@@ -411,61 +343,6 @@
 			sw1aNDI0CqTWoFwAl/BoysSnzVrJqfoRSzi3y6/KJCM=
 			</data>
 		</dict>
-		<key>PlugIns/exampleTests.xctest.dSYM/Contents/Info.plist</key>
-		<dict>
-			<key>hash</key>
-			<data>
-			hRLQDASi0V+IZMK8eLmks4GQugE=
-			</data>
-			<key>hash2</key>
-			<data>
-			9RUf2VckrKdL5Mwv6vtH1kfL/wUyh+c1YjER9Dpjggg=
-			</data>
-		</dict>
-		<key>PlugIns/exampleTests.xctest.dSYM/Contents/Resources/DWARF/exampleTests</key>
-		<dict>
-			<key>hash</key>
-			<data>
-			9s0z93vI7mUtLtw0QkPioi/Y9zs=
-			</data>
-			<key>hash2</key>
-			<data>
-			uc6jMsns1JCsPSs7UevIxDuDT6I+Ti7XbIBocQSnQgE=
-			</data>
-		</dict>
-		<key>PlugIns/exampleTests.xctest/Info.plist</key>
-		<dict>
-			<key>hash</key>
-			<data>
-			LDZyfj8APahMGrkf782U0H13Iks=
-			</data>
-			<key>hash2</key>
-			<data>
-			Nr3jO+4jMmEEtM8ITeS3h5afoQTummAMLe+TaU+Hzwc=
-			</data>
-		</dict>
-		<key>PlugIns/exampleTests.xctest/_CodeSignature/CodeResources</key>
-		<dict>
-			<key>hash</key>
-			<data>
-			fgvygIGCD8BW+ozcWMN3fvj/VJI=
-			</data>
-			<key>hash2</key>
-			<data>
-			PakaHJiD5MNRAPTJRpLMlTP9tN69B7bi5f4scY9eWRU=
-			</data>
-		</dict>
-		<key>PlugIns/exampleTests.xctest/exampleTests</key>
-		<dict>
-			<key>hash</key>
-			<data>
-			WVv8GJQSrfe78WZVpN+cFh6mLCQ=
-			</data>
-			<key>hash2</key>
-			<data>
-			wDg6GrBFAdi/je/1gOm9M3tVhLhocbJ2XfUU2tEmE30=
-			</data>
-		</dict>
 		<key>Roboto.ttf</key>
 		<dict>
 			<key>hash</key>
@@ -508,6 +385,17 @@
 			<key>hash2</key>
 			<data>
 			17EKHr4YMOWi8I9JA7moDiwZEsDdL3O5P88r+DIhZgI=
+			</data>
+		</dict>
+		<key>index.jsbundle</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			hGiutzoSWz5btiSuUKO1+Jf/bng=
+			</data>
+			<key>hash2</key>
+			<data>
+			NsZKefuz8noyDZlC7u9b21Qv9yJia1AxE68BdIRhUdU=
 			</data>
 		</dict>
 		<key>libswiftRemoteMirror.dylib</key>

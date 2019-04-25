@@ -33,7 +33,7 @@
     "test": "cd example && npm test && cd .."
   },
   "dependencies": {
-    "lodash": "^4.17.11"
+    "lodash": "4.17.11"
   },
   "peerDependencies": {
     "react-native": "0.56.0"

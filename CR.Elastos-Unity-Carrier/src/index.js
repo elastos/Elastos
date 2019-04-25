@@ -1,5 +1,5 @@
 import {NativeModules, NativeEventEmitter} from 'react-native';
-import _ from 'lodash';
+// import _ from 'lodash';
 import config from './config';
 
 const NativeCarrier = NativeModules.CarrierPlugin;
@@ -70,12 +70,15 @@ const Carrier = class {
         console.log(`callback [${name}] fired : `, args);
       }
     };
-    _.each(_.concat(config.CARRIER_CB_NAMES, config.STREAM_CB_NAMES), (name)=>{
+    const list = config.CARRIER_CB_NAMES.concat(config.STREAM_CB_NAMES);
+
+    list.forEach((name)=>{
       const fn = callbacks[name] || def_fn(name);
       Listener.addListener(name, (data)=>{
         fn(...data);
       });
     });
+
   }
 
   /*
@@ -120,7 +123,7 @@ const Carrier = class {
    * @error: throw an error if failure
    */
   setSelfInfo(info){
-    const user_info = _.extend({
+    const user_info = Objest.assign({
       name : '',
       description : '',
       email : '',

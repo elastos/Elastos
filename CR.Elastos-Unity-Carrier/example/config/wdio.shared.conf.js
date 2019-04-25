@@ -8,11 +8,11 @@ exports.config = {
   jasmineNodeOpts: {
       // Updated the timeout to 30 seconds due to possible longer appium calls
       // When using XPATH
-      defaultTimeoutInterval: 5000,
+      defaultTimeoutInterval: 30000,
   },
   sync: true,
   logPath : "./",
-  logLevel: 'debug',
+  logLevel: 'silent',
   deprecationWarnings: true,
   bail: 0,
   baseUrl: '',
