@@ -123,7 +123,7 @@ const Carrier = class {
    * @error: throw an error if failure
    */
   setSelfInfo(info){
-    const user_info = Objest.assign({
+    const user_info = Object.assign({
       name : '',
       description : '',
       email : '',
