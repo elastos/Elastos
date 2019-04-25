@@ -115,22 +115,29 @@ export default class extends Base {
   }
 
   public async list(param: any): Promise<Object> {
+
     const query = _.omit(param, ['results', 'page', 'sortBy', 'sortOrder', 'filter', 'profileListFor', 'search', 'tagsIncluded', 'referenceStatus'])
     const { sortBy, sortOrder, tagsIncluded, referenceStatus } = param
-
+    let qryTagsType
 
 
     if (!_.isEmpty(tagsIncluded)) {
-      query['tags.type'] = { $in: tagsIncluded.split(',') }
+      qryTagsType = { $in: tagsIncluded.split(',') }
     } else {
-      query['tags.type'] = { $nin: listExlucdedFields }
+      qryTagsType = { $nin: listExlucdedFields }
     }
 
     if (referenceStatus === 'true') {
-      query.reference = {$exists: true, $ne: []}
+      query.$or = [{reference: {$exists: true, $ne: []}}, {'tags.type': qryTagsType}]
+
     } else {
-      query.$or = [{reference: {$exists: false}}, {reference: {$eq: []}}]
+      query.$and = [
+        {$or: [{reference: {$exists: false}}, {reference: {$eq: []}}]},
+        {'tags.type': qryTagsType}
+      ]
     }
+
+    delete query['tags.type']
 
     const cursor = this.model.getDBInstance()
       .find(query)

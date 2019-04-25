@@ -271,7 +271,7 @@ const en = {
   'suggestion.suggestion': 'Suggestion',
   'suggestion.referred': 'Referred in',
   'suggestion.title': 'Suggestions',
-  'suggestion.listTitle': 'All suggestions',
+  'suggestion.listTitle': 'Suggestions',
   'suggestion.add': 'Add a Suggestion',
   'suggestion.sort': 'Sort by',
   'suggestion.likes': 'Most Popular',
@@ -330,7 +330,7 @@ const en = {
       confirm: 'Confirm',
       cancel: 'Cancel',
       pleaseUpdate: 'Please update the Suggestion with the requested info and notify the council/community through a comment.',
-      commentsFromCouncil: 'Comments from Council:'
+      commentsFromCouncil: 'Comments from Council/Admin:'
     },
     tag: {
       type: {
