@@ -130,10 +130,6 @@ func (a *ArbitratorsMock) GetCRCArbitrators() map[string]*Producer {
 	return a.CRCArbitratorsMap
 }
 
-func (a *ArbitratorsMock) IsCRCArbitratorNodePublicKey(nodePublicKeyHex string) bool {
-	return false
-}
-
 func (a *ArbitratorsMock) GetArbitersCount() int {
 	return len(a.CurrentArbitrators)
 }
