@@ -461,12 +461,9 @@ func (a *arbitrators) GetCRCArbiters() [][]byte {
 	return result
 }
 
-func (a *arbitrators) IsCRCArbitratorNodePublicKey(nodePublicKeyHex string) bool {
-	_, ok := a.crcArbitratorsNodePublicKey[nodePublicKeyHex]
-	return ok
-}
-
 func (a *arbitrators) IsCRCArbitrator(pk []byte) bool {
+	// there is no need to lock because crc related variable is read only and
+	// initialized at the very first
 	_, ok := a.crcArbitratorsNodePublicKey[hex.EncodeToString(pk)]
 	return ok
 }
@@ -679,7 +676,7 @@ func (a *arbitrators) updateOwnerProgramHashes() error {
 	a.ownerVotesInRound = make(map[common.Uint168]common.Fixed64, 0)
 	a.totalVotesInRound = 0
 	for _, nodePublicKey := range a.currentArbitrators {
-		if a.IsCRCArbitratorNodePublicKey(common.BytesToHexString(nodePublicKey)) {
+		if a.IsCRCArbitrator(nodePublicKey) {
 			ownerPublicKey := nodePublicKey // crc node public key is its owner public key for now
 			programHash, err := contract.PublicKeyToStandardProgramHash(ownerPublicKey)
 			if err != nil {
@@ -704,7 +701,7 @@ func (a *arbitrators) updateOwnerProgramHashes() error {
 
 	a.candidateOwnerProgramHashes = make([]*common.Uint168, 0)
 	for _, nodePublicKey := range a.currentCandidates {
-		if a.IsCRCArbitratorNodePublicKey(common.BytesToHexString(nodePublicKey)) {
+		if a.IsCRCArbitrator(nodePublicKey) {
 			continue
 		}
 		producer := a.GetProducer(nodePublicKey)
