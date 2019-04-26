@@ -23,6 +23,12 @@ import (
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
+const (
+	// maxRequestedBlocks is the maximum number of requested block
+	// hashes to store in memory.
+	maxRequestedBlocks = msg.MaxInvPerMsg
+)
+
 type DPOSNetworkConfig struct {
 	ProposalDispatcher *ProposalDispatcher
 	Store              store.IDposStore
@@ -114,6 +120,8 @@ type DPOSManager struct {
 	recoverStarted       bool
 	notHandledProposal   map[string]struct{}
 	statusMap            map[uint32]map[string]*dmsg.ConsensusStatus
+
+	requestedBlocks map[common.Uint256]struct{}
 }
 
 func (d *DPOSManager) AppendConfirm(confirm *payload.Confirm) (bool, bool, error) {
@@ -126,12 +134,15 @@ func (d *DPOSManager) AppendBlock(block *types.Block) {
 
 func NewManager(cfg DPOSManagerConfig) *DPOSManager {
 	m := &DPOSManager{
-		publicKey:   cfg.PublicKey,
-		blockCache:  &ConsensusBlockCache{},
-		arbitrators: cfg.Arbitrators,
-		chainParams: cfg.ChainParams,
-		timeSource:  cfg.TimeSource,
-		server:      cfg.Server,
+		publicKey:          cfg.PublicKey,
+		blockCache:         &ConsensusBlockCache{},
+		arbitrators:        cfg.Arbitrators,
+		chainParams:        cfg.ChainParams,
+		timeSource:         cfg.TimeSource,
+		server:             cfg.Server,
+		notHandledProposal: make(map[string]struct{}),
+		statusMap:          make(map[uint32]map[string]*dmsg.ConsensusStatus),
+		requestedBlocks:    make(map[common.Uint256]struct{}),
 	}
 	m.blockCache.Reset()
 
@@ -151,8 +162,6 @@ func (d *DPOSManager) Initialize(handler *DPOSHandlerSwitch,
 	d.blockPool = blockPool
 	d.txPool = txPool
 	d.broadcast = broadcast
-	d.notHandledProposal = make(map[string]struct{})
-	d.statusMap = make(map[uint32]map[string]*dmsg.ConsensusStatus)
 }
 
 func (d *DPOSManager) AppendToTxnPool(txn *types.Transaction) error {
@@ -205,8 +214,10 @@ func (d *DPOSManager) ProcessHigherBlock(b *types.Block) {
 		return
 	}
 
-	//log.Info("[ProcessHigherBlock] broadcast inv and try start new consensus")
-	//d.network.BroadcastMessage(dmsg.NewInventory(b.Hash()))
+	if !d.consensus.IsOnDuty() {
+		log.Info("[ProcessHigherBlock] broadcast inv and try start new consensus")
+		d.network.BroadcastMessage(dmsg.NewInventory(b.Hash()))
+	}
 
 	if d.handler.TryStartNewConsensus(b) {
 		d.notHandledProposal = make(map[string]struct{})
@@ -266,7 +277,13 @@ func (d *DPOSManager) OnPong(id dpeer.PID, height uint32) {
 }
 
 func (d *DPOSManager) OnBlock(id dpeer.PID, block *types.Block) {
-	log.Info("[ProcessBlock] received block:", block.Hash().String())
+	log.Debug("[OnBlock] received block:", block.Hash().String())
+	hash := block.Hash()
+	if _, ok := d.requestedBlocks[hash]; !ok {
+		log.Warn("[OnBlock] received unrequested block")
+		return
+	}
+	delete(d.requestedBlocks, hash)
 	if block.Header.Height == blockchain.DefaultLedger.Blockchain.GetHeight()+1 {
 		if _, _, err := d.blockPool.AppendDposBlock(&types.DposBlock{
 			Block: block,
@@ -277,10 +294,17 @@ func (d *DPOSManager) OnBlock(id dpeer.PID, block *types.Block) {
 }
 
 func (d *DPOSManager) OnInv(id dpeer.PID, blockHash common.Uint256) {
-	if _, err := d.getBlock(blockHash); err != nil {
-		log.Info("[ProcessInv] send getblock:", blockHash.String())
-		d.network.SendMessageToPeer(id, dmsg.NewGetBlock(blockHash))
+	if _, err := d.getBlock(blockHash); err == nil {
+		return
 	}
+	if _, ok := d.requestedBlocks[blockHash]; ok {
+		return
+	}
+
+	log.Info("[ProcessInv] send getblock:", blockHash.String())
+	d.limitMap(d.requestedBlocks, maxRequestedBlocks)
+	d.requestedBlocks[blockHash] = struct{}{}
+	d.network.SendMessageToPeer(id, dmsg.NewGetBlock(blockHash))
 }
 
 func (d *DPOSManager) OnGetBlock(id dpeer.PID, blockHash common.Uint256) {
@@ -587,4 +611,22 @@ func (d *DPOSManager) getBlock(blockHash common.Uint256) (*types.Block, error) {
 	}
 
 	return blockchain.DefaultLedger.GetBlockWithHash(blockHash)
+}
+
+// limitMap is a helper function for maps that require a maximum limit by
+// evicting a random transaction if adding a new value would cause it to
+// overflow the maximum allowed.
+func (d *DPOSManager) limitMap(m map[common.Uint256]struct{}, limit int) {
+	if len(m)+1 > limit {
+		// Remove a random entry from the map.  For most compilers, Go's
+		// range statement iterates starting at a random item although
+		// that is not 100% guaranteed by the spec.  The iteration order
+		// is not important here because an adversary would have to be
+		// able to pull off preimage attacks on the hashing function in
+		// order to target eviction of specific entries anyways.
+		for txHash := range m {
+			delete(m, txHash)
+			return
+		}
+	}
 }
