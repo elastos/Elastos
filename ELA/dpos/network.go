@@ -44,6 +44,7 @@ type network struct {
 
 	badNetworkChan           chan bool
 	changeViewChan           chan bool
+	recoverChan              chan bool
 	recoverTimeoutChan       chan bool
 	blockReceivedChan        chan blockItem
 	confirmReceivedChan      chan *payload.Confirm
@@ -71,6 +72,8 @@ func (n *network) Start() {
 				n.changeView()
 			case <-n.badNetworkChan:
 				n.badNetwork()
+			case <-n.recoverChan:
+				n.recover()
 			case <-n.recoverTimeoutChan:
 				n.recoverTimeout()
 			case blockItem := <-n.blockReceivedChan:
@@ -282,6 +285,10 @@ func (n *network) badNetwork() {
 	n.listener.OnBadNetwork()
 }
 
+func (n *network) recover() {
+	n.listener.OnRecover()
+}
+
 func (n *network) recoverTimeout() {
 	n.listener.OnRecoverTimeout()
 }
@@ -324,6 +331,7 @@ func NewDposNetwork(account account.Account, medianTime dtime.MedianTimeSource,
 		quit:                     make(chan bool),
 		badNetworkChan:           make(chan bool),
 		changeViewChan:           make(chan bool),
+		recoverChan:              make(chan bool),
 		recoverTimeoutChan:       make(chan bool),
 		blockReceivedChan:        make(chan blockItem, 10),        //todo config handle capacity though config file
 		confirmReceivedChan:      make(chan *payload.Confirm, 10), //todo config handle capacity though config file
