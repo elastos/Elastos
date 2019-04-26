@@ -73,6 +73,7 @@ type NetworkEventListener interface {
 
 	OnChangeView()
 	OnBadNetwork()
+	OnRecover()
 	OnRecoverTimeout()
 
 	OnBlockReceived(b *types.Block, confirmed bool)
@@ -182,22 +183,6 @@ func (d *DPOSManager) GetBlockCache() *ConsensusBlockCache {
 
 func (d *DPOSManager) GetArbitrators() state.Arbitrators {
 	return d.arbitrators
-}
-
-func (d *DPOSManager) Recover() {
-	for {
-		if d.server.IsCurrent() {
-			if !d.isCurrentArbiter() {
-				return
-			}
-			d.changeHeight()
-			if d.recoverAbnormalState() {
-				return
-			}
-		}
-
-		time.Sleep(time.Second)
-	}
 }
 
 func (d *DPOSManager) isCurrentArbiter() bool {
@@ -351,6 +336,14 @@ func (d *DPOSManager) OnBadNetwork() {
 	log.Info("[OnBadNetwork] found network bad")
 }
 
+func (d *DPOSManager) OnRecover() {
+	if !d.isCurrentArbiter() {
+		return
+	}
+	d.changeHeight()
+	d.recoverAbnormalState()
+}
+
 func (d *DPOSManager) OnRecoverTimeout() {
 	if d.recoverStarted == true && len(d.statusMap) != 0 {
 		d.DoRecover()
@@ -359,7 +352,7 @@ func (d *DPOSManager) OnRecoverTimeout() {
 
 func (d *DPOSManager) recoverAbnormalState() bool {
 	if d.recoverStarted {
-		return true
+		return false
 	}
 
 	if arbiters := d.arbitrators.GetArbitrators(); len(arbiters) != 0 {
