@@ -39,7 +39,7 @@ tx:appendtxout(amount_output)
 if (charge ~= 0)
 then
     local charge_output = output.new(assetID, charge, deposit_addr, 0, default_output)
-    tx.appendtxout(charge_output)
+    tx:appendtxout(charge_output)
 end
 -- print(amount_output:get())
 
