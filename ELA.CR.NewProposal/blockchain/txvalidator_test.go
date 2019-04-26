@@ -206,7 +206,10 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 	tx.Outputs = appendSpecial()
 	s.NoError(s.Chain.checkTransactionOutput(s.HeightVersion1, tx))
 	tx.Outputs = appendSpecial() // add another special output here
+	originHeight := config.DefaultParams.PublicDPOSHeight
+	config.DefaultParams.PublicDPOSHeight = 0
 	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
+	config.DefaultParams.PublicDPOSHeight = originHeight
 	s.EqualError(err, "special output count should less equal than 1")
 
 	// invalid program hash
@@ -218,7 +221,9 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 		address[0] = 0x23
 		output.ProgramHash = address
 	}
+	config.DefaultParams.PublicDPOSHeight = 0
 	s.NoError(s.Chain.checkTransactionOutput(s.HeightVersion1, tx))
+	config.DefaultParams.PublicDPOSHeight = originHeight
 
 	// new sideChainPow
 	tx = &types.Transaction{

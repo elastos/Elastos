@@ -91,8 +91,6 @@ func (p *ProposalDispatcher) ProcessVote(v *payload.DPOSProposalVote,
 	} else {
 		return p.countRejectedVote(v)
 	}
-
-	return false, false
 }
 
 func (p *ProposalDispatcher) AddPendingVote(v *payload.DPOSProposalVote) {
@@ -286,9 +284,9 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 	return true, true
 }
 
-func (d *ProposalDispatcher) tryGetBlock(id peer.PID, blockHash common.Uint256) error {
+func (p *ProposalDispatcher) tryGetBlock(id peer.PID, blockHash common.Uint256) error {
 	getBlock := dmsg.NewGetBlock(blockHash)
-	return d.cfg.Network.SendMessageToPeer(id, getBlock)
+	return p.cfg.Network.SendMessageToPeer(id, getBlock)
 }
 
 func (p *ProposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
