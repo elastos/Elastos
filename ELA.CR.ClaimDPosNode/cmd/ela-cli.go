@@ -44,8 +44,13 @@ func main() {
 
 	//sort.Sort(cli.CommandsByName(app.Commands))
 	//sort.Sort(cli.FlagsByName(app.Flags))
+	newArgs, err := cmdcom.MoveRPCFlags(os.Args)
+	if err != nil {
+		cmdcom.PrintErrorMsg(err.Error())
+		os.Exit(1)
+	}
 
-	if err := app.Run(os.Args); err != nil {
+	if err := app.Run(newArgs); err != nil {
 		cmdcom.PrintErrorMsg(err.Error())
 		os.Exit(1)
 	}

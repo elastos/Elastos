@@ -36,18 +36,32 @@ GLOBAL OPTIONS:
 
 --rpcuser 用于指定 rpc 服务器 BasicAuth 用户名。默认值为空。
 
---rpcpassword 用于指定 rpc 服务器 BasicAuth 密码。默认值为空
+--rpcpassword 用于指定 rpc 服务器 BasicAuth 密码。默认值为空。
 
 例如查询节点区块高度：
 
 ```
-./ela-cli --rpcport 11336 --rpcuser user1 --rpcpassword pwd1 info getcurrentheight
+./ela-cli --rpcport 20336 --rpcuser user123 --rpcpassword pass123 info getcurrentheight
 ```
 
 返回如下：
 
 ```
 301
+```
+
+可以配置 `ela-cli.sh ` 脚本，简化命令。
+
+```
+#!/bin/bash
+
+./ela-cli --rpcport 20336 --rpcuser user123 --rpcpassword pass123 $*
+```
+
+查询节点区块高度：
+
+```
+./ela-cli.sh info getcurrentheight
 ```
 
 

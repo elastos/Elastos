@@ -1,11 +1,13 @@
 package common
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
 	"github.com/elastos/Elastos.ELA/utils/http"
 	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
+
 	"github.com/urfave/cli"
 )
 
@@ -70,4 +72,32 @@ func PrintWarnMsg(format string, a ...interface{}) {
 
 func PrintInfoMsg(format string, a ...interface{}) {
 	fmt.Printf(format+"\n", a...)
+}
+
+// MoveRPCFlags finds the rpc argument and moves it to the front
+// of the argument array.
+func MoveRPCFlags(args []string) ([]string, error) {
+	newArgs := args[:1]
+	cacheArgs := make([]string, 0)
+
+	for i := 1; i < len(args); i++ {
+		switch args[i] {
+		case "--rpcport":
+			fallthrough
+		case "--rpcuser":
+			fallthrough
+		case "--rpcpassword":
+			newArgs = append(newArgs, args[i])
+			if i == len(args)-1 {
+				return nil, errors.New("invalid flag " + args[i])
+			}
+			newArgs = append(newArgs, args[i+1])
+			i++
+		default:
+			cacheArgs = append(cacheArgs, args[i])
+		}
+	}
+
+	newArgs = append(newArgs, cacheArgs...)
+	return newArgs, nil
 }
