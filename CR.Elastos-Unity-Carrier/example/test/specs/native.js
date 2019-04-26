@@ -14,13 +14,14 @@ const print = (msg)=>{
   console.log(`[LOG] => ${msg}`);
 };
 const printLog = async ()=>{
+  log = await getLogElement();
   const msg = await log.getText();
   print(msg);
 }
 
 describe('Elastos Carrier auto test with WebdriverIO and Appium', ()=>{
   beforeEach(async () => {
-    log = await getLogElement();
+    
     const clear = await $('~log:clear');
     await clear.click();
   });

@@ -17,7 +17,7 @@ exports.config = {
   bail: 0,
   baseUrl: '',
   waitforTimeout: 5000,
-  connectionRetryTimeout: 90000,
+  connectionRetryTimeout: 50000,
   connectionRetryCount: 3,
   reporters: [ 'spec' ],
 

@@ -6,7 +6,8 @@
     "start": "node node_modules/react-native/local-cli/cli.js start",
     "build:ios": "react-native bundle --entry-file ./index.js --bundle-output ./ios/bundle/index.jsbundle --platform ios --assets-dest ./ios/bundle --dev false",
     "test": "jest",
-    "autotest:ios": "./node_modules/.bin/wdio ./config/wdio.ios.app.conf.js"
+    "autotest:ios": "./node_modules/.bin/wdio ./config/wdio.ios.app.conf.js",
+    "autotest:android": "./node_modules/.bin/wdio ./config/wdio.android.app.conf.js"
   },
   "dependencies": {
     "lodash": "4.17.11",
