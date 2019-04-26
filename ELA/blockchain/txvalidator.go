@@ -946,12 +946,8 @@ func (b *BlockChain) checkRegisterProducerTransaction(txn *Transaction) error {
 		return fmt.Errorf("nick name %s already inuse", info.NickName)
 	}
 
-	// check node public key
-	if b.GetHeight() >= b.chainParams.PublicDPOSHeight {
-		_, err := DecodePoint(info.NodePublicKey)
-		if err != nil {
-			return errors.New("invalid node public key in payload")
-		}
+	if err := b.additionalProducerInfoCheck(info); err != nil {
+		return err
 	}
 
 	// check signature
@@ -1121,12 +1117,8 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 		return err
 	}
 
-	// check node public key
-	if b.GetHeight() >= b.chainParams.PublicDPOSHeight {
-		_, err := DecodePoint(info.NodePublicKey)
-		if err != nil {
-			return errors.New("invalid node public key in payload")
-		}
+	if err := b.additionalProducerInfoCheck(info); err != nil {
+		return err
 	}
 
 	// check signature
@@ -1162,6 +1154,25 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 			hex.EncodeToString(info.NodePublicKey))
 	}
 
+	return nil
+}
+
+func (b *BlockChain) additionalProducerInfoCheck(
+	info *payload.ProducerInfo) error {
+	if b.GetHeight() >= b.chainParams.PublicDPOSHeight {
+		_, err := DecodePoint(info.NodePublicKey)
+		if err != nil {
+			return errors.New("invalid node public key in payload")
+		}
+
+		if DefaultLedger.Arbitrators.IsCRCArbitrator(info.NodePublicKey) {
+			return errors.New("node public key can't equal with CRC")
+		}
+
+		if DefaultLedger.Arbitrators.IsCRCArbitrator(info.OwnerPublicKey) {
+			return errors.New("owner public key can't equal with CRC")
+		}
+	}
 	return nil
 }
 
