@@ -84,7 +84,6 @@ Default config for `testnet`
       "EmergencyInactivePenalty": 50000000000,  // EmergencyInactivePenalty defines the penalty amount the emergency producer takes.
       "MaxInactiveRounds": 1440,                // MaxInactiveRounds defines the maximum inactive rounds before producer takes penalty.
       "InactivePenalty": 10000000000,           // InactivePenalty defines the penalty amount the producer takes.
-      "InactiveEliminateCount": 12,             // InactiveEliminateCount defines arbitrators count should be eliminated
       "PreConnectOffset": 360                   // PreConnectOffset defines the offset blocks to pre-connect to the block producers.
     },
     "CheckAddressHeight": 88812,   //Before the height will not check that if address is ela address

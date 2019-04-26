@@ -14,6 +14,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos"
 	"github.com/elastos/Elastos.ELA/dpos/account"
+	dlog "github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/dpos/store"
 	"github.com/elastos/Elastos.ELA/elanet"
@@ -140,10 +141,11 @@ func main() {
 
 	var arbitrator *dpos.Arbitrator
 	if act != nil {
+		dcfg := cfg.DPoSConfiguration
+		dlog.Init(dcfg.PrintLevel, dcfg.MaxPerLogSize, dcfg.MaxLogsSize)
 		arbitrator, err = dpos.NewArbitrator(act, dpos.Config{
 			EnableEventLog:    true,
 			EnableEventRecord: false,
-			Params:            &cfg.DPoSConfiguration,
 			ChainParams:       activeNetParams,
 			Arbitrators:       arbiters,
 			Store:             dposStore,
