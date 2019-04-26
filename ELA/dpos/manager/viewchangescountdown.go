@@ -31,11 +31,13 @@ func (c *ViewChangesCountDown) Reset() {
 	c.timeoutRefactor = firstTimeoutFactor
 }
 
-func (c *ViewChangesCountDown) SetEliminated(hash common.Uint256) {
+func (c *ViewChangesCountDown) SetEliminated(hash common.Uint256) bool {
 	if _, ok := c.handledPayloadHashes[hash]; !ok {
 		c.handledPayloadHashes[hash] = struct{}{}
 		c.timeoutRefactor += othersTimeoutFactor
+		return true
 	}
+	return false
 }
 
 func (c *ViewChangesCountDown) IsTimeOut() bool {
