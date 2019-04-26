@@ -139,7 +139,6 @@ func (p *ProposalDispatcher) StartProposal(b *types.Block) {
 		Result:       false,
 	}
 	p.cfg.EventMonitor.OnProposalArrived(&proposalEvent)
-	p.eventAnalyzer.IncreaseLastConsensusViewCount()
 	p.acceptProposal(proposal)
 }
 
@@ -178,7 +177,6 @@ func (p *ProposalDispatcher) FinishProposal() bool {
 		Result:    result,
 	}
 	p.cfg.EventMonitor.OnProposalFinished(&proposalEvent)
-	p.eventAnalyzer.IncreaseLastConsensusViewCount()
 	p.FinishConsensus()
 
 	return true
@@ -608,7 +606,7 @@ func (p *ProposalDispatcher) acceptProposal(d *payload.DPOSProposal) {
 	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(vote.Signer),
 		ReceivedTime: p.cfg.TimeSource.AdjustedTime(), Result: true, RawData: vote}
 	p.cfg.EventMonitor.OnVoteArrived(&voteEvent)
-	p.eventAnalyzer.AppendConsensusVoteEvent(&voteEvent)
+	p.eventAnalyzer.AppendConsensusVote(vote)
 }
 
 func (p *ProposalDispatcher) rejectProposal(d *payload.DPOSProposal) {
@@ -636,7 +634,7 @@ func (p *ProposalDispatcher) rejectProposal(d *payload.DPOSProposal) {
 	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(vote.Signer),
 		ReceivedTime: p.cfg.TimeSource.AdjustedTime(), Result: false, RawData: vote}
 	p.cfg.EventMonitor.OnVoteArrived(&voteEvent)
-	p.eventAnalyzer.AppendConsensusVoteEvent(&voteEvent)
+	p.eventAnalyzer.AppendConsensusVote(vote)
 }
 
 func (p *ProposalDispatcher) setProcessingProposal(d *payload.DPOSProposal) {

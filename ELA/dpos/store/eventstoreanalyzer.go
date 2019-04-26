@@ -4,34 +4,33 @@ import (
 	"sort"
 
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/dpos/log"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 )
 
 type EventStoreAnalyzerConfig struct {
-	Store                  IDposStore
-	Arbitrators            state.Arbitrators
+	Store       IDposStore
+	Arbitrators state.Arbitrators
 }
 
 type EventStoreAnalyzer struct {
 	cfg EventStoreAnalyzerConfig
 
 	viewCount  uint32
-	voteEvents map[common.Uint256]*log.VoteEvent
+	voteEvents map[common.Uint256]string // vote hash as key, signer as value
 }
 
-func (e *EventStoreAnalyzer) ParseInactiveArbitrators() (
-	result []string) {
+func (e *EventStoreAnalyzer) ParseInactiveArbitrators() (result []string) {
 
 	viewCount := e.GetLastConsensusViewCount()
 
 	arbitratorsVoteCount := map[string]int{}
-	totalVotes := e.GetLastConsensusVoteEvents()
+	totalVotes := e.GetLastConsensusVoteSignerHistory()
 	for _, v := range totalVotes {
-		if _, exists := arbitratorsVoteCount[v.Signer]; exists {
-			arbitratorsVoteCount[v.Signer] += 1
+		if _, exists := arbitratorsVoteCount[v]; exists {
+			arbitratorsVoteCount[v] += 1
 		} else {
-			arbitratorsVoteCount[v.Signer] = 0
+			arbitratorsVoteCount[v] = 0
 		}
 	}
 
@@ -77,23 +76,23 @@ func (e *EventStoreAnalyzer) IncreaseLastConsensusViewCount() {
 	e.viewCount++
 }
 
-func (e *EventStoreAnalyzer) AppendConsensusVoteEvent(event *log.VoteEvent) {
-	if event.RawData != nil {
-		e.voteEvents[event.RawData.Hash()] = event
+func (e *EventStoreAnalyzer) AppendConsensusVote(vote *payload.DPOSProposalVote) {
+	if vote != nil {
+		e.voteEvents[vote.Hash()] = common.BytesToHexString(vote.Signer)
 	}
 }
 
 func (e *EventStoreAnalyzer) Clear() {
 	e.viewCount = 0
-	e.voteEvents = map[common.Uint256]*log.VoteEvent{}
+	e.voteEvents = map[common.Uint256]string{}
 }
 
 func (e *EventStoreAnalyzer) GetLastConsensusViewCount() uint32 {
 	return e.viewCount
 }
 
-func (e *EventStoreAnalyzer) GetLastConsensusVoteEvents() []*log.VoteEvent {
-	result := make([]*log.VoteEvent, 0)
+func (e *EventStoreAnalyzer) GetLastConsensusVoteSignerHistory() []string {
+	result := make([]string, 0, len(e.voteEvents))
 	for _, v := range e.voteEvents {
 		result = append(result, v)
 	}
@@ -104,6 +103,6 @@ func NewEventStoreAnalyzer(cfg EventStoreAnalyzerConfig) *EventStoreAnalyzer {
 	return &EventStoreAnalyzer{
 		cfg:        cfg,
 		viewCount:  0,
-		voteEvents: map[common.Uint256]*log.VoteEvent{},
+		voteEvents: map[common.Uint256]string{},
 	}
 }
