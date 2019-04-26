@@ -25,7 +25,6 @@ import (
 type Config struct {
 	EnableEventLog    bool
 	EnableEventRecord bool
-	Params            *config.DPoSConfiguration
 	Arbitrators       state.Arbitrators
 	Store             store.IDposStore
 	Server            elanet.Server
@@ -141,9 +140,6 @@ func (a *Arbitrator) OnCipherAddr(pid peer.PID, cipher []byte) {
 }
 
 func NewArbitrator(account account.Account, cfg Config) (*Arbitrator, error) {
-	log.Init(cfg.Params.PrintLevel, cfg.Params.MaxPerLogSize,
-		cfg.Params.MaxLogsSize)
-
 	medianTime := dtime.NewMedianTime()
 	dposManager := manager.NewManager(manager.DPOSManagerConfig{
 		PublicKey:   account.PublicKeyBytes(),
@@ -180,7 +176,7 @@ func NewArbitrator(account account.Account, cfg Config) (*Arbitrator, error) {
 		TimeSource:  medianTime,
 	})
 
-	consensus := manager.NewConsensus(dposManager, time.Duration(cfg.Params.SignTolerance)*time.Second, dposHandlerSwitch)
+	consensus := manager.NewConsensus(dposManager, cfg.ChainParams.ToleranceDuration, dposHandlerSwitch)
 	proposalDispatcher, illegalMonitor := manager.NewDispatcherAndIllegalMonitor(
 		manager.ProposalDispatcherConfig{
 			EventMonitor: eventMonitor,

@@ -66,8 +66,6 @@
       "EmergencyInactivePenalty": 0,
       "MaxInactiveRounds": 1440,
       "InactivePenalty": 0,
-      "InactiveEliminateCount": 12,
-      "EnableEventRecord": false,
       "PreConnectOffset": 360
     },
     "CheckAddressHeight": 88812,

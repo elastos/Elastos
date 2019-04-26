@@ -1,6 +1,8 @@
 package config
 
 import (
+	"time"
+
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/utils/elalog"
 )
@@ -64,7 +66,7 @@ type DPoSConfiguration struct {
 	IPAddress                string         `json:"IPAddress"`
 	DPoSPort                 uint16         `json:"DPoSPort"`
 	PrintLevel               uint8          `json:"PrintLevel"`
-	SignTolerance            uint64         `json:"SignTolerance"`
+	SignTolerance            time.Duration  `json:"SignTolerance"`
 	MaxLogsSize              int64          `json:"MaxLogsSize"`
 	MaxPerLogSize            int64          `json:"MaxPerLogSize"`
 	OriginArbiters           []string       `json:"OriginArbiters"`
@@ -74,6 +76,5 @@ type DPoSConfiguration struct {
 	EmergencyInactivePenalty common.Fixed64 `json:"EmergencyInactivePenalty"`
 	MaxInactiveRounds        uint32         `json:"MaxInactiveRounds"`
 	InactivePenalty          common.Fixed64 `json:"InactivePenalty"`
-	EnableEventRecord        bool           `json:"EnableEventRecord"`
 	PreConnectOffset         uint32         `json:"PreConnectOffset"`
 }

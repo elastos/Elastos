@@ -158,6 +158,7 @@ var DefaultParams = Params{
 	VoteStartHeight:          290000,
 	CRCOnlyDPOSHeight:        343400,
 	PublicDPOSHeight:         1108812, //fixme edit height later
+	ToleranceDuration:        5 * time.Second,
 	MaxInactiveRounds:        720 * 2,
 	InactivePenalty:          0, //there will be no penalty in this version
 	EmergencyInactivePenalty: 0, //there will be no penalty in this version
@@ -371,6 +372,9 @@ type Params struct {
 
 	// CandidateArbiters defines the number of needed candidate arbiters.
 	CandidateArbiters int
+
+	// ToleranceDuration defines the tolerance duration of the DPoS consensus.
+	ToleranceDuration time.Duration
 
 	// MaxInactiveRounds defines the maximum inactive rounds before producer
 	// takes penalty.

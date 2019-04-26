@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net"
 	"strings"
+	"time"
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
@@ -121,8 +122,9 @@ func loadConfigParams() *config.Configuration {
 	if enableArbiter && ipAddr == "" {
 		panic("arbiter IPAddress must set")
 	}
-	if ip := net.ParseIP(ipAddr); enableArbiter && ip == nil {
-		panic(fmt.Sprintf("%s not a valid IP address", ipAddr))
+	cfg.DPoSConfiguration.IPAddress, err = hostToIP(ipAddr)
+	if enableArbiter && err != nil {
+		panic(fmt.Sprintf("invalid IP %s, %s", ipAddr, err))
 	}
 
 	// FIXME we should replace the default value in activeNetParams by the
@@ -153,6 +155,10 @@ func loadConfigParams() *config.Configuration {
 		activeNetParams.CandidateArbiters =
 			cfg.DPoSConfiguration.CandidatesCount
 	}
+	if cfg.DPoSConfiguration.SignTolerance > 0 {
+		activeNetParams.ToleranceDuration =
+			cfg.DPoSConfiguration.SignTolerance * time.Second
+	}
 	if cfg.DPoSConfiguration.MaxInactiveRounds > 0 {
 		activeNetParams.MaxInactiveRounds =
 			cfg.DPoSConfiguration.MaxInactiveRounds
@@ -167,6 +173,25 @@ func loadConfigParams() *config.Configuration {
 	}
 
 	return cfg
+}
+
+// hostToIP parse the host to IP address.
+func hostToIP(host string) (string, error) {
+	// Skip if host is already an IP address.
+	if ip := net.ParseIP(host); ip != nil {
+		return ip.String(), nil
+	}
+
+	// Attempt to look up an IP address associated with the parsed host.
+	ips, err := net.LookupIP(host)
+	if err != nil {
+		return "", err
+	}
+	if len(ips) == 0 {
+		return "", fmt.Errorf("no addresses found for %s", host)
+	}
+
+	return ips[0].String(), nil
 }
 
 // mainNetDefault set the default parameters for main net usage.
