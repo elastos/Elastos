@@ -483,7 +483,7 @@ func (b *BlockChain) checkTransactionOutput(blockHeight uint32,
 			}
 		}
 	}
-	if specialOutputCount > 1 {
+	if b.GetHeight() >= b.chainParams.PublicDPOSHeight && specialOutputCount > 1 {
 		return errors.New("special output count should less equal than 1")
 	}
 
