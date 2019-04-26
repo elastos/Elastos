@@ -513,8 +513,9 @@ func (d *DPOSManager) clearInactiveData(p *payload.InactiveArbitrators) {
 	d.illegalMonitor.AddEvidence(p)
 	d.illegalMonitor.SetInactiveArbitratorsTxHash(p.Hash())
 	d.dispatcher.currentInactiveArbitratorTx = nil
-	d.dispatcher.eventAnalyzer.Clear()
-	d.dispatcher.inactiveCountDown.SetEliminated(p.Hash())
+	if d.dispatcher.inactiveCountDown.SetEliminated(p.Hash()) {
+		d.dispatcher.eventAnalyzer.Clear()
+	}
 
 	var blocks []*types.Block
 	for _, v := range d.blockCache.ConsensusBlocks {
