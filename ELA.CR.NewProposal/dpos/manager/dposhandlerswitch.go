@@ -102,13 +102,13 @@ func (h *DPOSHandlerSwitch) ProcessProposal(id peer.PID, p *payload.DPOSProposal
 		Result:       false,
 	}
 	h.cfg.Monitor.OnProposalArrived(&proposalEvent)
-	h.proposalDispatcher.eventAnalyzer.IncreaseLastConsensusViewCount()
 
 	return handled
 }
 
 func (h *DPOSHandlerSwitch) ChangeView(firstBlockHash *common.Uint256) {
 	h.currentHandler.ChangeView(firstBlockHash)
+	h.proposalDispatcher.eventAnalyzer.IncreaseLastConsensusViewCount()
 
 	viewEvent := log.ViewEvent{
 		OnDutyArbitrator: common.BytesToHexString(h.consensus.GetOnDutyArbitrator()),
@@ -127,6 +127,7 @@ func (h *DPOSHandlerSwitch) TryStartNewConsensus(b *types.Block) bool {
 
 	if h.proposalDispatcher.IsProcessingBlockEmpty() {
 		if h.currentHandler.TryStartNewConsensus(b) {
+			h.proposalDispatcher.eventAnalyzer.IncreaseLastConsensusViewCount()
 			c := log.ConsensusEvent{StartTime: h.cfg.TimeSource.AdjustedTime(), Height: b.Height,
 				RawData: &b.Header}
 			h.cfg.Monitor.OnConsensusStarted(&c)
@@ -134,7 +135,6 @@ func (h *DPOSHandlerSwitch) TryStartNewConsensus(b *types.Block) bool {
 		}
 	}
 
-	//todo record block into database
 	return false
 }
 
@@ -144,7 +144,7 @@ func (h *DPOSHandlerSwitch) ProcessAcceptVote(id peer.PID, p *payload.DPOSPropos
 	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(p.Signer),
 		ReceivedTime: h.cfg.TimeSource.AdjustedTime(), Result: true, RawData: p}
 	h.cfg.Monitor.OnVoteArrived(&voteEvent)
-	h.proposalDispatcher.eventAnalyzer.AppendConsensusVoteEvent(&voteEvent)
+	h.proposalDispatcher.eventAnalyzer.AppendConsensusVote(p)
 
 	return succeed, finished
 }
@@ -155,7 +155,7 @@ func (h *DPOSHandlerSwitch) ProcessRejectVote(id peer.PID, p *payload.DPOSPropos
 	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(p.Signer),
 		ReceivedTime: h.cfg.TimeSource.AdjustedTime(), Result: false, RawData: p}
 	h.cfg.Monitor.OnVoteArrived(&voteEvent)
-	h.proposalDispatcher.eventAnalyzer.AppendConsensusVoteEvent(&voteEvent)
+	h.proposalDispatcher.eventAnalyzer.AppendConsensusVote(p)
 
 	return succeed, finished
 }
