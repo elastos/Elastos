@@ -46,7 +46,17 @@ func (a *Arbitrator) Start() {
 	a.network.Start()
 
 	go a.changeViewLoop()
-	go a.dposManager.Recover()
+	go a.recover()
+}
+
+func (a *Arbitrator) recover() {
+	for {
+		if a.cfg.Server.IsCurrent() {
+			a.network.recoverChan <- true
+			return
+		}
+		time.Sleep(time.Second)
+	}
 }
 
 func (a *Arbitrator) Stop() error {
@@ -93,7 +103,7 @@ func (a *Arbitrator) OnInactiveArbitratorsTxReceived(
 					"arbitrators error: ", err)
 				return
 			}
-			a.dposManager.OnBadNetwork()
+			go a.recover()
 		}
 	} else {
 		a.network.PostInactiveArbitersTask(p)

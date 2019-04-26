@@ -126,7 +126,10 @@ func (a *arbitrators) ProcessSpecialTxPayload(p types.Payload,
 		a.illegalBlocksPayloadHashes[obj.Hash()] = nil
 		a.mtx.Unlock()
 	case *payload.InactiveArbitrators:
-		a.AddInactivePayload(obj)
+		if !a.AddInactivePayload(obj) {
+			log.Debug("[ProcessSpecialTxPayload] duplicated payload")
+			return nil
+		}
 	default:
 		return errors.New("[ProcessSpecialTxPayload] invalid payload type")
 	}
@@ -860,10 +863,15 @@ func (i *inactiveState) InactiveModeSwitch(height uint32,
 	return false, false
 }
 
-func (i *inactiveState) AddInactivePayload(p *payload.InactiveArbitrators) {
+func (i *inactiveState) AddInactivePayload(p *payload.InactiveArbitrators) bool {
+	hash := p.Hash()
 	i.mtx.Lock()
-	i.inactiveTxs[p.Hash()] = nil
+	_, exist := i.inactiveTxs[hash]
+	if !exist {
+		i.inactiveTxs[hash] = nil
+	}
 	i.mtx.Unlock()
+	return !exist
 }
 
 func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
