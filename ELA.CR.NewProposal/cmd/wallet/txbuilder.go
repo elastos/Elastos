@@ -99,7 +99,7 @@ func getSender(walletPath string, from string) (*account.AccountData, error) {
 	if from == "" {
 		from = mainAccount.Address
 		sender = mainAccount
-	} else if from != mainAccount.Address {
+	} else {
 		storeAccounts, err := account.GetWalletAccountData(walletPath)
 		if err != nil {
 			return nil, err
