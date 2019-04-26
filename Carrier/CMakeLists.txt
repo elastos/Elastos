@@ -40,6 +40,7 @@ endif()
 
 if(ENABLE_TESTS)
     add_subdirectory(tests/apitests)
+    add_subdirectory(tests/offmsg)
 endif()
 
 if(ENABLE_DOCS AND (${CMAKE_SYSTEM_NAME} STREQUAL "Linux"))
