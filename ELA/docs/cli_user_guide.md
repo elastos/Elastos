@@ -47,13 +47,27 @@ The `rpcpassword` parameter is used to set the password of the BasicAuth. The de
 For example, getting the current height of blockchain.
 
 ```
-./ela-cli --rpcport 20336 --rpcuser user1 --rpcpassword pwd1 info getcurrentheight
+./ela-cli --rpcport 20336 --rpcuser user123 --rpcpassword pass123 info getcurrentheight
 ```
 
 Result:
 
 ```
 301
+```
+
+You can configure an `ela-cli.sh` script to simplify the commands.
+
+```
+#!/bin/bash
+
+./ela-cli --rpcport 20336 --rpcuser user123 --rpcpassword pass123 $*
+```
+
+Getting the current height of blockchain.
+
+```
+./ela-cli.sh info getcurrentheight
 ```
 
 
