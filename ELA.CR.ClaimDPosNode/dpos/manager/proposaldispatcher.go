@@ -2,7 +2,7 @@ package manager
 
 import (
 	"bytes"
-	"errors"
+
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
@@ -52,7 +52,7 @@ type ProposalDispatcher struct {
 }
 
 func (p *ProposalDispatcher) RequestAbnormalRecovering() {
-	height := p.CurrentHeight()
+	height := blockchain.DefaultLedger.Blockchain.GetHeight()
 	msgItem := &dmsg.RequestConsensus{Height: height}
 	log.Info("[RequestAbnormalRecovering] broadcast message to peers")
 	p.cfg.Network.BroadcastMessage(msgItem)
@@ -324,18 +324,15 @@ func (p *ProposalDispatcher) FinishConsensus() {
 		defer log.Info("[FinishConsensus] end")
 
 		p.cfg.Manager.changeOnDuty()
-		c := log.ConsensusEvent{EndTime: p.cfg.TimeSource.AdjustedTime(), Height: p.CurrentHeight()}
+		height := blockchain.DefaultLedger.Blockchain.GetHeight()
+		c := log.ConsensusEvent{EndTime: p.cfg.TimeSource.AdjustedTime(), Height: height}
 		p.cfg.EventMonitor.OnConsensusFinished(&c)
 		p.cfg.Consensus.SetReady()
 		p.CleanProposals(false)
 	}
 }
 
-func (p *ProposalDispatcher) CollectConsensusStatus(height uint32, status *dmsg.ConsensusStatus) error {
-	if height > p.CurrentHeight() {
-		return errors.New("Requesting height greater than current processing height")
-	}
-
+func (p *ProposalDispatcher) CollectConsensusStatus(status *dmsg.ConsensusStatus) error {
 	status.AcceptVotes = make([]payload.DPOSProposalVote, 0, len(p.acceptVotes))
 	for _, v := range p.acceptVotes {
 		status.AcceptVotes = append(status.AcceptVotes, *v)
@@ -385,17 +382,6 @@ func (p *ProposalDispatcher) RecoverFromConsensusStatus(status *dmsg.ConsensusSt
 	}
 
 	return nil
-}
-
-func (p *ProposalDispatcher) CurrentHeight() uint32 {
-	var height uint32
-	currentBlock := p.GetProcessingBlock()
-	if currentBlock != nil {
-		height = currentBlock.Height
-	} else {
-		height = blockchain.DefaultLedger.Blockchain.GetHeight()
-	}
-	return height
 }
 
 func (p *ProposalDispatcher) IsViewChangedTimeOut() bool {

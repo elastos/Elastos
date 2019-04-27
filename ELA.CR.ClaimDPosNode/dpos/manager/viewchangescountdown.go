@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 )
@@ -41,7 +42,7 @@ func (c *ViewChangesCountDown) SetEliminated(hash common.Uint256) bool {
 }
 
 func (c *ViewChangesCountDown) IsTimeOut() bool {
-	if c.dispatcher.CurrentHeight() <
+	if blockchain.DefaultLedger.Blockchain.GetHeight()+1 <
 		c.dispatcher.cfg.ChainParams.PublicDPOSHeight || c.arbitrators.IsInactiveMode() {
 		return false
 	}
