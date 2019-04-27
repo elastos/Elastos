@@ -25,6 +25,7 @@ type Arbitrators interface {
 	GetArbitersRoundReward() map[common.Uint168]common.Fixed64
 	GetFinalRoundChange() common.Fixed64
 	IsInactiveMode() bool
+	IsUnderstaffedMode() bool
 
 	GetCRCArbiters() [][]byte
 	GetCRCProducer(publicKey []byte) *Producer

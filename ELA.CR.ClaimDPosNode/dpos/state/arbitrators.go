@@ -40,16 +40,13 @@ const (
 	normalChange = ChangeType(0x02)
 )
 
-type inactiveState struct {
-	mtx              sync.Mutex
-	inactiveMode     bool
-	inactiveTxs      map[common.Uint256]interface{}
-	inactivateHeight uint32
-}
+var (
+	ErrInsufficientProducer = errors.New("producers count less than min arbitrators count")
+)
 
 type arbitrators struct {
 	*State
-	*inactiveState
+	*degradation
 	chainParams   *config.Params
 	bestHeight    func() uint32
 	bestBlock     func() (*types.Block, error)
@@ -217,6 +214,16 @@ func (a *arbitrators) ForceChange(height uint32) error {
 	return nil
 }
 
+func (a *arbitrators) tryHandleError(height uint32, err error) error {
+	if err == ErrInsufficientProducer {
+		log.Warn("found error: ", err, ", degrade to CRC only state")
+		a.TrySetUnderstaffed(height)
+		return nil
+	} else {
+		return err
+	}
+}
+
 func (a *arbitrators) NormalChange(height uint32) error {
 	if err := a.changeCurrentArbitrators(); err != nil {
 		log.Warn("[NormalChange] change current arbiters error: ", err)
@@ -356,7 +363,7 @@ func (a *arbitrators) distributeDPOSReward(reward common.Fixed64) error {
 }
 
 func (a *arbitrators) DecreaseChainHeight(height uint32) error {
-	a.inactiveState.RollbackTo(height)
+	a.degradation.RollbackTo(height)
 
 	heightOffset := int(a.history.height - height)
 	if a.dutyIndex == 0 || a.dutyIndex < heightOffset {
@@ -583,9 +590,11 @@ func (a *arbitrators) changeCurrentArbitrators() error {
 }
 
 func (a *arbitrators) updateNextArbitrators(height uint32) error {
-	_, recover := a.InactiveModeSwitch(height, a.IsAbleToRecover)
+	_, recover := a.InactiveModeSwitch(height, a.IsAbleToRecoverFromInactiveMode)
 	if recover {
 		a.LeaveEmergency()
+	} else {
+		a.TryLeaveUnderStaffed(a.IsAbleToRecoverFromUnderstaffedState)
 	}
 
 	a.nextArbitrators = make([][]byte, 0)
@@ -595,14 +604,19 @@ func (a *arbitrators) updateNextArbitrators(height uint32) error {
 
 	count := 0
 
-	if !a.IsInactiveMode() {
+	if !a.IsInactiveMode() && !a.IsUnderstaffedMode() {
 		count = a.chainParams.GeneralArbiters
-		producers, err := a.GetNormalArbitratorsDesc(height, count, a.State.GetActiveProducers())
+		producers, err := a.GetNormalArbitratorsDesc(height, count,
+			a.State.GetActiveProducers())
 		if err != nil {
-			return err
-		}
-		for _, v := range producers {
-			a.nextArbitrators = append(a.nextArbitrators, v)
+			if err := a.tryHandleError(height, err); err != nil {
+				return err
+			}
+			count = 0
+		} else {
+			for _, v := range producers {
+				a.nextArbitrators = append(a.nextArbitrators, v)
+			}
 		}
 	}
 
@@ -643,8 +657,8 @@ func (a *arbitrators) GetNormalArbitratorsDesc(height uint32,
 	arbitratorsCount int, producers []*Producer) ([][]byte, error) {
 	// main version >= H2
 	if height >= a.State.chainParams.PublicDPOSHeight {
-		if len(producers) < arbitratorsCount/2+1 {
-			return nil, errors.New("producers count less than min arbitrators count")
+		if len(producers) < arbitratorsCount {
+			return nil, ErrInsufficientProducer
 		}
 
 		sort.Slice(producers, func(i, j int) bool {
@@ -776,7 +790,7 @@ func (a *arbitrators) getBlockDPOSReward(block *types.Block) common.Fixed64 {
 		totalTxFx += tx.Fee
 	}
 
-	return common.Fixed64(math.Ceil(float64(totalTxFx+
+	return common.Fixed64(math.Ceil(float64(totalTxFx +
 		a.chainParams.RewardPerBlock) * 0.35))
 }
 
@@ -811,64 +825,6 @@ func (a *arbitrators) getArbitersInfoWithoutOnduty(title string, arbiters [][]by
 	}
 	info += "----- " + strings.Repeat("-", 66) + " " + strings.Repeat("-", 21)
 	return info, params
-}
-
-func (i *inactiveState) IsInactiveMode() bool {
-	i.mtx.Lock()
-	result := i.inactiveMode
-	i.mtx.Unlock()
-
-	return result
-}
-
-func (i *inactiveState) RollbackTo(height uint32) {
-	i.mtx.Lock()
-	defer i.mtx.Unlock()
-
-	// if rollback to the height before inactive mode was set,
-	// then reset inactive related state
-	if height < i.inactivateHeight {
-		i.inactivateHeight = 0
-		i.inactiveMode = false
-	}
-}
-
-func (i *inactiveState) InactiveModeSwitch(height uint32,
-	isAbleToRecover func() bool) (bool, bool) {
-
-	i.mtx.Lock()
-	if len(i.inactiveTxs) >= MaxNormalInactiveChangesCount {
-		i.inactiveMode = true
-		i.inactivateHeight = height
-		i.mtx.Unlock()
-
-		return true, false
-	}
-
-	isInactive := i.inactiveMode
-	i.mtx.Unlock()
-
-	if isInactive && isAbleToRecover() {
-		i.mtx.Lock()
-		i.inactiveMode = false
-		i.inactivateHeight = 0
-		i.mtx.Unlock()
-
-		return false, true
-	}
-
-	return false, false
-}
-
-func (i *inactiveState) AddInactivePayload(p *payload.InactiveArbitrators) bool {
-	hash := p.Hash()
-	i.mtx.Lock()
-	_, exist := i.inactiveTxs[hash]
-	if !exist {
-		i.inactiveTxs[hash] = nil
-	}
-	i.mtx.Unlock()
-	return !exist
 }
 
 func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
@@ -934,10 +890,11 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
 		finalRoundChange:            common.Fixed64(0),
 		arbitersRoundReward:         nil,
 		illegalBlocksPayloadHashes:  make(map[common.Uint256]interface{}),
-		inactiveState: &inactiveState{
-			inactiveTxs:      make(map[common.Uint256]interface{}),
-			inactivateHeight: 0,
-			inactiveMode:     false,
+		degradation: &degradation{
+			inactiveTxs:       make(map[common.Uint256]interface{}),
+			inactivateHeight:  0,
+			understaffedSince: 0,
+			state:             Normal,
 		},
 	}
 	a.State = NewState(chainParams, a.GetArbitrators)
