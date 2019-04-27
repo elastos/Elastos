@@ -31,7 +31,8 @@ type RpcConfiguration struct {
 type Configuration struct {
 	ActiveNet          string            `json:"ActiveNet"`
 	Magic              uint32            `json:"Magic"`
-	SeedList           []string          `json:"SeedList"`
+	DNSSeeds           []string          `json:"DNSSeeds"`
+	DisableDNS         bool              `json:"DisableDNS"`
 	PermanentPeers     []string          `json:"PermanentPeers"`
 	HttpInfoPort       uint16            `json:"HttpInfoPort"`
 	HttpInfoStart      bool              `json:"HttpInfoStart"`
