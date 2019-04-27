@@ -591,10 +591,10 @@ func (d *DPOSManager) processHeartBeat(id dpeer.PID, height uint32) {
 }
 
 func (d *DPOSManager) tryRequestBlocks(id dpeer.PID, sourceHeight uint32) bool {
-	height := d.dispatcher.CurrentHeight()
+	height := blockchain.DefaultLedger.Blockchain.GetHeight()
 	if sourceHeight > height {
 		m := &dmsg.GetBlocks{
-			StartBlockHeight: height,
+			StartBlockHeight: height + 1,
 			EndBlockHeight:   sourceHeight}
 		d.network.SendMessageToPeer(id, m)
 
