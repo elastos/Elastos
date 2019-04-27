@@ -9,6 +9,7 @@
 
 #include <sqlite3.h>
 #include <boost/filesystem.hpp>
+#include <boost/thread/mutex.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -63,6 +64,7 @@ namespace Elastos {
 
 		private:
 			sqlite3 *_dataBasePtr;
+			mutable boost::mutex _lockMutex;
 		};
 
 	}
