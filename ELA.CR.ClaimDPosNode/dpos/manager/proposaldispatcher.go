@@ -258,7 +258,7 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 	currentBlock, ok := p.cfg.Manager.GetBlockCache().TryGetValue(d.BlockHash)
 	if !ok || !p.cfg.Consensus.IsRunning() {
 		p.pendingProposals[d.Hash()] = d
-		p.tryGetBlock(id, d.BlockHash)
+		p.cfg.Manager.OnInv(id, d.BlockHash)
 		log.Info("received pending proposal")
 		return true, false
 	} else {
@@ -280,11 +280,6 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 	}
 
 	return true, true
-}
-
-func (p *ProposalDispatcher) tryGetBlock(id peer.PID, blockHash common.Uint256) error {
-	getBlock := dmsg.NewGetBlock(blockHash)
-	return p.cfg.Network.SendMessageToPeer(id, getBlock)
 }
 
 func (p *ProposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
