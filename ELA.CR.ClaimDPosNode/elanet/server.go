@@ -913,12 +913,8 @@ func NewServer(dataDir string, cfg *Config) (*server, error) {
 	}
 
 	svrCfg := svr.NewDefaultConfig(
-		params.Magic,
-		pact.DPOSStartVersion,
-		uint64(services),
-		params.DefaultPort,
-		params.SeedList,
-		params.ListenAddrs,
+		params.Magic, pact.DPOSStartVersion, uint64(services),
+		params.DefaultPort, params.DNSSeeds, params.ListenAddrs,
 		nil, nil, makeEmptyMessage,
 		func() uint64 { return uint64(cfg.Chain.GetHeight()) },
 	)

@@ -23,12 +23,13 @@ Default config for `testnet`
 {
   "Configuration": {
     "ActiveNet": "mainnet",  // Network type. Choices: mainnet testnet and regnet
-    "Magic": 20180312,       // Magic Number：Segregation for different subnet. No matter the port number, as long as the magic number not matching, nodes cannot talk to each others
-    "SeedList": [            // SeedList. Other nodes will look up this seed list to connect to any of those seed in order to get all nodes addresses
-      "127.0.0.1:30338"
+    "Magic": 2017001,        // Magic Number：Segregation for different subnet. No matter the port number, as long as the magic number not matching, nodes cannot talk to each others
+    "DNSSeeds": [            // DNSSeeds. DNSSeeds defines a list of DNS seeds for the network that are used to discover peers.
+      "node-mainnet-001.elastos.org:20338"
     ],
+    "DisableDNS": false,     // DisableDNS. Disable the DNS seeding function.
     "PermanentPeers": [      // PermanentPeers. Other nodes will look up this seed list to connect to any of those seed in order to get all nodes addresses, if lost connection will try to connect again
-      "127.0.0.1:40338"    
+      "127.0.0.1:20338"
     ],
     "HttpInfoPort": 20333,        // Local web portal port number. User can go to http://127.0.0.1:10333/info to access the web UI
     "HttpInfoStart": true,        // Whether to enable the HTTPInfo service

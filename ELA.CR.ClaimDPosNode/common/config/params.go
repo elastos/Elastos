@@ -103,19 +103,12 @@ var DefaultParams = Params{
 	Magic:       2017001,
 	DefaultPort: 20338,
 
-	SeedList: []string{
+	DNSSeeds: []string{
 		"node-mainnet-002.elastos.org:20338",
 		"node-mainnet-003.elastos.org:20338",
 		"node-mainnet-004.elastos.org:20338",
+		"node-mainnet-005.elastos.org:20338",
 		"node-mainnet-006.elastos.org:20338",
-		"node-mainnet-007.elastos.org:20338",
-		"node-mainnet-014.elastos.org:20338",
-		"node-mainnet-015.elastos.org:20338",
-		"node-mainnet-016.elastos.org:20338",
-		"node-mainnet-017.elastos.org:20338",
-		"node-mainnet-022.elastos.org:20338",
-		"node-mainnet-021.elastos.org:20338",
-		"node-mainnet-023.elastos.org:20338",
 	},
 
 	Foundation:   mainNetFoundation,
@@ -173,13 +166,10 @@ func (p *Params) TestNet() *Params {
 	copy.Magic = 2018101
 	copy.DefaultPort = 21338
 
-	copy.SeedList = []string{
+	copy.DNSSeeds = []string{
 		"node-testnet-002.elastos.org:21338",
 		"node-testnet-003.elastos.org:21338",
 		"node-testnet-004.elastos.org:21338",
-		"node-testnet-005.elastos.org:21338",
-		"node-testnet-006.elastos.org:21338",
-		"node-testnet-007.elastos.org:21338",
 	}
 
 	copy.Foundation = testNetFoundation
@@ -221,13 +211,10 @@ func (p *Params) RegNet() *Params {
 	copy.Magic = 2018201
 	copy.DefaultPort = 22338
 
-	copy.SeedList = []string{
+	copy.DNSSeeds = []string{
 		"node-regtest-102.eadd.co:22338",
 		"node-regtest-103.eadd.co:22338",
 		"node-regtest-104.eadd.co:22338",
-		"node-regtest-105.eadd.co:22338",
-		"node-regtest-106.eadd.co:22338",
-		"node-regtest-107.eadd.co:22338",
 	}
 
 	copy.Foundation = testNetFoundation
@@ -280,8 +267,8 @@ type Params struct {
 	// DefaultPort defines the default peer-to-peer port for the network.
 	DefaultPort uint16
 
-	// SeedList defines a list of seed peers.
-	SeedList []string
+	// DNSSeeds defines a list of DNS seeds for the network to discover peers.
+	DNSSeeds []string
 
 	// The interface/port to listen for connections.
 	ListenAddrs []string
