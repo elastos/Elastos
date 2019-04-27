@@ -114,7 +114,7 @@ func (h *DPOSHandlerSwitch) ChangeView(firstBlockHash *common.Uint256) {
 		OnDutyArbitrator: common.BytesToHexString(h.consensus.GetOnDutyArbitrator()),
 		StartTime:        h.cfg.TimeSource.AdjustedTime(),
 		Offset:           h.consensus.GetViewOffset(),
-		Height:           h.proposalDispatcher.CurrentHeight(),
+		Height:           blockchain.DefaultLedger.Blockchain.GetHeight() + 1,
 	}
 	h.cfg.Monitor.OnViewStarted(&viewEvent)
 }
@@ -162,7 +162,7 @@ func (h *DPOSHandlerSwitch) ProcessRejectVote(id peer.PID, p *payload.DPOSPropos
 
 func (h *DPOSHandlerSwitch) ResponseGetBlocks(id peer.PID, startBlockHeight, endBlockHeight uint32) {
 	//todo limit max height range (endBlockHeight - startBlockHeight)
-	currentHeight := h.proposalDispatcher.CurrentHeight()
+	currentHeight := blockchain.DefaultLedger.Blockchain.GetHeight()
 
 	endHeight := endBlockHeight
 	if currentHeight < endBlockHeight {
@@ -190,15 +190,19 @@ func (h *DPOSHandlerSwitch) RequestAbnormalRecovering() {
 }
 
 func (h *DPOSHandlerSwitch) HelpToRecoverAbnormal(id peer.PID, height uint32) {
-	status := &msg.ConsensusStatus{}
 	log.Info("[HelpToRecoverAbnormal] peer id:", common.BytesToHexString(id[:]))
+	if height > blockchain.DefaultLedger.Blockchain.GetHeight() {
+		log.Error("Requesting height greater than current processing height")
+		return
+	}
 
-	if err := h.consensus.CollectConsensusStatus(height, status); err != nil {
+	status := &msg.ConsensusStatus{}
+	if err := h.consensus.CollectConsensusStatus(status); err != nil {
 		log.Error("Error occurred when collect consensus status from consensus object: ", err)
 		return
 	}
 
-	if err := h.proposalDispatcher.CollectConsensusStatus(height, status); err != nil {
+	if err := h.proposalDispatcher.CollectConsensusStatus(status); err != nil {
 		log.Error("Error occurred when collect consensus status from proposal dispatcher object: ", err)
 		return
 	}
