@@ -372,9 +372,9 @@ func (s *State) IsIllegalProducer(publicKey []byte) bool {
 	return ok
 }
 
-// IsAbleToRecover returns if most of the emergency arbiters have activated
+// IsAbleToRecoverFromInactiveMode returns if most of the emergency arbiters have activated
 // and able to work again
-func (s *State) IsAbleToRecover() bool {
+func (s *State) IsAbleToRecoverFromInactiveMode() bool {
 	activatedNum := 0
 
 	s.mtx.RLock()
@@ -388,6 +388,14 @@ func (s *State) IsAbleToRecover() bool {
 
 	return totalNum == 0 || float64(activatedNum)/float64(totalNum) >
 		MajoritySignRatioNumerator/MajoritySignRatioDenominator
+}
+
+// IsAbleToRecoverFromInactiveMode returns if there are enough active arbiters
+func (s *State) IsAbleToRecoverFromUnderstaffedState() bool {
+	s.mtx.RLock()
+	result := len(s.activityProducers) >= s.chainParams.GeneralArbiters
+	s.mtx.RUnlock()
+	return result
 }
 
 // LeaveEmergency will reset emergencyInactiveArbiters variable

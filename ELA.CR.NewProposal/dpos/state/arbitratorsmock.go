@@ -48,6 +48,10 @@ type ArbitratorsMock struct {
 	InactiveMode                bool
 }
 
+func (a *ArbitratorsMock) IsUnderstaffedMode() bool {
+	return false
+}
+
 func (a *ArbitratorsMock) IsInactiveMode() bool {
 	return a.InactiveMode
 }
