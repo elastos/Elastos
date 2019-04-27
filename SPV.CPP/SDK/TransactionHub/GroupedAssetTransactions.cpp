@@ -713,7 +713,7 @@ namespace Elastos {
 				_parent->SetBlockHeight(blockHeight);
 
 			for (i = 0; i < txHashes.size(); i++) {
-				const TransactionPtr &tx = GetExistTransaction(txHashes[i]);
+				const TransactionPtr tx = GetExistTransaction(txHashes[i]);
 				if (tx == nullptr || (tx->GetBlockHeight() == blockHeight && tx->GetTimestamp() == timestamp))
 					continue;
 
@@ -727,7 +727,7 @@ namespace Elastos {
 
 				if (WalletContainsTx(tx)) {
 					for (size_t k = _transactions.size(); k > 0; k--) {
-						if (_transactions[i]->IsEqual(tx.get())) {
+						if (_transactions[k - 1]->IsEqual(tx.get())) {
 							_transactions.erase(_transactions.begin() + k - 1);
 							InsertTx(tx);
 							break;
