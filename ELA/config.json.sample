@@ -2,7 +2,8 @@
   "Configuration": {
     "ActiveNet": "main",
     "Magic": 2017001,
-    "SeedList": [
+    "DisableDNS": false,
+    "PermanentPeers": [
       "127.0.0.1:20338"
     ],
     "HttpInfoPort": 20333,

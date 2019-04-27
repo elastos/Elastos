@@ -91,16 +91,16 @@ func setupNode() *cli.App {
 func setupConfig(c *cli.Context) {
 	configPath := c.String("conf")
 	var err error
-	fileConfig, err := loadConfigFile(configPath)
+	file, err := loadConfigFile(configPath)
 	if err != nil {
 		if c.IsSet("conf") {
 			cmdcom.PrintErrorMsg(err.Error())
 			os.Exit(1)
 		}
-		fileConfig = &defaultConfig
+		file = &defaultConfig
 	}
 
-	cfg, err = loadConfigParams(fileConfig)
+	cfg, err = loadConfigParams(file)
 	if err != nil {
 		cmdcom.PrintErrorMsg(err.Error())
 		os.Exit(1)

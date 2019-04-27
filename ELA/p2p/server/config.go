@@ -30,8 +30,8 @@ type Config struct {
 	// Services represent which services you are supporting.
 	Services uint64
 
-	// SeedPeers are the peers to connect with at startup.
-	SeedPeers []string
+	// DNSSeeds defines a list of DNS seeds for the network to discover peers.
+	DNSSeeds []string
 
 	// PermanentPeers are the peers need to be connected permanently.
 	PermanentPeers []string
@@ -105,7 +105,7 @@ func (cfg *Config) normalize() {
 
 	// Add default port to all seed peer addresses if needed and remove
 	// duplicate addresses.
-	cfg.SeedPeers = normalizeAddresses(cfg.SeedPeers, defaultPort)
+	cfg.DNSSeeds = normalizeAddresses(cfg.DNSSeeds, defaultPort)
 
 	// Add default port to all listener addresses if needed and remove
 	// duplicate addresses.
@@ -191,7 +191,7 @@ func NewDefaultConfig(
 		MagicNumber:      magic,
 		ProtocolVersion:  pver,
 		Services:         services,
-		SeedPeers:        seeds,
+		DNSSeeds:         seeds,
 		ListenAddrs:      listenAddrs,
 		ExternalIPs:      nil,
 		Upnp:             false,
