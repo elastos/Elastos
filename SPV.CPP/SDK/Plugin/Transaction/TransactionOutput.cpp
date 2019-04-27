@@ -251,7 +251,11 @@ namespace Elastos {
 
 		void TransactionOutput::FromJson(const nlohmann::json &j) {
 
-			_amount.setDec(j["Amount"].get<std::string>());
+			if (j["Amount"].is_number()) {
+				_amount.setWord(j["Amount"].get<uint64_t>());
+			} else if (j["Amount"].is_string()) {
+				_amount.setDec(j["Amount"].get<std::string>());
+			}
 			_assetId.SetHex(j["AssetId"].get<std::string>());
 			_outputLock = j["OutputLock"].get<uint32_t>();
 			_programHash.SetHex(j["ProgramHash"].get<std::string>());

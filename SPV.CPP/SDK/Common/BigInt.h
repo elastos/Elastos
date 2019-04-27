@@ -12,6 +12,7 @@
 #ifndef __ELASTOS_SDK_BIGINT_H__
 #define __ELASTOS_SDK_BIGINT_H__
 
+#include <SDK/Common/typedefs.h>
 #include <openssl/crypto.h>
 #include <openssl/bn.h>
 #include <string>

@@ -9,8 +9,6 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-#define SQLITE_MUTEX_LOCK_ON
-
 		TableBase::TableBase(Sqlite *sqlite) :
 				_sqlite(sqlite),
 				_txType(EXCLUSIVE) {

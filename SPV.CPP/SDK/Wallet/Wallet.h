@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef __ELASTOS_SDK_TRANSACTIONHUB_H__
-#define __ELASTOS_SDK_TRANSACTIONHUB_H__
+#ifndef __ELASTOS_SDK_WALLET_H__
+#define __ELASTOS_SDK_WALLET_H__
 
 #include <SDK/Wallet/UTXOList.h>
 #include <SDK/Common/Lockable.h>
@@ -208,4 +208,4 @@ namespace Elastos {
 	}
 }
 
-#endif //__ELASTOS_SDK_TRANSACTIONHUB_H__
+#endif //__ELASTOS_SDK_WALLET_H__

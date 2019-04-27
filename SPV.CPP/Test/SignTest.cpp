@@ -10,6 +10,8 @@
 #include <SDK/Account/SubAccount.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
+#include <SDK/Plugin/Transaction/Program.h>
+#include <SDK/Plugin/Transaction/Transaction.h>
 
 using namespace Elastos::ElaWallet;
 
