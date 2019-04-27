@@ -279,7 +279,7 @@ func (d *DPOSManager) OnBlock(id dpeer.PID, block *types.Block) {
 }
 
 func (d *DPOSManager) OnInv(id dpeer.PID, blockHash common.Uint256) {
-	if _, err := d.getBlock(blockHash); err == nil {
+	if d.isBlockExist(blockHash) {
 		return
 	}
 	if _, ok := d.requestedBlocks[blockHash]; ok {
@@ -290,6 +290,11 @@ func (d *DPOSManager) OnInv(id dpeer.PID, blockHash common.Uint256) {
 	d.limitMap(d.requestedBlocks, maxRequestedBlocks)
 	d.requestedBlocks[blockHash] = struct{}{}
 	d.network.SendMessageToPeer(id, dmsg.NewGetBlock(blockHash))
+}
+
+func (d *DPOSManager) isBlockExist(blockHash common.Uint256) bool {
+	block, _ := d.getBlock(blockHash)
+	return block != nil
 }
 
 func (d *DPOSManager) OnGetBlock(id dpeer.PID, blockHash common.Uint256) {
