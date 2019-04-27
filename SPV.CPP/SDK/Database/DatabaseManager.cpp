@@ -103,24 +103,20 @@ namespace Elastos {
 			return _assetDataStore.PutAsset(iso, asset);
 		}
 
-		bool DatabaseManager::PutAssets(const std::string &iso, const std::vector<AssetEntity> &assets) {
-			return _assetDataStore.PutAssets(iso, assets);
+		bool DatabaseManager::DeleteAsset(const std::string &assetID) {
+			return _assetDataStore.DeleteAsset(assetID);
 		}
 
-		bool DatabaseManager::DeleteAsset(const std::string &iso, const std::string &assetID) {
-			return _assetDataStore.DeleteAsset(iso, assetID);
+		bool DatabaseManager::DeleteAllAssets() {
+			return _assetDataStore.DeleteAllAssets();
 		}
 
-		bool DatabaseManager::DeleteAllAssets(const std::string &iso) {
-			return _assetDataStore.DeleteAllAssets(iso);
+		bool DatabaseManager::GetAssetDetails(const std::string &assetID, AssetEntity &asset) const {
+			return _assetDataStore.GetAssetDetails(assetID, asset);
 		}
 
-		bool DatabaseManager::GetAssetDetails(const std::string &iso, const std::string &assetID, AssetEntity &asset) const {
-			return _assetDataStore.GetAssetDetails(iso, assetID, asset);
-		}
-
-		std::vector<AssetEntity> DatabaseManager::GetAllAssets(const std::string &iso) const {
-			return _assetDataStore.GetAllAssets(iso);
+		std::vector<AssetEntity> DatabaseManager::GetAllAssets() const {
+			return _assetDataStore.GetAllAssets();
 		}
 
 	}

@@ -40,52 +40,48 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			AssetEntity asset;
 			asset.Asset = getRandBytes(100);
 			asset.AssetID = getRandString(64);
-			asset.TxHash = getRandString(64);
 			asset.Amount = rand();
 			assets.push_back(asset);
 			REQUIRE(dm.PutAsset(ISO, asset));
 		}
 
 		// verify save
-		std::vector<AssetEntity> assetsVerify = dm.GetAllAssets(ISO);
+		std::vector<AssetEntity> assetsVerify = dm.GetAllAssets();
 		REQUIRE(assetsVerify.size() > 0);
 		REQUIRE(assetsVerify.size() == assets.size());
 		for (size_t i = 0; i < assets.size(); ++i) {
 			REQUIRE(assets[i].Asset == assetsVerify[i].Asset);
 			REQUIRE(assets[i].AssetID == assetsVerify[i].AssetID);
-			REQUIRE(assets[i].TxHash == assetsVerify[i].TxHash);
 			REQUIRE(assets[i].Amount == assetsVerify[i].Amount);
 		}
 
 		// delete random one
 		int idx = rand() % assetsVerify.size();
-		REQUIRE(dm.DeleteAsset(ISO, assets[idx].AssetID));
+		REQUIRE(dm.DeleteAsset(assets[idx].AssetID));
 
 		// verify deleted
 		AssetEntity assetGot;
-		REQUIRE(!dm.GetAssetDetails(ISO, assets[idx].AssetID, assetGot));
+		REQUIRE(!dm.GetAssetDetails(assets[idx].AssetID, assetGot));
 
 		// verify count after delete
-		assetsVerify = dm.GetAllAssets(ISO);
+		assetsVerify = dm.GetAllAssets();
 		REQUIRE(assetsVerify.size() == assets.size() - 1);
 
 		// update already exist assetID
 		idx = rand() % assetsVerify.size();
-		std::vector<AssetEntity> assetsUpdate;
-		assetsVerify[idx].TxHash = getRandString(64);
+		AssetEntity assetsUpdate;
 		assetsVerify[idx].Amount = rand();
 		assetsVerify[idx].Asset = getRandBytes(200);
-		assetsUpdate.push_back(assetsVerify[idx]);
-		REQUIRE(dm.PutAssets(ISO, assetsUpdate));
+		assetsUpdate = assetsVerify[idx];
+		REQUIRE(dm.PutAsset("Test", assetsUpdate));
 
-		REQUIRE(dm.GetAssetDetails(ISO, assetsVerify[idx].AssetID, assetGot));
-		REQUIRE(assetsVerify[idx].TxHash == assetGot.TxHash);
+		REQUIRE(dm.GetAssetDetails(assetsVerify[idx].AssetID, assetGot));
 		REQUIRE(assetsVerify[idx].Amount == assetGot.Amount);
 		REQUIRE(assetsVerify[idx].Asset == assetGot.Asset);
 
 		// delete all
-		REQUIRE(dm.DeleteAllAssets(ISO));
-		assetsVerify = dm.GetAllAssets(ISO);
+		REQUIRE(dm.DeleteAllAssets());
+		assetsVerify = dm.GetAllAssets();
 		REQUIRE(assetsVerify.size() == 0);
 	}
 

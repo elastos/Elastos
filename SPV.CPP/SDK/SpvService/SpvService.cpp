@@ -121,8 +121,7 @@ namespace Elastos {
 			std::string remark = _wallet->GetRemark(txHash);
 			tx->SetRemark(remark);
 
-			TransactionEntity txEntity(data, tx->GetBlockHeight(), tx->GetTimestamp(), tx->GetAssetTableID(),
-									   tx->GetRemark(), txHash);
+			TransactionEntity txEntity(data, tx->GetBlockHeight(), tx->GetTimestamp(), tx->GetRemark(), txHash);
 			_databaseManager.PutTransaction(ISO, txEntity);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
@@ -159,7 +158,7 @@ namespace Elastos {
 			ByteStream stream;
 			asset->Serialize(stream);
 			AssetEntity assetEntity(assetID, amount, stream.GetBytes());
-			_databaseManager.PutAsset(ISO, assetEntity);
+			_databaseManager.PutAsset(asset->GetName(), assetEntity);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&asset, &amount, &controller](Wallet::Listener *listener) {
@@ -311,7 +310,6 @@ namespace Elastos {
 				ByteStream byteStream(txsEntity[i].buff);
 				tx->Deserialize(byteStream);
 				tx->SetRemark(txsEntity[i].remark);
-				tx->SetAssetTableID(txsEntity[i].assetID);
 				tx->SetBlockHeight(txsEntity[i].blockHeight);
 				tx->SetTimestamp(txsEntity[i].timeStamp);
 
@@ -354,7 +352,7 @@ namespace Elastos {
 		std::vector<AssetPtr> SpvService::loadAssets() {
 			std::vector<AssetPtr> assets;
 
-			std::vector<AssetEntity> assetsEntity = _databaseManager.GetAllAssets(ISO);
+			std::vector<AssetEntity> assetsEntity = _databaseManager.GetAllAssets();
 
 			for (size_t i = 0; i < assetsEntity.size(); ++i) {
 				ByteStream stream(assetsEntity[i].Asset);

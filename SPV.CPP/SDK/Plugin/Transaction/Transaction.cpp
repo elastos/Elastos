@@ -811,20 +811,5 @@ namespace Elastos {
 			return walletBlockHeight >= _blockHeight ? walletBlockHeight - _blockHeight + 1 : 0;
 		}
 
-		uint256 Transaction::GetAssetID() const {
-			uint256 result;
-			if (!_outputs.empty())
-				result = _outputs.begin()->GetAssetId();
-			return result;
-		}
-
-		const std::string &Transaction::GetAssetTableID() const {
-			return _assetTableID;
-		}
-
-		void Transaction::SetAssetTableID(const std::string &assetTableID) {
-			_assetTableID = assetTableID;
-		}
-
 	}
 }

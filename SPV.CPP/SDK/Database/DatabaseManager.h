@@ -45,11 +45,10 @@ namespace Elastos {
 
 			// Asset's database interface
 			bool PutAsset(const std::string &iso, const AssetEntity &asset);
-			bool PutAssets(const std::string &iso, const std::vector<AssetEntity> &assets);
-			bool DeleteAsset(const std::string &iso, const std::string &assetID);
-			bool DeleteAllAssets(const std::string &iso);
-			bool GetAssetDetails(const std::string &iso, const std::string &assetID, AssetEntity &asset) const;
-			std::vector<AssetEntity> GetAllAssets(const std::string &iso) const;
+			bool DeleteAsset(const std::string &assetID);
+			bool DeleteAllAssets();
+			bool GetAssetDetails(const std::string &assetID, AssetEntity &asset) const;
+			std::vector<AssetEntity> GetAllAssets() const;
 
 			const boost::filesystem::path &GetPath() const;
 

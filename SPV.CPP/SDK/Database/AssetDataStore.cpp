@@ -30,7 +30,7 @@ namespace Elastos {
 			return DoTransaction([&iso, &asset, this]() {
 				AssetEntity existAsset;
 
-				if (SelectAsset(iso, asset.AssetID, existAsset)) {
+				if (SelectAsset(asset.AssetID, existAsset)) {
 					UpdateAsset(iso, asset);
 				} else {
 					InsertAsset(iso, asset);
@@ -38,61 +38,45 @@ namespace Elastos {
 			});
 		}
 
-		bool AssetDataStore::PutAssets(const std::string &iso, const std::vector<AssetEntity> &assets) {
-			return DoTransaction([&iso, &assets, this]() {
-				AssetEntity existAsset;
-
-				for (size_t i = 0; i < assets.size(); ++i) {
-					if (SelectAsset(iso, assets[i].AssetID, existAsset)) {
-						UpdateAsset(iso, assets[i]);
-					} else {
-						InsertAsset(iso, assets[i]);
-					}
-				}
-			});
-		}
-
-		bool AssetDataStore::DeleteAsset(const std::string &iso, const std::string &assetID) {
-			return DoTransaction([&iso, &assetID, this]() {
+		bool AssetDataStore::DeleteAsset(const std::string &assetID) {
+			return DoTransaction([&assetID, this]() {
 				std::stringstream ss;
 
 				ss << "DELETE FROM "
 				   << ASSET_TABLE_NAME
-				   << " WHERE " << ASSET_COLUMN_ID << " = '" << assetID << "'"
-				   << " AND " << ASSET_ISO << " = '" << iso << "';";
+				   << " WHERE " << ASSET_COLUMN_ID << " = '" << assetID << "';";
 
 				ErrorChecker::CheckCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
 											 "exec sql " + ss.str());
 			});
 		}
 
-		bool AssetDataStore::DeleteAllAssets(const std::string &iso) {
-			return DoTransaction([&iso, this]() {
+		bool AssetDataStore::DeleteAllAssets() {
+			return DoTransaction([this]() {
 				std::stringstream ss;
 
 				ss << "DELETE FROM "
-				   << ASSET_TABLE_NAME
-				   << " WHERE " << ASSET_ISO << " = '" << iso << "';";
+				   << ASSET_TABLE_NAME << ";";
 
 				ErrorChecker::CheckCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
 											 "exec sql " + ss.str());
 			});
 		}
 
-		bool AssetDataStore::GetAssetDetails(const std::string &iso, const std::string &assetID, AssetEntity &asset) const {
+		bool AssetDataStore::GetAssetDetails(const std::string &assetID, AssetEntity &asset) const {
 			bool found = false;
 
-			DoTransaction([&iso, &assetID, &asset, &found, this]() {
-				found = SelectAsset(iso, assetID, asset);
+			DoTransaction([&assetID, &asset, &found, this]() {
+				found = SelectAsset(assetID, asset);
 			});
 
 			return found;
 		}
 
-		std::vector<AssetEntity> AssetDataStore::GetAllAssets(const std::string &iso) const {
+		std::vector<AssetEntity> AssetDataStore::GetAllAssets() const {
 			std::vector<AssetEntity> assets;
 
-			DoTransaction([&iso, &assets, this]() {
+			DoTransaction([&assets, this]() {
 				AssetEntity asset;
 				std::stringstream ss;
 
@@ -100,8 +84,7 @@ namespace Elastos {
 				   << ASSET_COLUMN_ID << ", "
 				   << ASSET_AMOUNT << ", "
 				   << ASSET_BUFF
-				   << " FROM " << ASSET_TABLE_NAME
-				   << " WHERE " << ASSET_ISO << " = '" << iso << "';";
+				   << " FROM " << ASSET_TABLE_NAME << ";";
 
 				sqlite3_stmt *stmt;
 				ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
@@ -110,7 +93,7 @@ namespace Elastos {
 				while (SQLITE_ROW == _sqlite->Step(stmt)) {
 
 					asset.AssetID = _sqlite->ColumnText(stmt, 0);
-					asset.Amount = (uint64_t) _sqlite->ColumnInt64(stmt, 1);
+					asset.Amount.setDec(_sqlite->ColumnText(stmt, 1));
 
 					const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 2);
 					size_t len = (size_t) _sqlite->ColumnBytes(stmt, 2);
@@ -124,7 +107,7 @@ namespace Elastos {
 			return assets;
 		}
 
-		bool AssetDataStore::SelectAsset(const std::string &iso, const std::string &assetID, AssetEntity &asset) const {
+		bool AssetDataStore::SelectAsset(const std::string &assetID, AssetEntity &asset) const {
 			bool found = false;
 			std::stringstream ss;
 
@@ -132,8 +115,7 @@ namespace Elastos {
 				<< ASSET_AMOUNT << ", "
 				<< ASSET_BUFF
 				<< " FROM " << ASSET_TABLE_NAME
-				<< " WHERE " << ASSET_ISO << " = '" << iso << "' "
-				<< " AND " << ASSET_COLUMN_ID << " = '" << assetID << "';";
+				<< " WHERE " << ASSET_COLUMN_ID << " = '" << assetID << "';";
 
 			sqlite3_stmt *stmt;
 			ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
@@ -143,7 +125,7 @@ namespace Elastos {
 				found = true;
 
 				asset.AssetID = assetID;
-				asset.Amount = (uint64_t) _sqlite->ColumnInt64(stmt, 0);
+				asset.Amount.setDec(_sqlite->ColumnText(stmt, 0));
 
 				const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
 				size_t len = (size_t) _sqlite->ColumnBytes(stmt, 1);
@@ -169,7 +151,7 @@ namespace Elastos {
 										 "Prepare sql " + ss.str());
 
 			_sqlite->BindText(stmt, 1, asset.AssetID, nullptr);
-			_sqlite->BindInt64(stmt, 2, asset.Amount);
+			_sqlite->BindText(stmt, 2, asset.Amount.getDec(), nullptr);
 			_sqlite->BindBlob(stmt, 3, asset.Asset, nullptr);
 			_sqlite->BindText(stmt, 4, iso, nullptr);
 
@@ -185,16 +167,17 @@ namespace Elastos {
 
 			ss << "UPDATE " << ASSET_TABLE_NAME << " SET "
 				<< ASSET_AMOUNT << " = ?, "
-				<< ASSET_BUFF   << " = ? "
-				<< " WHERE " << ASSET_ISO << " = '" << iso << "'"
-				<< " AND " << ASSET_COLUMN_ID << " = '" << asset.AssetID << "';";
+				<< ASSET_BUFF   << " = ?, "
+				<< ASSET_ISO    << " = ?"
+				<< " WHERE " << ASSET_COLUMN_ID << " = '" << asset.AssetID << "';";
 
 			sqlite3_stmt *stmt;
 			ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
 										 "Prepare sql " + ss.str());
 
-			_sqlite->BindInt64(stmt, 1, asset.Amount);
+			_sqlite->BindText(stmt, 1, asset.Amount.getDec(), nullptr);
 			_sqlite->BindBlob(stmt, 2, asset.Asset, nullptr);
+			_sqlite->BindText(stmt, 3, iso, nullptr);
 
 			_sqlite->Step(stmt);
 

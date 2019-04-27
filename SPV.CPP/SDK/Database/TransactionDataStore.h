@@ -23,13 +23,10 @@ namespace Elastos {
 			}
 
 			TransactionEntity(const bytes_t &buff, uint32_t blockHeight, uint32_t timeStamp,
-							  const std::string &assetID,
-							  const std::string &remark,
-							  const std::string &txHash) :
+							  const std::string &remark, const std::string &txHash) :
 				buff(buff),
 				blockHeight(blockHeight),
 				timeStamp(timeStamp),
-				assetID(assetID),
 				remark(remark),
 				txHash(txHash)
 			{
@@ -38,7 +35,6 @@ namespace Elastos {
 			bytes_t buff;
 			uint32_t blockHeight;
 			uint32_t timeStamp;
-			std::string assetID;
 			std::string remark;
 			std::string txHash;
 		};

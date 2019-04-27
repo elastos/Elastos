@@ -39,10 +39,8 @@ namespace Elastos {
 					   << TX_BUFF << " = ?, "
 					   << TX_BLOCK_HEIGHT << " = ?, "
 					   << TX_TIME_STAMP << " = ?, "
-					   << TX_REMARK << " = ?, "
-					   << TX_ASSETID << " = ? "
-					   << " WHERE " << TX_ISO << " = '" << iso << "'"
-					   << " AND " << TX_COLUMN_ID << " = '" << transactionEntity.txHash << "';";
+					   << TX_REMARK << " = ? "
+					   << " WHERE " << TX_COLUMN_ID << " = '" << transactionEntity.txHash << "';";
 
 					sqlite3_stmt *stmt;
 					ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
@@ -52,7 +50,6 @@ namespace Elastos {
 					_sqlite->BindInt(stmt, 2, transactionEntity.blockHeight);
 					_sqlite->BindInt(stmt, 3, transactionEntity.timeStamp);
 					_sqlite->BindText(stmt, 4, transactionEntity.remark, nullptr);
-					_sqlite->BindText(stmt, 5, transactionEntity.assetID, nullptr);
 
 					_sqlite->Step(stmt);
 
@@ -82,7 +79,7 @@ namespace Elastos {
 				_sqlite->BindInt(stmt, 3, transactionEntity.blockHeight);
 				_sqlite->BindInt(stmt, 4, transactionEntity.timeStamp);
 				_sqlite->BindText(stmt, 5, transactionEntity.remark, nullptr);
-				_sqlite->BindText(stmt, 6, transactionEntity.assetID, nullptr);
+				_sqlite->BindText(stmt, 6, "", nullptr);
 				_sqlite->BindText(stmt, 7, iso, nullptr);
 
 				_sqlite->Step(stmt);
@@ -96,8 +93,7 @@ namespace Elastos {
 			return DoTransaction([&iso, this]() {
 				std::stringstream ss;
 
-				ss << "DELETE FROM " << TX_TABLE_NAME <<
-				   " WHERE " << TX_ISO << " = '" << iso << "';";
+				ss << "DELETE FROM " << TX_TABLE_NAME << "';";
 
 				ErrorChecker::CheckCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
 											 "Exec sql " + ss.str());
@@ -139,10 +135,8 @@ namespace Elastos {
 				   << TX_BUFF << ", "
 				   << TX_BLOCK_HEIGHT << ", "
 				   << TX_TIME_STAMP << ", "
-				   << TX_ASSETID << ", "
 				   << TX_REMARK
-				   << " FROM " << TX_TABLE_NAME
-				   << " WHERE " << TX_ISO << " = '" << iso << "';";
+				   << " FROM " << TX_TABLE_NAME << ";";
 
 				sqlite3_stmt *stmt;
 				ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
@@ -158,8 +152,7 @@ namespace Elastos {
 					tx.buff.assign(pdata, pdata + len);
 					tx.blockHeight = (uint32_t) _sqlite->ColumnInt(stmt, 2);
 					tx.timeStamp = (uint32_t) _sqlite->ColumnInt(stmt, 3);
-					tx.assetID = _sqlite->ColumnText(stmt, 4);
-					tx.remark = _sqlite->ColumnText(stmt, 5);
+					tx.remark = _sqlite->ColumnText(stmt, 4);
 
 					transactions.push_back(tx);
 				}
@@ -176,10 +169,8 @@ namespace Elastos {
 
 				ss << "UPDATE " << TX_TABLE_NAME << " SET "
 				   << TX_BLOCK_HEIGHT << " = ?, "
-				   << TX_TIME_STAMP << " = ?, "
-				   << TX_ASSETID << " = ? "
-				   << " WHERE " << TX_ISO << " = '" << iso << "'"
-				   << " AND " << TX_COLUMN_ID << " = '" << txEntity.txHash << "';";
+				   << TX_TIME_STAMP << " = ? "
+				   << " WHERE " << TX_COLUMN_ID << " = '" << txEntity.txHash << "';";
 
 				sqlite3_stmt *stmt;
 				ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
@@ -187,7 +178,6 @@ namespace Elastos {
 
 				_sqlite->BindInt(stmt, 1, txEntity.blockHeight);
 				_sqlite->BindInt(stmt, 2, txEntity.timeStamp);
-				_sqlite->BindText(stmt, 3, txEntity.assetID, nullptr);
 
 				_sqlite->Step(stmt);
 
@@ -201,8 +191,7 @@ namespace Elastos {
 
 				ss << "DELETE FROM "
 				   << TX_TABLE_NAME
-				   << " WHERE " << TX_ISO << " = '" << iso << "'"
-				   << " AND " << TX_COLUMN_ID << " = '" << hash << "';";
+				   << " WHERE " << TX_COLUMN_ID << " = '" << hash << "';";
 
 				ErrorChecker::CheckCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
 											 "Exec sql " + ss.str());
@@ -220,11 +209,9 @@ namespace Elastos {
 				   << TX_BUFF << ", "
 				   << TX_BLOCK_HEIGHT << ", "
 				   << TX_TIME_STAMP << ", "
-				   << TX_ASSETID << ", "
 				   << TX_REMARK
 				   << " FROM " << TX_TABLE_NAME
-				   << " WHERE " << TX_ISO << " = '" << iso << "'"
-				   << " AND " << TX_COLUMN_ID << " = '" << hash << "';";
+				   << " WHERE " << TX_COLUMN_ID << " = '" << hash << "';";
 
 				sqlite3_stmt *stmt;
 				ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
@@ -241,8 +228,7 @@ namespace Elastos {
 					txEntity.buff.assign(pdata, pdata + len);
 					txEntity.blockHeight = (uint32_t) _sqlite->ColumnInt(stmt, 1);
 					txEntity.timeStamp = (uint32_t) _sqlite->ColumnInt(stmt, 2);
-					txEntity.assetID = _sqlite->ColumnText(stmt, 3);
-					txEntity.remark = _sqlite->ColumnText(stmt, 4);
+					txEntity.remark = _sqlite->ColumnText(stmt, 3);
 				}
 			});
 

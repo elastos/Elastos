@@ -160,15 +160,9 @@ namespace Elastos {
 
 			void SetFee(uint64_t fee);
 
-			const std::string &GetAssetTableID() const;
-
-			void SetAssetTableID(const std::string &assetTableID);
-
 			void SerializeUnsigned(ByteStream &ostream) const;
 
 			uint256 GetShaData() const;
-
-			uint256 GetAssetID() const;
 
 			void Cleanup();
 
