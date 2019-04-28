@@ -14,9 +14,9 @@ ExternalProject_Add(
     Elastos.NET.Hive.Native.SDK
 
     PREFIX ${CARRIER_DEPS_BUILD_PREFIX}
-    URL "https://github.com/elastos/Elastos.NET.Hive.Native.SDK/archive/release-v0.0.1.0.tar.gz"
-    URL_HASH SHA256=43dadca95cdac4e5dbf4e2c82ca2b74a12cf9e7bd8b712fc1662b44356642427
-    DOWNLOAD_NAME "Elastos.NET.Hive.Native.SDK-v0.0.1.0.tar.gz"
+    URL "https://github.com/elastos/Elastos.NET.Hive.Native.SDK/archive/alpha-release-v0.1.1.tar.gz"
+    URL_HASH SHA256=6a678c5262eac5246d36afa9dec18a95c303aae7e0bba143d46e21ca03004bb8
+    DOWNLOAD_NAME "Elastos.NET.Hive.Native.SDK-alpha-release-v0.1.1.tar.gz"
     DOWNLOAD_DIR ${CARRIER_DEPS_TARBALL_DIR}
     DOWNLOAD_NO_PROGRESS 1
 
