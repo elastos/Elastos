@@ -56,6 +56,8 @@ jboolean carrierInit(JNIEnv* env, jobject thiz, jobject joptions, jobject jcallb
         .persistent_location = helper.persistent_location,
         .bootstraps_size = helper.bootstraps_size,
         .bootstraps = (BootstrapNode *)helper.bootstraps,
+        .hive_bootstraps_size = helper.hive_bootstraps_size,
+        .hive_bootstraps = (HiveBootstrapNode *)helper.hive_bootstraps
     };
 
     if (!handlerCtxtSet(hc, env, thiz, jcallbacks)) {

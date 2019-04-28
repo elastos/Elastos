@@ -33,11 +33,19 @@ typedef struct BootstrapHelper {
     char *public_key;
 } BootstrapHelper;
 
+typedef struct HiveBootstrapHelper {
+    char *ipv4;
+    char *ipv6;
+    char *port;
+} HiveBootstrapHelper;
+
 typedef struct OptionsHelper {
     int udp_enabled;
     char* persistent_location;
     size_t  bootstraps_size;
     BootstrapHelper *bootstraps;
+    size_t  hive_bootstraps_size;
+    HiveBootstrapHelper *hive_bootstraps;
 } OptionsHelper;
 
 int getOptionsHelper(JNIEnv* env, jobject jopts, OptionsHelper* opts);

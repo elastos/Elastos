@@ -35,6 +35,7 @@ int getOptionsHelper(JNIEnv* env, jobject jopts, OptionsHelper* opts)
     jclass clazz;
     jclass bNClazz;
     jobject jnodes;
+    jobject jhvnodes;
     jsize size;
     int rc;
     int i;
@@ -55,6 +56,11 @@ int getOptionsHelper(JNIEnv* env, jobject jopts, OptionsHelper* opts)
     rc = callObjectMethod(env, clazz, jopts, "getBootstrapNodes", "()Ljava/util/List;", &jnodes);
     if (!rc) {
         logE("call method Carrier::Options::getBootstrapNodes error");
+        return 0;
+    }
+
+    if(!jnodes) {
+        logE("No bootstrapNodes attached");
         return 0;
     }
 
@@ -120,6 +126,79 @@ int getOptionsHelper(JNIEnv* env, jobject jopts, OptionsHelper* opts)
     }
 
     (*env)->DeleteLocalRef(env, jnodes);
+
+    rc = callObjectMethod(env, clazz, jopts, "getHiveBootstrapNodes", "()Ljava/util/List;", &jhvnodes);
+    if (!rc) {
+        logE("call method Carrier::Options::getHiveBootstrapNodes error");
+        return 0;
+    }
+
+    if (!jhvnodes) {
+        logE("Not hiveBootstrapNodes attached.");
+        return 1;
+    }
+
+    bNClazz = (*env)->GetObjectClass(env, jhvnodes);
+    if (!bNClazz) {
+        logE("Java class 'java/util/List' not found");
+        (*env)->DeleteLocalRef(env, jhvnodes);
+        return 0;
+    }
+
+    rc = callIntMethod(env, bNClazz, jhvnodes, "size", "()I", (int *)&size);
+    if (!rc) {
+        (*env)->DeleteLocalRef(env, jhvnodes);
+        return 0;
+    }
+
+    if (size == 0) {
+        (*env)->DeleteLocalRef(env, jhvnodes);
+        opts->hive_bootstraps_size = 0;
+        opts->hive_bootstraps = NULL;
+        return 1;
+    }
+
+    opts->hive_bootstraps_size = (size_t)size;
+    opts->hive_bootstraps = (HiveBootstrapHelper *)calloc(1, sizeof(HiveBootstrapHelper) * size);
+    if (!opts->hive_bootstraps) {
+        (*env)->DeleteLocalRef(env, jhvnodes);
+        return 0;
+    }
+
+    for (i = 0; i < (int)size; i++) {
+        HiveBootstrapHelper *node = &opts->hive_bootstraps[i];
+        jclass  jnodeClazz;
+        jobject jnode;
+
+        rc = callObjectMethod(env, bNClazz, jhvnodes, "get",
+                              "(I)"_J("Object;"), &jnode, i);
+        if (!rc) {
+            (*env)->DeleteLocalRef(env, jhvnodes);
+            return 0;
+        }
+
+        jnodeClazz = (*env)->GetObjectClass(env, jnode);
+        if (!jnodeClazz) {
+            (*env)->DeleteLocalRef(env, jnode);
+            (*env)->DeleteLocalRef(env, jhvnodes);
+            return 0;
+        }
+
+        if (!getStringExt(env, jnodeClazz, jnode, "getIpv4", &node->ipv4) ||
+            !getStringExt(env, jnodeClazz, jnode, "getIpv6", &node->ipv6) ||
+            !getStringExt(env, jnodeClazz, jnode, "getPort", &node->port)) {
+
+            logE("At least one getter method of class 'Carrier.HiveBootstrapNode' mismatched");
+
+            (*env)->DeleteLocalRef(env, jnode);
+            (*env)->DeleteLocalRef(env, jhvnodes);
+            return 0;
+        }
+
+        (*env)->DeleteLocalRef(env, jnode);
+    }
+
+    (*env)->DeleteLocalRef(env, jhvnodes);
     return 1;
 }
 
@@ -145,6 +224,21 @@ void cleanupOptionsHelper(OptionsHelper* opts)
         }
 
         free(opts->bootstraps);
+    }
+
+    if (opts->hive_bootstraps) {
+        for (i = 0; i < opts->hive_bootstraps_size; i++) {
+            HiveBootstrapHelper *node = &opts->hive_bootstraps[i];
+
+            if (node->ipv4)
+                free(node->ipv4);
+            if (node->ipv6)
+                free(node->ipv6);
+            if (node->port)
+                free(node->port);
+        }
+
+        free(opts->hive_bootstraps);
     }
 }
 

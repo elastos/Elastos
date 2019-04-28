@@ -176,6 +176,7 @@ public class Carrier {
 		private String persistentLocation;
 		private boolean udpEnabled;
 		private List<BootstrapNode> bootstrapNodes;
+		private List<HiveBootstrapNode> hiveBootstrapNodes;
 
 		public static class BootstrapNode {
 			private String ipv4;
@@ -217,6 +218,39 @@ public class Carrier {
 
 			public String getPublicKey() {
 				return publicKey;
+			}
+		}
+
+		public static class HiveBootstrapNode {
+			private String ipv4;
+			private String ipv6;
+			private String port;
+
+			public HiveBootstrapNode setIpv4(String ipv4) {
+				this.ipv4 = ipv4;
+				return this;
+			}
+
+			public String getIpv4() {
+				return ipv4;
+			}
+
+			public HiveBootstrapNode setIpv6(String ipv6) {
+				this.ipv6 = ipv6;
+				return this;
+			}
+
+			public String getIpv6() {
+				return ipv6;
+			}
+
+			public HiveBootstrapNode setPort(String port) {
+				this.port = port;
+				return this;
+			}
+
+			public String getPort() {
+				return port;
 			}
 		}
 
@@ -272,6 +306,15 @@ public class Carrier {
 
 		public List<BootstrapNode> getBootstrapNodes() {
 			return bootstrapNodes;
+		}
+
+		public Options setHiveBootstrapNodes(List<HiveBootstrapNode> hiveBootstrapNodes) {
+			this.hiveBootstrapNodes = hiveBootstrapNodes;
+			return this;
+		}
+
+		public List<HiveBootstrapNode> getHiveBootstrapNodes() {
+			return hiveBootstrapNodes;
 		}
 	}
 
