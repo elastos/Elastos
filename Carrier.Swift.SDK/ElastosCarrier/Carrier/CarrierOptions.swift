@@ -48,18 +48,25 @@ public class CarrierOptions: NSObject {
     @objc public var udpEnabled: Bool
     
     @objc public var bootstrapNodes: [BootstrapNode]?
+
+    @objc public var hivebootstrapNodes: [HiveBootstrapNode]?
+
 }
 
 internal func convertCarrierOptionsToCOptions(_ options : CarrierOptions) -> COptions {
     var cOptions = COptions()
     var cNodes: UnsafeMutablePointer<CBootstrapNode>?
     
+    var cHiveNodes: UnsafeMutablePointer<CHiveBootstrapNode>?
+
     cOptions.persistent_location = createCStringDuplicate(options.persistentLocation)
     cOptions.udp_enabled = options.udpEnabled
     (cNodes, cOptions.bootstraps_size) = convertBootstrapNodesToCBootstrapNodes(options.bootstrapNodes!)
-    
+    (cHiveNodes, cOptions.hive_bootstraps_size) = convertBootstrapNodesToCHiveBootstrapNode(options.hivebootstrapNodes!)
+
     cOptions.bootstraps = UnsafePointer<CBootstrapNode>(cNodes)
-    
+    cOptions.hive_bootstraps = UnsafePointer<CHiveBootstrapNode>(cHiveNodes)
+
     return cOptions
 }
 
@@ -67,4 +74,8 @@ internal func cleanupCOptions(_ cOptions : COptions) {
     deallocCString(cOptions.persistent_location)
     cleanupCBootstrap(cOptions.bootstraps!, cOptions.bootstraps_size)
     UnsafeMutablePointer<CBootstrapNode>(mutating: cOptions.bootstraps)?.deallocate()
+
+    cleanupCBootstraphive(cOptions.hive_bootstraps!, cOptions.hive_bootstraps_size)
+    UnsafeMutablePointer<CHiveBootstrapNode>(mutating: cOptions.hive_bootstraps)?.deallocate()
 }
+

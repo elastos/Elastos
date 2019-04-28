@@ -58,6 +58,35 @@ public class BootstrapNode: NSObject {
     }
 }
 
+public class HiveBootstrapNode: NSObject {
+
+    /**
+     Ipv4 address.
+     */
+    @objc public var ipv4: String?
+
+    /**
+     Ipv6 address.
+     */
+    @objc public var ipv6: String?
+
+    /**
+     Port.
+     */
+    @objc public var port: String?
+
+    internal static func format(_ node: HiveBootstrapNode) -> String {
+        return String(format: "ipv4[%@], ipv6[%@], port[%@], publicKey[%@]",
+                      String.toHardString(node.ipv4),
+                      String.toHardString(node.ipv6),
+                      String.toHardString(node.port))
+    }
+
+    @objc public override var description: String {
+        return HiveBootstrapNode.format(self)
+    }
+}
+
 internal func convertBootstrapNodesToCBootstrapNodes(_ nodes: [BootstrapNode]) -> (UnsafeMutablePointer<CBootstrapNode>?, Int) {
     var cNodes: UnsafeMutablePointer<CBootstrapNode>?
     
@@ -88,6 +117,31 @@ internal func convertBootstrapNodesToCBootstrapNodes(_ nodes: [BootstrapNode]) -
     return (cNodes, nodes.count)
 }
 
+internal func convertBootstrapNodesToCHiveBootstrapNode(_ nodes: [HiveBootstrapNode]) -> (UnsafeMutablePointer<CHiveBootstrapNode>?, Int){
+    var cNodes: UnsafeMutablePointer<CHiveBootstrapNode>?
+    cNodes = UnsafeMutablePointer<CHiveBootstrapNode>.allocate(capacity: nodes.count)
+    if cNodes == nil {
+        return (nil, 0)
+    }
+
+    for (index, node) in nodes.enumerated() {
+
+        var cNode = CHiveBootstrapNode()
+        node.ipv4?.withCString { (ipv4) in
+            cNode.ipv4 = UnsafePointer<Int8>(strdup(ipv4))
+        }
+        node.ipv6?.withCString { (ipv6) in
+            cNode.ipv6 = UnsafePointer<Int8>(strdup(ipv6));
+        }
+        node.port?.withCString { (port) in
+            cNode.port = UnsafePointer<Int8>(strdup(port));
+        }
+        (cNodes! + index).initialize(to: cNode)
+    }
+
+    return (cNodes, nodes.count)
+}
+
 internal func cleanupCBootstrap(_ cNodes: UnsafePointer<CBootstrapNode>, _ count: Int) -> Void {
     
     for index in 0..<count {
@@ -103,6 +157,22 @@ internal func cleanupCBootstrap(_ cNodes: UnsafePointer<CBootstrapNode>, _ count
         }
         if cNode.public_key != nil {
             free(UnsafeMutablePointer<Int8>(mutating: cNode.public_key))
+        }
+    }
+}
+
+internal func cleanupCBootstraphive(_ cNodes: UnsafePointer<CHiveBootstrapNode>, _ count: Int) -> Void {
+
+    for index in 0..<count {
+        let cNode: CHiveBootstrapNode = (cNodes + index).pointee
+        if cNode.ipv4 != nil {
+            free(UnsafeMutablePointer<Int8>(mutating: cNode.ipv4))
+        }
+        if cNode.ipv6 != nil {
+            free(UnsafeMutablePointer<Int8>(mutating: cNode.ipv6))
+        }
+        if cNode.port != nil {
+            free(UnsafeMutablePointer<Int8>(mutating: cNode.port))
         }
     }
 }
