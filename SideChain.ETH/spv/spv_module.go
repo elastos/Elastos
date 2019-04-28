@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	spv "github.com/elastos/Elastos.ELA.SPV/interface"
+	ethCommon "github.com/elastos/Elastos.ELA.SideChain.ETH/common"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/crypto"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
@@ -14,7 +16,6 @@ import (
 	com "github.com/elastos/Elastos.ELA.SideChain.ETH/common"
 	"github.com/elastos/Elastos.ELA/utils/signal"
 	"github.com/syndtr/goleveldb/leveldb"
-	"math/big"
 	"path/filepath"
 	"strings"
 	"time"
@@ -163,7 +164,6 @@ func (l *listener) Notify(id common.Uint256, proof bloom.MerkleProof, tx core.Tr
 	fmt.Println("----------------------------------------------------------------------------------------")
 	fmt.Println(string(tx.String()))
 	fmt.Println("----------------------------------------------------------------------------------------")
-	fmt.Println(AddrIsArbiter(big.NewInt(111)))
 	fmt.Println(" ")
 	savePayloadInfo(tx)
 	defer l.service.SubmitTransactionReceipt(id, tx.Hash())
@@ -208,20 +208,20 @@ func FindPayloadByTransactionHash(transactionHash string) string {
 }
 
 // Get Ela Chain Height 
-func GetElaChainHeight() *big.Int {
-	var elaHeight = big.NewInt(-1)
+func GetElaChainHeight() uint32 {
+	var elaHeight uint32 = 0
 	if spvService == nil || spvService.DPOSSPVService == nil {
 		fmt.Println("spv service initiation does not finish yet !")
 	} else {
-		elaHeight = big.NewInt(int64(spvService.DPOSSPVService.GetHeight()))
+		elaHeight = spvService.DPOSSPVService.GetHeight()
 	}
 	return elaHeight
 }
 
 // Until Get Ela Chain Height 
-func UntilGetElaChainHeight() *big.Int {
+func UntilGetElaChainHeight() uint32 {
 	for {
-		if elaHeight := GetElaChainHeight(); elaHeight.Cmp(big.NewInt(-1)) != 0  {
+		if elaHeight := GetElaChainHeight(); elaHeight != 0  {
 			return elaHeight
 		}
 		fmt.Println("can not get elas height, because ela height interface has no any response !")
@@ -230,20 +230,39 @@ func UntilGetElaChainHeight() *big.Int {
 }
 
 // Determine whether an address is an arbiter 
-func AddrIsArbiter(address *big.Int) int8 {
+func AddrIsArbiter(address ethCommon.Address) int8 {
 	if spvService == nil || spvService.DPOSSPVService == nil {
 		fmt.Println("spv service initiation does not finish yet !")
 	} else {
-		fmt.Println("---------------------------------------------------------------")
-		fmt.Println(spvService.DPOSSPVService.GetHeight())
 		arbiters := spvService.DPOSSPVService.GetProducersByHeight(spvService.DPOSSPVService.GetHeight())
-		fmt.Println("---------------------------------------------------------------")
-		fmt.Println(arbiters)
-		fmt.Println("---------------------------------------------------------------")
-		fmt.Println(address)
-		fmt.Println("---------------------------------------------------------------")
+		for _, arbiter := range arbiters {
+			publicKey, convertErr := crypto.UnmarshalPubkey(arbiter)
+			if convertErr == nil {
+				if abiterAddress := crypto.PubkeyToAddress(*publicKey); abiterAddress == address {
+					return 1
+				}
+			}
+		}
 	}
-	return -1
+	return 0
+}
+
+// Determine whether an address is an arbiter
+func AddrIsArbiterWithElaHeight(address ethCommon.Address, elaHeight uint32) int8 {
+	if spvService == nil || spvService.DPOSSPVService == nil {
+		fmt.Println("spv service initiation does not finish yet !")
+	} else {
+		arbiters := spvService.DPOSSPVService.GetProducersByHeight(elaHeight)
+		for _, arbiter := range arbiters {
+			publicKey, convertErr := crypto.UnmarshalPubkey(arbiter)
+			if convertErr == nil {
+				if abiterAddress := crypto.PubkeyToAddress(*publicKey); abiterAddress == address {
+					return 1
+				}
+			}
+		}
+	}
+	return 0
 }
 
 func GetCurrentProducers() [][]byte {
@@ -272,6 +291,10 @@ func GetCurrentElaHeight() uint32 {
 	return height
 }
 
+func GetSubContractAddress() com.Address {
+	return com.HexToAddress("0x491bC043672B9286fA02FA7e0d6A3E5A0384A31A")
+}
+
 func GetProducersByHeight(height uint32) [][]byte {
 	var arbiters [][]byte
 
@@ -283,10 +306,6 @@ func GetProducersByHeight(height uint32) [][]byte {
 		fmt.Println(arbiters)
 	}
 	return arbiters
-}
-
-func GetSubContractAddress() com.Address {
-	return com.HexToAddress("0x491bC043672B9286fA02FA7e0d6A3E5A0384A31A")
 }
 
 //Service

@@ -279,19 +279,15 @@ func geth(ctx *cli.Context) error {
 	if args := ctx.Args(); len(args) > 0 {
 		return fmt.Errorf("invalid command: %q", args[0])
 	}
-
-	// get the flag and start SPV
-	// spv.SpvInit(ctx.GlobalString(utils.SpvMonitoringAddrFlag.Name))
-
 	node := makeFullNode(ctx)
 	startNode(ctx, node)
 	node.Wait()
 	return nil
 }
 
-// calculate the ELA mainchain address from the sidechain (ie. this chain)
+// calculate the ELA mainchain address from the sidechain (ie. this chain) 
 // genesis block hash for corresponding crosschain transactions
-// refer to https://github.com/elastos/Elastos.ELA.Client/blob/dev/cli/wallet/wallet.go
+// refer to https://github.com/elastos/Elastos.ELA.Client/blob/dev/cli/wallet/wallet.go 
 // for the original ELA-CLI implementation
 func calculateGenesisAddress(genesisBlockHash string) (string, error) {
 	// unlike Ethereum, the ELA hash values do not contain 0x prefix
@@ -352,9 +348,9 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 	}
 
 	// prepare to start the SPV module
-	// if --spvmoniaddr commandline parameter is present, use the parameter value
+	// if --spvmoniaddr commandline parameter is present, use the parameter value 
 	// as the ELA mainchain address for the SPV module to monitor on
-	// if no --spvmoniaddr commandline parameter is provided, use the sidechain genesis block hash
+	// if no --spvmoniaddr commandline parameter is provided, use the sidechain genesis block hash 
 	// to generate the corresponding ELA mainchain address for the SPV module to monitor on
 	if ctx.GlobalString(utils.SpvMonitoringAddrFlag.Name) != "" {
 		// --spvmoniaddr parameter is provided, set the SPV monitor address accordingly

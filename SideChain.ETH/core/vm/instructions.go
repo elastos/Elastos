@@ -972,11 +972,10 @@ func opSpvPayLoadCode(pc *uint64, interpreter *EVMInterpreter, contract *Contrac
 
 // to judge an address is an arbiter 
 func opSpvIsArbiter(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
-	fmt.Println("lidongqing niubi")
 	var isArbiter = big.NewInt(0)
 	address := stack.pop()
 	if address != nil {
-		spv.AddrIsArbiter(address)
+		isArbiter = big.NewInt(int64(spv.AddrIsArbiter(common.BigToAddress(address))))
 	}
 	stack.push(isArbiter)
 	return nil, nil
@@ -984,8 +983,6 @@ func opSpvIsArbiter(pc *uint64, interpreter *EVMInterpreter, contract *Contract,
 
 func getSubContractAddress(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 	address :=	spv.GetSubContractAddress()
-
 	stack.push(address.Big())
 	return nil, nil
 }
-

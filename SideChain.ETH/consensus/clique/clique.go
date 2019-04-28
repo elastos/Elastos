@@ -492,6 +492,7 @@ func (c *Clique) verifySeal(chain consensus.ChainReader, header *types.Header, p
 	if err != nil {
 		return err
 	}
+
 	if _, ok := snap.Signers[signer]; !ok {
 		return errUnauthorizedSigner
 	}
@@ -617,6 +618,7 @@ func (c *Clique) Seal(chain consensus.ChainReader, block *types.Block, results c
 		log.Info("Sealing paused, waiting for transactions")
 		return nil
 	}
+
 	// Don't hold the signer fields for the entire sealing procedure
 	c.lock.RLock()
 	signer, signFn := c.signer, c.signFn
@@ -627,6 +629,7 @@ func (c *Clique) Seal(chain consensus.ChainReader, block *types.Block, results c
 	if err != nil {
 		return err
 	}
+
 	if _, authorized := snap.Signers[signer]; !authorized {
 		return errUnauthorizedSigner
 	}
