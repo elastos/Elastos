@@ -665,12 +665,13 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckInactiveArbitrators() {
 			},
 		},
 	}
+	s.arbitrators.ActiveProducer = s.arbitrators.CurrentArbitrators
 
 	s.EqualError(CheckInactiveArbitrators(tx),
 		"sponsor is not belong to arbitrators")
 
 	// correct sponsor
-	p.Sponsor = s.arbitrators.CurrentArbitrators[0]
+	p.Sponsor = s.arbitrators.ActiveProducer[0]
 	for i := 0; i < 3; i++ { // add more than InactiveEliminateCount arbiters
 		p.Arbitrators = append(p.Arbitrators, s.arbitrators.CurrentArbitrators[i])
 	}
@@ -805,7 +806,7 @@ func (s *txValidatorSpecialTxTestSuite) createArbitratorsRedeemScript(
 	}
 
 	arbitratorsCount := len(arbitrators)
-	minSignCount := int(float64(arbitratorsCount) * 0.5)
+	minSignCount := arbitratorsCount * 2 / 3
 	result, _ := contract.CreateMultiSigRedeemScript(minSignCount+1, pks)
 	return result
 }

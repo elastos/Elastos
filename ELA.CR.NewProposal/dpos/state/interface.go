@@ -31,6 +31,7 @@ type Arbitrators interface {
 	GetCRCProducer(publicKey []byte) *Producer
 	GetCRCArbitrators() map[string]*Producer
 	IsCRCArbitrator(pk []byte) bool
+	IsActiveProducer(pk []byte) bool
 	IsDisabledProducer(pk []byte) bool
 
 	GetOnDutyArbitrator() []byte

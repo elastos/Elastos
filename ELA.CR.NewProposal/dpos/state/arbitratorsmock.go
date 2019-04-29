@@ -21,6 +21,7 @@ func NewArbitratorsMock(arbitersByte [][]byte, changeCount, majorityCount int) *
 		OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
 		ArbitersRoundReward:         make(map[common.Uint168]common.Fixed64),
 		CRCArbitratorsMap:           make(map[string]*Producer),
+		ActiveProducer:              make([][]byte, 0),
 		TotalVotesInRound:           0,
 		DutyChangedCount:            0,
 		MajorityCount:               majorityCount,
@@ -46,6 +47,16 @@ type ArbitratorsMock struct {
 	MajorityCount               int
 	FinalRoundChange            common.Fixed64
 	InactiveMode                bool
+	ActiveProducer              [][]byte
+}
+
+func (a *ArbitratorsMock) IsActiveProducer(pk []byte) bool {
+	for _, v := range a.ActiveProducer {
+		if bytes.Equal(v, pk) {
+			return true
+		}
+	}
+	return false
 }
 
 func (a *ArbitratorsMock) IsUnderstaffedMode() bool {

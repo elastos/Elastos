@@ -495,6 +495,10 @@ func (a *arbitrators) IsCRCArbitrator(pk []byte) bool {
 	return ok
 }
 
+func (a *arbitrators) IsActiveProducer(pk []byte) bool {
+	return a.State.IsActiveProducer(pk)
+}
+
 func (a *arbitrators) IsDisabledProducer(pk []byte) bool {
 	return a.State.IsInactiveProducer(pk) || a.State.IsIllegalProducer(pk)
 }
@@ -851,7 +855,7 @@ func (a *arbitrators) getBlockDPOSReward(block *types.Block) common.Fixed64 {
 		totalTxFx += tx.Fee
 	}
 
-	return common.Fixed64(math.Ceil(float64(totalTxFx +
+	return common.Fixed64(math.Ceil(float64(totalTxFx+
 		a.chainParams.RewardPerBlock) * 0.35))
 }
 

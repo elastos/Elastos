@@ -844,7 +844,7 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payloa
 
 	if block.Height >= b.chainParams.CRCOnlyDPOSHeight {
 		if err := checkBlockWithConfirmation(block, confirm); err != nil {
-			return errors.New("block confirmation validate failed")
+			return fmt.Errorf("block confirmation validate failed: %s", err)
 		}
 	}
 
