@@ -57,7 +57,6 @@ export default class extends StandardPage {
       showArchived: false,
       isDropdownActionOpen: false,
       showMobile: false,
-      page: 1,
       results: 10,
       total: 0,
     }
@@ -352,14 +351,20 @@ export default class extends StandardPage {
     )
   }
 
+  onPageChanged = (page) => {
+    const { changePage } = this.props
+    changePage(page)
+    this.loadPage(page)
+  }
+
   renderPagination() {
-    const { total } = this.props
-    const { results, page } = this.state
+    const { total, page } = this.props
+    const { results } = this.state
     const props = {
       pageSize: results,
       total,
       current: page,
-      onChange: this.loadPage,
+      onChange: this.onPageChanged,
     }
     return <Pagination {...props} className="cr-pagination" />
   }
@@ -380,7 +385,8 @@ export default class extends StandardPage {
    */
   getQuery = () => {
     const sortBy = this.props.sortBy || DEFAULT_SORT
-    const { page, results } = this.state
+    const { results } = this.state
+    const { page } = this.props
     const query = {
       status: this.state.showArchived ? SUGGESTION_STATUS.ARCHIVED : SUGGESTION_STATUS.ACTIVE,
       page,
@@ -432,7 +438,6 @@ export default class extends StandardPage {
 
     try {
       await this.props.loadMore(query)
-      this.setState({ page })
     } catch (e) {
       // Do not update page in state if the call fails
     }

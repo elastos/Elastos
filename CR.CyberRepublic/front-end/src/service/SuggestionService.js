@@ -10,6 +10,10 @@ export default class extends BaseService {
     this.prefixPath = '/api/suggestion'
   }
 
+  async changePage(page) {
+    this.dispatch(this.selfRedux.actions.page_update(page))
+  }
+
   async saveFilter(filter) {
     this.dispatch(this.selfRedux.actions.filter_update(filter))
   }
