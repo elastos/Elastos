@@ -39,21 +39,13 @@ type spvservice struct {
 	listeners map[common.Uint256]TransactionListener
 }
 
-func newSpvService(cfg *Config) (*spvservice, error) {
-	if cfg.Foundation == "" {
-		cfg.Foundation = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
-	}
-
-	foundation, err := common.Uint168FromAddress(cfg.Foundation)
-	if err != nil {
-		return nil, fmt.Errorf("Parse foundation address error %s", err)
-	}
-
+// NewSPVService creates a new SPV service instance.
+func NewSPVService(cfg *Config) (*spvservice, error) {
 	dataDir := defaultDataDir
 	if len(cfg.DataDir) > 0 {
 		dataDir = cfg.DataDir
 	}
-	_, err = os.Stat(dataDir)
+	_, err := os.Stat(dataDir)
 	if os.IsNotExist(err) {
 		err := os.MkdirAll(dataDir, os.ModePerm)
 		if err != nil {
@@ -81,16 +73,14 @@ func newSpvService(cfg *Config) (*spvservice, error) {
 	chainStore := database.NewChainDB(headerStore, service)
 
 	serviceCfg := &sdk.Config{
-		DataDir:     dataDir,
-		Magic:       cfg.Magic,
-		SeedList:    cfg.SeedList,
-		DefaultPort: cfg.DefaultPort,
-		MaxPeers:    cfg.MaxConnections,
+		DataDir:        dataDir,
+		ChainParams:    cfg.ChainParams,
+		PermanentPeers: cfg.PermanentPeers,
 		CandidateFlags: []uint64{
 			uint64(pact.SFNodeNetwork),
 			uint64(pact.SFNodeBloom),
 		},
-		GenesisHeader:  GenesisHeader(foundation),
+		GenesisHeader:  GenesisHeader(cfg.ChainParams.GenesisBlock),
 		ChainStore:     chainStore,
 		NewTransaction: newTransaction,
 		NewBlockHeader: newBlockHeader,
@@ -508,4 +498,18 @@ func getConfirmations(tx types.Transaction) uint32 {
 		return 100
 	}
 	return DefaultConfirmations
+}
+
+func newBlockHeader() util.BlockHeader {
+	return iutil.NewHeader(&types.Header{})
+}
+
+func newTransaction() util.Transaction {
+	return iutil.NewTx(&types.Transaction{})
+}
+
+// GenesisHeader creates a specific genesis header by the given
+// foundation address.
+func GenesisHeader(genesisBlock *types.Block) util.BlockHeader {
+	return iutil.NewHeader(&genesisBlock.Header)
 }

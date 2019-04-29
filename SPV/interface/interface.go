@@ -5,6 +5,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/database"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 )
 
@@ -13,24 +14,11 @@ type Config struct {
 	// DataDir is the data path to store db files peer addresses etc.
 	DataDir string
 
-	// The magic number that specify which network to connect.
-	Magic uint32
+	// The chain parameters within network settings.
+	ChainParams *config.Params
 
-	// The foundation address of the genesis block, which is different between
-	// MainNet, TestNet, RegNet etc.
-	Foundation string
-
-	// The public seed peers addresses.
-	SeedList []string
-
-	// DefaultPort is the default port for public peers provide services.
-	DefaultPort uint16
-
-	// The minimum target outbound connections.
-	MinOutbound int
-
-	// The maximum connected peers.
-	MaxConnections int
+	// PermanentPeers are the peers need to be connected permanently.
+	PermanentPeers []string
 
 	// Rollback callbacks that, the transactions
 	// on the given height has been rollback
@@ -106,8 +94,4 @@ type TransactionListener interface {
 	// with the merkle tree proof to verify it, the notifyId is key of this
 	// notify message and it must be submitted with the receipt together.
 	Notify(notifyId common.Uint256, proof bloom.MerkleProof, tx types.Transaction)
-}
-
-func NewSPVService(config *Config) (SPVService, error) {
-	return newSpvService(config)
 }

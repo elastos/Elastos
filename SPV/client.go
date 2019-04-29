@@ -11,6 +11,6 @@ import (
 var Version string
 
 func main() {
-	url := fmt.Sprint("http://127.0.0.1:", cfg.JsonRpcPort, "/spvwallet")
+	url := fmt.Sprint("http://127.0.0.1:", cfg.RPCPort, "/spvwallet")
 	wallet.RunClient(Version, dataDir, url, config.ELAAssetID)
 }

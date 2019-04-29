@@ -18,17 +18,19 @@ import (
 	"github.com/elastos/Elastos.ELA/utils/elalog"
 )
 
+const (
+	maxLogFileSize = 10   // 10MB
+	logsFolderSize = 1024 // 1GB
+)
+
 // log is a logger that is initialized with no output filters.  This
 // means the package will not perform any logging by default until the caller
 // requests it.
 var (
-	fileWriter = elalog.NewFileWriter(
-		filepath.Join(dataDir, "logs"),
-		cfg.MaxPerLogSize,
-		cfg.MaxLogsSize,
-	)
-	level   = elalog.Level(cfg.PrintLevel)
-	backend = elalog.NewBackend(io.MultiWriter(os.Stdout, fileWriter),
+	fileWriter = elalog.NewFileWriter(filepath.Join(dataDir, "logs"),
+		maxLogFileSize, logsFolderSize)
+	level, _ = elalog.LevelFromString(cfg.DebugLevel)
+	backend  = elalog.NewBackend(io.MultiWriter(os.Stdout, fileWriter),
 		elalog.Llongfile)
 
 	admrlog = backend.Logger("ADMR", elalog.LevelOff)
