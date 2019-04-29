@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -59,11 +58,6 @@ func main() {
 	eladlog.Infof("Node version: %s", Version)
 	eladlog.Info(GoVersion)
 
-	if loadConfigErr != nil {
-		eladlog.Fatalf("load config file failed %s", loadConfigErr)
-		os.Exit(-1)
-	}
-
 	// listen interrupt signals.
 	interrupt := signal.NewInterrupt()
 
@@ -92,10 +86,8 @@ func main() {
 
 	spvCfg := spv.Config{
 		DataDir:        filepath.Join(DataPath, DataDir, SpvDir),
-		Magic:          activeNetParams.SpvParams.Magic,
-		DefaultPort:    activeNetParams.SpvParams.DefaultPort,
-		SeedList:       activeNetParams.SpvParams.SeedList,
-		Foundation:     activeNetParams.SpvParams.Foundation,
+		ChainParams:    spvNetParams,
+		PermanentPeers: cfg.SPVPermanentPeers,
 		GenesisAddress: genesisAddress,
 	}
 	spvService, err := spv.NewService(&spvCfg)
@@ -134,7 +126,13 @@ func main() {
 	txPool := mempool.New(&mempoolCfg)
 
 	eladlog.Info("3. Start the P2P networks")
-	server, err := server.New(filepath.Join(DataPath, DataDir), chain, txPool, activeNetParams)
+	server, err := server.New(&server.Config{
+		DataDir:        filepath.Join(DataPath, DataDir),
+		Chain:          chain,
+		TxMemPool:      txPool,
+		ChainParams:    activeNetParams,
+		PermanentPeers: cfg.PermanentPeers,
+	})
 	if err != nil {
 		eladlog.Fatalf("initialize P2P networks failed, %s", err)
 		os.Exit(1)
@@ -145,7 +143,7 @@ func main() {
 	eladlog.Info("4. --Initialize pow service")
 	powCfg := pow.Config{
 		ChainParams:               activeNetParams,
-		MinerAddr:                 cfg.MinerAddr,
+		MinerAddr:                 cfg.PayToAddr,
 		MinerInfo:                 cfg.MinerInfo,
 		Server:                    server,
 		Chain:                     chain,
@@ -158,7 +156,7 @@ func main() {
 	}
 
 	powService := pow.NewService(&powCfg)
-	if cfg.Mining {
+	if cfg.EnableMining {
 		eladlog.Info("Start POW Services")
 		go powService.Start()
 	}
@@ -183,44 +181,49 @@ func main() {
 		},
 		Compile:  Version,
 		NodePort: cfg.NodePort,
-		RPCPort:  cfg.HttpJsonPort,
-		RestPort: cfg.HttpRestPort,
-		WSPort:   cfg.HttpWsPort,
+		RPCPort:  cfg.RPCPort,
+		RestPort: cfg.RESTPort,
+		WSPort:   cfg.WSPort,
 		Store:    idChainStore,
 	}
 	service := sv.NewHttpService(&serviceCfg)
 
-	rpcServer := newJsonRpcServer(cfg.HttpJsonPort, service)
-	defer rpcServer.Stop()
-	go func() {
-		if err := rpcServer.Start(); err != nil {
-			eladlog.Errorf("Start HttpJsonRpc server failed, %s", err.Error())
-		}
-	}()
-
-	restServer := newRESTfulServer(cfg.HttpRestPort, service.HttpService)
-	defer restServer.Stop()
-	go func() {
-		if err := restServer.Start(); err != nil {
-			eladlog.Errorf("Start HttpRESTful server failed, %s", err.Error())
-		}
-	}()
-
-	socketServer := newWebSocketServer(cfg.HttpWsPort, service.HttpService, &serviceCfg.Config)
-	defer socketServer.Stop()
-	go func() {
-		if err := socketServer.Start(); err != nil {
-			fmt.Println("Start HttpSocket server failed, %s", err.Error())
-		}
-	}()
-	if cfg.MonitorState {
-		go printSyncState(idChainStore.ChainStore, server)
+	if cfg.EnableRPC {
+		rpcServer := newRPCServer(cfg.RPCPort, service)
+		defer rpcServer.Stop()
+		go func() {
+			if err := rpcServer.Start(); err != nil {
+				eladlog.Errorf("Start JSON-PRC server failed, %s", err)
+			}
+		}()
 	}
+
+	if cfg.EnableREST {
+		restServer := newRESTfulServer(cfg.RESTPort, service.HttpService)
+		defer restServer.Stop()
+		go func() {
+			if err := restServer.Start(); err != nil {
+				eladlog.Errorf("Start RESTful server failed, %s", err)
+			}
+		}()
+	}
+
+	if cfg.EnableWS {
+		wsServer := newWebSocketServer(cfg.WSPort, service.HttpService, &serviceCfg.Config)
+		defer wsServer.Stop()
+		go func() {
+			if err := wsServer.Start(); err != nil {
+				eladlog.Errorf("Start WebSocket server failed, %s", err)
+			}
+		}()
+	}
+
+	go printSyncState(idChainStore.ChainStore, server)
 
 	<-interrupt.C
 }
 
-func newJsonRpcServer(port uint16, service *sv.HttpService) *jsonrpc.Server {
+func newRPCServer(port uint16, service *sv.HttpService) *jsonrpc.Server {
 	s := jsonrpc.NewServer(&jsonrpc.Config{
 		ServePort: port,
 		User:      cfg.RPCUser,

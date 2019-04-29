@@ -1,0 +1,34 @@
+{
+  "ActiveNet": "main",
+  "Magic": 2017002,
+  "NodePort": 20608,
+  "DisableDNS": false,
+  "PermanentPeers": [
+    "localhost:20608"
+  ],
+  "SPVDisableDNS": false,
+  "SPVPermanentPeers": [
+    "localhost:20338"
+  ],
+  "ExchangeRate": 1.0,
+  "MinCrossChainTxFee": 10000,
+  "EnableREST": false,
+  "RESTPort": 20604,
+  "EnableWS": false,
+  "WSPort": 20605,
+  "EnableRPC": false,
+  "RPCPort": 20606,
+  "RPCUser": "User",
+  "RPCPass": "Password",
+  "RPCWhiteList": [
+    "127.0.0.1"
+  ],
+  "DebugLevel": "info",
+  "PerLogFileSize": 20,
+  "LogsFolderSize": 2048,
+  "DisableTxFilters": false,
+  "EnableMining": false,
+  "InstantBlock": false,
+  "PayToAddr": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
+  "MinerInfo": "ELA",
+}

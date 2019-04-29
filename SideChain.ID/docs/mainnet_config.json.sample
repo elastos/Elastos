@@ -1,46 +1,16 @@
 {
-  "Configuration": {
-    "Magic": 2017002,
-    "SpvMagic": 2017001,
-    "SeedList": [
-      "node-mainnet-026.elastos.org:20608",
-      "node-mainnet-027.elastos.org:20608",
-      "node-mainnet-028.elastos.org:20608",
-      "node-mainnet-029.elastos.org:20608",
-      "node-mainnet-030.elastos.org:20608"
-    ],
-    "SpvSeedList": [
-      "node-mainnet-002.elastos.org:20338",
-      "node-mainnet-003.elastos.org:20338",
-      "node-mainnet-004.elastos.org:20338",
-      "node-mainnet-005.elastos.org:20338",
-      "node-mainnet-006.elastos.org:20338"
-    ],
-    "ExchangeRate": 1.0,
-    "MinCrossChainTxFee": 10000,
-    "HttpRestPort": 20604,
-    "HttpWsPort": 20605,
-    "HttpJsonPort": 20606,
-    "NodePort": 20608,
-    "PrintLevel": 1,
-    "MaxLogsSize": 0,
-    "MaxPerLogSize": 0,
-    "DisableTxFilters": true,
-    "MainChainFoundationAddress": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
-    "FoundationAddress": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
-    "PowConfiguration": {
-      "PayToAddr": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
-      "AutoMining": false,
-      "MinerInfo": "ELA",
-      "MinTxFee": 100,
-      "InstantBlock": false
-    },
-    "RpcConfiguration": {
-        "User": "ElaUser",
-        "Pass": "Ela123",
-        "WhiteIPList": [
-            "127.0.0.1"
-        ]
-    }
-  }
+  "DisableDNS": false,
+  "PermanentPeers": [
+    "localhost:20608"
+  ],
+  "SPVDisableDNS": false,
+  "SPVPermanentPeers": [
+    "localhost:20338"
+  ],
+  "EnableRPC": true,
+  "RPCUser": "User",
+  "RPCPass": "Password",
+  "RPCWhiteList": [
+    "127.0.0.1"
+  ]
 }
