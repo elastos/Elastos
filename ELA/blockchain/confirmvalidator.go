@@ -71,7 +71,7 @@ func checkBlockWithConfirmation(block *Block, confirm *payload.Confirm) error {
 	}
 
 	if err := preProcessSpecialTx(block); err != nil {
-		return nil
+		return err
 	}
 
 	if err := ConfirmContextCheck(confirm); err != nil {

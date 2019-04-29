@@ -476,17 +476,18 @@ func (p *ProposalDispatcher) OnResponseInactiveArbitratorsReceived(
 	pro := p.currentInactiveArbitratorTx.Programs[0]
 	buf := new(bytes.Buffer)
 	buf.Write(pro.Parameter)
+	buf.WriteByte(byte(len(sign)))
 	buf.Write(sign)
 	pro.Parameter = buf.Bytes()
 
-	p.tryEnterEmergencyState(len(pro.Parameter) / crypto.SignatureLength)
+	p.tryEnterEmergencyState(len(pro.Parameter) / crypto.SignatureScriptLength)
 }
 
 func (p *ProposalDispatcher) tryEnterEmergencyState(signCount int) bool {
 	log.Info("[tryEnterEmergencyState] current sign count: ", signCount)
 
-	minSignCount := int(float64(len(p.cfg.Arbitrators.GetCRCArbiters())) *
-		state.MajoritySignRatioNumerator / state.MajoritySignRatioDenominator)
+	minSignCount := int(float64(len(p.cfg.Arbitrators.GetCRCArbiters()))*
+		state.MajoritySignRatioNumerator/state.MajoritySignRatioDenominator) + 1
 	if signCount >= minSignCount {
 		payload := p.currentInactiveArbitratorTx.Payload.(*payload.InactiveArbitrators)
 		p.illegalMonitor.AddEvidence(payload)
@@ -673,10 +674,11 @@ func (p *ProposalDispatcher) CreateInactiveArbitrators() (
 	if sign, err = p.cfg.Account.SignTx(tx); err != nil {
 		return nil, err
 	}
+	parameter := append([]byte{byte(len(sign))}, sign...)
 	tx.Programs = []*program.Program{
 		{
 			Code:      con.Code,
-			Parameter: sign,
+			Parameter: parameter,
 		},
 	}
 
@@ -685,7 +687,6 @@ func (p *ProposalDispatcher) CreateInactiveArbitrators() (
 }
 
 func (p *ProposalDispatcher) createArbitratorsRedeemScript() ([]byte, error) {
-
 	var pks []*crypto.PublicKey
 	for _, v := range p.cfg.Arbitrators.GetCRCArbiters() {
 		pk, err := crypto.DecodePoint(v)
@@ -696,8 +697,8 @@ func (p *ProposalDispatcher) createArbitratorsRedeemScript() ([]byte, error) {
 	}
 
 	arbitratorsCount := len(p.cfg.Arbitrators.GetCRCArbiters())
-	minSignCount := int(float64(arbitratorsCount) *
-		state.MajoritySignRatioNumerator / state.MajoritySignRatioNumerator)
+	minSignCount := int(float64(arbitratorsCount)*
+		state.MajoritySignRatioNumerator/state.MajoritySignRatioDenominator) + 1
 	return contract.CreateMultiSigRedeemScript(minSignCount, pks)
 }
 

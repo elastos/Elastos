@@ -1327,17 +1327,13 @@ func CheckInactiveArbitrators(txn *Transaction) error {
 		return errors.New("invalid payload")
 	}
 
-	arbitrators := map[string]interface{}{}
-	for _, v := range DefaultLedger.Arbitrators.GetArbitrators() {
-		arbitrators[common.BytesToHexString(v)] = nil
-	}
-
-	if _, exists := arbitrators[common.BytesToHexString(p.Sponsor)]; !exists {
+	if !DefaultLedger.Arbitrators.IsActiveProducer(p.Sponsor) &&
+		!DefaultLedger.Arbitrators.IsDisabledProducer(p.Sponsor) {
 		return errors.New("sponsor is not belong to arbitrators")
 	}
 
 	for _, v := range p.Arbitrators {
-		if _, exists := arbitrators[common.BytesToHexString(v)]; !exists &&
+		if !DefaultLedger.Arbitrators.IsActiveProducer(v) &&
 			!DefaultLedger.Arbitrators.IsDisabledProducer(v) {
 			return errors.New("inactive arbitrator is not belong to " +
 				"arbitrators")
@@ -1364,9 +1360,10 @@ func checkCRCArbitratorsSignatures(program *program.Program) error {
 
 	crcArbitrators := DefaultLedger.Arbitrators.GetCRCArbitrators()
 	crcArbitratorsCount := len(crcArbitrators)
-	minSignCount := int(float64(crcArbitratorsCount) *
-		state.MajoritySignRatioNumerator / state.MajoritySignRatioDenominator)
+	minSignCount := int(float64(crcArbitratorsCount)*
+		state.MajoritySignRatioNumerator/state.MajoritySignRatioDenominator) + 1
 	if m < 1 || m > n || n != crcArbitratorsCount || m < minSignCount {
+		fmt.Printf("m:%d n:%d minSignCount:%d crc:  %d", m, n, minSignCount, crcArbitratorsCount)
 		return errors.New("invalid multi sign script code")
 	}
 	publicKeys, err := crypto.ParseMultisigScript(code)

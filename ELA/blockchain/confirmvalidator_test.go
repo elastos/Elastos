@@ -35,6 +35,7 @@ func (s *confirmValidatorTestSuite) SetupSuite() {
 	for _, v := range arbitratorsStr {
 		a, _ := common.HexStringToBytes(v)
 		s.arbitrators.CurrentArbitrators = append(s.arbitrators.CurrentArbitrators, a)
+		s.arbitrators.ActiveProducer = append(s.arbitrators.ActiveProducer, a)
 	}
 
 	s.originalLedger = DefaultLedger
