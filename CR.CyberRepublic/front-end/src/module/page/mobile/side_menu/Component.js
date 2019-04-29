@@ -9,6 +9,8 @@ import I18N from '@/I18N'
 
 import { USER_ROLE, USER_LANGUAGE } from '@/constant'
 
+const { analytics, location } = window
+
 export default class extends BaseComponent {
 
   handleMenuClick (ev) {
@@ -52,6 +54,18 @@ export default class extends BaseComponent {
       })
     } else if (key === 'teams') {
       this.props.history.push('/developer/search?lookingFor=TEAM&sortBy=createdAt&sortOrder=DESC')
+    } else if (key === 'supernodes') {
+      analytics.track('SUPERNODES_CLICKED', {
+        url: location.href,
+      })
+      const linkTo = 'https://medium.com/series/supernodes-39936b014bc0'
+      window.location.href = linkTo
+    } else if (key === 'news') {
+      analytics.track('NEWS_CLICKED', {
+        url: location.href,
+      })
+      const linkTo = 'https://news.cyberrepublic.org'
+      window.location.href = linkTo
 
     } else if (key === 'blog') {
 
@@ -144,19 +158,25 @@ export default class extends BaseComponent {
                 {I18N.get('navigation.suggestion')}
               </Menu.Item>
               <Menu.Item key="proposals">
-                {I18N.get('council.voting.proposalList')}
+                {I18N.get('navigation.proposal')}
               </Menu.Item>
               {/* <Menu.Item key="constitution/1">
                   {I18N.get('navigation.constitution')}
               </Menu.Item> */}
+              <Menu.Item key="supernodes">
+                {I18N.get('navigation.resources.submenu.supernodes')}
+              </Menu.Item>
+              <Menu.Item key="news">
+                {I18N.get('navigation.resources.submenu.news')}
+              </Menu.Item>
               <Menu.Item key="forum">
-                {I18N.get('0011')}
+                {I18N.get('navigation.resources.submenu.forum')}
               </Menu.Item>
               <Menu.Item key="blog">
-                {I18N.get('0110')}
+                {I18N.get('navigation.resources.submenu.blog')}
               </Menu.Item>
               <Menu.Item key="docs">
-                {I18N.get('navigation.docs')}
+                {I18N.get('navigation.resources.submenu.docs')}
               </Menu.Item>
             </Menu>
           </Col>

@@ -17,6 +17,12 @@ const { Header } = Layout
 
 const { analytics, location } = window
 
+const Hamburger = () => (
+  <svg width="14" height="11" viewBox="0 0 14 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path fillRule="evenodd" clipRule="evenodd" d="M0 0H14V1H0V0ZM0 5H14V6H0V5ZM14 10H0V11H14V10Z" fill="black" />
+  </svg>
+)
+
 export default class extends BaseComponent {
   constructor() {
     super()
@@ -190,6 +196,33 @@ export default class extends BaseComponent {
     )
   }
 
+  buildResourcesDropdown() {
+    return (
+      <Menu onClick={this.clickItem.bind(this)} className="help-menu">
+        <Menu.Item key="supernodes">
+          {I18N.get('navigation.resources.submenu.supernodes')}
+        </Menu.Item>
+
+        <Menu.Item key="news">
+          {I18N.get('navigation.resources.submenu.news')}
+        </Menu.Item>
+
+        <Menu.Item key="forum">
+          {I18N.get('navigation.resources.submenu.forum')}
+        </Menu.Item>
+
+        <Menu.Item key="blog">
+          {I18N.get('navigation.resources.submenu.blog')}
+        </Menu.Item>
+
+        <Menu.Item key="docs">
+          {I18N.get('navigation.resources.submenu.docs')}
+        </Menu.Item>
+
+      </Menu>
+    )
+  }
+
   getSelectedKeys() {
     let keys = _.map(['cr100', 'crcles', 'ambassadors', 'profile', 'admin',
       'developer', 'social', 'community'], key => (((this.props.pathname || '').indexOf(`/${key}`) === 0) ? key : ''))
@@ -205,6 +238,7 @@ export default class extends BaseComponent {
     const isLogin = this.props.isLogin
     const acctDropdown = this.buildAcctDropdown()
     const helpDropdown = this.buildHelpDropdown()
+    const resourcesDropdown = this.buildResourcesDropdown()
 
     return (
       <Header className="c_Header">
@@ -230,9 +264,7 @@ export default class extends BaseComponent {
             <MediaQuery minWidth={MIN_WIDTH_PC}>
               <Dropdown overlay={helpDropdown} style={{marginTop: '24px'}}>
                 <a className="ant-dropdown-link">
-                  <svg width="14" height="11" viewBox="0 0 14 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path fillRule="evenodd" clipRule="evenodd" d="M0 0H14V1H0V0ZM0 5H14V6H0V5ZM14 10H0V11H14V10Z" fill="black" />
-                  </svg>
+                  <Hamburger />
                 </a>
               </Dropdown>
             </MediaQuery>
@@ -275,31 +307,22 @@ export default class extends BaseComponent {
           </Menu.Item>
 
           <Menu.Item className="c_MenuItem link" key="proposals">
-            {I18N.get('council.voting.proposalList')}
+            {I18N.get('navigation.proposal')}
           </Menu.Item>
 
-          {/*
-          <Menu.Item className="c_MenuItem link" key="supernodes">
-            {I18N.get('navigation.supernodes')}
-          </Menu.Item>
-          */}
-
-          <Menu.Item className="c_MenuItem link" key="forum">
-            {I18N.get('0011')}
-          </Menu.Item>
-
-          <Menu.Item className="c_MenuItem link" key="blog">
-            {I18N.get('0110')}
-          </Menu.Item>
-
-          <Menu.Item className="c_MenuItem link" key="docs">
-            {I18N.get('navigation.docs')}
+          <Menu.Item className="c_MenuItem link" key="resources">
+            <Dropdown overlay={this.buildResourcesDropdown()} placement="bottomCenter">
+              <a className="ant-dropdown-link">
+                {I18N.get('navigation.resources.title')}
+                {/* <Hamburger /> */}
+              </a>
+            </Dropdown>
           </Menu.Item>
 
           {this.props.isLogin
             ? (
               <Menu.Item className="c_MenuItem link" key="profile">
-                {I18N.get('0104')}
+                {I18N.get('navigation.profile')}
               </Menu.Item>
             ) : (
               <Menu.Item className="c_MenuItem link" key="login">
@@ -376,7 +399,6 @@ export default class extends BaseComponent {
       'crcles',
       'ambassadors',
       'social',
-      'supernodes',
       'leader',
       'community',
       'proposals',
@@ -443,6 +465,18 @@ export default class extends BaseComponent {
       this.props.history.push('/profile/info')
     } else if (key === 'teams') {
       this.props.history.push('/developer/search?lookingFor=TEAM&sortBy=createdAt&sortOrder=DESC')
+    } else if (key === 'supernodes') {
+      analytics.track('SUPERNODES_CLICKED', {
+        url: location.href,
+      })
+      const linkTo = 'https://medium.com/series/supernodes-39936b014bc0'
+      window.location.href = linkTo
+    } else if (key === 'news') {
+      analytics.track('NEWS_CLICKED', {
+        url: location.href,
+      })
+      const linkTo = 'https://news.cyberrepublic.org'
+      window.location.href = linkTo
     } else if (key === 'blog') {
       analytics.track('BLOG_CLICKED', {
         url: location.href,
