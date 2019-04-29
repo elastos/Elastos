@@ -11,10 +11,8 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/crypto"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	core "github.com/elastos/Elastos.ELA/core/types"
 	com "github.com/elastos/Elastos.ELA.SideChain.ETH/common"
-	"github.com/elastos/Elastos.ELA/utils/signal"
 	"github.com/syndtr/goleveldb/leveldb"
 	"path/filepath"
 	"strings"
@@ -53,41 +51,41 @@ type Service struct {
 	spv.DPOSSPVService
 }
 
-func NewService(cfg *Config) (*Service, error) {
-	chainParams := config.DefaultParams.TestNet()
-	spvCfg := spv.DPOSConfig{
-		Config: spv.Config{
-			DataDir:        cfg.DataDir,
-			Magic:          chainParams.Magic,
-			Foundation:     "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
-			SeedList:       chainParams.SeedList,
-			DefaultPort:    chainParams.DefaultPort,
-			MinOutbound:    8,
-			MaxConnections: 100,
-		},
-		ChainParams: chainParams,
-		//可以有回调机制，在任何arbiters发生改变的时候，将arbiters信息推过来（需要实现该接口）
-	}
-	dataDir = cfg.DataDir
-	initLog(cfg.DataDir)
-
-	service, err := spv.NewDPOSSPVService(&spvCfg, signal.NewInterrupt().C)
-	if err != nil {
-		return nil, err
-	}
-
-	err = service.RegisterTransactionListener(&listener{
-		address: cfg.GenesisAddress,
-		service: service,
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	spvService = &Service{ service}
-	return &Service{DPOSSPVService: service}, nil
-}
+//func NewService(cfg *Config) (*Service, error) {
+//	chainParams := config.DefaultParams.TestNet()
+//	spvCfg := spv.DPOSConfig{
+//		Config: spv.Config{
+//			DataDir:        cfg.DataDir,
+//			Magic:          chainParams.Magic,
+//			Foundation:     "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
+//			SeedList:       chainParams.SeedList,
+//			DefaultPort:    chainParams.DefaultPort,
+//			MinOutbound:    8,
+//			MaxConnections: 100,
+//		},
+//		ChainParams: chainParams,
+//		//可以有回调机制，在任何arbiters发生改变的时候，将arbiters信息推过来（需要实现该接口）
+//	}
+//	dataDir = cfg.DataDir
+//	initLog(cfg.DataDir)
+//
+//	service, err := spv.NewDPOSSPVService(&spvCfg, signal.NewInterrupt().C)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	err = service.RegisterTransactionListener(&listener{
+//		address: cfg.GenesisAddress,
+//		service: service,
+//	})
+//
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	spvService = &Service{ service}
+//	return &Service{DPOSSPVService: service}, nil
+//}
 
 func (s *Service) VerifyTransaction(tx *types.Transaction) error {
 	payload, ok := tx.Payload.(*types.PayloadRechargeToSideChain)
@@ -292,7 +290,7 @@ func GetCurrentElaHeight() uint32 {
 }
 
 func GetSubContractAddress() com.Address {
-	return com.HexToAddress("0x491bC043672B9286fA02FA7e0d6A3E5A0384A31A")
+	return com.HexToAddress("0xc11790E64046f1892b6e26cE010E31958b11639F")
 }
 
 func GetProducersByHeight(height uint32) [][]byte {
