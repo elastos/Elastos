@@ -3007,7 +3007,7 @@ int ela_send_friend_message(ElaCarrier *w, const char *to, const void *msg,
 
     if (!w->dstorectx) {
         free(data);
-        ela_set_error(rc);
+        ela_set_error(rc < 0 ? rc : ELA_DHT_ERROR(ELAERR_FRIEND_OFFLINE));
         return -1;
     }
 

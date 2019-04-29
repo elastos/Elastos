@@ -241,15 +241,16 @@ ShellConfig *load_config(const char *config_file)
 
     setting = config_lookup(&cfg, "hive_bootstraps");
     if (!setting) {
-        fprintf(stderr, "Missing hive_bootstraps section.\n");
+        config->hive_bootstraps_size = 0;
+        config->hive_bootstraps = NULL;
+
         config_destroy(&cfg);
-        deref(config);
-        return NULL;
+        return config;
     }
 
     entries = config_setting_length(setting);
     if (entries <= 0) {
-        fprintf(stderr, "Empty hive_bootstraps option.\n");
+        fprintf(stderr, "Empty hive bootstraps option.\n");
         config_destroy(&cfg);
         deref(config);
         return NULL;
