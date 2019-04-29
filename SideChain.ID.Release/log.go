@@ -20,31 +20,30 @@ import (
 )
 
 const (
-	defaultMaxPerLogFileSize int64 = elalog.MBSize * 20
-	defaultMaxLogsFolderSize int64 = elalog.GBSize * 2
+	defaultPerLogFileSize int64 = elalog.MBSize * 20
+	defaultLogsFolderSize int64 = elalog.GBSize * 2
 )
 
 // configFileWriter returns the configured parameters for log file writer.
 func configFileWriter() (string, int64, int64) {
-	maxPerLogFileSize := defaultMaxPerLogFileSize
-	maxLogsFolderSize := defaultMaxLogsFolderSize
-	if cfg.MaxPerLogFileSize > 0 {
-		maxPerLogFileSize = cfg.MaxPerLogFileSize * elalog.MBSize
+	perLogFileSize := defaultPerLogFileSize
+	logsFolderSize := defaultLogsFolderSize
+	if cfg.PerLogFileSize > 0 {
+		perLogFileSize = cfg.PerLogFileSize * elalog.MBSize
 	}
-	if cfg.MaxLogsFolderSize > 0 {
-		maxLogsFolderSize = cfg.MaxLogsFolderSize * elalog.MBSize
+	if cfg.LogsFolderSize > 0 {
+		logsFolderSize = cfg.LogsFolderSize * elalog.MBSize
 	}
-	return filepath.Join(DataPath, defaultLogDir), maxPerLogFileSize, maxLogsFolderSize
+	return filepath.Join(DataPath, defaultLogDir), perLogFileSize, logsFolderSize
 }
 
-// log is a logger that is initialized with no output filters.  This
-// means the package will not perform any logging by default until the caller
-// requests it.
+// log is a logger that is initialized with no output filters.  This means the
+// package will not perform any logging by default until the caller requests it.
 var (
 	fileWriter = elalog.NewFileWriter(configFileWriter())
 	logWriter  = io.MultiWriter(os.Stdout, fileWriter)
 	backend    = elalog.NewBackend(logWriter, elalog.Llongfile)
-	level, _   = elalog.LevelFromString(cfg.LogLevel)
+	level, _   = elalog.LevelFromString(cfg.DebugLevel)
 
 	admrlog = backend.Logger("ADMR", elalog.LevelOff)
 	cmgrlog = backend.Logger("CMGR", elalog.LevelOff)
