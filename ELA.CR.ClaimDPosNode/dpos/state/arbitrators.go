@@ -626,6 +626,10 @@ func (a *arbitrators) updateNextArbitrators(height uint32) error {
 	}
 	a.nextCandidates = candidates
 
+	if err = a.snapshotVotesStates(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -685,10 +689,46 @@ func (a *arbitrators) GetNormalArbitratorsDesc(height uint32,
 	return a.getNormalArbitratorsDescV0()
 }
 
-func (a *arbitrators) updateOwnerProgramHashes() error {
-	a.currentOwnerProgramHashes = make([]*common.Uint168, 0)
+func (a *arbitrators) snapshotVotesStates() error {
 	a.ownerVotesInRound = make(map[common.Uint168]common.Fixed64, 0)
 	a.totalVotesInRound = 0
+	for _, nodePublicKey := range a.nextArbitrators {
+		if !a.IsCRCArbitrator(nodePublicKey) {
+			producer := a.GetProducer(nodePublicKey)
+			if producer == nil {
+				return errors.New("get producer by node public key failed")
+			}
+			programHash, err := contract.PublicKeyToStandardProgramHash(
+				producer.OwnerPublicKey())
+			if err != nil {
+				return err
+			}
+			a.ownerVotesInRound[*programHash] = producer.Votes()
+			a.totalVotesInRound += producer.Votes()
+		}
+	}
+
+	for _, nodePublicKey := range a.nextCandidates {
+		if a.IsCRCArbitrator(nodePublicKey) {
+			continue
+		}
+		producer := a.GetProducer(nodePublicKey)
+		if producer == nil {
+			return errors.New("get producer by node public key failed")
+		}
+		programHash, err := contract.PublicKeyToStandardProgramHash(producer.OwnerPublicKey())
+		if err != nil {
+			return err
+		}
+		a.ownerVotesInRound[*programHash] = producer.Votes()
+		a.totalVotesInRound += producer.Votes()
+	}
+
+	return nil
+}
+
+func (a *arbitrators) updateOwnerProgramHashes() error {
+	a.currentOwnerProgramHashes = make([]*common.Uint168, 0)
 	for _, nodePublicKey := range a.currentArbitrators {
 		if a.IsCRCArbitrator(nodePublicKey) {
 			ownerPublicKey := nodePublicKey // crc node public key is its owner public key for now
@@ -708,8 +748,6 @@ func (a *arbitrators) updateOwnerProgramHashes() error {
 				return err
 			}
 			a.currentOwnerProgramHashes = append(a.currentOwnerProgramHashes, programHash)
-			a.ownerVotesInRound[*programHash] = producer.Votes()
-			a.totalVotesInRound += producer.Votes()
 		}
 	}
 
@@ -727,8 +765,6 @@ func (a *arbitrators) updateOwnerProgramHashes() error {
 			return err
 		}
 		a.candidateOwnerProgramHashes = append(a.candidateOwnerProgramHashes, programHash)
-		a.ownerVotesInRound[*programHash] = producer.Votes()
-		a.totalVotesInRound += producer.Votes()
 	}
 
 	return nil
@@ -890,6 +926,8 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
 		finalRoundChange:            common.Fixed64(0),
 		arbitersRoundReward:         nil,
 		illegalBlocksPayloadHashes:  make(map[common.Uint256]interface{}),
+		totalVotesInRound:           0,
+		ownerVotesInRound:           make(map[common.Uint168]common.Fixed64),
 		degradation: &degradation{
 			inactiveTxs:       make(map[common.Uint256]interface{}),
 			inactivateHeight:  0,
