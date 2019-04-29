@@ -504,7 +504,7 @@ func setDefaultSettings(args []string) []string {
 
 		if isContainsCmd(args, "--testnet") {
 			args = append(args, "--networkid")
-			args = append(args, "2")
+			args = append(args, "11")
 
 			if !isContainsCmd(args, "--bootnodes") {
 				args = append(args, "--bootnodes")
@@ -512,7 +512,7 @@ func setDefaultSettings(args []string) []string {
 			}
 		} else if isContainsCmd(args, "--rinkeby") {
 			args = append(args, "--networkid")
-			args = append(args, "3")
+			args = append(args, "12")
 
 			if !isContainsCmd(args, "--bootnodes") {
 				args = append(args, "--bootnodes")
