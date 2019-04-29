@@ -1,20 +1,20 @@
 import React, {Component} from 'react';
 
 import {AppRegistry, StyleSheet, View, Image, ActionSheetIOS, NativeModules, AlertIOS, Platform} from 'react-native';
-import {Root, Toast, Container, Header, Content, Footer, FooterTab, Button, Text } from 'native-base';
+import {Root, Toast, Container, Header, Content, Footer, FooterTab, Button, Text, Row, Col } from 'native-base';
 
 import {Carrier} from 'react-native-elastos-carrier';
 
 
-let targetAddress = 'DAQb3hTPLiaeLjhLyHvHK4ebJ8PcAvJUewwtxCQmbgZLVaQdLkjc';
-let target = '6XwWqntxZFwa6XmAtSmJLNZbrL9VwbsMr8GDMxKAUPmy';
+let targetAddress = '';
+let target = '';
 if(Platform.OS === 'ios'){
   targetAddress = '7qMfNokEqAubtDiQ59i5iDyMfnnZ7V7AMGeVhwrC6cUHrWZYy2gd';
   target = '47LBjMwsybaJK551bvSW3eRLLJuBVM53k6TJdL3LAwAM';
 }
 if(Platform.OS === 'android'){
-  targetAddress ='FFqmEuri4AQxD7w83pgLYwthSQhJ47XaAChyaARWnUji9rE86gUp';
-  target = '7VBxbJPczHZZwLfs4NhtUvv66CxyhMaSsbakpS8wjccw';
+  targetAddress ='TNSXbdWyHg6dDDbABH2xuqNH81TEwCWwSaBA9gFXcnLMX9cmaj6K';
+  target = 'CzrPpmBSutLGVH6VjtoqE6rhoy8jwn7tfADp2nnrArv8';
 }
 
 const testID = (name)=>{
@@ -45,71 +45,119 @@ class App extends Component{
       <Root>
       <Container style={styles.container}>
         <Text style={styles.log} {...testID('log')}>{this.state.log.join('\n')}</Text>
-        <Button style={styles.btn} {...testID('log:clear')} danger onPress={this.testFn.bind(this, 'clearLog')}>
-          <Text>clear log5</Text>
+        <Button style={styles.btn} {...testID('log:clear')} danger block onPress={this.testFn.bind(this, 'clearLog')}>
+          <Text>clear log</Text>
         </Button>
         {/* <Text style={styles.error}>{this.state.error}</Text> */}
         
 
         <Content>
-          <Button style={styles.btn} {...testID('btn:getVersion')} primary onPress={this.testFn.bind(this, 'getVersion')}>
-            <Text>getVersion</Text>
-          </Button>
-          <Button style={styles.btn} {...testID('btn:isValidAddress')} success onPress={this.testFn.bind(this, 'isValidAddress')}>
-            <Text>isValidAddress</Text>
-          </Button>
-          <Button style={styles.btn} {...testID('btn:isValidId')} primary onPress={this.testFn.bind(this, 'isValidId')}>
-            <Text>isValidId</Text>
-          </Button>
-          
+          <Row>
+            <Col>
+              <Button style={styles.btn} {...testID('btn:getVersion')} primary onPress={this.testFn.bind(this, 'getVersion')}>
+                <Text>getVersion</Text>
+              </Button>
+            </Col>
+            <Col>
+              <Button style={styles.btn} {...testID('btn:isValidAddress')} success onPress={this.testFn.bind(this, 'isValidAddress')}>
+                <Text>isValidAddress</Text>
+              </Button>
+            </Col>
+            <Col>
+              <Button style={styles.btn} {...testID('btn:isValidId')} primary onPress={this.testFn.bind(this, 'isValidId')}>
+                <Text>isValidId</Text>
+              </Button>
+            </Col>
+          </Row>
 
-          <Button style={styles.btn} {...testID('btn:getAddress')} success onPress={this.testFn.bind(this, 'getAddress')}>
-            <Text>getAddress</Text>
-          </Button>
-          <Button style={styles.btn} {...testID('btn:getNodeId')} primary onPress={this.testFn.bind(this, 'getNodeId')}>
-            <Text>getNodeId</Text>
-          </Button>
+          <Row>
+            <Col>
+              <Button style={styles.btn} {...testID('btn:getAddress')} success onPress={this.testFn.bind(this, 'getAddress')}>
+                <Text>getAddress</Text>
+              </Button>
+            </Col>
+            <Col>
+              <Button style={styles.btn} {...testID('btn:getNodeId')} primary onPress={this.testFn.bind(this, 'getNodeId')}>
+                <Text>getNodeId</Text>
+              </Button>
+            </Col>
+            <Col>
+              <Button style={styles.btn} {...testID('btn:setSelfInfo')} success onPress={this.testFn.bind(this, 'setSelfInfo')}>
+                <Text>setSelfInfo</Text>
+              </Button>
+            </Col>
+          </Row>
 
-          <Button style={styles.btn} {...testID('btn:setSelfInfo')} success onPress={this.testFn.bind(this, 'setSelfInfo')}>
-            <Text>setSelfInfo</Text>
-          </Button>
-          <Button style={styles.btn} {...testID('btn:getSelfInfo')} primary onPress={this.testFn.bind(this, 'getSelfInfo')}>
-            <Text>getSelfInfo</Text>
-          </Button>
+          <Row>
+            <Col>
+              <Button style={styles.btn} {...testID('btn:getSelfInfo')} primary onPress={this.testFn.bind(this, 'getSelfInfo')}>
+                <Text>getSelfInfo</Text>
+              </Button>
+            </Col>
+            <Col>
+              <Button style={styles.btn} {...testID('btn:addFriend')} success onPress={this.testFn.bind(this, 'addFriend')}>
+                <Text>addFriend</Text>
+              </Button>
+            </Col>
+            <Col>
+              <Button style={styles.btn} {...testID('btn:acceptFriend')} primary onPress={this.testFn.bind(this, 'acceptFriend')}>
+                <Text>acceptFriend</Text>
+              </Button>
+            </Col>
+          </Row>
+
+          <Row>
+            <Col>
+              <Button style={styles.btn} {...testID('btn:getFriendInfo')} success onPress={this.testFn.bind(this, 'getFriendInfo')}>
+                <Text>getFriendInfo</Text>
+              </Button>
+            </Col>
+              
+            <Col>
+              <Button style={styles.btn} {...testID('btn:sendMessage')} primary onPress={this.testFn.bind(this, 'sendMessage')}>
+                <Text>sendMessage</Text>
+              </Button>
+            </Col>
+            <Col>
+              <Button style={styles.btn} {...testID('btn:createSession')} success onPress={this.testFn.bind(this, 'createSession')}>
+                <Text>createSession</Text>
+              </Button>
+            </Col>
+          </Row>
+
+          <Row>
+            {/* <Col>
+              <Button style={styles.btn} {...testID('btn:sessionRequest')} primary onPress={this.testFn.bind(this, 'sessionRequest')}>
+                <Text>sessionRequest</Text>
+              </Button>
+            </Col>
+            <Col>
+              <Button style={styles.btn} {...testID('btn:sessionReplyRequest')} success onPress={this.testFn.bind(this, 'sessionReplyRequest')}>
+                <Text>sessionReplyRequest</Text>
+              </Button>
+            </Col> */}
+            <Col>
+              <Button style={styles.btn} {...testID('btn:writeStream')} primary onPress={this.testFn.bind(this, 'writeStream')}>
+                <Text>writeStream</Text>
+              </Button>
+            </Col>
+            <Col>
+              <Button style={styles.btn} {...testID('btn:closeSession')} success block onPress={this.testFn.bind(this, 'closeSession')}>
+                <Text>closeSession</Text>
+              </Button>
+            </Col>
+          </Row>
           
-          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'addFriend')}>
-            <Text>addFriend</Text>
-          </Button>
-          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'acceptFriend')}>
-            <Text>acceptFriend</Text>
-          </Button>
-          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'getFriendInfo')}>
-            <Text>getFriendInfo</Text>
-          </Button>
-          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'sendMessage')}>
-            <Text>sendMessage</Text>
-          </Button>
-          {/* <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'close')}>
-            <Text>close</Text>
-          </Button> */}
-          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'createSession')}>
-            <Text>createSession</Text>
-          </Button>
-          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'sessionRequest')}>
-            <Text>sessionRequest</Text>
-          </Button>
-          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'sessionReplyRequest')}>
-            <Text>sessionReplyRequest</Text>
-          </Button>
-          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'writeStream')}>
-            <Text>writeStream</Text>
-          </Button>
-          <Button style={styles.btn} success block onPress={this.testFn.bind(this, 'closeSession')}>
-            <Text>closeSession</Text>
-          </Button>
+          <Row>
+            <Col>
+              
+            </Col>
+            <Col></Col>
+            <Col></Col>
+          </Row>
+
         </Content>
-        
-        
+
       </Container>
       </Root>
     );
@@ -254,7 +302,9 @@ class App extends Component{
     this.setState({log : mlog});
   }
   setError(error){
-    // this.setState({error});
+    const mlog = this.state.log;
+    mlog.unshift('[error]=>'+error);
+    this.setState({log : mlog});
     Toast.show({
       text : error,
       type : 'danger'
