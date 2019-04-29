@@ -43,6 +43,9 @@ type Config struct {
 	// ChainParams represents the active net parameters.
 	ChainParams *config.Params
 
+	// PermanentPeers are the peers need to be connected permanently.
+	PermanentPeers []string
+
 	// NewTxFilter indicates the function to create a TxFilter according to the
 	// TxFilterType.
 	NewTxFilter func(filter.TxFilterType) filter.TxFilter
@@ -819,17 +822,14 @@ func New(cfg *Config) (*server, error) {
 	}
 
 	svrcfg := p2psvr.NewDefaultConfig(
-		params.Magic,
-		pact.EBIP002Version,
-		uint64(services),
-		params.DefaultPort,
-		params.SeedList,
-		params.ListenAddrs,
+		params.Magic, pact.EBIP002Version, uint64(services),
+		params.DefaultPort, params.DNSSeeds, params.ListenAddrs,
 		nil, nil, makeEmptyMessage,
 		func() uint64 { return uint64(cfg.Chain.GetBestHeight()) },
 	)
 	svrcfg.DataDir = cfg.DataDir
 	svrcfg.NAFilter = &naFilter{}
+	svrcfg.PermanentPeers = cfg.PermanentPeers
 
 	s := server{
 		chain:      cfg.Chain,
