@@ -1,7 +1,6 @@
 package dpos
 
 import (
-	"encoding/hex"
 	"errors"
 	"sync"
 
@@ -91,30 +90,6 @@ func (n *network) Start() {
 			}
 		}
 	}()
-}
-
-func (n *network) getProducersConnectionInfo() (result map[string]p2p.PeerAddr) {
-	result = make(map[string]p2p.PeerAddr)
-	crcs := blockchain.DefaultLedger.Arbitrators.GetCRCArbitrators()
-	for k, v := range crcs {
-		pid := peer.PID{}
-		copy(pid[:], v.NodePublicKey())
-		result[k] = p2p.PeerAddr{PID: pid, Addr: v.Info().NetAddress}
-	}
-
-	producers := blockchain.DefaultLedger.Blockchain.GetState().GetActiveProducers()
-	for _, p := range producers {
-		if len(p.Info().NodePublicKey) != 33 {
-			log.Warn("[getProducersConnectionInfo] invalid public key")
-			continue
-		}
-		pid := peer.PID{}
-		copy(pid[:], p.Info().NodePublicKey)
-		result[hex.EncodeToString(p.Info().NodePublicKey)] =
-			p2p.PeerAddr{PID: pid, Addr: p.Info().NetAddress}
-	}
-
-	return result
 }
 
 func (n *network) Stop() error {

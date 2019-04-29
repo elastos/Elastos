@@ -284,6 +284,17 @@ func (s *State) GetActiveProducers() []*Producer {
 	s.mtx.RLock()
 	producers := make([]*Producer, 0, len(s.activityProducers))
 	for _, producer := range s.activityProducers {
+		producers = append(producers, producer)
+	}
+	s.mtx.RUnlock()
+	return producers
+}
+
+// GetVotedProducers returns all producers that in active state with votes.
+func (s *State) GetVotedProducers() []*Producer {
+	s.mtx.RLock()
+	producers := make([]*Producer, 0, len(s.activityProducers))
+	for _, producer := range s.activityProducers {
 		// limit arbiters can only be producers who have votes
 		if producer.Votes() > 0 {
 			producers = append(producers, producer)

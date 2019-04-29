@@ -311,14 +311,36 @@ func (a *arbitrators) clearingDPOSReward(block *types.Block,
 	return nil
 }
 
-func (a *arbitrators) distributeDPOSReward(reward common.Fixed64) error {
+func (a *arbitrators) distributeDPOSReward(reward common.Fixed64) (err error) {
 	a.arbitersRoundReward = map[common.Uint168]common.Fixed64{}
 
+	a.arbitersRoundReward[a.chainParams.CRCAddress] = 0
+	var realDPOSReward common.Fixed64
+	if a.IsUnderstaffedMode() || a.IsInactiveMode() {
+		realDPOSReward, err = a.distributeOnlyWithCRCArbitrators(reward)
+	} else {
+		realDPOSReward, err = a.distributeWithNormalArbitrators(reward)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	change := reward - realDPOSReward
+	if change < 0 {
+		return errors.New("real dpos reward more than reward limit")
+	}
+
+	a.finalRoundChange = change
+	return nil
+}
+
+func (a *arbitrators) distributeWithNormalArbitrators(
+	reward common.Fixed64) (common.Fixed64, error) {
 	ownerHashes := a.currentOwnerProgramHashes
 	if len(ownerHashes) == 0 {
-		return errors.New("not found arbiters when distributeDposReward")
+		return 0, errors.New("not found arbiters when distributeDposReward")
 	}
-	candidateOwnerHashes := a.candidateOwnerProgramHashes
 
 	totalBlockConfirmReward := float64(reward) * 0.25
 	totalTopProducersReward := float64(reward) - totalBlockConfirmReward
@@ -329,7 +351,6 @@ func (a *arbitrators) distributeDPOSReward(reward common.Fixed64) error {
 	}
 	rewardPerVote := totalTopProducersReward / float64(totalVotesInRound)
 
-	a.arbitersRoundReward[a.chainParams.CRCAddress] = 0
 	realDPOSReward := common.Fixed64(0)
 	for _, ownerHash := range ownerHashes {
 		votes := a.ownerVotesInRound[*ownerHash]
@@ -344,7 +365,7 @@ func (a *arbitrators) distributeDPOSReward(reward common.Fixed64) error {
 
 		realDPOSReward += r
 	}
-
+	candidateOwnerHashes := a.candidateOwnerProgramHashes
 	for _, ownerHash := range candidateOwnerHashes {
 		votes := a.ownerVotesInRound[*ownerHash]
 		individualProducerReward := common.Fixed64(float64(votes) * rewardPerVote)
@@ -352,14 +373,13 @@ func (a *arbitrators) distributeDPOSReward(reward common.Fixed64) error {
 
 		realDPOSReward += individualProducerReward
 	}
+	return realDPOSReward, nil
+}
 
-	change := reward - realDPOSReward
-	if change < 0 {
-		return errors.New("real dpos reward more than reward limit")
-	}
-
-	a.finalRoundChange = change
-	return nil
+func (a *arbitrators) distributeOnlyWithCRCArbitrators(
+	reward common.Fixed64) (common.Fixed64, error) {
+	a.arbitersRoundReward[a.chainParams.CRCAddress] = reward
+	return reward, nil
 }
 
 func (a *arbitrators) DecreaseChainHeight(height uint32) error {
@@ -607,7 +627,7 @@ func (a *arbitrators) updateNextArbitrators(height uint32) error {
 	if !a.IsInactiveMode() && !a.IsUnderstaffedMode() {
 		count = a.chainParams.GeneralArbiters
 		producers, err := a.GetNormalArbitratorsDesc(height, count,
-			a.State.GetActiveProducers())
+			a.State.GetVotedProducers())
 		if err != nil {
 			if err := a.tryHandleError(height, err); err != nil {
 				return err
@@ -618,15 +638,18 @@ func (a *arbitrators) updateNextArbitrators(height uint32) error {
 				a.nextArbitrators = append(a.nextArbitrators, v)
 			}
 		}
+
+		candidates, err := a.GetCandidatesDesc(height, count,
+			a.State.GetVotedProducers())
+		if err != nil {
+			return err
+		}
+		a.nextCandidates = candidates
+	} else {
+		a.nextCandidates = make([][]byte, 0)
 	}
 
-	candidates, err := a.GetCandidatesDesc(height, count, a.State.GetActiveProducers())
-	if err != nil {
-		return err
-	}
-	a.nextCandidates = candidates
-
-	if err = a.snapshotVotesStates(); err != nil {
+	if err := a.snapshotVotesStates(); err != nil {
 		return err
 	}
 
@@ -690,6 +713,7 @@ func (a *arbitrators) GetNormalArbitratorsDesc(height uint32,
 }
 
 func (a *arbitrators) snapshotVotesStates() error {
+	log.Info("[snapshotVotesStates] begin")
 	a.ownerVotesInRound = make(map[common.Uint168]common.Fixed64, 0)
 	a.totalVotesInRound = 0
 	for _, nodePublicKey := range a.nextArbitrators {
@@ -724,6 +748,7 @@ func (a *arbitrators) snapshotVotesStates() error {
 		a.totalVotesInRound += producer.Votes()
 	}
 
+	log.Info("[snapshotVotesStates] end")
 	return nil
 }
 
