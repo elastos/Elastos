@@ -262,6 +262,8 @@ static void *crawl_offline_msg(void *arg)
         return NULL;
     }
 
+    vlogI("Carrier: Dstore is ready now.");
+
     while (true) {
         pthread_mutex_lock(&ctx->lock);
         while (ctx->state == DSTORE_STATE_IDLE)
