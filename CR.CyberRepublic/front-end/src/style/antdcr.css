@@ -14120,33 +14120,7 @@ tr.ant-table-expanded-row:hover {
 .ant-tabs-tab-next:hover {
   color: rgba(0, 0, 0, 0.65);
 }
-.ant-tabs-tab-prev-icon,
-.ant-tabs-tab-next-icon {
-  font-style: normal;
-  font-weight: bold;
-  font-variant: normal;
-  line-height: inherit;
-  vertical-align: baseline;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  text-transform: none;
-}
-.ant-tabs-tab-prev-icon:before,
-.ant-tabs-tab-next-icon:before {
-  display: block;
-  font-family: "anticon" !important;
-  display: inline-block;
-  font-size: 12px;
-  font-size: 10px \9;
-  transform: scale(0.83333333) rotate(0deg);
-}
-:root .ant-tabs-tab-prev-icon:before,
-:root .ant-tabs-tab-next-icon:before {
-  font-size: 12px;
-}
+
 .ant-tabs-tab-btn-disabled {
   cursor: not-allowed;
 }
@@ -14156,59 +14130,6 @@ tr.ant-table-expanded-row:hover {
 }
 .ant-tabs-tab-next {
   right: 2px;
-}
-.ant-tabs-tab-next-icon:before {
-  content: "\e61f";
-}
-.ant-tabs-tab-prev {
-  left: 0;
-}
-.ant-tabs-tab-prev-icon:before {
-  content: "\e620";
-}
-:root .ant-tabs-tab-prev {
-  filter: none;
-}
-.ant-tabs-nav-wrap {
-  overflow: hidden;
-  margin-bottom: -1px;
-}
-.ant-tabs-nav-scroll {
-  overflow: hidden;
-  white-space: nowrap;
-}
-.ant-tabs-nav {
-  box-sizing: border-box;
-  padding-left: 0;
-  transition: transform 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
-  position: relative;
-  margin: 0;
-  list-style: none;
-  display: inline-block;
-}
-.ant-tabs-nav:before,
-.ant-tabs-nav:after {
-  display: table;
-  content: " ";
-}
-.ant-tabs-nav:after {
-  clear: both;
-}
-.ant-tabs-nav .ant-tabs-tab-disabled {
-  pointer-events: none;
-  cursor: default;
-  color: rgba(0, 0, 0, 0.25);
-}
-.ant-tabs-nav .ant-tabs-tab {
-  display: inline-block;
-  height: 100%;
-  margin: 0 32px 0 0;
-  padding: 12px 16px;
-  box-sizing: border-box;
-  position: relative;
-  transition: color 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
-  cursor: pointer;
-  text-decoration: none;
 }
 .ant-tabs-nav .ant-tabs-tab:last-child {
   margin-right: 0;
@@ -14315,17 +14236,6 @@ tr.ant-table-expanded-row:hover {
   width: 100%;
   bottom: 0;
   height: 32px;
-}
-.ant-tabs-vertical > .ant-tabs-bar .ant-tabs-tab-next-icon:before {
-  content: "\e61d";
-}
-.ant-tabs-vertical > .ant-tabs-bar .ant-tabs-tab-prev {
-  top: 0;
-  width: 100%;
-  height: 32px;
-}
-.ant-tabs-vertical > .ant-tabs-bar .ant-tabs-tab-prev-icon:before {
-  content: "\e61e";
 }
 .ant-tabs-vertical > .ant-tabs-content {
   overflow: hidden;
