@@ -404,12 +404,6 @@ func GetInfo(param Params) map[string]interface{} {
 	return ResponsePack(Success, &RetVal)
 }
 
-func AuxHelp(param Params) map[string]interface{} {
-
-	//TODO  and description for this rpc-interface
-	return ResponsePack(Success, "createauxblock==submitauxblock")
-}
-
 func ToggleMining(param Params) map[string]interface{} {
 	mining, ok := param.Bool("mining")
 	if !ok {
