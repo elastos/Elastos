@@ -213,6 +213,10 @@ func (a *ArbitratorsMock) GetOnDutyArbitrator() []byte {
 	return a.GetNextOnDutyArbitrator(0)
 }
 
+func (a *ArbitratorsMock) GetOnDutyCrossChainArbitrator() []byte {
+	return a.GetNextOnDutyArbitrator(0)
+}
+
 func (a *ArbitratorsMock) GetNextOnDutyArbitrator(offset uint32) []byte {
 	if len(a.CurrentArbitrators) == 0 {
 		return nil
