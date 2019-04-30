@@ -526,6 +526,23 @@ func (a *arbitrators) GetNextOnDutyArbitrator(offset uint32) []byte {
 	return a.GetNextOnDutyArbitratorV(a.bestHeight()+1, offset)
 }
 
+func (a *arbitrators) GetOnDutyCrossChainArbitrator() []byte {
+	var arbiter []byte
+	height := a.bestHeight()
+	if height < a.chainParams.CRCOnlyDPOSHeight-1 {
+		arbiter = a.GetOnDutyArbitrator()
+	} else {
+		crcArbiters := a.GetCRCArbiters()
+		sort.Slice(crcArbiters, func(i, j int) bool {
+			return bytes.Compare(crcArbiters[i], crcArbiters[j]) < 0
+		})
+		ondutyIndex := int(height-a.chainParams.CRCOnlyDPOSHeight+1) % len(crcArbiters)
+		arbiter = crcArbiters[ondutyIndex]
+	}
+
+	return arbiter
+}
+
 func (a *arbitrators) GetNextOnDutyArbitratorV(height, offset uint32) []byte {
 	// main version is >= H1
 	if height >= a.State.chainParams.CRCOnlyDPOSHeight {

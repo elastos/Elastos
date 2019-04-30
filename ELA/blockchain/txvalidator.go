@@ -148,7 +148,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 		return Success
 
 	case SideChainPow:
-		arbitrator := DefaultLedger.Arbitrators.GetOnDutyArbitrator()
+		arbitrator := DefaultLedger.Arbitrators.GetOnDutyCrossChainArbitrator()
 		if err := CheckSideChainPowConsensus(txn, arbitrator); err != nil {
 			log.Warn("[CheckSideChainPowConsensus],", err)
 			return ErrSideChainPowConsensus
