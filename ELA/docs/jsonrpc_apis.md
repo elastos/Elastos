@@ -1694,9 +1694,9 @@ description: find out which are already exist in chain by providing a list of  w
 
 parameters:
 
-| name | type   | description                                   |
-| ---- | ------ | --------------------------------------------- |
-| txs  | string | a list of transaction hashes in string format |
+| name | type          | description                                   |
+| ---- | ------------- | --------------------------------------------- |
+| txs  | array[string] | a list of transaction hashes in string format |
 
 result: 
 
@@ -1708,7 +1708,11 @@ argument sample:
 { 
   "method":"getexistwithdrawtransactions", 
   "params":{
-    "txs":"5b2233656462636338333966643466313663306237303836396632643437376235366130303664333164633761313064386362343962643132363238643633353265222c2236383634626266353261336531343064343066316437303762616533316430303632363565666335346463623538653334303337363435303630636533653136222c2239313332636638326131386438353964323030633935326165633534386437383935653762363534666431373631643564303539623931656462616431373638225d"
+    "txs":[
+      "3edbcc839fd4f16c0b70869f2d477b56a006d31dc7a10d8cb49bd12628d6352e",
+      "9132cf82a18d859d200c952aec548d7895e7b654fd1761d5d059b91edbad1768",
+      "764691821f937fd566bcf533611a5e5b193008ea1ba1396f67b7b0da22717c02"
+    ]
   } 
 }
 ```

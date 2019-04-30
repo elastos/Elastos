@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"math"
 	"sort"
@@ -1131,24 +1130,13 @@ func GetTransactionByHash(param Params) map[string]interface{} {
 }
 
 func GetExistWithdrawTransactions(param Params) map[string]interface{} {
-	txsStr, ok := param.String("txs")
+	txList, ok := param.ArrayString("txs")
 	if !ok {
 		return ResponsePack(InvalidParams, "txs not found")
 	}
 
-	txsBytes, err := common.HexStringToBytes(txsStr)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
-
-	var txHashes []string
-	err = json.Unmarshal(txsBytes, &txHashes)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
-
 	var resultTxHashes []string
-	for _, txHash := range txHashes {
+	for _, txHash := range txList {
 		txHashBytes, err := common.HexStringToBytes(txHash)
 		if err != nil {
 			return ResponsePack(InvalidParams, "")
