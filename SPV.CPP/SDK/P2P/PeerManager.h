@@ -283,6 +283,7 @@ namespace Elastos {
 			mutable std::string _downloadPeerName;
 			time_t _keepAliveTimestamp;
 			uint32_t _earliestKeyTime, _reconnectSeconds, _syncStartHeight, _filterUpdateHeight, _estimatedHeight;
+			uint32_t _reconnectStep;
 			BloomFilterPtr _bloomFilter;
 			double _fpRate, _averageTxPerBlock;
 			BlockSet _blocks;

@@ -135,6 +135,7 @@ namespace Elastos {
 				_keepAliveTimestamp(0),
 				_earliestKeyTime(earliestKeyTime),
 				_reconnectSeconds(reconnectSeconds),
+				_reconnectStep(1),
 				_syncStartHeight(0),
 				_filterUpdateHeight(0),
 				_estimatedHeight(0),
@@ -880,8 +881,8 @@ namespace Elastos {
 				_syncSucceeded = false;
 				_keepAliveTimestamp = time(nullptr);
 				_isConnected = 1;
-				if (_estimatedHeight < peer->GetLastBlock())
-					_estimatedHeight = peer->GetLastBlock();
+				_reconnectStep = 1;
+				_estimatedHeight = peer->GetLastBlock();
 				LoadBloomFilter(peer);
 				peer->SetCurrentBlockHeight(_lastBlock->GetHeight());
 				PublishPendingTx(peer);
@@ -908,11 +909,11 @@ namespace Elastos {
 		}
 
 		void PeerManager::OnDisconnected(const PeerPtr &peer, int error) {
-			int willSave = 0, willReconnect = 0, txError = 0;
+			int willSave = 0, txError = 0;
 			TransactionPeerList *peerList;
 			std::vector<PublishedTransaction> pubTx;
-			int reconnectSeconds = 30;
-			bool enableReconnect = true;
+			uint32_t reconnectSeconds = 1;
+			bool enableReconnect, willReconnect = false;
 
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
@@ -962,7 +963,7 @@ namespace Elastos {
 					peer->warn("sync failed");
 				} else if (_connectFailureCount < MAX_CONNECT_FAILURES && _reconnectTaskCount == 0) {
 					peer->info("will reconnect");
-					willReconnect = 1;
+					willReconnect = true;
 				}
 
 				if (txError) {
@@ -983,8 +984,14 @@ namespace Elastos {
 
 
 				if (willReconnect) {
+					reconnectSeconds = _reconnectStep;
+					if (_reconnectStep < 60) {
+						// doubling the step back each time
+						_reconnectStep <<= 1;
+					}
+
 					for (size_t i = 0; i < _publishedTx.size(); ++i) {
-						if (_publishedTx[i].HasCallback()) {
+						if (_publishedTx[i].HasCallback() && reconnectSeconds > 3) {
 							// have pending tx
 							reconnectSeconds = 3;
 							break;
@@ -995,7 +1002,7 @@ namespace Elastos {
 				enableReconnect = _enableReconnectTask;
 			}
 
-			if (willReconnect == 0) {
+			if (willReconnect == false) {
 				for (size_t i = 0; i < pubTx.size(); i++) {
 					pubTx[i].FireCallback(txError, "tx canceled");
 				}
