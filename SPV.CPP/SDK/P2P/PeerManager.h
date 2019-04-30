@@ -45,7 +45,7 @@ namespace Elastos {
 				// func syncStarted()
 				virtual void syncStarted() = 0;
 
-				virtual void syncProgress(uint32_t currentHeight, uint32_t estimateHeight) = 0;
+				virtual void syncProgress(uint32_t currentHeight, uint32_t estimateHeight, time_t lastBlockTime) = 0;
 
 				// func syncStopped(_ error: BRPeerManagerError?)
 				virtual void syncStopped(const std::string &error) = 0;
@@ -192,7 +192,7 @@ namespace Elastos {
 		private:
 			void FireSyncStarted();
 
-			void FireSyncProgress(uint32_t currentHeight, uint32_t estimatedHeight);
+			void FireSyncProgress(uint32_t currentHeight, uint32_t estimatedHeight, time_t lastBlockTime);
 
 			void FireSyncStopped(int error);
 

@@ -113,7 +113,7 @@ namespace Elastos {
 			std::vector<UTXO> utxos = GetUTXO(assetID);
 
 			for (size_t i = 0; i < utxos.size(); ++i) {
-				const TransactionPtr &tx = _allTx.Get(utxos[i].hash);
+				const TransactionPtr tx = _allTx.Get(utxos[i].hash);
 				if (tx == nullptr ||
 					(type == GroupedAsset::Default &&
 						tx->GetOutputs()[utxos[i].n].GetType() != TransactionOutput::Type::Default) ||
@@ -240,7 +240,7 @@ namespace Elastos {
 			assert(txHash != 0);
 
 			Lock();
-			const TransactionPtr &tx = _allTx.Get(txHash);
+			const TransactionPtr tx = _allTx.Get(txHash);
 
 			if (tx) {
 				for (size_t i = _transactions.size(); i > 0; i--) { // find depedent _transactions
@@ -306,7 +306,7 @@ namespace Elastos {
 				_blockHeight = blockHeight;
 
 			for (i = 0; i < txHashes.size(); i++) {
-				const TransactionPtr &tx = _allTx.Get(txHashes[i]);
+				const TransactionPtr tx = _allTx.Get(txHashes[i]);
 				if (tx == nullptr || (tx->GetBlockHeight() == blockHeight && tx->GetTimestamp() == timestamp))
 					continue;
 
@@ -460,7 +460,7 @@ namespace Elastos {
 
 			boost::mutex::scoped_lock scoped_lock(lock);
 			for (size_t i = 0; tx && i < tx->GetInputs().size(); i++) {
-				const TransactionPtr &t = _allTx.Get(tx->GetInputs()[i].GetTransctionHash());
+				const TransactionPtr t = _allTx.Get(tx->GetInputs()[i].GetTransctionHash());
 				uint32_t n = tx->GetInputs()[i].GetIndex();
 
 				if (t && n < t->GetOutputs().size() &&
@@ -628,7 +628,7 @@ namespace Elastos {
 			}
 
 			for (size_t i = 0; !r && i < tx->GetInputs().size(); i++) {
-				const TransactionPtr &t = _allTx.Get(tx->GetInputs()[i].GetTransctionHash());
+				const TransactionPtr t = _allTx.Get(tx->GetInputs()[i].GetTransctionHash());
 				uint32_t n = tx->GetInputs()[i].GetIndex();
 
 				if (t == nullptr || n >= t->GetOutputs().size()) {

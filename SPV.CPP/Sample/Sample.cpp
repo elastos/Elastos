@@ -53,8 +53,11 @@ public:
 		logger->debug("{} OnBlockSyncStarted", _walletID);
 	}
 
-	virtual void OnBlockSyncProgress(uint32_t currentBlockHeight, uint32_t estimatedHeight) {
-		logger->debug("{} OnBlockSyncProgress ----> [ {} / {} ]", _walletID, currentBlockHeight, estimatedHeight);
+	virtual void OnBlockSyncProgress(uint32_t currentBlockHeight, uint32_t estimatedHeight, time_t lastBlockTime) {
+		struct tm tm;
+
+		localtime_r(&lastBlockTime, &tm);
+		logger->debug("{} OnBlockSyncProgress ----> [ {} / {} ] {}", _walletID, currentBlockHeight, estimatedHeight, asctime(&tm));
 		if (currentBlockHeight >= estimatedHeight) {
 			if (_walletID.find(gMainchainSubWalletID) != std::string::npos) {
 

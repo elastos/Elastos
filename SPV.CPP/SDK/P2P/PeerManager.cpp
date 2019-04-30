@@ -39,9 +39,9 @@ namespace Elastos {
 			}
 		}
 
-		void PeerManager::FireSyncProgress(uint32_t currentHeight, uint32_t estimatedHeight) {
+		void PeerManager::FireSyncProgress(uint32_t currentHeight, uint32_t estimatedHeight, time_t lastBlockTime) {
 			if (!_listener.expired()) {
-				_listener.lock()->syncProgress(currentHeight, estimatedHeight);
+				_listener.lock()->syncProgress(currentHeight, estimatedHeight, lastBlockTime);
 			}
 		}
 
@@ -1355,7 +1355,7 @@ namespace Elastos {
 						block->GetHeight() >= peer->GetLastBlock()) {
 						peer->info("adding block #{}, false positive rate: {}", block->GetHeight(), _fpRate);
 						if (block->GetHeight() <= _estimatedHeight)
-							FireSyncProgress(block->GetHeight(), _estimatedHeight);
+							FireSyncProgress(block->GetHeight(), _estimatedHeight, block->GetTimestamp());
 					}
 
 					_blocks.Insert(block);
