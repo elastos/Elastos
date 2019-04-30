@@ -176,8 +176,8 @@ namespace Elastos {
 					   BLOCK_UNKNOWN_HEIGHT); // height must be saved/restored along with serialized block
 				_orphans.insert(blocks[i]);
 
-				if ((blocks[i]->GetHeight() % BLOCK_DIFFICULTY_INTERVAL) == 0 &&
-					(block == nullptr || blocks[i]->GetHeight() > block->GetHeight()))
+				if (/*(blocks[i]->GetHeight() % BLOCK_DIFFICULTY_INTERVAL) == 0 &&*/
+					(block == nullptr || blocks[i]->GetHeight() < block->GetHeight()))
 					block = blocks[i]; // find last transition block
 			}
 
@@ -1484,11 +1484,11 @@ namespace Elastos {
 				if (j > 0) {
 					if (saveBlocks.size() > BLOCK_DIFFICULTY_INTERVAL - j) {
 						saveBlocks.resize(saveBlocks.size() - (BLOCK_DIFFICULTY_INTERVAL - j));
-					} else {
-						saveBlocks.clear();
+//					} else {
+//						saveBlocks.clear();
 					}
 				}
-				assert(saveBlocks.size() == 0 || (saveBlocks.back()->GetHeight() % BLOCK_DIFFICULTY_INTERVAL) == 0);
+//				assert(saveBlocks.size() == 0 || (saveBlocks.back()->GetHeight() % BLOCK_DIFFICULTY_INTERVAL) == 0);
 			}
 
 			if (saveBlocks.size() > 0)
