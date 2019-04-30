@@ -361,10 +361,10 @@ namespace Elastos {
 						  });
 		}
 
-		void SubWallet::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight) {
+		void SubWallet::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight, time_t lastBlockTime) {
 			std::for_each(_callbacks.begin(), _callbacks.end(),
-						  [&currentHeight, &estimatedHeight](ISubWalletCallback *callback) {
-							  callback->OnBlockSyncProgress(currentHeight, estimatedHeight);
+						  [&currentHeight, &estimatedHeight, &lastBlockTime](ISubWalletCallback *callback) {
+							  callback->OnBlockSyncProgress(currentHeight, estimatedHeight, lastBlockTime);
 						  });
 		}
 

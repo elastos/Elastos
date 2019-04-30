@@ -86,7 +86,7 @@ namespace Elastos {
 
 		}
 
-		void CoreSpvService::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight) {
+		void CoreSpvService::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight, time_t lastBlockTime) {
 
 		}
 
@@ -177,9 +177,10 @@ namespace Elastos {
 			}
 		}
 
-		void WrappedExceptionPeerManagerListener::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight) {
+		void WrappedExceptionPeerManagerListener::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight,
+															   time_t lastBlockTime) {
 			try {
-				_listener->syncProgress(currentHeight, estimatedHeight);
+				_listener->syncProgress(currentHeight, estimatedHeight, lastBlockTime);
 			} catch (std::exception ex) {
 				Log::getLogger()->error("Peer manager callback (syncProgress) error: {}", ex.what());
 			} catch (...) {
@@ -313,10 +314,11 @@ namespace Elastos {
 			}));
 		}
 
-		void WrappedExecutorPeerManagerListener::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight) {
-			_executor->Execute(Runnable([this, currentHeight, estimatedHeight]() -> void {
+		void WrappedExecutorPeerManagerListener::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight,
+															  time_t lastBlockTime) {
+			_executor->Execute(Runnable([this, currentHeight, estimatedHeight, lastBlockTime]() -> void {
 				try {
-					_listener->syncProgress(currentHeight, estimatedHeight);
+					_listener->syncProgress(currentHeight, estimatedHeight, lastBlockTime);
 				} catch (std::exception ex) {
 					Log::getLogger()->error("Peer manager callback (syncProgress) error: {}", ex.what());
 				} catch (...) {
