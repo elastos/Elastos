@@ -57,7 +57,6 @@ func StartRPCServer() {
 	mainMux["getamountbyinputs"] = GetAmountByInputs
 	mainMux["getreceivedbyaddress"] = GetReceivedByAddress
 	// aux interfaces
-	mainMux["help"] = AuxHelp
 	mainMux["submitauxblock"] = SubmitAuxBlock
 	mainMux["createauxblock"] = CreateAuxBlock
 	// mining interfaces
