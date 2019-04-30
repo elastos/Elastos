@@ -180,6 +180,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 			log.Warn("[CheckActivateProducerTransaction],", err)
 			return ErrTransactionPayload
 		}
+		return Success
 	}
 
 	// check double spent transaction
