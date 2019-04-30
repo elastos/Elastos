@@ -750,7 +750,7 @@ func (s *server) handleRelayInvMsg(peers map[svr.IPeer]*serverPeer, rmsg relayMs
 			// Compatible for old version SPV client.
 			if sp.filter.IsLoaded() {
 				// Do not send unconfirmed block to SPV client after H1.
-				if current > s.chainParams.CRCOnlyDPOSHeight &&
+				if current >= s.chainParams.CRCOnlyDPOSHeight-1 &&
 					rmsg.invVect.Type == msg.InvTypeBlock {
 					continue
 				}
