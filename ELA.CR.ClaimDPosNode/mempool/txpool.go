@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"sort"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -511,21 +510,9 @@ func (mp *TxPool) cleanSidechainTx(txs []*Transaction) {
 
 // clean the sidechainpow tx pool
 func (mp *TxPool) cleanSideChainPowTx() {
-	var arbiter []byte
-	height := blockchain.DefaultLedger.Blockchain.GetHeight()
-	if height < mp.chainParams.CRCOnlyDPOSHeight-1 {
-		arbiter = blockchain.DefaultLedger.Arbitrators.GetOnDutyArbitrator()
-	} else {
-		crcArbiters := blockchain.DefaultLedger.Arbitrators.GetCRCArbiters()
-		sort.Slice(crcArbiters, func(i, j int) bool {
-			return bytes.Compare(crcArbiters[i], crcArbiters[j]) < 0
-		})
-		ondutyIndex := int(height-mp.chainParams.CRCOnlyDPOSHeight+1) % len(crcArbiters)
-		arbiter = crcArbiters[ondutyIndex]
-	}
-
 	for hash, txn := range mp.txnList {
 		if txn.IsSideChainPowTx() {
+			arbiter := blockchain.DefaultLedger.Arbitrators.GetOnDutyCrossChainArbitrator()
 			if err := blockchain.CheckSideChainPowConsensus(txn, arbiter); err != nil {
 				// delete tx
 				delete(mp.txnList, hash)
