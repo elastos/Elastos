@@ -1057,7 +1057,7 @@ int multiplex_handler_create(ElaStream *s, MultiplexHandler **handler)
         flex_buffer_init(&_handler->incomplete_buf, _handler->__buffer,
                          FLEX_BUFFER_MAX_LEN, FLEX_PADDING_LEN);
 
-    _handler->channels = channels_create(256);
+    _handler->channels = channels_create(257);
     if (!_handler->channels) {
         deref(handler);
         return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);

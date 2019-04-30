@@ -47,9 +47,9 @@ int friend_number_compare(const void *key1, size_t len1,
 }
 
 static inline
-hashtable_t *friends_create(void)
+hashtable_t *friends_create(int capacity)
 {
-    return hashtable_create(32, 1, NULL, friend_number_compare);
+    return hashtable_create(capacity, 1, NULL, friend_number_compare);
 }
 
 static inline

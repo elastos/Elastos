@@ -536,7 +536,7 @@ int portforwarding_worker_create(MultiplexHandler *handler,
         return ELA_SYS_ERROR(rc);
     }
 
-    wk->portforwardings = portforwardings_create(8);
+    wk->portforwardings = portforwardings_create(7);
     if (!wk->portforwardings) {
         deref(wk);
         return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);

@@ -1237,7 +1237,7 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
         return NULL;
     }
 
-    w->friends = friends_create();
+    w->friends = friends_create(31);
     if (!w->friends) {
         free_persistence_data(&data);
         deref(w);
@@ -1253,7 +1253,7 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
         return NULL;
     }
 
-    w->tcallbacks = transacted_callbacks_create(32);
+    w->tcallbacks = transacted_callbacks_create(31);
     if (!w->tcallbacks) {
         free_persistence_data(&data);
         deref(w);
@@ -1261,7 +1261,7 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
         return NULL;
     }
 
-    w->thistory = transaction_history_create(32);
+    w->thistory = transaction_history_create(31);
     if (!w->thistory) {
         free_persistence_data(&data);
         deref(w);
@@ -1269,7 +1269,7 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
         return NULL;
     }
 
-    w->tassembly_ireqs = tassemblies_create(8);
+    w->tassembly_ireqs = tassemblies_create(17);
     if (!w->tassembly_ireqs) {
         free_persistence_data(&data);
         deref(w);
@@ -1277,7 +1277,7 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
         return NULL;
     }
 
-    w->tassembly_irsps = tassemblies_create(8);
+    w->tassembly_irsps = tassemblies_create(17);
     if (!w->tassembly_irsps) {
         free_persistence_data(&data);
         deref(w);

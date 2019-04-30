@@ -770,7 +770,7 @@ int ela_filetransfer_init(ElaCarrier *w,
     if (!ext)
         goto error_exit;
 
-    ext->filereqs = filereqs_create(8);
+    ext->filereqs = filereqs_create(17);
     if (!ext->filereqs)
         goto error_exit;
 

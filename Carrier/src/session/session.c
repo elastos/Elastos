@@ -1357,7 +1357,7 @@ int ela_session_add_service(ElaSession *ws, const char *service,
     }
 
     if (!ws->portforwarding.services) {
-        ws->portforwarding.services = services_create(8);
+        ws->portforwarding.services = services_create(7);
         if (!ws->portforwarding.services) {
             ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
             return -1;
