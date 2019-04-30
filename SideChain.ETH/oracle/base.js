@@ -11,7 +11,7 @@ contract.options.address = ctrt.address;
 
 var method = contract.methods[String("upgrade")]();
 var encodeABI = method.encodeABI();
-//base.acc.signTransaction({data: base.encodeABI, gas: 3000000, gasPrice: 9000000000, to: base.ctrt.address,nonce:4}).then(function(xxx) {rawtx = xxx});
+//base.acc.signTransaction({data: base.encodeABI, gas: 3000000, gasPrice: 9000000000, to: base.ctrt.address}).then(function(xxx) {rawtx = xxx});
 //base.web3.eth.sendSignedTransaction(rawtx.rawTransaction).on("transactionHash", console.log).on("receipt",console.log).then(console.log).catch(console.log)
 
 //signTransaction({data: encodeABI,      gas: 3000000, gasPrice: 1000000000, to: '0x302DE19296bc097d36ab9cDF8bfE4fb0b969D5dA'}).then(function(xxx) {rawtx = xxx});

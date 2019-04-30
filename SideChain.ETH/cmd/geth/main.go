@@ -508,7 +508,7 @@ func setDefaultSettings(args []string) []string {
 
 			if !isContainsCmd(args, "--bootnodes") {
 				args = append(args, "--bootnodes")
-				args = append(args, "enode://f348cbae8f390dcf74576cc3d6fa6a1f61b0999c9dc73708c4019d7b91329c45e1e777ed899cb3c691592732d2bbb776a5ae168547ec4ac1c58a81db2a67684e@54.223.80.38:30301")
+				args = append(args, "enode://da476658b470ccfd35e7886cd8c971ef77fa0ae6557e963686af7ef3f09cf484ee3063301db2e33969b31dbbff480373911fa2e478cc583deb80ffa005c513c0@54.223.196.249:20000")
 			}
 		} else if isContainsCmd(args, "--rinkeby") {
 			args = append(args, "--networkid")
@@ -516,12 +516,12 @@ func setDefaultSettings(args []string) []string {
 
 			if !isContainsCmd(args, "--bootnodes") {
 				args = append(args, "--bootnodes")
-				args = append(args, "enode://f348cbae8f390dcf74576cc3d6fa6a1f61b0999c9dc73708c4019d7b91329c45e1e777ed899cb3c691592732d2bbb776a5ae168547ec4ac1c58a81db2a67684e@54.223.80.38:30301")
+				args = append(args, "enode://da476658b470ccfd35e7886cd8c971ef77fa0ae6557e963686af7ef3f09cf484ee3063301db2e33969b31dbbff480373911fa2e478cc583deb80ffa005c513c0@54.223.196.249:20000")
 			}
 		} else {
 			if !isContainsCmd(args, "--bootnodes") {
 				args = append(args, "--bootnodes")
-				args = append(args, "enode://f348cbae8f390dcf74576cc3d6fa6a1f61b0999c9dc73708c4019d7b91329c45e1e777ed899cb3c691592732d2bbb776a5ae168547ec4ac1c58a81db2a67684e@54.223.80.38:30301")
+				args = append(args, "enode://da476658b470ccfd35e7886cd8c971ef77fa0ae6557e963686af7ef3f09cf484ee3063301db2e33969b31dbbff480373911fa2e478cc583deb80ffa005c513c0@54.223.196.249:20000")
 			}
 		}
 	}

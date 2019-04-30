@@ -290,7 +290,7 @@ func GetCurrentElaHeight() uint32 {
 }
 
 func GetSubContractAddress() com.Address {
-	return com.HexToAddress("0xc11790E64046f1892b6e26cE010E31958b11639F")
+	return com.HexToAddress("0x322f033e93f548C721ed8963718Fbdb2d6aE7866")
 }
 
 func GetProducersByHeight(height uint32) [][]byte {
