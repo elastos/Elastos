@@ -340,11 +340,8 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 
 	// prepare the SPV service config parameters
 	spvCfg := &spv.Config{
-		DataDir:     ctx.GlobalString(utils.DataDirFlag.Name),
-		Magic:       spv.Parameters.SpvMagic,
-		Foundation:  spv.Parameters.MainChainFoundationAddress,
-		SeedList:    spv.Parameters.SpvSeedList,
-		DefaultPort: spv.Parameters.NodePort,
+		DataDir:   ctx.GlobalString(utils.DataDirFlag.Name),
+		ActiveNet: "t",
 	}
 
 	// prepare to start the SPV module
@@ -388,13 +385,13 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 
 	//  注销掉spv模块启动的代码
 	// start the SPV service
-	//fmt.Printf("Starting SPV service with config: %+v \n", *spvCfg)
-	//if spvService, err := spv.NewService(spvCfg); err != nil {
-	//	utils.Fatalf("Cannot start mainchain SPV service: %v", err)
-	//} else {
-	//	spvService.Start()
-	//	fmt.Println("Mainchain SPV module started successfully!")
-	//}
+	fmt.Printf("Starting SPV service with config: %+v \n", *spvCfg)
+	if spvService, err := spv.NewService(spvCfg); err != nil {
+		utils.Fatalf("Cannot start mainchain SPV service: %v", err)
+	} else {
+		spvService.Start()
+		fmt.Println("Mainchain SPV module started successfully!")
+	}
 
 	// Unlock any account  requested
 	ks := stack.AccountManager().Backends(keystore.KeyStoreType)[0].(*keystore.KeyStore)
