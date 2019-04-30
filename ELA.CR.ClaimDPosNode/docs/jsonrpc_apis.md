@@ -1206,7 +1206,7 @@ named arguments sample:
 
 ```json
 {
-  "method":"submitauxblock",
+  "method":"submitsidechainillegaldata",
   "params":{
     "illegaldata": "016400000021023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c64981855ad8681d0d86d1e91e00167939cb6694d2c422acd208a0072939487f699940353662653933363937386332363162326536343964353864626661663366323364346138363832373466353532326364326164623433303861393535633461330221030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9210288e79636e41edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c7"
   }
@@ -1494,3 +1494,237 @@ result sample:
   "result": "0.3"
 }
 ```
+
+#### getblockbyheight
+
+description: get a block by specifying block height.
+
+parameters:
+
+| name   | type   | description         |
+| ------ | ------ | ------------------- |
+| height | uint32 | the height of block |
+
+result: 
+
+| name              | type          | description                                                  |
+| ----------------- | ------------- | ------------------------------------------------------------ |
+| hash              | string        | the blockchain hash                                          |
+| confirmations     | integer       | confirmations                                                |
+| size              | integer       | the size of a block in bytes                                 |
+| strippedsize      | integer       | equals to size                                               |
+| weight            | integer       | This block’s weight                                          |
+| height            | integer       | the height of block                                          |
+| version           | integer       | block header's version                                       |
+| versionhex        | string        | block header's version in hex format                         |
+| merkleroot        | string        | the merkleroot hash of this block                            |
+| tx                | array[struct] | transactions of this block as an array                       |
+| time              | integer       | the Unix timestamp of this block                             |
+| mediantime        | integer       | equals to time                                               |
+| nonce             | integer       | the nonce of this block                                      |
+| bits              | integer       | bits of this block                                           |
+| difficulty        | string        | difficulty of this block                                     |
+| chainwork         | string        | The estimated number of block header hashes miners had to check from the genesis block to this block, encoded as big-endian hex |
+| previousblockhash | string        | previous block hash                                          |
+| nextblockhash     | string        | next block hash                                              |
+| auxpow            | string        | Auxpow information in hex format                             |
+
+argument sample:
+
+```json
+{ 
+  "method":"getblockbyheight", 
+  "params":{
+    "height":"5"
+  } 
+}
+```
+
+result sample:
+
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "hash": "d428cf8a8e8e2c265ccceb0ed0a017aae45a89c98529d1f6dd43efc219089e0e",
+        "confirmations": 452,
+        "strippedsize": 563,
+        "size": 563,
+        "weight": 2252,
+        "height": 5,
+        "version": 0,
+        "versionhex": "00000000",
+        "merkleroot": "c1accbe3434279f74db674728d7020190680474f11c4ec2976bd1223cf7c9c66",
+        "tx": [
+            {
+                "txid": "c1accbe3434279f74db674728d7020190680474f11c4ec2976bd1223cf7c9c66",
+                "hash": "c1accbe3434279f74db674728d7020190680474f11c4ec2976bd1223cf7c9c66",
+                "size": 257,
+                "vsize": 257,
+                "version": 0,
+                "locktime": 5,
+                "vin": [
+                    {
+                        "txid": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "vout": 65535,
+                        "sequence": 4294967295
+                    }
+                ],
+                "vout": [
+                    {
+                        "value": "1.50684931",
+                        "n": 0,
+                        "address": "EPha6MJ2Y9HAdrtNvMVrBu6ePMnmZJtmyv",
+                        "assetid": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+                        "outputlock": 0,
+                        "type": 0,
+                        "payload": null
+                    },
+                    {
+                        "value": "1.75799086",
+                        "n": 1,
+                        "address": "EQzEvQbz5XGDZeWu2u48dPaeLTzvmfSyG4",
+                        "assetid": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+                        "outputlock": 0,
+                        "type": 0,
+                        "payload": null
+                    },
+                    {
+                        "value": "1.75799088",
+                        "n": 2,
+                        "address": "EPha6MJ2Y9HAdrtNvMVrBu6ePMnmZJtmyv",
+                        "assetid": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+                        "outputlock": 0,
+                        "type": 0,
+                        "payload": null
+                    }
+                ],
+                "blockhash": "d428cf8a8e8e2c265ccceb0ed0a017aae45a89c98529d1f6dd43efc219089e0e",
+                "confirmations": 452,
+                "time": 1556595214,
+                "blocktime": 1556595214,
+                "type": 0,
+                "payloadversion": 4,
+                "payload": {
+                    "coinbasedata": "ELA"
+                },
+                "attributes": [
+                    {
+                        "usage": 0,
+                        "data": "f53c107eec00d337"
+                    }
+                ],
+                "programs": []
+            }
+        ],
+        "time": 1556595214,
+        "mediantime": 1556595214,
+        "nonce": 0,
+        "bits": 545259519,
+        "difficulty": "1",
+        "chainwork": "000001c3",
+        "previousblockhash": "b45f9e479340c6d2889076f6bd1e138d14e8620bc2cc0ef642bd15278509d49f",
+        "nextblockhash": "185cf0322f3f38abe0ecc0fffbca84d87965492042e87036bf78bfdb665b53fa",
+        "auxpow": "01000000010000000000000000000000000000000000000000000000000000000000000000000000002cfabe6d6d0e9e0819c2ef43ddf6d12985c9895ae4aa17a0d00eebcc5c262c8e8e8acf28d40100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ffffff7f0000000000000000000000000000000000000000000000000000000000000000a0c69cab73b8541e6d5b17d5c27e3482d3cc0264da80142645f4ad67677a44940cc2c75c0000000001000000",
+        "minerinfo": "ELA"
+    }
+}
+```
+
+#### getarbitratorgroupbyheight
+
+description: get amount of given inputs.
+
+parameters:
+
+| name   | type   | description                  |
+| ------ | ------ | ---------------------------- |
+| height | uint32 | block height about the chain |
+
+result: 
+
+| name                  | type          | description                         |
+| --------------------- | ------------- | ----------------------------------- |
+| ondutyarbitratorindex | int           | index of current on duty arbitrator |
+| arbitrators           | array[string] | an array of current arbitrators     |
+
+argument sample:
+
+```json
+{ 
+  "method":"getarbitratorgroupbyheight", 
+  "params":{
+    "height":"310"
+  } 
+}
+```
+
+result sample:
+
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "ondutyarbitratorindex": 10,
+        "arbitrators": [
+            "02338fc098e08ed9a798f0d40b5320f52ad0539b98a972856a948bf652b0014110",
+            "026ef6740c405e9ff137410f47fe92597c82a8dd236e87e7f4aafe4dc1aa0cd06b",
+            "02c684ec9883bb5397243d9e129b9334a643f4778c28e99d59858162884081b183",
+            "02d20a48b4287737912de6af53b6afef2596a755f2a541374dda1fd3ab0aa1b984",
+            "02d2dd22fa2abfebb94d34666da47b15f214cc1a9ea1b8db0fda22d264bb922b36",
+            "02fc936192cfb02b8a22e4ba090638f05ac60c8bf9d70f1558c5166cb7768a182e",
+            "030936942e4bbe3d7f7dc45cea38195f4c4bb1474b336d6bf35fcba179872332b4",
+            "0320cb8d823c5d202e0ec481f4e0fa0d3e191fb9d0a7629543882bad7444ad3016",
+            "03268eb4064889047863485288515cdd880a986b57ccc9d72ae58d4401f67509a7",
+            "034282d36e034272f7c289fd9655797a352d1c76a917e94d6dedaf484acf167e2d",
+            "03d732f3df7c081d149bd585b77afe1077cedb4b6c6fd9b6278a8ffd456d34c3ab",
+            "03f9a1f5b23e3d57e8d95a45008ad4574352fa55f755a655c81ee22e62894811b2"
+        ]
+    }
+}
+```
+
+#### getexistwithdrawtransactions
+
+description: find out which are already exist in chain by providing a list of  withdraw transaction hashes.
+
+parameters:
+
+| name | type   | description                                   |
+| ---- | ------ | --------------------------------------------- |
+| txs  | string | a list of transaction hashes in string format |
+
+result: 
+
+a list of existing transaction hashes
+
+argument sample:
+
+```json
+{ 
+  "method":"getexistwithdrawtransactions", 
+  "params":{
+    "txs":"5b2233656462636338333966643466313663306237303836396632643437376235366130303664333164633761313064386362343962643132363238643633353265222c2236383634626266353261336531343064343066316437303762616533316430303632363565666335346463623538653334303337363435303630636533653136222c2239313332636638326131386438353964323030633935326165633534386437383935653762363534666431373631643564303539623931656462616431373638225d"
+  } 
+}
+```
+
+result sample:
+
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": [
+      "3edbcc839fd4f16c0b70869f2d477b56a006d31dc7a10d8cb49bd12628d6352e",
+      "9132cf82a18d859d200c952aec548d7895e7b654fd1761d5d059b91edbad1768"
+    ]
+}
+```
+
+#### 
