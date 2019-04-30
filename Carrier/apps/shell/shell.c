@@ -844,6 +844,56 @@ static void send_message(ElaCarrier *w, int argc, char *argv[])
         output("Send message failed(0x%x).\n", ela_get_error());
 }
 
+static void send_bulk_message(ElaCarrier *w, int argc, char *argv[])
+{
+    int total_count;
+    int failed_count;
+    size_t msglen;
+    int i;
+    int rc;
+
+    if (argc != 4) {
+        output("Invalid command syntax.\n");
+        return;
+    }
+
+    total_count = atoi(argv[2]);
+    if (total_count <= 0) {
+        output("Count is invalid.\n");
+        return;
+    }
+
+    msglen = strlen(argv[3]);
+    if (msglen >= ELA_MAX_APP_MESSAGE_LEN - 16) {
+        output("Message is too long.\n");
+        return;
+    }
+
+    output("Sending");
+    failed_count = 0;
+    for (i = 0; i < total_count; i++) {
+        char msg[ELA_MAX_APP_MESSAGE_LEN + 1] = {0};
+        char index[16] = {0};
+
+        sprintf(index, "#%d", i + 1);
+        strcpy(msg, argv[3]);
+        strcat(msg, index);
+
+        rc = ela_send_friend_message(w, argv[1], msg, strlen(msg) + 1);
+        if (rc < 0) {
+            output("x(0x%x)", ela_get_error());
+            failed_count++;
+        } else {
+            output(".");
+        }
+    }
+
+    output("\nSend bulk messages finished\n");
+    output("  totoal: %d\n", total_count);
+    output(" success: %d\n", total_count - failed_count);
+    output("  failed: %d\n", failed_count);
+}
+
 static void invite_response_callback(ElaCarrier *w, const char *friendid,
                             const char *bundle, int status, const char *reason,
                             const void *data, size_t len, void *context)
@@ -1790,6 +1840,7 @@ struct command {
     { "friend",     show_friend,            "friend [User ID] - Display friend details." },
     { "label",      label_friend,           "label [User ID] [Name] - Add label to friend." },
     { "msg",        send_message,           "msg [User ID] [Message] - Send message to a friend." },
+    { "bulkmsg",    send_bulk_message,      "bulkmsg [User ID] [Count] [Message] - Send numerous messages to a friend." },
     { "invite",     invite,                 "invite [User ID] [Message] [Bundle] - Invite friend." },
     { "ireply",     reply_invite,           "ireply [User ID] confirm [Message] [Bundle] *OR* ireply [User ID] refuse [Reason] [Bundle] - Confirm or refuse invitation with a message or reason." },
 
