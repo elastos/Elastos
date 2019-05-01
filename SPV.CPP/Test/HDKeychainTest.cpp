@@ -21,6 +21,7 @@
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("HDKeychain test", "[HDKeychain]") {
+	Log::registerMultiLogger();
 
 	SECTION("Web standard HD keystore") {
 		nlohmann::json keystore = R"({

@@ -16,59 +16,7 @@
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("Sign transaction test", "[SignTransaction]") {
-
-#if 0
-	SECTION("Multi sign account sign multi sign tx test") {
-		TransactionPtr tx(new Transaction);
-		nlohmann::json content = "{\"Attributes\":[{\"Data\":\"353634383333303934\",\"Usage\":0}],\"BlockHeight\":2147483647,\"Fee\":10000,\"Inputs\":[{\"Address\":\"8Gqrkk876Kc1HUjeG9evyFsc91RGYWyQj4\",\"Amount\":200000000,\"Index\":0,\"Script\":\"76a914134a742f7782c295d3ea18cb59cd0101b21b1a2f88ac\",\"Sequence\":4294967295,\"Signature\":\"\",\"TxHash\":\"e77c3bea963d124311076d4737372cbb23aef8d63d5eadaad578455d481cc025\"}],\"IsRegistered\":false,\"LockTime\":0,\"Outputs\":[{\"Address\":\"Ed8ZSxSB98roeyuRZwwekrnRqcgnfiUDeQ\",\"Amount\":10000000,\"AssetId\":\"b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3\",\"OutputLock\":0,\"ProgramHash\":\"21db215de2758b7d743f66e4c66cfcc35dc54ccbcb\",\"Script\":\"76a914db215de2758b7d743f66e4c66cfcc35dc54ccbcb88ac\",\"ScriptLen\":25,\"SignType\":172},{\"Address\":\"8Gqrkk876Kc1HUjeG9evyFsc91RGYWyQj4\",\"Amount\":189990000,\"AssetId\":\"b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3\",\"OutputLock\":0,\"ProgramHash\":\"12134a742f7782c295d3ea18cb59cd0101b21b1a2f\",\"Script\":\"76a914134a742f7782c295d3ea18cb59cd0101b21b1a2f88ac\",\"ScriptLen\":25,\"SignType\":174}],\"PayLoad\":null,\"PayloadVersion\":0,\"Programs\":[],\"Remark\":\"\",\"Timestamp\":0,\"TxHash\":\"80a0eb3c6bbce2c21d542c7ce9d248fe013fc1c757addd7fcee04b14098d5fa7\",\"Type\":2,\"Version\":1}"_json;
-		tx->FromJson(content);
-
-		bytes_t key;
-		std::string payPassword = "payPassword";
-		std::vector<std::string> coSigners;
-
-		std::string pubKey1 = "03b73a64f50c142c1f08710e04b928553508c3028e045dfdfdc5489434df13275e";
-		std::string prvKey1 = "6e7910da9c066524273be2b493616ef0d4a848a0696829141a90458a9cf160af";
-		std::string pubKey2 = "02f925e82f4482a9aa853a35203ab8965439c9db6aee8ef1783d2e1a491c28a482";
-		std::string prvKey2 = "2c7c9180792e49a624b02ac2adff2f994ecc28044ee9889d6054159189da03a5";
-
-		Account *account1 = new Account(new SimpleAccount(prvKey1, payPassword), {pubKey2}, 2);
-		MultiSignSubAccount *subAccount1 = new MultiSignSubAccount(account1);
-
-		MultiSignAccount *account2 = new MultiSignAccount(new SimpleAccount(prvKey2, payPassword), {pubKey1}, 2);
-		MultiSignSubAccount *subAccount2 = new MultiSignSubAccount(account2);
-
-		std::vector<Address> addrs;
-		subAccount1->GetAllAddresses(addrs, 0, 100, true);
-		bytes_t code = subAccount1->GetRedeemScript(addrs[0]);
-		tx->AddProgram(Program(code, bytes_t()));
-
-		REQUIRE_NOTHROW(subAccount1->SignTransaction(tx, payPassword));
-		REQUIRE_THROWS(subAccount1->SignTransaction(tx, payPassword));
-
-		nlohmann::json signedInfo = tx->GetSignedInfo();
-
-
-		REQUIRE(signedInfo.size() == 1);
-		REQUIRE((signedInfo[0]["SignType"] == "MultiSign"));
-		REQUIRE((signedInfo[0]["Signers"][0] == pubKey1));
-		REQUIRE(!tx->IsSigned());
-
-		REQUIRE_NOTHROW(subAccount2->SignTransaction(tx, payPassword));
-		REQUIRE_THROWS(subAccount2->SignTransaction(tx, payPassword));
-		signedInfo = tx->GetSignedInfo();
-		REQUIRE(signedInfo.size() == 1);
-		REQUIRE((signedInfo[0]["SignType"] == "MultiSign"));
-		REQUIRE((signedInfo[0]["Signers"][1] == pubKey2));
-		REQUIRE(tx->IsSigned());
-
-		SECTION("Simple account should not support vote") {
-			bytes_t votePubKey = subAccount1->GetVotePublicKey();
-			REQUIRE(votePubKey.size() == 0);
-			REQUIRE_THROWS(subAccount1->DeriveVoteKey(payPassword));
-		}
-	}
-#endif
+	Log::registerMultiLogger();
 
 	SECTION("HD account sign multi sign tx test") {
 		nlohmann::json content = "{\"Attributes\":[{\"Data\":\"353634383333303934\",\"Usage\":0}],\"BlockHeight\":2147483647,\"Fee\":10000,\"Inputs\":[{\"Address\":\"8Gqrkk876Kc1HUjeG9evyFsc91RGYWyQj4\",\"Amount\":200000000,\"Index\":0,\"Script\":\"76a914134a742f7782c295d3ea18cb59cd0101b21b1a2f88ac\",\"Sequence\":4294967295,\"Signature\":\"\",\"TxHash\":\"e77c3bea963d124311076d4737372cbb23aef8d63d5eadaad578455d481cc025\"}],\"IsRegistered\":false,\"LockTime\":0,\"Outputs\":[{\"Address\":\"Ed8ZSxSB98roeyuRZwwekrnRqcgnfiUDeQ\",\"Amount\":10000000,\"AssetId\":\"b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3\",\"OutputLock\":0,\"ProgramHash\":\"21db215de2758b7d743f66e4c66cfcc35dc54ccbcb\",\"Script\":\"76a914db215de2758b7d743f66e4c66cfcc35dc54ccbcb88ac\",\"ScriptLen\":25,\"SignType\":172},{\"Address\":\"8Gqrkk876Kc1HUjeG9evyFsc91RGYWyQj4\",\"Amount\":189990000,\"AssetId\":\"b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3\",\"OutputLock\":0,\"ProgramHash\":\"12134a742f7782c295d3ea18cb59cd0101b21b1a2f\",\"Script\":\"76a914134a742f7782c295d3ea18cb59cd0101b21b1a2f88ac\",\"ScriptLen\":25,\"SignType\":174}],\"PayLoad\":null,\"PayloadVersion\":0,\"Programs\":[],\"Remark\":\"\",\"Timestamp\":0,\"TxHash\":\"80a0eb3c6bbce2c21d542c7ce9d248fe013fc1c757addd7fcee04b14098d5fa7\",\"Type\":2,\"Version\":1}"_json;

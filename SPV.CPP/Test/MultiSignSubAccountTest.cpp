@@ -13,6 +13,7 @@
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("MultiSign account test", "[Readonly account test]") {
+	Log::registerMultiLogger();
 	SECTION("Address generate test") {
 
 		std::vector<std::string> coSigners;

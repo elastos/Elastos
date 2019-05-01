@@ -7,10 +7,12 @@
 #include <catch.hpp>
 
 #include <SDK/Common/Base64.h>
+#include <SDK/Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 
 TEST_CASE( "Decode method test", "[Base64]" ) {
+	Log::registerMultiLogger();
 
 	SECTION("test1") {
 		bytes_t expectData("6515636B82C5AC56");

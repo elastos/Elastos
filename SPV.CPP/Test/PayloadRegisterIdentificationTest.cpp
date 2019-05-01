@@ -7,6 +7,7 @@
 #include "catch.hpp"
 #include <SDK/Plugin/Transaction/Payload/PayloadRegisterIdentification.h>
 #include <SDK/Common/Utils.h>
+#include <SDK/Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -19,6 +20,7 @@ const std::string Content2_Proof2 = "\"signature\":\"3046022100e888040388d0f5691
 const std::string Content2_DataHash2 = "cf985a76d1eef80aa7aa4ce144edad2c042c217ecabb0f86cd91bd4dae3b7215";
 
 TEST_CASE("PayloadRegisterIdentification fromJson test", "[fromJson&toJson]") {
+	Log::registerMultiLogger();
 
 	SECTION("Parse from existing json") {
 		nlohmann::json rawJson = "{\n"

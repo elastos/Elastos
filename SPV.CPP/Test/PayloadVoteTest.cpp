@@ -12,6 +12,7 @@
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("PayloadVote Test", "[PayloadVote]") {
+	Log::registerMultiLogger();
 
 	SECTION("Serialize and deserialize") {
 		std::vector<PayloadVote::VoteContent> voteContent;

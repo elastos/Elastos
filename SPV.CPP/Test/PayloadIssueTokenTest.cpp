@@ -8,10 +8,12 @@
 #include "TestHelper.h"
 
 #include <SDK/Plugin/Transaction/Payload/PayloadRechargeToSideChain.h>
+#include <SDK/Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("PayloadRechargeToSideChain test", "[PayloadRechargeToSideChain]") {
+	Log::registerMultiLogger();
 	bytes_t merkleProof = getRandBytes(50);
 	bytes_t mainChainTx = getRandBytes(100);
 

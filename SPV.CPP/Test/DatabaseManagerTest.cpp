@@ -20,6 +20,7 @@ using namespace Elastos::ElaWallet;
 #define DBFILE "wallet.db"
 
 TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
+	Log::registerMultiLogger();
 
 	SECTION("Prepare to test") {
 		srand(time(nullptr));

@@ -13,6 +13,7 @@
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("PayloadCoinBase Test", "[PayloadCoinBase]") {
+	Log::registerMultiLogger();
 
 	SECTION("Serialize and deserialize") {
 		PayloadCoinBase p1(getRandBytes(50)), p2;

@@ -17,6 +17,7 @@ using namespace Elastos::ElaWallet;
 
 TEST_CASE("IdAuxPow test", "[IdAuxPow]") {
 	srand((unsigned int)time(nullptr));
+	Log::registerMultiLogger();
 
 	SECTION("Serialize and deserialize") {
 		IDAuxPow ap1;

@@ -6,8 +6,13 @@
 
 #include <SDK/Common/ByteStream.h>
 #include <SDK/Common/Utils.h>
+#include <SDK/Common/Log.h>
 #include <SDK/Plugin/Interface/IMerkleBlock.h>
 #include <SDK/Plugin/Registry.h>
+#include <SDK/Plugin/Block/SidechainMerkleBlock.h>
+#include <SDK/Plugin/Block/MerkleBlock.h>
+#include <SDK/Plugin/ELAPlugin.h>
+#include <SDK/Plugin/IDPlugin.h>
 
 #include "catch.hpp"
 #include "TestHelper.h"
@@ -15,6 +20,13 @@
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("MerkleBlock construct test", "[MerkleBlock]") {
+	Log::registerMultiLogger();
+
+#ifndef BUILD_SHARED_LIBS
+	Log::info("Registering plugin ...");
+	REGISTER_MERKLEBLOCKPLUGIN(ELA, getELAPluginComponent);
+	REGISTER_MERKLEBLOCKPLUGIN(SideStandard, getIDPluginComponent);
+#endif
 
 	srand(time(nullptr));
 

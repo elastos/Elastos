@@ -7,6 +7,7 @@
 #include "catch.hpp"
 #include "TestHelper.h"
 #include <SDK/Plugin/Transaction/Payload/PayloadTransferCrossChainAsset.h>
+#include <SDK/Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -34,6 +35,7 @@ static void verifyPayload(const PayloadTransferCrossChainAsset &p1, const Payloa
 }
 
 TEST_CASE("PayloadTransferCrossChainAsset Test", "[PayloadTransferCrossChainAsset]") {
+	Log::registerMultiLogger();
 
 	SECTION("Default construct test") {
 		PayloadTransferCrossChainAsset p1, p2;

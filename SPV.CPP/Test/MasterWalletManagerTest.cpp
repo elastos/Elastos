@@ -30,7 +30,8 @@ public:
 
 
 TEST_CASE("Master wallet manager CreateMasterWallet test", "[CreateMasterWallet]") {
-	Log::setPattern("%m-%d %T.%e %P %t %^%L%$ %n: %v");
+	Log::registerMultiLogger();
+
 	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";

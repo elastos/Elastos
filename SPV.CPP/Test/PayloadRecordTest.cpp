@@ -7,10 +7,12 @@
 #include "catch.hpp"
 #include "TestHelper.h"
 #include <SDK/Plugin/Transaction/Payload/PayloadRecord.h>
+#include <SDK/Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("PayloadRecord test", "PayloadRecord") {
+	Log::registerMultiLogger();
 
 	SECTION("Serialize and deserialize") {
 		PayloadRecord p1(getRandString(20), getRandBytes(50)), p2;

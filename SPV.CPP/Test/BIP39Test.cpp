@@ -15,6 +15,8 @@
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("BIP39 test", "[BIP39]") {
+	Log::registerMultiLogger();
+
 	SECTION("BIP39 to seed") {
 		uint512 constSeed("086c1a55a6c8acc657357195f5ea233a89df54e977323e285f958036700ff4a30ea486e90d3c07154e987d7e1b7d10436fc9f7280851f3689b413a61d26880aa");
 

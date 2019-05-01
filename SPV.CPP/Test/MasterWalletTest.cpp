@@ -14,6 +14,11 @@
 #include <SDK/Implement/IdChainSubWallet.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/WalletCore/BIPs/Base58.h>
+#include <SDK/Plugin/Registry.h>
+#include <SDK/Plugin/Block/SidechainMerkleBlock.h>
+#include <SDK/Plugin/Block/MerkleBlock.h>
+#include <SDK/Plugin/ELAPlugin.h>
+#include <SDK/Plugin/IDPlugin.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -80,6 +85,14 @@ public:
 };
 
 TEST_CASE("Master wallet constructor with language only", "[Constructor1]") {
+	Log::registerMultiLogger();
+
+#ifndef BUILD_SHARED_LIBS
+	Log::info("Registering plugin ...");
+	REGISTER_MERKLEBLOCKPLUGIN(ELA, getELAPluginComponent);
+	REGISTER_MERKLEBLOCKPLUGIN(SideStandard, getIDPluginComponent);
+#endif
+
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
 	std::string chainId = "IdChain";

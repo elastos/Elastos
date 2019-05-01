@@ -10,10 +10,12 @@
 #include <SDK/Account/Account.h>
 
 #include <Core/BRAddress.h>
+#include <SDK/Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("Derive id public and private key", "[Id agent]") {
+	Log::registerMultiLogger();
 	std::string phrasePasswd = "phrasePassword";
 	std::string payPasswd = "payPassword";
 	std::string chainId = "chainid";

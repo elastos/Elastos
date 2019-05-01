@@ -11,10 +11,12 @@
 
 #include <fstream>
 #include <boost/filesystem.hpp>
+#include <SDK/Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("Json convert", "[SjclFile]") {
+	Log::registerMultiLogger();
 
 	SECTION("to json and from json") {
 		SjclFile s1, s2;

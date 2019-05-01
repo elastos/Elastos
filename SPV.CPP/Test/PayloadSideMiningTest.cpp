@@ -8,10 +8,12 @@
 #include "TestHelper.h"
 //#include "BRInt.h"
 #include <SDK/Plugin/Transaction/Payload/PayloadSideMining.h>
+#include <SDK/Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("PayloadSideMining Test", "[PayloadSideMining]") {
+	Log::registerMultiLogger();
 
 	SECTION("Serialize and deserialize") {
 		PayloadSideMining p1, p2;

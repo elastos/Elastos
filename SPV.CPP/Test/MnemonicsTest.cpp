@@ -7,12 +7,14 @@
 
 #include "catch.hpp"
 #include <SDK/WalletCore/BIPs/Mnemonic.h>
+#include <SDK/Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 
 #define ROOT_PATH "./Data/"
 
 TEST_CASE("Mnemonic of English test", "[English]") {
+	Log::registerMultiLogger();
 	Mnemonic mnemonic(ROOT_PATH);
 
 	std::string phrase;

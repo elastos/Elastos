@@ -20,6 +20,7 @@ using namespace Elastos::ElaWallet;
 
 
 TEST_CASE("Transaction Serialize and Deserialize", "[Transaction]") {
+	Log::registerMultiLogger();
 	srand(time(nullptr));
 
 	SECTION("transaction Serialize test") {

@@ -19,27 +19,32 @@ namespace Elastos {
 		class Log {
 		public:
 
-#define SPV_LOG_NAME "spvsdk_multi"
+#define SPV_LOG_NAME "spvsdk"
 #define SPV_DEFAULT_LOG SPV_LOG_NAME
 
 #define SPV_FILE_NAME "spvsdk.log"
 
-			static inline spdlog::sink_ptr registerLogger() {
+			static inline void registerMultiLogger(const std::string &path = "") {
+				if (spdlog::get(SPV_DEFAULT_LOG) != nullptr)
+					return ;
+
 #if defined(__ANDROID__)
 				auto console_sink = std::make_shared<spdlog::sinks::android_sink>("spvsdk");
 #else
 				auto console_sink = std::make_shared<spdlog::sinks::ansicolor_stdout_sink_mt>();
 #endif
 				console_sink->set_level(spdlog::level::trace);
-				return console_sink;
-			}
 
-			static inline void registerMultiLogger(const std::string &path) {
-				auto console_sink = registerLogger();
+				std::vector<spdlog::sink_ptr> sinks = {console_sink};
 
-				auto file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(path + "/" + SPV_FILE_NAME, 1024*1024*1, 1);
-				file_sink->set_level(spdlog::level::info);
-				std::vector<spdlog::sink_ptr> sinks = {console_sink, file_sink};
+				std::string filepath = SPV_FILE_NAME;
+				if (path != "") {
+					filepath = path + "/" + SPV_FILE_NAME;
+					auto file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(filepath, 1024*1024*1, 1);
+					file_sink->set_level(spdlog::level::info);
+					sinks.push_back(file_sink);
+				}
+
 				auto logger = std::make_shared<spdlog::logger>(SPV_DEFAULT_LOG, sinks.begin(), sinks.end());
 				spdlog::register_logger(logger);
 

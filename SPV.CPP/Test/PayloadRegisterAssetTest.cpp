@@ -8,6 +8,7 @@
 #include "TestHelper.h"
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadRegisterAsset.h>
+#include <SDK/Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -22,6 +23,7 @@ static void initAsset(AssetPtr &asset) {
 }
 
 TEST_CASE("PayloadRegisterAsset test", "[PayloadRegisterAsset]") {
+	Log::registerMultiLogger();
 
 	SECTION("serialize and deserialize") {
 		PayloadRegisterAsset p1, p2;

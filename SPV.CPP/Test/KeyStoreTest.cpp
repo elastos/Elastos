@@ -8,6 +8,7 @@
 #include <nlohmann/json.hpp>
 #include <SDK/Account/Account.h>
 #include <SDK/WalletCore/KeyStore/KeyStore.h>
+#include <SDK/Common/Log.h>
 
 #include <fstream>
 #include <boost/filesystem.hpp>
@@ -15,6 +16,7 @@
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("createAccountFromJson test", "[createAccountFromJson]") {
+	Log::registerMultiLogger();
 
 	SECTION("open") {
 

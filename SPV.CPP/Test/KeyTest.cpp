@@ -20,6 +20,7 @@
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("Key sign pressure test", "[KeySign]") {
+	Log::registerMultiLogger();
 
 #ifdef PRESSURE_TEST
 #define LOOP_COUNT 10000
