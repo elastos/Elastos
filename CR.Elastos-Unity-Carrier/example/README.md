@@ -15,6 +15,19 @@ npm test
   // The path to the app
   app: join(process.cwd(), './apps/example.app'),
 ```
+* Run **react-native run-ios**
 * Build example.app with xcode and replace the ./apps/example.app with build result.
-* run **npm run autotest:ios**
+* Run **npm run autotest:ios**
 <img src="./autotest.png" width="auto" />
+
+## Run autotest with appium and webdriver (Android)
+* Change config/wdio.android.app.conf.js
+```
+  deviceName: 'Genymotion Samsung',
+  platformName: 'Android',
+  platformVersion: '8.0',
+  app: join(process.cwd(), './apps/app-debug.apk'),
+```
+* Run **react-native run-android**
+* Build app.apk with gradle and replace the ./apps/app-debug.apk with build result.
+* Run **npm run autotest:android**
