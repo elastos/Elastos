@@ -2,6 +2,7 @@ package manager
 
 import (
 	"bytes"
+	"errors"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
@@ -413,6 +414,12 @@ func (p *ProposalDispatcher) OnInactiveArbitratorsReceived(id peer.PID,
 	for _, v := range p.eventAnalyzer.ParseInactiveArbitrators() {
 		inactiveArbitratorsMap[v] = nil
 	}
+	if len(inactivePayload.Arbitrators) != len(inactiveArbitratorsMap) ||
+		len(inactivePayload.Arbitrators) == 0 {
+		log.Warn("[OnInactiveArbitratorsReceived] received inactive" +
+			" arbitrators transaction with wrong arbitrators count")
+		return
+	}
 	for _, v := range inactivePayload.Arbitrators {
 		if _, exist := inactiveArbitratorsMap[common.BytesToHexString(
 			v)]; !exist {
@@ -647,6 +654,9 @@ func (p *ProposalDispatcher) CreateInactiveArbitrators() (
 			return nil, err
 		}
 		inactivePayload.Arbitrators = append(inactivePayload.Arbitrators, pk)
+	}
+	if len(inactivePayload.Arbitrators) == 0 {
+		return nil, errors.New("found no inactive arbiters")
 	}
 
 	con := contract.Contract{Prefix: contract.PrefixMultiSig}
