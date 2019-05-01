@@ -121,8 +121,8 @@ func checkCrossChainSignatures(program Program, data []byte) error {
 	n := int(code[len(code)-2]) - crypto.PUSH1 + 1
 	// Get M parameter
 	m := int(code[0]) - crypto.PUSH1 + 1
-	if m < 1 || m > n || n != int(DefaultLedger.Arbitrators.GetArbitersCount()) ||
-		m <= int(DefaultLedger.Arbitrators.GetArbitersMajorityCount()) {
+	if m < 1 || m > n || n != int(DefaultLedger.Arbitrators.GetCrossChainArbitersCount()) ||
+		m <= int(DefaultLedger.Arbitrators.GetCrossChainArbitersMajorityCount()) {
 		return errors.New("invalid multi sign script code")
 	}
 	publicKeys, err := crypto.ParseCrossChainScript(code)

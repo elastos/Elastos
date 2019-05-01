@@ -36,7 +36,11 @@ type Arbitrators interface {
 
 	GetOnDutyArbitrator() []byte
 	GetNextOnDutyArbitrator(offset uint32) []byte
+
 	GetOnDutyCrossChainArbitrator() []byte
+	GetCrossChainArbiters() [][]byte
+	GetCrossChainArbitersCount() int
+	GetCrossChainArbitersMajorityCount() int
 
 	GetArbitersCount() int
 	GetArbitersMajorityCount() int
