@@ -153,6 +153,22 @@ func (a *ArbitratorsMock) GetArbitersMajorityCount() int {
 	return a.MajorityCount
 }
 
+func (a *ArbitratorsMock) GetOnDutyCrossChainArbitrator() []byte {
+	return a.GetNextOnDutyArbitrator(0)
+}
+
+func (a *ArbitratorsMock) GetCrossChainArbitersMajorityCount() int {
+	return a.MajorityCount
+}
+
+func (a *ArbitratorsMock) GetCrossChainArbitersCount() int {
+	return len(a.CurrentArbitrators)
+}
+
+func (a *ArbitratorsMock) GetCrossChainArbiters() [][]byte {
+	return a.CurrentArbitrators
+}
+
 func (a *ArbitratorsMock) GetDutyChangeCount() int {
 	return a.DutyChangedCount
 }
@@ -210,10 +226,6 @@ func (a *ArbitratorsMock) SetNextCandidates(ca [][]byte) {
 }
 
 func (a *ArbitratorsMock) GetOnDutyArbitrator() []byte {
-	return a.GetNextOnDutyArbitrator(0)
-}
-
-func (a *ArbitratorsMock) GetOnDutyCrossChainArbitrator() []byte {
 	return a.GetNextOnDutyArbitrator(0)
 }
 

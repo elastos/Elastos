@@ -815,16 +815,10 @@ func (b *BlockChain) checkWithdrawFromSideChainTransaction(txn *Transaction, ref
 }
 
 func (b *BlockChain) checkCrossChainArbitrators(publicKeys [][]byte) error {
-	arbiters := make([][]byte, 0)
-	if DefaultLedger.Blockchain.GetHeight() < b.chainParams.CRCOnlyDPOSHeight-1 {
-		arbiters = DefaultLedger.Arbitrators.GetArbitrators()
-	} else {
-		arbiters = DefaultLedger.Arbitrators.GetCRCArbiters()
-	}
+	arbiters := DefaultLedger.Arbitrators.GetCrossChainArbiters()
 	if len(arbiters) != len(publicKeys) {
 		return errors.New("invalid arbitrator count")
 	}
-
 	arbitratorsMap := make(map[string]interface{})
 	for _, arbitrator := range arbiters {
 		found := false
@@ -844,7 +838,7 @@ func (b *BlockChain) checkCrossChainArbitrators(publicKeys [][]byte) error {
 
 	if DefaultLedger.Blockchain.GetHeight()+1 >=
 		b.chainParams.CRCOnlyDPOSHeight {
-		for _, crc := range DefaultLedger.Arbitrators.GetArbitrators() {
+		for _, crc := range arbiters {
 			if _, exist :=
 				arbitratorsMap[common.BytesToHexString(crc)]; !exist {
 				return errors.New("not all crc arbitrators participated in" +

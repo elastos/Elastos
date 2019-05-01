@@ -543,6 +543,27 @@ func (a *arbitrators) GetOnDutyCrossChainArbitrator() []byte {
 	return arbiter
 }
 
+func (a *arbitrators) GetCrossChainArbiters() [][]byte {
+	if a.bestHeight() < a.chainParams.CRCOnlyDPOSHeight-1 {
+		return a.GetArbitrators()
+	}
+	return a.GetCRCArbiters()
+}
+
+func (a *arbitrators) GetCrossChainArbitersCount() int {
+	if a.bestHeight() < a.chainParams.CRCOnlyDPOSHeight-1 {
+		return len(a.chainParams.OriginArbiters)
+	}
+
+	return len(a.chainParams.CRCArbiters)
+}
+
+func (a *arbitrators) GetCrossChainArbitersMajorityCount() int {
+	minSignCount := int(float64(a.GetCrossChainArbitersCount()) *
+		MajoritySignRatioNumerator / MajoritySignRatioDenominator)
+	return minSignCount
+}
+
 func (a *arbitrators) GetNextOnDutyArbitratorV(height, offset uint32) []byte {
 	// main version is >= H1
 	if height >= a.State.chainParams.CRCOnlyDPOSHeight {
