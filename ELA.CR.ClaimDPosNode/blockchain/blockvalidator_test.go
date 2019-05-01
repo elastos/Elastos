@@ -13,6 +13,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/state"
+	"github.com/elastos/Elastos.ELA/utils/test"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -37,10 +38,10 @@ const (
 )
 
 func TestCheckBlockSanity(t *testing.T) {
-	log.NewDefault(0, 0, 0)
+	log.NewDefault(test.NodeLogPath, 0, 0, 0)
 	params := &config.DefaultParams
 	FoundationAddress = params.Foundation
-	chainStore, err := NewChainStore("Chain_UnitTest", params.GenesisBlock)
+	chainStore, err := NewChainStore(test.DataPath, params.GenesisBlock)
 	if err != nil {
 		t.Error(err.Error())
 	}

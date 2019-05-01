@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/elastos/Elastos.ELA/utils"
 	"github.com/elastos/Elastos.ELA/utils/http"
 	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
 
@@ -12,8 +13,8 @@ import (
 )
 
 const (
-	DefaultConfigPath = "./config.json"
-	DefaultDataDir    = "./elastos"
+	defaultConfigPath = "./config.json"
+	defaultDataDir    = "elastos"
 )
 
 var (
@@ -100,4 +101,15 @@ func MoveRPCFlags(args []string) ([]string, error) {
 
 	newArgs = append(newArgs, cacheArgs...)
 	return newArgs, nil
+}
+
+// GetFlagPassword gets node's wallet password from command line or user input
+func GetFlagPassword(c *cli.Context) ([]byte, error) {
+	flagPassword := c.String("password")
+	password := []byte(flagPassword)
+	if flagPassword == "" {
+		return utils.GetPassword()
+	}
+
+	return password, nil
 }

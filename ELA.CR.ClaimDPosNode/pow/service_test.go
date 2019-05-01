@@ -12,6 +12,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/state"
+	"github.com/elastos/Elastos.ELA/utils/test"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -22,11 +23,10 @@ var arbitrators [][]byte
 var originLedger *blockchain.Ledger
 
 func TestService_Init(t *testing.T) {
-	log.NewDefault(0, 0, 0)
+	log.NewDefault(test.NodeLogPath, 0, 0, 0)
 
 	params := &config.DefaultParams
-	chainStore, err := blockchain.NewChainStore("Chain_UnitTest",
-		config.DefaultParams.GenesisBlock)
+	chainStore, err := blockchain.NewChainStore(test.DataPath, config.DefaultParams.GenesisBlock)
 	if err != nil {
 		t.Error(err)
 	}

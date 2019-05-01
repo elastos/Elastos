@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -15,14 +16,11 @@ import (
 )
 
 const (
-	// rootDir defines the root folder storing the ELA data.
-	rootDir = "elastos"
+	// dataPath indicates the path storing the chain data.
+	dataPath = "data"
 
-	// dataDir defines the folder where to put the database files.
-	dataDir = rootDir + "/data"
-
-	// configFilename defines the configuration file name for the ELA node.
-	configFilename = "./config.json"
+	// logPath indicates the path storing the node log.
+	nodeLogPath = "logs/node"
 )
 
 var (
@@ -36,14 +34,14 @@ var (
 	}
 
 	// cfg is the loaded config parameters to running the ELA node.
-	cfg = loadConfigParams()
+	cfg *config.Configuration
 )
 
-// loadConfigFile read configuration parameters through the config.json file.
-func loadConfigFile() *config.Configuration {
-	file, err := ioutil.ReadFile(configFilename)
+// loadConfigFile read configuration parameters through the config file.
+func loadConfigFile(confPath string) (*config.Configuration, error) {
+	file, err := ioutil.ReadFile(confPath)
 	if err != nil {
-		return &defaultConfig
+		return nil, err
 	}
 	// Remove the UTF-8 Byte Order Mark
 	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
@@ -54,125 +52,133 @@ func loadConfigFile() *config.Configuration {
 		Configuration: defaultConfig,
 	}
 
-	// We have put the default configuration into config file, it's not mater
-	// whether unmarshall success or not.
-	json.Unmarshal(file, &cfgFile)
+	err = json.Unmarshal(file, &cfgFile)
+	if err != nil {
+		return nil, errors.New("config file parsing failed, " + err.Error())
+	}
 
-	return &cfgFile.Configuration
+	return &cfgFile.Configuration, nil
 }
 
 // loadConfigParams load the configuration parameters to running the ELA node.
-func loadConfigParams() *config.Configuration {
-	cfg := loadConfigFile()
-
-	switch strings.ToLower(cfg.ActiveNet) {
+func loadConfigParams(fileConfig *config.Configuration) (*config.Configuration, error) {
+	switch strings.ToLower(fileConfig.ActiveNet) {
 	case "testnet", "test":
-		testNetDefault(cfg)
+		testNetDefault(fileConfig)
 		activeNetParams = activeNetParams.TestNet()
 
 	case "regnet", "reg":
-		regNetDefault(cfg)
+		regNetDefault(fileConfig)
 		activeNetParams = activeNetParams.RegNet()
 
 	default:
-		mainNetDefault(cfg)
+		mainNetDefault(fileConfig)
 	}
 
-	config.Parameters = cfg
-	if cfg.PowConfiguration.InstantBlock {
+	config.Parameters = fileConfig
+	if fileConfig.PowConfiguration.InstantBlock {
 		activeNetParams = activeNetParams.InstantBlock()
 	}
-	if cfg.Magic > 0 {
-		activeNetParams.Magic = cfg.Magic
+	if fileConfig.Magic > 0 {
+		activeNetParams.Magic = fileConfig.Magic
 	}
-	if cfg.NodePort > 0 {
-		activeNetParams.DefaultPort = cfg.NodePort
+	if fileConfig.NodePort > 0 {
+		activeNetParams.DefaultPort = fileConfig.NodePort
 	}
-	if len(cfg.SeedList) > 0 {
-		activeNetParams.SeedList = cfg.SeedList
+	if len(fileConfig.SeedList) > 0 {
+		activeNetParams.SeedList = fileConfig.SeedList
 	}
-	if cfg.MinCrossChainTxFee > 0 {
-		activeNetParams.MinCrossChainTxFee = cfg.MinCrossChainTxFee
+	if fileConfig.MinCrossChainTxFee > 0 {
+		activeNetParams.MinCrossChainTxFee = fileConfig.MinCrossChainTxFee
 	}
-	foundation, err := common.Uint168FromAddress(cfg.FoundationAddress)
-	if err == nil {
+	if fileConfig.FoundationAddress != "" {
+		foundation, err := common.Uint168FromAddress(fileConfig.FoundationAddress)
+		if err != nil {
+			return nil, errors.New("invalid foundation address")
+		}
 		activeNetParams.Foundation = *foundation
 		activeNetParams.GenesisBlock = config.GenesisBlock(foundation)
 	}
-	crcAddress, err := common.Uint168FromAddress(cfg.CRCAddress)
-	if err == nil {
+	if fileConfig.CRCAddress != "" {
+		crcAddress, err := common.Uint168FromAddress(fileConfig.CRCAddress)
+		if err != nil {
+			return nil, errors.New("invalid CRC address")
+		}
 		activeNetParams.CRCAddress = *crcAddress
 	}
-	if cfg.VoteStartHeight > 0 {
-		activeNetParams.VoteStartHeight = cfg.VoteStartHeight
+	if fileConfig.VoteStartHeight > 0 {
+		activeNetParams.VoteStartHeight = fileConfig.VoteStartHeight
 	}
-	if cfg.CheckAddressHeight > 0 {
-		activeNetParams.CheckAddressHeight = cfg.CheckAddressHeight
+	if fileConfig.CheckAddressHeight > 0 {
+		activeNetParams.CheckAddressHeight = fileConfig.CheckAddressHeight
 	}
-	if cfg.CRCOnlyDPOSHeight > 0 {
-		activeNetParams.CRCOnlyDPOSHeight = cfg.CRCOnlyDPOSHeight
+	if fileConfig.CRCOnlyDPOSHeight > 0 {
+		activeNetParams.CRCOnlyDPOSHeight = fileConfig.CRCOnlyDPOSHeight
 	}
-	if cfg.PublicDPOSHeight > 0 {
-		activeNetParams.PublicDPOSHeight = cfg.PublicDPOSHeight
+	if fileConfig.PublicDPOSHeight > 0 {
+		activeNetParams.PublicDPOSHeight = fileConfig.PublicDPOSHeight
 	}
 
 	// When arbiter service enabled, IP address must be set.
-	enableArbiter := cfg.DPoSConfiguration.EnableArbiter
-	ipAddr := cfg.DPoSConfiguration.IPAddress
-	if enableArbiter && ipAddr == "" {
-		panic("arbiter IPAddress must set")
-	}
-	cfg.DPoSConfiguration.IPAddress, err = hostToIP(ipAddr)
-	if enableArbiter && err != nil {
-		panic(fmt.Sprintf("invalid IP %s, %s", ipAddr, err))
+	enableArbiter := fileConfig.DPoSConfiguration.EnableArbiter
+	if enableArbiter {
+		ipAddr := fileConfig.DPoSConfiguration.IPAddress
+		if ipAddr == "" {
+			return nil, errors.New("arbiter IPAddress must set when arbiter service enabled")
+		}
+		var err error
+		fileConfig.DPoSConfiguration.IPAddress, err = hostToIP(ipAddr)
+		if err != nil {
+			return nil, errors.New(fmt.Sprintf("invalid IP %s, %s", ipAddr, err))
+		}
 	}
 
 	// FIXME we should replace the default value in activeNetParams by the
 	// loaded parameters from file, this will be fixed after the arbiter use
 	// the activeNetParams instead of using the global config.
-	if cfg.DPoSConfiguration.Magic == 0 {
-		cfg.DPoSConfiguration.Magic = activeNetParams.DPoSMagic
+	if fileConfig.DPoSConfiguration.Magic == 0 {
+		fileConfig.DPoSConfiguration.Magic = activeNetParams.DPoSMagic
 	}
-	if cfg.DPoSConfiguration.DPoSPort == 0 {
-		cfg.DPoSConfiguration.DPoSPort = activeNetParams.DPoSDefaultPort
+	if fileConfig.DPoSConfiguration.DPoSPort == 0 {
+		fileConfig.DPoSConfiguration.DPoSPort = activeNetParams.DPoSDefaultPort
 	}
 
-	if len(cfg.DPoSConfiguration.OriginArbiters) > 0 {
-		activeNetParams.OriginArbiters = cfg.DPoSConfiguration.OriginArbiters
+	if len(fileConfig.DPoSConfiguration.OriginArbiters) > 0 {
+		activeNetParams.OriginArbiters = fileConfig.DPoSConfiguration.OriginArbiters
 	}
-	if len(cfg.DPoSConfiguration.CRCArbiters) > 0 {
-		activeNetParams.CRCArbiters = cfg.DPoSConfiguration.CRCArbiters
+	if len(fileConfig.DPoSConfiguration.CRCArbiters) > 0 {
+		activeNetParams.CRCArbiters = fileConfig.DPoSConfiguration.CRCArbiters
 	}
-	if cfg.DPoSConfiguration.NormalArbitratorsCount > 0 {
+	if fileConfig.DPoSConfiguration.NormalArbitratorsCount > 0 {
 		activeNetParams.GeneralArbiters =
-			cfg.DPoSConfiguration.NormalArbitratorsCount
+			fileConfig.DPoSConfiguration.NormalArbitratorsCount
 	}
-	if cfg.DPoSConfiguration.PreConnectOffset > 0 {
+	if fileConfig.DPoSConfiguration.PreConnectOffset > 0 {
 		activeNetParams.PreConnectOffset =
-			cfg.DPoSConfiguration.PreConnectOffset
+			fileConfig.DPoSConfiguration.PreConnectOffset
 	}
-	if cfg.DPoSConfiguration.CandidatesCount > 0 {
+	if fileConfig.DPoSConfiguration.CandidatesCount > 0 {
 		activeNetParams.CandidateArbiters =
-			cfg.DPoSConfiguration.CandidatesCount
+			fileConfig.DPoSConfiguration.CandidatesCount
 	}
-	if cfg.DPoSConfiguration.SignTolerance > 0 {
+	if fileConfig.DPoSConfiguration.SignTolerance > 0 {
 		activeNetParams.ToleranceDuration =
-			cfg.DPoSConfiguration.SignTolerance * time.Second
+			fileConfig.DPoSConfiguration.SignTolerance * time.Second
 	}
-	if cfg.DPoSConfiguration.MaxInactiveRounds > 0 {
+	if fileConfig.DPoSConfiguration.MaxInactiveRounds > 0 {
 		activeNetParams.MaxInactiveRounds =
-			cfg.DPoSConfiguration.MaxInactiveRounds
+			fileConfig.DPoSConfiguration.MaxInactiveRounds
 	}
-	if cfg.DPoSConfiguration.InactivePenalty > 0 {
+	if fileConfig.DPoSConfiguration.InactivePenalty > 0 {
 		activeNetParams.InactivePenalty =
-			cfg.DPoSConfiguration.InactivePenalty
+			fileConfig.DPoSConfiguration.InactivePenalty
 	}
-	if cfg.DPoSConfiguration.EmergencyInactivePenalty > 0 {
+	if fileConfig.DPoSConfiguration.EmergencyInactivePenalty > 0 {
 		activeNetParams.EmergencyInactivePenalty =
-			cfg.DPoSConfiguration.EmergencyInactivePenalty
+			fileConfig.DPoSConfiguration.EmergencyInactivePenalty
 	}
 
-	return cfg
+	return fileConfig, nil
 }
 
 // hostToIP parse the host to IP address.

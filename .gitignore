@@ -10,11 +10,7 @@
 *.log
 /glide.lock
 /vendor/*
-Chain_WhiteBox/
-Chain_UnitTest/
-Dpos_UnitTest/
-Dpos_Test/
-Dpos_Data/
+elastos_test/
 elastos/
 /ela
 /ela-cli

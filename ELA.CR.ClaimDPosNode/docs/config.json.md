@@ -77,7 +77,7 @@ Default config for `testnet`
         "02eae9164bd143eb988fcd4b7a3c9c04a44eb9a009f73e7615e80a5e8ce1e748b8",
         "0294d85959f746b8e6e579458b41eea05afeae50f5a37a037de601673cb24133d9",
         "03b0a3a16edfba8d9c1fed9094431c9f24c78b8ceb04b4b6eeb7706f1686b83499",
-        "0222461ae6c9671cad288f10469f9fd759912f257c64524367dc12c40c2bb4046d",
+        "0222461ae6c9671cad288f10469f9fd759912f257c64524367dc12c40c2bb4046d"
       ],
       "NormalArbitratorsCount": 24,             // The count of voted arbiters
       "CandidatesCount": 72,                    // The count of candidates

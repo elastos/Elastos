@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/stretchr/testify/suite"
-
 	"github.com/elastos/Elastos.ELA/auxpow"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
@@ -17,6 +15,9 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/state"
+	"github.com/elastos/Elastos.ELA/utils/test"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type txValidatorSpecialTxTestSuite struct {
@@ -59,8 +60,7 @@ func (s *txValidatorSpecialTxTestSuite) SetupSuite() {
 		s.arbitratorsPriKeys = append(s.arbitratorsPriKeys, a)
 	}
 
-	chainStore, err := NewChainStore("Chain_UnitTest",
-		config.DefaultParams.GenesisBlock)
+	chainStore, err := NewChainStore(test.DataPath, config.DefaultParams.GenesisBlock)
 	if err != nil {
 		s.Error(err)
 	}

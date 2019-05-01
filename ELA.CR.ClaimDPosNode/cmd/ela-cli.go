@@ -1,7 +1,9 @@
 package main
 
 import (
+	"math/rand"
 	"os"
+	"time"
 
 	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/cmd/info"
@@ -30,6 +32,9 @@ func main() {
 		cmdcom.RPCPortFlag,
 	}
 	app.Before = func(c *cli.Context) error {
+		//seed transaction nonce
+		rand.Seed(time.Now().UnixNano())
+
 		cmdcom.SetRpcConfig(c)
 		return nil
 	}
