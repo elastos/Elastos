@@ -14,13 +14,14 @@ const print = (msg)=>{
   console.log(`[LOG] => ${msg}`);
 };
 const printLog = async ()=>{
+  log = await getLogElement();
   const msg = await log.getText();
   print(msg);
 }
 
 describe('Elastos Carrier auto test with WebdriverIO and Appium', ()=>{
   beforeEach(async () => {
-    log = await getLogElement();
+    
     const clear = await $('~log:clear');
     await clear.click();
   });
@@ -65,6 +66,53 @@ describe('Elastos Carrier auto test with WebdriverIO and Appium', ()=>{
 
   it('getSelfInfo', async()=>{
     let btn = await getBtnElement('getSelfInfo');
+    await btn.click();
+    await printLog();
+  });
+
+  it('addFriend', async()=>{
+    const btn = await getBtnElement('addFriend');
+    await btn.click();
+    await printLog();
+  });
+  it('acceptFriend', async()=>{
+    const btn = await getBtnElement('acceptFriend');
+    await btn.click();
+    await printLog();
+  });
+  it('getFriendInfo', async()=>{
+    const btn = await getBtnElement('getFriendInfo');
+    await btn.click();
+    await printLog();
+  });
+  it('sendMessage', async()=>{
+    const btn = await getBtnElement('sendMessage');
+    await btn.click();
+    await printLog();
+  });
+
+  it('createSession', async()=>{
+    const btn = await getBtnElement('createSession');
+    await btn.click();
+    await printLog();
+  });
+  // it('sessionRequest', async()=>{
+  //   const btn = await getBtnElement('sessionRequest');
+  //   await btn.click();
+  //   await printLog();
+  // });
+  // it('sessionReplyRequest', async()=>{
+  //   const btn = await getBtnElement('sessionReplyRequest');
+  //   await btn.click();
+  //   await printLog();
+  // });
+  // it('writeStream', async()=>{
+  //   const btn = await getBtnElement('writeStream');
+  //   await btn.click();
+  //   await printLog();
+  // });
+  it('closeSession', async()=>{
+    const btn = await getBtnElement('closeSession');
     await btn.click();
     await printLog();
   });
