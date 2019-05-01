@@ -142,8 +142,10 @@ out:
 				delete(pendingResponses, m.Serializable.(util.Transaction).Hash().String())
 
 			case *msg.NotFound:
-				// NotFound should not received from sync peer
-				p.Disconnect()
+				// Remove received transaction from expected response map.
+				for _, iv := range m.InvList {
+					delete(pendingResponses, iv.Hash.String())
+				}
 
 			case stallClearMsg:
 				// Clear pending responses.
