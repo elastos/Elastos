@@ -664,29 +664,27 @@ func (a *arbitrators) updateNextArbitrators(height uint32) error {
 		a.nextArbitrators = append(a.nextArbitrators, v.info.NodePublicKey)
 	}
 
-	count := 0
-
 	if !a.IsInactiveMode() && !a.IsUnderstaffedMode() {
-		count = a.chainParams.GeneralArbiters
+		count := a.chainParams.GeneralArbiters
 		producers, err := a.GetNormalArbitratorsDesc(height, count,
 			a.State.GetVotedProducers())
 		if err != nil {
 			if err := a.tryHandleError(height, err); err != nil {
 				return err
 			}
-			count = 0
+			a.nextCandidates = make([][]byte, 0)
 		} else {
 			for _, v := range producers {
 				a.nextArbitrators = append(a.nextArbitrators, v)
 			}
-		}
 
-		candidates, err := a.GetCandidatesDesc(height, count,
-			a.State.GetVotedProducers())
-		if err != nil {
-			return err
+			candidates, err := a.GetCandidatesDesc(height, count,
+				a.State.GetVotedProducers())
+			if err != nil {
+				return err
+			}
+			a.nextCandidates = candidates
 		}
-		a.nextCandidates = candidates
 	} else {
 		a.nextCandidates = make([][]byte, 0)
 	}
@@ -893,7 +891,7 @@ func (a *arbitrators) getBlockDPOSReward(block *types.Block) common.Fixed64 {
 		totalTxFx += tx.Fee
 	}
 
-	return common.Fixed64(math.Ceil(float64(totalTxFx+
+	return common.Fixed64(math.Ceil(float64(totalTxFx +
 		a.chainParams.RewardPerBlock) * 0.35))
 }
 
