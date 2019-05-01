@@ -500,7 +500,7 @@ func (a *arbitrators) IsActiveProducer(pk []byte) bool {
 }
 
 func (a *arbitrators) IsDisabledProducer(pk []byte) bool {
-	return a.State.IsInactiveProducer(pk) || a.State.IsIllegalProducer(pk)
+	return a.State.IsInactiveProducer(pk) || a.State.IsIllegalProducer(pk) || a.State.IsCanceledProducer(pk)
 }
 
 func (a *arbitrators) GetCRCProducer(publicKey []byte) *Producer {
