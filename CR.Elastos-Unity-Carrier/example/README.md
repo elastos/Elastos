@@ -33,4 +33,4 @@ npm test
 * Run **npm run autotest:android**
 
 ## Vedio links
-(https://youtu.be/8N99PZEOIm0)[https://youtu.be/8N99PZEOIm0]
+* [https://youtu.be/8N99PZEOIm0]
