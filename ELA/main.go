@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
 	"runtime/debug"
 	"strconv"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
+	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos"
@@ -28,9 +30,10 @@ import (
 	"github.com/elastos/Elastos.ELA/servers/httpnodeinfo"
 	"github.com/elastos/Elastos.ELA/servers/httprestful"
 	"github.com/elastos/Elastos.ELA/servers/httpwebsocket"
-	"github.com/elastos/Elastos.ELA/utils"
 	"github.com/elastos/Elastos.ELA/utils/elalog"
 	"github.com/elastos/Elastos.ELA/utils/signal"
+
+	"github.com/urfave/cli"
 )
 
 var (
@@ -46,23 +49,71 @@ var (
 )
 
 func main() {
-	// Use all processor cores.
-	runtime.GOMAXPROCS(runtime.NumCPU())
+	if err := setupNode().Run(os.Args); err != nil {
+		cmdcom.PrintErrorMsg(err.Error())
+		os.Exit(1)
+	}
+}
 
-	// Block and transaction processing can cause bursty allocations.  This
-	// limits the garbage collector from excessively overallocating during
-	// bursts.  This value was arrived at with the help of profiling live
-	// usage.
-	debug.SetGCPercent(10)
+func setupNode() *cli.App {
+	app := cli.NewApp()
+	app.Name = "ela"
+	app.Version = Version
+	app.HelpName = "ela"
+	app.Usage = "ela node for elastos blockchain"
+	app.UsageText = "ela [options] [args]"
+	app.Flags = []cli.Flag{
+		cmdcom.ConfigFileFlag,
+		cmdcom.DataDirFlag,
+		cmdcom.AccountPasswordFlag,
+	}
+	app.Action = func(c *cli.Context) {
+		setupConfig(c)
+		setupLog(c)
+		startNode(c)
+	}
+	app.Before = func(c *cli.Context) error {
+		// Use all processor cores.
+		runtime.GOMAXPROCS(runtime.NumCPU())
 
-	log.Infof("Node version: %s", Version)
-	log.Info(GoVersion)
+		// Block and transaction processing can cause bursty allocations.  This
+		// limits the garbage collector from excessively overallocating during
+		// bursts.  This value was arrived at with the help of profiling live
+		// usage.
+		debug.SetGCPercent(10)
 
-	var interrupt = signal.NewInterrupt()
+		return nil
+	}
+
+	return app
+}
+
+func setupConfig(c *cli.Context) {
+	configPath := c.String("conf")
+	var err error
+	fileConfig, err := loadConfigFile(configPath)
+	if err != nil {
+		if c.IsSet("conf") {
+			cmdcom.PrintErrorMsg(err.Error())
+			os.Exit(1)
+		}
+		fileConfig = &defaultConfig
+	}
+
+	cfg, err = loadConfigParams(fileConfig)
+	if err != nil {
+		cmdcom.PrintErrorMsg(err.Error())
+		os.Exit(1)
+	}
+}
+
+func startNode(c *cli.Context) {
+	flagDataDir := c.String("datadir")
+	dataDir := filepath.Join(flagDataDir, dataPath)
 
 	var act account.Account
 	if cfg.DPoSConfiguration.EnableArbiter {
-		password, err := utils.GetFlagPassword()
+		password, err := cmdcom.GetFlagPassword(c)
 		if err != nil {
 			printErrorAndExit(err)
 		}
@@ -71,6 +122,11 @@ func main() {
 			printErrorAndExit(err)
 		}
 	}
+
+	log.Infof("Node version: %s", Version)
+	log.Info(GoVersion)
+
+	var interrupt = signal.NewInterrupt()
 
 	// fixme remove singleton Ledger
 	ledger := blockchain.Ledger{}

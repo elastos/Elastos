@@ -49,7 +49,6 @@ var (
 const (
 	calldepth = 2
 
-	defaultDir                  = "elastos/logs/node/"
 	defaultPerLogFileSize int64 = 20 * elalog.MBSize
 	defaultLogsFolderSize int64 = 5 * elalog.GBSize
 )
@@ -90,8 +89,8 @@ func NewLogger(outputPath string, level uint8, maxPerLogSizeMb, maxLogsSizeMb in
 	}
 }
 
-func NewDefault(level uint8, maxPerLogSizeMb, maxLogsSizeMb int64) *Logger {
-	logger = NewLogger(defaultDir, level, maxPerLogSizeMb, maxLogsSizeMb)
+func NewDefault(path string, level uint8, maxPerLogSizeMb, maxLogsSizeMb int64) *Logger {
+	logger = NewLogger(path, level, maxPerLogSizeMb, maxLogsSizeMb)
 	return logger
 }
 

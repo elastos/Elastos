@@ -9,13 +9,13 @@ import (
 	"strconv"
 
 	"github.com/elastos/Elastos.ELA/account"
+	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	pg "github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
-	"github.com/elastos/Elastos.ELA/utils"
 
 	"github.com/urfave/cli"
 )
@@ -289,18 +289,12 @@ func createTransaction(walletPath string, from string, fee common.Fixed64, locke
 
 func CreateActivateProducerTransaction(c *cli.Context) error {
 	walletPath := c.String("wallet")
-	pwdHex := c.String("password")
-
-	pwd := []byte(pwdHex)
-	if pwdHex == "" {
-		var err error
-		pwd, err = utils.GetPassword()
-		if err != nil {
-			return err
-		}
+	password, err := cmdcom.GetFlagPassword(c)
+	if err != nil {
+		return err
 	}
 
-	client, err := account.Open(walletPath, pwd)
+	client, err := account.Open(walletPath, password)
 	if err != nil {
 		return err
 	}

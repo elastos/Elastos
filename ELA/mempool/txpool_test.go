@@ -18,6 +18,8 @@ import (
 	dplog "github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/errors"
+	"github.com/elastos/Elastos.ELA/utils/test"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,13 +27,12 @@ var txPool *TxPool
 var initialLedger *blockchain.Ledger
 
 func TestTxPoolInit(t *testing.T) {
-	log.NewDefault(0,0,0)
-	dplog.Init(0,0,0)
+	log.NewDefault(test.NodeLogPath, 0, 0, 0)
+	dplog.Init(0, 0, 0)
 
 	params := &config.DefaultParams
 	blockchain.FoundationAddress = params.Foundation
-	chainStore, err := blockchain.NewChainStore("Chain_UnitTest",
-		params.GenesisBlock)
+	chainStore, err := blockchain.NewChainStore(test.DataPath, params.GenesisBlock)
 	if err != nil {
 		t.Fatal("open LedgerStore err:", err)
 		os.Exit(1)

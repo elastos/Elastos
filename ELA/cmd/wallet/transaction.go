@@ -13,7 +13,6 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/crypto"
-	"github.com/elastos/Elastos.ELA/utils"
 	"github.com/elastos/Elastos.ELA/utils/http"
 
 	"github.com/urfave/cli"
@@ -26,13 +25,13 @@ var txCommand = []cli.Command{
 		Usage:       "Build a transaction",
 		Description: "use --to --amount --fee to create a transaction",
 		Flags: []cli.Flag{
-			TransactionFromFlag,
-			TransactionToFlag,
-			TransactionToManyFlag,
-			TransactionAmountFlag,
-			TransactionFeeFlag,
+			cmdcom.TransactionFromFlag,
+			cmdcom.TransactionToFlag,
+			cmdcom.TransactionToManyFlag,
+			cmdcom.TransactionAmountFlag,
+			cmdcom.TransactionFeeFlag,
 			//TransactionLockFlag,
-			AccountWalletFlag,
+			cmdcom.AccountWalletFlag,
 		},
 		Subcommands: buildTxCommand,
 		Action:      buildTx,
@@ -43,10 +42,10 @@ var txCommand = []cli.Command{
 		Usage:       "Sign a transaction",
 		Description: "use --file or --hex to specify the transaction file path or content",
 		Flags: []cli.Flag{
-			TransactionHexFlag,
-			TransactionFileFlag,
-			AccountWalletFlag,
-			AccountPasswordFlag,
+			cmdcom.TransactionHexFlag,
+			cmdcom.TransactionFileFlag,
+			cmdcom.AccountWalletFlag,
+			cmdcom.AccountPasswordFlag,
 		},
 		Action: signTx,
 	},
@@ -56,8 +55,8 @@ var txCommand = []cli.Command{
 		Usage:       "Send a transaction",
 		Description: "use --file or --hex to specify the transaction file path or content",
 		Flags: []cli.Flag{
-			TransactionHexFlag,
-			TransactionFileFlag,
+			cmdcom.TransactionHexFlag,
+			cmdcom.TransactionFileFlag,
 		},
 		Action: sendTx,
 	},
@@ -66,8 +65,8 @@ var txCommand = []cli.Command{
 		Name:     "showtx",
 		Usage:    "Show info of raw transaction",
 		Flags: []cli.Flag{
-			TransactionHexFlag,
-			TransactionFileFlag,
+			cmdcom.TransactionHexFlag,
+			cmdcom.TransactionFileFlag,
 		},
 		Action: showTx,
 	},
@@ -78,9 +77,9 @@ var buildTxCommand = []cli.Command{
 		Name:  "activate",
 		Usage: "Build a tx to activate producer which have been inactivated",
 		Flags: []cli.Flag{
-			TransactionNodePublicKeyFlag,
-			AccountWalletFlag,
-			AccountPasswordFlag,
+			cmdcom.TransactionNodePublicKeyFlag,
+			cmdcom.AccountWalletFlag,
+			cmdcom.AccountPasswordFlag,
 		},
 		Action: func(c *cli.Context) error {
 			if c.NumFlags() == 0 {
@@ -98,12 +97,12 @@ var buildTxCommand = []cli.Command{
 		Name:  "vote",
 		Usage: "Build a tx to vote for candidates using ELA",
 		Flags: []cli.Flag{
-			TransactionForFlag,
-			TransactionAmountFlag,
-			TransactionFromFlag,
-			TransactionFeeFlag,
-			AccountWalletFlag,
-			AccountPasswordFlag,
+			cmdcom.TransactionForFlag,
+			cmdcom.TransactionAmountFlag,
+			cmdcom.TransactionFromFlag,
+			cmdcom.TransactionFeeFlag,
+			cmdcom.AccountWalletFlag,
+			cmdcom.AccountPasswordFlag,
 		},
 		Action: func(c *cli.Context) error {
 			if c.NumFlags() == 0 {
@@ -170,17 +169,12 @@ func signTx(c *cli.Context) error {
 		return nil
 	}
 	walletPath := c.String("wallet")
-	pwdHex := c.String("password")
-	pwd := []byte(pwdHex)
-	if pwdHex == "" {
-		var err error
-		pwd, err = utils.GetPassword()
-		if err != nil {
-			return err
-		}
+	password, err := cmdcom.GetFlagPassword(c)
+	if err != nil {
+		return err
 	}
 
-	client, err := account.Open(walletPath, pwd)
+	client, err := account.Open(walletPath, password)
 	if err != nil {
 		return err
 	}

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"path/filepath"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/common/log"
@@ -15,6 +16,7 @@ import (
 	"github.com/elastos/Elastos.ELA/p2p/connmgr"
 	"github.com/elastos/Elastos.ELA/utils/elalog"
 
+	"github.com/urfave/cli"
 	"gopkg.in/cheggaaa/pb.v1"
 )
 
@@ -156,21 +158,26 @@ func newProgress(w io.Writer) *progress {
 // means the package will not perform any logging by default until the caller
 // requests it.
 var (
-	logger = log.NewDefault(uint8(cfg.PrintLevel), cfg.MaxPerLogSize,
-		cfg.MaxLogsSize)
-	pgBar = newProgress(logger.Writer())
-
-	admrlog = wrap(logger, cfg.PrintLevel)
-	cmgrlog = wrap(logger, cfg.PrintLevel)
-	synclog = wrap(logger, cfg.PrintLevel)
-	peerlog = wrap(logger, cfg.PrintLevel)
-	routlog = wrap(logger, cfg.PrintLevel)
-	elanlog = wrap(logger, cfg.PrintLevel)
-	statlog = wrap(logger, cfg.PrintLevel)
+	logger *log.Logger
+	pgBar  *progress
 )
 
 // The default amount of logging is none.
-func init() {
+func setupLog(c *cli.Context) {
+	flagDataDir := c.String("datadir")
+	path := filepath.Join(flagDataDir, nodeLogPath)
+
+	logger = log.NewDefault(path, uint8(cfg.PrintLevel), cfg.MaxPerLogSize, cfg.MaxLogsSize)
+	pgBar = newProgress(logger.Writer())
+
+	admrlog := wrap(logger, elalog.LevelOff)
+	cmgrlog := wrap(logger, elalog.LevelOff)
+	synclog := wrap(logger, cfg.PrintLevel)
+	peerlog := wrap(logger, cfg.PrintLevel)
+	routlog := wrap(logger, cfg.PrintLevel)
+	elanlog := wrap(logger, cfg.PrintLevel)
+	statlog := wrap(logger, cfg.PrintLevel)
+
 	addrmgr.UseLogger(admrlog)
 	connmgr.UseLogger(cmgrlog)
 	netsync.UseLogger(synclog)
