@@ -533,7 +533,7 @@ func (d *DPOSManager) clearInactiveData(p *payload.InactiveArbitrators) {
 		d.blockCache.AddValue(b.Hash(), b)
 	}
 
-	if d.arbitrators.IsInactiveMode() {
+	if d.arbitrators.IsInactiveMode() || d.arbitrators.IsUnderstaffedMode() {
 		d.dispatcher.FinishConsensus()
 	}
 
