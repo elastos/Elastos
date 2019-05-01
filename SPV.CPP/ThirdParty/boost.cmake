@@ -13,6 +13,7 @@ if(${SPV_PLATFORM} STREQUAL ${SPV_PLATFORM_ANDROID})
 		BUILD_COMMAND
 		./build.sh
 		--verbose
+		--boost=1.67.0
 		--with-libraries=${BUILD_WITH_LIBRARIES}
 		--build-dir=${BOOST_BUILD_DIR}
 		--prefix=${BOOST_INSTALL_DIR}
