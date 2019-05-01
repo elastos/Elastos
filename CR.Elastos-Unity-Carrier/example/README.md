@@ -31,3 +31,6 @@ npm test
 * Run **react-native run-android**
 * Build app.apk with gradle and replace the ./apps/app-debug.apk with build result.
 * Run **npm run autotest:android**
+
+## Vedio links
+(https://youtu.be/8N99PZEOIm0)[https://youtu.be/8N99PZEOIm0]
