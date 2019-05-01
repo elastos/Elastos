@@ -18,6 +18,7 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/utils/http"
 	"github.com/elastos/Elastos.ELA/utils/signal"
+	"github.com/elastos/Elastos.ELA/utils/test"
 
 	"github.com/yuin/gopher-lua"
 )
@@ -111,11 +112,10 @@ func initLedger(L *lua.LState) int {
 	chainParams := &config.DefaultParams
 	logLevel := uint8(L.ToInt(1))
 
-	log.NewDefault(logLevel, 0, 0)
+	log.NewDefault(test.NodeLogPath, logLevel, 0, 0)
 	dlog.Init(logLevel, 0, 0)
 
-	chainStore, err := blockchain.NewChainStore("Chain_WhiteBox",
-		chainParams.GenesisBlock)
+	chainStore, err := blockchain.NewChainStore(test.DataPath, chainParams.GenesisBlock)
 	if err != nil {
 		fmt.Printf("Init chain store error: %s \n", err.Error())
 	}
@@ -155,7 +155,7 @@ func closeStore(L *lua.LState) int {
 }
 
 func clearStore(L *lua.LState) int {
-	os.RemoveAll("Chain_WhiteBox/")
+	os.RemoveAll(test.DataDir)
 	return 0
 }
 
