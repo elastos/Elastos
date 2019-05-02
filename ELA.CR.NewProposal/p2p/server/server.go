@@ -1287,7 +1287,7 @@ func newServer(origCfg *Config) (*server, error) {
 				continue
 			}
 
-			// allow nondefault ports after 50 failed tries.
+			// allow non-default ports after 50 failed tries.
 			if tries < 50 && addr.NetAddress().Port != cfg.DefaultPort {
 				continue
 			}
@@ -1301,9 +1301,6 @@ func newServer(origCfg *Config) (*server, error) {
 
 	// Create a connection manager.
 	targetOutbound := cfg.TargetOutbound
-	if targetOutbound == 0 {
-		targetOutbound = defaultTargetOutbound
-	}
 	if cfg.MaxPeers < targetOutbound {
 		targetOutbound = cfg.MaxPeers
 	}

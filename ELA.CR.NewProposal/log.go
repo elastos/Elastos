@@ -160,8 +160,8 @@ var (
 		cfg.MaxLogsSize)
 	pgBar = newProgress(logger.Writer())
 
-	admrlog = wrap(logger, elalog.LevelOff)
-	cmgrlog = wrap(logger, elalog.LevelOff)
+	admrlog = wrap(logger, cfg.PrintLevel)
+	cmgrlog = wrap(logger, cfg.PrintLevel)
 	synclog = wrap(logger, cfg.PrintLevel)
 	peerlog = wrap(logger, cfg.PrintLevel)
 	routlog = wrap(logger, cfg.PrintLevel)

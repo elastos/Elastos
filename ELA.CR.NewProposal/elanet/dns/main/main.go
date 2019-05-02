@@ -9,6 +9,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/elanet/dns"
+	"github.com/elastos/Elastos.ELA/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA/p2p/peer"
 	"github.com/elastos/Elastos.ELA/p2p/server"
 	"github.com/elastos/Elastos.ELA/utils/elalog"
@@ -80,9 +81,11 @@ func main() {
 	fileWriter := elalog.NewFileWriter(dataDir, 0, 0)
 	backend := elalog.NewBackend(io.MultiWriter(fileWriter, os.Stdout),
 		elalog.Llongfile)
+	addrlog := backend.Logger("AMGR", logLevel)
 	peerlog := backend.Logger("PEER", logLevel)
 	srvrlog := backend.Logger("SRVR", logLevel)
 	dnsslog := backend.Logger("DNSS", logLevel)
+	addrmgr.UseLogger(addrlog)
 	peer.UseLogger(peerlog)
 	server.UseLogger(srvrlog)
 	dns.UseLogger(dnsslog)
