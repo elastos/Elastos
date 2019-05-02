@@ -160,6 +160,14 @@ func (sm *SyncManager) startSync() {
 
 	// Start syncing from the best peer if one was selected.
 	if bestPeer != nil {
+		// Set best peer as sync peer.
+		sm.syncPeer = bestPeer
+
+		// Do not start syncing if we have the same height with best peer.
+		if bestPeer.Height() == bestHeight {
+			return
+		}
+
 		// Clear the requestedBlocks if the sync peer changes, otherwise
 		// we may ignore blocks we need that the last sync peer failed
 		// to send.
@@ -177,7 +185,6 @@ func (sm *SyncManager) startSync() {
 			bestPeer.Height(), bestPeer.Addr())
 
 		bestPeer.PushGetBlocksMsg(locator, &zeroHash)
-		sm.syncPeer = bestPeer
 	} else {
 		log.Warnf("No sync peer candidates available")
 	}
