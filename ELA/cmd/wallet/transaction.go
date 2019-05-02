@@ -209,6 +209,7 @@ func signTx(c *cli.Context) error {
 		return err
 	}
 
+	program = txn.Programs[0]
 	haveSign, needSign, _ = crypto.GetSignStatus(program.Code, program.Parameter)
 	fmt.Println("[", haveSign, "/", needSign, "] Transaction successfully signed")
 
