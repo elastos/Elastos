@@ -81,6 +81,24 @@ func ShowAccountBalance(walletPath string) error {
 	return nil
 }
 
+func getUTXOsByAmount(address string, amount common.Fixed64) ([]servers.UTXOInfo, error) {
+	result, err := cmdcom.RPCCall("getutxosbyamount", http.Params{
+		"address": address,
+		"amount":  amount.String(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	data, err := json.Marshal(result)
+	if err != nil {
+		return nil, err
+	}
+	var UTXOs []servers.UTXOInfo
+	err = json.Unmarshal(data, &UTXOs)
+
+	return UTXOs, nil
+}
+
 func getAddressUTXOs(address string) ([]servers.UTXOInfo, []servers.UTXOInfo, error) {
 	result, err := cmdcom.RPCCall("listunspent", http.Params{
 		"addresses": []string{address},

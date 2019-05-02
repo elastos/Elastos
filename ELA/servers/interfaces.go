@@ -907,6 +907,9 @@ func GetUTXOsByAmount(param Params) map[string]interface{} {
 			tx.Outputs[unspent.Index].Type == OTVote {
 			continue
 		}
+		if tx.TxType == CoinBase && bestHeight-height < config.DefaultParams.CoinbaseMaturity {
+			continue
+		}
 		totalAmount += unspent.Value
 		result = append(result, UTXOInfo{
 			TxType:        byte(tx.TxType),

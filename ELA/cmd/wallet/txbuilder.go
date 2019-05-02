@@ -118,14 +118,15 @@ func getSender(walletPath string, from string) (*account.AccountData, error) {
 	return sender, nil
 }
 
-func createInputs(sender *account.AccountData, txOutputs []*types.Output, totalAmount common.Fixed64) ([]*types.Input, error) {
-	availableUTXOs, _, err := getAddressUTXOs(sender.Address)
+func createInputs(sender *account.AccountData, totalAmount common.Fixed64) ([]*types.Input, []*types.Output, error) {
+	UTXOs, err := getUTXOsByAmount(sender.Address, totalAmount)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	var txInputs []*types.Input
-	for _, utxo := range availableUTXOs {
+	var changeOutputs []*types.Output
+	for _, utxo := range UTXOs {
 		txIDReverse, _ := hex.DecodeString(utxo.TxID)
 		txID, _ := common.Uint256FromBytes(common.BytesReverse(txIDReverse))
 		input := &types.Input{
@@ -138,11 +139,11 @@ func createInputs(sender *account.AccountData, txOutputs []*types.Output, totalA
 		txInputs = append(txInputs, input)
 		amount, err := common.StringToFixed64(utxo.Amount)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		programHash, err := common.Uint168FromAddress(sender.Address)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		if *amount < totalAmount {
 			totalAmount -= *amount
@@ -158,16 +159,16 @@ func createInputs(sender *account.AccountData, txOutputs []*types.Output, totalA
 				Type:        types.OTNone,
 				Payload:     &outputpayload.DefaultOutput{},
 			}
-			txOutputs = append(txOutputs, change)
+			changeOutputs = append(changeOutputs, change)
 			totalAmount = 0
 			break
 		}
 	}
 	if totalAmount > 0 {
-		return nil, errors.New("[Wallet], Available token is not enough")
+		return nil, nil, errors.New("[Wallet], Available token is not enough")
 	}
 
-	return txInputs, nil
+	return txInputs, changeOutputs, nil
 }
 
 func createNormalOutputs(outputs []*OutputInfo, fee common.Fixed64, lockedUntil uint32) ([]*types.Output, common.Fixed64, error) {
@@ -255,10 +256,11 @@ func createTransaction(walletPath string, from string, fee common.Fixed64, locke
 	}
 
 	// create inputs
-	txInputs, err := createInputs(sender, txOutputs, totalAmount)
+	txInputs, changeOutputs, err := createInputs(sender, totalAmount)
 	if err != nil {
 		return nil, err
 	}
+	txOutputs = append(txOutputs, changeOutputs...)
 
 	redeemScript, err := common.HexStringToBytes(sender.RedeemScript)
 	if err != nil {
@@ -388,10 +390,11 @@ func CreateVoteTransaction(c *cli.Context) error {
 	}
 
 	// create inputs
-	txInputs, err := createInputs(sender, txOutputs, totalAmount)
+	txInputs, changeOutputs, err := createInputs(sender, totalAmount)
 	if err != nil {
 		return err
 	}
+	txOutputs = append(txOutputs, changeOutputs...)
 
 	redeemScript, err := common.HexStringToBytes(sender.RedeemScript)
 	if err != nil {
