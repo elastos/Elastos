@@ -1178,12 +1178,16 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
     }
 
     w->pref.hive_bootstraps_size = opts->hive_bootstraps_size;
-    w->pref.hive_bootstraps = (HiveBootstrapNodeBuf *)calloc(1, sizeof(HiveBootstrapNodeBuf)
-                                                             * opts->hive_bootstraps_size);
-    if (!w->pref.hive_bootstraps) {
-        deref(w);
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
-        return NULL;
+    if (w->pref.hive_bootstraps_size > 0) {
+        w->pref.hive_bootstraps = (HiveBootstrapNodeBuf *)calloc(1,
+                            sizeof(HiveBootstrapNodeBuf) * opts->hive_bootstraps_size);
+        if (!w->pref.hive_bootstraps) {
+            deref(w);
+            ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
+            return NULL;
+        }
+    } else {
+        w->pref.hive_bootstraps = NULL;
     }
 
     for (i = 0; i < opts->hive_bootstraps_size; i++) {
@@ -1222,6 +1226,15 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
             vlogE("Carrier: Invalid Hive bootstrap port value (%s)", b->port);
             deref(w);
             ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+            return NULL;
+        }
+    }
+
+    if (w->pref.hive_bootstraps_size > 0) {
+        w->dstorectx = dstore_wrapper_create(w, notify_offline_msg);
+        if (!w->dstorectx) {
+            vlogE("Carrier: Creating dstore warpper error (%s)", ela_get_error());
+            deref(w);
             return NULL;
         }
     }
@@ -1321,9 +1334,6 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
         w->context = context;
     }
 
-    if (w->pref.hive_bootstraps_size)
-        w->dstorectx = dstore_wrapper_create(w, &notify_offline_msg);
-
     vlogI("Carrier: Carrier node created.");
 
     return w;
@@ -1386,12 +1396,13 @@ static void notify_connection_cb(bool connected, void *context)
 {
     ElaCarrier *w = (ElaCarrier *)context;
 
+    if (w->is_ready && connected && w->dstorectx)
+        dstore_enqueue_pollmsg(w->dstorectx);
+
     if (!w->is_ready && connected) {
         w->is_ready = true;
         if (w->callbacks.ready)
             w->callbacks.ready(w, w->context);
-    } else if (connected && w->dstorectx) {
-        notify_crawl_offline_msg(w->dstorectx);
     }
 
     w->connection_status = (connected ? ElaConnectionStatus_Connected :
@@ -3005,13 +3016,9 @@ int ela_send_friend_message(ElaCarrier *w, const char *to, const void *msg,
         }
     }
 
-    if (!w->dstorectx) {
-        free(data);
-        ela_set_error(rc < 0 ? rc : ELA_DHT_ERROR(ELAERR_FRIEND_OFFLINE));
-        return -1;
-    }
+    if (w->dstorectx)
+        rc = dstore_enqueue_offmsg(w->dstorectx, to, data, data_len);
 
-    rc = (ssize_t)dstore_send_msg(w->dstorectx, to, data, data_len);
     free(data);
 
     if (rc < 0) {

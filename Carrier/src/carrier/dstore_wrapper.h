@@ -22,19 +22,40 @@
 #ifndef __DSOTRE_WRAPPER_H__
 #define __DSOTRE_WRAPPER_H__
 
-#include <stdlib.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-typedef struct ElaCarrier ElaCarrier;
+typedef struct ElaCarrier    ElaCarrier;
 typedef struct DStoreWrapper DStoreWrapper;
 
 typedef void (*DStoreOnMsgCallback)(ElaCarrier *carrier,
                                     const char *from,
                                     const uint8_t *message, size_t len);
 
-DStoreWrapper *dstore_wrapper_create(ElaCarrier *w, DStoreOnMsgCallback cb);
-void dstore_wrapper_destroy(DStoreWrapper *ds);
+/*
+ * Create an dstore wrapper.
+ */
 
-void notify_crawl_offline_msg(DStoreWrapper *ds);
-ssize_t dstore_send_msg(DStoreWrapper *, const char *to, const void *, size_t);
+DStoreWrapper *dstore_wrapper_create(ElaCarrier *w, DStoreOnMsgCallback cb);
+
+/*
+ * Destroy an dstore wrapper
+ */
+void dstore_wrapper_destroy(DStoreWrapper *);
+
+/*
+ * Enqueue an message to poll offline message.
+ */
+void dstore_enqueue_pollmsg(DStoreWrapper *);
+
+/*
+ *  Enqueue an message to send offline message aynchronizedly.
+ */
+int dstore_enqueue_offmsg(DStoreWrapper *, const char *to, const void *, size_t);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //__DSOTRE_WRAPPER_H__
