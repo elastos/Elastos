@@ -14,6 +14,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
+	pg "github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/utils/signal"
@@ -83,31 +84,37 @@ func Open(path string, password []byte) (*Client, error) {
 }
 
 func (cl *Client) Sign(txn *types.Transaction) (*types.Transaction, error) {
-	// Get sign type
-	signType, err := crypto.GetScriptType(txn.Programs[0].Code)
-	if err != nil {
-		return nil, err
-	}
-	// Look up transaction type
-	if signType == vm.CHECKSIG {
-		// Sign single transaction
-		txn, err = cl.signStandardTransaction(txn)
+	var signedPrograms []*pg.Program
+	for _, program := range txn.Programs {
+		// Get sign type
+		signType, err := crypto.GetScriptType(program.Code)
 		if err != nil {
 			return nil, err
 		}
-	} else if signType == vm.CHECKMULTISIG {
-		// Sign multi sign transaction
-		txn, err = cl.signMultiSignTransaction(txn)
-		if err != nil {
-			return nil, err
+		// Look up transaction type
+		if signType == vm.CHECKSIG {
+			// Sign single transaction
+			signedProgram, err := cl.signStandardTransaction(txn, program)
+			if err != nil {
+				return nil, err
+			}
+			signedPrograms = append(signedPrograms, signedProgram)
+		} else if signType == vm.CHECKMULTISIG {
+			// Sign multi sign transaction
+			signedProgram, err := cl.signMultiSignTransaction(txn, program)
+			if err != nil {
+				return nil, err
+			}
+			signedPrograms = append(signedPrograms, signedProgram)
 		}
 	}
+	txn.Programs = signedPrograms
 
 	return txn, nil
 }
 
-func (cl *Client) signStandardTransaction(txn *types.Transaction) (*types.Transaction, error) {
-	code := txn.Programs[0].Code
+func (cl *Client) signStandardTransaction(txn *types.Transaction, program *pg.Program) (*pg.Program, error) {
+	code := program.Code
 	acct := cl.GetAccountByCodeHash(*common.ToCodeHash(code))
 	if acct == nil {
 		return nil, errors.New("no available account in wallet to do single-sign")
@@ -122,15 +129,18 @@ func (cl *Client) signStandardTransaction(txn *types.Transaction) (*types.Transa
 	buf := new(bytes.Buffer)
 	buf.WriteByte(byte(len(signature)))
 	buf.Write(signature)
-	// Add signature
-	txn.Programs[0].Parameter = buf.Bytes()
 
-	return txn, nil
+	signedProgram := &pg.Program{
+		Code:      code,
+		Parameter: buf.Bytes(),
+	}
+
+	return signedProgram, nil
 }
 
-func (cl *Client) signMultiSignTransaction(txn *types.Transaction) (*types.Transaction, error) {
-	code := txn.Programs[0].Code
-	param := txn.Programs[0].Parameter
+func (cl *Client) signMultiSignTransaction(txn *types.Transaction, program *pg.Program) (*pg.Program, error) {
+	code := program.Code
+	param := program.Parameter
 	// Check if current user is a valid signer
 	codeHashes, err := GetSigners(code)
 	if err != nil {
@@ -157,12 +167,17 @@ func (cl *Client) signMultiSignTransaction(txn *types.Transaction) (*types.Trans
 	// Append signature
 	buf := new(bytes.Buffer)
 	txn.SerializeUnsigned(buf)
-	txn.Programs[0].Parameter, err = crypto.AppendSignature(signerIndex, signature, buf.Bytes(), code, param)
+	parameter, err := crypto.AppendSignature(signerIndex, signature, buf.Bytes(), code, param)
 	if err != nil {
 		return nil, err
 	}
 
-	return txn, nil
+	signedProgram := &pg.Program{
+		Code:      code,
+		Parameter: parameter,
+	}
+
+	return signedProgram, nil
 }
 
 func (cl *Client) GetMainAccount() *Account {

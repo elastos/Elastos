@@ -151,14 +151,15 @@ func newUpdateProducer(L *lua.LState) int {
 		Location:       uint64(location),
 		NetAddress:     address,
 	}
-
 	upSignBuf := new(bytes.Buffer)
 	err = updateProducer.SerializeUnsigned(upSignBuf, payload.ProducerInfoVersion)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	acc := client.GetMainAccount()
+
+	codeHash, err := contract.PublicKeyToStandardCodeHash(ownerPublicKey)
+	acc := client.GetAccountByCodeHash(*codeHash)
 	rpSig, err := crypto.Sign(acc.PrivKey(), upSignBuf.Bytes())
 	if err != nil {
 		fmt.Println(err)
@@ -241,7 +242,8 @@ func newRegisterProducer(L *lua.LState) int {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	acc := client.GetMainAccount()
+	codeHash, err := contract.PublicKeyToStandardCodeHash(ownerPublicKey)
+	acc := client.GetAccountByCodeHash(*codeHash)
 	rpSig, err := crypto.Sign(acc.PrivKey(), rpSignBuf.Bytes())
 	if err != nil {
 		fmt.Println(err)
