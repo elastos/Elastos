@@ -26,6 +26,10 @@ export default class extends BaseService {
     this.dispatch(this.selfRedux.actions.tags_included_update(tagsIncluded))
   }
 
+  async saveReferenceStatus(referenceStatus) {
+    this.dispatch(this.selfRedux.actions.reference_status_update(referenceStatus))
+  }
+
   async saveEditHistory(editHistory) {
     this.dispatch(this.selfRedux.actions.edit_history_update(editHistory))
   }

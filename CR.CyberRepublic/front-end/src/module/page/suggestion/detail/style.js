@@ -109,3 +109,9 @@ export const StyledButton = styled(Button)`
     margin-top: -4px;
   }
 `
+
+export const IconWrap = styled.div`
+  display: inline-block;
+  position: relative;
+  top: 4px;  
+`
