@@ -1,29 +1,22 @@
-import {NativeModules, NativeEventEmitter} from 'react-native';
-// import _ from 'lodash';
+import { NativeModules, NativeEventEmitter } from 'react-native';
 import config from './config';
 
 const NativeCarrier = NativeModules.CarrierPlugin;
 const Listener = new NativeEventEmitter(NativeCarrier);
 
+// const isDebug = true;
+
 /*
  * This is Elastos Carrier plugin
- * 
  */
 
-
-const exec = async (fnName, ...args)=>{
-  return new Promise((resolve, reject)=>{
-    NativeCarrier[fnName](...args, (err, rs)=>{
-      console.log('exec ['+fnName+'] ===>', err, rs);
-      if(err){
-        reject(err);
-      }
-      else{
-        resolve(rs);
-      }
-    });
+const exec = async (fnName, ...args) => new Promise((resolve, reject) => {
+  NativeCarrier[fnName](...args, (err, rs) => {
+    // console.log('exec ['+fnName+'] ===>', err, rs);
+    if (err) reject(err);
+    else resolve(rs);
   });
-};
+});
 
 const Carrier = class {
   static config = config;
@@ -32,7 +25,7 @@ const Carrier = class {
    * @brief: get current carrier version
    * @return: (string) current verison
    */
-  static getVersion(){
+  static getVersion() {
     return exec('getVersion');
   }
 
@@ -40,7 +33,7 @@ const Carrier = class {
    * @brief: check given address is a valid carrier address or not
    * @return: (boolean) true or false.
    */
-  static isValidAddress(address){
+  static isValidAddress(address) {
     return exec('isValidAddress', address);
   }
 
@@ -48,37 +41,36 @@ const Carrier = class {
    * @brief: check given nodeId is a valid carrier node id or not
    * @return: (boolean) true or false.
    */
-  static isValidId(nodeId){
+  static isValidId(nodeId) {
     return exec('isValidId', nodeId);
   }
 
-  constructor(id, callbacks){
+  constructor(id, callbacks) {
     this.id = id;
 
     this.config = {
-      name : this.id,
-      udp_enabled : true,
-      bootstraps : config.bootstraps
+      name: this.id,
+      udp_enabled: true,
+      bootstraps: config.bootstraps,
     };
 
     this.buildCallbacks(callbacks);
   }
 
-  buildCallbacks(callbacks){
-    const def_fn = (name)=>{
-      return (...args)=>{
-        console.log(`callback [${name}] fired : `, args);
-      }
-    };
+  buildCallbacks(callbacks) {
+    // const defFn = (name) => (...args) => {
+    //   if (isDebug) console.log(`callback [${name}] fired : `, args);
+    // };
     const list = config.CARRIER_CB_NAMES.concat(config.STREAM_CB_NAMES);
 
-    list.forEach((name)=>{
-      const fn = callbacks[name] || def_fn(name);
-      Listener.addListener(name, (data)=>{
-        fn(...data);
-      });
+    list.forEach((name) => {
+      const fn = callbacks[name]; // defFn(name);
+      const cb = (data) => {
+        if (fn) fn.call(null, ...data);
+      };
+      Listener.addListener(name, cb);
     });
-
+    this.rid = Math.random();
   }
 
   /*
@@ -86,7 +78,7 @@ const Carrier = class {
    * @return: ok
    * @error: if connect failure, throw an error here.
    */
-  start(){
+  start() {
     return exec('createObject', this.config);
   }
 
@@ -94,7 +86,7 @@ const Carrier = class {
    * @brief: get current node address
    * @return: (string) node address
    */
-  getAddress(){
+  getAddress() {
     return exec('getAddress', this.id);
   }
 
@@ -102,7 +94,7 @@ const Carrier = class {
    * @brief: get current node id.
    * @return: (string) node id.
    */
-  getNodeId(){
+  getNodeId() {
     return exec('getNodeId', this.id);
   }
 
@@ -111,7 +103,7 @@ const Carrier = class {
    * @return: (json) node profile
    * @formatter: userId, gender, region, phone, email, description, name
    */
-  getSelfInfo(){
+  getSelfInfo() {
     return exec('getSelfInfo', this.id);
   }
 
@@ -122,16 +114,16 @@ const Carrier = class {
    * @return: ok
    * @error: throw an error if failure
    */
-  setSelfInfo(info){
-    const user_info = Object.assign({
-      name : '',
-      description : '',
-      email : '',
-      phone : '',
-      gender : '',
-      region : ''
+  setSelfInfo(info) {
+    const userInfo = Object.assign({
+      name: '',
+      description: '',
+      email: '',
+      phone: '',
+      gender: '',
+      region: '',
     }, info);
-    return exec('setSelfInfo', this.id, user_info);
+    return exec('setSelfInfo', this.id, userInfo);
   }
 
   /*
@@ -140,7 +132,7 @@ const Carrier = class {
    * @return: ok
    * @error: throw an error if failure
    */
-  setSelfPresence(presence){
+  setSelfPresence(presence) {
     return exec('setSelfPresence', this.id, presence);
   }
 
@@ -150,7 +142,7 @@ const Carrier = class {
    * @param: (string) msg, hello message
    * @return: ok
    */
-  addFriend(address, msg){
+  addFriend(address, msg) {
     return exec('addFriend', this.id, address, msg);
   }
 
@@ -159,7 +151,7 @@ const Carrier = class {
    * @param: (string) friend userId
    * @return: ok
    */
-  acceptFriend(userId){
+  acceptFriend(userId) {
     return exec('acceptFriend', this.id, userId);
   }
 
@@ -168,7 +160,7 @@ const Carrier = class {
    * @param: friend user id
    * @return: json (friendInfo)
    */
-  getFriendInfo(friendId){
+  getFriendInfo(friendId) {
     return exec('getFriendInfo', this.id, friendId);
   }
 
@@ -178,7 +170,7 @@ const Carrier = class {
    * @param: friend message
    * @return: ok
    */
-  sendMessage(friendId, msg){
+  sendMessage(friendId, msg) {
     return exec('sendFriendMessageTo', this.id, friendId, msg);
   }
 
@@ -187,7 +179,7 @@ const Carrier = class {
    * @param: friend userId
    * @return: ok
    */
-  removeFriend(friendId){
+  removeFriend(friendId) {
     return exec('removeFriend', this.id, friendId);
   }
 
@@ -197,7 +189,7 @@ const Carrier = class {
    * @param: friend label
    * @return: ok
    */
-  setLabel(friendId, label){
+  setLabel(friendId, label) {
     return exec('setLabel', this.id, friendId, label);
   }
 
@@ -205,15 +197,15 @@ const Carrier = class {
    * @brief: get friends info list
    * @return: (json array) friends info
    */
-  getFriendList(){
+  getFriendList() {
     return exec('getFriendList', this.id);
   }
-  
+
   /*
    * @brief: close carrier
    * @return: ok
    */
-  close(){
+  close() {
     return exec('close', this.id);
   }
 
@@ -221,7 +213,7 @@ const Carrier = class {
    * @brief: clean carrier
    * @return: ok
    */
-  clean(){
+  clean() {
     return exec('clean', this.id);
   }
 
@@ -232,7 +224,7 @@ const Carrier = class {
    * @param: (enum) STREAM_MODE
    * @return: ok
    */
-  createSession(friendId, streamType, streamMode){
+  createSession(friendId, streamType, streamMode) {
     return exec('createSession', this.id, friendId, streamType, streamMode);
   }
 
@@ -241,7 +233,7 @@ const Carrier = class {
    * @param: friend userId
    * @return: ok
    */
-  sessionRequest(friendId){
+  sessionRequest(friendId) {
     return exec('sessionRequest', this.id, friendId);
   }
 
@@ -252,7 +244,7 @@ const Carrier = class {
    * @param: if refuse, here is the reason
    * @return: ok
    */
-  sessionReplyRequest(friendId, status, reason){
+  sessionReplyRequest(friendId, status, reason) {
     return exec('sessionReplyRequest', this.id, friendId, status, reason);
   }
 
@@ -262,7 +254,7 @@ const Carrier = class {
    * @param: (string) data string.
    * @return: ok
    */
-  writeStream(streamIdOrFriendId, data){
+  writeStream(streamIdOrFriendId, data) {
     return exec('writeStream', this.id, streamIdOrFriendId, data);
   }
 
@@ -271,7 +263,7 @@ const Carrier = class {
    * @param: friend userId
    * @return: ok
    */
-  removeStream(friendId){
+  removeStream(friendId) {
     return exec('removeStream', this.id, friendId);
   }
 
@@ -280,7 +272,7 @@ const Carrier = class {
    * @param: friend userId
    * @return: ok
    */
-  closeSession(friendId){
+  closeSession(friendId) {
     return exec('closeSession', this.id, friendId);
   }
 
@@ -292,17 +284,17 @@ const Carrier = class {
    * @param: host port
    * @return: ok
    */
-  addService(friendId, serviceName, host, port){
+  addService(friendId, serviceName, host, port) {
     return exec('addService', this.id, friendId, serviceName, host, port);
   }
 
   /*
    * @brief: remove session service
    * @param: friend userId
-   * @param: service name 
+   * @param: service name
    * @return: ok
    */
-  removeService(friendId, serviceName){
+  removeService(friendId, serviceName) {
     return exec('removeService', this.id, friendId, serviceName);
   }
 
@@ -314,7 +306,7 @@ const Carrier = class {
    * @param: server port
    * @return: (Number) port forwarding id
    */
-  openPortFowarding(friendId, serviceName, host, port){
+  openPortFowarding(friendId, serviceName, host, port) {
     return exec('openPortFowarding', this.id, friendId, serviceName, host, port);
   }
 
@@ -324,7 +316,7 @@ const Carrier = class {
    * @param: port forwarding id
    * @return: ok
    */
-  closePortForwarding(friendId, portForwardingId){
+  closePortForwarding(friendId, portForwardingId) {
     return exec('closePortForwarding', this.id, friendId, portForwardingId);
   }
 
@@ -334,7 +326,7 @@ const Carrier = class {
    * @param: (string)cookie string
    * @return: (Number)channel id
    */
-  openChannel(friendId, cookie){
+  openChannel(friendId, cookie) {
     return exec('openChannel', this.id, friendId, cookie);
   }
 
@@ -344,7 +336,7 @@ const Carrier = class {
    * @param: channel id
    * @return: ok
    */
-  closeChannel(friendId, channelId){
+  closeChannel(friendId, channelId) {
     return exec('closeChannel', this.id, friendId, channelId);
   }
 
@@ -355,8 +347,8 @@ const Carrier = class {
    * @param: data string
    * @return: (Number) data size
    */
-  writeChannel(friendId, channelId, data){
-    return exec('writeChannel', this.id, friendId, channelId, data)
+  writeChannel(friendId, channelId, data) {
+    return exec('writeChannel', this.id, friendId, channelId, data);
   }
 
   /*
@@ -365,7 +357,7 @@ const Carrier = class {
    * @param: channel id
    * @return: ok
    */
-  pendChannel(friendId, channelId){
+  pendChannel(friendId, channelId) {
     return exec('pendChannel', this.id, friendId, channelId);
   }
 
@@ -375,12 +367,13 @@ const Carrier = class {
    * @param: channel id
    * @return: ok
    */
-  resumeChannel(friendId, channelId){
+  resumeChannel(friendId, channelId) {
     return exec('resumeChannel', this.id, friendId, channelId);
   }
 
-  test(){
+  test() {
     NativeCarrier.test();
+    return this.rid;
   }
 };
 

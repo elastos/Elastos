@@ -37,6 +37,11 @@ npm test
 ```
 <img src="./doc/jest.png" width="300" />
 
+### ESLint to format code
+```
+npm run lint
+```
+
 
 ## Usage
 ```
