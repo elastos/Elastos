@@ -69,6 +69,7 @@ type arbitrators struct {
 	crcArbitratorsProgramHashes map[common.Uint168]interface{}
 	crcArbitratorsNodePublicKey map[string]*Producer
 	accumulativeReward          common.Fixed64
+	lastAccumulativeReward      common.Fixed64
 	finalRoundChange            common.Fixed64
 	clearingHeight              uint32
 	arbitersRoundReward         map[common.Uint168]common.Fixed64
@@ -287,7 +288,9 @@ func (a *arbitrators) accumulateReward(block *types.Block) {
 func (a *arbitrators) clearingDPOSReward(block *types.Block,
 	smoothClearing bool) error {
 	if block.Height == a.clearingHeight {
-		return nil
+		a.accumulativeReward = a.lastAccumulativeReward
+	} else {
+		a.lastAccumulativeReward = a.accumulativeReward
 	}
 
 	dposReward := a.getBlockDPOSReward(block)
