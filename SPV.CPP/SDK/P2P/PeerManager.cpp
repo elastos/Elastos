@@ -1828,9 +1828,10 @@ namespace Elastos {
 				}
 
 				if (!b) {
-					peer->warn("missing previous difficulty tansition, can't verify block: {}",
-							   block->GetHash().GetHex());
-					r = false;
+					peer->warn("missing previous difficulty tansition, block height: {}", block->GetHeight());
+//					peer->warn("missing previous difficulty tansition, can't verify block: {}",
+//							   block->GetHash().GetHex());
+					//r = false;
 				} else prevBlock = b->GetPrevBlockHash();
 
 				while (b) { // free up some memory
