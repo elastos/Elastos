@@ -666,8 +666,17 @@ func (a *arbitrators) updateNextArbitrators(height uint32) error {
 
 	if !a.IsInactiveMode() && !a.IsUnderstaffedMode() {
 		count := a.chainParams.GeneralArbiters
+		votedProducers := a.State.GetVotedProducers()
+		sort.Slice(votedProducers, func(i, j int) bool {
+			if votedProducers[i].votes == votedProducers[j].votes {
+				return bytes.Compare(votedProducers[i].info.NodePublicKey,
+					votedProducers[j].NodePublicKey()) < 0
+			}
+			return votedProducers[i].Votes() > votedProducers[j].Votes()
+		})
+
 		producers, err := a.GetNormalArbitratorsDesc(height, count,
-			a.State.GetVotedProducers())
+			votedProducers)
 		if err != nil {
 			if err := a.tryHandleError(height, err); err != nil {
 				return err
@@ -679,7 +688,7 @@ func (a *arbitrators) updateNextArbitrators(height uint32) error {
 			}
 
 			candidates, err := a.GetCandidatesDesc(height, count,
-				a.State.GetVotedProducers())
+				votedProducers)
 			if err != nil {
 				return err
 			}
@@ -727,14 +736,6 @@ func (a *arbitrators) GetNormalArbitratorsDesc(height uint32,
 		if len(producers) < arbitratorsCount {
 			return nil, ErrInsufficientProducer
 		}
-
-		sort.Slice(producers, func(i, j int) bool {
-			if producers[i].votes == producers[j].votes {
-				return bytes.Compare(producers[i].info.NodePublicKey,
-					producers[j].NodePublicKey()) < 0
-			}
-			return producers[i].Votes() > producers[j].Votes()
-		})
 
 		result := make([][]byte, 0)
 		for i := 0; i < arbitratorsCount && i < len(producers); i++ {
