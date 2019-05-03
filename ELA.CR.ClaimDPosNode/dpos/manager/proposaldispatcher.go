@@ -201,6 +201,14 @@ func (p *ProposalDispatcher) CleanProposals(changeView bool) {
 		p.pendingProposals = make(map[common.Uint256]*payload.DPOSProposal)
 
 		p.eventAnalyzer.Clear()
+	} else {
+		// clear pending proposals less than current view offset
+		currentOffset := p.cfg.Consensus.GetViewOffset()
+		for k, v := range p.pendingProposals {
+			if v.ViewOffset < currentOffset {
+				delete(p.pendingProposals, k)
+			}
+		}
 	}
 }
 
