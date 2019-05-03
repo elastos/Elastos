@@ -15,10 +15,8 @@ import I18N from '@/I18N'
 import ReactQuill from 'react-quill'
 import {TOOLBAR_OPTIONS} from '@/config/constant'
 import Translation from '@/module/common/Translation/Container'
-import sanitizeHtml from 'sanitize-html'
 
 import './style.scss'
-import {StyledFormDesc} from './style'
 
 const FormItem = Form.Item
 
@@ -48,9 +46,7 @@ class C extends BaseComponent {
         const param = {
           title: values.title,
           shortDesc: values.shortDesc,
-          desc: sanitizeHtml(values.description, {
-            allowedTags: sanitizeHtml.defaults.allowedTags.concat(['u', 's']),
-          }),
+          desc: values.description,
           benefits: values.benefits,
         }
         if (values.funding) {
