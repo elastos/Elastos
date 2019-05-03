@@ -436,7 +436,7 @@ func (b *BlockChain) checkTransactionOutput(blockHeight uint32,
 	if txn.IsIllegalTypeTx() || txn.IsInactiveArbitrators() ||
 		txn.IsUpdateVersion() || txn.IsActivateProducerTx() {
 		if len(txn.Outputs) != 0 {
-			return errors.New("Illegal transactions should have no output")
+			return errors.New("no cost transactions should have no output")
 		}
 
 		return nil
