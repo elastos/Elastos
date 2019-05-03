@@ -35,7 +35,7 @@ const (
 
 	// InactiveRecoveringHeightLimit is the minimum height an inactive
 	// producer can request recovering
-	InactiveRecoveringHeightLimit = 720
+	InactiveRecoveringHeightLimit = 0
 )
 
 // CheckTransactionSanity verifies received single transaction
