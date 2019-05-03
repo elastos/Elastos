@@ -753,7 +753,6 @@ func (a *arbitrators) GetNormalArbitratorsDesc(height uint32,
 }
 
 func (a *arbitrators) snapshotVotesStates() error {
-	log.Info("[snapshotVotesStates] begin")
 	a.ownerVotesInRound = make(map[common.Uint168]common.Fixed64, 0)
 	a.totalVotesInRound = 0
 	for _, nodePublicKey := range a.nextArbitrators {
@@ -788,7 +787,6 @@ func (a *arbitrators) snapshotVotesStates() error {
 		a.totalVotesInRound += producer.Votes()
 	}
 
-	log.Info("[snapshotVotesStates] end")
 	return nil
 }
 
