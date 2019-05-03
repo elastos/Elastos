@@ -53,7 +53,7 @@ class C extends BaseComponent {
           }),
           benefits: values.benefits,
         }
-        if (!_.isEmpty(values.funding)) {
+        if (values.funding) {
           param.funding = values.funding
         }
         if (!_.isEmpty(values.timeline)) {
