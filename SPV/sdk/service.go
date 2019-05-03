@@ -111,7 +111,7 @@ func newService(cfg *Config) (*service, error) {
 	params := cfg.ChainParams
 	svrCfg := server.NewDefaultConfig(
 		params.Magic, pact.DPOSStartVersion, 0,
-		params.DefaultPort, params.SeedList, nil,
+		params.DefaultPort, params.DNSSeeds, nil,
 		service.newPeer, service.donePeer, service.makeEmptyMessage,
 		func() uint64 { return uint64(chain.BestHeight()) },
 	)
