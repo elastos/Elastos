@@ -123,16 +123,9 @@ func loadConfigParams(cfg *config.Configuration) (*config.Configuration, error) 
 	}
 
 	// When arbiter service enabled, IP address must be set.
-	enableArbiter := cfg.DPoSConfiguration.EnableArbiter
-	if enableArbiter {
-		ipAddr := cfg.DPoSConfiguration.IPAddress
-		if ipAddr == "" {
-			return nil, errors.New("arbiter IPAddress must set when arbiter service enabled")
-		}
-		var err error
-		cfg.DPoSConfiguration.IPAddress, err = hostToIP(ipAddr)
-		if err != nil {
-			return nil, errors.New(fmt.Sprintf("invalid IP %s, %s", ipAddr, err))
+	if cfg.DPoSConfiguration.EnableArbiter {
+		if err := checkHost(cfg.DPoSConfiguration.IPAddress); err != nil {
+			return nil, err
 		}
 	}
 
@@ -184,23 +177,29 @@ func loadConfigParams(cfg *config.Configuration) (*config.Configuration, error) 
 	return cfg, nil
 }
 
-// hostToIP parse the host to IP address.
-func hostToIP(host string) (string, error) {
+// checkHost check the host or IP address is valid and available.
+func checkHost(host string) error {
+	// Empty host check.
+	if host == "" {
+		return errors.New("arbiter IPAddress must set when arbiter" +
+			" service enabled")
+	}
+
 	// Skip if host is already an IP address.
 	if ip := net.ParseIP(host); ip != nil {
-		return ip.String(), nil
+		return nil
 	}
 
 	// Attempt to look up an IP address associated with the parsed host.
 	ips, err := net.LookupIP(host)
 	if err != nil {
-		return "", err
+		return err
 	}
 	if len(ips) == 0 {
-		return "", fmt.Errorf("no addresses found for %s", host)
+		return fmt.Errorf("no addresses found for %s", host)
 	}
 
-	return ips[0].String(), nil
+	return nil
 }
 
 // mainNetDefault set the default parameters for main net usage.
