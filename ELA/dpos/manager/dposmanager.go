@@ -228,7 +228,8 @@ func (d *DPOSManager) OnProposalReceived(id dpeer.PID, p *payload.DPOSProposal) 
 		count := len(d.notHandledProposal)
 
 		if d.arbitrators.HasArbitersMinorityCount(count) {
-			log.Info("[OnProposalReceived] has minority not handled votes, need recover")
+			log.Info("[OnProposalReceived] has minority not handled" +
+				" proposals, need recover")
 			if d.recoverAbnormalState() {
 				log.Info("[OnProposalReceived] recover start")
 			} else {

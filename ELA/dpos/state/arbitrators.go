@@ -286,7 +286,7 @@ func (a *arbitrators) accumulateReward(block *types.Block) {
 
 func (a *arbitrators) clearingDPOSReward(block *types.Block,
 	smoothClearing bool) error {
-	if !smoothClearing && block.Height == a.clearingHeight {
+	if block.Height == a.clearingHeight {
 		return nil
 	}
 
