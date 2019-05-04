@@ -756,7 +756,7 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 		}
 
 		log.Info("disconnect block:", block.Height)
-		DefaultLedger.Arbitrators.DumpInfo()
+		DefaultLedger.Arbitrators.DumpInfo(block.Height-1)
 
 		err = b.disconnectBlock(n, block, confirm)
 		if err != nil {
@@ -779,7 +779,7 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 		// update state after connected block
 		if block.Height >= b.chainParams.VoteStartHeight {
 			DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
-			DefaultLedger.Arbitrators.DumpInfo()
+			DefaultLedger.Arbitrators.DumpInfo(block.Height)
 		}
 
 		delete(b.blockCache, *n.Hash)
@@ -944,7 +944,7 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 		block.Height == b.chainParams.CRCOnlyDPOSHeight-b.chainParams.
 			PreConnectOffset) {
 		DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
-		DefaultLedger.Arbitrators.DumpInfo()
+		DefaultLedger.Arbitrators.DumpInfo(block.Height)
 	}
 
 	// Notify the caller that the new block was accepted into the block
