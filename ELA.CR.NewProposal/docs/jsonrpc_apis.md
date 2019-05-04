@@ -895,7 +895,6 @@ result:
 | location       | uint64 | the location number of the producer       |
 | active         | bool   | if producer has confirmed                 |
 | votes          | string | the votes currently held                  |
-| netaddress     | string | the ip address and port of the producer   |
 | state          | string | the current state of the producer         |
 | registerheight | uint32 | the height of cancel producer             |
 | cancelheight   | uint32 | the cancel height of the producer         |
@@ -934,7 +933,6 @@ result sample:
         "location": 401,
         "active": true,
         "votes": "3.11100000",
-        "netaddress": "127.0.0.1:20339",
         "state": "Activate",
         "registerheight": 236,
         "cancelheight": 0,
@@ -950,7 +948,6 @@ result sample:
         "location": 402,
         "active": true,
         "votes": "2.10000000",
-        "netaddress": "127.0.0.1:20339",
         "state": "Activate",
         "registerheight": 225,
         "cancelheight": 0,
@@ -966,7 +963,6 @@ result sample:
         "location": 403,
         "active": true,
         "votes": "0",
-        "netaddress": "127.0.0.1:20339",
         "state": "Activate",
         "registerheight": 216,
         "cancelheight": 0,
