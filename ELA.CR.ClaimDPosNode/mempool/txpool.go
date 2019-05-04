@@ -74,10 +74,6 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) ErrCode {
 		return errCode
 	}
 
-	tx.Fee = blockchain.GetTxFee(tx, config.ELAAssetID)
-	buf := new(bytes.Buffer)
-	tx.Serialize(buf)
-	tx.FeePerKB = tx.Fee * 1000 / Fixed64(len(buf.Bytes()))
 	// Add the transaction to mem pool
 	mp.txnList[txHash] = tx
 
