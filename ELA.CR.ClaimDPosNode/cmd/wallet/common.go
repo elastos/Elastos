@@ -16,6 +16,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/servers"
 	"github.com/elastos/Elastos.ELA/utils/http"
 )
@@ -52,8 +53,21 @@ func ShowAccountInfo(client *account.Client) error {
 		prefixType := contract.GetPrefixType(acc.ProgramHash)
 		if prefixType == contract.PrefixStandard {
 			fmt.Printf("%-34s %-66s\n", addr, hex.EncodeToString(publicKey))
-			fmt.Println(strings.Repeat("-", 34), strings.Repeat("-", 66))
+		} else if prefixType == contract.PrefixMultiSig {
+			publicKeys, err := crypto.ParseMultisigScript(acc.RedeemScript)
+			if err != nil {
+				return err
+			}
+			if len(publicKeys) > 0 {
+				fmt.Printf("%-34s %-66s\n", addr,
+					hex.EncodeToString(publicKeys[0][1:]))
+			}
+			for _, publicKey := range publicKeys[1:] {
+				fmt.Printf("%-34s %-66s\n", "",
+					hex.EncodeToString(publicKey[1:]))
+			}
 		}
+		fmt.Println(strings.Repeat("-", 34), strings.Repeat("-", 66))
 	}
 
 	return nil

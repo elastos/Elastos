@@ -17,6 +17,7 @@ import (
 	pg "github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/crypto"
+	"github.com/elastos/Elastos.ELA/utils"
 	"github.com/elastos/Elastos.ELA/utils/signal"
 	"github.com/elastos/Elastos.ELA/vm"
 )
@@ -63,7 +64,8 @@ func Add(path string, password []byte) (*Client, error) {
 }
 
 func AddMultiSig(path string, password []byte, m int, pubKeys []*crypto.PublicKey) (*Account, error) {
-	client := NewClient(path, password, false)
+	exist := utils.FileExisted(path)
+	client := NewClient(path, password, !exist)
 	if client == nil {
 		return nil, errors.New("add multi-signature account failed")
 	}

@@ -3,7 +3,6 @@ package common
 import (
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/elastos/Elastos.ELA/utils"
 	"github.com/elastos/Elastos.ELA/utils/http"
@@ -54,11 +53,6 @@ func PrintError(c *cli.Context, err error, cmd string) {
 	fmt.Println("Incorrect Usage:", err)
 	fmt.Println("")
 	cli.ShowCommandHelp(c, cmd)
-}
-
-func FileExisted(filename string) bool {
-	_, err := os.Stat(filename)
-	return err == nil || os.IsExist(err)
 }
 
 func PrintErrorMsg(format string, a ...interface{}) {

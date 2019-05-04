@@ -37,3 +37,8 @@ func GetConfirmedPassword() ([]byte, error) {
 	}
 	return first, nil
 }
+
+func FileExisted(filename string) bool {
+	_, err := os.Stat(filename)
+	return err == nil || os.IsExist(err)
+}
