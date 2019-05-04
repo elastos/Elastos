@@ -272,12 +272,8 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 			log.Warn("check transaction context failed, wrong transaction:", tx.Hash().String())
 			continue
 		}
-		fee := blockchain.GetTxFee(tx, config.ELAAssetID)
-		if fee != tx.Fee {
-			continue
-		}
 		msgBlock.Transactions = append(msgBlock.Transactions, tx)
-		totalTxFee += fee
+		totalTxFee += tx.Fee
 		txCount++
 	}
 
