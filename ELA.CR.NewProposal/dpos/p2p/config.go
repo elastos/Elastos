@@ -29,6 +29,9 @@ type Config struct {
 	// EnableHub indicates whether or not to enable the hub service.
 	EnableHub bool
 
+	// Localhost represents the local host IP or name of this peer.
+	Localhost string
+
 	// MagicNumber is the peer-to-peer network ID to connect to.
 	MagicNumber uint32
 

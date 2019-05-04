@@ -30,6 +30,7 @@ type Config struct {
 	Server            elanet.Server
 	TxMemPool         *mempool.TxPool
 	BlockMemPool      *mempool.BlockPool
+	Localhost         string
 	ChainParams       *config.Params
 	Broadcast         func(msg p2p.Message)
 }
@@ -159,7 +160,8 @@ func NewArbitrator(account account.Account, cfg Config) (*Arbitrator, error) {
 		Server:      cfg.Server,
 	})
 
-	network, err := NewDposNetwork(account, medianTime, dposManager)
+	network, err := NewDposNetwork(account, medianTime, cfg.Localhost,
+		dposManager)
 	if err != nil {
 		log.Error("Init p2p network error")
 		return nil, err
