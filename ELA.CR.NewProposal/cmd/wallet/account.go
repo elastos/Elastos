@@ -148,7 +148,7 @@ func createAccount(c *cli.Context) error {
 
 func accountInfo(c *cli.Context) error {
 	walletPath := c.String("wallet")
-	if exist := cmdcom.FileExisted(walletPath); !exist {
+	if exist := utils.FileExisted(walletPath); !exist {
 		fmt.Println(fmt.Sprintf("error: %s is not found.", walletPath))
 		cli.ShowCommandHelpAndExit(c, "account", 1)
 	}
@@ -170,7 +170,7 @@ func accountInfo(c *cli.Context) error {
 
 func accountBalance(c *cli.Context) error {
 	walletPath := c.String("wallet")
-	if exist := cmdcom.FileExisted(walletPath); !exist {
+	if exist := utils.FileExisted(walletPath); !exist {
 		fmt.Println(fmt.Sprintf("error: %s is not found.", walletPath))
 		cli.ShowCommandHelpAndExit(c, "account", 1)
 	}
