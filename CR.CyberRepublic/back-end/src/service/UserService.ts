@@ -8,6 +8,7 @@ import { validate, utilCrypto, mail, permissions } from '../utility'
 import CommunityService from './CommunityService'
 
 const selectFields = '-salt -password -elaBudget -elaOwed -votePower -resetToken'
+const strictSelectFields = selectFields + ' -email -profile.walletAddress'
 
 const restrictedFields = {
     update: [
@@ -115,6 +116,7 @@ export default class extends Base {
         const userRole = _.get(this.currentUser, 'role')
         const isUserAdmin = permissions.isAdmin(userRole)
         const isSelf = _.get(this.currentUser, '_id') === userId
+        let fields = (isUserAdmin || isSelf) ? selectFields : strictSelectFields
 
         if (param.admin && !isUserAdmin && !isSelf) {
             throw 'Access Denied'
@@ -127,7 +129,7 @@ export default class extends Base {
                 {banned: false}
             ]
         })
-            .select(selectFields)
+            .select(fields)
             .populate('circles')
 
         if (!user) {
@@ -139,7 +141,7 @@ export default class extends Base {
                 for (let thread of comment) {
                     await db_user.getDBInstance().populate(thread, {
                         path: 'createdBy',
-                        select: selectFields
+                        select: fields
                     })
                 }
             }
@@ -147,7 +149,7 @@ export default class extends Base {
             for (let subscriber of user.subscribers) {
                 await db_user.getDBInstance().populate(subscriber, {
                     path: 'user',
-                    select: selectFields
+                    select: fields
                 })
             }
         }
@@ -181,7 +183,8 @@ export default class extends Base {
         const isUserAdmin = permissions.isAdmin(userRole)
         const canUpdate = isUserAdmin || isSelf
         let countryChanged = false
-        console.log(isUserAdmin, isSelf)
+        let fields = (isUserAdmin || isSelf) ? selectFields : strictSelectFields
+
         if (!canUpdate) {
             throw 'Access Denied'
         }
@@ -234,7 +237,7 @@ export default class extends Base {
 
         await db_user.update({_id: userId}, updateObj)
 
-        user = db_user.getDBInstance().findOne({_id: userId}).select(selectFields)
+        user = db_user.getDBInstance().findOne({_id: userId}).select(fields)
             .populate('circles')
 
         // if we change the country, we add the new country as a community if not already
@@ -261,7 +264,6 @@ export default class extends Base {
 
     public async findUsers(query): Promise<Document[]>{
         const db_user = this.getDBModel('User')
-        const strictSelectFields = selectFields + ' -email'
 
         return await db_user.getDBInstance().find({
             '_id' : {
