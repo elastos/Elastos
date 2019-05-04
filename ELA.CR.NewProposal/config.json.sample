@@ -6,12 +6,13 @@
     "PermanentPeers": [
       "127.0.0.1:20338"
     ],
-    "HttpInfoPort": 20333,
     "HttpInfoStart": true,
-    "HttpRestPort": 20334,
+    "HttpInfoPort": 20333,
     "HttpRestStart": true,
-    "HttpWsPort": 20335,
+    "HttpRestPort": 20334,
     "HttpWsStart": true,
+    "HttpWsPort": 20335,
+    "EnableRPC": true,
     "HttpJsonPort": 20336,
     "NodePort": 20338,
     "PrintLevel": 0,

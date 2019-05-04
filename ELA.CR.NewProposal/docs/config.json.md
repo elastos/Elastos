@@ -2,7 +2,6 @@
 
 ## Configuration free
 - `config.json` file is optional, you can run a `ela` node without a `config.json` file.
--  By default JSON-RPC is enabled on `localhost:20336`.
 
 ## Change active network
 Just modify the `ActiveNet` parameter in the `config.json` file.
@@ -15,7 +14,6 @@ Just modify the `ActiveNet` parameter in the `config.json` file.
 ```
 Default config for `testnet`
 - Peer-to-Peer network connect to ELA `testnet`.
-- JSON-RPC is enabled on `localhost:21336`.
 
 ## Inline Explanation
 
@@ -38,7 +36,7 @@ Default config for `testnet`
     "HttpWsPort": 20335,          // Websocket port number
     "HttpWsStart": true,          // Whether to enable the WebSocket service
     "HttpJsonPort": 20336,        // RPC port number
-    "DisableRPC": false,          // Disable the RPC service
+    "EnableRPC": true,            // Enable the RPC service
     "NodePort": 20338,            // P2P port number
     "PrintLevel": 0,              // Log level. Level 0 is the highest, 5 is the lowest
     "MaxLogsSize": 0,             // Max total logs size in MB

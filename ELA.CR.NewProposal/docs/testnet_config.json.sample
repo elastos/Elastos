@@ -6,6 +6,7 @@
       "MinerInfo": "ELA",
       "MinTxFee": 100
     },
+    "EnableRPC": true,
     "RpcConfiguration": {
       "User": "User",
       "Pass": "Password",

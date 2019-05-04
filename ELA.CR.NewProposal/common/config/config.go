@@ -41,7 +41,7 @@ type Configuration struct {
 	HttpWsPort         int               `json:"HttpWsPort"`
 	HttpWsStart        bool              `json:"HttpWsStart"`
 	HttpJsonPort       int               `json:"HttpJsonPort"`
-	DisableRPC         bool              `json:"DisableRPC"`
+	EnableRPC          bool              `json:"EnableRPC"`
 	NodePort           uint16            `json:"NodePort"`
 	PrintLevel         elalog.Level      `json:"PrintLevel"`
 	MaxLogsSize        int64             `json:"MaxLogsSize"`

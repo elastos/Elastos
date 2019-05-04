@@ -255,7 +255,7 @@ func startNode(c *cli.Context) {
 	defer server.Stop()
 
 	log.Info("Start services")
-	if !cfg.DisableRPC {
+	if cfg.EnableRPC {
 		go httpjsonrpc.StartRPCServer()
 	}
 	if cfg.HttpRestStart {
