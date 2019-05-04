@@ -6,7 +6,7 @@ const F = {
         return validator.isEmail(email)
     },
 
-    valid_string(str, min, max=16384){
+    valid_string(str, min, max=32768){
         if(!str || !_.isString(str)) return false
         const len = str.length
         if(len < min) return false
