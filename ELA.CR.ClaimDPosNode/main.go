@@ -202,6 +202,7 @@ func startNode(c *cli.Context) {
 		arbitrator, err = dpos.NewArbitrator(act, dpos.Config{
 			EnableEventLog:    true,
 			EnableEventRecord: false,
+			Localhost:         cfg.DPoSConfiguration.IPAddress,
 			ChainParams:       activeNetParams,
 			Arbitrators:       arbiters,
 			Store:             dposStore,

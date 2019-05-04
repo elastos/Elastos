@@ -416,7 +416,7 @@ func (r *Routes) handleAnnounce(s *state) {
 		// Generate DAddr for the given PID.
 		cipher, err := crypto.Encrypt(pubKey, []byte(r.addr))
 		if err != nil {
-			log.Warnf("encrypt addr failed %s", err)
+			log.Warnf("encrypt addr %s failed %s", r.addr, err)
 			continue
 		}
 		addr := msg.DAddr{
