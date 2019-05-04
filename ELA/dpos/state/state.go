@@ -667,17 +667,26 @@ func (s *State) updateProducer(info *payload.ProducerInfo, height uint32) {
 func (s *State) cancelProducer(payload *payload.ProcessProducer, height uint32) {
 	key := hex.EncodeToString(payload.OwnerPublicKey)
 	producer := s.getProducer(payload.OwnerPublicKey)
+	isPending := producer.state == Pending
 	s.history.append(height, func() {
 		producer.state = Canceled
 		producer.cancelHeight = height
 		s.canceledProducers[key] = producer
-		delete(s.activityProducers, key)
+		if isPending {
+			delete(s.pendingProducers, key)
+		} else {
+			delete(s.activityProducers, key)
+		}
 		delete(s.nicknames, producer.info.NickName)
 	}, func() {
 		producer.state = Activate
 		producer.cancelHeight = 0
 		delete(s.canceledProducers, key)
-		s.activityProducers[key] = producer
+		if isPending {
+			s.pendingProducers[key] = producer
+		} else {
+			s.activityProducers[key] = producer
+		}
 		s.nicknames[producer.info.NickName] = struct{}{}
 	})
 }
