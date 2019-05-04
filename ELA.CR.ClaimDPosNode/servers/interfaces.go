@@ -1166,7 +1166,6 @@ type Producer struct {
 	Location       uint64 `json:"location"`
 	Active         bool   `json:"active"`
 	Votes          string `json:"votes"`
-	NetAddress     string `json:"netaddress"`
 	State          string `json:"state"`
 	RegisterHeight uint32 `json:"registerheight"`
 	CancelHeight   uint32 `json:"cancelheight"`
@@ -1202,7 +1201,6 @@ func ListProducers(param Params) map[string]interface{} {
 			Location:       p.Info().Location,
 			Active:         p.State() == state.Activate,
 			Votes:          p.Votes().String(),
-			NetAddress:     p.Info().NetAddress,
 			State:          p.State().String(),
 			RegisterHeight: p.RegisterHeight(),
 			CancelHeight:   p.CancelHeight(),
