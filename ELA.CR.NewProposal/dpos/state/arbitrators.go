@@ -15,7 +15,6 @@ import (
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
-	"github.com/elastos/Elastos.ELA/dpos/p2p"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/events"
 )
@@ -210,7 +209,7 @@ func (a *arbitrators) ForceChange(height uint32) error {
 			a.GetNeedConnectArbiters())
 	}
 
-	a.DumpInfo()
+	a.DumpInfo(height)
 
 	return nil
 }
@@ -837,54 +836,33 @@ func (a *arbitrators) updateOwnerProgramHashes() error {
 	return nil
 }
 
-func (a *arbitrators) DumpInfo() {
+func (a *arbitrators) DumpInfo(height uint32) {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
 
 	var printer func(string, ...interface{})
-	changeType, _ := a.getChangeType(a.State.history.height + 1)
+	changeType, _ := a.getChangeType(height)
 	switch changeType {
 	case updateNext:
 		fallthrough
 	case normalChange:
-		printer = log.Debugf
-	case none:
 		printer = log.Infof
+	case none:
+		printer = log.Debugf
 	}
 
-	connectionInfoMap := a.getProducersConnectionInfo()
 	var crInfo string
 	crParams := make([]interface{}, 0)
 	if len(a.currentArbitrators) != 0 {
-		crInfo, crParams = a.getArbitersInfoWithOnduty("CURRENT ARBITERS", a.currentArbitrators, connectionInfoMap)
+		crInfo, crParams = getArbitersInfoWithOnduty("CURRENT ARBITERS",
+			a.currentArbitrators, a.dutyIndex, a.GetOnDutyArbitrator())
 	} else {
-		crInfo, crParams = a.getArbitersInfoWithoutOnduty("CURRENT ARBITERS", a.currentArbitrators, connectionInfoMap)
+		crInfo, crParams = getArbitersInfoWithoutOnduty("CURRENT ARBITERS", a.currentArbitrators)
 	}
-	nrInfo, nrParams := a.getArbitersInfoWithoutOnduty("NEXT ARBITERS", a.nextArbitrators, connectionInfoMap)
-	ccInfo, ccParams := a.getArbitersInfoWithoutOnduty("CURRENT CANDIDATES", a.currentCandidates, connectionInfoMap)
-	ncInfo, ncParams := a.getArbitersInfoWithoutOnduty("NEXT CANDIDATES", a.nextCandidates, connectionInfoMap)
+	nrInfo, nrParams := getArbitersInfoWithoutOnduty("NEXT ARBITERS", a.nextArbitrators)
+	ccInfo, ccParams := getArbitersInfoWithoutOnduty("CURRENT CANDIDATES", a.currentCandidates)
+	ncInfo, ncParams := getArbitersInfoWithoutOnduty("NEXT CANDIDATES", a.nextCandidates)
 	printer(crInfo+nrInfo+ccInfo+ncInfo, append(append(append(crParams, nrParams...), ccParams...), ncParams...)...)
-}
-
-func (a *arbitrators) getProducersConnectionInfo() (result map[string]p2p.PeerAddr) {
-	result = make(map[string]p2p.PeerAddr)
-	for k, v := range a.crcArbitratorsNodePublicKey {
-		pid := peer.PID{}
-		copy(pid[:], v.info.NodePublicKey)
-		result[k] = p2p.PeerAddr{PID: pid, Addr: v.info.NetAddress}
-	}
-	for _, p := range a.State.activityProducers {
-		if len(p.Info().NodePublicKey) != 33 {
-			log.Warn("[getProducersConnectionInfo] invalid public key")
-			continue
-		}
-		pid := peer.PID{}
-		copy(pid[:], p.Info().NodePublicKey)
-		result[hex.EncodeToString(p.Info().NodePublicKey)] =
-			p2p.PeerAddr{PID: pid, Addr: p.Info().NetAddress}
-	}
-
-	return result
 }
 
 func (a *arbitrators) getBlockDPOSReward(block *types.Block) common.Fixed64 {
@@ -893,40 +871,37 @@ func (a *arbitrators) getBlockDPOSReward(block *types.Block) common.Fixed64 {
 		totalTxFx += tx.Fee
 	}
 
-	return common.Fixed64(math.Ceil(float64(totalTxFx +
+	return common.Fixed64(math.Ceil(float64(totalTxFx+
 		a.chainParams.RewardPerBlock) * 0.35))
 }
 
-func (a *arbitrators) getArbitersInfoWithOnduty(title string, arbiters [][]byte,
-	connectionInfoMap map[string]p2p.PeerAddr) (string, []interface{}) {
-	info := "\n" + title + "\nDUTYINDEX: %d\n%5s %66s %21s %6s\n----- " + strings.Repeat("-", 66) +
-		" " + strings.Repeat("-", 21) + " ------\n"
+func getArbitersInfoWithOnduty(title string, arbiters [][]byte,
+	dutyIndex int, ondutyArbiter []byte) (string, []interface{}) {
+	info := "\n" + title + "\nDUTYINDEX: %d\n%5s %66s %6s \n----- " +
+		strings.Repeat("-", 66) + " ------\n"
 	params := make([]interface{}, 0)
-	params = append(params, (a.dutyIndex+1)%len(arbiters))
-	params = append(params, "INDEX", "PUBLICKEY", "NETADDRESS", "ONDUTY")
+	params = append(params, (dutyIndex+1)%len(arbiters))
+	params = append(params, "INDEX", "PUBLICKEY", "ONDUTY")
 	for i, arbiter := range arbiters {
+		info += "%-5d %-66s %6t\n"
 		publicKey := common.BytesToHexString(arbiter)
-		info += "%-5d %-66s %21s %6t\n"
-		params = append(params, i+1, publicKey,
-			connectionInfoMap[publicKey].Addr, bytes.Equal(arbiter, a.GetOnDutyArbitrator()))
+		params = append(params, i+1, publicKey, bytes.Equal(arbiter, ondutyArbiter))
 	}
-	info += "----- " + strings.Repeat("-", 66) + " " + strings.Repeat("-", 21) + " ------"
+	info += "----- " + strings.Repeat("-", 66) + " ------"
 	return info, params
 }
 
-func (a *arbitrators) getArbitersInfoWithoutOnduty(title string, arbiters [][]byte,
-	connectionInfoMap map[string]p2p.PeerAddr) (string, []interface{}) {
+func getArbitersInfoWithoutOnduty(title string, arbiters [][]byte) (string, []interface{}) {
 
-	info := "\n" + title + "\n%5s %66s %21s\n----- " + strings.Repeat("-", 66) +
-		" " + strings.Repeat("-", 21) + "\n"
+	info := "\n" + title + "\n%5s %66s\n----- " + strings.Repeat("-", 66) + "\n"
 	params := make([]interface{}, 0)
-	params = append(params, "INDEX", "PUBLICKEY", "NETADDRESS")
+	params = append(params, "INDEX", "PUBLICKEY")
 	for i, arbiter := range arbiters {
+		info += "%-5d %-66s\n"
 		publicKey := common.BytesToHexString(arbiter)
-		info += "%-5d %-66s %21s\n"
-		params = append(params, i+1, publicKey, connectionInfoMap[publicKey].Addr)
+		params = append(params, i+1, publicKey)
 	}
-	info += "----- " + strings.Repeat("-", 66) + " " + strings.Repeat("-", 21)
+	info += "----- " + strings.Repeat("-", 66)
 	return info, params
 }
 

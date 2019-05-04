@@ -47,5 +47,5 @@ type Arbitrators interface {
 	HasArbitersMajorityCount(num int) bool
 	HasArbitersMinorityCount(num int) bool
 
-	DumpInfo()
+	DumpInfo(height uint32)
 }
