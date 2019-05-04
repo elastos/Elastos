@@ -167,17 +167,11 @@ func (sp *serverPeer) OnVersion(_ *peer.Peer, v *msg.Version) {
 		return
 	}
 
-	// Update the AddrManager with the inbound peer, for we already know the
-	// address of an outbound peer so we can create the outbound connection.
-	// But we may be don't know the inbound peer's address, so add it into
-	// AddrManager.
-	addrManager := sp.server.addrManager
-	if sp.Inbound() {
-		// Create net address according to the version message.
-		na := &net.TCPAddr{IP: sp.NA().IP, Port: int(v.Port)}
-		log.Debugf("New inbound %s addr %s", sp.PID(), na)
-
-		addrManager.AddAddress(v.PID, na)
+	// Advertise the local address when the server accepts outbound incoming
+	// connections.
+	if !sp.Inbound() {
+		addr := msg.NewAddr(sp.server.cfg.Localhost, sp.server.cfg.DefaultPort)
+		sp.QueueMessage(addr, nil)
 	}
 
 	// Add the remote peer time as a sample for creating an offset against
@@ -186,6 +180,14 @@ func (sp *serverPeer) OnVersion(_ *peer.Peer, v *msg.Version) {
 
 	// Add valid peer to the server.
 	sp.server.AddPeer(sp)
+}
+
+// OnAddr is invoked when a peer receives an addr message and is used to notify
+// the server about advertised address.
+func (sp *serverPeer) OnAddr(_ *peer.Peer, msg *msg.Addr) {
+	addr := normalizeAddress(msg.Host, fmt.Sprint(msg.Port))
+	sp.server.addrManager.AddAddress(sp.PID(), simpleAddr{net: "tcp",
+		addr: addr})
 }
 
 // PID returns the peer's public key id.
@@ -515,6 +517,10 @@ func newPeerConfig(sp *serverPeer) *peer.Config {
 			switch m := m.(type) {
 			case *msg.Version:
 				sp.OnVersion(peer, m)
+
+			case *msg.Addr:
+				sp.OnAddr(peer, m)
+
 			}
 		},
 	}
@@ -639,12 +645,7 @@ func (s *server) handlePeerMsg(state *peerState, sp interface{}) {
 // AddAddr adds an arbiter address into AddrManager.
 func (s *server) AddAddr(pid peer.PID, addr string) {
 	addr = normalizeAddress(addr, fmt.Sprint(s.cfg.DefaultPort))
-	na, err := addrStringToNetAddr(addr)
-	if err != nil {
-		return
-	}
-
-	s.addrManager.AddAddress(pid, na)
+	s.addrManager.AddAddress(pid, &simpleAddr{net: "tcp", addr: addr})
 }
 
 // AddPeer adds a new peer that has already been connected to the server.
@@ -788,6 +789,11 @@ func (s *server) ScheduleShutdown(duration time.Duration) {
 }
 
 func (s *server) dialTimeout(addr net.Addr) (net.Conn, error) {
+	log.Debugf("Server dial addr %s", addr)
+	addr, err := addrStringToNetAddr(addr.String())
+	if err != nil {
+		return nil, err
+	}
 	return net.DialTimeout(addr.Network(), addr.String(), s.cfg.ConnectTimeout)
 }
 
@@ -894,7 +900,7 @@ func initListeners(cfg Config) ([]net.Listener, error) {
 // a net.Addr which maps to the original address with any host names resolved
 // to IP addresses.  It also handles tor addresses properly by returning a
 // net.Addr that encapsulates the address.
-func addrStringToNetAddr(addr string) (*net.TCPAddr, error) {
+func addrStringToNetAddr(addr string) (net.Addr, error) {
 	host, strPort, err := net.SplitHostPort(addr)
 	if err != nil {
 		return nil, err

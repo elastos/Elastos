@@ -299,7 +299,7 @@ func (n *network) getCurrentHeight(pid peer.PID) uint64 {
 }
 
 func NewDposNetwork(account account.Account, medianTime dtime.MedianTimeSource,
-	listener manager.NetworkEventListener) (*network, error) {
+	localhost string, listener manager.NetworkEventListener) (*network, error) {
 	network := &network{
 		listener:                 listener,
 		messageQueue:             make(chan *messageItem, 10000), //todo config handle capacity though config file
@@ -322,6 +322,7 @@ func NewDposNetwork(account account.Account, medianTime dtime.MedianTimeSource,
 	server, err := p2p.NewServer(&p2p.Config{
 		PID:              pid,
 		EnableHub:        true,
+		Localhost:        localhost,
 		MagicNumber:      config.Parameters.DPoSConfiguration.Magic,
 		DefaultPort:      config.Parameters.DPoSConfiguration.DPoSPort,
 		TimeSource:       medianTime,
