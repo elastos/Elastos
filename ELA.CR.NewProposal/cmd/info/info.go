@@ -174,6 +174,20 @@ func NewCommand() *cli.Command {
 					return nil
 				},
 			},
+			{
+				Name:  "listproducers",
+				Usage: "list current producers information",
+				Action: func(c *cli.Context) error {
+					result, err := cmdcom.RPCCall("listproducers",
+						http.Params{})
+					if err != nil {
+						fmt.Println("error: get transaction pool failed,", err)
+						return err
+					}
+					printFormat(result)
+					return nil
+				},
+			},
 		},
 	}
 }

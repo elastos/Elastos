@@ -989,6 +989,53 @@ OPTIONS:
 ]
 ```
 
+### 3.10 获取生产者列表
+
+```
+./ela-cli info listproducers
+```
+
+返回如下：
+
+```
+{
+    "producers": [
+        {
+            "active": true,
+            "cancelheight": 0,
+            "illegalheight": 0,
+            "inactiveheight": 0,
+            "index": 0,
+            "location": 0,
+            "nickname": "PRO-002",
+            "nodepublickey": "03340dd02ea014133f927ea0828db685e39d9fdc2b9a1b37d2de5b2533d66ef605",
+            "ownerpublickey": "02690e2887ac7bc2c5d2ffdfeef4d1edc060838fee009c26a18557648f9e6f19a9",
+            "registerheight": 104,
+            "state": "Activate",
+            "url": "https://elastos.org",
+            "votes": "2"
+        },
+        {
+            "active": true,
+            "cancelheight": 0,
+            "illegalheight": 0,
+            "inactiveheight": 0,
+            "index": 1,
+            "location": 0,
+            "nickname": "PRO-003",
+            "nodepublickey": "02b796ff22974f2f2b866e0cce39ff72a417a5c13ceb93f3932f05cc547e4b98e4",
+            "ownerpublickey": "036e66b27064da32f333f765a9ae501e7dd418f529d10afa1e4f72bd2a3b2c76a2",
+            "registerheight": 110,
+            "state": "Activate",
+            "url": "https://elastos.org",
+            "votes": "1"
+        }
+    ],
+    "totalcounts": 2,
+    "totalvotes": "3"
+}
+```
+
 
 
 ## 4.挖矿
