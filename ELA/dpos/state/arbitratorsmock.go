@@ -245,6 +245,6 @@ func (a *ArbitratorsMock) HasArbitersMinorityCount(num int) bool {
 	return num >= len(a.CurrentArbitrators)-a.MajorityCount
 }
 
-func (a *ArbitratorsMock) DumpInfo() {
+func (a *ArbitratorsMock) DumpInfo(height uint32) {
 	panic("implement me")
 }
