@@ -631,6 +631,11 @@ func (b *BlockChain) checkTransactionFee(tx *Transaction, references map[*Input]
 	if inputValue < b.chainParams.MinTransactionFee+outputValue {
 		return fmt.Errorf("transaction fee not enough")
 	}
+	// set Fee and FeePerKB if check has passed
+	tx.Fee = inputValue - outputValue
+	buf := new(bytes.Buffer)
+	tx.Serialize(buf)
+	tx.FeePerKB = tx.Fee * 1000 / common.Fixed64(len(buf.Bytes()))
 	return nil
 }
 
