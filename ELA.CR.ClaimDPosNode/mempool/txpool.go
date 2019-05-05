@@ -279,7 +279,20 @@ func (mp *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 			log.Warn(err)
 			return ErrSidechainTxDuplicate
 		}
-	} else if txn.IsRegisterProducerTx() {
+	}
+
+	// check if the transaction includes double spent UTXO inputs
+	if err := mp.verifyDoubleSpend(txn); err != nil {
+		log.Warn(err)
+		return ErrDoubleSpend
+	}
+
+	return mp.verifyProducerRelatedTx(txn)
+}
+
+//verify producer related transaction with txnpool
+func (mp *TxPool) verifyProducerRelatedTx(txn *Transaction) ErrCode {
+	if txn.IsRegisterProducerTx() {
 		payload, ok := txn.Payload.(*payload.ProducerInfo)
 		if !ok {
 			log.Error("register producer payload cast failed, tx:", txn.Hash())
@@ -324,12 +337,6 @@ func (mp *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 			log.Warn(err)
 			return ErrProducerProcessing
 		}
-	}
-
-	// check if the transaction includes double spent UTXO inputs
-	if err := mp.verifyDoubleSpend(txn); err != nil {
-		log.Warn(err)
-		return ErrDoubleSpend
 	}
 
 	return Success
