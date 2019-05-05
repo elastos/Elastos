@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/elastos/Elastos.ELA/common/config"
@@ -17,9 +18,6 @@ import (
 )
 
 const (
-	// dataDir defines the default data directory.
-	dataDir = "elastos/dns/"
-
 	// help message print on startup.
 	help = "Go to the 'elanet/dns/README.md' file for more details.\n" +
 		"OPTIONS:\n" +
@@ -38,6 +36,12 @@ var (
 
 	// Set default active net params.
 	params = &config.DefaultParams
+
+	// dataDir defines the default data directory.
+	dataDir = filepath.Join("elastos", "data", "dns")
+
+	// logDir defines the directory to put log files.
+	logDir = filepath.Join("elastos", "logs", "dns")
 
 	// logLevel represents the log print level.
 	logLevel = elalog.LevelInfo
@@ -91,7 +95,7 @@ func main() {
 	}
 
 	// Initiate log printer.
-	fileWriter := elalog.NewFileWriter(dataDir, 0, 0)
+	fileWriter := elalog.NewFileWriter(logDir, 0, 0)
 	backend := elalog.NewBackend(io.MultiWriter(fileWriter, os.Stdout),
 		elalog.Llongfile)
 	addrlog := backend.Logger("AMGR", logLevel)
