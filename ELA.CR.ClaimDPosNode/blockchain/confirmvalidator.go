@@ -70,10 +70,6 @@ func checkBlockWithConfirmation(block *Block, confirm *payload.Confirm) error {
 			"confirmation validate failed")
 	}
 
-	if err := preProcessSpecialTx(block); err != nil {
-		return err
-	}
-
 	if err := ConfirmContextCheck(confirm); err != nil {
 		// rollback to the state before this method
 		if e := DefaultLedger.Arbitrators.RollbackTo(block.

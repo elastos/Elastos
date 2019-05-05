@@ -145,7 +145,7 @@ func (b *BlockChain) InitProducerState(interrupt <-chan struct{},
 			}
 
 			if block.Height >= bestHeight-uint32(
-				b.chainParams.GeneralArbiters-len(b.chainParams.CRCArbiters)) {
+				b.chainParams.GeneralArbiters+len(b.chainParams.CRCArbiters)) {
 				b.calculateTxsFee(block)
 			}
 
@@ -867,6 +867,9 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block, confirm *pay
 // connectBlock handles connecting the passed node/block to the end of the main
 // (best) chain.
 func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payload.Confirm) error {
+	if err := preProcessSpecialTx(block); err != nil {
+		return err
+	}
 
 	// The block must pass all of the validation rules which depend on the
 	// position of the block within the block chain.
@@ -1015,6 +1018,9 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *Block, confirm *pa
 		// Connect the block to the main chain.
 		err := b.connectBlock(node, block, confirm)
 		if err != nil {
+			if err := b.state.RollbackTo(block.Height); err != nil {
+				log.Error("state rollback failed: ", err)
+			}
 			return false, false, err
 		}
 
