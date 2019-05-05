@@ -132,9 +132,9 @@ const en = {
   'home.explanation_1.part_2': '',
 
   'home.box_2.title': 'What is the Cyber Republic Council?',
-  'home.box_2.description': 'A democratically elected group of 3 individuals that conducts the first stage of proposal evaluation and ensures that Cyber Republic funds are spent effectively and responsibly.',
+  'home.box_2.description': 'A democratically elected group of 12(3 during Interim Period) individuals that conducts the first stage of proposal evaluation and ensures that Cyber Republic funds are spent effectively and responsibly.',
 
-  'home.explanation_2.part_1': 'A democratically elected group of 3 individuals that conducts the first stage of proposal evaluation and ensures that Cyber Republic funds are spent effectively and responsibly.',
+  'home.explanation_2.part_1': 'A democratically elected group of 12(3 during Interim Period) individuals that conducts the first stage of proposal evaluation and ensures that Cyber Republic funds are spent effectively and responsibly.',
   'home.explanation_2.part_2': '',
 
   'home.box_3.title': 'What is the Cyber Republic Constitution?',

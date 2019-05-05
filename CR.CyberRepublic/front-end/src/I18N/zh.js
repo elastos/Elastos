@@ -132,7 +132,7 @@ const zh = {
   'home.explanation_1.part_2': '',
 
   'home.box_2.title': '什么是Cyber Republic委员会？',
-  'home.box_2.description': '民主选举产生的3人委员组织，他们对第一阶段的提案进行评估，并确保有效并负责任地使用Cyber Republic的资金。',
+  'home.box_2.description': '民主选举产生的12名委员组成（筹备期为3名），他们对第一阶段的提案进行评估，并确保有效并负责任地使用Cyber Republic的资金。',
 
   'home.explanation_2.part_1': '民主选举产生的3人委员组织，他们对第一阶段的提案进行评估，并确保有效并负责任地使用Cyber Republic的资金。',
   'home.explanation_2.part_2': '',
