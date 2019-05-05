@@ -1,9 +1,5 @@
 {
   "ActiveNet": "test",
-  "DisableDNS": false,
-  "PermanentPeers": [
-    "localhost:21608"
-  ],
   "SPVDisableDNS": false,
   "SPVPermanentPeers": [
     "localhost:21338"

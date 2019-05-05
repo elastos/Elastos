@@ -10,12 +10,13 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/utils/elalog"
 )
 
 const (
-	configFilename    = "./config.json"
-	defaultDebugLevel = "info"
-	defaultLogDir     = "logs"
+	configFilename  = "./config.json"
+	defaultLogDir   = "logs"
+	defaultLogLevel = elalog.LevelInfo
 )
 
 var (
@@ -27,7 +28,7 @@ var (
 
 	// defaultConfig defines the default configuration parameters.
 	defaultConfig = configParams{
-		DebugLevel: defaultDebugLevel,
+		LogLevel: defaultLogLevel,
 	}
 
 	// cfg indicates the configuration parameters load from 'config.json' file.
@@ -54,7 +55,7 @@ type configParams struct {
 	RPCUser            string
 	RPCPass            string
 	RPCWhiteList       []string
-	DebugLevel         string
+	LogLevel           elalog.Level
 	LogsFolderSize     int64
 	PerLogFileSize     int64
 	FoundationAddress  string

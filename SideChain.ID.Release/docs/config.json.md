@@ -41,7 +41,7 @@ Default config for `testnet`
   "RPCWhiteList": [       // Specify a white list of IP addresses for the JSON-RPC service.
     "127.0.0.1"
   ],
-  "DebugLevel": "info",   // Specify the debug log level. Choices: info warn error debug.
+  "LogLevel": 1,          // Specify the debug log level. Choices: (0)debug (1)info (2)warn (3)error (4)fatal (5)off.
   "PerLogFileSize": 20,   // Specify the maximum file size of a single log file.
   "LogsFolderSize": 2048, // Specify the maximum logs folder size which containing all log files.
   "DisableTxFilters": false, // Disable the transaction filer function.
