@@ -281,13 +281,6 @@ export default class extends Base {
      */
     public async findAll(query): Promise<Object>{
         const db_user = this.getDBModel('User')
-        let excludeFields = selectFields
-        const userRole = _.get(this.currentUser, 'role')
-        const isUserAdmin = permissions.isAdmin(userRole)
-
-        if (!query.admin || !isUserAdmin) {
-            excludeFields += ' -email'
-        }
 
         const finalQuery: any = {
             active: true,
@@ -329,7 +322,7 @@ export default class extends Base {
             cursor.skip(results * (page - 1)).limit(results)
         }
 
-        cursor.select(excludeFields).sort({username: 1})
+        cursor.select(strictSelectFields).sort({username: 1})
 
         const users = await cursor
         const total = await totalCursor
