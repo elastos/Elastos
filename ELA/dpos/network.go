@@ -20,6 +20,8 @@ import (
 	elamsg "github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
+const dataPathDPoS = "elastos/data/dpos"
+
 type blockItem struct {
 	Block     *types.Block
 	Confirmed bool
@@ -320,6 +322,7 @@ func NewDposNetwork(account account.Account, medianTime dtime.MedianTimeSource,
 	var pid peer.PID
 	copy(pid[:], account.PublicKeyBytes())
 	server, err := p2p.NewServer(&p2p.Config{
+		DataDir:          dataPathDPoS,
 		PID:              pid,
 		EnableHub:        true,
 		Localhost:        localhost,
