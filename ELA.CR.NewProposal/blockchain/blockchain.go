@@ -1,6 +1,7 @@
 package blockchain
 
 import (
+	"bytes"
 	"container/list"
 	"errors"
 	"fmt"
@@ -142,6 +143,12 @@ func (b *BlockChain) InitProducerState(interrupt <-chan struct{},
 				err = e
 				break
 			}
+
+			if block.Height >= bestHeight-uint32(
+				b.chainParams.GeneralArbiters-len(b.chainParams.CRCArbiters)) {
+				b.caculateTxsFee(block)
+			}
+
 			confirm, _ := b.db.GetConfirm(block.Hash())
 			arbiters.ProcessBlock(block, confirm)
 
@@ -162,6 +169,35 @@ func (b *BlockChain) InitProducerState(interrupt <-chan struct{},
 	case <-interrupt:
 	}
 	return err
+}
+
+func (b *BlockChain) caculateTxsFee(block *Block) {
+	for _, tx := range block.Transactions {
+		references, err := DefaultLedger.Store.GetTxReference(tx)
+		if err != nil {
+			log.Error("InitProducerState get" +
+				" transaction reference failed")
+			return
+		}
+		var outputValue Fixed64
+		var inputValue Fixed64
+		for _, output := range tx.Outputs {
+			outputValue += output.Value
+		}
+		for _, reference := range references {
+			inputValue += reference.Value
+		}
+		if inputValue < b.chainParams.MinTransactionFee+outputValue {
+			log.Error("InitProducerState transaction" +
+				" fee not enough")
+			return
+		}
+		// set Fee and FeePerKB if check has passed
+		tx.Fee = inputValue - outputValue
+		buf := new(bytes.Buffer)
+		tx.Serialize(buf)
+		tx.FeePerKB = tx.Fee * 1000 / Fixed64(len(buf.Bytes()))
+	}
 }
 
 // GetState returns the DPOS state instance that stores producers and votes
