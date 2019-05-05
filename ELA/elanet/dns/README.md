@@ -11,25 +11,32 @@ $ make dns
 # Run DNS service
 
 There are 3 optional parameters for the DNS service
-1. Port, use `-p <port>` to specify a port for the DNS service, it will overwrite the port
- value in network parameters even the network has been specified by using `-net` parameter.
-2. Net, use `-net <network>` to specify the network parameters for the DNS service,
+1. Net, use `-net <network>` to specify the network parameters for the DNS service,
  it can be `mainnet` `testnet` or `regnet`, the DNS service use `mainnet` parameters by default.
-3. Debug, use `-debug` to enable debug mode, in debug mode, DNS service will print out debug logs.
+2. Magic, use `-magic` to specify the magic number of the DNS service, it will overwrite the magic
+ number in network parameters even the network has been specified by using `-net` parameter.
+3. Port, use `-port` to specify a port for the DNS service, it will overwrite the port
+ number in network parameters even the network has been specified by using `-net` parameter.
+4. Debug, use `-debug` to enable debug mode, in debug mode, DNS service will print out debug logs.
 
-Run DNS service with default network parameters.
+Run DNS service with default `mainnet` network parameters.
 ```shell
 $ ./ela-dns
-```
-
-Specify the serving port.
-```shell
-$ ./ela-dns -p 20866
 ```
 
 Specify the network.
 ```shell
 $ ./ela-dns -net testnet
+```
+
+Specify the magic number.
+```shell
+$ ./ela-dns -magic 123123
+```
+
+Specify the serving port.
+```shell
+$ ./ela-dns -port 12345
 ```
 
 Enable debug mode.
@@ -39,5 +46,5 @@ $ ./ela-dns -debug
 
 Use all of them.
 ```shell
-$ ./ela-dns -p 20866 -net regnet -debug
+$ ./ela-dns -net regnet -magic 123123 -port 12345  -debug
 ```
