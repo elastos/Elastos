@@ -146,7 +146,7 @@ func (b *BlockChain) InitProducerState(interrupt <-chan struct{},
 
 			if block.Height >= bestHeight-uint32(
 				b.chainParams.GeneralArbiters-len(b.chainParams.CRCArbiters)) {
-				b.caculateTxsFee(block)
+				b.calculateTxsFee(block)
 			}
 
 			confirm, _ := b.db.GetConfirm(block.Hash())
@@ -171,12 +171,14 @@ func (b *BlockChain) InitProducerState(interrupt <-chan struct{},
 	return err
 }
 
-func (b *BlockChain) caculateTxsFee(block *Block) {
+func (b *BlockChain) calculateTxsFee(block *Block) {
 	for _, tx := range block.Transactions {
+		if tx.IsCoinBaseTx() {
+			continue
+		}
 		references, err := DefaultLedger.Store.GetTxReference(tx)
 		if err != nil {
-			log.Error("InitProducerState get" +
-				" transaction reference failed")
+			log.Error("get transaction reference failed")
 			return
 		}
 		var outputValue Fixed64
@@ -186,11 +188,6 @@ func (b *BlockChain) caculateTxsFee(block *Block) {
 		}
 		for _, reference := range references {
 			inputValue += reference.Value
-		}
-		if inputValue < b.chainParams.MinTransactionFee+outputValue {
-			log.Error("InitProducerState transaction" +
-				" fee not enough")
-			return
 		}
 		// set Fee and FeePerKB if check has passed
 		tx.Fee = inputValue - outputValue
@@ -792,7 +789,7 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 		}
 
 		log.Info("disconnect block:", block.Height)
-		DefaultLedger.Arbitrators.DumpInfo(block.Height-1)
+		DefaultLedger.Arbitrators.DumpInfo(block.Height - 1)
 
 		err = b.disconnectBlock(n, block, confirm)
 		if err != nil {
