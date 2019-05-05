@@ -78,6 +78,8 @@ module.exports = merge(common, {
         },*/
         watchOptions: {
             ignored: /node_modules/,
+            aggregateTimeout: 2000,
+            poll: 5000
         },
         compress: true,
         disableHostCheck: true

@@ -316,6 +316,7 @@ const zh = {
   'suggestion.form.fields.suggestion': '建议',
   'suggestion.form.fields.subject': '标题',
   'suggestion.form.fields.desc': '描述',
+  'suggestion.form.fields.coverImg': '封面图片',
   'suggestion.form.fields.shortDesc': '概述',
   'suggestion.form.fields.fullDesc': '完整描述',
   'suggestion.form.fields.benefits': '对于亦来云社区/生态的价值',

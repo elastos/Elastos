@@ -26,7 +26,7 @@ export default class extends Base {
 
   public async create(param: any): Promise<Document> {
     // get param
-    const { title, shortDesc, desc, benefits, funding, timeline, link, } = param
+    const { title, shortDesc, desc, coverImg, benefits, funding, timeline, link, } = param
     // validation
     this.validateTitle(title)
     this.validateDesc(desc)
@@ -35,6 +35,7 @@ export default class extends Base {
       title,
       shortDesc,
       desc,
+      coverImg,
       benefits,
       // funding,
       // timeline,
@@ -64,7 +65,7 @@ export default class extends Base {
 
   public async update(param: any): Promise<Document> {
     // get param
-    const { id, title, shortDesc, desc, benefits, funding, timeline, link } = param
+    const { id, title, shortDesc, desc, coverImg, benefits, funding, timeline, link } = param
     const userId = _.get(this.currentUser, '_id')
     const currDoc = await this.model.getDBInstance().findById(id)
 
@@ -85,6 +86,7 @@ export default class extends Base {
       title,
       shortDesc,
       desc,
+      coverImg,
       benefits,
       funding,
       timeline,
@@ -102,6 +104,7 @@ export default class extends Base {
         title: currDoc.title,
         shortDesc: currDoc.shortDesc,
         desc: currDoc.desc,
+        coverImg: currDoc.coverImg,
         benefits: currDoc.benefits,
         funding: currDoc.funding,
         timeline: currDoc.timeline,

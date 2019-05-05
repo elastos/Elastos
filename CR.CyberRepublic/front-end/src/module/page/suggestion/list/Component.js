@@ -3,11 +3,11 @@ import {Link} from 'react-router-dom'
 import _ from 'lodash'
 import styled from 'styled-components'
 import {
-  Pagination, Modal, Button, Col, Row, Select, Spin, Switch,
+  Pagination, Modal, Button, Col, Row, Select, Spin, Switch
 } from 'antd'
 import URI from 'urijs'
 import I18N from '@/I18N'
-import {loginRedirectWithQuery} from '@/util'
+import { loginRedirectWithQuery } from '@/util'
 import StandardPage from '../../StandardPage'
 import Footer from '@/module/layout/Footer/Container'
 import MySuggestion from '../my_list/Container'
@@ -401,7 +401,11 @@ export default class extends StandardPage {
         {title}
         <ShortDesc>
           {data.shortDesc}
+          {(data.link && data.link.length) && (data.link.map((link) => {
+            return <ItemLinkWrapper key={link}><a target="_blank" href={link}>{link}</a></ItemLinkWrapper>
+          }))}
         </ShortDesc>
+
         {actionsNode}
       </div>
     )
@@ -538,6 +542,11 @@ const ItemTitle = styled(Link)`
   padding: 4px 8px;
   border: 1px solid #e4effd;
   border-radius: 4px;
+`
+
+const ItemLinkWrapper = styled.div`
+  margin-top: 8px;
+  display: block;
 `
 
 const ShortDesc = styled.div`

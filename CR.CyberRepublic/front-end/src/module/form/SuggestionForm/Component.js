@@ -9,13 +9,16 @@ import {
   Button,
   Icon,
   DatePicker,
+  Upload,
+  Popover
 } from 'antd'
 import moment from 'moment/moment'
 import I18N from '@/I18N'
 import ReactQuill from 'react-quill'
 import {TOOLBAR_OPTIONS} from '@/config/constant'
+import { upload_file } from '@/util'
 import Translation from '@/module/common/Translation/Container'
-
+import { CoverImg } from './style'
 import './style.scss'
 
 const FormItem = Form.Item
@@ -29,6 +32,8 @@ class C extends BaseComponent {
 
     this.state = {
       showRules: false,
+
+      coverImg: this.props.data.coverImg
     }
   }
 
@@ -61,6 +66,10 @@ class C extends BaseComponent {
         if (_.get(data, '_id')) {
           param.id = _.get(data, '_id')
         }
+        if (this.state.coverImg) {
+          param.coverImg = this.state.coverImg
+        }
+
         onFormSubmit(param)
       }
     })
@@ -72,6 +81,45 @@ class C extends BaseComponent {
 
     const input_el = <Input size="large"/>
     const shortDesc_el = <Input size="large"/>
+
+    const p_cover = {
+      showUploadList: false,
+      customRequest: (info) => {
+        upload_file(info.file).then(async (d) => {
+          this.setState({
+            coverImg: d.url
+          })
+        })
+      }
+    }
+    const cover_el = (
+      <div>
+        {this.state.coverImg ?
+        <div>
+          <Upload
+          name="cover"
+          listType="picture"
+          {...p_cover}
+          >
+            <Popover content="click to change">
+              <CoverImg src={this.state.coverImg}/>
+            </Popover>
+          </Upload>
+          <br/>
+          <a onClick={this.removeCoverImg}>Remove Image</a>
+        </div> :
+        <Upload
+        name="cover"
+        listType="picture"
+        {...p_cover}
+        >
+          <Button>Upload a Cover Image</Button>
+        </Upload>
+        }
+
+      </div>
+    )
+
     const textarea_el = (
       <ReactQuill
         modules={{
@@ -101,6 +149,10 @@ class C extends BaseComponent {
         {max: 255, message: I18N.get('from.OrganizerAppForm.field.max')},
       ],
       initialValue: _.get(data, 'shortDesc', ''),
+    })
+
+    const cover_fn = getFieldDecorator('cover', {
+      rules: []
     })
 
     const description_fn = getFieldDecorator('description', {
@@ -145,6 +197,7 @@ class C extends BaseComponent {
       title: title_fn(input_el),
       shortDesc: shortDesc_fn(shortDesc_el),
       description: description_fn(textarea_el),
+      cover: cover_fn(cover_el),
       benefits: benefits_fn(benefits_el),
       funding: funding_fn(funding_el),
       timeline: timeline_fn(timeline_el),
@@ -243,6 +296,12 @@ class C extends BaseComponent {
     )
   }
 
+  removeCoverImg = async () => {
+    await this.setState({
+      coverImg: undefined
+    })
+  }
+
   ord_render() {
     const headerNode = this.renderHeader()
     const rulesNode = this.renderRules()
@@ -265,6 +324,9 @@ class C extends BaseComponent {
         </FormItem>
         <FormItem className="form-item" label={I18N.get('suggestion.form.fields.shortDesc')} {...formItemLayout}>
           {p.shortDesc}
+        </FormItem>
+        <FormItem className="form-item" label={I18N.get('suggestion.form.fields.coverImg')} {...formItemLayout}>
+          {p.cover}
         </FormItem>
         <FormItem className="form-desc" label={I18N.get('suggestion.form.fields.desc')} {...formItemLayout}>
           {p.description}

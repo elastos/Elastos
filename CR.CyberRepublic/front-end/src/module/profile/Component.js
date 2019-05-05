@@ -25,6 +25,7 @@ const TabPane = Tabs.TabPane
  *
  */
 export default class extends BaseComponent {
+
   constructor(props) {
     super(props)
 
@@ -253,7 +254,6 @@ export default class extends BaseComponent {
             name="avatar"
             listType="picture-card"
             className="avatar-uploader"
-            showUploadList={false}
             {...p_avatar}
           >
             {this.props.avatar_loading

@@ -1,5 +1,5 @@
 import { breakPoint } from '@/constants/breakPoint'
-import { text, bg, primary } from '@/constants/color'
+import { text, bg, primary, border } from '@/constants/color'
 import { gap } from '@/constants/variable'
 import styled from 'styled-components'
 import { Button } from 'antd'
@@ -25,10 +25,18 @@ export const Container = styled.div`
 
 export const Title = styled.div`
   font-size: 30px;
-  color: ${text.primaryDark};
+  color: ${text.newGray};
   margin-top: 26px;
   margin-bottom: 8px;
+  background-color: ${bg.blue};
+  border: 1px solid ${border.lightBlue};
+  border-radius: 4px;
+  padding: 4px 8px;
  `
+
+export const CoverImg = styled.img`
+  width: 100%;
+`
 
 export const ShortDesc = styled.div`
   /* font-weight: 200; */
@@ -44,7 +52,7 @@ export const Label = styled.span`
 
   padding: 4px 8px;
   color: ${text.newGray};
-  border: 1px solid #e4effd;
+  border: 1px solid ${border.lightBlue};
   border-radius: 4px;
 
 `

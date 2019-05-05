@@ -316,6 +316,7 @@ const en = {
   'suggestion.form.fields.suggestion': 'Suggestion',
   'suggestion.form.fields.subject': 'Subject',
   'suggestion.form.fields.desc': 'Description',
+  'suggestion.form.fields.coverImg': 'Cover Image',
   'suggestion.form.fields.shortDesc': 'Short Description',
   'suggestion.form.fields.fullDesc': 'Full Description',
   'suggestion.form.fields.benefits': 'Benefits to Elastos Community/Ecosystem ',

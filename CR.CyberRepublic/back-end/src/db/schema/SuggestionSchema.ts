@@ -32,6 +32,8 @@ const SuggestionCore = {
     type: Date,
   },
   link: [String],
+
+  coverImg: String
 }
 
 const tag = {

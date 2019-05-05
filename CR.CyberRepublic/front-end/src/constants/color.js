@@ -35,4 +35,5 @@ export const text = {
 
 export const border = {
   middleGray: '#7E96BE',
+  lightBlue: '#e4effd'
 }

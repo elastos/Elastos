@@ -21,7 +21,7 @@ import MySuggestion from '../my_list/Container'
 
 import { ReactComponent as CommentIcon } from '@/assets/images/icon-info.svg'
 
-import { Container, Title, ShortDesc, DescLabel, Label, LabelPointer, Desc, BtnGroup, StyledButton, DescBody, CouncilComments, IconWrap } from './style'
+import { Container, Title, CoverImg, ShortDesc, DescLabel, Label, LabelPointer, Desc, BtnGroup, StyledButton, DescBody, CouncilComments, IconWrap } from './style'
 
 import './style.scss'
 
@@ -100,8 +100,9 @@ export default class extends StandardPage {
   renderDetail() {
     const metaNode = this.renderMetaNode()
     const titleNode = this.renderTitleNode()
+    const coverNode = this.renderCoverNode()
     const shortDescNode = this.renderShortDescNode()
-    const labelNode = this.renderLabelNode()
+    // const labelNode = this.renderLabelNode()
     const tagsNode = this.renderTagsNode()
     const descNode = this.renderDescNode()
     const benefitsNode = this.renderBenefitsNode()
@@ -112,7 +113,7 @@ export default class extends StandardPage {
       <div>
         {metaNode}
         {titleNode}
-        {/* labelNode */}
+        {coverNode}
         {tagsNode}
         {shortDescNode}
         <Divider/>
@@ -135,6 +136,13 @@ export default class extends StandardPage {
     const { detail } = this.props
     return (
       <Title>{detail.title}</Title>
+    )
+  }
+
+  renderCoverNode() {
+    const { detail } = this.props
+    return (
+      detail.coverImg ? <CoverImg src={detail.coverImg}/> : ''
     )
   }
 

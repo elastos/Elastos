@@ -6,6 +6,11 @@ const FormItem = Form.Item
 export const Container = styled.div`
 `
 
+export const CoverImg = styled.img`
+  width: 100%;
+  cursor: pointer;
+`
+
 export const StyledFormItem = styled(FormItem)`
   input, textarea {
     border-radius: 0;
