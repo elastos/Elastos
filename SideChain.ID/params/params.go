@@ -142,9 +142,9 @@ func regNetParams(cfg config.Params) config.Params {
 	cfg.Magic = 2018202
 	cfg.DefaultPort = 22608
 	cfg.DNSSeeds = []string{
-		"node-regtest-011.elastos.org:22608",
-		"node-regtest-012.elastos.org:22608",
-		"node-regtest-013.elastos.org:22608",
+		"node-regtest-102.eadd.co:22608",
+		"node-regtest-103.eadd.co:22608",
+		"node-regtest-104.eadd.co:22608",
 	}
 	cfg.Foundation = testNetFoundation
 	cfg.CheckPowHeaderHeight = 160340
