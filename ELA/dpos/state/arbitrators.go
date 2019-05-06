@@ -46,10 +46,9 @@ var (
 type arbitrators struct {
 	*State
 	*degradation
-	chainParams   *config.Params
-	bestHeight    func() uint32
-	bestBlock     func() (*types.Block, error)
-	arbitersCount int
+	chainParams *config.Params
+	bestHeight  func() uint32
+	bestBlock   func() (*types.Block, error)
 
 	mtx                sync.Mutex
 	started            bool
@@ -630,7 +629,7 @@ func (a *arbitrators) getChangeType(height uint32) (ChangeType, uint32) {
 
 	// main version >= H2
 	if height > a.State.chainParams.PublicDPOSHeight &&
-		a.dutyIndex == a.arbitersCount-1 {
+		a.dutyIndex == len(a.currentArbitrators)-1 {
 		return normalChange, height
 	}
 
@@ -951,12 +950,10 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
 		}
 	}
 
-	arbitersCount := chainParams.GeneralArbiters + len(chainParams.CRCArbiters)
 	a := &arbitrators{
 		chainParams:                 chainParams,
 		bestHeight:                  bestHeight,
 		bestBlock:                   bestBlock,
-		arbitersCount:               arbitersCount,
 		currentArbitrators:          originArbiters,
 		currentOwnerProgramHashes:   originArbitersProgramHashes,
 		nextArbitrators:             originArbiters,

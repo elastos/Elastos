@@ -149,6 +149,10 @@ func (b *BlockChain) InitProducerState(interrupt <-chan struct{},
 				b.calculateTxsFee(block)
 			}
 
+			if e = PreProcessSpecialTx(block); e != nil {
+				err = e
+				break
+			}
 			confirm, _ := b.db.GetConfirm(block.Hash())
 			arbiters.ProcessBlock(block, confirm)
 
@@ -867,7 +871,7 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block, confirm *pay
 // connectBlock handles connecting the passed node/block to the end of the main
 // (best) chain.
 func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payload.Confirm) error {
-	if err := preProcessSpecialTx(block); err != nil {
+	if err := PreProcessSpecialTx(block); err != nil {
 		return err
 	}
 
