@@ -6,6 +6,7 @@
   "PermanentPeers": [
     "localhost:20608"
   ],
+  "SPVMagic": 2017001,
   "SPVDisableDNS": false,
   "SPVPermanentPeers": [
     "localhost:20338"

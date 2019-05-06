@@ -43,6 +43,7 @@ type configParams struct {
 	DNSSeeds           []string
 	DisableDNS         bool
 	PermanentPeers     []string
+	SPVMagic           uint32
 	SPVDNSSeeds        []string
 	SPVDisableDNS      bool
 	SPVPermanentPeers  []string
@@ -124,6 +125,9 @@ func loadConfig() *configParams {
 			spvNetParams.GenesisBlock = config.GenesisBlock(foundation)
 			activeNetParams.Foundation = *foundation
 		}
+	}
+	if cfg.SPVMagic > 0 {
+		spvNetParams.Magic = cfg.SPVMagic
 	}
 	if len(cfg.SPVDNSSeeds) > 0 {
 		spvNetParams.DNSSeeds = cfg.SPVDNSSeeds
