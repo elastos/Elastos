@@ -160,6 +160,10 @@ func newUpdateProducer(L *lua.LState) int {
 
 	codeHash, err := contract.PublicKeyToStandardCodeHash(ownerPublicKey)
 	acc := client.GetAccountByCodeHash(*codeHash)
+	if acc == nil {
+		fmt.Println("no available account in wallet")
+		os.Exit(1)
+	}
 	rpSig, err := crypto.Sign(acc.PrivKey(), upSignBuf.Bytes())
 	if err != nil {
 		fmt.Println(err)
@@ -244,6 +248,10 @@ func newRegisterProducer(L *lua.LState) int {
 	}
 	codeHash, err := contract.PublicKeyToStandardCodeHash(ownerPublicKey)
 	acc := client.GetAccountByCodeHash(*codeHash)
+	if acc == nil {
+		fmt.Println("no available account in wallet")
+		os.Exit(1)
+	}
 	rpSig, err := crypto.Sign(acc.PrivKey(), rpSignBuf.Bytes())
 	if err != nil {
 		fmt.Println(err)
@@ -317,6 +325,10 @@ func newProcessProducer(L *lua.LState) int {
 		os.Exit(1)
 	}
 	acc := client.GetAccountByCodeHash(*codeHash)
+	if acc == nil {
+		fmt.Println("no available account in wallet")
+		os.Exit(1)
+	}
 	rpSig, err := crypto.Sign(acc.PrivKey(), cpSignBuf.Bytes())
 	if err != nil {
 		fmt.Println(err)
@@ -430,6 +442,10 @@ func newActivateProducer(L *lua.LState) int {
 		os.Exit(1)
 	}
 	acc := client.GetAccountByCodeHash(*codeHash)
+	if acc == nil {
+		fmt.Println("no available account in wallet")
+		os.Exit(1)
+	}
 	rpSig, err := crypto.Sign(acc.PrivKey(), apSignBuf.Bytes())
 	if err != nil {
 		fmt.Println(err)
