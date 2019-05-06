@@ -82,7 +82,7 @@ func checkBlockWithConfirmation(block *Block, confirm *payload.Confirm) error {
 	return nil
 }
 
-func preProcessSpecialTx(block *Block) error {
+func PreProcessSpecialTx(block *Block) error {
 	illegalBlocks := make([]*payload.DPOSIllegalBlocks, 0)
 	inactivePayloads := make([]*payload.InactiveArbitrators, 0)
 	for _, tx := range block.Transactions {
