@@ -33,7 +33,7 @@ class C extends BaseComponent {
     this.state = {
       showRules: false,
 
-      coverImg: this.props.data.coverImg
+      coverImg: this.props.data ? this.props.data.coverImg : undefined
     }
   }
 
