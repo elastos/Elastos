@@ -120,9 +120,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 			continue
 		}
 
-		if blockTx.IsIllegalTypeTx() || blockTx.IsInactiveArbitrators() ||
-			blockTx.IsNewSideChainPowTx() || blockTx.IsUpdateVersion() ||
-			blockTx.IsActivateProducerTx() {
+		if blockTx.IsIllegalTypeTx() || blockTx.IsInactiveArbitrators() {
 			illegalData, ok := blockTx.Payload.(payload.DPOSIllegalData)
 			if !ok {
 				log.Error("cancel producer payload cast failed, tx:", blockTx.Hash())
@@ -131,6 +129,11 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 			hash := illegalData.Hash()
 			delete(mp.txnList, blockTx.Hash())
 			mp.delSpecialTx(&hash)
+			deleteCount++
+			continue
+		} else if blockTx.IsNewSideChainPowTx() || blockTx.IsUpdateVersion() ||
+			blockTx.IsActivateProducerTx() {
+			delete(mp.txnList, blockTx.Hash())
 			deleteCount++
 			continue
 		}
