@@ -172,6 +172,11 @@ func (sm *SyncManager) startSync() {
 
 	// Start syncing from the best peer if one was selected.
 	if bestPeer != nil {
+		// Do not start syncing if we have the same height with best peer.
+		if bestPeer.Height() == bestHeight {
+			return
+		}
+
 		// Clear the requestedBlocks if the sync peer changes, otherwise
 		// we may ignore blocks we need that the last sync peer failed
 		// to send.
