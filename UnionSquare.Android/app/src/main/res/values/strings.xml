@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Wallet</string>
+
+    <!-- Languages -->
+    <string name="ENGLISH">english</string>
+    <string name="CHINESE">chinese</string>
+    <string name="FRENCH">french</string>
+    <string name="ITALIAN">italian</string>
+    <string name="JAPANESE">japanese</string>
+    <string name="SPANISH">spanish</string>
+</resources>

@@ -1,0 +1,20 @@
+{
+  "ELA": {
+    "Type": "Mainchain",
+    "CoinIndex": 0,
+    "NetType": "MainNet",
+    "MinFee": 10000,
+    "ReconnectSeconds": 300,
+    "PluginType": "ELA",
+    "GenesisAddress" : ""
+  },
+  "IdChain": {
+    "Type": "Idchain",
+    "CoinIndex": 1,
+    "NetType": "MainNet",
+    "MinFee": 10000,
+    "ReconnectSeconds": 300,
+    "PluginType": "SideStandard",
+    "GenesisAddress" : "XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ"
+  }
+}
