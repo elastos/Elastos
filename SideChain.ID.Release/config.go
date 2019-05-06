@@ -120,6 +120,8 @@ func loadConfig() *configParams {
 	if len(cfg.FoundationAddress) > 0 {
 		foundation, err := common.Uint168FromAddress(cfg.FoundationAddress)
 		if err == nil {
+			spvNetParams.Foundation = *foundation
+			spvNetParams.GenesisBlock = config.GenesisBlock(foundation)
 			activeNetParams.Foundation = *foundation
 		}
 	}
