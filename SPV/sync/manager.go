@@ -178,22 +178,28 @@ func (sm *SyncManager) startSync() {
 
 	// Start syncing from the best peer if one was selected.
 	if bestPeer != nil {
+		// Do not start syncing if we have the same height with best peer.
+		if bestPeer.Height() == bestHeight {
+			return
+		}
+
 		sm.syncWith(bestPeer)
 	} else {
 		log.Warnf("No sync peer candidates available")
 	}
 }
 
-func (sm *SyncManager) syncWith(p *peer.Peer) {
+func (sm *SyncManager) syncWith(peer *peer.Peer) {
 	// Clear the requestedBlocks if the sync peer changes, otherwise we
 	// may ignore blocks we need that the last sync peer failed to send.
 	sm.requestedBlocks = make(map[common.Uint256]struct{})
 
-	log.Infof("Syncing to block height %d from peer %v", p.Height(), p.Addr())
+	log.Infof("Syncing to block height %d from peer %v", peer.Height(),
+		peer.Addr())
 
 	locator := sm.cfg.Chain.LatestBlockLocator()
-	p.PushGetBlocksMsg(locator, &zeroHash)
-	sm.syncPeer = p
+	peer.PushGetBlocksMsg(locator, &zeroHash)
+	sm.syncPeer = peer
 }
 
 // isSyncCandidate returns whether or not the peer is a candidate to consider
