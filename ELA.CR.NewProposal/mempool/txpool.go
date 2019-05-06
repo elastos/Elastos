@@ -120,7 +120,9 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 			continue
 		}
 
-		if blockTx.IsIllegalTypeTx() || blockTx.IsInactiveArbitrators() {
+		if blockTx.IsIllegalTypeTx() || blockTx.IsInactiveArbitrators() ||
+			blockTx.IsNewSideChainPowTx() || blockTx.IsUpdateVersion() ||
+			blockTx.IsActivateProducerTx() {
 			illegalData, ok := blockTx.Payload.(payload.DPOSIllegalData)
 			if !ok {
 				log.Error("cancel producer payload cast failed, tx:", blockTx.Hash())
