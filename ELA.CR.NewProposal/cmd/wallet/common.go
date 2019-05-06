@@ -21,6 +21,11 @@ import (
 	"github.com/elastos/Elastos.ELA/utils/http"
 )
 
+const (
+	// maxPrintLen is the maximum print length
+	maxPrintLen = 2000
+)
+
 func FormatOutput(o []byte) error {
 	var out bytes.Buffer
 	err := json.Indent(&out, o, "", "\t")
@@ -177,7 +182,11 @@ func output(haveSign, needSign int, txn *types.Transaction) error {
 	content := common.BytesToHexString(buf.Bytes())
 
 	// Print transaction hex string
-	fmt.Println("Hex: ", content)
+	if len(content) > maxPrintLen {
+		fmt.Println("Hex: ", content[:maxPrintLen], "...")
+	} else {
+		fmt.Println("Hex: ", content)
+	}
 
 	// Output to file
 	fileName := "to_be_signed" // Create transaction file name
