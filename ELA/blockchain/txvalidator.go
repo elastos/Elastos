@@ -247,7 +247,13 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 	}
 
 	if txn.Version >= TxVersion09 {
-		if err := checkVoteProducerOutputs(txn.Outputs, references, getProducerPublicKeys(b.state.GetActiveProducers())); err != nil {
+		var producers []*state.Producer
+		if blockHeight < b.chainParams.PublicDPOSHeight {
+			producers = b.state.GetAllProducers()
+		} else {
+			producers = b.state.GetActiveProducers()
+		}
+		if err := checkVoteProducerOutputs(txn.Outputs, references, getProducerPublicKeys(producers)); err != nil {
 			log.Warn("[CheckVoteProducerOutputs],", err)
 			return ErrInvalidOutput
 		}
