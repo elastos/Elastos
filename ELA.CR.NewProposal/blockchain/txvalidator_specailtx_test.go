@@ -671,7 +671,9 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckInactiveArbitrators() {
 		"sponsor is not belong to arbitrators")
 
 	// correct sponsor
-	p.Sponsor = s.arbitrators.ActiveProducer[0]
+	s.arbitrators.CRCArbitrators = [][]byte{
+		p.Sponsor,
+	}
 	for i := 0; i < 3; i++ { // add more than InactiveEliminateCount arbiters
 		p.Arbitrators = append(p.Arbitrators, s.arbitrators.CurrentArbitrators[i])
 	}
@@ -692,6 +694,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckInactiveArbitrators() {
 
 	// let "Arbitrators" has CRC arbitrators
 	s.arbitrators.CRCArbitrators = [][]byte{
+		p.Sponsor,
 		s.arbitrators.CurrentArbitrators[4],
 	}
 	s.EqualError(CheckInactiveArbitrators(tx),
@@ -708,6 +711,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckInactiveArbitrators() {
 	for _, v := range s.arbitrators.CRCArbitrators {
 		s.arbitrators.CRCArbitratorsMap[common.BytesToHexString(v)] = nil
 	}
+	p.Sponsor = s.arbitrators.CRCArbitrators[0]
 	var arbitrators [][]byte
 	for i := 0; i < 4; i++ {
 		arbitrators = append(arbitrators, s.arbitrators.CurrentArbitrators[i])
