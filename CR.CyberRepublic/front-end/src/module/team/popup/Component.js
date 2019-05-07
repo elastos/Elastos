@@ -12,9 +12,11 @@ import {
 import { TEAM_USER_STATUS, USER_AVATAR_DEFAULT } from '@/constant'
 import ProfilePopup from '@/module/profile/OverviewPopup/Container'
 import _ from 'lodash'
-import './style.scss'
 import I18N from '@/I18N'
+import { getSafeUrl } from '@/util/url'
 import sanitizeHtml from 'sanitize-html'
+
+import './style.scss'
 
 /*
  * Project Pop-up UI
@@ -123,7 +125,7 @@ class C extends BaseComponent {
     const detailUrl = `/team-detail/${this.props.detail._id}`
     return (
       <div className="app-footer valign-wrapper halign-wrapper">
-        <Button href={detailUrl}>
+        <Button href={getSafeUrl(detailUrl)}>
           {this.isTeamMember() || this.isTeamOwner()
             ? I18N.get('team.detail.view')
             : I18N.get('team.applyMessage')}

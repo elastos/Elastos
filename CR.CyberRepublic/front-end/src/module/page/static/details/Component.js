@@ -30,6 +30,7 @@ import Geocode from 'react-geocode'
 import moment from 'moment'
 import _ from 'lodash'
 import EmptyPage from '../../EmptyPage'
+import { getSafeUrl } from '@/util/url'
 
 process.env.NODE_ENV === 'production' && Geocode.setApiKey(process.env.GOOGLE_MAPS_API_KEY)
 
@@ -187,7 +188,7 @@ Hosted by
                 <Row>
                   <Icon type="info-circle" className="icon-info"/>
                   <span className="event-info">
-                    <a target="_blank" href={eventInfo}>{eventInfo}</a>
+                    <a target="_blank" href={getSafeUrl(eventInfo)}>{eventInfo}</a>
                   </span>
                 </Row>
               </div>

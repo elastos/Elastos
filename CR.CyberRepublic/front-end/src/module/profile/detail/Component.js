@@ -8,6 +8,7 @@ import {
   Col, Row, Tabs, Icon, Button, Spin, Table, Tooltip, Tag, Modal,
 } from 'antd'
 import I18N from '@/I18N'
+import { getSafeUrl } from '@/util/url'
 import sanitizeHtml from 'sanitize-html'
 import {
   TASK_CATEGORY, TASK_TYPE, TASK_STATUS, TASK_CANDIDATE_STATUS,
@@ -311,7 +312,7 @@ export default class extends BaseComponent {
         {!_.isEmpty(this.props.member.profile.portfolio)
           && (
             <div className="portfolio-container">
-              <a href={this.props.member.profile.portfolio} target="_blank" className="link-container">
+              <a href={getSafeUrl(this.props.member.profile.portfolio)} target="_blank" className="link-container">
                 <Icon type="link" />
               </a>
               {I18N.get('profile.portfolio')}
@@ -358,12 +359,12 @@ export default class extends BaseComponent {
 
     return (
       <div className={`profile-social ${isMobile ? 'profile-social-mobile' : ''}`}>
-        {profile.telegram && <a href={profile.telegram} target="_blank"><i className="fab fa-telegram fa-2x" /></a>}
-        {profile.twitter && <a href={profile.twitter} target="_blank"><i className="fab fa-twitter fa-2x" /></a>}
-        {profile.facebook && <a href={profile.facebook} target="_blank"><i className="fab fa-facebook-square fa-2x" /></a>}
-        {profile.reddit && <a href={profile.reddit} target="_blank"><i className="fab fa-reddit fa-2x" /></a>}
-        {profile.linkedin && <a href={profile.linkedin} target="_blank"><i className="fab fa-linkedin fa-2x" /></a>}
-        {profile.github && <a href={profile.github} target="_blank"><i className="fab fa-github fa-2x" /></a>}
+        {profile.telegram && <a href={getSafeUrl(profile.telegram)} target="_blank"><i className="fab fa-telegram fa-2x" /></a>}
+        {profile.twitter && <a href={getSafeUrl(profile.twitter)} target="_blank"><i className="fab fa-twitter fa-2x" /></a>}
+        {profile.facebook && <a href={getSafeUrl(profile.facebook)} target="_blank"><i className="fab fa-facebook-square fa-2x" /></a>}
+        {profile.reddit && <a href={getSafeUrl(profile.reddit)} target="_blank"><i className="fab fa-reddit fa-2x" /></a>}
+        {profile.linkedin && <a href={getSafeUrl(profile.linkedin)} target="_blank"><i className="fab fa-linkedin fa-2x" /></a>}
+        {profile.github && <a href={getSafeUrl(profile.github)} target="_blank"><i className="fab fa-github fa-2x" /></a>}
       </div>
     )
   }

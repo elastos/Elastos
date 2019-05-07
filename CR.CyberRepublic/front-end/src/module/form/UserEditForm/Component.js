@@ -382,6 +382,7 @@ class C extends BaseComponent {
          */
       const telegram_fn = getFieldDecorator('telegram', {
         rules: [
+          { type: 'url' },
           { min: 4, message: I18N.get('from.UserEditForm.telegram.min') },
         ],
         initialValue: user.profile.telegram,
@@ -392,6 +393,7 @@ class C extends BaseComponent {
 
       const reddit_fn = getFieldDecorator('reddit', {
         rules: [
+          { type: 'url' },
           { min: 4, message: I18N.get('from.UserEditForm.telegram.min') },
         ],
         initialValue: user.profile.reddit,
@@ -412,6 +414,7 @@ class C extends BaseComponent {
 
       const twitter_fn = getFieldDecorator('twitter', {
         rules: [
+          { type: 'url' },
           { min: 4, message: I18N.get('from.UserEditForm.telegram.min') },
         ],
         initialValue: user.profile.twitter,
@@ -422,6 +425,7 @@ class C extends BaseComponent {
 
       const facebook_fn = getFieldDecorator('facebook', {
         rules: [
+          { type: 'url' },
           { min: 4, message: I18N.get('from.UserEditForm.telegram.min') },
         ],
         initialValue: user.profile.facebook,
@@ -432,6 +436,7 @@ class C extends BaseComponent {
 
       const linkedin_fn = getFieldDecorator('linkedin', {
         rules: [
+          { type: 'url' },
           { min: 4, message: I18N.get('from.UserEditForm.telegram.min') },
         ],
         initialValue: user.profile.linkedin,
@@ -442,6 +447,7 @@ class C extends BaseComponent {
 
       const github_fn = getFieldDecorator('github', {
         rules: [
+          { type: 'url' },
           { min: 4, message: I18N.get('from.UserEditForm.telegram.min') },
         ],
         initialValue: user.profile.github,

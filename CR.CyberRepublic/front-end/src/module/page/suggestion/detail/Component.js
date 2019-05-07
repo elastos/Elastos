@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import _ from 'lodash'
-import { Row, Col, Spin, Divider, Modal, Input, Button, Icon } from 'antd'
+import { Row, Col, Spin, Divider, Modal, Input, Button } from 'antd'
 import { Link } from 'react-router-dom'
 import MediaQuery from 'react-responsive'
 import moment from 'moment/moment'
@@ -14,13 +14,12 @@ import ProposalForm from '@/module/page/CVote/create/Container'
 import I18N from '@/I18N'
 import { LG_WIDTH } from '@/config/constant'
 import { CVOTE_STATUS, SUGGESTION_TAG_TYPE } from '@/constant'
+import { getSafeUrl } from '@/util/url'
 import sanitizeHtml from 'sanitize-html'
+import { ReactComponent as CommentIcon } from '@/assets/images/icon-info.svg'
 import StandardPage from '../../StandardPage'
 import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
-import MySuggestion from '../my_list/Container'
-
-import { ReactComponent as CommentIcon } from '@/assets/images/icon-info.svg'
 
 import { Container, Title, ShortDesc, DescLabel, Label, LabelPointer, Desc, BtnGroup, StyledButton, DescBody, CouncilComments, IconWrap } from './style'
 
@@ -269,7 +268,7 @@ export default class extends StandardPage {
     return (
       <Desc>
         <DescLabel>{I18N.get('suggestion.form.fields.links')}</DescLabel>
-        {_.map(link, href => <div key={href}><a href={href} target="_blank" rel="noopener noreferrer">{href}</a></div>)}
+        {_.map(link, href => <div key={href}><a href={getSafeUrl(href)} target="_blank" rel="noopener noreferrer">{href}</a></div>)}
       </Desc>
     )
   }

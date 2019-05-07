@@ -12,6 +12,7 @@ import Comments from '@/module/common/comments/Container'
 import {TASK_EVENT_DATE_TYPE} from '../../../constant'
 
 import I18N from '@/I18N'
+import { getSafeUrl } from '@/util/url'
 
 const dateTimeFormat = 'MMM D, YYYY - h:mma (Z [GMT])'
 
@@ -189,7 +190,7 @@ export default class extends BaseComponent {
                     Info Link
                   </Col>
                   <Col sm={24} md={20}>
-                    <a target="_blank" href={this.props.task.infoLink}>
+                    <a target="_blank" href={getSafeUrl(this.props.task.infoLink)}>
                       {this.props.task.infoLink}
                     </a>
                   </Col>
@@ -378,7 +379,7 @@ export default class extends BaseComponent {
                   File
                 </Col>
                 <Col span={20}>
-                  <a target="_blank" href={this.props.task.attachment}>
+                  <a target="_blank" href={getSafeUrl(this.props.task.attachment)}>
                     {this.props.task.attachmentType === 'application/pdf' ?
                       <Icon type="file-pdf"/> :
                       <Icon type="file"/>

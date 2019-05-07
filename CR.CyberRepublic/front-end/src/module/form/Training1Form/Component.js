@@ -17,7 +17,7 @@ import {
   Divider
 
 } from 'antd'
-
+import { getSafeUrl } from '@/util/url'
 import {upload_file} from '@/util'
 
 const FormItem = Form.Item
@@ -193,7 +193,7 @@ class C extends BaseComponent {
       <Upload name="attachment" {...p_attachment}>
         {
           this.state.attachment_url ? (
-            <a target="_blank" href={this.state.attachment_url}>
+            <a target="_blank" href={getSafeUrl(this.state.attachment_url)}>
               <Icon type="file"/>
               {' '}
 &nbsp;

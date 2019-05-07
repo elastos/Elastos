@@ -30,6 +30,7 @@ import './style.scss'
 import { TOOLBAR_OPTIONS } from '@/config/constant'
 import moment from 'moment'
 import _ from 'lodash'
+import { getSafeUrl } from '@/util/url'
 
 import {TEAM_TASK_DOMAIN, SKILLSET_TYPE, TASK_CATEGORY, TASK_TYPE,
   TASK_STATUS, TASK_EVENT_DATE_TYPE} from '@/constant'
@@ -511,7 +512,7 @@ class C extends BaseComponent {
       <Upload name="attachment" {...p_attachment}>
         {
           this.state.attachment_url ? (
-            <a target="_blank" href={this.state.attachment_url}>
+            <a target="_blank" href={getSafeUrl(this.state.attachment_url)}>
               {this.state.attachment_type === 'application/pdf'
                 ? <Icon type="file-pdf"/>
                 : <Icon type="file"/>
@@ -866,7 +867,7 @@ class C extends BaseComponent {
                       </label>
                     </Col>
                     <Col span={16} style={{lineHeight: '40px'}}>
-                      <a target="_blank" href={this.state.thumbnail}>
+                      <a target="_blank" href={getSafeUrl(this.state.thumbnail)}>
                         <Icon type="file-image"/>
                         {this.state.thumbnail_filename}
                       </a>
@@ -1104,7 +1105,7 @@ class C extends BaseComponent {
                 : (
                   <Row>
                     <Col offset={8} span={16}>
-                      <a target="_blank" href={this.state.attachment_url}>
+                      <a target="_blank" href={getSafeUrl(this.state.attachment_url)}>
                         {this.state.attachment_type === 'application/pdf'
                           ? <Icon type="file-pdf"/>
                           : <Icon type="file"/>

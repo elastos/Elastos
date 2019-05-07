@@ -16,7 +16,9 @@ import I18N from '@/I18N'
 import {TASK_CANDIDATE_STATUS, USER_AVATAR_DEFAULT} from '@/constant'
 import ProfilePopup from '@/module/profile/OverviewPopup/Container'
 import _ from 'lodash'
+import { getSafeUrl } from '@/util/url'
 import sanitizeHtml from 'sanitize-html'
+
 import './style.scss'
 
 /*
@@ -177,7 +179,7 @@ class C extends BaseComponent {
         {generateHtmlRow(I18N.get('task.description'), detail.description, 'task-description')}
 
         {detail.infoLink && generateRow(I18N.get('task.infoLink'),
-          <a href={detail.infoLink} target="_blank">{detail.infoLink}</a>)}
+          <a href={getSafeUrl(detail.infoLink)} target="_blank">{detail.infoLink}</a>)}
       </div>
     )
   }
@@ -186,7 +188,7 @@ class C extends BaseComponent {
     const detailUrl = `/task-detail/${this.props.detail._id}`
     return (
       <div className="app-footer valign-wrapper halign-wrapper">
-        <Button href={detailUrl}>
+        <Button href={getSafeUrl(detailUrl)}>
           {this.isAssigned() ? I18N.get('project.detail.view') : I18N.get('task.applyMessage')}
         </Button>
       </div>

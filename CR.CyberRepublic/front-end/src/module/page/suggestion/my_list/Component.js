@@ -4,6 +4,7 @@ import { Spin } from 'antd'
 import I18N from '@/I18N'
 import BaseComponent from '@/model/BaseComponent'
 import MetaContainer from '../common/meta/Container'
+import { getSafeUrl } from '@/util/url'
 
 import './style.scss'
 
@@ -64,7 +65,7 @@ export default class extends BaseComponent {
   renderItem = (data) => {
     const metaNode = this.renderMetaNode(data)
     const href = `/suggestion/${data._id}`
-    const title = <a href={href} className="title-link">{data.title}</a>
+    const title = <a href={getSafeUrl(href)} className="title-link">{data.title}</a>
     return (
       <div key={data._id} className="item-container">
         {metaNode}

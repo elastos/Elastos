@@ -5,8 +5,10 @@ import _ from 'lodash'
 import { Col, Row, message, Input, Avatar, InputNumber, Select } from 'antd'
 import {TASK_CATEGORY, TASK_TYPE, TASK_STATUS, TASK_CANDIDATE_TYPE, TASK_CANDIDATE_STATUS, USER_AVATAR_DEFAULT} from '@/constant'
 import Comments from '@/module/common/comments/Container'
-import './style.scss'
 import I18N from '@/I18N'
+import { getSafeUrl } from '@/util/url'
+
+import './style.scss'
 
 const { TextArea } = Input
 const Option = Select.Option
@@ -193,7 +195,7 @@ export default class extends BaseComponent {
     const {attachment, attachmentFilename} = applicant
 
     return attachment
-      ? <h5><a href={attachment} target="_blank">{attachmentFilename}</a></h5>
+      ? <h5><a href={getSafeUrl(attachment)} target="_blank">{attachmentFilename}</a></h5>
       : <h5>{I18N.get('project.detail.no_attachments')}</h5>
   }
 

@@ -4,6 +4,7 @@ import { Form, Modal, Input, Button, Row, Col, Upload, Icon } from 'antd'
 import config from '@/config'
 import I18N from '@/I18N'
 import {upload_file} from '@/util'
+import { getSafeUrl } from '@/util/url'
 
 const TextArea = Input.TextArea
 
@@ -90,7 +91,7 @@ export default Form.create()(
         <Upload name="attachment" {...p_attachment}>
           {
             this.state.attachment_url ? (
-              <a target="_blank" href={this.state.attachment_url}>
+              <a target="_blank" href={getSafeUrl(this.state.attachment_url)}>
                 {this.state.attachment_type === 'application/pdf' ?
                   <Icon type="file-pdf"/> :
                   <Icon type="file"/>

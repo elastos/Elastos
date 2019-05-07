@@ -4,6 +4,7 @@ import { withRouter } from 'react-router'
 import { api_request, upload_file } from './request'
 import { loginRedirectWithQuery } from './login'
 import * as permissions from './permissions'
+import * as url from './url'
 
 /**
  * Helper for React-Redux connect
@@ -37,4 +38,5 @@ export {
   upload_file,
   loginRedirectWithQuery,
   permissions,
+  url,
 }
