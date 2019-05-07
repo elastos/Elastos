@@ -21,6 +21,13 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		1155FC6122815C4E00F8E6A0 /* libc++.1.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155FC5E22815C4E00F8E6A0 /* libc++.1.tbd */; };
+		1155FC6222815C4E00F8E6A0 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155FC5F22815C4E00F8E6A0 /* libc++.tbd */; };
+		1155FC6322815C4E00F8E6A0 /* libc++abi.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155FC6022815C4E00F8E6A0 /* libc++abi.tbd */; };
+		1155FC6622815C8100F8E6A0 /* libhive-api.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155FC6422815C8100F8E6A0 /* libhive-api.a */; };
+		1155FC6722815C8100F8E6A0 /* libhive-api++.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155FC6522815C8100F8E6A0 /* libhive-api++.a */; };
+		1155FC6922815C8D00F8E6A0 /* libcurl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155FC6822815C8D00F8E6A0 /* libcurl.a */; };
+		1155FC6B22815C9800F8E6A0 /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155FC6A22815C9800F8E6A0 /* libz.a */; };
 		116061DB2268AB4A00BDCB9F /* ElastosCarrierSDK_macOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 116061D92268AB4A00BDCB9F /* ElastosCarrierSDK_macOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		116061DF2268AB6900BDCB9F /* CFileTransfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15B21BD43CF00AF4FE3 /* CFileTransfer.swift */; };
 		116061E02268AB6E00BDCB9F /* CCarrier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497F32003779300420421 /* CCarrier.swift */; };
@@ -139,6 +146,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1155FC5E22815C4E00F8E6A0 /* libc++.1.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.1.tbd"; path = "usr/lib/libc++.1.tbd"; sourceTree = SDKROOT; };
+		1155FC5F22815C4E00F8E6A0 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
+		1155FC6022815C4E00F8E6A0 /* libc++abi.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++abi.tbd"; path = "usr/lib/libc++abi.tbd"; sourceTree = SDKROOT; };
+		1155FC6422815C8100F8E6A0 /* libhive-api.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libhive-api.a"; path = "NativeDistributions/lib/iphoneos/libhive-api.a"; sourceTree = "<group>"; };
+		1155FC6522815C8100F8E6A0 /* libhive-api++.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libhive-api++.a"; path = "NativeDistributions/lib/iphoneos/libhive-api++.a"; sourceTree = "<group>"; };
+		1155FC6822815C8D00F8E6A0 /* libcurl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcurl.a; path = NativeDistributions/lib/iphoneos/libcurl.a; sourceTree = "<group>"; };
+		1155FC6A22815C9800F8E6A0 /* libz.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libz.a; path = NativeDistributions/lib/iphoneos/libz.a; sourceTree = "<group>"; };
 		116061D72268AB4A00BDCB9F /* ElastosCarrierSDK_macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ElastosCarrierSDK_macOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		116061D92268AB4A00BDCB9F /* ElastosCarrierSDK_macOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ElastosCarrierSDK_macOS.h; sourceTree = "<group>"; };
 		116061DA2268AB4A00BDCB9F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -247,6 +261,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1155FC6B22815C9800F8E6A0 /* libz.a in Frameworks */,
+				1155FC6922815C8D00F8E6A0 /* libcurl.a in Frameworks */,
+				1155FC6622815C8100F8E6A0 /* libhive-api.a in Frameworks */,
+				1155FC6722815C8100F8E6A0 /* libhive-api++.a in Frameworks */,
+				1155FC6122815C4E00F8E6A0 /* libc++.1.tbd in Frameworks */,
+				1155FC6222815C4E00F8E6A0 /* libc++.tbd in Frameworks */,
+				1155FC6322815C4E00F8E6A0 /* libc++abi.tbd in Frameworks */,
 				A3FB995E225ED83400C4361A /* libcrystal.a in Frameworks */,
 				A3FB995F225ED83400C4361A /* libelacarrier.a in Frameworks */,
 				A3FB9960225ED83400C4361A /* libelafiletrans.a in Frameworks */,
@@ -296,6 +317,13 @@
 		A38A7CC0214B6A9D0010D5EB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1155FC6A22815C9800F8E6A0 /* libz.a */,
+				1155FC6822815C8D00F8E6A0 /* libcurl.a */,
+				1155FC6422815C8100F8E6A0 /* libhive-api.a */,
+				1155FC6522815C8100F8E6A0 /* libhive-api++.a */,
+				1155FC5E22815C4E00F8E6A0 /* libc++.1.tbd */,
+				1155FC5F22815C4E00F8E6A0 /* libc++.tbd */,
+				1155FC6022815C4E00F8E6A0 /* libc++abi.tbd */,
 				A3F4A0B4226F1CFD00146D25 /* libsrtp.a */,
 				A3F4A0A4226F1C6300146D25 /* libcrystal.a */,
 				A3F4A0A5226F1C6300146D25 /* libelacarrier.a */,
