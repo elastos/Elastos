@@ -1333,9 +1333,7 @@ func CheckInactiveArbitrators(txn *Transaction) error {
 		return errors.New("invalid payload")
 	}
 
-	if !DefaultLedger.Arbitrators.IsCRCArbitrator(p.Sponsor) &&
-		!DefaultLedger.Arbitrators.IsActiveProducer(p.Sponsor) &&
-		!DefaultLedger.Arbitrators.IsDisabledProducer(p.Sponsor) {
+	if !DefaultLedger.Arbitrators.IsCRCArbitrator(p.Sponsor) {
 		return errors.New("sponsor is not belong to arbitrators")
 	}
 

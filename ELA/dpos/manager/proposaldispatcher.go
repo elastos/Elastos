@@ -417,24 +417,13 @@ func (p *ProposalDispatcher) OnInactiveArbitratorsReceived(id peer.PID,
 	}
 
 	inactivePayload := tx.Payload.(*payload.InactiveArbitrators)
-
-	inactiveArbitratorsMap := make(map[string]interface{})
-	for _, v := range p.eventAnalyzer.ParseInactiveArbitrators() {
-		inactiveArbitratorsMap[v] = nil
-	}
-	if len(inactivePayload.Arbitrators) != len(inactiveArbitratorsMap) ||
-		len(inactivePayload.Arbitrators) == 0 {
-		log.Warn("[OnInactiveArbitratorsReceived] received inactive" +
-			" arbitrators transaction with wrong arbitrators count")
+	if len(inactivePayload.Arbitrators) == 0 {
+		log.Warn("[OnInactiveArbitratorsReceived] received empty payload")
 		return
 	}
-	for _, v := range inactivePayload.Arbitrators {
-		if _, exist := inactiveArbitratorsMap[common.BytesToHexString(
-			v)]; !exist {
-			log.Warn("[OnInactiveArbitratorsReceived] disagree with " +
-				"inactive arbitrators")
-			return
-		}
+	if err := p.checkInactivePayloadContent(inactivePayload); err != nil {
+		log.Warn("[OnInactiveArbitratorsReceived] error: ", err)
+		return
 	}
 
 	p.signedTxs[tx.Hash()] = nil
@@ -453,6 +442,28 @@ func (p *ProposalDispatcher) OnInactiveArbitratorsReceived(id peer.PID,
 	}
 
 	log.Info("[OnInactiveArbitratorsReceived] response inactive tx sign")
+}
+
+func (p *ProposalDispatcher) checkInactivePayloadContent(
+	inactivePayload *payload.InactiveArbitrators) error {
+	// todo pass this check for now
+	return nil
+
+	inactiveArbitratorsMap := make(map[string]interface{})
+	for _, v := range p.eventAnalyzer.ParseInactiveArbitrators() {
+		inactiveArbitratorsMap[v] = nil
+	}
+	if len(inactivePayload.Arbitrators) != len(inactiveArbitratorsMap) {
+		return errors.New("received inactive arbitrators transaction " +
+			"with wrong arbitrators count")
+	}
+	for _, v := range inactivePayload.Arbitrators {
+		if _, exist := inactiveArbitratorsMap[common.BytesToHexString(
+			v)]; !exist {
+			return errors.New("disagree with inactive arbitrators")
+		}
+	}
+	return nil
 }
 
 func (p *ProposalDispatcher) OnResponseInactiveArbitratorsReceived(
