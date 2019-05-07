@@ -32,14 +32,25 @@ set(HIVE_DEPS
     hive-api++
     curl)
 
+set(LIBC++_STATIC
+    ${CMAKE_ANDROID_NDK}/sources/cxx-stl/llvm-libc++/libs/${CMAKE_ANDROID_ARCH_ABI}/libc++_static.a)
+
 if(WIN32)
     set(HIVE_DEPS ${HIVE_DEPS} zlib1 ws2_32)
 elseif(ANDROID)
-    set(HIVE_DEPS ${HIVE_DEPS} z
-        ${CMAKE_ANDROID_NDK}/sources/cxx-stl/llvm-libc++/libs/${CMAKE_ANDROID_ARCH_ABI}/libc++_static.a)
+    set(HIVE_DEPS ${HIVE_DEPS} z ${LIBC++_STATIC})
 else()
     set(HIVE_DEPS ${HIVE_DEPS} z stdc++)
 endif()
 
 add_library(hive INTERFACE)
 target_link_libraries(hive INTERFACE ${HIVE_DEPS})
+
+if(ENABLE_STATIC)
+    export_static_library(hive-api++)
+    export_static_library(hive-api)
+endif()
+
+if(ENABLE_STATIC AND ANDROID)
+    install(FILES ${LIBC++_STATIC} DESTINATION lib)
+endif()

@@ -27,6 +27,10 @@ ExternalProject_Add(
                 /y
 )
 
+if(ENABLE_STATIC)
+    export_static_library(pthread)
+endif()
+
 if(ENABLE_SHARED)
     set(SHARED_LIBRARY_NAME
         "${CARRIER_INT_DIST_DIR}/bin/pthreadVC2.dll")
