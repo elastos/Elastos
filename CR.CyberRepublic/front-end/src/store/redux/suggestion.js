@@ -24,6 +24,7 @@ class SuggestionRedux extends BaseRedux {
       my_suggestions_loading: false,
       my_suggestions: [],
       my_suggestions_total: 0,
+      page: 1,
 
       // if we select a detail
       detail: {},

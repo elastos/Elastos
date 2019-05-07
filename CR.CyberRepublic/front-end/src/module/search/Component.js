@@ -19,6 +19,7 @@ import I18N from '@/I18N'
 import moment from 'moment'
 import ProfilePopup from '@/module/profile/OverviewPopup/Container'
 import URI from 'urijs'
+import sanitizeHtml from 'sanitize-html'
 
 const CheckboxGroup = Checkbox.Group
 const RadioGroup = Radio.Group
@@ -1065,7 +1066,7 @@ ELA
                       {item.description}
                     </h5>
                     <div className="description-ql-editor-wrapper">
-                      <div className="ql-editor" dangerouslySetInnerHTML={{__html: item.content}}/>
+                      <div className="ql-editor" dangerouslySetInnerHTML={{__html: sanitizeHtml(item.content)}}/>
                     </div>
                     <div className="ant-list-item-right-box">
                       <a className="pull-up" onClick={() => this.setState({ showUserInfo: item.owner })}>

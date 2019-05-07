@@ -10,6 +10,7 @@ import { TEAM_USER_STATUS, TEAM_AVATAR_DEFAULT } from '@/constant'
 import InfiniteScroll from 'react-infinite-scroller'
 import MediaQuery from 'react-responsive'
 import moment from 'moment/moment'
+import sanitizeHtml from 'sanitize-html'
 import ProfilePage from '../../ProfilePage'
 import Footer from '@/module/layout/Footer/Container'
 import I18N from '@/I18N'
@@ -251,7 +252,7 @@ export default class extends ProfilePage {
             <h5 className="no-margin">
               {item.description}
             </h5>
-            <div className="description-content ql-editor" dangerouslySetInnerHTML={{__html: item.content}} />
+            <div className="description-content ql-editor" dangerouslySetInnerHTML={{__html: sanitizeHtml(item.content)}} />
             <div className="ant-list-item-right-box">
               <a className="pull-up" onClick={this.linkUserDetail.bind(this, item.owner)}>
                 <Avatar size="large" icon="user" className="pull-right" src={ownerProfile.avatar}/>

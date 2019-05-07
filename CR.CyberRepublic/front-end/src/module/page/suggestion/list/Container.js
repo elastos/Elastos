@@ -31,6 +31,10 @@ const mapDispatch = () => {
   const commentService = new CommentService()
 
   return {
+    async changePage(page) {
+      return service.changePage(page)
+    },
+
     async onSortByChanged(sortBy) {
       return service.saveSortBy(sortBy)
     },

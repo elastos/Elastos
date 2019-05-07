@@ -28,6 +28,9 @@ import ProjectApplication from '@/module/project/application/Container'
 import ProjectApplicationStart from '@/module/page/project_detail/application/start/Container'
 import ProfilePopup from '@/module/profile/OverviewPopup/Container'
 import _ from 'lodash'
+import { getSafeUrl } from '@/util/url'
+import sanitizeHtml from 'sanitize-html'
+
 import './style.scss'
 
 /*
@@ -109,7 +112,7 @@ class C extends BaseComponent {
           {key}
         </Col>
         <Col span={16}>
-          <div className="ql-editor" dangerouslySetInnerHTML={{__html: value}} />
+          <div className="ql-editor" dangerouslySetInnerHTML={{__html: sanitizeHtml(value)}} />
         </Col>
       </Row>
     )
@@ -193,10 +196,10 @@ class C extends BaseComponent {
         {generateHtmlRow(I18N.get('task.description'), detail.description, 'task-description')}
 
         {detail.attachment && generateRow(I18N.get('task.attachment'),
-          <a href={detail.attachment} target="_blank">{detail.attachmentFilename}</a>)}
+          <a href={getSafeUrl(detail.attachment)} target="_blank">{detail.attachmentFilename}</a>)}
 
         {detail.infoLink && generateRow(I18N.get('task.infoLink'),
-          <a href={detail.infoLink} target="_blank">{detail.infoLink}</a>)}
+          <a href={getSafeUrl(detail.infoLink)} target="_blank">{detail.infoLink}</a>)}
       </div>
     )
   }

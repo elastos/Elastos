@@ -5,6 +5,7 @@ import I18N from '@/I18N'
 import './style.scss'
 import { Col, Row, Modal } from 'antd'
 import _ from 'lodash'
+import sanitizeHtml from 'sanitize-html'
 import Navigator from '@/module/page/shared/ConstitutionNavigator/Container'
 import MediaQuery from 'react-responsive'
 import StandardPage from '../StandardPage'
@@ -44,7 +45,7 @@ export default class extends StandardPage {
                 <Col xs={{span: 24}} md={{span: 20}} className="c_ConstitutionContainer wrap-box-user">
                   <div className="content">
                     <h1 className="title">{I18N.get(`counstitution.title${id}`)}</h1>
-                    <span dangerouslySetInnerHTML={{__html: text}} />
+                    <span dangerouslySetInnerHTML={{__html: sanitizeHtml(text)}} />
                   </div>
                 </Col>
               </Row>

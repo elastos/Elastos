@@ -7,6 +7,7 @@ import {Col, Row, Divider, Icon, Tag, Spin, Avatar} from 'antd'
 
 import {SUBMISSION_TYPE, SUBMISSION_CAMPAIGN} from '@/constant'
 import _ from 'lodash'
+import { getSafeUrl } from '@/util/url'
 
 import '../style.scss'
 import './style.scss'
@@ -169,7 +170,7 @@ export default class extends BaseComponent {
         </Row>
         <Row>
           <Col offset={4} span={16}>
-            <a target="_blank" href={this.props.submission.attachment}>
+            <a target="_blank" href={getSafeUrl(this.props.submission.attachment)}>
               <Icon type="file"/>
               {' '}
 &nbsp;

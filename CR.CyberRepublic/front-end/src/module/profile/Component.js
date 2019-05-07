@@ -8,10 +8,13 @@ import {
 } from 'antd'
 import moment from 'moment-timezone'
 import { upload_file } from '@/util'
+import { getSafeUrl } from '@/util/url'
 import { USER_AVATAR_DEFAULT, LINKIFY_OPTION } from '@/constant'
 import config from '@/config'
 import MediaQuery from 'react-responsive'
 import linkifyStr from 'linkifyjs/string'
+import sanitizeHtml from 'sanitize-html'
+
 import './style.scss'
 
 const TabPane = Tabs.TabPane
@@ -334,7 +337,7 @@ export default class extends BaseComponent {
         {!_.isEmpty(this.props.user.profile.portfolio)
           && (
             <div className="portfolio-container">
-              <a href={this.getFullUrl(this.props.user.profile.portfolio)} target="_blank" className="link-container">
+              <a href={getSafeUrl(this.props.user.profile.portfolio)} target="_blank" className="link-container">
                 <Icon type="link" />
                 {' '}
                 <span>
@@ -381,25 +384,17 @@ export default class extends BaseComponent {
     )
   }
 
-  getFullUrl(url = '') {
-    if (url.indexOf('http') < 0) {
-      return `https://${url}`
-    }
-
-    return url
-  }
-
   renderSocialMedia(isMobile) {
     const { profile } = this.props.user
 
     return (
       <div className={`profile-social ${isMobile ? 'profile-social-mobile' : ''}`}>
-        {profile.telegram && <a href={this.getFullUrl(profile.telegram)} target="_blank"><i className="fab fa-telegram fa-2x" /></a>}
-        {profile.twitter && <a href={this.getFullUrl(profile.twitter)} target="_blank"><i className="fab fa-twitter fa-2x" /></a>}
-        {profile.facebook && <a href={this.getFullUrl(profile.facebook)} target="_blank"><i className="fab fa-facebook-square fa-2x" /></a>}
-        {profile.reddit && <a href={this.getFullUrl(profile.reddit)} target="_blank"><i className="fab fa-reddit fa-2x" /></a>}
-        {profile.linkedin && <a href={this.getFullUrl(profile.linkedin)} target="_blank"><i className="fab fa-linkedin fa-2x" /></a>}
-        {profile.github && <a href={this.getFullUrl(profile.github)} target="_blank"><i className="fab fa-github fa-2x" /></a>}
+        {profile.telegram && <a href={getSafeUrl(profile.telegram)} target="_blank"><i className="fab fa-telegram fa-2x" /></a>}
+        {profile.twitter && <a href={getSafeUrl(profile.twitter)} target="_blank"><i className="fab fa-twitter fa-2x" /></a>}
+        {profile.facebook && <a href={getSafeUrl(profile.facebook)} target="_blank"><i className="fab fa-facebook-square fa-2x" /></a>}
+        {profile.reddit && <a href={getSafeUrl(profile.reddit)} target="_blank"><i className="fab fa-reddit fa-2x" /></a>}
+        {profile.linkedin && <a href={getSafeUrl(profile.linkedin)} target="_blank"><i className="fab fa-linkedin fa-2x" /></a>}
+        {profile.github && <a href={getSafeUrl(profile.github)} target="_blank"><i className="fab fa-github fa-2x" /></a>}
       </div>
     )
   }
@@ -411,7 +406,7 @@ export default class extends BaseComponent {
       <div className="profile-container">
         {
           this.props.user.profile.bio
-          && <div className={`profile-description ${isMobile ? 'profile-description-mobile' : ''}`} dangerouslySetInnerHTML={{ __html: content }} />
+          && <div className={`profile-description ${isMobile ? 'profile-description-mobile' : ''}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
         }
       </div>
     )

@@ -19,6 +19,8 @@ import {
 
 import {upload_file} from '@/util'
 import I18N from '@/I18N'
+import { getSafeUrl } from '@/util/url'
+
 import './style.scss'
 
 const FormItem = Form.Item
@@ -209,7 +211,7 @@ class C extends BaseComponent {
       <Upload name="attachment" {...p_attachment}>
         {
           this.state.attachment_url ? (
-            <a target="_blank" href={this.state.attachment_url}>
+            <a target="_blank" href={getSafeUrl(this.state.attachment_url)}>
               <Icon type="file"/>
               {' '}
 &nbsp;

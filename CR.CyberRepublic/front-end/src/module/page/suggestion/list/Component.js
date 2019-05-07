@@ -1,5 +1,5 @@
 import React from 'react'
-import {Link} from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import _ from 'lodash'
 import styled from 'styled-components'
 import {
@@ -16,16 +16,16 @@ import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
 import suggestionImg from '@/assets/images/SuggestionToProposal.png'
 import suggestionZhImg from '@/assets/images/SuggestionToProposal.zh.png'
-import {breakPoint} from '@/constants/breakPoint'
-import {text, bg} from '@/constants/color'
-import {SUGGESTION_TAG_TYPE} from '@/constant'
+import { breakPoint } from '@/constants/breakPoint'
+import { text, bg } from '@/constants/color'
+import { SUGGESTION_TAG_TYPE } from '@/constant'
 
 import {
   SUGGESTION_STATUS,
 } from '@/constant'
 
 import MediaQuery from 'react-responsive'
-import {MAX_WIDTH_MOBILE, MIN_WIDTH_PC, LG_WIDTH} from '@/config/constant'
+import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC, LG_WIDTH } from '@/config/constant'
 
 import './style.scss'
 
@@ -60,7 +60,6 @@ export default class extends StandardPage {
       referenceStatus: false,
       isDropdownActionOpen: false,
       showMobile: false,
-      page: 1,
       results: 10,
       total: 0,
     }
@@ -105,7 +104,7 @@ export default class extends StandardPage {
             }
             <Row>
               <Col>
-                <br/>
+                <br />
               </Col>
             </Row>
             <Row>
@@ -139,7 +138,7 @@ export default class extends StandardPage {
           </MediaQuery>
           {createForm}
         </SuggestionContainer>
-        <Footer/>
+        <Footer />
       </div>
     )
   }
@@ -170,19 +169,19 @@ export default class extends StandardPage {
         footer={null}
         width="70%"
       >
-        {this.state.showForm
-        && <SuggestionForm {...props} />
+        { this.state.showForm
+          && <SuggestionForm {...props} />
         }
       </Modal>
     )
   }
 
   showCreateForm = () => {
-    const {isLogin, history} = this.props
-    const {showForm} = this.state
+    const { isLogin, history } = this.props
+    const { showForm } = this.state
     if (!isLogin) {
-      const query = {create: true}
-      loginRedirectWithQuery({query})
+      const query = { create: true }
+      loginRedirectWithQuery({ query })
       history.push('/login')
       return
     }
@@ -411,23 +410,29 @@ export default class extends StandardPage {
     )
   }
 
+  onPageChanged = (page) => {
+    const { changePage } = this.props
+    changePage(page)
+    this.loadPage(page)
+  }
+
   renderPagination() {
-    const {total} = this.props
-    const {results, page} = this.state
+    const { total, page } = this.props
+    const { results } = this.state
     const props = {
       pageSize: results,
       total,
       current: page,
-      onChange: this.loadPage,
+      onChange: this.onPageChanged,
     }
-    return <Pagination {...props} className="cr-pagination"/>
+    return <Pagination {...props} className="cr-pagination" />
   }
 
-  renderMetaNode = detail => <MetaContainer data={detail}/>
+  renderMetaNode = detail => <MetaContainer data={detail} />
 
   renderActionsNode = (detail, refetch) => <ActionsContainer data={detail} listRefetch={refetch}/>
 
-  renderMySuggestion = () => <MySuggestion/>
+  renderMySuggestion = () => <MySuggestion />
 
   onSortByChanged = async (sortBy) => {
     await this.props.onSortByChanged(sortBy)
@@ -439,7 +444,8 @@ export default class extends StandardPage {
    */
   getQuery = () => {
     const sortBy = this.props.sortBy || DEFAULT_SORT
-    const {page, results, referenceStatus} = this.state
+    const { page } = this.props
+    const { results, referenceStatus} = this.state
     const query = {
       status: this.state.showArchived ? SUGGESTION_STATUS.ARCHIVED : SUGGESTION_STATUS.ACTIVE,
       page,
@@ -494,22 +500,20 @@ export default class extends StandardPage {
       results: this.state.results,
     }
 
-    this.setState({loadingMore: true})
+    this.setState({ loadingMore: true })
 
     try {
       await this.props.loadMore(query)
-      this.setState({page})
     } catch (e) {
       // Do not update page in state if the call fails
     }
 
-    this.setState({loadingMore: false})
+    this.setState({ loadingMore: false })
   }
 
   gotoDetail(id) {
     this.props.history.push(`/suggestion/${id}`)
   }
-
 }
 
 const HeaderDiagramContainer = styled.div`

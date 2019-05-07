@@ -19,7 +19,7 @@ export const EMPOWER_MAX_REGIONAL_EVANGELIST = 10
 export const MAX_LENGTH_COMMENT = 2048
 export const TOOLBAR_OPTIONS = {
   container: [
-    [{ header: [1, 2, 3, 4, 5, 6, false] }],
+    [{ header: [3, 4, 5, 6, false] }],
     ['bold', 'italic', 'underline', 'strike'],
     ['link'],
     [{ list: 'ordered' }, { list: 'bullet' }],

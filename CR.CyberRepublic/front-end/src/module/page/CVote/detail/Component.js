@@ -5,6 +5,7 @@ import {
 import { Link } from 'react-router-dom'
 import I18N from '@/I18N'
 import _ from 'lodash'
+import sanitizeHtml from 'sanitize-html'
 import StandardPage from '../../StandardPage'
 import { LANGUAGES } from '@/config/constant'
 import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
@@ -14,6 +15,7 @@ import EditForm from '../edit/Container'
 import Footer from '@/module/layout/Footer/Container'
 import BackLink from '@/module/shared/BackLink/Component'
 import CRPopover from '@/module/shared/Popover/Component'
+import Translation from '@/module/common/Translation/Container'
 
 import { Title, Label } from './style'
 import './style.scss'
@@ -77,6 +79,8 @@ class C extends StandardPage {
     const adminActionsNode = this.renderAdminActions()
     const voteDetailNode = this.renderVoteResults()
     const editFormNode = this.renderEditForm()
+    const translationBtn = this.renderTranslationBtn()
+
     return (
       <div>
         <div className="p_CVoteDetail">
@@ -86,6 +90,7 @@ class C extends StandardPage {
           {labelNode}
           {subTitleNode}
           {contentNode}
+          {translationBtn}
           {notesNode}
           {voteActionsNode}
           {adminActionsNode}
@@ -93,6 +98,20 @@ class C extends StandardPage {
           {editFormNode}
         </div>
         <Footer />
+      </div>
+    )
+  }
+
+  renderTranslationBtn() {
+    const { title, content } = this.state.data
+    const text = `
+      <h1>${title}</h1>
+      <p>${content}</p>
+    `
+
+    return (
+      <div style={{ marginTop: 20 }}>
+        <Translation text={text} />
       </div>
     )
   }
@@ -190,7 +209,7 @@ class C extends StandardPage {
 
   renderContent() {
     const { content } = this.state.data
-    return <div className="content ql-editor" dangerouslySetInnerHTML={{ __html: content }} />
+    return <div className="content ql-editor" dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
   }
 
   renderNotes() {

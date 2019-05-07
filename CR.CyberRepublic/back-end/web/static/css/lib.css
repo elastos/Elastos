@@ -10332,22 +10332,6 @@ input[type="checkbox"].disabled {
   height: auto;
   top: 0;
 }
-.ant-tabs-vertical > .ant-tabs-bar .ant-tabs-tab-next {
-  width: 100%;
-  bottom: 0;
-  height: 32px;
-}
-.ant-tabs-vertical > .ant-tabs-bar .ant-tabs-tab-next-icon:before {
-  content: "\E61D";
-}
-.ant-tabs-vertical > .ant-tabs-bar .ant-tabs-tab-prev {
-  top: 0;
-  width: 100%;
-  height: 32px;
-}
-.ant-tabs-vertical > .ant-tabs-bar .ant-tabs-tab-prev-icon:before {
-  content: "\E61E";
-}
 .ant-tabs-vertical > .ant-tabs-content {
   overflow: hidden;
   width: auto;

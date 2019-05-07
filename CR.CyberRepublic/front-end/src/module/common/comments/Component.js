@@ -14,6 +14,7 @@ import Translation from '@/module/common/Translation/Container'
 import MediaQuery from 'react-responsive'
 import { USER_AVATAR_DEFAULT, LINKIFY_OPTION } from '@/constant'
 import linkifyStr from 'linkifyjs/string'
+import sanitizeHtml from 'sanitize-html'
 
 const TextArea = Input.TextArea
 const FormItem = Form.Item
@@ -252,7 +253,7 @@ class C extends BaseComponent {
       /*
         ** Format visuals
         */
-      const spanCreator = (content, key) => <div key={key} className="non-mention" dangerouslySetInnerHTML={{ __html: content }} />
+      const spanCreator = (content, key) => <div key={key} className="non-mention" dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
       const mentionCreator = (mention, key) => (
         <a key={key} onClick={() => this.showUserProfile(mention.replace('@', ''))}>
           {mention}

@@ -1,5 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
+import sanitizeHtml from 'sanitize-html'
 
 const jsdiff = require('diff')
 const showdown = require('showdown')
@@ -39,7 +40,7 @@ export default ({ type, inputA, inputB }) => {
       spanStyle.textDecoration = 'line-through'
     }
 
-    return <StyledSpan key={index} highlight={part.added || part.removed} style={spanStyle} dangerouslySetInnerHTML={{ __html: converter.makeHtml(part.value) }} />
+    return <StyledSpan key={index} highlight={part.added || part.removed} style={spanStyle} dangerouslySetInnerHTML={{ __html: converter.makeHtml(sanitizeHtml(part.value)) }} />
     // return <span key={index} style={spanStyle}>{part.value}</span>
   })
   return (
