@@ -734,8 +734,7 @@ func (s *State) processVoteOutput(output *types.Output, height uint32) {
 	payload := output.Payload.(*outputpayload.VoteOutput)
 	for _, vote := range payload.Contents {
 		for _, candidate := range vote.Candidates {
-			key := hex.EncodeToString(candidate)
-			producer := s.activityProducers[key]
+			producer := s.getProducer(candidate)
 			if producer == nil {
 				continue
 			}
