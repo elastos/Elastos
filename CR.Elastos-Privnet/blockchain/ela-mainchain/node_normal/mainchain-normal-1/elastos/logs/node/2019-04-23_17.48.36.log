@@ -1,15 +1,0 @@
-2019/04/23 17:48:36.294645 [1;35m[INF][m GID 1, Node version: v0.3.1-dirty
-2019/04/23 17:48:36.294768 [1;35m[INF][m GID 1, go version go1.11.5 linux/amd64
-[ ========== BLOCKCHAIN INITIALIZE STARTED ========== ]
- 0 / 198 [------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------]   0.00% 199 / 198 [=======================================================================================================================================================================================================================================================] 100.51% 0s
-[ ========== BLOCKCHAIN INITIALIZE FINISHED ========== ]
-2019/04/23 17:48:36.353456 [1;35m[INF][m GID 1, Start the P2P networks
-2019/04/23 17:48:36.353540 [1;35m[INF][m GID 1, Start services
-2019/04/23 17:48:36.354893 [1;32m[DBG][m GID 117, github.com/elastos/Elastos.ELA/p2p/peer.(*Peer).writeMessage peer.go:515 Sending version (pver 20000, block 298) to 127.0.0.1:10015 (outbound)
-2019/04/23 17:48:36.355065 [1;32m[DBG][m GID 142, github.com/elastos/Elastos.ELA/p2p/peer.(*Peer).readMessage peer.go:491 Received version (pver 20000, block 298) from 127.0.0.1:55174 (inbound)
-2019/04/23 17:48:36.355105 [1;32m[DBG][m GID 115, github.com/elastos/Elastos.ELA/p2p/peer.(*Peer).AssociateConnection.func1 peer.go:961 Cannot negotiate peer 127.0.0.1:55174 (inbound): disconnecting peer connected to self
-2019/04/23 17:48:36.355198 [1;32m[DBG][m GID 117, github.com/elastos/Elastos.ELA/p2p/peer.(*Peer).readMessage peer.go:491 Read message failed, EOF
-2019/04/23 17:48:36.355307 [1;32m[DBG][m GID 96, github.com/elastos/Elastos.ELA/p2p/peer.(*Peer).AssociateConnection.func1 peer.go:961 Cannot negotiate peer 127.0.0.1:10015 (outbound): EOF
-2019/04/23 17:48:40.331750 [1;33m[WRN][m GID 1, Server shutting down
-2019/04/23 17:48:40.331791 [1;33m[WRN][m GID 1, server shutting down
-2019/04/23 17:48:40.331852 [1;35m[INF][m GID 30, Sync manager shutting down
