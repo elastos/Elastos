@@ -163,7 +163,7 @@ const en = {
   'home.hero.cr.community': 'Community Governance',
   'home.hero.cr.supernodes': 'DPoS Supernodes',
 
-  'home.crc.title': 'Cyber Republic Consensus (CRC)',
+  'home.crc.title': 'Cyber Republic Consensus',
 
   'home.crc.desc': 'Elastos has already made concrete steps towards a true Decentralized Autonomous Organization (DAO). The community has the power to elect and fund projects they deem beneficial to the Elastos ecosystem, to date we have already funded over 100k USD in projects. A new council will be elected by August 2019 and the Cyber Republic will be officially launched, any member of the community can be a candidate.',
 
