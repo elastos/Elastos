@@ -1,9 +1,17 @@
 {
     "Configuration": {
-        "ActiveNet": "main",
         "Magic": 20190131,
-        "Version": 23,
-        "SeedList": [
+        "DisableDNS": true,
+        "DNSSeeds": [
+            "ela-mainchain-normal-1:10015",
+            "ela-mainchain-crc-1:10115",
+            "ela-mainchain-crc-2:10215",
+            "ela-mainchain-crc-3:10315",
+            "ela-mainchain-crc-4:10415",
+            "ela-mainchain-dpos-1:10515",
+            "ela-mainchain-dpos-2:10615"
+        ],
+        "PermanentPeers": [
             "ela-mainchain-normal-1:10015",
             "ela-mainchain-crc-1:10115",
             "ela-mainchain-crc-2:10215",
@@ -13,17 +21,17 @@
             "ela-mainchain-dpos-2:10615"
         ],
         "HttpInfoPort": 10611,
-        "HttpInfoStart": true,
         "HttpRestPort": 10612,
         "HttpRestStart": true,
         "HttpWsPort": 10613,
-        "HttpWsStart": true,
         "HttpJsonPort": 10614,
+        "EnableRPC": true,
         "NodePort": 10615,
         "PrintLevel": 1,
         "MaxLogsSize": 0,
         "MaxPerLogSize": 0,
         "MinCrossChainTxFee": 10000,
+        "FoundationAddress": "ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw",
         "PowConfiguration": {
             "PayToAddr": "EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U",
             "AutoMining": true,
@@ -38,11 +46,11 @@
                 "0.0.0.0"
             ]
         },
-        "EnableArbiter": true,
-        "ArbiterConfiguration": {
+        "DPoSConfiguration": {
+            "EnableArbiter": true,
             "Magic": 7630403,
             "IPAddress": "ela-mainchain-dpos-2",
-            "NodePort": 10616,
+            "DPoSPort": 10616,
             "PrintLevel": 1,
             "SignTolerance": 5,
             "MaxLogsSize": 0,
@@ -52,46 +60,21 @@
                 "0232d3172b7fc139b7605b83cd27e3c6f64fde1e71da2489764723639a6d40b5b9"
             ],
             "CRCArbiters": [
-                {
-                    "PublicKey": "0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450",
-                    "NetAddress": "ela-mainchain-crc-1:10116"
-                },
-                {
-                    "PublicKey": "0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08",
-                    "NetAddress": "ela-mainchain-crc-2:10216"
-                },
-                {
-                    "PublicKey": "032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a",
-                    "NetAddress": "ela-mainchain-crc-3:10316"
-                },
-                {
-                    "PublicKey": "02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7",
-                    "NetAddress": "ela-mainchain-crc-4:10416"
-                }
+                "0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450",
+                "0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08",
+                "032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a",
+                "02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7"
             ],
             "NormalArbitratorsCount": 2,
             "CandidatesCount": 24,
             "EmergencyInactivePenalty": 0,
             "MaxInactiveRounds": 20,
             "InactivePenalty": 0,
-            "InactiveEliminateCount": 12,
-            "EnableEventRecord": false,
-            "PreConnectOffset": 20,
-            "PublicKey": "0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25"
+            "PreConnectOffset": 20
         },
         "CheckAddressHeight": 101,
         "VoteStartHeight": 100,
         "CRCOnlyDPOSHeight": 200,
-        "PublicDPOSHeight": 420,
-        "PermanentPeers": [
-            "ela-mainchain-normal-1:10015",
-            "ela-mainchain-crc-1:10115",
-            "ela-mainchain-crc-2:10215",
-            "ela-mainchain-crc-3:10315",
-            "ela-mainchain-crc-4:10415",
-            "ela-mainchain-dpos-1:10515",
-            "ela-mainchain-dpos-2:10615"
-        ],
-        "FoundationAddress": "ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw"
+        "PublicDPOSHeight": 10000
     }
 }

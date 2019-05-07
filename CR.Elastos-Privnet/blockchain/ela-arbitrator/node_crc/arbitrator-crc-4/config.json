@@ -3,8 +3,10 @@
         "Magic": 20190228,
         "Version": 0,
         "NodePort": 10825,
-        "PrintLevel": 0,
+        "PrintLevel": 1,
         "SpvPrintLevel": 4,
+        "MaxLogsSize": 0,
+        "MaxPerLogSize": 0,
         "HttpJsonPort": 10824,
         "MainNode": {
             "Rpc": {
@@ -17,8 +19,6 @@
                 "ela-mainchain-crc-4:10415"
             ],
             "Magic": 20190131,
-            "MinOutbound": 1,
-            "MaxConnections": 3,
             "FoundationAddress": "ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw",
             "DefaultPort": 10415
         },
@@ -51,41 +51,24 @@
             }
         ],
         "OriginCrossChainArbiters": [
-            {
-                "PublicKey": "02677bd3dc8ea4a9ab22f8ba5c5348fc1ce4ba5f1810e8ec8603d5bd927b630b3e",
-                "NetAddress": "ela-arbitrator-origin-1:10025"
-            },
-            {
-                "PublicKey": "0232d3172b7fc139b7605b83cd27e3c6f64fde1e71da2489764723639a6d40b5b9",
-                "NetAddress": "ela-arbitrator-origin-2:10125"
-            }
+            "02677bd3dc8ea4a9ab22f8ba5c5348fc1ce4ba5f1810e8ec8603d5bd927b630b3e",
+            "0232d3172b7fc139b7605b83cd27e3c6f64fde1e71da2489764723639a6d40b5b9"
         ],
         "CRCCrossChainArbiters": [
-            {
-                "PublicKey": "0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450",
-                "NetAddress": "ela-arbitrator-crc-1:10525"
-            },
-            {
-                "PublicKey": "0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08",
-                "NetAddress": "ela-arbitrator-crc-2:10625"
-            },
-            {
-                "PublicKey": "032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a",
-                "NetAddress": "ela-arbitrator-crc-3:10725"
-            },
-            {
-                "PublicKey": "02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7",
-                "NetAddress": "ela-arbitrator-crc-4:10825"
-            }
+            "0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450",
+            "0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08",
+            "032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a",
+            "02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7"
         ],
+        "DPoSNetAddress": "ela-mainchain-crc-4:10416",
         "CRCOnlyDPOSHeight": 200,
         "SyncInterval": 1000,
         "SideChainMonitorScanInterval": 1000,
         "ClearTransactionInterval": 60000,
         "MinOutbound": 3,
         "MaxConnections": 8,
-        "MaxLogsSize": 0,
-        "MaxPerLogSize": 0,
+        "SideAuxPowFee": 50000,
+        "MaxTxsPerWithdrawTx": 1000,
         "RpcConfiguration": {
             "User": "",
             "Pass": "",
