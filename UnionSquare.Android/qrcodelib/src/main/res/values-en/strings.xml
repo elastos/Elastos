@@ -1,0 +1,14 @@
+<resources>
+
+    <string name="qr_app_name">qrcodelib</string>
+    <string name="qr_scan_failed">Scan failed!</string>
+    <string name="qr_tip">Tips</string>
+    <string name="qrcannotrecognize">QR not reconizabl</string>
+    <string name="qr_sure">Confirm</string>
+    <string name="qr_imagepathnotfound">Image not found</string>
+    <string name="qr_requredpermission">Please enable camera in settings</string>
+    <string name="qr_permissiontryagin">Please enable camera in setttings</string>
+    <string name="qr_sanauto">Scan the QR code</string>
+    <string name="qr_sacn">Scan</string>
+    <string name="qr_gallery">Album</string>
+</resources>

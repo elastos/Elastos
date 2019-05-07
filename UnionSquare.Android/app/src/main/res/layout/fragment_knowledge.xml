@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/mswipeRefreshLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/px80">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:textColor="#2f2f2f"
+            android:text="知识体系"
+            android:layout_marginLeft="@dimen/px25"
+            android:gravity="center_vertical"
+            android:textSize="18sp"/>
+
+        <ImageView
+            android:layout_width="@dimen/px44"
+            android:layout_height="@dimen/px44"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/icon_search"
+            android:layout_marginTop="@dimen/px18"
+            android:layout_marginRight="@dimen/px18"
+            />
+    </RelativeLayout>
+
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="#dddddd"/>
+
+
+
+
+        <com.classic.common.MultipleStatusView
+            android:id="@+id/MultipleStatusView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:loadingView="@layout/custom_loading_view">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/mrecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                />
+
+        </com.classic.common.MultipleStatusView>
+
+    </LinearLayout>
+</android.support.v4.widget.SwipeRefreshLayout>

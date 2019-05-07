@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/option_menu_bj"
+        android:icon="@mipmap/found_vote_edit"
+        android:title="编辑"
+        app:showAsAction="ifRoom" />
+
+
+    <item
+        android:id="@+id/option_menu_qd"
+        android:icon="@mipmap/found_vote_finish"
+        android:title="确定"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+</menu>

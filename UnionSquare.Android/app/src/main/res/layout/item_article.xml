@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="#dddddd" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/articleiv"
+            android:layout_width="@dimen/px130"
+            android:layout_height="@dimen/px200"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="@dimen/px25"
+            android:layout_marginTop="@dimen/px30"
+            android:layout_marginBottom="@dimen/px30"
+            />
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="@dimen/px30"
+            android:layout_marginLeft="@dimen/px25"
+            android:layout_marginRight="@dimen/px200"
+            android:layout_marginBottom="@dimen/px30">
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:maxLines="2"
+                android:text="标题"
+                android:textColor="#2f2f2f"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/tvContent"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/px110"
+                android:layout_marginTop="@dimen/px8"
+                android:ellipsize="end"
+                android:maxLines="4"
+                android:text="内容"
+                android:textColor="#999999"
+                android:textSize="14sp" />
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/px50"
+                android:layout_marginTop="@dimen/px5">
+
+                <TextView
+                    android:id="@+id/tvAuthor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:text="作者"
+                    android:textColor="#999999"
+                    android:textSize="14sp" />
+
+                <ImageView
+                    android:id="@+id/ivtime"
+                    android:layout_width="@dimen/px26"
+                    android:layout_height="@dimen/px26"
+                    android:layout_marginLeft="@dimen/px20"
+                    android:layout_marginTop="@dimen/px12"
+                    android:layout_toRightOf="@+id/tvAuthor"
+                    android:background="@drawable/icon_time" />
+
+
+                <TextView
+                    android:id="@+id/tvNiceDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="@dimen/px5"
+                    android:layout_toRightOf="@+id/ivtime"
+                    android:text="1小时前"
+                    android:textColor="#999999"
+                    android:textSize="14sp" />
+
+            </RelativeLayout>
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tvChapterName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:text="章节名称"
+                    android:textColor="#ea6f5a"
+                    android:textSize="14sp" />
+
+            </RelativeLayout>
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</LinearLayout>

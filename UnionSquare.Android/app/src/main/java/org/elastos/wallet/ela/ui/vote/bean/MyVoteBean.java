@@ -1,0 +1,76 @@
+package org.elastos.wallet.ela.ui.vote.bean;
+
+import com.google.gson.annotations.SerializedName;
+
+public class MyVoteBean {
+
+    /**
+     * 028b6e4d5c85ce549cefb8987f61f3e50ae385737eadbefc3f90f70d6d1d530472 : 100000000
+     * 02dfd375f7f612e3a23e1a86cfb0d4d7de4ca1482bc36294a2d06d861201cb9f03 : 100000000
+     * 02fe6d1f9e1e03ef7e41bf0cb65eea4f7c6e8f5faa902455b723b997a7e6ded40b : 100000000
+     * 0341315fe4e1f26ba09c5c56bf76e1e97aaee992f59407b33c4fc9d42e11634bdc : 100000000
+     * 039a1de7457157317cb1578cfafa72a13eb8332a198960bb1e5733f4bfd559b09e : 100000000
+     * 03b273e27a6820b55fe5a6b7a445814f7c1db300e961661aaed3a06cbdfd3dca5d : 100000000
+     */
+
+    @SerializedName("028b6e4d5c85ce549cefb8987f61f3e50ae385737eadbefc3f90f70d6d1d530472")
+    private int _$028b6e4d5c85ce549cefb8987f61f3e50ae385737eadbefc3f90f70d6d1d530472;
+    @SerializedName("02dfd375f7f612e3a23e1a86cfb0d4d7de4ca1482bc36294a2d06d861201cb9f03")
+    private int _$02dfd375f7f612e3a23e1a86cfb0d4d7de4ca1482bc36294a2d06d861201cb9f03;
+    @SerializedName("02fe6d1f9e1e03ef7e41bf0cb65eea4f7c6e8f5faa902455b723b997a7e6ded40b")
+    private int _$02fe6d1f9e1e03ef7e41bf0cb65eea4f7c6e8f5faa902455b723b997a7e6ded40b;
+    @SerializedName("0341315fe4e1f26ba09c5c56bf76e1e97aaee992f59407b33c4fc9d42e11634bdc")
+    private int _$0341315fe4e1f26ba09c5c56bf76e1e97aaee992f59407b33c4fc9d42e11634bdc;
+    @SerializedName("039a1de7457157317cb1578cfafa72a13eb8332a198960bb1e5733f4bfd559b09e")
+    private int _$039a1de7457157317cb1578cfafa72a13eb8332a198960bb1e5733f4bfd559b09e;
+    @SerializedName("03b273e27a6820b55fe5a6b7a445814f7c1db300e961661aaed3a06cbdfd3dca5d")
+    private int _$03b273e27a6820b55fe5a6b7a445814f7c1db300e961661aaed3a06cbdfd3dca5d;
+
+    public int get_$028b6e4d5c85ce549cefb8987f61f3e50ae385737eadbefc3f90f70d6d1d530472() {
+        return _$028b6e4d5c85ce549cefb8987f61f3e50ae385737eadbefc3f90f70d6d1d530472;
+    }
+
+    public void set_$028b6e4d5c85ce549cefb8987f61f3e50ae385737eadbefc3f90f70d6d1d530472(int _$028b6e4d5c85ce549cefb8987f61f3e50ae385737eadbefc3f90f70d6d1d530472) {
+        this._$028b6e4d5c85ce549cefb8987f61f3e50ae385737eadbefc3f90f70d6d1d530472 = _$028b6e4d5c85ce549cefb8987f61f3e50ae385737eadbefc3f90f70d6d1d530472;
+    }
+
+    public int get_$02dfd375f7f612e3a23e1a86cfb0d4d7de4ca1482bc36294a2d06d861201cb9f03() {
+        return _$02dfd375f7f612e3a23e1a86cfb0d4d7de4ca1482bc36294a2d06d861201cb9f03;
+    }
+
+    public void set_$02dfd375f7f612e3a23e1a86cfb0d4d7de4ca1482bc36294a2d06d861201cb9f03(int _$02dfd375f7f612e3a23e1a86cfb0d4d7de4ca1482bc36294a2d06d861201cb9f03) {
+        this._$02dfd375f7f612e3a23e1a86cfb0d4d7de4ca1482bc36294a2d06d861201cb9f03 = _$02dfd375f7f612e3a23e1a86cfb0d4d7de4ca1482bc36294a2d06d861201cb9f03;
+    }
+
+    public int get_$02fe6d1f9e1e03ef7e41bf0cb65eea4f7c6e8f5faa902455b723b997a7e6ded40b() {
+        return _$02fe6d1f9e1e03ef7e41bf0cb65eea4f7c6e8f5faa902455b723b997a7e6ded40b;
+    }
+
+    public void set_$02fe6d1f9e1e03ef7e41bf0cb65eea4f7c6e8f5faa902455b723b997a7e6ded40b(int _$02fe6d1f9e1e03ef7e41bf0cb65eea4f7c6e8f5faa902455b723b997a7e6ded40b) {
+        this._$02fe6d1f9e1e03ef7e41bf0cb65eea4f7c6e8f5faa902455b723b997a7e6ded40b = _$02fe6d1f9e1e03ef7e41bf0cb65eea4f7c6e8f5faa902455b723b997a7e6ded40b;
+    }
+
+    public int get_$0341315fe4e1f26ba09c5c56bf76e1e97aaee992f59407b33c4fc9d42e11634bdc() {
+        return _$0341315fe4e1f26ba09c5c56bf76e1e97aaee992f59407b33c4fc9d42e11634bdc;
+    }
+
+    public void set_$0341315fe4e1f26ba09c5c56bf76e1e97aaee992f59407b33c4fc9d42e11634bdc(int _$0341315fe4e1f26ba09c5c56bf76e1e97aaee992f59407b33c4fc9d42e11634bdc) {
+        this._$0341315fe4e1f26ba09c5c56bf76e1e97aaee992f59407b33c4fc9d42e11634bdc = _$0341315fe4e1f26ba09c5c56bf76e1e97aaee992f59407b33c4fc9d42e11634bdc;
+    }
+
+    public int get_$039a1de7457157317cb1578cfafa72a13eb8332a198960bb1e5733f4bfd559b09e() {
+        return _$039a1de7457157317cb1578cfafa72a13eb8332a198960bb1e5733f4bfd559b09e;
+    }
+
+    public void set_$039a1de7457157317cb1578cfafa72a13eb8332a198960bb1e5733f4bfd559b09e(int _$039a1de7457157317cb1578cfafa72a13eb8332a198960bb1e5733f4bfd559b09e) {
+        this._$039a1de7457157317cb1578cfafa72a13eb8332a198960bb1e5733f4bfd559b09e = _$039a1de7457157317cb1578cfafa72a13eb8332a198960bb1e5733f4bfd559b09e;
+    }
+
+    public int get_$03b273e27a6820b55fe5a6b7a445814f7c1db300e961661aaed3a06cbdfd3dca5d() {
+        return _$03b273e27a6820b55fe5a6b7a445814f7c1db300e961661aaed3a06cbdfd3dca5d;
+    }
+
+    public void set_$03b273e27a6820b55fe5a6b7a445814f7c1db300e961661aaed3a06cbdfd3dca5d(int _$03b273e27a6820b55fe5a6b7a445814f7c1db300e961661aaed3a06cbdfd3dca5d) {
+        this._$03b273e27a6820b55fe5a6b7a445814f7c1db300e961661aaed3a06cbdfd3dca5d = _$03b273e27a6820b55fe5a6b7a445814f7c1db300e961661aaed3a06cbdfd3dca5d;
+    }
+}

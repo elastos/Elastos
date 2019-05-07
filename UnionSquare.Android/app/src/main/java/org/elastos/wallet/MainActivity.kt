@@ -1,3 +1,4 @@
+/*
 // Copyright (c) 2012-2019 The Elastos Open Source Project
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -87,3 +88,4 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
+*/

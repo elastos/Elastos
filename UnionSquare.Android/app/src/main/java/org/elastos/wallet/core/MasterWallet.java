@@ -40,6 +40,17 @@ public class MasterWallet {
         return list;
     }
 
+    public SubWallet GetSubWallet(String chainID) {
+        ArrayList<SubWallet> subWalletList = GetAllSubWallets();
+        for (int i = 0; i < subWalletList.size(); i++) {
+            if (chainID.equals(subWalletList.get(i).GetChainID())) {
+                return subWalletList.get(i);
+            }
+        }
+
+        return null;
+    }
+
     public SubWallet CreateSubWallet(String chainID, long feePerKb) throws WalletException {
         if ((!CHAINID.MAIN.equals(chainID)) && (!CHAINID.ID.equals(chainID))) {
             throw new WalletException("Not support the other sidechain now.");

@@ -1,3 +1,4 @@
+/*
 package org.elastos.wallet.utils
 
 import android.content.Context
@@ -45,3 +46,4 @@ internal object Utils {
         }
     }
 }
+*/

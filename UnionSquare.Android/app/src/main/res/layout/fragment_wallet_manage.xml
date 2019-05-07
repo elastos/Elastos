@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/asset_bg"
+    android:orientation="vertical">
+
+    <include layout="@layout/title" />
+
+    <LinearLayout
+        android:id="@+id/ll_1"
+        style="@style/settingItem_margin"
+        android:background="@color/mainitembg"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:text="@string/modifywallletname"
+            android:textColor="@color/whiter"
+            android:textSize="14dp" />
+
+        <TextView
+            android:id="@+id/tv_1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="right"
+            android:textColor="@color/whiter50"
+            android:textSize="13dp" />
+
+        <ImageView
+            android:layout_width="@dimen/px44"
+            android:layout_height="@dimen/px44"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="@dimen/px40"
+            android:src="@mipmap/asset_list_arrow" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_2"
+        style="@style/settingItem_margin"
+        android:layout_marginTop="10dp"
+        android:background="@color/mainitembg"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:text="@string/modifywallletpwd"
+            android:textColor="@color/whiter"
+            android:textSize="14dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:layout_width="@dimen/px44"
+            android:layout_height="@dimen/px44"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="@dimen/px40"
+            android:src="@mipmap/asset_list_arrow" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_3"
+        style="@style/settingItem_margin"
+        android:layout_marginTop="10dp"
+        android:background="@color/mainitembg"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:text="@string/outportKeystore"
+            android:textColor="@color/whiter"
+            android:textSize="14dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:layout_width="@dimen/px44"
+            android:layout_height="@dimen/px44"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="@dimen/px40"
+            android:src="@mipmap/asset_list_arrow" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_4"
+        style="@style/settingItem_margin"
+        android:layout_marginTop="10dp"
+        android:background="@color/mainitembg"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:text="@string/outportMnemonic"
+            android:textColor="@color/whiter"
+            android:textSize="14dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:layout_width="@dimen/px44"
+            android:layout_height="@dimen/px44"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="@dimen/px40"
+            android:src="@mipmap/asset_list_arrow" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_delete"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginLeft="@dimen/common_margin_button"
+        android:layout_marginRight="@dimen/common_margin_button"
+        android:layout_marginTop="140dp"
+        android:background="@color/mainitembg"
+        android:gravity="center"
+        android:text="@string/deletwallet"
+        android:textColor="@color/whiter"
+        android:textSize="16sp" />
+</LinearLayout>

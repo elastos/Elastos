@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/setting_bg"
+    android:orientation="vertical">
+
+    <include layout="@layout/title" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/px60"
+        android:layout_marginRight="@dimen/px60"
+        android:background="@color/a26ffffff"
+        android:orientation="vertical"
+        android:paddingBottom="15dp"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp">
+
+        <EditText
+            android:id="@+id/et_name"
+            android:layout_width="match_parent"
+            android:layout_height="53dp"
+            android:background="@null"
+            android:hint="@string/pleaseinputname"
+            android:textColor="@color/white"
+            android:textColorHint="#80ffffff"
+            android:textSize="13sp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="@color/white" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/et_walletaddr"
+                android:layout_width="0dp"
+                android:layout_height="53dp"
+                android:layout_weight="1"
+                android:background="@null"
+                android:ellipsize="end"
+                android:hint="@string/pleaseinputwalletaddr"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:textColor="@color/white"
+                android:textColorHint="#80ffffff"
+                android:textSize="13sp" />
+
+            <ImageView
+                android:id="@+id/iv_1"
+                android:layout_width="@dimen/px64"
+                android:layout_height="match_parent"
+                android:padding="@dimen/px10"
+                android:src="@mipmap/setting_adding_scan" />
+
+            <View
+                android:layout_width="1px"
+                android:layout_height="10dp"
+                android:background="@color/white" />
+
+            <ImageView
+                android:id="@+id/iv_2"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:padding="@dimen/px10"
+                android:src="@mipmap/asset_transfer_stick" />
+        </LinearLayout>
+
+        <View style="@style/line1" />
+
+        <EditText
+            android:id="@+id/et_mobile"
+            android:layout_width="match_parent"
+            android:layout_height="53dp"
+            android:background="@null"
+            android:hint="@string/pleaseinputmobile"
+            android:textColor="@color/white"
+            android:textColorHint="#80ffffff"
+            android:textSize="13sp" />
+
+        <View style="@style/line1" />
+
+        <EditText
+            android:id="@+id/et_email"
+            android:layout_width="match_parent"
+            android:layout_height="53dp"
+            android:background="@null"
+            android:hint="@string/pleaseinputemail"
+            android:textColor="@color/white"
+            android:textColorHint="#80ffffff"
+            android:textSize="13sp" />
+
+        <View style="@style/line1" />
+
+        <EditText
+            android:id="@+id/et_remark"
+            android:layout_width="match_parent"
+            android:layout_height="53dp"
+            android:background="@null"
+            android:hint="@string/pleaseinputremark"
+            android:textColor="@color/white"
+            android:textColorHint="#80ffffff"
+            android:textSize="13sp" />
+
+        <View style="@style/line1" />
+
+    </LinearLayout>
+
+
+    <TextView
+        android:id="@+id/tv_add"
+        style="@style/button1"
+        android:layout_marginLeft="60dp"
+        android:layout_marginRight="60dp"
+        android:layout_marginTop="@dimen/px264"
+        android:text="@string/add" />
+
+    <TextView
+        android:id="@+id/tv_change"
+        style="@style/button1"
+        android:layout_marginLeft="60dp"
+        android:layout_marginRight="60dp"
+        android:layout_marginTop="@dimen/px264"
+        android:text="@string/surechange"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/ll_edit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/px60"
+        android:layout_marginRight="@dimen/px60"
+        android:layout_marginTop="@dimen/px264"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tv_edit"
+            style="@style/button1"
+            android:layout_weight="1"
+            android:text="@string/edit" />
+
+        <TextView
+            android:id="@+id/tv_delete"
+            style="@style/button1"
+            android:layout_marginLeft="@dimen/px30"
+            android:layout_weight="1"
+            android:text="@string/delete" />
+    </LinearLayout>
+
+</LinearLayout>
+
+

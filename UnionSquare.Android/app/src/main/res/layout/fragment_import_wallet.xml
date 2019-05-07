@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.qmuiteam.qmui.layout.QMUILinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/wallet_bg"
+    android:orientation="vertical"
+    tools:context=".ui.Assets.fragment.ImportWalletFragment">
+
+    <include layout="@layout/title_bar"/>
+
+
+    <RadioGroup
+        android:id="@+id/radiogroup"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/px72"
+        android:layout_marginLeft="@dimen/px60"
+        android:layout_marginRight="@dimen/px60"
+        android:background="@drawable/shape_radiogroup"
+        android:orientation="horizontal">
+
+
+        <RadioButton
+            android:id="@+id/radiobutton1"
+            style="@style/style_RadioButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="@string/mnemonic" />
+
+        <RadioButton
+            android:id="@+id/radiobutton2"
+            style="@style/style_RadioButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="@string/keystore" />
+    </RadioGroup>
+
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/viewpage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+</com.qmuiteam.qmui.layout.QMUILinearLayout>

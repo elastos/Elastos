@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.qmuiteam.qmui.layout.QMUILinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/wallet_bg"
+    android:orientation="vertical"
+   >
+
+    <include layout="@layout/title_bar" />
+
+
+    <android.support.v7.widget.AppCompatTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="@dimen/px130"
+        android:text="@string/clickmneminic"
+        android:textColor="@color/qmui_config_color_white"
+        android:textSize="14sp" />
+
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_mnemonic_put"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/px300"
+        android:layout_marginLeft="@dimen/px68"
+        android:layout_marginTop="@dimen/px70"
+        android:layout_marginRight="@dimen/px68"
+        android:background="@drawable/cfff_4_cdab279_"
+        android:gravity="center"
+        />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_mnemonic_read"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/px68"
+        android:layout_marginTop="@dimen/px40"
+        android:layout_marginRight="@dimen/px68" />
+
+
+    <com.allen.library.SuperButton
+        android:id="@+id/sb_create_wallet"
+        style="@style/PublicButton"
+        android:layout_marginTop="@dimen/px170"
+        android:layout_marginBottom="@dimen/px82"
+        android:text="@string/determine" />
+
+</com.qmuiteam.qmui.layout.QMUILinearLayout>

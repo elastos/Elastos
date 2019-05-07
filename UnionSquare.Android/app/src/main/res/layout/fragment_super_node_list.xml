@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.qmuiteam.qmui.layout.QMUILinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/qmuilinearlayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/found_bg"
+    android:orientation="vertical"
+    tools:context=".ui.vote.SuperNodeList.SuperNodeListFragment">
+
+
+    <include layout="@layout/title_bar" />
+
+    <com.qmuiteam.qmui.layout.QMUILinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <com.qmuiteam.qmui.layout.QMUILinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/px250"
+            android:layout_gravity="center"
+            android:layout_marginLeft="@dimen/px10"
+            android:layout_marginTop="@dimen/px25"
+            android:layout_marginRight="@dimen/px10"
+            android:background="@drawable/sc_26ffffff_2"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+
+            <com.qmuiteam.qmui.layout.QMUILinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/vote_qwtpzb"
+                    android:textColor="#ffffffff"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/tv_zb"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/px58"
+                    android:text="0.0%"
+                    android:textColor="#ffffffff"
+                    android:textSize="18sp" />
+
+
+            </com.qmuiteam.qmui.layout.QMUILinearLayout>
+
+
+            <View
+                android:layout_width="1px"
+                android:layout_height="@dimen/px66"
+                android:layout_marginTop="@dimen/px48"
+                android:background="@color/qmui_config_color_white" />
+
+            <com.qmuiteam.qmui.layout.QMUILinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/the_current_number"
+                    android:textColor="#ffffffff"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/tv_num"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/px58"
+                    android:text="0"
+                    android:textColor="#ffffffff"
+                    android:textSize="18sp" />
+            </com.qmuiteam.qmui.layout.QMUILinearLayout>
+
+            <View
+                android:layout_width="1px"
+                android:layout_height="@dimen/px66"
+                android:layout_marginTop="@dimen/px48"
+                android:background="@color/qmui_config_color_white" />
+
+            <com.qmuiteam.qmui.layout.QMUILinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/number_of_voting_addresses"
+                    android:textColor="#ffffffff"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/px58"
+                    android:text="121786"
+                    android:textColor="#ffffffff"
+                    android:textSize="18sp" />
+            </com.qmuiteam.qmui.layout.QMUILinearLayout>
+        </com.qmuiteam.qmui.layout.QMUILinearLayout>
+
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="@dimen/px10"
+            android:layout_marginTop="@dimen/px22"
+            android:layout_marginRight="@dimen/px10" />
+
+    </com.qmuiteam.qmui.layout.QMUILinearLayout>
+
+    <com.qmuiteam.qmui.layout.QMUILinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal">
+
+        <android.support.v7.widget.AppCompatTextView
+            android:id="@+id/tv_myvote"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/px13"
+            android:layout_weight="1"
+            android:drawableTop="@mipmap/bottom_my_vote"
+            android:gravity="center"
+            android:text="@string/my_vote"
+            android:textColor="#999999"
+            android:textSize="@dimen/px18" />
+
+        <android.support.v7.widget.AppCompatTextView
+            android:id="@+id/tv_voting_rules"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/px13"
+            android:layout_weight="1"
+            android:drawableTop="@mipmap/bottom_vote_rule"
+            android:gravity="center"
+            android:text="@string/voting_rules"
+            android:textColor="#999999"
+            android:textSize="@dimen/px18" />
+
+
+        <com.qmuiteam.qmui.layout.QMUILinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/sc_26ffffff_2"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <android.support.v7.widget.AppCompatTextView
+                android:id="@+id/tv_going_to_vote"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:drawableLeft="@mipmap/found_vote_to_vote"
+                android:drawablePadding="6dp"
+                android:gravity="center"
+                android:text="@string/going_to_vote"
+                android:textColor="#fffefeff"
+                android:textSize="15sp" />
+
+
+        </com.qmuiteam.qmui.layout.QMUILinearLayout>
+
+
+    </com.qmuiteam.qmui.layout.QMUILinearLayout>
+</com.qmuiteam.qmui.layout.QMUILinearLayout>

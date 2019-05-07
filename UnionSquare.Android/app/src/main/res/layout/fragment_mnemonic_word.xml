@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.qmuiteam.qmui.layout.QMUILinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ll_mnemonic_word"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/wallet_bg"
+    android:orientation="vertical">
+
+
+    <include layout="@layout/title_bar" />
+
+    <android.support.v4.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <android.support.v7.widget.AppCompatImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/px56"
+                android:src="@mipmap/walllet_copy_word" />
+
+
+            <android.support.v7.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/px50"
+                android:text="@string/copy_down_your_wallet_mnemonic"
+                android:textColor="@color/qmui_config_color_white"
+                android:textSize="14sp" />
+
+
+            <android.support.v7.widget.AppCompatTextView
+                android:id="@+id/tv_mnemonic"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/px214"
+                android:layout_marginLeft="78px"
+                android:layout_marginRight="@dimen/px78"
+                android:layout_marginTop="@dimen/px50"
+                android:background="@drawable/mnemonic_border"
+                android:gravity="center"
+                android:textColor="@color/qmui_config_color_white"
+                android:textSize="13sp" />
+
+
+            <android.support.v7.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/px36"
+                android:drawableLeft="@mipmap/wallet_notice"
+                android:drawablePadding="@dimen/px8"
+                android:text="@string/text_mnemonic_prompt"
+                android:textColor="@color/qmui_config_color_white"
+                android:textSize="11sp" />
+
+
+            <com.allen.library.SuperTextView
+                android:id="@+id/st_pws"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginLeft="@dimen/px60"
+                android:layout_marginRight="@dimen/px60"
+                android:layout_marginTop="@dimen/px56"
+                android:background="#F8F8F8"
+                android:paddingLeft="@dimen/px30"
+                android:textSize="14sp"
+                app:sBackgroundDrawableRes="@drawable/selector_red"
+                app:sDividerLineColor="#26ffffff"
+                app:sDividerLineType="none"
+                app:sLeftTextColor="@color/qmui_config_color_white"
+                app:sLeftTextString="@string/mnemonic_password"
+                app:sRightViewType="switchBtn"
+                app:sSwitchIsChecked="false"
+                app:sSwitchMinWidth="@dimen/px60"
+                app:sThumbResource="@drawable/thumb"
+                app:sTrackResource="@drawable/track" />
+
+            <com.qmuiteam.qmui.layout.QMUILinearLayout
+                android:id="@+id/ll_mnemonic_pws"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/px60"
+                android:layout_marginRight="@dimen/px60"
+                android:layout_marginTop="@dimen/px10"
+                android:background="@color/a26ffffff"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+
+                <com.qmuiteam.qmui.layout.QMUILinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="@dimen/px28"
+                    android:orientation="vertical">
+
+
+                    <org.elastos.wallet.ela.widget.keyboard.SecurityEditText
+                        android:id="@+id/et_walletpws"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/px32"
+                        android:background="@null"
+                        android:hint="@string/please_set_bit_mnemonic_password"
+                        android:inputType="textPassword"
+                        android:paddingBottom="@dimen/px26"
+                        android:textColor="@color/qmui_config_color_white"
+                        android:textColorHint="@color/hint_color"
+                        android:textSize="@dimen/px26" />
+
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/px1"
+                        android:layout_alignBottom="@id/et_walletpws"
+                        android:layout_marginLeft="@dimen/px32"
+                        android:layout_marginRight="@dimen/px30"
+                        android:background="@color/gap_wallet" />
+
+                </com.qmuiteam.qmui.layout.QMUILinearLayout>
+
+
+                <com.qmuiteam.qmui.layout.QMUIRelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/px28">
+
+                    <org.elastos.wallet.ela.widget.keyboard.SecurityEditText
+                        android:id="@+id/et_walletpws_next"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/px32"
+                        android:background="@null"
+                        android:hint="@string/please_repeat_the_mnemonic_password_you_entered"
+                        android:inputType="textPassword"
+                        android:paddingBottom="@dimen/px26"
+                        android:textColor="@color/qmui_config_color_white"
+                        android:textColorHint="@color/hint_color"
+                        android:textSize="@dimen/px26" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/px1"
+                        android:layout_alignBottom="@id/et_walletpws_next"
+                        android:layout_marginLeft="@dimen/px32"
+                        android:layout_marginRight="@dimen/px30"
+                        android:background="@color/gap_wallet" />
+
+                </com.qmuiteam.qmui.layout.QMUIRelativeLayout>
+
+                <com.qmuiteam.qmui.layout.QMUILinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/px12"
+                    android:layout_marginLeft="@dimen/px30"
+                    android:layout_marginTop="@dimen/px12">
+
+
+                    <android.support.v7.widget.AppCompatTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:drawableLeft="@mipmap/wallet_notice"
+                        android:drawablePadding="@dimen/px12"
+                        android:text="@string/mustcontain"
+                        android:textColor="@color/hint_color"
+                        android:textSize="11sp" />
+
+                </com.qmuiteam.qmui.layout.QMUILinearLayout>
+
+            </com.qmuiteam.qmui.layout.QMUILinearLayout>
+
+
+            <com.allen.library.SuperButton
+                android:id="@+id/sb_create_wallet"
+                style="@style/PublicButton"
+                android:layout_marginBottom="@dimen/px80"
+                android:layout_marginTop="@dimen/px56"
+                android:text="@string/next" />
+        </LinearLayout>
+    </android.support.v4.widget.NestedScrollView>
+</com.qmuiteam.qmui.layout.QMUILinearLayout>

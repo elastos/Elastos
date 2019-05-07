@@ -1,0 +1,241 @@
+package org.elastos.wallet.ela.ui.Assets.fragment;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.TextUtils;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
+import org.elastos.wallet.R;
+import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.bean.BusEvent;
+import org.elastos.wallet.ela.db.table.Contact;
+import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
+import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
+import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
+import org.elastos.wallet.ela.ui.Assets.presenter.SideChainPresenter;
+import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
+import org.elastos.wallet.ela.ui.common.viewdata.CommmonBooleanViewData;
+import org.elastos.wallet.ela.ui.common.viewdata.CommmonLongViewData;
+import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
+import org.elastos.wallet.ela.utils.Arith;
+import org.elastos.wallet.ela.utils.ClipboardUtil;
+import org.elastos.wallet.ela.utils.Constant;
+import org.elastos.wallet.ela.utils.DialogUtil;
+import org.elastos.wallet.ela.utils.MatcherUtil;
+import org.elastos.wallet.ela.utils.NumberiUtil;
+import org.elastos.wallet.ela.utils.RxEnum;
+import org.elastos.wallet.ela.utils.ScanQRcodeUtil;
+import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
+
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.math.BigDecimal;
+
+import butterknife.BindView;
+import butterknife.OnClick;
+import butterknife.Unbinder;
+
+public class SideChainRechargeFragment extends BaseFragment implements CommmonStringWithMethNameViewData, CommonBalanceViewData, CommmonBooleanViewData, CommmonLongViewData {
+    @BindView(R.id.tv_title)
+    TextView tvTitle;
+    @BindView(R.id.iv_title_right)
+    ImageView ivTitleRight;
+    @BindView(R.id.et_payeeaddr)
+    EditText etPayeeaddr;
+    @BindView(R.id.iv_paste)
+    ImageView ivPaste;
+    @BindView(R.id.iv_contact)
+    ImageView ivContact;
+    @BindView(R.id.et_balance)
+    EditText etBalance;
+    @BindView(R.id.tv_max)
+    TextView tvMax;
+    @BindView(R.id.et_remark)
+    EditText etRemark;
+    Unbinder unbinder;
+    @BindView(R.id.tv_tochain)
+    TextView tvTochain;
+    Unbinder unbinder1;
+    private String chainId;
+    private Wallet wallet;
+    private SideChainPresenter presenter;
+    private String address;
+    private String amount;
+    private String genesisAddress;
+    private String attributes;
+    private String chargeChain;
+    private String maxBalance="0";
+
+    @Override
+    protected int getLayoutId() {
+        return R.layout.fragment_sidechain_recharge;
+    }
+
+    @Override
+    protected void setExtraData(Bundle data) {
+        chainId = data.getString("ChainId", "ELA");
+        wallet = data.getParcelable("wallet");
+        new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), chainId, 2, this);
+    }
+
+    @Override
+    protected void initView(View view) {
+        tvTitle.setText(getString(R.string.side_chain_top_up));
+        ivTitleRight.setVisibility(View.VISIBLE);
+        ivTitleRight.setImageResource(R.mipmap.setting_adding_scan);
+        registReceiver();
+        presenter = new SideChainPresenter();
+        chargeChain = "IdChain";
+        tvTochain.setText(getString(R.string.chargerto) + chargeChain);
+        presenter.getGenesisAddress(wallet.getWalletId(), chargeChain, this);
+        etBalance.setFilters(new InputFilter[]{MatcherUtil.filter(4)});
+    }
+
+    @OnClick({R.id.iv_paste, R.id.iv_contact, R.id.tv_max, R.id.tv_next, R.id.iv_title_right, R.id.ll_choseaddress})
+    public void onViewClicked(View view) {
+        switch (view.getId()) {
+            case R.id.iv_paste:
+                etPayeeaddr.setText(ClipboardUtil.paste(getBaseActivity()));
+                break;
+            case R.id.iv_contact:
+                start(new ChooseContactFragment());
+                break;
+            case R.id.tv_max:
+                etBalance.setText("0");
+                break;
+            case R.id.tv_next:
+                // startActivity(new Intent(getActivity(), TransferActivity.class));
+                startTransfer();
+                break;
+            case R.id.iv_title_right:
+                requstManifestPermission(getString(R.string.needpermission));
+                break;
+            case R.id.ll_choseaddress:
+                //选择充值链
+                start(ChooseSideChainFragment.class);
+                break;
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void Event(BusEvent result) {
+        int integer = result.getCode();
+        if (integer == RxEnum.CHOOSECONTACT.ordinal()) {
+            Contact contact = (Contact) result.getObj();
+            etPayeeaddr.setText(contact.getWalletAddr());
+
+
+        } else if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
+            new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
+                @Override
+                public void affireBtnClick(View view) {
+                    popBackFragment();
+                }
+            });
+
+        } else if (integer == RxEnum.CHOSESIDECHAIN.ordinal()) {
+            String temp = (String) result.getObj();
+            if (!chargeChain.equals(temp)) {
+                chargeChain = temp;
+                tvTochain.setText(getString(R.string.chargerto) + chargeChain);
+                presenter.getGenesisAddress(wallet.getWalletId(), chargeChain, this);
+
+            }
+        }
+    }
+
+    @Override
+    protected void requstPermissionOk() {
+        new ScanQRcodeUtil().scanQRcode(this);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        //处理扫描结果（在界面上显示）
+        if (resultCode == RESULT_OK && requestCode == ScanQRcodeUtil.SCAN_QR_REQUEST_CODE && data != null) {
+            String result = data.getStringExtra("result");//&& matcherUtil.isMatcherAddr(result)
+            if (!TextUtils.isEmpty(result) /*&& matcherUtil.isMatcherAddr(result)*/) {
+                etPayeeaddr.setText(result);
+            }
+        }
+
+    }
+
+
+    @Override
+    public void onGetCommonData(String methodname, String data) {
+        switch (methodname) {
+            case "getGenesisAddress":
+                genesisAddress = data;
+                break;
+            case "createDepositTransaction":
+                attributes = data;
+                presenter.calculateTransactionFee(wallet.getWalletId(), chainId, data, MyWallet.feePerKb, this);
+                break;
+        }
+    }
+
+    @Override
+    public void onBalance(BalanceEntity data) {
+        maxBalance = data.getBalance();
+        // String balance = String.format(getString(R.string.inputbalance), NumberiUtil.maxNumberFormat((Double.parseDouble(data.getBalance()) / MyWallet.RATE) + "", 12) + " " + data.getChainId());
+        String balance = String.format(getString(R.string.inputbalance), NumberiUtil.maxNumberFormat(Arith.div(data.getBalance(), MyWallet.RATE_S), 12) + " " + data.getChainId());
+        etBalance.setHint(balance);
+    }
+
+    @Override
+    public void onGetCommonData(boolean data) {
+        if (!data) {
+            showToastMessage(getString(R.string.invalidaddress));
+            return;
+        }
+        String remark = etRemark.getText().toString().trim();
+        //long actualSpend = (long) (Double.parseDouble(amount) * MyWallet.RATE);
+        long actualSpend = Arith.mul(amount, MyWallet.RATE_S).longValue();
+        presenter.createDepositTransaction(wallet.getWalletId(), chainId, "", genesisAddress, actualSpend, address, "", remark, true, this);
+
+    }
+
+    private void startTransfer() {
+        address = etPayeeaddr.getText().toString().trim();
+        if (TextUtils.isEmpty(address)) {
+            showToastMessage(getString(R.string.payeeaddrnotnull));
+            return;
+        }
+        amount = etBalance.getText().toString().trim();
+        if (TextUtils.isEmpty(amount)) {
+            showToastMessage(getString(R.string.transferamountnotnull));
+            return;
+        }
+        if (Arith.mul(amount, MyWallet.RATE_S).add(new BigDecimal(MyWallet.feePerKb+""))
+                .compareTo(new BigDecimal(maxBalance)) > -1) {
+            showToastMessage(getString(R.string.lack_of_balance));
+            return;
+        }
+        presenter.isAddressValid(wallet.getWalletId(), address, this);
+    }
+
+    @Override
+    public void onGetCommonData(long fee) {
+        //获得calculateTransactionFee
+
+        Intent intent = new Intent(getActivity(), TransferActivity.class);
+        intent.putExtra("amount", amount);
+        intent.putExtra("toAddress", address);
+        intent.putExtra("wallet", wallet);
+        intent.putExtra("chainId", chainId);
+        intent.putExtra("fee", fee);
+        intent.putExtra("attributes", attributes);
+        intent.putExtra("type", Constant.SIDEWITHDRAW);
+        startActivity(intent);
+
+    }
+}

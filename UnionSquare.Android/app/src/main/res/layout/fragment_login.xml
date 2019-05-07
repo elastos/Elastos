@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginLeft="@dimen/px33"
+    android:layout_marginRight="@dimen/px33"
+    android:gravity="center_vertical"
+    android:orientation="vertical">
+
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:orientation="horizontal"
+        app:hintTextAppearance="@style/TextInputAppTheme">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/usernameet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="账号"
+            android:theme="@style/MyEditText" />
+
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:orientation="horizontal"
+        app:hintTextAppearance="@style/TextInputAppTheme">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/userpasswordet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="密码"
+            android:inputType="textPassword"
+            android:theme="@style/MyEditText" />
+    </android.support.design.widget.TextInputLayout>
+
+
+    <Button
+        android:id="@+id/loginbtn"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/px80"
+        android:layout_marginTop="@dimen/px15"
+        android:background="@drawable/bg_login"
+        android:gravity="center"
+        android:text="登录"
+        android:textColor="@color/white" />
+
+
+    <Button
+        android:id="@+id/registerbtn"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/px80"
+        android:layout_marginTop="@dimen/px15"
+        android:background="@drawable/bg_register"
+        android:gravity="center"
+        android:text="注册并登陆"
+        android:textColor="@color/white" />
+
+</LinearLayout>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.qmuiteam.qmui.layout.QMUILinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/found_voting_orign_bg"
+    android:clickable="true"
+    android:orientation="vertical"
+    tools:context=".ui.vote.voteFirst.VoteFirstFragment">
+
+
+    <include layout="@layout/title" />
+
+
+    <android.support.v7.widget.AppCompatImageView
+
+        android:layout_width="155dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="50dp"
+        android:src="@mipmap/wallet_ela_logo" />
+
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/tv_signupfor"
+        style="@style/button_margin"
+        android:height="50dp"
+        android:background="@drawable/setting_item_select"
+        android:text="@string/sign_up_for"
+        android:textSize="17sp"
+        android:visibility="gone" />
+
+
+    <!--<TextView-->
+    <!--android:id="@+id/tv_electoral_affairs"-->
+    <!--style="@style/button_margin"-->
+    <!--android:layout_marginTop="@dimen/px66"-->
+    <!--android:height="50dp"-->
+    <!--android:background="@drawable/setting_item_select"-->
+    <!--android:text="@string/electoral_affairs"-->
+    <!--android:textSize="17sp"-->
+    <!--android:visibility="gone" />-->
+
+
+    <TextView
+        android:id="@+id/tv_goingtovote"
+        style="@style/button_margin"
+        android:layout_marginTop="@dimen/px66"
+        android:layout_marginBottom="90dp"
+        android:height="50dp"
+        android:background="@drawable/setting_item_select"
+        android:text="@string/going_to_vote"
+        android:textSize="17sp" />
+
+
+</com.qmuiteam.qmui.layout.QMUILinearLayout>

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include layout="@layout/title" />
+
+    <android.support.v4.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="@dimen/px60"
+        android:layout_marginRight="@dimen/px60">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:id="@+id/rl_language"
+                style="@style/settingItem"
+                android:layout_gravity="center"
+                android:background="@drawable/ass_border">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:text="@string/language"
+                    android:textColor="#ffffffff"
+                    android:textSize="14sp" />
+
+                <ImageView
+                    android:id="@+id/iv_language"
+                    android:layout_width="@dimen/px44"
+                    android:layout_height="@dimen/px44"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="@dimen/px40"
+                    android:src="@mipmap/asset_list_arrow" />
+
+            </RelativeLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_languge"
+                style="@style/settingItem"
+                android:layout_marginTop="@dimen/px10"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tv_chinese"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_centerInParent="true"
+                    android:layout_weight="1"
+                    android:background="@drawable/selector_setting_item"
+                    android:gravity="center"
+                    android:text="中文(简体)"
+                    android:textColor="#ffffffff"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tv_english"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_centerInParent="true"
+                    android:layout_marginLeft="@dimen/px10"
+                    android:layout_weight="1"
+                    android:background="@drawable/selector_setting_item"
+                    android:gravity="center"
+                    android:text="English"
+                    android:textColor="#ffffffff"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <RelativeLayout
+                android:id="@+id/rl_contact"
+                style="@style/settingItem"
+                android:layout_marginTop="@dimen/px30"
+                android:background="@drawable/ass_border">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:text="@string/contact"
+                    android:textColor="#ffffffff"
+                    android:textSize="14sp" />
+
+                <ImageView
+                    android:id="@+id/iv_contact"
+                    android:layout_width="@dimen/px44"
+                    android:layout_height="@dimen/px44"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="@dimen/px40"
+                    android:src="@mipmap/asset_list_arrow" />
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/tv_contact_none"
+                style="@style/settingItem"
+                android:layout_centerInParent="true"
+                android:layout_marginTop="@dimen/px10"
+                android:background="@drawable/ass_border"
+                android:gravity="center"
+                android:text="@string/nocontact"
+                android:textSize="11sp"
+                android:visibility="gone" />
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rv"
+                style="@style/settingItem"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <ImageView
+                android:src="@mipmap/setting_contacts_add"
+                android:id="@+id/iv_contact_add"
+                style="@style/settingItem"
+                android:paddingTop="@dimen/px30"
+                android:paddingBottom="@dimen/px30"
+                android:layout_centerInParent="true"
+                android:layout_marginTop="@dimen/px10"
+                android:background="@drawable/ass_border"
+                android:gravity="center"
+                android:visibility="gone" />
+        </LinearLayout>
+    </android.support.v4.widget.NestedScrollView>
+</LinearLayout>
+
