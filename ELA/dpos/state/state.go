@@ -960,6 +960,7 @@ func (s *State) ProcessSpecialTxPayload(p types.Payload, height uint32) {
 func (s *State) setInactiveProducer(producer *Producer, key string,
 	height uint32, emergency bool) {
 	producer.inactiveSince = height
+	producer.activateRequestHeight = math.MaxUint32
 	producer.state = Inactivate
 	s.inactiveProducers[key] = producer
 	delete(s.activityProducers, key)
@@ -977,6 +978,7 @@ func (s *State) setInactiveProducer(producer *Producer, key string,
 func (s *State) revertSettingInactiveProducer(producer *Producer, key string,
 	height uint32, emergency bool) {
 	producer.inactiveSince = 0
+	producer.activateRequestHeight = math.MaxUint32
 	producer.state = Activate
 	s.activityProducers[key] = producer
 	delete(s.inactiveProducers, key)
