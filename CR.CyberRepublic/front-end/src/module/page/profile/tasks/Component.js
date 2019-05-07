@@ -3,6 +3,7 @@ import Footer from '@/module/layout/Footer/Container'
 import Navigator from '@/module/page/shared/HomeNavigator/Container'
 import _ from 'lodash'
 import I18N from '@/I18N'
+import sanitizeHtml from 'sanitize-html'
 
 import './style.scss'
 import '../../admin/admin.scss'
@@ -466,7 +467,7 @@ Status:
                 <h5 className="no-margin">
                   {item.description}
                 </h5>
-                <div className="description-content ql-editor" dangerouslySetInnerHTML={{__html: item.content}} />
+                <div className="description-content ql-editor" dangerouslySetInnerHTML={{__html: sanitizeHtml(item.content)}} />
                 <div className="ant-list-item-right-box">
                   <a className="pull-up" onClick={this.linkUserDetail.bind(this, item.owner)}>
                     <Avatar size="large" icon="user" className="pull-right" src={USER_AVATAR_DEFAULT}/>

@@ -8,6 +8,7 @@ import {
   Spin,
 } from 'antd'
 import I18N from '@/I18N'
+import sanitizeHtml from 'sanitize-html'
 import { TranslateButton, ModalBody, TranslationText, Container, Footer, LangText } from './style'
 
 export default class extends BaseComponent {
@@ -34,7 +35,7 @@ export default class extends BaseComponent {
 
   renderTranslationModal() {
     const { isTranslateModalOpen, translation } = this.state
-    const translationNode = translation ? <TranslationText dangerouslySetInnerHTML={{ __html: translation }} /> : <Spin />
+    const translationNode = translation ? <TranslationText dangerouslySetInnerHTML={{ __html: sanitizeHtml(translation) }} /> : <Spin />
 
     return (
       <Modal

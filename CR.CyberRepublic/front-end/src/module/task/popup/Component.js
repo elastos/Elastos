@@ -16,6 +16,7 @@ import I18N from '@/I18N'
 import {TASK_CANDIDATE_STATUS, USER_AVATAR_DEFAULT} from '@/constant'
 import ProfilePopup from '@/module/profile/OverviewPopup/Container'
 import _ from 'lodash'
+import sanitizeHtml from 'sanitize-html'
 import './style.scss'
 
 /*
@@ -101,7 +102,7 @@ class C extends BaseComponent {
           {key}
         </Col>
         <Col span={16}>
-          <div className="ql-editor" dangerouslySetInnerHTML={{__html: value}}/>
+          <div className="ql-editor" dangerouslySetInnerHTML={{__html: sanitizeHtml(value)}}/>
         </Col>
       </Row>
     )

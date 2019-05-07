@@ -5,6 +5,7 @@ import {
 import { Link } from 'react-router-dom'
 import I18N from '@/I18N'
 import _ from 'lodash'
+import sanitizeHtml from 'sanitize-html'
 import StandardPage from '../../StandardPage'
 import { LANGUAGES } from '@/config/constant'
 import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
@@ -208,7 +209,7 @@ class C extends StandardPage {
 
   renderContent() {
     const { content } = this.state.data
-    return <div className="content ql-editor" dangerouslySetInnerHTML={{ __html: content }} />
+    return <div className="content ql-editor" dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
   }
 
   renderNotes() {

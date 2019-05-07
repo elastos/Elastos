@@ -10,6 +10,7 @@ import moment from 'moment/moment'
 import config from '@/config'
 import _ from 'lodash'
 import {TEAM_TYPE} from '@/constant'
+import sanitizeHtml from 'sanitize-html'
 
 const Component = class extends BaseAdmin {
 
@@ -59,7 +60,7 @@ const Component = class extends BaseAdmin {
         title: 'Description',
         dataIndex: 'profile.description',
         render: (description, record) => {
-          return <div dangerouslySetInnerHTML={{__html: description}} />
+          return <div dangerouslySetInnerHTML={{__html: sanitizeHtml(description)}} />
         }
         // key: 'profile.description'
       },

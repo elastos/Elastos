@@ -8,6 +8,7 @@ import {
   Col, Row, Tabs, Icon, Button, Spin, Table, Tooltip, Tag, Modal,
 } from 'antd'
 import I18N from '@/I18N'
+import sanitizeHtml from 'sanitize-html'
 import {
   TASK_CATEGORY, TASK_TYPE, TASK_STATUS, TASK_CANDIDATE_STATUS,
   USER_ROLE, USER_AVATAR_DEFAULT, TEAM_TYPE, LINKIFY_OPTION,
@@ -374,7 +375,7 @@ export default class extends BaseComponent {
       <div>
         {
           this.props.member.profile.bio
-          && <div className={`profile-description ${isMobile ? 'profile-description-mobile' : ''}`} dangerouslySetInnerHTML={{ __html: content }} />
+          && <div className={`profile-description ${isMobile ? 'profile-description-mobile' : ''}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
         }
       </div>
     )

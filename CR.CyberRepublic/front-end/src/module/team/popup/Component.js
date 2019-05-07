@@ -14,6 +14,7 @@ import ProfilePopup from '@/module/profile/OverviewPopup/Container'
 import _ from 'lodash'
 import './style.scss'
 import I18N from '@/I18N'
+import sanitizeHtml from 'sanitize-html'
 
 /*
  * Project Pop-up UI
@@ -98,7 +99,7 @@ class C extends BaseComponent {
           {key}
         </Col>
         <Col span={16}>
-          <div className="ql-editor" dangerouslySetInnerHTML={{__html: value}} />
+          <div className="ql-editor" dangerouslySetInnerHTML={{__html: sanitizeHtml(value)}} />
         </Col>
       </Row>
     )

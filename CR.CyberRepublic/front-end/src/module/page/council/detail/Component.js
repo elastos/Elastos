@@ -3,6 +3,7 @@ import I18N from '@/I18N'
 import './style.scss'
 import { Col, Row, Card, Button, Breadcrumb, Icon, List, Spin, Avatar, Modal } from 'antd'
 import _ from 'lodash'
+import sanitizeHtml from 'sanitize-html'
 import StandardPage from '../../StandardPage'
 
 export default class extends StandardPage {
@@ -39,7 +40,7 @@ export default class extends StandardPage {
     const id = this.props.id
     const content = I18N.get(`council.article.${id}`)
     return (
-      <p className="f_box" dangerouslySetInnerHTML={{__html: content}} />
+      <p className="f_box" dangerouslySetInnerHTML={{__html: sanitizeHtml(content)}} />
     )
   }
 

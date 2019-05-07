@@ -12,6 +12,8 @@ import { USER_AVATAR_DEFAULT, LINKIFY_OPTION } from '@/constant'
 import config from '@/config'
 import MediaQuery from 'react-responsive'
 import linkifyStr from 'linkifyjs/string'
+import sanitizeHtml from 'sanitize-html'
+
 import './style.scss'
 
 const TabPane = Tabs.TabPane
@@ -411,7 +413,7 @@ export default class extends BaseComponent {
       <div className="profile-container">
         {
           this.props.user.profile.bio
-          && <div className={`profile-description ${isMobile ? 'profile-description-mobile' : ''}`} dangerouslySetInnerHTML={{ __html: content }} />
+          && <div className={`profile-description ${isMobile ? 'profile-description-mobile' : ''}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
         }
       </div>
     )
