@@ -736,6 +736,9 @@ func (s *State) processVoteOutput(output *types.Output, height uint32) {
 		for _, candidate := range vote.Candidates {
 			key := hex.EncodeToString(candidate)
 			producer := s.activityProducers[key]
+			if producer == nil {
+				continue
+			}
 			switch vote.VoteType {
 			case outputpayload.CRC:
 				// TODO separate CRC and Delegate votes.
