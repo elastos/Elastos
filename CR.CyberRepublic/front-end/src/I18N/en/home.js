@@ -1,61 +1,87 @@
 export default {
-
-  // Home
-  'title': 'Elastos - Cyber Republic',
-  'developers': 'Developers',
-  'developers.help_1': 'Write code, find bugs, earn ELA',
-  'developers.help_2': 'Earn ELA for contributing to the Elastos ecosystem through everything',
-  'developers.help_3': 'from example apps to enterprise App development.',
-  'developers.help_4': 'You can also earn ELA for finding bugs and submitting issues.',
-  'developers.action': 'Yes I am interested in Developing for Elastos',
-  'organizers': 'Organizers & Contributors',
-  'organizers.help_1': 'Help organize meetups and promote Elastos',
-  'organizers.help_2': 'Whether you\'re already part of the community or want to join,',
-  'organizers.help_3': 'we reward you for various things you do to promote Elastos either online, locally or worldwide.',
-  'organizers.help_4': 'You can also earn ELA for referring potential contributors.',
-  'organizers.action_1': 'Apply to be an Organizer',
-  'organizers.action_2': 'View Events & Tasks I can contribute to',
-  'summary_1': 'We are a diverse democratic group of leaders, developers, organizers and designers',
-  'summary_2': 'formed to promote Elastos in our communities. Membership is open to everyone.',
-
-  'box_1.title': 'What is Cyber Republic?',
-  'box_1.description': 'A diverse, robust community of skill-focused sub-groups whose leaders, developers, and organizers are working together to promote Elastos in our communities. Membership is open to all.',
-
-  'explanation_1.part_1': 'A diverse, robust community of skill-focused sub-groups whose leaders, developers, and organizers are working together to promote Elastos in our communities. Membership is open to all.',
-  'explanation_1.part_2': '',
-
-  'box_2.title': 'What is the Cyber Republic Council?',
-  'box_2.description': 'A democratically elected group of 12(3 during Interim Period) individuals that conducts the first stage of proposal evaluation and ensures that Cyber Republic funds are spent effectively and responsibly.',
-
-  'explanation_2.part_1': 'A democratically elected group of 12(3 during Interim Period) individuals that conducts the first stage of proposal evaluation and ensures that Cyber Republic funds are spent effectively and responsibly.',
-  'explanation_2.part_2': '',
-
-  'box_3.title': 'What is the Cyber Republic Constitution?',
-  'box_3.description': 'The Cyber Republic is a decentralized autonomous organization, and its Constitution serves to govern the actions of its members and protects the integrity of its platform.',
-
-  'explanation_3.box_1.title': 'Elastos Cyber Republic Constitution',
-  'explanation_3.box_1.text': 'The set of rights, rules, and a code of ethics by which all members of the Cyber Republic uphold, abide, and conduct themselves.',
-  'explanation_3.box_2.title': 'Elastos Cyber Republic Council Founding Document',
-  'explanation_3.box_2.text': 'An abstract that takes care to lay out the vision and establish the value set underneath which the Cyber Republic will operate and grow.',
-  'explanation_3.box_3.title': 'Elastos Cyber Republic Voting Rules',
-  'explanation_3.box_3.text': 'These rules delineate the process of effecting changes, allocating funds, and approving proposals within the Cyber Republic and its sub-communities.',
-  'explanation_3.box_4.title': 'Elastos Cyber Republic Council Conflict of Interest Policy',
-  'explanation_3.box_4.text': 'Members of the Cyber Republic Council must be dedicated fully to the propagation of the Cyber Republic and its sub-communities. Other positions they presently hold may not create conflicting incentives thereof.',
-  'explanation_3.date': '',
-
-  'mob.logo.title': 'ELASTOS COMMUNITY',
-  'mob.logo.subtitle': 'Powered by the Elastos Blockchain',
-
-  'hero.ela.blockchain': 'Core Blockchain Development',
-  'hero.ela.application.1': 'Application SDKs',
-  'hero.ela.application.2': 'Developer APIs',
-  'hero.ela.sidechain': 'Sidechain Integrations',
-
-  'hero.cr.fund.1': 'Ecosystem Fund',
-  'hero.cr.fund.2': 'Project Funding',
-  'hero.cr.community': 'Community Governance',
-  'hero.cr.supernodes': 'DPoS Supernodes',
-
+  title: 'Elastos - Cyber Republic',
+  developers: {
+    title: 'Developers',
+    help_1: 'Write code, find bugs, earn ELA',
+    help_2: 'Earn ELA for contributing to the Elastos ecosystem through everything',
+    help_3: 'from example apps to enterprise App development.',
+    help_4: 'You can also earn ELA for finding bugs and submitting issues.',
+    action: 'Yes I am interested in Developing for Elastos',
+  },
+  organizers: {
+    title: 'Organizers & Contributors',
+    help_1: 'Help organize meetups and promote Elastos',
+    help_2: 'Whether you\'re already part of the community or want to join,',
+    help_3: 'we reward you for various things you do to promote Elastos either online, locally or worldwide.',
+    help_4: 'You can also earn ELA for referring potential contributors.',
+    action_1: 'Apply to be an Organizer',
+    action_2: 'View Events & Tasks I can contribute to',
+  },
+  summary_1: 'We are a diverse democratic group of leaders, developers, organizers and designers',
+  summary_2: 'formed to promote Elastos in our communities. Membership is open to everyone.',
+  box_1: {
+    title: 'What is Cyber Republic?',
+    description: 'A diverse, robust community of skill-focused sub-groups whose leaders, developers, and organizers are working together to promote Elastos in our communities. Membership is open to all.',
+  },
+  explanation_1: {
+    part_1: 'A diverse, robust community of skill-focused sub-groups whose leaders, developers, and organizers are working together to promote Elastos in our communities. Membership is open to all.',
+    part_2: '',
+  },
+  box_2: {
+    title: 'What is the Cyber Republic Council?',
+    description: 'A democratically elected group of 12(3 during Interim Period) individuals that conducts the first stage of proposal evaluation and ensures that Cyber Republic funds are spent effectively and responsibly.',
+  },
+  explanation_2: {
+    part_1: 'A democratically elected group of 12(3 during Interim Period) individuals that conducts the first stage of proposal evaluation and ensures that Cyber Republic funds are spent effectively and responsibly.',
+    part_2: '',
+  },
+  box_3: {
+    title: 'What is the Cyber Republic Constitution?',
+    description: 'The Cyber Republic is a decentralized autonomous organization, and its Constitution serves to govern the actions of its members and protects the integrity of its platform.',
+  },
+  explanation_3: {
+    box_1: {
+      title: 'Elastos Cyber Republic Constitution',
+      text: 'The set of rights, rules, and a code of ethics by which all members of the Cyber Republic uphold, abide, and conduct themselves.',
+    },
+    box_2: {
+      title: 'Elastos Cyber Republic Council Founding Document',
+      text: 'An abstract that takes care to lay out the vision and establish the value set underneath which the Cyber Republic will operate and grow.',
+    },
+    box_3: {
+      title: 'Elastos Cyber Republic Voting Rules',
+      text: 'These rules delineate the process of effecting changes, allocating funds, and approving proposals within the Cyber Republic and its sub-communities.',
+    },
+    box_4: {
+      title: 'Elastos Cyber Republic Council Conflict of Interest Policy',
+      text: 'Members of the Cyber Republic Council must be dedicated fully to the propagation of the Cyber Republic and its sub-communities. Other positions they presently hold may not create conflicting incentives thereof.',
+    },
+    date: '',
+  },
+  mob: {
+    logo: {
+      title: 'ELASTOS COMMUNITY',
+      subtitle: 'Powered by the Elastos Blockchain',
+    },
+  },
+  hero: {
+    ela: {
+      blockchain: 'Core Blockchain Development',
+      application: {
+        1: 'Application SDKs',
+        2: 'Developer APIs',
+      },
+      sidechain: 'Sidechain Integrations',
+    },
+    cr: {
+      fund: {
+        1: 'Ecosystem Fund',
+        2: 'Project Funding',
+      },
+      community: 'Community Governance',
+      supernodes: 'DPoS Supernodes',
+    },
+  },
   crc: {
     title: 'Cyber Republic Consensus',
 

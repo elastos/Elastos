@@ -1,61 +1,87 @@
 export default {
-
-  // Home
-  'title': 'Elastos - Cyber Republic',
-  'developers': '开发者',
-  'developers.help_1': '编写代码，找出错误，获得ELA',
-  'developers.help_2': '通过为亦来云生态系统做点点滴滴贡献即可获取ELA',
-  'developers.help_3': '从示例App到企业App开发。',
-  'developers.help_4': '您还可以通过发现错误和提交问题赚取ELA。',
-  'developers.action': '是的，我对亦来云的开发很感兴趣。',
-  'organizers': '组织者和贡献者',
-  'organizers.help_1': '帮助组织聚会和推广亦来云',
-  'organizers.help_2': '无论您是否已成为社区的一员或者想要加入，',
-  'organizers.help_3': '您在线上、线下或者全球推广亦来云所做出贡献都会获得奖励。',
-  'organizers.help_4': '您也可以通过成功推荐贡献者以获取ELA。',
-  'organizers.action_1': '申请成为组织者',
-  'organizers.action_2': '查看我可以参与的活动和任务',
-  'summary_1': '我们是由领导者，开发者，组织者和设计师组成的一个多元化民主团体',
-  'summary_2': '宗旨是在我们的社区推广亦来云，我们欢迎所有人加入。',
-
-  'box_1.title': '什么是Cyber Republic？',
-  'box_1.description': '一个多元化的、强大的技能型小组构成的社区，其领导者、开发者和组织者共同努力在我们的社区推广亦来云。会员资格对所有人开放。',
-
-  'explanation_1.part_1': '一个多元化的、强大的技能型小组构成的社区，其领导者、开发者和组织者共同努力在我们的社区推广亦来云。会员资格对所有人开放。',
-  'explanation_1.part_2': '',
-
-  'box_2.title': '什么是Cyber Republic委员会？',
-  'box_2.description': '民主选举产生的12名委员组成（筹备期为3名），他们对第一阶段的提案进行评估，并确保有效并负责任地使用Cyber Republic的资金。',
-
-  'explanation_2.part_1': '民主选举产生的3人委员组织，他们对第一阶段的提案进行评估，并确保有效并负责任地使用Cyber Republic的资金。',
-  'explanation_2.part_2': '',
-
-  'box_3.title': '什么是Cyber Republic章程？',
-  'box_3.description': 'Cyber Republic是一个去中心化的自治组织，其章程用于管理社区成员的行为并保护其平台的公正性。',
-
-  'explanation_3.box_1.title': '亦来云Cyber Republic章程',
-  'explanation_3.box_1.text': '规定了Cyber Republic所有成员应当维护的权利、遵守的规则和规范行为的道德准则。',
-  'explanation_3.box_2.title': '亦来云Cyber Republic委员会创始文件',
-  'explanation_3.box_2.text': '简明扼要地阐释了Cyber Republic的愿景并确定其未来运作和发展的价值观。',
-  'explanation_3.box_3.title': '亦来云Cyber Republic投票规则',
-  'explanation_3.box_3.text': '描述了在Cyber Republic及其子社区内实施变更，分配资金和批准提案的流程。',
-  'explanation_3.box_4.title': '亦来云Cyber Republic委员会利益冲突政策',
-  'explanation_3.box_4.text': 'Cyber Republic委员会成员必须全心全意地致力于Cyber Republic及其子社区的宣传推广。他们目前担任的其他职位可能不应与之产生冲突。',
-  'explanation_3.date': '',
-
-  'mob.logo.title': '亦来云社区',
-  'mob.logo.subtitle': '亦来云区块链驱动的',
-
-  'hero.ela.blockchain': '区块链开发核心',
-  'hero.ela.application.1': '应用SDK',
-  'hero.ela.application.2': '开发者API',
-  'hero.ela.sidechain': '侧链整合',
-
-  'hero.cr.fund.1': '生态系统基金',
-  'hero.cr.fund.2': '项目资金',
-  'hero.cr.community': '社区管理',
-  'hero.cr.supernodes': 'DPOS超级节点',
-
+  title: 'Elastos - Cyber Republic',
+  developers: {
+    title: '开发者',
+    help_1: '编写代码，找出错误，获得ELA',
+    help_2: '通过为亦来云生态系统做点点滴滴贡献即可获取ELA',
+    help_3: '从示例App到企业App开发。',
+    help_4: '您还可以通过发现错误和提交问题赚取ELA。',
+    action: '是的，我对亦来云的开发很感兴趣。',
+  },
+  organizers: {
+    title: '组织者和贡献者',
+    help_1: '帮助组织聚会和推广亦来云',
+    help_2: '无论您是否已成为社区的一员或者想要加入，',
+    help_3: '您在线上、线下或者全球推广亦来云所做出贡献都会获得奖励。',
+    help_4: '您也可以通过成功推荐贡献者以获取ELA。',
+    action_1: '申请成为组织者',
+    action_2: '查看我可以参与的活动和任务',
+  },
+  summary_1: '我们是由领导者，开发者，组织者和设计师组成的一个多元化民主团体',
+  summary_2: '宗旨是在我们的社区推广亦来云，我们欢迎所有人加入。',
+  box_1: {
+    title: '什么是Cyber Republic？',
+    description: '一个多元化的、强大的技能型小组构成的社区，其领导者、开发者和组织者共同努力在我们的社区推广亦来云。会员资格对所有人开放。',
+  },
+  explanation_1: {
+    part_1: '一个多元化的、强大的技能型小组构成的社区，其领导者、开发者和组织者共同努力在我们的社区推广亦来云。会员资格对所有人开放。',
+    part_2: '',
+  },
+  box_2: {
+    title: '什么是Cyber Republic委员会？',
+    description: '民主选举产生的12名委员组成（筹备期为3名），他们对第一阶段的提案进行评估，并确保有效并负责任地使用Cyber Republic的资金。',
+  },
+  explanation_2: {
+    part_1: '民主选举产生的3人委员组织，他们对第一阶段的提案进行评估，并确保有效并负责任地使用Cyber Republic的资金。',
+    part_2: '',
+  },
+  box_3: {
+    title: '什么是Cyber Republic章程？',
+    description: 'Cyber Republic是一个去中心化的自治组织，其章程用于管理社区成员的行为并保护其平台的公正性。',
+  },
+  explanation_3: {
+    box_1: {
+      title: '亦来云Cyber Republic章程',
+      text: '规定了Cyber Republic所有成员应当维护的权利、遵守的规则和规范行为的道德准则。',
+    },
+    box_2: {
+      title: '亦来云Cyber Republic委员会创始文件',
+      text: '简明扼要地阐释了Cyber Republic的愿景并确定其未来运作和发展的价值观。',
+    },
+    box_3: {
+      title: '亦来云Cyber Republic投票规则',
+      text: '描述了在Cyber Republic及其子社区内实施变更，分配资金和批准提案的流程。',
+    },
+    box_4: {
+      title: '亦来云Cyber Republic委员会利益冲突政策',
+      text: 'Cyber Republic委员会成员必须全心全意地致力于Cyber Republic及其子社区的宣传推广。他们目前担任的其他职位可能不应与之产生冲突。',
+    },
+    date: '',
+  },
+  mob: {
+    logo: {
+      title: '亦来云社区',
+      subtitle: '亦来云区块链驱动的',
+    },
+  },
+  hero: {
+    ela: {
+      blockchain: '区块链开发核心',
+      application: {
+        1: '应用SDK',
+        2: '开发者API',
+      },
+      sidechain: '侧链整合',
+    },
+    cr: {
+      fund: {
+        1: '生态系统基金',
+        2: '项目资金',
+      },
+      community: '社区管理',
+      supernodes: 'DPOS超级节点',
+    },
+  },
   crc: {
     title: 'CR 共识',
 
