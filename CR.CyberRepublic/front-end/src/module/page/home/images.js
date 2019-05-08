@@ -30,7 +30,6 @@ import SiteImg from '@/assets/images/home/site.png'
 import StripDarkImg from '@/assets/images/home/strip-dark.png'
 import StripLightImg from '@/assets/images/home/strip-light.png'
 import SuggestionImg from '@/assets/images/home/suggestion.png'
-import SuggestionCircleImg from '@/assets/images/home/suggestion-circle.png'
 
 export const images = {
   ElaLogo,
@@ -64,5 +63,4 @@ export const images = {
   StripDarkImg,
   StripLightImg,
   SuggestionImg,
-  SuggestionCircleImg,
 }
