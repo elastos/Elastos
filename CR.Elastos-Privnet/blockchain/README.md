@@ -75,9 +75,21 @@ These are located in the `wallets` folder:
 1. Just run with docker-compose from within the corresponding directory:
     
     ```
+    tools/copy_freshdata_docker.sh
     docker-compose up --remove-orphans --build --force-recreate -d
     ```
     For users in China, if you get issues pulling images please refer to this post: https://segmentfault.com/a/1190000016083023
+
+    If you would like to reset the entire environment with fresh data, do the following. This basically removes all the blockchain data that may have been saved previously and resets it back to block height 510
+    ```
+    tools/copy_freshdata_docker.sh
+    docker-compose up --remove-orphans --build --force-recreate -d
+    ```
+
+    If you would like to resume the blockchain data from where you last left off, do the following. All the blockchain data is saved to ~/.volumes/elastos-privnet so if you were at block height 1000 previously, it'll continue from there without resetting everything
+    ```
+    docker-compose up --remove-orphans --build --force-recreate -d
+    ```
     
 2. Verify the Mainchain is running by checking the miner reward wallet:
 
