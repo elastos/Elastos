@@ -20,7 +20,10 @@ import (
 const (
 	// minPeersToAnnounce defines the minimum connected peers to announce
 	// DPOS address into the P2P network.
-	minPeersToAnnounce = 3
+	minPeersToAnnounce = 5
+
+	// retryAnnounceDuration defines the time duration to retry an announce.
+	retryAnnounceDuration = 3 * time.Second
 
 	// maxTimeOffset indicates the maximum time offset with the to accept an DAddr
 	// message.
@@ -63,11 +66,12 @@ type Config struct {
 // state stores the DPOS addresses and other additional information tracking
 // addresses syncing status.
 type state struct {
-	peers     map[dp.PID]struct{}
-	addrIndex map[dp.PID]map[dp.PID]common.Uint256
-	knownAddr map[common.Uint256]*msg.DAddr
-	requested map[common.Uint256]struct{}
-	peerCache map[*peer.Peer]*cache
+	peers        map[dp.PID]struct{}
+	addrIndex    map[dp.PID]map[dp.PID]common.Uint256
+	knownAddr    map[common.Uint256]*msg.DAddr
+	requested    map[common.Uint256]struct{}
+	peerCache    map[*peer.Peer]*cache
+	lastAnnounce time.Time
 }
 
 type newPeerMsg *peer.Peer
@@ -106,9 +110,6 @@ type Routes struct {
 
 // addrHandler is the main handler to syncing the addresses state.
 func (r *Routes) addrHandler() {
-	// lastAnnounce stores the last time announced
-	var lastAnnounce time.Time
-
 	state := &state{
 		peers:     make(map[dp.PID]struct{}),
 		addrIndex: make(map[dp.PID]map[dp.PID]common.Uint256),
@@ -138,31 +139,25 @@ out:
 			case dAddrMsg:
 				r.handleDAddr(state, m.peer, m.msg)
 
-			case *peersMsg:
+			case peersMsg:
 				r.handlePeersMsg(state, m.peers)
 			}
 
-		// Handle the announce request.
+			// Handle the announce request.
 		case <-r.announce:
-
-			// Do not announce address if connected peers not enough.
-			if len(state.peerCache) < minPeersToAnnounce {
-				r.announce <- struct{}{}
-				continue
-			}
-
-			// Do not announce address too frequent.
-			now := time.Now()
-			if lastAnnounce.Add(minAnnounceDuration).After(now) {
-				r.announce <- struct{}{}
-				continue
-			}
-
 			r.handleAnnounce(state)
-			lastAnnounce = time.Now()
 
 		case <-r.quit:
 			break out
+		}
+	}
+
+cleanup:
+	for {
+		select {
+		case <-r.queue:
+		default:
+			break cleanup
 		}
 	}
 }
@@ -226,7 +221,7 @@ func (r *Routes) handlePeersMsg(state *state, peers []dp.PID) {
 	_, isArbiter := newPeers[r.pid]
 	_, wasArbiter := state.peers[r.pid]
 	if isArbiter && !wasArbiter {
-		r.announce <- struct{}{}
+		r.handleAnnounce(state)
 	}
 
 	// Update peers list.
@@ -402,6 +397,29 @@ func (r *Routes) handleDAddr(s *state, p *peer.Peer, m *msg.DAddr) {
 }
 
 func (r *Routes) handleAnnounce(s *state) {
+	// Do not announce address if connected peers not enough.
+	if len(s.peerCache) < minPeersToAnnounce {
+		// Retry announce after the retry duration.
+		time.AfterFunc(retryAnnounceDuration, func() {
+			r.announce <- struct{}{}
+		})
+		return
+	}
+
+	// Do not announce address too frequent.
+	now := time.Now()
+	if s.lastAnnounce.Add(minAnnounceDuration).After(now) {
+		// Calculate next announce time and schedule an announce.
+		nextAnnounce := minAnnounceDuration - now.Sub(s.lastAnnounce)
+		time.AfterFunc(nextAnnounce, func() {
+			r.announce <- struct{}{}
+		})
+		return
+	}
+
+	// Update last announce time.
+	s.lastAnnounce = now
+
 	for pid := range s.peers {
 		// Do not create address for self.
 		if r.pid.Equal(pid) {
@@ -487,7 +505,7 @@ func New(cfg *Config) *Routes {
 		if !cfg.IsCurrent() {
 			return
 		}
-		r.queue <- &peersMsg{peers: peers}
+		r.queue <- peersMsg{peers: peers}
 	}
 
 	events.Subscribe(func(e *events.Event) {
