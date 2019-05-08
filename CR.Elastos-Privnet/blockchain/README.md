@@ -16,13 +16,13 @@ These are located in the `wallets` folder:
 
 ## Repos used to build 
 
-- [Elastos.ELA](https://github.com/elastos/Elastos.ELA): Apr 12, 2019: release_v0.3.1 a974e079fd6b50f9fa70d93b5647d8a7303dfa08
-- [Elastos.ELA.Arbiter](https://github.com/elastos/Elastos.ELA.Arbiter): Apr 4, 2019: release_v0.1.1 758efcdad3266a054bbc823aa87d22cb8343d5e9
-- [Elastos.ELA.SideChain.ID](https://github.com/elastos/Elastos.ELA.Sidechain.ID): Apr 12, 2019: release_v0.1.1 fc639ea4e19324f70981c82a4548ef8ee3b4bce5
-- [Elastos.ELA.SideChain.Token](https://github.com/elastos/Elastos.ELA.SideChain.Token): Apr 12, 2019: release_v0.1.1 ebd23319c29cfb6c85a1671c39314bd2c45a602d
-- [Elastos.ORG.Wallet.Service](https://github.com/elastos/Elastos.ORG.Wallet.Service): Apr 15, 2019: master 47ca5e2ef167680c73da5377f3526477d63e8b1a
-- [Elastos.ORG.DID.Service](https://github.com/elastos/Elastos.ORG.DID.Service): Feb 21, 2019: master 8784b182debc4cbd22b607850b261aef7557b8ac
-- [Elastos.ORG.API.Misc](https://github.com/elastos/Elastos.ORG.API.Misc): Apr 22, 2019: master d06114b77b789bbd7a769221ff3fa6bddfd8edbe
+- [Elastos.ELA](https://github.com/elastos/Elastos.ELA): release_v0.3.2
+- [Elastos.ELA.Arbiter](https://github.com/elastos/Elastos.ELA.Arbiter): release_v0.1.1
+- [Elastos.ELA.SideChain.ID](https://github.com/elastos/Elastos.ELA.Sidechain.ID): release_v0.1.2
+- [Elastos.ELA.SideChain.Token](https://github.com/elastos/Elastos.ELA.SideChain.Token): release_v0.1.2
+- [Elastos.ORG.Wallet.Service](https://github.com/elastos/Elastos.ORG.Wallet.Service): master
+- [Elastos.ORG.DID.Service](https://github.com/elastos/Elastos.ORG.DID.Service): master
+- [Elastos.ORG.API.Misc](https://github.com/elastos/Elastos.ORG.API.Misc): master
 
 ## Containers that are run
 
@@ -38,33 +38,37 @@ These are located in the `wallets` folder:
 
 ### Arbitrator nodes
 
-- Origin node 1: 10024-10025
-- Origin node 2: 10124-10125
-- CRC node 1: 10524-10525
-- CRC node 2: 10624-10625
-- CRC node 3: 10724-10725
-- CRC node 4: 10824-10825
+- CRC node 1: 20114-20115
+- CRC node 2: 20214-20215
+- CRC node 3: 20314-20315
+- CRC node 4: 20414-20415
+- Origin node 1: 20514-20515
+- Origin node 2: 20614-20615
 
 ### DID Sidechain nodes
 
-- DID sidechain node 1: 10031-10035
-- DID sidechain node 2: 10131-10135
-- DID sidechain node 3: 10231-10235
-- DID sidechain node 4: 10331-10335
+- DID sidechain node 1: 30111-30115
+- DID sidechain node 2: 30211-30215
+- DID sidechain node 3: 30311-30315
+- DID sidechain node 4: 30411-30415
 
 ### Token Sidechain nodes
 
-- Token sidechain node 1: 10041-10045
-- Token sidechain node 2: 10141-10145
-- Token sidechain node 3: 10241-10245
-- Token sidechain node 4: 10341-10345
+- Token sidechain node 1: 40111-40115
+- Token sidechain node 2: 40111-40115
+- Token sidechain node 3: 40111-40115
+- Token sidechain node 4: 40111-40115
 
 ### Restful Services
 
 - Wallet Service REST API Portal: 8091
 - DID Service REST API Portal: 8092
-- MISC Service Mainchain REST API Portal: 8093
-- MISC Service DID Sidechain REST API Portal: 8094
+- MISC Service Mainchain REST API Portal: 9091
+- MISC Service DID Sidechain REST API Portal: 9092
+
+### Database Layer
+
+- MYSQL Database: 3307
 
 ## How to Run
 
@@ -81,15 +85,15 @@ These are located in the `wallets` folder:
     curl http://localhost:10012/api/v1/asset/balances/EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U
     ```    
     
-    You should see at least 1100 ELA in the miner wallet:
+    You should see at least 852 ELA in the miner wallet:
     ```
-    {"Desc":"Success","Error":0,"Result":"1217.03190898"}
+    {"Desc":"Success","Error":0,"Result":"852.62642215"}
     ```
     
 3. Verify the DID Sidechain is running by checking the pre-loaded wallet:
 
     ```
-    curl http://localhost:10032/api/v1/asset/balances/EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3
+    curl http://localhost:30112/api/v1/asset/balances/EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3
     ```    
     
     You should see 100,000 ELA in the DID Sidechain wallet pre-loaded:
@@ -103,9 +107,9 @@ These are located in the `wallets` folder:
     curl http://localhost:8091/api/1/balance/EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr
     ```    
     
-    You should see at least 100,000 ELA in the miner wallet:
+    You should see around 100,000 ELA in the miner wallet:
     ```
-    {"result":"100000","status":200}
+    {"result":"94999.99895140","status":200}
     ```
     
 5. Verify the DID Service is running by checking the pre-loaded DID sidechain wallet
@@ -132,7 +136,7 @@ These are located in the `wallets` folder:
       "error": null,
       "id": null,
       "jsonrpc": "2.0",
-      "result": "17001625.63953213"
+      "result": "17001629.15679416"
     }
     ```
 
@@ -147,7 +151,7 @@ These are located in the `wallets` folder:
       "error": null,
       "id": null,
       "jsonrpc": "2.0",
-      "result": "100000"
+      "result": "94999.99895140"
     }
     ```
 
@@ -162,13 +166,13 @@ These are located in the `wallets` folder:
       "error": null,
       "id": null,
       "jsonrpc": "2.0",
-      "result": "100000"
+      "result": "94999.99895140"
     }
     ```
 
     Pre-loaded DID Sidechain Address:
     ```
-    curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3"}}' http://localhost:10034 
+    curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3"}}' http://localhost:30114 
     ```
 
     Should return
@@ -183,7 +187,7 @@ These are located in the `wallets` folder:
 
     Pre-loaded Token Sidechain Address:
     ```
-    curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"EUscMawPCr8uFxKDtVxaq93Wbjm1DdtzeW"}}' http://localhost:10044
+    curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"EUscMawPCr8uFxKDtVxaq93Wbjm1DdtzeW"}}' http://localhost:40114
     ```
 
     Should return
@@ -211,7 +215,7 @@ These are located in the `wallets` folder:
     
     After about 12 blocks, you can also see the new ELA on your receiver address, it should be greater than the initial 10000
     ```
-    curl http://localhost:10032/api/v1/asset/balances/EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3
+    curl http://localhost:30112/api/v1/asset/balances/EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3
     ```
 
     You should now see 10005 ELA in the DID Sidechain wallet:
@@ -221,10 +225,10 @@ These are located in the `wallets` folder:
 
 8. Verify that the API Misc works [Elastos.ORG.Misc.API](https://github.com/elastos/Elastos.ORG.API.Misc)
 
-    The service for mainchain is running on port 8093 and for DID sidechain is running on port 8094
+    The service for mainchain is running on port 9091 and for DID sidechain is running on port 9092
     
     ```
-    curl http://localhost:8093/api/1/history/EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY 
+    curl http://localhost:9091/api/1/history/EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY 
     ```
     
     Should return
@@ -260,7 +264,7 @@ These are located in the `wallets` folder:
 
     There are two supernodes already registered. Let's check out producer vote stats for one of them:
     ```
-    curl http://localhost:8093/api/1/dpos/producer/02fc4aed0eee73aee7915519a596c6c22a1e9509a5ca9763672b03d8e24f2a467b
+    curl http://localhost:9091/api/1/dpos/producer/02fc4aed0eee73aee7915519a596c6c22a1e9509a5ca9763672b03d8e24f2a467b
     ```
     
     Should return
@@ -289,10 +293,44 @@ COMING SOON
 
 ### How to vote for a supernode
 
-With our private net, there are already two supernodes that have been registered so let's try to use some ELA from pre-loaded mainchain addresses to vote for one of them and check the results after
+With our private net, there are already two supernodes that have been registered so let's try to use some ELA from pre-loaded mainchain addresses to vote for both of them and check the results after
 
 ```
-curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr","privateKey": "a24ee48f308189d46a5f050f326e76779b6508d8c8aaf51a7152b903b9f42f80"}],"receiver": [{"address": "EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr","amount": "10000","candidatePublicKeys":["02fc4aed0eee73aee7915519a596c6c22a1e9509a5ca9763672b03d8e24f2a467b"]}]}' localhost:8091/api/1/dpos/vote
+# Give 50,000 votes to Noderators supernode using mainchain addr 1
+curl -X POST -H "Content-Type: application/json" -d '{
+      "sender":[
+          {
+              "address":"EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr",
+              "privateKey":"a24ee48f308189d46a5f050f326e76779b6508d8c8aaf51a7152b903b9f42f80"
+          }
+      ],
+      "memo":"Voting for Noderators",
+      "receiver":[
+          {
+              "address":"EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr",
+              "amount":"50000",
+              "candidatePublicKeys":["03aa307d123cf3f181e5b9cc2839c4860a27caf5fb329ccde2877c556881451007"]
+          }
+      ]
+  }' localhost:8091/api/1/dpos/vote
+
+# Give 50,000 votes to KP supernode using mainchain addr 2
+curl -X POST -H "Content-Type: application/json" -d '{
+      "sender":[
+          {
+              "address":"EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY",
+              "privateKey":"ff6dc625cf986eae4365f69c30035608fa47518e5ada4ad99b7cbc5df7683c30"
+          }
+      ],
+      "memo":"Voting for KP Supernode",
+      "receiver":[
+          {
+              "address":"EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY",
+              "amount":"75000",
+              "candidatePublicKeys":["03521eb1f20fcb7a792aeed2f747f278ae7d7b38474ee571375ebe1abb3fa2cbbb"]
+          }
+      ]
+  }' localhost:8091/api/1/dpos/vote
 ```
 
 Should return:
@@ -314,45 +352,43 @@ Should return:
   "result": {
     "producers": [
       {
-        "ownerpublickey": "02fc4aed0eee73aee7915519a596c6c22a1e9509a5ca9763672b03d8e24f2a467b",
-        "nodepublickey": "021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556",
-        "nickname": "Noderators",
-        "url": "www.noderators.org",
-        "location": 61,
+        "ownerpublickey": "03521eb1f20fcb7a792aeed2f747f278ae7d7b38474ee571375ebe1abb3fa2cbbb",
+        "nodepublickey": "0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25",
+        "nickname": "KP Supernode",
+        "url": "www.pachhai.com",
+        "location": 112211,
         "active": true,
-        "votes": "60000",
-        "netaddress": "",
+        "votes": "75000",
         "state": "Activate",
-        "registerheight": 244,
+        "registerheight": 418,
         "cancelheight": 0,
         "inactiveheight": 0,
         "illegalheight": 0,
         "index": 0
       },
       {
-        "ownerpublickey": "03349e33ed837402a2d54df3c73e7b6146531c96113f5f6eb4dfed3392d0ba227c",
-        "nodepublickey": "0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25",
-        "nickname": "KP Supernode",
-        "url": "www.kpsupernode.com",
-        "location": 93,
+        "ownerpublickey": "03aa307d123cf3f181e5b9cc2839c4860a27caf5fb329ccde2877c556881451007",
+        "nodepublickey": "021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556",
+        "nickname": "Noderators",
+        "url": "www.noderators.org",
+        "location": 112211,
         "active": true,
         "votes": "50000",
-        "netaddress": "",
         "state": "Activate",
-        "registerheight": 381,
+        "registerheight": 368,
         "cancelheight": 0,
         "inactiveheight": 0,
         "illegalheight": 0,
         "index": 1
       }
     ],
-    "totalvotes": "110000",
+    "totalvotes": "125000",
     "totalcounts": 2
   }
 }
 ```
 
-As you can see, our supernode with public key "02fc4aed0eee73aee7915519a596c6c22a1e9509a5ca9763672b03d8e24f2a467b" now has 60,000 votes compared to the previous 50,000 votes
+As you can see, our supernode with public key "03521eb1f20fcb7a792aeed2f747f278ae7d7b38474ee571375ebe1abb3fa2cbbb" has 75,000 votes
 
 ## DID Sidechain Testing
 
@@ -438,16 +474,16 @@ If you try to set the DID info before letting it be propagated to the block, you
 
 Don't be alarmed. Just wait a couple of minutes and try again.
 
-### Retrieving the DID info must be on the Misc.API DID Sidechain - port 8094
+### Retrieving the DID info must be on the Misc.API DID Sidechain - port 9092
 
-Even if you use DID.Service to store DID property, you need to use Misc.API for DID sidechain to retrieve the DID property which should be running on port `8094`.
+Even if you use DID.Service to store DID property, you need to use Misc.API for DID sidechain to retrieve the DID property which should be running on port `9092`.
 
-The API call should be `http://localhost:8094/api/1/did/{did}/{key}`
+The API call should be `http://localhost:9092/api/1/did/{did}/{key}`
 
 For example if you stored the property key "clark" above, and assuming the did was `iXxFsEtpt8krhcNbVL7gzRfNqrJdRT4bSw`, then calling
 
 ```
-curl http://localhost:8094/api/1/did/iXxFsEtpt8krhcNbVL7gzRfNqrJdRT4bSw/clark
+curl http://localhost:9092/api/1/did/iXxFsEtpt8krhcNbVL7gzRfNqrJdRT4bSw/clark
 ```
 
 Would return something like
@@ -624,7 +660,7 @@ The Elastos.ORG.Wallet.Service currently only supports main chain and DID sidech
     Wait around 12 blocks so this transaction is confirmed and added to the blockchain. And then check whether the ELA was transferred successfully
 
     ```
-    curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC"}}' http://localhost:10044 
+    curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC"}}' http://localhost:40144 
     ```
 
     Should return

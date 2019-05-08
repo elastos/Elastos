@@ -1,8 +1,3 @@
-### Build Wallet and DID Service 
-```bash
-mvn clean; mvn install -Dmaven.test.skip -Dgpg.skip
-```
-
 ### Some useful info
 ```bash
 DID Genesis: XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ
@@ -12,93 +7,79 @@ Foundation: ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw
 Mining: EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U
 ```
 
-### Prepare Staging Environment
-```bash
-repo=Elastos.ELA
-repo2=ela
-docker_file=Dockerfile-ela
-binary=ela
-
-repo=Elastos.ELA.Arbiter
-repo2=ela-arbiter
-docker_file=Dockerfile-ela-arbiter
-binary=arbiter
-
-repo=Elastos.ELA.SideChain.ID
-repo2=ela-did
-docker_file=Dockerfile-did
-binary=did
-
-repo=Elastos.ELA.SideChain.Token
-repo2=ela-token
-docker_file=Dockerfile-token
-binary=token
-
-repo=Elastos.ORG.API.Misc
-repo2=api-misc
-docker_file=Dockerfile-ela-api
-binary=misc
-
-rm -rf ~/dev/src/github.com/kpachhai/ela-privnet-staging/$repo2/*; cp -r ~/dev/src/github.com/elastos/$repo/* ~/dev/src/github.com/kpachhai/ela-privnet-staging/$repo2/.
-docker build -t test -f $docker_file .
-container_id=$(docker run -it -d test)
-docker cp $container_id:/go/src/github.com/elastos/$repo/$binary ~/dev/src/github.com/cyber-republic/elastos-privnet/blockchain/
-```
-
-### Copy from docker container to host
-```
-docker cp ela-mainchain-normal-1:/home/elauser/elastos ~/dev/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-mainchain/node_normal/mainchain-normal-1/
-docker cp ela-mainchain-dpos-1:/home/elauser/elastos ~/dev/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-mainchain/node_dpos/mainchain-dpos-1/
-docker cp ela-mainchain-dpos-2:/home/elauser/elastos ~/dev/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-mainchain/node_dpos/mainchain-dpos-2/
-docker cp ela-mainchain-crc-1:/home/elauser/elastos ~/dev/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-mainchain/node_crc/mainchain-crc-1/
-docker cp ela-mainchain-crc-2:/home/elauser/elastos ~/dev/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-mainchain/node_crc/mainchain-crc-2/
-docker cp ela-mainchain-crc-3:/home/elauser/elastos ~/dev/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-mainchain/node_crc/mainchain-crc-3/
-docker cp ela-mainchain-crc-4:/home/elauser/elastos ~/dev/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-mainchain/node_crc/mainchain-crc-4/
-
-docker cp ela-arbitrator-origin-1:/home/elauser/elastos_arbiter ~/dev/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-arbitrator/node_origin/arbitrator-origin-1/
-docker cp ela-arbitrator-origin-2:/home/elauser/elastos_arbiter ~/dev/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-arbitrator/node_origin/arbitrator-origin-2/
-docker cp ela-arbitrator-crc-1:/home/elauser/elastos_arbiter ~/dev/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-arbitrator/node_crc/arbitrator-crc-1/
-docker cp ela-arbitrator-crc-2:/home/elauser/elastos_arbiter ~/dev/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-arbitrator/node_crc/arbitrator-crc-2/
-docker cp ela-arbitrator-crc-3:/home/elauser/elastos_arbiter ~/dev/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-arbitrator/node_crc/arbitrator-crc-3/
-docker cp ela-arbitrator-crc-4:/home/elauser/elastos_arbiter ~/dev/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-arbitrator/node_crc/arbitrator-crc-4/
-
-docker cp ela-sidechain-did-1:/home/elauser/elastos_did ~/dev/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-sidechain/did/did-1/
-docker cp ela-sidechain-did-2:/home/elauser/elastos_did ~/dev/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-sidechain/did/did-2/
-docker cp ela-sidechain-did-3:/home/elauser/elastos_did ~/dev/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-sidechain/did/did-3/
-docker cp ela-sidechain-did-4:/home/elauser/elastos_did ~/dev/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-sidechain/did/did-4/
-
-docker cp ela-sidechain-token-1:/home/elauser/elastos_token ~/dev/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-sidechain/token/token-1/
-docker cp ela-sidechain-token-2:/home/elauser/elastos_token ~/dev/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-sidechain/token/token-2/
-docker cp ela-sidechain-token-3:/home/elauser/elastos_token ~/dev/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-sidechain/token/token-3/
-docker cp ela-sidechain-token-4:/home/elauser/elastos_token ~/dev/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-sidechain/token/token-4/
-```
-
 ### Distribute ELA to appropriate addresses in main chain and sidechains
 ```bash
+# Send from foundation to reserve address
 curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw","privateKey": "79aaa0b2df79e82e687063ff7fd03579130095ec93aa2d1861ee669aabff69c3"}],"receiver": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","amount": "16000000"}]}' localhost:8091/api/1/transfer
+
+# Send from reserve to mainchain addr 1
 curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": "EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr","amount": "100000"}]}' localhost:8091/api/1/transfer
+
+# Send from reserve to mainchain addr 2
 curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": "EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY","amount": "100000"}]}' localhost:8091/api/1/transfer
+
+# Send from reserve to DID sidechain addr
 curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": "EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3","amount": "100000"}]}' localhost:8091/api/1/cross/m2d/transfer
-curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3"}}' http://localhost:10034
+curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3"}}' http://localhost:30114
+
+# Send from reserve to Token sidechain addr
 ./ela-cli wallet -t create --from EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s --deposit EUscMawPCr8uFxKDtVxaq93Wbjm1DdtzeW --amount 100000 --fee 0.0001; ./ela-cli wallet -t sign -p 123 --file to_be_signed.txn; ./ela-cli wallet -t send --file ready_to_send.txn
-curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"EUscMawPCr8uFxKDtVxaq93Wbjm1DdtzeW"}}' http://localhost:10044
+curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"EUscMawPCr8uFxKDtVxaq93Wbjm1DdtzeW"}}' http://localhost:40114
 ```
 
-### Send ELA to wallets that will be used in registering for supernodes
+### Register your supernodes
 ```bash
-Private net wallet adress 1 that needs ELA: EPwYwLCrxiANe87Qhw35vsrHR95sDR6ANo
-Owner's Public Key: 02fc4aed0eee73aee7915519a596c6c22a1e9509a5ca9763672b03d8e24f2a467b
-curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": "EPwYwLCrxiANe87Qhw35vsrHR95sDR6ANo","amount": "100000"}]}' localhost:8091/api/1/transfer
+cd ela-mainchain
 
-Private net wallet address 2 that needs ELA: EZb2xME3AprQXPv17Xcq1C6qW8dxN2Jt17
-Owner's Public Key: 03349e33ed837402a2d54df3c73e7b6146531c96113f5f6eb4dfed3392d0ba227c
-curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": "EZb2xME3AprQXPv17Xcq1C6qW8dxN2Jt17","amount": "100000"}]}' localhost:8091/api/1/transfer
+# Register supernode 1 using mainchain addr 1
+./ela-cli wallet import a24ee48f308189d46a5f050f326e76779b6508d8c8aaf51a7152b903b9f42f80 -p elastos
+./ela-cli wallet b
+./ela-cli script --file ../test/register_mainchain-dpos-1.lua
+
+# Register supernode 1 using mainchain addr 1
+./ela-cli wallet import ff6dc625cf986eae4365f69c30035608fa47518e5ada4ad99b7cbc5df7683c30 -p elastos
+./ela-cli wallet b
+./ela-cli script --file ../test/register_mainchain-dpos-2.lua
 ```
 
 ### Caste vote to supernodes
 NOTE: You gotta use owner's public key here. Also, as soon as ELA is taken out of the sender address, the votes are reset
 ```bash
-curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","amount": "50000","candidatePublicKeys":["02fc4aed0eee73aee7915519a596c6c22a1e9509a5ca9763672b03d8e24f2a467b","03349e33ed837402a2d54df3c73e7b6146531c96113f5f6eb4dfed3392d0ba227c"]}]}' localhost:8091/api/1/dpos/vote
+# Give 50,000 votes to Noderators supernode using mainchain addr 1
+curl -X POST -H "Content-Type: application/json" -d '{
+      "sender":[
+          {
+              "address":"EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr",
+              "privateKey":"a24ee48f308189d46a5f050f326e76779b6508d8c8aaf51a7152b903b9f42f80"
+          }
+      ],
+      "memo":"Voting for Noderators",
+      "receiver":[
+          {
+              "address":"EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr",
+              "amount":"50000",
+              "candidatePublicKeys":["03aa307d123cf3f181e5b9cc2839c4860a27caf5fb329ccde2877c556881451007"]
+          }
+      ]
+  }' localhost:8091/api/1/dpos/vote
+
+# Give 50,000 votes to KP supernode using mainchain addr 2
+curl -X POST -H "Content-Type: application/json" -d '{
+      "sender":[
+          {
+              "address":"EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY",
+              "privateKey":"ff6dc625cf986eae4365f69c30035608fa47518e5ada4ad99b7cbc5df7683c30"
+          }
+      ],
+      "memo":"Voting for KP Supernode",
+      "receiver":[
+          {
+              "address":"EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY",
+              "amount":"75000",
+              "candidatePublicKeys":["03521eb1f20fcb7a792aeed2f747f278ae7d7b38474ee571375ebe1abb3fa2cbbb"]
+          }
+      ]
+  }' localhost:8091/api/1/dpos/vote
 ```
 
 ### Verify that the supernodes are in fact registered and have received some votes

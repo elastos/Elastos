@@ -1,24 +1,15 @@
 {
     "Configuration": {
-        "Magic": 20190131,
+        "Magic": 7630401,
         "DisableDNS": true,
-        "DNSSeeds": [
-            "ela-mainchain-normal-1:10015",
-            "ela-mainchain-crc-1:10115",
-            "ela-mainchain-crc-2:10215",
-            "ela-mainchain-crc-3:10315",
-            "ela-mainchain-crc-4:10415",
-            "ela-mainchain-dpos-1:10515",
-            "ela-mainchain-dpos-2:10615"
-        ],
         "PermanentPeers": [
             "ela-mainchain-normal-1:10015",
-            "ela-mainchain-crc-1:10115",
-            "ela-mainchain-crc-2:10215",
-            "ela-mainchain-crc-3:10315",
-            "ela-mainchain-crc-4:10415",
-            "ela-mainchain-dpos-1:10515",
-            "ela-mainchain-dpos-2:10615"
+            "ela-mainchain-crc-1:10015",
+            "ela-mainchain-crc-2:10015",
+            "ela-mainchain-crc-3:10015",
+            "ela-mainchain-crc-4:10015",
+            "ela-mainchain-dpos-1:10015",
+            "ela-mainchain-dpos-2:10015"
         ],
         "HttpInfoPort": 10011,
         "HttpRestPort": 10012,
@@ -48,7 +39,7 @@
         },
         "DPoSConfiguration": {
             "EnableArbiter": false,
-            "Magic": 7630403,
+            "Magic": 7630402,
             "IPAddress": "ela-mainchain-normal-1",
             "DPoSPort": 10016,
             "PrintLevel": 1,
@@ -75,6 +66,6 @@
         "CheckAddressHeight": 101,
         "VoteStartHeight": 100,
         "CRCOnlyDPOSHeight": 200,
-        "PublicDPOSHeight": 10000
+        "PublicDPOSHeight": 500
     }
 }

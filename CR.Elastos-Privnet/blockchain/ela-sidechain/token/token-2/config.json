@@ -1,43 +1,31 @@
 {
-    "Configuration": {
-        "Magic": 20190401,
-        "NodePort": 10145,
+        "Magic": 7630405,
+        "NodePort": 10015,
         "DisableDNS": true,
-        "SPVMagic": 20190131,
+        "SPVMagic": 7630401,
         "SPVDisableDNS": true,
-        "DNSSeeds": [
-            "ela-sidechain-token-1:10045",
-            "ela-sidechain-token-2:10145",
-            "ela-sidechain-token-3:10245",
-            "ela-sidechain-token-4:10345"
-        ],
         "PermanentPeers": [
-            "ela-sidechain-token-1:10045",
-            "ela-sidechain-token-2:10145",
-            "ela-sidechain-token-3:10245",
-            "ela-sidechain-token-4:10345"
-        ],
-        "SPVDNSSeeds": [
-            "ela-mainchain-normal-1:10015",
-            "ela-mainchain-crc-1:10115",
-            "ela-mainchain-crc-2:10215",
-            "ela-mainchain-crc-3:10315",
-            "ela-mainchain-crc-4:10415"
+            "ela-sidechain-token-1:10015",
+            "ela-sidechain-token-2:10015",
+            "ela-sidechain-token-3:10015",
+            "ela-sidechain-token-4:10015"
         ],
         "SPVPermanentPeers": [
             "ela-mainchain-normal-1:10015",
-            "ela-mainchain-crc-1:10115",
-            "ela-mainchain-crc-2:10215",
-            "ela-mainchain-crc-3:10315",
-            "ela-mainchain-crc-4:10415"
+            "ela-mainchain-crc-1:10015",
+            "ela-mainchain-crc-2:10015",
+            "ela-mainchain-crc-3:10015",
+            "ela-mainchain-crc-4:10015",
+            "ela-mainchain-dpos-1:10015",
+            "ela-mainchain-dpos-2:10015"
         ],
         "ExchangeRate": 1.0,
         "MinCrossChainTxFee": 10000,
         "EnableREST": true,
-        "RESTPort": 10142,
-        "WSPort": 10143,
+        "RESTPort": 10012,
+        "WSPort": 10013,
         "EnableRPC": true,
-        "RPCPort": 10144,
+        "RPCPort": 10014,
         "RPCUser": "",
         "RPCPass": "",
         "RPCWhiteList": [
@@ -52,5 +40,4 @@
         "InstantBlock": false,
         "PayToAddr": "EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U",
         "MinerInfo": "ELA"
-    }
 }
