@@ -131,8 +131,6 @@ export default class extends React.Component {
               </StyledCol>
             </StyledRow>
           </VotingContainer>
-
-          <StyledImg src={images.ShapeGroupImg} alt="ShapeGroupImg" />
         </Inner>
       </MainContainer>
     )

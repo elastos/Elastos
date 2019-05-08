@@ -16,49 +16,52 @@ export default class extends React.Component {
   render () {
     return (
       <ContainerMid className="mid-section">
-        <img src={images.CRCLogoImg} alt="CRCLogoImg" />
         <MainContainer>
-          <CRCTitle>
-            {I18N.get('home.crc.title')}
-          </CRCTitle>
-
-          <CRCDesc>
-            {I18N.get('home.crc.desc')}
-            <Timeline>
-              <Timeline.Item>
-                <ItemTitle>{I18N.get('home.crc.list.1.date')}</ItemTitle>
-                <ItemDesc>{I18N.get('home.crc.list.1.text')}</ItemDesc>
-              </Timeline.Item>
-              <Timeline.Item>
-                <ItemTitle>{I18N.get('home.crc.list.2.date')}</ItemTitle>
-                <ItemDesc>{I18N.get('home.crc.list.2.text')} - <a href="/constitution/1">{I18N.get('home.crc.list.2.link')}</a>.</ItemDesc>
-              </Timeline.Item>
-              <Timeline.Item>
-                <ItemTitle>{I18N.get('home.crc.list.3.date')}</ItemTitle>
-                <ItemDesc>{I18N.get('home.crc.list.3.text')} <a href="https://www.cyberrepublic.org/docs/#/overview/crc" target="_blank">{I18N.get('home.crc.list.3.link')}</a>.</ItemDesc>
-              </Timeline.Item>
-              <Timeline.Item>
-                <ItemTitle>{I18N.get('home.crc.list.4.date')}</ItemTitle>
-                <ItemDesc>{I18N.get('home.crc.list.4.text')} <a href="/proposals">{I18N.get('home.crc.list.4.link')}</a>.</ItemDesc>
-              </Timeline.Item>
-            </Timeline>
-          </CRCDesc>
+          <CRCIntroContainer>
+            <CRCLogo src={images.CRCLogoImg} alt="CRCLogoImg" />
+            <CRCTitle>
+              {I18N.get('home.crc.title')}
+            </CRCTitle>
+            <CRCDesc>
+              <MainDesc>{I18N.get('home.crc.desc')}</MainDesc>
+              <Timeline>
+                <Timeline.Item>
+                  <ItemTitle>{I18N.get('home.crc.list.1.date')}</ItemTitle>
+                  <ItemDesc>{I18N.get('home.crc.list.1.text')}</ItemDesc>
+                </Timeline.Item>
+                <Timeline.Item>
+                  <ItemTitle>{I18N.get('home.crc.list.2.date')}</ItemTitle>
+                  <ItemDesc>{I18N.get('home.crc.list.2.text')} - <a href="/constitution/1">{I18N.get('home.crc.list.2.link')}</a>.</ItemDesc>
+                </Timeline.Item>
+                <Timeline.Item>
+                  <ItemTitle>{I18N.get('home.crc.list.3.date')}</ItemTitle>
+                  <ItemDesc>{I18N.get('home.crc.list.3.text')} <a href="https://www.cyberrepublic.org/docs/#/overview/crc" target="_blank">{I18N.get('home.crc.list.3.link')}</a>.</ItemDesc>
+                </Timeline.Item>
+                <Timeline.Item>
+                  <ItemTitle>{I18N.get('home.crc.list.4.date')}</ItemTitle>
+                  <ItemDesc>{I18N.get('home.crc.list.4.text')} <a href="/proposals">{I18N.get('home.crc.list.4.link')}</a>.</ItemDesc>
+                </Timeline.Item>
+              </Timeline>
+            </CRCDesc>
+            <BottomImg src={images.StripLightImg} alt="StripLightImg" />
+          </CRCIntroContainer>
           <CRCFlow />
 
-          <CRCTitle>
-            {I18N.get('home.crc.regionalComm')}
-          </CRCTitle>
-          <CommunityImg src={images.RegionMapImg} />
+          <SectionContainer>
+            <CRCTitle>
+              {I18N.get('home.crc.regionalComm')}
+            </CRCTitle>
+            <CommunityImg src={images.RegionMapImg} />
+          </SectionContainer>
 
-          <br/>
-          <br/>
-          <br/>
-
-          <CRCTitle>
-            {I18N.get('home.crc.submit-suggestion.1')}
-          </CRCTitle>
-          <Button className="cr-btn cr-btn-primary" href="/suggestion">{I18N.get('home.crc.submit-suggestion.2')}</Button>
+          <SectionContainer>
+            <CRCTitle>
+              {I18N.get('home.crc.submit-suggestion.1')}
+            </CRCTitle>
+            <Button style={{ height: 'auto' }} className="cr-btn cr-btn-primary" href="/suggestion">{I18N.get('home.crc.submit-suggestion.2')}</Button>
+          </SectionContainer>
         </MainContainer>
+        <GroupImg src={images.ShapeGroupImg} alt="ShapeGroupImg" />
       </ContainerMid>
     )
   }
@@ -67,7 +70,7 @@ export default class extends React.Component {
 
 const ContainerMid = styled.div`
   margin-top: 25px;
-  padding: 50px 0;
+  padding: 50px 0 30px;
   color: #fff;
 `
 
@@ -77,14 +80,22 @@ const MainContainer = styled.div`
   text-align: center;
 `
 
-const CommunityImg = styled.img`
-  width: 70%;
-  margin: 0 auto;
-  display: block;
-
+const CRCIntroContainer = styled.div`
+  position: relative;
+  background: #031E28;
+  max-width: 750px;
+  padding: 80px;
+  margin: 0 auto 30px;
+  text-align: left;
   @media only screen and (max-width: ${LG_WIDTH}px) {
-    width: 95%;
+   padding: 15px;
   }
+`
+
+const CRCLogo = styled.img`
+  position: absolute;
+  top: -50px;
+  left: -50px;
 `
 
 const CRCTitle = styled.div`
@@ -100,19 +111,55 @@ const CRCTitle = styled.div`
 
 const CRCDesc = styled.div`
   text-align: left;
-  width: 70%;
-  margin: 25px auto;
-  background: url(${images.StripLightImg}) no-repeat;
+  margin-top: 25px;
+  font-weight: 200;
   @media only screen and (max-width: ${LG_WIDTH}px) {
     width: 90%;
   }
+  .ant-timeline-item-head {
+    background-color: #43af92;
+  }
+  .ant-timeline-item-tail {
+    border-color: #43af92;
+  }
+`
+
+const MainDesc = styled.div`
+  margin-bottom: 25px;
 `
 
 const ItemTitle = styled.div`
   color: #18FFFF;
-  font-size: 18px;
+  font-size: 16px;
 `
 
 const ItemDesc = styled.div`
+  color: white;
+  font-size: 13px;
+`
 
+const BottomImg = styled.img`
+  position: absolute;
+  bottom: 30px;
+  right: -30px;
+`
+
+const GroupImg = styled.img`
+  position: absolute;
+  bottom: -30px;
+  left: 50px;
+`
+
+const SectionContainer = styled.div`
+  margin-top: 60px;
+`
+
+const CommunityImg = styled.img`
+  width: 70%;
+  margin: 0 auto;
+  display: block;
+
+  @media only screen and (max-width: ${LG_WIDTH}px) {
+    width: 95%;
+  }
 `
