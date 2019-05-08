@@ -11,6 +11,7 @@ import { Row, Col, Timeline } from 'antd'
 import {LG_WIDTH} from '../../../config/constant'
 import { USER_LANGUAGE } from '@/constant'
 import StandardPage from '../StandardPage'
+import CRC from './CRC'
 
 import { images } from './images'
 
@@ -77,40 +78,7 @@ export default class extends StandardPage {
             <InfoDesc>{I18N.get('home.hero.cr.supernodes')}</InfoDesc>
           </InfoRowMob>
         </MediaQuery>
-        <ContainerMid className="mid-section">
-          <MainContainer>
-            <CRCTitle>
-              {I18N.get('home.crc.title')}
-            </CRCTitle>
-
-            <CRCDesc>
-              {I18N.get('home.crc.desc')}
-              <Timeline>
-                <Timeline.Item>
-                  <b>{I18N.get('home.crc.list.1.date')}</b> - {I18N.get('home.crc.list.1.text')}
-                </Timeline.Item>
-                <Timeline.Item>
-                  <b>{I18N.get('home.crc.list.2.date')}</b> - {I18N.get('home.crc.list.2.text')} - <a href="/constitution/1">{I18N.get('home.crc.list.2.link')}</a>.
-                </Timeline.Item>
-                <Timeline.Item>
-                  <b>{I18N.get('home.crc.list.3.date')}</b> - {I18N.get('home.crc.list.3.text')} <a href="https://www.cyberrepublic.org/docs/#/overview/crc" target="_blank">{I18N.get('home.crc.list.3.link')}</a>.
-                </Timeline.Item>
-                <Timeline.Item>
-                  <b>{I18N.get('home.crc.list.4.date')}</b> - {I18N.get('home.crc.list.4.text')} <a href="/proposals">{I18N.get('home.crc.list.4.link')}</a>.
-                </Timeline.Item>
-              </Timeline>
-            </CRCDesc>
-            <CommunityImg src={I18N.getLang() === USER_LANGUAGE.zh ? images.CommunityPowerZhImg : images.CommunityPowerImg}/>
-
-            <br/>
-            <br/>
-            <br/>
-
-            <CRCTitle>
-              {I18N.get('home.crc.submit-suggestion.1')} <a href="/suggestion">{I18N.get('home.crc.submit-suggestion.2')}</a>
-            </CRCTitle>
-          </MainContainer>
-        </ContainerMid>
+        <CRC />
         {this.renderWhatIsCR()}
       </div>
     )

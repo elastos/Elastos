@@ -17,6 +17,20 @@ import SepCenterImg from '@/assets/images/home/sep-center.png'
 
 import CommunityPowerImg from '@/assets/images/home/community-power.png'
 import CommunityPowerZhImg from '@/assets/images/home/community-power.zh.png'
+import ArrowH from '@/assets/images/home/arrow-h.png'
+import ArrowV from '@/assets/images/home/arrow-v.png'
+import ApprovedProposalImg from '@/assets/images/home/approved-proposal.png'
+import CircleImg from '@/assets/images/home/circle.png'
+import CouncilImg from '@/assets/images/home/council.png'
+import CRCLogoImg from '@/assets/images/home/CRC-logo.png'
+import MemberImg from '@/assets/images/home/member.png'
+import RegionMapImg from '@/assets/images/home/region-map.png'
+import ShapeGroupImg from '@/assets/images/home/shape-group.png'
+import SiteImg from '@/assets/images/home/site.png'
+import StripDarkImg from '@/assets/images/home/strip-dark.png'
+import StripLightImg from '@/assets/images/home/strip-light.png'
+import SuggestionImg from '@/assets/images/home/suggestion.png'
+import SuggestionCircleImg from '@/assets/images/home/suggestion-circle.png'
 
 export const images = {
   ElaLogo,
@@ -35,5 +49,20 @@ export const images = {
   SepCenterImg,
 
   CommunityPowerImg,
-  CommunityPowerZhImg
+  CommunityPowerZhImg,
+
+  ArrowH,
+  ArrowV,
+  ApprovedProposalImg,
+  CircleImg,
+  CouncilImg,
+  CRCLogoImg,
+  MemberImg,
+  RegionMapImg,
+  ShapeGroupImg,
+  SiteImg,
+  StripDarkImg,
+  StripLightImg,
+  SuggestionImg,
+  SuggestionCircleImg,
 }
