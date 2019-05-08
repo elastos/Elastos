@@ -56,10 +56,12 @@ type arbitrators struct {
 	currentArbitrators [][]byte
 	currentCandidates  [][]byte
 
-	currentOwnerProgramHashes   []*common.Uint168
-	candidateOwnerProgramHashes []*common.Uint168
-	ownerVotesInRound           map[common.Uint168]common.Fixed64
-	totalVotesInRound           common.Fixed64
+	currentOwnerProgramHashes       []*common.Uint168
+	candidateOwnerProgramHashes     []*common.Uint168
+	nextOwnerProgramHashes          []*common.Uint168
+	nextCandidateOwnerProgramHashes []*common.Uint168
+	ownerVotesInRound               map[common.Uint168]common.Fixed64
+	totalVotesInRound               common.Fixed64
 
 	nextArbitrators             [][]byte
 	nextCandidates              [][]byte
@@ -639,14 +641,12 @@ func (a *arbitrators) getChangeType(height uint32) (ChangeType, uint32) {
 func (a *arbitrators) changeCurrentArbitrators() error {
 	a.currentArbitrators = a.nextArbitrators
 	a.currentCandidates = a.nextCandidates
+	a.currentOwnerProgramHashes = a.nextOwnerProgramHashes
+	a.candidateOwnerProgramHashes = a.nextCandidateOwnerProgramHashes
 
 	sort.Slice(a.currentArbitrators, func(i, j int) bool {
 		return bytes.Compare(a.currentArbitrators[i], a.currentArbitrators[j]) < 0
 	})
-
-	if err := a.updateOwnerProgramHashes(); err != nil {
-		return err
-	}
 
 	a.dutyIndex = 0
 	return nil
@@ -700,6 +700,9 @@ func (a *arbitrators) updateNextArbitrators(height uint32) error {
 	}
 
 	if err := a.snapshotVotesStates(); err != nil {
+		return err
+	}
+	if err := a.updateNextOwnerProgramHashes(); err != nil {
 		return err
 	}
 
@@ -792,16 +795,17 @@ func (a *arbitrators) snapshotVotesStates() error {
 	return nil
 }
 
-func (a *arbitrators) updateOwnerProgramHashes() error {
-	a.currentOwnerProgramHashes = make([]*common.Uint168, 0)
-	for _, nodePublicKey := range a.currentArbitrators {
+func (a *arbitrators) updateNextOwnerProgramHashes() error {
+	a.nextOwnerProgramHashes = make([]*common.Uint168, 0)
+	for _, nodePublicKey := range a.nextArbitrators {
 		if a.IsCRCArbitrator(nodePublicKey) {
 			ownerPublicKey := nodePublicKey // crc node public key is its owner public key for now
 			programHash, err := contract.PublicKeyToStandardProgramHash(ownerPublicKey)
 			if err != nil {
 				return err
 			}
-			a.currentOwnerProgramHashes = append(a.currentOwnerProgramHashes, programHash)
+			a.nextOwnerProgramHashes = append(a.nextOwnerProgramHashes,
+				programHash)
 		} else {
 			producer := a.GetProducer(nodePublicKey)
 			if producer == nil {
@@ -812,12 +816,13 @@ func (a *arbitrators) updateOwnerProgramHashes() error {
 			if err != nil {
 				return err
 			}
-			a.currentOwnerProgramHashes = append(a.currentOwnerProgramHashes, programHash)
+			a.nextOwnerProgramHashes = append(a.nextOwnerProgramHashes,
+				programHash)
 		}
 	}
 
-	a.candidateOwnerProgramHashes = make([]*common.Uint168, 0)
-	for _, nodePublicKey := range a.currentCandidates {
+	a.nextCandidateOwnerProgramHashes = make([]*common.Uint168, 0)
+	for _, nodePublicKey := range a.nextCandidates {
 		if a.IsCRCArbitrator(nodePublicKey) {
 			continue
 		}
@@ -829,7 +834,8 @@ func (a *arbitrators) updateOwnerProgramHashes() error {
 		if err != nil {
 			return err
 		}
-		a.candidateOwnerProgramHashes = append(a.candidateOwnerProgramHashes, programHash)
+		a.nextCandidateOwnerProgramHashes = append(
+			a.nextCandidateOwnerProgramHashes, programHash)
 	}
 
 	return nil
@@ -951,22 +957,24 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
 	}
 
 	a := &arbitrators{
-		chainParams:                 chainParams,
-		bestHeight:                  bestHeight,
-		bestBlock:                   bestBlock,
-		currentArbitrators:          originArbiters,
-		currentOwnerProgramHashes:   originArbitersProgramHashes,
-		nextArbitrators:             originArbiters,
-		nextCandidates:              make([][]byte, 0),
-		crcArbiters:                 crcArbiters,
-		crcArbitratorsNodePublicKey: crcNodeMap,
-		crcArbitratorsProgramHashes: crcArbitratorsProgramHashes,
-		accumulativeReward:          common.Fixed64(0),
-		finalRoundChange:            common.Fixed64(0),
-		arbitersRoundReward:         nil,
-		illegalBlocksPayloadHashes:  make(map[common.Uint256]interface{}),
-		totalVotesInRound:           0,
-		ownerVotesInRound:           make(map[common.Uint168]common.Fixed64),
+		chainParams:                     chainParams,
+		bestHeight:                      bestHeight,
+		bestBlock:                       bestBlock,
+		currentArbitrators:              originArbiters,
+		currentOwnerProgramHashes:       originArbitersProgramHashes,
+		nextArbitrators:                 originArbiters,
+		nextCandidates:                  make([][]byte, 0),
+		nextOwnerProgramHashes:          originArbitersProgramHashes,
+		nextCandidateOwnerProgramHashes: make([]*common.Uint168, 0),
+		crcArbiters:                     crcArbiters,
+		crcArbitratorsNodePublicKey:     crcNodeMap,
+		crcArbitratorsProgramHashes:     crcArbitratorsProgramHashes,
+		accumulativeReward:              common.Fixed64(0),
+		finalRoundChange:                common.Fixed64(0),
+		arbitersRoundReward:             nil,
+		illegalBlocksPayloadHashes:      make(map[common.Uint256]interface{}),
+		totalVotesInRound:               0,
+		ownerVotesInRound:               make(map[common.Uint168]common.Fixed64),
 		degradation: &degradation{
 			inactiveTxs:       make(map[common.Uint256]interface{}),
 			inactivateHeight:  0,
