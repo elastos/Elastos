@@ -5,12 +5,13 @@ import _ from 'lodash'
 import styled from 'styled-components'
 import './style.scss'
 import MediaQuery from 'react-responsive'
-import { Row, Col, Button } from 'antd'
+import { Row, Col, Timeline } from 'antd'
 
 
 import {LG_WIDTH} from '../../../config/constant'
 import { USER_LANGUAGE } from '@/constant'
 import StandardPage from '../StandardPage'
+import CRC from './CRC'
 
 import { images } from './images'
 
@@ -41,138 +42,108 @@ export default class extends StandardPage {
   }
 
   ord_renderContent() {
-    return <div className="c_Home">
-      <MediaQuery minWidth={LG_WIDTH}>
-        {this.renderDesktop()}
-      </MediaQuery>
-      <MediaQuery maxWidth={LG_WIDTH}>
-        <CRLogoMobContainer>
-          <CRLogo src={images.CRLogo} />
-          <CRLogoMobText style={{marginLeft: I18N.getLang() === USER_LANGUAGE.zh ? '-66px' : '-118px'}}>
-            {I18N.get('home.mob.logo.title')}<br/>
-            <br/>
-            <a target="_blank" href="https://www.elastos.org">{I18N.get('home.mob.logo.subtitle')}</a>
-          </CRLogoMobText>
-        </CRLogoMobContainer>
+    return (
+      <div className="c_Home">
+        <MediaQuery minWidth={LG_WIDTH}>
+          {this.renderDesktop()}
+        </MediaQuery>
+        <MediaQuery maxWidth={LG_WIDTH}>
+          <CRLogoMobContainer>
+            <CRLogo src={images.CRLogo} />
+            <CRLogoMobText style={{marginLeft: I18N.getLang() === USER_LANGUAGE.zh ? '-66px' : '-118px'}}>
+              {I18N.get('home.mob.logo.title')}<br/>
+              <br/>
+              <a target="_blank" href="https://www.elastos.org">{I18N.get('home.mob.logo.subtitle')}</a>
+            </CRLogoMobText>
+          </CRLogoMobContainer>
 
-        <InfoRowMob>
-          <InfoImgContainerCR>
-            <InfoImg src={images.CREcosystemFundImg} style={{height: '80px'}}/>
-          </InfoImgContainerCR>
-          <InfoDesc>{I18N.get('home.hero.cr.fund.1')}<br/>{I18N.get('home.hero.cr.fund.2')}</InfoDesc>
-        </InfoRowMob>
-
-        <InfoRowMob>
-          <InfoImgContainerCR>
-            <InfoImg src={images.CRGovernanceImg} style={{height: '80px'}}/>
-          </InfoImgContainerCR>
-          <InfoDesc>{I18N.get('home.hero.cr.community')}</InfoDesc>
-        </InfoRowMob>
-
-        <InfoRowMob>
-          <InfoImgContainerCR>
-            <InfoImg src={images.CRDPoSImg} style={{height: '80px'}}/>
-          </InfoImgContainerCR>
-          <InfoDesc>{I18N.get('home.hero.cr.supernodes')}</InfoDesc>
-        </InfoRowMob>
-      </MediaQuery>
-      <ContainerMid className="mid-section">
-        <MainContainer>
-          <CRCTitle>
-            {I18N.get('home.crc.title')}
-          </CRCTitle>
-
-          <CRCDesc>
-            {I18N.get('home.crc.desc')}
-            <CRCLIst>
-              <li>
-                <b>{I18N.get('home.crc.list.1.date')}</b> - {I18N.get('home.crc.list.1.text')}
-              </li>
-              <li>
-                <b>{I18N.get('home.crc.list.2.date')}</b> - {I18N.get('home.crc.list.2.text')} - <a href="/constitution/1">{I18N.get('home.crc.list.2.link')}</a>.
-              </li>
-              <li>
-                <b>{I18N.get('home.crc.list.3.date')}</b> - {I18N.get('home.crc.list.3.text')} <a href="https://www.cyberrepublic.org/docs/#/overview/crc" target="_blank">{I18N.get('home.crc.list.3.link')}</a>.
-              </li>
-              <li>
-                <b>{I18N.get('home.crc.list.4.date')}</b> - {I18N.get('home.crc.list.4.text')} <a href="/proposals">{I18N.get('home.crc.list.4.link')}</a>.
-              </li>
-            </CRCLIst>
-          </CRCDesc>
-
-          <CommunityImg src={I18N.getLang() === USER_LANGUAGE.zh ? images.CommunityPowerZhImg : images.CommunityPowerImg}/>
-
-          <br/>
-          <br/>
-          <br/>
-
-          <CRCTitle>
-            {I18N.get('home.crc.submit-suggestion.1')} <a href="/suggestion">{I18N.get('home.crc.submit-suggestion.2')}</a>
-          </CRCTitle>
-        </MainContainer>
-      </ContainerMid>
-      {this.renderWhatIsCR()}
-    </div>
-  }
-
-  renderDesktop() {
-    return <MainContainer>
-      <ElaContainer>
-        <LogoContainer>
-          {/* Be nice if this opened a modal explaining Elastos first */}
-          <a target="_blank" href="https://www.elastos.org">
-            <ElaLogo src={images.ElaLogo}/>
-          </a>
-        </LogoContainer>
-        <Row>
-          <InfoCol span={8}>
-            <InfoImgContainer>
-              <InfoImg src={images.ElaBlockchainImg}/>
-            </InfoImgContainer>
-            <InfoDesc>{I18N.get('home.hero.ela.blockchain')}</InfoDesc>
-          </InfoCol>
-          <InfoColMid span={8} style={{paddingTop: '20px'}}>
-            <InfoImgContainer style={{height: '70px'}}>
-              <InfoImg src={images.ElaApplicationImg} style={{height: '50px'}}/>
-            </InfoImgContainer>
-            <InfoDesc>{I18N.get('home.hero.ela.application.1')}<br/>{I18N.get('home.hero.ela.application.2')}</InfoDesc>
-          </InfoColMid>
-          {/* Moving this up a bit */}
-          <InfoColRight span={8} style={{paddingTop: '10px'}}>
-            <InfoImgContainer style={{height: '80px'}}>
-              <InfoImg src={images.ElaSidechainImg} style={{paddingLeft: '12px', height: '75px', paddingBottom: '15px'}}/>
-            </InfoImgContainer>
-            <InfoDesc>{I18N.get('home.hero.ela.sidechain')}<br/>(ETH, NEO, DID)</InfoDesc>
-          </InfoColRight>
-        </Row>
-      </ElaContainer>
-      <CRContainer>
-        <LogoContainer>
-          <CRLogo src={images.CRLogo}/>
-        </LogoContainer>
-        <Row>
-          <InfoColCR span={9}>
+          <InfoRowMob>
             <InfoImgContainerCR>
               <InfoImg src={images.CREcosystemFundImg} style={{height: '80px'}}/>
             </InfoImgContainerCR>
             <InfoDesc>{I18N.get('home.hero.cr.fund.1')}<br/>{I18N.get('home.hero.cr.fund.2')}</InfoDesc>
-          </InfoColCR>
-          <InfoColCRMid span={8}>
+          </InfoRowMob>
+
+          <InfoRowMob>
             <InfoImgContainerCR>
               <InfoImg src={images.CRGovernanceImg} style={{height: '80px'}}/>
             </InfoImgContainerCR>
             <InfoDesc>{I18N.get('home.hero.cr.community')}</InfoDesc>
-          </InfoColCRMid>
-          <InfoColCRRight span={7}>
-            <InfoImgContainerCR style={{height: '110px'}}>
-              <InfoImg src={images.CRDPoSImg} style={{marginTop: '-20px', height: '100px'}}/>
+          </InfoRowMob>
+
+          <InfoRowMob>
+            <InfoImgContainerCR>
+              <InfoImg src={images.CRDPoSImg} style={{height: '80px'}}/>
             </InfoImgContainerCR>
             <InfoDesc>{I18N.get('home.hero.cr.supernodes')}</InfoDesc>
-          </InfoColCRRight>
-        </Row>
-      </CRContainer>
-      <ClearFix/>
-    </MainContainer>
+          </InfoRowMob>
+        </MediaQuery>
+        <CRC />
+        {this.renderWhatIsCR()}
+      </div>
+    )
+  }
+
+  renderDesktop() {
+    return (
+      <MainContainer>
+        <ElaContainer>
+          <LogoContainer>
+            {/* Be nice if this opened a modal explaining Elastos first */}
+            <a target="_blank" href="https://www.elastos.org">
+              <ElaLogo src={images.ElaLogo}/>
+            </a>
+          </LogoContainer>
+          <Row>
+            <InfoCol span={8}>
+              <InfoImgContainer>
+                <InfoImg src={images.ElaBlockchainImg}/>
+              </InfoImgContainer>
+              <InfoDesc>{I18N.get('home.hero.ela.blockchain')}</InfoDesc>
+            </InfoCol>
+            <InfoColMid span={8} style={{paddingTop: '20px'}}>
+              <InfoImgContainer style={{height: '70px'}}>
+                <InfoImg src={images.ElaApplicationImg} style={{height: '50px'}}/>
+              </InfoImgContainer>
+              <InfoDesc>{I18N.get('home.hero.ela.application.1')}<br/>{I18N.get('home.hero.ela.application.2')}</InfoDesc>
+            </InfoColMid>
+            {/* Moving this up a bit */}
+            <InfoColRight span={8} style={{paddingTop: '10px'}}>
+              <InfoImgContainer style={{height: '80px'}}>
+                <InfoImg src={images.ElaSidechainImg} style={{paddingLeft: '12px', height: '75px', paddingBottom: '15px'}}/>
+              </InfoImgContainer>
+              <InfoDesc>{I18N.get('home.hero.ela.sidechain')}<br/>(ETH, NEO, DID)</InfoDesc>
+            </InfoColRight>
+          </Row>
+        </ElaContainer>
+        <CRContainer>
+          <LogoContainer>
+            <CRLogo src={images.CRLogo}/>
+          </LogoContainer>
+          <Row>
+            <InfoColCR span={9}>
+              <InfoImgContainerCR>
+                <InfoImg src={images.CREcosystemFundImg} style={{height: '80px'}}/>
+              </InfoImgContainerCR>
+              <InfoDesc>{I18N.get('home.hero.cr.fund.1')}<br/>{I18N.get('home.hero.cr.fund.2')}</InfoDesc>
+            </InfoColCR>
+            <InfoColCRMid span={8}>
+              <InfoImgContainerCR>
+                <InfoImg src={images.CRGovernanceImg} style={{height: '80px'}}/>
+              </InfoImgContainerCR>
+              <InfoDesc>{I18N.get('home.hero.cr.community')}</InfoDesc>
+            </InfoColCRMid>
+            <InfoColCRRight span={7}>
+              <InfoImgContainerCR style={{height: '110px'}}>
+                <InfoImg src={images.CRDPoSImg} style={{marginTop: '-20px', height: '100px'}}/>
+              </InfoImgContainerCR>
+              <InfoDesc>{I18N.get('home.hero.cr.supernodes')}</InfoDesc>
+            </InfoColCRRight>
+          </Row>
+        </CRContainer>
+        <ClearFix/>
+      </MainContainer>
+    )
   }
 
   renderWhatIsCR() {
@@ -414,7 +385,7 @@ const CommunityImg = styled.img`
   width: 70%;
   margin: 0 auto;
   display: block;
-  
+
   @media only screen and (max-width: ${LG_WIDTH}px) {
     width: 95%;
   }
@@ -461,7 +432,7 @@ const CRLogoMobText = styled.div`
   bottom: 0px;
   font-weight: 200;
   line-height: 1;
-  
+
   text-align: center;
 `
 
