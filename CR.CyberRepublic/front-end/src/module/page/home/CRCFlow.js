@@ -1,16 +1,11 @@
 import React from 'react'
 import I18N from '@/I18N'
-import _ from 'lodash'
 import styled from 'styled-components'
-import './style.scss'
-import MediaQuery from 'react-responsive'
-import { Row, Col, Timeline } from 'antd'
-
-
-import {LG_WIDTH} from '../../../config/constant'
-import { USER_LANGUAGE } from '@/constant'
-
+import { Row, Col } from 'antd'
+import { LG_WIDTH, MAX_WIDTH_MOBILE } from '../../../config/constant'
 import { images } from './images'
+
+import './style.scss'
 
 export default class extends React.Component {
   render () {
@@ -78,27 +73,27 @@ export default class extends React.Component {
           </SuggestionContainer>
           <StyledRow type="flex" align="middle">
             <StyledCol span={7}>
-              <StyledImg style={{ height: 94 }} src={images.ApprovedProposalImg} alt="ApprovedProposalImg" />
+              <ProposalImg src={images.ApprovedProposalImg} alt="ApprovedProposalImg" />
               <Desc>{I18N.get('home.crc.flow.approvedProposal')}</Desc>
             </StyledCol>
             <StyledCol span={2}>
               <ImgContainer style={{ height: 55}}>
-                <StyledImg src={images.ArrowH} alt="ArrowH" />
+                <ArrowH src={images.ArrowH} alt="ArrowH" />
               </ImgContainer>
             </StyledCol>
             <StyledCol span={6}>
-              <StyledImg style={{ height: 94 }} src={images.SiteImg} alt="SiteImg" />
+              <ProposalImg src={images.SiteImg} alt="SiteImg" />
               <Desc>{I18N.get('home.crc.flow.proposalPage')}</Desc>
             </StyledCol>
             <StyledCol span={2}>
               <ImgContainer style={{ height: 55}}>
                 <SubmitText>{I18N.get('home.crc.flow.submitProposal')}</SubmitText>
-                <StyledImg src={images.ArrowH} alt="ArrowH" />
+                <ArrowH src={images.ArrowH} alt="ArrowH" />
               </ImgContainer>
             </StyledCol>
             <StyledCol span={7}>
               <CouncilArrow src={images.ArrowH} alt="ArrowH" />
-              <StyledImg src={images.CouncilImg} alt="CouncilImg" />
+              <ProposalImg src={images.CouncilImg} alt="CouncilImg" />
               <Desc style={{ color: '#1DE9B6' }}>{I18N.get('home.crc.flow.council')} #1</Desc>
             </StyledCol>
           </StyledRow>
@@ -144,6 +139,9 @@ const MainContainer = styled.div`
   text-align: center;
   color: #18FFFF;
   font-weight: 200;
+  @media only screen and (max-width: ${MAX_WIDTH_MOBILE}px) {
+    font-size: 13px;
+  }
 `
 
 const Inner = styled.div`
@@ -178,10 +176,21 @@ const StyledCol = styled(Col)`
 
 const StyledImg = styled.img`
   position: relative;
+  max-width: 100%;
 `
 
 const CouncilImg = styled.img`
   height: 70px;
+  @media only screen and (max-width: ${MAX_WIDTH_MOBILE}px) {
+    height: 40px;
+  }
+`
+
+const ArrowH = styled.img`
+  @media only screen and (max-width: ${MAX_WIDTH_MOBILE}px) {
+    /* left: 28px; */
+  }
+
 `
 
 const CouncilArrow = styled.img`
@@ -189,13 +198,20 @@ const CouncilArrow = styled.img`
   position: absolute;
   left: 55px;
   top: -45px;
+  @media only screen and (max-width: ${MAX_WIDTH_MOBILE}px) {
+    left: 28px;
+  }
+`
+
+const ProposalImg = styled.img`
+  height: 94px;
+  @media only screen and (max-width: ${MAX_WIDTH_MOBILE}px) {
+    height: 65px;
+  }
 `
 
 const Desc = styled.div`
   margin: 10px auto;
-
-  @media only screen and (max-width: ${LG_WIDTH}px) {
-  }
 `
 
 const SubmitText = styled.div`
@@ -204,6 +220,10 @@ const SubmitText = styled.div`
   top: -80px;
   left: -20px;
   width: 125px;
+  @media only screen and (max-width: ${MAX_WIDTH_MOBILE}px) {
+    width: 100px;
+    top: -70px;
+  }
 `
 
 const VotingTitle = styled.div`

@@ -6,7 +6,7 @@ import './style.scss'
 import MediaQuery from 'react-responsive'
 import { Row, Col, Timeline, Button } from 'antd'
 
-import {LG_WIDTH} from '../../../config/constant'
+import { LG_WIDTH, MAX_WIDTH_MOBILE } from '../../../config/constant'
 import { USER_LANGUAGE } from '@/constant'
 import CRCFlow from './CRCFlow'
 
@@ -96,6 +96,9 @@ const CRCLogo = styled.img`
   position: absolute;
   top: -50px;
   left: -50px;
+  @media only screen and (max-width: ${MAX_WIDTH_MOBILE}px) {
+   display: none;
+  }
 `
 
 const CRCTitle = styled.div`
@@ -148,6 +151,9 @@ const GroupImg = styled.img`
   position: absolute;
   bottom: -30px;
   left: 50px;
+  @media only screen and (max-width: ${MAX_WIDTH_MOBILE}px) {
+    left: 5px;
+  }
 `
 
 const SectionContainer = styled.div`
