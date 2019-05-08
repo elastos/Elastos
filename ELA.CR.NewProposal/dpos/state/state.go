@@ -315,6 +315,19 @@ func (s *State) GetCanceledProducers() []*Producer {
 	return producers
 }
 
+// GetReturnedDepositProducers returns producers that in returned deposit state.
+func (s *State) GetReturnedDepositProducers() []*Producer {
+	s.mtx.RLock()
+	producers := make([]*Producer, 0, len(s.canceledProducers))
+	for _, producer := range s.canceledProducers {
+		if producer.state == ReturnedDeposit {
+			producers = append(producers, producer)
+		}
+	}
+	s.mtx.RUnlock()
+	return producers
+}
+
 // GetIllegalProducers returns all illegal producers.
 func (s *State) GetIllegalProducers() []*Producer {
 	s.mtx.RLock()

@@ -883,6 +883,16 @@ parameters:
 | ----- | ------- | ---------------------------- |
 | start | integer | the start index of producers |
 | limit | integer | the limit index of producers |
+| state | string  | the state of producers       |
+state:
+not provided will return pending and active producers
+"all": return all producers
+"pending": return pending producers
+"active", "activate": return active producers
+"inactive", "inactivate": return inactive producers
+"cancel", "canceled": return canceled producers
+"foundbad", "illegal": return illegal producers
+"returneddeposit", "returned": return returned deposit producers
 
 result:
 

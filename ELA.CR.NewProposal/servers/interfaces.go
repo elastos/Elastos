@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"strings"
 
 	aux "github.com/elastos/Elastos.ELA/auxpow"
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -1190,8 +1191,30 @@ func ListProducers(param Params) map[string]interface{} {
 	if !ok {
 		limit = math.MaxInt64
 	}
+	s, ok := param.String("state")
+	if ok {
+		s = strings.ToLower(s)
+	}
+	var producers []*state.Producer
+	switch s {
+	case "all":
+		producers = Chain.GetState().GetAllProducers()
+	case "pending":
+		producers = Chain.GetState().GetPendingProducers()
+	case "active", "activate":
+		producers = Chain.GetState().GetActiveProducers()
+	case "inactive", "inactivate":
+		producers = Chain.GetState().GetInactiveProducers()
+	case "cancel", "canceled":
+		producers = Chain.GetState().GetCanceledProducers()
+	case "foundbad", "illegal":
+		producers = Chain.GetState().GetIllegalProducers()
+	case "returneddeposit", "returned":
+		producers = Chain.GetState().GetReturnedDepositProducers()
+	default:
+		producers = Chain.GetState().GetProducers()
+	}
 
-	producers := Chain.GetState().GetAllProducers()
 	sort.Slice(producers, func(i, j int) bool {
 		return producers[i].Votes() > producers[j].Votes()
 	})
