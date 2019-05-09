@@ -69,7 +69,6 @@ type arbitrators struct {
 	crcArbitratorsProgramHashes map[common.Uint168]interface{}
 	crcArbitratorsNodePublicKey map[string]*Producer
 	accumulativeReward          common.Fixed64
-	lastAccumulativeReward      common.Fixed64
 	finalRoundChange            common.Fixed64
 	clearingHeight              uint32
 	arbitersRoundReward         map[common.Uint168]common.Fixed64
@@ -288,9 +287,7 @@ func (a *arbitrators) accumulateReward(block *types.Block) {
 func (a *arbitrators) clearingDPOSReward(block *types.Block,
 	smoothClearing bool) error {
 	if block.Height == a.clearingHeight {
-		a.accumulativeReward = a.lastAccumulativeReward
-	} else {
-		a.lastAccumulativeReward = a.accumulativeReward
+		return nil
 	}
 
 	dposReward := a.getBlockDPOSReward(block)
@@ -308,7 +305,6 @@ func (a *arbitrators) clearingDPOSReward(block *types.Block,
 		return err
 	}
 	a.accumulativeReward = dposReward
-
 	a.clearingHeight = block.Height
 
 	return nil
@@ -318,12 +314,7 @@ func (a *arbitrators) distributeDPOSReward(reward common.Fixed64) (err error) {
 	a.arbitersRoundReward = map[common.Uint168]common.Fixed64{}
 
 	a.arbitersRoundReward[a.chainParams.CRCAddress] = 0
-	var realDPOSReward common.Fixed64
-	if a.IsUnderstaffedMode() || a.IsInactiveMode() {
-		realDPOSReward, err = a.distributeOnlyWithCRCArbitrators(reward)
-	} else {
-		realDPOSReward, err = a.distributeWithNormalArbitrators(reward)
-	}
+	realDPOSReward, err := a.distributeWithNormalArbitrators(reward)
 
 	if err != nil {
 		return err
@@ -350,7 +341,8 @@ func (a *arbitrators) distributeWithNormalArbitrators(
 	individualBlockConfirmReward := common.Fixed64(math.Floor(totalBlockConfirmReward / float64(len(ownerHashes))))
 	totalVotesInRound := a.totalVotesInRound
 	if totalVotesInRound == common.Fixed64(0) {
-		panic("total votes in round equal 0")
+		a.arbitersRoundReward[a.chainParams.CRCAddress] = reward
+		return 0, nil
 	}
 	rewardPerVote := totalTopProducersReward / float64(totalVotesInRound)
 
@@ -377,12 +369,6 @@ func (a *arbitrators) distributeWithNormalArbitrators(
 		realDPOSReward += individualProducerReward
 	}
 	return realDPOSReward, nil
-}
-
-func (a *arbitrators) distributeOnlyWithCRCArbitrators(
-	reward common.Fixed64) (common.Fixed64, error) {
-	a.arbitersRoundReward[a.chainParams.CRCAddress] = reward
-	return reward, nil
 }
 
 func (a *arbitrators) DecreaseChainHeight(height uint32) error {
