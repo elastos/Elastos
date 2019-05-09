@@ -596,6 +596,10 @@ func (p *ProposalDispatcher) acceptProposal(d *payload.DPOSProposal) {
 	defer log.Info("[acceptProposal] end")
 
 	p.setProcessingProposal(d)
+	if !p.cfg.Manager.isCurrentArbiter() {
+		return
+	}
+
 	vote := &payload.DPOSProposalVote{ProposalHash: d.Hash(),
 		Signer: p.cfg.Manager.GetPublicKey(), Accept: true}
 	var err error
