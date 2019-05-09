@@ -91,11 +91,6 @@ class C extends BaseComponent {
       }
     })
   }
-  // const atValues = _.map(councilMembers, obj => ({ id: obj._id, value: userUtil.formatUsername(obj) }))
-  // const atValues = [
-  //   { id: 1, value: 'Fredrik Sundqvist' },
-  //   { id: 2, value: 'Patrik Sjölin' }
-  // ]
 
   mentionModule = {
     allowedChars: /^[A-Za-z\s]*$/,
@@ -112,10 +107,7 @@ class C extends BaseComponent {
       } else {
         const matches = []
         for (let i = 0; i < values.length; i++) {
-          console.log('i: ', i)
           if (values[i].value.toLowerCase().indexOf(searchTerm.toLowerCase())) {
-            console.log('will push value: ', values[i].value)
-
             matches.push(values[i])
           }
         }
@@ -126,7 +118,7 @@ class C extends BaseComponent {
 
   getInputProps() {
     const { getFieldDecorator } = this.props.form
-    const { data, councilMembers } = this.props
+    const { data } = this.props
 
     const input_el = <Input size="large"/>
     const shortDesc_el = <Input size="large"/>
