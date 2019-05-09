@@ -68,7 +68,10 @@ func onChannelOpen(_: OpaquePointer?, cstream:Int32,
         return false
     }
 
-    let cookie = String(cString: ccookie!)
+    var cookie = ""
+    if ccookie == nil {
+       cookie = String(cString: ccookie!)
+    }
 
     return handler.shouldOpenNewChannel?(stream,
                                          Int(cchannel),

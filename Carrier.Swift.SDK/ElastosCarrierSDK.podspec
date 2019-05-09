@@ -20,7 +20,7 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = "9.0"
   s.source       = { :git=> "https://github.com/elastos/Elastos.NET.Carrier.iOS.SDK/releases/download/release-v5.3.1/ElastosCarrier-framework.zip", :tag => s.version }
   s.vendored_frameworks = 'ElastosCarrier-framework/*.framework'
-  s.source_files = 'ElastosCarrier-framework/ElastosCarrier.framework/**/*.h'
+  s.source_files = 'ElastosCarrier-framework/ElastosCarrierSDK.framework/**/*.h'
 
 
 end
