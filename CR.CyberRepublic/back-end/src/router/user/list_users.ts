@@ -1,6 +1,5 @@
 import Base from '../Base'
 import UserService from '../../service/UserService'
-import {constant} from '../../constant'
 
 export default class extends Base {
     protected needLogin = false

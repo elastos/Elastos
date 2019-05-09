@@ -17,6 +17,8 @@ export const EMPOWER_MAX_WRITER_TECHNICAL = 3
 export const EMPOWER_MAX_DAPP_ANALYST = 5
 export const EMPOWER_MAX_REGIONAL_EVANGELIST = 10
 export const MAX_LENGTH_COMMENT = 2048
+
+// react quill configs
 export const TOOLBAR_OPTIONS = {
   container: [
     [{ header: [3, 4, 5, 6, false] }],

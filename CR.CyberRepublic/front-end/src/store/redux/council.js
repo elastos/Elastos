@@ -10,6 +10,8 @@ class CouncilRedux extends BaseRedux {
       loading: false,
       tab: 'COUNCIL',
       filter: {},
+      council_members: [],
+      council_members_loading: false,
     }
   }
 }
