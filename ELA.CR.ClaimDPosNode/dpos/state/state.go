@@ -22,28 +22,28 @@ const (
 	// confirmations yet.
 	Pending ProducerState = iota
 
-	// Activate indicates the producer is registered and confirmed by more than
+	// Active indicates the producer is registered and confirmed by more than
 	// 6 blocks.
-	Activate
+	Active
 
-	// Inactivate indicates the producer has been inactive for a period which shall
-	// be punished and will be activate later
-	Inactivate
+	// Inactive indicates the producer has been inactivated for a period which shall
+	// be punished and will be activated later.
+	Inactive
 
 	// Canceled indicates the producer was canceled.
 	Canceled
 
-	// FoundBad indicates the producer was found doing bad.
-	FoundBad
+	// Illegal indicates the producer was found to break the consensus.
+	Illegal
 
-	// ReturnedDeposit indicates the producer has canceled and returned deposit
-	ReturnedDeposit
+	// Returned indicates the producer has canceled and deposit returned.
+	Returned
 )
 
 // producerStateStrings is a array of producer states back to their constant
 // names for pretty printing.
-var producerStateStrings = []string{"Pending", "Activate", "Inactivate",
-	"Canceled", "FoundBad", "ReturnedDeposit"}
+var producerStateStrings = []string{"Pending", "Active", "Inactive",
+	"Canceled", "Illegal", "Returned"}
 
 func (ps ProducerState) String() string {
 	if int(ps) < len(producerStateStrings) {
@@ -328,7 +328,7 @@ func (s *State) GetReturnedDepositProducers() []*Producer {
 	s.mtx.RLock()
 	producers := make([]*Producer, 0, len(s.canceledProducers))
 	for _, producer := range s.canceledProducers {
-		if producer.state == ReturnedDeposit {
+		if producer.state == Returned {
 			producers = append(producers, producer)
 		}
 	}
@@ -564,7 +564,7 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 	// Check if any pending producers has got 6 confirms, set them to activate.
 	activateProducerFromPending := func(key string, producer *Producer) {
 		s.history.append(height, func() {
-			producer.state = Activate
+			producer.state = Active
 			s.activityProducers[key] = producer
 			delete(s.pendingProducers, key)
 		}, func() {
@@ -577,11 +577,11 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 	// Check if any pending producers has got 6 confirms, set them to activate.
 	activateProducerFromInactive := func(key string, producer *Producer) {
 		s.history.append(height, func() {
-			producer.state = Activate
+			producer.state = Active
 			s.activityProducers[key] = producer
 			delete(s.inactiveProducers, key)
 		}, func() {
-			producer.state = Inactivate
+			producer.state = Inactive
 			s.inactiveProducers[key] = producer
 			delete(s.activityProducers, key)
 		})
@@ -700,7 +700,7 @@ func (s *State) cancelProducer(payload *payload.ProcessProducer, height uint32) 
 		}
 		delete(s.nicknames, producer.info.NickName)
 	}, func() {
-		producer.state = Activate
+		producer.state = Active
 		producer.cancelHeight = 0
 		delete(s.canceledProducers, key)
 		if isPending {
@@ -804,7 +804,7 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 
 	returnAction := func(producer *Producer) {
 		s.history.append(height, func() {
-			producer.state = ReturnedDeposit
+			producer.state = Returned
 		}, func() {
 			producer.state = Canceled
 		})
@@ -926,13 +926,13 @@ func (s *State) processIllegalEvidence(payloadData types.Payload,
 		}
 		if producer, ok := s.activityProducers[key]; ok {
 			s.history.append(height, func() {
-				producer.state = FoundBad
+				producer.state = Illegal
 				producer.illegalHeight = height
 				s.illegalProducers[key] = producer
 				delete(s.activityProducers, key)
 				delete(s.nicknames, producer.info.NickName)
 			}, func() {
-				producer.state = Activate
+				producer.state = Active
 				producer.illegalHeight = 0
 				s.activityProducers[key] = producer
 				delete(s.illegalProducers, key)
@@ -943,7 +943,7 @@ func (s *State) processIllegalEvidence(payloadData types.Payload,
 
 		if producer, ok := s.canceledProducers[key]; ok {
 			s.history.append(height, func() {
-				producer.state = FoundBad
+				producer.state = Illegal
 				producer.illegalHeight = height
 				s.illegalProducers[key] = producer
 				delete(s.canceledProducers, key)
@@ -982,7 +982,7 @@ func (s *State) setInactiveProducer(producer *Producer, key string,
 	height uint32, emergency bool) {
 	producer.inactiveSince = height
 	producer.activateRequestHeight = math.MaxUint32
-	producer.state = Inactivate
+	producer.state = Inactive
 	s.inactiveProducers[key] = producer
 	delete(s.activityProducers, key)
 
@@ -1000,7 +1000,7 @@ func (s *State) revertSettingInactiveProducer(producer *Producer, key string,
 	height uint32, emergency bool) {
 	producer.inactiveSince = 0
 	producer.activateRequestHeight = math.MaxUint32
-	producer.state = Activate
+	producer.state = Active
 	s.activityProducers[key] = producer
 	delete(s.inactiveProducers, key)
 
@@ -1075,7 +1075,7 @@ func (s *State) tryRevertInactivity(key string, producer *Producer,
 		producer.inactiveCountingHeight = 0
 	}
 
-	if producer.state == Inactivate {
+	if producer.state == Inactive {
 		s.revertSettingInactiveProducer(producer, key, height, false)
 		producer.inactiveCountingHeight = startHeight
 	}

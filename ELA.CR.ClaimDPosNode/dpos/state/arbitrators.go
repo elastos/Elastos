@@ -974,7 +974,7 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
 			inactiveTxs:       make(map[common.Uint256]interface{}),
 			inactivateHeight:  0,
 			understaffedSince: 0,
-			state:             Normal,
+			state:             DSNormal,
 		},
 	}
 	a.State = NewState(chainParams, a.GetArbitrators)

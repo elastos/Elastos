@@ -260,7 +260,7 @@ parameters: none
 argument sample:
 
 ```json
-{   
+{
   "method":"getblockcount"
 }
 ```
@@ -629,7 +629,7 @@ argument sample:
 ```json
 {
   "method":"getnodestate"
-} 
+}
 ```
 
 ```json
@@ -750,7 +750,7 @@ result sample:
 
 #### discretemining
 
-description: generate one or more blocks instantly  
+description: generate one or more blocks instantly
 parameters:
 
 | name  | type    | description     |
@@ -781,7 +781,7 @@ result sample:
 
 #### createauxblock
 
-description: generate an auxiliary block  
+description: generate an auxiliary block
 parameters:
 
 | name         | type   | description     |
@@ -871,7 +871,7 @@ result sample:
 
 #### getinfo
 
-description: return node information.  
+description: return node information.
 warning: this interface is ready to be deprecated. So no api information will be supplied.
 
 #### listproducers
@@ -879,20 +879,17 @@ warning: this interface is ready to be deprecated. So no api information will be
 description: show producers infromation
 parameters:
 
-| name  | type    | description                  |
-| ----- | ------- | ---------------------------- |
-| start | integer | the start index of producers |
-| limit | integer | the limit index of producers |
-| state | string  | the state of producers       |
-state:
-not provided will return pending and active producers
-"all": return all producers
-"pending": return pending producers
-"active", "activate": return active producers
-"inactive", "inactivate": return inactive producers
-"cancel", "canceled": return canceled producers
-"foundbad", "illegal": return illegal producers
-"returneddeposit", "returned": return returned deposit producers
+| name  | type    | description                                                  |
+| ----- | ------- | ------------------------------------------------------------ |
+| start | integer | the start index of producers                                 |
+| limit | integer | the limit count of producers                                 |
+| state | string  | the producer state you want<br/>"all": get producers in any state<br/>"pending": get producers in the pendding state<br/>
+"active": get producers in the active state<br/>
+"inactive": get producers in the inactive state<br/>
+"canceled": get producers in the canceled state<br/>
+"illegal": get producers in the illegal state<br/>
+"returned": get producers in the returned state |
+if state flag not provided return the producers in pending and active state.
 
 result:
 
@@ -943,7 +940,7 @@ result sample:
         "location": 401,
         "active": true,
         "votes": "3.11100000",
-        "state": "Activate",
+        "state": "Active",
         "registerheight": 236,
         "cancelheight": 0,
         "inactiveheight": 0,
@@ -958,7 +955,7 @@ result sample:
         "location": 402,
         "active": true,
         "votes": "2.10000000",
-        "state": "Activate",
+        "state": "Active",
         "registerheight": 225,
         "cancelheight": 0,
         "inactiveheight": 0,
@@ -973,7 +970,7 @@ result sample:
         "location": 403,
         "active": true,
         "votes": "0",
-        "state": "Activate",
+        "state": "Active",
         "registerheight": 216,
         "cancelheight": 0,
         "inactiveheight": 0,
@@ -1476,7 +1473,7 @@ parameters:
 | ------- | ------ | ------------------------ |
 | inputs  | string | the hex string of inputs |
 
-result: 
+result:
 amount of all given inputs, the type is string, if not found input will return error
 
 argument sample:
@@ -1511,7 +1508,7 @@ parameters:
 | ------ | ------ | ------------------- |
 | height | uint32 | the height of block |
 
-result: 
+result:
 
 | name              | type          | description                                                  |
 | ----------------- | ------------- | ------------------------------------------------------------ |
@@ -1538,11 +1535,11 @@ result:
 argument sample:
 
 ```json
-{ 
-  "method":"getblockbyheight", 
+{
+  "method":"getblockbyheight",
   "params":{
     "height":"5"
-  } 
+  }
 }
 ```
 
@@ -1649,7 +1646,7 @@ parameters:
 | ------ | ------ | ---------------------------- |
 | height | uint32 | block height about the chain |
 
-result: 
+result:
 
 | name                  | type          | description                         |
 | --------------------- | ------------- | ----------------------------------- |
@@ -1659,11 +1656,11 @@ result:
 argument sample:
 
 ```json
-{ 
-  "method":"getarbitratorgroupbyheight", 
+{
+  "method":"getarbitratorgroupbyheight",
   "params":{
     "height":"310"
-  } 
+  }
 }
 ```
 
@@ -1704,22 +1701,22 @@ parameters:
 | ---- | ------------- | --------------------------------------------- |
 | txs  | array[string] | a list of transaction hashes in string format |
 
-result: 
+result:
 
 a list of existing transaction hashes
 
 argument sample:
 
 ```json
-{ 
-  "method":"getexistwithdrawtransactions", 
+{
+  "method":"getexistwithdrawtransactions",
   "params":{
     "txs":[
       "3edbcc839fd4f16c0b70869f2d477b56a006d31dc7a10d8cb49bd12628d6352e",
       "9132cf82a18d859d200c952aec548d7895e7b654fd1761d5d059b91edbad1768",
       "764691821f937fd566bcf533611a5e5b193008ea1ba1396f67b7b0da22717c02"
     ]
-  } 
+  }
 }
 ```
 
@@ -1737,4 +1734,4 @@ result sample:
 }
 ```
 
-#### 
+####
