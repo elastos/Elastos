@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
-	"math"
 	"sort"
 	"strings"
 
@@ -1189,7 +1188,7 @@ func ListProducers(param Params) map[string]interface{} {
 	start, _ := param.Int("start")
 	limit, ok := param.Int("limit")
 	if !ok {
-		limit = math.MaxInt64
+		limit = -1
 	}
 	s, ok := param.String("state")
 	if ok {
@@ -1201,15 +1200,15 @@ func ListProducers(param Params) map[string]interface{} {
 		producers = Chain.GetState().GetAllProducers()
 	case "pending":
 		producers = Chain.GetState().GetPendingProducers()
-	case "active", "activate":
+	case "active":
 		producers = Chain.GetState().GetActiveProducers()
-	case "inactive", "inactivate":
+	case "inactive":
 		producers = Chain.GetState().GetInactiveProducers()
-	case "cancel", "canceled":
+	case "canceled":
 		producers = Chain.GetState().GetCanceledProducers()
-	case "foundbad", "illegal":
+	case "illegal":
 		producers = Chain.GetState().GetIllegalProducers()
-	case "returneddeposit", "returned":
+	case "returned":
 		producers = Chain.GetState().GetReturnedDepositProducers()
 	default:
 		producers = Chain.GetState().GetProducers()
@@ -1218,15 +1217,18 @@ func ListProducers(param Params) map[string]interface{} {
 	sort.Slice(producers, func(i, j int) bool {
 		return producers[i].Votes() > producers[j].Votes()
 	})
+
 	var ps []Producer
+	var totalVotes common.Fixed64
 	for i, p := range producers {
+		totalVotes += p.Votes()
 		producer := Producer{
 			OwnerPublicKey: hex.EncodeToString(p.Info().OwnerPublicKey),
 			NodePublicKey:  hex.EncodeToString(p.Info().NodePublicKey),
 			Nickname:       p.Info().NickName,
 			Url:            p.Info().Url,
 			Location:       p.Info().Location,
-			Active:         p.State() == state.Activate,
+			Active:         p.State() == state.Active,
 			Votes:          p.Votes().String(),
 			State:          p.State().String(),
 			RegisterHeight: p.RegisterHeight(),
@@ -1238,20 +1240,25 @@ func ListProducers(param Params) map[string]interface{} {
 		ps = append(ps, producer)
 	}
 
-	var resultPs []Producer
-	var totalVotes common.Fixed64
-	for i := start; i < limit && i < int64(len(ps)); i++ {
-		resultPs = append(resultPs, ps[i])
+	count := int64(len(producers))
+	if limit < 0 {
+		limit = count
 	}
-	for i := 0; i < len(ps); i++ {
-		v, _ := common.StringToFixed64(ps[i].Votes)
-		totalVotes += *v
+	var resultPs []Producer
+	if start < count {
+		end := start
+		if start+limit <= count {
+			end = start + limit
+		} else {
+			end = count
+		}
+		resultPs = append(resultPs, ps[start:end]...)
 	}
 
 	result := &Producers{
 		Producers:   resultPs,
 		TotalVotes:  totalVotes.String(),
-		TotalCounts: uint64(len(producers)),
+		TotalCounts: uint64(count),
 	}
 
 	return ResponsePack(Success, result)

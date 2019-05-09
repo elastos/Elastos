@@ -10,9 +10,9 @@ import (
 type degradationState byte
 
 const (
-	Normal       degradationState = 0x00
-	Understaffed degradationState = 0x01
-	Inactive     degradationState = 0x02
+	DSNormal       degradationState = 0x00
+	DSUnderstaffed degradationState = 0x01
+	DSInactive     degradationState = 0x02
 )
 
 // degradation maintains states which will take effect during
@@ -28,7 +28,7 @@ type degradation struct {
 
 func (d *degradation) IsUnderstaffedMode() bool {
 	d.mtx.Lock()
-	result := d.state == Understaffed
+	result := d.state == DSUnderstaffed
 	d.mtx.Unlock()
 
 	return result
@@ -36,7 +36,7 @@ func (d *degradation) IsUnderstaffedMode() bool {
 
 func (d *degradation) IsInactiveMode() bool {
 	d.mtx.Lock()
-	result := d.state == Inactive
+	result := d.state == DSInactive
 	d.mtx.Unlock()
 
 	return result
@@ -58,12 +58,12 @@ func (d *degradation) InactiveModeSwitch(height uint32,
 	isAbleToRecover func() bool) (bool, bool) {
 
 	d.mtx.Lock()
-	if d.state != Normal {
+	if d.state != DSNormal {
 		d.mtx.Unlock()
 		return false, false
 	}
 	if len(d.inactiveTxs) >= MaxNormalInactiveChangesCount {
-		d.state = Inactive
+		d.state = DSInactive
 		d.inactivateHeight = height
 		d.mtx.Unlock()
 
@@ -82,12 +82,12 @@ func (d *degradation) InactiveModeSwitch(height uint32,
 
 func (d *degradation) TrySetUnderstaffed(height uint32) bool {
 	d.mtx.Lock()
-	if d.state != Normal {
+	if d.state != DSNormal {
 		d.mtx.Unlock()
 		return false
 	}
 	d.understaffedSince = height
-	d.state = Understaffed
+	d.state = DSUnderstaffed
 	d.mtx.Unlock()
 	return true
 }
@@ -100,10 +100,10 @@ func (d *degradation) TryLeaveUnderStaffed(isAbleToRecover func() bool) bool {
 	return false
 }
 
-// Reset method reset all 
+// Reset method reset all
 func (d *degradation) Reset() {
 	d.mtx.Lock()
-	d.state = Normal
+	d.state = DSNormal
 	d.inactivateHeight = 0
 	d.understaffedSince = 0
 	d.mtx.Unlock()

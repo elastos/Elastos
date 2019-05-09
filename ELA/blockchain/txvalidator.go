@@ -1057,7 +1057,7 @@ func (b *BlockChain) checkCancelProducerTransaction(txn *Transaction) error {
 		return err
 	}
 
-	if producer.State() == state.FoundBad ||
+	if producer.State() == state.Illegal ||
 		producer.State() == state.Canceled {
 		return errors.New("can not cancel this producer")
 	}
@@ -1072,7 +1072,7 @@ func (b *BlockChain) checkActivateProducerTransaction(txn *Transaction,
 		return err
 	}
 
-	if producer.State() != state.Inactivate {
+	if producer.State() != state.Inactive {
 		return errors.New("can not activate this producer")
 	}
 
