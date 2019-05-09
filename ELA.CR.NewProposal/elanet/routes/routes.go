@@ -217,15 +217,15 @@ func (r *Routes) handlePeersMsg(state *state, peers []dp.PID) {
 		delete(state.addrIndex, pid)
 	}
 
-	// Announce address into P2P network if we become arbiter.
+	// Update peers list.
 	_, isArbiter := newPeers[r.pid]
 	_, wasArbiter := state.peers[r.pid]
+	state.peers = newPeers
+
+	// Announce address into P2P network if we become arbiter.
 	if isArbiter && !wasArbiter {
 		r.handleAnnounce(state)
 	}
-
-	// Update peers list.
-	state.peers = newPeers
 }
 
 func (r *Routes) handleInv(s *state, p *peer.Peer, m *msg.Inv) {
@@ -294,13 +294,8 @@ func (r *Routes) handleGetData(s *state, p *peer.Peer, m *msg.GetData) {
 	}
 }
 
-func (r *Routes) appendAddr(s *state, m *msg.DAddr) error {
+func (r *Routes) appendAddr(s *state, m *msg.DAddr) {
 	hash := m.Hash()
-
-	_, ok := s.peers[m.PID]
-	if !ok {
-		return fmt.Errorf("PID not in arbiter list")
-	}
 
 	// Append received addr into known addr index.
 	s.addrIndex[m.PID][m.Encode] = hash
@@ -309,7 +304,6 @@ func (r *Routes) appendAddr(s *state, m *msg.DAddr) error {
 	// Relay addr to the P2P network.
 	iv := msg.NewInvVect(msg.InvTypeAddress, &hash)
 	r.cfg.RelayAddr(iv, m)
-	return nil
 }
 
 // verifyDAddr verifies if this is a valid DPOS address message.
@@ -380,15 +374,18 @@ func (r *Routes) handleDAddr(s *state, p *peer.Peer, m *msg.DAddr) {
 		return
 	}
 
-	// Append received addr into state.
-	if err := r.appendAddr(s, m); err != nil {
-		log.Warnf("Append addr from %s failed, %s", p, err)
+	_, ok := s.peers[m.PID]
+	if !ok {
+		log.Warnf("PID not in arbiter list")
 
 		// Peers may have disagree with the current producers, so some times we
 		// receive addresses that not in the producers list.  We do not
 		// disconnect the peer even the address not in producers list.
 		return
 	}
+
+	// Append received addr into state.
+	r.appendAddr(s, m)
 
 	// Notify the received DPOS address if the Encode matches.
 	if r.pid.Equal(m.Encode) && r.cfg.OnCipherAddr != nil {
@@ -397,6 +394,13 @@ func (r *Routes) handleDAddr(s *state, p *peer.Peer, m *msg.DAddr) {
 }
 
 func (r *Routes) handleAnnounce(s *state) {
+	// This may be a retry or delayed announce, and the DPoS producers have been
+	// changed.
+	_, ok := s.peers[r.pid]
+	if !ok {
+		return
+	}
+
 	// Do not announce address if connected peers not enough.
 	if len(s.peerCache) < minPeersToAnnounce {
 		// Retry announce after the retry duration.
@@ -445,7 +449,7 @@ func (r *Routes) handleAnnounce(s *state) {
 		}
 		addr.Signature = r.sign(addr.Data())
 
-		// Append and relay the address.
+		// Append and relay the local address.
 		r.appendAddr(s, &addr)
 	}
 }

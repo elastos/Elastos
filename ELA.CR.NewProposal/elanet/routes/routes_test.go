@@ -22,6 +22,7 @@ func TestRoutes_announce(t *testing.T) {
 	pk1, err := pubKey.EncodePoint(true)
 	assert.NoError(t, err)
 
+	relay := make(chan struct{})
 	active := make(chan struct{})
 	routes := New(&Config{
 		PID:        pk1,
@@ -32,7 +33,7 @@ func TestRoutes_announce(t *testing.T) {
 			return
 		},
 		RelayAddr: func(iv *msg.InvVect, data interface{}) {
-			active <- struct{}{}
+			relay <- struct{}{}
 		},
 		OnCipherAddr: func(pid peer.PID, addr []byte) {},
 	})
@@ -71,6 +72,7 @@ func TestRoutes_announce(t *testing.T) {
 		}
 	}()
 
+	relays := 0
 	quit := make(chan struct{})
 	time.AfterFunc(time.Minute, func() {
 		quit <- struct{}{}
@@ -84,11 +86,21 @@ out:
 			checkTimer.Stop()
 			checkTimer.Reset(time.Second)
 
+		case <-relay:
+			relays++
+			if relays > 2 {
+				t.Logf("routes relay(%d) too frequent", relays)
+			}
+
 		case <-checkTimer.C:
 			t.Fatal("routes deadlock")
 
 		case <-quit:
 			break out
 		}
+	}
+
+	if relays == 0 {
+		t.Fatal("no relays found")
 	}
 }
