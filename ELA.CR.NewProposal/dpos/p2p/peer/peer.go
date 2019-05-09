@@ -130,10 +130,10 @@ type Peer struct {
 
 	// These fields are set at creation time and never modified, so they are
 	// safe to read from concurrently without a mutex.
-	addr         string
-	cfg          Config
-	inbound      bool
-	messageFuncs []MessageFunc
+	addr    string
+	cfg     Config
+	inbound bool
+	msgFns  []MessageFunc
 
 	flagsMtx sync.Mutex // protects the peer flags below
 	id       uint64
@@ -159,16 +159,16 @@ type Peer struct {
 }
 
 // AddMessageFunc add a new message handler for the peer.
-func (p *Peer) AddMessageFunc(messageFunc MessageFunc) {
-	if messageFunc != nil {
-		p.messageFuncs = append(p.messageFuncs, messageFunc)
+func (p *Peer) AddMessageFunc(fn MessageFunc) {
+	if fn != nil {
+		p.msgFns = append(p.msgFns, fn)
 	}
 }
 
 // handleMessage will be invoked when a message received.
 func (p *Peer) handleMessage(peer *Peer, msg p2p.Message) {
-	for _, messageFunc := range p.messageFuncs {
-		messageFunc(peer, msg)
+	for _, fn := range p.msgFns {
+		fn(peer, msg)
 	}
 }
 
