@@ -36,11 +36,11 @@ var (
 )
 
 // MainNetSpvParams defines the network parameters for the main network SPV.
-var MainNetSpvParams = config.SpvParams{
+var MainNetSpvParams = config.Params{
 	Magic:      2017001,
-	Foundation: "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
+	Foundation: mainNetFoundation,
 
-	SeedList: []string{
+	DNSSeeds: []string{
 		"node-mainnet-002.elastos.org",
 		"node-mainnet-003.elastos.org",
 		"node-mainnet-004.elastos.org",
@@ -59,11 +59,11 @@ var MainNetSpvParams = config.SpvParams{
 }
 
 // TestNetSpvParams defines the network parameters for the test network SPV.
-var TestNetSpvParams = config.SpvParams{
+var TestNetSpvParams = config.Params{
 	Magic:      2018001,
-	Foundation: "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
+	Foundation: mainNetFoundation,
 
-	SeedList: []string{
+	DNSSeeds: []string{
 		"node-testnet-001.elastos.org",
 		"node-testnet-002.elastos.org",
 		"node-testnet-003.elastos.org",
@@ -75,8 +75,8 @@ var TestNetSpvParams = config.SpvParams{
 }
 
 // RegNetSpvParams defines the network parameters for the regression network SPV.
-var RegNetSpvParams = config.SpvParams{
-	Foundation: "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
+var RegNetSpvParams = config.Params{
+	Foundation: mainNetFoundation,
 }
 
 // MainNetParams defines the network parameters for the main network.
@@ -85,7 +85,7 @@ var MainNetParams = config.Params{
 	Magic:       2018001,
 	DefaultPort: 20608,
 
-	SeedList: []string{
+	DNSSeeds: []string{
 		"node-testnet-001.elastos.org",
 		"node-testnet-002.elastos.org",
 		"node-testnet-003.elastos.org",
@@ -105,8 +105,7 @@ var MainNetParams = config.Params{
 	MinTransactionFee:  100,
 	ExchangeRate:       1,
 	MinCrossChainTxFee: 10000,
-
-	SpvParams: MainNetSpvParams,
+	CheckPowHeaderHeight: 160340,
 }
 
 // TestNetParams defines the network parameters for the test network.
@@ -115,7 +114,7 @@ var TestNetParams = config.Params{
 	Magic:       20180011,
 	DefaultPort: 21608,
 
-	SeedList: []string{
+	DNSSeeds: []string{
 		"node-testnet-001.elastos.org",
 		"node-testnet-002.elastos.org",
 		"node-testnet-003.elastos.org",
@@ -135,14 +134,13 @@ var TestNetParams = config.Params{
 	MinTransactionFee:  100,
 	ExchangeRate:       1,
 	MinCrossChainTxFee: 10000,
-
-	SpvParams: TestNetSpvParams,
+	CheckPowHeaderHeight: 160340,
 }
 
 // RegNetParams defines the network parameters for the regression test network.
 var RegNetParams = config.Params{
 	Name: "regnet",
-	SeedList: []string{
+	DNSSeeds: []string{
 	},
 	Foundation:         testNetFoundation,
 	ElaAssetId:         elaAssetId,
@@ -156,6 +154,12 @@ var RegNetParams = config.Params{
 	MinTransactionFee:  100,
 	ExchangeRate:       1,
 	MinCrossChainTxFee: 10000,
+	CheckPowHeaderHeight: 160340,
+}
 
-	SpvParams: RegNetSpvParams,
+// InstantBlock changes the given network parameter to instant block mode.
+func InstantBlock(cfg *config.Params) {
+	cfg.PowLimitBits = 0x207fffff
+	cfg.TargetTimespan = 1 * time.Second * 10
+	cfg.TargetTimePerBlock = 1 * time.Second
 }

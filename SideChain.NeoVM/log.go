@@ -32,15 +32,15 @@ const (
 
 // configFileWriter returns the configured parameters for log file writer.
 func configFileWriter() (string, int64, int64) {
-	maxPerLogFileSize := defaultMaxPerLogFileSize
-	maxLogsFolderSize := defaultMaxLogsFolderSize
-	if cfg.MaxPerLogFileSize > 0 {
-		maxPerLogFileSize = cfg.MaxPerLogFileSize * elalog.MBSize
+	perLogFileSize := defaultMaxPerLogFileSize
+	logsFolderSize := defaultMaxLogsFolderSize
+	if cfg.PerLogFileSize > 0 {
+		perLogFileSize = cfg.PerLogFileSize * elalog.MBSize
 	}
-	if cfg.MaxLogsFolderSize > 0 {
-		maxLogsFolderSize = cfg.MaxLogsFolderSize * elalog.MBSize
+	if cfg.LogsFolderSize > 0 {
+		logsFolderSize = cfg.LogsFolderSize * elalog.MBSize
 	}
-	return filepath.Join(DataPath, defaultLogDir), maxPerLogFileSize, maxLogsFolderSize
+	return filepath.Join(DataPath, defaultLogDir), perLogFileSize, logsFolderSize
 }
 
 // log is a logger that is initialized with no output filters.  This
@@ -50,7 +50,7 @@ var (
 	fileWriter = elalog.NewFileWriter(configFileWriter())
 	logWriter  = io.MultiWriter(os.Stdout, fileWriter)
 	backend    = elalog.NewBackend(logWriter, elalog.Llongfile)
-	level, _ = elalog.LevelFromString(cfg.LogLevel)
+	level = cfg.LogLevel
 
 	admrlog = backend.Logger("ADMR", elalog.LevelOff)
 	cmgrlog = backend.Logger("CMGR", elalog.LevelOff)

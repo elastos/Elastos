@@ -63,11 +63,6 @@ func main() {
 	eladlog.Infof("Node version: %s", Version)
 	eladlog.Info(GoVersion)
 
-	if loadConfigErr != nil {
-		eladlog.Fatalf("load config file failed %s", loadConfigErr)
-		os.Exit(-1)
-	}
-
 	// listen interrupt signals.
 	interrupt := signal.NewInterrupt()
 
@@ -108,10 +103,7 @@ func main() {
 
 	serviceCfg := spv.Config{
 		DataDir:        filepath.Join(DataPath, DataDir, SpvDir),
-		Magic:          activeNetParams.SpvParams.Magic,
-		DefaultPort:    activeNetParams.SpvParams.DefaultPort,
-		SeedList:       activeNetParams.SpvParams.SeedList,
-		Foundation:     activeNetParams.SpvParams.Foundation,
+		ChainParams:    spvNetParams,
 		GenesisAddress: genesisAddress,
 	}
 	spvService, err := spv.NewService(&serviceCfg)
@@ -156,9 +148,14 @@ func main() {
 	sv.Table = store.NewCacheCodeTable(nc.NewDBCache(ledgerStore))
 
 	txPool := mempool.New(&mempoolCfg)
-	chainCfg.Validator = blockchain.NewValidator(chain.BlockChain)
+	chainCfg.Validator = blockchain.NewValidator(chain.BlockChain, spvService)
 	eladlog.Info("3. Start the P2P networks")
-	server, err := server.New(filepath.Join(DataPath, DataDir), chain.BlockChain, txPool, activeNetParams)
+	server, err := server.New(&server.Config{
+		DataDir:        filepath.Join(DataPath, DataDir),
+		Chain:          chain.BlockChain,
+		TxMemPool:      txPool,
+		ChainParams:    activeNetParams,
+		PermanentPeers: cfg.PermanentPeers,})
 	if err != nil {
 		eladlog.Fatalf("initialize P2P networks failed, %s", err)
 		os.Exit(1)
@@ -169,19 +166,19 @@ func main() {
 	eladlog.Info("4. --Initialize pow service")
 	powCfg := pow.Config{
 		ChainParams:               activeNetParams,
-		MinerAddr:                 cfg.MinerAddr,
+		MinerAddr:                 cfg.PayToAddr,
 		MinerInfo:                 cfg.MinerInfo,
 		Server:                    server,
 		Chain:                     chain.BlockChain,
 		TxMemPool:                 txPool,
 		TxFeeHelper:               txFeeHelper,
 		CreateCoinBaseTx:          pow.CreateCoinBaseTx,
-		GenerateBlock:             GenerateBlock,
+		GenerateBlock:             pow.GenerateBlock,
 		GenerateBlockTransactions: pow.GenerateBlockTransactions,
 	}
 
 	powService := pow.NewService(&powCfg)
-	if cfg.Mining {
+	if cfg.EnableMining {
 		eladlog.Info("Start POW Services")
 		go powService.Start()
 	}
@@ -203,28 +200,32 @@ func main() {
 		GetPayloadInfo:              sv.GetPayloadInfo,
 		GetPayload:                  service.GetPayload,
 	}, mempoolCfg.ChainParams.ElaAssetId)
-	rpcServer := newJsonRpcServer(cfg.HttpJsonPort, service)
-	defer rpcServer.Stop()
-	go func() {
-		if err := rpcServer.Start(); err != nil {
-			eladlog.Errorf("Start HttpJsonRpc server failed, %s", err.Error())
-		}
-	}()
 
-	socketServer := newWebSocketServer(cfg.HttpWsPort, service.HttpService)
-	defer socketServer.Server.Stop()
-	go func() {
-		if err := socketServer.Server.Start(); err != nil {
-			sockLog.Errorf("Start HttpSocket server failed, %s", err.Error())
-		}
-	}()
-
-	if cfg.PrintSyncState {
-		go printSyncState(ledgerStore.ChainStore, server)
+	if cfg.EnableRPC {
+		rpcServer := newJsonRpcServer(cfg.RPCPort, service)
+		defer rpcServer.Stop()
+		go func() {
+			if err := rpcServer.Start(); err != nil {
+				eladlog.Errorf("Start HttpJsonRpc server failed, %s", err.Error())
+			}
+		}()
 	}
 
+	if cfg.EnableWS {
+		socketServer := newWebSocketServer(cfg.WSPort, service.HttpService)
+		defer socketServer.Server.Stop()
+		go func() {
+			if err := socketServer.Server.Start(); err != nil {
+				sockLog.Errorf("Start HttpSocket server failed, %s", err.Error())
+			}
+		}()
+
+		events.Subscribe(socketServer.OnEvent)
+	}
+
+	go printSyncState(ledgerStore.ChainStore, server)
+
 	events.Subscribe(handleRunTimeEvents)
-	events.Subscribe(socketServer.OnEvent)
 
 	<-interrupt.C
 }
