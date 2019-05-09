@@ -61,10 +61,16 @@ func (a simpleAddr) Network() string {
 var _ net.Addr = simpleAddr{}
 
 // newPeerMsg represent a new connected peer.
-type newPeerMsg *serverPeer
+type newPeerMsg struct {
+	sp    *serverPeer
+	reply chan struct{}
+}
 
 // donePeerMsg represent a disconnected peer.
-type donePeerMsg *serverPeer
+type donePeerMsg struct {
+	sp    *serverPeer
+	reply chan struct{}
+}
 
 // broadcastMsg provides the ability to house a message to be broadcast
 // to all connected peers except specified excluded peers.
@@ -571,7 +577,9 @@ func (s *server) outboundPeerConnected(c *connmgr.ConnReq, conn net.Conn) {
 // done along with other performing other desirable cleanup.
 func (s *server) peerDoneHandler(sp *serverPeer) {
 	sp.WaitForDisconnect()
-	s.peerQueue <- donePeerMsg(sp)
+	reply := make(chan struct{})
+	s.peerQueue <- donePeerMsg{sp: sp, reply: reply}
+	<-reply
 	close(sp.quit)
 }
 
@@ -592,8 +600,8 @@ out:
 	for {
 		select {
 		// Deal with peer messages.
-		case p := <-s.peerQueue:
-			s.handlePeerMsg(state, p)
+		case pmsg := <-s.peerQueue:
+			s.handlePeerMsg(state, pmsg)
 
 			// Message to broadcast to all connected peers except those
 			// which are excluded by the message.
@@ -631,13 +639,15 @@ cleanup:
 }
 
 // handlePeerMsg deals with adding/removing and ban peer message.
-func (s *server) handlePeerMsg(state *peerState, sp interface{}) {
-	switch sp := sp.(type) {
+func (s *server) handlePeerMsg(state *peerState, msg interface{}) {
+	switch msg := msg.(type) {
 	case newPeerMsg:
-		s.handleAddPeerMsg(state, sp)
+		s.handleAddPeerMsg(state, msg.sp)
+		msg.reply <- struct{}{}
 
 	case donePeerMsg:
-		s.handleDonePeerMsg(state, sp)
+		s.handleDonePeerMsg(state, msg.sp)
+		msg.reply <- struct{}{}
 
 	}
 }
@@ -650,7 +660,9 @@ func (s *server) AddAddr(pid peer.PID, addr string) {
 
 // AddPeer adds a new peer that has already been connected to the server.
 func (s *server) AddPeer(sp *serverPeer) {
-	s.peerQueue <- newPeerMsg(sp)
+	reply := make(chan struct{})
+	s.peerQueue <- newPeerMsg{sp: sp, reply: reply}
+	<-reply
 }
 
 // BroadcastMessage sends msg to all peers currently connected to the server
