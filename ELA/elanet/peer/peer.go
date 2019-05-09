@@ -237,11 +237,12 @@ func (p *Peer) maybeAddDeadline(pendingResponses map[string]time.Time, msgCmd st
 		pendingResponses[p2p.CmdInv] = deadline
 
 	case p2p.CmdGetData:
-		// Expects a block, merkleblock, tx, or notfound message.
+		// Expects all block, merkleblock, tx, notfound or daddr message.
 		pendingResponses[p2p.CmdBlock] = deadline
 		pendingResponses[p2p.CmdMerkleBlock] = deadline
 		pendingResponses[p2p.CmdTx] = deadline
 		pendingResponses[p2p.CmdNotFound] = deadline
+		pendingResponses[p2p.CmdDAddr] = deadline
 	}
 }
 
@@ -275,8 +276,7 @@ out:
 			case peer.SCCSendMessage:
 				// Add a deadline for the expected response
 				// message if needed.
-				p.maybeAddDeadline(pendingResponses,
-					msg.MSG.CMD())
+				p.maybeAddDeadline(pendingResponses, msg.MSG.CMD())
 
 			case peer.SCCReceiveMessage:
 				// Remove received messages from the expected
@@ -295,6 +295,7 @@ out:
 					delete(pendingResponses, p2p.CmdMerkleBlock)
 					delete(pendingResponses, p2p.CmdTx)
 					delete(pendingResponses, p2p.CmdNotFound)
+					delete(pendingResponses, p2p.CmdDAddr)
 
 				default:
 					delete(pendingResponses, msgCmd)
