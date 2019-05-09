@@ -82,6 +82,22 @@ var (
 		Usage: "JSON-RPC server listening port `<number>`",
 	}
 
+	// Info flags
+	InfoStartFlag = cli.IntFlag{
+		Name:  "start",
+		Usage: "the start index of producers",
+		Value: 0,
+	}
+	InfoLimitFlag = cli.Int64Flag{
+		Name:  "limit",
+		Usage: "the limit count of producers",
+		Value: -1,
+	}
+	InfoProducerStateFlag = cli.StringFlag{
+		Name:  "state",
+		Usage: "the producer state you want",
+	}
+
 	// Config flags
 	ConfigFileFlag = cli.StringFlag{
 		Name:  "conf",

@@ -177,9 +177,18 @@ func NewCommand() *cli.Command {
 			{
 				Name:  "listproducers",
 				Usage: "list current producers information",
+				Flags: []cli.Flag{
+					cmdcom.InfoStartFlag,
+					cmdcom.InfoLimitFlag,
+					cmdcom.InfoProducerStateFlag,
+				},
 				Action: func(c *cli.Context) error {
 					result, err := cmdcom.RPCCall("listproducers",
-						http.Params{})
+						http.Params{
+							"start": c.Int("start"),
+							"limit": c.Int64("limit"),
+							"state": c.String("state"),
+						})
 					if err != nil {
 						fmt.Println("error: get transaction pool failed,", err)
 						return err
