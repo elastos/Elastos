@@ -342,7 +342,8 @@ func (a *arbitrators) distributeWithNormalArbitrators(
 
 	totalBlockConfirmReward := float64(reward) * 0.25
 	totalTopProducersReward := float64(reward) - totalBlockConfirmReward
-	individualBlockConfirmReward := common.Fixed64(math.Floor(totalBlockConfirmReward / float64(len(ownerHashes))))
+	individualBlockConfirmReward := common.Fixed64(
+		math.Floor(totalBlockConfirmReward / float64(len(ownerHashes))))
 	totalVotesInRound := a.totalVotesInRound
 	if totalVotesInRound == common.Fixed64(0) {
 		a.arbitersRoundReward[a.chainParams.CRCAddress] = reward
@@ -353,7 +354,8 @@ func (a *arbitrators) distributeWithNormalArbitrators(
 	realDPOSReward := common.Fixed64(0)
 	for _, ownerHash := range ownerHashes {
 		votes := a.ownerVotesInRound[*ownerHash]
-		individualProducerReward := common.Fixed64(float64(votes) * rewardPerVote)
+		individualProducerReward := common.Fixed64(math.Floor(float64(
+			votes) * rewardPerVote))
 		r := individualBlockConfirmReward + individualProducerReward
 		if _, ok := a.crcArbitratorsProgramHashes[*ownerHash]; ok {
 			r = individualBlockConfirmReward
@@ -367,7 +369,8 @@ func (a *arbitrators) distributeWithNormalArbitrators(
 	candidateOwnerHashes := a.candidateOwnerProgramHashes
 	for _, ownerHash := range candidateOwnerHashes {
 		votes := a.ownerVotesInRound[*ownerHash]
-		individualProducerReward := common.Fixed64(float64(votes) * rewardPerVote)
+		individualProducerReward := common.Fixed64(math.Floor(float64(
+			votes) * rewardPerVote))
 		a.arbitersRoundReward[*ownerHash] = individualProducerReward
 
 		realDPOSReward += individualProducerReward
