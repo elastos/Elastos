@@ -177,6 +177,7 @@ func dposCheckConfirmInBlockPool(L *lua.LState) int {
 	blockHash := L.ToString(2)
 	hash, _ := common.Uint256FromHexString(blockHash)
 
+	time.Sleep(time.Millisecond * 100)
 	_, ok := m.Peer.GetBlockPool().GetConfirm(*hash)
 	L.Push(lua.LBool(ok))
 

@@ -165,17 +165,13 @@ func (p *ProposalDispatcher) FinishProposal() bool {
 
 	proposal, blockHash := p.processingProposal.Sponsor, p.processingBlock.Hash()
 
-	var result = true
-	if !p.TryAppendAndBroadcastConfirmBlockMsg() {
-		log.Warn("Add block failed, no need to broadcast confirm message")
-		result = false
-	}
+	p.AppendConfirm()
 
 	proposalEvent := log.ProposalEvent{
 		Sponsor:   common.BytesToHexString(proposal),
 		BlockHash: blockHash,
 		EndTime:   p.cfg.TimeSource.AdjustedTime(),
-		Result:    result,
+		Result:    true,
 	}
 	p.cfg.EventMonitor.OnProposalFinished(&proposalEvent)
 	p.FinishConsensus()
@@ -291,7 +287,7 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 	return true, true
 }
 
-func (p *ProposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
+func (p *ProposalDispatcher) AppendConfirm() {
 	currentVoteSlot := &payload.Confirm{
 		Proposal: *p.processingProposal,
 		Votes:    make([]payload.DPOSProposalVote, 0),
@@ -300,14 +296,13 @@ func (p *ProposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
 		currentVoteSlot.Votes = append(currentVoteSlot.Votes, *v)
 	}
 
-	log.Info("[TryAppendAndBroadcastConfirmBlockMsg] append confirm.")
-	inMainChain, isOrphan, err := p.cfg.Manager.AppendConfirm(currentVoteSlot)
-	if err != nil || !inMainChain || isOrphan {
-		log.Error("[AppendConfirm] err:", err.Error())
-		return false
-	}
-
-	return true
+	log.Info("[AppendConfirm] append confirm.")
+	go func() {
+		if _, _, err := p.cfg.Manager.AppendConfirm(
+			currentVoteSlot); err != nil {
+			log.Warn("[AppendConfirm] append failed: ", err)
+		}
+	}()
 }
 
 func (p *ProposalDispatcher) OnBlockAdded(b *types.Block) {
