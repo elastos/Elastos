@@ -15,12 +15,14 @@ export const bg = {
   lighterGray: '#F2F6FB',
   blue: '#f6f9fd',
   dark: '#102532',
+  primaryDark: primary.dark,
   navy: '#173045',
   obsidian: '#0F2631',
   obsidianTransparent: 'rgba(15,38,49,0.27)',
   middleGreen: '#22384C',
 }
 export const text = {
+  primary: primary.default,
   primaryDark: primary.dark,
   default: '#333',
   green: '#1DE9B6',

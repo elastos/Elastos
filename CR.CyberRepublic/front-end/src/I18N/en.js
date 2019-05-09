@@ -1434,6 +1434,7 @@ const en = {
       positions: {
         title: 'SECRETARIAT - OPEN POSITIONS',
         jobDesc: 'JOB DESCRIPTION',
+        toastMsg: 'We are now hiring for Council and Secretariat positions.',
         howtoApply: {
           title: 'HOW TO APPLY',
           desc: 'Apply for it via email: secretariat@cyberrepublic.org',

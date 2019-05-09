@@ -1433,6 +1433,7 @@ const zh = {
       positions: {
         title: '秘书处——开放职位',
         jobDesc: '工作职责描述',
+        toastMsg: '目前委员会和秘书处有职位可以申请。',
         howtoApply: {
           title: '如何申请',
           desc: '请发申请邮件至: secretariat@cyberrepublic.org',

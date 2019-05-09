@@ -8,6 +8,8 @@ import PersonCard from './PersonCard'
 import BGImg from './BGImg'
 import { text, border } from '@/constants/color'
 import { breakPoint } from '@/constants/breakPoint'
+import Toast from '@/module/common/Toast'
+
 import './style.scss'
 
 const TabPane = Tabs.TabPane
@@ -25,6 +27,8 @@ export default class extends StandardPage {
   ord_renderContent() {
     return (
       <div className="p_cs">
+        <Toast storageKey="openPositions" message={I18N.get('cs.secretariat.positions.toastMsg')} defaultDisplay={false} />
+
         <div className="ebp-header-divider" />
         <div className="p_admin_index ebp-wrap">
           <div className="d_box">

@@ -41,10 +41,10 @@ export default class extends BasePage {
         {this.state.showMobile && (
         <Motion {...mp}>
           {
-                    (tar) => {
-                      return <MobileMenu animateStyle={s.style_fn(tar)} toggleMobileMenu={this.toggleMobileMenu.bind(this)}/>
-                    }
-                  }
+            (tar) => {
+              return <MobileMenu animateStyle={s.style_fn(tar)} toggleMobileMenu={this.toggleMobileMenu.bind(this)}/>
+            }
+          }
         </Motion>
         )}
         <Header toggleMobileMenu={this.toggleMobileMenu.bind(this)}/>

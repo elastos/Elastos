@@ -235,10 +235,7 @@ export default class extends BaseComponent {
   }
 
   ord_render() {
-    const isLogin = this.props.isLogin
-    const acctDropdown = this.buildAcctDropdown()
     const helpDropdown = this.buildHelpDropdown()
-    const resourcesDropdown = this.buildResourcesDropdown()
 
     return (
       <Header className="c_Header">
@@ -332,20 +329,19 @@ export default class extends BaseComponent {
           }
         </Menu>
         <div className="clearfix" />
-        {!this.state.dismissed && !this.isPermanentlyDismissed()
-      && this.props.isLogin && this.hasIncompleteProfile() && this.renderToast()}
+        {this.renderProfileToast()}
         {this.renderCompleteProfileModal()}
       </Header>
     )
   }
 
-  completeProfile() {
+  completeProfile = () => {
     this.setState({
       completing: true,
     })
   }
 
-  dismissToast() {
+  dismissToast = () => {
     this.setState({
       dismissed: true,
     })
@@ -357,14 +353,19 @@ export default class extends BaseComponent {
     return localStorage.getItem('complete-profile-dismissed')
   }
 
-  renderToast() {
-    return (
-      <div className="fill-profile-toast">
-        <a onClick={this.completeProfile.bind(this)}>
+  renderProfileToast() {
+    const isShow = !this.state.dismissed
+      && !this.isPermanentlyDismissed()
+      && this.props.isLogin
+      && this.hasIncompleteProfile()
+
+    return isShow && (
+      <div className="top-toast">
+        <a onClick={this.completeProfile}>
           {I18N.get('profile.complete')}
           <Icon type="right" style={{ marginLeft: 8 }} />
         </a>
-        <a className="pull-right toast-close-container" onClick={this.dismissToast.bind(this)}>
+        <a className="pull-right toast-close-container" onClick={this.dismissToast}>
           <Icon type="close" />
         </a>
       </div>
