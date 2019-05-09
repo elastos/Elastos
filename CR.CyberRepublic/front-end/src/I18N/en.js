@@ -248,6 +248,7 @@ const en = {
   'suggestion.editHistory': 'Edit History',
   'suggestion.showEditHistory': 'Show Edit History',
   'suggestion.edited': 'Edited',
+  'suggestion.form.mention.allCouncil': 'All Council Members',
   'suggestion.form.fields.suggestion': 'Suggestion',
   'suggestion.form.fields.subject': 'Subject',
   'suggestion.form.fields.desc': 'Description',

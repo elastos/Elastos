@@ -248,6 +248,7 @@ const zh = {
   'suggestion.editHistory': '编辑历史',
   'suggestion.showEditHistory': '查看编辑历史',
   'suggestion.edited': '编辑于',
+  'suggestion.form.mention.allCouncil': '所有委员',
   'suggestion.form.fields.suggestion': '建议',
   'suggestion.form.fields.subject': '标题',
   'suggestion.form.fields.desc': '描述',

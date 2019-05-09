@@ -14,6 +14,7 @@ import change_password from './change_password'
 import forgot_password from './forgot_password'
 import reset_password from './reset_password'
 import list_users from './list_users'
+import getCouncilMembers from './getCouncilMembers'
 import comment from './comment'
 import subscribe from './subscribe'
 import unsubscribe from './unsubscribe'
@@ -92,6 +93,11 @@ export default Base.setRouter([
     {
         path : '/list',
         router : list_users,
+        method : 'get'
+    },
+    {
+        path : '/getCouncilMembers',
+        router : getCouncilMembers,
         method : 'get'
     },
     {
