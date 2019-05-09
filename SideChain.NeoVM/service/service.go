@@ -19,12 +19,13 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
 	vmerr "github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/errors"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/blockchain"
 )
 
 type HttpServiceExtend struct {
 	*sideser.HttpService
 
-	cfg   *sideser.Config
+	cfg        *sideser.Config
 	elaAssetID Uint256
 }
 
@@ -32,7 +33,7 @@ func NewHttpService(cfg *sideser.Config, assetid Uint256) *HttpServiceExtend {
 	server := &HttpServiceExtend{
 		HttpService: sideser.NewHttpService(cfg),
 		cfg:         cfg,
-		elaAssetID: assetid,
+		elaAssetID:  assetid,
 	}
 	return server
 }
@@ -199,7 +200,6 @@ func GetPayloadInfo(p side.Payload, pVersion byte) sideser.PayloadInfo {
 	return nil
 }
 
-
 func (s *HttpServiceExtend) GetReceivedByAddress(param http.Params) (interface{}, error) {
 	tokenValueList := make(map[Uint256]*big.Int)
 	var elaValue Fixed64
@@ -252,7 +252,7 @@ func (s *HttpServiceExtend) ListUnspent(param http.Params) (interface{}, error) 
 	for _, address := range addresses {
 		programHash, err := Uint168FromAddress(address)
 		if err != nil {
-			return nil, errors.New("Invalid address: "+address)
+			return nil, errors.New("Invalid address: " + address)
 		}
 		unspends, err := s.cfg.Chain.GetUnspents(*programHash)
 		if err != nil {
@@ -263,7 +263,7 @@ func (s *HttpServiceExtend) ListUnspent(param http.Params) (interface{}, error) 
 		for _, unspent := range unspents {
 			_, height, err := s.cfg.Chain.GetTransaction(unspent.TxId)
 			if err != nil {
-				return nil, errors.New("unknown transaction "+unspent.TxId.String()+" from persisted utxo")
+				return nil, errors.New("unknown transaction " + unspent.TxId.String() + " from persisted utxo")
 			}
 
 			result = append(result, UTXOInfo{
@@ -282,14 +282,14 @@ func (s *HttpServiceExtend) ListUnspent(param http.Params) (interface{}, error) 
 func (s *HttpServiceExtend) InvokeScript(param http.Params) (interface{}, error) {
 	script, ok := param.String("script")
 	if !ok {
-		return nil, errors.New("Invalid script: "+ script)
+		return nil, errors.New("Invalid script: " + script)
 	}
 	code, err := HexStringToBytes(script)
 	if err != nil {
 		return nil, errors.New("script is error hexString")
 	}
 
-	returntype, ok:= param.String("returntype")
+	returntype, ok := param.String("returntype")
 	if !ok {
 		returntype = "Void"
 	}
@@ -334,11 +334,11 @@ func (s *HttpServiceExtend) InvokeFunction(param http.Params) (interface{}, erro
 
 	script, ok := param.String("scripthash")
 	if !ok {
-		return nil, errors.New("Invalid hex: "+ script)
+		return nil, errors.New("Invalid hex: " + script)
 	}
 	codeHashBytes, err := HexStringToBytes(script)
 	if err != nil {
-		return nil, errors.New("Invalid hex: "+ err.Error())
+		return nil, errors.New("Invalid hex: " + err.Error())
 	}
 	codeHash, err := Uint168FromBytes(codeHashBytes)
 	if err != nil {
@@ -365,42 +365,42 @@ func (s *HttpServiceExtend) InvokeFunction(param http.Params) (interface{}, erro
 	return ret, nil
 }
 
-func paraseJsonToBytes(item map[string]interface{} , builder *avm.ParamsBuilder) error {
-		value := item["value"]
-		if item["type"] == "Boolean" {
-			builder.EmitPushBool(value.(bool))
-		} else if item["type"] == "Integer" {
-			value := value.(float64)
-			builder.EmitPushInteger(int64(value))
-		} else if item["type"] == "String" {
-			builder.EmitPushByteArray([]byte(value.(string)))
-		} else if item["type"] == "ByteArray" || item["type"] == "Hash256" || item["type"] == "Hash168" {
-			paramBytes, err := HexStringToBytes(value.(string))
-			if err != nil {
-				return errors.New(fmt.Sprint("Invalid param \"", item["type"], "\": ", value))
-			}
-			builder.EmitPushByteArray(paramBytes)
-		} else if item["type"] == "Hash160" {
-			paramBytes, err := HexStringToBytes(value.(string))
-			if err != nil {
-				return errors.New(fmt.Sprint("Invalid param \"", item["type"], "\": ", value))
-			}
-			if len(paramBytes) == 21 {
-				temp := make([]byte, 20)
-				copy(temp, paramBytes[1:])
-				paramBytes = temp
-			}
-			builder.EmitPushByteArray(paramBytes)
-		} else if item["type"] == "Array" {
-			count := len(value.([]interface{}))
-			for i := count - 1; i >= 0 ; i-- {
-				list := value.([]interface{})
-				paraseJsonToBytes(list[i].(map[string]interface{}), builder)
-			}
-
-			builder.EmitPushInteger(int64(count))
-			builder.Emit(avm.PACK)
+func paraseJsonToBytes(item map[string]interface{}, builder *avm.ParamsBuilder) error {
+	value := item["value"]
+	if item["type"] == "Boolean" {
+		builder.EmitPushBool(value.(bool))
+	} else if item["type"] == "Integer" {
+		value := value.(float64)
+		builder.EmitPushInteger(int64(value))
+	} else if item["type"] == "String" {
+		builder.EmitPushByteArray([]byte(value.(string)))
+	} else if item["type"] == "ByteArray" || item["type"] == "Hash256" || item["type"] == "Hash168" {
+		paramBytes, err := HexStringToBytes(value.(string))
+		if err != nil {
+			return errors.New(fmt.Sprint("Invalid param \"", item["type"], "\": ", value))
 		}
+		builder.EmitPushByteArray(paramBytes)
+	} else if item["type"] == "Hash160" {
+		paramBytes, err := HexStringToBytes(value.(string))
+		if err != nil {
+			return errors.New(fmt.Sprint("Invalid param \"", item["type"], "\": ", value))
+		}
+		if len(paramBytes) == 21 {
+			temp := make([]byte, 20)
+			copy(temp, paramBytes[1:])
+			paramBytes = temp
+		}
+		builder.EmitPushByteArray(paramBytes)
+	} else if item["type"] == "Array" {
+		count := len(value.([]interface{}))
+		for i := count - 1; i >= 0; i-- {
+			list := value.([]interface{})
+			paraseJsonToBytes(list[i].(map[string]interface{}), builder)
+		}
+
+		builder.EmitPushInteger(int64(count))
+		builder.Emit(avm.PACK)
+	}
 	return nil
 }
 
@@ -435,7 +435,7 @@ func getResult(item datatype.StackItem, returnType string) interface{} {
 	case *datatype.Integer:
 		return item.GetBigInteger().Int64()
 	case *datatype.ByteArray:
-		 return item.GetByteArray()
+		return item.GetByteArray()
 	case *datatype.GeneralInterface:
 		interop := item.GetInterface()
 		buf := bytes.NewBuffer([]byte{})
@@ -459,7 +459,7 @@ func (s *HttpServiceExtend) GetOpPrice(param http.Params) (interface{}, error) {
 
 	op, ok := param.String("op")
 	if !ok {
-		return ret, errors.New("Invalid script: "+ op)
+		return ret, errors.New("Invalid script: " + op)
 	}
 	isSysCall := false
 	opcode, err := avm.GetOPCodeByName(op)
@@ -525,4 +525,70 @@ func ArrayString(value interface{}) ([]string, bool) {
 	default:
 		return nil, false
 	}
+}
+
+func (s *HttpServiceExtend) GetTransactionReceipt(param http.Params) (interface{}, error) {
+	var ret map[string]interface{}
+	txid, ok := param.String("txid")
+	if !ok {
+		return ret, errors.New("Invalid params is txid: ")
+	}
+	storedb := blockchain.DefaultChain.Store
+	hash, err := Uint256FromHexString(txid)
+	if err != nil {
+		return ret, errors.New("Invalid params value: " + txid)
+	}
+
+	tx, blockHash, blockNumber, index := storedb.ReadTransaction(*hash)
+	if tx == nil {
+		data := BytesReverse(hash.Bytes())
+		copy(hash[:], data[:])
+		tx, blockHash, blockNumber, index = storedb.ReadTransaction(*hash)
+		if tx == nil {
+			return ret, errors.New("no found tx: " + txid)
+		}
+	}
+	receipts, err := storedb.GetReceipts(blockNumber, &blockHash)
+	if err != nil {
+		return nil, err
+	}
+
+	block, err := s.cfg.Chain.GetBlockByHash(blockHash)
+	if err != nil {
+		return nil, err
+	}
+
+	if !receipts.Hash().IsEqual(block.ReceiptHash) {
+		return nil, errors.New("error receipts: " + receipts.Hash().String())
+	}
+
+	for i, receipt := range receipts {
+		if receipt.TransactionIndex == index {
+			index = uint32(i)
+			break
+		}
+	}
+	receipt := receipts[index]
+
+	ret = map[string]interface{}{
+		"state":            receipt.Status,
+		"blockHash":        blockHash.String(),
+		"blockNumber":      blockNumber,
+		"transactionHash":  tx.Hash().String(),
+		"transactionIndex": receipt.TransactionIndex,
+		"gasUsed":          receipt.GasUsed,
+		"contractAddress":  receipt.ContractAddress.String(),
+		"logs":             receipt.Logs,
+	}
+
+	if receipt.Logs == nil {
+		ret["logs"] = [][]*types.Log{}
+	} else {
+		logs := make([]string, 0)
+		for _, l := range receipt.Logs {
+			logs = append(logs, l.String())
+		}
+		ret["logs"] = logs
+	}
+	return ret, nil
 }

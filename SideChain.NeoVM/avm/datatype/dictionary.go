@@ -86,3 +86,12 @@ func (dic *Dictionary) GetArray() []StackItem {
 func (dic *Dictionary) GetBigInteger() *big.Int {
 	return big.NewInt(0)
 }
+
+func (dic *Dictionary) String() string {
+	str := "{"
+	for temp := range dic.dic {
+		str += temp.String() + ":" + dic.dic[temp].String() + ","
+	}
+	str += "}"
+	return str
+}

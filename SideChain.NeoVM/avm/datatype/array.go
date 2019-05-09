@@ -75,3 +75,16 @@ func (a *Array) Reverse() {
 	}
 	a.items = items
 }
+
+func (a *Array) String() string {
+	len := len(a.items)
+	data := "["
+	for i := 0; i < len; i++ {
+		data += a.items[i].String()
+		if i < len - 1 {
+			data +=  ","
+		}
+	}
+	data += "]"
+	return data
+}

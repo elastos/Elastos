@@ -2,8 +2,11 @@ package datatype
 
 import (
 	"math/big"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/interfaces"
 	"bytes"
+
+	"github.com/elastos/Elastos.ELA/common"
+
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/interfaces"
 )
 
 type GeneralInterface struct {
@@ -52,4 +55,8 @@ func (ii *GeneralInterface) GetArray() []StackItem {
 
 func (ii *GeneralInterface) GetMap() map[StackItem]StackItem {
 	return nil
+}
+
+func (ii *GeneralInterface) String() string {
+	return common.BytesToHexString(ii.GetByteArray())
 }

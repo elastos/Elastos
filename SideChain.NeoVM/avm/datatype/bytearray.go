@@ -86,3 +86,7 @@ func (ba *ByteArray) Bytes() []byte {
 func (ba *ByteArray) GetMap() map[StackItem]StackItem {
 	return nil
 }
+
+func (ba *ByteArray) String() string {
+	return common.BytesToHexString(ba.value)
+}

@@ -14,4 +14,5 @@ type StackItem interface {
 	GetInterface() interfaces.IGeneralInterface
 	GetArray() []StackItem
 	GetMap() map[StackItem]StackItem
+	String() string
 }

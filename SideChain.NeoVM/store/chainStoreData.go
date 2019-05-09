@@ -190,8 +190,12 @@ func (c *LedgerStore) PersistDeployTransaction(block *side.Block, tx *side.Trans
 	return nil
 }
 
-func (c *LedgerStore) persisInvokeTransaction(block *side.Block, tx *side.Transaction, batch database.Batch) error {
+func (c *LedgerStore) PersisInvokeTransaction(block *side.Block, tx *side.Transaction, batch database.Batch) (*types.Receipt, error) {
 	payloadInvoke := tx.Payload.(*types.PayloadInvoke)
+	receipt, err := types.NewReceipt(payloadInvoke.CodeHash, tx, block)
+	if err != nil {
+		log.Errorf("NewReceipt failed, txid:%s, error:%s", tx.Hash(), err.Error())
+	}
 	constractState := states.NewContractState()
 	if !payloadInvoke.CodeHash.IsEqual(common.Uint168{}) {
 		contract, err := c.GetContract(&payloadInvoke.CodeHash)
@@ -203,8 +207,10 @@ func (c *LedgerStore) persisInvokeTransaction(block *side.Block, tx *side.Transa
 				TxID:     tx.Hash().String(),
 				CodeHash: payloadInvoke.CodeHash.String(),
 			})
+
+			c.onInvokeFailed(receipt, 0)
 			log.Errorf("invoke transaction failed, txid:%s, error:%s", tx.Hash(), err.Error())
-			return err
+			return receipt, err
 		}
 		state, err := states.GetStateValue(sb.ST_Contract, contract)
 		if err != nil {
@@ -215,8 +221,9 @@ func (c *LedgerStore) persisInvokeTransaction(block *side.Block, tx *side.Transa
 				TxID:     tx.Hash().String(),
 				CodeHash: payloadInvoke.CodeHash.String(),
 			})
+			c.onInvokeFailed(receipt, 0)
 			log.Errorf("invoke transaction failed, txid:%s, error:%s", tx.Hash(), err.Error())
-			return err
+			return receipt, err
 		}
 		constractState = state.(*states.ContractState)
 	}
@@ -245,6 +252,7 @@ func (c *LedgerStore) persisInvokeTransaction(block *side.Block, tx *side.Transa
 			TxID:     tx.Hash().String(),
 			CodeHash: payloadInvoke.CodeHash.String(),
 		})
+		c.onInvokeFailed(receipt, 0)
 		log.Errorf("invoke transaction failed, txid:%s, error:%s", tx.Hash(), err.Error())
 	}
 
@@ -257,12 +265,15 @@ func (c *LedgerStore) persisInvokeTransaction(block *side.Block, tx *side.Transa
 			TxID:     tx.Hash().String(),
 			CodeHash: payloadInvoke.CodeHash.String(),
 		})
+		c.onInvokeFailed(receipt, uint64((smartcontract.Engine.(*avm.ExecutionEngine)).GetGasConsumed()))
 		log.Errorf("invoke transaction failed, txid:%s, error:%s", tx.Hash(), err.Error())
-		return err
+		return receipt, err
 	}
 	log.Info("InvokeContract ret=", ret)
-	stateMachine.CloneCache.Commit()
-	dbCache.Commit()
+	if batch != nil {
+		stateMachine.CloneCache.Commit()
+		dbCache.Commit()
+	}
 	events.Notify(event.ETInvokeTransaction, &ResponseExt{
 		Action:   INVOKE_TRANSACTION,
 		Result:   true,
@@ -270,8 +281,131 @@ func (c *LedgerStore) persisInvokeTransaction(block *side.Block, tx *side.Transa
 		TxID:     tx.Hash().String(),
 		CodeHash: payloadInvoke.CodeHash.String(),
 	})
+	var notifyevents []service.NotifyEventArgs
+	notifyevents = stateMachine.StateReader.GetNotifyEvents()
+	c.onInvokeSucssed(receipt, uint64((smartcontract.Engine.(*avm.ExecutionEngine)).GetGasConsumed()),
+		notifyevents)
+	return receipt, nil
+}
 
-	return nil
+func (c *LedgerStore) onInvokeFailed(receipt *types.Receipt, gas uint64) {
+	receipt.Status = false
+	receipt.GasUsed = gas
+}
+
+func (c *LedgerStore) onInvokeSucssed(receipt *types.Receipt, gas uint64,
+	notifyevents []service.NotifyEventArgs) {
+	receipt.Status = true
+	receipt.GasUsed = gas
+	for _, evt := range notifyevents {
+		l := types.Log{}
+		l.BlockNumber = receipt.BlockNumber
+		l.TxHash = receipt.TxHash.String()
+		l.TxIndex = receipt.TransactionIndex
+		l.Index = uint32(len(receipt.Logs))
+		l.Address = receipt.ContractAddress.String()
+		l.LogItem = evt.GetStateItem()
+		receipt.Logs = append(receipt.Logs, &l)
+	}
+
+}
+
+func (c *LedgerStore) WriteReceipts(block *side.Block, receipts types.Receipts) error {
+	buf := new(bytes.Buffer)
+	len := len(receipts)
+	err := common.WriteVarUint(buf, uint64(len))
+	if err != nil {
+		return err
+	}
+	for _, receipt := range receipts {
+		err := receipt.Serialize(buf, 0)
+		if err != nil {
+			log.Errorf("Failed to encode block receipts=", err)
+			return err
+		}
+	}
+	return c.Put(blockReceiptsKey(block.Height, block.Hash()), buf.Bytes())
+}
+
+func (c *LedgerStore) GetReceipts(height uint32, hash *common.Uint256) (types.Receipts, error) {
+	data, err := c.Get(blockReceiptsKey(height, *hash))
+	if err != nil {
+		return nil, err
+	}
+	reader := bytes.NewReader(data)
+
+	len, err := common.ReadVarUint(reader, 0)
+	if err != nil {
+		return nil, err
+	}
+	block, err := c.GetBlock(*hash)
+	if err != nil {
+		return nil, err
+	}
+	rs := make(types.Receipts, len)
+	var i uint64
+	for i = 0; i < len; i++ {
+		rs[i] = &types.Receipt{}
+		err := rs[i].Deserialize(reader, 0)
+		rs[i].BlockNumber = height
+		rs[i].TransactionIndex, _ = rs[i].GetTxIndex(rs[i].TxHash, block)
+		rs[i].BlockHash = *hash
+		if err != nil {
+			return nil, err
+		}
+		for _, log := range rs[i].Logs {
+			log.BlockHash = hash.String()
+		}
+	}
+	return rs, nil
+}
+
+// WriteTxLookupEntries stores a positional metadata for every transaction from
+// a block, enabling hash based transaction and receipt lookups.
+func (c *LedgerStore) WriteTxLookupEntries(block *side.Block) {
+	for _, tx := range block.Transactions {
+		if err := c.Put(txLookupKey(tx.Hash()), block.Hash().Bytes()); err != nil {
+			log.Errorf("Failed to store transaction lookup entry", err)
+		}
+	}
+}
+
+// DeleteTxLookupEntry removes all transaction data associated with a hash.
+func (c *LedgerStore) DeleteTxLookupEntry(hash common.Uint256) error {
+	return c.Delete(txLookupKey(hash))
+}
+
+// ReadTxLookupEntry retrieves the positional metadata associated with a transaction
+// hash to allow retrieving the transaction or receipt by hash.
+func (c *LedgerStore) GetTxLookupEntry(hash common.Uint256) common.Uint256 {
+	data, _ := c.Get(txLookupKey(hash))
+	blockHash := &common.Uint256{}
+	if len(data) == common.UINT256SIZE {
+		blockHash, _ = common.Uint256FromBytes(data)
+	}
+	return *blockHash
+}
+
+// ReadTransaction retrieves a specific transaction from the database, along with
+// its added positional metadata.
+func (c *LedgerStore) ReadTransaction(hash common.Uint256) (*side.Transaction, common.Uint256, uint32, uint32) {
+	blockHash := c.GetTxLookupEntry(hash)
+	if blockHash == (common.Uint256{}) {
+		return nil, common.Uint256{}, 0, 0
+	}
+	block, err := c.GetBlock(blockHash)
+	if err != nil {
+		log.Error("not found block:", blockHash.String())
+		return nil, blockHash, 0, 0
+	}
+
+	for txIndex, tx := range block.Transactions {
+		if tx.Hash().IsEqual(hash) {
+			return tx, blockHash, block.Height, uint32(txIndex)
+		}
+	}
+	log.Error("Transaction not found", "number", block.Height, "hash", blockHash, "txhash", hash)
+	return nil, blockHash, block.Height, 0
 }
 
 func (c *LedgerStore) GetContract(codeHash *common.Uint168) ([]byte, error) {

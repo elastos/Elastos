@@ -17,6 +17,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/events"
 	sw "github.com/elastos/Elastos.ELA.SideChain/service/websocket"
+	sideTypes "github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA/utils/signal"
@@ -30,6 +31,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/event"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/datatype"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/service/websocket"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
 )
 
 const (
@@ -174,7 +176,7 @@ func main() {
 		TxMemPool:                 txPool,
 		TxFeeHelper:               txFeeHelper,
 		CreateCoinBaseTx:          pow.CreateCoinBaseTx,
-		GenerateBlock:             pow.GenerateBlock,
+		GenerateBlock:             GenerateBlock,
 		GenerateBlockTransactions: pow.GenerateBlockTransactions,
 	}
 
@@ -256,6 +258,7 @@ func newJsonRpcServer(port uint16, service *sv.HttpServiceExtend) *jsonrpc.Serve
 	s.RegisterAction("invokescript", service.InvokeScript, "script", "returntype")
 	s.RegisterAction("invokefunction", service.InvokeFunction, "scripthash", "operation", "params", "returntype")
 	s.RegisterAction("getOpPrice", service.GetOpPrice, "op", "args")
+	s.RegisterAction("getTransactionReceipt", service.GetTransactionReceipt, "txid")
 	return s
 }
 
@@ -330,4 +333,27 @@ func notifyInfo(item datatype.StackItem) {
 			notifyInfo(items[i])
 		}
 	}
+}
+
+func GenerateBlock(cfg *pow.Config) (*sideTypes.Block, error) {
+	block, err := pow.GenerateBlock(cfg)
+	if err != nil {
+		avmlog.Errorf("notifyInfo:", err)
+		return block, err
+	}
+
+	storedb := nc.DefaultChain.Store.(*store.LedgerStore)
+
+	var receipts types.Receipts
+	for _, txn := range block.Transactions {
+		if txn.TxType == sideTypes.Invoke {
+			receipt, err := storedb.PersisInvokeTransaction(block, txn, nil)
+			if err != nil {
+				avmlog.Error("GenerateBlock Invoke failed")
+			}
+			receipts = append(receipts, receipt)
+		}
+	}
+	block.ReceiptHash = receipts.Hash()
+	return block, err
 }

@@ -1,11 +1,12 @@
 package: github.com/elastos/Elastos.ELA.SideChain.NeoVM
 import:
 - package: github.com/golang/crypto
+  version: ff983b9c42bc9fbf91556e191cc8efb585c16908
 - package: github.com/golang/sys
 - package: github.com/elastos/Elastos.ELA
-  version: release_v0.3.0
+  version: v0.3.0
 - package: github.com/elastos/Elastos.ELA.SideChain
-  version: release_v0.1.2
+  version: v0.1.2
 - package: github.com/elastos/Elastos.ELA.SPV
   version: release_v0.0.2
 
@@ -22,3 +23,5 @@ testImport:
 - package: github.com/stretchr/testify
   subpackages:
   - assert
+- package: github.com/allegro/bigcache
+- package: github.com/hashicorp/golang-lru

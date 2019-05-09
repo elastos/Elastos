@@ -40,6 +40,7 @@ type HeadInfo struct {
 	Version          uint32
 	PrevBlockHash    string
 	TransactionsRoot string
+	ReceiptHash      string
 	Timestamp        uint32
 	Height           uint32
 	Nonce            uint32
@@ -47,14 +48,15 @@ type HeadInfo struct {
 }
 
 type BlockInfo struct {
-	Version          uint32
-	PrevBlockHash    string
-	MerkleRoot string
-	Timestamp        uint32
-	Height           uint32
-	Nonce            uint32
-	Hash             string
-	tx               []string
+	Version       uint32
+	PrevBlockHash string
+	MerkleRoot    string
+	ReceiptHash   string
+	Timestamp     uint32
+	Height        uint32
+	Nonce         uint32
+	Hash          string
+	tx            []string
 }
 
 func GetHeaderInfo(header *types.Header) *HeadInfo {
@@ -63,6 +65,7 @@ func GetHeaderInfo(header *types.Header) *HeadInfo {
 		Version:          header.Version,
 		PrevBlockHash:    common.BytesToHexString(common.BytesReverse(header.Previous.Bytes())),
 		TransactionsRoot: common.BytesToHexString(common.BytesReverse(header.MerkleRoot.Bytes())),
+		ReceiptHash:      common.BytesToHexString(common.BytesReverse(header.ReceiptHash.Bytes())),
 		Timestamp:        header.Timestamp,
 		Height:           header.Height,
 		Nonce:            header.Nonce,
@@ -77,14 +80,15 @@ func GetBlockInfo(block *types.Block) *BlockInfo {
 	}
 
 	return &BlockInfo{
-		Version:          block.Version,
-		PrevBlockHash:    common.BytesToHexString(common.BytesReverse(block.Previous.Bytes())),
-		MerkleRoot: common.BytesToHexString(common.BytesReverse(block.MerkleRoot.Bytes())),
-		Timestamp:        block.Timestamp,
-		Height:           block.Height,
-		Nonce:            block.Nonce,
-		Hash:             common.BytesToHexString(common.BytesReverse(block.Hash().Bytes())),
-		tx:               txs,
+		Version:       block.Version,
+		PrevBlockHash: common.BytesToHexString(common.BytesReverse(block.Previous.Bytes())),
+		MerkleRoot:    common.BytesToHexString(common.BytesReverse(block.MerkleRoot.Bytes())),
+		ReceiptHash:   common.BytesToHexString(common.BytesReverse(block.ReceiptHash.Bytes())),
+		Timestamp:     block.Timestamp,
+		Height:        block.Height,
+		Nonce:         block.Nonce,
+		Hash:          common.BytesToHexString(common.BytesReverse(block.Hash().Bytes())),
+		tx:            txs,
 	}
 }
 
@@ -148,11 +152,11 @@ func GetTXInfo(tx *types.Transaction) *service.TransactionInfo {
 
 func GetAssetInfo(asset *types.Asset) *service.AssetInfo {
 	return &service.AssetInfo{
-		ID: common.BytesToHexString(asset.Hash().Bytes()),
-		Name: asset.Name,
+		ID:          common.BytesToHexString(asset.Hash().Bytes()),
+		Name:        asset.Name,
 		Description: asset.Description,
-		Precision: int(asset.Precision),
-		AssetType: int(asset.AssetType),
-		RecordType: int(asset.RecordType),
+		Precision:   int(asset.Precision),
+		AssetType:   int(asset.AssetType),
+		RecordType:  int(asset.RecordType),
 	}
 }

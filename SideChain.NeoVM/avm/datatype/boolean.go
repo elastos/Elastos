@@ -54,3 +54,10 @@ func (b *Boolean) GetArray() []StackItem {
 func (a *Boolean) GetMap() map[StackItem]StackItem {
 	return nil
 }
+
+func (a *Boolean) String() string {
+	if a.value == true {
+		return "1"
+	}
+	return "0"
+}

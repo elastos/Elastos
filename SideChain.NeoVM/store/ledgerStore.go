@@ -8,6 +8,8 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/database"
 
 	"github.com/elastos/Elastos.ELA/common"
+
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
 )
 
 var (
@@ -29,6 +31,8 @@ func NewLedgerStore(store *sb.ChainStore) (*LedgerStore, error) {
 }
 
 func (c *LedgerStore) persistTransactions(batch database.Batch, b *side.Block) error {
+	c.WriteTxLookupEntries(b)
+	var receipts types.Receipts
 	for _, txn := range b.Transactions {
 		if err := c.PersistTransaction(batch, txn, b.Header.Height); err != nil {
 			return err
@@ -57,16 +61,22 @@ func (c *LedgerStore) persistTransactions(batch database.Batch, b *side.Block) e
 				//return err will effect manual mining
 				return nil
 			}
-
 		}
 
 		if txn.TxType == side.Invoke {
-			err := c.persisInvokeTransaction(b, txn, batch)
+			receipt, err := c.PersisInvokeTransaction(b, txn, batch)
 			if err != nil {
 				log.Error(err.Error())
 				//return err will effect manual mining
 				return nil
 			}
+			receipts = append(receipts, receipt)
+		}
+	}
+	if len(receipts) > 0 {
+		err := c.WriteReceipts(b, receipts)
+		if err != nil {
+			log.Error("WriteReceipts errors:", err)
 		}
 	}
 	return nil

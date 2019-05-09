@@ -57,3 +57,7 @@ func (i *Integer) GetArray() []StackItem {
 func (i *Integer) GetMap() map[StackItem]StackItem {
 	return nil
 }
+
+func (i *Integer) String() string {
+	return i.value.Text(10)
+}

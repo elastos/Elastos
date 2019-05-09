@@ -26,12 +26,14 @@ import (
 
 type StateReader struct {
 	serviceMap map[string]func(engine *avm.ExecutionEngine) bool
+	notifications []NotifyEventArgs
 }
 
 func NewStateReader() *StateReader {
 	var stateReader StateReader
 
 	stateReader.serviceMap = make(map[string]func(*avm.ExecutionEngine) bool, 0)
+	stateReader.notifications = make([]NotifyEventArgs, 0)
 
 	stateReader.Register("Neo.Runtime.GetTrigger", stateReader.RuntimeGetTrigger)
 	stateReader.Register("Neo.Runtime.CheckWitness", stateReader.RuntimeCheckWitness)
@@ -124,6 +126,10 @@ func (s *StateReader) GetServiceMap() map[string]func(*avm.ExecutionEngine) bool
 	return s.serviceMap
 }
 
+func (s *StateReader) GetNotifyEvents() []NotifyEventArgs{
+	return s.notifications
+}
+
 func (s *StateReader) RuntimeGetTrigger(e *avm.ExecutionEngine) bool {
 	avm.PushData(e, int(e.GetTrigger()))
 	return true
@@ -132,6 +138,16 @@ func (s *StateReader) RuntimeGetTrigger(e *avm.ExecutionEngine) bool {
 func (s *StateReader) RuntimeNotify(e *avm.ExecutionEngine) bool {
 	item := avm.PopStackItem(e)
 	events.Notify(event.ETRunTimeNotify, item)
+	scriptHash, err := common.Uint168FromBytes(e.CurrentContext().GetCodeHash())
+	if err != nil {
+		return false
+	}
+	notify := NotifyEventArgs{
+		e.GetDataContainer(),
+		*scriptHash,
+		item,
+	}
+	s.notifications = append(s.notifications, notify)
 	return true
 }
 
