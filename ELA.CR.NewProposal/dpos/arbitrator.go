@@ -53,7 +53,8 @@ func (a *Arbitrator) Start() {
 
 func (a *Arbitrator) recover() {
 	for {
-		if a.cfg.Server.IsCurrent() {
+		if a.cfg.Server.IsCurrent() && a.dposManager.GetArbitrators().
+			HasArbitersMinorityCount(len(a.network.GetActivePeers())) {
 			a.network.recoverChan <- true
 			return
 		}

@@ -43,6 +43,8 @@ type ProposalDispatcher struct {
 	pendingVotes       map[common.Uint256]*payload.DPOSProposalVote
 
 	proposalProcessFinished bool
+	crcBadNetwork           bool
+	firstBadNetworkRecover  bool
 
 	inactiveCountDown           ViewChangesCountDown
 	currentInactiveArbitratorTx *types.Transaction
@@ -385,10 +387,42 @@ func (p *ProposalDispatcher) RecoverFromConsensusStatus(status *dmsg.ConsensusSt
 		p.pendingVotes[v.Hash()] = &vote
 	}
 
+	if status.ConsensusStatus == consensusReady {
+		p.processingBlock = nil
+	}
 	return nil
 }
 
+func (p *ProposalDispatcher) IsCRCBadNetWork() bool {
+	peers := p.cfg.Network.GetActivePeers()
+	var count int
+	for _, v := range peers {
+		pid := v.PID()
+		if p.cfg.Arbitrators.IsCRCArbitrator(pid[:]) {
+			count++
+		}
+	}
+	return count <= len(p.cfg.Arbitrators.GetCRCArbiters())*2/3
+}
+
 func (p *ProposalDispatcher) IsViewChangedTimeOut() bool {
+	if p.crcBadNetwork {
+		if !p.IsCRCBadNetWork() {
+			p.crcBadNetwork = false
+			if p.firstBadNetworkRecover {
+				p.firstBadNetworkRecover = false
+				return false
+			}
+			p.FinishConsensus()
+		}
+		return false
+	}
+
+	if p.IsCRCBadNetWork() {
+		p.crcBadNetwork = true
+		return false
+	}
+
 	return p.inactiveCountDown.IsTimeOut()
 }
 
@@ -733,14 +767,15 @@ func (p *ProposalDispatcher) createArbitratorsRedeemScript() ([]byte, error) {
 func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (
 	*ProposalDispatcher, *IllegalBehaviorMonitor) {
 	p := &ProposalDispatcher{
-		cfg:                cfg,
-		processingBlock:    nil,
-		processingProposal: nil,
-		acceptVotes:        make(map[common.Uint256]*payload.DPOSProposalVote),
-		rejectedVotes:      make(map[common.Uint256]*payload.DPOSProposalVote),
-		pendingProposals:   make(map[common.Uint256]*payload.DPOSProposal),
-		pendingVotes:       make(map[common.Uint256]*payload.DPOSProposalVote),
-		signedTxs:          make(map[common.Uint256]interface{}),
+		cfg:                    cfg,
+		processingBlock:        nil,
+		processingProposal:     nil,
+		acceptVotes:            make(map[common.Uint256]*payload.DPOSProposalVote),
+		rejectedVotes:          make(map[common.Uint256]*payload.DPOSProposalVote),
+		pendingProposals:       make(map[common.Uint256]*payload.DPOSProposal),
+		pendingVotes:           make(map[common.Uint256]*payload.DPOSProposalVote),
+		signedTxs:              make(map[common.Uint256]interface{}),
+		firstBadNetworkRecover: true,
 		eventAnalyzer: store.NewEventStoreAnalyzer(store.EventStoreAnalyzerConfig{
 			Store:       cfg.Store,
 			Arbitrators: cfg.Arbitrators,
