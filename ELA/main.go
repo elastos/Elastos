@@ -186,13 +186,14 @@ func startNode(c *cli.Context) {
 		routesCfg.Sign = act.Sign
 	}
 
+	route := routes.New(routesCfg)
 	server, err := elanet.NewServer(dataDir, &elanet.Config{
 		Chain:          chain,
 		ChainParams:    activeNetParams,
 		PermanentPeers: cfg.PermanentPeers,
 		TxMemPool:      txMemPool,
 		BlockMemPool:   blockMemPool,
-		Routes:         routes.New(routesCfg),
+		Routes:         route,
 	})
 	if err != nil {
 		printErrorAndExit(err)
@@ -218,6 +219,7 @@ func startNode(c *cli.Context) {
 			Broadcast: func(msg p2p.Message) {
 				server.BroadcastMessage(msg)
 			},
+			AnnounceAddr: route.AnnounceAddr,
 		})
 		if err != nil {
 			printErrorAndExit(err)

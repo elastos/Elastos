@@ -33,6 +33,7 @@ type DPOSNetworkConfig struct {
 	ProposalDispatcher *ProposalDispatcher
 	Store              store.IDposStore
 	PublicKey          []byte
+	AnnounceAddr       func()
 }
 
 type DPOSNetwork interface {

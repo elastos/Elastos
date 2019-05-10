@@ -33,6 +33,7 @@ type Config struct {
 	Localhost         string
 	ChainParams       *config.Params
 	Broadcast         func(msg p2p.Message)
+	AnnounceAddr      func()
 }
 
 type Arbitrator struct {
@@ -211,6 +212,7 @@ func NewArbitrator(account account.Account, cfg Config) (*Arbitrator, error) {
 		ProposalDispatcher: proposalDispatcher,
 		Store:              cfg.Store,
 		PublicKey:          account.PublicKeyBytes(),
+		AnnounceAddr:       cfg.AnnounceAddr,
 	})
 
 	cfg.Store.StartEventRecord()
