@@ -146,7 +146,7 @@ export default class extends StandardPage {
   onFormSubmit = async (param) => {
     try {
       await this.props.create(param)
-      // this.showCreateForm()
+      this.showCreateForm()
       this.refetch()
     } catch (error) {
       // console.log(error)
