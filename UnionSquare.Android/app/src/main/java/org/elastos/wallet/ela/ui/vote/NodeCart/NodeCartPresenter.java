@@ -6,8 +6,6 @@ import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
 import org.elastos.wallet.ela.rxjavahelp.PresenterAbstract;
 import org.elastos.wallet.ela.ui.common.listener.CommonStringWithiMethNameListener;
 
-import org.json.JSONException;
-
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 

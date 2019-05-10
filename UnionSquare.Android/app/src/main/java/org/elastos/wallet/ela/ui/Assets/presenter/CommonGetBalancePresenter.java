@@ -1,14 +1,11 @@
 package org.elastos.wallet.ela.ui.Assets.presenter;
 
+import org.elastos.wallet.core.SubWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
 import org.elastos.wallet.ela.rxjavahelp.PresenterAbstract;
-import org.elastos.wallet.ela.ui.Assets.listener.GetAllSubWalletsListner;
 import org.elastos.wallet.ela.ui.Assets.listener.GetBalanceListner;
-import org.elastos.wallet.ela.ui.Assets.listener.ISubWalletListener;
-
-import org.elastos.wallet.core.SubWallet;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;

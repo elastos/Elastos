@@ -8,13 +8,14 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
+import com.qmuiteam.qmui.layout.QMUILinearLayout;
+
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.CreateWalletBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.ClearEditText;
 import org.elastos.wallet.ela.widget.keyboard.SecurityEditText;
-import com.qmuiteam.qmui.layout.QMUILinearLayout;
 
 import butterknife.BindView;
 import butterknife.OnClick;

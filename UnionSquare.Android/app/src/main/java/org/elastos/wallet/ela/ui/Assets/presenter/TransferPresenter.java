@@ -4,7 +4,6 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
 import org.elastos.wallet.ela.rxjavahelp.PresenterAbstract;
-import org.elastos.wallet.ela.ui.Assets.fragment.TransferFragment;
 import org.elastos.wallet.ela.ui.common.listener.CommonBooleanListener;
 import org.elastos.wallet.ela.ui.common.listener.CommonLongListener;
 import org.elastos.wallet.ela.ui.common.listener.CommonStringListner;

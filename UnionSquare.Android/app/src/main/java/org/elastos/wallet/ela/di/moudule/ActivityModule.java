@@ -3,7 +3,6 @@ package org.elastos.wallet.ela.di.moudule;
 import android.app.Activity;
 import android.content.Context;
 
-
 import org.elastos.wallet.ela.di.scope.ContextLife;
 import org.elastos.wallet.ela.di.scope.PerActivity;
 

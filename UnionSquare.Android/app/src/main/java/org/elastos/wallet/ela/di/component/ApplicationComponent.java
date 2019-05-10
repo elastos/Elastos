@@ -2,7 +2,6 @@ package org.elastos.wallet.ela.di.component;
 
 import android.content.Context;
 
-
 import org.elastos.wallet.ela.di.moudule.ApplicationModule;
 import org.elastos.wallet.ela.di.scope.ContextLife;
 import org.elastos.wallet.ela.di.scope.PerApp;

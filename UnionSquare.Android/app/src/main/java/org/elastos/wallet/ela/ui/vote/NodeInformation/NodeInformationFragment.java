@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.allen.library.SuperButton;
 import com.blankj.utilcode.util.CacheDoubleUtils;
 import com.blankj.utilcode.util.ToastUtils;
+
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.vote.NodeCart.NodeCartFragment;

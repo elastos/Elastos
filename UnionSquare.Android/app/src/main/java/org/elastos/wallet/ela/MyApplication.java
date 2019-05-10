@@ -4,12 +4,12 @@ import android.content.Context;
 import android.support.multidex.MultiDexApplication;
 
 import com.blankj.utilcode.util.Utils;
+import com.tencent.bugly.crashreport.CrashReport;
 
 import org.elastos.wallet.BuildConfig;
 import org.elastos.wallet.ela.di.component.ApplicationComponent;
 import org.elastos.wallet.ela.di.component.DaggerApplicationComponent;
 import org.elastos.wallet.ela.di.moudule.ApplicationModule;
-import com.tencent.bugly.crashreport.CrashReport;
 
 import io.realm.Realm;
 

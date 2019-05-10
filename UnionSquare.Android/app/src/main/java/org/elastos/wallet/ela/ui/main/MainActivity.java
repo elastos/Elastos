@@ -7,16 +7,15 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
 
+import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyUtil;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.FirstFragment;
-import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseActivity;
 import org.elastos.wallet.ela.ui.main.presenter.MainPresenter;
 import org.elastos.wallet.ela.ui.main.viewdata.MainViewData;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.utils.StatusBarUtil;
-
 
 import java.io.FileOutputStream;
 import java.io.InputStream;

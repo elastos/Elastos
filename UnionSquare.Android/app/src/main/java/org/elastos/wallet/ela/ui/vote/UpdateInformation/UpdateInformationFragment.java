@@ -11,8 +11,9 @@ import android.widget.TextView;
 import com.alibaba.fastjson.JSON;
 import com.allen.library.SuperButton;
 import com.blankj.utilcode.util.ToastUtils;
-import org.elastos.wallet.ela.ElaWallet.MyWallet;
+
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
@@ -32,7 +33,6 @@ import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.utils.klog.KLog;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
-
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;

@@ -5,10 +5,6 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
 import org.elastos.wallet.ela.rxjavahelp.PresenterAbstract;
-import org.elastos.wallet.ela.ui.Assets.activity.PwdActivity;
-import org.elastos.wallet.ela.ui.Assets.listener.GetSupportedChainsListner;
-import org.elastos.wallet.ela.ui.Assets.listener.SignTransactionListner;
-import org.elastos.wallet.ela.ui.common.listener.CommonStringListner;
 import org.elastos.wallet.ela.ui.common.listener.CommonStringWithiMethNameListener;
 
 import io.reactivex.Observable;

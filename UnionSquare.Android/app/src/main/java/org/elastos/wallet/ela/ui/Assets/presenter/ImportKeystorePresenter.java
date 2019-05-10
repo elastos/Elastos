@@ -4,9 +4,7 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
 import org.elastos.wallet.ela.rxjavahelp.PresenterAbstract;
-import org.elastos.wallet.ela.ui.Assets.fragment.ImportKeystoreFragment;
 import org.elastos.wallet.ela.ui.Assets.listener.ImportKeystoreListner;
-import org.elastos.wallet.ela.ui.Assets.listener.ImportMnemonicListner;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;

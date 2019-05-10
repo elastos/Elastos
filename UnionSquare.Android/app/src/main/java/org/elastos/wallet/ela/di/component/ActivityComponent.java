@@ -7,7 +7,6 @@ import org.elastos.wallet.ela.di.moudule.ActivityModule;
 import org.elastos.wallet.ela.di.scope.ContextLife;
 import org.elastos.wallet.ela.di.scope.PerActivity;
 
-
 import dagger.Component;
 
 /**

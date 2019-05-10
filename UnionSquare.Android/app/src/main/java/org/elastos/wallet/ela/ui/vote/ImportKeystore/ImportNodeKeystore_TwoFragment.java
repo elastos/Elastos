@@ -2,9 +2,7 @@ package org.elastos.wallet.ela.ui.vote.ImportKeystore;
 
 
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;

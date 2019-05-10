@@ -5,7 +5,6 @@ import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
 import org.elastos.wallet.ela.rxjavahelp.PresenterAbstract;
 import org.elastos.wallet.ela.ui.Assets.listener.CreateMasterWalletListner;
-import org.elastos.wallet.ela.ui.Assets.listener.CreateSubWalletListner;
 import org.elastos.wallet.ela.ui.Assets.listener.GenerateMnemonicListner;
 
 import io.reactivex.Observable;

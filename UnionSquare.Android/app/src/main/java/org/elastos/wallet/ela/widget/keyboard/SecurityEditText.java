@@ -4,9 +4,6 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.AppCompatEditText;
 import android.util.AttributeSet;
-import android.widget.EditText;
-
-import org.elastos.wallet.ela.utils.ClearEditText;
 
 /**
  * SecurityEditText

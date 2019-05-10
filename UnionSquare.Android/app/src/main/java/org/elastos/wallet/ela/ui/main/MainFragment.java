@@ -3,9 +3,10 @@ package org.elastos.wallet.ela.ui.main;
 import android.os.Bundle;
 import android.view.View;
 
-import com.blankj.utilcode.util. CacheDoubleUtils;
+import com.blankj.utilcode.util.CacheDoubleUtils;
 import com.chaychan.library.BottomBarItem;
 import com.chaychan.library.BottomBarLayout;
+
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.SupportFragment;
 import org.elastos.wallet.ela.base.BaseFragment;

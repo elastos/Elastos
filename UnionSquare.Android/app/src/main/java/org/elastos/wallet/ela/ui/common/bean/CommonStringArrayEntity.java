@@ -2,8 +2,6 @@ package org.elastos.wallet.ela.ui.common.bean;
 
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 
-import java.util.List;
-
 public class CommonStringArrayEntity extends BaseEntity {
 
     private String[] data;

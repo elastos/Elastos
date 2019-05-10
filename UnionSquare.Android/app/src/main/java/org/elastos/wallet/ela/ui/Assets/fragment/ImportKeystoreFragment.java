@@ -7,8 +7,9 @@ import android.text.TextUtils;
 import android.view.View;
 
 import com.allen.library.SuperButton;
-import org.elastos.wallet.ela.ElaWallet.MyWallet;
+
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.listener.RealmTransactionAbs;
@@ -20,7 +21,6 @@ import org.elastos.wallet.ela.ui.Assets.viewdata.CommonCreateSubWalletViewData;
 import org.elastos.wallet.ela.ui.Assets.viewdata.ImportKeystoreViewData;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.ClearEditText;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 

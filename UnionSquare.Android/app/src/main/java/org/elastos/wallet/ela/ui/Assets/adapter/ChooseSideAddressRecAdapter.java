@@ -9,7 +9,6 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
-import org.elastos.wallet.ela.db.table.Contact;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 
 import java.util.List;

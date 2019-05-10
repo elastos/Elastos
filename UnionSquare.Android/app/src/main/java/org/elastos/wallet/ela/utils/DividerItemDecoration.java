@@ -13,8 +13,6 @@ import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
 import android.view.View;
 
-import org.elastos.wallet.R;
-
 /**
  * recyclerView的分割线
  * Created by wangdff on 2017/8/8.

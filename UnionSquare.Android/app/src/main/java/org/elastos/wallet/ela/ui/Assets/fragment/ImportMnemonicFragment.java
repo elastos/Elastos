@@ -13,8 +13,10 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 
 import com.allen.library.SuperTextView;
-import org.elastos.wallet.ela.ElaWallet.MyWallet;
+import com.qmuiteam.qmui.layout.QMUIRelativeLayout;
+
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.listener.RealmTransactionAbs;
@@ -26,7 +28,6 @@ import org.elastos.wallet.ela.ui.Assets.viewdata.CommonCreateSubWalletViewData;
 import org.elastos.wallet.ela.ui.Assets.viewdata.ImportMnemonicViewData;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.ClearEditText;
-import com.qmuiteam.qmui.layout.QMUIRelativeLayout;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

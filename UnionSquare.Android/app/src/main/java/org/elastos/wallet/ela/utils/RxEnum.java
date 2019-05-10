@@ -1,7 +1,5 @@
 package org.elastos.wallet.ela.utils;
 
-import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
-
 /**
  * Created by wangdongfeng on 2018/4/22.
  */

@@ -3,6 +3,7 @@ package org.elastos.wallet.ela.net;
 import android.content.Context;
 
 import com.blankj.utilcode.util.NetworkUtils;
+
 import org.elastos.wallet.BuildConfig;
 import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.utils.Constant;
@@ -22,9 +23,6 @@ import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-/**
- * Created by xiaogang on 2018/9/8.
- */
 
 public class RetrofitManager {
     private static long CONNECT_TIMEOUT = 60L;

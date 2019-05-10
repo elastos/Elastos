@@ -18,9 +18,14 @@ import android.widget.TextView;
 
 import com.blankj.utilcode.util.ToastUtils;
 import com.classic.common.MultipleStatusView;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.footer.ClassicsFooter;
+import com.scwang.smartrefresh.layout.header.ClassicsHeader;
+import com.trello.rxlifecycle2.LifecycleTransformer;
+
+import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.MyApplication;
-import org.elastos.wallet.R;
 import org.elastos.wallet.ela.SupportFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.di.component.DaggerFragmentComponent;
@@ -28,11 +33,6 @@ import org.elastos.wallet.ela.di.component.FragmentComponent;
 import org.elastos.wallet.ela.di.moudule.FragmentModule;
 import org.elastos.wallet.ela.ui.Assets.fragment.HomeWalletFragment;
 import org.elastos.wallet.ela.ui.main.MainFragment;
-import com.scwang.smartrefresh.layout.SmartRefreshLayout;
-import com.scwang.smartrefresh.layout.footer.ClassicsFooter;
-import com.scwang.smartrefresh.layout.header.ClassicsHeader;
-import com.trello.rxlifecycle2.LifecycleTransformer;
-
 import org.greenrobot.eventbus.EventBus;
 
 import butterknife.BindView;

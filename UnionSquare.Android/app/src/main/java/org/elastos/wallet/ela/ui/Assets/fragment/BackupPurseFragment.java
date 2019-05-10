@@ -8,8 +8,6 @@ import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
-import org.elastos.wallet.ela.bean.CreateWalletBean;
-
 
 import butterknife.BindView;
 import butterknife.OnClick;

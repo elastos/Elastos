@@ -1,9 +1,7 @@
 package org.elastos.wallet.ela.ui.Assets.fragment;
 
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -13,7 +11,6 @@ import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 

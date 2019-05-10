@@ -4,14 +4,15 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.view.ViewGroup;
 
-import com.blankj.utilcode.util. CacheDoubleUtils;
+import com.blankj.utilcode.util.CacheDoubleUtils;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
 import org.elastos.wallet.ela.widget.keyboard.KeyboardType;
 import org.elastos.wallet.ela.widget.keyboard.SecurityConfigure;
 import org.elastos.wallet.ela.widget.keyboard.SecurityKeyboard;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

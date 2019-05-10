@@ -4,10 +4,8 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
 import org.elastos.wallet.ela.rxjavahelp.PresenterAbstract;
-import org.elastos.wallet.ela.ui.Assets.fragment.WallletManageFragment;
 import org.elastos.wallet.ela.ui.Assets.listener.DestroyWalletListner;
 import org.elastos.wallet.ela.ui.Assets.listener.OutportWalletMnemonicListner;
-import org.elastos.wallet.ela.ui.Assets.listener.UpdataWalletPwdListner;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;

@@ -2,7 +2,6 @@ package org.elastos.wallet.ela.ui.Assets.listener;
 
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.SubscriberOnNextLisenner;
-import org.elastos.wallet.ela.ui.Assets.viewdata.CommonCreateSubWalletViewData;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonDestorySubWalletViewData;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 

@@ -20,8 +20,10 @@ import com.alibaba.fastjson.JSONArray;
 import com.blankj.utilcode.util.CacheDoubleUtils;
 import com.blankj.utilcode.util.KeyboardUtils;
 import com.blankj.utilcode.util.ToastUtils;
-import org.elastos.wallet.ela.ElaWallet.MyWallet;
+import com.qmuiteam.qmui.layout.QMUILinearLayout;
+
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
@@ -43,8 +45,6 @@ import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.klog.KLog;
 import org.elastos.wallet.ela.utils.listener.NewWarmPromptListener;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
-import com.qmuiteam.qmui.layout.QMUILinearLayout;
-
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 

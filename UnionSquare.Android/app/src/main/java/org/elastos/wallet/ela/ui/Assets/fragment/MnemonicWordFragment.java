@@ -10,8 +10,10 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import com.allen.library.SuperTextView;
-import org.elastos.wallet.ela.ElaWallet.MyWallet;
+import com.qmuiteam.qmui.layout.QMUILinearLayout;
+
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.CreateWalletBean;
 import org.elastos.wallet.ela.db.RealmUtil;
@@ -26,7 +28,6 @@ import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.widget.keyboard.SecurityEditText;
-import com.qmuiteam.qmui.layout.QMUILinearLayout;
 
 import butterknife.BindView;
 import butterknife.OnClick;

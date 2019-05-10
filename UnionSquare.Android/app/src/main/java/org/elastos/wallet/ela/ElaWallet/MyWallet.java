@@ -1,5 +1,12 @@
 package org.elastos.wallet.ela.ElaWallet;
 
+import org.elastos.wallet.core.MainchainSubWallet;
+import org.elastos.wallet.core.MasterWallet;
+import org.elastos.wallet.core.MasterWalletManager;
+import org.elastos.wallet.core.SidechainSubWallet;
+import org.elastos.wallet.core.SubWallet;
+import org.elastos.wallet.core.SubWalletCallback;
+import org.elastos.wallet.core.WalletException;
 import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.CommonEntity;
@@ -15,14 +22,6 @@ import org.elastos.wallet.ela.ui.common.bean.CommonStringArrayEntity;
 import org.elastos.wallet.ela.ui.common.bean.ISubWalletListEntity;
 import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.klog.KLog;
-
-import org.elastos.wallet.core.MainchainSubWallet;
-import org.elastos.wallet.core.MasterWallet;
-import org.elastos.wallet.core.MasterWalletManager;
-import org.elastos.wallet.core.SidechainSubWallet;
-import org.elastos.wallet.core.SubWallet;
-import org.elastos.wallet.core.SubWalletCallback;
-import org.elastos.wallet.core.WalletException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
