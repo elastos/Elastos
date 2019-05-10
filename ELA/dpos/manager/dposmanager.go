@@ -118,10 +118,9 @@ type DPOSManager struct {
 	server      elanet.Server
 	broadcast   func(p2p.Message)
 
-	neededMajorityStatus int
-	recoverStarted       bool
-	notHandledProposal   map[string]struct{}
-	statusMap            map[uint32]map[string]*dmsg.ConsensusStatus
+	recoverStarted     bool
+	notHandledProposal map[string]struct{}
+	statusMap          map[uint32]map[string]*dmsg.ConsensusStatus
 
 	requestedBlocks map[common.Uint256]struct{}
 }
@@ -207,7 +206,6 @@ func (d *DPOSManager) ProcessHigherBlock(b *types.Block) {
 
 	if d.handler.TryStartNewConsensus(b) {
 		d.notHandledProposal = make(map[string]struct{})
-		d.statusMap = make(map[uint32]map[string]*dmsg.ConsensusStatus)
 	}
 }
 
@@ -222,7 +220,9 @@ func (d *DPOSManager) ChangeConsensus(onDuty bool) {
 func (d *DPOSManager) OnProposalReceived(id dpeer.PID, p *payload.DPOSProposal) {
 	log.Info("[OnProposalReceived] started")
 	defer log.Info("[OnProposalReceived] end")
-
+	if !d.isCurrentArbiter() {
+		return
+	}
 	if !d.handler.ProcessProposal(id, p) {
 		pubKey := common.BytesToHexString(id[:])
 		d.notHandledProposal[pubKey] = struct{}{}
@@ -243,6 +243,9 @@ func (d *DPOSManager) OnProposalReceived(id dpeer.PID, p *payload.DPOSProposal) 
 func (d *DPOSManager) OnVoteAccepted(id dpeer.PID, p *payload.DPOSProposalVote) {
 	log.Info("[OnVoteReceived] started")
 	defer log.Info("[OnVoteReceived] end")
+	if !d.isCurrentArbiter() {
+		return
+	}
 	_, finished := d.handler.ProcessAcceptVote(id, p)
 	if finished {
 		d.changeHeight()
@@ -252,6 +255,9 @@ func (d *DPOSManager) OnVoteAccepted(id dpeer.PID, p *payload.DPOSProposalVote) 
 func (d *DPOSManager) OnVoteRejected(id dpeer.PID, p *payload.DPOSProposalVote) {
 	log.Info("[OnVoteRejected] started")
 	defer log.Info("[OnVoteRejected] end")
+	if !d.isCurrentArbiter() {
+		return
+	}
 	d.handler.ProcessRejectVote(id, p)
 }
 
@@ -264,6 +270,9 @@ func (d *DPOSManager) OnPong(id dpeer.PID, height uint32) {
 }
 
 func (d *DPOSManager) OnBlock(id dpeer.PID, block *types.Block) {
+	if !d.isCurrentArbiter() {
+		return
+	}
 	log.Debug("[OnBlock] received block:", block.Hash().String())
 	hash := block.Hash()
 	if _, ok := d.requestedBlocks[hash]; !ok {
@@ -281,6 +290,9 @@ func (d *DPOSManager) OnBlock(id dpeer.PID, block *types.Block) {
 }
 
 func (d *DPOSManager) OnInv(id dpeer.PID, blockHash common.Uint256) {
+	if !d.isCurrentArbiter() {
+		return
+	}
 	if d.isBlockExist(blockHash) {
 		return
 	}
@@ -300,6 +312,9 @@ func (d *DPOSManager) isBlockExist(blockHash common.Uint256) bool {
 }
 
 func (d *DPOSManager) OnGetBlock(id dpeer.PID, blockHash common.Uint256) {
+	if !d.isCurrentArbiter() {
+		return
+	}
 	if block, err := d.getBlock(blockHash); err == nil {
 		d.network.SendMessageToPeer(id, msg.NewBlock(block))
 	}
@@ -312,17 +327,25 @@ func (d *DPOSManager) OnGetBlocks(id dpeer.PID, startBlockHeight, endBlockHeight
 func (d *DPOSManager) OnResponseBlocks(id dpeer.PID, blockConfirms []*types.DposBlock) {
 	log.Info("[OnResponseBlocks] start")
 	defer log.Info("[OnResponseBlocks] end")
-
+	if !d.isCurrentArbiter() {
+		return
+	}
 	if err := blockchain.DefaultLedger.AppendDposBlocks(blockConfirms); err != nil {
 		log.Error("Response blocks error: ", err)
 	}
 }
 
 func (d *DPOSManager) OnRequestConsensus(id dpeer.PID, height uint32) {
+	if !d.isCurrentArbiter() {
+		return
+	}
 	d.handler.HelpToRecoverAbnormal(id, height)
 }
 
 func (d *DPOSManager) OnResponseConsensus(id dpeer.PID, status *dmsg.ConsensusStatus) {
+	if !d.isCurrentArbiter() {
+		return
+	}
 	log.Info("[OnResponseConsensus] status:", *status)
 	if !d.handler.isAbnormal || !d.recoverStarted {
 		return
@@ -332,11 +355,6 @@ func (d *DPOSManager) OnResponseConsensus(id dpeer.PID, status *dmsg.ConsensusSt
 		d.statusMap[status.ViewOffset] = make(map[string]*dmsg.ConsensusStatus)
 	}
 	d.statusMap[status.ViewOffset][common.BytesToHexString(id[:])] = status
-
-	if len(d.statusMap[status.ViewOffset]) >= d.neededMajorityStatus {
-		log.Info("[OnResponseConsensus] start do recover")
-		d.DoRecover()
-	}
 }
 
 func (d *DPOSManager) OnBadNetwork() {
@@ -352,8 +370,12 @@ func (d *DPOSManager) OnRecover() {
 }
 
 func (d *DPOSManager) OnRecoverTimeout() {
-	if d.recoverStarted == true && len(d.statusMap) != 0 {
-		d.DoRecover()
+	if d.recoverStarted == true {
+		if len(d.statusMap) != 0 {
+			d.DoRecover()
+		}
+		d.recoverStarted = false
+		d.statusMap = make(map[uint32]map[string]*dmsg.ConsensusStatus)
 	}
 }
 
@@ -368,7 +390,6 @@ func (d *DPOSManager) recoverAbnormalState() bool {
 			return false
 		}
 		d.recoverStarted = true
-		d.neededMajorityStatus = len(arbiters) / 2
 		d.handler.RequestAbnormalRecovering()
 		go func() {
 			<-time.NewTicker(time.Second * 2).C
@@ -381,19 +402,23 @@ func (d *DPOSManager) recoverAbnormalState() bool {
 
 func (d *DPOSManager) DoRecover() {
 	var maxCount int
-	var maxCountMinViewOffset uint32
+	var maxCountMaxViewOffset uint32
 	for k, v := range d.statusMap {
 		if maxCount < len(v) {
 			maxCount = len(v)
-			maxCountMinViewOffset = k
-		} else if maxCount == len(v) && maxCountMinViewOffset > k {
-			maxCountMinViewOffset = k
+			maxCountMaxViewOffset = k
+		} else if maxCount == len(v) && maxCountMaxViewOffset < k {
+			maxCountMaxViewOffset = k
 		}
 	}
 	var status *dmsg.ConsensusStatus
 	startTimes := make([]int64, 0)
-	for _, v := range d.statusMap[maxCountMinViewOffset] {
+	for _, v := range d.statusMap[maxCountMaxViewOffset] {
 		if status == nil {
+			if v.ConsensusStatus == consensusReady {
+				d.notHandledProposal = make(map[string]struct{})
+				return
+			}
 			status = v
 		}
 		startTimes = append(startTimes, v.ViewStartTime.UnixNano())
@@ -403,14 +428,24 @@ func (d *DPOSManager) DoRecover() {
 	})
 	medianTime := medianOf(startTimes)
 	status.ViewStartTime = dtime.Int64ToTime(medianTime)
-
+	offset, offsetTime := d.calculateOffsetTime(status.ViewStartTime)
+	status.ViewOffset += offset
+	status.ViewStartTime = d.timeSource.AdjustedTime().Add(-offsetTime)
 	log.Infof("[DoRecover] recover received %d status at "+
-		"viewoffset:%d", len(d.statusMap[status.ViewOffset]), status.ViewOffset)
+		"viewoffset:%d", len(startTimes), status.ViewOffset)
 	d.handler.RecoverAbnormal(status)
 
 	d.notHandledProposal = make(map[string]struct{})
-	d.statusMap = make(map[uint32]map[string]*dmsg.ConsensusStatus)
-	d.recoverStarted = false
+}
+
+func (d *DPOSManager) calculateOffsetTime(
+	startTime time.Time) (uint32, time.Duration) {
+	now := d.timeSource.AdjustedTime()
+	duration := now.Sub(startTime)
+	offset := duration / d.consensus.currentView.signTolerance
+	offsetTime := duration % d.consensus.currentView.signTolerance
+
+	return uint32(offset), offsetTime
 }
 
 func medianOf(nums []int64) int64 {
@@ -444,7 +479,9 @@ func (d *DPOSManager) OnBlockReceived(b *types.Block, confirmed bool) {
 		log.Info("[OnBlockReceived] received confirmed block")
 		return
 	}
-
+	if !d.isCurrentArbiter() {
+		return
+	}
 	for _, tx := range b.Transactions {
 		if tx.IsInactiveArbitrators() {
 			p := tx.Payload.(*payload.InactiveArbitrators)
@@ -457,10 +494,6 @@ func (d *DPOSManager) OnBlockReceived(b *types.Block, confirmed bool) {
 		}
 	}
 
-	if !d.isCurrentArbiter() {
-		return
-	}
-
 	if blockchain.DefaultLedger.Blockchain.GetHeight() < b.Height { //new height block coming
 		d.ProcessHigherBlock(b)
 	} else {
@@ -469,15 +502,19 @@ func (d *DPOSManager) OnBlockReceived(b *types.Block, confirmed bool) {
 }
 
 func (d *DPOSManager) OnConfirmReceived(p *payload.Confirm) {
-
 	log.Info("[OnConfirmReceived] started, hash:", p.Proposal.BlockHash)
 	defer log.Info("[OnConfirmReceived] end")
-
+	if !d.isCurrentArbiter() {
+		return
+	}
 	d.ConfirmBlock()
 	d.changeHeight()
 }
 
 func (d *DPOSManager) OnIllegalProposalReceived(id dpeer.PID, proposals *payload.DPOSIllegalProposals) {
+	if !d.isCurrentArbiter() {
+		return
+	}
 	if err := blockchain.CheckDPOSIllegalProposals(proposals); err != nil {
 		log.Info("[OnIllegalProposalReceived] received error evidence: ", err)
 		return
@@ -486,6 +523,9 @@ func (d *DPOSManager) OnIllegalProposalReceived(id dpeer.PID, proposals *payload
 }
 
 func (d *DPOSManager) OnIllegalVotesReceived(id dpeer.PID, votes *payload.DPOSIllegalVotes) {
+	if !d.isCurrentArbiter() {
+		return
+	}
 	if err := blockchain.CheckDPOSIllegalVotes(votes); err != nil {
 		log.Info("[OnIllegalProposalReceived] received error evidence: ", err)
 		return
@@ -494,6 +534,9 @@ func (d *DPOSManager) OnIllegalVotesReceived(id dpeer.PID, votes *payload.DPOSIl
 }
 
 func (d *DPOSManager) OnIllegalBlocksTxReceived(i *payload.DPOSIllegalBlocks) {
+	if !d.isCurrentArbiter() {
+		return
+	}
 	if err := blockchain.CheckDPOSIllegalBlocks(i); err != nil {
 		log.Info("[OnIllegalProposalReceived] received error evidence: ", err)
 		return
@@ -503,6 +546,9 @@ func (d *DPOSManager) OnIllegalBlocksTxReceived(i *payload.DPOSIllegalBlocks) {
 }
 
 func (d *DPOSManager) OnSidechainIllegalEvidenceReceived(s *payload.SidechainIllegalData) {
+	if !d.isCurrentArbiter() {
+		return
+	}
 	if err := blockchain.CheckSidechainIllegalEvidence(s); err != nil {
 		log.Info("[OnIllegalProposalReceived] received error evidence: ", err)
 		return
@@ -512,6 +558,9 @@ func (d *DPOSManager) OnSidechainIllegalEvidenceReceived(s *payload.SidechainIll
 }
 
 func (d *DPOSManager) OnInactiveArbitratorsAccepted(p *payload.InactiveArbitrators) {
+	if !d.isCurrentArbiter() {
+		return
+	}
 	d.arbitrators.ProcessSpecialTxPayload(p, blockchain.DefaultLedger.Blockchain.GetHeight())
 	d.clearInactiveData(p)
 }
@@ -556,6 +605,9 @@ func (d *DPOSManager) OnInactiveArbitratorsReceived(id dpeer.PID,
 
 func (d *DPOSManager) OnResponseInactiveArbitratorsReceived(
 	txHash *common.Uint256, signers []byte, signs []byte) {
+	if !d.isCurrentArbiter() {
+		return
+	}
 	if !d.isCRCArbiter() || !d.arbitrators.IsCRCArbitrator(signers) {
 		return
 	}
