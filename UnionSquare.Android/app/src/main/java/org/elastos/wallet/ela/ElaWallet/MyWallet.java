@@ -31,7 +31,7 @@ import java.util.ArrayList;
  * wallet webview jni
  */
 public class MyWallet {
-    private static final String TAG = "钱包";
+    private static final String TAG = "MyWallet";
     public static final String ELA = "ELA";
     public static final String IdChain = "IdChain";
     public static final long RATE = 100000000;
@@ -768,131 +768,7 @@ public class MyWallet {
 
             Log.i(TAG, formatWalletName(masterWalletID, chainID) + " registerWalletListener =>");
 
-            subWallet.AddCallback(new SubWalletCallback(masterWalletID, chainID) {
-                @Override
-                public void OnTransactionStatusChanged(String txId, String status, String desc, int confirms) {
-                    JSONObject jsonObject = new JSONObject();
-                    Log.i(TAG, formatWalletName(masterWalletID, chainID) + " OnTxStatusChanged => tx: " + txId + ", status: " + status + ", confirms: " + confirms);
-                    try {
-                        jsonObject.put("txId", txId);
-                        jsonObject.put("status", status);
-                        jsonObject.put("desc", desc);
-                        jsonObject.put("confirms", confirms);
-                        jsonObject.put("MasterWalletID", masterWalletID);
-                        jsonObject.put("ChaiID", chainID);
-                        jsonObject.put("Action", "OnTransactionStatusChanged");
-
-                        listener.OnTransactionStatusChanged(jsonObject);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                @Override
-                public void OnBlockSyncStarted() {
-                    JSONObject jsonObject = new JSONObject();
-                    Log.i(TAG, formatWalletName(masterWalletID, chainID) + " OnBlockSyncStarted");
-                    try {
-                        jsonObject.put("MasterWalletID", masterWalletID);
-                        jsonObject.put("ChaiID", chainID);
-                        jsonObject.put("Action", "OnBlockSyncStarted");
-
-                        listener.OnBlockSyncStarted(jsonObject);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-
-                    }
-                }
-
-                @Override
-                public void OnBlockSyncProgress(int currentBlockHeight, int estimatedHeight, long lastBlockTime) {
-                    JSONObject jsonObject = new JSONObject();
-                    android.util.Log.i(TAG, formatWalletName(masterWalletID, chainID) + " OnBlockSyncProgress => [" + currentBlockHeight + " / " + estimatedHeight + "]: " + lastBlockTime);
-                    try {
-                        jsonObject.put("currentBlockHeight", currentBlockHeight);
-                        jsonObject.put("estimatedHeight", estimatedHeight);
-                        jsonObject.put("lastBlockTime", lastBlockTime);
-                        jsonObject.put("MasterWalletID", masterWalletID);
-                        jsonObject.put("ChaiID", chainID);
-                        jsonObject.put("Action", "OnBlockHeightIncreased");
-
-                        listener.OnBlockSyncProgress(jsonObject);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-
-                    }
-                }
-
-                @Override
-                public void OnBlockSyncStopped() {
-                    JSONObject jsonObject = new JSONObject();
-                    Log.i(TAG, formatWalletName(masterWalletID, chainID) + " OnBlockSyncStopped");
-                    try {
-                        jsonObject.put("MasterWalletID", masterWalletID);
-                        jsonObject.put("ChaiID", chainID);
-                        jsonObject.put("Action", "OnBlockSyncStopped");
-
-                        listener.OnBlockSyncStopped(jsonObject);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                @Override
-                public void OnBalanceChanged(String asset, long balance) {
-                    JSONObject jsonObject = new JSONObject();
-                    Log.i(TAG, formatWalletName(masterWalletID, chainID) + " OnBalanceChanged => " + balance);
-                    try {
-                        jsonObject.put("Asset", asset);
-                        jsonObject.put("Balance", balance);
-                        jsonObject.put("MasterWalletID", masterWalletID);
-                        jsonObject.put("ChaiID", chainID);
-                        jsonObject.put("Action", "OnBalanceChanged");
-
-                        listener.OnBalanceChanged(jsonObject);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                /**
-                 * @param result is json result
-                 */
-                @Override
-                public void OnTxPublished(String hash, String result) {
-                    JSONObject jsonObject = new JSONObject();
-                    Log.i(TAG, formatWalletName(masterWalletID, chainID) + " OnTxPublished => " + hash + ", result: " + result);
-                    try {
-                        jsonObject.put("hash", hash);
-                        jsonObject.put("result", result);
-                        jsonObject.put("MasterWalletID", masterWalletID);
-                        jsonObject.put("ChaiID", chainID);
-                        jsonObject.put("Action", "OnTxPublished");
-
-                        listener.OnTxPublished(jsonObject);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                @Override
-                public void OnTxDeleted(String hash, boolean notifyUser, boolean recommendRescan) {
-                    JSONObject jsonObject = new JSONObject();
-                    Log.i(TAG, formatWalletName(masterWalletID, chainID) + " OnTxDeleted => " + hash + ", notifyUser: " + notifyUser + ", recommendRescan: " + recommendRescan);
-                    try {
-                        jsonObject.put("hash", hash);
-                        jsonObject.put("notifyUser", notifyUser);
-                        jsonObject.put("recommendRescan", recommendRescan);
-                        jsonObject.put("MasterWalletID", masterWalletID);
-                        jsonObject.put("ChaiID", chainID);
-                        jsonObject.put("Action", "OnTxDeleted");
-
-                        listener.OnTxDeleted(jsonObject);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
+            subWallet.AddCallback(new SubWalletCallback(masterWalletID, chainID, listener));
             return new CommmonStringEntity(SUCESSCODE, "registerWalletListener");
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + " add callback");
