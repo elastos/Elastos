@@ -38,6 +38,7 @@ type network struct {
 	peersLock          sync.Mutex
 	store              store.IDposStore
 	publicKey          []byte
+	announceAddr       func()
 
 	p2pServer    p2p.Server
 	messageQueue chan *messageItem
@@ -58,6 +59,7 @@ func (n *network) Initialize(dnConfig manager.DPOSNetworkConfig) {
 	n.proposalDispatcher = dnConfig.ProposalDispatcher
 	n.store = dnConfig.Store
 	n.publicKey = dnConfig.PublicKey
+	n.announceAddr = dnConfig.AnnounceAddr
 }
 
 func (n *network) Start() {
@@ -150,6 +152,9 @@ func (n *network) PostConfirmReceivedTask(p *payload.Confirm) {
 func (n *network) notifyFlag(flag p2p.NotifyFlag) {
 	if flag == p2p.NFBadNetwork {
 		n.badNetworkChan <- true
+
+		// Trigger announce address when network go bad.
+		n.announceAddr()
 	}
 }
 

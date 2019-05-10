@@ -17,9 +17,14 @@ import (
 func TestRoutes_announce(t *testing.T) {
 	test.SkipShort(t)
 
-	priKey, pubKey, err := crypto.GenerateKeyPair()
+	priKey1, pubKey1, err := crypto.GenerateKeyPair()
 	assert.NoError(t, err)
-	pk1, err := pubKey.EncodePoint(true)
+	pk1, err := pubKey1.EncodePoint(true)
+	assert.NoError(t, err)
+
+	_, pubKey2, err := crypto.GenerateKeyPair()
+	assert.NoError(t, err)
+	pk2, err := pubKey2.EncodePoint(true)
 	assert.NoError(t, err)
 
 	relay := make(chan struct{})
@@ -29,7 +34,7 @@ func TestRoutes_announce(t *testing.T) {
 		Addr:       "localhost",
 		TimeSource: blockchain.NewMedianTime(),
 		Sign: func(data []byte) (signature []byte) {
-			signature, err = crypto.Sign(priKey, data)
+			signature, err = crypto.Sign(priKey1, data)
 			return
 		},
 		RelayAddr: func(iv *msg.InvVect, data interface{}) {
@@ -38,6 +43,11 @@ func TestRoutes_announce(t *testing.T) {
 		OnCipherAddr: func(pid peer.PID, addr []byte) {},
 	})
 	routes.Start()
+
+	var pid1, pid2 peer.PID
+	copy(pid1[:], pk1)
+	copy(pid2[:], pk2)
+	routes.queue <- peersMsg{peers: []peer.PID{pid1, pid2}}
 
 	// Trigger NewPeer and DonePeer continuously.
 	go func() {
@@ -54,27 +64,15 @@ func TestRoutes_announce(t *testing.T) {
 
 	// Trigger address announce continuously.
 	go func() {
-		var pid1, pid2 peer.PID
-		_, pubKey, err := crypto.GenerateKeyPair()
-		assert.NoError(t, err)
-		pk2, err := pubKey.EncodePoint(true)
-		assert.NoError(t, err)
-		copy(pid1[:], pk1)
-		copy(pid2[:], pk2)
-		peers := []peer.PID{pid1, pid2}
 		for i := 0; true; i++ {
-			if i%2 == 1 {
-				routes.queue <- peersMsg{peers: peers}
-			} else {
-				routes.queue <- peersMsg{peers: peers[1:]}
-			}
+			routes.AnnounceAddr()
 			active <- struct{}{}
 		}
 	}()
 
 	relays := 0
 	quit := make(chan struct{})
-	time.AfterFunc(time.Minute, func() {
+	time.AfterFunc(2*time.Minute, func() {
 		quit <- struct{}{}
 	})
 	checkTimer := time.NewTimer(time.Second)
@@ -88,19 +86,17 @@ out:
 
 		case <-relay:
 			relays++
-			if relays > 2 {
+			if relays > 4 {
 				t.Logf("routes relay(%d) too frequent", relays)
 			}
 
 		case <-checkTimer.C:
-			t.Fatal("routes deadlock")
+			t.Fatalf("routes deadlock")
 
 		case <-quit:
 			break out
 		}
 	}
 
-	if relays == 0 {
-		t.Fatal("no relays found")
-	}
+	assert.Equal(t, 4, relays)
 }

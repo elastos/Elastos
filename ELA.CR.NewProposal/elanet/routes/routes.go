@@ -71,6 +71,7 @@ type state struct {
 	knownAddr    map[common.Uint256]*msg.DAddr
 	requested    map[common.Uint256]struct{}
 	peerCache    map[*peer.Peer]*cache
+	waiting      bool
 	lastAnnounce time.Time
 }
 
@@ -145,6 +146,13 @@ out:
 
 			// Handle the announce request.
 		case <-r.announce:
+			// Refuse new announce if a previous announce is waiting,
+			// this is to reduce unnecessary announce.
+			if state.waiting {
+				continue
+			}
+			state.waiting = true
+
 			r.handleAnnounce(state)
 
 		case <-r.quit:
@@ -405,7 +413,7 @@ func (r *Routes) handleAnnounce(s *state) {
 	if len(s.peerCache) < minPeersToAnnounce {
 		// Retry announce after the retry duration.
 		time.AfterFunc(retryAnnounceDuration, func() {
-			r.announce <- struct{}{}
+			r.handleAnnounce(s)
 		})
 		return
 	}
@@ -416,13 +424,14 @@ func (r *Routes) handleAnnounce(s *state) {
 		// Calculate next announce time and schedule an announce.
 		nextAnnounce := minAnnounceDuration - now.Sub(s.lastAnnounce)
 		time.AfterFunc(nextAnnounce, func() {
-			r.announce <- struct{}{}
+			r.handleAnnounce(s)
 		})
 		return
 	}
 
 	// Update last announce time.
 	s.lastAnnounce = now
+	s.waiting = false
 
 	for pid := range s.peers {
 		// Do not create address for self.
@@ -487,6 +496,12 @@ func (r *Routes) QueueGetData(p *peer.Peer, m *msg.GetData) {
 // QueueInv adds the passed DAddr message and peer to the addr handling queue.
 func (r *Routes) QueueDAddr(p *peer.Peer, m *msg.DAddr) {
 	r.queue <- dAddrMsg{peer: p, msg: m}
+}
+
+// AnnounceAddr schedules an local address announce to the P2P network, it used
+// to re-announce the local address when DPoS network go bad.
+func (r *Routes) AnnounceAddr() {
+	r.announce <- struct{}{}
 }
 
 // New creates and return a Routes instance.
