@@ -83,7 +83,7 @@ These are located in the `wallets` folder:
 
     If you would like to start all the nodes from block 0, do the following. Note that doing this means you won't have the pre-loaded ELAs on the wallet addresses anymore and you need to set up everything yourself
     ```
-    tools/copy_freshdata_docker.sh
+    sudo tools/copy_freshdata_docker.sh
     docker container prune
     sudo rm -rf ~/.volumes/elastos-privnet
     docker-compose up --remove-orphans --build --force-recreate -d
@@ -100,9 +100,9 @@ These are located in the `wallets` folder:
     curl http://localhost:10012/api/v1/asset/balances/EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U
     ```    
     
-    You should see at least 852 ELA in the miner wallet:
+    You should see at least 915 ELA in the miner wallet:
     ```
-    {"Desc":"Success","Error":0,"Result":"852.62642215"}
+    {"Desc":"Success","Error":0,"Result":"915.91409329"}
     ```
     
 3. Verify the DID Sidechain is running by checking the pre-loaded wallet:
@@ -133,9 +133,9 @@ These are located in the `wallets` folder:
     curl http://localhost:8092/api/1/balance/EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3
     ```    
     
-    You should see 100000 ELA in the DID Sidechain wallet pre-loaded:
+    You should see 100005 ELA in the DID Sidechain wallet pre-loaded:
     ```
-    {"result":"100000","status":200}
+    {"result":"100005","status":200}
     ```
 
 6. Verify that all the appropriate addresses are pre-loaded with ELA in them
@@ -151,7 +151,7 @@ These are located in the `wallets` folder:
       "error": null,
       "id": null,
       "jsonrpc": "2.0",
-      "result": "17001629.15679416"
+      "result": "17001663.81432852"
     }
     ```
 
@@ -166,7 +166,7 @@ These are located in the `wallets` folder:
       "error": null,
       "id": null,
       "jsonrpc": "2.0",
-      "result": "94999.99895140"
+      "result": "95010.81059521"
     }
     ```
 
@@ -181,7 +181,7 @@ These are located in the `wallets` folder:
       "error": null,
       "id": null,
       "jsonrpc": "2.0",
-      "result": "94999.99895140"
+      "result": "95020.74324360"
     }
     ```
 
@@ -220,7 +220,7 @@ These are located in the `wallets` folder:
 7. Verify that cross-chain mainchain to sidechain transfers work
 
     ```
-    curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr","privateKey": "a24ee48f308189d46a5f050f326e76779b6508d8c8aaf51a7152b903b9f42f80"}],"receiver": [{"address": "EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3","amount": "5"}]}' localhost:8091/api/1/cross/m2d/transfer
+    curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": "EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3","amount": "5"}]}' localhost:8091/api/1/cross/m2d/transfer
     ```
     
     You should see the transaction hash returned and a 200 status
@@ -279,7 +279,7 @@ These are located in the `wallets` folder:
 
     There are two supernodes already registered. Let's check out producer vote stats for one of them:
     ```
-    curl http://localhost:9091/api/1/dpos/producer/02fc4aed0eee73aee7915519a596c6c22a1e9509a5ca9763672b03d8e24f2a467b
+    curl http://localhost:9091/api/1/dpos/producer/03521eb1f20fcb7a792aeed2f747f278ae7d7b38474ee571375ebe1abb3fa2cbbb
     ```
     
     Should return
@@ -288,13 +288,13 @@ These are located in the `wallets` folder:
     {
       "result": [
         {
-          "Producer_public_key": "02fc4aed0eee73aee7915519a596c6c22a1e9509a5ca9763672b03d8e24f2a467b",
+          "Producer_public_key": "03521eb1f20fcb7a792aeed2f747f278ae7d7b38474ee571375ebe1abb3fa2cbbb",
           "Vote_type": "Delegate",
-          "Txid": "83a2861cdb27e6feccb6b69dcd85c806797bc8fa14b890a7289926f10fe958ce",
-          "Value": "50000",
-          "Address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s",
-          "Block_time": 1556077974,
-          "Height": 538
+          "Txid": "810910a1578c3e05365c0c57eafa2a23122361199e4220084b4e1ba3827b1c57",
+          "Value": "75000",
+          "Address": "EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY",
+          "Block_time": 1557343057,
+          "Height": 479
         }
       ],
       "status": 200
@@ -308,57 +308,14 @@ COMING SOON
 
 ### How to vote for a supernode
 
-With our private net, there are already two supernodes that have been registered so let's try to use some ELA from pre-loaded mainchain addresses to vote for both of them and check the results after
+With our private net, there are already two supernodes that have been registered so let's try to use some ELA from pre-loaded mainchain addresses to vote for both of them and check the results after.
 
-```
-# Give 50,000 votes to Noderators supernode using mainchain addr 1
-curl -X POST -H "Content-Type: application/json" -d '{
-      "sender":[
-          {
-              "address":"EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr",
-              "privateKey":"a24ee48f308189d46a5f050f326e76779b6508d8c8aaf51a7152b903b9f42f80"
-          }
-      ],
-      "memo":"Voting for Noderators",
-      "receiver":[
-          {
-              "address":"EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr",
-              "amount":"50000",
-              "candidatePublicKeys":["03aa307d123cf3f181e5b9cc2839c4860a27caf5fb329ccde2877c556881451007"]
-          }
-      ]
-  }' localhost:8091/api/1/dpos/vote
-
-# Give 50,000 votes to KP supernode using mainchain addr 2
-curl -X POST -H "Content-Type: application/json" -d '{
-      "sender":[
-          {
-              "address":"EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY",
-              "privateKey":"ff6dc625cf986eae4365f69c30035608fa47518e5ada4ad99b7cbc5df7683c30"
-          }
-      ],
-      "memo":"Voting for KP Supernode",
-      "receiver":[
-          {
-              "address":"EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY",
-              "amount":"75000",
-              "candidatePublicKeys":["03521eb1f20fcb7a792aeed2f747f278ae7d7b38474ee571375ebe1abb3fa2cbbb"]
-          }
-      ]
-  }' localhost:8091/api/1/dpos/vote
-```
-
-Should return:
-
-```{"result":"5ab1e0e9d374c58b45bc60c62f34a11adf3933738bd203d9672d69c40d7ec92f","status":200}
-```
-
-After about 12 blocks, check whether the new votes are in:
+Note that the pre-loaded data already has votes so you check the current votes by doing
 ```
 curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"listproducers", "params":{"start":"0","limit":2}}' http://localhost:10014
 ```
 
-Should return:
+Should return
 ```
 {
   "error": null,
@@ -403,7 +360,156 @@ Should return:
 }
 ```
 
-As you can see, our supernode with public key "03521eb1f20fcb7a792aeed2f747f278ae7d7b38474ee571375ebe1abb3fa2cbbb" has 75,000 votes
+- Give 140000 votes to Noderators supernode using the address that has 17 million ELA in it
+  curl -X POST -H "Content-Type: application/json" -d '{
+        "sender":[
+            {
+                "address":"EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s",
+                "privateKey":"109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"
+            }
+        ],
+        "memo":"Voting for Noderators",
+        "receiver":[
+            {
+                "address":"EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s",
+                "amount":"140000",
+                "candidatePublicKeys":["03aa307d123cf3f181e5b9cc2839c4860a27caf5fb329ccde2877c556881451007"]
+            }
+        ]
+    }' localhost:8091/api/1/dpos/vote
+
+  Let's see if this new vote is counted towards the supernode after 2 blocks:
+  ```
+  curl http://localhost:9091/api/1/dpos/producer/03aa307d123cf3f181e5b9cc2839c4860a27caf5fb329ccde2877c556881451007
+  ```
+    
+  Should return
+
+  ```
+  {
+    "result": [
+      {
+        "Producer_public_key": "03aa307d123cf3f181e5b9cc2839c4860a27caf5fb329ccde2877c556881451007",
+        "Vote_type": "Delegate",
+        "Txid": "07831663f0a30d89a8a41b1cd50a4f67c3d91947bcd3aa0aed271f644dbbc858",
+        "Value": "50000",
+        "Address": "EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr",
+        "Block_time": 1557342957,
+        "Height": 473
+      },
+      {
+        "Producer_public_key": "03aa307d123cf3f181e5b9cc2839c4860a27caf5fb329ccde2877c556881451007",
+        "Vote_type": "Delegate",
+        "Txid": "7c6fd446346a4445406ed1e5cd8654846b601cf747f9b197c860aeacea65cbc5",
+        "Value": "140000",
+        "Address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s",
+        "Block_time": 1557451007,
+        "Height": 554
+      }
+    ],
+    "status": 200
+  }
+  ```
+
+- Give 250,000 votes to KP supernode using the address that has 17 million ELA in it
+  curl -X POST -H "Content-Type: application/json" -d '{
+        "sender":[
+            {
+                "address":"EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s",
+                "privateKey":"109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"
+            }
+        ],
+        "memo":"Voting for KP Supernode",
+        "receiver":[
+            {
+                "address":"EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s",
+                "amount":"140000",
+                "candidatePublicKeys":["03521eb1f20fcb7a792aeed2f747f278ae7d7b38474ee571375ebe1abb3fa2cbbb"]
+            }
+        ]
+    }' localhost:8091/api/1/dpos/vote
+
+  Let's see if this new vote is counted towards the supernode after 2 blocks:
+  ```
+  curl http://localhost:9091/api/1/dpos/producer/03521eb1f20fcb7a792aeed2f747f278ae7d7b38474ee571375ebe1abb3fa2cbbb
+  ```
+    
+  Should return
+  ```
+  {
+    "result": [
+      {
+        "Producer_public_key": "03521eb1f20fcb7a792aeed2f747f278ae7d7b38474ee571375ebe1abb3fa2cbbb",
+        "Vote_type": "Delegate",
+        "Txid": "810910a1578c3e05365c0c57eafa2a23122361199e4220084b4e1ba3827b1c57",
+        "Value": "75000",
+        "Address": "EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY",
+        "Block_time": 1557343057,
+        "Height": 479
+      },
+      {
+        "Producer_public_key": "03521eb1f20fcb7a792aeed2f747f278ae7d7b38474ee571375ebe1abb3fa2cbbb",
+        "Vote_type": "Delegate",
+        "Txid": "1a67256af742270e5cafbbad9105dd09815b6bbf037460b7953efe0821854f6a",
+        "Value": "140000",
+        "Address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s",
+        "Block_time": 1557451230,
+        "Height": 576
+      }
+    ],
+    "status": 200
+  }
+  ```
+
+- We used the same ELA address to vote twice for two different supernodes at two different times. We know that you can only vote for multiple supernodes with the same transaction and can use 1 ELA to vote up to 36 supernodes. However, note that if you just vote for one supernode and then another supernode as a different transaction, only the second vote will count and the first vote will be void. 
+  ```
+  curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"listproducers", "params":{"start":"0"}}' http://localhost:10014 | jq .
+  ```
+
+  Should return:
+  ```
+  {
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+      "producers": [
+        {
+          "ownerpublickey": "03521eb1f20fcb7a792aeed2f747f278ae7d7b38474ee571375ebe1abb3fa2cbbb",
+          "nodepublickey": "0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25",
+          "nickname": "KP Supernode",
+          "url": "www.pachhai.com",
+          "location": 112211,
+          "active": true,
+          "votes": "215000",
+          "state": "Activate",
+          "registerheight": 418,
+          "cancelheight": 0,
+          "inactiveheight": 0,
+          "illegalheight": 0,
+          "index": 0
+        },
+        {
+          "ownerpublickey": "03aa307d123cf3f181e5b9cc2839c4860a27caf5fb329ccde2877c556881451007",
+          "nodepublickey": "021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556",
+          "nickname": "Noderators",
+          "url": "www.noderators.org",
+          "location": 112211,
+          "active": true,
+          "votes": "50000",
+          "state": "Activate",
+          "registerheight": 368,
+          "cancelheight": 0,
+          "inactiveheight": 0,
+          "illegalheight": 0,
+          "index": 1
+        }
+      ],
+      "totalvotes": "265000",
+      "totalcounts": 2
+    }
+  }
+  ```
 
 ## DID Sidechain Testing
 
@@ -510,9 +616,9 @@ Would return something like
     "Public_key": "02BDA7DBA5E4E1E24245566AF75E34CC9933FAA99FFFC61081156CC05AE65422E2",
     "Property_key": "clark",
     "Property_value": "hello,world",
-    "Txid": "4f65869f32ee2ad5397829178ea7ab7b0ef40284ccdac489f3de8db8d5f2000b",
-    "Block_time": 1552402320,
-    "Height": 1570
+    "Txid": "1d46f57b8e892a1f1df7c7fe757a1b49c7d2d88f53c9d89ba299f02ef2b965c4",
+    "Block_time": 1557451466,
+    "Height": 367
   },
   "status": 200
 }
