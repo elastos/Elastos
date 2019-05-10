@@ -112,6 +112,10 @@ func (p *Producer) IllegalHeight() uint32 {
 	return p.illegalHeight
 }
 
+func (p *Producer) ActivateRequestHeight() uint32 {
+	return p.activateRequestHeight
+}
+
 const (
 	// maxHistoryCapacity indicates the maximum capacity of change history.
 	maxHistoryCapacity = 10
@@ -121,6 +125,10 @@ const (
 
 	// maxSnapshots is the maximum newest snapshots keeps in memory.
 	maxSnapshots = 9
+
+	// ActivateDuration is about how long we should activate from pending or
+	// inactive state
+	ActivateDuration = 6
 )
 
 // State is a memory database storing DPOS producers state, like pending
@@ -581,7 +589,7 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 
 	if len(s.pendingProducers) > 0 {
 		for key, producer := range s.pendingProducers {
-			if height-producer.registerHeight+1 >= 6 {
+			if height-producer.registerHeight+1 >= ActivateDuration {
 				activateProducerFromPending(key, producer)
 			}
 		}
@@ -590,7 +598,7 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 	if len(s.inactiveProducers) > 0 {
 		for key, producer := range s.inactiveProducers {
 			if height > producer.activateRequestHeight &&
-				height-producer.activateRequestHeight+1 >= 6 {
+				height-producer.activateRequestHeight+1 >= ActivateDuration {
 				activateProducerFromInactive(key, producer)
 			}
 		}
