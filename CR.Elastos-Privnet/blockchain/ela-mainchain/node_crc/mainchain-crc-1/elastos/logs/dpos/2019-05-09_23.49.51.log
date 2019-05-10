@@ -1,0 +1,37 @@
+2019/05/09 23:49:51.899509 [1;35m[INF][m GID 1, [UpdatePeers] peers: 0  height:  0
+2019/05/09 23:49:51.899801 [1;35m[INF][m GID 49, Loaded 0 addresses from file 'elastos/data/dpos/peers.json'
+2019/05/09 23:49:51.900163 [1;35m[INF][m GID 70, Server listening on [::]:10016
+2019/05/09 23:49:51.900364 [1;35m[INF][m GID 69, Server listening on 0.0.0.0:10016
+2019/05/09 23:50:21.916155 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/09 23:50:51.935706 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/09 23:51:21.947557 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/09 23:51:51.961553 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/09 23:52:21.969151 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/09 23:52:51.970868 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/09 23:53:21.979234 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/09 23:53:51.979436 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/09 23:54:21.984494 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/09 23:54:51.984948 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/09 23:55:22.008684 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/09 23:55:52.009422 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/09 23:56:22.016418 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/09 23:56:52.027210 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/09 23:57:22.071723 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/09 23:57:52.100429 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/09 23:58:22.126089 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/09 23:58:52.171557 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/09 23:59:22.201292 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/09 23:59:52.218477 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/10 00:00:22.227747 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/10 00:00:52.311563 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/10 00:01:22.313206 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/10 00:01:52.314386 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/10 00:02:22.319234 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/10 00:02:52.325846 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/10 00:03:22.352587 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/10 00:03:52.354804 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/10 00:04:22.385558 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/10 00:04:52.386610 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/10 00:05:22.407702 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/10 00:05:52.415122 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad
+2019/05/10 00:06:22.427180 [1;35m[INF][m GID 50, [OnBadNetwork] found network bad

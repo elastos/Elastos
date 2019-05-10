@@ -1,0 +1,844 @@
+2019/05/09 23:49:51.853783 [1;35m[INF][m GID 1, Node version: 
+2019/05/09 23:49:51.854025 [1;35m[INF][m GID 1, go version go1.11.5 linux/amd64
+2019/05/09 23:49:51.898911 [1;35m[INF][m GID 1, current block height -> 0
+2019/05/09 23:49:51.899887 [1;35m[INF][m GID 1, Start the P2P networks
+2019/05/09 23:49:51.900017 [1;35m[INF][m GID 1, Start services
+2019/05/09 23:49:51.907186 [1;35m[INF][m GID 73, New valid peer 172.25.0.2:10015 (outbound)
+2019/05/09 23:49:52.786547 [1;35m[INF][m GID 73, New valid peer 172.25.0.4:58378 (inbound)
+2019/05/09 23:49:53.024023 [1;35m[INF][m GID 73, New valid peer 172.25.0.6:38152 (inbound)
+2019/05/09 23:49:55.177987 [1;35m[INF][m GID 73, New valid peer 172.25.0.10:42642 (inbound)
+2019/05/09 23:49:56.209950 [1;35m[INF][m GID 73, New valid peer 172.25.0.9:34078 (inbound)
+2019/05/09 23:49:56.224706 [1;35m[INF][m GID 73, New valid peer 172.25.0.11:34824 (inbound)
+2019/05/09 23:49:56.901565 [1;35m[INF][m GID 1, Start consensus
+2019/05/09 23:49:56.901737 [1;35m[INF][m GID 1, Start POW Services
+2019/05/09 23:49:56.901874 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:50:00.088938 [1;35m[INF][m GID 73, New valid peer 172.25.0.9:10015 (outbound)
+2019/05/09 23:50:00.098845 [1;35m[INF][m GID 73, New valid peer 172.25.0.11:10015 (outbound)
+2019/05/09 23:50:00.679019 [1;35m[INF][m GID 73, New valid peer 172.25.0.13:54702 (inbound)
+2019/05/09 23:50:01.101788 [1;35m[INF][m GID 73, New valid peer 172.25.0.17:56198 (inbound)
+2019/05/09 23:50:01.904994 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:50:01.920276 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:50:02.100473 [1;35m[INF][m GID 73, New valid peer 172.25.0.12:56066 (inbound)
+2019/05/09 23:50:02.156299 [1;35m[INF][m GID 73, New valid peer 172.25.0.16:39788 (inbound)
+2019/05/09 23:50:02.370249 [1;35m[INF][m GID 216, <================Solved Block==============>
+2019/05/09 23:50:02.414053 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:50:02.428206 [1;35m[INF][m GID 73, New valid peer 172.25.0.14:40414 (inbound)
+2019/05/09 23:50:02.681010 [1;35m[INF][m GID 73, FORK: Block 0a0ec60462c185ab3a24a1cf1915077cb937e2710f453967b0d92a55f37d48b8 forks the chain at height 0/block bd33933f61125b12618b88e61923d91d7a0b5f1200eaf0e73b04fa8864e2e815, but does not cause a reorganize
+2019/05/09 23:50:02.922055 [1;35m[INF][m GID 73, New valid peer 172.25.0.15:53918 (inbound)
+2019/05/09 23:50:03.473784 [1;35m[INF][m GID 73, New valid peer 172.25.0.19:43298 (inbound)
+2019/05/09 23:50:04.362803 [1;35m[INF][m GID 73, New valid peer 172.25.0.18:40228 (inbound)
+2019/05/09 23:50:07.418527 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:50:07.418868 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:50:07.854909 [1;35m[INF][m GID 73, REORGANIZE: Block 5d9a68aa1472a41408fc858f95a3d17660b61a53caee94ce8918dfb669a2cef8 is causing a reorganize.
+2019/05/09 23:50:07.919113 [1;35m[INF][m GID 73, disconnect block: 1
+2019/05/09 23:50:07.919617 [1;35m[INF][m GID 73, Rejected block 5d9a68aa1472a41408fc858f95a3d17660b61a53caee94ce8918dfb669a2cef8 from 172.25.0.6:38152 (inbound): get producer by node public key failed
+2019/05/09 23:50:08.636009 [1;35m[INF][m GID 73, New valid peer 172.25.0.22:43268 (inbound)
+2019/05/09 23:50:09.307453 [1;35m[INF][m GID 216, <================Solved Block==============>
+2019/05/09 23:50:09.324471 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:50:14.336330 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:50:14.336818 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:50:19.343078 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:50:19.343190 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:50:24.388313 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:50:24.388414 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:50:27.901687 [1;35m[INF][m GID 216, <================Solved Block==============>
+2019/05/09 23:50:27.905300 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:50:32.910962 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:50:32.914398 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:50:33.988557 [1;35m[INF][m GID 73, REORGANIZE: Block ca2b6a781fb8a1f0e0c5eacdcea6a51f547e969a12f16c35ad376eeeefa77183 is causing a reorganize.
+2019/05/09 23:50:34.012760 [1;35m[INF][m GID 73, Rejected block ca2b6a781fb8a1f0e0c5eacdcea6a51f547e969a12f16c35ad376eeeefa77183 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:50:37.925134 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:50:37.925297 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:50:42.942790 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:50:42.944666 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:50:43.107213 [1;35m[INF][m GID 216, <================Solved Block==============>
+2019/05/09 23:50:43.107729 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:50:48.163382 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:50:48.163746 [1;35m[INF][m GID 216, difficulty:  520095999
+2019-05-09 23:50:51.903 [INF] STAT: -> 0 [2 172.25.0.19:43298 (inbound), 0 172.25.0.22:43268 (inbound), 2 172.25.0.6:38152 (inbound), 2 172.25.0.16:39788 (inbound), 2 172.25.0.15:53918 (inbound), 2 172.25.0.9:34078 (inbound), 2 172.25.0.13:54702 (inbound), 2 172.25.0.14:40414 (inbound), 2 172.25.0.10:42642 (inbound), 2 172.25.0.11:34824 (inbound), 2 172.25.0.12:56066 (inbound), 2 172.25.0.4:58378 (inbound), 2 172.25.0.17:56198 (inbound), 3 172.25.0.18:40228 (inbound), 2 172.25.0.2:10015 (outbound), 2 172.25.0.9:10015 (outbound), 2 172.25.0.11:10015 (outbound)]
+2019/05/09 23:50:53.235142 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:50:53.235278 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:50:58.256682 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:50:58.257019 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:50:59.503173 [1;35m[INF][m GID 73, REORGANIZE: Block 7eab3ddf01570e7de187ff81e9df5ecb2dc92444595f7e1affe8e52a4d6c7c91 is causing a reorganize.
+2019/05/09 23:50:59.503451 [1;35m[INF][m GID 73, Rejected block 7eab3ddf01570e7de187ff81e9df5ecb2dc92444595f7e1affe8e52a4d6c7c91 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:51:03.275737 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:51:03.276590 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:51:08.279591 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:51:08.279980 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:51:13.299624 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:51:13.300704 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:51:18.333513 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:51:18.334388 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:51:23.408672 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:51:23.415329 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:51:25.165735 [1;35m[INF][m GID 73, REORGANIZE: Block 6cc36d2b27f9a765c44e140b64efe10ce2df345553e2ab04da5eda5f777c2018 is causing a reorganize.
+2019/05/09 23:51:25.165788 [1;35m[INF][m GID 73, Rejected block 6cc36d2b27f9a765c44e140b64efe10ce2df345553e2ab04da5eda5f777c2018 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:51:28.506160 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:51:28.506789 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:51:30.459221 [1;35m[INF][m GID 73, REORGANIZE: Block 2af4f2df2b951ccf3d63c04486a3e50cdcbc6c141c1518910214c9c5bedeb246 is causing a reorganize.
+2019/05/09 23:51:30.459771 [1;35m[INF][m GID 73, Rejected block 2af4f2df2b951ccf3d63c04486a3e50cdcbc6c141c1518910214c9c5bedeb246 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:51:33.536836 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:51:33.540728 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:51:37.545997 [1;35m[INF][m GID 73, REORGANIZE: Block 2f5c866320575cc4b868e3a68f36c4aeb9d679d9410255ae604b69a9564d8a31 is causing a reorganize.
+2019/05/09 23:51:37.551725 [1;35m[INF][m GID 73, Rejected block 2f5c866320575cc4b868e3a68f36c4aeb9d679d9410255ae604b69a9564d8a31 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:51:38.545270 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:51:38.545648 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:51:43.578734 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:51:43.589582 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:51:44.875805 [1;35m[INF][m GID 73, REORGANIZE: Block b0868d67f5d99afa2c7286c5101e9ecd1fe98f48e7ee6bc90e7da65ea628b0e3 is causing a reorganize.
+2019/05/09 23:51:44.876008 [1;35m[INF][m GID 73, Rejected block b0868d67f5d99afa2c7286c5101e9ecd1fe98f48e7ee6bc90e7da65ea628b0e3 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:51:45.893019 [1;35m[INF][m GID 73, REORGANIZE: Block 627f31444f01d92215c3ddf6c9ba58a58719146d0dcb03a48ff6793420cbce10 is causing a reorganize.
+2019/05/09 23:51:45.893268 [1;35m[INF][m GID 73, Rejected block 627f31444f01d92215c3ddf6c9ba58a58719146d0dcb03a48ff6793420cbce10 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:51:48.609939 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:51:48.610209 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:51:50.512872 [1;35m[INF][m GID 73, REORGANIZE: Block 48f249ec3002f1907117e7e52e99631fdce6c4bf0601bcbe4f894a02906832b4 is causing a reorganize.
+2019/05/09 23:51:50.517017 [1;35m[INF][m GID 73, Rejected block 48f249ec3002f1907117e7e52e99631fdce6c4bf0601bcbe4f894a02906832b4 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019-05-09 23:51:51.945 [INF] STAT: -> 0 [6 172.25.0.15:53918 (inbound), 6 172.25.0.19:43298 (inbound), 0 172.25.0.22:43268 (inbound), 4 172.25.0.6:38152 (inbound), 6 172.25.0.16:39788 (inbound), 5 172.25.0.9:34078 (inbound), 6 172.25.0.13:54702 (inbound), 6 172.25.0.12:56066 (inbound), 6 172.25.0.14:40414 (inbound), 5 172.25.0.10:42642 (inbound), 5 172.25.0.11:34824 (inbound), 6 172.25.0.18:40228 (inbound), 4 172.25.0.4:58378 (inbound), 6 172.25.0.17:56198 (inbound), 5 172.25.0.9:10015 (outbound), 5 172.25.0.11:10015 (outbound), 4 172.25.0.2:10015 (outbound)]
+2019/05/09 23:51:52.601980 [1;35m[INF][m GID 73, REORGANIZE: Block e24de27f186019c5cabe3feca63386413260ac3e4d2a6a6648976564ae82dfd1 is causing a reorganize.
+2019/05/09 23:51:52.602182 [1;35m[INF][m GID 73, Rejected block e24de27f186019c5cabe3feca63386413260ac3e4d2a6a6648976564ae82dfd1 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:51:53.625628 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:51:53.625840 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:51:54.156676 [1;35m[INF][m GID 73, REORGANIZE: Block e72f2e4592317720cf79e955337bc603f822a70cea8cf6ac901b7a7b12e9e18e is causing a reorganize.
+2019/05/09 23:51:54.160523 [1;35m[INF][m GID 73, Rejected block e72f2e4592317720cf79e955337bc603f822a70cea8cf6ac901b7a7b12e9e18e from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:51:58.627766 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:51:58.628895 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:52:00.351170 [1;35m[INF][m GID 73, REORGANIZE: Block 1b0650821e3ca17067e712c05e20288345fb7d36238906f8735b3d4dd7684d64 is causing a reorganize.
+2019/05/09 23:52:00.351922 [1;35m[INF][m GID 73, Rejected block 1b0650821e3ca17067e712c05e20288345fb7d36238906f8735b3d4dd7684d64 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:52:01.785824 [1;35m[INF][m GID 216, <================Solved Block==============>
+2019/05/09 23:52:01.793344 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:52:06.807468 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:52:06.807800 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:52:11.839373 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:52:11.839629 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:52:16.850443 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:52:16.850855 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:52:20.318783 [1;35m[INF][m GID 73, REORGANIZE: Block 9444f5fa8a5ea25f4c850c9a50a27c2d8bf2bc31e05d6693ee23b49830b76e16 is causing a reorganize.
+2019/05/09 23:52:20.318916 [1;35m[INF][m GID 73, Rejected block 9444f5fa8a5ea25f4c850c9a50a27c2d8bf2bc31e05d6693ee23b49830b76e16 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:52:21.887259 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:52:21.887553 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:52:26.891584 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:52:26.897015 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:52:31.927990 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:52:31.935220 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:52:35.198402 [1;35m[INF][m GID 73, REORGANIZE: Block 9239e5caa39ed4cd729bc92c5dea54f33dec6f075c59321e52b33bf0aa5d50b2 is causing a reorganize.
+2019/05/09 23:52:35.198695 [1;35m[INF][m GID 73, Rejected block 9239e5caa39ed4cd729bc92c5dea54f33dec6f075c59321e52b33bf0aa5d50b2 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:52:36.946876 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:52:36.947239 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:52:41.949218 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:52:41.950646 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:52:46.995131 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:52:46.995613 [1;35m[INF][m GID 216, difficulty:  520095999
+2019-05-09 23:52:51.925 [INF] STAT: -> 0 [14 172.25.0.9:34078 (inbound), 14 172.25.0.13:54702 (inbound), 14 172.25.0.10:42642 (inbound), 14 172.25.0.11:34824 (inbound), 14 172.25.0.12:56066 (inbound), 14 172.25.0.14:40414 (inbound), 14 172.25.0.4:58378 (inbound), 14 172.25.0.17:56198 (inbound), 14 172.25.0.18:40228 (inbound), 14 172.25.0.6:38152 (inbound), 14 172.25.0.16:39788 (inbound), 14 172.25.0.15:53918 (inbound), 14 172.25.0.19:43298 (inbound), 0 172.25.0.22:43268 (inbound), 14 172.25.0.2:10015 (outbound), 14 172.25.0.9:10015 (outbound), 14 172.25.0.11:10015 (outbound)]
+2019/05/09 23:52:52.005701 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:52:52.006903 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:52:54.569957 [1;35m[INF][m GID 73, REORGANIZE: Block 4b2091162dea4f243ab304b0b6fa0bc47d37074471872bbd6c60579536a834e4 is causing a reorganize.
+2019/05/09 23:52:54.571088 [1;35m[INF][m GID 73, Rejected block 4b2091162dea4f243ab304b0b6fa0bc47d37074471872bbd6c60579536a834e4 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:52:57.032798 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:52:57.033195 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:53:02.049360 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:53:02.049637 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:53:07.056267 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:53:07.056604 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:53:12.120576 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:53:12.121316 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:53:16.561089 [1;35m[INF][m GID 73, REORGANIZE: Block 805a2dc04e46aceddb0737085f96071168c20427f8701bf2f59af3f8b8cb54a8 is causing a reorganize.
+2019/05/09 23:53:16.561550 [1;35m[INF][m GID 73, Rejected block 805a2dc04e46aceddb0737085f96071168c20427f8701bf2f59af3f8b8cb54a8 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:53:17.128961 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:53:17.129363 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:53:22.256039 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:53:22.257807 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:53:27.296536 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:53:27.296905 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:53:32.296185 [1;35m[INF][m GID 73, REORGANIZE: Block ced07ede5b8cd9037a911829a342e9ad2c15aff9489e883143e6db37b7b68172 is causing a reorganize.
+2019/05/09 23:53:32.296337 [1;35m[INF][m GID 73, Rejected block ced07ede5b8cd9037a911829a342e9ad2c15aff9489e883143e6db37b7b68172 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:53:32.300998 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:53:32.301256 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:53:37.312960 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:53:37.313584 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:53:40.343033 [1;35m[INF][m GID 73, REORGANIZE: Block c2a4bdde04fef1feaeff24d9d7d537d0aa7acbf0b99d3af7d1ae88ba82ac83d3 is causing a reorganize.
+2019/05/09 23:53:40.344231 [1;35m[INF][m GID 73, Rejected block c2a4bdde04fef1feaeff24d9d7d537d0aa7acbf0b99d3af7d1ae88ba82ac83d3 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:53:42.314892 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:53:42.315361 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:53:47.099252 [1;35m[INF][m GID 73, REORGANIZE: Block cef50e5e19b6a5a05c16cc7373051664a236359ea853bd7c3cdb0e54fdc3aa9f is causing a reorganize.
+2019/05/09 23:53:47.102014 [1;35m[INF][m GID 73, Rejected block cef50e5e19b6a5a05c16cc7373051664a236359ea853bd7c3cdb0e54fdc3aa9f from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:53:47.318173 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:53:47.318417 [1;35m[INF][m GID 216, difficulty:  520095999
+2019-05-09 23:53:51.900 [INF] STAT: -> 0 [17 172.25.0.17:56198 (inbound), 18 172.25.0.18:40228 (inbound), 17 172.25.0.4:58378 (inbound), 17 172.25.0.16:39788 (inbound), 18 172.25.0.15:53918 (inbound), 18 172.25.0.19:43298 (inbound), 0 172.25.0.22:43268 (inbound), 17 172.25.0.6:38152 (inbound), 17 172.25.0.13:54702 (inbound), 17 172.25.0.9:34078 (inbound), 17 172.25.0.11:34824 (inbound), 17 172.25.0.12:56066 (inbound), 18 172.25.0.14:40414 (inbound), 17 172.25.0.10:42642 (inbound), 17 172.25.0.2:10015 (outbound), 17 172.25.0.9:10015 (outbound), 17 172.25.0.11:10015 (outbound)]
+2019/05/09 23:53:52.362437 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:53:52.362614 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:53:57.372053 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:53:57.372617 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:54:02.262198 [1;35m[INF][m GID 73, REORGANIZE: Block 8eeaaafef8a72f483732493c8af6761a4ac9ae3e9ce72aa3d34e771b60c13dac is causing a reorganize.
+2019/05/09 23:54:02.262431 [1;35m[INF][m GID 73, Rejected block 8eeaaafef8a72f483732493c8af6761a4ac9ae3e9ce72aa3d34e771b60c13dac from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:54:02.434896 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:54:02.435258 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:54:05.962456 [1;35m[INF][m GID 73, REORGANIZE: Block fd71dc1b4958a9db4b0571c78e9c07e1ff8727be76d5539513ea8cf27a5d5d53 is causing a reorganize.
+2019/05/09 23:54:05.962909 [1;35m[INF][m GID 73, Rejected block fd71dc1b4958a9db4b0571c78e9c07e1ff8727be76d5539513ea8cf27a5d5d53 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:54:07.530840 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:54:07.530992 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:54:12.575981 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:54:12.600390 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:54:16.812474 [1;35m[INF][m GID 216, <================Solved Block==============>
+2019/05/09 23:54:16.814062 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:54:21.818025 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:54:21.819973 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:54:25.702432 [1;35m[INF][m GID 216, <================Solved Block==============>
+2019/05/09 23:54:25.726773 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:54:30.770748 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:54:30.773627 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:54:33.704847 [1;35m[INF][m GID 216, <================Solved Block==============>
+2019/05/09 23:54:33.711248 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:54:38.734880 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:54:38.735296 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:54:43.235110 [1;35m[INF][m GID 73, REORGANIZE: Block 8ad86cf6eb5757210463a2ac685e3e67cf803ed1c573415563f13d3e0898e36c is causing a reorganize.
+2019/05/09 23:54:43.273849 [1;35m[INF][m GID 73, Rejected block 8ad86cf6eb5757210463a2ac685e3e67cf803ed1c573415563f13d3e0898e36c from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:54:43.801256 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:54:43.801519 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:54:45.595848 [1;35m[INF][m GID 73, REORGANIZE: Block 079c7f656192eced347269f2a6e3efff9e32f07eb26380aa736df5a0a10a608f is causing a reorganize.
+2019/05/09 23:54:45.596598 [1;35m[INF][m GID 73, Rejected block 079c7f656192eced347269f2a6e3efff9e32f07eb26380aa736df5a0a10a608f from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:54:48.803217 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:54:48.803512 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:54:50.237380 [1;35m[INF][m GID 216, <================Solved Block==============>
+2019/05/09 23:54:50.274097 [1;35m[INF][m GID 216, difficulty:  520095999
+2019-05-09 23:54:51.900 [INF] STAT: -> 0 [22 172.25.0.12:56066 (inbound), 22 172.25.0.14:40414 (inbound), 22 172.25.0.10:42642 (inbound), 22 172.25.0.11:34824 (inbound), 22 172.25.0.18:40228 (inbound), 22 172.25.0.4:58378 (inbound), 22 172.25.0.17:56198 (inbound), 22 172.25.0.15:53918 (inbound), 22 172.25.0.19:43298 (inbound), 0 172.25.0.22:43268 (inbound), 22 172.25.0.6:38152 (inbound), 22 172.25.0.16:39788 (inbound), 22 172.25.0.9:34078 (inbound), 22 172.25.0.13:54702 (inbound), 22 172.25.0.2:10015 (outbound), 22 172.25.0.9:10015 (outbound), 22 172.25.0.11:10015 (outbound)]
+2019/05/09 23:54:55.302513 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:54:55.302805 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:55:00.303243 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:55:00.305377 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:55:00.910982 [1;35m[INF][m GID 73, REORGANIZE: Block 041f51c0d41d70eba7f45b9a118a81ddaab6811bb8eb54e3766a45055396bb81 is causing a reorganize.
+2019/05/09 23:55:00.918752 [1;35m[INF][m GID 73, Rejected block 041f51c0d41d70eba7f45b9a118a81ddaab6811bb8eb54e3766a45055396bb81 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:55:05.316782 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:55:05.317118 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:55:10.356679 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:55:10.357295 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:55:15.371010 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:55:15.371244 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:55:16.104937 [1;35m[INF][m GID 73, REORGANIZE: Block 1c262dc54e1c1bff5667234fd235d754fca00c72543cc8d7c994a2aa27e83522 is causing a reorganize.
+2019/05/09 23:55:16.105754 [1;35m[INF][m GID 73, Rejected block 1c262dc54e1c1bff5667234fd235d754fca00c72543cc8d7c994a2aa27e83522 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:55:20.399485 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:55:20.408997 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:55:22.442662 [1;35m[INF][m GID 73, REORGANIZE: Block f6a0b4e72a9b4658ace4351b1bbea033fa196f790696985492182809b4a02268 is causing a reorganize.
+2019/05/09 23:55:22.442819 [1;35m[INF][m GID 73, Rejected block f6a0b4e72a9b4658ace4351b1bbea033fa196f790696985492182809b4a02268 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:55:25.419781 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:55:25.420008 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:55:30.426500 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:55:30.427077 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:55:35.433111 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:55:35.433420 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:55:38.995295 [1;35m[INF][m GID 73, REORGANIZE: Block 0de7a913866691177f0adea868374b9dd2b0c4f369c9fc88b432b93dfe67cb13 is causing a reorganize.
+2019/05/09 23:55:39.059357 [1;35m[INF][m GID 73, Rejected block 0de7a913866691177f0adea868374b9dd2b0c4f369c9fc88b432b93dfe67cb13 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:55:40.441411 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:55:40.451448 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:55:43.515343 [1;35m[INF][m GID 73, REORGANIZE: Block 0c27977f55bb5a8b2af99152b4e9cbc1d1931d254919c9125dd4cecf4582e3b2 is causing a reorganize.
+2019/05/09 23:55:43.515573 [1;35m[INF][m GID 73, Rejected block 0c27977f55bb5a8b2af99152b4e9cbc1d1931d254919c9125dd4cecf4582e3b2 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:55:45.525601 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:55:45.527323 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:55:50.534294 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:55:50.547614 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:55:51.138385 [1;35m[INF][m GID 73, REORGANIZE: Block 55efec70c296865aafa0f36c91c92c22a72d6b21f65c707b28534b14126608a3 is causing a reorganize.
+2019/05/09 23:55:51.139457 [1;35m[INF][m GID 73, Rejected block 55efec70c296865aafa0f36c91c92c22a72d6b21f65c707b28534b14126608a3 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019-05-09 23:55:51.900 [INF] STAT: -> 0 [27 172.25.0.9:34078 (inbound), 27 172.25.0.13:54702 (inbound), 27 172.25.0.10:42642 (inbound), 27 172.25.0.11:34824 (inbound), 27 172.25.0.12:56066 (inbound), 27 172.25.0.14:40414 (inbound), 27 172.25.0.4:58378 (inbound), 27 172.25.0.17:56198 (inbound), 27 172.25.0.18:40228 (inbound), 27 172.25.0.6:38152 (inbound), 27 172.25.0.16:39788 (inbound), 27 172.25.0.15:53918 (inbound), 27 172.25.0.19:43298 (inbound), 0 172.25.0.22:43268 (inbound), 27 172.25.0.11:10015 (outbound), 26 172.25.0.2:10015 (outbound), 27 172.25.0.9:10015 (outbound)]
+2019/05/09 23:55:55.596502 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:55:55.596868 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:55:58.384483 [1;35m[INF][m GID 73, REORGANIZE: Block 940640987a2a33111df7de9c08268fd87d537426675b9e71faef4b1a40ab38e4 is causing a reorganize.
+2019/05/09 23:55:58.385183 [1;35m[INF][m GID 73, Rejected block 940640987a2a33111df7de9c08268fd87d537426675b9e71faef4b1a40ab38e4 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:56:00.609428 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:56:00.610317 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:56:05.619230 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:56:05.621281 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:56:09.249210 [1;35m[INF][m GID 73, REORGANIZE: Block 782916b419ab9ef2fbe71121fb02652e153e9773223ee7176d552e683d8b1272 is causing a reorganize.
+2019/05/09 23:56:09.250262 [1;35m[INF][m GID 73, Rejected block 782916b419ab9ef2fbe71121fb02652e153e9773223ee7176d552e683d8b1272 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:56:10.357359 [1;35m[INF][m GID 73, REORGANIZE: Block 8c67200b163a0e654d92d43d08b7b0f3420ffbcb9dc5885edcb8cbe4fa7e29c0 is causing a reorganize.
+2019/05/09 23:56:10.360645 [1;35m[INF][m GID 73, Rejected block 8c67200b163a0e654d92d43d08b7b0f3420ffbcb9dc5885edcb8cbe4fa7e29c0 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:56:10.624597 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:56:10.625106 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:56:13.679317 [1;35m[INF][m GID 73, REORGANIZE: Block 0ec906f84bb9287fe699df28dd9276995e295465c45901c447a02ed83a489f3e is causing a reorganize.
+2019/05/09 23:56:13.685124 [1;35m[INF][m GID 73, Rejected block 0ec906f84bb9287fe699df28dd9276995e295465c45901c447a02ed83a489f3e from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:56:15.114857 [1;35m[INF][m GID 73, REORGANIZE: Block 49769e85691e9036fc611e347dadc7b1e3d1a3b896e9a1e859b12d60f38dea8e is causing a reorganize.
+2019/05/09 23:56:15.115193 [1;35m[INF][m GID 73, Rejected block 49769e85691e9036fc611e347dadc7b1e3d1a3b896e9a1e859b12d60f38dea8e from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:56:15.646717 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:56:15.646965 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:56:20.716717 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:56:20.718096 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:56:22.902820 [1;35m[INF][m GID 73, REORGANIZE: Block e956734b934fc9e1ebec0fc84745bd99fcd36211b12efd73f147777eeaeaf240 is causing a reorganize.
+2019/05/09 23:56:22.902920 [1;35m[INF][m GID 73, Rejected block e956734b934fc9e1ebec0fc84745bd99fcd36211b12efd73f147777eeaeaf240 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:56:25.733203 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:56:25.735083 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:56:26.575845 [1;35m[INF][m GID 73, REORGANIZE: Block 5bb3624943b1e31e2c7b2508ef424d24fc37a921304fc58da960219a6d610c35 is causing a reorganize.
+2019/05/09 23:56:26.576146 [1;35m[INF][m GID 73, Rejected block 5bb3624943b1e31e2c7b2508ef424d24fc37a921304fc58da960219a6d610c35 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:56:30.741558 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:56:30.742005 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:56:33.097336 [1;35m[INF][m GID 73, REORGANIZE: Block abbbdbc4cc3a6d660b964afe2a0ace38f2830de8ebdf15f14605afbb470c7ea6 is causing a reorganize.
+2019/05/09 23:56:33.097735 [1;35m[INF][m GID 73, Rejected block abbbdbc4cc3a6d660b964afe2a0ace38f2830de8ebdf15f14605afbb470c7ea6 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:56:35.788104 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:56:35.788603 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:56:40.431880 [1;35m[INF][m GID 73, REORGANIZE: Block 7c4c2a03582f7487b474e98bfbc03e9d4434e77aca6184cdd24dd904217f3544 is causing a reorganize.
+2019/05/09 23:56:40.432222 [1;35m[INF][m GID 73, Rejected block 7c4c2a03582f7487b474e98bfbc03e9d4434e77aca6184cdd24dd904217f3544 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:56:40.802871 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:56:40.805258 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:56:45.813922 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:56:45.814251 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:56:46.004839 [1;35m[INF][m GID 73, REORGANIZE: Block 4808674185207cf2f5efa2bd6fb0bfda6eb0823f4dbdd267b908049dcd7dae83 is causing a reorganize.
+2019/05/09 23:56:46.007243 [1;35m[INF][m GID 73, Rejected block 4808674185207cf2f5efa2bd6fb0bfda6eb0823f4dbdd267b908049dcd7dae83 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:56:50.816870 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:56:50.818373 [1;35m[INF][m GID 216, difficulty:  520095999
+2019-05-09 23:56:51.902 [INF] STAT: -> 0 [36 172.25.0.4:58378 (inbound), 37 172.25.0.17:56198 (inbound), 38 172.25.0.18:40228 (inbound), 36 172.25.0.6:38152 (inbound), 37 172.25.0.16:39788 (inbound), 37 172.25.0.15:53918 (inbound), 38 172.25.0.19:43298 (inbound), 0 172.25.0.22:43268 (inbound), 36 172.25.0.9:34078 (inbound), 37 172.25.0.13:54702 (inbound), 36 172.25.0.10:42642 (inbound), 36 172.25.0.11:34824 (inbound), 37 172.25.0.12:56066 (inbound), 37 172.25.0.14:40414 (inbound), 35 172.25.0.2:10015 (outbound), 37 172.25.0.9:10015 (outbound), 37 172.25.0.11:10015 (outbound)]
+2019/05/09 23:56:55.834130 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:56:55.836083 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:56:57.561499 [1;35m[INF][m GID 73, REORGANIZE: Block 7c3d470a4f43808d90609fb33d6b96ece836b2ec92acf232ca2dd9aefa1bab91 is causing a reorganize.
+2019/05/09 23:56:57.561677 [1;35m[INF][m GID 73, Rejected block 7c3d470a4f43808d90609fb33d6b96ece836b2ec92acf232ca2dd9aefa1bab91 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:57:00.837898 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:57:00.838145 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:57:05.842770 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:57:05.844200 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:57:10.869015 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:57:10.869272 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:57:11.480911 [1;35m[INF][m GID 73, REORGANIZE: Block 3df484c2222118b37d95561fc255281737e7e5f33ec3fa2943871a3d8da3b845 is causing a reorganize.
+2019/05/09 23:57:11.481043 [1;35m[INF][m GID 73, Rejected block 3df484c2222118b37d95561fc255281737e7e5f33ec3fa2943871a3d8da3b845 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:57:15.946387 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:57:15.951684 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:57:20.964719 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:57:20.965116 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:57:23.951121 [1;35m[INF][m GID 73, REORGANIZE: Block 1d239ff7cdc72ef2209463e2a80f08d4ad944643778f498814e007b677376d0a is causing a reorganize.
+2019/05/09 23:57:23.951280 [1;35m[INF][m GID 73, Rejected block 1d239ff7cdc72ef2209463e2a80f08d4ad944643778f498814e007b677376d0a from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:57:25.975469 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:57:25.976983 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:57:27.700944 [1;35m[INF][m GID 73, REORGANIZE: Block c8fd3d08ac1ab574ed1685b390352dad1544ed9897ce3d2770141fef559a68d9 is causing a reorganize.
+2019/05/09 23:57:27.705565 [1;35m[INF][m GID 73, Rejected block c8fd3d08ac1ab574ed1685b390352dad1544ed9897ce3d2770141fef559a68d9 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:57:30.983083 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:57:30.983767 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:57:33.770526 [1;35m[INF][m GID 73, REORGANIZE: Block 0e7dfb829dcf29f2a78fd4f8278c97fcea463d052128aa8207fc4fc90b9d785e is causing a reorganize.
+2019/05/09 23:57:33.770612 [1;35m[INF][m GID 73, Rejected block 0e7dfb829dcf29f2a78fd4f8278c97fcea463d052128aa8207fc4fc90b9d785e from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:57:35.989472 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:57:35.991492 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:57:41.001393 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:57:41.001735 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:57:42.756068 [1;35m[INF][m GID 216, <================Solved Block==============>
+2019/05/09 23:57:42.762869 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:57:47.763469 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:57:47.763747 [1;35m[INF][m GID 216, difficulty:  520095999
+2019-05-09 23:57:51.922 [INF] STAT: -> 0 [44 172.25.0.19:43298 (inbound), 0 172.25.0.22:43268 (inbound), 42 172.25.0.6:38152 (inbound), 44 172.25.0.16:39788 (inbound), 44 172.25.0.15:53918 (inbound), 43 172.25.0.9:34078 (inbound), 44 172.25.0.13:54702 (inbound), 44 172.25.0.14:40414 (inbound), 43 172.25.0.10:42642 (inbound), 43 172.25.0.11:34824 (inbound), 44 172.25.0.12:56066 (inbound), 42 172.25.0.4:58378 (inbound), 44 172.25.0.17:56198 (inbound), 45 172.25.0.18:40228 (inbound), 42 172.25.0.2:10015 (outbound), 44 172.25.0.9:10015 (outbound), 44 172.25.0.11:10015 (outbound)]
+2019/05/09 23:57:52.874504 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:57:52.874828 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:57:55.606614 [1;35m[INF][m GID 216, <================Solved Block==============>
+2019/05/09 23:57:55.610373 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:57:58.004675 [1;35m[INF][m GID 73, REORGANIZE: Block 4f019d85f4063f3b9e00469c72d5f6f81359d15852d9b07c341ae3183c6f1e4c is causing a reorganize.
+2019/05/09 23:57:58.097656 [1;35m[INF][m GID 73, Rejected block 4f019d85f4063f3b9e00469c72d5f6f81359d15852d9b07c341ae3183c6f1e4c from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:58:00.631575 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:58:00.634942 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:58:01.704534 [1;35m[INF][m GID 73, REORGANIZE: Block 94b9d79aa24fd0cf67cef46a79d1e154943ff275a0d8a63587c2e16f69770b3a is causing a reorganize.
+2019/05/09 23:58:01.704686 [1;35m[INF][m GID 73, Rejected block 94b9d79aa24fd0cf67cef46a79d1e154943ff275a0d8a63587c2e16f69770b3a from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:58:05.645587 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:58:05.651294 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:58:07.548097 [1;35m[INF][m GID 73, REORGANIZE: Block 165f85d141b72cf84c4e96af5d53553eb75be394622471d0124110f426285688 is causing a reorganize.
+2019/05/09 23:58:07.569807 [1;35m[INF][m GID 73, Rejected block 165f85d141b72cf84c4e96af5d53553eb75be394622471d0124110f426285688 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:58:10.655763 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:58:10.656081 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:58:11.445221 [1;35m[INF][m GID 216, <================Solved Block==============>
+2019/05/09 23:58:11.447677 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:58:16.453824 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:58:16.455149 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:58:19.726190 [1;35m[INF][m GID 73, REORGANIZE: Block 295168a762ced48d06f0e7bc0ae81638cca2b74c832573109ebe751f3deada3e is causing a reorganize.
+2019/05/09 23:58:19.726234 [1;35m[INF][m GID 73, Rejected block 295168a762ced48d06f0e7bc0ae81638cca2b74c832573109ebe751f3deada3e from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:58:21.516295 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:58:21.517021 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:58:26.519881 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:58:26.520745 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:58:31.525652 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:58:31.526236 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:58:36.568957 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:58:36.569225 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:58:38.706069 [1;35m[INF][m GID 73, REORGANIZE: Block 8b923ebadd82e6239eaca779d946d02b54102d833e3b2c1a9a462b0cd7c9f4dc is causing a reorganize.
+2019/05/09 23:58:38.709298 [1;35m[INF][m GID 73, Rejected block 8b923ebadd82e6239eaca779d946d02b54102d833e3b2c1a9a462b0cd7c9f4dc from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:58:41.576925 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:58:41.577655 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:58:43.867657 [1;35m[INF][m GID 73, REORGANIZE: Block aeefacd17d16bc0b93cea9bf2ce45f916ecd7f5afc1396ecef46b08423d67713 is causing a reorganize.
+2019/05/09 23:58:43.867847 [1;35m[INF][m GID 73, Rejected block aeefacd17d16bc0b93cea9bf2ce45f916ecd7f5afc1396ecef46b08423d67713 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:58:46.593554 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:58:46.593774 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:58:51.614058 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:58:51.614413 [1;35m[INF][m GID 216, difficulty:  520095999
+2019-05-09 23:58:51.957 [INF] STAT: -> 0 [49 172.25.0.15:53918 (inbound), 49 172.25.0.19:43298 (inbound), 0 172.25.0.22:43268 (inbound), 49 172.25.0.6:38152 (inbound), 49 172.25.0.16:39788 (inbound), 49 172.25.0.9:34078 (inbound), 49 172.25.0.13:54702 (inbound), 49 172.25.0.12:56066 (inbound), 49 172.25.0.14:40414 (inbound), 49 172.25.0.10:42642 (inbound), 49 172.25.0.11:34824 (inbound), 49 172.25.0.18:40228 (inbound), 49 172.25.0.4:58378 (inbound), 49 172.25.0.17:56198 (inbound), 51 172.25.0.2:10015 (outbound), 49 172.25.0.9:10015 (outbound), 49 172.25.0.11:10015 (outbound)]
+2019/05/09 23:58:54.347973 [1;35m[INF][m GID 216, <================Solved Block==============>
+2019/05/09 23:58:54.348861 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:58:59.355755 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:58:59.356013 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:58:59.507151 [1;35m[INF][m GID 73, REORGANIZE: Block 6542ff876b304888937f8a0ba5b58a225ff376d7f9f6a6f5cf1551782f99adf0 is causing a reorganize.
+2019/05/09 23:58:59.533494 [1;35m[INF][m GID 73, Rejected block 6542ff876b304888937f8a0ba5b58a225ff376d7f9f6a6f5cf1551782f99adf0 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:59:02.664758 [1;35m[INF][m GID 73, REORGANIZE: Block 3e3645fc6a48f407ff34d1f6940838850704293f8f5bf3f2abd8f31230dfb0e3 is causing a reorganize.
+2019/05/09 23:59:02.664930 [1;35m[INF][m GID 73, Rejected block 3e3645fc6a48f407ff34d1f6940838850704293f8f5bf3f2abd8f31230dfb0e3 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:59:04.423168 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:59:04.423408 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:59:05.149987 [1;35m[INF][m GID 73, REORGANIZE: Block 93baa954e52922fd05493c32a66a44adc3110eb59a7d3e64355c9f692ab54066 is causing a reorganize.
+2019/05/09 23:59:05.217540 [1;35m[INF][m GID 73, Rejected block 93baa954e52922fd05493c32a66a44adc3110eb59a7d3e64355c9f692ab54066 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:59:09.425392 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:59:09.430679 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:59:11.322203 [1;35m[INF][m GID 73, REORGANIZE: Block 52c673b4c726e31365b845f55e22fe373d5eb911e56ec606b142110d6e323409 is causing a reorganize.
+2019/05/09 23:59:11.389863 [1;35m[INF][m GID 73, Rejected block 52c673b4c726e31365b845f55e22fe373d5eb911e56ec606b142110d6e323409 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:59:14.440679 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:59:14.441026 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:59:18.187071 [1;35m[INF][m GID 73, REORGANIZE: Block 9a06b181e809173b3d0ab374ea14936fcdcc426139bc28cddb614059217399ec is causing a reorganize.
+2019/05/09 23:59:18.192651 [1;35m[INF][m GID 73, Rejected block 9a06b181e809173b3d0ab374ea14936fcdcc426139bc28cddb614059217399ec from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:59:19.514700 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:59:19.514983 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:59:24.525362 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:59:24.530589 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:59:29.538033 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:59:29.539140 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:59:34.550571 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:59:34.550740 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:59:39.561916 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:59:39.562134 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:59:39.612474 [1;35m[INF][m GID 73, REORGANIZE: Block e81507dbf4f8541af49b5c8b440557f2d48fa45664682ffb4cfa15577d9685ce is causing a reorganize.
+2019/05/09 23:59:39.613343 [1;35m[INF][m GID 73, Rejected block e81507dbf4f8541af49b5c8b440557f2d48fa45664682ffb4cfa15577d9685ce from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:59:40.400793 [1;35m[INF][m GID 73, REORGANIZE: Block 67bd137d14fb7504a73a1e23c5ad202bfa6bfcfc3aa4acfffba99b79f10071de is causing a reorganize.
+2019/05/09 23:59:40.405320 [1;35m[INF][m GID 73, Rejected block 67bd137d14fb7504a73a1e23c5ad202bfa6bfcfc3aa4acfffba99b79f10071de from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/09 23:59:44.564677 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:59:44.565343 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:59:45.632763 [1;35m[INF][m GID 216, <================Solved Block==============>
+2019/05/09 23:59:45.646375 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:59:50.664579 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:59:50.664909 [1;35m[INF][m GID 216, difficulty:  520095999
+2019-05-09 23:59:51.928 [INF] STAT: -> 0 [56 172.25.0.6:38152 (inbound), 56 172.25.0.16:39788 (inbound), 56 172.25.0.15:53918 (inbound), 56 172.25.0.19:43298 (inbound), 0 172.25.0.22:43268 (inbound), 56 172.25.0.9:34078 (inbound), 56 172.25.0.13:54702 (inbound), 56 172.25.0.10:42642 (inbound), 56 172.25.0.11:34824 (inbound), 56 172.25.0.12:56066 (inbound), 56 172.25.0.14:40414 (inbound), 56 172.25.0.4:58378 (inbound), 56 172.25.0.17:56198 (inbound), 56 172.25.0.18:40228 (inbound), 58 172.25.0.2:10015 (outbound), 56 172.25.0.9:10015 (outbound), 56 172.25.0.11:10015 (outbound)]
+2019/05/09 23:59:55.725633 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/09 23:59:55.727048 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/09 23:59:57.519505 [1;35m[INF][m GID 216, <================Solved Block==============>
+2019/05/09 23:59:57.519740 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:00:01.144928 [1;35m[INF][m GID 73, REORGANIZE: Block 6f0b02d845b575ed1f4ef5b2d3a6f7bdd724386b3f541d5047dc582ac52c1ff0 is causing a reorganize.
+2019/05/10 00:00:01.151525 [1;35m[INF][m GID 73, Rejected block 6f0b02d845b575ed1f4ef5b2d3a6f7bdd724386b3f541d5047dc582ac52c1ff0 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:00:02.577644 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:00:02.577916 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:00:07.595687 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:00:07.596530 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:00:12.599239 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:00:12.599572 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:00:17.662863 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:00:17.663266 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:00:18.873319 [1;35m[INF][m GID 73, REORGANIZE: Block a2aafc7dc34a71d31d299b30cf31b3bf9812fbe32d617075beb6d5939aa3d1ce is causing a reorganize.
+2019/05/10 00:00:18.874702 [1;35m[INF][m GID 73, Rejected block a2aafc7dc34a71d31d299b30cf31b3bf9812fbe32d617075beb6d5939aa3d1ce from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:00:22.704904 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:00:22.719626 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:00:27.463067 [1;35m[INF][m GID 216, <================Solved Block==============>
+2019/05/10 00:00:27.463557 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:00:32.535712 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:00:32.560025 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:00:37.584403 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:00:37.584576 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:00:42.605453 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:00:42.607727 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:00:47.609506 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:00:47.609946 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:00:47.857708 [1;35m[INF][m GID 73, REORGANIZE: Block 52796ca948c1378b2df7cbd99e4678b3c6ebbd0b7d3c619c6b90330ac431256e is causing a reorganize.
+2019/05/10 00:00:47.857904 [1;35m[INF][m GID 73, Rejected block 52796ca948c1378b2df7cbd99e4678b3c6ebbd0b7d3c619c6b90330ac431256e from 172.25.0.2:10015 (outbound): leveldb: not found
+2019-05-10 00:00:51.903 [INF] STAT: -> 0 [60 172.25.0.10:42642 (inbound), 60 172.25.0.11:34824 (inbound), 60 172.25.0.12:56066 (inbound), 60 172.25.0.14:40414 (inbound), 60 172.25.0.4:58378 (inbound), 60 172.25.0.17:56198 (inbound), 60 172.25.0.18:40228 (inbound), 60 172.25.0.6:38152 (inbound), 60 172.25.0.16:39788 (inbound), 60 172.25.0.15:53918 (inbound), 60 172.25.0.19:43298 (inbound), 0 172.25.0.22:43268 (inbound), 60 172.25.0.9:34078 (inbound), 60 172.25.0.13:54702 (inbound), 60 172.25.0.2:10015 (outbound), 60 172.25.0.9:10015 (outbound), 60 172.25.0.11:10015 (outbound)]
+2019/05/10 00:00:52.611187 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:00:52.615258 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:00:56.373546 [1;35m[INF][m GID 73, REORGANIZE: Block 8cac4dd7fb20b19dd10da77e5d5d0707e250c6a942374439f302da5ff0cbf617 is causing a reorganize.
+2019/05/10 00:00:56.374069 [1;35m[INF][m GID 73, Rejected block 8cac4dd7fb20b19dd10da77e5d5d0707e250c6a942374439f302da5ff0cbf617 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:00:57.644221 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:00:57.646788 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:01:02.657512 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:01:02.658542 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:01:04.363336 [1;35m[INF][m GID 216, <================Solved Block==============>
+2019/05/10 00:01:04.366780 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:01:07.497955 [1;35m[INF][m GID 73, REORGANIZE: Block e74034ab79f72d16ef772c647eb8c85f5a932ebc72da0905ffbcedfffcaf9640 is causing a reorganize.
+2019/05/10 00:01:07.498140 [1;35m[INF][m GID 73, Rejected block e74034ab79f72d16ef772c647eb8c85f5a932ebc72da0905ffbcedfffcaf9640 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:01:09.387645 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:01:09.387872 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:01:13.393205 [1;35m[INF][m GID 73, REORGANIZE: Block 9ccd5b7e04134ccdf06ec0309340f2464b1087e070b6d75140a04a43d1f440e2 is causing a reorganize.
+2019/05/10 00:01:13.393510 [1;35m[INF][m GID 73, Rejected block 9ccd5b7e04134ccdf06ec0309340f2464b1087e070b6d75140a04a43d1f440e2 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:01:14.388137 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:01:14.388472 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:01:19.410305 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:01:19.410600 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:01:24.427307 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:01:24.441853 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:01:29.532183 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:01:29.533994 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:01:34.551183 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:01:34.552012 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:01:36.689251 [1;35m[INF][m GID 216, <================Solved Block==============>
+2019/05/10 00:01:36.689634 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:01:40.217615 [1;35m[INF][m GID 73, REORGANIZE: Block b6b6d635ae80212a938e1aade75cbc1874d8f79e1b12e5e8669cdeebdf74f2be is causing a reorganize.
+2019/05/10 00:01:40.217876 [1;35m[INF][m GID 73, Rejected block b6b6d635ae80212a938e1aade75cbc1874d8f79e1b12e5e8669cdeebdf74f2be from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:01:41.692804 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:01:41.693164 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:01:46.730523 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:01:46.730661 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:01:51.771804 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:01:51.773663 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:01:51.833985 [1;35m[INF][m GID 73, REORGANIZE: Block f07dbee64b73ff719430c5b0b2846cf044e37f94f4a6b6da08d8c8f2ffce8604 is causing a reorganize.
+2019/05/10 00:01:51.834792 [1;35m[INF][m GID 73, Rejected block f07dbee64b73ff719430c5b0b2846cf044e37f94f4a6b6da08d8c8f2ffce8604 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019-05-10 00:01:51.907 [INF] STAT: -> 0 [64 172.25.0.18:40228 (inbound), 64 172.25.0.4:58378 (inbound), 64 172.25.0.17:56198 (inbound), 64 172.25.0.15:53918 (inbound), 64 172.25.0.19:43298 (inbound), 0 172.25.0.22:43268 (inbound), 64 172.25.0.6:38152 (inbound), 64 172.25.0.16:39788 (inbound), 64 172.25.0.9:34078 (inbound), 64 172.25.0.13:54702 (inbound), 64 172.25.0.12:56066 (inbound), 64 172.25.0.14:40414 (inbound), 64 172.25.0.10:42642 (inbound), 64 172.25.0.11:34824 (inbound), 64 172.25.0.2:10015 (outbound), 64 172.25.0.9:10015 (outbound), 64 172.25.0.11:10015 (outbound)]
+2019/05/10 00:01:56.805609 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:01:56.805847 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:02:01.813706 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:02:01.814582 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:02:02.390681 [1;35m[INF][m GID 73, REORGANIZE: Block 45c94a3fe6085891836e5d22c66ec86a6dd1b93f2d41b81144ab09068a5c44f5 is causing a reorganize.
+2019/05/10 00:02:02.391004 [1;35m[INF][m GID 73, Rejected block 45c94a3fe6085891836e5d22c66ec86a6dd1b93f2d41b81144ab09068a5c44f5 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:02:05.874111 [1;35m[INF][m GID 73, REORGANIZE: Block 6f02f21bfe736490095e91d7192fc9fe33dd01ffd37ebcae8fa3eb8b8d1ef889 is causing a reorganize.
+2019/05/10 00:02:05.876150 [1;35m[INF][m GID 73, Rejected block 6f02f21bfe736490095e91d7192fc9fe33dd01ffd37ebcae8fa3eb8b8d1ef889 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:02:06.851695 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:02:06.852717 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:02:07.734472 [1;35m[INF][m GID 73, REORGANIZE: Block e5d73dc497271c66dae71158bd370a73eec7408c49ba2dcb26f73e44fecd3330 is causing a reorganize.
+2019/05/10 00:02:07.736685 [1;35m[INF][m GID 73, Rejected block e5d73dc497271c66dae71158bd370a73eec7408c49ba2dcb26f73e44fecd3330 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:02:11.614609 [1;35m[INF][m GID 216, <================Solved Block==============>
+2019/05/10 00:02:11.640120 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:02:16.664998 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:02:16.665084 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:02:21.706307 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:02:21.706728 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:02:26.724190 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:02:26.724494 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:02:29.334238 [1;35m[INF][m GID 73, REORGANIZE: Block 55f3b829e20df2b608afea3c41ba4db3158869f4d7ce862fef164c768c3ee393 is causing a reorganize.
+2019/05/10 00:02:29.337610 [1;35m[INF][m GID 73, Rejected block 55f3b829e20df2b608afea3c41ba4db3158869f4d7ce862fef164c768c3ee393 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:02:31.731074 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:02:31.732802 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:02:36.736800 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:02:36.738371 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:02:41.741864 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:02:41.742315 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:02:46.759919 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:02:46.760615 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:02:50.363117 [1;35m[INF][m GID 73, REORGANIZE: Block 3ce9636efb3d6da174e3fa21184118ba303de088416c76b893c49155fc048e97 is causing a reorganize.
+2019/05/10 00:02:50.388169 [1;35m[INF][m GID 73, Rejected block 3ce9636efb3d6da174e3fa21184118ba303de088416c76b893c49155fc048e97 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:02:51.788823 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:02:51.789081 [1;35m[INF][m GID 216, difficulty:  520095999
+2019-05-10 00:02:51.908 [INF] STAT: -> 0 [69 172.25.0.4:58378 (inbound), 70 172.25.0.17:56198 (inbound), 70 172.25.0.18:40228 (inbound), 69 172.25.0.6:38152 (inbound), 70 172.25.0.16:39788 (inbound), 70 172.25.0.15:53918 (inbound), 70 172.25.0.19:43298 (inbound), 0 172.25.0.22:43268 (inbound), 69 172.25.0.9:34078 (inbound), 70 172.25.0.13:54702 (inbound), 69 172.25.0.10:42642 (inbound), 69 172.25.0.11:34824 (inbound), 70 172.25.0.12:56066 (inbound), 70 172.25.0.14:40414 (inbound), 70 172.25.0.9:10015 (outbound), 70 172.25.0.11:10015 (outbound), 69 172.25.0.2:10015 (outbound)]
+2019/05/10 00:02:55.864720 [1;35m[INF][m GID 73, REORGANIZE: Block 0b3e1f0e46195f7e0297f14244d0ad9cc9b2493ff402906bf7fbd7cff5523f36 is causing a reorganize.
+2019/05/10 00:02:55.888012 [1;35m[INF][m GID 73, Rejected block 0b3e1f0e46195f7e0297f14244d0ad9cc9b2493ff402906bf7fbd7cff5523f36 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:02:56.804327 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:02:56.812340 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:03:01.393947 [1;35m[INF][m GID 73, REORGANIZE: Block 47e33b562ff3a01e04aaac45542de6ccf4d337272bace3dc2df3251fdff811c2 is causing a reorganize.
+2019/05/10 00:03:01.401558 [1;35m[INF][m GID 73, Rejected block 47e33b562ff3a01e04aaac45542de6ccf4d337272bace3dc2df3251fdff811c2 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:03:01.824200 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:03:01.824557 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:03:06.908602 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:03:06.909724 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:03:07.885095 [1;35m[INF][m GID 73, REORGANIZE: Block d1f06b1e7c907f6bdc6aec6c50c0470e1f9b01b60cfbf7d56f40cd0a7ad521ba is causing a reorganize.
+2019/05/10 00:03:07.887825 [1;35m[INF][m GID 73, Rejected block d1f06b1e7c907f6bdc6aec6c50c0470e1f9b01b60cfbf7d56f40cd0a7ad521ba from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:03:10.850277 [1;35m[INF][m GID 73, REORGANIZE: Block cc53072b9def84c77ffcb1ae7805f68ab6fb6870391dd12ffd1db855918a7784 is causing a reorganize.
+2019/05/10 00:03:10.854732 [1;35m[INF][m GID 73, Rejected block cc53072b9def84c77ffcb1ae7805f68ab6fb6870391dd12ffd1db855918a7784 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:03:11.919154 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:03:11.919411 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:03:12.398975 [1;35m[INF][m GID 73, REORGANIZE: Block 8364eb5da0477ce6ed1df3225cec4baafad6c21f21dd60a78d61f6ac60bb61c8 is causing a reorganize.
+2019/05/10 00:03:12.399126 [1;35m[INF][m GID 73, Rejected block 8364eb5da0477ce6ed1df3225cec4baafad6c21f21dd60a78d61f6ac60bb61c8 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:03:16.931345 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:03:16.933635 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:03:21.039004 [1;35m[INF][m GID 73, REORGANIZE: Block 8609f33a50e54595964411f09fa46de93669c6bcede83dab7db8c3177dac5d10 is causing a reorganize.
+2019/05/10 00:03:21.039142 [1;35m[INF][m GID 73, Rejected block 8609f33a50e54595964411f09fa46de93669c6bcede83dab7db8c3177dac5d10 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:03:21.996019 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:03:21.996152 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:03:27.004190 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:03:27.004476 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:03:31.130111 [1;35m[INF][m GID 73, REORGANIZE: Block 58a9e16b3f93f8b4f4b79c02871e67c60fe43b52972d2bb8245fd0657cd4bdc1 is causing a reorganize.
+2019/05/10 00:03:31.130864 [1;35m[INF][m GID 73, Rejected block 58a9e16b3f93f8b4f4b79c02871e67c60fe43b52972d2bb8245fd0657cd4bdc1 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:03:32.013226 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:03:32.013572 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:03:37.035556 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:03:37.036968 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:03:42.066141 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:03:42.067831 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:03:47.123754 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:03:47.123906 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:03:49.916407 [1;35m[INF][m GID 73, REORGANIZE: Block 5ed1812a3c20d9baf9df269a9db9d5483e1486a4457740a1eac3b0fe0d0760ff is causing a reorganize.
+2019/05/10 00:03:49.924473 [1;35m[INF][m GID 73, Rejected block 5ed1812a3c20d9baf9df269a9db9d5483e1486a4457740a1eac3b0fe0d0760ff from 172.25.0.2:10015 (outbound): leveldb: not found
+2019-05-10 00:03:51.912 [INF] STAT: -> 0 [78 172.25.0.12:56066 (inbound), 78 172.25.0.14:40414 (inbound), 77 172.25.0.10:42642 (inbound), 77 172.25.0.11:34824 (inbound), 78 172.25.0.18:40228 (inbound), 77 172.25.0.4:58378 (inbound), 77 172.25.0.17:56198 (inbound), 78 172.25.0.15:53918 (inbound), 78 172.25.0.19:43298 (inbound), 0 172.25.0.22:43268 (inbound), 77 172.25.0.6:38152 (inbound), 78 172.25.0.16:39788 (inbound), 77 172.25.0.9:34078 (inbound), 77 172.25.0.13:54702 (inbound), 77 172.25.0.2:10015 (outbound), 77 172.25.0.9:10015 (outbound), 77 172.25.0.11:10015 (outbound)]
+2019/05/10 00:03:52.124801 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:03:52.128982 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:03:57.143429 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:03:57.148421 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:04:02.151644 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:04:02.151985 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:04:05.604112 [1;35m[INF][m GID 73, REORGANIZE: Block 92ea866f61130a9bf2bd7867f10af7e59d8fecb0d0a5dbb87e919438dabc68d4 is causing a reorganize.
+2019/05/10 00:04:05.604160 [1;35m[INF][m GID 73, Rejected block 92ea866f61130a9bf2bd7867f10af7e59d8fecb0d0a5dbb87e919438dabc68d4 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:04:07.170402 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:04:07.170637 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:04:10.278159 [1;35m[INF][m GID 73, REORGANIZE: Block 242be5dad7da50ddc7fc9b52e85f34028c03b13f33804ee192cdf0069abb7b93 is causing a reorganize.
+2019/05/10 00:04:10.278338 [1;35m[INF][m GID 73, Rejected block 242be5dad7da50ddc7fc9b52e85f34028c03b13f33804ee192cdf0069abb7b93 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:04:12.193887 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:04:12.194130 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:04:17.217465 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:04:17.217913 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:04:22.276693 [1;35m[INF][m GID 73, REORGANIZE: Block 27a9d539be76cbe02ade230303c7f2a91c2ecb04eee6e8b412d9abed599671f1 is causing a reorganize.
+2019/05/10 00:04:22.292927 [1;35m[INF][m GID 73, Rejected block 27a9d539be76cbe02ade230303c7f2a91c2ecb04eee6e8b412d9abed599671f1 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:04:22.293315 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:04:22.300723 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:04:24.718651 [1;35m[INF][m GID 73, REORGANIZE: Block f5d1b948407b3d26c6b3754cc04d22bd4a41ce4dbdca50aec20c09583b95c502 is causing a reorganize.
+2019/05/10 00:04:24.723561 [1;35m[INF][m GID 73, Rejected block f5d1b948407b3d26c6b3754cc04d22bd4a41ce4dbdca50aec20c09583b95c502 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:04:27.306522 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:04:27.307180 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:04:32.366837 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:04:32.367271 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:04:36.633841 [1;35m[INF][m GID 73, REORGANIZE: Block 068926ecab0087cf5f7812999ec23aea80a7435325ad5cf6f82f1d77aaafb11e is causing a reorganize.
+2019/05/10 00:04:36.644746 [1;35m[INF][m GID 73, Rejected block 068926ecab0087cf5f7812999ec23aea80a7435325ad5cf6f82f1d77aaafb11e from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:04:37.433704 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:04:37.433827 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:04:40.794264 [1;35m[INF][m GID 73, REORGANIZE: Block a2753a031d2ef6136807304c41dd0ce973f07dce02a96f7ef85de754388dc2b8 is causing a reorganize.
+2019/05/10 00:04:40.794993 [1;35m[INF][m GID 73, Rejected block a2753a031d2ef6136807304c41dd0ce973f07dce02a96f7ef85de754388dc2b8 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:04:42.452694 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:04:42.454552 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:04:47.532089 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:04:47.532505 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:04:50.909358 [1;35m[INF][m GID 73, REORGANIZE: Block 9907e7e56c03e5276063d199243a3f660b8e36167e9b302607d41f481489809c is causing a reorganize.
+2019/05/10 00:04:50.909653 [1;35m[INF][m GID 73, Rejected block 9907e7e56c03e5276063d199243a3f660b8e36167e9b302607d41f481489809c from 172.25.0.2:10015 (outbound): leveldb: not found
+2019-05-10 00:04:51.917 [INF] STAT: -> 0 [83 172.25.0.9:34078 (inbound), 83 172.25.0.13:54702 (inbound), 83 172.25.0.10:42642 (inbound), 83 172.25.0.11:34824 (inbound), 83 172.25.0.12:56066 (inbound), 83 172.25.0.14:40414 (inbound), 82 172.25.0.4:58378 (inbound), 83 172.25.0.17:56198 (inbound), 83 172.25.0.18:40228 (inbound), 82 172.25.0.6:38152 (inbound), 83 172.25.0.16:39788 (inbound), 83 172.25.0.15:53918 (inbound), 83 172.25.0.19:43298 (inbound), 0 172.25.0.22:43268 (inbound), 83 172.25.0.11:10015 (outbound), 81 172.25.0.2:10015 (outbound), 83 172.25.0.9:10015 (outbound)]
+2019/05/10 00:04:52.539825 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:04:52.542243 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:04:57.547846 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:04:57.549103 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:04:58.630630 [1;35m[INF][m GID 73, REORGANIZE: Block c6e38ca9ed9b62579eb35ffe3a462ea5608a33d9ed57b99d9e862e6a4c793415 is causing a reorganize.
+2019/05/10 00:04:58.630859 [1;35m[INF][m GID 73, Rejected block c6e38ca9ed9b62579eb35ffe3a462ea5608a33d9ed57b99d9e862e6a4c793415 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:05:02.550045 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:05:02.551458 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:05:07.552392 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:05:07.552547 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:05:10.294067 [1;35m[INF][m GID 73, REORGANIZE: Block acd1d4649855d8e7ec25f9f67921006e79953b9e79beb5720d25b782e3ec478c is causing a reorganize.
+2019/05/10 00:05:10.294127 [1;35m[INF][m GID 73, Rejected block acd1d4649855d8e7ec25f9f67921006e79953b9e79beb5720d25b782e3ec478c from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:05:12.561341 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:05:12.561555 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:05:15.412479 [1;35m[INF][m GID 73, REORGANIZE: Block 8c1f7b73cf54f84cdf3c829a0d37bd2ff893198dc31a08dfc85421f1d2a71117 is causing a reorganize.
+2019/05/10 00:05:15.412720 [1;35m[INF][m GID 73, Rejected block 8c1f7b73cf54f84cdf3c829a0d37bd2ff893198dc31a08dfc85421f1d2a71117 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:05:17.562237 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:05:17.562558 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:05:22.574990 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:05:22.576437 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:05:27.593430 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:05:27.594880 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:05:32.618940 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:05:32.619423 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:05:37.629906 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:05:37.630028 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:05:38.092180 [1;35m[INF][m GID 216, <================Solved Block==============>
+2019/05/10 00:05:38.126683 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:05:38.807027 [1;35m[INF][m GID 73, REORGANIZE: Block 6c2333a788c25ad2d19234ea5d3515861cc81868028f6f7ea3652674132e726a is causing a reorganize.
+2019/05/10 00:05:38.807095 [1;35m[INF][m GID 73, Rejected block 6c2333a788c25ad2d19234ea5d3515861cc81868028f6f7ea3652674132e726a from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:05:43.134821 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:05:43.138253 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:05:48.149996 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:05:48.151937 [1;35m[INF][m GID 216, difficulty:  520095999
+2019-05-10 00:05:51.908 [INF] STAT: -> 0 [0 172.25.0.22:43268 (inbound), 89 172.25.0.6:38152 (inbound), 89 172.25.0.16:39788 (inbound), 89 172.25.0.15:53918 (inbound), 89 172.25.0.19:43298 (inbound), 89 172.25.0.9:34078 (inbound), 89 172.25.0.13:54702 (inbound), 89 172.25.0.10:42642 (inbound), 89 172.25.0.11:34824 (inbound), 89 172.25.0.12:56066 (inbound), 89 172.25.0.14:40414 (inbound), 89 172.25.0.4:58378 (inbound), 89 172.25.0.17:56198 (inbound), 89 172.25.0.18:40228 (inbound), 89 172.25.0.2:10015 (outbound), 89 172.25.0.9:10015 (outbound), 89 172.25.0.11:10015 (outbound)]
+2019/05/10 00:05:53.155663 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:05:53.162565 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:05:58.164732 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:05:58.165155 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:05:59.934741 [1;35m[INF][m GID 73, REORGANIZE: Block 7640fbc210eb0060d00286420698b1f577511042613ca1641cf380f55a283341 is causing a reorganize.
+2019/05/10 00:05:59.936879 [1;35m[INF][m GID 73, Rejected block 7640fbc210eb0060d00286420698b1f577511042613ca1641cf380f55a283341 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:06:03.213937 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:06:03.214294 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:06:08.229100 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:06:08.231228 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:06:10.557427 [1;35m[INF][m GID 216, <================Solved Block==============>
+2019/05/10 00:06:10.560984 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:06:15.583667 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:06:15.586611 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:06:20.599114 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:06:20.600990 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:06:24.488263 [1;35m[INF][m GID 73, REORGANIZE: Block b33fd96f151fb233988471f04e94b51d44eb06d7de8443292564deead4e3cbfd is causing a reorganize.
+2019/05/10 00:06:24.488701 [1;35m[INF][m GID 73, Rejected block b33fd96f151fb233988471f04e94b51d44eb06d7de8443292564deead4e3cbfd from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:06:25.607428 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:06:25.611009 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:06:30.619923 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:06:30.621642 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:06:30.745091 [1;35m[INF][m GID 73, REORGANIZE: Block 5faa6915ea1eb0bcb1f9726372ae541afb825ff4c15c9bb175be86895450f9e2 is causing a reorganize.
+2019/05/10 00:06:30.745616 [1;35m[INF][m GID 73, Rejected block 5faa6915ea1eb0bcb1f9726372ae541afb825ff4c15c9bb175be86895450f9e2 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:06:35.502981 [1;35m[INF][m GID 73, REORGANIZE: Block 7bc10c857eda696ce131100bbc637e34e4ba7aaf066a02e299af255f4325d052 is causing a reorganize.
+2019/05/10 00:06:35.515288 [1;35m[INF][m GID 73, Rejected block 7bc10c857eda696ce131100bbc637e34e4ba7aaf066a02e299af255f4325d052 from 172.25.0.2:10015 (outbound): leveldb: not found
+2019/05/10 00:06:35.640152 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:06:35.640430 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:06:39.567048 [1;35m[INF][m GID 73, Lost peer 172.25.0.2:10015 (outbound)
+2019/05/10 00:06:39.633019 [1;35m[INF][m GID 73, Syncing to block height 91 from peer 172.25.0.4:58378
+2019/05/10 00:06:39.859339 [1;35m[INF][m GID 73, Rejected block 0a0ec60462c185ab3a24a1cf1915077cb937e2710f453967b0d92a55f37d48b8 from 172.25.0.4:58378 (inbound): already have block 0a0ec60462c185ab3a24a1cf1915077cb937e2710f453967b0d92a55f37d48b8
+
+2019/05/10 00:06:39.859813 [1;35m[INF][m GID 73, Rejected block 5d9a68aa1472a41408fc858f95a3d17660b61a53caee94ce8918dfb669a2cef8 from 172.25.0.4:58378 (inbound): already have block 5d9a68aa1472a41408fc858f95a3d17660b61a53caee94ce8918dfb669a2cef8
+
+2019/05/10 00:06:39.860616 [1;35m[INF][m GID 73, Rejected block ca2b6a781fb8a1f0e0c5eacdcea6a51f547e969a12f16c35ad376eeeefa77183 from 172.25.0.4:58378 (inbound): already have block ca2b6a781fb8a1f0e0c5eacdcea6a51f547e969a12f16c35ad376eeeefa77183
+
+2019/05/10 00:06:39.860896 [1;35m[INF][m GID 73, Rejected block 7eab3ddf01570e7de187ff81e9df5ecb2dc92444595f7e1affe8e52a4d6c7c91 from 172.25.0.4:58378 (inbound): already have block 7eab3ddf01570e7de187ff81e9df5ecb2dc92444595f7e1affe8e52a4d6c7c91
+
+2019/05/10 00:06:39.861347 [1;35m[INF][m GID 73, Rejected block 6cc36d2b27f9a765c44e140b64efe10ce2df345553e2ab04da5eda5f777c2018 from 172.25.0.4:58378 (inbound): already have block 6cc36d2b27f9a765c44e140b64efe10ce2df345553e2ab04da5eda5f777c2018
+
+2019/05/10 00:06:39.861601 [1;35m[INF][m GID 73, Rejected block 2af4f2df2b951ccf3d63c04486a3e50cdcbc6c141c1518910214c9c5bedeb246 from 172.25.0.4:58378 (inbound): already have block 2af4f2df2b951ccf3d63c04486a3e50cdcbc6c141c1518910214c9c5bedeb246
+
+2019/05/10 00:06:39.863440 [1;35m[INF][m GID 73, Rejected block 2f5c866320575cc4b868e3a68f36c4aeb9d679d9410255ae604b69a9564d8a31 from 172.25.0.4:58378 (inbound): already have block 2f5c866320575cc4b868e3a68f36c4aeb9d679d9410255ae604b69a9564d8a31
+
+2019/05/10 00:06:39.863733 [1;35m[INF][m GID 73, Rejected block b0868d67f5d99afa2c7286c5101e9ecd1fe98f48e7ee6bc90e7da65ea628b0e3 from 172.25.0.4:58378 (inbound): already have block b0868d67f5d99afa2c7286c5101e9ecd1fe98f48e7ee6bc90e7da65ea628b0e3
+
+2019/05/10 00:06:39.864085 [1;35m[INF][m GID 73, Rejected block 627f31444f01d92215c3ddf6c9ba58a58719146d0dcb03a48ff6793420cbce10 from 172.25.0.4:58378 (inbound): already have block 627f31444f01d92215c3ddf6c9ba58a58719146d0dcb03a48ff6793420cbce10
+
+2019/05/10 00:06:39.864509 [1;35m[INF][m GID 73, Rejected block 48f249ec3002f1907117e7e52e99631fdce6c4bf0601bcbe4f894a02906832b4 from 172.25.0.4:58378 (inbound): already have block 48f249ec3002f1907117e7e52e99631fdce6c4bf0601bcbe4f894a02906832b4
+
+2019/05/10 00:06:39.864854 [1;35m[INF][m GID 73, Rejected block e24de27f186019c5cabe3feca63386413260ac3e4d2a6a6648976564ae82dfd1 from 172.25.0.4:58378 (inbound): already have block e24de27f186019c5cabe3feca63386413260ac3e4d2a6a6648976564ae82dfd1
+
+2019/05/10 00:06:39.865495 [1;35m[INF][m GID 73, Rejected block e72f2e4592317720cf79e955337bc603f822a70cea8cf6ac901b7a7b12e9e18e from 172.25.0.4:58378 (inbound): already have block e72f2e4592317720cf79e955337bc603f822a70cea8cf6ac901b7a7b12e9e18e
+
+2019/05/10 00:06:39.866416 [1;35m[INF][m GID 73, Rejected block 1b0650821e3ca17067e712c05e20288345fb7d36238906f8735b3d4dd7684d64 from 172.25.0.4:58378 (inbound): already have block 1b0650821e3ca17067e712c05e20288345fb7d36238906f8735b3d4dd7684d64
+
+2019/05/10 00:06:39.940491 [1;35m[INF][m GID 73, Rejected block 9444f5fa8a5ea25f4c850c9a50a27c2d8bf2bc31e05d6693ee23b49830b76e16 from 172.25.0.4:58378 (inbound): already have block 9444f5fa8a5ea25f4c850c9a50a27c2d8bf2bc31e05d6693ee23b49830b76e16
+
+2019/05/10 00:06:39.941707 [1;35m[INF][m GID 73, Rejected block 9239e5caa39ed4cd729bc92c5dea54f33dec6f075c59321e52b33bf0aa5d50b2 from 172.25.0.4:58378 (inbound): already have block 9239e5caa39ed4cd729bc92c5dea54f33dec6f075c59321e52b33bf0aa5d50b2
+
+2019/05/10 00:06:39.942424 [1;35m[INF][m GID 73, Rejected block 4b2091162dea4f243ab304b0b6fa0bc47d37074471872bbd6c60579536a834e4 from 172.25.0.4:58378 (inbound): already have block 4b2091162dea4f243ab304b0b6fa0bc47d37074471872bbd6c60579536a834e4
+
+2019/05/10 00:06:39.942879 [1;35m[INF][m GID 73, Rejected block 805a2dc04e46aceddb0737085f96071168c20427f8701bf2f59af3f8b8cb54a8 from 172.25.0.4:58378 (inbound): already have block 805a2dc04e46aceddb0737085f96071168c20427f8701bf2f59af3f8b8cb54a8
+
+2019/05/10 00:06:39.943411 [1;35m[INF][m GID 73, Rejected block ced07ede5b8cd9037a911829a342e9ad2c15aff9489e883143e6db37b7b68172 from 172.25.0.4:58378 (inbound): already have block ced07ede5b8cd9037a911829a342e9ad2c15aff9489e883143e6db37b7b68172
+
+2019/05/10 00:06:39.944048 [1;35m[INF][m GID 73, Rejected block c2a4bdde04fef1feaeff24d9d7d537d0aa7acbf0b99d3af7d1ae88ba82ac83d3 from 172.25.0.4:58378 (inbound): already have block c2a4bdde04fef1feaeff24d9d7d537d0aa7acbf0b99d3af7d1ae88ba82ac83d3
+
+2019/05/10 00:06:39.945847 [1;35m[INF][m GID 73, Rejected block cef50e5e19b6a5a05c16cc7373051664a236359ea853bd7c3cdb0e54fdc3aa9f from 172.25.0.4:58378 (inbound): already have block cef50e5e19b6a5a05c16cc7373051664a236359ea853bd7c3cdb0e54fdc3aa9f
+
+2019/05/10 00:06:39.946256 [1;35m[INF][m GID 73, Rejected block 8eeaaafef8a72f483732493c8af6761a4ac9ae3e9ce72aa3d34e771b60c13dac from 172.25.0.4:58378 (inbound): already have block 8eeaaafef8a72f483732493c8af6761a4ac9ae3e9ce72aa3d34e771b60c13dac
+
+2019/05/10 00:06:39.946998 [1;35m[INF][m GID 73, Rejected block fd71dc1b4958a9db4b0571c78e9c07e1ff8727be76d5539513ea8cf27a5d5d53 from 172.25.0.4:58378 (inbound): already have block fd71dc1b4958a9db4b0571c78e9c07e1ff8727be76d5539513ea8cf27a5d5d53
+
+2019/05/10 00:06:39.978540 [1;35m[INF][m GID 73, Rejected block 8ad86cf6eb5757210463a2ac685e3e67cf803ed1c573415563f13d3e0898e36c from 172.25.0.4:58378 (inbound): already have block 8ad86cf6eb5757210463a2ac685e3e67cf803ed1c573415563f13d3e0898e36c
+
+2019/05/10 00:06:39.980527 [1;35m[INF][m GID 73, Rejected block 079c7f656192eced347269f2a6e3efff9e32f07eb26380aa736df5a0a10a608f from 172.25.0.4:58378 (inbound): already have block 079c7f656192eced347269f2a6e3efff9e32f07eb26380aa736df5a0a10a608f
+
+2019/05/10 00:06:39.981130 [1;35m[INF][m GID 73, Rejected block 041f51c0d41d70eba7f45b9a118a81ddaab6811bb8eb54e3766a45055396bb81 from 172.25.0.4:58378 (inbound): already have block 041f51c0d41d70eba7f45b9a118a81ddaab6811bb8eb54e3766a45055396bb81
+
+2019/05/10 00:06:39.981637 [1;35m[INF][m GID 73, Rejected block 1c262dc54e1c1bff5667234fd235d754fca00c72543cc8d7c994a2aa27e83522 from 172.25.0.4:58378 (inbound): already have block 1c262dc54e1c1bff5667234fd235d754fca00c72543cc8d7c994a2aa27e83522
+
+2019/05/10 00:06:39.983357 [1;35m[INF][m GID 73, Rejected block f6a0b4e72a9b4658ace4351b1bbea033fa196f790696985492182809b4a02268 from 172.25.0.4:58378 (inbound): already have block f6a0b4e72a9b4658ace4351b1bbea033fa196f790696985492182809b4a02268
+
+2019/05/10 00:06:39.984182 [1;35m[INF][m GID 73, Rejected block 0de7a913866691177f0adea868374b9dd2b0c4f369c9fc88b432b93dfe67cb13 from 172.25.0.4:58378 (inbound): already have block 0de7a913866691177f0adea868374b9dd2b0c4f369c9fc88b432b93dfe67cb13
+
+2019/05/10 00:06:39.985574 [1;35m[INF][m GID 73, Rejected block 0c27977f55bb5a8b2af99152b4e9cbc1d1931d254919c9125dd4cecf4582e3b2 from 172.25.0.4:58378 (inbound): already have block 0c27977f55bb5a8b2af99152b4e9cbc1d1931d254919c9125dd4cecf4582e3b2
+
+2019/05/10 00:06:39.987332 [1;35m[INF][m GID 73, Rejected block 55efec70c296865aafa0f36c91c92c22a72d6b21f65c707b28534b14126608a3 from 172.25.0.4:58378 (inbound): already have block 55efec70c296865aafa0f36c91c92c22a72d6b21f65c707b28534b14126608a3
+
+2019/05/10 00:06:39.988279 [1;35m[INF][m GID 73, Rejected block 940640987a2a33111df7de9c08268fd87d537426675b9e71faef4b1a40ab38e4 from 172.25.0.4:58378 (inbound): already have block 940640987a2a33111df7de9c08268fd87d537426675b9e71faef4b1a40ab38e4
+
+2019/05/10 00:06:39.990291 [1;35m[INF][m GID 73, Rejected block 782916b419ab9ef2fbe71121fb02652e153e9773223ee7176d552e683d8b1272 from 172.25.0.4:58378 (inbound): already have block 782916b419ab9ef2fbe71121fb02652e153e9773223ee7176d552e683d8b1272
+
+2019/05/10 00:06:40.033953 [1;35m[INF][m GID 73, Rejected block 8c67200b163a0e654d92d43d08b7b0f3420ffbcb9dc5885edcb8cbe4fa7e29c0 from 172.25.0.4:58378 (inbound): already have block 8c67200b163a0e654d92d43d08b7b0f3420ffbcb9dc5885edcb8cbe4fa7e29c0
+
+2019/05/10 00:06:40.112214 [1;35m[INF][m GID 73, Rejected block 0ec906f84bb9287fe699df28dd9276995e295465c45901c447a02ed83a489f3e from 172.25.0.4:58378 (inbound): already have block 0ec906f84bb9287fe699df28dd9276995e295465c45901c447a02ed83a489f3e
+
+2019/05/10 00:06:40.149839 [1;35m[INF][m GID 73, Rejected block 49769e85691e9036fc611e347dadc7b1e3d1a3b896e9a1e859b12d60f38dea8e from 172.25.0.4:58378 (inbound): already have block 49769e85691e9036fc611e347dadc7b1e3d1a3b896e9a1e859b12d60f38dea8e
+
+2019/05/10 00:06:40.174428 [1;35m[INF][m GID 73, Rejected block e956734b934fc9e1ebec0fc84745bd99fcd36211b12efd73f147777eeaeaf240 from 172.25.0.4:58378 (inbound): already have block e956734b934fc9e1ebec0fc84745bd99fcd36211b12efd73f147777eeaeaf240
+
+2019/05/10 00:06:40.177795 [1;35m[INF][m GID 73, Rejected block 5bb3624943b1e31e2c7b2508ef424d24fc37a921304fc58da960219a6d610c35 from 172.25.0.4:58378 (inbound): already have block 5bb3624943b1e31e2c7b2508ef424d24fc37a921304fc58da960219a6d610c35
+
+2019/05/10 00:06:40.178217 [1;35m[INF][m GID 73, Rejected block abbbdbc4cc3a6d660b964afe2a0ace38f2830de8ebdf15f14605afbb470c7ea6 from 172.25.0.4:58378 (inbound): already have block abbbdbc4cc3a6d660b964afe2a0ace38f2830de8ebdf15f14605afbb470c7ea6
+
+2019/05/10 00:06:40.178806 [1;35m[INF][m GID 73, Rejected block 7c4c2a03582f7487b474e98bfbc03e9d4434e77aca6184cdd24dd904217f3544 from 172.25.0.4:58378 (inbound): already have block 7c4c2a03582f7487b474e98bfbc03e9d4434e77aca6184cdd24dd904217f3544
+
+2019/05/10 00:06:40.179067 [1;35m[INF][m GID 73, Rejected block 4808674185207cf2f5efa2bd6fb0bfda6eb0823f4dbdd267b908049dcd7dae83 from 172.25.0.4:58378 (inbound): already have block 4808674185207cf2f5efa2bd6fb0bfda6eb0823f4dbdd267b908049dcd7dae83
+
+2019/05/10 00:06:40.179204 [1;35m[INF][m GID 73, Rejected block 7c3d470a4f43808d90609fb33d6b96ece836b2ec92acf232ca2dd9aefa1bab91 from 172.25.0.4:58378 (inbound): already have block 7c3d470a4f43808d90609fb33d6b96ece836b2ec92acf232ca2dd9aefa1bab91
+
+2019/05/10 00:06:40.179500 [1;35m[INF][m GID 73, Rejected block 3df484c2222118b37d95561fc255281737e7e5f33ec3fa2943871a3d8da3b845 from 172.25.0.4:58378 (inbound): already have block 3df484c2222118b37d95561fc255281737e7e5f33ec3fa2943871a3d8da3b845
+
+2019/05/10 00:06:40.179594 [1;35m[INF][m GID 73, Rejected block 1d239ff7cdc72ef2209463e2a80f08d4ad944643778f498814e007b677376d0a from 172.25.0.4:58378 (inbound): already have block 1d239ff7cdc72ef2209463e2a80f08d4ad944643778f498814e007b677376d0a
+
+2019/05/10 00:06:40.179886 [1;35m[INF][m GID 73, Rejected block c8fd3d08ac1ab574ed1685b390352dad1544ed9897ce3d2770141fef559a68d9 from 172.25.0.4:58378 (inbound): already have block c8fd3d08ac1ab574ed1685b390352dad1544ed9897ce3d2770141fef559a68d9
+
+2019/05/10 00:06:40.180039 [1;35m[INF][m GID 73, Rejected block 0e7dfb829dcf29f2a78fd4f8278c97fcea463d052128aa8207fc4fc90b9d785e from 172.25.0.4:58378 (inbound): already have block 0e7dfb829dcf29f2a78fd4f8278c97fcea463d052128aa8207fc4fc90b9d785e
+
+2019/05/10 00:06:40.185068 [1;35m[INF][m GID 73, Rejected block 4f019d85f4063f3b9e00469c72d5f6f81359d15852d9b07c341ae3183c6f1e4c from 172.25.0.4:58378 (inbound): already have block 4f019d85f4063f3b9e00469c72d5f6f81359d15852d9b07c341ae3183c6f1e4c
+
+2019/05/10 00:06:40.198908 [1;35m[INF][m GID 73, Rejected block 94b9d79aa24fd0cf67cef46a79d1e154943ff275a0d8a63587c2e16f69770b3a from 172.25.0.4:58378 (inbound): already have block 94b9d79aa24fd0cf67cef46a79d1e154943ff275a0d8a63587c2e16f69770b3a
+
+2019/05/10 00:06:40.204175 [1;35m[INF][m GID 73, Rejected block 165f85d141b72cf84c4e96af5d53553eb75be394622471d0124110f426285688 from 172.25.0.4:58378 (inbound): already have block 165f85d141b72cf84c4e96af5d53553eb75be394622471d0124110f426285688
+
+2019/05/10 00:06:40.204277 [1;35m[INF][m GID 73, Rejected block 295168a762ced48d06f0e7bc0ae81638cca2b74c832573109ebe751f3deada3e from 172.25.0.4:58378 (inbound): already have block 295168a762ced48d06f0e7bc0ae81638cca2b74c832573109ebe751f3deada3e
+
+2019/05/10 00:06:40.204393 [1;35m[INF][m GID 73, Rejected block 8b923ebadd82e6239eaca779d946d02b54102d833e3b2c1a9a462b0cd7c9f4dc from 172.25.0.4:58378 (inbound): already have block 8b923ebadd82e6239eaca779d946d02b54102d833e3b2c1a9a462b0cd7c9f4dc
+
+2019/05/10 00:06:40.204498 [1;35m[INF][m GID 73, Rejected block aeefacd17d16bc0b93cea9bf2ce45f916ecd7f5afc1396ecef46b08423d67713 from 172.25.0.4:58378 (inbound): already have block aeefacd17d16bc0b93cea9bf2ce45f916ecd7f5afc1396ecef46b08423d67713
+
+2019/05/10 00:06:40.204616 [1;35m[INF][m GID 73, Rejected block 6542ff876b304888937f8a0ba5b58a225ff376d7f9f6a6f5cf1551782f99adf0 from 172.25.0.4:58378 (inbound): already have block 6542ff876b304888937f8a0ba5b58a225ff376d7f9f6a6f5cf1551782f99adf0
+
+2019/05/10 00:06:40.204675 [1;35m[INF][m GID 73, Rejected block 3e3645fc6a48f407ff34d1f6940838850704293f8f5bf3f2abd8f31230dfb0e3 from 172.25.0.4:58378 (inbound): already have block 3e3645fc6a48f407ff34d1f6940838850704293f8f5bf3f2abd8f31230dfb0e3
+
+2019/05/10 00:06:40.204764 [1;35m[INF][m GID 73, Rejected block 93baa954e52922fd05493c32a66a44adc3110eb59a7d3e64355c9f692ab54066 from 172.25.0.4:58378 (inbound): already have block 93baa954e52922fd05493c32a66a44adc3110eb59a7d3e64355c9f692ab54066
+
+2019/05/10 00:06:40.204857 [1;35m[INF][m GID 73, Rejected block 52c673b4c726e31365b845f55e22fe373d5eb911e56ec606b142110d6e323409 from 172.25.0.4:58378 (inbound): already have block 52c673b4c726e31365b845f55e22fe373d5eb911e56ec606b142110d6e323409
+
+2019/05/10 00:06:40.204953 [1;35m[INF][m GID 73, Rejected block 9a06b181e809173b3d0ab374ea14936fcdcc426139bc28cddb614059217399ec from 172.25.0.4:58378 (inbound): already have block 9a06b181e809173b3d0ab374ea14936fcdcc426139bc28cddb614059217399ec
+
+2019/05/10 00:06:40.205057 [1;35m[INF][m GID 73, Rejected block e81507dbf4f8541af49b5c8b440557f2d48fa45664682ffb4cfa15577d9685ce from 172.25.0.4:58378 (inbound): already have block e81507dbf4f8541af49b5c8b440557f2d48fa45664682ffb4cfa15577d9685ce
+
+2019/05/10 00:06:40.205817 [1;35m[INF][m GID 73, Rejected block 67bd137d14fb7504a73a1e23c5ad202bfa6bfcfc3aa4acfffba99b79f10071de from 172.25.0.4:58378 (inbound): already have block 67bd137d14fb7504a73a1e23c5ad202bfa6bfcfc3aa4acfffba99b79f10071de
+
+2019/05/10 00:06:40.211373 [1;35m[INF][m GID 73, Rejected block 6f0b02d845b575ed1f4ef5b2d3a6f7bdd724386b3f541d5047dc582ac52c1ff0 from 172.25.0.4:58378 (inbound): already have block 6f0b02d845b575ed1f4ef5b2d3a6f7bdd724386b3f541d5047dc582ac52c1ff0
+
+2019/05/10 00:06:40.214678 [1;35m[INF][m GID 73, Rejected block a2aafc7dc34a71d31d299b30cf31b3bf9812fbe32d617075beb6d5939aa3d1ce from 172.25.0.4:58378 (inbound): already have block a2aafc7dc34a71d31d299b30cf31b3bf9812fbe32d617075beb6d5939aa3d1ce
+
+2019/05/10 00:06:40.217361 [1;35m[INF][m GID 73, Rejected block 52796ca948c1378b2df7cbd99e4678b3c6ebbd0b7d3c619c6b90330ac431256e from 172.25.0.4:58378 (inbound): already have block 52796ca948c1378b2df7cbd99e4678b3c6ebbd0b7d3c619c6b90330ac431256e
+
+2019/05/10 00:06:40.303747 [1;35m[INF][m GID 73, Rejected block 8cac4dd7fb20b19dd10da77e5d5d0707e250c6a942374439f302da5ff0cbf617 from 172.25.0.4:58378 (inbound): already have block 8cac4dd7fb20b19dd10da77e5d5d0707e250c6a942374439f302da5ff0cbf617
+
+2019/05/10 00:06:40.312442 [1;35m[INF][m GID 73, Rejected block e74034ab79f72d16ef772c647eb8c85f5a932ebc72da0905ffbcedfffcaf9640 from 172.25.0.4:58378 (inbound): already have block e74034ab79f72d16ef772c647eb8c85f5a932ebc72da0905ffbcedfffcaf9640
+
+2019/05/10 00:06:40.317366 [1;35m[INF][m GID 73, Rejected block 9ccd5b7e04134ccdf06ec0309340f2464b1087e070b6d75140a04a43d1f440e2 from 172.25.0.4:58378 (inbound): already have block 9ccd5b7e04134ccdf06ec0309340f2464b1087e070b6d75140a04a43d1f440e2
+
+2019/05/10 00:06:40.321265 [1;35m[INF][m GID 73, Rejected block b6b6d635ae80212a938e1aade75cbc1874d8f79e1b12e5e8669cdeebdf74f2be from 172.25.0.4:58378 (inbound): already have block b6b6d635ae80212a938e1aade75cbc1874d8f79e1b12e5e8669cdeebdf74f2be
+
+2019/05/10 00:06:40.341720 [1;35m[INF][m GID 73, Rejected block f07dbee64b73ff719430c5b0b2846cf044e37f94f4a6b6da08d8c8f2ffce8604 from 172.25.0.4:58378 (inbound): already have block f07dbee64b73ff719430c5b0b2846cf044e37f94f4a6b6da08d8c8f2ffce8604
+
+2019/05/10 00:06:40.346420 [1;35m[INF][m GID 73, Rejected block 45c94a3fe6085891836e5d22c66ec86a6dd1b93f2d41b81144ab09068a5c44f5 from 172.25.0.4:58378 (inbound): already have block 45c94a3fe6085891836e5d22c66ec86a6dd1b93f2d41b81144ab09068a5c44f5
+
+2019/05/10 00:06:40.347429 [1;35m[INF][m GID 73, Rejected block 6f02f21bfe736490095e91d7192fc9fe33dd01ffd37ebcae8fa3eb8b8d1ef889 from 172.25.0.4:58378 (inbound): already have block 6f02f21bfe736490095e91d7192fc9fe33dd01ffd37ebcae8fa3eb8b8d1ef889
+
+2019/05/10 00:06:40.416001 [1;35m[INF][m GID 73, Rejected block e5d73dc497271c66dae71158bd370a73eec7408c49ba2dcb26f73e44fecd3330 from 172.25.0.4:58378 (inbound): already have block e5d73dc497271c66dae71158bd370a73eec7408c49ba2dcb26f73e44fecd3330
+
+2019/05/10 00:06:40.422743 [1;35m[INF][m GID 73, Rejected block 55f3b829e20df2b608afea3c41ba4db3158869f4d7ce862fef164c768c3ee393 from 172.25.0.4:58378 (inbound): already have block 55f3b829e20df2b608afea3c41ba4db3158869f4d7ce862fef164c768c3ee393
+
+2019/05/10 00:06:40.425954 [1;35m[INF][m GID 73, Rejected block 3ce9636efb3d6da174e3fa21184118ba303de088416c76b893c49155fc048e97 from 172.25.0.4:58378 (inbound): already have block 3ce9636efb3d6da174e3fa21184118ba303de088416c76b893c49155fc048e97
+
+2019/05/10 00:06:40.426091 [1;35m[INF][m GID 73, Rejected block 0b3e1f0e46195f7e0297f14244d0ad9cc9b2493ff402906bf7fbd7cff5523f36 from 172.25.0.4:58378 (inbound): already have block 0b3e1f0e46195f7e0297f14244d0ad9cc9b2493ff402906bf7fbd7cff5523f36
+
+2019/05/10 00:06:40.426156 [1;35m[INF][m GID 73, Rejected block 47e33b562ff3a01e04aaac45542de6ccf4d337272bace3dc2df3251fdff811c2 from 172.25.0.4:58378 (inbound): already have block 47e33b562ff3a01e04aaac45542de6ccf4d337272bace3dc2df3251fdff811c2
+
+2019/05/10 00:06:40.426209 [1;35m[INF][m GID 73, Rejected block d1f06b1e7c907f6bdc6aec6c50c0470e1f9b01b60cfbf7d56f40cd0a7ad521ba from 172.25.0.4:58378 (inbound): already have block d1f06b1e7c907f6bdc6aec6c50c0470e1f9b01b60cfbf7d56f40cd0a7ad521ba
+
+2019/05/10 00:06:40.426258 [1;35m[INF][m GID 73, Rejected block cc53072b9def84c77ffcb1ae7805f68ab6fb6870391dd12ffd1db855918a7784 from 172.25.0.4:58378 (inbound): already have block cc53072b9def84c77ffcb1ae7805f68ab6fb6870391dd12ffd1db855918a7784
+
+2019/05/10 00:06:40.426307 [1;35m[INF][m GID 73, Rejected block 8364eb5da0477ce6ed1df3225cec4baafad6c21f21dd60a78d61f6ac60bb61c8 from 172.25.0.4:58378 (inbound): already have block 8364eb5da0477ce6ed1df3225cec4baafad6c21f21dd60a78d61f6ac60bb61c8
+
+2019/05/10 00:06:40.430283 [1;35m[INF][m GID 73, Rejected block 8609f33a50e54595964411f09fa46de93669c6bcede83dab7db8c3177dac5d10 from 172.25.0.4:58378 (inbound): already have block 8609f33a50e54595964411f09fa46de93669c6bcede83dab7db8c3177dac5d10
+
+2019/05/10 00:06:40.440069 [1;35m[INF][m GID 73, Rejected block 58a9e16b3f93f8b4f4b79c02871e67c60fe43b52972d2bb8245fd0657cd4bdc1 from 172.25.0.4:58378 (inbound): already have block 58a9e16b3f93f8b4f4b79c02871e67c60fe43b52972d2bb8245fd0657cd4bdc1
+
+2019/05/10 00:06:40.501278 [1;35m[INF][m GID 73, Rejected block 5ed1812a3c20d9baf9df269a9db9d5483e1486a4457740a1eac3b0fe0d0760ff from 172.25.0.4:58378 (inbound): already have block 5ed1812a3c20d9baf9df269a9db9d5483e1486a4457740a1eac3b0fe0d0760ff
+
+2019/05/10 00:06:40.577365 [1;35m[INF][m GID 73, Rejected block 92ea866f61130a9bf2bd7867f10af7e59d8fecb0d0a5dbb87e919438dabc68d4 from 172.25.0.4:58378 (inbound): already have block 92ea866f61130a9bf2bd7867f10af7e59d8fecb0d0a5dbb87e919438dabc68d4
+
+2019/05/10 00:06:40.577541 [1;35m[INF][m GID 73, Rejected block 242be5dad7da50ddc7fc9b52e85f34028c03b13f33804ee192cdf0069abb7b93 from 172.25.0.4:58378 (inbound): already have block 242be5dad7da50ddc7fc9b52e85f34028c03b13f33804ee192cdf0069abb7b93
+
+2019/05/10 00:06:40.577659 [1;35m[INF][m GID 73, Rejected block 27a9d539be76cbe02ade230303c7f2a91c2ecb04eee6e8b412d9abed599671f1 from 172.25.0.4:58378 (inbound): already have block 27a9d539be76cbe02ade230303c7f2a91c2ecb04eee6e8b412d9abed599671f1
+
+2019/05/10 00:06:40.577771 [1;35m[INF][m GID 73, Rejected block f5d1b948407b3d26c6b3754cc04d22bd4a41ce4dbdca50aec20c09583b95c502 from 172.25.0.4:58378 (inbound): already have block f5d1b948407b3d26c6b3754cc04d22bd4a41ce4dbdca50aec20c09583b95c502
+
+2019/05/10 00:06:40.577867 [1;35m[INF][m GID 73, Rejected block 068926ecab0087cf5f7812999ec23aea80a7435325ad5cf6f82f1d77aaafb11e from 172.25.0.4:58378 (inbound): already have block 068926ecab0087cf5f7812999ec23aea80a7435325ad5cf6f82f1d77aaafb11e
+
+2019/05/10 00:06:40.577966 [1;35m[INF][m GID 73, Rejected block a2753a031d2ef6136807304c41dd0ce973f07dce02a96f7ef85de754388dc2b8 from 172.25.0.4:58378 (inbound): already have block a2753a031d2ef6136807304c41dd0ce973f07dce02a96f7ef85de754388dc2b8
+
+2019/05/10 00:06:40.578060 [1;35m[INF][m GID 73, Rejected block 9907e7e56c03e5276063d199243a3f660b8e36167e9b302607d41f481489809c from 172.25.0.4:58378 (inbound): already have block 9907e7e56c03e5276063d199243a3f660b8e36167e9b302607d41f481489809c
+
+2019/05/10 00:06:40.578156 [1;35m[INF][m GID 73, Rejected block c6e38ca9ed9b62579eb35ffe3a462ea5608a33d9ed57b99d9e862e6a4c793415 from 172.25.0.4:58378 (inbound): already have block c6e38ca9ed9b62579eb35ffe3a462ea5608a33d9ed57b99d9e862e6a4c793415
+
+2019/05/10 00:06:40.578247 [1;35m[INF][m GID 73, Rejected block acd1d4649855d8e7ec25f9f67921006e79953b9e79beb5720d25b782e3ec478c from 172.25.0.4:58378 (inbound): already have block acd1d4649855d8e7ec25f9f67921006e79953b9e79beb5720d25b782e3ec478c
+
+2019/05/10 00:06:40.578342 [1;35m[INF][m GID 73, Rejected block 8c1f7b73cf54f84cdf3c829a0d37bd2ff893198dc31a08dfc85421f1d2a71117 from 172.25.0.4:58378 (inbound): already have block 8c1f7b73cf54f84cdf3c829a0d37bd2ff893198dc31a08dfc85421f1d2a71117
+
+2019/05/10 00:06:40.578442 [1;35m[INF][m GID 73, Rejected block 6c2333a788c25ad2d19234ea5d3515861cc81868028f6f7ea3652674132e726a from 172.25.0.4:58378 (inbound): already have block 6c2333a788c25ad2d19234ea5d3515861cc81868028f6f7ea3652674132e726a
+
+2019/05/10 00:06:40.578537 [1;35m[INF][m GID 73, Rejected block 7640fbc210eb0060d00286420698b1f577511042613ca1641cf380f55a283341 from 172.25.0.4:58378 (inbound): already have block 7640fbc210eb0060d00286420698b1f577511042613ca1641cf380f55a283341
+
+2019/05/10 00:06:40.578653 [1;35m[INF][m GID 73, Rejected block b33fd96f151fb233988471f04e94b51d44eb06d7de8443292564deead4e3cbfd from 172.25.0.4:58378 (inbound): already have block b33fd96f151fb233988471f04e94b51d44eb06d7de8443292564deead4e3cbfd
+
+2019/05/10 00:06:40.578750 [1;35m[INF][m GID 73, Rejected block 5faa6915ea1eb0bcb1f9726372ae541afb825ff4c15c9bb175be86895450f9e2 from 172.25.0.4:58378 (inbound): already have block 5faa6915ea1eb0bcb1f9726372ae541afb825ff4c15c9bb175be86895450f9e2
+
+2019/05/10 00:06:40.578845 [1;35m[INF][m GID 73, Rejected block 7bc10c857eda696ce131100bbc637e34e4ba7aaf066a02e299af255f4325d052 from 172.25.0.4:58378 (inbound): already have block 7bc10c857eda696ce131100bbc637e34e4ba7aaf066a02e299af255f4325d052
+
+2019/05/10 00:06:40.646468 [1;35m[INF][m GID 216, five second countdown ends. Re-generate block.
+2019/05/10 00:06:40.646583 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:06:41.530274 [1;35m[INF][m GID 216, <================Solved Block==============>
+2019/05/10 00:06:41.530632 [1;35m[INF][m GID 216, difficulty:  520095999
+2019/05/10 00:06:41.985155 [1;35m[INF][m GID 73, Lost peer 172.25.0.6:38152 (inbound)

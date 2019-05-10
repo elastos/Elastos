@@ -1,0 +1,127 @@
+2019/05/10 00:39:23.022909 [1;35m[INF][m GID 1, Node version: 
+2019/05/10 00:39:23.023114 [1;35m[INF][m GID 1, go version go1.11.5 linux/amd64
+2019/05/10 00:39:23.110307 [1;35m[INF][m GID 1, current block height -> 273
+[ ========== BLOCKCHAIN INITIALIZE STARTED ========== ]
+ 0 / 173    0.00% 174 / 173  100.58% 0s
+[ ========== BLOCKCHAIN INITIALIZE FINISHED ========== ]
+2019/05/10 00:39:23.125806 [1;35m[INF][m GID 1, Start the P2P networks
+2019/05/10 00:39:23.125837 [1;35m[INF][m GID 1, Start services
+2019/05/10 00:39:23.148984 [1;35m[INF][m GID 57, New valid peer 172.27.0.3:10015 (outbound)
+2019/05/10 00:39:23.503450 [1;35m[INF][m GID 57, New valid peer 172.27.0.5:10015 (outbound)
+2019/05/10 00:39:23.503687 [1;35m[INF][m GID 57, New valid peer 172.27.0.5:52110 (inbound)
+2019/05/10 00:39:28.126675 [1;35m[INF][m GID 1, Start consensus
+2019/05/10 00:39:28.126872 [1;35m[INF][m GID 1, Start POW Services
+2019/05/10 00:39:28.127039 [1;35m[INF][m GID 233, difficulty:  520095999
+2019/05/10 00:39:32.503277 [1;35m[INF][m GID 233, <================Solved Block==============>
+2019/05/10 00:39:32.503684 [1;35m[INF][m GID 233, [ConfirmBlock] block hash: afaeff1ebb861621a1ad72dcb414b3c78f5d3a6801dceb5978d3454552ceeb59
+2019/05/10 00:39:32.509439 [1;35m[INF][m GID 233, difficulty:  520095999
+2019/05/10 00:39:32.559627 [1;35m[INF][m GID 227, 172.27.0.5:52110 (inbound) sent a reject message Code: REJECT_INVALID, Hash afaeff1ebb861621a1ad72dcb414b3c78f5d3a6801dceb5978d3454552ceeb59, Reason: Rejected block afaeff1ebb861621a1ad72dcb414b3c78f5d3a6801dceb5978d3454552ceeb59 from 172.27.0.4:10015 (outbound): duplicate block in pool
+2019/05/10 00:39:32.624552 [1;35m[INF][m GID 233, <================Solved Block==============>
+2019/05/10 00:39:32.624813 [1;35m[INF][m GID 233, [ConfirmBlock] block hash: 058b45b8d0b40ea8b8d8d7a7c54102a6c8df9492a14e3ddb445e59b7acac0c71
+2019/05/10 00:39:32.625143 [1;35m[INF][m GID 233, difficulty:  520095999
+2019/05/10 00:39:32.638777 [1;35m[INF][m GID 205, 172.27.0.5:10015 (outbound) sent a reject message Code: REJECT_INVALID, Hash 058b45b8d0b40ea8b8d8d7a7c54102a6c8df9492a14e3ddb445e59b7acac0c71, Reason: Rejected block 058b45b8d0b40ea8b8d8d7a7c54102a6c8df9492a14e3ddb445e59b7acac0c71 from 172.27.0.4:53064 (inbound): duplicate block in pool
+2019/05/10 00:39:35.329799 [1;35m[INF][m GID 233, <================Solved Block==============>
+2019/05/10 00:39:35.330099 [1;35m[INF][m GID 233, [ConfirmBlock] block hash: b708bab87ab9a3ad1fd5f08137845ac97b6d1a1579f4ea71bbcc06ade75d2f98
+2019/05/10 00:39:35.330449 [1;35m[INF][m GID 233, difficulty:  520095999
+2019/05/10 00:39:38.622733 [1;35m[INF][m GID 57, New valid peer 172.27.0.10:41770 (inbound)
+2019/05/10 00:39:38.708899 [1;35m[INF][m GID 57, New valid peer 172.27.0.6:60196 (inbound)
+2019/05/10 00:39:39.070999 [1;35m[INF][m GID 57, New valid peer 172.27.0.12:46522 (inbound)
+2019/05/10 00:39:39.110544 [1;35m[INF][m GID 57, New valid peer 172.27.0.7:52610 (inbound)
+2019/05/10 00:39:40.138870 [1;35m[INF][m GID 57, New valid peer 172.27.0.13:36944 (inbound)
+2019/05/10 00:39:40.182885 [1;35m[INF][m GID 57, New valid peer 172.27.0.10:10015 (outbound)
+2019/05/10 00:39:40.330883 [1;35m[INF][m GID 233, five second countdown ends. Re-generate block.
+2019/05/10 00:39:40.331139 [1;35m[INF][m GID 233, difficulty:  520095999
+2019/05/10 00:39:41.180194 [1;33m[WRN][m GID 205, Unknown type in inventory request 5
+2019/05/10 00:39:41.209979 [1;33m[WRN][m GID 408, Unknown type in inventory request 5
+2019/05/10 00:39:41.210114 [1;33m[WRN][m GID 205, Unknown type in inventory request 5
+2019/05/10 00:39:41.212174 [1;33m[WRN][m GID 205, Unknown type in inventory request 5
+2019/05/10 00:39:41.222185 [1;33m[WRN][m GID 289, Unknown type in inventory request 5
+2019/05/10 00:39:41.240993 [1;33m[WRN][m GID 364, Unknown type in inventory request 5
+2019/05/10 00:39:41.241979 [1;33m[WRN][m GID 183, Unknown type in inventory request 5
+2019/05/10 00:39:41.245004 [1;33m[WRN][m GID 205, Unknown type in inventory request 5
+2019/05/10 00:39:41.245132 [1;33m[WRN][m GID 408, Unknown type in inventory request 5
+2019/05/10 00:39:41.245280 [1;33m[WRN][m GID 289, Unknown type in inventory request 5
+2019/05/10 00:39:41.245340 [1;33m[WRN][m GID 289, Unknown type in inventory request 5
+2019/05/10 00:39:41.245405 [1;33m[WRN][m GID 364, Unknown type in inventory request 5
+2019/05/10 00:39:41.247219 [1;33m[WRN][m GID 364, Unknown type in inventory request 5
+2019/05/10 00:39:41.267690 [1;33m[WRN][m GID 183, Unknown type in inventory request 5
+2019/05/10 00:39:41.267752 [1;33m[WRN][m GID 183, Unknown type in inventory request 5
+2019/05/10 00:39:41.267803 [1;33m[WRN][m GID 408, Unknown type in inventory request 5
+2019/05/10 00:39:41.267854 [1;33m[WRN][m GID 205, Unknown type in inventory request 5
+2019/05/10 00:39:41.268010 [1;33m[WRN][m GID 289, Unknown type in inventory request 5
+2019/05/10 00:39:41.268061 [1;33m[WRN][m GID 364, Unknown type in inventory request 5
+2019/05/10 00:39:41.332157 [1;33m[WRN][m GID 364, Unknown type in inventory request 5
+2019/05/10 00:39:41.279856 [1;33m[WRN][m GID 183, Unknown type in inventory request 5
+2019/05/10 00:39:41.332416 [1;33m[WRN][m GID 183, Unknown type in inventory request 5
+2019/05/10 00:39:41.279908 [1;33m[WRN][m GID 408, Unknown type in inventory request 5
+2019/05/10 00:39:41.332806 [1;33m[WRN][m GID 408, Unknown type in inventory request 5
+2019/05/10 00:39:41.280807 [1;33m[WRN][m GID 289, Unknown type in inventory request 5
+2019/05/10 00:39:41.412559 [1;35m[INF][m GID 57, New valid peer 172.27.0.9:10015 (outbound)
+2019/05/10 00:39:41.412847 [1;35m[INF][m GID 57, New valid peer 172.27.0.6:10015 (outbound)
+2019/05/10 00:39:41.470389 [1;35m[INF][m GID 57, New valid peer 172.27.0.7:10015 (outbound)
+2019/05/10 00:39:42.936113 [1;35m[INF][m GID 57, New valid peer 172.27.0.14:44894 (inbound)
+2019/05/10 00:39:43.864751 [1;35m[INF][m GID 57, New valid peer 172.27.0.16:53088 (inbound)
+2019/05/10 00:39:44.530797 [1;35m[INF][m GID 57, New valid peer 172.27.0.18:33732 (inbound)
+2019/05/10 00:39:45.390836 [1;35m[INF][m GID 233, five second countdown ends. Re-generate block.
+2019/05/10 00:39:45.391985 [1;35m[INF][m GID 233, difficulty:  520095999
+2019/05/10 00:39:45.648876 [1;35m[INF][m GID 57, New valid peer 172.27.0.19:36670 (inbound)
+2019/05/10 00:39:46.592667 [1;35m[INF][m GID 57, New valid peer 172.27.0.15:57894 (inbound)
+2019/05/10 00:39:47.646525 [1;35m[INF][m GID 57, New valid peer 172.27.0.20:45712 (inbound)
+2019/05/10 00:39:50.567731 [1;35m[INF][m GID 233, five second countdown ends. Re-generate block.
+2019/05/10 00:39:50.576822 [1;35m[INF][m GID 233, difficulty:  520095999
+2019/05/10 00:39:51.167595 [1;35m[INF][m GID 57, New valid peer 172.27.0.17:42672 (inbound)
+2019/05/10 00:39:55.583248 [1;35m[INF][m GID 233, five second countdown ends. Re-generate block.
+2019/05/10 00:39:55.586628 [1;35m[INF][m GID 233, difficulty:  520095999
+2019/05/10 00:39:55.938605 [1;35m[INF][m GID 57, [ConfirmBlock] block hash: e9488fc30cd78ee655c1a48ad145b349054559feb1b0b142043f716d78c58ed4
+2019/05/10 00:39:58.341508 [1;35m[INF][m GID 57, [ConfirmBlock] block hash: 6ba799d1b963e070872ab54f167a0fedaaa7ab557b4361b9a036cadf8a51e8f2
+2019/05/10 00:40:00.609809 [1;35m[INF][m GID 233, five second countdown ends. Re-generate block.
+2019/05/10 00:40:00.610135 [1;35m[INF][m GID 233, difficulty:  520095999
+2019/05/10 00:40:02.471578 [1;35m[INF][m GID 57, [ConfirmBlock] block hash: 6f4bf8c402d9f6b3be231f928ec715fca76f9e19f6517a895f7c2da663a805fa
+2019/05/10 00:40:02.536409 [1;35m[INF][m GID 314, 172.27.0.10:41770 (inbound) sent a reject message Code: REJECT_INVALID, Hash 6f4bf8c402d9f6b3be231f928ec715fca76f9e19f6517a895f7c2da663a805fa, Reason: Rejected block 6f4bf8c402d9f6b3be231f928ec715fca76f9e19f6517a895f7c2da663a805fa from 172.27.0.4:10015 (outbound): duplicate block in pool
+2019/05/10 00:40:05.633615 [1;35m[INF][m GID 233, five second countdown ends. Re-generate block.
+2019/05/10 00:40:05.633823 [1;35m[INF][m GID 233, difficulty:  520095999
+2019/05/10 00:40:10.644820 [1;35m[INF][m GID 233, five second countdown ends. Re-generate block.
+2019/05/10 00:40:10.645140 [1;35m[INF][m GID 233, difficulty:  520095999
+2019/05/10 00:40:15.662084 [1;35m[INF][m GID 233, five second countdown ends. Re-generate block.
+2019/05/10 00:40:15.671314 [1;35m[INF][m GID 233, difficulty:  520095999
+2019/05/10 00:40:17.379066 [1;35m[INF][m GID 57, [ConfirmBlock] block hash: 64822dad9024f02871c1715bdf17935e13697ffacd447f74a6f8ceacce827581
+2019/05/10 00:40:20.672816 [1;35m[INF][m GID 233, five second countdown ends. Re-generate block.
+2019/05/10 00:40:20.672968 [1;35m[INF][m GID 233, difficulty:  520095999
+2019-05-10 00:40:23.170 [INF] STAT: -> 273 [273 172.27.0.5:52110 (inbound), 273 172.27.0.12:46522 (inbound), 273 172.27.0.16:53088 (inbound), 273 172.27.0.19:36670 (inbound), 273 172.27.0.20:45712 (inbound), 273 172.27.0.10:41770 (inbound), 273 172.27.0.6:60196 (inbound), 273 172.27.0.7:52610 (inbound), 273 172.27.0.13:36944 (inbound), 273 172.27.0.14:44894 (inbound), 273 172.27.0.18:33732 (inbound), 273 172.27.0.15:57894 (inbound), 273 172.27.0.17:42672 (inbound), 273 172.27.0.6:10015 (outbound), 273 172.27.0.7:10015 (outbound), 273 172.27.0.5:10015 (outbound), 273 172.27.0.10:10015 (outbound), 273 172.27.0.9:10015 (outbound)]
+2019/05/10 00:40:23.170702 [1;35m[INF][m GID 57, Lost peer 172.27.0.3:10015 (outbound)
+2019/05/10 00:40:23.599777 [1;35m[INF][m GID 57, Lost peer 172.27.0.5:10015 (outbound)
+2019/05/10 00:40:23.608570 [1;35m[INF][m GID 57, Lost peer 172.27.0.5:52110 (inbound)
+2019/05/10 00:40:23.622184 [1;35m[INF][m GID 57, Lost peer 172.27.0.10:41770 (inbound)
+2019/05/10 00:40:23.829436 [1;35m[INF][m GID 57, Lost peer 172.27.0.6:60196 (inbound)
+2019/05/10 00:40:24.117169 [1;35m[INF][m GID 57, Lost peer 172.27.0.7:52610 (inbound)
+2019/05/10 00:40:25.224309 [1;35m[INF][m GID 57, Lost peer 172.27.0.10:10015 (outbound)
+2019/05/10 00:40:25.722694 [1;35m[INF][m GID 233, five second countdown ends. Re-generate block.
+2019/05/10 00:40:25.722910 [1;35m[INF][m GID 233, difficulty:  520095999
+2019/05/10 00:40:26.354545 [1;35m[INF][m GID 57, Lost peer 172.27.0.7:10015 (outbound)
+2019/05/10 00:40:27.273618 [1;35m[INF][m GID 30, [ConfirmBlock] block hash: 760741f0267b5f81357a241650677f81e1a5c7ac9766225aa2a1e038e975f6e3
+2019/05/10 00:40:27.409504 [1;35m[INF][m GID 233, <================Solved Block==============>
+2019/05/10 00:40:27.412568 [1;35m[INF][m GID 233, [ConfirmBlock] block hash: b950d077cc7f8ceaed3943a8957a38312329d41add97aefbeb5691fbe13fe927
+2019/05/10 00:40:27.415489 [1;35m[INF][m GID 233, difficulty:  520095999
+2019/05/10 00:40:28.246159 [1;35m[INF][m GID 57, New valid peer 172.27.0.3:10015 (outbound)
+2019/05/10 00:40:28.672326 [1;35m[INF][m GID 57, New valid peer 172.27.0.5:10015 (outbound)
+2019/05/10 00:40:28.721741 [1;35m[INF][m GID 57, New valid peer 172.27.0.10:42212 (inbound)
+2019/05/10 00:40:28.774071 [1;35m[INF][m GID 57, New valid peer 172.27.0.5:52628 (inbound)
+2019/05/10 00:40:28.884059 [1;35m[INF][m GID 57, New valid peer 172.27.0.6:60630 (inbound)
+2019/05/10 00:40:29.257482 [1;35m[INF][m GID 57, [ConfirmBlock] block hash: 9a23db9e8043bfb2cc8979e965d9e3b5873c5ab147a2c685ceeee3a4a345eb2b
+2019/05/10 00:40:29.297035 [1;35m[INF][m GID 750, 172.27.0.10:42212 (inbound) sent a reject message Code: REJECT_INVALID, Hash 9a23db9e8043bfb2cc8979e965d9e3b5873c5ab147a2c685ceeee3a4a345eb2b, Reason: Rejected block 9a23db9e8043bfb2cc8979e965d9e3b5873c5ab147a2c685ceeee3a4a345eb2b from 172.27.0.4:10015 (outbound): duplicate block in pool
+2019/05/10 00:40:29.383662 [1;35m[INF][m GID 57, New valid peer 172.27.0.7:53014 (inbound)
+2019/05/10 00:40:29.587144 [1;35m[INF][m GID 57, [ConfirmBlock] block hash: 07d2ce76bc202306aa27970e45498f1e9ba34994cb54fc94f7a9bf78ae578c19
+2019/05/10 00:40:30.383028 [1;35m[INF][m GID 57, New valid peer 172.27.0.10:10015 (outbound)
+2019/05/10 00:40:31.377077 [1;35m[INF][m GID 57, New valid peer 172.27.0.7:10015 (outbound)
+2019/05/10 00:40:32.460351 [1;35m[INF][m GID 233, five second countdown ends. Re-generate block.
+2019/05/10 00:40:32.470743 [1;35m[INF][m GID 233, difficulty:  520095999
+2019/05/10 00:40:37.483484 [1;35m[INF][m GID 233, five second countdown ends. Re-generate block.
+2019/05/10 00:40:37.484051 [1;35m[INF][m GID 233, difficulty:  520095999
+2019/05/10 00:40:42.494516 [1;35m[INF][m GID 233, five second countdown ends. Re-generate block.
+2019/05/10 00:40:42.499249 [1;35m[INF][m GID 233, difficulty:  520095999
+2019/05/10 00:40:47.532527 [1;35m[INF][m GID 233, five second countdown ends. Re-generate block.
+2019/05/10 00:40:47.532780 [1;35m[INF][m GID 233, difficulty:  520095999
+2019/05/10 00:40:48.071386 [1;35m[INF][m GID 57, [ConfirmBlock] block hash: 1e84a1e245416a4e5f96b433e72348a2498280bfee21fe38afa44835f7c49f3c
+2019/05/10 00:40:52.536035 [1;35m[INF][m GID 233, five second countdown ends. Re-generate block.
+2019/05/10 00:40:52.536353 [1;35m[INF][m GID 233, difficulty:  520095999
+2019/05/10 00:40:52.806689 [1;35m[INF][m GID 57, [ConfirmBlock] block hash: cde55a9db78a1b5b2491ae5794c7c98581a51d8f62927f0cd41bf31462e6b60e

@@ -9,17 +9,21 @@ function setup_node() {
     cd ela-${TYPE_DIR}/${SUB_DIR}
     for dir in $(ls -d */)
     do
-        rm -rf ${dir}/backup
+        rm -rf ${dir}/backup 
+        rm -rf ${dir}/elastos*
         absolute_path_dir="`pwd`/${dir}"
         container_name=$(echo $dir | sed 's:/*$::')
         if [ "${TYPE_DIR}" == "mainchain" ]
         then
             docker cp ela-${container_name}:/root/ela/elastos ${absolute_path_dir}/backup
+            docker cp ela-${container_name}:/root/ela/elastos ${absolute_path_dir}/
         elif [ "${TYPE_DIR}" == "arbitrator" ]
         then
             docker cp ela-${container_name}:/root/arbiter/elastos_arbiter ${absolute_path_dir}/backup
+            docker cp ela-${container_name}:/root/arbiter/elastos_arbiter ${absolute_path_dir}/
         else
             docker cp ela-sidechain-${container_name}:/root/${SUB_DIR}/elastos_${SUB_DIR} ${absolute_path_dir}/backup
+            docker cp ela-sidechain-${container_name}:/root/${SUB_DIR}/elastos_${SUB_DIR} ${absolute_path_dir}/
         fi
     done
     cd ${CURRENT_DIR}

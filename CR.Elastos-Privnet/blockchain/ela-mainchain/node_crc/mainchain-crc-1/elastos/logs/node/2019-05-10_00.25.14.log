@@ -1,0 +1,27 @@
+2019/05/10 00:25:14.919170 [1;35m[INF][m GID 1, Node version: 
+2019/05/10 00:25:14.948745 [1;35m[INF][m GID 1, go version go1.11.5 linux/amd64
+2019/05/10 00:25:15.193784 [1;35m[INF][m GID 1, current block height -> 0
+2019/05/10 00:25:15.193871 [1;35m[INF][m GID 1, Start the P2P networks
+2019/05/10 00:25:15.193900 [1;35m[INF][m GID 1, Start services
+2019/05/10 00:25:20.199759 [1;35m[INF][m GID 1, Start consensus
+2019/05/10 00:25:20.387134 [1;35m[INF][m GID 50, New valid peer 35.177.133.230:20338 (outbound)
+2019/05/10 00:25:20.387197 [1;35m[INF][m GID 50, Syncing to block height 374744 from peer 35.177.133.230:20338
+2019/05/10 00:25:22.327058 [1;35m[INF][m GID 50, [ConfirmBlock] block hash: 8ef6d362e6c14a805a2dec081151c5074e7a037d26450d9334635cb9a92a21e5
+2019/05/10 00:25:22.328243 [1;35m[INF][m GID 50, [ConfirmBlock] block height: 374744
+2019/05/10 00:25:26.918565 [1;35m[INF][m GID 50, New valid peer 47.254.134.142:20338 (outbound)
+2019/05/10 00:25:51.652408 [1;35m[INF][m GID 50, New valid peer 52.74.188.35:20338 (outbound)
+2019/05/10 00:25:51.652976 [1;35m[INF][m GID 50, New valid peer 52.74.121.225:20338 (outbound)
+2019/05/10 00:25:51.653086 [1;35m[INF][m GID 50, Lost peer 52.74.121.225:20338 (outbound)
+2019/05/10 00:25:56.358841 [1;35m[INF][m GID 50, New valid peer 54.66.146.105:20338 (outbound)
+2019/05/10 00:25:56.458442 [1;35m[INF][m GID 50, New valid peer 39.108.13.102:20338 (outbound)
+2019-05-10 00:26:15.194 [INF] STAT: -> 0 [374744 35.177.133.230:20338 (outbound), 374744 47.254.134.142:20338 (outbound), 374744 52.74.188.35:20338 (outbound), 374744 54.66.146.105:20338 (outbound), 374744 39.108.13.102:20338 (outbound)]
+2019/05/10 00:26:20.997595 [1;35m[INF][m GID 50, New valid peer 13.210.18.149:20338 (outbound)
+2019/05/10 00:26:32.369408 [1;35m[INF][m GID 50, [ConfirmBlock] block hash: 704fdf2073e53b1611e699515a15e5890204602a4abf933649fa3a2486357b83
+2019/05/10 00:26:33.005223 [1;35m[INF][m GID 50, [ConfirmBlock] block hash: 704fdf2073e53b1611e699515a15e5890204602a4abf933649fa3a2486357b83
+2019/05/10 00:26:33.005291 [1;35m[INF][m GID 50, [ConfirmBlock] block height: 374745
+2019/05/10 00:26:50.541875 [1;33m[WRN][m GID 50, [CheckSideChainPowConsensus], Arbitrator is not matched. [Validation], Verify failed.
+2019/05/10 00:26:50.541979 [1;33m[WRN][m GID 50, [TxPool CheckTransactionContext] failed a402e34f73e56dbaf70128f7c15bbfa86f1dc97cb5988cf4b22d59e1bd2376c5
+2019/05/10 00:26:50.542419 [1;33m[WRN][m GID 50, [CheckSideChainPowConsensus], Arbitrator is not matched. [Validation], Verify failed.
+2019/05/10 00:26:50.542496 [1;33m[WRN][m GID 50, [TxPool CheckTransactionContext] failed dde5778a02059bec14a8320aad207ccefc4fe772953e0ef7e4d213f9e210bb62
+2019/05/10 00:26:54.563869 [1;35m[INF][m GID 50, New valid peer 47.93.173.10:20338 (outbound)
+2019-05-10 00:27:15.194 [INF] STAT: -> 0 [374745 47.93.173.10:20338 (outbound), 374745 35.177.133.230:20338 (outbound), 374745 47.254.134.142:20338 (outbound), 374745 52.74.188.35:20338 (outbound), 374745 54.66.146.105:20338 (outbound), 374745 39.108.13.102:20338 (outbound), 374745 13.210.18.149:20338 (outbound)]

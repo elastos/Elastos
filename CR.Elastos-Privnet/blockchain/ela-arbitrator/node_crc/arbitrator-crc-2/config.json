@@ -61,7 +61,7 @@
             "02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7"
         ],
         "DPoSNetAddress": "ela-mainchain-crc-2:10016",
-        "CRCOnlyDPOSHeight": 200,
+        "CRCOnlyDPOSHeight": 150,
         "SyncInterval": 1000,
         "SideChainMonitorScanInterval": 1000,
         "ClearTransactionInterval": 60000,

@@ -65,7 +65,7 @@
         },
         "CheckAddressHeight": 101,
         "VoteStartHeight": 100,
-        "CRCOnlyDPOSHeight": 200,
-        "PublicDPOSHeight": 500
+        "CRCOnlyDPOSHeight": 150,
+        "PublicDPOSHeight": 250
     }
 }

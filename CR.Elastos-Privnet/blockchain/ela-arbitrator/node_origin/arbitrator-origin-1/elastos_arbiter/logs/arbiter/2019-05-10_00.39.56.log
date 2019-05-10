@@ -1,0 +1,24 @@
+2019/05/10 00:39:56.984259 [1;35m[INF][m GID 1, Init wallet.
+2019/05/10 00:39:57.158119 [1;35m[INF][m GID 1, Arbiter version:  
+2019/05/10 00:39:57.171213 [1;35m[INF][m GID 1, 1. Init chain utxo cache.
+2019/05/10 00:39:57.217806 [1;35m[INF][m GID 1, 2. Init finished transaction cache.
+2019/05/10 00:39:57.225827 [1;35m[INF][m GID 1, 3. Start arbitrator P2P networks.
+2019/05/10 00:39:57.234932 [1;35m[INF][m GID 1, 4. Init configurations.
+2019/05/10 00:39:57.243528 [1;35m[INF][m GID 1, 5. Start arbitrator spv module.
+2019/05/10 00:39:57.276831 [1;35m[INF][m GID 41, currentHeight: 476  chainHeight: 477
+2019/05/10 00:39:57.383142 [1;35m[INF][m GID 41,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  477
+2019/05/10 00:39:57.423721 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG
+2019/05/10 00:39:57.424041 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ
+2019/05/10 00:39:57.424258 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J
+2019/05/10 00:39:57.424428 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4
+2019/05/10 00:39:57.424539 [1;35m[INF][m GID 1, 6. Start arbitrator group monitor.
+2019/05/10 00:39:57.424672 [1;35m[INF][m GID 1, 7. Start servers.
+2019/05/10 00:39:57.424781 [1;35m[INF][m GID 1, 8. Start check and remove cross chain transactions from db.
+2019/05/10 00:39:57.424886 [1;35m[INF][m GID 1, 9. Start side chain account divide.
+2019/05/10 00:39:57.426242 [1;35m[INF][m GID 93, Check and remove cross chain transactions from dbcache finished
+2019/05/10 00:40:03.495084 [1;35m[INF][m GID 41, currentHeight: 477  chainHeight: 478
+2019/05/10 00:40:03.529555 [1;35m[INF][m GID 41,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  478
+2019/05/10 00:40:51.340376 [1;35m[INF][m GID 41, currentHeight: 478  chainHeight: 479
+2019/05/10 00:40:51.344049 [1;35m[INF][m GID 41,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  479
+2019/05/10 00:40:57.445056 [1;35m[INF][m GID 93, Check and remove cross chain transactions from dbcache finished
+2019/05/10 00:40:57.464957 [1;35m[INF][m GID 94, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 

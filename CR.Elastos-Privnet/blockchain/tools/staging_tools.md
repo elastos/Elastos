@@ -23,20 +23,25 @@ curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EU
 curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3"}}' http://localhost:30114
 
 # Send from reserve to Token sidechain addr
+cd $GOPATH/src/github.com/elastos/Elastos.ELA.Client
+rm -f keystore.dat
+./ela-cli wallet --import 109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8 -p 123
 ./ela-cli wallet -t create --from EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s --deposit EUscMawPCr8uFxKDtVxaq93Wbjm1DdtzeW --amount 100000 --fee 0.0001; ./ela-cli wallet -t sign -p 123 --file to_be_signed.txn; ./ela-cli wallet -t send --file ready_to_send.txn
 curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"EUscMawPCr8uFxKDtVxaq93Wbjm1DdtzeW"}}' http://localhost:40114
 ```
 
 ### Register your supernodes
 ```bash
-cd ela-mainchain
+cd $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-mainchain
 
 # Register supernode 1 using mainchain addr 1
+rm -f keystore.dat
 ./ela-cli wallet import a24ee48f308189d46a5f050f326e76779b6508d8c8aaf51a7152b903b9f42f80 -p elastos
 ./ela-cli wallet b
 ./ela-cli script --file ../test/register_mainchain-dpos-1.lua
 
 # Register supernode 1 using mainchain addr 1
+rm -f keystore.dat
 ./ela-cli wallet import ff6dc625cf986eae4365f69c30035608fa47518e5ada4ad99b7cbc5df7683c30 -p elastos
 ./ela-cli wallet b
 ./ela-cli script --file ../test/register_mainchain-dpos-2.lua
@@ -63,7 +68,7 @@ curl -X POST -H "Content-Type: application/json" -d '{
       ]
   }' localhost:8091/api/1/dpos/vote
 
-# Give 50,000 votes to KP supernode using mainchain addr 2
+# Give 60,000 votes to KP supernode using mainchain addr 2
 curl -X POST -H "Content-Type: application/json" -d '{
       "sender":[
           {
@@ -75,7 +80,7 @@ curl -X POST -H "Content-Type: application/json" -d '{
       "receiver":[
           {
               "address":"EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY",
-              "amount":"75000",
+              "amount":"60000",
               "candidatePublicKeys":["03521eb1f20fcb7a792aeed2f747f278ae7d7b38474ee571375ebe1abb3fa2cbbb"]
           }
       ]

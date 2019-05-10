@@ -18,29 +18,31 @@ function build_binary_and_docker {
     mkdir -p $TMPDIR/$WORKDIR/$BINARY
     cp $CURRENT_DIR/$WORKDIR/* $TMPDIR/$WORKDIR/
     cp -r * $TMPDIR/$WORKDIR/$BINARY/
-    docker build -t $DOCKERIMAGE -f $TMPDIR/$WORKDIR/Dockerfile $TMPDIR/$WORKDIR/
+    docker build -t "$DOCKERIMAGE:latest" -f $TMPDIR/$WORKDIR/Dockerfile $TMPDIR/$WORKDIR/
+    docker tag "$DOCKERIMAGE:latest" "$DOCKERIMAGE:$BRANCH"
+    docker push "$DOCKERIMAGE:$BRANCH"
     cd $CURRENT_DIR
 }
 
 build_binary_and_docker "release_v0.3.2" "Elastos.ELA" "ela-mainchain" "ela" \
-    "cyberrepublic/elastos-mainchain-node:latest"
+    "cyberrepublic/elastos-mainchain-node"
 
 build_binary_and_docker "release_v0.1.1" "Elastos.ELA.Arbiter" "ela-arbitrator" "arbiter" \
-    "cyberrepublic/elastos-arbitrator-node:latest"
+    "cyberrepublic/elastos-arbitrator-node"
 
 build_binary_and_docker "release_v0.1.2" "Elastos.ELA.SideChain.ID" "ela-sidechain/did" "did" \
-    "cyberrepublic/elastos-sidechain-did-node:latest"
+    "cyberrepublic/elastos-sidechain-did-node"
 
 build_binary_and_docker "release_v0.1.2" "Elastos.ELA.SideChain.Token" "ela-sidechain/token" "token" \
-    "cyberrepublic/elastos-sidechain-token-node:latest"
+    "cyberrepublic/elastos-sidechain-token-node"
 
 build_binary_and_docker "master" "Elastos.ORG.Wallet.Service" "restful-services/wallet-service" "service" \
-    "cyberrepublic/elastos-wallet-service:latest"
+    "cyberrepublic/elastos-wallet-service"
 
 build_binary_and_docker "master" "Elastos.ORG.DID.Service" "restful-services/did-service" "service" \
-    "cyberrepublic/elastos-did-service:latest"
+    "cyberrepublic/elastos-did-service"
 
 build_binary_and_docker "master" "Elastos.ORG.API.Misc" "restful-services/api-misc" "misc" \
-    "cyberrepublic/elastos-api-misc-service:latest"
+    "cyberrepublic/elastos-api-misc-service"
 
 cd $CURRENT_DIR
