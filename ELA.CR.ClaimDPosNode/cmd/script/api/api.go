@@ -124,6 +124,12 @@ func initLedger(L *lua.LState) int {
 		func() (block *types.Block, e error) {
 			hash := chainStore.GetCurrentBlockHash()
 			return chainStore.GetBlock(hash)
+		}, func(height uint32) (*types.Block, error) {
+			hash, err := chainStore.GetBlockHash(height)
+			if err != nil {
+				return nil, err
+			}
+			return chainStore.GetBlock(hash)
 		})
 
 	var interrupt = signal.NewInterrupt()
