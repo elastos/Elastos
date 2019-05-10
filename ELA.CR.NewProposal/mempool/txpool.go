@@ -169,8 +169,8 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 					mp.delInputUTXOList(input)
 				}
 
-				//delete sidechain tx list
-				if tx.TxType == WithdrawFromSideChain {
+				switch tx.TxType {
+				case WithdrawFromSideChain:
 					payload, ok := tx.Payload.(*payload.WithdrawFromSideChain)
 					if !ok {
 						log.Error("type cast failed when clean sidechain tx:", tx.Hash())
@@ -178,31 +178,32 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 					for _, hash := range payload.SideChainTransactionHashes {
 						mp.delSidechainTx(hash)
 					}
-				}
-
-				// delete producer
-				if tx.TxType == RegisterProducer {
+				case RegisterProducer:
 					rpPayload, ok := tx.Payload.(*payload.ProducerInfo)
 					if !ok {
 						log.Error("register producer payload cast failed, tx:", tx.Hash())
 					}
 					mp.delOwnerPublicKey(BytesToHexString(rpPayload.OwnerPublicKey))
 					mp.delNodePublicKey(BytesToHexString(rpPayload.NodePublicKey))
-				}
-				if tx.TxType == UpdateProducer {
+				case UpdateProducer:
 					upPayload, ok := tx.Payload.(*payload.ProducerInfo)
 					if !ok {
 						log.Error("update producer payload cast failed, tx:", tx.Hash())
 					}
 					mp.delOwnerPublicKey(BytesToHexString(upPayload.OwnerPublicKey))
 					mp.delNodePublicKey(BytesToHexString(upPayload.NodePublicKey))
-				}
-				if tx.TxType == CancelProducer {
+				case CancelProducer:
 					cpPayload, ok := tx.Payload.(*payload.ProcessProducer)
 					if !ok {
 						log.Error("cancel producer payload cast failed, tx:", tx.Hash())
 					}
 					mp.delOwnerPublicKey(BytesToHexString(cpPayload.OwnerPublicKey))
+				case ActivateProducer:
+					apPayload, ok := tx.Payload.(*payload.ActivateProducer)
+					if !ok {
+						log.Error("activate producer payload cast failed, tx:", tx.Hash())
+					}
+					mp.delNodePublicKey(BytesToHexString(apPayload.NodePublicKey))
 				}
 
 				deleteCount++
@@ -297,7 +298,8 @@ func (mp *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 
 //verify producer related transaction with txnpool
 func (mp *TxPool) verifyProducerRelatedTx(txn *Transaction) ErrCode {
-	if txn.IsRegisterProducerTx() {
+	switch txn.TxType {
+	case RegisterProducer:
 		payload, ok := txn.Payload.(*payload.ProducerInfo)
 		if !ok {
 			log.Error("register producer payload cast failed, tx:", txn.Hash())
@@ -310,7 +312,7 @@ func (mp *TxPool) verifyProducerRelatedTx(txn *Transaction) ErrCode {
 			log.Warn(err)
 			return ErrProducerNodeProcessing
 		}
-	} else if txn.IsUpdateProducerTx() {
+	case UpdateProducer:
 		payload, ok := txn.Payload.(*payload.ProducerInfo)
 		if !ok {
 			log.Error("update producer payload cast failed, tx:", txn.Hash())
@@ -323,7 +325,7 @@ func (mp *TxPool) verifyProducerRelatedTx(txn *Transaction) ErrCode {
 			log.Warn(err)
 			return ErrProducerNodeProcessing
 		}
-	} else if txn.IsCancelProducerTx() {
+	case CancelProducer:
 		payload, ok := txn.Payload.(*payload.ProcessProducer)
 		if !ok {
 			log.Error("cancel producer payload cast failed, tx:", txn.Hash())
@@ -332,7 +334,17 @@ func (mp *TxPool) verifyProducerRelatedTx(txn *Transaction) ErrCode {
 			log.Warn(err)
 			return ErrProducerProcessing
 		}
-	} else if txn.IsIllegalTypeTx() || txn.IsInactiveArbitrators() {
+	case ActivateProducer:
+		payload, ok := txn.Payload.(*payload.ActivateProducer)
+		if !ok {
+			log.Error("activate producer payload cast failed, tx:", txn.Hash())
+		}
+		if err := mp.verifyDuplicateNode(BytesToHexString(payload.NodePublicKey)); err != nil {
+			log.Warn(err)
+			return ErrProducerNodeProcessing
+		}
+	case IllegalProposalEvidence, IllegalVoteEvidence, IllegalBlockEvidence,
+		IllegalSidechainEvidence, InactiveArbitrators:
 		illegalData, ok := txn.Payload.(payload.DPOSIllegalData)
 		if !ok {
 			log.Error("special tx payload cast failed, tx:", txn.Hash())
