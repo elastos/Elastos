@@ -56,7 +56,7 @@ func (s *txValidatorTestSuite) SetupSuite() {
 		chainStore.GetHeight, func() (*types.Block, error) {
 			hash := chainStore.GetCurrentBlockHash()
 			return chainStore.GetBlock(hash)
-		})
+		}, nil)
 	if err != nil {
 		s.Fail("initialize arbitrator failed")
 	}
