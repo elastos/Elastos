@@ -32,10 +32,6 @@ const (
 
 	// MaxStringLength is the maximum length of a string field.
 	MaxStringLength = 100
-
-	// InactiveRecoveringHeightLimit is the minimum height an inactive
-	// producer can request recovering
-	InactiveRecoveringHeightLimit = 0
 )
 
 // CheckTransactionSanity verifies received single transaction
@@ -1080,8 +1076,9 @@ func (b *BlockChain) checkActivateProducerTransaction(txn *Transaction,
 		return errors.New("can not activate this producer")
 	}
 
-	if height < producer.InactiveSince()+InactiveRecoveringHeightLimit {
-		return errors.New("inactive producers should recover after 1 day")
+	if height > producer.ActivateRequestHeight() &&
+		height - producer.ActivateRequestHeight() <= state.ActivateDuration {
+		return errors.New("can only activate once during inactive state")
 	}
 
 	programHash, err := contract.PublicKeyToDepositProgramHash(
