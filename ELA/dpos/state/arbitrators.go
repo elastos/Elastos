@@ -46,9 +46,10 @@ var (
 type arbitrators struct {
 	*State
 	*degradation
-	chainParams *config.Params
-	bestHeight  func() uint32
-	bestBlock   func() (*types.Block, error)
+	chainParams      *config.Params
+	bestHeight       func() uint32
+	bestBlock        func() (*types.Block, error)
+	getBlockByHeight func(uint32) (*types.Block, error)
 
 	mtx                sync.Mutex
 	started            bool
@@ -185,9 +186,12 @@ func (a *arbitrators) GetFinalRoundChange() common.Fixed64 {
 func (a *arbitrators) ForceChange(height uint32) error {
 	a.mtx.Lock()
 
-	block, err := a.bestBlock()
+	block, err := a.getBlockByHeight(height)
 	if err != nil {
-		return err
+		block, err = a.bestBlock()
+		if err != nil {
+			return err
+		}
 	}
 
 	if err := a.clearingDPOSReward(block, false); err != nil {
@@ -342,7 +346,7 @@ func (a *arbitrators) distributeWithNormalArbitrators(
 	totalVotesInRound := a.totalVotesInRound
 	if totalVotesInRound == common.Fixed64(0) {
 		a.arbitersRoundReward[a.chainParams.CRCAddress] = reward
-		return 0, nil
+		return reward, nil
 	}
 	rewardPerVote := totalTopProducersReward / float64(totalVotesInRound)
 
@@ -897,7 +901,8 @@ func getArbitersInfoWithoutOnduty(title string, arbiters [][]byte) (string, []in
 }
 
 func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
-	bestBlock func() (*types.Block, error)) (*arbitrators, error) {
+	bestBlock func() (*types.Block, error),
+	getBlockByHeight func(uint32) (*types.Block, error)) (*arbitrators, error) {
 
 	originArbiters := make([][]byte, len(chainParams.OriginArbiters))
 	originArbitersProgramHashes := make([]*common.Uint168, len(chainParams.OriginArbiters))
@@ -946,6 +951,7 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
 		chainParams:                     chainParams,
 		bestHeight:                      bestHeight,
 		bestBlock:                       bestBlock,
+		getBlockByHeight:                getBlockByHeight,
 		currentArbitrators:              originArbiters,
 		currentOwnerProgramHashes:       originArbitersProgramHashes,
 		nextArbitrators:                 originArbiters,

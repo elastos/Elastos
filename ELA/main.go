@@ -158,6 +158,12 @@ func startNode(c *cli.Context) {
 		chainStore.GetHeight, func() (*types.Block, error) {
 			hash := chainStore.GetCurrentBlockHash()
 			return chainStore.GetBlock(hash)
+		}, func(height uint32) (*types.Block, error) {
+			hash, err := chainStore.GetBlockHash(height)
+			if err != nil {
+				return nil, err
+			}
+			return chainStore.GetBlock(hash)
 		})
 	if err != nil {
 		printErrorAndExit(err)
