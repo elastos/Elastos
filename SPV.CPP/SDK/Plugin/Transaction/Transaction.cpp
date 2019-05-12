@@ -52,7 +52,7 @@ namespace Elastos {
 		}
 
 		Transaction::Transaction(const Transaction &tx) {
-			operator=(tx);
+			this->operator=(tx);
 		}
 
 		Transaction &Transaction::operator=(const Transaction &orig) {
