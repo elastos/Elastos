@@ -171,25 +171,30 @@ namespace Elastos {
 					_lastBlock = checkBlock;
 			}
 
-			MerkleBlockPtr block;
+			MerkleBlockPtr block = nullptr, earlistBlock = nullptr;
 			for (size_t i = 0; i < blocks.size(); i++) {
 				assert(blocks[i]->GetHeight() !=
 					   BLOCK_UNKNOWN_HEIGHT); // height must be saved/restored along with serialized block
 				_orphans.insert(blocks[i]);
 
-				if (/*(blocks[i]->GetHeight() % BLOCK_DIFFICULTY_INTERVAL) == 0 &&*/
-					(block == nullptr || blocks[i]->GetHeight() < block->GetHeight()))
+				if ((blocks[i]->GetHeight() % BLOCK_DIFFICULTY_INTERVAL) == 0 &&
+					(block == nullptr || blocks[i]->GetHeight() > block->GetHeight()))
 					block = blocks[i]; // find last transition block
-			}
 
-			MerkleBlockPtr orphan = Registry::Instance()->CreateMerkleBlock(_pluginType);
+				if (earlistBlock == nullptr || blocks[i]->GetHeight() < earlistBlock->GetHeight())
+					earlistBlock = blocks[i];
+			}
+			if (block == nullptr)
+				block = earlistBlock;
+
+			uint256 hash;
 			while (block != nullptr) {
 				_blocks.Insert(block);
 				_lastBlock = block;
 
-				orphan->SetPrevBlockHash(block->GetPrevBlockHash());
+				hash = block->GetPrevBlockHash();
 				for (std::set<MerkleBlockPtr>::const_iterator it = _orphans.cbegin(); it != _orphans.cend();) {
-					if (orphan->GetPrevBlockHash() == (*it)->GetPrevBlockHash()) {
+					if (hash == (*it)->GetPrevBlockHash()) {
 						it = _orphans.erase(it);
 						break;
 					} else {
@@ -197,11 +202,12 @@ namespace Elastos {
 					}
 				}
 
-				orphan->SetPrevBlockHash(block->GetHash());
+				hash = block->GetHash();
 				block = nullptr;
 				for (std::set<MerkleBlockPtr>::const_iterator it = _orphans.cbegin(); it != _orphans.cend(); ++it) {
-					if (orphan->GetPrevBlockHash() == (*it)->GetPrevBlockHash()) {
+					if (hash == (*it)->GetPrevBlockHash()) {
 						block = *it;
+						break;
 					}
 				}
 			}
