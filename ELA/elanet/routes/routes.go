@@ -66,13 +66,11 @@ type Config struct {
 // state stores the DPOS addresses and other additional information tracking
 // addresses syncing status.
 type state struct {
-	peers        map[dp.PID]struct{}
-	addrIndex    map[dp.PID]map[dp.PID]common.Uint256
-	knownAddr    map[common.Uint256]*msg.DAddr
-	requested    map[common.Uint256]struct{}
-	peerCache    map[*peer.Peer]*cache
-	waiting      bool
-	lastAnnounce time.Time
+	peers     map[dp.PID]struct{}
+	addrIndex map[dp.PID]map[dp.PID]common.Uint256
+	knownAddr map[common.Uint256]*msg.DAddr
+	requested map[common.Uint256]struct{}
+	peerCache map[*peer.Peer]*cache
 }
 
 type newPeerMsg *peer.Peer
@@ -100,13 +98,14 @@ type dAddrMsg struct {
 
 // Routes is the DPOS routes implementation.
 type Routes struct {
-	pid      dp.PID
-	cfg      *Config
-	addr     string
-	sign     func([]byte) []byte
-	queue    chan interface{}
-	announce chan struct{}
-	quit     chan struct{}
+	pid       dp.PID
+	cfg       *Config
+	addr      string
+	sign      func([]byte) []byte
+	queue     chan interface{}
+	announce  chan struct{}
+	sendQueue chan struct{}
+	quit      chan struct{}
 }
 
 // addrHandler is the main handler to syncing the addresses state.
@@ -118,6 +117,12 @@ func (r *Routes) addrHandler() {
 		requested: make(map[common.Uint256]struct{}),
 		peerCache: make(map[*peer.Peer]*cache),
 	}
+
+	// waiting indicates if a previous announce is waiting.
+	var waiting bool
+
+	// lastAnnounce represents the last announce time.
+	var lastAnnounce time.Time
 
 out:
 	for {
@@ -144,16 +149,81 @@ out:
 				r.handlePeersMsg(state, m.peers)
 			}
 
-			// Handle the announce request.
+		// Handle the announce request.
 		case <-r.announce:
 			// Refuse new announce if a previous announce is waiting,
 			// this is to reduce unnecessary announce.
-			if state.waiting {
+			if waiting {
 				continue
 			}
-			state.waiting = true
+			waiting = true
 
-			r.handleAnnounce(state)
+			r.sendQueue <- struct{}{}
+
+		// Handle send address announce.
+		case <-r.sendQueue:
+			// This may be a retry or delayed announce, and the DPoS producers
+			// have been changed.
+			_, ok := state.peers[r.pid]
+			if !ok {
+				// Waiting status must reset here or the announce will never
+				// work again.
+				waiting = false
+				continue
+			}
+
+			// Do not announce address if connected peers not enough.
+			if len(state.peerCache) < minPeersToAnnounce {
+				// Retry announce after the retry duration.
+				time.AfterFunc(retryAnnounceDuration, func() {
+					r.sendQueue <- struct{}{}
+				})
+				continue
+			}
+
+			// Do not announce address too frequent.
+			now := time.Now()
+			if lastAnnounce.Add(minAnnounceDuration).After(now) {
+				// Calculate next announce time and schedule an announce.
+				nextAnnounce := minAnnounceDuration - now.Sub(lastAnnounce)
+				time.AfterFunc(nextAnnounce, func() {
+					r.sendQueue <- struct{}{}
+				})
+				continue
+			}
+
+			// Update last announce time.
+			waiting = false
+			lastAnnounce = now
+
+			for pid := range state.peers {
+				// Do not create address for self.
+				if r.pid.Equal(pid) {
+					continue
+				}
+
+				pubKey, err := crypto.DecodePoint(pid[:])
+				if err != nil {
+					continue
+				}
+
+				// Generate DAddr for the given PID.
+				cipher, err := crypto.Encrypt(pubKey, []byte(r.addr))
+				if err != nil {
+					log.Warnf("encrypt addr %s failed %s", r.addr, err)
+					continue
+				}
+				addr := msg.DAddr{
+					PID:       r.pid,
+					Timestamp: r.cfg.TimeSource.AdjustedTime(),
+					Encode:    pid,
+					Cipher:    cipher,
+				}
+				addr.Signature = r.sign(addr.Data())
+
+				// Append and relay the local address.
+				r.appendAddr(state, &addr)
+			}
 
 		case <-r.quit:
 			break out
@@ -164,6 +234,8 @@ cleanup:
 	for {
 		select {
 		case <-r.queue:
+		case <-r.announce:
+		case <-r.sendQueue:
 		default:
 			break cleanup
 		}
@@ -232,7 +304,7 @@ func (r *Routes) handlePeersMsg(state *state, peers []dp.PID) {
 
 	// Announce address into P2P network if we become arbiter.
 	if isArbiter && !wasArbiter {
-		r.handleAnnounce(state)
+		r.announce <- struct{}{}
 	}
 }
 
@@ -401,68 +473,6 @@ func (r *Routes) handleDAddr(s *state, p *peer.Peer, m *msg.DAddr) {
 	}
 }
 
-func (r *Routes) handleAnnounce(s *state) {
-	// This may be a retry or delayed announce, and the DPoS producers have been
-	// changed.
-	_, ok := s.peers[r.pid]
-	if !ok {
-		return
-	}
-
-	// Do not announce address if connected peers not enough.
-	if len(s.peerCache) < minPeersToAnnounce {
-		// Retry announce after the retry duration.
-		time.AfterFunc(retryAnnounceDuration, func() {
-			r.handleAnnounce(s)
-		})
-		return
-	}
-
-	// Do not announce address too frequent.
-	now := time.Now()
-	if s.lastAnnounce.Add(minAnnounceDuration).After(now) {
-		// Calculate next announce time and schedule an announce.
-		nextAnnounce := minAnnounceDuration - now.Sub(s.lastAnnounce)
-		time.AfterFunc(nextAnnounce, func() {
-			r.handleAnnounce(s)
-		})
-		return
-	}
-
-	// Update last announce time.
-	s.lastAnnounce = now
-	s.waiting = false
-
-	for pid := range s.peers {
-		// Do not create address for self.
-		if r.pid.Equal(pid) {
-			continue
-		}
-
-		pubKey, err := crypto.DecodePoint(pid[:])
-		if err != nil {
-			continue
-		}
-
-		// Generate DAddr for the given PID.
-		cipher, err := crypto.Encrypt(pubKey, []byte(r.addr))
-		if err != nil {
-			log.Warnf("encrypt addr %s failed %s", r.addr, err)
-			continue
-		}
-		addr := msg.DAddr{
-			PID:       r.pid,
-			Timestamp: r.cfg.TimeSource.AdjustedTime(),
-			Encode:    pid,
-			Cipher:    cipher,
-		}
-		addr.Signature = r.sign(addr.Data())
-
-		// Append and relay the local address.
-		r.appendAddr(s, &addr)
-	}
-}
-
 // Start starts the Routes instance to sync DPOS addresses.
 func (r *Routes) Start() {
 	go r.addrHandler()
@@ -510,13 +520,14 @@ func New(cfg *Config) *Routes {
 	copy(pid[:], cfg.PID)
 
 	r := Routes{
-		pid:      pid,
-		cfg:      cfg,
-		addr:     cfg.Addr,
-		sign:     cfg.Sign,
-		queue:    make(chan interface{}, 256),
-		announce: make(chan struct{}, 1),
-		quit:     make(chan struct{}),
+		pid:       pid,
+		cfg:       cfg,
+		addr:      cfg.Addr,
+		sign:      cfg.Sign,
+		queue:     make(chan interface{}, 256),
+		announce:  make(chan struct{}, 1),
+		sendQueue: make(chan struct{}, 1),
+		quit:      make(chan struct{}),
 	}
 
 	queuePeers := func(peers []dp.PID) {
