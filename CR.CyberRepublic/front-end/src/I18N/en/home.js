@@ -116,7 +116,7 @@ export default {
       member: 'Community Member',
       suggestion: 'Suggestion',
       submitProposal: 'Submit Proposal to the CR Website',
-      council: 'CR Council',
+      council: 'CRC Council',
       proposalPage: 'CR Proposal Page',
       approvedProposal: 'Approved Proposal',
       voting: 'Voting',

@@ -49,8 +49,8 @@ export default class extends StandardPage {
         </MediaQuery>
         <MediaQuery maxWidth={LG_WIDTH}>
           <CRLogoMobContainer>
-            <CRLogo src={images.CRLogo} />
-            <CRLogoMobText style={{marginLeft: I18N.getLang() === USER_LANGUAGE.zh ? '-66px' : '-118px'}}>
+            <Logo src={images.CRLogo} />
+            <CRLogoMobText>
               {I18N.get('home.mob.logo.title')}<br/>
               <br/>
               <a target="_blank" href="https://www.elastos.org">{I18N.get('home.mob.logo.subtitle')}</a>
@@ -59,21 +59,21 @@ export default class extends StandardPage {
 
           <InfoRowMob>
             <InfoImgContainerCR>
-              <InfoImg src={images.CREcosystemFundImg} style={{height: '80px'}}/>
+              <InfoImg src={images.CREcosystemFundImg} />
             </InfoImgContainerCR>
             <InfoDesc>{I18N.get('home.hero.cr.fund.1')}<br/>{I18N.get('home.hero.cr.fund.2')}</InfoDesc>
           </InfoRowMob>
 
           <InfoRowMob>
             <InfoImgContainerCR>
-              <InfoImg src={images.CRGovernanceImg} style={{height: '80px'}}/>
+              <InfoImg src={images.CRGovernanceImg} />
             </InfoImgContainerCR>
             <InfoDesc>{I18N.get('home.hero.cr.community')}</InfoDesc>
           </InfoRowMob>
 
           <InfoRowMob>
             <InfoImgContainerCR>
-              <InfoImg src={images.CRDPoSImg} style={{height: '80px'}}/>
+              <InfoImg src={images.CRDPoSImg} />
             </InfoImgContainerCR>
             <InfoDesc>{I18N.get('home.hero.cr.supernodes')}</InfoDesc>
           </InfoRowMob>
@@ -91,55 +91,55 @@ export default class extends StandardPage {
           <LogoContainer>
             {/* Be nice if this opened a modal explaining Elastos first */}
             <a target="_blank" href="https://www.elastos.org">
-              <ElaLogo src={images.ElaLogo}/>
+              <Logo src={images.ElaLogo}/>
             </a>
           </LogoContainer>
-          <Row>
+          <ElaRow>
             <InfoCol span={8}>
               <InfoImgContainer>
                 <InfoImg src={images.ElaBlockchainImg}/>
               </InfoImgContainer>
               <InfoDesc>{I18N.get('home.hero.ela.blockchain')}</InfoDesc>
             </InfoCol>
-            <InfoColMid span={8} style={{paddingTop: '20px'}}>
-              <InfoImgContainer style={{height: '70px'}}>
-                <InfoImg src={images.ElaApplicationImg} style={{height: '50px'}}/>
+            <InfoColMid span={8}>
+              <InfoImgContainer>
+                <InfoImg src={images.ElaApplicationImg}/>
               </InfoImgContainer>
               <InfoDesc>{I18N.get('home.hero.ela.application.1')}<br/>{I18N.get('home.hero.ela.application.2')}</InfoDesc>
             </InfoColMid>
             {/* Moving this up a bit */}
-            <InfoColRight span={8} style={{paddingTop: '10px'}}>
-              <InfoImgContainer style={{height: '80px'}}>
-                <InfoImg src={images.ElaSidechainImg} style={{paddingLeft: '12px', height: '75px', paddingBottom: '15px'}}/>
+            <InfoColRight span={8}>
+              <InfoImgContainer>
+                <InfoImg src={images.ElaSidechainImg} />
               </InfoImgContainer>
               <InfoDesc>{I18N.get('home.hero.ela.sidechain')}<br/>(ETH, NEO, DID)</InfoDesc>
             </InfoColRight>
-          </Row>
+          </ElaRow>
         </ElaContainer>
         <CRContainer>
           <LogoContainer>
-            <CRLogo src={images.CRLogo}/>
+            <Logo src={images.CRLogo}/>
           </LogoContainer>
-          <Row>
-            <InfoColCR span={9}>
+          <CRRow>
+            <InfoCol span={9}>
               <InfoImgContainerCR>
-                <InfoImg src={images.CREcosystemFundImg} style={{height: '80px'}}/>
+                <InfoImg src={images.CREcosystemFundImg} />
               </InfoImgContainerCR>
               <InfoDesc>{I18N.get('home.hero.cr.fund.1')}<br/>{I18N.get('home.hero.cr.fund.2')}</InfoDesc>
-            </InfoColCR>
-            <InfoColCRMid span={8}>
+            </InfoCol>
+            <InfoCol span={8}>
               <InfoImgContainerCR>
-                <InfoImg src={images.CRGovernanceImg} style={{height: '80px'}}/>
+                <InfoImg src={images.CRGovernanceImg} />
               </InfoImgContainerCR>
               <InfoDesc>{I18N.get('home.hero.cr.community')}</InfoDesc>
-            </InfoColCRMid>
-            <InfoColCRRight span={7}>
-              <InfoImgContainerCR style={{height: '110px'}}>
-                <InfoImg src={images.CRDPoSImg} style={{marginTop: '-20px', height: '100px'}}/>
+            </InfoCol>
+            <InfoCol span={7}>
+              <InfoImgContainerCR>
+                <InfoImg src={images.CRDPoSImg} />
               </InfoImgContainerCR>
               <InfoDesc>{I18N.get('home.hero.cr.supernodes')}</InfoDesc>
-            </InfoColCRRight>
-          </Row>
+            </InfoCol>
+          </CRRow>
         </CRContainer>
         <ClearFix/>
       </MainContainer>
@@ -154,15 +154,6 @@ export default class extends StandardPage {
 
     return (
       <div>
-        <div className="decoration-1">
-          <img className="upper-left" src="/assets/images/training_mini_connector.png"/>
-        </div>
-        <MediaQuery minWidth={LG_WIDTH}>
-          <div className="decoration-square">
-            <div className="big-square" />
-            <div className="small-square" />
-          </div>
-        </MediaQuery>
         <Row className="top-section" type="flex" justify="center" gutter={32}>
           <Col className={`box-wrap ${selectedBox === 0 ? 'selected-box' : ''}`} xs={24} sm={24} md={24} lg={8} onClick={this.switchToBox.bind(this, 0)}>
             <div className="box box-hover">
@@ -286,35 +277,46 @@ const TriColDesc = styled.p`
 `
 
 const MainContainer = styled.div`
-  max-width: 1200px;
+  /* max-width: 1200px; */
   margin: 0 auto;
   text-align: center;
 `
 
 const LogoContainer = styled.div`
   height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  :after {
+    content: '';
+    height: 70%;
+    width: 1px;
+    position: absolute;
+    right: 0;
+    z-index: 1000;
+    bottom: 0;
+    background-color: #e5e5e5;
+  }
 `
 
 const ElaContainer = styled.div`
   width: 50%;
   float: left;
-
-  background-image: url(${images.SepCenterImg});
-  background-repeat: no-repeat;
-  background-size: contain;
-  background-position: bottom right;
 `
 
-const ElaLogo = styled.img`
-  display: block;
-  margin: 0 auto;
-  padding-top: 100px;
-  max-width: 190px;
+const Logo = styled.img`
 `
 
-const CRLogo = styled.img`
-  width: 100%;
-  display: block;
+const ElaRow = styled(Row)`
+  background-color: rgba(124, 127, 134, 0.1);
+  padding: 40px;
+  display: flex;
+  align-items: center;
+`
+
+const CRRow = styled(ElaRow)`
+  background-color: #F6F9FD;;
 `
 
 const CRContainer = styled.div`
@@ -322,12 +324,6 @@ const CRContainer = styled.div`
 `
 
 const InfoCol = styled(Col)`
-  margin-top: 25px;
-  padding: 30px 0 30px 0;
-  background-image: url(${images.SepGreyImg});
-  background-repeat: no-repeat;
-  background-size: contain;
-  background-position: center right;
 `
 
 const InfoColRight = styled(InfoCol)`
@@ -339,26 +335,15 @@ const InfoColMid = styled(InfoCol)`
 `
 
 const InfoImgContainer = styled.div`
-  height: 60px;
+  height: 90px;
+  display: flex;
+  align-items: center;
 `
 
 const InfoImgContainerCR = styled.div`
   height: 90px;
-`
-
-const InfoColCR = styled(InfoCol)`
-  background-image: url(${images.SepBlueImg});
-  padding: 0 0 30px 0;
-`
-
-const InfoColCRMid = styled(InfoColCR)`
-  background: none;
-  padding: 0 0 55px 0;
-`
-
-const InfoColCRRight = styled(InfoColCR)`
-  background-position: center left;
-  padding: 0 0 55px 0;
+  display: flex;
+  align-items: center;
 `
 
 const InfoImg = styled.img`
@@ -371,69 +356,14 @@ const InfoDesc = styled.div`
   line-height: 1.8;
 `
 
-const ContainerMid = styled.div`
-  margin-top: 25px;
-  padding: 50px 0;
-  color: #fff;
-`
-
 const ClearFix = styled.div`
   clear: both;
 `
 
-const CommunityImg = styled.img`
-  width: 70%;
-  margin: 0 auto;
-  display: block;
-
-  @media only screen and (max-width: ${LG_WIDTH}px) {
-    width: 95%;
-  }
-`
-
-const CRCTitle = styled.div`
-  color: #ccc;
-  font-family: komu-a, Synthese, sans-serif;
-  font-size: 48px;
-  text-align: center;
-
-  > a {
-    font-family: komu-a, Synthese, sans-serif;
-    font-size: 48px;
-  }
-`
-
-const CRCDesc = styled.div`
-  text-align: left;
-  width: 70%;
-  margin: 25px auto;
-
-  @media only screen and (max-width: ${LG_WIDTH}px) {
-    width: 90%;
-  }
-`
-
-const CRCLIst = styled.ul`
-  font-weight: 200;
-  margin: 24px 0 48px 24px;
-
-  > li {
-    margin: 16px 0;
-
-    > b {
-      font-weight: 400;
-    }
-  }
-`
-
 const CRLogoMobText = styled.div`
-  position: absolute;
-  left: 50%;
-  bottom: 0px;
   font-weight: 200;
-  line-height: 1;
-
   text-align: center;
+  margin-top: 20px;
 `
 
 const InfoRowMob = styled.div`
@@ -444,6 +374,7 @@ const InfoRowMob = styled.div`
 `
 
 const CRLogoMobContainer = styled.div`
-  position: relative;
-  padding-bottom: 24px;
+  margin-top: 24px;
+  padding: 36px 0 12px 0;
+  text-align: center;
 `

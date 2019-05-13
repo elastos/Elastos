@@ -69,7 +69,6 @@ export default class extends React.Component {
 
 
 const ContainerMid = styled.div`
-  margin-top: 25px;
   padding: 50px 0 30px;
   color: #fff;
 `
@@ -88,7 +87,7 @@ const CRCIntroContainer = styled.div`
   margin: 0 auto 30px;
   text-align: left;
   @media only screen and (max-width: ${LG_WIDTH}px) {
-   padding: 15px;
+   padding: 30px 15px;
   }
 `
 

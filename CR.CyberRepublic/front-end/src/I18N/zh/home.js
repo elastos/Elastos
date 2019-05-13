@@ -117,7 +117,7 @@ export default {
       member: '社区成员',
       suggestion: '建议',
       submitProposal: '在CR网站上提交提案',
-      council: 'CR委员',
+      council: 'CRC委员',
       proposalPage: 'CR提案页面',
       approvedProposal: '已批准的提案',
       voting: '投票',
