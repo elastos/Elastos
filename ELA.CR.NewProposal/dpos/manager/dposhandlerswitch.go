@@ -109,6 +109,7 @@ func (h *DPOSHandlerSwitch) ProcessProposal(id peer.PID, p *payload.DPOSProposal
 func (h *DPOSHandlerSwitch) ChangeView(firstBlockHash *common.Uint256) {
 	h.currentHandler.ChangeView(firstBlockHash)
 	h.proposalDispatcher.eventAnalyzer.IncreaseLastConsensusViewCount()
+	h.proposalDispatcher.UpdatePrecociousProposals()
 
 	viewEvent := log.ViewEvent{
 		OnDutyArbitrator: common.BytesToHexString(h.consensus.GetOnDutyArbitrator()),
