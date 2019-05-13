@@ -29,8 +29,9 @@ endif()
 if(ANDROID)
     set(XDK_SYSROOT "${CMAKE_BINARY_DIR}/.android_toolchain/sysroot")
     set(CMAKE_ARGS_INIT ${CMAKE_ARGS_INIT}
-        -DANDROID_NDK_HOME=${CMAKE_ANDROID_NDK}
-        -DANDROID_ABI=${ANDROID_ABI})
+        "-DANDROID_NDK_HOME=${CMAKE_ANDROID_NDK}"
+        "-DANDROID_ABI=${ANDROID_ABI}"
+        -DCMAKE_SHARED_LINKER_FLAGS=-Wl,--exclude-libs,ALL)
 endif()
 
 if(RASPBERRYPI)

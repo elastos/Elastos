@@ -32,12 +32,17 @@ set(HIVE_DEPS
     hive-api++
     curl)
 
-set(LIBC++_SHARED
-    ${CMAKE_ANDROID_NDK}/sources/cxx-stl/llvm-libc++/libs/${CMAKE_ANDROID_ARCH_ABI}/libc++_shared.so)
 
 if(WIN32)
     set(HIVE_DEPS ${HIVE_DEPS} zlib1 ws2_32)
 elseif(ANDROID)
+    set(LIBC++_SHARED
+        ${CMAKE_ANDROID_NDK}/sources/cxx-stl/llvm-libc++/libs/${CMAKE_ANDROID_ARCH_ABI}/libc++_shared.so)
+    if(${ANDROID_ABI} STREQUAL armeabi-v7a)
+        set(LIBUNWIND_STATIC
+            ${CMAKE_ANDROID_NDK}/sources/cxx-stl/llvm-libc++/libs/${CMAKE_ANDROID_ARCH_ABI}/libunwind.a)
+        set(HIVE_DEPS ${HIVE_DEPS} ${LIBUNWIND_STATIC})
+    endif()
     set(HIVE_DEPS ${HIVE_DEPS} z ${LIBC++_SHARED})
 else()
     set(HIVE_DEPS ${HIVE_DEPS} z stdc++)

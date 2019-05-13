@@ -29,7 +29,7 @@ if(${CMAKE_CROSSCOMPILING})
 
         set(XDK_C_FLAGS "${CMAKE_C_FLAGS_INIT} ${CMAKE_C_FLAGS}")
         set(XDK_CXX_FLAGS "${XDK_C_FLAGS} -fexceptions")
-        set(XDK_C_LINK_FLAGS "${XDK_C_FLAGS}")
+        set(XDK_C_LINK_FLAGS "${XDK_C_FLAGS} -Wl,--exclude-libs,ALL")
     endif()
 
     if(IOS)
