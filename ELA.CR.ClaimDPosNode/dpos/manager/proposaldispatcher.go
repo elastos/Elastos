@@ -35,12 +35,13 @@ type ProposalDispatcherConfig struct {
 type ProposalDispatcher struct {
 	cfg ProposalDispatcherConfig
 
-	processingBlock    *types.Block
-	processingProposal *payload.DPOSProposal
-	acceptVotes        map[common.Uint256]*payload.DPOSProposalVote
-	rejectedVotes      map[common.Uint256]*payload.DPOSProposalVote
-	pendingProposals   map[common.Uint256]*payload.DPOSProposal
-	pendingVotes       map[common.Uint256]*payload.DPOSProposalVote
+	processingBlock     *types.Block
+	processingProposal  *payload.DPOSProposal
+	acceptVotes         map[common.Uint256]*payload.DPOSProposalVote
+	rejectedVotes       map[common.Uint256]*payload.DPOSProposalVote
+	pendingProposals    map[common.Uint256]*payload.DPOSProposal
+	precociousProposals map[common.Uint256]*payload.DPOSProposal
+	pendingVotes        map[common.Uint256]*payload.DPOSProposalVote
 
 	proposalProcessFinished bool
 	crcBadNetwork           bool
@@ -197,6 +198,7 @@ func (p *ProposalDispatcher) CleanProposals(changeView bool) {
 		p.currentInactiveArbitratorTx = nil
 		p.signedTxs = map[common.Uint256]interface{}{}
 		p.pendingProposals = make(map[common.Uint256]*payload.DPOSProposal)
+		p.precociousProposals = make(map[common.Uint256]*payload.DPOSProposal)
 
 		p.eventAnalyzer.Clear()
 	} else {
@@ -205,6 +207,11 @@ func (p *ProposalDispatcher) CleanProposals(changeView bool) {
 		for k, v := range p.pendingProposals {
 			if v.ViewOffset < currentOffset {
 				delete(p.pendingProposals, k)
+			}
+		}
+		for k, v := range p.precociousProposals {
+			if v.ViewOffset < currentOffset {
+				delete(p.precociousProposals, k)
 			}
 		}
 	}
@@ -238,6 +245,9 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 
 	if d.ViewOffset != p.cfg.Consensus.GetViewOffset() {
 		log.Info("have different view offset")
+		if d.ViewOffset > p.cfg.Consensus.GetViewOffset() {
+			p.precociousProposals[d.Hash()] = d
+		}
 		return true, false
 	}
 
@@ -308,18 +318,27 @@ func (p *ProposalDispatcher) AppendConfirm() {
 }
 
 func (p *ProposalDispatcher) OnBlockAdded(b *types.Block) {
-
-	if p.cfg.Consensus.IsRunning() {
-		for k, v := range p.pendingProposals {
-			if v.BlockHash.IsEqual(b.Hash()) {
-				// block is already exist, will not use PID, given PID{} is ok
-				if needRecord, _ := p.ProcessProposal(
-					peer.PID{}, v, true); needRecord {
-					p.illegalMonitor.AddProposal(v)
-				}
-				delete(p.pendingProposals, k)
-				break
+	for k, v := range p.pendingProposals {
+		if p.cfg.Consensus.IsRunning() && v.BlockHash.IsEqual(b.Hash()) {
+			// block is already exist, will not use PID, given PID{} is ok
+			if needRecord, _ := p.ProcessProposal(
+				peer.PID{}, v, true); needRecord {
+				p.illegalMonitor.AddProposal(v)
 			}
+			delete(p.pendingProposals, k)
+		}
+	}
+}
+
+func (p *ProposalDispatcher) UpdatePrecociousProposals() {
+	for k, v := range p.precociousProposals {
+		if p.cfg.Consensus.IsRunning() &&
+			v.ViewOffset == p.cfg.Consensus.GetViewOffset() {
+			if needRecord, _ := p.ProcessProposal(
+				peer.PID{}, v, true); needRecord {
+				p.illegalMonitor.AddProposal(v)
+			}
+			delete(p.precociousProposals, k)
 		}
 	}
 }
@@ -773,6 +792,7 @@ func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (
 		acceptVotes:            make(map[common.Uint256]*payload.DPOSProposalVote),
 		rejectedVotes:          make(map[common.Uint256]*payload.DPOSProposalVote),
 		pendingProposals:       make(map[common.Uint256]*payload.DPOSProposal),
+		precociousProposals:    make(map[common.Uint256]*payload.DPOSProposal),
 		pendingVotes:           make(map[common.Uint256]*payload.DPOSProposalVote),
 		signedTxs:              make(map[common.Uint256]interface{}),
 		firstBadNetworkRecover: true,
