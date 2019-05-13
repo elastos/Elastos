@@ -107,7 +107,7 @@ class C extends BaseComponent {
       } else {
         const matches = []
         for (let i = 0; i < values.length; i++) {
-          if (values[i].value.toLowerCase().indexOf(searchTerm.toLowerCase())) {
+          if (values[i].value.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1) {
             matches.push(values[i])
           }
         }
