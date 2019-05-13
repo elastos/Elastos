@@ -274,9 +274,9 @@ func (s *server) handleDonePeerMsg(state *peerState, sp *serverPeer) {
 	if sp.connReq != nil {
 		_, ok := state.connectPeers[sp.connReq.PID]
 		if !ok {
-			s.connManager.Remove(sp.connReq.ID())
+			s.connManager.Remove(sp.connReq.PID)
 		} else {
-			s.connManager.Disconnect(sp.connReq.ID())
+			s.connManager.Disconnect(sp.connReq.PID)
 		}
 	}
 
@@ -376,7 +376,11 @@ func (s *server) handleQuery(state *peerState, querymsg interface{}) {
 		// Disconnect peers in disconnect list.
 		state.forAllPeers(func(sp *serverPeer) {
 			if _, ok := disconnectPeers[sp.PID()]; ok {
-				sp.Disconnect()
+				if sp.connReq != nil {
+					s.connManager.Remove(sp.connReq.PID)
+				} else {
+					sp.Disconnect()
+				}
 			}
 		})
 
@@ -565,7 +569,7 @@ func (s *server) outboundPeerConnected(c *connmgr.ConnReq, conn net.Conn) {
 	p, err := peer.NewOutboundPeer(cfg, c.Addr.String())
 	if err != nil {
 		log.Debugf("Cannot create outbound peer %s: %v", c.Addr, err)
-		s.connManager.Disconnect(c.ID())
+		s.connManager.Disconnect(c.PID)
 	}
 	sp.Peer = p
 	sp.connReq = c
