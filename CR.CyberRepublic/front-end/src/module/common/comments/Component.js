@@ -15,6 +15,7 @@ import MediaQuery from 'react-responsive'
 import { USER_AVATAR_DEFAULT, LINKIFY_OPTION } from '@/constant'
 import linkifyStr from 'linkifyjs/string'
 import sanitizeHtml from 'sanitize-html'
+import userUtil from '@/util/user'
 
 const TextArea = Input.TextArea
 const FormItem = Form.Item
@@ -99,7 +100,13 @@ class C extends BaseComponent {
   }
 
   renderComment() {
-    const allUsers = _.map(this.props.all_users, user => user.username)
+    // const allUsers = _.map(this.props.all_users, user => user.username)
+    const allUsers = [`ALL (${I18N.get('suggestion.form.mention.allCouncil')})`]
+    _.each(this.props.all_users, obj => {
+      const mentionStr = `${obj.username} (${userUtil.formatUsername(obj)})`
+      allUsers.push(mentionStr)
+    })
+
     const { getFieldDecorator } = this.props.form
     const comment_fn = getFieldDecorator('comment', {
       rules: [],
@@ -109,7 +116,7 @@ class C extends BaseComponent {
       <Mention
         multiLines={true}
         style={{ width: '100%', height: 100 }}
-        suggestions={allUsers}
+        defaultSuggestions={allUsers}
         notFoundContent={I18N.get('mentions.notFound')}
         placeholder={I18N.get('comments.commentsOrUpdates')}
       />
