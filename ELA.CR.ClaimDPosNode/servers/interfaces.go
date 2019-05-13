@@ -438,7 +438,7 @@ func DiscreteMining(param Params) map[string]interface{} {
 
 	blockHashes, err := Pow.DiscreteMining(uint32(count))
 	if err != nil {
-		return ResponsePack(Error, err)
+		return ResponsePack(Error, err.Error())
 	}
 
 	for _, hash := range blockHashes {
