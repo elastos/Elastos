@@ -92,7 +92,7 @@ public class FirstFragment extends BaseFragment implements CommmonStringListView
             public void run() {
                 onFirst(data);
             }
-        }, 1000);
+        }, 800);
     }
 
    /* @Override

@@ -18,21 +18,24 @@ public class CustomMigration implements RealmMigration {
         if (newVersion == 2 && oldVersion == 1) {
             uodata1to2(oldVersion, schema);
 
-        } else if (newVersion == 3 && oldVersion == 2) {
+        } /*else if (newVersion == 3 && oldVersion == 2) {
             updata2to3(oldVersion, schema);
         } else if (newVersion == 3 && oldVersion == 1) {
             uodata1to2(oldVersion, schema);
             updata2to3(oldVersion, schema);
-        }
-    }
-
-    private void updata2to3(long oldVersion, RealmSchema schema) {
-        RealmObjectSchema personSchema = schema.get("User");
-        personSchema.addField("channelType", String.class).addField("channelId", String.class);
-        oldVersion++;
+        }*/
     }
 
     private void uodata1to2(long oldVersion, RealmSchema schema) {
+        schema.get("SubWallet").addField("progress", int.class).transform(new RealmObjectSchema.Function() {
+            @Override
+            public void apply(DynamicRealmObject obj) {
+                obj.set("progress", "0");//为id设置值
+            }
+        });
+    }
+
+    private void uodata2to3(long oldVersion, RealmSchema schema) {
         RealmObjectSchema personSchema = schema.get("User");
         //新增@Required的id
         personSchema.addField("areaCode", String.class).addField("hasWealthPwd", int.class)
@@ -43,10 +46,10 @@ public class CustomMigration implements RealmMigration {
                         obj.set("hasWealthPwd", 0);//为hasWealthPwd设置值
                     }
                 });
-        oldVersion++;
+        // oldVersion++;
     }
 
-    @Override
+   /* @Override
     public int hashCode() {
         return 37;
     }
@@ -54,6 +57,6 @@ public class CustomMigration implements RealmMigration {
     @Override
     public boolean equals(Object o) {
         return (o instanceof CustomMigration);
-    }
+    }*/
 
 }

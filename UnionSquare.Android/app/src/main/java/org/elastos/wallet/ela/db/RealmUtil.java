@@ -18,7 +18,7 @@ import io.realm.RealmResults;
 
 public class RealmUtil {
 
-    public static final long DB_VERSION_CODE = 1;//当前数据库版本号
+    public static final long DB_VERSION_CODE =2;//当前数据库版本号
     public static final String DB_NAME = "DB";//BuildConfig
 
     @Inject
@@ -285,7 +285,34 @@ public class RealmUtil {
         }
         return wallets;
     }
+    public void sync(ArrayList<String> ids) {
+        Realm realm = getInstanceRealm();
+        RealmResults<Wallet> list = realm.where(Wallet.class)
+                .findAll();
+        for (Wallet wallet : list) {
+            String walletId = wallet.getWalletId();
+            if (!ids.contains(walletId)) {
+                realm.executeTransaction(new Realm.Transaction() {
+                    @Override
+                    public void execute(Realm realm) {
+                        wallet.deleteFromRealm();
+                    }
+                });
 
+                RealmResults<SubWallet> subList = realm.where(SubWallet.class)
+                        .equalTo("belongId", walletId)
+                        .findAll();
+
+                realm.executeTransaction(new Realm.Transaction() {
+                    @Override
+                    public void execute(Realm realm) {
+                        subList.deleteAllFromRealm();
+                    }
+                });
+            }
+        }
+        closeRealm(realm);
+    }
 
     /***********子钱包*********************************/
     /*更新钱包的名称 密码等信息*/
@@ -298,8 +325,11 @@ public class RealmUtil {
         realm.close();
         listener.onSuccess();
     }
+/*
 
-    /*查询所有钱包*/
+    */
+/*查询所有钱包*//*
+//不可靠  需要同步子钱包 本地不一定有
     public List<SubWallet> queryAllSubWallet(String belongId) {
         Realm realm = getInstanceRealm();
         RealmResults<SubWallet> list = realm.where(SubWallet.class).equalTo("belongId", belongId)
@@ -309,6 +339,7 @@ public class RealmUtil {
         closeRealm(realm);
         return wallets;
     }
+*/
 
     private List<SubWallet> getSubWalletList(RealmResults<SubWallet> list) {
         List<SubWallet> wallets = new ArrayList<>();
@@ -367,7 +398,25 @@ public class RealmUtil {
         closeRealm(realm);
         listener.onSuccess();
     }
-
+    public SubWallet querySubWallet(String belongId, String chainId) {
+        Realm realm = getInstanceRealm();
+        SubWallet subWallet = realm.where(SubWallet.class)
+                .equalTo("belongId", belongId).equalTo("chainId", chainId)
+                .findFirst();
+        if (subWallet == null) {
+            subWallet = new SubWallet();
+            subWallet.setBelongId(belongId);
+            subWallet.setChainId(chainId);
+            subWallet.setWallletId(subWallet.getBelongId() + subWallet.getChainId());
+            realm.beginTransaction();
+            realm.copyToRealmOrUpdate(subWallet);
+            realm.commitTransaction();
+        }
+        SubWallet tempSubWallet = new SubWallet();
+        tempSubWallet.setSubWallet(subWallet);
+        closeRealm(realm);
+        return tempSubWallet;
+    }
     public String querySubWalletSyncTime(String belongId, String chainId) {
         Realm realm = getInstanceRealm();
         SubWallet subWallet = realm.where(SubWallet.class)
@@ -389,32 +438,5 @@ public class RealmUtil {
         return syncTime;
     }
 
-    public void sync(ArrayList<String> ids) {
-        Realm realm = getInstanceRealm();
-        RealmResults<Wallet> list = realm.where(Wallet.class)
-                .findAll();
-        for (Wallet wallet : list) {
-            String walletId = wallet.getWalletId();
-            if (!ids.contains(walletId)) {
-                realm.executeTransaction(new Realm.Transaction() {
-                    @Override
-                    public void execute(Realm realm) {
-                        wallet.deleteFromRealm();
-                    }
-                });
 
-                RealmResults<SubWallet> subList = realm.where(SubWallet.class)
-                        .equalTo("belongId", walletId)
-                        .findAll();
-
-                realm.executeTransaction(new Realm.Transaction() {
-                    @Override
-                    public void execute(Realm realm) {
-                        subList.deleteAllFromRealm();
-                    }
-                });
-            }
-        }
-        closeRealm(realm);
-    }
 }

@@ -5,8 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@mipmap/found_bg"
-    android:orientation="vertical"
-    tools:context=".ui.vote.myVote.MyVoteFragment">
+    android:orientation="vertical">
 
 
     <include layout="@layout/title_bar" />
@@ -16,8 +15,8 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/px240"
         android:layout_marginLeft="15dp"
-        android:layout_marginTop="@dimen/px33"
         android:layout_marginRight="15dp"
+        android:layout_marginTop="@dimen/px33"
         android:background="@drawable/sc_stroke">
 
 
@@ -65,8 +64,8 @@
                     android:layout_height="match_parent"
                     android:layout_marginStart="27dp"
                     android:layout_weight="1"
-                    android:drawableStart="@mipmap/my_vote_unlocked"
                     android:drawablePadding="@dimen/px7"
+                    android:drawableStart="@mipmap/my_vote_unlocked"
                     android:gravity="center"
                     android:text="本次投票："
                     android:textColor="#ffffffff"
@@ -106,10 +105,10 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginLeft="15dp"
-            android:layout_marginTop="15dp"
-            android:layout_marginRight="15dp"
             android:layout_marginBottom="@dimen/px200"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginTop="15dp"
             android:layout_weight="1"
             android:background="@drawable/sc_26ffffff_3"
             android:gravity="center">

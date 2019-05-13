@@ -72,7 +72,6 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
     private int startCount = 0;
     private final int pageCount = 20;
     private CommonGetTransactionPresenter presenter;
-    private boolean flag;
 
     @Override
     protected int getLayoutId() {
@@ -99,13 +98,8 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
         srl.setOnLoadMoreListener(this);
         new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), chainId, 2, this);
         presenter = new CommonGetTransactionPresenter();
-        presenter.getAllTransaction(wallet.getWalletId(), chainId, startCount, pageCount, "", this);
         String synctime = new RealmUtil().querySubWalletSyncTime(wallet.getWalletId(), chainId);
-        if (TextUtils.isEmpty(synctime)) {
-            tvSynctime.setText(getString(R.string.lastsynctime) + "- -");
-        } else {
-            tvSynctime.setText(getString(R.string.lastsynctime) + synctime);
-        }
+        tvSynctime.setText(getString(R.string.lastsynctime) + synctime);
         registReceiver();
     }
 
@@ -213,21 +207,10 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
 
     @Override
     public void onBalance(BalanceEntity data) {
-        if (data != null)
-            // tvBalance.setText(NumberiUtil.maxNumberFormat((Double.parseDouble(data.getBalance()) / MyWallet.RATE) + "", 12) + data.getChainId());
+        if (data != null) {
             tvBalance.setText(NumberiUtil.maxNumberFormat(Arith.div(data.getBalance(), MyWallet.RATE_S), 12) + " ELA");
-
-     /*   if (!flag) {
-            tvBalance.setText(getString(R.string.allamount) + NumberiUtil.maxNumberFormat((Double.parseDouble(data.getBalance()) / MyWallet.RATE) + " ", 12) + data.getChainId());
-            //获得投票锁定的
-            if (chainId.equals("ELA")) {
-                flag = true;
-                new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), chainId, 1, this);
-            }
-        } else {
-            tvBalanceuse.setText(getString(R.string.voteuseamount) + NumberiUtil.maxNumberFormat((Double.parseDouble(data.getBalance()) / MyWallet.RATE) + " ", 12) + data.getChainId());
-            flag = false;
-        }*/
+            presenter.getAllTransaction(wallet.getWalletId(), chainId, startCount, pageCount, "", this);
+        }
     }
 
 
@@ -235,10 +218,15 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
     public void Event(BusEvent result) {
         int integer = result.getCode();
         if (integer == RxEnum.BALANCECHANGE.ordinal()) {
-            long balance = (long) result.getObj();
+            String balance = (String) result.getObj();
             if (chainId.equals(result.getName())) {
-                // tvBalance.setText(NumberiUtil.maxNumberFormat((balance / MyWallet.RATE_) + "", 12) + chainId);
-                tvBalance.setText(NumberiUtil.maxNumberFormat(Arith.div(balance + "", MyWallet.RATE_S), 12) + chainId);
+                tvBalance.setText(NumberiUtil.maxNumberFormat(Arith.div(balance, MyWallet.RATE_S), 12) + chainId);
+            }
+        }
+        if (integer == RxEnum.UPDATAPROGRESS.ordinal()) {
+            org.elastos.wallet.ela.db.table.SubWallet subWallet = (org.elastos.wallet.ela.db.table.SubWallet) result.getObj();
+            if (subWallet != null) {
+                tvSynctime.setText(getString(R.string.lastsynctime) + subWallet.getSyncTime());
             }
         }
 

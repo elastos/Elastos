@@ -12,7 +12,6 @@ import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
-import org.elastos.wallet.ela.ui.Assets.bean.AssetsItemEntity;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.NumberiUtil;
@@ -24,11 +23,11 @@ import butterknife.ButterKnife;
 
 public class AssetskAdapter extends RecyclerView.Adapter<AssetskAdapter.ViewHolder> {
     private Context context;
-    private List<AssetsItemEntity> data;
+    private List<org.elastos.wallet.ela.db.table.SubWallet> data;
     private CommonRvListener1 commonRvListener;
 
 
-    public AssetskAdapter(Context context, List<AssetsItemEntity> data) {
+    public AssetskAdapter(Context context, List<org.elastos.wallet.ela.db.table.SubWallet> data) {
         this.context = context;
         this.data = data;
     }
@@ -47,14 +46,14 @@ public class AssetskAdapter extends RecyclerView.Adapter<AssetskAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
-        AssetsItemEntity assetsItemEntity = data.get(i);
+        org.elastos.wallet.ela.db.table.SubWallet assetsItemEntity = data.get(i);
         viewHolder.tvName.setText(assetsItemEntity.getChainId());
-        viewHolder.tvTime.setText(context.getString(R.string.lastsynctime) + assetsItemEntity.getSyncRime());
+        viewHolder.tvTime.setText(context.getString(R.string.lastsynctime) + assetsItemEntity.getSyncTime());
         viewHolder.sbSuger.setEnabled(false);
         viewHolder.sbSuger.setProgress(assetsItemEntity.getProgress());
         viewHolder.tvProgress.setText(assetsItemEntity.getProgress() + "%");
-       // viewHolder.tvNum.setText(NumberiUtil.maxNumberFormat((Double.parseDouble(assetsItemEntity.getBalance()) / MyWallet.RATE) + "", 12));
-        viewHolder.tvNum.setText(NumberiUtil.maxNumberFormat(Arith.div(assetsItemEntity.getBalance(),MyWallet.RATE_S), 12));
+        // viewHolder.tvNum.setText(NumberiUtil.maxNumberFormat((Double.parseDouble(assetsItemEntity.getBalance()) / MyWallet.RATE) + "", 12));
+        viewHolder.tvNum.setText(NumberiUtil.maxNumberFormat(Arith.div(assetsItemEntity.getBalance(), MyWallet.RATE_S), 12));
         if (commonRvListener != null) {
             viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

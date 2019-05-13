@@ -23,15 +23,18 @@ public class SubWallet extends RealmObject implements Parcelable {
     private String chainId;//钱包id
     private String balance;
     private String syncTime;
+    private int progress;
     private String filed1;//
     private String filed2;//
     private String filed3;//
 
 
     public SubWallet() {
+        this.progress = 0;
+        this.syncTime = "- -";
     }
 
-    public SubWallet(String wallletId, String belongId, String walletName, String walletType, String chainId, String balance, String syncTime, String filed1, String filed2, String filed3) {
+    public SubWallet(String wallletId, String belongId, String walletName, String walletType, String chainId, String balance, String syncTime, int progress, String filed1, String filed2, String filed3) {
 
         this.wallletId = wallletId;
         this.belongId = belongId;
@@ -40,6 +43,7 @@ public class SubWallet extends RealmObject implements Parcelable {
         this.chainId = chainId;
         this.balance = balance;
         this.syncTime = syncTime;
+        this.progress = progress;
         this.filed1 = filed1;
         this.filed2 = filed2;
         this.filed3 = filed3;
@@ -53,6 +57,7 @@ public class SubWallet extends RealmObject implements Parcelable {
         this.chainId = subWallet.getChainId();
         this.balance = subWallet.getBalance();
         this.syncTime = subWallet.getSyncTime();
+        this.progress = subWallet.getProgress();
         this.filed1 = subWallet.getFiled1();
         this.filed2 = subWallet.getFiled2();
         this.filed3 = subWallet.getFiled3();
@@ -85,6 +90,7 @@ public class SubWallet extends RealmObject implements Parcelable {
         dest.writeString(chainId);
         dest.writeString(balance);
         dest.writeString(syncTime);
+        dest.writeInt(progress);
         dest.writeString(filed1);
         dest.writeString(filed2);
         dest.writeString(filed3);
@@ -98,6 +104,7 @@ public class SubWallet extends RealmObject implements Parcelable {
         chainId = in.readString();
         balance = in.readString();
         syncTime = in.readString();
+        progress = in.readInt();
         filed1 = in.readString();
         filed2 = in.readString();
         filed3 = in.readString();
@@ -157,6 +164,14 @@ public class SubWallet extends RealmObject implements Parcelable {
 
     public void setSyncTime(String syncTime) {
         this.syncTime = syncTime;
+    }
+
+    public int getProgress() {
+        return progress;
+    }
+
+    public void setProgress(int progress) {
+        this.progress = progress;
     }
 
     public String getFiled1() {

@@ -4,7 +4,6 @@ package org.elastos.wallet.ela.ui.Assets;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -23,7 +22,6 @@ import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.listener.RealmTransactionAbs;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.adapter.AssetskAdapter;
-import org.elastos.wallet.ela.ui.Assets.bean.AssetsItemEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.fragment.AddAssetFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.AssetDetailsFragment;
@@ -72,7 +70,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     private AssetsPresenter assetsPresenter;
     private RealmUtil realmUtil;
     private Wallet wallet;
-    private List<AssetsItemEntity> assetList;
+    private List<org.elastos.wallet.ela.db.table.SubWallet> assetList;
     private CommonGetBalancePresenter commonGetBalancePresenter;
 
 
@@ -118,7 +116,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 bundle = new Bundle();
                 bundle.putString("walletId", wallet.getWalletId());
                 ArrayList<String> chainIds = new ArrayList<>();
-                for (AssetsItemEntity iSubWallet : assetList) {
+                for (org.elastos.wallet.ela.db.table.SubWallet iSubWallet : assetList) {
                     chainIds.add(iSubWallet.getChainId());
                 }
                 bundle.putStringArrayList("chainIds", chainIds);
@@ -161,26 +159,11 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         if (assetList == null) {
             assetList = new ArrayList<>();
         }
-
         assetList.clear();
-
-        // assetsPresenter.getBalance(wallet.getWalletId(), list.get(0).GetChainId(), this);
         for (SubWallet iSubWallet : data) {
-            //初始化map
-            AssetsItemEntity assetsItemEntity = new AssetsItemEntity();
-            assetsItemEntity.setChainId(iSubWallet.GetChainID());
-            assetsItemEntity.setBalance(iSubWallet.GetBalance(SubWallet.BalanceType.Total) + "");
-            String syncTime = new RealmUtil().querySubWalletSyncTime(wallet.getWalletId(), iSubWallet.GetChainID());
-            if (TextUtils.isEmpty(syncTime)) {
-                assetsItemEntity.setProgress(0);
-                assetsItemEntity.setSyncRime("- -");
-            } else {
-                assetsItemEntity.setProgress(100);
-                assetsItemEntity.setSyncRime(syncTime);
-            }
-            assetList.add(assetsItemEntity);
-            //同步各个字钱包
-            //iSubWallet.GetChainId()
+            org.elastos.wallet.ela.db.table.SubWallet subWallet = new RealmUtil().querySubWallet(wallet.getWalletId(), iSubWallet.GetChainID());
+            subWallet.setBalance(iSubWallet.GetBalance(SubWallet.BalanceType.Total) + "");
+            assetList.add(subWallet);
             assetsPresenter.registerWalletListener(wallet.getWalletId(), iSubWallet.GetChainID(), this);
         }
         setRecycleView();
@@ -188,10 +171,10 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
     @Override
     public void onBalance(BalanceEntity data) {
-        for (AssetsItemEntity assetsItemEntity : assetList) {
+        for (org.elastos.wallet.ela.db.table.SubWallet assetsItemEntity : assetList) {
             if (assetsItemEntity.getChainId().equals(data.getChainId())) {
                 assetsItemEntity.setBalance(data.getBalance());
-                post(RxEnum.UPDATAPROGRESS.ordinal(), null, null);
+                post(RxEnum.BALANCECHANGE.ordinal(), null, data.getBalance());
             }
 
         }
@@ -224,7 +207,6 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
         try {
             String MasterWalletID = jsonObject.getString("MasterWalletID");
-
             if (!wallet.getWalletId().equals(MasterWalletID)) {
                 return;
             }
@@ -234,24 +216,24 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             int estimatedHeight = jsonObject.getInt("estimatedHeight");
             //同步进行中
             int progress = (int) (1.0f * currentBlockHeight / estimatedHeight * 100);
-            for (AssetsItemEntity assetsItemEntity : assetList) {
-                if (ChaiID.equals(assetsItemEntity.getChainId())) {
-                    assetsItemEntity.setProgress(progress);
-                    //if (currentBlockHeight >= estimatedHeight) {
-                    if (lastBlockTime!=0) {
-                        //同步完成
+            for (org.elastos.wallet.ela.db.table.SubWallet subWallet : assetList) {
+                if (ChaiID.equals(subWallet.getChainId())) {
+                    subWallet.setProgress(progress);
+                    if (lastBlockTime != 0) {
                         String curentTime = DateUtil.time(lastBlockTime);
-                        realmUtil.updateWalletSyncTime(wallet.getWalletId(), ChaiID, curentTime, new RealmTransactionAbs() {
-                            @Override
-                            public void onSuccess() {
-                                assetsItemEntity.setSyncRime(curentTime);
-                                post(RxEnum.UPDATAPROGRESS.ordinal(), null, null);
-                            }
-                        });
+                        subWallet.setSyncTime(curentTime);
                     }
+                    subWallet.setProgress(progress);
+                    realmUtil.updateSubWalletDetial(subWallet, new RealmTransactionAbs() {
+                        @Override
+                        public void onSuccess() {
+                            post(RxEnum.UPDATAPROGRESS.ordinal(), null, subWallet);
+                        }
+                    });
+
                 }
             }
-            post(RxEnum.UPDATAPROGRESS.ordinal(), null, null);
+
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -275,11 +257,10 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             }
             String ChaiID = jsonObject.getString("ChaiID");
             long balance = jsonObject.getLong("Balance");
-            for (AssetsItemEntity assetsItemEntity : assetList) {
+            for (org.elastos.wallet.ela.db.table.SubWallet assetsItemEntity : assetList) {
                 if (ChaiID.equals(assetsItemEntity.getChainId())) {
                     assetsItemEntity.setBalance(balance + "");
-                    post(RxEnum.UPDATAPROGRESS.ordinal(), null, null);
-                    post(RxEnum.BALANCECHANGE.ordinal(), ChaiID, balance);
+                    post(RxEnum.BALANCECHANGE.ordinal(), null, balance+"");
                 }
             }
         } catch (JSONException e) {
@@ -301,7 +282,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
     @Override
     public void onRefresh(RefreshLayout refreshLayout) {
-        for (AssetsItemEntity assetsItemEntity : assetList) {
+        for (org.elastos.wallet.ela.db.table.SubWallet assetsItemEntity : assetList) {
             //初始化map
             commonGetBalancePresenter.getBalance(wallet.getWalletId(), assetsItemEntity.getChainId(), 2, this);
         }
@@ -361,10 +342,14 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             }
         }
         if (integer == RxEnum.UPDATAPROPERTY.ordinal()) {
-            //资产改变
+            //子钱包改变
             setWalletView(wallet);
         }
         if (integer == RxEnum.UPDATAPROGRESS.ordinal()) {
+            //progress改变
+            assetskAdapter.notifyDataSetChanged();
+        }
+        if (integer == RxEnum.BALANCECHANGE.ordinal()) {
             //资产改变
             assetskAdapter.notifyDataSetChanged();
         }
