@@ -222,7 +222,10 @@ export default class extends StandardPage {
     return (
       <Desc>
         <DescLabel>{I18N.get('suggestion.form.fields.fullDesc')}</DescLabel>
-        <DescBody className="ql-editor" dangerouslySetInnerHTML={{ __html: sanitizeHtml(detail.desc) }} />
+        <DescBody className="ql-editor" dangerouslySetInnerHTML={{ __html: sanitizeHtml(detail.desc, {
+          allowedTags: sanitizeHtml.defaults.allowedTags.concat(['span']),
+          allowedAttributes: { span: ['class'] },
+        }) }} />
       </Desc>
     )
   }

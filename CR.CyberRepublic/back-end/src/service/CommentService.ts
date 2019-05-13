@@ -2,7 +2,7 @@ import Base from './Base'
 import {Document} from 'mongoose'
 import * as _ from 'lodash'
 import {constant} from '../constant'
-import {mail} from '../utility'
+import {user as userUtil, mail } from '../utility'
 
 const sanitize = '-password -salt -email -resetToken'
 const sanitizeWithEmail = '-password -salt -resetToken'
@@ -199,7 +199,24 @@ export default class extends Base {
         const seenEmails = {}
 
         for (let mention of mentions) {
-            const username = mention.replace('@', '')
+            const username = mention.replace('@', '').split(' ')[0]
+            // if mention all council members, will send email to them
+            if (_.includes(mentions, '@ALL')) {
+                const db_user = this.getDBModel('User')
+                const query = { role: constant.USER_ROLE.COUNCIL }
+                const councilMembers = await db_user.getDBInstance().find(query)
+
+                _.map(councilMembers, user => {
+                  mail.send({
+                    to: user.email,
+                    toName: userUtil.formatUsername(user),
+                    subject: ownerSubject,
+                    body: ownerBody
+                      })
+                })
+                return
+              }
+
             const db_user = this.getDBModel('User')
             const user = await db_user.findOne({username})
 

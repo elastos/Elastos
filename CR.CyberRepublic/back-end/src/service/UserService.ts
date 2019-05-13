@@ -343,6 +343,16 @@ export default class extends Base {
         }
     }
 
+    public async getCouncilMembers(): Promise<Object> {
+        const db_user = this.getDBModel('User')
+        const query = { role: constant.USER_ROLE.COUNCIL }
+        const councilMembers = await db_user.getDBInstance().find(query)
+            .select(constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+        return {
+            list: councilMembers,
+        }
+    }
+
     public async changePassword(param): Promise<boolean>{
         const db_user = this.getDBModel('User')
 

@@ -1,9 +1,11 @@
 import { TASK_STATUS, TASK_TYPE, CVOTE_STATUS } from '@/constant'
 import council from './en/council'
+import home from './en/home'
 import getting_started from './en/getting_started'
 
 const en = {
   council,
+  home,
   getting_started,
   // Header
   '0000': 'ALPHA',
@@ -106,84 +108,6 @@ const en = {
   'comments.commentsOrUpdates': 'Comments or updates',
   // Admin tasks
   'admin.tasks.status': 'Status',
-
-  // Home
-  'home.title': 'Elastos - Cyber Republic',
-  'home.developers': 'Developers',
-  'home.developers.help_1': 'Write code, find bugs, earn ELA',
-  'home.developers.help_2': 'Earn ELA for contributing to the Elastos ecosystem through everything',
-  'home.developers.help_3': 'from example apps to enterprise App development.',
-  'home.developers.help_4': 'You can also earn ELA for finding bugs and submitting issues.',
-  'home.developers.action': 'Yes I am interested in Developing for Elastos',
-  'home.organizers': 'Organizers & Contributors',
-  'home.organizers.help_1': 'Help organize meetups and promote Elastos',
-  'home.organizers.help_2': 'Whether you\'re already part of the community or want to join,',
-  'home.organizers.help_3': 'we reward you for various things you do to promote Elastos either online, locally or worldwide.',
-  'home.organizers.help_4': 'You can also earn ELA for referring potential contributors.',
-  'home.organizers.action_1': 'Apply to be an Organizer',
-  'home.organizers.action_2': 'View Events & Tasks I can contribute to',
-  'home.summary_1': 'We are a diverse democratic group of leaders, developers, organizers and designers',
-  'home.summary_2': 'formed to promote Elastos in our communities. Membership is open to everyone.',
-
-  'home.box_1.title': 'What is Cyber Republic?',
-  'home.box_1.description': 'A diverse, robust community of skill-focused sub-groups whose leaders, developers, and organizers are working together to promote Elastos in our communities. Membership is open to all.',
-
-  'home.explanation_1.part_1': 'A diverse, robust community of skill-focused sub-groups whose leaders, developers, and organizers are working together to promote Elastos in our communities. Membership is open to all.',
-  'home.explanation_1.part_2': '',
-
-  'home.box_2.title': 'What is the Cyber Republic Council?',
-  'home.box_2.description': 'A democratically elected group of 12(3 during Interim Period) individuals that conducts the first stage of proposal evaluation and ensures that Cyber Republic funds are spent effectively and responsibly.',
-
-  'home.explanation_2.part_1': 'A democratically elected group of 12(3 during Interim Period) individuals that conducts the first stage of proposal evaluation and ensures that Cyber Republic funds are spent effectively and responsibly.',
-  'home.explanation_2.part_2': '',
-
-  'home.box_3.title': 'What is the Cyber Republic Constitution?',
-  'home.box_3.description': 'The Cyber Republic is a decentralized autonomous organization, and its Constitution serves to govern the actions of its members and protects the integrity of its platform.',
-
-  'home.explanation_3.box_1.title': 'Elastos Cyber Republic Constitution',
-  'home.explanation_3.box_1.text': 'The set of rights, rules, and a code of ethics by which all members of the Cyber Republic uphold, abide, and conduct themselves.',
-  'home.explanation_3.box_2.title': 'Elastos Cyber Republic Council Founding Document',
-  'home.explanation_3.box_2.text': 'An abstract that takes care to lay out the vision and establish the value set underneath which the Cyber Republic will operate and grow.',
-  'home.explanation_3.box_3.title': 'Elastos Cyber Republic Voting Rules',
-  'home.explanation_3.box_3.text': 'These rules delineate the process of effecting changes, allocating funds, and approving proposals within the Cyber Republic and its sub-communities.',
-  'home.explanation_3.box_4.title': 'Elastos Cyber Republic Council Conflict of Interest Policy',
-  'home.explanation_3.box_4.text': 'Members of the Cyber Republic Council must be dedicated fully to the propagation of the Cyber Republic and its sub-communities. Other positions they presently hold may not create conflicting incentives thereof.',
-  'home.explanation_3.date': '',
-
-  'home.mob.logo.title': 'ELASTOS COMMUNITY',
-  'home.mob.logo.subtitle': 'Powered by the Elastos Blockchain',
-
-  'home.hero.ela.blockchain': 'Core Blockchain Development',
-  'home.hero.ela.application.1': 'Application SDKs',
-  'home.hero.ela.application.2': 'Developer APIs',
-  'home.hero.ela.sidechain': 'Sidechain Integrations',
-
-  'home.hero.cr.fund.1': 'Ecosystem Fund',
-  'home.hero.cr.fund.2': 'Project Funding',
-  'home.hero.cr.community': 'Community Governance',
-  'home.hero.cr.supernodes': 'DPoS Supernodes',
-
-  'home.crc.title': 'Cyber Republic Consensus (CRC)',
-
-  'home.crc.desc': 'Elastos has already made concrete steps towards a true Decentralized Autonomous Organization (DAO). The community has the power to elect and fund projects they deem beneficial to the Elastos ecosystem, to date we have already funded over 100k USD in projects. A new council will be elected by August 2019 and the Cyber Republic will be officially launched, any member of the community can be a candidate.',
-
-  'home.crc.list.1.date': 'August 2018',
-  'home.crc.list.1.text': 'At the Elastos First Anniversary Event, 16 million ELA was transferred to Cyber Republic (CR).',
-
-  'home.crc.list.2.date': 'December 2018',
-  'home.crc.list.2.text': 'The first draft of the CR Constitution was submitted for community review',
-  'home.crc.list.2.link': 'read it here',
-
-  'home.crc.list.3.date': 'February 2019',
-  'home.crc.list.3.text': 'Further refinements to the CRC were made giving the community a way to propose Suggestions and the Council to fund projects. You can read more about the funding workflow at',
-  'home.crc.list.3.link': 'our documentation site',
-
-  'home.crc.list.4.date': 'March 2019',
-  'home.crc.list.4.text': 'The first Marketing and Development projects were funded for over 100k USD, see all our proposals and voting process at',
-  'home.crc.list.4.link': 'our proposals page',
-
-  'home.crc.submit-suggestion.1': 'Have a Project or Idea?',
-  'home.crc.submit-suggestion.2': 'Submit Your Suggestion Here',
 
   // Pop-up Announcement
   'popup.changes.title': 'Important CR Announcement',
@@ -324,6 +248,7 @@ const en = {
   'suggestion.editHistory': 'Edit History',
   'suggestion.showEditHistory': 'Show Edit History',
   'suggestion.edited': 'Edited',
+  'suggestion.form.mention.allCouncil': 'All Council Members',
   'suggestion.form.fields.suggestion': 'Suggestion',
   'suggestion.form.fields.subject': 'Subject',
   'suggestion.form.fields.desc': 'Description',
@@ -1510,6 +1435,7 @@ const en = {
       positions: {
         title: 'SECRETARIAT - OPEN POSITIONS',
         jobDesc: 'JOB DESCRIPTION',
+        toastMsg: 'We are now hiring for Council and Secretariat positions.',
         howtoApply: {
           title: 'HOW TO APPLY',
           desc: 'Apply for it via email: secretariat@cyberrepublic.org',

@@ -1,7 +1,7 @@
 import { createContainer } from '@/util'
 import Component from './Component'
 import CommentService from '@/service/CommentService'
-import UserService from '@/service/UserService'
+import CouncilService from '@/service/CouncilService'
 import { message } from 'antd'
 import _ from 'lodash'
 
@@ -10,7 +10,7 @@ export default createContainer(Component, (state) => {
 
   const props = {
     currentUserId: state.user.current_user_id,
-    all_users: _.values(state.member.users || []),
+    all_users: _.values(state.council.council_members || []),
     loading: {},
   }
 
@@ -22,7 +22,7 @@ export default createContainer(Component, (state) => {
   return props
 }, () => {
   const commentService = new CommentService()
-  const userService = new UserService()
+  const councilService = new CouncilService()
 
   return {
     async postComment(type, reduxType, detailReducer, returnUrl, parentId, comment, headline) {
@@ -40,9 +40,9 @@ export default createContainer(Component, (state) => {
 
     async listUsers() {
       try {
-        return await userService.getAll()
+        return await councilService.getCouncilMembers()
       } catch (err) {
-        console.error(err)
+        // console.error(err)
         message.error(err.message)
       }
     },

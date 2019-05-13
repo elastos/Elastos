@@ -37,9 +37,6 @@ export default class extends Base {
       desc,
       coverImg,
       benefits,
-      // funding,
-      // timeline,
-      // link,
     }
     if (!_.isEmpty(funding)) {
       docCore.funding = funding
@@ -51,8 +48,6 @@ export default class extends Base {
       docCore.link = link
     }
 
-    // console.log('docCore is: ', docCore)
-
     // build document object
     const doc = {
       ...docCore,
@@ -60,7 +55,68 @@ export default class extends Base {
       editHistory: [emptyDoc, docCore],
     }
     // save the document
-    return await this.model.save(doc)
+    const result = await this.model.save(doc)
+
+    // parse rich text mention: @</span>username
+    const mentions = desc.match(/@\<\/span\>\w+/g)
+    if (mentions) {
+      this.sendMentionEmails(result, mentions)
+    }
+
+    return result
+  }
+
+  public async sendMentionEmails(suggestion, mentions) {
+    const db_user = this.getDBModel('User')
+    const query = { role: constant.USER_ROLE.COUNCIL }
+    const councilMembers = await db_user.getDBInstance().find(query)
+        .select(constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+
+    const subject = 'You were mentioned in a suggestion'
+    const body = `
+      <p>You were mentioned in a suggestion, click this link to view more details:</p>
+      <br />
+      <p><a href="${process.env.SERVER_URL}/suggestion/${suggestion._id}">${process.env.SERVER_URL}/suggestion/${suggestion._id}</a></p>
+      <br /> <br />
+      <p>Thanks</p>
+      <p>Cyber Republic</p>
+    `
+
+    if (_.includes(mentions, '@</span>ALL')) {
+      _.map(councilMembers, user => {
+        mail.send({
+          to: user.email,
+          toName: userUtil.formatUsername(user),
+          subject,
+          body
+        })
+      })
+      return
+    }
+
+    // hack for now, don't send more than 1 email to an individual subscriber
+    const seenEmails = {}
+
+    for (let mention of mentions) {
+      const username = mention.replace('@</span>', '')
+      const user = await db_user.findOne({ username })
+
+      const to = user.email
+      const toName = userUtil.formatUsername(user)
+
+      if (seenEmails[to]) {
+        continue
+      }
+
+      await mail.send({
+        to,
+        toName,
+        subject,
+        body
+      })
+
+      seenEmails[to] = true
+    }
   }
 
   public async update(param: any): Promise<Document> {

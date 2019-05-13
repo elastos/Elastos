@@ -2,9 +2,10 @@
 @import "@/style/color";
 
 .c_SuggestionDetail {
-
+  .mention {
+    background-color: yellow;
+  }
   svg.more-info-icon {
-
     width: 20px;
 
     > path {

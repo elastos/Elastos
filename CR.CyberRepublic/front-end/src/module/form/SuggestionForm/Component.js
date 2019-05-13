@@ -15,11 +15,23 @@ import {
 import moment from 'moment/moment'
 import I18N from '@/I18N'
 import ReactQuill from 'react-quill'
-import {TOOLBAR_OPTIONS} from '@/config/constant'
+import QuillMention from 'quill-mention'
+import { TOOLBAR_OPTIONS, quillMention } from '@/config/constant'
 import { upload_file } from '@/util'
 import Translation from '@/module/common/Translation/Container'
+import userUtil from '@/util/user'
 import { CoverImg } from './style'
 import './style.scss'
+
+// const atValues = [
+//   { id: 1, value: 'Fredrik Sundqvist' },
+//   { id: 2, value: 'Patrik Sjölin' }
+// ];
+// const hashValues = [
+//   { id: 3, value: 'Fredrik Sundqvist 2' },
+//   { id: 4, value: 'Patrik Sjölin 2' }
+// ]
+
 
 const FormItem = Form.Item
 
@@ -32,14 +44,19 @@ class C extends BaseComponent {
 
     this.state = {
       showRules: false,
-
-      coverImg: this.props.data ? this.props.data.coverImg : undefined
+      coverImg: this.props.data ? this.props.data.coverImg : undefined,
+      text: '',
     }
   }
 
-  //   componentDidMount() {
-  //     // TOTO: get council members used for mentions
-  //   }
+  handleChange = (value) => {
+    this.setState({text: value})
+  }
+
+  componentDidMount() {
+    // get council members used for mentions
+    this.props.getCouncilMembers()
+  }
 
   handleSubmit(e) {
     e.preventDefault()
@@ -75,9 +92,33 @@ class C extends BaseComponent {
     })
   }
 
+  mentionModule = {
+    allowedChars: /^[A-Za-z\s]*$/,
+    mentionDenotationChars: ['@'],
+    source: (searchTerm, renderList, mentionChar) => {
+      const values = [{ id: 1, value: `ALL (${I18N.get('suggestion.form.mention.allCouncil')})` }]
+      _.each(this.props.councilMembers, obj => {
+        const mentionStr = `${obj.username} (${userUtil.formatUsername(obj)})`
+        values.push({ id: obj._id, value: mentionStr })
+      })
+
+      if (searchTerm.length === 0) {
+        renderList(values, searchTerm)
+      } else {
+        const matches = []
+        for (let i = 0; i < values.length; i++) {
+          if (values[i].value.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1) {
+            matches.push(values[i])
+          }
+        }
+        renderList(matches, searchTerm)
+      }
+    },
+  }
+
   getInputProps() {
-    const {getFieldDecorator} = this.props.form
-    const {data} = this.props
+    const { getFieldDecorator } = this.props.form
+    const { data } = this.props
 
     const input_el = <Input size="large"/>
     const shortDesc_el = <Input size="large"/>
@@ -120,11 +161,13 @@ class C extends BaseComponent {
       </div>
     )
 
+    // console.log('------atValues: ', atValues)
     const textarea_el = (
       <ReactQuill
         modules={{
           toolbar: TOOLBAR_OPTIONS,
           autoLinks: true,
+          mention: this.mentionModule,
         }}
         style={{backgroundColor: 'white'}}
       />
@@ -303,6 +346,7 @@ class C extends BaseComponent {
   }
 
   ord_render() {
+    if (!this.props.councilMembers.length === 0) return 'loading...'
     const headerNode = this.renderHeader()
     const rulesNode = this.renderRules()
     const p = this.getInputProps()
