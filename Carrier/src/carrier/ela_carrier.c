@@ -1040,6 +1040,9 @@ static void ela_destroy(void *argv)
     if (w->friend_events)
         deref(w->friend_events);
 
+    if (w->dstorectx)
+        deref(w->dstorectx);
+
     pthread_mutex_destroy(&w->ext_mutex);
 
     dht_kill(&w->dht);
@@ -1346,10 +1349,8 @@ void ela_kill(ElaCarrier *w)
         return;
     }
 
-    if (w->dstorectx) {
-        dstore_wrapper_destroy(w->dstorectx);
-        w->dstorectx = NULL;
-    }
+    if (w->dstorectx)
+        dstore_wrapper_kill(w->dstorectx);
 
     if (w->running) {
         w->quit = 1;

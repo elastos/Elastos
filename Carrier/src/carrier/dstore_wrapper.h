@@ -42,7 +42,7 @@ DStoreWrapper *dstore_wrapper_create(ElaCarrier *w, DStoreOnMsgCallback cb);
 /*
  * Destroy an dstore wrapper
  */
-void dstore_wrapper_destroy(DStoreWrapper *);
+void dstore_wrapper_kill(DStoreWrapper *);
 
 /*
  * Enqueue an message to poll offline message.
