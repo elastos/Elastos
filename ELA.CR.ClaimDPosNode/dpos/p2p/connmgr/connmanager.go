@@ -1,6 +1,7 @@
 package connmgr
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"net"
@@ -42,9 +43,6 @@ const (
 // ConnReq is the connection request to a network address. If permanent, the
 // connection will be retried on disconnection.
 type ConnReq struct {
-	// The following variables must only be used atomically.
-	id uint64
-
 	PID        [33]byte // PID is the peer public key id from PeerAddr
 	Addr       net.Addr
 	conn       net.Conn
@@ -60,11 +58,6 @@ func (c *ConnReq) updateState(state ConnState) {
 	c.stateMtx.Unlock()
 }
 
-// ID returns a unique identifier for the connection request.
-func (c *ConnReq) ID() uint64 {
-	return atomic.LoadUint64(&c.id)
-}
-
 // State is the connection state of the requested connection.
 func (c *ConnReq) State() ConnState {
 	c.stateMtx.RLock()
@@ -76,9 +69,10 @@ func (c *ConnReq) State() ConnState {
 // String returns a human-readable string for the connection request.
 func (c *ConnReq) String() string {
 	if c.Addr == nil || c.Addr.String() == "" {
-		return fmt.Sprintf("reqid %d", atomic.LoadUint64(&c.id))
+		return fmt.Sprintf("reqid %s", hex.EncodeToString(c.PID[:]))
 	}
-	return fmt.Sprintf("%s (reqid %d)", c.Addr, atomic.LoadUint64(&c.id))
+	return fmt.Sprintf("%s (reqid %s)", c.Addr,
+		hex.EncodeToString(c.PID[:]))
 }
 
 // Config holds the configuration options related to the connection manager.
@@ -142,7 +136,7 @@ type handleConnected struct {
 
 // handleDisconnected is used to remove a connection.
 type handleDisconnected struct {
-	id    uint64
+	pid   [33]byte
 	retry bool
 }
 
@@ -155,9 +149,8 @@ type handleFailed struct {
 // ConnManager provides a manager to handle network connections.
 type ConnManager struct {
 	// The following variables must only be used atomically.
-	connReqCount uint64
-	start        int32
-	stop         int32
+	start int32
+	stop  int32
 
 	cfg            Config
 	wg             sync.WaitGroup
@@ -196,10 +189,10 @@ func (cm *ConnManager) connHandler() {
 
 	// pending holds all registered conn requests that have yet to
 	// succeed.
-	pending := make(map[uint64]*ConnReq)
+	pending := make(map[[33]byte]*ConnReq)
 
 	// conns represents the set of all actively connected peers.
-	conns := make(map[uint64]*ConnReq)
+	conns := make(map[[33]byte]*ConnReq)
 
 out:
 	for {
@@ -210,13 +203,13 @@ out:
 			case registerPending:
 				connReq := msg.c
 				connReq.updateState(ConnPending)
-				pending[msg.c.id] = connReq
+				pending[msg.c.PID] = connReq
 				close(msg.done)
 
 			case handleConnected:
 				connReq := msg.c
 
-				if _, ok := pending[connReq.id]; !ok {
+				if _, ok := pending[connReq.PID]; !ok {
 					if msg.conn != nil {
 						msg.conn.Close()
 					}
@@ -227,24 +220,24 @@ out:
 
 				connReq.updateState(ConnEstablished)
 				connReq.conn = msg.conn
-				conns[connReq.id] = connReq
+				conns[connReq.PID] = connReq
 				log.Debugf("Connected to %v", connReq)
 				connReq.retryCount = 0
 				cm.failedAttempts = 0
 
-				delete(pending, connReq.id)
+				delete(pending, connReq.PID)
 
 				if cm.cfg.OnConnection != nil {
 					go cm.cfg.OnConnection(connReq, msg.conn)
 				}
 
 			case handleDisconnected:
-				connReq, ok := conns[msg.id]
+				connReq, ok := conns[msg.pid]
 				if !ok {
-					connReq, ok = pending[msg.id]
+					connReq, ok = pending[msg.pid]
 					if !ok {
-						log.Errorf("Unknown connid=%d",
-							msg.id)
+						log.Errorf("Unknown connid=%s",
+							hex.EncodeToString(msg.pid[:]))
 						continue
 					}
 
@@ -254,7 +247,7 @@ out:
 					// connection.
 					connReq.updateState(ConnCanceled)
 					log.Debugf("Canceling: %v", connReq)
-					delete(pending, msg.id)
+					delete(pending, msg.pid)
 					continue
 
 				}
@@ -263,7 +256,7 @@ out:
 				// disconnected and execute disconnection
 				// callback.
 				log.Debugf("Disconnected from %v", connReq)
-				delete(conns, msg.id)
+				delete(conns, msg.pid)
 
 				if connReq.conn != nil {
 					connReq.conn.Close()
@@ -288,13 +281,13 @@ out:
 				connReq.updateState(ConnPending)
 				log.Debugf("Reconnecting to %v",
 					connReq)
-				pending[msg.id] = connReq
+				pending[msg.pid] = connReq
 				cm.handleFailedConn(connReq)
 
 			case handleFailed:
 				connReq := msg.c
 
-				if _, ok := pending[connReq.id]; !ok {
+				if _, ok := pending[connReq.PID]; !ok {
 					log.Debugf("Ignoring connection for "+
 						"canceled conn req: %v", connReq)
 					continue
@@ -320,9 +313,6 @@ func (cm *ConnManager) Connect(c *ConnReq) {
 	if atomic.LoadInt32(&cm.stop) != 0 {
 		return
 	}
-
-	// Allocate a unique ID for the connection request.
-	atomic.StoreUint64(&c.id, atomic.AddUint64(&cm.connReqCount, 1))
 
 	// Submit a request of a pending connection attempt to the
 	// connection manager. By registering the id before the
@@ -374,13 +364,13 @@ func (cm *ConnManager) Connect(c *ConnReq) {
 // Disconnect disconnects the connection corresponding to the given connection
 // id. If permanent, the connection will be retried with an increasing backoff
 // duration.
-func (cm *ConnManager) Disconnect(id uint64) {
+func (cm *ConnManager) Disconnect(pid [33]byte) {
 	if atomic.LoadInt32(&cm.stop) != 0 {
 		return
 	}
 
 	select {
-	case cm.requests <- handleDisconnected{id, true}:
+	case cm.requests <- handleDisconnected{pid, true}:
 	case <-cm.quit:
 	}
 }
@@ -390,13 +380,13 @@ func (cm *ConnManager) Disconnect(id uint64) {
 //
 // NOTE: This method can also be used to cancel a lingering connection attempt
 // that hasn't yet succeeded.
-func (cm *ConnManager) Remove(id uint64) {
+func (cm *ConnManager) Remove(pid [33]byte) {
 	if atomic.LoadInt32(&cm.stop) != 0 {
 		return
 	}
 
 	select {
-	case cm.requests <- handleDisconnected{id, false}:
+	case cm.requests <- handleDisconnected{pid, false}:
 	case <-cm.quit:
 	}
 }
