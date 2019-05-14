@@ -211,6 +211,7 @@ func (d *DPOSManager) ProcessHigherBlock(b *types.Block) {
 
 func (d *DPOSManager) ConfirmBlock() {
 	d.handler.FinishConsensus()
+	d.notHandledProposal = make(map[string]struct{})
 }
 
 func (d *DPOSManager) ChangeConsensus(onDuty bool) {
