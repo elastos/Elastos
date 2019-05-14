@@ -24,7 +24,10 @@ namespace Elastos {
 
 		class Transaction;
 
-		class SubWallet : public virtual ISubWallet, public Wallet::Listener, public PeerManager::Listener {
+		class SubWallet : public virtual ISubWallet,
+						  public Wallet::Listener,
+						  public PeerManager::Listener,
+						  public Lockable {
 		public:
 			typedef boost::shared_ptr<SpvService> WalletManagerPtr;
 

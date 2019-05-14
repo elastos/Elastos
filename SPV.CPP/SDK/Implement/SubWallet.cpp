@@ -97,12 +97,16 @@ namespace Elastos {
 		}
 
 		void SubWallet::AddCallback(ISubWalletCallback *subCallback) {
+			boost::mutex::scoped_lock scoped_lock(lock);
+
 			if (std::find(_callbacks.begin(), _callbacks.end(), subCallback) != _callbacks.end())
 				return;
 			_callbacks.push_back(subCallback);
 		}
 
 		void SubWallet::RemoveCallback(ISubWalletCallback *subCallback) {
+			boost::mutex::scoped_lock scoped_lock(lock);
+
 			_callbacks.erase(std::remove(_callbacks.begin(), _callbacks.end(), subCallback), _callbacks.end());
 		}
 
@@ -217,6 +221,8 @@ namespace Elastos {
 		}
 
 		void SubWallet::balanceChanged(const uint256 &assetID, const BigInt &balance) {
+			boost::mutex::scoped_lock scoped_lock(lock);
+
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [&assetID, &balance](ISubWalletCallback *callback) {
 							  callback->OnBalanceChanged(assetID.GetHex(), balance.getDec());
@@ -261,6 +267,8 @@ namespace Elastos {
 		}
 
 		void SubWallet::onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
+			boost::mutex::scoped_lock scoped_lock(lock);
+
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [&hash, &notifyUser, &recommendRescan](ISubWalletCallback *callback) {
 				callback->OnTxDeleted(hash.GetHex(), notifyUser, recommendRescan);
@@ -350,6 +358,8 @@ namespace Elastos {
 				_info.SetEaliestPeerTime(time(nullptr));
 			}
 
+			boost::mutex::scoped_lock scoped_lock(lock);
+
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [](ISubWalletCallback *callback) {
 							  callback->OnBlockSyncStarted();
@@ -357,6 +367,8 @@ namespace Elastos {
 		}
 
 		void SubWallet::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight, time_t lastBlockTime) {
+			boost::mutex::scoped_lock scoped_lock(lock);
+
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [&currentHeight, &estimatedHeight, &lastBlockTime](ISubWalletCallback *callback) {
 							  callback->OnBlockSyncProgress(currentHeight, estimatedHeight, lastBlockTime);
@@ -365,6 +377,8 @@ namespace Elastos {
 
 		void SubWallet::syncStopped(const std::string &error) {
 			_syncStartHeight = 0;
+
+			boost::mutex::scoped_lock scoped_lock(lock);
 
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [](ISubWalletCallback *callback) {
@@ -376,6 +390,8 @@ namespace Elastos {
 		}
 
 		void SubWallet::txPublished(const std::string &hash, const nlohmann::json &result) {
+			boost::mutex::scoped_lock scoped_lock(lock);
+
 			std::for_each(_callbacks.begin(), _callbacks.end(), [&hash, &result](ISubWalletCallback *callback) {
 				callback->OnTxPublished(hash, result);
 			});
@@ -408,6 +424,8 @@ namespace Elastos {
 
 		void SubWallet::fireTransactionStatusChanged(const uint256 &txid, const std::string &status,
 													 const nlohmann::json &desc, uint32_t confirms) {
+			boost::mutex::scoped_lock scoped_lock(lock);
+
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [&txid, &status, &desc, confirms](ISubWalletCallback *callback) {
 							  callback->OnTransactionStatusChanged(txid.GetHex(), status, desc, confirms);
