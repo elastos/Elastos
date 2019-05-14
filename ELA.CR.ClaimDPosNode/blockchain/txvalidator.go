@@ -933,14 +933,26 @@ func (b *BlockChain) checkRegisterProducerTransaction(txn *Transaction) error {
 		return err
 	}
 
-	// check duplication of node.
-	if b.state.ProducerNodePublicKeyExists(info.NodePublicKey) {
-		return fmt.Errorf("producer already registered")
-	}
+	if b.GetHeight() < b.chainParams.PublicDPOSHeight {
+		// check duplication of node.
+		if b.state.ProducerExists(info.NodePublicKey) {
+			return fmt.Errorf("producer already registered")
+		}
 
-	// check duplication of owner.
-	if b.state.ProducerOwnerPublicKeyExists(info.OwnerPublicKey) {
-		return fmt.Errorf("producer owner already registered")
+		// check duplication of owner.
+		if b.state.ProducerExists(info.OwnerPublicKey) {
+			return fmt.Errorf("producer owner already registered")
+		}
+	} else {
+		// check duplication of node.
+		if b.state.ProducerNodePublicKeyExists(info.NodePublicKey) {
+			return fmt.Errorf("producer already registered")
+		}
+
+		// check duplication of owner.
+		if b.state.ProducerOwnerPublicKeyExists(info.OwnerPublicKey) {
+			return fmt.Errorf("producer owner already registered")
+		}
 	}
 
 	// check duplication of nickname.
@@ -1151,10 +1163,20 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 	}
 
 	// check node public key duplication
-	if !bytes.Equal(info.NodePublicKey, producer.Info().NodePublicKey) &&
-		b.state.ProducerNodePublicKeyExists(info.NodePublicKey) {
-		return fmt.Errorf("producer %s already exist",
-			hex.EncodeToString(info.NodePublicKey))
+	if bytes.Equal(info.NodePublicKey, producer.Info().NodePublicKey) {
+		return nil
+	}
+
+	if b.GetHeight() < b.chainParams.PublicDPOSHeight {
+		if b.state.ProducerExists(info.NodePublicKey) {
+			return fmt.Errorf("producer %s already exist",
+				hex.EncodeToString(info.NodePublicKey))
+		}
+	} else {
+		if b.state.ProducerNodePublicKeyExists(info.NodePublicKey) {
+			return fmt.Errorf("producer %s already exist",
+				hex.EncodeToString(info.NodePublicKey))
+		}
 	}
 
 	return nil
