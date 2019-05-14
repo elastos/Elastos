@@ -45,8 +45,10 @@ public class MasterWallet {
             SubWallet subWallet = (SubWallet) allSubWallets[i];
             boolean found = false;
             for (int j = 0; j < mSubWallets.size(); ++j) {
-                if (mSubWallets.get(j).GetChainID().equals(subWallet.GetChainID()))
+                if (mSubWallets.get(j).GetChainID().equals(subWallet.GetChainID())) {
                     found = true;
+                    break;
+                }
             }
             if (!found)
                 mSubWallets.add(subWallet);
