@@ -16,7 +16,7 @@ namespace Elastos {
         SubWalletCallback::~SubWalletCallback() {
             JNIEnv *env = GetEnv();
 
-            _jvm->DetachCurrentThread();
+//            _jvm->DetachCurrentThread();
             env->DeleteGlobalRef(_obj);
         }
 

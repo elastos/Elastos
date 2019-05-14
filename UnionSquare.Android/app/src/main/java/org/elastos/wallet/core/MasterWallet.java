@@ -20,6 +20,15 @@ public class MasterWallet {
     static public String TAG = "IMasterWallet";
 
     private long mInstance;
+    private ArrayList<SubWallet> mSubWallets = new ArrayList<SubWallet>();
+
+    public MasterWallet(long instance) {
+        mInstance = instance;
+        Object[] allSubWallets = GetAllSubWallets(mInstance);
+        for (int i = 0; i < allSubWallets.length; i++) {
+            mSubWallets.add((SubWallet) allSubWallets[i]);
+        }
+    }
 
     public String GetID() {
         return GetID(mInstance);
@@ -32,19 +41,24 @@ public class MasterWallet {
     public ArrayList<SubWallet> GetAllSubWallets() {
         Object[] allSubWallets = GetAllSubWallets(mInstance);
 
-        ArrayList<SubWallet> list = new ArrayList<SubWallet>();
         for (int i = 0; i < allSubWallets.length; i++) {
-            list.add((SubWallet) allSubWallets[i]);
+            SubWallet subWallet = (SubWallet) allSubWallets[i];
+            boolean found = false;
+            for (int j = 0; j < mSubWallets.size(); ++j) {
+                if (mSubWallets.get(j).GetChainID().equals(subWallet.GetChainID()))
+                    found = true;
+            }
+            if (!found)
+                mSubWallets.add(subWallet);
         }
 
-        return list;
+        return mSubWallets;
     }
 
     public SubWallet GetSubWallet(String chainID) {
-        ArrayList<SubWallet> subWalletList = GetAllSubWallets();
-        for (int i = 0; i < subWalletList.size(); i++) {
-            if (chainID.equals(subWalletList.get(i).GetChainID())) {
-                return subWalletList.get(i);
+        for (int i = 0; i < mSubWallets.size(); i++) {
+            if (chainID.equals(mSubWallets.get(i).GetChainID())) {
+                return mSubWallets.get(i);
             }
         }
 
@@ -56,23 +70,40 @@ public class MasterWallet {
             throw new WalletException("Not support the other sidechain now.");
         }
 
+        for (int i = 0; i < mSubWallets.size(); ++i) {
+            if (mSubWallets.get(i).GetChainID().equals(chainID)) {
+                return mSubWallets.get(i);
+            }
+        }
+
         long subProxy = CreateSubWallet(mInstance, chainID, feePerKb);
         if (subProxy == 0) {
             Log.e(TAG, "Native create subwallet fail: subProxy is 0");
             throw new WalletException("Native create subwallet fail");
         }
 
+        SubWallet subWallet = null;
+
         if (CHAINID.MAIN.equals(chainID)) {
-            return new MainchainSubWallet(subProxy);
+            subWallet = new MainchainSubWallet(subProxy);
         } else if (CHAINID.ID.equals(chainID)) {
-            return new IDChainSubWallet(subProxy);
+            subWallet = new IDChainSubWallet(subProxy);
+        } else {
+            throw new WalletException("Unsupport chainID: " + chainID);
         }
 
-        Log.e(TAG, "CreateSubWallet error: unsupport chainID = " + chainID);
-        throw new WalletException("Not support the other sidechain now");
+        mSubWallets.add(subWallet);
+
+        return subWallet;
     }
 
     public void DestroyWallet(SubWallet wallet) {
+        for (int i = 0; i < mSubWallets.size(); ++i) {
+            if (mSubWallets.get(i).GetChainID().equals(wallet.GetChainID())) {
+                mSubWallets.remove(i);
+                break;
+            }
+        }
         wallet.RemoveCallback();
         DestroyWallet(mInstance, wallet.GetProxy());
     }
@@ -89,9 +120,6 @@ public class MasterWallet {
         return CheckSign(mInstance, publicKey, message, signature);
     }
 
-    public MasterWallet(long instance) {
-        mInstance = instance;
-    }
 
     public boolean IsAddressValid(String address) {
         return IsAddressValid(mInstance, address);

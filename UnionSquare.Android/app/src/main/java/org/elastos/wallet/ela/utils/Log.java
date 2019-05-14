@@ -1,7 +1,7 @@
 package org.elastos.wallet.ela.utils;
 
 public class Log {
-    private static boolean isDebug = false;
+    private static boolean isDebug = true;
 
     public static void v(String tag, String msg) {
         if (isDebug)

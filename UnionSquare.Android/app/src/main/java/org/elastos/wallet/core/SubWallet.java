@@ -13,6 +13,7 @@ public class SubWallet {
     private long mInstance;
     private SubWalletCallback mCallback = null;
     private String TAG = "SubWallet";
+    private boolean mRegisteredCallback = false;
 
     public enum BalanceType {
         Default,
@@ -33,6 +34,7 @@ public class SubWallet {
     }
 
     public long GetBalance(BalanceType type) throws WalletException {
+        Log.d(TAG, "SubWallet [" + mInstance + "] get balance");
         return GetBalance(mInstance, type.ordinal());
     }
 
@@ -49,19 +51,23 @@ public class SubWallet {
     }
 
     public void AddCallback(SubWalletCallback subCallback) throws WalletException {
-        if (mCallback == null) {
+        if (!mRegisteredCallback) {
+            Log.d(TAG, "SubWallet[" + mInstance + "] adding callback");
             AddCallback(mInstance, subCallback.GetProxy());
             mCallback = subCallback;
+            mRegisteredCallback = true;
         } else {
             Log.w(TAG, "SubWallet[" + GetChainID() + "]'s callback already registered");
         }
     }
 
     public void RemoveCallback() throws WalletException {
-        if (mCallback != null) {
+        if (mRegisteredCallback) {
+            Log.d(TAG, "SubWallet[" + mInstance + "] removing callback");
             RemoveCallback(mInstance, mCallback.GetProxy());
             mCallback.Dispose();
             mCallback = null;
+            mRegisteredCallback = false;
         } else {
             Log.w(TAG, "SubWallet[" + GetChainID() + "]'s callback already remove");
         }

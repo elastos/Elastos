@@ -12,10 +12,25 @@ public class MasterWalletManager {
     private String TAG = "MasterWalletManager";
     private long mInstance;
     private String mRootPath;
+    private ArrayList<MasterWallet> mMasterWallets = new ArrayList<MasterWallet>();
+
+    private boolean MasterWalletExist(String walletID) {
+        for (int i = 0; i < mMasterWallets.size(); ++i) {
+            if (mMasterWallets.get(i).equals(walletID))
+                return true;
+        }
+
+        return false;
+    }
 
     public MasterWalletManager(String rootPath) {
         mRootPath = rootPath;
         mInstance = InitMasterWalletManager(mRootPath);
+
+        long[] masterWalletProxies = GetAllMasterWallets(mInstance);
+        for (int i = 0; i < masterWalletProxies.length; i++) {
+            mMasterWallets.add(new MasterWallet(masterWalletProxies[i]));
+        }
     }
 
     public void Dispose() {
@@ -27,6 +42,11 @@ public class MasterWalletManager {
             String masterWalletId, String mnemonic, String phrasePassword, String payPassword,
             boolean singleAddress) throws WalletException {
 
+        if (MasterWalletExist(masterWalletId)) {
+            Log.e(TAG, "Master wallet [" + masterWalletId + "] exist");
+            return null;
+        }
+
         long instance = CreateMasterWallet(mInstance, masterWalletId, mnemonic,
                 phrasePassword, payPassword, singleAddress);
 
@@ -35,19 +55,29 @@ public class MasterWalletManager {
             return null;
         }
 
-        return new MasterWallet(instance);
+        MasterWallet masterWallet = new MasterWallet(instance);
+        mMasterWallets.add(masterWallet);
+
+        return masterWallet;
     }
 
     public ArrayList<MasterWallet> GetAllMasterWallets() throws WalletException {
 
-        ArrayList<MasterWallet> list = new ArrayList<MasterWallet>();
         long[] masterWalletProxies = GetAllMasterWallets(mInstance);
 
         for (int i = 0; i < masterWalletProxies.length; i++) {
-            list.add(new MasterWallet(masterWalletProxies[i]));
+            MasterWallet masterWallet = new MasterWallet(masterWalletProxies[i]);
+            boolean found = false;
+            for (int j = 0; j < mMasterWallets.size(); ++j) {
+                if (mMasterWallets.get(j).GetID().equals(masterWallet.GetID()))
+                    found = true;
+            }
+
+            if (!found)
+                    mMasterWallets.add(masterWallet);
         }
 
-        return list;
+        return mMasterWallets;
     }
 
     public String[] GetAllMasterWalletIds() throws WalletException {
@@ -55,17 +85,23 @@ public class MasterWalletManager {
     }
 
     public MasterWallet GetWallet(String masterWalletId) throws WalletException {
-        long masterWalletProxy = GetWallet(mInstance, masterWalletId);
-
-        if (masterWalletProxy == 0) {
-            Log.e(TAG, "Get master wallet fail");
-            return null;
+        for (int i = 0; i < mMasterWallets.size(); ++i) {
+            if (mMasterWallets.get(i).GetID().equals(masterWalletId))
+                return mMasterWallets.get(i);
         }
 
-        return new MasterWallet(masterWalletProxy);
+        Log.e(TAG, "master wallet [" + masterWalletId + "] not found");
+
+        return null;
     }
 
     public void DestroyWallet(String masterWalletId) throws WalletException {
+        for (int i = 0; i < mMasterWallets.size(); ++i) {
+            if (mMasterWallets.get(i).GetID().equals(masterWalletId)) {
+                mMasterWallets.remove(i);
+                break;
+            }
+        }
         DestroyWallet(mInstance, masterWalletId);
     }
 
@@ -88,6 +124,11 @@ public class MasterWalletManager {
             String masterWalletId, String mnemonic, String phrasePassword, String payPassWord,
             boolean singleAddress) throws WalletException {
 
+        if (MasterWalletExist(masterWalletId)) {
+            Log.e(TAG, "Master wallet [" + masterWalletId + "] exist");
+            return null;
+        }
+
         long masterProxy = ImportWalletWithMnemonic(mInstance, masterWalletId,
                 mnemonic, phrasePassword, payPassWord, singleAddress);
 
@@ -95,8 +136,10 @@ public class MasterWalletManager {
             Log.e(TAG, "Import master wallet with mnemonic fail");
             return null;
         }
+        MasterWallet masterWallet = new MasterWallet(masterProxy);
+        mMasterWallets.add(masterWallet);
 
-        return new MasterWallet(masterProxy);
+        return masterWallet;
     }
 
     public String ExportWalletWithKeystore(MasterWallet masterWallet, String backupPassWord,
@@ -129,10 +172,15 @@ public class MasterWalletManager {
         SaveConfigs(mInstance);
     }
 
-    public MasterWallet CreateMultiSignMasterWallet(String masterWallet, String coSigners,
+    public MasterWallet CreateMultiSignMasterWallet(String masterWalletID, String coSigners,
                                                     int requiredSignCount) throws WalletException {
 
-        long masterProxy = CreateMultiSignMasterWallet(mInstance, masterWallet,
+        if (MasterWalletExist(masterWalletID)) {
+            Log.e(TAG, "Master wallet [" + masterWalletID + "] exist");
+            return null;
+        }
+
+        long masterProxy = CreateMultiSignMasterWallet(mInstance, masterWalletID,
                 coSigners, requiredSignCount);
 
         if (masterProxy == 0) {
@@ -140,14 +188,22 @@ public class MasterWalletManager {
             return null;
         }
 
-        return new MasterWallet(masterProxy);
+        MasterWallet masterWallet = new MasterWallet(masterProxy);
+        mMasterWallets.add(masterWallet);
+
+        return masterWallet;
     }
 
     public MasterWallet CreateMultiSignMasterWallet(
-            String masterWallet, String privKey, String payPassword, String coSigners,
+            String masterWalletID, String privKey, String payPassword, String coSigners,
             int requiredSignCount) throws WalletException {
 
-        long masterProxy = CreateMultiSignMasterWalletWithPrivKey(mInstance, masterWallet,
+        if (MasterWalletExist(masterWalletID)) {
+            Log.e(TAG, "Master wallet [" + masterWalletID + "] exist");
+            return null;
+        }
+
+        long masterProxy = CreateMultiSignMasterWalletWithPrivKey(mInstance, masterWalletID,
                 privKey, payPassword, coSigners, requiredSignCount);
 
         if (masterProxy == 0) {
@@ -155,12 +211,21 @@ public class MasterWalletManager {
             return null;
         }
 
-        return new MasterWallet(masterProxy);
+        MasterWallet masterWallet = new MasterWallet(masterProxy);
+        mMasterWallets.add(masterWallet);
+
+        return masterWallet;
     }
 
     public MasterWallet CreateMultiSignMasterWallet(
             String masterWalletId, String mnemonic, String phrasePassword, String payPassword,
             String coSigners, int requiredSignCount) throws WalletException {
+
+
+        if (MasterWalletExist(masterWalletId)) {
+            Log.e(TAG, "Master wallet [" + masterWalletId + "] exist");
+            return null;
+        }
 
         long masterProxy = CreateMultiSignMasterWalletWithMnemonic(mInstance, masterWalletId,
                 mnemonic, phrasePassword, payPassword, coSigners, requiredSignCount);
@@ -170,7 +235,10 @@ public class MasterWalletManager {
             return null;
         }
 
-        return new MasterWallet(masterProxy);
+        MasterWallet masterWallet = new MasterWallet(masterProxy);
+        mMasterWallets.add(masterWallet);
+
+        return masterWallet;
     }
 
     public String EncodeTransactionToString(String txJson) {
