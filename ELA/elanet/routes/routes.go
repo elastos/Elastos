@@ -6,6 +6,7 @@ package routes
 
 import (
 	"fmt"
+	"sync/atomic"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -98,14 +99,19 @@ type dAddrMsg struct {
 
 // Routes is the DPOS routes implementation.
 type Routes struct {
-	pid       dp.PID
-	cfg       *Config
-	addr      string
-	sign      func([]byte) []byte
-	queue     chan interface{}
-	announce  chan struct{}
-	sendQueue chan struct{}
-	quit      chan struct{}
+	pid  dp.PID
+	cfg  *Config
+	addr string
+	sign func([]byte) []byte
+
+	// The following variables must only be used atomically.
+	started int32
+	stopped int32
+	waiting int32
+
+	queue    chan interface{}
+	announce chan struct{}
+	quit     chan struct{}
 }
 
 // addrHandler is the main handler to syncing the addresses state.
@@ -118,11 +124,15 @@ func (r *Routes) addrHandler() {
 		peerCache: make(map[*peer.Peer]*cache),
 	}
 
-	// waiting indicates if a previous announce is waiting.
-	var waiting bool
-
-	// lastAnnounce represents the last announce time.
+	// lastAnnounce indicates the time when last announce sent.
 	var lastAnnounce time.Time
+
+	// scheduleAnnounce schedules an announce according to the delay time.
+	var scheduleAnnounce = func(delay time.Duration) {
+		time.AfterFunc(delay, func() {
+			r.announce <- struct{}{}
+		})
+	}
 
 out:
 	for {
@@ -151,33 +161,20 @@ out:
 
 		// Handle the announce request.
 		case <-r.announce:
-			// Refuse new announce if a previous announce is waiting,
-			// this is to reduce unnecessary announce.
-			if waiting {
-				continue
-			}
-			waiting = true
-
-			r.sendQueue <- struct{}{}
-
-		// Handle send address announce.
-		case <-r.sendQueue:
 			// This may be a retry or delayed announce, and the DPoS producers
 			// have been changed.
 			_, ok := state.peers[r.pid]
 			if !ok {
 				// Waiting status must reset here or the announce will never
 				// work again.
-				waiting = false
+				atomic.StoreInt32(&r.waiting, 0)
 				continue
 			}
 
 			// Do not announce address if connected peers not enough.
 			if len(state.peerCache) < minPeersToAnnounce {
 				// Retry announce after the retry duration.
-				time.AfterFunc(retryAnnounceDuration, func() {
-					r.sendQueue <- struct{}{}
-				})
+				scheduleAnnounce(retryAnnounceDuration)
 				continue
 			}
 
@@ -186,15 +183,15 @@ out:
 			if lastAnnounce.Add(minAnnounceDuration).After(now) {
 				// Calculate next announce time and schedule an announce.
 				nextAnnounce := minAnnounceDuration - now.Sub(lastAnnounce)
-				time.AfterFunc(nextAnnounce, func() {
-					r.sendQueue <- struct{}{}
-				})
+				scheduleAnnounce(nextAnnounce)
 				continue
 			}
 
 			// Update last announce time.
-			waiting = false
 			lastAnnounce = now
+
+			// Reset waiting state to 0(false).
+			atomic.StoreInt32(&r.waiting, 0)
 
 			for pid := range state.peers {
 				// Do not create address for self.
@@ -235,11 +232,31 @@ cleanup:
 		select {
 		case <-r.queue:
 		case <-r.announce:
-		case <-r.sendQueue:
 		default:
 			break cleanup
 		}
 	}
+}
+
+func (r *Routes) appendAddr(s *state, m *msg.DAddr) {
+	hash := m.Hash()
+
+	// Append received addr into known addr index.
+	s.addrIndex[m.PID][m.Encode] = hash
+	s.knownAddr[hash] = m
+
+	// Relay addr to the P2P network.
+	iv := msg.NewInvVect(msg.InvTypeAddress, &hash)
+	r.cfg.RelayAddr(iv, m)
+}
+
+func (r *Routes) announceAddr() {
+	// Refuse new announce if a previous announce is waiting,
+	// this is to reduce unnecessary announce.
+	if !atomic.CompareAndSwapInt32(&r.waiting, 0, 1) {
+		return
+	}
+	r.announce <- struct{}{}
 }
 
 func (r *Routes) handleNewPeer(s *state, p *peer.Peer) {
@@ -304,7 +321,7 @@ func (r *Routes) handlePeersMsg(state *state, peers []dp.PID) {
 
 	// Announce address into P2P network if we become arbiter.
 	if isArbiter && !wasArbiter {
-		r.announce <- struct{}{}
+		r.announceAddr()
 	}
 }
 
@@ -372,18 +389,6 @@ func (r *Routes) handleGetData(s *state, p *peer.Peer, m *msg.GetData) {
 			continue
 		}
 	}
-}
-
-func (r *Routes) appendAddr(s *state, m *msg.DAddr) {
-	hash := m.Hash()
-
-	// Append received addr into known addr index.
-	s.addrIndex[m.PID][m.Encode] = hash
-	s.knownAddr[hash] = m
-
-	// Relay addr to the P2P network.
-	iv := msg.NewInvVect(msg.InvTypeAddress, &hash)
-	r.cfg.RelayAddr(iv, m)
 }
 
 // verifyDAddr verifies if this is a valid DPOS address message.
@@ -475,11 +480,17 @@ func (r *Routes) handleDAddr(s *state, p *peer.Peer, m *msg.DAddr) {
 
 // Start starts the Routes instance to sync DPOS addresses.
 func (r *Routes) Start() {
+	if !atomic.CompareAndSwapInt32(&r.started, 0, 1) {
+		return
+	}
 	go r.addrHandler()
 }
 
 // Stop quits the syncing address handler.
 func (r *Routes) Stop() {
+	if !atomic.CompareAndSwapInt32(&r.stopped, 0, 1) {
+		return
+	}
 	close(r.quit)
 }
 
@@ -495,6 +506,19 @@ func (r *Routes) DonePeer(peer *peer.Peer) {
 
 // QueueInv adds the passed Inv message and peer to the addr handling queue.
 func (r *Routes) QueueInv(p *peer.Peer, m *msg.Inv) {
+	// Filter non-address inventory messages.
+	var invList []*msg.InvVect
+	for _, iv := range m.InvList {
+		switch iv.Type {
+		case msg.InvTypeAddress:
+		default:
+			continue
+		}
+		invList = append(invList, iv)
+	}
+	if len(invList) == 0 {
+		return
+	}
 	r.queue <- invMsg{peer: p, msg: m}
 }
 
@@ -511,7 +535,10 @@ func (r *Routes) QueueDAddr(p *peer.Peer, m *msg.DAddr) {
 // AnnounceAddr schedules an local address announce to the P2P network, it used
 // to re-announce the local address when DPoS network go bad.
 func (r *Routes) AnnounceAddr() {
-	r.announce <- struct{}{}
+	if atomic.LoadInt32(&r.started) == 0 {
+		return
+	}
+	r.announceAddr()
 }
 
 // New creates and return a Routes instance.
@@ -520,14 +547,13 @@ func New(cfg *Config) *Routes {
 	copy(pid[:], cfg.PID)
 
 	r := Routes{
-		pid:       pid,
-		cfg:       cfg,
-		addr:      cfg.Addr,
-		sign:      cfg.Sign,
-		queue:     make(chan interface{}, 256),
-		announce:  make(chan struct{}, 1),
-		sendQueue: make(chan struct{}, 1),
-		quit:      make(chan struct{}),
+		pid:      pid,
+		cfg:      cfg,
+		addr:     cfg.Addr,
+		sign:     cfg.Sign,
+		queue:    make(chan interface{}, 125*3),
+		announce: make(chan struct{}, 1),
+		quit:     make(chan struct{}),
 	}
 
 	queuePeers := func(peers []dp.PID) {

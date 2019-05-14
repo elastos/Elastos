@@ -44,10 +44,20 @@ func TestRoutes_announce(t *testing.T) {
 	})
 	routes.Start()
 
-	var pid1, pid2 peer.PID
-	copy(pid1[:], pk1)
-	copy(pid2[:], pk2)
-	routes.queue <- peersMsg{peers: []peer.PID{pid1, pid2}}
+	// Trigger peers change continuously.
+	go func() {
+		var pid1, pid2 peer.PID
+		copy(pid1[:], pk1)
+		copy(pid2[:], pk2)
+		peers := []peer.PID{pid1, pid2}
+		for i := 0; true; i++ {
+			if i%2 == 0 {
+				routes.queue <- peersMsg{peers: peers}
+			} else {
+				routes.queue <- peersMsg{peers: peers[1:]}
+			}
+		}
+	}()
 
 	// Trigger NewPeer and DonePeer continuously.
 	go func() {
