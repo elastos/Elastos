@@ -109,7 +109,7 @@ namespace Elastos {
 
 			for (const auto &word: words) {
 				for (i = 0; i < dictionary.size(); ++i) {
-					if (word == dictionary[i]) {
+					if (dictionary[i].find(word) != std::string::npos) {
 						idx[count++] = i;
 						break;
 					}
