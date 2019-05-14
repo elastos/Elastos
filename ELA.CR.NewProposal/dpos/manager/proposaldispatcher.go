@@ -235,7 +235,7 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 	if p.processingProposal != nil && d.Hash().IsEqual(
 		p.processingProposal.Hash()) {
 		log.Info("already processing proposal")
-		return true, false
+		return true, true
 	}
 
 	if _, err := blockchain.DefaultLedger.Blockchain.GetBlockByHash(d.BlockHash); err == nil {
@@ -254,7 +254,7 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 	if !force {
 		if _, ok := p.pendingProposals[d.Hash()]; ok {
 			log.Info("already have proposal, wait for processing")
-			return true, false
+			return true, true
 		}
 	}
 
@@ -277,7 +277,7 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 		p.pendingProposals[d.Hash()] = d
 		p.cfg.Manager.OnInv(id, d.BlockHash)
 		log.Info("received pending proposal")
-		return true, false
+		return true, true
 	} else {
 		p.TryStartSpeculatingProposal(currentBlock)
 	}
