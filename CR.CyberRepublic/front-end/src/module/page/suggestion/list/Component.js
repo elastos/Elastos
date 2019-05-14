@@ -400,7 +400,7 @@ export default class extends StandardPage {
         {title}
         <ShortDesc>
           {data.shortDesc}
-          {(data.link && data.link.length) && (data.link.map((link) => {
+          {_.isArray(data.link) && (data.link.map((link) => {
             return <ItemLinkWrapper key={link}><a target="_blank" href={link}>{link}</a></ItemLinkWrapper>
           }))}
         </ShortDesc>
