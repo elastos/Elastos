@@ -395,8 +395,6 @@ out:
 				case msg.InvTypeBlock:
 					fallthrough
 				case msg.InvTypeConfirmedBlock:
-					fallthrough
-				case msg.InvTypeAddress:
 					invMsg := msg.NewInvSize(1)
 					invMsg.AddInvVect(iv)
 					p.QueueMessage(invMsg, nil)
