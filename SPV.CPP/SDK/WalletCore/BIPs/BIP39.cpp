@@ -60,7 +60,7 @@ namespace Elastos {
 
 		uint512 BIP39::DeriveSeed(const std::string &mnemonic, const std::string &passphrase) {
 			std::vector<std::string> wordList;
-			boost::algorithm::split(wordList, mnemonic, boost::is_any_of(" \n\t"), boost::token_compress_on);
+			boost::algorithm::split(wordList, mnemonic, boost::is_any_of(" \n\r\t"), boost::token_compress_on);
 
 			ErrorChecker::CheckLogic(wordList.size() != 12, Error::Mnemonic, "invalid mnemonic word count");
 
@@ -105,18 +105,17 @@ namespace Elastos {
 			bytes_t entropy;
 			std::vector<std::string> words;
 
-			boost::algorithm::split(words, mnemonic, boost::is_any_of(" \n\t"), boost::token_compress_on);
+			boost::algorithm::split(words, mnemonic, boost::is_any_of(" \n\r\t"), boost::token_compress_on);
 
 			for (const auto &word: words) {
 				for (i = 0; i < dictionary.size(); ++i) {
-					if (word == dictionary[i]) {
+					if (dictionary[i].find(word) != std::string::npos) {
 						idx[count++] = i;
 						break;
 					}
 				}
 
 				if (i >= dictionary.size()) {
-					//ErrorChecker::ThrowLogicException(Error::Mnemonic, "invalid word in mnemonic");
 					return bytes_t();
 				}
 			}
