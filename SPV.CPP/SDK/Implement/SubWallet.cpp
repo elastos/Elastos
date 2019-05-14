@@ -133,7 +133,7 @@ namespace Elastos {
 			TransactionPtr tx = wallet->CreateTransaction(fromAddress, amount, toAddress, _info.GetMinFee(),
 														  assetID, useVotedUTXO);
 
-			std::set<Address> uniqueAddress;
+			std::set<std::string> uniqueAddress;
 			std::vector<TransactionInput> &inputs = tx->GetInputs();
 			for (size_t i = 0; i < inputs.size(); ++i) {
 				TransactionPtr txInput = wallet->TransactionForHash(inputs[i].GetTransctionHash());
@@ -144,8 +144,8 @@ namespace Elastos {
 						tx->SetLockTime(o.GetOutputLock());
 					}
 
-					if (uniqueAddress.find(addr) == uniqueAddress.end()) {
-						uniqueAddress.insert(addr);
+					if (uniqueAddress.find(addr.String()) == uniqueAddress.end()) {
+						uniqueAddress.insert(addr.String());
 						bytes_t code = _subAccount->GetRedeemScript(addr);
 						tx->AddProgram(Program(code, bytes_t()));
 					}
