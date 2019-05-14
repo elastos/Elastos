@@ -83,7 +83,6 @@ namespace Elastos {
 			}
 
 			if (containInternal) {
-				maxCount += _internalChain.size();
 				for (size_t i = start + addr.size(); addr.size() < count && i < _externalChain.size() + _internalChain.size(); i++) {
 					addr.push_back(_internalChain[i - _externalChain.size()]);
 				}
