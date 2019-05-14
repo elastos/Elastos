@@ -513,9 +513,6 @@ func (d *DPOSManager) OnConfirmReceived(p *payload.Confirm) {
 }
 
 func (d *DPOSManager) OnIllegalProposalReceived(id dpeer.PID, proposals *payload.DPOSIllegalProposals) {
-	if !d.isCurrentArbiter() {
-		return
-	}
 	if err := blockchain.CheckDPOSIllegalProposals(proposals); err != nil {
 		log.Info("[OnIllegalProposalReceived] received error evidence: ", err)
 		return
@@ -524,9 +521,6 @@ func (d *DPOSManager) OnIllegalProposalReceived(id dpeer.PID, proposals *payload
 }
 
 func (d *DPOSManager) OnIllegalVotesReceived(id dpeer.PID, votes *payload.DPOSIllegalVotes) {
-	if !d.isCurrentArbiter() {
-		return
-	}
 	if err := blockchain.CheckDPOSIllegalVotes(votes); err != nil {
 		log.Info("[OnIllegalProposalReceived] received error evidence: ", err)
 		return
@@ -547,9 +541,6 @@ func (d *DPOSManager) OnIllegalBlocksTxReceived(i *payload.DPOSIllegalBlocks) {
 }
 
 func (d *DPOSManager) OnSidechainIllegalEvidenceReceived(s *payload.SidechainIllegalData) {
-	if !d.isCurrentArbiter() {
-		return
-	}
 	if err := blockchain.CheckSidechainIllegalEvidence(s); err != nil {
 		log.Info("[OnIllegalProposalReceived] received error evidence: ", err)
 		return
