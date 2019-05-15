@@ -371,14 +371,14 @@ func (r *Routes) handleGetData(s *state, p *peer.Peer, m *msg.GetData) {
 		return
 	}
 
-	done := make(chan struct{})
+	done := make(chan struct{}, 1)
 	for _, iv := range m.InvList {
 		switch iv.Type {
 		case msg.InvTypeAddress:
 			// Attempt to fetch the requested addr.
 			addr, ok := s.knownAddr[iv.Hash]
 			if !ok {
-				done <- struct{}{}
+				log.Warnf("%s for DAddr not found", iv.Hash)
 				continue
 			}
 
@@ -507,24 +507,23 @@ func (r *Routes) DonePeer(peer *peer.Peer) {
 // QueueInv adds the passed Inv message and peer to the addr handling queue.
 func (r *Routes) QueueInv(p *peer.Peer, m *msg.Inv) {
 	// Filter non-address inventory messages.
-	var invList []*msg.InvVect
 	for _, iv := range m.InvList {
-		switch iv.Type {
-		case msg.InvTypeAddress:
-		default:
-			continue
+		if iv.Type == msg.InvTypeAddress {
+			r.queue <- invMsg{peer: p, msg: m}
+			return
 		}
-		invList = append(invList, iv)
 	}
-	if len(invList) == 0 {
-		return
-	}
-	r.queue <- invMsg{peer: p, msg: m}
 }
 
 // QueueInv adds the passed GetData message and peer to the addr handling queue.
 func (r *Routes) QueueGetData(p *peer.Peer, m *msg.GetData) {
-	r.queue <- getDataMsg{peer: p, msg: m}
+	// Filter non-address GetData messages.
+	for _, iv := range m.InvList {
+		if iv.Type == msg.InvTypeAddress {
+			r.queue <- getDataMsg{peer: p, msg: m}
+			return
+		}
+	}
 }
 
 // QueueInv adds the passed DAddr message and peer to the addr handling queue.
@@ -551,7 +550,7 @@ func New(cfg *Config) *Routes {
 		cfg:      cfg,
 		addr:     cfg.Addr,
 		sign:     cfg.Sign,
-		queue:    make(chan interface{}, 125*3),
+		queue:    make(chan interface{}, 125),
 		announce: make(chan struct{}, 1),
 		quit:     make(chan struct{}),
 	}
