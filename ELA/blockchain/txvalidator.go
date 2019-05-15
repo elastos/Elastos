@@ -1435,11 +1435,13 @@ func CheckDPOSIllegalProposals(d *payload.DPOSIllegalProposals) error {
 		return errors.New("should in same view")
 	}
 
-	if err := ProposalCheck(&d.Evidence.Proposal); err != nil {
+	if err := ProposalCheckByHeight(&d.Evidence.Proposal, d.GetBlockHeight());
+		err != nil {
 		return err
 	}
 
-	if err := ProposalCheck(&d.CompareEvidence.Proposal); err != nil {
+	if err := ProposalCheckByHeight(&d.CompareEvidence.Proposal,
+		d.GetBlockHeight()); err != nil {
 		return err
 	}
 
@@ -1481,19 +1483,23 @@ func CheckDPOSIllegalVotes(d *payload.DPOSIllegalVotes) error {
 		return errors.New("should in same view")
 	}
 
-	if err := ProposalCheck(&d.Evidence.Proposal); err != nil {
+	if err := ProposalCheckByHeight(&d.Evidence.Proposal,
+		d.GetBlockHeight()); err != nil {
 		return err
 	}
 
-	if err := ProposalCheck(&d.CompareEvidence.Proposal); err != nil {
+	if err := ProposalCheckByHeight(&d.CompareEvidence.Proposal,
+		d.GetBlockHeight()); err != nil {
 		return err
 	}
 
-	if err := VoteCheck(&d.Evidence.Vote); err != nil {
+	if err := VoteCheckByHeight(&d.Evidence.Vote,
+		d.GetBlockHeight()); err != nil {
 		return err
 	}
 
-	if err := VoteCheck(&d.CompareEvidence.Vote); err != nil {
+	if err := VoteCheckByHeight(&d.CompareEvidence.Vote,
+		d.GetBlockHeight()); err != nil {
 		return err
 	}
 
@@ -1698,10 +1704,6 @@ func validateProposalEvidence(evidence *payload.ProposalEvidence) error {
 		return errors.New("proposal hash and block should match")
 	}
 
-	if err := ProposalCheck(&evidence.Proposal); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -1712,10 +1714,6 @@ func validateVoteEvidence(evidence *payload.VoteEvidence) error {
 
 	if !evidence.Proposal.Hash().IsEqual(evidence.Vote.ProposalHash) {
 		return errors.New("vote and proposal should match")
-	}
-
-	if err := VoteCheck(&evidence.Vote); err != nil {
-		return err
 	}
 
 	return nil

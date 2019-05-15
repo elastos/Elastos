@@ -54,6 +54,11 @@ func (s *txValidatorSpecialTxTestSuite) SetupSuite() {
 		a, _ := common.HexStringToBytes(v)
 		s.arbitrators.CurrentArbitrators = append(s.arbitrators.CurrentArbitrators, a)
 	}
+	s.arbitrators.Snapshot = []*state.KeyFrame{
+		{
+			CurrentArbitrators: s.arbitrators.CurrentArbitrators,
+		},
+	}
 
 	for _, v := range arbitratorsPrivateKeys {
 		a, _ := common.HexStringToBytes(v)
@@ -97,7 +102,7 @@ func (s *txValidatorSpecialTxTestSuite) TestValidateProposalEvidence() {
 		"proposal hash and block should match")
 
 	evidence.Proposal.BlockHash = header.Hash()
-	s.Error(validateProposalEvidence(evidence))
+	s.NoError(validateProposalEvidence(evidence))
 
 	// let proposal sanity and context check pass
 	evidence.Proposal.Sponsor = s.arbitrators.CurrentArbitrators[0]
@@ -216,7 +221,7 @@ func (s *txValidatorSpecialTxTestSuite) TestValidateVoteEvidence() {
 		"vote and proposal should match")
 
 	evidence.Vote.ProposalHash = evidence.Proposal.Hash()
-	s.Error(validateVoteEvidence(evidence), "vote verify error")
+	s.NoError(validateVoteEvidence(evidence), "vote verify error")
 
 	evidence.Vote.Signer = s.arbitrators.CurrentArbitrators[1]
 	evidence.Vote.Accept = true

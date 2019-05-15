@@ -144,6 +144,19 @@ func ProposalCheck(proposal *payload.DPOSProposal) error {
 	return nil
 }
 
+func ProposalCheckByHeight(proposal *payload.DPOSProposal,
+	height uint32) error {
+	if err := ProposalSanityCheck(proposal); err != nil {
+		return err
+	}
+
+	if err := ProposalContextCheckByHeight(proposal, height); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func ProposalSanityCheck(proposal *payload.DPOSProposal) error {
 	pubKey, err := crypto.DecodePoint(proposal.Sponsor)
 	if err != nil {
@@ -172,12 +185,43 @@ func ProposalContextCheck(proposal *payload.DPOSProposal) error {
 	return nil
 }
 
+func ProposalContextCheckByHeight(proposal *payload.DPOSProposal,
+	height uint32) error {
+	var isArbiter bool
+	keyFrames := DefaultLedger.Arbitrators.GetSnapshot(height)
+	for _, k := range keyFrames {
+		for _, a := range k.CurrentArbitrators {
+			if bytes.Equal(a, proposal.Sponsor) {
+				isArbiter = true
+			}
+		}
+	}
+	if !isArbiter {
+		return errors.New("current arbitrators verify error")
+	}
+
+	return nil
+}
+
 func VoteCheck(vote *payload.DPOSProposalVote) error {
 	if err := VoteSanityCheck(vote); err != nil {
 		return err
 	}
 
 	if err := VoteContextCheck(vote); err != nil {
+		log.Warn("[VoteContextCheck] error: ", err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func VoteCheckByHeight(vote *payload.DPOSProposalVote, height uint32) error {
+	if err := VoteSanityCheck(vote); err != nil {
+		return err
+	}
+
+	if err := VoteContextCheckByHeight(vote, height); err != nil {
 		log.Warn("[VoteContextCheck] error: ", err.Error())
 		return err
 	}
@@ -197,12 +241,31 @@ func VoteSanityCheck(vote *payload.DPOSProposalVote) error {
 
 	return nil
 }
+
 func VoteContextCheck(vote *payload.DPOSProposalVote) error {
 	var isArbiter bool
 	arbiters := DefaultLedger.Arbitrators.GetArbitrators()
 	for _, a := range arbiters {
 		if bytes.Equal(a, vote.Signer) {
 			isArbiter = true
+		}
+	}
+	if !isArbiter {
+		return errors.New("current arbitrators verify error")
+	}
+
+	return nil
+}
+
+func VoteContextCheckByHeight(vote *payload.DPOSProposalVote,
+	height uint32) error {
+	var isArbiter bool
+	keyFrames := DefaultLedger.Arbitrators.GetSnapshot(height)
+	for _, k := range keyFrames {
+		for _, a := range k.CurrentArbitrators {
+			if bytes.Equal(a, vote.Signer) {
+				isArbiter = true
+			}
 		}
 	}
 	if !isArbiter {
