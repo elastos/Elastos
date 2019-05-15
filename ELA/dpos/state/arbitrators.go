@@ -337,7 +337,7 @@ func (a *arbitrators) distributeWithNormalArbitrators(
 	reward common.Fixed64) (common.Fixed64, error) {
 	ownerHashes := a.currentOwnerProgramHashes
 	if len(ownerHashes) == 0 {
-		return 0, errors.New("not found arbiters when distributeDposReward")
+		return 0, errors.New("not found arbiters when distributeWithNormalArbitrators")
 	}
 
 	totalBlockConfirmReward := float64(reward) * 0.25
@@ -345,7 +345,7 @@ func (a *arbitrators) distributeWithNormalArbitrators(
 	individualBlockConfirmReward := common.Fixed64(
 		math.Floor(totalBlockConfirmReward / float64(len(ownerHashes))))
 	totalVotesInRound := a.totalVotesInRound
-	if totalVotesInRound == common.Fixed64(0) {
+	if len(a.chainParams.CRCArbiters) == len(a.currentArbitrators) {
 		a.arbitersRoundReward[a.chainParams.CRCAddress] = reward
 		return reward, nil
 	}
