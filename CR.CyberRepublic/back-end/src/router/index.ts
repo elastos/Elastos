@@ -4,6 +4,7 @@ import db from '../db'
 import {utilCrypto} from '../utility'
 import * as moment from 'moment'
 
+import release from './release'
 import test from './test'
 import user from './user'
 import team from './team'
@@ -77,6 +78,7 @@ if (getEnv() === 'dev') {
 router.use('/ping', ping)
 
 router.use('/user', user)
+router.use('/release', release)
 router.use('/team', team)
 router.use('/task', task)
 router.use('/taskCandidate', taskCandidate)
