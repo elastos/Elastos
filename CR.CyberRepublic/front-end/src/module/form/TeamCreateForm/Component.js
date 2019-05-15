@@ -25,7 +25,7 @@ import ReactQuill from 'react-quill'
 import { TOOLBAR_OPTIONS } from '@/config/constant'
 import {TEAM_TASK_DOMAIN, SKILLSET_TYPE} from '@/constant'
 import {upload_file} from '@/util'
-import sanitizeHtml from 'sanitize-html'
+import sanitizeHtml from '@/util/html'
 import './style.scss'
 
 const FormItem = Form.Item

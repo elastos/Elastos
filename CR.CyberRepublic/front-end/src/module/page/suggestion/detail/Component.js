@@ -15,7 +15,7 @@ import I18N from '@/I18N'
 import { LG_WIDTH } from '@/config/constant'
 import { CVOTE_STATUS, SUGGESTION_TAG_TYPE } from '@/constant'
 import { getSafeUrl } from '@/util/url'
-import sanitizeHtml from 'sanitize-html'
+import sanitizeHtml from '@/util/html'
 import { ReactComponent as CommentIcon } from '@/assets/images/icon-info.svg'
 import StandardPage from '../../StandardPage'
 import ActionsContainer from '../common/actions/Container'
@@ -222,10 +222,7 @@ export default class extends StandardPage {
     return (
       <Desc>
         <DescLabel>{I18N.get('suggestion.form.fields.fullDesc')}</DescLabel>
-        <DescBody className="ql-editor" dangerouslySetInnerHTML={{ __html: sanitizeHtml(detail.desc, {
-          allowedTags: sanitizeHtml.defaults.allowedTags.concat(['span']),
-          allowedAttributes: { span: ['class'] },
-        }) }} />
+        <DescBody className="ql-editor" dangerouslySetInnerHTML={{ __html: sanitizeHtml(detail.desc) }} />
       </Desc>
     )
   }

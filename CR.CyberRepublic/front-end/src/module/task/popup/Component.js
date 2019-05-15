@@ -17,7 +17,7 @@ import {TASK_CANDIDATE_STATUS, USER_AVATAR_DEFAULT} from '@/constant'
 import ProfilePopup from '@/module/profile/OverviewPopup/Container'
 import _ from 'lodash'
 import { getSafeUrl } from '@/util/url'
-import sanitizeHtml from 'sanitize-html'
+import sanitizeHtml from '@/util/html'
 
 import './style.scss'
 

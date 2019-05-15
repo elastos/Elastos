@@ -14,7 +14,7 @@ import Translation from '@/module/common/Translation/Container'
 import MediaQuery from 'react-responsive'
 import { USER_AVATAR_DEFAULT, LINKIFY_OPTION } from '@/constant'
 import linkifyStr from 'linkifyjs/string'
-import sanitizeHtml from 'sanitize-html'
+import sanitizeHtml from '@/util/html'
 import userUtil from '@/util/user'
 
 const TextArea = Input.TextArea

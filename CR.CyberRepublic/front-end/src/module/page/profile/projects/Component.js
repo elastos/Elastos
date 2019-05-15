@@ -3,7 +3,7 @@ import ProfilePage from '../../ProfilePage'
 import Footer from '@/module/layout/Footer/Container'
 import Navigator from '@/module/page/shared/HomeNavigator/Container'
 import _ from 'lodash'
-import sanitizeHtml from 'sanitize-html'
+import sanitizeHtml from '@/util/html'
 import '../tasks/style.scss'
 import '../../admin/admin.scss'
 import {

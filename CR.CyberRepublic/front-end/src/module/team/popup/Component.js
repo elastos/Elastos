@@ -14,7 +14,7 @@ import ProfilePopup from '@/module/profile/OverviewPopup/Container'
 import _ from 'lodash'
 import I18N from '@/I18N'
 import { getSafeUrl } from '@/util/url'
-import sanitizeHtml from 'sanitize-html'
+import sanitizeHtml from '@/util/html'
 
 import './style.scss'
 

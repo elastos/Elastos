@@ -10,7 +10,7 @@ import I18N from '@/I18N'
 import Comments from '@/module/common/comments/Container'
 import TeamApplication from '@/module/team/application/Container'
 import {TEAM_USER_STATUS} from '@/constant'
-import sanitizeHtml from 'sanitize-html'
+import sanitizeHtml from '@/util/html'
 
 class C extends BaseComponent {
   ord_states() {

@@ -3,7 +3,7 @@ import I18N from '@/I18N'
 import './style.scss'
 import { Col, Row, Card, Button, Breadcrumb, Icon, List, Spin, Avatar, Modal } from 'antd'
 import _ from 'lodash'
-import sanitizeHtml from 'sanitize-html'
+import sanitizeHtml from '@/util/html'
 import StandardPage from '../../StandardPage'
 
 export default class extends StandardPage {

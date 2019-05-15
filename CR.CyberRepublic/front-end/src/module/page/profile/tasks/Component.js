@@ -3,7 +3,7 @@ import Footer from '@/module/layout/Footer/Container'
 import Navigator from '@/module/page/shared/HomeNavigator/Container'
 import _ from 'lodash'
 import I18N from '@/I18N'
-import sanitizeHtml from 'sanitize-html'
+import sanitizeHtml from '@/util/html'
 
 import './style.scss'
 import '../../admin/admin.scss'

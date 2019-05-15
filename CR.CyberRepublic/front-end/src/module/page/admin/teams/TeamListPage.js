@@ -10,7 +10,7 @@ import moment from 'moment/moment'
 import config from '@/config'
 import _ from 'lodash'
 import {TEAM_TYPE} from '@/constant'
-import sanitizeHtml from 'sanitize-html'
+import sanitizeHtml from '@/util/html'
 
 const Component = class extends BaseAdmin {
 
