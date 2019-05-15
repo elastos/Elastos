@@ -1,6 +1,7 @@
 package dpos
 
 import (
+	"bytes"
 	"errors"
 	"sync"
 
@@ -104,8 +105,14 @@ func (n *network) Stop() error {
 func (n *network) UpdatePeers(peers []peer.PID) {
 	log.Info("[UpdatePeers] peers:", len(peers), " height: ",
 		blockchain.DefaultLedger.Blockchain.GetHeight())
-
-	n.p2pServer.ConnectPeers(peers)
+	for _, p := range peers {
+		if bytes.Equal(n.publicKey, p[:]) {
+			n.p2pServer.ConnectPeers(peers)
+			return
+		}
+	}
+	log.Info("[UpdatePeers] i am not in peers")
+	n.p2pServer.ConnectPeers(nil)
 }
 
 func (n *network) SendMessageToPeer(id peer.PID, msg elap2p.Message) error {
