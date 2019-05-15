@@ -8,9 +8,11 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	spv "github.com/elastos/Elastos.ELA.SPV/interface"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	ela "github.com/elastos/Elastos.ELA/core/types"
+	elapayload "github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
 type Config struct {
@@ -29,6 +31,7 @@ type Config struct {
 
 type Service struct {
 	spv.SPVService
+	chainParams *config.Params
 }
 
 func NewService(cfg *Config) (*Service, error) {
@@ -52,7 +55,10 @@ func NewService(cfg *Config) (*Service, error) {
 		return nil, err
 	}
 
-	return &Service{SPVService: service}, nil
+	return &Service{
+		SPVService:  service,
+		chainParams: cfg.ChainParams,
+	}, nil
 }
 
 func (s *Service) VerifyTransaction(tx *types.Transaction) error {
@@ -95,13 +101,42 @@ func (s *Service) VerifyTransaction(tx *types.Transaction) error {
 	return nil
 }
 
-func (s *Service) VerifyElaHeader(hash *common.Uint256) error {
-	blockChain := s.HeaderStore()
-	_, err := blockChain.Get(hash)
-	if err != nil {
-		return errors.New("[VerifyElaHeader] Verify ela header failed.")
+func (s *Service) verifyCRCArbiter(publicKey []byte) error {
+	for _, v := range s.chainParams.CRCArbiters {
+		CRC, err := common.HexStringToBytes(v)
+		if err != nil {
+			return err
+		}
+		if bytes.Equal(CRC, publicKey) {
+			return nil
+		}
 	}
-	return nil
+	return errors.New("CRC arbiter expected")
+}
+
+func (s *Service) CheckCRCArbiterSignature(sideChainPowTx *ela.Transaction) error {
+	payload, ok := sideChainPowTx.Payload.(*elapayload.SideChainPow)
+	if !ok {
+		return errors.New("[checkCRCArbiterSignature], invalid sideChainPow tx")
+	}
+	if len(sideChainPowTx.Programs[0].Code) != 35 {
+		return errors.New("[checkCRCArbiterSignature], invalid program")
+	}
+	publicKey := sideChainPowTx.Programs[0].Code[1:34]
+	if err := s.verifyCRCArbiter(publicKey); err != nil {
+		return err
+	}
+
+	buf := new(bytes.Buffer)
+	if err := payload.SerializeUnsigned(buf, elapayload.SideChainPowVersion); err != nil {
+		return err
+	}
+	pubKey, err := crypto.DecodePoint(publicKey)
+	if err != nil {
+		return err
+	}
+
+	return crypto.Verify(*pubKey, buf.Bytes(), payload.Signature)
 }
 
 type listener struct {

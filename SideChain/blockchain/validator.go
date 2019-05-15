@@ -109,9 +109,7 @@ func (v *Validator) checkHeader(params ...interface{}) (err error) {
 	header := block.Header
 
 	if header.Height >= v.chain.chainParams.CheckPowHeaderHeight {
-		// A block's main chain block header must contain in spv module
-		mainChainBlockHash := header.SideAuxPow.MainBlockHeader.Hash()
-		if err := v.spvService.VerifyElaHeader(&mainChainBlockHash); err != nil {
+		if err := v.spvService.CheckCRCArbiterSignature(&header.SideAuxPow.SideAuxBlockTx); err != nil {
 			return err
 		}
 	}
