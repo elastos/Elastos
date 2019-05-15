@@ -61,7 +61,7 @@ namespace Elastos {
 
             jclass clazz = env->GetObjectClass(_obj);
             jmethodID methodId = env->GetMethodID(clazz, "OnBlockSyncProgress", "(IIJ)V");
-            env->CallVoidMethod(_obj, methodId, currentBlockHeight, estimatedHeight, lastBlockTime);
+            env->CallVoidMethod(_obj, methodId, currentBlockHeight, estimatedHeight, (jlong)lastBlockTime);
 
 //            Detach();
         }
