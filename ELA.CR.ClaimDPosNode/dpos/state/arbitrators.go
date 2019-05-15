@@ -356,7 +356,7 @@ func (a *arbitrators) distributeWithNormalArbitrators(
 	individualBlockConfirmReward := common.Fixed64(
 		math.Floor(totalBlockConfirmReward / float64(len(ownerHashes))))
 	totalVotesInRound := a.totalVotesInRound
-	if len(a.chainParams.CRCArbiters) == len(a.currentArbitrators) {
+	if len(a.chainParams.CRCArbiters) == len(a.CurrentArbitrators) {
 		a.arbitersRoundReward[a.chainParams.CRCAddress] = reward
 		return reward, nil
 	}
