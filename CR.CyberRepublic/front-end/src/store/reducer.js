@@ -12,6 +12,7 @@ import council from './redux/council'
 import language from './redux/language'
 import permission from './redux/permission'
 import permissionRole from './redux/permissionRole'
+import release from './redux/release'
 
 const default_state = {
   init: false,
@@ -37,4 +38,5 @@ export default combineReducers({
   language: language.getReducer(),
   permission: permission.getReducer(),
   permissionRole: permissionRole.getReducer(),
+  release: release.getReducer(),
 })
