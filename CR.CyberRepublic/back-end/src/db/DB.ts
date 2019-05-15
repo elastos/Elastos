@@ -12,6 +12,7 @@ import Suggestion from './Suggestion'
 import CVote from './CVote'
 import Permission from './Permission'
 import PermissionRole from './Permission_Role'
+import Release from './Release'
 
 import Log from './Log'
 
@@ -103,6 +104,7 @@ export default class {
         this.db.CVote = new CVote(db)
         this.db.Permission = new Permission(db)
         this.db.Permission_Role = new PermissionRole(db)
+        this.db.Release = new Release(db)
     }
 
     public getModel(name: string){

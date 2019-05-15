@@ -1,11 +1,13 @@
 import { TASK_STATUS, TASK_TYPE, CVOTE_STATUS } from '@/constant'
 import council from './en/council'
 import home from './en/home'
+import release from './en/release'
 import getting_started from './en/getting_started'
 
 const en = {
   council,
   home,
+  release,
   getting_started,
   // Header
   '0000': 'ALPHA',
@@ -37,6 +39,7 @@ const en = {
     constitution: 'Constitution',
     suggestion: 'Suggestions',
     proposal: 'Proposals',
+    whatsNew: 'What\'s New',
     resources: {
       title: 'Resources',
       submenu: {

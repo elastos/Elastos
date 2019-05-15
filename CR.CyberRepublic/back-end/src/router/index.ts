@@ -4,24 +4,24 @@ import db from '../db'
 import {utilCrypto} from '../utility'
 import * as moment from 'moment'
 
+import community from './community'
+import cvote from './cvote'
+import google from './google'
+import ping from './ping'
+import permission from './permission'
+import permissionRole from './permission_role'
+import release from './release'
+import sso from './sso'
+import submission from './submission'
+import suggestion from './suggestion'
 import test from './test'
-import user from './user'
 import team from './team'
 import task from './task'
 import taskCandidate from './task_candidate'
 import teamCandidate from './team_candidate'
-import community from './community'
-import submission from './submission'
-import suggestion from './suggestion'
-import cvote from './cvote'
-
 import upload from './upload'
+import user from './user'
 
-import ping from './ping'
-import sso from './sso'
-import permission from './permission'
-import permissionRole from './permission_role'
-import google from './google'
 
 /**
  * Every request intercepts the token and sets the session user from the userId again
@@ -76,20 +76,21 @@ if (getEnv() === 'dev') {
 
 router.use('/ping', ping)
 
-router.use('/user', user)
+router.use('/community', community)
+router.use('/cvote', cvote)
+router.use('/google', google)
+router.use('/permission', permission)
+router.use('/permissionRole', permissionRole)
+router.use('/release', release)
 router.use('/team', team)
 router.use('/task', task)
 router.use('/taskCandidate', taskCandidate)
 router.use('/teamCandidate', teamCandidate)
-router.use('/community', community)
-router.use('/upload', upload)
 router.use('/submission', submission)
 router.use('/suggestion', suggestion)
-router.use('/cvote', cvote)
 router.use('/sso', sso)
-router.use('/permission', permission)
-router.use('/permissionRole', permissionRole)
-router.use('/google', google)
+router.use('/user', user)
+router.use('/upload', upload)
 
 router.use((req, res) => {
     return res.sendStatus(403)
