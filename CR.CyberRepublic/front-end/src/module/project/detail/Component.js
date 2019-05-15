@@ -29,7 +29,7 @@ import ProjectApplicationStart from '@/module/page/project_detail/application/st
 import ProfilePopup from '@/module/profile/OverviewPopup/Container'
 import _ from 'lodash'
 import { getSafeUrl } from '@/util/url'
-import sanitizeHtml from 'sanitize-html'
+import sanitizeHtml from '@/util/html'
 
 import './style.scss'
 

@@ -13,7 +13,7 @@ import { USER_AVATAR_DEFAULT, LINKIFY_OPTION } from '@/constant'
 import config from '@/config'
 import MediaQuery from 'react-responsive'
 import linkifyStr from 'linkifyjs/string'
-import sanitizeHtml from 'sanitize-html'
+import sanitizeHtml from '@/util/html'
 
 import './style.scss'
 

@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import sanitizeHtml from 'sanitize-html'
+import sanitizeHtml from '@/util/html'
 
 const jsdiff = require('diff')
 const showdown = require('showdown')

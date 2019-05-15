@@ -9,7 +9,7 @@ import {
 } from 'antd'
 import I18N from '@/I18N'
 import { getSafeUrl } from '@/util/url'
-import sanitizeHtml from 'sanitize-html'
+import sanitizeHtml from '@/util/html'
 import {
   TASK_CATEGORY, TASK_TYPE, TASK_STATUS, TASK_CANDIDATE_STATUS,
   USER_ROLE, USER_AVATAR_DEFAULT, TEAM_TYPE, LINKIFY_OPTION,

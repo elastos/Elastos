@@ -19,7 +19,7 @@ import I18N from '@/I18N'
 import moment from 'moment'
 import ProfilePopup from '@/module/profile/OverviewPopup/Container'
 import URI from 'urijs'
-import sanitizeHtml from 'sanitize-html'
+import sanitizeHtml from '@/util/html'
 
 const CheckboxGroup = Checkbox.Group
 const RadioGroup = Radio.Group
