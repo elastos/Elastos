@@ -11,7 +11,12 @@ import (
 
 func NewArbitratorsMock(arbitersByte [][]byte, changeCount, majorityCount int) *ArbitratorsMock {
 	return &ArbitratorsMock{
-		CurrentArbitrators:          arbitersByte,
+		CurrentArbitrators: arbitersByte,
+		Snapshot: []*KeyFrame{
+			{
+				CurrentArbitrators: arbitersByte,
+			},
+		},
 		CurrentCandidates:           make([][]byte, 0),
 		CRCArbitrators:              make([][]byte, 0),
 		NextArbitrators:             make([][]byte, 0),
@@ -48,6 +53,11 @@ type ArbitratorsMock struct {
 	FinalRoundChange            common.Fixed64
 	InactiveMode                bool
 	ActiveProducer              [][]byte
+	Snapshot                    []*KeyFrame
+}
+
+func (a *ArbitratorsMock) GetSnapshot(height uint32) []*KeyFrame {
+	return a.Snapshot
 }
 
 func (a *ArbitratorsMock) IsActiveProducer(pk []byte) bool {
