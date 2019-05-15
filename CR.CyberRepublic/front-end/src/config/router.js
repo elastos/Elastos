@@ -79,6 +79,9 @@ import CouncilDetailPage from '../module/page/council/detail/Container'
 
 import CVoteDetailPage from '@/module/page/CVote/detail/Container'
 
+// what's new
+import ReleaseList from '@/module/page/release/list/Container'
+
 // suggestion
 import SuggestionListPage from '@/module/page/suggestion/list/Container'
 import SuggestionDetailPage from '@/module/page/suggestion/detail/Container'
@@ -234,6 +237,15 @@ export default [
   {
     path: '/terms',
     page: TermsPage,
+  },
+  /*
+     ********************************************************************************
+     * What's new page
+     ********************************************************************************
+     */
+  {
+    path: '/what-is-new',
+    page: ReleaseList,
   },
   /*
      ********************************************************************************
