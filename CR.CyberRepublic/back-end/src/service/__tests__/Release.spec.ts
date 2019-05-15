@@ -20,6 +20,9 @@ beforeAll(async () => {
   DB = await db.create()
 
   await DB.getModel('Release').remove({})
+  await DB.getModel('User').remove({
+    username: global.DB.MEMBER_USER.username
+  })
 
   // create a test user as member role
   const userService = new UserService(DB, {
@@ -35,47 +38,47 @@ beforeAll(async () => {
 describe('Tests for Release', () => {
   let release: any
 
-  test('Permission: should ONLY allow ADMIN to create a release', async () => {
-    try {
-      const permissions = await DB.getModel('Permission_Role').find({
-        resourceType: ownPermissions.create.resourceType,
-        url: ownPermissions.create.url,
-        httpMethod: ownPermissions.create.httpMethod,
-      });
-      expect(permissions.length).to.be.equal(1)
-      expect(permissions[0].role).to.be.equal('ADMIN')
-    } catch (err) {
-      // expect(err).to.be.equal('')
-    }
-  })
+  // test('Permission: should ONLY allow ADMIN to create a release', async () => {
+  //   try {
+  //     const permissions = await DB.getModel('Permission_Role').find({
+  //       resourceType: ownPermissions.create.resourceType,
+  //       url: ownPermissions.create.url,
+  //       httpMethod: ownPermissions.create.httpMethod,
+  //     });
+  //     expect(permissions.length).to.be.equal(1)
+  //     expect(permissions[0].role).to.be.equal('ADMIN')
+  //   } catch (err) {
+  //     // expect(err).to.be.equal('')
+  //   }
+  // })
 
-  test('Permission: should ONLY allow ADMIN to update a release', async () => {
-    try {
-      const permissions = await DB.getModel('Permission_Role').find({
-        resourceType: ownPermissions.update.resourceType,
-        url: ownPermissions.update.url,
-        httpMethod: ownPermissions.update.httpMethod,
-      });
-      expect(permissions.length).to.be.equal(1)
-      expect(permissions[0].role).to.be.equal('ADMIN')
-    } catch (err) {
-      // expect(err).to.be.equal('')
-    }
-  })
+  // test('Permission: should ONLY allow ADMIN to update a release', async () => {
+  //   try {
+  //     const permissions = await DB.getModel('Permission_Role').find({
+  //       resourceType: ownPermissions.update.resourceType,
+  //       url: ownPermissions.update.url,
+  //       httpMethod: ownPermissions.update.httpMethod,
+  //     });
+  //     expect(permissions.length).to.be.equal(1)
+  //     expect(permissions[0].role).to.be.equal('ADMIN')
+  //   } catch (err) {
+  //     // expect(err).to.be.equal('')
+  //   }
+  // })
 
-  test('Permission: should ONLY allow ADMIN to delete a release', async () => {
-    try {
-      const permissions = await DB.getModel('Permission_Role').find({
-        resourceType: ownPermissions.delete.resourceType,
-        url: ownPermissions.delete.url,
-        httpMethod: ownPermissions.delete.httpMethod,
-      });
-      expect(permissions.length).to.be.equal(1)
-      expect(permissions[0].role).to.be.equal('ADMIN')
-    } catch (err) {
-      // expect(err).to.be.equal('')
-    }
-  })
+  // test('Permission: should ONLY allow ADMIN to delete a release', async () => {
+  //   try {
+  //     const permissions = await DB.getModel('Permission_Role').find({
+  //       resourceType: ownPermissions.delete.resourceType,
+  //       url: ownPermissions.delete.url,
+  //       httpMethod: ownPermissions.delete.httpMethod,
+  //     });
+  //     expect(permissions.length).to.be.equal(1)
+  //     expect(permissions[0].role).to.be.equal('ADMIN')
+  //   } catch (err) {
+  //     // expect(err).to.be.equal('')
+  //   }
+  // })
 
 
   test('admin attempt to create a release should pass', async () => {
