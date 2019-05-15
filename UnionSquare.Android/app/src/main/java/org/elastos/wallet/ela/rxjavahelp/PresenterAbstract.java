@@ -90,6 +90,9 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
 
             @Override
             public void onError(Throwable e) {
+                if (isShowDialog) {
+                    dismissProgessDialog();
+                }
                 Log.e(TAG, "onError=" + e.getMessage());
                 Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
@@ -139,6 +142,9 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
             public void onError(Throwable e) {
                 Log.e(TAG, "onError=" + e.getMessage());
                 Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+                if (isShowDialog) {
+                    dismissProgessDialog();
+                }
             }
 
             @Override

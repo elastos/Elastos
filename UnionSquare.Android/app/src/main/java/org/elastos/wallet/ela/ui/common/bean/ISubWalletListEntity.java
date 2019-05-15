@@ -1,6 +1,7 @@
 package org.elastos.wallet.ela.ui.common.bean;
 
-import org.elastos.wallet.core.SubWallet;
+
+import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 
 import java.util.List;

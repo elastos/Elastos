@@ -4,7 +4,6 @@ package org.elastos.wallet.ela.ui.Assets.fragment;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -19,7 +18,7 @@ import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
-import org.elastos.wallet.ela.db.RealmUtil;
+import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.adapter.TransferRecordRecAdapetr;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
@@ -72,6 +71,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
     private int startCount = 0;
     private final int pageCount = 20;
     private CommonGetTransactionPresenter presenter;
+    private SubWallet subWallet;
 
     @Override
     protected int getLayoutId() {
@@ -84,6 +84,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
     protected void setExtraData(Bundle data) {
         chainId = data.getString("ChainId", "ELA");
         wallet = data.getParcelable("wallet");
+        subWallet = data.getParcelable("subWallet");
         tvTitle.setText(chainId);
     }
 
@@ -98,8 +99,11 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
         srl.setOnLoadMoreListener(this);
         new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), chainId, 2, this);
         presenter = new CommonGetTransactionPresenter();
-        String synctime = new RealmUtil().querySubWalletSyncTime(wallet.getWalletId(), chainId);
-        tvSynctime.setText(getString(R.string.lastsynctime) + synctime);
+        //String synctime = new RealmUtil().querySubWalletSyncTime(wallet.getWalletId(), chainId);
+        if (subWallet!=null){
+            tvSynctime.setText(getString(R.string.lastsynctime) + subWallet.getSyncTime());
+        }
+
         registReceiver();
     }
 
@@ -218,14 +222,16 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
     public void Event(BusEvent result) {
         int integer = result.getCode();
         if (integer == RxEnum.BALANCECHANGE.ordinal()) {
-            String balance = (String) result.getObj();
-            if (chainId.equals(result.getName())) {
-                tvBalance.setText(NumberiUtil.maxNumberFormat(Arith.div(balance, MyWallet.RATE_S), 12) + chainId);
+            SubWallet subWallet = (SubWallet) result.getObj();
+            if (subWallet != null && subWallet.getBelongId().equals(wallet.getWalletId()) &&
+                    subWallet.getChainId().equals(chainId)) {
+                tvBalance.setText(NumberiUtil.maxNumberFormat(Arith.div(subWallet.getBalance(), MyWallet.RATE_S), 12) + chainId);
             }
         }
         if (integer == RxEnum.UPDATAPROGRESS.ordinal()) {
-            org.elastos.wallet.ela.db.table.SubWallet subWallet = (org.elastos.wallet.ela.db.table.SubWallet) result.getObj();
-            if (subWallet != null) {
+            SubWallet subWallet = (SubWallet) result.getObj();
+            if (subWallet != null && subWallet.getBelongId().equals(wallet.getWalletId()) &&
+                    subWallet.getChainId().equals(chainId)) {
                 tvSynctime.setText(getString(R.string.lastsynctime) + subWallet.getSyncTime());
             }
         }

@@ -257,7 +257,7 @@
     <string name='error_20002'>(ERR_20002)Invalid password</string>
     <string name='error_20003'>(ERR_20003)Wrong password</string>
     <string name='error_20004'>(ERR_20004)ID not found</string>
-    <string name='error_20005'>(ERR_20005)SPV create master wallet error</string>
+    <string name='error_20005'>(ERR_20005)Master wallet already exist</string>
     <string name='error_20006'>(ERR_20006)SPV create sub wallet error</string>
     <string name='error_20007'>(ERR_20007)Parse json array error</string>
     <string name='error_20008'>(ERR_20008)Invalid mnemonic</string>

@@ -49,7 +49,7 @@ public class CustomMigration implements RealmMigration {
         // oldVersion++;
     }
 
-   /* @Override
+    @Override
     public int hashCode() {
         return 37;
     }
@@ -57,6 +57,6 @@ public class CustomMigration implements RealmMigration {
     @Override
     public boolean equals(Object o) {
         return (o instanceof CustomMigration);
-    }*/
+    }
 
 }

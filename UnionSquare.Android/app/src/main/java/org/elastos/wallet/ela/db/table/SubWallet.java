@@ -14,13 +14,13 @@ import io.realm.annotations.Required;
 public class SubWallet extends RealmObject implements Parcelable {
     //主键必须有而且必须设置 否则默认"" 这样再次插入新的就会覆盖
     @PrimaryKey
-    private String wallletId;//字钱包id
+    private String wallletId;//主键 belongid+chainId
     @Required
     private String belongId;//所属钱包的标识
     private String walletName;//
     private String walletType;//钱包type
     @Required
-    private String chainId;//钱包id
+    private String chainId;//子钱包id
     private String balance;
     private String syncTime;
     private int progress;
@@ -110,7 +110,7 @@ public class SubWallet extends RealmObject implements Parcelable {
         filed3 = in.readString();
     }
 
-    public String getWallletId() {
+    private String getWallletId() {
         return wallletId;
     }
 
@@ -196,5 +196,20 @@ public class SubWallet extends RealmObject implements Parcelable {
 
     public void setFiled3(String filed3) {
         this.filed3 = filed3;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof SubWallet)) {
+            return false;
+        }
+
+        if (this == obj) {
+            return true;
+        }
+        SubWallet e = (SubWallet) obj;
+        return e.getBelongId().equals(belongId) && e.getChainId().equals(chainId);
+
+
     }
 }

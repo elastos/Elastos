@@ -14,3 +14,5 @@ local.properties
 .Trashes
 ehthumbs.db
 Thumbs.db
+*.jks
+CoinConfig_TestNet.json

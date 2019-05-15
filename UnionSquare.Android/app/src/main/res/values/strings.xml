@@ -260,7 +260,7 @@
     <string name='error_20002'>(ERR_20002)无效密码</string>
     <string name='error_20003'>(ERR_20003)密码错误</string>
     <string name='error_20004'>(ERR_20004)无效ID</string>
-    <string name='error_20005'>(ERR_20005)SPV创建主钱包错误</string>
+    <string name='error_20005'>(ERR_20005)钱包已存在</string>
     <string name='error_20006'>(ERR_20006)SPV创建子钱包错误</string>
     <string name='error_20007'>(ERR_20007)解析JSON数组错误</string>
     <string name='error_20008'>(ERR_20008)无效助记词</string>

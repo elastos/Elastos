@@ -162,8 +162,8 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
     public void onDestoryWallet(String data) {
         dialog.dismiss();
         RealmUtil realmUtil = new RealmUtil();
-        realmUtil.deleteWallet(wallet.getWalletId());
-       // realmUtil.deleteSubWallet(wallet.getWalletId());
+        realmUtil.deleteWallet(wallet.getWalletId());//删除钱包和其子钱包
+        // realmUtil.deleteSubWallet(wallet.getWalletId());
         List<Wallet> wallets = realmUtil.queryUserAllWallet();
         if (wallets == null || wallets.size() == 0) {
             //没有其他钱包了

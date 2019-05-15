@@ -25,7 +25,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class RetrofitManager {
-    private static long CONNECT_TIMEOUT = 60L;
+    private static long CONNECT_TIMEOUT = 25L;
     private static long READ_TIMEOUT = 10L;
     private static long WRITE_TIMEOUT = 10L;
     //设缓存有效期为1天

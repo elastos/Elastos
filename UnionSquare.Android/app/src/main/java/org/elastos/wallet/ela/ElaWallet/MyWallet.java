@@ -278,12 +278,20 @@ public class MyWallet {
                 return errorProcess(errCodeInvalidMasterWallet + "", "Get->getAllSubWallets " + formatWalletName(masterWalletID));
 
             }
-
             ArrayList<SubWallet> subWalletList = masterWallet.GetAllSubWallets();
+            ArrayList<org.elastos.wallet.ela.db.table.SubWallet> newSubWalletList =new ArrayList<>();
+            for (SubWallet subWallet : subWalletList) {
+                org.elastos.wallet.ela.db.table.SubWallet newSubWallet = new org.elastos.wallet.ela.db.table.SubWallet();
+                newSubWallet.setBalance(subWallet.GetBalance(SubWallet.BalanceType.Total) + "");
+                newSubWallet.setBelongId(masterWalletID);
+                newSubWallet.setChainId(subWallet.GetChainID());
+                newSubWalletList.add(newSubWallet);
+            }
+
 
             Log.d(TAG, "result: count = " + subWalletList.size());
 
-            return new ISubWalletListEntity(SUCESSCODE, subWalletList);
+            return new ISubWalletListEntity(SUCESSCODE, newSubWalletList);
         } catch (WalletException e) {
             return exceptionProcess(e, "Get " + masterWalletID + " all subwallets");
         }
@@ -354,7 +362,7 @@ public class MyWallet {
             }
             createDIDManager(masterWallet);
 
-            Log.d(TAG,  "result: " + masterWallet.GetBasicInfo());
+            Log.d(TAG, "result: " + masterWallet.GetBasicInfo());
             basicInfo = masterWallet.GetBasicInfo();
             //  successProcess(masterWallet.GetBasicInfo());
             return new CommmonStringEntity(SUCESSCODE, basicInfo);
@@ -574,7 +582,7 @@ public class MyWallet {
             }
 
             Log.d(TAG, "result: " + subWallet.GetBalance(BalanceType));
-            return new CommmonObjEntity(SUCESSCODE, new BalanceEntity(chainID, subWallet.GetBalance(BalanceType) + ""));
+            return new CommmonObjEntity(SUCESSCODE, new BalanceEntity(chainID, subWallet.GetBalance(BalanceType) + "", masterWalletID));
 
         } catch (WalletException e) {
             return exceptionProcess(e, "Get " + formatWalletName(masterWalletID, chainID) + " balance");
@@ -851,7 +859,7 @@ public class MyWallet {
     // args[8]: boolean useVotedUTXO
     public BaseEntity createDepositTransaction(String masterWalletID, String chainID,
                                                String fromAddress, String lockedAddress,
-                                               long amount , String sideChainAddress, String memo,
+                                               long amount, String sideChainAddress, String memo,
                                                String remark, boolean useVotedUTXO) {
 
         Log.d(TAG, "<<< createDepositTransaction >>>");

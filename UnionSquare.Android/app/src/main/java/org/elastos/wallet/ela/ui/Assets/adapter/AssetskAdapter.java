@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
+import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.NumberiUtil;
@@ -23,6 +24,11 @@ import butterknife.ButterKnife;
 
 public class AssetskAdapter extends RecyclerView.Adapter<AssetskAdapter.ViewHolder> {
     private Context context;
+
+    public void setData(List<SubWallet> data) {
+        this.data = data;
+    }
+
     private List<org.elastos.wallet.ela.db.table.SubWallet> data;
     private CommonRvListener1 commonRvListener;
 
