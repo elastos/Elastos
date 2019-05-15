@@ -100,10 +100,10 @@ if(WIN32)
 endif()
 
 set(LIBS
+    hive
     crystal
     toxcore
-    flatccrt
-    hive)
+    flatccrt)
 
 if(WIN32)
     set(LIBS
