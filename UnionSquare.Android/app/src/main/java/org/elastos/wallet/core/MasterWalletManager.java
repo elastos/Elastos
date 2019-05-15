@@ -116,8 +116,10 @@ public class MasterWalletManager {
             Log.e(TAG, "Import master wallet with key store fail");
             return null;
         }
+        MasterWallet masterWallet = new MasterWallet(masterProxy);
+        mMasterWallets.add(masterWallet);
 
-        return new MasterWallet(masterProxy);
+        return masterWallet;
     }
 
     public MasterWallet ImportWalletWithMnemonic(
