@@ -79,6 +79,6 @@ type Params struct {
 	MinCrossChainTxFee int64
 
 	// CheckPowHeaderHeight defines the height where stating check if pow is coming
-	// from main chain
+	// from main chain.
 	CheckPowHeaderHeight uint32
 }
