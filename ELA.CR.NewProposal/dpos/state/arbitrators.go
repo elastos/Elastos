@@ -34,6 +34,9 @@ const (
 	// change when more than 1/3 arbiters don't sign cause to confirm fail
 	MaxNormalInactiveChangesCount = 3
 
+	// MaxSnapshotLength defines the max length the snapshot map should take
+	MaxSnapshotLength = 36
+
 	none         = ChangeType(0x00)
 	updateNext   = ChangeType(0x01)
 	normalChange = ChangeType(0x02)
@@ -43,19 +46,23 @@ var (
 	ErrInsufficientProducer = errors.New("producers count less than min arbitrators count")
 )
 
+type KeyFrame struct {
+	CurrentArbitrators [][]byte
+}
+
 type arbitrators struct {
 	*State
 	*degradation
+	*KeyFrame
 	chainParams      *config.Params
 	bestHeight       func() uint32
 	bestBlock        func() (*types.Block, error)
 	getBlockByHeight func(uint32) (*types.Block, error)
 
-	mtx                sync.Mutex
-	started            bool
-	dutyIndex          int
-	currentArbitrators [][]byte
-	currentCandidates  [][]byte
+	mtx               sync.Mutex
+	started           bool
+	dutyIndex         int
+	currentCandidates [][]byte
 
 	currentOwnerProgramHashes       []*common.Uint168
 	candidateOwnerProgramHashes     []*common.Uint168
@@ -74,6 +81,9 @@ type arbitrators struct {
 	clearingHeight              uint32
 	arbitersRoundReward         map[common.Uint168]common.Fixed64
 	illegalBlocksPayloadHashes  map[common.Uint256]interface{}
+
+	snapshots        map[uint32][]*KeyFrame
+	snapshotKeysDesc []uint32
 }
 
 func (a *arbitrators) Start() {
@@ -150,9 +160,9 @@ func (a *arbitrators) RollbackTo(height uint32) error {
 func (a *arbitrators) GetDutyIndexByHeight(height uint32) (index int) {
 	a.mtx.Lock()
 	if height >= a.chainParams.CRCOnlyDPOSHeight-1 {
-		index = a.dutyIndex % len(a.currentArbitrators)
+		index = a.dutyIndex % len(a.CurrentArbitrators)
 	} else {
-		index = int(height) % len(a.currentArbitrators)
+		index = int(height) % len(a.CurrentArbitrators)
 	}
 	a.mtx.Unlock()
 	return index
@@ -180,7 +190,6 @@ func (a *arbitrators) GetFinalRoundChange() common.Fixed64 {
 	a.mtx.Unlock()
 
 	return result
-
 }
 
 func (a *arbitrators) ForceChange(height uint32) error {
@@ -206,6 +215,7 @@ func (a *arbitrators) ForceChange(height uint32) error {
 		return err
 	}
 
+	a.snapshot(height)
 	a.mtx.Unlock()
 
 	if a.started {
@@ -239,6 +249,7 @@ func (a *arbitrators) NormalChange(height uint32) error {
 		return err
 	}
 
+	a.snapshot(height)
 	return nil
 }
 
@@ -411,7 +422,7 @@ func (a *arbitrators) GetNeedConnectArbiters() []peer.PID {
 		pids[k] = pid
 	}
 
-	for _, v := range a.currentArbitrators {
+	for _, v := range a.CurrentArbitrators {
 		key := common.BytesToHexString(v)
 		var pid peer.PID
 		copy(pid[:], v)
@@ -446,7 +457,7 @@ func (a *arbitrators) IsArbitrator(pk []byte) bool {
 
 func (a *arbitrators) GetArbitrators() [][]byte {
 	a.mtx.Lock()
-	result := a.currentArbitrators
+	result := a.CurrentArbitrators
 	a.mtx.Unlock()
 
 	return result
@@ -563,7 +574,7 @@ func (a *arbitrators) GetCrossChainArbitersMajorityCount() int {
 func (a *arbitrators) GetNextOnDutyArbitratorV(height, offset uint32) []byte {
 	// main version is >= H1
 	if height >= a.State.chainParams.CRCOnlyDPOSHeight {
-		arbitrators := a.currentArbitrators
+		arbitrators := a.CurrentArbitrators
 		if len(arbitrators) == 0 {
 			return nil
 		}
@@ -579,14 +590,14 @@ func (a *arbitrators) GetNextOnDutyArbitratorV(height, offset uint32) []byte {
 
 func (a *arbitrators) GetArbitersCount() int {
 	a.mtx.Lock()
-	result := len(a.currentArbitrators)
+	result := len(a.CurrentArbitrators)
 	a.mtx.Unlock()
 	return result
 }
 
 func (a *arbitrators) GetArbitersMajorityCount() int {
 	a.mtx.Lock()
-	minSignCount := int(float64(len(a.currentArbitrators)) *
+	minSignCount := int(float64(len(a.CurrentArbitrators)) *
 		MajoritySignRatioNumerator / MajoritySignRatioDenominator)
 	a.mtx.Unlock()
 	return minSignCount
@@ -598,7 +609,7 @@ func (a *arbitrators) HasArbitersMajorityCount(num int) bool {
 
 func (a *arbitrators) HasArbitersMinorityCount(num int) bool {
 	a.mtx.Lock()
-	count := len(a.currentArbitrators)
+	count := len(a.CurrentArbitrators)
 	a.mtx.Unlock()
 	return num >= count-a.GetArbitersMajorityCount()
 }
@@ -624,7 +635,7 @@ func (a *arbitrators) getChangeType(height uint32) (ChangeType, uint32) {
 
 	// main version >= H2
 	if height > a.State.chainParams.PublicDPOSHeight &&
-		a.dutyIndex == len(a.currentArbitrators)-1 {
+		a.dutyIndex == len(a.CurrentArbitrators)-1 {
 		return normalChange, height
 	}
 
@@ -632,13 +643,13 @@ func (a *arbitrators) getChangeType(height uint32) (ChangeType, uint32) {
 }
 
 func (a *arbitrators) changeCurrentArbitrators() error {
-	a.currentArbitrators = a.nextArbitrators
+	a.CurrentArbitrators = a.nextArbitrators
 	a.currentCandidates = a.nextCandidates
 	a.currentOwnerProgramHashes = a.nextOwnerProgramHashes
 	a.candidateOwnerProgramHashes = a.nextCandidateOwnerProgramHashes
 
-	sort.Slice(a.currentArbitrators, func(i, j int) bool {
-		return bytes.Compare(a.currentArbitrators[i], a.currentArbitrators[j]) < 0
+	sort.Slice(a.CurrentArbitrators, func(i, j int) bool {
+		return bytes.Compare(a.CurrentArbitrators[i], a.CurrentArbitrators[j]) < 0
 	})
 
 	a.dutyIndex = 0
@@ -851,11 +862,11 @@ func (a *arbitrators) DumpInfo(height uint32) {
 
 	var crInfo string
 	crParams := make([]interface{}, 0)
-	if len(a.currentArbitrators) != 0 {
+	if len(a.CurrentArbitrators) != 0 {
 		crInfo, crParams = getArbitersInfoWithOnduty("CURRENT ARBITERS",
-			a.currentArbitrators, a.dutyIndex, a.GetOnDutyArbitrator())
+			a.CurrentArbitrators, a.dutyIndex, a.GetOnDutyArbitrator())
 	} else {
-		crInfo, crParams = getArbitersInfoWithoutOnduty("CURRENT ARBITERS", a.currentArbitrators)
+		crInfo, crParams = getArbitersInfoWithoutOnduty("CURRENT ARBITERS", a.CurrentArbitrators)
 	}
 	nrInfo, nrParams := getArbitersInfoWithoutOnduty("NEXT ARBITERS", a.nextArbitrators)
 	ccInfo, ccParams := getArbitersInfoWithoutOnduty("CURRENT CANDIDATES", a.currentCandidates)
@@ -869,8 +880,54 @@ func (a *arbitrators) getBlockDPOSReward(block *types.Block) common.Fixed64 {
 		totalTxFx += tx.Fee
 	}
 
-	return common.Fixed64(math.Ceil(float64(totalTxFx+
+	return common.Fixed64(math.Ceil(float64(totalTxFx +
 		a.chainParams.RewardPerBlock) * 0.35))
+}
+
+func (a *arbitrators) snapshot(height uint32) {
+	var frames []*KeyFrame
+	if v, ok := a.snapshots[height]; ok {
+		frames = v
+	} else {
+		// remove the oldest keys if snapshot capacity is over
+		if len(a.snapshotKeysDesc) >= MaxSnapshotLength {
+			for i := MaxSnapshotLength - 1; i < len(a.snapshotKeysDesc); i++ {
+				delete(a.snapshots, a.snapshotKeysDesc[i])
+			}
+			a.snapshotKeysDesc = a.snapshotKeysDesc[0 : MaxSnapshotLength-1]
+		}
+
+		a.snapshotKeysDesc = append(a.snapshotKeysDesc, height)
+		sort.Slice(a.snapshotKeysDesc, func(i, j int) bool {
+			return a.snapshotKeysDesc[i] > a.snapshotKeysDesc[j]
+		})
+	}
+	clonedFrame := *a.KeyFrame
+	frames = append(frames, &clonedFrame)
+	a.snapshots[height] = frames
+}
+
+func (a *arbitrators) GetSnapshot(height uint32) (result []*KeyFrame) {
+	a.mtx.Lock()
+	if height >= a.bestHeight() {
+		// if height is larger than first snapshot then return current key frame
+		result = append(result, a.KeyFrame)
+	} else if height >= a.snapshotKeysDesc[len(a.snapshotKeysDesc)-1] {
+		// if height is in range of snapshotKeysDesc, get the key with the same
+		// election as height
+		key := a.snapshotKeysDesc[0]
+		for i := 1; i < len(a.snapshotKeysDesc); i++ {
+			if height >= a.snapshotKeysDesc[i] &&
+				height < a.snapshotKeysDesc[i-1] {
+				key = a.snapshotKeysDesc[i]
+			}
+		}
+
+		result = a.snapshots[key]
+	}
+	a.mtx.Unlock()
+
+	return result
 }
 
 func getArbitersInfoWithOnduty(title string, arbiters [][]byte,
@@ -955,7 +1012,6 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
 		bestHeight:                      bestHeight,
 		bestBlock:                       bestBlock,
 		getBlockByHeight:                getBlockByHeight,
-		currentArbitrators:              originArbiters,
 		currentOwnerProgramHashes:       originArbitersProgramHashes,
 		nextArbitrators:                 originArbiters,
 		nextCandidates:                  make([][]byte, 0),
@@ -970,6 +1026,11 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
 		illegalBlocksPayloadHashes:      make(map[common.Uint256]interface{}),
 		totalVotesInRound:               0,
 		ownerVotesInRound:               make(map[common.Uint168]common.Fixed64),
+		snapshots:                       make(map[uint32][]*KeyFrame),
+		snapshotKeysDesc:                make([]uint32, 0),
+		KeyFrame: &KeyFrame{
+			CurrentArbitrators: originArbiters,
+		},
 		degradation: &degradation{
 			inactiveTxs:       make(map[common.Uint256]interface{}),
 			inactivateHeight:  0,
