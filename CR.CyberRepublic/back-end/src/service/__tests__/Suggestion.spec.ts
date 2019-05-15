@@ -29,7 +29,6 @@ beforeAll(async () => {
     username: global.DB.COUNCIL_USER.username
   })
   await DB.getModel('Task').remove({})
-  await DB.getModel('CVote').remove({})
 
   // create a test user as member role
   const userService = new UserService(DB, {
@@ -55,7 +54,7 @@ beforeAll(async () => {
   service.admin = new SuggestionService(DB, {user: user.admin})
 })
 
-describe('Tests for CVote', () => {
+describe('Tests for Suggestion', () => {
   let suggestion1: any
   test('member attempt to create a suggestion should pass', async () => {
     try {
