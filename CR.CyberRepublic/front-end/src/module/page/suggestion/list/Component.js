@@ -14,6 +14,7 @@ import MySuggestion from '../my_list/Container'
 import SuggestionForm from '@/module/form/SuggestionForm/Container'
 import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
+import TagsContainer from '../common/tags/Container'
 import suggestionImg from '@/assets/images/SuggestionToProposal.png'
 import suggestionZhImg from '@/assets/images/SuggestionToProposal.zh.png'
 import { breakPoint } from '@/constants/breakPoint'
@@ -396,11 +397,13 @@ export default class extends StandardPage {
     const href = `/suggestion/${data._id}`
     const actionsNode = this.renderActionsNode(data, this.refetch)
     const metaNode = this.renderMetaNode(data)
-    const title = <ItemTitle to={href} className="title-link">{data.title}</ItemTitle>
+    const title = <ItemTitle to={href}>{data.title}</ItemTitle>
+    const tagsNode = this.renderTagsNode(data)
     return (
       <div key={data._id} className="item-container">
         {metaNode}
         {title}
+        {tagsNode}
         <ShortDesc>
           {data.shortDesc}
           {_.isArray(data.link) && (data.link.map((link) => {
@@ -432,6 +435,8 @@ export default class extends StandardPage {
   }
 
   renderMetaNode = detail => <MetaContainer data={detail} />
+
+  renderTagsNode = detail => <TagsContainer data={detail} />
 
   renderActionsNode = (detail, refetch) => <ActionsContainer data={detail} listRefetch={refetch}/>
 
@@ -533,7 +538,7 @@ const HeaderDiagramContainer = styled.div`
 
 const ItemTitle = styled(Link)`
   font-size: 20px;
-  color: ${text.newGray};
+  color: black;
   transition: all 0.3s;
   font-weight: 400;
   text-decoration: none;
@@ -543,12 +548,6 @@ const ItemTitle = styled(Link)`
   &:hover {
     color: $link_color;
   }
-
-  background-color: ${bg.blue};
-
-  padding: 4px 8px;
-  border: 1px solid #e4effd;
-  border-radius: 4px;
 `
 
 const ItemLinkWrapper = styled.div`
@@ -557,8 +556,8 @@ const ItemLinkWrapper = styled.div`
 `
 
 const ShortDesc = styled.div`
+  margin-top: 8px;
   font-weight: 200;
-  padding: 4px 8px 0;
 `
 
 const HeaderDesc = styled.div`
