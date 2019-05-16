@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import _ from 'lodash'
 import styled from 'styled-components'
 import {
-  Pagination, Modal, Button, Col, Row, Select, Spin, Switch
+  Pagination, Modal, Button, Col, Row, Select, Spin, Checkbox
 } from 'antd'
 import URI from 'urijs'
 import I18N from '@/I18N'
@@ -321,44 +321,47 @@ export default class extends StandardPage {
 
     return (
       <Row>
-        <Col sm={24} md={8}>
-          <Switch defaultChecked={underConsideration} onChange={this.onUnderConsiderationChange}/>
-          <SwitchText>{I18N.get('suggestion.tag.type.UNDER_CONSIDERATION')}</SwitchText>
+        <Col sm={24} md={3}>
+          <span>{I18N.get('suggestion.tag.show')}:</span>
         </Col>
-        <Col sm={24} md={8}>
-          <Switch defaultChecked={infoNeeded} onChange={this.onInfoNeededChange}/>
-          <SwitchText>{I18N.get('suggestion.tag.type.INFO_NEEDED')}</SwitchText>
+        <Col sm={24} md={7}>
+          <Checkbox defaultChecked={underConsideration} onChange={this.onUnderConsiderationChange}/>
+          <CheckboxText>{I18N.get('suggestion.tag.type.UNDER_CONSIDERATION')}</CheckboxText>
         </Col>
-        <Col sm={24} md={8}>
-          <Switch defaultChecked={this.state.referenceStatus} onChange={this.onReferenceStatusChange}/>
-          <SwitchText>{I18N.get('suggestion.tag.type.ADDED_TO_PROPOSAL')}</SwitchText>
+        <Col sm={24} md={7}>
+          <Checkbox defaultChecked={infoNeeded} onChange={this.onInfoNeededChange}/>
+          <CheckboxText>{I18N.get('suggestion.tag.type.INFO_NEEDED')}</CheckboxText>
+        </Col>
+        <Col sm={24} md={7}>
+          <Checkbox defaultChecked={this.state.referenceStatus} onChange={this.onReferenceStatusChange}/>
+          <CheckboxText>{I18N.get('suggestion.tag.type.ADDED_TO_PROPOSAL')}</CheckboxText>
         </Col>
       </Row>
     )
   }
 
-  onInfoNeededChange = async (checked) => {
+  onInfoNeededChange = async (e) => {
     const {onTagsIncludedChanged, tagsIncluded} = this.props
-    tagsIncluded.infoNeeded = checked
+    tagsIncluded.infoNeeded = e.target.checked
     await onTagsIncludedChanged(tagsIncluded)
     await this.refetch()
   }
 
-  onUnderConsiderationChange = async (checked) => {
+  onUnderConsiderationChange = async (e) => {
     const {onTagsIncludedChanged, tagsIncluded} = this.props
-    tagsIncluded.underConsideration = checked
+    tagsIncluded.underConsideration = e.target.checked
     await onTagsIncludedChanged(tagsIncluded)
     await this.refetch()
   }
 
   // checked = boolean
-  onReferenceStatusChange = async (checked) => {
+  onReferenceStatusChange = async (e) => {
 
     const {onReferenceStatusChanged} = this.props
 
     // the first onReferenceStatusChanged is the props fn from Container
-    await this.setState({referenceStatus: checked})
-    await onReferenceStatusChanged(checked)
+    await this.setState({referenceStatus: e.target.checked})
+    await onReferenceStatusChanged(e.target.checked)
     await this.refetch()
   }
 
@@ -577,7 +580,7 @@ const AddButtonContainer = styled.div`
   padding-top: 24px;
 `
 
-const SwitchText = styled.span`
+const CheckboxText = styled.span`
   margin-left: 10px;
 `
 

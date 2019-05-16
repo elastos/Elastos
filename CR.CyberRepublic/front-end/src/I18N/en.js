@@ -273,6 +273,7 @@ const en = {
       commentsFromCouncil: 'Comments from Council/Admin:'
     },
     tag: {
+      show: 'Show',
       type: {
         UNDER_CONSIDERATION: 'Under Council Consideration',
         INFO_NEEDED: 'More Info Required',

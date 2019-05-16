@@ -273,6 +273,7 @@ const zh = {
       commentsFromCouncil: '委员的评论：'
     },
     tag: {
+      show: '显示',
       type: {
         UNDER_CONSIDERATION: '审议中',
         INFO_NEEDED: '需要更多信息',
