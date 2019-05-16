@@ -21,6 +21,7 @@ import org.elastos.wallet.ela.ui.Assets.viewdata.CommonCreateSubWalletViewData;
 import org.elastos.wallet.ela.ui.Assets.viewdata.ImportKeystoreViewData;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.ClearEditText;
+import org.elastos.wallet.ela.utils.RxEnum;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -148,6 +149,7 @@ public class ImportKeystoreFragment extends BaseFragment implements ImportKeysto
                     realmUtil.updateWalletDefault(masterWalletID, new RealmTransactionAbs() {
                         @Override
                         public void onSuccess() {
+                            post(RxEnum.ONE.ordinal(), null, masterWallet);
                             toMainFragment();
                         }
                     });

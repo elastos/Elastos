@@ -3,6 +3,8 @@ package org.elastos.wallet.ela.db.table;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.io.Serializable;
+
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 import io.realm.annotations.Required;
@@ -11,7 +13,7 @@ import io.realm.annotations.Required;
  * 子钱包表
  */
 
-public class SubWallet extends RealmObject implements Parcelable {
+public class SubWallet extends RealmObject implements Parcelable ,Serializable{
     //主键必须有而且必须设置 否则默认"" 这样再次插入新的就会覆盖
     @PrimaryKey
     private String wallletId;//主键 belongid+chainId

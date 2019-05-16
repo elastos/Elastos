@@ -32,9 +32,9 @@ import org.elastos.wallet.ela.ui.Assets.presenter.AssetsPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.AssetsViewData;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
-import org.elastos.wallet.ela.ui.common.bean.ISubWalletListEntity;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
 import org.elastos.wallet.ela.utils.DateUtil;
+import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -82,6 +82,21 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         return R.layout.fragment_assetsk;
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        for (Map.Entry<String, List<SubWallet>> entry : listMap.entrySet()) {
+            List<SubWallet> assetList = entry.getValue();
+            for (SubWallet subWallet : assetList) {
+                realmUtil.updateSubWalletDetial(subWallet, new RealmTransactionAbs() {
+                    @Override
+                    public void onSuccess() {
+
+                    }
+                });
+            }
+        }
+        super.onSaveInstanceState(outState);
+    }
 
     @Override
     protected void initView(View view) {
@@ -171,29 +186,31 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         List<SubWallet> assetList = listMap.get(currentBelongId);//原来的数据
 
         for (SubWallet newSubWallet : data) {
-            if (assetList != null && assetList.size() != 0) {
-                for (SubWallet oldSubWallet : assetList) {
-                    if (newSubWallet.equals(oldSubWallet)) {
-                        //原有的数据保留
-                        newSubWallet.setProgress(oldSubWallet.getProgress());
-                        newSubWallet.setSyncTime(oldSubWallet.getSyncTime());
-                        assetsPresenter.registerWalletListener(currentBelongId, newSubWallet.getChainId(), this);
-                        break;
-                    } else {
-                        SubWallet subWallet = new RealmUtil().querySubWallet(newSubWallet.getBelongId(), newSubWallet.getChainId());
-                        newSubWallet.setProgress(subWallet.getProgress());
-                        newSubWallet.setSyncTime(subWallet.getSyncTime());
-                        assetsPresenter.registerWalletListener(currentBelongId, newSubWallet.getChainId(), this);
+            First:
+            {
+                if (assetList != null && assetList.size() != 0) {
+                    for (SubWallet oldSubWallet : assetList) {
+                        if (newSubWallet.equals(oldSubWallet)) {
+                            //原有的数据保留
+                            newSubWallet.setProgress(oldSubWallet.getProgress());
+                            newSubWallet.setSyncTime(oldSubWallet.getSyncTime());
+                            // assetsPresenter.registerWalletListener(currentBelongId, newSubWallet.getChainId(), this);
+                            break First;
+
+                        }
+
                     }
-
+                    SubWallet subWallet = new RealmUtil().querySubWallet(newSubWallet.getBelongId(), newSubWallet.getChainId());
+                    newSubWallet.setProgress(subWallet.getProgress());
+                    newSubWallet.setSyncTime(subWallet.getSyncTime());
+                    assetsPresenter.registerWalletListener(currentBelongId, newSubWallet.getChainId(), this);
+                } else {
+                    SubWallet subWallet = new RealmUtil().querySubWallet(newSubWallet.getBelongId(), newSubWallet.getChainId());
+                    newSubWallet.setProgress(subWallet.getProgress());
+                    newSubWallet.setSyncTime(subWallet.getSyncTime());
+                    assetsPresenter.registerWalletListener(currentBelongId, newSubWallet.getChainId(), this);
                 }
-            } else {
-                SubWallet subWallet = new RealmUtil().querySubWallet(newSubWallet.getBelongId(), newSubWallet.getChainId());
-                newSubWallet.setProgress(subWallet.getProgress());
-                newSubWallet.setSyncTime(subWallet.getSyncTime());
-                assetsPresenter.registerWalletListener(currentBelongId, newSubWallet.getChainId(), this);
             }
-
 
         }
 

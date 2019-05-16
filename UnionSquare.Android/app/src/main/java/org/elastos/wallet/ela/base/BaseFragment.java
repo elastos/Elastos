@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,6 +34,7 @@ import org.elastos.wallet.ela.di.component.FragmentComponent;
 import org.elastos.wallet.ela.di.moudule.FragmentModule;
 import org.elastos.wallet.ela.ui.Assets.fragment.HomeWalletFragment;
 import org.elastos.wallet.ela.ui.main.MainFragment;
+import org.elastos.wallet.ela.utils.Log;
 import org.greenrobot.eventbus.EventBus;
 
 import butterknife.BindView;
@@ -50,11 +52,6 @@ import permissions.dispatcher.RuntimePermissions;
  */
 @RuntimePermissions
 public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends SupportFragment implements BaseContract.Baseview {
-    /*
-        @Nullable
-        @Inject*/
-    protected T mPresenter;
-
     protected FragmentComponent mFragmentComponent;
     private String requstStr = "";
     private Unbinder unbinder;
@@ -100,6 +97,13 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
             setExtraData(bundle);
         }
         initView(mRootView);
+       /* int num = getActivity().getSupportFragmentManager().getBackStackEntryCount();
+        String numString = "++++++++++++++++++++++++++++++++++Fragment回退栈数量：" + num;
+        Log.d("Fragment", numString);
+        for (int i = 0; i < num; i++) {
+            FragmentManager.BackStackEntry backstatck = getActivity().getSupportFragmentManager().getBackStackEntryAt(i);
+            Log.d("++++++++++++++++++++++++++++++", backstatck.getName());
+        }*/
         return mRootView;
     }
 
@@ -369,11 +373,16 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
     }
 
     public void toMainFragment() {
-        getBaseActivity().getSupportFragmentManager().popBackStackImmediate(null, 1);
-        ((BaseActivity) _mActivity).loadRootFragment(R.id.mhoneframeLayout, MainFragment.newInstance());
-        //todo 优化  判断 MainFragment是否存在 存在退回到它并更新数据  不纯在执行下面的
-        //  popTo(MainFragment.class,false);
-
+        //popTo(MainFragment.class, false);
+        Fragment mainFragment = getBaseActivity().getSupportFragmentManager().findFragmentByTag(MainFragment.class.getName());
+        if (mainFragment != null) {
+           // Log.d("+++++++", "1");
+            getBaseActivity().getSupportFragmentManager().popBackStackImmediate(MainFragment.class.getName(), 0);
+        } else {
+           // Log.d("+++++++", "2");
+            getBaseActivity().getSupportFragmentManager().popBackStackImmediate(null, 1);
+            ((BaseActivity) _mActivity).loadRootFragment(R.id.mhoneframeLayout, MainFragment.newInstance());
+        }
     }
 
     public void toHomeWalletFragment() {

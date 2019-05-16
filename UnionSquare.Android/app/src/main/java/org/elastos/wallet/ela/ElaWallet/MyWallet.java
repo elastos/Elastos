@@ -15,6 +15,7 @@ import org.elastos.wallet.ela.ui.Assets.listener.ISubWalletListener;
 import org.elastos.wallet.ela.ui.common.bean.CommmonBooleanEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonObjEntity;
+import org.elastos.wallet.ela.ui.common.bean.CommmonObjectWithMethNameEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringListEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringWithiMethNameEntity;
@@ -251,14 +252,14 @@ public class MyWallet {
 
     public BaseEntity getAllMasterWallets() {
         Log.d(TAG, "<<< getAllMasterWallets >>>");
-        ArrayList<String> list = new ArrayList<>();
+
         try {
             ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
             for (int i = 0; i < masterWalletList.size(); i++) {
-                list.add(masterWalletList.get(i).GetID());
+                Log.d(TAG, "result:  = " + masterWalletList.get(i).GetBasicInfo());
             }
-            Log.d(TAG, "result: count = " + list.size());
-            return new CommmonStringListEntity(SUCESSCODE, list);
+
+            return new CommmonObjectWithMethNameEntity(SUCESSCODE, masterWalletList,"getAllMasterWallets");
         } catch (WalletException e) {
             return exceptionProcess(e, "Get all master wallets");
         }

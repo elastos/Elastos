@@ -6,22 +6,22 @@ import android.view.View;
 import android.widget.ImageView;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.core.MasterWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.ui.Assets.fragment.HomeWalletFragment;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringListViewData;
+import org.elastos.wallet.ela.ui.common.viewdata.CommmonObjectWithMethNameViewData;
 import org.elastos.wallet.ela.ui.main.MainFragment;
 import org.elastos.wallet.ela.utils.SPUtil;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.BindView;
 
 
-public class FirstFragment extends BaseFragment implements CommmonStringListViewData {
+public class FirstFragment extends BaseFragment implements CommmonObjectWithMethNameViewData {
 
-    private List<String> data;
+    private ArrayList<MasterWallet> data;
     @BindView(R.id.imageView)
     ImageView imageView;
 
@@ -51,13 +51,13 @@ public class FirstFragment extends BaseFragment implements CommmonStringListView
 
     }
 
-    private void onFirst(List<String> data) {
+    private void onFirst(ArrayList<MasterWallet> data) {
         if (data.size() > 0) {
-           // Bundle bundle = new Bundle();
-           // bundle.putStringArrayList("ids", (ArrayList<String>) data);
-           //对比本地数据库并同步
-            new RealmUtil().sync((ArrayList<String>) data);
-            startWithPop(MainFragment.class,null);
+            // Bundle bundle = new Bundle();
+            // bundle.putStringArrayList("ids", (ArrayList<String>) data);
+            //对比本地数据库并同步
+            new RealmUtil().sync(data);
+            startWithPop(MainFragment.class, null);
         } else {
             startWithPop(HomeWalletFragment.class, null);
         }
@@ -71,13 +71,7 @@ public class FirstFragment extends BaseFragment implements CommmonStringListView
         return fragment;
     }
 
-    @Override
-    public void onGetStringListCommonData(List<String> data) {
-        this.data = data;
-        //requstManifestPermission(getString(R.string.needpermission));
-        deayedSkipActivity();
 
-    }
 
   /*  @Override
     protected void requstPermissionOk() {
@@ -93,6 +87,13 @@ public class FirstFragment extends BaseFragment implements CommmonStringListView
                 onFirst(data);
             }
         }, 800);
+    }
+
+    @Override
+    public void onGetCommonData(String methodname, Object data) {
+        this.data = (ArrayList<MasterWallet>) data;
+        //requstManifestPermission(getString(R.string.needpermission));
+        deayedSkipActivity();
     }
 
    /* @Override

@@ -2,10 +2,13 @@ package org.elastos.wallet.ela.db;
 
 import android.support.annotation.NonNull;
 
+import org.elastos.wallet.core.MasterWallet;
 import org.elastos.wallet.ela.db.listener.RealmTransactionAbs;
 import org.elastos.wallet.ela.db.table.Contact;
 import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.db.table.Wallet;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +21,7 @@ import io.realm.RealmResults;
 
 public class RealmUtil {
 
-    public static final long DB_VERSION_CODE =2;//当前数据库版本号
+    public static final long DB_VERSION_CODE = 2;//当前数据库版本号
     public static final String DB_NAME = "DB";//BuildConfig
 
     @Inject
@@ -285,13 +288,54 @@ public class RealmUtil {
         }
         return wallets;
     }
-    public void sync(ArrayList<String> ids) {
+
+    public void sync(ArrayList<MasterWallet> masterWallets) {
         Realm realm = getInstanceRealm();
         RealmResults<Wallet> list = realm.where(Wallet.class)
                 .findAll();
+        for (MasterWallet masterWallet : masterWallets) {
+            String id = masterWallet.GetID();
+            boolean flag = false;
+            for (Wallet wallet : list) {
+                String walletId = wallet.getWalletId();
+                if (id.equals(walletId)) {
+                    flag = true;
+                    break;
+                }
+
+            }
+            if (!flag) {
+                //增加钱包 id
+                // {"Account":{"SingleAddress":false,"Type":"Standard"}}
+                try {
+                    JSONObject jsonObject = new JSONObject(masterWallet.GetBasicInfo());
+                    JSONObject account = jsonObject.getJSONObject("Account");
+                    boolean singleAddress = account.getBoolean("SingleAddress");
+                    Wallet newWallet = new Wallet();
+                    newWallet.setWalletId(id);
+                    newWallet.setWalletName("Unknown");
+                    newWallet.setSingleAddress(singleAddress);
+                    realm.beginTransaction();
+                    realm.copyToRealmOrUpdate(newWallet);
+                    realm.commitTransaction();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+        }
         for (Wallet wallet : list) {
+            boolean flag = false;
             String walletId = wallet.getWalletId();
-            if (!ids.contains(walletId)) {
+            for (MasterWallet masterWallet : masterWallets) {
+                String id = masterWallet.GetID();
+                if (id.equals(walletId)) {
+                    flag = true;
+                    break;
+                }
+            }
+            if (!flag) {
                 realm.executeTransaction(new Realm.Transaction() {
                     @Override
                     public void execute(Realm realm) {
@@ -325,10 +369,10 @@ public class RealmUtil {
         realm.close();
         listener.onSuccess();
     }
-/*
+    /*
 
-    */
-/*查询所有钱包*//*
+     */
+    /*查询所有钱包*//*
 //不可靠  需要同步子钱包 本地不一定有
     public List<SubWallet> queryAllSubWallet(String belongId) {
         Realm realm = getInstanceRealm();
@@ -398,6 +442,7 @@ public class RealmUtil {
         closeRealm(realm);
         listener.onSuccess();
     }
+
     public SubWallet querySubWallet(String belongId, String chainId) {
         Realm realm = getInstanceRealm();
         SubWallet subWallet = realm.where(SubWallet.class)
@@ -417,6 +462,7 @@ public class RealmUtil {
         closeRealm(realm);
         return tempSubWallet;
     }
+
     public String querySubWalletSyncTime(String belongId, String chainId) {
         Realm realm = getInstanceRealm();
         SubWallet subWallet = realm.where(SubWallet.class)
