@@ -542,8 +542,7 @@ const ItemTitle = styled(Link)`
   transition: all 0.3s;
   font-weight: 400;
   text-decoration: none;
-  margin-top: 8px;
-  margin-bottom: 4px;
+  margin: 8px 0;
   display: block;
   &:hover {
     color: $link_color;
