@@ -229,6 +229,25 @@ public class MyWallet {
 
     }
 
+    // args[0]: String masterWalletID
+    public BaseEntity getMasterWalletBasicInfo(String masterWalletID) {
+        Log.d(TAG, "<<< getMasterWalletBasicInfo >>>");
+        Log.d(TAG, "arg[0]: " + masterWalletID);
+
+        try {
+            MasterWallet masterWallet = getMasterWallet(masterWalletID);
+            if (masterWallet == null) {
+                return errorProcess(errCodeInvalidMasterWallet + "", "Get " + formatWalletName(masterWalletID));
+            }
+
+            String basicInfo = masterWallet.GetBasicInfo();
+            Log.d(TAG, "result: " + basicInfo);
+
+            return new CommmonStringEntity(SUCESSCODE, basicInfo);
+        } catch (WalletException e) {
+            return exceptionProcess(e, "Get " + formatWalletName(masterWalletID) + " basic info");
+        }
+    }
 
     public BaseEntity getAllMasterWallets() {
         Log.d(TAG, "<<< getAllMasterWallets >>>");
