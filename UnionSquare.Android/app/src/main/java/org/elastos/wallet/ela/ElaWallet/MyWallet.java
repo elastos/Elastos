@@ -832,12 +832,17 @@ public class MyWallet {
         Log.d(TAG, "<<< registerWalletListener >>>");
         Log.d(TAG, "arg[0]: " + masterWalletID);
         Log.d(TAG, "arg[1]: " + chainID);
-        Log.d(TAG, "arg[2]: " + "listener");
+        Log.d(TAG, "arg[2]: " + listener);
 
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
                 return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
+            }
+
+            if (subWallet.IsCallbackRegistered()) {
+                Log.d(TAG, "listener already registered, do nothing");
+                return new CommmonStringEntity(SUCESSCODE, "listener already registered");
             }
 
             subWallet.AddCallback(new SubWalletCallback(masterWalletID, chainID, listener));
