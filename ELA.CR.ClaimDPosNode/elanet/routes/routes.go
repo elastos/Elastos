@@ -251,6 +251,11 @@ func (r *Routes) appendAddr(s *state, m *msg.DAddr) {
 }
 
 func (r *Routes) announceAddr() {
+	// Ignore if BlockChain not sync to current.
+	if !r.cfg.IsCurrent() {
+		return
+	}
+
 	// Refuse new announce if a previous announce is waiting,
 	// this is to reduce unnecessary announce.
 	if !atomic.CompareAndSwapInt32(&r.waiting, 0, 1) {
@@ -556,10 +561,6 @@ func New(cfg *Config) *Routes {
 	}
 
 	queuePeers := func(peers []dp.PID) {
-		// Ignore if BlockChain not sync to current.
-		if !cfg.IsCurrent() {
-			return
-		}
 		r.queue <- peersMsg{peers: peers}
 	}
 
