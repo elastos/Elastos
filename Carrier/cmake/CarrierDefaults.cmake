@@ -3,6 +3,18 @@ if(__carrier_defaults_included)
 endif()
 set(__carrier_defaults_included TRUE)
 
+if(WIN32)
+    set(CMAKE_CPP_FLAGS
+        "${CMAKE_CPP_FLAGS} -D_CRT_SECURE_NO_WARNINGS")
+else()
+    set(CMAKE_C_FLAGS
+        "${CMAKE_C_FLAGS} -fPIC -fvisibility=hidden")
+    if(ANDROID)
+        set(CMAKE_SHARED_LINKER_FLAGS
+            "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--exclude-libs,ALL")
+    endif()
+endif()
+
 # Global default variables defintions
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
     set(CMAKE_BUILD_TYPE "Debug")

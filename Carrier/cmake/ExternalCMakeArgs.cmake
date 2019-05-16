@@ -3,18 +3,12 @@ if(__external_cmake_args_included)
 endif()
 set(__external_cmake_args_included TRUE)
 
-cmake_policy(PUSH)
-cmake_policy(SET CMP0054 NEW)
-
 include(CarrierDefaults)
 
-if(MSVC)
-    set(CMAKE_ARGS_INIT "-DCMAKE_C_FLAGS_INIT=-D_CRT_SECURE_NO_WARNINGS")
-else()
-    set(CMAKE_ARGS_INIT "-DCMAKE_C_FLAGS_INIT=-fPIC -fvisibility=hidden")
-endif()
+set(CMAKE_ARGS_INIT "-DCMAKE_C_FLAGS_INIT=${CMAKE_C_FLAGS}")
 
-cmake_policy(POP)
+set(CMAKE_ARGS_INIT ${CMAKE_ARGS_INIT}
+    -DCMAKE_CPP_FLAGS_INIT=${CMAKE_CPP_FLAGS})
 
 set(CMAKE_ARGS_INIT ${CMAKE_ARGS_INIT}
     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE})
