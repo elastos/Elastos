@@ -1,3 +1,4 @@
+import * as _ from 'lodash'
 import Base from '../Base'
 import CVoteService from '../../service/CVoteService'
 
@@ -11,6 +12,10 @@ export default class extends Base {
 
         // TODO: this is curious, this should be run using agenda or something
         service.cronjob()
+
+        if (param.search) {
+            param.title = { $regex: _.trim(param.search), $options: 'i' }
+        }
 
         // for the public call param.published should always be true
         param.published = true
