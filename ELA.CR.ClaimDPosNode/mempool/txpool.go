@@ -131,8 +131,18 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 			mp.delSpecialTx(&hash)
 			deleteCount++
 			continue
-		} else if blockTx.IsNewSideChainPowTx() || blockTx.IsUpdateVersion() ||
-			blockTx.IsActivateProducerTx() {
+		} else if blockTx.IsNewSideChainPowTx() || blockTx.IsUpdateVersion() {
+			delete(mp.txnList, blockTx.Hash())
+			deleteCount++
+			continue
+		} else if blockTx.IsActivateProducerTx() {
+			apPayload, ok := blockTx.Payload.(*payload.ActivateProducer)
+			if !ok {
+				log.Error("activate producer payload cast failed, tx:",
+					blockTx.Hash())
+				continue
+			}
+			mp.delNodePublicKey(BytesToHexString(apPayload.NodePublicKey))
 			delete(mp.txnList, blockTx.Hash())
 			deleteCount++
 			continue
@@ -174,6 +184,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 					payload, ok := tx.Payload.(*payload.WithdrawFromSideChain)
 					if !ok {
 						log.Error("type cast failed when clean sidechain tx:", tx.Hash())
+						continue
 					}
 					for _, hash := range payload.SideChainTransactionHashes {
 						mp.delSidechainTx(hash)
@@ -182,6 +193,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 					rpPayload, ok := tx.Payload.(*payload.ProducerInfo)
 					if !ok {
 						log.Error("register producer payload cast failed, tx:", tx.Hash())
+						continue
 					}
 					mp.delOwnerPublicKey(BytesToHexString(rpPayload.OwnerPublicKey))
 					mp.delNodePublicKey(BytesToHexString(rpPayload.NodePublicKey))
@@ -189,6 +201,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 					upPayload, ok := tx.Payload.(*payload.ProducerInfo)
 					if !ok {
 						log.Error("update producer payload cast failed, tx:", tx.Hash())
+						continue
 					}
 					mp.delOwnerPublicKey(BytesToHexString(upPayload.OwnerPublicKey))
 					mp.delNodePublicKey(BytesToHexString(upPayload.NodePublicKey))
@@ -196,14 +209,9 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 					cpPayload, ok := tx.Payload.(*payload.ProcessProducer)
 					if !ok {
 						log.Error("cancel producer payload cast failed, tx:", tx.Hash())
+						continue
 					}
 					mp.delOwnerPublicKey(BytesToHexString(cpPayload.OwnerPublicKey))
-				case ActivateProducer:
-					apPayload, ok := tx.Payload.(*payload.ActivateProducer)
-					if !ok {
-						log.Error("activate producer payload cast failed, tx:", tx.Hash())
-					}
-					mp.delNodePublicKey(BytesToHexString(apPayload.NodePublicKey))
 				}
 
 				deleteCount++
