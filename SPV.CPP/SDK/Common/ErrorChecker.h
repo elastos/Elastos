@@ -64,6 +64,7 @@ namespace Elastos {
 				EncryptError = 20047,
 				VerifyError = 20048,
 				TxPending = 20049,
+				InvalidMnemonicWordCount = 20050,
 				Other = 29999,
 			} Code;
 		}
