@@ -15,9 +15,17 @@ namespace Elastos {
 
 		class Mnemonic {
 		public:
+			enum WordCount {
+				WORDS_12,
+				WORDS_15,
+				WORDS_18,
+				WORDS_21,
+				WORDS_24
+			};
+		public:
 			Mnemonic(const boost::filesystem::path &rootPath);
 
-			std::string Create(const std::string &language) const;
+			std::string Create(const std::string &language, WordCount words = WORDS_12) const;
 
 			bool Validate(const std::string &mnemonic) const;
 

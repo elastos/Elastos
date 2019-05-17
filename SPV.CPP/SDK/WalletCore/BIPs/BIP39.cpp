@@ -62,7 +62,10 @@ namespace Elastos {
 			std::vector<std::string> wordList;
 			boost::algorithm::split(wordList, mnemonic, boost::is_any_of(" \n\r\t"), boost::token_compress_on);
 
-			ErrorChecker::CheckLogic(wordList.size() != 12, Error::Mnemonic, "invalid mnemonic word count");
+			wordList.erase(std::remove(wordList.begin(), wordList.end(), ""), wordList.end());
+
+			ErrorChecker::CheckLogic(wordList.size() % 3 != 0, Error::Mnemonic,
+									 "invalid mnemonic word count = " + std::to_string(wordList.size()));
 
 			std::string sentence = boost::algorithm::join(wordList, " ");
 			std::string salt = "mnemonic" + passphrase;
@@ -106,10 +109,17 @@ namespace Elastos {
 			std::vector<std::string> words;
 
 			boost::algorithm::split(words, mnemonic, boost::is_any_of(" \n\r\t"), boost::token_compress_on);
+			words.erase(std::remove(words.begin(), words.end(), ""), words.end());
 
 			for (const auto &word: words) {
 				for (i = 0; i < dictionary.size(); ++i) {
-					if (dictionary[i].find(word) != std::string::npos) {
+					std::string dictWord = dictionary[i];
+
+					dictWord.erase(std::remove_if(dictWord.begin(), dictWord.end(), [](char &c) {
+						return c == '\t' || c == '\r' || c == ' ' || c == '\n';
+					}), dictWord.end());
+
+					if (dictWord == word) {
 						idx[count++] = i;
 						break;
 					}

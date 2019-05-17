@@ -9,9 +9,64 @@
 #include <SDK/WalletCore/BIPs/Mnemonic.h>
 #include <SDK/Common/Log.h>
 
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <SDK/Common/Log.h>
+
 using namespace Elastos::ElaWallet;
 
 #define ROOT_PATH "./Data/"
+
+TEST_CASE("Mnemonic words test", "[Mnemonic]") {
+	SECTION("Word count 12") {
+		Mnemonic m(ROOT_PATH);
+
+		std::vector<Mnemonic::WordCount> wordCount = {
+			Mnemonic::WORDS_12,
+			Mnemonic::WORDS_15,
+			Mnemonic::WORDS_18,
+			Mnemonic::WORDS_21,
+			Mnemonic::WORDS_24
+		};
+
+		std::vector<std::string> lang = {
+			"english",
+			"chinese",
+			"french",
+			"japanese",
+			"spanish"
+		};
+
+		for (size_t k = 0; k < wordCount.size(); k++) {
+			Mnemonic::WordCount wc = wordCount[k];
+			for (size_t l = 0; l < lang.size(); l++) {
+				for (size_t i = 0; i < 10; ++i) {
+					std::string phrase;
+
+					REQUIRE_NOTHROW(phrase = m.Create(lang[l], wc));
+					std::vector<std::string> words;
+					boost::algorithm::split(words, phrase, boost::is_any_of(" \n\r\t"), boost::token_compress_on);
+					words.erase(std::remove(words.begin(), words.end(), ""), words.end());
+
+					if (wc == Mnemonic::WORDS_12)
+						REQUIRE(words.size() == 12);
+					else if (wc == Mnemonic::WORDS_15)
+						REQUIRE(words.size() == 15);
+					else if (wc == Mnemonic::WORDS_18)
+						REQUIRE(words.size() == 18);
+					else if (wc == Mnemonic::WORDS_21)
+						REQUIRE(words.size() == 21);
+					else if (wc == Mnemonic::WORDS_24)
+						REQUIRE(words.size() == 24);
+
+					REQUIRE_NOTHROW(m.DeriveSeed(phrase, ""));
+				}
+			}
+		}
+
+	}
+}
 
 TEST_CASE("Mnemonic of English test", "[English]") {
 	Log::registerMultiLogger();

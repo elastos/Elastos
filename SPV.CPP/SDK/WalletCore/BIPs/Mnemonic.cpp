@@ -12,6 +12,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <SDK/Common/hash.h>
 
 #define MNEMONIC_PREFIX "mnemonic_"
 #define MNEMONIC_EXTENSION ".txt"
@@ -26,11 +27,38 @@ namespace Elastos {
 			_rootPath(rootPath) {
 		}
 
-		std::string Mnemonic::Create(const std::string &language) const {
+		std::string Mnemonic::Create(const std::string &language, WordCount words) const {
 			std::string lan = language;
+			size_t entropyBits = 0;
+
 			std::transform(lan.begin(), lan.end(), lan.begin(), ::tolower);
 
-			bytes_t entropy = Utils::GetRandom(16);
+			switch (words) {
+				case WORDS_12:
+					entropyBits = 128;
+					break;
+
+				case WORDS_15:
+					entropyBits = 160;
+					break;
+
+				case WORDS_18:
+					entropyBits = 192;
+					break;
+
+				case WORDS_21:
+					entropyBits = 224;
+					break;
+
+				case WORDS_24:
+					entropyBits = 256;
+					break;
+
+				default:
+					ErrorChecker::ThrowParamException(Error::InvalidMnemonicWordCount, "invalid mnemonic word count");
+			}
+
+			bytes_t entropy = Utils::GetRandom(entropyBits / 8);
 
 			if (lan == "english") {
 				return BIP39::Encode(EnglistWordLists, entropy);
