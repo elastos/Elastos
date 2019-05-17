@@ -68,8 +68,10 @@ type arbitrators struct {
 	candidateOwnerProgramHashes     []*common.Uint168
 	nextOwnerProgramHashes          []*common.Uint168
 	nextCandidateOwnerProgramHashes []*common.Uint168
-	ownerVotesInRound               map[common.Uint168]common.Fixed64
-	totalVotesInRound               common.Fixed64
+	currentOwnerVotesInRound        map[common.Uint168]common.Fixed64
+	currentTotalVotesInRound        common.Fixed64
+	nextOwnerVotesInRound           map[common.Uint168]common.Fixed64
+	nextTotalVotesInRound           common.Fixed64
 
 	nextArbitrators             [][]byte
 	nextCandidates              [][]byte
@@ -355,7 +357,7 @@ func (a *arbitrators) distributeWithNormalArbitrators(
 	totalTopProducersReward := float64(reward) - totalBlockConfirmReward
 	individualBlockConfirmReward := common.Fixed64(
 		math.Floor(totalBlockConfirmReward / float64(len(ownerHashes))))
-	totalVotesInRound := a.totalVotesInRound
+	totalVotesInRound := a.currentTotalVotesInRound
 	if len(a.chainParams.CRCArbiters) == len(a.CurrentArbitrators) {
 		a.arbitersRoundReward[a.chainParams.CRCAddress] = reward
 		return reward, nil
@@ -364,7 +366,7 @@ func (a *arbitrators) distributeWithNormalArbitrators(
 
 	realDPOSReward := common.Fixed64(0)
 	for _, ownerHash := range ownerHashes {
-		votes := a.ownerVotesInRound[*ownerHash]
+		votes := a.currentOwnerVotesInRound[*ownerHash]
 		individualProducerReward := common.Fixed64(math.Floor(float64(
 			votes) * rewardPerVote))
 		r := individualBlockConfirmReward + individualProducerReward
@@ -379,7 +381,7 @@ func (a *arbitrators) distributeWithNormalArbitrators(
 	}
 	candidateOwnerHashes := a.candidateOwnerProgramHashes
 	for _, ownerHash := range candidateOwnerHashes {
-		votes := a.ownerVotesInRound[*ownerHash]
+		votes := a.currentOwnerVotesInRound[*ownerHash]
 		individualProducerReward := common.Fixed64(math.Floor(float64(
 			votes) * rewardPerVote))
 		a.arbitersRoundReward[*ownerHash] = individualProducerReward
@@ -647,6 +649,8 @@ func (a *arbitrators) changeCurrentArbitrators() error {
 	a.currentCandidates = a.nextCandidates
 	a.currentOwnerProgramHashes = a.nextOwnerProgramHashes
 	a.candidateOwnerProgramHashes = a.nextCandidateOwnerProgramHashes
+	a.currentOwnerVotesInRound = a.nextOwnerVotesInRound
+	a.currentTotalVotesInRound = a.nextTotalVotesInRound
 
 	sort.Slice(a.CurrentArbitrators, func(i, j int) bool {
 		return bytes.Compare(a.CurrentArbitrators[i], a.CurrentArbitrators[j]) < 0
@@ -762,8 +766,8 @@ func (a *arbitrators) GetNormalArbitratorsDesc(height uint32,
 }
 
 func (a *arbitrators) snapshotVotesStates() error {
-	a.ownerVotesInRound = make(map[common.Uint168]common.Fixed64, 0)
-	a.totalVotesInRound = 0
+	a.nextOwnerVotesInRound = make(map[common.Uint168]common.Fixed64, 0)
+	a.nextTotalVotesInRound = 0
 	for _, nodePublicKey := range a.nextArbitrators {
 		if !a.IsCRCArbitrator(nodePublicKey) {
 			producer := a.GetProducer(nodePublicKey)
@@ -775,8 +779,8 @@ func (a *arbitrators) snapshotVotesStates() error {
 			if err != nil {
 				return err
 			}
-			a.ownerVotesInRound[*programHash] = producer.Votes()
-			a.totalVotesInRound += producer.Votes()
+			a.nextOwnerVotesInRound[*programHash] = producer.Votes()
+			a.nextTotalVotesInRound += producer.Votes()
 		}
 	}
 
@@ -792,8 +796,8 @@ func (a *arbitrators) snapshotVotesStates() error {
 		if err != nil {
 			return err
 		}
-		a.ownerVotesInRound[*programHash] = producer.Votes()
-		a.totalVotesInRound += producer.Votes()
+		a.nextOwnerVotesInRound[*programHash] = producer.Votes()
+		a.nextTotalVotesInRound += producer.Votes()
 	}
 
 	return nil
@@ -1024,8 +1028,10 @@ func NewArbitrators(chainParams *config.Params, bestHeight func() uint32,
 		finalRoundChange:                common.Fixed64(0),
 		arbitersRoundReward:             nil,
 		illegalBlocksPayloadHashes:      make(map[common.Uint256]interface{}),
-		totalVotesInRound:               0,
-		ownerVotesInRound:               make(map[common.Uint168]common.Fixed64),
+		currentTotalVotesInRound:        0,
+		nextTotalVotesInRound:           0,
+		currentOwnerVotesInRound:        make(map[common.Uint168]common.Fixed64),
+		nextOwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
 		snapshots:                       make(map[uint32][]*KeyFrame),
 		snapshotKeysDesc:                make([]uint32, 0),
 		KeyFrame: &KeyFrame{
