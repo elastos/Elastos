@@ -1,3 +1,4 @@
+import * as _ from 'lodash'
 import Base from '../Base'
 import CVoteService from '../../service/CVoteService'
 
@@ -17,6 +18,10 @@ export default class extends Base {
         const service = this.buildService(CVoteService)
 
         service.cronjob()
+
+        if (param.search) {
+            param.title = { $regex: _.trim(param.search), $options: 'i' }
+        }
 
         const rs = await service.list(param)
         return this.result(1, rs)

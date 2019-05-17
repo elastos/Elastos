@@ -307,6 +307,10 @@ export default class extends BaseComponent {
             {I18N.get('navigation.proposal')}
           </Menu.Item>
 
+          <Menu.Item className="c_MenuItem link" key="what-is-new">
+            {I18N.get('navigation.whatsNew')}
+          </Menu.Item>
+
           <Menu.Item className="c_MenuItem link" key="resources">
             <Dropdown overlay={this.buildResourcesDropdown()} placement="bottomCenter">
               <a className="ant-dropdown-link">
@@ -419,6 +423,7 @@ export default class extends BaseComponent {
       'suggestion',
       'council',
       'constitution/1',
+      'what-is-new',
     ], key)) {
       if (key === 'landing') {
         this.props.history.push('/')

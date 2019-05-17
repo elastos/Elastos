@@ -3,7 +3,7 @@ import _ from 'lodash'
 import moment from 'moment/moment'
 import BaseComponent from '@/model/BaseComponent'
 import {
-  Table, Row, Col, Button, Modal,
+  Table, Row, Col, Button, Input,
 } from 'antd'
 import I18N from '@/I18N'
 import VoteStats from '../stats/Component'
@@ -11,7 +11,7 @@ import CreateForm from '../create/Container'
 import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
 
 // style
-import { Container, List, Item, ItemUndecided, StyledButton, VoteFilter } from './style'
+import { Container, List, Item, ItemUndecided, StyledButton, StyledSearch, VoteFilter } from './style'
 
 const FILTERS = {
   ALL: 'all',
@@ -26,7 +26,10 @@ export default class extends BaseComponent {
       list: null,
       loading: true,
       voteResult: FILTERS.ALL,
+      search: ''
     }
+
+    this.debouncedRefetch = _.debounce(this.refetch.bind(this), 300)
   }
 
   async componentDidMount() {
@@ -143,24 +146,40 @@ export default class extends BaseComponent {
         </StyledButton>
       </Button.Group>
     )
+    const title = (
+      <Col lg={8} md={8} sm={12} xs={24}>
+        <h3 style={{ textAlign: 'left', paddingBottom: 0 }} className="komu-a cr-title-with-icon">
+          {I18N.get('council.voting.proposalList')}
+        </h3>
+      </Col>
+    )
+    const searchInput = (
+      <Col lg={8} md={8} sm={12} xs={24}>
+        <StyledSearch
+          defaultValue={this.state.search}
+          onSearch={this.searchChangedHandler}
+          placeholder={I18N.get('developer.search.search.placeholder')}
+        />
+      </Col>
+    )
+    const btns = (
+      <Col lg={8} md={8} sm={12} xs={24}>
+        {statusIndicator}
+        {isCouncil && (
+          <VoteFilter>
+            <span>{`${I18N.get('council.voting.voteResult.show')}: `}</span>
+            {filterBtnGroup}
+          </VoteFilter>
+        )}
+      </Col>
+    )
     return (
       <Container>
         {createFormNode}
         <Row type="flex" align="middle" justify="space-between" style={{ marginTop: 20 }}>
-          <Col lg={8} md={8} sm={12} xs={24}>
-            <h3 style={{ textAlign: 'left', paddingBottom: 0 }} className="komu-a cr-title-with-icon">
-              {I18N.get('council.voting.proposalList')}
-            </h3>
-          </Col>
-          <Col lg={8} md={8} sm={12} xs={24}>
-            {statusIndicator}
-            {isCouncil && (
-              <VoteFilter>
-                <span>{`${I18N.get('council.voting.voteResult.show')}: `}</span>
-                {filterBtnGroup}
-              </VoteFilter>
-            )}
-          </Col>
+          {title}
+          {searchInput}
+          {btns}
         </Row>
         <Table
           columns={columns}
@@ -178,6 +197,11 @@ export default class extends BaseComponent {
     if (this.state.voteResult === FILTERS.UNVOTED) {
       query.voteResult = FILTERS.UNVOTED
     }
+
+    if (!_.isEmpty(this.state.search)) {
+      query.search = this.state.search
+    }
+
     return query
   }
 
@@ -193,6 +217,13 @@ export default class extends BaseComponent {
     }
 
     this.ord_loading(false)
+  }
+
+  searchChangedHandler = (search) => {
+    this.setState({
+      search,
+      page: 1
+    }, this.debouncedRefetch)
   }
 
   onFilterChanged = (value) => {

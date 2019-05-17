@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import _ from 'lodash'
 import styled from 'styled-components'
 import {
-  Pagination, Modal, Button, Col, Row, Select, Spin, Switch
+  Pagination, Modal, Button, Col, Row, Select, Spin, Checkbox
 } from 'antd'
 import URI from 'urijs'
 import I18N from '@/I18N'
@@ -14,6 +14,7 @@ import MySuggestion from '../my_list/Container'
 import SuggestionForm from '@/module/form/SuggestionForm/Container'
 import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
+import TagsContainer from '../common/tags/Container'
 import suggestionImg from '@/assets/images/SuggestionToProposal.png'
 import suggestionZhImg from '@/assets/images/SuggestionToProposal.zh.png'
 import { breakPoint } from '@/constants/breakPoint'
@@ -321,44 +322,47 @@ export default class extends StandardPage {
 
     return (
       <Row>
-        <Col sm={24} md={8}>
-          <Switch defaultChecked={underConsideration} onChange={this.onUnderConsiderationChange}/>
-          <SwitchText>{I18N.get('suggestion.tag.type.UNDER_CONSIDERATION')}</SwitchText>
+        <Col sm={24} md={3}>
+          <span>{I18N.get('suggestion.tag.show')}:</span>
         </Col>
-        <Col sm={24} md={8}>
-          <Switch defaultChecked={infoNeeded} onChange={this.onInfoNeededChange}/>
-          <SwitchText>{I18N.get('suggestion.tag.type.INFO_NEEDED')}</SwitchText>
+        <Col sm={24} md={7}>
+          <Checkbox defaultChecked={underConsideration} onChange={this.onUnderConsiderationChange}/>
+          <CheckboxText>{I18N.get('suggestion.tag.type.UNDER_CONSIDERATION')}</CheckboxText>
         </Col>
-        <Col sm={24} md={8}>
-          <Switch defaultChecked={this.state.referenceStatus} onChange={this.onReferenceStatusChange}/>
-          <SwitchText>{I18N.get('suggestion.tag.type.ADDED_TO_PROPOSAL')}</SwitchText>
+        <Col sm={24} md={7}>
+          <Checkbox defaultChecked={infoNeeded} onChange={this.onInfoNeededChange}/>
+          <CheckboxText>{I18N.get('suggestion.tag.type.INFO_NEEDED')}</CheckboxText>
+        </Col>
+        <Col sm={24} md={7}>
+          <Checkbox defaultChecked={this.state.referenceStatus} onChange={this.onReferenceStatusChange}/>
+          <CheckboxText>{I18N.get('suggestion.tag.type.ADDED_TO_PROPOSAL')}</CheckboxText>
         </Col>
       </Row>
     )
   }
 
-  onInfoNeededChange = async (checked) => {
+  onInfoNeededChange = async (e) => {
     const {onTagsIncludedChanged, tagsIncluded} = this.props
-    tagsIncluded.infoNeeded = checked
+    tagsIncluded.infoNeeded = e.target.checked
     await onTagsIncludedChanged(tagsIncluded)
     await this.refetch()
   }
 
-  onUnderConsiderationChange = async (checked) => {
+  onUnderConsiderationChange = async (e) => {
     const {onTagsIncludedChanged, tagsIncluded} = this.props
-    tagsIncluded.underConsideration = checked
+    tagsIncluded.underConsideration = e.target.checked
     await onTagsIncludedChanged(tagsIncluded)
     await this.refetch()
   }
 
   // checked = boolean
-  onReferenceStatusChange = async (checked) => {
+  onReferenceStatusChange = async (e) => {
 
     const {onReferenceStatusChanged} = this.props
 
     // the first onReferenceStatusChanged is the props fn from Container
-    await this.setState({referenceStatus: checked})
-    await onReferenceStatusChanged(checked)
+    await this.setState({referenceStatus: e.target.checked})
+    await onReferenceStatusChanged(e.target.checked)
     await this.refetch()
   }
 
@@ -393,11 +397,13 @@ export default class extends StandardPage {
     const href = `/suggestion/${data._id}`
     const actionsNode = this.renderActionsNode(data, this.refetch)
     const metaNode = this.renderMetaNode(data)
-    const title = <ItemTitle to={href} className="title-link">{data.title}</ItemTitle>
+    const title = <ItemTitle to={href}>{data.title}</ItemTitle>
+    const tagsNode = this.renderTagsNode(data)
     return (
       <div key={data._id} className="item-container">
         {metaNode}
         {title}
+        {tagsNode}
         <ShortDesc>
           {data.shortDesc}
           {_.isArray(data.link) && (data.link.map((link) => {
@@ -429,6 +435,8 @@ export default class extends StandardPage {
   }
 
   renderMetaNode = detail => <MetaContainer data={detail} />
+
+  renderTagsNode = detail => <TagsContainer data={detail} />
 
   renderActionsNode = (detail, refetch) => <ActionsContainer data={detail} listRefetch={refetch}/>
 
@@ -530,22 +538,15 @@ const HeaderDiagramContainer = styled.div`
 
 const ItemTitle = styled(Link)`
   font-size: 20px;
-  color: ${text.newGray};
+  color: black;
   transition: all 0.3s;
   font-weight: 400;
   text-decoration: none;
-  margin-top: 8px;
-  margin-bottom: 4px;
+  margin: 8px 0;
   display: block;
   &:hover {
     color: $link_color;
   }
-
-  background-color: ${bg.blue};
-
-  padding: 4px 8px;
-  border: 1px solid #e4effd;
-  border-radius: 4px;
 `
 
 const ItemLinkWrapper = styled.div`
@@ -554,8 +555,8 @@ const ItemLinkWrapper = styled.div`
 `
 
 const ShortDesc = styled.div`
+  margin-top: 8px;
   font-weight: 200;
-  padding: 4px 8px 0;
 `
 
 const HeaderDesc = styled.div`
@@ -577,7 +578,7 @@ const AddButtonContainer = styled.div`
   padding-top: 24px;
 `
 
-const SwitchText = styled.span`
+const CheckboxText = styled.span`
   margin-left: 10px;
 `
 

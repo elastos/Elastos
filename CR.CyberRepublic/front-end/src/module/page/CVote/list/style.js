@@ -1,9 +1,11 @@
 import styled from 'styled-components'
-import { Button } from 'antd'
+import { Button, Input } from 'antd'
 import { grid } from '../common/variable'
 import { CVOTE_RESULT_COLOR, CVOTE_RESULT } from '@/constant'
 import { breakPoint } from '@/constants/breakPoint'
 import { bg } from '@/constants/color'
+
+const Search = Input.Search
 
 export const Container = styled.div`
   background: #ffffff;
@@ -54,6 +56,11 @@ export const StyledButton = styled(Button)`
     color: white !important;
     background-color: ${bg.obsidian} !important;
     border-color: ${bg.obsidian} !important;
+  }
+`
+export const StyledSearch = styled(Search)`
+  .ant-input {
+    border-radius: 0;
   }
 `
 export const VoteFilter = styled.div`
