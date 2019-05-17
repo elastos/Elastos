@@ -7,6 +7,7 @@ import (
 	"io"
 	"net"
 	"sync/atomic"
+	"time"
 
 	"github.com/elastos/Elastos.ELA/dpos/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
@@ -21,6 +22,9 @@ const (
 	// they will take 200MB memory cache, is not too large for a computer that
 	// have a 8GB(1024MB*8) or larger memory.
 	buffSize = 1024 << 10 // 1MB
+
+	// pipeTimeout defines the time duration to timeout a pipe.
+	pipeTimeout = 2 * time.Minute
 )
 
 // pipe represent a pipeline from the local connection to the mapping net
@@ -38,39 +42,60 @@ func (p *pipe) start() {
 	go p.flow(p.outlet, p.inlet)
 }
 
-// close closes the data pipeline between inlet and outlet.
-func (p *pipe) close() {
-	if atomic.AddInt32(&p.closed, 1) != 1 {
-		return
+// isAllowedReadError returns whether or not the passed error is allowed without
+// close the pipe.
+func (p *pipe) isAllowedIOError(err error) bool {
+	if !atomic.CompareAndSwapInt32(&p.closed, 0, 1) {
+		return false
 	}
-	_ = p.inlet.Close()
-	_ = p.outlet.Close()
-}
 
-// handleIOError handles the IO error and decide whether or not close the pipe.
-func (p *pipe) handleIOError(err error) {
 	if err == io.EOF {
-		p.close()
-		return
+		return false
 	}
 	if opErr, ok := err.(*net.OpError); ok && !opErr.Temporary() {
-		p.close()
+		return false
 	}
+	return true
 }
 
 // flow creates a one way flow between from and to.
 func (p *pipe) flow(from net.Conn, to net.Conn) {
 	buf := make([]byte, buffSize)
-	for atomic.LoadInt32(&p.closed) == 0 {
+
+	idleTimer := time.NewTimer(pipeTimeout)
+	defer idleTimer.Stop()
+
+	ioFunc := func() error {
 		n, err := from.Read(buf)
 		if err != nil {
-			p.handleIOError(err)
+			return err
 		}
+
 		_, err = to.Write(buf[:n])
-		if err != nil {
-			p.handleIOError(err)
+		return err
+	}
+	done := make(chan error)
+out:
+	for {
+		go func() {
+			done <- ioFunc()
+		}()
+
+		select {
+		case err := <-done:
+			if !p.isAllowedIOError(err) {
+				break out
+			}
+
+			idleTimer.Reset(pipeTimeout)
+
+		case <-idleTimer.C:
+			log.Warnf("pipe no response for %s -- timeout", pipeTimeout)
+			break out
 		}
 	}
+	_ = p.inlet.Close()
+	_ = p.outlet.Close()
 }
 
 // state stores the current connect peers and local service index.
