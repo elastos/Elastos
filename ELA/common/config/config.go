@@ -58,6 +58,7 @@ type Configuration struct {
 	VoteStartHeight    uint32            `json:"VoteStartHeight"`
 	CRCOnlyDPOSHeight  uint32            `json:"CRCOnlyDPOSHeight"`
 	PublicDPOSHeight   uint32            `json:"PublicDPOSHeight"`
+	ProfilePort        uint32            `json:"ProfilePort"`
 }
 
 // DPoSConfiguration defines the DPoS consensus parameters.

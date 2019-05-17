@@ -30,6 +30,7 @@ import (
 	"github.com/elastos/Elastos.ELA/servers/httpnodeinfo"
 	"github.com/elastos/Elastos.ELA/servers/httprestful"
 	"github.com/elastos/Elastos.ELA/servers/httpwebsocket"
+	"github.com/elastos/Elastos.ELA/utils"
 	"github.com/elastos/Elastos.ELA/utils/elalog"
 	"github.com/elastos/Elastos.ELA/utils/signal"
 
@@ -108,6 +109,11 @@ func setupConfig(c *cli.Context) {
 }
 
 func startNode(c *cli.Context) {
+	// Enable http profiling server if requested.
+	if cfg.ProfilePort != 0 {
+		go utils.StartPProf(cfg.ProfilePort)
+	}
+
 	flagDataDir := c.String("datadir")
 	dataDir := filepath.Join(flagDataDir, dataPath)
 
