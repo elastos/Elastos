@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import org.elastos.wallet.ela.utils.Log;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -160,6 +161,10 @@ public class MyUtil {
                 "mnemonic_spanish.txt"};
 
         for (int i = 0; i < names.length; i++) {
+            File file = new File(rootPath + "/" + names[i]);
+            if (file.exists()) {
+                continue;
+            }
             InputStream is = context.getClass().getClassLoader().getResourceAsStream("assets/" + names[i]);
             try
             {

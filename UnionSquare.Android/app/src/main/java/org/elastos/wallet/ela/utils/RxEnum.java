@@ -50,7 +50,8 @@ public enum RxEnum {
     CHOSESIDECHAIN,//选择测链地址
     UPDATAPROGRESS,//首页同步
     VOTETRANSFERACTIVITY,//投票
-    BALANCECHANGE;//balance发生变化
+    BALANCECHANGE,//balance发生变化
+    CHANGELANGUAGE;//改变语言
 
     enum Type {
         CoinBase, // 创币交易

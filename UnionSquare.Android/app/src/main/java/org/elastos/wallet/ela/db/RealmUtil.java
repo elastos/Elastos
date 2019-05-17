@@ -12,6 +12,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -368,6 +369,20 @@ public class RealmUtil {
         realm.commitTransaction();
         realm.close();
         listener.onSuccess();
+    }
+
+    public void updateSubWalletDetial(@NonNull Map<String, List<org.elastos.wallet.ela.db.table.SubWallet>> listMap) {
+        Realm realm = getInstanceRealm();
+        realm.beginTransaction();
+        for (Map.Entry<String, List<SubWallet>> entry : listMap.entrySet()) {
+            List<SubWallet> assetList = entry.getValue();
+            for (SubWallet subWallet : assetList) {
+                subWallet.setWallletId(subWallet.getBelongId() + subWallet.getChainId());
+                realm.copyToRealmOrUpdate(subWallet);
+            }
+        }
+        realm.commitTransaction();
+        realm.close();
     }
     /*
 

@@ -177,15 +177,13 @@ public abstract class BaseActivity<T extends BaseContract.Basepresenter> extends
         EventBus.getDefault().post(new BusEvent(code, name, obj));
     }
 
-    protected static MyWallet myWallet;
-
 
     public synchronized MyWallet getWallet() {
-        if (myWallet == null) {
-            myWallet = new MyWallet();
-            return myWallet;
+
+        if (MyApplication.getMyWallet() == null) {
+            MyApplication.setMyWallet(new MyWallet());
         }
-        return myWallet;
+        return MyApplication.getMyWallet();
     }
 
 

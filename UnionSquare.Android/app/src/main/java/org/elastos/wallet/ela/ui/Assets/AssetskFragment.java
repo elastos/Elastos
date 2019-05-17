@@ -18,7 +18,6 @@ import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
-import org.elastos.wallet.ela.db.listener.RealmTransactionAbs;
 import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.adapter.AssetskAdapter;
@@ -83,18 +82,10 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        for (Map.Entry<String, List<SubWallet>> entry : listMap.entrySet()) {
-            List<SubWallet> assetList = entry.getValue();
-            for (SubWallet subWallet : assetList) {
-                realmUtil.updateSubWalletDetial(subWallet, new RealmTransactionAbs() {
-                    @Override
-                    public void onSuccess() {
 
-                    }
-                });
-            }
-        }
+    public void onSaveInstanceState(Bundle outState) {
+        Log.d(getClass().getName(), "onSaveInstanceState");
+        realmUtil.updateSubWalletDetial(listMap);
         super.onSaveInstanceState(outState);
     }
 
@@ -418,16 +409,6 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     public void onDestroy() {
         super.onDestroy();
         //存储所有同步状态
-        for (Map.Entry<String, List<SubWallet>> entry : listMap.entrySet()) {
-            List<SubWallet> assetList = entry.getValue();
-            for (SubWallet subWallet : assetList) {
-                realmUtil.updateSubWalletDetial(subWallet, new RealmTransactionAbs() {
-                    @Override
-                    public void onSuccess() {
-
-                    }
-                });
-            }
-        }
+        realmUtil.updateSubWalletDetial(listMap);
     }
 }

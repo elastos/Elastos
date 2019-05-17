@@ -7,6 +7,7 @@ import com.blankj.utilcode.util.Utils;
 import com.tencent.bugly.crashreport.CrashReport;
 
 import org.elastos.wallet.BuildConfig;
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.di.component.ApplicationComponent;
 import org.elastos.wallet.ela.di.component.DaggerApplicationComponent;
 import org.elastos.wallet.ela.di.moudule.ApplicationModule;
@@ -19,6 +20,7 @@ public class MyApplication extends MultiDexApplication {
     private static MyApplication myApplication;
     public static int chainID = 0;//0正式  1testnet
 
+    protected static MyWallet myWallet;
     private ApplicationComponent mApplicationComponent;
 
 
@@ -63,5 +65,12 @@ public class MyApplication extends MultiDexApplication {
         return myApplication;
     }
 
+    public static MyWallet getMyWallet() {
+        return myWallet;
+    }
+
+    public static void setMyWallet(MyWallet myWallet) {
+        MyApplication.myWallet = myWallet;
+    }
 
 }

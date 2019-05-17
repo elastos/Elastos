@@ -11,12 +11,18 @@ import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyUtil;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.FirstFragment;
+import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.base.BaseActivity;
+import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.ui.main.presenter.MainPresenter;
 import org.elastos.wallet.ela.ui.main.viewdata.MainViewData;
+import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.utils.StatusBarUtil;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -32,6 +38,8 @@ public class MainActivity extends BaseActivity implements MainViewData {
         System.loadLibrary("spvsdk_jni");
     }
 
+    private boolean flag;
+
 
     @Override
     protected int getLayoutId() {
@@ -46,6 +54,8 @@ public class MainActivity extends BaseActivity implements MainViewData {
         if (findFragment(FirstFragment.class) == null) {
             loadRootFragment(R.id.mhoneframeLayout, FirstFragment.newInstance());
         }
+        flag = false;
+        registReceiver();
     }
 
     @Override
@@ -77,8 +87,7 @@ public class MainActivity extends BaseActivity implements MainViewData {
     protected void onResume() {
 
         super.onResume();
-        if (myWallet == null) {
-
+        if (MyApplication.getMyWallet() == null) {
             new MainPresenter().getWallet(this);
         } else {
             getWallet().onResume(true);
@@ -119,7 +128,6 @@ public class MainActivity extends BaseActivity implements MainViewData {
     }
 
     public void changeAppLanguage() {
-
         String sta = new SPUtil(this).getLanguage() == 0 ? "zh" : "en";//这是SharedPreferences工具类，用于保存设置，代码很简单，自己实现吧
         // 本地语言设置
         Locale myLocale = new Locale(sta);
@@ -133,9 +141,12 @@ public class MainActivity extends BaseActivity implements MainViewData {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (flag) {
+            return;
+        }
         getWallet().onDestroy();
         getWallet().mMasterWalletManager = null;
-        myWallet = null;
+        MyApplication.setMyWallet(null);
     }
 
 
@@ -159,6 +170,10 @@ public class MainActivity extends BaseActivity implements MainViewData {
                 "mnemonic_japanese.txt",
                 "mnemonic_spanish.txt"};
         for (int i = 0; i < names.length; i++) {
+            File file = new File(rootPath + "/" + names1[i]);
+            if (file.exists()) {
+                continue;
+            }
             InputStream is = context.getClass().getClassLoader().getResourceAsStream("assets/" + names[i]);
             try {
                 OutputStream fosto = new FileOutputStream(rootPath + "/" + names1[i]);
@@ -173,6 +188,15 @@ public class MainActivity extends BaseActivity implements MainViewData {
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void Event(BusEvent result) {
+        int integer = result.getCode();
+        if (integer == RxEnum.CHANGELANGUAGE.ordinal()) {
+
+            flag = true;
         }
     }
 }

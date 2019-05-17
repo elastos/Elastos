@@ -102,7 +102,7 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.tv_chinese:
-                if (sp.getLanguage()==0){
+                if (sp.getLanguage() == 0) {
                     return;
                 }
                 tvEnglish.setSelected(false);
@@ -112,7 +112,7 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
 
                 break;
             case R.id.tv_english:
-                if (sp.getLanguage()==1){
+                if (sp.getLanguage() == 1) {
                     return;
                 }
                 tvChinese.setSelected(false);
@@ -219,7 +219,8 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
         Configuration conf = res.getConfiguration();
         conf.locale = myLocale;
         res.updateConfiguration(conf, dm);*/
-
+//todo  不销毁wallet post 或者application或者 firstfrag用activity
+        post(RxEnum.CHANGELANGUAGE.ordinal(), null, null);
         Intent intent = new Intent(getActivity(), MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
@@ -271,17 +272,5 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
         ((BaseFragment) getParentFragment()).start(contactDetailFragment);
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // TODO: inflate a fragment view
-        View rootView = super.onCreateView(inflater, container, savedInstanceState);
-        unbinder = ButterKnife.bind(this, rootView);
-        return rootView;
-    }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
-    }
 }
