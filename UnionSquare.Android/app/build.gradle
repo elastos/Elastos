@@ -14,10 +14,12 @@ android {
         versionCode 3
         versionName "1.0.0.3"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+        }
         externalNativeBuild {
             cmake {
                 cppFlags "-Wl,--no-warn-search-mismatch"
-                abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
             }
         }
         sourceSets {
