@@ -73,6 +73,8 @@
     "CheckAddressHeight": 88812,
     "VoteStartHeight": 88812,
     "CRCOnlyDPOSHeight": 1008812,
-    "PublicDPOSHeight": 1108812
+    "PublicDPOSHeight": 1108812,
+    "ProfilePort"     : 20332
+
   }
 }
