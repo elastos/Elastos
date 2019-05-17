@@ -4,9 +4,7 @@ import android.content.Context;
 import android.support.multidex.MultiDexApplication;
 
 import com.blankj.utilcode.util.Utils;
-import com.tencent.bugly.crashreport.CrashReport;
 
-import org.elastos.wallet.BuildConfig;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.di.component.ApplicationComponent;
 import org.elastos.wallet.ela.di.component.DaggerApplicationComponent;
@@ -27,15 +25,10 @@ public class MyApplication extends MultiDexApplication {
     @Override
     public void onCreate() {
         super.onCreate();
-        //  JPushInterface.setDebugMode(true); 	// 设置开启日志,发布时请关闭日志
-        // JPushInterface.init(this);
         myApplication = this;
         initApplicationComponent();
         Utils.init(this);
         Realm.init(getApplicationContext());
-        if (!BuildConfig.DEBUG) {
-            CrashReport.initCrashReport(getApplicationContext(), "9c89947c00", false);
-        }
         String pachageName = getPackageName();
         if (pachageName.endsWith("testnet")) {
             chainID = 1;

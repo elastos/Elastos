@@ -1,7 +1,10 @@
 package org.elastos.wallet.ela.utils;
 
+import org.elastos.wallet.BuildConfig;
+
 public class Log {
-    private static boolean isDebug = true;
+    private static boolean isDebug = BuildConfig.DEBUG;
+
 
     public static void v(String tag, String msg) {
         if (isDebug)
