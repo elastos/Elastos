@@ -57,12 +57,6 @@ func (i *IllegalBehaviorMonitor) AddProposal(proposal *payload.DPOSProposal) {
 
 func (i *IllegalBehaviorMonitor) Reset(changeView bool) {
 	i.cachedProposals = make(map[common.Uint256]*payload.DPOSProposal)
-	for k, v := range i.dispatcher.pendingProposals {
-		i.cachedProposals[k] = v
-	}
-	for k, v := range i.dispatcher.precociousProposals {
-		i.cachedProposals[k] = v
-	}
 
 	if !changeView {
 		if i.dispatcher.processingBlock != nil {
@@ -70,6 +64,13 @@ func (i *IllegalBehaviorMonitor) Reset(changeView bool) {
 		}
 
 		i.inactiveArbitratorsPayloadHash = nil
+	} else {
+		for k, v := range i.dispatcher.pendingProposals {
+			i.cachedProposals[k] = v
+		}
+		for k, v := range i.dispatcher.precociousProposals {
+			i.cachedProposals[k] = v
+		}
 	}
 }
 
