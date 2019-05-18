@@ -271,6 +271,11 @@ func (b *BlockChain) CurrentBlockHash() Uint256 {
 }
 
 func (b *BlockChain) ProcessIllegalBlock(payload *payload.DPOSIllegalBlocks) {
+	// if received inactive when synchronizing, then return
+	if payload.GetBlockHeight() > b.GetHeight() {
+		log.Info("received inactive tx when synchronizing")
+		return
+	}
 	if err := DefaultLedger.Arbitrators.ProcessSpecialTxPayload(payload,
 		b.BestChain.Height); err != nil {
 		log.Error("process illegal block error: ", err)
@@ -278,6 +283,11 @@ func (b *BlockChain) ProcessIllegalBlock(payload *payload.DPOSIllegalBlocks) {
 }
 
 func (b *BlockChain) ProcessInactiveArbiter(payload *payload.InactiveArbitrators) {
+	// if received inactive when synchronizing, then return
+	if payload.GetBlockHeight() > b.GetHeight()+1 {
+		log.Info("received inactive tx when synchronizing")
+		return
+	}
 	if err := DefaultLedger.Arbitrators.ProcessSpecialTxPayload(payload,
 		b.BestChain.Height); err != nil {
 		log.Error("process illegal block error: ", err)
@@ -980,7 +990,7 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 	}
 
 	if inMainChain && !reorganized && (block.Height >= b.chainParams.VoteStartHeight ||
-		// In case of VoteStartHeight larger than (CRCOnlyDPOSHeight-PreConnectOffset)
+	// In case of VoteStartHeight larger than (CRCOnlyDPOSHeight-PreConnectOffset)
 		block.Height == b.chainParams.CRCOnlyDPOSHeight-b.chainParams.
 			PreConnectOffset) {
 		DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
