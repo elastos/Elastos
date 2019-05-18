@@ -14,7 +14,10 @@ export default class extends Base {
         service.cronjob()
 
         if (param.search) {
-            param.title = { $regex: _.trim(param.search), $options: 'i' }
+            param.$or = [
+                {title: { $regex: _.trim(param.search), $options: 'i' }},
+                {vid: _.toNumber(_.trim(param.search)) || 0 },
+            ]
         }
 
         // for the public call param.published should always be true
