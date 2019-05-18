@@ -577,7 +577,7 @@ func (d *DPOSManager) clearInactiveData(p *payload.InactiveArbitrators) {
 	}
 
 	if d.arbitrators.IsInactiveMode() || d.arbitrators.IsUnderstaffedMode() {
-		d.dispatcher.FinishConsensus()
+		d.dispatcher.ResetByCurrentView()
 	}
 
 	log.Info("clearInactiveData finished:", len(d.blockCache.ConsensusBlocks))

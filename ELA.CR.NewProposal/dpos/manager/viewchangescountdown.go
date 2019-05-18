@@ -25,11 +25,13 @@ type ViewChangesCountDown struct {
 
 	handledPayloadHashes map[common.Uint256]struct{}
 	timeoutRefactor      uint32
+	startViewOffset      uint32
 }
 
-func (c *ViewChangesCountDown) Reset() {
+func (c *ViewChangesCountDown) Reset(start uint32) {
 	c.handledPayloadHashes = make(map[common.Uint256]struct{})
 	c.timeoutRefactor = firstTimeoutFactor
+	c.startViewOffset = start
 }
 
 func (c *ViewChangesCountDown) SetEliminated(hash common.Uint256) bool {
@@ -48,6 +50,6 @@ func (c *ViewChangesCountDown) IsTimeOut() bool {
 		return false
 	}
 
-	return c.consensus.GetViewOffset() >=
+	return c.consensus.GetViewOffset() - c.startViewOffset >=
 		uint32(c.arbitrators.GetArbitersCount())*c.timeoutRefactor
 }

@@ -194,7 +194,7 @@ func (p *ProposalDispatcher) CleanProposals(changeView bool) {
 	p.pendingVotes = make(map[common.Uint256]*payload.DPOSProposalVote)
 	p.proposalProcessFinished = false
 	if !changeView {
-		p.inactiveCountDown.Reset()
+		p.inactiveCountDown.Reset(0)
 		p.currentInactiveArbitratorTx = nil
 		p.signedTxs = map[common.Uint256]interface{}{}
 		p.pendingProposals = make(map[common.Uint256]*payload.DPOSProposal)
@@ -215,6 +215,26 @@ func (p *ProposalDispatcher) CleanProposals(changeView bool) {
 			}
 		}
 	}
+}
+
+func (p *ProposalDispatcher) ResetByCurrentView() {
+	p.illegalMonitor.Reset(false)
+
+	p.processingBlock = nil
+	p.processingProposal = nil
+	p.acceptVotes = make(map[common.Uint256]*payload.DPOSProposalVote)
+	p.rejectedVotes = make(map[common.Uint256]*payload.DPOSProposalVote)
+	p.pendingVotes = make(map[common.Uint256]*payload.DPOSProposalVote)
+	p.proposalProcessFinished = false
+
+	p.inactiveCountDown.Reset(p.cfg.Consensus.GetViewOffset() + 1)
+	p.currentInactiveArbitratorTx = nil
+	p.signedTxs = map[common.Uint256]interface{}{}
+	p.pendingProposals = make(map[common.Uint256]*payload.DPOSProposal)
+	p.precociousProposals = make(map[common.Uint256]*payload.DPOSProposal)
+
+	p.eventAnalyzer.Clear()
+
 }
 
 func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposal,
@@ -432,7 +452,7 @@ func (p *ProposalDispatcher) IsViewChangedTimeOut() bool {
 				p.firstBadNetworkRecover = false
 				return false
 			}
-			p.FinishConsensus()
+			p.ResetByCurrentView()
 		}
 		return false
 	}
@@ -807,7 +827,7 @@ func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (
 		arbitrators:     cfg.Arbitrators,
 		timeoutRefactor: 0,
 	}
-	p.inactiveCountDown.Reset()
+	p.inactiveCountDown.Reset(0)
 
 	i := &IllegalBehaviorMonitor{
 		dispatcher:      p,
