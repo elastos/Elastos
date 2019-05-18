@@ -7,28 +7,17 @@ android {
     productFlavors {
         applicationVariants.all { variant ->
             variant.outputs.all { output ->
-				/*
-				 * Gets the version name from the latest Git tag
-				 */
-				def getVersionName = { ->
-					def stdout = new ByteArrayOutputStream()
-						exec {
-							commandLine 'git', 'describe', '--dirty', '--always', '--tags'
-								standardOutput = stdout
-						}
-					return stdout.toString().trim()
-				}
 
                 if (!variant.buildType.isDebuggable()) {
                     if (variant.flavorName == "MainNet") {
-                        def fileName = "ELAWallet-v${variant.versionName}-${getVersionName}"
+                        def fileName = "ELAWallet-${variant.versionName}"
                         outputFileName = fileName + ".apk";
                     } else {
-                        def fileName = "ELAWallet-v${variant.versionName}-${getVersionName}-${variant.flavorName}"
+                        def fileName = "ELAWallet-${variant.versionName}-${variant.flavorName}"
                         outputFileName = fileName + ".apk";
                     }
                 } else {
-                    def fileName = "ELAWallet-v${variant.versionName}-${getVersionName}-${variant.flavorName}-debug"
+                    def fileName = "ELAWallet-${variant.versionName}-${variant.flavorName}-debug"
                     outputFileName = fileName + ".apk";
                 }
             }
@@ -41,14 +30,35 @@ android {
         }
     }
 
+    /*
+     * Gets the version name from the latest Git tag
+     */
+    def getVersionName = { ->
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'describe', '--dirty', '--always', '--tags'
+            standardOutput = stdout
+        }
+        return stdout.toString().trim()
+    }
+
+    def getCommitCount = { ->
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'rev-list', '--count', 'HEAD'
+            standardOutput = stdout
+        }
+        return stdout.toString().trim().toInteger()
+    }
+
     compileSdkVersion 28
     defaultConfig {
         applicationId "org.elastos.unionsquare"
         resValue "string", "app_name", "ELAWallet"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 5
-        versionName "1.0.0.5"
+        versionCode getCommitCount()
+        versionName getVersionName()
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk {
             abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
