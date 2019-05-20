@@ -991,12 +991,6 @@ func (p *Peer) localVersionMsg() (*msg.Version, error) {
 	msg := msg.NewVersion(p.cfg.ProtocolVersion, p.cfg.DefaultPort,
 		p.cfg.Services, nonce, p.cfg.BestHeight(), p.cfg.DisableRelayTx)
 
-	// Advertise the services flag
-	msg.Services = p.cfg.Services
-
-	// Advertise our max supported protocol version.
-	msg.Version = uint32(p.cfg.ProtocolVersion)
-
 	return msg, nil
 }
 
