@@ -68,7 +68,7 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
     private String amount;
     private SideChainPresenter presenter;
     private String attributes;
-    private String maxBalance="0";
+    private String maxBalance = "0";
 
     @Override
     protected int getLayoutId() {
@@ -155,8 +155,8 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
     @Override
     public void onBalance(BalanceEntity data) {
         maxBalance = data.getBalance();
-       // String balance = String.format(getString(R.string.inputbalance), NumberiUtil.maxNumberFormat((Double.parseDouble(data.getBalance()) / MyWallet.RATE) + "", 12) + " " + data.getChainId());
-        String balance = String.format(getString(R.string.inputbalance), NumberiUtil.maxNumberFormat(Arith.div(data.getBalance(),MyWallet.RATE_S), 12) + " ELA");
+        // String balance = String.format(getString(R.string.inputbalance), NumberiUtil.maxNumberFormat((Double.parseDouble(data.getBalance()) / MyWallet.RATE) + "", 12) + " " + data.getChainId());
+        String balance = String.format(getString(R.string.inputbalance), NumberiUtil.maxNumberFormat(Arith.div(data.getBalance(), MyWallet.RATE_S), 12) + " ELA");
         etBalance.setHint(balance);
     }
 
@@ -171,11 +171,11 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
             showToastMessage(getString(R.string.transferamountnotnull));
             return;
         }
-        if (Arith.mul(amount, MyWallet.RATE_S).add(new BigDecimal(MyWallet.feePerKb+""))
-                .compareTo(new BigDecimal(maxBalance)) > -1) {
+        /*if (Arith.mul(amount, MyWallet.RATE_S).add(new BigDecimal(MyWallet.feePerKb+""))
+                .compareTo(new BigDecimal(maxBalance)) > 0) {
             showToastMessage(getString(R.string.lack_of_balance));
             return;
-        }
+        }*/
         presenter.isAddressValid(wallet.getWalletId(), address, this);
     }
 

@@ -68,7 +68,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
     Unbinder unbinder1;
     private String chainId;
     private Wallet wallet;
-    private String maxBalance="0";
+    private String maxBalance = "0";
     private TransferPresenter presenter;
     private String address;
     private String amount;
@@ -141,11 +141,11 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
             showToastMessage(getString(R.string.transferamountnotnull));
             return;
         }
-        if (Arith.mul(amount, MyWallet.RATE_S).add(new BigDecimal(MyWallet.feePerKb+""))
-                .compareTo(new BigDecimal(maxBalance)) > -1) {
+      /*  if (Arith.mul(amount, MyWallet.RATE_S).add(new BigDecimal(MyWallet.feePerKb + ""))
+                .compareTo(new BigDecimal(maxBalance)) > 0) {
             showToastMessage(getString(R.string.lack_of_balance));
             return;
-        }
+        }*/
         presenter.isAddressValid(wallet.getWalletId(), address, this);
     }
 

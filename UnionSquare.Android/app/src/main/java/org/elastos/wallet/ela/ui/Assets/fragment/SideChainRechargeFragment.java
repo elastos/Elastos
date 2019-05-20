@@ -214,11 +214,11 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
             showToastMessage(getString(R.string.transferamountnotnull));
             return;
         }
-        if (Arith.mul(amount, MyWallet.RATE_S).add(new BigDecimal(MyWallet.feePerKb+""))
-                .compareTo(new BigDecimal(maxBalance)) > -1) {
+       /* if (Arith.mul(amount, MyWallet.RATE_S).add(new BigDecimal(MyWallet.feePerKb+""))
+                .compareTo(new BigDecimal(maxBalance)) > 0) {
             showToastMessage(getString(R.string.lack_of_balance));
             return;
-        }
+        }*/
         presenter.isAddressValid(wallet.getWalletId(), address, this);
     }
 
