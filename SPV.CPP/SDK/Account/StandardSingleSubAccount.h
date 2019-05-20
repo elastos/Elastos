@@ -12,7 +12,7 @@ namespace Elastos {
 
 		class StandardSingleSubAccount : public SingleSubAccount {
 		public:
-			StandardSingleSubAccount(const HDKeychain &masterPubKey, const bytes_t &votePubKey,
+			StandardSingleSubAccount(const HDKeychain &masterPubKey, const bytes_t &ownerPubKey,
 									 IAccount *account, uint32_t coinIndex);
 
 			virtual bytes_t GetRedeemScript(const Address &addr) const;
@@ -25,7 +25,7 @@ namespace Elastos {
 
 			virtual bool ContainsAddress(const Address &address) const;
 
-			virtual Key DeriveVoteKey(const std::string &payPasswd);
+			virtual Key DeriveOwnerKey(const std::string &payPasswd);
 
 			virtual size_t TxInternalChainIndex(const TransactionPtr &tx) const;
 

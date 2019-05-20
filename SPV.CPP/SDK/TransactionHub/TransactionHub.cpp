@@ -83,11 +83,12 @@ namespace Elastos {
 
 		nlohmann::json TransactionHub::GetBalanceInfo() {
 			nlohmann::json info;
+			boost::mutex::scoped_lock scopedLock(lock);
 
 			_transactions.ForEach([this, &info](const uint256 &key, const AssetTransactionsPtr &value) {
 				nlohmann::json assetInfo;
 				assetInfo["AssetID"] = key.GetHex();
-				assetInfo["BalanceInfo"] = value->GetBalanceInfo();
+				assetInfo["Summary"] = value->GetBalanceInfo();
 				info.push_back(assetInfo);
 			});
 
@@ -213,6 +214,7 @@ namespace Elastos {
 			return r;
 		}
 
+#if 0
 		bool TransactionHub::TransactionIsPending(const TransactionPtr &transaction) {
 			time_t now = time(NULL);
 			uint32_t height;
@@ -271,6 +273,7 @@ namespace Elastos {
 
 			return r;
 		}
+#endif
 
 		uint64_t TransactionHub::GetTransactionAmount(const TransactionPtr &tx) {
 			uint64_t amountSent = GetTransactionAmountSent(tx);
@@ -331,12 +334,20 @@ namespace Elastos {
 			return _subAccount->GetAllAddresses(addr, start, count, containInternal);
 		}
 
-		Address TransactionHub::GetVoteDepositAddress() const {
+		Address TransactionHub::GetOwnerDepositAddress() const {
 			if ("Multi-Sign Account" == _subAccount->GetBasicInfo()["Type"]) {
 				return Address();
 			}
 
-			return Address(PrefixDeposit, _subAccount->GetVotePublicKey());
+			return Address(PrefixDeposit, _subAccount->GetOwnerPublicKey());
+		}
+
+		Address TransactionHub::GetOwnerAddress() const {
+			if ("Multi-Sign Account" == _subAccount->GetBasicInfo()["Type"]) {
+				return Address();
+			}
+
+			return Address(PrefixStandard, _subAccount->GetOwnerPublicKey());
 		}
 
 		bool TransactionHub::IsVoteDepositAddress(const Address &addr) const {

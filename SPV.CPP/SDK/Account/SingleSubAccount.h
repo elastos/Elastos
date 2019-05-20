@@ -30,7 +30,7 @@ namespace Elastos {
 
 			virtual bool IsAddressUsed(const Address &address) const;
 
-			virtual Key DeriveVoteKey(const std::string &payPasswd);
+			virtual Key DeriveOwnerKey(const std::string &payPasswd);
 
 		};
 

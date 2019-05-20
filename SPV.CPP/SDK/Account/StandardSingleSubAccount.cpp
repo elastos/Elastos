@@ -15,15 +15,17 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		StandardSingleSubAccount::StandardSingleSubAccount(const HDKeychain &masterPubKey,
-														   const bytes_t &votePubKey,
+														   const bytes_t &ownerPubKey,
 														   IAccount *account,
 														   uint32_t coinIndex) :
 				SingleSubAccount(account) {
 				_masterPubKey = masterPubKey;
 				_coinIndex = coinIndex;
-				_votePublicKey = votePubKey;
-				if (votePubKey.size() > 0)
-					_depositAddress = Address(PrefixDeposit, votePubKey);
+				_ownerPublicKey = ownerPubKey;
+				if (ownerPubKey.size() > 0) {
+					_depositAddress = Address(PrefixDeposit, ownerPubKey);
+					_ownerAddress = Address(PrefixStandard, ownerPubKey);
+				}
 
 				_address = Address(PrefixStandard, _masterPubKey.getChild("0/0").pubkey());
 		}
@@ -33,7 +35,7 @@ namespace Elastos {
 			Key key;
 
 			if (IsDepositAddress(addr)) {
-				pubKey = GetVotePublicKey();
+				pubKey = GetOwnerPublicKey();
 				return Address(PrefixDeposit, pubKey).RedeemScript();
 			}
 
@@ -74,10 +76,13 @@ namespace Elastos {
 			if (IsDepositAddress(address))
 				return true;
 
+			if (IsOwnerAddress(address))
+				return true;
+
 			return address == _address;
 		}
 
-		Key StandardSingleSubAccount::DeriveVoteKey(const std::string &payPasswd) {
+		Key StandardSingleSubAccount::DeriveOwnerKey(const std::string &payPasswd) {
 			HDSeed hdseed(_parentAccount->DeriveSeed(payPasswd).bytes());
 			HDKeychain rootKey(hdseed.getExtendedKey(true));
 			// account is 1

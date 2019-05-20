@@ -65,9 +65,9 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 		REQUIRE(tx->IsSigned());
 
 		SECTION("Simple account should not support vote") {
-			bytes_t votePubKey = subAccount1->GetVotePublicKey();
+			bytes_t votePubKey = subAccount1->GetOwnerPublicKey();
 			REQUIRE(votePubKey.size() == 0);
-			REQUIRE_THROWS(subAccount1->DeriveVoteKey(payPassword));
+			REQUIRE_THROWS(subAccount1->DeriveOwnerKey(payPassword));
 		}
 	}
 
