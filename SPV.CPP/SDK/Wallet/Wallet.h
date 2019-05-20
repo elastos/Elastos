@@ -86,7 +86,9 @@ namespace Elastos {
 
 			size_t GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool containInternal);
 
-			Address GetVoteDepositAddress() const;
+			Address GetOwnerDepositAddress() const;
+
+			Address GetOwnerAddress() const;
 
 			bool IsVoteDepositAddress(const Address &addr) const;
 
@@ -121,9 +123,11 @@ namespace Elastos {
 
 			bool TransactionIsValid(const TransactionPtr &transaction);
 
+#if 0
 			bool TransactionIsPending(const TransactionPtr &transaction);
 
 			bool TransactionIsVerified(const TransactionPtr &transaction);
+#endif
 
 			BigInt AmountSentByTx(const TransactionPtr &tx);
 

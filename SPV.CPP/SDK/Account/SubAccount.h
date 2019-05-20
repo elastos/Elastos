@@ -29,6 +29,8 @@ namespace Elastos {
 
 			bool IsDepositAddress(const Address &address) const;
 
+			bool IsOwnerAddress(const Address &address) const;
+
 			void AddUsedAddrs(const Address &address);
 
 			size_t GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool internal) const;
@@ -58,7 +60,7 @@ namespace Elastos {
 			uint32_t _coinIndex;
 			std::vector<Address> _internalChain, _externalChain;
 			std::set<Address> _usedAddrs, _allAddrs;
-			mutable Address _depositAddress;
+			mutable Address _depositAddress, _ownerAddress;
 
 			AccountPtr _parent;
 			Lockable *_lock;

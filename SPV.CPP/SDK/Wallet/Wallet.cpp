@@ -98,7 +98,7 @@ namespace Elastos {
 			for (it = _groupedAssets.begin(); it != _groupedAssets.end(); ++it) {
 				nlohmann::json assetInfo;
 				assetInfo["AssetID"] = it->first.GetHex();
-				assetInfo["BalancdInfo"] = it->second->GetBalanceInfo();
+				assetInfo["Summary"] = it->second->GetBalanceInfo();
 				info.push_back(assetInfo);
 			}
 
@@ -395,6 +395,7 @@ namespace Elastos {
 			return r;
 		}
 
+#if 0
 		bool Wallet::TransactionIsPending(const TransactionPtr &transaction) {
 			time_t now = time(NULL);
 			uint32_t height;
@@ -454,6 +455,7 @@ namespace Elastos {
 
 			return r;
 		}
+#endif
 
 		BigInt Wallet::AmountSentByTx(const TransactionPtr &tx) {
 			BigInt amount(0);
@@ -481,12 +483,20 @@ namespace Elastos {
 			return _subAccount->GetAllAddresses(addr, start, count, containInternal);
 		}
 
-		Address Wallet::GetVoteDepositAddress() const {
+		Address Wallet::GetOwnerDepositAddress() const {
 			if (Account::MultiSign == _subAccount->Parent()->GetSignType()) {
 				return Address();
 			}
 
 			return Address(PrefixDeposit, _subAccount->OwnerPubKey());
+		}
+
+		Address Wallet::GetOwnerAddress() const {
+			if (Account::MultiSign == _subAccount->Parent()->GetSignType()) {
+				return Address();
+			}
+
+			return Address(PrefixStandard, _subAccount->OwnerPubKey());
 		}
 
 		bool Wallet::IsVoteDepositAddress(const Address &addr) const {
@@ -495,12 +505,8 @@ namespace Elastos {
 		}
 
 		bool Wallet::ContainsAddress(const Address &address) {
-			bool result;
-			{
-				boost::mutex::scoped_lock scoped_lock(lock);
-				result = _subAccount->ContainsAddress(address);
-			}
-			return result;
+			boost::mutex::scoped_lock scoped_lock(lock);
+			return _subAccount->ContainsAddress(address);
 		}
 
 		void Wallet::UpdateBalance() {

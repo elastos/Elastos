@@ -101,19 +101,19 @@ namespace Elastos {
 		}
 
 		nlohmann::json MainchainSubWallet::GenerateCancelProducerPayload(
-			const std::string &publicKey,
+			const std::string &ownerPublicKey,
 			const std::string &payPasswd) const {
 
 			ErrorChecker::CheckLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
 									 Error::AccountNotSupportVote, "This account do not support vote");
 
 			ErrorChecker::CheckPassword(payPasswd, "Generate payload");
-			size_t pubKeyLen = publicKey.size() >> 1;
+			size_t pubKeyLen = ownerPublicKey.size() >> 1;
 			ErrorChecker::CheckParam(pubKeyLen != 33 && pubKeyLen != 65, Error::PubKeyLength,
 									 "Public key length should be 33 or 65 bytes");
 
 			PayloadCancelProducer pc;
-			pc.SetPublicKey(publicKey);
+			pc.SetPublicKey(ownerPublicKey);
 
 			ByteStream ostream;
 			pc.SerializeUnsigned(ostream, 0);

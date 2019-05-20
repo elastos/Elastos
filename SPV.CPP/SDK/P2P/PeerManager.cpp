@@ -654,7 +654,9 @@ namespace Elastos {
 			_filterUpdateHeight = _lastBlock->GetHeight();
 			_fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
 
-			Address voteDepositAddress = _wallet->GetVoteDepositAddress();
+			Address ownerDepositAddress = _wallet->GetOwnerDepositAddress();
+			Address ownerAddress = _wallet->GetOwnerAddress();
+
 			std::vector<Address> addrs;
 			_wallet->GetAllAddresses(addrs, 0, size_t(-1), true);
 			std::vector<UTXO> utxos = _wallet->GetAllUTXO();
@@ -662,15 +664,22 @@ namespace Elastos {
 
 			std::vector<TransactionPtr> transactions = _wallet->TxUnconfirmedBefore(blockHeight);
 			BloomFilterPtr filter = BloomFilterPtr(
-					new BloomFilter(_fpRate, 1 + addrs.size() + _wallet->GetListeningAddrs().size() +
+					new BloomFilter(_fpRate, 2 + addrs.size() + _wallet->GetListeningAddrs().size() +
 											 utxos.size() + transactions.size() + 100,
 									(uint32_t) peer->GetPeerInfo().GetHash(),
 									BLOOM_UPDATE_ALL)); // BUG: XXX txCount not the same as number of spent wallet outputs
 
 			bytes_t hash;
 
-			if (voteDepositAddress.Valid()) {
-				hash = voteDepositAddress.ProgramHash().bytes();
+			if (ownerDepositAddress.Valid()) {
+				hash = ownerDepositAddress.ProgramHash().bytes();
+				if (!filter->ContainsData(hash)) {
+					filter->InsertData(hash);
+				}
+			}
+
+			if (ownerAddress.Valid()) {
+				hash = ownerAddress.ProgramHash().bytes();
 				if (!filter->ContainsData(hash)) {
 					filter->InsertData(hash);
 				}
@@ -1450,7 +1459,6 @@ namespace Elastos {
 							txHashes.clear();
 							b->MerkleBlockTxHashes(txHashes);
 							b = _blocks.Get(b->GetPrevBlockHash());
-							if (b) timestamp = timestamp / 2 + b->GetTimestamp() / 2;
 							if (txHashes.size() > 0)
 								_wallet->UpdateTransactions(txHashes, height, timestamp);
 						}

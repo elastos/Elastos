@@ -25,7 +25,7 @@ namespace Elastos {
 					bool useVotedUTXO = false);
 
 			virtual nlohmann::json GenerateProducerPayload(
-				const std::string &publicKey,
+				const std::string &ownerPublicKey,
 				const std::string &nodePublicKey,
 				const std::string &nickName,
 				const std::string &url,
@@ -34,7 +34,7 @@ namespace Elastos {
 				const std::string &payPasswd) const;
 
 			virtual nlohmann::json GenerateCancelProducerPayload(
-				const std::string &publicKey,
+				const std::string &ownerPublicKey,
 				const std::string &payPasswd) const;
 
 			virtual nlohmann::json CreateRegisterProducerTransaction(

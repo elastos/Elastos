@@ -21,8 +21,10 @@ namespace Elastos {
 			_coinIndex(coinIndex) {
 
 			bytes_t ownerPubKey = _parent->OwnerPubKey();
-			if (!ownerPubKey.empty())
+			if (!ownerPubKey.empty()) {
 				_depositAddress = Address(PrefixDeposit, ownerPubKey);
+				_ownerAddress = Address(PrefixStandard, ownerPubKey);
+			}
 		}
 
 		nlohmann::json SubAccount::GetBasicInfo() const {
@@ -56,6 +58,14 @@ namespace Elastos {
 			}
 
 			return _depositAddress == address;
+		}
+
+		bool SubAccount::IsOwnerAddress(const Address &address) const {
+			if (!_ownerAddress.Valid()) {
+				return false;
+			}
+
+			return _ownerAddress == address;
 		}
 
 		void SubAccount::AddUsedAddrs(const Address &address) {
@@ -254,6 +264,10 @@ namespace Elastos {
 				return true;
 			}
 
+			if (IsOwnerAddress(address)) {
+				return true;
+			}
+
 			if (_parent->GetSignType() == Account::MultiSign) {
 				return _parent->GetAddress() == address;
 			}
@@ -271,6 +285,10 @@ namespace Elastos {
 
 			if (IsDepositAddress(addr)) {
 				return _depositAddress.RedeemScript();
+			}
+
+			if (IsOwnerAddress(addr)) {
+				return _ownerAddress.RedeemScript();
 			}
 
 			if (_parent->GetSignType() == Account::MultiSign) {
