@@ -190,11 +190,21 @@ type ConnManager struct {
 // retry duration. Otherwise, if required, it makes a new connection request.
 // After maxFailedConnectionAttempts new connections will be retried after the
 // configured retry duration.
-func (cm *ConnManager) handleFailedConn(c *ConnReq) {
+func (cm *ConnManager) handleFailedConn(pending map[uint64]*ConnReq, c *ConnReq) {
 	if atomic.LoadInt32(&cm.stop) != 0 {
 		return
 	}
+
+	// Update connection state to failing.
+	c.updateState(ConnFailing)
+	delete(pending, c.id)
+
 	if c.Permanent {
+		// The connection request is re added to the pending map, so that
+		// subsequent processing of connections and failures do not ignore
+		// the request.
+		c.updateState(ConnPending)
+		pending[c.id] = c
 		c.retryCount++
 		d := time.Duration(c.retryCount) * cm.cfg.RetryDuration
 		if d > maxRetryDuration {
@@ -318,18 +328,11 @@ out:
 
 				// Otherwise, we will attempt a reconnection if
 				// we do not have enough peers, or if this is a
-				// persistent peer. The connection request is
-				// re added to the pending map, so that
-				// subsequent processing of connections and
-				// failures do not ignore the request.
+				// persistent peer.
 				if uint32(len(conns)) < cm.cfg.TargetOutbound ||
 					connReq.Permanent {
-
-					connReq.updateState(ConnPending)
-					log.Debugf("Reconnecting to %v",
-						connReq)
-					pending[msg.id] = connReq
-					cm.handleFailedConn(connReq)
+					log.Debugf("Reconnecting to %v", connReq)
+					cm.handleFailedConn(pending, connReq)
 				}
 
 			case handleFailed:
@@ -346,8 +349,7 @@ out:
 				if msg.err != ErrDuplicateAddr {
 					cm.addresses.Delete(connReq.Addr.String())
 				}
-				connReq.updateState(ConnFailing)
-				cm.handleFailedConn(connReq)
+				cm.handleFailedConn(pending, connReq)
 			}
 
 		case <-cm.quit:
