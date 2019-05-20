@@ -113,7 +113,7 @@ func PreProcessSpecialTx(block *Block) error {
 	if len(illegalBlocks) != 0 {
 		for _, v := range illegalBlocks {
 			if err := DefaultLedger.Arbitrators.ProcessSpecialTxPayload(
-				v, block.Height); err != nil {
+				v, block.Height-1); err != nil {
 				return errors.New("force change fail when finding an " +
 					"inactive arbitrators transaction")
 			}
@@ -122,7 +122,7 @@ func PreProcessSpecialTx(block *Block) error {
 	if len(inactivePayloads) != 0 {
 		for _, v := range inactivePayloads {
 			if err := DefaultLedger.Arbitrators.ProcessSpecialTxPayload(
-				v, block.Height); err != nil {
+				v, block.Height-1); err != nil {
 				return errors.New("force change fail when finding an " +
 					"inactive arbitrators transaction")
 			}
