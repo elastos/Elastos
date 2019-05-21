@@ -25,8 +25,20 @@ android {
 
         MainNet {
             dimension "default"
-            applicationId "org.elastos.unionsquare"
+            applicationId "org.elastos.unionsquare.android"
             resValue "string", "app_name", "ELAWallet"
+        }
+
+        MainNetAlpha {
+            dimension "default"
+            applicationId "org.elastos.unionsquare"
+            resValue "string", "app_name", "ELAAlpha"
+        }
+
+        TestNet {
+            dimension "default"
+            applicationId "org.elastos.unionsquare.test"
+            resValue "string", "app_name", "ELATest"
         }
     }
 
@@ -39,6 +51,7 @@ android {
             commandLine 'git', 'describe', '--dirty', '--always', '--tags'
             standardOutput = stdout
         }
+        
         return stdout.toString().trim()
     }
 
@@ -161,7 +174,7 @@ dependencies {
     implementation 'com.android.support:multidex:1.0.3'
     implementation 'com.squareup.okhttp3:logging-interceptor:3.5.0'
     implementation project(':qrcodelib')
-    }
+}
 repositories {
     mavenCentral()
 }
