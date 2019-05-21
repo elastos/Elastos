@@ -374,15 +374,9 @@ func (s *server) handleQuery(state *peerState, querymsg interface{}) {
 		}
 
 		// Disconnect peers in disconnect list.
-		state.forAllPeers(func(sp *serverPeer) {
-			if _, ok := disconnectPeers[sp.PID()]; ok {
-				if sp.connReq != nil {
-					s.connManager.Remove(sp.connReq.PID)
-				} else {
-					sp.Disconnect()
-				}
-			}
-		})
+		for pid := range disconnectPeers {
+			s.connManager.Remove(pid)
+		}
 
 		// Set new connect list into state.
 		state.connectPeers = connectPeers

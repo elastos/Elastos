@@ -25,45 +25,14 @@ var (
 	defaultRetryDuration = time.Second * 5
 )
 
-// ConnState represents the state of the requested connection.
-type ConnState uint8
-
-// ConnState can be either pending, established, disconnected or failed.  When
-// a new connection is requested, it is attempted and categorized as
-// established or failed depending on the connection result.  An established
-// connection which was disconnected is categorized as disconnected.
-const (
-	ConnPending ConnState = iota
-	ConnFailing
-	ConnCanceled
-	ConnEstablished
-	ConnDisconnected
-)
-
 // ConnReq is the connection request to a network address. If permanent, the
 // connection will be retried on disconnection.
 type ConnReq struct {
 	PID        [33]byte // PID is the peer public key id from PeerAddr
 	Addr       net.Addr
 	conn       net.Conn
-	state      ConnState
 	stateMtx   sync.RWMutex
 	retryCount uint32
-}
-
-// updateState updates the state of the connection request.
-func (c *ConnReq) updateState(state ConnState) {
-	c.stateMtx.Lock()
-	c.state = state
-	c.stateMtx.Unlock()
-}
-
-// State is the connection state of the requested connection.
-func (c *ConnReq) State() ConnState {
-	c.stateMtx.RLock()
-	state := c.state
-	c.stateMtx.RUnlock()
-	return state
 }
 
 // String returns a human-readable string for the connection request.
@@ -175,7 +144,7 @@ func (cm *ConnManager) handleFailedConn(c *ConnReq) {
 	}
 	log.Debugf("Retrying connection to %v in %v", c, d)
 	time.AfterFunc(d, func() {
-		cm.Connect(c)
+		cm.connect(c)
 	})
 }
 
@@ -202,7 +171,6 @@ out:
 
 			case registerPending:
 				connReq := msg.c
-				connReq.updateState(ConnPending)
 				pending[msg.c.PID] = connReq
 				close(msg.done)
 
@@ -218,7 +186,6 @@ out:
 					continue
 				}
 
-				connReq.updateState(ConnEstablished)
 				connReq.conn = msg.conn
 				conns[connReq.PID] = connReq
 				log.Debugf("Connected to %v", connReq)
@@ -245,7 +212,6 @@ out:
 					// it from pending map if we should
 					// ignore a later, successful
 					// connection.
-					connReq.updateState(ConnCanceled)
 					log.Debugf("Canceling: %v", connReq)
 					delete(pending, msg.pid)
 					continue
@@ -270,7 +236,6 @@ out:
 				// this connection is being removed, we will
 				// make no further attempts with this request.
 				if !msg.retry {
-					connReq.updateState(ConnDisconnected)
 					continue
 				}
 
@@ -278,10 +243,6 @@ out:
 				// request is re-added to the pending map, so that
 				// subsequent processing of connections and failures
 				// do not ignore the request.
-				connReq.updateState(ConnPending)
-				log.Debugf("Reconnecting to %v",
-					connReq)
-				pending[msg.pid] = connReq
 				cm.handleFailedConn(connReq)
 
 			case handleFailed:
@@ -293,7 +254,6 @@ out:
 					continue
 				}
 
-				connReq.updateState(ConnFailing)
 				log.Debugf("Failed to connect to %v: %v",
 					connReq, msg.err)
 				cm.handleFailedConn(connReq)
@@ -305,6 +265,35 @@ out:
 	}
 
 	cm.wg.Done()
+}
+
+func (cm *ConnManager) connect(c *ConnReq) {
+	log.Debugf("Attempting to connect to %v", c)
+
+	// Attempt to find the network address for the request.
+	na, err := cm.cfg.GetAddr(c.PID)
+	if err != nil {
+		select {
+		case cm.requests <- handleFailed{c, err}:
+		case <-cm.quit:
+		}
+		return
+	}
+	c.Addr = na
+
+	conn, err := cm.cfg.Dial(c.Addr)
+	if err != nil {
+		select {
+		case cm.requests <- handleFailed{c, err}:
+		case <-cm.quit:
+		}
+		return
+	}
+
+	select {
+	case cm.requests <- handleConnected{c, conn}:
+	case <-cm.quit:
+	}
 }
 
 // Connect assigns an id and dials a connection to the address of the
@@ -333,32 +322,7 @@ func (cm *ConnManager) Connect(c *ConnReq) {
 		return
 	}
 
-	log.Debugf("Attempting to connect to %v", c)
-
-	// Attempt to find the network address for the request.
-	na, err := cm.cfg.GetAddr(c.PID)
-	if err != nil {
-		select {
-		case cm.requests <- handleFailed{c, err}:
-		case <-cm.quit:
-		}
-		return
-	}
-	c.Addr = na
-
-	conn, err := cm.cfg.Dial(c.Addr)
-	if err != nil {
-		select {
-		case cm.requests <- handleFailed{c, err}:
-		case <-cm.quit:
-		}
-		return
-	}
-
-	select {
-	case cm.requests <- handleConnected{c, conn}:
-	case <-cm.quit:
-	}
+	cm.connect(c)
 }
 
 // Disconnect disconnects the connection corresponding to the given connection
