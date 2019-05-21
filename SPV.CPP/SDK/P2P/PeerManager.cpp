@@ -1370,6 +1370,8 @@ namespace Elastos {
 						peer->info("adding block #{}, false positive rate: {}", block->GetHeight(), _fpRate);
 						if (block->GetHeight() <= _estimatedHeight)
 							FireSyncProgress(block->GetHeight(), _estimatedHeight, block->GetTimestamp());
+						else
+							FireSyncProgress(block->GetHeight(), block->GetHeight(), block->GetTimestamp());
 					}
 
 					_blocks.Insert(block);
