@@ -50,6 +50,10 @@ func (c *ViewChangesCountDown) IsTimeOut() bool {
 		return false
 	}
 
-	return c.consensus.GetViewOffset() - c.startViewOffset >=
+	if c.arbitrators.GetCRCArbitersCount() == c.arbitrators.GetArbitersCount() {
+		return false
+	}
+
+	return c.consensus.GetViewOffset()-c.startViewOffset >=
 		uint32(c.arbitrators.GetArbitersCount())*c.timeoutRefactor
 }
