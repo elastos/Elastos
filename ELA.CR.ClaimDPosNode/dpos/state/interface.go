@@ -43,6 +43,7 @@ type Arbitrators interface {
 	GetCrossChainArbitersMajorityCount() int
 
 	GetArbitersCount() int
+	GetCRCArbitersCount() int
 	GetArbitersMajorityCount() int
 	HasArbitersMajorityCount(num int) bool
 	HasArbitersMinorityCount(num int) bool

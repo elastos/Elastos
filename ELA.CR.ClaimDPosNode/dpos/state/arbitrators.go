@@ -597,6 +597,13 @@ func (a *arbitrators) GetArbitersCount() int {
 	return result
 }
 
+func (a *arbitrators) GetCRCArbitersCount() int {
+	a.mtx.Lock()
+	result := len(a.crcArbiters)
+	a.mtx.Unlock()
+	return result
+}
+
 func (a *arbitrators) GetArbitersMajorityCount() int {
 	a.mtx.Lock()
 	minSignCount := int(float64(len(a.CurrentArbitrators)) *
@@ -884,7 +891,7 @@ func (a *arbitrators) getBlockDPOSReward(block *types.Block) common.Fixed64 {
 		totalTxFx += tx.Fee
 	}
 
-	return common.Fixed64(math.Ceil(float64(totalTxFx +
+	return common.Fixed64(math.Ceil(float64(totalTxFx+
 		a.chainParams.RewardPerBlock) * 0.35))
 }
 
