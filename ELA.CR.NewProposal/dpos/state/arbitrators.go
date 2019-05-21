@@ -1046,11 +1046,7 @@ func NewArbitrators(chainParams *config.Params,
 		}
 		originArbiters[i] = a
 
-		publicKey, err := common.HexStringToBytes(arbiter)
-		if err != nil {
-			return nil, err
-		}
-		hash, err := contract.PublicKeyToStandardProgramHash(publicKey)
+		hash, err := contract.PublicKeyToStandardProgramHash(a)
 		if err != nil {
 			return nil, err
 		}
