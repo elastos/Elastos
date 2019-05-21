@@ -164,4 +164,16 @@ func TestHub_Intercept(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// Test sending and reading message after connection intercepted.
+	for i := 0; i < 10; i++ {
+		err = sendVersion(localSubConn, subMagic, someID, subID, somePort)
+		if !assert.NoError(t, err) {
+			t.Fatal(err)
+		}
+		err = readVersion(localSubSvrConn, subMagic, someID, subID, somePort)
+		if !assert.NoError(t, err) {
+			t.Fatal(err)
+		}
+	}
+
 }
