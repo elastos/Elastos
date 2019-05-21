@@ -3,6 +3,7 @@ package signal
 import (
 	"os"
 	"os/signal"
+	"syscall"
 )
 
 type interrupt struct {
@@ -27,7 +28,7 @@ func NewInterrupt() *interrupt {
 	}
 	go func() {
 		signals := make(chan os.Signal, 1)
-		signal.Notify(signals, os.Interrupt, os.Kill)
+		signal.Notify(signals, os.Interrupt, os.Kill, syscall.SIGTERM)
 
 		// Listen for initial shutdown signal and close the returned
 		// channel to notify the caller.
