@@ -245,7 +245,7 @@ export default class extends Base {
       query.published = param.published
     }
 
-    if (param.title) query.title = param.title
+    if (param.$or) query.$or = param.$or
 
     const list = await db_cvote.list(query, {
       vid: -1,
