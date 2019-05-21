@@ -45,7 +45,7 @@ func (p *pipe) start() {
 // isAllowedReadError returns whether or not the passed error is allowed without
 // close the pipe.
 func (p *pipe) isAllowedIOError(err error) bool {
-	if !atomic.CompareAndSwapInt32(&p.closed, 0, 1) {
+	if atomic.LoadInt32(&p.closed) != 0 {
 		return false
 	}
 
@@ -94,8 +94,9 @@ out:
 			break out
 		}
 	}
-	_ = p.inlet.Close()
-	_ = p.outlet.Close()
+	atomic.AddInt32(&p.closed, 1)
+	_ = from.Close()
+	_ = to.Close()
 }
 
 // state stores the current connect peers and local service index.
