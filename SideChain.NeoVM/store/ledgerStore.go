@@ -2,6 +2,8 @@ package store
 
 import (
 	"errors"
+	"bytes"
+	"fmt"
 
 	sb "github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	side "github.com/elastos/Elastos.ELA.SideChain/types"
@@ -74,11 +76,38 @@ func (c *LedgerStore) persistTransactions(batch database.Batch, b *side.Block) e
 		}
 	}
 	if len(receipts) > 0 {
-		err := c.WriteReceipts(b, receipts)
+		//CheckBlockStates
+		err  := checkBlockStates(b, receipts)
+
+		if err != nil {
+			log.Error("CheckBlockStates errors:", err)
+		}
+
+		err = c.WriteReceipts(b, receipts)
 		if err != nil {
 			log.Error("WriteReceipts errors:", err)
 		}
+
 	}
+	return nil
+}
+
+
+func checkBlockStates(block *side.Block, receipts types.Receipts) error {
+	header := block.Header
+	// Validate the received block's bloom with the one derived from the generated receipts.
+	// For valid blocks this should always validate to true.
+	rbloom := types.CreateBloom(receipts).Bytes()
+	if !bytes.Equal(rbloom, header.Bloom) {
+		return fmt.Errorf("invalid bloom (remote: %x  local: %x)", header.Bloom, rbloom)
+	}
+
+	// Tre receipt hash
+	receiptSha := receipts.Hash()
+	if !receiptSha.IsEqual(block.ReceiptHash) {
+		return fmt.Errorf("invalid receipt hash (remote: %x local: %x)", header.ReceiptHash, receiptSha)
+	}
+
 	return nil
 }
 

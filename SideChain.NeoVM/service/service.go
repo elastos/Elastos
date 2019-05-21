@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"math"
 	"fmt"
+	"reflect"
 
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/utils/http"
@@ -74,6 +75,75 @@ func GetTransactionInfoFromBytes(txInfoBytes []byte) (*sideser.TransactionInfo, 
 	}
 
 	return &txInfo, nil
+}
+
+func (s *HttpServiceExtend) GetBlockByHash(param http.Params) (interface{}, error) {
+	str, ok := param.String("blockhash")
+	if !ok {
+		return nil, http.NewError(int(sideser.InvalidParams), "block hash not found")
+	}
+
+	var hash Uint256
+	hashBytes, err := sideser.FromReversedString(str)
+	if err != nil {
+		return nil, http.NewError(int(sideser.InvalidParams), "invalid block hash")
+	}
+	if err := hash.Deserialize(bytes.NewReader(hashBytes)); err != nil {
+		return nil, http.NewError(int(sideser.InvalidParams), "invalid block hash")
+	}
+
+	verbosity, ok := param.Uint("verbosity")
+	if !ok {
+		verbosity = 1
+	}
+
+	return s.getBlock(hash, verbosity)
+}
+
+func (s *HttpServiceExtend) GetBlockByHeight(param http.Params) (interface{}, error) {
+	height, ok := param.Uint("height")
+	if !ok {
+		return nil, http.NewError(int(sideser.InvalidParams), "height parameter should be a positive integer")
+	}
+
+	hash, err := s.cfg.Chain.GetBlockHash(uint32(height))
+	if err != nil {
+		return nil, http.NewError(int(sideser.UnknownBlock), "")
+	}
+
+	return s.getBlock(hash, 2)
+}
+
+func (s *HttpServiceExtend) getBlock(hash Uint256, format uint) (interface{}, error) {
+	block, err := s.cfg.Chain.GetBlockByHash(hash)
+	if err != nil {
+		return "", http.NewError(int(sideser.UnknownBlock), "")
+	}
+	var blockInfo interface{}
+	var ret map[string]interface{}
+	ret = make(map[string]interface{})
+	switch format {
+	case 0:
+		w := new(bytes.Buffer)
+		block.Serialize(w)
+		return BytesToHexString(w.Bytes()), nil
+	case 2:
+		blockInfo, err = s.cfg.GetBlockInfo(s.cfg, block, true), nil
+	default:
+		blockInfo, err = s.cfg.GetBlockInfo(s.cfg, block, false), nil
+	}
+	value := reflect.ValueOf(blockInfo)
+	knames := reflect.TypeOf(blockInfo)
+	count := value.NumField()
+	for i := 0; i < count; i++ {
+		k := knames.Field(i).Name
+		v := value.Field(i).Interface()
+		ret[k] = v
+	}
+	ret["ReceiptHash"] = block.ReceiptHash.String()
+	ret["Bloom"] = BytesToHexString(block.Bloom)
+
+	return ret, err
 }
 
 func GetTransactionInfo(cfg *sideser.Config, header *side.Header, tx *side.Transaction) *sideser.TransactionInfo {
@@ -582,7 +652,7 @@ func (s *HttpServiceExtend) GetTransactionReceipt(param http.Params) (interface{
 	}
 
 	if receipt.Logs == nil {
-		ret["logs"] = [][]*types.Log{}
+		ret["logs"] = [][]*types.Nep5Log{}
 	} else {
 		logs := make([]string, 0)
 		for _, l := range receipt.Logs {

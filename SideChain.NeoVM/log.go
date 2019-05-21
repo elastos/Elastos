@@ -15,7 +15,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 
 	"github.com/elastos/Elastos.ELA/utils/elalog"
-
 	"github.com/elastos/Elastos.ELA/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA/p2p/connmgr"
 
@@ -23,6 +22,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/store"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/service"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/service/websocket"
+	nser "github.com/elastos/Elastos.ELA.SideChain.NeoVM/p2p/server"
 )
 
 const (
@@ -68,6 +68,7 @@ var (
 
 	sockLog = backend.Logger("SOCKET", level)
 	avmlog  = backend.Logger("AVM", level)
+	nsrvrlog  = backend.Logger("NVMSERVER", level)
 )
 
 func setLogLevel(level elalog.Level) {
@@ -84,6 +85,7 @@ func setLogLevel(level elalog.Level) {
 	eladlog.SetLevel(level)
 	sockLog.SetLevel(level)
 	avmlog.SetLevel(level)
+	nsrvrlog.SetLevel(level)
 }
 
 // The default amount of logging is none.
@@ -103,4 +105,5 @@ func init() {
 	store.UseLogger(avmlog)
 	service.UseLogger(avmlog)
 	websocket.UseLogger(sockLog)
+	nser.UseLogger(nsrvrlog)
 }

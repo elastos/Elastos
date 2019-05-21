@@ -298,16 +298,29 @@ func (c *LedgerStore) onInvokeSucssed(receipt *types.Receipt, gas uint64,
 	receipt.Status = true
 	receipt.GasUsed = gas
 	for _, evt := range notifyevents {
-		l := types.Log{}
+		l := types.Nep5Log{}
 		l.BlockNumber = receipt.BlockNumber
 		l.TxHash = receipt.TxHash.String()
 		l.TxIndex = receipt.TransactionIndex
 		l.Index = uint32(len(receipt.Logs))
 		l.Address = receipt.ContractAddress.String()
-		l.LogItem = evt.GetStateItem()
+		l.Data = big.Int{}
+		items := evt.GetStateItem().GetArray()
+		if len(items) == 4 && string(items[0].GetByteArray()) == "transfer" {
+			from, err := common.Uint160FromBytes(items[1].GetByteArray())
+			if err != nil {
+				log.Error("onInvokeSucssed Nep5 Transfer from error:", err, from)
+			}
+			to, err := common.Uint160FromBytes(items[2].GetByteArray())
+			if err != nil {
+				log.Error("onInvokeSucssed Nep5 Transfer to error:", err)
+			}
+			l.From = from
+			l.To = to
+			l.Data = *items[3].GetBigInteger()
+		}
 		receipt.Logs = append(receipt.Logs, &l)
 	}
-
 }
 
 func (c *LedgerStore) WriteReceipts(block *side.Block, receipts types.Receipts) error {

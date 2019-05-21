@@ -11,11 +11,11 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
-	"github.com/elastos/Elastos.ELA.SideChain/server"
 	"github.com/elastos/Elastos.ELA.SideChain/service"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/events"
+	"github.com/elastos/Elastos.ELA.SideChain/server"
 	sw "github.com/elastos/Elastos.ELA.SideChain/service/websocket"
 	sideTypes "github.com/elastos/Elastos.ELA.SideChain/types"
 
@@ -32,6 +32,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/datatype"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/service/websocket"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
+	ns "github.com/elastos/Elastos.ELA.SideChain.NeoVM/p2p/server"
 )
 
 const (
@@ -150,7 +151,7 @@ func main() {
 	txPool := mempool.New(&mempoolCfg)
 	chainCfg.Validator = blockchain.NewValidator(chain.BlockChain, spvService)
 	eladlog.Info("3. Start the P2P networks")
-	server, err := server.New(&server.Config{
+	server, err := ns.New(&server.Config{
 		DataDir:        filepath.Join(DataPath, DataDir),
 		Chain:          chain.BlockChain,
 		TxMemPool:      txPool,
@@ -173,8 +174,9 @@ func main() {
 		TxMemPool:                 txPool,
 		TxFeeHelper:               txFeeHelper,
 		CreateCoinBaseTx:          pow.CreateCoinBaseTx,
-		GenerateBlock:             pow.GenerateBlock,
+		GenerateBlock:             GenerateBlock,
 		GenerateBlockTransactions: pow.GenerateBlockTransactions,
+		Validator:                 txValidator,
 	}
 
 	powService := pow.NewService(&powCfg)
@@ -356,5 +358,6 @@ func GenerateBlock(cfg *pow.Config) (*sideTypes.Block, error) {
 		}
 	}
 	block.ReceiptHash = receipts.Hash()
+	block.Bloom = types.CreateBloom(receipts).Bytes()
 	return block, err
 }
