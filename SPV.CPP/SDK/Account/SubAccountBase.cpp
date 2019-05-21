@@ -41,8 +41,8 @@ namespace Elastos {
 			return _parentAccount->DeriveMultiSignKey(payPassword);
 		}
 
-		bytes_t SubAccountBase::GetVotePublicKey() const {
-			return _votePublicKey;
+		bytes_t SubAccountBase::GetOwnerPublicKey() const {
+			return _ownerPublicKey;
 		}
 
 		bool SubAccountBase::IsDepositAddress(const Address &address) const {
@@ -51,6 +51,14 @@ namespace Elastos {
 			}
 
 			return _depositAddress == address;
+		}
+
+		bool SubAccountBase::IsOwnerAddress(const Address &address) const {
+			if (!_ownerAddress.Valid()) {
+				return false;
+			}
+
+			return _ownerAddress == address;
 		}
 
 		void SubAccountBase::SignTransaction(const TransactionPtr &tx, const std::string &payPasswd) {
@@ -94,8 +102,8 @@ namespace Elastos {
 		}
 
 		bool SubAccountBase::FindKey(Key &key, const bytes_t &pubKey, const std::string &payPasswd) {
-			if (GetVotePublicKey() == pubKey) {
-				key = DeriveVoteKey(payPasswd);
+			if (GetOwnerPublicKey() == pubKey) {
+				key = DeriveOwnerKey(payPasswd);
 				return true;
 			}
 

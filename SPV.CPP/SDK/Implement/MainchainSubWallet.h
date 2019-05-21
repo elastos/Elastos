@@ -34,7 +34,7 @@ namespace Elastos {
 				const std::string &payPasswd) const;
 
 			virtual nlohmann::json GenerateCancelProducerPayload(
-				const std::string &publicKey,
+				const std::string &ownerPublicKey,
 				const std::string &payPasswd) const;
 
 			virtual nlohmann::json CreateRegisterProducerTransaction(

@@ -94,32 +94,32 @@ namespace Elastos {
 			pr.SerializeUnsigned(ostream, 0);
 			bytes_t prUnsigned = ostream.GetBytes();
 
-			Key key = _subAccount->DeriveVoteKey(payPasswd);
+			Key key = _subAccount->DeriveOwnerKey(payPasswd);
 			pr.SetSignature(key.Sign(prUnsigned));
 
 			return pr.ToJson(0);
 		}
 
 		nlohmann::json MainchainSubWallet::GenerateCancelProducerPayload(
-			const std::string &publicKey,
+			const std::string &ownerPublicKey,
 			const std::string &payPasswd) const {
 
 			ErrorChecker::CheckLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
 									 Error::AccountNotSupportVote, "This account do not support vote");
 
 			ErrorChecker::CheckPassword(payPasswd, "Generate payload");
-			size_t pubKeyLen = publicKey.size() >> 1;
+			size_t pubKeyLen = ownerPublicKey.size() >> 1;
 			ErrorChecker::CheckParam(pubKeyLen != 33 && pubKeyLen != 65, Error::PubKeyLength,
 									 "Public key length should be 33 or 65 bytes");
 
 			PayloadCancelProducer pc;
-			pc.SetPublicKey(publicKey);
+			pc.SetPublicKey(ownerPublicKey);
 
 			ByteStream ostream;
 			pc.SerializeUnsigned(ostream, 0);
 			bytes_t pcUnsigned = ostream.GetBytes();
 
-			Key key = _subAccount->DeriveVoteKey(payPasswd);
+			Key key = _subAccount->DeriveOwnerKey(payPasswd);
 			pc.SetSignature(key.Sign(pcUnsigned));
 
 			return pc.ToJson(0);
@@ -229,7 +229,7 @@ namespace Elastos {
 			ErrorChecker::CheckLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
 									 Error::AccountNotSupportVote, "This account do not support vote");
 
-			bytes_t pubkey(_subAccount->GetVotePublicKey());
+			bytes_t pubkey(_subAccount->GetOwnerPublicKey());
 			std::string fromAddress = Address(PrefixDeposit, pubkey).String();
 
 			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), amount, Asset::GetELAAssetID(), memo, remark);
@@ -247,7 +247,7 @@ namespace Elastos {
 			ErrorChecker::CheckLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
 									 Error::AccountNotSupportVote, "This account do not support vote");
 
-			return _subAccount->GetVotePublicKey().getHex();
+			return _subAccount->GetOwnerPublicKey().getHex();
 		}
 
 		nlohmann::json

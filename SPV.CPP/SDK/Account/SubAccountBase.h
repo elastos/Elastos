@@ -26,9 +26,11 @@ namespace Elastos {
 
 			virtual Key DeriveMultiSignKey(const std::string &payPassword);
 
-			virtual bytes_t GetVotePublicKey() const;
+			virtual bytes_t GetOwnerPublicKey() const;
 
 			virtual bool IsDepositAddress(const Address &address) const;
+
+			virtual bool IsOwnerAddress(const Address &address) const;
 
 			virtual void SignTransaction(const TransactionPtr &transaction, const std::string &payPassword);
 
@@ -39,8 +41,8 @@ namespace Elastos {
 			virtual size_t TxExternalChainIndex(const TransactionPtr &tx) const;
 
 		protected:
-			mutable Address _depositAddress;
-			bytes_t _votePublicKey;
+			mutable Address _depositAddress, _ownerAddress;
+			bytes_t _ownerPublicKey;
 			IAccount *_parentAccount;
 			HDKeychain _masterPubKey;
 			uint32_t _coinIndex;
