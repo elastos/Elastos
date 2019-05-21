@@ -441,7 +441,7 @@ func (p *ProposalDispatcher) IsCRCBadNetWork() bool {
 			count++
 		}
 	}
-	return count <= len(p.cfg.Arbitrators.GetCRCArbiters())*2/3
+	return count <= p.cfg.Arbitrators.GetCRCArbitersCount()*2/3
 }
 
 func (p *ProposalDispatcher) IsViewChangedTimeOut() bool {
@@ -797,7 +797,7 @@ func (p *ProposalDispatcher) createArbitratorsRedeemScript() ([]byte, error) {
 		pks = append(pks, pk)
 	}
 
-	arbitratorsCount := len(p.cfg.Arbitrators.GetCRCArbiters())
+	arbitratorsCount := p.cfg.Arbitrators.GetCRCArbitersCount()
 	minSignCount := int(float64(arbitratorsCount)*
 		state.MajoritySignRatioNumerator/state.MajoritySignRatioDenominator) + 1
 	return contract.CreateMultiSigRedeemScript(minSignCount, pks)

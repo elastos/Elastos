@@ -159,6 +159,10 @@ func (a *ArbitratorsMock) GetArbitersCount() int {
 	return len(a.CurrentArbitrators)
 }
 
+func (a *ArbitratorsMock) GetCRCArbitersCount() int {
+	return len(a.CRCArbitrators)
+}
+
 func (a *ArbitratorsMock) GetArbitersMajorityCount() int {
 	return a.MajorityCount
 }
