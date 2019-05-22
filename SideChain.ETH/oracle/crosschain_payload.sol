@@ -37,7 +37,6 @@ contract CrossChainPayload {
             i++;
         }
         require(total == msg.value);
-        address(0).transfer(msg.value);
         emit EtherDeposited(msg.sender, msg.value, address(0));
     }
 
