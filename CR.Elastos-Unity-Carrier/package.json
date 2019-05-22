@@ -1,6 +1,6 @@
 {
-  "name": "react-native-elastos-carrier",
-  "version": "0.1.1",
+  "name": "elastos-unity-carrier",
+  "version": "1.0.1",
   "description": "react native plugin for elastos carrier",
   "main": "index.js",
   "repository": {

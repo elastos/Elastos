@@ -4,13 +4,13 @@ Elastos Carrier is a decentralized peer-to-peer platform that takes over all net
 
 This repo is the react native bridge between native carrier lib and javascript api. so developer could easy to create a elastos dapp with carrier module by javascript.
 
-The release version for plugin is [here](https://www.npmjs.com/package/react-native-elastos-carrier)
+The release version for plugin is [here](https://www.npmjs.com/package/elastos-unity-carrier)
 
 ## Getting started
 ```
-npm install --save react-native-elastos-carrier
+npm install --save elastos-unity-carrier
 
-react-native link react-native-elastos-carrier
+react-native link elastos-unity-carrier
 ```
 
 
