@@ -99,21 +99,3 @@ func (api *API) Proposals() map[common.Address]bool {
 	}
 	return proposals
 }
-
-// Propose injects a new authorization proposal that the signer will attempt to
-// push through.
-func (api *API) Propose(address common.Address, auth bool) {
-	api.clique.lock.Lock()
-	defer api.clique.lock.Unlock()
-
-	api.clique.proposals[address] = auth
-}
-
-// Discard drops a currently running proposal, stopping the signer from casting
-// further votes (either for or against).
-func (api *API) Discard(address common.Address) {
-	api.clique.lock.Lock()
-	defer api.clique.lock.Unlock()
-
-	delete(api.clique.proposals, address)
-}
