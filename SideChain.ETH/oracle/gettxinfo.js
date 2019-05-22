@@ -9,6 +9,8 @@ module.exports = async function(json_data, res) {
         if (sctxhash.indexOf("0x") !== 0) sctxhash = "0x" + sctxhash;
         console.log(sctxhash);
         console.log("============================================================");
+
+        let txinfo = await common.web3.eth.getTransaction(sctxhash);
         let txreceipt = await common.web3.eth.getTransactionReceipt(sctxhash);
         let payload = {};
         payload["crosschainassets"] = null;
@@ -20,19 +22,15 @@ module.exports = async function(json_data, res) {
                     payload["crosschainassets"] = new Array();
                 }
                 let event = common.web3.eth.abi.decodeLog(common.payloadReceived.inputs, log.data, log.topics.slice(1));
-
-                let crosschainamount = String(common.retnum(event["_crosschainamount"] / 1e18));
-                let outputamount = String(event["_amount"] / 1e18);
-
                 payload["crosschainassets"].push({
                     "crosschainaddress": event["_addr"],
-                    "crosschainamount": crosschainamount,
-                    "outputamount":outputamount
+                    "crosschainamount": String(BigInt(event["_amount"]) / BigInt("10000000000")),
+                    "outputamount":String((BigInt(event["_amount"])+ BigInt(txreceipt.gasUsed) * BigInt(txinfo.gasPrice)) / BigInt(10000000000))
                 });
                 outputindex++;
             }
         }
-        res.json({"error": null, "id": null, "jsonrpc": "2.0", "result": {"txid": sctxhash.slice(2), "crosschainassets": payload["crosschainassets"]}});
+        res.json({"error": null, "id": null, "jsonrpc": "2.0", "result": {"txid": sctxhash, "crosschainassets": payload["crosschainassets"]}});
         return;
     } catch (err) {
         common.reterr(err, res);

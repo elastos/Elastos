@@ -12,22 +12,25 @@ module.exports = async function(json_data, res) {
         let result = new Array();
         let txhash = null;
         let txlog = null;
+        let outputindex = 0;
+        let outputamount = 0;
+		console.log(logs);
         for (const log of logs) {
             if (txhash === null || txhash != log["transactionHash"]) {
                 txhash = log["transactionHash"];
-                txlog = {"txid": txhash.slice(2)};
+                let txinfo = await common.web3.eth.getTransaction(txhash);
+                let txreceipt = await common.web3.eth.getTransactionReceipt(txhash)
+                outputamount = txreceipt.gasUsed * txinfo.gasPrice
+                txlog = {"txid": txhash};
                 result.push(txlog);
                 txlog["crosschainassets"] = new Array();
             }
-
-            let crosschainamount = String(common.retnum(log["returnValues"]["_crosschainamount"] / 1e18));
-            let outputamount = String(log["returnValues"]["_amount"] / 1e18);
-
             txlog["crosschainassets"].push({
                 "crosschainaddress": log["returnValues"]["_addr"],
-                "crosschainamount": crosschainamount,
-                "outputamount":outputamount
+                "crosschainamount": String(BigInt(log["returnValues"]["_amount"]) / BigInt("10000000000")),
+                "outputamount":String((BigInt(log["returnValues"]["_amount"])+ BigInt(outputamount)) / BigInt(10000000000))
             });
+            outputindex++;
         }
         res.json({"result": result, "id": null, "error": null, "jsonrpc": "2.0"});
         return;
