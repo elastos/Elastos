@@ -2,26 +2,34 @@ package spv
 
 import (
 	"bytes"
-	"encoding/hex"
 	"errors"
 	"fmt"
+	"math/big"
+	"path/filepath"
+	"strings"
+	"time"
+
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	spv "github.com/elastos/Elastos.ELA.SPV/interface"
 	ethCommon "github.com/elastos/Elastos.ELA.SideChain.ETH/common"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/crypto"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 	"github.com/elastos/Elastos.ELA/common"
-	core "github.com/elastos/Elastos.ELA/core/types"
-	com "github.com/elastos/Elastos.ELA.SideChain.ETH/common"
-	"github.com/syndtr/goleveldb/leveldb"
-	"path/filepath"
-	"strings"
-	"time"
 	"github.com/elastos/Elastos.ELA/common/config"
+	core "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/utils/signal"
+	"github.com/syndtr/goleveldb/leveldb"
 )
 
 var dataDir = "./"
+
+//Service
+var spvService *Service
+
+const (
+	txNotperformed int64 = iota
+)
 
 type Config struct {
 	// DataDir is the data path to store db files peer addresses etc.
@@ -47,12 +55,27 @@ func NewService(cfg *Config) (*Service, error) {
 		chainParams = config.DefaultParams.RegNet()
 	default:
 		chainParams = &config.DefaultParams
+		chainParams.DNSSeeds = nil
+		chainParams.OriginArbiters = []string{
+			"034c6337f1dd5c58ac46257aadc9d7df14a61f73a7a90b78bad17effae0668c6fd",
+			"0262ed1cebce01c0a0920de7d4d8c060e43152cf0f3dc77dcad959e4db2318dae5",
+			"035b7025c4effc881d71d260c26cbf6f6e59611d833ba0d9663daf22bed1949b95",
+			"0201dcedec7149f076ec1a43eaf2a002ef03ed443b903e5fcfc2f4d11878d7e0de",
+		}
+		chainParams.CRCArbiters = []string{
+			"034c6337f1dd5c58ac46257aadc9d7df14a61f73a7a90b78bad17effae0668c6fd",
+			"0262ed1cebce01c0a0920de7d4d8c060e43152cf0f3dc77dcad959e4db2318dae5",
+			"035b7025c4effc881d71d260c26cbf6f6e59611d833ba0d9663daf22bed1949b95",
+			"0201dcedec7149f076ec1a43eaf2a002ef03ed443b903e5fcfc2f4d11878d7e0de",
+		}
+		chainParams.CheckAddressHeight = 200
+		chainParams.VoteStartHeight = 200
 	}
 	spvCfg := spv.DPOSConfig{Config: spv.Config{
-			DataDir:        cfg.DataDir,
-			ChainParams:chainParams,
-		},
-		//可以有回调机制，在任何arbiters发生改变的时候，将arbiters信息推过来（需要实现该接口）
+		DataDir:        cfg.DataDir,
+		ChainParams:    chainParams,
+		PermanentPeers: []string{"127.0.0.1:20338"},
+	},
 	}
 	dataDir = cfg.DataDir
 	initLog(cfg.DataDir)
@@ -71,7 +94,7 @@ func NewService(cfg *Config) (*Service, error) {
 		return nil, err
 	}
 
-	spvService = &Service{ service}
+	spvService = &Service{service}
 	return &Service{DPOSSPVService: service}, nil
 }
 
@@ -152,33 +175,60 @@ func (l *listener) Notify(id common.Uint256, proof bloom.MerkleProof, tx core.Tr
 	fmt.Println("----------------------------------------------------------------------------------------")
 	fmt.Println(" ")
 	savePayloadInfo(tx)
-	defer l.service.SubmitTransactionReceipt(id, tx.Hash())
+	l.service.SubmitTransactionReceipt(id, tx.Hash())
 }
 
-func savePayloadInfo(elaTx core.Transaction) error {
+func savePayloadInfo(elaTx core.Transaction) {
 	db, err := leveldb.OpenFile(filepath.Join(dataDir, "spv_transaction_info.db"), nil)
+	defer db.Close()
 	if err != nil {
 		fmt.Println(err)
 	}
-	defer db.Close()
-	err = db.Put([]byte(elaTx.Hash().String()), []byte(hex.EncodeToString(elaTx.Payload.Data(elaTx.PayloadVersion))), nil)
+
+	nr := bytes.NewReader(elaTx.Payload.Data(elaTx.PayloadVersion))
+	p := new(payload.TransferCrossChainAsset)
+	p.Deserialize(nr, elaTx.PayloadVersion)
+	var fees []string
+	var address []string
+	var outputs []string
+	for i, amount := range p.CrossChainAmounts {
+		fees = append(fees, (elaTx.Outputs[i].Value - amount).String())
+		outputs = append(outputs, elaTx.Outputs[i].Value.String())
+		address = append(address, p.CrossChainAddresses[i])
+	}
+	addr := strings.Join(address, ",")
+	fee := strings.Join(fees, ",")
+	output := strings.Join(outputs, ",")
+	err = db.Put([]byte(elaTx.Hash().String()+"Fee"), []byte(fee), nil)
 
 	if err != nil {
 		fmt.Println(err)
 	}
-	return nil
+
+	err = db.Put([]byte(elaTx.Hash().String()+"Address"), []byte(addr), nil)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = db.Put([]byte(elaTx.Hash().String()+"Output"), []byte(output), nil)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return
 }
 
 func FindPayloadByTransactionHash(transactionHash string) string {
 	if transactionHash == "" {
-		return "0"
+		return ""
 	}
 
 	transactionHash = strings.Replace(transactionHash, "0x", "", 1)
 	db, err := leveldb.OpenFile(filepath.Join(dataDir, "spv_transaction_info.db"), nil)
 	if err != nil {
 		fmt.Println(err)
-		return "0"
+		return ""
 	}
 	defer db.Close()
 
@@ -186,14 +236,65 @@ func FindPayloadByTransactionHash(transactionHash string) string {
 
 	if err != nil {
 		fmt.Println(err)
-		return "0"
+		return ""
 	}
 
 	return string(v)
 
 }
 
-// Get Ela Chain Height 
+func FindOutputFeeAndaddressByTxHash(transactionHash string) (*big.Int, ethCommon.Address, *big.Int) {
+	var emptyaddr ethCommon.Address
+	transactionHash = strings.Replace(transactionHash, "0x", "", 1)
+	db, err := leveldb.OpenFile(filepath.Join(dataDir, "spv_transaction_info.db"), nil)
+	if err != nil {
+		fmt.Println(err)
+		return new(big.Int), emptyaddr, new(big.Int)
+	}
+	defer db.Close()
+	v, err := db.Get([]byte(transactionHash+"Fee"), nil)
+	if err != nil {
+		fmt.Println(err)
+		return new(big.Int), emptyaddr, new(big.Int)
+	}
+	fees := strings.Split(string(v), ",")
+	f, err := common.StringToFixed64(fees[0])
+	if err != nil {
+		fmt.Println(err)
+		return new(big.Int), emptyaddr, new(big.Int)
+
+	}
+	fe := new(big.Int).SetInt64(f.IntValue())
+	y := new(big.Int).SetInt64(10000000000)
+
+	addrss, err := db.Get([]byte(transactionHash+"Address"), nil)
+	if err != nil {
+		fmt.Println(err)
+		return new(big.Int), emptyaddr, new(big.Int)
+
+	}
+	addrs := strings.Split(string(addrss), ",")
+	if !ethCommon.IsHexAddress(addrs[0]) {
+		return new(big.Int), emptyaddr, new(big.Int)
+	}
+	outputs, err := db.Get([]byte(transactionHash+"Output"), nil)
+	if err != nil {
+		fmt.Println(err)
+		return new(big.Int), emptyaddr, new(big.Int)
+
+	}
+	output := strings.Split(string(outputs), ",")
+	o, err := common.StringToFixed64(output[0])
+	if err != nil {
+		fmt.Println(err)
+		return new(big.Int), emptyaddr, new(big.Int)
+
+	}
+	op := new(big.Int).SetInt64(o.IntValue())
+	return new(big.Int).Mul(fe, y), ethCommon.HexToAddress(addrs[0]), new(big.Int).Mul(op, y)
+}
+
+// Get Ela Chain Height
 func GetElaChainHeight() uint32 {
 	var elaHeight uint32 = 0
 	if spvService == nil || spvService.DPOSSPVService == nil {
@@ -204,18 +305,18 @@ func GetElaChainHeight() uint32 {
 	return elaHeight
 }
 
-// Until Get Ela Chain Height 
+// Until Get Ela Chain Height
 func UntilGetElaChainHeight() uint32 {
 	for {
-		if elaHeight := GetElaChainHeight(); elaHeight != 0  {
+		if elaHeight := GetElaChainHeight(); elaHeight != 0 {
 			return elaHeight
 		}
 		fmt.Println("can not get elas height, because ela height interface has no any response !")
-		time.Sleep(time.Millisecond*1000)
+		time.Sleep(time.Millisecond * 1000)
 	}
 }
 
-// Determine whether an address is an arbiter 
+// Determine whether an address is an arbiter
 func AddrIsArbiter(address ethCommon.Address) int8 {
 	if spvService == nil || spvService.DPOSSPVService == nil {
 		fmt.Println("spv service initiation does not finish yet !")
@@ -277,10 +378,6 @@ func GetCurrentElaHeight() uint32 {
 	return height
 }
 
-func GetSubContractAddress() com.Address {
-	return com.HexToAddress("0x322f033e93f548C721ed8963718Fbdb2d6aE7866")
-}
-
 func GetProducersByHeight(height uint32) [][]byte {
 	var arbiters [][]byte
 
@@ -293,7 +390,3 @@ func GetProducersByHeight(height uint32) [][]byte {
 	}
 	return arbiters
 }
-
-//Service
-var spvService *Service
-

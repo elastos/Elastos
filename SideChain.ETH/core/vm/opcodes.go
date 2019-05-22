@@ -217,14 +217,6 @@ const (
 	SELFDESTRUCT = 0xff
 )
 
-// 0xdd - 0xdf opcodes used for spv
-const (
-	GETSUBCONTRACTADDRESS = 0xdc
-	SPVPAYLOADSIZE = 0xdd
-	SPVPAYLOADCOPY = 0xde
-	SPVISARBITER = 0xdf
-)
-
 // Since the opcodes aren't all in order we can't use a regular slice.
 var opCodeToString = map[OpCode]string{
 	// 0x0 range - arithmetic ops.
@@ -389,11 +381,6 @@ var opCodeToString = map[OpCode]string{
 	PUSH: "PUSH",
 	DUP:  "DUP",
 	SWAP: "SWAP",
-
-	GETSUBCONTRACTADDRESS: "GETSUBCONTRACTADDRESS",
-	SPVPAYLOADSIZE: "SPVPAYLOADSIZE",
-	SPVPAYLOADCOPY: "SPVPAYLOADCOPY",
-	SPVISARBITER: "SPVISARBITER",
 }
 
 func (op OpCode) String() string {
@@ -545,10 +532,6 @@ var stringToOp = map[string]OpCode{
 	"CALLCODE":       CALLCODE,
 	"REVERT":         REVERT,
 	"SELFDESTRUCT":   SELFDESTRUCT,
-	"GETSUBCONTRACTADDRESS": GETSUBCONTRACTADDRESS,
-	"SPVPAYLOADSIZE": SPVPAYLOADSIZE,
-	"SPVPAYLOADCOPY": SPVPAYLOADCOPY,
-	"SPVISARBITER": SPVISARBITER,
 }
 
 // StringToOp finds the opcode whose name is stored in `str`.

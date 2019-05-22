@@ -34,7 +34,7 @@ import (
 )
 
 // DefaultConfig contains default settings for use on the Ethereum main net.
-// Modify networkId and the default one is 1 
+// Modify networkId and the default one is 1
 var DefaultConfig = Config{
 	SyncMode: downloader.FastSync,
 	Ethash: ethash.Config{
@@ -44,7 +44,7 @@ var DefaultConfig = Config{
 		DatasetsInMem:  1,
 		DatasetsOnDisk: 2,
 	},
-	NetworkId:     10,
+	NetworkId:     1,
 	LightPeers:    100,
 	DatabaseCache: 768,
 	TrieCache:     256,
@@ -127,6 +127,10 @@ type Config struct {
 	EWASMInterpreter string
 	// Type of the EVM interpreter ("" for default)
 	EVMInterpreter string
+
+	BlackContractAddr string
+
+	PassBalance uint64
 }
 
 type configMarshaling struct {

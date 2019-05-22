@@ -180,6 +180,7 @@ func SetupGenesisBlock(db ethdb.Database, genesis *Genesis) (*params.ChainConfig
 	// Get the existing chain configuration.
 	newcfg := genesis.configOrDefault(stored)
 	storedcfg := rawdb.ReadChainConfig(db, stored)
+
 	if storedcfg == nil {
 		log.Warn("Found genesis block without chain config")
 		rawdb.WriteChainConfig(db, stored, newcfg)
@@ -303,22 +304,10 @@ func DefaultGenesisBlock() *Genesis {
 	return &Genesis{
 		Config:     params.MainnetChainConfig,
 		Timestamp:  0x5bda9da6,
-		ExtraData:  hexutil.MustDecode("0x00000000000000000000000000000000000000000000000000000000000000003b7007e3ea156fd588b6c2a585a326f4ff81ddbaf89d5f20872b812862929a8943c3c4207abba884206f7d1961f1bdd589c6f63d522ec45963876d5da3638c13ee77a717a0b83683e3c3e573bd33d2af0bf5a7073b63dde502efc6ff58482e308fe3a65d68ac120d4962f3ec3fd45eb9d087ad64fa38fb404037c6c545c9410616374dc0a198b8c6331c4b5227cd069485cf5ea68ffd32d3ae03a28ee19f6a9a8e0c3b5846cc2209f71efc640d0185630cac21fd8ac0caf0965af2ad0d16a571b6ad5d417900734b323846c8df9d7372896634cc442c5f848e21058ab2c5e0992cd97b34e3a9df305df3b078f02bc4940000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
+		ExtraData:  hexutil.MustDecode("0x000000000000000000000000000000000000000000000000000000000000000060c892e607f994e7cb79010055ba9cdb6336560d840534b46b3b3bf8c1c3e4c7d34bc86933de78148bf2e42de44c50e2966a98ddc0e2a79ce0e949f5d9758863f280c25b0d1f2f81705e3725ccd5ac49fd7f1f6e2c5157a33dda2e91f58f32862f864d700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
 		GasLimit:   0x2068F7700,
 		Difficulty: big.NewInt(1),
-		Alloc: GenesisAlloc{common.HexToAddress("0x0000000000000000000000000000000000000000"): {Balance: convertBigIntData("1")},
-			common.HexToAddress("0x3b7007e3ea156fd588b6c2a585a326f4ff81ddba"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0xf89d5f20872b812862929a8943c3c4207abba884"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x206f7d1961f1bdd589c6f63d522ec45963876d5d"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0xa3638c13ee77a717a0b83683e3c3e573bd33d2af"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x0bf5a7073b63dde502efc6ff58482e308fe3a65d"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x68ac120d4962f3ec3fd45eb9d087ad64fa38fb40"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x4037c6c545c9410616374dc0a198b8c6331c4b52"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x27cd069485cf5ea68ffd32d3ae03a28ee19f6a9a"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x8e0c3b5846cc2209f71efc640d0185630cac21fd"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x8ac0caf0965af2ad0d16a571b6ad5d417900734b"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x323846c8df9d7372896634cc442c5f848e21058a"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0xb2c5e0992cd97b34e3a9df305df3b078f02bc494"): {Balance: convertBigIntData("1000000000000000000000000000000")}},
+		Alloc:      nil,
 	}
 }
 
@@ -326,23 +315,11 @@ func DefaultGenesisBlock() *Genesis {
 func DefaultTestnetGenesisBlock() *Genesis {
 	return &Genesis{
 		Config:     params.TestnetChainConfig,
-		Timestamp:  0x5bda9da6,
-		ExtraData:  hexutil.MustDecode("0x00000000000000000000000000000000000000000000000000000000000000003b7007e3ea156fd588b6c2a585a326f4ff81ddbaf89d5f20872b812862929a8943c3c4207abba884206f7d1961f1bdd589c6f63d522ec45963876d5da3638c13ee77a717a0b83683e3c3e573bd33d2af0bf5a7073b63dde502efc6ff58482e308fe3a65d68ac120d4962f3ec3fd45eb9d087ad64fa38fb404037c6c545c9410616374dc0a198b8c6331c4b5227cd069485cf5ea68ffd32d3ae03a28ee19f6a9a8e0c3b5846cc2209f71efc640d0185630cac21fd8ac0caf0965af2ad0d16a571b6ad5d417900734b323846c8df9d7372896634cc442c5f848e21058ab2c5e0992cd97b34e3a9df305df3b078f02bc4940000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
+		Timestamp:  0x5bda9da7,
+		ExtraData:  hexutil.MustDecode("0x000000000000000000000000000000000000000000000000000000000000000060c892e607f994e7cb79010055ba9cdb6336560d840534b46b3b3bf8c1c3e4c7d34bc86933de78148bf2e42de44c50e2966a98ddc0e2a79ce0e949f5d9758863f280c25b0d1f2f81705e3725ccd5ac49fd7f1f6e2c5157a33dda2e91f58f32862f864d700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
 		GasLimit:   0x2068F7700,
 		Difficulty: big.NewInt(1),
-		Alloc: GenesisAlloc{common.HexToAddress("0x0000000000000000000000000000000000000000"): {Balance: convertBigIntData("1")},
-			common.HexToAddress("0x3b7007e3ea156fd588b6c2a585a326f4ff81ddba"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0xf89d5f20872b812862929a8943c3c4207abba884"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x206f7d1961f1bdd589c6f63d522ec45963876d5d"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0xa3638c13ee77a717a0b83683e3c3e573bd33d2af"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x0bf5a7073b63dde502efc6ff58482e308fe3a65d"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x68ac120d4962f3ec3fd45eb9d087ad64fa38fb40"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x4037c6c545c9410616374dc0a198b8c6331c4b52"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x27cd069485cf5ea68ffd32d3ae03a28ee19f6a9a"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x8e0c3b5846cc2209f71efc640d0185630cac21fd"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x8ac0caf0965af2ad0d16a571b6ad5d417900734b"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x323846c8df9d7372896634cc442c5f848e21058a"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0xb2c5e0992cd97b34e3a9df305df3b078f02bc494"): {Balance: convertBigIntData("1000000000000000000000000000000")}},
+		Alloc:      nil,
 	}
 }
 
@@ -350,34 +327,22 @@ func DefaultTestnetGenesisBlock() *Genesis {
 func DefaultRinkebyGenesisBlock() *Genesis {
 	return &Genesis{
 		Config:     params.RinkebyChainConfig,
-		Timestamp:  0x5bda9da6,
-		ExtraData:  hexutil.MustDecode("0x00000000000000000000000000000000000000000000000000000000000000003b7007e3ea156fd588b6c2a585a326f4ff81ddbaf89d5f20872b812862929a8943c3c4207abba884206f7d1961f1bdd589c6f63d522ec45963876d5da3638c13ee77a717a0b83683e3c3e573bd33d2af0bf5a7073b63dde502efc6ff58482e308fe3a65d68ac120d4962f3ec3fd45eb9d087ad64fa38fb404037c6c545c9410616374dc0a198b8c6331c4b5227cd069485cf5ea68ffd32d3ae03a28ee19f6a9a8e0c3b5846cc2209f71efc640d0185630cac21fd8ac0caf0965af2ad0d16a571b6ad5d417900734b323846c8df9d7372896634cc442c5f848e21058ab2c5e0992cd97b34e3a9df305df3b078f02bc4940000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
+		Timestamp:  0x5bda9da8,
+		ExtraData:  hexutil.MustDecode("0x0000000000000000000000000000000000000000000000000000000000000000d9758863f280c25b0d1f2f81705e3725ccd5ac490000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
 		GasLimit:   0x2068F7700,
 		Difficulty: big.NewInt(1),
-		Alloc: GenesisAlloc{common.HexToAddress("0x0000000000000000000000000000000000000000"): {Balance: convertBigIntData("1")},
-			common.HexToAddress("0x3b7007e3ea156fd588b6c2a585a326f4ff81ddba"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0xf89d5f20872b812862929a8943c3c4207abba884"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x206f7d1961f1bdd589c6f63d522ec45963876d5d"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0xa3638c13ee77a717a0b83683e3c3e573bd33d2af"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x0bf5a7073b63dde502efc6ff58482e308fe3a65d"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x68ac120d4962f3ec3fd45eb9d087ad64fa38fb40"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x4037c6c545c9410616374dc0a198b8c6331c4b52"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x27cd069485cf5ea68ffd32d3ae03a28ee19f6a9a"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x8e0c3b5846cc2209f71efc640d0185630cac21fd"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x8ac0caf0965af2ad0d16a571b6ad5d417900734b"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0x323846c8df9d7372896634cc442c5f848e21058a"): {Balance: convertBigIntData("1000000000000000000000000000000")},
-			common.HexToAddress("0xb2c5e0992cd97b34e3a9df305df3b078f02bc494"): {Balance: convertBigIntData("1000000000000000000000000000000")}},
+		Alloc:      nil,
 	}
 }
 
-// Convert a string to an int 
+// Convert a string to an int
 func convertBigIntData(intNumber string) *big.Int {
 	number, err := big.NewInt(0).SetString(intNumber, 10)
 	if !err {
 		fmt.Print(err)
 		return big.NewInt(0)
 	}
-    return number
+	return number
 }
 
 // DeveloperGenesisBlock returns the 'geth --dev' genesis block. Note, this must
@@ -402,7 +367,7 @@ func DeveloperGenesisBlock(period uint64, faucet common.Address) *Genesis {
 			common.BytesToAddress([]byte{6}): {Balance: big.NewInt(1)}, // ECAdd
 			common.BytesToAddress([]byte{7}): {Balance: big.NewInt(1)}, // ECScalarMul
 			common.BytesToAddress([]byte{8}): {Balance: big.NewInt(1)}, // ECPairing
-			faucet:                           {Balance: new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 256), big.NewInt(9))},
+			faucet: {Balance: new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 256), big.NewInt(9))},
 		},
 	}
 }

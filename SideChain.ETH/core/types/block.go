@@ -82,9 +82,6 @@ type Header struct {
 	Extra       []byte         `json:"extraData"        gencodec:"required"`
 	MixDigest   common.Hash    `json:"mixHash"          gencodec:"required"`
 	Nonce       BlockNonce     `json:"nonce"            gencodec:"required"`
-
-	// add New ElaHeight
-	ElaHeight   uint32         `json:"elaHeight"        gencodec:"required"`
 }
 
 // field type overrides for gencodec

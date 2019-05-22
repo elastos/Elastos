@@ -626,6 +626,16 @@ var (
 		Usage: "configue SPV module monitoring ela chain address",
 		Value: "",
 	}
+	BlackContractAddr = cli.StringFlag{
+		Name:  "black.contract.address",
+		Usage: "configue Black Contract address",
+		Value: "0x491bC043672B9286fA02FA7e0d6A3E5A0384A31A",
+	}
+	PassBalance = cli.Int64Flag{
+		Name:  "pass.balance",
+		Usage: "configue Oracle Contract account balance",
+		Value: 1000000000000000000,
+	}
 )
 
 // MakeDataDir retrieves the currently requested data directory, terminating
@@ -681,9 +691,6 @@ func setNodeUserIdent(ctx *cli.Context, cfg *node.Config) {
 // setBootstrapNodes creates a list of bootstrap nodes from the command line
 // flags, reverting to pre-configured ones if none have been specified.
 func setBootstrapNodes(ctx *cli.Context, cfg *p2p.Config) {
-	fmt.Println(ctx.GlobalIsSet(BootnodesFlag.Name) || ctx.GlobalIsSet(BootnodesV4Flag.Name))
-	fmt.Println(ctx.GlobalBool(TestnetFlag.Name))
-	fmt.Println(ctx.GlobalBool(RinkebyFlag.Name))
 
 	urls := params.MainnetBootnodes
 
@@ -1215,7 +1222,8 @@ func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *eth.Config) {
 	if ctx.GlobalIsSet(EVMInterpreterFlag.Name) {
 		cfg.EVMInterpreter = ctx.GlobalString(EVMInterpreterFlag.Name)
 	}
-
+	cfg.BlackContractAddr = ctx.GlobalString(BlackContractAddr.Name)
+	cfg.PassBalance = ctx.GlobalUint64(PassBalance.Name)
 	// Override any default configs for hard coded networks.
 	switch {
 	case ctx.GlobalBool(TestnetFlag.Name):

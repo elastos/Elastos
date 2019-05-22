@@ -37,6 +37,10 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/params"
 )
 
+var (
+	errInsufficientBalanceForGas = errors.New("insufficient balance to pay for gas")
+)
+
 const (
 	// resultQueueSize is the size of channel listening to sealing result.
 	resultQueueSize = 10
@@ -697,13 +701,14 @@ func (w *worker) commitTransaction(tx *types.Transaction, coinbase common.Addres
 		w.current.state.RevertToSnapshot(snap)
 		return nil, err
 	}
+
 	w.current.txs = append(w.current.txs, tx)
 	w.current.receipts = append(w.current.receipts, receipt)
-
 	return receipt.Logs, nil
 }
 
 func (w *worker) commitTransactions(txs *types.TransactionsByPriceAndNonce, coinbase common.Address, interrupt *int32) bool {
+
 	// Short circuit if current is nil
 	if w.current == nil {
 		return true
@@ -768,6 +773,13 @@ func (w *worker) commitTransactions(txs *types.TransactionsByPriceAndNonce, coin
 			// Pop the current out-of-gas transaction without shifting in the next from the account
 			log.Trace("Gas limit exceeded for current block", "sender", from)
 			txs.Pop()
+			var addr common.Address
+			if tx.To() != nil {
+				to := *tx.To()
+				if len(tx.Data()) == 32 && to == addr {
+					core.RemoveLocalTx(w.eth.TxPool(), tx.Hash(), true)
+				}
+			}
 
 		case core.ErrNonceTooLow:
 			// New head notification data race between the transaction pool and miner, shift
@@ -835,17 +847,12 @@ func (w *worker) commitNewWork(interrupt *int32, noempty bool, timestamp int64) 
 	}
 
 	num := parent.Number()
-	var elaHeight uint32 = 0
-	//if num.Cmp(big.NewInt(0)) != 0 {
-	//	elaHeight = spv.UntilGetElaChainHeight()
-	//}
 	header := &types.Header{
 		ParentHash: parent.Hash(),
 		Number:     num.Add(num, common.Big1),
 		GasLimit:   core.CalcGasLimit(parent, w.gasFloor, w.gasCeil),
 		Extra:      w.extra,
 		Time:       big.NewInt(timestamp),
-		ElaHeight:  elaHeight,
 	}
 
 	// Only set the coinbase if our consensus engine is running (avoid spurious block rewards)
