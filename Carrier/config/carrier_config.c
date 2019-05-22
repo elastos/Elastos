@@ -25,10 +25,12 @@
 #include <limits.h>
 #include <assert.h>
 #include <ctype.h>
-#include <getopt.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 
+#ifdef HAVE_GETOPT_H
+#include <getopt.h>
+#endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -52,10 +54,11 @@
 
 static void bootstraps_destructor(void *p)
 {
+    int i;
     size_t *size = (size_t *)p;
     BootstrapNode *bootstraps = (struct BootstrapNode *)(size + 1);
 
-    for (int i = i; i < *size; i++) {
+    for (i = 0; i < *size; i++) {
         BootstrapNode *node = bootstraps + i;
 
         if (node->ipv4)
@@ -267,11 +270,6 @@ ElaOptions *carrier_config_copy(ElaOptions *dest, ElaOptions *src)
 
 void carrier_config_update(ElaOptions *options, int argc, char *argv[])
 {
-    bool udp_enabled;
-    int log_level;
-    char *log_file;
-    char *data_dir;
-
     char path[PATH_MAX];
 
     int opt;
@@ -292,11 +290,9 @@ void carrier_config_update(ElaOptions *options, int argc, char *argv[])
         switch (opt) {
         case 1:
             if (isdigit(*optarg))
-                udp_enabled = atoi(optarg) != 0;
+                options->udp_enabled = atoi(optarg) != 0;
             else
-                udp_enabled = strcmp(optarg, "true") == 0;
-
-            options->udp_enabled = udp_enabled;
+                options->udp_enabled = strcmp(optarg, "true") == 0;
             break;
 
         case 2:
