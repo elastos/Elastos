@@ -40,9 +40,9 @@ public class FirstFragment extends BaseFragment implements CommmonObjectWithMeth
         int Language = new SPUtil(getContext()).getLanguage();
         int id;
         if (Language == 0) {
-            id = MyApplication.chainID == 0 ? R.mipmap.c_flash : R.mipmap.alpha_720_1280;
+            id = MyApplication.chainID <= 0 ? R.mipmap.c_flash : R.mipmap.alpha_720_1280;
         } else {
-            id = MyApplication.chainID == 0 ? R.mipmap.e_flash : R.mipmap.alpha_e_720_1280;
+            id = MyApplication.chainID <= 0 ? R.mipmap.e_flash : R.mipmap.alpha_e_720_1280;
 
         }
         imageView.setBackgroundResource(id);

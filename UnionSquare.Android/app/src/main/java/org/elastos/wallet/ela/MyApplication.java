@@ -4,7 +4,9 @@ import android.content.Context;
 import android.support.multidex.MultiDexApplication;
 
 import com.blankj.utilcode.util.Utils;
+import com.tencent.bugly.crashreport.CrashReport;
 
+import org.elastos.wallet.BuildConfig;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.di.component.ApplicationComponent;
 import org.elastos.wallet.ela.di.component.DaggerApplicationComponent;
@@ -16,7 +18,7 @@ import io.realm.Realm;
 public class MyApplication extends MultiDexApplication {
 
     private static MyApplication myApplication;
-    public static int chainID = 0;//默认0正式或者alpha  1testnet 2 regtest
+    public static int chainID = 0;//  -1alpha 默认0正式  1testnet 2 regtest 小于0为mainnet的不同包名版本
 
     protected static MyWallet myWallet;
     private ApplicationComponent mApplicationComponent;
@@ -30,14 +32,28 @@ public class MyApplication extends MultiDexApplication {
         Utils.init(this);
         Realm.init(getApplicationContext());
         String pachageName = getPackageName();
+
+        if (pachageName.endsWith("unionsquare")) {
+            chainID = -1;
+            useBugly();
+        }
         if (pachageName.endsWith("testnet")) {
             chainID = 1;
+            useBugly();
         }
         if (pachageName.endsWith("regtest")) {
             chainID = 2;
+            useBugly();
         }
+
+
     }
 
+    private void useBugly() {
+        if (!BuildConfig.DEBUG) {
+            CrashReport.initCrashReport(getApplicationContext(), "9c89947c00", false);
+        }
+    }
 
     public static Context getAppContext() {
         return myApplication.getApplicationContext();

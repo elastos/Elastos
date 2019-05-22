@@ -168,7 +168,7 @@ public class RetrofitManager {
         Retrofit.Builder build = new Retrofit.Builder().baseUrl(Constant.REQUEST_BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create());
-        if (MyApplication.chainID == 0) {
+        if (MyApplication.chainID <= 0) {
             retrofit = build.client(getOkHttpClient()).build();
         } else {
             retrofit = build.client(getOkHttpClient(context)).build();

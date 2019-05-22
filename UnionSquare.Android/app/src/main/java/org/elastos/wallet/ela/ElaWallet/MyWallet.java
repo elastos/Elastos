@@ -38,8 +38,7 @@ public class MyWallet {
     public static final String RATE_S = RATE + "";
     public static final Double RATE_ = 100000000.0;
     public static final long feePerKb = 10000L;
-    public static String Url = MyApplication.chainID == 0 ? "https://blockchain.elastos.org/tx/" : "https://blockchain-beta.elastos.org/tx/";
-
+    public static String Url = getTxHashBaseUrl();
     public MasterWalletManager mMasterWalletManager = null;
     //private IDidManager mDidManager = null;
     private String mRootPath = null;
@@ -55,11 +54,26 @@ public class MyWallet {
     private int errCodeImportFromMnemonic = 10009;
     private int errCodeSubWalletInstance = 10010;
 
+
     public MyWallet() {
 
         mRootPath = MyApplication.getAppContext().getFilesDir().getParent();
 //		mDIDManagerSupervisor = new DIDManagerSupervisor(mRootPath);
         mMasterWalletManager = new MasterWalletManager(mRootPath);
+    }
+
+    private static String getTxHashBaseUrl() {
+        String baseUrl = "https://blockchain.elastos.org/tx/";
+        switch (MyApplication.chainID) {
+            case 1:
+                baseUrl = "https://blockchain-beta.elastos.org/tx/";
+                break;
+            case 2:
+                baseUrl = "https://blockchain-regtest.elastos.org/";
+                break;
+
+        }
+        return baseUrl;
     }
 
     /**
