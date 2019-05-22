@@ -315,6 +315,8 @@ func (sp *serverPeer) OnGetData(_ *peer.Peer, getData *msg.GetData) {
 			err = sp.server.pushConfirmedBlockMsg(sp, &iv.Hash, c, waitChan)
 		case msg.InvTypeFilteredBlock:
 			err = sp.server.pushMerkleBlockMsg(sp, &iv.Hash, c, waitChan)
+		case msg.InvTypeAddress:
+			continue
 		default:
 			log.Warnf("Unknown type in inventory request %d", iv.Type)
 			continue
