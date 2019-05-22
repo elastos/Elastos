@@ -2328,26 +2328,6 @@ int main(int argc, char *argv[])
     init_screen();
     history_load();
 
-    opts.hive_bootstraps_size = cfg->hive_bootstraps_size;
-    if (opts.hive_bootstraps_size > 0) {
-        opts.hive_bootstraps = (HiveBootstrapNode *)calloc(1, sizeof(HiveBootstrapNode) * opts.hive_bootstraps_size);
-        if (!opts.hive_bootstraps) {
-            fprintf(stderr, "out of memory.");
-            deref(cfg);
-            free(opts.bootstraps);
-            return -1;
-        }
-
-        for (i = 0 ; i < cfg->hive_bootstraps_size; i++) {
-            HiveBootstrapNode *b = &opts.hive_bootstraps[i];
-            HiveBootstrapNode *node = cfg->hive_bootstraps[i];
-
-            b->ipv4 = node->ipv4;
-            b->ipv6 = node->ipv6;
-            b->port = node->port;
-        }
-    }
-
     memset(&callbacks, 0, sizeof(callbacks));
     callbacks.idle = idle_callback;
     callbacks.connection_status = connection_callback;

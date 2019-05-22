@@ -75,6 +75,26 @@ static void bootstraps_destructor(void *p)
     }
 }
 
+static void hive_bootstrap_destructor(void *p)
+{
+    int i;
+    size_t *size = (size_t *)p;
+    HiveBootstrapNode *bootstraps = (struct HiveBootstrapNode *)(size + 1);
+
+    for (i = 0; i < *size; i++) {
+        HiveBootstrapNode *node = bootstraps + i;
+
+        if (node->ipv4)
+            free((void *)node->ipv4);
+
+        if (node->ipv6)
+            free((void *)node->ipv6);
+
+        if (node->port)
+            free((void *)node->port);
+    }
+}
+
 #if defined(_WIN32) || defined(_WIN64)
 #define PATH_SEP        "\\"
 #define HOME_ENV        "LOCALAPPDATA"
@@ -211,6 +231,60 @@ ElaOptions *carrier_config_load(const char *config_file,
             node->public_key = NULL;
     }
 
+    bootstraps_setting = config_lookup(&cfg, "hive_bootstraps");
+    if (!bootstraps_setting) {
+        fprintf(stderr, "Missing hive bootstraps section.\n");
+        carrier_config_free(options);
+        config_destroy(&cfg);
+        return NULL;
+    }
+
+    entries = config_setting_length(bootstraps_setting);
+    if (entries <= 0) {
+        fprintf(stderr, "Empty hive bootstraps option.\n");
+        carrier_config_free(options);
+        config_destroy(&cfg);
+        return NULL;
+    }
+
+    mem = (size_t *)rc_zalloc(sizeof(size_t) +
+            sizeof(HiveBootstrapNode) * entries, hive_bootstrap_destructor);
+    if (!mem) {
+        fprintf(stderr, "Load configuration failed, out of memory.\n");
+        carrier_config_free(options);
+        config_destroy(&cfg);
+        return NULL;
+    }
+
+    *mem = entries;
+    options->hive_bootstraps_size = entries;
+    options->hive_bootstraps = (HiveBootstrapNode *)(++mem);
+
+    for (i = 0; i < entries; i++) {
+        HiveBootstrapNode *node = options->hive_bootstraps + i;
+
+        bootstrap_setting = config_setting_get_elem(bootstraps_setting, i);
+
+        rc = config_setting_lookup_string(bootstrap_setting, "ipv4", &stropt);
+        if (rc && *stropt)
+            node->ipv4 = (const char *)strdup(stropt);
+        else
+            node->ipv4 = NULL;
+
+        rc = config_setting_lookup_string(bootstrap_setting, "ipv6", &stropt);
+        if (rc && *stropt)
+            node->ipv6 = (const char *)strdup(stropt);
+        else
+            node->ipv6 = NULL;
+
+        rc = config_setting_lookup_int(bootstrap_setting, "port", &intopt);
+        if (rc && intopt) {
+            sprintf(number, "%d", intopt);
+            node->port = (const char *)strdup(number);
+        } else
+            node->port = NULL;
+    }
+
     options->udp_enabled = true;
     rc = config_lookup_bool(&cfg, "udp-enabled", &intopt);
     if (rc)
@@ -338,6 +412,11 @@ void carrier_config_free(ElaOptions *options)
 
     if (options->bootstraps) {
         size_t *p = (size_t *)options->bootstraps;
+        deref(--p);
+    }
+
+    if (options->hive_bootstraps) {
+        size_t *p = (size_t *)options->hive_bootstraps;
         deref(--p);
     }
 
