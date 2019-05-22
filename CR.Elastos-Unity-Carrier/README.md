@@ -8,9 +8,9 @@ The release version for plugin is [here](https://www.npmjs.com/package/elastos-u
 
 ## Getting started
 ```
-npm install --save react-native-elastos-carrier
+npm install --save elastos-unity-carrier
 
-react-native link react-native-elastos-carrier
+react-native link elastos-unity-carrier
 ```
 
 
