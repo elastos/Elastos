@@ -242,6 +242,7 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 	log.Info("[ProcessProposal] start")
 	defer log.Info("[ProcessProposal] end")
 
+	self := bytes.Equal(id[:], d.Sponsor)
 	if err := blockchain.ProposalCheck(d); err != nil {
 		log.Warn("invalid proposal: ", err.Error())
 		return false, true
@@ -249,7 +250,7 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 
 	if p.IsViewChangedTimeOut() {
 		log.Info("enter emergency state, proposal will be discard")
-		return true, false
+		return true, !self
 	}
 
 	if p.processingProposal != nil && d.Hash().IsEqual(
@@ -260,7 +261,7 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 
 	if _, err := blockchain.DefaultLedger.Blockchain.GetBlockByHash(d.BlockHash); err == nil {
 		log.Info("already exist block in block chain")
-		return true, false
+		return true, !self
 	}
 
 	if d.ViewOffset != p.cfg.Consensus.GetViewOffset() {
@@ -268,7 +269,7 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 		if d.ViewOffset > p.cfg.Consensus.GetViewOffset() {
 			p.precociousProposals[d.Hash()] = d
 		}
-		return true, false
+		return true, !self
 	}
 
 	if !force {
@@ -289,7 +290,7 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 			common.BytesToHexString(currentArbiter), "sponsor:", d.Sponsor)
 		p.rejectProposal(d)
 		log.Warn("reject: current arbiter is not sponsor")
-		return true, false
+		return true, !self
 	}
 
 	currentBlock, ok := p.cfg.Manager.GetBlockCache().TryGetValue(d.BlockHash)
@@ -304,12 +305,12 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 
 	if currentBlock.Height != p.processingBlock.Height {
 		log.Warn("[ProcessProposal] Invalid block height")
-		return true, false
+		return true, !self
 	}
 
 	if !d.BlockHash.IsEqual(p.processingBlock.Hash()) {
 		log.Warn("[ProcessProposal] Invalid block hash")
-		return true, false
+		return true, !self
 	}
 
 	if !p.proposalProcessFinished {
