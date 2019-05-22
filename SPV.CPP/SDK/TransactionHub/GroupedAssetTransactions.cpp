@@ -178,7 +178,7 @@ namespace Elastos {
 					} else {
 						// add inputs to spent output set
 						for (j = 0; j < tx->GetInputs().size(); j++) {
-							_pendingSpentOutputs.AddByTxInput(tx->GetInputs()[j], 0, 0);
+							_pendingSpentOutputs.AddByTxInput(tx->GetInputs()[j], 0);
 						}
 					}
 					continue;
@@ -186,7 +186,7 @@ namespace Elastos {
 
 				// add inputs to spent output set
 				for (j = 0; j < tx->GetInputs().size(); j++) {
-					_spentOutputs.AddByTxInput(tx->GetInputs()[j], 0, 0);
+					_spentOutputs.AddByTxInput(tx->GetInputs()[j], 0);
 				}
 
 				_subAccount->AddUsedAddrs(tx);
@@ -197,14 +197,14 @@ namespace Elastos {
 					Address addr = outputs[j].GetAddress();
 					if (_subAccount->ContainsAddress(addr)) {
 						if (_subAccount->IsDepositAddress(addr)) {
-							_utxos.AddUTXO(tx->GetHash(), (uint32_t) j, outputs[j].GetAmount(), confirms);
+							_utxos.AddUTXO(tx->GetHash(), (uint16_t) j, outputs[j].GetAmount());
 							depositBalance += outputs[j].GetAmount();
 						} else if ((tx->GetTransactionType() == Transaction::Type::CoinBase && confirms <= 100) ||
 							outputs[j].GetOutputLock() > _parent->GetBlockHeight()) {
-							_utxosLocked.AddUTXO(tx->GetHash(), (uint32_t)j, outputs[j].GetAmount(), confirms);
+							_utxosLocked.AddUTXO(tx->GetHash(), (uint16_t)j, outputs[j].GetAmount());
 							lockedBalance += outputs[j].GetAmount();
 						} else {
-							_utxos.AddUTXO(tx->GetHash(), (uint32_t) j, outputs[j].GetAmount(), confirms);
+							_utxos.AddUTXO(tx->GetHash(), (uint16_t) j, outputs[j].GetAmount());
 							balance += outputs[j].GetAmount();
 							if (outputs[j].GetType() == TransactionOutput::VoteOutput) {
 								votedBalance += outputs[j].GetAmount();

@@ -34,11 +34,11 @@ namespace Elastos {
 			_txHash = hash;
 		}
 
-		uint32_t TransactionInput::GetIndex() const {
+		uint16_t TransactionInput::GetIndex() const {
 			return _index;
 		}
 
-		void TransactionInput::SetIndex(uint32_t index) {
+		void TransactionInput::SetIndex(uint16_t index) {
 			_index = index;
 		}
 
@@ -56,7 +56,7 @@ namespace Elastos {
 
 		void TransactionInput::Serialize(ByteStream &ostream) const {
 			ostream.WriteBytes(_txHash);
-			ostream.WriteUint16(uint16_t(_index));
+			ostream.WriteUint16(_index);
 			ostream.WriteUint32(_sequence);
 		}
 
@@ -66,12 +66,10 @@ namespace Elastos {
 				return false;
 			}
 
-			uint16_t index;
-			if (!istream.ReadUint16(index)) {
+			if (!istream.ReadUint16(_index)) {
 				Log::error("deserialize tx index error");
 				return false;
 			}
-			_index = index;
 
 			if (!istream.ReadUint32(_sequence)) {
 				Log::error("deserialize tx sequence error");
@@ -91,7 +89,7 @@ namespace Elastos {
 
 		void TransactionInput::FromJson(const nlohmann::json &jsonData) {
 			_txHash = uint256(jsonData["TxHash"].get<std::string>());
-			_index = jsonData["Index"].get<uint32_t>();
+			_index = jsonData["Index"].get<uint16_t>();
 			_sequence = jsonData["Sequence"].get<uint32_t>();
 		}
 

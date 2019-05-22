@@ -15,7 +15,7 @@ namespace Elastos {
 		struct UTXO {
 			UTXO() : n(0), amount(0) {}
 
-			UTXO(const uint256 &h, uint32_t i, uint64_t a, uint32_t c) :
+			UTXO(const uint256 &h, uint16_t i, uint64_t a) :
 					hash(h),
 					n(i),
 					amount(a) {
@@ -26,7 +26,7 @@ namespace Elastos {
 			}
 
 			uint256 hash;
-			uint32_t n;
+			uint16_t n;
 			uint64_t amount;
 		};
 
@@ -44,9 +44,9 @@ namespace Elastos {
 
 			const std::vector<UTXO> &GetUTXOs() const;
 
-			void AddByTxInput(const TransactionInput &input, uint64_t amount, uint32_t confirms);
+			void AddByTxInput(const TransactionInput &input, uint64_t amount);
 
-			void AddUTXO(const uint256 &hash, uint32_t index, uint64_t amount, uint32_t confirms);
+			void AddUTXO(const uint256 &hash, uint16_t index, uint64_t amount);
 
 			void RemoveAt(size_t index);
 

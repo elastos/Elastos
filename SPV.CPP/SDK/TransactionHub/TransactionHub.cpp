@@ -61,24 +61,13 @@ namespace Elastos {
 		}
 
 		std::vector<UTXO> TransactionHub::GetUTXOsSafe(const uint256 &assetID) const {
-			std::vector<UTXO> result;
-
-			{
-				boost::mutex::scoped_lock scopedLock(lock);
-				return _transactions.GetUTXOs(assetID);
-			}
-
-			return result;
+			boost::mutex::scoped_lock scopedLock(lock);
+			return _transactions.GetUTXOs(assetID);
 		}
 
 		std::vector<UTXO> TransactionHub::GetAllUTXOsSafe() {
-			std::vector<UTXO> result;
-
-			{
-				boost::mutex::scoped_lock scopedLock(lock);
-				result = _transactions.GetAllUTXOs();
-			}
-			return result;
+			boost::mutex::scoped_lock scopedLock(lock);
+			return _transactions.GetAllUTXOs();
 		}
 
 		nlohmann::json TransactionHub::GetBalanceInfo() {

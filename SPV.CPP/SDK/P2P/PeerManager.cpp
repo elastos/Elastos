@@ -702,6 +702,7 @@ namespace Elastos {
 
 			for (size_t i = 0; i < utxos.size(); i++) { // add UTXOs to watch for tx sending money from the wallet
 				bytes_t o = utxos[i].hash.bytes();
+				o.reverse();
 				o.append(utxos[i].n);
 
 				if (!filter->ContainsData(o))
