@@ -17,7 +17,6 @@ import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonObjEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonObjectWithMethNameEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
-import org.elastos.wallet.ela.ui.common.bean.CommmonStringListEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringWithiMethNameEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommonStringArrayEntity;
 import org.elastos.wallet.ela.ui.common.bean.ISubWalletListEntity;
@@ -58,7 +57,7 @@ public class MyWallet {
 
     public MyWallet() {
 
-        mRootPath = MyUtil.getRootPath();
+        mRootPath = MyApplication.getAppContext().getFilesDir().getParent();
 //		mDIDManagerSupervisor = new DIDManagerSupervisor(mRootPath);
         mMasterWalletManager = new MasterWalletManager(mRootPath);
     }
@@ -259,7 +258,7 @@ public class MyWallet {
                 Log.d(TAG, "result:  = " + masterWalletList.get(i).GetBasicInfo());
             }
 
-            return new CommmonObjectWithMethNameEntity(SUCESSCODE, masterWalletList,"getAllMasterWallets");
+            return new CommmonObjectWithMethNameEntity(SUCESSCODE, masterWalletList, "getAllMasterWallets");
         } catch (WalletException e) {
             return exceptionProcess(e, "Get all master wallets");
         }
@@ -299,7 +298,7 @@ public class MyWallet {
 
             }
             ArrayList<SubWallet> subWalletList = masterWallet.GetAllSubWallets();
-            ArrayList<org.elastos.wallet.ela.db.table.SubWallet> newSubWalletList =new ArrayList<>();
+            ArrayList<org.elastos.wallet.ela.db.table.SubWallet> newSubWalletList = new ArrayList<>();
             for (SubWallet subWallet : subWalletList) {
                 org.elastos.wallet.ela.db.table.SubWallet newSubWallet = new org.elastos.wallet.ela.db.table.SubWallet();
                 newSubWallet.setBalance(subWallet.GetBalance(SubWallet.BalanceType.Total) + "");

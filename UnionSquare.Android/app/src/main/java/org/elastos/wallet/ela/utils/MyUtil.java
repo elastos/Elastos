@@ -1,4 +1,4 @@
-package org.elastos.wallet.ela.ElaWallet;
+package org.elastos.wallet.ela.utils;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -13,8 +13,6 @@ import android.os.Looper;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.widget.Toast;
-
-import org.elastos.wallet.ela.utils.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;

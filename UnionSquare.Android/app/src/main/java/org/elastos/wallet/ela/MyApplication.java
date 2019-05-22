@@ -16,7 +16,7 @@ import io.realm.Realm;
 public class MyApplication extends MultiDexApplication {
 
     private static MyApplication myApplication;
-    public static int chainID = 0;//0正式  1testnet
+    public static int chainID = 0;//默认0正式或者alpha  1testnet 2 regtest
 
     protected static MyWallet myWallet;
     private ApplicationComponent mApplicationComponent;
@@ -32,6 +32,9 @@ public class MyApplication extends MultiDexApplication {
         String pachageName = getPackageName();
         if (pachageName.endsWith("testnet")) {
             chainID = 1;
+        }
+        if (pachageName.endsWith("regtest")) {
+            chainID = 2;
         }
     }
 

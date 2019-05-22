@@ -37,8 +37,13 @@ android {
 
         TestNet {
             dimension "default"
-            applicationId "org.elastos.unionsquare.test"
+            applicationId "org.elastos.unionsquare.testnet"
             resValue "string", "app_name", "ELATest"
+        }
+        RegTest {
+            dimension "default"
+            applicationId "org.elastos.unionsquare.regtest"
+            resValue "string", "app_name", "ELARegTest"
         }
     }
 
@@ -51,7 +56,7 @@ android {
             commandLine 'git', 'describe', '--dirty', '--always', '--tags'
             standardOutput = stdout
         }
-        
+
         return stdout.toString().trim()
     }
 

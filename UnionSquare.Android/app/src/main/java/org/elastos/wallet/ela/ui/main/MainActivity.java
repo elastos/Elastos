@@ -8,7 +8,6 @@ import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
 
 import org.elastos.wallet.R;
-import org.elastos.wallet.ela.ElaWallet.MyUtil;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.FirstFragment;
 import org.elastos.wallet.ela.MyApplication;
@@ -26,9 +25,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
-
-import static org.elastos.wallet.ela.MyApplication.chainID;
 
 
 public class MainActivity extends BaseActivity implements MainViewData {
@@ -102,13 +101,7 @@ public class MainActivity extends BaseActivity implements MainViewData {
     }
 
     private void init() {
-        if (chainID == 0) {
-            MyUtil.moveConfigFiles2RootPath(this);
-        } else if (chainID == 1) {
-            moveTestConfigFiles2RootPath(this);
-        }
-        Context applicationContext = getApplicationContext();
-        MyUtil.setApplicationContext(applicationContext);
+        moveTestConfigFiles2RootPath(this);
     }
 
     private void setLanguage() {
@@ -157,26 +150,40 @@ public class MainActivity extends BaseActivity implements MainViewData {
 
     public static void moveTestConfigFiles2RootPath(Context context) {
         String rootPath = context.getFilesDir().getParent();
-        String[] names = {"CoinConfig_TestNet.json",
-                "mnemonic_chinese.txt",
-                "mnemonic_french.txt",
-                "mnemonic_italian.txt",
-                "mnemonic_japanese.txt",
-                "mnemonic_spanish.txt"};
-        String[] names1 = {"CoinConfig.json",
-                "mnemonic_chinese.txt",
-                "mnemonic_french.txt",
-                "mnemonic_italian.txt",
-                "mnemonic_japanese.txt",
-                "mnemonic_spanish.txt"};
-        for (int i = 0; i < names.length; i++) {
-            File file = new File(rootPath + "/" + names1[i]);
+        List<String> names = new ArrayList<String>();
+        String name = "CoinConfig.json";
+        switch (MyApplication.chainID) {
+            case 1:
+                name = "CoinConfig_TestNet.json";
+                break;
+            case 2:
+                name = "CoinConfig_RegTest.json";
+                break;
+
+        }
+        names.add(name);
+        names.add("mnemonic_chinese.txt");
+        names.add("mnemonic_french.txt");
+        names.add("mnemonic_italian.txt");
+        names.add("mnemonic_japanese.txt");
+        names.add("mnemonic_spanish.txt");
+
+        List<String> names1 = new ArrayList<String>();
+        names1.add("CoinConfig.json");
+        names1.add("mnemonic_chinese.txt");
+        names1.add("mnemonic_french.txt");
+        names1.add("mnemonic_italian.txt");
+        names1.add("mnemonic_japanese.txt");
+        names1.add("mnemonic_spanish.txt");
+
+        for (int i = 0; i < names1.size(); i++) {
+            File file = new File(rootPath + "/" + names1.get(i));
             if (file.exists()) {
                 continue;
             }
-            InputStream is = context.getClass().getClassLoader().getResourceAsStream("assets/" + names[i]);
+            InputStream is = context.getClass().getClassLoader().getResourceAsStream("assets/" + names.get(i));
             try {
-                OutputStream fosto = new FileOutputStream(rootPath + "/" + names1[i]);
+                OutputStream fosto = new FileOutputStream(rootPath + "/" + names1.get(i));
                 byte bt[] = new byte[1024];
                 int c = 0;
                 while ((c = is.read(bt)) > 0) {
