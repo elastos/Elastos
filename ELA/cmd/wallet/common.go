@@ -172,7 +172,7 @@ func getAddressBalance(address string) (common.Fixed64, common.Fixed64, error) {
 	return availableAmount, lockedAmount, nil
 }
 
-func output(haveSign, needSign int, txn *types.Transaction) error {
+func OutputTx(haveSign, needSign int, txn *types.Transaction) error {
 	// Serialise transaction content
 	buf := new(bytes.Buffer)
 	err := txn.Serialize(buf)
@@ -183,7 +183,7 @@ func output(haveSign, needSign int, txn *types.Transaction) error {
 
 	// Print transaction hex string
 	if len(content) > maxPrintLen {
-		fmt.Println("Hex: ", content[:maxPrintLen], "...")
+		fmt.Println("Hex: ", content[:maxPrintLen], "... ...")
 	} else {
 		fmt.Println("Hex: ", content)
 	}
@@ -212,7 +212,9 @@ func output(haveSign, needSign int, txn *types.Transaction) error {
 
 	var tx types.Transaction
 	txBytes, _ := hex.DecodeString(content)
-	tx.Deserialize(bytes.NewReader(txBytes))
+	if err := tx.Deserialize(bytes.NewReader(txBytes)); err != nil {
+		return err
+	}
 
 	// Print output file to console
 	fmt.Println("File: ", fileName)

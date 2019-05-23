@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -119,31 +118,11 @@ var buildTxCommand = []cli.Command{
 }
 
 func getTransactionHex(c *cli.Context) (string, error) {
-	// If parameter with file path is not empty, read content from file
 	if filePath := strings.TrimSpace(c.String("file")); filePath != "" {
-
-		if _, err := os.Stat(filePath); err != nil {
-			return "", errors.New("invalid transaction file path")
-		}
-		file, err := os.OpenFile(filePath, os.O_RDONLY, 0666)
-		if err != nil {
-			return "", errors.New("open transaction file failed")
-		}
-		rawData, err := ioutil.ReadAll(file)
-		if err != nil {
-			return "", errors.New("read transaction file failed")
-		}
-
-		content := strings.TrimSpace(string(rawData))
-		// File content can not by empty
-		if content == "" {
-			return "", errors.New("transaction file is empty")
-		}
-		return content, nil
+		return cmdcom.ReadFile(filePath)
 	}
 
 	content := strings.TrimSpace(c.String("hex"))
-	// Hex string content can not be empty
 	if content == "" {
 		return "", errors.New("transaction hex string is empty")
 	}
@@ -214,7 +193,7 @@ func signTx(c *cli.Context) error {
 	haveSign, needSign, _ = crypto.GetSignStatus(txn.Programs[0].Code, txn.Programs[0].Parameter)
 	fmt.Println("[", haveSign, "/", needSign, "] Transaction was successfully signed")
 
-	output(haveSign, needSign, txnSigned)
+	OutputTx(haveSign, needSign, txnSigned)
 
 	return nil
 }

@@ -108,14 +108,14 @@ func (o *Output) Deserialize(r io.Reader, txVersion TransactionVersion) error {
 }
 
 func (o *Output) String() string {
-	outputStr := fmt.Sprint("Output: {\n\t\t",
-		"AssetID: ", o.AssetID.String(), "\n\t\t",
-		"Value: ", o.Value.String(), "\n\t\t",
-		"OutputLock: ", o.OutputLock, "\n\t\t",
-		"ProgramHash: ", o.ProgramHash.String(), "\n\t\t")
+	outputStr := fmt.Sprint("Output: {\n\t\t\t",
+		"AssetID: ", o.AssetID.String(), "\n\t\t\t",
+		"Value: ", o.Value.String(), "\n\t\t\t",
+		"OutputLock: ", o.OutputLock, "\n\t\t\t",
+		"ProgramHash: ", o.ProgramHash.String(), "\n\t\t\t")
 
 	if o.Payload != nil {
-		outputStr += fmt.Sprint("Type: ", o.Type, "\n\t\t", "Payload: ", o.Payload, "\n\t\t")
+		outputStr += fmt.Sprint("Type: ", o.Type, "\n\t\t\t", "Payload: ", o.Payload, "\n\t\t")
 	}
 	outputStr += "}"
 
