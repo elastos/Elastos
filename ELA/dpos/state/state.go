@@ -138,18 +138,19 @@ type State struct {
 	getArbiters func() [][]byte
 	chainParams *config.Params
 
-	mtx               sync.RWMutex
-	nodeOwnerKeys     map[string]string // NodePublicKey as key, OwnerPublicKey as value
-	pendingProducers  map[string]*Producer
-	activityProducers map[string]*Producer
-	inactiveProducers map[string]*Producer
-	canceledProducers map[string]*Producer
-	illegalProducers  map[string]*Producer
-	votes             map[string]*types.Output
-	nicknames         map[string]struct{}
-	specialTxHashes   map[common.Uint256]struct{}
-	preBlockArbiters  map[string]struct{}
-	history           *history
+	mtx                      sync.RWMutex
+	nodeOwnerKeys            map[string]string // NodePublicKey as key, OwnerPublicKey as value
+	pendingProducers         map[string]*Producer
+	activityProducers        map[string]*Producer
+	inactiveProducers        map[string]*Producer
+	canceledProducers        map[string]*Producer
+	pendingCanceledProducers map[string]*Producer
+	illegalProducers         map[string]*Producer
+	votes                    map[string]*types.Output
+	nicknames                map[string]struct{}
+	specialTxHashes          map[common.Uint256]struct{}
+	preBlockArbiters         map[string]struct{}
+	history                  *history
 
 	emergencyInactiveArbiters map[string]struct{}
 	versionStartHeight        uint32
@@ -317,6 +318,17 @@ func (s *State) GetCanceledProducers() []*Producer {
 	s.mtx.RLock()
 	producers := make([]*Producer, 0, len(s.canceledProducers))
 	for _, producer := range s.canceledProducers {
+		producers = append(producers, producer)
+	}
+	s.mtx.RUnlock()
+	return producers
+}
+
+// GetPendingCanceledProducers returns all producers that in pending canceled state.
+func (s *State) GetPendingCanceledProducers() []*Producer {
+	s.mtx.RLock()
+	producers := make([]*Producer, 0, len(s.pendingCanceledProducers))
+	for _, producer := range s.pendingCanceledProducers {
 		producers = append(producers, producer)
 	}
 	s.mtx.RUnlock()
@@ -695,6 +707,7 @@ func (s *State) cancelProducer(payload *payload.ProcessProducer, height uint32) 
 		s.canceledProducers[key] = producer
 		if isPending {
 			delete(s.pendingProducers, key)
+			s.pendingProducers[key] = producer
 		} else {
 			delete(s.activityProducers, key)
 		}
@@ -705,6 +718,7 @@ func (s *State) cancelProducer(payload *payload.ProcessProducer, height uint32) 
 		delete(s.canceledProducers, key)
 		if isPending {
 			s.pendingProducers[key] = producer
+			delete(s.pendingProducers, key)
 		} else {
 			s.activityProducers[key] = producer
 		}
