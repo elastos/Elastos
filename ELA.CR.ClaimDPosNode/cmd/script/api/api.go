@@ -10,10 +10,13 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
+	"github.com/elastos/Elastos.ELA/cmd/wallet"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/crypto"
 	dlog "github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/dpos/store"
@@ -44,6 +47,55 @@ var exports = map[string]lua.LGFunction{
 	"close_store":       closeStore,
 	"clear_store":       clearStore,
 	"get_dir_all_files": getDirAllFiles,
+	"get_standard_addr": getStandardAddr,
+	"output_tx":         outputTx,
+}
+
+func outputTx(L *lua.LState) int {
+	txn := checkTransaction(L, 1)
+	if len(txn.Programs) == 0 {
+		fmt.Println("no program found in transaction")
+		os.Exit(1)
+	}
+	haveSign, needSign, _ := crypto.GetSignStatus(txn.Programs[0].Code, txn.Programs[0].Parameter)
+	fmt.Println("[", haveSign, "/", needSign, "] Transaction was successfully signed")
+	wallet.OutputTx(haveSign, needSign, txn)
+
+	return 0
+}
+
+func getStandardAddr(L *lua.LState) int {
+	pubKeyHex := L.ToString(1)
+	pubKey, err := common.HexStringToBytes(pubKeyHex)
+	if err != nil {
+		fmt.Println("invalid public key hex")
+		os.Exit(1)
+	}
+	pk, err := crypto.DecodePoint(pubKey)
+	if err != nil {
+		fmt.Println("invalid public key")
+		os.Exit(1)
+	}
+	code, err := contract.CreateStandardRedeemScript(pk)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+	programHash, err := contract.PublicKeyToStandardProgramHash(pubKey)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+	addr, err := programHash.ToAddress()
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	L.Push(lua.LString(addr))
+	L.Push(lua.LString(common.BytesToHexString(code)))
+
+	return 2
 }
 
 func getDirAllFiles(L *lua.LState) int {
@@ -216,6 +268,7 @@ func RegisterDataType(L *lua.LState) int {
 	RegisterIllegalBlocksType(L)
 	RegisterStringsType(L)
 	RegisterSidechainPowType(L)
+	RegisterProgramType(L)
 
 	return 0
 }

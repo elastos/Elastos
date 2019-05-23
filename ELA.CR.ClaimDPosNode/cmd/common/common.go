@@ -2,9 +2,10 @@ package common
 
 import (
 	"errors"
-	"fmt"
+	"io/ioutil"
+	"os"
+	"strings"
 
-	"github.com/elastos/Elastos.ELA/utils"
 	"github.com/elastos/Elastos.ELA/utils/http"
 	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
 
@@ -49,61 +50,22 @@ func RPCCall(method string, params http.Params) (interface{}, error) {
 	return jsonrpc.Call(localServer(), req, rpcUser, rpcPassword)
 }
 
-func PrintError(c *cli.Context, err error, cmd string) {
-	fmt.Println("Incorrect Usage:", err)
-	fmt.Println("")
-	cli.ShowCommandHelp(c, cmd)
-}
-
-func PrintErrorMsg(format string, a ...interface{}) {
-	format = fmt.Sprintf("\033[31m[ERROR] %s\033[0m\n", format) //Print error msg with red color
-	fmt.Printf(format, a...)
-}
-
-func PrintWarnMsg(format string, a ...interface{}) {
-	format = fmt.Sprintf("\033[33m[WARN] %s\033[0m\n", format) //Print error msg with yellow color
-	fmt.Printf(format, a...)
-}
-
-func PrintInfoMsg(format string, a ...interface{}) {
-	fmt.Printf(format+"\n", a...)
-}
-
-// MoveRPCFlags finds the rpc argument and moves it to the front
-// of the argument array.
-func MoveRPCFlags(args []string) ([]string, error) {
-	newArgs := args[:1]
-	cacheArgs := make([]string, 0)
-
-	for i := 1; i < len(args); i++ {
-		switch args[i] {
-		case "--rpcport":
-			fallthrough
-		case "--rpcuser":
-			fallthrough
-		case "--rpcpassword":
-			newArgs = append(newArgs, args[i])
-			if i == len(args)-1 {
-				return nil, errors.New("invalid flag " + args[i])
-			}
-			newArgs = append(newArgs, args[i+1])
-			i++
-		default:
-			cacheArgs = append(cacheArgs, args[i])
-		}
+func ReadFile(filePath string) (string, error) {
+	if _, err := os.Stat(filePath); err != nil {
+		return "", errors.New("invalid transaction file path")
+	}
+	file, err := os.OpenFile(filePath, os.O_RDONLY, 0666)
+	if err != nil {
+		return "", errors.New("open transaction file failed")
+	}
+	rawData, err := ioutil.ReadAll(file)
+	if err != nil {
+		return "", errors.New("read transaction file failed")
 	}
 
-	newArgs = append(newArgs, cacheArgs...)
-	return newArgs, nil
-}
-
-// GetFlagPassword gets node's wallet password from command line or user input
-func GetFlagPassword(c *cli.Context) ([]byte, error) {
-	flagPassword := c.String("password")
-	password := []byte(flagPassword)
-	if flagPassword == "" {
-		return utils.GetPassword()
+	content := strings.TrimSpace(string(rawData))
+	if content == "" {
+		return "", errors.New("transaction file is empty")
 	}
-
-	return password, nil
+	return content, nil
 }
