@@ -19,7 +19,7 @@ func TestRewardData_Deserialize(t *testing.T) {
 	buf := new(bytes.Buffer)
 	assert.NoError(t, originData.Serialize(buf))
 
-	cmpData := &RewardData{}
+	cmpData := NewRewardData()
 	assert.NoError(t, cmpData.Deserialize(buf))
 
 	assert.True(t, rewardEqual(originData, cmpData))
@@ -228,12 +228,7 @@ func rewardEqual(first *RewardData, second *RewardData) bool {
 }
 
 func randomRewardData() *RewardData {
-	result := &RewardData{
-		OwnerProgramHashes:          make([]*common.Uint168, 0),
-		CandidateOwnerProgramHashes: make([]*common.Uint168, 0),
-		OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
-		TotalVotesInRound:           common.Fixed64(rand.Uint64()),
-	}
+	result := NewRewardData()
 
 	for i := 0; i < 5; i++ {
 		result.OwnerProgramHashes = append(result.OwnerProgramHashes,
