@@ -274,7 +274,7 @@ func (sp *serverPeer) OnNotFound(_ *peer.Peer, notFound *msg.NotFound) {
 // is used to deliver block and transaction information.
 func (sp *serverPeer) OnGetData(_ *peer.Peer, getData *msg.GetData) {
 	// Notify the GetData message to DPOS routes.
-	sp.server.routes.QueueGetData(sp.Peer, getData)
+	sp.server.routes.OnGetData(sp.Peer, getData)
 
 	numAdded := 0
 	notFound := msg.NewNotFound()
