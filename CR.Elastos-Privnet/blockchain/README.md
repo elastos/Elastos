@@ -2,8 +2,22 @@
 
 - Prerequisite basic knowledge of docker is expected  
 - After starting, the miners will automatically start running and about 25 containers are created
-- Pre-mined 1100 ELA on Mainchain miner reward address, 100,000 ELA on one mainchain address, 100,000 ELA on another mainchain address, 100,000 ELA on DID sidechain address and 100,000 ELA on Token sidechain address. For more, see [Wallets](#Wallets)
+- Pre-mined 900 ELA on Mainchain miner reward address, 100,000 ELA on one mainchain address, 100,000 ELA on another mainchain address, 100,000 ELA on DID sidechain address and 100,000 ELA on Token sidechain address. For more, see [Wallets](#Wallets)
+- For the docker images that might be used for connecting to mainnet, testnet, regnet or private net, check out [https://cloud.docker.com/u/cyberrepublic/repository/list](https://cloud.docker.com/u/cyberrepublic/repository/list)
 
+## Tools 
+
+- [./tools/build_dockerimages.sh](build_dockerimages.sh): This shell script automatically builds all the binaries for main chain, all the sidechains, services, etc and then packages them to be run inside docker images and if the flags "-p" and "-l" are set to "yes", the built docker images are automatically pushed to [https://cloud.docker.com/u/cyberrepublic/repository/list](Cyber Republic Docker Hub). Note that you need permission to push to the CR dockerhub but you can still build the images locally if you so choose
+- [./tools/staging_tools.md](staging_tools.md): This README file contains all the commands that are used in building the private net from scratch(if that's your cup of tea)
+- [./tools/copy_dockerdata_host.sh](copy_dockerdata_host.sh): This script automatically copies the appropriate data folders from the running docker container and saves them with the names "backup" in each corresponding nodes directories. This is a very handy tool when you're building your own private net from scratch and want to save the progress
+- [./tools/copy_freshdata_docker.sh](copy_freshdata_docker.sh): This script removes all the previous data from your previously ran docker containers and resets it to use the data that is committed to this github repository for each nodes. This is a very handy tool when you want to purge everything from your docker containers and want to reset the data back to the original data(with preloaded wallets and such)
+
+## Tests
+
+- [./test/action_storeinfoon_didchain.json](action_storeinfoon_didchain.json): This file is used for DID sidechain testing 
+- [./test/did_example.json](./did_example.json): This file contains info that is produced when you create a new DID. The DID sidechain test that's used later on uses this already created DID to make the process easier
+- [./test/register_mainchain-dpos-1.lua](register_mainchain-dpos-1.lua): This script is executed when registering for one of the dpos supernodes locally. Please do not use this on production environment
+- [./test/register_mainchain-dpos-2.lua](register_mainchain-dpos-2.lua): This script is executed when registering for one of the dpos supernodes locally. Please do not use this on production environment
 
 ## Wallets
 

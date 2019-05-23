@@ -1,5 +1,16 @@
 #!/bin/bash
 
+while getopts ":p:l:" opt; do
+  case $opt in
+    p) DOCKER_PUSH="$OPTARG"
+    ;;
+    l) DOCKER_PUSH_LATEST="$OPTARG"
+    ;;
+    \?) echo "Invalid option -$OPTARG" >&2
+    ;;
+  esac
+done
+
 TMPDIR=$(mktemp -d)
 trap "rm -rf $TMPDIR" EXIT
 
@@ -19,8 +30,15 @@ function build_binary_and_docker {
     cp $CURRENT_DIR/$WORKDIR/* $TMPDIR/$WORKDIR/
     cp -r * $TMPDIR/$WORKDIR/$BINARY/
     docker build -t "$DOCKERIMAGE:latest" -f $TMPDIR/$WORKDIR/Dockerfile $TMPDIR/$WORKDIR/
-    docker tag "$DOCKERIMAGE:latest" "$DOCKERIMAGE:$BRANCH"
-    docker push "$DOCKERIMAGE:$BRANCH"
+    if [ "${DOCKER_PUSH}" == "yes" ]
+    then
+        docker tag "$DOCKERIMAGE:latest" "$DOCKERIMAGE:$BRANCH"
+        docker push "$DOCKERIMAGE:$BRANCH"
+        if [ "${DOCKER_PUSH_LATEST}" == "yes" ]
+        then
+            docker push "$DOCKERIMAGE:latest"
+        fi
+    fi
     cd $CURRENT_DIR
 }
 
