@@ -269,6 +269,8 @@ namespace Elastos {
 
 			void PublishTxInvDone(const PeerPtr &peer, int success);
 
+			void FindPeersThreadRoutine(const std::string &hostname, uint64_t services);
+
 		private:
 			int _isConnected, _connectFailureCount, _misbehavinCount, _dnsThreadCount, _maxConnectCount, _reconnectTaskCount;
 			bool _syncSucceeded, _needGetAddr, _enableReconnectTask;

@@ -376,12 +376,13 @@ namespace Elastos {
 			if (txn) {
 				ErrorChecker::CheckLogic(txn->GetOutputs().size() < 1, Error::CreateTransaction, "No output in tx");
 				if (totalInputAmount < totalOutputAmount + fee) {
+					uint64_t maxAvailable = totalInputAmount >= fee ? totalInputAmount - fee : 0;
 					if (_pendingSpentOutputs.size() > 0) {
 						ErrorChecker::ThrowLogicException(Error::TxPending, "Last transaction is pending, max available: "
-																			+ std::to_string(totalInputAmount - fee));
+																			+ std::to_string(maxAvailable));
 					} else {
 						ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "Available balance is not enough, max available: "
-																				   + std::to_string(totalInputAmount - fee));
+																				   + std::to_string(maxAvailable));
 					}
 				}
 				txn->SetFee(fee);
@@ -479,12 +480,13 @@ namespace Elastos {
 			_lockable->Unlock();
 
 			if (totalInputAmount < totalOutputAmount + fee) {
+				uint64_t maxAvailable = totalInputAmount >= fee ? totalInputAmount - fee : 0;
 				if (_pendingSpentOutputs.size() > 0) {
 					ErrorChecker::ThrowLogicException(Error::TxPending, "Last transaction is pending, max available: "
-														 + std::to_string(totalInputAmount - fee));
+														 + std::to_string(maxAvailable));
 				} else {
 					ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "Available balance is not enough, max available: "
-																+ std::to_string(totalInputAmount - fee));
+																+ std::to_string(maxAvailable));
 				}
 			}
 

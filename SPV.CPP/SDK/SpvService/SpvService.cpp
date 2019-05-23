@@ -91,8 +91,11 @@ namespace Elastos {
 			SPVLOG_DEBUG("raw tx {}", byteStream.GetBytes().getHex());
 
 			if (getPeerManager()->GetConnectStatus() != Peer::Connected) {
+				getPeerManager()->SetReconnectEnableStatus(false);
 				if (_reconnectTimer != nullptr)
 					_reconnectTimer->cancel();
+				getPeerManager()->Disconnect();
+				getPeerManager()->SetReconnectEnableStatus(true);
 				getPeerManager()->Connect();
 			}
 

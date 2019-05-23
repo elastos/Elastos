@@ -391,6 +391,7 @@ namespace Elastos {
 		}
 
 		void TransactionHub::UpdateBalance() {
+			boost::mutex::scoped_lock scopedLock(lock);
 			_transactions.ForEach([this](const uint256 &key, const AssetTransactionsPtr &value) {
 				value->UpdateBalance();
 			});
