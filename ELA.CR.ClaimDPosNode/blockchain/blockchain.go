@@ -129,10 +129,19 @@ func (b *BlockChain) InitProducerState(interrupt <-chan struct{},
 	done := make(chan struct{})
 	go func() {
 		// Notify initialize process start.
-		if start != nil && bestHeight >= b.chainParams.VoteStartHeight {
-			start(bestHeight - b.chainParams.VoteStartHeight)
+		startHeight := b.chainParams.VoteStartHeight
+		if height, err := arbiters.RecoverFromCheckPoints(
+			bestHeight); err != nil {
+			log.Warn("recover form check points fail: ", err)
+		} else {
+			startHeight = height + 1
 		}
-		for i := b.chainParams.VoteStartHeight; i <= bestHeight; i++ {
+
+		log.Info("[RecoverFromCheckPoints] recover start height: ", startHeight)
+		if start != nil && bestHeight >= startHeight {
+			start(bestHeight - startHeight)
+		}
+		for i := startHeight; i <= bestHeight; i++ {
 			hash, e := b.db.GetBlockHash(i)
 			if e != nil {
 				err = e

@@ -1215,6 +1215,10 @@ func ListProducers(param Params) map[string]interface{} {
 	}
 
 	sort.Slice(producers, func(i, j int) bool {
+		if producers[i].Votes() == producers[j].Votes() {
+			return bytes.Compare(producers[i].OwnerPublicKey(),
+				producers[j].OwnerPublicKey()) < 0
+		}
 		return producers[i].Votes() > producers[j].Votes()
 	})
 

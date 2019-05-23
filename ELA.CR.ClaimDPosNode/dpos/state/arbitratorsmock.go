@@ -32,6 +32,18 @@ func NewArbitratorsMock(arbitersByte [][]byte, changeCount, majorityCount int) *
 		MajorityCount:               majorityCount,
 		FinalRoundChange:            0,
 		InactiveMode:                false,
+		CurrentReward: RewardData{
+			OwnerProgramHashes:          make([]*common.Uint168, 0),
+			CandidateOwnerProgramHashes: make([]*common.Uint168, 0),
+			OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
+			TotalVotesInRound:           0,
+		},
+		NextReward: RewardData{
+			OwnerProgramHashes:          make([]*common.Uint168, 0),
+			CandidateOwnerProgramHashes: make([]*common.Uint168, 0),
+			OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
+			TotalVotesInRound:           0,
+		},
 	}
 }
 
@@ -54,6 +66,24 @@ type ArbitratorsMock struct {
 	InactiveMode                bool
 	ActiveProducer              [][]byte
 	Snapshot                    []*KeyFrame
+	CurrentReward               RewardData
+	NextReward                  RewardData
+}
+
+func (a *ArbitratorsMock) SaveCheckPoint(height uint32) error {
+	panic("implement me")
+}
+
+func (a *ArbitratorsMock) RecoverFromCheckPoints(height uint32) (uint32, error) {
+	return height, nil
+}
+
+func (a *ArbitratorsMock) GetCurrentRewardData() RewardData {
+	return a.CurrentReward
+}
+
+func (a *ArbitratorsMock) GetNextRewardData() RewardData {
+	return a.NextReward
 }
 
 func (a *ArbitratorsMock) GetSnapshot(height uint32) []*KeyFrame {

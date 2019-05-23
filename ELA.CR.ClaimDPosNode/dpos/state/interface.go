@@ -9,6 +9,7 @@ import (
 
 type Arbitrators interface {
 	Start()
+	RecoverFromCheckPoints(height uint32) (uint32, error)
 	CheckDPOSIllegalTx(block *types.Block) error
 	ProcessBlock(block *types.Block, confirm *payload.Confirm)
 	ProcessSpecialTxPayload(p types.Payload, height uint32) error
@@ -22,6 +23,9 @@ type Arbitrators interface {
 	GetNeedConnectArbiters() []peer.PID
 	GetDutyIndexByHeight(height uint32) int
 	GetDutyIndex() int
+
+	GetCurrentRewardData() RewardData
+	GetNextRewardData() RewardData
 	GetArbitersRoundReward() map[common.Uint168]common.Fixed64
 	GetFinalRoundChange() common.Fixed64
 	IsInactiveMode() bool
@@ -50,4 +54,10 @@ type Arbitrators interface {
 
 	GetSnapshot(height uint32) []*KeyFrame
 	DumpInfo(height uint32)
+}
+
+type IArbitratorsRecord interface {
+	GetHeightsDesc() ([]uint32, error)
+	GetCheckPoint(height uint32) (*CheckPoint, error)
+	SaveArbitersState(point *CheckPoint) error
 }
