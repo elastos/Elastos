@@ -243,11 +243,9 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 	}
 
 	if txn.Version >= TxVersion09 {
-		var producers []*state.Producer
+		producers := b.state.GetActiveProducers()
 		if blockHeight < b.chainParams.PublicDPOSHeight {
-			producers = b.state.GetAllProducers()
-		} else {
-			producers = b.state.GetActiveProducers()
+			producers = append(producers, b.state.GetPendingCanceledProducers()...)
 		}
 		if err := checkVoteProducerOutputs(txn.Outputs, references, getProducerPublicKeys(producers)); err != nil {
 			log.Warn("[CheckVoteProducerOutputs],", err)
@@ -1089,7 +1087,7 @@ func (b *BlockChain) checkActivateProducerTransaction(txn *Transaction,
 	}
 
 	if height > producer.ActivateRequestHeight() &&
-		height - producer.ActivateRequestHeight() <= state.ActivateDuration {
+		height-producer.ActivateRequestHeight() <= state.ActivateDuration {
 		return errors.New("can only activate once during inactive state")
 	}
 
@@ -1435,8 +1433,7 @@ func CheckDPOSIllegalProposals(d *payload.DPOSIllegalProposals) error {
 		return errors.New("should in same view")
 	}
 
-	if err := ProposalCheckByHeight(&d.Evidence.Proposal, d.GetBlockHeight());
-		err != nil {
+	if err := ProposalCheckByHeight(&d.Evidence.Proposal, d.GetBlockHeight()); err != nil {
 		return err
 	}
 
