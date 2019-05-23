@@ -84,7 +84,7 @@ func CreateTransaction(c *cli.Context) error {
 		return errors.New("create transaction failed: " + err.Error())
 	}
 
-	output(0, 1, txn)
+	OutputTx(0, 1, txn)
 
 	return nil
 }
@@ -338,7 +338,7 @@ func CreateActivateProducerTransaction(c *cli.Context) error {
 		LockTime:   0,
 	}
 
-	output(0, 0, txn)
+	OutputTx(0, 0, txn)
 
 	return nil
 }
@@ -423,7 +423,7 @@ func CreateVoteTransaction(c *cli.Context) error {
 		LockTime:   0,
 	}
 
-	output(0, 1, txn)
+	OutputTx(0, 1, txn)
 
 	return nil
 }

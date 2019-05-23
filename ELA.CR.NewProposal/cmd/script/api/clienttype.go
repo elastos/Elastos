@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
 
 	"github.com/elastos/Elastos.ELA/account"
@@ -40,15 +41,15 @@ func newClient(L *lua.LState) int {
 	return 1
 }
 
-// Checks whether the first lua argument is a *LUserData with *Wallet and returns this *Wallet.
-func checkClient(L *lua.LState, idx int) *account.Client {
-	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*account.Client); ok {
-		return v
+func checkClient(L *lua.LState, idx int) (*account.Client, error) {
+	v := L.Get(idx)
+	if ud, ok := v.(*lua.LUserData); ok {
+		if v, ok := ud.Value.(*account.Client); ok {
+			return v, nil
+		}
 	}
-	L.ArgError(1, "Wallet expected")
 
-	return nil
+	return nil, errors.New("wallet expected")
 }
 
 var clientMethods = map[string]lua.LGFunction{
@@ -59,14 +60,20 @@ var clientMethods = map[string]lua.LGFunction{
 
 // Getter and setter for the Person#Name
 func clientGet(L *lua.LState) int {
-	p := checkClient(L, 1)
+	p, err := checkClient(L, 1)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	fmt.Println(p)
 
 	return 0
 }
 
 func getWalletAddr(L *lua.LState) int {
-	wallet := checkClient(L, 1)
+	wallet, err := checkClient(L, 1)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	acc := wallet.GetMainAccount()
 	addr, _ := acc.ProgramHash.ToAddress()
 
@@ -76,7 +83,10 @@ func getWalletAddr(L *lua.LState) int {
 }
 
 func getWalletPubkey(L *lua.LState) int {
-	wallet := checkClient(L, 1)
+	wallet, err := checkClient(L, 1)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	acc := wallet.GetMainAccount()
 	pubkey, _ := acc.PublicKey.EncodePoint(true)
 	L.Push(lua.LString(hex.EncodeToString(pubkey)))

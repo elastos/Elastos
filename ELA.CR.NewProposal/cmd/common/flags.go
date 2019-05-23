@@ -1,7 +1,10 @@
 package common
 
 import (
+	"errors"
+
 	"github.com/elastos/Elastos.ELA/account"
+	"github.com/elastos/Elastos.ELA/utils"
 
 	"github.com/urfave/cli"
 )
@@ -110,3 +113,42 @@ var (
 		Value: defaultDataDir,
 	}
 )
+
+// MoveRPCFlags finds the rpc argument and moves it to the front
+// of the argument array.
+func MoveRPCFlags(args []string) ([]string, error) {
+	newArgs := args[:1]
+	cacheArgs := make([]string, 0)
+
+	for i := 1; i < len(args); i++ {
+		switch args[i] {
+		case "--rpcport":
+			fallthrough
+		case "--rpcuser":
+			fallthrough
+		case "--rpcpassword":
+			newArgs = append(newArgs, args[i])
+			if i == len(args)-1 {
+				return nil, errors.New("invalid flag " + args[i])
+			}
+			newArgs = append(newArgs, args[i+1])
+			i++
+		default:
+			cacheArgs = append(cacheArgs, args[i])
+		}
+	}
+
+	newArgs = append(newArgs, cacheArgs...)
+	return newArgs, nil
+}
+
+// GetFlagPassword gets node's wallet password from command line or user input
+func GetFlagPassword(c *cli.Context) ([]byte, error) {
+	flagPassword := c.String("password")
+	password := []byte(flagPassword)
+	if flagPassword == "" {
+		return utils.GetPassword()
+	}
+
+	return password, nil
+}
