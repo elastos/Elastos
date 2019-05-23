@@ -181,6 +181,7 @@ func TestRoutes_Messages(t *testing.T) {
 			signature, err = crypto.Sign(priKey1, data)
 			return
 		},
+		IsCurrent: func() bool { return true },
 		RelayAddr: func(iv *msg.InvVect, data interface{}) {
 			relay <- struct{}{}
 		},
@@ -232,7 +233,7 @@ func TestRoutes_Messages(t *testing.T) {
 			hash := common.Uint256{}
 			rand.Read(hash[:])
 			inv.AddInvVect(msg.NewInvVect(msg.InvTypeAddress, &hash))
-			routes.QueueGetData(p1, inv)
+			routes.OnGetData(p1, inv)
 			active <- struct{}{}
 		}
 	}()

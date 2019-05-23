@@ -6,6 +6,7 @@ package routes
 
 import (
 	"fmt"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -68,8 +69,6 @@ type Config struct {
 // addresses syncing status.
 type state struct {
 	peers     map[dp.PID]struct{}
-	addrIndex map[dp.PID]map[dp.PID]common.Uint256
-	knownAddr map[common.Uint256]*msg.DAddr
 	requested map[common.Uint256]struct{}
 	peerCache map[*peer.Peer]*cache
 }
@@ -85,11 +84,6 @@ type peersMsg struct {
 type invMsg struct {
 	peer *peer.Peer
 	msg  *msg.Inv
-}
-
-type getDataMsg struct {
-	peer *peer.Peer
-	msg  *msg.GetData
 }
 
 type dAddrMsg struct {
@@ -109,6 +103,10 @@ type Routes struct {
 	stopped int32
 	waiting int32
 
+	addrMtx   sync.RWMutex
+	addrIndex map[dp.PID]map[dp.PID]common.Uint256
+	knownAddr map[common.Uint256]*msg.DAddr
+
 	queue    chan interface{}
 	announce chan struct{}
 	quit     chan struct{}
@@ -118,8 +116,6 @@ type Routes struct {
 func (r *Routes) addrHandler() {
 	state := &state{
 		peers:     make(map[dp.PID]struct{}),
-		addrIndex: make(map[dp.PID]map[dp.PID]common.Uint256),
-		knownAddr: make(map[common.Uint256]*msg.DAddr),
 		requested: make(map[common.Uint256]struct{}),
 		peerCache: make(map[*peer.Peer]*cache),
 	}
@@ -148,9 +144,6 @@ out:
 
 			case invMsg:
 				r.handleInv(state, m.peer, m.msg)
-
-			case getDataMsg:
-				r.handleGetData(state, m.peer, m.msg)
 
 			case dAddrMsg:
 				r.handleDAddr(state, m.peer, m.msg)
@@ -242,8 +235,10 @@ func (r *Routes) appendAddr(s *state, m *msg.DAddr) {
 	hash := m.Hash()
 
 	// Append received addr into known addr index.
-	s.addrIndex[m.PID][m.Encode] = hash
-	s.knownAddr[hash] = m
+	r.addrMtx.Lock()
+	r.addrIndex[m.PID][m.Encode] = hash
+	r.knownAddr[hash] = m
+	r.addrMtx.Unlock()
 
 	// Relay addr to the P2P network.
 	iv := msg.NewInvVect(msg.InvTypeAddress, &hash)
@@ -292,9 +287,13 @@ func (r *Routes) handlePeersMsg(state *state, peers []dp.PID) {
 		newPeers[pid] = struct{}{}
 
 		// Initiate address index.
-		_, ok := state.addrIndex[pid]
+		r.addrMtx.RLock()
+		_, ok := r.addrIndex[pid]
+		r.addrMtx.RUnlock()
 		if !ok {
-			state.addrIndex[pid] = make(map[dp.PID]common.Uint256)
+			r.addrMtx.Lock()
+			r.addrIndex[pid] = make(map[dp.PID]common.Uint256)
+			r.addrMtx.Unlock()
 		}
 	}
 
@@ -309,14 +308,19 @@ func (r *Routes) handlePeersMsg(state *state, peers []dp.PID) {
 
 	for _, pid := range delPeers {
 		// Remove from index and known addr.
-		pids, ok := state.addrIndex[pid]
+		r.addrMtx.RLock()
+		pids, ok := r.addrIndex[pid]
+		r.addrMtx.RUnlock()
 		if !ok {
 			continue
 		}
+
+		r.addrMtx.Lock()
 		for _, pid := range pids {
-			delete(state.knownAddr, pid)
+			delete(r.knownAddr, pid)
 		}
-		delete(state.addrIndex, pid)
+		delete(r.addrIndex, pid)
+		r.addrMtx.Unlock()
 	}
 
 	// Update peers list.
@@ -350,7 +354,9 @@ func (r *Routes) handleInv(s *state, p *peer.Peer, m *msg.Inv) {
 		// for the peer.
 		p.AddKnownInventory(iv)
 
-		_, ok := s.knownAddr[iv.Hash]
+		r.addrMtx.RLock()
+		_, ok := r.knownAddr[iv.Hash]
+		r.addrMtx.RUnlock()
 		if ok {
 			continue
 		}
@@ -369,33 +375,6 @@ func (r *Routes) handleInv(s *state, p *peer.Peer, m *msg.Inv) {
 	}
 }
 
-func (r *Routes) handleGetData(s *state, p *peer.Peer, m *msg.GetData) {
-	_, exists := s.peerCache[p]
-	if !exists {
-		log.Warnf("Received getdata message for unknown peer %s", p)
-		return
-	}
-
-	done := make(chan struct{}, 1)
-	for _, iv := range m.InvList {
-		switch iv.Type {
-		case msg.InvTypeAddress:
-			// Attempt to fetch the requested addr.
-			addr, ok := s.knownAddr[iv.Hash]
-			if !ok {
-				log.Warnf("%s for DAddr not found", iv.Hash)
-				continue
-			}
-
-			p.QueueMessage(addr, done)
-			<-done
-
-		default:
-			continue
-		}
-	}
-}
-
 // verifyDAddr verifies if this is a valid DPOS address message.
 func (r *Routes) verifyDAddr(s *state, m *msg.DAddr) error {
 	// Verify signature of the message.
@@ -411,9 +390,11 @@ func (r *Routes) verifyDAddr(s *state, m *msg.DAddr) error {
 	// Verify timestamp of the message. A DAddr to same arbiter can not be sent
 	// frequently to prevent attack, and a DAddr timestamp must not to far from
 	// the P2P network median time.
-	if index, ok := s.addrIndex[m.PID]; ok {
+	r.addrMtx.RLock()
+	defer r.addrMtx.RUnlock()
+	if index, ok := r.addrIndex[m.PID]; ok {
 		if hash, ok := index[m.Encode]; ok {
-			ka := s.knownAddr[hash]
+			ka := r.knownAddr[hash]
 
 			// Abandon address older than the known address to the same arbiter.
 			if ka.Timestamp.After(m.Timestamp) {
@@ -520,13 +501,26 @@ func (r *Routes) QueueInv(p *peer.Peer, m *msg.Inv) {
 	}
 }
 
-// QueueInv adds the passed GetData message and peer to the addr handling queue.
-func (r *Routes) QueueGetData(p *peer.Peer, m *msg.GetData) {
-	// Filter non-address GetData messages.
+// OnGetData handles the passed GetData message of the peer.
+func (r *Routes) OnGetData(p *peer.Peer, m *msg.GetData) {
+	done := make(chan struct{}, 1)
 	for _, iv := range m.InvList {
-		if iv.Type == msg.InvTypeAddress {
-			r.queue <- getDataMsg{peer: p, msg: m}
-			return
+		switch iv.Type {
+		case msg.InvTypeAddress:
+			// Attempt to fetch the requested addr.
+			r.addrMtx.RLock()
+			addr, ok := r.knownAddr[iv.Hash]
+			r.addrMtx.RUnlock()
+			if !ok {
+				log.Warnf("%s for DAddr not found", iv.Hash)
+				continue
+			}
+
+			p.QueueMessage(addr, done)
+			<-done
+
+		default:
+			continue
 		}
 	}
 }
@@ -551,13 +545,15 @@ func New(cfg *Config) *Routes {
 	copy(pid[:], cfg.PID)
 
 	r := Routes{
-		pid:      pid,
-		cfg:      cfg,
-		addr:     cfg.Addr,
-		sign:     cfg.Sign,
-		queue:    make(chan interface{}, 125),
-		announce: make(chan struct{}, 1),
-		quit:     make(chan struct{}),
+		pid:       pid,
+		cfg:       cfg,
+		addr:      cfg.Addr,
+		sign:      cfg.Sign,
+		addrIndex: make(map[dp.PID]map[dp.PID]common.Uint256),
+		knownAddr: make(map[common.Uint256]*msg.DAddr),
+		queue:     make(chan interface{}, 125),
+		announce:  make(chan struct{}, 1),
+		quit:      make(chan struct{}),
 	}
 
 	queuePeers := func(peers []dp.PID) {
