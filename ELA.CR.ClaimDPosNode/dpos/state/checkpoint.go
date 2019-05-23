@@ -463,6 +463,15 @@ func (d *RewardData) Deserialize(r io.Reader) (err error) {
 	return
 }
 
+func NewRewardData() *RewardData {
+	return &RewardData{
+		OwnerProgramHashes:          make([]*common.Uint168, 0),
+		CandidateOwnerProgramHashes: make([]*common.Uint168, 0),
+		OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
+		TotalVotesInRound:           0,
+	}
+}
+
 // copyProducerMap copy the src map's key, value pairs into dst map.
 func copyProducerMap(src map[string]*Producer) (dst map[string]*Producer) {
 	dst = map[string]*Producer{}

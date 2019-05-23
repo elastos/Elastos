@@ -32,18 +32,8 @@ func NewArbitratorsMock(arbitersByte [][]byte, changeCount, majorityCount int) *
 		MajorityCount:               majorityCount,
 		FinalRoundChange:            0,
 		InactiveMode:                false,
-		CurrentReward: RewardData{
-			OwnerProgramHashes:          make([]*common.Uint168, 0),
-			CandidateOwnerProgramHashes: make([]*common.Uint168, 0),
-			OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
-			TotalVotesInRound:           0,
-		},
-		NextReward: RewardData{
-			OwnerProgramHashes:          make([]*common.Uint168, 0),
-			CandidateOwnerProgramHashes: make([]*common.Uint168, 0),
-			OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
-			TotalVotesInRound:           0,
-		},
+		CurrentReward:               *NewRewardData(),
+		NextReward:                  *NewRewardData(),
 	}
 }
 

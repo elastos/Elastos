@@ -125,20 +125,12 @@ func generateCheckPoint(height uint32) *state.CheckPoint {
 		KeyFrame: state.KeyFrame{
 			CurrentArbitrators: [][]byte{},
 		},
-		CurrentReward: state.RewardData{
-			OwnerProgramHashes:          []*common.Uint168{},
-			CandidateOwnerProgramHashes: []*common.Uint168{},
-			OwnerVotesInRound:           map[common.Uint168]common.Fixed64{},
-			TotalVotesInRound:           common.Fixed64(rand.Uint64()),
-		},
-		NextReward: state.RewardData{
-			OwnerProgramHashes:          []*common.Uint168{},
-			CandidateOwnerProgramHashes: []*common.Uint168{},
-			OwnerVotesInRound:           map[common.Uint168]common.Fixed64{},
-			TotalVotesInRound:           common.Fixed64(rand.Uint64()),
-		},
+		CurrentReward: *state.NewRewardData(),
+		NextReward:    *state.NewRewardData(),
 		StateKeyFrame: *randomStateKeyFrame(),
 	}
+	result.CurrentReward.TotalVotesInRound = common.Fixed64(rand.Uint64())
+	result.NextReward.TotalVotesInRound = common.Fixed64(rand.Uint64())
 
 	for i := 0; i < 5; i++ {
 		result.CurrentArbitrators = append(result.CurrentArbitrators,
