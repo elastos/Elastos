@@ -194,9 +194,11 @@ func signTx(c *cli.Context) error {
 		return errors.New("deserialize transaction failed")
 	}
 
-	program := txn.Programs[0]
+	if len(txn.Programs) == 0 {
+		return errors.New("no program found in transaction")
+	}
 
-	haveSign, needSign, err := crypto.GetSignStatus(program.Code, program.Parameter)
+	haveSign, needSign, err := crypto.GetSignStatus(txn.Programs[0].Code, txn.Programs[0].Parameter)
 	if err != nil {
 		return err
 	}
@@ -209,9 +211,8 @@ func signTx(c *cli.Context) error {
 		return err
 	}
 
-	program = txn.Programs[0]
-	haveSign, needSign, _ = crypto.GetSignStatus(program.Code, program.Parameter)
-	fmt.Println("[", haveSign, "/", needSign, "] Transaction successfully signed")
+	haveSign, needSign, _ = crypto.GetSignStatus(txn.Programs[0].Code, txn.Programs[0].Parameter)
+	fmt.Println("[", haveSign, "/", needSign, "] Transaction was successfully signed")
 
 	output(haveSign, needSign, txnSigned)
 

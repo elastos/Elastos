@@ -70,9 +70,13 @@ func (vc *VoteContent) Deserialize(r io.Reader, version byte) error {
 }
 
 func (vc VoteContent) String() string {
-	return fmt.Sprint("Content: {",
-		"VoteType: ", vc.VoteType, " ",
-		"Candidates: ", vc.Candidates, "}")
+	candidates := make([]string, 0)
+	for _, c := range vc.Candidates {
+		candidates = append(candidates, common.BytesToHexString(c))
+	}
+	return fmt.Sprint("Content: {\n\t\t\t\t",
+		"VoteType: ", vc.VoteType, "\n\t\t\t\t",
+		"Candidates: ", candidates, "}\n\t\t\t\t")
 }
 
 type VoteOutput struct {
@@ -162,7 +166,7 @@ func (o *VoteOutput) Validate() error {
 }
 
 func (o VoteOutput) String() string {
-	return fmt.Sprint("Vote: {",
-		"Version: ", o.Version, " ",
-		"Contents: ", o.Contents, "\n\t}")
+	return fmt.Sprint("Vote: {\n\t\t\t",
+		"Version: ", o.Version, "\n\t\t\t",
+		"Contents: ", o.Contents, "\n\t\t\t}")
 }

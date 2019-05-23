@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	pg "github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -168,7 +167,9 @@ func (cl *Client) signMultiSignTransaction(txn *types.Transaction, program *pg.P
 
 	// Append signature
 	buf := new(bytes.Buffer)
-	txn.SerializeUnsigned(buf)
+	if err := txn.SerializeUnsigned(buf); err != nil {
+		return nil, err
+	}
 	parameter, err := crypto.AppendSignature(signerIndex, signature, buf.Bytes(), code, param)
 	if err != nil {
 		return nil, err
@@ -231,27 +232,27 @@ func NewClient(path string, password []byte, create bool) *Client {
 		client.BuildDatabase(path)
 
 		if err := client.SaveStoredData("Version", []byte(KeystoreVersion)); err != nil {
-			log.Error(err)
+			fmt.Println("error: failed to save Version")
 			return nil
 		}
 
 		pwdhash := sha256.Sum256(passwordKey)
 		if err := client.SaveStoredData("PasswordHash", pwdhash[:]); err != nil {
-			log.Error(err)
+			fmt.Println("error: failed to save PasswordHash")
 			return nil
 		}
 		if err := client.SaveStoredData("IV", client.iv[:]); err != nil {
-			log.Error(err)
+			fmt.Println("error: failed to save IV")
 			return nil
 		}
 
 		aesmk, err := crypto.AesEncrypt(client.masterKey[:], passwordKey, client.iv)
 		if err != nil {
-			log.Error(err)
+			fmt.Println("error: failed to encrypt the passoword", err.Error())
 			return nil
 		}
 		if err := client.SaveStoredData("MasterKey", aesmk); err != nil {
-			log.Error(err)
+			fmt.Println("error: failed to save MasterKey")
 			return nil
 		}
 
@@ -347,7 +348,7 @@ func (cl *Client) GetAccounts() []*Account {
 	}
 
 	sort.Slice(accounts, func(i, j int) bool {
-		if cl.mainAccount == accounts[i].ProgramHash.ToCodeHash() {
+		if cl.mainAccount == accounts[i].ProgramHash.ToCodeHash() || accounts[i].Address < accounts[j].Address {
 			return true
 		}
 		return false
@@ -375,8 +376,7 @@ func (cl *Client) LoadAccounts() error {
 			encryptedKeyPair, _ := common.HexStringToBytes(a.PrivateKeyEncrypted)
 			keyPair, err := cl.DecryptPrivateKey(encryptedKeyPair)
 			if err != nil {
-				log.Error(err)
-				continue
+				return err
 			}
 			privateKey := keyPair[64:96]
 			ac, err := NewAccountWithPrivateKey(privateKey)
@@ -384,7 +384,6 @@ func (cl *Client) LoadAccounts() error {
 				return err
 			}
 			accounts[ac.ProgramHash.ToCodeHash()] = ac
-
 			if a.Type == MAINACCOUNT {
 				cl.mainAccount = ac.ProgramHash.ToCodeHash()
 			}
@@ -422,10 +421,10 @@ func (cl *Client) EncryptPrivateKey(prikey []byte) ([]byte, error) {
 
 func (cl *Client) DecryptPrivateKey(prikey []byte) ([]byte, error) {
 	if prikey == nil {
-		return nil, errors.New("The PriKey is nil")
+		return nil, errors.New("the private key is nil")
 	}
 	if len(prikey) != 96 {
-		return nil, errors.New("The len of PriKeyEnc is not 96bytes")
+		return nil, errors.New("the len of private key is not 96bytes")
 	}
 
 	dec, err := crypto.AesDecrypt(prikey, cl.masterKey, cl.iv)
@@ -467,10 +466,12 @@ func (cl *Client) HandleInterrupt() {
 
 func SignBySigner(txn *types.Transaction, acc *Account) ([]byte, error) {
 	buf := new(bytes.Buffer)
-	txn.SerializeUnsigned(buf)
+	if err := txn.SerializeUnsigned(buf); err != nil {
+		return nil, err
+	}
 	signature, err := crypto.Sign(acc.PrivKey(), buf.Bytes())
 	if err != nil {
-		return nil, errors.New("[Signature],SignBySigner failed.")
+		return nil, errors.New("[Signature],SignBySigner failed")
 	}
 	return signature, nil
 }
