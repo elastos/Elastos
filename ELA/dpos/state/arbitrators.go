@@ -934,18 +934,8 @@ func (a *arbitrators) trySaveCheckPoint(height uint32) error {
 		CurrentCandidates: make([][]byte, 0),
 		NextArbitrators:   make([][]byte, 0),
 		NextCandidates:    make([][]byte, 0),
-		CurrentReward: RewardData{
-			OwnerProgramHashes:          make([]*common.Uint168, 0),
-			CandidateOwnerProgramHashes: make([]*common.Uint168, 0),
-			OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
-			TotalVotesInRound:           a.CurrentReward.TotalVotesInRound,
-		},
-		NextReward: RewardData{
-			OwnerProgramHashes:          make([]*common.Uint168, 0),
-			CandidateOwnerProgramHashes: make([]*common.Uint168, 0),
-			OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
-			TotalVotesInRound:           a.NextReward.TotalVotesInRound,
-		},
+		CurrentReward: *NewRewardData(),
+		NextReward: *NewRewardData(),
 		KeyFrame: KeyFrame{
 			CurrentArbitrators: a.CurrentArbitrators,
 		},

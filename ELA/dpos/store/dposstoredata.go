@@ -319,12 +319,7 @@ func (s *DposStore) getRewardData(height uint32,
 		return nil, err
 	}
 
-	rewards := &state.RewardData{
-		OwnerProgramHashes:          make([]*common.Uint168, 0),
-		CandidateOwnerProgramHashes: make([]*common.Uint168, 0),
-		OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
-		TotalVotesInRound:           common.Fixed64(0),
-	}
+	rewards := state.NewRewardData()
 	r := bytes.NewReader(data)
 	if err = rewards.Deserialize(r); err != nil {
 		return nil, err
