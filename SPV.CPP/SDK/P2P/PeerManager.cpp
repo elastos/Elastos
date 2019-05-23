@@ -265,8 +265,8 @@ namespace Elastos {
 			}
 
 			for (size_t i = _connectedPeers.size(); i > 0; i--) {
-				if (_connectedPeers[i]->GetConnectStatus() == Peer::Connecting)
-					_connectedPeers[i]->Connect();
+				if (_connectedPeers[i - 1]->GetConnectStatus() == Peer::Connecting)
+					_connectedPeers[i - 1]->Connect();
 			}
 
 			if (_connectedPeers.size() < _maxConnectCount) {
