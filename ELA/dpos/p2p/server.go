@@ -272,12 +272,7 @@ func (s *server) handleDonePeerMsg(state *peerState, sp *serverPeer) {
 
 	// Remove connection request if peer not in connect list.
 	if sp.connReq != nil {
-		_, ok := state.connectPeers[sp.connReq.PID]
-		if !ok {
-			s.connManager.Remove(sp.connReq.PID)
-		} else {
-			s.connManager.Disconnect(sp.connReq.PID)
-		}
+		s.connManager.Disconnect(sp.connReq.PID)
 	}
 
 	// Notify peer state change for done peer removed.
@@ -360,7 +355,7 @@ func (s *server) handleQuery(state *peerState, querymsg interface{}) {
 			}
 
 			// Connect the peer.
-			go s.connManager.Connect(&connmgr.ConnReq{PID: pid})
+			go s.connManager.Connect(pid)
 		}
 
 		// disconnectPeers saves the peers need to be disconnected.
@@ -377,6 +372,11 @@ func (s *server) handleQuery(state *peerState, querymsg interface{}) {
 		for pid := range disconnectPeers {
 			s.connManager.Remove(pid)
 		}
+		state.forAllPeers(func(sp *serverPeer) {
+			if _, ok := disconnectPeers[sp.PID()]; ok {
+				sp.Disconnect()
+			}
+		})
 
 		// Set new connect list into state.
 		state.connectPeers = connectPeers
