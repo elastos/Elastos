@@ -16,6 +16,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	dlog "github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/state"
+	"github.com/elastos/Elastos.ELA/dpos/store"
 	"github.com/elastos/Elastos.ELA/utils/http"
 	"github.com/elastos/Elastos.ELA/utils/signal"
 	"github.com/elastos/Elastos.ELA/utils/test"
@@ -119,8 +120,13 @@ func initLedger(L *lua.LState) int {
 	if err != nil {
 		fmt.Printf("Init chain store error: %s \n", err.Error())
 	}
+	dposStore, err := store.NewDposStore(test.DataPath)
+	if err != nil {
+		fmt.Printf("Init dpos store error: %s \n", err.Error())
+	}
 
-	arbiters, err := state.NewArbitrators(chainParams, chainStore.GetHeight,
+	arbiters, err := state.NewArbitrators(chainParams, dposStore,
+		chainStore.GetHeight,
 		func() (block *types.Block, e error) {
 			hash := chainStore.GetCurrentBlockHash()
 			return chainStore.GetBlock(hash)
