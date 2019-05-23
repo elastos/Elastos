@@ -52,7 +52,7 @@ func (s *txValidatorTestSuite) SetupSuite() {
 
 	s.OriginalLedger = DefaultLedger
 
-	arbiters, err := state.NewArbitrators(params,
+	arbiters, err := state.NewArbitrators(params, nil,
 		chainStore.GetHeight, func() (*types.Block, error) {
 			hash := chainStore.GetCurrentBlockHash()
 			return chainStore.GetBlock(hash)
