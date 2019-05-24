@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"sync/atomic"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
@@ -27,6 +28,9 @@ const (
 	// defaultServices describes the default services that are supported by
 	// the server.
 	defaultServices = pact.SFNodeNetwork | pact.SFTxFiltering | pact.SFNodeBloom
+
+	// maxNonNodePeers defines the maximum count of accepting non-node peers.
+	maxNonNodePeers = 100
 )
 
 // naFilter defines a network address filter for the main chain server, for now
@@ -67,10 +71,11 @@ type server struct {
 	blockMemPool *mempool.BlockPool
 	routes       *routes.Routes
 
-	peerQueue chan interface{}
-	relayInv  chan relayMsg
-	quit      chan struct{}
-	services  pact.ServiceFlag
+	nonNodePeers int32 // This variable must be use atomically.
+	peerQueue    chan interface{}
+	relayInv     chan relayMsg
+	quit         chan struct{}
+	services     pact.ServiceFlag
 }
 
 // serverPeer extends the peer to maintain state shared by the server and
@@ -116,6 +121,11 @@ func (sp *serverPeer) handleDisconnect() {
 	sp.WaitForDisconnect()
 	sp.server.routes.DonePeer(sp.Peer)
 	sp.server.syncManager.DonePeer(sp.Peer)
+
+	// Decrease non node count.
+	if !nodeFlag(uint64(sp.Services())) {
+		atomic.AddInt32(&sp.server.nonNodePeers, -1)
+	}
 }
 
 // OnVersion is invoked when a peer receives a version message and is
@@ -123,9 +133,20 @@ func (sp *serverPeer) handleDisconnect() {
 // the communications.
 func (sp *serverPeer) OnVersion(_ *peer.Peer, m *msg.Version) {
 	// Disconnect full node peers that do not support DPOS protocol.
-	if m.Relay && sp.ProtocolVersion() < pact.DPOSStartVersion {
+	if nodeFlag(m.Services) && sp.ProtocolVersion() < pact.DPOSStartVersion {
 		sp.Disconnect()
 		return
+	}
+
+	if !nodeFlag(m.Services) {
+		// Disconnect non node peers if limitation arrived.
+		if atomic.LoadInt32(&sp.server.nonNodePeers) >= maxNonNodePeers {
+			sp.Disconnect()
+			return
+		}
+
+		// Increase non node peers count.
+		atomic.AddInt32(&sp.server.nonNodePeers, 1)
 	}
 
 	// Add the remote peer time as a sample for creating an offset against
@@ -1002,4 +1023,9 @@ func makeEmptyMessage(cmd string) (p2p.Message, error) {
 		return nil, fmt.Errorf("unhandled command [%s]", cmd)
 	}
 	return message, nil
+}
+
+// nodeFlag returns if a peer contains the full node flag.
+func nodeFlag(flag uint64) bool {
+	return pact.ServiceFlag(flag)&pact.SFNodeNetwork == pact.SFNodeNetwork
 }
