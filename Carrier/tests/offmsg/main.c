@@ -31,6 +31,7 @@
 #include <ela_carrier.h>
 #include <crystal.h>
 
+#include "carrier_config.h"
 #include "config.h"
 
 #define MSG_INACTIVE_TIMEOUT   60
@@ -314,10 +315,9 @@ const char *get_config_path(const char *cfg_file, const char *cfg_files[])
 
 int main(int argc, char *argv[])
 {
-    ElaOptions opts = {0};
     ElaCallbacks callbacks = {0};
     ElaCarrier *w = NULL;
-    TestConfig *config = NULL;
+    TestConfig config = {0};
     const char *config_file = NULL;
     char logfile[PATH_MAX] = {0};
     char datadir[PATH_MAX] = {0};
@@ -451,61 +451,26 @@ int main(int argc, char *argv[])
         goto error_exit;
      }
 
-    config = load_config(config_file);
-    if (!config) {
+    if (!load_config(config_file, &config)) {
         vlogE("Error: Loading config file.");
         output_error();
         goto error_exit;
     }
 
-    memset(&opts, 0, sizeof(opts));
-    sprintf(logfile, "%s/%s.log", config->data_location, mode_str[mode]);
+    sprintf(logfile, "%s/%s.log", config.shared_options.persistent_location, mode_str[mode]);
 
     if (mode == RunMode_sender)
-        level = config->sender_log_level;
+        level = config.sender_log_level;
     else
-        level = config->receiver_log_level;
+        level = config.receiver_log_level;
 
     vlog_init(level, logfile, output_null);
 
-    opts.udp_enabled = config->udp_enabled;
-    sprintf(datadir, "%s/%s", config->data_location, mode_str[mode]);
-    opts.persistent_location = datadir;
-    opts.bootstraps_size = config->bootstraps_size;
-    opts.bootstraps = (BootstrapNode *)calloc(1,
-                    sizeof(BootstrapNode) * opts.bootstraps_size);
-    if (!opts.bootstraps) {
-        output_error();
-        goto error_exit;
-    }
-
-    for (i = 0 ; i < opts.bootstraps_size; i++) {
-        BootstrapNode *b = &opts.bootstraps[i];
-        BootstrapNode *node = config->bootstraps[i];
-
-        b->ipv4 = node->ipv4;
-        b->ipv6 = node->ipv6;
-        b->port = node->port;
-        b->public_key = node->public_key;
-    }
-
-    opts.hive_bootstraps_size = config->hive_bootstraps_size;
-    opts.hive_bootstraps = (HiveBootstrapNode *)calloc(1,
-                     sizeof(HiveBootstrapNode) * opts.hive_bootstraps_size);
-    if (!opts.hive_bootstraps) {
-        output_error();
-        free(opts.bootstraps);
-        goto error_exit;
-    }
-
-    for (i = 0 ; i < config->hive_bootstraps_size; i++) {
-        HiveBootstrapNode *b = &opts.hive_bootstraps[i];
-        HiveBootstrapNode *node = config->hive_bootstraps[i];
-
-        b->ipv4 = node->ipv4;
-        b->ipv6 = node->ipv6;
-        b->port = node->port;
-    }
+    free(config.shared_options.log_file);
+    config.shared_options.log_file = strdup(logfile);
+    sprintf(datadir, "%s/%s", config.shared_options.persistent_location, mode_str[mode]);
+    free((void*)config.shared_options.persistent_location);
+    config.shared_options.persistent_location = strdup(datadir);
 
     memset(&callbacks, 0, sizeof(callbacks));
     callbacks.idle = idle_callback;
@@ -514,9 +479,8 @@ int main(int argc, char *argv[])
     callbacks.friend_message = message_callback;
     callbacks.ready = ready_callback;
 
-    w = ela_new(&opts, &callbacks, ctx);
-    free(opts.bootstraps);
-    free(opts.hive_bootstraps);
+    w = ela_new(&config.shared_options, &callbacks, ctx);
+    carrier_config_free(&config.shared_options);
 
     if (!w) {
         vlogE("Create carrier instance error: 0x%x", ela_get_error());
@@ -566,9 +530,6 @@ error_exit:
 
     if (w && !ctx->did_kill)
         ela_kill(w);
-
-    if (config)
-        deref(config);
 
     return ctx->error;
 }

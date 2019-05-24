@@ -28,19 +28,12 @@
 #include <ela_carrier.h>
 
 typedef struct TestConfig {
+    ElaOptions shared_options;
     int sender_log_level;
     int receiver_log_level;
-
-    char data_location[PATH_MAX];
-    bool udp_enabled;
-
-    int bootstraps_size;
-    BootstrapNode **bootstraps;
-
-    int hive_bootstraps_size;
-    HiveBootstrapNode **hive_bootstraps;
 } TestConfig;
 
-TestConfig *load_config(const char *config_file);
+TestConfig *load_config(const char *config_file, TestConfig *config);
+void free_config(TestConfig *config);
 
 #endif /* __TEST_CONFIG_H__ */

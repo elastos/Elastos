@@ -27,7 +27,8 @@ endif()
 
 set(SRC
     main.c
-    config.c)
+    config.c
+    ../../config/carrier_config.c)
 
 add_definitions(-DLIBCONFIG_STATIC)
 
@@ -68,6 +69,7 @@ endif()
 include_directories(
     .
     ../../src/carrier
+    ../../config
     ${CARRIER_INT_DIST_DIR}/include)
 
 link_directories(
