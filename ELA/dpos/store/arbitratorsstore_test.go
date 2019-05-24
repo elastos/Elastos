@@ -165,6 +165,7 @@ func randomStateKeyFrame() *state.StateKeyFrame {
 		InactiveProducers:         make(map[string]*state.Producer),
 		CanceledProducers:         make(map[string]*state.Producer),
 		IllegalProducers:          make(map[string]*state.Producer),
+		PendingCanceledProducers:  make(map[string]*state.Producer),
 		Votes:                     make(map[string]*types.Output),
 		Nicknames:                 make(map[string]struct{}),
 		SpecialTxHashes:           make(map[common.Uint256]struct{}),
@@ -181,6 +182,7 @@ func randomStateKeyFrame() *state.StateKeyFrame {
 		result.InactiveProducers[randomString()] = &state.Producer{}
 		result.CanceledProducers[randomString()] = &state.Producer{}
 		result.IllegalProducers[randomString()] = &state.Producer{}
+		result.PendingCanceledProducers[randomString()] = &state.Producer{}
 		result.Votes[randomString()] = randomVotes()
 		result.Nicknames[randomString()] = struct{}{}
 		result.SpecialTxHashes[*randomHash()] = struct{}{}
