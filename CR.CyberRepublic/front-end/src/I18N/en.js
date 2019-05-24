@@ -1471,17 +1471,21 @@ const en = {
         view: 'to view the rules for council',
       }
     },
+    contact: 'Contact',
     kevin: {
       name: 'Kevin Zhang',
       intro: 'Head of Elastos Global Adoption Team, based in Silicon Valley',
+      email: 'kevinzhang@elastos.org'
     },
     yipeng: {
       name: 'Yipeng Su',
       intro: 'Chief Architect of Elastos Foundation, based in Beijing',
+      email: 'suyipeng@elastos.org'
     },
     feng: {
       name: 'Feng Zhang',
       intro: 'Lawyer, Founder of Digital-Era Blockchain Service Alliance, Co-Founder of Bit University, based in Shanghai',
+      email: '41059324@qq.com'
     },
     rebecca: {
       name: 'Rebecca Zhu',
