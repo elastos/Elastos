@@ -58,6 +58,7 @@ const en = {
   '0202': 'Register',
   '0203': 'Admin',
   '0204': 'Logout',
+  '0205': 'Login',
 
   '0300': 'Language',
   '0301': 'English',
