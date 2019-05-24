@@ -202,6 +202,7 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 		fee, toaddr, output := spv.FindOutputFeeAndaddressByTxHash(txhash)
 		sender = vm.AccountRef(blackaddr)
 		completetxhash := evm.StateDB.GetState(blackaddr, common.HexToHash(txhash))
+
 		if completetxhash.String() != txhash && toaddr != blackaddr && output.Cmp(new(big.Int)) > 0 {
 			st.state.AddBalance(st.msg.From(), new(big.Int).SetUint64(evm.ChainConfig().PassBalance))
 			defer func() {
@@ -233,7 +234,7 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 				}
 			}()
 		} else {
-			return nil, 0, false, ErrGasLimitReached
+			return nil, 0, false, ErrMainTxHashPresence
 		}
 	} else if contractCreation {
 		blackcontract = crypto.CreateAddress(sender.Address(), evm.StateDB.GetNonce(sender.Address()))

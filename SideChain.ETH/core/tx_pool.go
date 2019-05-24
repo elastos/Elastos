@@ -831,8 +831,11 @@ func (pool *TxPool) addTx(tx *types.Transaction, local bool) error {
 			fee, addr, output := spv.FindOutputFeeAndaddressByTxHash(txhash)
 			if fee.Cmp(new(big.Int)) > 0 && output.Cmp(new(big.Int)) > 0 && addr != blackaddr {
 				ethfee := new(big.Int).Mul(new(big.Int).SetUint64(tx.Gas()), tx.GasPrice())
+				completetxhash := pool.currentState.GetState(blackaddr, common.HexToHash(txhash))
 				if fee.Cmp(ethfee) < 0 {
 					return ErrGasLimitReached
+				} else if completetxhash.String() == txhash {
+					return ErrMainTxHashPresence
 				}
 			} else {
 				return ErrGasLimitReached

@@ -17,7 +17,9 @@
 package core
 
 import (
+	"fmt"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/common"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/common/hexutil"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/consensus"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/consensus/misc"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/core/state"
@@ -100,9 +102,13 @@ func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *commo
 	if err != nil {
 		return nil, 0, err
 	}
+	var blackaddr common.Address
 	// Update the state with pending changes
 	var root []byte
+	txhash := hexutil.Encode(msg.Data())
 	if config.IsByzantium(header.Number) {
+
+		fmt.Println(statedb.GetState(blackaddr, common.HexToHash(txhash)))
 		statedb.Finalise(true)
 	} else {
 		root = statedb.IntermediateRoot(config.IsEIP158(header.Number)).Bytes()
@@ -121,6 +127,5 @@ func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *commo
 	// Set the receipt logs and create a bloom for filtering
 	receipt.Logs = statedb.GetLogs(tx.Hash())
 	receipt.Bloom = types.CreateBloom(types.Receipts{receipt})
-
 	return receipt, gas, err
 }

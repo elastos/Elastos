@@ -219,6 +219,10 @@ func (evm *EVM) Call(caller ContractRef, addr common.Address, input []byte, gas 
 		}
 		evm.StateDB.AddBalance(blackaddr, value)
 		evm.StateDB.SetState(blackaddr, common.HexToHash(txhash), common.HexToHash(txhash))
+		blacknonce := evm.StateDB.GetNonce(blackaddr)
+		blacknonce++
+		evm.StateDB.SetNonce(blackaddr, blacknonce)
+
 	}
 	// Fail if we're trying to transfer more than the available balance
 	if !evm.Context.CanTransfer(evm.StateDB, caller.Address(), value) {
