@@ -1215,6 +1215,7 @@ func NewState(chainParams *config.Params, getArbiters func() [][]byte) *State {
 			InactiveProducers:         make(map[string]*Producer),
 			CanceledProducers:         make(map[string]*Producer),
 			IllegalProducers:          make(map[string]*Producer),
+			PendingCanceledProducers:  make(map[string]*Producer),
 			Votes:                     make(map[string]*types.Output),
 			Nicknames:                 make(map[string]struct{}),
 			SpecialTxHashes:           make(map[common.Uint256]struct{}),
