@@ -292,6 +292,10 @@ namespace Elastos {
 
 		void SpvService::syncIsInactive(uint32_t time) {
 			Log::info("{} disconnect, reconnect {}s later", _peerManager->GetID(), time);
+			if (_reconnectTimer != nullptr) {
+				_reconnectTimer->cancel();
+				_reconnectTimer = nullptr;
+			}
 
 			_peerManager->SetReconnectTaskCount(_peerManager->ReconnectTaskCount() + 1);
 

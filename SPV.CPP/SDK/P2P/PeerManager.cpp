@@ -815,17 +815,16 @@ namespace Elastos {
 		void PeerManager::AsyncConnect(const boost::system::error_code &error) {
 			if (error.value() == 0) {
 				if (GetConnectStatus() != Peer::Connected) {
+					Log::info("{} Async connecting...", GetID());
 					Connect();
 				}
 			} else {
 				Log::warn("{} async connect err: {}", GetID(), error.message());
 			}
 
+			boost::mutex::scoped_lock scoped_lock(lock);
 			if (_reconnectTaskCount > 0) {
-				{
-					boost::mutex::scoped_lock scoped_lock(lock);
-					_reconnectTaskCount = 0;
-				}
+				_reconnectTaskCount--;
 			}
 		}
 
@@ -984,7 +983,7 @@ namespace Elastos {
 					willReconnect = true;
 				}
 
-				Log::info("connect failure = {}, enable reconnect = {}, reconnect task count = {}",
+				peer->info("connect failure = {}, enable reconnect = {}, reconnect task count = {}",
 						_connectFailureCount, _enableReconnectTask, _reconnectTaskCount);
 				if (txError) {
 					for (size_t i = _publishedTx.size(); i > 0; i--) {
