@@ -100,7 +100,7 @@ const zh = {
   2306: '社区',
   'profile.suggestion': '我的建议',
 
-  'login.success': '登陆成功',
+  'login.success': '登录成功',
 
   'mentions.notFound': '该用户不存在',
 
@@ -147,7 +147,7 @@ const zh = {
   'register.description_2': '作为会员，您可以在Cyber Republic上申领任务来获取奖励',
   'register.required': '必填项',
   'register.error.code': '您输入的验证码不匹配',
-  'register.error.passwords': '您两次输入的密码不匹配',
+  'register.error.passwords': '您两次输入的密码不一致',
   'register.error.password_length_1': '您输入的密码必须至少',
   'register.error.password_length_2': '位字母.',
   'register.form.input_code': '请输入您的验证码',
@@ -257,10 +257,10 @@ const zh = {
   'suggestion.form.fields.desc': '描述',
   'suggestion.form.fields.coverImg': '封面图片',
   'suggestion.form.fields.shortDesc': '概述',
-  'suggestion.form.fields.fullDesc': '完整描述',
+  'suggestion.form.fields.fullDesc': '详细描述',
   'suggestion.form.fields.benefits': '对于亦来云社区/生态的价值',
   'suggestion.form.fields.funding': '预算（USD）',
-  'suggestion.form.fields.timeline': '启动时间',
+  'suggestion.form.fields.timeline': '时间计划',
   'suggestion.form.fields.links': '相关链接',
   'suggestion.form.fields.linksSplit': '相关链接 (逗号分隔)',
 
@@ -275,7 +275,7 @@ const zh = {
     tag: {
       show: '显示',
       type: {
-        UNDER_CONSIDERATION: '审议中',
+        UNDER_CONSIDERATION: '被考虑中',
         INFO_NEEDED: '需要更多信息',
       },
     },
@@ -667,7 +667,7 @@ const zh = {
   'community.message.success.joincommunity': '您已经加入社区',
   'community.message.success.leavecommunity': '您已经成功离开该社区',
   'community.message.error.joincommunity': '在加入社区时出错',
-  'community.message.error.apply': '您必须登陆后才能申请',
+  'community.message.error.apply': '您必须登录后才能申请',
   'community.selectcountry': '请选择一个国家',
   'community.guidecontainer.part1': '您好！ 看来我们还没有一位组织者',
   'community.guidecontainer.part2': '我们始终寻找新的组织者，特别是在新的社区',
@@ -679,10 +679,10 @@ const zh = {
   // Council
   'council.list': '列表',
   'council.voting': '表决意见',
-  'council.list.proposals': '如果有意见和建议，请发送提案到',
+  'council.list.proposals': '如果有意见和建议，请发送你的提议到',
   'council.voting.proposal': '提案',
   'council.voting.referred': '引用自',
-  'council.voting.proposalList': '提案清单',
+  'council.voting.proposalList': '所有提案',
   'council.voting.number': '编号',
   'council.voting.published': '已发布',
   'council.voting.title': '标题',
@@ -711,13 +711,13 @@ const zh = {
   'council.voting.btnText.yes': '赞成',
   'council.voting.btnText.no': '反对',
   'council.voting.btnText.abstention': '弃权',
-  'council.voting.btnText.notesSecretary': '秘书处记录',
-  'council.voting.btnText.editNotes': '编辑记录',
+  'council.voting.btnText.notesSecretary': '秘书处备注',
+  'council.voting.btnText.editNotes': '编辑备注',
   'council.voting.btnText.editProposal': '编辑此提案',
-  'council.voting.btnText.completeProposal': '完成此提案',
+  'council.voting.btnText.completeProposal': '标记提案为完成',
 
-  'council.voting.modal.complete': '您确定要完成此提案吗？',
-  'council.voting.modal.updateNotes': '秘书处记录',
+  'council.voting.modal.complete': '您确定要标记此提案为完成状态吗？',
+  'council.voting.modal.updateNotes': '秘书处备注',
   'council.voting.modal.voteYes': '您确定要投赞成票吗？',
   'council.voting.modal.voteAbstain': '您确定要弃权吗？',
   'council.voting.modal.voteReason': '理由',
@@ -872,7 +872,7 @@ const zh = {
   'landing.footer.header.1': '成为Cyber Republic',
   'landing.footer.header.2': '的一员',
   'landing.footer.note': '及时了解Cyber Republic的动态',
-  'landing.footer.email': '输入您Email',
+  'landing.footer.email': '输入您的邮箱',
   'landing.footer.resources': '资源',
   'landing.footer.wallet': '钱包',
   'landing.footer.explorer': '区块浏览器',
@@ -889,9 +889,9 @@ const zh = {
   'landing.footer.privacyPolicy': '隐私政策',
   'landing.footer.termsAndConditions': '条款与条件',
 
-  'landing.0220': 'ELA令牌将用于在区块链上注册ID，打开通往亦来云生态系统的门。 一旦加入，将会有无数的交流机会。',
+  'landing.0220': 'ELA代币将用于在区块链上注册ID，打开通往亦来云生态系统的门。 一旦加入，将会有无数的交流机会。',
   'landing.0221': '您可以购买去中心化应用程序，获得云存储，购买和销售数字产品和资产，如歌曲、电影、书籍和视频，以及无限的其他资源。',
-  'landing.0222': '此外，ELA令牌持有者将有机会投资于众多项目。对于在亦来云上运行的每一个DApp，拥有ELA来注册数字资产将是非常重要的，从而为令牌创造持续的必要性。',
+  'landing.0222': '此外，ELA代币持有者将有机会投资于众多项目。对于在亦来云上运行的每一个DApp，拥有ELA来注册数字资产将是非常重要的，从而为令牌创造持续的必要性。',
 
   'landing.0230': '在亦来云上的应用程序将运行在区块链技术的可靠运行时环境中。它通过提供一个“沙箱”环境来创建真正的安全性，在允许访问互联网之前，该环境需要获得区块链上的验证。这为构建各种用例或场景的任何应用程序提供了巨大的潜力。',
   'landing.0231': '',
@@ -1436,12 +1436,12 @@ const zh = {
       general: '秘书长',
       staff: '秘书处成员',
       positions: {
-        title: '秘书处——开放职位',
+        title: '秘书处 — 开放职位',
         jobDesc: '工作职责描述',
-        toastMsg: '目前委员会和秘书处有职位可以申请。',
+        toastMsg: '委员会和秘书处正在长期招聘哦。',
         howtoApply: {
           title: '如何申请',
-          desc: '请发申请邮件至: secretariat@cyberrepublic.org',
+          desc: '请发简历和申请邮件到: secretariat@cyberrepublic.org',
         },
         viewMore: '查看更多',
         position_1: {
