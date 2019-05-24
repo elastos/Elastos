@@ -1627,6 +1627,7 @@ namespace Elastos {
 		}
 
 		int PeerManager::ReconnectTaskCount() const {
+			boost::mutex::scoped_lock scopedLock(lock);
 			return _reconnectTaskCount;
 		}
 

@@ -291,21 +291,25 @@ namespace Elastos {
 		}
 
 		void SpvService::syncIsInactive(uint32_t time) {
-			Log::info("{} disconnect, reconnect {}s later", _peerManager->GetID(), time);
-			if (_reconnectTimer != nullptr) {
-				_reconnectTimer->cancel();
-				_reconnectTimer = nullptr;
+			if (_peerManager->ReconnectTaskCount() == 0) {
+				Log::info("{} disconnect, reconnect {}s later", _peerManager->GetID(), time);
+				if (_reconnectTimer != nullptr) {
+					_reconnectTimer->cancel();
+					_reconnectTimer = nullptr;
+				}
+
+				_peerManager->SetReconnectTaskCount(_peerManager->ReconnectTaskCount() + 1);
+
+				_executor.StopThread();
+				getPeerManager()->SetReconnectEnableStatus(false);
+				if (_peerManager->GetConnectStatus() == Peer::Connected) {
+					_peerManager->Disconnect();
+				}
+
+				_executor.InitThread(BACKGROUND_THREAD_COUNT);
+				getPeerManager()->SetReconnectEnableStatus(true);
+				StartReconnect(time);
 			}
-
-			_peerManager->SetReconnectTaskCount(_peerManager->ReconnectTaskCount() + 1);
-
-			_executor.StopThread();
-			if (_peerManager->GetConnectStatus() == Peer::Connected) {
-				_peerManager->Disconnect();
-			}
-
-			_executor.InitThread(BACKGROUND_THREAD_COUNT);
-			StartReconnect(time);
 		}
 
 		size_t SpvService::GetAllTransactionsCount() {
