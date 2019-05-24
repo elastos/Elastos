@@ -1147,7 +1147,8 @@ public class MyWallet {
             KLog.a(txJson);
             return new CommmonStringWithiMethNameEntity(SUCESSCODE, txJson, "createRegisterProducerTransaction");
         } catch (WalletException e) {
-            return new CommmonStringWithiMethNameEntity("", "", "");
+          //  return new CommmonStringWithiMethNameEntity("", "", "");
+            return exceptionProcess(e, formatWalletName(masterWalletID) + " change password");
         }
 
     }

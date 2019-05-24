@@ -135,9 +135,9 @@ public class SignUpForFragment extends BaseFragment implements CommmonStringWith
                     ToastUtils.showShort(getString(R.string.please_enter_the_correct_url));
                     return;
                 }*/
-
+                dialogUtil.showWarmPromptInput(getBaseActivity(), null, null, this);
                 //查询余额
-                new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), MyWallet.ELA, 2,this);
+               // new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), MyWallet.ELA, 2,this);
                 break;
             case R.id.ll_area:
                 //选择国家和地区
