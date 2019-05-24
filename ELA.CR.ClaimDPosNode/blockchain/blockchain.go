@@ -999,7 +999,7 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 	}
 
 	if inMainChain && !reorganized && (block.Height >= b.chainParams.VoteStartHeight ||
-	// In case of VoteStartHeight larger than (CRCOnlyDPOSHeight-PreConnectOffset)
+		// In case of VoteStartHeight larger than (CRCOnlyDPOSHeight-PreConnectOffset)
 		block.Height == b.chainParams.CRCOnlyDPOSHeight-b.chainParams.
 			PreConnectOffset) {
 		DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
@@ -1218,19 +1218,17 @@ func (b *BlockChain) processBlock(block *Block, confirm *payload.Confirm) (bool,
 }
 
 func (b *BlockChain) LatestBlockLocator() ([]*Uint256, error) {
-	b.mutex.RLock()
-	defer b.mutex.RUnlock()
 	if b.BestChain == nil {
 		// Get the latest block hash for the main chain from the
 		// database.
 
 		// Get Current Block
 		blockHash := b.db.GetCurrentBlockHash()
-		return b.blockLocatorFromHash(&blockHash), nil
+		return b.BlockLocatorFromHash(&blockHash), nil
 	}
 
 	// The best chain is set, so use its hash.
-	return b.blockLocatorFromHash(b.BestChain.Hash), nil
+	return b.BlockLocatorFromHash(b.BestChain.Hash), nil
 }
 
 func (b *BlockChain) AddNodeToIndex(node *BlockNode) {
@@ -1255,12 +1253,6 @@ func (b *BlockChain) LookupNodeInIndex(hash *Uint256) (*BlockNode, bool) {
 }
 
 func (b *BlockChain) BlockLocatorFromHash(inhash *Uint256) []*Uint256 {
-	b.mutex.RLock()
-	defer b.mutex.RUnlock()
-	return b.blockLocatorFromHash(inhash)
-}
-
-func (b *BlockChain) blockLocatorFromHash(inhash *Uint256) []*Uint256 {
 	// The locator contains the requested hash at the very least.
 	var hash Uint256
 	copy(hash[:], inhash[:])
@@ -1418,8 +1410,6 @@ func (b *BlockChain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBloc
 //
 // This function is safe for concurrent access.
 func (b *BlockChain) LocateBlocks(locator []*Uint256, hashStop *Uint256, maxHashes uint32) []*Uint256 {
-	b.mutex.RLock()
-	defer b.mutex.RUnlock()
 	startHash := b.locateStartBlock(locator)
 	blocks, err := b.locateBlocks(startHash, hashStop, maxHashes)
 	if err != nil {
