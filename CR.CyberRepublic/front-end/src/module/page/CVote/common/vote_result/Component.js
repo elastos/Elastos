@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import _ from 'lodash'
+import Translation from '@/module/common/Translation/Container'
 
 import { Container, ResultRow, Reason, Label, List, Item, Avatar } from './style'
 
@@ -14,11 +15,17 @@ const Component = ({ label, type, dataList }) => {
       </Item>
     )
 
+    const googleNode = data.reason && <div style={{ marginTop: '0.5rem'}}><Translation text={data.reason} /></div>
+
     // if (!isReject) return userNode
     // show reason for all vote type
     const reasonNode = (
-      <Reason>{data.reason}</Reason>
+      <Reason>
+        {data.reason}
+        {googleNode}
+      </Reason>
     )
+
     return (
       <ResultRow key={key}>
         {userNode}
