@@ -290,7 +290,7 @@ func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
 }
 
 func (a *arbitrators) accumulateReward(block *types.Block) {
-	if block.Height <= a.State.chainParams.PublicDPOSHeight {
+	if block.Height < a.State.chainParams.PublicDPOSHeight {
 		return
 	}
 
@@ -303,16 +303,12 @@ func (a *arbitrators) accumulateReward(block *types.Block) {
 
 func (a *arbitrators) clearingDPOSReward(block *types.Block,
 	smoothClearing bool) error {
-	if block.Height == a.clearingHeight {
+	if block.Height < a.chainParams.PublicDPOSHeight ||
+		block.Height == a.clearingHeight {
 		return nil
 	}
 
 	dposReward := a.getBlockDPOSReward(block)
-	if block.Height+1 <= a.State.chainParams.PublicDPOSHeight {
-		a.accumulativeReward = dposReward
-		return nil
-	}
-
 	if smoothClearing {
 		a.accumulativeReward += dposReward
 		dposReward = 0
