@@ -1440,8 +1440,8 @@ const zh = {
         jobDesc: '工作职责描述',
         toastMsg: '委员会和秘书处正在长期招聘哦。',
         howtoApply: {
-          title: '如何申请',
-          desc: '请发简历和申请邮件到: secretariat@cyberrepublic.org',
+          title: '如何申请？',
+          desc: '请发您的简历和申请到: secretariat@cyberrepublic.org',
         },
         viewMore: '查看更多',
         position_1: {
