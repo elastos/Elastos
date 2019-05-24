@@ -61,8 +61,8 @@ namespace Elastos {
 			return nullptr != _key.setPubKey(pubKey);
 		}
 
-		bytes_t Key::PubKey() const {
-			return _key.getPubKey();
+		bytes_t Key::PubKey(bool compress) const {
+			return _key.getPubKey(compress);
 		}
 
 		bytes_t Key::PrvKey() const {

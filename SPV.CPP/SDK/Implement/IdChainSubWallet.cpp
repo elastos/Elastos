@@ -25,18 +25,14 @@ namespace Elastos {
 				SidechainSubWallet(info, chainParams, pluginTypes, parent) {
 
 			std::vector<std::string> registeredIds = _parent->GetAllIds();
-
-			uint32_t purpose = (uint32_t) info.GetIndex();
-			std::set<std::string> bufferIds(registeredIds.begin(), registeredIds.end());
-
-			if (_subAccount->GetParent()->GetType() == "Standard") { //We only derive ids when accout type is "Standard"
-				for (int i = 0; i < registeredIds.size() + ID_REGISTER_BUFFER_COUNT; ++i) {
-					bufferIds.insert(_parent->DeriveIdAndKeyForPurpose(purpose, i));
+			if (registeredIds.size() == 0 || registeredIds.size() > 1) {
+				if (_subAccount->GetParent()->GetType() == "Standard") {
+					registeredIds.clear();
+					registeredIds.push_back(_parent->DeriveIdAndKeyForPurpose(0, 0));
 				}
 			}
 
-			std::vector<std::string> addrs(bufferIds.begin(), bufferIds.end());
-			_walletManager->getWallet()->InitListeningAddresses(addrs);
+			_walletManager->getWallet()->InitListeningAddresses(registeredIds);
 		}
 
 		IdChainSubWallet::~IdChainSubWallet() {

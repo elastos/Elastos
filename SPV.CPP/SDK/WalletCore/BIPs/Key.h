@@ -35,7 +35,7 @@ namespace Elastos {
 
 			bool SetPubKey(const bytes_t &pub);
 
-			bytes_t PubKey() const;
+			bytes_t PubKey(bool compress = true) const;
 
 			bytes_t PrvKey() const;
 

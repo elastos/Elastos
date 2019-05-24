@@ -113,12 +113,16 @@ namespace Elastos {
 		}
 
 		void SubWallet::AddCallback(ISubWalletCallback *subCallback) {
+			boost::mutex::scoped_lock scoped_lock(lock);
+
 			if (std::find(_callbacks.begin(), _callbacks.end(), subCallback) != _callbacks.end())
 				return;
 			_callbacks.push_back(subCallback);
 		}
 
 		void SubWallet::RemoveCallback(ISubWalletCallback *subCallback) {
+			boost::mutex::scoped_lock scoped_lock(lock);
+
 			_callbacks.erase(std::remove(_callbacks.begin(), _callbacks.end(), subCallback), _callbacks.end());
 		}
 
@@ -129,7 +133,7 @@ namespace Elastos {
 			TransactionPtr tx = wallet->CreateTransaction(fromAddress, amount, toAddress, _info.GetMinFee(),
 														  assetID, useVotedUTXO);
 
-			std::set<Address> uniqueAddress;
+			std::set<std::string> uniqueAddress;
 			std::vector<TransactionInput> &inputs = tx->GetInputs();
 			for (size_t i = 0; i < inputs.size(); ++i) {
 				TransactionPtr txInput = wallet->TransactionForHash(inputs[i].GetTransctionHash());
@@ -140,8 +144,8 @@ namespace Elastos {
 						tx->SetLockTime(o.GetOutputLock());
 					}
 
-					if (uniqueAddress.find(addr) == uniqueAddress.end()) {
-						uniqueAddress.insert(addr);
+					if (uniqueAddress.find(addr.String()) == uniqueAddress.end()) {
+						uniqueAddress.insert(addr.String());
 						bytes_t code = _subAccount->GetRedeemScript(addr);
 						tx->AddProgram(Program(code, bytes_t()));
 					}
@@ -229,6 +233,8 @@ namespace Elastos {
 		}
 
 		void SubWallet::balanceChanged(const uint256 &asset, uint64_t balance) {
+			boost::mutex::scoped_lock scoped_lock(lock);
+
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [&asset, &balance](ISubWalletCallback *callback) {
 							  callback->OnBalanceChanged(asset.GetHex(), balance);
@@ -273,6 +279,8 @@ namespace Elastos {
 
 		void SubWallet::onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser,
 									bool recommendRescan) {
+			boost::mutex::scoped_lock scoped_lock(lock);
+
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [&hash, &assetID, &notifyUser, &recommendRescan](ISubWalletCallback *callback) {
 				callback->OnTxDeleted(hash, notifyUser, recommendRescan);
@@ -355,21 +363,27 @@ namespace Elastos {
 				_info.SetEaliestPeerTime(time(nullptr));
 			}
 
+			boost::mutex::scoped_lock scoped_lock(lock);
+
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [](ISubWalletCallback *callback) {
 							  callback->OnBlockSyncStarted();
 						  });
 		}
 
-		void SubWallet::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight) {
+		void SubWallet::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight, time_t lastBlockTime) {
+			boost::mutex::scoped_lock scoped_lock(lock);
+
 			std::for_each(_callbacks.begin(), _callbacks.end(),
-						  [&currentHeight, &estimatedHeight](ISubWalletCallback *callback) {
-							  callback->OnBlockSyncProgress(currentHeight, estimatedHeight);
+						  [&currentHeight, &estimatedHeight, &lastBlockTime](ISubWalletCallback *callback) {
+							  callback->OnBlockSyncProgress(currentHeight, estimatedHeight, lastBlockTime);
 						  });
 		}
 
 		void SubWallet::syncStopped(const std::string &error) {
 			_syncStartHeight = 0;
+
+			boost::mutex::scoped_lock scoped_lock(lock);
 
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [](ISubWalletCallback *callback) {
@@ -381,6 +395,8 @@ namespace Elastos {
 		}
 
 		void SubWallet::txPublished(const std::string &hash, const nlohmann::json &result) {
+			boost::mutex::scoped_lock scoped_lock(lock);
+
 			std::for_each(_callbacks.begin(), _callbacks.end(), [&hash, &result](ISubWalletCallback *callback) {
 				callback->OnTxPublished(hash, result);
 			});
@@ -414,6 +430,8 @@ namespace Elastos {
 
 		void SubWallet::fireTransactionStatusChanged(const std::string &txid, const std::string &status,
 													 const nlohmann::json &desc, uint32_t confirms) {
+			boost::mutex::scoped_lock scoped_lock(lock);
+
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [&txid, &status, &desc, confirms](ISubWalletCallback *callback) {
 							  callback->OnTransactionStatusChanged(txid, status, desc, confirms);

@@ -64,13 +64,19 @@ namespace Elastos {
 
 			virtual bool IsDepositAddress(const Address &address) const = 0;
 
+			virtual bool IsOwnerAddress(const Address &address) const = 0;
+
 			virtual bool IsAddressUsed(const Address &address) const = 0;
 
 			virtual void ClearUsedAddresses() = 0;
 
-			virtual Key DeriveVoteKey(const std::string &payPasswd) = 0;
+			virtual Key DeriveOwnerKey(const std::string &payPasswd) = 0;
 
-			virtual bytes_t GetVotePublicKey() const = 0;
+			virtual bytes_t GetOwnerPublicKey() const = 0;
+
+			virtual size_t TxInternalChainIndex(const TransactionPtr &tx) const = 0;
+
+			virtual size_t TxExternalChainIndex(const TransactionPtr &tx) const = 0;
 
 		};
 

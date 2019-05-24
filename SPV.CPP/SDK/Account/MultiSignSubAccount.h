@@ -22,9 +22,13 @@ namespace Elastos {
 
 			virtual bool FindKey(Key &key, const bytes_t &pubKey, const std::string &payPasswd);
 
-			virtual bytes_t GetVotePublicKey() const;
+			virtual bytes_t GetOwnerPublicKey() const;
 
-			virtual Key DeriveVoteKey(const std::string &payPasswd);
+			virtual Key DeriveOwnerKey(const std::string &payPasswd);
+
+			virtual size_t TxInternalChainIndex(const TransactionPtr &tx) const;
+
+			virtual size_t TxExternalChainIndex(const TransactionPtr &tx) const;
 
 		private:
 			MultiSignAccount *_multiSignAccount;

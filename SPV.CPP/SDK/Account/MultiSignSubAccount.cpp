@@ -43,14 +43,31 @@ namespace Elastos {
 			return j;
 		}
 
-		bytes_t MultiSignSubAccount::GetVotePublicKey() const {
+		bytes_t MultiSignSubAccount::GetOwnerPublicKey() const {
 			return bytes_t();
 		}
 
-		Key MultiSignSubAccount::DeriveVoteKey(const std::string &payPasswd) {
+		Key MultiSignSubAccount::DeriveOwnerKey(const std::string &payPasswd) {
 			ErrorChecker::ThrowLogicException(Error::AccountNotSupportVote, "This account do not support vote");
 			return Key();
 		}
 
+		size_t MultiSignSubAccount::TxInternalChainIndex(const TransactionPtr &tx) const {
+			for (size_t i = 0; i < tx->GetOutputs().size(); ++i) {
+				if (_parentAccount->GetAddress() == tx->GetOutputs()[i].GetAddress())
+					return 0;
+			}
+
+			return -1;
+		}
+
+		size_t MultiSignSubAccount::TxExternalChainIndex(const TransactionPtr &tx) const {
+			for (size_t i = 0; i < tx->GetOutputs().size(); ++i) {
+				if (_parentAccount->GetAddress() == tx->GetOutputs()[i].GetAddress())
+					return 0;
+			}
+
+			return -1;
+		}
 	}
 }

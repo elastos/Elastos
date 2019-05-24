@@ -134,7 +134,7 @@ namespace Elastos {
 			std::string innerType;
 			if (_me != nullptr) {
 				nlohmann::json basicInfo = _me->GetBasicInfo();
-				innerType = basicInfo["Type"];
+				innerType = basicInfo["Type"].get<std::string>();
 				signers.push_back(_me->GetMultiSignPublicKey().getHex());
 			} else {
 				innerType = "Readonly";

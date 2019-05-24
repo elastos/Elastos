@@ -378,9 +378,9 @@ public:
         return n < WIDTH ? pn[n] : 0;
     }
 
-    std::vector<uint8_t> bytes() const
+    bytes_t bytes() const
     {
-        return std::vector<uint8_t>((uint8_t *)&pn[0], (uint8_t *)&pn[0] + sizeof(pn));
+        return bytes_t((uint8_t *)&pn[0], (uint8_t *)&pn[0] + sizeof(pn));
     }
 
 //    unsigned int GetSerializeSize(int nType=0, int nVersion=PROTOCOL_VERSION) const

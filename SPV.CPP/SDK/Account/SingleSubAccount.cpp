@@ -64,7 +64,7 @@ namespace Elastos {
 			return address == GetParent()->GetAddress();
 		}
 
-		Key SingleSubAccount::DeriveVoteKey(const std::string &payPasswd) {
+		Key SingleSubAccount::DeriveOwnerKey(const std::string &payPasswd) {
 			ErrorChecker::ThrowLogicException(Error::AccountNotSupportVote, "This account do not support vote");
 			return Key();
 		}

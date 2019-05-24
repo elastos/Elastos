@@ -46,12 +46,13 @@ namespace Elastos {
 				_payload(nullptr),
 				_type(DEFAULT_PAYLOAD_TYPE),
 				_isRegistered(false),
-				_txHash(0) {
+				_txHash(0),
+				_timestamp(0) {
 			InitPayloadFromType(_type);
 		}
 
 		Transaction::Transaction(const Transaction &tx) {
-			operator=(tx);
+			this->operator=(tx);
 		}
 
 		Transaction &Transaction::operator=(const Transaction &orig) {

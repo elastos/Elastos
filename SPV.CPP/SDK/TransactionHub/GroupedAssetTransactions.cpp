@@ -67,17 +67,50 @@ namespace Elastos {
 			return _transactions;
 		}
 
-		void AssetTransactions::SortTransaction() {
-			std::sort(_transactions.begin(), _transactions.end(),
-					  [](const TransactionPtr &first, const TransactionPtr &second) {
-						  return first->GetTimestamp() < second->GetTimestamp();
-					  });
+		bool AssetTransactions::TxIsAscending(const TransactionPtr &tx1, const TransactionPtr &tx2) const {
+			if (! tx1 || ! tx2) return false;
+
+			if (tx1->GetBlockHeight() > tx2->GetBlockHeight()) return true;
+			if (tx1->GetBlockHeight() < tx2->GetBlockHeight()) return false;
+
+			for (size_t i = 0; i < tx1->GetInputs().size(); ++i) {
+				if (tx1->GetInputs()[i].GetTransctionHash() == tx2->GetHash()) return true;
+			}
+
+			for (size_t i = 0; i < tx2->GetInputs().size(); ++i) {
+				if (tx2->GetInputs()[i].GetTransctionHash() == tx1->GetHash()) return false;
+			}
+
+			for (size_t i = 0; i < tx1->GetInputs().size(); ++i) {
+				if (TxIsAscending(_allTx.Get(tx1->GetInputs()[i].GetTransctionHash()), tx2)) return true;
+			}
+
+			return false;
 		}
 
-		void AssetTransactions::Append(const TransactionPtr &transaction) {
-			_allTx.Insert(transaction);
-			_transactions.push_back(transaction);
-			SortTransaction();
+		int AssetTransactions::TxCompare(const TransactionPtr &tx1, const TransactionPtr &tx2) const {
+			size_t i = -1, j = -1;
+
+			if (TxIsAscending(tx1, tx2)) return 1;
+			if (TxIsAscending(tx2, tx1)) return -1;
+			if ((i = _subAccount->TxInternalChainIndex(tx1)) != -1) j = _subAccount->TxInternalChainIndex(tx2);
+			if (j == -1 && (i = _subAccount->TxExternalChainIndex(tx1)) != -1)
+				j = _subAccount->TxExternalChainIndex(tx2);
+			if (i != -1 && j != -1 && i != j) return (i > j) ? 1 : -1;
+			return 0;
+		}
+
+		void AssetTransactions::InsertTx(const TransactionPtr &tx) {
+			_allTx.Insert(tx);
+
+			size_t i = _transactions.size();
+
+			_transactions.resize(i + 1);
+			for (; i > 0 && TxCompare(_transactions[i - 1], tx) > 0; --i) {
+				_transactions[i] = _transactions[i - 1];
+			}
+
+			_transactions[i] = tx;
 		}
 
 		void AssetTransactions::BatchSet(const boost::function<void(const TransactionPtr &)> &fun) {
@@ -145,7 +178,7 @@ namespace Elastos {
 					} else {
 						// add inputs to spent output set
 						for (j = 0; j < tx->GetInputs().size(); j++) {
-							_pendingSpentOutputs.AddByTxInput(tx->GetInputs()[j], 0, 0);
+							_pendingSpentOutputs.AddByTxInput(tx->GetInputs()[j], 0);
 						}
 					}
 					continue;
@@ -153,7 +186,7 @@ namespace Elastos {
 
 				// add inputs to spent output set
 				for (j = 0; j < tx->GetInputs().size(); j++) {
-					_spentOutputs.AddByTxInput(tx->GetInputs()[j], 0, 0);
+					_spentOutputs.AddByTxInput(tx->GetInputs()[j], 0);
 				}
 
 				_subAccount->AddUsedAddrs(tx);
@@ -164,14 +197,14 @@ namespace Elastos {
 					Address addr = outputs[j].GetAddress();
 					if (_subAccount->ContainsAddress(addr)) {
 						if (_subAccount->IsDepositAddress(addr)) {
-							_utxos.AddUTXO(tx->GetHash(), (uint32_t) j, outputs[j].GetAmount(), confirms);
+							_utxos.AddUTXO(tx->GetHash(), (uint16_t) j, outputs[j].GetAmount());
 							depositBalance += outputs[j].GetAmount();
 						} else if ((tx->GetTransactionType() == Transaction::Type::CoinBase && confirms <= 100) ||
 							outputs[j].GetOutputLock() > _parent->GetBlockHeight()) {
-							_utxosLocked.AddUTXO(tx->GetHash(), (uint32_t)j, outputs[j].GetAmount(), confirms);
+							_utxosLocked.AddUTXO(tx->GetHash(), (uint16_t)j, outputs[j].GetAmount());
 							lockedBalance += outputs[j].GetAmount();
 						} else {
-							_utxos.AddUTXO(tx->GetHash(), (uint32_t) j, outputs[j].GetAmount(), confirms);
+							_utxos.AddUTXO(tx->GetHash(), (uint16_t) j, outputs[j].GetAmount());
 							balance += outputs[j].GetAmount();
 							if (outputs[j].GetType() == TransactionOutput::VoteOutput) {
 								votedBalance += outputs[j].GetAmount();
@@ -342,11 +375,14 @@ namespace Elastos {
 
 			if (txn) {
 				ErrorChecker::CheckLogic(txn->GetOutputs().size() < 1, Error::CreateTransaction, "No output in tx");
-				if (totalInputAmount < totalOutputAmount) {
+				if (totalInputAmount < totalOutputAmount + fee) {
+					uint64_t maxAvailable = totalInputAmount >= fee ? totalInputAmount - fee : 0;
 					if (_pendingSpentOutputs.size() > 0) {
-						ErrorChecker::ThrowLogicException(Error::TxPending, "Last transaction is pending");
+						ErrorChecker::ThrowLogicException(Error::TxPending, "Last transaction is pending, max available: "
+																			+ std::to_string(maxAvailable));
 					} else {
-						ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "Available balance is not enough");
+						ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "Available balance is not enough, max available: "
+																				   + std::to_string(maxAvailable));
 					}
 				}
 				txn->SetFee(fee);
@@ -443,11 +479,14 @@ namespace Elastos {
 			}
 			_lockable->Unlock();
 
-			if (totalInputAmount < totalOutputAmount) {
+			if (totalInputAmount < totalOutputAmount + fee) {
+				uint64_t maxAvailable = totalInputAmount >= fee ? totalInputAmount - fee : 0;
 				if (_pendingSpentOutputs.size() > 0) {
-					ErrorChecker::ThrowLogicException(Error::TxPending, "Last transaction is pending");
+					ErrorChecker::ThrowLogicException(Error::TxPending, "Last transaction is pending, max available: "
+														 + std::to_string(maxAvailable));
 				} else {
-					ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "Available balance is not enough");
+					ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "Available balance is not enough, max available: "
+																+ std::to_string(maxAvailable));
 				}
 			}
 
@@ -531,7 +570,7 @@ namespace Elastos {
 						// TODO: verify signatures when possible
 						// TODO: handle tx replacement with input sequence numbers
 						//       (for now, replacements appear invalid until confirmation)
-						Append(tx);
+						InsertTx(tx);
 						if (tx->GetTransactionType() != Transaction::CoinBase)
 							UpdateBalance();
 						wasAdded = true;
@@ -680,7 +719,7 @@ namespace Elastos {
 				_parent->SetBlockHeight(blockHeight);
 
 			for (i = 0; i < txHashes.size(); i++) {
-				const TransactionPtr &tx = GetExistTransaction(txHashes[i]);
+				const TransactionPtr tx = GetExistTransaction(txHashes[i]);
 				if (tx == nullptr || (tx->GetBlockHeight() == blockHeight && tx->GetTimestamp() == timestamp))
 					continue;
 
@@ -693,7 +732,13 @@ namespace Elastos {
 				tx->SetBlockHeight(blockHeight);
 
 				if (WalletContainsTx(tx)) {
-					SortTransaction();
+					for (size_t k = _transactions.size(); k > 0; k--) {
+						if (_transactions[k - 1]->IsEqual(tx.get())) {
+							_transactions.erase(_transactions.begin() + k - 1);
+							InsertTx(tx);
+							break;
+						}
+					}
 					hashes.push_back(txHashes[i]);
 					if (_invalidTx.Contains(tx)) {
 						assetID = tx->GetAssetID();
@@ -752,7 +797,7 @@ namespace Elastos {
 
 			for (size_t i = 0; i < txns.size(); ++i) {
 				if (!txns[i]->IsSigned() || WalletExistTx(txns[i])) continue;
-				Append(txns[i]);
+				InsertTx(txns[i]);
 			}
 
 		}
@@ -772,9 +817,9 @@ namespace Elastos {
 			return txn;
 		}
 
-		void GroupedAssetTransactions::Append(const TransactionPtr &transaction) {
+		void GroupedAssetTransactions::InsertTx(const TransactionPtr &transaction) {
 			transaction->SetAssetTableID(transaction->GetAssetID().GetHex());
-			_groupedTransactions[transaction->GetAssetID()]->Append(transaction);
+			_groupedTransactions[transaction->GetAssetID()]->InsertTx(transaction);
 		}
 
 		bool GroupedAssetTransactions::Empty() const {

@@ -146,8 +146,20 @@ namespace Elastos {
 			_checkpoints.emplace_back(314496, "bba5bc0a3bbf3d714e8f414d096440eb18586ce9bed9a006e91e79745ea12566", 1550434616, 407071079);
 			_checkpoints.emplace_back(318528, "8b75b943b49d711b82427644b769da5847122bb16b6041811b0ce7928565d87b", 1550923897, 407321316);
 			_checkpoints.emplace_back(322560, "8ca8aa2c69bcc45727396ffc6eee0ed2019ea2b2fc4ff17ced85796a18669cff", 1551388640, 406145876);
-			_checkpoints.emplace_back(324576, "aea8458dfafe6e6ce7a325220cd9c2ef422a41cc8a90aa0364699dbda62183d7", 1551631041, 406048162);
 			_checkpoints.emplace_back(326592, "ebb2ba952f8bb5b1d005f6c5355970ba3351b23f48e6965b7007f7b4e29ee92c", 1551876151, 406029313);
+			_checkpoints.emplace_back(330624, "474b63cd0999e4df250065b96f758320afa7cb14086b131a0b82ab5b98276fb4", 1552366336, 406439903);
+			_checkpoints.emplace_back(334656, "e13a065674b677a4f9d1f44d9559b7c25254b216ee719919c6eb67198196b0c3", 1552843215, 406198821);
+			_checkpoints.emplace_back(338688, "1f6f544ea59956a45998738401730b2c08eec5768d0012b0ad57857afa11d495", 1553331416, 406259802);
+			_checkpoints.emplace_back(342720, "7fc930cf5d5ffe2d2867fcdd88a13c7ecd452b31a58b3950b2351c1a21ff7563", 1553822395, 406440006);
+			_checkpoints.emplace_back(346752, "e2c2c10620409ad3291689ab120d797f7fda0ed0365584c4de785ba38d75f70a", 1554298032, 406389305);
+			_checkpoints.emplace_back(350784, "acded54e74c6150e6a0b60b6bfd3a5caed26138bfe5f6675dd8d8c52ec32079d", 1554664257, 403276644);
+			_checkpoints.emplace_back(354816, "7bad9fff3e61999fc7aaf89818961c37cd010a7a6a6356f5bc80911f43b86451", 1555057366, 402854529);
+			_checkpoints.emplace_back(358848, "cd2cda5a6d6145b8fbe03ccaa24aca36c27505f308899496bf325052d8c8bda4", 1555539128, 402833189);
+			_checkpoints.emplace_back(362880, "5ab1174f3939951a4141506660d8174502562f75f8eb9574a8347eb216032b45", 1556018891, 402820368);
+			_checkpoints.emplace_back(366912, "8b3491d19ead3c59bb1b556f9938d762ddd51ff1126666a49cac664d2e58ee60", 1556505545, 402832366);
+			_checkpoints.emplace_back(370944, "6cd5a1478c14b8e6d378a78c590e0dd89084e2619496f396ca2c451556fb1768", 1556988838, 402817892);
+			_checkpoints.emplace_back(374976, "10354cd88a40a834e5074a5a086d32278dfff4be49320d537e0896aa410bc184", 1557475422, 402828591);
+			_checkpoints.emplace_back(376992, "7027ba67e634265f4d01b5067b41e76f30621b27f5679b42bb3222b206aac9ba", 1557710709, 402813617);
 			_standardPort = 20338;
 			_magicNumber = 2017001;
 			_services = 0;
@@ -156,11 +168,16 @@ namespace Elastos {
 		}
 
 		void ChainParams::MainNetIDChainParamsInit() {
-			_dnsSeeds.emplace_back("did-mainnet-001.elastos.org");
-			_dnsSeeds.emplace_back("did-mainnet-002.elastos.org");
-			_dnsSeeds.emplace_back("did-mainnet-003.elastos.org");
-			_dnsSeeds.emplace_back("did-mainnet-004.elastos.org");
-			_dnsSeeds.emplace_back("did-mainnet-005.elastos.org");
+			_dnsSeeds.emplace_back("node-mainnet-026.elastos.org");
+			_dnsSeeds.emplace_back("node-mainnet-027.elastos.org");
+			_dnsSeeds.emplace_back("node-mainnet-028.elastos.org");
+			_dnsSeeds.emplace_back("node-mainnet-029.elastos.org");
+			_dnsSeeds.emplace_back("node-mainnet-030.elastos.org");
+			_dnsSeeds.emplace_back("node-mainnet-031.elastos.org");
+			_dnsSeeds.emplace_back("node-mainnet-032.elastos.org");
+			_dnsSeeds.emplace_back("node-mainnet-033.elastos.org");
+			_dnsSeeds.emplace_back("node-mainnet-034.elastos.org");
+			_dnsSeeds.emplace_back("node-mainnet-035.elastos.org");
 			_checkpoints.emplace_back(0,      "56be936978c261b2e649d58dbfaf3f23d4a868274f5522cd2adb4308a955c4a3", 1530360000, 486801407);
 			_checkpoints.emplace_back(2016,   "df060a6475ace78657e1ec945cebb37f2ffb6367b185f9ba5edfa987f16b84f4", 1531426582, 520126740);
 			_checkpoints.emplace_back(6048,   "4e6a53d3e3e61d4883a10d62fb42afb62ad6f10807bcc3791db284f43b063671", 1532395676, 522028475);
@@ -201,6 +218,17 @@ namespace Elastos {
 			_checkpoints.emplace_back(129024, "6b5bc4a25e1a7d6e32e77d0ff6117798cda5a209bfb26063c9335a8fc035f40a", 1551070409, 523617671);
 			_checkpoints.emplace_back(131040, "d82242161807d283f0cf7b23d958e8d976a042ba4f76be9690d8daf5b3d72749", 1551286214, 522744768);
 			_checkpoints.emplace_back(133056, "0c8700398106cf79a90fdff85aaf49ed91a2247582b0ede35d19de5e3771359c", 1551537603, 523094962);
+			_checkpoints.emplace_back(135072, "452dee26b8ccf4d7dcb814f79b0a4c8a063410f4c905225c017e44ca713b77ec", 1551787216, 523287865);
+			_checkpoints.emplace_back(137088, "39dec128089c8f3527da72694fc55675df4daa75142d301c7578489a47e86eff", 1552035304, 523322318);
+			_checkpoints.emplace_back(139104, "71250ef5f1b3148356f3203af5818b8b87e433df450c398332ae12d9658258dd", 1552295776, 524206706);
+			_checkpoints.emplace_back(141120, "edcab93009f4455ccd341d7ee2922fbdbb9258a51a8a23035bfcac4f18900ac7", 1552535827, 524136806);
+			_checkpoints.emplace_back(143136, "fb08912f624ef0bfe1a2cdf2966d7ac2c6ac3aba7f82bfa8993b983a2d66ced2", 1552780272, 524222237);
+			_checkpoints.emplace_back(145152, "b5a3fe17e1f7d82eaac14fe51cadc6ac051217eec2af10b1dba3380ae257b6cf", 1553072753, 526103666);
+			_checkpoints.emplace_back(147168, "96874a8fe125480f949952afbe369c044fa9c979354fd999117be9a5eb5e2f78", 1553478082, 536950698);
+			_checkpoints.emplace_back(149184, "b6cb66bf62d90593dc6d96c3dcd9cfab5c47228c05557b0e49a3bf563ff6362d", 1553907062, 537377438);
+			_checkpoints.emplace_back(151200, "f54c84e12cc490e69102a3c0bea00e19f007f71ea438fa38e2260e4159bfe0f1", 1554182600, 537615411);
+			_checkpoints.emplace_back(153216, "14ab322c37190744a6a8f975f5d50805f63729dad96aa07dabb3d54a8d36459b", 1554406994, 537508844);
+			_checkpoints.emplace_back(155232, "b60ffe855183f56edf49e505010172a409e075d2ac32daaa2e2a1faf0c23bab7", 1554636477, 537294997);
 			_standardPort = 20608;
 			_magicNumber = 2017002;
 			_services = 0;
@@ -213,6 +241,9 @@ namespace Elastos {
 			_dnsSeeds.emplace_back("node-testnet-002.elastos.org");
 			_dnsSeeds.emplace_back("node-testnet-003.elastos.org");
 			_dnsSeeds.emplace_back("node-testnet-004.elastos.org");
+			_dnsSeeds.emplace_back("node-testnet-005.elastos.org");
+			_dnsSeeds.emplace_back("node-testnet-006.elastos.org");
+			_dnsSeeds.emplace_back("node-testnet-007.elastos.org");
 			_checkpoints.emplace_back(0,      "6418be20291bc857c9a01e5ba205445b85a0593d47cc0b576d55a55e464f31b3", 1513936800, 486801407);
 			_checkpoints.emplace_back(2016,   "99ca9a4467b547c19a6554021fd1b5b455b29d1adddbd910dd437bc143785767", 1517940844, 503906048);
 			_checkpoints.emplace_back(8064,   "fa9b768a5a670a8c58d8b411a8f856f73d6d4652261530b330dee49a8319a158", 1522645593, 494006531);
@@ -268,11 +299,11 @@ namespace Elastos {
 		}
 
 		void ChainParams::TestNetIDChainParamsInit() {
-			_dnsSeeds.emplace_back("did-testnet-001.elastos.org");
-			_dnsSeeds.emplace_back("did-testnet-002.elastos.org");
-			_dnsSeeds.emplace_back("did-testnet-003.elastos.org");
-			_dnsSeeds.emplace_back("did-testnet-004.elastos.org");
-			_dnsSeeds.emplace_back("did-testnet-005.elastos.org");
+			_dnsSeeds.emplace_back("node-testnet-011.elastos.org");
+			_dnsSeeds.emplace_back("node-testnet-012.elastos.org");
+			_dnsSeeds.emplace_back("node-testnet-013.elastos.org");
+			_dnsSeeds.emplace_back("node-testnet-014.elastos.org");
+			_dnsSeeds.emplace_back("node-testnet-015.elastos.org");
 			_checkpoints.emplace_back(0,     "56be936978c261b2e649d58dbfaf3f23d4a868274f5522cd2adb4308a955c4a3", 1513936800, 486801407);
 			_checkpoints.emplace_back(2016,  "9b3069a05478988d4c9d2d4b941af048680dbe92353bc8f0cf282766aa935edb", 1532276131, 505977014);
 			_checkpoints.emplace_back(4032,  "6e8f5e21ddd736bb62dcd3ae445444702dc0b0ee560b4161877d0c8f0d9ad448", 1532628770, 510283913);
@@ -318,9 +349,12 @@ namespace Elastos {
 
 		// reg net (reg test)
 		void ChainParams::RegNetMainChainParamsInit() {
-			_dnsSeeds.emplace_back("node-regtest-002.elastos.org");
-			_dnsSeeds.emplace_back("node-regtest-003.elastos.org");
-			_dnsSeeds.emplace_back("node-regtest-004.elastos.org");
+			_dnsSeeds.emplace_back("node-regtest-102.eadd.co");
+			_dnsSeeds.emplace_back("node-regtest-103.eadd.co");
+			_dnsSeeds.emplace_back("node-regtest-104.eadd.co");
+			_dnsSeeds.emplace_back("node-regtest-105.eadd.co");
+			_dnsSeeds.emplace_back("node-regtest-106.eadd.co");
+			_dnsSeeds.emplace_back("node-regtest-107.eadd.co");
 			_checkpoints.emplace_back(0,      "6418be20291bc857c9a01e5ba205445b85a0593d47cc0b576d55a55e464f31b3", 1513936800, 486801407);
 			_checkpoints.emplace_back(2016,   "99ca9a4467b547c19a6554021fd1b5b455b29d1adddbd910dd437bc143785767", 1517940844, 503906048);
 			_checkpoints.emplace_back(8064,   "fa9b768a5a670a8c58d8b411a8f856f73d6d4652261530b330dee49a8319a158", 1522645593, 494006531);
@@ -388,11 +422,11 @@ namespace Elastos {
 		}
 
 		void ChainParams::RegNetIDChainParamsInit() {
-			_dnsSeeds.emplace_back("did-regtest-001.elastos.org");
-			_dnsSeeds.emplace_back("did-regtest-002.elastos.org");
-			_dnsSeeds.emplace_back("did-regtest-003.elastos.org");
-			_dnsSeeds.emplace_back("did-regtest-004.elastos.org");
-			_dnsSeeds.emplace_back("did-regtest-005.elastos.org");
+			_dnsSeeds.emplace_back("node-regtest-116.eadd.co");
+			_dnsSeeds.emplace_back("node-regtest-117.eadd.co");
+			_dnsSeeds.emplace_back("node-regtest-118.eadd.co");
+			_dnsSeeds.emplace_back("node-regtest-119.eadd.co");
+			_dnsSeeds.emplace_back("node-regtest-120.eadd.co");
 			_checkpoints.emplace_back(0,     "56be936978c261b2e649d58dbfaf3f23d4a868274f5522cd2adb4308a955c4a3", 1513936800, 486801407);
 			_checkpoints.emplace_back(2016,  "fb29c3de03ab8dbdc9e50ee882efc9a8115697a7681593ec1c587dd8ddc0da70", 1548438160, 505759638);
 			_standardPort = 22608;

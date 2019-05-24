@@ -16,14 +16,16 @@ namespace Elastos {
 
 
 
-		HDSubAccount::HDSubAccount(const HDKeychain &masterPubKey, const bytes_t &votePubKey,
+		HDSubAccount::HDSubAccount(const HDKeychain &masterPubKey, const bytes_t &ownerPubKey,
 								   IAccount *account, uint32_t coinIndex) :
 				SubAccountBase(account) {
 				_coinIndex = coinIndex;
 				_masterPubKey = masterPubKey;
-				_votePublicKey = votePubKey;
-				if (votePubKey.size() > 0)
-					_depositAddress = Address(PrefixDeposit, votePubKey);
+				_ownerPublicKey = ownerPubKey;
+				if (ownerPubKey.size() > 0) {
+					_depositAddress = Address(PrefixDeposit, ownerPubKey);
+					_ownerAddress = Address(PrefixStandard, ownerPubKey);
+				}
 		}
 
 		void HDSubAccount::InitAccount(const std::vector<TransactionPtr> &transactions, Lockable *lock) {
@@ -44,8 +46,13 @@ namespace Elastos {
 			bytes_t pubKey;
 
 			if (IsDepositAddress(addr)) {
-				pubKey = GetVotePublicKey();
+				pubKey = GetOwnerPublicKey();
 				return Address(PrefixDeposit, pubKey).RedeemScript();
+			}
+
+			if (IsOwnerAddress(addr)) {
+				pubKey = GetOwnerPublicKey();
+				return Address(PrefixStandard, pubKey).RedeemScript();
 			}
 
 			for (index = internalChain.size(); index > 0; index--) {
@@ -210,6 +217,10 @@ namespace Elastos {
 				return true;
 			}
 
+			if (IsOwnerAddress(address)) {
+				return true;
+			}
+
 			return allAddrs.find(address) != allAddrs.end();
 		}
 
@@ -217,12 +228,34 @@ namespace Elastos {
 			usedAddrs.clear();
 		}
 
-		Key HDSubAccount::DeriveVoteKey(const std::string &payPasswd) {
+		Key HDSubAccount::DeriveOwnerKey(const std::string &payPasswd) {
 			HDSeed hdseed(_parentAccount->DeriveSeed(payPasswd).bytes());
 			HDKeychain rootKey(hdseed.getExtendedKey(true));
 
 			// 44'/coinIndex'/account'/change/index
 			return rootKey.getChild("44'/0'/1'/0/0");
+		}
+
+		size_t HDSubAccount::TxInternalChainIndex(const TransactionPtr &tx) const {
+			for (size_t i = internalChain.size(); i > 0; --i) {
+				for (size_t o = 0; o < tx->GetOutputs().size(); o++) {
+					if (internalChain[i] == tx->GetOutputs()[o].GetAddress())
+						return i - 1;
+				}
+			}
+
+			return -1;
+		}
+
+		size_t HDSubAccount::TxExternalChainIndex(const TransactionPtr &tx) const {
+			for (size_t i = externalChain.size(); i > 0; --i) {
+				for (size_t o = 0; o < tx->GetOutputs().size(); ++o) {
+					if (externalChain[i] == tx->GetOutputs()[o].GetAddress())
+						return i - 1;
+				}
+			}
+
+			return -1;
 		}
 
 	}

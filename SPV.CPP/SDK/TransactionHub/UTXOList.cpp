@@ -44,12 +44,12 @@ namespace Elastos {
 			_utxos.clear();
 		}
 
-		void UTXOList::AddByTxInput(const TransactionInput &input, uint64_t amount, uint32_t confirms) {
-			_utxos.emplace_back(input.GetTransctionHash(), input.GetIndex(), amount, confirms);
+		void UTXOList::AddByTxInput(const TransactionInput &input, uint64_t amount) {
+			_utxos.emplace_back(input.GetTransctionHash(), input.GetIndex(), amount);
 		}
 
-		void UTXOList::AddUTXO(const uint256 &hash, uint32_t index, uint64_t amount, uint32_t confirms) {
-			_utxos.emplace_back(hash, index, amount, confirms);
+		void UTXOList::AddUTXO(const uint256 &hash, uint16_t index, uint64_t amount) {
+			_utxos.emplace_back(hash, index, amount);
 		}
 
 		void UTXOList::RemoveAt(size_t index) {

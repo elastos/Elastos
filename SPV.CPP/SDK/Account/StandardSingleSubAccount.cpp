@@ -15,15 +15,17 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		StandardSingleSubAccount::StandardSingleSubAccount(const HDKeychain &masterPubKey,
-														   const bytes_t &votePubKey,
+														   const bytes_t &ownerPubKey,
 														   IAccount *account,
 														   uint32_t coinIndex) :
 				SingleSubAccount(account) {
 				_masterPubKey = masterPubKey;
 				_coinIndex = coinIndex;
-				_votePublicKey = votePubKey;
-				if (votePubKey.size() > 0)
-					_depositAddress = Address(PrefixDeposit, votePubKey);
+				_ownerPublicKey = ownerPubKey;
+				if (ownerPubKey.size() > 0) {
+					_depositAddress = Address(PrefixDeposit, ownerPubKey);
+					_ownerAddress = Address(PrefixStandard, ownerPubKey);
+				}
 
 				_address = Address(PrefixStandard, _masterPubKey.getChild("0/0").pubkey());
 		}
@@ -33,7 +35,7 @@ namespace Elastos {
 			Key key;
 
 			if (IsDepositAddress(addr)) {
-				pubKey = GetVotePublicKey();
+				pubKey = GetOwnerPublicKey();
 				return Address(PrefixDeposit, pubKey).RedeemScript();
 			}
 
@@ -74,15 +76,35 @@ namespace Elastos {
 			if (IsDepositAddress(address))
 				return true;
 
+			if (IsOwnerAddress(address))
+				return true;
+
 			return address == _address;
 		}
 
-		Key StandardSingleSubAccount::DeriveVoteKey(const std::string &payPasswd) {
+		Key StandardSingleSubAccount::DeriveOwnerKey(const std::string &payPasswd) {
 			HDSeed hdseed(_parentAccount->DeriveSeed(payPasswd).bytes());
 			HDKeychain rootKey(hdseed.getExtendedKey(true));
 			// account is 1
 			return rootKey.getChild("44'/0'/1'/0/0");
 		}
 
+		size_t StandardSingleSubAccount::TxInternalChainIndex(const TransactionPtr &tx) const {
+			for (size_t i = 0; i < tx->GetOutputs().size(); ++i) {
+				if (tx->GetOutputs()[i].GetAddress() == _address)
+					return 0;
+			}
+
+			return -1;
+		}
+
+		size_t StandardSingleSubAccount::TxExternalChainIndex(const TransactionPtr &tx) const {
+			for (size_t i = 0; i < tx->GetOutputs().size(); ++i) {
+				if (tx->GetOutputs()[i].GetAddress() == _address)
+					return 0;
+			}
+
+			return -1;
+		}
 	}
 }

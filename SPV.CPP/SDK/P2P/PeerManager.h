@@ -43,7 +43,7 @@ namespace Elastos {
 				// func syncStarted()
 				virtual void syncStarted() = 0;
 
-				virtual void syncProgress(uint32_t currentHeight, uint32_t estimateHeight) = 0;
+				virtual void syncProgress(uint32_t currentHeight, uint32_t estimateHeight, time_t lastBlockTime) = 0;
 
 				// func syncStopped(_ error: BRPeerManagerError?)
 				virtual void syncStopped(const std::string &error) = 0;
@@ -119,8 +119,6 @@ namespace Elastos {
 
 			void SetSyncSucceeded(bool succeeded);
 
-			bool IsReconnectEnable() const;
-
 			void SetReconnectEnableStatus(bool status);
 
 			void SetFixedPeer(uint128 address, uint16_t port);
@@ -192,7 +190,7 @@ namespace Elastos {
 		private:
 			void FireSyncStarted();
 
-			void FireSyncProgress(uint32_t currentHeight, uint32_t estimatedHeight);
+			void FireSyncProgress(uint32_t currentHeight, uint32_t estimatedHeight, time_t lastBlockTime);
 
 			void FireSyncStopped(int error);
 
@@ -271,9 +269,11 @@ namespace Elastos {
 
 			void PublishTxInvDone(const PeerPtr &peer, int success);
 
+			void FindPeersThreadRoutine(const std::string &hostname, uint64_t services);
+
 		private:
 			int _isConnected, _connectFailureCount, _misbehavinCount, _dnsThreadCount, _maxConnectCount, _reconnectTaskCount;
-			bool _syncSucceeded, _needGetAddr;
+			bool _syncSucceeded, _needGetAddr, _enableReconnectTask;
 
 			std::vector<PeerInfo> _peers;
 			std::vector<PeerInfo> _fiexedPeers;
@@ -285,6 +285,7 @@ namespace Elastos {
 			mutable std::string _downloadPeerName;
 			time_t _keepAliveTimestamp;
 			uint32_t _earliestKeyTime, _reconnectSeconds, _syncStartHeight, _filterUpdateHeight, _estimatedHeight;
+			uint32_t _reconnectStep;
 			BloomFilterPtr _bloomFilter;
 			double _fpRate, _averageTxPerBlock;
 			BlockSet _blocks;

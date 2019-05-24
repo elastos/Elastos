@@ -24,7 +24,10 @@ namespace Elastos {
 
 		class Transaction;
 
-		class SubWallet : public virtual ISubWallet, public AssetTransactions::Listener, public PeerManager::Listener {
+		class SubWallet : public virtual ISubWallet,
+						  public AssetTransactions::Listener,
+						  public PeerManager::Listener,
+						  public Lockable {
 		public:
 			typedef boost::shared_ptr<SpvService> WalletManagerPtr;
 
@@ -123,7 +126,7 @@ namespace Elastos {
 		protected: //implement PeerManager::Listener
 			virtual void syncStarted();
 
-			virtual void syncProgress(uint32_t currentHeight, uint32_t estimatedHeight);
+			virtual void syncProgress(uint32_t currentHeight, uint32_t estimatedHeight, time_t lastBlockTime);
 
 			// func syncStopped(_ error: BRPeerManagerError?)
 			virtual void syncStopped(const std::string &error);

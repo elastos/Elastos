@@ -5,14 +5,6 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-# Define helper macro option_with_default
-macro(option_with_default OPTION_NAME OPTION_STRING OPTION_DEFAULT)
-	if(NOT DEFINED ${OPTION_NAME})
-		set(${OPTION_NAME} ${OPTION_DEFAULT})
-	endif(NOT DEFINED ${OPTION_NAME})
-	option(${OPTION_NAME} "${OPTION_STRING}" ${${OPTION_NAME}})
-endmacro(option_with_default OPTION_NAME OPTION_STRING OPTION_DEFAULT)
-
 set(SPV_PLATFORM_ANDROID "Android" CACHE INTERNAL "SPV platform" FORCE)
 set(SPV_PLATFORM_IOS "IOS" CACHE INTERNAL "SPV platform" FORCE)
 
@@ -106,12 +98,10 @@ if(NOT DEFINED CMAKE_INSTALL_PREFIX)
 	set(CMAKE_INSTALL_PREFIX "/usr/local/" CACHE PATH "Install prefix prepended to target to create install location")
 endif(NOT DEFINED CMAKE_INSTALL_PREFIX)
 
-option_with_default(SPVSDK_DEBUG "SPV debug" OFF)
-option_with_default(SPV_BUILD_TEST_CASES "Build test cases" OFF)
-option_with_default(SPV_BUILD_SAMPLE "Build sample" OFF)
-option_with_default(CMAKE_EXPORT_COMPILE_COMMANDS "Export to compile_commands.json" OFF)
-
-option_with_default(SPV_EXTRA_WARNINGS "Enable Maximum Warnings Level" OFF)
+option(SPVSDK_DEBUG "SPV debug" OFF)
+option(SPV_BUILD_TEST_CASES "Build test cases" OFF)
+option(SPV_BUILD_SAMPLE "Build sample" OFF)
+option(SPV_EXTRA_WARNINGS "Enable Maximum Warnings Level" OFF)
 
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_RELEASE NDEBUG)
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL NDEBUG)
