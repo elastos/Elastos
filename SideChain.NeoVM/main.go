@@ -17,7 +17,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/events"
 	"github.com/elastos/Elastos.ELA.SideChain/server"
 	sw "github.com/elastos/Elastos.ELA.SideChain/service/websocket"
-	sideTypes "github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA/utils/signal"
@@ -31,8 +30,8 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/event"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/datatype"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/service/websocket"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
 	ns "github.com/elastos/Elastos.ELA.SideChain.NeoVM/p2p/server"
+	npow "github.com/elastos/Elastos.ELA.SideChain.NeoVM/pow"
 )
 
 const (
@@ -75,19 +74,6 @@ func main() {
 	}
 	defer chainStore.Close()
 
-	chainCfg := blockchain.Config{
-		ChainParams: activeNetParams,
-		ChainStore:  chainStore,
-	}
-
-	mempoolCfg := mempool.Config{
-		ChainParams: activeNetParams,
-		ChainStore:  chainStore,
-	}
-	txFeeHelper := mempool.NewFeeHelper(&mempoolCfg)
-	mempoolCfg.FeeHelper = txFeeHelper
-	chainCfg.GetTxFee = txFeeHelper.GetTxFee
-
 	eladlog.Info("2. SPV module init")
 	genesisHash := activeNetParams.GenesisBlock.Hash()
 	programHash, err := mempool.GenesisToProgramHash(&genesisHash)
@@ -101,10 +87,10 @@ func main() {
 		eladlog.Fatalf("Genesis program hash to address failed, %s", err)
 		os.Exit(1)
 	}
-
 	serviceCfg := spv.Config{
 		DataDir:        filepath.Join(DataPath, DataDir, SpvDir),
 		ChainParams:    spvNetParams,
+		PermanentPeers: cfg.SPVPermanentPeers,
 		GenesisAddress: genesisAddress,
 	}
 	spvService, err := spv.NewService(&serviceCfg)
@@ -112,15 +98,28 @@ func main() {
 		eladlog.Fatalf("SPV module initialize failed, %s", err)
 		os.Exit(1)
 	}
-	mempoolCfg.SpvService = spvService
 
 	defer spvService.Stop()
 	spvService.Start()
 
+	mempoolCfg := mempool.Config{
+		ChainParams: activeNetParams,
+		ChainStore:  chainStore,
+		SpvService:  spvService,
+	}
+	txFeeHelper := mempool.NewFeeHelper(&mempoolCfg)
+	mempoolCfg.FeeHelper = txFeeHelper
+
 	txValidator := mp.NewValidator(&mempoolCfg)
 	mempoolCfg.Validator = txValidator
-	chainCfg.CheckTxSanity = txValidator.CheckTransactionSanity
-	chainCfg.CheckTxContext = txValidator.CheckTransactionContext
+
+	chainCfg := blockchain.Config{
+		ChainParams: activeNetParams,
+		ChainStore:  chainStore,
+		GetTxFee:  txFeeHelper.GetTxFee,
+		CheckTxSanity: txValidator.CheckTransactionSanity,
+		CheckTxContext:txValidator.CheckTransactionContext,
+	}
 
 	chain, err := nc.NewBlockChain(&chainCfg, txValidator)
 	if err != nil {
@@ -165,7 +164,7 @@ func main() {
 	server.Start()
 
 	eladlog.Info("4. --Initialize pow service")
-	powCfg := pow.Config{
+	powCfg := &pow.Config{
 		ChainParams:               activeNetParams,
 		MinerAddr:                 cfg.PayToAddr,
 		MinerInfo:                 cfg.MinerInfo,
@@ -174,12 +173,12 @@ func main() {
 		TxMemPool:                 txPool,
 		TxFeeHelper:               txFeeHelper,
 		CreateCoinBaseTx:          pow.CreateCoinBaseTx,
-		GenerateBlock:             GenerateBlock,
 		GenerateBlockTransactions: pow.GenerateBlockTransactions,
 		Validator:                 txValidator,
+		GenerateBlock:             npow.GenerateBlock,
 	}
 
-	powService := pow.NewService(&powCfg)
+	powService := pow.NewService(powCfg)
 	if cfg.EnableMining {
 		eladlog.Info("Start POW Services")
 		go powService.Start()
@@ -257,6 +256,7 @@ func newJsonRpcServer(port uint16, service *sv.HttpServiceExtend) *jsonrpc.Serve
 	s.RegisterAction("discretemining", service.DiscreteMining, "count")
 	s.RegisterAction("listunspent", service.ListUnspent, "addresses")
 	s.RegisterAction("getreceivedbyaddress", service.GetReceivedByAddress, "address", "assetid")
+	s.RegisterAction("getillegalevidencebyheight", service.GetIllegalEvidenceByHeight, "height")
 
 	s.RegisterAction("invokescript", service.InvokeScript, "script", "returntype")
 	s.RegisterAction("invokefunction", service.InvokeFunction, "scripthash", "operation", "params", "returntype")
@@ -336,28 +336,4 @@ func notifyInfo(item datatype.StackItem) {
 			notifyInfo(items[i])
 		}
 	}
-}
-
-func GenerateBlock(cfg *pow.Config) (*sideTypes.Block, error) {
-	block, err := pow.GenerateBlock(cfg)
-	if err != nil {
-		avmlog.Errorf("notifyInfo:", err)
-		return block, err
-	}
-
-	storedb := nc.DefaultChain.Store.(*store.LedgerStore)
-
-	var receipts types.Receipts
-	for _, txn := range block.Transactions {
-		if txn.TxType == sideTypes.Invoke {
-			receipt, err := storedb.PersisInvokeTransaction(block, txn, nil)
-			if err != nil {
-				avmlog.Error("GenerateBlock Invoke failed")
-			}
-			receipts = append(receipts, receipt)
-		}
-	}
-	block.ReceiptHash = receipts.Hash()
-	block.Bloom = types.CreateBloom(receipts).Bytes()
-	return block, err
 }

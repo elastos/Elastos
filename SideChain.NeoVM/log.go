@@ -9,7 +9,6 @@ import (
 	sm "github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/netsync"
 	"github.com/elastos/Elastos.ELA.SideChain/peer"
-	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	"github.com/elastos/Elastos.ELA.SideChain/server"
 	ser "github.com/elastos/Elastos.ELA.SideChain/service"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
@@ -22,7 +21,9 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/store"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/service"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/service/websocket"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/pow"
 	nser "github.com/elastos/Elastos.ELA.SideChain.NeoVM/p2p/server"
+
 )
 
 const (

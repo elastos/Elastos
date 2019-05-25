@@ -2,13 +2,12 @@ package types
 
 import (
 	"errors"
+	"io"
+	"bytes"
 
 	"github.com/elastos/Elastos.ELA/common"
 
 	"github.com/elastos/Elastos.ELA.SideChain/types"
-
-	"io"
-	"bytes"
 )
 
 // Receipt represents the results of a transaction.
