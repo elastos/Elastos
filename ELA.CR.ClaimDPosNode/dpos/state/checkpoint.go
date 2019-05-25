@@ -5,6 +5,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 // KeyFrame holds necessary state about arbitrators
@@ -470,6 +471,111 @@ func NewRewardData() *RewardData {
 		OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
 		TotalVotesInRound:           0,
 	}
+}
+
+func (c *CheckPoint) Serialize(w io.Writer) (err error) {
+	if err = common.WriteUint32(w, c.Height); err != nil {
+		return
+	}
+
+	if err = common.WriteUint32(w, uint32(c.DutyIndex)); err != nil {
+		return
+	}
+
+	if err = c.persistBytesArray(w, c.CurrentArbitrators); err != nil {
+		return
+	}
+
+	if err = c.persistBytesArray(w, c.CurrentCandidates); err != nil {
+		return
+	}
+
+	if err = c.persistBytesArray(w, c.NextArbitrators); err != nil {
+		return
+	}
+
+	if err = c.persistBytesArray(w, c.NextCandidates); err != nil {
+		return
+	}
+
+	if err = c.CurrentReward.Serialize(w); err != nil {
+		return
+	}
+
+	if err = c.NextReward.Serialize(w); err != nil {
+		return
+	}
+	return c.StateKeyFrame.Serialize(w)
+}
+
+func (c *CheckPoint) Deserialize(r io.Reader) (err error) {
+	if c.Height, err = common.ReadUint32(r); err != nil {
+		return
+	}
+
+	var index uint32
+	if index, err = common.ReadUint32(r); err != nil {
+		return
+	}
+	c.DutyIndex = int(index)
+
+	if c.CurrentArbitrators, err = c.getBytesArray(r); err != nil {
+		return
+	}
+
+	if c.CurrentCandidates, err = c.getBytesArray(r); err != nil {
+		return
+	}
+
+	if c.NextArbitrators, err = c.getBytesArray(r); err != nil {
+		return
+	}
+
+	if c.NextCandidates, err = c.getBytesArray(r); err != nil {
+		return
+	}
+
+	if err = c.CurrentReward.Deserialize(r); err != nil {
+		return
+	}
+
+	if err = c.NextReward.Deserialize(r); err != nil {
+		return
+	}
+
+	return c.StateKeyFrame.Deserialize(r)
+}
+
+func (c *CheckPoint) persistBytesArray(value io.Writer,
+	bytesArray [][]byte) (err error) {
+	if err = common.WriteVarUint(value, uint64(len(bytesArray))); err != nil {
+		return
+	}
+
+	for _, b := range bytesArray {
+		if err = common.WriteVarBytes(value, b); err != nil {
+			return
+		}
+	}
+	return
+}
+
+func (c *CheckPoint) getBytesArray(r io.Reader) ([][]byte, error) {
+	count, err := common.ReadVarUint(r, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	arbitrators := make([][]byte, 0)
+	for i := uint64(0); i < count; i++ {
+		arbiter, err := common.ReadVarBytes(
+			r, crypto.NegativeBigLength, "arbiter")
+		if err != nil {
+			return nil, err
+		}
+		arbitrators = append(arbitrators, arbiter)
+	}
+	return arbitrators, nil
 }
 
 // copyProducerMap copy the src map's key, value pairs into dst map.
