@@ -26,9 +26,9 @@ namespace Elastos {
 
 			void SetTransactionHash(const uint256 &hash);
 
-			uint32_t GetIndex() const;
+			uint16_t GetIndex() const;
 
-			void SetIndex(uint32_t index);
+			void SetIndex(uint16_t index);
 
 			uint32_t GetSequence() const;
 
@@ -46,7 +46,7 @@ namespace Elastos {
 
 		private:
 			uint256 _txHash;
-			uint32_t _index;
+			uint16_t _index;
 			uint32_t _sequence;
 		};
 

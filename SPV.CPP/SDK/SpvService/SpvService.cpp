@@ -90,8 +90,11 @@ namespace Elastos {
 			SPVLOG_DEBUG("raw tx {}", byteStream.GetBytes().getHex());
 
 			if (getPeerManager()->GetConnectStatus() != Peer::Connected) {
+				_peerManager->SetReconnectEnableStatus(false);
 				if (_reconnectTimer != nullptr)
 					_reconnectTimer->cancel();
+				_peerManager->Disconnect();
+				_peerManager->SetReconnectEnableStatus(true);
 				getPeerManager()->Connect();
 			}
 
@@ -281,17 +284,25 @@ namespace Elastos {
 		}
 
 		void SpvService::syncIsInactive(uint32_t time) {
-			Log::info("{} disconnect, reconnect {}s later", _peerManager->GetID(), time);
+			if (_peerManager->ReconnectTaskCount() == 0) {
+				Log::info("{} disconnect, reconnect {}s later", _peerManager->GetID(), time);
+				if (_reconnectTimer != nullptr) {
+					_reconnectTimer->cancel();
+					_reconnectTimer = nullptr;
+				}
 
-			_peerManager->SetReconnectTaskCount(_peerManager->ReconnectTaskCount() + 1);
+				_peerManager->SetReconnectTaskCount(_peerManager->ReconnectTaskCount() + 1);
 
-			_executor.StopThread();
-			if (_peerManager->GetConnectStatus() == Peer::Connected) {
-				_peerManager->Disconnect();
+				_executor.StopThread();
+				_peerManager->SetReconnectEnableStatus(false);
+				if (_peerManager->GetConnectStatus() == Peer::Connected) {
+					_peerManager->Disconnect();
+				}
+
+				_executor.InitThread(BACKGROUND_THREAD_COUNT);
+				_peerManager->SetReconnectEnableStatus(true);
+				StartReconnect(time);
 			}
-
-			_executor.InitThread(BACKGROUND_THREAD_COUNT);
-			StartReconnect(time);
 		}
 
 		size_t SpvService::GetAllTransactionsCount() {

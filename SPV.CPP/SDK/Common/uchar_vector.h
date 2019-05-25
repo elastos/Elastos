@@ -110,14 +110,10 @@ public:
             this->push_back(pad);
     }
 
-    void append(uint32_t n)
+    template <class T>
+    void append(T n)
     {
-        operator+=(uchar_vector(&n, sizeof(uint32_t)));
-    }
-
-    void append(uint64_t n)
-    {
-    	operator+=(uchar_vector(&n, sizeof(uint64_t)));
+    	operator+=(uchar_vector(&n, sizeof(T)));
     }
 
     void append(const void *array, size_t size)

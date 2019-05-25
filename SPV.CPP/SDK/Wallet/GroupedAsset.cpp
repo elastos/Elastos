@@ -242,10 +242,19 @@ namespace Elastos {
 			if (txn) {
 				ErrorChecker::CheckLogic(txn->GetOutputs().size() < 1, Error::CreateTransaction, "No output in tx");
 				if (totalInputAmount < totalOutputAmount + fee) {
+					BigInt maxAvailable(0);
+					if (totalInputAmount >= fee) {
+						maxAvailable = totalInputAmount - fee;
+					}
+
 					if (lastUTXOPending) {
-						ErrorChecker::ThrowLogicException(Error::TxPending, "Last transaction is pending");
+						ErrorChecker::ThrowLogicException(Error::TxPending,
+														  "Last transaction is pending, max available: "
+														  + maxAvailable.getDec());
 					} else {
-						ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "Available balance is not enough");
+						ErrorChecker::ThrowLogicException(Error::BalanceNotEnough,
+														  "Available balance is not enough, max available: "
+														  + maxAvailable.getDec());
 					}
 				} else if (totalInputAmount > totalOutputAmount + fee) {
 					uint256 assetID = txn->GetOutputs()[0].GetAssetId();
@@ -353,10 +362,19 @@ namespace Elastos {
 			_parent->Unlock();
 
 			if (totalInputAmount < totalOutputAmount + fee) {
+				BigInt maxAvailable(0);
+				if (totalInputAmount >= fee) {
+					maxAvailable = totalInputAmount - fee;
+				}
+
 				if (lastUTXOPending) {
-					ErrorChecker::ThrowLogicException(Error::TxPending, "Last transaction is pending");
+					ErrorChecker::ThrowLogicException(Error::TxPending,
+													  "Last transaction is pending, max available: "
+													  + maxAvailable.getDec());
 				} else {
-					ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "Available balance is not enough");
+					ErrorChecker::ThrowLogicException(Error::BalanceNotEnough,
+													  "Available balance is not enough, max available: "
+													  + maxAvailable.getDec());
 				}
 			} else if (totalInputAmount > totalOutputAmount + fee) {
 				std::vector<Address> addresses = _parent->_subAccount->UnusedAddresses(1, 1);

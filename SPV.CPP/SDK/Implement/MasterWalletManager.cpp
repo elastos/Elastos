@@ -196,33 +196,33 @@ namespace Elastos {
 			if (_masterWalletMap.find(masterWalletId) == _masterWalletMap.end())
 				return;
 
-			Log::info("Master wallet manager remove master wallet ({})", masterWalletId);
+			Log::info("Master wallet manager remove master wallet: {}", masterWalletId);
 
 			IMasterWallet *masterWallet = _masterWalletMap[masterWalletId];
 
 			MasterWallet *masterWalletInner = static_cast<MasterWallet *>(masterWallet);
 			if (saveMaster) {
-				Log::info("Destroying sub wallets.");
 				std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
 				for (int i = 0; i < subWallets.size(); ++i) {
+					Log::info("Destroying sub wallets: {}", subWallets[i]->GetChainId());
 					masterWallet->DestroyWallet(subWallets[i]);
 				}
 			} else {
-				Log::info("Destroying sub wallets.");
 				std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
 				for (int i = 0; i < subWallets.size(); ++i) {
+					Log::info("Destroying sub wallets: {}", subWallets[i]->GetChainId());
 					masterWallet->DestroyWallet(subWallets[i]);
 				}
 
-				Log::info("Clearing local.", masterWalletId);
+				Log::info("{} Clearing local", masterWalletId);
 				masterWalletInner->ClearLocal();
 			}
 
 
-			Log::info("Removing master wallet from map.");
+			Log::info("Removing master wallet {} from map", masterWalletId);
 			_masterWalletMap.erase(masterWalletId);
 
-			Log::info("Deleting master wallet.");
+			Log::info("Deleting master wallet");
 			delete masterWallet;
 		}
 

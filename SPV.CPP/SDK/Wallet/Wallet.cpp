@@ -754,7 +754,7 @@ namespace Elastos {
 					} else {
 						// add inputs to spent output set
 						for (j = 0; j < tx->GetInputs().size(); j++) {
-							_spendingOutputs.AddByTxInput(tx->GetInputs()[j], 0, 0);
+							_spendingOutputs.AddByTxInput(tx->GetInputs()[j], 0);
 						}
 					}
 					continue;
@@ -762,10 +762,8 @@ namespace Elastos {
 
 				// add inputs to spent output set
 				for (j = 0; j < tx->GetInputs().size(); j++) {
-					_spentOutputs.AddByTxInput(tx->GetInputs()[j], 0, 0);
+					_spentOutputs.AddByTxInput(tx->GetInputs()[j], 0);
 				}
-
-				uint32_t confirms = tx->GetConfirms(_blockHeight);
 
 				const std::vector<TransactionOutput> &outputs = tx->GetOutputs();
 				for (j = 0; j < outputs.size(); j++) {
@@ -774,7 +772,7 @@ namespace Elastos {
 						_subAccount->AddUsedAddrs(addr);
 						uint256 assetID = outputs[j].GetAssetId();
 						if (ContainsAsset(assetID)) {
-							_groupedAssets[assetID]->AddUTXO(UTXO(tx->GetHash(), (uint32_t) j, outputs[j].GetAmount(), confirms));
+							_groupedAssets[assetID]->AddUTXO(UTXO(tx->GetHash(), (uint16_t) j, outputs[j].GetAmount()));
 						}
 					}
 				}
