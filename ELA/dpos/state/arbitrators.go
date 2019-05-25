@@ -727,9 +727,7 @@ func (a *arbitrators) updateNextArbitrators(height uint32) error {
 			}
 			a.nextCandidates = make([][]byte, 0)
 		} else {
-			for _, v := range producers {
-				a.nextArbitrators = append(a.nextArbitrators, v)
-			}
+			a.nextArbitrators = append(a.nextArbitrators, producers...)
 
 			candidates, err := a.GetCandidatesDesc(height, count,
 				votedProducers)
@@ -759,10 +757,6 @@ func (a *arbitrators) GetCandidatesDesc(height uint32, startIndex int,
 		if len(producers) < startIndex {
 			return make([][]byte, 0), nil
 		}
-
-		sort.Slice(producers, func(i, j int) bool {
-			return producers[i].Votes() > producers[j].Votes()
-		})
 
 		result := make([][]byte, 0)
 		for i := startIndex; i < len(producers) && i < startIndex+a.
@@ -934,8 +928,8 @@ func (a *arbitrators) trySaveCheckPoint(height uint32) error {
 		CurrentCandidates: make([][]byte, 0),
 		NextArbitrators:   make([][]byte, 0),
 		NextCandidates:    make([][]byte, 0),
-		CurrentReward: *NewRewardData(),
-		NextReward: *NewRewardData(),
+		CurrentReward:     *NewRewardData(),
+		NextReward:        *NewRewardData(),
 		KeyFrame: KeyFrame{
 			CurrentArbitrators: a.CurrentArbitrators,
 		},
