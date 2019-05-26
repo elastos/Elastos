@@ -322,7 +322,7 @@
   min-width: 96px;
   margin-left: -8px;
   background: #fff;
-  border-radius: 4px;
+  border-radius: 0;
   -webkit-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
@@ -340,7 +340,7 @@
   padding-right: 0;
 }
 .ant-table-filter-dropdown .ant-dropdown-menu-sub {
-  border-radius: 4px;
+  border-radius: 0;
   -webkit-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
@@ -389,7 +389,7 @@
   margin-top: 5px;
   margin-left: -30px;
   background: #fff;
-  border-radius: 4px;
+  border-radius: 0;
   -webkit-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
@@ -553,7 +553,7 @@ tr.ant-table-expanded-row:hover {
 }
 .ant-table-small {
   border: 1px solid #e8e8e8;
-  border-radius: 4px;
+  border-radius: 0;
 }
 .ant-table-small > .ant-table-title,
 .ant-table-small > .ant-table-footer {
@@ -1064,7 +1064,7 @@ mark {
   background-color: #fff;
   background-image: none;
   border: 1px solid #d9d9d9;
-  border-radius: 4px;
+  border-radius: 0;
   -webkit-transition: all .3s;
   transition: all .3s;
 }
@@ -1176,7 +1176,7 @@ textarea.ant-input {
   text-align: center;
   background-color: #fafafa;
   border: 1px solid #d9d9d9;
-  border-radius: 4px;
+  border-radius: 0;
   position: relative;
   -webkit-transition: all .3s;
   transition: all .3s;
@@ -1301,8 +1301,8 @@ textarea.ant-input {
 .ant-input-group.ant-input-group-compact > .ant-cascader-picker:first-child .ant-input,
 .ant-input-group.ant-input-group-compact > .ant-mention-wrapper:first-child .ant-mention-editor,
 .ant-input-group.ant-input-group-compact > .ant-time-picker:first-child .ant-time-picker-input {
-  border-top-left-radius: 4px;
-  border-bottom-left-radius: 4px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 .ant-input-group.ant-input-group-compact > *:last-child,
 .ant-input-group.ant-input-group-compact > .ant-select:last-child > .ant-select-selection,
@@ -1311,8 +1311,8 @@ textarea.ant-input {
 .ant-input-group.ant-input-group-compact > .ant-cascader-picker:last-child .ant-input,
 .ant-input-group.ant-input-group-compact > .ant-mention-wrapper:last-child .ant-mention-editor,
 .ant-input-group.ant-input-group-compact > .ant-time-picker:last-child .ant-time-picker-input {
-  border-top-right-radius: 4px;
-  border-bottom-right-radius: 4px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
   border-right-width: 1px;
 }
 .ant-input-group-wrapper {
@@ -1459,7 +1459,7 @@ textarea.ant-input {
           box-sizing: border-box;
   display: block;
   background-color: #fff;
-  border-radius: 4px;
+  border-radius: 0;
   border: 1px solid #d9d9d9;
   border-top-width: 1.02px;
   -webkit-transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
@@ -1659,7 +1659,7 @@ textarea.ant-input {
   width: 100%;
   background: transparent;
   outline: 0;
-  border-radius: 4px;
+  border-radius: 0;
   line-height: 1;
 }
 .ant-select-search--inline > i {
@@ -1824,7 +1824,7 @@ textarea.ant-input {
   background-color: #fff;
   -webkit-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  border-radius: 4px;
+  border-radius: 0;
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
   z-index: 1050;
@@ -1982,7 +1982,7 @@ textarea.ant-input {
   white-space: nowrap;
   padding: 0 15px;
   font-size: 14px;
-  border-radius: 4px;
+  border-radius: 0;
   height: 32px;
   -webkit-user-select: none;
      -moz-user-select: none;
@@ -2022,13 +2022,13 @@ textarea.ant-input {
 .ant-btn-lg {
   padding: 0 15px;
   font-size: 16px;
-  border-radius: 4px;
+  border-radius: 0;
   height: 40px;
 }
 .ant-btn-sm {
   padding: 0 7px;
   font-size: 14px;
-  border-radius: 4px;
+  border-radius: 0;
   height: 24px;
 }
 .ant-btn > a:only-child {
@@ -2659,14 +2659,14 @@ textarea.ant-input {
 .ant-btn-group-lg > .ant-btn {
   padding: 0 15px;
   font-size: 16px;
-  border-radius: 4px;
+  border-radius: 0;
   height: 40px;
   line-height: 38px;
 }
 .ant-btn-group-sm > .ant-btn {
   padding: 0 7px;
   font-size: 14px;
-  border-radius: 4px;
+  border-radius: 0;
   height: 24px;
   line-height: 22px;
 }
@@ -3010,7 +3010,7 @@ a.ant-btn-sm {
 }
 .ant-pagination-item {
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 0;
   -webkit-user-select: none;
      -moz-user-select: none;
       -ms-user-select: none;
@@ -3111,7 +3111,7 @@ a.ant-btn-sm {
   font-family: Arial;
   cursor: pointer;
   color: rgba(0, 0, 0, 0.65);
-  border-radius: 4px;
+  border-radius: 0;
   list-style: none;
   min-width: 32px;
   height: 32px;
@@ -3142,7 +3142,7 @@ a.ant-btn-sm {
 .ant-pagination-next .ant-pagination-item-link {
   border: 1px solid #d9d9d9;
   background-color: #fff;
-  border-radius: 4px;
+  border-radius: 0;
   outline: none;
   display: block;
   -webkit-transition: all .3s;
@@ -3217,7 +3217,7 @@ a.ant-btn-sm {
   background-color: #fff;
   background-image: none;
   border: 1px solid #d9d9d9;
-  border-radius: 4px;
+  border-radius: 0;
   -webkit-transition: all .3s;
   transition: all .3s;
   margin: 0 8px;
@@ -3294,7 +3294,7 @@ textarea.ant-pagination-options-quick-jumper input {
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
   background-color: #fff;
-  border-radius: 4px;
+  border-radius: 0;
   border: 1px solid #d9d9d9;
   outline: none;
   padding: 0 6px;
@@ -7170,7 +7170,7 @@ textarea.ant-pagination-options-quick-jumper input {
 }
 .ant-message-notice-content {
   padding: 10px 16px;
-  border-radius: 4px;
+  border-radius: 0;
   -webkit-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   background: #fff;
@@ -7269,7 +7269,7 @@ textarea.ant-pagination-options-quick-jumper input {
   position: relative;
   background-color: #fff;
   border: 0;
-  border-radius: 4px;
+  border-radius: 0;
   background-clip: padding-box;
   -webkit-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -7491,7 +7491,7 @@ textarea.ant-pagination-options-quick-jumper input {
   margin: 0;
   text-align: left;
   background-color: #fff;
-  border-radius: 4px;
+  border-radius: 0;
   -webkit-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   background-clip: padding-box;
@@ -7571,7 +7571,7 @@ textarea.ant-pagination-options-quick-jumper input {
 .ant-dropdown-menu-submenu-title:only-child,
 .ant-dropdown-menu-item:only-child > a,
 .ant-dropdown-menu-submenu-title:only-child > a {
-  border-radius: 4px;
+  border-radius: 0;
 }
 .ant-dropdown-menu-item-divider,
 .ant-dropdown-menu-submenu-title-divider {
@@ -7910,12 +7910,12 @@ textarea.ant-pagination-options-quick-jumper input {
 }
 .ant-menu-submenu-popup {
   position: absolute;
-  border-radius: 4px;
+  border-radius: 0;
   z-index: 1050;
 }
 .ant-menu-submenu > .ant-menu {
   background-color: #fff;
-  border-radius: 4px;
+  border-radius: 0;
 }
 .ant-menu-submenu > .ant-menu-submenu-title:after {
   -webkit-transition: -webkit-transform 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
@@ -8441,7 +8441,7 @@ textarea.ant-pagination-options-quick-jumper input {
   text-align: left;
   text-decoration: none;
   background-color: rgba(0, 0, 0, 0.75);
-  border-radius: 4px;
+  border-radius: 0;
   -webkit-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   min-height: 32px;
@@ -8754,7 +8754,7 @@ textarea.ant-pagination-options-quick-jumper input {
   display: block;
 }
 .ant-list-bordered {
-  border-radius: 4px;
+  border-radius: 0;
   border: 1px solid #d9d9d9;
 }
 .ant-list-bordered .ant-list-header {
@@ -9011,7 +9011,7 @@ span.ant-radio + * {
   border-radius: 0 4px 4px 0;
 }
 .ant-radio-button-wrapper:first-child:last-child {
-  border-radius: 4px;
+  border-radius: 0;
 }
 .ant-radio-button-wrapper:hover,
 .ant-radio-button-wrapper-focused {
@@ -10609,7 +10609,7 @@ input[type="checkbox"].disabled {
 .ant-popover-inner {
   background-color: #fff;
   background-clip: padding-box;
-  border-radius: 4px;
+  border-radius: 0;
   -webkit-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
@@ -10763,7 +10763,7 @@ input[type="checkbox"].disabled {
   border: 1px dashed #d9d9d9;
   width: 104px;
   height: 104px;
-  border-radius: 4px;
+  border-radius: 0;
   background-color: #fafafa;
   text-align: center;
   cursor: pointer;
@@ -10790,7 +10790,7 @@ input[type="checkbox"].disabled {
   -webkit-transition: border-color 0.3s;
   transition: border-color 0.3s;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 0;
   text-align: center;
   width: 100%;
   height: 100%;
@@ -10944,7 +10944,7 @@ input[type="checkbox"].disabled {
 .ant-upload-list-picture .ant-upload-list-item,
 .ant-upload-list-picture-card .ant-upload-list-item {
   padding: 8px;
-  border-radius: 4px;
+  border-radius: 0;
   border: 1px solid #d9d9d9;
   height: 66px;
   position: relative;
@@ -11399,7 +11399,7 @@ input[type="checkbox"].disabled {
 /* stylelint-disable no-duplicate-selectors */
 /* stylelint-disable declaration-bang-space-before,no-duplicate-selectors */
 /* stylelint-disable declaration-bang-space-before,no-duplicate-selectors,string-no-newline */
-.ant-input-number {
+/* .ant-input-number {
   font-family: "Monospaced Number", "Chinese Quote", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
@@ -11419,7 +11419,7 @@ input[type="checkbox"].disabled {
   padding: 0;
   display: inline-block;
   border: 1px solid #d9d9d9;
-  border-radius: 4px;
+  border-radius: 0;
   width: 90px;
 }
 .ant-input-number::-moz-placeholder {
@@ -11560,7 +11560,7 @@ textarea.ant-input-number {
   color: rgba(0, 0, 0, 0.65);
   background-color: #fff;
   border: 0;
-  border-radius: 4px;
+  border-radius: 0;
   padding: 0 11px;
   display: block;
 }
@@ -11654,7 +11654,7 @@ textarea.ant-input-number {
 .ant-input-number-handler-up-disabled:hover .ant-input-number-handler-up-inner,
 .ant-input-number-handler-down-disabled:hover .ant-input-number-handler-down-inner {
   color: rgba(0, 0, 0, 0.25);
-}
+} */
 /* stylelint-disable at-rule-empty-line-before,at-rule-name-space-after,at-rule-no-unknown */
 /* stylelint-disable no-duplicate-selectors */
 /* stylelint-disable declaration-bang-space-before,no-duplicate-selectors */
@@ -11690,7 +11690,7 @@ textarea.ant-input-number {
   display: inline-block;
   cursor: pointer;
   background-color: #fff;
-  border-radius: 4px;
+  border-radius: 0;
   outline: 0;
 }
 .ant-cascader-picker-with-value .ant-cascader-picker-label {
@@ -11777,7 +11777,7 @@ textarea.ant-input-number {
   background: #fff;
   position: absolute;
   z-index: 1050;
-  border-radius: 4px;
+  border-radius: 0;
   -webkit-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   white-space: nowrap;
@@ -11830,7 +11830,7 @@ textarea.ant-input-number {
   border-radius: 0 4px 4px 0;
 }
 .ant-cascader-menu:only-child {
-  border-radius: 4px;
+  border-radius: 0;
 }
 .ant-cascader-menu-item {
   padding: 5px 12px;
@@ -11950,7 +11950,7 @@ textarea.ant-input-number {
   font-size: 14px;
 }
 .ant-avatar-square {
-  border-radius: 4px;
+  border-radius: 0;
 }
 .ant-avatar > img {
   width: 100%;

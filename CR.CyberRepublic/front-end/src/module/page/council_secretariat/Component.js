@@ -68,6 +68,7 @@ export default class extends StandardPage {
               <div className="content">
                 <h3 className="name">{I18N.get('cs.kevin.name')}</h3>
                 <span className="self-intro">{I18N.get('cs.kevin.intro')}</span>
+                <Email>{I18N.get('cs.contact')}: {I18N.get('cs.kevin.email')}</Email>
               </div>
             </div>
           </Col>
@@ -80,6 +81,7 @@ export default class extends StandardPage {
               <div className="content">
                 <h3 className="name">{I18N.get('cs.yipeng.name')}</h3>
                 <span className="self-intro">{I18N.get('cs.yipeng.intro')}</span>
+                <Email>{I18N.get('cs.contact')}: {I18N.get('cs.yipeng.email')}</Email>
               </div>
             </div>
           </Col>
@@ -92,6 +94,7 @@ export default class extends StandardPage {
               <div className="content">
                 <h3 className="name">{I18N.get('cs.feng.name')}</h3>
                 <span className="self-intro">{I18N.get('cs.feng.intro')}</span>
+                <Email>{I18N.get('cs.contact')}: {I18N.get('cs.feng.email')}</Email>
               </div>
             </div>
           </Col>
@@ -213,17 +216,6 @@ const TabTitle = styled.div`
     font-size: 48px;
   }
 `
-// .title-council {
-//   line-height: normal;
-//   color: #1DE9B6;
-// }
-
-// .title-secretariat {
-//   clear: left;
-//   font-family: "komu-a",sans-serif;
-//   line-height: normal;
-//   font-size: 56px;
-//   color: #1DE9B6;
-//   margin-top: 35px;
-//   margin-bottom: 50px;
-// }
+const Email = styled.div`
+  color: white;
+`

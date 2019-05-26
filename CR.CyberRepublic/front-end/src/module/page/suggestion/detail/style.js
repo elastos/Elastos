@@ -30,7 +30,7 @@ export const Title = styled.div`
   margin-bottom: 8px;
   background-color: ${bg.blue};
   border: 1px solid ${border.lightBlue};
-  border-radius: 4px;
+  /* border-radius: 4px; */
   padding: 4px 8px;
  `
 
@@ -53,7 +53,7 @@ export const Label = styled.span`
   padding: 4px 8px;
   color: ${text.newGray};
   border: 1px solid ${border.lightBlue};
-  border-radius: 4px;
+  /* border-radius: 4px; */
 
 `
 
@@ -121,5 +121,5 @@ export const StyledButton = styled(Button)`
 export const IconWrap = styled.div`
   display: inline-block;
   position: relative;
-  top: 4px;  
+  top: 4px;
 `

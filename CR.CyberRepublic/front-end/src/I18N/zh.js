@@ -58,6 +58,7 @@ const zh = {
   '0202': '注册',
   '0203': '管理员',
   '0204': '登出',
+  '0205': '登录',
 
   '0300': '语言',
   '0301': '英语',
@@ -1470,17 +1471,21 @@ const zh = {
         view: '查阅委员会规则',
       },
     },
+    contact: '联系',
     kevin: {
       name: '张戈',
       intro: '亦来云全球推广负责人, 常驻硅谷',
+      email: 'kevinzhang@elastos.org'
     },
     yipeng: {
       name: '苏翼鹏',
       intro: '亦来云基金会首席架构师, 常驻北京',
+      email: 'suyipeng@elastos.org'
     },
     feng: {
       name: '张烽',
       intro: '律师、数字时代区块链服务联盟创始人、比特大学联合创始人，常驻上海',
+      email: '41059324@qq.com'
     },
     rebecca: {
       name: '朱凤',

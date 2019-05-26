@@ -58,10 +58,10 @@ export default class extends BaseComponent {
               this.setState({activeKey: key})
             }}
             className={!this.state.hideTabBar ? '' : 'hide-tabbar'}>
-            <TabPane tab="Login" key="login">
+            <TabPane tab={I18N.get('0205')} key="login">
               <LoginForm onHideModal={this.props.onHideModal}/>
             </TabPane>
-            <TabPane tab="Register" key="register">
+            <TabPane tab={I18N.get('0202')} key="register">
               <RegisterForm onHideTabBar={() => { this.setState({hideTabBar: true}) }}
                 onChangeActiveKey={(key) => { this.setState({activeKey: key}) }}/>
             </TabPane>
