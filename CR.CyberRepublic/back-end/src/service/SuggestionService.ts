@@ -38,7 +38,7 @@ export default class extends Base {
       coverImg,
       benefits,
     }
-    if (!_.isEmpty(funding)) {
+    if (_.isNumber(funding)) {
       docCore.funding = funding
     }
     if (!_.isEmpty(timeline)) {
