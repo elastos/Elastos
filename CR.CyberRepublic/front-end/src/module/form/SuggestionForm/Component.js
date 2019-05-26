@@ -6,6 +6,7 @@ import {
   Col,
   Form,
   Input,
+  InputNumber,
   Button,
   Icon,
   DatePicker,
@@ -173,7 +174,7 @@ class C extends BaseComponent {
       />
     )
     const benefits_el = <Input.TextArea/>
-    const funding_el = <Input size="large"/>
+    const funding_el = <InputNumber size="large" style={{width: '100%'}} />
     const timeline_el = <DatePicker size="large" placeholder="" style={{width: '100%'}}/>
     const link_el = <Input size="large"/>
 
