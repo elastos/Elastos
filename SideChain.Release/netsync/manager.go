@@ -438,14 +438,7 @@ func (sm *SyncManager) handleInvMsg(imsg *invMsg) {
 
 	// Attempt to find the final block in the inventory list.  There may
 	// not be one.
-	lastBlock := -1
 	invVects := imsg.inv.InvList
-	for i := len(invVects) - 1; i >= 0; i-- {
-		if invVects[i].Type == msg.InvTypeBlock {
-			lastBlock = i
-			break
-		}
-	}
 
 	// Ignore invs from peers that aren't the sync if we are not current.
 	// Helps prevent fetching a mass of orphans.
@@ -457,7 +450,7 @@ func (sm *SyncManager) handleInvMsg(imsg *invMsg) {
 	// request parent blocks of orphans if we receive one we already have.
 	// Finally, attempt to detect potential stalls due to long side chains
 	// we already have and request more blocks to prevent them.
-	for i, iv := range invVects {
+	for _, iv := range invVects {
 		// Ignore unsupported inventory types.
 		switch iv.Type {
 		case msg.InvTypeBlock:
@@ -517,18 +510,6 @@ func (sm *SyncManager) handleInvMsg(imsg *invMsg) {
 				}
 				peer.PushGetBlocksMsg(locator, orphanRoot)
 				continue
-			}
-
-			// We already have the final block advertised by this
-			// inventory message, so force a request for more.  This
-			// should only happen if we're on a really long side
-			// chain.
-			if i == lastBlock {
-				// Request blocks after this one up to the
-				// final one the remote peer knows about (zero
-				// stop hash).
-				locator := sm.chain.BlockLocatorFromHash(&iv.Hash)
-				peer.PushGetBlocksMsg(locator, &zeroHash)
 			}
 		}
 	}
