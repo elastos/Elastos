@@ -160,7 +160,7 @@ func startNode(c *cli.Context) {
 
 	blockchain.DefaultLedger = &ledger // fixme
 
-	arbiters, err := state.NewArbitrators(activeNetParams, dposStore,
+	arbiters, err := state.NewArbitrators(activeNetParams, nil,
 		chainStore.GetHeight, func() (*types.Block, error) {
 			hash := chainStore.GetCurrentBlockHash()
 			return chainStore.GetBlock(hash)
