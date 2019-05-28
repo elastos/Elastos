@@ -177,32 +177,20 @@ export default class extends Base {
 
     const query = _.omit(param, ['results', 'page', 'sortBy', 'sortOrder', 'filter', 'profileListFor', 'search', 'tagsIncluded', 'referenceStatus'])
     const { sortBy, sortOrder, tagsIncluded, referenceStatus } = param
-    let qryTagsType
+    let qryTagsType: any
 
+    query.$or = []
 
     if (!_.isEmpty(tagsIncluded)) {
       qryTagsType = { $in: tagsIncluded.split(',') }
-    } else {
-      qryTagsType = { $nin: listExlucdedFields }
+      query.$or.push({'tags.type': qryTagsType})
     }
-
     if (referenceStatus === 'true') {
-
       // if we have another tag selected we only want that tag and referenced suggestions
-      if (!_.isEmpty(tagsIncluded)) {
-        query.$or = [{reference: {$exists: true, $ne: []}}, {'tags.type': qryTagsType}]
-      } else {
-        // this is the only filter selected and we only want to show referenced ones
-        query.reference = {$exists: true, $ne: []}
-      }
-
-    } else {
-      query.$and = [
-        {$or: [{reference: {$exists: false}}, {reference: {$eq: []}}]},
-        {'tags.type': qryTagsType}
-      ]
+      query.$or.push({reference: {$exists: true, $ne: []}})
     }
 
+    if (_.isEmpty(query.$or)) delete query.$or
     delete query['tags.type']
 
     const cursor = this.model.getDBInstance()
