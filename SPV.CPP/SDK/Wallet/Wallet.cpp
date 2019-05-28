@@ -143,7 +143,7 @@ namespace Elastos {
 												 const std::vector<TransactionOutput> &outputs,
 												 bool useVotedUTXO, bool autoReduceOutputAmount) {
 
-			uint256 assetID = outputs.front().GetAssetId();
+			uint256 assetID = outputs.front().GetAssetID();
 
 			Lock();
 			bool containAsset = ContainsAsset(assetID);
@@ -693,7 +693,7 @@ namespace Elastos {
 
 		bool Wallet::IsAssetUnique(const std::vector<TransactionOutput> &outputs) const {
 			for (size_t i = 1; i < outputs.size(); ++i) {
-				if (outputs[0].GetAssetId() != outputs[i].GetAssetId())
+				if (outputs[0].GetAssetID() != outputs[i].GetAssetID())
 					return false;
 			}
 
@@ -747,7 +747,7 @@ namespace Elastos {
 					Address addr = outputs[j].GetAddress();
 					if (_subAccount->ContainsAddress(addr)) {
 						_subAccount->AddUsedAddrs(addr);
-						uint256 assetID = outputs[j].GetAssetId();
+						uint256 assetID = outputs[j].GetAssetID();
 						if (ContainsAsset(assetID)) {
 							_groupedAssets[assetID]->AddUTXO(UTXO(tx->GetHash(), (uint16_t) j, outputs[j].GetAmount()));
 						}

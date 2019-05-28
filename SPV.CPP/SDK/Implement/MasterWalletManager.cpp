@@ -204,13 +204,13 @@ namespace Elastos {
 			if (saveMaster) {
 				std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
 				for (int i = 0; i < subWallets.size(); ++i) {
-					Log::info("Destroying sub wallets: {}", subWallets[i]->GetChainId());
+					Log::info("Destroying sub wallets: {}", subWallets[i]->GetChainID());
 					masterWallet->DestroyWallet(subWallets[i]);
 				}
 			} else {
 				std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
 				for (int i = 0; i < subWallets.size(); ++i) {
-					Log::info("Destroying sub wallets: {}", subWallets[i]->GetChainId());
+					Log::info("Destroying sub wallets: {}", subWallets[i]->GetChainID());
 					masterWallet->DestroyWallet(subWallets[i]);
 				}
 

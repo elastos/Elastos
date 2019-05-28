@@ -106,7 +106,7 @@ namespace Elastos {
 			for (size_t i = 0; i < 20; ++i) {
 				TransactionOutput output;
 				output.SetAmount(getRandUInt64());
-				output.SetAssetId(getRanduint256());
+				output.SetAssetID(getRanduint256());
 				output.SetOutputLock(getRandUInt32());
 				output.SetProgramHash(getRandUInt168());
 				if (version >= Transaction::TxVersion::V09) {
@@ -167,7 +167,7 @@ namespace Elastos {
 				TransactionOutput o1, o2;
 				o1 = tx1.GetOutputs()[i];
 				o2 = tx2.GetOutputs()[i];
-				REQUIRE(o2.GetAssetId() == o1.GetAssetId());
+				REQUIRE(o2.GetAssetID() == o1.GetAssetID());
 				REQUIRE(o2.GetProgramHash() == o1.GetProgramHash());
 				REQUIRE(o2.GetOutputLock() == o1.GetOutputLock());
 				REQUIRE(o2.GetAmount() == o1.GetAmount());

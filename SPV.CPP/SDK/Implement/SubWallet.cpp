@@ -45,7 +45,7 @@ namespace Elastos {
 			_walletManager->RegisterPeerManagerListener(this);
 
 			WalletPtr wallet = _walletManager->getWallet();
-			wallet->SetWalletID(_parent->GetId() + ":" + GetChainId());
+			wallet->SetWalletID(_parent->GetId() + ":" + GetChainID());
 			if (info.GetFeePerKb() > 0) {
 				wallet->SetFeePerKb(info.GetFeePerKb());
 			}
@@ -55,7 +55,7 @@ namespace Elastos {
 
 		}
 
-		std::string SubWallet::GetChainId() const {
+		std::string SubWallet::GetChainID() const {
 			return _info.GetChainId();
 		}
 

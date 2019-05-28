@@ -11,10 +11,10 @@
 #include <Interface/ISubWallet.h>
 #include <Interface/ISubWalletCallback.h>
 #include <Interface/IMainchainSubWallet.h>
-#include <Interface/IIdChainSubWallet.h>
+#include <Interface/IIDChainSubWallet.h>
 #include <Interface/ISidechainSubWallet.h>
 #include <Interface/ITokenchainSubWallet.h>
-#include <Interface/IIdAgent.h>
+#include <Interface/IIDAgent.h>
 #include <spdlog/logger.h>
 #include <spdlog/spdlog.h>
 
@@ -174,7 +174,7 @@ static ISubWallet *GetSubWallet(const std::string &masterWalletID, const std::st
 
 	std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
 	for (size_t i = 0; i < subWallets.size(); ++i) {
-		if (subWallets[i]->GetChainId() == subWalletID) {
+		if (subWallets[i]->GetChainID() == subWalletID) {
 			return subWallets[i];
 		}
 	}
@@ -389,20 +389,20 @@ static void RegisterID(const std::string &masterWalletID, const std::string &DID
 		return ;
 	}
 
-	IIdAgent *IDAgent = dynamic_cast<IIdAgent *>(masterWalelt);
+	IIDAgent *IDAgent = dynamic_cast<IIDAgent *>(masterWalelt);
 	if (IDAgent == nullptr) {
 		logger->error("[{}] is not instance of IIdAgent", masterWalletID);
 		return ;
 	}
 
 	ISubWallet *subWallet = GetSubWallet(masterWalletID, DIDSubWalletID);
-	IIdChainSubWallet *DIDSubWallet = dynamic_cast<IIdChainSubWallet *>(subWallet);
+	IIDChainSubWallet *DIDSubWallet = dynamic_cast<IIDChainSubWallet *>(subWallet);
 	if (DIDSubWallet == nullptr) {
 		logger->error("[{}:{}] is not instance of IIdChainSubWallet", masterWalletID, DIDSubWalletID);
 		return ;
 	}
 
-	std::string id = IDAgent->DeriveIdAndKeyForPurpose(1, 0);
+	std::string id = IDAgent->DeriveIDAndKeyForPurpose(1, 0);
 
 	nlohmann::json payload = nlohmann::json::parse(
 		"{\"Id\":\"ij8rfb6A4Ri7c5CRE1nDVdVCUMuUxkk2c6\",\"Contents\":[{\"Path\":\"kyc/person/identityCard\","
@@ -410,12 +410,12 @@ static void RegisterID(const std::string &masterWalletID, const std::string &DID
 		"ee4d38fe2e3386ec8a5dae57022100b7679de8d181a454e2def8f55de423e9e15bebcde5c58e871d20aa0d91162ff6\\\","
 		"\\\"notary\\\":\\\"COOIX\\\"\", \"DataHash\": \"bd117820c4cf30b0ad9ce68fe92b0117ca41ac2b6a49235fabd"
 		"793fc3a9413c0\"}]}]}");
-	payload["Id"] = id;
+	payload["ID"] = id;
 
 	payload["Sign"] = IDAgent->Sign(id, payload.dump(), payPasswd);;
 	nlohmann::json program = IDAgent->GenerateProgram(id, payload.dump(), payPasswd);
 
-	nlohmann::json tx = DIDSubWallet->CreateIdTransaction("", payload, program, memo);
+	nlohmann::json tx = DIDSubWallet->CreateIDTransaction("", payload, program, memo);
 
 	logger->debug("[{}:{}] register id", masterWalletID, DIDSubWalletID);
 
@@ -444,7 +444,7 @@ static void InitWallets() {
 	for (size_t i = 0; i < masterWallets.size(); ++i) {
 		std::vector<ISubWallet *> subWallets = masterWallets[i]->GetAllSubWallets();
 		for (size_t j = 0; j < subWallets.size(); ++j) {
-			std::string walletID = masterWallets[i]->GetId() + ":" + subWallets[j]->GetChainId();
+			std::string walletID = masterWallets[i]->GetId() + ":" + subWallets[j]->GetChainID();
 			subWallets[j]->AddCallback(new SubWalletCallback(walletID));
 			logger->debug("{} basic info -> {}", walletID, subWallets[j]->GetBasicInfo().dump());
 			logger->debug("{} all addresses -> {}", walletID, subWallets[j]->GetAllAddress(0, 20).dump());

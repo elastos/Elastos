@@ -10,13 +10,13 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class IIdChainSubWallet : public virtual ISidechainSubWallet {
+		class IIDChainSubWallet : public virtual ISidechainSubWallet {
 		public:
 
 			/**
 			 * Virtual destructor.
 			 */
-			virtual ~IIdChainSubWallet() noexcept {}
+			virtual ~IIDChainSubWallet() noexcept {}
 
 			/**
 			 * Create a id transaction and return the content of transaction in json format, this is a special transaction to register id related information on id chain.
@@ -26,7 +26,7 @@ namespace Elastos {
 			 * @param memo input memo attribute for describing.
 			 * @return If success return the content of transaction in json format.
 			 */
-			virtual nlohmann::json CreateIdTransaction(
+			virtual nlohmann::json CreateIDTransaction(
 					const std::string &fromAddress,
 					const nlohmann::json &payloadJson,
 					const nlohmann::json &programJson,

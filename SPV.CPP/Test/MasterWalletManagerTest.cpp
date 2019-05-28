@@ -9,7 +9,7 @@
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Implement/MainchainSubWallet.h>
-#include <SDK/Implement/IdChainSubWallet.h>
+#include <SDK/Implement/IDChainSubWallet.h>
 #include <SDK/Implement/MasterWallet.h>
 
 #include <Interface/MasterWalletManager.h>
@@ -933,7 +933,7 @@ TEST_CASE("Wallet ImportWalletWithKeystore method", "[ImportWalletWithKeystore]"
 		REQUIRE(dynamic_cast<MainchainSubWallet *>(subWallet) != nullptr);
 		subWallet = masterWallet->CreateSubWallet("IdChain", feePerKB);
 		REQUIRE(subWallet != nullptr);
-		REQUIRE(dynamic_cast<IdChainSubWallet *>(subWallet) != nullptr);
+		REQUIRE(dynamic_cast<IDChainSubWallet *>(subWallet) != nullptr);
 
 		nlohmann::json keyStoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword,
 																					   payPassword);
@@ -957,10 +957,10 @@ TEST_CASE("Wallet ImportWalletWithKeystore method", "[ImportWalletWithKeystore]"
 		REQUIRE(subwallets[0] != nullptr);
 		REQUIRE(subwallets[1] != nullptr);
 		for (int i = 0; i < 2; ++i) {
-			if (subwallets[i]->GetChainId() == "ELA")
+			if (subwallets[i]->GetChainID() == "ELA")
 				REQUIRE(dynamic_cast<MainchainSubWallet *>(subwallets[i]) != nullptr);
-			else if (subwallets[i]->GetChainId() == "IdChain")
-				REQUIRE(dynamic_cast<IdChainSubWallet *>(subwallets[i]) != nullptr);
+			else if (subwallets[i]->GetChainID() == "IdChain")
+				REQUIRE(dynamic_cast<IDChainSubWallet *>(subwallets[i]) != nullptr);
 		}
 	}
 }

@@ -12,7 +12,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class IIdAgent {
+		class IIDAgent {
 		public:
 			/**
 			 * Derive id by specified purpose and index.
@@ -20,7 +20,7 @@ namespace Elastos {
 			 * @param index for generating sub keys sequentially.
 			 * @return If success return generated id correspond to the \p key.
 			 */
-			virtual std::string DeriveIdAndKeyForPurpose(
+			virtual std::string DeriveIDAndKeyForPurpose(
 					uint32_t purpose,
 					uint32_t index) = 0;
 
@@ -29,7 +29,7 @@ namespace Elastos {
 			 * @param id to be verified.
 			 * @return True if valid, otherwise return false.
 			 */
-			virtual bool IsIdValid(const std::string &id) = 0;
+			virtual bool IsIDValid(const std::string &id) = 0;
 
 			/**
 			 * Generate a program data by passing payload of id transaction
@@ -59,7 +59,7 @@ namespace Elastos {
 			 * Get all generated ids.
 			 * @return list of id.
 			 */
-			virtual std::vector<std::string> GetAllIds() const = 0;
+			virtual std::vector<std::string> GetAllIDs() const = 0;
 
 			/**
 			 * Get public key of the id.

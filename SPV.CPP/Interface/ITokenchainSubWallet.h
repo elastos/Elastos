@@ -69,7 +69,7 @@ namespace Elastos {
 				const std::string &memo) = 0;
 
 			/**
-			 * Create transaction to combine as many small UTXOs as possible.
+			 * Create a transaction to combine as many UTXOs as possible until transaction size reaches the max size.
 			 * @param assetID specify asset ID
 			 * @param memo input memo attribute for describing.
 			 * @param useVotedUTXO If true, all voted UTXO will be picked. Otherwise, any voted UTXO will not be picked.

@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "IdChainSubWallet.h"
+#include "IDChainSubWallet.h"
 #include "MasterWallet.h"
 
 #include <SDK/Common/ErrorChecker.h>
@@ -18,34 +18,34 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		IdChainSubWallet::IdChainSubWallet(const CoinInfo &info,
+		IDChainSubWallet::IDChainSubWallet(const CoinInfo &info,
 										   const ChainParams &chainParams, const PluginType &pluginTypes,
 										   MasterWallet *parent) :
 				SidechainSubWallet(info, chainParams, pluginTypes, parent) {
 
-			std::vector<std::string> registeredIds = _parent->GetAllIds();
+			std::vector<std::string> registeredIds = _parent->GetAllIDs();
 			if (registeredIds.size() != 1) {
 				if (_subAccount->Parent()->GetSignType() == Account::Standard) {
 					registeredIds.clear();
-					registeredIds.push_back(_parent->DeriveIdAndKeyForPurpose(0, 0));
+					registeredIds.push_back(_parent->DeriveIDAndKeyForPurpose(0, 0));
 				}
 			}
 
 			_walletManager->getWallet()->InitListeningAddresses(registeredIds);
 		}
 
-		IdChainSubWallet::~IdChainSubWallet() {
+		IDChainSubWallet::~IDChainSubWallet() {
 
 		}
 
 		nlohmann::json
-		IdChainSubWallet::CreateIdTransaction(const std::string &fromAddress, const nlohmann::json &payloadJson,
+		IDChainSubWallet::CreateIDTransaction(const std::string &fromAddress, const nlohmann::json &payloadJson,
 											  const nlohmann::json &programJson, const std::string &memo) {
 			std::string toAddress;
 			Program program;
 			PayloadPtr payload = nullptr;
 			try {
-				toAddress = payloadJson["Id"].get<std::string>();
+				toAddress = payloadJson["ID"].get<std::string>();
 				program.FromJson(programJson);
 				payload = PayloadPtr(new PayloadRegisterIdentification());
 				payload->FromJson(payloadJson, 0);
@@ -63,7 +63,7 @@ namespace Elastos {
 			return tx->ToJson();
 		}
 
-		void IdChainSubWallet::onTxAdded(const TransactionPtr &transaction) {
+		void IDChainSubWallet::onTxAdded(const TransactionPtr &transaction) {
 			if (transaction != nullptr && transaction->GetTransactionType() == Transaction::RegisterIdentification) {
 				std::string txHash = transaction->GetHash().GetHex();
 
@@ -78,7 +78,7 @@ namespace Elastos {
 			}
 		}
 
-		void IdChainSubWallet::onTxUpdated(const uint256 &hash, uint32_t blockHeight, uint32_t timeStamp) {
+		void IDChainSubWallet::onTxUpdated(const uint256 &hash, uint32_t blockHeight, uint32_t timeStamp) {
 			TransactionPtr transaction = _walletManager->getWallet()->TransactionForHash(hash);
 			if (transaction != nullptr && transaction->GetTransactionType() == Transaction::RegisterIdentification) {
 				uint32_t confirm = blockHeight >= transaction->GetBlockHeight() ? blockHeight -
@@ -96,7 +96,7 @@ namespace Elastos {
 			}
 		}
 
-		nlohmann::json IdChainSubWallet::GetBasicInfo() const {
+		nlohmann::json IDChainSubWallet::GetBasicInfo() const {
 			nlohmann::json j;
 			j["Type"] = "Idchain";
 			j["Account"] = _subAccount->GetBasicInfo();

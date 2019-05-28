@@ -16,35 +16,35 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		struct IdItem {
-			IdItem() :
+		struct IDItem {
+			IDItem() :
 					Purpose(0),
 					Index(0) {
 			}
 
-			IdItem(uint32_t purpose, uint32_t index, const bytes_t &pubKey = bytes_t()) :
+			IDItem(uint32_t purpose, uint32_t index, const bytes_t &pubKey = bytes_t()) :
 					Purpose(purpose),
 					Index(index),
 					PublicKey(pubKey) {
 			}
 
-			inline bool operator<(const IdItem &b) {
+			inline bool operator<(const IDItem &b) {
 				if (Purpose != b.Purpose)
 					return Purpose < b.Purpose;
 				return Index < b.Index;
 			}
 
-			inline bool operator==(const IdItem &b) {
+			inline bool operator==(const IDItem &b) {
 				return Purpose == b.Purpose && Index == b.Index;
 			}
 
-			JSON_SM_LS(IdItem);
+			JSON_SM_LS(IDItem);
 
-			JSON_SM_RS(IdItem);
+			JSON_SM_RS(IDItem);
 
-			TO_JSON(IdItem);
+			TO_JSON(IDItem);
 
-			FROM_JSON(IdItem);
+			FROM_JSON(IDItem);
 
 			uint32_t Purpose;
 			uint32_t Index;

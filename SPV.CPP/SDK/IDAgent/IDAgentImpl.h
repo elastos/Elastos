@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_IDAGENTIMPL_H__
 #define __ELASTOS_SDK_IDAGENTIMPL_H__
 
-#include "IdItem.h"
+#include "IDItem.h"
 
 #include <SDK/WalletCore/BIPs/Key.h>
 #include <SDK/WalletCore/BIPs/Address.h>
@@ -19,28 +19,28 @@ namespace Elastos {
 
 		class MasterWallet;
 
-		struct IdAgentInfo {
-			typedef std::map<std::string, IdItem> IdMap;
+		struct IDAgentInfo {
+			typedef std::map<std::string, IDItem> IDMap;
 
-			IdMap Ids;
+			IDMap IDs;
 
-			JSON_SM_LS(IdAgentInfo);
-			JSON_SM_RS(IdAgentInfo);
-			TO_JSON(IdAgentInfo);
-			FROM_JSON(IdAgentInfo);
+			JSON_SM_LS(IDAgentInfo);
+			JSON_SM_RS(IDAgentInfo);
+			TO_JSON(IDAgentInfo);
+			FROM_JSON(IDAgentInfo);
 		};
 
-		class IdAgentImpl {
+		class IDAgentImpl {
 		public:
-			IdAgentImpl(MasterWallet *parentWallet);
+			IDAgentImpl(MasterWallet *parentWallet);
 
-			~IdAgentImpl();
+			~IDAgentImpl();
 
-			Address DeriveIdAndKeyForPurpose(
-					uint32_t purpose,
-					uint32_t index);
+			Address DeriveIDAndKeyForPurpose(
+				uint32_t purpose,
+				uint32_t index);
 
-			bool IsIdValid(const std::string &id);
+			bool IsIDValid(const std::string &id);
 
 			bytes_t Sign(const std::string &id, const bytes_t &data, const std::string &passwd);
 
@@ -51,20 +51,20 @@ namespace Elastos {
 
 			std::string GenerateRedeemScript(const std::string &id, const std::string &password);
 
-			std::vector<std::string> GetAllIds() const;
+			std::vector<std::string> GetAllIDs() const;
 
-			const IdAgentInfo &GetIdAgentInfo() const;
+			const IDAgentInfo &GetIDAgentInfo() const;
 
 			bytes_t GetPublicKey(const std::string &id) const;
 
 		private:
 			KeyPtr generateKey(const std::string &id, const std::string &password);
 
-			bool findIdByPath(const IdItem &item, std::string &id);
+			bool findIDByPath(const IDItem &item, std::string &id);
 
 		private:
 
-			IdAgentInfo _info;
+			IDAgentInfo _info;
 			MasterWallet *_parentWallet;
 		};
 

@@ -31,7 +31,7 @@ namespace Elastos {
 
 		TransactionOutput &TransactionOutput::operator=(const TransactionOutput &o) {
 			_amount = o._amount;
-			_assetId = o._assetId;
+			_assetID = o._assetID;
 			_programHash = o._programHash;
 			_outputLock = o._outputLock;
 			_outputType = o._outputType;
@@ -45,7 +45,7 @@ namespace Elastos {
 			_outputLock(0),
 			_outputType(type) {
 
-			_assetId = assetID;
+			_assetID = assetID;
 			_amount = a;
 			_programHash = addr.ProgramHash();
 
@@ -61,7 +61,7 @@ namespace Elastos {
 			_outputLock(0),
 			_outputType(type) {
 
-			_assetId = assetID;
+			_assetID = assetID;
 			_amount = a;
 			_programHash = programHash;
 
@@ -88,9 +88,9 @@ namespace Elastos {
 		}
 
 		void TransactionOutput::Serialize(ByteStream &ostream) const {
-			ostream.WriteBytes(_assetId);
+			ostream.WriteBytes(_assetID);
 
-			if (_assetId == Asset::GetELAAssetID()) {
+			if (_assetID == Asset::GetELAAssetID()) {
 				uint64_t amount = _amount.getWord();
 				ostream.WriteUint64(amount);
 			} else {
@@ -102,12 +102,12 @@ namespace Elastos {
 		}
 
 		bool TransactionOutput::Deserialize(const ByteStream &istream) {
-			if (!istream.ReadBytes(_assetId)) {
+			if (!istream.ReadBytes(_assetID)) {
 				Log::error("deserialize output assetid error");
 				return false;
 			}
 
-			if (_assetId == Asset::GetELAAssetID()) {
+			if (_assetID == Asset::GetELAAssetID()) {
 				uint64_t amount;
 				if (!istream.ReadUint64(amount)) {
 					Log::error("deserialize output amount error");
@@ -174,12 +174,12 @@ namespace Elastos {
 			return true;
 		}
 
-		const uint256 &TransactionOutput::GetAssetId() const {
-			return _assetId;
+		const uint256 &TransactionOutput::GetAssetID() const {
+			return _assetID;
 		}
 
-		void TransactionOutput::SetAssetId(const uint256 &assetId) {
-			_assetId = assetId;
+		void TransactionOutput::SetAssetID(const uint256 &assetId) {
+			_assetID = assetId;
 		}
 
 		uint32_t TransactionOutput::GetOutputLock() const {
@@ -241,7 +241,7 @@ namespace Elastos {
 			nlohmann::json j;
 
 			j["Amount"] = _amount.getDec();
-			j["AssetId"] = _assetId.GetHex();
+			j["AssetId"] = _assetID.GetHex();
 			j["OutputLock"] = _outputLock;
 			j["ProgramHash"] = _programHash.GetHex();
 			j["Address"] = Address(_programHash).String();
@@ -256,7 +256,7 @@ namespace Elastos {
 			} else if (j["Amount"].is_string()) {
 				_amount.setDec(j["Amount"].get<std::string>());
 			}
-			_assetId.SetHex(j["AssetId"].get<std::string>());
+			_assetID.SetHex(j["AssetId"].get<std::string>());
 			_outputLock = j["OutputLock"].get<uint32_t>();
 			_programHash.SetHex(j["ProgramHash"].get<std::string>());
 		}
@@ -283,7 +283,7 @@ namespace Elastos {
 		}
 
 		size_t TransactionOutput::GetSize() const {
-			return _assetId.size() + sizeof(_amount) + sizeof(_outputLock) + _programHash.size();
+			return _assetID.size() + sizeof(_amount) + sizeof(_outputLock) + _programHash.size();
 		}
 
 	}

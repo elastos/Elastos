@@ -276,7 +276,7 @@ namespace Elastos {
 														  + maxAvailable.getDec());
 					}
 				} else if (totalInputAmount > totalOutputAmount + feeAmount) {
-					uint256 assetID = txn->GetOutputs()[0].GetAssetId();
+					uint256 assetID = txn->GetOutputs()[0].GetAssetID();
 					std::vector<Address> addresses = _parent->_subAccount->UnusedAddresses(1, 1);
 					ErrorChecker::CheckCondition(addresses.empty(), Error::GetUnusedAddress, "Get address failed");
 					BigInt changeAmount = totalInputAmount - totalOutputAmount - feeAmount;

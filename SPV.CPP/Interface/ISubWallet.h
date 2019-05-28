@@ -31,7 +31,7 @@ namespace Elastos {
 			 * Get the sub wallet chain id.
 			 * @return sub wallet chain id.
 			 */
-			virtual std::string GetChainId() const = 0;
+			virtual std::string GetChainID() const = 0;
 
 			/**
 			 * Here is a example of hd account wallet basic info:
@@ -127,7 +127,7 @@ namespace Elastos {
 					bool useVotedUTXO = false) = 0;
 
 			/**
-			 * Create transaction to combine as many small UTXOs as possible.
+			 * Create a transaction to combine as many UTXOs as possible until transaction size reaches the max size.
 			 * @param memo input memo attribute for describing.
 			 * @param useVotedUTXO If true, all voted UTXO will be picked. Otherwise, any voted UTXO will not be picked.
 			 * @return If success return the content of transaction in json format.

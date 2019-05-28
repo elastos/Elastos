@@ -58,9 +58,9 @@ namespace Elastos {
 
 			void SetAmount(const BigInt &amount);
 
-			const uint256 &GetAssetId() const;
+			const uint256 &GetAssetID() const;
 
-			void SetAssetId(const uint256 &assetId);
+			void SetAssetID(const uint256 &assetId);
 
 			uint32_t GetOutputLock() const;
 
@@ -94,7 +94,7 @@ namespace Elastos {
 
 		private:
 			BigInt _amount; // to support token chain
-			uint256 _assetId;
+			uint256 _assetID;
 			uint32_t _outputLock;
 			uint168 _programHash;
 

@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "IdChainSubWallet.h"
+#include "IDChainSubWallet.h"
 #include "SidechainSubWallet.h"
 #include "MainchainSubWallet.h"
 #include "SubWallet.h"
@@ -42,7 +42,7 @@ namespace Elastos {
 			if (_account->GetSignType() == Account::MultiSign)
 				_idAgentImpl = nullptr;
 			else
-				_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this));
+				_idAgentImpl = boost::shared_ptr<IDAgentImpl>(new IDAgentImpl(this));
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -65,7 +65,7 @@ namespace Elastos {
 													   singleAddress, payPassword));
 			_account = AccountPtr(new Account(_localStore, _rootPath));
 
-			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this));
+			_idAgentImpl = boost::shared_ptr<IDAgentImpl>(new IDAgentImpl(this));
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -89,7 +89,7 @@ namespace Elastos {
 			if (_account->GetSignType() == Account::MultiSign) {
 				_idAgentImpl = nullptr;
 			} else {
-				_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this));
+				_idAgentImpl = boost::shared_ptr<IDAgentImpl>(new IDAgentImpl(this));
 			}
 		}
 
@@ -281,7 +281,7 @@ namespace Elastos {
 				ErrorChecker::CheckCondition(subWalletImpl == nullptr, Error::CreateSubWalletError,
 											 "Recover sub wallet error");
 				startPeerManager(subWalletImpl);
-				_createdWallets[subWallet->GetChainId()] = subWallet;
+				_createdWallets[subWallet->GetChainID()] = subWallet;
 			}
 			Save();
 		}
@@ -304,7 +304,7 @@ namespace Elastos {
 			return key.Verify(message, bytes_t(signature));
 		}
 
-		bool MasterWallet::IsIdValid(const std::string &id) {
+		bool MasterWallet::IsIDValid(const std::string &id) {
 			return Address(id).IsIDAddress();
 		}
 
@@ -339,7 +339,7 @@ namespace Elastos {
 				case Sidechain:
 					return new SidechainSubWallet(fixedInfo, chainParams, config.PluginType, parent);
 				case Idchain:
-					return new IdChainSubWallet(fixedInfo, chainParams, config.PluginType, parent);
+					return new IDChainSubWallet(fixedInfo, chainParams, config.PluginType, parent);
 				case Tokenchain:
 					return new TokenchainSubWallet(fixedInfo, chainParams, config.PluginType, parent);
 				case Normal:
@@ -349,8 +349,8 @@ namespace Elastos {
 		}
 
 		std::string
-		MasterWallet::DeriveIdAndKeyForPurpose(uint32_t purpose, uint32_t index) {
-			return _idAgentImpl->DeriveIdAndKeyForPurpose(purpose, index).String();
+		MasterWallet::DeriveIDAndKeyForPurpose(uint32_t purpose, uint32_t index) {
+			return _idAgentImpl->DeriveIDAndKeyForPurpose(purpose, index).String();
 		}
 
 		nlohmann::json
@@ -380,11 +380,11 @@ namespace Elastos {
 			return _idAgentImpl->Sign(id, message, password);
 		}
 
-		std::vector<std::string> MasterWallet::GetAllIds() const {
+		std::vector<std::string> MasterWallet::GetAllIDs() const {
 			if (_idAgentImpl == nullptr)
 				return std::vector<std::string>();
 
-			return _idAgentImpl->GetAllIds();
+			return _idAgentImpl->GetAllIDs();
 		}
 
 		std::string MasterWallet::GetPublicKey(const std::string &id) const {
@@ -423,7 +423,7 @@ namespace Elastos {
 			_account->ChangePassword(oldPassword, newPassword);
 		}
 
-		IIdAgent *MasterWallet::GetIIdAgent() {
+		IIDAgent *MasterWallet::GetIIDAgent() {
 			return this;
 		}
 

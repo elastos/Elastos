@@ -11,7 +11,7 @@
 #include <SDK/Implement/MasterWallet.h>
 #include <SDK/Implement/MainchainSubWallet.h>
 #include <SDK/Implement/SidechainSubWallet.h>
-#include <SDK/Implement/IdChainSubWallet.h>
+#include <SDK/Implement/IDChainSubWallet.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/WalletCore/BIPs/Base58.h>
 #include <SDK/Plugin/Registry.h>
@@ -168,7 +168,7 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 		SubWallet *normalSubWallet = dynamic_cast<SubWallet *>(subWallet);
 		REQUIRE(normalSubWallet != nullptr);
 
-		IdChainSubWallet *idChainSubWallet = dynamic_cast<IdChainSubWallet *>(subWallet);
+		IDChainSubWallet *idChainSubWallet = dynamic_cast<IDChainSubWallet *>(subWallet);
 		REQUIRE(idChainSubWallet != nullptr);
 
 		MainchainSubWallet *mainchainSubWallet = dynamic_cast<MainchainSubWallet *>(subWallet);
@@ -424,7 +424,7 @@ TEST_CASE("Master wallet IsAddressValid method test", "[IsAddressValid]") {
 	}
 }
 
-TEST_CASE("Master wallet DeriveIdAndKeyForPurpose method test", "[DeriveIdAndKeyForPurpose]") {
+TEST_CASE("Master wallet DeriveIDAndKeyForPurpose method test", "[DeriveIDAndKeyForPurpose]") {
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
 	std::string mnemonic = "you train view salon cancel impulse phrase oxygen sport crack peasant observe";
@@ -438,18 +438,18 @@ TEST_CASE("Master wallet DeriveIdAndKeyForPurpose method test", "[DeriveIdAndKey
 	std::string id;
 
 	SECTION("Normal derive") {
-		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1);
+		id = masterWallet->DeriveIDAndKeyForPurpose(1, 1);
 		REQUIRE(id == "ipjftQmHL17hY2XXkMWNzau1eifRwgXEbS");
-		std::string id2 = masterWallet->DeriveIdAndKeyForPurpose(1, 2);
+		std::string id2 = masterWallet->DeriveIDAndKeyForPurpose(1, 2);
 		REQUIRE(id != id2);
 	}
 	SECTION("Derive reserved purpose") {
-		REQUIRE_THROWS(id = masterWallet->DeriveIdAndKeyForPurpose(44, 1));
+		REQUIRE_THROWS(id = masterWallet->DeriveIDAndKeyForPurpose(44, 1));
 		//todo add other reserved purpose test in future
 	}
 }
 
-TEST_CASE("Master wallet GetPublicKey method of id agent", "[GetPublicKey-IdAgent]") {
+TEST_CASE("Master wallet GetPublicKey method of id agent", "[GetPublicKey-IDAgent]") {
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
 	std::string mnemonic = "you train view salon cancel impulse phrase oxygen sport crack peasant observe";
@@ -459,17 +459,17 @@ TEST_CASE("Master wallet GetPublicKey method of id agent", "[GetPublicKey-IdAgen
 	std::string id;
 
 	SECTION("Normal get") {
-		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1);
+		id = masterWallet->DeriveIDAndKeyForPurpose(1, 1);
 		std::string pubKey = masterWallet->GetPublicKey(id);
 		REQUIRE(pubKey == "02a5f84fa3b959275b931f771b81d059677f039e6dc6dd6cd2269abe554b3aaba7");
 	}
 	SECTION("Should throw with wrong id") {
-		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1);
+		id = masterWallet->DeriveIDAndKeyForPurpose(1, 1);
 		REQUIRE_THROWS(masterWallet->GetPublicKey("wrongid"));
 	}
 }
 
-TEST_CASE("Master wallet Sign method of id agent", "[Sign-IdAgent]") {
+TEST_CASE("Master wallet Sign method of id agent", "[Sign-IDAgent]") {
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
 	std::string mnemonic = "you train view salon cancel impulse phrase oxygen sport crack peasant observe";
@@ -478,7 +478,7 @@ TEST_CASE("Master wallet Sign method of id agent", "[Sign-IdAgent]") {
 		boost::filesystem::remove_all("Data/MasterWalletTest");
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(mnemonic, phrasePassword, payPassword, singleAddress));
 
-	std::string id = masterWallet->DeriveIdAndKeyForPurpose(1, 1);
+	std::string id = masterWallet->DeriveIDAndKeyForPurpose(1, 1);
 
 	SECTION("Normal sign") {
 		std::string signedMsg = masterWallet->Sign(id, "mymessage", payPassword);
@@ -510,20 +510,20 @@ TEST_CASE("Master wallet IsIdValid method test", "[IsIdValid]") {
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet());
 
 	SECTION("Normal test") {
-		REQUIRE(masterWallet->IsIdValid("im1NmKj6QKGmFToknsNP8cJyfCoU5sS26Y"));
+		REQUIRE(masterWallet->IsIDValid("im1NmKj6QKGmFToknsNP8cJyfCoU5sS26Y"));
 	}
 	SECTION("Invalid id with not base58 character") {
-		REQUIRE_FALSE(masterWallet->IsIdValid("im1NmKj6QKGmFToknsNP8cJyfCoU5sS26I"));
+		REQUIRE_FALSE(masterWallet->IsIDValid("im1NmKj6QKGmFToknsNP8cJyfCoU5sS26I"));
 	}
 	SECTION("Invalid id with wrong length") {
-		REQUIRE_FALSE(masterWallet->IsIdValid("im1NmKj6QKGmFToknsNP8cJyfCoU5sS26"));
+		REQUIRE_FALSE(masterWallet->IsIDValid("im1NmKj6QKGmFToknsNP8cJyfCoU5sS26"));
 	}
 	SECTION("Invalid id with wrong prefix") {
-		REQUIRE_FALSE(masterWallet->IsIdValid("Ym1NmKj6QKGmFToknsNP8cJyfCoU5sS26Y"));
+		REQUIRE_FALSE(masterWallet->IsIDValid("Ym1NmKj6QKGmFToknsNP8cJyfCoU5sS26Y"));
 	}
 	SECTION("Invalid even is a valid normal address") {
 		REQUIRE(masterWallet->IsAddressValid("EZuWALdKM92U89NYAN5DDP5ynqMuyqG5i3"));
-		REQUIRE_FALSE(masterWallet->IsIdValid("EZuWALdKM92U89NYAN5DDP5ynqMuyqG5i3"));
+		REQUIRE_FALSE(masterWallet->IsIDValid("EZuWALdKM92U89NYAN5DDP5ynqMuyqG5i3"));
 	}
 }
 
@@ -592,7 +592,7 @@ TEST_CASE("Master wallet save and restore", "[Save&Restore]") {
 		REQUIRE(dynamic_cast<MainchainSubWallet *>(subWallet) != nullptr);
 		subWallet = masterWallet->CreateSubWallet("IdChain", feePerKB);
 		REQUIRE(subWallet != nullptr);
-		REQUIRE(dynamic_cast<IdChainSubWallet *>(subWallet) != nullptr);
+		REQUIRE(dynamic_cast<IDChainSubWallet *>(subWallet) != nullptr);
 
 		std::string newPassword = "newPayPassword";
 		masterWallet->ChangePassword(payPassword, newPassword);
@@ -615,10 +615,10 @@ TEST_CASE("Master wallet save and restore", "[Save&Restore]") {
 		REQUIRE(subwallets[1] != nullptr);
 		REQUIRE_NOTHROW(subwallets[1]->Sign("MyPassword", newPassword));
 		for (int i = 0; i < 2; ++i) {
-			if (subwallets[i]->GetChainId() == "ELA")
+			if (subwallets[i]->GetChainID() == "ELA")
 				REQUIRE(dynamic_cast<MainchainSubWallet *>(subwallets[i]) != nullptr);
-			else if (subwallets[i]->GetChainId() == "IdChain")
-				REQUIRE(dynamic_cast<IdChainSubWallet *>(subwallets[i]) != nullptr);
+			else if (subwallets[i]->GetChainID() == "IdChain")
+				REQUIRE(dynamic_cast<IDChainSubWallet *>(subwallets[i]) != nullptr);
 		}
 	}
 }

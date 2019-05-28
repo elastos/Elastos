@@ -10,13 +10,13 @@
 #include <SDK/WalletCore/KeyStore/KeyStore.h>
 #include <SDK/WalletCore/KeyStore/CoinInfo.h>
 #include <SDK/SpvService/LocalStore.h>
-#include <SDK/IdAgent/IdAgentImpl.h>
+#include "../IDAgent/IDAgentImpl.h"
 #include <SDK/Plugin/Registry.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
 #include <SDK/Account/Account.h>
 
 #include <Interface/IMasterWallet.h>
-#include <Interface/IIdAgent.h>
+#include <Interface/IIDAgent.h>
 
 #include <map>
 #include <boost/shared_ptr.hpp>
@@ -41,7 +41,7 @@ namespace Elastos {
 			ImportFromKeyStore,    // Select check point from key store
 		} MasterWalletInitFrom;
 
-		class MasterWallet : public IMasterWallet, public IIdAgent {
+		class MasterWallet : public IMasterWallet, public IIDAgent {
 		public:
 			virtual ~MasterWallet();
 
@@ -86,14 +86,14 @@ namespace Elastos {
 
 			void InitSubWallets();
 
-			virtual IIdAgent *GetIIdAgent();
+			virtual IIDAgent *GetIIDAgent();
 
-		public: //override from IIdAgent
-			virtual std::string DeriveIdAndKeyForPurpose(
+		public: //override from IIDAgent
+			virtual std::string DeriveIDAndKeyForPurpose(
 					uint32_t purpose,
 					uint32_t index);
 
-			virtual bool IsIdValid(const std::string &id);
+			virtual bool IsIDValid(const std::string &id);
 
 			virtual nlohmann::json GenerateProgram(
 					const std::string &id,
@@ -105,7 +105,7 @@ namespace Elastos {
 					const std::string &message,
 					const std::string &password);
 
-			virtual std::vector<std::string> GetAllIds() const;
+			virtual std::vector<std::string> GetAllIDs() const;
 
 			virtual std::string GetPublicKey(const std::string &id) const;
 
@@ -113,7 +113,7 @@ namespace Elastos {
 
 			friend class MasterWalletManager;
 
-			friend class IdAgentImpl;
+			friend class IDAgentImpl;
 
 			friend class SubWallet;
 
@@ -204,7 +204,7 @@ namespace Elastos {
 			std::string _rootPath;
 
 			mutable CoinConfigReader _coinConfigReader;
-			boost::shared_ptr<IdAgentImpl> _idAgentImpl;
+			boost::shared_ptr<IDAgentImpl> _idAgentImpl;
 			bool _p2pEnable;
 
 		};

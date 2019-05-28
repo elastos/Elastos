@@ -40,7 +40,7 @@ namespace Elastos {
 			void StopP2P();
 
 		public: //implement ISubWallet
-			virtual std::string GetChainId() const;
+			virtual std::string GetChainID() const;
 
 			virtual nlohmann::json GetBasicInfo() const;
 
