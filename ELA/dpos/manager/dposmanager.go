@@ -145,7 +145,7 @@ func NewManager(cfg DPOSManagerConfig) *DPOSManager {
 		statusMap:          make(map[uint32]map[string]*dmsg.ConsensusStatus),
 		requestedBlocks:    make(map[common.Uint256]struct{}),
 	}
-	m.blockCache.Reset()
+	m.blockCache.Reset(nil)
 
 	return m
 }
@@ -571,7 +571,7 @@ func (d *DPOSManager) clearInactiveData(p *payload.InactiveArbitrators) {
 			blocks = append(blocks, v)
 		}
 	}
-	d.blockCache.Reset()
+	d.blockCache.Reset(nil)
 	for _, b := range blocks {
 		d.blockCache.AddValue(b.Hash(), b)
 	}

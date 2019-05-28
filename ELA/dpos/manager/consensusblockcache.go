@@ -16,9 +16,24 @@ type ConsensusBlockCache struct {
 	Listener ConsensusBlockCacheListener
 }
 
-func (c *ConsensusBlockCache) Reset() {
-	c.ConsensusBlocks = make(map[common.Uint256]*types.Block)
-	c.ConsensusBlockList = make([]common.Uint256, 0)
+func (c *ConsensusBlockCache) Reset(block *types.Block) {
+	if block == nil {
+		c.ConsensusBlocks = make(map[common.Uint256]*types.Block)
+		c.ConsensusBlockList = make([]common.Uint256, 0)
+		return
+	}
+
+	newConsensusBlocks := make(map[common.Uint256]*types.Block)
+	newConsensusBlockList := make([]common.Uint256, 0)
+	for _, b := range c.ConsensusBlocks {
+		if b.Height < block.Height {
+			continue
+		}
+		newConsensusBlocks[b.Hash()] = b
+		newConsensusBlockList = append(c.ConsensusBlockList, b.Hash())
+	}
+	c.ConsensusBlocks = newConsensusBlocks
+	c.ConsensusBlockList = newConsensusBlockList
 }
 
 func (c *ConsensusBlockCache) AddValue(key common.Uint256, value *types.Block) {
