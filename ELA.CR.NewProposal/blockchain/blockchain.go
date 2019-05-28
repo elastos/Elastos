@@ -866,8 +866,11 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block, confirm *pay
 	}
 
 	// Rollback state memory DB
-	if err := DefaultLedger.Arbitrators.RollbackTo(block.Height - 1); err != nil {
-		return err
+	if block.Height-1 >= b.chainParams.VoteStartHeight {
+		err := DefaultLedger.Arbitrators.RollbackTo(block.Height - 1)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Put block in the side chain cache.
