@@ -50,15 +50,18 @@ namespace Elastos {
 
 			nlohmann::json GetBalanceInfo();
 
-			TransactionPtr CreateTxForFee(const std::vector<TransactionOutput> &outputs,
-										  const Address &fromAddress,
-										  uint64_t fee, bool useVotedUTXO);
+			TransactionPtr CreateTxForOutputs(const std::vector<TransactionOutput> &outputs,
+											  const Address &fromAddress, bool useVotedUTXO,
+											  bool autoReduceOutputAmount);
 
-			void UpdateTxFee(TransactionPtr &tx, uint64_t fee, const Address &fromAddress);
+			void AddFeeForTx(TransactionPtr &tx, bool useVotedUTXO);
 
 			const AssetPtr &GetAsset() const;
 
 			void AddUTXO(const UTXO &o);
+
+		private:
+			uint64_t CalculateFee(uint64_t feePerKB, size_t size);
 
 		private:
 			BigInt _balance, _votedBalance, _lockedBalance, _depositBalance;

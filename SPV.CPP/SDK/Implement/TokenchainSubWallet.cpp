@@ -37,8 +37,7 @@ namespace Elastos {
 				const std::string &registerToAddress,
 				uint64_t registerAmount,
 				uint8_t precision,
-				const std::string &memo,
-				const std::string &remark) {
+				const std::string &memo) {
 
 			ErrorChecker::CheckParam(_walletManager->getWallet()->AssetNameExist(name), Error::InvalidArgument,
 									 "asset name already registered");
@@ -49,7 +48,7 @@ namespace Elastos {
 			AssetPtr asset(new Asset(name, description, precision));
 			PayloadPtr payload = PayloadPtr(new PayloadRegisterAsset(asset, registerAmount, address.ProgramHash()));
 
-			TransactionPtr tx = CreateTx("", CreateAddress(), BigInt(1000000000 - 10000), Asset::GetELAAssetID(), memo, remark);
+			TransactionPtr tx = CreateTx("", CreateAddress(), BigInt(1000000000), Asset::GetELAAssetID(), memo);
 
 			tx->SetTransactionType(Transaction::RegisterAsset, payload);
 
@@ -66,7 +65,7 @@ namespace Elastos {
 		nlohmann::json
 		TokenchainSubWallet::CreateTransaction(const std::string &fromAddress, const std::string &toAddress,
 											   const std::string &amount, const std::string &assetID,
-											   const std::string &memo, const std::string &remark) {
+											   const std::string &memo) {
 			uint256 asset = uint256(assetID);
 
 			AssetPtr assetInfo = _walletManager->getWallet()->GetAsset(asset);
@@ -82,20 +81,21 @@ namespace Elastos {
 			bnAmount.setDec(amount);
 
 			ErrorChecker::CheckParam((bnAmount % bn) != 0, Error::InvalidArgument, "amount exceed max presicion");
-			TransactionPtr tx = CreateTx(fromAddress, toAddress, bnAmount, asset, memo, remark);
+			TransactionPtr tx = CreateTx(fromAddress, toAddress, bnAmount, asset, memo);
 
 			return tx->ToJson();
 		}
 
-		uint64_t TokenchainSubWallet::CalculateTransactionFee(const nlohmann::json &txJson,
-															  uint64_t feePerKb) {
-			TransactionPtr tx(new Transaction());
-			tx->FromJson(txJson);
+		nlohmann::json TokenchainSubWallet::CreateCombineUTXOTransaction(const std::string &assetID,
+																		 const std::string &memo) {
+			std::string addr = CreateAddress();
 
-			if (tx->GetTransactionType() == Transaction::RegisterAsset)
-				return std::max(tx->CalculateFee(feePerKb), uint64_t(1000000000));
+			BigInt bnAmount = _walletManager->getWallet()->GetBalance(uint256(assetID), GroupedAsset::Total);
 
-			return SubWallet::CalculateTxFee(tx, feePerKb);
+			uint256 asset = uint256(assetID);
+			TransactionPtr tx = CreateTx("", addr, bnAmount, asset, memo);
+
+			return tx->ToJson();
 		}
 
 		nlohmann::json TokenchainSubWallet::GetBalanceInfo(const std::string &assetID) const {

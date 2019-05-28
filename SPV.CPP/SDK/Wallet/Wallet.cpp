@@ -46,7 +46,6 @@ namespace Elastos {
 
 			for (size_t i = 0; i < _transactions.size(); ++i) {
 				_transactions[i]->IsRegistered() = true;
-				_txRemarkMap[_transactions[i]->GetHash().GetHex()] = _transactions[i]->GetRemark();
 			}
 
 			_listener = boost::weak_ptr<Listener>(listener);
@@ -64,18 +63,6 @@ namespace Elastos {
 		void Wallet::InitListeningAddresses(const std::vector<std::string> &addrs) {
 			boost::mutex::scoped_lock scopedLock(lock);
 			_listeningAddrs = addrs;
-		}
-
-		void Wallet::RegisterRemark(const TransactionPtr &transaction) {
-			boost::mutex::scoped_lock scopedLock(lock);
-			_txRemarkMap[transaction->GetHash().GetHex()] = transaction->GetRemark();
-		}
-
-		std::string Wallet::GetRemark(const std::string &txHash) {
-			boost::mutex::scoped_lock scopedLock(lock);
-			if (_txRemarkMap.find(txHash) == _txRemarkMap.end())
-				return "";
-			return _txRemarkMap[txHash];
 		}
 
 		std::vector<UTXO> Wallet::GetAllUTXO() const {
@@ -152,34 +139,24 @@ namespace Elastos {
 			return DEFAULT_FEE_PER_KB;
 		}
 
-		void Wallet::UpdateTxFee(TransactionPtr &tx, uint64_t fee, const Address &fromAddress) {
-			_groupedAssets[Asset::GetELAAssetID()]->UpdateTxFee(tx, fee, fromAddress);
-		}
+		TransactionPtr Wallet::CreateTransaction(const Address &fromAddress,
+												 const std::vector<TransactionOutput> &outputs,
+												 bool useVotedUTXO, bool autoReduceOutputAmount) {
 
-		TransactionPtr Wallet::CreateTransaction(const Address &fromAddress, const BigInt &amount,
-												 const Address &toAddress, uint64_t fee,
-												 const uint256 &assetID, bool useVotedUTXO) {
-
-			ErrorChecker::CheckParam(!toAddress.Valid(), Error::CreateTransaction,
-									 "invalid receiver address " + toAddress.String());
-
-			std::vector<TransactionOutput> outputs;
-			outputs.emplace_back(amount, toAddress, assetID);
+			uint256 assetID = outputs.front().GetAssetId();
 
 			Lock();
-			bool containAsset = ContainsAsset(outputs[0].GetAssetId());
+			bool containAsset = ContainsAsset(assetID);
 			Unlock();
 
 			ErrorChecker::CheckParam(!IsAssetUnique(outputs), Error::InvalidAsset, "asset is not unique in outputs");
-			ErrorChecker::CheckParam(!containAsset, Error::InvalidAsset,
-									 "asset not found: " + outputs[0].GetAssetId().GetHex());
+			ErrorChecker::CheckParam(!containAsset, Error::InvalidAsset, "asset not found: " + assetID.GetHex());
 
-			if (outputs[0].GetAssetId() == Asset::GetELAAssetID())  {
-				return _groupedAssets[outputs[0].GetAssetId()]->CreateTxForFee(outputs, fromAddress, fee, useVotedUTXO);
-			}
+			TransactionPtr tx = _groupedAssets[assetID]->CreateTxForOutputs(outputs, fromAddress, useVotedUTXO,
+																			autoReduceOutputAmount);
 
-			TransactionPtr tx = _groupedAssets[outputs[0].GetAssetId()]->CreateTxForFee(outputs, fromAddress, 0, useVotedUTXO);
-			_groupedAssets[Asset::GetELAAssetID()]->UpdateTxFee(tx, fee, Address());
+			if (assetID != Asset::GetELAAssetID())
+				_groupedAssets[Asset::GetELAAssetID()]->AddFeeForTx(tx, useVotedUTXO);
 
 			return tx;
 		}

@@ -64,25 +64,11 @@ namespace Elastos {
 					const std::string &toAddress,
 					uint64_t amount,
 					const std::string &memo,
-					const std::string &remark,
 					bool useVotedUTXO = false);
 
-			virtual nlohmann::json CreateMultiSignTransaction(
-					const std::string &fromAddress,
-					const std::string &toAddress,
-					uint64_t amount,
+			virtual nlohmann::json CreateCombineUTXOTransaction(
 					const std::string &memo,
-					const std::string &remark,
 					bool useVotedUTXO = false);
-
-			virtual uint64_t CalculateTransactionFee(
-					const nlohmann::json &rawTransaction,
-					uint64_t feePerKb);
-
-			virtual nlohmann::json UpdateTransactionFee(
-					const nlohmann::json &transactionJson,
-					uint64_t fee,
-					const std::string &fromAddress);
 
 			virtual nlohmann::json SignTransaction(
 					const nlohmann::json &rawTransaction,
@@ -165,10 +151,7 @@ namespace Elastos {
 				const BigInt &amount,
 				const uint256 &assetID,
 				const std::string &memo,
-				const std::string &remark,
 				bool useVotedUTXO = false) const;
-
-			virtual uint64_t CalculateTxFee(const TransactionPtr &tx, uint64_t feePerKB) const;
 
 			virtual void publishTransaction(const TransactionPtr &transaction);
 

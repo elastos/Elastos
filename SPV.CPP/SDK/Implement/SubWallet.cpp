@@ -112,10 +112,18 @@ namespace Elastos {
 
 		TransactionPtr SubWallet::CreateTx(const std::string &fromAddress, const std::string &toAddress,
 										   const BigInt &amount, const uint256 &assetID, const std::string &memo,
-										   const std::string &remark, bool useVotedUTXO) const {
+										   bool useVotedUTXO) const {
+			Address receiveAddr(toAddress);
+
+			ErrorChecker::CheckParam(!receiveAddr.Valid(), Error::CreateTransaction,
+									 "invalid receiver address " + toAddress);
+
 			const WalletPtr &wallet = _walletManager->getWallet();
-			TransactionPtr tx = wallet->CreateTransaction(fromAddress, amount, toAddress, _info.GetMinFee(),
-														  assetID, useVotedUTXO);
+
+			std::vector<TransactionOutput> outputs;
+			outputs.emplace_back(amount, receiveAddr, assetID);
+
+			TransactionPtr tx = wallet->CreateTransaction(fromAddress, outputs, useVotedUTXO, false);
 
 			std::set<std::string> uniqueAddress;
 			std::vector<TransactionInput> &inputs = tx->GetInputs();
@@ -139,26 +147,35 @@ namespace Elastos {
 			if (_info.GetChainId() == "ELA") {
 				tx->SetVersion(Transaction::TxVersion::V09);
 			}
-			tx->SetRemark(remark);
 
 			tx->AddAttribute(Attribute(Attribute::Nonce, bytes_t(std::to_string((std::rand() & 0xFFFFFFFF)))));
 			if (!memo.empty()) {
-				tx->AddAttribute(Attribute(Attribute::Memo, bytes_t(memo)));
+				tx->AddAttribute(Attribute(Attribute::Memo, bytes_t(memo.c_str(), memo.size())));
 			}
 
 			return tx;
-		};
-
-		uint64_t SubWallet::CalculateTxFee(const TransactionPtr &tx, uint64_t feePerKB) const {
-			return std::max(tx->CalculateFee(feePerKB), _info.GetMinFee());
 		}
 
 		nlohmann::json SubWallet::CreateTransaction(const std::string &fromAddress, const std::string &toAddress,
 													uint64_t amount, const std::string &memo,
-													const std::string &remark, bool useVotedUTXO) {
+													bool useVotedUTXO) {
 			BigInt bnAmount;
 			bnAmount.setWord(amount);
-			TransactionPtr tx = CreateTx(fromAddress, toAddress, bnAmount, Asset::GetELAAssetID(), memo, remark, useVotedUTXO);
+			TransactionPtr tx = CreateTx(fromAddress, toAddress, bnAmount, Asset::GetELAAssetID(), memo, useVotedUTXO);
+			return tx->ToJson();
+		}
+
+		nlohmann::json SubWallet::CreateCombineUTXOTransaction(const std::string &memo, bool useVotedUTXO) {
+			std::string addr = CreateAddress();
+			uint64_t balance = 0;
+
+			if (useVotedUTXO)
+				balance = GetBalance(BalanceType::Total);
+			else
+				balance = GetBalance(BalanceType::Default);
+
+			TransactionPtr tx = CreateTx("", addr, balance, Asset::GetELAAssetID(), memo, useVotedUTXO);
+
 			return tx->ToJson();
 		}
 
@@ -212,12 +229,6 @@ namespace Elastos {
 
 		bool SubWallet::CheckSign(const std::string &publicKey, const std::string &message, const std::string &signature) {
 			return _parent->CheckSign(publicKey, message, signature);
-		}
-
-		uint64_t SubWallet::CalculateTransactionFee(const nlohmann::json &txJson, uint64_t feePerKb) {
-			TransactionPtr tx(new Transaction());
-			tx->FromJson(txJson);
-			return CalculateTxFee(tx, feePerKb);
 		}
 
 		void SubWallet::balanceChanged(const uint256 &assetID, const BigInt &balance) {
@@ -282,12 +293,6 @@ namespace Elastos {
 			});
 		}
 
-		nlohmann::json SubWallet::CreateMultiSignTransaction(const std::string &fromAddress,
-															 const std::string &toAddress, uint64_t amount,
-															 const std::string &memo, const std::string &remark, bool useVotedUTXO) {
-			return CreateTransaction(fromAddress, toAddress, amount, memo, remark, useVotedUTXO);
-		}
-
 		nlohmann::json SubWallet::SignTransaction(const nlohmann::json &rawTransaction,
 												  const std::string &payPassword) {
 			TransactionPtr tx(new Transaction());
@@ -306,22 +311,6 @@ namespace Elastos {
 			j["TxHash"] = transaction->GetHash().GetHex();
 			j["Fee"] = transaction->GetFee();
 			return j;
-		}
-
-		nlohmann::json
-		SubWallet::UpdateTransactionFee(const nlohmann::json &transactionJson, uint64_t fee,
-										const std::string &fromAddress) {
-			if (fee <= _info.GetMinFee()) {
-				return transactionJson;
-			}
-
-			TransactionPtr tx(new Transaction());
-			tx->FromJson(transactionJson);
-
-			WalletPtr wallet = _walletManager->getWallet();
-			wallet->UpdateTxFee(tx, fee, fromAddress);
-
-			return tx->ToJson();
 		}
 
 		bool SubWallet::filterByAddressOrTxId(const TransactionPtr &transaction, const std::string &addressOrTxid) const {

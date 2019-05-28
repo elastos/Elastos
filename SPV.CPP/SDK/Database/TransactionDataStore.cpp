@@ -38,8 +38,7 @@ namespace Elastos {
 					ss << "UPDATE " << TX_TABLE_NAME << " SET "
 					   << TX_BUFF << " = ?, "
 					   << TX_BLOCK_HEIGHT << " = ?, "
-					   << TX_TIME_STAMP << " = ?, "
-					   << TX_REMARK << " = ? "
+					   << TX_TIME_STAMP << " = ? "
 					   << " WHERE " << TX_COLUMN_ID << " = '" << transactionEntity.txHash << "';";
 
 					sqlite3_stmt *stmt;
@@ -49,7 +48,6 @@ namespace Elastos {
 					_sqlite->BindBlob(stmt, 1, transactionEntity.buff, nullptr);
 					_sqlite->BindInt(stmt, 2, transactionEntity.blockHeight);
 					_sqlite->BindInt(stmt, 3, transactionEntity.timeStamp);
-					_sqlite->BindText(stmt, 4, transactionEntity.remark, nullptr);
 
 					_sqlite->Step(stmt);
 
@@ -78,7 +76,7 @@ namespace Elastos {
 				_sqlite->BindBlob(stmt, 2, transactionEntity.buff, nullptr);
 				_sqlite->BindInt(stmt, 3, transactionEntity.blockHeight);
 				_sqlite->BindInt(stmt, 4, transactionEntity.timeStamp);
-				_sqlite->BindText(stmt, 5, transactionEntity.remark, nullptr);
+				_sqlite->BindText(stmt, 5, "", nullptr);
 				_sqlite->BindText(stmt, 6, "", nullptr);
 				_sqlite->BindText(stmt, 7, iso, nullptr);
 
@@ -134,8 +132,7 @@ namespace Elastos {
 				   << TX_COLUMN_ID << ", "
 				   << TX_BUFF << ", "
 				   << TX_BLOCK_HEIGHT << ", "
-				   << TX_TIME_STAMP << ", "
-				   << TX_REMARK
+				   << TX_TIME_STAMP
 				   << " FROM " << TX_TABLE_NAME << ";";
 
 				sqlite3_stmt *stmt;
@@ -152,7 +149,6 @@ namespace Elastos {
 					tx.buff.assign(pdata, pdata + len);
 					tx.blockHeight = (uint32_t) _sqlite->ColumnInt(stmt, 2);
 					tx.timeStamp = (uint32_t) _sqlite->ColumnInt(stmt, 3);
-					tx.remark = _sqlite->ColumnText(stmt, 4);
 
 					transactions.push_back(tx);
 				}
@@ -208,8 +204,7 @@ namespace Elastos {
 				ss << "SELECT "
 				   << TX_BUFF << ", "
 				   << TX_BLOCK_HEIGHT << ", "
-				   << TX_TIME_STAMP << ", "
-				   << TX_REMARK
+				   << TX_TIME_STAMP
 				   << " FROM " << TX_TABLE_NAME
 				   << " WHERE " << TX_COLUMN_ID << " = '" << hash << "';";
 
@@ -228,7 +223,6 @@ namespace Elastos {
 					txEntity.buff.assign(pdata, pdata + len);
 					txEntity.blockHeight = (uint32_t) _sqlite->ColumnInt(stmt, 1);
 					txEntity.timeStamp = (uint32_t) _sqlite->ColumnInt(stmt, 2);
-					txEntity.remark = _sqlite->ColumnText(stmt, 3);
 				}
 			});
 

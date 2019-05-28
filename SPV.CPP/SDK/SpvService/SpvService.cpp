@@ -99,7 +99,6 @@ namespace Elastos {
 			}
 
 			getPeerManager()->PublishTransaction(transaction);
-			getWallet()->RegisterRemark(transaction);
 		}
 
 		const WalletPtr &SpvService::getWallet() {
@@ -121,10 +120,8 @@ namespace Elastos {
 			bytes_t data = stream.GetBytes();
 
 			std::string txHash = tx->GetHash().GetHex();
-			std::string remark = _wallet->GetRemark(txHash);
-			tx->SetRemark(remark);
 
-			TransactionEntity txEntity(data, tx->GetBlockHeight(), tx->GetTimestamp(), tx->GetRemark(), txHash);
+			TransactionEntity txEntity(data, tx->GetBlockHeight(), tx->GetTimestamp(), txHash);
 			_databaseManager.PutTransaction(ISO, txEntity);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
@@ -320,7 +317,6 @@ namespace Elastos {
 
 				ByteStream byteStream(txsEntity[i].buff);
 				tx->Deserialize(byteStream);
-				tx->SetRemark(txsEntity[i].remark);
 				tx->SetBlockHeight(txsEntity[i].blockHeight);
 				tx->SetTimestamp(txsEntity[i].timeStamp);
 

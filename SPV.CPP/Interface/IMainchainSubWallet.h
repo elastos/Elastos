@@ -38,7 +38,6 @@ namespace Elastos {
 					uint64_t amount,
 					const std::string &sideChainAddress,
 					const std::string &memo,
-					const std::string &remark,
 					bool useVotedUTXO = false) = 0;
 
 			/**
@@ -94,7 +93,6 @@ namespace Elastos {
 				const nlohmann::json &payload,
 				uint64_t amount,
 				const std::string &memo,
-				const std::string &remark,
 				bool useVotedUTXO = false) = 0;
 
 			/**
@@ -112,7 +110,6 @@ namespace Elastos {
 				const std::string &fromAddress,
 				const nlohmann::json &payload,
 				const std::string &memo,
-				const std::string &remark,
 				bool useVotedUTXO = false) = 0;
 
 			/**
@@ -130,7 +127,6 @@ namespace Elastos {
 				const std::string &fromAddress,
 				const nlohmann::json &payload,
 				const std::string &memo,
-				const std::string &remark,
 				bool useVotedUTXO = false) = 0;
 
 			/**
@@ -143,8 +139,7 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json CreateRetrieveDepositTransaction(
 				uint64_t amount,
-				const std::string &memo,
-				const std::string &remark) = 0;
+				const std::string &memo) = 0;
 
 			/**
 			 * Get owner public key.
@@ -161,7 +156,6 @@ namespace Elastos {
 			 * @param stake        Vote amount in sela.
 			 * @param publicKeys   Public keys array in JSON format.
 			 * @param memo         Remarks string. Can be empty string.
-			 * @param remark       Deprecated.
 			 * @param useVotedUTXO If true, all voted UTXO will be picked. Otherwise, any voted UTXO will not be picked.
 			 *
 			 * @return             The transaction in JSON format to be signed and published.
@@ -171,7 +165,6 @@ namespace Elastos {
 					uint64_t stake,
 					const nlohmann::json &pubicKeys,
 					const std::string &memo,
-					const std::string &remark,
 					bool useVotedUTXO = false) = 0;
 
 			/**

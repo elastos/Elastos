@@ -27,20 +27,18 @@ namespace Elastos {
 				const std::string &registerToAddress,
 				uint64_t registerAmount,
 				uint8_t precision,
-				const std::string &memo,
-				const std::string &remark);
+				const std::string &memo);
 
 			virtual nlohmann::json CreateTransaction(
 				const std::string &fromAddress,
 				const std::string &toAddress,
 				const std::string &amount,
 				const std::string &assetID,
-				const std::string &memo,
-				const std::string &remark);
+				const std::string &memo);
 
-			virtual uint64_t CalculateTransactionFee(
-				const nlohmann::json &rawTransaction,
-				uint64_t feePerKb);
+			virtual nlohmann::json CreateCombineUTXOTransaction(
+				const std::string &assetID,
+				const std::string &memo);
 
 			virtual nlohmann::json GetAllAssets() const;
 

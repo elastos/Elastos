@@ -31,8 +31,7 @@ namespace Elastos {
 			const std::string &fromAddress,
 			uint64_t amount,
 			const std::string &mainChainAddress,
-			const std::string &memo,
-			const std::string &remark) {
+			const std::string &memo) {
 
 			PayloadPtr payload = nullptr;
 			try {
@@ -47,7 +46,7 @@ namespace Elastos {
 			}
 
 			TransactionPtr tx = CreateTx(fromAddress, ELA_SIDECHAIN_DESTROY_ADDR, amount + _info.GetMinFee(),
-													Asset::GetELAAssetID(), memo, remark);
+										 Asset::GetELAAssetID(), memo);
 			ErrorChecker::CheckLogic(tx == nullptr, Error::CreateTransaction, "Create withdraw tx");
 
 			tx->SetTransactionType(Transaction::TransferCrossChainAsset, payload);

@@ -36,7 +36,6 @@ namespace Elastos {
 					uint64_t amount,
 					const std::string &sideChainAddress,
 					const std::string &memo,
-					const std::string &remark,
 					bool useVotedUTXO = false);
 
 			/**
@@ -92,7 +91,6 @@ namespace Elastos {
 				const nlohmann::json &payload,
 				uint64_t amount,
 				const std::string &memo,
-				const std::string &remark,
 				bool useVotedUTXO = false);
 
 			/**
@@ -110,7 +108,6 @@ namespace Elastos {
 				const std::string &fromAddress,
 				const nlohmann::json &payload,
 				const std::string &memo,
-				const std::string &remark,
 				bool useVotedUTXO = false);
 
 			/**
@@ -128,7 +125,6 @@ namespace Elastos {
 				const std::string &fromAddress,
 				const nlohmann::json &payload,
 				const std::string &emmo,
-				const std::string &remark,
 				bool useVotedUTXO = false);
 
 			/**
@@ -141,8 +137,7 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json CreateRetrieveDepositTransaction(
 				uint64_t amount,
-				const std::string &memo,
-				const std::string &remark);
+				const std::string &memo);
 
 			/**
 			 * Get owner public key.
@@ -169,7 +164,6 @@ namespace Elastos {
 					uint64_t stake,
 					const nlohmann::json &publicKeys,
 					const std::string &memo,
-					const std::string &remark,
 					bool useVotedUTXO = false);
 
 			/**

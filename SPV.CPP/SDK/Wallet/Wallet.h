@@ -75,10 +75,6 @@ namespace Elastos {
 
 			nlohmann::json GetBalanceInfo();
 
-			void RegisterRemark(const TransactionPtr &transaction);
-
-			std::string GetRemark(const std::string &txHash);
-
 			BigInt GetBalanceWithAddress(const uint256 &assetID, const Address &address, GroupedAsset::BalanceType type) const;
 
 			// returns the first unused external address
@@ -103,11 +99,8 @@ namespace Elastos {
 
 			uint64_t GetDefaultFeePerKb();
 
-			void UpdateTxFee(TransactionPtr &tx, uint64_t fee, const Address &fromAddress);
-
-			TransactionPtr CreateTransaction(const Address &fromAddress, const BigInt &amount,
-											 const Address &toAddress, uint64_t fee,
-											 const uint256 &assetID, bool useVotedUTXO);
+			TransactionPtr CreateTransaction(const Address &fromAddress, const std::vector<TransactionOutput> &outputs,
+											 bool useVotedUTXO, bool autoReduceOutputAmount);
 
 			bool ContainsTransaction(const TransactionPtr &transaction);
 
@@ -188,8 +181,6 @@ namespace Elastos {
 
 			std::string _walletID;
 
-			typedef std::map<std::string, std::string> TransactionRemarkMap;
-			TransactionRemarkMap _txRemarkMap;
 			std::vector<std::string> _listeningAddrs;
 
 			SubAccountPtr _subAccount;

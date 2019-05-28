@@ -39,7 +39,6 @@ namespace Elastos {
 																	uint64_t amount,
 																	const std::string &sideChainAddress,
 																	const std::string &memo,
-																	const std::string &remark,
 																	bool useVotedUTXO) {
 			PayloadPtr payload = nullptr;
 			try {
@@ -54,7 +53,7 @@ namespace Elastos {
 			}
 
 			TransactionPtr tx = CreateTx(fromAddress, lockedAddress, amount + _info.GetMinFee(),
-													Asset::GetELAAssetID(), memo, remark, useVotedUTXO);
+										 Asset::GetELAAssetID(), memo, useVotedUTXO);
 
 			tx->SetTransactionType(Transaction::TransferCrossChainAsset, payload);
 
@@ -130,7 +129,6 @@ namespace Elastos {
 			const nlohmann::json &payloadJson,
 			uint64_t amount,
 			const std::string &memo,
-			const std::string &remark,
 			bool useVotedUTXO) {
 
 			ErrorChecker::CheckLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
@@ -150,8 +148,7 @@ namespace Elastos {
 			bytes_t pubkey = static_cast<PayloadRegisterProducer *>(payload.get())->GetPublicKey();
 			std::string toAddress = Address(PrefixDeposit, pubkey).String();
 
-			TransactionPtr tx = CreateTx(fromAddress, toAddress, amount,
-													Asset::GetELAAssetID(), memo, remark, useVotedUTXO);
+			TransactionPtr tx = CreateTx(fromAddress, toAddress, amount, Asset::GetELAAssetID(), memo, useVotedUTXO);
 
 			tx->SetTransactionType(Transaction::RegisterProducer, payload);
 
@@ -162,7 +159,6 @@ namespace Elastos {
 			const std::string &fromAddress,
 			const nlohmann::json &payloadJson,
 			const std::string &memo,
-			const std::string &remark,
 			bool useVotedUTXO) {
 
 			ErrorChecker::CheckLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
@@ -177,7 +173,7 @@ namespace Elastos {
 			}
 
 			std::string toAddress = CreateAddress();
-			TransactionPtr tx = CreateTx(fromAddress, toAddress, 0, Asset::GetELAAssetID(), memo, remark, useVotedUTXO);
+			TransactionPtr tx = CreateTx(fromAddress, toAddress, 0, Asset::GetELAAssetID(), memo, useVotedUTXO);
 
 			tx->SetTransactionType(Transaction::UpdateProducer, payload);
 
@@ -192,7 +188,6 @@ namespace Elastos {
 			const std::string &fromAddress,
 			const nlohmann::json &payloadJson,
 			const std::string &memo,
-			const std::string &remark,
 			bool useVotedUTXO) {
 
 			ErrorChecker::CheckLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
@@ -207,7 +202,7 @@ namespace Elastos {
 			}
 
 			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), 0, Asset::GetELAAssetID(),
-										 memo, remark, useVotedUTXO);
+										 memo, useVotedUTXO);
 
 			tx->SetTransactionType(Transaction::CancelProducer, payload);
 
@@ -220,15 +215,14 @@ namespace Elastos {
 
 		nlohmann::json MainchainSubWallet::CreateRetrieveDepositTransaction(
 			uint64_t amount,
-			const std::string &memo,
-			const std::string &remark) {
+			const std::string &memo) {
 
 			ErrorChecker::CheckLogic(_subAccount->GetBasicInfo()["Type"] == "Multi-Sign Account",
 									 Error::AccountNotSupportVote, "This account do not support vote");
 
 			std::string fromAddress = Address(PrefixDeposit, _subAccount->OwnerPubKey()).String();
 
-			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), amount, Asset::GetELAAssetID(), memo, remark);
+			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), amount, Asset::GetELAAssetID(), memo);
 
 			tx->SetTransactionType(Transaction::ReturnDepositCoin);
 
@@ -252,7 +246,6 @@ namespace Elastos {
 			uint64_t stake,
 			const nlohmann::json &publicKeys,
 			const std::string &memo,
-			const std::string &remark,
 			bool useVotedUTXO) {
 
 			ErrorChecker::CheckJsonArray(publicKeys, 1, "Candidates public keys");
@@ -271,7 +264,7 @@ namespace Elastos {
 
 			OutputPayloadPtr payload = OutputPayloadPtr(new PayloadVote({voteContent}));
 
-			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), stake, Asset::GetELAAssetID(), memo, remark, useVotedUTXO);
+			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), stake, Asset::GetELAAssetID(), memo, useVotedUTXO);
 
 			const std::vector<TransactionInput> &inputs = tx->GetInputs();
 

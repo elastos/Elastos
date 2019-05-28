@@ -40,8 +40,7 @@ namespace Elastos {
 
 		nlohmann::json
 		IdChainSubWallet::CreateIdTransaction(const std::string &fromAddress, const nlohmann::json &payloadJson,
-											  const nlohmann::json &programJson, const std::string &memo,
-											  const std::string &remark) {
+											  const nlohmann::json &programJson, const std::string &memo) {
 			std::string toAddress;
 			Program program;
 			PayloadPtr payload = nullptr;
@@ -55,7 +54,7 @@ namespace Elastos {
 												  "Create id tx param error: " + std::string(e.what()));
 			}
 
-			TransactionPtr tx = CreateTx(fromAddress, toAddress, 0, Asset::GetELAAssetID(), memo, remark);
+			TransactionPtr tx = CreateTx(fromAddress, toAddress, 0, Asset::GetELAAssetID(), memo);
 
 			tx->SetTransactionType(Transaction::RegisterIdentification, payload);
 

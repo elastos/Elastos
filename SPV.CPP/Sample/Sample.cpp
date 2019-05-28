@@ -198,17 +198,12 @@ static void Transafer(const std::string &masterWalletID, const std::string &subW
 
 	if (subWalletID == gTokenchainSubWalletID) {
 		ITokenchainSubWallet *tokenSubWallet = dynamic_cast<ITokenchainSubWallet *>(subWallet);
-		tx = tokenSubWallet->CreateTransaction(from, to, std::to_string(amount), assetID, memo, "transafer remark");
+		tx = tokenSubWallet->CreateTransaction(from, to, std::to_string(amount), assetID, memo);
 	} else {
-		tx = subWallet->CreateTransaction(from, to, amount, memo, "transafer remark");
+		tx = subWallet->CreateTransaction(from, to, amount, memo);
 	}
 
 	logger->debug("tx after created = {}", tx.dump());
-	uint64_t fee = subWallet->CalculateTransactionFee(tx, feePerKB);
-	logger->debug("fee = {}", fee);
-
-	tx = subWallet->UpdateTransactionFee(tx, fee, from);
-	logger->debug("tx after fee = {}", tx.dump());
 
 	PublishTransaction(subWallet, tx);
 }
@@ -223,12 +218,8 @@ static void Vote(const std::string &masterWalletID, const std::string &subWallet
 		return;
 	}
 
-	nlohmann::json tx = mainchainSubWallet->CreateVoteProducerTransaction("", stake, publicKeys, memo, "from spv cpp sample", false);
+	nlohmann::json tx = mainchainSubWallet->CreateVoteProducerTransaction("", stake, publicKeys, memo, false);
 	logger->debug("tx = {}", tx.dump());
-
-	uint64_t fee = mainchainSubWallet->CalculateTransactionFee(tx, 10000);
-	logger->debug("fee = {}", fee);
-	tx = mainchainSubWallet->UpdateTransactionFee(tx, fee, "");
 
 	PublishTransaction(mainchainSubWallet, tx);
 }
@@ -253,10 +244,7 @@ static void RegisterProducer(const std::string &masterWalletID, const std::strin
 																		 location, payPasswd);
 
 	nlohmann::json tx = mainchainSubWallet->CreateRegisterProducerTransaction("", payload, 500000000000 + 10000,
-																			  memo, "heropan register producer");
-
-	uint64_t fee = mainchainSubWallet->CalculateTransactionFee(tx, feePerKB);
-	tx = mainchainSubWallet->UpdateTransactionFee(tx, fee, "");
+																			  memo);
 
 	PublishTransaction(mainchainSubWallet, tx);
 }
@@ -280,10 +268,7 @@ static void UpdateProducer(const std::string &masterWalletID, const std::string 
 	nlohmann::json payload = mainchainSubWallet->GenerateProducerPayload(pubKey, nodePubKey, nickName, url, ipAddress,
 																		 location, payPasswd);
 
-	nlohmann::json tx = mainchainSubWallet->CreateUpdateProducerTransaction("", payload, memo, "heropan update producer");
-
-	uint64_t fee = mainchainSubWallet->CalculateTransactionFee(tx, feePerKB);
-	tx = mainchainSubWallet->UpdateTransactionFee(tx, fee, "");
+	nlohmann::json tx = mainchainSubWallet->CreateUpdateProducerTransaction("", payload, memo);
 
 	PublishTransaction(mainchainSubWallet, tx);
 }
@@ -301,10 +286,7 @@ static void CancelProducer(const std::string &masterWalletID, const std::string 
 
 	nlohmann::json payload = mainchainSubWallet->GenerateCancelProducerPayload(pubKey, payPasswd);
 
-	nlohmann::json tx = mainchainSubWallet->CreateCancelProducerTransaction("", payload, memo, "heropan update producer");
-
-	uint64_t fee = mainchainSubWallet->CalculateTransactionFee(tx, feePerKB);
-	tx = mainchainSubWallet->UpdateTransactionFee(tx, fee, "");
+	nlohmann::json tx = mainchainSubWallet->CreateCancelProducerTransaction("", payload, memo);
 
 	PublishTransaction(mainchainSubWallet, tx);
 }
@@ -338,7 +320,7 @@ static void RetrieveDeposit(const std::string &masterWalletID, const std::string
 		return;
 	}
 
-	nlohmann::json tx = mainchainSubWallet->CreateRetrieveDepositTransaction(500000000000, memo, "");
+	nlohmann::json tx = mainchainSubWallet->CreateRetrieveDepositTransaction(500000000000, memo);
 
 	PublishTransaction(mainchainSubWallet, tx);
 }
@@ -372,13 +354,9 @@ static void Deposit(const std::string &fromMasterWalletID, const std::string &fr
 
 	std::string lockedAddress = sidechainSubWallet->GetGenesisAddress();
 
-	nlohmann::json tx = mainchainSubWallet->CreateDepositTransaction(
-		from, lockedAddress, amount, sidechainAddress, memo, "deposit remark");
+	nlohmann::json tx = mainchainSubWallet->CreateDepositTransaction(from, lockedAddress, amount, sidechainAddress, memo);
 
 	logger->debug("[{}:{}] deposit {} to {}", fromMasterWalletID, fromSubWalletID, amount, sidechainAddress);
-
-	uint64_t fee = fromSubWallet->CalculateTransactionFee(tx, feePerKB);
-	tx = fromSubWallet->UpdateTransactionFee(tx, fee, from);
 
 	PublishTransaction(fromSubWallet, tx);
 }
@@ -397,12 +375,9 @@ static void Withdraw(const std::string &fromMasterWalletID, const std::string &f
 		return ;
 	}
 
-	nlohmann::json tx = sidechainSubWallet->CreateWithdrawTransaction(from, amount, mainchainAddress, memo, "with remark");
+	nlohmann::json tx = sidechainSubWallet->CreateWithdrawTransaction(from, amount, mainchainAddress, memo);
 
 	logger->debug("[{}:{}] withdraw {} to {}", fromMasterWalletID, fromSubWalletID, amount, mainchainAddress);
-
-	uint64_t fee = sidechainSubWallet->CalculateTransactionFee(tx, feePerKB);
-	tx = sidechainSubWallet->UpdateTransactionFee(tx, fee, from);
 
 	PublishTransaction(sidechainSubWallet, tx);
 }
@@ -440,12 +415,9 @@ static void RegisterID(const std::string &masterWalletID, const std::string &DID
 	payload["Sign"] = IDAgent->Sign(id, payload.dump(), payPasswd);;
 	nlohmann::json program = IDAgent->GenerateProgram(id, payload.dump(), payPasswd);
 
-	nlohmann::json tx = DIDSubWallet->CreateIdTransaction("", payload, program, memo, "remark");
+	nlohmann::json tx = DIDSubWallet->CreateIdTransaction("", payload, program, memo);
 
 	logger->debug("[{}:{}] register id", masterWalletID, DIDSubWalletID);
-
-	uint64_t fee = subWallet->CalculateTransactionFee(tx, feePerKB);
-	tx = subWallet->UpdateTransactionFee(tx, fee, "");
 
 	PublishTransaction(subWallet, tx);
 }
@@ -474,10 +446,8 @@ static void InitWallets() {
 		for (size_t j = 0; j < subWallets.size(); ++j) {
 			std::string walletID = masterWallets[i]->GetId() + ":" + subWallets[j]->GetChainId();
 			subWallets[j]->AddCallback(new SubWalletCallback(walletID));
-			logger->debug("[{}:{}] all addresses -> {}",
-						  masterWallets[i]->GetId(), subWallets[j]->GetChainId(),
-						  subWallets[j]->GetAllAddress(0, 20).dump());
-
+			logger->debug("{} basic info -> {}", walletID, subWallets[j]->GetBasicInfo().dump());
+			logger->debug("{} all addresses -> {}", walletID, subWallets[j]->GetAllAddress(0, 20).dump());
 		}
 	}
 }
@@ -572,14 +542,8 @@ static void RegisterAsset() {
 	nlohmann::json tx = tokenSubWallet->CreateRegisterAssetTransaction("Poon",
 				"Description: test spv interface",
 				"EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv",
-				1000000000000000, 10, "", "spv register asset");
+				1000000000000000, 10, memo);
 	logger->debug("tx after created = {}", tx.dump());
-
-	uint64_t fee = subWallet->CalculateTransactionFee(tx, feePerKB);
-	logger->debug("fee = {}", fee);
-
-	tx = subWallet->UpdateTransactionFee(tx, fee, "");
-	logger->debug("tx after fee = {}", tx.dump());
 
 	PublishTransaction(subWallet, tx);
 }
@@ -637,6 +601,7 @@ static void DIDTest() {
 }
 
 int main(int argc, char *argv[]) {
+	bool delay = false;
 	logger->set_level(spdlog::level::level_enum::debug);
 	logger->set_pattern("%m-%d %T.%e %P %t %^%L%$ %n %v");
 
@@ -651,17 +616,24 @@ int main(int argc, char *argv[]) {
 	while(1) {
 		if (ELASyncSucceed) {
 			ELATest();
+			delay = true;
 		}
 
 		if (TokenSyncSucceed) {
 			TokenTest();
+			delay = true;
 		}
 
 		if (IDChainSyncSucceed) {
 			DIDTest();
+			delay = true;
 		}
 
-		sleep(60);
+		if (delay) {
+			sleep(60);
+		} else {
+			sleep(1);
+		}
 	}
 
 	return 0;

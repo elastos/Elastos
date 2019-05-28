@@ -146,10 +146,6 @@ namespace Elastos {
 
 			std::vector<Program> &GetPrograms();
 
-			const std::string GetRemark() const;
-
-			void SetRemark(const std::string &remark);
-
 			nlohmann::json GetSummary(const boost::shared_ptr<Wallet> &wallet, uint32_t confirms, bool detail);
 
 			uint8_t	GetPayloadVersion() const;
@@ -194,7 +190,6 @@ namespace Elastos {
 			std::vector<TransactionInput> _inputs;
 			std::vector<Attribute> _attributes;
 			std::vector<Program> _programs;
-			std::string _remark;
 		};
 
 		typedef boost::shared_ptr<Transaction> TransactionPtr;

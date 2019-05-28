@@ -93,7 +93,6 @@ namespace Elastos {
 				_programs.push_back(orig._programs[i]);
 			}
 
-			_remark = orig._remark;
 			return *this;
 		}
 
@@ -327,14 +326,6 @@ namespace Elastos {
 			_programs.clear();
 		}
 
-		const std::string Transaction::GetRemark() const {
-			return _remark;
-		}
-
-		void Transaction::SetRemark(const std::string &remark) {
-			_remark = remark;
-		}
-
 		void Transaction::Serialize(ByteStream &ostream) const {
 			SerializeUnsigned(ostream);
 
@@ -520,8 +511,6 @@ namespace Elastos {
 
 			jsonData["Fee"] = _fee;
 
-			jsonData["Remark"] = _remark;
-
 			return jsonData;
 		}
 
@@ -577,8 +566,6 @@ namespace Elastos {
 
 				_fee = jsonData["Fee"].get<uint64_t>();
 
-				_remark = jsonData["Remark"].get<std::string>();
-
 				_txHash = 0;
 				GetHash();
 			} catch (const nlohmann::detail::exception &e) {
@@ -612,9 +599,6 @@ namespace Elastos {
 		}
 
 		nlohmann::json Transaction::GetSummary(const WalletPtr &wallet, uint32_t confirms, bool detail) {
-			std::string remark = wallet->GetRemark(GetHash().GetHex());
-			SetRemark(remark);
-
 			std::string addr;
 			nlohmann::json summary, outputPayload;
 			std::vector<nlohmann::json> outputPayloads;
@@ -720,8 +704,24 @@ namespace Elastos {
 			summary["Type"] = GetTransactionType();
 			summary["Height"] = GetBlockHeight();
 			if (detail) {
+				std::string memo;
+				for (size_t i = 0; i < _attributes.size(); ++i) {
+					if (_attributes[i].GetUsage() == Attribute::Usage::Memo) {
+						const bytes_t &memoData = _attributes[i].GetData();
+						memo = std::string((char *)memoData.data(), memoData.size());
+						try {
+							nlohmann::json memoJson = nlohmann::json::parse(memo);
+							if (memoJson.is_object() && memoJson.find("msg") != memoJson.end()) {
+								memo.clear();
+							}
+						} catch (const nlohmann::detail::exception &e) {
+						}
+						break;
+					}
+				}
+
 				summary["Fee"] = fee;
-				summary["Remark"] = GetRemark();
+				summary["Memo"] = memo;
 				summary["Inputs"] = inputJson;
 				summary["Outputs"] = outputJson;
 				summary["Payload"] = _payload->ToJson(_payloadVersion);

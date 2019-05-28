@@ -94,7 +94,6 @@ namespace Elastos {
 			tx.SetTransactionType(Transaction::TransferAsset);
 			tx.SetPayloadVersion(getRandUInt8());
 			tx.SetFee(getRandUInt64());
-			tx.SetRemark(getRandString(40));
 
 			for (size_t i = 0; i < 20; ++i) {
 				TransactionInput input;
@@ -149,7 +148,6 @@ namespace Elastos {
 				REQUIRE(tx1.GetBlockHeight() == tx2.GetBlockHeight());
 				REQUIRE(tx1.GetTimestamp() == tx2.GetTimestamp());
 				REQUIRE(tx1.GetFee() == tx2.GetFee());
-				REQUIRE(tx1.GetRemark() == tx2.GetRemark());
 			}
 
 			REQUIRE(tx1.GetOutputs().size() == tx2.GetOutputs().size());

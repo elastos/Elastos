@@ -38,11 +38,10 @@ namespace Elastos {
 			 * Register asset.
 			 * @param name Asset name such as ELA, IDChain.
 			 * @param description
-			 * @param address Address where to receive registered asset amount.
+			 * @param registerToAddress Address where to receive registered asset amount.
 			 * @param registerAmount Integer part amount.
 			 * @param precision Range: [0, 18].
 			 * @param memo
-			 * @param remark
 			 * @return Transaction in json format.
 			 */
 			virtual nlohmann::json CreateRegisterAssetTransaction(
@@ -51,8 +50,7 @@ namespace Elastos {
 				const std::string &registerToAddress,
 				uint64_t registerAmount,
 				uint8_t precision,
-				const std::string &memo,
-				const std::string &remark) = 0;
+				const std::string &memo) = 0;
 
 			/**
 			 * Create a normal transaction and return the content of transaction in json format.
@@ -61,7 +59,6 @@ namespace Elastos {
 			 * @param amount specify amount(big int string) we want to send.
 			 * @param assetID specify asset ID
 			 * @param memo input memo attribute for describing.
-			 * @param remark is used to record message of local wallet.
 			 * @return If success return the content of transaction in json format.
 			 */
 			virtual nlohmann::json CreateTransaction(
@@ -69,8 +66,18 @@ namespace Elastos {
 				const std::string &toAddress,
 				const std::string &amount,
 				const std::string &assetID,
-				const std::string &memo,
-				const std::string &remark) = 0;
+				const std::string &memo) = 0;
+
+			/**
+			 * Create transaction to combine as many small UTXOs as possible.
+			 * @param assetID specify asset ID
+			 * @param memo input memo attribute for describing.
+			 * @param useVotedUTXO If true, all voted UTXO will be picked. Otherwise, any voted UTXO will not be picked.
+			 * @return If success return the content of transaction in json format.
+			 */
+			virtual nlohmann::json CreateCombineUTXOTransaction(
+				const std::string &assetID,
+				const std::string &memo) = 0;
 
 			/**
 			 * Get all assets in json format. Note this is a sub set of supported assets.
