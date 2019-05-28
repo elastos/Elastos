@@ -1420,8 +1420,8 @@ func CheckDPOSIllegalProposals(d *payload.DPOSIllegalProposals) error {
 		return errors.New("proposals can not be same")
 	}
 
-	if d.Evidence.Proposal.Hash().String() >
-		d.CompareEvidence.Proposal.Hash().String() {
+	if d.Evidence.Proposal.Hash().Compare(
+		d.CompareEvidence.Proposal.Hash()) > 0 {
 		return errors.New("evidence order error")
 	}
 
@@ -1463,8 +1463,7 @@ func CheckDPOSIllegalVotes(d *payload.DPOSIllegalVotes) error {
 		return errors.New("votes can not be same")
 	}
 
-	if d.Evidence.Vote.Hash().String() >
-		d.CompareEvidence.Vote.Hash().String() {
+	if d.Evidence.Vote.Hash().Compare(d.CompareEvidence.Vote.Hash()) > 0 {
 		return errors.New("evidence order error")
 	}
 
