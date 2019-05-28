@@ -342,15 +342,19 @@ export default class extends StandardPage {
   }
 
   onInfoNeededChange = async (e) => {
-    const {onTagsIncludedChanged, tagsIncluded} = this.props
+    const {onTagsIncludedChanged, tagsIncluded, changePage} = this.props
     tagsIncluded.infoNeeded = e.target.checked
+
+    await changePage(1)
     await onTagsIncludedChanged(tagsIncluded)
     await this.refetch()
   }
 
   onUnderConsiderationChange = async (e) => {
-    const {onTagsIncludedChanged, tagsIncluded} = this.props
+    const {onTagsIncludedChanged, tagsIncluded, changePage} = this.props
     tagsIncluded.underConsideration = e.target.checked
+
+    await changePage(1)
     await onTagsIncludedChanged(tagsIncluded)
     await this.refetch()
   }
