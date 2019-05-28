@@ -104,11 +104,11 @@ var DefaultParams = Params{
 	DefaultPort: 20338,
 
 	DNSSeeds: []string{
-		"node-mainnet-002.elastos.org:20338",
-		"node-mainnet-003.elastos.org:20338",
-		"node-mainnet-004.elastos.org:20338",
 		"node-mainnet-005.elastos.org:20338",
-		"node-mainnet-006.elastos.org:20338",
+		"node-mainnet-010.elastos.org:20338",
+		"node-mainnet-015.elastos.org:20338",
+		"node-mainnet-020.elastos.org:20338",
+		"node-mainnet-025.elastos.org:20338",
 	},
 
 	Foundation:   mainNetFoundation,
@@ -150,7 +150,7 @@ var DefaultParams = Params{
 	CheckAddressHeight:       88812,
 	VoteStartHeight:          290000,
 	CRCOnlyDPOSHeight:        343400,
-	PublicDPOSHeight:         1108812, //fixme edit height later
+	PublicDPOSHeight:         402680,
 	ToleranceDuration:        5 * time.Second,
 	MaxInactiveRounds:        720 * 2,
 	InactivePenalty:          0, //there will be no penalty in this version
@@ -201,7 +201,7 @@ func (p *Params) TestNet() *Params {
 	copy.CheckAddressHeight = 0
 	copy.VoteStartHeight = 200000
 	copy.CRCOnlyDPOSHeight = 246700
-	copy.PublicDPOSHeight = 1108812 //fixme edit height later
+	copy.PublicDPOSHeight = 300000
 	return &copy
 }
 
