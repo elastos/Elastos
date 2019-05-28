@@ -167,7 +167,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalProposals() {
 		s.arbitratorsPriKeys[0], cmpEvidence.Proposal.Data())
 	illegalProposals.CompareEvidence = *cmpEvidence
 
-	asc := evidence.Proposal.Hash().String() < cmpEvidence.Proposal.Hash().String()
+	asc := evidence.Proposal.Hash().Compare(cmpEvidence.Proposal.Hash()) < 0
 	if asc {
 		illegalProposals.Evidence = *cmpEvidence
 		illegalProposals.CompareEvidence = *evidence
@@ -188,7 +188,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalProposals() {
 	cmpEvidence.Proposal.ViewOffset = evidence.Proposal.ViewOffset
 	cmpEvidence.Proposal.Sign, _ = crypto.Sign(
 		s.arbitratorsPriKeys[0], cmpEvidence.Proposal.Data())
-	if evidence.Proposal.Hash().String() < cmpEvidence.Proposal.Hash().String() {
+	if evidence.Proposal.Hash().Compare(cmpEvidence.Proposal.Hash()) < 0 {
 		illegalProposals.Evidence = *evidence
 		illegalProposals.CompareEvidence = *cmpEvidence
 	} else {
@@ -274,7 +274,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalVotes_SameProposal()
 	cmpEvidence.Vote.Sign, _ = crypto.Sign(s.arbitratorsPriKeys[1],
 		cmpEvidence.Vote.Data())
 
-	asc := evidence.Vote.Hash().String() < cmpEvidence.Vote.Hash().String()
+	asc := evidence.Vote.Hash().Compare(cmpEvidence.Vote.Hash()) < 0
 	if asc {
 		illegalVotes.Evidence = *cmpEvidence
 		illegalVotes.CompareEvidence = *evidence
@@ -357,7 +357,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalVotes_DiffProposal()
 		s.arbitrators.CurrentArbitrators[2]
 	s.updateEvidenceSigns(cmpEvidence, s.arbitratorsPriKeys[2],
 		s.arbitratorsPriKeys[1])
-	if evidence.Vote.Hash().String() < cmpEvidence.Vote.Hash().String() {
+	if evidence.Vote.Hash().Compare(cmpEvidence.Vote.Hash()) < 0 {
 		illegalVotes.Evidence = *evidence
 		illegalVotes.CompareEvidence = *cmpEvidence
 	} else {
@@ -372,7 +372,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalVotes_DiffProposal()
 	cmpEvidence.Proposal.ViewOffset = evidence.Proposal.ViewOffset + 1
 	s.updateEvidenceSigns(cmpEvidence, s.arbitratorsPriKeys[0],
 		s.arbitratorsPriKeys[1])
-	if evidence.Vote.Hash().String() < cmpEvidence.Vote.Hash().String() {
+	if evidence.Vote.Hash().Compare(cmpEvidence.Vote.Hash()) < 0 {
 		illegalVotes.Evidence = *evidence
 		illegalVotes.CompareEvidence = *cmpEvidence
 	} else {
@@ -386,7 +386,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalVotes_DiffProposal()
 	cmpEvidence.Proposal.ViewOffset = evidence.Proposal.ViewOffset
 	s.updateEvidenceSigns(cmpEvidence, s.arbitratorsPriKeys[0],
 		s.arbitratorsPriKeys[1])
-	if evidence.Vote.Hash().String() < cmpEvidence.Vote.Hash().String() {
+	if evidence.Vote.Hash().Compare(cmpEvidence.Vote.Hash()) < 0 {
 		illegalVotes.Evidence = *evidence
 		illegalVotes.CompareEvidence = *cmpEvidence
 	} else {
@@ -424,8 +424,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalBlocks() {
 		Signers:      [][]byte{},
 	}
 
-	asc := common.BytesToHexString(evidence.Header) <
-		common.BytesToHexString(cmpEvidence.Header)
+	asc := bytes.Compare(evidence.Header, cmpEvidence.Header) < 0
 	if asc {
 		illegalBlocks.Evidence = *cmpEvidence
 		illegalBlocks.CompareEvidence = *evidence
