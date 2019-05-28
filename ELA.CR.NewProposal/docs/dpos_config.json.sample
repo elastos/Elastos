@@ -4,6 +4,7 @@
       "EnableArbiter": true,
       "IPAddress": "192.168.0.1"
     },
+    "EnableRPC": true,
     "RpcConfiguration": {
       "User": "User",
       "Pass": "Password",
