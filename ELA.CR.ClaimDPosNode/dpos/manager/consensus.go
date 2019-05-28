@@ -79,7 +79,7 @@ func (c *Consensus) StartConsensus(b *types.Block) {
 	defer log.Info("[StartConsensus] consensus end")
 
 	now := c.manager.timeSource.AdjustedTime()
-	c.manager.GetBlockCache().Reset()
+	c.manager.GetBlockCache().Reset(b)
 	c.SetRunning()
 
 	c.manager.GetBlockCache().AddValue(b.Hash(), b)
