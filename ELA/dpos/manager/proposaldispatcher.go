@@ -101,10 +101,6 @@ func (p *ProposalDispatcher) AddPendingVote(v *payload.DPOSProposalVote) {
 	p.pendingVotes[v.Hash()] = v
 }
 
-func (p *ProposalDispatcher) IsProcessingBlockEmpty() bool {
-	return p.processingBlock == nil
-}
-
 func (p *ProposalDispatcher) StartProposal(b *types.Block) {
 	log.Info("[StartProposal] start")
 	defer log.Info("[StartProposal] end")
