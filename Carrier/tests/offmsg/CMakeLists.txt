@@ -89,3 +89,6 @@ install(TARGETS offmsg_tests
 
 install(FILES offmsg_tests.conf
     DESTINATION "etc/carrier")
+
+install(FILES off_msg.sh
+    DESTINATION "etc/carrier")
