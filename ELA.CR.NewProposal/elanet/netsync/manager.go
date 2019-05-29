@@ -122,6 +122,7 @@ type SyncManager struct {
 	requestedBlocks          map[common.Uint256]struct{}
 	requestedConfirmedBlocks map[common.Uint256]struct{}
 	syncPeer                 *peer.Peer
+	syncHeight               uint32
 	peerStates               map[*peer.Peer]*peerSyncState
 }
 
@@ -160,9 +161,6 @@ func (sm *SyncManager) startSync() {
 
 	// Start syncing from the best peer if one was selected.
 	if bestPeer != nil {
-		// Set best peer as sync peer.
-		sm.syncPeer = bestPeer
-
 		// Do not start syncing if we have the same height with best peer.
 		if bestPeer.Height() == bestHeight {
 			return
@@ -184,6 +182,8 @@ func (sm *SyncManager) startSync() {
 		log.Infof("Syncing to block height %d from peer %v",
 			bestPeer.Height(), bestPeer.Addr())
 
+		sm.syncPeer = bestPeer
+		sm.syncHeight = bestPeer.Height()
 		bestPeer.PushGetBlocksMsg(locator, &zeroHash)
 	} else {
 		log.Warnf("No sync peer candidates available")
@@ -409,6 +409,10 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 		return
 	}
 
+	if sm.syncPeer != nil && sm.chain.BestChain.Height >= sm.syncHeight {
+		sm.syncPeer = nil
+	}
+
 	// Request the parents for the orphan block from the peer that sent it.
 	if isOrphan {
 		orphanRoot := sm.chain.GetOrphanRoot(&blockHash)
@@ -417,7 +421,13 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 			log.Warnf("Failed to get block locator for the "+
 				"latest block: %v", err)
 		} else {
-			peer.PushGetBlocksMsg(locator, orphanRoot)
+			if sm.syncPeer == nil {
+				sm.syncPeer = peer
+				sm.syncHeight = bmsg.block.Block.Height
+			}
+			if sm.syncPeer == peer {
+				peer.PushGetBlocksMsg(locator, orphanRoot)
+			}
 		}
 	} else {
 		// Clear the rejected transactions.
@@ -546,7 +556,13 @@ func (sm *SyncManager) handleInvMsg(imsg *invMsg) {
 						"%v", err)
 					continue
 				}
-				peer.PushGetBlocksMsg(locator, orphanRoot)
+				if sm.syncPeer == nil {
+					sm.syncPeer = peer
+					sm.syncHeight = sm.chain.GetOrphan(&iv.Hash).Block.Height
+				}
+				if sm.syncPeer == peer {
+					peer.PushGetBlocksMsg(locator, orphanRoot)
+				}
 				continue
 			}
 		}
