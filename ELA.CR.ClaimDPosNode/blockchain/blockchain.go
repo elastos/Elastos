@@ -430,6 +430,14 @@ func (b *BlockChain) IsKnownOrphan(hash *Uint256) bool {
 	return false
 }
 
+func (b *BlockChain) GetOrphan(hash *Uint256) *OrphanBlock {
+	b.orphanLock.RLock()
+	defer b.orphanLock.RUnlock()
+
+	orphan, _ := b.orphans[*hash]
+	return orphan
+}
+
 func (b *BlockChain) GetOrphanRoot(hash *Uint256) *Uint256 {
 	b.orphanLock.RLock()
 	defer b.orphanLock.RUnlock()
