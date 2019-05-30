@@ -93,11 +93,11 @@ var MainNetParams = config.Params{
 	DefaultPort: 20608,
 
 	DNSSeeds: []string{
-		"node-mainnet-026.elastos.org:20608",
-		"node-mainnet-027.elastos.org:20608",
-		"node-mainnet-028.elastos.org:20608",
-		"node-mainnet-029.elastos.org:20608",
-		"node-mainnet-030.elastos.org:20608",
+		"node-mainnet-005.elastos.org:20608",
+		"node-mainnet-010.elastos.org:20608",
+		"node-mainnet-015.elastos.org:20608",
+		"node-mainnet-020.elastos.org:20608",
+		"node-mainnet-025.elastos.org:20608",
 	},
 
 	Foundation:           mainNetFoundation,
@@ -127,9 +127,9 @@ func testNetParams(cfg config.Params) config.Params {
 	cfg.Magic = 2018102
 	cfg.DefaultPort = 21608
 	cfg.DNSSeeds = []string{
-		"node-testnet-011.elastos.org:21608",
-		"node-testnet-012.elastos.org:21608",
-		"node-testnet-013.elastos.org:21608",
+		"node-testnet-002.elastos.org:21608",
+		"node-testnet-003.elastos.org:21608",
+		"node-testnet-004.elastos.org:21608",
 	}
 	cfg.Foundation = testNetFoundation
 	cfg.CheckPowHeaderHeight = 100000
