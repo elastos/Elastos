@@ -137,7 +137,7 @@ func (i *IllegalBehaviorMonitor) ProcessIllegalProposal(
 	}
 
 	asc := true
-	if first.Hash().Compare(second.Hash()) < 0 {
+	if first.Hash().Compare(second.Hash()) > 0 {
 		asc = false
 	}
 
@@ -245,7 +245,7 @@ func (i *IllegalBehaviorMonitor) ProcessIllegalVote(
 	}
 
 	asc := true
-	if first.Hash().Compare(second.Hash()) < 0 {
+	if first.Hash().Compare(second.Hash()) > 0 {
 		asc = false
 	}
 

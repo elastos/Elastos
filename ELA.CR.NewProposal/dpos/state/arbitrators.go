@@ -223,6 +223,7 @@ func (a *arbitrators) ForceChange(height uint32) error {
 			return err
 		}
 	}
+	a.snapshot(height)
 
 	if err := a.clearingDPOSReward(block, false); err != nil {
 		return err
@@ -236,7 +237,6 @@ func (a *arbitrators) ForceChange(height uint32) error {
 		return err
 	}
 
-	a.snapshot(height)
 	a.mtx.Unlock()
 
 	if a.started {
@@ -260,6 +260,8 @@ func (a *arbitrators) tryHandleError(height uint32, err error) error {
 }
 
 func (a *arbitrators) NormalChange(height uint32) error {
+	a.snapshot(height)
+
 	if err := a.changeCurrentArbitrators(); err != nil {
 		log.Warn("[NormalChange] change current arbiters error: ", err)
 		return err
@@ -270,7 +272,6 @@ func (a *arbitrators) NormalChange(height uint32) error {
 		return err
 	}
 
-	a.snapshot(height)
 	return nil
 }
 
@@ -913,7 +914,7 @@ func (a *arbitrators) getBlockDPOSReward(block *types.Block) common.Fixed64 {
 		totalTxFx += tx.Fee
 	}
 
-	return common.Fixed64(math.Ceil(float64(totalTxFx +
+	return common.Fixed64(math.Ceil(float64(totalTxFx+
 		a.chainParams.RewardPerBlock) * 0.35))
 }
 
@@ -980,7 +981,7 @@ func (a *arbitrators) snapshot(height uint32) {
 
 func (a *arbitrators) GetSnapshot(height uint32) (result []*KeyFrame) {
 	a.mtx.Lock()
-	if height >= a.bestHeight() {
+	if height > a.bestHeight() {
 		// if height is larger than first snapshot then return current key frame
 		result = append(result, a.KeyFrame)
 	} else if height >= a.snapshotKeysDesc[len(a.snapshotKeysDesc)-1] {

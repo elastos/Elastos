@@ -189,10 +189,12 @@ func ProposalContextCheckByHeight(proposal *payload.DPOSProposal,
 	height uint32) error {
 	var isArbiter bool
 	keyFrames := DefaultLedger.Arbitrators.GetSnapshot(height)
+out:
 	for _, k := range keyFrames {
 		for _, a := range k.CurrentArbitrators {
 			if bytes.Equal(a, proposal.Sponsor) {
 				isArbiter = true
+				break out
 			}
 		}
 	}
@@ -261,10 +263,12 @@ func VoteContextCheckByHeight(vote *payload.DPOSProposalVote,
 	height uint32) error {
 	var isArbiter bool
 	keyFrames := DefaultLedger.Arbitrators.GetSnapshot(height)
+out:
 	for _, k := range keyFrames {
 		for _, a := range k.CurrentArbitrators {
 			if bytes.Equal(a, vote.Signer) {
 				isArbiter = true
+				break out
 			}
 		}
 	}
