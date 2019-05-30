@@ -111,7 +111,7 @@ func (bm *BlockPool) CheckConfirmedBlockOnFork(height uint32, block *types.Block
 		}
 
 		asc := true
-		if bytes.Compare(evidence.Header, compareEvidence.Header) < 0 {
+		if bytes.Compare(evidence.Header, compareEvidence.Header) > 0 {
 			asc = false
 		}
 

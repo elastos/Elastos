@@ -50,6 +50,11 @@ func TestArbitrators_GetSnapshot(t *testing.T) {
 	// bestHeight
 	frames = arbitrators.GetSnapshot(bestHeight)
 	assert.Equal(t, 1, len(frames))
+	assert.True(t, bytes.Equal(firstSnapshotPk, frames[0].CurrentArbitrators[0]))
+
+	// bestHeight+1
+	frames = arbitrators.GetSnapshot(bestHeight + 1)
+	assert.Equal(t, 1, len(frames))
 	assert.True(t, bytes.Equal(secondSnapshotPk, frames[0].CurrentArbitrators[0]))
 
 	// > bestHeight
@@ -88,7 +93,7 @@ func TestArbitrators_GetSnapshot(t *testing.T) {
 	// bestHeight
 	frames = arbitrators.GetSnapshot(bestHeight)
 	assert.Equal(t, 1, len(frames))
-	assert.True(t, bytes.Equal(arbitrators.KeyFrame.CurrentArbitrators[0],
+	assert.True(t, bytes.Equal(secondSnapshotPk,
 		frames[0].CurrentArbitrators[0]))
 
 	// > bestHeight
