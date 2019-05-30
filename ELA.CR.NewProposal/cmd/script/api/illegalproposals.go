@@ -81,7 +81,7 @@ func illegalProposalsSetContent(L *lua.LState) int {
 	}
 
 	asc := true
-	if p.Hash().Compare(p2.Hash()) < 0 {
+	if p.Hash().Compare(p2.Hash()) > 0 {
 		asc = false
 	}
 
