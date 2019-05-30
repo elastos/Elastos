@@ -318,169 +318,185 @@ These are located in the `wallets` folder:
 ## DPoS Testing
 
 ### How to register a supernode
-COMING SOON
+
+1. Create a directory to work off of:
+
+  This uses release v0.3.2 binary for ela program but if there's a newer version, make sure to grab that instead
+  ```
+  mkdir -p ~/node/ela
+  cd ~/node/ela
+  wget https://github.com/elastos/Elastos.ELA/releases/download/v0.3.2/ela
+  cp $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-mainchain/ela-cli .
+  ```
+
+2. Let's create a new wallet that we will use to register for our supernode so we'll be both an owner and a node
+
+  ```
+  ./ela-cli wallet create -p elastos
+  ```
+
+  Should return something like:
+  ```
+  ADDRESS                            PUBLIC KEY                                                        
+  ---------------------------------- ------------------------------------------------------------------
+  Ec39reRzMTixsYt7yoXkQWDi7kb5dwbj66 036d49dfbb70932b8aea1218beee8dd7aa5e0aafa7a079cb15ba468d74c38a99cf
+  ---------------------------------- ------------------------------------------------------------------
+  ```
+
+3. Let's send some ELA to this ELA address first because we need 5000 ELA to register for our supernode
+  ```
+  curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": "Ec39reRzMTixsYt7yoXkQWDi7kb5dwbj66","amount": "6000"}]}' localhost:8091/api/1/transfer
+  ```
+
+  Wait for the transaction to confirm(around 6 blocks) and then check your new balance:
+  ```
+  ./ela-cli wallet b
+  ```
+
+  Should return something like:
+  ```
+  INDEX                            ADDRESS BALANCE                           (LOCKED) 
+  ----- ---------------------------------- ------------------------------------------
+      0 Ec39reRzMTixsYt7yoXkQWDi7kb5dwbj66 6000                                   (0) 
+  ----- ---------------------------------- ------------------------------------------
+  ```
+
+4. Modify ela configuration file: `config.json`
+
+  ```json
+  {
+    "Configuration": {
+      "Magic": 7630401,
+      "DisableDNS": true,
+      "PermanentPeers": [
+        "127.0.0.1:10015",
+        "127.0.0.1:10115",
+        "127.0.0.1:10215",
+        "127.0.0.1:10315",
+        "127.0.0.1:10415",
+        "127.0.0.1:10515",
+        "127.0.0.1:10615"
+      ],
+      "HttpRestStart": true,
+      "EnableRPC": true,
+      "PrintLevel": 1,
+      "MaxLogsSize": 0,
+      "MaxPerLogSize": 0,
+      "MinCrossChainTxFee": 10000,
+      "FoundationAddress": "ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw",
+      "DPoSConfiguration": {
+        "EnableArbiter": true,
+        "Magic": 7630403,
+        "PrintLevel": 1,
+        "IPAddress": "127.0.0.1",
+        "SignTolerance": 5,
+        "MaxLogsSize": 0,
+        "MaxPerLogSize": 0,
+        "OriginArbiters": [
+          "02677bd3dc8ea4a9ab22f8ba5c5348fc1ce4ba5f1810e8ec8603d5bd927b630b3e",
+          "0232d3172b7fc139b7605b83cd27e3c6f64fde1e71da2489764723639a6d40b5b9"
+        ],
+        "CRCArbiters": [
+          "0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450",
+          "0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08",
+          "032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a",
+          "02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7"
+        ],
+        "NormalArbitratorsCount": 2,
+        "CandidatesCount": 24,
+        "EmergencyInactivePenalty": 0,
+        "MaxInactiveRounds": 20,
+        "InactivePenalty": 0,
+        "PreConnectOffset": 20
+      },
+      "CheckAddressHeight": 101,
+      "VoteStartHeight": 100,
+      "CRCOnlyDPOSHeight": 200,
+      "PublicDPOSHeight": 500,
+      "RpcConfiguration": {
+        "User": "",
+        "Pass": "",
+        "WhiteIPList": [
+          "0.0.0.0"
+        ]
+      }
+    }
+  }
+  ```
+
+5. Run ela node
+
+  ```bash
+  # This will run the ./ela program in the background and will pass in
+  # the password "elastos" and it sends all the outputted logs to
+  # /dev/null and only captures error logs to a file called "output"
+  echo elastos | nohup ./ela > /dev/null 2>output &
+  ```
+
+6. Modify [./test/register_new_supernode.lua](./test/register_new_supernode.lua) 
+
+  Get deposit_address:
+  ```
+  ./ela-cli wallet depositaddr Ec39reRzMTixsYt7yoXkQWDi7kb5dwbj66
+  ```
+
+  Should output your "deposit_address" that you enter on register_new_supernode.lua script
+  ```
+  DoMwtRqQw6oDEgbwvxs7SFg8rk5C8aGxRB
+  ```
+
+  ```
+  ./ela-cli wallet account -p elastos
+  ```
+
+  Should output your public key that you can enter for both "own_publickey" and "node_publickey" for testing purposes
+
+  Finally, also, make sure to change "nick_name", "url" and "location" to your own choosing.
+
+7. Register your supernode
+
+  ```
+  ./ela-cli script --file $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain/test/register_new_supernode.lua
+  ```
+
+  If the transaction is successful, it should say "tx send success" at the end of the output
+
+8. Verify your supernode got registered successfully
+
+  ```
+  curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"listproducers", "params":{"start":"0"}}' http://localhost:20336 
+  ```
+
+  You should see your new supernode listed there
 
 ### How to vote for a supernode
 
-With our private net, there are already two supernodes that have been registered so let's try to use some ELA from pre-loaded mainchain addresses to vote for both of them and check the results after.
-
-Note that the pre-loaded data already has votes so you check the current votes by doing
-```
-curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"listproducers", "params":{"start":"0","limit":2}}' http://localhost:10014
-```
-
-Should return
-```
-{
-  "error": null,
-  "id": null,
-  "jsonrpc": "2.0",
-  "result": {
-    "producers": [
-      {
-        "ownerpublickey": "03521eb1f20fcb7a792aeed2f747f278ae7d7b38474ee571375ebe1abb3fa2cbbb",
-        "nodepublickey": "0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25",
-        "nickname": "KP Supernode",
-        "url": "www.pachhai.com",
-        "location": 112211,
-        "active": true,
-        "votes": "75000",
-        "state": "Activate",
-        "registerheight": 418,
-        "cancelheight": 0,
-        "inactiveheight": 0,
-        "illegalheight": 0,
-        "index": 0
-      },
-      {
-        "ownerpublickey": "03aa307d123cf3f181e5b9cc2839c4860a27caf5fb329ccde2877c556881451007",
-        "nodepublickey": "021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556",
-        "nickname": "Noderators",
-        "url": "www.noderators.org",
-        "location": 112211,
-        "active": true,
-        "votes": "50000",
-        "state": "Activate",
-        "registerheight": 368,
-        "cancelheight": 0,
-        "inactiveheight": 0,
-        "illegalheight": 0,
-        "index": 1
-      }
-    ],
-    "totalvotes": "125000",
-    "totalcounts": 2
-  }
-}
-```
-
-- Give 140000 votes to Noderators supernode using the address that has 17 million ELA in it
+- Give 500 votes to Noderators supernode using the same wallet
+  ```
   curl -X POST -H "Content-Type: application/json" -d '{
-        "sender":[
-            {
-                "address":"EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s",
-                "privateKey":"109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"
-            }
-        ],
-        "memo":"Voting for Noderators",
-        "receiver":[
-            {
-                "address":"EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s",
-                "amount":"140000",
-                "candidatePublicKeys":["03aa307d123cf3f181e5b9cc2839c4860a27caf5fb329ccde2877c556881451007"]
-            }
-        ]
-    }' localhost:8091/api/1/dpos/vote
-
-  Let's see if this new vote is counted towards the supernode after 2 blocks:
-  ```
-  curl http://localhost:9091/api/1/dpos/producer/03aa307d123cf3f181e5b9cc2839c4860a27caf5fb329ccde2877c556881451007
-  ```
-    
-  Should return
-
-  ```
-  {
-    "result": [
-      {
-        "Producer_public_key": "03aa307d123cf3f181e5b9cc2839c4860a27caf5fb329ccde2877c556881451007",
-        "Vote_type": "Delegate",
-        "Txid": "07831663f0a30d89a8a41b1cd50a4f67c3d91947bcd3aa0aed271f644dbbc858",
-        "Value": "50000",
-        "Address": "EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr",
-        "Block_time": 1557342957,
-        "Height": 473
-      },
-      {
-        "Producer_public_key": "03aa307d123cf3f181e5b9cc2839c4860a27caf5fb329ccde2877c556881451007",
-        "Vote_type": "Delegate",
-        "Txid": "7c6fd446346a4445406ed1e5cd8654846b601cf747f9b197c860aeacea65cbc5",
-        "Value": "140000",
-        "Address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s",
-        "Block_time": 1557451007,
-        "Height": 554
-      }
-    ],
-    "status": 200
-  }
+      "sender":[
+          {
+              "address":"Ec39reRzMTixsYt7yoXkQWDi7kb5dwbj66",
+              "privateKey":"b45d7babf77ad5d6b02291f38a3a0ad4827bbdcb86ab6bd467f1b8ef99ad3235"
+          }
+      ],
+      "memo":"Voting for Dev Workshop Supernode",
+      "receiver":[
+          {
+              "address":"Ec39reRzMTixsYt7yoXkQWDi7kb5dwbj66",
+              "amount":"500",
+              "candidatePublicKeys":["036d49dfbb70932b8aea1218beee8dd7aa5e0aafa7a079cb15ba468d74c38a99cf"]
+          }
+      ]
+  }' localhost:8091/api/1/dpos/vote
   ```
 
-- Give 250,000 votes to KP supernode using the address that has 17 million ELA in it
-  curl -X POST -H "Content-Type: application/json" -d '{
-        "sender":[
-            {
-                "address":"EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s",
-                "privateKey":"109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"
-            }
-        ],
-        "memo":"Voting for KP Supernode",
-        "receiver":[
-            {
-                "address":"EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s",
-                "amount":"140000",
-                "candidatePublicKeys":["03521eb1f20fcb7a792aeed2f747f278ae7d7b38474ee571375ebe1abb3fa2cbbb"]
-            }
-        ]
-    }' localhost:8091/api/1/dpos/vote
-
-  Let's see if this new vote is counted towards the supernode after 2 blocks:
+  After some blocks, your vote will be seen. Let's verify this:
   ```
-  curl http://localhost:9091/api/1/dpos/producer/03521eb1f20fcb7a792aeed2f747f278ae7d7b38474ee571375ebe1abb3fa2cbbb
-  ```
-    
-  Should return
-  ```
-  {
-    "result": [
-      {
-        "Producer_public_key": "03521eb1f20fcb7a792aeed2f747f278ae7d7b38474ee571375ebe1abb3fa2cbbb",
-        "Vote_type": "Delegate",
-        "Txid": "810910a1578c3e05365c0c57eafa2a23122361199e4220084b4e1ba3827b1c57",
-        "Value": "75000",
-        "Address": "EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY",
-        "Block_time": 1557343057,
-        "Height": 479
-      },
-      {
-        "Producer_public_key": "03521eb1f20fcb7a792aeed2f747f278ae7d7b38474ee571375ebe1abb3fa2cbbb",
-        "Vote_type": "Delegate",
-        "Txid": "1a67256af742270e5cafbbad9105dd09815b6bbf037460b7953efe0821854f6a",
-        "Value": "140000",
-        "Address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s",
-        "Block_time": 1557451230,
-        "Height": 576
-      }
-    ],
-    "status": 200
-  }
+  curl --user user:password -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"listproducers", "params":{"start":"0"}}' http://localhost:20336
   ```
 
-- We used the same ELA address to vote twice for two different supernodes at two different times. We know that you can only vote for multiple supernodes with the same transaction and can use 1 ELA to vote up to 36 supernodes. However, note that if you just vote for one supernode and then another supernode as a different transaction, only the second vote will count and the first vote will be void. 
-  ```
-  curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"listproducers", "params":{"start":"0"}}' http://localhost:10014 | jq .
-  ```
-
-  Should return:
+  Should output something like:
   ```
   {
     "error": null,
@@ -495,8 +511,8 @@ Should return
           "url": "www.pachhai.com",
           "location": 112211,
           "active": true,
-          "votes": "215000",
-          "state": "Activate",
+          "votes": "75000",
+          "state": "Active",
           "registerheight": 418,
           "cancelheight": 0,
           "inactiveheight": 0,
@@ -511,19 +527,36 @@ Should return
           "location": 112211,
           "active": true,
           "votes": "50000",
-          "state": "Activate",
+          "state": "Active",
           "registerheight": 368,
           "cancelheight": 0,
           "inactiveheight": 0,
           "illegalheight": 0,
           "index": 1
+        },
+        {
+          "ownerpublickey": "036d49dfbb70932b8aea1218beee8dd7aa5e0aafa7a079cb15ba468d74c38a99cf",
+          "nodepublickey": "036d49dfbb70932b8aea1218beee8dd7aa5e0aafa7a079cb15ba468d74c38a99cf",
+          "nickname": "My new awesome supernode",
+          "url": "www.mynewawesomesupernode.com",
+          "location": 112211,
+          "active": true,
+          "votes": "500",
+          "state": "Active",
+          "registerheight": 1514,
+          "cancelheight": 0,
+          "inactiveheight": 0,
+          "illegalheight": 0,
+          "index": 2
         }
       ],
-      "totalvotes": "265000",
-      "totalcounts": 2
+      "totalvotes": "125500",
+      "totalcounts": 3
     }
   }
   ```
+
+  As you can see, our newly created supernode has 500 votes now
 
 ## DID Sidechain Testing
 
