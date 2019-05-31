@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_LOG_H__
 #define __ELASTOS_SDK_LOG_H__
 
-#include <Config.h>
+#include <CMakeConfig.h>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_sinks.h>
 #include <spdlog/sinks/file_sinks.h>

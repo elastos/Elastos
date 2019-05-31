@@ -10,6 +10,9 @@
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
 #include <SDK/Account/SubAccount.h>
+#include <SDK/WalletCore/BIPs/Base58.h>
+#include <SDK/WalletCore/KeyStore/CoinInfo.h>
+#include <SDK/SpvService/Config.h>
 
 #include <algorithm>
 #include <boost/scoped_ptr.hpp>
@@ -21,34 +24,31 @@ namespace fs = boost::filesystem;
 namespace Elastos {
 	namespace ElaWallet {
 
-		SubWallet::SubWallet(const CoinInfo &info,
-							 const ChainParams &chainParams,
-							 const PluginType &pluginTypes,
+		SubWallet::SubWallet(const CoinInfoPtr &info,
+							 const ChainConfigPtr &config,
 							 MasterWallet *parent) :
-				PeerManager::Listener(pluginTypes),
+				PeerManager::Listener(),
 				_parent(parent),
 				_info(info),
+				_config(config),
 				_syncStartHeight(0) {
 
 			fs::path subWalletDbPath = _parent->_rootPath;
 			subWalletDbPath /= parent->GetId();
-			subWalletDbPath /= info.GetChainId() + DB_FILE_EXTENSION;
+			subWalletDbPath /= info->GetChainID() + DB_FILE_EXTENSION;
 
-			_subAccount = SubAccountPtr(new SubAccount(_parent->_account, _info.GetIndex()));
+			_subAccount = SubAccountPtr(new SubAccount(_parent->_account, _config->Index()));
 			_walletManager = WalletManagerPtr(
 					new SpvService(_subAccount, subWalletDbPath,
-								   _info.GetEarliestPeerTime(), _info.GetReconnectSeconds(),
-								   _info.GetForkId(), pluginTypes,
-									  chainParams));
+								   _info->GetEarliestPeerTime(), _config->DisconnectionTime(),
+								   _config->PluginType(), config->ChainParameters()));
 
 			_walletManager->RegisterWalletListener(this);
 			_walletManager->RegisterPeerManagerListener(this);
 
 			WalletPtr wallet = _walletManager->getWallet();
 			wallet->SetWalletID(_parent->GetId() + ":" + GetChainID());
-			if (info.GetFeePerKb() > 0) {
-				wallet->SetFeePerKb(info.GetFeePerKb());
-			}
+			wallet->SetFeePerKb(info->GetFeePerKB());
 		}
 
 		SubWallet::~SubWallet() {
@@ -56,7 +56,7 @@ namespace Elastos {
 		}
 
 		std::string SubWallet::GetChainID() const {
-			return _info.GetChainId();
+			return _info->GetChainID();
 		}
 
 		const SubWallet::WalletManagerPtr &SubWallet::GetWalletManager() const {
@@ -144,7 +144,7 @@ namespace Elastos {
 				}
 			}
 
-			if (_info.GetChainId() == "ELA") {
+			if (_info->GetChainID() == "ELA") {
 				tx->SetVersion(Transaction::TxVersion::V09);
 			}
 
@@ -247,9 +247,8 @@ namespace Elastos {
 			const uint256 &txHash = transaction->GetHash();
 			_confirmingTxs[txHash] = transaction;
 
-			if (transaction->GetTransactionType() != Transaction::CoinBase && _walletManager->getPeerManager()->SyncSucceeded()) {
-				fireTransactionStatusChanged(txHash, "Added",
-											 transaction->ToJson(), 0);
+			if (transaction->GetTransactionType() != Transaction::CoinBase) {
+				fireTransactionStatusChanged(txHash, "Added", transaction->ToJson(), 0);
 			} else {
 				Log::debug("{} onTxAdded: {}", _walletManager->getWallet()->GetWalletID(), txHash.GetHex());
 			}
@@ -257,7 +256,7 @@ namespace Elastos {
 
 		void SubWallet::onTxUpdated(const uint256 &hash, uint32_t blockHeight, uint32_t timeStamp) {
 			if (_walletManager->GetAllTransactionsCount() == 1) {
-				_info.SetEaliestPeerTime(timeStamp);
+				_info->SetEaliestPeerTime(timeStamp);
 				_parent->Save();
 			}
 
@@ -268,8 +267,8 @@ namespace Elastos {
 			uint32_t txBlockHeight = _confirmingTxs[hash]->GetBlockHeight();
 			uint32_t confirm = txBlockHeight != TX_UNCONFIRMED &&
 								blockHeight >= txBlockHeight ? blockHeight - txBlockHeight + 1 : 0;
-			if (_confirmingTxs[hash]->GetTransactionType() != Transaction::CoinBase &&
-				_walletManager->getPeerManager()->SyncSucceeded()) {
+
+			if (_confirmingTxs[hash]->GetTransactionType() != Transaction::CoinBase) {
 				fireTransactionStatusChanged(hash, "Updated", _confirmingTxs[hash]->ToJson(), confirm);
 			} else {
 				Log::debug("{} onTxUpdated: {}, confirm: {}", _walletManager->getWallet()->GetWalletID(),
@@ -278,12 +277,11 @@ namespace Elastos {
 		}
 
 		void SubWallet::onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
-			boost::mutex::scoped_lock scoped_lock(lock);
+			if (_confirmingTxs.find(hash) != _confirmingTxs.end()) {
+				_confirmingTxs.erase(hash);
+			}
 
-			std::for_each(_callbacks.begin(), _callbacks.end(),
-						  [&hash, &notifyUser, &recommendRescan](ISubWalletCallback *callback) {
-				callback->OnTxDeleted(hash.GetHex(), notifyUser, recommendRescan);
-			});
+			fireTransactionStatusChanged(hash, "Deleted", nlohmann::json(), 0);
 		}
 
 		void SubWallet::onAssetRegistered(const AssetPtr &asset, uint64_t amount, const uint168 &controller) {
@@ -343,8 +341,8 @@ namespace Elastos {
 
 		void SubWallet::syncStarted() {
 			_syncStartHeight = _walletManager->getPeerManager()->GetSyncStartHeight();
-			if (_info.GetEarliestPeerTime() == 0) {
-				_info.SetEaliestPeerTime(time(nullptr));
+			if (_info->GetEarliestPeerTime() == 0) {
+				_info->SetEaliestPeerTime(time(nullptr));
 			}
 
 			boost::mutex::scoped_lock scoped_lock(lock);
@@ -421,23 +419,80 @@ namespace Elastos {
 						  });
 		}
 
-		const CoinInfo &SubWallet::getCoinInfo() {
-			_info.SetFeePerKb(_walletManager->getWallet()->GetFeePerKb());
+		const CoinInfoPtr &SubWallet::GetCoinInfo() const {
 			return _info;
 		}
 
 		void SubWallet::StartP2P() {
-			if (_info.GetEnableP2P())
-				_walletManager->Start();
+			_walletManager->Start();
 		}
 
 		void SubWallet::StopP2P() {
-			if (_info.GetEnableP2P())
-				_walletManager->Stop();
+			_walletManager->Stop();
 		}
 
 		std::string SubWallet::GetPublicKey() const {
 			return _parent->GetPublicKey();
+		}
+
+		nlohmann::json SubWallet::EncodeTransaction(const nlohmann::json &tx) const {
+			Transaction txn;
+
+			txn.FromJson(tx);
+
+			ByteStream stream;
+			txn.Serialize(stream);
+			bytes_t hex = stream.GetBytes();
+
+			nlohmann::json result;
+
+			result["Algorithm"] = "base64";
+			result["Data"] = hex.getBase64();
+			result["ChainID"] = GetChainID();
+
+			return result;
+		}
+
+		nlohmann::json SubWallet::DecodeTransaction(const nlohmann::json &encodedTx) const {
+			Transaction txn;
+
+			if (encodedTx.find("Algorithm") == encodedTx.end() ||
+				encodedTx.find("Data") == encodedTx.end() ||
+				encodedTx.find("ChainID") == encodedTx.end()) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "Invalid input");
+			}
+
+			std::string algorithm, data, chainID;
+
+			try {
+				algorithm = encodedTx["Algorithm"].get<std::string>();
+				data = encodedTx["Data"].get<std::string>();
+				chainID = encodedTx["ChainID"].get<std::string>();
+			} catch (const std::exception &e) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "Invalid input: " + std::string(e.what()));
+			}
+
+			if (chainID != GetChainID()) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument,
+												  "Invalid input: tx is not belongs to current subwallet");
+			}
+
+			bytes_t rawHex;
+			if (algorithm == "base64") {
+				rawHex.setBase64(data);
+			} else if (algorithm == "base58") {
+				if (!Base58::CheckDecode(data, rawHex)) {
+					ErrorChecker::ThrowLogicException(Error::InvalidArgument, "Decode tx from base58 error");
+				}
+			} else {
+				ErrorChecker::CheckCondition(true, Error::InvalidArgument, "Decode tx with unknown algorithm");
+			}
+
+			ByteStream stream(rawHex);
+			ErrorChecker::CheckParam(!txn.Deserialize(stream), Error::InvalidArgument,
+									 "Invalid input: deserialize fail");
+
+			return txn.ToJson();
 		}
 
 		nlohmann::json SubWallet::GetBasicInfo() const {

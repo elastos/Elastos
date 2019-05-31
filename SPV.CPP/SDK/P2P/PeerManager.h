@@ -11,7 +11,6 @@
 
 #include <SDK/Common/Lockable.h>
 #include <SDK/WalletCore/BIPs/BloomFilter.h>
-#include <SDK/P2P/ChainParams.h>
 #include <SDK/Plugin/Interface/IMerkleBlock.h>
 #include <SDK/Plugin/Block/MerkleBlock.h>
 #include <SDK/Plugin/Registry.h>
@@ -27,8 +26,10 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class Wallet;
+		class ChainParams;
 
 		typedef boost::shared_ptr<Wallet> WalletPtr;
+		typedef boost::shared_ptr<ChainParams> ChainParamsPtr;
 		typedef ElementSet<MerkleBlockPtr> BlockSet;
 
 		class PeerManager :
@@ -38,7 +39,7 @@ namespace Elastos {
 
 			class Listener {
 			public:
-				Listener(const PluginType &pluginTypes);
+				Listener();
 
 				virtual ~Listener() {}
 
@@ -68,17 +69,12 @@ namespace Elastos {
 				virtual void blockHeightIncreased(uint32_t blockHeight) = 0;
 
 				virtual void syncIsInactive(uint32_t time) = 0;
-
-				const PluginType &getPluginTypes() const { return _pluginTypes; }
-
-			protected:
-				PluginType _pluginTypes;
 			};
 
 		public:
-			PeerManager(const ChainParams &params,
+			PeerManager(const ChainParamsPtr &params,
 						const WalletPtr &wallet,
-						uint32_t earliestKeyTime,
+						time_t earliestKeyTime,
 						uint32_t reconnectSeconds,
 						const std::vector<MerkleBlockPtr> &blocks,
 						const std::vector<PeerInfo> &peers,
@@ -212,7 +208,7 @@ namespace Elastos {
 
 			void FireSyncIsInactive(uint32_t time);
 
-			int VerifyDifficulty(const ChainParams &params, const MerkleBlockPtr &block,
+			int VerifyDifficulty(const ChainParamsPtr &params, const MerkleBlockPtr &block,
 								 const BlockSet &blockSet);
 
 			int VerifyDifficultyInner(const MerkleBlockPtr &block, const MerkleBlockPtr &previous,
@@ -285,8 +281,8 @@ namespace Elastos {
 			PeerPtr _downloadPeer;
 
 			mutable std::string _downloadPeerName;
-			time_t _keepAliveTimestamp;
-			uint32_t _earliestKeyTime, _reconnectSeconds, _syncStartHeight, _filterUpdateHeight, _estimatedHeight;
+			time_t _keepAliveTimestamp, _earliestKeyTime;
+			uint32_t _reconnectSeconds, _syncStartHeight, _filterUpdateHeight, _estimatedHeight;
 			uint32_t _reconnectStep;
 			BloomFilterPtr _bloomFilter;
 			double _fpRate, _averageTxPerBlock;
@@ -300,7 +296,7 @@ namespace Elastos {
 
 			PluginType _pluginType;
 			WalletPtr _wallet;
-			ChainParams _chainParams;
+			ChainParamsPtr _chainParams;
 			boost::weak_ptr<Listener> _listener;
 		};
 

@@ -19,6 +19,7 @@
 #include <SDK/WalletCore/BIPs/Base58.h>
 #include <SDK/WalletCore/BIPs/BloomFilter.h>
 #include <SDK/Wallet/Wallet.h>
+#include <SDK/P2P/ChainParams.h>
 
 #include <netdb.h>
 #include <netinet/in.h>
@@ -106,13 +107,12 @@ namespace Elastos {
 			}
 		}
 
-		PeerManager::Listener::Listener(const PluginType &pluginTypes) :
-				_pluginTypes(pluginTypes) {
+		PeerManager::Listener::Listener() {
 		}
 
-		PeerManager::PeerManager(const ChainParams &params,
+		PeerManager::PeerManager(const ChainParamsPtr &params,
 								 const WalletPtr &wallet,
-								 uint32_t earliestKeyTime,
+								 time_t earliestKeyTime,
 								 uint32_t reconnectSeconds,
 								 const std::vector<MerkleBlockPtr> &blocks,
 								 const std::vector<PeerInfo> &peers,
@@ -158,13 +158,13 @@ namespace Elastos {
 			SortPeers();
 
 			time_t now = time(nullptr);
-			const std::vector<CheckPoint> &Checkpoints = params.GetCheckpoints();
+			const std::vector<CheckPoint> &Checkpoints = params->Checkpoints();
 			for (size_t i = 0; i < Checkpoints.size(); i++) {
 				MerkleBlockPtr checkBlock = Registry::Instance()->CreateMerkleBlock(_pluginType);
-				checkBlock->SetHeight(Checkpoints[i].GetHeight());
-				checkBlock->SetHash(Checkpoints[i].GetHash());
-				checkBlock->SetTimestamp(Checkpoints[i].GetTimestamp());
-				checkBlock->SetTarget(Checkpoints[i].GetTarget());
+				checkBlock->SetHeight(Checkpoints[i].Height());
+				checkBlock->SetHash(Checkpoints[i].Hash());
+				checkBlock->SetTimestamp(Checkpoints[i].Timestamp());
+				checkBlock->SetTarget(Checkpoints[i].Target());
 				_checkpoints.Insert(checkBlock);
 				_blocks.Insert(checkBlock);
 				if (i == 0 || checkBlock->GetTimestamp() + 1 * 24 * 60 * 60 < earliestKeyTime ||
@@ -293,7 +293,7 @@ namespace Elastos {
 					}
 
 					if (i != SIZE_MAX) {
-						PeerPtr newPeer = PeerPtr(new Peer(this, _chainParams.GetMagicNumber()));
+						PeerPtr newPeer = PeerPtr(new Peer(this, _chainParams->MagicNumber()));
 						newPeer->InitDefaultMessages();
 						newPeer->SetPeerInfo(peers[i]);
 						newPeer->setEarliestKeyTime(_earliestKeyTime);
@@ -349,11 +349,11 @@ namespace Elastos {
 
 			if (_isConnected) {
 				// start the chain download from the most recent checkpoint that's at least a week older than earliestKeyTime
-				const std::vector<CheckPoint> &checkpoints = _chainParams.GetCheckpoints();
+				const std::vector<CheckPoint> &checkpoints = _chainParams->Checkpoints();
 				for (size_t i = checkpoints.size(); i > 0; i--) {
 					if (i - 1 == 0 ||
-						checkpoints[i - 1].GetTimestamp() + 7 * 24 * 60 * 60 < _earliestKeyTime) {
-						uint256 hash = checkpoints[i - 1].GetHash();
+						checkpoints[i - 1].Timestamp() + 7 * 24 * 60 * 60 < _earliestKeyTime) {
+						uint256 hash = checkpoints[i - 1].Hash();
 						_lastBlock = _blocks.Get(hash);
 						break;
 					}
@@ -467,7 +467,7 @@ namespace Elastos {
 				*(uint16_t *)&address.begin()[10] = 0xffff;
 				*(uint32_t *)&address.begin()[12] = addr.s_addr;
 				if (port == 0)
-					_port = _chainParams.GetStandardPort();
+					_port = _chainParams->StandardPort();
 			} else {
 				_port = 0;
 			}
@@ -583,12 +583,12 @@ namespace Elastos {
 			return count;
 		}
 
-		int PeerManager::VerifyDifficulty(const ChainParams &params, const MerkleBlockPtr &block,
+		int PeerManager::VerifyDifficulty(const ChainParamsPtr &params, const MerkleBlockPtr &block,
 										  const BlockSet &blockSet) {
 			MerkleBlockPtr previous, b = nullptr;
 			uint32_t i;
-			const uint32_t &targetTimeSpan = params.GetTargetTimeSpan();
-			const uint32_t &targetTimePerBlock = params.GetTargetTimePerBlock();
+			const uint32_t &targetTimeSpan = params->TargetTimeSpan();
+			const uint32_t &targetTimePerBlock = params->TargetTimePerBlock();
 
 			assert(block != nullptr);
 
@@ -741,7 +741,7 @@ namespace Elastos {
 		}
 
 		void PeerManager::FindPeers() {
-			uint64_t services = SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM | _chainParams.GetServices();
+			uint64_t services = SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM | _chainParams->Services();
 			time_t now = time(NULL);
 			struct timespec ts;
 
@@ -757,7 +757,7 @@ namespace Elastos {
 				_peers[0].Services = services;
 				_peers[0].Timestamp = now;
 			} else {
-				const std::vector<std::string> &dnsSeeds = _chainParams.GetDNSSeeds();
+				const std::vector<std::string> &dnsSeeds = _chainParams->DNSSeeds();
 				for (size_t i = 1; i < dnsSeeds.size(); i++) {
 					boost::thread workThread(boost::bind(&PeerManager::FindPeersThreadRoutine, this, dnsSeeds[i], services));
 					_dnsThreadCount++;
@@ -766,7 +766,7 @@ namespace Elastos {
 				std::vector<uint128> addrList = AddressLookup(dnsSeeds[0]);
 				for (std::vector<uint128>::iterator addr = addrList.begin();
 					 addr != addrList.end() && (*addr) != 0; addr++) {
-					_peers.emplace_back(*addr, _chainParams.GetStandardPort(), now, services);
+					_peers.emplace_back(*addr, _chainParams->StandardPort(), now, services);
 				}
 
 				ts.tv_sec = 0;
@@ -850,7 +850,7 @@ namespace Elastos {
 				peer->SetTimestamp(now); // sanity check
 
 			// TODO: XXX does this work with 0.11 pruned nodes?
-			if ((peer->GetServices() & _chainParams.GetServices()) != _chainParams.GetServices()) {
+			if ((peer->GetServices() & _chainParams->Services()) != _chainParams->Services()) {
 				peer->warn("unsupported node type");
 				peer->Disconnect();
 			} else if ((peer->GetServices() & SERVICES_NODE_NETWORK) != SERVICES_NODE_NETWORK) {
@@ -1432,7 +1432,7 @@ namespace Elastos {
 					peer->info("marking new block #{} as orphan until rescan completes", block->GetHeight());
 					_orphans.insert(block); // mark as orphan til we're caught up
 					_lastOrphan = block;
-				} else if (block->GetHeight() <= _chainParams.GetLastCheckpoint().GetHeight()) { // old fork
+				} else if (block->GetHeight() <= _chainParams->LastCheckpoint().Height()) { // old fork
 					peer->info("ignoring block on fork older than most recent checkpoint, block #{}, hash: {}",
 							   block->GetHeight(), block->GetHash().GetHex());
 				} else { // new block is on a fork
@@ -1892,7 +1892,7 @@ namespace Elastos {
 				}
 			}
 
-			locators.push_back(_chainParams.GetFirstCheckpoint().GetHash());
+			locators.push_back(_chainParams->FirstCheckpoint().Hash());
 			return locators;
 		}
 
@@ -2083,7 +2083,7 @@ namespace Elastos {
 
 			boost::mutex::scoped_lock scopedLock(lock);
 			for (std::vector<uint128>::iterator addr = addrList.begin(); addr != addrList.end() && (*addr) != 0; addr++) {
-				_peers.emplace_back(*addr, _chainParams.GetStandardPort(), now, services);
+				_peers.emplace_back(*addr, _chainParams->StandardPort(), now, services);
 			}
 			_dnsThreadCount--;
 		}

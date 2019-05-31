@@ -27,9 +27,8 @@ namespace Elastos {
 		protected:
 			friend class MasterWallet;
 
-			SidechainSubWallet(const CoinInfo &info,
-							   const ChainParams &chainParams,
-							   const PluginType &pluginTypes,
+			SidechainSubWallet(const CoinInfoPtr &info,
+							   const ChainConfigPtr &config,
 							   MasterWallet *parent);
 
 		};

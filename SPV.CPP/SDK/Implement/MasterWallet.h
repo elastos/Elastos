@@ -5,12 +5,10 @@
 #ifndef __ELASTOS_SDK_MASTERWALLET_H__
 #define __ELASTOS_SDK_MASTERWALLET_H__
 
-#include <SDK/SpvService/CoinConfig.h>
 #include <SDK/WalletCore/BIPs/Mnemonic.h>
 #include <SDK/WalletCore/KeyStore/KeyStore.h>
-#include <SDK/WalletCore/KeyStore/CoinInfo.h>
 #include <SDK/SpvService/LocalStore.h>
-#include "../IDAgent/IDAgentImpl.h"
+#include <SDK/IDAgent/IDAgentImpl.h>
 #include <SDK/Plugin/Registry.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
 #include <SDK/Account/Account.h>
@@ -26,12 +24,16 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class CoinInfo;
-
 		class ChainParams;
-
 		class SubWallet;
-
 		class KeyStore;
+		class Config;
+		class ChainConfig;
+
+		typedef boost::shared_ptr<CoinInfo> CoinInfoPtr;
+		typedef boost::shared_ptr<ChainParams> ChainParamsPtr;
+		typedef boost::shared_ptr<Config> ConfigPtr;
+		typedef boost::shared_ptr<ChainConfig> ChainConfigPtr;
 
 		typedef enum {
 			CreateNormal,          // Select newest check point
@@ -63,7 +65,7 @@ namespace Elastos {
 
 			virtual ISubWallet *CreateSubWallet(
 					const std::string &chainID,
-					uint64_t feePerKb = 0);
+					uint64_t feePerKB);
 
 			virtual void DestroyWallet(ISubWallet *wallet);
 
@@ -179,17 +181,14 @@ namespace Elastos {
 
 			std::string exportMnemonic(const std::string &payPassword);
 
-			SubWallet *SubWalletFactoryMethod(const CoinInfo &info,
-											  const CoinConfig &config,
-											  const ChainParams &chainParams,
+			SubWallet *SubWalletFactoryMethod(const CoinInfoPtr &info,
+											  const ChainConfigPtr &config,
 											  MasterWallet *parent);
 
 
 			virtual void startPeerManager(SubWallet *wallet);
 
 			virtual void stopPeerManager(SubWallet *wallet);
-
-			void tryInitCoinConfig() const;
 
 		protected:
 			WalletMap _createdWallets;
@@ -203,7 +202,7 @@ namespace Elastos {
 			std::string _id;
 			std::string _rootPath;
 
-			mutable CoinConfigReader _coinConfigReader;
+			ConfigPtr _config;
 			boost::shared_ptr<IDAgentImpl> _idAgentImpl;
 			bool _p2pEnable;
 

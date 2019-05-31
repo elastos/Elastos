@@ -6,12 +6,15 @@
 #define __ELASTOS_SDK_ELANEWWALLETJSON_H__
 
 #include "ElaWebWalletJson.h"
-#include "CoinInfo.h"
 
-#include <SDK/Common/Mstream.h>
+#include <boost/shared_ptr.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {
+
+		class CoinInfo;
+
+		typedef boost::shared_ptr<CoinInfo> CoinInfoPtr;
 
 		class ElaNewWalletJson :
 				public ElaWebWalletJson {
@@ -20,13 +23,13 @@ namespace Elastos {
 
 			~ElaNewWalletJson();
 
-			void AddCoinInfo(const CoinInfo &info) { _coinInfoList.push_back(info); }
+			void AddCoinInfo(const CoinInfoPtr &info) { _coinInfoList.push_back(info); }
 
 			void ClearCoinInfo() { _coinInfoList.clear(); }
 
-			const std::vector<CoinInfo> &GetCoinInfoList() const { return _coinInfoList; }
+			const std::vector<CoinInfoPtr> &GetCoinInfoList() const { return _coinInfoList; }
 
-			void SetCoinInfoList(const std::vector<CoinInfo> &list) { _coinInfoList = list; }
+			void SetCoinInfoList(const std::vector<CoinInfoPtr> &list) { _coinInfoList = list; }
 
 			const std::string &PassPhrase() const { return _passphrase; }
 
@@ -38,27 +41,21 @@ namespace Elastos {
 
 			bool Old() const { return _old; }
 
-			ElaNewWalletJson &operator=(const nlohmann::json &j) {
-				from_json(j, *this);
-				return *this;
-			}
+			virtual nlohmann::json ToJson(bool withPrivKey) const;
 
-			nlohmann::json ToJson(bool withPrivKey) const {
-				nlohmann::json j;
-				to_json(j, *this, withPrivKey);
-				return j;
-			}
+			virtual void FromJson(const nlohmann::json &j);
 
-			void FromJson(const nlohmann::json &j) {
-				from_json(j, *this);
-			}
-
-			friend void to_json(nlohmann::json &j, const ElaNewWalletJson &p, bool withPrivKey);
+			friend void to_json(nlohmann::json &j, const ElaNewWalletJson &p);
 
 			friend void from_json(const nlohmann::json &j, ElaNewWalletJson &p);
 
 		private:
-			std::vector<CoinInfo> _coinInfoList;
+			void ToJsonCommon(nlohmann::json &j) const;
+
+			void FromJsonCommon(const nlohmann::json &j);
+
+		private:
+			std::vector<CoinInfoPtr> _coinInfoList;
 			std::string _passphrase __attribute((deprecated));
 			bool _singleAddress;
 

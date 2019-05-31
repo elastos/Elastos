@@ -5,7 +5,6 @@
 #ifndef __ELASTOS_SDK_LOCALSTORE_H__
 #define __ELASTOS_SDK_LOCALSTORE_H__
 
-#include <SDK/WalletCore/KeyStore/CoinInfo.h>
 #include <SDK/IDAgent/IDAgentImpl.h>
 #include <SDK/WalletCore/KeyStore/KeyStore.h>
 
@@ -14,6 +13,10 @@
 
 namespace Elastos {
 	namespace ElaWallet {
+
+		class CoinInfo;
+
+		typedef boost::shared_ptr<CoinInfo> CoinInfoPtr;
 
 		class LocalStore {
 		public:
@@ -90,11 +93,11 @@ namespace Elastos {
 
 			void SetReadonly(bool status) { _readonly = status; }
 
-			const std::vector<CoinInfo> &GetSubWalletInfoList() const { return _subWalletsInfoList; }
+			const std::vector<CoinInfoPtr> &GetSubWalletInfoList() const { return _subWalletsInfoList; }
 
-			void AddSubWalletInfoList(const CoinInfo &info) { _subWalletsInfoList.push_back(info); }
+			void AddSubWalletInfoList(const CoinInfoPtr &info) { _subWalletsInfoList.push_back(info); }
 
-			void SetSubWalletInfoList(const std::vector<CoinInfo> &infoList) { _subWalletsInfoList = infoList; }
+			void SetSubWalletInfoList(const std::vector<CoinInfoPtr> &infoList) { _subWalletsInfoList = infoList; }
 
 			void ClearSubWalletInfoList() { _subWalletsInfoList.clear(); }
 
@@ -131,7 +134,7 @@ namespace Elastos {
 			bool _singleAddress;
 			bool _readonly;
 
-			std::vector<CoinInfo> _subWalletsInfoList;
+			std::vector<CoinInfoPtr> _subWalletsInfoList;
 		private:
 			std::string _path; // rootPath + masterWalletID
 		};

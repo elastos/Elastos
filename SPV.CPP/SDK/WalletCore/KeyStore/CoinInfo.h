@@ -5,8 +5,6 @@
 #ifndef __ELASTOS_SDK_ELACOINPATH_H__
 #define __ELASTOS_SDK_ELACOINPATH_H__
 
-#include <SDK/Implement/SubWalletType.h>
-#include <SDK/Common/Mstream.h>
 #include <SDK/Common/uint256.h>
 
 #include <nlohmann/json.hpp>
@@ -21,45 +19,17 @@ namespace Elastos {
 		public:
 			CoinInfo();
 
-			const std::string &GetChainId() const { return _chainId; }
+			const std::string &GetChainID() const { return _chainID; }
 
-			void SetChainId(const std::string &id) { _chainId = id; }
+			void SetChainID(const std::string &id) { _chainID = id; }
 
-			uint32_t GetEarliestPeerTime() const { return _earliestPeerTime; }
+			time_t GetEarliestPeerTime() const { return _earliestPeerTime; }
 
-			void SetEaliestPeerTime(uint32_t time) { _earliestPeerTime = time; }
+			void SetEaliestPeerTime(time_t time) { _earliestPeerTime = time; }
 
-			uint32_t GetReconnectSeconds() const { return _reconnectSeconds; }
+			uint64_t GetFeePerKB() const { return _feePerKB; }
 
-			void SetReconnectSeconds(uint32_t reconnectSeconds) { _reconnectSeconds = reconnectSeconds; }
-
-			uint32_t GetIndex() const { return _index; }
-
-			void SetIndex(uint32_t index) { _index = index; }
-
-			uint64_t GetFeePerKb() const { return _feePerKb; }
-
-			void SetFeePerKb(uint64_t fee) { _feePerKb = fee; }
-
-			int GetForkId() const { return _forkId; }
-
-			void SetForkId(int forkId) { _forkId = forkId; }
-
-			SubWalletType GetWalletType() const { return _walletType; }
-
-			void SetWalletType(SubWalletType type) { _walletType = type; }
-
-			uint64_t GetMinFee() const { return _minFee; }
-
-			void SetMinFee(uint64_t fee) { _minFee = fee; }
-
-			const std::string &GetGenesisAddress() const { return _genesisAddress; }
-
-			void SetGenesisAddress(const std::string &address) { _genesisAddress = address; }
-
-			bool GetEnableP2P() const { return _enableP2P; }
-
-			void SetEnableP2P(bool enable) { _enableP2P = enable; }
+			void SetFeePerKB(uint64_t fee) { _feePerKB = fee; }
 
 			const std::vector<uint256> &GetVisibleAssets() const { return _visibleAssets; }
 
@@ -71,24 +41,18 @@ namespace Elastos {
 
 			void SetVisibleAsset(const uint256 &assetID);
 
-		private:
-			TO_JSON(CoinInfo);
+			nlohmann::json ToJson() const;
 
-			FROM_JSON(CoinInfo);
+			void FromJson(const nlohmann::json &j);
 
 		private:
-			std::string _chainId;
-			uint32_t _earliestPeerTime;
-			uint32_t _reconnectSeconds;
-			int _forkId;
-			uint32_t _index;
-			bool _enableP2P;
-			uint64_t _minFee;
-			uint64_t _feePerKb;
-			SubWalletType _walletType;
-			std::string _genesisAddress;
+			std::string _chainID;
+			time_t _earliestPeerTime;
+			uint64_t _feePerKB;
 			std::vector<uint256> _visibleAssets;
 		};
+
+		typedef boost::shared_ptr<CoinInfo> CoinInfoPtr;
 
 	}
 }

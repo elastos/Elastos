@@ -66,7 +66,7 @@ namespace Elastos {
 			 */
 			virtual ISubWallet *CreateSubWallet(
 					const std::string &chainID,
-					uint64_t feePerKb = 0) = 0;
+					uint64_t feePerKB) = 0;
 
 			/**
 			 * Destroy a sub wallet created by the master wallet.

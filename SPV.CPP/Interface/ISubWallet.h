@@ -215,6 +215,21 @@ namespace Elastos {
 			 * @return root public key with hex string format.
 			 */
 			virtual std::string GetPublicKey() const = 0;
+
+			/**
+			 * Encode transaction serialized bytes into base64.
+			 * @param tx transaction in json format.
+			 * @return encoded transaction in json format.
+			 */
+			virtual nlohmann::json EncodeTransaction(const nlohmann::json &tx) const = 0;
+
+			/**
+			 * Decode transaction from encoded message.
+			 * @param encodedTx encoded message by EncodeTransaction().
+			 * @return transaction in json format.
+			 */
+			virtual nlohmann::json DecodeTransaction(const nlohmann::json &encodedTx) const = 0;
+
 		};
 
 	}

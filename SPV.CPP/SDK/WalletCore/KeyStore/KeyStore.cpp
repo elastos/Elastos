@@ -47,7 +47,7 @@ namespace Elastos {
 			bytes_t plaintext = AES::DecryptCCM(sjcl.GetCt(), passwd, sjcl.GetSalt(), sjcl.GetIv(), sjcl.GetAdata(),
 												sjcl.GetKs());
 
-			_walletJson = nlohmann::json::parse(std::string((char *)&plaintext[0], plaintext.size()));
+			_walletJson.FromJson(nlohmann::json::parse(std::string((char *)&plaintext[0], plaintext.size())));
 
 			return true;
 		}

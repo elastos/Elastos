@@ -71,6 +71,8 @@ namespace Elastos {
 				InvalidLocalStore = 20051,
 				MasterWalletNotExist = 20052,
 				InvalidAsset = 20053,
+				ReadConfigFileError = 20054,
+				InvalidChainID = 20055,
 				Other = 29999,
 			} Code;
 		}

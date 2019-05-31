@@ -5,7 +5,6 @@
 #ifndef __ELASTOS_SDK_SUBWALLET_H__
 #define __ELASTOS_SDK_SUBWALLET_H__
 
-#include <SDK/WalletCore/KeyStore/CoinInfo.h>
 #include <SDK/P2P/ChainParams.h>
 #include <SDK/SpvService/SpvService.h>
 #include <SDK/Account/SubAccount.h>
@@ -21,8 +20,13 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class MasterWallet;
-
 		class Transaction;
+		class ChainConfig;
+		class CoinInfo;
+
+		typedef boost::shared_ptr<Transaction> TransactionPtr;
+		typedef boost::shared_ptr<ChainConfig> ChainConfigPtr;
+		typedef boost::shared_ptr<CoinInfo> CoinInfoPtr;
 
 		class SubWallet : public virtual ISubWallet,
 						  public Wallet::Listener,
@@ -99,6 +103,10 @@ namespace Elastos {
 
 			virtual std::string GetPublicKey() const;
 
+			virtual nlohmann::json EncodeTransaction(const nlohmann::json &tx) const;
+
+			virtual nlohmann::json DecodeTransaction(const nlohmann::json &encodedTx) const;
+
 		protected: //implement Wallet::Listener
 			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
 
@@ -140,9 +148,8 @@ namespace Elastos {
 		protected:
 			friend class MasterWallet;
 
-			SubWallet(const CoinInfo &info,
-					  const ChainParams &chainParams,
-					  const PluginType &pluginTypes,
+			SubWallet(const CoinInfoPtr &info,
+					  const ChainConfigPtr &config,
 					  MasterWallet *parent);
 
 			virtual TransactionPtr CreateTx(
@@ -160,13 +167,14 @@ namespace Elastos {
 			virtual void fireTransactionStatusChanged(const uint256 &txid, const std::string &status,
 													  const nlohmann::json &desc, uint32_t confirms);
 
-			const CoinInfo &getCoinInfo();
+			const CoinInfoPtr &GetCoinInfo() const;
 
 		protected:
 			WalletManagerPtr _walletManager;
 			std::vector<ISubWalletCallback *> _callbacks;
 			MasterWallet *_parent;
-			CoinInfo _info;
+			CoinInfoPtr _info;
+			ChainConfigPtr _config;
 			SubAccountPtr _subAccount;
 
 			typedef std::map<uint256, TransactionPtr> TransactionMap;

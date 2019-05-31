@@ -119,7 +119,7 @@ namespace Elastos {
 			 * @param masterWalletId master wallet id.
 			 * @return master wallet object.
 			 */
-			virtual IMasterWallet *GetWallet(
+			virtual IMasterWallet *GetMasterWallet(
 					const std::string &masterWalletId) const = 0;
 
 			/**

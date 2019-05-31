@@ -12,8 +12,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		CoreSpvService::CoreSpvService(const PluginType &pluginTypes, const ChainParams &chainParams) :
-				PeerManager::Listener(pluginTypes),
+		CoreSpvService::CoreSpvService(const PluginType &pluginTypes, const ChainParamsPtr &chainParams) :
 				_wallet(nullptr),
 				_walletListener(nullptr),
 				_peerManager(nullptr),
@@ -27,9 +26,8 @@ namespace Elastos {
 
 		}
 
-		void CoreSpvService::init(const SubAccountPtr &subAccount, uint32_t earliestPeerTime, uint32_t reconnectSeconds) {
+		void CoreSpvService::init(const SubAccountPtr &subAccount, time_t earliestPeerTime, uint32_t reconnectSeconds) {
 			_subAccount = subAccount;
-			_earliestPeerTime = earliestPeerTime;
 			_reconnectSeconds = reconnectSeconds;
 
 			std::vector<TransactionPtr>  txs = loadTransactions();
@@ -42,7 +40,7 @@ namespace Elastos {
 				_peerManager = PeerManagerPtr(new PeerManager(
 						_chainParams,
 						getWallet(),
-						_earliestPeerTime,
+						earliestPeerTime,
 						_reconnectSeconds,
 						loadBlocks(),
 						loadPeers(),
@@ -150,7 +148,7 @@ namespace Elastos {
 		const CoreSpvService::PeerManagerListenerPtr &CoreSpvService::createPeerManagerListener() {
 			if (_peerManagerListener == nullptr) {
 				_peerManagerListener = PeerManagerListenerPtr(
-						new WrappedExceptionPeerManagerListener(this, _pluginTypes));
+						new WrappedExceptionPeerManagerListener(this));
 			}
 			return _peerManagerListener;
 		}
@@ -162,9 +160,7 @@ namespace Elastos {
 			return _walletListener;
 		}
 
-		WrappedExceptionPeerManagerListener::WrappedExceptionPeerManagerListener(PeerManager::Listener *listener,
-																				 const PluginType &pluginTypes) :
-				PeerManager::Listener(pluginTypes),
+		WrappedExceptionPeerManagerListener::WrappedExceptionPeerManagerListener(PeerManager::Listener *listener) :
 				_listener(listener) {
 		}
 
@@ -279,7 +275,6 @@ namespace Elastos {
 				Executor *executor,
 				Executor *reconnectExecutor,
 				const PluginType &pluginType) :
-				PeerManager::Listener(pluginType),
 				_listener(listener),
 				_executor(executor),
 				_reconnectExecutor(reconnectExecutor) {

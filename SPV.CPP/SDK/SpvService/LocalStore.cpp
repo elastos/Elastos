@@ -10,6 +10,7 @@
 #include <SDK/WalletCore/BIPs/Base58.h>
 #include <SDK/WalletCore/BIPs/BIP39.h>
 #include <SDK/WalletCore/Crypto/AES.h>
+#include <SDK/WalletCore/KeyStore/CoinInfo.h>
 
 #include <fstream>
 
@@ -265,24 +266,27 @@ namespace Elastos {
 		}
 
 		void to_json(nlohmann::json &j, const LocalStore &p) {
-			j = nlohmann::json{
-				{"xPrivKey", p._xPrivKey},
-				{"xPubKey", p._xPubKey},
-				{"requestPrivKey", p._requestPrivKey},
-				{"requestPubKey", p._requestPubKey},
-				{"publicKeyRing", p._publicKeyRing},
-				{"m", p._m},
-				{"n", p._n},
-				{"mnemonicHasPassphrase", p._mnemonicHasPassphrase},
-				{"derivationStrategy", p._derivationStrategy},
-				{"account", p._account},
-				{"mnemonic", p._mnemonic},
-				{"passphrase", p._passphrase},
-				{"ownerPubKey", p._ownerPubKey},
-				{"singleAddress", p._singleAddress},
-				{"readonly", p._readonly},
-				{"coinInfo", p._subWalletsInfoList}
-			};
+			j["xPrivKey"] = p._xPrivKey;
+			j["xPubKey"] = p._xPubKey;
+			j["requestPrivKey"] = p._requestPrivKey;
+			j["requestPubKey"] = p._requestPubKey;
+			j["publicKeyRing"] = p._publicKeyRing;
+			j["m"] = p._m;
+			j["n"] = p._n;
+			j["mnemonicHasPassphrase"] = p._mnemonicHasPassphrase;
+			j["derivationStrategy"] = p._derivationStrategy;
+			j["account"] = p._account;
+			j["mnemonic"] = p._mnemonic;
+			j["passphrase"] = p._passphrase;
+			j["ownerPubKey"] = p._ownerPubKey;
+			j["singleAddress"] = p._singleAddress;
+			j["readonly"] = p._readonly;
+
+			nlohmann::json jCoinInfo;
+			for (size_t i = 0; i < p._subWalletsInfoList.size(); ++i) {
+				jCoinInfo.push_back(p._subWalletsInfoList[i]->ToJson());
+			}
+			j["coinInfo"] = jCoinInfo;
 		}
 
 		void from_json(const nlohmann::json &j, LocalStore &p) {
@@ -304,7 +308,14 @@ namespace Elastos {
 					p._ownerPubKey = j["ownerPubKey"].get<std::string>();
 					p._singleAddress = j["singleAddress"].get<bool>();
 					p._readonly = j["readonly"].get<bool>();
-					p._subWalletsInfoList = j["coinInfo"].get<std::vector<CoinInfo>>();
+
+					p._subWalletsInfoList.clear();
+					nlohmann::json jCoinInfo = j["coinInfo"];
+					for (nlohmann::json::iterator it = jCoinInfo.begin(); it != jCoinInfo.end(); ++it) {
+						CoinInfoPtr coinInfo(new CoinInfo());
+						coinInfo->FromJson((*it));
+						p._subWalletsInfoList.push_back(coinInfo);
+					}
 				} else {
 					// old version of localstore
 					bytes_t bytes;
@@ -334,8 +345,17 @@ namespace Elastos {
 
 					nlohmann::json jaccount = j["Account"];
 
-					if (j.find("SubWallets") != j.end())
-						p._subWalletsInfoList = j["SubWallets"].get<std::vector<CoinInfo>>();
+					if (j.find("SubWallets") != j.end()) {
+						p._subWalletsInfoList.clear();
+						nlohmann::json jCoinInfo = j["SubWallets"];
+						for (nlohmann::json::iterator it = jCoinInfo.begin(); it != jCoinInfo.end(); ++it) {
+							CoinInfoPtr coinInfo(new CoinInfo());
+							coinInfo->FromJson((*it));
+							p._subWalletsInfoList.push_back(coinInfo);
+						}
+					}
+
+
 					if (jaccount.find("CoSigners") != jaccount.end()) {
 						// 1. multi sign
 						std::vector<std::string> coSigners = jaccount["CoSigners"];

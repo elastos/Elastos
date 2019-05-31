@@ -2,12 +2,12 @@ add_custom_target(
 	auto_run_test ALL
 )
 
-add_custom_command(
+add_custom_target(
+	copy_test_data
 	COMMENT "Copy Data to Test..."
-	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Data
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../Data ${CMAKE_CURRENT_BINARY_DIR}/Data
-	)
-add_custom_target(copy_test_data DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Data)
+	DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Data
+)
 
 unset(AUTO_TEST_COMMAND)
 
@@ -39,5 +39,6 @@ if(NOT ${SPV_PLATFORM} STREQUAL ${SPV_PLATFORM_ANDROID} AND NOT ${SPV_PLATFORM} 
 		POST_BUILD
 		COMMAND ${AUTO_TEST_COMMAND}
 		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+		DEPENDS copy_test_data
 	)
 endif()

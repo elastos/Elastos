@@ -1,10 +1,10 @@
 
-add_custom_command(
+add_custom_target(
+	copy_sample_data
 	COMMENT "Copy Data to Sample..."
-	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Data
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../Data ${CMAKE_CURRENT_BINARY_DIR}/Data
-	)
-add_custom_target(copy_sample_data DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Data)
+	DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Data
+)
 
 set(SAMPLE_NAME sample)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} SAMPLE_SOURCE_FILES)

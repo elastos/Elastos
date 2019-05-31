@@ -4,8 +4,6 @@
 
 #include "BitcoreWalletClientJson.h"
 
-
-
 namespace Elastos {
 	namespace ElaWallet {
 
@@ -21,6 +19,15 @@ namespace Elastos {
 			p._requestPubKey = j["requestPubKey"].get<std::string>();
 		}
 
+		nlohmann::json PublicKeyRing::ToJson() const {
+			nlohmann::json j;
+			to_json(j, *this);
+			return j;
+		}
+
+		void PublicKeyRing::FromJson(const nlohmann::json &j) {
+			from_json(j, *this);
+		}
 
 		BitcoreWalletClientJson::BitcoreWalletClientJson() :
 				_m(0),
@@ -36,9 +43,22 @@ namespace Elastos {
 			_requestPrivKey.resize(_requestPrivKey.size(), 0);
 		}
 
-		void to_json(nlohmann::json &j, const BitcoreWalletClientJson &p, bool withPrivKey) {
-			if (withPrivKey && !p._xPrivKey.empty())
-				j["xPrivKey"] = p._xPrivKey;
+		nlohmann::json BitcoreWalletClientJson::ToJson(bool withPrivKey) const {
+			nlohmann::json j;
+			to_json(j, *this);
+
+			if (!withPrivKey)
+				j.erase("xPrivKey");
+
+			return j;
+		}
+
+		void BitcoreWalletClientJson::FromJson(const nlohmann::json &j) {
+			from_json(j, *this);
+		}
+
+		void to_json(nlohmann::json &j, const BitcoreWalletClientJson &p) {
+			j["xPrivKey"] = p._xPrivKey;
 			j["coin"] = p._coin;
 			j["network"] = p._network;
 			j["xPubKey"] = p._xPubKey;

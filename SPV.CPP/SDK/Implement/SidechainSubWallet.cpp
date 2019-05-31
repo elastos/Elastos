@@ -6,7 +6,7 @@
 
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadTransferCrossChainAsset.h>
-
+#include <SDK/SpvService/Config.h>
 #include <Core/BRAddress.h>
 
 #include <vector>
@@ -16,10 +16,10 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		SidechainSubWallet::SidechainSubWallet(const CoinInfo &info,
-											   const ChainParams &chainParams, const PluginType &pluginTypes,
+		SidechainSubWallet::SidechainSubWallet(const CoinInfoPtr &info,
+											   const ChainConfigPtr &config,
 											   MasterWallet *parent) :
-				SubWallet(info, chainParams, pluginTypes, parent) {
+				SubWallet(info, config, parent) {
 
 		}
 
@@ -45,7 +45,7 @@ namespace Elastos {
 												  "main chain message error: " + std::string(e.what()));
 			}
 
-			TransactionPtr tx = CreateTx(fromAddress, ELA_SIDECHAIN_DESTROY_ADDR, amount + _info.GetMinFee(),
+			TransactionPtr tx = CreateTx(fromAddress, ELA_SIDECHAIN_DESTROY_ADDR, amount + _config->MinFee(),
 										 Asset::GetELAAssetID(), memo);
 			ErrorChecker::CheckLogic(tx == nullptr, Error::CreateTransaction, "Create withdraw tx");
 
@@ -55,7 +55,7 @@ namespace Elastos {
 		}
 
 		std::string SidechainSubWallet::GetGenesisAddress() const {
-			return _info.GetGenesisAddress();
+			return _config->GenesisAddress();
 		}
 
 	}

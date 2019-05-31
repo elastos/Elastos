@@ -45,9 +45,8 @@ namespace Elastos {
 		protected:
 			friend class MasterWallet;
 
-			TokenchainSubWallet(const CoinInfo &info,
-							   const ChainParams &chainParams,
-							   const PluginType &pluginTypes,
+			TokenchainSubWallet(const CoinInfoPtr &info,
+							   const ChainConfigPtr &config,
 							   MasterWallet *parent);
 
 			virtual nlohmann::json GetBasicInfo() const;

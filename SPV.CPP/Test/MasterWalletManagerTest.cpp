@@ -931,7 +931,7 @@ TEST_CASE("Wallet ImportWalletWithKeystore method", "[ImportWalletWithKeystore]"
 		ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA", feePerKB);
 		REQUIRE(subWallet != nullptr);
 		REQUIRE(dynamic_cast<MainchainSubWallet *>(subWallet) != nullptr);
-		subWallet = masterWallet->CreateSubWallet("IdChain", feePerKB);
+		subWallet = masterWallet->CreateSubWallet("IDChain", feePerKB);
 		REQUIRE(subWallet != nullptr);
 		REQUIRE(dynamic_cast<IDChainSubWallet *>(subWallet) != nullptr);
 
@@ -959,7 +959,7 @@ TEST_CASE("Wallet ImportWalletWithKeystore method", "[ImportWalletWithKeystore]"
 		for (int i = 0; i < 2; ++i) {
 			if (subwallets[i]->GetChainID() == "ELA")
 				REQUIRE(dynamic_cast<MainchainSubWallet *>(subwallets[i]) != nullptr);
-			else if (subwallets[i]->GetChainID() == "IdChain")
+			else if (subwallets[i]->GetChainID() == "IDChain")
 				REQUIRE(dynamic_cast<IDChainSubWallet *>(subwallets[i]) != nullptr);
 		}
 	}

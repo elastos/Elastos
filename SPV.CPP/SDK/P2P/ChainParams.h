@@ -5,8 +5,7 @@
 #ifndef __ELASTOS_SDK_CHAINPARAMS_H__
 #define __ELASTOS_SDK_CHAINPARAMS_H__
 
-#include <SDK/SpvService/CoinConfig.h>
-#include <SDK/P2P/CheckPoint.h>
+#include <SDK/Common/uint256.h>
 
 #include <boost/shared_ptr.hpp>
 #include <string>
@@ -14,63 +13,103 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		class CheckPoint {
+		public:
+			CheckPoint() :
+				_height(0),
+				_timestamp(0),
+				_target(0)
+			{ }
+
+			CheckPoint(uint32_t height, const std::string &hash, time_t timestamp, uint32_t target) :
+				_height(height),
+				_timestamp(timestamp),
+				_target(target) {
+				_hash.SetHex(hash);
+			}
+
+			CheckPoint(const CheckPoint &checkPoint) {
+				this->operator=(checkPoint);
+			}
+
+			~CheckPoint() {}
+
+			CheckPoint &operator=(const CheckPoint &checkpoint) {
+				_height = checkpoint._height;
+				_hash = checkpoint._hash;
+				_timestamp = checkpoint._timestamp;
+				_target = checkpoint._target;
+				return *this;
+			}
+
+			const uint32_t &Height() const { return _height; }
+
+			const uint256 &Hash() const { return _hash; }
+
+			const time_t &Timestamp() const { return _timestamp; }
+
+			const uint32_t &Target() const { return _target; }
+
+		private:
+			uint32_t _height;
+			uint256 _hash;
+			time_t _timestamp;
+			uint32_t _target;
+		};
+
 		class ChainParams {
 		public:
-			ChainParams(const ChainParams &chainParams);
+			ChainParams() :
+				_standardPort(0),
+				_magicNumber(0),
+				_services(0),
+				_targetTimeSpan(0),
+				_targetTimePerBlock(0)
+			{ }
 
-			ChainParams(const CoinConfig &config);
+			ChainParams(const ChainParams &chainParams) {
+				this->operator=(chainParams);
+			}
 
-			ChainParams &operator=(const ChainParams &params);
+			~ChainParams() {}
 
-			const std::vector<std::string> &GetDNSSeeds() const;
+			ChainParams &operator=(const ChainParams &params) {
+				_dnsSeeds = params._dnsSeeds;
+				_checkpoints = params._checkpoints;
+				_standardPort = params._standardPort;
+				_magicNumber = params._magicNumber;
+				_services = params._services;
+				_targetTimeSpan = params._targetTimeSpan;
+				_targetTimePerBlock = params._targetTimePerBlock;
+				return *this;
+			}
 
-			const CheckPoint &GetLastCheckpoint() const;
+			const std::vector<std::string> &DNSSeeds() const { return _dnsSeeds; }
 
-			const CheckPoint &GetFirstCheckpoint() const;
+			const CheckPoint &LastCheckpoint() const { return _checkpoints.back(); }
 
-			const std::vector<CheckPoint> &GetCheckpoints() const;
+			const CheckPoint &FirstCheckpoint() const { return _checkpoints.front(); }
 
-			const uint32_t &GetMagicNumber() const;
+			const std::vector<CheckPoint> &Checkpoints() const { return _checkpoints; }
 
-			const uint16_t &GetStandardPort() const;
+			const uint32_t &MagicNumber()  const { return _magicNumber; }
 
-			const uint64_t &GetServices() const;
+			const uint16_t &StandardPort() const { return _standardPort; }
 
-			const uint32_t &GetTargetTimeSpan() const;
+			const uint64_t &Services() const { return _services; }
 
-			const uint32_t &GetTargetTimePerBlock() const;
+			const uint32_t &TargetTimeSpan() const { return _targetTimeSpan; }
 
-		private:
-			void MainNetMainChainParamsInit();
-
-			void MainNetIDChainParamsInit();
-
-			void MainNetTokenChainParamsInit();
-
-			void TestNetMainChainParamsInit();
-
-			void TestNetIDChainParamsInit();
-
-			void TestNetTokenChainParamsInit();
-
-			void RegNetMainChainParamsInit();
-
-			void RegNetIDChainParamsInit();
-
-			void RegNetTokenChainParamsInit();
-
-			void MainNetParamsInit(SubWalletType type);
-
-			void TestNetParamsInit(SubWalletType type);
-
-			void RegNetParamsInit(SubWalletType type);
+			const uint32_t &TargetTimePerBlock() const { return _targetTimePerBlock; }
 
 		private:
+			friend class Config;
+
+			std::vector<CheckPoint> _checkpoints;
 			std::vector<std::string> _dnsSeeds;
 			uint16_t _standardPort;
 			uint32_t _magicNumber;
 			uint64_t _services;
-			std::vector<CheckPoint> _checkpoints;
 
 			uint32_t _targetTimeSpan;
 			uint32_t _targetTimePerBlock;

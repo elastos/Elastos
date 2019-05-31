@@ -5,8 +5,6 @@
 #ifndef __ELASTOS_SDK_BITCOREWALLETCLIENTJSON_H__
 #define __ELASTOS_SDK_BITCOREWALLETCLIENTJSON_H__
 
-#include <SDK/Common/Mstream.h>
-
 #include <nlohmann/json.hpp>
 #include <string>
 #include <vector>
@@ -31,9 +29,13 @@ namespace Elastos {
 
 			void SetxPubKey(const std::string &xpubkey) { _xPubKey = xpubkey; }
 
-			TO_JSON(PublicKeyRing);
+			nlohmann::json ToJson() const;
 
-			FROM_JSON(PublicKeyRing);
+			void FromJson(const nlohmann::json &j);
+
+			friend void to_json(nlohmann::json&, const PublicKeyRing &p);
+
+			friend void from_json(const nlohmann::json&, PublicKeyRing &p);
 
 		private:
 			std::string _xPubKey;
@@ -91,7 +93,11 @@ namespace Elastos {
 
 			void SetAccount(int account) { _account = account; }
 
-			friend void to_json(nlohmann::json &j, const BitcoreWalletClientJson &p, bool withPrivKey);
+			virtual nlohmann::json ToJson(bool withPrivKey) const;
+
+			virtual void FromJson(const nlohmann::json &j);
+
+			friend void to_json(nlohmann::json &j, const BitcoreWalletClientJson &p);
 
 			friend void from_json(const nlohmann::json &j, BitcoreWalletClientJson &p);
 

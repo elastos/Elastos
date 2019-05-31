@@ -17,7 +17,7 @@
 #include <SDK/Plugin/ELAPlugin.h>
 #include <SDK/Plugin/IDPlugin.h>
 #include <Interface/MasterWalletManager.h>
-#include <Config.h>
+#include <CMakeConfig.h>
 
 
 #include <boost/filesystem.hpp>
@@ -184,8 +184,8 @@ namespace Elastos {
 		std::vector<IMasterWallet *> MasterWalletManager::GetAllMasterWallets() const {
 			std::vector<IMasterWallet *> result;
 			for (MasterWalletMap::const_iterator it = _masterWalletMap.cbegin(); it != _masterWalletMap.cend(); ++it) {
-				if (GetWallet(it->first))
-					result.push_back(GetWallet(it->first));
+				if (GetMasterWallet(it->first))
+					result.push_back(GetMasterWallet(it->first));
 			}
 			return result;
 		};
@@ -295,51 +295,6 @@ namespace Elastos {
 			return wallet->exportMnemonic(payPassword);
 		}
 
-		nlohmann::json MasterWalletManager::EncodeTransactionToString(const nlohmann::json &tx) {
-			Transaction txn;
-
-			txn.FromJson(tx);
-
-			ByteStream stream;
-			txn.Serialize(stream);
-			bytes_t hex = stream.GetBytes();
-
-			nlohmann::json result;
-
-			result["Algorithm"] = "base64";
-			result["Data"] = hex.getBase64();
-
-			return result;
-		}
-
-		nlohmann::json MasterWalletManager::DecodeTransactionFromString(const nlohmann::json &cipher) {
-			Transaction txn;
-
-			if (cipher.find("Algorithm") == cipher.end() || cipher.find("Data") == cipher.end()) {
-				ErrorChecker::ThrowParamException(Error::InvalidArgument, "Invalid input");
-			}
-
-			std::string algorithm = cipher["Algorithm"].get<std::string>();
-			std::string data = cipher["Data"].get<std::string>();
-
-			bytes_t rawHex;
-			if (algorithm == "base64") {
-				rawHex.setBase64(data);
-			} else if (algorithm == "base58") {
-				if (!Base58::CheckDecode(data, rawHex)) {
-					ErrorChecker::ThrowLogicException(Error::Transaction, "Decode tx from base58 error");
-				}
-			} else {
-				ErrorChecker::CheckCondition(true, Error::Transaction,
-											 "Decode tx with unknown algorithm");
-			}
-
-			ByteStream stream(rawHex);
-			ErrorChecker::CheckParam(!txn.Deserialize(stream), Error::InvalidArgument, "Invalid input: deserialize fail");
-
-			return txn.ToJson();
-		}
-
 		std::string MasterWalletManager::GetVersion() const {
 			return SPVSDK_VERSION_MESSAGE;
 		}
@@ -371,7 +326,7 @@ namespace Elastos {
 
 				std::string masterWalletId = temp.filename().string();
 				if (exists((*it) / LOCAL_STORE_FILE) || exists((*it) / MASTER_WALLET_STORE_FILE)) {
-					GetWallet(masterWalletId);
+					GetMasterWallet(masterWalletId);
 				}
 				++it;
 			}
@@ -389,7 +344,7 @@ namespace Elastos {
 			return result;
 		}
 
-		IMasterWallet *MasterWalletManager::GetWallet(const std::string &masterWalletId) const {
+		IMasterWallet *MasterWalletManager::GetMasterWallet(const std::string &masterWalletId) const {
 			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.cend() &&
 				_masterWalletMap[masterWalletId] != nullptr)
 				return _masterWalletMap[masterWalletId];

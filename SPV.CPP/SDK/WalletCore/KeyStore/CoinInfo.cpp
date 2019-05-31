@@ -10,41 +10,30 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		CoinInfo::CoinInfo() :
-				_chainId(""),
+				_chainID(""),
 				_earliestPeerTime(0),
-				_forkId(0),
-				_index(0),
-				_enableP2P(true),
-				_feePerKb(0),
-				_minFee(0),
-				_walletType(Normal) {
+				_feePerKB(0) {
 
 		}
 
-		void to_json(nlohmann::json &j, const CoinInfo &p) {
-			j["ChainID"] = p._chainId;
-			j["EarliestPeerTime"] = p._earliestPeerTime;
-			j["Index"] = p._index;
-			j["WalletType"] = int(p.GetWalletType());
-			j["MinFee"] = p._minFee;
-			j["FeePerKB"] = p._feePerKb;
-			j["EnableP2P"] = p._enableP2P;
-			j["ReconnectSeconds"] = p._reconnectSeconds;
-			j["VisibleAssets"] = p.VisibleAssetsToJson();
+		nlohmann::json CoinInfo::ToJson() const {
+			nlohmann::json j;
+			j["ChainID"] = _chainID;
+			j["EarliestPeerTime"] = _earliestPeerTime;
+			j["FeePerKB"] = _feePerKB;
+			j["VisibleAssets"] = VisibleAssetsToJson();
+
+			return j;
 		}
 
-		void from_json(const nlohmann::json &j, CoinInfo &p) {
-			p._chainId = j["ChainID"].get<std::string>();
-			p._earliestPeerTime = j["EarliestPeerTime"].get<uint32_t>();
-			p._index = j["Index"].get<uint32_t>();
-			p._walletType = (SubWalletType) j["WalletType"].get<int>();
-			p._minFee = j["MinFee"].get<uint64_t>();
-			p._feePerKb = j["FeePerKB"].get<uint64_t>();
-			p._reconnectSeconds = j["ReconnectSeconds"].get<uint32_t>();
-			if (j.find("EnableP2P") != j.end())
-				p._enableP2P = j["EnableP2P"].get<bool>();
+		void CoinInfo::FromJson(const nlohmann::json &j) {
+			_chainID = j["ChainID"].get<std::string>();
+			if (_chainID == "IdChain")
+				_chainID = "IDChain";
+			_earliestPeerTime = j["EarliestPeerTime"].get<uint32_t>();
+			_feePerKB = j["FeePerKB"].get<uint64_t>();
 			if (j.find("VisibleAssets") != j.end())
-				p.VisibleAssetsFromJson(j["VisibleAssets"]);
+				VisibleAssetsFromJson(j["VisibleAssets"]);
 		}
 
 		nlohmann::json CoinInfo::VisibleAssetsToJson() const {

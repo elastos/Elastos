@@ -24,25 +24,14 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		SpvService::SpvService(const SpvService &proto) :
-				CoreSpvService(proto._pluginTypes, proto._chainParams),
-				_executor(BACKGROUND_THREAD_COUNT),
-				_reconnectExecutor(BACKGROUND_THREAD_COUNT),
-				_databaseManager(proto._databaseManager.GetPath()),
-				_reconnectTimer(nullptr),
-				_forkId(proto._forkId) {
-			init(proto._subAccount, proto._earliestPeerTime, proto._reconnectSeconds);
-		}
-
 		SpvService::SpvService(const SubAccountPtr &subAccount, const boost::filesystem::path &dbPath,
-									 uint32_t earliestPeerTime, uint32_t reconnectSeconds, int forkId,
-									 const PluginType &pluginTypes, const ChainParams &chainParams) :
+							   time_t earliestPeerTime, uint32_t reconnectSeconds,
+							   const PluginType &pluginTypes, const ChainParamsPtr &chainParams) :
 				CoreSpvService(pluginTypes, chainParams),
 				_executor(BACKGROUND_THREAD_COUNT),
 				_reconnectExecutor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(dbPath),
-				_reconnectTimer(nullptr),
-				_forkId(forkId) {
+				_reconnectTimer(nullptr) {
 			init(subAccount, earliestPeerTime, reconnectSeconds);
 		}
 
@@ -371,10 +360,6 @@ namespace Elastos {
 			}
 
 			return assets;
-		}
-
-		int SpvService::getForkId() const {
-			return _forkId;
 		}
 
 		const CoreSpvService::PeerManagerListenerPtr &SpvService::createPeerManagerListener() {

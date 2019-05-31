@@ -24,7 +24,7 @@ static std::string memo = "";
 static std::string separator = "===========================================================";
 static const std::string gMasterWalletID = "WalletID";
 static const std::string gMainchainSubWalletID = "ELA";
-static const std::string gIDchainSubWalletID = "IdChain";
+static const std::string gIDchainSubWalletID = "IDChain";
 static const std::string gTokenchainSubWalletID = "TokenChain";
 static const std::string rootPath = "Data";
 static const std::string payPasswd = "s12345678";
@@ -80,10 +80,6 @@ public:
 
 	virtual void OnTxPublished(const std::string &hash, const nlohmann::json &result) {
 		logger->debug("{} OnTxPublished ----> hash = {}, result = {}", _walletID, hash, result.dump());
-	}
-
-	virtual void OnTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) {
-		logger->debug("{} OnTxDeleted ----> hash = {}, notifyUser = {}, recommendRescan = {}", _walletID, hash, notifyUser, recommendRescan);
 	}
 
 	virtual void OnAssetRegistered(const std::string &asset, const nlohmann::json &info) {
@@ -167,7 +163,7 @@ static IMasterWallet *NewMultiSignWalletWithPrvKey() {
 }
 
 static ISubWallet *GetSubWallet(const std::string &masterWalletID, const std::string &subWalletID) {
-	IMasterWallet *masterWallet = manager->GetWallet(masterWalletID);
+	IMasterWallet *masterWallet = manager->GetMasterWallet(masterWalletID);
 	if (nullptr == masterWallet) {
 		return nullptr;
 	}
@@ -383,7 +379,7 @@ static void Withdraw(const std::string &fromMasterWalletID, const std::string &f
 }
 
 static void RegisterID(const std::string &masterWalletID, const std::string &DIDSubWalletID) {
-	IMasterWallet *masterWalelt = manager->GetWallet(masterWalletID);
+	IMasterWallet *masterWalelt = manager->GetMasterWallet(masterWalletID);
 	if (masterWalelt == nullptr) {
 		logger->error("[{}] master wallet not found", masterWalletID);
 		return ;
@@ -434,9 +430,9 @@ static void InitWallets() {
 //			masterWallet = NewMultiSignWalletWithMnemonic();
 //			masterWallet = NewMultiSignWalletWithPrvKey();
 
-			masterWallet->CreateSubWallet(gMainchainSubWalletID);
-			masterWallet->CreateSubWallet(gIDchainSubWalletID);
-			masterWallet->CreateSubWallet(gTokenchainSubWalletID);
+			masterWallet->CreateSubWallet(gMainchainSubWalletID, 10000);
+			masterWallet->CreateSubWallet(gIDchainSubWalletID, 10000);
+			masterWallet->CreateSubWallet(gTokenchainSubWalletID, 10000);
 		}
 		masterWallets.push_back(masterWallet);
 	}

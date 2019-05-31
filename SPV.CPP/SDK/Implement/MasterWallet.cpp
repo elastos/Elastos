@@ -16,7 +16,9 @@
 #include <SDK/WalletCore/BIPs/Mnemonic.h>
 #include <SDK/WalletCore/BIPs/Base58.h>
 #include <SDK/WalletCore/Crypto/AES.h>
-#include <Config.h>
+#include <SDK/WalletCore/KeyStore/CoinInfo.h>
+#include <SDK/SpvService/Config.h>
+#include <CMakeConfig.h>
 
 #include <vector>
 #include <boost/filesystem.hpp>
@@ -36,6 +38,8 @@ namespace Elastos {
 				_rootPath(rootPath),
 				_p2pEnable(p2pEnable),
 				_initFrom(from) {
+
+			_config = ConfigPtr(new Config(_rootPath));
 			_localStore = LocalStorePtr(new LocalStore(_rootPath + "/" + _id));
 			_account = AccountPtr(new Account(_localStore, _rootPath));
 
@@ -61,6 +65,7 @@ namespace Elastos {
 			Mnemonic m(_rootPath);
 			ErrorChecker::CheckLogic(!m.Validate(mnemonic), Error::Mnemonic, "Invalid mnemonic");
 
+			_config = ConfigPtr(new Config(_rootPath));
 			_localStore = LocalStorePtr(new LocalStore(_rootPath + "/" + _id, mnemonic, passphrase,
 													   singleAddress, payPassword));
 			_account = AccountPtr(new Account(_localStore, _rootPath));
@@ -83,6 +88,7 @@ namespace Elastos {
 			KeyStore keystore;
 			keystore.Import(keystoreContent, backupPassword);
 
+			_config = ConfigPtr(new Config(_rootPath));
 			_localStore = LocalStorePtr(new LocalStore(_rootPath + "/" + _id, keystore.WalletJson(), payPassword));
 			_account = AccountPtr(new Account(_localStore, _rootPath));
 
@@ -106,6 +112,7 @@ namespace Elastos {
 			ErrorChecker::CheckPubKeyJsonArray(coSigners, 1, "coSigner");
 			ErrorChecker::CheckParam(coSigners.size() < requiredSignCount, Error::InvalidArgument, "Invalid M");
 
+			_config = ConfigPtr(new Config(_rootPath));
 			_localStore = LocalStorePtr(new LocalStore(_rootPath + "/" + _id, coSigners, requiredSignCount));
 			_account = AccountPtr(new Account(_localStore, _rootPath));
 		}
@@ -135,6 +142,7 @@ namespace Elastos {
 			ErrorChecker::CheckPubKeyJsonArray(coSigners, 1, "coSigner");
 			ErrorChecker::CheckParam(coSigners.size() + 1 < requiredSignCount, Error::InvalidArgument, "Invalid M");
 
+			_config = ConfigPtr(new Config(_rootPath));
 			_localStore = LocalStorePtr(new LocalStore(_rootPath + "/" + _id, mnemonic, passphrase, true, payPassword));
 			for (nlohmann::json::const_iterator it = coSigners.cbegin(); it != coSigners.cend(); ++it)
 				_localStore->AddPublicKeyRing(PublicKeyRing((*it).get<std::string>()));
@@ -167,7 +175,7 @@ namespace Elastos {
 				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
 				if (subWallet == nullptr) continue;
 
-				_localStore->AddSubWalletInfoList(subWallet->getCoinInfo());
+				_localStore->AddSubWalletInfoList(subWallet->GetCoinInfo());
 			}
 
 			_localStore->Save();
@@ -188,7 +196,7 @@ namespace Elastos {
 		}
 
 		ISubWallet *
-		MasterWallet::CreateSubWallet(const std::string &chainID, uint64_t feePerKb) {
+		MasterWallet::CreateSubWallet(const std::string &chainID, uint64_t feePerKB) {
 
 			ErrorChecker::CheckParamNotEmpty(chainID, "Chain ID");
 			ErrorChecker::CheckParam(chainID.size() > 128, Error::InvalidArgument, "Chain ID sould less than 128");
@@ -197,20 +205,19 @@ namespace Elastos {
 				return _createdWallets[chainID];
 			}
 
-			CoinInfo info;
-			tryInitCoinConfig();
-			CoinConfig coinConfig = _coinConfigReader.FindConfig(chainID);
-			info.SetWalletType(coinConfig.Type);
-			info.SetIndex(coinConfig.Index);
-			info.SetMinFee(coinConfig.MinFee);
-			info.SetGenesisAddress(coinConfig.GenesisAddress);
-			info.SetEnableP2P(coinConfig.EnableP2P);
-			info.SetReconnectSeconds(coinConfig.ReconnectSeconds);
+			ChainConfigPtr chainConfig = _config->GetChainConfig(chainID);
+			ErrorChecker::CheckLogic(chainConfig == nullptr, Error::InvalidArgument, "Unsupport chain ID: " + chainID);
 
-			info.SetChainId(chainID);
-			info.SetFeePerKb(feePerKb);
+			CoinInfoPtr info(new CoinInfo());
 
-			SubWallet *subWallet = SubWalletFactoryMethod(info, coinConfig, ChainParams(coinConfig), this);
+			info->SetChainID(chainID);
+			if (feePerKB > chainConfig->FeePerKB())
+				info->SetFeePerKB(feePerKB);
+			else
+				info->SetFeePerKB(chainConfig->FeePerKB());
+			info->SetVisibleAsset(Asset::GetELAAssetID());
+
+			SubWallet *subWallet = SubWalletFactoryMethod(info, chainConfig, this);
 			_createdWallets[chainID] = subWallet;
 			startPeerManager(subWallet);
 			Save();
@@ -269,14 +276,16 @@ namespace Elastos {
 		}
 
 		void MasterWallet::InitSubWallets() {
-			const std::vector<CoinInfo> &coinInfoList = _localStore->GetSubWalletInfoList();
+			const std::vector<CoinInfoPtr> &info = _localStore->GetSubWalletInfoList();
 
-			tryInitCoinConfig();
+			for (int i = 0; i < info.size(); ++i) {
+				const ChainConfigPtr &chainConfig = _config->GetChainConfig(info[i]->GetChainID());
+				if (chainConfig == nullptr) {
+					Log::error("Can not find config of chain ID: " + info[i]->GetChainID());
+					continue;
+				}
 
-			for (int i = 0; i < coinInfoList.size(); ++i) {
-				CoinConfig coinConfig = _coinConfigReader.FindConfig(coinInfoList[i].GetChainId());
-				ISubWallet *subWallet = SubWalletFactoryMethod(coinInfoList[i], coinConfig,
-															   ChainParams(coinConfig), this);
+				ISubWallet *subWallet = SubWalletFactoryMethod(info[i], chainConfig, this);
 				SubWallet *subWalletImpl = dynamic_cast<SubWallet *>(subWallet);
 				ErrorChecker::CheckCondition(subWalletImpl == nullptr, Error::CreateSubWalletError,
 											 "Recover sub wallet error");
@@ -308,44 +317,39 @@ namespace Elastos {
 			return Address(id).IsIDAddress();
 		}
 
-		SubWallet *MasterWallet::SubWalletFactoryMethod(const CoinInfo &info, const CoinConfig &config,
-														const ChainParams &chainParams,
+		SubWallet *MasterWallet::SubWalletFactoryMethod(const CoinInfoPtr &info, const ChainConfigPtr &config,
 														MasterWallet *parent) {
 
-			CoinInfo fixedInfo = info;
-
 			if (_initFrom == CreateNormal) {
-				fixedInfo.SetEaliestPeerTime(chainParams.GetLastCheckpoint().GetTimestamp());
-			} else if (_initFrom == CreateMultiSign || _initFrom == ImportFromMnemonic) {
-				fixedInfo.SetEaliestPeerTime(chainParams.GetFirstCheckpoint().GetTimestamp());
-			} else if (_initFrom == ImportFromKeyStore || _initFrom == ImportFromLocalStore) {
-				fixedInfo.SetEaliestPeerTime(info.GetEarliestPeerTime());
+				Log::info("Create new master wallet");
+				info->SetEaliestPeerTime(config->ChainParameters()->LastCheckpoint().Timestamp());
+			} else if (_initFrom == CreateMultiSign) {
+				info->SetEaliestPeerTime(config->ChainParameters()->FirstCheckpoint().Timestamp());
+				Log::info("Create new multi-sign master wallet");
+			} else if (_initFrom == ImportFromMnemonic) {
+				info->SetEaliestPeerTime(config->ChainParameters()->FirstCheckpoint().Timestamp());
+				Log::info("Import master wallet with mnemonic");
+			} else if (_initFrom == ImportFromKeyStore) {
+				Log::info("Master wallet import with keystore");
+			} else if (_initFrom == ImportFromLocalStore) {
+				Log::info("Master wallet init from local store");
 			} else {
-				fixedInfo.SetEaliestPeerTime(chainParams.GetFirstCheckpoint().GetTimestamp());
+				Log::error("Should not be here");
+				info->SetEaliestPeerTime(config->ChainParameters()->FirstCheckpoint().Timestamp());
+			}
+			Log::info("Ealiest peer time: {}", info->GetEarliestPeerTime());
+
+			if (info->GetChainID() == "ELA") {
+				return new MainchainSubWallet(info, config, parent);
+			} else if (info->GetChainID() == "IDChain") {
+				return new IDChainSubWallet(info, config, parent);
+			} else if (info->GetChainID() == "TokenChain") {
+				return new TokenchainSubWallet(info, config, parent);
+			} else {
+				ErrorChecker::ThrowLogicException(Error::InvalidChainID, "Invalid chain ID: " + info->GetChainID());
 			}
 
-			std::vector<uint256> visibleAssets;
-			visibleAssets.push_back(Asset::GetELAAssetID());
-			fixedInfo.SetVisibleAssets(visibleAssets);
-
-			Log::info("Master wallet init from {}, ealiest peer time = {}", _initFrom,
-					  fixedInfo.GetEarliestPeerTime());
-
-			fixedInfo.SetGenesisAddress(config.GenesisAddress);
-
-			switch (fixedInfo.GetWalletType()) {
-				case Mainchain:
-					return new MainchainSubWallet(fixedInfo, chainParams, config.PluginType, parent);
-				case Sidechain:
-					return new SidechainSubWallet(fixedInfo, chainParams, config.PluginType, parent);
-				case Idchain:
-					return new IDChainSubWallet(fixedInfo, chainParams, config.PluginType, parent);
-				case Tokenchain:
-					return new TokenchainSubWallet(fixedInfo, chainParams, config.PluginType, parent);
-				case Normal:
-				default:
-					return new SubWallet(fixedInfo, chainParams, config.PluginType, parent);
-			}
+			return nullptr;
 		}
 
 		std::string
@@ -406,17 +410,13 @@ namespace Elastos {
 		}
 
 		std::vector<std::string> MasterWallet::GetSupportedChains() const {
-			tryInitCoinConfig();
-			return _coinConfigReader.GetAllChainId();
-		}
+			std::vector<std::string> chainIDs;
 
-		void MasterWallet::tryInitCoinConfig() const {
-			if (!_coinConfigReader.IsInitialized()) {
-				boost::filesystem::path configPath = _rootPath;
-				configPath /= COIN_COINFIG_FILE;
-				ErrorChecker::CheckPathExists(configPath);
-				_coinConfigReader.Load(configPath);
-			}
+			const std::vector<ChainConfigPtr> &chainConfigs = _config->GetChainConfigs();
+			for (size_t i = 0; i < chainConfigs.size(); ++i)
+				chainIDs.push_back(chainConfigs[i]->ID());
+
+			return chainIDs;
 		}
 
 		void MasterWallet::ChangePassword(const std::string &oldPassword, const std::string &newPassword) {

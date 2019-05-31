@@ -8,7 +8,6 @@
 #include "Executor.h"
 
 #include <SDK/P2P/PeerManager.h>
-#include <SDK/P2P/ChainParams.h>
 #include <SDK/Account/SubAccount.h>
 #include <SDK/Wallet/Wallet.h>
 
@@ -17,16 +16,20 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		class ChainParams;
+
+		typedef boost::shared_ptr<ChainParams> ChainParamsPtr;
+
 		class CoreSpvService :
 				public Wallet::Listener,
 				public PeerManager::Listener {
 
 		public:
-			CoreSpvService(const PluginType &pluginType, const ChainParams &chainParams);
+			CoreSpvService(const PluginType &pluginType, const ChainParamsPtr &chainParams);
 
 			virtual ~CoreSpvService();
 
-			void init(const SubAccountPtr &subAccount, uint32_t earliestPeerTime, uint32_t reconnectSeconds);
+			void init(const SubAccountPtr &subAccount, time_t earliestPeerTime, uint32_t reconnectSeconds);
 
 			virtual const WalletPtr &getWallet();
 
@@ -87,8 +90,7 @@ namespace Elastos {
 			SubAccountPtr _subAccount;
 
 			PluginType _pluginTypes;
-			ChainParams _chainParams;
-			uint32_t _earliestPeerTime;
+			ChainParamsPtr _chainParams;
 			uint32_t _reconnectSeconds;
 
 			WalletPtr _wallet; // Optional<BRCoreWallet>
@@ -104,7 +106,7 @@ namespace Elastos {
 		class WrappedExceptionPeerManagerListener :
 				public PeerManager::Listener {
 		public:
-			WrappedExceptionPeerManagerListener(PeerManager::Listener *listener, const PluginType &pluginType);
+			WrappedExceptionPeerManagerListener(PeerManager::Listener *listener);
 
 			virtual void syncStarted();
 

@@ -25,15 +25,12 @@ namespace Elastos {
 				public CoreSpvService {
 		public:
 
-			SpvService(const SpvService &proto);
-
 			SpvService(const SubAccountPtr &subAccount,
 						  const boost::filesystem::path &dbPath,
-						  uint32_t earliestPeerTime,
+						  time_t earliestPeerTime,
 						  uint32_t reconnectSeconds,
-						  int forkId,
 						  const PluginType &pluginTypes,
-						  const ChainParams &chainParams);
+						  const ChainParamsPtr &chainParams);
 
 			virtual ~SpvService();
 
@@ -92,8 +89,6 @@ namespace Elastos {
 
 			virtual std::vector<AssetPtr> loadAssets();
 
-			virtual int getForkId() const;
-
 			virtual const PeerManagerListenerPtr &createPeerManagerListener();
 
 			virtual const WalletListenerPtr &createWalletListener();
@@ -106,7 +101,6 @@ namespace Elastos {
 			DatabaseManager _databaseManager;
 			BackgroundExecutor _executor;
 			BackgroundExecutor _reconnectExecutor;
-			int _forkId;
 
 			boost::asio::io_service _reconnectService;
 			boost::shared_ptr<boost::asio::deadline_timer> _reconnectTimer;

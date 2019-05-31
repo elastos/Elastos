@@ -135,7 +135,7 @@ namespace Elastos {
 			 * @param masterWalletId master wallet id.
 			 * @return master wallet object.
 			 */
-			virtual IMasterWallet *GetWallet(
+			virtual IMasterWallet *GetMasterWallet(
 					const std::string &masterWalletId) const;
 
 			/**
@@ -202,10 +202,6 @@ namespace Elastos {
 					const std::string &payPassword) const;
 
 			virtual std::string GetVersion() const;
-
-			nlohmann::json EncodeTransactionToString(const nlohmann::json &tx);
-
-			nlohmann::json DecodeTransactionFromString(const nlohmann::json &cipher);
 
 		protected:
 			typedef std::map<std::string, IMasterWallet *> MasterWalletMap;

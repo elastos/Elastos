@@ -14,7 +14,8 @@
 #include <SDK/Plugin/Transaction/Payload/PayloadCancelProducer.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadUpdateProducer.h>
 #include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
-#include <Config.h>
+#include <SDK/SpvService/Config.h>
+#include <CMakeConfig.h>
 
 #include <vector>
 #include <map>
@@ -23,10 +24,10 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		MainchainSubWallet::MainchainSubWallet(const CoinInfo &info,
-											   const ChainParams &chainParams, const PluginType &pluginTypes,
+		MainchainSubWallet::MainchainSubWallet(const CoinInfoPtr &info,
+											   const ChainConfigPtr &config,
 											   MasterWallet *parent) :
-				SubWallet(info, chainParams, pluginTypes, parent) {
+				SubWallet(info, config, parent) {
 
 		}
 
@@ -52,7 +53,7 @@ namespace Elastos {
 												  "Side chain message error: " + std::string(e.what()));
 			}
 
-			TransactionPtr tx = CreateTx(fromAddress, lockedAddress, amount + _info.GetMinFee(),
+			TransactionPtr tx = CreateTx(fromAddress, lockedAddress, amount + _config->MinFee(),
 										 Asset::GetELAAssetID(), memo, useVotedUTXO);
 
 			tx->SetTransactionType(Transaction::TransferCrossChainAsset, payload);
