@@ -4,15 +4,18 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"sync"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types"
 )
 
 const (
-	CMDSize      = 12
-	CMDOffset    = 4
-	ChecksumSize = 4
-	HeaderSize   = 24
+	CMDSize         = 12
+	CMDOffset       = 4
+	ChecksumSize    = 4
+	HeaderSize      = 24
+	BlocksCacheSize = 2
 
 	// MaxMessagePayload is the maximum bytes a message can be regardless of other
 	// individual limits imposed by messages themselves.
@@ -43,6 +46,11 @@ const (
 )
 
 var (
+	mtx                sync.Mutex
+	blockHashesCache   []common.Uint256
+	blockConfirmsCache []bool
+	blocksCache        map[common.Uint256]map[bool][]byte
+
 	ErrInvalidHeader   = fmt.Errorf("invalid message header")
 	ErrInvalidPayload  = fmt.Errorf("invalid message payload")
 	ErrUnmatchedMagic  = fmt.Errorf("unmatched magic")
@@ -115,13 +123,51 @@ func ReadMessage(r io.Reader, magic uint32, makeEmptyMessage MakeEmptyMessage) (
 
 // WriteMessage writes a Message to w including the necessary header
 // information.
-func WriteMessage(w io.Writer, magic uint32, msg Message) error {
+func WriteMessage(w io.Writer, magic uint32, msg Message, getDposBlock func(msg Message) (*types.DposBlock, bool)) error {
 	// Serialize message
-	buf := new(bytes.Buffer)
-	if err := msg.Serialize(buf); err != nil {
-		return fmt.Errorf("serialize message failed %s", err.Error())
+	var payload []byte
+	mtx.Lock()
+	dposBlock, ok := getDposBlock(msg)
+	if ok {
+		hash := dposBlock.Hash()
+		cacheBlock, exist := blocksCache[hash]
+		if exist {
+			if block, _ := cacheBlock[dposBlock.HaveConfirm]; block != nil {
+				payload = block
+			}
+		}
+		if !exist {
+			buf := new(bytes.Buffer)
+			if err := dposBlock.Serialize(buf); err != nil {
+				mtx.Unlock()
+				return fmt.Errorf("write message serialize message failed %s", err.Error())
+			}
+			if len(blockHashesCache) >= BlocksCacheSize {
+				delete(blocksCache[blockHashesCache[0]], blockConfirmsCache[0])
+				blockHashesCache = blockHashesCache[1:BlocksCacheSize]
+				blockConfirmsCache = blockConfirmsCache[1:BlocksCacheSize]
+			}
+
+			if blocksCache[hash] != nil {
+				blocksCache[hash][dposBlock.HaveConfirm] = buf.Bytes()
+			} else {
+				cache := make(map[bool][]byte)
+				cache[dposBlock.HaveConfirm] = buf.Bytes()
+				blocksCache[hash] = cache
+			}
+			blockHashesCache = append(blockHashesCache, hash)
+			blockConfirmsCache = append(blockConfirmsCache, dposBlock.HaveConfirm)
+			payload = buf.Bytes()
+		}
 	}
-	payload := buf.Bytes()
+	mtx.Unlock()
+	if payload == nil {
+		buf := new(bytes.Buffer)
+		if err := msg.Serialize(buf); err != nil {
+			return fmt.Errorf("serialize message failed %s", err.Error())
+		}
+		payload = buf.Bytes()
+	}
 
 	// Enforce maximum overall message payload.
 	if len(payload) > MaxMessagePayload {
@@ -142,4 +188,10 @@ func WriteMessage(w io.Writer, magic uint32, msg Message) error {
 	// Write payload
 	_, err = w.Write(payload)
 	return err
+}
+
+func init() {
+	blockHashesCache = make([]common.Uint256, 0, BlocksCacheSize)
+	blockConfirmsCache = make([]bool, 0, BlocksCacheSize)
+	blocksCache = make(map[common.Uint256]map[bool][]byte)
 }
