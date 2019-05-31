@@ -61,6 +61,7 @@ set(SRC
     api/tests.c
     robot/cmd.c
     robot/robot.c
+    ../../src/filetransfer/easyfile.c
     ../../config/carrier_config.c)
 
 add_definitions(-DLIBCONFIG_STATIC)

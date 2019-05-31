@@ -91,6 +91,12 @@ typedef struct EasyFile {
     int                     carrier_errno;
 } EasyFile;
 
+int ela_file_send(ElaCarrier *w, const char *address, const char *filename,
+                  ElaFileProgressCallbacks *callbacks, void *context);
+
+int ela_file_recv(ElaCarrier *w, const char *address, const char *filename,
+                  ElaFileProgressCallbacks *callbacks, void *context);
+
 void ela_set_error(int error);
 
 #ifdef __cplusplus
