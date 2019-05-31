@@ -37,7 +37,7 @@ RUN make
 # alpine3.8 - use image digest for security
 FROM alpine@sha256:dad671370a148e9d9573e3e10a9f8cc26ce937bea78f3da80b570c2442364406
 
-ENV SRC_DIR="/root/arbiter"
+ENV SRC_DIR="/arbiter"
 
 WORKDIR $SRC_DIR
 
@@ -45,6 +45,7 @@ COPY --from=builder /go/src/github.com/elastos/Elastos.ELA.Arbiter/arbiter ${SRC
 
 RUN apk update
 
-EXPOSE 10014-10015
+EXPOSE 20536
+EXPOSE 20538
 
-ENTRYPOINT ["/bin/sh", "-c", "ls /root/arbiter/elastos_arbiter && ./arbiter -p 123"]
+ENTRYPOINT ["/bin/sh", "-c", "./arbiter -p 123"]

@@ -2,31 +2,26 @@
     "Configuration": {
         "Magic": 7630403,
         "Version": 0,
-        "NodePort": 10015,
         "PrintLevel": 1,
         "SpvPrintLevel": 4,
         "MaxLogsSize": 0,
         "MaxPerLogSize": 0,
-        "HttpJsonPort": 10014,
         "MainNode": {
             "Rpc": {
                 "IpAddress": "ela-mainchain-dpos-2",
-                "HttpJsonPort": 10014,
                 "User": "",
                 "Pass": ""
             },
             "SpvSeedList": [
-                "ela-mainchain-dpos-2:10015"
+                "ela-mainchain-dpos-2:20338"
             ],
             "Magic": 7630401,
-            "FoundationAddress": "ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw",
-            "DefaultPort": 10015
+            "FoundationAddress": "ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw"
         },
         "SideNodeList": [
             {
                 "Rpc": {
                     "IpAddress": "ela-sidechain-did-2",
-                    "HttpJsonPort": 10014,
                     "User": "",
                     "Pass": ""
                 },
@@ -38,7 +33,6 @@
             },
             {
                 "Rpc":{
-                    "HttpJsonPort":10014,
                     "IpAddress":"ela-sidechain-token-2",
                     "Pass":"",
                     "User":""
@@ -60,7 +54,7 @@
             "032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a",
             "02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7"
         ],
-        "DPoSNetAddress": "ela-mainchain-dpos-2:10016",
+        "DPoSNetAddress": "ela-mainchain-dpos-2:20339",
         "CRCOnlyDPOSHeight": 200,
         "SyncInterval": 1000,
         "SideChainMonitorScanInterval": 1000,

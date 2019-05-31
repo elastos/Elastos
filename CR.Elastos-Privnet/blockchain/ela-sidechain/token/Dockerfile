@@ -37,7 +37,7 @@ RUN make
 # alpine3.8 - use image digest for security
 FROM alpine@sha256:dad671370a148e9d9573e3e10a9f8cc26ce937bea78f3da80b570c2442364406
 
-ENV SRC_DIR="/root/token"
+ENV SRC_DIR="/token"
 
 WORKDIR $SRC_DIR
 
@@ -45,6 +45,6 @@ COPY --from=builder /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/token
 
 RUN apk update
 
-EXPOSE 10011-10015
+EXPOSE 20614-20618
 
-ENTRYPOINT ["/bin/sh", "-c", "ls /root/token/elastos_token && ./token"]
+ENTRYPOINT ["/bin/sh", "-c", "./token"]

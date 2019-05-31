@@ -35,7 +35,7 @@ RUN make
 # alpine3.8 - use image digest for security
 FROM alpine@sha256:dad671370a148e9d9573e3e10a9f8cc26ce937bea78f3da80b570c2442364406
 
-ENV SRC_DIR="/root/ela"
+ENV SRC_DIR="/ela"
 
 WORKDIR $SRC_DIR
 
@@ -43,6 +43,6 @@ COPY --from=builder /go/src/github.com/elastos/Elastos.ELA/ela ${SRC_DIR}/ela
 
 RUN apk update
 
-EXPOSE 10011-10016
+EXPOSE 20333-20338
 
-ENTRYPOINT ["/bin/sh", "-c", "ls /root/ela/elastos && ./ela -p 123"]
+ENTRYPOINT ["/bin/sh", "-c", "./ela -p 123"]

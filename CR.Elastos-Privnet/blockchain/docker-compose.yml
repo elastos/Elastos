@@ -5,11 +5,11 @@ services:
     container_name: ela-mainchain-normal-1
     image: cyberrepublic/elastos-mainchain-node:latest
     volumes:
-      - ~/.volumes/elastos-privnet/mainchain-normal-1:/root/ela/elastos
-      - ${PWD}/ela-mainchain/node_normal/mainchain-normal-1/config.json:/root/ela/config.json
-      - ${PWD}/ela-mainchain/node_normal/mainchain-normal-1/keystore.dat:/root/ela/keystore.dat
+      - ~/.volumes/elastos-privnet/mainchain-normal-1:/ela/elastos
+      - ${PWD}/ela-mainchain/node_normal/mainchain-normal-1/config.json:/ela/config.json
+      - ${PWD}/ela-mainchain/node_normal/mainchain-normal-1/keystore.dat:/ela/keystore.dat
     ports:
-      - 10011-10016:10011-10016
+      - 10011-10016:20333-20338
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:10012/api/v1/block/height"]
       interval: 30s
@@ -25,11 +25,11 @@ services:
     depends_on:
       - ela-mainchain-normal-1
     volumes:
-      - ~/.volumes/elastos-privnet/mainchain-crc-1:/root/ela/elastos
-      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-1/config.json:/root/ela/config.json
-      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-1/keystore.dat:/root/ela/keystore.dat
+      - ~/.volumes/elastos-privnet/mainchain-crc-1:/ela/elastos
+      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-1/config.json:/ela/config.json
+      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-1/keystore.dat:/ela/keystore.dat
     ports:
-      - 10111-10116:10011-10016
+      - 10111-10116:20333-20338
     networks:
       - blockchain
     tty: true
@@ -40,11 +40,11 @@ services:
     depends_on:
       - ela-mainchain-normal-1
     volumes:
-      - ~/.volumes/elastos-privnet/mainchain-crc-2:/root/ela/elastos
-      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-2/config.json:/root/ela/config.json
-      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-2/keystore.dat:/root/ela/keystore.dat
+      - ~/.volumes/elastos-privnet/mainchain-crc-2:/ela/elastos
+      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-2/config.json:/ela/config.json
+      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-2/keystore.dat:/ela/keystore.dat
     ports:
-      - 10211-10216:10011-10016
+      - 10211-10216:20333-20338
     networks:
       - blockchain
     tty: true
@@ -55,11 +55,11 @@ services:
     depends_on:
       - ela-mainchain-normal-1
     volumes:
-      - ~/.volumes/elastos-privnet/mainchain-crc-3:/root/ela/elastos
-      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-3/config.json:/root/ela/config.json
-      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-3/keystore.dat:/root/ela/keystore.dat
+      - ~/.volumes/elastos-privnet/mainchain-crc-3:/ela/elastos
+      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-3/config.json:/ela/config.json
+      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-3/keystore.dat:/ela/keystore.dat
     ports:
-      - 10311-10316:10011-10016
+      - 10311-10316:20333-20338
     networks:
       - blockchain
     tty: true
@@ -70,11 +70,11 @@ services:
     depends_on:
       - ela-mainchain-normal-1
     volumes:
-      - ~/.volumes/elastos-privnet/mainchain-crc-4:/root/ela/elastos
-      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-4/config.json:/root/ela/config.json
-      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-4/keystore.dat:/root/ela/keystore.dat
+      - ~/.volumes/elastos-privnet/mainchain-crc-4:/ela/elastos
+      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-4/config.json:/ela/config.json
+      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-4/keystore.dat:/ela/keystore.dat
     ports:
-      - 10411-10416:10011-10016
+      - 10411-10416:20333-20338
     networks:
       - blockchain
     tty: true
@@ -85,11 +85,11 @@ services:
     depends_on:
       - ela-mainchain-normal-1
     volumes:
-      - ~/.volumes/elastos-privnet/mainchain-dpos-1:/root/ela/elastos
-      - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-1/config.json:/root/ela/config.json
-      - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-1/keystore.dat:/root/ela/keystore.dat
+      - ~/.volumes/elastos-privnet/mainchain-dpos-1:/ela/elastos
+      - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-1/config.json:/ela/config.json
+      - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-1/keystore.dat:/ela/keystore.dat
     ports:
-      - 10511-10516:10011-10016
+      - 10511-10516:20333-20338
     networks:
       - blockchain
     tty: true
@@ -100,11 +100,11 @@ services:
     depends_on:
       - ela-mainchain-normal-1
     volumes:
-      - ~/.volumes/elastos-privnet/mainchain-dpos-2:/root/ela/elastos
-      - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-2/config.json:/root/ela/config.json
-      - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-2/keystore.dat:/root/ela/keystore.dat
+      - ~/.volumes/elastos-privnet/mainchain-dpos-2:/ela/elastos
+      - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-2/config.json:/ela/config.json
+      - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-2/keystore.dat:/ela/keystore.dat
     ports:
-      - 10611-10616:10011-10016
+      - 10611-10616:20333-20338
     networks:
       - blockchain
     tty: true
@@ -117,11 +117,11 @@ services:
       - ela-sidechain-did-1
       - ela-sidechain-token-1
     volumes:
-      - ~/.volumes/elastos-privnet/arbitrator-crc-1:/root/arbiter/elastos_arbiter
-      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-1/config.json:/root/arbiter/config.json
-      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-1/keystore.dat:/root/arbiter/keystore.dat
+      - ~/.volumes/elastos-privnet/arbitrator-crc-1:/arbiter/elastos_arbiter
+      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-1/config.json:/arbiter/config.json
+      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-1/keystore.dat:/arbiter/keystore.dat
     ports:
-      - 20114-20115:10014-10015
+      - 20114-20118:20534-20538
     networks:
       - blockchain
     tty: true
@@ -134,11 +134,11 @@ services:
       - ela-sidechain-did-2
       - ela-sidechain-token-2
     volumes:
-      - ~/.volumes/elastos-privnet/arbitrator-crc-2:/root/arbiter/elastos_arbiter
-      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-2/config.json:/root/arbiter/config.json
-      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-2/keystore.dat:/root/arbiter/keystore.dat
+      - ~/.volumes/elastos-privnet/arbitrator-crc-2:/arbiter/elastos_arbiter
+      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-2/config.json:/arbiter/config.json
+      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-2/keystore.dat:/arbiter/keystore.dat
     ports:
-      - 20214-20215:10014-10015
+      - 20214-20218:20534-20538
     networks:
       - blockchain
     tty: true
@@ -151,11 +151,11 @@ services:
       - ela-sidechain-did-3
       - ela-sidechain-token-3
     volumes:
-      - ~/.volumes/elastos-privnet/arbitrator-crc-3:/root/arbiter/elastos_arbiter
-      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-3/config.json:/root/arbiter/config.json
-      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-3/keystore.dat:/root/arbiter/keystore.dat
+      - ~/.volumes/elastos-privnet/arbitrator-crc-3:/arbiter/elastos_arbiter
+      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-3/config.json:/arbiter/config.json
+      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-3/keystore.dat:/arbiter/keystore.dat
     ports:
-      - 20314-20315:10014-10015
+      - 20314-20318:20534-20538
     networks:
       - blockchain
     tty: true
@@ -168,11 +168,11 @@ services:
       - ela-sidechain-did-4
       - ela-sidechain-token-4
     volumes:
-      - ~/.volumes/elastos-privnet/arbitrator-crc-4:/root/arbiter/elastos_arbiter
-      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-4/config.json:/root/arbiter/config.json
-      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-4/keystore.dat:/root/arbiter/keystore.dat
+      - ~/.volumes/elastos-privnet/arbitrator-crc-4:/arbiter/elastos_arbiter
+      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-4/config.json:/arbiter/config.json
+      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-4/keystore.dat:/arbiter/keystore.dat
     ports:
-      - 20414-20415:10014-10015
+      - 20414-20418:20534-20538
     networks:
       - blockchain
     tty: true
@@ -185,11 +185,11 @@ services:
       - ela-sidechain-did-1
       - ela-sidechain-token-1
     volumes:
-      - ~/.volumes/elastos-privnet/arbitrator-origin-1:/root/arbiter/elastos_arbiter
-      - ${PWD}/ela-arbitrator/node_origin/arbitrator-origin-1/config.json:/root/arbiter/config.json
-      - ${PWD}/ela-arbitrator/node_origin/arbitrator-origin-1/keystore.dat:/root/arbiter/keystore.dat
+      - ~/.volumes/elastos-privnet/arbitrator-origin-1:/arbiter/elastos_arbiter
+      - ${PWD}/ela-arbitrator/node_origin/arbitrator-origin-1/config.json:/arbiter/config.json
+      - ${PWD}/ela-arbitrator/node_origin/arbitrator-origin-1/keystore.dat:/arbiter/keystore.dat
     ports:
-      - 20514-20515:10014-10015
+      - 20514-20518:20534-20538
     networks:
       - blockchain
     tty: true
@@ -202,11 +202,11 @@ services:
       - ela-sidechain-did-2
       - ela-sidechain-token-2
     volumes:
-      - ~/.volumes/elastos-privnet/arbitrator-origin-2:/root/arbiter/elastos_arbiter
-      - ${PWD}/ela-arbitrator/node_origin/arbitrator-origin-2/config.json:/root/arbiter/config.json
-      - ${PWD}/ela-arbitrator/node_origin/arbitrator-origin-2/keystore.dat:/root/arbiter/keystore.dat
+      - ~/.volumes/elastos-privnet/arbitrator-origin-2:/arbiter/elastos_arbiter
+      - ${PWD}/ela-arbitrator/node_origin/arbitrator-origin-2/config.json:/arbiter/config.json
+      - ${PWD}/ela-arbitrator/node_origin/arbitrator-origin-2/keystore.dat:/arbiter/keystore.dat
     ports:
-      - 20614-20615:10014-10015
+      - 20614-20618:20534-20538
     networks:
       - blockchain
     tty: true
@@ -219,10 +219,10 @@ services:
       - ela-mainchain-dpos-1
       - ela-mainchain-crc-1
     volumes:
-      - ~/.volumes/elastos-privnet/did-1:/root/did/elastos_did
-      - ${PWD}/ela-sidechain/did/did-1/config.json:/root/did/config.json
+      - ~/.volumes/elastos-privnet/did-1:/did/elastos_did
+      - ${PWD}/ela-sidechain/did/did-1/config.json:/did/config.json
     ports:
-      - 30111-30115:10011-10015
+      - 30111-30115:20604-20608
     networks:
       - blockchain
     tty: true 
@@ -235,10 +235,10 @@ services:
       - ela-mainchain-dpos-2
       - ela-mainchain-crc-2
     volumes:
-      - ~/.volumes/elastos-privnet/did-2:/root/did/elastos_did
-      - ${PWD}/ela-sidechain/did/did-2/config.json:/root/did/config.json
+      - ~/.volumes/elastos-privnet/did-2:/did/elastos_did
+      - ${PWD}/ela-sidechain/did/did-2/config.json:/did/config.json
     ports:
-      - 30211-30215:10011-10015
+      - 30211-30215:20604-20608
     networks:
       - blockchain
     tty: true 
@@ -250,10 +250,10 @@ services:
       - ela-mainchain-normal-1
       - ela-mainchain-crc-3
     volumes:
-      - ~/.volumes/elastos-privnet/did-3:/root/did/elastos_did
-      - ${PWD}/ela-sidechain/did/did-3/config.json:/root/did/config.json
+      - ~/.volumes/elastos-privnet/did-3:/did/elastos_did
+      - ${PWD}/ela-sidechain/did/did-3/config.json:/did/config.json
     ports:
-      - 30311-30315:10011-10015
+      - 30311-30315:20604-20608
     networks:
       - blockchain
     tty: true 
@@ -265,10 +265,10 @@ services:
       - ela-mainchain-normal-1
       - ela-mainchain-crc-4
     volumes:
-      - ~/.volumes/elastos-privnet/did-4:/root/did/elastos_did
-      - ${PWD}/ela-sidechain/did/did-4/config.json:/root/did/config.json
+      - ~/.volumes/elastos-privnet/did-4:/did/elastos_did
+      - ${PWD}/ela-sidechain/did/did-4/config.json:/did/config.json
     ports:
-      - 30411-30415:10011-10015
+      - 30411-30415:20604-20608
     networks:
       - blockchain
     tty: true 
@@ -281,10 +281,10 @@ services:
       - ela-mainchain-dpos-1
       - ela-mainchain-crc-1
     volumes:
-      - ~/.volumes/elastos-privnet/token-1:/root/token/elastos_token
-      - ${PWD}/ela-sidechain/token/token-1/config.json:/root/token/config.json
+      - ~/.volumes/elastos-privnet/token-1:/token/elastos_token
+      - ${PWD}/ela-sidechain/token/token-1/config.json:/token/config.json
     ports:
-      - 40111-40115:10011-10015
+      - 40111-40115:20614-20618
     networks:
       - blockchain
     tty: true 
@@ -297,10 +297,10 @@ services:
       - ela-mainchain-dpos-2
       - ela-mainchain-crc-2
     volumes:
-      - ~/.volumes/elastos-privnet/token-2:/root/token/elastos_token
-      - ${PWD}/ela-sidechain/token/token-2/config.json:/root/token/config.json
+      - ~/.volumes/elastos-privnet/token-2:/token/elastos_token
+      - ${PWD}/ela-sidechain/token/token-2/config.json:/token/config.json
     ports:
-      - 40211-40215:10011-10015
+      - 40211-40215:20614-20618
     networks:
       - blockchain
     tty: true 
@@ -312,10 +312,10 @@ services:
       - ela-mainchain-normal-1
       - ela-mainchain-crc-3
     volumes:
-      - ~/.volumes/elastos-privnet/token-3:/root/token/elastos_token
-      - ${PWD}/ela-sidechain/token/token-3/config.json:/root/token/config.json
+      - ~/.volumes/elastos-privnet/token-3:/token/elastos_token
+      - ${PWD}/ela-sidechain/token/token-3/config.json:/token/config.json
     ports:
-      - 40311-40315:10011-10015
+      - 40311-40315:20614-20618
     networks:
       - blockchain
     tty: true 
@@ -327,10 +327,10 @@ services:
       - ela-mainchain-normal-1
       - ela-mainchain-crc-4
     volumes:
-      - ~/.volumes/elastos-privnet/token-4:/root/token/elastos_token
-      - ${PWD}/ela-sidechain/token/token-4/config.json:/root/token/config.json
+      - ~/.volumes/elastos-privnet/token-4:/token/elastos_token
+      - ${PWD}/ela-sidechain/token/token-4/config.json:/token/config.json
     ports:
-      - 40411-40415:10011-10015
+      - 40411-40415:20614-20618
     networks:
       - blockchain
     tty: true 

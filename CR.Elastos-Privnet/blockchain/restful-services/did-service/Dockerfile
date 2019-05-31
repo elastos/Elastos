@@ -11,7 +11,7 @@ RUN apk update
 COPY service /restful-services/did-service
 
 RUN cp /restful-services/did-service/did.api/src/main/resources/application.properties.in /restful-services/did-service/did.api/src/main/resources/application.properties
-RUN sed -i "s#@SIDE_REST_API@#http://ela-sidechain-did-1:10012#g" /restful-services/did-service/did.api/src/main/resources/application.properties
+RUN sed -i "s#@SIDE_REST_API@#http://ela-sidechain-did-1:20604#g" /restful-services/did-service/did.api/src/main/resources/application.properties
 RUN cd /restful-services/did-service    \
     && mvn clean                        \
     && mvn install -Dmaven.test.skip -Dgpg.skip

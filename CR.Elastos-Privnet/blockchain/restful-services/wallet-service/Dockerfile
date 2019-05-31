@@ -11,7 +11,7 @@ RUN apk update
 COPY service /restful-services/wallet-service
 
 RUN cp /restful-services/wallet-service/base.api/src/main/resources/application.properties.in /restful-services/wallet-service/base.api/src/main/resources/application.properties
-RUN sed -i "s#@ELA_REST_API@#http://ela-mainchain-normal-1:10012#g" /restful-services/wallet-service/base.api/src/main/resources/application.properties
+RUN sed -i "s#@ELA_REST_API@#http://ela-mainchain-normal-1:20334#g" /restful-services/wallet-service/base.api/src/main/resources/application.properties
 RUN cd /restful-services/wallet-service \
     && mvn clean                        \
     && mvn install -Dmaven.test.skip -Dgpg.skip
