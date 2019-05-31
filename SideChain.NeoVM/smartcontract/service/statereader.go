@@ -296,6 +296,7 @@ func (s *StateReader) CheckWitnessHash160(engine *avm.ExecutionEngine, programHa
 	if len(programHash) != 20 {
 		return false, errors.New("CheckWitnessHash programHash length is not 20")
 	}
+	hash, _ := common.Uint160FromBytes(programHash)
 
 	tx := engine.GetDataContainer().(*st.Transaction)
 	hashForVerify, err := blockchain.DefaultChain.Validator.TxProgramHashes(tx)
@@ -303,19 +304,12 @@ func (s *StateReader) CheckWitnessHash160(engine *avm.ExecutionEngine, programHa
 		return false, err
 	}
 
-	var index int
 	for _, v := range hashForVerify {
-		p1 := v.Bytes()[1:]
-		for i, x := range p1 {
-			if x != programHash[i] {
-				break
-			}
-			index = i
+		if v.ToCodeHash().IsEqual(hash) {
+			return true, nil
 		}
 	}
-	if index == len(programHash) - 1 {
-		return true, nil
-	}
+
 	return false, errors.New("can't find programhash" + common.BytesToHexString(programHash))
 }
 
@@ -371,6 +365,7 @@ func (s *StateReader) RuntimeCheckWitness(e *avm.ExecutionEngine) bool {
 		return false
 	}
 	if err != nil {
+		log.Error(err)
 		return false
 	}
 	avm.PushData(e, result)

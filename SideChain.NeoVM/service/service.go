@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
+	"strings"
 
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/utils/http"
@@ -134,12 +135,12 @@ func (s *HttpServiceExtend) getBlock(hash Uint256, format uint) (interface{}, er
 	knames := reflect.TypeOf(blockInfo)
 	count := value.NumField()
 	for i := 0; i < count; i++ {
-		k := knames.Field(i).Name
+		k := strings.ToLower(knames.Field(i).Name)
 		v := value.Field(i).Interface()
 		ret[k] = v
 	}
-	ret["ReceiptHash"] = block.ReceiptHash.String()
-	ret["Bloom"] = BytesToHexString(block.Bloom)
+	ret["receiptHash"] = block.ReceiptHash.String()
+	ret["bloom"] = BytesToHexString(block.Bloom)
 
 	return ret, err
 }

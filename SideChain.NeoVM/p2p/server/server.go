@@ -858,8 +858,8 @@ func (s *Server) handlePeerMsg(peers map[p2psvr.IPeer]*serverPeer, p interface{}
 			case *nmsg.Nep5LogMsg:
 				sp.OnNep5Log(nil, m)
 			default:
-				log.Debugf("Received unhandled message of type %v "+
-					"from %v", m.CMD(), p)
+				//log.Debugf("Received unhandled message of type %v "+
+				//	"from %v", m.CMD(), p)
 			}
 		})
 
