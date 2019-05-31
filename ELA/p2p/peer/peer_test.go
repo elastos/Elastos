@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"github.com/elastos/Elastos.ELA/p2p"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
@@ -405,7 +406,15 @@ func TestUnsupportedVersionPeer(t *testing.T) {
 	invalidVersionMsg := msg.NewVersion(1, 0, 0, verNonce,
 		0, true)
 
-	err = p2p.WriteMessage(remoteConn.Writer, peerCfg.Magic, invalidVersionMsg)
+	err = p2p.WriteMessage(remoteConn.Writer, peerCfg.Magic, invalidVersionMsg,
+		func(m p2p.Message) (*types.DposBlock, bool) {
+			msgBlock, ok := m.(*msg.Block)
+			if !ok {
+				return nil, false
+			}
+			dposBlock, ok := msgBlock.Serializable.(*types.DposBlock)
+			return dposBlock, ok
+		})
 	if err != nil {
 		t.Fatalf("p2p.WriteMessageN: unexpected err - %v\n", err)
 	}
