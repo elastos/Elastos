@@ -122,7 +122,7 @@ These are located in the `wallets` folder:
 3. Verify the DID Sidechain is running by checking the pre-loaded wallet:
 
     ```
-    curl http://localhost:30112/api/v1/asset/balances/EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3
+    curl http://localhost:30111/api/v1/asset/balances/EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3
     ```    
     
     You should see 100,000 ELA in the DID Sidechain wallet pre-loaded:
@@ -201,7 +201,7 @@ These are located in the `wallets` folder:
 
     Pre-loaded DID Sidechain Address:
     ```
-    curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3"}}' http://localhost:30114 
+    curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3"}}' http://localhost:30113 
     ```
 
     Should return
@@ -216,7 +216,7 @@ These are located in the `wallets` folder:
 
     Pre-loaded Token Sidechain Address:
     ```
-    curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"EUscMawPCr8uFxKDtVxaq93Wbjm1DdtzeW"}}' http://localhost:40114
+    curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"EUscMawPCr8uFxKDtVxaq93Wbjm1DdtzeW"}}' http://localhost:40113
     ```
 
     Should return
@@ -244,7 +244,7 @@ These are located in the `wallets` folder:
     
     After about 12 blocks, you can also see the new ELA on your receiver address, it should be greater than the initial 10000
     ```
-    curl http://localhost:30112/api/v1/asset/balances/EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3
+    curl http://localhost:30111/api/v1/asset/balances/EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3
     ```
 
     You should now see 10005 ELA in the DID Sidechain wallet:
@@ -414,8 +414,8 @@ These are located in the `wallets` folder:
       "CRCOnlyDPOSHeight": 200,
       "PublicDPOSHeight": 500,
       "RpcConfiguration": {
-        "User": "",
-        "Pass": "",
+        "User": "user",
+        "Pass": "password",
         "WhiteIPList": [
           "0.0.0.0"
         ]
@@ -733,7 +733,7 @@ The Elastos.ORG.Wallet.Service currently only supports main chain and DID sidech
     You can get genesis block hash for token sidechain doing the following:
 
     ```
-    curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getblockhash","params":{"height":0}}' http://localhost:10044
+    curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getblockhash","params":{"height":0}}' http://localhost:40113
     ```
 
     Should return
@@ -828,7 +828,7 @@ The Elastos.ORG.Wallet.Service currently only supports main chain and DID sidech
     Wait around 12 blocks so this transaction is confirmed and added to the blockchain. And then check whether the ELA was transferred successfully
 
     ```
-    curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC"}}' http://localhost:40144 
+    curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC"}}' http://localhost:40113
     ```
 
     Should return

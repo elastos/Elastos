@@ -9,6 +9,7 @@
         "MainNode": {
             "Rpc": {
                 "IpAddress": "ela-mainchain-crc-2",
+                "HttpJsonPort": 20336,
                 "User": "",
                 "Pass": ""
             },
@@ -22,6 +23,7 @@
             {
                 "Rpc": {
                     "IpAddress": "ela-sidechain-did-2",
+                    "HttpJsonPort": 20606,
                     "User": "",
                     "Pass": ""
                 },
@@ -34,6 +36,7 @@
             {
                 "Rpc":{
                     "IpAddress":"ela-sidechain-token-2",
+                    "HttpJsonPort": 20616,
                     "Pass":"",
                     "User":""
                 },
