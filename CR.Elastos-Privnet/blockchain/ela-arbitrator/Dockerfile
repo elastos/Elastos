@@ -43,9 +43,13 @@ WORKDIR $SRC_DIR
 
 COPY --from=builder /go/src/github.com/elastos/Elastos.ELA.Arbiter/arbiter ${SRC_DIR}/arbiter
 
-RUN apk update
+RUN apk update \
+    && apk add --no-cache curl \
+    && adduser -h $SRC_DIR -D -g '' elauser \
+    && chown -R elauser:elauser $SRC_DIR
+    
+USER elauser
 
-EXPOSE 20536
-EXPOSE 20538
+EXPOSE 20534-20538
 
 ENTRYPOINT ["/bin/sh", "-c", "./arbiter -p 123"]

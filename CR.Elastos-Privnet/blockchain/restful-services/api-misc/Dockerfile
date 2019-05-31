@@ -42,7 +42,11 @@ COPY --from=builder /go/src/github.com/elastos/Elastos.ORG.API.Misc/misc ${SRC_D
 COPY --from=builder /go/src/github.com/elastos/Elastos.ORG.API.Misc/docs/sql ${SRC_DIR}/sql
 
 RUN apk update \
-    && apk add --no-cache mysql-client
+    && apk add --no-cache curl mysql-client \
+    && adduser -h $SRC_DIR -D -g '' elauser \
+    && chown -R elauser:elauser $SRC_DIR
+    
+USER elauser
 
 EXPOSE 8080
 

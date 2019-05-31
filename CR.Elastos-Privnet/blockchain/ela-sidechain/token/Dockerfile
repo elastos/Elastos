@@ -43,7 +43,12 @@ WORKDIR $SRC_DIR
 
 COPY --from=builder /go/src/github.com/elastos/Elastos.ELA.SideChain.Token/token ${SRC_DIR}/token
 
-RUN apk update
+RUN apk update \
+    && apk add --no-cache curl \
+    && adduser -h $SRC_DIR -D -g '' elauser \
+    && chown -R elauser:elauser $SRC_DIR
+    
+USER elauser
 
 EXPOSE 20614-20618
 
