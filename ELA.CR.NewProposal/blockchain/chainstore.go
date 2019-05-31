@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"path/filepath"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -14,7 +15,8 @@ import (
 )
 
 const (
-	TaskChanCap = 4
+	TaskChanCap     = 4
+	BlocksCacheSize = 2
 )
 
 type ProducerState byte
@@ -45,6 +47,10 @@ type ChainStore struct {
 	quit   chan chan bool
 
 	currentBlockHeight uint32
+
+	mtx              sync.RWMutex
+	blockHashesCache []Uint256
+	blocksCache      map[Uint256]*Block
 }
 
 func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
@@ -54,9 +60,11 @@ func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
 	}
 
 	s := &ChainStore{
-		IStore: db,
-		taskCh: make(chan persistTask, TaskChanCap),
-		quit:   make(chan chan bool, 1),
+		IStore:           db,
+		taskCh:           make(chan persistTask, TaskChanCap),
+		quit:             make(chan chan bool, 1),
+		blockHashesCache: make([]Uint256, 0, BlocksCacheSize),
+		blocksCache:      make(map[Uint256]*Block),
 	}
 
 	go s.taskHandler()
@@ -399,6 +407,12 @@ func (c *ChainStore) persistTransaction(tx *Transaction, height uint32) error {
 }
 
 func (c *ChainStore) GetBlock(hash Uint256) (*Block, error) {
+	c.mtx.RLock()
+	if block, exist := c.blocksCache[hash]; exist {
+		c.mtx.RUnlock()
+		return block, nil
+	}
+	c.mtx.RUnlock()
 	var b = new(Block)
 	prefix := []byte{byte(DATAHeader)}
 	data, err := c.Get(append(prefix, hash.Bytes()...))
@@ -435,6 +449,17 @@ func (c *ChainStore) GetBlock(hash Uint256) (*Block, error) {
 			return nil, err
 		}
 		b.Transactions[i] = tx
+	}
+
+	if c.blocksCache != nil {
+		c.mtx.Lock()
+		if len(c.blockHashesCache) >= BlocksCacheSize {
+			delete(c.blocksCache, c.blockHashesCache[0])
+			c.blockHashesCache = c.blockHashesCache[1:BlocksCacheSize]
+		}
+		c.blockHashesCache = append(c.blockHashesCache, hash)
+		c.blocksCache[hash] = b
+		c.mtx.Unlock()
 	}
 
 	return b, nil
