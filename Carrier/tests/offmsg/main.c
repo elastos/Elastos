@@ -63,6 +63,7 @@ typedef struct TestCtx {
 
     FILE *offmsg_fp;
 
+    int msg_cnt;
     int mode;
     int tasktype;
     int error;
@@ -91,17 +92,13 @@ static void try_send_offmsg(ElaCarrier *w, TestCtx *ctx)
     char buf[128] = {0};
     int error =  0;
     int rc = 0;
+    long msg_cnt = 0;
 
     rc = fread(buf, 1, sizeof(buf), ctx->offmsg_fp);
     if (rc > 0) {
-        int ret = 0;
-
-        ret = ela_send_friend_message(w, ctx->remote_userid, buf, rc);
-        if (ret < 0) {
-            vlogE("Error: Send offline message error: 0x%x", ela_get_error());
-            error = 1;
-            goto error_exit;
-        }
+        msg_cnt = strtol(buf, NULL, 0);
+        if (msg_cnt > 0)
+            goto send_msg;
     }
 
     if (rc != sizeof(buf)) {
@@ -112,7 +109,17 @@ static void try_send_offmsg(ElaCarrier *w, TestCtx *ctx)
         goto error_exit;
     }
 
-    return;
+send_msg:
+    while (msg_cnt-- > 0) {
+        const char *msg = "hello";
+        int ret = 0;
+
+        ret = ela_send_friend_message(w, ctx->remote_userid, msg, strlen(msg) + 1);
+        if (ret < 0) {
+            vlogE("Error: Send offline message error: 0x%x", ela_get_error());
+            error |= 1;
+        }
+    }
 
 error_exit:
     ctx->error = error;
@@ -120,20 +127,19 @@ error_exit:
     ela_kill(w);
 }
 
-static void try_store_offmsg(ElaCarrier *w, TestCtx *ctx,
-                             const void *msg, size_t length)
+static void try_store_offmsg(ElaCarrier *w, TestCtx *ctx)
 {
     size_t rc = 0;
+    char buf[32] = {0};
 
-    rc = fwrite(msg, length, 1, ctx->offmsg_fp);
+    sprintf(buf, "%d", ctx->msg_cnt);
+    rc = fwrite(buf, strlen(buf), 1, ctx->offmsg_fp);
     fflush(ctx->offmsg_fp);
     if (rc != 1) {
         vlogE("Error: write offmsg error");
         ctx->error = 1;
         ctx->did_kill = true;
         ela_kill(w);
-    } else {
-        gettimeofday(&ctx->last_timestamp, NULL);
     }
 }
 
@@ -173,6 +179,7 @@ static void idle_callback(ElaCarrier *w, void *context)
             timeout_interval.tv_usec = 0;
             timeradd(&ctx->last_timestamp, &timeout_interval, &expiration);
             if (timercmp(&now, &expiration, >)) {
+                try_store_offmsg(w, ctx);
                 ctx->error = 1;
                 ctx->did_kill = true;
                 ela_kill(w);
@@ -224,7 +231,7 @@ static void message_callback(ElaCarrier *w, const char *from,
     vlogI("Message from friend[%s]: %.*s", from, (int)len, msg);
 
     if (ctx->tasktype == Task_offmsg && ctx->mode == RunMode_receiver)
-        try_store_offmsg(w, ctx, msg, len);
+        ctx->msg_cnt++;
 }
 
 static void ready_callback(ElaCarrier *w, void *context)
