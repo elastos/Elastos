@@ -59,6 +59,7 @@ type Configuration struct {
 	CRCOnlyDPOSHeight  uint32            `json:"CRCOnlyDPOSHeight"`
 	PublicDPOSHeight   uint32            `json:"PublicDPOSHeight"`
 	ProfilePort        uint32            `json:"ProfilePort"`
+	MaxBlockSize       uint32            `json"MaxBlockSize"`
 }
 
 // DPoSConfiguration defines the DPoS consensus parameters.

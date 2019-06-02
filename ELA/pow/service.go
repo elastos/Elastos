@@ -257,7 +257,7 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 
 	for _, tx := range txs {
 		size := totalTxsSize + tx.GetSize()
-		if size > pact.MaxBlockSize {
+		if size > int(pact.MaxBlockSize) {
 			continue
 		}
 		totalTxsSize = size
