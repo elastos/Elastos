@@ -588,7 +588,7 @@ func checkTransactionDepositUTXO(txn *Transaction, references map[*Input]*Output
 
 func checkTransactionSize(txn *Transaction) error {
 	size := txn.GetSize()
-	if size <= 0 || size > pact.MaxBlockSize {
+	if size <= 0 || size > int(pact.MaxBlockSize) {
 		return fmt.Errorf("Invalid transaction size: %d bytes", size)
 	}
 

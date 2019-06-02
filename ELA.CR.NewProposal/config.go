@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"io/ioutil"
 	"net"
 	"strings"
@@ -70,9 +71,15 @@ func loadConfigParams(cfg *config.Configuration) (*config.Configuration, error) 
 	case "regnet", "reg":
 		regNetDefault(cfg)
 		activeNetParams = activeNetParams.RegNet()
+		pact.MaxBlockSize = 2000000
 
 	default:
 		mainNetDefault(cfg)
+		pact.MaxBlockSize = 2000000
+	}
+
+	if cfg.MaxBlockSize > 0 {
+		pact.MaxBlockSize = cfg.MaxBlockSize
 	}
 
 	config.Parameters = cfg
