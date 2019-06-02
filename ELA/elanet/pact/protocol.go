@@ -21,6 +21,9 @@ const (
 
 	// MaxBlocksPerMsg is the maximum number of blocks allowed per message.
 	MaxBlocksPerMsg = 500
+
+	// MaxTxPoolSize is the maximum size of txs allowed in transaction pool.
+	MaxTxPoolSize = 20000000
 )
 
 // MaxBlockSize is the maximum number of bytes allowed per block.
