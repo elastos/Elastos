@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -14,7 +13,6 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/utils/http"
-	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
 
 	"github.com/urfave/cli"
 )
@@ -26,14 +24,16 @@ var txCommand = []cli.Command{
 		Usage:       "Build a transaction",
 		Description: "use --to --amount --fee to create a transaction",
 		Flags: []cli.Flag{
-			TransactionFromFlag,
-			TransactionToFlag,
-			TransactionAmountFlag,
-			TransactionFeeFlag,
+			cmdcom.TransactionFromFlag,
+			cmdcom.TransactionToFlag,
+			cmdcom.TransactionToManyFlag,
+			cmdcom.TransactionAmountFlag,
+			cmdcom.TransactionFeeFlag,
 			//TransactionLockFlag,
-			AccountWalletFlag,
+			cmdcom.AccountWalletFlag,
 		},
-		Action: buildTx,
+		Subcommands: buildTxCommand,
+		Action:      buildTx,
 	},
 	{
 		Category:    "Transaction",
@@ -41,10 +41,10 @@ var txCommand = []cli.Command{
 		Usage:       "Sign a transaction",
 		Description: "use --file or --hex to specify the transaction file path or content",
 		Flags: []cli.Flag{
-			TransactionHexFlag,
-			TransactionFileFlag,
-			AccountWalletFlag,
-			AccountPasswordFlag,
+			cmdcom.TransactionHexFlag,
+			cmdcom.TransactionFileFlag,
+			cmdcom.AccountWalletFlag,
+			cmdcom.AccountPasswordFlag,
 		},
 		Action: signTx,
 	},
@@ -54,8 +54,8 @@ var txCommand = []cli.Command{
 		Usage:       "Send a transaction",
 		Description: "use --file or --hex to specify the transaction file path or content",
 		Flags: []cli.Flag{
-			TransactionHexFlag,
-			TransactionFileFlag,
+			cmdcom.TransactionHexFlag,
+			cmdcom.TransactionFileFlag,
 		},
 		Action: sendTx,
 	},
@@ -64,39 +64,65 @@ var txCommand = []cli.Command{
 		Name:     "showtx",
 		Usage:    "Show info of raw transaction",
 		Flags: []cli.Flag{
-			TransactionHexFlag,
-			TransactionFileFlag,
+			cmdcom.TransactionHexFlag,
+			cmdcom.TransactionFileFlag,
 		},
 		Action: showTx,
 	},
 }
 
+var buildTxCommand = []cli.Command{
+	{
+		Name:  "activate",
+		Usage: "Build a tx to activate producer which have been inactivated",
+		Flags: []cli.Flag{
+			cmdcom.TransactionNodePublicKeyFlag,
+			cmdcom.AccountWalletFlag,
+			cmdcom.AccountPasswordFlag,
+		},
+		Action: func(c *cli.Context) error {
+			if c.NumFlags() == 0 {
+				cli.ShowSubcommandHelp(c)
+				return nil
+			}
+			if err := CreateActivateProducerTransaction(c); err != nil {
+				fmt.Println("error:", err)
+				os.Exit(1)
+			}
+			return nil
+		},
+	},
+	{
+		Name:  "vote",
+		Usage: "Build a tx to vote for candidates using ELA",
+		Flags: []cli.Flag{
+			cmdcom.TransactionForFlag,
+			cmdcom.TransactionAmountFlag,
+			cmdcom.TransactionFromFlag,
+			cmdcom.TransactionFeeFlag,
+			cmdcom.AccountWalletFlag,
+			cmdcom.AccountPasswordFlag,
+		},
+		Action: func(c *cli.Context) error {
+			if c.NumFlags() == 0 {
+				cli.ShowSubcommandHelp(c)
+				return nil
+			}
+			if err := CreateVoteTransaction(c); err != nil {
+				fmt.Println("error:", err)
+				os.Exit(1)
+			}
+			return nil
+		},
+	},
+}
+
 func getTransactionHex(c *cli.Context) (string, error) {
-	// If parameter with file path is not empty, read content from file
 	if filePath := strings.TrimSpace(c.String("file")); filePath != "" {
-
-		if _, err := os.Stat(filePath); err != nil {
-			return "", errors.New("invalid transaction file path")
-		}
-		file, err := os.OpenFile(filePath, os.O_RDONLY, 0666)
-		if err != nil {
-			return "", errors.New("open transaction file failed")
-		}
-		rawData, err := ioutil.ReadAll(file)
-		if err != nil {
-			return "", errors.New("read transaction file failed")
-		}
-
-		content := strings.TrimSpace(string(rawData))
-		// File content can not by empty
-		if content == "" {
-			return "", errors.New("transaction file is empty")
-		}
-		return content, nil
+		return cmdcom.ReadFile(filePath)
 	}
 
 	content := strings.TrimSpace(c.String("hex"))
-	// Hex string content can not be empty
 	if content == "" {
 		return "", errors.New("transaction hex string is empty")
 	}
@@ -122,17 +148,12 @@ func signTx(c *cli.Context) error {
 		return nil
 	}
 	walletPath := c.String("wallet")
-	pwdHex := c.String("password")
-	pwd := []byte(pwdHex)
-	if pwdHex == "" {
-		var err error
-		pwd, err = cmdcom.GetPassword()
-		if err != nil {
-			return err
-		}
+	password, err := cmdcom.GetFlagPassword(c)
+	if err != nil {
+		return err
 	}
 
-	client, err := account.Open(walletPath, pwd)
+	client, err := account.Open(walletPath, password)
 	if err != nil {
 		return err
 	}
@@ -152,9 +173,11 @@ func signTx(c *cli.Context) error {
 		return errors.New("deserialize transaction failed")
 	}
 
-	program := txn.Programs[0]
+	if len(txn.Programs) == 0 {
+		return errors.New("no program found in transaction")
+	}
 
-	haveSign, needSign, err := crypto.GetSignStatus(program.Code, program.Parameter)
+	haveSign, needSign, err := crypto.GetSignStatus(txn.Programs[0].Code, txn.Programs[0].Parameter)
 	if err != nil {
 		return err
 	}
@@ -167,10 +190,10 @@ func signTx(c *cli.Context) error {
 		return err
 	}
 
-	haveSign, needSign, _ = crypto.GetSignStatus(program.Code, program.Parameter)
-	fmt.Println("[", haveSign, "/", needSign, "] Transaction successfully signed")
+	haveSign, needSign, _ = crypto.GetSignStatus(txn.Programs[0].Code, txn.Programs[0].Parameter)
+	fmt.Println("[", haveSign, "/", needSign, "] Transaction was successfully signed")
 
-	output(haveSign, needSign, txnSigned)
+	OutputTx(haveSign, needSign, txnSigned)
 
 	return nil
 }
@@ -186,7 +209,7 @@ func sendTx(c *cli.Context) error {
 		return err
 	}
 
-	result, err := jsonrpc.CallParams(cmdcom.LocalServer(), "sendrawtransaction", http.Params{"data": txHex})
+	result, err := cmdcom.RPCCall("sendrawtransaction", http.Params{"data": txHex})
 	if err != nil {
 		return err
 	}

@@ -163,6 +163,7 @@ func (a *AddrManager) updateAddress(netAddr, srcAddr *p2p.NetAddress) {
 	// Filter out non-routable addresses. Note that non-routable
 	// also includes invalid and local addresses.
 	if !IsRoutable(netAddr) {
+		log.Debugf("addr %v is non-routable", netAddr)
 		return
 	}
 

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"math/rand"
 	"os"
+	"time"
 
 	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/cmd/info"
@@ -24,6 +26,18 @@ func main() {
 	app.UsageText = "ela-cli [global options] command [command options] [args]"
 	app.HideHelp = false
 	app.HideVersion = false
+	app.Flags = []cli.Flag{
+		cmdcom.RPCUserFlag,
+		cmdcom.RPCPasswordFlag,
+		cmdcom.RPCPortFlag,
+	}
+	app.Before = func(c *cli.Context) error {
+		//seed transaction nonce
+		rand.Seed(time.Now().UnixNano())
+
+		cmdcom.SetRpcConfig(c)
+		return nil
+	}
 	//commands
 	app.Commands = []cli.Command{
 		*wallet.NewCommand(),
@@ -35,8 +49,13 @@ func main() {
 
 	//sort.Sort(cli.CommandsByName(app.Commands))
 	//sort.Sort(cli.FlagsByName(app.Flags))
+	newArgs, err := cmdcom.MoveRPCFlags(os.Args)
+	if err != nil {
+		cmdcom.PrintErrorMsg(err.Error())
+		os.Exit(1)
+	}
 
-	if err := app.Run(os.Args); err != nil {
+	if err := app.Run(newArgs); err != nil {
 		cmdcom.PrintErrorMsg(err.Error())
 		os.Exit(1)
 	}

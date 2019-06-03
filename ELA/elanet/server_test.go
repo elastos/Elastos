@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/elanet/netsync"
+	"github.com/elastos/Elastos.ELA/elanet/routes"
 	"github.com/elastos/Elastos.ELA/p2p/peer"
 	svr "github.com/elastos/Elastos.ELA/p2p/server"
 	"github.com/stretchr/testify/assert"
@@ -33,6 +34,7 @@ func TestHandlePeerMsg(t *testing.T) {
 
 	s := &server{
 		syncManager: netsync.New(&netsync.Config{MaxPeers: 2}),
+		routes:      routes.New(&routes.Config{}),
 	}
 
 	// New peers should be added.

@@ -260,7 +260,7 @@ parameters: none
 argument sample:
 
 ```json
-{   
+{
   "method":"getblockcount"
 }
 ```
@@ -450,6 +450,7 @@ parameters:
 | addresses | array[string] | addresses     |
 | utxotype  | string        | the utxo type |
 
+if not set utxotype will use "mixed" as default value
 if set utxotype to "mixed" or not set will get all utxos ignore the type
 if set utxotype to "vote" will get vote utxos
 if set utxotype to "normal" will get normal utxos without vote
@@ -628,7 +629,7 @@ argument sample:
 ```json
 {
   "method":"getnodestate"
-} 
+}
 ```
 
 ```json
@@ -749,7 +750,7 @@ result sample:
 
 #### discretemining
 
-description: generate one or more blocks instantly  
+description: generate one or more blocks instantly
 parameters:
 
 | name  | type    | description     |
@@ -780,7 +781,7 @@ result sample:
 
 #### createauxblock
 
-description: generate an auxiliary block  
+description: generate an auxiliary block
 parameters:
 
 | name         | type   | description     |
@@ -870,7 +871,7 @@ result sample:
 
 #### getinfo
 
-description: return node information.  
+description: return node information.
 warning: this interface is ready to be deprecated. So no api information will be supplied.
 
 #### listproducers
@@ -878,10 +879,17 @@ warning: this interface is ready to be deprecated. So no api information will be
 description: show producers infromation
 parameters:
 
-| name  | type    | description                  |
-| ----- | ------- | ---------------------------- |
-| start | integer | the start index of producers |
-| limit | integer | the limit index of producers |
+| name  | type    | description                                                  |
+| ----- | ------- | ------------------------------------------------------------ |
+| start | integer | the start index of producers                                 |
+| limit | integer | the limit count of producers                                 |
+| state | string  | the producer state you want<br/>"all": get producers in any state<br/>"pending": get producers in the pendding state<br/>
+"active": get producers in the active state<br/>
+"inactive": get producers in the inactive state<br/>
+"canceled": get producers in the canceled state<br/>
+"illegal": get producers in the illegal state<br/>
+"returned": get producers in the returned state |
+if state flag not provided return the producers in pending and active state.
 
 result:
 
@@ -894,7 +902,6 @@ result:
 | location       | uint64 | the location number of the producer       |
 | active         | bool   | if producer has confirmed                 |
 | votes          | string | the votes currently held                  |
-| netaddress     | string | the ip address and port of the producer   |
 | state          | string | the current state of the producer         |
 | registerheight | uint32 | the height of cancel producer             |
 | cancelheight   | uint32 | the cancel height of the producer         |
@@ -933,8 +940,7 @@ result sample:
         "location": 401,
         "active": true,
         "votes": "3.11100000",
-        "netaddress": "127.0.0.1:20339",
-        "state": "Activate",
+        "state": "Active",
         "registerheight": 236,
         "cancelheight": 0,
         "inactiveheight": 0,
@@ -949,8 +955,7 @@ result sample:
         "location": 402,
         "active": true,
         "votes": "2.10000000",
-        "netaddress": "127.0.0.1:20339",
-        "state": "Activate",
+        "state": "Active",
         "registerheight": 225,
         "cancelheight": 0,
         "inactiveheight": 0,
@@ -965,8 +970,7 @@ result sample:
         "location": 403,
         "active": true,
         "votes": "0",
-        "netaddress": "127.0.0.1:20339",
-        "state": "Activate",
+        "state": "Active",
         "registerheight": 216,
         "cancelheight": 0,
         "inactiveheight": 0,
@@ -1205,7 +1209,7 @@ named arguments sample:
 
 ```json
 {
-  "method":"submitauxblock",
+  "method":"submitsidechainillegaldata",
   "params":{
     "illegaldata": "016400000021023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c64981855ad8681d0d86d1e91e00167939cb6694d2c422acd208a0072939487f699940353662653933363937386332363162326536343964353864626661663366323364346138363832373466353532326364326164623433303861393535633461330221030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9210288e79636e41edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c7"
   }
@@ -1370,29 +1374,364 @@ result sample:
 
 ```json
 {
+  "error": null,
+  "id": null,
+  "jsonrpc": "2.0",
+  "result": {
+    "arbiters": [
+      "0247984879d35fe662d6dddb4edf111c9f64fde18ccf8af0a51e4b278c3411a8f2",
+      "032e583b6b578cccb9bbe4a53ab54a3e3e60156c01973b16af52b614813fca1bb2",
+      "0223b8e8098dd694f4d20ea74800b1260a5a4a0afe7f6a0043c7e459c84ff80fba",
+        "03982eaa9744a3777860013b6b988dc5250198cb81b3aea157f9b429206e3ae80f",
+      "0328443c1e4bdb5b60ec1d017056f314ba31f8f9f43806128fac20499a9df27bc2"
+    ],
+    "candidates": [],
+    "nextarbiters": [
+      "0247984879d35fe662d6dddb4edf111c9f64fde18ccf8af0a51e4b278c3411a8f2",
+      "032e583b6b578cccb9bbe4a53ab54a3e3e60156c01973b16af52b614813fca1bb2",
+      "0223b8e8098dd694f4d20ea74800b1260a5a4a0afe7f6a0043c7e459c84ff80fba",
+      "03982eaa9744a3777860013b6b988dc5250198cb81b3aea157f9b429206e3ae80f",
+      "0328443c1e4bdb5b60ec1d017056f314ba31f8f9f43806128fac20499a9df27bc2"
+    ],
+    "nextcandidates": [],
+    "ondutyarbiter": "03982eaa9744a3777860013b6b988dc5250198cb81b3aea157f9b429206e3ae80f",
+    "currentturnstartheight": 200,
+    "nextturnstartheight": 212
+  }
+}
+```
+
+#### getutxosbyamount
+
+description: get utxo by given amount, amount of utxo >= given amount.
+
+parameters:
+
+| name     | type   | description                |
+| -------- | ------ | -------------------------- |
+| address  | string | the address of ela         |
+| amount   | string | the min amount to get utxo |
+| utxotype | string | the utxo type              |
+
+if not set utxotype will use "mixed" as default value
+if set utxotype to "mixed" or not set will get all utxos ignore the type
+if set utxotype to "vote" will get vote utxos
+if set utxotype to "normal" will get normal utxos without vote
+
+result:
+please see below
+
+argument sample:
+
+```json
+{
+  "method":"getutxosbyamount",
+  "params":{
+    "address": "XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ",
+    "amount": "0.25"
+  }
+}
+```
+
+result sample:
+
+```json
+{
+  "error": null,
+  "id": null,
+  "jsonrpc": "2.0",
+  "result": [
+    {
+      "assetid": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+      "txid": "9132cf82a18d859d200c952aec548d7895e7b654fd1761d5d059b91edbad1768",
+      "vout": 0,
+      "address": "XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ",
+      "amount": "0.1",
+      "confirmations": 1102,
+      "outputlock": 0
+    },
+    {
+      "assetid": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+      "txid": "3edbcc839fd4f16c0b70869f2d477b56a006d31dc7a10d8cb49bd12628d6352e",
+      "vout": 0,
+      "address": "XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ",
+      "amount": "0.2",
+      "confirmations": 846,
+      "outputlock": 0
+     }
+  ]
+}
+```
+
+#### getamountbyinputs
+
+description: get amount of given inputs.
+
+parameters:
+
+| name    | type   | description              |
+| ------- | ------ | ------------------------ |
+| inputs  | string | the hex string of inputs |
+
+result:
+amount of all given inputs, the type is string, if not found input will return error
+
+argument sample:
+
+```json
+{
+  "method":"getamountbyinputs",
+  "params":{
+    "inputs": "029132cf82a18d859d200c952aec548d7895e7b654fd1761d5d059b91edbad17680000000000003edbcc839fd4f16c0b70869f2d477b56a006d31dc7a10d8cb49bd12628d6352e000000000000"
+  }
+}
+```
+
+result sample:
+
+```json
+{
+  "error": null,
+  "id": null,
+  "jsonrpc": "2.0",
+  "result": "0.3"
+}
+```
+
+#### getblockbyheight
+
+description: get a block by specifying block height.
+
+parameters:
+
+| name   | type   | description         |
+| ------ | ------ | ------------------- |
+| height | uint32 | the height of block |
+
+result:
+
+| name              | type          | description                                                  |
+| ----------------- | ------------- | ------------------------------------------------------------ |
+| hash              | string        | the blockchain hash                                          |
+| confirmations     | integer       | confirmations                                                |
+| size              | integer       | the size of a block in bytes                                 |
+| strippedsize      | integer       | equals to size                                               |
+| weight            | integer       | This block’s weight                                          |
+| height            | integer       | the height of block                                          |
+| version           | integer       | block header's version                                       |
+| versionhex        | string        | block header's version in hex format                         |
+| merkleroot        | string        | the merkleroot hash of this block                            |
+| tx                | array[struct] | transactions of this block as an array                       |
+| time              | integer       | the Unix timestamp of this block                             |
+| mediantime        | integer       | equals to time                                               |
+| nonce             | integer       | the nonce of this block                                      |
+| bits              | integer       | bits of this block                                           |
+| difficulty        | string        | difficulty of this block                                     |
+| chainwork         | string        | The estimated number of block header hashes miners had to check from the genesis block to this block, encoded as big-endian hex |
+| previousblockhash | string        | previous block hash                                          |
+| nextblockhash     | string        | next block hash                                              |
+| auxpow            | string        | Auxpow information in hex format                             |
+
+argument sample:
+
+```json
+{
+  "method":"getblockbyheight",
+  "params":{
+    "height":"5"
+  }
+}
+```
+
+result sample:
+
+```json
+{
     "error": null,
     "id": null,
     "jsonrpc": "2.0",
     "result": {
-        "arbiters": [
-            "0247984879d35fe662d6dddb4edf111c9f64fde18ccf8af0a51e4b278c3411a8f2",
-            "032e583b6b578cccb9bbe4a53ab54a3e3e60156c01973b16af52b614813fca1bb2",
-            "0223b8e8098dd694f4d20ea74800b1260a5a4a0afe7f6a0043c7e459c84ff80fba",
-            "03982eaa9744a3777860013b6b988dc5250198cb81b3aea157f9b429206e3ae80f",
-            "0328443c1e4bdb5b60ec1d017056f314ba31f8f9f43806128fac20499a9df27bc2"
+        "hash": "d428cf8a8e8e2c265ccceb0ed0a017aae45a89c98529d1f6dd43efc219089e0e",
+        "confirmations": 452,
+        "strippedsize": 563,
+        "size": 563,
+        "weight": 2252,
+        "height": 5,
+        "version": 0,
+        "versionhex": "00000000",
+        "merkleroot": "c1accbe3434279f74db674728d7020190680474f11c4ec2976bd1223cf7c9c66",
+        "tx": [
+            {
+                "txid": "c1accbe3434279f74db674728d7020190680474f11c4ec2976bd1223cf7c9c66",
+                "hash": "c1accbe3434279f74db674728d7020190680474f11c4ec2976bd1223cf7c9c66",
+                "size": 257,
+                "vsize": 257,
+                "version": 0,
+                "locktime": 5,
+                "vin": [
+                    {
+                        "txid": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "vout": 65535,
+                        "sequence": 4294967295
+                    }
+                ],
+                "vout": [
+                    {
+                        "value": "1.50684931",
+                        "n": 0,
+                        "address": "EPha6MJ2Y9HAdrtNvMVrBu6ePMnmZJtmyv",
+                        "assetid": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+                        "outputlock": 0,
+                        "type": 0,
+                        "payload": null
+                    },
+                    {
+                        "value": "1.75799086",
+                        "n": 1,
+                        "address": "EQzEvQbz5XGDZeWu2u48dPaeLTzvmfSyG4",
+                        "assetid": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+                        "outputlock": 0,
+                        "type": 0,
+                        "payload": null
+                    },
+                    {
+                        "value": "1.75799088",
+                        "n": 2,
+                        "address": "EPha6MJ2Y9HAdrtNvMVrBu6ePMnmZJtmyv",
+                        "assetid": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+                        "outputlock": 0,
+                        "type": 0,
+                        "payload": null
+                    }
+                ],
+                "blockhash": "d428cf8a8e8e2c265ccceb0ed0a017aae45a89c98529d1f6dd43efc219089e0e",
+                "confirmations": 452,
+                "time": 1556595214,
+                "blocktime": 1556595214,
+                "type": 0,
+                "payloadversion": 4,
+                "payload": {
+                    "coinbasedata": "ELA"
+                },
+                "attributes": [
+                    {
+                        "usage": 0,
+                        "data": "f53c107eec00d337"
+                    }
+                ],
+                "programs": []
+            }
         ],
-        "candidates": [],
-        "nextarbiters": [
-            "0247984879d35fe662d6dddb4edf111c9f64fde18ccf8af0a51e4b278c3411a8f2",
-            "032e583b6b578cccb9bbe4a53ab54a3e3e60156c01973b16af52b614813fca1bb2",
-            "0223b8e8098dd694f4d20ea74800b1260a5a4a0afe7f6a0043c7e459c84ff80fba",
-            "03982eaa9744a3777860013b6b988dc5250198cb81b3aea157f9b429206e3ae80f",
-            "0328443c1e4bdb5b60ec1d017056f314ba31f8f9f43806128fac20499a9df27bc2"
-        ],
-        "nextcandidates": [],
-        "ondutyarbiter": "03982eaa9744a3777860013b6b988dc5250198cb81b3aea157f9b429206e3ae80f",
-        "currentturnstartheight": 200,
-        "nextturnstartheight": 212
+        "time": 1556595214,
+        "mediantime": 1556595214,
+        "nonce": 0,
+        "bits": 545259519,
+        "difficulty": "1",
+        "chainwork": "000001c3",
+        "previousblockhash": "b45f9e479340c6d2889076f6bd1e138d14e8620bc2cc0ef642bd15278509d49f",
+        "nextblockhash": "185cf0322f3f38abe0ecc0fffbca84d87965492042e87036bf78bfdb665b53fa",
+        "auxpow": "01000000010000000000000000000000000000000000000000000000000000000000000000000000002cfabe6d6d0e9e0819c2ef43ddf6d12985c9895ae4aa17a0d00eebcc5c262c8e8e8acf28d40100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ffffff7f0000000000000000000000000000000000000000000000000000000000000000a0c69cab73b8541e6d5b17d5c27e3482d3cc0264da80142645f4ad67677a44940cc2c75c0000000001000000",
+        "minerinfo": "ELA"
     }
 }
 ```
+
+#### getarbitratorgroupbyheight
+
+description: get amount of given inputs.
+
+parameters:
+
+| name   | type   | description                  |
+| ------ | ------ | ---------------------------- |
+| height | uint32 | block height about the chain |
+
+result:
+
+| name                  | type          | description                         |
+| --------------------- | ------------- | ----------------------------------- |
+| ondutyarbitratorindex | int           | index of current on duty arbitrator |
+| arbitrators           | array[string] | an array of current arbitrators     |
+
+argument sample:
+
+```json
+{
+  "method":"getarbitratorgroupbyheight",
+  "params":{
+    "height":"310"
+  }
+}
+```
+
+result sample:
+
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "ondutyarbitratorindex": 10,
+        "arbitrators": [
+            "02338fc098e08ed9a798f0d40b5320f52ad0539b98a972856a948bf652b0014110",
+            "026ef6740c405e9ff137410f47fe92597c82a8dd236e87e7f4aafe4dc1aa0cd06b",
+            "02c684ec9883bb5397243d9e129b9334a643f4778c28e99d59858162884081b183",
+            "02d20a48b4287737912de6af53b6afef2596a755f2a541374dda1fd3ab0aa1b984",
+            "02d2dd22fa2abfebb94d34666da47b15f214cc1a9ea1b8db0fda22d264bb922b36",
+            "02fc936192cfb02b8a22e4ba090638f05ac60c8bf9d70f1558c5166cb7768a182e",
+            "030936942e4bbe3d7f7dc45cea38195f4c4bb1474b336d6bf35fcba179872332b4",
+            "0320cb8d823c5d202e0ec481f4e0fa0d3e191fb9d0a7629543882bad7444ad3016",
+            "03268eb4064889047863485288515cdd880a986b57ccc9d72ae58d4401f67509a7",
+            "034282d36e034272f7c289fd9655797a352d1c76a917e94d6dedaf484acf167e2d",
+            "03d732f3df7c081d149bd585b77afe1077cedb4b6c6fd9b6278a8ffd456d34c3ab",
+            "03f9a1f5b23e3d57e8d95a45008ad4574352fa55f755a655c81ee22e62894811b2"
+        ]
+    }
+}
+```
+
+#### getexistwithdrawtransactions
+
+description: find out which are already exist in chain by providing a list of  withdraw transaction hashes.
+
+parameters:
+
+| name | type          | description                                   |
+| ---- | ------------- | --------------------------------------------- |
+| txs  | array[string] | a list of transaction hashes in string format |
+
+result:
+
+a list of existing transaction hashes
+
+argument sample:
+
+```json
+{
+  "method":"getexistwithdrawtransactions",
+  "params":{
+    "txs":[
+      "3edbcc839fd4f16c0b70869f2d477b56a006d31dc7a10d8cb49bd12628d6352e",
+      "9132cf82a18d859d200c952aec548d7895e7b654fd1761d5d059b91edbad1768",
+      "764691821f937fd566bcf533611a5e5b193008ea1ba1396f67b7b0da22717c02"
+    ]
+  }
+}
+```
+
+result sample:
+
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": [
+      "3edbcc839fd4f16c0b70869f2d477b56a006d31dc7a10d8cb49bd12628d6352e",
+      "9132cf82a18d859d200c952aec548d7895e7b654fd1761d5d059b91edbad1768"
+    ]
+}
+```
+
+####

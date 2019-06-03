@@ -14,7 +14,7 @@ type SideChainPow struct {
 	SideBlockHash   common.Uint256
 	SideGenesisHash common.Uint256
 	BlockHeight     uint32
-	SignedData      []byte
+	Signature       []byte
 }
 
 func (a *SideChainPow) Data(version byte) []byte {
@@ -26,7 +26,7 @@ func (a *SideChainPow) Data(version byte) []byte {
 	return buf.Bytes()
 }
 
-func (a *SideChainPow) Serialize(w io.Writer, version byte) error {
+func (a *SideChainPow) SerializeUnsigned(w io.Writer, version byte) error {
 	err := a.SideBlockHash.Serialize(w)
 	if err != nil {
 		return errors.New("[SideChainPow], SideBlockHash serialize failed.")
@@ -39,7 +39,17 @@ func (a *SideChainPow) Serialize(w io.Writer, version byte) error {
 	if err != nil {
 		return errors.New("[SideChainPow], BlockHeight serialize failed.")
 	}
-	err = common.WriteVarBytes(w, a.SignedData)
+
+	return nil
+}
+
+func (a *SideChainPow) Serialize(w io.Writer, version byte) error {
+	err := a.SerializeUnsigned(w, version)
+	if err != nil {
+		return err
+	}
+
+	err = common.WriteVarBytes(w, a.Signature)
 	if err != nil {
 		return errors.New("[SideChainPow], SignatureData serialize failed.")
 	}
@@ -59,7 +69,7 @@ func (a *SideChainPow) Deserialize(r io.Reader, version byte) error {
 	if err != nil {
 		return errors.New("[SideChainPow], SignatureData dserialize failed.")
 	}
-	if a.SignedData, err = common.ReadVarBytes(r, MaxPayloadDataSize,
+	if a.Signature, err = common.ReadVarBytes(r, MaxPayloadDataSize,
 		"payload sidechainpow signed data"); err != nil {
 		return errors.New("[SideChainPow], SignatureData dserialize failed.")
 	}

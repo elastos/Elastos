@@ -15,8 +15,14 @@ import (
 const maxFailedAttempts = 25
 
 var (
-	//ErrDialNil is used to indicate that Dial cannot be nil in the configuration.
+	// ErrDialNil is used to indicate that Dial cannot be nil in the configuration.
 	ErrDialNil = errors.New("Config: Dial cannot be nil")
+
+	// ErrDialSelf indicates the connection is dialling to self address.
+	ErrDialSelf = errors.New("dial to self address")
+
+	// ErrDuplicateAddr indicates the connection is using a duplicate address.
+	ErrDuplicateAddr = errors.New("connecting to duplicate addr")
 
 	// maxRetryDuration is the max duration of time retrying of a persistent
 	// connection is allowed to grow to.  This is necessary since the retry
@@ -27,10 +33,6 @@ var (
 	// defaultRetryDuration is the default duration of time for retrying
 	// persistent connections.
 	defaultRetryDuration = time.Second * 5
-
-	// defaultTargetOutbound is the default number of outbound connections to
-	// maintain.
-	defaultTargetOutbound = uint32(8)
 )
 
 // ConnState represents the state of the requested connection.
@@ -178,6 +180,7 @@ type ConnManager struct {
 	wg             sync.WaitGroup
 	failedAttempts uint64
 	addresses      sync.Map
+	selfAddr       string
 	requests       chan interface{}
 	quit           chan struct{}
 }
@@ -187,11 +190,21 @@ type ConnManager struct {
 // retry duration. Otherwise, if required, it makes a new connection request.
 // After maxFailedConnectionAttempts new connections will be retried after the
 // configured retry duration.
-func (cm *ConnManager) handleFailedConn(c *ConnReq) {
+func (cm *ConnManager) handleFailedConn(pending map[uint64]*ConnReq, c *ConnReq) {
 	if atomic.LoadInt32(&cm.stop) != 0 {
 		return
 	}
+
+	// Update connection state to failing.
+	c.updateState(ConnFailing)
+	delete(pending, c.id)
+
 	if c.Permanent {
+		// The connection request is re added to the pending map, so that
+		// subsequent processing of connections and failures do not ignore
+		// the request.
+		c.updateState(ConnPending)
+		pending[c.id] = c
 		c.retryCount++
 		d := time.Duration(c.retryCount) * cm.cfg.RetryDuration
 		if d > maxRetryDuration {
@@ -315,18 +328,11 @@ out:
 
 				// Otherwise, we will attempt a reconnection if
 				// we do not have enough peers, or if this is a
-				// persistent peer. The connection request is
-				// re added to the pending map, so that
-				// subsequent processing of connections and
-				// failures do not ignore the request.
+				// persistent peer.
 				if uint32(len(conns)) < cm.cfg.TargetOutbound ||
 					connReq.Permanent {
-
-					connReq.updateState(ConnPending)
-					log.Debugf("Reconnecting to %v",
-						connReq)
-					pending[msg.id] = connReq
-					cm.handleFailedConn(connReq)
+					log.Debugf("Reconnecting to %v", connReq)
+					cm.handleFailedConn(pending, connReq)
 				}
 
 			case handleFailed:
@@ -338,11 +344,12 @@ out:
 					continue
 				}
 
-				connReq.updateState(ConnFailing)
 				log.Debugf("Failed to connect to %v: %v",
 					connReq, msg.err)
-				cm.addresses.Delete(connReq.Addr.String())
-				cm.handleFailedConn(connReq)
+				if msg.err != ErrDuplicateAddr {
+					cm.addresses.Delete(connReq.Addr.String())
+				}
+				cm.handleFailedConn(pending, connReq)
 			}
 
 		case <-cm.quit:
@@ -428,10 +435,22 @@ func (cm *ConnManager) Connect(c *ConnReq) {
 		}
 	}
 
-	// Do not connect to same address.
 	addr := c.Addr.String()
+	// Do not connect to self.
+	if addr == cm.selfAddr {
+		select {
+		case cm.requests <- handleFailed{c, ErrDialSelf}:
+		case <-cm.quit:
+		}
+		return
+	}
+
+	// Do not connect to the same address.
 	if _, ok := cm.addresses.LoadOrStore(addr, addr); ok {
-		cm.handleFailedConn(c)
+		select {
+		case cm.requests <- handleFailed{c, ErrDuplicateAddr}:
+		case <-cm.quit:
+		}
 		return
 	}
 
@@ -450,6 +469,12 @@ func (cm *ConnManager) Connect(c *ConnReq) {
 	case cm.requests <- handleConnected{c, conn}:
 	case <-cm.quit:
 	}
+}
+
+// OnSelfConnection tells the ConnManager a connected address is self connection
+// so the ConnManager can avoid to connect to the address again.
+func (cm *ConnManager) OnSelfConnection(addr string) {
+	cm.selfAddr = addr
 }
 
 // Disconnect disconnects the connection corresponding to the given connection
@@ -557,9 +582,6 @@ func New(cfg *Config) (*ConnManager, error) {
 	// Default to sane values
 	if cfg.RetryDuration <= 0 {
 		cfg.RetryDuration = defaultRetryDuration
-	}
-	if cfg.TargetOutbound == 0 {
-		cfg.TargetOutbound = defaultTargetOutbound
 	}
 	cm := ConnManager{
 		cfg:      *cfg, // Copy so caller can't mutate

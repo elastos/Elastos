@@ -7,7 +7,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	. "github.com/elastos/Elastos.ELA/dpos/manager"
-	dposp2p "github.com/elastos/Elastos.ELA/dpos/p2p"
+	dp2p "github.com/elastos/Elastos.ELA/dpos/p2p"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/p2p"
@@ -56,6 +56,10 @@ type messageItem struct {
 type network struct {
 	listener    NetworkEventListener
 	messageList []messageItem
+}
+
+func (n *network) RecoverTimeout() {
+	panic("implement me")
 }
 
 func (n *network) DumpMessages(level uint32) string {
@@ -110,11 +114,9 @@ func (n *network) BroadcastMessage(msg p2p.Message) {
 	n.messageList = append(n.messageList, messageItem{ID: nil, Message: msg})
 }
 
-func (n *network) UpdatePeers(arbitrators map[string]*dposp2p.PeerAddr) error {
-	return nil
-}
+func (n *network) UpdatePeers(peers []peer.PID) {}
 
-func (n *network) GetActivePeers() []dposp2p.Peer {
+func (n *network) GetActivePeers() []dp2p.Peer {
 	return nil
 }
 

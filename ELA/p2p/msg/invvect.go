@@ -24,6 +24,7 @@ const (
 	InvTypeBlock
 	InvTypeFilteredBlock
 	InvTypeConfirmedBlock
+	InvTypeAddress
 )
 
 func (i InvType) String() string {
@@ -38,6 +39,8 @@ func (i InvType) String() string {
 		return "MSG_FILTERED_BLOCK"
 	case InvTypeConfirmedBlock:
 		return "MSG_CONFIRMED_BLOCK"
+	case InvTypeAddress:
+		return "MSG_ADDRESS"
 	default:
 		return fmt.Sprintf("Unknown InvType (%d)", i)
 	}

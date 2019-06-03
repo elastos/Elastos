@@ -2,6 +2,7 @@ package peer
 
 import (
 	"bytes"
+	"container/list"
 	"crypto/rand"
 	"encoding/binary"
 	"encoding/hex"
@@ -27,8 +28,8 @@ const (
 	// peer that hasn't completed the initial version negotiation.
 	negotiateTimeout = 5 * time.Second
 
-	// writeTimeout is the duration of write message before we time out a peer.
-	writeTimeout = 5 * time.Second
+	// outputBufferSize is the number of elements the output channels use.
+	outputBufferSize = 50
 )
 
 var (
@@ -45,6 +46,11 @@ func (p PID) Equal(o PID) bool {
 	return bytes.Equal(p[:], o[:])
 }
 
+// String returns the hexadecimal format string of the PID.
+func (p PID) String() string {
+	return hex.EncodeToString(p[:])
+}
+
 // outMsg is used to house a message to be sent along with a channel to signal
 // when the message has been sent (or won't be sent due to things such as
 // shutdown)
@@ -58,11 +64,9 @@ type StatsSnap struct {
 	ID             uint64
 	PID            string
 	Addr           string
-	Services       uint64
 	LastSend       time.Time
 	LastRecv       time.Time
 	ConnTime       time.Time
-	Version        uint32
 	Inbound        bool
 	LastPingTime   time.Time
 	LastPingMicros int64
@@ -74,36 +78,15 @@ type MessageFunc func(peer *Peer, msg p2p.Message)
 // Config is a descriptor which specifies the peer instance configuration.
 type Config struct {
 	PID              PID
+	Target           [16]byte
 	Magic            uint32
-	ProtocolVersion  uint32
-	Services         uint64
+	Port             uint16
 	PingInterval     time.Duration
-	SignNonce        func(nonce []byte) (signature [64]byte)
+	Sign             func(data []byte) []byte
 	PingNonce        func(pid PID) uint64
 	PongNonce        func(pid PID) uint64
 	MakeEmptyMessage func(cmd string) (p2p.Message, error)
-	messageFuncs     []MessageFunc
-}
-
-func (c *Config) AddMessageFunc(messageFunc MessageFunc) {
-	if messageFunc != nil {
-		c.messageFuncs = append(c.messageFuncs, messageFunc)
-	}
-}
-
-func (c *Config) handleMessage(peer *Peer, msg p2p.Message) {
-	for _, messageFunc := range c.messageFuncs {
-		messageFunc(peer, msg)
-	}
-}
-
-// minUint32 is a helper function to return the minimum of two uint32s.
-// This avoids a math import and the need to cast to floats.
-func minUint32(a, b uint32) uint32 {
-	if a < b {
-		return a
-	}
-	return b
+	MessageFunc      MessageFunc
 }
 
 // newNetAddress attempts to extract the IP address and port from the passed
@@ -141,7 +124,6 @@ type Peer struct {
 	lastRecv   int64
 	lastSend   int64
 	connected  int32
-	started    int32
 	disconnect int32
 
 	conn net.Conn
@@ -151,15 +133,13 @@ type Peer struct {
 	addr    string
 	cfg     Config
 	inbound bool
+	msgFns  []MessageFunc
 
-	flagsMtx           sync.Mutex // protects the peer flags below
-	id                 uint64
-	na                 *p2p.NetAddress
-	pk                 *crypto.PublicKey
-	pid                PID
-	services           uint64
-	advertisedProtoVer uint32 // protocol version advertised by remote
-	protocolVersion    uint32 // negotiated protocol version
+	flagsMtx sync.Mutex // protects the peer flags below
+	id       uint64
+	na       *p2p.NetAddress
+	pk       *crypto.PublicKey
+	pid      PID
 
 	// These fields keep track of statistics for the peer and are protected
 	// by the statsMtx mutex.
@@ -169,15 +149,27 @@ type Peer struct {
 	lastPingTime   time.Time // Time we sent last ping.
 	lastPingMicros int64     // Time for last ping to return.
 
-	sendQueue chan outMsg
-	inQuit    chan struct{}
-	outQuit   chan struct{}
-	quit      chan struct{}
+	outputQueue   chan outMsg
+	sendQueue     chan outMsg
+	sendDoneQueue chan struct{}
+	inQuit        chan struct{}
+	queueQuit     chan struct{}
+	outQuit       chan struct{}
+	quit          chan struct{}
 }
 
 // AddMessageFunc add a new message handler for the peer.
-func (p *Peer) AddMessageFunc(messageFunc MessageFunc) {
-	p.cfg.AddMessageFunc(messageFunc)
+func (p *Peer) AddMessageFunc(fn MessageFunc) {
+	if fn != nil {
+		p.msgFns = append(p.msgFns, fn)
+	}
+}
+
+// handleMessage will be invoked when a message received.
+func (p *Peer) handleMessage(peer *Peer, msg p2p.Message) {
+	for _, fn := range p.msgFns {
+		fn(peer, msg)
+	}
 }
 
 // String returns the peer's address and directionality as a human-readable
@@ -198,8 +190,6 @@ func (p *Peer) StatsSnapshot() *StatsSnap {
 	id := p.id
 	pid := p.pid
 	addr := p.addr
-	services := p.services
-	protocolVersion := p.advertisedProtoVer
 	p.flagsMtx.Unlock()
 
 	// Get a copy of all relevant flags and stats.
@@ -207,11 +197,9 @@ func (p *Peer) StatsSnapshot() *StatsSnap {
 		ID:             id,
 		PID:            hex.EncodeToString(pid[:]),
 		Addr:           addr,
-		Services:       services,
 		LastSend:       p.LastSend(),
 		LastRecv:       p.LastRecv(),
 		ConnTime:       p.timeConnected,
-		Version:        protocolVersion,
 		Inbound:        p.inbound,
 		LastPingMicros: p.lastPingMicros,
 		LastPingTime:   p.lastPingTime,
@@ -281,17 +269,6 @@ func (p *Peer) Inbound() bool {
 	return p.inbound
 }
 
-// Services returns the services flag of the remote peer.
-//
-// This function is safe for concurrent access.
-func (p *Peer) Services() uint64 {
-	p.flagsMtx.Lock()
-	services := p.services
-	p.flagsMtx.Unlock()
-
-	return services
-}
-
 // LastPingTime returns the last ping time of the remote peer.
 //
 // This function is safe for concurrent access.
@@ -312,17 +289,6 @@ func (p *Peer) LastPingMicros() int64 {
 	p.statsMtx.RUnlock()
 
 	return lastPingMicros
-}
-
-// ProtocolVersion returns the negotiated peer protocol version.
-//
-// This function is safe for concurrent access.
-func (p *Peer) ProtocolVersion() uint32 {
-	p.flagsMtx.Lock()
-	protocolVersion := p.protocolVersion
-	p.flagsMtx.Unlock()
-
-	return protocolVersion
 }
 
 // LastSend returns the last send time of the peer.
@@ -363,7 +329,7 @@ func (p *Peer) TimeConnected() time.Time {
 
 // handlePingMsg is invoked when a peer receives a ping message.
 func (p *Peer) handlePingMsg(ping *msg.Ping) {
-	p.SendMessage(msg.NewPong(p.cfg.PongNonce(p.pid)), nil)
+	p.QueueMessage(msg.NewPong(p.cfg.PongNonce(p.pid)), nil)
 }
 
 // handlePongMsg is invoked when a peer receives a pong message.
@@ -380,16 +346,19 @@ func (p *Peer) handlePongMsg(pong *msg.Pong) {
 func (p *Peer) makeEmptyMessage(cmd string) (p2p.Message, error) {
 	var message p2p.Message
 	switch cmd {
-	case p2p.CmdVersion:
+	case msg.CmdVersion:
 		message = &msg.Version{}
 
-	case p2p.CmdVerAck:
+	case msg.CmdVerAck:
 		message = &msg.VerAck{}
 
-	case p2p.CmdPing:
+	case msg.CmdAddr:
+		message = &msg.Addr{}
+
+	case msg.CmdPing:
 		message = &msg.Ping{}
 
-	case p2p.CmdPong:
+	case msg.CmdPong:
 		message = &msg.Pong{}
 
 	default:
@@ -435,18 +404,8 @@ func (p *Peer) writeMessage(msg p2p.Message) error {
 		return fmt.Sprintf("Sending %v%s to %s", msg.CMD(), summary, p)
 	}))
 
-	// Handle write message timeout.
-	doneChan := make(chan error)
-	go func() {
-		doneChan <- p2p.WriteMessage(p.conn, p.cfg.Magic, msg)
-	}()
-
-	select {
-	case err := <-doneChan:
-		return err
-	case <-time.After(writeTimeout):
-	}
-	return fmt.Errorf("sending %s to %s timeout", msg.CMD(), p)
+	// Write the message to the peer.
+	return p2p.WriteMessage(p.conn, p.cfg.Magic, msg)
 }
 
 // shouldHandleIOError returns whether or not the passed error, which is
@@ -503,7 +462,7 @@ out:
 				rejectMsg := msg.NewReject("malformed", msg.RejectMalformed, errMsg)
 				// Send the message and block until it has been sent before returning.
 				doneChan := make(chan error, 1)
-				p.SendMessage(rejectMsg, doneChan)
+				p.QueueMessage(rejectMsg, doneChan)
 				<-doneChan
 			}
 			break out
@@ -517,7 +476,7 @@ out:
 			rejectMsg := msg.NewReject(m.CMD(), msg.RejectDuplicate, "duplicate version message")
 			// Send the message and block until it has been sent before returning.
 			doneChan := make(chan error, 1)
-			p.SendMessage(rejectMsg, doneChan)
+			p.QueueMessage(rejectMsg, doneChan)
 			<-doneChan
 			break out
 
@@ -537,7 +496,7 @@ out:
 		}
 
 		// Call handle message which is configured on peer creation.
-		p.cfg.handleMessage(p, rmsg)
+		p.handleMessage(p, rmsg)
 
 		// A message was received so reset the idle timer.
 		idleTimer.Reset(idleTimeout)
@@ -550,6 +509,84 @@ out:
 	p.Disconnect()
 
 	close(p.inQuit)
+}
+
+// queueHandler handles the queuing of outgoing data for the peer. This runs as
+// a muxer for various sources of input so we can ensure that server and peer
+// handlers will not block on us sending a message.  That data is then passed on
+// to outHandler to be actually written.
+func (p *Peer) queueHandler() {
+	pendingMsgs := list.New()
+
+	// We keep the waiting flag so that we know if we have a message queued
+	// to the outHandler or not.  We could use the presence of a head of
+	// the list for this but then we have rather racy concerns about whether
+	// it has gotten it at cleanup time - and thus who sends on the
+	// message's done channel.  To avoid such confusion we keep a different
+	// flag and pendingMsgs only contains messages that we have not yet
+	// passed to outHandler.
+	waiting := false
+
+	// To avoid duplication below.
+	queuePacket := func(msg outMsg, list *list.List, waiting bool) bool {
+		if !waiting {
+			p.sendQueue <- msg
+		} else {
+			list.PushBack(msg)
+		}
+		// we are always waiting now.
+		return true
+	}
+out:
+	for {
+		select {
+		case msg := <-p.outputQueue:
+			waiting = queuePacket(msg, pendingMsgs, waiting)
+
+		// This channel is notified when a message has been sent across
+		// the network socket.
+		case <-p.sendDoneQueue:
+			// No longer waiting if there are no more messages
+			// in the pending messages queue.
+			next := pendingMsgs.Front()
+			if next == nil {
+				waiting = false
+				continue
+			}
+
+			// Notify the outHandler about the next item to
+			// asynchronously send.
+			val := pendingMsgs.Remove(next)
+			p.sendQueue <- val.(outMsg)
+
+		case <-p.quit:
+			break out
+		}
+	}
+
+	// Drain any wait channels before we go away so we don't leave something
+	// waiting for us.
+	for e := pendingMsgs.Front(); e != nil; e = pendingMsgs.Front() {
+		val := pendingMsgs.Remove(e)
+		msg := val.(outMsg)
+		if msg.doneChan != nil {
+			msg.doneChan <- nil
+		}
+	}
+cleanup:
+	for {
+		select {
+		case msg := <-p.outputQueue:
+			if msg.doneChan != nil {
+				msg.doneChan <- nil
+			}
+			// Just drain channel
+		// sendDoneQueue is buffered so doesn't need draining.
+		default:
+			break cleanup
+		}
+	}
+	close(p.queueQuit)
 }
 
 // outHandler handles all outgoing messages for the peer.  It must be run as a
@@ -589,11 +626,14 @@ out:
 			if smsg.doneChan != nil {
 				smsg.doneChan <- nil
 			}
+			p.sendDoneQueue <- struct{}{}
 
 		case <-p.quit:
 			break out
 		}
 	}
+
+	<-p.queueQuit
 
 	// Drain any wait channels before going away so there is nothing left
 	// waiting on this goroutine.
@@ -622,7 +662,7 @@ out:
 	for {
 		select {
 		case <-pingTicker.C:
-			p.SendMessage(msg.NewPing(p.cfg.PingNonce(p.pid)), nil)
+			p.QueueMessage(msg.NewPing(p.cfg.PingNonce(p.pid)), nil)
 
 		case <-p.quit:
 			break out
@@ -630,11 +670,14 @@ out:
 	}
 }
 
-func (p *Peer) SendMessage(msg p2p.Message, doneChan chan<- error) {
+// QueueMessage adds the passed bitcoin message to the peer send queue.
+//
+// This function is safe for concurrent access.
+func (p *Peer) QueueMessage(msg p2p.Message, doneChan chan<- error) {
 	// Avoid risk of deadlock if goroutine already exited.  The goroutine
 	// we will be sending to hangs around until it knows for a fact that
 	// it is marked as disconnected and *then* it drains the channels.
-	if !p.Connected() || atomic.LoadInt32(&p.started) == 0 {
+	if !p.Connected() {
 		if doneChan != nil {
 			go func() {
 				doneChan <- ErrPeerDisconnected
@@ -642,7 +685,7 @@ func (p *Peer) SendMessage(msg p2p.Message, doneChan chan<- error) {
 		}
 		return
 	}
-	p.sendQueue <- outMsg{msg: msg, doneChan: doneChan}
+	p.outputQueue <- outMsg{msg: msg, doneChan: doneChan}
 }
 
 // Connected returns whether or not the peer is currently connected.
@@ -665,21 +708,6 @@ func (p *Peer) Disconnect() {
 		p.conn.Close()
 	}
 	close(p.quit)
-}
-
-// InQuit returns the signal chan of message inHandler quit.
-func (p *Peer) InQuit() <-chan struct{} {
-	return p.inQuit
-}
-
-// OutQuit returns the signal chan of message outHandler quit.
-func (p *Peer) OutQuit() <-chan struct{} {
-	return p.outQuit
-}
-
-// Quit returns the signal chan of peer quit.
-func (p *Peer) Quit() <-chan struct{} {
-	return p.quit
 }
 
 // readRemoteVersionMsg waits for the next message to arrive from the remote
@@ -714,17 +742,11 @@ func (p *Peer) readRemoteVersionMsg() ([]byte, error) {
 	// Negotiate the protocol version and set the services to what the remote
 	// peer advertised.
 	p.flagsMtx.Lock()
-	p.advertisedProtoVer = uint32(verMsg.Version)
-	p.protocolVersion = minUint32(p.protocolVersion, p.advertisedProtoVer)
-	log.Debugf("Negotiated protocol version %d for peer %s",
-		p.protocolVersion, p)
-
 	p.pk = pk
 	p.pid = verMsg.PID
-	p.services = verMsg.Services
 	p.flagsMtx.Unlock()
 
-	p.cfg.handleMessage(p, verMsg)
+	p.handleMessage(p, verMsg)
 	return verMsg.Nonce[:], nil
 }
 
@@ -747,26 +769,25 @@ func (p *Peer) readRemoteVerAckMsg(nonce []byte) error {
 	}
 
 	// Verify signature of the message nonce.
-	p.cfg.handleMessage(p, verAck)
+	p.handleMessage(p, verAck)
 	return crypto.Verify(*p.pk, nonce, verAck.Signature[:])
 }
 
 // writeLocalVersionMsg writes our version message to the remote peer.
 func (p *Peer) writeLocalVersionMsg() ([]byte, error) {
 	// Create a 32 bytes nonce value
-	nonce := [32]byte{}
+	var nonce [16]byte
 	rand.Read(nonce[:])
 
 	// Version message.
-	localVerMsg := msg.NewVersion(p.cfg.ProtocolVersion, p.cfg.Services,
-		p.cfg.PID, nonce)
+	localVerMsg := msg.NewVersion(p.cfg.PID, p.cfg.Target, nonce, p.cfg.Port)
 
 	return nonce[:], p.writeMessage(localVerMsg)
 }
 
 // writeLocalVerAckMsg writes our verack message to the remote peer.
 func (p *Peer) writeLocalVerAckMsg(nonce []byte) error {
-	localVarAck := msg.NewVerAck(p.cfg.SignNonce(nonce))
+	localVarAck := msg.NewVerAck(p.cfg.Sign(nonce))
 	return p.writeMessage(localVarAck)
 }
 
@@ -837,12 +858,9 @@ func (p *Peer) start() error {
 	// The protocol has been negotiated successfully so start processing input
 	// and output messages.
 	go p.inHandler()
+	go p.queueHandler()
 	go p.outHandler()
 	go p.pingHandler()
-
-	if !atomic.CompareAndSwapInt32(&p.started, 0, 1) {
-		return errors.New("negotiated before")
-	}
 
 	return nil
 }
@@ -864,7 +882,7 @@ func (p *Peer) AssociateConnection(conn net.Conn) {
 		// Set up a NetAddress for the peer to be used with AddrManager.  We
 		// only do this inbound because outbound set this up at connection time
 		// and no point recomputing.
-		na, err := newNetAddress(p.conn.RemoteAddr(), p.services)
+		na, err := newNetAddress(p.conn.RemoteAddr(), 0)
 		if err != nil {
 			log.Errorf("Cannot create remote net address: %v", err)
 			p.Disconnect()
@@ -902,16 +920,18 @@ func newPeerBase(origCfg *Config, inbound bool) *Peer {
 	cfg := *origCfg // Copy to avoid mutating caller.
 
 	p := Peer{
-		id:              RandomUint64(),
-		inbound:         inbound,
-		sendQueue:       make(chan outMsg, 1), // nonblocking sync
-		inQuit:          make(chan struct{}),
-		outQuit:         make(chan struct{}),
-		quit:            make(chan struct{}),
-		cfg:             cfg, // Copy so caller can't mutate.
-		services:        cfg.Services,
-		protocolVersion: cfg.ProtocolVersion,
+		id:            RandomUint64(),
+		inbound:       inbound,
+		outputQueue:   make(chan outMsg, outputBufferSize),
+		sendQueue:     make(chan outMsg, 1),   // nonblocking sync
+		sendDoneQueue: make(chan struct{}, 1), // nonblocking sync
+		inQuit:        make(chan struct{}),
+		queueQuit:     make(chan struct{}),
+		outQuit:       make(chan struct{}),
+		quit:          make(chan struct{}),
+		cfg:           cfg, // Copy so caller can't mutate.
 	}
+	p.AddMessageFunc(cfg.MessageFunc)
 	return &p
 }
 
@@ -936,8 +956,7 @@ func NewOutboundPeer(cfg *Config, addr string) (*Peer, error) {
 		return nil, err
 	}
 
-	p.na = p2p.NewNetAddressIPPort(net.ParseIP(host), uint16(port),
-		cfg.Services)
+	p.na = p2p.NewNetAddressIPPort(net.ParseIP(host), uint16(port), 0)
 
 	return p, nil
 }

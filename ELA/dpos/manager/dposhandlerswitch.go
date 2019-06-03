@@ -1,13 +1,13 @@
 package manager
 
 import (
-	"time"
+	"bytes"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/dpos/dtime"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
@@ -29,6 +29,7 @@ type DPOSHandlerConfig struct {
 	Manager     *DPOSManager
 	Monitor     *log.EventMonitor
 	Arbitrators state.Arbitrators
+	TimeSource  dtime.MedianTimeSource
 }
 
 type DPOSHandlerSwitch struct {
@@ -66,8 +67,7 @@ func (h *DPOSHandlerSwitch) Initialize(dispatcher *ProposalDispatcher,
 	h.consensus = consensus
 	currentArbiter := h.cfg.Manager.GetArbitrators().GetNextOnDutyArbitrator(h.
 		consensus.GetViewOffset())
-	isDposOnDuty := common.BytesToHexString(currentArbiter) == config.
-		Parameters.ArbiterConfiguration.PublicKey
+	isDposOnDuty := bytes.Equal(currentArbiter, dispatcher.cfg.Account.PublicKeyBytes())
 	h.SwitchTo(isDposOnDuty)
 }
 
@@ -96,7 +96,7 @@ func (h *DPOSHandlerSwitch) ProcessProposal(id peer.PID, p *payload.DPOSProposal
 	proposalEvent := log.ProposalEvent{
 		Sponsor:      common.BytesToHexString(p.Sponsor),
 		BlockHash:    p.BlockHash,
-		ReceivedTime: time.Now(),
+		ReceivedTime: h.cfg.TimeSource.AdjustedTime(),
 		ProposalHash: p.Hash(),
 		RawData:      p,
 		Result:       false,
@@ -108,12 +108,14 @@ func (h *DPOSHandlerSwitch) ProcessProposal(id peer.PID, p *payload.DPOSProposal
 
 func (h *DPOSHandlerSwitch) ChangeView(firstBlockHash *common.Uint256) {
 	h.currentHandler.ChangeView(firstBlockHash)
+	h.proposalDispatcher.eventAnalyzer.IncreaseLastConsensusViewCount()
+	h.proposalDispatcher.UpdatePrecociousProposals()
 
 	viewEvent := log.ViewEvent{
 		OnDutyArbitrator: common.BytesToHexString(h.consensus.GetOnDutyArbitrator()),
-		StartTime:        time.Now(),
+		StartTime:        h.cfg.TimeSource.AdjustedTime(),
 		Offset:           h.consensus.GetViewOffset(),
-		Height:           h.proposalDispatcher.CurrentHeight(),
+		Height:           blockchain.DefaultLedger.Blockchain.GetHeight() + 1,
 	}
 	h.cfg.Monitor.OnViewStarted(&viewEvent)
 }
@@ -124,16 +126,14 @@ func (h *DPOSHandlerSwitch) TryStartNewConsensus(b *types.Block) bool {
 		return false
 	}
 
-	if h.proposalDispatcher.IsProcessingBlockEmpty() {
-		if h.currentHandler.TryStartNewConsensus(b) {
-			c := log.ConsensusEvent{StartTime: time.Now(), Height: b.Height,
-				RawData: &b.Header}
-			h.cfg.Monitor.OnConsensusStarted(&c)
-			return true
-		}
+	if h.currentHandler.TryStartNewConsensus(b) {
+		h.proposalDispatcher.eventAnalyzer.IncreaseLastConsensusViewCount()
+		c := log.ConsensusEvent{StartTime: h.cfg.TimeSource.AdjustedTime(), Height: b.Height,
+			RawData: &b.Header}
+		h.cfg.Monitor.OnConsensusStarted(&c)
+		return true
 	}
 
-	//todo record block into database
 	return false
 }
 
@@ -141,8 +141,9 @@ func (h *DPOSHandlerSwitch) ProcessAcceptVote(id peer.PID, p *payload.DPOSPropos
 	succeed, finished := h.currentHandler.ProcessAcceptVote(id, p)
 
 	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(p.Signer),
-		ReceivedTime: time.Now(), Result: true, RawData: p}
+		ReceivedTime: h.cfg.TimeSource.AdjustedTime(), Result: true, RawData: p}
 	h.cfg.Monitor.OnVoteArrived(&voteEvent)
+	h.proposalDispatcher.eventAnalyzer.AppendConsensusVote(p)
 
 	return succeed, finished
 }
@@ -151,15 +152,16 @@ func (h *DPOSHandlerSwitch) ProcessRejectVote(id peer.PID, p *payload.DPOSPropos
 	succeed, finished := h.currentHandler.ProcessRejectVote(id, p)
 
 	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(p.Signer),
-		ReceivedTime: time.Now(), Result: false, RawData: p}
+		ReceivedTime: h.cfg.TimeSource.AdjustedTime(), Result: false, RawData: p}
 	h.cfg.Monitor.OnVoteArrived(&voteEvent)
+	h.proposalDispatcher.eventAnalyzer.AppendConsensusVote(p)
 
 	return succeed, finished
 }
 
 func (h *DPOSHandlerSwitch) ResponseGetBlocks(id peer.PID, startBlockHeight, endBlockHeight uint32) {
 	//todo limit max height range (endBlockHeight - startBlockHeight)
-	currentHeight := h.proposalDispatcher.CurrentHeight()
+	currentHeight := blockchain.DefaultLedger.Blockchain.GetHeight()
 
 	endHeight := endBlockHeight
 	if currentHeight < endBlockHeight {
@@ -187,15 +189,19 @@ func (h *DPOSHandlerSwitch) RequestAbnormalRecovering() {
 }
 
 func (h *DPOSHandlerSwitch) HelpToRecoverAbnormal(id peer.PID, height uint32) {
-	status := &msg.ConsensusStatus{}
 	log.Info("[HelpToRecoverAbnormal] peer id:", common.BytesToHexString(id[:]))
+	if height > blockchain.DefaultLedger.Blockchain.GetHeight() {
+		log.Error("Requesting height greater than current processing height")
+		return
+	}
 
-	if err := h.consensus.CollectConsensusStatus(height, status); err != nil {
+	status := &msg.ConsensusStatus{}
+	if err := h.consensus.CollectConsensusStatus(status); err != nil {
 		log.Error("Error occurred when collect consensus status from consensus object: ", err)
 		return
 	}
 
-	if err := h.proposalDispatcher.CollectConsensusStatus(height, status); err != nil {
+	if err := h.proposalDispatcher.CollectConsensusStatus(status); err != nil {
 		log.Error("Error occurred when collect consensus status from proposal dispatcher object: ", err)
 		return
 	}
@@ -230,6 +236,6 @@ func (h *DPOSHandlerSwitch) OnViewChanged(isOnDuty bool) {
 		log.Warn("[OnViewChanged] firstBlockHash is nil")
 		return
 	}
-	log.Info("OnViewChanged, onduty, getBlock from first block hash:", firstBlockHash)
+	log.Info("OnViewChanged, getBlock from first block hash:", firstBlockHash, "onduty:", isOnDuty)
 	h.ChangeView(&firstBlockHash)
 }

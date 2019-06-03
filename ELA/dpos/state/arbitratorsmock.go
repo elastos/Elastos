@@ -1,42 +1,123 @@
 package state
 
 import (
+	"bytes"
+
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
-	"github.com/elastos/Elastos.ELA/dpos/p2p"
+	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 )
 
 func NewArbitratorsMock(arbitersByte [][]byte, changeCount, majorityCount int) *ArbitratorsMock {
 	return &ArbitratorsMock{
-		CurrentArbitrators:          arbitersByte,
+		CurrentArbitrators: arbitersByte,
+		Snapshot: []*KeyFrame{
+			{
+				CurrentArbitrators: arbitersByte,
+			},
+		},
 		CurrentCandidates:           make([][]byte, 0),
+		CRCArbitrators:              make([][]byte, 0),
 		NextArbitrators:             make([][]byte, 0),
 		NextCandidates:              make([][]byte, 0),
 		CurrentOwnerProgramHashes:   make([]*common.Uint168, 0),
 		CandidateOwnerProgramHashes: make([]*common.Uint168, 0),
 		OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
+		ArbitersRoundReward:         make(map[common.Uint168]common.Fixed64),
+		CRCArbitratorsMap:           make(map[string]*Producer),
+		ActiveProducer:              make([][]byte, 0),
 		TotalVotesInRound:           0,
 		DutyChangedCount:            0,
 		MajorityCount:               majorityCount,
+		FinalRoundChange:            0,
+		InactiveMode:                false,
+		CurrentReward:               *NewRewardData(),
+		NextReward:                  *NewRewardData(),
 	}
 }
 
 //mock object of arbitrators
 type ArbitratorsMock struct {
 	CurrentArbitrators          [][]byte
+	CRCArbitrators              [][]byte
 	CurrentCandidates           [][]byte
 	NextArbitrators             [][]byte
 	NextCandidates              [][]byte
 	CurrentOwnerProgramHashes   []*common.Uint168
 	CandidateOwnerProgramHashes []*common.Uint168
+	ArbitersRoundReward         map[common.Uint168]common.Fixed64
 	OwnerVotesInRound           map[common.Uint168]common.Fixed64
+	CRCArbitratorsMap           map[string]*Producer
 	TotalVotesInRound           common.Fixed64
 	DutyChangedCount            int
 	MajorityCount               int
+	FinalRoundChange            common.Fixed64
+	InactiveMode                bool
+	ActiveProducer              [][]byte
+	Snapshot                    []*KeyFrame
+	CurrentReward               RewardData
+	NextReward                  RewardData
 }
 
-func (a *ArbitratorsMock) GetDutyIndexByHeight(height uint32) int {
+func (a *ArbitratorsMock) SaveCheckPoint(height uint32) error {
+	panic("implement me")
+}
+
+func (a *ArbitratorsMock) RecoverFromCheckPoints(height uint32) (uint32, error) {
+	return height, nil
+}
+
+func (a *ArbitratorsMock) GetCurrentRewardData() RewardData {
+	return a.CurrentReward
+}
+
+func (a *ArbitratorsMock) GetNextRewardData() RewardData {
+	return a.NextReward
+}
+
+func (a *ArbitratorsMock) GetSnapshot(height uint32) []*KeyFrame {
+	return a.Snapshot
+}
+
+func (a *ArbitratorsMock) IsActiveProducer(pk []byte) bool {
+	for _, v := range a.ActiveProducer {
+		if bytes.Equal(v, pk) {
+			return true
+		}
+	}
+	return false
+}
+
+func (a *ArbitratorsMock) IsUnderstaffedMode() bool {
+	return false
+}
+
+func (a *ArbitratorsMock) IsInactiveMode() bool {
+	return a.InactiveMode
+}
+
+func (a *ArbitratorsMock) IsDisabledProducer(pk []byte) bool {
+	return false
+}
+
+func (a *ArbitratorsMock) CheckDPOSIllegalTx(block *types.Block) error {
+	return nil
+}
+
+func (a *ArbitratorsMock) GetArbitersRoundReward() map[common.Uint168]common.Fixed64 {
+	return a.ArbitersRoundReward
+}
+
+func (a *ArbitratorsMock) GetFinalRoundChange() common.Fixed64 {
+	return a.FinalRoundChange
+}
+
+func (a *ArbitratorsMock) Start() {
+	panic("implement me")
+}
+
+func (a *ArbitratorsMock) GetDutyIndexByHeight(uint32) int {
 	panic("implement me")
 }
 
@@ -56,16 +137,26 @@ func (a *ArbitratorsMock) RollbackTo(height uint32) error {
 	panic("implement me")
 }
 
-func (a *ArbitratorsMock) GetNeedConnectArbiters(height uint32) map[string]*p2p.PeerAddr {
+func (a *ArbitratorsMock) GetNeedConnectArbiters() []peer.PID {
 	panic("implement me")
 }
 
 func (a *ArbitratorsMock) IsArbitrator(pk []byte) bool {
-	panic("implement me")
+	for _, v := range a.CurrentArbitrators {
+		if bytes.Equal(v, pk) {
+			return true
+		}
+	}
+	return false
 }
 
 func (a *ArbitratorsMock) IsCRCArbitrator(pk []byte) bool {
-	panic("implement me")
+	for _, v := range a.CRCArbitrators {
+		if bytes.Equal(v, pk) {
+			return true
+		}
+	}
+	return false
 }
 
 func (a *ArbitratorsMock) GetLastConfirmedBlockTimeStamp() uint32 {
@@ -81,23 +172,35 @@ func (a *ArbitratorsMock) GetCRCProducer(publicKey []byte) *Producer {
 }
 
 func (a *ArbitratorsMock) GetCRCArbitrators() map[string]*Producer {
-	panic("implement me")
-}
-
-func (a *ArbitratorsMock) IsCRCArbitratorProgramHash(hash *common.Uint168) bool {
-	return false
-}
-
-func (a *ArbitratorsMock) IsCRCArbitratorNodePublicKey(nodePublicKeyHex string) bool {
-	return false
+	return a.CRCArbitratorsMap
 }
 
 func (a *ArbitratorsMock) GetArbitersCount() int {
 	return len(a.CurrentArbitrators)
 }
 
+func (a *ArbitratorsMock) GetCRCArbitersCount() int {
+	return len(a.CRCArbitrators)
+}
+
 func (a *ArbitratorsMock) GetArbitersMajorityCount() int {
 	return a.MajorityCount
+}
+
+func (a *ArbitratorsMock) GetOnDutyCrossChainArbitrator() []byte {
+	return a.GetNextOnDutyArbitrator(0)
+}
+
+func (a *ArbitratorsMock) GetCrossChainArbitersMajorityCount() int {
+	return a.MajorityCount
+}
+
+func (a *ArbitratorsMock) GetCrossChainArbitersCount() int {
+	return len(a.CurrentArbitrators)
+}
+
+func (a *ArbitratorsMock) GetCrossChainArbiters() [][]byte {
+	return a.CurrentArbitrators
 }
 
 func (a *ArbitratorsMock) GetDutyChangeCount() int {
@@ -128,6 +231,10 @@ func (a *ArbitratorsMock) GetNextCandidates() [][]byte {
 	return a.NextCandidates
 }
 
+func (a *ArbitratorsMock) GetCRCArbiters() [][]byte {
+	return a.CRCArbitrators
+}
+
 func (a *ArbitratorsMock) GetDutyChangedCount() int {
 	return a.DutyChangedCount
 }
@@ -152,30 +259,6 @@ func (a *ArbitratorsMock) SetNextCandidates(ca [][]byte) {
 	a.NextCandidates = ca
 }
 
-func (a *ArbitratorsMock) GetCurrentOwnerProgramHashes() []*common.Uint168 {
-	result := a.CurrentOwnerProgramHashes
-
-	return result
-}
-
-func (a *ArbitratorsMock) GetCandidateOwnerProgramHashes() []*common.Uint168 {
-	result := a.CandidateOwnerProgramHashes
-
-	return result
-}
-
-func (a *ArbitratorsMock) GetOwnerVotes(programHash *common.Uint168) common.Fixed64 {
-	result := a.OwnerVotesInRound[*programHash]
-
-	return result
-}
-
-func (a *ArbitratorsMock) GetTotalVotesInRound() common.Fixed64 {
-	result := a.TotalVotesInRound
-
-	return result
-}
-
 func (a *ArbitratorsMock) GetOnDutyArbitrator() []byte {
 	return a.GetNextOnDutyArbitrator(0)
 }
@@ -196,6 +279,6 @@ func (a *ArbitratorsMock) HasArbitersMinorityCount(num int) bool {
 	return num >= len(a.CurrentArbitrators)-a.MajorityCount
 }
 
-func (a *ArbitratorsMock) DumpInfo() {
+func (a *ArbitratorsMock) DumpInfo(height uint32) {
 	panic("implement me")
 }

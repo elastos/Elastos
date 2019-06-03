@@ -34,13 +34,20 @@ func (i *InactiveArbitrators) Data(version byte) []byte {
 	return buf.Bytes()
 }
 
-func (i *InactiveArbitrators) Serialize(w io.Writer,
-	version byte) error {
+func (i *InactiveArbitrators) SerializeUnsigned(w io.Writer, version byte) error {
 	if err := common.WriteVarBytes(w, i.Sponsor); err != nil {
 		return err
 	}
 
 	if err := common.WriteUint32(w, i.BlockHeight); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (i *InactiveArbitrators) Serialize(w io.Writer, version byte) error {
+	if err := i.SerializeUnsigned(w, version); err != nil {
 		return err
 	}
 
@@ -56,7 +63,7 @@ func (i *InactiveArbitrators) Serialize(w io.Writer,
 	return nil
 }
 
-func (i *InactiveArbitrators) Deserialize(r io.Reader,
+func (i *InactiveArbitrators) DeserializeUnsigned(r io.Reader,
 	version byte) (err error) {
 	if i.Sponsor, err = common.ReadVarBytes(r, crypto.NegativeBigLength,
 		"public key"); err != nil {
@@ -64,6 +71,15 @@ func (i *InactiveArbitrators) Deserialize(r io.Reader,
 	}
 
 	if i.BlockHeight, err = common.ReadUint32(r); err != nil {
+		return err
+	}
+
+	return err
+}
+
+func (i *InactiveArbitrators) Deserialize(r io.Reader,
+	version byte) (err error) {
+	if err = i.DeserializeUnsigned(r, version); err != nil {
 		return err
 	}
 
@@ -79,13 +95,13 @@ func (i *InactiveArbitrators) Deserialize(r io.Reader,
 		}
 	}
 
-	return err
+	return nil
 }
 
 func (i *InactiveArbitrators) Hash() common.Uint256 {
 	if i.hash == nil {
 		buf := new(bytes.Buffer)
-		i.Serialize(buf, InactiveArbitratorsVersion)
+		i.SerializeUnsigned(buf, InactiveArbitratorsVersion)
 		hash := common.Uint256(common.Sha256D(buf.Bytes()))
 		i.hash = &hash
 	}

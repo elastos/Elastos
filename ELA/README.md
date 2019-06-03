@@ -111,21 +111,21 @@ $ curl https://glide.sh/get | sh
 
 ## Configure the node
 
-See the [documentation](./docs/config.json.md) about config.json to understand what each parameter means on the configuration file.
+You can just run a `ela` node without a `config.json` file, the `ela` node will use the main net configuration by default, and provide a JSON-RPC service on `localhost:20336`.
+
+If you want to customize the node configuration, see the [`config.json`](./docs/config.json.md) to understand what each parameter means on the configuration file.
 
 If you would like to connect to testnet, do the following:
 ```shell
 $ cp docs/testnet_config.json.sample config.json
 ```
 
-If you would like to connect to mainnet, do the following:
+If you would like a simple config template, do the following:
 ```shell
 $ cp docs/mainnet_config.json.sample config.json
 ```
 
 Make sure to modify the parameters to what your own specification. 
-
-> NOTE: At the moment, main net is only open to BTC.com mining pool.
 
 ## Build the node
 

@@ -69,7 +69,7 @@ func illegalVotesSetContent(L *lua.LState) int {
 	h2 := checkHeader(L, 7)
 
 	asc := true
-	if v.Hash().String() > v2.Hash().String() {
+	if v.Hash().Compare(v2.Hash()) > 0 {
 		asc = false
 	}
 

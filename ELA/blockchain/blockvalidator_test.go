@@ -13,6 +13,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/state"
+	"github.com/elastos/Elastos.ELA/utils/test"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -37,24 +38,16 @@ const (
 )
 
 func TestCheckBlockSanity(t *testing.T) {
-	config.Parameters = config.ConfigParams{Configuration: &config.Template}
-	log.NewDefault(
-		config.Parameters.PrintLevel,
-		config.Parameters.MaxPerLogSize,
-		config.Parameters.MaxLogsSize,
-	)
-	foundation, err := common.Uint168FromAddress("8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta")
-	if !assert.NoError(t, err) {
-		return
-	}
-	FoundationAddress = *foundation
-	chainStore, err := NewChainStore("Chain_UnitTest", config.DefaultParams.GenesisBlock)
+	log.NewDefault(test.NodeLogPath, 0, 0, 0)
+	params := &config.DefaultParams
+	FoundationAddress = params.Foundation
+	chainStore, err := NewChainStore(test.DataPath, params.GenesisBlock)
 	if err != nil {
 		t.Error(err.Error())
 	}
 	defer chainStore.Close()
 
-	chain, _ := New(chainStore, &config.DefaultParams, state.NewState(&config.DefaultParams, nil))
+	chain, _ := New(chainStore, params, state.NewState(params, nil))
 	if DefaultLedger == nil {
 		DefaultLedger = &Ledger{
 			Blockchain: chain,
@@ -138,6 +131,7 @@ func TestCheckCoinbaseArbitratorsReward(t *testing.T) {
 		CandidateOwnerProgramHashes: candidateHashes,
 		OwnerVotesInRound:           ownerVotes,
 		TotalVotesInRound:           common.Fixed64(totalVotesInRound),
+		ArbitersRoundReward:         map[common.Uint168]common.Fixed64{},
 	}
 	DefaultLedger = &Ledger{
 		Arbitrators: arbitratorsMock,
@@ -159,21 +153,19 @@ func TestCheckCoinbaseArbitratorsReward(t *testing.T) {
 		{ProgramHash: common.Uint168{}, Value: common.Fixed64(float64(rewardInCoinbase) * 0.35)},
 	}
 
-	assert.Error(t, checkCoinbaseArbitratorsReward(config.Parameters.PublicDPOSHeight, tx, rewardInCoinbase))
-
 	for _, v := range arbitratorHashes {
 		vote := ownerVotes[*v]
 		individualProducerReward := common.Fixed64(rewardPerVote * float64(vote))
+		arbitratorsMock.ArbitersRoundReward[*v] = individualBlockConfirmReward + individualProducerReward
 		tx.Outputs = append(tx.Outputs, &types.Output{ProgramHash: *v, Value: individualBlockConfirmReward + individualProducerReward})
 	}
-	assert.Error(t, checkCoinbaseArbitratorsReward(config.Parameters.PublicDPOSHeight, tx, rewardInCoinbase))
-
 	for _, v := range candidateHashes {
 		vote := ownerVotes[*v]
 		individualProducerReward := common.Fixed64(rewardPerVote * float64(vote))
+		arbitratorsMock.ArbitersRoundReward[*v] = individualProducerReward
 		tx.Outputs = append(tx.Outputs, &types.Output{ProgramHash: *v, Value: individualProducerReward})
 	}
-	assert.NoError(t, checkCoinbaseArbitratorsReward(config.Parameters.PublicDPOSHeight, tx, rewardInCoinbase))
+	assert.NoError(t, checkCoinbaseArbitratorsReward(tx))
 
 	DefaultLedger = originLedger
 }

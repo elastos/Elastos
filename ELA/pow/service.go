@@ -27,7 +27,7 @@ import (
 
 const (
 	maxNonce       = ^uint32(0) // 2^32 - 1
-	updateInterval = 5 * time.Second
+	updateInterval = 30 * time.Second
 )
 
 type Config struct {
@@ -159,14 +159,20 @@ func (pow *Service) AssignCoinbaseTxRewards(block *types.Block, totalReward comm
 	// main version >= H2
 	if block.Height >= pow.chainParams.PublicDPOSHeight {
 		rewardCyberRepublic := common.Fixed64(math.Ceil(float64(totalReward) * 0.3))
-		rewardDposArbiter := common.Fixed64(float64(totalReward) * 0.35)
+		rewardDposArbiter := common.Fixed64(math.Ceil(float64(totalReward) * 0.35))
+		rewardMergeMiner := common.Fixed64(totalReward) - rewardCyberRepublic - rewardDposArbiter
 
-		var dposChange common.Fixed64
-		var err error
-		if dposChange, err = pow.distributeDposReward(block.Transactions[0], rewardDposArbiter); err != nil {
-			return err
+		if rewards := pow.arbiters.GetArbitersRoundReward(); len(rewards) > 0 {
+
+			var dposChange common.Fixed64
+			var err error
+			if dposChange, err = pow.distributeDPOSReward(block.Transactions[0],
+				rewards); err != nil {
+				return err
+			}
+			rewardMergeMiner += dposChange
 		}
-		rewardMergeMiner := common.Fixed64(totalReward) - rewardCyberRepublic - rewardDposArbiter + dposChange
+
 		block.Transactions[0].Outputs[0].Value = rewardCyberRepublic
 		block.Transactions[0].Outputs[1].Value = rewardMergeMiner
 		return nil
@@ -187,60 +193,19 @@ func (pow *Service) AssignCoinbaseTxRewards(block *types.Block, totalReward comm
 	return nil
 }
 
-func (pow *Service) distributeDposReward(coinBaseTx *types.Transaction, reward common.Fixed64) (common.Fixed64, error) {
-	ownerHashes := pow.arbiters.GetCurrentOwnerProgramHashes()
-	if len(ownerHashes) == 0 {
-		return 0, errors.New("not found arbiters when distributeDposReward")
-	}
-	candidateOwnerHashes := pow.arbiters.GetCandidateOwnerProgramHashes()
+func (pow *Service) distributeDPOSReward(coinBaseTx *types.Transaction,
+	rewards map[common.Uint168]common.Fixed64) (common.Fixed64, error) {
 
-	totalBlockConfirmReward := float64(reward) * 0.25
-	totalTopProducersReward := float64(reward) - totalBlockConfirmReward
-	individualBlockConfirmReward := common.Fixed64(math.Floor(totalBlockConfirmReward / float64(len(ownerHashes))))
-	totalVotesInRound := pow.arbiters.GetTotalVotesInRound()
-	if totalVotesInRound == common.Fixed64(0) {
-		panic("total votes in round equal 0")
-	}
-	rewardPerVote := totalTopProducersReward / float64(totalVotesInRound)
-
-	realDposReward := common.Fixed64(0)
-	for _, ownerHash := range ownerHashes {
-		votes := pow.arbiters.GetOwnerVotes(ownerHash)
-		individualProducerReward := common.Fixed64(float64(votes) * rewardPerVote)
-		reward := individualBlockConfirmReward + individualProducerReward
-		if pow.arbiters.IsCRCArbitratorProgramHash(ownerHash) {
-			reward = individualBlockConfirmReward
-		}
+	for ownerHash, reward := range rewards {
 		coinBaseTx.Outputs = append(coinBaseTx.Outputs, &types.Output{
 			AssetID:     config.ELAAssetID,
 			Value:       reward,
-			ProgramHash: *ownerHash,
+			ProgramHash: ownerHash,
 			Type:        types.OTNone,
 			Payload:     &outputpayload.DefaultOutput{},
 		})
-
-		realDposReward += reward
 	}
-
-	for _, ownerHash := range candidateOwnerHashes {
-		votes := pow.arbiters.GetOwnerVotes(ownerHash)
-		individualProducerReward := common.Fixed64(float64(votes) * rewardPerVote)
-		coinBaseTx.Outputs = append(coinBaseTx.Outputs, &types.Output{
-			AssetID:     config.ELAAssetID,
-			Value:       individualProducerReward,
-			ProgramHash: *ownerHash,
-			Type:        types.OTNone,
-			Payload:     &outputpayload.DefaultOutput{},
-		})
-
-		realDposReward += individualProducerReward
-	}
-
-	change := reward - realDposReward
-	if change < 0 {
-		return 0, errors.New("real dpos reward more than reward limit")
-	}
-	return change, nil
+	return pow.arbiters.GetFinalRoundChange(), nil
 }
 
 func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
@@ -256,7 +221,7 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 		Previous:   *pow.chain.BestChain.Hash,
 		MerkleRoot: common.EmptyHash,
 		Timestamp:  uint32(pow.chain.MedianAdjustedTime().Unix()),
-		Bits:       config.Parameters.ChainParam.PowLimitBits,
+		Bits:       pow.chainParams.PowLimitBits,
 		Height:     nextBlockHeight,
 		Nonce:      0,
 	}
@@ -271,11 +236,20 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 	txCount := 1
 	totalTxFee := common.Fixed64(0)
 	txs := pow.txMemPool.GetTxsInPool()
-	sort.Slice(txs, func(i, j int) bool {
-		if txs[i].IsIllegalTypeTx() || txs[i].IsInactiveArbitrators() {
+	isHighPriority := func(tx *types.Transaction) bool {
+		if tx.IsIllegalTypeTx() || tx.IsInactiveArbitrators() ||
+			tx.IsSideChainPowTx() || tx.IsUpdateVersion() ||
+			tx.IsActivateProducerTx() {
 			return true
 		}
-		if txs[j].IsIllegalTypeTx() || txs[j].IsInactiveArbitrators() {
+		return false
+	}
+
+	sort.Slice(txs, func(i, j int) bool {
+		if isHighPriority(txs[i]) {
+			return true
+		}
+		if isHighPriority(txs[j]) {
 			return false
 		}
 		return txs[i].FeePerKB > txs[j].FeePerKB
@@ -283,7 +257,7 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 
 	for _, tx := range txs {
 		size := totalTxsSize + tx.GetSize()
-		if size > pact.MaxBlockSize {
+		if size > int(pact.MaxBlockSize) {
 			continue
 		}
 		totalTxsSize = size
@@ -299,12 +273,8 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 			log.Warn("check transaction context failed, wrong transaction:", tx.Hash().String())
 			continue
 		}
-		fee := blockchain.GetTxFee(tx, config.ELAAssetID)
-		if fee != tx.Fee {
-			continue
-		}
 		msgBlock.Transactions = append(msgBlock.Transactions, tx)
-		totalTxFee += fee
+		totalTxFee += tx.Fee
 		txCount++
 	}
 
@@ -385,7 +355,7 @@ func (pow *Service) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 
 	if pow.started || pow.discreteMining {
 		pow.mutex.Unlock()
-		return nil, fmt.Errorf("Server is already CPU mining.")
+		return nil, errors.New("node is mining")
 	}
 
 	pow.started = true
@@ -396,12 +366,12 @@ func (pow *Service) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 	i := uint32(0)
 	blockHashes := make([]*common.Uint256, 0)
 
+	log.Info("<================Discrete Mining==============>\n")
 	for {
-		log.Debug("<================Discrete Mining==============>\n")
-
 		msgBlock, err := pow.GenerateBlock(pow.PayToAddr)
+		log.Info("Generate block, " + msgBlock.Hash().String())
 		if err != nil {
-			log.Debug("generage block err", err)
+			log.Warn("Generate block failed, ", err.Error())
 			continue
 		}
 
