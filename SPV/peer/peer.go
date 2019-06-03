@@ -1,7 +1,6 @@
 package peer
 
 import (
-	"container/list"
 	"sync"
 	"time"
 
@@ -24,13 +23,13 @@ const (
 	// stalling.  The deadlines are adjusted for callback running times and
 	// only checked on each stall tick interval.
 	stallResponseTimeout = 15 * time.Second
-
-	// outputBufferSize is the number of elements the output channels use.
-	outputBufferSize = 50
 )
 
 // Config is the struct to hold configuration options useful to Peer.
 type Config struct {
+	// OnVersion is invoked when a peer receives a version message.
+	OnVersion func(*Peer, *msg.Version)
+
 	// After send a blocks request message, this inventory message
 	// will return with a bunch of block hashes, then you can use them
 	// to request all the blocks by send data requests.
@@ -52,14 +51,6 @@ type Config struct {
 	OnReject func(*Peer, *msg.Reject)
 }
 
-// outMsg is used to house a message to be sent along with a channel to signal
-// when the message has been sent (or won't be sent due to things such as
-// shutdown)
-type outMsg struct {
-	msg      p2p.Message
-	doneChan chan<- struct{}
-}
-
 // stallClearMsg is used to clear current stalled messages.  This is useful when
 // we are synced to current but a getblocks message is stalled, we need to cancel
 // it.
@@ -73,37 +64,9 @@ type Peer struct {
 	prevGetBlocksBegin *common.Uint256
 	prevGetBlocksStop  *common.Uint256
 
-	stallControl  chan interface{}
-	blockQueue    chan interface{}
-	outputQueue   chan outMsg
-	sendDoneQueue chan struct{}
-}
-
-func NewPeer(peer *peer.Peer, cfg *Config) *Peer {
-	p := Peer{
-		Peer:          peer,
-		cfg:           *cfg,
-		stallControl:  make(chan interface{}, 1),
-		blockQueue:    make(chan interface{}, 1),
-		sendDoneQueue: make(chan struct{}, 1),
-		outputQueue:   make(chan outMsg, outputBufferSize),
-	}
-	peer.AddMessageFunc(p.handleMessage)
-	peer.OnSendDone(p.sendDoneQueue)
-
-	go p.stallHandler()
-	go p.queueHandler()
-	go p.blockHandler()
-
-	return &p
-}
-
-func (p *Peer) sendMessage(out outMsg) {
-	switch out.msg.(type) {
-	case *msg.GetBlocks, *msg.GetData:
-		p.stallControl <- out.msg
-	}
-	p.SendMessage(out.msg, out.doneChan)
+	stallControl chan interface{}
+	blockQueue   chan interface{}
+	quit         chan struct{}
 }
 
 func (p *Peer) handleMessage(peer *peer.Peer, message p2p.Message) {
@@ -113,28 +76,29 @@ func (p *Peer) handleMessage(peer *peer.Peer, message p2p.Message) {
 	}
 
 	switch m := message.(type) {
+	case *msg.Version:
+		p.cfg.OnVersion(p, m)
+
 	case *msg.Inv:
-		p.stallControl <- message
 		p.cfg.OnInv(p, m)
 
 	case *msg.MerkleBlock:
-		p.stallControl <- message
 		p.blockQueue <- m
 
 	case *msg.Tx:
-		p.stallControl <- message
 		p.blockQueue <- m
 
 	case *msg.NotFound:
-		p.stallControl <- message
 		p.cfg.OnNotFound(p, m)
 
 	case *msg.Reject:
-		p.stallControl <- message
 		p.cfg.OnReject(p, m)
 	}
 }
 
+// stallHandler handles stall detection for the peer.  This entails keeping
+// track of expected responses and assigning them deadlines while accounting for
+// the time spent in callbacks.  It must be run as a goroutine.
 func (p *Peer) stallHandler() {
 	// lastActive tracks the last active sync message.
 	var lastActive time.Time
@@ -147,9 +111,6 @@ func (p *Peer) stallHandler() {
 	stallTicker := time.NewTicker(stallTickInterval)
 	defer stallTicker.Stop()
 
-	// ioStopped is used to detect when both the input and output handler
-	// goroutines are done.
-	var ioStopped bool
 out:
 	for {
 		select {
@@ -181,8 +142,10 @@ out:
 				delete(pendingResponses, m.Serializable.(util.Transaction).Hash().String())
 
 			case *msg.NotFound:
-				// NotFound should not received from sync peer
-				p.Disconnect()
+				// Remove received transaction from expected response map.
+				for _, iv := range m.InvList {
+					delete(pendingResponses, iv.Hash.String())
+				}
 
 			case stallClearMsg:
 				// Clear pending responses.
@@ -201,24 +164,12 @@ out:
 				continue
 			}
 
-			log.Debugf("peer %v appears to be stalled or misbehaving, response timeout -- disconnecting", p)
+			log.Debugf("peer %v appears to be stalled or misbehaving,"+
+				" response timeout -- disconnecting", p)
 			p.Disconnect()
 
-		case <-p.InQuit():
-			// The stall handler can exit once both the input and
-			// output handler goroutines are done.
-			if ioStopped {
-				break out
-			}
-			ioStopped = true
-
-		case <-p.OutQuit():
-			// The stall handler can exit once both the input and
-			// output handler goroutines are done.
-			if ioStopped {
-				break out
-			}
-			ioStopped = true
+		case <-p.quit:
+			break out
 		}
 	}
 
@@ -271,8 +222,8 @@ out:
 				// If header is not nil, the previous block download was not
 				// finished, that means the peer is misbehaving, disconnect it.
 				if header != nil {
-					log.Debugf("peer %v send us new block before previous"+
-						" block download finished -- disconnecting", p)
+					log.Debugf("peer %v send us new block before"+
+						" previous block download finished -- disconnecting", p)
 					p.Disconnect()
 					continue
 				}
@@ -280,7 +231,8 @@ out:
 				// Check block
 				txIds, err := bloom.CheckMerkleBlock(*m)
 				if err != nil {
-					log.Debugf("peer %v send us invalid merkleblock -- disconnecting", p)
+					log.Debugf("peer %v send us invalid merkleblock"+
+						" -- disconnecting", p)
 					p.Disconnect()
 					continue
 				}
@@ -339,7 +291,7 @@ out:
 				}
 			}
 
-		case <-p.Quit():
+		case <-p.quit:
 			break out
 		}
 	}
@@ -350,81 +302,6 @@ cleanup:
 	for {
 		select {
 		case <-p.blockQueue:
-		default:
-			break cleanup
-		}
-	}
-}
-
-// queueHandler handles the queuing of outgoing data for the peer. This runs as
-// a muxer for various sources of input so we can ensure that server and peer
-// handlers will not block on us sending a message.  That data is then passed on
-// to outHandler to be actually written.
-func (p *Peer) queueHandler() {
-	pendingMsgs := list.New()
-
-	// We keep the waiting flag so that we know if we have a message queued
-	// to the outHandler or not.  We could use the presence of a head of
-	// the list for this but then we have rather racy concerns about whether
-	// it has gotten it at cleanup time - and thus who sends on the
-	// message's done channel.  To avoid such confusion we keep a different
-	// flag and pendingMsgs only contains messages that we have not yet
-	// passed to outHandler.
-	waiting := false
-
-	// To avoid duplication below.
-	queuePacket := func(msg outMsg, list *list.List, waiting bool) bool {
-		if !waiting {
-			p.sendMessage(msg)
-		} else {
-			list.PushBack(msg)
-		}
-		// we are always waiting now.
-		return true
-	}
-out:
-	for {
-		select {
-		case msg := <-p.outputQueue:
-			waiting = queuePacket(msg, pendingMsgs, waiting)
-
-			// This channel is notified when a message has been sent across
-			// the network socket.
-		case <-p.sendDoneQueue:
-			// No longer waiting if there are no more messages
-			// in the pending messages queue.
-			next := pendingMsgs.Front()
-			if next == nil {
-				waiting = false
-				continue
-			}
-
-			// Notify the outHandler about the next item to
-			// asynchronously send.
-			val := pendingMsgs.Remove(next)
-			p.sendMessage(val.(outMsg))
-
-		case <-p.Quit():
-			break out
-		}
-	}
-
-	// Drain any wait channels before we go away so we don't leave something
-	// waiting for us.
-	for e := pendingMsgs.Front(); e != nil; e = pendingMsgs.Front() {
-		val := pendingMsgs.Remove(e)
-		msg := val.(outMsg)
-		if msg.doneChan != nil {
-			msg.doneChan <- struct{}{}
-		}
-	}
-cleanup:
-	for {
-		select {
-		case msg := <-p.outputQueue:
-			if msg.doneChan != nil {
-				msg.doneChan <- struct{}{}
-			}
 		default:
 			break cleanup
 		}
@@ -473,17 +350,30 @@ func (p *Peer) StallClear() {
 	p.stallControl <- stallClearMsg{}
 }
 
-func (p *Peer) QueueMessage(msg p2p.Message, doneChan chan<- struct{}) {
-	// Avoid risk of deadlock if goroutine already exited.  The goroutine
-	// we will be sending to hangs around until it knows for a fact that
-	// it is marked as disconnected and *then* it drains the channels.
-	if !p.Connected() {
-		if doneChan != nil {
-			go func() {
-				doneChan <- struct{}{}
-			}()
-		}
-		return
+func NewPeer(orgPeer *peer.Peer, cfg *Config) *Peer {
+	p := Peer{
+		Peer:         orgPeer,
+		cfg:          *cfg,
+		stallControl: make(chan interface{}, 1),
+		blockQueue:   make(chan interface{}, 1),
+		quit:         make(chan struct{}),
 	}
-	p.outputQueue <- outMsg{msg: msg, doneChan: doneChan}
+
+	// Append message handler to the peer.
+	p.AddMessageFunc(p.handleMessage)
+
+	// Set stall handler to the peer.
+	p.SetStallHandler(func(msg peer.StallControlMsg) {
+		p.stallControl <- msg.MSG
+	})
+
+	go p.stallHandler()
+	go p.blockHandler()
+
+	// Wait for supper class peer quit.
+	go func() {
+		p.WaitForDisconnect()
+		close(p.quit)
+	}()
+	return &p
 }

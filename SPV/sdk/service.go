@@ -20,8 +20,9 @@ import (
 
 const (
 	defaultDataDir        = "./"
-	TxExpireTime          = time.Hour * 24
-	TxRebroadcastDuration = time.Minute * 15
+	defaultMaxPeers       = 25
+	txExpireTime          = time.Hour * 24
+	txRebroadcastDuration = time.Minute * 15
 )
 
 // newPeerMsg represents a new peer connected.
@@ -78,21 +79,16 @@ func newService(cfg *Config) (*service, error) {
 	// Create SPV service instance
 	service := &service{
 		cfg:            *cfg,
-		peerQueue:      make(chan interface{}, cfg.MaxPeers),
+		peerQueue:      make(chan interface{}, defaultMaxPeers),
 		txQueue:        make(chan interface{}, 3),
 		quit:           make(chan struct{}),
 		txProcessed:    make(chan struct{}, 1),
 		blockProcessed: make(chan struct{}, 1),
 	}
 
-	var maxPeers int
-	if cfg.MaxPeers > 0 {
-		maxPeers = cfg.MaxPeers
-	}
-
 	// Create sync manager instance.
 	syncCfg := sync.NewDefaultConfig(chain, cfg.CandidateFlags, cfg.GetTxFilter)
-	syncCfg.MaxPeers = maxPeers
+	syncCfg.MaxPeers = defaultMaxPeers
 	if cfg.StateNotifier != nil {
 		syncCfg.TransactionAnnounce = cfg.StateNotifier.TransactionAnnounce
 	}
@@ -112,25 +108,21 @@ func newService(cfg *Config) (*service, error) {
 		os.MkdirAll(dataDir, os.ModePerm)
 	}
 
-	serverCfg := server.NewDefaultConfig(
-		cfg.Magic,
-		pact.EBIP001Version,
-		0,
-		cfg.DefaultPort,
-		cfg.SeedList,
-		nil,
-		service.newPeer,
-		service.donePeer,
-		service.makeEmptyMessage,
+	params := cfg.ChainParams
+	svrCfg := server.NewDefaultConfig(
+		params.Magic, pact.DPOSStartVersion, 0,
+		params.DefaultPort, params.DNSSeeds, nil,
+		service.newPeer, service.donePeer, service.makeEmptyMessage,
 		func() uint64 { return uint64(chain.BestHeight()) },
 	)
-	serverCfg.DataDir = dataDir
-	serverCfg.MaxPeers = maxPeers
-	serverCfg.DisableListen = true
-	serverCfg.DisableRelayTx = true
+	svrCfg.DataDir = dataDir
+	svrCfg.MaxPeers = defaultMaxPeers
+	svrCfg.DisableListen = true
+	svrCfg.DisableRelayTx = true
+	svrCfg.PermanentPeers = cfg.PermanentPeers
 
 	// Create P2P server.
-	server, err := server.NewServer(serverCfg)
+	server, err := server.NewServer(svrCfg)
 	if err != nil {
 		return nil, err
 	}
@@ -217,28 +209,20 @@ func (s *service) handlePeerMsg(peers map[*peer.Peer]*speer.Peer, msg interface{
 	switch msg := msg.(type) {
 	case newPeerMsg:
 		// Create spv peer warpper for the new peer.
-		sp := speer.NewPeer(msg.Peer,
-			&speer.Config{
-				OnInv:      s.onInv,
-				OnTx:       s.onTx,
-				OnBlock:    s.onBlock,
-				OnNotFound: s.onNotFound,
-				OnReject:   s.onReject,
-			})
+		sp := speer.NewPeer(msg.Peer, &speer.Config{
+			OnVersion:  s.onVersion,
+			OnInv:      s.onInv,
+			OnTx:       s.onTx,
+			OnBlock:    s.onBlock,
+			OnNotFound: s.onNotFound,
+			OnReject:   s.onReject,
+		})
 
 		peers[msg.Peer] = sp
-		s.syncManager.NewPeer(sp)
 		msg.reply <- struct{}{}
 
 	case donePeerMsg:
-		sp, ok := peers[msg.Peer]
-		if !ok {
-			log.Errorf("unknown done peer %v", msg.Peer)
-			msg.reply <- struct{}{}
-			return
-		}
-
-		s.syncManager.DonePeer(sp)
+		delete(peers, msg.Peer)
 		msg.reply <- struct{}{}
 	}
 }
@@ -250,7 +234,7 @@ func (s *service) txHandler() {
 	var accepted = make(map[common.Uint256]struct{})
 	var rejected = make(map[common.Uint256]struct{})
 
-	retryTicker := time.NewTicker(TxRebroadcastDuration)
+	retryTicker := time.NewTicker(txRebroadcastDuration)
 	defer retryTicker.Stop()
 
 out:
@@ -260,7 +244,7 @@ out:
 			switch tmsg := tmsg.(type) {
 			case *sendTxMsg:
 				txId := tmsg.tx.Hash()
-				tmsg.expire = time.Now().Add(TxExpireTime)
+				tmsg.expire = time.Now().Add(txExpireTime)
 				unconfirmed[txId] = tmsg
 				delete(accepted, txId)
 				delete(rejected, txId)
@@ -390,6 +374,24 @@ func (s *service) SendTransaction(tx util.Transaction) error {
 
 	s.txQueue <- &sendTxMsg{tx: tx}
 	return nil
+}
+
+// handleDisconnect handles peer disconnects and remove the peer from
+// SyncManager.
+func (s *service) handleDisconnect(sp *speer.Peer) {
+	sp.WaitForDisconnect()
+	s.syncManager.DonePeer(sp)
+}
+
+// OnVersion is invoked when a peer receives a version message and is
+// used to negotiate the protocol version details as well as kick start
+// the communications.
+func (s *service) onVersion(sp *speer.Peer, m *msg.Version) {
+	// Signal the sync manager this peer is a new sync candidate.
+	s.syncManager.NewPeer(sp)
+
+	// Handle peer disconnect.
+	go s.handleDisconnect(sp)
 }
 
 func (s *service) onInv(sp *speer.Peer, inv *msg.Inv) {

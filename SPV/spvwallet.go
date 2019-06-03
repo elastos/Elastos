@@ -14,6 +14,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/wallet/sutil"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/elanet/filter"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
@@ -329,32 +330,37 @@ func NewWallet(dataDir string) (*spvwallet, error) {
 		return nil, err
 	}
 
-	w := spvwallet{
-		db: db,
-	}
+	w := spvwallet{db: db}
 	chainStore := database.NewChainDB(headers, &w)
 
+	var params *config.Params
+	switch cfg.Network {
+	case "testnet", "test", "t":
+		params = config.DefaultParams.TestNet()
+	case "regnet", "reg", "r":
+		params = config.DefaultParams.RegNet()
+	default:
+		params = &config.DefaultParams
+	}
+
 	// Initialize spv service
-	w.IService, err = sdk.NewService(
-		&sdk.Config{
-			Magic:          cfg.Magic,
-			SeedList:       cfg.SeedList,
-			DefaultPort:    cfg.DefaultPort,
-			MaxPeers:       MaxPeers,
-			GenesisHeader:  GenesisHeader(),
-			ChainStore:     chainStore,
-			NewTransaction: newTransaction,
-			NewBlockHeader: sutil.NewEmptyHeader,
-			GetTxFilter:    w.GetFilter,
-			StateNotifier:  &w,
-		})
+	w.IService, err = sdk.NewService(&sdk.Config{
+		ChainParams:    params,
+		PermanentPeers: cfg.PermanentPeers,
+		GenesisHeader:  sutil.NewHeader(&params.GenesisBlock.Header),
+		ChainStore:     chainStore,
+		NewTransaction: newTransaction,
+		NewBlockHeader: sutil.NewEmptyHeader,
+		GetTxFilter:    w.GetFilter,
+		StateNotifier:  &w,
+	})
 	if err != nil {
 		return nil, err
 	}
 
 	s := jsonrpc.NewServer(&jsonrpc.Config{
 		Path:      "/spvwallet",
-		ServePort: cfg.JsonRpcPort,
+		ServePort: cfg.RPCPort,
 	})
 	s.RegisterAction("notifynewaddress", w.notifyNewAddress, "addr")
 	s.RegisterAction("sendrawtransaction", w.sendTransaction, "data")
@@ -365,10 +371,4 @@ func NewWallet(dataDir string) (*spvwallet, error) {
 
 func newTransaction() util.Transaction {
 	return sutil.NewTx(&types.Transaction{})
-}
-
-// GenesisHeader creates a specific genesis header by the given
-// foundation address.
-func GenesisHeader() util.BlockHeader {
-	return sutil.NewHeader(&cfg.genesisBlock.Header)
 }

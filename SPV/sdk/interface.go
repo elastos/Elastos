@@ -3,6 +3,7 @@ package sdk
 import (
 	"github.com/elastos/Elastos.ELA.SPV/database"
 	"github.com/elastos/Elastos.ELA.SPV/util"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
@@ -58,17 +59,11 @@ type Config struct {
 	// DataDir is the data path to store peer addresses etc.
 	DataDir string
 
-	// The magic number to indicate which network to access.
-	Magic uint32
+	// ChainParams indicates the network parameters for the SPV service.
+	ChainParams *config.Params
 
-	// The seed peers addresses in [host:port] or [ip:port] format.
-	SeedList []string
-
-	// The default port for public peers to provide service.
-	DefaultPort uint16
-
-	// The max peer connections.
-	MaxPeers int
+	// PermanentPeers are the peers need to be connected permanently.
+	PermanentPeers []string
 
 	// CandidateFlags defines flags needed for a sync candidate.
 	CandidateFlags []uint64
