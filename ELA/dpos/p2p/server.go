@@ -61,10 +61,16 @@ func (a simpleAddr) Network() string {
 var _ net.Addr = simpleAddr{}
 
 // newPeerMsg represent a new connected peer.
-type newPeerMsg *serverPeer
+type newPeerMsg struct {
+	sp    *serverPeer
+	reply chan struct{}
+}
 
 // donePeerMsg represent a disconnected peer.
-type donePeerMsg *serverPeer
+type donePeerMsg struct {
+	sp    *serverPeer
+	reply chan struct{}
+}
 
 // broadcastMsg provides the ability to house a message to be broadcast
 // to all connected peers except specified excluded peers.
@@ -167,17 +173,11 @@ func (sp *serverPeer) OnVersion(_ *peer.Peer, v *msg.Version) {
 		return
 	}
 
-	// Update the AddrManager with the inbound peer, for we already know the
-	// address of an outbound peer so we can create the outbound connection.
-	// But we may be don't know the inbound peer's address, so add it into
-	// AddrManager.
-	addrManager := sp.server.addrManager
-	if sp.Inbound() {
-		// Create net address according to the version message.
-		na := &net.TCPAddr{IP: sp.NA().IP, Port: int(v.Port)}
-		log.Debugf("New inbound %s addr %s", sp.PID(), na)
-
-		addrManager.AddAddress(v.PID, na)
+	// Advertise the local address when the server accepts outbound incoming
+	// connections.
+	if !sp.Inbound() {
+		addr := msg.NewAddr(sp.server.cfg.Localhost, sp.server.cfg.DefaultPort)
+		sp.QueueMessage(addr, nil)
 	}
 
 	// Add the remote peer time as a sample for creating an offset against
@@ -186,6 +186,14 @@ func (sp *serverPeer) OnVersion(_ *peer.Peer, v *msg.Version) {
 
 	// Add valid peer to the server.
 	sp.server.AddPeer(sp)
+}
+
+// OnAddr is invoked when a peer receives an addr message and is used to notify
+// the server about advertised address.
+func (sp *serverPeer) OnAddr(_ *peer.Peer, msg *msg.Addr) {
+	addr := normalizeAddress(msg.Host, fmt.Sprint(msg.Port))
+	sp.server.addrManager.AddAddress(sp.PID(), simpleAddr{net: "tcp",
+		addr: addr})
 }
 
 // PID returns the peer's public key id.
@@ -264,12 +272,7 @@ func (s *server) handleDonePeerMsg(state *peerState, sp *serverPeer) {
 
 	// Remove connection request if peer not in connect list.
 	if sp.connReq != nil {
-		_, ok := state.connectPeers[sp.connReq.PID]
-		if !ok {
-			s.connManager.Remove(sp.connReq.ID())
-		} else {
-			s.connManager.Disconnect(sp.connReq.ID())
-		}
+		s.connManager.Disconnect(sp.connReq.PID)
 	}
 
 	// Notify peer state change for done peer removed.
@@ -352,7 +355,7 @@ func (s *server) handleQuery(state *peerState, querymsg interface{}) {
 			}
 
 			// Connect the peer.
-			go s.connManager.Connect(&connmgr.ConnReq{PID: pid})
+			go s.connManager.Connect(pid)
 		}
 
 		// disconnectPeers saves the peers need to be disconnected.
@@ -366,6 +369,9 @@ func (s *server) handleQuery(state *peerState, querymsg interface{}) {
 		}
 
 		// Disconnect peers in disconnect list.
+		for pid := range disconnectPeers {
+			s.connManager.Remove(pid)
+		}
 		state.forAllPeers(func(sp *serverPeer) {
 			if _, ok := disconnectPeers[sp.PID()]; ok {
 				sp.Disconnect()
@@ -515,6 +521,10 @@ func newPeerConfig(sp *serverPeer) *peer.Config {
 			switch m := m.(type) {
 			case *msg.Version:
 				sp.OnVersion(peer, m)
+
+			case *msg.Addr:
+				sp.OnAddr(peer, m)
+
 			}
 		},
 	}
@@ -553,7 +563,7 @@ func (s *server) outboundPeerConnected(c *connmgr.ConnReq, conn net.Conn) {
 	p, err := peer.NewOutboundPeer(cfg, c.Addr.String())
 	if err != nil {
 		log.Debugf("Cannot create outbound peer %s: %v", c.Addr, err)
-		s.connManager.Disconnect(c.ID())
+		s.connManager.Disconnect(c.PID)
 	}
 	sp.Peer = p
 	sp.connReq = c
@@ -565,7 +575,9 @@ func (s *server) outboundPeerConnected(c *connmgr.ConnReq, conn net.Conn) {
 // done along with other performing other desirable cleanup.
 func (s *server) peerDoneHandler(sp *serverPeer) {
 	sp.WaitForDisconnect()
-	s.peerQueue <- donePeerMsg(sp)
+	reply := make(chan struct{})
+	s.peerQueue <- donePeerMsg{sp: sp, reply: reply}
+	<-reply
 	close(sp.quit)
 }
 
@@ -586,8 +598,8 @@ out:
 	for {
 		select {
 		// Deal with peer messages.
-		case p := <-s.peerQueue:
-			s.handlePeerMsg(state, p)
+		case pmsg := <-s.peerQueue:
+			s.handlePeerMsg(state, pmsg)
 
 			// Message to broadcast to all connected peers except those
 			// which are excluded by the message.
@@ -625,13 +637,15 @@ cleanup:
 }
 
 // handlePeerMsg deals with adding/removing and ban peer message.
-func (s *server) handlePeerMsg(state *peerState, sp interface{}) {
-	switch sp := sp.(type) {
+func (s *server) handlePeerMsg(state *peerState, msg interface{}) {
+	switch msg := msg.(type) {
 	case newPeerMsg:
-		s.handleAddPeerMsg(state, sp)
+		s.handleAddPeerMsg(state, msg.sp)
+		msg.reply <- struct{}{}
 
 	case donePeerMsg:
-		s.handleDonePeerMsg(state, sp)
+		s.handleDonePeerMsg(state, msg.sp)
+		msg.reply <- struct{}{}
 
 	}
 }
@@ -639,17 +653,14 @@ func (s *server) handlePeerMsg(state *peerState, sp interface{}) {
 // AddAddr adds an arbiter address into AddrManager.
 func (s *server) AddAddr(pid peer.PID, addr string) {
 	addr = normalizeAddress(addr, fmt.Sprint(s.cfg.DefaultPort))
-	na, err := addrStringToNetAddr(addr)
-	if err != nil {
-		return
-	}
-
-	s.addrManager.AddAddress(pid, na)
+	s.addrManager.AddAddress(pid, &simpleAddr{net: "tcp", addr: addr})
 }
 
 // AddPeer adds a new peer that has already been connected to the server.
 func (s *server) AddPeer(sp *serverPeer) {
-	s.peerQueue <- newPeerMsg(sp)
+	reply := make(chan struct{})
+	s.peerQueue <- newPeerMsg{sp: sp, reply: reply}
+	<-reply
 }
 
 // BroadcastMessage sends msg to all peers currently connected to the server
@@ -788,6 +799,11 @@ func (s *server) ScheduleShutdown(duration time.Duration) {
 }
 
 func (s *server) dialTimeout(addr net.Addr) (net.Conn, error) {
+	log.Debugf("Server dial addr %s", addr)
+	addr, err := addrStringToNetAddr(addr.String())
+	if err != nil {
+		return nil, err
+	}
 	return net.DialTimeout(addr.Network(), addr.String(), s.cfg.ConnectTimeout)
 }
 
@@ -894,7 +910,7 @@ func initListeners(cfg Config) ([]net.Listener, error) {
 // a net.Addr which maps to the original address with any host names resolved
 // to IP addresses.  It also handles tor addresses properly by returning a
 // net.Addr that encapsulates the address.
-func addrStringToNetAddr(addr string) (*net.TCPAddr, error) {
+func addrStringToNetAddr(addr string) (net.Addr, error) {
 	host, strPort, err := net.SplitHostPort(addr)
 	if err != nil {
 		return nil, err

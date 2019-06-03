@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/elanet/dns"
+	"github.com/elastos/Elastos.ELA/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA/p2p/peer"
 	"github.com/elastos/Elastos.ELA/p2p/server"
 	"github.com/elastos/Elastos.ELA/utils/elalog"
@@ -16,15 +18,13 @@ import (
 )
 
 const (
-	// dataDir defines the default data directory.
-	dataDir = "elastos/dns/"
-
 	// help message print on startup.
 	help = "Go to the 'elanet/dns/README.md' file for more details.\n" +
 		"OPTIONS:\n" +
-		"	-p      specify a port for the DNS service\n" +
-		"	-net    specify a network for the DNS service\n" +
-		"	-debug  enable debug mode\n"
+		"	-net    specify a active net for the DNS service.\n" +
+		"	-magic  specify a magic number of the DNS service.\n" +
+		"	-port   specify a port number for the DNS service.\n" +
+		"	-debug  enable debug mode."
 )
 
 var (
@@ -36,6 +36,15 @@ var (
 
 	// Set default active net params.
 	params = &config.DefaultParams
+
+	// dataDir defines the default data directory.
+	dataDir = filepath.Join("elastos", "data", "dns")
+
+	// logDir defines the directory to put log files.
+	logDir = filepath.Join("elastos", "logs", "dns")
+
+	// logLevel represents the log print level.
+	logLevel = elalog.LevelInfo
 )
 
 func main() {
@@ -45,14 +54,17 @@ func main() {
 	interrupt := signal.NewInterrupt()
 
 	// Resolve the parameters if have.
-	var port uint
 	var net string
+	var magic uint
+	var port uint
 	var debug bool
-	flag.UintVar(&port, "p", 0, "port")
-	flag.StringVar(&net, "net", "", "active net")
+	flag.StringVar(&net, "net", "main", "specify a active net for the DNS service")
+	flag.UintVar(&magic, "magic", 0, "specify a magic number for the DNS service")
+	flag.UintVar(&port, "port", 0, "specify a port number for the DNS service")
 	flag.BoolVar(&debug, "debug", false, "turn on debug log")
 	flag.Parse()
 
+	// Use the specified active net parameters.
 	switch strings.ToLower(net) {
 	case "testnet", "test":
 		params = config.DefaultParams.TestNet()
@@ -60,29 +72,37 @@ func main() {
 		params = config.DefaultParams.RegNet()
 	}
 
-	// If no port parameter, use default value.
-	if port == 0 {
-		port = uint(params.DefaultPort)
+	// If magic parameter specified use the given magic number.
+	if magic != 0 {
+		params.Magic = uint32(magic)
+	}
+
+	// If port parameter specified use the given port number.
+	if port != 0 {
+		params.DefaultPort = uint16(port)
 	}
 
 	// Create the DNS instance.
-	dnsService, err := dns.New(dataDir, params.Magic, uint16(port))
+	dnsService, err := dns.New(dataDir, params.Magic, params.DefaultPort)
 	if err != nil {
 		fmt.Fprint(os.Stderr, err.Error())
 		os.Exit(1)
 	}
 
-	// Initiate log.
-	logLevel := elalog.LevelInfo
+	// Change log level to debug if debug parameter added.
 	if debug {
 		logLevel = elalog.LevelDebug
 	}
-	fileWriter := elalog.NewFileWriter(dataDir, 0, 0)
+
+	// Initiate log printer.
+	fileWriter := elalog.NewFileWriter(logDir, 0, 0)
 	backend := elalog.NewBackend(io.MultiWriter(fileWriter, os.Stdout),
 		elalog.Llongfile)
+	addrlog := backend.Logger("AMGR", logLevel)
 	peerlog := backend.Logger("PEER", logLevel)
 	srvrlog := backend.Logger("SRVR", logLevel)
 	dnsslog := backend.Logger("DNSS", logLevel)
+	addrmgr.UseLogger(addrlog)
 	peer.UseLogger(peerlog)
 	server.UseLogger(srvrlog)
 	dns.UseLogger(dnsslog)

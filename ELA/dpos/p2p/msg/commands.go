@@ -8,12 +8,12 @@ import (
 )
 
 const (
-	CmdVersion = "version"
-	CmdVerAck  = "verack"
-	CmdPing    = "ping"
-	CmdPong    = "pong"
-
-	CmdInv      = "inventory"
+	CmdVersion  = "version"
+	CmdVerAck   = "verack"
+	CmdAddr     = "addr"
+	CmdPing     = "ping"
+	CmdPong     = "pong"
+	CmdInv      = "inv"
 	CmdGetBlock = "getblock"
 
 	CmdReceivedProposal            = "proposal"

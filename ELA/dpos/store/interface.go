@@ -1,6 +1,9 @@
 package store
 
-import "github.com/elastos/Elastos.ELA/blockchain"
+import (
+	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/dpos/state"
+)
 
 type Batch interface {
 	Put(key []byte, value []byte) error
@@ -47,4 +50,5 @@ type IEventRecord interface {
 type IDposStore interface {
 	IDBOperator
 	IEventRecord
+	state.IArbitratorsRecord
 }

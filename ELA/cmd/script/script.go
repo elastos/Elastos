@@ -27,14 +27,12 @@ func scriptAction(c *cli.Context) error {
 	api.RegisterDataType(L)
 
 	if strContent != "" {
-		fmt.Println("str test")
 		if err := L.DoString(strContent); err != nil {
 			panic(err)
 		}
 	}
 
 	if fileContent != "" {
-		fmt.Println("file test")
 		if err := L.DoFile(fileContent); err != nil {
 			panic(err)
 		}

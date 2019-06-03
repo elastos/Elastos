@@ -1,7 +1,7 @@
 package dpos
 
 import (
-	"encoding/hex"
+	"bytes"
 	"errors"
 	"sync"
 
@@ -21,6 +21,8 @@ import (
 	elamsg "github.com/elastos/Elastos.ELA/p2p/msg"
 )
 
+const dataPathDPoS = "elastos/data/dpos"
+
 type blockItem struct {
 	Block     *types.Block
 	Confirmed bool
@@ -37,6 +39,7 @@ type network struct {
 	peersLock          sync.Mutex
 	store              store.IDposStore
 	publicKey          []byte
+	announceAddr       func()
 
 	p2pServer    p2p.Server
 	messageQueue chan *messageItem
@@ -44,6 +47,8 @@ type network struct {
 
 	badNetworkChan           chan bool
 	changeViewChan           chan bool
+	recoverChan              chan bool
+	recoverTimeoutChan       chan bool
 	blockReceivedChan        chan blockItem
 	confirmReceivedChan      chan *payload.Confirm
 	illegalBlocksEvidence    chan *payload.DPOSIllegalBlocks
@@ -55,6 +60,7 @@ func (n *network) Initialize(dnConfig manager.DPOSNetworkConfig) {
 	n.proposalDispatcher = dnConfig.ProposalDispatcher
 	n.store = dnConfig.Store
 	n.publicKey = dnConfig.PublicKey
+	n.announceAddr = dnConfig.AnnounceAddr
 }
 
 func (n *network) Start() {
@@ -70,6 +76,10 @@ func (n *network) Start() {
 				n.changeView()
 			case <-n.badNetworkChan:
 				n.badNetwork()
+			case <-n.recoverChan:
+				n.recover()
+			case <-n.recoverTimeoutChan:
+				n.recoverTimeout()
 			case blockItem := <-n.blockReceivedChan:
 				n.blockReceived(blockItem.Block, blockItem.Confirmed)
 			case confirm := <-n.confirmReceivedChan:
@@ -87,30 +97,6 @@ func (n *network) Start() {
 	}()
 }
 
-func (n *network) getProducersConnectionInfo() (result map[string]p2p.PeerAddr) {
-	result = make(map[string]p2p.PeerAddr)
-	crcs := blockchain.DefaultLedger.Arbitrators.GetCRCArbitrators()
-	for k, v := range crcs {
-		pid := peer.PID{}
-		copy(pid[:], v.NodePublicKey())
-		result[k] = p2p.PeerAddr{PID: pid, Addr: v.Info().NetAddress}
-	}
-
-	producers := blockchain.DefaultLedger.Blockchain.GetState().GetActiveProducers()
-	for _, p := range producers {
-		if len(p.Info().NodePublicKey) != 33 {
-			log.Warn("[getProducersConnectionInfo] invalid public key")
-			continue
-		}
-		pid := peer.PID{}
-		copy(pid[:], p.Info().NodePublicKey)
-		result[hex.EncodeToString(p.Info().NodePublicKey)] =
-			p2p.PeerAddr{PID: pid, Addr: p.Info().NetAddress}
-	}
-
-	return result
-}
-
 func (n *network) Stop() error {
 	n.quit <- true
 	return n.p2pServer.Stop()
@@ -119,8 +105,14 @@ func (n *network) Stop() error {
 func (n *network) UpdatePeers(peers []peer.PID) {
 	log.Info("[UpdatePeers] peers:", len(peers), " height: ",
 		blockchain.DefaultLedger.Blockchain.GetHeight())
-
-	n.p2pServer.ConnectPeers(peers)
+	for _, p := range peers {
+		if bytes.Equal(n.publicKey, p[:]) {
+			n.p2pServer.ConnectPeers(peers)
+			return
+		}
+	}
+	log.Info("[UpdatePeers] i am not in peers")
+	n.p2pServer.ConnectPeers(nil)
 }
 
 func (n *network) SendMessageToPeer(id peer.PID, msg elap2p.Message) error {
@@ -138,6 +130,10 @@ func (n *network) GetActivePeers() []p2p.Peer {
 
 func (n *network) PostChangeViewTask() {
 	n.changeViewChan <- true
+}
+
+func (n *network) RecoverTimeout() {
+	n.recoverTimeoutChan <- true
 }
 
 func (n *network) PostBlockReceivedTask(b *types.Block, confirmed bool) {
@@ -163,6 +159,9 @@ func (n *network) PostConfirmReceivedTask(p *payload.Confirm) {
 func (n *network) notifyFlag(flag p2p.NotifyFlag) {
 	if flag == p2p.NFBadNetwork {
 		n.badNetworkChan <- true
+
+		// Trigger announce address when network go bad.
+		n.announceAddr()
 	}
 }
 
@@ -275,6 +274,14 @@ func (n *network) badNetwork() {
 	n.listener.OnBadNetwork()
 }
 
+func (n *network) recover() {
+	n.listener.OnRecover()
+}
+
+func (n *network) recoverTimeout() {
+	n.listener.OnRecoverTimeout()
+}
+
 func (n *network) changeView() {
 	n.listener.OnChangeView()
 }
@@ -306,13 +313,15 @@ func (n *network) getCurrentHeight(pid peer.PID) uint64 {
 }
 
 func NewDposNetwork(account account.Account, medianTime dtime.MedianTimeSource,
-	listener manager.NetworkEventListener) (*network, error) {
+	localhost string, listener manager.NetworkEventListener) (*network, error) {
 	network := &network{
 		listener:                 listener,
 		messageQueue:             make(chan *messageItem, 10000), //todo config handle capacity though config file
 		quit:                     make(chan bool),
 		badNetworkChan:           make(chan bool),
 		changeViewChan:           make(chan bool),
+		recoverChan:              make(chan bool),
+		recoverTimeoutChan:       make(chan bool),
 		blockReceivedChan:        make(chan blockItem, 10),        //todo config handle capacity though config file
 		confirmReceivedChan:      make(chan *payload.Confirm, 10), //todo config handle capacity though config file
 		illegalBlocksEvidence:    make(chan *payload.DPOSIllegalBlocks),
@@ -325,10 +334,12 @@ func NewDposNetwork(account account.Account, medianTime dtime.MedianTimeSource,
 	var pid peer.PID
 	copy(pid[:], account.PublicKeyBytes())
 	server, err := p2p.NewServer(&p2p.Config{
+		DataDir:          dataPathDPoS,
 		PID:              pid,
 		EnableHub:        true,
-		MagicNumber:      config.Parameters.ArbiterConfiguration.Magic,
-		DefaultPort:      config.Parameters.ArbiterConfiguration.NodePort,
+		Localhost:        localhost,
+		MagicNumber:      config.Parameters.DPoSConfiguration.Magic,
+		DefaultPort:      config.Parameters.DPoSConfiguration.DPoSPort,
 		TimeSource:       medianTime,
 		MakeEmptyMessage: makeEmptyMessage,
 		HandleMessage:    network.handleMessage,

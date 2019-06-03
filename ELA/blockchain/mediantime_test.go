@@ -5,15 +5,17 @@
 package blockchain
 
 import (
-	"github.com/elastos/Elastos.ELA/common/log"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/utils/test"
 )
 
 // TestMedianTime tests the medianTime implementation.
 func TestMedianTime(t *testing.T) {
-	log.NewDefault(5, 0, 0)
+	log.NewDefault(test.NodeLogPath, 5, 0, 0)
 
 	tests := []struct {
 		in         []int64

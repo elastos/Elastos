@@ -2,9 +2,12 @@ package wallet
 
 import (
 	"bytes"
+	"encoding/csv"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -13,8 +16,14 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/servers"
 	"github.com/elastos/Elastos.ELA/utils/http"
+)
+
+const (
+	// maxPrintLen is the maximum print length
+	maxPrintLen = 2000
 )
 
 func FormatOutput(o []byte) error {
@@ -49,8 +58,21 @@ func ShowAccountInfo(client *account.Client) error {
 		prefixType := contract.GetPrefixType(acc.ProgramHash)
 		if prefixType == contract.PrefixStandard {
 			fmt.Printf("%-34s %-66s\n", addr, hex.EncodeToString(publicKey))
-			fmt.Println(strings.Repeat("-", 34), strings.Repeat("-", 66))
+		} else if prefixType == contract.PrefixMultiSig {
+			publicKeys, err := crypto.ParseMultisigScript(acc.RedeemScript)
+			if err != nil {
+				return err
+			}
+			if len(publicKeys) > 0 {
+				fmt.Printf("%-34s %-66s\n", addr,
+					hex.EncodeToString(publicKeys[0][1:]))
+			}
+			for _, publicKey := range publicKeys[1:] {
+				fmt.Printf("%-34s %-66s\n", "",
+					hex.EncodeToString(publicKey[1:]))
+			}
 		}
+		fmt.Println(strings.Repeat("-", 34), strings.Repeat("-", 66))
 	}
 
 	return nil
@@ -76,6 +98,24 @@ func ShowAccountBalance(walletPath string) error {
 	}
 
 	return nil
+}
+
+func getUTXOsByAmount(address string, amount common.Fixed64) ([]servers.UTXOInfo, error) {
+	result, err := cmdcom.RPCCall("getutxosbyamount", http.Params{
+		"address": address,
+		"amount":  amount.String(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	data, err := json.Marshal(result)
+	if err != nil {
+		return nil, err
+	}
+	var UTXOs []servers.UTXOInfo
+	err = json.Unmarshal(data, &UTXOs)
+
+	return UTXOs, nil
 }
 
 func getAddressUTXOs(address string) ([]servers.UTXOInfo, []servers.UTXOInfo, error) {
@@ -132,7 +172,7 @@ func getAddressBalance(address string) (common.Fixed64, common.Fixed64, error) {
 	return availableAmount, lockedAmount, nil
 }
 
-func output(haveSign, needSign int, txn *types.Transaction) error {
+func OutputTx(haveSign, needSign int, txn *types.Transaction) error {
 	// Serialise transaction content
 	buf := new(bytes.Buffer)
 	err := txn.Serialize(buf)
@@ -142,12 +182,16 @@ func output(haveSign, needSign int, txn *types.Transaction) error {
 	content := common.BytesToHexString(buf.Bytes())
 
 	// Print transaction hex string
-	fmt.Println("Hex: ", content)
+	if len(content) > maxPrintLen {
+		fmt.Println("Hex: ", content[:maxPrintLen], "... ...")
+	} else {
+		fmt.Println("Hex: ", content)
+	}
 
 	// Output to file
 	fileName := "to_be_signed" // Create transaction file name
 
-	if haveSign == 0 {
+	if haveSign == 0 && needSign > 0 {
 		//	Transaction created do nothing
 	} else if needSign > haveSign {
 		fileName = fmt.Sprint(fileName, "_", haveSign, "_of_", needSign)
@@ -168,10 +212,73 @@ func output(haveSign, needSign int, txn *types.Transaction) error {
 
 	var tx types.Transaction
 	txBytes, _ := hex.DecodeString(content)
-	tx.Deserialize(bytes.NewReader(txBytes))
+	if err := tx.Deserialize(bytes.NewReader(txBytes)); err != nil {
+		return err
+	}
 
 	// Print output file to console
 	fmt.Println("File: ", fileName)
 
 	return nil
+}
+
+func parseMultiOutput(path string) ([]*OutputInfo, error) {
+	if _, err := os.Stat(path); err != nil {
+		return nil, errors.New("invalid multi output file path")
+	}
+	file, err := os.OpenFile(path, os.O_RDONLY, 0666)
+	if err != nil {
+		return nil, errors.New("open multi output file failed")
+	}
+
+	var multiOutput []*OutputInfo
+	r := csv.NewReader(file)
+	for {
+		record, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, errors.New(fmt.Sprint("invalid multi output data:", err.Error()))
+		}
+
+		amountStr := strings.TrimSpace(record[1])
+		amount, err := common.StringToFixed64(amountStr)
+		if err != nil {
+			return nil, errors.New("invalid multi output transaction amount: " + amountStr)
+		}
+		address := strings.TrimSpace(record[0])
+		multiOutput = append(multiOutput, &OutputInfo{address, amount})
+		fmt.Println("Multi output address:", address, ", amount:", amountStr)
+	}
+
+	return multiOutput, nil
+}
+
+func parseCandidates(path string) ([]string, error) {
+	if _, err := os.Stat(path); err != nil {
+		return nil, errors.New("invalid candidates file path")
+	}
+	file, err := os.OpenFile(path, os.O_RDONLY, 0666)
+	if err != nil {
+		return nil, errors.New("open candidates file failed")
+	}
+
+	var candidates []string
+	r := csv.NewReader(file)
+	for {
+		record, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, errors.New(fmt.Sprint("invalid candidate data:", err.Error()))
+		}
+
+		candidate := strings.TrimSpace(record[0])
+		candidates = append(candidates, candidate)
+		fmt.Println("candidate:", candidate)
+	}
+
+	return candidates, nil
 }

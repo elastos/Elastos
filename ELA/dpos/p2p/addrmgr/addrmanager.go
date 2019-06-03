@@ -4,7 +4,6 @@ import (
 	"encoding/base32"
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"net"
 	"os"
 	"path/filepath"
@@ -20,7 +19,6 @@ import (
 type AddrManager struct {
 	mtx       sync.Mutex
 	peersFile string
-	rand      *rand.Rand
 	addrIndex map[[33]byte]net.Addr // address key to ka for all addrs.
 	started   int32
 	shutdown  int32
@@ -235,10 +233,6 @@ func (a *AddrManager) GetAddress(pid [33]byte) net.Addr {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
 
-	return a.find(pid)
-}
-
-func (a *AddrManager) find(pid [33]byte) net.Addr {
 	return a.addrIndex[pid]
 }
 
@@ -247,7 +241,6 @@ func (a *AddrManager) find(pid [33]byte) net.Addr {
 func New(dataDir string) *AddrManager {
 	am := AddrManager{
 		peersFile: filepath.Join(dataDir, "peers.json"),
-		rand:      rand.New(rand.NewSource(time.Now().UnixNano())),
 		addrIndex: make(map[[33]byte]net.Addr),
 		quit:      make(chan struct{}),
 	}

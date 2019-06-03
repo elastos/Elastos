@@ -2,6 +2,7 @@ package pow
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"math"
 	"math/rand"
@@ -26,7 +27,7 @@ import (
 
 const (
 	maxNonce       = ^uint32(0) // 2^32 - 1
-	updateInterval = 5 * time.Second
+	updateInterval = 30 * time.Second
 )
 
 type Config struct {
@@ -220,7 +221,7 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 		Previous:   *pow.chain.BestChain.Hash,
 		MerkleRoot: common.EmptyHash,
 		Timestamp:  uint32(pow.chain.MedianAdjustedTime().Unix()),
-		Bits:       config.Parameters.ChainParam.PowLimitBits,
+		Bits:       pow.chainParams.PowLimitBits,
 		Height:     nextBlockHeight,
 		Nonce:      0,
 	}
@@ -256,7 +257,7 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 
 	for _, tx := range txs {
 		size := totalTxsSize + tx.GetSize()
-		if size > pact.MaxBlockSize {
+		if size > int(pact.MaxBlockSize) {
 			continue
 		}
 		totalTxsSize = size
@@ -272,12 +273,8 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 			log.Warn("check transaction context failed, wrong transaction:", tx.Hash().String())
 			continue
 		}
-		fee := blockchain.GetTxFee(tx, config.ELAAssetID)
-		if fee != tx.Fee {
-			continue
-		}
 		msgBlock.Transactions = append(msgBlock.Transactions, tx)
-		totalTxFee += fee
+		totalTxFee += tx.Fee
 		txCount++
 	}
 
@@ -358,7 +355,7 @@ func (pow *Service) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 
 	if pow.started || pow.discreteMining {
 		pow.mutex.Unlock()
-		return nil, fmt.Errorf("Server is already CPU mining.")
+		return nil, errors.New("node is mining")
 	}
 
 	pow.started = true
@@ -369,12 +366,12 @@ func (pow *Service) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 	i := uint32(0)
 	blockHashes := make([]*common.Uint256, 0)
 
+	log.Info("<================Discrete Mining==============>\n")
 	for {
-		log.Debug("<================Discrete Mining==============>\n")
-
 		msgBlock, err := pow.GenerateBlock(pow.PayToAddr)
+		log.Info("Generate block, " + msgBlock.Hash().String())
 		if err != nil {
-			log.Debug("generage block err", err)
+			log.Warn("Generate block failed, ", err.Error())
 			continue
 		}
 

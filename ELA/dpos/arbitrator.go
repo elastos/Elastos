@@ -25,14 +25,15 @@ import (
 type Config struct {
 	EnableEventLog    bool
 	EnableEventRecord bool
-	Params            config.ArbiterConfiguration
 	Arbitrators       state.Arbitrators
 	Store             store.IDposStore
 	Server            elanet.Server
 	TxMemPool         *mempool.TxPool
 	BlockMemPool      *mempool.BlockPool
+	Localhost         string
 	ChainParams       *config.Params
 	Broadcast         func(msg p2p.Message)
+	AnnounceAddr      func()
 }
 
 type Arbitrator struct {
@@ -47,7 +48,18 @@ func (a *Arbitrator) Start() {
 	a.network.Start()
 
 	go a.changeViewLoop()
-	go a.dposManager.Recover()
+	go a.recover()
+}
+
+func (a *Arbitrator) recover() {
+	for {
+		if a.cfg.Server.IsCurrent() && a.dposManager.GetArbitrators().
+			HasArbitersMinorityCount(len(a.network.GetActivePeers())) {
+			a.network.recoverChan <- true
+			return
+		}
+		time.Sleep(time.Second)
+	}
 }
 
 func (a *Arbitrator) Stop() error {
@@ -94,7 +106,7 @@ func (a *Arbitrator) OnInactiveArbitratorsTxReceived(
 					"arbitrators error: ", err)
 				return
 			}
-			a.dposManager.OnBadNetwork()
+			go a.recover()
 		}
 	} else {
 		a.network.PostInactiveArbitersTask(p)
@@ -141,9 +153,6 @@ func (a *Arbitrator) OnCipherAddr(pid peer.PID, cipher []byte) {
 }
 
 func NewArbitrator(account account.Account, cfg Config) (*Arbitrator, error) {
-	log.Init(cfg.Params.PrintLevel, cfg.Params.MaxPerLogSize,
-		cfg.Params.MaxLogsSize)
-
 	medianTime := dtime.NewMedianTime()
 	dposManager := manager.NewManager(manager.DPOSManagerConfig{
 		PublicKey:   account.PublicKeyBytes(),
@@ -153,7 +162,8 @@ func NewArbitrator(account account.Account, cfg Config) (*Arbitrator, error) {
 		Server:      cfg.Server,
 	})
 
-	network, err := NewDposNetwork(account, medianTime, dposManager)
+	network, err := NewDposNetwork(account, medianTime, cfg.Localhost,
+		dposManager)
 	if err != nil {
 		log.Error("Init p2p network error")
 		return nil, err
@@ -180,7 +190,7 @@ func NewArbitrator(account account.Account, cfg Config) (*Arbitrator, error) {
 		TimeSource:  medianTime,
 	})
 
-	consensus := manager.NewConsensus(dposManager, time.Duration(cfg.Params.SignTolerance)*time.Second, dposHandlerSwitch)
+	consensus := manager.NewConsensus(dposManager, cfg.ChainParams.ToleranceDuration, dposHandlerSwitch)
 	proposalDispatcher, illegalMonitor := manager.NewDispatcherAndIllegalMonitor(
 		manager.ProposalDispatcherConfig{
 			EventMonitor: eventMonitor,
@@ -203,6 +213,7 @@ func NewArbitrator(account account.Account, cfg Config) (*Arbitrator, error) {
 		ProposalDispatcher: proposalDispatcher,
 		Store:              cfg.Store,
 		PublicKey:          account.PublicKeyBytes(),
+		AnnounceAddr:       cfg.AnnounceAddr,
 	})
 
 	cfg.Store.StartEventRecord()

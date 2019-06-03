@@ -19,6 +19,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/state"
+	"github.com/elastos/Elastos.ELA/utils/test"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -34,32 +35,32 @@ type txValidatorTestSuite struct {
 }
 
 func (s *txValidatorTestSuite) SetupSuite() {
-	config.Parameters = config.ConfigParams{Configuration: &config.Template}
-	log.NewDefault(
-		config.Parameters.PrintLevel,
-		config.Parameters.MaxPerLogSize,
-		config.Parameters.MaxLogsSize,
-	)
+	log.NewDefault(test.NodeLogPath, 0, 0, 0)
 
-	foundation, err := common.Uint168FromAddress("8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta")
+	params := &config.DefaultParams
+	FoundationAddress = params.Foundation
+	s.foundationAddress = params.Foundation
+
+	chainStore, err := NewChainStore(test.DataPath, params.GenesisBlock)
 	if err != nil {
 		s.Error(err)
 	}
-	FoundationAddress = *foundation
-	s.foundationAddress = FoundationAddress
-
-	chainStore, err := NewChainStore("Chain_UnitTest",
-		config.DefaultParams.GenesisBlock)
-	if err != nil {
-		s.Error(err)
-	}
-	s.Chain, err = New(chainStore, &config.DefaultParams, state.NewState(&config.DefaultParams, nil))
+	s.Chain, err = New(chainStore, params, state.NewState(params, nil))
 	if err != nil {
 		s.Error(err)
 	}
 
 	s.OriginalLedger = DefaultLedger
-	DefaultLedger = &Ledger{}
+
+	arbiters, err := state.NewArbitrators(params, nil,
+		chainStore.GetHeight, func() (*types.Block, error) {
+			hash := chainStore.GetCurrentBlockHash()
+			return chainStore.GetBlock(hash)
+		}, nil)
+	if err != nil {
+		s.Fail("initialize arbitrator failed")
+	}
+	DefaultLedger = &Ledger{Arbitrators: arbiters}
 }
 
 func (s *txValidatorTestSuite) TearDownSuite() {
@@ -214,7 +215,10 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 	tx.Outputs = appendSpecial()
 	s.NoError(s.Chain.checkTransactionOutput(s.HeightVersion1, tx))
 	tx.Outputs = appendSpecial() // add another special output here
+	originHeight := config.DefaultParams.PublicDPOSHeight
+	config.DefaultParams.PublicDPOSHeight = 0
 	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
+	config.DefaultParams.PublicDPOSHeight = originHeight
 	s.EqualError(err, "special output count should less equal than 1")
 
 	// invalid program hash
@@ -226,7 +230,9 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 		address[0] = 0x23
 		output.ProgramHash = address
 	}
+	config.DefaultParams.PublicDPOSHeight = 0
 	s.NoError(s.Chain.checkTransactionOutput(s.HeightVersion1, tx))
+	config.DefaultParams.PublicDPOSHeight = originHeight
 
 	// new sideChainPow
 	tx = &types.Transaction{
@@ -406,12 +412,12 @@ func (s *txValidatorTestSuite) TestCheckTransactionBalance() {
 	references := map[*types.Input]*types.Output{
 		&types.Input{}: {Value: outputValue1},
 	}
-	s.EqualError(checkTransactionFee(tx, references), "transaction fee not enough")
+	s.EqualError(s.Chain.checkTransactionFee(tx, references), "transaction fee not enough")
 
 	references = map[*types.Input]*types.Output{
-		&types.Input{}: {Value: outputValue1 + common.Fixed64(config.Parameters.PowConfiguration.MinTxFee)},
+		&types.Input{}: {Value: outputValue1 + s.Chain.chainParams.MinTransactionFee},
 	}
-	s.NoError(checkTransactionFee(tx, references))
+	s.NoError(s.Chain.checkTransactionFee(tx, references))
 
 	// multiple output
 
@@ -425,12 +431,12 @@ func (s *txValidatorTestSuite) TestCheckTransactionBalance() {
 	references = map[*types.Input]*types.Output{
 		&types.Input{}: {Value: outputValue1 + outputValue2},
 	}
-	s.EqualError(checkTransactionFee(tx, references), "transaction fee not enough")
+	s.EqualError(s.Chain.checkTransactionFee(tx, references), "transaction fee not enough")
 
 	references = map[*types.Input]*types.Output{
-		&types.Input{}: {Value: outputValue1 + outputValue2 + common.Fixed64(config.Parameters.PowConfiguration.MinTxFee)},
+		&types.Input{}: {Value: outputValue1 + outputValue2 + s.Chain.chainParams.MinTransactionFee},
 	}
-	s.NoError(checkTransactionFee(tx, references))
+	s.NoError(s.Chain.checkTransactionFee(tx, references))
 }
 
 func (s *txValidatorTestSuite) TestCheckSideChainPowConsensus() {
@@ -495,6 +501,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 	txn.TxType = types.RegisterProducer
 	rpPayload := &payload.ProducerInfo{
 		OwnerPublicKey: publicKey1,
+		NodePublicKey:  publicKey1,
 		NickName:       "nickname 1",
 		Url:            "http://www.elastos_test.com",
 		Location:       1,
@@ -524,13 +531,40 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 	err = s.Chain.checkRegisterProducerTransaction(txn)
 	s.NoError(err)
 
-	// Give an invalid public key in payload
+	// Give an invalid owner public key in payload
 	txn.Payload.(*payload.ProducerInfo).OwnerPublicKey = errPublicKey
 	err = s.Chain.checkRegisterProducerTransaction(txn)
-	s.EqualError(err, "invalid public key in payload")
+	s.EqualError(err, "invalid owner public key in payload")
+
+	// check node public when block height is higher than h2
+	originHeight := config.DefaultParams.PublicDPOSHeight
+	txn.Payload.(*payload.ProducerInfo).NodePublicKey = errPublicKey
+	config.DefaultParams.PublicDPOSHeight = 0
+	err = s.Chain.checkRegisterProducerTransaction(txn)
+	config.DefaultParams.PublicDPOSHeight = originHeight
+	s.EqualError(err, "invalid node public key in payload")
+
+	// check node public key same with CRC
+	txn.Payload.(*payload.ProducerInfo).OwnerPublicKey = publicKey2
+	pk, _ := common.HexStringToBytes(config.DefaultParams.CRCArbiters[0])
+	txn.Payload.(*payload.ProducerInfo).NodePublicKey = pk
+	config.DefaultParams.PublicDPOSHeight = 0
+	err = s.Chain.checkRegisterProducerTransaction(txn)
+	config.DefaultParams.PublicDPOSHeight = originHeight
+	s.EqualError(err, "node public key can't equal with CRC")
+
+	// check owner public key same with CRC
+	txn.Payload.(*payload.ProducerInfo).NodePublicKey = publicKey2
+	pk, _ = common.HexStringToBytes(config.DefaultParams.CRCArbiters[0])
+	txn.Payload.(*payload.ProducerInfo).OwnerPublicKey = pk
+	config.DefaultParams.PublicDPOSHeight = 0
+	err = s.Chain.checkRegisterProducerTransaction(txn)
+	config.DefaultParams.PublicDPOSHeight = originHeight
+	s.EqualError(err, "owner public key can't equal with CRC")
 
 	// Invalidates the signature in payload
 	txn.Payload.(*payload.ProducerInfo).OwnerPublicKey = publicKey2
+	txn.Payload.(*payload.ProducerInfo).NodePublicKey = publicKey2
 	err = s.Chain.checkRegisterProducerTransaction(txn)
 	s.EqualError(err, "invalid signature in payload")
 
@@ -681,6 +715,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 	txn.TxType = types.RegisterProducer
 	updatePayload := &payload.ProducerInfo{
 		OwnerPublicKey: publicKey1,
+		NodePublicKey:  publicKey1,
 		NickName:       "",
 		Url:            "",
 		Location:       1,
@@ -707,14 +742,40 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 
 	updatePayload.Url = "www.elastos.org"
 	updatePayload.OwnerPublicKey = errPublicKey
-	s.EqualError(s.Chain.checkUpdateProducerTransaction(txn), "invalid public key in payload")
+	s.EqualError(s.Chain.checkUpdateProducerTransaction(txn), "invalid owner public key in payload")
+
+	// check node public when block height is higher than h2
+	originHeight := config.DefaultParams.PublicDPOSHeight
+	updatePayload.NodePublicKey = errPublicKey
+	config.DefaultParams.PublicDPOSHeight = 0
+	s.EqualError(s.Chain.checkUpdateProducerTransaction(txn), "invalid node public key in payload")
+	config.DefaultParams.PublicDPOSHeight = originHeight
+
+	// check node public key same with CRC
+	txn.Payload.(*payload.ProducerInfo).OwnerPublicKey = publicKey2
+	pk, _ := common.HexStringToBytes(config.DefaultParams.CRCArbiters[0])
+	txn.Payload.(*payload.ProducerInfo).NodePublicKey = pk
+	config.DefaultParams.PublicDPOSHeight = 0
+	err := s.Chain.checkUpdateProducerTransaction(txn)
+	config.DefaultParams.PublicDPOSHeight = originHeight
+	s.EqualError(err, "node public key can't equal with CRC")
+
+	// check owner public key same with CRC
+	txn.Payload.(*payload.ProducerInfo).NodePublicKey = publicKey2
+	pk, _ = common.HexStringToBytes(config.DefaultParams.CRCArbiters[0])
+	txn.Payload.(*payload.ProducerInfo).OwnerPublicKey = pk
+	config.DefaultParams.PublicDPOSHeight = 0
+	err = s.Chain.checkUpdateProducerTransaction(txn)
+	config.DefaultParams.PublicDPOSHeight = originHeight
+	s.EqualError(err, "owner public key can't equal with CRC")
 
 	updatePayload.OwnerPublicKey = publicKey2
+	updatePayload.NodePublicKey = publicKey1
 	s.EqualError(s.Chain.checkUpdateProducerTransaction(txn), "invalid signature in payload")
 
 	updatePayload.OwnerPublicKey = publicKey1
 	updateSignBuf := new(bytes.Buffer)
-	err := updatePayload.SerializeUnsigned(updateSignBuf, payload.ProducerInfoVersion)
+	err = updatePayload.SerializeUnsigned(updateSignBuf, payload.ProducerInfoVersion)
 	s.NoError(err)
 	updateSig, err := crypto.Sign(privateKey1, updateSignBuf.Bytes())
 	s.NoError(err)
