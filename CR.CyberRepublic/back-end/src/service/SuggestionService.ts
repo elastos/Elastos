@@ -152,6 +152,11 @@ export default class extends Base {
       doc.link = []
     }
 
+    // we set the descUpdatedAt if it changes
+    if (currDoc.desc !== doc.desc) {
+      doc.descUpdatedAt = new Date()
+    }
+
     // update the document
     if (!_.isEmpty(currDoc.editHistory)) {
       await this.model.update({_id: id}, {$set: doc, $push: { editHistory: doc }})
@@ -201,6 +206,12 @@ export default class extends Base {
 
     if (sortBy) {
       const sortObject = {}
+
+      // hack to prioritize descUpdatedAt if it's createdAt
+      if (sortBy === 'createdAt') {
+        sortObject['descUpdatedAt'] = _.get(constant.SORT_ORDER, sortOrder, constant.SORT_ORDER.DESC)
+      }
+
       sortObject[sortBy] = _.get(constant.SORT_ORDER, sortOrder, constant.SORT_ORDER.DESC)
       cursor.sort(sortObject)
     }
@@ -221,6 +232,7 @@ export default class extends Base {
   }
 
   public async show(param: any): Promise<Document> {
+
     const { id: _id, incViewsNum } = param
     if (incViewsNum === 'true') {
       await this.model.findOneAndUpdate({ _id }, {

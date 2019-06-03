@@ -6,11 +6,12 @@ import I18N from '@/I18N'
 import './style.scss'
 
 export default ({ data, hideAuthor, postedByText }) => {
-  const { displayId, createdAt } = data;
+  const { displayId, createdAt, descUpdatedAt } = data;
   let name = `${_.get(data, 'createdBy.profile.firstName', '')} ${_.get(data, 'createdBy.profile.lastName', '')}`
   if (name === ' ') {
     name = _.get(data, 'createdBy.username')
   }
+
   const author = data.author || name
   const authorNode = hideAuthor ? '' : (
     <span>
@@ -25,6 +26,7 @@ export default ({ data, hideAuthor, postedByText }) => {
       <span>{`#${displayId}`}</span>
       {authorNode}
       <span>{moment(createdAt).format('MMM D, YYYY')}</span>
+      {descUpdatedAt && <span>updated: {moment(descUpdatedAt).format('MMM D, YYYY')}</span>}
     </div>
   )
 }

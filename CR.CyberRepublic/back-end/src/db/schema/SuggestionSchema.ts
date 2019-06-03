@@ -21,6 +21,7 @@ const SuggestionCore = {
     // minlength: 1,
     // maxLength: 10000,
   },
+  descUpdatedAt: Date,
   benefits: {
     type: String,
     // required: true,
