@@ -176,6 +176,18 @@ func (sp *serverPeer) pushAddrMsg(addresses []*p2p.NetAddress) {
 	sp.addKnownAddresses(known)
 }
 
+// AssociateConnection associates the given conn to the peer.   Calling this
+// function when the peer is already connected will have no effect.
+func (sp *serverPeer) AssociateConnection(conn net.Conn) {
+	// Notify the new peer before starting the protocol negotiate, so the upper
+	// layer can receive version message and deal with it.
+	if sp.server.cfg.OnNewPeer != nil {
+		sp.server.cfg.OnNewPeer(sp)
+	}
+
+	sp.Peer.AssociateConnection(conn)
+}
+
 // OnVersion is invoked when a peer receives a version message and is
 // used to negotiate the protocol version details as well as kick start
 // the communications.
@@ -203,7 +215,7 @@ func (sp *serverPeer) OnVersion(_ *peer.Peer, v *msg.Version) {
 
 		// Request known addresses if the server address manager needs more.
 		if addrManager.NeedMoreAddresses() {
-			sp.SendMessage(new(msg.GetAddr), nil)
+			sp.QueueMessage(&msg.GetAddr{}, nil)
 		}
 
 		// Mark the address as a known good address.
@@ -221,11 +233,6 @@ func (sp *serverPeer) OnVersion(_ *peer.Peer, v *msg.Version) {
 
 	// Add valid peer to the server.
 	sp.server.AddPeer(sp)
-
-	// Signal the new peer.
-	if sp.server.cfg.OnNewPeer != nil {
-		sp.server.cfg.OnNewPeer(sp)
-	}
 }
 
 // OnGetAddr is invoked when a peer receives a getaddr message and is used
@@ -541,7 +548,7 @@ func (s *server) handleBroadcastMsg(state *peerState, bmsg *broadcastMsg) {
 			}
 		}
 
-		go sp.SendMessage(bmsg.message, nil)
+		sp.QueueMessage(bmsg.message, nil)
 	})
 }
 
@@ -716,7 +723,7 @@ func disconnectPeer(peerList map[uint64]*serverPeer, compareFunc func(*serverPee
 
 // newPeerConfig returns the configuration for the given serverPeer.
 func newPeerConfig(sp *serverPeer) *peer.Config {
-	cfg := &peer.Config{
+	return &peer.Config{
 		Magic:            sp.server.cfg.MagicNumber,
 		ProtocolVersion:  sp.server.cfg.ProtocolVersion,
 		DefaultPort:      sp.server.cfg.DefaultPort,
@@ -725,31 +732,36 @@ func newPeerConfig(sp *serverPeer) *peer.Config {
 		HostToNetAddress: sp.server.addrManager.HostToNetAddress,
 		MakeEmptyMessage: sp.server.cfg.MakeEmptyMessage,
 		BestHeight:       sp.server.cfg.BestHeight,
-		IsSelfConnection: func(nonce uint64) bool {
-			return sp.server.sentNonces.Exists(nonce)
+		IsSelfConnection: func(ip net.IP, port int, nonce uint64) bool {
+			exists := sp.server.sentNonces.Exists(nonce)
+
+			// If we found a self connection, tell the ConnManager the addr so
+			// it can avoid to connect to self again.
+			if exists {
+				addr := net.JoinHostPort(ip.String(), strconv.Itoa(port))
+				sp.server.connManager.OnSelfConnection(addr)
+			}
+			return exists
 		},
 		GetVersionNonce: func() uint64 {
 			nonce := uint64(rand.Int63())
 			sp.server.sentNonces.Add(nonce)
 			return nonce
 		},
+		MessageFunc: func(peer *peer.Peer, m p2p.Message) {
+			switch m := m.(type) {
+			case *msg.Version:
+				sp.OnVersion(peer, m)
+
+			case *msg.GetAddr:
+				sp.OnGetAddr(peer, m)
+
+			case *msg.Addr:
+				sp.OnAddr(peer, m)
+
+			}
+		},
 	}
-
-	// Add default message function for peer configuration.
-	cfg.AddMessageFunc(func(peer *peer.Peer, m p2p.Message) {
-		switch m := m.(type) {
-		case *msg.Version:
-			sp.OnVersion(peer, m)
-
-		case *msg.GetAddr:
-			sp.OnGetAddr(peer, m)
-
-		case *msg.Addr:
-			sp.OnAddr(peer, m)
-
-		}
-	})
-	return cfg
 }
 
 // inboundPeerConnected is invoked by the connection manager when a new inbound
@@ -788,12 +800,13 @@ func (s *server) outboundPeerConnected(c *connmgr.ConnReq, conn net.Conn) {
 // done along with other performing other desirable cleanup.
 func (s *server) peerDoneHandler(sp *serverPeer) {
 	sp.WaitForDisconnect()
-	s.peerQueue <- donePeerMsg(sp)
 
-	// Only tell sync manager we are gone if we ever told it we existed.
-	if sp.VersionKnown() && s.cfg.OnDonePeer != nil {
+	// Tell the upper layer we have done with the peer.
+	if s.cfg.OnDonePeer != nil {
 		s.cfg.OnDonePeer(sp)
 	}
+
+	s.peerQueue <- donePeerMsg(sp)
 }
 
 // peerHandler is used to handle peer operations such as adding and removing
@@ -812,22 +825,6 @@ func (s *server) peerHandler() {
 		outboundPeers:   make(map[uint64]*serverPeer),
 		banned:          make(map[string]time.Time),
 		outboundGroups:  make(map[string]int),
-	}
-
-	// Connect seed peers first.
-	for _, addr := range s.cfg.SeedPeers {
-		netAddr, err := addrStringToNetAddr(addr)
-		if err != nil {
-			continue
-		}
-
-		// Add seed peer addresses into addr manager
-		err = s.addrManager.AddAddressByIP(netAddr.String())
-		if err != nil {
-			continue
-		}
-
-		go s.connManager.Connect(&connmgr.ConnReq{Addr: netAddr})
 	}
 
 	// Connect permanent peers if there are.  Permanent peers will not added to
@@ -1249,48 +1246,11 @@ func newServer(origCfg *Config) (*server, error) {
 		nat:         nat,
 	}
 
-	// Setup a function to return new addresses to connect to.
-	var newAddressFunc = func() (net.Addr, error) {
-		for tries := 0; tries < 100; tries++ {
-			addr := s.addrManager.GetAddress()
-			if addr == nil {
-				break
-			}
-
-			log.Debugf("netAddressFunc pick addr %v", addr.NetAddress())
-			// Address will not be invalid, local or unroutable
-			// because addrmanager rejects those on addition.
-			// Just check that we don't already have an address
-			// in the same group so that we are not connecting
-			// to the same network segment at the expense of
-			// others.
-			key := addrmgr.GroupKey(addr.NetAddress())
-			if s.OutboundGroupCount(key) != 0 {
-				continue
-			}
-
-			// only allow recent nodes (10mins) after we failed 30 times
-			if tries < 30 && time.Since(addr.LastAttempt()) < 10*time.Minute {
-				continue
-			}
-
-			// allow nondefault ports after 50 failed tries.
-			if tries < 50 && addr.NetAddress().Port != cfg.DefaultPort {
-				continue
-			}
-
-			addrString := addrmgr.NetAddressKey(addr.NetAddress())
-			return addrStringToNetAddr(addrString)
-		}
-
-		return nil, errors.New("no valid connect address")
-	}
+	// Create the DNS seeds provider.
+	seeds := newSeed(&cfg, amgr, s.OutboundGroupCount)
 
 	// Create a connection manager.
 	targetOutbound := cfg.TargetOutbound
-	if targetOutbound == 0 {
-		targetOutbound = defaultTargetOutbound
-	}
 	if cfg.MaxPeers < targetOutbound {
 		targetOutbound = cfg.MaxPeers
 	}
@@ -1301,7 +1261,7 @@ func newServer(origCfg *Config) (*server, error) {
 		TargetOutbound: uint32(targetOutbound),
 		Dial:           dialTimeout,
 		OnConnection:   s.outboundPeerConnected,
-		GetNewAddress:  newAddressFunc,
+		GetNewAddress:  seeds.GetAddress,
 	})
 	if err != nil {
 		return nil, err

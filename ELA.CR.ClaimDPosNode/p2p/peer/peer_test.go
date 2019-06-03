@@ -213,12 +213,13 @@ func TestPeerConnection(t *testing.T) {
 		BestHeight: func() uint64 {
 			return 0
 		},
-		IsSelfConnection: func(nonce uint64) bool {
+		IsSelfConnection: func(ip net.IP, port int, nonce uint64) bool {
 			return false
 		},
 		GetVersionNonce: func() uint64 {
 			return rand.Uint64()
 		},
+		MessageFunc: messageFunc,
 	}
 	peer2Cfg := &peer.Config{
 		Magic:            123123,
@@ -230,15 +231,14 @@ func TestPeerConnection(t *testing.T) {
 		BestHeight: func() uint64 {
 			return 0
 		},
-		IsSelfConnection: func(nonce uint64) bool {
+		IsSelfConnection: func(ip net.IP, port int, nonce uint64) bool {
 			return false
 		},
 		GetVersionNonce: func() uint64 {
 			return rand.Uint64()
 		},
+		MessageFunc: messageFunc,
 	}
-	peer1Cfg.AddMessageFunc(messageFunc)
-	peer2Cfg.AddMessageFunc(messageFunc)
 
 	wantStats1 := peerStats{
 		wantServices:        0,
@@ -350,7 +350,7 @@ func TestUnsupportedVersionPeer(t *testing.T) {
 		BestHeight: func() uint64 {
 			return 0
 		},
-		IsSelfConnection: func(nonce uint64) bool {
+		IsSelfConnection: func(ip net.IP, port int, nonce uint64) bool {
 			return nonce == verNonce
 		},
 		GetVersionNonce: func() uint64 {

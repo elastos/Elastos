@@ -12,6 +12,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/state"
+	"github.com/elastos/Elastos.ELA/utils/test"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -22,15 +23,10 @@ var arbitrators [][]byte
 var originLedger *blockchain.Ledger
 
 func TestService_Init(t *testing.T) {
-	config.Parameters = config.ConfigParams{Configuration: &config.Template}
-	log.NewDefault(
-		config.Parameters.PrintLevel,
-		config.Parameters.MaxPerLogSize,
-		config.Parameters.MaxLogsSize,
-	)
+	log.NewDefault(test.NodeLogPath, 0, 0, 0)
 
-	chainStore, err := blockchain.NewChainStore("Chain_UnitTest",
-		config.DefaultParams.GenesisBlock)
+	params := &config.DefaultParams
+	chainStore, err := blockchain.NewChainStore(test.DataPath, config.DefaultParams.GenesisBlock)
 	if err != nil {
 		t.Error(err)
 	}
@@ -42,12 +38,12 @@ func TestService_Init(t *testing.T) {
 		"03e281f89d85b3a7de177c240c4961cb5b1f2106f09daa42d15874a38bbeae85dd",
 		"0393e823c2087ed30871cbea9fa5121fa932550821e9f3b17acef0e581971efab0",
 	}
-	config.Parameters.ArbiterConfiguration.CRCArbiters = []config.CRCArbiter{
-		{PublicKey: "023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a"},
-		{PublicKey: "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9"},
-		{PublicKey: "0288e79636e41edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c7"},
-		{PublicKey: "03e281f89d85b3a7de177c240c4961cb5b1f2106f09daa42d15874a38bbeae85dd"},
-		{PublicKey: "0393e823c2087ed30871cbea9fa5121fa932550821e9f3b17acef0e581971efab0"},
+	params.CRCArbiters = []string{
+		"023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a",
+		"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9",
+		"0288e79636e41edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c7",
+		"03e281f89d85b3a7de177c240c4961cb5b1f2106f09daa42d15874a38bbeae85dd",
+		"0393e823c2087ed30871cbea9fa5121fa932550821e9f3b17acef0e581971efab0",
 	}
 
 	arbitrators = make([][]byte, 0)
@@ -59,8 +55,8 @@ func TestService_Init(t *testing.T) {
 		CurrentArbitrators: arbitrators,
 	}
 
-	chain, err := blockchain.New(chainStore, &config.DefaultParams,
-		state.NewState(&config.DefaultParams, nil))
+	chain, err := blockchain.New(chainStore, params, state.NewState(params,
+		nil))
 	if err != nil {
 		t.Error(err)
 	}
@@ -74,7 +70,7 @@ func TestService_Init(t *testing.T) {
 	pow = NewService(&Config{
 		Chain:       chain,
 		Arbitrators: arbitratorsMock,
-		ChainParams: &config.DefaultParams,
+		ChainParams: params,
 	})
 }
 
@@ -142,17 +138,21 @@ func TestService_AssignCoinbaseTxRewards(t *testing.T) {
 	individualBlockConfirmReward := common.Fixed64(math.Floor(totalBlockConfirmReward / float64(5)))
 	rewardPerVote := totalTopProducersReward / float64(totalVotesInRound)
 	realReward := common.Fixed64(0)
+	arbitratorsMock.ArbitersRoundReward = map[common.Uint168]common.Fixed64{}
 	for hash, vote := range ownerVotes {
 		individualProducerReward := common.Fixed64(rewardPerVote * float64(vote))
 		if _, ok := arbitratorHashMap[hash]; ok {
 			realReward = realReward + individualProducerReward + individualBlockConfirmReward
+			arbitratorsMock.ArbitersRoundReward[hash] = individualProducerReward + individualBlockConfirmReward
 		}
 
 		if _, ok := candidateHashMap[hash]; ok {
 			realReward = realReward + individualProducerReward
+			arbitratorsMock.ArbitersRoundReward[hash] = individualProducerReward
 		}
 	}
 	arbitratorsChange := dposTotalReward - realReward
+	arbitratorsMock.FinalRoundChange = arbitratorsChange
 
 	tx := &types.Transaction{
 		Version: types.TxVersion09,
@@ -203,24 +203,28 @@ func TestService_AssignCoinbaseTxRewards(t *testing.T) {
 	rewardInCoinbase = common.Fixed64(999)
 	foundationReward = common.Fixed64(math.Ceil(float64(rewardInCoinbase) * 0.3))
 	foundationRewardNormal := common.Fixed64(float64(rewardInCoinbase) * 0.3)
-	dposTotalReward = common.Fixed64(float64(rewardInCoinbase) * 0.35)
+	dposTotalReward = common.Fixed64(math.Ceil(float64(rewardInCoinbase) * 0.35))
 	minerReward = rewardInCoinbase - foundationReward - dposTotalReward
 	totalBlockConfirmReward = float64(dposTotalReward) * 0.25
 	totalTopProducersReward = float64(dposTotalReward) - totalBlockConfirmReward
 	individualBlockConfirmReward = common.Fixed64(math.Floor(totalBlockConfirmReward / float64(5)))
 	rewardPerVote = totalTopProducersReward / float64(totalVotesInRound)
 	realReward = common.Fixed64(0)
+	arbitratorsMock.ArbitersRoundReward = map[common.Uint168]common.Fixed64{}
 	for hash, vote := range ownerVotes {
 		individualProducerReward := common.Fixed64(rewardPerVote * float64(vote))
 		if _, ok := arbitratorHashMap[hash]; ok {
 			realReward = realReward + individualProducerReward + individualBlockConfirmReward
+			arbitratorsMock.ArbitersRoundReward[hash] = individualProducerReward + individualBlockConfirmReward
 		}
 
 		if _, ok := candidateHashMap[hash]; ok {
 			realReward = realReward + individualProducerReward
+			arbitratorsMock.ArbitersRoundReward[hash] = individualProducerReward
 		}
 	}
 	arbitratorsChange = dposTotalReward - realReward
+	arbitratorsMock.FinalRoundChange = arbitratorsChange
 
 	tx = &types.Transaction{
 		Version: types.TxVersion09,

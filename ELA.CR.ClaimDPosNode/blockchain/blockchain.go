@@ -1,6 +1,7 @@
 package blockchain
 
 import (
+	"bytes"
 	"container/list"
 	"errors"
 	"fmt"
@@ -118,18 +119,29 @@ func New(db IChainStore, chainParams *config.Params, state *state.State) (*Block
 	return &chain, nil
 }
 
-// InitializeProducersState go through all blocks since the start of DPOS
+// InitProducerState go through all blocks since the start of DPOS
 // consensus to initialize producers and votes state.
-func (b *BlockChain) InitializeProducersState(interrupt <-chan struct{},
+func (b *BlockChain) InitProducerState(interrupt <-chan struct{},
 	start func(total uint32), increase func()) (err error) {
 	bestHeight := b.db.GetHeight()
+	log.Info("current block height ->", bestHeight)
+	arbiters := DefaultLedger.Arbitrators
 	done := make(chan struct{})
 	go func() {
 		// Notify initialize process start.
-		if start != nil && bestHeight >= b.chainParams.VoteStartHeight {
-			start(bestHeight - b.chainParams.VoteStartHeight)
+		startHeight := b.chainParams.VoteStartHeight
+		if height, err := arbiters.RecoverFromCheckPoints(
+			bestHeight); err != nil {
+			log.Warn("recover form check points fail: ", err)
+		} else {
+			startHeight = height + 1
 		}
-		for i := b.chainParams.VoteStartHeight; i <= bestHeight; i++ {
+
+		log.Info("[RecoverFromCheckPoints] recover start height: ", startHeight)
+		if start != nil && bestHeight >= startHeight {
+			start(bestHeight - startHeight)
+		}
+		for i := startHeight; i <= bestHeight; i++ {
 			hash, e := b.db.GetBlockHash(i)
 			if e != nil {
 				err = e
@@ -140,8 +152,18 @@ func (b *BlockChain) InitializeProducersState(interrupt <-chan struct{},
 				err = e
 				break
 			}
+
+			if block.Height >= bestHeight-uint32(
+				b.chainParams.GeneralArbiters+len(b.chainParams.CRCArbiters)) {
+				b.calculateTxsFee(block)
+			}
+
+			if e = PreProcessSpecialTx(block); e != nil {
+				err = e
+				break
+			}
 			confirm, _ := b.db.GetConfirm(block.Hash())
-			DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
+			arbiters.ProcessBlock(block, confirm)
 
 			// Notify process increase.
 			if increase != nil {
@@ -153,9 +175,39 @@ func (b *BlockChain) InitializeProducersState(interrupt <-chan struct{},
 
 	select {
 	case <-done:
+		arbiters.Start()
+		events.Notify(events.ETDirectPeersChanged,
+			arbiters.GetNeedConnectArbiters())
+
 	case <-interrupt:
 	}
 	return err
+}
+
+func (b *BlockChain) calculateTxsFee(block *Block) {
+	for _, tx := range block.Transactions {
+		if tx.IsCoinBaseTx() {
+			continue
+		}
+		references, err := DefaultLedger.Store.GetTxReference(tx)
+		if err != nil {
+			log.Error("get transaction reference failed")
+			return
+		}
+		var outputValue Fixed64
+		var inputValue Fixed64
+		for _, output := range tx.Outputs {
+			outputValue += output.Value
+		}
+		for _, reference := range references {
+			inputValue += reference.Value
+		}
+		// set Fee and FeePerKB if check has passed
+		tx.Fee = inputValue - outputValue
+		buf := new(bytes.Buffer)
+		tx.Serialize(buf)
+		tx.FeePerKB = tx.Fee * 1000 / Fixed64(len(buf.Bytes()))
+	}
 }
 
 // GetState returns the DPOS state instance that stores producers and votes
@@ -228,7 +280,27 @@ func (b *BlockChain) CurrentBlockHash() Uint256 {
 }
 
 func (b *BlockChain) ProcessIllegalBlock(payload *payload.DPOSIllegalBlocks) {
-	b.state.ProcessSpecialTxPayload(payload)
+	// if received inactive when synchronizing, then return
+	if payload.GetBlockHeight() > b.GetHeight() {
+		log.Info("received inactive tx when synchronizing")
+		return
+	}
+	if err := DefaultLedger.Arbitrators.ProcessSpecialTxPayload(payload,
+		b.BestChain.Height); err != nil {
+		log.Error("process illegal block error: ", err)
+	}
+}
+
+func (b *BlockChain) ProcessInactiveArbiter(payload *payload.InactiveArbitrators) {
+	// if received inactive when synchronizing, then return
+	if payload.GetBlockHeight() > b.GetHeight()+1 {
+		log.Info("received inactive tx when synchronizing")
+		return
+	}
+	if err := DefaultLedger.Arbitrators.ProcessSpecialTxPayload(payload,
+		b.BestChain.Height); err != nil {
+		log.Error("process illegal block error: ", err)
+	}
 }
 
 type OrphanBlock struct {
@@ -356,6 +428,14 @@ func (b *BlockChain) IsKnownOrphan(hash *Uint256) bool {
 	}
 
 	return false
+}
+
+func (b *BlockChain) GetOrphan(hash *Uint256) *OrphanBlock {
+	b.orphanLock.RLock()
+	defer b.orphanLock.RUnlock()
+
+	orphan, _ := b.orphans[*hash]
+	return orphan
 }
 
 func (b *BlockChain) GetOrphanRoot(hash *Uint256) *Uint256 {
@@ -740,7 +820,7 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 		}
 
 		log.Info("disconnect block:", block.Height)
-		DefaultLedger.Arbitrators.DumpInfo()
+		DefaultLedger.Arbitrators.DumpInfo(block.Height - 1)
 
 		err = b.disconnectBlock(n, block, confirm)
 		if err != nil {
@@ -754,7 +834,6 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 		block := b.blockCache[*n.Hash]
 		confirm := b.confirmCache[*n.Hash]
 
-
 		log.Info("connect block:", block.Height)
 		err := b.connectBlock(n, block, confirm)
 		if err != nil {
@@ -764,7 +843,7 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 		// update state after connected block
 		if block.Height >= b.chainParams.VoteStartHeight {
 			DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
-			DefaultLedger.Arbitrators.DumpInfo()
+			DefaultLedger.Arbitrators.DumpInfo(block.Height)
 		}
 
 		delete(b.blockCache, *n.Hash)
@@ -795,7 +874,12 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block, confirm *pay
 	}
 
 	// Rollback state memory DB
-	b.state.RollbackTo(block.Height - 1)
+	if block.Height-1 >= b.chainParams.VoteStartHeight {
+		err := DefaultLedger.Arbitrators.RollbackTo(block.Height - 1)
+		if err != nil {
+			return err
+		}
+	}
 
 	// Put block in the side chain cache.
 	node.InMainChain = false
@@ -817,6 +901,9 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block, confirm *pay
 // connectBlock handles connecting the passed node/block to the end of the main
 // (best) chain.
 func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payload.Confirm) error {
+	if err := PreProcessSpecialTx(block); err != nil {
+		return err
+	}
 
 	// The block must pass all of the validation rules which depend on the
 	// position of the block within the block chain.
@@ -827,7 +914,7 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payloa
 
 	if block.Height >= b.chainParams.CRCOnlyDPOSHeight {
 		if err := checkBlockWithConfirmation(block, confirm); err != nil {
-			return errors.New("block confirmation validate failed")
+			return fmt.Errorf("block confirmation validate failed: %s", err)
 		}
 	}
 
@@ -927,7 +1014,7 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 		block.Height == b.chainParams.CRCOnlyDPOSHeight-b.chainParams.
 			PreConnectOffset) {
 		DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
-		DefaultLedger.Arbitrators.DumpInfo()
+		DefaultLedger.Arbitrators.DumpInfo(block.Height)
 	}
 
 	// Notify the caller that the new block was accepted into the block
@@ -965,6 +1052,9 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *Block, confirm *pa
 		// Connect the block to the main chain.
 		err := b.connectBlock(node, block, confirm)
 		if err != nil {
+			if err := b.state.RollbackTo(block.Height); err != nil {
+				log.Error("state rollback failed: ", err)
+			}
 			return false, false, err
 		}
 
@@ -1139,19 +1229,17 @@ func (b *BlockChain) processBlock(block *Block, confirm *payload.Confirm) (bool,
 }
 
 func (b *BlockChain) LatestBlockLocator() ([]*Uint256, error) {
-	b.mutex.RLock()
-	defer b.mutex.RUnlock()
 	if b.BestChain == nil {
 		// Get the latest block hash for the main chain from the
 		// database.
 
 		// Get Current Block
 		blockHash := b.db.GetCurrentBlockHash()
-		return b.blockLocatorFromHash(&blockHash), nil
+		return b.BlockLocatorFromHash(&blockHash), nil
 	}
 
 	// The best chain is set, so use its hash.
-	return b.blockLocatorFromHash(b.BestChain.Hash), nil
+	return b.BlockLocatorFromHash(b.BestChain.Hash), nil
 }
 
 func (b *BlockChain) AddNodeToIndex(node *BlockNode) {
@@ -1176,12 +1264,6 @@ func (b *BlockChain) LookupNodeInIndex(hash *Uint256) (*BlockNode, bool) {
 }
 
 func (b *BlockChain) BlockLocatorFromHash(inhash *Uint256) []*Uint256 {
-	b.mutex.RLock()
-	defer b.mutex.RUnlock()
-	return b.blockLocatorFromHash(inhash)
-}
-
-func (b *BlockChain) blockLocatorFromHash(inhash *Uint256) []*Uint256 {
 	// The locator contains the requested hash at the very least.
 	var hash Uint256
 	copy(hash[:], inhash[:])
@@ -1339,8 +1421,6 @@ func (b *BlockChain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBloc
 //
 // This function is safe for concurrent access.
 func (b *BlockChain) LocateBlocks(locator []*Uint256, hashStop *Uint256, maxHashes uint32) []*Uint256 {
-	b.mutex.RLock()
-	defer b.mutex.RUnlock()
 	startHash := b.locateStartBlock(locator)
 	blocks, err := b.locateBlocks(startHash, hashStop, maxHashes)
 	if err != nil {

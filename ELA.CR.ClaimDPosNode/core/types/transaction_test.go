@@ -123,7 +123,7 @@ func (s *transactionSuite) TestSideChainPow_SerializeDeserialize() {
 		SideBlockHash:   *randomUint256(),
 		SideGenesisHash: *randomUint256(),
 		BlockHeight:     rand.Uint32(),
-		SignedData:      []byte(strconv.FormatUint(rand.Uint64(), 10)),
+		Signature:       []byte(strconv.FormatUint(rand.Uint64(), 10)),
 	}
 
 	serializedData := new(bytes.Buffer)
@@ -140,7 +140,7 @@ func (s *transactionSuite) TestSideChainPow_SerializeDeserialize() {
 	s.True(p1.SideBlockHash.IsEqual(p2.SideBlockHash))
 	s.True(p1.SideGenesisHash.IsEqual(p2.SideGenesisHash))
 	s.Equal(p1.BlockHeight, p2.BlockHeight)
-	s.True(bytes.Equal(p1.SignedData, p2.SignedData))
+	s.True(bytes.Equal(p1.Signature, p2.Signature))
 }
 
 func (s *transactionSuite) TestWithdrawFromSideChain_SerializeDeserialize() {
@@ -272,9 +272,9 @@ func (s *transactionSuite) TestCancelProducer_SerializeDeserialize() {
 func (s *transactionSuite) TestActivateProducer_SerializeDeserialize() {
 	txn := randomOldVersionTransaction(false, byte(ActivateProducer),
 		s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
-	txn.Payload = &payload.ProcessProducer{
-		OwnerPublicKey: []byte(strconv.FormatUint(rand.Uint64(), 10)),
-		Signature:      randomSignature(),
+	txn.Payload = &payload.ActivateProducer{
+		NodePublicKey: []byte(strconv.FormatUint(rand.Uint64(), 10)),
+		Signature:     randomSignature(),
 	}
 
 	serializedData := new(bytes.Buffer)
@@ -286,10 +286,10 @@ func (s *transactionSuite) TestActivateProducer_SerializeDeserialize() {
 	assertOldVersionTxEqual(false, &s.Suite, txn, txn2, s.InputNum,
 		s.OutputNum, s.AttrNum, s.ProgramNum)
 
-	p1 := txn.Payload.(*payload.ProcessProducer)
-	p2 := txn2.Payload.(*payload.ProcessProducer)
+	p1 := txn.Payload.(*payload.ActivateProducer)
+	p2 := txn2.Payload.(*payload.ActivateProducer)
 
-	s.True(bytes.Equal(p1.OwnerPublicKey, p2.OwnerPublicKey))
+	s.True(bytes.Equal(p1.NodePublicKey, p2.NodePublicKey))
 	s.True(bytes.Equal(p1.Signature, p2.Signature))
 }
 
@@ -463,6 +463,76 @@ func (s *transactionSuite) TestIllegalBlockEvidence_SerializeDeserialize() {
 
 	s.True(txn.Payload.(*payload.DPOSIllegalBlocks).Hash().IsEqual(
 		txn2.Payload.(*payload.DPOSIllegalBlocks).Hash()))
+}
+
+func (s *transactionSuite) TestSidechainIllegalData_SerializeDeserialize() {
+	txn := randomOldVersionTransaction(false, byte(IllegalSidechainEvidence), s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
+	p := &payload.SidechainIllegalData{
+		IllegalType:         payload.IllegalDataType(rand.Intn(6)),
+		Height:              rand.Uint32(),
+		IllegalSigner:       randomPublicKey(),
+		GenesisBlockAddress: randomUint168().String(),
+		Evidence: payload.SidechainIllegalEvidence{
+			DataHash: *randomUint256(),
+		},
+		CompareEvidence: payload.SidechainIllegalEvidence{
+			DataHash: *randomUint256(),
+		},
+	}
+	p.Signs = make([][]byte, 0)
+	for i := 0; i < 10; i++ {
+		p.Signs = append(p.Signs, randomSignature())
+	}
+	txn.Payload = p
+
+	serializedData := new(bytes.Buffer)
+	txn.Serialize(serializedData)
+
+	txn2 := &Transaction{}
+	txn2.Deserialize(serializedData)
+
+	assertOldVersionTxEqual(false, &s.Suite, txn, txn2, s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
+
+	p2 := txn2.Payload.(*payload.SidechainIllegalData)
+	s.Equal(p.IllegalType, p2.IllegalType)
+	s.Equal(p.Height, p2.Height)
+	s.True(bytes.Equal(p.IllegalSigner, p2.IllegalSigner))
+	s.Equal(p.GenesisBlockAddress, p2.GenesisBlockAddress)
+	s.Equal(p.Evidence.DataHash.String(), p2.Evidence.DataHash.String())
+	s.Equal(p.CompareEvidence.DataHash.String(),
+		p2.CompareEvidence.DataHash.String())
+	for i := 0; i < 10; i++ {
+		s.True(bytes.Equal(p.Signs[i], p2.Signs[i]))
+	}
+}
+
+func (s *transactionSuite) TestInactiveArbitrators_SerializeDeserialize() {
+	txn := randomOldVersionTransaction(false, byte(InactiveArbitrators), s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
+	p := &payload.InactiveArbitrators{
+		Sponsor:     randomPublicKey(),
+		BlockHeight: rand.Uint32(),
+	}
+
+	p.Arbitrators = make([][]byte, 0)
+	for i := 0; i < 10; i++ {
+		p.Arbitrators = append(p.Arbitrators, randomPublicKey())
+	}
+	txn.Payload = p
+
+	serializedData := new(bytes.Buffer)
+	txn.Serialize(serializedData)
+
+	txn2 := &Transaction{}
+	txn2.Deserialize(serializedData)
+
+	assertOldVersionTxEqual(false, &s.Suite, txn, txn2, s.InputNum, s.OutputNum, s.AttrNum, s.ProgramNum)
+
+	p2 := txn2.Payload.(*payload.InactiveArbitrators)
+	s.True(bytes.Equal(p.Sponsor, p2.Sponsor))
+	s.Equal(p.BlockHeight, p2.BlockHeight)
+	for i := 0; i < 10; i++ {
+		s.True(bytes.Equal(p.Arbitrators[i], p2.Arbitrators[i]))
+	}
 }
 
 func (s *transactionSuite) TestTransaction_SpecificSample() {
@@ -677,5 +747,11 @@ func randomSignature() []byte {
 	randBytes := make([]byte, 64)
 	rand.Read(randBytes)
 
+	return randBytes
+}
+
+func randomPublicKey() []byte {
+	randBytes := make([]byte, 33)
+	rand.Read(randBytes)
 	return randBytes
 }

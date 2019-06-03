@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"math"
 	"sync"
 
@@ -22,28 +23,28 @@ const (
 	// confirmations yet.
 	Pending ProducerState = iota
 
-	// Activate indicates the producer is registered and confirmed by more than
+	// Active indicates the producer is registered and confirmed by more than
 	// 6 blocks.
-	Activate
+	Active
 
-	// Inactivate indicates the producer has been inactive for a period which shall
-	// be punished and will be activate later
-	Inactivate
+	// Inactive indicates the producer has been inactivated for a period which shall
+	// be punished and will be activated later.
+	Inactive
 
 	// Canceled indicates the producer was canceled.
 	Canceled
 
-	// FoundBad indicates the producer was found doing bad.
-	FoundBad
+	// Illegal indicates the producer was found to break the consensus.
+	Illegal
 
-	// ReturnedDeposit indicates the producer has canceled and returned deposit
-	ReturnedDeposit
+	// Returned indicates the producer has canceled and deposit returned.
+	Returned
 )
 
 // producerStateStrings is a array of producer states back to their constant
 // names for pretty printing.
-var producerStateStrings = []string{"Pending", "Activate", "Inactivate",
-	"Canceled", "FoundBad", "ReturnedDeposit"}
+var producerStateStrings = []string{"Pending", "Active", "Inactive",
+	"Canceled", "Illegal", "Returned"}
 
 func (ps ProducerState) String() string {
 	if int(ps) < len(producerStateStrings) {
@@ -112,6 +113,99 @@ func (p *Producer) IllegalHeight() uint32 {
 	return p.illegalHeight
 }
 
+func (p *Producer) ActivateRequestHeight() uint32 {
+	return p.activateRequestHeight
+}
+
+func (p *Producer) Serialize(w io.Writer) error {
+	if err := p.info.Serialize(w, payload.ProducerInfoVersion); err != nil {
+		return err
+	}
+
+	if err := common.WriteUint8(w, uint8(p.state)); err != nil {
+		return err
+	}
+
+	if err := common.WriteUint32(w, p.registerHeight); err != nil {
+		return err
+	}
+
+	if err := common.WriteUint32(w, p.cancelHeight); err != nil {
+		return err
+	}
+
+	if err := common.WriteUint32(w, p.inactiveCountingHeight); err != nil {
+		return err
+	}
+
+	if err := common.WriteUint32(w, p.inactiveSince); err != nil {
+		return err
+	}
+
+	if err := common.WriteUint32(w, p.activateRequestHeight); err != nil {
+		return err
+	}
+
+	if err := common.WriteUint32(w, p.illegalHeight); err != nil {
+		return err
+	}
+
+	if err := common.WriteUint64(w, uint64(p.penalty)); err != nil {
+		return err
+	}
+
+	return common.WriteUint64(w, uint64(p.votes))
+}
+
+func (p *Producer) Deserialize(r io.Reader) (err error) {
+	if err = p.info.Deserialize(r, payload.ProducerInfoVersion); err != nil {
+		return
+	}
+
+	var state uint8
+	if state, err = common.ReadUint8(r); err != nil {
+		return
+	}
+	p.state = ProducerState(state)
+
+	if p.registerHeight, err = common.ReadUint32(r); err != nil {
+		return
+	}
+
+	if p.cancelHeight, err = common.ReadUint32(r); err != nil {
+		return
+	}
+
+	if p.inactiveCountingHeight, err = common.ReadUint32(r); err != nil {
+		return
+	}
+
+	if p.inactiveSince, err = common.ReadUint32(r); err != nil {
+		return
+	}
+
+	if p.activateRequestHeight, err = common.ReadUint32(r); err != nil {
+		return
+	}
+
+	if p.illegalHeight, err = common.ReadUint32(r); err != nil {
+		return
+	}
+
+	var penalty uint64
+	if penalty, err = common.ReadUint64(r); err != nil {
+		return
+	}
+	p.penalty = common.Fixed64(penalty)
+
+	var votes uint64
+	if votes, err = common.ReadUint64(r); err != nil {
+		return
+	}
+	p.votes = common.Fixed64(votes)
+	return
+}
+
 const (
 	// maxHistoryCapacity indicates the maximum capacity of change history.
 	maxHistoryCapacity = 10
@@ -121,31 +215,25 @@ const (
 
 	// maxSnapshots is the maximum newest snapshots keeps in memory.
 	maxSnapshots = 9
+
+	// ActivateDuration is about how long we should activate from pending or
+	// inactive state
+	ActivateDuration = 6
 )
 
 // State is a memory database storing DPOS producers state, like pending
 // producers active producers and their votes.
 type State struct {
+	*StateKeyFrame
+
 	// getArbiters defines methods about get current arbiters
 	getArbiters func() [][]byte
 	chainParams *config.Params
 
-	mtx               sync.RWMutex
-	nodeOwnerKeys     map[string]string // NodePublicKey as key, OwnerPublicKey as value
-	pendingProducers  map[string]*Producer
-	activityProducers map[string]*Producer
-	inactiveProducers map[string]*Producer
-	canceledProducers map[string]*Producer
-	illegalProducers  map[string]*Producer
-	votes             map[string]*types.Output
-	nicknames         map[string]struct{}
-	specialTxHashes   map[string]struct{}
-	history           *history
+	mtx     sync.RWMutex
+	history *history
 
-	// snapshots is the data set of DPOS state snapshots, it takes a snapshot of
-	// state every 12 blocks, and keeps at most 9 newest snapshots in memory.
-	snapshots [maxSnapshots]*State
-	cursor    int
+	cursor int
 }
 
 // getProducerKey returns the producer's owner public key string, whether the
@@ -155,7 +243,7 @@ func (s *State) getProducerKey(publicKey []byte) string {
 
 	// If the given public key is node public key, get the producer's owner
 	// public key.
-	if owner, ok := s.nodeOwnerKeys[key]; ok {
+	if owner, ok := s.NodeOwnerKeys[key]; ok {
 		return owner
 	}
 
@@ -166,19 +254,25 @@ func (s *State) getProducerKey(publicKey []byte) string {
 // owner public key, if no matches return nil.
 func (s *State) getProducer(publicKey []byte) *Producer {
 	key := s.getProducerKey(publicKey)
-	if producer, ok := s.activityProducers[key]; ok {
+	return s.getProducerByOwnerPublicKey(key)
+}
+
+// getProducer returns a producer with the producer's owner public key,
+// if no matches return nil.
+func (s *State) getProducerByOwnerPublicKey(key string) *Producer {
+	if producer, ok := s.ActivityProducers[key]; ok {
 		return producer
 	}
-	if producer, ok := s.canceledProducers[key]; ok {
+	if producer, ok := s.CanceledProducers[key]; ok {
 		return producer
 	}
-	if producer, ok := s.illegalProducers[key]; ok {
+	if producer, ok := s.IllegalProducers[key]; ok {
 		return producer
 	}
-	if producer, ok := s.pendingProducers[key]; ok {
+	if producer, ok := s.PendingProducers[key]; ok {
 		return producer
 	}
-	if producer, ok := s.inactiveProducers[key]; ok {
+	if producer, ok := s.InactiveProducers[key]; ok {
 		return producer
 	}
 	return nil
@@ -191,8 +285,8 @@ func (s *State) updateProducerInfo(origin *payload.ProducerInfo, update *payload
 
 	// compare and update node nickname.
 	if origin.NickName != update.NickName {
-		delete(s.nicknames, origin.NickName)
-		s.nicknames[update.NickName] = struct{}{}
+		delete(s.Nicknames, origin.NickName)
+		s.Nicknames[update.NickName] = struct{}{}
 	}
 
 	// compare and update node public key, we only query pending and active node
@@ -200,8 +294,8 @@ func (s *State) updateProducerInfo(origin *payload.ProducerInfo, update *payload
 	if !bytes.Equal(origin.NodePublicKey, update.NodePublicKey) {
 		oldKey := hex.EncodeToString(origin.NodePublicKey)
 		newKey := hex.EncodeToString(update.NodePublicKey)
-		delete(s.nodeOwnerKeys, oldKey)
-		s.nodeOwnerKeys[newKey] = hex.EncodeToString(origin.OwnerPublicKey)
+		delete(s.NodeOwnerKeys, oldKey)
+		s.NodeOwnerKeys[newKey] = hex.EncodeToString(origin.OwnerPublicKey)
 	}
 
 	producer.info = *update
@@ -221,31 +315,47 @@ func (s *State) GetProducer(publicKey []byte) *Producer {
 // canceled and illegal producers).
 func (s *State) GetProducers() []*Producer {
 	s.mtx.RLock()
-	producers := make([]*Producer, 0, len(s.pendingProducers)+
-		len(s.activityProducers))
-	for _, producer := range s.pendingProducers {
+	producers := make([]*Producer, 0, len(s.PendingProducers)+
+		len(s.ActivityProducers))
+	for _, producer := range s.PendingProducers {
 		producers = append(producers, producer)
 	}
-	for _, producer := range s.activityProducers {
+	for _, producer := range s.ActivityProducers {
 		producers = append(producers, producer)
 	}
 	s.mtx.RUnlock()
 	return producers
 }
 
-func (s *State) getProducers() []*Producer {
-	producers := make([]*Producer, 0, len(s.activityProducers))
-	for _, producer := range s.activityProducers {
+// GetAllProducers returns all producers including pending, active, canceled, illegal and inactive producers.
+func (s *State) GetAllProducers() []*Producer {
+	s.mtx.RLock()
+	producers := make([]*Producer, 0, len(s.PendingProducers)+
+		len(s.ActivityProducers))
+	for _, producer := range s.PendingProducers {
 		producers = append(producers, producer)
 	}
+	for _, producer := range s.ActivityProducers {
+		producers = append(producers, producer)
+	}
+	for _, producer := range s.InactiveProducers {
+		producers = append(producers, producer)
+	}
+	for _, producer := range s.CanceledProducers {
+		producers = append(producers, producer)
+	}
+	for _, producer := range s.IllegalProducers {
+		producers = append(producers, producer)
+	}
+	s.mtx.RUnlock()
 	return producers
 }
 
 // GetPendingProducers returns all producers that in pending state.
 func (s *State) GetPendingProducers() []*Producer {
 	s.mtx.RLock()
-	producers := make([]*Producer, 0, len(s.pendingProducers))
-	for _, producer := range s.pendingProducers {
+	producers := make([]*Producer, 0, len(s.PendingProducers))
+	for _, producer := range s.PendingProducers {
 		producers = append(producers, producer)
 	}
 	s.mtx.RUnlock()
@@ -255,9 +365,23 @@ func (s *State) GetPendingProducers() []*Producer {
 // GetActiveProducers returns all producers that in active state.
 func (s *State) GetActiveProducers() []*Producer {
 	s.mtx.RLock()
-	producers := make([]*Producer, 0, len(s.activityProducers))
-	for _, producer := range s.activityProducers {
+	producers := make([]*Producer, 0, len(s.ActivityProducers))
+	for _, producer := range s.ActivityProducers {
 		producers = append(producers, producer)
+	}
+	s.mtx.RUnlock()
+	return producers
+}
+
+// GetVotedProducers returns all producers that in active state with votes.
+func (s *State) GetVotedProducers() []*Producer {
+	s.mtx.RLock()
+	producers := make([]*Producer, 0, len(s.ActivityProducers))
+	for _, producer := range s.ActivityProducers {
+		// limit arbiters can only be producers who have votes
+		if producer.Votes() > 0 {
+			producers = append(producers, producer)
+		}
 	}
 	s.mtx.RUnlock()
 	return producers
@@ -266,9 +390,33 @@ func (s *State) GetActiveProducers() []*Producer {
 // GetCanceledProducers returns all producers that in cancel state.
 func (s *State) GetCanceledProducers() []*Producer {
 	s.mtx.RLock()
-	producers := make([]*Producer, 0, len(s.canceledProducers))
-	for _, producer := range s.canceledProducers {
+	producers := make([]*Producer, 0, len(s.CanceledProducers))
+	for _, producer := range s.CanceledProducers {
 		producers = append(producers, producer)
+	}
+	s.mtx.RUnlock()
+	return producers
+}
+
+// GetPendingCanceledProducers returns all producers that in pending canceled state.
+func (s *State) GetPendingCanceledProducers() []*Producer {
+	s.mtx.RLock()
+	producers := make([]*Producer, 0, len(s.PendingCanceledProducers))
+	for _, producer := range s.PendingCanceledProducers {
+		producers = append(producers, producer)
+	}
+	s.mtx.RUnlock()
+	return producers
+}
+
+// GetReturnedDepositProducers returns producers that in returned deposit state.
+func (s *State) GetReturnedDepositProducers() []*Producer {
+	s.mtx.RLock()
+	producers := make([]*Producer, 0, len(s.CanceledProducers))
+	for _, producer := range s.CanceledProducers {
+		if producer.state == Returned {
+			producers = append(producers, producer)
+		}
 	}
 	s.mtx.RUnlock()
 	return producers
@@ -277,8 +425,8 @@ func (s *State) GetCanceledProducers() []*Producer {
 // GetIllegalProducers returns all illegal producers.
 func (s *State) GetIllegalProducers() []*Producer {
 	s.mtx.RLock()
-	producers := make([]*Producer, 0, len(s.illegalProducers))
-	for _, producer := range s.illegalProducers {
+	producers := make([]*Producer, 0, len(s.IllegalProducers))
+	for _, producer := range s.IllegalProducers {
 		producers = append(producers, producer)
 	}
 	s.mtx.RUnlock()
@@ -287,8 +435,8 @@ func (s *State) GetIllegalProducers() []*Producer {
 
 func (s *State) GetInactiveProducers() []*Producer {
 	s.mtx.RLock()
-	producers := make([]*Producer, 0, len(s.inactiveProducers))
-	for _, producer := range s.inactiveProducers {
+	producers := make([]*Producer, 0, len(s.InactiveProducers))
+	for _, producer := range s.InactiveProducers {
 		producers = append(producers, producer)
 	}
 	s.mtx.RUnlock()
@@ -299,7 +447,7 @@ func (s *State) GetInactiveProducers() []*Producer {
 // public key.
 func (s *State) IsPendingProducer(publicKey []byte) bool {
 	s.mtx.RLock()
-	_, ok := s.pendingProducers[s.getProducerKey(publicKey)]
+	_, ok := s.PendingProducers[s.getProducerKey(publicKey)]
 	s.mtx.RUnlock()
 	return ok
 }
@@ -308,7 +456,7 @@ func (s *State) IsPendingProducer(publicKey []byte) bool {
 // public key.
 func (s *State) IsActiveProducer(publicKey []byte) bool {
 	s.mtx.RLock()
-	_, ok := s.activityProducers[s.getProducerKey(publicKey)]
+	_, ok := s.ActivityProducers[s.getProducerKey(publicKey)]
 	s.mtx.RUnlock()
 	return ok
 }
@@ -323,7 +471,7 @@ func (s *State) IsInactiveProducer(publicKey []byte) bool {
 }
 
 func (s *State) isInactiveProducer(publicKey []byte) bool {
-	_, ok := s.inactiveProducers[s.getProducerKey(publicKey)]
+	_, ok := s.InactiveProducers[s.getProducerKey(publicKey)]
 	return ok
 }
 
@@ -331,7 +479,7 @@ func (s *State) isInactiveProducer(publicKey []byte) bool {
 // public key.
 func (s *State) IsCanceledProducer(publicKey []byte) bool {
 	s.mtx.RLock()
-	_, ok := s.canceledProducers[s.getProducerKey(publicKey)]
+	_, ok := s.CanceledProducers[s.getProducerKey(publicKey)]
 	s.mtx.RUnlock()
 	return ok
 }
@@ -340,15 +488,48 @@ func (s *State) IsCanceledProducer(publicKey []byte) bool {
 // public key.
 func (s *State) IsIllegalProducer(publicKey []byte) bool {
 	s.mtx.RLock()
-	_, ok := s.illegalProducers[s.getProducerKey(publicKey)]
+	_, ok := s.IllegalProducers[s.getProducerKey(publicKey)]
 	s.mtx.RUnlock()
 	return ok
+}
+
+// IsAbleToRecoverFromInactiveMode returns if most of the emergency arbiters have activated
+// and able to work again
+func (s *State) IsAbleToRecoverFromInactiveMode() bool {
+	activatedNum := 0
+
+	s.mtx.RLock()
+	totalNum := len(s.EmergencyInactiveArbiters)
+	for k := range s.EmergencyInactiveArbiters {
+		if _, ok := s.InactiveProducers[k]; !ok {
+			activatedNum++
+		}
+	}
+	s.mtx.RUnlock()
+
+	return totalNum == 0 || float64(activatedNum)/float64(totalNum) >
+		MajoritySignRatioNumerator/MajoritySignRatioDenominator
+}
+
+// IsAbleToRecoverFromInactiveMode returns if there are enough active arbiters
+func (s *State) IsAbleToRecoverFromUnderstaffedState() bool {
+	s.mtx.RLock()
+	result := len(s.ActivityProducers) >= s.chainParams.GeneralArbiters
+	s.mtx.RUnlock()
+	return result
+}
+
+// LeaveEmergency will reset EmergencyInactiveArbiters variable
+func (s *State) LeaveEmergency() {
+	s.mtx.Lock()
+	s.EmergencyInactiveArbiters = map[string]struct{}{}
+	s.mtx.Unlock()
 }
 
 // NicknameExists returns if a nickname is exists.
 func (s *State) NicknameExists(nickname string) bool {
 	s.mtx.RLock()
-	_, ok := s.nicknames[nickname]
+	_, ok := s.Nicknames[nickname]
 	s.mtx.RUnlock()
 	return ok
 }
@@ -362,11 +543,36 @@ func (s *State) ProducerExists(publicKey []byte) bool {
 	return producer != nil
 }
 
+// ProducerExists returns if a producer is exists by it's owner public key.
+func (s *State) ProducerOwnerPublicKeyExists(publicKey []byte) bool {
+	s.mtx.RLock()
+	key := hex.EncodeToString(publicKey)
+	producer := s.getProducerByOwnerPublicKey(key)
+	s.mtx.RUnlock()
+	return producer != nil
+}
+
+// ProducerExists returns if a producer is exists by it's node public key.
+func (s *State) ProducerNodePublicKeyExists(publicKey []byte) bool {
+	s.mtx.RLock()
+	key := hex.EncodeToString(publicKey)
+	_, ok := s.NodeOwnerKeys[key]
+	s.mtx.RUnlock()
+	return ok
+}
+
 // SpecialTxExists returns if a special tx (typically means illegal and
 // inactive tx) is exists by it's hash
-func (s *State) SpecialTxExists(hash *common.Uint256) bool {
+func (s *State) SpecialTxExists(tx *types.Transaction) bool {
+	illegalData, ok := tx.Payload.(payload.DPOSIllegalData)
+	if !ok {
+		log.Error("special tx payload cast failed, tx:", tx.Hash())
+		return false
+	}
+
+	hash := illegalData.Hash()
 	s.mtx.RLock()
-	_, ok := s.specialTxHashes[hash.String()]
+	_, ok = s.SpecialTxHashes[hash]
 	s.mtx.RUnlock()
 	return ok
 }
@@ -401,7 +607,7 @@ func (s *State) IsDPOSTransaction(tx *types.Transaction) bool {
 
 	// Cancel votes.
 	for _, input := range tx.Inputs {
-		_, ok := s.votes[input.ReferKey()]
+		_, ok := s.Votes[input.ReferKey()]
 		if ok {
 			return true
 		}
@@ -422,13 +628,6 @@ func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 		s.countArbitratorsInactivity(block.Height, confirm)
 	}
 
-	// Take snapshot when snapshot point arrives.
-	if (block.Height-s.chainParams.VoteStartHeight)%snapshotInterval == 0 {
-		s.cursor = s.cursor % maxSnapshots
-		s.snapshots[s.cursor] = s.snapshot()
-		s.cursor++
-	}
-
 	// Commit changes here if no errors found.
 	s.history.commit(block.Height)
 }
@@ -444,41 +643,41 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 	// Check if any pending producers has got 6 confirms, set them to activate.
 	activateProducerFromPending := func(key string, producer *Producer) {
 		s.history.append(height, func() {
-			producer.state = Activate
-			s.activityProducers[key] = producer
-			delete(s.pendingProducers, key)
+			producer.state = Active
+			s.ActivityProducers[key] = producer
+			delete(s.PendingProducers, key)
 		}, func() {
 			producer.state = Pending
-			s.pendingProducers[key] = producer
-			delete(s.activityProducers, key)
+			s.PendingProducers[key] = producer
+			delete(s.ActivityProducers, key)
 		})
 	}
 
 	// Check if any pending producers has got 6 confirms, set them to activate.
 	activateProducerFromInactive := func(key string, producer *Producer) {
 		s.history.append(height, func() {
-			producer.state = Activate
-			s.activityProducers[key] = producer
-			delete(s.inactiveProducers, key)
+			producer.state = Active
+			s.ActivityProducers[key] = producer
+			delete(s.InactiveProducers, key)
 		}, func() {
-			producer.state = Inactivate
-			s.inactiveProducers[key] = producer
-			delete(s.activityProducers, key)
+			producer.state = Inactive
+			s.InactiveProducers[key] = producer
+			delete(s.ActivityProducers, key)
 		})
 	}
 
-	if len(s.pendingProducers) > 0 {
-		for key, producer := range s.pendingProducers {
-			if height-producer.registerHeight+1 >= 6 {
+	if len(s.PendingProducers) > 0 {
+		for key, producer := range s.PendingProducers {
+			if height-producer.registerHeight+1 >= ActivateDuration {
 				activateProducerFromPending(key, producer)
 			}
 		}
 
 	}
-	if len(s.inactiveProducers) > 0 {
-		for key, producer := range s.inactiveProducers {
+	if len(s.InactiveProducers) > 0 {
+		for key, producer := range s.InactiveProducers {
 			if height > producer.activateRequestHeight &&
-				height-producer.activateRequestHeight+1 >= 6 {
+				height-producer.activateRequestHeight+1 >= ActivateDuration {
 				activateProducerFromInactive(key, producer)
 			}
 		}
@@ -499,11 +698,10 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 			height)
 
 	case types.CancelProducer:
-		s.cancelProducer(tx.Payload.(*payload.ProcessProducer),
-			height)
+		s.cancelProducer(tx.Payload.(*payload.ProcessProducer), height)
 
 	case types.ActivateProducer:
-		s.activateProducer(tx.Payload.(*payload.ProcessProducer), height)
+		s.activateProducer(tx.Payload.(*payload.ActivateProducer), height)
 
 	case types.TransferAsset:
 		s.processVotes(tx, height)
@@ -520,6 +718,9 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 
 	case types.ReturnDepositCoin:
 		s.returnDeposit(tx, height)
+
+	case types.UpdateVersion:
+		s.updateVersion(tx, height)
 	}
 
 	s.processCancelVotes(tx, height)
@@ -541,13 +742,13 @@ func (s *State) registerProducer(payload *payload.ProducerInfo, height uint32) {
 	}
 
 	s.history.append(height, func() {
-		s.nicknames[nickname] = struct{}{}
-		s.nodeOwnerKeys[nodeKey] = ownerKey
-		s.pendingProducers[ownerKey] = &producer
+		s.Nicknames[nickname] = struct{}{}
+		s.NodeOwnerKeys[nodeKey] = ownerKey
+		s.PendingProducers[ownerKey] = &producer
 	}, func() {
-		delete(s.nicknames, nickname)
-		delete(s.nodeOwnerKeys, nodeKey)
-		delete(s.pendingProducers, ownerKey)
+		delete(s.Nicknames, nickname)
+		delete(s.NodeOwnerKeys, nodeKey)
+		delete(s.PendingProducers, ownerKey)
 	})
 }
 
@@ -566,24 +767,39 @@ func (s *State) updateProducer(info *payload.ProducerInfo, height uint32) {
 func (s *State) cancelProducer(payload *payload.ProcessProducer, height uint32) {
 	key := hex.EncodeToString(payload.OwnerPublicKey)
 	producer := s.getProducer(payload.OwnerPublicKey)
+	isPending := producer.state == Pending
 	s.history.append(height, func() {
 		producer.state = Canceled
 		producer.cancelHeight = height
-		s.canceledProducers[key] = producer
-		delete(s.activityProducers, key)
-		delete(s.nicknames, producer.info.NickName)
+		s.CanceledProducers[key] = producer
+		if isPending {
+			delete(s.PendingProducers, key)
+			s.PendingCanceledProducers[key] = producer
+		} else {
+			delete(s.ActivityProducers, key)
+		}
+		delete(s.Nicknames, producer.info.NickName)
 	}, func() {
-		producer.state = Activate
+		producer.state = Active
 		producer.cancelHeight = 0
-		delete(s.canceledProducers, key)
-		s.activityProducers[key] = producer
-		s.nicknames[producer.info.NickName] = struct{}{}
+		delete(s.CanceledProducers, key)
+		if isPending {
+			s.PendingProducers[key] = producer
+			delete(s.PendingCanceledProducers, key)
+		} else {
+			s.ActivityProducers[key] = producer
+		}
+		s.Nicknames[producer.info.NickName] = struct{}{}
 	})
 }
 
 // activateProducer handles the activate producer transaction.
-func (s *State) activateProducer(p *payload.ProcessProducer, height uint32) {
-	producer := s.getProducer(p.OwnerPublicKey)
+func (s *State) activateProducer(p *payload.ActivateProducer, height uint32) {
+	producer := s.getProducer(p.NodePublicKey)
+	if producer == nil {
+		log.Error("can't find producer to activate")
+		return
+	}
 	s.history.append(height, func() {
 		producer.activateRequestHeight = height
 	}, func() {
@@ -599,7 +815,7 @@ func (s *State) processVotes(tx *types.Transaction, height uint32) {
 		for i, output := range tx.Outputs {
 			if output.Type == types.OTVote {
 				op := types.NewOutPoint(tx.Hash(), uint16(i))
-				s.votes[op.ReferKey()] = output
+				s.Votes[op.ReferKey()] = output
 				s.processVoteOutput(output, height)
 			}
 		}
@@ -608,7 +824,7 @@ func (s *State) processVotes(tx *types.Transaction, height uint32) {
 
 func (s *State) processCancelVotes(tx *types.Transaction, height uint32) {
 	for _, input := range tx.Inputs {
-		output, ok := s.votes[input.ReferKey()]
+		output, ok := s.Votes[input.ReferKey()]
 		if ok {
 			s.processVoteCancel(output, height)
 		}
@@ -620,8 +836,10 @@ func (s *State) processVoteOutput(output *types.Output, height uint32) {
 	payload := output.Payload.(*outputpayload.VoteOutput)
 	for _, vote := range payload.Contents {
 		for _, candidate := range vote.Candidates {
-			key := hex.EncodeToString(candidate)
-			producer := s.activityProducers[key]
+			producer := s.getProducer(candidate)
+			if producer == nil {
+				continue
+			}
 			switch vote.VoteType {
 			case outputpayload.CRC:
 				// TODO separate CRC and Delegate votes.
@@ -662,11 +880,12 @@ func (s *State) processVoteCancel(output *types.Output, height uint32) {
 	}
 }
 
+// returnDeposit change producer state to ReturnedDeposit
 func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 
 	returnAction := func(producer *Producer) {
 		s.history.append(height, func() {
-			producer.state = ReturnedDeposit
+			producer.state = Returned
 		}, func() {
 			producer.state = Canceled
 		})
@@ -680,6 +899,26 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 	}
 }
 
+// updateVersion record the update period during that inactive arbitrators
+// will not need to pay the penalty
+func (s *State) updateVersion(tx *types.Transaction, height uint32) {
+	p, ok := tx.Payload.(*payload.UpdateVersion)
+	if !ok {
+		log.Error("tx payload cast failed, tx:", tx.Hash())
+		return
+	}
+
+	start := p.StartHeight
+	end := p.EndHeight
+	s.history.append(height, func() {
+		s.VersionStartHeight = start
+		s.VersionEndHeight = end
+	}, func() {
+		s.VersionStartHeight = 0
+		s.VersionEndHeight = 0
+	})
+}
+
 // processEmergencyInactiveArbitrators change producer state according to
 // emergency inactive arbitrators
 func (s *State) processEmergencyInactiveArbitrators(
@@ -687,27 +926,43 @@ func (s *State) processEmergencyInactiveArbitrators(
 
 	addEmergencyInactiveArbitrator := func(key string, producer *Producer) {
 		s.history.append(height, func() {
-			s.setInactiveProducer(producer, key, height)
+			s.setInactiveProducer(producer, key, height, true)
+			s.EmergencyInactiveArbiters[key] = struct{}{}
 		}, func() {
-			s.revertSettingInactiveProducer(producer, key, height)
+			s.revertSettingInactiveProducer(producer, key, height, true)
+			delete(s.EmergencyInactiveArbiters, key)
 		})
 	}
 
 	for _, v := range inactivePayload.Arbitrators {
-		key := hex.EncodeToString(v)
-		if p, ok := s.activityProducers[key]; ok {
+		nodeKey := hex.EncodeToString(v)
+		key, ok := s.NodeOwnerKeys[nodeKey]
+		if !ok {
+			continue
+		}
+
+		if p, ok := s.ActivityProducers[key]; ok {
+			addEmergencyInactiveArbitrator(key, p)
+		}
+		if p, ok := s.InactiveProducers[key]; ok {
 			addEmergencyInactiveArbitrator(key, p)
 		}
 	}
-
 }
 
 // recordSpecialTx record hash of a special tx
 func (s *State) recordSpecialTx(tx *types.Transaction, height uint32) {
+	illegalData, ok := tx.Payload.(payload.DPOSIllegalData)
+	if !ok {
+		log.Error("special tx payload cast failed, tx:", tx.Hash())
+		return
+	}
+
+	hash := illegalData.Hash()
 	s.history.append(height, func() {
-		s.specialTxHashes[tx.Hash().String()] = struct{}{}
+		s.SpecialTxHashes[hash] = struct{}{}
 	}, func() {
-		delete(s.specialTxHashes, tx.Hash().String())
+		delete(s.SpecialTxHashes, hash)
 	})
 }
 
@@ -746,37 +1001,40 @@ func (s *State) processIllegalEvidence(payloadData types.Payload,
 
 	// Set illegal producers to FoundBad state
 	for _, pk := range illegalProducers {
-		key := hex.EncodeToString(pk)
-		if producer, ok := s.activityProducers[key]; ok {
+		key, ok := s.NodeOwnerKeys[hex.EncodeToString(pk)]
+		if !ok {
+			continue
+		}
+		if producer, ok := s.ActivityProducers[key]; ok {
 			s.history.append(height, func() {
-				producer.state = FoundBad
+				producer.state = Illegal
 				producer.illegalHeight = height
-				s.illegalProducers[key] = producer
-				delete(s.activityProducers, key)
-				delete(s.nicknames, producer.info.NickName)
+				s.IllegalProducers[key] = producer
+				delete(s.ActivityProducers, key)
+				delete(s.Nicknames, producer.info.NickName)
 			}, func() {
-				producer.state = Activate
+				producer.state = Active
 				producer.illegalHeight = 0
-				s.activityProducers[key] = producer
-				delete(s.illegalProducers, key)
-				s.nicknames[producer.info.NickName] = struct{}{}
+				s.ActivityProducers[key] = producer
+				delete(s.IllegalProducers, key)
+				s.Nicknames[producer.info.NickName] = struct{}{}
 			})
 			continue
 		}
 
-		if producer, ok := s.canceledProducers[key]; ok {
+		if producer, ok := s.CanceledProducers[key]; ok {
 			s.history.append(height, func() {
-				producer.state = FoundBad
+				producer.state = Illegal
 				producer.illegalHeight = height
-				s.illegalProducers[key] = producer
-				delete(s.canceledProducers, key)
-				delete(s.nicknames, producer.info.NickName)
+				s.IllegalProducers[key] = producer
+				delete(s.CanceledProducers, key)
+				delete(s.Nicknames, producer.info.NickName)
 			}, func() {
 				producer.state = Canceled
 				producer.illegalHeight = 0
-				s.canceledProducers[key] = producer
-				delete(s.illegalProducers, key)
-				s.nicknames[producer.info.NickName] = struct{}{}
+				s.CanceledProducers[key] = producer
+				delete(s.IllegalProducers, key)
+				s.Nicknames[producer.info.NickName] = struct{}{}
 			})
 			continue
 		}
@@ -786,7 +1044,7 @@ func (s *State) processIllegalEvidence(payloadData types.Payload,
 // ProcessIllegalBlockEvidence takes a illegal block payload and change the
 // producers state immediately.  This is a spacial case that can be handled
 // before it packed into a block.
-func (s *State) ProcessSpecialTxPayload(p types.Payload) {
+func (s *State) ProcessSpecialTxPayload(p types.Payload, height uint32) {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 
@@ -797,32 +1055,47 @@ func (s *State) ProcessSpecialTxPayload(p types.Payload) {
 	}
 
 	// Commit changes here if no errors found.
-	s.history.commit(0)
+	s.history.commit(height)
 }
 
 // setInactiveProducer set active producer to inactive state
 func (s *State) setInactiveProducer(producer *Producer, key string,
-	height uint32) {
+	height uint32, emergency bool) {
 	producer.inactiveSince = height
-	producer.state = Inactivate
-	s.inactiveProducers[key] = producer
-	delete(s.activityProducers, key)
+	producer.activateRequestHeight = math.MaxUint32
+	producer.state = Inactive
+	s.InactiveProducers[key] = producer
+	delete(s.ActivityProducers, key)
 
-	producer.penalty += s.chainParams.InactivePenalty
+	if height < s.VersionStartHeight || height >= s.VersionEndHeight {
+		if !emergency {
+			producer.penalty += s.chainParams.InactivePenalty
+		} else {
+			producer.penalty += s.chainParams.EmergencyInactivePenalty
+		}
+	}
 }
 
 // revertSettingInactiveProducer revert operation about setInactiveProducer
 func (s *State) revertSettingInactiveProducer(producer *Producer, key string,
-	height uint32) {
+	height uint32, emergency bool) {
 	producer.inactiveSince = 0
-	producer.state = Activate
-	s.activityProducers[key] = producer
-	delete(s.inactiveProducers, key)
+	producer.activateRequestHeight = math.MaxUint32
+	producer.state = Active
+	s.ActivityProducers[key] = producer
+	delete(s.InactiveProducers, key)
 
-	if producer.penalty < s.chainParams.InactivePenalty {
-		producer.penalty = common.Fixed64(0)
-	} else {
-		producer.penalty -= s.chainParams.InactivePenalty
+	if height < s.VersionStartHeight || height >= s.VersionEndHeight {
+		penalty := s.chainParams.InactivePenalty
+		if emergency {
+			penalty = s.chainParams.EmergencyInactivePenalty
+		}
+
+		if producer.penalty < penalty {
+			producer.penalty = common.Fixed64(0)
+		} else {
+			producer.penalty -= penalty
+		}
 	}
 }
 
@@ -835,36 +1108,46 @@ func (s *State) countArbitratorsInactivity(height uint32,
 		return
 	}
 
-	arbiters := make(map[string]bool)
+	// changingArbiters indicates the arbiters that should reset inactive
+	// counting state. With the value of true means the producer is on duty or
+	// is not current arbiter any more, or just becoming current arbiter; and
+	// false means producer is arbiter in both heights and not on duty.
+	changingArbiters := make(map[string]bool)
+	for k := range s.PreBlockArbiters {
+		changingArbiters[k] = true
+	}
+	s.PreBlockArbiters = make(map[string]struct{})
 	for _, a := range s.getArbiters() {
-		arbiters[common.BytesToHexString(a)] = false
-	}
-	for _, v := range confirm.Votes {
-		arbiters[common.BytesToHexString(v.Signer)] = true
-	}
-
-	for k, v := range arbiters {
-		buf, _ := common.HexStringToBytes(k)
-		key := s.getProducerKey(buf)
-
-		// CRC producers are not in the activityProducers,
-		// so they will not be inactive
-		if producer, ok := s.activityProducers[key]; ok {
-			countingHeight := producer.inactiveCountingHeight
-			signed := v
-
-			s.history.append(height, func() {
-				s.tryUpdateInactivity(key, producer, signed, height)
-			}, func() {
-				s.tryRevertInactivity(key, producer, signed, height, countingHeight)
-			})
+		key := s.getProducerKey(a)
+		s.PreBlockArbiters[key] = struct{}{}
+		if _, exist := changingArbiters[key]; exist {
+			changingArbiters[key] = false
 		}
+	}
+	changingArbiters[s.getProducerKey(confirm.Proposal.Sponsor)] = true
+
+	// CRC producers are not in the ActivityProducers,
+	// so they will not be inactive
+	for k, v := range changingArbiters {
+		key := k // avoiding pass iterator to closure
+		producer, ok := s.ActivityProducers[key]
+		if !ok {
+			continue
+		}
+		countingHeight := producer.inactiveCountingHeight
+		needReset := v // avoiding pass iterator to closure
+
+		s.history.append(height, func() {
+			s.tryUpdateInactivity(key, producer, needReset, height)
+		}, func() {
+			s.tryRevertInactivity(key, producer, needReset, height, countingHeight)
+		})
 	}
 }
 
 func (s *State) tryRevertInactivity(key string, producer *Producer,
-	signed bool, height, startHeight uint32) {
-	if signed {
+	needReset bool, height, startHeight uint32) {
+	if needReset {
 		producer.inactiveCountingHeight = startHeight
 		return
 	}
@@ -873,15 +1156,15 @@ func (s *State) tryRevertInactivity(key string, producer *Producer,
 		producer.inactiveCountingHeight = 0
 	}
 
-	if producer.state == Inactivate {
-		s.revertSettingInactiveProducer(producer, key, height)
+	if producer.state == Inactive {
+		s.revertSettingInactiveProducer(producer, key, height, false)
 		producer.inactiveCountingHeight = startHeight
 	}
 }
 
 func (s *State) tryUpdateInactivity(key string, producer *Producer,
-	signed bool, height uint32) {
-	if signed {
+	needReset bool, height uint32) {
+	if needReset {
 		producer.inactiveCountingHeight = 0
 		return
 	}
@@ -890,8 +1173,8 @@ func (s *State) tryUpdateInactivity(key string, producer *Producer,
 		producer.inactiveCountingHeight = height
 	}
 
-	if height-producer.inactiveCountingHeight > s.chainParams.MaxInactiveRounds {
-		s.setInactiveProducer(producer, key, height)
+	if height-producer.inactiveCountingHeight >= s.chainParams.MaxInactiveRounds {
+		s.setInactiveProducer(producer, key, height, false)
 		producer.inactiveCountingHeight = 0
 	}
 }
@@ -906,7 +1189,7 @@ func (s *State) RollbackTo(height uint32) error {
 
 // GetHistory returns a history state instance storing the producers and votes
 // on the historical height.
-func (s *State) GetHistory(height uint32) (*State, error) {
+func (s *State) GetHistory(height uint32) (*StateKeyFrame, error) {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
 
@@ -919,54 +1202,27 @@ func (s *State) GetHistory(height uint32) (*State, error) {
 	return s.snapshot(), nil
 }
 
-// snapshot takes a snapshot of current state and returns the copy.
-func (s *State) snapshot() *State {
-	state := State{
-		pendingProducers:  make(map[string]*Producer),
-		activityProducers: make(map[string]*Producer),
-		inactiveProducers: make(map[string]*Producer),
-		canceledProducers: make(map[string]*Producer),
-		illegalProducers:  make(map[string]*Producer),
-	}
-	copyMap(state.pendingProducers, s.pendingProducers)
-	copyMap(state.activityProducers, s.activityProducers)
-	copyMap(state.inactiveProducers, s.inactiveProducers)
-	copyMap(state.canceledProducers, s.canceledProducers)
-	copyMap(state.illegalProducers, s.illegalProducers)
-	return &state
-}
-
-// GetSnapshot returns a snapshot of the state according to the given height.
-func (s *State) GetSnapshot(height uint32) *State {
-	s.mtx.RLock()
-	defer s.mtx.RUnlock()
-	offset := (s.history.height - height) / snapshotInterval
-	index := (s.cursor - 1 - int(offset) + maxSnapshots) % maxSnapshots
-	return s.snapshots[index]
-}
-
-// copyMap copy the src map's key, value pairs into dst map.
-func copyMap(dst map[string]*Producer, src map[string]*Producer) {
-	for k, v := range src {
-		p := *v
-		dst[k] = &p
-	}
-}
-
 // NewState returns a new State instance.
 func NewState(chainParams *config.Params, getArbiters func() [][]byte) *State {
 	return &State{
-		chainParams:       chainParams,
-		getArbiters:       getArbiters,
-		nodeOwnerKeys:     make(map[string]string),
-		pendingProducers:  make(map[string]*Producer),
-		activityProducers: make(map[string]*Producer),
-		inactiveProducers: make(map[string]*Producer),
-		canceledProducers: make(map[string]*Producer),
-		illegalProducers:  make(map[string]*Producer),
-		votes:             make(map[string]*types.Output),
-		nicknames:         make(map[string]struct{}),
-		specialTxHashes:   make(map[string]struct{}),
-		history:           newHistory(maxHistoryCapacity),
+		chainParams: chainParams,
+		getArbiters: getArbiters,
+		history:     newHistory(maxHistoryCapacity),
+		StateKeyFrame: &StateKeyFrame{
+			NodeOwnerKeys:             make(map[string]string),
+			PendingProducers:          make(map[string]*Producer),
+			ActivityProducers:         make(map[string]*Producer),
+			InactiveProducers:         make(map[string]*Producer),
+			CanceledProducers:         make(map[string]*Producer),
+			IllegalProducers:          make(map[string]*Producer),
+			PendingCanceledProducers:  make(map[string]*Producer),
+			Votes:                     make(map[string]*types.Output),
+			Nicknames:                 make(map[string]struct{}),
+			SpecialTxHashes:           make(map[common.Uint256]struct{}),
+			PreBlockArbiters:          make(map[string]struct{}),
+			EmergencyInactiveArbiters: make(map[string]struct{}),
+			VersionStartHeight:        0,
+			VersionEndHeight:          0,
+		},
 	}
 }

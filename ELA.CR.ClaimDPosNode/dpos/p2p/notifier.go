@@ -1,6 +1,8 @@
 package p2p
 
 import (
+	"bytes"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -63,13 +65,13 @@ const (
 type Notifier struct {
 	flags    NotifyFlag
 	notify   func(flag NotifyFlag)
-	addrList chan map[peer.PID]PeerAddr
+	peers    chan []peer.PID
 	newPeer  chan peer.PID
 	donePeer chan peer.PID
 }
 
-func (n *Notifier) OnConnectPeers(addrList map[peer.PID]PeerAddr) {
-	n.addrList <- addrList
+func (n *Notifier) OnConnectPeers(peers []peer.PID) {
+	n.peers <- peers
 }
 
 func (n *Notifier) OnNewPeer(pid peer.PID) {
@@ -82,7 +84,7 @@ func (n *Notifier) OnDonePeer(pid peer.PID) {
 
 func (n *Notifier) notifyHandler() {
 	// The current connect peer addresses.
-	var addrList map[peer.PID]PeerAddr
+	var peers []peer.PID
 
 	// Connected peers whether inbound or outbound or both.
 	var connected = make(map[peer.PID]int)
@@ -113,10 +115,10 @@ func (n *Notifier) notifyHandler() {
 
 	for {
 		select {
-		case list := <-n.addrList:
+		case list := <-n.peers:
 			// New ConnectPeers message received.
-			if !equalList(addrList, list) {
-				addrList = list
+			if !equalList(peers, list) {
+				peers = list
 				startTimer()
 			}
 
@@ -126,7 +128,7 @@ func (n *Notifier) notifyHandler() {
 			connected[pid]++
 
 			// Connected peers reach 2/3, mark server state as stable.
-			if !stable && len(connected)/2 >= len(addrList)/3 {
+			if !stable && len(connected)/2 >= len(peers)/3 {
 				timer.Stop()
 				stable = true
 				if n.flags&NFNetStabled == NFNetStabled {
@@ -143,7 +145,7 @@ func (n *Notifier) notifyHandler() {
 			}
 
 			// Stabled server turn to unstable.
-			if stable && len(connected)/2 < len(addrList)/3 {
+			if stable && len(connected)/2 < len(peers)/3 {
 				startTimer()
 				if n.flags&NFBadNetwork == NFBadNetwork {
 					go n.notify(NFBadNetwork)
@@ -165,7 +167,7 @@ func NewNotifier(flags NotifyFlag, notify func(flag NotifyFlag)) *Notifier {
 	n := Notifier{
 		flags:    flags,
 		notify:   notify,
-		addrList: make(chan map[peer.PID]PeerAddr),
+		peers:    make(chan []peer.PID),
 		newPeer:  make(chan peer.PID),
 		donePeer: make(chan peer.PID),
 	}
@@ -173,15 +175,24 @@ func NewNotifier(flags NotifyFlag, notify func(flag NotifyFlag)) *Notifier {
 	return &n
 }
 
-func equalList(list1 map[peer.PID]PeerAddr, list2 map[peer.PID]PeerAddr) bool {
+func equalList(list1, list2 []peer.PID) bool {
 	if len(list1) != len(list2) || list1 == nil || list2 == nil {
 		return false
 	}
-	for k, v := range list1 {
-		addr, ok := list2[k]
-		if !ok || addr.Addr != v.Addr {
-			return false
+
+	list1, list2 = sortPeers(list1), sortPeers(list2)
+	for i := range list1 {
+		if list1[i].Equal(list2[i]) {
+			continue
 		}
+		return false
 	}
 	return true
+}
+
+func sortPeers(peers []peer.PID) []peer.PID {
+	sort.Slice(peers, func(i, j int) bool {
+		return bytes.Compare(peers[i][:], peers[j][:]) < 0
+	})
+	return peers
 }

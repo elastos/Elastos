@@ -3,7 +3,6 @@ package manager
 import (
 	"bytes"
 	"errors"
-	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
@@ -14,9 +13,11 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/account"
+	"github.com/elastos/Elastos.ELA/dpos/dtime"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	dmsg "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
+	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/dpos/store"
 )
 
@@ -26,31 +27,36 @@ type ProposalDispatcherConfig struct {
 	Consensus    *Consensus
 	Network      DPOSNetwork
 	Manager      *DPOSManager
-	Account      account.DposAccount
+	Account      account.Account
 	ChainParams  *config.Params
+	TimeSource   dtime.MedianTimeSource
 }
 
 type ProposalDispatcher struct {
 	cfg ProposalDispatcherConfig
 
-	processingBlock    *types.Block
-	processingProposal *payload.DPOSProposal
-	acceptVotes        map[common.Uint256]*payload.DPOSProposalVote
-	rejectedVotes      map[common.Uint256]*payload.DPOSProposalVote
-	pendingProposals   map[common.Uint256]*payload.DPOSProposal
-	pendingVotes       map[common.Uint256]*payload.DPOSProposalVote
+	processingBlock     *types.Block
+	processingProposal  *payload.DPOSProposal
+	acceptVotes         map[common.Uint256]*payload.DPOSProposalVote
+	rejectedVotes       map[common.Uint256]*payload.DPOSProposalVote
+	pendingProposals    map[common.Uint256]*payload.DPOSProposal
+	precociousProposals map[common.Uint256]*payload.DPOSProposal
+	pendingVotes        map[common.Uint256]*payload.DPOSProposalVote
 
 	proposalProcessFinished bool
+	crcBadNetwork           bool
+	firstBadNetworkRecover  bool
 
 	inactiveCountDown           ViewChangesCountDown
 	currentInactiveArbitratorTx *types.Transaction
+	signedTxs                   map[common.Uint256]interface{}
 
 	eventAnalyzer  *store.EventStoreAnalyzer
 	illegalMonitor *IllegalBehaviorMonitor
 }
 
 func (p *ProposalDispatcher) RequestAbnormalRecovering() {
-	height := p.CurrentHeight()
+	height := blockchain.DefaultLedger.Blockchain.GetHeight()
 	msgItem := &dmsg.RequestConsensus{Height: height}
 	log.Info("[RequestAbnormalRecovering] broadcast message to peers")
 	p.cfg.Network.BroadcastMessage(msgItem)
@@ -69,8 +75,8 @@ func (p *ProposalDispatcher) ProcessVote(v *payload.DPOSProposalVote,
 	log.Info("[ProcessVote] start")
 	defer log.Info("[ProcessVote] end")
 
-	if !blockchain.IsVoteValid(v) {
-		log.Info("Invalid vote")
+	if err := blockchain.VoteCheck(v); err != nil {
+		log.Warn("Invalid vote: ", err.Error())
 		return false, false
 	}
 
@@ -89,16 +95,10 @@ func (p *ProposalDispatcher) ProcessVote(v *payload.DPOSProposalVote,
 	} else {
 		return p.countRejectedVote(v)
 	}
-
-	return false, false
 }
 
 func (p *ProposalDispatcher) AddPendingVote(v *payload.DPOSProposalVote) {
 	p.pendingVotes[v.Hash()] = v
-}
-
-func (p *ProposalDispatcher) IsProcessingBlockEmpty() bool {
-	return p.processingBlock == nil
 }
 
 func (p *ProposalDispatcher) StartProposal(b *types.Block) {
@@ -133,7 +133,7 @@ func (p *ProposalDispatcher) StartProposal(b *types.Block) {
 	proposalEvent := log.ProposalEvent{
 		Sponsor:      common.BytesToHexString(proposal.Sponsor),
 		BlockHash:    proposal.BlockHash,
-		ReceivedTime: time.Now(),
+		ReceivedTime: p.cfg.TimeSource.AdjustedTime(),
 		ProposalHash: proposal.Hash(),
 		RawData:      proposal,
 		Result:       false,
@@ -164,17 +164,13 @@ func (p *ProposalDispatcher) FinishProposal() bool {
 
 	proposal, blockHash := p.processingProposal.Sponsor, p.processingBlock.Hash()
 
-	var result = true
-	if !p.TryAppendAndBroadcastConfirmBlockMsg() {
-		log.Warn("Add block failed, no need to broadcast confirm message")
-		result = false
-	}
+	p.AppendConfirm()
 
 	proposalEvent := log.ProposalEvent{
 		Sponsor:   common.BytesToHexString(proposal),
 		BlockHash: blockHash,
-		EndTime:   time.Now(),
-		Result:    result,
+		EndTime:   p.cfg.TimeSource.AdjustedTime(),
+		Result:    true,
 	}
 	p.cfg.EventMonitor.OnProposalFinished(&proposalEvent)
 	p.FinishConsensus()
@@ -185,7 +181,6 @@ func (p *ProposalDispatcher) FinishProposal() bool {
 func (p *ProposalDispatcher) CleanProposals(changeView bool) {
 	log.Info("Clean proposals")
 
-	//todo clear pending proposals that are lower than current consensus height
 	p.illegalMonitor.Reset(changeView)
 
 	p.processingBlock = nil
@@ -195,9 +190,47 @@ func (p *ProposalDispatcher) CleanProposals(changeView bool) {
 	p.pendingVotes = make(map[common.Uint256]*payload.DPOSProposalVote)
 	p.proposalProcessFinished = false
 	if !changeView {
-		p.inactiveCountDown.Reset()
+		p.inactiveCountDown.Reset(0)
 		p.currentInactiveArbitratorTx = nil
+		p.signedTxs = map[common.Uint256]interface{}{}
+		p.pendingProposals = make(map[common.Uint256]*payload.DPOSProposal)
+		p.precociousProposals = make(map[common.Uint256]*payload.DPOSProposal)
+
+		p.eventAnalyzer.Clear()
+	} else {
+		// clear pending proposals less than current view offset
+		currentOffset := p.cfg.Consensus.GetViewOffset()
+		for k, v := range p.pendingProposals {
+			if v.ViewOffset < currentOffset {
+				delete(p.pendingProposals, k)
+			}
+		}
+		for k, v := range p.precociousProposals {
+			if v.ViewOffset < currentOffset {
+				delete(p.precociousProposals, k)
+			}
+		}
 	}
+}
+
+func (p *ProposalDispatcher) ResetByCurrentView() {
+	p.illegalMonitor.Reset(false)
+
+	p.processingBlock = nil
+	p.processingProposal = nil
+	p.acceptVotes = make(map[common.Uint256]*payload.DPOSProposalVote)
+	p.rejectedVotes = make(map[common.Uint256]*payload.DPOSProposalVote)
+	p.pendingVotes = make(map[common.Uint256]*payload.DPOSProposalVote)
+	p.proposalProcessFinished = false
+
+	p.inactiveCountDown.Reset(p.cfg.Consensus.GetViewOffset() + 1)
+	p.currentInactiveArbitratorTx = nil
+	p.signedTxs = map[common.Uint256]interface{}{}
+	p.pendingProposals = make(map[common.Uint256]*payload.DPOSProposal)
+	p.precociousProposals = make(map[common.Uint256]*payload.DPOSProposal)
+
+	p.eventAnalyzer.Clear()
+
 }
 
 func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposal,
@@ -205,14 +238,15 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 	log.Info("[ProcessProposal] start")
 	defer log.Info("[ProcessProposal] end")
 
-	if ok := blockchain.IsProposalValid(d); !ok {
-		log.Warn("invalid proposal.")
+	self := bytes.Equal(id[:], d.Sponsor)
+	if err := blockchain.ProposalCheck(d); err != nil {
+		log.Warn("invalid proposal: ", err.Error())
 		return false, true
 	}
 
 	if p.IsViewChangedTimeOut() {
 		log.Info("enter emergency state, proposal will be discard")
-		return true, false
+		return true, !self
 	}
 
 	if p.processingProposal != nil && d.Hash().IsEqual(
@@ -223,18 +257,21 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 
 	if _, err := blockchain.DefaultLedger.Blockchain.GetBlockByHash(d.BlockHash); err == nil {
 		log.Info("already exist block in block chain")
-		return true, true
+		return true, !self
 	}
 
 	if d.ViewOffset != p.cfg.Consensus.GetViewOffset() {
 		log.Info("have different view offset")
-		return true, false
+		if d.ViewOffset > p.cfg.Consensus.GetViewOffset() {
+			p.precociousProposals[d.Hash()] = d
+		}
+		return true, !self
 	}
 
 	if !force {
 		if _, ok := p.pendingProposals[d.Hash()]; ok {
 			log.Info("already have proposal, wait for processing")
-			return true, false
+			return true, true
 		}
 	}
 
@@ -249,27 +286,27 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 			common.BytesToHexString(currentArbiter), "sponsor:", d.Sponsor)
 		p.rejectProposal(d)
 		log.Warn("reject: current arbiter is not sponsor")
-		return true, false
+		return true, !self
 	}
 
 	currentBlock, ok := p.cfg.Manager.GetBlockCache().TryGetValue(d.BlockHash)
 	if !ok || !p.cfg.Consensus.IsRunning() {
 		p.pendingProposals[d.Hash()] = d
-		p.tryGetBlock(id, d.BlockHash)
+		p.cfg.Manager.OnInv(id, d.BlockHash)
 		log.Info("received pending proposal")
-		return true, false
+		return true, true
 	} else {
 		p.TryStartSpeculatingProposal(currentBlock)
 	}
 
 	if currentBlock.Height != p.processingBlock.Height {
 		log.Warn("[ProcessProposal] Invalid block height")
-		return true, false
+		return true, !self
 	}
 
 	if !d.BlockHash.IsEqual(p.processingBlock.Hash()) {
 		log.Warn("[ProcessProposal] Invalid block hash")
-		return true, false
+		return true, !self
 	}
 
 	if !p.proposalProcessFinished {
@@ -279,12 +316,7 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 	return true, true
 }
 
-func (d *ProposalDispatcher) tryGetBlock(id peer.PID, blockHash common.Uint256) error {
-	getBlock := dmsg.NewGetBlock(blockHash)
-	return d.cfg.Network.SendMessageToPeer(id, getBlock)
-}
-
-func (p *ProposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
+func (p *ProposalDispatcher) AppendConfirm() {
 	currentVoteSlot := &payload.Confirm{
 		Proposal: *p.processingProposal,
 		Votes:    make([]payload.DPOSProposalVote, 0),
@@ -293,29 +325,37 @@ func (p *ProposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
 		currentVoteSlot.Votes = append(currentVoteSlot.Votes, *v)
 	}
 
-	log.Info("[TryAppendAndBroadcastConfirmBlockMsg] append confirm.")
-	inMainChain, isOrphan, err := p.cfg.Manager.AppendConfirm(currentVoteSlot)
-	if err != nil || !inMainChain || isOrphan {
-		log.Error("[AppendConfirm] err:", err.Error())
-		return false
-	}
-
-	return true
+	log.Info("[AppendConfirm] append confirm.")
+	go func() {
+		if _, _, err := p.cfg.Manager.AppendConfirm(
+			currentVoteSlot); err != nil {
+			log.Warn("[AppendConfirm] append failed: ", err)
+		}
+	}()
 }
 
 func (p *ProposalDispatcher) OnBlockAdded(b *types.Block) {
-
-	if p.cfg.Consensus.IsRunning() {
-		for k, v := range p.pendingProposals {
-			if v.BlockHash.IsEqual(b.Hash()) {
-				// block is already exist, will not use PID, given PID{} is ok
-				if needRecord, _ := p.ProcessProposal(
-					peer.PID{}, v, true); needRecord {
-					p.illegalMonitor.AddProposal(v)
-				}
-				delete(p.pendingProposals, k)
-				break
+	for k, v := range p.pendingProposals {
+		if p.cfg.Consensus.IsRunning() && v.BlockHash.IsEqual(b.Hash()) {
+			// block is already exist, will not use PID, given PID{} is ok
+			if needRecord, _ := p.ProcessProposal(
+				peer.PID{}, v, true); needRecord {
+				p.illegalMonitor.AddProposal(v)
 			}
+			delete(p.pendingProposals, k)
+		}
+	}
+}
+
+func (p *ProposalDispatcher) UpdatePrecociousProposals() {
+	for k, v := range p.precociousProposals {
+		if p.cfg.Consensus.IsRunning() &&
+			v.ViewOffset == p.cfg.Consensus.GetViewOffset() {
+			if needRecord, _ := p.ProcessProposal(
+				peer.PID{}, v, true); needRecord {
+				p.illegalMonitor.AddProposal(v)
+			}
+			delete(p.precociousProposals, k)
 		}
 	}
 }
@@ -325,18 +365,16 @@ func (p *ProposalDispatcher) FinishConsensus() {
 		log.Info("[FinishConsensus] start")
 		defer log.Info("[FinishConsensus] end")
 
-		c := log.ConsensusEvent{EndTime: time.Now(), Height: p.CurrentHeight()}
+		p.cfg.Manager.changeOnDuty()
+		height := blockchain.DefaultLedger.Blockchain.GetHeight()
+		c := log.ConsensusEvent{EndTime: p.cfg.TimeSource.AdjustedTime(), Height: height}
 		p.cfg.EventMonitor.OnConsensusFinished(&c)
 		p.cfg.Consensus.SetReady()
 		p.CleanProposals(false)
 	}
 }
 
-func (p *ProposalDispatcher) CollectConsensusStatus(height uint32, status *dmsg.ConsensusStatus) error {
-	if height > p.CurrentHeight() {
-		return errors.New("Requesting height greater than current processing height")
-	}
-
+func (p *ProposalDispatcher) CollectConsensusStatus(status *dmsg.ConsensusStatus) error {
 	status.AcceptVotes = make([]payload.DPOSProposalVote, 0, len(p.acceptVotes))
 	for _, v := range p.acceptVotes {
 		status.AcceptVotes = append(status.AcceptVotes, *v)
@@ -363,45 +401,79 @@ func (p *ProposalDispatcher) CollectConsensusStatus(height uint32, status *dmsg.
 func (p *ProposalDispatcher) RecoverFromConsensusStatus(status *dmsg.ConsensusStatus) error {
 	p.acceptVotes = make(map[common.Uint256]*payload.DPOSProposalVote)
 	for _, v := range status.AcceptVotes {
-		p.acceptVotes[v.Hash()] = &v
+		vote := v
+		p.acceptVotes[v.Hash()] = &vote
 	}
 
 	p.rejectedVotes = make(map[common.Uint256]*payload.DPOSProposalVote)
 	for _, v := range status.RejectedVotes {
-		p.rejectedVotes[v.Hash()] = &v
+		vote := v
+		p.rejectedVotes[v.Hash()] = &vote
 	}
 
 	p.pendingProposals = make(map[common.Uint256]*payload.DPOSProposal)
 	for _, v := range status.PendingProposals {
-		p.pendingProposals[v.Hash()] = &v
+		vote := v
+		p.pendingProposals[v.Hash()] = &vote
 	}
 
 	p.pendingVotes = make(map[common.Uint256]*payload.DPOSProposalVote)
 	for _, v := range status.PendingVotes {
-		p.pendingVotes[v.Hash()] = &v
+		vote := v
+		p.pendingVotes[v.Hash()] = &vote
 	}
 
+	if status.ConsensusStatus == consensusReady {
+		p.processingBlock = nil
+	}
 	return nil
 }
 
-func (p *ProposalDispatcher) CurrentHeight() uint32 {
-	var height uint32
-	currentBlock := p.GetProcessingBlock()
-	if currentBlock != nil {
-		height = currentBlock.Height
-	} else {
-		height = blockchain.DefaultLedger.Blockchain.GetHeight()
+func (p *ProposalDispatcher) IsCRCBadNetWork() bool {
+	peers := p.cfg.Network.GetActivePeers()
+	var count int
+	for _, v := range peers {
+		pid := v.PID()
+		if p.cfg.Arbitrators.IsCRCArbitrator(pid[:]) {
+			count++
+		}
 	}
-	return height
+	return count <= p.cfg.Arbitrators.GetCRCArbitersCount()*2/3
 }
 
 func (p *ProposalDispatcher) IsViewChangedTimeOut() bool {
+	if p.crcBadNetwork {
+		if !p.IsCRCBadNetWork() {
+			p.crcBadNetwork = false
+			if p.firstBadNetworkRecover {
+				p.firstBadNetworkRecover = false
+				return false
+			}
+			p.ResetByCurrentView()
+		}
+		return false
+	}
+
+	if p.IsCRCBadNetWork() {
+		p.crcBadNetwork = true
+		return false
+	}
+
 	return p.inactiveCountDown.IsTimeOut()
 }
 
-func (p *ProposalDispatcher) OnInactiveArbitratorsReceived(
+func (p *ProposalDispatcher) OnIllegalBlocksTxReceived(i *payload.DPOSIllegalBlocks) {
+	p.inactiveCountDown.SetEliminated(i.Hash())
+}
+
+func (p *ProposalDispatcher) OnInactiveArbitratorsReceived(id peer.PID,
 	tx *types.Transaction) {
-	var err error
+	if _, ok := p.signedTxs[tx.Hash()]; ok {
+		log.Warn("[OnInactiveArbitratorsReceived] already processed")
+		return
+	}
+
+	log.Info("[OnInactiveArbitratorsReceived] received inactive tx")
 
 	if !p.IsViewChangedTimeOut() {
 		log.Warn("[OnInactiveArbitratorsReceived] received inactive" +
@@ -410,43 +482,62 @@ func (p *ProposalDispatcher) OnInactiveArbitratorsReceived(
 	}
 
 	inactivePayload := tx.Payload.(*payload.InactiveArbitrators)
-	if !p.cfg.Consensus.IsArbitratorOnDuty(inactivePayload.Sponsor) {
-		log.Warn("[OnInactiveArbitratorsReceived] sender is not on duty")
+	if len(inactivePayload.Arbitrators) == 0 {
+		log.Warn("[OnInactiveArbitratorsReceived] received empty payload")
+		return
+	}
+	if err := p.checkInactivePayloadContent(inactivePayload); err != nil {
+		log.Warn("[OnInactiveArbitratorsReceived] error: ", err)
 		return
 	}
 
-	inactiveArbitratorsMap := make(map[string]interface{})
-	for _, v := range p.eventAnalyzer.ParseInactiveArbitrators() {
-		inactiveArbitratorsMap[v] = nil
-	}
-	for _, v := range inactivePayload.Arbitrators {
-		if _, exist := inactiveArbitratorsMap[common.BytesToHexString(
-			v)]; !exist {
-			log.Warn("[OnInactiveArbitratorsReceived] disagree with " +
-				"inactive arbitrators")
-			return
-		}
-	}
-
-	if !p.currentInactiveArbitratorTx.Hash().IsEqual(tx.Hash()) {
-		p.currentInactiveArbitratorTx = tx
-	}
+	p.signedTxs[tx.Hash()] = nil
 
 	response := &dmsg.ResponseInactiveArbitrators{
 		TxHash: tx.Hash(),
 		Signer: p.cfg.Manager.GetPublicKey(),
 	}
+	var err error
 	if response.Sign, err = p.cfg.Account.SignTx(tx); err != nil {
 		log.Warn("[OnInactiveArbitratorsReceived] sign response message"+
 			" error, details: ", err.Error())
 	}
-	p.cfg.Network.BroadcastMessage(response)
+	if err := p.cfg.Network.SendMessageToPeer(id, response); err != nil {
+		log.Warn("[OnInactiveArbitratorsReceived] send msg error: ", err)
+	}
+
+	log.Info("[OnInactiveArbitratorsReceived] response inactive tx sign")
+}
+
+func (p *ProposalDispatcher) checkInactivePayloadContent(
+	inactivePayload *payload.InactiveArbitrators) error {
+	// todo pass this check for now
+	return nil
+
+	inactiveArbitratorsMap := make(map[string]interface{})
+	for _, v := range p.eventAnalyzer.ParseInactiveArbitrators() {
+		inactiveArbitratorsMap[v] = nil
+	}
+	if len(inactivePayload.Arbitrators) != len(inactiveArbitratorsMap) {
+		return errors.New("received inactive arbitrators transaction " +
+			"with wrong arbitrators count")
+	}
+	for _, v := range inactivePayload.Arbitrators {
+		if _, exist := inactiveArbitratorsMap[common.BytesToHexString(
+			v)]; !exist {
+			return errors.New("disagree with inactive arbitrators")
+		}
+	}
+	return nil
 }
 
 func (p *ProposalDispatcher) OnResponseInactiveArbitratorsReceived(
 	txHash *common.Uint256, signer []byte, sign []byte) {
+	log.Info("[OnResponseInactiveArbitratorsReceived] collect transaction" +
+		" signs")
 
-	if !p.currentInactiveArbitratorTx.Hash().IsEqual(*txHash) {
+	if p.currentInactiveArbitratorTx == nil ||
+		!p.currentInactiveArbitratorTx.Hash().IsEqual(*txHash) {
 		log.Warn("[OnResponseInactiveArbitratorsReceived] unknown " +
 			"inactive arbitrators transaction")
 		return
@@ -476,17 +567,21 @@ func (p *ProposalDispatcher) OnResponseInactiveArbitratorsReceived(
 	pro := p.currentInactiveArbitratorTx.Programs[0]
 	buf := new(bytes.Buffer)
 	buf.Write(pro.Parameter)
+	buf.WriteByte(byte(len(sign)))
 	buf.Write(sign)
 	pro.Parameter = buf.Bytes()
 
-	p.tryEnterEmergencyState(len(pro.Parameter) / crypto.SignatureLength)
+	p.tryEnterEmergencyState(len(pro.Parameter) / crypto.SignatureScriptLength)
 }
 
 func (p *ProposalDispatcher) tryEnterEmergencyState(signCount int) bool {
-	minSignCount := int(float64(p.cfg.Arbitrators.GetArbitersCount()) * 0.5)
-	if signCount > minSignCount {
-		p.illegalMonitor.AddEvidence(p.currentInactiveArbitratorTx.
-			Payload.(*payload.InactiveArbitrators))
+	log.Info("[tryEnterEmergencyState] current sign count: ", signCount)
+
+	minSignCount := int(float64(len(p.cfg.Arbitrators.GetCRCArbiters()))*
+		state.MajoritySignRatioNumerator/state.MajoritySignRatioDenominator) + 1
+	if signCount >= minSignCount {
+		payload := p.currentInactiveArbitratorTx.Payload.(*payload.InactiveArbitrators)
+		p.illegalMonitor.AddEvidence(payload)
 		p.cfg.Manager.AppendToTxnPool(p.currentInactiveArbitratorTx)
 
 		if err := p.cfg.Arbitrators.ProcessSpecialTxPayload(
@@ -496,14 +591,10 @@ func (p *ProposalDispatcher) tryEnterEmergencyState(signCount int) bool {
 				" error: ", err.Error())
 			return false
 		}
+		p.cfg.Manager.clearInactiveData(payload)
 
-		p.illegalMonitor.SetInactiveArbitratorsTxHash(p.
-			currentInactiveArbitratorTx.Hash())
-		// we should clear existing blocks because they do not have inactive
-		// arbitrators tx
-		p.cfg.Manager.GetBlockCache().Reset()
-
-		p.inactiveCountDown.SetEliminated()
+		log.Info("[tryEnterEmergencyState] successfully entered emergency"+
+			" state ", payload.Hash())
 		return true
 	}
 
@@ -570,6 +661,10 @@ func (p *ProposalDispatcher) acceptProposal(d *payload.DPOSProposal) {
 	defer log.Info("[acceptProposal] end")
 
 	p.setProcessingProposal(d)
+	if !p.cfg.Manager.isCurrentArbiter() {
+		return
+	}
+
 	vote := &payload.DPOSProposalVote{ProposalHash: d.Hash(),
 		Signer: p.cfg.Manager.GetPublicKey(), Accept: true}
 	var err error
@@ -586,8 +681,9 @@ func (p *ProposalDispatcher) acceptProposal(d *payload.DPOSProposal) {
 	log.Info("[acceptProposal] send acc_vote msg:", dmsg.GetMessageHash(voteMsg).String())
 
 	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(vote.Signer),
-		ReceivedTime: time.Now(), Result: true, RawData: vote}
+		ReceivedTime: p.cfg.TimeSource.AdjustedTime(), Result: true, RawData: vote}
 	p.cfg.EventMonitor.OnVoteArrived(&voteEvent)
+	p.eventAnalyzer.AppendConsensusVote(vote)
 }
 
 func (p *ProposalDispatcher) rejectProposal(d *payload.DPOSProposal) {
@@ -613,8 +709,9 @@ func (p *ProposalDispatcher) rejectProposal(d *payload.DPOSProposal) {
 	p.cfg.Network.BroadcastMessage(msg)
 
 	voteEvent := log.VoteEvent{Signer: common.BytesToHexString(vote.Signer),
-		ReceivedTime: time.Now(), Result: false, RawData: vote}
+		ReceivedTime: p.cfg.TimeSource.AdjustedTime(), Result: false, RawData: vote}
 	p.cfg.EventMonitor.OnVoteArrived(&voteEvent)
+	p.eventAnalyzer.AppendConsensusVote(vote)
 }
 
 func (p *ProposalDispatcher) setProcessingProposal(d *payload.DPOSProposal) {
@@ -635,7 +732,7 @@ func (p *ProposalDispatcher) CreateInactiveArbitrators() (
 	inactivePayload := &payload.InactiveArbitrators{
 		Sponsor:     p.cfg.Manager.GetPublicKey(),
 		Arbitrators: [][]byte{},
-		BlockHeight: p.CurrentHeight(),
+		BlockHeight: blockchain.DefaultLedger.Blockchain.GetHeight() + 1,
 	}
 	inactiveArbitrators := p.eventAnalyzer.ParseInactiveArbitrators()
 	for _, v := range inactiveArbitrators {
@@ -645,6 +742,9 @@ func (p *ProposalDispatcher) CreateInactiveArbitrators() (
 			return nil, err
 		}
 		inactivePayload.Arbitrators = append(inactivePayload.Arbitrators, pk)
+	}
+	if len(inactivePayload.Arbitrators) == 0 {
+		return nil, errors.New("found no inactive arbiters")
 	}
 
 	con := contract.Contract{Prefix: contract.PrefixMultiSig}
@@ -672,10 +772,11 @@ func (p *ProposalDispatcher) CreateInactiveArbitrators() (
 	if sign, err = p.cfg.Account.SignTx(tx); err != nil {
 		return nil, err
 	}
+	parameter := append([]byte{byte(len(sign))}, sign...)
 	tx.Programs = []*program.Program{
 		{
 			Code:      con.Code,
-			Parameter: sign,
+			Parameter: parameter,
 		},
 	}
 
@@ -684,9 +785,8 @@ func (p *ProposalDispatcher) CreateInactiveArbitrators() (
 }
 
 func (p *ProposalDispatcher) createArbitratorsRedeemScript() ([]byte, error) {
-
 	var pks []*crypto.PublicKey
-	for _, v := range p.cfg.Arbitrators.GetArbitrators() {
+	for _, v := range p.cfg.Arbitrators.GetCRCArbiters() {
 		pk, err := crypto.DecodePoint(v)
 		if err != nil {
 			return nil, err
@@ -694,35 +794,37 @@ func (p *ProposalDispatcher) createArbitratorsRedeemScript() ([]byte, error) {
 		pks = append(pks, pk)
 	}
 
-	arbitratorsCount := len(p.cfg.Arbitrators.GetArbitrators())
-	minSignCount := int(float64(arbitratorsCount) * 0.5)
-	return contract.CreateMultiSigRedeemScript(minSignCount+1, pks)
+	arbitratorsCount := p.cfg.Arbitrators.GetCRCArbitersCount()
+	minSignCount := int(float64(arbitratorsCount)*
+		state.MajoritySignRatioNumerator/state.MajoritySignRatioDenominator) + 1
+	return contract.CreateMultiSigRedeemScript(minSignCount, pks)
 }
 
 func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (
 	*ProposalDispatcher, *IllegalBehaviorMonitor) {
 	p := &ProposalDispatcher{
-		cfg:                cfg,
-		processingBlock:    nil,
-		processingProposal: nil,
-		acceptVotes:        make(map[common.Uint256]*payload.DPOSProposalVote),
-		rejectedVotes:      make(map[common.Uint256]*payload.DPOSProposalVote),
-		pendingProposals:   make(map[common.Uint256]*payload.DPOSProposal),
-		pendingVotes:       make(map[common.Uint256]*payload.DPOSProposalVote),
+		cfg:                    cfg,
+		processingBlock:        nil,
+		processingProposal:     nil,
+		acceptVotes:            make(map[common.Uint256]*payload.DPOSProposalVote),
+		rejectedVotes:          make(map[common.Uint256]*payload.DPOSProposalVote),
+		pendingProposals:       make(map[common.Uint256]*payload.DPOSProposal),
+		precociousProposals:    make(map[common.Uint256]*payload.DPOSProposal),
+		pendingVotes:           make(map[common.Uint256]*payload.DPOSProposalVote),
+		signedTxs:              make(map[common.Uint256]interface{}),
+		firstBadNetworkRecover: true,
 		eventAnalyzer: store.NewEventStoreAnalyzer(store.EventStoreAnalyzerConfig{
-			InactiveEliminateCount: cfg.InactiveEliminateCount,
 			Store:       cfg.Store,
 			Arbitrators: cfg.Arbitrators,
 		}),
 	}
 	p.inactiveCountDown = ViewChangesCountDown{
-		dispatcher:                    p,
-		consensus:                     cfg.Consensus,
-		arbitrators:                   cfg.Arbitrators,
-		timeoutRefactor:               0,
-		inactiveArbitratorsEliminated: false,
+		dispatcher:      p,
+		consensus:       cfg.Consensus,
+		arbitrators:     cfg.Arbitrators,
+		timeoutRefactor: 0,
 	}
-	p.inactiveCountDown.Reset()
+	p.inactiveCountDown.Reset(0)
 
 	i := &IllegalBehaviorMonitor{
 		dispatcher:      p,

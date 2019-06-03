@@ -133,39 +133,39 @@ type PeerInfo struct {
 }
 
 type ArbitratorGroupInfo struct {
-	OnDutyArbitratorIndex int
-	Arbitrators           []string
+	OnDutyArbitratorIndex int      `json:"ondutyarbitratorindex"`
+	Arbitrators           []string `json:"arbitrators"`
 }
 
 type PayloadInfo interface{}
 
 type CoinbaseInfo struct {
-	CoinbaseData string
+	CoinbaseData string `json:"coinbasedata"`
 }
 
 type RegisterAssetInfo struct {
-	Asset      payload.Asset
-	Amount     string
-	Controller string
+	Asset      payload.Asset `json:"asset"`
+	Amount     string        `json:"amount"`
+	Controller string        `json:"controller"`
 }
 
 type SideChainPowInfo struct {
-	BlockHeight     uint32
-	SideBlockHash   string
-	SideGenesisHash string
-	SignedData      string
+	BlockHeight     uint32 `json:"blockheight"`
+	SideBlockHash   string `json:"sideblockhash"`
+	SideGenesisHash string `json:"sidegenesishash"`
+	Signature       string `json:"signature"`
 }
 
 type TransferCrossChainAssetInfo struct {
-	CrossChainAddresses []string
-	OutputIndexes       []uint64
-	CrossChainAmounts   []common.Fixed64
+	CrossChainAddresses []string         `json:"crosschainaddresses"`
+	OutputIndexes       []uint64         `json:"outputindexes"`
+	CrossChainAmounts   []common.Fixed64 `json:"crosschainamounts"`
 }
 
 type WithdrawFromSideChainInfo struct {
-	BlockHeight                uint32
-	GenesisBlockAddress        string
-	SideChainTransactionHashes []string
+	BlockHeight                uint32   `json:"blockheight"`
+	GenesisBlockAddress        string   `json:"genesisblockaddress"`
+	SideChainTransactionHashes []string `json:"sidechaintransactionhashes"`
 }
 
 type ProducerInfo struct {
@@ -183,6 +183,11 @@ type CancelProducerInfo struct {
 	Signature      string `json:"signature"`
 }
 
+type ActivateProducerInfo struct {
+	NodePublicKey string `json:"nodepublickey"`
+	Signature     string `json:"signature"`
+}
+
 type UTXOInfo struct {
 	TxType        byte   `json:"txtype"`
 	TxID          string `json:"txid"`
@@ -195,11 +200,11 @@ type UTXOInfo struct {
 }
 
 type SidechainIllegalDataInfo struct {
-	IllegalType         uint8
-	Height              uint32
-	IllegalSigner       string
-	Evidence            string
-	CompareEvidence     string
-	GenesisBlockAddress string
-	Signs               []string
+	IllegalType         uint8    `json:"illegaltype"`
+	Height              uint32   `json:"height"`
+	IllegalSigner       string   `json:"illegalsigner"`
+	Evidence            string   `json:"evidence"`
+	CompareEvidence     string   `json:"compareevidence"`
+	GenesisBlockAddress string   `json:"genesisblockaddress"`
+	Signs               []string `json:"signs"`
 }

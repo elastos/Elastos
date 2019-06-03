@@ -1,10 +1,10 @@
 package manager
 
 import (
+	"bytes"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 )
@@ -14,6 +14,7 @@ type ViewListener interface {
 }
 
 type view struct {
+	publicKey     []byte
 	signTolerance time.Duration
 	viewStartTime time.Time
 	isDposOnDuty  bool
@@ -38,36 +39,35 @@ func (v *view) ResetView(t time.Time) {
 	v.viewStartTime = t
 }
 
-func (v *view) ChangeView(viewOffset *uint32) {
-	offset, offsetTime := v.CalculateOffsetTime(v.viewStartTime)
+func (v *view) ChangeView(viewOffset *uint32, now time.Time) {
+	offset, offsetTime := v.calculateOffsetTime(v.viewStartTime, now)
 	*viewOffset += uint32(offset)
-	v.viewStartTime = time.Now().Add(-offsetTime)
-	log.Info("[ChangeView] current view offset:", *viewOffset)
+	v.viewStartTime = now.Add(-offsetTime)
 
 	if offset > 0 {
 		currentArbiter := v.arbitrators.GetNextOnDutyArbitrator(*viewOffset)
 
-		v.isDposOnDuty = common.BytesToHexString(currentArbiter) == config.Parameters.ArbiterConfiguration.PublicKey
-		log.Info("current onduty arbiter:", currentArbiter)
+		v.isDposOnDuty = bytes.Equal(currentArbiter, v.publicKey)
+		log.Info("current onduty arbiter:",
+			common.BytesToHexString(currentArbiter))
 
 		v.listener.OnViewChanged(v.isDposOnDuty)
 	}
 }
 
-func (v *view) CalculateOffsetTime(startTime time.Time) (uint32, time.Duration) {
-	duration := time.Now().Sub(startTime)
+func (v *view) calculateOffsetTime(startTime time.Time,
+	now time.Time) (uint32, time.Duration) {
+	duration := now.Sub(startTime)
 	offset := duration / v.signTolerance
 	offsetTime := duration % v.signTolerance
 
 	return uint32(offset), offsetTime
 }
 
-func (v *view) TryChangeView(viewOffset *uint32) bool {
-
-	now := time.Now()
+func (v *view) TryChangeView(viewOffset *uint32, now time.Time) bool {
 	if now.After(v.viewStartTime.Add(v.signTolerance)) {
 		log.Info("[TryChangeView] succeed")
-		v.ChangeView(viewOffset)
+		v.ChangeView(viewOffset, now)
 		return true
 	}
 	return false

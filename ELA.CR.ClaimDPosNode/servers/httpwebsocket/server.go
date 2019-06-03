@@ -215,32 +215,26 @@ func (s *Server) handle(ss *session, bysMsg []byte, r *http.Request) bool {
 		log.Error("websocket OnDataHandle:", err)
 		return false
 	}
-	actionName, ok := req["action"].(string)
+	action, ok := req["action"].(string)
 	if !ok {
 		resp := servers.ResponsePack(errors.InvalidMethod, "")
 		s.response(ss, resp)
 		return false
 	}
-	action, ok := s.handlers[actionName]
+	handler, ok := s.handlers[action]
 	if !ok {
 		resp := servers.ResponsePack(errors.InvalidMethod, "")
 		s.response(ss, resp)
 		return false
 	}
-	if !s.IsValidMsg(actionName, req) {
+	if !s.IsValidMsg(action, req) {
 		resp := servers.ResponsePack(errors.InvalidParams, "")
 		s.response(ss, resp)
 		return true
 	}
-	if height, ok := req["Height"].(float64); ok {
-		req["Height"] = strconv.FormatInt(int64(height), 10)
-	}
-	if raw, ok := req["Raw"].(float64); ok {
-		req["Raw"] = strconv.FormatInt(int64(raw), 10)
-	}
 
-	resp := action(req)
-	resp["Action"] = actionName
+	resp := handler(req)
+	resp["Action"] = action
 
 	s.response(ss, resp)
 

@@ -47,7 +47,7 @@ Send raw transaction
 
 ### ELA client
 
-<https://github.com/elastos/Elastos.ELA.Client>
+<https://github.com/elastos/Elastos.ELA/blob/master/docs/cli_user_guide.md>
 
 This is a command line tool. Used for testing.
 

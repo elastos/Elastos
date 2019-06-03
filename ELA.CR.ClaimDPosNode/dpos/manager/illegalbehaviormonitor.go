@@ -21,7 +21,7 @@ type IllegalBehaviorMonitor struct {
 	evidenceCache evidenceCache
 	manager       *DPOSManager
 
-	inactiveArbitratorsTxHash *common.Uint256
+	inactiveArbitratorsPayloadHash *common.Uint256
 }
 
 func (i *IllegalBehaviorMonitor) AddEvidence(evidence payload.DPOSIllegalData) {
@@ -30,14 +30,15 @@ func (i *IllegalBehaviorMonitor) AddEvidence(evidence payload.DPOSIllegalData) {
 
 func (i *IllegalBehaviorMonitor) SetInactiveArbitratorsTxHash(
 	hash common.Uint256) {
-	i.inactiveArbitratorsTxHash = &hash
+	i.inactiveArbitratorsPayloadHash = &hash
 }
 
 func (i *IllegalBehaviorMonitor) IsBlockValid(block *types.Block) bool {
-	if i.inactiveArbitratorsTxHash != nil {
+	if i.inactiveArbitratorsPayloadHash != nil {
 		hasInactiveArbitratorsTx := false
 		for _, tx := range block.Transactions {
-			if tx.Hash().IsEqual(*i.inactiveArbitratorsTxHash) {
+			if tx.IsInactiveArbitrators() &&
+				tx.Payload.(*payload.InactiveArbitrators).Hash().IsEqual(*i.inactiveArbitratorsPayloadHash) {
 				hasInactiveArbitratorsTx = true
 			}
 		}
@@ -56,16 +57,33 @@ func (i *IllegalBehaviorMonitor) AddProposal(proposal *payload.DPOSProposal) {
 
 func (i *IllegalBehaviorMonitor) Reset(changeView bool) {
 	i.cachedProposals = make(map[common.Uint256]*payload.DPOSProposal)
-	for k, v := range i.dispatcher.pendingProposals {
-		i.cachedProposals[k] = v
-	}
 
 	if !changeView {
 		if i.dispatcher.processingBlock != nil {
 			i.evidenceCache.Reset(i.dispatcher.processingBlock)
 		}
 
-		i.inactiveArbitratorsTxHash = nil
+		i.inactiveArbitratorsPayloadHash = nil
+	} else {
+		for k, v := range i.dispatcher.pendingProposals {
+			i.cachedProposals[k] = v
+		}
+		for k, v := range i.dispatcher.precociousProposals {
+			i.cachedProposals[k] = v
+		}
+	}
+}
+
+func (i *IllegalBehaviorMonitor) CleanByBlock(b *types.Block) {
+	for _, tx := range b.Transactions {
+		if tx.IsIllegalTypeTx() || tx.IsInactiveArbitrators() {
+			hash := tx.Payload.(payload.DPOSIllegalData).Hash()
+			i.evidenceCache.TryDelete(hash)
+
+			if tx.IsIllegalProposalTx() {
+				delete(i.cachedProposals, hash)
+			}
+		}
 	}
 }
 
@@ -77,6 +95,11 @@ func (i *IllegalBehaviorMonitor) IsLegalProposal(p *payload.DPOSProposal) (*payl
 	for _, pending := range i.dispatcher.pendingProposals {
 		if i.isProposalsIllegal(p, pending) {
 			return pending, false
+		}
+	}
+	for _, pre := range i.dispatcher.precociousProposals {
+		if i.isProposalsIllegal(p, pre) {
+			return pre, false
 		}
 	}
 
@@ -114,7 +137,7 @@ func (i *IllegalBehaviorMonitor) ProcessIllegalProposal(
 	}
 
 	asc := true
-	if first.Hash().String() > second.Hash().String() {
+	if first.Hash().Compare(second.Hash()) > 0 {
 		asc = false
 	}
 
@@ -222,7 +245,7 @@ func (i *IllegalBehaviorMonitor) ProcessIllegalVote(
 	}
 
 	asc := true
-	if first.Hash().String() > second.Hash().String() {
+	if first.Hash().Compare(second.Hash()) > 0 {
 		asc = false
 	}
 

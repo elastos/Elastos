@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 
@@ -21,6 +22,7 @@ const (
 	luaCancelProducerName    = "cancelproducer"
 	luaActivateProducerName  = "activateproducer"
 	luaReturnDepositCoinName = "returndepositcoin"
+	luaSideChainPowName      = "sidechainpow"
 )
 
 func RegisterCoinBaseType(L *lua.LState) {
@@ -129,7 +131,10 @@ func newUpdateProducer(L *lua.LState) int {
 	url := L.ToString(4)
 	location := L.ToInt64(5)
 	address := L.ToString(6)
-	client := checkClient(L, 7)
+	client, err := checkClient(L, 7)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	ownerPublicKey, err := common.HexStringToBytes(ownerPublicKeyStr)
 	if err != nil {
@@ -149,14 +154,19 @@ func newUpdateProducer(L *lua.LState) int {
 		Location:       uint64(location),
 		NetAddress:     address,
 	}
-
 	upSignBuf := new(bytes.Buffer)
 	err = updateProducer.SerializeUnsigned(upSignBuf, payload.ProducerInfoVersion)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	acc := client.GetMainAccount()
+
+	codeHash, err := contract.PublicKeyToStandardCodeHash(ownerPublicKey)
+	acc := client.GetAccountByCodeHash(*codeHash)
+	if acc == nil {
+		fmt.Println("no available account in wallet")
+		os.Exit(1)
+	}
 	rpSig, err := crypto.Sign(acc.PrivKey(), upSignBuf.Bytes())
 	if err != nil {
 		fmt.Println(err)
@@ -211,7 +221,11 @@ func newRegisterProducer(L *lua.LState) int {
 	url := L.ToString(4)
 	location := L.ToInt64(5)
 	address := L.ToString(6)
-	client := checkClient(L, 7)
+	needSign := true
+	client, err := checkClient(L, 7)
+	if err != nil {
+		needSign = false
+	}
 
 	ownerPublicKey, err := common.HexStringToBytes(ownerPublicKeyStr)
 	if err != nil {
@@ -233,19 +247,26 @@ func newRegisterProducer(L *lua.LState) int {
 		NetAddress:     address,
 	}
 
-	rpSignBuf := new(bytes.Buffer)
-	err = registerProducer.SerializeUnsigned(rpSignBuf, payload.ProducerInfoVersion)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+	if needSign {
+		rpSignBuf := new(bytes.Buffer)
+		err = registerProducer.SerializeUnsigned(rpSignBuf, payload.ProducerInfoVersion)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		codeHash, err := contract.PublicKeyToStandardCodeHash(ownerPublicKey)
+		acc := client.GetAccountByCodeHash(*codeHash)
+		if acc == nil {
+			fmt.Println("no available account in wallet")
+			os.Exit(1)
+		}
+		rpSig, err := crypto.Sign(acc.PrivKey(), rpSignBuf.Bytes())
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		registerProducer.Signature = rpSig
 	}
-	acc := client.GetMainAccount()
-	rpSig, err := crypto.Sign(acc.PrivKey(), rpSignBuf.Bytes())
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	registerProducer.Signature = rpSig
 
 	ud := L.NewUserData()
 	ud.Value = registerProducer
@@ -290,7 +311,10 @@ func RegisterCancelProducerType(L *lua.LState) {
 // Constructor
 func newProcessProducer(L *lua.LState) int {
 	publicKeyStr := L.ToString(1)
-	client := checkClient(L, 2)
+	client, err := checkClient(L, 2)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	publicKey, err := common.HexStringToBytes(publicKeyStr)
 	if err != nil {
@@ -307,7 +331,16 @@ func newProcessProducer(L *lua.LState) int {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	acc := client.GetMainAccount()
+	codeHash, err := contract.PublicKeyToStandardCodeHash(publicKey)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	acc := client.GetAccountByCodeHash(*codeHash)
+	if acc == nil {
+		fmt.Println("no available account in wallet")
+		os.Exit(1)
+	}
 	rpSig, err := crypto.Sign(acc.PrivKey(), cpSignBuf.Bytes())
 	if err != nil {
 		fmt.Println(err)
@@ -391,14 +424,64 @@ func RegisterActivateProducerType(L *lua.LState) {
 	mt := L.NewTypeMetatable(luaActivateProducerName)
 	L.SetGlobal("activateproducer", mt)
 	// static attributes
-	L.SetField(mt, "new", L.NewFunction(newProcessProducer))
+	L.SetField(mt, "new", L.NewFunction(newActivateProducer))
 	// methods
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), activateProducerMethods))
 }
 
-func checkActivateProducer(L *lua.LState, idx int) *payload.ProcessProducer {
+func newActivateProducer(L *lua.LState) int {
+	publicKeyStr := L.ToString(1)
+	client, err := checkClient(L, 2)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	publicKey, err := common.HexStringToBytes(publicKeyStr)
+	if err != nil {
+		fmt.Println("wrong producer node public key")
+		os.Exit(1)
+	}
+	activateProducer := &payload.ActivateProducer{
+		NodePublicKey: []byte(publicKey),
+	}
+
+	apSignBuf := new(bytes.Buffer)
+	err = activateProducer.SerializeUnsigned(apSignBuf, payload.ActivateProducerVersion)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	codeHash, err := contract.PublicKeyToStandardCodeHash(publicKey)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	acc := client.GetAccountByCodeHash(*codeHash)
+	if err != nil {
+		fmt.Println(err)
+	}
+	if acc == nil {
+		fmt.Println("no available account in wallet")
+		os.Exit(1)
+	}
+	rpSig, err := crypto.Sign(acc.PrivKey(), apSignBuf.Bytes())
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	activateProducer.Signature = rpSig
+
+	ud := L.NewUserData()
+	ud.Value = activateProducer
+	L.SetMetatable(ud, L.GetTypeMetatable(luaActivateProducerName))
+	L.Push(ud)
+
+	return 1
+}
+
+func checkActivateProducer(L *lua.LState, idx int) *payload.ActivateProducer {
 	ud := L.CheckUserData(idx)
-	if v, ok := ud.Value.(*payload.ProcessProducer); ok {
+	if v, ok := ud.Value.(*payload.ActivateProducer); ok {
 		return v
 	}
 	L.ArgError(1, "ActivateProducer expected")
@@ -412,6 +495,85 @@ var activateProducerMethods = map[string]lua.LGFunction{
 // Getter and setter for the Person#Name
 func activateProducerGet(L *lua.LState) int {
 	p := checkActivateProducer(L, 1)
+	fmt.Println(p)
+
+	return 0
+}
+
+func RegisterSidechainPowType(L *lua.LState) {
+	mt := L.NewTypeMetatable(luaSideChainPowName)
+	L.SetGlobal("sidechainpow", mt)
+	// static attributes
+	L.SetField(mt, "new", L.NewFunction(newSideChainPow))
+	// methods
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), returnSideChainPowMethods))
+}
+
+// Constructor
+func newSideChainPow(L *lua.LState) int {
+	sideBlockHashStr := L.ToString(1)
+	sideGenesisHashStr := L.ToString(2)
+	blockHeight := L.ToInt(3)
+	client, err := checkClient(L, 4)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	sideBlockHash, err := common.Uint256FromHexString(sideBlockHashStr)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	sideGenesisHash, err := common.Uint256FromHexString(sideGenesisHashStr)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	sideChainPow := &payload.SideChainPow{
+		SideBlockHash:   *sideBlockHash,
+		SideGenesisHash: *sideGenesisHash,
+		BlockHeight:     uint32(blockHeight),
+	}
+
+	spSignBuf := new(bytes.Buffer)
+	err = sideChainPow.SerializeUnsigned(spSignBuf, payload.SideChainPowVersion)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	acc := client.GetMainAccount()
+	spSig, err := crypto.Sign(acc.PrivKey(), spSignBuf.Bytes())
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	sideChainPow.Signature = spSig
+
+	ud := L.NewUserData()
+	ud.Value = sideChainPow
+	L.SetMetatable(ud, L.GetTypeMetatable(luaSideChainPowName))
+	L.Push(ud)
+
+	return 1
+}
+
+func checkSideChainPow(L *lua.LState, idx int) *payload.SideChainPow {
+	ud := L.CheckUserData(idx)
+	if v, ok := ud.Value.(*payload.SideChainPow); ok {
+		return v
+	}
+	L.ArgError(1, "SideChainPow expected")
+	return nil
+}
+
+var returnSideChainPowMethods = map[string]lua.LGFunction{
+	"get": returnSideChainPowGet,
+}
+
+// Getter and setter for the Person#Name
+func returnSideChainPowGet(L *lua.LState) int {
+	p := checkSideChainPow(L, 1)
 	fmt.Println(p)
 
 	return 0

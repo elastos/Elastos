@@ -1,6 +1,7 @@
 package peer
 
 import (
+	"container/list"
 	"errors"
 	"fmt"
 	"io"
@@ -16,6 +17,9 @@ import (
 )
 
 const (
+	// outputBufferSize is the number of elements the output channels use.
+	outputBufferSize = 50
+
 	// idleTimeout is the duration of inactivity before we time out a peer.
 	idleTimeout = 2 * time.Minute
 
@@ -26,9 +30,6 @@ const (
 	// negotiateTimeout is the duration of inactivity before we timeout a
 	// peer that hasn't completed the initial version negotiation.
 	negotiateTimeout = 30 * time.Second
-
-	// writeTimeout is the duration of write message before we time out a peer.
-	writeTimeout = 30 * time.Second
 )
 
 // outMsg is used to house a message to be sent along with a channel to signal
@@ -38,6 +39,35 @@ type outMsg struct {
 	msg      p2p.Message
 	doneChan chan<- struct{}
 }
+
+// StallControlCmd represents the command of a stall control message.
+type StallControlCmd uint8
+
+// Constants for the command of a stall control message.
+const (
+	// SCCSendMessage indicates a message is being sent to the remote peer.
+	SCCSendMessage StallControlCmd = iota
+
+	// SCCReceiveMessage indicates a message has been received from the
+	// remote peer.
+	SCCReceiveMessage
+
+	// SCCHandlerStart indicates a callback handler is about to be invoked.
+	SCCHandlerStart
+
+	// SCCHandlerDone indicates a callback handler has completed.
+	SCCHandlerDone
+)
+
+// StallControlMsg is used to signal the stall handler about specific events
+// so it can properly detect and handle stalled remote peers.
+type StallControlMsg struct {
+	CMD StallControlCmd
+	MSG p2p.Message
+}
+
+// StallHandler defines the interfaces to invoke stall control messages.
+type StallHandler func(msg StallControlMsg)
 
 // StatsSnap is a snapshot of peer stats at a point in time.
 type StatsSnap struct {
@@ -70,21 +100,9 @@ type Config struct {
 	HostToNetAddress HostToNetAddrFunc
 	MakeEmptyMessage func(cmd string) (p2p.Message, error)
 	BestHeight       func() uint64
-	IsSelfConnection func(nonce uint64) bool
+	IsSelfConnection func(ip net.IP, port int, nonce uint64) bool
 	GetVersionNonce  func() uint64
-	messageFuncs     []MessageFunc
-}
-
-func (c *Config) AddMessageFunc(messageFunc MessageFunc) {
-	if messageFunc != nil {
-		c.messageFuncs = append(c.messageFuncs, messageFunc)
-	}
-}
-
-func (c *Config) handleMessage(peer *Peer, msg p2p.Message) {
-	for _, messageFunc := range c.messageFuncs {
-		messageFunc(peer, msg)
-	}
+	MessageFunc      MessageFunc
 }
 
 // minUint32 is a helper function to return the minimum of two uint32s.
@@ -131,16 +149,17 @@ type Peer struct {
 	lastRecv   int64
 	lastSend   int64
 	connected  int32
-	started    int32
 	disconnect int32
 
 	conn net.Conn
 
 	// These fields are set at creation time and never modified, so they are
 	// safe to read from concurrently without a mutex.
-	addr    string
-	cfg     Config
-	inbound bool
+	addr         string
+	cfg          Config
+	inbound      bool
+	messageFuncs []MessageFunc
+	stallHandle  StallHandler
 
 	flagsMtx           sync.Mutex // protects the peer flags below
 	na                 *p2p.NetAddress
@@ -161,16 +180,33 @@ type Peer struct {
 	lastPingTime   time.Time // Time we sent last ping.
 	lastPingMicros int64     // Time for last ping to return.
 
+	stallControl  chan StallControlMsg
+	outputQueue   chan outMsg
 	sendQueue     chan outMsg
-	sendDoneQueue chan<- struct{}
+	sendDoneQueue chan struct{}
 	inQuit        chan struct{}
+	queueQuit     chan struct{}
 	outQuit       chan struct{}
 	quit          chan struct{}
 }
 
 // AddMessageFunc add a new message handler for the peer.
 func (p *Peer) AddMessageFunc(messageFunc MessageFunc) {
-	p.cfg.AddMessageFunc(messageFunc)
+	if messageFunc != nil {
+		p.messageFuncs = append(p.messageFuncs, messageFunc)
+	}
+}
+
+// handleMessage will be invoked when a message received.
+func (p *Peer) handleMessage(peer *Peer, msg p2p.Message) {
+	for _, messageFunc := range p.messageFuncs {
+		messageFunc(peer, msg)
+	}
+}
+
+// SetStallHandler set the stall handler for the peer.
+func (p *Peer) SetStallHandler(handler StallHandler) {
+	p.stallHandle = handler
 }
 
 // String returns the peer's address and directionality as a human-readable
@@ -432,7 +468,7 @@ func (p *Peer) PushAddrMsg(addresses []*p2p.NetAddress) []*p2p.NetAddress {
 		addr.AddrList = addr.AddrList[:msg.MaxAddrPerMsg]
 	}
 
-	p.SendMessage(addr, nil)
+	p.QueueMessage(addr, nil)
 	return addr.AddrList
 }
 
@@ -445,7 +481,7 @@ func (p *Peer) handlePingMsg(ping *msg.Ping) {
 		p.height = newHeight
 	}
 	p.statsMtx.Unlock()
-	p.SendMessage(msg.NewPong(p.cfg.BestHeight()), nil)
+	p.QueueMessage(msg.NewPong(p.cfg.BestHeight()), nil)
 }
 
 // handlePongMsg is invoked when a peer receives a pong message.
@@ -521,18 +557,8 @@ func (p *Peer) writeMessage(msg p2p.Message) error {
 		return fmt.Sprintf("Sending %v%s to %s", msg.CMD(), summary, p)
 	}))
 
-	// Handle write message timeout.
-	doneChan := make(chan error)
-	go func() {
-		doneChan <- p2p.WriteMessage(p.conn, p.cfg.Magic, msg)
-	}()
-
-	select {
-	case err := <-doneChan:
-		return err
-	case <-time.After(writeTimeout):
-	}
-	return fmt.Errorf("sending %s to %s timeout", msg.CMD(), p)
+	// Write the message to the peer.
+	return p2p.WriteMessage(p.conn, p.cfg.Magic, msg)
 }
 
 // shouldHandleIOError returns whether or not the passed error, which is
@@ -554,6 +580,54 @@ func (p *Peer) shouldHandleIOError(err error) bool {
 	return true
 }
 
+// stallHandler handles stall detection for the peer.  This entails keeping
+// track of expected responses and assigning them deadlines while accounting for
+// the time spent in callbacks.  It must be run as a goroutine.
+func (p *Peer) stallHandler() {
+	// ioStopped is used to detect when both the input and output handler
+	// goroutines are done.
+	var ioStopped bool
+out:
+	for {
+		select {
+		case msg := <-p.stallControl:
+			// Invoke stall control message to upper layer if configured.
+			if p.stallHandle != nil {
+				p.stallHandle(msg)
+			}
+
+		case <-p.inQuit:
+			// The stall handler can exit once both the input and
+			// output handler goroutines are done.
+			if ioStopped {
+				break out
+			}
+			ioStopped = true
+
+		case <-p.outQuit:
+			// The stall handler can exit once both the input and
+			// output handler goroutines are done.
+			if ioStopped {
+				break out
+			}
+			ioStopped = true
+		}
+	}
+
+	// Drain any wait channels before going away so there is nothing left
+	// waiting on this goroutine.
+cleanup:
+	for {
+		select {
+		case <-p.stallControl:
+		default:
+			break cleanup
+		}
+	}
+}
+
+// inHandler handles all incoming messages for the peer.  It must be run as a
+// goroutine.
 func (p *Peer) inHandler() {
 	// The timer is stopped when a new message is received and reset after it
 	// is processed.
@@ -589,21 +663,23 @@ out:
 				rejectMsg := msg.NewReject("malformed", msg.RejectMalformed, errMsg)
 				// Send the message and block until it has been sent before returning.
 				doneChan := make(chan struct{}, 1)
-				p.SendMessage(rejectMsg, doneChan)
+				p.QueueMessage(rejectMsg, doneChan)
 				<-doneChan
 			}
 			break out
 		}
 		atomic.StoreInt64(&p.lastRecv, time.Now().Unix())
+		p.stallControl <- StallControlMsg{SCCReceiveMessage, rmsg}
 
 		// Handle each supported message type.
+		p.stallControl <- StallControlMsg{SCCHandlerStart, rmsg}
 		switch m := rmsg.(type) {
 		case *msg.Version:
 
 			rejectMsg := msg.NewReject(m.CMD(), msg.RejectDuplicate, "duplicate version message")
 			// Send the message and block until it has been sent before returning.
 			doneChan := make(chan struct{}, 1)
-			p.SendMessage(rejectMsg, doneChan)
+			p.QueueMessage(rejectMsg, doneChan)
 			<-doneChan
 			break out
 
@@ -624,11 +700,11 @@ out:
 
 		case *msg.Pong:
 			p.handlePongMsg(m)
-
 		}
 
 		// Call handle message which is configured on peer creation.
-		p.cfg.handleMessage(p, rmsg)
+		p.handleMessage(p, rmsg)
+		p.stallControl <- StallControlMsg{SCCHandlerDone, rmsg}
 
 		// A message was received so reset the idle timer.
 		idleTimer.Reset(idleTimeout)
@@ -641,6 +717,82 @@ out:
 	p.Disconnect()
 
 	close(p.inQuit)
+}
+
+// queueHandler handles the queuing of outgoing data for the peer. This runs as
+// a muxer for various sources of input so we can ensure that server and peer
+// handlers will not block on us sending a message.  That data is then passed on
+// to outHandler to be actually written.
+func (p *Peer) queueHandler() {
+	pendingMsgs := list.New()
+
+	// We keep the waiting flag so that we know if we have a message queued
+	// to the outHandler or not.  We could use the presence of a head of
+	// the list for this but then we have rather racy concerns about whether
+	// it has gotten it at cleanup time - and thus who sends on the
+	// message's done channel.  To avoid such confusion we keep a different
+	// flag and pendingMsgs only contains messages that we have not yet
+	// passed to outHandler.
+	waiting := false
+
+	// To avoid duplication below.
+	queuePacket := func(msg outMsg, list *list.List, waiting bool) bool {
+		if !waiting {
+			p.sendQueue <- msg
+		} else {
+			list.PushBack(msg)
+		}
+		// we are always waiting now.
+		return true
+	}
+out:
+	for {
+		select {
+		case msg := <-p.outputQueue:
+			waiting = queuePacket(msg, pendingMsgs, waiting)
+
+		// This channel is notified when a message has been sent across
+		// the network socket.
+		case <-p.sendDoneQueue:
+			// No longer waiting if there are no more messages
+			// in the pending messages queue.
+			next := pendingMsgs.Front()
+			if next == nil {
+				waiting = false
+				continue
+			}
+
+			// Notify the outHandler about the next item to
+			// asynchronously send.
+			val := pendingMsgs.Remove(next)
+			p.sendQueue <- val.(outMsg)
+
+		case <-p.quit:
+			break out
+		}
+	}
+
+	// Drain any wait channels before we go away so we don't leave something
+	// waiting for us.
+	for e := pendingMsgs.Front(); e != nil; e = pendingMsgs.Front() {
+		val := pendingMsgs.Remove(e)
+		msg := val.(outMsg)
+		if msg.doneChan != nil {
+			msg.doneChan <- struct{}{}
+		}
+	}
+cleanup:
+	for {
+		select {
+		case msg := <-p.outputQueue:
+			if msg.doneChan != nil {
+				msg.doneChan <- struct{}{}
+			}
+		default:
+			break cleanup
+		}
+	}
+	close(p.queueQuit)
 }
 
 // outHandler handles all outgoing messages for the peer.  It must be run as a
@@ -658,6 +810,8 @@ out:
 				p.lastPingTime = time.Now()
 				p.statsMtx.Unlock()
 			}
+
+			p.stallControl <- StallControlMsg{SCCSendMessage, smsg.msg}
 
 			err := p.writeMessage(smsg.msg)
 			if err != nil {
@@ -679,14 +833,14 @@ out:
 			if smsg.doneChan != nil {
 				smsg.doneChan <- struct{}{}
 			}
-			if p.sendDoneQueue != nil {
-				p.sendDoneQueue <- struct{}{}
-			}
+			p.sendDoneQueue <- struct{}{}
 
 		case <-p.quit:
 			break out
 		}
 	}
+
+	<-p.queueQuit
 
 	// Drain any wait channels before going away so there is nothing left
 	// waiting on this goroutine.
@@ -715,7 +869,7 @@ out:
 	for {
 		select {
 		case <-pingTicker.C:
-			p.SendMessage(msg.NewPing(p.cfg.BestHeight()), nil)
+			p.QueueMessage(msg.NewPing(p.cfg.BestHeight()), nil)
 
 		case <-p.quit:
 			break out
@@ -723,7 +877,10 @@ out:
 	}
 }
 
-func (p *Peer) SendMessage(msg p2p.Message, doneChan chan<- struct{}) {
+// QueueMessage adds the passed bitcoin message to the peer send queue.
+//
+// This function is safe for concurrent access.
+func (p *Peer) QueueMessage(msg p2p.Message, doneChan chan<- struct{}) {
 	// Avoid risk of deadlock if goroutine already exited.  The goroutine
 	// we will be sending to hangs around until it knows for a fact that
 	// it is marked as disconnected and *then* it drains the channels.
@@ -735,11 +892,7 @@ func (p *Peer) SendMessage(msg p2p.Message, doneChan chan<- struct{}) {
 		}
 		return
 	}
-	p.sendQueue <- outMsg{msg: msg, doneChan: doneChan}
-}
-
-func (p *Peer) OnSendDone(sendDoneChan chan<- struct{}) {
-	p.sendDoneQueue = sendDoneChan
+	p.outputQueue <- outMsg{msg: msg, doneChan: doneChan}
 }
 
 // Connected returns whether or not the peer is currently connected.
@@ -747,7 +900,6 @@ func (p *Peer) OnSendDone(sendDoneChan chan<- struct{}) {
 // This function is safe for concurrent access.
 func (p *Peer) Connected() bool {
 	return atomic.LoadInt32(&p.connected) != 0 &&
-		atomic.LoadInt32(&p.started) != 0 &&
 		atomic.LoadInt32(&p.disconnect) == 0
 
 }
@@ -763,23 +915,7 @@ func (p *Peer) Disconnect() {
 	if atomic.LoadInt32(&p.connected) != 0 {
 		p.conn.Close()
 	}
-	atomic.StoreInt32(&p.started, 0)
 	close(p.quit)
-}
-
-// InQuit returns the signal chan of message inHandler quit.
-func (p *Peer) InQuit() <-chan struct{} {
-	return p.inQuit
-}
-
-// OutQuit returns the signal chan of message outHandler quit.
-func (p *Peer) OutQuit() <-chan struct{} {
-	return p.outQuit
-}
-
-// Quit returns the signal chan of peer quit.
-func (p *Peer) Quit() <-chan struct{} {
-	return p.quit
 }
 
 // handleRemoteVersionMsg is invoked when a version message is received
@@ -787,7 +923,7 @@ func (p *Peer) Quit() <-chan struct{} {
 // is not compatible with ours.
 func (p *Peer) handleRemoteVersionMsg(msg *msg.Version) error {
 	// Detect self connections.
-	if p.cfg.IsSelfConnection(msg.Nonce) {
+	if p.cfg.IsSelfConnection(p.na.IP, int(msg.Port), msg.Nonce) {
 		return errors.New("disconnecting peer connected to self")
 	}
 
@@ -796,7 +932,7 @@ func (p *Peer) handleRemoteVersionMsg(msg *msg.Version) error {
 	p.statsMtx.Lock()
 	p.height = uint32(msg.Height)
 	p.startingHeight = p.height
-	p.timeOffset = int64(msg.TimeStamp) - time.Now().Unix()
+	p.timeOffset = msg.Timestamp.Unix() - time.Now().Unix()
 	p.statsMtx.Unlock()
 
 	// Negotiate the protocol version.
@@ -839,7 +975,7 @@ func (p *Peer) readRemoteVersionMsg() error {
 		return err
 	}
 
-	p.cfg.handleMessage(p, remoteVerMsg)
+	p.handleMessage(p, remoteVerMsg)
 	return nil
 }
 
@@ -854,12 +990,6 @@ func (p *Peer) localVersionMsg() (*msg.Version, error) {
 	// Version message.
 	msg := msg.NewVersion(p.cfg.ProtocolVersion, p.cfg.DefaultPort,
 		p.cfg.Services, nonce, p.cfg.BestHeight(), p.cfg.DisableRelayTx)
-
-	// Advertise the services flag
-	msg.Services = p.cfg.Services
-
-	// Advertise our max supported protocol version.
-	msg.Version = uint32(p.cfg.ProtocolVersion)
 
 	return msg, nil
 }
@@ -920,13 +1050,14 @@ func (p *Peer) start() error {
 
 	// The protocol has been negotiated successfully so start processing input
 	// and output messages.
-	atomic.StoreInt32(&p.started, 1)
+	go p.stallHandler()
 	go p.inHandler()
+	go p.queueHandler()
 	go p.outHandler()
 	go p.pingHandler()
 
 	// Send our verack message now that the IO processing machinery has started.
-	p.SendMessage(&msg.VerAck{}, nil)
+	p.QueueMessage(msg.NewVerAck(), nil)
 	return nil
 }
 
@@ -979,14 +1110,19 @@ func newPeerBase(origCfg *Config, inbound bool) *Peer {
 
 	p := Peer{
 		inbound:         inbound,
-		sendQueue:       make(chan outMsg, 1), // nonblocking sync
+		stallControl:    make(chan StallControlMsg, 1), // nonblocking sync
+		outputQueue:     make(chan outMsg, outputBufferSize),
+		sendQueue:       make(chan outMsg, 1),   // nonblocking sync
+		sendDoneQueue:   make(chan struct{}, 1), // nonblocking sync
 		inQuit:          make(chan struct{}),
+		queueQuit:       make(chan struct{}),
 		outQuit:         make(chan struct{}),
 		quit:            make(chan struct{}),
 		cfg:             cfg, // Copy so caller can't mutate.
 		services:        cfg.Services,
 		protocolVersion: cfg.ProtocolVersion,
 	}
+	p.AddMessageFunc(cfg.MessageFunc)
 	return &p
 }
 

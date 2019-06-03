@@ -576,20 +576,6 @@ func TestCancelIgnoreDelayedConnection(t *testing.T) {
 			cr.State())
 	}
 
-	// Remove the connection, and then immediately allow the next connection
-	// to succeed.
-	cmgr.Remove(cr.ID())
-	close(connect)
-
-	// Allow the connection manager to process the removal.
-	time.Sleep(5 * time.Millisecond)
-
-	// Now examine the status of the connection request, it should read a
-	// status of canceled.
-	if cr.State() != ConnCanceled {
-		t.Fatalf("request wasn't canceled, status is: %v", cr.State())
-	}
-
 	// Finally, the connection manager should not signal the on-connection
 	// callback, since we explicitly canceled this request. We give a
 	// generous window to ensure the connection manager's lienar backoff is

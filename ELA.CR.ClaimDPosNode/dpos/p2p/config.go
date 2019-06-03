@@ -4,8 +4,8 @@ import (
 	"net"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/dpos/dtime"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
-
 	"github.com/elastos/Elastos.ELA/p2p"
 )
 
@@ -20,20 +20,27 @@ const (
 
 // Config is a descriptor which specifies the server instance configuration.
 type Config struct {
+	// DataDir is the data path to store peer addresses etc.
+	DataDir string
+
 	// PID is the public key id of this server.
 	PID peer.PID
+
+	// EnableHub indicates whether or not to enable the hub service.
+	EnableHub bool
+
+	// Localhost represents the local host IP or name of this peer.
+	Localhost string
 
 	// MagicNumber is the peer-to-peer network ID to connect to.
 	MagicNumber uint32
 
-	// ProtocolVersion represent the protocol version you are supporting.
-	ProtocolVersion uint32
-
-	// Services represent which services you are supporting.
-	Services uint64
-
 	// DefaultPort defines the default peer-to-peer port for the network.
 	DefaultPort uint16
+
+	// TimeSource defines the median time source to use for things such as
+	// view changing.
+	TimeSource dtime.MedianTimeSource
 
 	// ConnectTimeout is the duration before we timeout a dial to peer.
 	ConnectTimeout time.Duration
@@ -42,11 +49,8 @@ type Config struct {
 	// messages.
 	PingInterval time.Duration
 
-	// SignNonce will be invoked when creating a version message to do the
-	// protocol negotiate.  The passed nonce is a 32 bytes length random value,
-	// and returns the signature of the nonce value to proof you have the right
-	// of the PID(public key) you've provided.
-	SignNonce func(nonce []byte) (signature [64]byte)
+	// Sign will be invoked when creating a signature of the data content.
+	Sign func(data []byte) (signature []byte)
 
 	// PingNonce will be invoked before send a ping message to the connect peer
 	// with the given PID, to get the nonce value within the ping message.

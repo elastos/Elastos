@@ -14,6 +14,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/account"
+	"github.com/elastos/Elastos.ELA/dpos/dtime"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	. "github.com/elastos/Elastos.ELA/dpos/manager"
 	"github.com/elastos/Elastos.ELA/dpos/store"
@@ -58,15 +59,16 @@ func newDposManager(L *lua.LState) int {
 		return 0
 	}
 
+	medianTime := dtime.NewMedianTime()
 	pub, _ := common.HexStringToBytes(arbitratorsPublicKeys[index])
-	dposManager := NewManager(DPOSManagerConfig{PublicKey: pub, Arbitrators: a})
+	dposManager := NewManager(DPOSManagerConfig{TimeSource: medianTime, PublicKey: pub, Arbitrators: a})
 	mockManager := &manager{
 		DPOSManager: dposManager,
 	}
 
 	priKey, _ := common.HexStringToBytes(arbitratorsPrivateKeys[index])
 	pubKey, _ := crypto.DecodePoint(pub)
-	mockManager.Account = account.NewDposAccountFromExisting(&account2.Account{
+	mockManager.Account = account.New(&account2.Account{
 		PrivateKey: priKey,
 		PublicKey:  pubKey,
 	})
@@ -75,12 +77,13 @@ func newDposManager(L *lua.LState) int {
 	mockManager.EventMonitor.RegisterListener(&log.EventLogs{})
 
 	mockManager.Handler = NewHandler(DPOSHandlerConfig{
-		Network: n,
-		Manager: dposManager,
-		Monitor: mockManager.EventMonitor,
+		Network:    n,
+		Manager:    dposManager,
+		Monitor:    mockManager.EventMonitor,
+		TimeSource: medianTime,
 	})
 
-	mockManager.Consensus = NewConsensus(dposManager, time.Duration(config.Parameters.ArbiterConfiguration.SignTolerance)*time.Second, mockManager.Handler)
+	mockManager.Consensus = NewConsensus(dposManager, 5*time.Second, mockManager.Handler)
 	mockManager.Dispatcher, mockManager.IllegalMonitor = NewDispatcherAndIllegalMonitor(ProposalDispatcherConfig{
 		EventMonitor: mockManager.EventMonitor,
 		Consensus:    mockManager.Consensus,
@@ -88,8 +91,8 @@ func newDposManager(L *lua.LState) int {
 		Manager:      dposManager,
 		Account:      mockManager.Account,
 		ChainParams:  &config.DefaultParams,
+		TimeSource:   medianTime,
 		EventStoreAnalyzerConfig: store.EventStoreAnalyzerConfig{
-			InactiveEliminateCount: config.Parameters.ArbiterConfiguration.InactiveEliminateCount,
 			Store:       nil,
 			Arbitrators: a,
 		},
@@ -174,6 +177,7 @@ func dposCheckConfirmInBlockPool(L *lua.LState) int {
 	blockHash := L.ToString(2)
 	hash, _ := common.Uint256FromHexString(blockHash)
 
+	time.Sleep(time.Millisecond * 100)
 	_, ok := m.Peer.GetBlockPool().GetConfirm(*hash)
 	L.Push(lua.LBool(ok))
 
@@ -216,8 +220,7 @@ func dposManagerCheckLastRelay(L *lua.LState) int {
 	return 1
 }
 
-func confirmsEqual(con1 *payload.Confirm,
-	con2 *payload.Confirm) bool {
+func confirmsEqual(con1 *payload.Confirm, con2 *payload.Confirm) bool {
 
 	if !con1.Proposal.BlockHash.IsEqual(con2.Proposal.BlockHash) {
 		return false
@@ -321,7 +324,7 @@ func dposManagerSignVote(L *lua.LState) int {
 //mock object of dpos manager
 type manager struct {
 	*DPOSManager
-	Account        account.DposAccount
+	Account        account.Account
 	Consensus      *Consensus
 	EventMonitor   *log.EventMonitor
 	Handler        *DPOSHandlerSwitch

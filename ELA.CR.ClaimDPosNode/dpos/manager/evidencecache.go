@@ -29,7 +29,7 @@ func (e *evidenceCache) IsBlockValid(block *types.Block) bool {
 			v.Type() == payload.InactiveArbitrator {
 			tolerance = 0
 		}
-		if v.GetBlockHeight()+tolerance < block.Height {
+		if v.GetBlockHeight()+tolerance <= block.Height {
 			necessaryEvidences[k] = nil
 		}
 	}
@@ -55,6 +55,12 @@ func (e *evidenceCache) Reset(block *types.Block) {
 				delete(e.evidences, hash)
 			}
 		}
+	}
+}
+
+func (e *evidenceCache) TryDelete(hash common.Uint256) {
+	if _, hasEvidence := e.evidences[hash]; hasEvidence {
+		delete(e.evidences, hash)
 	}
 }
 

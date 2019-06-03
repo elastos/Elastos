@@ -3,24 +3,27 @@ package api
 import (
 	"bytes"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	clicom "github.com/elastos/Elastos.ELA/cmd/common"
+	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
+	"github.com/elastos/Elastos.ELA/cmd/wallet"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/crypto"
 	dlog "github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/state"
-	"github.com/elastos/Elastos.ELA/servers"
+	"github.com/elastos/Elastos.ELA/dpos/store"
 	"github.com/elastos/Elastos.ELA/utils/http"
-	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA/utils/signal"
+	"github.com/elastos/Elastos.ELA/utils/test"
+
 	"github.com/yuin/gopher-lua"
 )
 
@@ -39,12 +42,60 @@ var exports = map[string]lua.LGFunction{
 	"hex_reverse":       hexReverse,
 	"send_tx":           sendTx,
 	"get_asset_id":      getAssetID,
-	"get_utxo":          getUTXO,
 	"set_arbitrators":   setArbitrators,
 	"init_ledger":       initLedger,
 	"close_store":       closeStore,
 	"clear_store":       clearStore,
 	"get_dir_all_files": getDirAllFiles,
+	"get_standard_addr": getStandardAddr,
+	"output_tx":         outputTx,
+}
+
+func outputTx(L *lua.LState) int {
+	txn := checkTransaction(L, 1)
+	if len(txn.Programs) == 0 {
+		fmt.Println("no program found in transaction")
+		os.Exit(1)
+	}
+	haveSign, needSign, _ := crypto.GetSignStatus(txn.Programs[0].Code, txn.Programs[0].Parameter)
+	fmt.Println("[", haveSign, "/", needSign, "] Transaction was successfully signed")
+	wallet.OutputTx(haveSign, needSign, txn)
+
+	return 0
+}
+
+func getStandardAddr(L *lua.LState) int {
+	pubKeyHex := L.ToString(1)
+	pubKey, err := common.HexStringToBytes(pubKeyHex)
+	if err != nil {
+		fmt.Println("invalid public key hex")
+		os.Exit(1)
+	}
+	pk, err := crypto.DecodePoint(pubKey)
+	if err != nil {
+		fmt.Println("invalid public key")
+		os.Exit(1)
+	}
+	code, err := contract.CreateStandardRedeemScript(pk)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+	programHash, err := contract.PublicKeyToStandardProgramHash(pubKey)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+	addr, err := programHash.ToAddress()
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	L.Push(lua.LString(addr))
+	L.Push(lua.LString(common.BytesToHexString(code)))
+
+	return 2
 }
 
 func getDirAllFiles(L *lua.LState) int {
@@ -85,7 +136,7 @@ func sendTx(L *lua.LState) int {
 	}
 	txHex := hex.EncodeToString(buffer.Bytes())
 
-	result, err := jsonrpc.CallParams(clicom.LocalServer(), "sendrawtransaction", http.Params{
+	result, err := cmdcom.RPCCall("sendrawtransaction", http.Params{
 		"data": txHex,
 	})
 	if err != nil {
@@ -103,37 +154,6 @@ func getAssetID(L *lua.LState) int {
 	return 1
 }
 
-func getUTXO(L *lua.LState) int {
-	from := L.ToString(1)
-	result, err := jsonrpc.CallParams(clicom.LocalServer(), "listunspent", http.Params{
-		"addresses": []string{from},
-	})
-	if err != nil {
-		return 0
-	}
-	data, err := json.Marshal(result)
-	if err != nil {
-		return 0
-	}
-	var utxos []servers.UTXOInfo
-	err = json.Unmarshal(data, &utxos)
-
-	var availabelUtxos []servers.UTXOInfo
-	for _, utxo := range utxos {
-		if types.TxType(utxo.TxType) == types.CoinBase && utxo.Confirmations < 100 {
-			continue
-		}
-		availabelUtxos = append(availabelUtxos, utxo)
-	}
-
-	ud := L.NewUserData()
-	ud.Value = availabelUtxos
-	L.SetMetatable(ud, L.GetTypeMetatable(luaClientTypeName))
-	L.Push(ud)
-
-	return 1
-}
-
 func setArbitrators(L *lua.LState) int {
 	arbitrators := checkArbitrators(L, 1)
 	blockchain.DefaultLedger.Arbitrators = arbitrators
@@ -142,34 +162,50 @@ func setArbitrators(L *lua.LState) int {
 }
 
 func initLedger(L *lua.LState) int {
-	config.Parameters = config.ConfigParams{
-		Configuration: &config.Template,
-		ChainParam:    &config.MainNet,
-	}
+	chainParams := &config.DefaultParams
 	logLevel := uint8(L.ToInt(1))
 
-	log.NewDefault(logLevel, 0, 0)
+	log.NewDefault(test.NodeLogPath, logLevel, 0, 0)
 	dlog.Init(logLevel, 0, 0)
 
-	chainStore, err := blockchain.NewChainStore("Chain_WhiteBox", config.DefaultParams.GenesisBlock)
+	chainStore, err := blockchain.NewChainStore(test.DataPath, chainParams.GenesisBlock)
 	if err != nil {
 		fmt.Printf("Init chain store error: %s \n", err.Error())
 	}
+	dposStore, err := store.NewDposStore(test.DataPath)
+	if err != nil {
+		fmt.Printf("Init dpos store error: %s \n", err.Error())
+	}
+
+	arbiters, err := state.NewArbitrators(chainParams, dposStore,
+		chainStore.GetHeight,
+		func() (block *types.Block, e error) {
+			hash := chainStore.GetCurrentBlockHash()
+			return chainStore.GetBlock(hash)
+		}, func(height uint32) (*types.Block, error) {
+			hash, err := chainStore.GetBlockHash(height)
+			if err != nil {
+				return nil, err
+			}
+			return chainStore.GetBlock(hash)
+		})
 
 	var interrupt = signal.NewInterrupt()
-	chain, err := blockchain.New(chainStore, &config.DefaultParams,
-		state.NewState(&config.DefaultParams, nil))
+	chain, err := blockchain.New(chainStore, chainParams,
+		state.NewState(chainParams, arbiters.GetArbitrators))
 	if err != nil {
 		fmt.Printf("Init block chain error: %s \n", err.Error())
 	}
 
 	ledger := blockchain.Ledger{}
-	blockchain.FoundationAddress = config.DefaultParams.Foundation
+	blockchain.FoundationAddress = chainParams.Foundation
 	blockchain.DefaultLedger = &ledger // fixme
 	blockchain.DefaultLedger.Blockchain = chain
 	blockchain.DefaultLedger.Store = chainStore
+	blockchain.DefaultLedger.Arbitrators = arbiters
 
-	if err = chain.InitializeProducersState(interrupt.C, nil, nil); err != nil {
+	err = chain.InitProducerState(interrupt.C, nil, nil)
+	if err != nil {
 		fmt.Printf("Init producers state error: %s \n", err.Error())
 	}
 
@@ -183,7 +219,7 @@ func closeStore(L *lua.LState) int {
 }
 
 func clearStore(L *lua.LState) int {
-	os.RemoveAll("Chain_WhiteBox/")
+	os.RemoveAll(test.DataDir)
 	return 0
 }
 
@@ -231,6 +267,8 @@ func RegisterDataType(L *lua.LState) int {
 	RegisterIllegalVotesType(L)
 	RegisterIllegalBlocksType(L)
 	RegisterStringsType(L)
+	RegisterSidechainPowType(L)
+	RegisterProgramType(L)
 
 	return 0
 }

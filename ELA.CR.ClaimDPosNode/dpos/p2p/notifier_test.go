@@ -16,24 +16,26 @@ func TestNotifier(t *testing.T) {
 	test.SkipShort(t)
 	// Start peer-to-peer server
 	pid := peer.PID{}
-	priKey, pubKey, _ := crypto.GenerateKeyPair()
-	ePubKey, _ := pubKey.EncodePoint(true)
-	copy(pid[:], ePubKey)
 
 	notifyChan := make(chan NotifyFlag)
 	notifier := NewNotifier(NFNetStabled|NFBadNetwork, func(flag NotifyFlag) {
 		notifyChan <- flag
 	})
+
+	peers := 90
+	portBase := 40000
+	peerList := make([]peer.PID, 0, peers)
+
+	priKey, pubKey, _ := crypto.GenerateKeyPair()
+	ePubKey, _ := pubKey.EncodePoint(true)
+	copy(pid[:], ePubKey)
 	server, err := NewServer(&Config{
 		PID:             pid,
 		MagicNumber:     123123,
-		ProtocolVersion: 0,
-		Services:        0,
 		DefaultPort:     20338,
-		SignNonce: func(nonce []byte) (signature [64]byte) {
+		Sign: func(nonce []byte) []byte {
 			sign, _ := crypto.Sign(priKey, nonce)
-			copy(signature[:], sign)
-			return signature
+			return sign
 		},
 		MakeEmptyMessage: makeEmptyMessage,
 		StateNotifier:    notifier,
@@ -41,19 +43,17 @@ func TestNotifier(t *testing.T) {
 	if !assert.NoError(t, err) {
 		t.FailNow()
 	}
-	defer server.Stop()
 	server.Start()
+	defer server.Stop()
 
-	peers := 90
-	portBase := 40000
-	addrList := make([]PeerAddr, 0, peers)
 	for i := 0; i < peers; i++ {
 		rand.Read(pid[:])
 		port := portBase + i
-		addr := PeerAddr{PID: pid, Addr: fmt.Sprintf("localhost:%d", port)}
-		addrList = append(addrList, addr)
+		peerList = append(peerList, pid)
+		server.AddAddr(pid, fmt.Sprintf("127.0.0.1:%d", port))
 	}
-	server.ConnectPeers(addrList)
+
+	server.ConnectPeers(peerList)
 
 	// Mock peers not started, wait for connection timeout.
 	select {
@@ -61,26 +61,26 @@ func TestNotifier(t *testing.T) {
 		if !assert.Equal(t, NFBadNetwork, f) {
 			t.FailNow()
 		}
-	case <-time.After(time.Second * 40):
+	case <-time.After(time.Second * 31):
 		t.Fatalf("Connect peers timeout")
 	}
 
 	// Start mock peers and connect them.
 	peerChan := make(chan *peer.Peer, peers)
-	addrList = addrList[:0]
+	peerList = peerList[:0]
 	for i := 0; i < peers; i++ {
 		priKey, pubKey, _ := crypto.GenerateKeyPair()
 		ePubKey, _ := pubKey.EncodePoint(true)
 		copy(pid[:], ePubKey)
 		port := portBase + i
-		addr := PeerAddr{PID: pid, Addr: fmt.Sprintf("localhost:%d", port)}
-		addrList = append(addrList, addr)
+		peerList = append(peerList, pid)
+		server.AddAddr(pid, fmt.Sprintf("127.0.0.1:%d", port))
 		err := mockRemotePeer(pid, priKey, uint16(port), peerChan, nil)
 		if !assert.NoError(t, err) {
 			t.FailNow()
 		}
 	}
-	server.ConnectPeers(addrList)
+	server.ConnectPeers(peerList)
 
 	// Wait for network stable notify.
 	select {

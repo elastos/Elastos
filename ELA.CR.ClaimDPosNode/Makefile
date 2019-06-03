@@ -3,10 +3,13 @@ BUILD = go build -ldflags "-X main.Version=$(VERSION) -X 'main.GoVersion=`go ver
 
 all:
 	$(BUILD) -o ela log.go config.go main.go
-	$(BUILD) -o ela-cli cmd/config.go cmd/ela-cli.go
+	$(BUILD) -o ela-cli cmd/ela-cli.go
 
 cli:
-	$(BUILD) -o ela-cli cmd/config.go cmd/ela-cli.go
+	$(BUILD) -o ela-cli cmd/ela-cli.go
+
+dns:
+	$(BUILD) -o ela-dns elanet/dns/main/main.go
 
 format:
 	go fmt ./*
