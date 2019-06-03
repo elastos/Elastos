@@ -100,6 +100,37 @@ func CreateBloom(receipts Receipts) Bloom {
 	return BytesToBloom(bin.Bytes())
 }
 
+// Add tx_from and tx_to into BloomLogs.
+func CreateBloomWithTxList(receipts Receipts, txs []*Transaction) Bloom {
+	bin := new(big.Int)
+	var frontierSigner = FrontierSigner{}
+	var eip155Signer EIP155Signer
+	var signer Signer
+	for _, receipt := range receipts {
+		bin.Or(bin, LogsBloom(receipt.Logs))
+		txHash := receipt.TxHash
+		for _, tx := range txs {
+			if (*tx).Hash() == txHash {
+				to := tx.To()
+				if tx.Protected() {
+					if eip155Signer == (EIP155Signer{}) {
+						eip155Signer = NewEIP155Signer(tx.ChainId())
+					}
+					signer = eip155Signer
+				} else {
+					signer = frontierSigner
+				}
+				from, _ := Sender(signer, tx)
+				bin.Or(bin, bloom9(from[:]))
+				bin.Or(bin, bloom9(to[:]))
+				break
+			}
+		}
+	}
+
+	return BytesToBloom(bin.Bytes())
+}
+
 func LogsBloom(logs []*Log) *big.Int {
 	bin := new(big.Int)
 	for _, log := range logs {
