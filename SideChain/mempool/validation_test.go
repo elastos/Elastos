@@ -9,8 +9,10 @@ import (
 	"testing"
 
 	"github.com/elastos/Elastos.ELA.SideChain/types"
+	"github.com/elastos/Elastos.ELA.SideChain/vm"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/stretchr/testify/assert"
 )
@@ -86,20 +88,18 @@ func TestCheckCheckSigSignature(t *testing.T) {
 	rand.Read(fakeSignature)
 	tx.Programs = []*types.Program{{Code: act.redeemScript, Parameter: fakeSignature}}
 	err = RunPrograms(tx, []common.Uint168{*act.programHash}, tx.Programs)
-	assert.EqualError(t, err, "[VM] Finish State not equal to HALT.", "Invalid signature length")
+	assert.EqualError(t, err, "[VM] Finish State not equal to HALT", "Invalid signature length")
 
 	// invalid signature content
 	fakeSignature = make([]byte, crypto.SignatureScriptLength)
 	tx.Programs = []*types.Program{{Code: act.redeemScript, Parameter: fakeSignature}}
 	err = RunPrograms(tx, []common.Uint168{*act.programHash}, tx.Programs)
-	assert.EqualError(t, err, "[VM] Execute Engine Stack Count Error.", "[Validation], Verify failed.")
+	assert.EqualError(t, err, "[VM] Execute Engine Stack Count Error", "[Validation], Verify failed.")
 
 	// invalid data content
 	tx.Programs = []*types.Program{{Code: act.redeemScript, Parameter: fakeSignature}}
 	err = RunPrograms(nil, []common.Uint168{*act.programHash}, tx.Programs)
 	assert.EqualError(t, err, "invalid data content nil transaction", "[Validation], Verify failed.")
-
-	t.Log("TestCheckChecksigSignature passed")
 }
 
 func TestCheckMultiSigSignature(t *testing.T) {
@@ -122,14 +122,14 @@ func TestCheckMultiSigSignature(t *testing.T) {
 	fakeCode[0] = fakeCode[0] - fakeCode[0] + crypto.PUSH1 - 1
 	tx.Programs = []*types.Program{{Code: fakeCode, Parameter: signature}}
 	err = RunPrograms(tx, []common.Uint168{*act.programHash}, tx.Programs)
-	assert.EqualError(t, err, "The data hashes is different with corresponding program code.", "invalid multi sign script code")
+	assert.EqualError(t, err, "data hash is different from corresponding program code", "invalid multi sign script code")
 
 	// invalid redeem script M > N
 	copy(fakeCode, act.redeemScript)
 	fakeCode[0] = fakeCode[len(fakeCode)-2] - crypto.PUSH1 + 2
 	tx.Programs = []*types.Program{{Code: fakeCode, Parameter: signature}}
 	err = RunPrograms(tx, []common.Uint168{*act.programHash}, tx.Programs)
-	assert.EqualError(t, err, "The data hashes is different with corresponding program code.", "invalid multi sign script code")
+	assert.EqualError(t, err, "data hash is different from corresponding program code", "invalid multi sign script code")
 
 	// invalid redeem script length not enough
 	copy(fakeCode, act.redeemScript)
@@ -138,7 +138,7 @@ func TestCheckMultiSigSignature(t *testing.T) {
 	}
 	tx.Programs = []*types.Program{{Code: fakeCode, Parameter: signature}}
 	err = RunPrograms(tx, []common.Uint168{*act.programHash}, tx.Programs)
-	assert.EqualError(t, err, "[ToProgramHash] error, not a valid multisig script", "not a valid multi sign transaction code, length not enough")
+	assert.EqualError(t, err, "data hash is different from corresponding program code", "not a valid multi sign transaction code, length not enough")
 
 	// invalid redeem script N not equal to public keys count
 	fakeCode = make([]byte, len(act.redeemScript))
@@ -146,7 +146,7 @@ func TestCheckMultiSigSignature(t *testing.T) {
 	fakeCode[len(fakeCode)-2] = fakeCode[len(fakeCode)-2] + 1
 	tx.Programs = []*types.Program{{Code: fakeCode, Parameter: signature}}
 	err = RunPrograms(tx, []common.Uint168{*act.programHash}, tx.Programs)
-	assert.EqualError(t, err, "The data hashes is different with corresponding program code.", "invalid multi sign public key script count")
+	assert.EqualError(t, err, "data hash is different from corresponding program code", "invalid multi sign public key script count")
 
 	// invalid redeem script wrong public key
 	fakeCode = make([]byte, len(act.redeemScript))
@@ -154,39 +154,37 @@ func TestCheckMultiSigSignature(t *testing.T) {
 	fakeCode[2] = 0x01
 	tx.Programs = []*types.Program{{Code: fakeCode, Parameter: signature}}
 	err = RunPrograms(tx, []common.Uint168{*act.programHash}, tx.Programs)
-	assert.EqualError(t, err, "The data hashes is different with corresponding program code.", "The encodeData format is error")
+	assert.EqualError(t, err, "data hash is different from corresponding program code", "The encodeData format is error")
 
 	// invalid signature length not match
 	tx.Programs = []*types.Program{{Code: fakeCode, Parameter: signature[math.Intn(64):]}}
 	err = RunPrograms(tx, []common.Uint168{*act.programHash}, tx.Programs)
-	assert.EqualError(t, err, "The data hashes is different with corresponding program code.", "invalid multi sign signatures, length not match")
+	assert.EqualError(t, err, "data hash is different from corresponding program code", "invalid multi sign signatures, length not match")
 
 	// invalid signature not enough
 	cut := len(signature)/crypto.SignatureScriptLength - int(act.redeemScript[0]-crypto.PUSH1)
 	tx.Programs = []*types.Program{{Code: act.redeemScript, Parameter: signature[65*cut:]}}
 	err = RunPrograms(tx, []common.Uint168{*act.programHash}, tx.Programs)
-	assert.EqualError(t, err, "[VM] Finish State not equal to HALT.", "invalid signatures, not enough signatures")
+	assert.EqualError(t, err, "[VM] Finish State not equal to HALT", "invalid signatures, not enough signatures")
 
 	// invalid signature too many
 	tx.Programs = []*types.Program{{Code: act.redeemScript,
 		Parameter: append(signature[:65], signature...)}}
 	err = RunPrograms(tx, []common.Uint168{*act.programHash}, tx.Programs)
-	assert.EqualError(t, err, "[VM] Finish State not equal to HALT.", "invalid signatures, too many signatures")
+	assert.EqualError(t, err, "[VM] Finish State not equal to HALT", "invalid signatures, too many signatures")
 
 	// invalid signature duplicate
 	tx.Programs = []*types.Program{{Code: act.redeemScript,
 		Parameter: append(signature[:65], signature[:len(signature)-65]...)}}
 	err = RunPrograms(tx, []common.Uint168{*act.programHash}, tx.Programs)
-	assert.EqualError(t, err, "[VM] Check Sig FALSE.", "duplicated signatures")
+	assert.EqualError(t, err, "[VM] Check Sig FALSE", "duplicated signatures")
 
 	// invalid signature fake signature
 	signature, err = newMultiAccount(math.Intn(2)+3, t).Sign(data)
 	assert.NoError(t, err, "Generate signature failed, error %v", err)
 	tx.Programs = []*types.Program{{Code: act.redeemScript, Parameter: signature}}
 	err = RunPrograms(tx, []common.Uint168{*act.programHash}, tx.Programs)
-	assert.EqualError(t, err, "[VM] Check Sig FALSE.", "matched signatures not enough")
-
-	t.Log("TestCheckMultisigSignature passed")
+	assert.EqualError(t, err, "[VM] Check Sig FALSE", "matched signatures not enough")
 }
 
 func TestRunPrograms(t *testing.T) {
@@ -254,13 +252,13 @@ func TestRunPrograms(t *testing.T) {
 	removeIndex := math.Intn(num)
 	hashes = append(hashes[:removeIndex], hashes[removeIndex+1:]...)
 	err = RunPrograms(tx, hashes, programs)
-	assert.Equal(t, "The number of data hashes is different with number of programs.", err.Error())
+	assert.Equal(t, "number of data hashes is different with number of programs", err.Error())
 
 	// With no programs
 	init()
 	programs = []*types.Program{}
 	err = RunPrograms(tx, hashes, programs)
-	assert.Equal(t, "The number of data hashes is different with number of programs.", err.Error())
+	assert.Equal(t, "number of data hashes is different with number of programs", err.Error())
 
 	// With unmatched hashes
 	init()
@@ -268,14 +266,14 @@ func TestRunPrograms(t *testing.T) {
 		rand.Read(hashes[math.Intn(num)][:])
 	}
 	err = RunPrograms(tx, hashes, programs)
-	assert.Equal(t, "The data hashes is different with corresponding program code.", err.Error())
+	assert.Equal(t, "data hash is different from corresponding program code", err.Error())
 
 	// With disordered hashes
 	init()
-	common.SortProgramHashes(hashes)
+	common.SortProgramHashByCodeHash(hashes)
 	sort.Sort(sort.Reverse(byHash(programs)))
 	err = RunPrograms(tx, hashes, programs)
-	assert.EqualError(t, err, "The data hashes is different with corresponding program code.")
+	assert.EqualError(t, err, "data hash is different from corresponding program code")
 
 	// With random no code
 	init()
@@ -283,7 +281,7 @@ func TestRunPrograms(t *testing.T) {
 		programs[math.Intn(num)].Code = nil
 	}
 	err = RunPrograms(tx, hashes, programs)
-	assert.EqualError(t, err, "[ToProgramHash] failed, empty program code")
+	assert.EqualError(t, err, "data hash is different from corresponding program code")
 
 	// With random no parameter
 	init()
@@ -293,8 +291,6 @@ func TestRunPrograms(t *testing.T) {
 	}
 	err = RunPrograms(tx, hashes, programs)
 	assert.Error(t, err, "[RunProgram] passed with random no parameter")
-
-	t.Log("TestRunPrograms passed")
 }
 
 func newAccount(t *testing.T) *account {
@@ -305,15 +301,17 @@ func newAccount(t *testing.T) *account {
 		t.Errorf("Generate key pair failed, error %s", err.Error())
 	}
 
-	a.redeemScript, err = crypto.CreateStandardRedeemScript(a.public)
+	a.redeemScript, err = contract.CreateStandardRedeemScript(a.public)
 	if err != nil {
 		t.Errorf("Create standard redeem script failed, error %s", err.Error())
 	}
 
-	a.programHash, err = crypto.ToProgramHash(a.redeemScript)
+	c, err := contract.CreateStandardContract(a.public)
 	if err != nil {
-		t.Errorf("To program hash failed, error %s", err.Error())
+		t.Errorf("Create standard contract failed, error %s", err.Error())
 	}
+
+	a.programHash = c.ToProgramHash()
 
 	return a
 }
@@ -327,15 +325,17 @@ func newMultiAccount(num int, t *testing.T) *multiAccount {
 	}
 
 	var err error
-	ma.redeemScript, err = crypto.CreateMultiSignRedeemScript(uint(num/2+1), publicKeys)
+	ma.redeemScript, err = contract.CreateMultiSigRedeemScript(num/2+1, publicKeys)
 	if err != nil {
 		t.Errorf("Create multisig redeem script failed, error %s", err.Error())
 	}
 
-	ma.programHash, err = crypto.ToProgramHash(ma.redeemScript)
+	c, err := contract.CreateMultiSigContract(num/2+1, publicKeys)
 	if err != nil {
-		t.Errorf("To program hash failed, error %s", err.Error())
+		t.Errorf("Create multi-sign contract failed, error %s", err.Error())
 	}
+
+	ma.programHash = c.ToProgramHash()
 
 	return ma
 }
@@ -418,50 +418,61 @@ func TestSortPrograms(t *testing.T) {
 		programs = append(programs, program)
 	}
 	err := SortPrograms(programs)
-	assert.Error(t, err)
+	assert.NoError(t, err)
 
 	count := 100
 	hashes := make([]common.Uint168, 0, count)
 	programs = make([]*types.Program, 0, count)
 	for i := 0; i < count; i++ {
+		_, pubKey, _ := crypto.GenerateKeyPair()
 		program := new(types.Program)
 		randType := math.Uint32()
-		switch randType % 3 {
+		var hash common.Uint168
+		switch randType % 2 {
 		case 0: // CHECKSIG
-			program.Code = make([]byte, crypto.PublicKeyScriptLength)
-			rand.Read(program.Code)
-			program.Code[len(program.Code)-1] = common.STANDARD
+			c, err := contract.CreateStandardContract(pubKey)
+			if err != nil {
+				t.Fatal(err)
+			}
+			hash = *c.ToProgramHash()
+			program.Code = c.Code
+
 		case 1: // MULTISIG
 			num := math.Intn(5) + 3
-			program.Code = make([]byte, (crypto.PublicKeyScriptLength-1)*num+3)
-			rand.Read(program.Code)
-			program.Code[len(program.Code)-1] = common.MULTISIG
-		case 2: // CROSSCHAIN
-			num := math.Intn(5) + 3
-			program.Code = make([]byte, (crypto.PublicKeyScriptLength-1)*num+3)
-			rand.Read(program.Code)
-			program.Code[len(program.Code)-1] = common.CROSSCHAIN
+			pubKeys := make([]*crypto.PublicKey, 0, num)
+			for i := 0; i < num; i++ {
+				_, pubKey, _ := crypto.GenerateKeyPair()
+				pubKeys = append(pubKeys, pubKey)
+			}
+			c, err := contract.CreateMultiSigContract(num, pubKeys)
+			if err != nil {
+				t.Fatal(err)
+			}
+			hash = *c.ToProgramHash()
+			program.Code = c.Code
 		}
-		hash, err := crypto.ToProgramHash(program.Code)
-		if err != nil {
-			t.Errorf("ToProgramHash failed, %s", err.Error())
-		}
-		hashes = append(hashes, *hash)
+
+		hashes = append(hashes, hash)
 		programs = append(programs, program)
 	}
 
-	common.SortProgramHashes(hashes)
+	common.SortProgramHashByCodeHash(hashes)
 	SortPrograms(programs)
 
 	for i, hash := range hashes {
-		programsHash, err := crypto.ToProgramHash(programs[i].Code)
-		if err != nil {
-			t.Errorf("ToProgramHash failed, %s", err.Error())
-		}
+		programsHash := toProgramHash(programs[i].Code)
 		if !hash.IsEqual(*programsHash) {
 			t.Errorf("Hash %s not match with ProgramHash %s", hex.EncodeToString(hash[:]), hex.EncodeToString(programsHash[:]))
 		}
-
-		t.Logf("Hash[%02d] %s match with ProgramHash[%02d] %s", i, hex.EncodeToString(hash[:]), i, hex.EncodeToString(programsHash[:]))
 	}
+}
+
+func toProgramHash(code []byte) *common.Uint168 {
+	switch code[len(code)-1] {
+	case vm.CHECKSIG:
+		return common.ToProgramHash(byte(contract.PrefixStandard), code)
+	case vm.CHECKMULTISIG:
+		return common.ToProgramHash(byte(contract.PrefixMultiSig), code)
+	}
+	return nil
 }

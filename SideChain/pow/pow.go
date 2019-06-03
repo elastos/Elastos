@@ -38,6 +38,7 @@ type Config struct {
 	Chain       *blockchain.BlockChain
 	TxMemPool   *mempool.TxPool
 	TxFeeHelper *mempool.FeeHelper
+	Validator   *mempool.Validator
 
 	CreateCoinBaseTx          func(cfg *Config, nextBlockHeight uint32, addr string) (*types.Transaction, error)
 	GenerateBlock             func(cfg *Config) (*types.Block, error)
@@ -447,6 +448,10 @@ func GenerateBlockTransactions(cfg *Config, msgBlock *types.Block, coinBaseTx *t
 		}
 
 		if err := blockchain.CheckTransactionFinalize(tx, nextBlockHeight); err != nil {
+			continue
+		}
+
+		if err := cfg.Validator.CheckTransactionContext(tx); err != nil {
 			continue
 		}
 

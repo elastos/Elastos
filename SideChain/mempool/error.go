@@ -88,7 +88,7 @@ func extractRejectCode(err error) (msg.RejectCode, bool) {
 		return msg.RejectInvalid, false
 	}
 
-	var code = msg.RejectInvalid
+	var code msg.RejectCode
 	switch ruleErr.ErrorCode {
 	case ErrUTXOLocked:
 	case ErrInvalidInput:
@@ -112,9 +112,12 @@ func extractRejectCode(err error) (msg.RejectCode, bool) {
 	case ErrRechargeToSideChain:
 	case ErrCrossChain:
 	case ErrTransactionSize:
+
+	default:
+		return msg.RejectInvalid, false
 	}
 
-	return code, false
+	return code, true
 }
 
 // ErrToRejectErr examines the underlying type of the error and returns a reject

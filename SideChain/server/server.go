@@ -29,6 +29,28 @@ const (
 	MaxBlocksPerMsg = 500
 )
 
+// Config defines the parameters to create a server instance.
+type Config struct {
+	// DataDir indicates the path the store data files.
+	DataDir string
+
+	// Chain represents the BlockChain instance.
+	Chain *blockchain.BlockChain
+
+	// TxMemPool represents the TxPool instance.
+	TxMemPool *mempool.TxPool
+
+	// ChainParams represents the active net parameters.
+	ChainParams *config.Params
+
+	// PermanentPeers are the peers need to be connected permanently.
+	PermanentPeers []string
+
+	// NewTxFilter indicates the function to create a TxFilter according to the
+	// TxFilterType.
+	NewTxFilter func(filter.TxFilterType) filter.TxFilter
+}
+
 // naFilter defines a network address filter for the side chain server, for now
 // it is used to filter SPV wallet addresses from relaying to other peers.
 type naFilter struct{}
@@ -64,6 +86,7 @@ type server struct {
 	syncManager *netsync.SyncManager
 	chain       *blockchain.BlockChain
 	txMemPool   *mempool.TxPool
+	newTxFiler  func(filter.TxFilterType) filter.TxFilter
 
 	peerQueue chan interface{}
 	relayInv  chan relayMsg
@@ -89,23 +112,39 @@ type serverPeer struct {
 // newServerPeer returns a new serverPeer instance. The peer needs to be set by
 // the caller.
 func newServerPeer(s *server) *serverPeer {
-	filter := filter.New(func(filterType filter.TxFilterType) filter.TxFilter {
-		switch filterType {
-		case filter.FTBloom:
-			return bloom.NewTxFilter()
-		case filter.FTTxType:
-			return filter.NewTxTypeFilter()
-		}
-		return nil
-	})
-
 	return &serverPeer{
 		server:         s,
-		filter:         filter,
+		filter:         filter.New(s.newTxFiler),
 		quit:           make(chan struct{}),
 		txProcessed:    make(chan struct{}, 1),
 		blockProcessed: make(chan struct{}, 1),
 	}
+}
+
+// handleDisconnect handles peer disconnects and remove the peer from
+// SyncManager and Routes.
+func (sp *serverPeer) handleDisconnect() {
+	sp.WaitForDisconnect()
+	sp.server.syncManager.DonePeer(sp.Peer)
+}
+
+// OnVersion is invoked when a peer receives a version message and is
+// used to negotiate the protocol version details as well as kick start
+// the communications.
+func (sp *serverPeer) OnVersion(_ *peer.Peer, m *msg.Version) {
+	// Add the remote peer time as a sample for creating an offset against
+	// the local clock to keep the network time in sync.
+	sp.server.chain.TimeSource.AddTimeSample(sp.Addr(), m.Timestamp)
+
+	// Signal the sync manager this peer is a new sync candidate.
+	sp.server.syncManager.NewPeer(sp.Peer)
+
+	// Choose whether or not to relay transactions before a filter command
+	// is received.
+	sp.SetDisableRelayTx(!m.Relay)
+
+	// Handle peer disconnect.
+	go sp.handleDisconnect()
 }
 
 // OnMemPool is invoked when a peer receives a mempool message.
@@ -215,10 +254,17 @@ func (sp *serverPeer) OnInv(_ *peer.Peer, msg *msg.Inv) {
 
 // OnNotFound is invoked when a peer receives an notfounc message.
 // A peer should not response a notfound message so we just disconnect it.
-func (sp *serverPeer) OnNotFound(_ *peer.Peer, msg *msg.NotFound) {
-	log.Debugf("%s sent us notfound message --  disconnecting", sp)
-	sp.AddBanScore(100, 0, msg.CMD())
-	sp.Disconnect()
+func (sp *serverPeer) OnNotFound(_ *peer.Peer, notFound *msg.NotFound) {
+	for _, i := range notFound.InvList {
+		if i.Type == msg.InvTypeTx {
+			continue
+		}
+
+		log.Debugf("%s sent us notfound message --  disconnecting", sp)
+		sp.AddBanScore(100, 0, notFound.CMD())
+		sp.Disconnect()
+		return
+	}
 }
 
 // handleGetData is invoked when a peer receives a getdata message and
@@ -688,6 +734,7 @@ func (s *server) handlePeerMsg(peers map[p2psvr.IPeer]*serverPeer, p interface{}
 	case newPeerMsg:
 		sp := newServerPeer(s)
 		sp.Peer = peer.New(p, &peer.Listeners{
+			OnVersion:      sp.OnVersion,
 			OnMemPool:      sp.OnMemPool,
 			OnTx:           sp.OnTx,
 			OnBlock:        sp.OnBlock,
@@ -703,19 +750,10 @@ func (s *server) handlePeerMsg(peers map[p2psvr.IPeer]*serverPeer, p interface{}
 		})
 
 		peers[p.IPeer] = sp
-		s.syncManager.NewPeer(sp.Peer)
 		p.reply <- struct{}{}
 
 	case donePeerMsg:
-		sp, ok := peers[p.IPeer]
-		if !ok {
-			log.Errorf("unknown done peer %v", p)
-			p.reply <- struct{}{}
-			return
-		}
-
 		delete(peers, p.IPeer)
-		s.syncManager.DonePeer(sp.Peer)
 		p.reply <- struct{}{}
 	}
 }
@@ -763,10 +801,10 @@ func (s *server) Stop() error {
 	return nil
 }
 
-// newServer returns a new btcd server configured to listen on addr for the
-// network type specified by chainParams.  Use start to begin accepting
-// connections from peers.
-func New(dataDir string, chain *blockchain.BlockChain, txPool *mempool.TxPool, params *config.Params) (*server, error) {
+// New returns a new server instance configured to specified config parameters.
+// Use start to begin accepting connections from peers.
+func New(cfg *Config) (*server, error) {
+	params := cfg.ChainParams
 	services := defaultServices
 	if params.DisableTxFilters {
 		services &^= pact.SFNodeBloom
@@ -777,31 +815,42 @@ func New(dataDir string, chain *blockchain.BlockChain, txPool *mempool.TxPool, p
 		params.ListenAddrs = []string{fmt.Sprint(":", params.DefaultPort)}
 	}
 
-	cfg := p2psvr.NewDefaultConfig(
-		params.Magic,
-		pact.EBIP002Version,
-		uint64(services),
-		params.DefaultPort,
-		params.SeedList,
-		params.ListenAddrs,
+	// If NewTxFilter not set, create a default one.
+	if cfg.NewTxFilter == nil {
+		cfg.NewTxFilter = func(filterType filter.TxFilterType) filter.TxFilter {
+			switch filterType {
+			case filter.FTBloom:
+				return bloom.NewTxFilter()
+			case filter.FTTxType:
+				return filter.NewTxTypeFilter()
+			}
+			return nil
+		}
+	}
+
+	svrcfg := p2psvr.NewDefaultConfig(
+		params.Magic, pact.EBIP002Version, uint64(services),
+		params.DefaultPort, params.DNSSeeds, params.ListenAddrs,
 		nil, nil, makeEmptyMessage,
-		func() uint64 { return uint64(chain.GetBestHeight()) },
+		func() uint64 { return uint64(cfg.Chain.GetBestHeight()) },
 	)
-	cfg.DataDir = dataDir
-	cfg.NAFilter = &naFilter{}
+	svrcfg.DataDir = cfg.DataDir
+	svrcfg.NAFilter = &naFilter{}
+	svrcfg.PermanentPeers = cfg.PermanentPeers
 
 	s := server{
-		chain:     chain,
-		txMemPool: txPool,
-		peerQueue: make(chan interface{}, cfg.MaxPeers),
-		relayInv:  make(chan relayMsg, cfg.MaxPeers),
-		quit:      make(chan struct{}),
-		services:  services,
+		chain:      cfg.Chain,
+		txMemPool:  cfg.TxMemPool,
+		newTxFiler: cfg.NewTxFilter,
+		peerQueue:  make(chan interface{}, svrcfg.MaxPeers),
+		relayInv:   make(chan relayMsg, svrcfg.MaxPeers),
+		quit:       make(chan struct{}),
+		services:   services,
 	}
-	cfg.OnNewPeer = s.NewPeer
-	cfg.OnDonePeer = s.DonePeer
+	svrcfg.OnNewPeer = s.NewPeer
+	svrcfg.OnDonePeer = s.DonePeer
 
-	p2pServer, err := p2psvr.NewServer(cfg)
+	p2pServer, err := p2psvr.NewServer(svrcfg)
 	if err != nil {
 		return nil, err
 	}
@@ -811,7 +860,7 @@ func New(dataDir string, chain *blockchain.BlockChain, txPool *mempool.TxPool, p
 		PeerNotifier: &s,
 		Chain:        s.chain,
 		TxMemPool:    s.txMemPool,
-		MaxPeers:     cfg.MaxPeers,
+		MaxPeers:     svrcfg.MaxPeers,
 	})
 
 	return &s, nil
