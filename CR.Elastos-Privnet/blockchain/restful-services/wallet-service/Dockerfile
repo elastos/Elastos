@@ -1,13 +1,28 @@
 # Elastos privnet - Wallet Service - elastos.org
 # This is an official but unsupported docker image
 
+FROM maven:3.6.0-jdk-8-alpine AS builder
+
+LABEL maintainer="kpachhai"
+
+RUN apk update
+
+# copy folders
+COPY service /restful-services/wallet-service
+
+RUN cp /restful-services/wallet-service/base.api/src/main/resources/application.properties.in /restful-services/wallet-service/base.api/src/main/resources/application.properties
+RUN sed -i "s#@ELA_REST_API@#http://ela-mainchain-normal-1:20334#g" /restful-services/wallet-service/base.api/src/main/resources/application.properties
+RUN cd /restful-services/wallet-service \
+    && mvn clean                        \
+    && mvn install -Dmaven.test.skip -Dgpg.skip
+
 FROM maven:3.6.0-jdk-8-alpine
 
 ENV SRC_DIR="/home/elauser"
 
 WORKDIR $SRC_DIR
 
-COPY . .
+COPY --from=builder /restful-services/wallet-service/base.api/target/base.api-0.0.6.jar ${SRC_DIR}/base.api-0.0.6.jar
 
 RUN apk update \
     && apk add --no-cache curl \
@@ -16,6 +31,6 @@ RUN apk update \
 
 USER elauser
 
-EXPOSE 8091
+EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "./base.api-0.0.6.jar"]

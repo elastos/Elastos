@@ -1,0 +1,190 @@
+2019-05-08 19:50:11.208 [INF] ELAD /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/main.go:58: Node version: 
+2019-05-08 19:50:11.213 [INF] ELAD /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/main.go:59: go version go1.11.5 linux/amd64
+2019-05-08 19:50:11.213 [INF] ELAD /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/main.go:64: 1. BlockChain init
+2019-05-08 19:50:11.376 [INF] ELAD /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/main.go:73: 2. SPV module init
+2019-05-08 19:50:11.706 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sdk/service.go:464: SPV service started...
+2019-05-08 19:50:11.882 [INF] ELAD /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/main.go:128: 3. Start the P2P networks
+2019-05-08 19:50:11.882 [INF] ELAD /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/main.go:143: 4. --Initialize pow service
+2019-05-08 19:50:11.882 [INF] ELAD /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/main.go:160: Start POW Services
+2019-05-08 19:50:11.882 [INF] ELAD /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/main.go:164: 5. --Start the RPC service
+2019-05-08 19:50:11.894 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-05-08 19:50:11.894 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:50:12.006 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:244: New valid peer 192.168.48.11:10015 (outbound)
+2019-05-08 19:50:12.007 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:197: Syncing to block height 485 from peer 192.168.48.11:10015
+2019-05-08 19:50:12.301 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:223: New valid peer 192.168.48.13:10015 (outbound)
+2019-05-08 19:50:12.916 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:244: New valid peer 192.168.48.2:10015 (outbound)
+2019-05-08 19:50:12.916 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:244: New valid peer 192.168.48.4:10015 (outbound)
+2019-05-08 19:50:12.916 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:244: New valid peer 192.168.48.8:10015 (outbound)
+2019-05-08 19:50:12.916 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:244: New valid peer 192.168.48.5:10015 (outbound)
+2019-05-08 19:50:12.916 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:244: New valid peer 192.168.48.9:10015 (outbound)
+2019-05-08 19:50:12.916 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:244: New valid peer 192.168.48.10:10015 (outbound)
+2019-05-08 19:50:12.922 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block 619674c9de532e45207ff1326073199a8371a51447249d92e485897eda8c8fce at height 485
+2019-05-08 19:50:13.928 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:223: New valid peer 192.168.48.14:56192 (inbound)
+2019-05-08 19:50:14.138 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  295
+2019-05-08 19:50:14.138 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-05-08 19:50:14.138 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:50:16.151 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:223: New valid peer 192.168.48.18:47440 (inbound)
+2019-05-08 19:50:16.151 [WRN] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:198: No sync peer candidates available
+2019-05-08 19:50:16.315 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:223: New valid peer 192.168.48.13:43252 (inbound)
+2019-05-08 19:50:17.061 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:223: New valid peer 192.168.48.14:10015 (outbound)
+2019-05-08 19:50:19.479 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  296
+2019-05-08 19:50:19.479 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-05-08 19:50:19.480 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:50:20.074 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:223: New valid peer 192.168.48.18:10015 (outbound)
+2019-05-08 19:50:27.773 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block 7eef1179363b4bbb3f0cb7c209f4c0ac5e0b80142ca16371bb53f85fba1d1e9d at height 486
+2019-05-08 19:50:28.297 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:50:41.925 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block 384a26a1dedfd5f3ab1dabf869fa44a073b57a6c28c4f1ae50938d6ff49708c1 at height 487
+2019-05-08 19:50:46.722 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block 9daea3ca630fb97f257b39c7b17ac5e4dbbd2cccb7a774fde87c781fab984dea at height 488
+2019-05-08 19:50:48.805 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  297
+2019-05-08 19:50:55.914 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block a2aea20a4e160c9ee4d58d9f0516a959ec41bee56600b323cecca4390f248c87 at height 489
+2019-05-08 19:50:56.896 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-05-08 19:50:56.896 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:51:03.485 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block a846031de59a94b4508e81a59d34cc47446abf021561c134d1f394bbfe45ce76 at height 490
+2019-05-08 19:51:03.767 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:51:11.588 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block 52bdcc21ee53a4461b10061cfce2adfad7f985089b4769ff3d5aa53800ff338c at height 491
+2019-05-08 19:51:12.014 [INF] STAT: -> 297 [296 192.168.48.14:56192 (inbound), 296 192.168.48.18:47440 (inbound), 296 192.168.48.13:43252 (inbound), 297 192.168.48.18:10015 (outbound), 296 192.168.48.13:10015 (outbound), 296 192.168.48.14:10015 (outbound)]
+2019-05-08 19:51:15.170 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  298
+2019-05-08 19:51:17.423 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-05-08 19:51:17.443 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:51:22.999 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block 83ddf9cb320cf8b8bb1fd8148dcc20d0aa0092ff27d456dd944d780f1517955d at height 492
+2019-05-08 19:51:27.008 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block f04553f7202887661664ad9217d6688015dad1a7f5e0ab713a9000b65210cd18 at height 493
+2019-05-08 19:51:35.765 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  299
+2019-05-08 19:51:41.908 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-05-08 19:51:41.908 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:51:44.441 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block d704df124b95b9aac899eb0844fc0daa6444f0072f38e0a292fdeff78b7830da at height 494
+2019-05-08 19:51:45.617 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:51:47.082 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:253: Lost peer 192.168.48.14:10015 (outbound)
+2019-05-08 19:51:47.820 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  300
+2019-05-08 19:51:47.847 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-05-08 19:51:47.848 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:51:48.778 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:51:52.219 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:223: New valid peer 192.168.48.14:10015 (outbound)
+2019-05-08 19:52:01.999 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block 577de2c3dd9c89e6a73791ce7a809f80d7383f6225c243f6430b7e0f739c0305 at height 495
+2019-05-08 19:52:06.051 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block 6e5faabe2da833ac1ad93d7201897c49730c2e12ac61e331ffa8ee4ca1bce088 at height 496
+2019-05-08 19:52:07.433 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block dfa136ed2cce06ccbf248be2b31d3ffb448bf68ead0ff7a2fda78f254ade74df at height 497
+2019-05-08 19:52:08.020 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  301
+2019-05-08 19:52:11.899 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-05-08 19:52:11.900 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:52:11.950 [INF] STAT: -> 301 [299 192.168.48.14:56192 (inbound), 299 192.168.48.18:47440 (inbound), 299 192.168.48.13:43252 (inbound), 299 192.168.48.13:10015 (outbound), 300 192.168.48.14:10015 (outbound), 300 192.168.48.18:10015 (outbound)]
+2019-05-08 19:52:12.508 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block ccdb76836b67f54a436c0a0fc51531cf91eb6cdd6632757676b73d508ac62ffe at height 498
+2019-05-08 19:52:13.164 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:52:19.733 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  302
+2019-05-08 19:52:20.408 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:52:24.484 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block 4b98327673acda2e1d95fb4bfc21a9855f0bbcfeee4084b6eb0315fbdd57feed at height 499
+2019-05-08 19:52:26.920 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-05-08 19:52:26.920 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:52:35.577 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  303
+2019-05-08 19:52:35.577 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-05-08 19:52:35.583 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:52:37.694 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block e02208b8a754cb9eae211ab11a0f149a05622dafbdb4d1d18808ff14a54d0913 at height 500
+2019-05-08 19:52:38.625 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  304
+2019-05-08 19:52:38.629 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-05-08 19:52:38.632 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:52:49.879 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block ef06e747872276bf4cfb777927799c58527ff5e29b0a5426881f8890172158eb at height 501
+2019-05-08 19:52:55.256 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  305
+2019-05-08 19:52:56.929 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-05-08 19:52:56.932 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:53:08.936 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  306
+2019-05-08 19:53:11.876 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block 713d2d02a4cde4f892d306cfa2b8ad81cc1f3d8e482daf0fc41a8f292fe2da07 at height 502
+2019-05-08 19:53:11.952 [INF] STAT: -> 306 [304 192.168.48.14:56192 (inbound), 304 192.168.48.18:47440 (inbound), 304 192.168.48.13:43252 (inbound), 304 192.168.48.14:10015 (outbound), 304 192.168.48.18:10015 (outbound), 304 192.168.48.13:10015 (outbound)]
+2019-05-08 19:53:11.953 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-05-08 19:53:11.954 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:53:12.469 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:53:16.144 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:253: Lost peer 192.168.48.18:47440 (inbound)
+2019-05-08 19:53:17.801 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block 703c313ae7157abe435b69d106bc1d437c8be293f4a4b319721e8df75937d8b4 at height 503
+2019-05-08 19:53:21.178 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:223: New valid peer 192.168.48.18:48094 (inbound)
+2019-05-08 19:53:22.129 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:253: Lost peer 192.168.48.14:10015 (outbound)
+2019-05-08 19:53:25.557 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block 77f38524f262d1b5f73e25f347b8cd143a96942c516d928ce1300ae540f0c532 at height 504
+2019-05-08 19:53:27.152 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:223: New valid peer 192.168.48.14:10015 (outbound)
+2019-05-08 19:53:27.172 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:253: Lost peer 192.168.48.13:10015 (outbound)
+2019-05-08 19:53:27.208 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  307
+2019-05-08 19:53:30.613 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block f4b243e1bcdcb6d532a96bab775b54b5c8214d23e07206db1e3da6259a7cb43d at height 505
+2019-05-08 19:53:31.468 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:253: Lost peer 192.168.48.13:43252 (inbound)
+2019-05-08 19:53:31.983 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  308
+2019-05-08 19:53:32.196 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:223: New valid peer 192.168.48.13:10015 (outbound)
+2019-05-08 19:53:34.449 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block 1010f9908a8ec31819ebbfbf963038e238b189c51896e8d477499d2c1374ee88 at height 506
+2019-05-08 19:53:34.883 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:53:36.430 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:223: New valid peer 192.168.48.13:43938 (inbound)
+2019-05-08 19:53:42.029 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-05-08 19:53:42.030 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:53:46.730 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block 10043a7ea42b33925f1a2ea8b79eaf6b742b886e4b02c60c7c9e8ea100edee97 at height 507
+2019-05-08 19:53:51.662 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block f23dc5c0747e3b529ffd6b39b7357a204f320a3c6df7007435863544c6f6bbdd at height 508
+2019-05-08 19:53:58.835 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block b78481c1fe6b108e90b9e57c754c783116154f42c640f5945d5f8d7917039e4c at height 509
+2019-05-08 19:54:03.904 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  309
+2019-05-08 19:54:09.615 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block ee1abe8221f677de6877d458d08a28465858694f41430c1b47154d5c8d8bc69c at height 510
+2019-05-08 19:54:10.487 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:54:11.895 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-05-08 19:54:11.896 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:54:11.952 [INF] STAT: -> 309 [308 192.168.48.14:56192 (inbound), 308 192.168.48.18:48094 (inbound), 309 192.168.48.13:43938 (inbound), 308 192.168.48.13:10015 (outbound), 308 192.168.48.14:10015 (outbound), 308 192.168.48.18:10015 (outbound)]
+2019-05-08 19:54:12.198 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:253: Lost peer 192.168.48.14:10015 (outbound)
+2019-05-08 19:54:12.198 [WRN] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:340: Received block from 192.168.48.10:10015 (outbound) when we aren't current
+2019-05-08 19:54:13.934 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:253: Lost peer 192.168.48.14:56192 (inbound)
+2019-05-08 19:54:16.950 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  310
+2019-05-08 19:54:17.207 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:223: New valid peer 192.168.48.14:10015 (outbound)
+2019-05-08 19:54:18.936 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:223: New valid peer 192.168.48.14:57070 (inbound)
+2019-05-08 19:54:26.905 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-05-08 19:54:26.905 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:54:36.431 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:253: Lost peer 192.168.48.13:43938 (inbound)
+2019-05-08 19:54:39.033 [WRN] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:388: Disconnecting from peer 192.168.48.11:10015 (outbound) because he sent us too many bad blocks
+2019-05-08 19:54:39.034 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:280: Lost peer 192.168.48.11:10015 (outbound)
+2019-05-08 19:54:39.047 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:197: Syncing to block height 511 from peer 192.168.48.8:10015
+2019-05-08 19:54:39.261 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block 54b4a0200b543f4df097653f019ee49a058084c5630036696e6c71f2a3493a53 at height 511
+2019-05-08 19:54:39.262 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block 95d62f334810867bbd9aa51ad69bfa1fff0d1cee3888230b8c08793d891288dd at height 512
+2019-05-08 19:54:41.498 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:223: New valid peer 192.168.48.13:44074 (inbound)
+2019-05-08 19:54:44.139 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:244: New valid peer 192.168.48.11:10015 (outbound)
+2019-05-08 19:54:44.394 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  311
+2019-05-08 19:54:47.202 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:253: Lost peer 192.168.48.13:10015 (outbound)
+2019-05-08 19:54:47.806 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  312
+2019-05-08 19:54:48.028 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  313
+2019-05-08 19:54:52.308 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:223: New valid peer 192.168.48.13:10015 (outbound)
+2019-05-08 19:54:52.317 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block 9af764026a7b87d1f84ebcb357172f2cb3206bf51bf7b26c51ac9f7c54c39aaa at height 513
+2019-05-08 19:54:56.908 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-05-08 19:54:56.908 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:54:58.026 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block 05f64d0cc92eda1e9cca6b6075c1701ac674c266b30fdaad8246a1d3a19c0569 at height 514
+2019-05-08 19:54:58.255 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:55:00.676 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block 7283fdc2c4bfa9e1f5603af8a0dbf382450d329bd77c0c5d3c7526912478e9b7 at height 515
+2019-05-08 19:55:03.301 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block 9a7f77f1a6d88a2e635031ae885383446a2bede20f69173633550dcb6007b9e0 at height 516
+2019-05-08 19:55:05.146 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  314
+2019-05-08 19:55:11.999 [INF] STAT: -> 314 [313 192.168.48.14:57070 (inbound), 313 192.168.48.18:48094 (inbound), 314 192.168.48.13:44074 (inbound), 311 192.168.48.14:10015 (outbound), 313 192.168.48.18:10015 (outbound), 313 192.168.48.13:10015 (outbound)]
+2019-05-08 19:55:12.001 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-05-08 19:55:12.034 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:55:15.022 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  315
+2019-05-08 19:55:19.250 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block c965814d4b5e60637f466f0450139de3f1dedc98ed6c79c04a094d1c24885838 at height 517
+2019-05-08 19:55:26.936 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-05-08 19:55:26.936 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:55:27.618 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block 0b45ecf5f9a0c9896541f4b887d0daf56931a47e301c8e2e0daa114d678570a1 at height 518
+2019-05-08 19:55:27.719 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:55:33.113 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block b534172d30bd4f9fdffef1f1a5a1eb85f782706c368ea0811cb2e23655cb8366 at height 519
+2019-05-08 19:55:37.250 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:253: Lost peer 192.168.48.13:10015 (outbound)
+2019-05-08 19:55:37.596 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  316
+2019-05-08 19:55:38.175 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  317
+2019-05-08 19:55:38.245 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block c15760869a06a1825f0570677802b79eb218054bbc14a7039dae339d0a259400 at height 520
+2019-05-08 19:55:41.894 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-05-08 19:55:41.895 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:55:42.326 [INF] SYNC /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/netsync/manager.go:223: New valid peer 192.168.48.13:10015 (outbound)
+2019-05-08 19:55:46.800 [INF] BCDB /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/blockchain/blockchain.go:1032: current height ->  318
+2019-05-08 19:55:50.310 [INF] SPVS /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SPV/sync/manager.go:419: Received block 7483642450627c92c44638a2621aa921d38f23ff2d67b0cff62fe3f3dad7fbec at height 521
+2019-05-08 19:55:57.041 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:299: <================POW Mining==============>
+
+2019-05-08 19:55:57.041 [INF] MINR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID/vendor/github.com/elastos/Elastos.ELA.SideChain/pow/pow.go:423: difficulty:  520095999
+2019-05-08 19:56:11.949 [INF] STAT: -> 318 [318 192.168.48.14:57070 (inbound), 318 192.168.48.18:48094 (inbound), 318 192.168.48.13:44074 (inbound), 317 192.168.48.13:10015 (outbound), 318 192.168.48.14:10015 (outbound), 318 192.168.48.18:10015 (outbound)]

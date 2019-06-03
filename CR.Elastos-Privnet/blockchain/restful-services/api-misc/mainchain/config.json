@@ -1,12 +1,12 @@
 {
-  "ServerPort":"8093",
+  "ServerPort":"8080",
   "Db":{
       "DbDriverName":"mysql",
       "DbDriverSource":"elastos:12345678@tcp(ela-mysql:3306)/chain"
   },
   "Ela":{
-      "Restful":"ela-mainchain-normal-1:10012",
-      "Jsonrpc":"ela-mainchain-normal-1:10014"
+      "Restful":"ela-mainchain-normal-1:20334",
+      "Jsonrpc":"ela-mainchain-normal-1:20336"
   },
   "Cmc":{
     "ApiKey":["d72b4bf0-00f3-4bab-8dca-45df2b0fb14c","cfa976fc-7642-4946-a0b2-858619fb2802"],
