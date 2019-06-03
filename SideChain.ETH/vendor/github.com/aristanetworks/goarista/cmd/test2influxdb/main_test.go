@@ -10,33 +10,8 @@ import (
 	"time"
 
 	"github.com/aristanetworks/goarista/test"
-	client "github.com/influxdata/influxdb1-client/v2"
+	"github.com/influxdata/influxdb/client/v2"
 )
-
-type mockedConn struct {
-	bp client.BatchPoints
-}
-
-func (m *mockedConn) Ping(timeout time.Duration) (time.Duration, string, error) {
-	return time.Duration(0), "", nil
-}
-
-func (m *mockedConn) Write(bp client.BatchPoints) error {
-	m.bp = bp
-	return nil
-}
-
-func (m *mockedConn) Query(q client.Query) (*client.Response, error) {
-	return nil, nil
-}
-
-func (m *mockedConn) QueryAsChunk(q client.Query) (*client.ChunkedResponse, error) {
-	return nil, nil
-}
-
-func (m *mockedConn) Close() error {
-	return nil
-}
 
 func newPoint(t *testing.T, measurement string, tags map[string]string,
 	fields map[string]interface{}, timeString string) *client.Point {
@@ -52,7 +27,7 @@ func newPoint(t *testing.T, measurement string, tags map[string]string,
 	return p
 }
 
-func TestRunWithTestData(t *testing.T) {
+func TestParseTestOutput(t *testing.T) {
 	// Verify tags and fields set by flags are set in records
 	flagTags.Set("tag=foo")
 	flagFields.Set("field=true")
@@ -117,12 +92,15 @@ func TestRunWithTestData(t *testing.T) {
 		),
 	}
 
-	var mc mockedConn
-	if err := run(&mc, f); err != nil {
+	batch, err := client.NewBatchPoints(client.BatchPointsConfig{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := parseTestOutput(f, batch); err != nil {
 		t.Fatal(err)
 	}
 
-	if diff := test.Diff(expected, mc.bp.Points()); diff != "" {
+	if diff := test.Diff(expected, batch.Points()); diff != "" {
 		t.Errorf("unexpected diff: %s", diff)
 	}
 }
@@ -173,18 +151,16 @@ func TestFieldsFlag(t *testing.T) {
 	}
 }
 
-func TestRunWithBenchmarkData(t *testing.T) {
+func TestParseBenchmarkOutput(t *testing.T) {
 	// Verify tags and fields set by flags are set in records
 	flagTags.Set("tag=foo")
 	flagFields.Set("field=true")
 	defaultMeasurement := *flagMeasurement
 	*flagMeasurement = "benchmarks"
-	*flagBenchOnly = true
 	defer func() {
 		flagTags = nil
 		flagFields = nil
 		*flagMeasurement = defaultMeasurement
-		*flagBenchOnly = false
 	}()
 
 	f, err := os.Open("testdata/bench-output.txt")
@@ -252,11 +228,11 @@ func TestRunWithBenchmarkData(t *testing.T) {
 		),
 	}
 
-	var mc mockedConn
-	err = run(&mc, f)
-	switch err.(type) {
-	case duplicateTestsErr:
-	default:
+	batch, err := client.NewBatchPoints(client.BatchPointsConfig{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := parseBenchmarkOutput(f, batch); err != nil {
 		t.Fatal(err)
 	}
 
@@ -270,7 +246,7 @@ func TestRunWithBenchmarkData(t *testing.T) {
 		return m
 	}
 	expectedMap := pointsAsMap(expected)
-	actualMap := pointsAsMap(mc.bp.Points())
+	actualMap := pointsAsMap(batch.Points())
 	if diff := test.Diff(expectedMap, actualMap); diff != "" {
 		t.Errorf("unexpected diff: %s\nexpected: %v\nactual: %v", diff, expectedMap, actualMap)
 	}

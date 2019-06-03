@@ -495,12 +495,11 @@ func (a Author) String() string {
 // it's an ActionFunc or a func with the legacy signature for Action, the func
 // is run!
 func HandleAction(action interface{}, context *Context) (err error) {
-	switch a := action.(type) {
-	case ActionFunc:
+	if a, ok := action.(ActionFunc); ok {
 		return a(context)
-	case func(*Context) error:
+	} else if a, ok := action.(func(*Context) error); ok {
 		return a(context)
-	case func(*Context): // deprecated function signature
+	} else if a, ok := action.(func(*Context)); ok { // deprecated function signature
 		a(context)
 		return nil
 	}

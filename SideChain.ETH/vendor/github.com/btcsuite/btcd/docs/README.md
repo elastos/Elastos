@@ -95,9 +95,11 @@ recommended that `GOPATH` is set to a directory in your home directory such as
 - Run the following commands to obtain btcd, all dependencies, and install it:
 
 ```bash
+$ go get -u github.com/Masterminds/glide
 $ git clone https://github.com/btcsuite/btcd $GOPATH/src/github.com/btcsuite/btcd
 $ cd $GOPATH/src/github.com/btcsuite/btcd
-$ GO111MODULE=on go install -v . ./cmd/...
+$ glide install
+$ go install . ./cmd/...
 ```
 
 - btcd (and utilities) will now be installed in ```$GOPATH/bin```.  If you did
@@ -110,7 +112,8 @@ $ GO111MODULE=on go install -v . ./cmd/...
 
 ```bash
 $ cd $GOPATH/src/github.com/btcsuite/btcd
-$ git pull && GO111MODULE=on go install -v . ./cmd/...
+$ git pull && glide install
+$ go install . ./cmd/...
 ```
 
 <a name="GentooInstallation" />

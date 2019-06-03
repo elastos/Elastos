@@ -26,34 +26,34 @@ func TestConfig(t *testing.T) {
 		tags   map[string]string
 	}{{
 		path:   "/Sysdb/environment/cooling/status/fan/Fan1/1/speed/value",
-		metric: "eos.fanspeed.environment.fan.speed",
+		metric: "eos.environment.fan.speed",
 		tags:   map[string]string{"fan": "Fan1/1"},
 	}, {
 		path:   "/Sysdb/environment/power/status/powerSupply/PowerSupply2/outputPower/value",
-		metric: "eos.powersensor.environment.power.output",
+		metric: "eos.environment.power.output",
 		tags:   map[string]string{"sensor": "PowerSupply2"},
 	}, {
 		path:   "/Sysdb/environment/power/status/voltageSensor/VoltageSensor23/voltage/value",
-		metric: "eos.voltagesensor.environment.voltage",
+		metric: "eos.environment.voltage",
 		tags:   map[string]string{"sensor": "VoltageSensor23"},
 	}, {
 		path:   "/Sysdb/environment/power/status/currentSensor/CurrentSensorP2/1/current/value",
-		metric: "eos.currentsensor.environment.current",
+		metric: "eos.environment.current",
 		tags:   map[string]string{"sensor": "CurrentSensorP2/1"},
 	}, {
 		path: "/Sysdb/environment/temperature/status/tempSensor/" +
 			"TempSensorP2/1/maxTemperature/value",
-		metric: "eos.tempsensor.environment.maxtemperature",
+		metric: "eos.environment.maxtemperature",
 		tags:   map[string]string{"sensor": "TempSensorP2/1"},
 	}, {
 		path: "/Sysdb/interface/counter/eth/lag/intfCounterDir/" +
 			"Port-Channel201/intfCounter/current/statistics/outUcastPkts",
-		metric: "eos.intfpktcounter.interface.pkt",
+		metric: "eos.interface.pkt",
 		tags:   map[string]string{"intf": "Port-Channel201", "direction": "out", "type": "Ucast"},
 	}, {
 		path: "/Sysdb/interface/counter/eth/slice/phy/1/intfCounterDir/" +
 			"Ethernet42/intfCounter/current/statistics/inUcastPkts",
-		metric: "eos.intfpktcounter.interface.pkt",
+		metric: "eos.interface.pkt",
 		tags:   map[string]string{"intf": "Ethernet42", "direction": "in", "type": "Ucast"},
 	}, {
 		path: "/Sysdb/interface/counter/eth/slice/phy/1/intfCounterDir/" +
@@ -61,7 +61,7 @@ func TestConfig(t *testing.T) {
 	}, {
 		path: "/Sysdb/interface/counter/eth/slice/phy/1/intfCounterDir/" +
 			"Ethernet42/intfCounter/current/ethStatistics/outPfcClassFrames",
-		metric: "eos.intfpfcclasscounter.interface.pfcclassframes",
+		metric: "eos.interface.pfcclassframes",
 		tags:   map[string]string{"intf": "Ethernet42", "direction": "out"},
 	}}
 	for i, tcase := range testcases {

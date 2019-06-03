@@ -108,13 +108,6 @@ func deepEqual(a, b interface{}, seen map[edge]struct{}) bool {
 			return ok && a == v
 		}
 		return deepEqual(*a, *v, seen)
-
-	case error:
-		if sb, ok := b.(error); ok {
-			return errorStringFromError(a) == errorStringFromError(sb)
-		}
-		return false
-
 	case key.Comparable:
 		return a.Equal(b)
 
@@ -168,13 +161,6 @@ func deepEqual(a, b interface{}, seen map[edge]struct{}) bool {
 		// Handle other kinds of non-comparable objects.
 		return genericDeepEqual(a, b, seen)
 	}
-}
-
-func errorStringFromError(err error) string {
-	if v := reflect.ValueOf(err); v.Kind() == reflect.Ptr && v.IsNil() {
-		return ""
-	}
-	return err.Error()
 }
 
 type edge struct {

@@ -35,8 +35,8 @@ func TestParseValue(t *testing.T) { // Because parsing JSON sucks.
 	}
 	for i, tcase := range testcases {
 		actual := parseValue(&pb.Update{
-			Val: &pb.TypedValue{
-				Value: &pb.TypedValue_JsonVal{JsonVal: []byte(tcase.input)},
+			Value: &pb.Value{
+				Value: []byte(tcase.input),
 			},
 		})
 		if d := test.Diff(tcase.expected, actual); d != "" {

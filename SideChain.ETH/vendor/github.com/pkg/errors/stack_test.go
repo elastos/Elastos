@@ -35,11 +35,11 @@ func TestFrameFormat(t *testing.T) {
 		"github.com/pkg/errors.init\n" +
 			"\t.+/github.com/pkg/errors/stack_test.go",
 	}, {
-		0,
+		Frame{},
 		"%s",
 		"unknown",
 	}, {
-		0,
+		Frame{},
 		"%+s",
 		"unknown",
 	}, {
@@ -47,7 +47,7 @@ func TestFrameFormat(t *testing.T) {
 		"%d",
 		"9",
 	}, {
-		0,
+		Frame{},
 		"%d",
 		"0",
 	}, {
@@ -69,7 +69,7 @@ func TestFrameFormat(t *testing.T) {
 		"%n",
 		"X.val",
 	}, {
-		0,
+		Frame{},
 		"%n",
 		"",
 	}, {
@@ -82,7 +82,7 @@ func TestFrameFormat(t *testing.T) {
 		"github.com/pkg/errors.init\n" +
 			"\t.+/github.com/pkg/errors/stack_test.go:9",
 	}, {
-		0,
+		Frame{},
 		"%v",
 		"unknown:0",
 	}}
@@ -133,7 +133,7 @@ func TestStackTrace(t *testing.T) {
 				"\t.+/github.com/pkg/errors/stack_test.go:131", // this is the stack of New
 		},
 	}, {
-		func() error { return New("ooh") }(), []string{
+		func() error { noinline(); return New("ooh") }(), []string{
 			`github.com/pkg/errors.TestStackTrace.func1` +
 				"\n\t.+/github.com/pkg/errors/stack_test.go:136", // this is the stack of New
 			"github.com/pkg/errors.TestStackTrace\n" +
@@ -246,5 +246,9 @@ func caller() Frame {
 	n := runtime.Callers(2, pcs[:])
 	frames := runtime.CallersFrames(pcs[:n])
 	frame, _ := frames.Next()
-	return Frame(frame.PC)
+	return Frame(frame)
 }
+
+//go:noinline
+// noinline prevents the caller being inlined
+func noinline() {}

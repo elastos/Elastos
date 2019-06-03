@@ -38,7 +38,7 @@ import (
 	"time"
 
 	"github.com/aristanetworks/glog"
-	client "github.com/influxdata/influxdb1-client/v2"
+	client "github.com/influxdata/influxdb/client/v2"
 	"golang.org/x/tools/benchmark/parse"
 )
 
@@ -155,23 +155,6 @@ var (
 	flagFields fields
 )
 
-type duplicateTestsErr map[string][]string // package to tests
-
-func (dte duplicateTestsErr) Error() string {
-	var b bytes.Buffer
-	if _, err := b.WriteString("duplicate tests found:"); err != nil {
-		panic(err)
-	}
-	for pkg, tests := range dte {
-		if _, err := b.WriteString(
-			fmt.Sprintf("\n\t%s: %s", pkg, strings.Join(tests, " ")),
-		); err != nil {
-			panic(err)
-		}
-	}
-	return b.String()
-}
-
 func init() {
 	flag.Var(&flagTags, "tags", "set additional `tags`. Ex: name=alice,food=pasta")
 	flag.Var(&flagFields, "fields", "set additional `fields`. Ex: id=1234i,long=34.123,lat=72.234")
@@ -187,36 +170,24 @@ func main() {
 		glog.Fatal(err)
 	}
 
-	if err := run(c, os.Stdin); err != nil {
-		glog.Fatal(err)
-	}
-}
-
-func run(c client.Client, r io.Reader) error {
 	batch, err := client.NewBatchPoints(client.BatchPointsConfig{Database: *flagDB})
 	if err != nil {
-		return err
+		glog.Fatal(err)
 	}
 
-	var parseErr error
 	if *flagBenchOnly {
-		parseErr = parseBenchmarkOutput(r, batch)
-	} else {
-		parseErr = parseTestOutput(r, batch)
-	}
-
-	// Partial results can still be published with certain parsing errors like
-	// duplicate test names.
-	// The process still exits with a non-zero code in this case.
-	switch parseErr.(type) {
-	case nil, duplicateTestsErr:
-		if err := c.Write(batch); err != nil {
-			return err
+		if err = parseBenchmarkOutput(os.Stdin, batch); err != nil {
+			glog.Fatal(err)
 		}
-		glog.Infof("wrote %d data points", len(batch.Points()))
+	} else {
+		if err = parseTestOutput(os.Stdin, batch); err != nil {
+			glog.Fatal(err)
+		}
 	}
 
-	return parseErr
+	if err := c.Write(batch); err != nil {
+		glog.Fatal(err)
+	}
 }
 
 // See https://golang.org/cmd/test2json/ for a description of 'go test
@@ -457,7 +428,6 @@ func parseBenchmarkOutput(r io.Reader, batch client.BatchPoints) error {
 		timestamps map[string]time.Time
 	}
 	benchmarksPerPkg := make(map[string]*pkgBenchmarks)
-	dups := make(duplicateTestsErr)
 	for pkg, po := range outputByPkg {
 		glog.V(5).Infof("Package %s output:\n%s", pkg, &po.output)
 
@@ -477,7 +447,9 @@ func parseBenchmarkOutput(r io.Reader, batch client.BatchPoints) error {
 				}
 				pb.benchmarks = append(pb.benchmarks, benchmarks[0])
 			default:
-				dups[pkg] = append(dups[pkg], name)
+				return fmt.Errorf(
+					"expected a benchmark name (%s) to be unique within a package (%s)",
+					name, pkg)
 			}
 		}
 	}
@@ -510,8 +482,5 @@ func parseBenchmarkOutput(r io.Reader, batch client.BatchPoints) error {
 	glog.Infof("Parsed %d benchmarks from %d packages",
 		len(batch.Points()), len(benchmarksPerPkg))
 
-	if len(dups) > 0 {
-		return dups
-	}
 	return nil
 }

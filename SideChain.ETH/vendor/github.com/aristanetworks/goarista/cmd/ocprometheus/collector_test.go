@@ -9,7 +9,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aristanetworks/goarista/gnmi"
 	"github.com/aristanetworks/goarista/test"
 	pb "github.com/openconfig/gnmi/proto/gnmi"
 	"github.com/prometheus/client_golang/prometheus"
@@ -67,9 +66,9 @@ func makeMetrics(cfg *Config, expValues map[source]float64, notification *pb.Not
 }
 
 func findUpdate(notif *pb.Notification, path string) (*pb.Update, error) {
-	prefix := notif.Prefix
+	prefix := notif.Prefix.Element
 	for _, v := range notif.Update {
-		fullPath := gnmi.StrPath(gnmi.JoinPaths(prefix, v.Path))
+		fullPath := "/" + strings.Join(append(prefix, v.Path.Element...), "/")
 		if strings.Contains(path, fullPath) || path == fullPath {
 			return v, nil
 		}
@@ -81,15 +80,6 @@ func makeResponse(notif *pb.Notification) *pb.SubscribeResponse {
 	return &pb.SubscribeResponse{
 		Response: &pb.SubscribeResponse_Update{Update: notif},
 	}
-}
-
-func makePath(pathStr string) *pb.Path {
-	splitPath := gnmi.SplitPath(pathStr)
-	path, err := gnmi.ParseGNMIElements(splitPath)
-	if err != nil {
-		return &pb.Path{}
-	}
-	return path
 }
 
 func TestUpdate(t *testing.T) {
@@ -127,30 +117,43 @@ metrics:
 	coll := newCollector(cfg)
 
 	notif := &pb.Notification{
-		Prefix: makePath("Sysdb"),
+		Prefix: &pb.Path{Element: []string{"Sysdb"}},
 		Update: []*pb.Update{
 			{
-				Path: makePath("lag/intfCounterDir/Ethernet1/intfCounter"),
-				Val: &pb.TypedValue{
-					Value: &pb.TypedValue_JsonVal{JsonVal: []byte("42")},
+				Path: &pb.Path{
+					Element: []string{"lag", "intfCounterDir", "Ethernet1", "intfCounter"},
+				},
+				Value: &pb.Value{
+					Type:  pb.Encoding_JSON,
+					Value: []byte("42"),
 				},
 			},
 			{
-				Path: makePath("environment/cooling/status/fan/speed"),
-				Val: &pb.TypedValue{
-					Value: &pb.TypedValue_JsonVal{JsonVal: []byte("{\"value\": 45}")},
+				Path: &pb.Path{
+					Element: []string{"environment", "cooling", "status", "fan", "speed"},
+				},
+				Value: &pb.Value{
+					Type:  pb.Encoding_JSON,
+					Value: []byte("{\"value\": 45}"),
 				},
 			},
 			{
-				Path: makePath("igmpsnooping/vlanStatus/2050/ethGroup/01:00:5e:01:01:01/intf/Cpu"),
-				Val: &pb.TypedValue{
-					Value: &pb.TypedValue_JsonVal{JsonVal: []byte("true")},
+				Path: &pb.Path{
+					Element: []string{"igmpsnooping", "vlanStatus", "2050", "ethGroup",
+						"01:00:5e:01:01:01", "intf", "Cpu"},
+				},
+				Value: &pb.Value{
+					Type:  pb.Encoding_JSON,
+					Value: []byte("true"),
 				},
 			},
 			{
-				Path: makePath("environment/cooling/status/fan/name"),
-				Val: &pb.TypedValue{
-					Value: &pb.TypedValue_JsonVal{JsonVal: []byte("\"Fan1.1\"")},
+				Path: &pb.Path{
+					Element: []string{"environment", "cooling", "status", "fan", "name"},
+				},
+				Value: &pb.Value{
+					Type:  pb.Encoding_JSON,
+					Value: []byte("\"Fan1.1\""),
 				},
 			},
 		},
@@ -182,24 +185,33 @@ metrics:
 
 	// Update two values, and one path which is not a metric
 	notif = &pb.Notification{
-		Prefix: makePath("Sysdb"),
+		Prefix: &pb.Path{Element: []string{"Sysdb"}},
 		Update: []*pb.Update{
 			{
-				Path: makePath("lag/intfCounterDir/Ethernet1/intfCounter"),
-				Val: &pb.TypedValue{
-					Value: &pb.TypedValue_JsonVal{JsonVal: []byte("52")},
+				Path: &pb.Path{
+					Element: []string{"lag", "intfCounterDir", "Ethernet1", "intfCounter"},
+				},
+				Value: &pb.Value{
+					Type:  pb.Encoding_JSON,
+					Value: []byte("52"),
 				},
 			},
 			{
-				Path: makePath("environment/cooling/status/fan/name"),
-				Val: &pb.TypedValue{
-					Value: &pb.TypedValue_JsonVal{JsonVal: []byte("\"Fan2.1\"")},
+				Path: &pb.Path{
+					Element: []string{"environment", "cooling", "status", "fan", "name"},
+				},
+				Value: &pb.Value{
+					Type:  pb.Encoding_JSON,
+					Value: []byte("\"Fan2.1\""),
 				},
 			},
 			{
-				Path: makePath("environment/doesntexist/status"),
-				Val: &pb.TypedValue{
-					Value: &pb.TypedValue_JsonVal{JsonVal: []byte("{\"value\": 45}")},
+				Path: &pb.Path{
+					Element: []string{"environment", "doesntexist", "status"},
+				},
+				Value: &pb.Value{
+					Type:  pb.Encoding_JSON,
+					Value: []byte("{\"value\": 45}"),
 				},
 			},
 		},
@@ -218,12 +230,15 @@ metrics:
 
 	// Same path, different device
 	notif = &pb.Notification{
-		Prefix: makePath("Sysdb"),
+		Prefix: &pb.Path{Element: []string{"Sysdb"}},
 		Update: []*pb.Update{
 			{
-				Path: makePath("lag/intfCounterDir/Ethernet1/intfCounter"),
-				Val: &pb.TypedValue{
-					Value: &pb.TypedValue_JsonVal{JsonVal: []byte("42")},
+				Path: &pb.Path{
+					Element: []string{"lag", "intfCounterDir", "Ethernet1", "intfCounter"},
+				},
+				Value: &pb.Value{
+					Type:  pb.Encoding_JSON,
+					Value: []byte("42"),
 				},
 			},
 		},
@@ -239,8 +254,12 @@ metrics:
 
 	// Delete a path
 	notif = &pb.Notification{
-		Prefix: makePath("Sysdb"),
-		Delete: []*pb.Path{makePath("lag/intfCounterDir/Ethernet1/intfCounter")},
+		Prefix: &pb.Path{Element: []string{"Sysdb"}},
+		Delete: []*pb.Path{
+			{
+				Element: []string{"lag", "intfCounterDir", "Ethernet1", "intfCounter"},
+			},
+		},
 	}
 	src.addr = "10.1.1.1"
 	delete(expValues, src)
@@ -253,12 +272,15 @@ metrics:
 
 	// Non-numeric update to path without value label
 	notif = &pb.Notification{
-		Prefix: makePath("Sysdb"),
+		Prefix: &pb.Path{Element: []string{"Sysdb"}},
 		Update: []*pb.Update{
 			{
-				Path: makePath("lag/intfCounterDir/Ethernet1/intfCounter"),
-				Val: &pb.TypedValue{
-					Value: &pb.TypedValue_JsonVal{JsonVal: []byte("\"test\"")},
+				Path: &pb.Path{
+					Element: []string{"lag", "intfCounterDir", "Ethernet1", "intfCounter"},
+				},
+				Value: &pb.Value{
+					Type:  pb.Encoding_JSON,
+					Value: []byte("\"test\""),
 				},
 			},
 		},

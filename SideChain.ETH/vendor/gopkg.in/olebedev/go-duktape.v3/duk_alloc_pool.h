@@ -3,10 +3,6 @@
 
 #include "duktape.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 /* 32-bit (big endian) marker used at the end of pool entries so that wasted
  * space can be detected.  Waste tracking must be enabled explicitly.
  */
@@ -223,9 +219,5 @@ static DUK__ALLOC_POOL_ALWAYS_INLINE void *duk_alloc_pool_dec16(duk_uint16_t val
 	return (void *) ((char *) duk_alloc_pool_ptrcomp_base + (((size_t) val) << 2));
 }
 #endif
-
-#if defined(__cplusplus)
-}
-#endif  /* end 'extern "C"' wrapper */
 
 #endif  /* DUK_ALLOC_POOL_H_INCLUDED */

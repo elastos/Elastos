@@ -8,7 +8,7 @@ const ctrt = require("./ctrt");
 const contract = new web3.eth.Contract(ctrt.abi);
 contract.options.address = ctrt.address;
 const payloadReceived = {name: null, inputs: null, signature: null};
-const blockAdr = "0x0000000000000000000000000000000000000000";
+const blackAdr = "0x0000000000000000000000000000000000000000";
 const zeroHash64 = "0x0000000000000000000000000000000000000000000000000000000000000000"
 const latest = "latest";
 
@@ -25,7 +25,7 @@ module.exports = {
     acc: acc,
     contract: contract,
     payloadReceived: payloadReceived,
-    blockAdr: blockAdr,
+    blackAdr: blackAdr,
     latest: latest,
     zeroHash64: zeroHash64,
     reterr: function(err, res) {
