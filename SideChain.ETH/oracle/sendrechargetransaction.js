@@ -11,7 +11,7 @@ module.exports = async function (json_data, res) {
         let mctxhash = json_data["params"]["txid"];
         if (mctxhash.indexOf("0x") !== 0) mctxhash = "0x" + mctxhash;
         console.log(mctxhash);
-        let txprocessed = await common.web3.eth.getStorageAt(common.blockAdr, mctxhash, common.latest)
+        let txprocessed = await common.web3.eth.getStorageAt(common.blackAdr, mctxhash, common.latest)
         if (txprocessed != common.zeroHash64) {
             console.log("Mainchain Trasaction Hash already processed: " + txprocessed);
             console.log("============================================================");
@@ -19,13 +19,13 @@ module.exports = async function (json_data, res) {
             return;
         }
 
-        let tx = {to: common.blockAdr, data: mctxhash, from: common.acc.address};
+        let tx = {to: common.blackAdr, data: mctxhash, from: common.acc.address};
         let gas = await common.web3.eth.estimateGas(tx);
         let gasPrice = await common.web3.eth.getGasPrice();
         gas = String(BigInt(gas) * BigInt(11) / BigInt(10));
         gasPrice = String(BigInt(gasPrice) * BigInt(15) / BigInt(10));
         tx = {
-            to: common.blockAdr,
+            to: common.blackAdr,
             value: "0",
             data: mctxhash,
             from: common.acc.address,
