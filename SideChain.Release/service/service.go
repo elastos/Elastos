@@ -82,7 +82,11 @@ func (s *HttpService) GetRawTransaction(param http.Params) (interface{}, error) 
 	}
 	tx, height, err := s.cfg.Chain.GetTransaction(hash)
 	if err != nil {
-		return nil, newError(UnknownTransaction)
+		//try to find transaction in transaction pool.
+		tx = s.cfg.TxMemPool.GetTransaction(hash)
+		if tx == nil {
+			return nil, newError(UnknownTransaction)
+		}
 	}
 	bHash, err := s.cfg.Chain.GetBlockHash(height)
 	if err != nil {
