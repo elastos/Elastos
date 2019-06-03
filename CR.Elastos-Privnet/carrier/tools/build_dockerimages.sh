@@ -42,7 +42,7 @@ function build_binary_and_docker {
     cd $CURRENT_DIR
 }
 
-build_binary_and_docker "release-v5.2" "Elastos.NET.Carrier.Bootstrap" "bootstrap" "bootstrapd" \
+build_binary_and_docker "release-v5.2.3" "Elastos.NET.Carrier.Bootstrap" "bootstrap" "bootstrapd" \
     "cyberrepublic/elastos-carrier-bootstrap-node"
 
 cd $CURRENT_DIR

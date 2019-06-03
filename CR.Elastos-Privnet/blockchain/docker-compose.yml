@@ -3,7 +3,7 @@ services:
 
   ela-mainchain-normal-1:
     container_name: ela-mainchain-normal-1
-    image: cyberrepublic/elastos-mainchain-node:latest
+    image: cyberrepublic/elastos-mainchain-node:v0.3.2
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-normal-1:/ela/elastos
       - ${PWD}/ela-mainchain/node_normal/mainchain-normal-1/config.json:/ela/config.json
@@ -21,7 +21,7 @@ services:
 
   ela-mainchain-crc-1:
     container_name: ela-mainchain-crc-1
-    image: cyberrepublic/elastos-mainchain-node:latest
+    image: cyberrepublic/elastos-mainchain-node:v0.3.2
     depends_on:
       - ela-mainchain-normal-1
     volumes:
@@ -36,7 +36,7 @@ services:
 
   ela-mainchain-crc-2:
     container_name: ela-mainchain-crc-2
-    image: cyberrepublic/elastos-mainchain-node:latest
+    image: cyberrepublic/elastos-mainchain-node:v0.3.2
     depends_on:
       - ela-mainchain-normal-1
     volumes:
@@ -51,7 +51,7 @@ services:
 
   ela-mainchain-crc-3:
     container_name: ela-mainchain-crc-3
-    image: cyberrepublic/elastos-mainchain-node:latest
+    image: cyberrepublic/elastos-mainchain-node:v0.3.2
     depends_on:
       - ela-mainchain-normal-1
     volumes:
@@ -66,7 +66,7 @@ services:
 
   ela-mainchain-crc-4:
     container_name: ela-mainchain-crc-4
-    image: cyberrepublic/elastos-mainchain-node:latest
+    image: cyberrepublic/elastos-mainchain-node:v0.3.2
     depends_on:
       - ela-mainchain-normal-1
     volumes:
@@ -81,7 +81,7 @@ services:
 
   ela-mainchain-dpos-1:
     container_name: ela-mainchain-dpos-1
-    image: cyberrepublic/elastos-mainchain-node:latest
+    image: cyberrepublic/elastos-mainchain-node:v0.3.2
     depends_on:
       - ela-mainchain-normal-1
     volumes:
@@ -96,7 +96,7 @@ services:
 
   ela-mainchain-dpos-2:
     container_name: ela-mainchain-dpos-2
-    image: cyberrepublic/elastos-mainchain-node:latest
+    image: cyberrepublic/elastos-mainchain-node:v0.3.2
     depends_on:
       - ela-mainchain-normal-1
     volumes:
@@ -111,7 +111,7 @@ services:
 
   ela-arbitrator-crc-1:
     container_name: ela-arbitrator-crc-1
-    image: cyberrepublic/elastos-arbitrator-node:latest
+    image: cyberrepublic/elastos-arbitrator-node:v0.1.1
     depends_on:
       - ela-mainchain-crc-1
       - ela-sidechain-did-1
@@ -128,7 +128,7 @@ services:
 
   ela-arbitrator-crc-2:
     container_name: ela-arbitrator-crc-2
-    image: cyberrepublic/elastos-arbitrator-node:latest
+    image: cyberrepublic/elastos-arbitrator-node:v0.1.1
     depends_on:
       - ela-mainchain-crc-2
       - ela-sidechain-did-2
@@ -145,7 +145,7 @@ services:
 
   ela-arbitrator-crc-3:
     container_name: ela-arbitrator-crc-3
-    image: cyberrepublic/elastos-arbitrator-node:latest
+    image: cyberrepublic/elastos-arbitrator-node:v0.1.1
     depends_on:
       - ela-mainchain-crc-3
       - ela-sidechain-did-3
@@ -162,7 +162,7 @@ services:
 
   ela-arbitrator-crc-4:
     container_name: ela-arbitrator-crc-4
-    image: cyberrepublic/elastos-arbitrator-node:latest
+    image: cyberrepublic/elastos-arbitrator-node:v0.1.1
     depends_on:
       - ela-mainchain-crc-4
       - ela-sidechain-did-4
@@ -179,7 +179,7 @@ services:
 
   ela-arbitrator-origin-1:
     container_name: ela-arbitrator-origin-1
-    image: cyberrepublic/elastos-arbitrator-node:latest
+    image: cyberrepublic/elastos-arbitrator-node:v0.1.1
     depends_on:
       - ela-mainchain-dpos-1
       - ela-sidechain-did-1
@@ -196,7 +196,7 @@ services:
 
   ela-arbitrator-origin-2:
     container_name: ela-arbitrator-origin-2
-    image: cyberrepublic/elastos-arbitrator-node:latest
+    image: cyberrepublic/elastos-arbitrator-node:v0.1.1
     depends_on:
       - ela-mainchain-dpos-2
       - ela-sidechain-did-2
@@ -213,7 +213,7 @@ services:
 
   ela-sidechain-did-1:
     container_name: ela-sidechain-did-1
-    image: cyberrepublic/elastos-sidechain-did-node:latest
+    image: cyberrepublic/elastos-sidechain-did-node:v0.1.2
     depends_on:
       - ela-mainchain-normal-1
       - ela-mainchain-dpos-1
@@ -229,7 +229,7 @@ services:
 
   ela-sidechain-did-2:
     container_name: ela-sidechain-did-2
-    image: cyberrepublic/elastos-sidechain-did-node:latest
+    image: cyberrepublic/elastos-sidechain-did-node:v0.1.2
     depends_on:
       - ela-mainchain-normal-1
       - ela-mainchain-dpos-2
@@ -245,7 +245,7 @@ services:
 
   ela-sidechain-did-3:
     container_name: ela-sidechain-did-3
-    image: cyberrepublic/elastos-sidechain-did-node:latest
+    image: cyberrepublic/elastos-sidechain-did-node:v0.1.2
     depends_on:
       - ela-mainchain-normal-1
       - ela-mainchain-crc-3
@@ -260,7 +260,7 @@ services:
 
   ela-sidechain-did-4:
     container_name: ela-sidechain-did-4
-    image: cyberrepublic/elastos-sidechain-did-node:latest
+    image: cyberrepublic/elastos-sidechain-did-node:v0.1.2
     depends_on:
       - ela-mainchain-normal-1
       - ela-mainchain-crc-4
@@ -275,7 +275,7 @@ services:
 
   ela-sidechain-token-1:
     container_name: ela-sidechain-token-1
-    image: cyberrepublic/elastos-sidechain-token-node:latest
+    image: cyberrepublic/elastos-sidechain-token-node:v0.1.2
     depends_on:
       - ela-mainchain-normal-1
       - ela-mainchain-dpos-1
@@ -291,7 +291,7 @@ services:
 
   ela-sidechain-token-2:
     container_name: ela-sidechain-token-2
-    image: cyberrepublic/elastos-sidechain-token-node:latest
+    image: cyberrepublic/elastos-sidechain-token-node:v0.1.2
     depends_on:
       - ela-mainchain-normal-1
       - ela-mainchain-dpos-2
@@ -307,7 +307,7 @@ services:
 
   ela-sidechain-token-3:
     container_name: ela-sidechain-token-3
-    image: cyberrepublic/elastos-sidechain-token-node:latest
+    image: cyberrepublic/elastos-sidechain-token-node:v0.1.2
     depends_on:
       - ela-mainchain-normal-1
       - ela-mainchain-crc-3
@@ -322,7 +322,7 @@ services:
 
   ela-sidechain-token-4:
     container_name: ela-sidechain-token-4
-    image: cyberrepublic/elastos-sidechain-token-node:latest
+    image: cyberrepublic/elastos-sidechain-token-node:v0.1.2
     depends_on:
       - ela-mainchain-normal-1
       - ela-mainchain-crc-4
