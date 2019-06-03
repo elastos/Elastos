@@ -120,8 +120,8 @@ func (c *ChainStore) RollbackCurrentBlock(b *Block) error {
 	return nil
 }
 
-func (c *ChainStore) persistUnspendUTXOs(b *Block) error {
-	unspendUTXOs := make(map[Uint168]map[Uint256]map[uint32][]*UTXO)
+func (c *ChainStore) persistUTXOs(b *Block) error {
+	utxos := make(map[Uint168]map[Uint256]map[uint32][]*UTXO)
 	curHeight := b.Header.Height
 
 	for _, txn := range b.Transactions {
@@ -129,89 +129,89 @@ func (c *ChainStore) persistUnspendUTXOs(b *Block) error {
 			continue
 		}
 
+		// Store UTXOs according to the transaction outputs.
 		for index, output := range txn.Outputs {
 			programHash := output.ProgramHash
 			assetID := output.AssetID
 			value := output.Value
 
-			if _, ok := unspendUTXOs[programHash]; !ok {
-				unspendUTXOs[programHash] = make(map[Uint256]map[uint32][]*UTXO)
+			if _, ok := utxos[programHash]; !ok {
+				utxos[programHash] = make(map[Uint256]map[uint32][]*UTXO)
 			}
 
-			if _, ok := unspendUTXOs[programHash][assetID]; !ok {
-				unspendUTXOs[programHash][assetID] = make(map[uint32][]*UTXO, 0)
+			if _, ok := utxos[programHash][assetID]; !ok {
+				utxos[programHash][assetID] = make(map[uint32][]*UTXO, 0)
 			}
 
-			if _, ok := unspendUTXOs[programHash][assetID][curHeight]; !ok {
-				var err error
-				unspendUTXOs[programHash][assetID][curHeight], err = c.GetUnspentElementFromProgramHash(programHash, assetID, curHeight)
-				if err != nil {
-					unspendUTXOs[programHash][assetID][curHeight] = make([]*UTXO, 0)
-				}
-
+			elements, ok := utxos[programHash][assetID][curHeight]
+			if !ok {
+				elements, _ = c.GetUnspentElementFromProgramHash(programHash, assetID, curHeight)
 			}
+			elements = append(elements, &UTXO{TxID: txn.Hash(), Index: uint32(index),
+				Value: value})
 
-			u := UTXO{
-				TxID:  txn.Hash(),
-				Index: uint32(index),
-				Value: value,
-			}
-			unspendUTXOs[programHash][assetID][curHeight] = append(unspendUTXOs[programHash][assetID][curHeight], &u)
+			utxos[programHash][assetID][curHeight] = elements
 		}
 
-		if !txn.IsCoinBaseTx() {
-			for _, input := range txn.Inputs {
-				referTxn, height, err := c.GetTransaction(input.Previous.TxID)
-				if err != nil {
-					return err
-				}
-				index := input.Previous.Index
-				referTxnOutput := referTxn.Outputs[index]
-				programHash := referTxnOutput.ProgramHash
-				assetID := referTxnOutput.AssetID
+		// Skip coin base transaction, it has no inputs.
+		if txn.IsCoinBaseTx() {
+			continue
+		}
 
-				if _, ok := unspendUTXOs[programHash]; !ok {
-					unspendUTXOs[programHash] = make(map[Uint256]map[uint32][]*UTXO)
+		// Remove UTXOs according to the transaction inputs.
+		for _, input := range txn.Inputs {
+			// Find the reference transaction of the input.
+			tx, height, err := c.GetTransaction(input.Previous.TxID)
+			if err != nil {
+				return err
+			}
+			index := input.Previous.Index
+			output := tx.Outputs[index]
+			programHash := output.ProgramHash
+			assetID := output.AssetID
+
+			if _, ok := utxos[programHash]; !ok {
+				utxos[programHash] = make(map[Uint256]map[uint32][]*UTXO)
+			}
+			if _, ok := utxos[programHash][assetID]; !ok {
+				utxos[programHash][assetID] = make(map[uint32][]*UTXO)
+			}
+
+			elements, ok := utxos[programHash][assetID][height]
+			if !ok {
+				elements, _ = c.GetUnspentElementFromProgramHash(programHash, assetID, height)
+			}
+
+			// Find the spent UTXO and remove it.
+			for i, e := range elements {
+				if !e.TxID.IsEqual(tx.Hash()) {
+					continue
 				}
-				if _, ok := unspendUTXOs[programHash][assetID]; !ok {
-					unspendUTXOs[programHash][assetID] = make(map[uint32][]*UTXO)
+				if e.Index != uint32(index) {
+					continue
 				}
 
-				if _, ok := unspendUTXOs[programHash][assetID][height]; !ok {
-					unspendUTXOs[programHash][assetID][height], err = c.GetUnspentElementFromProgramHash(programHash, assetID, height)
+				// Here is a little tricky, we replace the matched UTXO with the
+				// last UTXO, and then remove the last UTXO.
+				elements[i] = elements[len(elements)-1]
+				utxos[programHash][assetID][height] = elements[:len(elements)-1]
 
-					if err != nil {
-						return errors.New(fmt.Sprintf("[persist] UTXOs programHash:%v, assetID:%v height:%v has no unspent UTXO.", programHash, assetID, height))
-					}
-				}
-
-				flag := false
-				listnum := len(unspendUTXOs[programHash][assetID][height])
-				for i := 0; i < listnum; i++ {
-					if unspendUTXOs[programHash][assetID][height][i].TxID.IsEqual(referTxn.Hash()) && unspendUTXOs[programHash][assetID][height][i].Index == uint32(index) {
-						unspendUTXOs[programHash][assetID][height][i] = unspendUTXOs[programHash][assetID][height][listnum-1]
-						unspendUTXOs[programHash][assetID][height] = unspendUTXOs[programHash][assetID][height][:listnum-1]
-						flag = true
-						break
-					}
-				}
-				if !flag {
-					return errors.New(fmt.Sprintf("[persist] UTXOs NOT find UTXO by txid: %x, index: %d.", referTxn.Hash(), index))
-				}
+				// One input has only one match, so we break when found the
+				// match.
+				break
 			}
 		}
 	}
 
 	// batch put the UTXOs
-	for programHash, programHashValue := range unspendUTXOs {
-		for assetID, unspents := range programHashValue {
-			for height, unspent := range unspents {
-				err := c.PersistUnspentWithProgramHash(programHash, assetID, height, unspent)
+	for programHash, assetUTXOs := range utxos {
+		for assetID, utxos := range assetUTXOs {
+			for height, utxo := range utxos {
+				err := c.PersistUnspentWithProgramHash(programHash, assetID, height, utxo)
 				if err != nil {
 					return err
 				}
 			}
-
 		}
 	}
 

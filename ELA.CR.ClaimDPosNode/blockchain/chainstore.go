@@ -440,6 +440,30 @@ func (c *ChainStore) GetBlock(hash Uint256) (*Block, error) {
 	return b, nil
 }
 
+func (c *ChainStore) getBlockHeader(hash Uint256) (*Header, error) {
+	header := new(Header)
+	prefix := []byte{byte(DATAHeader)}
+	data, err := c.Get(append(prefix, hash.Bytes()...))
+	if err != nil {
+		return nil, err
+	}
+
+	r := bytes.NewReader(data)
+
+	// first 8 bytes is sys_fee
+	_, err = ReadUint64(r)
+	if err != nil {
+		return nil, err
+	}
+
+	// deserialize block header data
+	if err := header.Deserialize(r); err != nil {
+		return nil, err
+	}
+
+	return header, nil
+}
+
 func (c *ChainStore) rollback(b *Block) error {
 	c.NewBatch()
 	c.RollbackTrimmedBlock(b)
@@ -467,7 +491,7 @@ func (c *ChainStore) persist(b *Block, confirm *payload.Confirm) error {
 	if err := c.PersistTransactions(b); err != nil {
 		return err
 	}
-	if err := c.persistUnspendUTXOs(b); err != nil {
+	if err := c.persistUTXOs(b); err != nil {
 		return err
 	}
 	if err := c.persistUnspend(b); err != nil {
@@ -585,12 +609,12 @@ func (c *ChainStore) GetHeight() uint32 {
 }
 
 func (c *ChainStore) IsBlockInStore(hash *Uint256) bool {
-	b, err := c.GetBlock(*hash)
+	h, err := c.getBlockHeader(*hash)
 	if err != nil {
 		return false
 	}
 
-	if b.Header.Height > c.currentBlockHeight {
+	if h.Height > c.currentBlockHeight {
 		return false
 	}
 

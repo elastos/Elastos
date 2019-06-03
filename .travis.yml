@@ -11,6 +11,7 @@ install:
 script:
   - go test -v -short ./...
   - make
+  - make dns
   - ./util.sh test
 deploy:
   provider: releases

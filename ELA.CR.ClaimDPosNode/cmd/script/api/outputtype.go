@@ -233,8 +233,6 @@ func newVoteContent(L *lua.LState) int {
 		Candidates: candidates,
 	}
 
-	fmt.Println(voteContent)
-
 	ud := L.NewUserData()
 	ud.Value = voteContent
 	L.SetMetatable(ud, L.GetTypeMetatable(luaVoteContentTypeName))

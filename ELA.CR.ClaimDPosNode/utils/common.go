@@ -1,9 +1,12 @@
 package utils
 
 import (
-	"flag"
 	"fmt"
+	"net"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
+	"strconv"
 
 	"github.com/howeyc/gopass"
 )
@@ -11,11 +14,7 @@ import (
 // GetPassword gets password from user input
 func GetPassword() ([]byte, error) {
 	fmt.Printf("Password:")
-	passwd, err := gopass.GetPasswd()
-	if err != nil {
-		return nil, err
-	}
-	return passwd, nil
+	return gopass.GetPasswd()
 }
 
 // GetConfirmedPassword gets double confirmed password from user input
@@ -43,25 +42,17 @@ func GetConfirmedPassword() ([]byte, error) {
 	return first, nil
 }
 
-// GetFlagPassword gets node's wallet password from command line or user input
-func GetFlagPassword() ([]byte, error) {
-	var password []byte
-	var err error
-	if len(os.Args) == 1 {
-		password, err = GetPassword()
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		var p string
-		flag.StringVar(&p, "p", "", "wallet password")
-		flag.Parse()
-		if p == "" {
-			fmt.Println("Invalid parameter, use '-p <password>' to specify a not nil wallet password.")
-			os.Exit(1)
-		}
-		password = []byte(p)
-	}
+func FileExisted(filename string) bool {
+	_, err := os.Stat(filename)
+	return err == nil || os.IsExist(err)
+}
 
-	return password, nil
+//open ela pprof ,must run with goroutine
+func StartPProf(port uint32) {
+	listenAddr := net.JoinHostPort("", strconv.FormatUint(uint64(port), 10))
+	fmt.Printf("Profile server listening on %s\n", listenAddr)
+	profileRedirect := http.RedirectHandler("/debug/pprof", http.StatusSeeOther)
+	http.Handle("/", profileRedirect)
+	ret := http.ListenAndServe(listenAddr, nil)
+	fmt.Printf("Profile server ListenAndServe return %v", ret)
 }

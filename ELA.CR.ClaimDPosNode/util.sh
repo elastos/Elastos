@@ -7,9 +7,7 @@ function cleanDirectoryRecursively() {
 function cleanTempData() {
 	cleanDirectoryRecursively "config.json"
 	cleanDirectoryRecursively "peers.json"
-	cleanDirectoryRecursively "Chain_UnitTest"
-	cleanDirectoryRecursively "Chain_WhiteBox"
-	cleanDirectoryRecursively "Logs"
+	cleanDirectoryRecursively "elastos_test"
 }
 
 if [[ "$1" = "clean" ]]; then

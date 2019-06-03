@@ -6,6 +6,8 @@ package routes
 
 import (
 	"fmt"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -20,7 +22,10 @@ import (
 const (
 	// minPeersToAnnounce defines the minimum connected peers to announce
 	// DPOS address into the P2P network.
-	minPeersToAnnounce = 3
+	minPeersToAnnounce = 5
+
+	// retryAnnounceDuration defines the time duration to retry an announce.
+	retryAnnounceDuration = 3 * time.Second
 
 	// maxTimeOffset indicates the maximum time offset with the to accept an DAddr
 	// message.
@@ -64,8 +69,6 @@ type Config struct {
 // addresses syncing status.
 type state struct {
 	peers     map[dp.PID]struct{}
-	addrIndex map[dp.PID]map[dp.PID]common.Uint256
-	knownAddr map[common.Uint256]*msg.DAddr
 	requested map[common.Uint256]struct{}
 	peerCache map[*peer.Peer]*cache
 }
@@ -83,11 +86,6 @@ type invMsg struct {
 	msg  *msg.Inv
 }
 
-type getDataMsg struct {
-	peer *peer.Peer
-	msg  *msg.GetData
-}
-
 type dAddrMsg struct {
 	peer *peer.Peer
 	msg  *msg.DAddr
@@ -95,10 +93,20 @@ type dAddrMsg struct {
 
 // Routes is the DPOS routes implementation.
 type Routes struct {
-	pid      dp.PID
-	cfg      *Config
-	addr     string
-	sign     func([]byte) []byte
+	pid  dp.PID
+	cfg  *Config
+	addr string
+	sign func([]byte) []byte
+
+	// The following variables must only be used atomically.
+	started int32
+	stopped int32
+	waiting int32
+
+	addrMtx   sync.RWMutex
+	addrIndex map[dp.PID]map[dp.PID]common.Uint256
+	knownAddr map[common.Uint256]*msg.DAddr
+
 	queue    chan interface{}
 	announce chan struct{}
 	quit     chan struct{}
@@ -106,15 +114,20 @@ type Routes struct {
 
 // addrHandler is the main handler to syncing the addresses state.
 func (r *Routes) addrHandler() {
-	// lastAnnounce stores the last time announced
-	var lastAnnounce time.Time
-
 	state := &state{
 		peers:     make(map[dp.PID]struct{}),
-		addrIndex: make(map[dp.PID]map[dp.PID]common.Uint256),
-		knownAddr: make(map[common.Uint256]*msg.DAddr),
 		requested: make(map[common.Uint256]struct{}),
 		peerCache: make(map[*peer.Peer]*cache),
+	}
+
+	// lastAnnounce indicates the time when last announce sent.
+	var lastAnnounce time.Time
+
+	// scheduleAnnounce schedules an announce according to the delay time.
+	var scheduleAnnounce = func(delay time.Duration) {
+		time.AfterFunc(delay, func() {
+			r.announce <- struct{}{}
+		})
 	}
 
 out:
@@ -132,39 +145,118 @@ out:
 			case invMsg:
 				r.handleInv(state, m.peer, m.msg)
 
-			case getDataMsg:
-				r.handleGetData(state, m.peer, m.msg)
-
 			case dAddrMsg:
 				r.handleDAddr(state, m.peer, m.msg)
 
-			case *peersMsg:
+			case peersMsg:
 				r.handlePeersMsg(state, m.peers)
 			}
 
 		// Handle the announce request.
 		case <-r.announce:
+			// This may be a retry or delayed announce, and the DPoS producers
+			// have been changed.
+			_, ok := state.peers[r.pid]
+			if !ok {
+				// Waiting status must reset here or the announce will never
+				// work again.
+				atomic.StoreInt32(&r.waiting, 0)
+				continue
+			}
 
 			// Do not announce address if connected peers not enough.
 			if len(state.peerCache) < minPeersToAnnounce {
-				r.announce <- struct{}{}
+				// Retry announce after the retry duration.
+				scheduleAnnounce(retryAnnounceDuration)
 				continue
 			}
 
 			// Do not announce address too frequent.
 			now := time.Now()
 			if lastAnnounce.Add(minAnnounceDuration).After(now) {
-				r.announce <- struct{}{}
+				// Calculate next announce time and schedule an announce.
+				nextAnnounce := minAnnounceDuration - now.Sub(lastAnnounce)
+				scheduleAnnounce(nextAnnounce)
 				continue
 			}
 
-			r.handleAnnounce(state)
-			lastAnnounce = time.Now()
+			// Update last announce time.
+			lastAnnounce = now
+
+			// Reset waiting state to 0(false).
+			atomic.StoreInt32(&r.waiting, 0)
+
+			for pid := range state.peers {
+				// Do not create address for self.
+				if r.pid.Equal(pid) {
+					continue
+				}
+
+				pubKey, err := crypto.DecodePoint(pid[:])
+				if err != nil {
+					continue
+				}
+
+				// Generate DAddr for the given PID.
+				cipher, err := crypto.Encrypt(pubKey, []byte(r.addr))
+				if err != nil {
+					log.Warnf("encrypt addr %s failed %s", r.addr, err)
+					continue
+				}
+				addr := msg.DAddr{
+					PID:       r.pid,
+					Timestamp: r.cfg.TimeSource.AdjustedTime(),
+					Encode:    pid,
+					Cipher:    cipher,
+				}
+				addr.Signature = r.sign(addr.Data())
+
+				// Append and relay the local address.
+				r.appendAddr(state, &addr)
+			}
 
 		case <-r.quit:
 			break out
 		}
 	}
+
+cleanup:
+	for {
+		select {
+		case <-r.queue:
+		case <-r.announce:
+		default:
+			break cleanup
+		}
+	}
+}
+
+func (r *Routes) appendAddr(s *state, m *msg.DAddr) {
+	hash := m.Hash()
+
+	// Append received addr into known addr index.
+	r.addrMtx.Lock()
+	r.addrIndex[m.PID][m.Encode] = hash
+	r.knownAddr[hash] = m
+	r.addrMtx.Unlock()
+
+	// Relay addr to the P2P network.
+	iv := msg.NewInvVect(msg.InvTypeAddress, &hash)
+	r.cfg.RelayAddr(iv, m)
+}
+
+func (r *Routes) announceAddr() {
+	// Ignore if BlockChain not sync to current.
+	if !r.cfg.IsCurrent() {
+		return
+	}
+
+	// Refuse new announce if a previous announce is waiting,
+	// this is to reduce unnecessary announce.
+	if !atomic.CompareAndSwapInt32(&r.waiting, 0, 1) {
+		return
+	}
+	r.announce <- struct{}{}
 }
 
 func (r *Routes) handleNewPeer(s *state, p *peer.Peer) {
@@ -195,9 +287,13 @@ func (r *Routes) handlePeersMsg(state *state, peers []dp.PID) {
 		newPeers[pid] = struct{}{}
 
 		// Initiate address index.
-		_, ok := state.addrIndex[pid]
+		r.addrMtx.RLock()
+		_, ok := r.addrIndex[pid]
+		r.addrMtx.RUnlock()
 		if !ok {
-			state.addrIndex[pid] = make(map[dp.PID]common.Uint256)
+			r.addrMtx.Lock()
+			r.addrIndex[pid] = make(map[dp.PID]common.Uint256)
+			r.addrMtx.Unlock()
 		}
 	}
 
@@ -212,25 +308,30 @@ func (r *Routes) handlePeersMsg(state *state, peers []dp.PID) {
 
 	for _, pid := range delPeers {
 		// Remove from index and known addr.
-		pids, ok := state.addrIndex[pid]
+		r.addrMtx.RLock()
+		pids, ok := r.addrIndex[pid]
+		r.addrMtx.RUnlock()
 		if !ok {
 			continue
 		}
-		for _, pid := range pids {
-			delete(state.knownAddr, pid)
-		}
-		delete(state.addrIndex, pid)
-	}
 
-	// Announce address into P2P network if we become arbiter.
-	_, isArbiter := newPeers[r.pid]
-	_, wasArbiter := state.peers[r.pid]
-	if isArbiter && !wasArbiter {
-		r.announce <- struct{}{}
+		r.addrMtx.Lock()
+		for _, pid := range pids {
+			delete(r.knownAddr, pid)
+		}
+		delete(r.addrIndex, pid)
+		r.addrMtx.Unlock()
 	}
 
 	// Update peers list.
+	_, isArbiter := newPeers[r.pid]
+	_, wasArbiter := state.peers[r.pid]
 	state.peers = newPeers
+
+	// Announce address into P2P network if we become arbiter.
+	if isArbiter && !wasArbiter {
+		r.announceAddr()
+	}
 }
 
 func (r *Routes) handleInv(s *state, p *peer.Peer, m *msg.Inv) {
@@ -253,7 +354,9 @@ func (r *Routes) handleInv(s *state, p *peer.Peer, m *msg.Inv) {
 		// for the peer.
 		p.AddKnownInventory(iv)
 
-		_, ok := s.knownAddr[iv.Hash]
+		r.addrMtx.RLock()
+		_, ok := r.knownAddr[iv.Hash]
+		r.addrMtx.RUnlock()
 		if ok {
 			continue
 		}
@@ -272,51 +375,6 @@ func (r *Routes) handleInv(s *state, p *peer.Peer, m *msg.Inv) {
 	}
 }
 
-func (r *Routes) handleGetData(s *state, p *peer.Peer, m *msg.GetData) {
-	_, exists := s.peerCache[p]
-	if !exists {
-		log.Warnf("Received getdata message for unknown peer %s", p)
-		return
-	}
-
-	done := make(chan struct{})
-	for _, iv := range m.InvList {
-		switch iv.Type {
-		case msg.InvTypeAddress:
-			// Attempt to fetch the requested addr.
-			addr, ok := s.knownAddr[iv.Hash]
-			if !ok {
-				done <- struct{}{}
-				continue
-			}
-
-			p.QueueMessage(addr, done)
-			<-done
-
-		default:
-			continue
-		}
-	}
-}
-
-func (r *Routes) appendAddr(s *state, m *msg.DAddr) error {
-	hash := m.Hash()
-
-	_, ok := s.peers[m.PID]
-	if !ok {
-		return fmt.Errorf("PID not in arbiter list")
-	}
-
-	// Append received addr into known addr index.
-	s.addrIndex[m.PID][m.Encode] = hash
-	s.knownAddr[hash] = m
-
-	// Relay addr to the P2P network.
-	iv := msg.NewInvVect(msg.InvTypeAddress, &hash)
-	r.cfg.RelayAddr(iv, m)
-	return nil
-}
-
 // verifyDAddr verifies if this is a valid DPOS address message.
 func (r *Routes) verifyDAddr(s *state, m *msg.DAddr) error {
 	// Verify signature of the message.
@@ -332,9 +390,11 @@ func (r *Routes) verifyDAddr(s *state, m *msg.DAddr) error {
 	// Verify timestamp of the message. A DAddr to same arbiter can not be sent
 	// frequently to prevent attack, and a DAddr timestamp must not to far from
 	// the P2P network median time.
-	if index, ok := s.addrIndex[m.PID]; ok {
+	r.addrMtx.RLock()
+	defer r.addrMtx.RUnlock()
+	if index, ok := r.addrIndex[m.PID]; ok {
 		if hash, ok := index[m.Encode]; ok {
-			ka := s.knownAddr[hash]
+			ka := r.knownAddr[hash]
 
 			// Abandon address older than the known address to the same arbiter.
 			if ka.Timestamp.After(m.Timestamp) {
@@ -385,9 +445,9 @@ func (r *Routes) handleDAddr(s *state, p *peer.Peer, m *msg.DAddr) {
 		return
 	}
 
-	// Append received addr into state.
-	if err := r.appendAddr(s, m); err != nil {
-		log.Warnf("Append addr from %s failed,", p, err)
+	_, ok := s.peers[m.PID]
+	if !ok {
+		log.Warnf("PID not in arbiter list")
 
 		// Peers may have disagree with the current producers, so some times we
 		// receive addresses that not in the producers list.  We do not
@@ -395,50 +455,28 @@ func (r *Routes) handleDAddr(s *state, p *peer.Peer, m *msg.DAddr) {
 		return
 	}
 
+	// Append received addr into state.
+	r.appendAddr(s, m)
+
 	// Notify the received DPOS address if the Encode matches.
 	if r.pid.Equal(m.Encode) && r.cfg.OnCipherAddr != nil {
 		r.cfg.OnCipherAddr(m.PID, m.Cipher)
 	}
 }
 
-func (r *Routes) handleAnnounce(s *state) {
-	for pid := range s.peers {
-		// Do not create address for self.
-		if r.pid.Equal(pid) {
-			continue
-		}
-
-		pubKey, err := crypto.DecodePoint(pid[:])
-		if err != nil {
-			continue
-		}
-
-		// Generate DAddr for the given PID.
-		cipher, err := crypto.Encrypt(pubKey, []byte(r.addr))
-		if err != nil {
-			log.Warnf("encrypt addr failed %s", err)
-			continue
-		}
-		addr := msg.DAddr{
-			PID:       r.pid,
-			Timestamp: r.cfg.TimeSource.AdjustedTime(),
-			Encode:    pid,
-			Cipher:    cipher,
-		}
-		addr.Signature = r.sign(addr.Data())
-
-		// Append and relay the address.
-		r.appendAddr(s, &addr)
-	}
-}
-
 // Start starts the Routes instance to sync DPOS addresses.
 func (r *Routes) Start() {
+	if !atomic.CompareAndSwapInt32(&r.started, 0, 1) {
+		return
+	}
 	go r.addrHandler()
 }
 
 // Stop quits the syncing address handler.
 func (r *Routes) Stop() {
+	if !atomic.CompareAndSwapInt32(&r.stopped, 0, 1) {
+		return
+	}
 	close(r.quit)
 }
 
@@ -454,17 +492,51 @@ func (r *Routes) DonePeer(peer *peer.Peer) {
 
 // QueueInv adds the passed Inv message and peer to the addr handling queue.
 func (r *Routes) QueueInv(p *peer.Peer, m *msg.Inv) {
-	r.queue <- invMsg{peer: p, msg: m}
+	// Filter non-address inventory messages.
+	for _, iv := range m.InvList {
+		if iv.Type == msg.InvTypeAddress {
+			r.queue <- invMsg{peer: p, msg: m}
+			return
+		}
+	}
 }
 
-// QueueInv adds the passed GetData message and peer to the addr handling queue.
-func (r *Routes) QueueGetData(p *peer.Peer, m *msg.GetData) {
-	r.queue <- getDataMsg{peer: p, msg: m}
+// OnGetData handles the passed GetData message of the peer.
+func (r *Routes) OnGetData(p *peer.Peer, m *msg.GetData) {
+	done := make(chan struct{}, 1)
+	for _, iv := range m.InvList {
+		switch iv.Type {
+		case msg.InvTypeAddress:
+			// Attempt to fetch the requested addr.
+			r.addrMtx.RLock()
+			addr, ok := r.knownAddr[iv.Hash]
+			r.addrMtx.RUnlock()
+			if !ok {
+				log.Warnf("%s for DAddr not found", iv.Hash)
+				continue
+			}
+
+			p.QueueMessage(addr, done)
+			<-done
+
+		default:
+			continue
+		}
+	}
 }
 
 // QueueInv adds the passed DAddr message and peer to the addr handling queue.
 func (r *Routes) QueueDAddr(p *peer.Peer, m *msg.DAddr) {
 	r.queue <- dAddrMsg{peer: p, msg: m}
+}
+
+// AnnounceAddr schedules an local address announce to the P2P network, it used
+// to re-announce the local address when DPoS network go bad.
+func (r *Routes) AnnounceAddr() {
+	if atomic.LoadInt32(&r.started) == 0 {
+		return
+	}
+	r.announceAddr()
 }
 
 // New creates and return a Routes instance.
@@ -473,21 +545,19 @@ func New(cfg *Config) *Routes {
 	copy(pid[:], cfg.PID)
 
 	r := Routes{
-		pid:      pid,
-		cfg:      cfg,
-		addr:     cfg.Addr,
-		sign:     cfg.Sign,
-		queue:    make(chan interface{}, 256),
-		announce: make(chan struct{}, 1),
-		quit:     make(chan struct{}),
+		pid:       pid,
+		cfg:       cfg,
+		addr:      cfg.Addr,
+		sign:      cfg.Sign,
+		addrIndex: make(map[dp.PID]map[dp.PID]common.Uint256),
+		knownAddr: make(map[common.Uint256]*msg.DAddr),
+		queue:     make(chan interface{}, 125),
+		announce:  make(chan struct{}, 1),
+		quit:      make(chan struct{}),
 	}
 
 	queuePeers := func(peers []dp.PID) {
-		// Ignore if BlockChain not sync to current.
-		if !cfg.IsCurrent() {
-			return
-		}
-		r.queue <- &peersMsg{peers: peers}
+		r.queue <- peersMsg{peers: peers}
 	}
 
 	events.Subscribe(func(e *events.Event) {
