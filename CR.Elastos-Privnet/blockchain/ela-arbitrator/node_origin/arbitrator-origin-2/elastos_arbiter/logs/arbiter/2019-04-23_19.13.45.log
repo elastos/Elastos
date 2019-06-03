@@ -1,0 +1,106 @@
+2019/04/23 19:13:45.184511 [1;35m[INF][m GID 1, Init wallet.
+2019/04/23 19:13:45.241937 [1;35m[INF][m GID 1, Arbiter version:  v0.1.0-6-g758e
+2019/04/23 19:13:45.242006 [1;35m[INF][m GID 1, 1. Init chain utxo cache.
+2019/04/23 19:13:45.249092 [1;35m[INF][m GID 1, 2. Init finished transaction cache.
+2019/04/23 19:13:45.249567 [1;35m[INF][m GID 1, 3. Start arbitrator P2P networks.
+2019/04/23 19:13:45.251007 [1;35m[INF][m GID 1, 4. Init configurations.
+2019/04/23 19:13:45.264163 [1;35m[INF][m GID 43, currentHeight: 189  chainHeight: 211
+2019/04/23 19:13:45.267671 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:45.282407 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:45.289153 [1;35m[INF][m GID 1, [arbitrator] Main chain height:  392
+2019/04/23 19:13:45.341107 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:45.341208 [1;35m[INF][m GID 1, 5. Start arbitrator spv module.
+2019/04/23 19:13:45.341263 [1;35m[INF][m GID 1, [StartSpvModule] new spv service: &{elastos_arbiter/data/spv 20190131 ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw [127.0.0.1:10115] 10115 1 3 <nil>}
+2019/04/23 19:13:45.344261 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:45.354124 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:45.370001 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:45.370343 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:45.370600 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:45.370835 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:45.371067 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:45.371344 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:45.371582 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:45.371927 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:45.372230 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:45.394326 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: EL8Zg6LiLPaC9eDQYre3syTqv2vBBig9Nd
+2019/04/23 19:13:45.394435 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ
+2019/04/23 19:13:45.394508 [1;35m[INF][m GID 1, 6. Start arbitrator group monitor.
+2019/04/23 19:13:45.394525 [1;35m[INF][m GID 1, 7. Start servers.
+2019/04/23 19:13:45.394537 [1;35m[INF][m GID 1, 8. Start check and remove cross chain transactions from db.
+2019/04/23 19:13:45.394552 [1;35m[INF][m GID 1, 9. Start side chain account divide.
+2019/04/23 19:13:45.394838 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:45.395040 [1;35m[INF][m GID 68, Check and remove cross chain transactions from dbcache finished
+2019/04/23 19:13:45.438928 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:45.445551 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:45.498821 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:45.499243 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:45.499608 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:45.499960 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:45.500331 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:45.503960 [1;35m[INF][m GID 43,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  211
+2019/04/23 19:13:49.634935 [1;35m[INF][m GID 43, currentHeight: 211  chainHeight: 212
+2019/04/23 19:13:49.635433 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:49.638900 [1;35m[INF][m GID 43,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  212
+2019/04/23 19:13:53.776566 [1;35m[INF][m GID 43, currentHeight: 212  chainHeight: 213
+2019/04/23 19:13:53.814576 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:53.867428 [1;35m[INF][m GID 43,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  213
+2019/04/23 19:13:58.874520 [1;35m[INF][m GID 43, currentHeight: 213  chainHeight: 214
+2019/04/23 19:13:58.874849 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:13:58.896253 [1;35m[INF][m GID 43,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  214
+2019/04/23 19:14:03.707325 [1;35m[INF][m GID 66, [arbitrator] Main chain height:  393
+2019/04/23 19:14:16.017461 [1;35m[INF][m GID 66, [arbitrator] Main chain height:  394
+2019/04/23 19:14:17.186645 [1;35m[INF][m GID 43, currentHeight: 214  chainHeight: 215
+2019/04/23 19:14:17.192280 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:14:17.202021 [1;35m[INF][m GID 43,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  215
+2019/04/23 19:14:22.132871 [1;35m[INF][m GID 66, [arbitrator] Main chain height:  395
+2019/04/23 19:14:25.380932 [1;35m[INF][m GID 66, [arbitrator] Main chain height:  396
+2019/04/23 19:14:31.463968 [1;35m[INF][m GID 66, [arbitrator] Main chain height:  397
+2019/04/23 19:14:32.497509 [1;35m[INF][m GID 43, currentHeight: 215  chainHeight: 217
+2019/04/23 19:14:32.497722 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:14:32.498069 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:14:32.504886 [1;35m[INF][m GID 43,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  217
+2019/04/23 19:14:44.838453 [1;35m[INF][m GID 66, [arbitrator] Main chain height:  398
+2019/04/23 19:14:45.395836 [1;35m[INF][m GID 68, Check and remove cross chain transactions from dbcache finished
+2019/04/23 19:14:45.397375 [1;35m[INF][m GID 69, Warning side chain mining account:  EL8Zg6LiLPaC9eDQYre3syTqv2vBBig9Nd: 0 
+2019/04/23 19:14:46.606356 [1;35m[INF][m GID 43, currentHeight: 217  chainHeight: 218
+2019/04/23 19:14:46.606742 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:14:46.610492 [1;35m[INF][m GID 43,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  218
+2019/04/23 19:14:49.982581 [1;35m[INF][m GID 66, [arbitrator] Main chain height:  399
+2019/04/23 19:14:57.200095 [1;35m[INF][m GID 66, [arbitrator] Main chain height:  400
+2019/04/23 19:15:02.377536 [1;35m[INF][m GID 66, [arbitrator] Main chain height:  401
+2019/04/23 19:15:02.995068 [1;35m[INF][m GID 43, currentHeight: 218  chainHeight: 219
+2019/04/23 19:15:02.995338 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/23 19:15:03.008835 [1;35m[INF][m GID 43,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  219
+2019/04/23 19:15:11.490690 [1;35m[INF][m GID 66, [arbitrator] Main chain height:  402
+2019/04/23 19:15:13.544185 [1;32m[DBG][m GID 66, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10114: dial tcp 127.0.0.1:10114: connect: connection refused
+2019/04/23 19:15:13.544230 [1;35m[INF][m GID 66, [SyncFromMainNode] rpc get current height failed
+2019/04/23 19:15:13.544249 [1;31m[ERR][m GID 66, Arbitrator group sync error:  Post http://127.0.0.1:10114: dial tcp 127.0.0.1:10114: connect: connection refused
+2019/04/23 19:15:14.548660 [1;32m[DBG][m GID 66, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10114: dial tcp 127.0.0.1:10114: connect: connection refused
+2019/04/23 19:15:14.548701 [1;35m[INF][m GID 66, [SyncFromMainNode] rpc get current height failed
+2019/04/23 19:15:14.548731 [1;31m[ERR][m GID 66, Arbitrator group sync error:  Post http://127.0.0.1:10114: dial tcp 127.0.0.1:10114: connect: connection refused
+2019/04/23 19:15:15.549404 [1;32m[DBG][m GID 66, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10114: dial tcp 127.0.0.1:10114: connect: connection refused
+2019/04/23 19:15:15.549608 [1;35m[INF][m GID 66, [SyncFromMainNode] rpc get current height failed
+2019/04/23 19:15:15.549706 [1;31m[ERR][m GID 66, Arbitrator group sync error:  Post http://127.0.0.1:10114: dial tcp 127.0.0.1:10114: connect: connection refused
+2019/04/23 19:15:16.550918 [1;32m[DBG][m GID 66, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10114: dial tcp 127.0.0.1:10114: connect: connection refused
+2019/04/23 19:15:16.550997 [1;35m[INF][m GID 66, [SyncFromMainNode] rpc get current height failed
+2019/04/23 19:15:16.551019 [1;31m[ERR][m GID 66, Arbitrator group sync error:  Post http://127.0.0.1:10114: dial tcp 127.0.0.1:10114: connect: connection refused
+2019/04/23 19:15:17.552557 [1;32m[DBG][m GID 66, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10114: dial tcp 127.0.0.1:10114: connect: connection refused
+2019/04/23 19:15:17.552695 [1;35m[INF][m GID 66, [SyncFromMainNode] rpc get current height failed
+2019/04/23 19:15:17.552716 [1;31m[ERR][m GID 66, Arbitrator group sync error:  Post http://127.0.0.1:10114: dial tcp 127.0.0.1:10114: connect: connection refused
+2019/04/23 19:15:18.081573 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10134: dial tcp 127.0.0.1:10134: connect: connection refused
+2019/04/23 19:15:18.553323 [1;32m[DBG][m GID 66, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10114: dial tcp 127.0.0.1:10114: connect: connection refused
+2019/04/23 19:15:18.553384 [1;35m[INF][m GID 66, [SyncFromMainNode] rpc get current height failed
+2019/04/23 19:15:18.553404 [1;31m[ERR][m GID 66, Arbitrator group sync error:  Post http://127.0.0.1:10114: dial tcp 127.0.0.1:10114: connect: connection refused
+2019/04/23 19:15:19.082287 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10134: dial tcp 127.0.0.1:10134: connect: connection refused
+2019/04/23 19:15:19.553748 [1;32m[DBG][m GID 66, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10114: dial tcp 127.0.0.1:10114: connect: connection refused
+2019/04/23 19:15:19.553898 [1;35m[INF][m GID 66, [SyncFromMainNode] rpc get current height failed
+2019/04/23 19:15:19.553980 [1;31m[ERR][m GID 66, Arbitrator group sync error:  Post http://127.0.0.1:10114: dial tcp 127.0.0.1:10114: connect: connection refused
+2019/04/23 19:15:20.083386 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10134: dial tcp 127.0.0.1:10134: connect: connection refused
+2019/04/23 19:15:20.554524 [1;32m[DBG][m GID 66, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10114: dial tcp 127.0.0.1:10114: connect: connection refused
+2019/04/23 19:15:20.554562 [1;35m[INF][m GID 66, [SyncFromMainNode] rpc get current height failed
+2019/04/23 19:15:20.554595 [1;31m[ERR][m GID 66, Arbitrator group sync error:  Post http://127.0.0.1:10114: dial tcp 127.0.0.1:10114: connect: connection refused
+2019/04/23 19:15:21.083884 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10134: dial tcp 127.0.0.1:10134: connect: connection refused
+2019/04/23 19:15:21.555134 [1;32m[DBG][m GID 66, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10114: dial tcp 127.0.0.1:10114: connect: connection refused
+2019/04/23 19:15:21.555181 [1;35m[INF][m GID 66, [SyncFromMainNode] rpc get current height failed
+2019/04/23 19:15:21.555201 [1;31m[ERR][m GID 66, Arbitrator group sync error:  Post http://127.0.0.1:10114: dial tcp 127.0.0.1:10114: connect: connection refused
+2019/04/23 19:15:22.086070 [1;32m[DBG][m GID 43, github.com/elastos/Elastos.ELA.Arbiter/rpc.Call jsonrpc.go:349 POST requset err: Post http://127.0.0.1:10134: dial tcp 127.0.0.1:10134: connect: connection refused

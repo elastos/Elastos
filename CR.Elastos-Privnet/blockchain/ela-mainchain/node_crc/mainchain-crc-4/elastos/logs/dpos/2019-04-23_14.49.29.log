@@ -1,0 +1,5 @@
+2019/04/23 14:49:29.394425 [1;35m[INF][m GID 1, ID: 02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7
+2019/04/23 14:49:29.394843 [1;35m[INF][m GID 1, [UpdatePeers] peers: 0  height:  0
+2019/04/23 14:49:29.394951 [1;31m[ERR][m GID 1, self not in direct peers list
+2019/04/23 14:49:29.405814 [1;35m[INF][m GID 56, Server listening on 0.0.0.0:10416
+2019/04/23 14:49:29.406078 [1;35m[INF][m GID 57, Server listening on [::]:10416

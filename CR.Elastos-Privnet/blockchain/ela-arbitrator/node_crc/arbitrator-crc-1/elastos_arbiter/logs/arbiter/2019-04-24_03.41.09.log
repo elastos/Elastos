@@ -1,0 +1,156 @@
+2019/04/24 03:41:09.207903 [1;35m[INF][m GID 1, Init wallet.
+2019/04/24 03:41:09.412669 [1;35m[INF][m GID 1, Arbiter version:  
+2019/04/24 03:41:09.413257 [1;35m[INF][m GID 1, 1. Init chain utxo cache.
+2019/04/24 03:41:09.438839 [1;35m[INF][m GID 1, 2. Init finished transaction cache.
+2019/04/24 03:41:09.449673 [1;35m[INF][m GID 1, 3. Start arbitrator P2P networks.
+2019/04/24 03:41:09.458946 [1;35m[INF][m GID 1, 4. Init configurations.
+2019/04/24 03:41:09.516770 [1;35m[INF][m GID 61, currentHeight: 44  chainHeight: 46
+2019/04/24 03:41:09.530737 [1;32m[DBG][m GID 61, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/24 03:41:09.543588 [1;35m[INF][m GID 60, currentHeight: 282  chainHeight: 283
+2019/04/24 03:41:09.558377 [1;32m[DBG][m GID 60, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/24 03:41:09.586310 [1;35m[INF][m GID 60,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  283
+2019/04/24 03:41:09.603973 [1;32m[DBG][m GID 61, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/24 03:41:09.646718 [1;35m[INF][m GID 61,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  46
+2019/04/24 03:41:09.649614 [1;35m[INF][m GID 1, [arbitrator] Main chain height:  507
+2019/04/24 03:41:09.704555 [1;35m[INF][m GID 1, 5. Start arbitrator spv module.
+2019/04/24 03:41:09.704793 [1;35m[INF][m GID 1, [StartSpvModule] new spv service: &{elastos_arbiter/data/spv 20190131 ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw [ela-mainchain-crc-1:10115] 10115 1 3 <nil>}
+2019/04/24 03:41:09.949427 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: EVQRDhuehyAs2P4bJZrx1JcmBPkkXbHJEw
+2019/04/24 03:41:09.949643 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ
+2019/04/24 03:41:09.949811 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: EamRAVSKik9XTfC485KZpxcmk4KhmPZCea
+2019/04/24 03:41:09.949954 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4
+2019/04/24 03:41:09.950108 [1;35m[INF][m GID 1, 6. Start arbitrator group monitor.
+2019/04/24 03:41:09.950209 [1;35m[INF][m GID 1, 7. Start servers.
+2019/04/24 03:41:09.950301 [1;35m[INF][m GID 1, 8. Start check and remove cross chain transactions from db.
+2019/04/24 03:41:09.950483 [1;35m[INF][m GID 1, 9. Start side chain account divide.
+2019/04/24 03:41:09.971416 [1;35m[INF][m GID 124, Check and remove cross chain transactions from dbcache finished
+2019/04/24 03:41:13.049653 [1;35m[INF][m GID 122, [arbitrator] Main chain height:  508
+2019/04/24 03:41:13.085062 [1;35m[INF][m GID 122, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/24 03:41:13.085265 [1;35m[INF][m GID 122, [SyncMainChainCachedTxs] start
+2019/04/24 03:41:13.085477 [1;35m[INF][m GID 122, [SyncMainChainCachedTxs] end
+2019/04/24 03:41:13.085602 [1;33m[WRN][m GID 122, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/24 03:41:13.085719 [1;35m[INF][m GID 173, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/04/24 03:41:13.085980 [1;35m[INF][m GID 173, [sideChainPowTransfer] start
+2019/04/24 03:41:13.085824 [1;35m[INF][m GID 171, [SendCachedWithdrawTxs] start
+2019/04/24 03:41:13.086221 [1;35m[INF][m GID 171, No cached withdraw transaction need to send
+2019/04/24 03:41:13.086319 [1;35m[INF][m GID 171, [SendCachedWithdrawTxs] end
+2019/04/24 03:41:13.085836 [1;35m[INF][m GID 170, [SendCachedWithdrawTxs] start
+2019/04/24 03:41:13.086563 [1;35m[INF][m GID 170, No cached withdraw transaction need to send
+2019/04/24 03:41:13.086683 [1;35m[INF][m GID 170, [SendCachedWithdrawTxs] end
+2019/04/24 03:41:13.085849 [1;35m[INF][m GID 172, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/24 03:41:13.086804 [1;35m[INF][m GID 172, [sideChainPowTransfer] start
+2019/04/24 03:41:13.090777 [1;35m[INF][m GID 172, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 262ffe0c5518e08b0f993e35122810c6ed655f66646d70817a3d3c77bc64b24e
+2019/04/24 03:41:13.099857 [1;33m[WRN][m GID 172, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/24 03:41:13.128225 [1;35m[INF][m GID 173, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: 84d280e3b2fa9d48c61961a3dd0e8d6690540d106aaec9fef6fb962c911a4713
+2019/04/24 03:41:13.128959 [1;33m[WRN][m GID 173, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/24 03:41:18.935370 [1;35m[INF][m GID 61, currentHeight: 46  chainHeight: 47
+2019/04/24 03:41:18.936170 [1;32m[DBG][m GID 61, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/24 03:41:18.941205 [1;35m[INF][m GID 61,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  47
+2019/04/24 03:41:18.941339 [1;35m[INF][m GID 61, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/04/24 03:41:18.941443 [1;35m[INF][m GID 61, [sideChainPowTransfer] start
+2019/04/24 03:41:18.942099 [1;35m[INF][m GID 61, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: 63a23019a94b38d18cab2e0b211426db0f6a2f573cc6e9f084c40297559a597a
+2019/04/24 03:41:18.943906 [1;33m[WRN][m GID 61, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/24 03:41:18.944063 [1;35m[INF][m GID 61, [SyncSideChain] Start side chain mining, genesis address: [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/04/24 03:41:27.001619 [1;35m[INF][m GID 61, currentHeight: 47  chainHeight: 48
+2019/04/24 03:41:27.003105 [1;32m[DBG][m GID 61, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/24 03:41:27.016613 [1;35m[INF][m GID 61,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  48
+2019/04/24 03:41:27.016679 [1;35m[INF][m GID 61, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/04/24 03:41:27.016700 [1;35m[INF][m GID 61, [sideChainPowTransfer] start
+2019/04/24 03:41:27.018864 [1;35m[INF][m GID 61, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: 014a94fc582a13d7f4d06503a8d04b1743eee1411edc26a309bb1047a7f87ab0
+2019/04/24 03:41:27.020708 [1;33m[WRN][m GID 61, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/24 03:41:27.020772 [1;35m[INF][m GID 61, [SyncSideChain] Start side chain mining, genesis address: [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/04/24 03:41:37.915754 [1;35m[INF][m GID 122, [arbitrator] Main chain height:  509
+2019/04/24 03:41:37.919642 [1;35m[INF][m GID 122, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/24 03:41:40.104833 [1;35m[INF][m GID 60, currentHeight: 283  chainHeight: 284
+2019/04/24 03:41:40.108629 [1;32m[DBG][m GID 60, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/24 03:41:40.111844 [1;35m[INF][m GID 60,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  284
+2019/04/24 03:41:43.023618 [1;35m[INF][m GID 122, [arbitrator] Main chain height:  510
+2019/04/24 03:42:01.331992 [1;35m[INF][m GID 122, [arbitrator] Main chain height:  511
+2019/04/24 03:42:03.442351 [1;35m[INF][m GID 60, currentHeight: 284  chainHeight: 285
+2019/04/24 03:42:03.444077 [1;32m[DBG][m GID 60, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/24 03:42:03.468465 [1;35m[INF][m GID 60,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  285
+2019/04/24 03:42:10.151461 [1;35m[INF][m GID 125, Warning side chain mining account:  EVQRDhuehyAs2P4bJZrx1JcmBPkkXbHJEw: 0 EamRAVSKik9XTfC485KZpxcmk4KhmPZCea: 0 
+2019/04/24 03:42:10.224407 [1;35m[INF][m GID 124, Check and remove cross chain transactions from dbcache finished
+2019/04/24 03:42:10.570187 [1;32m[DBG][m GID 125, github.com/elastos/Elastos.ELA.Arbiter/sideauxpow.divideTransfer autodivide.go:89 Divide transaction successfully signed:  1 1
+2019/04/24 03:42:15.848134 [1;35m[INF][m GID 60, currentHeight: 285  chainHeight: 286
+2019/04/24 03:42:15.872863 [1;32m[DBG][m GID 60, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/24 03:42:15.895736 [1;35m[INF][m GID 60,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  286
+2019/04/24 03:42:33.259416 [1;35m[INF][m GID 61, currentHeight: 48  chainHeight: 49
+2019/04/24 03:42:33.302096 [1;32m[DBG][m GID 61, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/24 03:42:33.373687 [1;35m[INF][m GID 61,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  49
+2019/04/24 03:42:38.068164 [1;35m[INF][m GID 122, [arbitrator] Main chain height:  512
+2019/04/24 03:42:47.830071 [1;35m[INF][m GID 61, currentHeight: 49  chainHeight: 50
+2019/04/24 03:42:47.837087 [1;32m[DBG][m GID 61, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/24 03:42:47.854607 [1;35m[INF][m GID 61,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  50
+2019/04/24 03:42:50.920513 [1;35m[INF][m GID 61, currentHeight: 50  chainHeight: 51
+2019/04/24 03:42:50.921076 [1;32m[DBG][m GID 61, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/24 03:42:50.924483 [1;35m[INF][m GID 61,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  51
+2019/04/24 03:42:58.672960 [1;35m[INF][m GID 122, [arbitrator] Main chain height:  513
+2019/04/24 03:43:03.787235 [1;35m[INF][m GID 122, [arbitrator] Main chain height:  514
+2019/04/24 03:43:03.887753 [1;35m[INF][m GID 122, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/24 03:43:03.887965 [1;35m[INF][m GID 122, [SyncMainChainCachedTxs] start
+2019/04/24 03:43:03.962660 [1;35m[INF][m GID 122, [SyncMainChainCachedTxs] end
+2019/04/24 03:43:03.962942 [1;33m[WRN][m GID 122, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/24 03:43:03.964057 [1;35m[INF][m GID 705, [SendCachedWithdrawTxs] start
+2019/04/24 03:43:03.964298 [1;35m[INF][m GID 705, No cached withdraw transaction need to send
+2019/04/24 03:43:03.964402 [1;35m[INF][m GID 705, [SendCachedWithdrawTxs] end
+2019/04/24 03:43:03.964518 [1;35m[INF][m GID 706, [SendCachedWithdrawTxs] start
+2019/04/24 03:43:03.964666 [1;35m[INF][m GID 706, No cached withdraw transaction need to send
+2019/04/24 03:43:03.964774 [1;35m[INF][m GID 706, [SendCachedWithdrawTxs] end
+2019/04/24 03:43:03.964888 [1;35m[INF][m GID 708, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/04/24 03:43:03.965003 [1;35m[INF][m GID 707, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/24 03:43:03.965110 [1;35m[INF][m GID 707, [sideChainPowTransfer] start
+2019/04/24 03:43:03.965289 [1;35m[INF][m GID 708, [sideChainPowTransfer] start
+2019/04/24 03:43:03.989340 [1;35m[INF][m GID 707, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 7023b769f62320c6939dcae140235f88d5bfd93eba5f269f796b9a09b8b036ee
+2019/04/24 03:43:03.999039 [1;35m[INF][m GID 708, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: 7563ec61e3ab4cf359870fc8f9149013f19b62e30c97bfc1fb73951e635c11d1
+2019/04/24 03:43:04.013781 [1;33m[WRN][m GID 707, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/24 03:43:04.027300 [1;33m[WRN][m GID 708, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/24 03:43:10.227883 [1;35m[INF][m GID 124, Check and remove cross chain transactions from dbcache finished
+2019/04/24 03:43:11.159081 [1;35m[INF][m GID 125, Warning side chain mining account:  EVQRDhuehyAs2P4bJZrx1JcmBPkkXbHJEw: 0 EamRAVSKik9XTfC485KZpxcmk4KhmPZCea: 0 
+2019/04/24 03:43:11.312482 [1;32m[DBG][m GID 125, github.com/elastos/Elastos.ELA.Arbiter/sideauxpow.divideTransfer autodivide.go:89 Divide transaction successfully signed:  1 1
+2019/04/24 03:43:12.149638 [1;35m[INF][m GID 122, [arbitrator] Main chain height:  515
+2019/04/24 03:43:12.156058 [1;35m[INF][m GID 122, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/24 03:43:24.364996 [1;35m[INF][m GID 122, [arbitrator] Main chain height:  516
+2019/04/24 03:43:31.447521 [1;35m[INF][m GID 122, [arbitrator] Main chain height:  517
+2019/04/24 03:43:38.610798 [1;35m[INF][m GID 122, [arbitrator] Main chain height:  518
+2019/04/24 03:43:47.830068 [1;35m[INF][m GID 60, currentHeight: 286  chainHeight: 287
+2019/04/24 03:43:47.830608 [1;32m[DBG][m GID 60, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/24 03:43:47.834550 [1;35m[INF][m GID 60,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  287
+2019/04/24 03:43:48.218604 [1;35m[INF][m GID 61, currentHeight: 51  chainHeight: 52
+2019/04/24 03:43:48.219339 [1;32m[DBG][m GID 61, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/24 03:43:48.224113 [1;35m[INF][m GID 61,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  52
+2019/04/24 03:43:49.994225 [1;35m[INF][m GID 122, [arbitrator] Main chain height:  519
+2019/04/24 03:43:52.429088 [1;35m[INF][m GID 61, currentHeight: 52  chainHeight: 53
+2019/04/24 03:43:52.440543 [1;32m[DBG][m GID 61, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/24 03:43:52.444512 [1;35m[INF][m GID 61,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  53
+2019/04/24 03:44:10.228449 [1;35m[INF][m GID 124, Check and remove cross chain transactions from dbcache finished
+2019/04/24 03:44:11.422916 [1;35m[INF][m GID 125, Warning side chain mining account:  EVQRDhuehyAs2P4bJZrx1JcmBPkkXbHJEw: 0 EamRAVSKik9XTfC485KZpxcmk4KhmPZCea: 0 
+2019/04/24 03:44:11.508833 [1;32m[DBG][m GID 125, github.com/elastos/Elastos.ELA.Arbiter/sideauxpow.divideTransfer autodivide.go:89 Divide transaction successfully signed:  1 1
+2019/04/24 03:44:12.547225 [1;35m[INF][m GID 122, [arbitrator] Main chain height:  520
+2019/04/24 03:44:12.559378 [1;35m[INF][m GID 122, [OnDutyArbitratorChanged] I am on duty of main
+2019/04/24 03:44:12.559571 [1;35m[INF][m GID 122, [SyncMainChainCachedTxs] start
+2019/04/24 03:44:12.559777 [1;35m[INF][m GID 122, [SyncMainChainCachedTxs] end
+2019/04/24 03:44:12.559907 [1;33m[WRN][m GID 122, [SyncMainChainCachedTxs] No main chain tx in dbcache
+2019/04/24 03:44:12.560021 [1;35m[INF][m GID 1017, [OnDutyChanged] Start side chain mining: genesis address [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ]
+2019/04/24 03:44:12.560269 [1;35m[INF][m GID 1017, [sideChainPowTransfer] start
+2019/04/24 03:44:12.560116 [1;35m[INF][m GID 1015, [SendCachedWithdrawTxs] start
+2019/04/24 03:44:12.560129 [1;35m[INF][m GID 1014, [SendCachedWithdrawTxs] start
+2019/04/24 03:44:12.560141 [1;35m[INF][m GID 1016, [OnDutyChanged] Start side chain mining: genesis address [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ]
+2019/04/24 03:44:12.560747 [1;35m[INF][m GID 1016, [sideChainPowTransfer] start
+2019/04/24 03:44:12.561549 [1;35m[INF][m GID 1017, sideGenesisHash: 0e739a2b87774ef2266a3cabc79a8e1201732fe409cfe50bd4125efb1d1169b5 sideBlockHash: 65411b89383a05cc4f1cbfc40c8887e7cca1c39e50cb380657743d6a1aae4d6a
+2019/04/24 03:44:12.561756 [1;35m[INF][m GID 1016, sideGenesisHash: a3c455a90843db2acd22554f2768a8d4233fafbf8dd549e6b261c2786993be56 sideBlockHash: 413fe12e83984cb9bf37d34ba8d8150f5dbf35a316db07d4d511d486c7edc439
+2019/04/24 03:44:12.562146 [1;35m[INF][m GID 1015, No cached withdraw transaction need to send
+2019/04/24 03:44:12.562571 [1;35m[INF][m GID 1015, [SendCachedWithdrawTxs] end
+2019/04/24 03:44:12.562204 [1;35m[INF][m GID 1014, No cached withdraw transaction need to send
+2019/04/24 03:44:12.562772 [1;35m[INF][m GID 1014, [SendCachedWithdrawTxs] end
+2019/04/24 03:44:12.562246 [1;33m[WRN][m GID 1017, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/24 03:44:12.563232 [1;33m[WRN][m GID 1016, [sideChainPowTransfer] create transaction failed: [Wallet], Available token is not enough
+2019/04/24 03:44:16.780587 [1;35m[INF][m GID 122, [arbitrator] Main chain height:  521
+2019/04/24 03:44:16.789755 [1;35m[INF][m GID 122, [OnDutyArbitratorChanged] I became not on duty of main
+2019/04/24 03:44:29.002129 [1;35m[INF][m GID 122, [arbitrator] Main chain height:  522
+2019/04/24 03:44:38.293415 [1;35m[INF][m GID 122, [arbitrator] Main chain height:  523
+2019/04/24 03:44:43.386664 [1;35m[INF][m GID 61, currentHeight: 53  chainHeight: 54
+2019/04/24 03:44:43.387111 [1;32m[DBG][m GID 61, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/24 03:44:43.392841 [1;35m[INF][m GID 61,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  54
+2019/04/24 03:44:47.665242 [1;35m[INF][m GID 60, currentHeight: 287  chainHeight: 288
+2019/04/24 03:44:47.674745 [1;32m[DBG][m GID 60, github.com/elastos/Elastos.ELA.Arbiter/rpc.GetWithdrawTransactionByHeight jsonrpc.go:178 [GetWithdrawTransactionByHeight] len transactions: 0 transactions: []
+2019/04/24 03:44:47.679801 [1;35m[INF][m GID 60,  [SyncSideChain] Side chain [ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ ] height:  288
