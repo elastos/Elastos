@@ -630,10 +630,10 @@ func (s *ChainStore) IsBlockInStore(hash *common.Uint256) bool {
 		return false
 	}
 
-	// Deserialize block data
-	err = b.FromTrimmedData(r)
+	// Deserialize block header data
+	err = b.Header.Deserialize(r)
 	if err != nil {
-		log.Error("Get trimmed data failed: ", err)
+		log.Error("Get block header failed: ", err)
 		return false
 	}
 
