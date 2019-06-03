@@ -16,16 +16,15 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
-	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"github.com/elastos/Elastos.ELA/p2p"
 )
 
 func makeEmptyMessage(cmd string) (message p2p.Message, err error) {
 	switch cmd {
-	case p2p.CmdVersion:
-		message = new(msg.Version)
-	case p2p.CmdVerAck:
-		message = new(msg.VerAck)
+	case msg.CmdVersion:
+		message = &msg.Version{}
+	case msg.CmdVerAck:
+		message = &msg.VerAck{}
 	default:
 		err = fmt.Errorf("unknown message type %s", cmd)
 	}
@@ -96,23 +95,16 @@ func pipe(c1, c2 *conn) (*conn, *conn) {
 
 // peerStats holds the expected peer stats used for testing peer.
 type peerStats struct {
-	wantServices        uint64
-	wantProtocolVersion uint32
-	wantConnected       bool
-	wantBestHeight      uint32
-	wantStartingHeight  uint32
-	wantLastPingTime    time.Time
-	wantLastPingMicros  int64
-	wantTimeOffset      int64
+	wantConnected      bool
+	wantBestHeight     uint32
+	wantStartingHeight uint32
+	wantLastPingTime   time.Time
+	wantLastPingMicros int64
+	wantTimeOffset     int64
 }
 
 // testPeer tests the given peer's flags and stats
 func testPeer(t *testing.T, p *peer.Peer, s peerStats) {
-	if p.Services() != s.wantServices {
-		t.Errorf("testPeer: wrong Services - got %v, want %v", p.Services(), s.wantServices)
-		return
-	}
-
 	if !p.LastPingTime().Equal(s.wantLastPingTime) {
 		t.Errorf("testPeer: wrong LastPingTime - got %v, want %v", p.LastPingTime(), s.wantLastPingTime)
 		return
@@ -120,11 +112,6 @@ func testPeer(t *testing.T, p *peer.Peer, s peerStats) {
 
 	if p.LastPingMicros() != s.wantLastPingMicros {
 		t.Errorf("testPeer: wrong LastPingMicros - got %v, want %v", p.LastPingMicros(), s.wantLastPingMicros)
-		return
-	}
-
-	if p.ProtocolVersion() != s.wantProtocolVersion {
-		t.Errorf("testPeer: wrong ProtocolVersion - got %v, want %v", p.ProtocolVersion(), s.wantProtocolVersion)
 		return
 	}
 
@@ -156,21 +143,27 @@ func testPeer(t *testing.T, p *peer.Peer, s peerStats) {
 	}
 }
 
-func peerConfig(magic, prev uint32, services uint64) *peer.Config {
+func peerConfig(magic uint32, verack chan<- struct{}) *peer.Config {
 	var pid peer.PID
 	priKey, pubKey, _ := crypto.GenerateKeyPair()
 	ePubKey, _ := pubKey.EncodePoint(true)
 	copy(pid[:], ePubKey)
 	return &peer.Config{
-		Magic:           magic,
-		ProtocolVersion: prev,
-		Services:        services,
-		PID:             pid,
-		PingInterval:    time.Second * 30,
-		SignNonce: func(nonce []byte) (signature [64]byte) {
+		Magic:        magic,
+		PID:          pid,
+		PingInterval: time.Second * 30,
+		Sign: func(nonce []byte) []byte {
 			sign, _ := crypto.Sign(priKey, nonce)
-			copy(signature[:], sign)
-			return signature
+			return sign
+		},
+		MakeEmptyMessage: func(cmd string) (p2p.Message, error) {
+			return makeEmptyMessage(cmd)
+		},
+		MessageFunc: func(peer *peer.Peer, message p2p.Message) {
+			switch message.(type) {
+			case *msg.VerAck:
+				verack <- struct{}{}
+			}
 		},
 	}
 }
@@ -178,42 +171,20 @@ func peerConfig(magic, prev uint32, services uint64) *peer.Config {
 // TestPeerConnection tests connection between inbound and outbound peers.
 func TestPeerConnection(t *testing.T) {
 	verack := make(chan struct{})
-	var makeMessage p2p.MakeEmptyMessage = func(cmd string) (p2p.Message, error) {
-		switch cmd {
-		case p2p.CmdVerAck:
-			verack <- struct{}{}
-		}
-		return makeEmptyMessage(cmd)
-	}
-	var messageFunc peer.MessageFunc = func(peer *peer.Peer, message p2p.Message) {
-		switch message.(type) {
-		case *msg.VerAck:
-			verack <- struct{}{}
-		}
-	}
-
-	peer1Cfg := peerConfig(123123, pact.EBIP001Version, 0)
-	peer2Cfg := peerConfig(123123, pact.EBIP001Version, 1)
-	peer1Cfg.MakeEmptyMessage = makeMessage
-	peer2Cfg.MakeEmptyMessage = makeMessage
-	peer1Cfg.AddMessageFunc(messageFunc)
-	peer2Cfg.AddMessageFunc(messageFunc)
+	peer1Cfg := peerConfig(123123, verack)
+	peer2Cfg := peerConfig(123123, verack)
 
 	wantStats1 := peerStats{
-		wantServices:        0,
-		wantProtocolVersion: pact.EBIP001Version,
-		wantConnected:       true,
-		wantLastPingTime:    time.Time{},
-		wantLastPingMicros:  int64(0),
-		wantTimeOffset:      int64(0),
+		wantConnected:      true,
+		wantLastPingTime:   time.Time{},
+		wantLastPingMicros: int64(0),
+		wantTimeOffset:     int64(0),
 	}
 	wantStats2 := peerStats{
-		wantServices:        1,
-		wantProtocolVersion: pact.EBIP001Version,
-		wantConnected:       true,
-		wantLastPingTime:    time.Time{},
-		wantLastPingMicros:  int64(0),
-		wantTimeOffset:      int64(0),
+		wantConnected:      true,
+		wantLastPingTime:   time.Time{},
+		wantLastPingMicros: int64(0),
+		wantTimeOffset:     int64(0),
 	}
 
 	tests := []struct {
@@ -280,6 +251,7 @@ func TestPeerConnection(t *testing.T) {
 			t.Errorf("TestPeerConnection setup #%d: unexpected err %v", i, err)
 			return
 		}
+		time.Sleep(time.Millisecond)
 		testPeer(t, inPeer, wantStats2)
 		testPeer(t, outPeer, wantStats1)
 
@@ -298,15 +270,12 @@ func TestUnsupportedVersionPeer(t *testing.T) {
 	ePubKey, _ := pubKey.EncodePoint(true)
 	copy(pid[:], ePubKey)
 	peerCfg := &peer.Config{
-		Magic:           123123,
-		ProtocolVersion: 0,
-		Services:        0,
-		PID:             pid,
-		PingInterval:    time.Second * 30,
-		SignNonce: func(nonce []byte) (signature [64]byte) {
+		Magic:        123123,
+		PID:          pid,
+		PingInterval: time.Second * 30,
+		Sign: func(nonce []byte) []byte {
 			sign, _ := crypto.Sign(priKey, nonce)
-			copy(signature[:], sign)
-			return signature
+			return sign
 		},
 		MakeEmptyMessage: makeEmptyMessage,
 	}
@@ -354,10 +323,11 @@ func TestUnsupportedVersionPeer(t *testing.T) {
 		t.Fatal("Peer did not send version message")
 	}
 
-	nonce := [32]byte{}
+	var nonce, target [16]byte
 	rand.Read(nonce[:])
+	rand.Read(target[:])
 	// Remote peer writes version message advertising invalid protocol version 1
-	invalidVersionMsg := msg.NewVersion(1, 0, peerCfg.PID, nonce)
+	invalidVersionMsg := msg.NewVersion(peerCfg.PID, target, nonce, 8333)
 
 	err = p2p.WriteMessage(
 		remoteConn.Writer,

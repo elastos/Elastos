@@ -7,14 +7,15 @@ import (
 	"fmt"
 	"os"
 
-	clicom "github.com/elastos/Elastos.ELA/cmd/common"
+	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	pg "github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/servers"
 	"github.com/elastos/Elastos.ELA/utils/http"
-	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
 
 	"github.com/yuin/gopher-lua"
 )
@@ -26,6 +27,7 @@ func RegisterTransactionType(L *lua.LState) {
 	L.SetGlobal("transaction", mt)
 	// static attributes
 	L.SetField(mt, "new", L.NewFunction(newTransaction))
+	L.SetField(mt, "fromfile", L.NewFunction(fromFile))
 	// methods
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), transactionMethods))
 }
@@ -60,6 +62,8 @@ func newTransaction(L *lua.LState) int {
 		pload, _ = ud.Value.(*payload.ProducerInfo)
 	case *payload.ProcessProducer:
 		pload, _ = ud.Value.(*payload.ProcessProducer)
+	case *payload.ActivateProducer:
+		pload, _ = ud.Value.(*payload.ActivateProducer)
 	case *payload.ReturnDepositCoin:
 		pload, _ = ud.Value.(*payload.ReturnDepositCoin)
 	case *payload.DPOSIllegalProposals:
@@ -72,6 +76,8 @@ func newTransaction(L *lua.LState) int {
 		pload, _ = ud.Value.(*payload.SidechainIllegalData)
 	case *payload.InactiveArbitrators:
 		pload, _ = ud.Value.(*payload.InactiveArbitrators)
+	case *payload.SideChainPow:
+		pload, _ = ud.Value.(*payload.SideChainPow)
 	default:
 		fmt.Println("error: undefined payload type")
 		os.Exit(1)
@@ -95,6 +101,33 @@ func newTransaction(L *lua.LState) int {
 	return 1
 }
 
+func fromFile(L *lua.LState) int {
+	filePath := L.CheckString(1)
+	content, err := cmdcom.ReadFile(filePath)
+	if err != nil {
+		fmt.Println(err)
+	}
+	txData, err := common.HexStringToBytes(content)
+	if err != nil {
+		fmt.Println("decode transaction content failed")
+		os.Exit(1)
+	}
+
+	var txn types.Transaction
+	err = txn.Deserialize(bytes.NewReader(txData))
+	if err != nil {
+		fmt.Println("deserialize transaction failed")
+		os.Exit(1)
+	}
+
+	ud := L.NewUserData()
+	ud.Value = &txn
+	L.SetMetatable(ud, L.GetTypeMetatable(luaTransactionTypeName))
+	L.Push(ud)
+
+	return 1
+}
+
 // Checks whether the first lua argument is a *LUserData with *Transaction and returns this *Transaction.
 func checkTransaction(L *lua.LState, idx int) *types.Transaction {
 	ud := L.CheckUserData(idx)
@@ -106,26 +139,72 @@ func checkTransaction(L *lua.LState, idx int) *types.Transaction {
 }
 
 var transactionMethods = map[string]lua.LGFunction{
-	"appendtxin":   transactionAppendInput,
-	"appendtxout":  transactionAppendOutput,
-	"appendattr":   transactionAppendAttribute,
-	"get":          transactionGet,
-	"sign":         transactionSign,
-	"hash":         transactionHash,
-	"serialize":    transactionSerialize,
-	"deserialize":  transactionDeserialize,
-	"appendenough": transactionAppendEnough,
+	"appendtxin":    txAppendInput,
+	"appendtxout":   txAppendOutput,
+	"appendattr":    txAppendAttribute,
+	"get":           txGet,
+	"sign":          signTx,
+	"hash":          txHash,
+	"serialize":     serialize,
+	"deserialize":   deserialize,
+	"appendenough":  appendEnough,
+	"appendprogram": appendProgram,
+	"signpayload":   signPayload,
+}
+
+func signPayload(L *lua.LState) int {
+	txn := checkTransaction(L, 1)
+	client, err := checkClient(L, 2)
+	if err != nil {
+		cmdcom.PrintErrorAndExit(err.Error())
+	}
+
+	switch txn.TxType {
+	case types.RegisterProducer:
+		registerProducer, ok := txn.Payload.(*payload.ProducerInfo)
+		if !ok {
+			cmdcom.PrintErrorAndExit("invalid register producer payload")
+		}
+		rpSignBuf := new(bytes.Buffer)
+		if err := registerProducer.SerializeUnsigned(rpSignBuf, payload.ProducerInfoVersion); err != nil {
+			cmdcom.PrintErrorAndExit(err.Error())
+		}
+
+		codeHash, err := contract.PublicKeyToStandardCodeHash(registerProducer.OwnerPublicKey)
+		if err != nil {
+			cmdcom.PrintErrorAndExit(err.Error())
+		}
+		acc := client.GetAccountByCodeHash(*codeHash)
+		if acc == nil {
+			cmdcom.PrintErrorAndExit("no available account in wallet")
+		}
+		rpSig, err := crypto.Sign(acc.PrivKey(), rpSignBuf.Bytes())
+		if err != nil {
+			cmdcom.PrintErrorAndExit(err.Error())
+		}
+		registerProducer.Signature = rpSig
+		txn.Payload = registerProducer
+	default:
+		cmdcom.PrintErrorAndExit("invalid payload")
+	}
+
+	udn := L.NewUserData()
+	udn.Value = txn
+	L.SetMetatable(udn, L.GetTypeMetatable(luaTransactionTypeName))
+	L.Push(udn)
+
+	return 1
 }
 
 // Getter and setter for the Person#Name
-func transactionGet(L *lua.LState) int {
+func txGet(L *lua.LState) int {
 	p := checkTransaction(L, 1)
 	fmt.Println(p)
 
 	return 0
 }
 
-func transactionAppendInput(L *lua.LState) int {
+func txAppendInput(L *lua.LState) int {
 	p := checkTransaction(L, 1)
 	input := checkInput(L, 2)
 	p.Inputs = append(p.Inputs, input)
@@ -133,7 +212,7 @@ func transactionAppendInput(L *lua.LState) int {
 	return 0
 }
 
-func transactionAppendAttribute(L *lua.LState) int {
+func txAppendAttribute(L *lua.LState) int {
 	p := checkTransaction(L, 1)
 	attr := checkAttribute(L, 2)
 	p.Attributes = append(p.Attributes, attr)
@@ -141,7 +220,7 @@ func transactionAppendAttribute(L *lua.LState) int {
 	return 0
 }
 
-func transactionAppendOutput(L *lua.LState) int {
+func txAppendOutput(L *lua.LState) int {
 	txn := checkTransaction(L, 1)
 	output := checkTxOutput(L, 2)
 	txn.Outputs = append(txn.Outputs, output)
@@ -149,7 +228,7 @@ func transactionAppendOutput(L *lua.LState) int {
 	return 0
 }
 
-func transactionHash(L *lua.LState) int {
+func txHash(L *lua.LState) int {
 	tx := checkTransaction(L, 1)
 	h := tx.Hash()
 	hash := common.BytesReverse(h.Bytes())
@@ -159,9 +238,13 @@ func transactionHash(L *lua.LState) int {
 	return 1
 }
 
-func transactionSign(L *lua.LState) int {
+func signTx(L *lua.LState) int {
 	txn := checkTransaction(L, 1)
-	client := checkClient(L, 2)
+	client, err := checkClient(L, 2)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	acc := client.GetMainAccount()
 	program := pg.Program{
@@ -172,7 +255,7 @@ func transactionSign(L *lua.LState) int {
 		&program,
 	}
 
-	txn, err := client.Sign(txn)
+	txn, err = client.Sign(txn)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -181,7 +264,7 @@ func transactionSign(L *lua.LState) int {
 	return 0
 }
 
-func transactionSerialize(L *lua.LState) int {
+func serialize(L *lua.LState) int {
 	txn := checkTransaction(L, 1)
 
 	var buffer bytes.Buffer
@@ -193,7 +276,7 @@ func transactionSerialize(L *lua.LState) int {
 	return 2
 }
 
-func transactionDeserialize(L *lua.LState) int {
+func deserialize(L *lua.LState) int {
 	txn := checkTransaction(L, 1)
 	txSlice, _ := hex.DecodeString(L.ToString(2))
 
@@ -202,12 +285,12 @@ func transactionDeserialize(L *lua.LState) int {
 	return 0
 }
 
-func transactionAppendEnough(L *lua.LState) int {
+func appendEnough(L *lua.LState) int {
 	txn := checkTransaction(L, 1)
 	from := L.ToString(2)
 	totalAmount := L.ToInt64(3)
 
-	result, err := jsonrpc.CallParams(clicom.LocalServer(), "listunspent", http.Params{
+	result, err := cmdcom.RPCCall("listunspent", http.Params{
 		"addresses": []string{from},
 	})
 	if err != nil {
@@ -267,4 +350,12 @@ func transactionAppendEnough(L *lua.LState) int {
 	L.Push(lua.LNumber(charge))
 
 	return 1
+}
+
+func appendProgram(L *lua.LState) int {
+	txn := checkTransaction(L, 1)
+	program := checkProgram(L, 2)
+	txn.Programs = append(txn.Programs, program)
+
+	return 0
 }

@@ -34,8 +34,13 @@ print(charge)
 local default_output = defaultoutput.new()
 
 -- output: asset_id, value, recipient, output_paload_type, output_paload
-local amount_output = output.new(assetID, (amount * 100000000) + charge, recipient, 0, default_output)
+local amount_output = output.new(assetID, amount * 100000000, recipient, 0, default_output)
 tx:appendtxout(amount_output)
+if (charge ~= 0)
+then
+    local charge_output = output.new(assetID, charge, deposit_addr, 0, default_output)
+    tx:appendtxout(charge_output)
+end
 -- print(amount_output:get())
 
 -- sign

@@ -64,7 +64,7 @@ func (h *DPOSOnDutyHandler) TryStartNewConsensus(b *types.Block) bool {
 		h.proposalDispatcher.StartProposal(b)
 		result = true
 	} else { //finished
-		log.Info("[OnDuty][OnBlockReceived] received unsigned block, do nothing")
+		log.Info("[OnDuty][OnBlockReceived] received unsigned block, record block")
 		h.consensus.ProcessBlock(b)
 		result = false
 	}
@@ -74,13 +74,15 @@ func (h *DPOSOnDutyHandler) TryStartNewConsensus(b *types.Block) bool {
 
 func (h *DPOSOnDutyHandler) tryCreateInactiveArbitratorsTx() bool {
 	if h.proposalDispatcher.IsViewChangedTimeOut() {
-		tx, err := h.proposalDispatcher.CreateInactiveArbitrators()
-		if err != nil {
-			log.Warn("[tryCreateInactiveArbitratorsTx] create tx error: ", err)
-			return false
-		}
+		if h.cfg.Manager.isCRCArbiter() {
+			tx, err := h.proposalDispatcher.CreateInactiveArbitrators()
+			if err != nil {
+				log.Warn("[tryCreateInactiveArbitratorsTx] create tx error: ", err)
+				return false
+			}
 
-		h.cfg.Network.BroadcastMessage(&msg.Tx{Serializable: tx})
+			h.cfg.Network.BroadcastMessage(&msg.Tx{Serializable: tx})
+		}
 		return true
 	}
 	return false

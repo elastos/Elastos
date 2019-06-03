@@ -24,10 +24,10 @@ func extractRejectCode(err error) (msg.RejectCode, bool) {
 		code = msg.RejectInsufficientFee
 
 	default:
-		code = msg.RejectInvalid
+		return msg.RejectInvalid, false
 	}
 
-	return code, false
+	return code, true
 }
 
 // ErrToRejectErr examines the underlying type of the error and returns a reject

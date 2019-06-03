@@ -1,6 +1,75 @@
-# ela-cli 使用说明
+# ELA CLI 使用说明
 
-## 1.钱包管理
+[[English](cli_user_guide.md)|中文]
+
+ela-cli 是 ELA 节点的命令行客户端，用于管理钱包账户，发送交易以及查询节点信息等。
+
+```
+NAME:
+   ela-cli - command line tool for ELA blockchain
+
+USAGE:
+   ela-cli [global options] command [command options] [args]
+
+VERSION:
+   v0.3.1-129-gd74b
+
+COMMANDS:
+     wallet    Wallet operations
+     info      Show node information
+     mine      Toggle cpu mining or manual mine
+     script    Test the blockchain via lua script
+     rollback  Rollback blockchain data
+     help, h   Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --rpcuser value      username for JSON-RPC connections
+   --rpcpassword value  password for JSON-RPC connections
+   --rpcport <number>   JSON-RPC server listening port <number>
+   --help, -h           show help
+   --version, -v        print the version
+```
+
+#### RPC 参数配置
+
+--rpcport 用指定 rpc 服务器绑定的端口号。默认值为20336。
+
+--rpcuser 用于指定 rpc 服务器 BasicAuth 用户名。默认值为空。
+
+--rpcpassword 用于指定 rpc 服务器 BasicAuth 密码。默认值为空。
+
+例如查询节点区块高度：
+
+```
+./ela-cli --rpcport 20336 --rpcuser user123 --rpcpassword pass123 info getcurrentheight
+```
+
+返回如下：
+
+```
+301
+```
+
+可以配置 `ela-cli.sh ` 脚本，简化命令。
+
+```
+#!/bin/bash
+
+./ela-cli --rpcport 20336 --rpcuser user123 --rpcpassword pass123 $*
+```
+
+查询节点区块高度：
+
+```
+./ela-cli.sh info getcurrentheight
+```
+
+
+
+## 1. 钱包管理
+
+钱包管理命令可以用来添加、查看、修改、删除、导入账户等功能。
+使用 `./ela-cli wallet -h` 命令可以查看钱包管理命令的帮助信息。
 
 ```
 NAME:
@@ -11,7 +80,7 @@ USAGE:
 
 COMMANDS:
    Account:
-     create, c       Create a account
+     create, c       Create an account
      account, a      Show account address and public key
      balance, b      Check account balance
      add             Add a standard account
@@ -32,13 +101,17 @@ OPTIONS:
    --help, -h  show help
 ```
 
-### 1.1 创建账户
+#### 指定钱包
 
-创建账户命令用于创建一个单签账户，并将私钥加密存储在 keystore 文件中。每个 keystore 文件都有一个**主账户**，一般情况下是第一个被添加上账户。
+--wallet <file>, -w <file> 用于指定 keystore 文件路径。默认值为 `./keystore.dat` 。
 
---wallet <file>, -w <file> 用于指定 keystore 文件路径。若不指定，默认为 `keystore.dat` 文件。
+#### 指定密码
 
---password <value>, -p <value> 用于指定 keystore 密码。也可以在下一步提示时再输入密码。
+--password <value>, -p <value> 用于指定 keystore 密码。也可以根据提示再输入密码。
+
+### 1.1 创建钱包
+
+创建账户命令用于创建一个单签账户，并将私钥加密存储在 keystore 文件中。每个 keystore 文件都有一个**主账户**，一般情况下是第一个被添加上账户。主账户不能被删除。
 
 ```
 ./ela-cli wallet create -p 123
@@ -53,9 +126,9 @@ ESVMKLVB1j1KQR8TYP7YbksHpNSHg5NZ8i 032d3d0e8125ac6215c237605486c9fbd4eb764f52f89
 ---------------------------------- ------------------------------------------------------------------
 ```
 
-### 1.2 查询公钥
+### 1.2 查看公钥
 
-查询 keystore 文件中所有账户地址及其公钥。可以使用 -w 指定 keystore 文件，默认查询 `keystore.dat`。
+查询 keystore 文件中所有账户地址及其公钥。
 
 ```
 ./ela-cli wallet account -p 123
@@ -72,7 +145,7 @@ ESVMKLVB1j1KQR8TYP7YbksHpNSHg5NZ8i 032d3d0e8125ac6215c237605486c9fbd4eb764f52f89
 
 ### 1.3 查询余额
 
-查询 keystore 文件中所有账户余额。可以使用 -w 指定 keystore 文件，默认查询 `keystore.dat`。
+查询 keystore 文件中所有账户余额。
 
 ```
 ./ela-cli wallet balance
@@ -91,8 +164,6 @@ INDEX                            ADDRESS BALANCE                           (LOCK
 
 ### 1.4 添加单签账户
 
-可以使用 -w 指定 keystore 文件，默认查询 `keystore.dat`。
-
 ```
 ./ela-cli wallet add
 ```
@@ -106,15 +177,15 @@ ET15giWpFNSYcTKVbj3s18TsR6i8MBnkvk 031c862055158e50dd6e2cf6bb33f869aaac42c5e6def
 ---------------------------------- ------------------------------------------------------------------
 ```
 
-### 1.5 添加多签地址
+### 1.5 添加多签账户
 
-添加多签地址需要指定公钥列表pks，以及在公钥列表中所需要的最少签名数量m。可以使用 -w 指定 keystore 文件，默认查询 `keystore.dat`。
+添加多签账户需要指定公钥列表pks，以及最少签名数 m。
 
 -- pks <pubkey list> 用于设定公钥列表，公钥之间以 `,` 分开。
 
 -- m <value>, -m <value> 用于设定最少签名数量。无符号整型。
 
-生成一个 3/4 签名的多签地址：
+生成一个 3/4 签名的多签账户：
 
 ```
 ./ela-cli wallet addmultisig -m 3 --pks 0325406f4abc3d41db929f26cf1a419393ed1fe5549ff18f6c579ff0c3cbb714c8,0353059bf157d3eaca184cc10a80f10baf10676c4a39695a9a092fa3c2934818bd,03fd77d569f766638677755e8a71c7c085c51b675fbf7459ca1094b29f62f0b27d,0353059bf157d3eaca184cc10a80f10baf10676c4a39695a9a092fa3c2934818bd
@@ -132,7 +203,7 @@ ET15giWpFNSYcTKVbj3s18TsR6i8MBnkvk 031c862055158e50dd6e2cf6bb33f869aaac42c5e6def
 
 ### 1.6 删除账户
 
-删除账户命令用于删除 keystore 中某个账户。第一个被创建的账户，即主账户不可被删除。
+主账户不可被删除。
 
 查看 keystore 中账户情况：
 
@@ -168,7 +239,7 @@ EJMzC16Eorq9CuFCGtyMrq4Jmgw9jYCHQR 034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddb
 
 ### 1.7 导出账户
 
-导出账户命令用于导出某个 keystore 文件中所有账户的私钥。可用 -w 指定 keystore 文件。
+导出账户命令用于导出某个 keystore 文件中所有账户的私钥。
 
 ```
 ./ela-cli wallet export
@@ -228,19 +299,21 @@ DVgnDnVfPVuPa2y2E4JitaWjWgRGJDuyrD
 XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ
 ```
 
+
+
 ### 2.1 构造交易
 
 构造交易命令 buildtx 用于构造转账交易的内容，构造出来的交易在发送到 ela 节点前，还需要用的私钥签名。
 
--- from <address> 参数用于设定花费地址。如果不设定，默认使用 keystore.dat 中主地址。
+-- from <address> 用于设定花费地址。默认值为 keystore.dat 中主地址。
 
--- to <address> 参数用于设定收款地址。
+-- to <address> 用于设定收款地址。
 
--- amount <amount> 参数用于设定转账金额。浮点类型。
+-- tomany <file> 用于设定保存多输出的文件。
 
--- fee <fee> 参数用于设定交易的手续费。浮点类型。
+-- amount <amount> 用于设定转账金额。浮点类型。
 
--- wallet <file>, -w <file> 参数用于设定所使用的 keystore 文件路径。
+-- fee <fee> 用于设定交易的手续费。浮点类型。
 
 #### 2.1.1 构造单签交易
 
@@ -257,7 +330,7 @@ File:  to_be_signed.txn
 
 #### 2.1.2 构造多签交易
 
-from 地址需要存在于所指定的 keystore 文件中，可使用 -w 参数指定 keystore 文件，默认为 keystore.dat。
+from 地址需要存在于所指定的 keystore 文件中。
 
 ```
 ./ela-cli wallet buildtx --from 8PT1XBZboe17rq71Xq1CvMEs8HdKmMztcP --to EQJP3XT7rshteqE1D3u9nBqXL7xQrfzVh1 --amount 0.51 --fee 0.001
@@ -270,6 +343,110 @@ Hex:  0902000100133334393234313234323933333338333335313701737a31035ebe8dfe3c58c7
 File:  to_be_signed.txn
 ```
 
+#### 2.1.3 构造多输出交易
+
+构造多输出交易需要准备一个 csv 格式的文件，用于指定接收人地址及金额。例如：addresses.csv
+
+```
+EY55SertfPSAiLxgYGQDUdxQW6eDZjbNbX,0.001
+Eeqn3kNwbnAsu1wnHNoSDbD8t8oq58pubN,0.002
+EXWWrRQxG2sH5U8wYD6jHizfGdDUzM4vGt,0.003
+```
+
+第一列为接收人地址，第二列为金额。（注意以上为样例数据，发送真实交易时要填写自己的数据）
+
+使用 `--tomany` 参数指定 addresses.csv 文件。
+
+```
+./ela-cli wallet buildtx --tomany addresses.csv --fee 0.001
+```
+
+返回如下：
+
+```
+Multi output address: EY55SertfPSAiLxgYGQDUdxQW6eDZjbNbX , amount: 0.001
+Multi output address: Eeqn3kNwbnAsu1wnHNoSDbD8t8oq58pubN , amount: 0.002
+Multi output address: EXWWrRQxG2sH5U8wYD6jHizfGdDUzM4vGt , amount: 0.003
+Hex:  09020001001235353938383739333333353636383730383501b9932e31681c63ce0425eecb50c2dfc8298bb3e1bcf31b1db648c11f65fd2caf0000ffffffff03b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3a0860100000000000000000021a3a01cc2e25b0178010f5d7707930b7e41359d7e00b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3400d0300000000000000000021ede51096266b26ca8695c5452d4d209760385c3600b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3e09304000000000000000000219d7798bd544db55cd40ed3d5ba55793be4db170a00000000000100232103c5b92b875b9820aba064dd1c93007c8a971fc43d318f7dc7fd6ea1509a424195ac
+File:  to_be_signed.txn
+```
+
+#### 2.1.4 构造特殊交易
+
+##### 2.1.4.1 构造激活交易
+
+```
+NAME:
+   ela-cli wallet buildtx activate - Build a tx to activate producer which have been inactivated
+
+USAGE:
+   ela-cli wallet buildtx activate [command options] [arguments...]
+
+OPTIONS:
+   --nodepublickey value       the node public key of an arbitrator which have been inactivated
+   --wallet <file>, -w <file>  wallet <file> path (default: "keystore.dat")
+   --password value, -p value  wallet password
+```
+
+--nodepublickey 用于设定仲裁人节点的 node publickkey
+
+node publickey 对应的账户必须存在于指定的 keystore 文件中。
+
+```
+./ela-cli wallet buildtx activate --nodepublickey 032895050b7de1a9cf43416e6e5310f8e909249dcd9c4166159b04a343f7f141b5
+```
+
+需要输入密码，对交易 payload 签名。返回如下：
+
+```
+Hex:  090d0021032895050b7de1a9cf43416e6e5310f8e909249dcd9c4166159b04a343f7f141b540b78018ce13a67366aab73584c66237a5345420049d141f1ba84876d0c015345cc6e503b2a3cd7c9b20e7677e8e0f8f5bb2bf311c480a9aba1eed217501d3e2ab0000000000000000
+File:  ready_to_send.txn
+```
+
+##### 2.1.4.2 构造投票交易
+
+```
+NAME:
+   ela-cli wallet buildtx vote - Build a tx to vote for candidates using ELA
+
+USAGE:
+   ela-cli wallet buildtx vote [command options] [arguments...]
+
+OPTIONS:
+   --for <file>                the <file> path that holds the list of candidates
+   --amount <amount>           the transfer <amount> of the transaction
+   --from <address>            the sender <address> of the transaction
+   --fee <fee>                 the transfer <fee> of the transaction
+   --wallet <file>, -w <file>  wallet <file> path (default: "keystore.dat")
+   --password value, -p value  wallet password
+```
+
+--for 用于指定保存候选人的文件
+
+--amount 用于指定投票数，单位为 ELA
+
+构造投票交易需要准备一个 csv 文件，指定候选人公钥。例如：candidates.csv
+
+```
+033b4606d3cec58a01a09da325f5849754909fec030e4cf626e6b4104328599fc7
+032895050b7de1a9cf43416e6e5310f8e909249dcd9c4166159b04a343f7f141b5
+```
+
+例如为上面的候选人各投1 ELA。
+
+```
+./ela-cli wallet buildtx vote --for candidates.csv --amount 1 --fee 0.1
+```
+
+返回如下：
+
+```
+candidate: 033b4606d3cec58a01a09da325f5849754909fec030e4cf626e6b4104328599fc7
+candidate: 032895050b7de1a9cf43416e6e5310f8e909249dcd9c4166159b04a343f7f141b5
+Hex:  0902000100133931333133393830343439313038373335313101b9932e31681c63ce0425eecb50c2dfc8298bb3e1bcf31b1db648c11f65fd2caf0000ffffffff01b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a300e1f5050000000000000000214cbc08129018f205d99007d8b57be7600c772afe010001000221033b4606d3cec58a01a09da325f5849754909fec030e4cf626e6b4104328599fc721032895050b7de1a9cf43416e6e5310f8e909249dcd9c4166159b04a343f7f141b5000000000100232103c5b92b875b9820aba064dd1c93007c8a971fc43d318f7dc7fd6ea1509a424195ac
+File:  to_be_signed.txn
+```
+
 ### 2.2 对交易签名
 
 使用 buildtx 命令构造的交易，需要通过花费地址的私钥签名后，才是有效的交易。
@@ -277,10 +454,6 @@ File:  to_be_signed.txn
 -- hex <value> 用于设定待签名交易的 hex 字符串。
 
 -- file <file> 用于设定待签名交易 hex 字符串所在的文件路径。-- file 与 -- hex 选一种方式即可。
-
--- wallet <file>, -w <file> 用于设定私钥所在 keystore 文件路径。如果不设定，默认使用 keystore.dat 的主账户。
-
--- password <value>, -p <value> 用于设定 keystore 密码。也可以根据提示设定。
 
 #### 2.2.1 单签
 
@@ -402,6 +575,8 @@ Transaction: {
 		}]
 	}
 ```
+
+
 
 ## 3.信息查询
 
@@ -814,23 +989,129 @@ OPTIONS:
 ]
 ```
 
+### 3.10 获取生产者列表
+
+```
+./ela-cli info listproducers
+```
+
+返回如下：
+
+```
+{
+    "producers": [
+        {
+            "active": true,
+            "cancelheight": 0,
+            "illegalheight": 0,
+            "inactiveheight": 0,
+            "index": 0,
+            "location": 0,
+            "nickname": "PRO-002",
+            "nodepublickey": "03340dd02ea014133f927ea0828db685e39d9fdc2b9a1b37d2de5b2533d66ef605",
+            "ownerpublickey": "02690e2887ac7bc2c5d2ffdfeef4d1edc060838fee009c26a18557648f9e6f19a9",
+            "registerheight": 104,
+            "state": "Activate",
+            "url": "https://elastos.org",
+            "votes": "2"
+        },
+        {
+            "active": true,
+            "cancelheight": 0,
+            "illegalheight": 0,
+            "inactiveheight": 0,
+            "index": 1,
+            "location": 0,
+            "nickname": "PRO-003",
+            "nodepublickey": "02b796ff22974f2f2b866e0cce39ff72a417a5c13ceb93f3932f05cc547e4b98e4",
+            "ownerpublickey": "036e66b27064da32f333f765a9ae501e7dd418f529d10afa1e4f72bd2a3b2c76a2",
+            "registerheight": 110,
+            "state": "Activate",
+            "url": "https://elastos.org",
+            "votes": "1"
+        }
+    ],
+    "totalcounts": 2,
+    "totalvotes": "3"
+}
+```
+
 
 
 ## 4.挖矿
 
+```
+NAME:
+   ela-cli mine - Toggle cpu mining or manual mine
+
+USAGE:
+   ela-cli mine [command options] [args]
+
+DESCRIPTION:
+   With ela-cli mine, you can toggle cpu mining or discrete mining.
+
+OPTIONS:
+   --toggle value, -t value  use --toggle [start, stop] to toggle cpu mining
+   --number value, -n value  user --number [number] to mine the given number of blocks
+```
+
 ### 4.1 开启cpu挖矿
 
-### 4.2 离散挖矿
+```
+./ela-cli mine -t start
+```
+
+返回如下：
+
+```
+mining started
+```
+
+### 4.2 关闭cpu挖矿
+
+```
+./ela-cli mine -t stop
+```
+
+返回如下：
+
+```
+mining stopped
+```
+
+### 4.3 离散挖矿
+
+使用 `-n` 指定要挖的区块数量
+
+```
+./ela-cli mine -n 1
+```
+
+返回如下：
+
+```
+[e9c1d12d5f4e7679737d1d348e53ce20fc6966e156d0a40d10e3fcf39c94c2f2]
+```
 
 
 
-## 5.lua脚本
+## 5.回滚
 
-### 运行lua脚本
+```
+NAME:
+   ela-cli rollback - Rollback blockchain data
 
+USAGE:
+   ela-cli rollback [command options] [args]
 
+DESCRIPTION:
+   With ela-cli rollback command, you could rollback blockchain data.
 
-## 6.回滚
+OPTIONS:
+   --height value  the final height after rollback (default: 0)
+```
+
+使用 `--height` 指定回滚后最高区块位置
 
 ```bash
 ./ela-cli rollback --height 20
@@ -844,5 +1125,4 @@ blockhash after rollback: 000000000000000000000000000000000000000000000000000000
 current height is 21
 blockhash before rollback: 18a38afc7942e4bed7040ed393cb761b84e6da222a1a43df0806968c60fcff8a
 blockhash after rollback: 0000000000000000000000000000000000000000000000000000000000000000
-
 ```

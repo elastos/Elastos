@@ -29,7 +29,12 @@ func NewConsensus(manager *DPOSManager, tolerance time.Duration,
 		consensusStatus: consensusReady,
 		viewOffset:      0,
 		manager:         manager,
-		currentView:     view{signTolerance: tolerance, listener: viewListener, arbitrators: manager.GetArbitrators()},
+		currentView: view{
+			publicKey:     manager.publicKey,
+			signTolerance: tolerance,
+			listener:      viewListener,
+			arbitrators:   manager.arbitrators,
+		},
 	}
 
 	return c
@@ -73,8 +78,8 @@ func (c *Consensus) StartConsensus(b *types.Block) {
 	log.Info("[StartConsensus] consensus start")
 	defer log.Info("[StartConsensus] consensus end")
 
-	now := time.Now()
-	c.manager.GetBlockCache().Reset()
+	now := c.manager.timeSource.AdjustedTime()
+	c.manager.GetBlockCache().Reset(b)
 	c.SetRunning()
 
 	c.manager.GetBlockCache().AddValue(b.Hash(), b)
@@ -82,9 +87,9 @@ func (c *Consensus) StartConsensus(b *types.Block) {
 
 	viewEvent := log.ViewEvent{
 		OnDutyArbitrator: common.BytesToHexString(c.GetOnDutyArbitrator()),
-		StartTime:        time.Now(),
+		StartTime:        now,
 		Offset:           c.GetViewOffset(),
-		Height:           c.manager.dispatcher.CurrentHeight(),
+		Height:           b.Height,
 	}
 	c.manager.dispatcher.cfg.EventMonitor.OnViewStarted(&viewEvent)
 }
@@ -98,17 +103,17 @@ func (c *Consensus) ProcessBlock(b *types.Block) {
 }
 
 func (c *Consensus) ChangeView() {
-	c.currentView.ChangeView(&c.viewOffset)
+	c.currentView.ChangeView(&c.viewOffset, c.manager.timeSource.AdjustedTime())
 }
 
 func (c *Consensus) TryChangeView() bool {
 	if c.IsRunning() {
-		return c.currentView.TryChangeView(&c.viewOffset)
+		return c.currentView.TryChangeView(&c.viewOffset, c.manager.timeSource.AdjustedTime())
 	}
 	return false
 }
 
-func (c *Consensus) CollectConsensusStatus(height uint32, status *msg.ConsensusStatus) error {
+func (c *Consensus) CollectConsensusStatus(status *msg.ConsensusStatus) error {
 	status.ConsensusStatus = c.consensusStatus
 	status.ViewOffset = c.viewOffset
 	status.ViewStartTime = c.currentView.GetViewStartTime()

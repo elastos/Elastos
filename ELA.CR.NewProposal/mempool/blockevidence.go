@@ -12,19 +12,15 @@ import (
 	"github.com/elastos/Elastos.ELA/events"
 )
 
-func (bm *BlockPool) generateBlockEvidence(block *types.Block) (
+func (bm *BlockPool) generateBlockEvidence(block *types.Block, confirm *payload.Confirm) (
 	*payload.BlockEvidence, uint32, error) {
 	headerBuf := new(bytes.Buffer)
 	if err := block.Header.Serialize(headerBuf); err != nil {
 		return nil, 0, err
 	}
 
-	confirm, err := bm.Store.GetConfirm(block.Hash())
-	if err != nil {
-		return nil, 0, err
-	}
 	confirmBuf := new(bytes.Buffer)
-	if err = confirm.Serialize(confirmBuf); err != nil {
+	if err := confirm.Serialize(confirmBuf); err != nil {
 		return nil, 0, err
 	}
 	confirmSigners, err := bm.getConfirmSigners(confirm)
@@ -77,12 +73,21 @@ func (bm *BlockPool) CheckConfirmedBlockOnFork(height uint32, block *types.Block
 			return nil
 		}
 
-		evidence, offset, err := bm.generateBlockEvidence(block)
+		confirm, ok := bm.confirms[block.Hash()]
+		if !ok {
+			return nil
+		}
+
+		evidence, offset, err := bm.generateBlockEvidence(block, confirm)
 		if err != nil {
 			return err
 		}
 
-		compareEvidence, compareOffset, err := bm.generateBlockEvidence(anotherBlock)
+		anotherConfirm, err := bm.Store.GetConfirm(block.Hash())
+		if err != nil {
+			return err
+		}
+		compareEvidence, compareOffset, err := bm.generateBlockEvidence(anotherBlock, anotherConfirm)
 		if err != nil {
 			return err
 		}
@@ -106,7 +111,7 @@ func (bm *BlockPool) CheckConfirmedBlockOnFork(height uint32, block *types.Block
 		}
 
 		asc := true
-		if common.BytesToHexString(evidence.Header) > common.BytesToHexString(compareEvidence.Header) {
+		if bytes.Compare(evidence.Header, compareEvidence.Header) > 0 {
 			asc = false
 		}
 

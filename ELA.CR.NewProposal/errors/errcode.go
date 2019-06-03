@@ -24,6 +24,7 @@ const (
 	ErrReturnDepositConsensus ErrCode = 45021
 	ErrProducerProcessing     ErrCode = 45022
 	ErrProducerNodeProcessing ErrCode = 45023
+	ErrTransactionPoolSize    ErrCode = 45024
 
 	SessionExpired       ErrCode = 41001
 	IllegalDataFormat    ErrCode = 41003
@@ -59,6 +60,7 @@ var ErrMap = map[ErrCode]string{
 	ErrReturnDepositConsensus: "Error return deposit consensus",
 	ErrProducerProcessing:     "Error producer processing",
 	ErrProducerNodeProcessing: "Error producer node processing",
+	ErrTransactionPoolSize:    "Error transactions size of transaction pool",
 	ErrInvalidInput:           "INTERNAL ERROR, ErrInvalidInput",
 	ErrInvalidOutput:          "INTERNAL ERROR, ErrInvalidOutput",
 	ErrAssetPrecision:         "INTERNAL ERROR, ErrAssetPrecision",

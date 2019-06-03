@@ -13,17 +13,22 @@ import (
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
 )
 
 type TxPool struct {
+	chainParams *config.Params
+
 	sync.RWMutex
 	txnList         map[Uint256]*Transaction // transaction which have been verifyed will put into this map
 	inputUTXOList   map[string]*Transaction  // transaction which pass the verify will add the UTXO to this map
 	sidechainTxList map[Uint256]*Transaction // sidechain tx pool
 	ownerPublicKeys map[string]struct{}
 	nodePublicKeys  map[string]struct{}
+	specialTxList   map[Uint256]struct{} // specialTxList holds the payload hashes of all illegal transactions and inactive arbitrators transactions
+	txnListSize     int
 }
 
 //append transaction to txnpool when check ok.
@@ -58,11 +63,11 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) ErrCode {
 	chain := blockchain.DefaultLedger.Blockchain
 	bestHeight := blockchain.DefaultLedger.Blockchain.GetHeight()
 	if errCode := chain.CheckTransactionSanity(bestHeight+1, tx); errCode != Success {
-		log.Warn("[TxPool CheckTransactionSanity] failed", tx.Hash().String())
+		log.Warn("[TxPool CheckTransactionSanity] failed", tx.Hash())
 		return errCode
 	}
 	if errCode := chain.CheckTransactionContext(bestHeight+1, tx); errCode != Success {
-		log.Warn("[TxPool CheckTransactionContext] failed", tx.Hash().String())
+		log.Warn("[TxPool CheckTransactionContext] failed", tx.Hash())
 		return errCode
 	}
 	//verify transaction by pool with lock
@@ -71,12 +76,14 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) ErrCode {
 		return errCode
 	}
 
-	tx.Fee = blockchain.GetTxFee(tx, config.ELAAssetID)
-	buf := new(bytes.Buffer)
-	tx.Serialize(buf)
-	tx.FeePerKB = tx.Fee * 1000 / Fixed64(len(buf.Bytes()))
+	size := tx.GetSize()
+	if mp.txnListSize+size > pact.MaxTxPoolSize {
+		log.Warn("TxPool check transactions size failed", tx.Hash())
+		return ErrTransactionPoolSize
+	}
 	// Add the transaction to mem pool
 	mp.txnList[txHash] = tx
+	mp.txnListSize += size
 
 	return Success
 }
@@ -120,6 +127,41 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 		if blockTx.TxType == CoinBase {
 			continue
 		}
+
+		if blockTx.IsIllegalTypeTx() || blockTx.IsInactiveArbitrators() {
+			illegalData, ok := blockTx.Payload.(payload.DPOSIllegalData)
+			if !ok {
+				log.Error("cancel producer payload cast failed, tx:", blockTx.Hash())
+				continue
+			}
+			hash := illegalData.Hash()
+			if _, ok := mp.txnList[blockTx.Hash()]; ok {
+				mp.doRemoveTransaction(blockTx.Hash(), blockTx.GetSize())
+				deleteCount++
+			}
+			mp.delSpecialTx(&hash)
+			continue
+		} else if blockTx.IsNewSideChainPowTx() || blockTx.IsUpdateVersion() {
+			if _, ok := mp.txnList[blockTx.Hash()]; ok {
+				mp.doRemoveTransaction(blockTx.Hash(), blockTx.GetSize())
+				deleteCount++
+			}
+			continue
+		} else if blockTx.IsActivateProducerTx() {
+			apPayload, ok := blockTx.Payload.(*payload.ActivateProducer)
+			if !ok {
+				log.Error("activate producer payload cast failed, tx:",
+					blockTx.Hash())
+				continue
+			}
+			mp.delNodePublicKey(BytesToHexString(apPayload.NodePublicKey))
+			if _, ok := mp.txnList[blockTx.Hash()]; ok {
+				mp.doRemoveTransaction(blockTx.Hash(), blockTx.GetSize())
+				deleteCount++
+			}
+			continue
+		}
+
 		inputUtxos, err := blockchain.DefaultLedger.Store.GetTxReference(blockTx)
 		if err != nil {
 			log.Info(fmt.Sprintf("Transaction =%x not Exist in Pool when delete.", blockTx.Hash()), err)
@@ -144,45 +186,44 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 				}
 
 				//1.remove from txnList
-				delete(mp.txnList, tx.Hash())
+				mp.doRemoveTransaction(tx.Hash(), tx.GetSize())
 
 				//2.remove from UTXO list map
 				for _, input := range tx.Inputs {
 					mp.delInputUTXOList(input)
 				}
 
-				//delete sidechain tx list
-				if tx.TxType == WithdrawFromSideChain {
+				switch tx.TxType {
+				case WithdrawFromSideChain:
 					payload, ok := tx.Payload.(*payload.WithdrawFromSideChain)
 					if !ok {
 						log.Error("type cast failed when clean sidechain tx:", tx.Hash())
+						continue
 					}
 					for _, hash := range payload.SideChainTransactionHashes {
 						mp.delSidechainTx(hash)
 					}
-				}
-
-				// delete producer
-				if tx.TxType == RegisterProducer {
+				case RegisterProducer:
 					rpPayload, ok := tx.Payload.(*payload.ProducerInfo)
 					if !ok {
 						log.Error("register producer payload cast failed, tx:", tx.Hash())
+						continue
 					}
 					mp.delOwnerPublicKey(BytesToHexString(rpPayload.OwnerPublicKey))
 					mp.delNodePublicKey(BytesToHexString(rpPayload.NodePublicKey))
-				}
-				if tx.TxType == UpdateProducer {
+				case UpdateProducer:
 					upPayload, ok := tx.Payload.(*payload.ProducerInfo)
 					if !ok {
 						log.Error("update producer payload cast failed, tx:", tx.Hash())
+						continue
 					}
 					mp.delOwnerPublicKey(BytesToHexString(upPayload.OwnerPublicKey))
 					mp.delNodePublicKey(BytesToHexString(upPayload.NodePublicKey))
-				}
-				if tx.TxType == CancelProducer {
+				case CancelProducer:
 					cpPayload, ok := tx.Payload.(*payload.ProcessProducer)
 					if !ok {
 						log.Error("cancel producer payload cast failed, tx:", tx.Hash())
+						continue
 					}
 					mp.delOwnerPublicKey(BytesToHexString(cpPayload.OwnerPublicKey))
 				}
@@ -266,7 +307,21 @@ func (mp *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 			log.Warn(err)
 			return ErrSidechainTxDuplicate
 		}
-	} else if txn.IsRegisterProducerTx() {
+	}
+
+	// check if the transaction includes double spent UTXO inputs
+	if err := mp.verifyDoubleSpend(txn); err != nil {
+		log.Warn(err)
+		return ErrDoubleSpend
+	}
+
+	return mp.verifyProducerRelatedTx(txn)
+}
+
+//verify producer related transaction with txnpool
+func (mp *TxPool) verifyProducerRelatedTx(txn *Transaction) ErrCode {
+	switch txn.TxType {
+	case RegisterProducer:
 		payload, ok := txn.Payload.(*payload.ProducerInfo)
 		if !ok {
 			log.Error("register producer payload cast failed, tx:", txn.Hash())
@@ -279,7 +334,7 @@ func (mp *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 			log.Warn(err)
 			return ErrProducerNodeProcessing
 		}
-	} else if txn.IsUpdateProducerTx() {
+	case UpdateProducer:
 		payload, ok := txn.Payload.(*payload.ProducerInfo)
 		if !ok {
 			log.Error("update producer payload cast failed, tx:", txn.Hash())
@@ -292,7 +347,7 @@ func (mp *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 			log.Warn(err)
 			return ErrProducerNodeProcessing
 		}
-	} else if txn.IsCancelProducerTx() {
+	case CancelProducer:
 		payload, ok := txn.Payload.(*payload.ProcessProducer)
 		if !ok {
 			log.Error("cancel producer payload cast failed, tx:", txn.Hash())
@@ -301,12 +356,26 @@ func (mp *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 			log.Warn(err)
 			return ErrProducerProcessing
 		}
-	}
-
-	// check if the transaction includes double spent UTXO inputs
-	if err := mp.verifyDoubleSpend(txn); err != nil {
-		log.Warn(err)
-		return ErrDoubleSpend
+	case ActivateProducer:
+		payload, ok := txn.Payload.(*payload.ActivateProducer)
+		if !ok {
+			log.Error("activate producer payload cast failed, tx:", txn.Hash())
+		}
+		if err := mp.verifyDuplicateNode(BytesToHexString(payload.NodePublicKey)); err != nil {
+			log.Warn(err)
+			return ErrProducerNodeProcessing
+		}
+	case IllegalProposalEvidence, IllegalVoteEvidence, IllegalBlockEvidence,
+		IllegalSidechainEvidence, InactiveArbitrators:
+		illegalData, ok := txn.Payload.(payload.DPOSIllegalData)
+		if !ok {
+			log.Error("special tx payload cast failed, tx:", txn.Hash())
+		}
+		hash := illegalData.Hash()
+		if err := mp.verifyDuplicateSpecialTx(&hash); err != nil {
+			log.Warn(err)
+			return ErrProducerProcessing
+		}
 	}
 
 	return Success
@@ -315,7 +384,9 @@ func (mp *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 //remove from associated map
 func (mp *TxPool) removeTransaction(tx *Transaction) {
 	//1.remove from txnList
-	delete(mp.txnList, tx.Hash())
+	if _, ok := mp.txnList[tx.Hash()]; ok {
+		mp.doRemoveTransaction(tx.Hash(), tx.GetSize())
+	}
 
 	//2.remove from UTXO list map
 	result, err := blockchain.DefaultLedger.Store.GetTxReference(tx)
@@ -411,6 +482,23 @@ func (mp *TxPool) delNodePublicKey(nodePublicKey string) {
 	delete(mp.nodePublicKeys, nodePublicKey)
 }
 
+func (mp *TxPool) addSpecialTx(hash *Uint256) {
+	mp.specialTxList[*hash] = struct{}{}
+}
+
+func (mp *TxPool) delSpecialTx(hash *Uint256) {
+	delete(mp.specialTxList, *hash)
+}
+
+func (mp *TxPool) verifyDuplicateSpecialTx(hash *Uint256) error {
+	if _, ok := mp.specialTxList[*hash]; ok {
+		return errors.New("this special tx has being processed")
+	}
+	mp.addSpecialTx(hash)
+
+	return nil
+}
+
 // check and replace the duplicate sidechainpow tx
 func (mp *TxPool) replaceDuplicateSideChainPowTx(txn *Transaction) {
 	var replaceList []*Transaction
@@ -445,7 +533,9 @@ func (mp *TxPool) cleanSidechainTx(txs []*Transaction) {
 				tx, ok := mp.sidechainTxList[hash]
 				if ok {
 					// delete tx
-					delete(mp.txnList, tx.Hash())
+					if _, ok := mp.txnList[tx.Hash()]; ok {
+						mp.doRemoveTransaction(tx.Hash(), tx.GetSize())
+					}
 					//delete utxo map
 					for _, input := range tx.Inputs {
 						mp.delInputUTXOList(input)
@@ -466,13 +556,13 @@ func (mp *TxPool) cleanSidechainTx(txs []*Transaction) {
 
 // clean the sidechainpow tx pool
 func (mp *TxPool) cleanSideChainPowTx() {
-	arbitrator := blockchain.DefaultLedger.Arbitrators.GetOnDutyArbitrator()
-
 	for hash, txn := range mp.txnList {
 		if txn.IsSideChainPowTx() {
-			if err := blockchain.CheckSideChainPowConsensus(txn, arbitrator); err != nil {
+			arbiter := blockchain.DefaultLedger.Arbitrators.GetOnDutyCrossChainArbitrator()
+			if err := blockchain.CheckSideChainPowConsensus(txn, arbiter); err != nil {
 				// delete tx
-				delete(mp.txnList, hash)
+				mp.doRemoveTransaction(hash, txn.GetSize())
+
 				//delete utxo map
 				for _, input := range txn.Inputs {
 					delete(mp.inputUTXOList, input.ReferKey())
@@ -551,12 +641,19 @@ func (mp *TxPool) RemoveTransaction(txn *Transaction) {
 	mp.Unlock()
 }
 
-func NewTxPool() *TxPool {
+func (mp *TxPool) doRemoveTransaction(hash Uint256, txSize int) {
+	delete(mp.txnList, hash)
+	mp.txnListSize -= txSize
+}
+
+func NewTxPool(params *config.Params) *TxPool {
 	return &TxPool{
+		chainParams:     params,
 		inputUTXOList:   make(map[string]*Transaction),
 		txnList:         make(map[Uint256]*Transaction),
 		sidechainTxList: make(map[Uint256]*Transaction),
 		ownerPublicKeys: make(map[string]struct{}),
 		nodePublicKeys:  make(map[string]struct{}),
+		specialTxList:   make(map[Uint256]struct{}),
 	}
 }

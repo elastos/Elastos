@@ -161,7 +161,7 @@ func (s *SidechainIllegalData) Deserialize(r io.Reader, version byte) error {
 func (s *SidechainIllegalData) Hash() common.Uint256 {
 	if s.hash == nil {
 		buf := new(bytes.Buffer)
-		s.Serialize(buf, SidechainIllegalDataVersion)
+		s.SerializeUnsigned(buf, SidechainIllegalDataVersion)
 		hash := common.Uint256(common.Sha256D(buf.Bytes()))
 		s.hash = &hash
 	}

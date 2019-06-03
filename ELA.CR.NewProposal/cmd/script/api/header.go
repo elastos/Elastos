@@ -35,7 +35,7 @@ func newHeader(L *lua.LState) int {
 		Previous:   *hash,
 		MerkleRoot: common.EmptyHash,
 		Timestamp:  uint32(time.Now().Unix()),
-		Bits:       config.Parameters.ChainParam.PowLimitBits,
+		Bits:       config.DefaultParams.PowLimitBits,
 		Height:     height,
 		Nonce:      rand.Uint32(),
 	}

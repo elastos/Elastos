@@ -12,6 +12,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/crypto"
+	"github.com/elastos/Elastos.ELA/utils"
 
 	"github.com/urfave/cli"
 )
@@ -21,10 +22,10 @@ var accountCommand = []cli.Command{
 		Category: "Account",
 		Name:     "create",
 		Aliases:  []string{"c"},
-		Usage:    "Create a account",
+		Usage:    "Create an account",
 		Flags: []cli.Flag{
-			AccountWalletFlag,
-			AccountPasswordFlag,
+			cmdcom.AccountWalletFlag,
+			cmdcom.AccountPasswordFlag,
 		},
 		Action: createAccount,
 	},
@@ -34,8 +35,8 @@ var accountCommand = []cli.Command{
 		Aliases:  []string{"a"},
 		Usage:    "Show account address and public key",
 		Flags: []cli.Flag{
-			AccountWalletFlag,
-			AccountPasswordFlag,
+			cmdcom.AccountWalletFlag,
+			cmdcom.AccountPasswordFlag,
 		},
 		Action: accountInfo,
 	},
@@ -45,7 +46,7 @@ var accountCommand = []cli.Command{
 		Aliases:  []string{"b"},
 		Usage:    "Check account balance",
 		Flags: []cli.Flag{
-			AccountWalletFlag,
+			cmdcom.AccountWalletFlag,
 		},
 		Action: accountBalance,
 	},
@@ -54,8 +55,8 @@ var accountCommand = []cli.Command{
 		Name:     "add",
 		Usage:    "Add a standard account",
 		Flags: []cli.Flag{
-			AccountWalletFlag,
-			AccountPasswordFlag,
+			cmdcom.AccountWalletFlag,
+			cmdcom.AccountPasswordFlag,
 		},
 		Action: addAccount,
 	},
@@ -64,10 +65,10 @@ var accountCommand = []cli.Command{
 		Name:     "addmultisig",
 		Usage:    "Add a multi-signature account",
 		Flags: []cli.Flag{
-			AccountWalletFlag,
-			AccountPasswordFlag,
-			AccountMultiMFlag,
-			AccountMultiPubKeyFlag,
+			cmdcom.AccountWalletFlag,
+			cmdcom.AccountPasswordFlag,
+			cmdcom.AccountMultiMFlag,
+			cmdcom.AccountMultiPubKeyFlag,
 		},
 		Action: addMultiSigAccount,
 	},
@@ -76,8 +77,8 @@ var accountCommand = []cli.Command{
 		Name:     "delete",
 		Usage:    "Delete an account",
 		Flags: []cli.Flag{
-			AccountWalletFlag,
-			AccountPasswordFlag,
+			cmdcom.AccountWalletFlag,
+			cmdcom.AccountPasswordFlag,
 		},
 		Action: delAccount,
 	},
@@ -93,8 +94,8 @@ var accountCommand = []cli.Command{
 		Usage:     "Import an account by private key hex string",
 		ArgsUsage: "[args]",
 		Flags: []cli.Flag{
-			AccountWalletFlag,
-			AccountPasswordFlag,
+			cmdcom.AccountWalletFlag,
+			cmdcom.AccountPasswordFlag,
 		},
 		Action: importAccount,
 	},
@@ -103,8 +104,8 @@ var accountCommand = []cli.Command{
 		Name:     "export",
 		Usage:    "Export all account private keys in hex string",
 		Flags: []cli.Flag{
-			AccountWalletFlag,
-			AccountPasswordFlag,
+			cmdcom.AccountWalletFlag,
+			cmdcom.AccountPasswordFlag,
 		},
 		Action: exportAccount,
 	},
@@ -129,7 +130,7 @@ func createAccount(c *cli.Context) error {
 	var p []byte
 	if password == "" {
 		var err error
-		p, err = cmdcom.GetConfirmedPassword()
+		p, err = utils.GetConfirmedPassword()
 		if err != nil {
 			return err
 		}
@@ -147,22 +148,16 @@ func createAccount(c *cli.Context) error {
 
 func accountInfo(c *cli.Context) error {
 	walletPath := c.String("wallet")
-	if exist := cmdcom.FileExisted(walletPath); !exist {
+	if exist := utils.FileExisted(walletPath); !exist {
 		fmt.Println(fmt.Sprintf("error: %s is not found.", walletPath))
 		cli.ShowCommandHelpAndExit(c, "account", 1)
 	}
-	pwdHex := c.String("password")
-
-	pwd := []byte(pwdHex)
-	if pwdHex == "" {
-		var err error
-		pwd, err = cmdcom.GetPassword()
-		if err != nil {
-			return err
-		}
+	password, err := cmdcom.GetFlagPassword(c)
+	if err != nil {
+		return err
 	}
 
-	client, err := account.Open(walletPath, pwd)
+	client, err := account.Open(walletPath, password)
 	if err != nil {
 		return err
 	}
@@ -175,7 +170,7 @@ func accountInfo(c *cli.Context) error {
 
 func accountBalance(c *cli.Context) error {
 	walletPath := c.String("wallet")
-	if exist := cmdcom.FileExisted(walletPath); !exist {
+	if exist := utils.FileExisted(walletPath); !exist {
 		fmt.Println(fmt.Sprintf("error: %s is not found.", walletPath))
 		cli.ShowCommandHelpAndExit(c, "account", 1)
 	}
@@ -188,18 +183,12 @@ func accountBalance(c *cli.Context) error {
 
 func addAccount(c *cli.Context) error {
 	walletPath := c.String("wallet")
-	pwdHex := c.String("password")
-
-	pwd := []byte(pwdHex)
-	if pwdHex == "" {
-		var err error
-		pwd, err = cmdcom.GetPassword()
-		if err != nil {
-			return err
-		}
+	password, err := cmdcom.GetFlagPassword(c)
+	if err != nil {
+		return err
 	}
 
-	client, err := account.Add(walletPath, pwd)
+	client, err := account.Add(walletPath, password)
 	if err != nil {
 		return err
 	}
@@ -209,7 +198,10 @@ func addAccount(c *cli.Context) error {
 
 func addMultiSigAccount(c *cli.Context) error {
 	walletPath := c.String("wallet")
-	pwdHex := c.String("password")
+	password, err := cmdcom.GetFlagPassword(c)
+	if err != nil {
+		return err
+	}
 	m := c.Int("m")
 	pksStr := c.String("pubkeys")
 	pksStr = strings.TrimSpace(strings.Trim(pksStr, ","))
@@ -218,14 +210,6 @@ func addMultiSigAccount(c *cli.Context) error {
 		return errors.New("missing arguments. pubkeys or m expected")
 	}
 
-	pwd := []byte(pwdHex)
-	if pwdHex == "" {
-		var err error
-		pwd, err = cmdcom.GetPassword()
-		if err != nil {
-			return err
-		}
-	}
 	pks := strings.Split(pksStr, ",")
 	pubKeys := make([]*crypto.PublicKey, 0)
 	for _, pk := range pks {
@@ -238,7 +222,7 @@ func addMultiSigAccount(c *cli.Context) error {
 		pubKeys = append(pubKeys, pubKey)
 	}
 
-	account, err := account.AddMultiSig(walletPath, pwd, m, pubKeys)
+	account, err := account.AddMultiSig(walletPath, password, m, pubKeys)
 	if err != nil {
 		return err
 	}
@@ -249,7 +233,10 @@ func addMultiSigAccount(c *cli.Context) error {
 
 func delAccount(c *cli.Context) error {
 	walletPath := c.String("wallet")
-	pwdHex := c.String("password")
+	password, err := cmdcom.GetFlagPassword(c)
+	if err != nil {
+		return err
+	}
 	if c.NArg() < 1 {
 		cmdcom.PrintErrorMsg("Missing argument. Account address expected.")
 		cli.ShowCommandHelpAndExit(c, "delete", 1)
@@ -260,16 +247,7 @@ func delAccount(c *cli.Context) error {
 		return err
 	}
 
-	pwd := []byte(pwdHex)
-	if pwdHex == "" {
-		var err error
-		pwd, err = cmdcom.GetPassword()
-		if err != nil {
-			return err
-		}
-	}
-
-	client, err := account.Open(walletPath, pwd)
+	client, err := account.Open(walletPath, password)
 	if err != nil {
 		return err
 	}
@@ -280,7 +258,7 @@ func delAccount(c *cli.Context) error {
 	}
 
 	// reopen client after delete
-	client, err = account.Open(walletPath, pwd)
+	client, err = account.Open(walletPath, password)
 	if err != nil {
 		return err
 	}
@@ -312,7 +290,7 @@ func importAccount(c *cli.Context) error {
 	if _, err := os.Open(walletPath); os.IsNotExist(err) {
 		// create a keystore file
 		if pwdHex == "" {
-			pwd, err = cmdcom.GetConfirmedPassword()
+			pwd, err = utils.GetConfirmedPassword()
 			if err != nil {
 				return err
 			}
@@ -324,7 +302,7 @@ func importAccount(c *cli.Context) error {
 	} else {
 		// append to keystore file
 		if pwdHex == "" {
-			pwd, err = cmdcom.GetPassword()
+			pwd, err = utils.GetPassword()
 			if err != nil {
 				return err
 			}
@@ -348,18 +326,12 @@ func importAccount(c *cli.Context) error {
 
 func exportAccount(c *cli.Context) error {
 	walletPath := c.String("wallet")
-	pwdHex := c.String("password")
-
-	pwd := []byte(pwdHex)
-	if pwdHex == "" {
-		var err error
-		pwd, err = cmdcom.GetPassword()
-		if err != nil {
-			return err
-		}
+	password, err := cmdcom.GetFlagPassword(c)
+	if err != nil {
+		return err
 	}
 
-	client, err := account.Open(walletPath, pwd)
+	client, err := account.Open(walletPath, password)
 	if err != nil {
 		return err
 	}

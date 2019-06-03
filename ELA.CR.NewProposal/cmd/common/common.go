@@ -1,40 +1,71 @@
 package common
 
 import (
-	"fmt"
+	"errors"
+	"io/ioutil"
 	"os"
-	"strconv"
+	"strings"
 
-	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/utils/http"
+	"github.com/elastos/Elastos.ELA/utils/http/jsonrpc"
 
 	"github.com/urfave/cli"
 )
 
-func LocalServer() string {
-	return "http://localhost" + ":" + strconv.Itoa(config.Template.HttpJsonPort)
+const (
+	defaultConfigPath = "./config.json"
+	defaultDataDir    = "elastos"
+)
+
+var (
+	rpcPort     = "20336"
+	rpcUser     = ""
+	rpcPassword = ""
+)
+
+func SetRpcConfig(c *cli.Context) {
+	port := c.String("rpcport")
+	if port != "" {
+		rpcPort = port
+	}
+	user := c.String("rpcuser")
+	if user != "" {
+		rpcUser = user
+	}
+	password := c.String("rpcpassword")
+	if password != "" {
+		rpcPassword = password
+	}
 }
 
-func PrintError(c *cli.Context, err error, cmd string) {
-	fmt.Println("Incorrect Usage:", err)
-	fmt.Println("")
-	cli.ShowCommandHelp(c, cmd)
+func localServer() string {
+	return "http://localhost:" + rpcPort
 }
 
-func FileExisted(filename string) bool {
-	_, err := os.Stat(filename)
-	return err == nil || os.IsExist(err)
+func RPCCall(method string, params http.Params) (interface{}, error) {
+	req := jsonrpc.Request{
+		Method: method,
+		Params: params,
+	}
+	return jsonrpc.Call(localServer(), req, rpcUser, rpcPassword)
 }
 
-func PrintErrorMsg(format string, a ...interface{}) {
-	format = fmt.Sprintf("\033[31m[ERROR] %s\033[0m\n", format) //Print error msg with red color
-	fmt.Printf(format, a...)
-}
+func ReadFile(filePath string) (string, error) {
+	if _, err := os.Stat(filePath); err != nil {
+		return "", errors.New("invalid transaction file path")
+	}
+	file, err := os.OpenFile(filePath, os.O_RDONLY, 0666)
+	if err != nil {
+		return "", errors.New("open transaction file failed")
+	}
+	rawData, err := ioutil.ReadAll(file)
+	if err != nil {
+		return "", errors.New("read transaction file failed")
+	}
 
-func PrintWarnMsg(format string, a ...interface{}) {
-	format = fmt.Sprintf("\033[33m[WARN] %s\033[0m\n", format) //Print error msg with yellow color
-	fmt.Printf(format, a...)
-}
-
-func PrintInfoMsg(format string, a ...interface{}) {
-	fmt.Printf(format+"\n", a...)
+	content := strings.TrimSpace(string(rawData))
+	if content == "" {
+		return "", errors.New("transaction file is empty")
+	}
+	return content, nil
 }

@@ -29,6 +29,10 @@ const (
 	InvalidParams  = -32602
 	InternalError  = -32603
 	//-32000 to -32099	Server error, waiting for defining
+
+	// IOTimeout is the maximum duration for JSON-RPC reading or writing
+	// timeout.
+	IOTimeout = 60 * time.Second
 )
 
 func StartRPCServer() {
@@ -53,6 +57,8 @@ func StartRPCServer() {
 	mainMux["getblockbyheight"] = GetBlockByHeight
 	mainMux["getexistwithdrawtransactions"] = GetExistWithdrawTransactions
 	mainMux["listunspent"] = ListUnspent
+	mainMux["getutxosbyamount"] = GetUTXOsByAmount
+	mainMux["getamountbyinputs"] = GetAmountByInputs
 	mainMux["getreceivedbyaddress"] = GetReceivedByAddress
 	// aux interfaces
 	mainMux["help"] = AuxHelp
@@ -76,8 +82,8 @@ func StartRPCServer() {
 	rpcServeMux := http.NewServeMux()
 	server := http.Server{
 		Handler:      rpcServeMux,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  IOTimeout,
+		WriteTimeout: IOTimeout,
 	}
 	rpcServeMux.HandleFunc("/", Handle)
 	l, _ := net.Listen("tcp4", ":"+strconv.Itoa(config.Parameters.HttpJsonPort))
@@ -113,7 +119,7 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 	isCheckAuthOk := checkAuth(r)
 	if !isCheckAuthOk {
 		log.Warn("client authenticate failed")
-		http.Error(w, "client authenticate failed", http.StatusUnauthorized)
+		RPCError(w, http.StatusUnauthorized, InternalError, "client authenticate failed")
 		return
 	}
 
