@@ -56,25 +56,32 @@ func NewService(cfg *Config) (*Service, error) {
 	default:
 		chainParams = &config.DefaultParams
 		chainParams.DNSSeeds = nil
+		chainParams.Magic = 2018201
+		//chainParams.DPoSMagic = 2019000
+		//chainParams.DPoSDefaultPort = 10119
+		t, _ := common.Uint168FromAddress("EgLe9ZAQyLmjxFZLp5em9VfqsYKvdhpGys")
+		chainParams.Foundation = *t
+		chainParams.GenesisBlock = config.GenesisBlock(t)
 		chainParams.OriginArbiters = []string{
-			"034c6337f1dd5c58ac46257aadc9d7df14a61f73a7a90b78bad17effae0668c6fd",
-			"0262ed1cebce01c0a0920de7d4d8c060e43152cf0f3dc77dcad959e4db2318dae5",
-			"035b7025c4effc881d71d260c26cbf6f6e59611d833ba0d9663daf22bed1949b95",
-			"0201dcedec7149f076ec1a43eaf2a002ef03ed443b903e5fcfc2f4d11878d7e0de",
+			"038eba1db314e7569aafc62a3c0fd1de9fe6359f88962521768a37786fce62dd37",
+			"02fb5528297b3c43e015d7e20a62b2fc70592cb0b08dfdec7ff95bcd11ff5a5fe6",
+			"03a9d3bbed3db04a4a6c167514b6a4e187b3eaeb3b8d4edd9a618d27b9fe4a0179",
+			"03022428a02e52ef0dd6adc1c7d95ea9cd93854057e9dd6a48486dc536ece71603",
+			"0251fc966a08f0e097711f54fa22ef69c90510ea8e8cf4431e8167c221cf3c7b86",
 		}
 		chainParams.CRCArbiters = []string{
-			"034c6337f1dd5c58ac46257aadc9d7df14a61f73a7a90b78bad17effae0668c6fd",
-			"0262ed1cebce01c0a0920de7d4d8c060e43152cf0f3dc77dcad959e4db2318dae5",
-			"035b7025c4effc881d71d260c26cbf6f6e59611d833ba0d9663daf22bed1949b95",
-			"0201dcedec7149f076ec1a43eaf2a002ef03ed443b903e5fcfc2f4d11878d7e0de",
+			"0342eeb0d664e2507d732382c66d0eedbd0a0f989179fd33d71679aa607d5d3b57",
+			"02cf7e80d1a1a76ab6259e0abdf2848c618655393f1fa3328901f80949ebed1476",
 		}
-		chainParams.CheckAddressHeight = 200
-		chainParams.VoteStartHeight = 200
+		chainParams.CheckAddressHeight = 101
+		chainParams.VoteStartHeight = 100
+		chainParams.CRCOnlyDPOSHeight = 300
+		chainParams.PublicDPOSHeight = 308
 	}
 	spvCfg := spv.DPOSConfig{Config: spv.Config{
 		DataDir:        cfg.DataDir,
 		ChainParams:    chainParams,
-		PermanentPeers: []string{"127.0.0.1:20338"},
+		PermanentPeers: []string{"192.168.205.33:10018", "192.168.205.33:10118"},
 	},
 	}
 	dataDir = cfg.DataDir
