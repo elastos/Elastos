@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/stretchr/testify/suite"
-
 	"github.com/elastos/Elastos.ELA/auxpow"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
@@ -17,6 +15,9 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/state"
+	"github.com/elastos/Elastos.ELA/utils/test"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type txValidatorSpecialTxTestSuite struct {
@@ -53,14 +54,18 @@ func (s *txValidatorSpecialTxTestSuite) SetupSuite() {
 		a, _ := common.HexStringToBytes(v)
 		s.arbitrators.CurrentArbitrators = append(s.arbitrators.CurrentArbitrators, a)
 	}
+	s.arbitrators.Snapshot = []*state.KeyFrame{
+		{
+			CurrentArbitrators: s.arbitrators.CurrentArbitrators,
+		},
+	}
 
 	for _, v := range arbitratorsPrivateKeys {
 		a, _ := common.HexStringToBytes(v)
 		s.arbitratorsPriKeys = append(s.arbitratorsPriKeys, a)
 	}
 
-	chainStore, err := NewChainStore("Chain_UnitTest",
-		config.DefaultParams.GenesisBlock)
+	chainStore, err := NewChainStore(test.DataPath, config.DefaultParams.GenesisBlock)
 	if err != nil {
 		s.Error(err)
 	}
@@ -97,7 +102,7 @@ func (s *txValidatorSpecialTxTestSuite) TestValidateProposalEvidence() {
 		"proposal hash and block should match")
 
 	evidence.Proposal.BlockHash = header.Hash()
-	s.Error(validateProposalEvidence(evidence))
+	s.NoError(validateProposalEvidence(evidence))
 
 	// let proposal sanity and context check pass
 	evidence.Proposal.Sponsor = s.arbitrators.CurrentArbitrators[0]
@@ -162,7 +167,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalProposals() {
 		s.arbitratorsPriKeys[0], cmpEvidence.Proposal.Data())
 	illegalProposals.CompareEvidence = *cmpEvidence
 
-	asc := evidence.Proposal.Hash().String() < cmpEvidence.Proposal.Hash().String()
+	asc := evidence.Proposal.Hash().Compare(cmpEvidence.Proposal.Hash()) < 0
 	if asc {
 		illegalProposals.Evidence = *cmpEvidence
 		illegalProposals.CompareEvidence = *evidence
@@ -183,7 +188,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalProposals() {
 	cmpEvidence.Proposal.ViewOffset = evidence.Proposal.ViewOffset
 	cmpEvidence.Proposal.Sign, _ = crypto.Sign(
 		s.arbitratorsPriKeys[0], cmpEvidence.Proposal.Data())
-	if evidence.Proposal.Hash().String() < cmpEvidence.Proposal.Hash().String() {
+	if evidence.Proposal.Hash().Compare(cmpEvidence.Proposal.Hash()) < 0 {
 		illegalProposals.Evidence = *evidence
 		illegalProposals.CompareEvidence = *cmpEvidence
 	} else {
@@ -216,7 +221,7 @@ func (s *txValidatorSpecialTxTestSuite) TestValidateVoteEvidence() {
 		"vote and proposal should match")
 
 	evidence.Vote.ProposalHash = evidence.Proposal.Hash()
-	s.Error(validateVoteEvidence(evidence), "vote verify error")
+	s.NoError(validateVoteEvidence(evidence), "vote verify error")
 
 	evidence.Vote.Signer = s.arbitrators.CurrentArbitrators[1]
 	evidence.Vote.Accept = true
@@ -269,7 +274,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalVotes_SameProposal()
 	cmpEvidence.Vote.Sign, _ = crypto.Sign(s.arbitratorsPriKeys[1],
 		cmpEvidence.Vote.Data())
 
-	asc := evidence.Vote.Hash().String() < cmpEvidence.Vote.Hash().String()
+	asc := evidence.Vote.Hash().Compare(cmpEvidence.Vote.Hash()) < 0
 	if asc {
 		illegalVotes.Evidence = *cmpEvidence
 		illegalVotes.CompareEvidence = *evidence
@@ -352,7 +357,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalVotes_DiffProposal()
 		s.arbitrators.CurrentArbitrators[2]
 	s.updateEvidenceSigns(cmpEvidence, s.arbitratorsPriKeys[2],
 		s.arbitratorsPriKeys[1])
-	if evidence.Vote.Hash().String() < cmpEvidence.Vote.Hash().String() {
+	if evidence.Vote.Hash().Compare(cmpEvidence.Vote.Hash()) < 0 {
 		illegalVotes.Evidence = *evidence
 		illegalVotes.CompareEvidence = *cmpEvidence
 	} else {
@@ -367,7 +372,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalVotes_DiffProposal()
 	cmpEvidence.Proposal.ViewOffset = evidence.Proposal.ViewOffset + 1
 	s.updateEvidenceSigns(cmpEvidence, s.arbitratorsPriKeys[0],
 		s.arbitratorsPriKeys[1])
-	if evidence.Vote.Hash().String() < cmpEvidence.Vote.Hash().String() {
+	if evidence.Vote.Hash().Compare(cmpEvidence.Vote.Hash()) < 0 {
 		illegalVotes.Evidence = *evidence
 		illegalVotes.CompareEvidence = *cmpEvidence
 	} else {
@@ -381,7 +386,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalVotes_DiffProposal()
 	cmpEvidence.Proposal.ViewOffset = evidence.Proposal.ViewOffset
 	s.updateEvidenceSigns(cmpEvidence, s.arbitratorsPriKeys[0],
 		s.arbitratorsPriKeys[1])
-	if evidence.Vote.Hash().String() < cmpEvidence.Vote.Hash().String() {
+	if evidence.Vote.Hash().Compare(cmpEvidence.Vote.Hash()) < 0 {
 		illegalVotes.Evidence = *evidence
 		illegalVotes.CompareEvidence = *cmpEvidence
 	} else {
@@ -419,8 +424,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalBlocks() {
 		Signers:      [][]byte{},
 	}
 
-	asc := common.BytesToHexString(evidence.Header) <
-		common.BytesToHexString(cmpEvidence.Header)
+	asc := bytes.Compare(evidence.Header, cmpEvidence.Header) < 0
 	if asc {
 		illegalBlocks.Evidence = *cmpEvidence
 		illegalBlocks.CompareEvidence = *evidence
@@ -665,12 +669,15 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckInactiveArbitrators() {
 			},
 		},
 	}
+	s.arbitrators.ActiveProducer = s.arbitrators.CurrentArbitrators
 
 	s.EqualError(CheckInactiveArbitrators(tx),
 		"sponsor is not belong to arbitrators")
 
 	// correct sponsor
-	p.Sponsor = s.arbitrators.CurrentArbitrators[0]
+	s.arbitrators.CRCArbitrators = [][]byte{
+		p.Sponsor,
+	}
 	for i := 0; i < 3; i++ { // add more than InactiveEliminateCount arbiters
 		p.Arbitrators = append(p.Arbitrators, s.arbitrators.CurrentArbitrators[i])
 	}
@@ -691,6 +698,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckInactiveArbitrators() {
 
 	// let "Arbitrators" has CRC arbitrators
 	s.arbitrators.CRCArbitrators = [][]byte{
+		p.Sponsor,
 		s.arbitrators.CurrentArbitrators[4],
 	}
 	s.EqualError(CheckInactiveArbitrators(tx),
@@ -707,6 +715,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckInactiveArbitrators() {
 	for _, v := range s.arbitrators.CRCArbitrators {
 		s.arbitrators.CRCArbitratorsMap[common.BytesToHexString(v)] = nil
 	}
+	p.Sponsor = s.arbitrators.CRCArbitrators[0]
 	var arbitrators [][]byte
 	for i := 0; i < 4; i++ {
 		arbitrators = append(arbitrators, s.arbitrators.CurrentArbitrators[i])
@@ -805,7 +814,7 @@ func (s *txValidatorSpecialTxTestSuite) createArbitratorsRedeemScript(
 	}
 
 	arbitratorsCount := len(arbitrators)
-	minSignCount := int(float64(arbitratorsCount) * 0.5)
+	minSignCount := arbitratorsCount * 2 / 3
 	result, _ := contract.CreateMultiSigRedeemScript(minSignCount+1, pks)
 	return result
 }

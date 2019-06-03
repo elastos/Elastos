@@ -18,6 +18,8 @@ import (
 	dplog "github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/errors"
+	"github.com/elastos/Elastos.ELA/utils/test"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,24 +27,12 @@ var txPool *TxPool
 var initialLedger *blockchain.Ledger
 
 func TestTxPoolInit(t *testing.T) {
-	config.Parameters = config.ConfigParams{Configuration: &config.Template}
-	log.NewDefault(
-		config.Parameters.PrintLevel,
-		config.Parameters.MaxPerLogSize,
-		config.Parameters.MaxLogsSize,
-	)
-	dplog.Init(
-		config.Parameters.PrintLevel,
-		config.Parameters.MaxPerLogSize,
-		config.Parameters.MaxLogsSize,
-	)
-	foundation, err := common.Uint168FromAddress("8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta")
-	if !assert.NoError(t, err) {
-		return
-	}
-	blockchain.FoundationAddress = *foundation
-	chainStore, err := blockchain.NewChainStore("Chain_UnitTest",
-		config.DefaultParams.GenesisBlock)
+	log.NewDefault(test.NodeLogPath, 0, 0, 0)
+	dplog.Init(0, 0, 0)
+
+	params := &config.DefaultParams
+	blockchain.FoundationAddress = params.Foundation
+	chainStore, err := blockchain.NewChainStore(test.DataPath, params.GenesisBlock)
 	if err != nil {
 		t.Fatal("open LedgerStore err:", err)
 		os.Exit(1)
@@ -67,9 +57,8 @@ func TestTxPoolInit(t *testing.T) {
 	}
 	arbitrators := state.NewArbitratorsMock(arbitersByte, 0, 3)
 
-	chain, err := blockchain.New(chainStore, &config.DefaultParams,
-		state.NewState(&config.DefaultParams, nil))
-	//err = blockchain.Init(chainStore, mock.NewBlockHeightMock())
+	chain, err := blockchain.New(chainStore, params, state.NewState(params,
+		nil))
 	if err != nil {
 		t.Fatal(err, "BlockChain generate failed")
 	}
@@ -80,8 +69,8 @@ func TestTxPoolInit(t *testing.T) {
 		Arbitrators: arbitrators,
 	}
 	//store.InitArbitrators(store.ArbitratorsConfig{
-	//	ArbitratorsCount: config.Parameters.ArbiterConfiguration.NormalArbitratorsCount,
-	//	CandidatesCount:  config.Parameters.ArbiterConfiguration.CandidatesCount,
+	//	ArbitratorsCount: config.Parameters.DPoSConfiguration.NormalArbitratorsCount,
+	//	CandidatesCount:  config.Parameters.DPoSConfiguration.CandidatesCount,
 	//	Store:            dposStore,
 	//})
 

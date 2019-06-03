@@ -16,7 +16,7 @@ import (
 const (
 	// trickleInterval is the min time between attempts to send an
 	// inv message to a peer.
-	trickleInterval = 10 * time.Second
+	trickleInterval = 5 * time.Second
 
 	// outputBufferSize is the number of elements the output channels use.
 	outputBufferSize = 50
@@ -92,14 +92,6 @@ type Listeners struct {
 
 	// OnDAddr is invoked when a peer receives a daddr message.
 	OnDAddr func(p *Peer, msg *msg.DAddr)
-}
-
-// outMsg is used to house a message to be sent along with a channel to signal
-// when the message has been sent (or won't be sent due to things such as
-// shutdown)
-type outMsg struct {
-	msg      p2p.Message
-	doneChan chan<- struct{}
 }
 
 type Peer struct {
@@ -245,11 +237,12 @@ func (p *Peer) maybeAddDeadline(pendingResponses map[string]time.Time, msgCmd st
 		pendingResponses[p2p.CmdInv] = deadline
 
 	case p2p.CmdGetData:
-		// Expects a block, merkleblock, tx, or notfound message.
+		// Expects all block, merkleblock, tx, notfound or daddr message.
 		pendingResponses[p2p.CmdBlock] = deadline
 		pendingResponses[p2p.CmdMerkleBlock] = deadline
 		pendingResponses[p2p.CmdTx] = deadline
 		pendingResponses[p2p.CmdNotFound] = deadline
+		pendingResponses[p2p.CmdDAddr] = deadline
 	}
 }
 
@@ -283,8 +276,7 @@ out:
 			case peer.SCCSendMessage:
 				// Add a deadline for the expected response
 				// message if needed.
-				p.maybeAddDeadline(pendingResponses,
-					msg.MSG.CMD())
+				p.maybeAddDeadline(pendingResponses, msg.MSG.CMD())
 
 			case peer.SCCReceiveMessage:
 				// Remove received messages from the expected
@@ -303,6 +295,7 @@ out:
 					delete(pendingResponses, p2p.CmdMerkleBlock)
 					delete(pendingResponses, p2p.CmdTx)
 					delete(pendingResponses, p2p.CmdNotFound)
+					delete(pendingResponses, p2p.CmdDAddr)
 
 				default:
 					delete(pendingResponses, msgCmd)
@@ -402,8 +395,6 @@ out:
 				case msg.InvTypeBlock:
 					fallthrough
 				case msg.InvTypeConfirmedBlock:
-					fallthrough
-				case msg.InvTypeAddress:
 					invMsg := msg.NewInvSize(1)
 					invMsg.AddInvVect(iv)
 					p.QueueMessage(invMsg, nil)

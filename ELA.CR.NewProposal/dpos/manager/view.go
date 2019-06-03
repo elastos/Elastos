@@ -43,7 +43,6 @@ func (v *view) ChangeView(viewOffset *uint32, now time.Time) {
 	offset, offsetTime := v.calculateOffsetTime(v.viewStartTime, now)
 	*viewOffset += uint32(offset)
 	v.viewStartTime = now.Add(-offsetTime)
-	log.Info("[ChangeView] current view offset:", *viewOffset)
 
 	if offset > 0 {
 		currentArbiter := v.arbitrators.GetNextOnDutyArbitrator(*viewOffset)
@@ -56,7 +55,8 @@ func (v *view) ChangeView(viewOffset *uint32, now time.Time) {
 	}
 }
 
-func (v *view) calculateOffsetTime(startTime time.Time, now time.Time) (uint32, time.Duration) {
+func (v *view) calculateOffsetTime(startTime time.Time,
+	now time.Time) (uint32, time.Duration) {
 	duration := now.Sub(startTime)
 	offset := duration / v.signTolerance
 	offsetTime := duration % v.signTolerance

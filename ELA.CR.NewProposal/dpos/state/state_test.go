@@ -639,21 +639,23 @@ func TestState_GetHistory(t *testing.T) {
 	}
 
 	s, err := state.GetHistory(10)
+	state.StateKeyFrame = s
 	if !assert.NoError(t, err) {
 		t.FailNow()
 	}
 	// At this point, we have 5 pending and 5 in total producers.
-	if !assert.Equal(t, 5, len(s.GetPendingProducers())) {
+	if !assert.Equal(t, 5, len(state.GetPendingProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 5, len(s.GetActiveProducers())) {
+	if !assert.Equal(t, 5, len(state.GetActiveProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 10, len(s.GetProducers())) {
+	if !assert.Equal(t, 10, len(state.GetProducers())) {
 		t.FailNow()
 	}
 
 	s, err = state.GetHistory(14)
+	state.StateKeyFrame = s
 	if !assert.NoError(t, err) {
 		t.FailNow()
 	}
@@ -675,20 +677,21 @@ func TestState_GetHistory(t *testing.T) {
 	}
 
 	s, err = state.GetHistory(12)
+	state.StateKeyFrame = s
 	if !assert.NoError(t, err) {
 		t.FailNow()
 	}
 	// At this point, we have 1 canceled, 3 pending, 6 active and 9 in total producers.
-	if !assert.Equal(t, 1, len(s.GetCanceledProducers())) {
+	if !assert.Equal(t, 1, len(state.GetCanceledProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 3, len(s.GetPendingProducers())) {
+	if !assert.Equal(t, 3, len(state.GetPendingProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 6, len(s.GetActiveProducers())) {
+	if !assert.Equal(t, 6, len(state.GetActiveProducers())) {
 		t.FailNow()
 	}
-	if !assert.Equal(t, 9, len(s.GetProducers())) {
+	if !assert.Equal(t, 9, len(state.GetProducers())) {
 		t.FailNow()
 	}
 

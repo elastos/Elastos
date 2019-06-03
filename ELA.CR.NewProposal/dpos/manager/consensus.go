@@ -79,7 +79,7 @@ func (c *Consensus) StartConsensus(b *types.Block) {
 	defer log.Info("[StartConsensus] consensus end")
 
 	now := c.manager.timeSource.AdjustedTime()
-	c.manager.GetBlockCache().Reset()
+	c.manager.GetBlockCache().Reset(b)
 	c.SetRunning()
 
 	c.manager.GetBlockCache().AddValue(b.Hash(), b)
@@ -113,7 +113,7 @@ func (c *Consensus) TryChangeView() bool {
 	return false
 }
 
-func (c *Consensus) CollectConsensusStatus(height uint32, status *msg.ConsensusStatus) error {
+func (c *Consensus) CollectConsensusStatus(status *msg.ConsensusStatus) error {
 	status.ConsensusStatus = c.consensusStatus
 	status.ViewOffset = c.viewOffset
 	status.ViewStartTime = c.currentView.GetViewStartTime()

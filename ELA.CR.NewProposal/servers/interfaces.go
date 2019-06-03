@@ -4,10 +4,9 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
-	"math"
 	"sort"
+	"strings"
 
 	aux "github.com/elastos/Elastos.ELA/auxpow"
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -30,7 +29,7 @@ import (
 
 var (
 	Compile   string
-	Config    *config.ConfigParams
+	Config    *config.Configuration
 	Chain     *blockchain.BlockChain
 	Store     blockchain.IChainStore
 	TxMemPool *mempool.TxPool
@@ -405,8 +404,6 @@ func GetInfo(param Params) map[string]interface{} {
 }
 
 func AuxHelp(param Params) map[string]interface{} {
-
-	//TODO  and description for this rpc-interface
 	return ResponsePack(Success, "createauxblock==submitauxblock")
 }
 
@@ -441,7 +438,7 @@ func DiscreteMining(param Params) map[string]interface{} {
 
 	blockHashes, err := Pow.DiscreteMining(uint32(count))
 	if err != nil {
-		return ResponsePack(Error, err)
+		return ResponsePack(Error, err.Error())
 	}
 
 	for _, hash := range blockHashes {
@@ -914,6 +911,9 @@ func GetUTXOsByAmount(param Params) map[string]interface{} {
 			tx.Outputs[unspent.Index].Type == OTVote {
 			continue
 		}
+		if tx.TxType == CoinBase && bestHeight-height < config.DefaultParams.CoinbaseMaturity {
+			continue
+		}
 		totalAmount += unspent.Value
 		result = append(result, UTXOInfo{
 			TxType:        byte(tx.TxType),
@@ -1137,24 +1137,13 @@ func GetTransactionByHash(param Params) map[string]interface{} {
 }
 
 func GetExistWithdrawTransactions(param Params) map[string]interface{} {
-	txsStr, ok := param.String("txs")
+	txList, ok := param.ArrayString("txs")
 	if !ok {
 		return ResponsePack(InvalidParams, "txs not found")
 	}
 
-	txsBytes, err := common.HexStringToBytes(txsStr)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
-
-	var txHashes []string
-	err = json.Unmarshal(txsBytes, &txHashes)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
-
 	var resultTxHashes []string
-	for _, txHash := range txHashes {
+	for _, txHash := range txList {
 		txHashBytes, err := common.HexStringToBytes(txHash)
 		if err != nil {
 			return ResponsePack(InvalidParams, "")
@@ -1181,7 +1170,6 @@ type Producer struct {
 	Location       uint64 `json:"location"`
 	Active         bool   `json:"active"`
 	Votes          string `json:"votes"`
-	NetAddress     string `json:"netaddress"`
 	State          string `json:"state"`
 	RegisterHeight uint32 `json:"registerheight"`
 	CancelHeight   uint32 `json:"cancelheight"`
@@ -1200,24 +1188,52 @@ func ListProducers(param Params) map[string]interface{} {
 	start, _ := param.Int("start")
 	limit, ok := param.Int("limit")
 	if !ok {
-		limit = math.MaxInt64
+		limit = -1
+	}
+	s, ok := param.String("state")
+	if ok {
+		s = strings.ToLower(s)
+	}
+	var producers []*state.Producer
+	switch s {
+	case "all":
+		producers = Chain.GetState().GetAllProducers()
+	case "pending":
+		producers = Chain.GetState().GetPendingProducers()
+	case "active":
+		producers = Chain.GetState().GetActiveProducers()
+	case "inactive":
+		producers = Chain.GetState().GetInactiveProducers()
+	case "canceled":
+		producers = Chain.GetState().GetCanceledProducers()
+	case "illegal":
+		producers = Chain.GetState().GetIllegalProducers()
+	case "returned":
+		producers = Chain.GetState().GetReturnedDepositProducers()
+	default:
+		producers = Chain.GetState().GetProducers()
 	}
 
-	producers := Chain.GetState().GetAllProducers()
 	sort.Slice(producers, func(i, j int) bool {
+		if producers[i].Votes() == producers[j].Votes() {
+			return bytes.Compare(producers[i].NodePublicKey(),
+				producers[j].NodePublicKey()) < 0
+		}
 		return producers[i].Votes() > producers[j].Votes()
 	})
+
 	var ps []Producer
+	var totalVotes common.Fixed64
 	for i, p := range producers {
+		totalVotes += p.Votes()
 		producer := Producer{
 			OwnerPublicKey: hex.EncodeToString(p.Info().OwnerPublicKey),
 			NodePublicKey:  hex.EncodeToString(p.Info().NodePublicKey),
 			Nickname:       p.Info().NickName,
 			Url:            p.Info().Url,
 			Location:       p.Info().Location,
-			Active:         p.State() == state.Activate,
+			Active:         p.State() == state.Active,
 			Votes:          p.Votes().String(),
-			NetAddress:     p.Info().NetAddress,
 			State:          p.State().String(),
 			RegisterHeight: p.RegisterHeight(),
 			CancelHeight:   p.CancelHeight(),
@@ -1228,20 +1244,25 @@ func ListProducers(param Params) map[string]interface{} {
 		ps = append(ps, producer)
 	}
 
-	var resultPs []Producer
-	var totalVotes common.Fixed64
-	for i := start; i < limit && i < int64(len(ps)); i++ {
-		resultPs = append(resultPs, ps[i])
+	count := int64(len(producers))
+	if limit < 0 {
+		limit = count
 	}
-	for i := 0; i < len(ps); i++ {
-		v, _ := common.StringToFixed64(ps[i].Votes)
-		totalVotes += *v
+	var resultPs []Producer
+	if start < count {
+		end := start
+		if start+limit <= count {
+			end = start + limit
+		} else {
+			end = count
+		}
+		resultPs = append(resultPs, ps[start:end]...)
 	}
 
 	result := &Producers{
 		Producers:   resultPs,
 		TotalVotes:  totalVotes.String(),
-		TotalCounts: uint64(len(producers)),
+		TotalCounts: uint64(count),
 	}
 
 	return ResponsePack(Success, result)

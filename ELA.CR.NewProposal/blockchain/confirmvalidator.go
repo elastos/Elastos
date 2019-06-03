@@ -70,10 +70,6 @@ func checkBlockWithConfirmation(block *Block, confirm *payload.Confirm) error {
 			"confirmation validate failed")
 	}
 
-	if err := preProcessSpecialTx(block); err != nil {
-		return nil
-	}
-
 	if err := ConfirmContextCheck(confirm); err != nil {
 		// rollback to the state before this method
 		if e := DefaultLedger.Arbitrators.RollbackTo(block.
@@ -86,7 +82,7 @@ func checkBlockWithConfirmation(block *Block, confirm *payload.Confirm) error {
 	return nil
 }
 
-func preProcessSpecialTx(block *Block) error {
+func PreProcessSpecialTx(block *Block) error {
 	illegalBlocks := make([]*payload.DPOSIllegalBlocks, 0)
 	inactivePayloads := make([]*payload.InactiveArbitrators, 0)
 	for _, tx := range block.Transactions {
@@ -117,7 +113,7 @@ func preProcessSpecialTx(block *Block) error {
 	if len(illegalBlocks) != 0 {
 		for _, v := range illegalBlocks {
 			if err := DefaultLedger.Arbitrators.ProcessSpecialTxPayload(
-				v, block.Height); err != nil {
+				v, block.Height-1); err != nil {
 				return errors.New("force change fail when finding an " +
 					"inactive arbitrators transaction")
 			}
@@ -126,7 +122,7 @@ func preProcessSpecialTx(block *Block) error {
 	if len(inactivePayloads) != 0 {
 		for _, v := range inactivePayloads {
 			if err := DefaultLedger.Arbitrators.ProcessSpecialTxPayload(
-				v, block.Height); err != nil {
+				v, block.Height-1); err != nil {
 				return errors.New("force change fail when finding an " +
 					"inactive arbitrators transaction")
 			}
@@ -142,6 +138,19 @@ func ProposalCheck(proposal *payload.DPOSProposal) error {
 	}
 
 	if err := ProposalContextCheck(proposal); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ProposalCheckByHeight(proposal *payload.DPOSProposal,
+	height uint32) error {
+	if err := ProposalSanityCheck(proposal); err != nil {
+		return err
+	}
+
+	if err := ProposalContextCheckByHeight(proposal, height); err != nil {
 		return err
 	}
 
@@ -176,12 +185,45 @@ func ProposalContextCheck(proposal *payload.DPOSProposal) error {
 	return nil
 }
 
+func ProposalContextCheckByHeight(proposal *payload.DPOSProposal,
+	height uint32) error {
+	var isArbiter bool
+	keyFrames := DefaultLedger.Arbitrators.GetSnapshot(height)
+out:
+	for _, k := range keyFrames {
+		for _, a := range k.CurrentArbitrators {
+			if bytes.Equal(a, proposal.Sponsor) {
+				isArbiter = true
+				break out
+			}
+		}
+	}
+	if !isArbiter {
+		return errors.New("current arbitrators verify error")
+	}
+
+	return nil
+}
+
 func VoteCheck(vote *payload.DPOSProposalVote) error {
 	if err := VoteSanityCheck(vote); err != nil {
 		return err
 	}
 
 	if err := VoteContextCheck(vote); err != nil {
+		log.Warn("[VoteContextCheck] error: ", err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func VoteCheckByHeight(vote *payload.DPOSProposalVote, height uint32) error {
+	if err := VoteSanityCheck(vote); err != nil {
+		return err
+	}
+
+	if err := VoteContextCheckByHeight(vote, height); err != nil {
 		log.Warn("[VoteContextCheck] error: ", err.Error())
 		return err
 	}
@@ -201,12 +243,33 @@ func VoteSanityCheck(vote *payload.DPOSProposalVote) error {
 
 	return nil
 }
+
 func VoteContextCheck(vote *payload.DPOSProposalVote) error {
 	var isArbiter bool
 	arbiters := DefaultLedger.Arbitrators.GetArbitrators()
 	for _, a := range arbiters {
 		if bytes.Equal(a, vote.Signer) {
 			isArbiter = true
+		}
+	}
+	if !isArbiter {
+		return errors.New("current arbitrators verify error")
+	}
+
+	return nil
+}
+
+func VoteContextCheckByHeight(vote *payload.DPOSProposalVote,
+	height uint32) error {
+	var isArbiter bool
+	keyFrames := DefaultLedger.Arbitrators.GetSnapshot(height)
+out:
+	for _, k := range keyFrames {
+		for _, a := range k.CurrentArbitrators {
+			if bytes.Equal(a, vote.Signer) {
+				isArbiter = true
+				break out
+			}
 		}
 	}
 	if !isArbiter {

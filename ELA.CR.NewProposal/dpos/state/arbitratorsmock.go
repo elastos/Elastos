@@ -11,7 +11,12 @@ import (
 
 func NewArbitratorsMock(arbitersByte [][]byte, changeCount, majorityCount int) *ArbitratorsMock {
 	return &ArbitratorsMock{
-		CurrentArbitrators:          arbitersByte,
+		CurrentArbitrators: arbitersByte,
+		Snapshot: []*KeyFrame{
+			{
+				CurrentArbitrators: arbitersByte,
+			},
+		},
 		CurrentCandidates:           make([][]byte, 0),
 		CRCArbitrators:              make([][]byte, 0),
 		NextArbitrators:             make([][]byte, 0),
@@ -21,11 +26,14 @@ func NewArbitratorsMock(arbitersByte [][]byte, changeCount, majorityCount int) *
 		OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
 		ArbitersRoundReward:         make(map[common.Uint168]common.Fixed64),
 		CRCArbitratorsMap:           make(map[string]*Producer),
+		ActiveProducer:              make([][]byte, 0),
 		TotalVotesInRound:           0,
 		DutyChangedCount:            0,
 		MajorityCount:               majorityCount,
 		FinalRoundChange:            0,
 		InactiveMode:                false,
+		CurrentReward:               *NewRewardData(),
+		NextReward:                  *NewRewardData(),
 	}
 }
 
@@ -46,6 +54,43 @@ type ArbitratorsMock struct {
 	MajorityCount               int
 	FinalRoundChange            common.Fixed64
 	InactiveMode                bool
+	ActiveProducer              [][]byte
+	Snapshot                    []*KeyFrame
+	CurrentReward               RewardData
+	NextReward                  RewardData
+}
+
+func (a *ArbitratorsMock) SaveCheckPoint(height uint32) error {
+	panic("implement me")
+}
+
+func (a *ArbitratorsMock) RecoverFromCheckPoints(height uint32) (uint32, error) {
+	return height, nil
+}
+
+func (a *ArbitratorsMock) GetCurrentRewardData() RewardData {
+	return a.CurrentReward
+}
+
+func (a *ArbitratorsMock) GetNextRewardData() RewardData {
+	return a.NextReward
+}
+
+func (a *ArbitratorsMock) GetSnapshot(height uint32) []*KeyFrame {
+	return a.Snapshot
+}
+
+func (a *ArbitratorsMock) IsActiveProducer(pk []byte) bool {
+	for _, v := range a.ActiveProducer {
+		if bytes.Equal(v, pk) {
+			return true
+		}
+	}
+	return false
+}
+
+func (a *ArbitratorsMock) IsUnderstaffedMode() bool {
+	return false
 }
 
 func (a *ArbitratorsMock) IsInactiveMode() bool {
@@ -130,16 +175,32 @@ func (a *ArbitratorsMock) GetCRCArbitrators() map[string]*Producer {
 	return a.CRCArbitratorsMap
 }
 
-func (a *ArbitratorsMock) IsCRCArbitratorNodePublicKey(nodePublicKeyHex string) bool {
-	return false
-}
-
 func (a *ArbitratorsMock) GetArbitersCount() int {
 	return len(a.CurrentArbitrators)
 }
 
+func (a *ArbitratorsMock) GetCRCArbitersCount() int {
+	return len(a.CRCArbitrators)
+}
+
 func (a *ArbitratorsMock) GetArbitersMajorityCount() int {
 	return a.MajorityCount
+}
+
+func (a *ArbitratorsMock) GetOnDutyCrossChainArbitrator() []byte {
+	return a.GetNextOnDutyArbitrator(0)
+}
+
+func (a *ArbitratorsMock) GetCrossChainArbitersMajorityCount() int {
+	return a.MajorityCount
+}
+
+func (a *ArbitratorsMock) GetCrossChainArbitersCount() int {
+	return len(a.CurrentArbitrators)
+}
+
+func (a *ArbitratorsMock) GetCrossChainArbiters() [][]byte {
+	return a.CurrentArbitrators
 }
 
 func (a *ArbitratorsMock) GetDutyChangeCount() int {
@@ -218,6 +279,6 @@ func (a *ArbitratorsMock) HasArbitersMinorityCount(num int) bool {
 	return num >= len(a.CurrentArbitrators)-a.MajorityCount
 }
 
-func (a *ArbitratorsMock) DumpInfo() {
+func (a *ArbitratorsMock) DumpInfo(height uint32) {
 	panic("implement me")
 }
