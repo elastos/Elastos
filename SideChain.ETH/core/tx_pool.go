@@ -603,7 +603,7 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 
 	if tx.To() != nil {
 		to := *tx.To()
-		if len(tx.Data()) != 32 && to != addr {
+		if len(tx.Data()) != 32 || to != addr {
 			if pool.currentState.GetBalance(from).Cmp(tx.Cost()) < 0 {
 				return ErrInsufficientFunds
 			}
