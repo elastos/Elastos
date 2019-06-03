@@ -21,7 +21,7 @@ module.exports = async function(json_data, res) {
             for (const log of logs) {
                 if (txhash === null || txhash != log["transactionHash"]) {
                     txhash = log["transactionHash"];
-                    txlog = {"txid": txhash};
+                    txlog = {"txid": txhash.slice(2)};
                     result.push(txlog);
                     txreceipt = await common.web3.eth.getTransactionReceipt(txhash)
                     console.log(txreceipt);
