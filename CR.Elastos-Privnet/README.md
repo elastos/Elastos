@@ -18,6 +18,7 @@ Here's a taste of how this build process looks from scratch [https://www.cyberre
 
 ## Requirements
 
+- Ubuntu 16 or higher
 - Docker Engine 18.09.2
 - Docker Compose 1.23.2
 - Docker Machine 0.16.1

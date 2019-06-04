@@ -30,10 +30,10 @@ These are located in the `wallets` folder:
 
 ## Repos used to build 
 
-- [Elastos.ELA](https://github.com/elastos/Elastos.ELA): release_v0.3.2
-- [Elastos.ELA.Arbiter](https://github.com/elastos/Elastos.ELA.Arbiter): release_v0.1.1
-- [Elastos.ELA.SideChain.ID](https://github.com/elastos/Elastos.ELA.Sidechain.ID): release_v0.1.2
-- [Elastos.ELA.SideChain.Token](https://github.com/elastos/Elastos.ELA.SideChain.Token): release_v0.1.2
+- [Elastos.ELA](https://github.com/elastos/Elastos.ELA): v0.3.2
+- [Elastos.ELA.Arbiter](https://github.com/elastos/Elastos.ELA.Arbiter): v0.1.1
+- [Elastos.ELA.SideChain.ID](https://github.com/elastos/Elastos.ELA.Sidechain.ID): v0.1.2
+- [Elastos.ELA.SideChain.Token](https://github.com/elastos/Elastos.ELA.SideChain.Token): v0.1.2
 - [Elastos.ORG.Wallet.Service](https://github.com/elastos/Elastos.ORG.Wallet.Service): master
 - [Elastos.ORG.DID.Service](https://github.com/elastos/Elastos.ORG.DID.Service): master
 - [Elastos.ORG.API.Misc](https://github.com/elastos/Elastos.ORG.API.Misc): master
@@ -147,9 +147,9 @@ These are located in the `wallets` folder:
     curl http://localhost:8092/api/1/balance/EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3
     ```    
     
-    You should see 100005 ELA in the DID Sidechain wallet pre-loaded:
+    You should see 100000 ELA in the DID Sidechain wallet pre-loaded:
     ```
-    {"result":"100005","status":200}
+    {"result":"100000","status":200}
     ```
 
 6. Verify that all the appropriate addresses are pre-loaded with ELA in them
@@ -323,10 +323,11 @@ These are located in the `wallets` folder:
 
   This uses release v0.3.2 binary for ela program but if there's a newer version, make sure to grab that instead
   ```
-  mkdir -p ~/node/ela
-  cd ~/node/ela
-  wget https://github.com/elastos/Elastos.ELA/releases/download/v0.3.2/ela
-  cp $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-mainchain/ela-cli .
+  mkdir -p ~/node/ela;
+  cd ~/node/ela;
+  wget https://github.com/elastos/Elastos.ELA/releases/download/v0.3.2/ela;
+  chmod +x ela;
+  cp $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-mainchain/ela-cli .;
   ```
 
 2. Let's create a new wallet that we will use to register for our supernode so we'll be both an owner and a node
@@ -344,8 +345,17 @@ These are located in the `wallets` folder:
   ```
 
 3. Let's send some ELA to this ELA address first because we need 5000 ELA to register for our supernode
+  Let's first save our ELA Address in a variable so we can keep on using it
+  ```bash
+  ELAADDRESS=$(./ela-cli wallet -a -p elastos | tail -2 | head -1 | cut -d' ' -f1)
+  PUBLICKEY=$(./ela-cli wallet -a -p elastos | tail -2 | head -1 | cut -d' ' -f2)
+  PRIVATEKEY=$(./ela-cli wallet export -p elastos | tail -2 | head -1 | cut -d' ' -f2)
+  # Make sure your info is correct
+  echo $ELAADDRESS $PUBLICKEY $PRIVATEKEY
   ```
-  curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": "Ec39reRzMTixsYt7yoXkQWDi7kb5dwbj66","amount": "6000"}]}' localhost:8091/api/1/transfer
+
+  ```
+  curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": '"$ELAADDRESS"',"amount": "6000"}]}' localhost:8091/api/1/transfer
   ```
 
   Wait for the transaction to confirm(around 6 blocks) and then check your new balance:
@@ -361,7 +371,7 @@ These are located in the `wallets` folder:
   ----- ---------------------------------- ------------------------------------------
   ```
 
-4. Modify ela configuration file: `config.json`
+4. Add ela configuration file: `config.json`
 
   ```json
   {
@@ -435,13 +445,19 @@ These are located in the `wallets` folder:
 
 6. Modify [./test/register_new_supernode.lua](./test/register_new_supernode.lua) 
 
-  Get deposit_address:
+  Copy the supernode registration script
   ```
-  ./ela-cli wallet depositaddr Ec39reRzMTixsYt7yoXkQWDi7kb5dwbj66
+  cp $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain/test/register_new_supernode.lua .
   ```
 
-  Should output your "deposit_address" that you enter on register_new_supernode.lua script
+  Get deposit_address:
   ```
+  ./ela-cli wallet depositaddr $ELAADDRESS
+  ```
+
+  Should output your "deposit_address" that you enter on register_new_supernode.lua script. 
+  ```bash
+  # Note: Your deposit address will be different
   DoMwtRqQw6oDEgbwvxs7SFg8rk5C8aGxRB
   ```
 
@@ -456,7 +472,7 @@ These are located in the `wallets` folder:
 7. Register your supernode
 
   ```
-  ./ela-cli script --file $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain/test/register_new_supernode.lua
+  ./ela-cli script --file ./register_new_supernode.lua
   ```
 
   If the transaction is successful, it should say "tx send success" at the end of the output
@@ -464,7 +480,7 @@ These are located in the `wallets` folder:
 8. Verify your supernode got registered successfully
 
   ```
-  curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"listproducers", "params":{"start":"0"}}' http://localhost:20336 
+  ./ela-cli info listproducers
   ```
 
   You should see your new supernode listed there
@@ -476,16 +492,16 @@ These are located in the `wallets` folder:
   curl -X POST -H "Content-Type: application/json" -d '{
       "sender":[
           {
-              "address":"Ec39reRzMTixsYt7yoXkQWDi7kb5dwbj66",
-              "privateKey":"b45d7babf77ad5d6b02291f38a3a0ad4827bbdcb86ab6bd467f1b8ef99ad3235"
+              "address":'"$ELAADDRESS"',
+              "privateKey":'"$PRIVATEKEY"'
           }
       ],
       "memo":"Voting for Dev Workshop Supernode",
       "receiver":[
           {
-              "address":"Ec39reRzMTixsYt7yoXkQWDi7kb5dwbj66",
+              "address":'"$ELAADDRESS"',
               "amount":"500",
-              "candidatePublicKeys":["036d49dfbb70932b8aea1218beee8dd7aa5e0aafa7a079cb15ba468d74c38a99cf"]
+              "candidatePublicKeys":['"$PUBLICKEY"']
           }
       ]
   }' localhost:8091/api/1/dpos/vote
@@ -493,70 +509,72 @@ These are located in the `wallets` folder:
 
   After some blocks, your vote will be seen. Let's verify this:
   ```
-  curl --user user:password -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"listproducers", "params":{"start":"0"}}' http://localhost:20336
+  ./ela-cli info listproducers
   ```
 
   Should output something like:
   ```
   {
-    "error": null,
-    "id": null,
-    "jsonrpc": "2.0",
-    "result": {
       "producers": [
-        {
-          "ownerpublickey": "03521eb1f20fcb7a792aeed2f747f278ae7d7b38474ee571375ebe1abb3fa2cbbb",
-          "nodepublickey": "0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25",
-          "nickname": "KP Supernode",
-          "url": "www.pachhai.com",
-          "location": 112211,
-          "active": true,
-          "votes": "75000",
-          "state": "Active",
-          "registerheight": 418,
-          "cancelheight": 0,
-          "inactiveheight": 0,
-          "illegalheight": 0,
-          "index": 0
-        },
-        {
-          "ownerpublickey": "03aa307d123cf3f181e5b9cc2839c4860a27caf5fb329ccde2877c556881451007",
-          "nodepublickey": "021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556",
-          "nickname": "Noderators",
-          "url": "www.noderators.org",
-          "location": 112211,
-          "active": true,
-          "votes": "50000",
-          "state": "Active",
-          "registerheight": 368,
-          "cancelheight": 0,
-          "inactiveheight": 0,
-          "illegalheight": 0,
-          "index": 1
-        },
-        {
-          "ownerpublickey": "036d49dfbb70932b8aea1218beee8dd7aa5e0aafa7a079cb15ba468d74c38a99cf",
-          "nodepublickey": "036d49dfbb70932b8aea1218beee8dd7aa5e0aafa7a079cb15ba468d74c38a99cf",
-          "nickname": "My new awesome supernode",
-          "url": "www.mynewawesomesupernode.com",
-          "location": 112211,
-          "active": true,
-          "votes": "500",
-          "state": "Active",
-          "registerheight": 1514,
-          "cancelheight": 0,
-          "inactiveheight": 0,
-          "illegalheight": 0,
-          "index": 2
-        }
+          {
+              "active": true,
+              "cancelheight": 0,
+              "illegalheight": 0,
+              "inactiveheight": 0,
+              "index": 0,
+              "location": 112211,
+              "nickname": "KP Supernode",
+              "nodepublickey": "0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25",
+              "ownerpublickey": "03521eb1f20fcb7a792aeed2f747f278ae7d7b38474ee571375ebe1abb3fa2cbbb",
+              "registerheight": 418,
+              "state": "Active",
+              "url": "www.pachhai.com",
+              "votes": "75000"
+          },
+          {
+              "active": true,
+              "cancelheight": 0,
+              "illegalheight": 0,
+              "inactiveheight": 0,
+              "index": 1,
+              "location": 112211,
+              "nickname": "Noderators",
+              "nodepublickey": "021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556",
+              "ownerpublickey": "03aa307d123cf3f181e5b9cc2839c4860a27caf5fb329ccde2877c556881451007",
+              "registerheight": 368,
+              "state": "Active",
+              "url": "www.noderators.org",
+              "votes": "50000"
+          },
+          {
+              "active": true,
+              "cancelheight": 0,
+              "illegalheight": 0,
+              "inactiveheight": 0,
+              "index": 2,
+              "location": 112211,
+              "nickname": "My new awesome supernode",
+              "nodepublickey": "02c1198343700f8c924ab36592066b9e938113a32f1df7fe0aac9e6eb1059faa8d",
+              "ownerpublickey": "02c1198343700f8c924ab36592066b9e938113a32f1df7fe0aac9e6eb1059faa8d",
+              "registerheight": 570,
+              "state": "Active",
+              "url": "www.mynewawesomesupernode.com",
+              "votes": "500"
+          }
       ],
-      "totalvotes": "125500",
-      "totalcounts": 3
-    }
+      "totalcounts": 3,
+      "totalvotes": "125500"
   }
   ```
 
   As you can see, our newly created supernode has 500 votes now
+
+### Stop your supernode process
+
+  ```
+  kill -9 $(ps aux | grep ela | grep -v "123" | grep -v grep | cut -d' ' -f2);
+  cd $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain
+  ```
 
 ## DID Sidechain Testing
 
@@ -675,49 +693,12 @@ Would return something like
 
 ## Transfer ELA from main chain to Token Sidechain
 
-The Elastos.ORG.Wallet.Service currently only supports main chain and DID sidechain so we cannot use it to transfer ELA from main chain to token sidechain so, we'll need to resort to using some command line tools to perform this testing.
+1. Change directory
+  ```
+  cd $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-mainchain
+  ```
 
-1. Download and Clone the repository at: https://github.com/elastos/Elastos.ELA.Client onto your $GOPATH/src/github.com/elastos directory
-
-    ```
-    $ echo $GOPATH
-    ```
-
-    Should return your $GOPATH dir
-    
-    ```
-    /home/kpachhai/dev
-    ```
-
-    Then, clone the repository
-
-    ```
-    $ git clone https://github.com/elastos/Elastos.ELA.Client
-    ```
-
-    Should return
-
-    ```
-    Cloning into 'Elastos.ELA.Client'...
-    remote: Enumerating objects: 31, done.
-    remote: Counting objects: 100% (31/31), done.
-    remote: Compressing objects: 100% (22/22), done.
-    remote: Total 1258 (delta 11), reused 12 (delta 9), pack-reused 1227
-    Receiving objects: 100% (1258/1258), 227.58 KiB | 3.08 MiB/s, done.
-    Resolving deltas: 100% (757/757), done.
-    ```
-
-2. Build the ela-cli client
-
-    ```
-    $ cd Elastos.ELA.Client/
-    $ git checkout dev
-    $ rm -rf vendor glide.lock
-    $ glide cc && glide update && glide install
-    $ make
-    ```
-
-3. Configure ela-cli config file
+2. Configure ela-cli config file
 
     Create a file called "cli-config.json" and put the following content in that file:
 
@@ -728,7 +709,7 @@ The Elastos.ORG.Wallet.Service currently only supports main chain and DID sidech
     }
     ```
 
-    This just means that we're connecting to one of our main chain nodes that's running locally at 127.0.0.1:10014(this is our ela-mainchain-normal-1 docker container that's running our main chain node and port 10336 is HttpJsonPort). The DepositAddress parameter is the deposit address of the sidechain genesis block.
+    This just means that we're connecting to one of our main chain nodes that's running locally at 127.0.0.1:10014(this is our ela-mainchain-normal-1 docker container that's running our main chain node and port 10014 is HttpJsonPort). The DepositAddress parameter is the deposit address of the sidechain genesis block.
 
     You can get genesis block hash for token sidechain doing the following:
 
@@ -752,7 +733,7 @@ The Elastos.ORG.Wallet.Service currently only supports main chain and DID sidech
     And then, plug in the genesis block hash into ela-cli command
 
     ```
-    ./ela-cli wallet -g b569111dfb5e12d40be5cf09e42f7301128e9ac7ab3c6a26f24e77872b9a730e
+    ./ela-cli-crosschain wallet -g b569111dfb5e12d40be5cf09e42f7301128e9ac7ab3c6a26f24e77872b9a730e
     ```
 
     Should return
@@ -764,15 +745,13 @@ The Elastos.ORG.Wallet.Service currently only supports main chain and DID sidech
 
     So, you plug in the genesis address "XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4" onto the cli-config.json file for "DepositAddress" parameter. This is what allows us to transfer assets from main chain to any of the sidechains. If you want to transfer to DID sidechain, you just plug in the deposit address for the DID sidechain instead.
 
-4. Create a new wallet using ela-cli client for testing purposes
+3. Create a new wallet using ela-cli-crosschain client for testing purposes
 
-    Note that the ela-cli built using elastos/Elastos.ELA.Client and elastos/Elastos.ELA are not compatible at this point so we'll need to create a new wallet and transfer some ELA to this address and then we can use that new wallet to transfer ELA to our token sidechain address
+    Note that the ela-cli-crosschain built using github.com/elastos/Elastos.ELA.Client and github.com/elastos/Elastos.ELA are not compatible at this point so we'll need to create a new wallet and transfer some ELA to this address and then we can use that new wallet to transfer ELA to our token sidechain address
 
     ```
-    ./ela-cli wallet --create
+    ./ela-cli-crosschain wallet --create -p elastos
     ```
-
-    Enter your desired password. I put "elastos" as my password
     
     Should return something like
 
@@ -782,10 +761,19 @@ The Elastos.ORG.Wallet.Service currently only supports main chain and DID sidech
     ------------------------------------------------------------------
     ```
 
-5. Transfer ELA from one of your pre-loaded mainchain wallet to this newly created wallet
+    Save ELA address, Public key and Private key to a variable so it can be used later
+    ```bash
+    ELAADDRESS=$(./ela-cli-crosschain wallet -a -p elastos | tail -2 | head -1 | cut -d' ' -f1)
+    PUBLICKEY=$(./ela-cli-crosschain wallet -a -p elastos | tail -2 | head -1 | cut -d' ' -f2)
+    PRIVATEKEY=$(./ela-cli-crosschain wallet --export -p elastos | tail -2 | head -1 | cut -d' ' -f2)
+    # Make sure your info is correct
+    echo $ELAADDRESS $PUBLICKEY $PRIVATEKEY
+    ```
+
+4. Transfer ELA from the resources wallet to this newly created wallet
 
     ```
-    curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr","privateKey": "a24ee48f308189d46a5f050f326e76779b6508d8c8aaf51a7152b903b9f42f80"}],"receiver": [{"address": "ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC","amount": "10100"}]}' localhost:8091/api/1/transfer
+    curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": '"$ELAADDRESS"',"amount": "10100"}]}' localhost:8091/api/1/transfer
     ```
 
     Should return something like
@@ -797,7 +785,7 @@ The Elastos.ORG.Wallet.Service currently only supports main chain and DID sidech
     Check whether the ELA got transferred successfully
 
     ```
-    ./ela-cli wallet -l
+    ./ela-cli-crosschain wallet -l
     ```
 
     Should return
@@ -811,12 +799,12 @@ The Elastos.ORG.Wallet.Service currently only supports main chain and DID sidech
     ------------------------------------------
     ```
 
-6. Transfer ELA from main chain to token sidechain
+5. Transfer ELA from main chain to token sidechain
 
     ```
-    ./ela-cli wallet -t create --from ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC --deposit ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC --amount 50 --fee 0.0001
-    ./ela-cli wallet -t sign -p elastos --file to_be_signed.txn
-    ./ela-cli wallet -t send --file ready_to_send.txn
+    ./ela-cli-crosschain wallet -t create --from $ELAADDRESS --deposit ESKgZtD8BUQT1f4e2RmAvFzcDvjY6Ta8vC --amount 50 --fee 0.0001;
+    ./ela-cli-crosschain wallet -t sign -p elastos --file to_be_signed.txn;
+    ./ela-cli-crosschain wallet -t send --file ready_to_send.txn;
     ```
 
     Should return the transaction hash if successfull
@@ -845,6 +833,18 @@ The Elastos.ORG.Wallet.Service currently only supports main chain and DID sidech
     ```
 
     As you can see, we now have around 50 ELA that was transferred to our token sidechain address
+
+7. Remove all the files that are no longer needed
+  ```
+  rm -rf ~/node/ela;
+  rm -f cli-config.json keystore.dat ready_to_send.txn to_be_signed.txnrm  wallet.db;
+  ```
+
+### Stop docker services
+
+  ```
+  cd $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain && docker-compose down
+  ```
 
 ### Create a fungible token 
 
