@@ -347,8 +347,8 @@ These are located in the `wallets` folder:
 3. Let's send some ELA to this ELA address first because we need 5000 ELA to register for our supernode
   Let's first save our ELA Address in a variable so we can keep on using it
   ```bash
-  ELAADDRESS=$(./ela-cli wallet -a -p elastos | tail -2 | head -1 | cut -d' ' -f1)
-  PUBLICKEY=$(./ela-cli wallet -a -p elastos | tail -2 | head -1 | cut -d' ' -f2)
+  ELAADDRESS=$(./ela-cli wallet a -p elastos | tail -2 | head -1 | cut -d' ' -f1)
+  PUBLICKEY=$(./ela-cli wallet a -p elastos | tail -2 | head -1 | cut -d' ' -f2)
   PRIVATEKEY=$(./ela-cli wallet export -p elastos | tail -2 | head -1 | cut -d' ' -f2)
   # Make sure your info is correct
   echo $ELAADDRESS $PUBLICKEY $PRIVATEKEY
