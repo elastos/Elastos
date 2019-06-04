@@ -9,7 +9,7 @@ services:
       - ${PWD}/ela-mainchain/node_normal/mainchain-normal-1/config.json:/ela/config.json
       - ${PWD}/ela-mainchain/node_normal/mainchain-normal-1/keystore.dat:/ela/keystore.dat
     ports:
-      - 10011-10016:20333-20338
+      - 10011-10017:20333-20339
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:10012/api/v1/block/height"]
       interval: 30s
@@ -29,7 +29,7 @@ services:
       - ${PWD}/ela-mainchain/node_crc/mainchain-crc-1/config.json:/ela/config.json
       - ${PWD}/ela-mainchain/node_crc/mainchain-crc-1/keystore.dat:/ela/keystore.dat
     ports:
-      - 10111-10116:20333-20338
+      - 10111-10117:20333-20339
     networks:
       - blockchain
     tty: true
@@ -44,7 +44,7 @@ services:
       - ${PWD}/ela-mainchain/node_crc/mainchain-crc-2/config.json:/ela/config.json
       - ${PWD}/ela-mainchain/node_crc/mainchain-crc-2/keystore.dat:/ela/keystore.dat
     ports:
-      - 10211-10216:20333-20338
+      - 10211-10217:20333-20339
     networks:
       - blockchain
     tty: true
@@ -59,7 +59,7 @@ services:
       - ${PWD}/ela-mainchain/node_crc/mainchain-crc-3/config.json:/ela/config.json
       - ${PWD}/ela-mainchain/node_crc/mainchain-crc-3/keystore.dat:/ela/keystore.dat
     ports:
-      - 10311-10316:20333-20338
+      - 10311-10317:20333-20339
     networks:
       - blockchain
     tty: true
@@ -74,7 +74,7 @@ services:
       - ${PWD}/ela-mainchain/node_crc/mainchain-crc-4/config.json:/ela/config.json
       - ${PWD}/ela-mainchain/node_crc/mainchain-crc-4/keystore.dat:/ela/keystore.dat
     ports:
-      - 10411-10416:20333-20338
+      - 10411-10417:20333-20339
     networks:
       - blockchain
     tty: true
@@ -89,7 +89,7 @@ services:
       - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-1/config.json:/ela/config.json
       - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-1/keystore.dat:/ela/keystore.dat
     ports:
-      - 10511-10516:20333-20338
+      - 10511-10517:20333-20339
     networks:
       - blockchain
     tty: true
@@ -104,7 +104,7 @@ services:
       - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-2/config.json:/ela/config.json
       - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-2/keystore.dat:/ela/keystore.dat
     ports:
-      - 10611-10616:20333-20338
+      - 10611-10617:20333-20339
     networks:
       - blockchain
     tty: true
@@ -121,7 +121,7 @@ services:
       - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-1/config.json:/arbiter/config.json
       - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-1/keystore.dat:/arbiter/keystore.dat
     ports:
-      - 20114-20118:20534-20538
+      - 50114-50118:20534-20538
     networks:
       - blockchain
     tty: true
@@ -138,7 +138,7 @@ services:
       - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-2/config.json:/arbiter/config.json
       - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-2/keystore.dat:/arbiter/keystore.dat
     ports:
-      - 20214-20218:20534-20538
+      - 50214-50218:20534-20538
     networks:
       - blockchain
     tty: true
@@ -155,7 +155,7 @@ services:
       - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-3/config.json:/arbiter/config.json
       - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-3/keystore.dat:/arbiter/keystore.dat
     ports:
-      - 20314-20318:20534-20538
+      - 50314-50318:20534-20538
     networks:
       - blockchain
     tty: true
@@ -172,7 +172,7 @@ services:
       - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-4/config.json:/arbiter/config.json
       - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-4/keystore.dat:/arbiter/keystore.dat
     ports:
-      - 20414-20418:20534-20538
+      - 50414-50418:20534-20538
     networks:
       - blockchain
     tty: true
@@ -189,7 +189,7 @@ services:
       - ${PWD}/ela-arbitrator/node_origin/arbitrator-origin-1/config.json:/arbiter/config.json
       - ${PWD}/ela-arbitrator/node_origin/arbitrator-origin-1/keystore.dat:/arbiter/keystore.dat
     ports:
-      - 20514-20518:20534-20538
+      - 50514-50518:20534-20538
     networks:
       - blockchain
     tty: true
@@ -206,7 +206,7 @@ services:
       - ${PWD}/ela-arbitrator/node_origin/arbitrator-origin-2/config.json:/arbiter/config.json
       - ${PWD}/ela-arbitrator/node_origin/arbitrator-origin-2/keystore.dat:/arbiter/keystore.dat
     ports:
-      - 20614-20618:20534-20538
+      - 50614-50618:20534-20538
     networks:
       - blockchain
     tty: true
