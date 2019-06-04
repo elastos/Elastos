@@ -39,7 +39,9 @@ namespace Elastos {
 
 			void SetSingleAddress(bool value) { _singleAddress = value; }
 
-			bool Old() const { return _old; }
+			const std::string &OwnerPubKey() const { return _ownerPubKey; }
+
+			void SetOwnerPubKey(const std::string &pubkey) { _ownerPubKey = pubkey; }
 
 			virtual nlohmann::json ToJson(bool withPrivKey) const;
 
@@ -57,9 +59,8 @@ namespace Elastos {
 		private:
 			std::vector<CoinInfoPtr> _coinInfoList;
 			std::string _passphrase __attribute((deprecated));
+			std::string _ownerPubKey;
 			bool _singleAddress;
-
-			bool _old;
 		};
 	}
 }

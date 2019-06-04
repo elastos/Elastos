@@ -35,7 +35,7 @@ namespace Elastos {
 
 			fs::path subWalletDbPath = _parent->_rootPath;
 			subWalletDbPath /= parent->GetId();
-			subWalletDbPath /= info->GetChainID() + DB_FILE_EXTENSION;
+			subWalletDbPath /= _info->GetChainID() + DB_FILE_EXTENSION;
 
 			_subAccount = SubAccountPtr(new SubAccount(_parent->_account, _config->Index()));
 			_walletManager = WalletManagerPtr(
@@ -48,7 +48,11 @@ namespace Elastos {
 
 			WalletPtr wallet = _walletManager->getWallet();
 			wallet->SetWalletID(_parent->GetId() + ":" + GetChainID());
-			wallet->SetFeePerKb(info->GetFeePerKB());
+
+			if (_info->GetFeePerKB() < _config->MinFee())
+				_info->SetFeePerKB(_config->MinFee());
+
+			wallet->SetFeePerKb(_info->GetFeePerKB());
 		}
 
 		SubWallet::~SubWallet() {

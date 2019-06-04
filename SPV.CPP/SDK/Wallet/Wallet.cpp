@@ -664,6 +664,7 @@ namespace Elastos {
 		bool Wallet::TxIsAscending(const TransactionPtr &tx1, const TransactionPtr &tx2) const {
 			if (! tx1 || ! tx2)
 				return false;
+
 			if (tx1->GetBlockHeight() > tx2->GetBlockHeight()) return 1;
 			if (tx1->GetBlockHeight() < tx2->GetBlockHeight()) return 0;
 

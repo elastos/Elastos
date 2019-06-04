@@ -87,7 +87,7 @@ namespace Elastos {
 			p._network = j["network"].get<std::string>();
 			p._xPrivKey =  j.find("xPrivKey") != j.end() ? j["xPrivKey"].get<std::string>() : "";
 			p._xPubKey = j["xPubKey"].get<std::string>();
-			p._requestPrivKey = j["requestPrivKey"].get<std::string>();
+			p._requestPrivKey = j.find("requestPrivKey") != j.end() ? j["requestPrivKey"].get<std::string>() : "";
 			p._requestPubKey = j["requestPubKey"].get<std::string>();
 			p._copayerId = j["copayerId"].get<std::string>();
 			p._publicKeyRing = j["publicKeyRing"].get<std::vector<PublicKeyRing>>();

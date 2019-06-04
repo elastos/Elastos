@@ -20,6 +20,9 @@ namespace Elastos {
 
 		class LocalStore {
 		public:
+			// for test case
+			LocalStore(const nlohmann::json &store);
+
 			LocalStore(const std::string &path);
 
 			LocalStore(const std::string &path, const std::string &mnemonic, const std::string &passphrase,

@@ -31,7 +31,10 @@ namespace Elastos {
 			if (_chainID == "IdChain")
 				_chainID = "IDChain";
 			_earliestPeerTime = j["EarliestPeerTime"].get<uint32_t>();
-			_feePerKB = j["FeePerKB"].get<uint64_t>();
+
+			if (j.find("FeePerKB") != j.end())
+				_feePerKB = j["FeePerKB"].get<uint64_t>();
+
 			if (j.find("VisibleAssets") != j.end())
 				VisibleAssetsFromJson(j["VisibleAssets"]);
 		}

@@ -21,6 +21,10 @@ namespace Elastos {
 #define MASTER_WALLET_STORE_FILE "MasterWalletStore.json"
 #define LOCAL_STORE_FILE "LocalStore.json"
 
+		LocalStore::LocalStore(const nlohmann::json &store) {
+			from_json(store, *this);
+		}
+
 		LocalStore::LocalStore(const std::string &path) :
 			_path(path) {
 
@@ -82,57 +86,33 @@ namespace Elastos {
 			_account(0),
 			_derivationStrategy("BIP44") {
 
-			if (!json.Old()) {
-				bytes_t bytes;
-				std::string str;
-				_readonly = true;
-				if (!json.xPrivKey().empty()) {
-					Base58::CheckDecode(json.xPrivKey(), bytes);
-					HDKeychain rootkey(bytes);
-					_ownerPubKey = rootkey.getChild("44'/0'/1'/0/0").pubkey().getHex();
-					_xPrivKey = AES::EncryptCCM(bytes, payPasswd);
-					_readonly = false;
-				}
-				if (!json.Mnemonic().empty()) {
-					_mnemonic = AES::EncryptCCM(bytes_t(json.Mnemonic().data(), json.Mnemonic().size()), payPasswd);
-				}
-				_xPubKey = json.xPubKey();
-				_requestPubKey = json.RequestPubKey();
+			bytes_t bytes;
+			std::string str;
+			_readonly = true;
+			if (!json.xPrivKey().empty()) {
+				Base58::CheckDecode(json.xPrivKey(), bytes);
+				HDKeychain rootkey(bytes);
+				_ownerPubKey = json.OwnerPubKey();
+				_xPrivKey = AES::EncryptCCM(bytes, payPasswd);
+				_readonly = false;
+			}
+			if (!json.Mnemonic().empty()) {
+				_mnemonic = AES::EncryptCCM(bytes_t(json.Mnemonic().data(), json.Mnemonic().size()), payPasswd);
+				_readonly = false;
+			}
+			_xPubKey = json.xPubKey();
+			_requestPubKey = json.RequestPubKey();
+
+			if (!json.RequestPrivKey().empty()) {
 				bytes.setHex(json.RequestPrivKey());
 				_requestPrivKey = AES::EncryptCCM(bytes, payPasswd);
-				_publicKeyRing = json.GetPublicKeyRing();
-				_m = json.GetM();
-				_n = json.GetN();
-				_mnemonicHasPassphrase = json.HasPassPhrase();
-				_passphrase.clear();
-			} else {
-				if (!json.Mnemonic().empty()) {
-					_readonly = false;
-					_mnemonic = AES::EncryptCCM(bytes_t(json.Mnemonic().data(), json.Mnemonic().size()), payPasswd);
-					HDSeed seed(BIP39::DeriveSeed(json.Mnemonic(), json.PassPhrase()).bytes());
-					HDKeychain rootkey(seed.getExtendedKey(true));
-					_xPrivKey = AES::EncryptCCM(rootkey.extkey(), payPasswd);
-					_xPubKey = Base58::CheckEncode(rootkey.getChild("44'/0'/0'").getPublic().extkey());
-
-					HDKeychain requestKey = rootkey.getChild("1'/0");
-					_requestPrivKey = AES::EncryptCCM(requestKey.privkey(), payPasswd);
-					_requestPubKey = requestKey.pubkey().getHex();
-
-					_publicKeyRing = json.GetPublicKeyRing();
-					_publicKeyRing.emplace_back(_requestPubKey, _xPubKey);
-					_m = json.GetM() > 0 ? json.GetM() : 1;
-					_n = _publicKeyRing.size();
-
-					if (!json.PassPhrase().empty())
-						_mnemonicHasPassphrase = true;
-				} else {
-					_readonly = true;
-					_publicKeyRing = json.GetPublicKeyRing();
-					_m = json.GetM();
-					_n = _publicKeyRing.size();
-					_mnemonicHasPassphrase = false;
-				}
 			}
+
+			_publicKeyRing = json.GetPublicKeyRing();
+			_m = json.GetM();
+			_n = json.GetN();
+			_mnemonicHasPassphrase = json.HasPassPhrase();
+			_passphrase.clear();
 			_singleAddress = json.SingleAddress();
 			_subWalletsInfoList = json.GetCoinInfoList();
 		}
@@ -253,7 +233,7 @@ namespace Elastos {
 			nlohmann::json j;
 			to_json(j, *this);
 
-			if (!j.is_null() && !j.empty()) {
+			if (!j.is_null() && !j.empty() && !_path.empty()) {
 				boost::filesystem::path path = _path;
 				if (!boost::filesystem::exists(path))
 					boost::filesystem::create_directory(path);
