@@ -7,6 +7,8 @@ const ErrInvalidMainchainTx = 45022
 
 module.exports = async function (json_data, res) {
     try {
+        let address= await common.web3.eth.getCoinbase();
+
         console.log("Mainchain Transaction Received: ");
         let mctxhash = json_data["params"]["txid"];
         if (mctxhash.indexOf("0x") !== 0) mctxhash = "0x" + mctxhash;
@@ -19,27 +21,26 @@ module.exports = async function (json_data, res) {
             return;
         }
 
-        let tx = {to: common.blackAdr, data: mctxhash, from: common.acc.address};
+        let tx = {to: common.blackAdr, data: mctxhash, from: address};
         let gas = await common.web3.eth.estimateGas(tx);
         let gasPrice = await common.web3.eth.getGasPrice();
-        gas = String(BigInt(gas) * BigInt(11) / BigInt(10));
         gasPrice = String(BigInt(gasPrice) * BigInt(15) / BigInt(10));
         tx = {
             to: common.blackAdr,
             value: "0",
             data: mctxhash,
-            from: common.acc.address,
+            from: address,
             gas: gas,
             gasPrice: gasPrice
         };
         console.log(tx)
-        let stx = await common.acc.signTransaction(tx);
         let sctxhash = await new Promise((resolve, reject) => {
-            common.web3.eth.sendSignedTransaction(stx.rawTransaction).on("transactionHash", (txhash) => {
-                console.log("Payload sent with Sidechain txHash: " + txhash + " from: " + common.acc.address);
+            common.web3.eth.sendTransaction(tx).on('transactionHash', function(txhash){
+                console.log("Payload sent with Sidechain txHash: " + txhash + " from: " + address);
                 console.log("Mainchain txHash: " + mctxhash);
                 console.log("============================================================");
-                resolve(txhash);
+                resolve(txhash.slice(2));
+
             }).catch((err) => {
                 reject(err);
             });

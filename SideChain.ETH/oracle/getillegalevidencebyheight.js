@@ -6,7 +6,6 @@ module.exports = async function(json_data, res) {
     try {
         let height = json_data["params"]["height"];
         console.log(height);
-        console.log(typeof (height));
         console.log("============================================================");
         let result = new Array();
         res.json({"error": null, "id": null, "jsonrpc": "2.0", "result": result});
