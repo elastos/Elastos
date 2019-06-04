@@ -34,7 +34,7 @@
         },
         "DPoSConfiguration": {
             "EnableArbiter": false,
-            "Magic": 7630402,
+            "Magic": 7630403,
             "IPAddress": "ela-mainchain-normal-1",
             "PrintLevel": 1,
             "SignTolerance": 5,

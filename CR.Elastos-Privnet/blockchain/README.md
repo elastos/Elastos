@@ -42,22 +42,13 @@ These are located in the `wallets` folder:
 
 ### Mainchain nodes
 
-- Normal node 1: 10011-10016
-- CRC node 1: 10111-10116
-- CRC node 2: 10211-10216
-- CRC node 3: 10311-10316
-- CRC node 4: 10411-10416
-- Elected node 1: 10511-10516
-- Elected node 2: 10611-10616
-
-### Arbitrator nodes
-
-- CRC node 1: 20114-20115
-- CRC node 2: 20214-20215
-- CRC node 3: 20314-20315
-- CRC node 4: 20414-20415
-- Origin node 1: 20514-20515
-- Origin node 2: 20614-20615
+- Normal node 1: 10011-10017
+- CRC node 1: 10111-10117
+- CRC node 2: 10211-10217
+- CRC node 3: 10311-10317
+- CRC node 4: 10411-10417
+- Elected node 1: 10511-10517
+- Elected node 2: 10611-10617
 
 ### DID Sidechain nodes
 
@@ -72,6 +63,15 @@ These are located in the `wallets` folder:
 - Token sidechain node 2: 40111-40115
 - Token sidechain node 3: 40111-40115
 - Token sidechain node 4: 40111-40115
+
+### Arbitrator nodes
+
+- CRC node 1: 50114-50115
+- CRC node 2: 50214-50215
+- CRC node 3: 50314-50315
+- CRC node 4: 50414-50415
+- Origin node 1: 50514-50515
+- Origin node 2: 50614-50615
 
 ### Restful Services
 
@@ -327,7 +327,8 @@ These are located in the `wallets` folder:
   cd ~/node/ela;
   wget https://github.com/elastos/Elastos.ELA/releases/download/v0.3.2/ela;
   chmod +x ela;
-  cp $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-mainchain/ela-cli .;
+  wget https://github.com/elastos/Elastos.ELA/releases/download/v0.3.2/ela-cli;
+  chmod +x ela-cli;
   ```
 
 2. Let's create a new wallet that we will use to register for our supernode so we'll be both an owner and a node
@@ -354,6 +355,7 @@ These are located in the `wallets` folder:
   echo $ELAADDRESS $PUBLICKEY $PRIVATEKEY
   ```
 
+  Send some ELA to this newly created ELA address
   ```
   curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": '"$ELAADDRESS"',"amount": "6000"}]}' localhost:8091/api/1/transfer
   ```
@@ -379,13 +381,13 @@ These are located in the `wallets` folder:
       "Magic": 7630401,
       "DisableDNS": true,
       "PermanentPeers": [
-        "127.0.0.1:10015",
-        "127.0.0.1:10115",
-        "127.0.0.1:10215",
-        "127.0.0.1:10315",
-        "127.0.0.1:10415",
-        "127.0.0.1:10515",
-        "127.0.0.1:10615"
+        "127.0.0.1:10016",
+        "127.0.0.1:10116",
+        "127.0.0.1:10216",
+        "127.0.0.1:10316",
+        "127.0.0.1:10416",
+        "127.0.0.1:10516",
+        "127.0.0.1:10616"
       ],
       "HttpRestStart": true,
       "EnableRPC": true,
