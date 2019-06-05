@@ -124,11 +124,11 @@ import:
   version: ~1.20.0
 - package: github.com/AlexpanXX/fsnotify
 - package: github.com/elastos/Elastos.ELA.SideChain
-  version: release_v0.1.2
-- package: github.com/alexpan0610/Elastos.ELA.SPV
+  version: release_v0.1.4
+- package: github.com/elastos/Elastos.ELA.SPV
   version: dpos_service
 - package: github.com/elastos/Elastos.ELA
-  version: release_v0.3.0
+  version: release_v0.3.2
 - package: github.com/gorilla/websocket
 - package: github.com/mattn/go-sqlite3
 testImport:
