@@ -131,6 +131,9 @@ func (c *ChainStore) persistUTXOs(b *Block) error {
 
 		// Store UTXOs according to the transaction outputs.
 		for index, output := range txn.Outputs {
+			if output.Value == 0 {
+				continue
+			}
 			programHash := output.ProgramHash
 			assetID := output.AssetID
 			value := output.Value
@@ -170,6 +173,9 @@ func (c *ChainStore) persistUTXOs(b *Block) error {
 			programHash := output.ProgramHash
 			assetID := output.AssetID
 
+			if output.Value == 0 {
+				continue
+			}
 			if _, ok := utxos[programHash]; !ok {
 				utxos[programHash] = make(map[Uint256]map[uint32][]*UTXO)
 			}
@@ -179,7 +185,11 @@ func (c *ChainStore) persistUTXOs(b *Block) error {
 
 			elements, ok := utxos[programHash][assetID][height]
 			if !ok {
-				elements, _ = c.GetUnspentElementFromProgramHash(programHash, assetID, height)
+				elements, err = c.GetUnspentElementFromProgramHash(programHash, assetID, height)
+				if err != nil {
+					return errors.New(fmt.Sprintf("[persist] UTXOs programHash:%v, "+
+						"assetID:%v height:%v has no unspent UTXO.", programHash, assetID, height))
+				}
 			}
 
 			// Find the spent UTXO and remove it.
