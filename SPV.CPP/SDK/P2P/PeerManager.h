@@ -121,6 +121,8 @@ namespace Elastos {
 
 			void SetReconnectEnableStatus(bool status);
 
+			bool GetReconnectEnableStatus() const;
+
 			void SetFixedPeer(uint128 address, uint16_t port);
 
 			void SetFixedPeers(const std::vector<PeerInfo> &peers);
