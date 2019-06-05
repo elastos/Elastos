@@ -641,15 +641,15 @@ func (c *ChainStore) GetUnspentElementFromProgramHash(programHash Uint168, asset
 	}
 
 	// read unspent list in store
-	unspents := make([]*UTXO, listNum)
+	unspents := make([]*UTXO, 0, listNum)
 	for i := 0; i < int(listNum); i++ {
 		uu := new(UTXO)
 		err := uu.Deserialize(r)
 		if err != nil {
-			return nil, err
+			break
 		}
 
-		unspents[i] = uu
+		unspents = append(unspents, uu)
 	}
 
 	return unspents, nil
@@ -674,7 +674,7 @@ func (c *ChainStore) GetUnspentFromProgramHash(programHash Uint168, assetid Uint
 			uu := new(UTXO)
 			err := uu.Deserialize(r)
 			if err != nil {
-				return nil, err
+				break
 			}
 
 			unspents = append(unspents, uu)
@@ -709,15 +709,15 @@ func (c *ChainStore) GetUnspentsFromProgramHash(programHash Uint168) (map[Uint25
 		}
 
 		// read unspent list in store
-		unspents := make([]*UTXO, listNum)
+		unspents := make([]*UTXO, 0, listNum)
 		for i := 0; i < int(listNum); i++ {
 			uu := new(UTXO)
 			err := uu.Deserialize(r)
 			if err != nil {
-				return nil, err
+				break
 			}
 
-			unspents[i] = uu
+			unspents = append(unspents, uu)
 		}
 		uxtoUnspents[assetid] = append(uxtoUnspents[assetid], unspents[:]...)
 	}
@@ -737,16 +737,20 @@ func (c *ChainStore) PersistUnspentWithProgramHash(programHash Uint168, assetid 
 	storeCount := 0
 	listnum := len(unspents)
 	w := new(bytes.Buffer)
-	WriteVarUint(w, uint64(listnum))
 	for i := 0; i < listnum; i++ {
 		if unspents[i].Value > 0 {
 			storeCount++
-			unspents[i].Serialize(w)
 		}
 	}
 	if storeCount == 0 {
 		c.BatchDelete(key.Bytes())
 		return nil
+	}
+	WriteVarUint(w, uint64(storeCount))
+	for i := 0; i < listnum; i++ {
+		if unspents[i].Value > 0 {
+			unspents[i].Serialize(w)
+		}
 	}
 
 	// BATCH PUT VALUE
