@@ -1095,9 +1095,7 @@ int main(int argc, char *argv[])
     int wait_for_attach = 0;
     ElaCallbacks callbacks;
     char addr[ELA_MAX_ADDRESS_LEN + 1];
-    struct stat st;
     int rc;
-    int i;
 
     int opt;
     int idx;

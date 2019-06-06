@@ -2245,7 +2245,6 @@ int main(int argc, char *argv[])
     char buf[ELA_MAX_ADDRESS_LEN+1];
     ElaCallbacks callbacks;
     int rc;
-    int i;
 
     int opt;
     int idx;

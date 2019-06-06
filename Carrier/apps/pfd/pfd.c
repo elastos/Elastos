@@ -576,7 +576,6 @@ int main(int argc, char *argv[])
     int rc;
     int opt;
     int idx;
-    int i;
 
 #ifdef HAVE_SYS_RESOURCE_H
     sys_coredump_set(true);

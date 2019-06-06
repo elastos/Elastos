@@ -443,7 +443,6 @@ int robot_main(int argc, char *argv[])
     ElaCarrier *w;
     char datadir[PATH_MAX];
     char logfile[PATH_MAX];
-    size_t i;
     pthread_t tid;
     char *cmd;
 
