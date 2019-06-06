@@ -258,11 +258,16 @@ func (c *ChainStore) RollbackUnspendUTXOs(b *Block) error {
 				Value: value,
 			}
 			var position int
+			var exist bool
 			for i, unspend := range unspendUTXOs[programHash][assetID][height] {
 				if unspend.TxID == u.TxID && unspend.Index == u.Index {
 					position = i
+					exist = true
 					break
 				}
+			}
+			if !exist {
+				continue
 			}
 			unspendUTXOs[programHash][assetID][height] = append(unspendUTXOs[programHash][assetID][height][:position], unspendUTXOs[programHash][assetID][height][position+1:]...)
 		}
