@@ -50,7 +50,7 @@ namespace Elastos {
 					return false;
 				}
 
-				if (type == inv_block) {
+				if (type == inv_block || type == inv_confirmd_block) {
 					if (!stream.ReadBytes(hash)) {
 						_peer->error("inv msg read block hash fail");
 						return false;
@@ -62,6 +62,16 @@ namespace Elastos {
 						return false;
 					}
 					transactions.push_back(hash);
+				} else if (type == inv_address) {
+					if (!stream.ReadBytes(hash)) {
+						_peer->error("inv msg read address hash fail");
+						return false;
+					}
+				} else {
+					if (!stream.ReadBytes(hash)) {
+						_peer->error("inv msg read other '{}' hash fail", type);
+						return false;
+					}
 				}
 			}
 
