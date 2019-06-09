@@ -7,6 +7,7 @@ package hub
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"net"
 
@@ -74,6 +75,8 @@ func WrapConn(c net.Conn) (conn *Conn, err error) {
 	}
 
 	if hdr.GetCMD() != p2p.CmdVersion {
+		err = fmt.Errorf("invalid message %s, expecting version",
+			hdr.GetCMD())
 		return
 	}
 
