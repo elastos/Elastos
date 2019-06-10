@@ -47,6 +47,7 @@ type configParams struct {
 	SPVDNSSeeds        []string
 	SPVDisableDNS      bool
 	SPVPermanentPeers  []string
+	CRCArbiters        []string
 	EnableREST         bool
 	RESTPort           uint16
 	EnableWS           bool
@@ -134,6 +135,9 @@ func loadConfig() *configParams {
 	}
 	if cfg.SPVDisableDNS {
 		spvNetParams.DNSSeeds = nil
+	}
+	if len(cfg.CRCArbiters) > 0 {
+		spvNetParams.CRCArbiters = cfg.CRCArbiters
 	}
 	if cfg.ExchangeRate > 0 {
 		activeNetParams.ExchangeRate = cfg.ExchangeRate
