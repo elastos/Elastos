@@ -29,6 +29,12 @@ Default config for `testnet`
   "SPVPermanentPeers": [  // Specify a list of SPV peers to connect with permanently.
     "localhost:20338"
   ],
+  "CRCArbiters": [        // CRCArbiters is the list of CRC public key.
+    "03e435ccd6073813917c2d841a0815d21301ec3286bc1412bb5b099178c68a10b6",
+    "038a1829b4b2bee784a99bebabbfecfec53f33dadeeeff21b460f8b4fc7c2ca771",
+    "02435df9a4728e6250283cfa8215f16b48948d71936c4600b3a5b1c6fde70503ae",
+    "027d44ee7e7a6c6ff13a130d15b18c75a3b47494c3e54fcffe5f4b10e225351e09",
+  ],
   "ExchangeRate": 1.0,    // Defines the exchange rate of main/side asset.
   "MinCrossChainTxFee": 10000, // Defines the minimum fee for a cross chain transaction.
   "EnableREST": false,    // Enable the RESTful service.
