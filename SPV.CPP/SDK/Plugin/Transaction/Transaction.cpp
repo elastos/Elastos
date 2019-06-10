@@ -649,6 +649,7 @@ namespace Elastos {
 				}
 			}
 
+			bool containAddress;
 			std::map<std::string, uint64_t> outputList;
 			for (size_t i = 0; i < _outputs.size(); ++i) {
 				uint64_t oAmount = _outputs[i].GetAmount();
@@ -660,17 +661,19 @@ namespace Elastos {
 					outputPayloads.push_back(outputPayload);
 				}
 
-				if (wallet->IsVoteDepositAddress(addr)) {
-					direction = "Deposit";
-				}
-
-				if (wallet->ContainsAddress(addr) && !wallet->IsVoteDepositAddress(addr)) {
-					changeAmount += oAmount;
+				containAddress = wallet->ContainsAddress(addr);
+				if (containAddress) {
+					if (wallet->IsVoteDepositAddress(addr)) {
+						direction = "Deposit";
+						outputAmount += oAmount;
+					} else {
+						changeAmount += oAmount;
+					}
 				} else {
 					outputAmount += oAmount;
 				}
 
-				if (detail) {
+				if (detail && (direction == "Sent" || (direction != "Sent" && containAddress))) {
 					if (outputList.find(addr) == outputList.end()) {
 						outputList[addr] = oAmount;
 					} else {
@@ -690,11 +693,7 @@ namespace Elastos {
 			} else if (direction == "Sent") {
 				amount = outputAmount;
 			} else if (direction == "Deposit") {
-				if (inputAmount > 0) {
-					amount = outputAmount;
-				} else {
-					amount = 0;
-				}
+				amount = outputAmount;
 			} else {
 				amount = 0;
 			}
