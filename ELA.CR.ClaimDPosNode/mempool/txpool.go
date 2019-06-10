@@ -164,7 +164,8 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 
 		inputUtxos, err := blockchain.DefaultLedger.Store.GetTxReference(blockTx)
 		if err != nil {
-			log.Info(fmt.Sprintf("Transaction =%x not Exist in Pool when delete.", blockTx.Hash()), err)
+			log.Infof("Transaction=%s not exist when deleting, %s.",
+				blockTx.Hash(), err)
 			continue
 		}
 		for input := range inputUtxos {
@@ -177,11 +178,11 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 					// it is evidently that two transactions with the same transaction id has exactly the same utxos with each
 					// other. This is a special case of what we've said above.
 					log.Debugf("duplicated transactions detected when adding a new block. "+
-						" Delete transaction in the transaction pool. Transaction id: %x", tx.Hash())
+						" Delete transaction in the transaction pool. Transaction id: %s", tx.Hash())
 				} else {
 					log.Debugf("double spent UTXO inputs detected in transaction pool when adding a new block. "+
 						"Delete transaction in the transaction pool. "+
-						"block transaction hash: %x, transaction hash: %x, the same input: %s, index: %d",
+						"block transaction hash: %s, transaction hash: %s, the same input: %s, index: %d",
 						blockTx.Hash(), tx.Hash(), input.Previous.TxID, input.Previous.Index)
 				}
 
@@ -391,7 +392,8 @@ func (mp *TxPool) removeTransaction(tx *Transaction) {
 	//2.remove from UTXO list map
 	result, err := blockchain.DefaultLedger.Store.GetTxReference(tx)
 	if err != nil {
-		log.Info(fmt.Sprintf("Transaction =%x not Exist in Pool when delete.", tx.Hash()))
+		log.Infof("Transaction=%s not exist when deleting, %s",
+			tx.Hash(), err)
 		return
 	}
 	for UTXOTxInput := range result {
@@ -408,9 +410,9 @@ func (mp *TxPool) verifyDoubleSpend(txn *Transaction) error {
 	inputs := []*Input{}
 	for k := range reference {
 		if txn := mp.getInputUTXOList(k); txn != nil {
-			return errors.New(fmt.Sprintf("double spent UTXO inputs detected, "+
-				"transaction hash: %x, input: %s, index: %d",
-				txn.Hash(), k.Previous.TxID, k.Previous.Index))
+			return fmt.Errorf("double spent UTXO inputs detected, "+
+				"transaction hash: %s, input: %s, index: %d",
+				txn.Hash(), k.Previous.TxID, k.Previous.Index)
 		}
 		inputs = append(inputs, k)
 	}
