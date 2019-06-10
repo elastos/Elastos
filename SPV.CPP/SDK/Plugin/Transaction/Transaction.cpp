@@ -631,10 +631,13 @@ namespace Elastos {
 			}
 
 			nlohmann::json inputJson;
-			for (it = inputList.begin(); it != inputList.end(); ++it) {
-				inputJson[it->first] = it->second.getDec();
+			if (direction == "Sent") {
+				for (it = inputList.begin(); it != inputList.end(); ++it) {
+					inputJson[it->first] = it->second.getDec();
+				}
 			}
 
+			bool containAddress;
 			std::map<std::string, BigInt> outputList;
 			for (size_t i = 0; i < _outputs.size(); ++i) {
 				const BigInt &oAmount = _outputs[i].GetAmount();
@@ -646,17 +649,19 @@ namespace Elastos {
 					outputPayloads.push_back(outputPayload);
 				}
 
-				if (wallet->IsVoteDepositAddress(addr)) {
-					direction = "Deposit";
-				}
-
-				if (wallet->ContainsAddress(addr) && !wallet->IsVoteDepositAddress(addr)) {
-					changeAmount += oAmount;
+				containAddress = wallet->ContainsAddress(addr);
+				if (containAddress) {
+					if (wallet->IsVoteDepositAddress(addr)) {
+						direction = "Deposit";
+						outputAmount += oAmount;
+					} else {
+						changeAmount += oAmount;
+					}
 				} else {
 					outputAmount += oAmount;
 				}
 
-				if (detail) {
+				if (detail && (direction == "Sent" || (direction != "Sent" && containAddress))) {
 					if (outputList.find(addr) == outputList.end()) {
 						outputList[addr] = oAmount;
 					} else {
@@ -686,11 +691,7 @@ namespace Elastos {
 			} else if (direction == "Sent") {
 				amount = outputAmount;
 			} else if (direction == "Deposit") {
-				if (inputAmount > 0) {
-					amount = outputAmount;
-				} else {
-					amount = 0;
-				}
+				amount = outputAmount;
 			} else {
 				amount = 0;
 			}

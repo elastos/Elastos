@@ -42,17 +42,7 @@ namespace Elastos {
 		void SpvService::Start() {
 			getPeerManager()->SetReconnectEnableStatus(true);
 
-			_reconnectExecutor.Execute(Runnable([this]() -> void {
-				try {
-					getPeerManager()->Connect();
-				}
-				catch (std::exception ex) {
-					Log::error("Peer manager callback (blockHeightIncreased) error: {}", ex.what());
-				}
-				catch (...) {
-					Log::error("Peer manager callback (blockHeightIncreased) error.");
-				}
-			}));
+			getPeerManager()->Connect();
 		}
 
 		void SpvService::Stop() {
@@ -270,7 +260,7 @@ namespace Elastos {
 		}
 
 		void SpvService::syncIsInactive(uint32_t time) {
-			if (_peerManager->ReconnectTaskCount() == 0) {
+			if (_peerManager->GetReconnectEnableStatus() && _peerManager->ReconnectTaskCount() == 0) {
 				Log::info("{} disconnect, reconnect {}s later", _peerManager->GetID(), time);
 				if (_reconnectTimer != nullptr) {
 					_reconnectTimer->cancel();

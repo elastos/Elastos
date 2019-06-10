@@ -254,6 +254,11 @@ namespace Elastos {
 			lock.unlock();
 		}
 
+		bool PeerManager::GetReconnectEnableStatus() const {
+			boost::mutex::scoped_lock scopedLock(lock);
+			return _enableReconnectTask;
+		}
+
 		void PeerManager::Connect() {
 			lock.lock();
 //			if (_connectFailureCount >= MAX_CONNECT_FAILURES) _connectFailureCount = 0; //this is a manual retry
@@ -317,14 +322,20 @@ namespace Elastos {
 
 		void PeerManager::Disconnect() {
 			struct timespec ts;
-			size_t peerCount, dnsThreadCount;
+			size_t peerCount = 0, dnsThreadCount;
 
 			{
+				time_t expect = time(NULL) + 2;
+				while (peerCount == 0 && time(NULL) < expect) {
+					lock.lock();
+					peerCount = _connectedPeers.size();
+					lock.unlock();
+					usleep(100000);
+				}
+
 				boost::mutex::scoped_lock scoped_lock(lock);
 				peerCount = _connectedPeers.size();
 				dnsThreadCount = this->_dnsThreadCount;
-//				if (!_enableReconnectTask)
-//					_connectFailureCount = MAX_CONNECT_FAILURES; // prevent futher automatic reconnect attempts
 
 				for (size_t i = peerCount; i > 0; i--) {
 					_connectedPeers[i - 1]->Disconnect();
@@ -1042,7 +1053,7 @@ namespace Elastos {
 				boost::mutex::scoped_lock scopedLock(lock);
 				peer->info("relayed {} peer(s)", peers.size());
 
-				if (_needGetAddr) {
+				if (_enableReconnectTask && _needGetAddr) {
 					_needGetAddr = false;
 					willReconnect = true;
 				}

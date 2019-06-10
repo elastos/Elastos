@@ -47,7 +47,9 @@ namespace Elastos {
 				inv_undefined = 0,
 				inv_tx = 1,
 				inv_block = 2,
-				inv_filtered_block = 3
+				inv_filtered_block = 3,
+				inv_confirmed_block = 4,
+				inv_address = 5
 			} inv_type;
 		}
 

@@ -50,17 +50,14 @@ namespace Elastos {
 					return false;
 				}
 
+				if (!stream.ReadBytes(hash)) {
+					_peer->error("inv msg read hash fail, type = {}", type);
+					return false;
+				}
+
 				if (type == inv_block) {
-					if (!stream.ReadBytes(hash)) {
-						_peer->error("inv msg read block hash fail");
-						return false;
-					}
 					blocks.push_back(hash);
 				} else if (type == inv_tx) {
-					if (!stream.ReadBytes(hash)) {
-						_peer->error("inv msg read tx hash fail");
-						return false;
-					}
 					transactions.push_back(hash);
 				}
 			}
