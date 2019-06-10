@@ -14,7 +14,6 @@ var _ p2p.Message = (*Nep5LogMsg)(nil)
 type Nep5LogMsg struct {
 	blockHash common.Uint256
 	height uint32
-	contract common.Uint168
 	topicAddr common.Uint160
 }
 
@@ -31,7 +30,7 @@ func (msg *Nep5LogMsg) GetTopicAddr() common.Uint160 {
 }
 
 func (msg *Nep5LogMsg) MaxLength() uint32 {
-	return 4 + 32 + 4 + 21 + 20
+	return 4 + 32 + 4 + 20
 }
 
 
@@ -51,11 +50,6 @@ func (msg *Nep5LogMsg) Serialize(w io.Writer) error {
 		return err
 	}
 
-	err = msg.contract.Serialize(w)
-	if err != nil {
-		return err
-	}
-
 	err = msg.topicAddr.Serialize(w)
 	if err != nil {
 		return err
@@ -71,11 +65,6 @@ func (msg *Nep5LogMsg) Deserialize(r io.Reader) error {
 	}
 
 	msg.height, err = common.ReadUint32(r)
-	if err != nil {
-		return err
-	}
-
-	err = msg.contract.Deserialize(r)
 	if err != nil {
 		return err
 	}
