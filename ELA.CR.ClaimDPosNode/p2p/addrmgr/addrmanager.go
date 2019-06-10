@@ -347,7 +347,7 @@ func (a *AddrManager) savePeers() {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
 
-	w, err := os.Create(a.peersFile)
+	w, err := os.OpenFile(a.peersFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		log.Errorf("Error opening file %s: %v", a.peersFile, err)
 		return
