@@ -39,7 +39,7 @@ export default class extends Base {
       type,
       published,
       content,
-      contentType: 'MARKDOWN',
+      contentType: constant.CONTENT_TYPE.MARKDOWN,
       proposedBy,
       motionId,
       isConflict,
@@ -288,7 +288,7 @@ export default class extends Base {
     }
 
     const doc: any = {
-      contentType: 'MARKDOWN',
+      contentType: constant.CONTENT_TYPE.MARKDOWN,
     }
     const willChangeToPublish = published === true && cur.status === constant.CVOTE_STATUS.DRAFT
 

@@ -58,10 +58,9 @@ const tag = {
 
 export const Suggestion = {
   ...SuggestionCore,
-  descType: {
+  contentType: {
     type: String,
-    default: 'MARKDOWN',
-    enum: ['MARKDOWN', 'HTML'],
+    enum: _.values(constant.CONTENT_TYPE),
   },
   editHistory: [{
     ...SuggestionCore,
