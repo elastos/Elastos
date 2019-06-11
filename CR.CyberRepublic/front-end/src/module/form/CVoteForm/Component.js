@@ -8,6 +8,14 @@ import { TOOLBAR_OPTIONS } from '@/config/constant'
 import I18N from '@/I18N'
 import _ from 'lodash'
 import { CVOTE_STATUS, CVOTE_STATUS_TEXT } from '@/constant'
+import {
+  Editor,
+  createEditorState,
+} from 'medium-draft'
+import { convertToRaw, convertFromRaw, convertFromHTML, ContentState, EditorState } from 'draft-js'
+
+// if using webpack
+import 'medium-draft/lib/index.css'
 
 import { Container, Title, Btn } from './style'
 
@@ -18,12 +26,40 @@ class C extends BaseComponent {
   constructor(props) {
     super(props)
 
+    // const contentString = _.get(props.data, 'content')
+    // const content = contentString ? JSON.parse(contentString) : ''
+    let editorState
+    if (props.data.contentType === 'MARKDOWN') {
+      const content = JSON.parse(_.get(props.data, 'content'))
+      console.log('constructor content: ', content)
+      editorState = createEditorState(content)
+    } else {
+      const blocksFromHTML = convertFromHTML(props.data.content)
+      const state = ContentState.createFromBlockArray(
+        blocksFromHTML.contentBlocks,
+        blocksFromHTML.entityMap
+      )
+      editorState = EditorState.createWithContent(state)
+    }
+
+    console.log('constructor editorState: ', editorState)
     this.state = {
       persist: true,
       loading: false,
+      editorState,
     }
 
     this.user = this.props.user
+
+    this.refsEditor = React.createRef()
+  }
+
+  componentDidMount() {
+    this.refsEditor.current && this.refsEditor.current.focus()
+  }
+
+  onChange = (editorState) => {
+    this.setState({ editorState })
   }
 
   ord_loading(f = false) {
@@ -44,7 +80,7 @@ class C extends BaseComponent {
         notes,
         motionId,
         isConflict,
-        content,
+        content: JSON.stringify(convertToRaw(content.getCurrentContent())),
         published: true,
         ...fields,
       }
@@ -81,6 +117,7 @@ class C extends BaseComponent {
     const { edit } = this.props
     const s = this.props.static
     const { getFieldDecorator } = this.props.form
+    const { editorState } = this.state
 
     const title_fn = getFieldDecorator('title', {
       rules: [{ required: true }],
@@ -118,14 +155,12 @@ class C extends BaseComponent {
       initialValue: edit ? data.content : _.get(data, 'content', ''),
     })
     const content_el = (
-      <ReactQuill
+      <Editor
+        ref={this.refsEditor}
         placeholder=""
-        style={{ background: 'white' }}
-        modules={{
-          toolbar: TOOLBAR_OPTIONS,
-          autoLinks: true,
-        }}
-      />
+        sideButtons={[]}
+        editorState={editorState}
+        onChange={this.onChange} />
     )
 
     const isConflict_fn = getFieldDecorator('isConflict', {

@@ -16,6 +16,11 @@ import Footer from '@/module/layout/Footer/Container'
 import BackLink from '@/module/shared/BackLink/Component'
 import CRPopover from '@/module/shared/Popover/Component'
 import Translation from '@/module/common/Translation/Container'
+import {
+  Editor,
+  createEditorState,
+} from 'medium-draft'
+import { convertToRaw, convertFromRaw, convertFromHTML, ContentState, EditorState } from 'draft-js'
 
 import { Title, Label } from './style'
 import './style.scss'
@@ -52,8 +57,10 @@ class C extends StandardPage {
     this.user = this.props.user
   }
 
-  componentDidMount() {
-    this.refetch()
+  async componentDidMount() {
+    await this.refetch()
+
+    this.refsEditor = React.createRef()
   }
 
   refetch = async () => {
@@ -208,8 +215,31 @@ class C extends StandardPage {
   }
 
   renderContent() {
-    const { content } = this.state.data
-    return <div className="content ql-editor" dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
+    const { data } = this.state
+    // return <div className="content ql-editor" dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
+    let editorState
+    if (data.contentType === 'MARKDOWN') {
+      const content = JSON.parse(_.get(data, 'content'))
+      console.log('constructor content: ', content)
+      editorState = createEditorState(content)
+    } else {
+      const blocksFromHTML = convertFromHTML(data.content)
+      const state = ContentState.createFromBlockArray(
+        blocksFromHTML.contentBlocks,
+        blocksFromHTML.entityMap
+      )
+      editorState = EditorState.createWithContent(state)
+    }
+    const contentNode = (
+      <Editor
+        ref={this.refsEditor}
+        placeholder=""
+        editorEnabled={false}
+        sideButtons={[]}
+        editorState={editorState}
+        onChange={this.onChange} />
+    )
+    return contentNode
   }
 
   renderNotes() {

@@ -12,6 +12,7 @@ export default class extends BaseComponent {
   }
 
   ord_render() {
+    if (!this.state.data) return null
     return (
       <Container>
         <CVoteForm

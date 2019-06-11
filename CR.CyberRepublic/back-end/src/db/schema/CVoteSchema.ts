@@ -50,6 +50,11 @@ export const CVote = {
     type: String,
     required: true
   },
+  contentType: {
+    type: String,
+    // default: 'MARKDOWN',
+    enum: ['MARKDOWN', 'HTML'],
+  },
   content_zh: {
     type: String,
   },
