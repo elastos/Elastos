@@ -13,6 +13,7 @@ import {
   createEditorState,
 } from 'medium-draft'
 import { convertToRaw, convertFromRaw, convertFromHTML, ContentState, EditorState } from 'draft-js'
+import { MEDIUM_DRAFT_TOOLBAR_OPTIONS } from '@/config/constant'
 
 // if using webpack
 import 'medium-draft/lib/index.css'
@@ -159,6 +160,8 @@ class C extends BaseComponent {
         ref={this.refsEditor}
         placeholder=""
         sideButtons={[]}
+        blockButtons={MEDIUM_DRAFT_TOOLBAR_OPTIONS.BLOCK_BUTTONS}
+        inlineButtons={MEDIUM_DRAFT_TOOLBAR_OPTIONS.INLINE_BUTTONS}
         editorState={editorState}
         onChange={this.onChange} />
     )
