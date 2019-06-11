@@ -16,10 +16,7 @@ import Footer from '@/module/layout/Footer/Container'
 import BackLink from '@/module/shared/BackLink/Component'
 import CRPopover from '@/module/shared/Popover/Component'
 import Translation from '@/module/common/Translation/Container'
-import {
-  Editor,
-  createEditorState,
-} from 'medium-draft'
+import { Editor, createEditorState, } from 'medium-draft'
 import { convertToRaw, convertFromRaw, convertFromHTML, ContentState, EditorState } from 'draft-js'
 
 import { Title, Label } from './style'
