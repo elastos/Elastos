@@ -148,9 +148,9 @@ export default class extends BaseComponent {
     )
     const title = (
       <Col lg={8} md={8} sm={12} xs={24}>
-        <h3 style={{ textAlign: 'left', paddingBottom: 0 }} className="komu-a cr-title-with-icon">
+        <h2 style={{ textAlign: 'left', paddingBottom: 0 }} className="komu-a cr-title-with-icon">
           {I18N.get('council.voting.proposalList')}
-        </h3>
+        </h2>
       </Col>
     )
     const searchInput = (
