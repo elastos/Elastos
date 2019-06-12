@@ -459,28 +459,27 @@ export default class extends Base {
         }
       }
     })
-
     await db_cvote.update({
       _id: {
         $in: idsDeferred
       }
     }, {
-        status: constant.CVOTE_STATUS.DEFERRED
-      })
+      status: constant.CVOTE_STATUS.DEFERRED
+    }, { multi: true })
     await db_cvote.update({
       _id: {
         $in: idsActive
       }
     }, {
       status: constant.CVOTE_STATUS.ACTIVE
-    })
+    }, { multi: true })
     await db_cvote.update({
       _id: {
         $in: idsRejected
       }
     }, {
       status: constant.CVOTE_STATUS.REJECT
-    })
+    }, { multi: true })
 
     this.notifyCouncilToVote()
   }
