@@ -10928,40 +10928,6 @@ a.ant-notification-notice-close:focus {
 .ant-pagination-jump-next {
   outline: 0;
 }
-.ant-pagination-jump-prev:after,
-.ant-pagination-jump-next:after {
-  content: "•••";
-  display: block;
-  letter-spacing: 2px;
-  color: rgba(0, 0, 0, 0.25);
-  text-align: center;
-}
-.ant-pagination-jump-prev:focus:after,
-.ant-pagination-jump-next:focus:after,
-.ant-pagination-jump-prev:hover:after,
-.ant-pagination-jump-next:hover:after {
-  color: #43af92;
-  display: inline-block;
-  font-size: 12px;
-  font-size: 8px \9;
-  transform: scale(0.66666667) rotate(0deg);
-  letter-spacing: -1px;
-  font-family: "anticon";
-}
-:root .ant-pagination-jump-prev:focus:after,
-:root .ant-pagination-jump-next:focus:after,
-:root .ant-pagination-jump-prev:hover:after,
-:root .ant-pagination-jump-next:hover:after {
-  font-size: 12px;
-}
-.ant-pagination-jump-prev:focus:after,
-.ant-pagination-jump-prev:hover:after {
-  content: "\e620\e620";
-}
-.ant-pagination-jump-next:focus:after,
-.ant-pagination-jump-next:hover:after {
-  content: "\e61f\e61f";
-}
 .ant-pagination-prev,
 .ant-pagination-jump-prev,
 .ant-pagination-jump-next {
