@@ -1,32 +1,38 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import BaseComponent from '@/model/BaseComponent'
-import _ from 'lodash'
-import { CVOTE_STATUS, CVOTE_STATUS_TEXT } from '@/constant'
-import { Editor, createEditorState, } from 'medium-draft'
-import { convertToRaw, convertFromRaw, convertFromHTML, ContentState, EditorState } from 'draft-js'
+import { Editor, createEditorState } from 'medium-draft'
+import { convertFromHTML, ContentState, EditorState } from 'draft-js'
 import { MEDIUM_DRAFT_TOOLBAR_OPTIONS } from '@/config/constant'
 
 // if using webpack
 import 'medium-draft/lib/index.css'
 
-import { Container, Title, Btn } from './style'
-
-const FormItem = Form.Item
-const { TextArea } = Input
-
-class C extends BaseComponent {
+class Component extends BaseComponent {
   constructor(props) {
     super(props)
+    console.log('constructor props: ', props)
+    this.updateContent()
 
+    this.refsEditor = React.createRef()
+  }
+
+  componentDidMount() {
+    this.refsEditor.current && this.refsEditor.current.focus()
+  }
+
+  componentWillReceiveProps() {
+  }
+
+  updateContent = () => {
+    const { content, contentType } = this.props
     let editorState
-    if (!props.data) {
+    if (!content) {
       editorState = createEditorState()
-    } else if (props.data.contentType === 'MARKDOWN') {
-      const content = JSON.parse(_.get(props.data, 'content'))
-      console.log('constructor content: ', content)
-      editorState = createEditorState(content)
+    } else if (contentType === 'MARKDOWN') {
+      editorState = createEditorState(JSON.parse(content))
     } else {
-      const blocksFromHTML = convertFromHTML(props.data.content)
+      const blocksFromHTML = convertFromHTML(content)
       const state = ContentState.createFromBlockArray(
         blocksFromHTML.contentBlocks,
         blocksFromHTML.entityMap
@@ -39,28 +45,37 @@ class C extends BaseComponent {
     this.state = {
       editorState,
     }
-
-    this.refsEditor = React.createRef()
-  }
-
-  componentDidMount() {
-    this.refsEditor.current && this.refsEditor.current.focus()
   }
 
   onChange = (editorState) => {
     this.setState({ editorState })
+    this.props.onChange && this.props.onChange(editorState)
   }
 
-  ord_renderContent() {
+  ord_render() {
+    const { editorEnabled } = this.props
     return (
       <Editor
         ref={this.refsEditor}
         placeholder=""
+        editorEnabled={editorEnabled}
         sideButtons={[]}
         blockButtons={MEDIUM_DRAFT_TOOLBAR_OPTIONS.BLOCK_BUTTONS}
         inlineButtons={MEDIUM_DRAFT_TOOLBAR_OPTIONS.INLINE_BUTTONS}
-        editorState={editorState}
-        onChange={this.onChange} />
+        editorState={this.state.editorState}
+        onChange={this.onChange}
+      />
     )
   }
 }
+
+const propTypes = {
+  contentType: PropTypes.string,
+  content: PropTypes.string,
+  editorEnabled: PropTypes.bool,
+}
+
+Component.propTypes = propTypes
+
+
+export default Component

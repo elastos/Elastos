@@ -3,10 +3,10 @@ import PropTypes from 'prop-types'
 import _ from 'lodash'
 import BaseComponent from '@/model/BaseComponent'
 import { Editor, createEditorState, } from 'medium-draft'
-import { convertToRaw, convertFromRaw, convertFromHTML, ContentState, EditorState } from 'draft-js'
+import { convertFromHTML, ContentState, EditorState } from 'draft-js'
 
 class Component extends BaseComponent {
-  ord_renderContent() {
+  ord_render() {
     const { contentType, content } = this.props
     let editorState
     if (contentType === 'MARKDOWN') {
@@ -26,7 +26,7 @@ class Component extends BaseComponent {
         editorEnabled={false}
         sideButtons={[]}
         editorState={editorState}
-        onChange={this.onChange} />
+        onChange={null} />
     )
     return contentNode
   }
