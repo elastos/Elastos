@@ -5,7 +5,6 @@ import {
 import { Link } from 'react-router-dom'
 import I18N from '@/I18N'
 import _ from 'lodash'
-import sanitizeHtml from '@/util/html'
 import StandardPage from '../../StandardPage'
 import { LANGUAGES } from '@/config/constant'
 import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
@@ -16,8 +15,7 @@ import Footer from '@/module/layout/Footer/Container'
 import BackLink from '@/module/shared/BackLink/Component'
 import CRPopover from '@/module/shared/Popover/Component'
 import Translation from '@/module/common/Translation/Container'
-import { Editor, createEditorState, } from 'medium-draft'
-import { convertToRaw, convertFromRaw, convertFromHTML, ContentState, EditorState } from 'draft-js'
+import DraftEditor from '@/module/common/DraftEditor'
 
 import { Title, Label } from './style'
 import './style.scss'
@@ -56,8 +54,6 @@ class C extends StandardPage {
 
   async componentDidMount() {
     await this.refetch()
-
-    this.refsEditor = React.createRef()
   }
 
   refetch = async () => {
@@ -213,28 +209,12 @@ class C extends StandardPage {
 
   renderContent() {
     const { data } = this.state
-    // return <div className="content ql-editor" dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
-    let editorState
-    if (data.contentType === 'MARKDOWN') {
-      const content = JSON.parse(_.get(data, 'content'))
-      console.log('constructor content: ', content)
-      editorState = createEditorState(content)
-    } else {
-      const blocksFromHTML = convertFromHTML(data.content)
-      const state = ContentState.createFromBlockArray(
-        blocksFromHTML.contentBlocks,
-        blocksFromHTML.entityMap
-      )
-      editorState = EditorState.createWithContent(state)
-    }
     const contentNode = (
-      <Editor
-        ref={this.refsEditor}
-        placeholder=""
+      <DraftEditor
+        content={data.content}
+        contentType={data.contentType}
         editorEnabled={false}
-        sideButtons={[]}
-        editorState={editorState}
-        onChange={this.onChange} />
+      />
     )
     return contentNode
   }
