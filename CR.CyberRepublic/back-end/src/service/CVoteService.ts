@@ -373,8 +373,14 @@ export default class extends Base {
 
   // proposal active/passed
   public isActive(data): Boolean {
-    const supportNum = _.countBy(data.voteResult, 'value').support || 0
+    const supportNum = _.countBy(data.voteResult, 'value')[constant.CVOTE_RESULT.SUPPORT] || 0
     return supportNum > data.voteResult.length * 0.5
+  }
+
+  // proposal rejected
+  public isRejected(data): Boolean {
+    const rejectNum = _.countBy(data.voteResult, 'value')[constant.CVOTE_RESULT.REJECT] || 0
+    return rejectNum > data.voteResult.length * 0.5
   }
 
   public async vote(param): Promise<Document> {
@@ -440,31 +446,40 @@ export default class extends Base {
     })
     const idsDeferred = []
     const idsActive = []
+    const idsRejected = []
 
     _.each(list, (item) => {
       if (this.isExpired(item)) {
         if (this.isActive(item)) {
           idsActive.push(item._id)
+        } else if (this.isRejected(item)) {
+          idsRejected.push(item._id)
         } else {
           idsDeferred.push(item._id)
         }
       }
     })
-
     await db_cvote.update({
       _id: {
         $in: idsDeferred
       }
     }, {
-        status: constant.CVOTE_STATUS.DEFERRED
-      })
+      status: constant.CVOTE_STATUS.DEFERRED
+    }, { multi: true })
     await db_cvote.update({
       _id: {
         $in: idsActive
       }
     }, {
       status: constant.CVOTE_STATUS.ACTIVE
-    })
+    }, { multi: true })
+    await db_cvote.update({
+      _id: {
+        $in: idsRejected
+      }
+    }, {
+      status: constant.CVOTE_STATUS.REJECT
+    }, { multi: true })
 
     this.notifyCouncilToVote()
   }
