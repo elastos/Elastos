@@ -54,6 +54,18 @@ export const TOOLBAR_OPTIONS = {
 export const MEDIUM_DRAFT_TOOLBAR_OPTIONS = {
   BLOCK_BUTTONS: [
     {
+      label: 'H1',
+      style: 'header-one',
+      icon: 'header',
+      description: 'Heading 1',
+    },
+    {
+      label: 'H2',
+      style: 'header-two',
+      icon: 'header',
+      description: 'Heading 2',
+    },
+    {
       label: 'H3',
       style: 'header-three',
       icon: 'header',
