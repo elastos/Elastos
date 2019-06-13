@@ -83,24 +83,24 @@ describe('Tests for Tasks', () => {
         expect(rs.status).to.be.equal('PENDING');
     });
 
-    test('Should allow removing candidate from task if you are the candidate', async () => {
-        const task = await ts_admin.create({
-            ...global.DB.TASK_1,
-            name : 'task_111'
-        });
+    // test('Should allow removing candidate from task if you are the candidate', async () => {
+    //     const task = await ts_admin.create({
+    //         ...global.DB.TASK_1,
+    //         name : 'task_111'
+    //     });
 
-        const candidate = await ts_admin.addCandidate({
-            taskId: task._id,
-            userId: user.member._id
-        });
+    //     const candidate = await ts_admin.addCandidate({
+    //         taskId: task._id,
+    //         userId: user.member._id
+    //     });
 
-        const ts1 = new TaskService(DB, {user: user.member});
-        const rs: any = await ts1.removeCandidate({
-            taskId: task._id,
-            taskCandidateId: user.member._id
-        });
-        expect(rs.ok).to.be.equal(1);
-    })
+    //     const ts1 = new TaskService(DB, {user: user.member});
+    //     const rs: any = await ts1.removeCandidate({
+    //         taskId: task._id,
+    //         taskCandidateId: user.member._id
+    //     });
+    //     expect(rs.ok).to.be.equal(1);
+    // })
 
     test('Should allow removing candidate from task if you are the task owner (leader)', async () => {
         // task owner must be admin for now.
