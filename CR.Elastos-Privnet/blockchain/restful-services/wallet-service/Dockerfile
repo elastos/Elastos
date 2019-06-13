@@ -22,7 +22,7 @@ ENV SRC_DIR="/home/elauser"
 
 WORKDIR $SRC_DIR
 
-COPY --from=builder /restful-services/wallet-service/base.api/target/base.api-0.0.6.jar ${SRC_DIR}/base.api-0.0.6.jar
+COPY --from=builder /restful-services/wallet-service/base.api/target/base.api-0.1.0.jar ${SRC_DIR}/base.api-0.1.0.jar
 
 RUN apk update \
     && apk add --no-cache curl \
@@ -33,4 +33,4 @@ USER elauser
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "./base.api-0.0.6.jar"]
+ENTRYPOINT ["java", "-jar", "./base.api-0.1.0.jar"]

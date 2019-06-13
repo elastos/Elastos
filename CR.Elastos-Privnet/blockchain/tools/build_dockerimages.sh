@@ -34,10 +34,10 @@ function build_binary_and_docker {
     then
         docker tag "$DOCKERIMAGE:latest" "$DOCKERIMAGE:$BRANCH"
         docker push "$DOCKERIMAGE:$BRANCH"
-        if [ "${DOCKER_PUSH_LATEST}" == "yes" ]
-        then
-            docker push "$DOCKERIMAGE:latest"
-        fi
+    fi
+    if [ "${DOCKER_PUSH_LATEST}" == "yes" ]
+    then
+        docker push "$DOCKERIMAGE:latest"
     fi
     cd $CURRENT_DIR
 }
@@ -57,7 +57,7 @@ build_binary_and_docker "v0.1.2" "Elastos.ELA.SideChain.Token" "ela-sidechain/to
 build_binary_and_docker "master" "Elastos.ORG.Wallet.Service" "restful-services/wallet-service" "service" \
     "cyberrepublic/elastos-wallet-service"
 
-build_binary_and_docker "master" "Elastos.ORG.DID.Service" "restful-services/did-service" "service" \
+build_binary_and_docker "ff99774a019e76d70a683f1a4c688dfbbf7cb671" "Elastos.ORG.DID.Service" "restful-services/did-service" "service" \
     "cyberrepublic/elastos-did-service"
 
 build_binary_and_docker "master" "Elastos.ORG.API.Misc" "restful-services/api-misc" "misc" \
