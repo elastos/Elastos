@@ -12,6 +12,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/events"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
+	"github.com/elastos/Elastos.ELA.SideChain/interfaces"
 
 	"github.com/elastos/Elastos.ELA/common"
 )
@@ -34,6 +35,7 @@ type Config struct {
 	CheckTxSanity  func(*types.Transaction) error
 	CheckTxContext func(*types.Transaction) error
 	GetTxFee       func(tx *types.Transaction, assetId common.Uint256) (common.Fixed64, error)
+	GetHeader      func(hash common.Uint256) (interfaces.Header, error)
 }
 
 type BlockChain struct {
@@ -105,7 +107,12 @@ func New(cfg *Config) (*BlockChain, error) {
 		if err != nil {
 			return nil, err
 		}
-		header, err := chain.db.GetHeader(hash)
+		var header interfaces.Header
+		if cfg.GetHeader != nil {
+			header, err = cfg.GetHeader(hash)
+		} else {
+			header, err = chain.db.GetHeader(hash)
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -257,8 +264,8 @@ func (b *BlockChain) RemoveOrphanBlock(orphan *OrphanBlock) {
 	orphanHash := orphan.Block.Hash()
 	delete(b.Orphans, orphanHash)
 
-	prevHash := &orphan.Block.Header.Previous
-	orphans := b.PrevOrphans[*prevHash]
+	prevHash := orphan.Block.Header.GetPrevious()
+	orphans := b.PrevOrphans[prevHash]
 	for i := 0; i < len(orphans); i++ {
 		hash := orphans[i].Block.Hash()
 		if hash.IsEqual(orphanHash) {
@@ -268,10 +275,10 @@ func (b *BlockChain) RemoveOrphanBlock(orphan *OrphanBlock) {
 			i--
 		}
 	}
-	b.PrevOrphans[*prevHash] = orphans
+	b.PrevOrphans[prevHash] = orphans
 
-	if len(b.PrevOrphans[*prevHash]) == 0 {
-		delete(b.PrevOrphans, *prevHash)
+	if len(b.PrevOrphans[prevHash]) == 0 {
+		delete(b.PrevOrphans, prevHash)
 	}
 }
 
@@ -310,8 +317,8 @@ func (b *BlockChain) AddOrphanBlock(block *types.Block) {
 	b.Orphans[block.Hash()] = oBlock
 
 	// Add to previous hash lookup index for faster dependency lookups.
-	prevHash := &block.Header.Previous
-	b.PrevOrphans[*prevHash] = append(b.PrevOrphans[*prevHash], oBlock)
+	prevHash := block.Header.GetPrevious()
+	b.PrevOrphans[prevHash] = append(b.PrevOrphans[prevHash], oBlock)
 
 	return
 }
@@ -336,7 +343,7 @@ func (b *BlockChain) GetOrphanRoot(hash *common.Uint256) *common.Uint256 {
 			break
 		}
 		orphanRoot = prevHash
-		prevHash = &orphan.Block.Header.Previous
+		*prevHash = orphan.Block.Header.GetPrevious()
 	}
 
 	return orphanRoot
@@ -355,18 +362,18 @@ type BlockNode struct {
 	Children    []*BlockNode
 }
 
-func NewBlockNode(header *types.Header, hash *common.Uint256) *BlockNode {
+func NewBlockNode(header interfaces.Header, hash *common.Uint256) *BlockNode {
 	var previous, current common.Uint256
-	copy(previous[:], header.Previous[:])
+	copy(previous[:], header.GetPrevious().Bytes()[:])
 	copy(current[:], hash[:])
 	node := BlockNode{
 		Hash:       &current,
 		ParentHash: &previous,
-		Height:     header.Height,
-		Version:    header.Version,
-		Bits:       header.Bits,
-		Timestamp:  header.Timestamp,
-		WorkSum:    CalcWork(header.Bits),
+		Height:     header.GetHeight(),
+		Version:    header.GetVersion(),
+		Bits:       header.GetBits(),
+		Timestamp:  header.GetTimeStamp(),
+		WorkSum:    CalcWork(header.GetBits()),
 	}
 	return &node
 }
@@ -407,7 +414,7 @@ func RemoveChildNode(children []*BlockNode, node *BlockNode) []*BlockNode {
 
 }
 
-func (b *BlockChain) LoadBlockNode(blockHeader *types.Header, hash *common.Uint256) (*BlockNode, error) {
+func (b *BlockChain) LoadBlockNode(blockHeader interfaces.Header, hash *common.Uint256) (*BlockNode, error) {
 
 	// Create the new block node for the block and set the work.
 	node := NewBlockNode(blockHeader, hash)
@@ -422,9 +429,9 @@ func (b *BlockChain) LoadBlockNode(blockHeader *types.Header, hash *common.Uint2
 	//     therefore is an error to insert into the chain
 	//  4) Neither 1 or 2 is true, but this is the first node being added
 	//     to the tree, so it's the root.
-	prevHash := &blockHeader.Previous
+	prevHash := blockHeader.GetPrevious()
 	//if parentNode, ok := b.Index[*prevHash]; ok {
-	if parentNode, ok := b.LookupNodeInIndex(prevHash); ok {
+	if parentNode, ok := b.LookupNodeInIndex(&prevHash); ok {
 		// Case 1 -- This node is a child of an existing block node.
 		// Update the node's work sum with the sum of the parent node's
 		// work sum and this node's work, append the node as a child of
@@ -464,7 +471,7 @@ func (b *BlockChain) LoadBlockNode(blockHeader *types.Header, hash *common.Uint2
 	// Add the new node to the indices for faster lookups.
 	//b.Index[*hash] = node
 	b.AddNodeToIndex(node)
-	b.DepNodes[*prevHash] = append(b.DepNodes[*prevHash], node)
+	b.DepNodes[prevHash] = append(b.DepNodes[prevHash], node)
 
 	return node, nil
 }
@@ -545,7 +552,7 @@ func (b *BlockChain) RemoveBlockNode(node *BlockNode) error {
 // The returned node will be nil if the genesis block is passed.
 func (b *BlockChain) GetPrevNodeFromBlock(block *types.Block) (*BlockNode, error) {
 	// Genesis block.
-	prevHash := block.Header.Previous
+	prevHash := block.Header.GetPrevious()
 	if prevHash.IsEqual(common.EmptyHash) {
 		return nil, nil
 	}
@@ -733,7 +740,7 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *types.Block) error {
 	}
 
 	// Make sure it's extending the end of the best chain.
-	prevHash := &block.Header.Previous
+	prevHash := block.Header.GetPrevious()
 	if b.BestChain != nil && !prevHash.IsEqual(*b.BestChain.Hash) {
 		return fmt.Errorf("connectBlock must be called with a block " +
 			"that extends the main chain")
@@ -750,7 +757,7 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *types.Block) error {
 	node.InMainChain = true
 	//b.Index[*node.Hash] = node
 	b.AddNodeToIndex(node)
-	b.DepNodes[*prevHash] = append(b.DepNodes[*prevHash], node)
+	b.DepNodes[prevHash] = append(b.DepNodes[prevHash], node)
 
 	// This node is now the end of the best chain.
 	b.BestChain = node
@@ -827,7 +834,7 @@ func (b *BlockChain) maybeAcceptBlock(block *types.Block) (bool, error) {
 		blockHeight = prevNode.Height + 1
 	}
 
-	if block.Header.Height != blockHeight {
+	if block.Header.GetHeight() != blockHeight {
 		return false, fmt.Errorf("wrong block height!")
 	}
 
@@ -849,7 +856,8 @@ func (b *BlockChain) maybeAcceptBlock(block *types.Block) (bool, error) {
 	// Create a new block node for the block and add it to the in-memory
 	// block chain (could be either a side chain or the main chain).
 	blockhash := block.Hash()
-	newNode := NewBlockNode(&block.Header, &blockhash)
+	header := block.Header
+	newNode := NewBlockNode(header, &blockhash)
 	if prevNode != nil {
 		newNode.Parent = prevNode
 		newNode.Height = blockHeight
@@ -968,7 +976,7 @@ func (b *BlockChain) ProcessBlock(block *types.Block) (bool, bool, error) {
 	defer b.mutex.Unlock()
 
 	blockHash := block.Hash()
-	log.Debugf("[ProcessBLock] height = %d, hash = %x", block.Header.Height, blockHash.Bytes())
+	log.Debugf("[ProcessBLock] height = %d, hash = %x", block.Header.GetHeight(), blockHash.Bytes())
 
 	// The block must not already exist in the main chain or side chains.
 	exists, err := b.BlockExists(&blockHash)
@@ -997,7 +1005,7 @@ func (b *BlockChain) ProcessBlock(block *types.Block) (bool, bool, error) {
 	blockHeader := block.Header
 
 	// Handle orphan blocks.
-	prevHash := blockHeader.Previous
+	prevHash := blockHeader.GetPrevious()
 	if !prevHash.IsEqual(common.EmptyHash) {
 		prevHashExists, err := b.BlockExists(&prevHash)
 		if err != nil {
@@ -1029,7 +1037,7 @@ func (b *BlockChain) ProcessBlock(block *types.Block) (bool, bool, error) {
 
 	//log.Debugf("Accepted block %v", blockHash)
 	if inMainChain {
-		log.Info("current height -> ", block.Height)
+		log.Info("current height -> ", block.GetHeight())
 	}
 
 	return inMainChain, false, nil
@@ -1102,7 +1110,7 @@ func (b *BlockChain) BlockLocatorFromHash(inhash *common.Uint256) []*common.Uint
 		if err != nil {
 			return locator
 		}
-		blockHeight = int32(block.Header.Height)
+		blockHeight = int32(block.Header.GetHeight())
 	} else {
 		blockHeight = int32(node.Height)
 	}

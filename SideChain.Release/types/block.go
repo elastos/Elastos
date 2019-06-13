@@ -7,6 +7,8 @@ import (
 	"io"
 
 	"github.com/elastos/Elastos.ELA/common"
+
+	"github.com/elastos/Elastos.ELA.SideChain/interfaces"
 )
 
 const (
@@ -25,7 +27,8 @@ const (
 )
 
 type Block struct {
-	Header
+	interfaces.Header
+
 	Transactions []*Transaction
 }
 
@@ -129,4 +132,11 @@ func (b *Block) GetSize() int {
 
 func (b *Block) Hash() common.Uint256 {
 	return b.Header.Hash()
+}
+
+func NewBlock() *Block {
+	b := &Block{
+		Header: &Header{},
+	}
+	return b
 }

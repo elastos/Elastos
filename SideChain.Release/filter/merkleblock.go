@@ -122,7 +122,7 @@ func NewMerkleBlock(block *types.Block, filter *Filter) (*msg.MerkleBlock, []uin
 
 	// Create and return the merkle block.
 	merkleBlock := &msg.MerkleBlock{
-		Header:       &block.Header,
+		Header:       block.Header,
 		Transactions: mBlock.NumTx,
 		Hashes:       make([]*common.Uint256, 0, len(mBlock.FinalHashes)),
 		Flags:        make([]byte, (len(mBlock.Bits)+7)/8),

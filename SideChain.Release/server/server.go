@@ -876,7 +876,7 @@ func makeEmptyMessage(cmd string) (p2p.Message, error) {
 		message = msg.NewTx(&types.Transaction{})
 
 	case p2p.CmdBlock:
-		message = msg.NewBlock(&types.Block{})
+		message = msg.NewBlock(types.NewBlock())
 
 	case p2p.CmdInv:
 		message = &msg.Inv{}
