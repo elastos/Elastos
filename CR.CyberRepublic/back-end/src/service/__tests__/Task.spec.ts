@@ -97,7 +97,7 @@ describe('Tests for Tasks', () => {
         const ts1 = new TaskService(DB, {user: user.member});
         const rs: any = await ts1.removeCandidate({
             taskId: task._id,
-            taskCandidateId: candidate._id,
+            taskCandidateId: user.member._id,
             userId: user.member._id
         });
         expect(rs.ok).to.be.equal(1);
