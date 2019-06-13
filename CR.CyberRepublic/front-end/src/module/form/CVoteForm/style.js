@@ -18,6 +18,7 @@ export const Container = styled.div`
   .md-RichEditor-root {
     padding: 15px 30px;
     margin-top: 0;
+    border: 1px solid #d9d9d9;
   }
 
 `
