@@ -97,8 +97,7 @@ describe('Tests for Tasks', () => {
         const ts1 = new TaskService(DB, {user: user.member});
         const rs: any = await ts1.removeCandidate({
             taskId: task._id,
-            taskCandidateId: user.member._id,
-            userId: user.member._id
+            taskCandidateId: user.member._id
         });
         expect(rs.ok).to.be.equal(1);
     })
@@ -122,7 +121,7 @@ describe('Tests for Tasks', () => {
 
         const rs: any = await ts_admin.removeCandidate({
             taskId: task._id,
-            userId: user.member._id
+            taskCandidateId: user.member._id
         });
         expect(rs.ok).to.be.equal(1);
     });
