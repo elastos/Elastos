@@ -45,6 +45,7 @@
     "mongoose": "^5.5.15",
     "mongoose-plugin-autoinc": "^1.1.9",
     "morgan": "^1.9.1",
+    "natives": "^1.1.6",
     "newrelic": "^4.8.0",
     "querystring": "^0.2.0",
     "request": "^2.85.0",
