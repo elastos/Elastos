@@ -3,17 +3,11 @@ import BaseComponent from '@/model/BaseComponent'
 import {
   Form, Input, Button, Select, Row, Col, message, Modal,
 } from 'antd'
-import ReactQuill from 'react-quill'
-import { TOOLBAR_OPTIONS } from '@/config/constant'
 import I18N from '@/I18N'
 import _ from 'lodash'
 import { CVOTE_STATUS, CVOTE_STATUS_TEXT } from '@/constant'
-import {
-  Editor,
-  createEditorState,
-} from 'medium-draft'
-import { convertToRaw, convertFromRaw, convertFromHTML, ContentState, EditorState } from 'draft-js'
-import { MEDIUM_DRAFT_TOOLBAR_OPTIONS } from '@/config/constant'
+import { convertToRaw } from 'draft-js'
+import DraftEditor from '@/module/common/DraftEditor'
 
 // if using webpack
 import 'medium-draft/lib/index.css'
@@ -27,40 +21,12 @@ class C extends BaseComponent {
   constructor(props) {
     super(props)
 
-    // const contentString = _.get(props.data, 'content')
-    // const content = contentString ? JSON.parse(contentString) : ''
-    let editorState
-    if (props.data.contentType === 'MARKDOWN') {
-      const content = JSON.parse(_.get(props.data, 'content'))
-      console.log('constructor content: ', content)
-      editorState = createEditorState(content)
-    } else {
-      const blocksFromHTML = convertFromHTML(props.data.content)
-      const state = ContentState.createFromBlockArray(
-        blocksFromHTML.contentBlocks,
-        blocksFromHTML.entityMap
-      )
-      editorState = EditorState.createWithContent(state)
-    }
-
-    console.log('constructor editorState: ', editorState)
     this.state = {
       persist: true,
       loading: false,
-      editorState,
     }
 
     this.user = this.props.user
-
-    this.refsEditor = React.createRef()
-  }
-
-  componentDidMount() {
-    this.refsEditor.current && this.refsEditor.current.focus()
-  }
-
-  onChange = (editorState) => {
-    this.setState({ editorState })
   }
 
   ord_loading(f = false) {
@@ -75,6 +41,7 @@ class C extends BaseComponent {
     form.validateFields(async (err, values) => {
       if (err) return
       const { title, type, notes, motionId, isConflict, content } = values
+      console.log('form values: ', values)
       const param = {
         title,
         type,
@@ -95,6 +62,7 @@ class C extends BaseComponent {
           await updateCVote(param)
           this.ord_loading(false)
           await onEdit()
+          window.location.reload()
           message.success(I18N.get('from.CVoteForm.message.updated.success'))
         } catch (error) {
           message.error(error.message)
@@ -118,7 +86,6 @@ class C extends BaseComponent {
     const { edit } = this.props
     const s = this.props.static
     const { getFieldDecorator } = this.props.form
-    const { editorState } = this.state
 
     const title_fn = getFieldDecorator('title', {
       rules: [{ required: true }],
@@ -151,19 +118,13 @@ class C extends BaseComponent {
       <Select disabled={true} />
     )
 
+    const content = _.get(data, 'content', '')
     const content_fn = getFieldDecorator('content', {
       rules: [{ required: true }],
-      initialValue: edit ? data.content : _.get(data, 'content', ''),
+      initialValue: content,
     })
     const content_el = (
-      <Editor
-        ref={this.refsEditor}
-        placeholder=""
-        sideButtons={[]}
-        blockButtons={MEDIUM_DRAFT_TOOLBAR_OPTIONS.BLOCK_BUTTONS}
-        inlineButtons={MEDIUM_DRAFT_TOOLBAR_OPTIONS.INLINE_BUTTONS}
-        editorState={editorState}
-        onChange={this.onChange} />
+      <DraftEditor content={content} contentType={_.get(data, 'contentType')} />
     )
 
     const isConflict_fn = getFieldDecorator('isConflict', {
