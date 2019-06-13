@@ -774,7 +774,8 @@ export default class extends Base {
         let task = await db_task.getDBInstance().findOne({_id: taskId})
             .populate('createdBy', sanitize)
         let doc = await db_tc.findOne({_id: taskCandidateId})
-
+        // no data, no need to remove
+        if (!doc) return true
         if (this.currentUser.role !== constant.USER_ROLE.ADMIN &&
             this.currentUser.role !== constant.USER_ROLE.COUNCIL &&
             (taskCandidateId && this.currentUser._id.toString() !== doc.user._id.toString()) &&
