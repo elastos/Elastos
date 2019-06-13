@@ -251,7 +251,7 @@ func (s *Server) broadcast(v interface{}) {
 			txs := make([]*service.TransactionInfo, 0, len(block.Transactions))
 			for _, tx := range block.Transactions {
 				txs = append(txs, service.GetTransactionInfo(s.cfg.ServiceCfg,
-					&block.Header, tx))
+					block.Header, tx))
 			}
 			result = txs
 		}

@@ -50,7 +50,7 @@ func (s *ChainStore) rollbackTrimmedBlock(batch database.Batch, b *types.Block) 
 func (s *ChainStore) persistBlockHash(batch database.Batch, b *types.Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_BlockHash))
-	if err := common.WriteUint32(key, b.Header.Height); err != nil {
+	if err := common.WriteUint32(key, b.Header.GetHeight()); err != nil {
 		return err
 	}
 
@@ -66,7 +66,7 @@ func (s *ChainStore) persistBlockHash(batch database.Batch, b *types.Block) erro
 func (s *ChainStore) rollbackBlockHash(batch database.Batch, b *types.Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_BlockHash))
-	if err := common.WriteUint32(key, b.Header.Height); err != nil {
+	if err := common.WriteUint32(key, b.Header.GetHeight()); err != nil {
 		return err
 	}
 	batch.Delete(key.Bytes())
@@ -84,7 +84,7 @@ func (s *ChainStore) persistCurrentBlock(batch database.Batch, b *types.Block) e
 	if err := blockHash.Serialize(value); err != nil {
 		return err
 	}
-	if err := common.WriteUint32(value, b.Header.Height); err != nil {
+	if err := common.WriteUint32(value, b.Header.GetHeight()); err != nil {
 		return err
 	}
 	batch.Put(key.Bytes(), value.Bytes())
@@ -96,11 +96,11 @@ func (s *ChainStore) rollbackCurrentBlock(batch database.Batch, b *types.Block) 
 	key.WriteByte(byte(SYS_CurrentBlock))
 
 	value := bytes.NewBuffer(nil)
-	previous := b.Header.Previous
+	previous := b.Header.GetPrevious()
 	if err := previous.Serialize(value); err != nil {
 		return err
 	}
-	if err := common.WriteUint32(value, b.Header.Height-1); err != nil {
+	if err := common.WriteUint32(value, b.Header.GetHeight() - 1); err != nil {
 		return err
 	}
 	batch.Put(key.Bytes(), value.Bytes())
@@ -109,7 +109,7 @@ func (s *ChainStore) rollbackCurrentBlock(batch database.Batch, b *types.Block) 
 
 func (s *ChainStore) persistUnspendUTXOs(batch database.Batch, b *types.Block) error {
 	unspendUTXOs := make(map[common.Uint168]map[common.Uint256]map[uint32][]*types.UTXO)
-	curHeight := b.Header.Height
+	curHeight := b.Header.GetHeight()
 
 	for _, txn := range b.Transactions {
 		if txn.TxType == types.RegisterAsset {
@@ -207,7 +207,7 @@ func (s *ChainStore) persistUnspendUTXOs(batch database.Batch, b *types.Block) e
 
 func (s *ChainStore) rollbackUnspendUTXOs(batch database.Batch, b *types.Block) error {
 	unspendUTXOs := make(map[common.Uint168]map[common.Uint256]map[uint32][]*types.UTXO)
-	height := b.Header.Height
+	height := b.Header.GetHeight()
 	for _, txn := range b.Transactions {
 		if txn.TxType == types.RegisterAsset {
 			continue
@@ -293,7 +293,7 @@ func (s *ChainStore) rollbackUnspendUTXOs(batch database.Batch, b *types.Block) 
 
 func (s *ChainStore) persistTransactions(batch database.Batch, b *types.Block) error {
 	for _, txn := range b.Transactions {
-		if err := s.PersistTransaction(batch, txn, b.Header.Height); err != nil {
+		if err := s.PersistTransaction(batch, txn, b.Header.GetHeight()); err != nil {
 			return err
 		}
 		if txn.TxType == types.RegisterAsset {

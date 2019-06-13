@@ -8,6 +8,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
+	"github.com/elastos/Elastos.ELA.SideChain/interfaces"
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/crypto"
@@ -69,19 +70,19 @@ func (v *Validator) CheckBlockContext(block *types.Block, prevNode *BlockNode) (
 	}
 
 	expectedDifficulty, err := v.chain.CalcNextRequiredDifficulty(
-		prevNode, time.Unix(int64(header.Timestamp), 0))
+		prevNode, time.Unix(int64(header.GetTimeStamp()), 0))
 	if err != nil {
 		return err
 	}
 
-	if header.Bits != expectedDifficulty {
+	if header.GetBits() != expectedDifficulty {
 		return errors.New("[powCheckBlockContext] block difficulty is not the expected")
 	}
 
 	// Ensure the timestamp for the block header is after the
 	// median time of the last several blocks (medianTimeBlocks).
 	medianTime := CalcPastMedianTime(prevNode)
-	tempTime := time.Unix(int64(header.Timestamp), 0)
+	tempTime := time.Unix(int64(header.GetTimeStamp()), 0)
 
 	if !tempTime.After(medianTime) {
 		return errors.New("[powCheckBlockContext] block timestamp is not after expected")
@@ -107,22 +108,21 @@ func (v *Validator) checkHeader(params ...interface{}) (err error) {
 	powLimit := AssertBigInt(params[1])
 	timeSource := AssertMedianTimeSource(params[2])
 	header := block.Header
-
-	if header.Height >= v.chain.chainParams.CheckPowHeaderHeight {
-		if err := v.spvService.CheckCRCArbiterSignature(&header.SideAuxPow.SideAuxBlockTx); err != nil {
+	if header.GetHeight() >= v.chain.chainParams.CheckPowHeaderHeight {
+		if err := v.spvService.CheckCRCArbiterSignature(&header.GetAuxPow().SideAuxBlockTx); err != nil {
 			return err
 		}
 	}
 
-	if !header.SideAuxPow.SideAuxPowCheck(header.Hash()) {
+	if !header.GetAuxPow().SideAuxPowCheck(header.Hash()) {
 		return errors.New("[powCheckHeader] block check proof is failed")
 	}
-	if v.checkProofOfWork(&header, powLimit) != nil {
+	if v.checkProofOfWork(header, powLimit) != nil {
 		return errors.New("[powCheckHeader] block check proof is failed.")
 	}
 
 	// A block timestamp must not have a greater precision than one second.
-	tempTime := time.Unix(int64(header.Timestamp), 0)
+	tempTime := time.Unix(int64(header.GetTimeStamp()), 0)
 	if !tempTime.Equal(time.Unix(tempTime.Unix(), 0)) {
 		return errors.New("[powCheckHeader] block timestamp of has a higher precision than one second")
 	}
@@ -240,16 +240,16 @@ func (v *Validator) checkTransactionsMerkle(params ...interface{}) (err error) {
 	if err != nil {
 		return errors.New("[CheckTransactionsMerkle] merkleTree compute failed")
 	}
-	if !block.Header.MerkleRoot.IsEqual(calcTransactionsRoot) {
+	if !block.Header.GetMerkleRoot().IsEqual(calcTransactionsRoot) {
 		return errors.New("[CheckTransactionsMerkle] block merkle root is invalid")
 	}
 
 	return nil
 }
 
-func (v *Validator) checkProofOfWork(header *types.Header, powLimit *big.Int) (err error) {
+func (v *Validator) checkProofOfWork(header interfaces.Header, powLimit *big.Int) (err error) {
 	// The target difficulty must be larger than zero.
-	target := CompactToBig(header.Bits)
+	target := CompactToBig(header.GetBits())
 	if target.Sign() <= 0 {
 		return errors.New("[checkProofOfWork], block target difficulty is too low.")
 	}
@@ -260,7 +260,7 @@ func (v *Validator) checkProofOfWork(header *types.Header, powLimit *big.Int) (e
 	}
 
 	// The block hash must be less than the claimed target.
-	hash := header.SideAuxPow.MainBlockHeader.AuxPow.ParBlockHeader.Hash()
+	hash := header.GetAuxPow().MainBlockHeader.AuxPow.ParBlockHeader.Hash()
 
 	hashNum := HashToBig(&hash)
 	if hashNum.Cmp(target) > 0 {
