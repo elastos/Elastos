@@ -527,7 +527,7 @@ func (s *Server) pushBlockMsg(sp *serverPeer, hash *common.Uint256, doneChan cha
 	waitChan <-chan struct{}) error {
 
 	// Fetch the block from the database.
-	block, err := s.chain.GetBlockByHash(*hash)
+	block, err := nb.DefaultChain.Store.GetBlock(*hash)
 	if err != nil {
 		if doneChan != nil {
 			doneChan <- struct{}{}
@@ -920,7 +920,9 @@ func makeEmptyMessage(cmd string) (p2p.Message, error) {
 		message = msg.NewTx(&types.Transaction{})
 
 	case p2p.CmdBlock:
-		message = msg.NewBlock(&types.Block{})
+		b := types.NewBlock()
+		b.Header = ntypes.NewHeader()
+		message = msg.NewBlock(b)
 
 	case p2p.CmdInv:
 		message = &msg.Inv{}

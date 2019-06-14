@@ -4,7 +4,7 @@ import (
 	"io"
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/utils"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/common"
 )
 
 type ExecutionContext struct {
@@ -39,7 +39,7 @@ func (ec *ExecutionContext) SetInstructionPointer(offset int) {
 
 func (ec *ExecutionContext) GetCodeHash() []byte {
 	if ec.CodeHash == nil {
-		hash, err := params.ToProgramHash(ec.Script)
+		hash, err := common.ToProgramHash(ec.Script)
 		if err != nil {
 			return nil
 		}

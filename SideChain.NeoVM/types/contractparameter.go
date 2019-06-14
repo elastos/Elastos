@@ -1,4 +1,4 @@
-package contract
+package types
 
 //parameter defined type.
 type ContractParameterType byte

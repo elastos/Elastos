@@ -1,7 +1,6 @@
 package: github.com/elastos/Elastos.ELA.SideChain.NeoVM
 import:
 - package: github.com/golang/crypto
-  version: ff983b9c42bc9fbf91556e191cc8efb585c16908
 - package: github.com/golang/sys
 - package: github.com/elastos/Elastos.ELA
   version: release_v0.3.2

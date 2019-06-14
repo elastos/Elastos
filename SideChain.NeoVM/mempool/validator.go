@@ -12,12 +12,12 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract"
 
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/service"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/store"
+	nc "github.com/elastos/Elastos.ELA.SideChain.NeoVM/common"
 )
 
 type validator struct {
@@ -123,7 +123,7 @@ func checkOutputProgramHash(programHash common.Uint168) bool {
 		fallthrough
 	case contract.PrefixCrossChain:
 		return true
-	case params.PrefixSmartContract:
+	case nc.PrefixSmartContract:
 		return true
 	}
 	return false
@@ -175,7 +175,7 @@ func (v *validator) checkAttributeProgram(txn *side.Transaction) error {
 			str := fmt.Sprint("[checkAttributeProgram] invalid program parameter nil")
 			return mempool.RuleError{ErrorCode: mempool.ErrAttributeProgram, Description: str}
 		}
-		_, err := params.ToProgramHash(program.Code)
+		_, err := nc.ToProgramHash(program.Code)
 
 		if err != nil {
 			str := fmt.Sprintf("[checkAttributeProgram] invalid program code %x", program.Code)
@@ -194,7 +194,7 @@ func RunPrograms(tx *side.Transaction, hashes []common.Uint168, programs []*side
 	}
 
 	for i := 0; i < len(programs); i++ {
-		programHash, err := params.ToProgramHash(programs[i].Code)
+		programHash, err := nc.ToProgramHash(programs[i].Code)
 		if err != nil {
 			return err
 		}

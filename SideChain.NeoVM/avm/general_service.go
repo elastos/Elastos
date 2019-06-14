@@ -2,7 +2,7 @@ package avm
 
 import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/errors"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/common"
 )
 
 type IGeneralService interface {
@@ -34,7 +34,7 @@ func (is *GeneralService) Register(method string, handler func(*ExecutionEngine)
 	}
 	is.dictionary[method] = handler
 
-	hash := params.StringToInvokeHash([]byte(method))
+	hash := common.StringToInvokeHash([]byte(method))
 	is.methods[hash] = handler
 	return true
 }
@@ -44,7 +44,7 @@ func (is *GeneralService) MergeMap(dictionary map[string]func(engine *ExecutionE
 		if _, ok := is.dictionary[k]; !ok {
 			is.dictionary[k] = v
 
-			hash := params.StringToInvokeHash([]byte(k))
+			hash := common.StringToInvokeHash([]byte(k))
 			is.methods[hash] = v
 		}
 	}
@@ -65,9 +65,9 @@ func (is *GeneralService) Invoke(method string, engine *ExecutionEngine) (bool, 
 	methodBytes := []byte(method)
 	var hash uint32
 	if len(methodBytes) == 4 {
-		hash = params.BytesToUInt(methodBytes)
+		hash = common.BytesToUInt(methodBytes)
 	} else {
-		hash = params.StringToInvokeHash([]byte(method))
+		hash = common.StringToInvokeHash([]byte(method))
 	}
 	if v, ok := is.methods[hash]; ok {
 		if engine.context.GetPriceOnly {

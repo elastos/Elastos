@@ -113,26 +113,27 @@ func main() {
 	txValidator := mp.NewValidator(&mempoolCfg)
 	mempoolCfg.Validator = txValidator
 
+	ledgerStore, err := store.NewLedgerStore(chainStore)
+	if err != nil {
+		eladlog.Fatalf("init DefaultLedgerStore failed, %s", err)
+		os.Exit(1)
+	}
+
 	chainCfg := blockchain.Config{
 		ChainParams: activeNetParams,
 		ChainStore:  chainStore,
 		GetTxFee:  txFeeHelper.GetTxFee,
 		CheckTxSanity: txValidator.CheckTransactionSanity,
 		CheckTxContext:txValidator.CheckTransactionContext,
+		GetHeader: ledgerStore.GetHeader,
 	}
 
-	chain, err := nc.NewBlockChain(&chainCfg, txValidator)
+	chain, err := nc.NewBlockChain(&chainCfg, txValidator, ledgerStore)
 	if err != nil {
 		eladlog.Fatalf("BlockChain initialize failed, %s", err)
 		os.Exit(1)
 	}
 	nc.DefaultChain = chain
-	ledgerStore, err := store.NewLedgerStore(chainStore)
-	if err != nil {
-		eladlog.Fatalf("init DefaultLedgerStore failed, %s", err)
-		os.Exit(1)
-	}
-	chain.Store = ledgerStore
 
 	flag, err := ledgerStore.Get([]byte(store.AccountPersisFlag))
 	if err != nil {
@@ -185,22 +186,31 @@ func main() {
 	}
 
 	eladlog.Info("5. --Start the RPC service")
-	service := sv.NewHttpService(&service.Config{
-		Server:                      server,
-		Chain:                       chain.BlockChain,
-		Store:                       ledgerStore.ChainStore,
-		GenesisAddress:              genesisAddress,
-		TxMemPool:                   txPool,
-		PowService:                  powService,
-		SpvService:                  spvService,
-		SetLogLevel:                 setLogLevel,
-		GetBlockInfo:                service.GetBlockInfo,
-		GetTransactionInfo:          sv.GetTransactionInfo,
-		GetTransactionInfoFromBytes: sv.GetTransactionInfoFromBytes,
-		GetTransaction:              service.GetTransaction,
-		GetPayloadInfo:              sv.GetPayloadInfo,
-		GetPayload:                  service.GetPayload,
-	}, mempoolCfg.ChainParams.ElaAssetId)
+	httpCfg := &sv.Config{
+		Config: &service.Config{
+			Server:                      server,
+			Chain:                       chain.BlockChain,
+			Store:                       ledgerStore.ChainStore,
+			GenesisAddress:              genesisAddress,
+			TxMemPool:                   txPool,
+			PowService:                  powService,
+			SpvService:                  spvService,
+			SetLogLevel:                 setLogLevel,
+			GetBlockInfo:                service.GetBlockInfo,
+			GetTransactionInfo:          sv.GetTransactionInfo,
+			GetTransactionInfoFromBytes: sv.GetTransactionInfoFromBytes,
+			GetTransaction:              service.GetTransaction,
+			GetPayloadInfo:              sv.GetPayloadInfo,
+			GetPayload:                  service.GetPayload,
+		},
+		Compile:  Version,
+		NodePort: cfg.NodePort,
+		RPCPort:  cfg.RPCPort,
+		RestPort: cfg.RESTPort,
+		WSPort:   cfg.WSPort,
+	}
+
+	service := sv.NewHttpService(httpCfg, mempoolCfg.ChainParams.ElaAssetId)
 
 	if cfg.EnableRPC {
 		rpcServer := newJsonRpcServer(cfg.RPCPort, service)
@@ -242,6 +252,7 @@ func newJsonRpcServer(port uint16, service *sv.HttpServiceExtend) *jsonrpc.Serve
 	s.RegisterAction("getrawmempool", service.GetTransactionPool)
 	s.RegisterAction("getrawtransaction", service.GetRawTransaction, "txid", "verbose")
 	s.RegisterAction("getneighbors", service.GetNeighbors)
+	s.RegisterAction("getnodestate", service.GetNodeState)
 	s.RegisterAction("sendrechargetransaction", service.SendRechargeToSideChainTxByHash)
 	s.RegisterAction("sendrawtransaction", service.SendRawTransaction, "data")
 	s.RegisterAction("getbestblockhash", service.GetBestBlockHash)

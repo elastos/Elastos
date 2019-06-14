@@ -14,9 +14,8 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/storage"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/errors"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract/states"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
+	nc "github.com/elastos/Elastos.ELA.SideChain.NeoVM/common"
 	nt "github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/blockchain"
 
@@ -119,9 +118,9 @@ func (s *StateMachine) CreateContract(engine *avm.ExecutionEngine) bool {
 	if len(parameters) > avm.MaxParameterSize {
 		return false
 	}
-	parameterList := make([]contract.ContractParameterType, 0)
+	parameterList := make([]nt.ContractParameterType, 0)
 	for _, v := range parameters {
-		parameterList = append(parameterList, contract.ContractParameterType(v))
+		parameterList = append(parameterList, nt.ContractParameterType(v))
 	}
 	returnType := avm.PopInt(engine)
 	nameByte := avm.PopByteArray(engine)
@@ -147,7 +146,7 @@ func (s *StateMachine) CreateContract(engine *avm.ExecutionEngine) bool {
 	funcCode := nt.FunctionCode{
 		Code:           codeByte,
 		ParameterTypes: parameterList,
-		ReturnType:     contract.ContractParameterType(returnType),
+		ReturnType:     nt.ContractParameterType(returnType),
 	}
 	contractState := &states.ContractState{
 		Code:        &funcCode,
@@ -158,7 +157,7 @@ func (s *StateMachine) CreateContract(engine *avm.ExecutionEngine) bool {
 		Description: common.BytesToHexString(descByte),
 	}
 	codeHash := funcCode.CodeHash()
-	key := params.UInt168ToUInt160(&codeHash)
+	key := nc.UInt168ToUInt160(&codeHash)
 	s.CloneCache.GetInnerCache().GetOrAdd(sb.ST_Contract, string(key), contractState)
 	avm.PushData(engine, contractState)
 	return true
@@ -170,7 +169,7 @@ func (s *StateMachine) GetContract(engine *avm.ExecutionEngine) bool {
 	if err != nil {
 		return false
 	}
-	keyStr := params.UInt168ToUInt160(hash)
+	keyStr := nc.UInt168ToUInt160(hash)
 	item, err := s.CloneCache.TryGet(sb.ST_Contract, string(keyStr))
 	if err != nil {
 		return false
@@ -189,9 +188,9 @@ func (s *StateMachine) ContractMigrate(engine *avm.ExecutionEngine) bool {
 	if len(parameters) > 252 {
 		return false
 	}
-	parameterList := make([]contract.ContractParameterType, 0)
+	parameterList := make([]nt.ContractParameterType, 0)
 	for _, v := range parameters {
-		parameterList = append(parameterList, contract.ContractParameterType(v))
+		parameterList = append(parameterList, nt.ContractParameterType(v))
 	}
 	returnType := avm.PopInt(engine)
 	needStorage := avm.PopBoolean(engine)
@@ -219,10 +218,10 @@ func (s *StateMachine) ContractMigrate(engine *avm.ExecutionEngine) bool {
 	funcCode := &nt.FunctionCode{
 		Code:           codeByte,
 		ParameterTypes: parameterList,
-		ReturnType:     contract.ContractParameterType(returnType),
+		ReturnType:     nt.ContractParameterType(returnType),
 	}
 	codeHash := funcCode.CodeHash()
-	keyStr := params.UInt168ToUInt160(&codeHash)
+	keyStr := nc.UInt168ToUInt160(&codeHash)
 	item, err := s.CloneCache.TryGet(sb.ST_Contract, string(keyStr))
 	if err != nil {
 		item = &states.ContractState{
@@ -242,7 +241,7 @@ func (s *StateMachine) ContractMigrate(engine *avm.ExecutionEngine) bool {
 			if data == nil {
 				return false
 			}
-			oldHash, err := params.ToProgramHash(data)
+			oldHash, err := nc.ToProgramHash(data)
 			if err != nil {
 				return false
 			}
@@ -292,11 +291,11 @@ func (s *StateMachine) ContractDestory(engine *avm.ExecutionEngine) bool {
 	if data == nil {
 		return false
 	}
-	hash, err := params.ToCodeHash(data)
+	hash, err := nc.ToCodeHash(data)
 	if err != nil {
 		return false
 	}
-	keyStr := string(params.UInt168ToUInt160(hash))
+	keyStr := string(nc.UInt168ToUInt160(hash))
 	item, err := s.CloneCache.TryGet(sb.ST_Contract, keyStr)
 	if err != nil || item == nil {
 		log.Error("ContractDestory:", err.Error())
@@ -310,7 +309,7 @@ func (s *StateMachine) ContractDestory(engine *avm.ExecutionEngine) bool {
 }
 
 func (s *StateMachine) CheckStorageContext(context *StorageContext) (bool, error) {
-	hashStr := string(params.UInt168ToUInt160(context.codeHash))
+	hashStr := string(nc.UInt168ToUInt160(context.codeHash))
 	item, err := s.CloneCache.TryGet(sb.ST_Contract, hashStr)
 	if err != nil {
 		return false, err
@@ -412,7 +411,7 @@ func (s *StateMachine) AccountIsStandard(e *avm.ExecutionEngine) bool {
 	if err != nil {
 		return false
 	}
-	keyStr := params.UInt168ToUInt160(hash)
+	keyStr := nc.UInt168ToUInt160(hash)
 	item, err := s.CloneCache.TryGet(sb.ST_Contract, string(keyStr))
 	if err != nil {
 		return false

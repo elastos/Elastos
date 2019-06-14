@@ -6,11 +6,12 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/common"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
 )
 
 //create a Single Singature contract for owner
-func CreateSignatureContract(ownerPubKey *crypto.PublicKey) (*Contract, error) {
+func CreateSignatureContract(ownerPubKey *crypto.PublicKey) (*types.Contract, error) {
 	msg := "[Contract],CreateSignatureContract failed."
 	temp, err := ownerPubKey.EncodePoint(true)
 	if err != nil {
@@ -20,17 +21,17 @@ func CreateSignatureContract(ownerPubKey *crypto.PublicKey) (*Contract, error) {
 	if err != nil {
 		return nil, errors.New(msg)
 	}
-	hash, err := params.ToProgramHash(temp)
+	hash, err := common.ToProgramHash(temp)
 	if err != nil {
 		return nil, errors.New(msg)
 	}
-	signatureReedScriptToCodeHash, err := params.ToProgramHash(signatureReedScript)
+	signatureReedScriptToCodeHash, err := common.ToProgramHash(signatureReedScript)
 	if err != nil {
 		return nil, errors.New(msg)
 	}
-	return &Contract{
+	return &types.Contract{
 		Code: signatureReedScript,
-		Parameters: []ContractParameterType{Signature},
+		Parameters: []types.ContractParameterType{types.Signature},
 		ProgramHash: *signatureReedScriptToCodeHash,
 		OwnerPubkeyHash: *hash,
 	}, nil

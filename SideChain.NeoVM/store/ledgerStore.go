@@ -8,6 +8,7 @@ import (
 	sb "github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	side "github.com/elastos/Elastos.ELA.SideChain/types"
 	"github.com/elastos/Elastos.ELA.SideChain/database"
+	"github.com/elastos/Elastos.ELA.SideChain/interfaces"
 
 	"github.com/elastos/Elastos.ELA/common"
 
@@ -36,7 +37,7 @@ func (c *LedgerStore) persistTransactions(batch database.Batch, b *side.Block) e
 	c.WriteTxLookupEntries(b)
 	var receipts types.Receipts
 	for _, txn := range b.Transactions {
-		if err := c.PersistTransaction(batch, txn, b.Header.Height); err != nil {
+		if err := c.PersistTransaction(batch, txn, b.Header.GetHeight()); err != nil {
 			return err
 		}
 
@@ -94,7 +95,7 @@ func (c *LedgerStore) persistTransactions(batch database.Batch, b *side.Block) e
 
 
 func checkBlockStates(block *side.Block, receipts types.Receipts) error {
-	header := block.Header
+	header := block.Header.(*types.Header)
 	// Validate the received block's bloom with the one derived from the generated receipts.
 	// For valid blocks this should always validate to true.
 	rbloom := types.CreateBloom(receipts).Bytes()
@@ -104,7 +105,7 @@ func checkBlockStates(block *side.Block, receipts types.Receipts) error {
 
 	// Tre receipt hash
 	receiptSha := receipts.Hash()
-	if !receiptSha.IsEqual(block.ReceiptHash) {
+	if !receiptSha.IsEqual(header.ReceiptHash) {
 		return fmt.Errorf("invalid receipt hash (remote: %x local: %x)", header.ReceiptHash, receiptSha)
 	}
 
@@ -120,4 +121,30 @@ func (c *LedgerStore) GetUnspents(txid common.Uint256) ([]*side.Output, error) {
 		return tx.Outputs, nil
 	}
 	return nil, errors.New("[GetUnspent] NOT ContainsUnspent.")
+}
+
+func (s *LedgerStore) GetHeader(hash common.Uint256) (interfaces.Header, error) {
+	var h = types.NewHeader()
+
+	prefix := []byte{byte(sb.DATA_Header)}
+	data, err := s.Get(append(prefix, hash.Bytes()...))
+	if err != nil {
+		//TODO: implement error process
+		return nil, err
+	}
+
+	r := bytes.NewReader(data)
+	// first 8 bytes is sys_fee
+	_, err = common.ReadUint64(r)
+	if err != nil {
+		return nil, err
+	}
+
+	// Deserialize block data
+	err = h.Deserialize(r)
+	if err != nil {
+		return nil, err
+	}
+
+	return h, err
 }

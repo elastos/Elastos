@@ -15,7 +15,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/service"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract"
 	ns "github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/service"
 )
 
@@ -23,10 +22,10 @@ type SmartContract struct {
 	Engine         Engine
 	Code           []byte
 	Input          []byte
-	ParameterTypes []contract.ContractParameterType
+	ParameterTypes []types.ContractParameterType
 	Caller         common.Uint168
 	CodeHash       common.Uint168
-	ReturnType     contract.ContractParameterType
+	ReturnType     types.ContractParameterType
 }
 
 type Context struct {
@@ -41,8 +40,8 @@ type Context struct {
 	StateMachine   ns.StateMachine
 	DBCache        database.Batch
 	Gas            common.Fixed64
-	ReturnType     contract.ContractParameterType
-	ParameterTypes []contract.ContractParameterType
+	ReturnType     types.ContractParameterType
+	ParameterTypes []types.ContractParameterType
 	Trigger        avm.TriggerType
 }
 
@@ -77,7 +76,7 @@ func (sc *SmartContract) DeployContract(payload *types.PayloadDeploy) ([]byte, e
 	buffer := new(bytes.Buffer)
 	paramBuilder := avm.NewParamsBuider(buffer)
 	var parameterTypes []byte
-	parameterTypes = contract.ContractParameterTypeToByte(payload.Code.ParameterTypes)
+	parameterTypes = types.ContractParameterTypeToByte(payload.Code.ParameterTypes)
 	returnType := byte(payload.Code.ReturnType)
 	paramBuilder.EmitSysCall("Neo.Contract.Create", payload.Code.Code, parameterTypes, returnType, payload.Name,
 		payload.CodeVersion, payload.Author, payload.Email, payload.Description)
@@ -100,21 +99,21 @@ func (sc *SmartContract) InvokeResult() (interface{}, error) {
 	engine := sc.Engine.(*avm.ExecutionEngine)
 	if engine.GetEvaluationStack().Count() > 0 && avm.Peek(engine) != nil {
 		switch sc.ReturnType {
-		case contract.Boolean:
+		case types.Boolean:
 			return avm.PopBoolean(engine), nil
-		case contract.Integer:
+		case types.Integer:
 			return avm.PopBigInt(engine), nil
-		case contract.ByteArray:
+		case types.ByteArray:
 			bs := avm.PopByteArray(engine)
 			return bs, nil
-		case contract.String:
+		case types.String:
 			return string(avm.PopByteArray(engine)), nil
-		case contract.Hash160, contract.Hash256:
+		case types.Hash160, types.Hash256:
 			data := avm.PopByteArray(engine)
 			return common.BytesToHexString(common.BytesReverse(data)), nil
-		case contract.PublicKey:
+		case types.PublicKey:
 			return common.BytesToHexString(avm.PopByteArray(engine)), nil
-		case contract.Object:
+		case types.Object:
 			data := avm.PeekStackItem(engine)
 			switch data.(type) {
 			case *datatype.Boolean:
@@ -126,8 +125,8 @@ func (sc *SmartContract) InvokeResult() (interface{}, error) {
 			case *datatype.GeneralInterface:
 				interop := data.GetInterface()
 				switch interop.(type) {
-				case *st.Header:
-					return service.GetHeaderInfo(interop.(*st.Header)), nil
+				case *types.Header:
+					return service.GetHeaderInfo(interop.(*types.Header)), nil
 				case *st.Block:
 					return service.GetBlockInfo(interop.(*st.Block)), nil
 				case *st.Transaction:
@@ -147,7 +146,7 @@ func (sc *SmartContract) InvokeParamsTransform() ([]byte, error) {
 	b := bytes.NewBuffer(sc.Input)
 	for _, k := range sc.ParameterTypes {
 		switch k {
-		case contract.Boolean:
+		case types.Boolean:
 			p, err := common.ReadUint8(b)
 			if err != nil {
 				return nil, err
@@ -157,7 +156,7 @@ func (sc *SmartContract) InvokeParamsTransform() ([]byte, error) {
 			} else {
 				builder.EmitPushBool(false)
 			}
-		case contract.Integer:
+		case types.Integer:
 			p, err := common.ReadVarBytes(b, avm.MAX_BIGINTEGER, "SmartContract InvokeParamsTransform Integer")
 			if err != nil {
 				return nil, err
@@ -167,25 +166,25 @@ func (sc *SmartContract) InvokeParamsTransform() ([]byte, error) {
 				return nil, err
 			}
 			builder.EmitPushInteger(int64(i))
-		case contract.Hash160:
+		case types.Hash160:
 			p, err := common.ReadVarBytes(b, 20, "SmartContract InvokeParamsTransform Hash160")
 			if err != nil {
 				return nil, err
 			}
 			builder.EmitPushByteArray(common.BytesReverse(p))
-		case contract.Hash256:
+		case types.Hash256:
 			p, err := common.ReadVarBytes(b, 32, "SmartContract InvokeParamsTransform Hash256")
 			if err != nil {
 				return nil, err
 			}
 			builder.EmitPushByteArray(common.BytesReverse(p))
-		case contract.Hash168:
+		case types.Hash168:
 			p, err := common.ReadVarBytes(b, 21, "SmartContract InvokeParamsTransform Hash168")
 			if err != nil {
 				return nil, err
 			}
 			builder.EmitPushByteArray(common.BytesReverse(p))
-		case contract.ByteArray, contract.String:
+		case types.ByteArray, types.String:
 			p, err := common.ReadVarBytes(b, common.MaxVarStringLength, "SmartContract InvokeParamsTransform ByteArray")
 			if err != nil {
 				return nil, err

@@ -154,38 +154,38 @@ func loadConfig() *configParams {
 // mainNetDefault set the default parameters for main network usage.
 func mainNetDefault(cfg *configParams) {
 	if cfg.RESTPort == 0 {
-		cfg.RESTPort = 20604
+		cfg.RESTPort = 20624
 	}
 	if cfg.WSPort == 0 {
-		cfg.WSPort = 20605
+		cfg.WSPort = 20625
 	}
 	if cfg.RPCPort == 0 {
-		cfg.RPCPort = 20606
+		cfg.RPCPort = 20626
 	}
 }
 
 // testNetDefault set the default parameters for test network usage.
 func testNetDefault(cfg *configParams) {
 	if cfg.RESTPort == 0 {
-		cfg.RESTPort = 21604
+		cfg.RESTPort = 21624
 	}
 	if cfg.WSPort == 0 {
-		cfg.WSPort = 21605
+		cfg.WSPort = 21625
 	}
 	if cfg.RPCPort == 0 {
-		cfg.RPCPort = 21606
+		cfg.RPCPort = 21626
 	}
 }
 
 // regNetDefault set the default parameters for regression network usage.
 func regNetDefault(cfg *configParams) {
 	if cfg.RESTPort == 0 {
-		cfg.RESTPort = 22604
+		cfg.RESTPort = 22624
 	}
 	if cfg.WSPort == 0 {
-		cfg.WSPort = 22605
+		cfg.WSPort = 22625
 	}
 	if cfg.RPCPort == 0 {
-		cfg.RPCPort = 22606
+		cfg.RPCPort = 22626
 	}
 }

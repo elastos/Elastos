@@ -7,6 +7,8 @@ import (
 	ntypes "github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/store"
+
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type Config struct {
@@ -22,6 +24,20 @@ func GenerateBlock(cfg *pow.Config) (*types.Block, error) {
 		return block, err
 	}
 
+	h := types.Header{
+		Version:    0,
+		Previous:   block.GetPrevious(),
+		MerkleRoot: block.GetMerkleRoot(),
+		Timestamp:  block.GetTimeStamp(),
+		Bits:       block.GetBits(),
+		Height:     block.GetHeight(),
+		Nonce:      block.GetNonce(),
+	}
+
+	header := &ntypes.Header{
+	 	Header: &h,
+	 	ReceiptHash: common.EmptyHash,
+	}
 	storedb := blockchain.DefaultChain.Store.(*store.LedgerStore)
 
 	var receipts ntypes.Receipts
@@ -34,7 +50,10 @@ func GenerateBlock(cfg *pow.Config) (*types.Block, error) {
 			receipts = append(receipts, receipt)
 		}
 	}
-	block.ReceiptHash = receipts.Hash()
-	block.Bloom = ntypes.CreateBloom(receipts).Bytes()
+	header.ReceiptHash = receipts.Hash()
+	header.Bloom = ntypes.CreateBloom(receipts).Bytes()
+
+	block.Header = header
+
 	return block, err
 }

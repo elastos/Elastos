@@ -10,28 +10,40 @@ import (
 
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/utils/http"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 
 	sideser "github.com/elastos/Elastos.ELA.SideChain/service"
 	side "github.com/elastos/Elastos.ELA.SideChain/types"
+	"github.com/elastos/Elastos.ELA.SideChain/interfaces"
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/datatype"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
 	vmerr "github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm/errors"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/blockchain"
+	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/common"
 )
+
+type Config struct {
+	*sideser.Config
+
+	Compile  string
+	NodePort uint16
+	RPCPort  uint16
+	RestPort uint16
+	WSPort   uint16
+}
 
 type HttpServiceExtend struct {
 	*sideser.HttpService
 
-	cfg        *sideser.Config
+	cfg        *Config
 	elaAssetID Uint256
 }
 
-func NewHttpService(cfg *sideser.Config, assetid Uint256) *HttpServiceExtend {
+func NewHttpService(cfg *Config, assetid Uint256) *HttpServiceExtend {
 	server := &HttpServiceExtend{
-		HttpService: sideser.NewHttpService(cfg),
+		HttpService: sideser.NewHttpService(cfg.Config),
 		cfg:         cfg,
 		elaAssetID:  assetid,
 	}
@@ -114,7 +126,7 @@ func (s *HttpServiceExtend) GetBlockByHeight(param http.Params) (interface{}, er
 }
 
 func (s *HttpServiceExtend) getBlock(hash Uint256, format uint) (interface{}, error) {
-	block, err := s.cfg.Chain.GetBlockByHash(hash)
+	block, err := blockchain.DefaultChain.Store.GetBlock(hash)
 	if err != nil {
 		return "", http.NewError(int(sideser.UnknownBlock), "")
 	}
@@ -127,9 +139,9 @@ func (s *HttpServiceExtend) getBlock(hash Uint256, format uint) (interface{}, er
 		block.Serialize(w)
 		return BytesToHexString(w.Bytes()), nil
 	case 2:
-		blockInfo, err = s.cfg.GetBlockInfo(s.cfg, block, true), nil
+		blockInfo, err = s.cfg.GetBlockInfo(s.cfg.Config, block, true), nil
 	default:
-		blockInfo, err = s.cfg.GetBlockInfo(s.cfg, block, false), nil
+		blockInfo, err = s.cfg.GetBlockInfo(s.cfg.Config, block, false), nil
 	}
 	value := reflect.ValueOf(blockInfo)
 	knames := reflect.TypeOf(blockInfo)
@@ -139,13 +151,14 @@ func (s *HttpServiceExtend) getBlock(hash Uint256, format uint) (interface{}, er
 		v := value.Field(i).Interface()
 		ret[k] = v
 	}
-	ret["receiptHash"] = block.ReceiptHash.String()
-	ret["bloom"] = BytesToHexString(block.Bloom)
+	header := block.Header.(*types.Header)
+	ret["receiptHash"] = header.ReceiptHash.String()
+	ret["bloom"] = BytesToHexString(header.Bloom)
 
 	return ret, err
 }
 
-func GetTransactionInfo(cfg *sideser.Config, header *side.Header, tx *side.Transaction) *sideser.TransactionInfo {
+func GetTransactionInfo(cfg *sideser.Config, header interfaces.Header, tx *side.Transaction) *sideser.TransactionInfo {
 	inputs := make([]sideser.InputInfo, len(tx.Inputs))
 	for i, v := range tx.Inputs {
 		inputs[i].TxID = sideser.ToReversedString(v.Previous.TxID)
@@ -183,10 +196,10 @@ func GetTransactionInfo(cfg *sideser.Config, header *side.Header, tx *side.Trans
 	var time uint32
 	var blockTime uint32
 	if header != nil {
-		confirmations = cfg.Chain.GetBestHeight() - header.Height + 1
+		confirmations = cfg.Chain.GetBestHeight() - header.GetHeight() + 1
 		blockHash = sideser.ToReversedString(header.Hash())
-		time = header.Timestamp
-		blockTime = header.Timestamp
+		time = header.GetTimeStamp()
+		blockTime = header.GetTimeStamp()
 	}
 
 	return &sideser.TransactionInfo{
@@ -325,6 +338,96 @@ func (s *HttpServiceExtend) ListUnspent(param http.Params) (interface{}, error) 
 	return result, nil
 }
 
+func (s *HttpServiceExtend) GetWithdrawTransactionsByHeight(param http.Params) (interface{}, error) {
+	height, ok := param.Uint("height")
+	if !ok {
+		return nil, http.NewError(int(sideser.InvalidParams), "height parameter should be a positive integer")
+	}
+
+	hash, err := s.cfg.Chain.GetBlockHash(uint32(height))
+	if err != nil {
+		return nil, fmt.Errorf(sideser.UnknownBlock.String())
+
+	}
+
+	block, err := blockchain.DefaultChain.Store.GetBlock(hash)
+	if err != nil {
+		return nil, fmt.Errorf(sideser.UnknownBlock.String())
+	}
+
+	destroyHash := Uint168{}
+	txs := s.GetBlockTransactionsDetail(block, func(tran *side.Transaction) bool {
+		_, ok := tran.Payload.(*side.PayloadTransferCrossChainAsset)
+		if !ok {
+			return false
+		}
+		for _, output := range tran.Outputs {
+			if output.ProgramHash == destroyHash {
+				return true
+			}
+		}
+		return false
+	})
+	return s.GetWithdrawTxsInfo(txs), nil
+}
+
+func (s *HttpServiceExtend) GetIllegalEvidenceByHeight(param http.Params) (interface{}, error) {
+	height, ok := param.Uint("height")
+	if !ok {
+		return nil, http.NewError(int(sideser.InvalidParams), "height parameter should be a positive integer")
+	}
+
+	hash, err := s.cfg.Chain.GetBlockHash(uint32(height))
+	if err != nil {
+		return nil, fmt.Errorf(sideser.UnknownBlock.String())
+
+	}
+
+	_, err = blockchain.DefaultChain.GetBlockByHash(hash)
+	if err != nil {
+		return nil, fmt.Errorf(sideser.UnknownBlock.String())
+	}
+
+	// todo get illegal evidences in block
+
+	result := make([]*sideser.SidechainIllegalDataInfo, 0)
+	return result, nil
+}
+
+func (s *HttpServiceExtend) GetNodeState(param http.Params) (interface{}, error) {
+	peers := s.cfg.Server.ConnectedPeers()
+	states := make([]*PeerInfo, 0, len(peers))
+	for _, peer := range peers {
+		snap := peer.ToPeer().StatsSnapshot()
+		states = append(states, &PeerInfo{
+			NetAddress:     snap.Addr,
+			Services:       pact.ServiceFlag(snap.Services).String(),
+			RelayTx:        snap.RelayTx != 0,
+			LastSend:       snap.LastSend.String(),
+			LastRecv:       snap.LastRecv.String(),
+			ConnTime:       snap.ConnTime.String(),
+			TimeOffset:     snap.TimeOffset,
+			Version:        snap.Version,
+			Inbound:        snap.Inbound,
+			StartingHeight: snap.StartingHeight,
+			LastBlock:      snap.LastBlock,
+			LastPingTime:   snap.LastPingTime.String(),
+			LastPingMicros: snap.LastPingMicros,
+		})
+	}
+	return ServerInfo{
+		Compile:   s.cfg.Compile,
+		Height:    s.cfg.Chain.GetBestHeight(),
+		Version:   pact.DPOSStartVersion,
+		Services:  s.cfg.Server.Services().String(),
+		Port:      s.cfg.NodePort,
+		RPCPort:   s.cfg.RPCPort,
+		RestPort:  s.cfg.RestPort,
+		WSPort:    s.cfg.WSPort,
+		Neighbors: states,
+	}, nil
+}
+
 func (s *HttpServiceExtend) InvokeScript(param http.Params) (interface{}, error) {
 	script, ok := param.String("script")
 	if !ok {
@@ -391,7 +494,7 @@ func (s *HttpServiceExtend) InvokeFunction(param http.Params) (interface{}, erro
 		codeHash = &Uint168{}
 	}
 	if len(codeHashBytes) == 21 {
-		codeHashBytes = params.UInt168ToUInt160(codeHash)
+		codeHashBytes = common.UInt168ToUInt160(codeHash)
 	}
 	codeHashBytes = BytesReverse(codeHashBytes)
 	paramBuilder.EmitPushCall(codeHashBytes)
@@ -599,12 +702,12 @@ func (s *HttpServiceExtend) GetTransactionReceipt(param http.Params) (interface{
 		return nil, err
 	}
 
-	block, err := s.cfg.Chain.GetBlockByHash(blockHash)
+	block, err := blockchain.DefaultChain.GetBlockByHash(blockHash)
 	if err != nil {
 		return nil, err
 	}
-
-	if !receipts.Hash().IsEqual(block.ReceiptHash) {
+	header := block.Header.(*types.Header)
+	if !receipts.Hash().IsEqual(header.ReceiptHash) {
 		return nil, errors.New("error receipts: " + receipts.Hash().String())
 	}
 

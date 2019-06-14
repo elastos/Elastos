@@ -6,7 +6,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common"
 
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
 )
 
@@ -23,7 +22,7 @@ type ContractState struct {
 
 func NewContractState() *ContractState {
 	Code := &types.FunctionCode{
-		ReturnType: contract.Void,
+		ReturnType: types.Void,
 	}
 	return &ContractState{
 		Code : Code,
@@ -134,9 +133,9 @@ func (contractState *ContractState) Bytes() []byte {
 }
 
 func (contractState *ContractState) IsMultiSigContract() bool {
-	return contract.IsMultiSigContract(contractState.Code.Code)
+	return types.IsMultiSigContract(contractState.Code.Code)
 }
 
 func (contractState *ContractState) IsSignatureCotract() bool {
-	return contract.IsSignatureCotract(contractState.Code.Code)
+	return types.IsSignatureCotract(contractState.Code.Code)
 }

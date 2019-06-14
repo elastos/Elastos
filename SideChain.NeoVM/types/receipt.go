@@ -32,7 +32,7 @@ type Receipt struct {
 // NewReceipt creates a barebone transaction receipt, copying the init fields.
 func NewReceipt(contractAddr common.Uint168, tx *types.Transaction, block *types.Block) (*Receipt, error) {
 	r := &Receipt{TxHash: tx.Hash(), Status: false, ContractAddress: contractAddr}
-	r.BlockNumber = block.Height
+	r.BlockNumber = block.GetHeight()
 	index, err := r.GetTxIndex(tx.Hash(), block)
 	r.TransactionIndex = index
 	if err != nil {

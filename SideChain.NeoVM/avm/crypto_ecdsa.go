@@ -6,14 +6,14 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/crypto"
 
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
+	nc "github.com/elastos/Elastos.ELA.SideChain.NeoVM/common"
 )
 
 type CryptoECDsa struct {
 }
 
 func (c *CryptoECDsa) Hash168(data []byte) []byte {
-	temp, err := params.ToProgramHash(data)
+	temp, err := nc.ToProgramHash(data)
 	if err != nil {
 		return nil
 	}

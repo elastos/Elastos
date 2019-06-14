@@ -15,7 +15,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/events"
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract/states"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
+	nc "github.com/elastos/Elastos.ELA.SideChain.NeoVM/common"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/smartcontract/service"
@@ -117,8 +117,8 @@ func (c *LedgerStore) PersistDeployTransaction(block *side.Block, tx *side.Trans
 		StateMachine: *service.NewStateMachine(dbCache, dbCache),
 		DBCache:      batch,
 		Code:         payloadDeploy.Code.Code,
-		Time:         big.NewInt(int64(block.Timestamp)),
-		BlockNumber:  big.NewInt(int64(block.Height)),
+		Time:         big.NewInt(int64(block.GetTimeStamp())),
+		BlockNumber:  big.NewInt(int64(block.GetHeight())),
 		Gas:          payloadDeploy.Gas,
 		Trigger:      avm.Application,
 	})
@@ -143,7 +143,7 @@ func (c *LedgerStore) PersistDeployTransaction(block *side.Block, tx *side.Trans
 		})
 		return err
 	}
-	codeHash, err := params.ToCodeHash(ret)
+	codeHash, err := nc.ToCodeHash(ret)
 	if err != nil {
 		events.Notify(event.ETDeployTransaction, &ResponseExt{
 			Action:   DEPLOY_TRANSACTION,
@@ -167,7 +167,7 @@ func (c *LedgerStore) PersistDeployTransaction(block *side.Block, tx *side.Trans
 		return err
 	}
 	//because neo compiler use [AppCall(hash)] ，will change hash168 to hash160,so we deploy contract use hash160
-	data := params.UInt168ToUInt160(codeHash)
+	data := nc.UInt168ToUInt160(codeHash)
 
 	dbCache.GetOrAdd(sb.ST_Contract, string(data), &states.ContractState{
 		Code:        payloadDeploy.Code,
@@ -237,8 +237,8 @@ func (c *LedgerStore) PersisInvokeTransaction(block *side.Block, tx *side.Transa
 		Input:          payloadInvoke.Code,
 		SignableData:   tx,
 		CacheCodeTable: NewCacheCodeTable(dbCache),
-		Time:           big.NewInt(int64(block.Timestamp)),
-		BlockNumber:    big.NewInt(int64(block.Height)),
+		Time:           big.NewInt(int64(block.GetTimeStamp())),
+		BlockNumber:    big.NewInt(int64(block.GetHeight())),
 		Gas:            payloadInvoke.Gas,
 		ReturnType:     constractState.Code.ReturnType,
 		ParameterTypes: constractState.Code.ParameterTypes,
@@ -337,7 +337,7 @@ func (c *LedgerStore) WriteReceipts(block *side.Block, receipts types.Receipts) 
 			return err
 		}
 	}
-	return c.Put(blockReceiptsKey(block.Height, block.Hash()), buf.Bytes())
+	return c.Put(blockReceiptsKey(block.GetHeight(), block.Hash()), buf.Bytes())
 }
 
 func (c *LedgerStore) GetReceipts(height uint32, hash *common.Uint256) (types.Receipts, error) {
@@ -414,17 +414,17 @@ func (c *LedgerStore) ReadTransaction(hash common.Uint256) (*side.Transaction, c
 
 	for txIndex, tx := range block.Transactions {
 		if tx.Hash().IsEqual(hash) {
-			return tx, blockHash, block.Height, uint32(txIndex)
+			return tx, blockHash, block.GetHeight(), uint32(txIndex)
 		}
 	}
-	log.Error("Transaction not found", "number", block.Height, "hash", blockHash, "txhash", hash)
-	return nil, blockHash, block.Height, 0
+	log.Error("Transaction not found", "number", block.GetHeight(), "hash", blockHash, "txhash", hash)
+	return nil, blockHash, block.GetHeight(), 0
 }
 
 func (c *LedgerStore) GetContract(codeHash *common.Uint168) ([]byte, error) {
 	prefix := []byte{byte(sb.ST_Contract)}
 
-	hashBytes := params.UInt168ToUInt160(codeHash)
+	hashBytes := nc.UInt168ToUInt160(codeHash)
 	bData, err_get := c.Get(append(prefix, hashBytes...))
 	if err_get != nil {
 		return nil, err_get
@@ -443,6 +443,40 @@ func (c *LedgerStore) GetAccount(programHash *common.Uint168) (*states.AccountSt
 	accountState.Deserialize(bytes.NewBuffer(state))
 
 	return accountState, nil
+}
+
+func (c *LedgerStore) GetBlock(hash common.Uint256) (*side.Block, error) {
+	var b = side.NewBlock()
+	b.Header = types.NewHeader()
+	prefix := []byte{byte(sb.DATA_Header)}
+	bHash, err := c.Get(append(prefix, hash.Bytes()...))
+	if err != nil {
+		return nil, err
+	}
+
+	r := bytes.NewReader(bHash)
+
+	// first 8 bytes is sys_fee
+	_, err = common.ReadUint64(r)
+	if err != nil {
+		return nil, err
+	}
+
+	// Deserialize block data
+	if err := b.FromTrimmedData(r); err != nil {
+		return nil, err
+	}
+
+	// Deserialize transaction
+	for i, txn := range b.Transactions {
+		tmp, _, err := c.GetTransaction(txn.Hash())
+		if err != nil {
+			return nil, err
+		}
+		b.Transactions[i] = tmp
+	}
+
+	return b, nil
 }
 
 func (c *LedgerStore) Close() error {

@@ -12,6 +12,7 @@ import (
 	st "github.com/elastos/Elastos.ELA.SideChain/types"
 	"github.com/elastos/Elastos.ELA.SideChain/database"
 	"github.com/elastos/Elastos.ELA.SideChain/events"
+	"github.com/elastos/Elastos.ELA.SideChain/interfaces"
 
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/contract"
@@ -21,7 +22,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/avm"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/event"
-	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/params"
+	nc "github.com/elastos/Elastos.ELA.SideChain.NeoVM/common"
 )
 
 type StateReader struct {
@@ -334,7 +335,7 @@ func (s *StateReader) CheckWitnessPublicKey(engine *avm.ExecutionEngine, publicK
 	if err != nil {
 		return false, err
 	}
-	h, err := params.ToProgramHash(c)
+	h, err := nc.ToProgramHash(c)
 	if err != nil {
 		return false, err
 	}
@@ -383,7 +384,7 @@ func (s *StateReader) BlockChainGetHeight(e *avm.ExecutionEngine) bool {
 
 func (s *StateReader) BlockChainGetHeader(e *avm.ExecutionEngine) bool {
 	var (
-		header *st.Header
+		header interfaces.Header
 		err    error
 	)
 	data := avm.PopByteArray(e)
@@ -529,10 +530,10 @@ func (s *StateReader) HeaderGetHeight(e *avm.ExecutionEngine) bool {
 
 	var height uint32
 	switch d.(type) {
-	case *st.Header:
-		height = d.(*st.Header).Height
+	case interfaces.Header:
+		height = d.(interfaces.Header).GetHeight()
 	case *st.Block:
-		height = d.(*st.Block).Header.Height
+		height = d.(*st.Block).Header.GetHeight()
 	default:
 		return false
 	}
@@ -548,8 +549,8 @@ func (s *StateReader) HeaderGetHash(e *avm.ExecutionEngine) bool {
 	}
 	var hash common.Uint256
 	switch d.(type) {
-	case *st.Header:
-		hash = d.(*st.Header).Hash()
+	case interfaces.Header:
+		hash = d.(interfaces.Header).Hash()
 	case *st.Block:
 		hash = d.(*st.Block).Header.Hash()
 	default:
@@ -566,10 +567,10 @@ func (s *StateReader) HeaderGetVersion(e *avm.ExecutionEngine) bool {
 	}
 	var version uint32
 	switch d.(type) {
-	case *st.Header:
-		version = d.(*st.Header).Version
+	case interfaces.Header:
+		version = d.(interfaces.Header).GetVersion()
 	case *st.Block:
-		version = d.(*st.Block).Header.Version
+		version = d.(*st.Block).Header.GetVersion()
 	default:
 		return false
 	}
@@ -586,10 +587,10 @@ func (s *StateReader) HeaderGetPrevHash(e *avm.ExecutionEngine) bool {
 
 	var preHash common.Uint256
 	switch d.(type) {
-	case *st.Header:
-		preHash = d.(*st.Header).Previous
+	case interfaces.Header:
+		preHash = d.(interfaces.Header).GetPrevious()
 	case *st.Block:
-		preHash = d.(*st.Block).Header.Previous
+		preHash = d.(*st.Block).Header.GetPrevious()
 	default:
 		return false
 	}
@@ -606,10 +607,10 @@ func (s *StateReader) HeaderGetMerkleRoot(e *avm.ExecutionEngine) bool {
 
 	var root common.Uint256
 	switch d.(type) {
-	case *st.Header:
-		root = d.(*st.Header).MerkleRoot
+	case interfaces.Header:
+		root = d.(interfaces.Header).GetMerkleRoot()
 	case *st.Block:
-		root = d.(*st.Block).Header.MerkleRoot
+		root = d.(*st.Block).Header.GetMerkleRoot()
 	default:
 		return false
 	}
@@ -626,10 +627,10 @@ func (s *StateReader) HeaderGetTimestamp(e *avm.ExecutionEngine) bool {
 
 	var timeStamp uint32
 	switch d.(type) {
-	case *st.Header:
-		timeStamp = d.(*st.Header).Timestamp
+	case interfaces.Header:
+		timeStamp = d.(interfaces.Header).GetTimeStamp()
 	case *st.Block:
-		timeStamp = d.(*st.Block).Header.Timestamp
+		timeStamp = d.(*st.Block).Header.GetTimeStamp()
 	default:
 		return false
 	}
@@ -646,10 +647,10 @@ func (s *StateReader) HeaderGetConsensusData(e *avm.ExecutionEngine) bool {
 
 	var consensusData uint32
 	switch d.(type) {
-	case *st.Header:
-		consensusData = d.(*st.Header).SideAuxPow.MainBlockHeader.AuxPow.ParBlockHeader.Nonce
+	case interfaces.Header:
+		consensusData = d.(interfaces.Header).GetAuxPow().MainBlockHeader.AuxPow.ParBlockHeader.Nonce
 	case *st.Block:
-		consensusData = d.(*st.Block).Header.SideAuxPow.MainBlockHeader.AuxPow.ParBlockHeader.Nonce
+		consensusData = d.(*st.Block).Header.GetAuxPow().MainBlockHeader.AuxPow.ParBlockHeader.Nonce
 	default:
 		return false
 	}
