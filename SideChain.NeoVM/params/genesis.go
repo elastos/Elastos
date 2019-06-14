@@ -9,6 +9,8 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	ela "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+
+	ntypes "github.com/elastos/Elastos.ELA.SideChain.NeoVM/types"
 )
 
 var (
@@ -39,11 +41,11 @@ var (
 		Version:    types.BlockVersion,
 		Previous:   common.EmptyHash,
 		MerkleRoot: elaAssetId,
-		Timestamp:  uint32(time.Unix(time.Date(2018, time.December, 24,
+		Timestamp: uint32(time.Unix(time.Date(2018, time.December, 24,
 			12, 0, 0, 0, time.UTC).Unix(), 0).Unix()),
-		Bits:       0x1d03ffff,
-		Nonce:      types.GenesisNonce,
-		Height:     uint32(0),
+		Bits:   0x1d03ffff,
+		Nonce:  types.GenesisNonce,
+		Height: uint32(0),
 		SideAuxPow: auxpow.SideAuxPow{
 			SideAuxBlockTx: ela.Transaction{
 				TxType:         ela.SideChainPow,
@@ -53,9 +55,14 @@ var (
 		},
 	}
 
+	header = ntypes.Header{
+		Header:      &genesisHeader,
+		ReceiptHash: common.EmptyHash,
+		Bloom:       []byte{},
+	}
 	// genesis block
 	genesisBlock = &types.Block{
-		Header:       genesisHeader,
+		Header:       &header,
 		Transactions: []*types.Transaction{&elaAsset},
 	}
 )
