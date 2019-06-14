@@ -165,11 +165,17 @@ func (s *StateMachine) CreateContract(engine *avm.ExecutionEngine) bool {
 
 func (s *StateMachine) GetContract(engine *avm.ExecutionEngine) bool {
 	hashByte := avm.PopByteArray(engine)
-	hash, err := common.Uint168FromBytes(hashByte)
-	if err != nil {
-		return false
+	var keyStr []byte
+	if len(hashByte) == 20 {
+		keyStr = hashByte
+	} else {
+		hash, err := common.Uint168FromBytes(hashByte)
+		if err != nil {
+			return false
+		}
+		keyStr = nc.UInt168ToUInt160(hash)
 	}
-	keyStr := nc.UInt168ToUInt160(hash)
+
 	item, err := s.CloneCache.TryGet(sb.ST_Contract, string(keyStr))
 	if err != nil {
 		return false
