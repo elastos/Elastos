@@ -52,6 +52,7 @@ export default class extends Base {
     const doc = {
       ...docCore,
       createdBy: _.get(this.currentUser, '_id'),
+      descUpdatedAt: new Date(),
       editHistory: [emptyDoc, docCore],
     }
     // save the document
