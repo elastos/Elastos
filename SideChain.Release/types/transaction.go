@@ -24,7 +24,7 @@ const (
 	RechargeToSideChain     TxType = 0x06
 	WithdrawFromSideChain   TxType = 0x07
 	TransferCrossChainAsset TxType = 0x08
-	Invoke                  TxType = 0x09
+	Invoke                  TxType = 0xF0
 
 	InvalidTransactionSize = -1
 )
