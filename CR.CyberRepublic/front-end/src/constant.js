@@ -219,21 +219,14 @@ export const CVOTE_STATUS_TEXT = {
   FINAL: 'FINAL',
 }
 
+export const CONTENT_TYPE = create(['MARKDOWN', 'HTML'])
+
 export const CVOTE_RESULT = {
   SUPPORT: 'support',
   REJECT: 'reject',
   ABSTENTION: 'abstention',
   UNDECIDED: 'undecided',
 }
-
-// export const CVOTE_RESULT_TEXT = {
-//   undefined: 'Undecided',
-//   undecided: 'Undecided',
-//   support: 'Yes',
-//   reject: 'No',
-//   abstention: 'Abstained',
-//   '-1': 'Undecided',
-// }
 
 export const CVOTE_RESULT_COLOR = {
   [CVOTE_RESULT.UNDECIDED]: '#CED6E3',
