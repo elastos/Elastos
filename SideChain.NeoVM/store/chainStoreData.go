@@ -368,6 +368,7 @@ func (c *LedgerStore) GetReceipts(height uint32, hash *common.Uint256) (types.Re
 		}
 		for _, log := range rs[i].Logs {
 			log.BlockHash = hash.String()
+			log.BlockNumber = height
 		}
 	}
 	return rs, nil

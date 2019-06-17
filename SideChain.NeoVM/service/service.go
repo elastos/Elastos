@@ -733,9 +733,9 @@ func (s *HttpServiceExtend) GetTransactionReceipt(param http.Params) (interface{
 	if receipt.Logs == nil {
 		ret["logs"] = [][]*types.Nep5Log{}
 	} else {
-		logs := make([]string, 0)
+		logs := make([]*types.Nep5Log, 0)
 		for _, l := range receipt.Logs {
-			logs = append(logs, l.String())
+			logs = append(logs, l)
 		}
 		ret["logs"] = logs
 	}
