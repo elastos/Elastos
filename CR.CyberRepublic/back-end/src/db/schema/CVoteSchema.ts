@@ -35,43 +35,57 @@ export const CVote = {
     type: String,
     required: true
   },
-  title_zh: {
-    type: String
-  },
   vid: {
     type: Number,
-    required: true
-  },
-  type: {
-    type: String,
-    required: true
-  },
-  content: {
-    type: String,
     required: true
   },
   contentType: {
     type: String,
     enum: _.values(constant.CONTENT_TYPE),
   },
-  content_zh: {
+  abstract: {
     type: String,
+    required: true
   },
+  goal: {
+    type: String,
+    required: true
+  },
+  motivation: {
+    type: String,
+    required: true
+  },
+  relevance: {
+    type: String,
+    required: true
+  },
+  budget: {
+    type: String,
+    required: true
+  },
+  plan: {
+    type: String,
+    required: true
+  },
+  // tracking: {
+  //   type: String,
+  // },
+  // summary: {
+  //   type: String,
+  // },
   // name of proposer
   proposedBy: {
+    type: String,
+    required: true
+  },
+  proposedByEmail: {
     type: String,
     required: true
   },
   motionId: {
     type: String,
   },
-  isConflict: {
-    type: String
-  },
   notes: {
-    type: String
-  },
-  notes_zh: {
     type: String
   },
   voteHistory: [CVoteHistorySchema],
