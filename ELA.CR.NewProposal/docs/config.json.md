@@ -61,10 +61,7 @@ Default config for `testnet`
       "Magic": 2019000,           // The magic number of DPoS network
       "IPAddress": "192.168.0.1", // The public network IP address of the node.
       "DPoSPort": 20339,          // The node prot of DPoS network
-      "PrintLevel": 0,            // Log level. Level 0 is the highest, 5 is the lowest
       "SignTolerance": 5,         // The time interval of consensus in seconds
-      "MaxLogsSize": 0,           // Max total logs size in MB
-      "MaxPerLogSize": 0,         // Max per log file size in MB
       "OriginArbiters": [         // The publickey list of arbiters before CRCOnlyDPOSHeight
         "02f3876d0973210d5af7eb44cc11029eb63a102e424f0dc235c60adb80265e426e",
         "03c96f2469b43dd8d0e6fa3041a6cee727e0a3a6658a9c28d91e547d11ba8014a1",
