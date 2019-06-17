@@ -39,6 +39,7 @@ import org.elastos.wallet.ela.ui.vote.activity.VoteActivity;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.ui.vote.signupfor.SignUpPresenter;
 import org.elastos.wallet.ela.utils.Arith;
+import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
@@ -241,7 +242,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
 
     // 初始化数据
     private void initDate() {
-        list = (ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean>) CacheDoubleUtils.getInstance().getSerializable("list");
+        list = CacheUtil.getProducerList();
         if (list == null || list.size() == 0) {
             return;
         }
@@ -252,7 +253,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
             }
         }
         list = newlist;
-        CacheDoubleUtils.getInstance().put("list", (Serializable) list, CacheDoubleUtils.DAY * 360);
+        CacheUtil.setProducerList(list);
         if (list != null && list.size() != 0) {
             Collections.sort(list);
         }
@@ -342,7 +343,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
                 list.removeAll(deleteList);
                 dataChanged(list.size(), false);
                 tv_num.setText(getString(R.string.futuregenerations) + list.size() + ")");
-                CacheDoubleUtils.getInstance().put("list", (Serializable) list, CacheDoubleUtils.DAY * 360);
+                CacheUtil.setProducerList(list);
                 break;
 
             case R.id.tv_ljtp:

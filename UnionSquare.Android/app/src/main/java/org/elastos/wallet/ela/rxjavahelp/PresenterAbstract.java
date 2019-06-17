@@ -34,6 +34,14 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
                 .subscribe(subscriber);
     }
 
+    protected void subscriberObservable(Observer subscriber,
+                                        Observable observable, BaseFragment baseFragment) {
+        observable.compose(baseFragment.bindToLife()).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .unsubscribeOn(Schedulers.io())
+                .subscribe(subscriber);
+    }
+
     protected Observable createObservable(ObservableListener listener) {
 
         return Observable.create(new ObservableOnSubscribe<BaseEntity>() {
@@ -77,9 +85,9 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
             @Override
             public void onNext(BaseEntity value) {
                 if (isShowDialog) {
-                 dismissProgessDialog();
+                    dismissProgessDialog();
                 }
-                if (MyWallet.SUCESSCODE.equals(value.getCode())||"0".equals(value.getCode())) {
+                if (MyWallet.SUCESSCODE.equals(value.getCode()) || "0".equals(value.getCode())) {
                     lisener.onNextLisenner(value);
                 } else {
                     showTips(value);
@@ -126,7 +134,7 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
             @Override
             public void onNext(BaseEntity value) {
                 if (isShowDialog) {
-                   dismissProgessDialog();
+                    dismissProgessDialog();
                 }
                 if (MyWallet.SUCESSCODE.equals(value.getCode())) {
                     lisener.onNextLisenner(value);
@@ -161,7 +169,7 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
     private void dismissProgessDialog() {
         if (DialogUtil.getHttpialog() != null && DialogUtil.getHttpialog().isShowing()) {
             DialogUtil.getHttpialog().dismiss();
-           DialogUtil.setHttpialogNull();
+            DialogUtil.setHttpialogNull();
         }
     }
 

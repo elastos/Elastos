@@ -28,6 +28,15 @@
             android:textColor="@color/qmui_config_color_white"
             android:textSize="15sp" />
 
+        <TextView
+            android:visibility="gone"
+            android:layout_marginRight="14dp"
+            android:textSize="12sp"
+            android:id="@+id/tv_title_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            />
     </android.support.v7.widget.Toolbar>
 
 </LinearLayout>

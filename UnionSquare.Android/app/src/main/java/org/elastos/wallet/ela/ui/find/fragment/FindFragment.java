@@ -12,7 +12,7 @@ import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.ui.find.FindListRecAdapter;
-import org.elastos.wallet.ela.ui.vote.voteFirst.VoteFirstFragment;
+import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListFragment;
 import org.elastos.wallet.ela.utils.SPUtil;
 
 import java.util.ArrayList;
@@ -80,9 +80,7 @@ public class FindFragment extends BaseFragment implements CommonRvListener {
 
     @Override
     public void onRvItemClick(int position, Object o) {
-        //Bundle bundle = new Bundle();
-        //bundle.putBoolean("is", is);
-        ((BaseFragment) getParentFragment()).start(VoteFirstFragment.class);
+        ((BaseFragment) getParentFragment()).start(SuperNodeListFragment.class);
     }
 
     private static final long WAIT_TIME = 2000L;
@@ -103,8 +101,6 @@ public class FindFragment extends BaseFragment implements CommonRvListener {
         }
         return true;
     }
-
-
 
 
 }

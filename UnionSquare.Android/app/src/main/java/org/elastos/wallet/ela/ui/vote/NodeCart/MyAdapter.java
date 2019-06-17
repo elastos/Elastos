@@ -46,7 +46,7 @@ public class MyAdapter extends BaseAdapter {
         // 初始化数据
         this.type = type;
         initDate();
-        glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial).placeholder(R.mipmap.found_vote_initial);
+        glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial).placeholder(R.mipmap.found_vote_initial).circleCrop();
     }
 
     // 初始化isSelected的数据
@@ -108,7 +108,7 @@ public class MyAdapter extends BaseAdapter {
         int id = producersBean.getIndex() + 1;
         holder.tv_id.setText("NO." + id);//12
         AppCompatImageView iv = holder.ivIcon;
-        iv.setImageResource(R.mipmap.found_vote_initial);
+        glideRequest.load(R.mipmap.found_vote_initial).into(iv);
         iv.setTag(R.string.error_tag_empty, position + "");
         if (iv.getTag(R.string.error_tag_empty) != null && iv.getTag(R.string.error_tag_empty).equals(position + "")) {
             String url = producersBean.getUrl();

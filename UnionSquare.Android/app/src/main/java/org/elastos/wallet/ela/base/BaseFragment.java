@@ -12,6 +12,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -192,7 +193,7 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
     }
 
 
-    public void setToobar(Toolbar toolbar, TextView toolbar_title, String title) {
+    public void setToobar(Toolbar toolbar, TextView toolbar_title, String... text) {
         toolbar.setNavigationIcon(R.mipmap.top_nav_back);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -200,7 +201,15 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
                 _mActivity.onBackPressed();
             }
         });
-        toolbar_title.setText(title);
+
+        toolbar_title.setText(text[0]);
+
+        if (text.length > 1) {
+            TextView tvRight = toolbar.findViewById(R.id.tv_title_right);
+            tvRight.setVisibility(View.VISIBLE);
+            tvRight.setText(text[1]);
+        }
+        
     }
 
     public void showToast(String message) {
@@ -376,10 +385,10 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
         //popTo(MainFragment.class, false);
         Fragment mainFragment = getBaseActivity().getSupportFragmentManager().findFragmentByTag(MainFragment.class.getName());
         if (mainFragment != null) {
-           // Log.d("+++++++", "1");
+            // Log.d("+++++++", "1");
             getBaseActivity().getSupportFragmentManager().popBackStackImmediate(MainFragment.class.getName(), 0);
         } else {
-           // Log.d("+++++++", "2");
+            // Log.d("+++++++", "2");
             getBaseActivity().getSupportFragmentManager().popBackStackImmediate(null, 1);
             ((BaseActivity) _mActivity).loadRootFragment(R.id.mhoneframeLayout, MainFragment.newInstance());
         }

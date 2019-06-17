@@ -5,8 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@mipmap/found_bg"
-    android:orientation="vertical"
-    tools:context=".ui.vote.SuperNodeList.SuperNodeListFragment">
+    android:orientation="vertical">
 
 
     <include layout="@layout/title_bar" />
@@ -117,6 +116,41 @@
             </com.qmuiteam.qmui.layout.QMUILinearLayout>
         </com.qmuiteam.qmui.layout.QMUILinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <View
+                android:layout_width="4dp"
+                android:layout_height="14dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="4dp"
+                android:background="@color/whiter" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="7dp"
+                android:text="@string/nodelist"
+                android:textSize="13sp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <ImageView
+                android:id="@+id/iv_swichlist"
+                android:padding="15dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:src="@mipmap/vote_switch_list" />
+
+        </LinearLayout>
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recyclerview"
@@ -125,7 +159,14 @@
             android:layout_marginLeft="@dimen/px10"
             android:layout_marginTop="@dimen/px22"
             android:layout_marginRight="@dimen/px10" />
-
+        <android.support.v7.widget.RecyclerView
+            android:visibility="gone"
+            android:id="@+id/recyclerview1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="@dimen/px10"
+            android:layout_marginTop="@dimen/px22"
+            android:layout_marginRight="@dimen/px10" />
     </com.qmuiteam.qmui.layout.QMUILinearLayout>
 
     <com.qmuiteam.qmui.layout.QMUILinearLayout
@@ -146,14 +187,14 @@
             android:textSize="@dimen/px18" />
 
         <android.support.v7.widget.AppCompatTextView
-            android:id="@+id/tv_voting_rules"
+            android:id="@+id/tv_signupfor"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="@dimen/px13"
             android:layout_weight="1"
-            android:drawableTop="@mipmap/bottom_vote_rule"
+            android:drawableTop="@mipmap/vote_attend"
             android:gravity="center"
-            android:text="@string/voting_rules"
+            android:text="@string/sign_up_for"
             android:textColor="#999999"
             android:textSize="@dimen/px18" />
 

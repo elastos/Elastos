@@ -4,12 +4,20 @@ package org.elastos.wallet.ela.ui.vote.SuperNodeList;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.widget.DrawableUtils;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.qmuiteam.qmui.layout.QMUILinearLayout;
 
@@ -19,12 +27,16 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
+import org.elastos.wallet.ela.ui.find.presenter.VoteFirstPresenter;
+import org.elastos.wallet.ela.ui.find.viewdata.RegisteredProducerInfoViewData;
+import org.elastos.wallet.ela.ui.vote.ElectoralAffairs.ElectoralAffairsFragment;
 import org.elastos.wallet.ela.ui.vote.ElectoralAffairs.VoteListPresenter;
 import org.elastos.wallet.ela.ui.vote.ElectoralAffairs.VotelistViewData;
 import org.elastos.wallet.ela.ui.vote.NodeCart.NodeCartFragment;
 import org.elastos.wallet.ela.ui.vote.NodeInformation.NodeInformationFragment;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.ui.vote.myVote.MyVoteFragment;
+import org.elastos.wallet.ela.ui.vote.signupfor.SignUpForFragment;
 import org.elastos.wallet.ela.ui.vote.signupfor.SignUpPresenter;
 import org.elastos.wallet.ela.utils.DividerItemDecoration;
 import org.elastos.wallet.ela.utils.NumberiUtil;
@@ -34,12 +46,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.Unbinder;
 
 /**
  * 超级节点选举
  */
-public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdapter.OnItemClickListener, CommmonStringWithMethNameViewData, VotelistViewData {
+public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdapter.OnItemClickListener, CommmonStringWithMethNameViewData, VotelistViewData, RegisteredProducerInfoViewData {
 
 
     @BindView(R.id.toolbar_title)
@@ -49,6 +63,12 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     @BindView(R.id.recyclerview)
     RecyclerView recyclerview;
     ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> netList = new ArrayList();
+    Unbinder unbinder;
+    @BindView(R.id.iv_swichlist)
+    ImageView ivSwichlist;
+    Unbinder unbinder1;
+    @BindView(R.id.recyclerview1)
+    RecyclerView recyclerview1;
     private SuperNodeListAdapter adapter;
     @BindView(R.id.qmuilinearlayout)
     QMUILinearLayout qmuilinearlayout;
@@ -56,10 +76,14 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     TextView tv_zb;
     @BindView(R.id.tv_num)
     TextView tv_num;
+    @BindView(R.id.tv_signupfor)
+    TextView tv_signupfor;
+
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
     public String type = "1";//1.正常投票 2. 复投
     SignUpPresenter signUpPresenter = new SignUpPresenter();
+    private SuperNodeListAdapter1 adapter1;
 
     @Override
     protected int getLayoutId() {
@@ -73,25 +97,25 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
 
     @Override
     protected void initView(View view) {
-        setToobar(toolbar, toolbarTitle, getString(R.string.supernode_election));
+        setToobar(toolbar, toolbarTitle, getString(R.string.supernode_election), getString(R.string.voting_rules));
+        //获取选举状态
+        new VoteFirstPresenter().getRegisteredProducerInfo(wallet.getWalletId(), MyWallet.ELA, this);
         //获取公钥
         signUpPresenter.getPublicKeyForVote(wallet.getWalletId(), MyWallet.ELA, this);
-        recyclerview.setLayoutManager(new GridLayoutManager(getContext(), 3));
-        DividerItemDecoration decoration = new DividerItemDecoration(getActivity(), DividerItemDecoration.BOTH_SET, 10, R.color.transparent);
-        recyclerview.addItemDecoration(decoration);
         //presenter.getVotedProducerList(wallet.getWalletId(), MyWallet.ELA, this);
     }
 
-    @OnClick({R.id.tv_myvote, R.id.tv_voting_rules, R.id.tv_going_to_vote})
+    @OnClick({R.id.tv_myvote, R.id.tv_title_right, R.id.tv_going_to_vote, R.id.tv_signupfor, R.id.iv_swichlist})
     public void onViewClicked(View view) {
+        Bundle bundle;
         switch (view.getId()) {
             case R.id.tv_myvote:
-                Bundle bundle = new Bundle();
+                bundle = new Bundle();
                 bundle.putString("zb", zb);
-                bundle.putSerializable("netList",  netList);
+                bundle.putSerializable("netList", netList);
                 start(MyVoteFragment.class, bundle);
                 break;
-            case R.id.tv_voting_rules:
+            case R.id.tv_title_right:
                 int Language = new SPUtil(getContext()).getLanguage();
                 if (Language == 0) {
                     Intent intent = new Intent("android.intent.action.VIEW");
@@ -104,11 +128,32 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
                 }
                 break;
             case R.id.tv_going_to_vote:
-                Bundle bundle1 = new Bundle();
-                bundle1.putString("zb", zb);
-                bundle1.putString("type", type);
-                bundle1.putSerializable("netList",  netList);
-                start(NodeCartFragment.class, bundle1);
+                bundle = new Bundle();
+                bundle.putString("zb", zb);
+                bundle.putString("type", type);
+                bundle.putSerializable("netList", netList);
+                start(NodeCartFragment.class, bundle);
+                break;
+            case R.id.tv_signupfor:
+                if (tv_signupfor.getText().equals(getString(R.string.sign_up_for))) {
+                    start(SignUpForFragment.newInstance());
+                } else {
+                    bundle = new Bundle();
+                    bundle.putString("status", status);
+                    bundle.putString("info", info);
+                    start(ElectoralAffairsFragment.class, bundle);
+                }
+                break;
+            case R.id.iv_swichlist:
+                if (recyclerview.getVisibility() == View.VISIBLE) {
+                    ivSwichlist.setImageResource(R.mipmap.vote_switch_squeral);
+                    recyclerview.setVisibility(View.GONE);
+                    recyclerview1.setVisibility(View.VISIBLE);
+                } else {
+                    ivSwichlist.setImageResource(R.mipmap.vote_switch_list);
+                    recyclerview1.setVisibility(View.GONE);
+                    recyclerview.setVisibility(View.VISIBLE);
+                }
                 break;
         }
     }
@@ -131,14 +176,32 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     }
 
     String zb;//占有率
-    int pos=-1;//自已的投票排第几
+    int pos = -1;//自已的投票排第几
     boolean is = false;//是否有自已的选举
 
 
     private void setRecyclerview(int pos, boolean is) {
-        adapter = new SuperNodeListAdapter(getContext(), netList, pos, is);
-        adapter.setOnItemClickListener(this);
-        recyclerview.setAdapter(adapter);
+        if (adapter == null) {
+            recyclerview.setLayoutManager(new GridLayoutManager(getContext(), 3));
+            DividerItemDecoration decoration = new DividerItemDecoration(getActivity(), DividerItemDecoration.BOTH_SET, 10, R.color.transparent);
+            recyclerview.addItemDecoration(decoration);
+            adapter = new SuperNodeListAdapter(getContext(), netList, pos, is);
+            adapter.setOnItemClickListener(this);
+            recyclerview.setAdapter(adapter);
+        } else {
+            adapter.notifyDataSetChanged();
+        }
+    }
+
+    private void setRecyclerview1(int pos, boolean is) {
+        if (adapter1 == null) {
+            recyclerview1.setLayoutManager(new LinearLayoutManager(getContext()));
+            adapter1 = new SuperNodeListAdapter1(getContext(), netList, pos, is);
+            adapter1.setOnItemClickListener(this);
+            recyclerview1.setAdapter(adapter1);
+        } else {
+            adapter1.notifyDataSetChanged();
+        }
     }
 
     String publicKey;
@@ -173,9 +236,43 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
             }
         }
         setRecyclerview(pos, is);
+        setRecyclerview1(pos, is);
         zb = dataResponse.getData().getResult().getTotalvoterate();
         Double zb1 = Double.parseDouble(dataResponse.getData().getResult().getTotalvoterate()) * 100;
         tv_zb.setText(NumberiUtil.numberFormat(zb1 + "", 5) + "%");
         tv_num.setText(dataResponse.getData().getResult().getTotalvotes().split("\\.")[0]);//totalvotes": "
     }
+
+    private String status;
+    private String info;
+
+    @Override
+    public void onGetRegisteredProducerInfo(String data) {
+        JSONObject jsonObject = JSON.parseObject(data);
+        status = jsonObject.getString("Status");
+        info = jsonObject.getString("Info");
+        if (!TextUtils.isEmpty(status)) {
+            switch (status) {
+                case "Unregistered":
+                    tv_signupfor.setText(getString(R.string.sign_up_for));
+                    tv_signupfor.setVisibility(View.VISIBLE);
+                    tv_signupfor.setCompoundDrawables(null, getResources().getDrawable(R.mipmap.vote_attend),null,null);
+                    break;
+                case "ReturnDeposit":
+                    tv_signupfor.setVisibility(View.GONE);
+                    break;
+                case "Canceled":
+                case "Registered":
+                    tv_signupfor.setText(getString(R.string.electoral_affairs));
+                    tv_signupfor.setVisibility(View.VISIBLE);
+                    tv_signupfor.setCompoundDrawables(null, getResources().getDrawable(R.mipmap.vote_management),null,null);
+                    break;
+
+            }
+
+        }
+    }
+
+
+
 }

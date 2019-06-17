@@ -13,7 +13,6 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.Assets.AssetskFragment;
 import org.elastos.wallet.ela.ui.find.fragment.FindFragment;
 import org.elastos.wallet.ela.ui.mine.MineFragment;
-import org.elastos.wallet.ela.ui.vote.voteFirst.VoteFirstFragment;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.SPUtil;
 
@@ -71,7 +70,7 @@ public class MainFragment extends BaseFragment {
 
             // 这里我们需要拿到mFragments的引用
             mFragments[0] = homeFragment;
-            mFragments[1] = findFragment(VoteFirstFragment.class);
+            mFragments[1] = findFragment(FindFragment.class);
             mFragments[2] = findFragment(MineFragment.class);
             // mFragments[3] = findFragment(MineFragment.class);
 
@@ -109,7 +108,7 @@ public class MainFragment extends BaseFragment {
 
     private void initArea() {
         if (new SPUtil(getContext()).getFristLogin()) {
-             CacheDoubleUtils.getInstance().clear();
+            CacheDoubleUtils.getInstance().clear();
             new SPUtil(getContext()).setFristLogin();
         }
         AppUtlis.getArea(getContext(), null);

@@ -58,6 +58,7 @@
     <string name="transaction_records">Transaction Records</string>
     <string name="create_a_wallet_text1">Password is used to protect private keys and transaction authorization. Please ensure you choose a strong password.</string>
     <string name="create_a_wallet_text2">Elastos won\'t store your password and won\'t be able to retrieve it back.  Please keep your password safe and secure.</string>
+    <string name="inputWalletName">Please enter your name.</string>
     <string name="inputWalletPwd">Please enter your password.</string>
     <string name="inputWalltPwdAgin">Please re-enter your password</string>
     <string name="lcmmsrbyz">Different passwords</string>
@@ -337,4 +338,6 @@
     <string name="invalidaddress">Invalid address</string>
     <string name="ownerpublicKey">Owner Public Key</string>
     <string name="max36dot">Vote for maximum of 36 nodes</string>
+    <string name="nodelist">参选节点列表</string>
+    <string name="error_tag_empty">error1</string>
 </resources>
