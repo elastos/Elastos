@@ -39,6 +39,11 @@ namespace Elastos {
 				return Address(PrefixDeposit, pubKey).RedeemScript();
 			}
 
+			if (IsOwnerAddress(addr)) {
+				pubKey = GetOwnerPublicKey();
+				return Address(PrefixStandard, pubKey).RedeemScript();
+			}
+
 			key.SetPubKey(_masterPubKey.getChild("0/0").pubkey());
 			ErrorChecker::CheckLogic(addr != _address, Error::Address, "Can't found pubKey for addr " + addr.String());
 			return _address.RedeemScript();
