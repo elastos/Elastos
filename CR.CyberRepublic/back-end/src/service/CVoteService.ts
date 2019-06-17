@@ -25,8 +25,8 @@ export default class extends Base {
     const db_suggestion = this.getDBModel('Suggestion')
     const currentUserId = _.get(this.currentUser, '_id')
     const {
-      title, type, content, published, proposedBy, motionId, isConflict, notes,
-      suggestionId,
+      title, published, proposedBy, proposedByEmail, motionId,
+      suggestionId, abstract, goal, motivation, relevance, budget, plan
     } = param
 
     const vid = await this.getNewVid()
@@ -36,14 +36,17 @@ export default class extends Base {
       title,
       vid,
       status,
-      type,
       published,
-      content,
       contentType: constant.CONTENT_TYPE.MARKDOWN,
       proposedBy,
+      abstract,
+      goal,
+      motivation,
+      relevance,
+      budget,
+      plan,
+      proposedByEmail,
       motionId,
-      isConflict,
-      notes,
       createdBy: this.currentUser._id
     }
 
@@ -272,7 +275,10 @@ export default class extends Base {
     const db_user = this.getDBModel('User')
     const db_cvote = this.getDBModel('CVote')
     const currentUserId = _.get(this.currentUser, '_id')
-    const { _id, published, notes, content, isConflict, proposedBy, title, type } = param
+    const {
+      _id, published, notes, title,
+      abstract, goal, motivation, relevance, budget, plan
+    } = param
 
     if (!this.currentUser || !this.currentUser._id) {
       throw 'cvoteservice.update - invalid current user'
@@ -292,11 +298,13 @@ export default class extends Base {
     }
     const willChangeToPublish = published === true && cur.status === constant.CVOTE_STATUS.DRAFT
 
-    if (content) doc.content = content
-    if (isConflict) doc.isConflict = isConflict
-    if (proposedBy) doc.proposedBy = proposedBy
     if (title) doc.title = title
-    if (type) doc.type = type
+    if (abstract) doc.abstract = abstract
+    if (goal) doc.goal = goal
+    if (motivation) doc.motivation = motivation
+    if (relevance) doc.relevance = relevance
+    if (budget) doc.budget = budget
+    if (plan) doc.plan = plan
 
     if (willChangeToPublish) {
       doc.status = constant.CVOTE_STATUS.PROPOSED
