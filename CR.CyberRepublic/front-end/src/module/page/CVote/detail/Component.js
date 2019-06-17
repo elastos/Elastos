@@ -78,7 +78,6 @@ class C extends StandardPage {
     const voteActionsNode = this.renderVoteActions()
     const adminActionsNode = this.renderAdminActions()
     const voteDetailNode = this.renderVoteResults()
-    const editFormNode = this.renderEditForm()
     const translationBtn = this.renderTranslationBtn()
 
     return (
@@ -95,7 +94,6 @@ class C extends StandardPage {
           {voteActionsNode}
           {adminActionsNode}
           {voteDetailNode}
-          {editFormNode}
         </div>
         <Footer />
       </div>
@@ -114,34 +112,6 @@ class C extends StandardPage {
         <Translation text={text} />
       </div>
     )
-  }
-
-  renderEditForm() {
-    return (
-      <Modal
-        className="project-detail-nobar"
-        maskClosable={false}
-        visible={this.state.editing}
-        onOk={this.switchEditMode}
-        onCancel={this.switchEditMode}
-        footer={null}
-        width="70%"
-      >
-        <EditForm onEdit={this.onEdit} onCancel={this.switchEditMode} />
-      </Modal>
-    )
-  }
-
-  switchEditMode = () => {
-    const { editing } = this.state
-    this.setState({
-      editing: !editing,
-    })
-  }
-
-  onEdit = () => {
-    this.switchEditMode()
-    this.refetch()
   }
 
   renderMeta() {
@@ -324,7 +294,7 @@ class C extends StandardPage {
     const editProposalBtn = isSelf && canEdit && (
       <Button
         icon="edit"
-        onClick={this.switchEditMode}
+        onClick={this.gotoEditPage}
       >
         {I18N.get('council.voting.btnText.editProposal')}
       </Button>
@@ -345,6 +315,11 @@ class C extends StandardPage {
         {completeProposalBtn}
       </div>
     )
+  }
+
+  gotoEditPage = () => {
+    const { _id: id } = this.state.data
+    this.props.history.push(`/proposals/${id}/edit`)
   }
 
   onNotesChanged = (e) => {

@@ -9,7 +9,6 @@ const Search = Input.Search
 
 export const Container = styled.div`
   background: #ffffff;
-  text-align: center;
   margin: 50px 108px 80px 108px;
   @media only screen and (max-width: ${grid.sm}) {
     margin: 15px;

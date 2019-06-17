@@ -6,9 +6,10 @@ import {
   Table, Row, Col, Button, Input,
 } from 'antd'
 import I18N from '@/I18N'
+import { Link } from 'react-router-dom'
+import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
 import VoteStats from '../stats/Component'
 import CreateForm from '../create/Container'
-import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
 
 // style
 import { Container, List, Item, ItemUndecided, StyledButton, StyledSearch, VoteFilter } from './style'
@@ -50,8 +51,7 @@ export default class extends BaseComponent {
         dataIndex: 'vid',
         render: (vid, item, index) => (
           <a className="tableLink" onClick={this.toDetail.bind(this, item._id)}>
-#
-            {vid}
+            {`#${vid}`}
           </a>
         ),
       },
@@ -122,10 +122,13 @@ export default class extends BaseComponent {
       </List>
     )
 
-    const createFormNode = canManage && (
+    const createBtn = canManage && (
       <Row type="flex" align="middle" justify="end">
         <Col lg={8} md={12} sm={24} xs={24} style={{ textAlign: 'right' }}>
-          <CreateForm onCreated={this.refetch} />
+          <StyledButton onClick={this.switchCreateMode} className="cr-btn cr-btn-primary">
+            <Link to="/proposals/new" style={{ color: 'white' }}>{I18N.get('from.CVoteForm.button.add')}</Link>
+            {/* {I18N.get('from.CVoteForm.button.add')} */}
+          </StyledButton>
         </Col>
       </Row>
     )
@@ -175,7 +178,7 @@ export default class extends BaseComponent {
     )
     return (
       <Container>
-        {createFormNode}
+        {createBtn}
         <Row type="flex" align="middle" justify="space-between" style={{ marginTop: 20 }}>
           {title}
           {searchInput}
@@ -187,7 +190,7 @@ export default class extends BaseComponent {
           dataSource={this.state.list}
           rowKey={record => record._id}
         />
-        {createFormNode}
+        {createBtn}
       </Container>
     )
   }
