@@ -69,18 +69,28 @@ class C extends BaseComponent {
     const fullName = `${profile.firstName} ${profile.lastName}`
     const { edit, form, updateCVote, createCVote, onCreated, onEdit, suggestionId } = this.props
 
+    const formatValue = (value) => {
+      let result
+      try {
+        result = _.isString(value) ? value : JSON.stringify(convertToRaw(value.getCurrentContent()))
+      } catch (error) {
+        result = _.toString(value)
+      }
+      return result
+    }
+
     form.validateFields(async (err, values) => {
       if (err) return
       const { title, notes, abstract, goal, motivation, relevance, budget, plan } = values
       const param = {
         title,
         notes,
-        abstract: JSON.stringify(convertToRaw(abstract.getCurrentContent())),
-        goal: JSON.stringify(convertToRaw(goal.getCurrentContent())),
-        motivation: JSON.stringify(convertToRaw(motivation.getCurrentContent())),
-        relevance: JSON.stringify(convertToRaw(relevance.getCurrentContent())),
-        budget: JSON.stringify(convertToRaw(budget.getCurrentContent())),
-        plan: JSON.stringify(convertToRaw(plan.getCurrentContent())),
+        abstract: formatValue(abstract),
+        goal: formatValue(goal),
+        motivation: formatValue(motivation),
+        relevance: formatValue(relevance),
+        budget: formatValue(budget),
+        plan: formatValue(plan),
         published: true,
         ...fields,
       }
