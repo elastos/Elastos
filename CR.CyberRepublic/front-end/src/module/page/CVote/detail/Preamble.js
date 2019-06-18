@@ -8,7 +8,7 @@ import styled from 'styled-components'
 
 const Component = ({ vid, title, proposedBy, proposedByEmail, status, createdAt }) => {
   // header
-  const headerNode = <Header>Preamble</Header>
+  const headerNode = <Header id="preamble">Preamble</Header>
   // note
   // const noteNode = <Note>Note: For confidential purpose, no one elase including council members is not able to access these files untill the bidding ended.</Note>
   // id

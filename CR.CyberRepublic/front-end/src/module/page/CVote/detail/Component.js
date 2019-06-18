@@ -1,6 +1,6 @@
 import React from 'react'
 import {
-  Form, Spin, Button, Input, message, Modal, Icon,
+  Form, Spin, Button, Input, message, Modal, Anchor,
 } from 'antd'
 import { Link } from 'react-router-dom'
 import I18N from '@/I18N'
@@ -17,14 +17,14 @@ import DraftEditor from '@/module/common/DraftEditor'
 import VoteResultComponent from '../common/vote_result/Component'
 import Preamble from './Preamble'
 
-import { Title, Label, ContentTitle } from './style'
+import { Title, Label, ContentTitle, StyledAnchor } from './style'
 import './style.scss'
 
 const { TextArea } = Input
 
 const renderRichContent = (data, key, title) => (
   <div>
-    {title && <ContentTitle>{title}</ContentTitle>}
+    {title && <ContentTitle id={title}>{title}</ContentTitle>}
     <DraftEditor
       content={data[key]}
       contentType={data.contentType}
@@ -82,6 +82,7 @@ class C extends StandardPage {
       return <div className="center"><Spin /></div>
     }
     const metaNode = this.renderMeta()
+    const anchorNode = this.renderAnchor()
     const titleNode = this.renderTitle()
     const labelNode = this.renderLabelNode()
     const subTitleNode = this.renderSubTitle()
@@ -94,6 +95,7 @@ class C extends StandardPage {
 
     return (
       <div>
+        {anchorNode}
         <div className="p_CVoteDetail">
           <BackLink link="/proposals" />
           {metaNode}
@@ -132,6 +134,20 @@ class C extends StandardPage {
     data.displayId = data.vid
     const postedByText = I18N.get('from.CVoteForm.label.proposedby')
     return <MetaComponent data={data} postedByText={postedByText} />
+  }
+
+  renderAnchor() {
+    return (
+      <StyledAnchor offsetTop={200}>
+        <Anchor.Link href="#preamble" title="Preamble" />
+        <Anchor.Link href="#abstract" title="Abstract" />
+        <Anchor.Link href="#goal" title="Goal" />
+        <Anchor.Link href="#motivation" title="Motivation" />
+        <Anchor.Link href="#relevance" title="Relevance" />
+        <Anchor.Link href="#budget" title="Budget" />
+        <Anchor.Link href="#plan" title="Plan" />
+      </StyledAnchor>
+    )
   }
 
   renderTitle() {
