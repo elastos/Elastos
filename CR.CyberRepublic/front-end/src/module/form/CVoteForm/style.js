@@ -15,6 +15,9 @@ export const Container = styled.div`
     /* line-height: 1.4rem; */
     display: block;
   }
+  .ant-tabs {
+    overflow: initial;
+  }
   .md-RichEditor-root {
     padding: 15px 30px;
     margin-top: 0;

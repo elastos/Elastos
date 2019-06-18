@@ -159,7 +159,7 @@ class C extends BaseComponent {
           <Title>
             {this.props.header || I18N.get('from.CVoteForm.button.add')}
           </Title>
-          <Tabs defaultActiveKey="abstract">
+          <Tabs defaultActiveKey="abstract" animated={false} tabBarGutter={5}>
             <TabPane tab="title" key="title">
               <FormItem>{formProps.title}</FormItem>
             </TabPane>
