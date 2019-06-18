@@ -59,10 +59,10 @@ build_binary_and_docker "v0.1.2" "Elastos.ELA.SideChain.Token" "ela-sidechain/to
 build_binary_and_docker "master" "Elastos.ORG.Wallet.Service" "restful-services/wallet-service" "service" \
     "cyberrepublic/elastos-wallet-service"
 
-build_binary_and_docker "ff99774a019e76d70a683f1a4c688dfbbf7cb671" "Elastos.ORG.DID.Service" "restful-services/did-service" "service" \
-    "cyberrepublic/elastos-did-service"
+build_binary_and_docker "master" "Elastos.ORG.SideChain.Service" "restful-services/sidechain-service" "service" \
+    "cyberrepublic/elastos-sidechain-service"
 
-build_binary_and_docker "master" "Elastos.ORG.API.Misc" "restful-services/api-misc" "misc" \
+build_binary_and_docker "0.0.2" "Elastos.ORG.API.Misc" "restful-services/api-misc" "misc" \
     "cyberrepublic/elastos-api-misc-service"
 
 cd $CURRENT_DIR
