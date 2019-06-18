@@ -22,6 +22,14 @@ import './style.scss'
 
 const { TextArea } = Input
 
+const renderRichContent = (data, key) => (
+  <DraftEditor
+    content={data[key]}
+    contentType={data.contentType}
+    editorEnabled={false}
+  />
+)
+
 const SubTitle = ({ dataList }) => {
   const result = _.map(dataList, (data, key) => (
     <h4 className="subtitle-item" key={key}>
@@ -66,7 +74,8 @@ class C extends StandardPage {
   }
 
   ord_renderContent() {
-    if (!this.state.data) {
+    const { data } = this.state
+    if (!data) {
       return <div className="center"><Spin /></div>
     }
     const metaNode = this.renderMeta()
@@ -179,14 +188,17 @@ class C extends StandardPage {
 
   renderContent() {
     const { data } = this.state
-    const contentNode = (
-      <DraftEditor
-        content={data.content}
-        contentType={data.contentType}
-        editorEnabled={false}
-      />
+    if (_.has(data, 'content')) return renderRichContent(data, 'content')
+    return (
+      <div>
+        {renderRichContent(data, 'abstract')}
+        {renderRichContent(data, 'goal')}
+        {renderRichContent(data, 'motivation')}
+        {renderRichContent(data, 'relevance')}
+        {renderRichContent(data, 'budget')}
+        {renderRichContent(data, 'plan')}
+      </div>
     )
-    return contentNode
   }
 
   renderNotes() {
