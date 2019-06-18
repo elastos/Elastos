@@ -60,12 +60,12 @@ const Component = ({ vid, title, proposedBy, proposedByEmail, status, createdAt 
 }
 
 const propTypes = {
-  vid: PropTypes.string.isRequired,
-  title: PropTypes.array.isRequired,
-  proposedBy: PropTypes.bool.isRequired,
+  vid: PropTypes.number.isRequired,
+  title: PropTypes.string.isRequired,
+  proposedBy: PropTypes.string.isRequired,
   proposedByEmail: PropTypes.string.isRequired,
-  status: PropTypes.array.isRequired,
-  createdAt: PropTypes.bool.isRequired,
+  status: PropTypes.string.isRequired,
+  createdAt: PropTypes.string.isRequired,
 }
 
 Component.propTypes = propTypes
