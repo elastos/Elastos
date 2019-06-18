@@ -46,7 +46,6 @@ export default class extends StandardPage {
   }
 
   onCreated = () => {
-    this.switchCreateMode()
-    this.props.onCreated()
+    this.props.history.push('/proposals')
   }
 }
