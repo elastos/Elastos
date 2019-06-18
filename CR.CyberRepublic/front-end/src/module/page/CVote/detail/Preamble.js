@@ -88,4 +88,5 @@ const ItemTitle = styled.div`
 `
 const ItemText = styled.div`
   font-weight: 200;
+  font-style: italic;
 `
