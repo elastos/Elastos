@@ -21,6 +21,7 @@ import org.elastos.wallet.ela.db.table.Contact;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.ui.main.MainActivity;
 import org.elastos.wallet.ela.ui.mine.adapter.ContactRecAdapetr;
+import org.elastos.wallet.ela.ui.mine.fragment.AboutFragment;
 import org.elastos.wallet.ela.ui.mine.fragment.ContactDetailFragment;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.RxEnum;
@@ -98,7 +99,7 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
         registReceiver();
     }
 
-    @OnClick({R.id.rl_language, R.id.rl_contact, R.id.tv_chinese, R.id.tv_english, R.id.iv_contact_add})
+    @OnClick({R.id.rl_language, R.id.rl_contact, R.id.tv_chinese, R.id.tv_english, R.id.iv_contact_add, R.id.rl_about})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.tv_chinese:
@@ -161,6 +162,9 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
                 contactDetailFragment.setArguments(bundle);
                 ((BaseFragment) getParentFragment()).start(contactDetailFragment);
 
+                break;
+            case R.id.rl_about:
+                ((BaseFragment) getParentFragment()).start(new AboutFragment());
                 break;
         }
     }

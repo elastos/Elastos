@@ -74,7 +74,7 @@ public class MyUtil {
     }
 
     // 取得版本号
-    public static String GetVersion(Context context) {
+    public static String getVersionName(Context context) {
 		try {
 			PackageInfo manager = context.getPackageManager().getPackageInfo(
 					context.getPackageName(), 0);

@@ -53,7 +53,7 @@ public class CreateWalletFragment extends BaseFragment {
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getString(R.string.create_a_wallet));
         //开启自定义键盘
-       // AppUtlis.securityKeyboard(ll_create_wallet);
+        // AppUtlis.securityKeyboard(ll_create_wallet);
     }
 
     public static CreateWalletFragment newInstance() {
@@ -89,17 +89,15 @@ public class CreateWalletFragment extends BaseFragment {
             showToast(getString(R.string.inputWalletPwd));
             return;
         }
-
+        if (!AppUtlis.chenckString(pws_next)) {
+            showToast(getString(R.string.mmgsbd));
+            return;
+        }
         if (TextUtils.isEmpty(pws_next)) {
             showToast(getString(R.string.inputWalltPwdAgin));
             return;
         }
 
-
-        if (!AppUtlis.chenckString(pws_next)) {
-            showToast(getString(R.string.mmgsbd));
-            return;
-        }
         if (!pws.equals(pws_next)) {
             showToast(getString(R.string.lcmmsrbyz));
             return;

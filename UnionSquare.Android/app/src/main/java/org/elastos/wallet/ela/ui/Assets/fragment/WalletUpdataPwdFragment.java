@@ -10,6 +10,7 @@ import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.Assets.presenter.WalletUpdatePwdPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.UpdataWalletPwdViewData;
+import org.elastos.wallet.ela.utils.AppUtlis;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -56,6 +57,10 @@ public class WalletUpdataPwdFragment extends BaseFragment implements UpdataWalle
                 String newPwd = etPwdNew.getText().toString().trim();
                 if (TextUtils.isEmpty(originPwd)) {
                     showToastMessage(getString(R.string.newpwdnotnull));
+                    return;
+                }
+                if (!AppUtlis.chenckString(newPwd)) {
+                    showToast(getString(R.string.mmgsbd));
                     return;
                 }
                 String aginPwd = etPwdAgin.getText().toString().trim();

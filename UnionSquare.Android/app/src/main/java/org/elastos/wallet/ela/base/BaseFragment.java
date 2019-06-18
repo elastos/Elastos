@@ -91,6 +91,7 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         inflaterView(inflater, container);
+        mRootView.setBackgroundResource(R.drawable.commonbg);//为每个页面设置默认背景
         unbinder = ButterKnife.bind(this, mRootView);
         showLoading();
         Bundle bundle = getArguments();

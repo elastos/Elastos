@@ -338,6 +338,11 @@
     <string name="invalidaddress">Invalid address</string>
     <string name="ownerpublicKey">Owner Public Key</string>
     <string name="max36dot">Vote for maximum of 36 nodes</string>
-    <string name="nodelist">参选节点列表</string>
     <string name="error_tag_empty">error1</string>
+    <string name="nodelist">参选节点列表</string>
+    <string name="about">关于ELAWallet</string>
+    <string name="currentversionname">当前版本号 </string>
+    <string name="feedback">问题反馈</string>
+    <string name="showupdatalog">查看更新日志</string>
+    <string name="tv_elaintroduce">ELAWallet是安全、便捷的专业亦来云SPV轻节点客户端钱包，支持亦来云全生态数字资产。</string>
 </resources>

@@ -45,6 +45,7 @@ public class HomeWalletFragment extends BaseFragment {
 
     @Override
     protected void initView(View view) {
+        view.setBackgroundResource(R.mipmap.wallet_orignal_bg);
     }
 
 

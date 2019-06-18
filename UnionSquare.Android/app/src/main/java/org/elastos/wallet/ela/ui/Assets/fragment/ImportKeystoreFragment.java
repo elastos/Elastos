@@ -94,6 +94,10 @@ public class ImportKeystoreFragment extends BaseFragment implements ImportKeysto
                     showToastMessage(getString(R.string.pwdnoempty));
                     return;
                 }
+                if (!AppUtlis.chenckString(payPassword)) {
+                    showToast(getString(R.string.mmgsbd));
+                    return;
+                }
                 String walletPwdAgin = etWalletpwsAgin.getText().toString().trim();
 
                 if (TextUtils.isEmpty(walletPwdAgin)) {

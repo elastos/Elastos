@@ -13,6 +13,7 @@ public class Constant {
     public static final String INNER = "inner";//油钱包列表打开
     public static final String SIDEWITHDRAW = "sideWithdraw";//侧链充值
     public static final String TRANFER = "transfer";//普通充值
+    public static String Email="contact@elastos.org";
 
     private static String getBaseUrl() {
         String baseUrl = "https://unionsquare.elastos.org/";
