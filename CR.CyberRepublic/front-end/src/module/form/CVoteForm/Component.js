@@ -20,7 +20,24 @@ const { TabPane } = Tabs
 const renderRichEditor = (data, key, getFieldDecorator) => {
   const content = _.get(data, key, '')
   const content_fn = getFieldDecorator(key, {
-    rules: [{ required: true }],
+    rules: [
+      {
+        required: true,
+        transform: value => {
+          // string or object
+          let result = value
+          if (_.isObject(value)) {
+            try {
+              result = value.getCurrentContent().getPlainText()
+            } catch (error) {
+              result = value
+            }
+          }
+          console.log(value, result)
+          return result
+        },
+      }
+    ],
     initialValue: content,
   })
   const content_el = (
