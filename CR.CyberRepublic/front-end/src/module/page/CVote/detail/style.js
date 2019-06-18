@@ -12,3 +12,8 @@ export const Label = styled.span`
 export const Title = styled.h2`
   padding-bottom: 15px;
 `
+
+export const ContentTitle = styled.h4`
+  font-size: 20px;
+  padding-bottom: 0;
+`
