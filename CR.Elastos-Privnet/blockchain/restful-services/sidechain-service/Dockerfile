@@ -11,9 +11,9 @@ RUN apk update
 # copy folders
 COPY service /restful-services/did-service
 
-RUN sed -i "s#http://localhost:21606#http://sidechain-did-node-1:20606#g" /restful-services/did-service/did.api/src/main/resources/application.properties
-RUN sed -i "s#clark##g" /restful-services/did-service/did.api/src/main/resources/application.properties
-RUN sed -i "s#123456##g" /restful-services/did-service/did.api/src/main/resources/application.properties
+RUN sed -i 's#localhost:21606#sidechain-did-node-1:20606#g' /restful-services/did-service/did.api/src/main/resources/application.properties
+RUN sed -i 's#clark##g' /restful-services/did-service/did.api/src/main/resources/application.properties
+RUN sed -i 's#123456##g' /restful-services/did-service/did.api/src/main/resources/application.properties
 RUN cd /restful-services/did-service    \
     && mvn clean                        \
     && mvn install -Dmaven.test.skip -Dgpg.skip
