@@ -31,30 +31,34 @@ namespace Elastos {
 			 * Get the sub wallet chain id.
 			 * @return sub wallet chain id.
 			 */
-			virtual std::string GetChainId() const = 0;
+			virtual std::string GetChainID() const = 0;
 
 			/**
 			 * Here is a example of hd account wallet basic info:
 			 * {
-			 * 	"Type": "Normal" //Type can be Normal, Mainchain, Sidechain and Idchain
-			 * 	"Account":
-			 * 		{
-			 * 			"Type": "HD Account"
-			 * 			"Details":
-			 * 				{
-			 * 					"CoinIndex": 1
-			 * 				}
-			 * 		}
+			 *   "Info":{
+			 *     "Account":{"M":1,"N":1,"Readonly":false,"SingleAddress":false,"Type":"Standard"},
+			 *     "CoinIndex":0
+			 *   },
+			 *   "ChainID":"ELA"
 			 * }
 			 *
-			 * and an example of multi-sign account wallet basic info:
 			 * {
-			 * 	"Type": "Mainchain" //Type can be Normal, Mainchain, Sidechain and Idchain
-			 * 	"Account":
-			 * 		{
-			 * 			"Type": "Multi-Sign Account"
-			 * 		}
+			 *   "Info":{
+			 *     "Account":{"M":1,"N":1,"Readonly":false,"SingleAddress":false,"Type":"Standard"},
+			 *     "CoinIndex":1
+			 *   },
+			 *   "ChainID":"IDChain"
 			 * }
+			 *
+			 * {
+			 *   "Info":{
+			 *     "Account":{"M":1,"N":1,"Readonly":false,"SingleAddress":false,"Type":"Standard"},
+			 *     "CoinIndex":2
+			 *   },
+			 *   "ChainID":"TokenChain"
+			 * }
+
 			 * @return basic information of current master wallet.
 			 */
 			virtual nlohmann::json GetBasicInfo() const = 0;
@@ -112,7 +116,7 @@ namespace Elastos {
 			 * @param toAddress specify which address we want to send.
 			 * @param amount specify amount we want to send.
 			 * @param memo input memo attribute for describing.
-			 * @param remark is used to record message of local wallet.
+			 * @param useVotedUTXO If true, all voted UTXO will be picked. Otherwise, any voted UTXO will not be picked.
 			 * @return If success return the content of transaction in json format.
 			 */
 			virtual nlohmann::json CreateTransaction(
@@ -120,89 +124,74 @@ namespace Elastos {
 					const std::string &toAddress,
 					uint64_t amount,
 					const std::string &memo,
-					const std::string &remark,
 					bool useVotedUTXO = false) = 0;
 
 			/**
-			 * Create a multi-sign transaction and return the content of transaction in json format.
-			 * @param fromAddress specify which address we want to spend, or just input empty string to let wallet choose UTXOs automatically.
-			 * @param toAddress specify which address we want to send.
-			 * @param amount specify amount we want to send.
+			 * Create a transaction to combine as many UTXOs as possible until transaction size reaches the max size.
 			 * @param memo input memo attribute for describing.
+			 * @param useVotedUTXO If true, all voted UTXO will be picked. Otherwise, any voted UTXO will not be picked.
 			 * @return If success return the content of transaction in json format.
 			 */
-			virtual nlohmann::json CreateMultiSignTransaction(
-					const std::string &fromAddress,
-					const std::string &toAddress,
-					uint64_t amount,
+			virtual nlohmann::json CreateCombineUTXOTransaction(
 					const std::string &memo,
-					const std::string &remark,
 					bool useVotedUTXO = false) = 0;
-
-			/**
-			 * Calculate transaction fee by content of transaction.
-			 * @param rawTransaction content of transaction in json format.
-			 * @param feePerKb specify the factor to calculate fee (transaction size * feePerKb).
-			 * @return Calculate result of final fee.
-			 */
-			virtual uint64_t CalculateTransactionFee(
-					const nlohmann::json &rawTransaction,
-					uint64_t feePerKb) = 0;
-
-			/**
-			 * Update a transaction by change fee
-			 * @param transactionJson content of transaction in json format.
-			 * @param fee specify fee for miners, fee must greater or equal than 1000 (sela).
-			 * @return Sent result in json format.
-			 */
-			virtual nlohmann::json UpdateTransactionFee(
-					const nlohmann::json &transactionJson,
-					uint64_t fee,
-					const std::string &fromAddress) = 0;
 
 			/**
 			 * Sign a transaction or append sign to a multi-sign transaction and return the content of transaction in json format.
-			 * @param rawTransaction content of transaction in json format.
+			 * @param tx content of transaction in json format.
 			 * @param payPassword use to decrypt the root private key temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
 			 * @return If success return the content of transaction in json format.
 			 */
 			virtual nlohmann::json SignTransaction(
-					const nlohmann::json &rawTransaction,
+					const nlohmann::json &tx,
 					const std::string &payPassword) = 0;
 
 			/**
 			 * Get signers already signed specified transaction.
-			 * @param rawTransaction a multi-sign transaction to find signed signers.
+			 * @param tx a signed transaction to find signed signers.
 			 * @return Signed signers in json format. An example of result will be displayed as follows:
 			 *
 			 * [{"M":3,"N":4,"SignType":"MultiSign","Signers":["02753416fc7c1fb43c91e29622e378cd16243b53577ec971c6c3624a775722491a","0370a77a257aa81f46629865eb8f3ca9cb052fcfd874e8648cfbea1fbf071b0280","030f5bdbee5e62f035f19153c5c32966e0fc72e419c2b4867ba533c43340c86b78"]}]
 			 * or
-			 * [{"SignType":"Standard","Signers":["028e0ce09c7a5905f876f38473d4e1e0a85327122372e5db14fc72f88311c30e75"]}]
+			 * [{"SignType":"Standard","Signers":["0207d8bc14c4bdd79ea4a30818455f705bcc9e17a4b843a5f8f4a95aa21fb03d77"]},{"SignType":"Standard","Signers":["02a58d1c4e4993572caf0133ece4486533261e0e44fb9054b1ea7a19842c35300e"]}]
 			 *
 			 */
 			virtual nlohmann::json GetTransactionSignedSigners(
-					const nlohmann::json &rawTransaction) const = 0;
+					const nlohmann::json &tx) const = 0;
 
 			/**
-			 * Send a transaction by p2p network.
-			 * @param rawTransaction content of transaction in json format.
+			 * Publish a transaction to p2p network.
+			 * @param tx content of transaction in json format.
 			 * @param fee specify fee for miners, fee must greater or equal than 1000 (sela).
 			 * @return Sent result in json format.
 			 */
 			virtual nlohmann::json PublishTransaction(
-					const nlohmann::json &rawTransaction) = 0;
+					const nlohmann::json &tx) = 0;
 
 			/**
-			 * Get all qualified transactions sorted by descent (newest first).
+			 * Get all qualified normal transactions sorted by descent (newest first).
 			 * @param start specify start index of all transactions list.
 			 * @param count specify count of transactions we need.
 			 * @param addressOrTxid filter word which can be an address or a transaction id, if empty all transactions shall be qualified.
 			 * @return All qualified transactions in json format.
+			 * {"MaxCount":3,"Transactions":[{"Amount":"20000","ConfirmStatus":"6+","Direction":"Received","Height":172570,"Status":"Confirmed","Timestamp":1557910458,"TxHash":"ff454532e57837cbe04f56a7e43f4209b5eb61d5d2a43a016a769c60d21125b6","Type":6},{"Amount":"10000","ConfirmStatus":"6+","Direction":"Received","Height":172569,"Status":"Confirmed","Timestamp":1557909659,"TxHash":"7253b2cefbac794b621b0080f0f5a4c27d5c91f65c83da75aad615062c42ac5a","Type":6},{"Amount":"100000","ConfirmStatus":"6+","Direction":"Received","Height":172300,"Status":"Confirmed","Timestamp":1557809019,"TxHash":"7e53bb8fe1617bdb57f7346bcf7d2e9dfa6b5d3f3524d0695046389bea79dcd9","Type":6}]}
 			 */
 			virtual nlohmann::json GetAllTransaction(
 					uint32_t start,
 					uint32_t count,
 					const std::string &addressOrTxid) const = 0;
+
+			/**
+			 * Get all coinbase transactions sorted by descent (newest first).
+			 * @param start specify start index of all transactions list.
+			 * @param count specify count of transactions we need.
+			 * @param txID the filter can be transaction ID or empty. If empty, all transactions shall be qualified.
+			 * @return transaction[s] in json format.
+			 */
+			virtual nlohmann::json GetAllCoinBaseTransaction(
+				uint32_t start,
+				uint32_t count,
+				const std::string &txID) const = 0;
 
 			/**
 			 * Sign message through root private key of the master wallet.
@@ -229,9 +218,9 @@ namespace Elastos {
 			/**
 			 * Get an asset details by specified asset ID
 			 * @param assetID asset hex code from asset hash.
-			 * @return details about asset in json format.
+			 * @return asset info in json format.
 			 */
-			virtual nlohmann::json GetAssetDetails(
+			virtual nlohmann::json GetAssetInfo(
 					const std::string &assetID) const = 0;
 
 			/**
@@ -239,6 +228,21 @@ namespace Elastos {
 			 * @return root public key with hex string format.
 			 */
 			virtual std::string GetPublicKey() const = 0;
+
+			/**
+			 * Encode transaction serialized bytes into base64.
+			 * @param tx transaction in json format.
+			 * @return encoded transaction in json format.
+			 */
+			virtual nlohmann::json EncodeTransaction(const nlohmann::json &tx) const = 0;
+
+			/**
+			 * Decode transaction from encoded message.
+			 * @param encodedTx encoded message by EncodeTransaction().
+			 * @return transaction in json format.
+			 */
+			virtual nlohmann::json DecodeTransaction(const nlohmann::json &encodedTx) const = 0;
+
 		};
 
 	}

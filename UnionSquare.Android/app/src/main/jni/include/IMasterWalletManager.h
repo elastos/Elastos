@@ -119,7 +119,7 @@ namespace Elastos {
 			 * @param masterWalletId master wallet id.
 			 * @return master wallet object.
 			 */
-			virtual IMasterWallet *GetWallet(
+			virtual IMasterWallet *GetMasterWallet(
 					const std::string &masterWalletId) const = 0;
 
 			/**
@@ -127,16 +127,6 @@ namespace Elastos {
 			 * @param masterWallet A pointer of master wallet interface create or imported by wallet factory object.
 			 */
 			virtual void DestroyWallet(const std::string &masterWalletId) = 0;
-
-			/*
-			 * To support old web keystore
-			 */
-			virtual IMasterWallet *ImportWalletWithKeystore(
-				const std::string &masterWalletId,
-				const nlohmann::json &keystoreContent,
-				const std::string &backupPassword,
-				const std::string &payPassword,
-				const std::string &phrasePassword) = 0;
 
 			/**
 			 * Import master wallet by key store file.
@@ -174,12 +164,14 @@ namespace Elastos {
 			 * @param masterWallet A pointer of master wallet interface create or imported by wallet factory object.
 			 * @param backupPassword use to decrypt key store file. Backup password should between 8 and 128, otherwise will throw invalid argument exception.
 			 * @param payPassword use to decrypt and generate mnemonic temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+			 * @param withPrivKey indicate keystore contain private key or not.
 			 * @return If success will return key store content in json format.
 			 */
 			virtual nlohmann::json ExportWalletWithKeystore(
 					IMasterWallet *masterWallet,
 					const std::string &backupPassword,
-					const std::string &payPassword) const = 0;
+					const std::string &payPassword,
+					bool withPrivKey = true) const = 0;
 
 			/**
 			 * Export mnemonic of the master wallet.
