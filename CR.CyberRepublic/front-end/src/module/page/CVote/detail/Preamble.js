@@ -1,0 +1,91 @@
+import React from 'react'
+import PropTypes from 'prop-types'
+import moment from 'moment/moment'
+import { Row, Col } from 'antd'
+import I18N from '@/I18N'
+
+import styled from 'styled-components'
+
+const Component = ({ vid, title, proposedBy, proposedByEmail, status, createdAt }) => {
+  // header
+  const headerNode = <Header>Preamble</Header>
+  // note
+  // const noteNode = <Note>Note: For confidential purpose, no one elase including council members is not able to access these files untill the bidding ended.</Note>
+  // id
+  const idNode = (
+    <Item>
+      <Col span={6}><ItemTitle>CRC Proposal</ItemTitle></Col>
+      <Col span={18}><ItemText>{`#${vid}`}</ItemText></Col>
+    </Item>
+  )
+  // title
+  const titleNode = (
+    <Item>
+      <Col span={6}><ItemTitle>Title</ItemTitle></Col>
+      <Col span={18}><ItemText>{title}</ItemText></Col>
+    </Item>
+  )
+  // proposer
+  const proposerNode = (
+    <Item>
+      <Col span={6}><ItemTitle>Proposer</ItemTitle></Col>
+      <Col span={18}><ItemText>{`${proposedBy} <${proposedByEmail}>`}</ItemText></Col>
+    </Item>
+  )
+  // status
+  const statusNode = (
+    <Item>
+      <Col span={6}><ItemTitle>Status</ItemTitle></Col>
+      <Col span={18}><ItemText>{I18N.get(`cvoteStatus.${status}`)}</ItemText></Col>
+    </Item>
+  )
+  // created
+  const createdNode = (
+    <Item>
+      <Col span={6}><ItemTitle>Created</ItemTitle></Col>
+      <Col span={18}><ItemText>{moment(createdAt).format('MMM D, YYYY')}</ItemText></Col>
+    </Item>
+  )
+  return (
+    <div>
+      {headerNode}
+      {/* {noteNode} */}
+      {idNode}
+      {titleNode}
+      {proposerNode}
+      {statusNode}
+      {createdNode}
+    </div>
+  )
+}
+
+const propTypes = {
+  vid: PropTypes.string.isRequired,
+  title: PropTypes.array.isRequired,
+  proposedBy: PropTypes.bool.isRequired,
+  proposedByEmail: PropTypes.string.isRequired,
+  status: PropTypes.array.isRequired,
+  createdAt: PropTypes.bool.isRequired,
+}
+
+Component.propTypes = propTypes
+
+
+export default Component
+
+const Header = styled.h4`
+  font-size: 20px;
+`
+const Note = styled.div`
+  font-weight: 200;
+`
+const Item = styled(Row)`
+  margin-top: 10px;
+  font-size: 13px;
+`
+const ItemTitle = styled.div`
+  font-weight: 400;
+`
+const ItemText = styled.div`
+  font-weight: 200;
+`

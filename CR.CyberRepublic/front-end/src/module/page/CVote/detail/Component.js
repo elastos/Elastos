@@ -5,29 +5,32 @@ import {
 import { Link } from 'react-router-dom'
 import I18N from '@/I18N'
 import _ from 'lodash'
-import StandardPage from '../../StandardPage'
+import StandardPage from '@/module/page/StandardPage'
 import { LANGUAGES } from '@/config/constant'
 import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
-import MetaComponent from '@/module/shared/meta/Container'
-import VoteResultComponent from '../common/vote_result/Component'
-import EditForm from '../edit/Container'
 import Footer from '@/module/layout/Footer/Container'
 import BackLink from '@/module/shared/BackLink/Component'
 import CRPopover from '@/module/shared/Popover/Component'
+import MetaComponent from '@/module/shared/meta/Container'
 import Translation from '@/module/common/Translation/Container'
 import DraftEditor from '@/module/common/DraftEditor'
+import VoteResultComponent from '../common/vote_result/Component'
+import Preamble from './Preamble'
 
-import { Title, Label } from './style'
+import { Title, Label, ContentTitle } from './style'
 import './style.scss'
 
 const { TextArea } = Input
 
-const renderRichContent = (data, key) => (
-  <DraftEditor
-    content={data[key]}
-    contentType={data.contentType}
-    editorEnabled={false}
-  />
+const renderRichContent = (data, key, title) => (
+  <div>
+    {title && <ContentTitle>{title}</ContentTitle>}
+    <DraftEditor
+      content={data[key]}
+      contentType={data.contentType}
+      editorEnabled={false}
+    />
+  </div>
 )
 
 const SubTitle = ({ dataList }) => {
@@ -166,9 +169,9 @@ class C extends StandardPage {
 
     const dataList = [
       statusObj,
-      publishObj,
-      typeObj,
-      voteObj,
+      // publishObj,
+      // typeObj,
+      // voteObj,
     ]
     return <SubTitle dataList={dataList} />
   }
@@ -191,12 +194,13 @@ class C extends StandardPage {
     if (_.has(data, 'content')) return renderRichContent(data, 'content')
     return (
       <div>
-        {renderRichContent(data, 'abstract')}
-        {renderRichContent(data, 'goal')}
-        {renderRichContent(data, 'motivation')}
-        {renderRichContent(data, 'relevance')}
-        {renderRichContent(data, 'budget')}
-        {renderRichContent(data, 'plan')}
+        <Preamble {...data} />
+        {renderRichContent(data, 'abstract', 'abstract')}
+        {renderRichContent(data, 'goal', 'goal')}
+        {renderRichContent(data, 'motivation', 'motivation')}
+        {renderRichContent(data, 'relevance', 'relevance')}
+        {renderRichContent(data, 'budget', 'budget')}
+        {renderRichContent(data, 'plan', 'plan')}
       </div>
     )
   }
