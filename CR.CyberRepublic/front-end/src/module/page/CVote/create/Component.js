@@ -32,20 +32,17 @@ export default class extends StandardPage {
     const props = {
       ...this.props,
       onCreated: this.onCreated,
-      onCancel: this.switchCreateMode,
+      onCancel: this.onCancel,
       header: I18N.get('from.CVoteForm.button.add'),
     }
     return <CVoteForm {...props} />
   }
 
-  switchCreateMode = () => {
-    const { creating } = this.state
-    this.setState({
-      creating: !creating,
-    })
-  }
-
   onCreated = () => {
     this.props.history.push('/proposals')
+  }
+
+  onCancel = () => {
+    this.onCreated()
   }
 }

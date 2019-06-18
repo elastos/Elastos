@@ -13,6 +13,11 @@ export default class extends StandardPage {
     this.state.data = null
   }
 
+  async componentDidMount() {
+    const data = await this.props.getData(this.props.match.params.id)
+    this.setState({ data })
+  }
+
   ord_renderContent() {
     const { data } = this.state
     if (!data) return null
@@ -33,15 +38,19 @@ export default class extends StandardPage {
       ...this.props,
       edit: this.props.match.params.id,
       data: this.state.data,
-      onEdit: this.props.onEdit,
-      onCancel: this.props.onCancel,
+      onEdit: this.onEdit,
+      onCancel: this.onCancel,
       header: I18N.get('council.voting.btnText.editProposal'),
     }
     return <CVoteForm {...props} />
   }
 
-  async componentDidMount() {
-    const data = await this.props.getData(this.props.match.params.id)
-    this.setState({ data })
+  onEdit = () => {
+    const { data } = this.state
+    this.props.history.push(`/proposals/${data._id}`)
+  }
+
+  onCancel = () => {
+    this.onEdit()
   }
 }
