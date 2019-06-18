@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-// import { Button } from 'antd'
+import { Anchor } from 'antd'
 // import { breakPoint } from '@/constants/breakPoint'
 // import { text } from '@/constants/color'
 // import { gap } from '@/constants/variable'
@@ -16,4 +16,10 @@ export const Title = styled.h2`
 export const ContentTitle = styled.h4`
   font-size: 20px;
   padding-bottom: 0;
+`
+
+export const StyledAnchor = styled(Anchor)`
+  position: fixed;
+  top: 250px;
+  left: 30px;
 `
