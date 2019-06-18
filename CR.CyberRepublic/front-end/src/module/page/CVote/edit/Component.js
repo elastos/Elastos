@@ -14,12 +14,13 @@ export default class extends StandardPage {
   }
 
   ord_renderContent() {
-    if (!this.state.data) return null
+    const { data } = this.state
+    if (!data) return null
     const form = this.renderForm()
     return (
       <div>
         <Container>
-          <BackLink link="/proposals" />
+          <BackLink link={`/proposals/${data._id}`} />
           {form}
         </Container>
         <Footer />
