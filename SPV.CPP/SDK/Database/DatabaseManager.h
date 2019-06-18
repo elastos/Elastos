@@ -9,6 +9,7 @@
 #include "TransactionDataStore.h"
 #include "PeerDataSource.h"
 #include "AssetDataStore.h"
+#include "CoinBaseUTXODataStore.h"
 #include "Sqlite.h"
 
 namespace Elastos {
@@ -20,13 +21,24 @@ namespace Elastos {
 			DatabaseManager();
 			~DatabaseManager();
 
+			// CoinBase UTXO database interface
+			bool PutCoinBase(const std::vector<CoinBaseUTXOEntity> &entitys);
+			bool PutCoinBase(const CoinBaseUTXOEntity &entity);
+			bool DeleteAllCoinBase();
+			size_t GetCoinBaseTotalCount() const;
+			std::vector<CoinBaseUTXOEntityPtr> GetAllCoinBase() const;
+			bool UpdateCoinBase(const std::vector<uint256> &txHashes, uint32_t blockHeight, time_t timestamp);
+			bool UpdateSpentCoinBase(const std::vector<uint256> &txHashes);
+			bool DeleteCoinBase(const std::string &hash);
+
 			// Transaction's database interface
 			bool PutTransaction(const std::string &iso, const TransactionEntity &tx);
 			bool DeleteAllTransactions(const std::string &iso);
 			size_t GetAllTransactionsCount(const std::string &iso) const;
 			std::vector<TransactionEntity> GetAllTransactions(const std::string &iso) const;
-			bool UpdateTransaction(const std::string &iso, const TransactionEntity &txEntity);
+			bool UpdateTransaction(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 			bool DeleteTxByHash(const std::string &iso, const std::string &hash);
+			bool DeleteTxByHashes(const std::vector<std::string> &hashes);
 
 			// Peer's database interface
 			bool PutPeer(const std::string &iso, const PeerEntity &peerEntity);
@@ -56,9 +68,10 @@ namespace Elastos {
 			boost::filesystem::path _path;
 			Sqlite                	_sqlite;
 			PeerDataSource        	_peerDataSource;
+			CoinBaseUTXODataStore   _coinbaseDataStore;
 			TransactionDataStore  	_transactionDataStore;
 			MerkleBlockDataSource 	_merkleBlockDataSource;
-			AssetDataStore 			_assetDataStore;
+			AssetDataStore          _assetDataStore;
 		};
 
 	}

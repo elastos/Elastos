@@ -57,6 +57,8 @@ namespace Elastos {
 
 			void SetSign(const bytes_t &sign);
 
+			virtual size_t EstimateSize(uint8_t version) const;
+
 			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
 			virtual bool Deserialize(const ByteStream &istream, uint8_t version);

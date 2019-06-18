@@ -211,19 +211,53 @@ namespace Elastos {
 			_blockHeight = height;
 		}
 
-		uint32_t Transaction::GetTimestamp() const {
+		time_t Transaction::GetTimestamp() const {
 			return _timestamp;
 		}
 
-		void Transaction::SetTimestamp(uint32_t t) {
+		void Transaction::SetTimestamp(time_t t) {
 			_timestamp = t;
 		}
 
-		size_t Transaction::GetSize() {
-			ByteStream ostream;
-			Serialize(ostream);
-			return ostream.GetBytes().size();
+		size_t Transaction::EstimateSize() const {
+			size_t i, txSize = 0;
+			ByteStream stream;
+
+			if (_version >= TxVersion::V09)
+				txSize += 1;
+
+			// type, payloadversion
+			txSize += 2;
+
+			// payload
+			txSize += _payload->EstimateSize(_payloadVersion);
+
+			txSize += stream.WriteVarUint(_attributes.size());
+			for (i = 0; i < _attributes.size(); ++i)
+				txSize += _attributes[i].EstimateSize();
+
+			txSize += stream.WriteVarUint(_inputs.size());
+			for (i = 0; i < _inputs.size(); ++i)
+				txSize += _inputs[i].EstimateSize();
+
+			txSize += stream.WriteVarUint(_outputs.size());
+			for (i = 0; i < _outputs.size(); ++i)
+				txSize += _outputs[i].EstimateSize();
+
+			txSize += sizeof(_lockTime);
+
+			txSize += stream.WriteVarUint(_programs.size());
+			for (i = 0; i < _programs.size(); ++i)
+				txSize += _programs[i].EstimateSize();
+
+			return txSize;
 		}
+
+//		size_t Transaction::GetSize() {
+//			ByteStream ostream;
+//			Serialize(ostream);
+//			return ostream.GetBytes().size();
+//		}
 
 		nlohmann::json Transaction::GetSignedInfo() const {
 			nlohmann::json info;
@@ -250,6 +284,10 @@ namespace Elastos {
 			}
 
 			return true;
+		}
+
+		bool Transaction::IsCoinBase() const {
+			return _type == Type::CoinBase;
 		}
 
 		bool Transaction::IsValid() const {
@@ -308,6 +346,18 @@ namespace Elastos {
 
 		const std::vector<Attribute> &Transaction::GetAttributes() const {
 			return _attributes;
+		}
+
+		bool Transaction::AddUniqueProgram(const Program &program) {
+			for (size_t i = 0; i < _programs.size(); ++i) {
+				if (_programs[i].GetCode() == program.GetCode()) {
+					return false;
+				}
+			}
+
+			_programs.push_back(program);
+
+			return true;
 		}
 
 		void Transaction::AddProgram(const Program &program) {
@@ -575,7 +625,7 @@ namespace Elastos {
 		}
 
 		uint64_t Transaction::CalculateFee(uint64_t feePerKb) {
-			return ((GetSize() + 999) / 1000) * feePerKb;
+			return ((EstimateSize() + 999) / 1000) * feePerKb;
 		}
 
 		uint64_t Transaction::GetTxFee(const boost::shared_ptr<Wallet> &wallet) {

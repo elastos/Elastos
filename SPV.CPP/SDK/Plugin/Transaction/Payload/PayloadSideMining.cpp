@@ -64,6 +64,19 @@ namespace Elastos {
 			return _signedData;
 		}
 
+		size_t PayloadSideMining::EstimateSize(uint8_t version) const {
+			size_t size = 0;
+			ByteStream stream;
+
+			size += _sideBlockHash.size();
+			size += _sideGenesisHash.size();
+			size += sizeof(_blockHeight);
+			size += stream.WriteVarUint(_signedData.size());
+			size += _signedData.size();
+
+			return size;
+		}
+
 		void PayloadSideMining::Serialize(ByteStream &ostream, uint8_t version) const {
 			ostream.WriteBytes(_sideBlockHash);
 			ostream.WriteBytes(_sideGenesisHash);

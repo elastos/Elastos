@@ -42,6 +42,8 @@ namespace Elastos {
 
 			~TransactionOutput();
 
+			size_t EstimateSize() const;
+
 			virtual void Serialize(ByteStream &ostream) const;
 
 			virtual bool Deserialize(const ByteStream &istream);

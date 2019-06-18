@@ -92,6 +92,56 @@ namespace Elastos {
 						  });
 		}
 
+		void SpvService::onCoinBaseTxAdded(const CoinBaseUTXOPtr &cb) {
+			CoinBaseUTXOEntity entity;
+
+			entity.SetSpent(cb->Spent());
+			entity.SetTxHash(cb->Hash().GetHex());
+			entity.SetBlockHeight(cb->BlockHeight());
+			entity.SetTimestamp(cb->Timestamp());
+			entity.SetPayload(nullptr);
+			entity.SetAmount(cb->Amount());
+			entity.SetOutputLock(cb->OutputLock());
+			entity.SetAssetID(cb->AssetID());
+			entity.SetProgramHash(cb->ProgramHash());
+			entity.SetIndex(cb->Index());
+
+			_databaseManager.PutCoinBase(entity);
+
+			std::for_each(_walletListeners.begin(), _walletListeners.end(),
+						  [&cb](Wallet::Listener *listener) {
+							  listener->onCoinBaseTxAdded(cb);
+						  });
+		}
+
+		void SpvService::onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight,
+											 time_t timestamp) {
+			_databaseManager.UpdateCoinBase(hashes, blockHeight, timestamp);
+
+			std::for_each(_walletListeners.begin(), _walletListeners.end(),
+						  [&hashes, &blockHeight, &timestamp](Wallet::Listener *listener) {
+							  listener->onCoinBaseTxUpdated(hashes, blockHeight, timestamp);
+						  });
+		}
+
+		void SpvService::onCoinBaseSpent(const std::vector<uint256> &spentHashes) {
+			_databaseManager.UpdateSpentCoinBase(spentHashes);
+
+			std::for_each(_walletListeners.begin(), _walletListeners.end(),
+						  [&spentHashes](Wallet::Listener *listener) {
+							  listener->onCoinBaseSpent(spentHashes);
+						  });
+		}
+
+		void SpvService::onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
+			_databaseManager.DeleteCoinBase(hash.GetHex());
+
+			std::for_each(_walletListeners.begin(), _walletListeners.end(),
+						  [&hash, &notifyUser, &recommendRescan](Wallet::Listener *listener) {
+							  listener->onCoinBaseTxDeleted(hash, notifyUser, recommendRescan);
+						  });
+		}
+
 		void SpvService::onTxAdded(const TransactionPtr &tx) {
 			ByteStream stream;
 			tx->Serialize(stream);
@@ -109,17 +159,13 @@ namespace Elastos {
 						  });
 		}
 
-		void SpvService::onTxUpdated(const uint256 &hash, uint32_t blockHeight, uint32_t timeStamp) {
-			TransactionEntity txEntity;
+		void SpvService::onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp) {
 
-			txEntity.blockHeight = blockHeight;
-			txEntity.timeStamp = timeStamp;
-			txEntity.txHash = hash.GetHex();
-			_databaseManager.UpdateTransaction(ISO, txEntity);
+			_databaseManager.UpdateTransaction(hashes, blockHeight, timestamp);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&hash, blockHeight, timeStamp](Wallet::Listener *listener) {
-							  listener->onTxUpdated(hash, blockHeight, timeStamp);
+						  [&hashes, &blockHeight, &timestamp](Wallet::Listener *listener) {
+							  listener->onTxUpdated(hashes, blockHeight, timestamp);
 						  });
 		}
 
@@ -251,14 +297,6 @@ namespace Elastos {
 						  });
 		}
 
-		void SpvService::blockHeightIncreased(uint32_t blockHeight) {
-
-			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
-						  [blockHeight](PeerManager::Listener *listener) {
-							  listener->blockHeightIncreased(blockHeight);
-						  });
-		}
-
 		void SpvService::syncIsInactive(uint32_t time) {
 			if (_peerManager->GetReconnectEnableStatus() && _peerManager->ReconnectTaskCount() == 0) {
 				Log::info("{} disconnect, reconnect {}s later", _peerManager->GetID(), time);
@@ -285,9 +323,34 @@ namespace Elastos {
 			return _databaseManager.GetAllTransactionsCount(ISO);
 		}
 
+		std::vector<CoinBaseUTXOPtr> SpvService::loadCoinBaseUTXOs() {
+			std::vector<CoinBaseUTXOPtr> cbs;
+
+			std::vector<CoinBaseUTXOEntityPtr> cbEntitys = _databaseManager.GetAllCoinBase();
+			for (size_t i = 0; i < cbEntitys.size(); ++i) {
+				CoinBaseUTXOPtr cb(new CoinBaseUTXO());
+				cb->SetSpent(cbEntitys[i]->Spent());
+				cb->SetHash(uint256(cbEntitys[i]->TxHash()));
+				cb->SetBlockHeight(cbEntitys[i]->BlockHeight());
+				cb->SetTimestamp(cbEntitys[i]->Timestamp());
+
+				cb->SetAmount(cbEntitys[i]->Amount());
+				cb->SetOutputLock(cbEntitys[i]->OutputLock());
+				cb->SetAssetID(cbEntitys[i]->AssetID());
+				cb->SetProgramHash(cbEntitys[i]->ProgramHash());
+				cb->SetIndex(cbEntitys[i]->Index());
+				cbs.push_back(cb);
+			}
+
+			return cbs;
+		}
+
 		// override protected methods
 		std::vector<TransactionPtr> SpvService::loadTransactions() {
 			std::vector<TransactionPtr> txs;
+			std::vector<CoinBaseUTXOEntity> coinBaseEntitys;
+			std::set<std::string> spentHashes;
+			std::set<std::string> coinBaseHashes;
 
 			std::vector<TransactionEntity> txsEntity = _databaseManager.GetAllTransactions(ISO);
 
@@ -299,8 +362,47 @@ namespace Elastos {
 				tx->SetBlockHeight(txsEntity[i].blockHeight);
 				tx->SetTimestamp(txsEntity[i].timeStamp);
 
-				txs.push_back(tx);
+				if (tx->IsCoinBase()) {
+					coinBaseHashes.insert(tx->GetHash().GetHex());
+					for (uint16_t n = 0; n < tx->GetOutputs().size(); ++n) {
+						if (_subAccount->ContainsAddress(tx->GetOutputs()[n].GetAddress())) {
+							CoinBaseUTXOEntity entity;
+							entity.SetAmount(tx->GetOutputs()[n].GetAmount());
+							entity.SetOutputLock(tx->GetOutputs()[n].GetOutputLock());
+							entity.SetAssetID(tx->GetOutputs()[n].GetAssetID());
+							entity.SetProgramHash(tx->GetOutputs()[n].GetProgramHash());
+							entity.SetIndex(n);
+
+							entity.SetTxHash(tx->GetHash().GetHex());
+							entity.SetBlockHeight(tx->GetBlockHeight());
+							entity.SetTimestamp(tx->GetTimestamp());
+							entity.SetPayload(nullptr);
+
+							coinBaseEntitys.push_back(entity);
+							break;
+						}
+					}
+				} else {
+					for (uint16_t n = 0; n < tx->GetInputs().size(); ++n)
+						spentHashes.insert(tx->GetInputs()[n].GetTransctionHash().GetHex());
+
+					txs.push_back(tx);
+				}
 			}
+
+			std::for_each(spentHashes.begin(), spentHashes.end(), [&coinBaseEntitys](const std::string &hash) {
+				for (size_t i = 0; i < coinBaseEntitys.size(); ++i) {
+					if (coinBaseEntitys[i].TxHash() == hash) {
+						coinBaseEntitys[i].SetSpent(true);
+						break;
+					}
+				}
+			});
+
+			_databaseManager.PutCoinBase(coinBaseEntitys);
+
+			std::vector<std::string> removeHashes(coinBaseHashes.begin(), coinBaseHashes.end());
+			_databaseManager.DeleteTxByHashes(removeHashes);
 
 			return txs;
 		}
@@ -362,7 +464,7 @@ namespace Elastos {
 
 		const CoreSpvService::WalletListenerPtr &SpvService::createWalletListener() {
 			if (_walletListener == nullptr) {
-				_walletListener = WalletListenerPtr(new WrappedExecutorTransactionHubListener(this, &_executor));
+				_walletListener = WalletListenerPtr(new WrappedExecutorWalletListener(this, &_executor));
 			}
 			return _walletListener;
 		}
@@ -380,7 +482,7 @@ namespace Elastos {
 					_reconnectService, boost::posix_time::seconds(time)));
 
 			_peerManager->Lock();
-			if (0 == _peerManager->GetPeers().size()) {
+			if (_peerManager->GetPeers().empty()) {
 				std::vector<PeerInfo> peers = loadPeers();
 				Log::info("{} load {} peers", _peerManager->GetID(), peers.size());
 				for (size_t i = 0; i < peers.size(); ++i) {

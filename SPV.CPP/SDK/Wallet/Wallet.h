@@ -47,9 +47,18 @@ namespace Elastos {
 			public:
 				virtual void balanceChanged(const uint256 &asset, const BigInt &balance) = 0;
 
-				virtual void onTxAdded(const TransactionPtr &transaction) = 0;
+				virtual void onCoinBaseTxAdded(const CoinBaseUTXOPtr &cb) = 0;
 
-				virtual void onTxUpdated(const uint256 &hash, uint32_t blockHeight, uint32_t timeStamp) = 0;
+				virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight,
+												 time_t timestamp) = 0;
+
+				virtual void onCoinBaseSpent(const std::vector<uint256> &spentHashes) = 0;
+
+				virtual void onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) = 0;
+
+				virtual void onTxAdded(const TransactionPtr &tx) = 0;
+
+				virtual void onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp) = 0;
 
 				virtual void onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) = 0;
 
@@ -60,6 +69,7 @@ namespace Elastos {
 
 			Wallet(const std::vector<AssetPtr> &assetArray,
 				   const std::vector<TransactionPtr> &txns,
+				   const std::vector<CoinBaseUTXOPtr> &cbs,
 				   const SubAccountPtr &subAccount,
 				   const boost::shared_ptr<Wallet::Listener> &listener);
 
@@ -100,6 +110,7 @@ namespace Elastos {
 			uint64_t GetDefaultFeePerKb();
 
 			TransactionPtr CreateTransaction(const Address &fromAddress, const std::vector<TransactionOutput> &outputs,
+											 const std::string &memo,
 											 bool useVotedUTXO, bool autoReduceOutputAmount);
 
 			bool ContainsTransaction(const TransactionPtr &transaction);
@@ -108,9 +119,11 @@ namespace Elastos {
 
 			void RemoveTransaction(const uint256 &transactionHash);
 
-			void UpdateTransactions(const std::vector<uint256> &txHashes, uint32_t blockHeight, uint32_t timestamp);
+			void UpdateTransactions(const std::vector<uint256> &txHashes, uint32_t blockHeight, time_t timestamp);
 
 			TransactionPtr TransactionForHash(const uint256 &transactionHash);
+
+			CoinBaseUTXOPtr CoinBaseTxForHash(const uint256 &txHash) const;
 
 			std::vector<TransactionPtr> GetAllTransactions() const;
 
@@ -129,6 +142,8 @@ namespace Elastos {
 			void UpdateBalance();
 
 			std::vector<UTXO> GetAllUTXO() const;
+
+			const std::vector<CoinBaseUTXOPtr> &GetAllCoinBaseUTXO() const;
 
 			std::vector<TransactionPtr> TxUnconfirmedBefore(uint32_t blockHeight);
 
@@ -149,6 +164,14 @@ namespace Elastos {
 
 			bool ContainsTx(const TransactionPtr &tx) const;
 
+			void UpdateSpentCoinBase(std::vector<uint256> &spentHashes, const TransactionPtr &tx) const;
+
+			bool CoinBaseContains(const uint256 &txHash) const;
+
+			CoinBaseUTXOPtr CoinBaseForHash(const uint256 &txHash) const;
+
+			CoinBaseUTXOPtr RegisterCoinBaseTx(const TransactionPtr &tx);
+
 			void InsertTx(const TransactionPtr &tx);
 
 			int TxCompare(const TransactionPtr &tx1, const TransactionPtr &tx2) const;
@@ -168,9 +191,17 @@ namespace Elastos {
 		protected:
 			void balanceChanged(const uint256 &asset, const BigInt &balance);
 
+			void coinBaseTxAdded(const CoinBaseUTXOPtr &cb);
+
+			void coinBaseTxUpdated(const std::vector<uint256> &txHashes, uint32_t blockHeight, time_t timestamp);
+
+			void coinBaseSpent(const std::vector<uint256> &spentHashes);
+
+			void coinBaseDeleted(const uint256 &txHash, bool notifyUser, bool recommendRescan);
+
 			void txAdded(const TransactionPtr &tx);
 
-			void txUpdated(const std::vector<uint256> &txHashes, uint32_t blockHeight, uint32_t timestamp);
+			void txUpdated(const std::vector<uint256> &txHashes, uint32_t blockHeight, time_t timestamp);
 
 			void txDeleted(const uint256 &txHash, bool notifyUser, bool recommendRescan);
 
@@ -192,6 +223,8 @@ namespace Elastos {
 			std::vector<TransactionPtr> _transactions;
 			TransactionSet _allTx, _invalidTx;
 			UTXOList _spentOutputs, _spendingOutputs;
+
+			std::vector<CoinBaseUTXOPtr> _coinBaseUTXOs;
 			uint64_t _feePerKb;
 
 			uint32_t _blockHeight;

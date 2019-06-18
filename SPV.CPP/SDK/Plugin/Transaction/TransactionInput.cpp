@@ -54,6 +54,16 @@ namespace Elastos {
 			return _txHash.size() + sizeof(_index) + sizeof(_sequence);
 		}
 
+		size_t TransactionInput::EstimateSize() const {
+			size_t size = 0;
+
+			size += _txHash.size();
+			size += sizeof(_index);
+			size += sizeof(_sequence);
+
+			return size;
+		}
+
 		void TransactionInput::Serialize(ByteStream &ostream) const {
 			ostream.WriteBytes(_txHash);
 			ostream.WriteUint16(_index);

@@ -53,7 +53,7 @@ namespace Elastos {
 					case inv_tx:
 						tx = FireRequestedTx(hash);
 
-						if (tx != nullptr && tx->GetSize() < TX_MAX_SIZE) {
+						if (tx != nullptr && tx->EstimateSize() < TX_MAX_SIZE) {
 							TransactionParameter txParam;
 							txParam.tx = tx;
 							_peer->SendMessage(MSG_TX, txParam);

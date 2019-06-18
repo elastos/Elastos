@@ -112,6 +112,19 @@ namespace Elastos {
 			return IsValid() && SQLITE_OK == sqlite3_bind_text(pStmt, idx, text.c_str(), text.length(), callBack);
 		}
 
+		bytes_ptr Sqlite::ColumnBlobBytes(sqlite3_stmt *pStmt, int iCol) {
+			uint8_t *data = (uint8_t *)ColumnBlob(pStmt, iCol);
+			size_t len = (size_t) ColumnBytes(pStmt, iCol);
+
+			if (len > 0) {
+				bytes_ptr blob(new bytes_t());
+				blob->assign(data, data + len);
+				return blob;
+			}
+
+			return nullptr;
+		}
+
 		const void *Sqlite::ColumnBlob(sqlite3_stmt *pStmt, int iCol) {
 			return sqlite3_column_blob(pStmt, iCol);
 		}

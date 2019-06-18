@@ -69,6 +69,21 @@ namespace Elastos {
 			return _crossChainAmount;
 		}
 
+		size_t PayloadTransferCrossChainAsset::EstimateSize(uint8_t version) const {
+			size_t size = 0;
+			ByteStream stream;
+
+			size += stream.WriteVarUint(_crossChainAddress.size());
+			for (size_t i = 0; i < _crossChainAddress.size(); ++i) {
+				size += stream.WriteVarUint(_crossChainAddress[i].size());
+				size += _crossChainAddress[i].size();
+				size += stream.WriteVarUint(_outputIndex[i]);
+				size += sizeof(uint64_t);
+			}
+
+			return size;
+		}
+
 		void PayloadTransferCrossChainAsset::Serialize(ByteStream &ostream, uint8_t version) const {
 			if (_crossChainAddress.size() != _outputIndex.size() || _outputIndex.size() != _crossChainAmount.size()) {
 				Log::error("Invalid cross chain asset: len(crossChainAddress)={},"

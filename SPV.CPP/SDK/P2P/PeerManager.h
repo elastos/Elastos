@@ -66,8 +66,6 @@ namespace Elastos {
 				// Called on publishTransaction
 				virtual void txPublished(const std::string &hash, const nlohmann::json &result) = 0;
 
-				virtual void blockHeightIncreased(uint32_t blockHeight) = 0;
-
 				virtual void syncIsInactive(uint32_t time) = 0;
 			};
 

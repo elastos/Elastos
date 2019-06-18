@@ -15,23 +15,79 @@ namespace Elastos {
 
 		class TransactionInput;
 
-		struct UTXO {
-			UTXO() : n(0) {}
+		class UTXO {
+		public:
+			UTXO();
 
-			UTXO(const uint256 &h, uint16_t i, const BigInt &a) :
-					hash(h),
-					n(i) {
-				amount = a;
-			}
+			UTXO(const uint256 &h, uint16_t i, const BigInt &a);
 
-			bool operator<(const UTXO &otherUtxo) {
-				return hash < otherUtxo.hash && n < otherUtxo.n;
-			}
+			virtual ~UTXO();
 
-			uint256 hash;
-			uint16_t n;
-			BigInt amount;
+			bool operator<(const UTXO &otherUtxo);
+
+			const uint256 &Hash() const;
+
+			void SetHash(const uint256 &hash);
+
+			const uint16_t &Index() const;
+
+			void SetIndex(uint16_t index);
+
+			const BigInt &Amount() const;
+
+			void SetAmount(const BigInt &amount);
+
+		protected:
+			friend class UTXOList;
+			friend class GroupedAsset;
+
+			uint256 _hash;
+			uint16_t _n;
+			BigInt _amount;
 		};
+
+		class CoinBaseUTXO : public UTXO {
+		public:
+			CoinBaseUTXO();
+
+			~CoinBaseUTXO();
+
+			const uint256 &AssetID() const;
+
+			void SetAssetID(const uint256 &assetID);
+
+			const uint168 &ProgramHash() const;
+
+			void SetProgramHash(const uint168 &programHash);
+
+			const uint32_t &OutputLock() const;
+
+			void SetOutputLock(uint32_t outputLock);
+
+			const uint32_t &BlockHeight() const;
+
+			void SetBlockHeight(uint32_t height);
+
+			const time_t &Timestamp() const;
+
+			void SetTimestamp(time_t t);
+
+			bool Spent() const;
+
+			void SetSpent(bool status);
+
+			uint32_t GetConfirms(uint32_t lastBlockHeight) const;
+
+		private:
+			uint256 _assetID;
+			uint168 _programHash;
+			uint32_t _outputLock;
+			uint32_t _blockHeight;
+			time_t _timestamp;
+			bool _spent;
+		};
+
+		typedef boost::shared_ptr<CoinBaseUTXO> CoinBaseUTXOPtr;
 
 		class UTXOList {
 		public:

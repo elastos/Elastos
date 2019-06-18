@@ -17,13 +17,13 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-	class Wallet;
-	class Asset;
-	class Transaction;
-	class TransactionOutput;
-	typedef boost::shared_ptr<Asset> AssetPtr;
+		class Wallet;
+		class Asset;
+		class Transaction;
+		class TransactionOutput;
+		typedef boost::shared_ptr<Asset> AssetPtr;
 
-	class GroupedAsset {
+		class GroupedAsset {
 		public:
 			enum BalanceType {
 				Default,
@@ -51,7 +51,9 @@ namespace Elastos {
 			nlohmann::json GetBalanceInfo();
 
 			TransactionPtr CreateTxForOutputs(const std::vector<TransactionOutput> &outputs,
-											  const Address &fromAddress, bool useVotedUTXO,
+											  const Address &fromAddress,
+											  const std::string &memo,
+											  bool useVotedUTXO,
 											  bool autoReduceOutputAmount);
 
 			void AddFeeForTx(TransactionPtr &tx, bool useVotedUTXO);
@@ -60,12 +62,15 @@ namespace Elastos {
 
 			void AddUTXO(const UTXO &o);
 
+			void AddCoinBaseUTXO(const CoinBaseUTXOPtr &coinbaseUTXO);
+
 		private:
 			uint64_t CalculateFee(uint64_t feePerKB, size_t size);
 
 		private:
 			BigInt _balance, _votedBalance, _lockedBalance, _depositBalance;
-			UTXOList _utxos, _utxosLocked;
+			UTXOList _utxos;
+			std::vector<CoinBaseUTXOPtr> _coinBaseUTXOs;
 
 			AssetPtr _asset;
 

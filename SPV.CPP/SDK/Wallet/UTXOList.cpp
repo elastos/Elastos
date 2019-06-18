@@ -13,9 +13,112 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+#define TX_UNCONFIRMED INT32_MAX
+
+		UTXO::UTXO() : _n(0) {
+		}
+
+		UTXO::UTXO(const uint256 &h, uint16_t i, const BigInt &a) :
+			_hash(h),
+			_n(i) {
+			_amount = a;
+		}
+
+		UTXO::~UTXO() {
+		}
+
+		bool UTXO::operator<(const UTXO &otherUtxo) {
+			return _hash < otherUtxo._hash && _n < otherUtxo._n;
+		}
+
+		const uint256 &UTXO::Hash() const {
+			return _hash;
+		}
+
+		void UTXO::SetHash(const uint256 &hash) {
+			_hash = hash;
+		}
+
+		const uint16_t &UTXO::Index() const {
+			return _n;
+		}
+
+		void UTXO::SetIndex(uint16_t index) {
+			_n = index;
+		}
+
+		const BigInt &UTXO::Amount() const {
+			return _amount;
+		}
+
+		void UTXO::SetAmount(const BigInt &amount) {
+			_amount = amount;
+		}
+
+		CoinBaseUTXO::CoinBaseUTXO() : _timestamp(0), _blockHeight(0) {
+		}
+
+		CoinBaseUTXO::~CoinBaseUTXO() {
+		}
+
+		const uint256 &CoinBaseUTXO::AssetID() const {
+			return _assetID;
+		}
+
+		void CoinBaseUTXO::SetAssetID(const uint256 &assetID) {
+			_assetID = assetID;
+		}
+
+		const uint168 &CoinBaseUTXO::ProgramHash() const {
+			return _programHash;
+		}
+
+		void CoinBaseUTXO::SetProgramHash(const uint168 &programHash) {
+			_programHash = programHash;
+		}
+
+		const uint32_t &CoinBaseUTXO::OutputLock() const {
+			return _outputLock;
+		}
+
+		void CoinBaseUTXO::SetOutputLock(uint32_t outputLock) {
+			_outputLock = outputLock;
+		}
+
+		const uint32_t &CoinBaseUTXO::BlockHeight() const {
+			return _blockHeight;
+		}
+
+		void CoinBaseUTXO::SetBlockHeight(uint32_t height) {
+			_blockHeight = height;
+		}
+
+		const time_t &CoinBaseUTXO::Timestamp() const {
+			return _timestamp;
+		}
+
+		void CoinBaseUTXO::SetTimestamp(time_t t) {
+			_timestamp = t;
+		}
+
+		bool CoinBaseUTXO::Spent() const {
+			return _spent;
+		}
+
+		void CoinBaseUTXO::SetSpent(bool status) {
+			_spent = status;
+		}
+
+		uint32_t CoinBaseUTXO::GetConfirms(uint32_t lastBlockHeight) const {
+			if (_blockHeight == TX_UNCONFIRMED)
+				return 0;
+
+			return lastBlockHeight >= _blockHeight ? lastBlockHeight - _blockHeight + 1 : 0;
+		}
+
 		bool UTXOList::Contains(const UTXO &o) const {
 			for (size_t i = 0; i < _utxos.size(); ++i) {
-				if (o.hash == _utxos[i].hash && _utxos[i].n == o.n) {
+				if (o._hash == _utxos[i].Hash() && _utxos[i].Index() == o.Index()) {
 					return true;
 				}
 			}
@@ -25,7 +128,7 @@ namespace Elastos {
 
 		bool UTXOList::Contains(const uint256 &hash, uint32_t n) const {
 			for (size_t i = 0; i < _utxos.size(); ++i) {
-				if (hash == _utxos[i].hash && _utxos[i].n == n) {
+				if (hash == _utxos[i]._hash && _utxos[i]._n == n) {
 					return true;
 				}
 			}
@@ -35,7 +138,7 @@ namespace Elastos {
 
 		bool UTXOList::Contains(const TransactionInput &input) const {
 			for (size_t i = 0; i < _utxos.size(); ++i) {
-				if (input.GetTransctionHash() == _utxos[i].hash && _utxos[i].n == input.GetIndex())
+				if (input.GetTransctionHash() == _utxos[i]._hash && _utxos[i]._n == input.GetIndex())
 					return true;
 			}
 
@@ -68,7 +171,7 @@ namespace Elastos {
 		}
 
 		bool UTXOList::Compare(const UTXO &o1, const UTXO &o2) const {
-			return o1.amount <= o2.amount;
+			return o1._amount <= o2._amount;
 		}
 
 		void UTXOList::SortBaseOnOutputAmount(const BigInt &totalOutputAmount, uint64_t feePerKB) {
@@ -79,7 +182,7 @@ namespace Elastos {
 					  boost::bind(&UTXOList::Compare, this, _1, _2));
 
 			for (size_t i = 0; i < _utxos.size(); ++i) {
-				if (_utxos[i].amount > Threshold) {
+				if (_utxos[i]._amount > Threshold) {
 					ThresholdIndex = i;
 					break;
 				}

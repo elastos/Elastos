@@ -41,6 +41,8 @@ namespace Elastos {
 
 			void SetParameter(const bytes_t &parameter);
 
+			virtual size_t EstimateSize() const;
+
 			virtual void Serialize(ByteStream &ostream) const;
 
 			virtual bool Deserialize(const ByteStream &istream);

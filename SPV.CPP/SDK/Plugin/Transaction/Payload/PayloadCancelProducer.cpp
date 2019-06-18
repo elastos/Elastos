@@ -41,6 +41,18 @@ namespace Elastos {
 			return istream.ReadVarBytes(_publicKey);
 		}
 
+		size_t PayloadCancelProducer::EstimateSize(uint8_t version) const {
+			size_t size = 0;
+			ByteStream stream;
+
+			size += stream.WriteVarUint(_publicKey.size());
+			size += _publicKey.size();
+			size += stream.WriteVarUint(_signature.size());
+			size += _signature.size();
+
+			return size;
+		}
+
 		void PayloadCancelProducer::Serialize(ByteStream &ostream, uint8_t version) const {
 			SerializeUnsigned(ostream, version);
 			ostream.WriteVarBytes(_signature);

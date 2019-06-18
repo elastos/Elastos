@@ -32,7 +32,7 @@ namespace Elastos {
 
 			virtual void onTxAdded(const TransactionPtr &transaction);
 
-			virtual void onTxUpdated(const uint256 &hash, uint32_t blockHeight, uint32_t timeStamp);
+			virtual void onTxUpdated(const std::vector<uint256> &hash, uint32_t blockHeight, time_t timeStamp);
 
 		};
 

@@ -295,15 +295,15 @@ namespace Elastos {
 									 Error::AccountNotSupportVote, "This account do not support vote");
 
 			for (size_t i = 0; i < utxos.size(); ++i) {
-				TransactionPtr tx = wallet->TransactionForHash(utxos[i].hash);
-				if (!tx || utxos[i].n >= tx->GetOutputs().size() ||
-					tx->GetOutputs()[utxos[i].n].GetType() != TransactionOutput::VoteOutput ||
+				TransactionPtr tx = wallet->TransactionForHash(utxos[i].Hash());
+				if (!tx || utxos[i].Index() >= tx->GetOutputs().size() ||
+					tx->GetOutputs()[utxos[i].Index()].GetType() != TransactionOutput::VoteOutput ||
 					tx->GetVersion() < Transaction::TxVersion::V09 ||
 					tx->GetTransactionType() != Transaction::TransferAsset) {
 					continue;
 				}
 
-				const TransactionOutput &output = tx->GetOutputs()[utxos[i].n];
+				const TransactionOutput &output = tx->GetOutputs()[utxos[i].Index()];
 				const PayloadVote *pv = dynamic_cast<const PayloadVote *>(output.GetPayload().get());
 				if (pv == nullptr) {
 					continue;

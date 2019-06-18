@@ -43,6 +43,8 @@ namespace Elastos {
 
 			const std::vector<VoteContent> &GetVoteContent() const;
 
+			virtual size_t EstimateSize() const;
+
 			virtual void Serialize(ByteStream &ostream) const;
 
 			virtual bool Deserialize(const ByteStream &istream);

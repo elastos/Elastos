@@ -78,21 +78,26 @@ namespace Elastos {
 			}
 		}
 
-		void IDChainSubWallet::onTxUpdated(const uint256 &hash, uint32_t blockHeight, uint32_t timeStamp) {
-			TransactionPtr transaction = _walletManager->getWallet()->TransactionForHash(hash);
-			if (transaction != nullptr && transaction->GetTransactionType() == Transaction::RegisterIdentification) {
-				uint32_t confirm = blockHeight >= transaction->GetBlockHeight() ? blockHeight -
-					transaction->GetBlockHeight() + 1 : 0;
+		void IDChainSubWallet::onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp) {
+			for (size_t i = 0; i < hashes.size(); ++i) {
+				TransactionPtr transaction = _walletManager->getWallet()->TransactionForHash(hashes[i]);
+				if (transaction != nullptr &&
+					transaction->GetTransactionType() == Transaction::RegisterIdentification) {
+					uint32_t confirm = blockHeight >= transaction->GetBlockHeight() ? blockHeight -
+																					  transaction->GetBlockHeight() + 1
+																					: 0;
 
-				std::for_each(_callbacks.begin(), _callbacks.end(),
-							  [&hash, &confirm, &transaction, this](ISubWalletCallback *callback) {
+					std::for_each(_callbacks.begin(), _callbacks.end(),
+								  [&i, &hashes, &confirm, &transaction, this](ISubWalletCallback *callback) {
 
-								  const PayloadRegisterIdentification *payload = static_cast<const PayloadRegisterIdentification *>(
-									  transaction->GetPayload());
-								  callback->OnTransactionStatusChanged(hash.GetHex(), "Updated", payload->ToJson(0), confirm);
-							  });
-			} else {
-				SubWallet::onTxUpdated(hash, blockHeight, timeStamp);
+									  const PayloadRegisterIdentification *payload = static_cast<const PayloadRegisterIdentification *>(
+										  transaction->GetPayload());
+									  callback->OnTransactionStatusChanged(hashes[i].GetHex(), "Updated", payload->ToJson(0),
+																		   confirm);
+								  });
+				} else {
+					SubWallet::onTxUpdated(hashes, blockHeight, timeStamp);
+				}
 			}
 		}
 

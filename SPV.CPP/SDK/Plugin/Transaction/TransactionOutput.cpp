@@ -87,6 +87,25 @@ namespace Elastos {
 			_amount = a;
 		}
 
+		size_t TransactionOutput::EstimateSize() const {
+			size_t size = 0;
+			ByteStream stream;
+
+			size += _assetID.size();
+			if (_assetID == Asset::GetELAAssetID()) {
+				size += sizeof(uint64_t);
+			} else {
+				bytes_t amountBytes = _amount.getHexBytes();
+				size += stream.WriteVarUint(amountBytes.size());
+				size += amountBytes.size();
+			}
+
+			size += sizeof(_outputLock);
+			size += _programHash.size();
+
+			return size;
+		}
+
 		void TransactionOutput::Serialize(ByteStream &ostream) const {
 			ostream.WriteBytes(_assetID);
 

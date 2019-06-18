@@ -11,6 +11,7 @@ namespace Elastos {
 			_path(path),
 			_sqlite(path),
 			_peerDataSource(&_sqlite),
+			_coinbaseDataStore(&_sqlite),
 			_transactionDataStore(&_sqlite),
 			_assetDataStore(&_sqlite),
 			_merkleBlockDataSource(&_sqlite) {
@@ -24,6 +25,39 @@ namespace Elastos {
 
 		DatabaseManager::~DatabaseManager() {
 
+		}
+
+		bool DatabaseManager::PutCoinBase(const std::vector<CoinBaseUTXOEntity> &entitys) {
+			return _coinbaseDataStore.Put(entitys);
+		}
+
+		bool DatabaseManager::PutCoinBase(const CoinBaseUTXOEntity &entity) {
+			return _coinbaseDataStore.Put(entity);
+		}
+
+		bool DatabaseManager::DeleteAllCoinBase() {
+			return _coinbaseDataStore.DeleteAll();
+		}
+
+		size_t DatabaseManager::GetCoinBaseTotalCount() const {
+			return _coinbaseDataStore.GetTotalCount();
+		}
+
+		std::vector<CoinBaseUTXOEntityPtr> DatabaseManager::GetAllCoinBase() const {
+			return _coinbaseDataStore.GetAll();
+		}
+
+		bool DatabaseManager::UpdateCoinBase(const std::vector<uint256> &txHashes, uint32_t blockHeight,
+											 time_t timestamp) {
+			return _coinbaseDataStore.Update(txHashes, blockHeight, timestamp);
+		}
+
+		bool DatabaseManager::UpdateSpentCoinBase(const std::vector<uint256> &txHashes) {
+			return _coinbaseDataStore.UpdateSpent(txHashes);
+		}
+
+		bool DatabaseManager::DeleteCoinBase(const std::string &hash) {
+			return _coinbaseDataStore.Delete(hash);
 		}
 
 		bool DatabaseManager::PutTransaction(const std::string &iso, const TransactionEntity &tx) {
@@ -42,12 +76,17 @@ namespace Elastos {
 			return _transactionDataStore.GetAllTransactions(iso);
 		}
 
-		bool DatabaseManager::UpdateTransaction(const std::string &iso, const TransactionEntity &txEntity) {
-			return _transactionDataStore.UpdateTransaction(iso, txEntity);
+		bool DatabaseManager::UpdateTransaction(const std::vector<uint256> &hashes, uint32_t blockHeight,
+												time_t timestamp) {
+			return _transactionDataStore.UpdateTransaction(hashes, blockHeight, timestamp);
 		}
 
 		bool DatabaseManager::DeleteTxByHash(const std::string &iso, const std::string &hash) {
 			return _transactionDataStore.DeleteTxByHash(iso, hash);
+		}
+
+		bool DatabaseManager::DeleteTxByHashes(const std::vector<std::string> &hashes) {
+			return _transactionDataStore.DeleteTxByHashes(hashes);
 		}
 
 		bool DatabaseManager::PutPeer(const std::string &iso, const PeerEntity &peerEntity) {

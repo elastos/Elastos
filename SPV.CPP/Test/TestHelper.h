@@ -34,8 +34,23 @@ namespace Elastos {
 			return block;
 		}
 
+		static bytes_ptr getRandBytesPtr(size_t size) {
+			bytes_ptr data(new bytes_t(size));
+
+			for (size_t i = 0; i < size; ++i)
+				(*data)[i] = (uint8_t) rand();
+
+			return data;
+		}
+
 		static uint256 getRanduint256(void) {
 			return uint256(getRandBytes(32));
+		}
+
+		static BigInt getRandBigInt() {
+			BigInt bg;
+			bg.setWord(rand());
+			return bg;
 		}
 
 		static std::string getRandHexString(size_t length) {
@@ -43,7 +58,7 @@ namespace Elastos {
 			for (size_t i = 0; i < length; ) {
 				char ch = rand();
 				if (isxdigit(ch)) {
-					buf[i++] = ch;
+					buf[i++] = tolower(ch);
 				}
 			}
 

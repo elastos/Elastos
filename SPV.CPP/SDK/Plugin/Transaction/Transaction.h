@@ -110,15 +110,19 @@ namespace Elastos {
 
 			void SetBlockHeight(uint32_t height);
 
-			uint32_t GetTimestamp() const;
+			time_t GetTimestamp() const;
 
-			void SetTimestamp(uint32_t timestamp);
+			void SetTimestamp(time_t timestamp);
 
-			size_t GetSize();
+			size_t EstimateSize() const;
+
+//			size_t GetSize();
 
 			nlohmann::json GetSignedInfo() const;
 
 			bool IsSigned() const;
+
+			bool IsCoinBase() const;
 
 			bool IsValid() const;
 
@@ -135,6 +139,8 @@ namespace Elastos {
 			void SetPayload(const PayloadPtr &payload);
 
 			void AddAttribute(const Attribute &attribute);
+
+			bool AddUniqueProgram(const Program &program);
 
 			void AddProgram(const Program &program);
 
@@ -181,7 +187,7 @@ namespace Elastos {
 			TxVersion _version; // uint8_t
 			uint32_t _lockTime;
 			uint32_t _blockHeight;
-			uint32_t _timestamp; // time interval since unix epoch
+			time_t _timestamp; // time interval since unix epoch
 			Type _type; // uint8_t
 			uint8_t _payloadVersion;
 			uint64_t _fee;

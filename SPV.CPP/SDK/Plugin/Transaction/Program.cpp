@@ -160,6 +160,18 @@ namespace Elastos {
 			_parameter = parameter;
 		}
 
+		size_t Program::EstimateSize() const {
+			size_t size = 0;
+			ByteStream stream;
+
+			size += stream.WriteVarUint(_parameter.size());
+			size += _parameter.size();
+			size += stream.WriteVarUint(_code.size());
+			size += _code.size();
+
+			return size;
+		}
+
 		void Program::Serialize(ByteStream &ostream) const {
 			ostream.WriteVarBytes(_parameter);
 			ostream.WriteVarBytes(_code);

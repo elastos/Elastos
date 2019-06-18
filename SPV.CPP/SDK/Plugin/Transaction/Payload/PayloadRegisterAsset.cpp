@@ -33,6 +33,16 @@ namespace Elastos {
 			return (_asset->GetPrecision() <= Asset::MaxPrecision);
 		}
 
+		size_t PayloadRegisterAsset::EstimateSize(uint8_t version) const {
+			size_t size = 0;
+
+			size += _asset->EstimateSize();
+			size += sizeof(_amount);
+			size += _controller.size();
+
+			return size;
+		}
+
 		void PayloadRegisterAsset::Serialize(ByteStream &ostream, uint8_t version) const {
 			_asset->Serialize(ostream);
 			ostream.WriteBytes(&_amount, sizeof(_amount));

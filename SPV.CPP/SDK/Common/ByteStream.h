@@ -241,19 +241,25 @@ namespace Elastos {
 				WriteBytes(bytes);
 			}
 
-			void WriteVarUint(uint64_t len) {
+			size_t WriteVarUint(uint64_t len) {
+				size_t count;
 				if (len < VAR_INT16_HEADER) {
 					_buf.push_back((uint8_t)len);
+					count = 1;
 				} else if (len <= UINT16_MAX) {
 					_buf.push_back(VAR_INT16_HEADER);
 					_buf += bytes_t((unsigned char *)&len, 2);
+					count = 2;
 				} else if (len <= UINT32_MAX) {
 					_buf.push_back(VAR_INT32_HEADER);
 					_buf += bytes_t((unsigned char *)&len, 4);
+					count = 4;
 				} else {
 					_buf.push_back(VAR_INT64_HEADER);
 					_buf += bytes_t((unsigned char *)&len, 8);
+					count = 8;
 				}
+				return count;
 			}
 
 			void WriteVarString(const std::string &str) {

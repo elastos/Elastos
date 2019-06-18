@@ -22,6 +22,8 @@ using namespace Elastos::ElaWallet;
 TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 	Log::registerMultiLogger();
 
+#define DEFAULT_RECORD_CNT 20
+
 	SECTION("Prepare to test") {
 		srand(time(nullptr));
 
@@ -33,11 +35,12 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 	}
 
 	SECTION("Asset test") {
+#define TEST_ASSET_RECORD_CNT DEFAULT_RECORD_CNT
 		DatabaseManager dm(DBFILE);
 
 		// save
 		std::vector<AssetEntity> assets;
-		for (int i = 0; i < 20; ++i) {
+		for (int i = 0; i < TEST_ASSET_RECORD_CNT; ++i) {
 			AssetEntity asset;
 			asset.Asset = getRandBytes(100);
 			asset.AssetID = getRandString(64);
@@ -87,7 +90,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 	}
 
 	SECTION("Merkle Block test ") {
-#define TEST_MERKLEBLOCK_RECORD_CNT uint64_t(20)
+#define TEST_MERKLEBLOCK_RECORD_CNT DEFAULT_RECORD_CNT
 
 		static std::vector<MerkleBlockEntity> blocksToSave;
 
@@ -158,8 +161,8 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		}
 	}
 
-#define TEST_PEER_RECORD_CNT 20
 	SECTION("Peer test") {
+#define TEST_PEER_RECORD_CNT DEFAULT_RECORD_CNT
 
 		static std::vector<PeerEntity> peerToSave;
 
@@ -233,8 +236,107 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 	}
 
-#define TEST_TX_RECORD_CNT 20
+	SECTION("CoinBase UTXO test") {
+#define TEST_TX_RECORD_CNT DEFAULT_RECORD_CNT
+		static std::vector<CoinBaseUTXOEntity> txToSave;
+		static std::vector<CoinBaseUTXOEntity> txToUpdate;
+
+		SECTION("prepare for testing") {
+			for (uint64_t i = 0; i < TEST_TX_RECORD_CNT; ++i) {
+				CoinBaseUTXOEntity entity;
+
+				entity.SetSpent(i % 2 == 0);
+				entity.SetIndex(getRandUInt16());
+				entity.SetProgramHash(getRandUInt168());
+				entity.SetAssetID(getRanduint256());
+				entity.SetOutputLock(getRandUInt32());
+				entity.SetAmount(getRandBigInt());
+				entity.SetPayload(getRandBytesPtr(40));
+				entity.SetTimestamp(getRandUInt32());
+				entity.SetBlockHeight(getRandUInt32());
+				entity.SetTxHash(getRandHexString(64));
+				txToSave.push_back(entity);
+			}
+
+			for (uint64_t i = 0; i < TEST_TX_RECORD_CNT; ++i) {
+				CoinBaseUTXOEntity entity;
+
+				entity.SetTimestamp(12345);
+				entity.SetBlockHeight(12345678);
+				entity.SetTxHash(txToSave[i].TxHash());
+				txToUpdate.push_back(entity);
+			}
+		}
+
+		SECTION("save test") {
+			DatabaseManager dbm(DBFILE);
+			for (int i = 0; i < txToSave.size(); ++i)
+				REQUIRE(dbm.PutCoinBase(txToSave[i]));
+		}
+
+		SECTION("read test") {
+			DatabaseManager dbm(DBFILE);
+			std::vector<CoinBaseUTXOEntityPtr> readTx = dbm.GetAllCoinBase();
+			REQUIRE(txToSave.size() == readTx.size());
+
+			for (int i = 0; i < readTx.size(); ++i) {
+				REQUIRE(readTx[i]->Spent() == txToSave[i].Spent());
+				REQUIRE(readTx[i]->Index() == txToSave[i].Index());
+				REQUIRE(readTx[i]->ProgramHash() == txToSave[i].ProgramHash());
+				REQUIRE(readTx[i]->AssetID() == txToSave[i].AssetID());
+				REQUIRE(readTx[i]->OutputLock() == txToSave[i].OutputLock());
+				REQUIRE(readTx[i]->Amount() == txToSave[i].Amount());
+				REQUIRE(*readTx[i]->Payload() == *txToSave[i].Payload());
+				REQUIRE(readTx[i]->Timestamp() == txToSave[i].Timestamp());
+				REQUIRE(readTx[i]->BlockHeight() == txToSave[i].BlockHeight());
+				REQUIRE(readTx[i]->TxHash() == txToSave[i].TxHash());
+			}
+		}
+
+		SECTION("udpate test") {
+			DatabaseManager dbm(DBFILE);
+			std::vector<uint256> hashes;
+
+			for (int i = 0; i < txToUpdate.size(); ++i)
+				hashes.push_back(uint256(txToUpdate[i].TxHash()));
+			REQUIRE(dbm.UpdateCoinBase(hashes, txToUpdate[0].BlockHeight(), txToUpdate[0].Timestamp()));
+		}
+
+		SECTION("read after update test") {
+			DatabaseManager dbm(DBFILE);
+			std::vector<CoinBaseUTXOEntityPtr> readTx = dbm.GetAllCoinBase();
+			REQUIRE(TEST_TX_RECORD_CNT == readTx.size());
+
+			for (int i = 0; i < readTx.size(); ++i) {
+				REQUIRE(readTx[i]->TxHash() == txToSave[i].TxHash());
+				REQUIRE(readTx[i]->Spent() == txToSave[i].Spent());
+				REQUIRE(readTx[i]->Index() == txToSave[i].Index());
+				REQUIRE(readTx[i]->ProgramHash() == txToSave[i].ProgramHash());
+				REQUIRE(readTx[i]->AssetID() == txToSave[i].AssetID());
+				REQUIRE(readTx[i]->OutputLock() == txToSave[i].OutputLock());
+				REQUIRE(readTx[i]->Amount() == txToSave[i].Amount());
+				REQUIRE(*readTx[i]->Payload() == *txToSave[i].Payload());
+
+				REQUIRE(readTx[i]->Timestamp() == txToUpdate[i].Timestamp());
+				REQUIRE(readTx[i]->BlockHeight() == txToUpdate[i].BlockHeight());
+			}
+		}
+
+		SECTION("delete by txHash test") {
+			DatabaseManager dbm(DBFILE);
+
+			for (int i = 0; i < txToUpdate.size(); ++i) {
+				REQUIRE(dbm.DeleteCoinBase(txToUpdate[i].TxHash()));
+			}
+
+			std::vector<CoinBaseUTXOEntityPtr> readTx = dbm.GetAllCoinBase();
+			REQUIRE(0 == readTx.size());
+		}
+
+	}
+
 	SECTION("Transaction test") {
+#define TEST_TX_RECORD_CNT DEFAULT_RECORD_CNT
 		static std::vector<TransactionEntity> txToSave;
 		static std::vector<TransactionEntity> txToUpdate;
 
@@ -245,7 +347,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 				tx.buff = getRandBytes(35);
 				tx.blockHeight = (uint32_t)rand();
 				tx.timeStamp = (uint32_t)rand();
-				tx.txHash = getRandString(25);
+				tx.txHash = getRandHexString(64);
 				txToSave.push_back(tx);
 			}
 
@@ -253,8 +355,8 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 				TransactionEntity tx;
 
 				tx.buff = getRandBytes(49);
-				tx.blockHeight = (uint32_t)rand();
-				tx.timeStamp = (uint32_t)rand();
+				tx.blockHeight = (uint32_t)1234;
+				tx.timeStamp = (uint32_t)12345678;
 				tx.txHash = txToSave[i].txHash;
 				txToUpdate.push_back(tx);
 			}
@@ -283,9 +385,11 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		SECTION("Transaction udpate test") {
 			DatabaseManager dbm(DBFILE);
 
+			std::vector<uint256> hashes;
 			for (int i = 0; i < txToUpdate.size(); ++i) {
-				REQUIRE(dbm.UpdateTransaction(ISO, txToUpdate[i]));
+				hashes.push_back(uint256(txToUpdate[i].txHash));
 			}
+			REQUIRE(dbm.UpdateTransaction(hashes, txToUpdate[0].blockHeight, txToUpdate[0].timeStamp));
 		}
 
 		SECTION("Transaction read after update test") {

@@ -34,6 +34,23 @@ namespace Elastos {
 			return _content;
 		}
 
+		size_t PayloadVote::EstimateSize() const {
+			ByteStream stream;
+			size_t size = 0;
+
+			size += 1;
+			size += stream.WriteVarUint(_content.size());
+			for (size_t i = 0; i < _content.size(); ++i) {
+				size += 1;
+				size += stream.WriteVarUint(_content[i].candidates.size());
+				for (size_t j = 0; j < _content[i].candidates.size(); ++j) {
+					size += _content[i].candidates[j].size();
+				}
+			}
+
+			return size;
+		}
+
 		void PayloadVote::Serialize(ByteStream &ostream) const {
 			ostream.WriteUint8(_version);
 

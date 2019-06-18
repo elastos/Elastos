@@ -95,12 +95,6 @@ namespace Elastos {
 			}
 		}
 
-		void PeerManager::FireBlockHeightIncreased(uint32_t height) {
-			if (!_listener.expired()) {
-				_listener.lock()->blockHeightIncreased(height);
-			}
-		}
-
 		void PeerManager::FireSyncIsInactive(uint32_t time) {
 			if (!_listener.expired()) {
 				_listener.lock()->syncIsInactive(time);
@@ -672,6 +666,7 @@ namespace Elastos {
 			std::vector<Address> addrs;
 			_wallet->GetAllAddresses(addrs, 0, size_t(-1), true);
 			std::vector<UTXO> utxos = _wallet->GetAllUTXO();
+			const std::vector<CoinBaseUTXOPtr> &coinBaseUTXOs = _wallet->GetAllCoinBaseUTXO();
 			uint32_t blockHeight = (_lastBlock->GetHeight() > 100) ? _lastBlock->GetHeight() - 100 : 0;
 
 			std::vector<TransactionPtr> transactions = _wallet->TxUnconfirmedBefore(blockHeight);
@@ -714,8 +709,16 @@ namespace Elastos {
 			}
 
 			for (size_t i = 0; i < utxos.size(); i++) { // add UTXOs to watch for tx sending money from the wallet
-				bytes_t o = utxos[i].hash.bytes();
-				o.append(utxos[i].n);
+				bytes_t o = utxos[i].Hash().bytes();
+				o.append(utxos[i].Index());
+
+				if (!filter->ContainsData(o))
+					filter->InsertData(o);
+			}
+
+			for (size_t i = 0; i < coinBaseUTXOs.size() && !coinBaseUTXOs[i]->Spent(); ++i) {
+				bytes_t o = coinBaseUTXOs[i]->Hash().bytes();
+				o.append(coinBaseUTXOs[i]->Index());
 
 				if (!filter->ContainsData(o))
 					filter->InsertData(o);
@@ -1105,6 +1108,7 @@ namespace Elastos {
 			int isWalletTx = 0, hasPendingCallbacks = 0;
 			size_t relayCount = 0;
 			TransactionPtr tx = transaction;
+			CoinBaseUTXOPtr coinBase;
 			PublishedTransaction pubTx;
 
 			{
@@ -1126,7 +1130,14 @@ namespace Elastos {
 
 				if (_syncStartHeight == 0 || _wallet->ContainsTransaction(tx)) {
 					isWalletTx = _wallet->RegisterTransaction(tx);
-					if (isWalletTx) tx = _wallet->TransactionForHash(tx->GetHash());
+					if (isWalletTx) {
+						if (tx->IsCoinBase()) {
+							coinBase = _wallet->CoinBaseTxForHash(tx->GetHash());
+							tx = nullptr;
+						} else {
+							tx = _wallet->TransactionForHash(tx->GetHash());
+						}
+					}
 				} else {
 					tx = nullptr;
 				}
@@ -1186,7 +1197,9 @@ namespace Elastos {
 				// set timestamp when tx is verified
 				if (tx && relayCount >= _maxConnectCount && tx->GetBlockHeight() == TX_UNCONFIRMED &&
 					tx->GetTimestamp() == 0) {
-					_wallet->UpdateTransactions({tx->GetHash()}, TX_UNCONFIRMED, (uint32_t) time(NULL));
+					_wallet->UpdateTransactions({tx->GetHash()}, TX_UNCONFIRMED, time(NULL));
+				} else if (coinBase->BlockHeight() == TX_UNCONFIRMED && coinBase->Timestamp() == 0) {
+					_wallet->UpdateTransactions({coinBase->Hash()}, TX_UNCONFIRMED, time(NULL));
 				}
 			}
 
@@ -1302,7 +1315,6 @@ namespace Elastos {
 		void PeerManager::OnRelayedBlock(const PeerPtr &peer, const MerkleBlockPtr &block) {
 			size_t i, j, fpCount = 0, saveCount = 0;
 			MerkleBlockPtr b, b2, prev, next;
-			uint32_t txTime = 0;
 			std::vector<MerkleBlockPtr> saveBlocks;
 			std::vector<uint256> txHashes;
 			block->MerkleBlockTxHashes(txHashes);
@@ -1312,7 +1324,6 @@ namespace Elastos {
 				prev = _blocks.Get(block->GetPrevBlockHash());
 
 				if (prev) {
-					txTime = block->GetTimestamp();
 					block->SetHeight(prev->GetHeight() + 1);
 				}
 
@@ -1390,10 +1401,9 @@ namespace Elastos {
 					_blocks.Insert(block);
 					_lastBlock = block;
 					_wallet->SetBlockHeight(_lastBlock->GetHeight());
-					FireBlockHeightIncreased(block->GetHeight());
 
 					if (txHashes.size() > 0)
-						_wallet->UpdateTransactions(txHashes, block->GetHeight(), txTime);
+						_wallet->UpdateTransactions(txHashes, block->GetHeight(), block->GetTimestamp());
 					if (_downloadPeer) _downloadPeer->SetCurrentBlockHeight(block->GetHeight());
 
 					if (block->GetHeight() < _estimatedHeight && peer == _downloadPeer) {
@@ -1420,7 +1430,7 @@ namespace Elastos {
 
 					if (b->IsEqual(block.get())) { // if it's not on a fork, set block heights for its transactions
 						if (txHashes.size() > 0)
-							_wallet->UpdateTransactions(txHashes, block->GetHeight(), txTime);
+							_wallet->UpdateTransactions(txHashes, block->GetHeight(), block->GetTimestamp());
 						if (block->GetHeight() == _lastBlock->GetHeight()) _lastBlock = block;
 					}
 
@@ -1479,9 +1489,6 @@ namespace Elastos {
 
 						_lastBlock = block;
 						_wallet->SetBlockHeight(_lastBlock->GetHeight());
-						for (int k = 1; k <= block->GetHeight() - b2->GetHeight(); ++k) {
-							FireBlockHeightIncreased(b2->GetHeight() + k);
-						}
 
 						if (block->GetHeight() == _estimatedHeight) { // chain download is complete
 							saveCount =

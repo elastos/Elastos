@@ -51,9 +51,17 @@ namespace Elastos {
 		public:
 			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
 
+			virtual void onCoinBaseTxAdded(const CoinBaseUTXOPtr &cb);
+
+			virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
+
+			virtual void onCoinBaseSpent(const std::vector<uint256> &spentHashes);
+
+			virtual void onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
+
 			virtual void onTxAdded(const TransactionPtr &tx);
 
-			virtual void onTxUpdated(const uint256 &hash, uint32_t blockHeight, uint32_t timeStamp);
+			virtual void onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp);
 
 			virtual void onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
 
@@ -76,11 +84,11 @@ namespace Elastos {
 
 			virtual void txPublished(const std::string &hash, const nlohmann::json &result);
 
-			virtual void blockHeightIncreased(uint32_t blockHeight);
-
 			virtual void syncIsInactive(uint32_t time);
 
 		protected:
+			virtual std::vector<CoinBaseUTXOPtr> loadCoinBaseUTXOs();
+
 			virtual std::vector<TransactionPtr> loadTransactions();
 
 			virtual std::vector<MerkleBlockPtr> loadBlocks();

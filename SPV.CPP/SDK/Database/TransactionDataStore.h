@@ -8,9 +8,7 @@
 #include "Sqlite.h"
 #include "TableBase.h"
 
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/shared_mutex.hpp>
-#include <utility>
+#include <SDK/Common/uint256.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -47,8 +45,9 @@ namespace Elastos {
 			bool DeleteAllTransactions(const std::string &iso);
 			size_t GetAllTransactionsCount(const std::string &iso) const;
 			std::vector<TransactionEntity> GetAllTransactions(const std::string &iso) const;
-			bool UpdateTransaction(const std::string &iso, const TransactionEntity &transactionEntity);
+			bool UpdateTransaction(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 			bool DeleteTxByHash(const std::string &iso, const std::string &hash);
+			bool DeleteTxByHashes(const std::vector<std::string> &hashes);
 
 		private:
 			bool SelectTxByHash(const std::string &iso, const std::string &hash, TransactionEntity &txEntity) const;

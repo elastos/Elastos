@@ -17,6 +17,10 @@ namespace Elastos {
 		PayloadReturnDepositCoin::~PayloadReturnDepositCoin() {
 		}
 
+		size_t PayloadReturnDepositCoin::EstimateSize(uint8_t version) const {
+			return 0;
+		}
+
 		void PayloadReturnDepositCoin::Serialize(ByteStream &ostream, uint8_t version) const {
 
 		}

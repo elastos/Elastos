@@ -50,6 +50,7 @@ namespace Elastos {
 			bool BindNull(sqlite3_stmt *pStmt, int idx);
 			bool BindText(sqlite3_stmt *pStmt, int idx, const std::string &text, BindCallBack callBack);
 
+			bytes_ptr ColumnBlobBytes(sqlite3_stmt *pStmt, int iCol);
 			const void *ColumnBlob(sqlite3_stmt *pStmt, int iCol);
 			double ColumnDouble(sqlite3_stmt *pStmt, int iCol);
 			int ColumnInt(sqlite3_stmt *pStmt, int iCol);

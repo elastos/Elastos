@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_TRANSACTIONINPUT_H__
 
 #include <SDK/Common/ByteStream.h>
+#include <SDK/Plugin/Interface/ELAMessageSerializable.h>
 
 #include <nlohmann/json.hpp>
 
@@ -14,7 +15,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class TransactionInput {
+		class TransactionInput : public ELAMessageSerializable {
 		public:
 			TransactionInput();
 
@@ -33,6 +34,8 @@ namespace Elastos {
 			uint32_t GetSequence() const;
 
 			void SetSequence(uint32_t sequence);
+
+			size_t EstimateSize() const;
 
 			void Serialize(ByteStream &ostream) const;
 

@@ -28,6 +28,22 @@ namespace Elastos {
 		PayloadRechargeToSideChain::~PayloadRechargeToSideChain() {
 		}
 
+		size_t PayloadRechargeToSideChain::EstimateSize(uint8_t version) const {
+			size_t size = 0;
+			ByteStream stream;
+
+			if (version == PayloadRechargeToSideChain::V0) {
+				size += stream.WriteVarUint(_merkeProof.size());
+				size += _merkeProof.size();
+				size += stream.WriteVarUint(_mainChainTransaction.size());
+				size += _mainChainTransaction.size();
+			} else if (version == PayloadRechargeToSideChain::V1) {
+				size += _mainChainTxHash.size();
+			}
+
+			return size;
+		}
+
 		void PayloadRechargeToSideChain::Serialize(ByteStream &ostream, uint8_t version) const {
 			if (version == PayloadRechargeToSideChain::V0) {
 				ostream.WriteVarBytes(_merkeProof);

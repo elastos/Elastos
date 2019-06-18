@@ -43,6 +43,18 @@ namespace Elastos {
 			return _recordData;
 		}
 
+		size_t PayloadRecord::EstimateSize(uint8_t version) const {
+			size_t size = 0;
+			ByteStream stream;
+
+			size += stream.WriteVarUint(_recordType.size());
+			size += _recordType.size();
+			size += stream.WriteVarUint(_recordData.size());
+			size += _recordData.size();
+
+			return size;
+		}
+
 		void PayloadRecord::Serialize(ByteStream &ostream, uint8_t version) const {
 			ostream.WriteVarString(_recordType);
 			ostream.WriteVarBytes(_recordData);

@@ -30,6 +30,8 @@ TEST_CASE("Transaction Serialize and Deserialize", "[Transaction]") {
 		ByteStream stream;
 		tx1.Serialize(stream);
 
+		REQUIRE(tx1.EstimateSize() == stream.GetBytes().size());
+
 		Transaction tx2;
 		REQUIRE(tx2.Deserialize(stream));
 

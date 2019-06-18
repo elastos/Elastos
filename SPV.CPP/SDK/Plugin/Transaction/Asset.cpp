@@ -46,6 +46,19 @@ namespace Elastos {
 			return *this;
 		}
 
+		size_t Asset::EstimateSize() const {
+			size_t size = 0;
+			ByteStream stream;
+
+			size += stream.WriteVarUint(_name.size());
+			size += _name.size();
+			size += stream.WriteVarUint(_description.size());
+			size += _description.size();
+			size += 3;
+
+			return size;
+		}
+
 		void Asset::Serialize(ByteStream &ostream) const {
 			ostream.WriteVarString(_name);
 			ostream.WriteVarString(_description);

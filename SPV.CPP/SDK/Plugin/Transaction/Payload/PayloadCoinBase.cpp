@@ -33,6 +33,16 @@ namespace Elastos {
 			return _coinBaseData;
 		}
 
+		size_t PayloadCoinBase::EstimateSize(uint8_t version) const {
+			size_t size = 0;
+			ByteStream stream;
+
+			size += stream.WriteVarUint(_coinBaseData.size());
+			size += _coinBaseData.size();
+
+			return size;
+		}
+
 		void PayloadCoinBase::Serialize(ByteStream &ostream, uint8_t version) const {
 			ostream.WriteVarBytes(_coinBaseData);
 		}

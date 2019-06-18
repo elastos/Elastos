@@ -46,6 +46,33 @@ namespace Elastos {
 			return true;
 		}
 
+		size_t PayloadRegisterIdentification::EstimateSize(uint8_t version) const {
+			size_t size = 0;
+			ByteStream stream;
+
+			size += stream.WriteVarUint(_id.size());
+			size += _id.size();
+			size += stream.WriteVarUint(_sign.size());
+			size += _sign.size();
+
+			size += stream.WriteVarUint(_contents.size());
+			for (size_t i = 0; i < _contents.size(); ++i) {
+				size += stream.WriteVarUint(_contents[i].Path.size());
+				size += _contents[i].Path.size();
+
+				size += stream.WriteVarUint(_contents[i].Values.size());
+				for (size_t j = 0; j < _contents[i].Values.size(); ++j) {
+					size += _contents[i].Values[j].DataHash.size();
+					size += stream.WriteVarUint(_contents[i].Values[j].Proof.size());
+					size += _contents[i].Values[j].Proof.size();
+					size += stream.WriteVarUint(_contents[i].Values[j].Info.size());
+					size += _contents[i].Values[j].Info.size();
+				}
+			}
+
+			return size;
+		}
+
 		void PayloadRegisterIdentification::Serialize(ByteStream &ostream, uint8_t version) const {
 
 			assert(!_id.empty());

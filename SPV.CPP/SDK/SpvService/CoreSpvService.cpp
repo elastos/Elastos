@@ -31,9 +31,10 @@ namespace Elastos {
 			_reconnectSeconds = reconnectSeconds;
 
 			std::vector<TransactionPtr>  txs = loadTransactions();
+			std::vector<CoinBaseUTXOPtr> cbs = loadCoinBaseUTXOs();
 
 			if (_wallet == nullptr) {
-				_wallet = WalletPtr(new Wallet(loadAssets(), txs, _subAccount, createWalletListener()));
+				_wallet = WalletPtr(new Wallet(loadAssets(), txs, cbs, _subAccount, createWalletListener()));
 			}
 
 			if (_peerManager == nullptr) {
@@ -49,7 +50,7 @@ namespace Elastos {
 			}
 
 			for (size_t i = 0; i < txs.size(); ++i) {
-				if (txs[i]->GetBlockHeight() == TX_UNCONFIRMED) {
+				if (txs[i]->GetBlockHeight() == TX_UNCONFIRMED && _wallet->AmountSentByTx(txs[i]) > 0) {
 					_peerManager->PublishTransaction(txs[i]);
 				}
 			}
@@ -67,11 +68,28 @@ namespace Elastos {
 
 		}
 
+		void CoreSpvService::onCoinBaseTxAdded(const CoinBaseUTXOPtr &cb) {
+
+		}
+
+		void CoreSpvService::onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight,
+												 time_t timestamp) {
+
+		}
+
+		void CoreSpvService::onCoinBaseSpent(const std::vector<uint256> &spentHashes) {
+
+		}
+
+		void CoreSpvService::onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
+
+		}
+
 		void CoreSpvService::onTxAdded(const TransactionPtr &transaction) {
 
 		}
 
-		void CoreSpvService::onTxUpdated(const uint256 &hash, uint32_t blockHeight, uint32_t timeStamp) {
+		void CoreSpvService::onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp) {
 
 		}
 
@@ -116,8 +134,8 @@ namespace Elastos {
 
 		}
 
-		void CoreSpvService::blockHeightIncreased(uint32_t blockHeight) {
-
+		std::vector<CoinBaseUTXOPtr> CoreSpvService::loadCoinBaseUTXOs() {
+			return std::vector<CoinBaseUTXOPtr>();
 		}
 
 		std::vector<TransactionPtr> CoreSpvService::loadTransactions() {
@@ -140,11 +158,6 @@ namespace Elastos {
 			return std::vector<AssetPtr>();
 		}
 
-		int CoreSpvService::getForkId() const {
-			//todo complete me
-			return -1;
-		}
-
 		const CoreSpvService::PeerManagerListenerPtr &CoreSpvService::createPeerManagerListener() {
 			if (_peerManagerListener == nullptr) {
 				_peerManagerListener = PeerManagerListenerPtr(
@@ -155,7 +168,7 @@ namespace Elastos {
 
 		const CoreSpvService::WalletListenerPtr &CoreSpvService::createWalletListener() {
 			if (_walletListener == nullptr) {
-				_walletListener = WalletListenerPtr(new WrappedExceptionTransactionHubListener(this));
+				_walletListener = WalletListenerPtr(new WrappedExceptionWalletListener(this));
 			}
 			return _walletListener;
 		}
@@ -168,9 +181,7 @@ namespace Elastos {
 			try {
 				_listener->syncStarted();
 			} catch (const std::exception &ex) {
-				Log::error("Peer manager callback (syncStarted) error: {}", ex.what());
-			} catch (...) {
-				Log::error("Peer manager callback (syncStarted) error.");
+				Log::error("syncStarted exception: {}", ex.what());
 			}
 		}
 
@@ -178,30 +189,24 @@ namespace Elastos {
 															   time_t lastBlockTime) {
 			try {
 				_listener->syncProgress(currentHeight, estimatedHeight, lastBlockTime);
-			} catch (const std::exception &ex) {
-				Log::error("Peer manager callback (syncProgress) error: {}", ex.what());
-			} catch (...) {
-				Log::error("Peer manager callback (syncProgress) error");
+			} catch (const std::exception &e) {
+				Log::error("syncProgress exception: {}", e.what());
 			}
 		}
 
 		void WrappedExceptionPeerManagerListener::syncStopped(const std::string &error) {
 			try {
 				_listener->syncStopped(error);
-			} catch (const std::exception &ex) {
-				Log::error("Peer manager callback (syncStopped) error: {}", ex.what());
-			} catch (...) {
-				Log::error("Peer manager callback (syncStopped) error.");
+			} catch (const std::exception &e) {
+				Log::error("syncStopped exception: {}", e.what());
 			}
 		}
 
 		void WrappedExceptionPeerManagerListener::txStatusUpdate() {
 			try {
 				_listener->txStatusUpdate();
-			} catch (const std::exception &ex) {
-				Log::error("Peer manager callback (txStatusUpdate) error: {}", ex.what());
-			} catch (...) {
-				Log::error("Peer manager callback (txStatusUpdate) error.");
+			} catch (const std::exception &e) {
+				Log::error("txStatusUpdate exception: {}", e.what());
 			}
 		}
 
@@ -209,10 +214,8 @@ namespace Elastos {
 
 			try {
 				_listener->saveBlocks(replace, blocks);
-			} catch (const std::exception &ex) {
-				Log::error("Peer manager callback (saveBlocks) error: {}", ex.what());
-			} catch (...) {
-				Log::error("Peer manager callback (saveBlocks) error.");
+			} catch (const std::exception &e) {
+				Log::error("saveBlocks exception: {}", e.what());
 			}
 		}
 
@@ -221,20 +224,16 @@ namespace Elastos {
 
 			try {
 				_listener->savePeers(replace, peers);
-			} catch (const std::exception &ex) {
-				Log::error("Peer manager callback (savePeers) error: {}", ex.what());
-			} catch (...) {
-				Log::error("Peer manager callback (savePeers) error.");
+			} catch (const std::exception &e) {
+				Log::error("savePeers exception: {}", e.what());
 			}
 		}
 
 		bool WrappedExceptionPeerManagerListener::networkIsReachable() {
 			try {
 				return _listener->networkIsReachable();
-			} catch (const std::exception &ex) {
-				Log::error("Peer manager callback (networkIsReachable) error: {}", ex.what());
-			} catch (...) {
-				Log::error("Peer manager callback (networkIsReachable) error.");
+			} catch (const std::exception &e) {
+				Log::error("networkIsReachable exception: {}", e.what());
 			}
 
 			return true;
@@ -243,30 +242,16 @@ namespace Elastos {
 		void WrappedExceptionPeerManagerListener::txPublished(const std::string &hash, const nlohmann::json &result) {
 			try {
 				_listener->txPublished(hash, result);
-			} catch (const std::exception &ex) {
-				Log::error("Peer manager callback (txPublished) error: {}", ex.what());
-			} catch (...) {
-				Log::error("Peer manager callback (txPublished) error.");
-			}
-		}
-
-		void WrappedExceptionPeerManagerListener::blockHeightIncreased(uint32_t blockHeight) {
-			try {
-				_listener->blockHeightIncreased(blockHeight);
-			} catch (const std::exception &ex) {
-				Log::error("Peer manager callback (blockHeightIncreased) error: {}", ex.what());
-			} catch (...) {
-				Log::error("Peer manager callback (blockHeightIncreased) error.");
+			} catch (const std::exception &e) {
+				Log::error("txPublished exception: {}", e.what());
 			}
 		}
 
 		void WrappedExceptionPeerManagerListener::syncIsInactive(uint32_t time) {
 			try {
 				_listener->syncIsInactive(time);
-			} catch (const std::exception &ex) {
-				Log::error("Peer manager callback (blockHeightIncreased) error: {}", ex.what());
-			} catch (...) {
-				Log::error("Peer manager callback (blockHeightIncreased) error.");
+			} catch (const std::exception &e) {
+				Log::error("syncIsInactive exception: {}", e.what());
 			}
 		}
 
@@ -284,10 +269,8 @@ namespace Elastos {
 			_executor->Execute(Runnable([this]() -> void {
 				try {
 					_listener->syncStarted();
-				} catch (const std::exception &ex) {
-					Log::error("Peer manager callback (syncStarted) error: {}", ex.what());
-				} catch (...) {
-					Log::error("Peer manager callback (syncStarted) error.");
+				} catch (const std::exception &e) {
+					Log::error("syncStarted exception: {}", e.what());
 				}
 			}));
 		}
@@ -297,10 +280,8 @@ namespace Elastos {
 			_executor->Execute(Runnable([this, currentHeight, estimatedHeight, lastBlockTime]() -> void {
 				try {
 					_listener->syncProgress(currentHeight, estimatedHeight, lastBlockTime);
-				} catch (const std::exception &ex) {
-					Log::error("Peer manager callback (syncProgress) error: {}", ex.what());
-				} catch (...) {
-					Log::error("Peer manager callback (syncProgress) error");
+				} catch (const std::exception &e) {
+					Log::error("syncProgress exception: {}", e.what());
 				}
 			}));
 		}
@@ -309,10 +290,8 @@ namespace Elastos {
 			_executor->Execute(Runnable([this, error]() -> void {
 				try {
 					_listener->syncStopped(error);
-				} catch (const std::exception &ex) {
-					Log::error("Peer manager callback (syncStopped) error: {}", ex.what());
-				} catch (...) {
-					Log::error("Peer manager callback (syncStopped) error.");
+				} catch (const std::exception &e) {
+					Log::error("syncStopped exception: {}", e.what());
 				}
 			}));
 		}
@@ -321,10 +300,8 @@ namespace Elastos {
 			_executor->Execute(Runnable([this]() -> void {
 				try {
 					_listener->txStatusUpdate();
-				} catch (const std::exception &ex) {
-					Log::error("Peer manager callback (txStatusUpdate) error: {}", ex.what());
-				} catch (...) {
-					Log::error("Peer manager callback (txStatusUpdate) error.");
+				} catch (const std::exception &e) {
+					Log::error("txStatusUpdate exception: {}", e.what());
 				}
 			}));
 		}
@@ -333,10 +310,8 @@ namespace Elastos {
 			_executor->Execute(Runnable([this, replace, blocks]() -> void {
 				try {
 					_listener->saveBlocks(replace, blocks);
-				} catch (const std::exception &ex) {
-					Log::error("Peer manager callback (saveBlocks) error: {}", ex.what());
-				} catch (...) {
-					Log::error("Peer manager callback (saveBlocks) error.");
+				} catch (const std::exception &e) {
+					Log::error("saveBlocks exception: {}", e.what());
 				}
 			}));
 		}
@@ -345,10 +320,8 @@ namespace Elastos {
 			_executor->Execute(Runnable([this, replace, peers]() -> void {
 				try {
 					_listener->savePeers(replace, peers);
-				} catch (const std::exception &ex) {
-					Log::error("Peer manager callback (savePeers) error: {}", ex.what());
-				} catch (...) {
-					Log::error("Peer manager callback (savePeers) error.");
+				} catch (const std::exception &e) {
+					Log::error("savePeers exception: {}", e.what());
 				}
 			}));
 		}
@@ -359,10 +332,8 @@ namespace Elastos {
 			_executor->Execute(Runnable([this, result]() -> void {
 				try {
 					_listener->networkIsReachable();
-				} catch (const std::exception &ex) {
-					Log::error("Peer manager callback (networkIsReachable) error: {}", ex.what());
-				} catch (...) {
-					Log::error("Peer manager callback (networkIsReachable) error.");
+				} catch (const std::exception &e) {
+					Log::error("networkIsReachable exception: {}", e.what());
 				}
 			}));
 			return result;
@@ -373,23 +344,8 @@ namespace Elastos {
 			_executor->Execute(Runnable([this, hash, result]() -> void {
 				try {
 					_listener->txPublished(hash, result);
-				} catch (const std::exception &ex) {
-					Log::error("Peer manager callback (txPublished) error: {}", ex.what());
-				} catch (...) {
-					Log::error("Peer manager callback (txPublished) error.");
-				}
-			}));
-		}
-
-		void WrappedExecutorPeerManagerListener::blockHeightIncreased(uint32_t blockHeight) {
-			_executor->Execute(Runnable([this, blockHeight]() -> void {
-				try {
-					if (_listener)
-						_listener->blockHeightIncreased(blockHeight);
-				} catch (const std::exception &ex) {
-					Log::error("Peer manager callback (blockHeightIncreased) error: {}", ex.what());
-				} catch (...) {
-					Log::error("Peer manager callback (blockHeightIncreased) error.");
+				} catch (const std::exception &e) {
+					Log::error("txPublished exception: {}", e.what());
 				}
 			}));
 		}
@@ -398,140 +354,196 @@ namespace Elastos {
 			_reconnectExecutor->Execute(Runnable([this, time]() -> void {
 				try {
 					_listener->syncIsInactive(time);
-				} catch (const std::exception &ex) {
-					Log::error("Peer manager callback (blockHeightIncreased) error: {}", ex.what());
-				} catch (...) {
-					Log::error("Peer manager callback (blockHeightIncreased) error.");
+				} catch (const std::exception &e) {
+					Log::error("Peer manager callback (syncIsInactive) error: {}", e.what());
 				}
 			}));
 		}
 
-		WrappedExceptionTransactionHubListener::WrappedExceptionTransactionHubListener(Wallet::Listener *listener) :
+		WrappedExceptionWalletListener::WrappedExceptionWalletListener(Wallet::Listener *listener) :
 				_listener(listener) {
 		}
 
-		void WrappedExceptionTransactionHubListener::balanceChanged(const uint256 &asset, const BigInt &balance) {
+		void WrappedExceptionWalletListener::balanceChanged(const uint256 &asset, const BigInt &balance) {
 			try {
 				_listener->balanceChanged(asset, balance);
-			} catch (const std::exception &ex) {
-				Log::error("Wallet callback (balanceChanged) error: {}", ex.what());
-			} catch (...) {
-				Log::error("Wallet callback (balanceChanged) error.");
+			} catch (const std::exception &e) {
+				Log::error("balanceChanged exception: {}", e.what());
 			}
 		}
 
-		void WrappedExceptionTransactionHubListener::onTxAdded(const TransactionPtr &transaction) {
+		void WrappedExceptionWalletListener::onCoinBaseTxAdded(const CoinBaseUTXOPtr &cb) {
+			try {
+				_listener->onCoinBaseTxAdded(cb);
+			} catch (const std::exception &e) {
+				Log::error("onCoinBaseTxAdded exception: {}", e.what());
+			}
+		}
+
+		void WrappedExceptionWalletListener::onCoinBaseTxUpdated(const std::vector<uint256> &hashes,
+																 uint32_t blockHeight,
+																 time_t timestamp) {
+			try {
+				_listener->onCoinBaseTxUpdated(hashes, blockHeight, timestamp);
+			} catch (const std::exception &e) {
+				Log::error("onCoinBaseTxUpdated exception: {}", e.what());
+			}
+		}
+
+		void WrappedExceptionWalletListener::onCoinBaseSpent(const std::vector<uint256> &spentHashes) {
+			try {
+				_listener->onCoinBaseSpent(spentHashes);
+			} catch (const std::exception &e) {
+				Log::error("onCoinBaseSpent exception: {}", e.what());
+			}
+		}
+
+		void WrappedExceptionWalletListener::onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser,
+																 bool recommendRescan) {
+			try {
+				_listener->onCoinBaseTxDeleted(hash, notifyUser, recommendRescan);
+			} catch (const std::exception &e) {
+				Log::error("onCoinBaseTxDeleted exception: {}", e.what());
+			}
+		}
+
+		void WrappedExceptionWalletListener::onTxAdded(const TransactionPtr &transaction) {
 			try {
 				_listener->onTxAdded(transaction);
-			} catch (const std::exception &ex) {
-				Log::error("Wallet callback (onTxAdded) error: {}", ex.what());
-			} catch (...) {
-				Log::error("Wallet callback (onTxAdded) error.");
+			} catch (const std::exception &e) {
+				Log::error("onTxAdded exception: {}", e.what());
 			}
 		}
 
-		void WrappedExceptionTransactionHubListener::onTxUpdated(
-				const uint256 &hash, uint32_t blockHeight, uint32_t timeStamp) {
+		void WrappedExceptionWalletListener::onTxUpdated(
+			const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp) {
 
 			try {
-				_listener->onTxUpdated(hash, blockHeight, timeStamp);
-			} catch (const std::exception &ex) {
-				Log::error("Wallet callback (onTxUpdated) error: {}", ex.what());
-			} catch (...) {
-				Log::error("Wallet callback (onTxUpdated) error.");
+				_listener->onTxUpdated(hashes, blockHeight, timeStamp);
+			} catch (const std::exception &e) {
+				Log::error("onTxUpdated exception: {}", e.what());
 			}
 		}
 
-		void WrappedExceptionTransactionHubListener::onTxDeleted(const uint256 &hash, bool notifyUser,
+		void WrappedExceptionWalletListener::onTxDeleted(const uint256 &hash, bool notifyUser,
 																 bool recommendRescan) {
 			try {
 				_listener->onTxDeleted(hash, notifyUser, recommendRescan);
-			} catch (const std::exception &ex) {
-				Log::error("Wallet callback (onTxDeleted) error: {}", ex.what());
-			} catch (...) {
-				Log::error("Wallet callback (onTxDeleted) error.");
+			} catch (const std::exception &e) {
+				Log::error("onTxDeleted exception: {}", e.what());
 			}
 		}
 
-		void WrappedExceptionTransactionHubListener::onAssetRegistered(const AssetPtr &asset,
+		void WrappedExceptionWalletListener::onAssetRegistered(const AssetPtr &asset,
 																	   uint64_t amount,
 																	   const uint168 &controller) {
 			try {
 				_listener->onAssetRegistered(asset, amount, controller);
-			} catch (const std::exception &ex) {
-				Log::error("Wallet callback (onTxDeleted) error: {}", ex.what());
-			} catch (...) {
-				Log::error("Wallet callback (onTxDeleted) error.");
+			} catch (const std::exception &e) {
+				Log::error("onTxDeleted exception: {}", e.what());
 			}
 		}
 
-		WrappedExecutorTransactionHubListener::WrappedExecutorTransactionHubListener(
+		WrappedExecutorWalletListener::WrappedExecutorWalletListener(
 				Wallet::Listener *listener,
 				Executor *executor) :
 				_listener(listener),
 				_executor(executor) {
 		}
 
-		void WrappedExecutorTransactionHubListener::balanceChanged(const uint256 &asset, const BigInt &balance) {
+		void WrappedExecutorWalletListener::balanceChanged(const uint256 &asset, const BigInt &balance) {
 			_executor->Execute(Runnable([this, asset, balance]() -> void {
 				try {
 					_listener->balanceChanged(asset, balance);
-				} catch (const std::exception &ex) {
-					Log::error("Wallet callback (balanceChanged) error: {}", ex.what());
-				} catch (...) {
-					Log::error("Wallet callback (balanceChanged) error.");
+				} catch (const std::exception &e) {
+					Log::error("balanceChanged exception: {}", e.what());
 				}
 			}));
 		}
 
-		void WrappedExecutorTransactionHubListener::onTxAdded(const TransactionPtr &transaction) {
-			_executor->Execute(Runnable([this, transaction]() -> void {
+		void WrappedExecutorWalletListener::onCoinBaseTxAdded(const CoinBaseUTXOPtr &cb) {
+			_executor->Execute(Runnable([this, cb]() -> void {
 				try {
-					_listener->onTxAdded(transaction);
-				} catch (const std::exception &ex) {
-					Log::error("Wallet callback (onTxAdded) error: {}", ex.what());
-				} catch (...) {
-					Log::error("Wallet callback (onTxAdded) error.");
+					_listener->onCoinBaseTxAdded(cb);
+				} catch (const std::exception &e) {
+					Log::error("onCoinBaseTxAdded exception: {}", e.what());
 				}
 			}));
 		}
 
-		void WrappedExecutorTransactionHubListener::onTxUpdated(
-				const uint256 &hash, uint32_t blockHeight, uint32_t timeStamp) {
-			_executor->Execute(Runnable([this, hash, blockHeight, timeStamp]() -> void {
+		void WrappedExecutorWalletListener::onCoinBaseTxUpdated(const std::vector<uint256> &hashes,
+																uint32_t blockHeight,
+																time_t timestamp) {
+			_executor->Execute(Runnable([this, hashes, blockHeight, timestamp]() -> void {
 				try {
-					_listener->onTxUpdated(hash, blockHeight, timeStamp);
-				} catch (const std::exception &ex) {
-					Log::error("Wallet callback (onTxUpdated) error: {}", ex.what());
-				} catch (...) {
-					Log::error("Wallet callback (onTxUpdated) error.");
+					_listener->onCoinBaseTxUpdated(hashes, blockHeight, timestamp);
+				} catch (const std::exception &e) {
+					Log::error("onCoinBaseTxUpdated exception: {}", e.what());
 				}
 			}));
 		}
 
-		void WrappedExecutorTransactionHubListener::onTxDeleted(
+		void WrappedExecutorWalletListener::onCoinBaseSpent(const std::vector<uint256> &spentHashes) {
+			_executor->Execute(Runnable([this, spentHashes]() -> void {
+				try {
+					_listener->onCoinBaseSpent(spentHashes);
+				} catch (const std::exception &e) {
+					Log::error("onCoinBaseSpent exception: {}", e.what());
+				}
+			}));
+		}
+
+		void WrappedExecutorWalletListener::onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser,
+																bool recommendRescan) {
+			_executor->Execute(Runnable([this, hash, notifyUser, recommendRescan]() -> void {
+				try {
+					_listener->onCoinBaseTxDeleted(hash, notifyUser, recommendRescan);
+				} catch (const std::exception &e) {
+					Log::error("onCoinBaseTxDeleted exception: {}", e.what());
+				}
+			}));
+		}
+
+		void WrappedExecutorWalletListener::onTxAdded(const TransactionPtr &tx) {
+			_executor->Execute(Runnable([this, tx]() -> void {
+				try {
+					_listener->onTxAdded(tx);
+				} catch (const std::exception &e) {
+					Log::error("onTxAdded exception: {}", e.what());
+				}
+			}));
+		}
+
+		void WrappedExecutorWalletListener::onTxUpdated(
+			const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp) {
+			_executor->Execute(Runnable([this, hashes, blockHeight, timeStamp]() -> void {
+				try {
+					_listener->onTxUpdated(hashes, blockHeight, timeStamp);
+				} catch (const std::exception &e) {
+					Log::error("onTxUpdated exception: {}", e.what());
+				}
+			}));
+		}
+
+		void WrappedExecutorWalletListener::onTxDeleted(
 				const uint256 &hash, bool notifyUser, bool recommendRescan) {
 			_executor->Execute(Runnable([this, hash, notifyUser, recommendRescan]() -> void {
 				try {
 					_listener->onTxDeleted(hash, notifyUser, recommendRescan);
-				} catch (const std::exception &ex) {
-					Log::error("Wallet callback (onTxDeleted) error: {}", ex.what());
-				} catch (...) {
-					Log::error("Wallet callback (onTxDeleted) error.");
+				} catch (const std::exception &e) {
+					Log::error("onTxDeleted exception: {}", e.what());
 				}
 			}));
 		}
 
-		void WrappedExecutorTransactionHubListener::onAssetRegistered(const AssetPtr &asset,
+		void WrappedExecutorWalletListener::onAssetRegistered(const AssetPtr &asset,
 																	  uint64_t amount,
 																	  const uint168 &controller) {
 			_executor->Execute(Runnable([this, asset, amount, controller]() -> void {
 				try {
 					_listener->onAssetRegistered(asset, amount, controller);
-				} catch (const std::exception &ex) {
-					Log::error("Wallet callback (onAssetRegistered) error: {}", ex.what());
-				} catch (...) {
-					Log::error("Wallet callback (onAssetRegistered) error.");
+				} catch (const std::exception &e) {
+					Log::error("onAssetRegistered exception: {}", e.what());
 				}
 			}));
 		}

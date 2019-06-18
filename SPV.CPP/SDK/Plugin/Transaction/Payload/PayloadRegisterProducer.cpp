@@ -116,6 +116,27 @@ namespace Elastos {
 			return true;
 		}
 
+		size_t PayloadRegisterProducer::EstimateSize(uint8_t version) const {
+			size_t size = 0;
+			ByteStream stream;
+
+			size += stream.WriteVarUint(_ownerPublicKey.size());
+			size += _ownerPublicKey.size();
+			size += stream.WriteVarUint(_nodePublicKey.size());
+			size += _nodePublicKey.size();
+			size += stream.WriteVarUint(_nickName.size());
+			size += _nickName.size();
+			size += stream.WriteVarUint(_url.size());
+			size += _url.size();
+			size += sizeof(_location);
+			size += stream.WriteVarUint(_address.size());
+			size += _address.size();
+			size += stream.WriteVarUint(_signature.size());
+			size += _signature.size();
+
+			return size;
+		}
+
 		void PayloadRegisterProducer::Serialize(ByteStream &ostream, uint8_t version) const {
 			SerializeUnsigned(ostream, version);
 			ostream.WriteVarBytes(_signature);

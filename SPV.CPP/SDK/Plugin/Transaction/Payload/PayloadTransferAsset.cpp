@@ -20,6 +20,10 @@ namespace Elastos {
 
 		}
 
+		size_t PayloadTransferAsset::EstimateSize(uint8_t version) const {
+			return 0;
+		}
+
 		void PayloadTransferAsset::Serialize(ByteStream &ostream, uint8_t version) const {
 
 		}

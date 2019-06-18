@@ -54,6 +54,21 @@ namespace Elastos {
 			return _sideChainTransactionHash;
 		}
 
+		size_t PayloadWithDrawAsset::EstimateSize(uint8_t version) const {
+			size_t size = 0;
+			ByteStream stream;
+
+			size += sizeof(_blockHeight);
+			size += stream.WriteVarUint(_genesisBlockAddress.size());
+			size += _genesisBlockAddress.size();
+			size += stream.WriteVarUint(_sideChainTransactionHash.size());
+
+			for (size_t i = 0; i < _sideChainTransactionHash.size(); ++i)
+				size += _sideChainTransactionHash[i].size();
+
+			return size;
+		}
+
 		void PayloadWithDrawAsset::Serialize(ByteStream &ostream, uint8_t version) const {
 			ostream.WriteUint32(_blockHeight);
 			ostream.WriteVarString(_genesisBlockAddress);

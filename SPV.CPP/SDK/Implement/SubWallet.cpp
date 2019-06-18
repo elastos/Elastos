@@ -127,34 +127,10 @@ namespace Elastos {
 			std::vector<TransactionOutput> outputs;
 			outputs.emplace_back(amount, receiveAddr, assetID);
 
-			TransactionPtr tx = wallet->CreateTransaction(fromAddress, outputs, useVotedUTXO, false);
-
-			std::set<std::string> uniqueAddress;
-			std::vector<TransactionInput> &inputs = tx->GetInputs();
-			for (size_t i = 0; i < inputs.size(); ++i) {
-				TransactionPtr txInput = wallet->TransactionForHash(inputs[i].GetTransctionHash());
-				if (txInput) {
-					TransactionOutput &o = txInput->GetOutputs()[inputs[i].GetIndex()];
-					Address addr = o.GetAddress();
-					if (o.GetOutputLock() > tx->GetLockTime()) {
-						tx->SetLockTime(o.GetOutputLock());
-					}
-
-					if (uniqueAddress.find(addr.String()) == uniqueAddress.end()) {
-						uniqueAddress.insert(addr.String());
-						bytes_t code = _subAccount->GetRedeemScript(addr);
-						tx->AddProgram(Program(code, bytes_t()));
-					}
-				}
-			}
+			TransactionPtr tx = wallet->CreateTransaction(fromAddress, outputs, memo, useVotedUTXO, false);
 
 			if (_info->GetChainID() == "ELA") {
 				tx->SetVersion(Transaction::TxVersion::V09);
-			}
-
-			tx->AddAttribute(Attribute(Attribute::Nonce, bytes_t(std::to_string((std::rand() & 0xFFFFFFFF)))));
-			if (!memo.empty()) {
-				tx->AddAttribute(Attribute(Attribute::Memo, bytes_t(memo.c_str(), memo.size())));
 			}
 
 			return tx;
@@ -244,47 +220,52 @@ namespace Elastos {
 						  });
 		}
 
-		void SubWallet::onTxAdded(const TransactionPtr &transaction) {
-			if (transaction == nullptr)
-				return;
-
-			const uint256 &txHash = transaction->GetHash();
-			_confirmingTxs[txHash] = transaction;
-
-			if (transaction->GetTransactionType() != Transaction::CoinBase) {
-				fireTransactionStatusChanged(txHash, "Added", transaction->ToJson(), 0);
-			} else {
-				Log::debug("{} onTxAdded: {}", _walletManager->getWallet()->GetWalletID(), txHash.GetHex());
-			}
+		void SubWallet::onCoinBaseTxAdded(const CoinBaseUTXOPtr &cb) {
+			Log::debug("{} onCoinBaseTxAdded: {}", _walletManager->getWallet()->GetWalletID(), cb->Hash().GetHex());
 		}
 
-		void SubWallet::onTxUpdated(const uint256 &hash, uint32_t blockHeight, uint32_t timeStamp) {
+		void SubWallet::onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp) {
+			Log::debug("{} onCoinBaseTxUpdated {}, height: {}, timestamp: {}: [{},{} {}]",
+					   _walletManager->getWallet()->GetWalletID(),
+					   hashes.size(), blockHeight, timestamp, hashes.front().GetHex(),
+					   (hashes.size() > 2 ? " ...," : ""),
+					   (hashes.size() > 1 ? hashes.back().GetHex() : ""));
+		}
+
+		void SubWallet::onCoinBaseSpent(const std::vector<uint256> &spentHashes) {
+			Log::debug("{} onCoinBaseSpent {}: [{},{} {}]",
+					   _walletManager->getWallet()->GetWalletID(),
+					   spentHashes.size(), spentHashes.front().GetHex(),
+					   (spentHashes.size() > 2 ? " ...," : ""),
+					   (spentHashes.size() > 1 ? spentHashes.back().GetHex() : ""));
+		}
+
+		void SubWallet::onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
+			Log::debug("{} onCoinBaseTxDeleted: {}, notify: {}, rescan: {}",
+					   _walletManager->getWallet()->GetWalletID(), hash.GetHex(), notifyUser, recommendRescan);
+		}
+
+		void SubWallet::onTxAdded(const TransactionPtr &tx) {
+			const uint256 &txHash = tx->GetHash();
+
+			fireTransactionStatusChanged(txHash, "Added", tx->ToJson(), 0);
+		}
+
+		void SubWallet::onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp) {
 			if (_walletManager->GetAllTransactionsCount() == 1) {
 				_info->SetEaliestPeerTime(timeStamp);
 				_parent->Save();
 			}
 
-			if (_confirmingTxs.find(hash) == _confirmingTxs.end()) {
-				_confirmingTxs[hash] = _walletManager->getWallet()->TransactionForHash(uint256(hash));
-			}
+			for (size_t i = 0; i < hashes.size(); ++i) {
+				TransactionPtr tx = _walletManager->getWallet()->TransactionForHash(hashes[i]);
+				uint32_t confirm = tx->GetConfirms(blockHeight);
 
-			uint32_t txBlockHeight = _confirmingTxs[hash]->GetBlockHeight();
-			uint32_t confirm = txBlockHeight != TX_UNCONFIRMED &&
-								blockHeight >= txBlockHeight ? blockHeight - txBlockHeight + 1 : 0;
-
-			if (_confirmingTxs[hash]->GetTransactionType() != Transaction::CoinBase) {
-				fireTransactionStatusChanged(hash, "Updated", _confirmingTxs[hash]->ToJson(), confirm);
-			} else {
-				Log::debug("{} onTxUpdated: {}, confirm: {}", _walletManager->getWallet()->GetWalletID(),
-						   hash.GetHex(), confirm);
+				fireTransactionStatusChanged(hashes[i], "Updated", nlohmann::json(), confirm);
 			}
 		}
 
 		void SubWallet::onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
-			if (_confirmingTxs.find(hash) != _confirmingTxs.end()) {
-				_confirmingTxs.erase(hash);
-			}
-
 			fireTransactionStatusChanged(hash, "Deleted", nlohmann::json(), 0);
 		}
 
@@ -386,31 +367,6 @@ namespace Elastos {
 			std::for_each(_callbacks.begin(), _callbacks.end(), [&hash, &result](ISubWalletCallback *callback) {
 				callback->OnTxPublished(hash, result);
 			});
-		}
-
-		void SubWallet::blockHeightIncreased(uint32_t blockHeight) {
-			if (_walletManager->getPeerManager()->SyncSucceeded()) {
-				for (TransactionMap::iterator it = _confirmingTxs.begin(); it != _confirmingTxs.end(); ++it) {
-					uint32_t txBlockHeight = it->second->GetBlockHeight();
-					uint32_t confirms = txBlockHeight != TX_UNCONFIRMED &&
-										blockHeight >= txBlockHeight ? blockHeight - txBlockHeight + 1 : 0;
-
-					if (confirms > 1) {
-						fireTransactionStatusChanged(it->first, "Updated", it->second->ToJson(), confirms);
-					}
-				}
-			}
-
-			for (TransactionMap::iterator it = _confirmingTxs.begin(); it != _confirmingTxs.end();) {
-				uint32_t txBlockHeight = it->second->GetBlockHeight();
-				uint32_t confirms = txBlockHeight != TX_UNCONFIRMED &&
-									blockHeight >= txBlockHeight ? blockHeight - txBlockHeight + 1 : 0;
-
-				if (confirms >= 6)
-					_confirmingTxs.erase(it++);
-				else
-					++it;
-			}
 		}
 
 		void SubWallet::fireTransactionStatusChanged(const uint256 &txid, const std::string &status,
