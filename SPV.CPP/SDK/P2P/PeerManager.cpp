@@ -1198,7 +1198,7 @@ namespace Elastos {
 				if (tx && relayCount >= _maxConnectCount && tx->GetBlockHeight() == TX_UNCONFIRMED &&
 					tx->GetTimestamp() == 0) {
 					_wallet->UpdateTransactions({tx->GetHash()}, TX_UNCONFIRMED, time(NULL));
-				} else if (coinBase->BlockHeight() == TX_UNCONFIRMED && coinBase->Timestamp() == 0) {
+				} else if (coinBase && coinBase->BlockHeight() == TX_UNCONFIRMED && coinBase->Timestamp() == 0) {
 					_wallet->UpdateTransactions({coinBase->Hash()}, TX_UNCONFIRMED, time(NULL));
 				}
 			}

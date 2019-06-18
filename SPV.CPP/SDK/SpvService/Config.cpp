@@ -67,6 +67,7 @@ namespace Elastos {
 
 		void Config::LoadConfig(const libconfig::Config &cfg, const std::string &netType) {
 			try {
+				unsigned long long minFee, feePerKB;
 				const libconfig::Setting &chainsSetting = cfg.getRoot()["Chains"];
 
 				ErrorChecker::CheckLogic(!chainsSetting.isList() || chainsSetting.getLength() == 0,
@@ -80,14 +81,16 @@ namespace Elastos {
 					if (!(chainSetting.lookupValue("ID", chainConfig->_id) &&
 						  chainSetting.lookupValue("Index", chainConfig->_index) &&
 						  chainSetting.lookupValue("NetType", chainConfig->_netType) &&
-						  chainSetting.lookupValue("MinFee", chainConfig->_minFee) &&
-						  chainSetting.lookupValue("FeePerKB", chainConfig->_feePerKB) &&
+						  chainSetting.lookupValue("MinFee", minFee) &&
+						  chainSetting.lookupValue("FeePerKB", feePerKB) &&
 						  chainSetting.lookupValue("DisconnectionTime", chainConfig->_disconnectionTime) &&
 						  chainSetting.lookupValue("PluginType", chainConfig->_pluginType) &&
 						  chainSetting.lookupValue("GenesisAddress", chainConfig->_genesisAddress))) {
 
 						ErrorChecker::ThrowLogicException(Error::ReadConfigFileError, "invalid config");
 					}
+					chainConfig->_minFee = minFee;
+					chainConfig->_feePerKB = feePerKB;
 					if (netType.empty())
 						chainConfig->_chainParameters = LoadChainParameter(chainSetting["ChainParameters"][chainConfig->NetType()]);
 					else
@@ -105,15 +108,16 @@ namespace Elastos {
 			ChainParamsPtr chainParams(new ChainParams());
 
 			uint32_t port;
+			unsigned long long services;
 			if (!(paramSetting.lookupValue("StandardPort", port) &&
 				  paramSetting.lookupValue("MagicNumber", chainParams->_magicNumber) &&
-				  paramSetting.lookupValue("Services", chainParams->_services) &&
+				  paramSetting.lookupValue("Services", services) &&
 				  paramSetting.lookupValue("TargetTimeSpan", chainParams->_targetTimeSpan) &&
 				  paramSetting.lookupValue("TargetTimePerBlock", chainParams->_targetTimePerBlock))) {
 
 				ErrorChecker::ThrowLogicException(Error::ReadConfigFileError, "invalid config file");
 			}
-
+			chainParams->_services = services;
 			chainParams->_standardPort = static_cast<uint16_t>(port);
 
 			const libconfig::Setting &dnsSeed = paramSetting["DNSSeeds"];

@@ -3,7 +3,6 @@ add_custom_target(
 	copy_sample_data
 	COMMENT "Copy Data to Sample..."
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../Data ${CMAKE_CURRENT_BINARY_DIR}/Data
-	DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Data
 )
 
 set(SAMPLE_NAME sample)
