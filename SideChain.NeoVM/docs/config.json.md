@@ -1,72 +1,54 @@
-# Config.json explanation
+# config.json explanation
 
-## In most cases, you only need to modify
-- NetType
-- AutoMining、
-- PayToAddr、
-- Magic、
-- SeedList、
-- HttpInfoPort、
-- HttpRestPort、
-- HttpWsPort、
-- HttpJsonPort、
-- NodePort，
-- InstantBlock  //for reduce the mining blocks interval
+## Configuration free
+- `config.json` file is optional, you can run a `neo` node without a `config.json` file.
+
+## Change active network
+Just modify the `ActiveNet` parameter in the `config.json` file.
+```json
+{
+  "ActiveNet": "test"
+}
+```
+Default config for `testnet`
+- Peer-to-Peer network connect to ELA `testnet`.
 
 ## Inline Explanation
 
-```
+```json5
 {
-  "NetType": "MainNet",//Network type. Choices: MainNet、TestNet
-  "Configuration": {
-    "Magic": 20180312,      //Magic Number：Segregation for different subnet. No matter the port number, as long as the magic number not matching, nodes cannot talk to each others.
-    "SpvMagic":2017001,
-    "Version": 1,          //Version number
-    "SeedList": [           //SeedList. Other nodes will look up this seed list to connect to any of those seed in order to get all nodes addresses.
-      "127.0.0.1:10338",    //At least one seed in this list. Format is "IP address : Port"
-      "127.0.0.1:20338",
-      "127.0.0.1:30338",
-      "127.0.0.1:40338"
-    ],
-    "SpvSeedList":[
-    ],
-    "SpvMinOutbound":3,
-    "SpvMaxConnections":10,
-    "MainChainDefaultPort":10866,	
-    "ExchangeRate":1.0,
-    "MinCrossChainTxFee": 10000,    //Minimal cross-chain transaction fee
-    "HttpInfoPort": 10333,  //Local web portal port number. User can go to http://127.0.0.1:10333/info to access the web UI
-    "HttpInfoStart": true,  //true to start the webUI, false to disable
-    "HttpRestPort": 10334,  //Restful port number
-    "HttpWsPort": 10335,    //Websocket port number
-    "WsHeartbeatInterval": 60,
-    "HttpJsonPort": 10336,  //RPC port number
-    "NodePort": 10338,      //P2P port number
-    "NodeOpenPort": 10866,  //P2P port number for open service
-    "OpenService": true,    //true to enable open service, false to disable
-    "PrintLevel": 1,        //Log level. Level 0 is the highest, 6 is the lowest.
-    "MaxLogsSize": 5000,    //Max total logs size in MB
-    "MaxPerLogSize": 20,    //Max per log file size in MB
-    "IsTLS": false,         //TLS connection, true or false
-    "CertPath": "./sample-cert.pem",  //Certificate path
-    "KeyPath": "./sample-cert-key.pem",
-    "CAPath": "./sample-ca.pem",
-    "MultiCoreNum": 4,      //Max number of CPU cores to mine ELA
-    "MaxTransactionInBlock": 10000, //Max transaction number in each block
-    "MaxBlockSize": 8000000,        //Max size of a block
-  	 "NoticeServerUrl":"",
-  	 "PrintSyncState":true,         //Whether to print synchronous block height
-  	 "ConsensusType":"pow",
-  	 "MainChainFoundationAddress":"EM8DhdWEFmuLff9fH7fZssK7h5ayUzKcV7",
-  	 "FoundationAddress":"EPwPux7M4YQZyhJbGsZzCUSdkEby3s8uYJ",
-    "PowConfiguration": {           //
-      "PayToAddr": "",              //Pay bonus to this address. Cannot be empty if AutoMining set to "true".
-      "AutoMining": false,          //Start mining automatically? true or false
-      "MinerInfo": "ELA",           //No need to change.
-      "MinTxFee": 100,              //Minimal mining fee
-      "InstantBlock": false        //for reduce the mining blocks interval
-    }
-  }
+  "ActiveNet": "mainnet", // Network type. Choices: mainnet testnet and regnet
+  "Magic": 2017002,       // Magic number：Segregation for different subnet. No matter the port number, as long as the magic number not matching, nodes cannot talk to each others
+  "NodePort": 20608,      // The port number for P2P network connection.
+  "DisableDNS": false,    // Disable the DNS service of the P2P network.
+  "PermanentPeers": [     // Specify a list of peers to connect with permanently.
+    "localhost:20608"
+  ],
+  "SPVMagic": 2017001,    // SPV magic number.
+  "SPVDisableDNS": false, // Disable the DNS service of the SPV P2P network.
+  "SPVPermanentPeers": [  // Specify a list of SPV peers to connect with permanently.
+    "localhost:20338"
+  ],
+  "ExchangeRate": 1.0,    // Defines the exchange rate of main/side asset.
+  "MinCrossChainTxFee": 10000, // Defines the minimum fee for a cross chain transaction.
+  "EnableREST": false,    // Enable the RESTful service.
+  "RESTPort": 20604,      // Specify a port for the RESTful service.
+  "EnableWS": false,      // Enable the WebSocket service.
+  "WSPort": 20605,        // Specify a port for the WebSocket service.
+  "EnableRPC": true,      // Enable the JSON-RPC service.
+  "RPCPort": 20606,       // Specify a port for the JSON-RPC service.
+  "RPCUser": "User",      // Specify the username when accessing the JSON-RPC service.
+  "RPCPass": "Password",  // Specify the password when accessing the JSON-RPC service.
+  "RPCWhiteList": [       // Specify a white list of IP addresses for the JSON-RPC service.
+    "127.0.0.1"
+  ],
+  "LogLevel": 1,          // Specify the debug log level. Choices: (0)debug (1)info (2)warn (3)error (4)fatal (5)off.
+  "PerLogFileSize": 20,   // Specify the maximum file size of a single log file.
+  "LogsFolderSize": 2048, // Specify the maximum logs folder size which containing all log files.
+  "DisableTxFilters": false, // Disable the transaction filer function.
+  "EnableMining": false,  // Enable the mining service which can produce blocks.
+  "InstantBlock": false,  // Set the block producing to instant mode which can make the mining service produce block instantly.
+  "PayToAddr": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta", // Specify the account address to receive rewards by mining blocks.
+  "MinerInfo": "ELA",     // The miner info displaying the miner in coinbase transaction.
 }
-
 ```
