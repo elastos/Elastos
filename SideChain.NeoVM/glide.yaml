@@ -5,7 +5,7 @@ import:
 - package: github.com/elastos/Elastos.ELA
   version: release_v0.3.2
 - package: github.com/elastos/Elastos.ELA.SideChain
-  version: release_v0.1.4
+  version: dev
 - package: github.com/elastos/Elastos.ELA.SPV
   version: release_v0.0.4
 
