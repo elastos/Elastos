@@ -36,28 +36,28 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 		SubAccountPtr subAccount1(new SubAccount(account1, coinIndex));
 		subAccount1->Init({}, &lock);
 		bytes_t multiSignPubKey1 = account1->RequestPubKey();
-		bytes_t ownerPubKey1 = account1->OwnerPubKey();
+		bytes_ptr ownerPubKey1 = account1->OwnerPubKey();
 
 		LocalStorePtr localStore2(new LocalStore("./Data/2", mnemonic2, passphrase, false, payPasswd));
 		AccountPtr account2(new Account(localStore2, "Data"));
 		SubAccountPtr subAccount2(new SubAccount(account2, coinIndex));
 		subAccount2->Init({}, &lock);
 		bytes_t multiSignPubKey2 = account2->RequestPubKey();
-		bytes_t ownerPubKey2 = account2->OwnerPubKey();
+		bytes_ptr ownerPubKey2 = account2->OwnerPubKey();
 
 		LocalStorePtr localstore3(new LocalStore("./Data/3", mnemonic3, passphrase, false, payPasswd));
 		AccountPtr account3(new Account(localstore3, "Data"));
 		SubAccountPtr subAccount3(new SubAccount(account3, coinIndex));
 		subAccount3->Init({}, &lock);
 		bytes_t multiSignPubKey3 = account3->RequestPubKey();
-		bytes_t ownerPubKey3 = account3->OwnerPubKey();
+		bytes_ptr ownerPubKey3 = account3->OwnerPubKey();
 
 		LocalStorePtr localstore4(new LocalStore("./Data/4", mnemonic4, passphrase, false, payPasswd));
 		AccountPtr account4(new Account(localstore4, "Data"));
 		SubAccountPtr subAccount4(new SubAccount(account4, coinIndex));
 		subAccount4->Init({}, &lock);
 		bytes_t multiSignPubKey4 = account4->RequestPubKey();
-		bytes_t votePubKey4 = account4->OwnerPubKey();
+		bytes_ptr votePubKey4 = account4->OwnerPubKey();
 
 		SECTION("Standard address sign test") {
 			std::vector<Address> addresses;
@@ -92,7 +92,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 		}
 
 		SECTION("Vote deposit address sign test") {
-			std::string addr = Address(PrefixDeposit, ownerPubKey1).String();
+			std::string addr = Address(PrefixDeposit, *ownerPubKey1).String();
 			bytes_t redeemScript = subAccount1->GetRedeemScript(addr);
 
 			TransactionPtr tx(new Transaction);

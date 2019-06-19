@@ -199,6 +199,68 @@ namespace Elastos {
 			return j;
 		}
 
+		nlohmann::json SubWallet::GetAllCoinBaseTransaction(uint32_t start, uint32_t count,
+															const std::string &txID) const {
+			nlohmann::json j;
+			const WalletPtr wallet = _walletManager->getWallet();
+			std::vector<CoinBaseUTXOPtr> cbs = wallet->GetAllCoinBaseUTXO();
+			size_t maxCount = cbs.size();
+			size_t pageCount = count, realCount = 0;
+
+			if (start >= maxCount) {
+				j["Transactions"] = {};
+				j["MaxCount"] = maxCount;
+				return j;
+			}
+
+			if (maxCount < start + count)
+				pageCount = maxCount - start;
+
+			if (!txID.empty())
+				pageCount = 1;
+
+			std::vector<nlohmann::json> jcbs;
+			jcbs.reserve(pageCount);
+			for (size_t i = maxCount - start; i > 0 && realCount < pageCount; --i) {
+				const CoinBaseUTXOPtr &cbptr = cbs[i - 1];
+				nlohmann::json cb;
+
+				if (!txID.empty()) {
+					if (cbptr->Hash().GetHex() == txID) {
+						cb["TxHash"] = txID;
+						uint32_t confirms = cbptr->GetConfirms(_walletManager->getPeerManager()->GetLastBlockHeight());
+						cb["Timestamp"] = cbptr->Timestamp();
+						cb["Amount"] = cbptr->Amount().getDec();
+						cb["Status"] = confirms <= 100 ? "Pending" : "Confirmed";
+						cb["Direction"] = "Received";
+
+						cb["ConfirmStatus"] = confirms <= 100 ? std::to_string(confirms) : "100+";
+						cb["Height"] = cbptr->BlockHeight();
+						cb["Spent"] = cbptr->Spent();
+						cb["Address"] = Address(cbptr->ProgramHash()).String();
+						cb["Type"] = Transaction::CoinBase;
+						jcbs.push_back(cb);
+						break;
+					}
+				} else {
+					nlohmann::json cb;
+
+					cb["TxHash"] = cbptr->Hash().GetHex();
+					uint32_t confirms = cbptr->GetConfirms(_walletManager->getPeerManager()->GetLastBlockHeight());
+					cb["Timestamp"] = cbptr->Timestamp();
+					cb["Amount"] = cbptr->Amount().getDec();
+					cb["Status"] = confirms <= 100 ? "Pending" : "Confirmed";
+					cb["Direction"] = "Received";
+
+					jcbs.push_back(cb);
+				}
+			}
+			j["Transactions"] = jcbs;
+			j["MaxCount"] = maxCount;
+
+			return j;
+		}
+
 		void SubWallet::publishTransaction(const TransactionPtr &transaction) {
 			_walletManager->PublishTransaction(transaction);
 		}
@@ -457,7 +519,8 @@ namespace Elastos {
 
 		nlohmann::json SubWallet::GetBasicInfo() const {
 			nlohmann::json j;
-			j["SubAccount"] = _subAccount->GetBasicInfo();
+			j["Info"] = _subAccount->GetBasicInfo();
+			j["ChainID"] = GetChainID();
 			return j;
 		}
 

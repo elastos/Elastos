@@ -49,8 +49,6 @@ namespace Elastos {
 							   const ChainConfigPtr &config,
 							   MasterWallet *parent);
 
-			virtual nlohmann::json GetBasicInfo() const;
-
 		};
 
 	}

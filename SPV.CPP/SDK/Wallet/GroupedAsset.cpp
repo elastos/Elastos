@@ -336,7 +336,7 @@ namespace Elastos {
 					}
 				} else if (totalInputAmount > totalOutputAmount + feeAmount) {
 					uint256 assetID = txn->GetOutputs()[0].GetAssetID();
-					std::vector<Address> addresses = _parent->_subAccount->UnusedAddresses(1, 1);
+					std::vector<Address> addresses = _parent->UnusedAddresses(1, 1);
 					ErrorChecker::CheckCondition(addresses.empty(), Error::GetUnusedAddress, "Get address failed");
 					BigInt changeAmount = totalInputAmount - totalOutputAmount - feeAmount;
 					TransactionOutput changeOutput(changeAmount, addresses[0], assetID);
@@ -493,7 +493,7 @@ namespace Elastos {
 				}
 			} else if (totalInputAmount > feeAmount) {
 				uint256 assetID = Asset::GetELAAssetID();
-				std::vector<Address> addresses = _parent->_subAccount->UnusedAddresses(1, 1);
+				std::vector<Address> addresses = _parent->UnusedAddresses(1, 1);
 				ErrorChecker::CheckCondition(addresses.empty(), Error::GetUnusedAddress, "Get address failed");
 				BigInt changeAmount = totalInputAmount - feeAmount;
 				TransactionOutput changeOutput(changeAmount, addresses[0], assetID);

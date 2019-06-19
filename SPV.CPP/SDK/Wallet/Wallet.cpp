@@ -208,8 +208,8 @@ namespace Elastos {
 			}
 
 			if (wasAdded) {
-				_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
-				_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL, 1);
+				UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
+				UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL, 1);
 				txAdded(tx);
 				if (tx->GetBlockHeight() != TX_UNCONFIRMED)
 					for (it = changedBalance.begin(); it != changedBalance.end(); ++it)
@@ -489,28 +489,30 @@ namespace Elastos {
 		}
 
 		Address Wallet::GetReceiveAddress() const {
+			boost::mutex::scoped_lock scopedLock(lock);
 			std::vector<Address> addr = _subAccount->UnusedAddresses(1, 0);
 			return addr[0];
 		}
 
 		size_t Wallet::GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool containInternal) {
+			boost::mutex::scoped_lock scopedLock(lock);
+
 			return _subAccount->GetAllAddresses(addr, start, count, containInternal);
 		}
 
 		Address Wallet::GetOwnerDepositAddress() const {
-			if (Account::MultiSign == _subAccount->Parent()->GetSignType()) {
-				return Address();
-			}
-
-			return Address(PrefixDeposit, _subAccount->OwnerPubKey());
+			boost::mutex::scoped_lock scopedLock(lock);
+			return Address(PrefixDeposit, *_subAccount->OwnerPubKey());
 		}
 
 		Address Wallet::GetOwnerAddress() const {
-			if (Account::MultiSign == _subAccount->Parent()->GetSignType()) {
-				return Address();
-			}
+			boost::mutex::scoped_lock scopedLock(lock);
+			return Address(PrefixStandard, *_subAccount->OwnerPubKey());
+		}
 
-			return Address(PrefixStandard, _subAccount->OwnerPubKey());
+		bytes_ptr Wallet::GetOwnerPublilcKey() const {
+			boost::mutex::scoped_lock scopedLock(lock);
+			return _subAccount->OwnerPubKey();
 		}
 
 		bool Wallet::IsVoteDepositAddress(const Address &addr) const {
@@ -589,6 +591,7 @@ namespace Elastos {
 		}
 
 		std::vector<Address> Wallet::UnusedAddresses(uint32_t gapLimit, bool internal) {
+			boost::mutex::scoped_lock scopedLock(lock);
 			return _subAccount->UnusedAddresses(gapLimit, internal);
 		}
 

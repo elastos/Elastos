@@ -229,7 +229,7 @@ static void RegisterProducer(const std::string &masterWalletID, const std::strin
 		return;
 	}
 
-	std::string pubKey = mainchainSubWallet->GetPublicKeyForVote();
+	std::string pubKey = mainchainSubWallet->GetOwnerPublicKey();
 	std::string nodePubKey = "0296e28b9bced49e175de2d2ae0e6a03724da9d00241213c988eeb65583a14f0c9";
 	std::string nickName = "heropan";
 	std::string url = "heropan.com";
@@ -254,7 +254,7 @@ static void UpdateProducer(const std::string &masterWalletID, const std::string 
 		return;
 	}
 
-	std::string pubKey = mainchainSubWallet->GetPublicKeyForVote();
+	std::string pubKey = mainchainSubWallet->GetOwnerPublicKey();
 	std::string nodePubKey = mainchainSubWallet->GetPublicKey();
 	std::string nickName = "heropan";
 	std::string url = "heropan.com";
@@ -278,7 +278,7 @@ static void CancelProducer(const std::string &masterWalletID, const std::string 
 		return;
 	}
 
-	std::string pubKey = mainchainSubWallet->GetPublicKeyForVote();
+	std::string pubKey = mainchainSubWallet->GetOwnerPublicKey();
 
 	nlohmann::json payload = mainchainSubWallet->GenerateCancelProducerPayload(pubKey, payPasswd);
 

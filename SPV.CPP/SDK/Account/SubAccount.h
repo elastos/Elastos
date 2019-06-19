@@ -41,7 +41,7 @@ namespace Elastos {
 
 			void ClearUsedAddresses();
 
-			bytes_t OwnerPubKey() const;
+			bytes_ptr OwnerPubKey() const;
 
 			void SignTransaction(const TransactionPtr &tx, const std::string &payPasswd);
 

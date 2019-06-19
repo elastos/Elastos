@@ -38,7 +38,7 @@ TEST_CASE("Config test", "[Config]") {
 			REQUIRE(chainConfig->GenesisAddress() == genesisAddress);
 
 			const ChainParamsPtr &chainParams = chainConfig->ChainParameters();
-			REQUIRE(chainParams->StandardPort() == 20038);
+			REQUIRE(chainParams->StandardPort() == 20338);
 			REQUIRE(chainParams->MagicNumber() == 2017001);
 			REQUIRE(chainParams->Services() == 0);
 			REQUIRE(chainParams->TargetTimeSpan() == 86400);

@@ -28,8 +28,6 @@ namespace Elastos {
 							 const ChainConfigPtr &config,
 							 MasterWallet *parent);
 
-			virtual nlohmann::json GetBasicInfo() const;
-
 			virtual void onTxAdded(const TransactionPtr &transaction);
 
 			virtual void onTxUpdated(const std::vector<uint256> &hash, uint32_t blockHeight, time_t timeStamp);

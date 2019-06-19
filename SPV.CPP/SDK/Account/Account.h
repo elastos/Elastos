@@ -32,7 +32,7 @@ namespace Elastos {
 
 			HDKeychain MasterPubKey() const;
 
-			bytes_t OwnerPubKey() const;
+			bytes_ptr OwnerPubKey() const;
 
 			const Address &GetAddress() const;
 

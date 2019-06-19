@@ -24,13 +24,6 @@ namespace Elastos {
 
 		}
 
-		nlohmann::json TokenchainSubWallet::GetBasicInfo() const {
-			nlohmann::json j;
-			j["Type"] = "Tokenchain";
-			j["Account"] = _subAccount->GetBasicInfo();
-			return j;
-		}
-
 		nlohmann::json TokenchainSubWallet::CreateRegisterAssetTransaction(
 				const std::string &name,
 				const std::string &description,

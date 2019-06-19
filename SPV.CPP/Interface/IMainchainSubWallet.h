@@ -146,7 +146,13 @@ namespace Elastos {
 			 *
 			 * @return Owner public key.
 			 */
-			virtual std::string GetPublicKeyForVote() const = 0;
+			virtual std::string GetOwnerPublicKey() const = 0;
+
+			/**
+			 * Get address of owner public key
+			 * @return Address of owner public key
+			 */
+			virtual std::string GetOwnerAddress() const = 0;
 
 			/**
 			 * Create vote transaction.

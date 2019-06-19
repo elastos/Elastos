@@ -139,12 +139,9 @@ namespace Elastos {
 				uint64_t amount,
 				const std::string &memo);
 
-			/**
-			 * Get owner public key.
-			 *
-			 * @return Owner public key.
-			 */
-			virtual std::string GetPublicKeyForVote() const;
+			virtual std::string GetOwnerPublicKey() const;
+
+			virtual std::string GetOwnerAddress() const;
 
 			/**
 			 * Create vote transaction.
@@ -208,8 +205,6 @@ namespace Elastos {
 			MainchainSubWallet(const CoinInfoPtr &info,
 							   const ChainConfigPtr &config,
 							   MasterWallet *parent);
-
-			virtual nlohmann::json GetBasicInfo() const;
 
 		};
 

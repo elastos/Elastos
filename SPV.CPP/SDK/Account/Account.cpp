@@ -83,8 +83,10 @@ namespace Elastos {
 			return HDKeychain(bytes);
 		}
 
-		bytes_t Account::OwnerPubKey() const {
-			return bytes_t(_localstore->GetOwnerPubKey());
+		bytes_ptr Account::OwnerPubKey() const {
+			bytes_ptr pubkey(new bytes_t());
+			pubkey->setHex(_localstore->GetOwnerPubKey());
+			return pubkey;
 		}
 
 		const Address &Account::GetAddress() const {

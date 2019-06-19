@@ -89,6 +89,11 @@ namespace Elastos {
 					uint32_t count,
 					const std::string &addressOrTxid) const;
 
+			virtual nlohmann::json GetAllCoinBaseTransaction(
+				uint32_t start,
+				uint32_t count,
+				const std::string &txID) const;
+
 			virtual std::string Sign(
 					const std::string &message,
 					const std::string &payPassword);

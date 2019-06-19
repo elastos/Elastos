@@ -20,10 +20,10 @@ namespace Elastos {
 			_parent(parent),
 			_coinIndex(coinIndex) {
 
-			bytes_t ownerPubKey = _parent->OwnerPubKey();
-			if (!ownerPubKey.empty()) {
-				_depositAddress = Address(PrefixDeposit, ownerPubKey);
-				_ownerAddress = Address(PrefixStandard, ownerPubKey);
+			bytes_ptr ownerPubKey = _parent->OwnerPubKey();
+			if (!ownerPubKey->empty()) {
+				_depositAddress = Address(PrefixDeposit, *ownerPubKey);
+				_ownerAddress = Address(PrefixStandard, *ownerPubKey);
 			}
 		}
 
@@ -86,8 +86,6 @@ namespace Elastos {
 				return maxCount;
 			}
 
-			_lock->Lock();
-
 			for (size_t i = start; i < _externalChain.size() && addr.size() < count; i++) {
 				addr.push_back(_externalChain[i]);
 			}
@@ -98,18 +96,14 @@ namespace Elastos {
 				}
 			}
 
-			_lock->Unlock();
-
 			return maxCount;
 		}
 
 		std::vector<Address> SubAccount::UnusedAddresses(uint32_t gapLimit, bool internal) {
 			std::vector<Address> addrs;
-			_lock->Lock();
 			if (_parent->SingleAddress()) {
 				if (_parent->GetSignType() == Account::MultiSign) {
 					addrs = {_parent->GetAddress()};
-					_lock->Unlock();
 					return addrs;
 				}
 
@@ -119,7 +113,6 @@ namespace Elastos {
 					_allAddrs.insert(_externalChain[0]);
 				}
 				addrs = _externalChain;
-				_lock->Unlock();
 				return addrs;
 			}
 
@@ -157,12 +150,11 @@ namespace Elastos {
 			for (i = startCount; i < count; i++) {
 				_allAddrs.insert(addrChain[i]);
 			}
-			_lock->Unlock();
 
 			return addrs;
 		}
 
-		bytes_t SubAccount::OwnerPubKey() const {
+		bytes_ptr SubAccount::OwnerPubKey() const {
 			return _parent->OwnerPubKey();
 		}
 
@@ -212,7 +204,7 @@ namespace Elastos {
 		}
 
 		bool SubAccount::FindKey(Key &key, const bytes_t &pubKey, const std::string &payPasswd) {
-			if (_parent->OwnerPubKey() == pubKey) {
+			if (*_parent->OwnerPubKey() == pubKey) {
 				key = DeriveOwnerKey(payPasswd);
 				return true;
 			}

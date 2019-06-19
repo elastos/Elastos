@@ -101,12 +101,5 @@ namespace Elastos {
 			}
 		}
 
-		nlohmann::json IDChainSubWallet::GetBasicInfo() const {
-			nlohmann::json j;
-			j["Type"] = "Idchain";
-			j["Account"] = _subAccount->GetBasicInfo();
-			return j;
-		}
-
 	}
 }
