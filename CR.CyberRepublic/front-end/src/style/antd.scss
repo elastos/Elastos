@@ -333,12 +333,12 @@ h3.one-line {
   }
 }
 
-h3 {
-  @extend .komu-a;
-  font-size: 42px;
+// h3 {
+//   @extend .komu-a;
+//   font-size: 42px;
 
-  & > * {
-    @extend .komu-a;
-    font-size: 42px;
-  }
-}
+//   & > * {
+//     @extend .komu-a;
+//     font-size: 42px;
+//   }
+// }

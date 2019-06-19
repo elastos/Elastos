@@ -39,6 +39,7 @@ export default class extends Base {
       type,
       published,
       content,
+      contentType: constant.CONTENT_TYPE.MARKDOWN,
       proposedBy,
       motionId,
       isConflict,
@@ -286,7 +287,9 @@ export default class extends Base {
       throw 'cvoteservice.update - invalid proposal id'
     }
 
-    const doc: any = {}
+    const doc: any = {
+      contentType: constant.CONTENT_TYPE.MARKDOWN,
+    }
     const willChangeToPublish = published === true && cur.status === constant.CVOTE_STATUS.DRAFT
 
     if (content) doc.content = content

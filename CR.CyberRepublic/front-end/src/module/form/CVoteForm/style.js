@@ -15,6 +15,12 @@ export const Container = styled.div`
     /* line-height: 1.4rem; */
     display: block;
   }
+  .md-RichEditor-root {
+    padding: 15px 30px;
+    margin-top: 0;
+    border: 1px solid #d9d9d9;
+  }
+
 `
 
 export const Title = styled.h2`

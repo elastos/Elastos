@@ -50,6 +50,10 @@ export const CVote = {
     type: String,
     required: true
   },
+  contentType: {
+    type: String,
+    enum: _.values(constant.CONTENT_TYPE),
+  },
   content_zh: {
     type: String,
   },

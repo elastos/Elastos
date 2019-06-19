@@ -5,7 +5,6 @@ import {
 import { Link } from 'react-router-dom'
 import I18N from '@/I18N'
 import _ from 'lodash'
-import sanitizeHtml from '@/util/html'
 import StandardPage from '../../StandardPage'
 import { LANGUAGES } from '@/config/constant'
 import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
@@ -16,6 +15,7 @@ import Footer from '@/module/layout/Footer/Container'
 import BackLink from '@/module/shared/BackLink/Component'
 import CRPopover from '@/module/shared/Popover/Component'
 import Translation from '@/module/common/Translation/Container'
+import DraftEditor from '@/module/common/DraftEditor'
 
 import { Title, Label } from './style'
 import './style.scss'
@@ -52,8 +52,8 @@ class C extends StandardPage {
     this.user = this.props.user
   }
 
-  componentDidMount() {
-    this.refetch()
+  async componentDidMount() {
+    await this.refetch()
   }
 
   refetch = async () => {
@@ -208,8 +208,15 @@ class C extends StandardPage {
   }
 
   renderContent() {
-    const { content } = this.state.data
-    return <div className="content ql-editor" dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
+    const { data } = this.state
+    const contentNode = (
+      <DraftEditor
+        content={data.content}
+        contentType={data.contentType}
+        editorEnabled={false}
+      />
+    )
+    return contentNode
   }
 
   renderNotes() {
