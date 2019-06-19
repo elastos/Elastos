@@ -77,7 +77,7 @@ export default class extends BaseComponent {
       <IconText
         component={!!LikeIcon && <LikeIcon />}
         text={likesNum}
-        onClick={() => this.handleClick('isLiked')}
+        onClick={this.handleClick('isLiked')}
         className={likeClass}
       />
     )
@@ -86,7 +86,7 @@ export default class extends BaseComponent {
       <IconText
         component={!!DislikeIcon && <DislikeIcon />}
         text={dislikesNum}
-        onClick={() => this.handleClick('isDisliked')}
+        onClick={this.handleClick('isDisliked')}
         className={dislikeClass}
       />
     )
@@ -128,20 +128,20 @@ export default class extends BaseComponent {
         <IconText
           component={!!FollowIcon && <FollowIcon />}
           text={I18N.get('suggestion.follow')}
-          onClick={() => this.handleClick('isSubscribed')}
+          onClick={this.handleClick('isSubscribed')}
           className={`follow-icon ${isSubscribed ? 'selected' : ''}`}
         />
         <IconText
           component={!!FlagIcon && <FlagIcon />}
           text={I18N.get('suggestion.reportAbuse')}
-          onClick={() => this.handleClick('isAbused')}
+          onClick={this.handleClick('isAbused')}
           className={`abuse-icon ${isAbused ? 'selected' : ''}`}
         />
         {(this.props.isAdmin || this.props.isCouncil) ?
         <IconText
           component={!!ArchiveIcon && <ArchiveIcon />}
           text={isArchived ? I18N.get('suggestion.unarchive') : I18N.get('suggestion.archive')}
-          onClick={() => this.handleClick('isArchived')}
+          onClick={this.handleClick('isArchived')}
           className="archive-icon"
         /> : ''}
       </div>
@@ -181,8 +181,13 @@ export default class extends BaseComponent {
     history.push(`/suggestion/history/${_id}`)
   }
 
+  // high order function to return a debounce function with param
+  handleClick = (action) => _.debounce(() => {
+    this.handleClickWithoutDebounce(action)
+  }, 300)
+
   // use setState to change UI state for better UX
-  handleClick = async (action) => {
+  handleClickWithoutDebounce = async (action) => {
 
     // callback is a function defined in getActionParams
     const { callback, param, state } = this.getActionParams(action)
