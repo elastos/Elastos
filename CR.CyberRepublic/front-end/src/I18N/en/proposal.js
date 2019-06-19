@@ -28,5 +28,9 @@ export default {
       tracking: 'This part is updated by the proposer according to the progress of the proposal, including the achievement of goal and budget usage. It is used to present the implementation status of proposal according to the checkpoints in the implementation plan or the goals of the proposal. The CRC Secretariat is responsible to review and verify this part.',
       summary: 'When proposal is completed, its proposer should submit a summary of the proposal implementation, including the achievement of goals and financial report. The CRC Secretariat is responsible for the review of this part.',
     },
+    error: {
+      required: 'This field is required',
+      tooLong: 'This field is too long'
+    }
   },
 }

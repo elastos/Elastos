@@ -12,10 +12,23 @@ import DraftEditor from '@/module/common/DraftEditor'
 // if using webpack
 import 'medium-draft/lib/index.css'
 
-import { Container, Title } from './style'
+import { Container, Title, TabPaneInner, Note, NoteHighlight } from './style'
 
 const FormItem = Form.Item
 const { TabPane } = Tabs
+
+const transform = value => {
+  // string or object
+  let result = value
+  if (_.isObject(value)) {
+    try {
+      result = value.getCurrentContent().getPlainText()
+    } catch (error) {
+      result = value
+    }
+  }
+  return result
+}
 
 const renderRichEditor = (data, key, getFieldDecorator) => {
   const content = _.get(data, key, '')
@@ -23,19 +36,13 @@ const renderRichEditor = (data, key, getFieldDecorator) => {
     rules: [
       {
         required: true,
-        transform: value => {
-          // string or object
-          let result = value
-          if (_.isObject(value)) {
-            try {
-              result = value.getCurrentContent().getPlainText()
-            } catch (error) {
-              result = value
-            }
-          }
-          console.log(value, result)
-          return result
-        },
+        transform,
+        message: I18N.get('proposal.form.error.required')
+      },
+      {
+        max: 200,
+        transform,
+        message: I18N.get('proposal.form.error.tooLong')
       }
     ],
     initialValue: content,
@@ -131,7 +138,7 @@ class C extends BaseComponent {
     const { getFieldDecorator } = this.props.form
 
     const title_fn = getFieldDecorator('title', {
-      rules: [{ required: true }],
+      rules: [{ required: true, message: I18N.get('proposal.form.error.required') }],
       initialValue: edit ? data.title : _.get(data, 'title', ''),
     })
     const title_el = (
@@ -162,34 +169,65 @@ class C extends BaseComponent {
       return null
     }
     const formProps = this.getInputProps(data)
+    const formItemLayout = {
+      labelCol: {
+        span: 2,
+      },
+      wrapperCol: {
+        span: 18,
+      },
+      colon: false,
+    }
 
+    // TODO: onChange autosave every 5s
     return (
       <Container>
         <Form onSubmit={this.handleSubmit}>
-          <Title>
+          <Title className="komu-a cr-title-with-icon ">
             {this.props.header || I18N.get('from.CVoteForm.button.add')}
           </Title>
+          <FormItem label={`${I18N.get('proposal.fields.title')}*`} {...formItemLayout}>
+            {formProps.title}
+          </FormItem>
           <Tabs defaultActiveKey="abstract" animated={false} tabBarGutter={5}>
-            <TabPane tab={I18N.get('proposal.fields.title')} key="title">
-              <FormItem>{formProps.title}</FormItem>
+            <TabPane tab={`${I18N.get('proposal.fields.abstract')}*`} key="abstract">
+              <TabPaneInner>
+                <Note>{I18N.get('proposal.form.note.abstract')}</Note>
+                <FormItem>{formProps.abstract}</FormItem>
+              </TabPaneInner>
             </TabPane>
-            <TabPane tab={I18N.get('proposal.fields.abstract')} key="abstract">
-              <FormItem>{formProps.abstract}</FormItem>
+            <TabPane tab={`${I18N.get('proposal.fields.goal')}*`} key="goal">
+              <TabPaneInner>
+                <Note>{I18N.get('proposal.form.note.goal')}</Note>
+                <FormItem>{formProps.goal}</FormItem>
+              </TabPaneInner>
             </TabPane>
-            <TabPane tab={I18N.get('proposal.fields.goal')} key="goal">
-              <FormItem>{formProps.goal}</FormItem>
+            <TabPane tab={`${I18N.get('proposal.fields.motivation')}*`} key="motivation">
+              <TabPaneInner>
+                <Note>
+                  {I18N.get('proposal.form.note.motivation')}
+                  <NoteHighlight> {I18N.get('proposal.form.note.motivationHighlight')}</NoteHighlight>
+                </Note>
+                <FormItem>{formProps.motivation}</FormItem>
+              </TabPaneInner>
             </TabPane>
-            <TabPane tab={I18N.get('proposal.fields.motivation')} key="motivation">
-              <FormItem>{formProps.motivation}</FormItem>
+            <TabPane tab={`${I18N.get('proposal.fields.relevance')}*`} key="relevance">
+              <TabPaneInner>
+                <Note>{I18N.get('proposal.form.note.relevance')}</Note>
+                <FormItem>{formProps.relevance}</FormItem>
+              </TabPaneInner>
             </TabPane>
-            <TabPane tab={I18N.get('proposal.fields.relevance')} key="relevance">
-              <FormItem>{formProps.relevance}</FormItem>
+            <TabPane tab={`${I18N.get('proposal.fields.budget')}*`} key="budget">
+              <TabPaneInner>
+                <Note>{I18N.get('proposal.form.note.budget')}</Note>
+                <FormItem>{formProps.budget}</FormItem>
+              </TabPaneInner>
             </TabPane>
-            <TabPane tab={I18N.get('proposal.fields.budget')} key="budget">
-              <FormItem>{formProps.budget}</FormItem>
-            </TabPane>
-            <TabPane tab={I18N.get('proposal.fields.plan')} key="plan">
-              <FormItem>{formProps.plan}</FormItem>
+            <TabPane tab={`${I18N.get('proposal.fields.plan')}*`} key="plan">
+              <TabPaneInner>
+                <Note>{I18N.get('proposal.form.note.plan')}</Note>
+                <FormItem>{formProps.plan}</FormItem>
+              </TabPaneInner>
             </TabPane>
           </Tabs>
 
