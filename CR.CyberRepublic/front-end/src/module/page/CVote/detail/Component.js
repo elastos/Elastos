@@ -24,7 +24,7 @@ const { TextArea } = Input
 
 const renderRichContent = (data, key, title) => (
   <div>
-    {title && <ContentTitle id={title}>{title}</ContentTitle>}
+    {title && <ContentTitle id={key}>{title}</ContentTitle>}
     <DraftEditor
       content={data[key]}
       contentType={data.contentType}
@@ -139,13 +139,13 @@ class C extends StandardPage {
   renderAnchor() {
     return (
       <StyledAnchor offsetTop={200}>
-        <Anchor.Link href="#preamble" title="Preamble" />
-        <Anchor.Link href="#abstract" title="Abstract" />
-        <Anchor.Link href="#goal" title="Goal" />
-        <Anchor.Link href="#motivation" title="Motivation" />
-        <Anchor.Link href="#relevance" title="Relevance" />
-        <Anchor.Link href="#budget" title="Budget" />
-        <Anchor.Link href="#plan" title="Plan" />
+        <Anchor.Link href="#preamble" title={I18N.get('proposal.fields.preamble')} />
+        <Anchor.Link href="#abstract" title={I18N.get('proposal.fields.abstract')} />
+        <Anchor.Link href="#goal" title={I18N.get('proposal.fields.goal')} />
+        <Anchor.Link href="#motivation" title={I18N.get('proposal.fields.motivation')} />
+        <Anchor.Link href="#relevance" title={I18N.get('proposal.fields.relevance')} />
+        <Anchor.Link href="#budget" title={I18N.get('proposal.fields.budget')} />
+        <Anchor.Link href="#plan" title={I18N.get('proposal.fields.plan')} />
       </StyledAnchor>
     )
   }
@@ -211,12 +211,12 @@ class C extends StandardPage {
     return (
       <div>
         <Preamble {...data} />
-        {renderRichContent(data, 'abstract', 'abstract')}
-        {renderRichContent(data, 'goal', 'goal')}
-        {renderRichContent(data, 'motivation', 'motivation')}
-        {renderRichContent(data, 'relevance', 'relevance')}
-        {renderRichContent(data, 'budget', 'budget')}
-        {renderRichContent(data, 'plan', 'plan')}
+        {renderRichContent(data, 'abstract', I18N.get('proposal.fields.abstract'))}
+        {renderRichContent(data, 'goal', I18N.get('proposal.fields.goal'))}
+        {renderRichContent(data, 'motivation', I18N.get('proposal.fields.motivation'))}
+        {renderRichContent(data, 'relevance', I18N.get('proposal.fields.relevance'))}
+        {renderRichContent(data, 'budget', I18N.get('proposal.fields.budget'))}
+        {renderRichContent(data, 'plan', I18N.get('proposal.fields.plan'))}
       </div>
     )
   }

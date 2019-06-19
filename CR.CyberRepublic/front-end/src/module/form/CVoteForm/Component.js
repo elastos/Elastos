@@ -170,25 +170,25 @@ class C extends BaseComponent {
             {this.props.header || I18N.get('from.CVoteForm.button.add')}
           </Title>
           <Tabs defaultActiveKey="abstract" animated={false} tabBarGutter={5}>
-            <TabPane tab="title" key="title">
+            <TabPane tab={I18N.get('proposal.fields.title')} key="title">
               <FormItem>{formProps.title}</FormItem>
             </TabPane>
-            <TabPane tab="abstract" key="abstract">
+            <TabPane tab={I18N.get('proposal.fields.abstract')} key="abstract">
               <FormItem>{formProps.abstract}</FormItem>
             </TabPane>
-            <TabPane tab="goal" key="goal">
+            <TabPane tab={I18N.get('proposal.fields.goal')} key="goal">
               <FormItem>{formProps.goal}</FormItem>
             </TabPane>
-            <TabPane tab="motivation" key="motivation">
+            <TabPane tab={I18N.get('proposal.fields.motivation')} key="motivation">
               <FormItem>{formProps.motivation}</FormItem>
             </TabPane>
-            <TabPane tab="relevance" key="relevance">
+            <TabPane tab={I18N.get('proposal.fields.relevance')} key="relevance">
               <FormItem>{formProps.relevance}</FormItem>
             </TabPane>
-            <TabPane tab="budget" key="budget">
+            <TabPane tab={I18N.get('proposal.fields.budget')} key="budget">
               <FormItem>{formProps.budget}</FormItem>
             </TabPane>
-            <TabPane tab="plan" key="plan">
+            <TabPane tab={I18N.get('proposal.fields.plan')} key="plan">
               <FormItem>{formProps.plan}</FormItem>
             </TabPane>
           </Tabs>

@@ -2,12 +2,14 @@ import { TASK_STATUS, CVOTE_STATUS } from '@/constant'
 import council from './zh/council'
 import home from './zh/home'
 import release from './zh/release'
+import proposal from './zh/proposal'
 import getting_started from './en/getting_started'
 
 const zh = {
   council,
   home,
   release,
+  proposal,
   getting_started,
   // Header
   '0000': 'ALPHA版本',

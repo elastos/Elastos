@@ -8,41 +8,41 @@ import styled from 'styled-components'
 
 const Component = ({ vid, title, proposedBy, proposedByEmail, status, createdAt }) => {
   // header
-  const headerNode = <Header id="preamble">Preamble</Header>
+  const headerNode = <Header id="preamble">{I18N.get('proposal.fields.preamble')}</Header>
   // note
   // const noteNode = <Note>Note: For confidential purpose, no one elase including council members is not able to access these files untill the bidding ended.</Note>
   // id
   const idNode = (
     <Item>
-      <Col span={6}><ItemTitle>CRC Proposal</ItemTitle></Col>
+      <Col span={6}><ItemTitle>{I18N.get('proposal.fields.preambleSub.proposal')}</ItemTitle></Col>
       <Col span={18}><ItemText>{`#${vid}`}</ItemText></Col>
     </Item>
   )
   // title
   const titleNode = (
     <Item>
-      <Col span={6}><ItemTitle>Title</ItemTitle></Col>
+      <Col span={6}><ItemTitle>{I18N.get('proposal.fields.preambleSub.title')}</ItemTitle></Col>
       <Col span={18}><ItemText>{title}</ItemText></Col>
     </Item>
   )
   // proposer
   const proposerNode = (
     <Item>
-      <Col span={6}><ItemTitle>Proposer</ItemTitle></Col>
+      <Col span={6}><ItemTitle>{I18N.get('proposal.fields.preambleSub.proposer')}</ItemTitle></Col>
       <Col span={18}><ItemText>{`${proposedBy} <${proposedByEmail}>`}</ItemText></Col>
     </Item>
   )
   // status
   const statusNode = (
     <Item>
-      <Col span={6}><ItemTitle>Status</ItemTitle></Col>
+      <Col span={6}><ItemTitle>{I18N.get('proposal.fields.preambleSub.status')}</ItemTitle></Col>
       <Col span={18}><ItemText>{I18N.get(`cvoteStatus.${status}`)}</ItemText></Col>
     </Item>
   )
   // created
   const createdNode = (
     <Item>
-      <Col span={6}><ItemTitle>Created</ItemTitle></Col>
+      <Col span={6}><ItemTitle>{I18N.get('proposal.fields.preambleSub.created')}</ItemTitle></Col>
       <Col span={18}><ItemText>{moment(createdAt).format('MMM D, YYYY')}</ItemText></Col>
     </Item>
   )
