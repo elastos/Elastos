@@ -113,7 +113,6 @@ class C extends BaseComponent {
           await updateCVote(param)
           this.ord_loading(false)
           await onEdit()
-          window.location.reload()
           message.success(I18N.get('from.CVoteForm.message.updated.success'))
         } catch (error) {
           message.error(error.message)
