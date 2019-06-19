@@ -131,9 +131,10 @@ func newUpdateProducer(L *lua.LState) int {
 	url := L.ToString(4)
 	location := L.ToInt64(5)
 	address := L.ToString(6)
+	needSign := true
 	client, err := checkClient(L, 7)
 	if err != nil {
-		fmt.Println(err)
+		needSign = false
 	}
 
 	ownerPublicKey, err := common.HexStringToBytes(ownerPublicKeyStr)
@@ -154,25 +155,28 @@ func newUpdateProducer(L *lua.LState) int {
 		Location:       uint64(location),
 		NetAddress:     address,
 	}
-	upSignBuf := new(bytes.Buffer)
-	err = updateProducer.SerializeUnsigned(upSignBuf, payload.ProducerInfoVersion)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
 
-	codeHash, err := contract.PublicKeyToStandardCodeHash(ownerPublicKey)
-	acc := client.GetAccountByCodeHash(*codeHash)
-	if acc == nil {
-		fmt.Println("no available account in wallet")
-		os.Exit(1)
+	if needSign {
+		upSignBuf := new(bytes.Buffer)
+		err = updateProducer.SerializeUnsigned(upSignBuf, payload.ProducerInfoVersion)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		codeHash, err := contract.PublicKeyToStandardCodeHash(ownerPublicKey)
+		acc := client.GetAccountByCodeHash(*codeHash)
+		if acc == nil {
+			fmt.Println("no available account in wallet")
+			os.Exit(1)
+		}
+		rpSig, err := crypto.Sign(acc.PrivKey(), upSignBuf.Bytes())
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		updateProducer.Signature = rpSig
 	}
-	rpSig, err := crypto.Sign(acc.PrivKey(), upSignBuf.Bytes())
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	updateProducer.Signature = rpSig
 
 	ud := L.NewUserData()
 	ud.Value = updateProducer
