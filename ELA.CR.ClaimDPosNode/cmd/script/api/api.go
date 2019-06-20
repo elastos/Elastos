@@ -269,6 +269,7 @@ func RegisterDataType(L *lua.LState) int {
 	RegisterStringsType(L)
 	RegisterSidechainPowType(L)
 	RegisterProgramType(L)
+	RegisterRegisterCRType(L)
 
 	return 0
 }
