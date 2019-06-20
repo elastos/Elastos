@@ -287,7 +287,7 @@ public class MasterWalletManager {
 
     private native String[] GetAllMasterWalletIds(long instance);
 
-//    private native long GetMasterWallet(long instance, String masterWalletId);
+    private native long GetMasterWallet(long instance, String masterWalletId);
 
     private native long InitMasterWalletManager(String rootPath);
 
