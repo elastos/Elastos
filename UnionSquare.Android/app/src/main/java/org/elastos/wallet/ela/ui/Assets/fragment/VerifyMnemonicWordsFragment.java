@@ -10,10 +10,21 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.bean.CreateWalletBean;
+import org.elastos.wallet.ela.db.RealmUtil;
+import org.elastos.wallet.ela.db.listener.RealmTransactionAbs;
+import org.elastos.wallet.ela.db.table.SubWallet;
+import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.adapter.CommonTextViewAdapter;
 import org.elastos.wallet.ela.ui.Assets.adapter.CommonTextViewTwoAdapter;
 import org.elastos.wallet.ela.ui.Assets.bean.Word;
+import org.elastos.wallet.ela.ui.Assets.presenter.CommonCreateSubWalletPresenter;
+import org.elastos.wallet.ela.ui.Assets.presenter.CreateMasterWalletPresenter;
+import org.elastos.wallet.ela.ui.Assets.viewdata.CommonCreateSubWalletViewData;
+import org.elastos.wallet.ela.ui.Assets.viewdata.CreaterWalletViewData;
+import org.elastos.wallet.ela.utils.RxEnum;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,7 +36,7 @@ import butterknife.OnClick;
 /**
  * 验证助记词
  */
-public class VerifyMnemonicWordsFragment extends BaseFragment {
+public class VerifyMnemonicWordsFragment extends BaseFragment implements CreaterWalletViewData, CommonCreateSubWalletViewData {
 
 
     @BindView(R.id.toolbar_title)
@@ -41,13 +52,13 @@ public class VerifyMnemonicWordsFragment extends BaseFragment {
     RecyclerView rvMnemonicRead;
 
     private String openType;
+    private CreateWalletBean createWalletBean;
+    private RealmUtil realmUtil;
 
     @Override
     protected int getLayoutId() {
         return R.layout.fragment_verify_mnemonic_words;
     }
-
-
 
 
     public List<Word> sort(List<Word> temp) {
@@ -59,13 +70,15 @@ public class VerifyMnemonicWordsFragment extends BaseFragment {
     @Override
     protected void setExtraData(Bundle data) {
         mnemonic = data.getString("mnemonic");
-      //  bundle.putString("type", "manager");
-        openType = data.getString("openType","");
+        //  bundle.putString("type", "manager");
+        openType = data.getString("openType", "");
+        createWalletBean = (CreateWalletBean) data.getParcelable("createWalletBean");
     }
 
     @Override
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getString(R.string.verify_mnemonic_words));
+        realmUtil = new RealmUtil();
         String[] temp = mnemonic.split(" ");
         readList = new ArrayList<>();
         for (int i = 0; i < temp.length; i++) {
@@ -76,8 +89,8 @@ public class VerifyMnemonicWordsFragment extends BaseFragment {
         rvMnemonicPut.setItemAnimator(new DefaultItemAnimator());
         rvMnemonicRead.setLayoutManager(new GridLayoutManager(this.getContext(), 4));
         rvMnemonicRead.setItemAnimator(new DefaultItemAnimator());
-         CommonTextViewAdapter putAdapter = new CommonTextViewAdapter(putList, this.getContext());
-         CommonTextViewTwoAdapter readAdapter = new CommonTextViewTwoAdapter(sort(readList), this.getContext());
+        CommonTextViewAdapter putAdapter = new CommonTextViewAdapter(putList, this.getContext());
+        CommonTextViewTwoAdapter readAdapter = new CommonTextViewTwoAdapter(sort(readList), this.getContext());
         putAdapter.setOnItemOnclickListner(new CommonTextViewAdapter.OnItemClickListner() {
             @Override
             public void onItemClick(View v, int position) {
@@ -90,7 +103,7 @@ public class VerifyMnemonicWordsFragment extends BaseFragment {
         readAdapter.setOnItemOnclickListner(new CommonTextViewTwoAdapter.OnItemClickListner() {
             @Override
             public void onItemClick(View v, int position) {
-                if (putList.size()>=readList.size()){
+                if (putList.size() >= readList.size()) {
                     return;
                 }
                 ((TextView) v).setTextColor(getResources().getColor(R.color.qmui_config_color_50_white));
@@ -115,12 +128,14 @@ public class VerifyMnemonicWordsFragment extends BaseFragment {
     @OnClick(R.id.sb_create_wallet)
     public void onViewClicked() {
         if (putList.toString().equals(readList.toString())) {
-            if ("manager".equals(openType)){
+            if ("manager".equals(openType)) {
                 //钱包管理的导出助记词
-                popTo(WallletManageFragment.class,false);
-            }else {
-                //成功跳转首页
-                toMainFragment();
+                popTo(WallletManageFragment.class, false);
+            } else {
+
+                new CreateMasterWalletPresenter().createMasterWallet(createWalletBean.getMasterWalletID(), createWalletBean.getMnemonic(), createWalletBean.getPhrasePassword(),
+                        createWalletBean.getPayPassword(), createWalletBean.getSingleAddress(), this);
+
             }
 
         } else {
@@ -131,4 +146,42 @@ public class VerifyMnemonicWordsFragment extends BaseFragment {
     }
 
 
+    @Override
+    public void onCreateMasterWallet(String baseInfo) {
+        if (baseInfo != null) {
+            new CommonCreateSubWalletPresenter().createSubWallet(createWalletBean.getMasterWalletID(), MyWallet.ELA, this);
+
+        }
+    }
+
+    @Override
+    public void onCreateSubWallet(String data) {
+        if (data != null) {
+            //创建Mainchain子钱包
+
+            Wallet masterWallet = new Wallet();
+            masterWallet.setWalletName(createWalletBean.getMasterWalletName());
+            masterWallet.setWalletId(createWalletBean.getMasterWalletID());
+            masterWallet.setSingleAddress(createWalletBean.getSingleAddress());
+            realmUtil.updateWalletDetial(masterWallet);
+            SubWallet subWallet = new SubWallet();
+            subWallet.setBelongId(createWalletBean.getMasterWalletID());
+            subWallet.setChainId(data);
+            realmUtil.updateSubWalletDetial(subWallet, new RealmTransactionAbs() {
+                @Override
+                public void onSuccess() {
+                    realmUtil.updateWalletDefault(createWalletBean.getMasterWalletID(), new RealmTransactionAbs() {
+                        @Override
+                        public void onSuccess() {
+                            post(RxEnum.ONE.ordinal(), null, masterWallet);
+                            //成功跳转首页
+                            toMainFragment();
+                        }
+                    });
+                }
+            });
+
+
+        }
+    }
 }

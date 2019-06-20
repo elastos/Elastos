@@ -6,6 +6,7 @@ import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
@@ -13,19 +14,12 @@ import com.allen.library.SuperTextView;
 import com.qmuiteam.qmui.layout.QMUILinearLayout;
 
 import org.elastos.wallet.R;
-import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.CreateWalletBean;
-import org.elastos.wallet.ela.db.RealmUtil;
-import org.elastos.wallet.ela.db.listener.RealmTransactionAbs;
-import org.elastos.wallet.ela.db.table.SubWallet;
-import org.elastos.wallet.ela.db.table.Wallet;
-import org.elastos.wallet.ela.ui.Assets.presenter.CommonCreateSubWalletPresenter;
-import org.elastos.wallet.ela.ui.Assets.presenter.MnemonicWordPresenter;
-import org.elastos.wallet.ela.ui.Assets.viewdata.CommonCreateSubWalletViewData;
-import org.elastos.wallet.ela.ui.Assets.viewdata.MnemonicWordViewData;
+import org.elastos.wallet.ela.ui.Assets.presenter.GenerateMnemonicPresenter;
+import org.elastos.wallet.ela.ui.Assets.viewdata.GenerateMnemonicData;
 import org.elastos.wallet.ela.utils.AppUtlis;
-import org.elastos.wallet.ela.utils.RxEnum;
+import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.widget.keyboard.SecurityEditText;
 
@@ -35,7 +29,7 @@ import butterknife.OnClick;
 /**
  * 助记词
  */
-public class MnemonicWordFragment extends BaseFragment implements MnemonicWordViewData, CommonCreateSubWalletViewData {
+public class MnemonicWordFragment extends BaseFragment implements GenerateMnemonicData {
 
 
     @BindView(R.id.toolbar_title)
@@ -57,12 +51,10 @@ public class MnemonicWordFragment extends BaseFragment implements MnemonicWordVi
     AppCompatTextView tv_mnemonic;
     private CreateWalletBean createWalletBean;
 
-    private MnemonicWordPresenter presenter;
-    private RealmUtil realmUtil;
-
 
     @Override
     protected int getLayoutId() {
+        getBaseActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         return R.layout.fragment_mnemonic_word;
     }
 
@@ -80,7 +72,7 @@ public class MnemonicWordFragment extends BaseFragment implements MnemonicWordVi
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getString(R.string.mnemonic));
         //开启自定义键盘
-       // AppUtlis.securityKeyboard(ll_mnemonic_word);
+        // AppUtlis.securityKeyboard(ll_mnemonic_word);
         //开关
         stPws.setOnSuperTextViewClickListener(new SuperTextView.OnSuperTextViewClickListener() {
             @Override
@@ -100,25 +92,16 @@ public class MnemonicWordFragment extends BaseFragment implements MnemonicWordVi
         });
 
         String type = (1 == new SPUtil(getContext()).getLanguage()) ? "english" : "chinese";
-        presenter = new MnemonicWordPresenter();
         //创建助记词
-        presenter.generateMnemonic(type, this);
+        new GenerateMnemonicPresenter().generateMnemonic(type, this);
 
 
     }
 
 
-    @OnClick({R.id.st_pws, R.id.sb_create_wallet})
+    @OnClick({R.id.sb_create_wallet})
     public void onViewClicked(View view) {
         switch (view.getId()) {
-            case R.id.st_pws:
-              /*  if (llMnemonicPws.getVisibility() == View.GONE) {
-                    llMnemonicPws.setVisibility(View.VISIBLE);
-                } else {
-                    llMnemonicPws.setVisibility(View.GONE);
-                }*/
-
-                break;
             case R.id.sb_create_wallet:
                 //选了助记词密码后的操作
                 String pws = "";
@@ -149,10 +132,7 @@ public class MnemonicWordFragment extends BaseFragment implements MnemonicWordVi
                     }
                 }
                 createWalletBean.setPhrasePassword(pws);
-                realmUtil = new RealmUtil();
-
-                presenter.createMasterWallet(createWalletBean.getMasterWalletID(), createWalletBean.getMnemonic(), createWalletBean.getPhrasePassword(),
-                        createWalletBean.getPayPassword(), createWalletBean.getSingleAddress(), this);
+                toNextPager();
                 break;
         }
     }
@@ -160,6 +140,7 @@ public class MnemonicWordFragment extends BaseFragment implements MnemonicWordVi
     private void toNextPager() {
         Bundle bundle = new Bundle();
         bundle.putString("mnemonic", createWalletBean.getMnemonic());
+        bundle.putParcelable("createWalletBean", createWalletBean);
         start(VerifyMnemonicWordsFragment.class, bundle);
     }
 
@@ -180,48 +161,16 @@ public class MnemonicWordFragment extends BaseFragment implements MnemonicWordVi
         createWalletBean.setMnemonic(mnemonic);
         String masterWalletID = AppUtlis.getStringRandom(8);
         createWalletBean.setMasterWalletID(masterWalletID);
-      //  String[] re = mnemonic.split(" ");//用split()函数直接分割
+        //  String[] re = mnemonic.split(" ");//用split()函数直接分割
         tv_mnemonic.setText(mnemonic);
         /*tv_mnemonic.setText(regex(Arrays.toString(Arrays.copyOfRange(re, 0, 8))) + "\n\n" +
                 regex(Arrays.toString(Arrays.copyOfRange(re, 8, re.length))));*/
 
     }
-
     @Override
-    public void onCreateMasterWallet(String baseInfo) {
-        if (baseInfo != null) {
-            new CommonCreateSubWalletPresenter().createSubWallet(createWalletBean.getMasterWalletID(), MyWallet.ELA, this);
-
-        }
+    public void onDestroy() {
+        super.onDestroy();
+        getBaseActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
     }
 
-    @Override
-    public void onCreateSubWallet(String data) {
-        if (data != null) {
-            //创建Mainchain子钱包
-
-            Wallet masterWallet = new Wallet();
-            masterWallet.setWalletName(createWalletBean.getMasterWalletName());
-            masterWallet.setWalletId(createWalletBean.getMasterWalletID());
-            masterWallet.setSingleAddress(createWalletBean.getSingleAddress());
-            realmUtil.updateWalletDetial(masterWallet);
-            SubWallet subWallet = new SubWallet();
-            subWallet.setBelongId(createWalletBean.getMasterWalletID());
-            subWallet.setChainId(data);
-            realmUtil.updateSubWalletDetial(subWallet, new RealmTransactionAbs() {
-                @Override
-                public void onSuccess() {
-                    realmUtil.updateWalletDefault(createWalletBean.getMasterWalletID(), new RealmTransactionAbs() {
-                        @Override
-                        public void onSuccess() {
-                            post(RxEnum.ONE.ordinal(), null, masterWallet);
-                            toNextPager();
-                        }
-                    });
-                }
-            });
-
-
-        }
-    }
 }

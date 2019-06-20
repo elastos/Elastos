@@ -20,6 +20,9 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.qmuiteam.qmui.layout.QMUILinearLayout;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
@@ -53,7 +56,7 @@ import butterknife.Unbinder;
 /**
  * 超级节点选举
  */
-public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdapter.OnItemClickListener, CommmonStringWithMethNameViewData, VotelistViewData, RegisteredProducerInfoViewData {
+public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdapter.OnItemClickListener, CommmonStringWithMethNameViewData, VotelistViewData, RegisteredProducerInfoViewData, OnRefreshListener {
 
 
     @BindView(R.id.toolbar_title)
@@ -62,7 +65,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     Toolbar toolbar;
     @BindView(R.id.recyclerview)
     RecyclerView recyclerview;
-    ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> netList = new ArrayList();
+    ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> netList;
     Unbinder unbinder;
     @BindView(R.id.iv_swichlist)
     ImageView ivSwichlist;
@@ -78,7 +81,8 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     TextView tv_num;
     @BindView(R.id.tv_signupfor)
     TextView tv_signupfor;
-
+    @BindView(R.id.srl)
+    SmartRefreshLayout srl;
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
     public String type = "1";//1.正常投票 2. 复投
@@ -103,6 +107,9 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
         //获取公钥
         signUpPresenter.getPublicKeyForVote(wallet.getWalletId(), MyWallet.ELA, this);
         //presenter.getVotedProducerList(wallet.getWalletId(), MyWallet.ELA, this);
+        onErrorRefreshLayout(srl);
+        srl.setOnRefreshListener(this);
+
     }
 
     @OnClick({R.id.tv_myvote, R.id.tv_title_right, R.id.tv_going_to_vote, R.id.tv_signupfor, R.id.iv_swichlist})
@@ -221,6 +228,11 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
 
     @Override
     public void onGetVoteList(VoteListBean dataResponse) {
+        if (netList == null) {
+            netList = new ArrayList<>();
+        } else {
+            netList.clear();
+        }
         netList.addAll(dataResponse.getData().getResult().getProducers());
         //有自已的投票就排第一
         if (publicKey != null && netList != null) {
@@ -256,7 +268,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
                 case "Unregistered":
                     tv_signupfor.setText(getString(R.string.sign_up_for));
                     tv_signupfor.setVisibility(View.VISIBLE);
-                    tv_signupfor.setCompoundDrawables(null, getResources().getDrawable(R.mipmap.vote_attend),null,null);
+                    tv_signupfor.setCompoundDrawables(null, getResources().getDrawable(R.mipmap.vote_attend), null, null);
                     break;
                 case "ReturnDeposit":
                     tv_signupfor.setVisibility(View.GONE);
@@ -265,7 +277,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
                 case "Registered":
                     tv_signupfor.setText(getString(R.string.electoral_affairs));
                     tv_signupfor.setVisibility(View.VISIBLE);
-                    tv_signupfor.setCompoundDrawables(null, getResources().getDrawable(R.mipmap.vote_management),null,null);
+                    tv_signupfor.setCompoundDrawables(null, getResources().getDrawable(R.mipmap.vote_management), null, null);
                     break;
 
             }
@@ -273,6 +285,13 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
         }
     }
 
+    @Override
+    public void onRefresh(RefreshLayout refreshLayout) {
+        if (publicKey == null) {
+            signUpPresenter.getPublicKeyForVote(wallet.getWalletId(), MyWallet.ELA, this);
+        } else {
+            new VoteListPresenter().votelistbean("1", this);
+        }
 
-
+    }
 }
