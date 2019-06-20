@@ -12,6 +12,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/p2p"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
@@ -540,7 +541,7 @@ func (p *Peer) readMessage() (p2p.Message, error) {
 	return msg, err
 }
 
-func (p *Peer) writeMessage(msg p2p.Message) error {
+func (p *Peer) writeMessage(m p2p.Message) error {
 	// Don't do anything if we're disconnecting.
 	if atomic.LoadInt32(&p.disconnect) != 0 {
 		return nil
@@ -550,15 +551,23 @@ func (p *Peer) writeMessage(msg p2p.Message) error {
 	// the logging level requires it.
 	log.Debugf("%v", newLogClosure(func() string {
 		// Debug summary of message.
-		summary := messageSummary(msg)
+		summary := messageSummary(m)
 		if len(summary) > 0 {
 			summary = " (" + summary + ")"
 		}
-		return fmt.Sprintf("Sending %v%s to %s", msg.CMD(), summary, p)
+		return fmt.Sprintf("Sending %v%s to %s", m.CMD(), summary, p)
 	}))
 
 	// Write the message to the peer.
-	return p2p.WriteMessage(p.conn, p.cfg.Magic, msg)
+	return p2p.WriteMessage(p.conn, p.cfg.Magic, m,
+		func(message p2p.Message) (*types.DposBlock, bool) {
+			msgBlock, ok := message.(*msg.Block)
+			if !ok {
+				return nil, false
+			}
+			dposBlock, ok := msgBlock.Serializable.(*types.DposBlock)
+			return dposBlock, ok
+		})
 }
 
 // shouldHandleIOError returns whether or not the passed error, which is

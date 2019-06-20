@@ -155,7 +155,7 @@ func (b *BlockChain) InitProducerState(interrupt <-chan struct{},
 
 			if block.Height >= bestHeight-uint32(
 				b.chainParams.GeneralArbiters+len(b.chainParams.CRCArbiters)) {
-				b.calculateTxsFee(block)
+				CalculateTxsFee(block)
 			}
 
 			if e = PreProcessSpecialTx(block); e != nil {
@@ -184,7 +184,7 @@ func (b *BlockChain) InitProducerState(interrupt <-chan struct{},
 	return err
 }
 
-func (b *BlockChain) calculateTxsFee(block *Block) {
+func CalculateTxsFee(block *Block) {
 	for _, tx := range block.Transactions {
 		if tx.IsCoinBaseTx() {
 			continue

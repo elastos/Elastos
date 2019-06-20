@@ -824,9 +824,11 @@ func (s *State) processVotes(tx *types.Transaction, height uint32) {
 
 func (s *State) processCancelVotes(tx *types.Transaction, height uint32) {
 	for _, input := range tx.Inputs {
-		output, ok := s.Votes[input.ReferKey()]
+		referKey := input.ReferKey()
+		output, ok := s.Votes[referKey]
 		if ok {
 			s.processVoteCancel(output, height)
+			s.Votes[referKey] = nil
 		}
 	}
 }
