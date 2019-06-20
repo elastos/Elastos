@@ -43,6 +43,10 @@ const (
 	IllegalSidechainEvidence TxType = 0x11
 	InactiveArbitrators      TxType = 0x12
 	UpdateVersion            TxType = 0x13
+
+	RegisterCR   TxType = 0x21
+	UnregisterCR TxType = 0x22
+	UpdateCR     TxType = 0x23
 )
 
 func (self TxType) Name() string {
@@ -87,6 +91,12 @@ func (self TxType) Name() string {
 		return "InactiveArbitrators"
 	case UpdateVersion:
 		return "UpdateVersion"
+	case RegisterCR:
+		return "RegisterCR"
+	case UnregisterCR:
+		return "UnregisterCR"
+	case UpdateCR:
+		return "UpdateCR"
 	default:
 		return "Unknown"
 	}
@@ -326,6 +336,18 @@ func (tx *Transaction) Hash() common.Uint256 {
 	return *tx.txHash
 }
 
+func (tx *Transaction) IsUpdateCRTx() bool {
+	return tx.TxType == UpdateCR
+}
+
+func (tx *Transaction) IsUnregisterCRTx() bool {
+	return tx.TxType == UnregisterCR
+}
+
+func (tx *Transaction) IsRegisterCRTx() bool {
+	return tx.TxType == RegisterCR
+}
+
 func (tx *Transaction) IsIllegalTypeTx() bool {
 	return tx.IsIllegalProposalTx() || tx.IsIllegalVoteTx() || tx.IsIllegalBlockTx() || tx.IsSidechainIllegalDataTx()
 }
@@ -457,6 +479,8 @@ func GetPayload(txType TxType) (Payload, error) {
 		p = new(payload.InactiveArbitrators)
 	case UpdateVersion:
 		p = new(payload.UpdateVersion)
+	case RegisterCR:
+		p = new(payload.CRInfo)
 	default:
 		return nil, errors.New("[Transaction], invalid transaction type.")
 	}

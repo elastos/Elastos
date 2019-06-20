@@ -101,7 +101,8 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 			existingTxInputs[referKey] = struct{}{}
 		}
 
-		if txn.IsWithdrawFromSideChainTx() {
+		switch txn.TxType {
+		case WithdrawFromSideChain:
 			witPayload := txn.Payload.(*payload.WithdrawFromSideChain)
 
 			// Check for duplicate sidechain tx in a block
@@ -111,9 +112,7 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 				}
 				existingSideTxs[hash] = struct{}{}
 			}
-		}
-
-		if txn.IsRegisterProducerTx() {
+		case RegisterProducer:
 			producerPayload, ok := txn.Payload.(*payload.ProducerInfo)
 			if !ok {
 				return errors.New("[PowCheckBlockSanity] invalid register producer payload")
@@ -132,9 +131,7 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 				return errors.New("[PowCheckBlockSanity] block contains duplicate producer node")
 			}
 			existingProducerNode[producerNode] = struct{}{}
-		}
-
-		if txn.IsUpdateProducerTx() {
+		case UpdateProducer:
 			producerPayload, ok := txn.Payload.(*payload.ProducerInfo)
 			if !ok {
 				return errors.New("[PowCheckBlockSanity] invalid update producer payload")
@@ -153,6 +150,8 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 				return errors.New("[PowCheckBlockSanity] block contains duplicate producer node")
 			}
 			existingProducerNode[producerNode] = struct{}{}
+		case RegisterCR:
+		case UpdateCR:
 		}
 
 		// Append transaction to list
