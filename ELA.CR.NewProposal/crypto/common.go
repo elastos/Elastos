@@ -15,9 +15,16 @@ const (
 	// signature length(0x40) || 64 bytes signature
 	SignatureScriptLength = 65
 
-	// 1byte m || 3 encoded public keys with leading 0x40 (34 bytes * 3) ||
+	// max signature length(0x40) || 1000 signature (64 bytes * 1000)
+	MaxSignatureScriptLength = 64001
+
+	// 1byte m || 2 encoded public keys with leading 0x40 (34 bytes * 2) ||
 	// 1byte n + 1byte OP_CHECKMULTISIG
 	MinMultiSignCodeLength = 71
+
+	// 1byte m || 1000 encoded public keys with leading 0x40 (34 bytes * 1000) ||
+	// 1byte n + 1byte OP_CHECKMULTISIG
+	MaxMultiSignCodeLength = 34003
 )
 
 func ParseMultisigScript(code []byte) ([][]byte, error) {
