@@ -145,6 +145,21 @@ namespace Elastos {
 			return DEFAULT_FEE_PER_KB;
 		}
 
+		TransactionPtr Wallet::CombineUTXO(const std::string &memo, const uint256 &assetID, bool userVotedUTXO) {
+			Lock();
+			bool containAsset = ContainsAsset(assetID);
+			Unlock();
+
+			ErrorChecker::CheckParam(!containAsset, Error::InvalidAsset, "asset not found: " + assetID.GetHex());
+
+			TransactionPtr tx = _groupedAssets[assetID]->CombineUTXO(memo, userVotedUTXO);
+
+			if (assetID != Asset::GetELAAssetID())
+				_groupedAssets[Asset::GetELAAssetID()]->AddFeeForTx(tx, false);
+
+			return tx;
+		}
+
 		TransactionPtr Wallet::CreateTransaction(const Address &fromAddress,
 												 const std::vector<TransactionOutput> &outputs,
 												 const std::string &memo,
@@ -803,7 +818,7 @@ namespace Elastos {
 			}
 
 			for (i = 0; i < _coinBaseUTXOs.size(); ++i) {
-				if (_coinBaseUTXOs[i]->BlockHeight() == TX_UNCONFIRMED)
+				if (_coinBaseUTXOs[i]->BlockHeight() == TX_UNCONFIRMED || _coinBaseUTXOs[i]->Spent())
 					continue;
 
 				if (ContainsAsset(_coinBaseUTXOs[i]->AssetID())) {

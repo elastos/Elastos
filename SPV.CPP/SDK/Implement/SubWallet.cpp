@@ -146,15 +146,10 @@ namespace Elastos {
 		}
 
 		nlohmann::json SubWallet::CreateCombineUTXOTransaction(const std::string &memo, bool useVotedUTXO) {
-			std::string addr = CreateAddress();
-			uint64_t balance = 0;
+			TransactionPtr tx = _walletManager->getWallet()->CombineUTXO(memo, Asset::GetELAAssetID(), useVotedUTXO);
 
-			if (useVotedUTXO)
-				balance = GetBalance(BalanceType::Total);
-			else
-				balance = GetBalance(BalanceType::Default);
-
-			TransactionPtr tx = CreateTx("", addr, balance, Asset::GetELAAssetID(), memo, useVotedUTXO);
+			if (_info->GetChainID() == "ELA")
+				tx->SetVersion(Transaction::TxVersion::V09);
 
 			return tx->ToJson();
 		}

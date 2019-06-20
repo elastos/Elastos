@@ -50,6 +50,8 @@ namespace Elastos {
 
 			nlohmann::json GetBalanceInfo();
 
+			TransactionPtr CombineUTXO(const std::string &memo, bool useVotedUTXO);
+
 			TransactionPtr CreateTxForOutputs(const std::vector<TransactionOutput> &outputs,
 											  const Address &fromAddress,
 											  const std::string &memo,

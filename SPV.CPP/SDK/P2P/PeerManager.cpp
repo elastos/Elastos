@@ -161,8 +161,7 @@ namespace Elastos {
 				checkBlock->SetTarget(Checkpoints[i].Target());
 				_checkpoints.Insert(checkBlock);
 				_blocks.Insert(checkBlock);
-				if (i == 0 || checkBlock->GetTimestamp() + 1 * 24 * 60 * 60 < earliestKeyTime ||
-					(earliestKeyTime == 0 && checkBlock->GetTimestamp() + 1 * 24 * 60 * 60 < now))
+				if (i == 0 || checkBlock->GetTimestamp() + 1 * 24 * 60 * 60 < earliestKeyTime)
 					_lastBlock = checkBlock;
 			}
 

@@ -186,6 +186,22 @@ static void PublishTransaction(ISubWallet *subWallet, const nlohmann::json &tx) 
 	logger->debug("published tx result -> {}", result.dump());
 }
 
+static void CombineUTXO(const std::string &masterWalletID, const std::string &subWalletID,
+						const std::string &assetID = "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0") {
+	nlohmann::json tx;
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
+
+	if (subWalletID == gTokenchainSubWalletID) {
+		ITokenchainSubWallet *tokenchainSubWallet = dynamic_cast<ITokenchainSubWallet *>(subWallet);
+		tx = tokenchainSubWallet->CreateCombineUTXOTransaction(assetID, "memo combine utxo");
+	} else {
+		tx = subWallet->CreateCombineUTXOTransaction("memo combine utxo");
+	}
+	logger->debug("tx after created = {}", tx.dump());
+
+	PublishTransaction(subWallet, tx);
+}
+
 static void Transafer(const std::string &masterWalletID, const std::string &subWalletID,
 					  const std::string &from, const std::string &to, uint64_t amount,
 					  const std::string &assetID = "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0") {
@@ -422,7 +438,7 @@ static void InitWallets() {
 	std::vector<IMasterWallet *> masterWallets = manager->GetAllMasterWallets();
 	if (masterWallets.size() == 0) {
 		IMasterWallet *masterWallet = nullptr;
-//		masterWallet = ImportWalletWithKeystore();
+		masterWallet = ImportWalletWithKeystore();
 		if (masterWallet == nullptr) {
 			masterWallet = ImportWalletWithMnemonic();
 //			masterWallet = NewWalletWithMnemonic();
@@ -458,6 +474,15 @@ static void GetAllTxSummary(const std::string &masterWalletID, const std::string
 		nlohmann::json tx = subWallet->GetAllTransaction(0, 500, (*it)["TxHash"]);
 		logger->debug("tx = {}", tx.dump());
 	}
+
+	nlohmann::json cbSummary = subWallet->GetAllCoinBaseTransaction(0, 10000, "");
+	logger->debug("[{}:{}] all coinbase tx -> {}", masterWalletID, subWalletID, cbSummary.dump());
+
+	nlohmann::json cbs = cbSummary["Transactions"];
+	for (nlohmann::json::iterator it = cbs.begin(); it != cbs.end(); ++it) {
+		nlohmann::json cb = subWallet->GetAllCoinBaseTransaction(0, 10000, (*it)["TxHash"]);
+		logger->debug("cb = {}", cb.dump());
+	}
 }
 
 static void GetBalance(const std::string &masterWalletID, const std::string &subWalletID,
@@ -481,7 +506,7 @@ static void GetAllAssets(const std::string &masterWalletID, const std::string &s
 }
 
 static void ELATest() {
-	static bool transferDone = true, depositDone = true;
+	static bool combineUTXODone = true, transferDone = true, depositDone = true;
 	static bool voteDone = true, registerProducer = true, updateProducer = true, cancelProducer = true, retrieveDeposit = true;
 
 	logger->debug("ELA {}", separator);
@@ -489,6 +514,11 @@ static void ELATest() {
 	GetBalance(gMasterWalletID, gMainchainSubWalletID);
 	GetVotedList(gMasterWalletID, gMainchainSubWalletID);
 	GetRegisteredProducerInfo(gMasterWalletID, gMainchainSubWalletID);
+
+	if (!combineUTXODone) {
+		CombineUTXO(gMasterWalletID, gMainchainSubWalletID);
+		combineUTXODone = true;
+	}
 
 	if (!transferDone) {
 		Transafer(gMasterWalletID, gMainchainSubWalletID,

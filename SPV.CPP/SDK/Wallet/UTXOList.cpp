@@ -55,7 +55,11 @@ namespace Elastos {
 			_amount = amount;
 		}
 
-		CoinBaseUTXO::CoinBaseUTXO() : _timestamp(0), _blockHeight(0) {
+		CoinBaseUTXO::CoinBaseUTXO() :
+			_timestamp(0),
+			_blockHeight(0),
+			_outputLock(0),
+			_spent(false) {
 		}
 
 		CoinBaseUTXO::~CoinBaseUTXO() {

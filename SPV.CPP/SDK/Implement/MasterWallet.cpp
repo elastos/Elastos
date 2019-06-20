@@ -278,6 +278,24 @@ namespace Elastos {
 		void MasterWallet::InitSubWallets() {
 			const std::vector<CoinInfoPtr> &info = _localStore->GetSubWalletInfoList();
 
+			if (info.size() == 0) {
+				const ChainConfigPtr &mainchainConfig = _config->GetChainConfig("ELA");
+				if (mainchainConfig) {
+					CoinInfoPtr defaultInfo(new CoinInfo());
+					defaultInfo->SetChainID(mainchainConfig->ID());
+					defaultInfo->SetFeePerKB(mainchainConfig->FeePerKB());
+					defaultInfo->SetVisibleAsset(Asset::GetELAAssetID());
+
+
+					ISubWallet *subWallet = SubWalletFactoryMethod(defaultInfo, mainchainConfig, this);
+					SubWallet *subWalletImpl = dynamic_cast<SubWallet *>(subWallet);
+					ErrorChecker::CheckCondition(subWalletImpl == nullptr, Error::CreateSubWalletError,
+												 "Recover sub wallet error");
+					startPeerManager(subWalletImpl);
+					_createdWallets[subWallet->GetChainID()] = subWallet;
+				}
+			}
+
 			for (int i = 0; i < info.size(); ++i) {
 				const ChainConfigPtr &chainConfig = _config->GetChainConfig(info[i]->GetChainID());
 				if (chainConfig == nullptr) {
@@ -292,6 +310,7 @@ namespace Elastos {
 				startPeerManager(subWalletImpl);
 				_createdWallets[subWallet->GetChainID()] = subWallet;
 			}
+
 			Save();
 		}
 

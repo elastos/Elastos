@@ -111,6 +111,8 @@ namespace Elastos {
 
 			uint64_t GetDefaultFeePerKb();
 
+			TransactionPtr CombineUTXO(const std::string &memo, const uint256 &asset, bool useVoteUTXO);
+
 			TransactionPtr CreateTransaction(const Address &fromAddress, const std::vector<TransactionOutput> &outputs,
 											 const std::string &memo,
 											 bool useVotedUTXO, bool autoReduceOutputAmount);
