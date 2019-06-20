@@ -49,7 +49,7 @@ func parsePublicKeys(code []byte) ([][]byte, error) {
 	// remove n
 	code = code[:len(code)-1]
 	if len(code)%(PublicKeyScriptLength-1) != 0 {
-		return nil, errors.New("not a valid cross chain transaction code, length not match")
+		return nil, errors.New("not a valid transaction code, length not match")
 	}
 
 	var publicKeys [][]byte

@@ -79,6 +79,7 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 	existingSideTxs := make(map[Uint256]struct{})
 	existingProducer := make(map[string]struct{})
 	existingProducerNode := make(map[string]struct{})
+	existingCR := make(map[string]struct{})
 	for _, txn := range transactions {
 		txID := txn.Hash()
 		// Check for duplicate transactions.
@@ -151,6 +152,16 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 			}
 			existingProducerNode[producerNode] = struct{}{}
 		case RegisterCR:
+			crPayload, ok := txn.Payload.(*payload.CRInfo)
+			if !ok {
+				return errors.New("[PowCheckBlockSanity] invalid register CR payload")
+			}
+
+			// Check for duplicate CR in a block
+			if _, exists := existingCR[crPayload.DID]; exists {
+				return errors.New("[PowCheckBlockSanity] block contains duplicate CR")
+			}
+			existingCR[crPayload.DID] = struct{}{}
 		case UpdateCR:
 		}
 
