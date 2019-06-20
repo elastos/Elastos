@@ -20,6 +20,7 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
 	. "github.com/elastos/Elastos.ELA/errors"
+	"github.com/elastos/Elastos.ELA/vm"
 )
 
 const (
@@ -168,6 +169,10 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 			return ErrTransactionPayload
 		}
 		return Success
+	case RegisterCR:
+		if err := b.checkRegisterCRTransaction(txn); err != nil {
+			log.Warn("[checkRegisterCRTransaction],", err)
+		}
 	}
 
 	// check double spent transaction
@@ -733,6 +738,7 @@ func checkTransactionPayload(txn *Transaction) error {
 	case *payload.DPOSIllegalBlocks:
 	case *payload.SidechainIllegalData:
 	case *payload.InactiveArbitrators:
+	case *payload.CRInfo:
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
 	}
@@ -1166,6 +1172,107 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 			return fmt.Errorf("producer %s already exist",
 				hex.EncodeToString(info.NodePublicKey))
 		}
+	}
+
+	return nil
+}
+
+func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction) error {
+	info, ok := txn.Payload.(*payload.CRInfo)
+	if !ok {
+		return errors.New("invalid payload")
+	}
+
+	if err := checkStringField(info.NickName, "NickName"); err != nil {
+		return err
+	}
+
+	// check url
+	if err := checkStringField(info.Url, "Url"); err != nil {
+		return err
+	}
+
+	// todo check duplication of nickname.(need to check by cr state)
+
+	//todo check duplication of DID.(need to check by cr state)
+
+	signedBuf := new(bytes.Buffer)
+	err := info.SerializeUnsigned(signedBuf, payload.CRInfoVersion)
+	if err != nil {
+		return err
+	}
+	signType, err := crypto.GetScriptType(info.Code)
+	if err != nil {
+		return errors.New("invalid code")
+	}
+	if signType == vm.CHECKSIG {
+		// check code and signature
+		if err := checkStandardSignature(program.Program{
+			Code:      info.Code,
+			Parameter: info.Signature,
+		}, signedBuf.Bytes()); err != nil {
+			return err
+		}
+
+		// check DID
+		publicKey := info.Code[1 : len(info.Code)-1]
+		hash, err := contract.PublicKeyToDepositProgramHash(publicKey)
+		if err != nil {
+			return err
+		}
+		addr, err := hash.ToAddress()
+		if err != nil {
+			return err
+		}
+		if info.DID != addr {
+			errors.New("the DID needs to be calculated from standard code")
+		}
+	} else if signType == vm.CHECKMULTISIG {
+		// check code and signature
+		if err := checkMultiSigSignatures(program.Program{
+			Code:      info.Code,
+			Parameter: info.Signature,
+		}, signedBuf.Bytes()); err != nil {
+			return err
+		}
+
+		// check DID
+		ct, err := contract.CreateMultiSigContractByCode(info.Code)
+		if err != nil {
+			return err
+		}
+		hash := ct.ToProgramHash()
+		addr, err := hash.ToAddress()
+		if err != nil {
+			return err
+		}
+		if info.DID != addr {
+			errors.New("the DID needs to be calculated from multi code")
+		}
+	} else {
+		return errors.New("invalid code type")
+	}
+
+	// check the deposit coin
+	hash, err := common.Uint168FromAddress(info.DID)
+	if err != nil {
+		return errors.New("invalid public key")
+	}
+	var depositCount int
+	for _, output := range txn.Outputs {
+		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixDeposit {
+			depositCount++
+			if !output.ProgramHash.IsEqual(*hash) {
+				return errors.New("deposit address does not" +
+					" match the public key in payload")
+			}
+			if output.Value < MinDepositAmount {
+				return errors.New("producer deposit amount is insufficient")
+			}
+		}
+	}
+	if depositCount != 1 {
+		return errors.New("there must be only one deposit address in outputs")
 	}
 
 	return nil
