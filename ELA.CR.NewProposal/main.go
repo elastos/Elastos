@@ -163,13 +163,23 @@ func startNode(c *cli.Context) {
 	arbiters, err := state.NewArbitrators(activeNetParams, nil,
 		chainStore.GetHeight, func() (*types.Block, error) {
 			hash := chainStore.GetCurrentBlockHash()
-			return chainStore.GetBlock(hash)
+			block, err := chainStore.GetBlock(hash)
+			if err != nil {
+				return nil, err
+			}
+			blockchain.CalculateTxsFee(block)
+			return block, nil
 		}, func(height uint32) (*types.Block, error) {
 			hash, err := chainStore.GetBlockHash(height)
 			if err != nil {
 				return nil, err
 			}
-			return chainStore.GetBlock(hash)
+			block, err := chainStore.GetBlock(hash)
+			if err != nil {
+				return nil, err
+			}
+			blockchain.CalculateTxsFee(block)
+			return block, nil
 		})
 	if err != nil {
 		printErrorAndExit(err)

@@ -87,15 +87,6 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 		return ErrTransactionDuplicate
 	}
 
-	// check to ensure only producer related txs and DPOS related txs existing
-	// in current block when inactive mode is on
-	if DefaultLedger.Arbitrators.IsInactiveMode() && !txn.IsProducerRelatedTx() &&
-		!txn.IsInactiveArbitrators() && !txn.IsIllegalTypeTx() {
-		log.Warn("[CheckTransactionContext] only producer related tx is" +
-			" allowed when inactive mode is on")
-		return ErrTransactionPayload
-	}
-
 	switch txn.TxType {
 	case CoinBase:
 		return Success

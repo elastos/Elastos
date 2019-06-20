@@ -5,6 +5,7 @@ collect all DPOS peer addresses from the normal P2P network.
 package routes
 
 import (
+	"container/list"
 	"fmt"
 	"sync"
 	"sync/atomic"
@@ -27,13 +28,17 @@ const (
 	// retryAnnounceDuration defines the time duration to retry an announce.
 	retryAnnounceDuration = 3 * time.Second
 
-	// maxTimeOffset indicates the maximum time offset with the to accept an DAddr
-	// message.
+	// maxTimeOffset indicates the maximum time offset with the to accept an
+	// DAddr message.
 	maxTimeOffset = 30 * time.Second
 
 	// minAnnounceDuration indicates the minimum allowed time duration to
 	// announce a new DAddr.
 	minAnnounceDuration = 30 * time.Second
+
+	// maxKnownAddrs indicates the maximum known DAddrs cached in memory.
+	// The maximum of DAddrs can be calculated as [36(current)+72(candidate)]².
+	maxKnownAddrs = 108 * 110
 )
 
 // cache stores the requested DAddrs from a peer.
@@ -106,6 +111,7 @@ type Routes struct {
 	addrMtx   sync.RWMutex
 	addrIndex map[dp.PID]map[dp.PID]common.Uint256
 	knownAddr map[common.Uint256]*msg.DAddr
+	knownList *list.List
 
 	queue    chan interface{}
 	announce chan struct{}
@@ -212,7 +218,7 @@ out:
 				addr.Signature = r.sign(addr.Data())
 
 				// Append and relay the local address.
-				r.appendAddr(state, &addr)
+				r.appendAddr(&addr)
 			}
 
 		case <-r.quit:
@@ -231,13 +237,24 @@ cleanup:
 	}
 }
 
-func (r *Routes) appendAddr(s *state, m *msg.DAddr) {
+func (r *Routes) appendAddr(m *msg.DAddr) {
 	hash := m.Hash()
 
 	// Append received addr into known addr index.
 	r.addrMtx.Lock()
 	r.addrIndex[m.PID][m.Encode] = hash
 	r.knownAddr[hash] = m
+	if len(r.knownAddr) > maxKnownAddrs {
+		node := r.knownList.Back()
+		lru := node.Value.(common.Uint256)
+
+		delete(r.knownAddr, lru)
+
+		node.Value = hash
+		r.knownList.MoveToFront(node)
+	} else {
+		r.knownList.PushFront(hash)
+	}
 	r.addrMtx.Unlock()
 
 	// Relay addr to the P2P network.
@@ -394,7 +411,14 @@ func (r *Routes) verifyDAddr(s *state, m *msg.DAddr) error {
 	defer r.addrMtx.RUnlock()
 	if index, ok := r.addrIndex[m.PID]; ok {
 		if hash, ok := index[m.Encode]; ok {
-			ka := r.knownAddr[hash]
+			ka, ok := r.knownAddr[hash]
+			if !ok {
+				// This may happen if the known DAddr has been deleted because
+				// maxKnownAddrs arrived.  In this case we do not return any
+				// error.
+				log.Debugf("unknown addr %s", hash)
+				return nil
+			}
 
 			// Abandon address older than the known address to the same arbiter.
 			if ka.Timestamp.After(m.Timestamp) {
@@ -447,7 +471,7 @@ func (r *Routes) handleDAddr(s *state, p *peer.Peer, m *msg.DAddr) {
 
 	_, ok := s.peers[m.PID]
 	if !ok {
-		log.Warnf("PID not in arbiter list")
+		log.Debugf("PID not in arbiter list")
 
 		// Peers may have disagree with the current producers, so some times we
 		// receive addresses that not in the producers list.  We do not
@@ -456,7 +480,7 @@ func (r *Routes) handleDAddr(s *state, p *peer.Peer, m *msg.DAddr) {
 	}
 
 	// Append received addr into state.
-	r.appendAddr(s, m)
+	r.appendAddr(m)
 
 	// Notify the received DPOS address if the Encode matches.
 	if r.pid.Equal(m.Encode) && r.cfg.OnCipherAddr != nil {
@@ -551,6 +575,7 @@ func New(cfg *Config) *Routes {
 		sign:      cfg.Sign,
 		addrIndex: make(map[dp.PID]map[dp.PID]common.Uint256),
 		knownAddr: make(map[common.Uint256]*msg.DAddr),
+		knownList: list.New(),
 		queue:     make(chan interface{}, 125),
 		announce:  make(chan struct{}, 1),
 		quit:      make(chan struct{}),
