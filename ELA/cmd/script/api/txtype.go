@@ -78,6 +78,8 @@ func newTransaction(L *lua.LState) int {
 		pload, _ = ud.Value.(*payload.InactiveArbitrators)
 	case *payload.SideChainPow:
 		pload, _ = ud.Value.(*payload.SideChainPow)
+	case *payload.CRInfo:
+		pload, _ = ud.Value.(*payload.CRInfo)
 	default:
 		fmt.Println("error: undefined payload type")
 		os.Exit(1)
