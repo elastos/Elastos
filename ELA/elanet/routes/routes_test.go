@@ -280,3 +280,37 @@ out:
 
 	assert.Equal(t, 4, relays)
 }
+
+func TestRoutes_AppendAddr(t *testing.T) {
+	routes := New(&Config{
+		Addr:       "localhost",
+		TimeSource: blockchain.NewMedianTime(),
+		Sign: func(data []byte) (signature []byte) {
+			return
+		},
+		IsCurrent:    func() bool { return true },
+		RelayAddr:    func(iv *msg.InvVect, data interface{}) {},
+		OnCipherAddr: func(pid dp.PID, addr []byte) {},
+	})
+
+	for i := 0; i < maxKnownAddrs*10; i++ {
+		addr := msg.DAddr{}
+		rand.Read(addr.PID[:])
+		routes.addrIndex[addr.PID] = make(map[dp.PID]common.Uint256)
+		addr.Timestamp = time.Now()
+		rand.Read(addr.Encode[:])
+		addr.Cipher = make([]byte, 120)
+		rand.Read(addr.Cipher)
+		addr.Signature = make([]byte, 65)
+		rand.Read(addr.Signature)
+		routes.appendAddr(&addr)
+
+		if len(routes.knownAddr) > maxKnownAddrs {
+			t.Fatalf("len(routes.knownAddr) > maxKnownAddrs")
+		}
+
+		if routes.knownList.Len() > maxKnownAddrs {
+			t.Fatalf("routes.knownList.Len() > maxKnownAddrs")
+		}
+	}
+}

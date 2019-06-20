@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"path/filepath"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -14,7 +15,8 @@ import (
 )
 
 const (
-	TaskChanCap = 4
+	TaskChanCap     = 4
+	BlocksCacheSize = 2
 )
 
 type ProducerState byte
@@ -29,13 +31,13 @@ type persistTask interface{}
 
 type rollbackBlockTask struct {
 	blockHash Uint256
-	reply     chan bool
+	reply     chan error
 }
 
 type persistBlockTask struct {
 	block   *Block
 	confirm *payload.Confirm
-	reply   chan bool
+	reply   chan error
 }
 
 type ChainStore struct {
@@ -45,6 +47,10 @@ type ChainStore struct {
 	quit   chan chan bool
 
 	currentBlockHeight uint32
+
+	mtx              sync.RWMutex
+	blockHashesCache []Uint256
+	blocksCache      map[Uint256]*Block
 }
 
 func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
@@ -54,9 +60,11 @@ func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
 	}
 
 	s := &ChainStore{
-		IStore: db,
-		taskCh: make(chan persistTask, TaskChanCap),
-		quit:   make(chan chan bool, 1),
+		IStore:           db,
+		taskCh:           make(chan persistTask, TaskChanCap),
+		quit:             make(chan chan bool, 1),
+		blockHashesCache: make([]Uint256, 0, BlocksCacheSize),
+		blocksCache:      make(map[Uint256]*Block),
 	}
 
 	go s.taskHandler()
@@ -80,13 +88,11 @@ func (c *ChainStore) taskHandler() {
 			now := time.Now()
 			switch task := t.(type) {
 			case *persistBlockTask:
-				c.handlePersistBlockTask(task.block, task.confirm)
-				task.reply <- true
+				task.reply <- c.handlePersistBlockTask(task.block, task.confirm)
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
 				log.Debugf("handle block exetime: %g num transactions:%d", tcall, len(task.block.Transactions))
 			case *rollbackBlockTask:
-				c.handleRollbackBlockTask(task.blockHash)
-				task.reply <- true
+				task.reply <- c.handleRollbackBlockTask(task.blockHash)
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
 				log.Debugf("handle block rollback exetime: %g", tcall)
 			}
@@ -234,12 +240,9 @@ func (c *ChainStore) GetCurrentBlockHash() Uint256 {
 }
 
 func (c *ChainStore) RollbackBlock(blockHash Uint256) error {
-
-	reply := make(chan bool)
+	reply := make(chan error)
 	c.taskCh <- &rollbackBlockTask{blockHash: blockHash, reply: reply}
-	<-reply
-
-	return nil
+	return <-reply
 }
 
 func (c *ChainStore) GetHeader(hash Uint256) (*Header, error) {
@@ -399,6 +402,12 @@ func (c *ChainStore) persistTransaction(tx *Transaction, height uint32) error {
 }
 
 func (c *ChainStore) GetBlock(hash Uint256) (*Block, error) {
+	c.mtx.RLock()
+	if block, exist := c.blocksCache[hash]; exist {
+		c.mtx.RUnlock()
+		return block, nil
+	}
+	c.mtx.RUnlock()
 	var b = new(Block)
 	prefix := []byte{byte(DATAHeader)}
 	data, err := c.Get(append(prefix, hash.Bytes()...))
@@ -437,6 +446,17 @@ func (c *ChainStore) GetBlock(hash Uint256) (*Block, error) {
 		b.Transactions[i] = tx
 	}
 
+	if c.blocksCache != nil {
+		c.mtx.Lock()
+		if len(c.blockHashesCache) >= BlocksCacheSize {
+			delete(c.blocksCache, c.blockHashesCache[0])
+			c.blockHashesCache = c.blockHashesCache[1:BlocksCacheSize]
+		}
+		c.blockHashesCache = append(c.blockHashesCache, hash)
+		c.blocksCache[hash] = b
+		c.mtx.Unlock()
+	}
+
 	return b, nil
 }
 
@@ -466,14 +486,28 @@ func (c *ChainStore) getBlockHeader(hash Uint256) (*Header, error) {
 
 func (c *ChainStore) rollback(b *Block) error {
 	c.NewBatch()
-	c.RollbackTrimmedBlock(b)
-	c.RollbackBlockHash(b)
-	c.RollbackTransactions(b)
-	c.RollbackUnspendUTXOs(b)
-	c.RollbackUnspend(b)
-	c.RollbackCurrentBlock(b)
-	c.RollbackConfirm(b)
-	c.BatchCommit()
+	if err := c.RollbackTrimmedBlock(b); err != nil {
+		return err
+	}
+	if err := c.RollbackBlockHash(b); err != nil {
+		return err
+	}
+	if err := c.RollbackTransactions(b); err != nil {
+		return err
+	}
+	if err := c.RollbackUnspendUTXOs(b); err != nil {
+		return err
+	}
+	if err := c.RollbackUnspend(b); err != nil {
+		return err
+	}
+	if err := c.RollbackCurrentBlock(b); err != nil {
+		return err
+	}
+	if err := c.RollbackConfirm(b); err != nil {
+		return err
+	}
+	return c.BatchCommit()
 
 	atomic.StoreUint32(&c.currentBlockHeight, b.Height-1)
 
@@ -509,38 +543,38 @@ func (c *ChainStore) persist(b *Block, confirm *payload.Confirm) error {
 func (c *ChainStore) SaveBlock(b *Block, confirm *payload.Confirm) error {
 	log.Debug("SaveBlock()")
 
-	reply := make(chan bool)
+	reply := make(chan error)
 	c.taskCh <- &persistBlockTask{block: b, confirm: confirm, reply: reply}
-	<-reply
-
-	return nil
+	return <-reply
 }
 
-func (c *ChainStore) handleRollbackBlockTask(blockHash Uint256) {
+func (c *ChainStore) handleRollbackBlockTask(blockHash Uint256) error {
 	block, err := c.GetBlock(blockHash)
 	if err != nil {
 		log.Errorf("block %x can't be found", BytesToHexString(blockHash.Bytes()))
-		return
+		return err
 	}
-	c.rollback(block)
+	return c.rollback(block)
 }
 
-func (c *ChainStore) handlePersistBlockTask(b *Block, confirm *payload.Confirm) {
+func (c *ChainStore) handlePersistBlockTask(b *Block,
+	confirm *payload.Confirm) error {
 	if b.Header.Height <= c.currentBlockHeight {
-		return
+		return errors.New("block height less than current block height")
 	}
 
-	c.persistBlock(b, confirm)
+	return c.persistBlock(b, confirm)
 }
 
-func (c *ChainStore) persistBlock(block *Block, confirm *payload.Confirm) {
+func (c *ChainStore) persistBlock(block *Block, confirm *payload.Confirm) error {
 	err := c.persist(block, confirm)
 	if err != nil {
 		log.Fatal("[persistBlocks]: error to persist block:", err.Error())
-		return
+		return err
 	}
 
 	atomic.StoreUint32(&c.currentBlockHeight, block.Height)
+	return nil
 }
 
 func (c *ChainStore) persistConfirm(confirm *payload.Confirm) error {
