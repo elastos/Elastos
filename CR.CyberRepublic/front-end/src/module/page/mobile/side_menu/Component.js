@@ -55,12 +55,6 @@ export default class extends BaseComponent {
       })
     } else if (key === 'teams') {
       this.props.history.push('/developer/search?lookingFor=TEAM&sortBy=createdAt&sortOrder=DESC')
-    } else if (key === 'supernodes') {
-      analytics.track('SUPERNODES_CLICKED', {
-        url: location.href,
-      })
-      const linkTo = 'https://medium.com/series/supernodes-39936b014bc0'
-      window.location.href = linkTo
     } else if (key === 'news') {
       analytics.track('NEWS_CLICKED', {
         url: location.href,
@@ -167,9 +161,6 @@ export default class extends BaseComponent {
               {/* <Menu.Item key="constitution/1">
                   {I18N.get('navigation.constitution')}
               </Menu.Item> */}
-              <Menu.Item key="supernodes">
-                {I18N.get('navigation.resources.submenu.supernodes')}
-              </Menu.Item>
               <Menu.Item key="news">
                 {I18N.get('navigation.resources.submenu.news')}
               </Menu.Item>
