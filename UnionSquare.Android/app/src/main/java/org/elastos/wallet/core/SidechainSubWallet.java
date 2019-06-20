@@ -10,8 +10,8 @@ package org.elastos.wallet.core;
 public class SidechainSubWallet extends SubWallet {
     private long mInstance;
 
-    public String CreateWithdrawTransaction(String fromAddress, long amount, String mainChainAddress, String memo, String remark) throws WalletException {
-        return CreateWithdrawTransaction(mInstance, fromAddress, amount, mainChainAddress, memo, remark);
+    public String CreateWithdrawTransaction(String fromAddress, long amount, String mainChainAddress, String memo) throws WalletException {
+        return CreateWithdrawTransaction(mInstance, fromAddress, amount, mainChainAddress, memo);
     }
 
     public String GetGenesisAddress() throws WalletException {
@@ -23,7 +23,7 @@ public class SidechainSubWallet extends SubWallet {
         mInstance = proxy;
     }
 
-    private native String CreateWithdrawTransaction(long proxy, String fromAddress, long amount, String mainChainAddress, String memo, String remark);
+    private native String CreateWithdrawTransaction(long proxy, String fromAddress, long amount, String mainChainAddress, String memo);
 
     private native String GetGenesisAddress(long proxy);
 }

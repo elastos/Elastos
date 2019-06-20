@@ -41,7 +41,7 @@ public class ElectoralAffairsPresenter extends PresenterAbstract {
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().createCancelProducerTransaction(masterWalletID, chainID, fromAddress, payloadJson, memo, remark, useVotedUTXO);
+                return baseFragment.getMyWallet().createCancelProducerTransaction(masterWalletID, chainID, fromAddress, payloadJson, memo, useVotedUTXO);
             }
         });
         subscriberObservable(observer, observable);
@@ -54,7 +54,7 @@ public class ElectoralAffairsPresenter extends PresenterAbstract {
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().createRetrieveDepositTransaction(masterWalletID, chainID, amount, memo, remark);
+                return baseFragment.getMyWallet().createRetrieveDepositTransaction(masterWalletID, chainID, amount, memo);
             }
         });
         subscriberObservable(observer, observable);

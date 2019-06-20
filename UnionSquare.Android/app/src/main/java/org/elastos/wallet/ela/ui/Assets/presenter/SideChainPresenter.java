@@ -52,7 +52,7 @@ public class SideChainPresenter extends PresenterAbstract {
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().calculateTransactionFee(walletId, chainId,data,feePerKb);
+                return null;
             }
         });
         subscriberObservable(observer, observable);
@@ -64,7 +64,7 @@ public class SideChainPresenter extends PresenterAbstract {
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().createWithdrawTransaction(walletId, chainId,fromAddress, actualSpend, address, memo,remark);
+                return baseFragment.getMyWallet().createWithdrawTransaction(walletId, chainId,fromAddress, actualSpend, address, memo);
             }
         });
         subscriberObservable(observer, observable);

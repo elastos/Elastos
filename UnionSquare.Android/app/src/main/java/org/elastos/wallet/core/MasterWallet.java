@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class MasterWallet {
     static public class CHAINID {
         public static String MAIN = "ELA";
-        public static String ID = "IdChain";
+        public static String ID = "IDChain";
     }
 
     static public String TAG = "IMasterWallet";

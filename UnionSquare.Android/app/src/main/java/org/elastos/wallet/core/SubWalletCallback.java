@@ -126,7 +126,7 @@ public class SubWalletCallback {
         }
     }
 
-    public void OnBalanceChanged(String assetID, long balance) {
+    public void OnBalanceChanged(String assetID, String balance) {
         Log.i(TAG, GetWalletID() + "[OnBalanceChanged] " + assetID + " = " + balance);
         JSONObject jsonObject = new JSONObject();
         try {
@@ -158,22 +158,23 @@ public class SubWalletCallback {
         }
     }
 
-    public void OnTxDeleted(String hash, boolean notifyUser, boolean recommendRescan) {
-        Log.i(TAG, GetWalletID() + "[OnTxDeleted] " + hash + ", notifyUser: " + notifyUser + ", recommendRescan: " + recommendRescan);
+    public void OnAssetRegistered(String asset, String info) {
+        Log.i(TAG, GetWalletID() + "[OnAssetRegistered] " + asset + ", info: " + info);
         JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put("hash", hash);
-            jsonObject.put("notifyUser", notifyUser);
-            jsonObject.put("recommendRescan", recommendRescan);
+            jsonObject.put("asset", asset);
+            jsonObject.put("info", info);
             jsonObject.put("MasterWalletID", mMasterWalletID);
             jsonObject.put("ChaiID", mSubWalletID);
-            jsonObject.put("Action", "OnTxDeleted");
+            jsonObject.put("Action", "OnAssetRegistered");
 
-            mListener.OnTxDeleted(jsonObject);
+            //todo add this interface on listener
+//            mListener.OnAssetRegistered(jsonObject);
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
+
 
     private native long InitSubWalletCallback();
 

@@ -74,16 +74,12 @@ public class SubWallet {
         }
     }
 
-    public String CreateTransaction(String fromAddress, String toAddress, long amount, String memo, String remark, boolean useVotedUTXO) throws WalletException {
-        return CreateTransaction(mInstance, fromAddress, toAddress, amount, memo, remark, useVotedUTXO);
+    public String CreateTransaction(String fromAddress, String toAddress, long amount, String memo, boolean useVotedUTXO) throws WalletException {
+        return CreateTransaction(mInstance, fromAddress, toAddress, amount, memo, useVotedUTXO);
     }
 
-    public long CalculateTransactionFee(String rawTransaction, long feePerKb) throws WalletException {
-        return CalculateTransactionFee(mInstance, rawTransaction, feePerKb);
-    }
-
-    public String UpdateTransactionFee(String rawTransaction, long fee, String fromAddress) throws WalletException {
-        return UpdateTransactionFee(mInstance, rawTransaction, fee, fromAddress);
+    public String CreateCombineUTXOTransaction(String memo, boolean useVotedUTXO) throws WalletException {
+        return CreateCombineUTXOTransaction(mInstance, memo, useVotedUTXO);
     }
 
     public String SignTransaction(String rawTransaction, String payPassword) throws WalletException {
@@ -114,6 +110,23 @@ public class SubWallet {
         return GetPublicKey(mInstance);
     }
 
+    public String EncodeTransaction(String txJson) throws WalletException {
+        return EncodeTransaction(mInstance, txJson);
+    }
+
+    public String DecodeTransaction(String txJson) throws WalletException {
+        return DecodeTransaction(mInstance, txJson);
+    }
+
+    public String GetAllCoinBaseTransaction(int start, int count, String txid) throws WalletException {
+        return GetAllCoinBaseTransaction(mInstance, start, count, txid);
+    }
+
+    public String GetAssetInfo(String assetID) throws WalletException {
+        return GetAssetInfo(mInstance, assetID);
+    }
+
+
     public SubWallet(long instance) {
         mInstance = instance;
     }
@@ -140,11 +153,9 @@ public class SubWallet {
 
     private native void RemoveCallback(long subProxys, long subCallback);
 
-    private native String CreateTransaction(long subProxy, String fromAddress, String toAddress, long amount, String memo, String remark, boolean useVotedUTXO);
+    private native String CreateTransaction(long subProxy, String fromAddress, String toAddress, long amount, String memo, boolean useVotedUTXO);
 
-    private native long CalculateTransactionFee(long subProxy, String rawTransaction, long feePerKb);
-
-    private native String UpdateTransactionFee(long subProxy, String rawTransaction, long fee, String fromAddress);
+    private native String CreateCombineUTXOTransaction(long subProxy, String memo, boolean useVotedUTXO);
 
     private native String SignTransaction(long subProxy, String rawTransaction, String payPassword);
 
@@ -158,5 +169,13 @@ public class SubWallet {
 
     private native boolean CheckSign(long subProxy, String publicKey, String message, String signature);
 
-    private native String GetPublicKey(long jSubProxy);
+    private native String GetPublicKey(long subProxy);
+
+    private native String EncodeTransaction(long subProxy, String txJson);
+
+    private native String DecodeTransaction(long subProxy, String txJson);
+
+    private native String GetAllCoinBaseTransaction(long subProxy, int start, int count, String txid);
+
+    private native String GetAssetInfo(long subProxy, String assetID);
 }

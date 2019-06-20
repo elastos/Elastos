@@ -18,7 +18,7 @@ public class PwdPresenter extends PresenterAbstract {
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseActivity.getWallet().updateTransactionFee(walletId, chainID, rawTransaction, fee, fromAddress);
+                return null;
             }
         });
         subscriberObservable(observer, observable);
@@ -56,7 +56,7 @@ public class PwdPresenter extends PresenterAbstract {
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseActivity.getMyWallet().updateTransactionFee(walletId, chainID, rawTransaction, fee, fromAddress);
+                return null;
             }
         });
         subscriberObservable(observer, observable);

@@ -243,14 +243,6 @@ public class MasterWalletManager {
         return masterWallet;
     }
 
-    public String EncodeTransactionToString(String txJson) {
-        return EncodeTransactionToString(mInstance, txJson);
-    }
-
-    public String DecodeTransactionFromString(String cipher) {
-        return DecodeTransactionFromString(mInstance, cipher);
-    }
-
     private native void SaveConfigs(long instance);
 
     private native String GenerateMnemonic(long instance, String language);
@@ -295,11 +287,7 @@ public class MasterWalletManager {
 
     private native String[] GetAllMasterWalletIds(long instance);
 
-    private native long GetWallet(long instance, String masterWalletId);
-
-    private native String EncodeTransactionToString(long instance, String txJson);
-
-    private native String DecodeTransactionFromString(long instance, String cipher);
+//    private native long GetMasterWallet(long instance, String masterWalletId);
 
     private native long InitMasterWalletManager(String rootPath);
 

@@ -31,7 +31,7 @@ public class TransferPresenter extends PresenterAbstract {
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().createTransaction(walletId, chainId, s, address, amount, s1, remark, useVotedUTXO);
+                return baseFragment.getMyWallet().createTransaction(walletId, chainId, s, address, amount, s1, useVotedUTXO);
             }
         });
         subscriberObservable(observer, observable);
@@ -42,7 +42,8 @@ public class TransferPresenter extends PresenterAbstract {
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().calculateTransactionFee(walletId, chainId, data, feePerKb);
+//                return baseFragment.getMyWallet().calculateTransactionFee(walletId, chainId, data, feePerKb);
+                return null;
             }
         });
         subscriberObservable(observer, observable);

@@ -11,9 +11,9 @@ public class IDChainSubWallet extends SidechainSubWallet {
     private long mInstance;
 
     public String CreateIdTransaction(
-            String fromAddress, String payloadJson, String programJson, String memo, String remark)
+            String fromAddress, String payloadJson, String programJson, String memo)
             throws WalletException {
-        return CreateIdTransaction(mInstance, fromAddress, payloadJson, programJson, memo, remark);
+        return CreateIdTransaction(mInstance, fromAddress, payloadJson, programJson, memo);
     }
 
     public IDChainSubWallet(long instance) {
@@ -22,5 +22,5 @@ public class IDChainSubWallet extends SidechainSubWallet {
     }
 
     private native String CreateIdTransaction(
-            long instance, String fromAddress, String payloadJson, String programJson, String memo, String remark);
+            long instance, String fromAddress, String payloadJson, String programJson, String memo);
 }

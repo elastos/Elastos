@@ -58,7 +58,7 @@ static jobjectArray JNICALL GetAllSubWallets(JNIEnv *env, jobject clazz, jlong i
         jobjectArray subWalletArray = env->NewObjectArray(allSubWallets.size(), clazzObject, NULL);
 
         for (int i = 0; i < allSubWallets.size(); i++) {
-            std::string id = allSubWallets[i]->GetChainId();
+            std::string id = allSubWallets[i]->GetChainID();
             if (id == CHAINID_MAINCHAIN) {
                 clazzSubWallet = env->FindClass(CLASS_MCSUBWALLET.c_str());
                 subWalletConstructor = env->GetMethodID(clazzSubWallet, "<init>", "(J)V");
