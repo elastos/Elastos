@@ -721,11 +721,12 @@ public:
     }
 
     std::string GetHex() const {
-	    return _u168.getHex();
+        return _u168.getReverse().getHex();
     }
 
     void SetHex(const std::string& str) {
         _u168.setHex(str);
+        _u168.reverse();
         if (_u168.size() != 21)
             _u168.resize(21, 0);
     }
