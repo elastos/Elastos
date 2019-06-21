@@ -34,6 +34,11 @@ namespace Elastos {
 			return Import(j, password);
 		}
 
+		bool KeyStore::ImportReadonly(const nlohmann::json &j) {
+			_walletJson.FromJson(j);
+			return true;
+		}
+
 		bool KeyStore::Import(const nlohmann::json &json, const std::string &passwd) {
 			SjclFile sjcl;
 
@@ -59,6 +64,12 @@ namespace Elastos {
 			outfile << json;
 
 			return true;
+		}
+
+		nlohmann::json KeyStore::ExportReadonly() const {
+			nlohmann::json roJson = _walletJson.ToJson(false);
+
+			return roJson;
 		}
 
 		nlohmann::json KeyStore::Export(const std::string &passwd, bool withPrivKey) {

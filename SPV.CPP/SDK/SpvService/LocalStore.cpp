@@ -137,6 +137,22 @@ namespace Elastos {
 
 		}
 
+		void LocalStore::GetReadOnlyWalletJson(ElaNewWalletJson &json) {
+			json.SetHasPassPhrase(_mnemonicHasPassphrase);
+			json.SetxPubKey(_xPubKey);
+			json.SetRequestPubKey(_requestPubKey);
+			json.SetPublicKeyRing(_publicKeyRing);
+			json.SetM(_m);
+			json.SetN(_n);
+			json.SetHasPassPhrase(_mnemonicHasPassphrase);
+			json.SetDerivationStrategy("BIP44");
+			json.SetAccount(0);
+			json.SetPassPhrase("");
+			json.SetSingleAddress(_singleAddress);
+			json.SetCoinInfoList(_subWalletsInfoList);
+			json.SetOwnerPubKey(_ownerPubKey);
+		}
+
 		void LocalStore::GetWalletJson(ElaNewWalletJson &json, const std::string &payPasswd) {
 			if (!_readonly && _xPrivKey.empty()) {
 				RegenerateKey(payPasswd);

@@ -231,24 +231,24 @@ namespace Elastos {
 		}
 
 		IMasterWallet *
-		MasterWalletManager::ImportWalletWithKeystore(const std::string &masterWalletId,
+		MasterWalletManager::ImportWalletWithKeystore(const std::string &masterWalletID,
 													  const nlohmann::json &keystoreContent,
 													  const std::string &backupPassword,
 													  const std::string &payPassword) {
-			ErrorChecker::CheckParamNotEmpty(masterWalletId, "Master wallet ID");
+			ErrorChecker::CheckParamNotEmpty(masterWalletID, "Master wallet ID");
 			ErrorChecker::CheckParam(!keystoreContent.is_object(), Error::KeyStore, "key store should be json object");
 			ErrorChecker::CheckPassword(backupPassword, "Backup");
 			ErrorChecker::CheckPassword(payPassword, "Pay");
 
-			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
-				return _masterWalletMap[masterWalletId];
+			if (_masterWalletMap.find(masterWalletID) != _masterWalletMap.end())
+				return _masterWalletMap[masterWalletID];
 
 
-			MasterWallet *masterWallet = new MasterWallet(masterWalletId, keystoreContent, backupPassword,
+			MasterWallet *masterWallet = new MasterWallet(masterWalletID, keystoreContent, backupPassword,
 														  payPassword, _rootPath, _p2pEnable,
 														  ImportFromKeyStore);
 			checkRedundant(masterWallet);
-			_masterWalletMap[masterWalletId] = masterWallet;
+			_masterWalletMap[masterWalletID] = masterWallet;
 			masterWallet->InitSubWallets();
 			return masterWallet;
 		}
@@ -273,15 +273,32 @@ namespace Elastos {
 			return masterWallet;
 		}
 
+		IMasterWallet *MasterWalletManager::ImportReadonlyWallet(
+			const std::string &masterWalletID,
+			const nlohmann::json &walletJson) {
+			ErrorChecker::CheckParam(!walletJson.is_object(), Error::KeyStore, "wallet json should be json object");
+
+			if (_masterWalletMap.find(masterWalletID) != _masterWalletMap.end())
+				return _masterWalletMap[masterWalletID];
+
+			MasterWallet *masterWallet = new MasterWallet(masterWalletID, walletJson, _rootPath, _p2pEnable, ImportFromKeyStore);
+
+			checkRedundant(masterWallet);
+			_masterWalletMap[masterWalletID] = masterWallet;
+			masterWallet->InitSubWallets();
+
+			return masterWallet;
+		}
+
 		nlohmann::json
 		MasterWalletManager::ExportWalletWithKeystore(IMasterWallet *masterWallet, const std::string &backupPassword,
-													  const std::string &payPassword, bool withPrivKey) const {
+													  const std::string &payPassword) const {
 
 			ErrorChecker::CheckParam(masterWallet == nullptr, Error::InvalidArgument, "Master wallet is null");
 			ErrorChecker::CheckPassword(backupPassword, "Backup");
 
 			MasterWallet *wallet = static_cast<MasterWallet *>(masterWallet);
-			return wallet->exportKeyStore(backupPassword, payPassword, withPrivKey);
+			return wallet->exportKeyStore(backupPassword, payPassword);
 		}
 
 		std::string
@@ -293,6 +310,14 @@ namespace Elastos {
 			MasterWallet *wallet = static_cast<MasterWallet *>(masterWallet);
 
 			return wallet->exportMnemonic(payPassword);
+		}
+
+		nlohmann::json MasterWalletManager::ExportReadonlyWallet(
+			IMasterWallet *masterWallet) const {
+			ErrorChecker::CheckParam(masterWallet == nullptr, Error::InvalidArgument, "master wallet is null");
+			MasterWallet *wallet = static_cast<MasterWallet *>(masterWallet);
+
+			return wallet->ExportReadonlyKeyStore();
 		}
 
 		std::string MasterWalletManager::GetVersion() const {

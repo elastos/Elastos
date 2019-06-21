@@ -100,6 +100,27 @@ namespace Elastos {
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
+								   const nlohmann::json &readonlyWalletJson,
+								   const std::string &rootPath,
+								   bool p2pEnable,
+								   MasterWalletInitFrom from) :
+			_id(id), _rootPath(rootPath), _p2pEnable(p2pEnable), _initFrom(from) {
+
+			KeyStore keyStore;
+			keyStore.ImportReadonly(readonlyWalletJson);
+
+			_config = ConfigPtr(new Config(_rootPath));
+			_localStore = LocalStorePtr(new LocalStore(_rootPath + "/" + _id, keyStore.WalletJson(), ""));
+			_account = AccountPtr(new Account(_localStore, _rootPath));
+
+			if (_account->GetSignType() == Account::MultiSign) {
+				_idAgentImpl = nullptr;
+			} else {
+				_idAgentImpl = boost::shared_ptr<IDAgentImpl>(new IDAgentImpl(this));
+			}
+		}
+
+		MasterWallet::MasterWallet(const std::string &id,
 								   const nlohmann::json &coSigners, uint32_t requiredSignCount,
 								   const std::string &rootPath,
 								   bool p2pEnable,
@@ -250,9 +271,23 @@ namespace Elastos {
 			return _localStore->GetRequestPubKey();
 		}
 
+		nlohmann::json MasterWallet::ExportReadonlyKeyStore() {
+			KeyStore keyStore;
+
+			_localStore->GetReadOnlyWalletJson(keyStore.WalletJson());
+
+			keyStore.WalletJson().ClearCoinInfo();
+			std::for_each(_createdWallets.begin(), _createdWallets.end(),
+						  [&keyStore](const WalletMap::value_type &item) {
+							  SubWallet *subWallet = dynamic_cast<SubWallet *>(item.second);
+							  keyStore.WalletJson().AddCoinInfo(subWallet->_info);
+						  });
+
+			return keyStore.ExportReadonly();
+		}
+
 		nlohmann::json MasterWallet::exportKeyStore(const std::string &backupPassword,
-													const std::string &payPassword,
-													bool withPrivKey) {
+													const std::string &payPassword) {
 			KeyStore keyStore;
 
 			_localStore->GetWalletJson(keyStore.WalletJson(), payPassword);
@@ -266,7 +301,7 @@ namespace Elastos {
 
 			Save();
 
-			return keyStore.Export(backupPassword, withPrivKey);
+			return keyStore.Export(backupPassword, true);
 		}
 
 		std::string MasterWallet::exportMnemonic(const std::string &payPassword) {

@@ -34,6 +34,8 @@ namespace Elastos {
 
 			~LocalStore();
 
+			void GetReadOnlyWalletJson(ElaNewWalletJson &json);
+
 			void GetWalletJson(ElaNewWalletJson &json, const std::string &payPasswd);
 
 			void RegenerateKey(const std::string &payPasswd);

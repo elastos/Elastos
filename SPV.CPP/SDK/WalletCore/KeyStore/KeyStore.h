@@ -20,9 +20,13 @@ namespace Elastos {
 
 			bool Open(const boost::filesystem::path &path, const std::string &password);
 
+			bool ImportReadonly(const nlohmann::json &json);
+
 			bool Import(const nlohmann::json &json, const std::string &password);
 
 			bool Save(const boost::filesystem::path &path, const std::string &password, bool withPrivKey);
+
+			nlohmann::json ExportReadonly() const;
 
 			nlohmann::json Export(const std::string &password, bool withPrivKey);
 

@@ -148,6 +148,13 @@ namespace Elastos {
 
 			MasterWallet(
 					const std::string &id,
+					const nlohmann::json &readonlyWalletJson,
+					const std::string &rootPath,
+					bool p2pEnable,
+					MasterWalletInitFrom from);
+
+			MasterWallet(
+					const std::string &id,
 					const nlohmann::json &coSigners,
 					uint32_t requiredSignCount,
 					const std::string &rootPath,
@@ -175,9 +182,10 @@ namespace Elastos {
 					const std::string &rootPath,
 					MasterWalletInitFrom from);
 
+			nlohmann::json ExportReadonlyKeyStore();
+
 			nlohmann::json exportKeyStore(const std::string &backupPassword,
-										  const std::string &payPassword,
-										  bool withPrivKey);
+										  const std::string &payPassword);
 
 			std::string exportMnemonic(const std::string &payPassword);
 

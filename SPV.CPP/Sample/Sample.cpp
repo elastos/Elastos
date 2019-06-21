@@ -132,6 +132,12 @@ static IMasterWallet *ImportWalletWithKeystore() {
 	return manager->ImportWalletWithKeystore(gMasterWalletID, keystore, backupPasswd, payPasswd);
 }
 
+static IMasterWallet *ImportReadonlyWallet() {
+	nlohmann::json readonlyJson = nlohmann::json::parse("{\"CoinInfoList\":[{\"ChainID\":\"ELA\",\"EarliestPeerTime\":1560855281,\"FeePerKB\":10000,\"VisibleAssets\":[\"a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0\"]}],\"OwnerPubKey\":\"03d916c2072fd8fb57224e9747e0f1e36a2c117689cedf39e0132f3cb4f8ee673d\",\"SingleAddress\":false,\"m\":1,\"mnemonicHasPassphrase\":false,\"n\":1,\"network\":\"\",\"publicKeyRing\":[{\"requestPubKey\":\"0370a77a257aa81f46629865eb8f3ca9cb052fcfd874e8648cfbea1fbf071b0280\",\"xPubKey\":\"xpub661MyMwAqRbcGc2nX69vU4AYzdqa2ExrdGskPQaGHN3oF5A22q2u4r7TVxamqHqH3zVyCd8rhjCpMMp94SjgRoTcUJ9GgRQ4yuYCDNrwRUc\"}],\"requestPubKey\":\"0370a77a257aa81f46629865eb8f3ca9cb052fcfd874e8648cfbea1fbf071b0280\",\"xPubKey\":\"xpub661MyMwAqRbcGc2nX69vU4AYzdqa2ExrdGskPQaGHN3oF5A22q2u4r7TVxamqHqH3zVyCd8rhjCpMMp94SjgRoTcUJ9GgRQ4yuYCDNrwRUc\"}");
+
+	return manager->ImportReadonlyWallet(gMasterWalletID, readonlyJson);
+}
+
 static IMasterWallet *NewReadOnlyMultiSignWallet() {
 	nlohmann::json coSigners = nlohmann::json::parse(
 		"[\"03FC8B9408A7C5AE6F8109BA97CE5429C1CD1F09C0655E4EC05FC0649754E4FB6C\","
@@ -439,6 +445,7 @@ static void InitWallets() {
 	if (masterWallets.size() == 0) {
 		IMasterWallet *masterWallet = nullptr;
 		masterWallet = ImportWalletWithKeystore();
+//		masterWallet = ImportReadonlyWallet();
 		if (masterWallet == nullptr) {
 			masterWallet = ImportWalletWithMnemonic();
 //			masterWallet = NewWalletWithMnemonic();

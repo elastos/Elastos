@@ -145,7 +145,7 @@ namespace Elastos {
 
 			/**
 			 * Import master wallet by mnemonic.
-			 * @param masterWalletId is the unique identification of a master wallet object.
+			 * @param masterWalletID is the unique identification of a master wallet object.
 			 * @param mnemonic for importing the master wallet.
 			 * @param phrasePassword combine with mnemonic to generate root key and chain code. Phrase password can be empty or between 8 and 128, otherwise will throw invalid argument exception.
 			 * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
@@ -153,11 +153,20 @@ namespace Elastos {
 			 * @return If success will return a pointer of master wallet interface.
 			 */
 			virtual IMasterWallet *ImportWalletWithMnemonic(
-					const std::string &masterWalletId,
+					const std::string &masterWalletID,
 					const std::string &mnemonic,
 					const std::string &phrasePassword,
 					const std::string &payPassword,
 					bool singleAddress) = 0;
+
+			/**
+			 * Import read-only(watch) wallet which does not contain any private keys.
+			 * @param masterWalletID is the unique identification of a master wallet object.
+			 * @param walletJson generate by ExportReadonlyWallet().
+			 */
+			virtual IMasterWallet *ImportReadonlyWallet(
+				const std::string &masterWalletID,
+				const nlohmann::json &walletJson) = 0;
 
 			/**
 			 * Export key store content of the master wallet in json format.
@@ -170,18 +179,25 @@ namespace Elastos {
 			virtual nlohmann::json ExportWalletWithKeystore(
 					IMasterWallet *masterWallet,
 					const std::string &backupPassword,
-					const std::string &payPassword,
-					bool withPrivKey = true) const = 0;
+					const std::string &payPassword) const = 0;
 
 			/**
 			 * Export mnemonic of the master wallet.
-			 * @param masterWallet A pointer of master wallet interface create or imported by wallet factory object.
+			 * @param masterWallet A pointer of master wallet interface created or imported by wallet factory object.
 			 * @param payPassword use to decrypt and generate mnemonic temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
 			 * @return If success will return the mnemonic of master wallet.
 			 */
 			virtual std::string ExportWalletWithMnemonic(
 					IMasterWallet *masterWallet,
 					const std::string &payPassword) const = 0;
+
+			/**
+			 * Export wallet info except private keys.
+			 * @param masterWallet A pointer of master wallet interface created or imported by wallet factory object.
+			 * @return If success will return public keys of readonly(watch) wallet.
+			 */
+			virtual nlohmann::json ExportReadonlyWallet(
+				IMasterWallet *masterWallet) const = 0;
 
 			virtual std::string GetVersion() const = 0;
 		};

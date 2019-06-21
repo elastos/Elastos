@@ -47,8 +47,23 @@ namespace Elastos {
 			nlohmann::json j;
 			to_json(j, *this);
 
-			if (!withPrivKey)
+			if (!withPrivKey) {
 				j.erase("xPrivKey");
+				j.erase("requestPrivKey");
+				j.erase("coin");
+				j.erase("account");
+				j.erase("derivationStrategy");
+				j.erase("addressType");
+				j.erase("copayerId");
+				j.erase("copayerName");
+				j.erase("entropySource");
+				j.erase("personalEncryptingKey");
+				j.erase("walletPrivKey");
+				j.erase("walletName");
+				j.erase("walletId");
+				j.erase("sharedEncryptingKey");
+				j.erase("compliantDerivation");
+			}
 
 			return j;
 		}
@@ -83,28 +98,28 @@ namespace Elastos {
 		}
 
 		void from_json(const nlohmann::json &j, BitcoreWalletClientJson &p) {
-			p._coin = j["coin"].get<std::string>();
-			p._network = j["network"].get<std::string>();
+			p._coin = j.find("coin") != j.end() ? j["coin"].get<std::string>() : "";
+			p._network = j.find("network") != j.end() ? j["network"].get<std::string>() : "";
 			p._xPrivKey =  j.find("xPrivKey") != j.end() ? j["xPrivKey"].get<std::string>() : "";
-			p._xPubKey = j["xPubKey"].get<std::string>();
+			p._xPubKey = j.find("xPubKey") != j.end() ? j["xPubKey"].get<std::string>() : "";
 			p._requestPrivKey = j.find("requestPrivKey") != j.end() ? j["requestPrivKey"].get<std::string>() : "";
-			p._requestPubKey = j["requestPubKey"].get<std::string>();
-			p._copayerId = j["copayerId"].get<std::string>();
+			p._requestPubKey = j.find("requestPubKey") != j.end() ? j["requestPubKey"].get<std::string>() : "";
+			p._copayerId = j.find("copayerId") != j.end() ? j["copayerId"].get<std::string>() : "";
 			p._publicKeyRing = j["publicKeyRing"].get<std::vector<PublicKeyRing>>();
-			p._walletId = j["walletId"].get<std::string>();
-			p._walletName = j["walletName"].get<std::string>();
-			p._m = j["m"].get<int>();
-			p._n = j["n"].get<int>();
-			p._walletPrivKey = j["walletPrivKey"].get<std::string>();
-			p._personalEncryptingKey = j["personalEncryptingKey"].get<std::string>();
-			p._sharedEncryptingKey = j["sharedEncryptingKey"].get<std::string>();
-			p._copayerName = j["copayerName"].get<std::string>();
-			p._entropySource = j["entropySource"].get<std::string>();
-			p._mnemonicHasPassphrase = j["mnemonicHasPassphrase"].get<bool>();
-			p._derivationStrategy = j["derivationStrategy"].get<std::string>();
-			p._account = j["account"].get<int>();
-			p._compliantDerivation = j["compliantDerivation"].get<bool>();
-			p._addressType = j["addressType"].get<std::string>();
+			p._walletId = j.find("walletId") != j.end() ? j["walletId"].get<std::string>() : "";
+			p._walletName = j.find("walletName") != j.end() ? j["walletName"].get<std::string>() : "";
+			p._m = j.find("m") != j.end() ? j["m"].get<int>() : 0;
+			p._n = j.find("n") != j.end() ? j["n"].get<int>() : 0;
+			p._walletPrivKey = j.find("walletPrivKey") != j.end() ? j["walletPrivKey"].get<std::string>() : "";
+			p._personalEncryptingKey = j.find("personalEncryptingKey") != j.end() ? j["personalEncryptingKey"].get<std::string>() : "";
+			p._sharedEncryptingKey = j.find("sharedEncryptingKey") != j.end() ? j["sharedEncryptingKey"].get<std::string>() : "";
+			p._copayerName = j.find("copayerName") != j.end() ? j["copayerName"].get<std::string>() : "";
+			p._entropySource = j.find("entropySource") != j.end() ? j["entropySource"].get<std::string>() : "";
+			p._mnemonicHasPassphrase = j.find("mnemonicHasPassphrase") != j.end() ? j["mnemonicHasPassphrase"].get<bool>() : false;
+			p._derivationStrategy = j.find("derivationStrategy") != j.end() ? j["derivationStrategy"].get<std::string>() : "";
+			p._account = j.find("account") != j.end() ? j["account"].get<int>() : 0;
+			p._compliantDerivation = j.find("compliantDerivation") != j.end() ? j["compliantDerivation"].get<bool>() : false;
+			p._addressType = j.find("addressType") != j.end() ? j["addressType"].get<std::string>() : "";
 		}
 	}
 }

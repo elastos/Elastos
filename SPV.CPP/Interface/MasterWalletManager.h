@@ -178,6 +178,15 @@ namespace Elastos {
 					bool singleAddress);
 
 			/**
+			 * Import read-only(watch) wallet which does not contain any private keys.
+			 * @param masterWalletID is the unique identification of a master wallet object.
+			 * @param walletJson generate by ExportReadonlyWallet().
+			 */
+			virtual IMasterWallet *ImportReadonlyWallet(
+				const std::string &masterWalletID,
+				const nlohmann::json &walletJson);
+
+			/**
 			 * Export key store content of the master wallet in json format.
 			 * @param masterWallet A pointer of master wallet interface create or imported by wallet factory object.
 			 * @param backupPassword use to decrypt key store file. Backup password should between 8 and 128, otherwise will throw invalid argument exception.
@@ -188,8 +197,7 @@ namespace Elastos {
 			virtual nlohmann::json ExportWalletWithKeystore(
 					IMasterWallet *masterWallet,
 					const std::string &backupPassword,
-					const std::string &payPassword,
-					bool withPrivKey = true) const;
+					const std::string &payPassword) const;
 
 			/**
 			 * Export mnemonic of the master wallet.
@@ -200,6 +208,14 @@ namespace Elastos {
 			virtual std::string ExportWalletWithMnemonic(
 					IMasterWallet *masterWallet,
 					const std::string &payPassword) const;
+
+			/**
+			 * Export wallet info except private keys.
+			 * @param masterWallet A pointer of master wallet interface created or imported by wallet factory object.
+			 * @return If success will return public keys of readonly(watch) wallet.
+			 */
+			virtual nlohmann::json ExportReadonlyWallet(
+				IMasterWallet *masterWallet) const;
 
 			virtual std::string GetVersion() const;
 
