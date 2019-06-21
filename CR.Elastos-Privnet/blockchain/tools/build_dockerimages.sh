@@ -29,7 +29,7 @@ function build_binary_and_docker {
     git checkout $BRANCH
     git pull
     mkdir -p $TMPDIR/$WORKDIR/$BINARY
-    cp $CURRENT_DIR/$WORKDIR/* $TMPDIR/$WORKDIR/
+    cp -r $CURRENT_DIR/$WORKDIR/* $TMPDIR/$WORKDIR/
     cp -r * $TMPDIR/$WORKDIR/$BINARY/
     docker build -t "$DOCKERIMAGE:latest" -f $TMPDIR/$WORKDIR/Dockerfile $TMPDIR/$WORKDIR/
     if [ "${DOCKER_PUSH}" == "yes" ]
@@ -62,7 +62,7 @@ build_binary_and_docker "master" "Elastos.ORG.Wallet.Service" "restful-services/
 build_binary_and_docker "master" "Elastos.ORG.SideChain.Service" "restful-services/sidechain-service" "service" \
     "cyberrepublic/elastos-sidechain-service"
 
-build_binary_and_docker "0.0.2" "Elastos.ORG.API.Misc" "restful-services/api-misc" "misc" \
+build_binary_and_docker "master" "Elastos.ORG.API.Misc" "restful-services/api-misc" "misc" \
     "cyberrepublic/elastos-api-misc-service"
 
 cd $CURRENT_DIR
