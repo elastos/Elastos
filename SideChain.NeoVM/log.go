@@ -12,6 +12,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/server"
 	ser "github.com/elastos/Elastos.ELA.SideChain/service"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
+	spow "github.com/elastos/Elastos.ELA.SideChain/pow"
 
 	"github.com/elastos/Elastos.ELA/utils/elalog"
 	"github.com/elastos/Elastos.ELA/p2p/addrmgr"
@@ -23,7 +24,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/service/websocket"
 	"github.com/elastos/Elastos.ELA.SideChain.NeoVM/pow"
 	nser "github.com/elastos/Elastos.ELA.SideChain.NeoVM/p2p/server"
-
 )
 
 const (
@@ -99,6 +99,7 @@ func init() {
 	peer.UseLogger(peerlog)
 	server.UseLogger(srvrlog)
 	pow.UseLogger(minrlog)
+	spow.UseLogger(minrlog)
 	spv.UseLogger(spvslog)
 	ser.UseLogger(httplog)
 

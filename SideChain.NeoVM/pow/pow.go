@@ -18,9 +18,10 @@ type Config struct {
 }
 
 func GenerateBlock(cfg *pow.Config) (*types.Block, error) {
+	log.Info("[GenerateBlock] int Neo POW :")
 	block, err := pow.GenerateBlock(cfg)
 	if err != nil {
-		log.Errorf("notifyInfo:", err)
+		log.Errorf("[GenerateBlock] in Neo POW Error :%s", err.Error())
 		return block, err
 	}
 
@@ -54,6 +55,6 @@ func GenerateBlock(cfg *pow.Config) (*types.Block, error) {
 	header.Bloom = ntypes.CreateBloom(receipts).Bytes()
 
 	block.Header = header
-
+	log.Info("[GenerateBlock] int Neo POW Success :")
 	return block, err
 }
