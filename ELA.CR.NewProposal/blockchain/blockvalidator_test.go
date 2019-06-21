@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"github.com/elastos/Elastos.ELA/common/log"
 	"math"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
-	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/dpos/state"
@@ -35,6 +35,14 @@ const (
 		"fa402bfaecabefacb6379c08edb5224fd95e25f700000000014140c72db63b7fdf90b8bf34e91f0a6394e25d1340f178a1776" +
 		"bdc344fecf8ced8e4db627fb9ffa7068c51d3d15b92a749ffa407e2593833ec836d4cdaae1062abe52321035e1529938d1a36" +
 		"bef97806557bdb4faec8c83a8fc557c1afb287b07bd923c589ac"
+
+	TestRegisterCRHex = "092100232103c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3ac22446b4" +
+		"e5446374735466d3732587069384c59717a354a687841683647756f6d7a474c0a6e69636b6e616d6520311b687474703a2f2f" +
+		"7777772e656c6173746f735f746573742e636f6d010000000000000040a219e335dd8dd28eb3738d7017e94d287b1d672dbc2" +
+		"7ef542549abe8d99efca0aa7e559cac5d771030ac02c03f4dbc7482a5c698733b07a64bf1139877ccf7ea0000010000000000" +
+		"0000000000000000000000000000000000000000000000000000000088526a74000000000000001fae53989e21c3212dd9bfe" +
+		"d6daeb56874782502dd00000000000100232103c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39" +
+		"c3ac"
 )
 
 func TestCheckBlockSanity(t *testing.T) {
@@ -168,4 +176,22 @@ func TestCheckCoinbaseArbitratorsReward(t *testing.T) {
 	assert.NoError(t, checkCoinbaseArbitratorsReward(tx))
 
 	DefaultLedger = originLedger
+}
+
+func TestCheckDuplicateTx(t *testing.T) {
+	var block types.Block
+	block.Transactions = make([]*types.Transaction, 0)
+	registerCRData, err := hex.DecodeString(TestRegisterCRHex)
+	assert.NoError(t, err)
+	var registerCR types.Transaction
+	err = registerCR.Deserialize(bytes.NewReader(registerCRData))
+	assert.NoError(t, err)
+
+	block.Transactions = append(block.Transactions, &registerCR)
+	err = checkDuplicateTx(&block)
+	assert.NoError(t, err)
+
+	block.Transactions = append(block.Transactions, &registerCR)
+	err = checkDuplicateTx(&block)
+	assert.Error(t, err, "[PowCheckBlockSanity] block contains duplicate CR")
 }
