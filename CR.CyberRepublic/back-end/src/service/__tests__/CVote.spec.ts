@@ -182,14 +182,24 @@ describe('Tests for CVote', () => {
         expect(updateRs.title).to.equal(global.DB.CVOTE_1.title)
 
         const uuidVal = uuid.v4()
-
-        const updateRs2: any = await cvoteService.update({
+        const updateObj = {
             _id: cvote1._id,
-            content: uuidVal
-        })
+            abstract: `${uuidVal} - abstract`,
+            goal: `${uuidVal} - goal`,
+            motivation: `${uuidVal} - motivation`,
+            relevance: `${uuidVal} - relevance`,
+            budget: `${uuidVal} - budget`,
+            plan: `${uuidVal} - plan`,
+        }
+        const updateRs2: any = await cvoteService.update(updateObj)
 
         expect(updateRs2.title).to.equal(global.DB.CVOTE_1.title)
-        expect(updateRs2.content).to.equal(uuidVal)
+        expect(updateRs2.abstract).to.equal(updateObj.abstract)
+        expect(updateRs2.goal).to.equal(updateObj.goal)
+        expect(updateRs2.motivation).to.equal(updateObj.motivation)
+        expect(updateRs2.relevance).to.equal(updateObj.relevance)
+        expect(updateRs2.budget).to.equal(updateObj.budget)
+        expect(updateRs2.plan).to.equal(updateObj.plan)
     })
 
     // TODO: council changing vote of other member should fail

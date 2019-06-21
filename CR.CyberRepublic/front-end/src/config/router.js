@@ -77,7 +77,9 @@ import CouncilPage from '../module/page/council/Container'
 import CouncilListPage from '../module/page/council/list/Container'
 import CouncilDetailPage from '../module/page/council/detail/Container'
 
+import CVoteCreatePage from '@/module/page/CVote/create/Container'
 import CVoteDetailPage from '@/module/page/CVote/detail/Container'
+import CVoteEditPage from '@/module/page/CVote/edit/Container'
 
 // what's new
 import ReleaseList from '@/module/page/release/list/Container'
@@ -442,8 +444,16 @@ export default [
     page: CVoteDetailPage,
   },
   {
+    path: '/proposals/new',
+    page: CVoteCreatePage,
+  },
+  {
     path: '/proposals/:id',
     page: CVoteDetailPage,
+  },
+  {
+    path: '/proposals/:id/edit',
+    page: CVoteEditPage,
   },
   {
     path: '/council',

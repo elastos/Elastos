@@ -1,7 +1,7 @@
 @import "@/style/color";
 
 .p_CVoteDetail {
-  padding: 0 50px 80px;
+  padding: 0 50px 80px 100px;
   width: 80vw;
   margin: 80px auto 0;
   background: #ffffff;
@@ -11,7 +11,12 @@
   }
   .md-RichEditor-root {
     padding: 0;
-    margin-top: 50px;
+    margin-top: 0;
+  }
+  .md-RichEditor-editor .public-DraftEditor-content {
+    min-height: 10px;
+    font-weight: 200;
+    line-height: 1.8em;
   }
   .notes {
     border-top: 1px solid #E5E5E5;

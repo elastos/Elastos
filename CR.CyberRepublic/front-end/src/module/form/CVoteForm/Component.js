@@ -1,21 +1,58 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import {
-  Form, Input, Button, Select, Row, Col, message, Modal,
+  Form, Input, Button, Row, message, Modal, Tabs,
 } from 'antd'
 import I18N from '@/I18N'
 import _ from 'lodash'
-import { CVOTE_STATUS, CVOTE_STATUS_TEXT } from '@/constant'
+import { CVOTE_STATUS } from '@/constant'
 import { convertToRaw } from 'draft-js'
 import DraftEditor from '@/module/common/DraftEditor'
 
 // if using webpack
 import 'medium-draft/lib/index.css'
 
-import { Container, Title, Btn } from './style'
+import { Container, Title, TabPaneInner, Note, NoteHighlight } from './style'
 
 const FormItem = Form.Item
-const { TextArea } = Input
+const { TabPane } = Tabs
+
+const transform = value => {
+  // string or object
+  let result = value
+  if (_.isObject(value)) {
+    try {
+      result = value.getCurrentContent().getPlainText()
+    } catch (error) {
+      result = value
+    }
+  }
+  return result
+}
+
+const renderRichEditor = (data, key, getFieldDecorator) => {
+  const content = _.get(data, key, '')
+  const content_fn = getFieldDecorator(key, {
+    rules: [
+      {
+        required: true,
+        transform,
+        message: I18N.get('proposal.form.error.required')
+      },
+      {
+        max: 200,
+        transform,
+        message: I18N.get('proposal.form.error.tooLong')
+      }
+    ],
+    initialValue: content,
+  })
+  const content_el = (
+    <DraftEditor content={content} contentType={_.get(data, 'contentType')} />
+  )
+  return content_fn(content_el)
+}
+
 
 class C extends BaseComponent {
   constructor(props) {
@@ -35,25 +72,39 @@ class C extends BaseComponent {
 
   handleSubmit = async (e, fields = {}) => {
     e.preventDefault()
-    const fullName = `${this.user.profile.firstName} ${this.user.profile.lastName}`
+    const { email, profile } = this.user
+    const fullName = `${profile.firstName} ${profile.lastName}`
     const { edit, form, updateCVote, createCVote, onCreated, onEdit, suggestionId } = this.props
+
+    const formatValue = (value) => {
+      let result
+      try {
+        result = _.isString(value) ? value : JSON.stringify(convertToRaw(value.getCurrentContent()))
+      } catch (error) {
+        result = _.toString(value)
+      }
+      return result
+    }
 
     form.validateFields(async (err, values) => {
       if (err) return
-      const { title, type, notes, motionId, isConflict, content } = values
-      console.log('form values: ', values)
+      const { title, notes, abstract, goal, motivation, relevance, budget, plan } = values
       const param = {
         title,
-        type,
         notes,
-        motionId,
-        isConflict,
-        content: JSON.stringify(convertToRaw(content.getCurrentContent())),
+        abstract: formatValue(abstract),
+        goal: formatValue(goal),
+        motivation: formatValue(motivation),
+        relevance: formatValue(relevance),
+        budget: formatValue(budget),
+        plan: formatValue(plan),
         published: true,
         ...fields,
       }
       if (!edit) param.proposedBy = fullName
+      if (!edit) param.proposedByEmail = email
       if (suggestionId) param.suggestionId = suggestionId
+      console.log('form values: ', this.user, values, param)
 
       this.ord_loading(true)
       if (edit) {
@@ -62,7 +113,6 @@ class C extends BaseComponent {
           await updateCVote(param)
           this.ord_loading(false)
           await onEdit()
-          window.location.reload()
           message.success(I18N.get('from.CVoteForm.message.updated.success'))
         } catch (error) {
           message.error(error.message)
@@ -84,138 +134,101 @@ class C extends BaseComponent {
 
   getInputProps(data) {
     const { edit } = this.props
-    const s = this.props.static
     const { getFieldDecorator } = this.props.form
 
     const title_fn = getFieldDecorator('title', {
-      rules: [{ required: true }],
+      rules: [{ required: true, message: I18N.get('proposal.form.error.required') }],
       initialValue: edit ? data.title : _.get(data, 'title', ''),
     })
     const title_el = (
       <Input size="large" type="text" />
     )
 
-    const type_fn = getFieldDecorator('type', {
-      rules: [{ required: true }],
-      readOnly: true,
-      initialValue: edit ? parseInt(data.type, 10) : 1,
-    })
-    const type_el = (
-      <Select>
-        {
-          _.map(s.select_type, (item, i) => (
-            <Select.Option key={i} value={item.code}>{item.name}</Select.Option>
-          ))
-        }
-      </Select>
-    )
-
-    const status_fn = getFieldDecorator('status', {
-      readOnly: true,
-      initialValue: edit ? I18N.get(`cvoteStatus.${data.status}`) : I18N.get(`cvoteStatus.${CVOTE_STATUS_TEXT.DRAFT}`),
-    })
-    const status_el = (
-      <Select disabled={true} />
-    )
-
-    const content = _.get(data, 'content', '')
-    const content_fn = getFieldDecorator('content', {
-      rules: [{ required: true }],
-      initialValue: content,
-    })
-    const content_el = (
-      <DraftEditor content={content} contentType={_.get(data, 'contentType')} />
-    )
-
-    const isConflict_fn = getFieldDecorator('isConflict', {
-      initialValue: edit ? data.isConflict : 'NO',
-    })
-    const isConflict_el = (
-      <Select>
-        <Select.Option value="NO">{I18N.get('from.CVoteForm.no')}</Select.Option>
-        <Select.Option value="YES">{I18N.get('from.CVoteForm.yes')}</Select.Option>
-      </Select>
-    )
-
-    const notes_fn = getFieldDecorator('notes', {
-      initialValue: edit ? data.notes : '',
-    })
-    const notes_el = (
-      <TextArea rows={4} />
-    )
+    const abstract = renderRichEditor(data, 'abstract', getFieldDecorator)
+    const goal = renderRichEditor(data, 'goal', getFieldDecorator)
+    const motivation = renderRichEditor(data, 'motivation', getFieldDecorator)
+    const relevance = renderRichEditor(data, 'relevance', getFieldDecorator)
+    const budget = renderRichEditor(data, 'budget', getFieldDecorator)
+    const plan = renderRichEditor(data, 'plan', getFieldDecorator)
 
     return {
       title: title_fn(title_el),
-      type: type_fn(type_el),
-      status: status_fn(status_el),
-      content: content_fn(content_el),
-      isConflict: isConflict_fn(isConflict_el),
-      notes: notes_fn(notes_el),
+      abstract,
+      goal,
+      motivation,
+      relevance,
+      budget,
+      plan,
     }
   }
 
-  togglePersist() {
-    const { persist } = this.state
-    this.setState({ persist: !persist })
-  }
-
   ord_render() {
-    const { edit, data, canManage, isSecretary } = this.props
+    const { edit, data, canManage } = this.props
     if (!canManage || (edit && !data)) {
       return null
     }
     const formProps = this.getInputProps(data)
-
     const formItemLayout = {
       labelCol: {
-        xs: { span: 24 },
-        sm: { span: 12 },
-        md: { span: 12 },
+        span: 2,
       },
       wrapperCol: {
-        xs: { span: 24 },
-        sm: { span: 12 },
-        md: { span: 12 },
-      },
-      colon: false,
-    }
-    const formItemLayoutOneLine = {
-      labelCol: {
-        span: 24,
-      },
-      wrapperCol: {
-        span: 24,
+        span: 18,
       },
       colon: false,
     }
 
+    // TODO: onChange autosave every 5s
     return (
       <Container>
         <Form onSubmit={this.handleSubmit}>
-          <Title>
+          <Title className="komu-a cr-title-with-icon ">
             {this.props.header || I18N.get('from.CVoteForm.button.add')}
           </Title>
-
-          <Row gutter={16} type="flex" justify="space-between">
-            <Col sm={24} md={11} lg={11}>
-              <FormItem label={I18N.get('from.CVoteForm.label.type')} {...formItemLayout}>{formProps.type}</FormItem>
-            </Col>
-            <Col sm={24} md={11} lg={11}>
-              <FormItem label={`${I18N.get('council.voting.ifConflicted')}?`} {...formItemLayout}>{formProps.isConflict}</FormItem>
-            </Col>
-          </Row>
-          <Row gutter={16} type="flex" justify="space-between">
-            <Col sm={24} md={11} lg={11}>
-              <FormItem disabled={true} label={I18N.get('from.CVoteForm.label.voteStatus')} {...formItemLayout}>{formProps.status}</FormItem>
-            </Col>
-          </Row>
-
-
-          <FormItem label={I18N.get('from.CVoteForm.label.title')} {...formItemLayoutOneLine}>{ formProps.title }</FormItem>
-
-          <FormItem label={I18N.get('from.CVoteForm.label.content')} {...formItemLayoutOneLine}>{formProps.content}</FormItem>
-
-          {isSecretary && <FormItem label={I18N.get('from.CVoteForm.label.note')} {...formItemLayoutOneLine}>{formProps.notes}</FormItem>}
+          <FormItem label={`${I18N.get('proposal.fields.title')}*`} {...formItemLayout}>
+            {formProps.title}
+          </FormItem>
+          <Tabs defaultActiveKey="abstract" animated={false} tabBarGutter={5}>
+            <TabPane tab={`${I18N.get('proposal.fields.abstract')}*`} key="abstract">
+              <TabPaneInner>
+                <Note>{I18N.get('proposal.form.note.abstract')}</Note>
+                <FormItem>{formProps.abstract}</FormItem>
+              </TabPaneInner>
+            </TabPane>
+            <TabPane tab={`${I18N.get('proposal.fields.goal')}*`} key="goal">
+              <TabPaneInner>
+                <Note>{I18N.get('proposal.form.note.goal')}</Note>
+                <FormItem>{formProps.goal}</FormItem>
+              </TabPaneInner>
+            </TabPane>
+            <TabPane tab={`${I18N.get('proposal.fields.motivation')}*`} key="motivation">
+              <TabPaneInner>
+                <Note>
+                  {I18N.get('proposal.form.note.motivation')}
+                  <NoteHighlight> {I18N.get('proposal.form.note.motivationHighlight')}</NoteHighlight>
+                </Note>
+                <FormItem>{formProps.motivation}</FormItem>
+              </TabPaneInner>
+            </TabPane>
+            <TabPane tab={`${I18N.get('proposal.fields.relevance')}*`} key="relevance">
+              <TabPaneInner>
+                <Note>{I18N.get('proposal.form.note.relevance')}</Note>
+                <FormItem>{formProps.relevance}</FormItem>
+              </TabPaneInner>
+            </TabPane>
+            <TabPane tab={`${I18N.get('proposal.fields.budget')}*`} key="budget">
+              <TabPaneInner>
+                <Note>{I18N.get('proposal.form.note.budget')}</Note>
+                <FormItem>{formProps.budget}</FormItem>
+              </TabPaneInner>
+            </TabPane>
+            <TabPane tab={`${I18N.get('proposal.fields.plan')}*`} key="plan">
+              <TabPaneInner>
+                <Note>{I18N.get('proposal.form.note.plan')}</Note>
+                <FormItem>{formProps.plan}</FormItem>
+              </TabPaneInner>
+            </TabPane>
+          </Tabs>
 
           <Row gutter={8} type="flex" justify="center">
             {this.renderCancelBtn()}

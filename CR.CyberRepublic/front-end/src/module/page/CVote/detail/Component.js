@@ -1,26 +1,37 @@
 import React from 'react'
 import {
-  Form, Spin, Button, Input, message, Modal, Icon,
+  Form, Spin, Button, Input, message, Modal, Anchor,
 } from 'antd'
 import { Link } from 'react-router-dom'
 import I18N from '@/I18N'
 import _ from 'lodash'
-import StandardPage from '../../StandardPage'
+import StandardPage from '@/module/page/StandardPage'
 import { LANGUAGES } from '@/config/constant'
 import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
-import MetaComponent from '@/module/shared/meta/Container'
-import VoteResultComponent from '../common/vote_result/Component'
-import EditForm from '../edit/Container'
 import Footer from '@/module/layout/Footer/Container'
 import BackLink from '@/module/shared/BackLink/Component'
 import CRPopover from '@/module/shared/Popover/Component'
+import MetaComponent from '@/module/shared/meta/Container'
 import Translation from '@/module/common/Translation/Container'
 import DraftEditor from '@/module/common/DraftEditor'
+import VoteResultComponent from '../common/vote_result/Component'
+import Preamble from './Preamble'
 
-import { Title, Label } from './style'
+import { Title, Label, ContentTitle, StyledAnchor } from './style'
 import './style.scss'
 
 const { TextArea } = Input
+
+const renderRichContent = (data, key, title) => (
+  <div>
+    {title && <ContentTitle id={key}>{title}</ContentTitle>}
+    <DraftEditor
+      content={data[key]}
+      contentType={data.contentType}
+      editorEnabled={false}
+    />
+  </div>
+)
 
 const SubTitle = ({ dataList }) => {
   const result = _.map(dataList, (data, key) => (
@@ -66,10 +77,12 @@ class C extends StandardPage {
   }
 
   ord_renderContent() {
-    if (!this.state.data) {
+    const { data } = this.state
+    if (!data) {
       return <div className="center"><Spin /></div>
     }
     const metaNode = this.renderMeta()
+    const anchorNode = this.renderAnchor()
     const titleNode = this.renderTitle()
     const labelNode = this.renderLabelNode()
     const subTitleNode = this.renderSubTitle()
@@ -78,11 +91,11 @@ class C extends StandardPage {
     const voteActionsNode = this.renderVoteActions()
     const adminActionsNode = this.renderAdminActions()
     const voteDetailNode = this.renderVoteResults()
-    const editFormNode = this.renderEditForm()
     const translationBtn = this.renderTranslationBtn()
 
     return (
       <div>
+        {anchorNode}
         <div className="p_CVoteDetail">
           <BackLink link="/proposals" />
           {metaNode}
@@ -95,7 +108,6 @@ class C extends StandardPage {
           {voteActionsNode}
           {adminActionsNode}
           {voteDetailNode}
-          {editFormNode}
         </div>
         <Footer />
       </div>
@@ -116,40 +128,26 @@ class C extends StandardPage {
     )
   }
 
-  renderEditForm() {
-    return (
-      <Modal
-        className="project-detail-nobar"
-        maskClosable={false}
-        visible={this.state.editing}
-        onOk={this.switchEditMode}
-        onCancel={this.switchEditMode}
-        footer={null}
-        width="70%"
-      >
-        <EditForm onEdit={this.onEdit} onCancel={this.switchEditMode} />
-      </Modal>
-    )
-  }
-
-  switchEditMode = () => {
-    const { editing } = this.state
-    this.setState({
-      editing: !editing,
-    })
-  }
-
-  onEdit = () => {
-    this.switchEditMode()
-    this.refetch()
-  }
-
   renderMeta() {
     const { data } = this.state
     data.author = data.proposedBy
     data.displayId = data.vid
     const postedByText = I18N.get('from.CVoteForm.label.proposedby')
     return <MetaComponent data={data} postedByText={postedByText} />
+  }
+
+  renderAnchor() {
+    return (
+      <StyledAnchor offsetTop={200}>
+        <Anchor.Link href="#preamble" title={I18N.get('proposal.fields.preamble')} />
+        <Anchor.Link href="#abstract" title={I18N.get('proposal.fields.abstract')} />
+        <Anchor.Link href="#goal" title={I18N.get('proposal.fields.goal')} />
+        <Anchor.Link href="#motivation" title={I18N.get('proposal.fields.motivation')} />
+        <Anchor.Link href="#relevance" title={I18N.get('proposal.fields.relevance')} />
+        <Anchor.Link href="#budget" title={I18N.get('proposal.fields.budget')} />
+        <Anchor.Link href="#plan" title={I18N.get('proposal.fields.plan')} />
+      </StyledAnchor>
+    )
   }
 
   renderTitle() {
@@ -187,9 +185,9 @@ class C extends StandardPage {
 
     const dataList = [
       statusObj,
-      publishObj,
-      typeObj,
-      voteObj,
+      // publishObj,
+      // typeObj,
+      // voteObj,
     ]
     return <SubTitle dataList={dataList} />
   }
@@ -209,14 +207,18 @@ class C extends StandardPage {
 
   renderContent() {
     const { data } = this.state
-    const contentNode = (
-      <DraftEditor
-        content={data.content}
-        contentType={data.contentType}
-        editorEnabled={false}
-      />
+    if (_.has(data, 'content')) return renderRichContent(data, 'content')
+    return (
+      <div>
+        <Preamble {...data} />
+        {renderRichContent(data, 'abstract', I18N.get('proposal.fields.abstract'))}
+        {renderRichContent(data, 'goal', I18N.get('proposal.fields.goal'))}
+        {renderRichContent(data, 'motivation', I18N.get('proposal.fields.motivation'))}
+        {renderRichContent(data, 'relevance', I18N.get('proposal.fields.relevance'))}
+        {renderRichContent(data, 'budget', I18N.get('proposal.fields.budget'))}
+        {renderRichContent(data, 'plan', I18N.get('proposal.fields.plan'))}
+      </div>
     )
-    return contentNode
   }
 
   renderNotes() {
@@ -324,7 +326,7 @@ class C extends StandardPage {
     const editProposalBtn = isSelf && canEdit && (
       <Button
         icon="edit"
-        onClick={this.switchEditMode}
+        onClick={this.gotoEditPage}
       >
         {I18N.get('council.voting.btnText.editProposal')}
       </Button>
@@ -345,6 +347,11 @@ class C extends StandardPage {
         {completeProposalBtn}
       </div>
     )
+  }
+
+  gotoEditPage = () => {
+    const { _id: id } = this.state.data
+    this.props.history.push(`/proposals/${id}/edit`)
   }
 
   onNotesChanged = (e) => {
