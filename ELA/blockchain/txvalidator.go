@@ -172,6 +172,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 	case RegisterCR:
 		if err := b.checkRegisterCRTransaction(txn); err != nil {
 			log.Warn("[checkRegisterCRTransaction],", err)
+			return ErrTransactionPayload
 		}
 	}
 
@@ -1201,6 +1202,10 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction) error {
 	if err != nil {
 		return err
 	}
+	buf := new(bytes.Buffer)
+	buf.WriteByte(byte(len(info.Signature)))
+	buf.Write(info.Signature)
+	parameter := buf.Bytes()
 	signType, err := crypto.GetScriptType(info.Code)
 	if err != nil {
 		return errors.New("invalid code")
@@ -1209,7 +1214,7 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction) error {
 		// check code and signature
 		if err := checkStandardSignature(program.Program{
 			Code:      info.Code,
-			Parameter: info.Signature,
+			Parameter: parameter,
 		}, signedBuf.Bytes()); err != nil {
 			return err
 		}
@@ -1225,13 +1230,13 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction) error {
 			return err
 		}
 		if info.DID != addr {
-			errors.New("the DID needs to be calculated from standard code")
+			return errors.New("the DID needs to be calculated from standard code")
 		}
 	} else if signType == vm.CHECKMULTISIG {
 		// check code and signature
 		if err := checkMultiSigSignatures(program.Program{
 			Code:      info.Code,
-			Parameter: info.Signature,
+			Parameter: parameter,
 		}, signedBuf.Bytes()); err != nil {
 			return err
 		}
@@ -1247,7 +1252,7 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction) error {
 			return err
 		}
 		if info.DID != addr {
-			errors.New("the DID needs to be calculated from multi code")
+			return errors.New("the DID needs to be calculated from multi code")
 		}
 	} else {
 		return errors.New("invalid code type")
