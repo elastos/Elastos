@@ -82,15 +82,15 @@ var RegNetSpvParams = config.Params{
 // MainNetParams defines the network parameters for the main network.
 var MainNetParams = config.Params{
 	Name:        "mainnet",
-	Magic:       2018001,
-	DefaultPort: 20608,
+	Magic:       2019005,
+	DefaultPort: 20628,
 
 	DNSSeeds: []string{
-		"node-testnet-001.elastos.org",
-		"node-testnet-002.elastos.org",
-		"node-testnet-003.elastos.org",
-		"node-testnet-004.elastos.org",
-		"node-testnet-005.elastos.org",
+		"node-mainnet-005.elastos.org:20628",
+		"node-mainnet-010.elastos.org:20628",
+		"node-mainnet-015.elastos.org:20628",
+		"node-mainnet-020.elastos.org:20628",
+		"node-mainnet-025.elastos.org:20628",
 	},
 
 	Foundation:         mainNetFoundation,
@@ -105,56 +105,43 @@ var MainNetParams = config.Params{
 	MinTransactionFee:  100,
 	ExchangeRate:       1,
 	MinCrossChainTxFee: 10000,
-	CheckPowHeaderHeight: 160340,
+	CheckPowHeaderHeight: 31538,
 }
 
 // TestNetParams defines the network parameters for the test network.
-var TestNetParams = config.Params{
-	Name:        "testnet",
-	Magic:       20180011,
-	DefaultPort: 21608,
+var TestNetParams = testNetParams(MainNetParams)
 
-	DNSSeeds: []string{
-		"node-testnet-001.elastos.org",
-		"node-testnet-002.elastos.org",
-		"node-testnet-003.elastos.org",
-		"node-testnet-004.elastos.org",
-		"node-testnet-005.elastos.org",
-	},
+// RegNetParams defines the network parameters for the regression network.
+var RegNetParams = regNetParams(MainNetParams)
 
-	Foundation:         testNetFoundation,
-	ElaAssetId:         elaAssetId,
-	GenesisBlock:       genesisBlock,
-	PowLimit:           powLimit,
-	PowLimitBits:       0x1e1da5ff,
-	TargetTimespan:     10 * time.Second * 10, // 100 second
-	TargetTimePerBlock: 10 * time.Second,      // 10 second
-	AdjustmentFactor:   4,                     // 25% less, 400% more
-	CoinbaseMaturity:   100,
-	MinTransactionFee:  100,
-	ExchangeRate:       1,
-	MinCrossChainTxFee: 10000,
-	CheckPowHeaderHeight: 160340,
+// testNetParams returns the network parameters for the test network.
+func testNetParams(cfg config.Params) config.Params {
+	cfg.Name = "testnet"
+	cfg.Magic = 2019105
+	cfg.DefaultPort = 21628
+	cfg.DNSSeeds = []string{
+		"node-testnet-002.elastos.org:21628",
+		"node-testnet-003.elastos.org:21628",
+		"node-testnet-004.elastos.org:21628",
+	}
+	cfg.Foundation = testNetFoundation
+	cfg.CheckPowHeaderHeight = 30000
+	return cfg
 }
 
-// RegNetParams defines the network parameters for the regression test network.
-var RegNetParams = config.Params{
-	Name: "regnet",
-	DNSSeeds: []string{
-	},
-	Foundation:         testNetFoundation,
-	ElaAssetId:         elaAssetId,
-	GenesisBlock:       genesisBlock,
-	PowLimit:           powLimit,
-	PowLimitBits:       0x207fffff,
-	TargetTimespan:     1 * time.Second * 10, // 10 second
-	TargetTimePerBlock: 1 * time.Second,      // 1 second
-	AdjustmentFactor:   4,                    // 25% less, 400% more
-	CoinbaseMaturity:   100,
-	MinTransactionFee:  100,
-	ExchangeRate:       1,
-	MinCrossChainTxFee: 10000,
-	CheckPowHeaderHeight: 160340,
+// regNetParams returns the network parameters for the regression network.
+func regNetParams(cfg config.Params) config.Params {
+	cfg.Name = "regnet"
+	cfg.Magic = 2019205
+	cfg.DefaultPort = 22628
+	cfg.DNSSeeds = []string{
+		"node-regtest-102.eadd.co:22628",
+		"node-regtest-103.eadd.co:22628",
+		"node-regtest-104.eadd.co:22628",
+	}
+	cfg.Foundation = testNetFoundation
+	cfg.CheckPowHeaderHeight = 20000
+	return cfg
 }
 
 // InstantBlock changes the given network parameter to instant block mode.
