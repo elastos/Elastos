@@ -26,26 +26,15 @@ public class TransferPresenter extends PresenterAbstract {
     }
 
 
-    public void createTransaction(String walletId, String chainId, String s, String address, long amount, String s1, String remark, boolean useVotedUTXO,BaseFragment baseFragment) {
+    public void createTransaction(String walletId, String chainId, String s, String address, long amount, String memo, boolean useVotedUTXO,BaseFragment baseFragment) {
         Observer observer = createObserver(CommonStringListner.class, baseFragment);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().createTransaction(walletId, chainId, s, address, amount, s1, useVotedUTXO);
+                return baseFragment.getMyWallet().createTransaction(walletId, chainId, s, address, amount, memo, useVotedUTXO);
             }
         });
         subscriberObservable(observer, observable);
     }
 
-    public void calculateTransactionFee(String walletId, String chainId, String data, long feePerKb, BaseFragment baseFragment) {
-        Observer observer = createObserver(CommonLongListener.class, baseFragment);
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe() {
-//                return baseFragment.getMyWallet().calculateTransactionFee(walletId, chainId, data, feePerKb);
-                return null;
-            }
-        });
-        subscriberObservable(observer, observable);
-    }
 }

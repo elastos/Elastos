@@ -4,9 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -23,7 +21,6 @@ import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonBooleanViewData;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonLongViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringViewData;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
@@ -38,14 +35,11 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.math.BigDecimal;
-
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
-public class TransferFragment extends BaseFragment implements CommonBalanceViewData, CommmonBooleanViewData, CommmonStringViewData, CommmonLongViewData {
+public class TransferFragment extends BaseFragment implements CommonBalanceViewData, CommmonBooleanViewData, CommmonStringViewData {
     @BindView(R.id.tv_title)
     TextView tvTitle;
     @BindView(R.id.iv_title_right)
@@ -72,7 +66,6 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
     private TransferPresenter presenter;
     private String address;
     private String amount;
-    private String attributes;
     public boolean Checked = true;
 
     @Override
@@ -204,43 +197,23 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
         }
         String remark = etRemark.getText().toString().trim();
         //presenter.createTransaction(wallet.getWalletId(), chainId, "", address, (long) (Double.parseDouble(amount) * MyWallet.RATE), "", remark, Checked, this);
-        presenter.createTransaction(wallet.getWalletId(), chainId, "", address, Arith.mul(amount, MyWallet.RATE_S).longValue(), "", remark, Checked, this);
+        presenter.createTransaction(wallet.getWalletId(), chainId, "", address, Arith.mul(amount, MyWallet.RATE_S).longValue(), remark, Checked, this);
     }
 
     @Override
     public void onGetCommonData(String data) {
         //获得createTransaction
-        attributes = data;
-        presenter.calculateTransactionFee(wallet.getWalletId(), chainId, data, MyWallet.feePerKb, this);
-    }
-
-    @Override
-    public void onGetCommonData(long fee) {
-        //获得calculateTransactionFee
 
         Intent intent = new Intent(getActivity(), TransferActivity.class);
         intent.putExtra("amount", amount);
         intent.putExtra("toAddress", address);
         intent.putExtra("wallet", wallet);
         intent.putExtra("chainId", chainId);
-        intent.putExtra("fee", fee);
-        intent.putExtra("attributes", attributes);
+        intent.putExtra("attributes", data);
         intent.putExtra("type", Constant.TRANFER);
         startActivity(intent);
 
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // TODO: inflate a fragment view
-        View rootView = super.onCreateView(inflater, container, savedInstanceState);
-        unbinder1 = ButterKnife.bind(this, rootView);
-        return rootView;
-    }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder1.unbind();
-    }
 }

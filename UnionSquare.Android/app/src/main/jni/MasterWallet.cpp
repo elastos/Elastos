@@ -10,7 +10,7 @@ using namespace Elastos::ElaWallet;
 const std::string CLASS_MCSUBWALLET = CLASS_PACKAGE_PATH + "MainchainSubWallet";
 const std::string CLASS_IDSUBWALLET = CLASS_PACKAGE_PATH + "IDChainSubWallet";
 const std::string CHAINID_MAINCHAIN = "ELA";
-const std::string CHAINID_IDCHAIN = "IdChain";
+const std::string CHAINID_IDCHAIN = "IDChain";
 
 #define JNI_GetID "(J)Ljava/lang/String;"
 

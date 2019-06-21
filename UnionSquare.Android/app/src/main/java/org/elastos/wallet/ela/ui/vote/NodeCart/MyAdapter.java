@@ -35,16 +35,14 @@ public class MyAdapter extends BaseAdapter {
     // 用来导入布局
     private LayoutInflater inflater = null;
 
-    private String type;
 
     // 构造器
-    public MyAdapter(List<VoteListBean.DataBean.ResultBean.ProducersBean> list, Context context, String type) {
+    public MyAdapter(List<VoteListBean.DataBean.ResultBean.ProducersBean> list, Context context) {
         this.context = context;
         this.list = list;
         inflater = LayoutInflater.from(context);
         isSelected = new HashMap<Integer, Boolean>();
         // 初始化数据
-        this.type = type;
         initDate();
         glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial).placeholder(R.mipmap.found_vote_initial).circleCrop();
     }

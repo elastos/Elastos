@@ -10,6 +10,7 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.MyUtil;
+import org.elastos.wallet.ela.utils.SPUtil;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -46,7 +47,7 @@ public class AboutFragment extends BaseFragment {
         switch (view.getId()) {
             case R.id.tv_updatalog:
                 Intent intent = new Intent("android.intent.action.VIEW");
-                intent.setData(Uri.parse("https://news.elastos.org/elastos-dpos-supernode-election-process/"));
+                intent.setData(Uri.parse(Constant.UpdateLog + "?langua =" + (new SPUtil(getContext()).getLanguage() == 0 ? "ch" : "en")));
                 startActivity(intent);
                 break;
             case R.id.tv_feedback:

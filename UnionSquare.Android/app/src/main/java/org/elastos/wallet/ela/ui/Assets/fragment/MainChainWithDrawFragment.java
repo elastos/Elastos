@@ -42,7 +42,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
-public class MainChainWithDrawFragment extends BaseFragment implements CommonBalanceViewData, CommmonBooleanViewData, CommmonStringWithMethNameViewData, CommmonLongViewData {
+public class MainChainWithDrawFragment extends BaseFragment implements CommonBalanceViewData, CommmonBooleanViewData, CommmonStringWithMethNameViewData {
     @BindView(R.id.tv_title)
     TextView tvTitle;
     @BindView(R.id.iv_title_right)
@@ -59,16 +59,11 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
     TextView tvMax;
     @BindView(R.id.et_remark)
     EditText etRemark;
-    Unbinder unbinder;
-
-    Unbinder unbinder1;
     private String chainId;
     private Wallet wallet;
     private String address;
     private String amount;
     private SideChainPresenter presenter;
-    private String attributes;
-    private String maxBalance = "0";
 
     @Override
     protected int getLayoutId() {
@@ -154,7 +149,6 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
 
     @Override
     public void onBalance(BalanceEntity data) {
-        maxBalance = data.getBalance();
         // String balance = String.format(getString(R.string.inputbalance), NumberiUtil.maxNumberFormat((Double.parseDouble(data.getBalance()) / MyWallet.RATE) + "", 12) + " " + data.getChainId());
         String balance = String.format(getString(R.string.inputbalance), NumberiUtil.maxNumberFormat(Arith.div(data.getBalance(), MyWallet.RATE_S), 12) + " ELA");
         etBalance.setHint(balance);
@@ -187,7 +181,7 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
         }
         String remark = etRemark.getText().toString().trim();
         long actualSpend = Arith.mul(amount, MyWallet.RATE_S).longValue();
-        presenter.createWithdrawTransaction(wallet.getWalletId(), chainId, "", actualSpend, address, "", remark, this);
+        presenter.createWithdrawTransaction(wallet.getWalletId(), chainId, "", actualSpend, address, remark, this);
 
     }
 
@@ -196,24 +190,17 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
         switch (methodname) {
 
             case "createWithdrawTransaction":
-                attributes = data;
-                presenter.calculateTransactionFee(wallet.getWalletId(), chainId, data, MyWallet.feePerKb, this);
+                Intent intent = new Intent(getActivity(), TransferActivity.class);
+                intent.putExtra("amount", amount);
+                intent.putExtra("toAddress", address);
+                intent.putExtra("wallet", wallet);
+                intent.putExtra("chainId", chainId);
+                intent.putExtra("attributes", data);
+                intent.putExtra("type", Constant.SIDEWITHDRAW);
+                startActivity(intent);
                 break;
         }
     }
 
-    @Override
-    public void onGetCommonData(long fee) {
-        //获得calculateTransactionFee
 
-        Intent intent = new Intent(getActivity(), TransferActivity.class);
-        intent.putExtra("amount", amount);
-        intent.putExtra("toAddress", address);
-        intent.putExtra("wallet", wallet);
-        intent.putExtra("chainId", chainId);
-        intent.putExtra("fee", fee);
-        intent.putExtra("attributes", attributes);
-        intent.putExtra("type", Constant.SIDEWITHDRAW);
-        startActivity(intent);
-    }
 }

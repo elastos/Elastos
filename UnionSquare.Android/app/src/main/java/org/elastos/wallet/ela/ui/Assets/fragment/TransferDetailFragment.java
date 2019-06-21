@@ -6,9 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -38,7 +36,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
@@ -107,17 +104,14 @@ public class TransferDetailFragment extends BaseFragment implements CommonRvList
     TextView tvSuretimes;
     @BindView(R.id.tv_remark)
     TextView tvRemark;
-    Unbinder unbinder1;
     @BindView(R.id.ll_charge)
     LinearLayout llCharge;
-    Unbinder unbinder2;
     @BindView(R.id.tv_type)
     TextView tvType;
     @BindView(R.id.srl)
     SmartRefreshLayout srl;
     @BindView(R.id.tv_ticketnum)
     TextView tvTicketnum;
-    Unbinder unbinder3;
     @BindView(R.id.ll_ticketnum)
     LinearLayout llTicketnum;
     @BindView(R.id.tv_address_target1)
@@ -263,15 +257,15 @@ public class TransferDetailFragment extends BaseFragment implements CommonRvList
             tvSuretime.setText(DateUtil.time(transactionsBean.getTimestamp()));
         }
         tvSuretimes.setText(transactionsBean.getConfirmStatus());
-        tvRemark.setText(transactionsBean.getRemark());
+        tvRemark.setText(transactionsBean.getMemo());
         //提现或者充值的特别情况
         if (transactionsBean.getType() == 8) {
             llTarget.setVisibility(View.VISIBLE);
-            Payload payload=    JSON.parseObject(transactionsBean.getPayload(), Payload.class);
-            if (payload!=null&&payload.getCrossChainAddress()!=null&&payload.getCrossChainAddress().size()!=0){
-               tvAddressTarget1.setText(payload.getCrossChainAddress().get(0));
+            Payload payload = JSON.parseObject(transactionsBean.getPayload(), Payload.class);
+            if (payload != null && payload.getCrossChainAddress() != null && payload.getCrossChainAddress().size() != 0) {
+                tvAddressTarget1.setText(payload.getCrossChainAddress().get(0));
             }
-            if (payload!=null&&payload.getCrossChainAmount()!=null&&payload.getCrossChainAmount().size()!=0){
+            if (payload != null && payload.getCrossChainAmount() != null && payload.getCrossChainAmount().size() != 0) {
                 tvAmountTarget1.setText(NumberiUtil.maxNumberFormat(Arith.div(payload.getCrossChainAmount().get(0), MyWallet.RATE_S), 12) + " ELA");
             }
         }
@@ -369,7 +363,9 @@ public class TransferDetailFragment extends BaseFragment implements CommonRvList
     private List<RecorderAddressEntity> initAddressData(String putJson) {
         JSONObject jsonObject = JSON.parseObject(putJson);
         List<RecorderAddressEntity> list = new ArrayList<>();
-
+        if (jsonObject == null) {
+            return list;
+        }
         for (String key : jsonObject.keySet()) {
             if (key == null) {
                 break;
@@ -388,17 +384,4 @@ public class TransferDetailFragment extends BaseFragment implements CommonRvList
         presenter.getAllTransaction(wallet.getWalletId(), chainId, 0, 20, txHash, this);
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // TODO: inflate a fragment view
-        View rootView = super.onCreateView(inflater, container, savedInstanceState);
-        unbinder3 = ButterKnife.bind(this, rootView);
-        return rootView;
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder3.unbind();
-    }
 }

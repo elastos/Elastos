@@ -33,7 +33,6 @@ import java.util.ArrayList;
 public class MyWallet {
     private static final String TAG = "Wallet";
     public static final String ELA = "ELA";
-    public static final String IdChain = "IdChain";
     public static final long RATE = 100000000;
     public static final String RATE_S = RATE + "";
     public static final Double RATE_ = 100000000.0;
@@ -835,8 +834,7 @@ public class MyWallet {
     // args[8]: boolean useVotedUTXO
     public BaseEntity createDepositTransaction(String masterWalletID, String chainID,
                                                String fromAddress, String lockedAddress,
-                                               long amount, String sideChainAddress, String memo,
-                                               String remark, boolean useVotedUTXO) {
+                                               long amount, String sideChainAddress, String memo, boolean useVotedUTXO) {
 
         Log.d(TAG, "<<< createDepositTransaction >>>");
         Log.d(TAG, "arg[0]: " + masterWalletID);
@@ -846,8 +844,7 @@ public class MyWallet {
         Log.d(TAG, "arg[4]: " + amount);
         Log.d(TAG, "arg[5]: " + sideChainAddress);
         Log.d(TAG, "arg[6]: " + memo);
-        Log.d(TAG, "arg[7]: " + remark);
-        Log.d(TAG, "arg[8]: " + useVotedUTXO);
+        Log.d(TAG, "arg[7]: " + useVotedUTXO);
 
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
@@ -1344,7 +1341,7 @@ public class MyWallet {
     // args[4]: String memo
     // args[5]: String remark
     // args[6]: boolean useVotedUTXO
-    public BaseEntity createUpdateProducerTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, String memo, String remark, boolean useVotedUTXO) {
+    public BaseEntity createUpdateProducerTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, String memo,  boolean useVotedUTXO) {
 
         Log.d(TAG, "<<< createUpdateProducerTransaction >>>");
         Log.d(TAG, "arg[0]: " + masterWalletID);
@@ -1352,8 +1349,7 @@ public class MyWallet {
         Log.d(TAG, "arg[2]: " + fromAddress);
         Log.d(TAG, "arg[3]: " + payloadJson);
         Log.d(TAG, "arg[4]: " + memo);
-        Log.d(TAG, "arg[5]: " + remark);
-        Log.d(TAG, "arg[6]: " + useVotedUTXO);
+        Log.d(TAG, "arg[5]: " + useVotedUTXO);
 
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);

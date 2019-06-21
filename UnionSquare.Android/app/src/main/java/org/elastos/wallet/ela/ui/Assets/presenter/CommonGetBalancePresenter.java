@@ -11,17 +11,7 @@ import io.reactivex.Observable;
 import io.reactivex.Observer;
 
 public class CommonGetBalancePresenter extends PresenterAbstract {
-    @Deprecated
-    public void getBalance(String walletId, String chainID, BaseFragment baseFragment) {
-        Observer observer = createObserver(GetBalanceListner.class, baseFragment);
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().getBalance(walletId, chainID, SubWallet.BalanceType.Total);
-            }
-        });
-        subscriberObservable(observer, observable);
-    }
+
 
     public void getBalance(String walletId, String chainID, int BalanceType, BaseFragment baseFragment) {
         Observer observer = createObserver(GetBalanceListner.class, baseFragment);

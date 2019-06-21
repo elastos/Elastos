@@ -20,6 +20,8 @@ import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -67,7 +69,18 @@ public class TransferActivity extends BaseActivity {
         amount = data.getStringExtra("amount");
         toAddress = data.getStringExtra("toAddress");
         attributes = data.getStringExtra("attributes");
-        fee = data.getLongExtra("fee", MyWallet.feePerKb);
+
+        try {
+            JSONObject jsonObject = new JSONObject(attributes);
+
+            if (jsonObject.has("Fee")) {
+                fee = jsonObject.getLong("Fee");
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+            fee = MyWallet.feePerKb;
+        }
         wallet = data.getParcelableExtra("wallet");
         tvAddress.setText(toAddress);
         tvAmount.setText(amount + " ELA");

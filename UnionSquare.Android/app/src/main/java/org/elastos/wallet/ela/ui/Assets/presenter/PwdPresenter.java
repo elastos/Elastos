@@ -11,20 +11,8 @@ import io.reactivex.Observable;
 import io.reactivex.Observer;
 
 public class PwdPresenter extends PresenterAbstract {
-    //所有转账都要经历的方法  calculateTransactionFee 步骤1 2 3
+    //所有转账都要经历的方法  步骤1 2 activitry
 //步骤1
-    public void updateTransactionFee(String walletId, String chainID, String rawTransaction, long fee, String fromAddress, BaseActivity baseActivity) {
-        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseActivity);
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe() {
-                return null;
-            }
-        });
-        subscriberObservable(observer, observable);
-    }
-
-    //步骤2
     public void signTransaction(String walletId, String chainId, String rawTransaction, String pwd, BaseActivity baseActivity) {
         Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseActivity);
         Observable observable = createObservable(new ObservableListener() {
@@ -36,7 +24,7 @@ public class PwdPresenter extends PresenterAbstract {
         subscriberObservable(observer, observable);
     }
 
-    //步骤3
+    //步骤2
     public void publishTransaction(String walletId, String chainId, String rawTransaction, BaseActivity baseActivity) {
         Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseActivity);
         Observable observable = createObservable(new ObservableListener() {
@@ -49,38 +37,26 @@ public class PwdPresenter extends PresenterAbstract {
     }
 
 
-    //所有转账都要经历的方法  calculateTransactionFee 步骤1 2 3
+    //所有转账都要经历的方法   步骤1 2    fragment
 //步骤1
-    public void updateTransactionFee(String walletId, String chainID, String rawTransaction, long fee, String fromAddress, BaseFragment baseActivity) {
-        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseActivity);
+    public void signTransaction(String walletId, String chainId, String rawTransaction, String pwd, BaseFragment baseFragment) {
+        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return null;
-            }
-        });
-        subscriberObservable(observer, observable);
-    }
-
-    //步骤2
-    public void signTransaction(String walletId, String chainId, String rawTransaction, String pwd, BaseFragment baseActivity) {
-        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseActivity);
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe() {
-                return baseActivity.getMyWallet().signTransaction(walletId, chainId, rawTransaction, pwd);
+                return baseFragment.getMyWallet().signTransaction(walletId, chainId, rawTransaction, pwd);
             }
         });
         subscriberObservable(observer, observable);
     }
 
     //步骤3
-    public void publishTransaction(String walletId, String chainId, String rawTransaction, BaseFragment baseActivity) {
-        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseActivity);
+    public void publishTransaction(String walletId, String chainId, String rawTransaction, BaseFragment baseFragment) {
+        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseActivity.getMyWallet().publishTransaction(walletId, chainId, rawTransaction);
+                return baseFragment.getMyWallet().publishTransaction(walletId, chainId, rawTransaction);
             }
         });
         subscriberObservable(observer, observable);

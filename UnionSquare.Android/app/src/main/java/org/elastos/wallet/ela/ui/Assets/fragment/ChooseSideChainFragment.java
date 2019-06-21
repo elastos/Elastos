@@ -40,7 +40,7 @@ public class ChooseSideChainFragment extends BaseFragment implements CommonRvLis
     protected void initView(View view) {
         tvTitle.setText(R.string.choosesidechain);
         list = new ArrayList<>();
-        list.add("IdChain");
+        list.add("IDChain");
         setRecycleView();
     }
 

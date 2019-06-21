@@ -7,8 +7,8 @@ public class TransferRecordEntity implements Serializable {
 
 
     /**
-     * MaxCount : 1
-     * Transactions : [{"Amount":1000000000,"ConfirmStatus":"6+","Direction":"Received","Fee":0,"Inputs":{},"Outputs":{"ET6v23Mo7z1KDKMmmUSPPT6jqcGPZkcQip":1000000000},"Remark":"","Status":"Confirmed","Timestamp":1547608219,"TxHash":"7759cc78df959cd7473f98db6ae0a8f53632ed0bad3aca5995b6f532d9bc7e44","Type":2}]
+     * MaxCount : 3
+     * Transactions : [{"Amount":"0","ConfirmStatus":"6+","Direction":"Moved","Height":186,"Status":"Confirmed","Timestamp":1560855293,"TxHash":"965a30286ddd7df1803963c32195ea1348a5dcebf4017e4d9d47cc19f2e6d56a","Type":2},{"Amount":"500000000000","ConfirmStatus":"6+","Direction":"Deposit","Height":179,"Status":"Confirmed","Timestamp":1560855292,"TxHash":"baafdc4174d764ec4311d0dbf4a8518af875d8d2d4a77dd6c14e4c85a2df95da","Type":9},{"Amount":"600000000000","ConfirmStatus":"6+","Direction":"Received","Height":114,"Status":"Confirmed","Timestamp":1560855281,"TxHash":"5d36908dfb0de98de286327682fbc0ffce7e471acf2bc274371c31bf53b85f3d","Type":2}]
      */
 
     private int MaxCount;
@@ -32,46 +32,30 @@ public class TransferRecordEntity implements Serializable {
 
     public static class TransactionsBean {
         /**
-         * Amount : 1000000000
+         * Amount : 0
          * ConfirmStatus : 6+
-         * Direction : Received
-         * Fee : 0
-         * Inputs : {}
-         * Outputs : {"ET6v23Mo7z1KDKMmmUSPPT6jqcGPZkcQip":1000000000}
-         * Remark :
+         * Direction : Moved
+         * Height : 186
          * Status : Confirmed
-         * Timestamp : 1547608219
-         * TxHash : 7759cc78df959cd7473f98db6ae0a8f53632ed0bad3aca5995b6f532d9bc7e44
+         * Timestamp : 1560855293
+         * TxHash : 965a30286ddd7df1803963c32195ea1348a5dcebf4017e4d9d47cc19f2e6d56a
          * Type : 2
          */
 
-        private long Amount;
+        private String Amount;
         private String ConfirmStatus;
         private String Direction;
-        private long Fee;
-        private String Inputs;
-        private String Outputs;
-        private String Remark;
+        private int Height;
         private String Status;
         private long Timestamp;
         private String TxHash;
         private int Type;
 
-        public int getHeight() {
-            return Height;
-        }
-
-        public void setHeight(int height) {
-            Height = height;
-        }
-
-        private int Height;
-
-        public long getAmount() {
+        public String getAmount() {
             return Amount;
         }
 
-        public void setAmount(long Amount) {
+        public void setAmount(String Amount) {
             this.Amount = Amount;
         }
 
@@ -91,21 +75,12 @@ public class TransferRecordEntity implements Serializable {
             this.Direction = Direction;
         }
 
-        public long getFee() {
-            return Fee;
+        public int getHeight() {
+            return Height;
         }
 
-        public void setFee(long Fee) {
-            this.Fee = Fee;
-        }
-
-
-        public String getRemark() {
-            return Remark;
-        }
-
-        public void setRemark(String Remark) {
-            this.Remark = Remark;
+        public void setHeight(int Height) {
+            this.Height = Height;
         }
 
         public String getStatus() {
@@ -138,22 +113,6 @@ public class TransferRecordEntity implements Serializable {
 
         public void setType(int Type) {
             this.Type = Type;
-        }
-
-        public String getInputs() {
-            return Inputs;
-        }
-
-        public void setInputs(String inputs) {
-            Inputs = inputs;
-        }
-
-        public String getOutputs() {
-            return Outputs;
-        }
-
-        public void setOutputs(String outputs) {
-            Outputs = outputs;
         }
     }
 }

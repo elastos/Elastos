@@ -17,7 +17,6 @@ import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.blankj.utilcode.util.CacheDoubleUtils;
 import com.blankj.utilcode.util.KeyboardUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.qmuiteam.qmui.layout.QMUILinearLayout;
@@ -31,9 +30,7 @@ import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
-import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonLongViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.ui.vote.activity.VoteActivity;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
@@ -49,7 +46,6 @@ import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -60,7 +56,7 @@ import butterknife.OnClick;
 /**
  * 节点购车车
  */
-public class NodeCartFragment extends BaseFragment implements CommonBalanceViewData, WarmPromptListener, CommmonStringWithMethNameViewData, CommmonLongViewData {
+public class NodeCartFragment extends BaseFragment implements CommonBalanceViewData, WarmPromptListener, CommmonStringWithMethNameViewData {
 
 
     @BindView(R.id.iv_title_left)
@@ -105,10 +101,8 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     private Wallet wallet = realmUtil.queryDefauleWallet();
 
     NodeCartPresenter presenter = new NodeCartPresenter();
-    TransferPresenter transferpresenter = new TransferPresenter();
     SignUpPresenter signuppresenter = new SignUpPresenter();
     PwdPresenter pwdpresenter = new PwdPresenter();
-    public String type;//1.正常投票 2 3. 复投
     ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> netList;
 
     @Override
@@ -124,8 +118,6 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     @Override
     protected void setExtraData(Bundle data) {
         super.setExtraData(data);
-        type = data.getString("type", "1");
-        KLog.a(type);
         tvRatio.setText(NumberiUtil.numberFormat(Double.parseDouble(data.getString("zb", "0")) * 100 + "", 5) + "%");
         sb_suger.setProgress((int) Double.parseDouble(data.getString("zb", "0")) * 100);
         netList = (ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean>) data.getSerializable("netList");
@@ -155,7 +147,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
             recyclerView.setVisibility(View.VISIBLE);
             tv_num.setText(getString(R.string.futuregenerations) + list.size() + ")");
             // 实例化自定义的MyAdapter
-            mAdapter = new MyAdapter(list, getContext(), type);
+            mAdapter = new MyAdapter(list, getContext());
             // 绑定Adapter
             recyclerView.setAdapter(mAdapter);
             // checkBox.setChecked(true);
@@ -406,7 +398,6 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         signuppresenter.exportWalletWithMnemonic(wallet.getWalletId(), pwd, this);
     }
 
-    String attributes;
 
     @Override
     public void onGetCommonData(String methodname, String data) {
@@ -414,27 +405,16 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         Long sl = Arith.mul(num, MyWallet.RATE_S).longValue();
 
         switch (methodname) {
-            //验证密码 updateTransactionFee
+            //验证密码
             case "exportWalletWithMnemonic":
-                KLog.a(jsonArray.toString() + type);
                 //创建投票
-                if (type.equals("2")) {
-                    presenter.createVoteProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "",
-                            sl, String.valueOf(jsonArray), "", true, this);
-                } else {
-                    presenter.createVoteProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "",
-                            sl, String.valueOf(jsonArray), "", true, this);
-                }
+                presenter.createVoteProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "",
+                        sl, String.valueOf(jsonArray), "", true, this);
                 break;
             //创建投票交易
             case "createVoteProducerTransaction":
                 KLog.a("createVoteProducerTransaction" + data);
-                attributes = data;
                 //计算手续费
-                transferpresenter.calculateTransactionFee(wallet.getWalletId(), MyWallet.ELA, data, MyWallet.feePerKb, this);
-                break;
-
-            case "updateTransactionFee":
                 pwdpresenter.signTransaction(wallet.getWalletId(), MyWallet.ELA, data, pwd, this);
                 break;
             case "signTransaction":
@@ -455,12 +435,6 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
 //                }
                 break;
         }
-    }
-
-    //计算手续费
-    @Override
-    public void onGetCommonData(long fee) {
-        pwdpresenter.updateTransactionFee(wallet.getWalletId(), MyWallet.ELA, attributes, fee, "", this);
     }
 
 

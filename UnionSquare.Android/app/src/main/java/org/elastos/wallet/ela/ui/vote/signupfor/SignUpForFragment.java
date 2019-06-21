@@ -172,7 +172,7 @@ public class SignUpForFragment extends BaseFragment implements CommmonStringWith
         }
     }
 
-    String attributes, datakey;
+    String  datakey;
 
     @Override
     public void onGetCommonData(String methodname, String data) {
@@ -197,10 +197,15 @@ public class SignUpForFragment extends BaseFragment implements CommmonStringWith
                 break;
             //创建交易
             case "createRegisterProducerTransaction":
-                attributes = data;
-                //计算手续费
-                transferpresenter.calculateTransactionFee(wallet.getWalletId(), MyWallet.ELA, data, MyWallet.feePerKb, this);
-                KLog.a(data);
+                Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
+                intent.putExtra("wallet", wallet);
+                intent.putExtra("type", Constant.TRANFER);
+                intent.putExtra("amount", "5000");
+                intent.putExtra("chainId", MyWallet.ELA);
+                intent.putExtra("toAddress", publickey);
+                intent.putExtra("pwd", pwd);
+                intent.putExtra("attributes", data);
+                startActivity(intent);
                 dialogUtil.dialogDismiss();
                 break;
         }
@@ -229,16 +234,7 @@ public class SignUpForFragment extends BaseFragment implements CommmonStringWith
 
     @Override
     public void onGetCommonData(long fee) {
-        Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
-        intent.putExtra("wallet", wallet);
-        intent.putExtra("type", Constant.TRANFER);
-        intent.putExtra("amount", "5000");
-        intent.putExtra("chainId", MyWallet.ELA);
-        intent.putExtra("toAddress", publickey);
-        intent.putExtra("pwd", pwd);
-        intent.putExtra("fee", fee);
-        intent.putExtra("attributes", attributes);
-        startActivity(intent);
+
     }
 
 }

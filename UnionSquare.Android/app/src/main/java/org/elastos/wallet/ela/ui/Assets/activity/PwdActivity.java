@@ -73,9 +73,7 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
                     showToastMessage(getString(R.string.pwdnoempty));
                     return;
                 }
-                presenter.updateTransactionFee(wallet.getWalletId(), chainId, attributes, fee, "", this);
-
-
+                presenter.signTransaction(wallet.getWalletId(), chainId, attributes, pwd, this);
                 break;
 
         }
@@ -85,10 +83,6 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
     @Override
     public void onGetCommonData(String methodname, String data) {
         switch (methodname) {
-
-            case "updateTransactionFee":
-                presenter.signTransaction(wallet.getWalletId(), chainId, data, pwd, this);
-                break;
             case "signTransaction":
                 presenter.publishTransaction(wallet.getWalletId(), chainId, data, this);
                 break;

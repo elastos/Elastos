@@ -52,7 +52,7 @@ import io.reactivex.functions.Consumer;
 /**
  * 选举管理  getRegisteredProducerInfo
  */
-public class ElectoralAffairsFragment extends BaseFragment implements WarmPromptListener, CommmonStringWithMethNameViewData, CommmonLongViewData, VotelistViewData {
+public class ElectoralAffairsFragment extends BaseFragment implements WarmPromptListener, CommmonStringWithMethNameViewData, VotelistViewData {
 
     @BindView(R.id.toolbar_title)
     TextView toolbarTitle;
@@ -84,7 +84,6 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
     ElectoralAffairsPresenter presenter = new ElectoralAffairsPresenter();
-    TransferPresenter transferpresenter = new TransferPresenter();
     PwdPresenter pwdpresenter = new PwdPresenter();
     String status;
     private String ownerPublicKey;
@@ -210,7 +209,6 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
         presenter.generateCancelProducerPayload(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey, pwd, this);
     }
 
-    String attributes;
 
     @Override
     public void onGetCommonData(String methodname, String data) {
@@ -222,21 +220,15 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
                 if (status.equals("Canceled")) {
                     //提取按钮
                     presenter.createRetrieveDepositTransaction(wallet.getWalletId(), MyWallet.ELA,
-                            available * MyWallet.RATE - 10000, "", "", this);
+                            available * MyWallet.RATE - 10000, "", this);
                 } else {
                     //注销按钮
-                    presenter.createCancelProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", data, "", "", false, this);
+                    presenter.createCancelProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", data, "", false, this);
                 }
 
                 break;
             case "createRetrieveDepositTransaction":
             case "createCancelProducerTransaction":
-                attributes = data;
-                //计算手续费
-                transferpresenter.calculateTransactionFee(wallet.getWalletId(), MyWallet.ELA, data, MyWallet.feePerKb, this);
-                break;
-
-            case "updateTransactionFee":
                 pwdpresenter.signTransaction(wallet.getWalletId(), MyWallet.ELA, data, pwd, this);
                 break;
             case "signTransaction":
@@ -263,10 +255,6 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
         }
     }
 
-    @Override
-    public void onGetCommonData(long data) {
-        pwdpresenter.updateTransactionFee(wallet.getWalletId(), MyWallet.ELA, attributes, data, "", this);
-    }
 
     Long available;
 

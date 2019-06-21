@@ -43,7 +43,7 @@ import butterknife.OnClick;
 /**
  * 更新信息
  */
-public class UpdateInformationFragment extends BaseFragment implements WarmPromptListener, CommmonStringWithMethNameViewData, CommmonLongViewData {
+public class UpdateInformationFragment extends BaseFragment implements WarmPromptListener, CommmonStringWithMethNameViewData {
 
 
     @BindView(R.id.statusbarutil_fake_status_bar_view)
@@ -173,7 +173,7 @@ public class UpdateInformationFragment extends BaseFragment implements WarmPromp
     }
 
 
-    String attributes;
+
 
     @Override
     public void onGetCommonData(String methodname, String data) {
@@ -195,16 +195,10 @@ public class UpdateInformationFragment extends BaseFragment implements WarmPromp
                 break;
             //创建交易
             case "createUpdateProducerTransaction":
-                attributes = data;
-                //计算手续费
-                transferpresenter.calculateTransactionFee(wallet.getWalletId(), MyWallet.ELA, data, MyWallet.feePerKb, this);
-                KLog.a(data);
+                pwdPresenter.signTransaction(wallet.getWalletId(), MyWallet.ELA, data, pwd, this);
                 dialogUtil.dialogDismiss();
                 break;
 
-            case "updateTransactionFee":
-                pwdPresenter.signTransaction(wallet.getWalletId(), MyWallet.ELA, data, pwd, this);
-                break;
             case "signTransaction":
                 pwdPresenter.publishTransaction(wallet.getWalletId(), MyWallet.ELA, data, this);
                 break;
@@ -216,12 +210,6 @@ public class UpdateInformationFragment extends BaseFragment implements WarmPromp
         }
     }
 
-
-    @Override
-    public void onGetCommonData(long fee) {
-        //更新手续费
-        pwdPresenter.updateTransactionFee(wallet.getWalletId(), MyWallet.ELA, attributes, fee, "", this);
-    }
 
 
     long code;

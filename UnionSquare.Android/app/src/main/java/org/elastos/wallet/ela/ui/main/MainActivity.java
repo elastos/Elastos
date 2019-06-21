@@ -151,13 +151,13 @@ public class MainActivity extends BaseActivity implements MainViewData {
     public static void moveTestConfigFiles2RootPath(Context context) {
         String rootPath = context.getFilesDir().getParent();
         List<String> names = new ArrayList<String>();
-        String name = "CoinConfig.json";
+        String name = "Config.cfg";
         switch (MyApplication.chainID) {
             case 1:
-                name = "CoinConfig_TestNet.json";
+                name = "Config_TestNet.cfg";
                 break;
             case 2:
-                name = "CoinConfig_RegTest.json";
+                name = "Config_RegTest.cfg";
                 break;
 
         }
@@ -169,7 +169,7 @@ public class MainActivity extends BaseActivity implements MainViewData {
         names.add("mnemonic_spanish.txt");
 
         List<String> names1 = new ArrayList<String>();
-        names1.add("CoinConfig.json");
+        names1.add("Config.cfg");
         names1.add("mnemonic_chinese.txt");
         names1.add("mnemonic_french.txt");
         names1.add("mnemonic_italian.txt");
