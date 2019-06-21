@@ -456,6 +456,7 @@ static jstring JNICALL EncodeTransaction(JNIEnv *env, jobject clazz, jlong jSubP
         ISubWallet *subWallet = (ISubWallet *) jSubProxy;
 
         nlohmann::json stringJson = subWallet->EncodeTransaction(nlohmann::json::parse(txJson));
+        result = env->NewStringUTF(stringJson.dump().c_str());
 
     } catch (const std::exception &e) {
         exception = true;
