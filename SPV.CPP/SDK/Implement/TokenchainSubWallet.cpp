@@ -41,7 +41,11 @@ namespace Elastos {
 			AssetPtr asset(new Asset(name, description, precision));
 			PayloadPtr payload = PayloadPtr(new PayloadRegisterAsset(asset, registerAmount, address.ProgramHash()));
 
-			TransactionPtr tx = CreateTx("", CreateAddress(), BigInt(1000000000), Asset::GetELAAssetID(), memo);
+			std::vector<TransactionOutput> outputs;
+			Address receiveAddr(CreateAddress());
+			outputs.emplace_back(BigInt(1000000000), receiveAddr, Asset::GetELAAssetID());
+
+			TransactionPtr tx = CreateTx("", outputs, memo);
 
 			tx->SetTransactionType(Transaction::RegisterAsset, payload);
 
@@ -74,7 +78,12 @@ namespace Elastos {
 			bnAmount.setDec(amount);
 
 			ErrorChecker::CheckParam((bnAmount % bn) != 0, Error::InvalidArgument, "amount exceed max presicion");
-			TransactionPtr tx = CreateTx(fromAddress, toAddress, bnAmount, asset, memo);
+
+			std::vector<TransactionOutput> outputs;
+			Address receiveAddr(toAddress);
+			outputs.emplace_back(bnAmount, receiveAddr, asset);
+
+			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
 
 			return tx->ToJson();
 		}
@@ -86,7 +95,11 @@ namespace Elastos {
 			BigInt bnAmount = _walletManager->getWallet()->GetBalance(uint256(assetID), GroupedAsset::Total);
 
 			uint256 asset = uint256(assetID);
-			TransactionPtr tx = CreateTx("", addr, bnAmount, asset, memo);
+
+			std::vector<TransactionOutput> outputs;
+			outputs.emplace_back(bnAmount, Address(addr), asset);
+
+			TransactionPtr tx = CreateTx("", outputs, memo);
 
 			return tx->ToJson();
 		}

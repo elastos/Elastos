@@ -54,7 +54,11 @@ namespace Elastos {
 												  "Create id tx param error: " + std::string(e.what()));
 			}
 
-			TransactionPtr tx = CreateTx(fromAddress, toAddress, 0, Asset::GetELAAssetID(), memo);
+			std::vector<TransactionOutput> outputs;
+			Address receiveAddr(toAddress);
+			outputs.emplace_back(0, receiveAddr, Asset::GetELAAssetID());
+
+			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
 
 			tx->SetTransactionType(Transaction::RegisterIdentification, payload);
 

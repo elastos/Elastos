@@ -45,8 +45,10 @@ namespace Elastos {
 												  "main chain message error: " + std::string(e.what()));
 			}
 
-			TransactionPtr tx = CreateTx(fromAddress, ELA_SIDECHAIN_DESTROY_ADDR, amount + _config->MinFee(),
-										 Asset::GetELAAssetID(), memo);
+			std::vector<TransactionOutput> outputs;
+			outputs.emplace_back(BigInt(amount + _config->MinFee()), Address(ELA_SIDECHAIN_DESTROY_ADDR), Asset::GetELAAssetID());
+
+			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
 			ErrorChecker::CheckLogic(tx == nullptr, Error::CreateTransaction, "Create withdraw tx");
 
 			tx->SetTransactionType(Transaction::TransferCrossChainAsset, payload);

@@ -53,8 +53,11 @@ namespace Elastos {
 												  "Side chain message error: " + std::string(e.what()));
 			}
 
-			TransactionPtr tx = CreateTx(fromAddress, lockedAddress, amount + _config->MinFee(),
-										 Asset::GetELAAssetID(), memo, useVotedUTXO);
+			std::vector<TransactionOutput> outputs;
+			Address receiveAddr(lockedAddress);
+			outputs.emplace_back(BigInt(amount + _config->MinFee()), receiveAddr, Asset::GetELAAssetID());
+
+			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
 			tx->SetTransactionType(Transaction::TransferCrossChainAsset, payload);
 
@@ -140,7 +143,11 @@ namespace Elastos {
 			bytes_t pubkey = static_cast<PayloadRegisterProducer *>(payload.get())->GetPublicKey();
 			std::string toAddress = Address(PrefixDeposit, pubkey).String();
 
-			TransactionPtr tx = CreateTx(fromAddress, toAddress, amount, Asset::GetELAAssetID(), memo, useVotedUTXO);
+			std::vector<TransactionOutput> outputs;
+			Address receiveAddr(toAddress);
+			outputs.emplace_back(BigInt(amount), receiveAddr, Asset::GetELAAssetID());
+
+			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
 			tx->SetTransactionType(Transaction::RegisterProducer, payload);
 
@@ -161,8 +168,11 @@ namespace Elastos {
 												  "Payload format err: " + std::string(e.what()));
 			}
 
-			std::string toAddress = CreateAddress();
-			TransactionPtr tx = CreateTx(fromAddress, toAddress, 0, Asset::GetELAAssetID(), memo, useVotedUTXO);
+			std::vector<TransactionOutput> outputs;
+			Address receiveAddr(CreateAddress());
+			outputs.emplace_back(BigInt(0), receiveAddr, Asset::GetELAAssetID());
+
+			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
 			tx->SetTransactionType(Transaction::UpdateProducer, payload);
 
@@ -187,8 +197,11 @@ namespace Elastos {
 												  "Payload format err: " + std::string(e.what()));
 			}
 
-			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), 0, Asset::GetELAAssetID(),
-										 memo, useVotedUTXO);
+			std::vector<TransactionOutput> outputs;
+			Address receiveAddr(CreateAddress());
+			outputs.emplace_back(BigInt(0), receiveAddr, Asset::GetELAAssetID());
+
+			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
 			tx->SetTransactionType(Transaction::CancelProducer, payload);
 
@@ -205,7 +218,11 @@ namespace Elastos {
 
 			std::string fromAddress = _walletManager->getWallet()->GetOwnerDepositAddress().String();
 
-			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), amount, Asset::GetELAAssetID(), memo);
+			std::vector<TransactionOutput> outputs;
+			Address receiveAddr(CreateAddress());
+			outputs.emplace_back(BigInt(amount), receiveAddr, Asset::GetELAAssetID());
+
+			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
 
 			tx->SetTransactionType(Transaction::ReturnDepositCoin);
 
@@ -248,7 +265,11 @@ namespace Elastos {
 
 			OutputPayloadPtr payload = OutputPayloadPtr(new PayloadVote({voteContent}));
 
-			TransactionPtr tx = CreateTx(fromAddress, CreateAddress(), stake, Asset::GetELAAssetID(), memo, useVotedUTXO);
+			std::vector<TransactionOutput> outs;
+			Address receiveAddr(CreateAddress());
+			outs.emplace_back(BigInt(stake), receiveAddr, Asset::GetELAAssetID());
+
+			TransactionPtr tx = CreateTx(fromAddress, outs, memo, useVotedUTXO);
 
 			const std::vector<TransactionInput> &inputs = tx->GetInputs();
 

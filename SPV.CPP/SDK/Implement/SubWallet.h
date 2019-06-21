@@ -165,9 +165,7 @@ namespace Elastos {
 
 			virtual TransactionPtr CreateTx(
 				const std::string &fromAddress,
-				const std::string &toAddress,
-				const BigInt &amount,
-				const uint256 &assetID,
+				const std::vector<TransactionOutput> &outputs,
 				const std::string &memo,
 				bool useVotedUTXO = false) const;
 

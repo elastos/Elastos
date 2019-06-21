@@ -114,18 +114,15 @@ namespace Elastos {
 			_callbacks.erase(std::remove(_callbacks.begin(), _callbacks.end(), subCallback), _callbacks.end());
 		}
 
-		TransactionPtr SubWallet::CreateTx(const std::string &fromAddress, const std::string &toAddress,
-										   const BigInt &amount, const uint256 &assetID, const std::string &memo,
-										   bool useVotedUTXO) const {
-			Address receiveAddr(toAddress);
-
-			ErrorChecker::CheckParam(!receiveAddr.Valid(), Error::CreateTransaction,
-									 "invalid receiver address " + toAddress);
+		TransactionPtr SubWallet::CreateTx(const std::string &fromAddress, const std::vector<TransactionOutput> &outputs,
+		                                   const std::string &memo, bool useVotedUTXO) const {
 
 			const WalletPtr &wallet = _walletManager->getWallet();
 
-			std::vector<TransactionOutput> outputs;
-			outputs.emplace_back(amount, receiveAddr, assetID);
+			for (const TransactionOutput &output : outputs) {
+				ErrorChecker::CheckParam(!output.GetAddress().Valid(), Error::CreateTransaction,
+				                         "invalid receiver address " + output.GetAddress().String());
+			}
 
 			TransactionPtr tx = wallet->CreateTransaction(fromAddress, outputs, memo, useVotedUTXO, false);
 
@@ -137,11 +134,16 @@ namespace Elastos {
 		}
 
 		nlohmann::json SubWallet::CreateTransaction(const std::string &fromAddress, const std::string &toAddress,
-													uint64_t amount, const std::string &memo,
-													bool useVotedUTXO) {
+		                                            uint64_t amount, const std::string &memo, bool useVotedUTXO) {
+
 			BigInt bnAmount;
 			bnAmount.setWord(amount);
-			TransactionPtr tx = CreateTx(fromAddress, toAddress, bnAmount, Asset::GetELAAssetID(), memo, useVotedUTXO);
+
+			std::vector<TransactionOutput> outputs;
+			Address receiveAddr(toAddress);
+			outputs.emplace_back(bnAmount, receiveAddr);
+
+			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 			return tx->ToJson();
 		}
 
