@@ -73,14 +73,10 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 		}
 	}
 
-	txIDs := make([]Uint256, 0, len(transactions))
+	txIDs := make([]Uint256, 0, len(block.Transactions))
 	existingTxIDs := make(map[Uint256]struct{})
 	existingTxInputs := make(map[string]struct{})
-	existingSideTxs := make(map[Uint256]struct{})
-	existingProducer := make(map[string]struct{})
-	existingProducerNode := make(map[string]struct{})
-	existingCR := make(map[string]struct{})
-	for _, txn := range transactions {
+	for _, txn := range block.Transactions {
 		txID := txn.Hash()
 		// Check for duplicate transactions.
 		if _, exists := existingTxIDs[txID]; exists {
@@ -102,6 +98,29 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 			existingTxInputs[referKey] = struct{}{}
 		}
 
+		// Append transaction to list
+		txIDs = append(txIDs, txID)
+	}
+	if err := checkDuplicateTx(block); err != nil {
+		return err
+	}
+	calcTransactionsRoot, err := crypto.ComputeRoot(txIDs)
+	if err != nil {
+		return errors.New("[PowCheckBlockSanity] merkleTree compute failed")
+	}
+	if !header.MerkleRoot.IsEqual(calcTransactionsRoot) {
+		return errors.New("[PowCheckBlockSanity] block merkle root is invalid")
+	}
+
+	return nil
+}
+
+func checkDuplicateTx(block *Block) error {
+	existingSideTxs := make(map[Uint256]struct{})
+	existingProducer := make(map[string]struct{})
+	existingProducerNode := make(map[string]struct{})
+	existingCR := make(map[string]struct{})
+	for _, txn := range block.Transactions {
 		switch txn.TxType {
 		case WithdrawFromSideChain:
 			witPayload := txn.Payload.(*payload.WithdrawFromSideChain)
@@ -164,18 +183,7 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 			existingCR[crPayload.DID] = struct{}{}
 		case UpdateCR:
 		}
-
-		// Append transaction to list
-		txIDs = append(txIDs, txID)
 	}
-	calcTransactionsRoot, err := crypto.ComputeRoot(txIDs)
-	if err != nil {
-		return errors.New("[PowCheckBlockSanity] merkleTree compute failed")
-	}
-	if !header.MerkleRoot.IsEqual(calcTransactionsRoot) {
-		return errors.New("[PowCheckBlockSanity] block merkle root is invalid")
-	}
-
 	return nil
 }
 
