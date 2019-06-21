@@ -30,21 +30,24 @@ const transform = value => {
   return result
 }
 
-const renderRichEditor = (data, key, getFieldDecorator) => {
+const renderRichEditor = (data, key, getFieldDecorator, max) => {
   const content = _.get(data, key, '')
+  const rules = [
+    {
+      required: true,
+      transform,
+      message: I18N.get('proposal.form.error.required')
+    },
+  ]
+  if (max) {
+    rules.push({
+      max,
+      transform,
+      message: I18N.get('proposal.form.error.tooLong')
+    })
+  }
   const content_fn = getFieldDecorator(key, {
-    rules: [
-      {
-        required: true,
-        transform,
-        message: I18N.get('proposal.form.error.required')
-      },
-      {
-        max: 200,
-        transform,
-        message: I18N.get('proposal.form.error.tooLong')
-      }
-    ],
+    rules,
     initialValue: content,
   })
   const content_el = (
@@ -144,7 +147,7 @@ class C extends BaseComponent {
       <Input size="large" type="text" />
     )
 
-    const abstract = renderRichEditor(data, 'abstract', getFieldDecorator)
+    const abstract = renderRichEditor(data, 'abstract', getFieldDecorator, 200)
     const goal = renderRichEditor(data, 'goal', getFieldDecorator)
     const motivation = renderRichEditor(data, 'motivation', getFieldDecorator)
     const relevance = renderRichEditor(data, 'relevance', getFieldDecorator)
