@@ -124,7 +124,6 @@ public class MyWallet {
      */
 
     public void onDestroy() {
-        Log.d(TAG, "onDestroy");
         if (mMasterWalletManager != null) {
             ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
             for (int i = 0; i < masterWalletList.size(); i++) {
@@ -213,15 +212,9 @@ public class MyWallet {
 
     // args[0]: String masterWalletID
     // args[1]: String chainID
-    // args[2]: long feePerKb
 
     public BaseEntity createSubWallet(String masterWalletID, String chainID) {
         long feePerKb = 10000;
-
-        Log.d(TAG, "<<< createSubWallet >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-
         try {
             MasterWallet masterWallet = getMasterWallet(masterWalletID);
             if (masterWallet == null) {
@@ -245,9 +238,6 @@ public class MyWallet {
 
     // args[0]: String masterWalletID
     public BaseEntity getMasterWalletBasicInfo(String masterWalletID) {
-        Log.d(TAG, "<<< getMasterWalletBasicInfo >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-
         try {
             MasterWallet masterWallet = getMasterWallet(masterWalletID);
             if (masterWallet == null) {
@@ -264,8 +254,6 @@ public class MyWallet {
     }
 
     public BaseEntity getAllMasterWallets() {
-        Log.d(TAG, "<<< getAllMasterWallets >>>");
-
         try {
             ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
             for (int i = 0; i < masterWalletList.size(); i++) {
@@ -301,10 +289,6 @@ public class MyWallet {
 
     // args[0]: String masterWalletID
     public BaseEntity getAllSubWallets(String masterWalletID) {
-
-        Log.d(TAG, "<<< getAllSubWallets >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-
         try {
             MasterWallet masterWallet = getMasterWallet(masterWalletID);
             if (masterWallet == null) {
@@ -333,9 +317,6 @@ public class MyWallet {
 
     // args[0]: String language
     public BaseEntity generateMnemonic(String language) {
-        Log.d(TAG, "<<< generateMnemonic >>>");
-        Log.d(TAG, "arg[0]: " + language);
-
         String mnemonic = null;
         try {
             mnemonic = mMasterWalletManager.GenerateMnemonic(language);
@@ -350,11 +331,6 @@ public class MyWallet {
     // args[0]: String masterWalletID
     // args[1]: String address
     public BaseEntity isAddressValid(String masterWalletID, String addr) {
-
-        Log.d(TAG, "<<< isAddressValid >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + addr);
-
         try {
             MasterWallet masterWallet = getMasterWallet(masterWalletID);
             if (masterWallet == null) {
@@ -376,14 +352,6 @@ public class MyWallet {
     // args[3]: String payPassword
     // args[4]: boolean singleAddress
     public BaseEntity createMasterWallet(String masterWalletID, String mnemonic, String phrasePassword, String payPassword, boolean singleAddress) {
-
-        Log.d(TAG, "<<< createMasterWallet >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + "mnemonic");
-        Log.d(TAG, "arg[2]: " + "phrasePasswd");
-        Log.d(TAG, "arg[3]: " + "payPasswd");
-        Log.d(TAG, "arg[4]: " + singleAddress);
-
         String basicInfo = null;
 
         try {
@@ -408,11 +376,6 @@ public class MyWallet {
     // args[0]: String masterWalletID
     // args[1]: String chainID
     public BaseEntity destroySubWallet(String masterWalletID, String chainID) {
-
-        Log.d(TAG, "<<< destroySubWallet >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-
         try {
             MasterWallet masterWallet = getMasterWallet(masterWalletID);
             if (masterWallet == null) {
@@ -436,10 +399,6 @@ public class MyWallet {
 
     // args[0]: String masterWalletID
     public BaseEntity destroyWallet(String masterWalletID) {
-
-        Log.d(TAG, "<<< destroyWallet >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-
         try {
             MasterWallet masterWallet = getMasterWallet(masterWalletID);
             if (masterWallet == null) {
@@ -464,13 +423,6 @@ public class MyWallet {
     // args[2]: String backupPassword
     // args[3]: String payPassword
     public BaseEntity importWalletWithKeystore(String masterWalletID, String keystoreContent, String backupPassword, String payPassword) {
-
-        Log.d(TAG, "<<< importWalletWithKeystore >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + keystoreContent);
-        Log.d(TAG, "arg[2]: " + "backupPasswd");
-        Log.d(TAG, "arg[3]: " + "payPasswd");
-
         try {
             MasterWallet masterWallet = mMasterWalletManager.ImportWalletWithKeystore(
                     masterWalletID, keystoreContent, backupPassword, payPassword);
@@ -496,14 +448,6 @@ public class MyWallet {
     // args[4]: boolean singleAddress
     public BaseEntity importWalletWithMnemonic(String masterWalletID, String mnemonic, String phrasePassword,
                                                String payPassword, boolean singleAddress) {
-
-        Log.d(TAG, "<<< importWalletWithMnemonic >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + "mnemonic");
-        Log.d(TAG, "arg[2]: " + "phrasePasswd");
-        Log.d(TAG, "arg[3]: " + "payPasswd");
-        Log.d(TAG, "arg[4]: " + singleAddress);
-
         try {
             MasterWallet masterWallet = mMasterWalletManager.ImportWalletWithMnemonic(
                     masterWalletID, mnemonic, phrasePassword, payPassword, singleAddress);
@@ -540,12 +484,6 @@ public class MyWallet {
     // args[1]: String backupPassword
     // args[2]: String payPassword
     public BaseEntity exportWalletWithKeystore(String masterWalletID, String backupPassword, String payPassword) {
-
-        Log.d(TAG, "<<< exportWalletWithKeystore >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: backupPasswd");
-        Log.d(TAG, "arg[2]: payPasswd");
-
         try {
             MasterWallet masterWallet = getMasterWallet(masterWalletID);
             if (masterWallet == null) {
@@ -565,11 +503,6 @@ public class MyWallet {
     // args[0]: String masterWalletID
     // args[1]: String payPassword
     public BaseEntity exportWalletWithMnemonic(String masterWalletID, String backupPassword) {
-
-        Log.d(TAG, "<<< exportWalletWithMnemonic >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: backupPasswd");
-
         try {
             MasterWallet masterWallet = getMasterWallet(masterWalletID);
             if (masterWallet == null) {
@@ -589,11 +522,6 @@ public class MyWallet {
     // args[0]: String masterWalletID
     // args[1]: String payPassword
     public BaseEntity exportWalletWithMnemonic_1(String masterWalletID, String backupPassword) {
-
-        Log.d(TAG, "<<< exportWalletWithMnemonic_1 >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: backupPasswd");
-
         try {
             MasterWallet masterWallet = getMasterWallet(masterWalletID);
             if (masterWallet == null) {
@@ -631,12 +559,6 @@ public class MyWallet {
     // args[1]: String chainID
     // args[2]: int BalanceType (0: Default, 1: Voted, 2: Total)
     public BaseEntity getBalance(String masterWalletID, String chainID, SubWallet.BalanceType BalanceType) {
-
-        Log.d(TAG, "<<< getBalance >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-        Log.d(TAG, "arg[2]: " + BalanceType);
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -655,11 +577,6 @@ public class MyWallet {
     // args[0]: String masterWalletID
     // args[1]: String chainID
     public BaseEntity createAddress(String masterWalletID, String chainID) {
-
-        Log.d(TAG, "<<< createAddress >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -680,13 +597,6 @@ public class MyWallet {
     // args[2]: int start
     // args[3]: int count
     public BaseEntity getAllAddress(String masterWalletID, String chainID, int start, int count) {
-
-        Log.d(TAG, "<<< getAllAddress >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-        Log.d(TAG, "arg[2]: " + start);
-        Log.d(TAG, "arg[3]: " + count);
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -710,19 +620,9 @@ public class MyWallet {
     // args[3]: String toAddress
     // args[4]: long amount
     // args[5]: String memo
-    // args[6]: String remark
+    // args[6]: Boolean useVotedUTXO
     public BaseEntity createTransaction(String masterWalletID, String chainID, String fromAddress,
                                         String toAddress, long amount, String memo, boolean useVotedUTXO) {
-
-        Log.d(TAG, "<<< createTransaction >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-        Log.d(TAG, "arg[2]: " + fromAddress);
-        Log.d(TAG, "arg[3]: " + toAddress);
-        Log.d(TAG, "arg[4]: " + amount);
-        Log.d(TAG, "arg[5]: " + memo);
-        Log.d(TAG, "arg[7]: " + useVotedUTXO);
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -746,13 +646,6 @@ public class MyWallet {
     // args[3]: String payPassword
     // return:  String txJson
     public BaseEntity signTransaction(String masterWalletID, String chainID, String rawTransaction, String payPassword) {
-
-        Log.d(TAG, "<<< signTransaction >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-        Log.d(TAG, "arg[2]: " + rawTransaction);
-        Log.d(TAG, "arg[3]: " + "payPassword");
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -774,12 +667,6 @@ public class MyWallet {
     // args[2]: String rawTxJson
     // return:  String resultJson
     public BaseEntity publishTransaction(String masterWalletID, String chainID, String rawTxJson) {
-
-        Log.d(TAG, "<<< publishTransaction >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-        Log.d(TAG, "arg[2]: " + rawTxJson);
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -802,14 +689,6 @@ public class MyWallet {
     // args[4]: String addressOrTxId
     // return:  String txJson
     public BaseEntity getAllTransaction(String masterWalletID, String chainID, int start, int count, String addressOrTxId) {
-
-        Log.d(TAG, "<<< getAllTransaction >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-        Log.d(TAG, "arg[2]: " + start);
-        Log.d(TAG, "arg[3]: " + count);
-        Log.d(TAG, "arg[4]: " + addressOrTxId);
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -829,12 +708,6 @@ public class MyWallet {
     // args[0]: String masterWalletID
     // args[1]: String chainID
     public BaseEntity registerWalletListener(String masterWalletID, String chainID, ISubWalletListener listener) {
-
-        Log.d(TAG, "<<< registerWalletListener >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-        Log.d(TAG, "arg[2]: " + listener);
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -861,22 +734,10 @@ public class MyWallet {
     // args[4]: long amount
     // args[5]: String sideChainAddress
     // args[6]: String memo
-    // args[7]: String remark
-    // args[8]: boolean useVotedUTXO
+    // args[7]: boolean useVotedUTXO
     public BaseEntity createDepositTransaction(String masterWalletID, String chainID,
                                                String fromAddress, String lockedAddress,
                                                long amount, String sideChainAddress, String memo, boolean useVotedUTXO) {
-
-        Log.d(TAG, "<<< createDepositTransaction >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-        Log.d(TAG, "arg[2]: " + fromAddress);
-        Log.d(TAG, "arg[3]: " + lockedAddress);
-        Log.d(TAG, "arg[4]: " + amount);
-        Log.d(TAG, "arg[5]: " + sideChainAddress);
-        Log.d(TAG, "arg[6]: " + memo);
-        Log.d(TAG, "arg[7]: " + useVotedUTXO);
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -903,10 +764,6 @@ public class MyWallet {
 
     // args[0]: String masterWalletID
     public BaseEntity getSupportedChains(String masterWalletID) {
-
-        Log.d(TAG, "<<< getSupportedChains >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-
         try {
             MasterWallet masterWallet = getMasterWallet(masterWalletID);
             if (masterWallet == null) {
@@ -929,12 +786,6 @@ public class MyWallet {
     // args[1]: String oldPassword
     // args[2]: String newPassword
     public BaseEntity changePassword(String masterWalletID, String oldPassword, String newPassword) {
-
-        Log.d(TAG, "<<< changePassword >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: oldPasswd");
-        Log.d(TAG, "arg[2]: newPasswd");
-
         try {
             MasterWallet masterWallet = getMasterWallet(masterWalletID);
             if (masterWallet == null) {
@@ -957,18 +808,8 @@ public class MyWallet {
     // args[3]: long amount
     // args[4]: String mainchainAdress
     // args[5]: String memo
-    // args[6]: String remark
     public BaseEntity createWithdrawTransaction(String masterWalletID, String chainID, String fromAddress,
                                                 long amount, String mainchainAddress, String memo) {
-
-        Log.d(TAG, "<<< createWithdrawTransaction >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-        Log.d(TAG, "arg[2]: " + fromAddress);
-        Log.d(TAG, "arg[3]: " + amount);
-        Log.d(TAG, "arg[4]: " + mainchainAddress);
-        Log.d(TAG, "arg[5]: " + memo);
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -995,11 +836,6 @@ public class MyWallet {
     // args[0]: String masterWalletID
     // args[1]: String chainID
     public BaseEntity getGenesisAddress(String masterWalletID, String chainID) {
-
-        Log.d(TAG, "<<< getGenesisAddress >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1035,18 +871,6 @@ public class MyWallet {
     // args[7]: long location
     // args[8]: String payPasswd
     public BaseEntity generateProducerPayload(String masterWalletID, String chainID, String ownerPublicKey, String nodePublicKey, String nickName, String url, String IPAddress, long location, String payPasswd) throws JSONException {
-
-        Log.d(TAG, "<<< generateProducerPayload >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-        Log.d(TAG, "arg[2]: " + ownerPublicKey);
-        Log.d(TAG, "arg[3]: " + nodePublicKey);
-        Log.d(TAG, "arg[4]: " + nickName);
-        Log.d(TAG, "arg[5]: " + url);
-        Log.d(TAG, "arg[6]: " + IPAddress);
-        Log.d(TAG, "arg[7]: " + location);
-        Log.d(TAG, "arg[8]: payPasswd");
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1081,16 +905,6 @@ public class MyWallet {
     // args[5]: String memo
     // args[6]: boolean useVotedUTXO
     public BaseEntity createRegisterProducerTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, long amount, String memo, boolean useVotedUTXO) {
-
-        Log.d(TAG, "<<< createRegisterProducerTransaction >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-        Log.d(TAG, "arg[2]: " + fromAddress);
-        Log.d(TAG, "arg[3]: " + payloadJson);
-        Log.d(TAG, "arg[4]: " + amount);
-        Log.d(TAG, "arg[5]: " + memo);
-        Log.d(TAG, "arg[6]: " + useVotedUTXO);
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1122,11 +936,6 @@ public class MyWallet {
     // args[0]: String masterWalletID
     // args[1]: String chainID
     public BaseEntity getPublicKeyForVote(String masterWalletID, String chainID) {
-
-        Log.d(TAG, "<<< getPublicKeyForVote >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1160,16 +969,6 @@ public class MyWallet {
     // args[5]: String memo
     // args[6]: boolean useVotedUTXO
     public BaseEntity createVoteProducerTransaction(String masterWalletID, String chainID, String fromAddress, long stake, String publicKeys, String memo, boolean useVotedUTXO) {
-
-        Log.d(TAG, "<<< createVoteProducerTransaction >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-        Log.d(TAG, "arg[2]: " + fromAddress);
-        Log.d(TAG, "arg[3]: " + stake);
-        Log.d(TAG, "arg[4]: " + publicKeys);
-        Log.d(TAG, "arg[5]: " + memo);
-        Log.d(TAG, "arg[6]: " + useVotedUTXO);
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1199,11 +998,6 @@ public class MyWallet {
     // args[0]: String masterWalletID
     // args[1]: String chainID (only main chain ID 'ELA')
     public BaseEntity getVotedProducerList(String masterWalletID, String chainID) {
-
-        Log.d(TAG, "<<< getVotedProducerList >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1230,11 +1024,6 @@ public class MyWallet {
     // args[0]: String masterWalletID
     // args[1]: String chainID (only main chain ID 'ELA')
     public BaseEntity getRegisteredProducerInfo(String masterWalletID, String chainID) {
-
-        Log.d(TAG, "<<< getRegisteredProducerInfo >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1264,13 +1053,6 @@ public class MyWallet {
     // args[2]: String publicKey
     // args[3]: String payPasswd
     public BaseEntity generateCancelProducerPayload(String masterWalletID, String chainID, String publicKey, String payPasswd) {
-
-        Log.d(TAG, "<<< generateCancelProducerPayload >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-        Log.d(TAG, "arg[2]: " + publicKey);
-        Log.d(TAG, "arg[3]: " + "payPasswd");
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1299,18 +1081,8 @@ public class MyWallet {
     // args[2]: String fromAddress
     // args[3]: String payloadJson
     // args[4]: String memo
-    // args[5]: String remark
-    // args[6]: boolean useVotedUTXO
+    // args[5]: boolean useVotedUTXO
     public BaseEntity createCancelProducerTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, String memo, boolean useVotedUTXO) {
-
-        Log.d(TAG, "<<< createCancelProducerTransaction >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-        Log.d(TAG, "arg[2]: " + fromAddress);
-        Log.d(TAG, "arg[3]: " + payloadJson);
-        Log.d(TAG, "arg[4]: " + memo);
-        Log.d(TAG, "arg[6]: " + useVotedUTXO);
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1335,13 +1107,6 @@ public class MyWallet {
 
     //取回押金
     public BaseEntity createRetrieveDepositTransaction(String masterWalletID, String chainID, long amount, String memo) {
-
-        Log.d(TAG, "<<< createRetrieveDepositTransaction >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-        Log.d(TAG, "arg[2]: " + amount);
-        Log.d(TAG, "arg[3]: " + memo);
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1370,18 +1135,8 @@ public class MyWallet {
     // args[2]: String fromAddress
     // args[3]: String payloadJson
     // args[4]: String memo
-    // args[5]: String remark
-    // args[6]: boolean useVotedUTXO
+    // args[5]: boolean useVotedUTXO
     public BaseEntity createUpdateProducerTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, String memo,  boolean useVotedUTXO) {
-
-        Log.d(TAG, "<<< createUpdateProducerTransaction >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-        Log.d(TAG, "arg[2]: " + fromAddress);
-        Log.d(TAG, "arg[3]: " + payloadJson);
-        Log.d(TAG, "arg[4]: " + memo);
-        Log.d(TAG, "arg[5]: " + useVotedUTXO);
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
