@@ -203,27 +203,44 @@ namespace Elastos {
 		}
 
 		std::string MasterWallet::GetId() const {
+			Log::preinfo("{} {}", _id, GetFun());
+			return _id;
+		}
+
+		std::string MasterWallet::GetWalletID() const {
 			return _id;
 		}
 
 		std::vector<ISubWallet *> MasterWallet::GetAllSubWallets() const {
-
+			Log::preinfo("{} {}", _id, GetFun());
 			std::vector<ISubWallet *> result;
 			for (WalletMap::const_iterator it = _createdWallets.cbegin(); it != _createdWallets.cend(); ++it) {
 				result.push_back(it->second);
 			}
+
+			Log::retinfo("{} {} | {}", _id, GetFun(), result.size());
+			std::string chainID = "";
+			for (size_t i = 0; i < result.size(); ++i) {
+				SubWallet *wallet = dynamic_cast<SubWallet *>(result[i]);
+				chainID += " | " + wallet->GetInfoChainID();
+			}
+			Log::retinfo("{} {} {}", _id, GetFun(), chainID);
 
 			return result;
 		}
 
 		ISubWallet *
 		MasterWallet::CreateSubWallet(const std::string &chainID, uint64_t feePerKB) {
+			Log::preinfo("{} {} | {} | {}", _id, GetFun(), chainID, feePerKB);
 
 			ErrorChecker::CheckParamNotEmpty(chainID, "Chain ID");
 			ErrorChecker::CheckParam(chainID.size() > 128, Error::InvalidArgument, "Chain ID sould less than 128");
 
+
 			if (_createdWallets.find(chainID) != _createdWallets.end()) {
-				return _createdWallets[chainID];
+				ISubWallet *subWallet = _createdWallets[chainID];
+				Log::retinfo("{} {} | {}",_id, GetFun(), dynamic_cast<SubWallet *>(subWallet)->GetInfoChainID());
+				return subWallet;
 			}
 
 			ChainConfigPtr chainConfig = _config->GetChainConfig(chainID);
@@ -242,12 +259,15 @@ namespace Elastos {
 			_createdWallets[chainID] = subWallet;
 			startPeerManager(subWallet);
 			Save();
+			Log::retinfo("{} {} | {}", _id, GetFun(),subWallet->GetInfoChainID());
 			return subWallet;
 		}
 
 		void MasterWallet::DestroyWallet(ISubWallet *wallet) {
 			ErrorChecker::CheckParam(wallet == nullptr, Error::Wallet, "Destroy wallet can't be null");
 			ErrorChecker::CheckParam(_createdWallets.empty(), Error::Wallet, "There is no sub wallet in this wallet.");
+
+			Log::preinfo("{} {} | {}", _id, GetFun(), wallet == nullptr ? 0 : dynamic_cast<SubWallet *>(wallet)->GetInfoChainID());
 
 			if (std::find_if(_createdWallets.begin(), _createdWallets.end(),
 							 [wallet](const WalletMap::value_type &item) {
@@ -268,7 +288,11 @@ namespace Elastos {
 		}
 
 		std::string MasterWallet::GetPublicKey() const {
-			return _localStore->GetRequestPubKey();
+			Log::preinfo("{} | {}", _id, GetFun());
+
+			std::string publicKey = _localStore->GetRequestPubKey();
+			Log::retinfo("{} | {} | {}", _id, GetFun(), publicKey);
+			return publicKey;
 		}
 
 		nlohmann::json MasterWallet::ExportReadonlyKeyStore() {
@@ -351,20 +375,27 @@ namespace Elastos {
 
 
 		std::string MasterWallet::Sign(const std::string &message, const std::string &payPassword) {
-
+			Log::preinfo("{} {} | {} | *", _id, GetFun(), message);
 			ErrorChecker::CheckParamNotEmpty(message, "Sign message");
 			ErrorChecker::CheckPassword(payPassword, "Pay");
 
 			Key key = _account->RequestPrivKey(payPassword);
-			return key.Sign(message).getHex();
+			std::string hex = key.Sign(message).getHex();
+
+			Log::retinfo("{} {} | {}", _id, GetFun(), hex);
+			return hex;
 		}
 
 		bool MasterWallet::CheckSign(const std::string &publicKey, const std::string &message,
 								const std::string &signature) {
+			Log::preinfo("{} {} | {} | {} | {}", _id, GetFun(), publicKey, message, signature);
 
 			Key key;
 			key.SetPubKey(bytes_t(publicKey));
-			return key.Verify(message, bytes_t(signature));
+			bool result = key.Verify(message, bytes_t(signature));
+
+			Log::retinfo("{} {} | {}", _id, GetFun(), result);
+			return result;
 		}
 
 		bool MasterWallet::IsIDValid(const std::string &id) {
@@ -413,6 +444,8 @@ namespace Elastos {
 
 		nlohmann::json
 		MasterWallet::GenerateProgram(const std::string &id, const std::string &message, const std::string &password) {
+			Log::preinfo("{} {} | {} | {} | *", _id, GetFun(), id, message);
+
 			PayloadRegisterIdentification payload;
 			nlohmann::json payLoadJson = nlohmann::json::parse(message);
 			payload.FromJson(payLoadJson, 0);
@@ -427,15 +460,23 @@ namespace Elastos {
 			ostream.WriteVarBytes(signedData);
 			j["Parameter"] = ostream.GetBytes().getHex();
 			j["Code"] = _idAgentImpl->GenerateRedeemScript(id, password);
+
+			Log::retinfo("{} {} | {}", _id, GetFun(), j.dump());
 			return j;
 		}
 
 		std::string MasterWallet::Sign(const std::string &id, const std::string &message, const std::string &password) {
+			Log::preinfo("{} {} | {} | {} | *", _id, GetFun(), id, message);
+
 			ErrorChecker::CheckParamNotEmpty(id, "Master wallet id");
 			ErrorChecker::CheckParamNotEmpty(message, "Master wallet sign message");
 			ErrorChecker::CheckPassword(password, "Master wallet sign");
 
-			return _idAgentImpl->Sign(id, message, password);
+			std::string data = _idAgentImpl->Sign(id, message, password);
+
+			Log::retinfo("{} {} | {}", _id, GetFun(), data);
+
+			return data;
 		}
 
 		std::vector<std::string> MasterWallet::GetAllIDs() const {
@@ -446,7 +487,12 @@ namespace Elastos {
 		}
 
 		std::string MasterWallet::GetPublicKey(const std::string &id) const {
-			return _idAgentImpl->GetPublicKey(id).getHex();
+			Log::preinfo("{} {} | {}", _id, GetFun(), id);
+
+			std::string pubkey = _idAgentImpl->GetPublicKey(id).getHex();
+
+			Log::retinfo("{} {} | {}", _id, GetFun(), pubkey);
+			return pubkey;
 		}
 
 		void MasterWallet::startPeerManager(SubWallet *wallet) {
@@ -460,29 +506,53 @@ namespace Elastos {
 		}
 
 		bool MasterWallet::IsAddressValid(const std::string &address) const {
-			return Address(address).Valid();
+			Log::preinfo("{} {} | {}", _id, GetFun(), address);
+
+			bool result = Address(address).Valid();
+
+			Log::retinfo("{} {} | {}", _id, GetFun(), result);
+			return result;
 		}
 
 		std::vector<std::string> MasterWallet::GetSupportedChains() const {
+			Log::preinfo("{} {}", _id, GetFun());
+
 			std::vector<std::string> chainIDs;
 
 			const std::vector<ChainConfigPtr> &chainConfigs = _config->GetChainConfigs();
 			for (size_t i = 0; i < chainConfigs.size(); ++i)
 				chainIDs.push_back(chainConfigs[i]->ID());
 
+			Log::retinfo("{} {} | {}", _id, GetFun(), chainIDs.size());
+
+			std::string chainID = "";
+			for (size_t i = 0; i < chainIDs.size(); ++i) {
+				chainID = chainID + " | " + chainIDs[i];
+			}
+			Log::retinfo("{} {} | {}", _id, GetFun(), chainID);
 			return chainIDs;
 		}
 
 		void MasterWallet::ChangePassword(const std::string &oldPassword, const std::string &newPassword) {
+			Log::preinfo("{} {} | * | *", _id, GetFun());
+
 			_account->ChangePassword(oldPassword, newPassword);
 		}
 
 		IIDAgent *MasterWallet::GetIIDAgent() {
+			Log::preinfo("{} {}", _id, GetFun());
+
+			Log::retinfo("{} {} | {:x}", _id, GetFun(), (long)this);
 			return this;
 		}
 
 		nlohmann::json MasterWallet::GetBasicInfo() const {
-			return _account->GetBasicInfo();
+			Log::preinfo("{} {}", _id, GetFun());
+
+			nlohmann::json info = _account->GetBasicInfo();
+
+			Log::retinfo("{} {} | {}", _id, GetFun(), info.dump());
+			return info;
 		}
 
 		bool MasterWallet::IsEqual(const MasterWallet &wallet) const {

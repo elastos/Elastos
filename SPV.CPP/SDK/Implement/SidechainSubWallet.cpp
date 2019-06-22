@@ -3,10 +3,12 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "SidechainSubWallet.h"
+#include "MasterWallet.h"
 
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadTransferCrossChainAsset.h>
 #include <SDK/SpvService/Config.h>
+#include <SDK/WalletCore/KeyStore/CoinInfo.h>
 #include <Core/BRAddress.h>
 
 #include <vector>
@@ -33,6 +35,9 @@ namespace Elastos {
 			const std::string &mainChainAddress,
 			const std::string &memo) {
 
+			Log::preinfo("{}:{} {} | {} | {} | {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(),
+			             fromAddress, amount, mainChainAddress, memo);
+
 			PayloadPtr payload = nullptr;
 			try {
 				std::vector<std::string> accounts = {mainChainAddress};
@@ -53,11 +58,18 @@ namespace Elastos {
 
 			tx->SetTransactionType(Transaction::TransferCrossChainAsset, payload);
 
-			return tx->ToJson();
+			nlohmann::json txJson = tx->ToJson();
+			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), txJson.dump());
+			return txJson;
 		}
 
 		std::string SidechainSubWallet::GetGenesisAddress() const {
-			return _config->GenesisAddress();
+			Log::preinfo("{}:{} {}", _parent->GetWalletID(), _info->GetChainID(), GetFun());
+
+			std::string address = _config->GenesisAddress();
+
+			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), address);
+			return address;
 		}
 
 	}

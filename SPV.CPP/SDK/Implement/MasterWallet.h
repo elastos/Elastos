@@ -88,6 +88,8 @@ namespace Elastos {
 
 			void InitSubWallets();
 
+			std::string GetWalletID() const;
+
 			virtual IIDAgent *GetIIDAgent();
 
 		public: //override from IIDAgent

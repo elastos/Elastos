@@ -8,6 +8,7 @@
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
+#include <SDK/WalletCore/KeyStore/CoinInfo.h>
 #include <SDK/Plugin/Transaction/Payload/PayloadRegisterIdentification.h>
 
 #include <set>
@@ -41,6 +42,8 @@ namespace Elastos {
 		nlohmann::json
 		IDChainSubWallet::CreateIDTransaction(const std::string &fromAddress, const nlohmann::json &payloadJson,
 											  const nlohmann::json &programJson, const std::string &memo) {
+			Log::preinfo("{}:{} {} | {} | {} | {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), fromAddress, payloadJson.dump(), programJson.dump(), memo);
+
 			std::string toAddress;
 			Program program;
 			PayloadPtr payload = nullptr;
@@ -64,7 +67,9 @@ namespace Elastos {
 
 			tx->AddProgram(program);
 
-			return tx->ToJson();
+			nlohmann::json txJson = tx->ToJson();
+			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), txJson.dump());
+			return txJson;
 		}
 
 		void IDChainSubWallet::onTxAdded(const TransactionPtr &transaction) {

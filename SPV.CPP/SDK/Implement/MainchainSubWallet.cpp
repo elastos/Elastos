@@ -28,7 +28,6 @@ namespace Elastos {
 											   const ChainConfigPtr &config,
 											   MasterWallet *parent) :
 				SubWallet(info, config, parent) {
-
 		}
 
 		MainchainSubWallet::~MainchainSubWallet() {
@@ -41,6 +40,9 @@ namespace Elastos {
 																	const std::string &sideChainAddress,
 																	const std::string &memo,
 																	bool useVotedUTXO) {
+			Log::preinfo("{}:{} {} | {} | {} | {} | {} | {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(),
+			             fromAddress, lockedAddress, amount, sideChainAddress, memo, useVotedUTXO);
+
 			PayloadPtr payload = nullptr;
 			try {
 				std::vector<std::string> accounts = {sideChainAddress};
@@ -61,7 +63,9 @@ namespace Elastos {
 
 			tx->SetTransactionType(Transaction::TransferCrossChainAsset, payload);
 
-			return tx->ToJson();
+			nlohmann::json txJson = tx->ToJson();
+			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), txJson.dump());
+			return txJson;
 		}
 
 		nlohmann::json MainchainSubWallet::GenerateProducerPayload(
@@ -72,6 +76,9 @@ namespace Elastos {
 			const std::string &ipAddress,
 			uint64_t location,
 			const std::string &payPasswd) const {
+
+			Log::preinfo("{}:{} {} | {} | {} | {} | {} | {} | {} | *", _parent->GetWalletID(), _info->GetChainID(), GetFun(),
+			             ownerPublicKey, nodePublicKey, nickName, url, ipAddress, location);
 
 			ErrorChecker::CheckPassword(payPasswd, "Generate payload");
 
@@ -97,12 +104,16 @@ namespace Elastos {
 			Key key = _subAccount->DeriveOwnerKey(payPasswd);
 			pr.SetSignature(key.Sign(prUnsigned));
 
-			return pr.ToJson(0);
+			nlohmann::json payloadJson = pr.ToJson(0);
+			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), payloadJson.dump());
+			return payloadJson;
 		}
 
 		nlohmann::json MainchainSubWallet::GenerateCancelProducerPayload(
 			const std::string &ownerPublicKey,
 			const std::string &payPasswd) const {
+
+			Log::preinfo("{}:{} {} | {} | *", _parent->GetWalletID(), _info->GetChainID(), GetFun(), ownerPublicKey);
 
 			ErrorChecker::CheckPassword(payPasswd, "Generate payload");
 			size_t pubKeyLen = ownerPublicKey.size() >> 1;
@@ -119,7 +130,9 @@ namespace Elastos {
 			Key key = _subAccount->DeriveOwnerKey(payPasswd);
 			pc.SetSignature(key.Sign(pcUnsigned));
 
-			return pc.ToJson(0);
+			nlohmann::json payloadJson = pc.ToJson(0);
+			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), payloadJson.dump());
+			return payloadJson;
 		}
 
 		nlohmann::json MainchainSubWallet::CreateRegisterProducerTransaction(
@@ -128,6 +141,9 @@ namespace Elastos {
 			uint64_t amount,
 			const std::string &memo,
 			bool useVotedUTXO) {
+
+			Log::preinfo("{}:{} {} | {} | {} | {} | {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(),
+			             fromAddress, payloadJson.dump(), amount, memo, useVotedUTXO);
 
 			ErrorChecker::CheckParam(amount < 500000000000, Error::VoteDepositAmountInsufficient,
 									 "Producer deposit amount is insufficient");
@@ -151,7 +167,9 @@ namespace Elastos {
 
 			tx->SetTransactionType(Transaction::RegisterProducer, payload);
 
-			return tx->ToJson();
+			nlohmann::json txJson = tx->ToJson();
+			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), txJson.dump());
+			return txJson;
 		}
 
 		nlohmann::json MainchainSubWallet::CreateUpdateProducerTransaction(
@@ -159,6 +177,9 @@ namespace Elastos {
 			const nlohmann::json &payloadJson,
 			const std::string &memo,
 			bool useVotedUTXO) {
+
+			Log::preinfo("{}:{} {} | {} | {} | {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(),
+			             fromAddress, payloadJson.dump(), memo, useVotedUTXO);
 
 			PayloadPtr payload = PayloadPtr(new PayloadUpdateProducer());
 			try {
@@ -180,7 +201,9 @@ namespace Elastos {
 				tx->GetOutputs().erase(tx->GetOutputs().begin());
 			}
 
-			return tx->ToJson();
+			nlohmann::json txJson = tx->ToJson();
+			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), txJson.dump());
+			return txJson;
 		}
 
 		nlohmann::json MainchainSubWallet::CreateCancelProducerTransaction(
@@ -188,6 +211,8 @@ namespace Elastos {
 			const nlohmann::json &payloadJson,
 			const std::string &memo,
 			bool useVotedUTXO) {
+
+			Log::preinfo("{}:{} {} | {} | {} | {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), fromAddress, payloadJson.dump(), memo, useVotedUTXO);
 
 			PayloadPtr payload = PayloadPtr(new PayloadCancelProducer());
 			try {
@@ -209,12 +234,16 @@ namespace Elastos {
 				tx->GetOutputs().erase(tx->GetOutputs().begin());
 			}
 
-			return tx->ToJson();
+			nlohmann::json txJson = tx->ToJson();
+			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), txJson.dump());
+			return txJson;
 		}
 
 		nlohmann::json MainchainSubWallet::CreateRetrieveDepositTransaction(
 			uint64_t amount,
 			const std::string &memo) {
+
+			Log::preinfo("{}:{} {} | {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), amount, memo);
 
 			std::string fromAddress = _walletManager->getWallet()->GetOwnerDepositAddress().String();
 
@@ -230,15 +259,26 @@ namespace Elastos {
 				tx->GetOutputs().erase(tx->GetOutputs().begin() + tx->GetOutputs().size() - 1);
 			}
 
-			return tx->ToJson();
+			nlohmann::json txJson = tx->ToJson();
+			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), txJson.dump());
+			return txJson;
 		}
 
 		std::string MainchainSubWallet::GetOwnerPublicKey() const {
-			return _walletManager->getWallet()->GetOwnerPublilcKey()->getHex();
+			Log::preinfo("{}:{} {}", _parent->GetWalletID(), _info->GetChainID(), GetFun());
+			std::string publicKey = _walletManager->getWallet()->GetOwnerPublilcKey()->getHex();
+			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), publicKey);
+			return publicKey;
 		}
 
 		std::string MainchainSubWallet::GetOwnerAddress() const {
-			return _walletManager->getWallet()->GetOwnerAddress().String();
+			Log::preinfo("{}:{} {}", _parent->GetWalletID(), _info->GetChainID(), GetFun());
+
+			std::string address = _walletManager->getWallet()->GetOwnerAddress().String();
+
+			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), address);
+
+			return address;
 		}
 
 		nlohmann::json
@@ -248,6 +288,9 @@ namespace Elastos {
 			const nlohmann::json &publicKeys,
 			const std::string &memo,
 			bool useVotedUTXO) {
+
+			Log::preinfo("{}:{} {} | {} | {} | {} | {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(),
+			             fromAddress, stake, publicKeys.dump(), memo, useVotedUTXO);
 
 			ErrorChecker::CheckJsonArray(publicKeys, 1, "Candidates public keys");
 			ErrorChecker::CheckParam(stake == 0, Error::Code::VoteStakeError, "Vote stake should not be zero");
@@ -286,10 +329,14 @@ namespace Elastos {
 			outputs[0].SetPayload(payload);
 			outputs[0].SetProgramHash(inputProgramHash);
 
-			return tx->ToJson();
+			nlohmann::json txJson = tx->ToJson();
+			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), txJson.dump());
+			return txJson;
 		}
 
 		nlohmann::json MainchainSubWallet::GetVotedProducerList() const {
+			Log::preinfo("{}:{} {}", _parent->GetWalletID(), _info->GetChainID(), GetFun());
+
 			WalletPtr wallet = _walletManager->getWallet();
 			std::vector<UTXO> utxos = wallet->GetAllUTXO();
 			nlohmann::json j;
@@ -331,10 +378,14 @@ namespace Elastos {
 
 			j = votedList;
 
+			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), j.dump());
+
 			return j;
 		}
 
 		nlohmann::json MainchainSubWallet::GetRegisteredProducerInfo() const {
+			Log::preinfo("{}:{} {}", _parent->GetWalletID(), _info->GetChainID(), GetFun());
+
 			std::vector<TransactionPtr> allTxs = _walletManager->getWallet()->GetAllTransactions();
 			nlohmann::json j;
 
@@ -393,6 +444,7 @@ namespace Elastos {
 				}
 			}
 
+			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), j.dump());
 			return j;
 		}
 
