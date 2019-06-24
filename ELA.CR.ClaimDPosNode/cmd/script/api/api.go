@@ -270,6 +270,6 @@ func RegisterDataType(L *lua.LState) int {
 	RegisterSidechainPowType(L)
 	RegisterProgramType(L)
 	RegisterRegisterCRType(L)
-
+	RegisterUpdateCRType(L)
 	return 0
 }
