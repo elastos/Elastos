@@ -361,7 +361,7 @@ static jlong JNICALL ImportWalletWithMnemonic(JNIEnv *env, jobject clazz, jlong 
     return (jlong) masterWallet;
 }
 
-#define JNI_ImportReadonlyWallet "(JLjava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+#define JNI_ImportReadonlyWallet "(JLjava/lang/String;Ljava/lang/String;)J"
 
 static jlong JNICALL ImportReadonlyWallet(JNIEnv *env, jobject clazz, jlong instance,
                                           jstring jmasterWalletID,
