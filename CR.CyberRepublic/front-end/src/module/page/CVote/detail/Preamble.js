@@ -76,17 +76,17 @@ export default Component
 const Header = styled.h4`
   font-size: 20px;
 `
-const Note = styled.div`
-  font-weight: 200;
-`
 const Item = styled(Row)`
   margin-top: 10px;
   font-size: 13px;
+  font-style: italic;
 `
 const ItemTitle = styled.div`
   font-weight: 400;
+  :after {
+    content: ":";
+  }
 `
 const ItemText = styled.div`
   font-weight: 200;
-  font-style: italic;
 `
