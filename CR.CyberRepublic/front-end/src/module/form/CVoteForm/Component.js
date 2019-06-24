@@ -190,7 +190,7 @@ class C extends BaseComponent {
           <FormItem label={`${I18N.get('proposal.fields.title')}*`} {...formItemLayout}>
             {formProps.title}
           </FormItem>
-          <Tabs defaultActiveKey="abstract" animated={false} tabBarGutter={5}>
+          <Tabs animated={false} tabBarGutter={5}>
             <TabPane tab={`${I18N.get('proposal.fields.abstract')}*`} key="abstract">
               <TabPaneInner>
                 <Note>{I18N.get('proposal.form.note.abstract')}</Note>
