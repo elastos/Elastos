@@ -169,10 +169,21 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 			return ErrTransactionPayload
 		}
 		return Success
+
 	case RegisterCR:
 		if err := b.checkRegisterCRTransaction(txn); err != nil {
 			log.Warn("[checkRegisterCRTransaction],", err)
 			return ErrTransactionPayload
+		}
+
+	case UpdateCR:
+		if err := b.checkUpdateCRTransaction(txn); err != nil {
+			log.Warn("[ checkUpdateCRTransaction],", err)
+		}
+
+	case UnregisterCR:
+		if err := b.checkUnRegisterCRTransaction(txn); err != nil {
+			log.Warn("[checkRegisterCRTransaction],", err)
 		}
 	}
 
@@ -740,6 +751,8 @@ func checkTransactionPayload(txn *Transaction) error {
 	case *payload.SidechainIllegalData:
 	case *payload.InactiveArbitrators:
 	case *payload.CRInfo:
+	case *payload.ProcessCR:
+
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
 	}
@@ -1266,6 +1279,157 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction) error {
 	}
 	if depositCount != 1 {
 		return errors.New("there must be only one deposit address in outputs")
+	}
+
+	return nil
+}
+
+func (b *BlockChain) getDIDAddress(info *payload.CRInfo) (string, error) {
+	signType, err := crypto.GetScriptType(info.Code)
+	var addr string
+
+	if err != nil {
+		return "", errors.New("invalid code")
+	}
+	if signType == vm.CHECKSIG {
+		// check DID
+		publicKey := info.Code[1 : len(info.Code)-1]
+		hash, err := contract.PublicKeyToDepositProgramHash(publicKey)
+		if err != nil {
+			return "", err
+		}
+		addr, err = hash.ToAddress()
+		if err != nil {
+			return "", err
+		}
+	} else if signType == vm.CHECKMULTISIG {
+		// check DID
+		ct, err := contract.CreateMultiSigContractByCode(info.Code)
+		if err != nil {
+			return "", err
+		}
+		hash := ct.ToProgramHash()
+		addr, err = hash.ToAddress()
+		if err != nil {
+			return "", err
+		}
+		if info.DID != addr {
+			return "", errors.New("the DID needs to be calculated from multi code")
+		}
+	} else {
+		return "", errors.New("invalid code type")
+	}
+	return addr, nil
+
+}
+
+func (b *BlockChain) crinfoSanityCheck(info *payload.CRInfo) error {
+	signedBuf := new(bytes.Buffer)
+	err := info.SerializeUnsigned(signedBuf, payload.CRInfoVersion)
+	if err != nil {
+		return err
+	}
+	buf := new(bytes.Buffer)
+	buf.WriteByte(byte(len(info.Signature)))
+	buf.Write(info.Signature)
+	parameter := buf.Bytes()
+	signType, err := crypto.GetScriptType(info.Code)
+	if err != nil {
+		return errors.New("invalid code")
+	}
+	if signType == vm.CHECKSIG {
+		// check code and signature
+		if err := checkStandardSignature(program.Program{
+			Code:      info.Code,
+			Parameter: parameter,
+		}, signedBuf.Bytes()); err != nil {
+			return err
+		}
+
+	} else if signType == vm.CHECKMULTISIG {
+		// check code and signature
+		if err := checkMultiSigSignatures(program.Program{
+			Code:      info.Code,
+			Parameter: parameter,
+		}, signedBuf.Bytes()); err != nil {
+			return err
+		}
+
+	} else {
+		return errors.New("invalid code type")
+	}
+	return nil
+}
+
+func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction) error {
+	info, ok := txn.Payload.(*payload.CRInfo)
+	if !ok {
+		return errors.New("invalid payload")
+	}
+
+	if err := checkStringField(info.NickName, "NickName"); err != nil {
+		return err
+	}
+
+	// check url
+	if err := checkStringField(info.Url, "Url"); err != nil {
+		return err
+	}
+
+	didAddress, err := b.getDIDAddress(info)
+	if err != nil {
+		return err
+	}
+	if didAddress != info.DID {
+		return errors.New("invalid did address")
+	}
+
+	if err := b.crinfoSanityCheck(info); err != nil {
+		return err
+	}
+
+	// todo check info.Code -----> DID(no matter CHECKSIG CHECKMULTISIG) must be registered
+	// todo if new nickname is not same as old nickname   check   duplication of nickname.(need to check by cr state)
+
+	return nil
+}
+
+func (b *BlockChain) checkUnRegisterCRTransaction(txn *Transaction) error {
+	info, ok := txn.Payload.(*payload.ProcessCR)
+	if !ok {
+		return errors.New("invalid payload")
+	}
+
+	//todo check Register of CR(need to check by cr state)
+
+	signedBuf := new(bytes.Buffer)
+	err := info.SerializeUnsigned(signedBuf, payload.CRInfoVersion)
+	if err != nil {
+		return err
+	}
+	signType, err := crypto.GetScriptType(info.Code)
+	if err != nil {
+		return errors.New("invalid code")
+	}
+	if signType == vm.CHECKSIG {
+		// check code and signature
+		if err := checkStandardSignature(program.Program{
+			Code:      info.Code,
+			Parameter: info.Signature,
+		}, signedBuf.Bytes()); err != nil {
+			return err
+		}
+	} else if signType == vm.CHECKMULTISIG {
+		// check code and signature
+		if err := checkMultiSigSignatures(program.Program{
+			Code:      info.Code,
+			Parameter: info.Signature,
+		}, signedBuf.Bytes()); err != nil {
+			return err
+		}
+
+	} else {
+		return errors.New("invalid code type")
 	}
 
 	return nil
