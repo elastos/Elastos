@@ -15,6 +15,8 @@ export default {
     relevance: 'Relevance',
     budget: 'Budget',
     plan: 'Execution Plan',
+    tracking: 'Tracking Plan',
+    summary: 'Summary',
   },
   form: {
     note: {
