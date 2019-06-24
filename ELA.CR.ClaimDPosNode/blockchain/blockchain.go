@@ -15,6 +15,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	crstate "github.com/elastos/Elastos.ELA/cr/state"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/events"
 )
@@ -37,6 +38,7 @@ type BlockChain struct {
 	chainParams *config.Params
 	db          IChainStore
 	state       *state.State
+	crState     *crstate.State
 	GenesisHash Uint256
 
 	// The following fields are calculated based upon the provided chain
@@ -75,6 +77,7 @@ func New(db IChainStore, chainParams *config.Params, state *state.State) (*Block
 		chainParams:         chainParams,
 		db:                  db,
 		state:               state,
+		crState:             crstate.NewState(chainParams),
 		GenesisHash:         chainParams.GenesisBlock.Hash(),
 		minRetargetTimespan: targetTimespan / adjustmentFactor,
 		maxRetargetTimespan: targetTimespan * adjustmentFactor,
