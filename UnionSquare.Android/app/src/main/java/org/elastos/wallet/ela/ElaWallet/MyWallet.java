@@ -52,6 +52,7 @@ public class MyWallet {
     private int errCodeImportFromKeyStore = 10008;
     private int errCodeImportFromMnemonic = 10009;
     private int errCodeSubWalletInstance = 10010;
+    private int errCodeImportReadonlyWallet = 10011;
 
 
     public MyWallet() {
@@ -508,7 +509,6 @@ public class MyWallet {
                     masterWalletID, mnemonic, phrasePassword, payPassword, singleAddress);
             if (masterWallet == null) {
                 return errorProcess(errCodeImportFromMnemonic + "", "Import " + formatWalletName(masterWalletID) + " with mnemonic");
-
             }
 
             createDIDManager(masterWallet);
@@ -518,6 +518,21 @@ public class MyWallet {
 
         } catch (WalletException e) {
             return exceptionProcess(e, "Import " + formatWalletName(masterWalletID) + " with mnemonic");
+        }
+    }
+
+    public BaseEntity importReadonlyWallet(String masterWalletID, String walletJson) {
+
+        try {
+            MasterWallet masterWallet = mMasterWalletManager.ImportReadonlyWallet(masterWalletID, walletJson);
+
+            if (masterWallet == null) {
+                return errorProcess(errCodeImportReadonlyWallet + "", "Import read-only wallet" + formatWalletName(masterWalletID));
+            }
+
+            return new CommmonStringEntity(SUCESSCODE, masterWallet.GetBasicInfo());
+        } catch (WalletException e) {
+            return exceptionProcess(e, "Import read-only wallet " + formatWalletName(masterWalletID));
         }
     }
 
@@ -595,6 +610,22 @@ public class MyWallet {
         }
     }
 
+    public BaseEntity exportReadonlyWallet(String masterWalletID) {
+
+        try {
+            MasterWallet masterWallet = getMasterWallet(masterWalletID);
+
+            if (masterWallet == null) {
+                return errorProcess(errCodeInvalidMasterWallet + "", "Get " + formatWalletName(masterWalletID));
+            }
+
+            String walletJson = mMasterWalletManager.ExportReadonlyWallet(masterWallet);
+
+            return new CommmonStringEntity(SUCESSCODE, walletJson);
+        } catch (WalletException e) {
+            return exceptionProcess(e, "Export read-only wallet " + formatWalletName(masterWalletID));
+        }
+    }
 
     // args[0]: String masterWalletID
     // args[1]: String chainID

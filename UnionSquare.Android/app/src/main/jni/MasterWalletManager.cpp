@@ -361,6 +361,34 @@ static jlong JNICALL ImportWalletWithMnemonic(JNIEnv *env, jobject clazz, jlong 
     return (jlong) masterWallet;
 }
 
+#define JNI_ImportReadonlyWallet "(JLjava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+
+static jlong JNICALL ImportReadonlyWallet(JNIEnv *env, jobject clazz, jlong instance,
+                                          jstring jmasterWalletID,
+                                          jstring jwalletJson) {
+    bool exception = false;
+    std::string msgException;
+
+    const char *masterWalletID = env->GetStringUTFChars(jmasterWalletID, NULL);
+    const char *walletJosn = env->GetStringUTFChars(jwalletJson, NULL);
+
+    MasterWalletManager *manager = (MasterWalletManager *) instance;
+    IMasterWallet *masterWallet = NULL;
+
+    try {
+        masterWallet = manager->ImportReadonlyWallet(masterWalletID, nlohmann::json::parse(walletJosn));
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+
+    return (jlong) masterWallet;
+}
+
 #define JNI_ExportWalletWithKeystore "(JLorg/elastos/wallet/core/MasterWallet;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL ExportWalletWithKeystore(JNIEnv *env, jobject clazz, jlong instance,
@@ -428,6 +456,37 @@ static jstring JNICALL ExportWalletWithMnemonic(JNIEnv *env, jobject clazz, jlon
     }
 
     env->ReleaseStringUTFChars(jpayPassword, payPassword);
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+
+    return result;
+}
+
+#define JNI_ExportReadonlyWallet "(JLorg/elastos/wallet/core/MasterWallet;)Ljava/lang/String;"
+
+static jstring JNICALL ExportReadonlyWallet(JNIEnv *env, jobject clazz, jlong instance,
+                                            jobject jmasterWallet) {
+    bool exception = false;
+    std::string msgException;
+
+    jclass cls = env->FindClass((CLASS_PACKAGE_PATH + "MasterWallet").c_str());
+    jlong field = GetJavaLongField(env, cls, jmasterWallet, "mInstance");
+    CheckErrorAndLog(env, "ExportWalletWithMnemonic", __LINE__);
+    IMasterWallet *masterWallet = (IMasterWallet *) field;
+
+    MasterWalletManager *manager = (MasterWalletManager *) instance;
+
+    jstring result = NULL;
+
+    try {
+        std::string str = manager->ExportReadonlyWallet(masterWallet);
+        result = env->NewStringUTF(str.c_str());
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
 
     if (exception) {
         ThrowWalletException(env, msgException.c_str());
@@ -568,8 +627,10 @@ static const JNINativeMethod methods[] = {
         REGISTER_METHOD(DestroyWallet),
         REGISTER_METHOD(ImportWalletWithKeystore),
         REGISTER_METHOD(ImportWalletWithMnemonic),
+        REGISTER_METHOD(ImportReadonlyWallet),
         REGISTER_METHOD(ExportWalletWithKeystore),
         REGISTER_METHOD(ExportWalletWithMnemonic),
+        REGISTER_METHOD(ExportReadonlyWallet),
         REGISTER_METHOD(InitMasterWalletManager),
         REGISTER_METHOD(DisposeNative),
 };

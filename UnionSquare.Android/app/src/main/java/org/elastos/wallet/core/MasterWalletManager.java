@@ -144,6 +144,26 @@ public class MasterWalletManager {
         return masterWallet;
     }
 
+    public MasterWallet ImportReadonlyWallet(String masterWalletID, String walletJson) {
+        if (MasterWalletExist(masterWalletID)) {
+            Log.e(TAG, "Master wallet [" + masterWalletID + "] exist");
+            return null;
+        }
+
+        long masterProxy = ImportReadonlyWallet(mInstance, masterWalletID, walletJson);
+
+        if (masterProxy == 0) {
+            Log.e(TAG, "Import master wallet [" + masterWalletID + "] error");
+            return null;
+        }
+
+        MasterWallet masterWallet = new MasterWallet(masterProxy);
+        mMasterWallets.add(masterWallet);
+
+        return masterWallet;
+    }
+
+
     public String ExportWalletWithKeystore(MasterWallet masterWallet, String backupPassWord,
                                            String payPassword) throws WalletException {
 
@@ -154,6 +174,10 @@ public class MasterWalletManager {
                                            String payPassWord) throws WalletException {
 
         return ExportWalletWithMnemonic(mInstance, masterWallet, payPassWord);
+    }
+
+    public String ExportReadonlyWallet(MasterWallet masterWallet) {
+        return ExportReadonlyWallet(mInstance, masterWallet);
     }
 
     public String GenerateMnemonic(String language) throws WalletException {
@@ -275,11 +299,15 @@ public class MasterWalletManager {
             long instance, String masterWalletId, String mnemonic, String phrasePassword,
             String payPassWord, boolean singleAddress);
 
+    private native long ImportReadonlyWallet(long instance, String masterWalletID, String walletJson);
+
     private native String ExportWalletWithKeystore(long instance, MasterWallet masterWallet,
                                                    String backupPassWord, String payPassword);
 
     private native String ExportWalletWithMnemonic(long instance, MasterWallet masterWallet,
                                                    String backupPassWord);
+
+    private native String ExportReadonlyWallet(long instance, MasterWallet masterWallet);
 
     private native void DestroyWallet(long instance, String masterWalletId);
 
