@@ -853,17 +853,15 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	pk1, _ := crypto.DecodePoint(publicKey1)
 	ct1, _ := contract.CreateStandardContract(pk1)
 	hash1, _ := contract.PublicKeyToDepositProgramHash(publicKey1)
-	addr1, _ := hash1.ToAddress()
 
 	hash2, _ := contract.PublicKeyToDepositProgramHash(publicKey2)
-	addr2, _ := hash2.ToAddress()
 
 	txn := new(types.Transaction)
 	txn.TxType = types.RegisterCR
 	txn.Version = types.TxVersion09
 	rcPayload := &payload.CRInfo{
 		Code:     ct1.Code,
-		DID:      addr1,
+		DID:      *hash1,
 		NickName: "nickname 1",
 		Url:      "http://www.elastos_test.com",
 		Location: 1,
@@ -901,13 +899,13 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 
 	// Give an invalid DID in payload
 	txn.Payload.(*payload.CRInfo).Code = ct1.Code
-	txn.Payload.(*payload.CRInfo).DID = "abc"
+	txn.Payload.(*payload.CRInfo).DID = common.Uint168{1, 2, 3}
 	err = s.Chain.checkRegisterCRTransaction(txn)
 	s.EqualError(err, "[Validation], Verify failed.")
 
 	// Give a mismatching code and DID in payload
 	txn.Payload.(*payload.CRInfo).Code = ct1.Code
-	txn.Payload.(*payload.CRInfo).DID = addr2
+	txn.Payload.(*payload.CRInfo).DID = *hash2
 	rcSignBuf2 := new(bytes.Buffer)
 	err = rcPayload.SerializeUnsigned(rcSignBuf2, payload.CRInfoVersion)
 	s.NoError(err)
@@ -919,21 +917,21 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 
 	// Invalidates the signature in payload
 	txn.Payload.(*payload.CRInfo).Code = ct1.Code
-	txn.Payload.(*payload.CRInfo).DID = addr2
+	txn.Payload.(*payload.CRInfo).DID = *hash2
 	txn.Payload.(*payload.CRInfo).Signature = rcSig1
 	err = s.Chain.checkRegisterCRTransaction(txn)
 	s.EqualError(err, "[Validation], Verify failed.")
 
 	// Give an invalid url in payload
 	txn.Payload.(*payload.CRInfo).Code = ct1.Code
-	txn.Payload.(*payload.CRInfo).DID = addr1
+	txn.Payload.(*payload.CRInfo).DID = *hash1
 	txn.Payload.(*payload.CRInfo).Url = ""
 	err = s.Chain.checkRegisterCRTransaction(txn)
 	s.EqualError(err, "Field Url has invalid string length.")
 
 	// Give a mismatching deposit address
 	rcPayload.Code = ct1.Code
-	rcPayload.DID = addr1
+	rcPayload.DID = *hash1
 	rcPayload.Url = "www.test.com"
 	rcSignBuf = new(bytes.Buffer)
 	err = rcPayload.SerializeUnsigned(rcSignBuf, payload.ProducerInfoVersion)
