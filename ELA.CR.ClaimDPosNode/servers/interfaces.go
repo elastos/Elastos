@@ -13,12 +13,14 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/elastos/Elastos.ELA/account"
 	aux "github.com/elastos/Elastos.ELA/auxpow"
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
+	pg "github.com/elastos/Elastos.ELA/core/contract/program"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -31,6 +33,8 @@ import (
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 	"github.com/elastos/Elastos.ELA/pow"
+
+	"github.com/tidwall/gjson"
 )
 
 var (
@@ -1026,6 +1030,111 @@ func ListUnspent(param Params) map[string]interface{} {
 		}
 	}
 	return ResponsePack(Success, result)
+}
+
+func CreateRawTransaction(param Params) map[string]interface{} {
+	inputsParam, ok := param.String("inputs")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a parameter named inputs")
+	}
+	outputsParam, ok := param.String("outputs")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a parameter named outputs")
+	}
+	locktime, ok := param.Uint("locktime")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a parameter named locktime")
+	}
+
+	fmt.Println(inputsParam)
+	fmt.Println(locktime)
+
+	inputs := make([]string, 0)
+	gjson.Parse(inputsParam).ForEach(func(key, value gjson.Result) bool {
+		println(value.String())
+		inputs = append(inputs, value.String())
+		return true
+	})
+
+	outputs := make([]string, 0)
+	gjson.Parse(outputsParam).ForEach(func(key, value gjson.Result) bool {
+		println(value.String())
+		outputs = append(outputs, value.String())
+		return true
+	})
+
+	txInputs := make([]*Input, 0)
+	for _, v := range inputs {
+		txIDStr := gjson.Get(v, "txid").String()
+		txID, err := common.Uint256FromHexString(txIDStr)
+		if err != nil {
+			return ResponsePack(InvalidParams, "invalid txid in inputs param")
+		}
+		input := &Input{
+			Previous: OutPoint{
+				TxID:  *txID,
+				Index: uint16(gjson.Get(v, "vout").Int()),
+			},
+		}
+		txInputs = append(txInputs, input)
+	}
+
+	txOutputs := make([]*Output, 0)
+	for _, v := range outputs {
+		amount := gjson.Get(v, "amount").String()
+		value, err := common.StringToFixed64(amount)
+		if err != nil {
+			return ResponsePack(InvalidParams, "invalid amount in inputs param")
+		}
+		address := gjson.Get(v, "address").String()
+		programHash, err := common.Uint168FromAddress(address)
+		if err != nil {
+			return ResponsePack(InvalidParams, "invalid address in outputs param")
+		}
+		output := &Output{
+			AssetID:     *account.SystemAssetID,
+			Value:       *value,
+			OutputLock:  0,
+			ProgramHash: *programHash,
+			Type:        OTNone,
+			Payload:     &outputpayload.DefaultOutput{},
+		}
+		txOutputs = append(txOutputs, output)
+	}
+
+	txn := &Transaction{
+		Version:    TxVersion09,
+		TxType:     TransferAsset,
+		Payload:    &payload.TransferAsset{},
+		Attributes: []*Attribute{},
+		Inputs:     txInputs,
+		Outputs:    txOutputs,
+		Programs:   []*pg.Program{},
+		LockTime:   locktime,
+	}
+
+	buf := new(bytes.Buffer)
+	err := txn.Serialize(buf)
+	if err != nil {
+		return ResponsePack(InternalError, "txn serialize failed")
+	}
+
+	return ResponsePack(Success, common.BytesToHexString(buf.Bytes()))
+}
+
+func SignRawTransactionWithKey(param Params) map[string]interface{} {
+
+	return ResponsePack(Success, 0)
+}
+
+func ImportAddress(param Params) map[string]interface{} {
+
+	return ResponsePack(Success, 0)
+}
+
+func ImportPubkey(param Params) map[string]interface{} {
+
+	return ResponsePack(Success, 0)
 }
 
 func GetUnspends(param Params) map[string]interface{} {

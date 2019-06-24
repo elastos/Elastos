@@ -9,7 +9,6 @@
 *.dat
 *.txn
 *.log
-/glide.lock
 /vendor/*
 elastos_test/
 elastos/
