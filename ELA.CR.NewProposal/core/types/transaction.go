@@ -484,7 +484,7 @@ func GetPayload(txType TxType) (Payload, error) {
 	case UpdateCR:
 		p = new(payload.CRInfo)
 	case UnregisterCR:
-		p = new(payload.ProcessCR)
+		p = new(payload.UnregisterCR)
 	default:
 		return nil, errors.New("[Transaction], invalid transaction type.")
 	}

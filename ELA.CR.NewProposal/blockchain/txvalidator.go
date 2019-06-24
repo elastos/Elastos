@@ -751,7 +751,7 @@ func checkTransactionPayload(txn *Transaction) error {
 	case *payload.SidechainIllegalData:
 	case *payload.InactiveArbitrators:
 	case *payload.CRInfo:
-	case *payload.ProcessCR:
+	case *payload.UnregisterCR:
 
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
@@ -1395,7 +1395,7 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction) error {
 }
 
 func (b *BlockChain) checkUnRegisterCRTransaction(txn *Transaction) error {
-	info, ok := txn.Payload.(*payload.ProcessCR)
+	info, ok := txn.Payload.(*payload.UnregisterCR)
 	if !ok {
 		return errors.New("invalid payload")
 	}
