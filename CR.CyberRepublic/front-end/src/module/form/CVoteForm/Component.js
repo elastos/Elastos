@@ -107,7 +107,6 @@ class C extends BaseComponent {
       if (!edit) param.proposedBy = fullName
       if (!edit) param.proposedByEmail = email
       if (suggestionId) param.suggestionId = suggestionId
-      console.log('form values: ', this.user, values, param)
 
       this.ord_loading(true)
       if (edit) {
