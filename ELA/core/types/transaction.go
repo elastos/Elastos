@@ -481,6 +481,10 @@ func GetPayload(txType TxType) (Payload, error) {
 		p = new(payload.UpdateVersion)
 	case RegisterCR:
 		p = new(payload.CRInfo)
+	case UpdateCR:
+		p = new(payload.CRInfo)
+	case UnregisterCR:
+		p = new(payload.ProcessCR)
 	default:
 		return nil, errors.New("[Transaction], invalid transaction type.")
 	}
