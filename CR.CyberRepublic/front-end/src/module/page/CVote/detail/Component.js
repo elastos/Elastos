@@ -17,7 +17,7 @@ import DraftEditor from '@/module/common/DraftEditor'
 import VoteResultComponent from '../common/vote_result/Component'
 import Preamble from './Preamble'
 
-import { Title, Label, ContentTitle, StyledAnchor } from './style'
+import { Title, Label, ContentTitle, StyledAnchor, FixedHeader, Body } from './style'
 import './style.scss'
 
 const { TextArea } = Input
@@ -97,17 +97,21 @@ class C extends StandardPage {
       <div>
         {anchorNode}
         <div className="p_CVoteDetail">
-          <BackLink link="/proposals" />
-          {metaNode}
-          {titleNode}
-          {labelNode}
-          {subTitleNode}
-          {contentNode}
-          {translationBtn}
-          {notesNode}
-          {voteActionsNode}
-          {adminActionsNode}
-          {voteDetailNode}
+          <FixedHeader>
+            <BackLink link="/proposals" />
+            {metaNode}
+            {titleNode}
+            {labelNode}
+            {subTitleNode}
+          </FixedHeader>
+          <Body>
+            {contentNode}
+            {translationBtn}
+            {notesNode}
+            {voteActionsNode}
+            {adminActionsNode}
+            {voteDetailNode}
+          </Body>
         </div>
         <Footer />
       </div>

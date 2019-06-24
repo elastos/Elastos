@@ -18,6 +18,14 @@ export const ContentTitle = styled.h4`
   padding-bottom: 0;
 `
 
+export const FixedHeader = styled.div`
+`
+
+export const Body = styled.div`
+  height: calc(100vh - 400px);
+  overflow: scroll;
+`
+
 export const StyledAnchor = styled(Anchor)`
   position: fixed;
   top: 250px;
