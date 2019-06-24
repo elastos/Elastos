@@ -56,6 +56,16 @@ const renderRichEditor = (data, key, getFieldDecorator, max) => {
   return content_fn(content_el)
 }
 
+const formatValue = (value) => {
+  let result
+  try {
+    result = _.isString(value) ? value : JSON.stringify(convertToRaw(value.getCurrentContent()))
+  } catch (error) {
+    result = _.toString(value)
+  }
+  return result
+}
+
 
 class C extends BaseComponent {
   constructor(props) {
@@ -69,32 +79,28 @@ class C extends BaseComponent {
     this.user = this.props.user
   }
 
+  componentDidMount = () => {
+    this.intervalId = setInterval(this.saveDraft, 5000)
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.intervalId)
+  }
+
   ord_loading(f = false) {
     this.setState({ loading: f })
   }
 
-  handleSubmit = async (e, fields = {}) => {
+  publishCVote = async (e) => {
     e.preventDefault()
-    const { email, profile } = this.user
-    const fullName = `${profile.firstName} ${profile.lastName}`
-    const { edit, form, updateCVote, createCVote, onCreated, onEdit, suggestionId } = this.props
-
-    const formatValue = (value) => {
-      let result
-      try {
-        result = _.isString(value) ? value : JSON.stringify(convertToRaw(value.getCurrentContent()))
-      } catch (error) {
-        result = _.toString(value)
-      }
-      return result
-    }
+    const { edit, form, updateCVote, onEdit, suggestionId } = this.props
 
     form.validateFields(async (err, values) => {
       if (err) return
-      const { title, notes, abstract, goal, motivation, relevance, budget, plan } = values
+      const { title, abstract, goal, motivation, relevance, budget, plan } = values
       const param = {
+        _id: edit,
         title,
-        notes,
         abstract: formatValue(abstract),
         goal: formatValue(goal),
         motivation: formatValue(motivation),
@@ -102,37 +108,50 @@ class C extends BaseComponent {
         budget: formatValue(budget),
         plan: formatValue(plan),
         published: true,
-        ...fields,
       }
-      if (!edit) param.proposedBy = fullName
-      if (!edit) param.proposedByEmail = email
       if (suggestionId) param.suggestionId = suggestionId
 
       this.ord_loading(true)
-      if (edit) {
-        try {
-          param._id = edit
-          await updateCVote(param)
-          this.ord_loading(false)
-          await onEdit()
-          message.success(I18N.get('from.CVoteForm.message.updated.success'))
-        } catch (error) {
-          message.error(error.message)
-          this.ord_loading(false)
-        }
-      } else {
-        try {
-          await createCVote(param)
-          this.ord_loading(false)
-          await onCreated()
-          message.success(I18N.get('from.CVoteForm.message.create.success'))
-        } catch (error) {
-          message.error(error.message)
-          this.ord_loading(false)
-        }
+      try {
+        await updateCVote(param)
+        this.ord_loading(false)
+        await onEdit()
+        message.success(I18N.get('from.CVoteForm.message.updated.success'))
+      } catch (error) {
+        message.error(error.message)
+        this.ord_loading(false)
       }
     })
   }
+
+  saveDraft = async (ifShowMsg = false) => {
+    const { edit, form, updateDraft, suggestionId } = this.props
+
+    const values = form.getFieldsValue()
+    console.log('form values: ', values)
+    const { title, abstract, goal, motivation, relevance, budget, plan } = values
+    const param = {
+      _id: edit,
+      title,
+    }
+    if (suggestionId) param.suggestionId = suggestionId
+
+    if (!_.isEmpty(transform(abstract))) param.abstract = formatValue(abstract)
+    if (!_.isEmpty(transform(goal))) param.goal = formatValue(goal)
+    if (!_.isEmpty(transform(motivation))) param.motivation = formatValue(motivation)
+    if (!_.isEmpty(transform(relevance))) param.relevance = formatValue(relevance)
+    if (!_.isEmpty(transform(budget))) param.budget = formatValue(budget)
+    if (!_.isEmpty(transform(plan))) param.plan = formatValue(plan)
+
+    try {
+      await updateDraft(param)
+      if (ifShowMsg) message.success(I18N.get('from.CVoteForm.message.updated.success'))
+    } catch (error) {
+      message.error(error.message)
+    }
+  }
+
+  saveDraftWithMsg = () => this.saveDraft(true)
 
   getInputProps(data) {
     const { edit } = this.props
@@ -183,7 +202,7 @@ class C extends BaseComponent {
     // TODO: onChange autosave every 5s
     return (
       <Container>
-        <Form onSubmit={this.handleSubmit}>
+        <Form onSubmit={this.publishCVote}>
           <Title className="komu-a cr-title-with-icon ">
             {this.props.header || I18N.get('from.CVoteForm.button.add')}
           </Title>
@@ -246,10 +265,6 @@ class C extends BaseComponent {
     this.props.history.push('/proposals')
   }
 
-  saveDraft = (e) => {
-    this.handleSubmit(e, { published: false })
-  }
-
   renderCancelBtn() {
     return (
       <FormItem>
@@ -266,7 +281,7 @@ class C extends BaseComponent {
 
     return showButton && (
       <FormItem>
-        <Button loading={this.state.loading} className="cr-btn cr-btn-primary" onClick={this.saveDraft} style={{ marginRight: 10 }}>
+        <Button loading={this.state.loading} className="cr-btn cr-btn-primary" onClick={this.saveDraftWithMsg} style={{ marginRight: 10 }}>
           {I18N.get('from.CVoteForm.button.saveDraft')}
         </Button>
       </FormItem>
