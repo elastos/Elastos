@@ -141,11 +141,19 @@ class C extends StandardPage {
       <StyledAnchor offsetTop={200}>
         <Anchor.Link href="#preamble" title={I18N.get('proposal.fields.preamble')} />
         <Anchor.Link href="#abstract" title={I18N.get('proposal.fields.abstract')} />
-        <Anchor.Link href="#goal" title={I18N.get('proposal.fields.goal')} />
+        <div style={{ marginTop: 48 }}>
+          <Anchor.Link href="#goal" title={I18N.get('proposal.fields.goal')} />
+        </div>
         <Anchor.Link href="#motivation" title={I18N.get('proposal.fields.motivation')} />
         <Anchor.Link href="#relevance" title={I18N.get('proposal.fields.relevance')} />
-        <Anchor.Link href="#budget" title={I18N.get('proposal.fields.budget')} />
+        <div style={{ marginTop: 48 }}>
+          <Anchor.Link href="#budget" title={I18N.get('proposal.fields.budget')} />
+        </div>
         <Anchor.Link href="#plan" title={I18N.get('proposal.fields.plan')} />
+        <div style={{ marginTop: 48 }}>
+          <Anchor.Link href="#tracking" title={I18N.get('proposal.fields.tracking')} />
+        </div>
+        <Anchor.Link href="#summary" title={I18N.get('proposal.fields.summary')} />
       </StyledAnchor>
     )
   }
