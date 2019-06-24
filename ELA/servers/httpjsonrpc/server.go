@@ -61,10 +61,15 @@ func StartRPCServer() {
 	mainMux["getblockcount"] = GetBlockCount
 	mainMux["getblockbyheight"] = GetBlockByHeight
 	mainMux["getexistwithdrawtransactions"] = GetExistWithdrawTransactions
-	mainMux["listunspent"] = ListUnspent
-	mainMux["getutxosbyamount"] = GetUTXOsByAmount
-	mainMux["getamountbyinputs"] = GetAmountByInputs
 	mainMux["getreceivedbyaddress"] = GetReceivedByAddress
+	// wallet interfaces
+	mainMux["getamountbyinputs"] = GetAmountByInputs
+	mainMux["getutxosbyamount"] = GetUTXOsByAmount
+	mainMux["listunspent"] = ListUnspent
+	mainMux["createrawtransaction"] = CreateRawTransaction
+	mainMux["signrawtransactionwithkey"] = SignRawTransactionWithKey
+	mainMux["importaddress"] = ImportAddress
+	mainMux["importpubkey"] = ImportPubkey
 	// aux interfaces
 	mainMux["help"] = AuxHelp
 	mainMux["submitauxblock"] = SubmitAuxBlock
