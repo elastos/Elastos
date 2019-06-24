@@ -119,7 +119,7 @@ func checkDuplicateTx(block *Block) error {
 	existingSideTxs := make(map[Uint256]struct{})
 	existingProducer := make(map[string]struct{})
 	existingProducerNode := make(map[string]struct{})
-	existingCR := make(map[string]struct{})
+	existingCR := make(map[Uint168]struct{})
 	for _, txn := range block.Transactions {
 		switch txn.TxType {
 		case WithdrawFromSideChain:

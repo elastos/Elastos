@@ -1225,11 +1225,7 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction) error {
 		if err != nil {
 			return err
 		}
-		addr, err := hash.ToAddress()
-		if err != nil {
-			return err
-		}
-		if info.DID != addr {
+		if !info.DID.IsEqual(*hash) {
 			return errors.New("the DID needs to be calculated from standard code")
 		}
 	} else if signType == vm.CHECKMULTISIG {
@@ -1247,11 +1243,7 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction) error {
 			return err
 		}
 		hash := ct.ToProgramHash()
-		addr, err := hash.ToAddress()
-		if err != nil {
-			return err
-		}
-		if info.DID != addr {
+		if !info.DID.IsEqual(*hash) {
 			return errors.New("the DID needs to be calculated from multi code")
 		}
 	} else {
@@ -1259,15 +1251,11 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction) error {
 	}
 
 	// check the deposit coin
-	hash, err := common.Uint168FromAddress(info.DID)
-	if err != nil {
-		return errors.New("invalid public key")
-	}
 	var depositCount int
 	for _, output := range txn.Outputs {
 		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixDeposit {
 			depositCount++
-			if !output.ProgramHash.IsEqual(*hash) {
+			if !output.ProgramHash.IsEqual(info.DID) {
 				return errors.New("deposit address does not" +
 					" match the public key in payload")
 			}
