@@ -18,6 +18,78 @@ const restrictedFields = {
 }
 
 export default class extends Base {
+  // create a DRAFT propoal with minimal info
+  public async createDraft(param: any): Promise<Document> {
+    const db_cvote = this.getDBModel('CVote')
+    const {
+      title, proposedBy, proposedByEmail,
+    } = param
+
+    const vid = await this.getNewVid()
+
+    const doc: any = {
+      title,
+      vid,
+      status: constant.CVOTE_STATUS.DRAFT,
+      published: false,
+      contentType: constant.CONTENT_TYPE.MARKDOWN,
+      proposedBy,
+      proposedByEmail,
+      createdBy: this.currentUser._id
+    }
+
+    try {
+      return await db_cvote.save(doc)
+    } catch (error) {
+      return
+    }
+  }
+
+  /**
+   *
+   * @param param
+   * @returns {Promise<"mongoose".Document>}
+   */
+  public async updateDraft(param: any): Promise<Document> {
+    const db_cvote = this.getDBModel('CVote')
+    const {
+      _id, title, abstract, goal, motivation, relevance, budget, plan
+    } = param
+
+    if (!this.currentUser || !this.currentUser._id) {
+      throw 'cvoteservice.update - invalid current user'
+    }
+
+    if (!this.canManageProposal()) {
+      throw 'cvoteservice.update - not council'
+    }
+
+    const cur = await db_cvote.findOne({ _id })
+    if (!cur) {
+      throw 'cvoteservice.update - invalid proposal id'
+    }
+
+    const doc: any = {
+      contentType: constant.CONTENT_TYPE.MARKDOWN,
+    }
+
+    if (title) doc.title = title
+    if (abstract) doc.abstract = abstract
+    if (goal) doc.goal = goal
+    if (motivation) doc.motivation = motivation
+    if (relevance) doc.relevance = relevance
+    if (budget) doc.budget = budget
+    if (plan) doc.plan = plan
+
+    try {
+      await db_cvote.update({ _id }, doc)
+      const res = await this.getById(_id)
+      return res
+    } catch (error) {
+      console.log('error happened: ', error)
+      return
+    }
+  }
 
   public async create(param): Promise<Document> {
     const db_cvote = this.getDBModel('CVote')

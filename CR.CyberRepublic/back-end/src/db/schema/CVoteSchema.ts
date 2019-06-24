@@ -45,27 +45,21 @@ export const CVote = {
   },
   abstract: {
     type: String,
-    required: true
   },
   goal: {
     type: String,
-    required: true
   },
   motivation: {
     type: String,
-    required: true
   },
   relevance: {
     type: String,
-    required: true
   },
   budget: {
     type: String,
-    required: true
   },
   plan: {
     type: String,
-    required: true
   },
   // tracking: {
   //   type: String,
