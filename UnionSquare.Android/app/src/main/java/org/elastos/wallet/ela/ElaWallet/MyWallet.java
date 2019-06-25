@@ -753,7 +753,6 @@ public class MyWallet {
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
             String txJson = mainchainSubWallet.CreateDepositTransaction(fromAddress, lockedAddress, amount, sideChainAddress, memo, useVotedUTXO);
-            Log.d(TAG, "result: " + txJson);
 
             return new CommmonStringWithiMethNameEntity(SUCESSCODE, txJson, "createDepositTransaction");
         } catch (WalletException e) {
@@ -772,9 +771,6 @@ public class MyWallet {
             }
 
             String[] supportedChains = masterWallet.GetSupportedChains();
-
-            Log.d(TAG, "result: " + supportedChains);
-
             //successProcess(cc, supportedChainsJson);
             return new CommonStringArrayEntity(SUCESSCODE, supportedChains);
         } catch (WalletException e) {
@@ -825,8 +821,6 @@ public class MyWallet {
             SidechainSubWallet sidechainSubWallet = (SidechainSubWallet) subWallet;
             String tx = sidechainSubWallet.CreateWithdrawTransaction(fromAddress, amount, mainchainAddress, memo);
 
-            Log.d(TAG, "result: " + tx);
-
             return new CommmonStringWithiMethNameEntity(SUCESSCODE, tx, "createWithdrawTransaction");
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + " create withdraw tx");
@@ -851,8 +845,6 @@ public class MyWallet {
             SidechainSubWallet sidechainSubWallet = (SidechainSubWallet) subWallet;
 
             String address = sidechainSubWallet.GetGenesisAddress();
-
-            Log.d(TAG, "result: " + address);
 
             return new CommmonStringWithiMethNameEntity(SUCESSCODE, address, "getGenesisAddress");
         } catch (WalletException e) {
@@ -887,8 +879,6 @@ public class MyWallet {
 
             String payloadJson = mainchainSubWallet.GenerateProducerPayload(ownerPublicKey, nodePublicKey, nickName, url, IPAddress, location, payPasswd);
 
-            Log.d(TAG, "result: " + payloadJson);
-
             KLog.a(payloadJson);
             return new CommmonStringWithiMethNameEntity(SUCESSCODE, payloadJson, "payload");
         } catch (WalletException e) {
@@ -921,8 +911,6 @@ public class MyWallet {
 
             String txJson = mainchainSubWallet.CreateRegisterProducerTransaction(fromAddress, payloadJson, amount, memo, useVotedUTXO);
 
-            Log.d(TAG, "result: " + txJson);
-
             KLog.a(txJson);
             return new CommmonStringWithiMethNameEntity(SUCESSCODE, txJson, "createRegisterProducerTransaction");
         } catch (WalletException e) {
@@ -951,8 +939,6 @@ public class MyWallet {
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
             String publicKey = mainchainSubWallet.GetOwnerPublicKey();
-
-            Log.d(TAG, "result: " + publicKey);
 
             return new CommmonStringWithiMethNameEntity(SUCESSCODE, publicKey, "getPublicKeyForVote");
         } catch (WalletException e) {
@@ -985,8 +971,6 @@ public class MyWallet {
 
             String txJson = mainchainSubWallet.CreateVoteProducerTransaction(fromAddress, stake, publicKeys, memo, useVotedUTXO);
 
-            Log.d(TAG, "result: " + txJson);
-
             return new CommmonStringWithiMethNameEntity(SUCESSCODE, txJson, "createVoteProducerTransaction");
             // successProcess(cc, txJson);
         } catch (WalletException e) {
@@ -1012,7 +996,6 @@ public class MyWallet {
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
             String list = mainchainSubWallet.GetVotedProducerList();
-            Log.d(TAG, "result: " + list);
 
             return new CommmonStringWithiMethNameEntity(SUCESSCODE, list, "getVotedProducerList");
 
@@ -1038,7 +1021,6 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
             String info = mainchainSubWallet.GetRegisteredProducerInfo();
-            Log.d(TAG, "result: " + info);
             KLog.a(info);
             return new CommmonStringEntity(SUCESSCODE, info);
         } catch (WalletException e) {
@@ -1068,7 +1050,6 @@ public class MyWallet {
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
             String payloadJson = mainchainSubWallet.GenerateCancelProducerPayload(publicKey, payPasswd);
-            Log.d(TAG, "result: " + payloadJson);
             return new CommmonStringWithiMethNameEntity(SUCESSCODE, payloadJson, "generateCancelProducerPayload");
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + " generate cancel producer payload");
@@ -1098,7 +1079,7 @@ public class MyWallet {
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
             String txJson = mainchainSubWallet.CreateCancelProducerTransaction(fromAddress, payloadJson, memo, useVotedUTXO);
-            Log.d(TAG, "result: " + txJson);
+
             return new CommmonStringWithiMethNameEntity(SUCESSCODE, txJson, "createCancelProducerTransaction");
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + " create cancel producer tx");
@@ -1121,7 +1102,6 @@ public class MyWallet {
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
             String txJson = mainchainSubWallet.CreateRetrieveDepositTransaction(amount, memo);
-            Log.d(TAG, "result: " + txJson);
 
             return new CommmonStringWithiMethNameEntity(SUCESSCODE, txJson, "createRetrieveDepositTransaction");
         } catch (WalletException e) {
@@ -1152,7 +1132,7 @@ public class MyWallet {
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
             String txJson = mainchainSubWallet.CreateUpdateProducerTransaction(fromAddress, payloadJson, memo, useVotedUTXO);
-            Log.d(TAG, "result: " + txJson);
+
             return new CommmonStringWithiMethNameEntity(SUCESSCODE, txJson, "createUpdateProducerTransaction");
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + " create update producer tx");
