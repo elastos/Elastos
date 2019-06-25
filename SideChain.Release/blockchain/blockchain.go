@@ -36,6 +36,7 @@ type Config struct {
 	CheckTxContext func(*types.Transaction) error
 	GetTxFee       func(tx *types.Transaction, assetId common.Uint256) (common.Fixed64, error)
 	GetHeader      func(hash common.Uint256) (interfaces.Header, error)
+	GetBlock       func(hash common.Uint256) (*types.Block, error)
 }
 
 type BlockChain struct {
@@ -157,7 +158,13 @@ func (b *BlockChain) GetBlockWithHeight(height uint32) (*types.Block, error) {
 	if err != nil {
 		return nil, errors.New("[Ledger],GetBlockWithHeight failed with height=" + string(height))
 	}
-	bk, err := b.db.GetBlock(temp)
+	var bk *types.Block
+	if b.cfg.GetBlock != nil {
+		bk, err = b.cfg.GetBlock(temp)
+	} else {
+		bk, err = b.db.GetBlock(temp)
+	}
+
 	if err != nil {
 		return nil, errors.New("[Ledger],GetBlockWithHeight failed with hash=" + temp.String())
 	}
@@ -166,7 +173,13 @@ func (b *BlockChain) GetBlockWithHeight(height uint32) (*types.Block, error) {
 
 //Get block with block hash.
 func (b *BlockChain) GetBlockByHash(hash common.Uint256) (*types.Block, error) {
-	bk, err := b.db.GetBlock(hash)
+	var bk *types.Block
+	var err error
+	if b.cfg.GetBlock != nil {
+		bk, err = b.cfg.GetBlock(hash)
+	} else {
+		bk, err = b.db.GetBlock(hash)
+	}
 	if err != nil {
 		return nil, errors.New("[Ledger],GetBlockWithHeight failed with hash=" + hash.String())
 	}
@@ -202,8 +215,14 @@ func (b *BlockChain) GetUnspents(programHash common.Uint168) (map[common.Uint256
 	return b.db.GetUnspents(programHash)
 }
 
-func (b *BlockChain) GetHeader(hash common.Uint256) (*types.Header, error) {
-	header, err := b.db.GetHeader(hash)
+func (b *BlockChain) GetHeader(hash common.Uint256) (interfaces.Header, error) {
+	var header interfaces.Header
+	var err error
+	if b.cfg.GetHeader != nil {
+		header, err = b.db.GetHeader(hash)
+	} else {
+		header, err = b.db.GetHeader(hash)
+	}
 	if err != nil {
 		return nil, errors.New("[BlockChain], GetHeader failed.")
 	}
@@ -670,7 +689,13 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 	// Disconnect blocks from the main chain.
 	for e := detachNodes.Front(); e != nil; e = e.Next() {
 		n := e.Value.(*BlockNode)
-		block, err := b.db.GetBlock(*n.Hash)
+		var block *types.Block
+		var err error
+		if b.cfg.GetBlock != nil {
+			block, err = b.cfg.GetBlock(*n.Hash)
+		} else {
+			block, err = b.db.GetBlock(*n.Hash)
+		}
 		if err != nil {
 			return err
 		}
@@ -1105,8 +1130,14 @@ func (b *BlockChain) BlockLocatorFromHash(inhash *common.Uint256) []*common.Uint
 		// Try to look up the height for passed block hash.  Assume an
 		// error means it doesn't exist and just return the locator for
 		// the block itself.
+		var block *types.Block
+		var err error
+		if b.cfg.GetBlock != nil {
+			block, err = b.cfg.GetBlock(hash)
+		} else {
+			block, err = b.db.GetBlock(hash)
+		}
 
-		block, err := b.db.GetBlock(hash)
 		if err != nil {
 			return locator
 		}
@@ -1151,7 +1182,12 @@ func (b *BlockChain) BlockLocatorFromHash(inhash *common.Uint256) []*common.Uint
 func (b *BlockChain) locateStartBlock(locator []*common.Uint256) *common.Uint256 {
 	var startHash common.Uint256
 	for _, hash := range locator {
-		_, err := b.db.GetBlock(*hash)
+		var err error
+		if b.cfg.GetBlock != nil {
+			_, err = b.cfg.GetBlock(*hash)
+		} else {
+			_, err = b.db.GetBlock(*hash)
+		}
 		if err == nil {
 			startHash = *hash
 			break
