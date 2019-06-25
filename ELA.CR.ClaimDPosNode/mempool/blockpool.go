@@ -62,8 +62,21 @@ func (bm *BlockPool) appendBlock(dposBlock *types.DposBlock) (bool, bool, error)
 	}
 	// verify block
 	if err := bm.Chain.CheckBlockSanity(block); err != nil {
+		log.Info("[AppendBlock] check block sanity failed, ", err)
 		return false, false, err
 	}
+	if block.Height == bm.Chain.GetHeight()+1 {
+		prevNode, exist := bm.Chain.LookupNodeInIndex(&block.Header.Previous)
+		if !exist {
+			log.Info("[AppendBlock] check block context failed, there is no previous block on the chain")
+			return false, false, errors.New("there is no previous block on the chain")
+		}
+		if err := bm.Chain.CheckBlockContext(block, prevNode); err != nil {
+			log.Info("[AppendBlock] check block context failed, ", err)
+			return false, false, err
+		}
+	}
+
 	bm.blocks[block.Hash()] = block
 
 	// confirm block
