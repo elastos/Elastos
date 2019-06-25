@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/log"
@@ -18,7 +19,7 @@ var eventStore *DposStore
 func TestEventStore_Open(t *testing.T) {
 	log.Init(0, 20, 100)
 
-	store, err := NewDposStore(test.DataPath)
+	store, err := NewDposStore(test.DataPath, &config.DefaultParams)
 	if err != nil {
 		t.Error("open database failed:", err.Error())
 	}

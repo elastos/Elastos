@@ -158,6 +158,7 @@ var DefaultParams = Params{
 	GeneralArbiters:          24,
 	CandidateArbiters:        72,
 	PreConnectOffset:         360,
+	CheckPointNoFlatFile:     false,
 }
 
 // TestNet returns the network parameters for the test network.
@@ -373,6 +374,9 @@ type Params struct {
 	// EmergencyInactivePenalty defines the penalty amount the emergency
 	// producer takes.
 	EmergencyInactivePenalty common.Fixed64
+
+	// CheckPointNoFlatFile defines if check point should store as flat file
+	CheckPointNoFlatFile bool
 }
 
 // rewardPerBlock calculates the reward for each block by a specified time

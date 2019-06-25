@@ -27,7 +27,11 @@ func (s *DposStore) GetCheckPoint(height uint32) (*state.CheckPoint, error) {
 
 	for i := 0; i < len(heights); i++ {
 		if height >= heights[i]+state.CheckPointInterval {
-			return s.getSingleCheckPoint(heights[i])
+			if !s.chainParams.CheckPointNoFlatFile {
+				return s.getFlatCheckPoint(heights[i])
+			} else {
+				return s.getSingleCheckPoint(heights[i])
+			}
 		}
 	}
 	return nil, errors.New("can't find check point")
@@ -41,10 +45,17 @@ func (s *DposStore) SaveArbitersState(point *state.CheckPoint) (err error) {
 		return
 	}
 
-	if err = s.persistSingleCheckPoint(batch, point.Height, point);
-		err != nil {
-		log.Warn("[SaveArbitersState] persistSingleCheckPoint err: ", err)
-		return
+	if !s.chainParams.CheckPointNoFlatFile {
+		if err = s.saveFlatCheckPoint(point); err != nil {
+			log.Warn("[SaveArbitersState] saveFlatCheckPoint err: ", err)
+			return
+		}
+	} else {
+		if err = s.persistSingleCheckPoint(batch, point.Height, point);
+			err != nil {
+			log.Warn("[SaveArbitersState] persistSingleCheckPoint err: ", err)
+			return
+		}
 	}
 
 	if err = batch.Commit(); err != nil {

@@ -101,6 +101,9 @@ func loadConfigParams(cfg *config.Configuration) (*config.Configuration, error) 
 	if cfg.MinCrossChainTxFee > 0 {
 		activeNetParams.MinCrossChainTxFee = cfg.MinCrossChainTxFee
 	}
+	if cfg.CheckPointNoFlatFile {
+		activeNetParams.CheckPointNoFlatFile = cfg.CheckPointNoFlatFile
+	}
 	if cfg.FoundationAddress != "" {
 		foundation, err := common.Uint168FromAddress(cfg.FoundationAddress)
 		if err != nil {

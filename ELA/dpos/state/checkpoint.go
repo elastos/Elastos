@@ -270,8 +270,18 @@ func (s *StateKeyFrame) SerializeVotesMap(vmap map[string]*types.Output,
 			return
 		}
 
-		if err = v.Serialize(w, types.TxVersion09); err != nil {
-			return
+		if v == nil {
+			if err = common.WriteUint8(w, 0); err != nil {
+				return
+			}
+		} else {
+			if err = common.WriteUint8(w, 1); err != nil {
+				return
+			}
+
+			if err = v.Serialize(w, types.TxVersion09); err != nil {
+				return
+			}
 		}
 	}
 	return
@@ -289,11 +299,21 @@ func (s *StateKeyFrame) DeserializeVotesMap(
 		if k, err = common.ReadVarString(r); err != nil {
 			return
 		}
-		vote := &types.Output{}
-		if err = vote.Deserialize(r, types.TxVersion09); err != nil {
+
+		var exist uint8
+		if exist, err = common.ReadUint8(r); err != nil {
 			return
 		}
-		vmap[k] = vote
+
+		if exist == 1 {
+			vote := &types.Output{}
+			if err = vote.Deserialize(r, types.TxVersion09); err != nil {
+				return
+			}
+			vmap[k] = vote
+		} else {
+			vmap[k] = nil
+		}
 	}
 	return
 }
@@ -482,19 +502,19 @@ func (c *CheckPoint) Serialize(w io.Writer) (err error) {
 		return
 	}
 
-	if err = c.persistBytesArray(w, c.CurrentArbitrators); err != nil {
+	if err = c.writeBytesArray(w, c.CurrentArbitrators); err != nil {
 		return
 	}
 
-	if err = c.persistBytesArray(w, c.CurrentCandidates); err != nil {
+	if err = c.writeBytesArray(w, c.CurrentCandidates); err != nil {
 		return
 	}
 
-	if err = c.persistBytesArray(w, c.NextArbitrators); err != nil {
+	if err = c.writeBytesArray(w, c.NextArbitrators); err != nil {
 		return
 	}
 
-	if err = c.persistBytesArray(w, c.NextCandidates); err != nil {
+	if err = c.writeBytesArray(w, c.NextCandidates); err != nil {
 		return
 	}
 
@@ -519,19 +539,19 @@ func (c *CheckPoint) Deserialize(r io.Reader) (err error) {
 	}
 	c.DutyIndex = int(index)
 
-	if c.CurrentArbitrators, err = c.getBytesArray(r); err != nil {
+	if c.CurrentArbitrators, err = c.readBytesArray(r); err != nil {
 		return
 	}
 
-	if c.CurrentCandidates, err = c.getBytesArray(r); err != nil {
+	if c.CurrentCandidates, err = c.readBytesArray(r); err != nil {
 		return
 	}
 
-	if c.NextArbitrators, err = c.getBytesArray(r); err != nil {
+	if c.NextArbitrators, err = c.readBytesArray(r); err != nil {
 		return
 	}
 
-	if c.NextCandidates, err = c.getBytesArray(r); err != nil {
+	if c.NextCandidates, err = c.readBytesArray(r); err != nil {
 		return
 	}
 
@@ -546,7 +566,7 @@ func (c *CheckPoint) Deserialize(r io.Reader) (err error) {
 	return c.StateKeyFrame.Deserialize(r)
 }
 
-func (c *CheckPoint) persistBytesArray(value io.Writer,
+func (c *CheckPoint) writeBytesArray(value io.Writer,
 	bytesArray [][]byte) (err error) {
 	if err = common.WriteVarUint(value, uint64(len(bytesArray))); err != nil {
 		return
@@ -560,7 +580,7 @@ func (c *CheckPoint) persistBytesArray(value io.Writer,
 	return
 }
 
-func (c *CheckPoint) getBytesArray(r io.Reader) ([][]byte, error) {
+func (c *CheckPoint) readBytesArray(r io.Reader) ([][]byte, error) {
 	count, err := common.ReadVarUint(r, 0)
 	if err != nil {
 		return nil, err
@@ -600,8 +620,12 @@ func copyStringMap(src map[string]string) (dst map[string]string) {
 func copyVotesMap(src map[string]*types.Output) (dst map[string]*types.Output) {
 	dst = map[string]*types.Output{}
 	for k, v := range src {
-		p := *v
-		dst[k] = &p
+		if v == nil {
+			dst[k] = nil
+		} else {
+			p := *v
+			dst[k] = &p
+		}
 	}
 	return
 }
