@@ -160,7 +160,7 @@ func (s *Service) GenerateAuxBlock(addr string) (*types.Block, string, bool) {
 	s.blockMtx.Lock()
 	defer s.blockMtx.Unlock()
 
-	msgBlock := &types.Block{}
+	msgBlock := types.NewBlock()
 	bestHeight := s.cfg.Chain.GetBestHeight()
 	if s.cfg.Chain.GetBestHeight() == 0 || s.preChainHeight != bestHeight ||
 		time.Now().Unix()-s.preTime > auxBlockGenerateInterval {
