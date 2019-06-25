@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 )
 
 type eventTask interface{}
@@ -17,7 +18,9 @@ type persistTask interface{}
 var _ IDposStore = (*DposStore)(nil)
 
 type DposStore struct {
-	db Database
+	db          Database
+	dataDir     string
+	chainParams *config.Params
 
 	eventCh   chan eventTask
 	persistCh chan persistTask
@@ -26,17 +29,19 @@ type DposStore struct {
 	quit chan struct{}
 }
 
-func NewDposStore(dataDir string) (*DposStore, error) {
+func NewDposStore(dataDir string, params *config.Params) (*DposStore, error) {
 	db, err := NewLevelDB(filepath.Join(dataDir, "dpos"))
 	if err != nil {
 		return nil, err
 	}
 
 	s := DposStore{
-		db:        db,
-		eventCh:   make(chan eventTask, MaxEvnetTaskNumber),
-		persistCh: make(chan persistTask, MaxEvnetTaskNumber),
-		quit:      make(chan struct{}),
+		db:          db,
+		dataDir:     dataDir,
+		chainParams: params,
+		eventCh:     make(chan eventTask, MaxEvnetTaskNumber),
+		persistCh:   make(chan persistTask, MaxEvnetTaskNumber),
+		quit:        make(chan struct{}),
 	}
 
 	return &s, nil

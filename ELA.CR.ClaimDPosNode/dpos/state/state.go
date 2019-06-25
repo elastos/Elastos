@@ -210,12 +210,6 @@ const (
 	// maxHistoryCapacity indicates the maximum capacity of change history.
 	maxHistoryCapacity = 10
 
-	// snapshotInterval is the time interval to take a snapshot of the state.
-	snapshotInterval = 12
-
-	// maxSnapshots is the maximum newest snapshots keeps in memory.
-	maxSnapshots = 9
-
 	// ActivateDuration is about how long we should activate from pending or
 	// inactive state
 	ActivateDuration = 6
@@ -232,8 +226,6 @@ type State struct {
 
 	mtx     sync.RWMutex
 	history *history
-
-	cursor int
 }
 
 // getProducerKey returns the producer's owner public key string, whether the
