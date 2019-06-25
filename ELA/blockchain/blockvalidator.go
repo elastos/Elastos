@@ -200,7 +200,7 @@ func (b *BlockChain) checkTxsContext(block *Block) error {
 	return err
 }
 
-func (b *BlockChain) checkBlockContext(block *Block, prevNode *BlockNode) error {
+func (b *BlockChain) CheckBlockContext(block *Block, prevNode *BlockNode) error {
 	// The genesis block is valid by definition.
 	if prevNode == nil {
 		return nil
