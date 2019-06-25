@@ -126,6 +126,7 @@ func main() {
 		CheckTxSanity: txValidator.CheckTransactionSanity,
 		CheckTxContext:txValidator.CheckTransactionContext,
 		GetHeader: ledgerStore.GetHeader,
+		GetBlock: ledgerStore.GetBlock,
 	}
 
 	chain, err := nc.NewBlockChain(&chainCfg, txValidator, ledgerStore)
