@@ -13,8 +13,10 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 	dplog "github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/errors"
@@ -115,6 +117,117 @@ func TestTxPool_VerifyDuplicateSidechainTx(t *testing.T) {
 	err := txPool.verifyDuplicateSidechainTx(txn2)
 	if err == nil {
 		t.Error("Should find the duplicate sidechain tx")
+	}
+}
+
+func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
+	// 1. Generate a register CR transaction
+	tx1 := new(types.Transaction)
+	tx1.TxType = types.TransferAsset
+	tx1.Payload = &payload.TransferAsset{}
+	tx1.Outputs = []*types.Output{
+		&types.Output{
+			AssetID:     common.Uint256{1, 2, 3},
+			Value:       1,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{1, 2, 3},
+			Type:        0,
+			Payload:     nil,
+		},
+	}
+	tx2 := new(types.Transaction)
+	tx2.TxType = types.TransferAsset
+	tx2.Payload = &payload.TransferAsset{}
+	tx2.Outputs = []*types.Output{
+		&types.Output{
+			AssetID:     common.Uint256{4, 5, 6},
+			Value:       1,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{4, 5, 6},
+			Type:        0,
+			Payload:     nil,
+		},
+	}
+
+	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
+	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+	pk1, _ := crypto.DecodePoint(publicKey1)
+	ct1, _ := contract.CreateStandardContract(pk1)
+	hash1, _ := contract.PublicKeyToDepositProgramHash(publicKey1)
+	input1 := &types.Input{
+		Previous: types.OutPoint{
+			TxID:  tx1.Hash(),
+			Index: 0,
+		},
+		Sequence: 0,
+	}
+	input2 := &types.Input{
+		Previous: types.OutPoint{
+			TxID:  tx2.Hash(),
+			Index: 0,
+		},
+		Sequence: 0,
+	}
+
+	tx3 := new(types.Transaction)
+	tx3.TxType = types.RegisterCR
+	tx3.Version = types.TxVersion09
+	tx3.Payload = &payload.CRInfo{
+		Code:     ct1.Code,
+		DID:      *hash1,
+		NickName: "nickname 1",
+		Url:      "http://www.elastos_test.com",
+		Location: 1,
+	}
+	tx3.Inputs = []*types.Input{input1}
+
+	tx4 := new(types.Transaction)
+	tx4.TxType = types.UpdateCR
+	tx4.Version = types.TxVersion09
+	tx4.Payload = &payload.CRInfo{
+		Code:     ct1.Code,
+		DID:      *hash1,
+		NickName: "nickname 2",
+		Url:      "http://www.elastos_test.com",
+		Location: 2,
+	}
+	tx4.Inputs = []*types.Input{input2}
+
+	// 2. Add tx1 and tx2 into store and input UTXO list
+	blockchain.DefaultLedger.Store.(*blockchain.ChainStore).NewBatch()
+	blockchain.DefaultLedger.Store.(*blockchain.ChainStore).PersistTransactions(
+		&types.Block{
+			Transactions: []*types.Transaction{tx1, tx2},
+		})
+	blockchain.DefaultLedger.Store.(*blockchain.ChainStore).BatchCommit()
+	txPool.addInputUTXOList(tx3, input1)
+	txPool.addInputUTXOList(tx4, input2)
+
+	// 3. Verify CR related tx
+	errCode := txPool.verifyCRRelatedTx(tx3)
+	if errCode != errors.Success {
+		t.Error("Should have no error verify CR related tx")
+	}
+
+	// 4. Verify duplicate CR related tx
+	errCode = txPool.verifyCRRelatedTx(tx4)
+	if errCode != errors.ErrCRProcessing {
+		t.Error("Should find the duplicate CR related tx")
+	}
+
+	// 5. Clean CR related tx
+	txs := make([]*types.Transaction, 2)
+	txs[0] = tx3
+	txs[1] = tx4
+	txPool.cleanTransactions(txs)
+	if errCode != errors.ErrCRProcessing {
+		t.Error("Should find the duplicate CR related tx")
+	}
+
+	// 6. Verify CR related tx
+	errCode = txPool.verifyCRRelatedTx(tx4)
+	if errCode != errors.Success {
+		t.Error("Should find the duplicate CR related tx")
 	}
 }
 

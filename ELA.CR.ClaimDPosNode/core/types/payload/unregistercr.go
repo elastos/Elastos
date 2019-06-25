@@ -9,7 +9,7 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
-const CRVersion byte = 0x00
+const UnregisterCRVersion byte = 0x00
 
 type UnregisterCR struct {
 	Code      []byte
