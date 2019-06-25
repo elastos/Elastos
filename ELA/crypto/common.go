@@ -2,7 +2,6 @@ package crypto
 
 import (
 	"errors"
-
 	"github.com/elastos/Elastos.ELA/common"
 )
 
