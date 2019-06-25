@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -21,7 +22,7 @@ var arbitratorsStore *DposStore
 func TestArbitratorsStore_Open(t *testing.T) {
 	log.Init(0, 20, 100)
 
-	store, err := NewDposStore(test.DataPath)
+	store, err := NewDposStore(test.DataPath, &config.DefaultParams)
 	if err != nil {
 		t.Error("open database failed:", err.Error())
 	}

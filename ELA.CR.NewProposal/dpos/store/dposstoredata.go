@@ -2,11 +2,16 @@ package store
 
 import (
 	"bytes"
+	"os"
+	"path/filepath"
+	"strconv"
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/syndtr/goleveldb/leveldb/errors"
 )
+
+const flatCheckPointExtension = ".cp"
 
 func (s *DposStore) getKey(height uint32, prefix DataEntryPrefix) ([]byte,
 	error) {
@@ -100,4 +105,36 @@ func (s *DposStore) persistSingleCheckPoint(batch Batch, height uint32,
 	}
 
 	return batch.Put(key, value.Bytes())
+}
+
+func (s *DposStore) saveFlatCheckPoint(point *state.CheckPoint) error {
+	fileName := filepath.Join(s.dataDir, "dpos", strconv.FormatUint(uint64(
+		point.Height), 10)+flatCheckPointExtension)
+	file, err := os.OpenFile(fileName,
+		os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
+	if err != nil {
+		return err
+	}
+
+	if err = point.Serialize(file); err != nil {
+		return err
+	}
+	return file.Close()
+}
+
+func (s *DposStore) getFlatCheckPoint(height uint32) (*state.CheckPoint,
+	error) {
+	fileName := filepath.Join(s.dataDir, "dpos",
+		strconv.FormatUint(uint64(height), 10)+flatCheckPointExtension)
+	file, err := os.OpenFile(fileName, os.O_RDONLY, 0400)
+	defer file.Close()
+	if err != nil {
+		return nil, errors.New("open check point file failed")
+	}
+
+	point := &state.CheckPoint{}
+	if err = point.Deserialize(file); err != nil {
+		return nil, err
+	}
+	return point, nil
 }

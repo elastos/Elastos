@@ -148,7 +148,7 @@ func startNode(c *cli.Context) {
 	defer chainStore.Close()
 	ledger.Store = chainStore // fixme
 
-	dposStore, err = store.NewDposStore(dataDir)
+	dposStore, err = store.NewDposStore(dataDir, activeNetParams)
 	if err != nil {
 		printErrorAndExit(err)
 	}
@@ -160,7 +160,7 @@ func startNode(c *cli.Context) {
 
 	blockchain.DefaultLedger = &ledger // fixme
 
-	arbiters, err := state.NewArbitrators(activeNetParams, nil,
+	arbiters, err := state.NewArbitrators(activeNetParams, dposStore,
 		chainStore.GetHeight, func() (*types.Block, error) {
 			hash := chainStore.GetCurrentBlockHash()
 			block, err := chainStore.GetBlock(hash)

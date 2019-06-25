@@ -172,7 +172,7 @@ func initLedger(L *lua.LState) int {
 	if err != nil {
 		fmt.Printf("Init chain store error: %s \n", err.Error())
 	}
-	dposStore, err := store.NewDposStore(test.DataPath)
+	dposStore, err := store.NewDposStore(test.DataPath, chainParams)
 	if err != nil {
 		fmt.Printf("Init dpos store error: %s \n", err.Error())
 	}
