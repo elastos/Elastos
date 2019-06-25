@@ -25,6 +25,7 @@ const (
 	ErrProducerProcessing     ErrCode = 45022
 	ErrProducerNodeProcessing ErrCode = 45023
 	ErrTransactionPoolSize    ErrCode = 45024
+	ErrCRProcessing           ErrCode = 45025
 
 	SessionExpired       ErrCode = 41001
 	IllegalDataFormat    ErrCode = 41003
@@ -61,6 +62,7 @@ var ErrMap = map[ErrCode]string{
 	ErrProducerProcessing:     "Error producer processing",
 	ErrProducerNodeProcessing: "Error producer node processing",
 	ErrTransactionPoolSize:    "Error transactions size of transaction pool",
+	ErrCRProcessing:           "Error CR processing",
 	ErrInvalidInput:           "INTERNAL ERROR, ErrInvalidInput",
 	ErrInvalidOutput:          "INTERNAL ERROR, ErrInvalidOutput",
 	ErrAssetPrecision:         "INTERNAL ERROR, ErrAssetPrecision",

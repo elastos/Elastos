@@ -70,7 +70,7 @@ func mockVoteTx(publicKeys [][]byte) *types.Transaction {
 		Payload: &outputpayload.VoteOutput{
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
-				{outputpayload.Delegate, publicKeys},
+				{outputpayload.Delegate, publicKeys, nil},
 			},
 		},
 	}

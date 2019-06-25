@@ -850,18 +850,25 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
 	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
 
-	pk1, _ := crypto.DecodePoint(publicKey1)
-	ct1, _ := contract.CreateStandardContract(pk1)
-	hash1, _ := contract.PublicKeyToDepositProgramHash(publicKey1)
+	codeStr1 := "2103c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3ac"
+	codeStr2 := "21027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45ac"
+	code1, _ := common.HexStringToBytes(codeStr1)
+	code2, _ := common.HexStringToBytes(codeStr2)
 
+	ct1, _ := contract.CreateCRDIDContractByCode(code1)
+	did1 := ct1.ToProgramHash()
+	ct2, _ := contract.CreateCRDIDContractByCode(code2)
+	did2 := ct2.ToProgramHash()
+
+	hash1, _ := contract.PublicKeyToDepositProgramHash(publicKey1)
 	hash2, _ := contract.PublicKeyToDepositProgramHash(publicKey2)
 
 	txn := new(types.Transaction)
 	txn.TxType = types.RegisterCR
 	txn.Version = types.TxVersion09
 	rcPayload := &payload.CRInfo{
-		Code:     ct1.Code,
-		DID:      *hash1,
+		Code:     code1,
+		DID:      *did1,
 		NickName: "nickname 1",
 		Url:      "http://www.elastos_test.com",
 		Location: 1,
@@ -893,19 +900,19 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	s.NoError(err)
 
 	// Give an invalid code in payload
-	txn.Payload.(*payload.CRInfo).Code = []byte{1, 2, 3, 4, 5}
+	txn.Payload.(*payload.CRInfo).Code = []byte{}
 	err = s.Chain.checkRegisterCRTransaction(txn)
-	s.EqualError(err, "invalid code")
+	s.EqualError(err, "code is nil")
 
 	// Give an invalid DID in payload
-	txn.Payload.(*payload.CRInfo).Code = ct1.Code
+	txn.Payload.(*payload.CRInfo).Code = code1
 	txn.Payload.(*payload.CRInfo).DID = common.Uint168{1, 2, 3}
 	err = s.Chain.checkRegisterCRTransaction(txn)
 	s.EqualError(err, "invalid did address")
 
 	// Give a mismatching code and DID in payload
-	txn.Payload.(*payload.CRInfo).Code = ct1.Code
-	txn.Payload.(*payload.CRInfo).DID = *hash2
+	txn.Payload.(*payload.CRInfo).Code = code1
+	txn.Payload.(*payload.CRInfo).DID = *did2
 	rcSignBuf2 := new(bytes.Buffer)
 	err = rcPayload.SerializeUnsigned(rcSignBuf2, payload.CRInfoVersion)
 	s.NoError(err)
@@ -916,22 +923,22 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	s.EqualError(err, "invalid did address")
 
 	// Invalidates the signature in payload
-	txn.Payload.(*payload.CRInfo).Code = ct1.Code
-	txn.Payload.(*payload.CRInfo).DID = *hash2
+	txn.Payload.(*payload.CRInfo).Code = code1
+	txn.Payload.(*payload.CRInfo).DID = *did2
 	txn.Payload.(*payload.CRInfo).Signature = rcSig1
 	err = s.Chain.checkRegisterCRTransaction(txn)
 	s.EqualError(err, "invalid did address")
 
 	// Give an invalid url in payload
-	txn.Payload.(*payload.CRInfo).Code = ct1.Code
-	txn.Payload.(*payload.CRInfo).DID = *hash1
+	txn.Payload.(*payload.CRInfo).Code = code1
+	txn.Payload.(*payload.CRInfo).DID = *did1
 	txn.Payload.(*payload.CRInfo).Url = ""
 	err = s.Chain.checkRegisterCRTransaction(txn)
 	s.EqualError(err, "Field Url has invalid string length.")
 
 	// Give a mismatching deposit address
-	rcPayload.Code = ct1.Code
-	rcPayload.DID = *hash1
+	rcPayload.Code = code1
+	rcPayload.DID = *did1
 	rcPayload.Url = "www.test.com"
 	rcSignBuf = new(bytes.Buffer)
 	err = rcPayload.SerializeUnsigned(rcSignBuf, payload.ProducerInfoVersion)
@@ -948,7 +955,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 		ProgramHash: *hash2,
 	}}
 	err = s.Chain.checkRegisterCRTransaction(txn)
-	s.EqualError(err, "deposit address does not match the public key in payload")
+	s.EqualError(err, "deposit address does not match the code in payload")
 
 	// Give a insufficient deposit coin
 	txn.Outputs = []*types.Output{&types.Output{
