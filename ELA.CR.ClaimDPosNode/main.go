@@ -41,6 +41,7 @@ import (
 	"github.com/elastos/Elastos.ELA/utils"
 	"github.com/elastos/Elastos.ELA/utils/elalog"
 	"github.com/elastos/Elastos.ELA/utils/signal"
+	"github.com/elastos/Elastos.ELA/wallet"
 
 	"github.com/urfave/cli"
 )
@@ -269,6 +270,7 @@ func startNode(c *cli.Context) {
 		defer arbitrator.Stop()
 	}
 
+	wallet := wallet.New(flagDataDir)
 	servers.Compile = Version
 	servers.Config = cfg
 	servers.Chain = chain
@@ -276,6 +278,7 @@ func startNode(c *cli.Context) {
 	servers.TxMemPool = txMemPool
 	servers.Server = server
 	servers.Arbiters = arbiters
+	servers.Wallet = wallet
 	servers.Pow = pow.NewService(&pow.Config{
 		PayToAddr:   cfg.PowConfiguration.PayToAddr,
 		MinerInfo:   cfg.PowConfiguration.MinerInfo,

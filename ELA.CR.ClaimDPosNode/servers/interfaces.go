@@ -33,6 +33,7 @@ import (
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 	"github.com/elastos/Elastos.ELA/pow"
+	"github.com/elastos/Elastos.ELA/wallet"
 
 	"github.com/tidwall/gjson"
 )
@@ -47,6 +48,7 @@ var (
 	Server    elanet.Server
 	Arbiter   *dpos.Arbitrator
 	Arbiters  state.Arbitrators
+	Wallet    *wallet.Wallet
 )
 
 func ToReversedString(hash common.Uint256) string {
@@ -1128,11 +1130,31 @@ func SignRawTransactionWithKey(param Params) map[string]interface{} {
 }
 
 func ImportAddress(param Params) map[string]interface{} {
+	address, ok := param.String("address")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a parameter named address")
+	}
+
+	if err := Wallet.ImportAddress(address); err != nil {
+		return ResponsePack(InternalError, "import address failed: "+err.Error())
+	}
 
 	return ResponsePack(Success, 0)
 }
 
 func ImportPubkey(param Params) map[string]interface{} {
+	pubKey, ok := param.String("pubkey")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a parameter named pubkey")
+	}
+	pubKeyBytes, err := common.HexStringToBytes(pubKey)
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid pubkey")
+	}
+
+	if err := Wallet.ImportPubkey(pubKeyBytes); err != nil {
+		return ResponsePack(InternalError, "import public key failed: "+err.Error())
+	}
 
 	return ResponsePack(Success, 0)
 }
