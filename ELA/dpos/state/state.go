@@ -780,13 +780,14 @@ func (s *State) cancelProducer(payload *payload.ProcessProducer, height uint32) 
 		}
 		delete(s.Nicknames, producer.info.NickName)
 	}, func() {
-		producer.state = Active
 		producer.cancelHeight = 0
 		delete(s.CanceledProducers, key)
 		if isPending {
+			producer.state = Pending
 			s.PendingProducers[key] = producer
 			delete(s.PendingCanceledProducers, key)
 		} else {
+			producer.state = Active
 			s.ActivityProducers[key] = producer
 		}
 		s.Nicknames[producer.info.NickName] = struct{}{}
