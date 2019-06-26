@@ -84,9 +84,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
     CarrierContext *wctxt = (CarrierContext *)context;
 
     wctxt->extra->connection_status = status;
-    wctxt->friend_status = (status == ElaConnectionStatus_Connected) ?
-                         ONLINE : OFFLINE;
-    cond_signal(wctxt->friend_status_cond);
+    status_cond_signal(wctxt->friend_status_cond, status);
 
     vlogD("Robot connection status changed -> %s", connection_str(status));
 }
@@ -122,7 +120,7 @@ static ElaCallbacks callbacks = {
 
 static Condition DEFINE_COND(ready_cond);
 static Condition DEFINE_COND(cond);
-static Condition DEFINE_COND(friend_status_cond);
+static StatusCondition DEFINE_STATUS_COND(friend_status_cond);
 
 static CarrierContext carrier_context = {
     .cbs = &callbacks,
@@ -176,10 +174,7 @@ static void test_add_friend(void)
     cond_trywait(wctxt->cond, 60000);
     CU_ASSERT_TRUE(ela_is_friend(wctxt->carrier, robotid));
     // wait for friend connection (online) callback to be invoked.
-    while (wctxt->friend_status != ONLINE) {
-        CU_ASSERT_FATAL(wctxt->friend_status != FAILED);
-        cond_wait(wctxt->friend_status_cond);
-    }
+    status_cond_wait(wctxt->friend_status_cond, ONLINE);
     CU_ASSERT_TRUE(extra->connection_status == ElaConnectionStatus_Connected);
 
     rc = read_ack("%32s %32s", buf[0], buf[1]);
@@ -229,10 +224,7 @@ static void test_accept_friend(void)
         CU_ASSERT_TRUE(ela_is_friend(wctxt->carrier, robotid));
 
         // wait for friend connection (online) callback invoked.
-        while (wctxt->friend_status != ONLINE) {
-            CU_ASSERT_FATAL(wctxt->friend_status != FAILED);
-            cond_wait(wctxt->friend_status_cond);
-        }
+        status_cond_wait(wctxt->friend_status_cond, ONLINE);
         CU_ASSERT_TRUE(extra->connection_status == ElaConnectionStatus_Connected);
 
         char result[32];

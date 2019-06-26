@@ -28,6 +28,7 @@
 #include "ela_filetransfer.h"
 
 #include "cond.h"
+#include "status_cond.h"
 
 typedef struct Condition Condition;
 typedef struct CarrierContextExtra CarrierContextExtra;
@@ -67,7 +68,7 @@ typedef struct CarrierContext {
     Condition *ft_cond;
     Condition *ready_cond;
     Condition *cond;
-    Condition *friend_status_cond;
+    StatusCondition *friend_status_cond;
     Condition *group_cond;
 
     FileTransferConnection ft_con_state;
@@ -79,11 +80,6 @@ typedef struct CarrierContext {
      * 2. peer is a friend of ours
      * 3. we received peer online notification
      */
-    enum {
-       OFFLINE,
-       ONLINE,
-       FAILED
-    } friend_status;
 
     char groupid[ELA_MAX_ID_LEN + 1];
     char joined_groupid[ELA_MAX_ID_LEN + 1];

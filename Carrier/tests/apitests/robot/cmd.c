@@ -322,10 +322,7 @@ static void fadd(TestContext *context, int argc, char *argv[])
         }
     }
 
-    // wait until elatests online.
-    while (wctx->friend_status != ONLINE) {
-        cond_wait(wctx->friend_status_cond);
-    }
+    status_cond_wait(wctx->friend_status_cond, ONLINE);
     write_ack("fadd succeeded\n");
 }
 
@@ -351,9 +348,7 @@ void faccept(TestContext *context, int argc, char *argv[])
         cond_wait(wctx->cond);
     }
 
-    while (wctx->friend_status != ONLINE) {
-        cond_wait(wctx->friend_status_cond);
-    }
+    status_cond_wait(wctx->friend_status_cond, ONLINE);
     write_ack("fadd succeeded\n");
 }
 
@@ -404,9 +399,7 @@ static void fremove(TestContext *context, int argc, char *argv[])
     cond_wait(wctx->cond);
 
     // wait until elatest offline.
-    while (wctx->friend_status != OFFLINE) {
-        cond_wait(wctx->friend_status_cond);
-    }
+    status_cond_wait(wctx->friend_status_cond, OFFLINE);
 
     write_ack("fremove succeeded\n");
 }

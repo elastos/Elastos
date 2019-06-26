@@ -36,15 +36,6 @@
 #include "cond.h"
 #include "test_helper.h"
 
-struct CarrierContextExtra {
-    ElaConnectionStatus connection_status;
-};
-
-static CarrierContextExtra extra = {
-    .connection_status = ElaConnectionStatus_Disconnected
-
-};
-
 static inline void wakeup(void* context)
 {
     cond_signal(((CarrierContext *)context)->cond);
@@ -70,10 +61,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
 {
     CarrierContext *wctxt = (CarrierContext *)context;
 
-    wctxt->extra->connection_status = status;
-    wctxt->friend_status = (status == ElaConnectionStatus_Connected) ?
-                           ONLINE : OFFLINE;
-    cond_signal(wctxt->friend_status_cond);
+    status_cond_signal(wctxt->friend_status_cond, status);
 
     vlogD("Robot connection status changed -> %s", connection_str(status));
 }
@@ -115,8 +103,8 @@ static ElaCallbacks callbacks = {
 
 static Condition DEFINE_COND(ready_cond);
 static Condition DEFINE_COND(cond);
-static Condition DEFINE_COND(friend_status_cond);
 static Condition DEFINE_COND(group_cond);
+static StatusCondition DEFINE_STATUS_COND(friend_status_cond);
 
 static CarrierContext carrier_context = {
     .cbs = &callbacks,
@@ -125,7 +113,7 @@ static CarrierContext carrier_context = {
     .cond = &cond,
     .friend_status_cond = &friend_status_cond,
     .group_cond = &group_cond,
-    .extra = &extra
+    .extra = NULL
 };
 
 static void test_context_reset(TestContext *context)
@@ -133,7 +121,7 @@ static void test_context_reset(TestContext *context)
     context->carrier->peer_list_cnt = 0;
     cond_reset(context->carrier->cond);
     cond_reset(context->carrier->group_cond);
-    cond_reset(context->carrier->friend_status_cond);
+    status_cond_reset(context->carrier->friend_status_cond);
 }
 
 static TestContext test_context = {

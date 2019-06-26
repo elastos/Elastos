@@ -159,8 +159,7 @@ static void carrier_friend_request_cb(ElaCarrier *w, const char *userid,
         if (rc < 0) {
             vlogE("Accept friend request from %s error (0x%x)",
                   userid, ela_get_error());
-            wctx->friend_status = FAILED;
-            cond_signal(wctx->friend_status_cond);
+            status_cond_signal(wctx->friend_status_cond, ElaConnectionStatus_Disconnected);
         }
         return;
     }
@@ -334,7 +333,6 @@ int test_suite_cleanup(TestContext *context)
 
     ela_kill(wctxt->carrier);
     pthread_join(wctxt->thread, 0);
-    cond_deinit(wctxt->cond);
 
     return 0;
 }
@@ -373,11 +371,7 @@ int add_friend_anyway(TestContext *context, const char *userid,
     CU_ASSERT_STRING_EQUAL_FATAL(buf[0], "fadd");
     CU_ASSERT_STRING_EQUAL_FATAL(buf[1], "succeeded");
 
-    // wait for friend_connection (online) callback invoked.
-    while (wctxt->friend_status != ONLINE) {
-        CU_ASSERT_FATAL(wctxt->friend_status != FAILED);
-        cond_wait(wctxt->friend_status_cond);
-    }
+    status_cond_wait(wctxt->friend_status_cond, ONLINE);
 
     return 0;
 }
@@ -396,15 +390,11 @@ int remove_friend_anyway(TestContext *context, const char *userid)
         }
 
         // wait until robot offline.
-        while (wctxt->friend_status != OFFLINE) {
-            CU_ASSERT_FATAL(wctxt->friend_status != FAILED);
-            cond_wait(wctxt->friend_status_cond);
-        }
+        status_cond_wait(wctxt->friend_status_cond, OFFLINE);
 
         // wait for friend_removed callback invoked.
         cond_wait(wctxt->cond);
     }
-
 
     (void)ela_get_userid(wctxt->carrier, me, sizeof(me));
     write_cmd("fremove %s\n", me);

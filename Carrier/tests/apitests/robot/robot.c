@@ -154,9 +154,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
     vlogD("Friend %s's connection status changed -> %s",
           friendid, connection_str(status));
 
-    wctx->friend_status = (status == ElaConnectionStatus_Connected) ?
-                        ONLINE : OFFLINE;
-    cond_signal(wctx->friend_status_cond);
+    status_cond_signal(wctx->friend_status_cond, status);
 }
 
 static void friend_info_cb(ElaCarrier *w, const char *friendid,
@@ -407,7 +405,7 @@ static ElaFileTransferInfo ft_info = {
     .size = 1
 };
 
-static Condition DEFINE_COND(friend_status_cond);
+static StatusCondition DEFINE_STATUS_COND(friend_status_cond);
 static Condition DEFINE_COND(cond);
 static Condition DEFINE_COND(group_cond);
 
