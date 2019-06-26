@@ -64,11 +64,13 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 			subAccount1->GetAllAddresses(addresses, 0, 100, true);
 
 			REQUIRE(!addresses.empty());
-			bytes_t redeemScript = subAccount1->GetRedeemScript(addresses[addresses.size() - 1]);
+			bytes_t redeemScript;
+			std::string path;
+			REQUIRE(subAccount1->GetCodeAndPath(addresses[addresses.size() - 1], redeemScript, path));
 
 			TransactionPtr tx(new Transaction);
 			tx->FromJson(content);
-			tx->AddProgram(Program(redeemScript, bytes_t()));
+			tx->AddProgram(Program(path, redeemScript, bytes_t()));
 
 
 			REQUIRE_THROWS(subAccount3->SignTransaction(tx, payPasswd));
@@ -79,8 +81,8 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 			subAccount2->GetAllAddresses(addresses, 0, 100, true);
 
 			tx->GetPrograms().clear();
-			redeemScript = subAccount2->GetRedeemScript(addresses[0]);
-			tx->AddProgram(Program(redeemScript, bytes_t()));
+			REQUIRE(subAccount2->GetCodeAndPath(addresses[0], redeemScript, path));
+			tx->AddProgram(Program(path, redeemScript, bytes_t()));
 			REQUIRE_THROWS(subAccount1->SignTransaction(tx, payPasswd));
 			REQUIRE_THROWS(subAccount3->SignTransaction(tx, payPasswd));
 
@@ -91,14 +93,34 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 			REQUIRE(tx->IsSigned());
 		}
 
-		SECTION("Vote deposit address sign test") {
-			std::string addr = Address(PrefixDeposit, *ownerPubKey1).String();
-			bytes_t redeemScript = subAccount1->GetRedeemScript(addr);
+		SECTION("Owner standard address sign test") {
+			std::string addr = Address(PrefixStandard, *ownerPubKey1).String();
+			bytes_t redeemScript;
+			std::string path;
+			REQUIRE(subAccount1->GetCodeAndPath(addr, redeemScript, path));
 
 			TransactionPtr tx(new Transaction);
 			tx->FromJson(content);
 
-			tx->AddProgram(Program(redeemScript, bytes_t()));
+			tx->AddProgram(Program(path, redeemScript, bytes_t()));
+
+			REQUIRE_THROWS(subAccount2->SignTransaction(tx, payPasswd));
+			REQUIRE(!tx->IsSigned());
+			REQUIRE_NOTHROW(subAccount1->SignTransaction(tx, payPasswd));
+			REQUIRE(tx->IsSigned());
+
+		}
+
+		SECTION("Owner deposit address sign test") {
+			std::string addr = Address(PrefixDeposit, *ownerPubKey1).String();
+			bytes_t redeemScript;
+			std::string path;
+			REQUIRE(subAccount1->GetCodeAndPath(addr, redeemScript, path));
+
+			TransactionPtr tx(new Transaction);
+			tx->FromJson(content);
+
+			tx->AddProgram(Program(path, redeemScript, bytes_t()));
 
 
 			REQUIRE_THROWS(subAccount2->SignTransaction(tx, payPasswd));
@@ -125,8 +147,10 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 			std::vector<Address> addresses;
 			multiSignSubAccount->GetAllAddresses(addresses, 0, 1, true);
 			REQUIRE(!addresses.empty());
-			bytes_t redeemScript = multiSignSubAccount->GetRedeemScript(addresses[0]);;
-			tx->AddProgram(Program(redeemScript, bytes_t()));
+			bytes_t redeemScript;
+			std::string path;
+			REQUIRE(multiSignSubAccount->GetCodeAndPath(addresses[0], redeemScript, path));
+			tx->AddProgram(Program(path, redeemScript, bytes_t()));
 
 			REQUIRE_NOTHROW(subAccount1->SignTransaction(tx, payPasswd));
 			REQUIRE(!tx->IsSigned());
@@ -212,9 +236,11 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 			REQUIRE(addresses1.size() == addresses3.size());
 			REQUIRE(addresses1.size() == addresses4.size());
 			REQUIRE(addresses1.size() == addresses5.size());
-			bytes_t redeemScript = ms1->GetRedeemScript(addresses1[0]);
+			bytes_t redeemScript;
+			std::string path;
+			REQUIRE(ms1->GetCodeAndPath(addresses1[0], redeemScript, path));
 
-			tx->AddProgram(Program(redeemScript, bytes_t()));
+			tx->AddProgram(Program(path, redeemScript, bytes_t()));
 
 
 			REQUIRE(!tx->IsSigned());

@@ -148,7 +148,7 @@ namespace Elastos {
 			for (size_t i = 0; i < 20; ++i) {
 				bytes_t code = getRandBytes(25);
 				bytes_t parameter = getRandBytes(25);
-				tx.AddProgram(Program(code, parameter));
+				tx.AddProgram(Program("", code, parameter));
 			}
 
 			tx.GetHash();

@@ -19,7 +19,8 @@ namespace Elastos {
 			operator=(program);
 		}
 
-		Program::Program(const bytes_t &code, const bytes_t &parameter) :
+		Program::Program(const std::string &path, const bytes_t &code, const bytes_t &parameter) :
+				_path(path),
 				_parameter(parameter),
 				_code(code) {
 
@@ -29,6 +30,7 @@ namespace Elastos {
 		}
 
 		Program &Program::operator=(const Program &p) {
+			_path = p._path;
 			_code = p._code;
 			_parameter = p._parameter;
 			return *this;
@@ -160,6 +162,14 @@ namespace Elastos {
 			_parameter = parameter;
 		}
 
+		void Program::SetPath(const std::string &path) {
+			_path = path;
+		}
+
+		const std::string &Program::GetPath() const {
+			return _path;
+		}
+
 		size_t Program::EstimateSize() const {
 			size_t size = 0;
 			ByteStream stream;
@@ -196,11 +206,15 @@ namespace Elastos {
 
 			jsonData["Parameter"] = _parameter.getHex();
 			jsonData["Code"] = _code.getHex();
+			jsonData["Path"] = _path;
 
 			return jsonData;
 		}
 
 		void Program::FromJson(const nlohmann::json &jsonData) {
+
+			_path = jsonData.find("Path") != jsonData.end() ? jsonData["Path"].get<std::string>() : "";
+
 			_parameter.setHex(jsonData["Parameter"].get<std::string>());
 			_code.setHex(jsonData["Code"].get<std::string>());
 		}

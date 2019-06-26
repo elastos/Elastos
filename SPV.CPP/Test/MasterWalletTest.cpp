@@ -71,9 +71,8 @@ public:
 	}
 
 	nlohmann::json ExportKeystore(const std::string &backupPassword,
-										  const std::string &payPassword,
-										  bool withPrivKey) {
-		return exportKeyStore(backupPassword, payPassword, withPrivKey);
+										  const std::string &payPassword) {
+		return exportKeyStore(backupPassword, payPassword);
 	}
 
 	std::string GetxPubKey() {
@@ -570,7 +569,7 @@ TEST_CASE("Master wallet manager initFromKeyStore method", "[initFromKeyStore]")
 
 	std::string publicKey = masterWallet->GetxPubKey();
 
-	nlohmann::json keystore = masterWallet->ExportKeystore("12345678", payPassword, true);
+	nlohmann::json keystore = masterWallet->ExportKeystore("12345678", payPassword);
 
 	TestMasterWallet masterWallet1(keystore, "12345678", payPassword);
 	std::string publicKey1 = masterWallet1.GetxPubKey();

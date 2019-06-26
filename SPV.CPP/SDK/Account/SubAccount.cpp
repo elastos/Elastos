@@ -166,7 +166,7 @@ namespace Elastos {
 
 			ErrorChecker::CheckParam(tx->IsSigned(), Error::AlreadySigned, "Transaction signed");
 			ErrorChecker::CheckParam(tx->GetPrograms().empty(), Error::InvalidTransaction,
-									 "Invalid transaction program");
+			                         "Invalid transaction program");
 
 			uint256 md = tx->GetShaData();
 
@@ -174,12 +174,16 @@ namespace Elastos {
 			for (size_t i = 0; i < programs.size(); ++i) {
 				std::vector<bytes_t> publicKeys = programs[i].DecodePublicKey();
 				ErrorChecker::CheckLogic(publicKeys.empty(), Error::InvalidRedeemScript, "Invalid redeem script");
+				ErrorChecker::CheckLogic(programs[i].GetPath().empty(), Error::UnSupportOldTx, "Unsupport old tx");
 
+				HDKeychain rootKey = _parent->RootKey(payPasswd);
+				key = rootKey.getChild(programs[i].GetPath());
 				bool found = false;
 				for (size_t k = 0; k < publicKeys.size(); ++k) {
-					found = FindKey(key, publicKeys[k], payPasswd);
-					if (found)
+					if (publicKeys[k] == key.PubKey()) {
+						found = true;
 						break;
+					}
 				}
 				ErrorChecker::CheckLogic(!found, Error::PrivateKeyNotFound, "Private key not found");
 
@@ -271,29 +275,39 @@ namespace Elastos {
 			_usedAddrs.clear();
 		}
 
-		bytes_t SubAccount::GetRedeemScript(const Address &addr) const {
+		bool SubAccount::GetCodeAndPath(const Address &addr, bytes_t &code, std::string &path) const {
 			uint32_t index;
 			bytes_t pubKey;
-
 			if (IsDepositAddress(addr)) {
-				return _depositAddress.RedeemScript();
+				code = _depositAddress.RedeemScript();
+				path = "44'/0'/1'/0/0";
+				return true;
 			}
 
 			if (IsOwnerAddress(addr)) {
-				return _ownerAddress.RedeemScript();
+				code = _ownerAddress.RedeemScript();
+				path = "44'/0'/1'/0/0";
+				return true;
 			}
 
 			if (_parent->GetSignType() == Account::MultiSign) {
 				ErrorChecker::CheckLogic(_parent->GetAddress() != addr, Error::Address,
 										 "Can't generate code for addr " + addr.String());
-				return _parent->GetAddress().RedeemScript();
+
+				code = _parent->GetAddress().RedeemScript();
+				path = "1'/0";
+				return true;
 			}
 
 			HDKeychain mpk = _parent->MasterPubKey();
 
+			path = "44'/0'/0'/";
+
 			for (index = _internalChain.size(); index > 0; index--) {
 				if (_internalChain[index - 1] == addr) {
 					pubKey = mpk.getChild(SEQUENCE_INTERNAL_CHAIN).getChild(index - 1).pubkey();
+
+					path = path + "1/" + std::to_string(index - 1);
 					break;
 				}
 			}
@@ -301,14 +315,20 @@ namespace Elastos {
 			for (index = _externalChain.size(); index > 0 && pubKey.empty(); index--) {
 				if (_externalChain[index - 1] == addr) {
 					pubKey = mpk.getChild(SEQUENCE_EXTERNAL_CHAIN).getChild(index - 1).pubkey();
+
+					path = path + "0/" + std::to_string(index - 1);
 					break;
 				}
 			}
 
-			ErrorChecker::CheckLogic(pubKey.empty(), Error::Address, "Can't found pubKey for addr " +
-																	 addr.String());
+			if (pubKey.empty()) {
+				ErrorChecker::ThrowLogicException(Error::Address, "Can't found code and path for address " + addr.String());
+				return false;
+			}
 
-			return Address(PrefixStandard, pubKey).RedeemScript();
+			code = Address(PrefixStandard, pubKey).RedeemScript();
+
+			return true;
 		}
 
 		size_t SubAccount::InternalChainIndex(const TransactionPtr &tx) const {

@@ -113,7 +113,7 @@ TEST_CASE("Convert to and from json", "[Transaction]") {
 						"Type":0
 					}]
 				},
-				"ProgramHash":"215af4f0f51ff9f011b1e21703a22dedc71fab3c8d"
+				"ProgramHash":"8d3cab1fc7ed2da20317e2b111f0f91ff5f0f45a21"
 			},
 			{
 				"Address":"ERSqjfWDwTYw7iLrCZYLHKzSzEYzF4QZUz",
@@ -122,7 +122,7 @@ TEST_CASE("Convert to and from json", "[Transaction]") {
 				"OutputLock":0,
 				"OutputType":0,
 				"Payload":null,
-				"ProgramHash":"215af4f0f51ff9f011b1e21703a22dedc71fab3c8d"
+				"ProgramHash":"8d3cab1fc7ed2da20317e2b111f0f91ff5f0f45a21"
 			}],
 			"PayLoad":null,
 			"PayloadVersion":0,

@@ -49,7 +49,7 @@ namespace Elastos {
 
 			bool FindKey(Key &key, const bytes_t &pubKey, const std::string &payPasswd);
 
-			bytes_t GetRedeemScript(const Address &addr) const;
+			bool GetCodeAndPath(const Address &addr, bytes_t &code, std::string &path) const;
 
 			size_t InternalChainIndex(const TransactionPtr &tx) const;
 
