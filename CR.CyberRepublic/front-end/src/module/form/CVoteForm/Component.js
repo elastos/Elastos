@@ -66,6 +66,7 @@ const formatValue = (value) => {
   return result
 }
 
+const activeKeys = ['abstract', 'goal', 'motivation', 'relevance', 'budget', 'plan']
 
 class C extends BaseComponent {
   constructor(props) {
@@ -74,6 +75,7 @@ class C extends BaseComponent {
     this.state = {
       persist: true,
       loading: false,
+      activeKeyNum: 0,
     }
 
     this.user = this.props.user
@@ -128,7 +130,6 @@ class C extends BaseComponent {
     const { edit, form, updateDraft, suggestionId } = this.props
 
     const values = form.getFieldsValue()
-    console.log('form values: ', values)
     const { title, abstract, goal, motivation, relevance, budget, plan } = values
     const param = {
       _id: edit,
@@ -198,8 +199,13 @@ class C extends BaseComponent {
       },
       colon: false,
     }
-
-    // TODO: onChange autosave every 5s
+    const { activeKeyNum } = this.state
+    const activeKey = activeKeys[activeKeyNum]
+    const continueBtn = (activeKeyNum !== activeKeys.length - 1) && (
+      <Row gutter={8} type="flex" justify="center">
+        {this.renderContinueBtn()}
+      </Row>
+    )
     return (
       <Container>
         <Form onSubmit={this.publishCVote}>
@@ -209,7 +215,7 @@ class C extends BaseComponent {
           <FormItem label={`${I18N.get('proposal.fields.title')}*`} {...formItemLayout}>
             {formProps.title}
           </FormItem>
-          <Tabs animated={false} tabBarGutter={5}>
+          <Tabs animated={false} tabBarGutter={5} activeKey={activeKey} onChange={this.onTabChange}>
             <TabPane tab={`${I18N.get('proposal.fields.abstract')}*`} key="abstract">
               <TabPaneInner>
                 <Note>{I18N.get('proposal.form.note.abstract')}</Note>
@@ -251,6 +257,8 @@ class C extends BaseComponent {
             </TabPane>
           </Tabs>
 
+          {continueBtn}
+
           <Row gutter={8} type="flex" justify="center">
             {this.renderCancelBtn()}
             {this.renderSaveDraftBtn()}
@@ -261,14 +269,34 @@ class C extends BaseComponent {
     )
   }
 
+  onTabChange = (activeKey) => {
+    const activeKeyNum = activeKeys.indexOf(activeKey)
+    this.setState({ activeKeyNum })
+  }
+
+  gotoNextTab = () => {
+    const currentKeyNum = this.state.activeKeyNum
+    this.setState({ activeKeyNum: currentKeyNum + 1 })
+  }
+
   gotoList = () => {
     this.props.history.push('/proposals')
+  }
+
+  renderContinueBtn() {
+    return (
+      <FormItem>
+        <Button onClick={this.gotoNextTab} className="cr-btn cr-btn-black" style={{ marginBottom: 10 }}>
+          {I18N.get('from.CVoteForm.button.continue')}
+        </Button>
+      </FormItem>
+    )
   }
 
   renderCancelBtn() {
     return (
       <FormItem>
-        <Button loading={this.state.loading} onClick={this.props.onCancel} className="cr-btn cr-btn-default" style={{ marginRight: 10 }}>
+        <Button onClick={this.props.onCancel} className="cr-btn cr-btn-default" style={{ marginRight: 10 }}>
           {I18N.get('from.CVoteForm.button.cancel')}
         </Button>
       </FormItem>
