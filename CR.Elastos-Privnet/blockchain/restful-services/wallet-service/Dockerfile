@@ -10,7 +10,7 @@ RUN apk update
 # copy folders
 COPY service /restful-services/wallet-service
 
-RUN sed -i 's#localhost:20334#mainchain-node-1:20334#g' /restful-services/wallet-service/base.api/src/main/resources/application.properties
+RUN sed -i 's#localhost:20334#mainchain-node:20334#g' /restful-services/wallet-service/base.api/src/main/resources/application.properties
 RUN sed -i 's#8090#8080#g' /restful-services/wallet-service/base.api/src/main/resources/application.properties
 RUN cd /restful-services/wallet-service \
     && mvn clean                        \
