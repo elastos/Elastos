@@ -1577,9 +1577,9 @@ int start_cmd_listener(const char *host, const char *port)
     }
 
 #ifdef _WIN32
-    struct timeval timeout = {300000,0};//300s
+    struct timeval timeout = {600000,0};//600s
 #else
-    struct timeval timeout = {300,0};//300s
+    struct timeval timeout = {600,0};//600s
 #endif
     setsockopt(cmd_sock, SOL_SOCKET, SO_SNDTIMEO, (const char *)&timeout, sizeof(timeout));
     setsockopt(cmd_sock, SOL_SOCKET, SO_RCVTIMEO, (const char *)&timeout, sizeof(timeout));
