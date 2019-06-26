@@ -25,9 +25,6 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
     ClearEditText etPwd;
     private Wallet wallet;
     private String chainId;
-    private String amount;
-    private long fee;
-    private String toAddress;
     private PwdPresenter presenter;
     private String attributes;
     private String pwd;
@@ -52,9 +49,6 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
     @Override
     protected void setExtraData(Intent data) {
         chainId = data.getStringExtra("chainId");
-        amount = data.getStringExtra("amount");
-        toAddress = data.getStringExtra("toAddress");
-        fee = data.getLongExtra("fee", MyWallet.feePerKb);
         attributes = data.getStringExtra("attributes");
         wallet = data.getParcelableExtra("wallet");
       /*  tvAddress.setText(toAddress);

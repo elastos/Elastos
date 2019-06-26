@@ -22,12 +22,15 @@ import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.adapter.TransferDetailRecAdapetr;
+import org.elastos.wallet.ela.ui.Assets.bean.CoinBaseTransferRecordEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.Payload;
 import org.elastos.wallet.ela.ui.Assets.bean.RecorderAddressEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.TransferRecordDetailEntity;
+import org.elastos.wallet.ela.ui.Assets.presenter.AssetDetailPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetTransactionPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonGetTransactionViewData;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
+import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.NumberiUtil;
@@ -39,7 +42,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
-public class TransferDetailFragment extends BaseFragment implements CommonRvListener, CommonGetTransactionViewData, OnRefreshListener {
+public class TransferDetailFragment extends BaseFragment implements CommonRvListener, CommonGetTransactionViewData, OnRefreshListener, CommmonStringWithMethNameViewData {
     @BindView(R.id.tv_title)
     TextView tvTitle;
 
@@ -130,6 +133,8 @@ public class TransferDetailFragment extends BaseFragment implements CommonRvList
     private Wallet wallet;
     private List<RecorderAddressEntity> inputList;
     private List<RecorderAddressEntity> outputList;
+    private int recordType;
+    AssetDetailPresenter assetDetailPresenter;
 
     @Override
     protected int getLayoutId() {
@@ -140,10 +145,20 @@ public class TransferDetailFragment extends BaseFragment implements CommonRvList
     @Override
     protected void setExtraData(Bundle data) {
         txHash = data.getString("TxHash");
+        recordType = data.getInt("recordType", 0);
         chainId = data.getString("ChainId", "ELA");
         wallet = data.getParcelable("wallet");
-        presenter = new CommonGetTransactionPresenter();
-        presenter.getAllTransaction(wallet.getWalletId(), chainId, 0, 20, txHash, this);
+
+        if (recordType == 1) {
+            //收益记录详情
+            assetDetailPresenter = new AssetDetailPresenter();
+            assetDetailPresenter.getAllCoinBaseTransaction(wallet.getWalletId(), chainId, 0, 20, txHash, this);
+
+        } else {
+            //交易记录
+            presenter = new CommonGetTransactionPresenter();
+            presenter.getAllTransaction(wallet.getWalletId(), chainId, 0, 20, txHash, this);
+        }
         tvTransfernum.setText(txHash);
         srl.setOnRefreshListener(this);
 
@@ -381,7 +396,46 @@ public class TransferDetailFragment extends BaseFragment implements CommonRvList
 
     @Override
     public void onRefresh(RefreshLayout refreshLayout) {
-        presenter.getAllTransaction(wallet.getWalletId(), chainId, 0, 20, txHash, this);
+        if (recordType == 0) {
+            presenter.getAllTransaction(wallet.getWalletId(), chainId, 0, 20, txHash, this);
+        } else {
+            assetDetailPresenter.getAllCoinBaseTransaction(wallet.getWalletId(), chainId, 0, 20, txHash, this);
+        }
     }
 
+    @Override
+    public void onGetCommonData(String methodname, String data) {
+        //getAllCoinBaseTransaction 获得收益记录
+        srl.finishRefresh();
+        CoinBaseTransferRecordEntity transferRecordDetailEntity = JSON.parseObject(data, CoinBaseTransferRecordEntity.class);
+        if (transferRecordDetailEntity == null) {
+            showToast(getString(R.string.nodata));
+            return;
+        }
+        List<CoinBaseTransferRecordEntity.TransactionsBean> transactions = transferRecordDetailEntity.getTransactions();
+        if (transactions == null || transactions.size() == 0) {
+            showToast(getString(R.string.nodata));
+            return;
+        }
+        CoinBaseTransferRecordEntity.TransactionsBean transactionsBean = transactions.get(0);
+        tvTransferamount.setText(NumberiUtil.maxNumberFormat(Arith.div(transactionsBean.getAmount() + "", MyWallet.RATE_S), 12) + " ELA");
+        llCharge.setVisibility(View.GONE);
+        llIn.setVisibility(View.GONE);//输入
+        //输出
+        llOut2.setVisibility(View.GONE);
+        ivShowOut.setVisibility(View.GONE);
+        llShowOut.setVisibility(View.GONE);
+        tvAddressOut1.setText(transactionsBean.getAddress());
+        tvAmountOut1.setVisibility(View.GONE);
+
+        if (transactionsBean.getStatus().equals("Pending")) {
+            tvSuretime.setText("- -");
+        } else {
+            tvSuretime.setText(DateUtil.time(transactionsBean.getTimestamp()));
+        }
+        tvSuretimes.setText(transactionsBean.getConfirmStatus());
+        tvRemark.setVisibility(View.GONE);
+
+
+    }
 }

@@ -24,18 +24,6 @@ public class SignUpPresenter extends PresenterAbstract {
         subscriberObservable(observer, observable);
     }
 
-    //验证密码
-    public void exportWalletWithMnemonic(String walletId, String pwd, BaseFragment baseFragment) {
-        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().exportWalletWithMnemonic_1(walletId, pwd);
-            }
-        });
-        subscriberObservable(observer, observable);
-    }
-
 
     //验证交易
     public void getGenerateProducerPayload(String masterWalletID, String chainID, String publicKey, String nodePublicKey, String nickName, String url, String IPAddress, long location, String payPasswd

@@ -2,6 +2,7 @@ package org.elastos.wallet.ela.ui.vote.SuperNodeList;
 
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.widget.DrawableUtils;
@@ -66,10 +67,8 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     @BindView(R.id.recyclerview)
     RecyclerView recyclerview;
     ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> netList;
-    Unbinder unbinder;
     @BindView(R.id.iv_swichlist)
     ImageView ivSwichlist;
-    Unbinder unbinder1;
     @BindView(R.id.recyclerview1)
     RecyclerView recyclerview1;
     private SuperNodeListAdapter adapter;
@@ -268,7 +267,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
                 case "Unregistered":
                     tv_signupfor.setText(getString(R.string.sign_up_for));
                     tv_signupfor.setVisibility(View.VISIBLE);
-                    tv_signupfor.setCompoundDrawables(null, getResources().getDrawable(R.mipmap.vote_attend), null, null);
+                    tv_signupfor.setCompoundDrawables(null, getDrawable(R.mipmap.vote_attend), null, null);
                     break;
                 case "ReturnDeposit":
                     tv_signupfor.setVisibility(View.GONE);
@@ -277,12 +276,19 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
                 case "Registered":
                     tv_signupfor.setText(getString(R.string.electoral_affairs));
                     tv_signupfor.setVisibility(View.VISIBLE);
-                    tv_signupfor.setCompoundDrawables(null, getResources().getDrawable(R.mipmap.vote_management), null, null);
+                    tv_signupfor.setCompoundDrawables(null, getDrawable(R.mipmap.vote_management), null, null);
+
                     break;
 
             }
 
         }
+    }
+
+    private Drawable getDrawable(int id) {
+        Drawable drawable = getResources().getDrawable(id);
+        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+        return drawable;
     }
 
     @Override

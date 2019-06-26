@@ -94,16 +94,16 @@ public class NodeInformationFragment extends BaseFragment {
         setToobar(toolbar, toolbarTitle, getString(R.string.node_information));
 //        registReceiver();
         String url = bean.getUrl();
+        GlideApp.with(NodeInformationFragment.this).load(R.mipmap.found_vote_initial).
+                circleCrop().into(ivIcon);
         GetDynanicUrl.getData(url, getContext(), new NodeDotJsonViewData() {
             @Override
             public void onGetNodeDotJsonData(NodeInfoBean t) {
                 if (t == null || t.getOrg() == null || t.getOrg().getBranding() == null) {
-                    GlideApp.with(NodeInformationFragment.this).load(R.mipmap.found_vote_initial).
-                            circleCrop().into(ivIcon);
                     return;
                 }
                 String imgUrl = t.getOrg().getBranding().getLogo_256();
-                GlideApp.with(NodeInformationFragment.this).load(imgUrl)
+                GlideApp.with(NodeInformationFragment.this).load(imgUrl).placeholder(R.mipmap.found_vote_initial)
                         .error(R.mipmap.found_vote_initial).circleCrop().into(ivIcon);
             }
         });

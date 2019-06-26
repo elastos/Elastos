@@ -27,35 +27,227 @@
             android:layout_marginTop="6dp"
             android:textColor="#fffbfbfb"
             android:textSize="20sp" />
+
         <TextView
-            android:visibility="gone"
             android:id="@+id/tv_balanceuse"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:textColor="#fffbfbfb"
-            android:textSize="20sp" />
+            android:textSize="20sp"
+            android:visibility="gone" />
+
         <TextView
             android:id="@+id/tv_synctime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
             android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
             android:textColor="#ffffffff"
             android:textSize="13sp" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="30dp"
         android:layout_marginLeft="@dimen/common_margin_asset"
         android:layout_marginRight="@dimen/common_margin_asset"
+        android:background="@color/a26ffffff"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tv_chain"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:paddingRight="25dp"
+            android:paddingLeft="25dp"
+            android:text="@string/main_chain_withdraw"
+            android:textColor="#ffffffff"
+            android:textSize="11sp" />
+
+        <View
+            android:visibility="gone"
+            android:id="@+id/view_line"
+            style="@style/linevertical"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp" />
+
+        <TextView
+            android:visibility="gone"
+            android:id="@+id/tv_towhole"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:paddingRight="25dp"
+            android:paddingLeft="25dp"
+            android:text="@string/towhole"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+
+    <RadioGroup
+        android:id="@+id/rg_record"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginLeft="@dimen/common_margin_asset"
         android:layout_marginTop="5dp"
+        android:layout_marginRight="@dimen/common_margin_asset"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/rb_trans_recorder"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/radiobutton_state"
+            android:button="@null"
+            android:checked="true"
+            android:gravity="center"
+            android:text="@string/transaction_records"
+            android:textColor="@color/white" />
+
+        <RadioButton
+            android:visibility="gone"
+            android:id="@+id/rb_earn_recorder"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/radiobutton_state"
+            android:button="@null"
+            android:gravity="center"
+            android:text="@string/earn_records"
+            android:textColor="@color/white" />
+    </RadioGroup>
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginLeft="@dimen/common_margin_asset"
+        android:layout_marginRight="@dimen/common_margin_asset"
+        android:layout_weight="1"
+        android:background="@color/a26ffffff">
+
+        <TextView
+            android:id="@+id/tv_record_bg"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/norecorder"
+            android:textColor="@color/whiter50"
+            android:textSize="17sp"
+            android:visibility="gone" />
+
+        <com.scwang.smartrefresh.layout.SmartRefreshLayout
+            android:id="@+id/srl"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:srlAccentColor="@android:color/white"
+            app:srlDisableContentWhenLoading="true"
+            app:srlDisableContentWhenRefresh="true"
+            app:srlEnablePreviewInEditMode="false">
+
+            <com.scwang.smartrefresh.layout.header.ClassicsHeader
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/rv"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+                <LinearLayout
+                    android:id="@+id/ll_earn"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="58dp"
+                        android:orientation="horizontal"
+                        android:paddingLeft="@dimen/common_margin_asset"
+                        android:paddingRight="@dimen/common_margin_asset">
+
+                        <TextView
+                            android:id="@+id/tv_address"
+                            android:layout_width="140dp"
+                            android:layout_height="match_parent"
+                            android:gravity="center" />
+
+
+                        <TextView
+                            android:id="@+id/tv_copyaddress"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentRight="true"
+                            android:layout_centerVertical="true"
+                            android:background="@drawable/bg_super_list"
+                            android:paddingLeft="15dp"
+                            android:paddingTop="5dp"
+                            android:paddingRight="15dp"
+                            android:paddingBottom="5dp"
+                            android:text="@string/copyearnaddress" />
+
+
+                        <View
+                            style="@style/line1"
+                            android:layout_alignParentBottom="true" />
+
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/tv_earn_bg"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:text="@string/norecorder"
+                            android:textColor="@color/whiter50"
+                            android:textSize="17sp"
+                            android:visibility="gone" />
+
+                        <android.support.v7.widget.RecyclerView
+                            android:id="@+id/rv1"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" />
+                    </RelativeLayout>
+
+                </LinearLayout>
+
+            </RelativeLayout>
+
+
+            <com.scwang.smartrefresh.layout.footer.ClassicsFooter
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:srlAccentColor="@color/whiter" />
+
+        </com.scwang.smartrefresh.layout.SmartRefreshLayout>
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginLeft="@dimen/common_margin_asset"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="@dimen/common_margin_asset"
+        android:layout_marginBottom="10dp"
         android:orientation="horizontal">
 
 
         <LinearLayout
-            android:id="@+id/ll_1"
+            android:id="@+id/ll_transfer"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="2"
@@ -77,35 +269,9 @@
                 android:textSize="15sp" />
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/ll_2"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="5dp"
-            android:layout_weight="3"
-            android:background="@color/a26ffffff"
-            android:gravity="center"
-            android:orientation="horizontal">
-
-            <ImageView
-                android:id="@+id/iv_2"
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:layout_margin="2dp"
-                android:src="@mipmap/asset_trade_side_recharge" />
-
-            <TextView
-                android:id="@+id/tv_2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/side_chain_top_up"
-                android:textColor="#ffffffff"
-                android:textSize="15sp" />
-        </LinearLayout>
-
 
         <LinearLayout
-            android:id="@+id/ll_3"
+            android:id="@+id/ll_recipe"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_marginLeft="5dp"
@@ -129,63 +295,4 @@
         </LinearLayout>
 
     </LinearLayout>
-
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/common_margin_asset"
-        android:layout_marginRight="@dimen/common_margin_asset"
-        android:layout_marginTop="5dp"
-        android:background="@color/a26ffffff"
-        android:paddingBottom="18dp"
-        android:paddingLeft="15dp"
-        android:paddingRight="15dp"
-        android:paddingTop="18dp"
-        android:text="@string/transaction_records" />
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginBottom="10dp"
-        android:layout_marginLeft="@dimen/common_margin_asset"
-        android:layout_marginRight="@dimen/common_margin_asset"
-        android:background="@color/a26ffffff">
-
-        <TextView
-            android:id="@+id/tv_record_bg"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-
-            android:gravity="center"
-            android:text="@string/norecorder"
-            android:textColor="@color/whiter50"
-            android:textSize="17sp"
-            android:visibility="gone" />
-
-        <com.scwang.smartrefresh.layout.SmartRefreshLayout
-            android:id="@+id/srl"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:srlAccentColor="@android:color/white"
-            app:srlDisableContentWhenLoading="true"
-            app:srlDisableContentWhenRefresh="true"
-            app:srlEnablePreviewInEditMode="false">
-
-            <com.scwang.smartrefresh.layout.header.ClassicsHeader
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/rv"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-            <com.scwang.smartrefresh.layout.footer.ClassicsFooter
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:srlAccentColor="@color/whiter" />
-
-        </com.scwang.smartrefresh.layout.SmartRefreshLayout>
-    </RelativeLayout>
 </LinearLayout>

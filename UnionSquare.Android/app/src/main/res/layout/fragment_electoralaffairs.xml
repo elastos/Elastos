@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.qmuiteam.qmui.layout.QMUILinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@mipmap/found_bg"
-    android:orientation="vertical"
-    tools:context=".ui.vote.NodeInformation.NodeInformationFragment">
+    android:orientation="vertical">
 
     <include layout="@layout/title_bar" />
 
@@ -27,11 +25,11 @@
             android:orientation="vertical">
 
             <android.support.v7.widget.AppCompatImageView
+                android:id="@+id/iv_icon"
                 android:layout_width="60dp"
                 android:layout_height="60dp"
                 android:layout_marginTop="26dp"
-                android:id="@+id/iv_icon"
-                android:src="@mipmap/found_vote_initial" />
+              />
 
 
             <LinearLayout
@@ -65,8 +63,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:orientation="horizontal"
-               >
+                android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="0dp"
@@ -78,14 +75,14 @@
                     android:textSize="13sp" />
 
                 <TextView
-                    android:gravity="right"
-                    android:layout_weight="1"
                     android:id="@+id/tv_node"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="15dp"
-                    android:text=""
+                    android:layout_weight="1"
+                    android:gravity="right"
                     android:maxLines="2"
+                    android:text=""
                     android:textColor="@color/qmui_config_color_white"
                     android:textSize="13sp" />
 
@@ -293,8 +290,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="88dp"
-                android:text="@string/_72"
                 android:gravity="center"
+                android:text="@string/_72"
                 android:textColor="#ffffffff"
                 android:textSize="14sp" />
 

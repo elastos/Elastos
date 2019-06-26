@@ -349,6 +349,14 @@
     <string name="feedback">问题反馈</string>
     <string name="showupdatalog">查看更新日志</string>
     <string name="tv_elaintroduce">ELAWallet是安全、便捷的专业亦来云SPV轻节点客户端钱包，支持亦来云全生态数字资产。</string>
-
+    <string name="earn_records">收益记录</string>
+    <string name="copyearnaddress">复制收益地址</string>
+    <string name="towhole">零钱换整</string>
+    <string name="copyemailsuccess">客服邮箱已复制到剪切板</string>
+    <string name="cbsy">创币收益</string>
+    <string name="runlog">运行日志</string>
+    <string name="needpermissionstorage">需要您的存储权限</string>
+    <string name="logkeppin">运行日志已保存到</string>
+    <string name="logkeepfail">日志生成失败</string>
 
 </resources>

@@ -207,7 +207,7 @@
             android:textColor="#999999"
             android:textSize="@dimen/px18" />
 
-        <android.support.v7.widget.AppCompatTextView
+        <TextView
             android:id="@+id/tv_signupfor"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

@@ -30,6 +30,7 @@ import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
+import org.elastos.wallet.ela.ui.Assets.presenter.WallletManagePresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.ui.vote.activity.VoteActivity;
@@ -395,7 +396,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
             showToastMessage(getString(R.string.pwdnoempty));
             return;
         }
-        signuppresenter.exportWalletWithMnemonic(wallet.getWalletId(), pwd, this);
+       new WallletManagePresenter().exportWalletWithMnemonic(wallet.getWalletId(), pwd, this);
     }
 
 

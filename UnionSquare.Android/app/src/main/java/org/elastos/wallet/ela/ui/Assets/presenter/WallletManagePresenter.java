@@ -5,7 +5,7 @@ import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
 import org.elastos.wallet.ela.rxjavahelp.PresenterAbstract;
 import org.elastos.wallet.ela.ui.Assets.listener.DestroyWalletListner;
-import org.elastos.wallet.ela.ui.Assets.listener.OutportWalletMnemonicListner;
+import org.elastos.wallet.ela.ui.common.listener.CommonStringWithiMethNameListener;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
@@ -14,7 +14,7 @@ public class WallletManagePresenter extends PresenterAbstract {
 
 
     public void exportWalletWithMnemonic(String walletId, String pwd, BaseFragment baseFragment) {
-        Observer observer = createObserver(OutportWalletMnemonicListner.class, baseFragment);
+        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {

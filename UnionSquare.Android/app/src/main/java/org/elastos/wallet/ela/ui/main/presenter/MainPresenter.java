@@ -19,7 +19,7 @@ public class MainPresenter extends PresenterAbstract {
             @Override
             public BaseEntity subscribe() {
                 MyWallet myWallet = baseActivity.getWallet();
-                return new CommmonObjEntity(MyWallet.SUCESSCODE, myWallet);
+                return new CommmonObjEntity(MyWallet.SUCCESSCODE, myWallet);
             }
         });
         subscriberObservable(observer, observable);

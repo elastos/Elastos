@@ -87,7 +87,7 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
                 if (isShowDialog) {
                     dismissProgessDialog();
                 }
-                if (MyWallet.SUCESSCODE.equals(value.getCode()) || "0".equals(value.getCode())) {
+                if (MyWallet.SUCCESSCODE.equals(value.getCode()) || "0".equals(value.getCode())) {
                     lisener.onNextLisenner(value);
                 } else {
                     showTips(value);
@@ -136,7 +136,7 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
                 if (isShowDialog) {
                     dismissProgessDialog();
                 }
-                if (MyWallet.SUCESSCODE.equals(value.getCode())) {
+                if (MyWallet.SUCCESSCODE.equals(value.getCode())) {
                     lisener.onNextLisenner(value);
                 } else {
                     showTips(value);

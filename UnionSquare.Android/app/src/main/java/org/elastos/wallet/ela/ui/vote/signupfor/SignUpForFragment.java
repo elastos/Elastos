@@ -19,6 +19,7 @@ import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
+import org.elastos.wallet.ela.ui.Assets.presenter.WallletManagePresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonLongViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
@@ -220,7 +221,7 @@ public class SignUpForFragment extends BaseFragment implements CommmonStringWith
             return;
         }
 
-        presenter.exportWalletWithMnemonic(wallet.getWalletId(), pwd, this);
+        new WallletManagePresenter().exportWalletWithMnemonic(wallet.getWalletId(), pwd, this);
     }
 
     @Override

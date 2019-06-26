@@ -177,6 +177,7 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
         ElectoralAffairsBean bean = JSON.parseObject(data, ElectoralAffairsBean.class);
         tvName.setText(bean.getNickName());
         tvAddress.setText(AppUtlis.getLoc(getContext(), bean.getLocation() + ""));
+        GlideApp.with(ElectoralAffairsFragment.this).load(R.mipmap.found_vote_initial).circleCrop().into(ivIcon);
         String url = bean.getURL();
         GetDynanicUrl.getData(url, getContext(), new NodeDotJsonViewData() {
             @Override
@@ -186,7 +187,7 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
                 }
                 String imgUrl = t.getOrg().getBranding().getLogo_256();
                 GlideApp.with(ElectoralAffairsFragment.this).load(imgUrl)
-                        .error(R.mipmap.found_vote_initial).into(ivIcon);
+                        .error(R.mipmap.found_vote_initial).circleCrop().into(ivIcon);
             }
         });
         tvUrl.setText(url);

@@ -20,7 +20,7 @@ import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonLongViewData;
+import org.elastos.wallet.ela.ui.Assets.presenter.WallletManagePresenter;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
 import org.elastos.wallet.ela.ui.vote.bean.ElectoralAffairsBean;
@@ -169,10 +169,8 @@ public class UpdateInformationFragment extends BaseFragment implements WarmPromp
             showToastMessage(getString(R.string.pwdnoempty));
             return;
         }
-        presenter.exportWalletWithMnemonic(wallet.getWalletId(), pwd, this);
+        new WallletManagePresenter().exportWalletWithMnemonic(wallet.getWalletId(), pwd, this);
     }
-
-
 
 
     @Override
@@ -209,7 +207,6 @@ public class UpdateInformationFragment extends BaseFragment implements WarmPromp
                 break;
         }
     }
-
 
 
     long code;

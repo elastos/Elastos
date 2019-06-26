@@ -107,13 +107,9 @@ public class TransferActivity extends BaseActivity {
                 //转账密码
                 registReceiver();
                 Intent intent = new Intent(this, PwdActivity.class);
-                intent.putExtra("amount", amount);
-                intent.putExtra("toAddress", toAddress);
                 intent.putExtra("wallet", wallet);
                 intent.putExtra("chainId", chainId);
-                intent.putExtra("fee", fee);
                 intent.putExtra("attributes", attributes);
-                intent.putExtra("type", type);
                 startActivity(intent);
                 break;
 
