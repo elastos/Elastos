@@ -42,7 +42,7 @@
             android:layout_height="50dp"
             android:layout_gravity="center_horizontal"
             android:layout_weight="1"
-            android:background="@color/blue1"
+            android:background="@color/surebutton"
             android:gravity="center"
             android:text="@string/sure"
             android:textColor="@color/whiter"

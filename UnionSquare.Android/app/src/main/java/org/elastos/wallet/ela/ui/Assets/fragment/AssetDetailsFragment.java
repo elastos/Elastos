@@ -26,7 +26,6 @@ import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.activity.PwdActivity;
-import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.Assets.adapter.TransferRecordRecAdapetr;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.TransferRecordEntity;
@@ -41,9 +40,10 @@ import org.elastos.wallet.ela.ui.find.presenter.VoteFirstPresenter;
 import org.elastos.wallet.ela.ui.find.viewdata.RegisteredProducerInfoViewData;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
-import org.elastos.wallet.ela.utils.Constant;
+import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
+import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -119,17 +119,20 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
         wallet = data.getParcelable("wallet");
         subWallet = data.getParcelable("subWallet");
         tvTitle.setText(chainId);
-        assetDetailPresenter = new AssetDetailPresenter();
+
     }
 
     @Override
     protected void initView(View view) {
+        assetDetailPresenter = new AssetDetailPresenter();
         onErrorRefreshLayout(srl);
         if (chainId.equals(MyWallet.ELA)) {
             tvChain.setText(getString(R.string.side_chain_top_up));
             viewLine.setVisibility(View.VISIBLE);
             tvTowhole.setVisibility(View.VISIBLE);
             new VoteFirstPresenter().getRegisteredProducerInfo(wallet.getWalletId(), chainId, this);
+            assetDetailPresenter.getAllUTXOs(wallet.getWalletId(), chainId, 0, 1, "", this);
+
         }
         presenter = new CommonGetTransactionPresenter();
         presenter.getAllTransaction(wallet.getWalletId(), chainId, startCount, pageCount, "", this);
@@ -316,7 +319,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
             SubWallet subWallet = (SubWallet) result.getObj();
             if (subWallet != null && subWallet.getBelongId().equals(wallet.getWalletId()) &&
                     subWallet.getChainId().equals(chainId)) {
-                tvBalance.setText(NumberiUtil.maxNumberFormat(Arith.div(subWallet.getBalance(), MyWallet.RATE_S), 12) + chainId);
+                tvBalance.setText(NumberiUtil.maxNumberFormat(Arith.div(subWallet.getBalance(), MyWallet.RATE_S), 12) + " ELA");
             }
         }
         if (integer == RxEnum.UPDATAPROGRESS.ordinal()) {
@@ -377,6 +380,15 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
             case "getOwnerAddress":
                 tvAddress.setText(data);
                 break;
+            case "getAllUTXOs":
+                JSONObject jsonObject = JSON.parseObject(data);
+                if (jsonObject.containsKey("MaxCount")) {
+                    int maxCount = jsonObject.getInteger("MaxCount");
+                    if (maxCount > 2000) {
+                        exchange();
+                    }
+                }
+                break;
             case "createCombineUTXOTransaction":
                 //零钱换整
                 Intent intent = new Intent(getActivity(), PwdActivity.class);
@@ -394,5 +406,15 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                 setRecycleView1(transferRecordEntity);
                 break;
         }
+    }
+
+    private void exchange() {
+        new DialogUtil().showWarmPrompt1(getBaseActivity(), getString(R.string.whetherexchange), new WarmPromptListener() {
+            @Override
+            public void affireBtnClick(View view) {
+                assetDetailPresenter.createCombineUTXOTransaction(wallet.getWalletId(), chainId, "", false, AssetDetailsFragment.this);
+
+            }
+        });
     }
 }

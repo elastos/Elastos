@@ -46,4 +46,15 @@ public class AssetDetailPresenter extends PresenterAbstract {
         });
         subscriberObservable(observer, observable, baseFragment);
     }
+
+    public void getAllUTXOs(String walletId, String chainId, int start, int count, String address, BaseFragment baseFragment) {
+        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().getAllUTXOs(walletId, chainId, start, count, address);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
 }

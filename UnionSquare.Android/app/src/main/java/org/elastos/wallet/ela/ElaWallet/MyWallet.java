@@ -613,25 +613,7 @@ public class MyWallet {
         }
     }
 
-    // args[0]: String masterWalletID
-    // args[1]: String chainID
-    // args[2]: int start
-    // args[3]: int count
-    // arg2[4]: String address
-    public BaseEntity getAllUTXOs(String masterWalletID, String chainID, int start, int count, String address) {
-        try {
-            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
-            if (subWallet == null) {
-                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
-            }
 
-            String utxoJson = subWallet.GetAllUTXOs(start, count, address);
-
-            return new CommmonStringEntity(SUCCESSCODE, utxoJson);
-        } catch (WalletException e) {
-            return exceptionProcess(e, "Get " + formatWalletName(masterWalletID, chainID) + " all UTXOs");
-        }
-    }
 
     // args[0]: String masterWalletID
     // args[1]: String chainID
@@ -1131,11 +1113,6 @@ public class MyWallet {
 
     /********************************************多签改动版本*******************************************/
     public BaseEntity getOwnerAddress(String masterWalletID, String chainID) {
-
-        Log.d(TAG, "<<< getOwnerAddress >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1151,8 +1128,6 @@ public class MyWallet {
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
             String address = mainchainSubWallet.GetOwnerAddress();
-            Log.d(TAG, "result: " + address);
-
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, address, "getOwnerAddress");
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + "getOwnerAddress");
@@ -1160,14 +1135,6 @@ public class MyWallet {
     }
 
     public BaseEntity getAllCoinBaseTransaction(String masterWalletID, String chainID, int start, int count, String addressOrTxId) {
-
-        Log.d(TAG, "<<< getAllCoinBaseTransaction >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-        Log.d(TAG, "arg[2]: " + start);
-        Log.d(TAG, "arg[3]: " + count);
-        Log.d(TAG, "arg[4]: " + addressOrTxId);
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1176,7 +1143,6 @@ public class MyWallet {
             }
 
             String txJson = subWallet.GetAllCoinBaseTransaction(start, count, addressOrTxId);
-            Log.d(TAG, "result: " + txJson);
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, txJson, "getAllCoinBaseTransaction");
         } catch (WalletException e) {
             return exceptionProcess(e, "Get " + formatWalletName(masterWalletID, chainID) + " all tx");
@@ -1184,13 +1150,6 @@ public class MyWallet {
     }
 
     public BaseEntity createCombineUTXOTransaction(String masterWalletID, String chainID, String memo, boolean useVotedUTXO) {
-
-        Log.d(TAG, "<<< createCombineUTXOTransaction >>>");
-        Log.d(TAG, "arg[0]: " + masterWalletID);
-        Log.d(TAG, "arg[1]: " + chainID);
-        Log.d(TAG, "arg[2]: " + memo);
-        Log.d(TAG, "arg[3]: " + useVotedUTXO);
-
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1199,11 +1158,24 @@ public class MyWallet {
             }
 
             String result = subWallet.CreateCombineUTXOTransaction(memo, useVotedUTXO);
-            Log.d(TAG, "result: " + result);
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, result, "createCombineUTXOTransaction");
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + "createCombineUTXOTransaction");
         }
     }
+    public BaseEntity getAllUTXOs(String masterWalletID, String chainID, int start, int count, String address) {
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
+
+            }
+
+            String utxoJson = subWallet.GetAllUTXOs(start, count, address);
+            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, utxoJson, "getAllUTXOs");
+        } catch (WalletException e) {
+            return exceptionProcess(e, "Get " + formatWalletName(masterWalletID, chainID) + " all UTXOs"); }
+    }
+
 }
 

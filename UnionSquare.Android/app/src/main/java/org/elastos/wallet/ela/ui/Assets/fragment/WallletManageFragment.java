@@ -147,7 +147,6 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
     }
 
 
-
     @Override
     public void onDestoryWallet(String data) {
         dialog.dismiss();
