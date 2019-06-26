@@ -111,7 +111,7 @@ class C extends StandardPage {
         {anchorNode}
         <div className="p_CVoteDetail">
           <FixedHeader>
-            <BackLink link="/proposals" />
+            <BackLink link="/proposals" style={{ left: -150 }} />
             {metaNode}
             {titleNode}
             {labelNode}
