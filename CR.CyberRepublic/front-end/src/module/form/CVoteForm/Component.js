@@ -48,6 +48,7 @@ const renderRichEditor = (data, key, getFieldDecorator, max) => {
   }
   const content_fn = getFieldDecorator(key, {
     rules,
+    validateTrigger: 'onSubmit',
     initialValue: content,
   })
   const content_el = (
