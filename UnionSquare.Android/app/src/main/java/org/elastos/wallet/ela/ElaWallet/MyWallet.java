@@ -507,7 +507,6 @@ public class MyWallet {
             MasterWallet masterWallet = getMasterWallet(masterWalletID);
             if (masterWallet == null) {
                 return errorProcess(errCodeInvalidMasterWallet + "", "Get " + formatWalletName(masterWalletID));
-
             }
 
             String mnemonic = mMasterWalletManager.ExportWalletWithMnemonic(masterWallet, backupPassword);
@@ -547,7 +546,6 @@ public class MyWallet {
 
             }
 
-            Log.d(TAG, "result: " + subWallet.GetBalance(BalanceType));
             return new CommmonObjEntity(SUCCESSCODE, new BalanceEntity(chainID, subWallet.GetBalance(BalanceType) + "", masterWalletID));
 
         } catch (WalletException e) {
@@ -566,7 +564,6 @@ public class MyWallet {
             }
 
             String address = subWallet.CreateAddress();
-            Log.d(TAG, "result: " + address);
             return new CommmonStringEntity(SUCCESSCODE, address);
         } catch (WalletException e) {
             return exceptionProcess(e, "Create " + formatWalletName(masterWalletID, chainID) + " address");
@@ -585,8 +582,6 @@ public class MyWallet {
 
             }
             String allAddresses = subWallet.GetAllAddress(start, count);
-
-            Log.d(TAG, "result: " + allAddresses);
 
             return new CommmonStringEntity(SUCCESSCODE, allAddresses);
         } catch (WalletException e) {
@@ -608,16 +603,33 @@ public class MyWallet {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
                 return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
-
             }
 
             String tx = subWallet.CreateTransaction(fromAddress, toAddress, amount, memo, useVotedUTXO);
 
-            Log.d(TAG, "result: " + tx);
-
             return new CommmonStringEntity(SUCCESSCODE, tx);
         } catch (WalletException e) {
             return exceptionProcess(e, "Create " + formatWalletName(masterWalletID, chainID) + " tx");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: int start
+    // args[3]: int count
+    // arg2[4]: String address
+    public BaseEntity getAllUTXOs(String masterWalletID, String chainID, int start, int count, String address) {
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
+            }
+
+            String utxoJson = subWallet.GetAllUTXOs(start, count, address);
+
+            return new CommmonStringEntity(SUCCESSCODE, utxoJson);
+        } catch (WalletException e) {
+            return exceptionProcess(e, "Get " + formatWalletName(masterWalletID, chainID) + " all UTXOs");
         }
     }
 
@@ -635,7 +647,6 @@ public class MyWallet {
             }
 
             String result = subWallet.SignTransaction(rawTransaction, payPassword);
-            Log.d(TAG, "result: " + result);
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, result, "signTransaction");
         } catch (WalletException e) {
             return exceptionProcess(e, "Sign " + formatWalletName(masterWalletID, chainID) + " tx");
@@ -656,7 +667,6 @@ public class MyWallet {
             }
 
             String resultJson = subWallet.PublishTransaction(rawTxJson);
-            Log.d(TAG, "result: " + resultJson);
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, resultJson, "publishTransaction");
         } catch (WalletException e) {
             return exceptionProcess(e, "Publish " + formatWalletName(masterWalletID, chainID) + " tx");
@@ -678,7 +688,6 @@ public class MyWallet {
             }
 
             String txJson = subWallet.GetAllTransaction(start, count, addressOrTxId);
-            Log.d(TAG, "result: " + txJson);
             return new CommmonStringEntity(SUCCESSCODE, txJson);
         } catch (WalletException e) {
             return exceptionProcess(e, "Get " + formatWalletName(masterWalletID, chainID) + " all tx");

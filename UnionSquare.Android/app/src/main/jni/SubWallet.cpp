@@ -204,6 +204,34 @@ static jstring JNICALL CreateTransaction(JNIEnv *env, jobject clazz, jlong jSubP
     return tx;
 }
 
+#define JNI_GetAllUTXOs "(JIILjava/lang/String;)Ljava/lang/String;"
+
+static jstring JNICALL GetAllUTXOs(JNIEnv *env, jobject clazz, jlong jSubProxy,
+                                    jint start,
+                                    jint count,
+                                    jstring jaddress) {
+    bool exception = false;
+    std::string msgException;
+
+    const char *address = env->GetStringUTFChars(jaddress, NULL);
+
+    ISubWallet *subWallet = (ISubWallet *) jSubProxy;
+
+    jstring result = NULL;
+
+    try {
+        nlohmann::json utxoJson = subWallet->GetAllUTXOs(start, count, address);
+        result = env->NewStringUTF(utxoJson.dump().c_str());
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    env->ReleaseStringUTFChars(jaddress, address);
+
+    return result;
+}
+
 #define JNI_CreateCombineUTXOTransaction "(JLjava/lang/String;Z)Ljava/lang/String;"
 
 static jstring JNICALL CreateCombineUTXOTransaction(JNIEnv *env, jobject clazz, jlong jSubProxy,
@@ -571,6 +599,7 @@ static const JNINativeMethod methods[] = {
         REGISTER_METHOD(AddCallback),
         REGISTER_METHOD(RemoveCallback),
         REGISTER_METHOD(CreateTransaction),
+        REGISTER_METHOD(GetAllUTXOs),
         REGISTER_METHOD(CreateCombineUTXOTransaction),
         REGISTER_METHOD(SignTransaction),
         REGISTER_METHOD(GetTransactionSignedSigners),

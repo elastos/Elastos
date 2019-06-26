@@ -78,6 +78,10 @@ public class SubWallet {
         return CreateTransaction(mInstance, fromAddress, toAddress, amount, memo, useVotedUTXO);
     }
 
+    public String GetAllUTXOs(int start, int count, String address) {
+        return GetAllUTXOs(mInstance, start, count, address);
+    }
+
     public String CreateCombineUTXOTransaction(String memo, boolean useVotedUTXO) throws WalletException {
         return CreateCombineUTXOTransaction(mInstance, memo, useVotedUTXO);
     }
@@ -154,6 +158,8 @@ public class SubWallet {
     private native void RemoveCallback(long subProxys, long subCallback);
 
     private native String CreateTransaction(long subProxy, String fromAddress, String toAddress, long amount, String memo, boolean useVotedUTXO);
+
+    private native String GetAllUTXOs(long subProxy, int start, int count, String address);
 
     private native String CreateCombineUTXOTransaction(long subProxy, String memo, boolean useVotedUTXO);
 
