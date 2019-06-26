@@ -72,6 +72,8 @@ namespace Elastos {
 					const std::string &memo,
 					bool useVotedUTXO = false);
 
+			virtual nlohmann::json GetAllUTXOs(uint32_t start, uint32_t count, const std::string &address) const;
+
 			virtual nlohmann::json CreateCombineUTXOTransaction(
 					const std::string &memo,
 					bool useVotedUTXO = false);

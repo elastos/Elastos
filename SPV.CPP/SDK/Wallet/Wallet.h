@@ -145,9 +145,9 @@ namespace Elastos {
 
 			void UpdateBalance();
 
-			std::vector<UTXO> GetAllUTXO() const;
+			std::vector<UTXO> GetAllUTXO(const std::string &address) const;
 
-			const std::vector<CoinBaseUTXOPtr> &GetAllCoinBaseUTXO() const;
+			std::vector<CoinBaseUTXOPtr> GetAllCoinBaseUTXO(const std::string &address) const;
 
 			std::vector<TransactionPtr> TxUnconfirmedBefore(uint32_t blockHeight);
 

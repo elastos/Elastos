@@ -42,6 +42,8 @@ namespace Elastos {
 
 			const std::vector<UTXO> &GetUTXOs() const;
 
+			const std::vector<CoinBaseUTXOPtr> &GetCoinBaseUTXOs() const;
+
 			BigInt GetBalance(BalanceType type = Total) const;
 
 			void CleanBalance();

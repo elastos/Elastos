@@ -187,6 +187,43 @@ namespace Elastos {
 			return txJson;
 		}
 
+		nlohmann::json SubWallet::GetAllUTXOs(uint32_t start, uint32_t count, const std::string &address) const {
+			Log::preinfo("{}:{} {}", _parent->GetWalletID(), _info->GetChainID(), GetFun());
+			size_t maxCount = 0, pageCount = 0;
+
+			const WalletPtr &wallet = _walletManager->getWallet();
+
+			std::vector<UTXO> UTXOs = wallet->GetAllUTXO(address);
+			std::vector<CoinBaseUTXOPtr> coinbaseUTXOs = wallet->GetAllCoinBaseUTXO(address);
+
+			maxCount = UTXOs.size() + coinbaseUTXOs.size();
+			nlohmann::json j, jutxos;
+
+			for (size_t i = start; i < UTXOs.size() && pageCount < count; ++i) {
+				nlohmann::json item;
+				item["Hash"] = UTXOs[i].Hash().GetHex();
+				item["Index"] = UTXOs[i].Index();
+				item["Amount"] = UTXOs[i].Amount().getDec();
+				jutxos.push_back(item);
+				pageCount++;
+			}
+
+			for (size_t i = start + pageCount; pageCount < count && i < UTXOs.size() + coinbaseUTXOs.size(); ++i) {
+				nlohmann::json item;
+				CoinBaseUTXOPtr cbp = coinbaseUTXOs[i - UTXOs.size()];
+				item["Hash"] = cbp->Hash().GetHex();
+				item["Index"] = cbp->Index();
+				item["Amount"] = cbp->Amount().getDec();
+				jutxos.push_back(item);
+				pageCount++;
+			}
+
+			j["MaxCount"] = maxCount;
+			j["UTXOs"] = jutxos;
+
+			return j;
+		}
+
 		nlohmann::json SubWallet::CreateCombineUTXOTransaction(const std::string &memo, bool useVotedUTXO) {
 			Log::preinfo("{}:{} {} | {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), memo, useVotedUTXO);
 
@@ -253,7 +290,7 @@ namespace Elastos {
 
 			nlohmann::json j;
 			const WalletPtr wallet = _walletManager->getWallet();
-			std::vector<CoinBaseUTXOPtr> cbs = wallet->GetAllCoinBaseUTXO();
+			std::vector<CoinBaseUTXOPtr> cbs = wallet->GetAllCoinBaseUTXO("");
 			size_t maxCount = cbs.size();
 			size_t pageCount = count, realCount = 0;
 

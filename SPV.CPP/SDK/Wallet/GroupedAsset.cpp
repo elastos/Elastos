@@ -45,6 +45,10 @@ namespace Elastos {
 			return _utxos.GetUTXOs();
 		}
 
+		const std::vector<CoinBaseUTXOPtr> &GroupedAsset::GetCoinBaseUTXOs() const {
+			return _coinBaseUTXOs;
+		}
+
 		BigInt GroupedAsset::GetBalance(BalanceType type) const {
 			if (type == BalanceType::Default) {
 				return _balance - _votedBalance;

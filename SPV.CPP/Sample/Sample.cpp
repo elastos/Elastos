@@ -490,6 +490,9 @@ static void GetAllTxSummary(const std::string &masterWalletID, const std::string
 		nlohmann::json cb = subWallet->GetAllCoinBaseTransaction(0, 10000, (*it)["TxHash"]);
 		logger->debug("cb = {}", cb.dump());
 	}
+
+	nlohmann::json utxoSummary = subWallet->GetAllUTXOs(0, 500, "Ed8ZSxSB98roeyuRZwwekrnRqcgnfiUDeQ");
+	logger->debug("[{}:{}] all utxos -> {}", masterWalletID, subWalletID, utxoSummary.dump());
 }
 
 static void GetBalance(const std::string &masterWalletID, const std::string &subWalletID,
@@ -634,7 +637,7 @@ static void DIDTest() {
 }
 
 int main(int argc, char *argv[]) {
-	bool delay = false;
+	char c = ' ';
 	logger->set_level(spdlog::level::level_enum::debug);
 	logger->set_pattern("%m-%d %T.%e %P %t %^%L%$ %n %v");
 
@@ -646,26 +649,16 @@ int main(int argc, char *argv[]) {
 
 	InitWallets();
 
-	while(1) {
-		if (ELASyncSucceed) {
+	while(c != 'q' && c != 'Q') {
+		c = getchar();
+
+		if (c == 't') {
 			ELATest();
-			delay = true;
-		}
-
-		if (TokenSyncSucceed) {
 			TokenTest();
-			delay = true;
-		}
-
-		if (IDChainSyncSucceed) {
 			DIDTest();
-			delay = true;
-		}
+		} else if (c == 'c') {
+			// trigger p2p connect now
 
-		if (delay) {
-			sleep(60);
-		} else {
-			sleep(1);
 		}
 	}
 

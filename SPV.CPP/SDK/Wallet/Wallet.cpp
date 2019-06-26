@@ -66,21 +66,39 @@ namespace Elastos {
 			_listeningAddrs = addrs;
 		}
 
-		std::vector<UTXO> Wallet::GetAllUTXO() const {
+		std::vector<UTXO> Wallet::GetAllUTXO(const std::string &address) const {
 			boost::mutex::scoped_lock scopedLock(lock);
 			std::vector<UTXO> result;
 
-			GroupedAssetMap::iterator it;
-			for (it = _groupedAssets.begin(); it != _groupedAssets.end(); ++it) {
-				result.insert(result.end(), it->second->GetUTXOs().begin(), it->second->GetUTXOs().end());
+			for (GroupedAssetMap::iterator it = _groupedAssets.begin(); it != _groupedAssets.end(); ++it) {
+				const std::vector<UTXO> &utxos = it->second->GetUTXOs();
+				for (size_t i = 0; i < utxos.size(); ++i) {
+					TransactionPtr tx = _allTx.Get(utxos[i].Hash());
+					if (tx) {
+						const TransactionOutput &o = tx->GetOutputs()[utxos[i].Index()];
+						if (address.empty() || (!address.empty() && address == o.GetAddress().String()))
+							result.push_back(utxos[i]);
+					}
+				}
 			}
 
 			return result;
 		}
 
-		const std::vector<CoinBaseUTXOPtr> &Wallet::GetAllCoinBaseUTXO() const {
+		std::vector<CoinBaseUTXOPtr> Wallet::GetAllCoinBaseUTXO(const std::string &address) const {
+			std::vector<CoinBaseUTXOPtr> result;
 			boost::mutex::scoped_lock scopedLock(lock);
-			return _coinBaseUTXOs;
+
+			for (GroupedAssetMap::iterator it = _groupedAssets.begin(); it != _groupedAssets.end(); ++it) {
+				const std::vector<CoinBaseUTXOPtr> &cbs = it->second->GetCoinBaseUTXOs();
+				for (size_t i = 0; i < cbs.size(); ++i) {
+					if (address.empty() || (!address.empty() && address == Address(cbs[i]->ProgramHash()).String()))
+						result.push_back(cbs[i]);
+
+				}
+			}
+
+			return result;
 		}
 
 		nlohmann::json Wallet::GetBalanceInfo() {
@@ -370,7 +388,7 @@ namespace Elastos {
 				coinBaseTxUpdated(coinBaseHashes, blockHeight, timestamp);
 
 			if (!spentCoinBase.empty()) {
-
+				coinBaseSpent(spentCoinBase);
 			}
 
 			if (!payloads.empty()) {

@@ -664,8 +664,8 @@ namespace Elastos {
 
 			std::vector<Address> addrs;
 			_wallet->GetAllAddresses(addrs, 0, size_t(-1), true);
-			std::vector<UTXO> utxos = _wallet->GetAllUTXO();
-			const std::vector<CoinBaseUTXOPtr> &coinBaseUTXOs = _wallet->GetAllCoinBaseUTXO();
+			std::vector<UTXO> utxos = _wallet->GetAllUTXO("");
+			std::vector<CoinBaseUTXOPtr> coinBaseUTXOs = _wallet->GetAllCoinBaseUTXO("");
 			uint32_t blockHeight = (_lastBlock->GetHeight() > 100) ? _lastBlock->GetHeight() - 100 : 0;
 
 			std::vector<TransactionPtr> transactions = _wallet->TxUnconfirmedBefore(blockHeight);
