@@ -14,6 +14,8 @@ import CRPopover from '@/module/shared/Popover/Component'
 import MetaComponent from '@/module/shared/meta/Container'
 import Translation from '@/module/common/Translation/Container'
 import DraftEditor from '@/module/common/DraftEditor'
+import { createEditorState } from 'medium-draft'
+import mediumDraftExporter from 'medium-draft/lib/exporter'
 import VoteResultComponent from '../common/vote_result/Component'
 import Preamble from './Preamble'
 
@@ -32,6 +34,17 @@ const renderRichContent = (data, key, title) => (
     />
   </div>
 )
+
+const getHTML = (data, key) => {
+  const { contentType } = data
+  const content = _.get(data, key, '')
+  let editorState
+  if (content && contentType === 'MARKDOWN') {
+    editorState = createEditorState(JSON.parse(content))
+    return mediumDraftExporter(editorState.getCurrentContent())
+  }
+  return content
+}
 
 const SubTitle = ({ dataList }) => {
   const result = _.map(dataList, (data, key) => (
@@ -119,10 +132,24 @@ class C extends StandardPage {
   }
 
   renderTranslationBtn() {
-    const { title, content } = this.state.data
+    const { data } = this.state
+    const { title } = data
     const text = `
       <h1>${title}</h1>
-      <p>${content}</p>
+      <br />
+      <br />
+      <h2>${I18N.get('proposal.fields.abstract')}</h2>
+      <p>${getHTML(data, 'abstract')}</p>
+      <h2>${I18N.get('proposal.fields.goal')}</h2>
+      <p>${getHTML(data, 'goal')}</p>
+      <h2>${I18N.get('proposal.fields.motivation')}</h2>
+      <p>${getHTML(data, 'motivation')}</p>
+      <h2>${I18N.get('proposal.fields.relevance')}</h2>
+      <p>${getHTML(data, 'relevance')}</p>
+      <h2>${I18N.get('proposal.fields.budget')}</h2>
+      <p>${getHTML(data, 'budget')}</p>
+      <h2>${I18N.get('proposal.fields.plan')}</h2>
+      <p>${getHTML(data, 'plan')}</p>
     `
 
     return (
