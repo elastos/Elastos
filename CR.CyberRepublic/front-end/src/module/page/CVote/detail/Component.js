@@ -14,10 +14,12 @@ import CRPopover from '@/module/shared/Popover/Component'
 import MetaComponent from '@/module/shared/meta/Container'
 import Translation from '@/module/common/Translation/Container'
 import DraftEditor from '@/module/common/DraftEditor'
+import { createEditorState } from 'medium-draft'
+import mediumDraftExporter from 'medium-draft/lib/exporter'
 import VoteResultComponent from '../common/vote_result/Component'
 import Preamble from './Preamble'
 
-import { Title, Label, ContentTitle, StyledAnchor } from './style'
+import { Title, Label, ContentTitle, StyledAnchor, FixedHeader, Body } from './style'
 import './style.scss'
 
 const { TextArea } = Input
@@ -32,6 +34,17 @@ const renderRichContent = (data, key, title) => (
     />
   </div>
 )
+
+const getHTML = (data, key) => {
+  const { contentType } = data
+  const content = _.get(data, key, '')
+  let editorState
+  if (content && contentType === 'MARKDOWN') {
+    editorState = createEditorState(JSON.parse(content))
+    return mediumDraftExporter(editorState.getCurrentContent())
+  }
+  return content
+}
 
 const SubTitle = ({ dataList }) => {
   const result = _.map(dataList, (data, key) => (
@@ -97,17 +110,21 @@ class C extends StandardPage {
       <div>
         {anchorNode}
         <div className="p_CVoteDetail">
-          <BackLink link="/proposals" />
-          {metaNode}
-          {titleNode}
-          {labelNode}
-          {subTitleNode}
-          {contentNode}
-          {translationBtn}
-          {notesNode}
-          {voteActionsNode}
-          {adminActionsNode}
-          {voteDetailNode}
+          <FixedHeader>
+            <BackLink link="/proposals" style={{ left: -150 }} />
+            {metaNode}
+            {titleNode}
+            {labelNode}
+            {subTitleNode}
+          </FixedHeader>
+          <Body>
+            {contentNode}
+            {translationBtn}
+            {notesNode}
+            {voteActionsNode}
+            {adminActionsNode}
+            {voteDetailNode}
+          </Body>
         </div>
         <Footer />
       </div>
@@ -115,10 +132,24 @@ class C extends StandardPage {
   }
 
   renderTranslationBtn() {
-    const { title, content } = this.state.data
+    const { data } = this.state
+    const { title } = data
     const text = `
       <h1>${title}</h1>
-      <p>${content}</p>
+      <br />
+      <br />
+      <h2>${I18N.get('proposal.fields.abstract')}</h2>
+      <p>${getHTML(data, 'abstract')}</p>
+      <h2>${I18N.get('proposal.fields.goal')}</h2>
+      <p>${getHTML(data, 'goal')}</p>
+      <h2>${I18N.get('proposal.fields.motivation')}</h2>
+      <p>${getHTML(data, 'motivation')}</p>
+      <h2>${I18N.get('proposal.fields.relevance')}</h2>
+      <p>${getHTML(data, 'relevance')}</p>
+      <h2>${I18N.get('proposal.fields.budget')}</h2>
+      <p>${getHTML(data, 'budget')}</p>
+      <h2>${I18N.get('proposal.fields.plan')}</h2>
+      <p>${getHTML(data, 'plan')}</p>
     `
 
     return (
@@ -141,11 +172,19 @@ class C extends StandardPage {
       <StyledAnchor offsetTop={200}>
         <Anchor.Link href="#preamble" title={I18N.get('proposal.fields.preamble')} />
         <Anchor.Link href="#abstract" title={I18N.get('proposal.fields.abstract')} />
-        <Anchor.Link href="#goal" title={I18N.get('proposal.fields.goal')} />
+        <div style={{ marginTop: 48 }}>
+          <Anchor.Link href="#goal" title={I18N.get('proposal.fields.goal')} />
+        </div>
         <Anchor.Link href="#motivation" title={I18N.get('proposal.fields.motivation')} />
         <Anchor.Link href="#relevance" title={I18N.get('proposal.fields.relevance')} />
-        <Anchor.Link href="#budget" title={I18N.get('proposal.fields.budget')} />
+        <div style={{ marginTop: 48 }}>
+          <Anchor.Link href="#budget" title={I18N.get('proposal.fields.budget')} />
+        </div>
         <Anchor.Link href="#plan" title={I18N.get('proposal.fields.plan')} />
+        <div style={{ marginTop: 48 }}>
+          <Anchor.Link href="#tracking" title={I18N.get('proposal.fields.tracking')} />
+        </div>
+        <Anchor.Link href="#summary" title={I18N.get('proposal.fields.summary')} />
       </StyledAnchor>
     )
   }

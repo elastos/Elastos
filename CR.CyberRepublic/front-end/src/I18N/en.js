@@ -1090,6 +1090,7 @@ const en = {
 
   'from.CVoteForm.button.add': 'Add a Proposal',
   'from.CVoteForm.button.cancel': 'Cancel',
+  'from.CVoteForm.button.continue': 'Continue',
   'from.CVoteForm.button.saveDraft': 'Save as Draft',
   'from.CVoteForm.button.saveAndPublish': 'Save & Publish',
   'from.CVoteForm.button.saveChanges': 'Save changes',

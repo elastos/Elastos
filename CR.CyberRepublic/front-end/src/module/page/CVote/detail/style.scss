@@ -3,7 +3,7 @@
 .p_CVoteDetail {
   padding: 0 50px 80px 100px;
   width: 80vw;
-  margin: 80px auto 0;
+  margin: 0 auto;
   background: #ffffff;
   text-align: left;
   .content {
@@ -31,7 +31,6 @@
     display: flex;
     font-size: 20px;
     color: rgba(3, 30, 40, 0.4);
-    margin-top: 30px;
   }
   .subtitle-item {
     &:not(:first-child) {
@@ -47,6 +46,7 @@
     }
     .text {
       font-size: 11px;
+      color: rgba(3, 30, 40, 0.4);
     }
   }
   .vote-btn-group {

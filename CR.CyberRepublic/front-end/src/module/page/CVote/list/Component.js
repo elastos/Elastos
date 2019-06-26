@@ -50,7 +50,7 @@ export default class extends BaseComponent {
         title: I18N.get('council.voting.number'),
         dataIndex: 'vid',
         render: (vid, item, index) => (
-          <a className="tableLink" onClick={this.toDetail.bind(this, item._id)}>
+          <a className="tableLink" onClick={this.toDetailPage.bind(this, item._id)}>
             {`#${vid}`}
           </a>
         ),
@@ -60,7 +60,7 @@ export default class extends BaseComponent {
         dataIndex: 'title',
         width: '30%',
         render: (title, item) => (
-          <a onClick={this.toDetail.bind(this, item._id)} className="tableLink">
+          <a onClick={this.toDetailPage.bind(this, item._id)} className="tableLink">
             {title}
           </a>
         ),
@@ -125,9 +125,9 @@ export default class extends BaseComponent {
     const createBtn = canManage && (
       <Row type="flex" align="middle" justify="end">
         <Col lg={8} md={12} sm={24} xs={24} style={{ textAlign: 'right' }}>
-          <StyledButton onClick={this.switchCreateMode} className="cr-btn cr-btn-primary">
-            <Link to="/proposals/new" style={{ color: 'white' }}>{I18N.get('from.CVoteForm.button.add')}</Link>
-            {/* {I18N.get('from.CVoteForm.button.add')} */}
+          <StyledButton onClick={this.createAndRedirect} className="cr-btn cr-btn-primary">
+            {/* <Link to="/proposals/new" style={{ color: 'white' }}>{I18N.get('from.CVoteForm.button.add')}</Link> */}
+            {I18N.get('from.CVoteForm.button.add')}
           </StyledButton>
         </Col>
       </Row>
@@ -195,6 +195,28 @@ export default class extends BaseComponent {
     )
   }
 
+  createAndRedirect = async () => {
+    const { email, profile } = this.props.user
+    const fullName = `${profile.firstName} ${profile.lastName}`
+    const {createDraft } = this.props
+
+    const param = {
+      title: 'New Proposal',
+      proposedBy: fullName,
+      proposedByEmail: email,
+    }
+
+    this.ord_loading(true)
+
+    try {
+      const res = await createDraft(param)
+      this.ord_loading(false)
+      this.toEditPage(res._id)
+    } catch (error) {
+      this.ord_loading(false)
+    }
+  }
+
   getQuery = () => {
     const query = {}
     if (this.state.voteResult === FILTERS.UNVOTED) {
@@ -251,8 +273,12 @@ export default class extends BaseComponent {
     this.setState({ voteResult }, this.refetch)
   }
 
-  toDetail(id) {
+  toDetailPage(id) {
     this.props.history.push(`/proposals/${id}`)
+  }
+
+  toEditPage(id) {
+    this.props.history.push(`/proposals/${id}/edit`)
   }
 
   voteDataByUser = (data) => {
