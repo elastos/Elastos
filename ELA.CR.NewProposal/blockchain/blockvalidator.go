@@ -1,6 +1,7 @@
 package blockchain
 
 import (
+	"bytes"
 	"errors"
 	"math"
 	"math/big"
@@ -10,6 +11,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/auxpow"
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
@@ -181,7 +183,21 @@ func (b *BlockChain) checkTxsContext(block *Block) error {
 		totalTxFee += GetTxFee(block.Transactions[i], config.ELAAssetID)
 	}
 
-	return b.checkCoinbaseTransactionContext(block.Height, block.Transactions[0], totalTxFee)
+	err := b.checkCoinbaseTransactionContext(block.Height,
+		block.Transactions[0], totalTxFee)
+	if err != nil {
+		buf := new(bytes.Buffer)
+		if err = block.Serialize(buf); err != nil {
+			return err
+		}
+		log.Errorf("checkCoinbaseTransactionContext failed,"+
+			" err:%s block:%s", err, BytesToHexString(buf.Bytes()))
+		log.Error("checkCoinbaseTransactionContext failed,round reward:",
+			DefaultLedger.Arbitrators.GetArbitersRoundReward())
+		log.Error("checkCoinbaseTransactionContext failed,final round change:",
+			DefaultLedger.Arbitrators.GetFinalRoundChange())
+	}
+	return err
 }
 
 func (b *BlockChain) checkBlockContext(block *Block, prevNode *BlockNode) error {
