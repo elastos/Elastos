@@ -10,7 +10,7 @@ import (
 )
 
 func TestKeyFrame_Deserialize(t *testing.T) {
-	frame := randomKeyFrame()
+	frame := randomKeyFrame(5)
 
 	buf := new(bytes.Buffer)
 	frame.Serialize(buf)
@@ -22,7 +22,7 @@ func TestKeyFrame_Deserialize(t *testing.T) {
 }
 
 func TestKeyFrame_Snapshot(t *testing.T) {
-	frame := randomKeyFrame()
+	frame := randomKeyFrame(5)
 	frame2 := frame.Snapshot()
 	assert.True(t, keyFrameEqual(frame, frame2))
 }
@@ -73,10 +73,10 @@ func candidatesMapEqual(first map[common.Uint168]*Candidate,
 	return true
 }
 
-func randomKeyFrame() *KeyFrame {
+func randomKeyFrame(size int) *KeyFrame {
 	frame := NewKeyFrame()
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < size; i++ {
 		did := *randomUint168()
 		candidate := randomCandidate()
 		nickname := randomString()
@@ -88,7 +88,7 @@ func randomKeyFrame() *KeyFrame {
 		frame.PendingCandidates[did] = candidate
 		frame.Nicknames[nickname] = struct{}{}
 	}
-	for i := 0; i < 5; i++ {
+	for i := 0; i < size; i++ {
 		did := *randomUint168()
 		candidate := randomCandidate()
 		nickname := randomString()
@@ -100,7 +100,7 @@ func randomKeyFrame() *KeyFrame {
 		frame.ActivityCandidates[did] = candidate
 		frame.Nicknames[nickname] = struct{}{}
 	}
-	for i := 0; i < 5; i++ {
+	for i := 0; i < size; i++ {
 		did := *randomUint168()
 		candidate := randomCandidate()
 		nickname := randomString()

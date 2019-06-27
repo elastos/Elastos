@@ -84,7 +84,7 @@ func (s *State) ExistCandidateByNickname(nickname string) bool {
 }
 
 func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
-	panic("implement me")
+	//todo complete me
 }
 
 func (s *State) getCandidateByDID(did common.Uint168) *Candidate {

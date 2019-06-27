@@ -9,7 +9,7 @@ import (
 )
 
 func TestState_GetCandidatesRelated(t *testing.T) {
-	keyFrame := *randomKeyFrame()
+	keyFrame := *randomKeyFrame(5)
 	state := State{
 		KeyFrame: keyFrame,
 	}
@@ -55,7 +55,7 @@ func TestState_GetCandidatesRelated(t *testing.T) {
 }
 
 func TestState_ExistCandidateRelated(t *testing.T) {
-	keyFrame := *randomKeyFrame()
+	keyFrame := *randomKeyFrame(5)
 	state := State{
 		KeyFrame: keyFrame,
 	}
