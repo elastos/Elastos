@@ -169,7 +169,7 @@ class C extends StandardPage {
 
   renderAnchor() {
     return (
-      <StyledAnchor offsetTop={200}>
+      <StyledAnchor offsetTop={420}>
         <Anchor.Link href="#preamble" title={I18N.get('proposal.fields.preamble')} />
         <Anchor.Link href="#abstract" title={I18N.get('proposal.fields.abstract')} />
         <div style={{ marginTop: 48 }}>
