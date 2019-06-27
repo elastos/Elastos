@@ -28,6 +28,7 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
     private PwdPresenter presenter;
     private String attributes;
     private String pwd;
+    private int type;
 
     @Override
     protected int getLayoutId() {
@@ -51,6 +52,7 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
         chainId = data.getStringExtra("chainId");
         attributes = data.getStringExtra("attributes");
         wallet = data.getParcelableExtra("wallet");
+        type = data.getIntExtra("type", 0);//1只签名目前只有钱包管理的签名用到
       /*  tvAddress.setText(toAddress);
         tvAmount.setText(amount + " " + chainId);
         tvCharge.setText(NumberiUtil.maxNumberFormat(new BigDecimal(((double) fee) / MyWallet.RATE + "").toPlainString(), 12) + " " + chainId);//0.0001
@@ -78,6 +80,11 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
     public void onGetCommonData(String methodname, String data) {
         switch (methodname) {
             case "signTransaction":
+                if (type == 1) {
+                    post(RxEnum.SIGNSUCCESS.ordinal(), "签名成功", data);
+                    finish();
+                    return;
+                }
                 presenter.publishTransaction(wallet.getWalletId(), chainId, data, this);
                 break;
             case "publishTransaction":

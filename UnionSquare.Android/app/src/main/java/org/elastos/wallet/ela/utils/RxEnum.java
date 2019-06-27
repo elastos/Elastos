@@ -51,7 +51,8 @@ public enum RxEnum {
     UPDATAPROGRESS,//首页同步
     VOTETRANSFERACTIVITY,//投票
     BALANCECHANGE,//balance发生变化
-    CHANGELANGUAGE;//改变语言
+    CHANGELANGUAGE,//改变语言
+    SIGNSUCCESS;//签名成功
 
     enum Type {
         CoinBase, // 创币交易

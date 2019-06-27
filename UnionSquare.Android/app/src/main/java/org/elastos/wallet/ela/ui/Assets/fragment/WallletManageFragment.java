@@ -74,7 +74,7 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
         registReceiver();
     }
 
-    @OnClick({R.id.tv_delete, R.id.ll_1, R.id.ll_2, R.id.ll_3, R.id.ll_4})
+    @OnClick({R.id.tv_delete, R.id.ll_1, R.id.ll_2, R.id.ll_3, R.id.ll_4, R.id.ll_5})
     public void onViewClicked(View view) {
         Bundle bundle = null;
         dialogAction = null;
@@ -111,6 +111,12 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
                 //导出助记词弹框
                 dialog = dialogUtil.showWarmPromptInput(getBaseActivity(), null, null, this);
                 dialogAction = OUTPORTMN;
+                break;
+            case R.id.ll_5:
+                //签名
+                bundle = new Bundle();
+                bundle.putParcelable("wallet", wallet);
+                start(SignTransactionFragment.class,bundle);
                 break;
 
         }
