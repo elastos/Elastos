@@ -69,7 +69,7 @@ namespace Elastos {
 				_peer->_listener->OnSetFeePerKb(_peer->shared_from_this(), feePerKb);
 		}
 
-		const TransactionPtr &Message::FireRequestedTx(const uint256 &txHash) {
+		TransactionPtr Message::FireRequestedTx(const uint256 &txHash) {
 			if (_peer->_listener != nullptr)
 				return _peer->_listener->OnRequestedTx(_peer->shared_from_this(), txHash);
 			return nullptr;

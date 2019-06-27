@@ -1579,7 +1579,7 @@ namespace Elastos {
 			}
 		}
 
-		const TransactionPtr &PeerManager::OnRequestedTx(const PeerPtr &peer, const uint256 &txHash) {
+		TransactionPtr PeerManager::OnRequestedTx(const PeerPtr &peer, const uint256 &txHash) {
 			int hasPendingCallbacks = 0, error = 0;
 			PublishedTransaction pubTx;
 
