@@ -34,8 +34,13 @@ namespace Elastos {
 				uint8_t precision,
 				const std::string &memo) {
 
-			Log::preinfo("{}:{} {} | {} | {} | {} | {} | {} | {}", _parent->GetWalletID(), _info->GetChainID(),
-			             GetFun(), name, description, registerToAddress, registerAmount, precision, memo);
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("name: {}", name);
+			ArgInfo("desc: {}", description);
+			ArgInfo("registerToAddr: {}", registerToAddress);
+			ArgInfo("amount: {}", registerAmount);
+			ArgInfo("precision: {}", precision);
+			ArgInfo("memo: {}", memo);
 
 			ErrorChecker::CheckParam(_walletManager->getWallet()->AssetNameExist(name), Error::InvalidArgument,
 									 "asset name already registered");
@@ -63,7 +68,7 @@ namespace Elastos {
 
 			nlohmann::json txJson = tx->ToJson();
 
-			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), txJson.dump());
+			ArgInfo("r => {}", txJson.dump());
 			return txJson;
 		}
 
@@ -72,8 +77,12 @@ namespace Elastos {
 											   const std::string &amount, const std::string &assetID,
 											   const std::string &memo) {
 
-			Log::preinfo("{}:{} {} | {} | {} | {} | {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(),
-			             fromAddress, toAddress, amount, assetID, memo);
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("fromAddr: {}", fromAddress);
+			ArgInfo("toAddr: {}", toAddress);
+			ArgInfo("amount: {}", amount);
+			ArgInfo("assetID: {}", assetID);
+			ArgInfo("memo: {}", memo);
 
 			uint256 asset = uint256(assetID);
 
@@ -99,13 +108,15 @@ namespace Elastos {
 
 			nlohmann::json txJson = tx->ToJson();
 
-			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), txJson.dump());
+			ArgInfo("r => {}", txJson.dump());
 			return txJson;
 		}
 
 		nlohmann::json TokenchainSubWallet::CreateCombineUTXOTransaction(const std::string &assetID,
 																		 const std::string &memo) {
-			Log::preinfo("{}:{} {} | {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), assetID, memo);
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("assetID: {}", assetID);
+			ArgInfo("memo: {}", memo);
 
 			std::string addr = CreateAddress();
 
@@ -120,45 +131,49 @@ namespace Elastos {
 
 			nlohmann::json txJson = tx->ToJson();
 
-			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), txJson.dump());
+			ArgInfo("r => {}", txJson.dump());
 			return txJson;
 		}
 
 		nlohmann::json TokenchainSubWallet::GetBalanceInfo(const std::string &assetID) const {
-			Log::preinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(),  GetFun(), assetID);
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("assetID: {}", assetID);
 
 			nlohmann::json balanceInfo = _walletManager->getWallet()->GetBalanceInfo();
 
-			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), balanceInfo.dump());
+			ArgInfo("r => {}", balanceInfo.dump());
 			return  balanceInfo;
 		}
 
 		std::string TokenchainSubWallet::GetBalance(const std::string &assetID) const {
-			Log::preinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), assetID);
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("assetID: {}", assetID);
 
-			std::string balancce = _walletManager->getWallet()->GetBalance(uint256(assetID), GroupedAsset::Total).getDec();
+			std::string balance = _walletManager->getWallet()->GetBalance(uint256(assetID), GroupedAsset::Total).getDec();
 
-			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), balancce);
-			return balancce;
+			ArgInfo("r => {}", balance);
+			return balance;
 		}
 
 		std::string TokenchainSubWallet::GetBalanceWithAddress(const std::string &assetID, const std::string &address) const {
-			Log::preinfo("{}:{} {} | {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), assetID, address);
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("assetID: {}", assetID);
+			ArgInfo("addr: {}", address);
 
 			std::string balance = _walletManager->getWallet()->GetBalanceWithAddress(uint256(assetID), address,
 					GroupedAsset::Total).getDec();
 
-			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), balance);
+			ArgInfo("r => {}", balance);
 
 			return balance;
 		}
 
 		nlohmann::json TokenchainSubWallet::GetAllAssets() const {
-			Log::preinfo("{}:{} {}", _parent->GetWalletID(), _info->GetChainID(), GetFun());
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 
 			nlohmann::json jsonData = _walletManager->getWallet()->GetAllAssets();
 
-			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), jsonData.dump());
+			ArgInfo("r => {}", jsonData.dump());
 
 			return jsonData;
 		}

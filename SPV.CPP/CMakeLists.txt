@@ -98,6 +98,7 @@ if(NOT DEFINED CMAKE_INSTALL_PREFIX)
 	set(CMAKE_INSTALL_PREFIX "/usr/local/" CACHE PATH "Install prefix prepended to target to create install location")
 endif(NOT DEFINED CMAKE_INSTALL_PREFIX)
 
+option(ARGUMENT_LOG_ENABLE "Eenable print argument that caller pass through" ON)
 option(SPVSDK_DEBUG "SPV debug" OFF)
 option(SPV_BUILD_TEST_CASES "Build test cases" OFF)
 option(SPV_BUILD_SAMPLE "Build sample" OFF)

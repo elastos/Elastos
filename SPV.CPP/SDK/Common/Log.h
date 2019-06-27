@@ -23,7 +23,7 @@ namespace Elastos {
 #define SPV_DEFAULT_LOG SPV_LOG_NAME
 
 #define SPV_FILE_NAME "spvsdk.log"
-#define GetFun() (std::string("(") + (__FUNCTION__) + ")")
+#define GetFunName() (std::string("<<< ") + (__FUNCTION__) + " >>>")
 
 			static inline void registerMultiLogger(const std::string &path = "") {
 				if (spdlog::get(SPV_DEFAULT_LOG) != nullptr)
@@ -70,16 +70,6 @@ namespace Elastos {
 			template<typename Arg1, typename... Args>
 			static inline void info(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
 				spdlog::get(SPV_DEFAULT_LOG)->info(fmt.c_str(), arg1, args...);
-			}
-
-			template<typename Arg1, typename... Args>
-			static inline void preinfo(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
-				spdlog::get(SPV_DEFAULT_LOG)->info(("<<< " + fmt).c_str(), arg1, args...);
-			}
-
-			template<typename Arg1, typename... Args>
-			static inline void retinfo(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
-				spdlog::get(SPV_DEFAULT_LOG)->info((">>> " + fmt).c_str(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
@@ -140,6 +130,10 @@ namespace Elastos {
 			}
 
 		};
+
+#ifdef ARGUMENT_LOG_ENABLE
+#define ArgInfo(fmt, ...) Log::info(std::string("+++ ") + fmt, __VA_ARGS__)
+#endif
 
 #define SPVLOG_DEBUG(...) SPDLOG_DEBUG(spdlog::get(SPV_DEFAULT_LOG), __VA_ARGS__)
 

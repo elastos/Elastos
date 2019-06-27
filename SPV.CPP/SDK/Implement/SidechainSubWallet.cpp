@@ -35,8 +35,11 @@ namespace Elastos {
 			const std::string &mainChainAddress,
 			const std::string &memo) {
 
-			Log::preinfo("{}:{} {} | {} | {} | {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(),
-			             fromAddress, amount, mainChainAddress, memo);
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("fromAddr: {}", fromAddress);
+			ArgInfo("amount: {}", amount);
+			ArgInfo("mainChainAddr: {}", mainChainAddress);
+			ArgInfo("memo: {}", memo);
 
 			PayloadPtr payload = nullptr;
 			try {
@@ -59,16 +62,16 @@ namespace Elastos {
 			tx->SetTransactionType(Transaction::TransferCrossChainAsset, payload);
 
 			nlohmann::json txJson = tx->ToJson();
-			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), txJson.dump());
+			ArgInfo("r => {}", txJson.dump());
 			return txJson;
 		}
 
 		std::string SidechainSubWallet::GetGenesisAddress() const {
-			Log::preinfo("{}:{} {}", _parent->GetWalletID(), _info->GetChainID(), GetFun());
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 
 			std::string address = _config->GenesisAddress();
 
-			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), address);
+			ArgInfo("r => {}", address);
 			return address;
 		}
 

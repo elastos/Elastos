@@ -42,7 +42,11 @@ namespace Elastos {
 		nlohmann::json
 		IDChainSubWallet::CreateIDTransaction(const std::string &fromAddress, const nlohmann::json &payloadJson,
 											  const nlohmann::json &programJson, const std::string &memo) {
-			Log::preinfo("{}:{} {} | {} | {} | {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), fromAddress, payloadJson.dump(), programJson.dump(), memo);
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("fromAddr: {}", fromAddress);
+			ArgInfo("payload: {}", payloadJson.dump());
+			ArgInfo("program: {}", programJson.dump());
+			ArgInfo("memo: {}", memo);
 
 			std::string toAddress;
 			Program program;
@@ -68,13 +72,16 @@ namespace Elastos {
 			tx->AddProgram(program);
 
 			nlohmann::json txJson = tx->ToJson();
-			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), txJson.dump());
+
+			ArgInfo("r => {}", txJson.dump());
+
 			return txJson;
 		}
 
 		void IDChainSubWallet::onTxAdded(const TransactionPtr &transaction) {
 			if (transaction != nullptr && transaction->GetTransactionType() == Transaction::RegisterIdentification) {
 				std::string txHash = transaction->GetHash().GetHex();
+				ArgInfo("{} onTxAdded Hash: {}", _walletManager->getWallet()->GetWalletID(), txHash);
 
 				std::for_each(_callbacks.begin(), _callbacks.end(),
 							  [&transaction, &txHash](ISubWalletCallback *callback) {

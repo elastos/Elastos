@@ -5,5 +5,6 @@
 #define SPVSDK_SPDLOG_LEVEL "@SPDLOG_LEVEL@"
 #cmakedefine SPVSDK_DEBUG
 #cmakedefine BUILD_SHARED_LIBS
+#cmakedefine ARGUMENT_LOG_ENABLE
 
 #endif

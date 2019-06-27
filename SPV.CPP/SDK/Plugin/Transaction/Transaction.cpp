@@ -766,6 +766,12 @@ namespace Elastos {
 								memo.clear();
 							}
 						} catch (const nlohmann::detail::exception &e) {
+							if (memo.find("type:") != std::string::npos &&
+								memo.find("text") != std::string::npos &&
+								memo.find("ciphertext") == std::string::npos &&
+								memo.find("msg:") != std::string::npos) {
+								memo = memo.substr(memo.find_first_of("msg:") + 4);
+							}
 						}
 						break;
 					}

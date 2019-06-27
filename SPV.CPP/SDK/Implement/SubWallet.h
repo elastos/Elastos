@@ -182,6 +182,8 @@ namespace Elastos {
 
 			const CoinInfoPtr &GetCoinInfo() const;
 
+			std::string GetBalanceTypeString(BalanceType type) const;
+
 		protected:
 			WalletManagerPtr _walletManager;
 			std::vector<ISubWalletCallback *> _callbacks;

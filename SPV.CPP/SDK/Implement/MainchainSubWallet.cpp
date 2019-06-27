@@ -40,8 +40,13 @@ namespace Elastos {
 																	const std::string &sideChainAddress,
 																	const std::string &memo,
 																	bool useVotedUTXO) {
-			Log::preinfo("{}:{} {} | {} | {} | {} | {} | {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(),
-			             fromAddress, lockedAddress, amount, sideChainAddress, memo, useVotedUTXO);
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("fromAddr: {}", fromAddress);
+			ArgInfo("lockedAddr: {}", lockedAddress);
+			ArgInfo("amount: {}", amount);
+			ArgInfo("sideChainAddr: {}", sideChainAddress);
+			ArgInfo("memo: {}", memo);
+			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
 
 			PayloadPtr payload = nullptr;
 			try {
@@ -64,7 +69,7 @@ namespace Elastos {
 			tx->SetTransactionType(Transaction::TransferCrossChainAsset, payload);
 
 			nlohmann::json txJson = tx->ToJson();
-			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), txJson.dump());
+			ArgInfo("r => {}", txJson.dump());
 			return txJson;
 		}
 
@@ -77,8 +82,14 @@ namespace Elastos {
 			uint64_t location,
 			const std::string &payPasswd) const {
 
-			Log::preinfo("{}:{} {} | {} | {} | {} | {} | {} | {} | *", _parent->GetWalletID(), _info->GetChainID(), GetFun(),
-			             ownerPublicKey, nodePublicKey, nickName, url, ipAddress, location);
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("ownerPubKey: {}", ownerPublicKey);
+			ArgInfo("nodePubKey: {}", nodePublicKey);
+			ArgInfo("nickName: {}", nickName);
+			ArgInfo("url: {}", url);
+			ArgInfo("ipAddress: {}", ipAddress);
+			ArgInfo("location: {}", location);
+			ArgInfo("payPasswd: {}", "*");
 
 			ErrorChecker::CheckPassword(payPasswd, "Generate payload");
 
@@ -105,7 +116,8 @@ namespace Elastos {
 			pr.SetSignature(key.Sign(prUnsigned));
 
 			nlohmann::json payloadJson = pr.ToJson(0);
-			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), payloadJson.dump());
+
+			ArgInfo("r => {}", payloadJson.dump());
 			return payloadJson;
 		}
 
@@ -113,7 +125,9 @@ namespace Elastos {
 			const std::string &ownerPublicKey,
 			const std::string &payPasswd) const {
 
-			Log::preinfo("{}:{} {} | {} | *", _parent->GetWalletID(), _info->GetChainID(), GetFun(), ownerPublicKey);
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("ownerPubKey: {}", ownerPublicKey);
+			ArgInfo("payPasswd: {}", "*");
 
 			ErrorChecker::CheckPassword(payPasswd, "Generate payload");
 			size_t pubKeyLen = ownerPublicKey.size() >> 1;
@@ -131,7 +145,7 @@ namespace Elastos {
 			pc.SetSignature(key.Sign(pcUnsigned));
 
 			nlohmann::json payloadJson = pc.ToJson(0);
-			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), payloadJson.dump());
+			ArgInfo("r => {}", payloadJson.dump());
 			return payloadJson;
 		}
 
@@ -142,8 +156,12 @@ namespace Elastos {
 			const std::string &memo,
 			bool useVotedUTXO) {
 
-			Log::preinfo("{}:{} {} | {} | {} | {} | {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(),
-			             fromAddress, payloadJson.dump(), amount, memo, useVotedUTXO);
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("fromAddr: {}", fromAddress);
+			ArgInfo("payload: {}", payloadJson.dump());
+			ArgInfo("amount: {}", amount);
+			ArgInfo("memo: {}", memo);
+			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
 
 			ErrorChecker::CheckParam(amount < 500000000000, Error::VoteDepositAmountInsufficient,
 									 "Producer deposit amount is insufficient");
@@ -168,7 +186,7 @@ namespace Elastos {
 			tx->SetTransactionType(Transaction::RegisterProducer, payload);
 
 			nlohmann::json txJson = tx->ToJson();
-			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), txJson.dump());
+			ArgInfo("r => {}", txJson.dump());
 			return txJson;
 		}
 
@@ -178,8 +196,11 @@ namespace Elastos {
 			const std::string &memo,
 			bool useVotedUTXO) {
 
-			Log::preinfo("{}:{} {} | {} | {} | {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(),
-			             fromAddress, payloadJson.dump(), memo, useVotedUTXO);
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("fromAddr: {}", fromAddress);
+			ArgInfo("payload: {}", payloadJson.dump());
+			ArgInfo("memo: {}", memo);
+			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
 
 			PayloadPtr payload = PayloadPtr(new PayloadUpdateProducer());
 			try {
@@ -202,7 +223,8 @@ namespace Elastos {
 			}
 
 			nlohmann::json txJson = tx->ToJson();
-			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), txJson.dump());
+
+			ArgInfo("r => {}", txJson.dump());
 			return txJson;
 		}
 
@@ -212,7 +234,11 @@ namespace Elastos {
 			const std::string &memo,
 			bool useVotedUTXO) {
 
-			Log::preinfo("{}:{} {} | {} | {} | {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), fromAddress, payloadJson.dump(), memo, useVotedUTXO);
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("fromAddr: {}", fromAddress);
+			ArgInfo("payload: {}", payloadJson.dump());
+			ArgInfo("memo: {}", memo);
+			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
 
 			PayloadPtr payload = PayloadPtr(new PayloadCancelProducer());
 			try {
@@ -235,7 +261,7 @@ namespace Elastos {
 			}
 
 			nlohmann::json txJson = tx->ToJson();
-			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), txJson.dump());
+			ArgInfo("r => {}", txJson.dump());
 			return txJson;
 		}
 
@@ -243,7 +269,9 @@ namespace Elastos {
 			uint64_t amount,
 			const std::string &memo) {
 
-			Log::preinfo("{}:{} {} | {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), amount, memo);
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("amount: {}", amount);
+			ArgInfo("memo: {}", memo);
 
 			std::string fromAddress = _walletManager->getWallet()->GetOwnerDepositAddress().String();
 
@@ -260,23 +288,23 @@ namespace Elastos {
 			}
 
 			nlohmann::json txJson = tx->ToJson();
-			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), txJson.dump());
+			ArgInfo("r => {}", txJson.dump());
 			return txJson;
 		}
 
 		std::string MainchainSubWallet::GetOwnerPublicKey() const {
-			Log::preinfo("{}:{} {}", _parent->GetWalletID(), _info->GetChainID(), GetFun());
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 			std::string publicKey = _walletManager->getWallet()->GetOwnerPublilcKey()->getHex();
-			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), publicKey);
+			ArgInfo("r => {}", publicKey);
 			return publicKey;
 		}
 
 		std::string MainchainSubWallet::GetOwnerAddress() const {
-			Log::preinfo("{}:{} {}", _parent->GetWalletID(), _info->GetChainID(), GetFun());
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 
 			std::string address = _walletManager->getWallet()->GetOwnerAddress().String();
 
-			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), address);
+			ArgInfo("r => {}", address);
 
 			return address;
 		}
@@ -289,8 +317,12 @@ namespace Elastos {
 			const std::string &memo,
 			bool useVotedUTXO) {
 
-			Log::preinfo("{}:{} {} | {} | {} | {} | {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(),
-			             fromAddress, stake, publicKeys.dump(), memo, useVotedUTXO);
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("fromAddr: {}", fromAddress);
+			ArgInfo("stake: {}", stake);
+			ArgInfo("pubkeys: {}", publicKeys.dump());
+			ArgInfo("memo: {}", memo);
+			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
 
 			ErrorChecker::CheckJsonArray(publicKeys, 1, "Candidates public keys");
 			ErrorChecker::CheckParam(stake == 0, Error::Code::VoteStakeError, "Vote stake should not be zero");
@@ -330,12 +362,13 @@ namespace Elastos {
 			outputs[0].SetProgramHash(inputProgramHash);
 
 			nlohmann::json txJson = tx->ToJson();
-			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), txJson.dump());
+
+			ArgInfo("r => {}", txJson.dump());
 			return txJson;
 		}
 
 		nlohmann::json MainchainSubWallet::GetVotedProducerList() const {
-			Log::preinfo("{}:{} {}", _parent->GetWalletID(), _info->GetChainID(), GetFun());
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 
 			WalletPtr wallet = _walletManager->getWallet();
 			std::vector<UTXO> utxos = wallet->GetAllUTXO("");
@@ -378,13 +411,13 @@ namespace Elastos {
 
 			j = votedList;
 
-			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), j.dump());
+			ArgInfo("r => {}", j.dump());
 
 			return j;
 		}
 
 		nlohmann::json MainchainSubWallet::GetRegisteredProducerInfo() const {
-			Log::preinfo("{}:{} {}", _parent->GetWalletID(), _info->GetChainID(), GetFun());
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 
 			std::vector<TransactionPtr> allTxs = _walletManager->getWallet()->GetAllTransactions();
 			nlohmann::json j;
@@ -444,7 +477,7 @@ namespace Elastos {
 				}
 			}
 
-			Log::retinfo("{}:{} {} | {}", _parent->GetWalletID(), _info->GetChainID(), GetFun(), j.dump());
+			ArgInfo("r => {}", j.dump());
 			return j;
 		}
 
