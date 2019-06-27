@@ -901,7 +901,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	txn.Payload.(*payload.CRInfo).Code = ct1.Code
 	txn.Payload.(*payload.CRInfo).DID = common.Uint168{1, 2, 3}
 	err = s.Chain.checkRegisterCRTransaction(txn)
-	s.EqualError(err, "[Validation], Verify failed.")
+	s.EqualError(err, "invalid did address")
 
 	// Give a mismatching code and DID in payload
 	txn.Payload.(*payload.CRInfo).Code = ct1.Code
@@ -913,14 +913,14 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	s.NoError(err)
 	txn.Payload.(*payload.CRInfo).Signature = rcSig2
 	err = s.Chain.checkRegisterCRTransaction(txn)
-	s.EqualError(err, "the DID needs to be calculated from standard code")
+	s.EqualError(err, "invalid did address")
 
 	// Invalidates the signature in payload
 	txn.Payload.(*payload.CRInfo).Code = ct1.Code
 	txn.Payload.(*payload.CRInfo).DID = *hash2
 	txn.Payload.(*payload.CRInfo).Signature = rcSig1
 	err = s.Chain.checkRegisterCRTransaction(txn)
-	s.EqualError(err, "[Validation], Verify failed.")
+	s.EqualError(err, "invalid did address")
 
 	// Give an invalid url in payload
 	txn.Payload.(*payload.CRInfo).Code = ct1.Code
