@@ -131,6 +131,9 @@ func loadConfigParams(cfg *config.Configuration) (*config.Configuration, error) 
 	if cfg.PublicDPOSHeight > 0 {
 		activeNetParams.PublicDPOSHeight = cfg.PublicDPOSHeight
 	}
+	if cfg.CRCommitteeStartHeight > 0 {
+		activeNetParams.CRCommitteeStartHeight = cfg.CRCommitteeStartHeight
+	}
 
 	// When arbiter service enabled, IP address must be set.
 	if cfg.DPoSConfiguration.EnableArbiter {
@@ -182,6 +185,15 @@ func loadConfigParams(cfg *config.Configuration) (*config.Configuration, error) 
 	if cfg.DPoSConfiguration.EmergencyInactivePenalty > 0 {
 		activeNetParams.EmergencyInactivePenalty =
 			cfg.DPoSConfiguration.EmergencyInactivePenalty
+	}
+	if cfg.CRConfiguration.MemberCount > 0 {
+		activeNetParams.CRMemberCount = cfg.CRConfiguration.MemberCount
+	}
+	if cfg.CRConfiguration.DutyPeriod > 0 {
+		activeNetParams.CRDutyPeriod = cfg.CRConfiguration.DutyPeriod
+	}
+	if cfg.CRConfiguration.VotingPeriod > 0 {
+		activeNetParams.CRVotingPeriod = cfg.CRConfiguration.VotingPeriod
 	}
 
 	return cfg, nil
