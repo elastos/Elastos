@@ -11,7 +11,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 
-	"github.com/yuin/gopher-lua"
+	lua "github.com/yuin/gopher-lua"
 )
 
 const (
@@ -732,15 +732,10 @@ func newUpdateCR(L *lua.LState) int {
 		fmt.Println("wrong cr public key")
 		os.Exit(1)
 	}
-	addr, err := hash.ToAddress()
-	if err != nil {
-		fmt.Println("wrong cr public key")
-		os.Exit(1)
-	}
 
 	registerCR := &payload.CRInfo{
 		Code:     ct.Code,
-		DID:      addr,
+		DID:      *hash,
 		NickName: nickName,
 		Url:      url,
 		Location: uint64(location),
