@@ -69,7 +69,7 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
 
     protected abstract void initView(View view);
 
-    private View mRootView;
+    protected View mRootView;
 
 
     @Override

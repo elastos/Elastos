@@ -7,19 +7,26 @@
 
     <include layout="@layout/title" />
 
-    <android.support.v7.widget.AppCompatEditText
-        android:id="@+id/et_chinid"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/px70"
-        android:layout_marginLeft="@dimen/px56"
-        android:layout_marginTop="@dimen/px39"
-        android:layout_marginRight="@dimen/px56"
-        android:background="@drawable/mnemonic_border"
-        android:gravity="center"
-        android:hint="请输入要签名的子链"
-        android:textColor="@color/qmui_config_color_white"
-        android:textColorHint="@color/hint_color"
-        android:textSize="13sp" />
+    <RadioGroup
+        android:id="@+id/rb"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ELA"
+            android:textColor="@color/white"
+            android:textSize="14dp" />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="IDChain"
+            android:textColor="@color/white"
+            android:textSize="14dp" />
+    </RadioGroup>
 
     <TextView
         android:id="@+id/tv_paste"
@@ -62,7 +69,7 @@
         android:gravity="center"
         android:padding="10dp"
         android:text="点击签名上面内容"
-        android:textSize="11sp"  />
+        android:textSize="11sp" />
 
     <android.support.v7.widget.AppCompatEditText
         android:id="@+id/et_sign"
@@ -91,5 +98,5 @@
         android:gravity="center"
         android:padding="10dp"
         android:text="复制签名后信息"
-        android:textSize="11sp"  />
+        android:textSize="11sp" />
 </LinearLayout>

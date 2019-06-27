@@ -7,6 +7,8 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
@@ -14,13 +16,9 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.activity.PwdActivity;
-import org.elastos.wallet.ela.ui.vote.bean.Area;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
-import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
-import org.elastos.wallet.ela.utils.SPUtil;
-import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -36,9 +34,10 @@ public class SignTransactionFragment extends BaseFragment {
     AppCompatEditText etSign;
     @BindView(R.id.et_tosign)
     AppCompatEditText etTosign;
-    @BindView(R.id.et_chinid)
-    AppCompatEditText etChinid;
+
     Unbinder unbinder;
+    @BindView(R.id.rb)
+    RadioGroup rb;
     private Wallet wallet;
 
 
@@ -57,6 +56,8 @@ public class SignTransactionFragment extends BaseFragment {
     protected void initView(View view) {
         tvTitle.setText("签名");
         registReceiver();
+        ((RadioButton) rb.getChildAt(0)).setChecked(true);
+
     }
 
     @OnClick({R.id.tv_copy, R.id.tv_paste, R.id.tv_tosign})
@@ -70,17 +71,14 @@ public class SignTransactionFragment extends BaseFragment {
                 etTosign.setText(ClipboardUtil.paste(getBaseActivity()));
                 break;
             case R.id.tv_tosign:
-                if (TextUtils.isEmpty(etChinid.getText().toString().trim())) {
-                    showToast("请输入子链信息");
-                    return;
-                }
+                RadioButton radioButton = (mRootView.findViewById(rb.getCheckedRadioButtonId()));
                 if (TextUtils.isEmpty(etTosign.getText().toString().trim())) {
                     showToast("请输入代签名信息");
                     return;
                 }
                 Intent intent = new Intent(getActivity(), PwdActivity.class);
                 intent.putExtra("wallet", wallet);
-                intent.putExtra("chainId", etChinid.getText().toString().trim());
+                intent.putExtra("chainId", radioButton.getText().toString().trim());
                 intent.putExtra("attributes", etTosign.getText().toString().trim());
                 intent.putExtra("type", 1);
                 startActivity(intent);
@@ -94,8 +92,9 @@ public class SignTransactionFragment extends BaseFragment {
         if (integer == RxEnum.SIGNSUCCESS.ordinal()) {
             String signData = (String) result.getObj();
             etSign.setText(signData);
-            showToast("签名成功且已经复制到剪切板");
+            showToast("签名成功");
             ClipboardUtil.copyClipboar(getBaseActivity(), signData);
         }
     }
+
 }
