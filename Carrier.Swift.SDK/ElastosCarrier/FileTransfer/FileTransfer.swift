@@ -71,6 +71,23 @@ public class CarrierFileTransfer: NSObject {
         return address;
     }
 
+    /// Generate an unique file identifier for the filetransfer
+    /// instance.
+    ///
+    /// - Throws: CarrierError
+    @objc(acquireFileId:)
+    class public func acquireFileId() throws -> String {
+        let len  = CarrierFileTransfer.MAX_FILE_ID_LEN + 1
+        let fileId = UnsafeMutablePointer<Int8>.allocate(capacity: len)
+        let cfileId = ela_filetransfer_fileid(fileId, len)
+        guard cfileId != nil else {
+            let errno = getErrorCode()
+            Log.e(TAG(), "Generate fileId error:0x%X", errno)
+            throw CarrierError.FromErrorCode(errno: errno)
+        }
+        return String(cString: cfileId!)
+    }
+
     /// Acquire an unique file identifier by filename within the filetransfer
     /// instance.
     ///

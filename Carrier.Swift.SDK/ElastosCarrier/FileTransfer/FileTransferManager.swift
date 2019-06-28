@@ -221,8 +221,8 @@ public class CarrierFileTransferManager: NSObject {
                 let handler = manager.handler
 
                 let from = String(cString: cfrom!)
-                let fileinfo = CarrierFileTransferInfo()  //TODO
-
+                let cf = cfileInfo?.load(as: CFileTransferInfo.self)
+                let fileinfo = convertCFileTransferInfoToCarrierFileTransferInfo(cf!)
                 handler!(carrier!, from, fileinfo)
             }
 

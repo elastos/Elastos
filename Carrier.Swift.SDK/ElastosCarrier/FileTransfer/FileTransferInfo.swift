@@ -35,7 +35,7 @@ public class CarrierFileTransferInfo: NSObject {
     /// Carrier transfer file ID max length.
     public static let MAX_FILE_ID_LEN = 45
     
-    internal override init() {
+    public override init() {
         fileSize = 0
         super.init()
     }
