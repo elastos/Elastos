@@ -1325,6 +1325,13 @@ func (b *BlockChain) checkUnRegisterCRTransaction(txn *Transaction) error {
 	return nil
 }
 
+func bySignatureGetParameter(info *payload.CRInfo) []byte {
+	buf := new(bytes.Buffer)
+	buf.WriteByte(byte(len(info.Signature)))
+	buf.Write(info.Signature)
+	return buf.Bytes()
+}
+
 func (b *BlockChain) getProgramHash(info *payload.CRInfo) (*common.Uint168, error) {
 	var hash *common.Uint168
 	signType, err := crypto.GetScriptType(info.Code)
@@ -1356,10 +1363,7 @@ func (b *BlockChain) crInfoSanityCheck(info *payload.CRInfo) error {
 	if err := info.SerializeUnsigned(signedBuf, payload.CRInfoVersion); err != nil {
 		return err
 	}
-	buf := new(bytes.Buffer)
-	buf.WriteByte(byte(len(info.Signature)))
-	buf.Write(info.Signature)
-	parameter := buf.Bytes()
+	parameter := bySignatureGetParameter(info)
 	signType, err := crypto.GetScriptType(info.Code)
 	if err != nil {
 		return errors.New("invalid code")
