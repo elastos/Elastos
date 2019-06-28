@@ -1,0 +1,62 @@
+stages:
+  - unit_test
+  - integration_test
+
+job_test1:
+  stage: unit_test
+  image:
+    name: golang:1.12.6-stretch
+    entrypoint: ["/bin/sh", "-c"]
+  variables:
+    GOPATH: /builds/go
+    ELA_PROJECT_DIR: "${GOPATH}/src/github.com/${CI_PROJECT_NAMESPACE}"
+  before_script:
+    - mkdir -p "${GOPATH}/src"
+    - cd "${GOPATH}/src"
+    - curl -O http://172.16.0.120/golang.org.tgz
+    - curl -O http://172.16.0.120/gopkg.in.tgz
+    - curl -O http://172.16.0.120/github.com.tgz
+    - tar xf golang.org.tgz
+    - tar xf gopkg.in.tgz
+    - tar xf github.com.tgz
+    - rm -f *.tgz
+    - mkdir -p $ELA_PROJECT_DIR
+    - ln -s "${CI_PROJECT_DIR}" "${ELA_PROJECT_DIR}/Elastos.ELA"
+  script:
+    - cd "${ELA_PROJECT_DIR}/Elastos.ELA"
+    - go test -v -short ./...
+    - make all
+    - make dns
+    - mkdir bin && cp ela ela-cli bin
+    - bin/ela -v
+    - ./util.sh test
+    - cd $CI_PROJECT_DIR
+  artifacts:
+    name: "$CI_COMMIT_REF_SLUG-$CI_PIPELINE_ID-${CI_BUILD_REF:0:8}"
+    paths:
+      - bin/
+
+job_test2:
+  stage: integration_test
+  image: python:3.6-jessie
+  variables:
+    GOPATH: /builds/go
+    ELA_PROJECT_DIR: "${GOPATH}/src/github.com/${CI_PROJECT_NAMESPACE}"
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  cache:
+    paths:
+    - $CI_PROJECT_DIR/.cache/pip
+  dependencies:
+    - job_test1
+  before_script:
+    - mkdir -p $ELA_PROJECT_DIR
+    - ln -s "${CI_PROJECT_DIR}" "${ELA_PROJECT_DIR}/Elastos.ELA"
+    - cp bin/* $CI_PROJECT_DIR
+    - curl -O http://172.16.0.120/testingwork-testing_work.tar.gz
+    - tar xf testingwork-testing_work.tar.gz
+  script:
+    - python -V
+    - ./ela -v
+    - cd testingwork-testing_work
+    - python -m pip install -r requirements.txt
+    - python dpos_normal_test.py
