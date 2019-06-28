@@ -6,6 +6,8 @@ import * as moment from 'moment'
 
 import community from './community'
 import cvote from './cvote'
+import cvoteTracking from './cvote_tracking'
+// import cvoteSummary from './cvote_summary'
 import google from './google'
 import ping from './ping'
 import permission from './permission'
@@ -78,6 +80,8 @@ router.use('/ping', ping)
 
 router.use('/community', community)
 router.use('/cvote', cvote)
+router.use('/cvoteTracking', cvoteTracking)
+// router.use('/cvoteSummary', cvoteSummary)
 router.use('/google', google)
 router.use('/permission', permission)
 router.use('/permissionRole', permissionRole)
