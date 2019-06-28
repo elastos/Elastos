@@ -77,7 +77,6 @@ func Sign(priKey []byte, data []byte) ([]byte, error) {
 
 	r, s, err := ecdsa.Sign(rand.Reader, privateKey, digest[:])
 	if err != nil {
-		fmt.Printf("Sign error\n")
 		return nil, err
 	}
 
