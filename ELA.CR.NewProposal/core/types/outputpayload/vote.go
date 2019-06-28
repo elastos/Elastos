@@ -20,14 +20,10 @@ const (
 
 type VoteType byte
 
-var VoteTypes = []VoteType{
-	Delegate,
-	CRC,
-}
-
 type VoteContent struct {
 	VoteType   VoteType
 	Candidates [][]byte
+	Votes      []common.Fixed64
 }
 
 func (vc *VoteContent) Serialize(w io.Writer, version byte) error {
@@ -40,6 +36,16 @@ func (vc *VoteContent) Serialize(w io.Writer, version byte) error {
 	for _, candidate := range vc.Candidates {
 		if err := common.WriteVarBytes(w, candidate); err != nil {
 			return err
+		}
+	}
+	if version == byte(1) {
+		if err := common.WriteVarUint(w, uint64(len(vc.Votes))); err != nil {
+			return err
+		}
+		for _, v := range vc.Votes {
+			if err := v.Serialize(w); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -66,17 +72,52 @@ func (vc *VoteContent) Deserialize(r io.Reader, version byte) error {
 		vc.Candidates = append(vc.Candidates, candidate)
 	}
 
+	if version == byte(1) {
+		votesCount, err := common.ReadVarUint(r, 0)
+		if err != nil {
+			return err
+		}
+
+		for i := uint64(0); i < votesCount; i++ {
+			var vote common.Fixed64
+			if err := vote.Deserialize(r); err != nil {
+				return err
+			}
+			vc.Votes = append(vc.Votes, vote)
+		}
+	}
+
 	return nil
 }
 
 func (vc VoteContent) String() string {
-	candidates := make([]string, 0)
-	for _, c := range vc.Candidates {
-		candidates = append(candidates, common.BytesToHexString(c))
+	if len(vc.Votes) == 0 {
+		candidates := make([]string, 0)
+		for _, c := range vc.Candidates {
+			candidates = append(candidates, common.BytesToHexString(c))
+		}
+
+		return fmt.Sprint("Content: {\n\t\t\t\t",
+			"VoteType: ", vc.VoteType, "\n\t\t\t\t",
+			"Candidates: ", candidates, "}\n\t\t\t\t")
 	}
+
+	type candidateVote struct {
+		Candidate string
+		Vote      string
+	}
+
+	candidateVotes := make([]candidateVote, 0, len(vc.Candidates))
+	for i := 0; i < len(vc.Candidates); i++ {
+		candidateVotes = append(candidateVotes, candidateVote{
+			Candidate: common.BytesToHexString(vc.Candidates[i]),
+			Vote:      vc.Votes[i].String(),
+		})
+	}
+
 	return fmt.Sprint("Content: {\n\t\t\t\t",
 		"VoteType: ", vc.VoteType, "\n\t\t\t\t",
-		"Candidates: ", candidates, "}\n\t\t\t\t")
+		"CandidateVotes: ", candidateVotes, "}\n\t\t\t\t")
 }
 
 type VoteOutput struct {
@@ -134,7 +175,7 @@ func (o *VoteOutput) Validate() error {
 	if o == nil {
 		return errors.New("vote output payload is nil")
 	}
-	if o.Version != byte(0) {
+	if o.Version != byte(0) && o.Version != byte(1) {
 		return errors.New("invalid vote version")
 	}
 	typeMap := make(map[VoteType]struct{})
@@ -147,8 +188,8 @@ func (o *VoteOutput) Validate() error {
 		if len(content.Candidates) == 0 || len(content.Candidates) > MaxVoteProducersPerTransaction {
 			return errors.New("invalid public key count")
 		}
-		// only use Delegate as a vote type for now
-		if content.VoteType != Delegate {
+		// only use Delegate and CRC as a vote type for now
+		if content.VoteType != Delegate && content.VoteType != CRC {
 			return errors.New("invalid vote type")
 		}
 
@@ -159,6 +200,10 @@ func (o *VoteOutput) Validate() error {
 				return errors.New("duplicate candidate")
 			}
 			candidateMap[c] = struct{}{}
+		}
+
+		if o.Version == byte(1) && len(content.Candidates) != len(content.Votes) {
+			return errors.New("invalid candidates and votes count")
 		}
 	}
 
