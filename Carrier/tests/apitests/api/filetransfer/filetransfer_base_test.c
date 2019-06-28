@@ -195,7 +195,7 @@ static int filetransfer_base_cb(TestContext *ctx)
     char data[ELA_MAX_USER_DATA_LEN] = "hello";
     char *p;
     const char *reason = "busy";
-    int len = strlen(data) + 1;
+    int len = (int)strlen(data) + 1;
     int status = -1;
     int rc;
     int size;
@@ -223,7 +223,7 @@ static int filetransfer_base_cb(TestContext *ctx)
     // wait for the 'pull' callback function to be invoked
     cond_wait(wctxt->ft_cond);
 
-    rc = ela_filetransfer_send(wctxt->ft, ft_info.fileid, (const uint8_t*)data, len);
+    rc = (int)ela_filetransfer_send(wctxt->ft, ft_info.fileid, (const uint8_t*)data, len);
     CU_ASSERT_EQUAL(rc, len);
 
     rc = read_ack("%32s %45s %32s %d", cmd, file_id, data, &len);
@@ -257,7 +257,7 @@ static int filetransfer_base_cb(TestContext *ctx)
 
     memset(data, 'D', sizeof(data) - 1);
     data[sizeof(data) - 1] = '\0';
-    rc = ela_filetransfer_send(wctxt->ft, ft_info.fileid, (const uint8_t*)data, sizeof(data) - 1);
+    rc = (int)ela_filetransfer_send(wctxt->ft, ft_info.fileid, (const uint8_t*)data, sizeof(data) - 1);
     CU_ASSERT_EQUAL(rc, sizeof(data) - 1);
 
     rc = read_ack("%32s %45s %32s %d", cmd, file_id, data, &len);
@@ -294,7 +294,7 @@ static int filetransfer_with_zero_length_cb(TestContext *ctx)
     char result[32] = {0};
     char data[32] = {0};
     char *p;
-    int len = strlen(data) + 1;
+    int len = (int)strlen(data) + 1;
     int rc;
     int size;
 
@@ -321,7 +321,7 @@ static int filetransfer_with_zero_length_cb(TestContext *ctx)
     // wait for the 'pull' callback function to be invoked
     cond_wait(wctxt->ft_cond);
 
-    rc = ela_filetransfer_send(wctxt->ft, ft_info.fileid, NULL, 0);
+    rc = (int)ela_filetransfer_send(wctxt->ft, ft_info.fileid, NULL, 0);
     CU_ASSERT_EQUAL(rc, 0);
 
     rc = read_ack("%32s %45s %32s %d", cmd, file_id, data, &len);

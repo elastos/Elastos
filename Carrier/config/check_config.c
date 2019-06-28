@@ -45,7 +45,7 @@ static const char *default_config_files[] = {
 
 static void print_options(ElaOptions *options)
 {
-    int i;
+    size_t i;
 
     printf("Current configuration\n");
     printf("===============================================================\n");

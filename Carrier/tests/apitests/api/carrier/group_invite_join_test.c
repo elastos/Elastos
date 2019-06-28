@@ -94,7 +94,7 @@ static void group_invite_cb(ElaCarrier *w, const char *from,
     CarrierContextExtra *extra = wctx->extra;
 
     memcpy(extra->gcookie, cookie, len);
-    extra->gcookie_len = len;
+    extra->gcookie_len = (int)len;
     if (extra->gfrom)
         free(extra->gfrom);
 
@@ -340,7 +340,7 @@ static void test_group_invite_stranger(void)
 
     rc = ela_new_group(wctx->carrier, groupid, sizeof(groupid));
     CU_ASSERT_EQUAL_FATAL(rc, 0);
-    CU_ASSERT_FATAL(strlen(groupid));
+    CU_ASSERT_FATAL(strlen(groupid) > 0);
 
     rc = ela_group_invite(wctx->carrier, groupid, robotid);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
@@ -359,7 +359,7 @@ static void test_group_invite_myself(void)
 
     rc = ela_new_group(wctx->carrier, groupid, sizeof(groupid));
     CU_ASSERT_EQUAL_FATAL(rc, 0);
-    CU_ASSERT_FATAL(strlen(groupid));
+    CU_ASSERT_FATAL(strlen(groupid) > 0);
 
     ela_get_userid(wctx->carrier, userid, sizeof(userid));
     rc = ela_group_invite(wctx->carrier, groupid, userid);

@@ -94,7 +94,7 @@ static void try_send_offmsg(ElaCarrier *w, TestCtx *ctx)
     int rc = 0;
     long msg_cnt = 0;
 
-    rc = fread(buf, 1, sizeof(buf), ctx->offmsg_fp);
+    rc = (int)fread(buf, 1, sizeof(buf), ctx->offmsg_fp);
     if (rc > 0) {
         msg_cnt = strtol(buf, NULL, 0);
         if (msg_cnt > 0)

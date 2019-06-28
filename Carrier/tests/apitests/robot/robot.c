@@ -266,7 +266,7 @@ static void group_invite_cb(ElaCarrier *w, const char *from,
     CarrierContext *wctx = ctx->carrier;
 
     memcpy(wctx->extra->gcookie, cookie, len);
-    wctx->extra->gcookie_len = len;
+    wctx->extra->gcookie_len = (int)len;
     strcpy(wctx->extra->gfrom, from);
 
     write_ack("ginvite received\n");

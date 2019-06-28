@@ -54,7 +54,7 @@
 
 static void bootstraps_destructor(void *p)
 {
-    int i;
+    size_t i;
     size_t *size = (size_t *)p;
     BootstrapNode *bootstraps = (struct BootstrapNode *)(size + 1);
 
@@ -77,7 +77,7 @@ static void bootstraps_destructor(void *p)
 
 static void hive_bootstrap_destructor(void *p)
 {
-    int i;
+    size_t i;
     size_t *size = (size_t *)p;
     HiveBootstrapNode *bootstraps = (struct HiveBootstrapNode *)(size + 1);
 

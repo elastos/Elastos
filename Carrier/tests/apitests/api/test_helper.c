@@ -582,7 +582,7 @@ void test_group_scheme(TestContext *context,
 
     rc = ela_new_group(wctx->carrier, wctx->groupid, sizeof(wctx->groupid));
     CU_ASSERT_EQUAL_FATAL(rc, 0);
-    CU_ASSERT_FATAL(strlen(wctx->groupid));
+    CU_ASSERT_FATAL(strlen(wctx->groupid) > 0);
 
     rc = ela_group_invite(wctx->carrier, wctx->groupid, robotid);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
