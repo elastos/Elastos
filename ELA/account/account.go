@@ -110,9 +110,5 @@ func (ac *Account) PubKey() *crypto.PublicKey {
 
 // Sign data with account
 func (ac *Account) Sign(data []byte) ([]byte, error) {
-	signature, err := crypto.Sign(ac.PrivateKey, data)
-	if err != nil {
-		return nil, err
-	}
-	return signature, nil
+	return crypto.Sign(ac.PrivateKey, data)
 }

@@ -1048,19 +1048,14 @@ func CreateRawTransaction(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "need a parameter named locktime")
 	}
 
-	fmt.Println(inputsParam)
-	fmt.Println(locktime)
-
 	inputs := make([]string, 0)
 	gjson.Parse(inputsParam).ForEach(func(key, value gjson.Result) bool {
-		println(value.String())
 		inputs = append(inputs, value.String())
 		return true
 	})
 
 	outputs := make([]string, 0)
 	gjson.Parse(outputsParam).ForEach(func(key, value gjson.Result) bool {
-		println(value.String())
 		outputs = append(outputs, value.String())
 		return true
 	})
@@ -1125,8 +1120,89 @@ func CreateRawTransaction(param Params) map[string]interface{} {
 }
 
 func SignRawTransactionWithKey(param Params) map[string]interface{} {
+	dataParam, ok := param.String("data")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a parameter named data")
+	}
+	privkeysParam, ok := param.String("privkeys")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a parameter named privkeys")
+	}
 
-	return ResponsePack(Success, 0)
+	privkeys := make([]string, 0)
+	gjson.Parse(privkeysParam).ForEach(func(key, value gjson.Result) bool {
+		privkeys = append(privkeys, value.String())
+		return true
+	})
+
+	accounts := make(map[common.Uint168]*account.Account, 0)
+	for _, privkeyStr := range privkeys {
+		privkey, err := common.HexStringToBytes(privkeyStr)
+		if err != nil {
+			return ResponsePack(InvalidTransaction, err.Error())
+		}
+		acc, err := account.NewAccountWithPrivateKey(privkey)
+		if err != nil {
+			return ResponsePack(InvalidTransaction, err.Error())
+		}
+		accounts[acc.ProgramHash] = acc
+	}
+
+	txBytes, err := common.HexStringToBytes(dataParam)
+	if err != nil {
+		return ResponsePack(InvalidParams, "hex string to bytes error")
+	}
+	var txn Transaction
+	if err := txn.Deserialize(bytes.NewReader(txBytes)); err != nil {
+		return ResponsePack(InvalidTransaction, err.Error())
+	}
+
+	signData := new(bytes.Buffer)
+	if err := txn.SerializeUnsigned(signData); err != nil {
+		return ResponsePack(InvalidTransaction, err.Error())
+	}
+
+	references, err := Store.GetTxReference(&txn)
+	if err != nil {
+		return ResponsePack(InvalidTransaction, "get transaction reference failed, "+err.Error())
+	}
+
+	programHashes, err := blockchain.GetTxProgramHashes(&txn, references)
+	if err != nil {
+		return ResponsePack(InternalError, err.Error())
+	}
+
+	programs := make([]*pg.Program, 0)
+	for _, programHash := range programHashes {
+		prefixType := contract.GetPrefixType(programHash)
+		if prefixType != contract.PrefixStandard {
+			return ResponsePack(InternalError, "not a standard address")
+		}
+		acc, exist := accounts[programHash]
+		if !exist {
+			return ResponsePack(InternalError, "no suitable private key was found")
+		}
+		signature, err := acc.Sign(signData.Bytes())
+		if err != nil {
+			return ResponsePack(InternalError, err.Error())
+		}
+		sigBuf := new(bytes.Buffer)
+		sigBuf.WriteByte(byte(len(signature)))
+		sigBuf.Write(signature)
+		program := &pg.Program{
+			Code:      acc.RedeemScript,
+			Parameter: sigBuf.Bytes(),
+		}
+		programs = append(programs, program)
+	}
+	txn.Programs = programs
+
+	result := new(bytes.Buffer)
+	if err := txn.Serialize(result); err != nil {
+		return ResponsePack(InternalError, err.Error())
+	}
+
+	return ResponsePack(Success, common.BytesToHexString(result.Bytes()))
 }
 
 func ImportAddress(param Params) map[string]interface{} {
