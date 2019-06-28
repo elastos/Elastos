@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.qmuiteam.qmui.layout.QMUILinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ll_create_wallet"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/commonbg"
+    android:orientation="vertical">
+
+
+    <include layout="@layout/title_bar" />
+
+
+    <org.elastos.wallet.ela.utils.ClearEditText
+        android:id="@+id/et_walletname"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/px120"
+        android:layout_marginTop="@dimen/px132"
+        android:layout_marginRight="@dimen/px120"
+        android:background="@null"
+        android:hint="@string/please_enter_the_name_your_wallet"
+        android:maxLength="16"
+        android:paddingBottom="@dimen/px26"
+        android:singleLine="true"
+        android:textColor="@color/wallet_textColor"
+        android:textColorHint="@color/wallet_hintTextColor"
+        android:textSize="@dimen/px26" />
+
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/px1"
+        android:layout_alignBottom="@id/et_walletname"
+        android:layout_marginLeft="@dimen/px120"
+        android:layout_marginRight="@dimen/px120"
+        android:background="@color/gap_wallet" />
+
+    <com.allen.library.SuperButton
+        android:id="@+id/sb_create_wallet"
+        style="@style/PublicButton"
+        android:layout_marginTop="@dimen/px180"
+        android:text="@string/surecreate" />
+
+</com.qmuiteam.qmui.layout.QMUILinearLayout>
