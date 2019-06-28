@@ -86,8 +86,8 @@ func (h *DPOSHandlerSwitch) SwitchTo(onDuty bool) {
 	h.consensus.SetOnDuty(onDuty)
 }
 
-func (h *DPOSHandlerSwitch) FinishConsensus() {
-	h.proposalDispatcher.FinishConsensus()
+func (h *DPOSHandlerSwitch) FinishConsensus(height uint32) {
+	h.proposalDispatcher.FinishConsensus(height)
 }
 
 func (h *DPOSHandlerSwitch) ProcessProposal(id peer.PID, p *payload.DPOSProposal) (handled bool) {
@@ -232,7 +232,9 @@ func (h *DPOSHandlerSwitch) OnViewChanged(isOnDuty bool) {
 	h.SwitchTo(isOnDuty)
 
 	firstBlockHash, ok := h.cfg.Manager.GetBlockCache().GetFirstArrivedBlockHash()
-	if isOnDuty && !ok {
+	block, existBlock := h.cfg.Manager.GetBlockCache().TryGetValue(firstBlockHash)
+	if isOnDuty && (!ok ||
+		!existBlock || block.Height <= h.proposalDispatcher.GetFinishedHeight()) {
 		log.Warn("[OnViewChanged] firstBlockHash is nil")
 		return
 	}

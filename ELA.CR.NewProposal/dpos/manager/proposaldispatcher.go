@@ -35,6 +35,7 @@ type ProposalDispatcherConfig struct {
 type ProposalDispatcher struct {
 	cfg ProposalDispatcherConfig
 
+	finishedHeight      uint32
 	processingBlock     *types.Block
 	processingProposal  *payload.DPOSProposal
 	acceptVotes         map[common.Uint256]*payload.DPOSProposalVote
@@ -64,6 +65,10 @@ func (p *ProposalDispatcher) RequestAbnormalRecovering() {
 
 func (p *ProposalDispatcher) GetProcessingBlock() *types.Block {
 	return p.processingBlock
+}
+
+func (p *ProposalDispatcher) GetFinishedHeight() uint32 {
+	return p.finishedHeight
 }
 
 func (p *ProposalDispatcher) GetProcessingProposal() *payload.DPOSProposal {
@@ -173,7 +178,7 @@ func (p *ProposalDispatcher) FinishProposal() bool {
 		Result:    true,
 	}
 	p.cfg.EventMonitor.OnProposalFinished(&proposalEvent)
-	p.FinishConsensus()
+	p.FinishConsensus(p.processingBlock.Height)
 
 	return true
 }
@@ -360,13 +365,13 @@ func (p *ProposalDispatcher) UpdatePrecociousProposals() {
 	}
 }
 
-func (p *ProposalDispatcher) FinishConsensus() {
+func (p *ProposalDispatcher) FinishConsensus(height uint32) {
 	if p.cfg.Consensus.IsRunning() {
 		log.Info("[FinishConsensus] start")
 		defer log.Info("[FinishConsensus] end")
 
+		p.finishedHeight = height
 		p.cfg.Manager.changeOnDuty()
-		height := blockchain.DefaultLedger.Blockchain.GetHeight()
 		c := log.ConsensusEvent{EndTime: p.cfg.TimeSource.AdjustedTime(), Height: height}
 		p.cfg.EventMonitor.OnConsensusFinished(&c)
 		p.cfg.Consensus.SetReady()

@@ -193,7 +193,7 @@ func (n *network) FireBlockReceived(b *types.Block, confirmed bool) {
 }
 
 func (n *network) FireConfirmReceived(p *payload.Confirm) {
-	n.listener.OnConfirmReceived(p)
+	n.listener.OnConfirmReceived(p, 0)
 }
 
 func (n *network) FireIllegalBlocksReceived(i *payload.DPOSIllegalBlocks) {

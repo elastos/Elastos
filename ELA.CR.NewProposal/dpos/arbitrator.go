@@ -125,7 +125,7 @@ func (a *Arbitrator) OnBlockReceived(b *types.Block, confirmed bool) {
 	a.network.PostBlockReceivedTask(b, confirmed)
 }
 
-func (a *Arbitrator) OnConfirmReceived(p *payload.Confirm) {
+func (a *Arbitrator) OnConfirmReceived(p *mempool.ConfirmInfo) {
 	log.Info("[OnConfirmReceived] listener received confirm")
 	a.network.PostConfirmReceivedTask(p)
 }
@@ -233,7 +233,7 @@ func NewArbitrator(account account.Account, cfg Config) (*Arbitrator, error) {
 			a.OnBlockReceived(block.Block, block.HaveConfirm)
 
 		case events.ETConfirmAccepted:
-			a.OnConfirmReceived(e.Data.(*payload.Confirm))
+			a.OnConfirmReceived(e.Data.(*mempool.ConfirmInfo))
 
 		case events.ETDirectPeersChanged:
 			a.OnPeersChanged(e.Data.([]peer.PID))

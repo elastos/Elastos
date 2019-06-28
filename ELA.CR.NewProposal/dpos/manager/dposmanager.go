@@ -78,7 +78,7 @@ type NetworkEventListener interface {
 	OnRecoverTimeout()
 
 	OnBlockReceived(b *types.Block, confirmed bool)
-	OnConfirmReceived(p *payload.Confirm)
+	OnConfirmReceived(p *payload.Confirm, height uint32)
 	OnIllegalBlocksTxReceived(i *payload.DPOSIllegalBlocks)
 	OnSidechainIllegalEvidenceReceived(s *payload.SidechainIllegalData)
 	OnInactiveArbitratorsReceived(id dpeer.PID, tx *types.Transaction)
@@ -209,8 +209,8 @@ func (d *DPOSManager) ProcessHigherBlock(b *types.Block) {
 	}
 }
 
-func (d *DPOSManager) ConfirmBlock() {
-	d.handler.FinishConsensus()
+func (d *DPOSManager) ConfirmBlock(height uint32) {
+	d.handler.FinishConsensus(height)
 	d.notHandledProposal = make(map[string]struct{})
 }
 
@@ -474,7 +474,7 @@ func (d *DPOSManager) OnBlockReceived(b *types.Block, confirmed bool) {
 	defer log.Info("[OnBlockReceived] end")
 
 	if confirmed {
-		d.ConfirmBlock()
+		d.ConfirmBlock(b.Height)
 		d.changeHeight()
 		d.dispatcher.illegalMonitor.CleanByBlock(b)
 		log.Info("[OnBlockReceived] received confirmed block")
@@ -495,20 +495,21 @@ func (d *DPOSManager) OnBlockReceived(b *types.Block, confirmed bool) {
 		}
 	}
 
-	if blockchain.DefaultLedger.Blockchain.GetHeight() < b.Height { //new height block coming
+	if b.Height > blockchain.DefaultLedger.Blockchain.GetHeight() &&
+		b.Height > d.dispatcher.GetFinishedHeight() { //new height block coming
 		d.ProcessHigherBlock(b)
 	} else {
 		log.Warn("a.Leger.LastBlock.Height", blockchain.DefaultLedger.Blockchain.GetHeight(), "b.Height", b.Height)
 	}
 }
 
-func (d *DPOSManager) OnConfirmReceived(p *payload.Confirm) {
+func (d *DPOSManager) OnConfirmReceived(p *payload.Confirm, height uint32) {
 	log.Info("[OnConfirmReceived] started, hash:", p.Proposal.BlockHash)
 	defer log.Info("[OnConfirmReceived] end")
 	if !d.isCurrentArbiter() {
 		return
 	}
-	d.ConfirmBlock()
+	d.ConfirmBlock(height)
 	d.changeHeight()
 }
 
