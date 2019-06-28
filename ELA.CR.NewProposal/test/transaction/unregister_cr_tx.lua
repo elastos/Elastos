@@ -1,8 +1,3 @@
--- Copyright (c) 2017-2019 Elastos Foundation
--- Use of this source code is governed by an MIT
--- license that can be found in the LICENSE file.
--- 
-
 local m = require("api")
 
 -- client: path, password, if create
@@ -22,18 +17,15 @@ local amount = 5000
 local fee = 0.001
 
 -- deposit params
-local deposit_address = "DWfJsXviRaTwhToeer7ftWVXoNUv4vuEDQ"
 local cr_publickey = "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
-local nick_name = "ela_test"
-local url = "ela_test.org"
-local location = "112211"
 
--- register cr payload: publickey, nickname, url, local, wallet
-local rp_payload =registercr.new(cr_publickey, nick_name, url, location, wallet)
+
+-- unregister cr payload: publickey,  wallet
+local rp_payload =unregistercr.new(cr_publickey, wallet)
 print(rp_payload:get())
 
 -- transaction: version, txType, payloadVersion, payload, locktime
-local tx = transaction.new(9, 0x21, 0, rp_payload, 0)
+local tx = transaction.new(9, 0x22, 0, rp_payload, 0)
 print(tx:get())
 
 -- input: from, amount + fee
@@ -45,11 +37,8 @@ local default_output = defaultoutput.new()
 
 -- output: asset_id, value, recipient, output_paload_type, outputpaload
 local charge_output = output.new(asset_id, charge, addr, 0, default_output)
-local amount_output = output.new(asset_id, amount * 100000000, deposit_address, 0, default_output)
 tx:appendtxout(charge_output)
-tx:appendtxout(amount_output)
--- print(charge_output:get())
--- print(amount_output:get())
+
 
 -- sign
 tx:sign(wallet)

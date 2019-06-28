@@ -1402,7 +1402,6 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction,
 	if err := b.crInfoSanityCheck(info); err != nil {
 		return err
 	}
-
 	if !b.crCommittee.IsInVotingPeriod(blockHeight) {
 		return errors.New("should create tx during voting period")
 	}
@@ -1485,6 +1484,7 @@ func checkCRTransactionSignature(signature []byte, code []byte, data []byte) err
 	}
 
 	return nil
+
 }
 
 func (b *BlockChain) crInfoSanityCheck(info *payload.CRInfo) error {
@@ -1698,8 +1698,8 @@ func checkCRCArbitratorsSignatures(program *program.Program) error {
 
 	crcArbitrators := DefaultLedger.Arbitrators.GetCRCArbitrators()
 	crcArbitratorsCount := len(crcArbitrators)
-	minSignCount := int(float64(crcArbitratorsCount) *
-		state.MajoritySignRatioNumerator / state.MajoritySignRatioDenominator) + 1
+	minSignCount := int(float64(crcArbitratorsCount)*
+		state.MajoritySignRatioNumerator/state.MajoritySignRatioDenominator) + 1
 	if m < 1 || m > n || n != crcArbitratorsCount || m < minSignCount {
 		fmt.Printf("m:%d n:%d minSignCount:%d crc:  %d", m, n, minSignCount, crcArbitratorsCount)
 		return errors.New("invalid multi sign script code")

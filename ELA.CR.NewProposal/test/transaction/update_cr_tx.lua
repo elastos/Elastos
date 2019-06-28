@@ -22,8 +22,9 @@ local asset_id = m.get_asset_id()
 local fee = 0.001
 
 -- deposit params
-local deposit_address = "DgauQGNDXYkn3xvVhHHDy4utmoQUjCdJgM"
-local cr_publickey = "039d419986f5c2bf6f2a6f59f0b6e111735b66570fb22107a038bca3e1005d1920"
+
+--local deposit_address = "DW1jxCSjnrCrtkyvbkGcUp4aPvjacXBpAM"
+local cr_publickey = "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 local nick_name = "ela_test11"
 local url = "ela_test.org11"
 local location = "00112211"
