@@ -49,7 +49,13 @@ func (c *Committee) GetMembersCodes() [][]byte {
 
 func (c *Committee) ProcessBlock(block *types.Block,
 	confirm *payload.Confirm) {
-	c.state.ProcessBlock(block, confirm)
+	c.mtx.RLock()
+	isVoting := c.isInVotingPeriod(block)
+	c.mtx.RUnlock()
+
+	if isVoting {
+		c.state.ProcessBlock(block, confirm)
+	}
 
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
@@ -64,6 +70,20 @@ func (c *Committee) shouldChange(block *types.Block) bool {
 	//todo judge by change cr committee tx later
 	return block.Height >= c.params.CRCommitteeStartHeight &&
 		block.Height >= c.lastCommitteeHeight+c.params.CRDutyPeriod
+}
+
+func (c *Committee) isInVotingPeriod(block *types.Block) bool {
+	//todo consider emergency election later
+	inVotingPeriod := func(committeeUpdateHeight uint32) bool {
+		return block.Height >= committeeUpdateHeight-c.params.CRVotingPeriod &&
+			block.Height < committeeUpdateHeight
+	}
+
+	if c.lastCommitteeHeight <= c.params.CRCommitteeStartHeight {
+		return inVotingPeriod(c.params.CRCommitteeStartHeight)
+	} else {
+		return inVotingPeriod(c.lastCommitteeHeight)
+	}
 }
 
 func (c *Committee) changeCommitteeMembers(height uint32) error {

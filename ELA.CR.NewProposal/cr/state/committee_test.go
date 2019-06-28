@@ -86,6 +86,87 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 	}
 }
 
+func TestCommittee_isInVotingPeriod(t *testing.T) {
+	committee := NewCommittee(&config.DefaultParams)
+
+	// 0
+	assert.False(t, committee.isInVotingPeriod(&types.Block{
+		Header: types.Header{
+			Height: 0,
+		},
+	}))
+
+	// < CRCommitteeStartHeight - CRVotingPeriod
+	assert.False(t, committee.isInVotingPeriod(&types.Block{
+		Header: types.Header{
+			Height: config.DefaultParams.CRCommitteeStartHeight -
+				config.DefaultParams.CRVotingPeriod - 1,
+		},
+	}))
+
+	// CRCommitteeStartHeight - CRVotingPeriod
+	assert.True(t, committee.isInVotingPeriod(&types.Block{
+		Header: types.Header{
+			Height: config.DefaultParams.CRCommitteeStartHeight -
+				config.DefaultParams.CRVotingPeriod,
+		},
+	}))
+
+	// [CRCommitteeStartHeight - CRVotingPeriod, CRCommitteeStartHeight)
+	assert.True(t, committee.isInVotingPeriod(&types.Block{
+		Header: types.Header{
+			Height: config.DefaultParams.CRCommitteeStartHeight -
+				config.DefaultParams.CRVotingPeriod + 1,
+		},
+	}))
+
+	// CRCommitteeStartHeight
+	assert.False(t, committee.isInVotingPeriod(&types.Block{
+		Header: types.Header{
+			Height: config.DefaultParams.CRCommitteeStartHeight,
+		},
+	}))
+
+	committee.lastCommitteeHeight = config.DefaultParams.
+		CRCommitteeStartHeight + config.DefaultParams.CRDutyPeriod
+
+	// < CRCommitteeStartHeight + CRDutyPeriod - CRVotingPeriod
+	assert.False(t, committee.isInVotingPeriod(&types.Block{
+		Header: types.Header{
+			Height: config.DefaultParams.CRCommitteeStartHeight +
+				config.DefaultParams.CRDutyPeriod - config.DefaultParams.
+				CRVotingPeriod - 1,
+		},
+	}))
+
+	// CRCommitteeStartHeight + CRDutyPeriod - CRVotingPeriod
+	assert.True(t, committee.isInVotingPeriod(&types.Block{
+		Header: types.Header{
+			Height: config.DefaultParams.CRCommitteeStartHeight +
+				config.DefaultParams.CRDutyPeriod - config.DefaultParams.
+				CRVotingPeriod,
+		},
+	}))
+
+	// [CRCommitteeStartHeight + CRDutyPeriod - CRVotingPeriod,
+	// CRCommitteeStartHeight + CRDutyPeriod)
+	assert.True(t, committee.isInVotingPeriod(&types.Block{
+		Header: types.Header{
+			Height: config.DefaultParams.CRCommitteeStartHeight +
+				config.DefaultParams.CRDutyPeriod - config.DefaultParams.
+				CRVotingPeriod + 1,
+		},
+	}))
+
+	// CRCommitteeStartHeight + CRDutyPeriod
+	assert.False(t, committee.isInVotingPeriod(&types.Block{
+		Header: types.Header{
+			Height: config.DefaultParams.CRCommitteeStartHeight +
+				config.DefaultParams.CRDutyPeriod,
+		},
+	}))
+}
+
 func generateCandidateSuite() (*KeyFrame, []*Candidate) {
 	keyFrame := randomKeyFrame(12)
 	candidates := make([]*Candidate, 0, 12)
