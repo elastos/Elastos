@@ -5,7 +5,6 @@ import { constant } from '../constant'
 import { permissions } from '../utility'
 import * as moment from 'moment'
 import { mail, user as userUtil } from '../utility'
-import MailService from './MailService'
 
 interface Mail {
   subject: string;
@@ -179,19 +178,29 @@ export default class extends Base {
   }
 
   public async reject(param: any): Promise<any> {
-    const { id } = param
+    const { id, comment } = param
     const cur = await this.getById(id)
+    const createdBy = _.get(this.currentUser, '_id')
+
     if (!cur) {
-      throw 'invalid id'
+      throw 'CVoteTrackingService.reject - invalid id'
     }
 
     if (cur.status !== constant.CVOTE_TRACKING_STATUS.REVIEWING) {
-      throw 'CVoteTrackingService.updateDraft - only REVIEWING can be updated'
+      throw 'CVoteTrackingService.reject - only REVIEWING can be updated'
+    }
+
+    if (!comment) {
+      throw 'CVoteTrackingService.reject - comment is required'
     }
 
     await this.model.update({ _id: id }, {
       $set: {
-        status: constant.CVOTE_TRACKING_STATUS.REJECT
+        status: constant.CVOTE_TRACKING_STATUS.REJECT,
+        comment: {
+          content: comment,
+          createdBy,
+        }
       }
     })
 

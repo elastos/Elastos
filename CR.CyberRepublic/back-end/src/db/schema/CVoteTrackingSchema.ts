@@ -7,10 +7,13 @@ const CommentSchema = {
       type: Schema.Types.ObjectId,
       ref: 'users',
   },
-  comment: {
+  content: {
       type: String,
   },
-  createdAt: Date
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  }
 }
 
 export const CVote_Tracking = {
