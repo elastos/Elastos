@@ -21,7 +21,7 @@ public class AssetDetailPresenter extends PresenterAbstract {
                 return baseFragment.getMyWallet().getOwnerAddress(walletId, chainID);
             }
         });
-        subscriberObservable(observer, observable);
+        subscriberObservable(observer, observable,baseFragment);
     }
 
 
@@ -33,7 +33,7 @@ public class AssetDetailPresenter extends PresenterAbstract {
                 return baseFragment.getMyWallet().getAllCoinBaseTransaction(walletId, chainId, start, count, s);
             }
         });
-        subscriberObservable(observer, observable);
+        subscriberObservable(observer, observable,baseFragment);
     }
 
     public void createCombineUTXOTransaction(String walletId, String chainId, String memo, boolean useVotedUTXO, BaseFragment baseFragment) {

@@ -26,6 +26,7 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
     private boolean isShowDialog = true;
     private Context context;
 
+    @Deprecated
     protected void subscriberObservable(Observer subscriber,
                                         Observable observable) {
         observable.subscribeOn(Schedulers.io())
@@ -37,6 +38,14 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
     protected void subscriberObservable(Observer subscriber,
                                         Observable observable, BaseFragment baseFragment) {
         observable.compose(baseFragment.bindToLife()).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .unsubscribeOn(Schedulers.io())
+                .subscribe(subscriber);
+    }
+
+    protected void subscriberObservable(Observer subscriber,
+                                        Observable observable, BaseActivity baseActivity) {
+        observable.compose(baseActivity.bindToLife()).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .unsubscribeOn(Schedulers.io())
                 .subscribe(subscriber);
