@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.core.MasterWallet;
@@ -23,7 +24,8 @@ public class FirstFragment extends BaseFragment implements CommmonObjectWithMeth
 
     private ArrayList<MasterWallet> data;
     @BindView(R.id.imageView)
-    ImageView imageView;
+    ImageView imageView; @BindView(R.id.tv_word)
+    TextView tvWord;
 
     @Override
     protected int getLayoutId() {
@@ -37,16 +39,6 @@ public class FirstFragment extends BaseFragment implements CommmonObjectWithMeth
 
     @Override
     protected void initView(View view) {
-        int Language = new SPUtil(getContext()).getLanguage();
-        int id;
-        if (Language == 0) {
-            id = MyApplication.chainID <= 0 ? R.mipmap.c_flash : R.mipmap.alpha_720_1280;
-        } else {
-            id = MyApplication.chainID <= 0 ? R.mipmap.e_flash : R.mipmap.alpha_e_720_1280;
-
-        }
-        imageView.setBackgroundResource(id);
-
         new FirstPresenter().getAllMasterWallets(this);
 
     }

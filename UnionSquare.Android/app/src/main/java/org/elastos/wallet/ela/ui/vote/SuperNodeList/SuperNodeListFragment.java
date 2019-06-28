@@ -176,8 +176,8 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
         Bundle bundle = new Bundle();
         bundle.putString("zb", zb);
         bundle.putString("type", type);
-        bundle.putSerializable("bean", (Serializable) netList.get(position));
-        bundle.putSerializable("netList", (Serializable) netList);
+        bundle.putSerializable("bean", netList.get(position));
+        bundle.putSerializable("netList", netList);
         start(NodeInformationFragment.class, bundle);
     }
 
