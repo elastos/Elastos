@@ -653,7 +653,8 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 		})
 	}
 
-	// Check if any pending producers has got 6 confirms, set them to activate.
+	// Check if any pending inactive producers has got 6 confirms,
+	// then set them to activate.
 	activateProducerFromInactive := func(key string, producer *Producer) {
 		s.history.append(height, func() {
 			producer.state = Active
@@ -662,6 +663,20 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 		}, func() {
 			producer.state = Inactive
 			s.InactiveProducers[key] = producer
+			delete(s.ActivityProducers, key)
+		})
+	}
+
+	// Check if any pending illegal producers has got 6 confirms,
+	// then set them to activate.
+	activateProducerFromIllegal := func(key string, producer *Producer) {
+		s.history.append(height, func() {
+			producer.state = Active
+			s.ActivityProducers[key] = producer
+			delete(s.IllegalProducers, key)
+		}, func() {
+			producer.state = Illegal
+			s.IllegalProducers[key] = producer
 			delete(s.ActivityProducers, key)
 		})
 	}
@@ -679,6 +694,14 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 			if height > producer.activateRequestHeight &&
 				height-producer.activateRequestHeight+1 >= ActivateDuration {
 				activateProducerFromInactive(key, producer)
+			}
+		}
+	}
+	if len(s.IllegalProducers) > 0 {
+		for key, producer := range s.IllegalProducers {
+			if height > producer.activateRequestHeight &&
+				height-producer.activateRequestHeight+1 >= ActivateDuration {
+				activateProducerFromIllegal(key, producer)
 			}
 		}
 	}
