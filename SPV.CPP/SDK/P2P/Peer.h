@@ -72,7 +72,7 @@ namespace Elastos {
 
 				virtual void OnSetFeePerKb(const PeerPtr &peer, uint64_t feePerKb) = 0;
 
-				virtual const TransactionPtr &OnRequestedTx(const PeerPtr &peer, const uint256 &txHash) = 0;
+				virtual const TransactionPtr OnRequestedTx(const PeerPtr &peer, const uint256 &txHash) = 0;
 
 				virtual bool OnNetworkIsReachable(const PeerPtr &peer) = 0;
 

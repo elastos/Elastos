@@ -94,7 +94,7 @@ namespace Elastos {
 
 			void FireSetFeePerKb(uint64_t feePerKb);
 
-			const TransactionPtr &FireRequestedTx(const uint256 &txHash);
+			const TransactionPtr FireRequestedTx(const uint256 &txHash);
 
 			bool FireNetworkIsReachable();
 
