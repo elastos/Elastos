@@ -15,6 +15,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	crstate "github.com/elastos/Elastos.ELA/cr/state"
 	"github.com/elastos/Elastos.ELA/crypto"
 	. "github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/state"
@@ -255,7 +256,10 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 		if blockHeight < b.chainParams.PublicDPOSHeight {
 			producers = append(producers, b.state.GetPendingCanceledProducers()...)
 		}
-		if err := checkVoteProducerOutputs(txn.Outputs, references, getProducerPublicKeys(producers)); err != nil {
+		candidates := b.crState.GetAllCandidates()
+		err := checkVoteOutputs(txn.Outputs, references,
+			getProducerPublicKeysMap(producers), getCRCodesMap(candidates))
+		if err != nil {
 			log.Warn("[CheckVoteProducerOutputs],", err)
 			return ErrInvalidOutput
 		}
@@ -264,32 +268,49 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 	return Success
 }
 
-func checkVoteProducerOutputs(outputs []*Output, references map[*Input]*Output, producers [][]byte) error {
+func checkVoteOutputs(outputs []*Output, references map[*Input]*Output,
+	producers map[string]struct{}, crs map[string]struct{}) error {
 	programHashes := make(map[common.Uint168]struct{})
 	for _, v := range references {
 		programHashes[v.ProgramHash] = struct{}{}
 	}
 
-	pds := make(map[string]struct{})
-	for _, p := range producers {
-		pds[common.BytesToHexString(p)] = struct{}{}
-	}
-
 	for _, o := range outputs {
-		if o.Type == OTVote {
-			if _, ok := programHashes[o.ProgramHash]; !ok {
-				return errors.New("the output address of vote tx should exist in its input")
+		if o.Type != OTVote {
+			continue
+		}
+		if _, ok := programHashes[o.ProgramHash]; !ok {
+			return errors.New("the output address of vote tx " +
+				"should exist in its input")
+		}
+		payload, ok := o.Payload.(*outputpayload.VoteOutput)
+		if !ok {
+			return errors.New("invalid vote output payload")
+		}
+		for _, content := range payload.Contents {
+			candidates := make(map[string]struct{})
+			switch content.VoteType {
+			case outputpayload.Delegate:
+				candidates = producers
+			case outputpayload.CRC:
+				candidates = crs
 			}
-			payload, ok := o.Payload.(*outputpayload.VoteOutput)
-			if !ok {
-				return errors.New("invalid vote output payload")
+			if content.VoteType == outputpayload.Delegate {
+				candidates = producers
 			}
-			for _, content := range payload.Contents {
-				if content.VoteType == outputpayload.Delegate {
-					for _, candidate := range content.Candidates {
-						if _, ok := pds[common.BytesToHexString(candidate)]; !ok {
-							return fmt.Errorf("invalid vote output payload candidate: %s", common.BytesToHexString(candidate))
-						}
+			for _, candidate := range content.Candidates {
+				if _, ok := candidates[common.BytesToHexString(candidate)]; !ok {
+					return fmt.Errorf("invalid vote output payload "+
+						"candidate: %s", common.BytesToHexString(candidate))
+				}
+			}
+			if payload.Version == byte(1) {
+				if len(content.Candidates) != len(content.Votes) {
+					return errors.New("invalid candidate and votes count")
+				}
+				for _, vote := range content.Votes {
+					if vote > o.Value {
+						return errors.New("vote larger than output amount")
 					}
 				}
 			}
@@ -299,12 +320,21 @@ func checkVoteProducerOutputs(outputs []*Output, references map[*Input]*Output, 
 	return nil
 }
 
-func getProducerPublicKeys(producers []*state.Producer) [][]byte {
-	var publicKeys [][]byte
+func getProducerPublicKeysMap(producers []*state.Producer) map[string]struct{} {
+	pds := make(map[string]struct{})
 	for _, p := range producers {
-		publicKeys = append(publicKeys, p.Info().OwnerPublicKey)
+		pds[common.BytesToHexString(p.Info().OwnerPublicKey)] = struct{}{}
 	}
-	return publicKeys
+	return pds
+}
+
+func getCRCodesMap(crs []*crstate.Candidate) map[string]struct{} {
+	codes := make(map[string]struct{})
+	// todo get code from candidate info
+	//for _, c := range crs {
+	//	codes[common.BytesToHexString(c.Info().Code)] = struct{}{}
+	//}
+	return codes
 }
 
 func checkDestructionAddress(references map[*Input]*Output) error {

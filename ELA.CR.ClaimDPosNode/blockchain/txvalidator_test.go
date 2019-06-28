@@ -1110,59 +1110,328 @@ func (s *txValidatorTestSuite) TestCheckOutputPayload() {
 	s.EqualError(err, "output address should be standard")
 }
 
-func (s *txValidatorTestSuite) TestCheckVoteProducerOutputs() {
-	outputs := []*types.Output{
-		{
-			Type: types.OTNone,
-		},
-	}
-	references := make(map[*types.Input]*types.Output)
+func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 
-	s.NoError(checkVoteProducerOutputs(outputs, references, nil))
+	references := make(map[*types.Input]*types.Output)
+	outputs := []*types.Output{{Type: types.OTNone}}
+	s.NoError(checkVoteOutputs(outputs, references, nil, nil))
 
 	publicKey1 := "023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a"
 	publicKey2 := "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9"
+	publicKey3 := "039d419986f5c2bf6f2a6f59f0b6e111735b66570fb22107a038bca3e1005d1920"
 	candidate1, _ := common.HexStringToBytes(publicKey1)
 	candidate2, _ := common.HexStringToBytes(publicKey2)
-	producers := [][]byte{candidate1}
+	candidate3, _ := common.HexStringToBytes(publicKey3)
+	producersMap := make(map[string]struct{})
+	producersMap[publicKey1] = struct{}{}
+	crsMap := make(map[string]struct{})
+	crsMap[publicKey3] = struct{}{}
 
 	hashStr := "21c5656c65028fe21f2222e8f0cd46a1ec734cbdb6"
 	hashByte, _ := common.HexStringToBytes(hashStr)
 	hash, _ := common.Uint168FromBytes(hashByte)
-	outputs = append(outputs, &types.Output{
+
+	// Check vote output of v0 with delegate type and wrong output program hash
+	outputs1 := []*types.Output{{Type: types.OTNone}}
+	outputs1 = append(outputs1, &types.Output{
 		Type:        types.OTVote,
 		ProgramHash: *hash,
 		Payload: &outputpayload.VoteOutput{
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
 				{
-					VoteType:   0,
+					VoteType:   outputpayload.Delegate,
 					Candidates: [][]byte{candidate1},
 				},
 			},
 		},
 	})
-	s.Error(checkVoteProducerOutputs(outputs, references, producers))
+	s.EqualError(checkVoteOutputs(outputs1, references, producersMap, crsMap),
+		"the output address of vote tx should exist in its input")
 
-	references[&types.Input{}] = &types.Output{
-		ProgramHash: *hash,
-	}
-	s.NoError(checkVoteProducerOutputs(outputs, references, producers))
-
-	outputs = append(outputs, &types.Output{
+	// Check vote output of v0 with crc type and with wrong output program hash
+	outputs2 := []*types.Output{{Type: types.OTNone}}
+	outputs2 = append(outputs2, &types.Output{
 		Type:        types.OTVote,
 		ProgramHash: *hash,
 		Payload: &outputpayload.VoteOutput{
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
 				{
-					VoteType:   0,
+					VoteType:   outputpayload.CRC,
+					Candidates: [][]byte{candidate3},
+				},
+			},
+		},
+	})
+	s.EqualError(checkVoteOutputs(outputs2, references, producersMap, crsMap),
+		"the output address of vote tx should exist in its input")
+
+	// Check vote output of v0 with wrong output program hash
+	outputs3 := []*types.Output{{Type: types.OTNone}}
+	outputs3 = append(outputs3, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Payload: &outputpayload.VoteOutput{
+			Version: 0,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType:   outputpayload.Delegate,
+					Candidates: [][]byte{candidate1},
+				},
+				{
+					VoteType:   outputpayload.CRC,
+					Candidates: [][]byte{candidate3},
+				},
+			},
+		},
+	})
+	s.EqualError(checkVoteOutputs(outputs3, references, producersMap, crsMap),
+		"the output address of vote tx should exist in its input")
+
+	// Check vote output v0 with correct ouput program hash
+	references[&types.Input{}] = &types.Output{
+		ProgramHash: *hash,
+	}
+	s.NoError(checkVoteOutputs(outputs1, references, producersMap, crsMap))
+	s.NoError(checkVoteOutputs(outputs2, references, producersMap, crsMap))
+	s.NoError(checkVoteOutputs(outputs3, references, producersMap, crsMap))
+
+	// Check vote output of v0 with delegate type and invalid candidate
+	outputs4 := []*types.Output{{Type: types.OTNone}}
+	outputs4 = append(outputs4, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Payload: &outputpayload.VoteOutput{
+			Version: 0,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType:   outputpayload.Delegate,
 					Candidates: [][]byte{candidate2},
 				},
 			},
 		},
 	})
-	s.Error(checkVoteProducerOutputs(outputs, references, producers))
+	s.EqualError(checkVoteOutputs(outputs4, references, producersMap, crsMap),
+		"invalid vote output payload candidate: "+
+			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
+
+	// Check vote output of v0 with crc type and invalid candidate
+	outputs5 := []*types.Output{{Type: types.OTNone}}
+	outputs5 = append(outputs5, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Payload: &outputpayload.VoteOutput{
+			Version: 0,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType:   outputpayload.CRC,
+					Candidates: [][]byte{candidate2},
+				},
+			},
+		},
+	})
+	s.EqualError(checkVoteOutputs(outputs5, references, producersMap, crsMap),
+		"invalid vote output payload candidate: "+
+			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
+
+	// Check vote output of v0 with invalid candidate
+	outputs6 := []*types.Output{{Type: types.OTNone}}
+	outputs6 = append(outputs6, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Payload: &outputpayload.VoteOutput{
+			Version: 0,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType:   outputpayload.Delegate,
+					Candidates: [][]byte{candidate2},
+				},
+				{
+					VoteType:   outputpayload.CRC,
+					Candidates: [][]byte{candidate2},
+				},
+			},
+		},
+	})
+	s.EqualError(checkVoteOutputs(outputs6, references, producersMap, crsMap),
+		"invalid vote output payload candidate: "+
+			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
+
+	// Check vote output of v1 with delegate type and wrong votes
+	outputs7 := []*types.Output{{Type: types.OTNone}}
+	outputs7 = append(outputs7, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType:   outputpayload.Delegate,
+					Candidates: [][]byte{candidate1},
+					Votes:      []common.Fixed64{},
+				},
+			},
+		},
+	})
+	s.EqualError(checkVoteOutputs(outputs7, references, producersMap, crsMap),
+		"invalid candidate and votes count")
+
+	// Check vote output of v1 with crc type and wrong votes
+	outputs8 := []*types.Output{{Type: types.OTNone}}
+	outputs8 = append(outputs8, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType:   outputpayload.CRC,
+					Candidates: [][]byte{candidate3},
+					Votes:      []common.Fixed64{},
+				},
+			},
+		},
+	})
+	s.EqualError(checkVoteOutputs(outputs8, references, producersMap, crsMap),
+		"invalid candidate and votes count")
+
+	// Check vote output of v1 with wrong votes
+	outputs9 := []*types.Output{{Type: types.OTNone}}
+	outputs9 = append(outputs9, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType:   outputpayload.Delegate,
+					Candidates: [][]byte{candidate1},
+					Votes:      []common.Fixed64{},
+				},
+				{
+					VoteType:   outputpayload.CRC,
+					Candidates: [][]byte{candidate3},
+					Votes:      []common.Fixed64{},
+				},
+			},
+		},
+	})
+	s.EqualError(checkVoteOutputs(outputs9, references, producersMap, crsMap),
+		"invalid candidate and votes count")
+
+	// Check vote output of v1 with delegate type and wrong votes
+	outputs10 := []*types.Output{{Type: types.OTNone}}
+	outputs10 = append(outputs10, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Value:       common.Fixed64(10),
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType:   outputpayload.Delegate,
+					Candidates: [][]byte{candidate1},
+					Votes:      []common.Fixed64{20},
+				},
+			},
+		},
+	})
+	s.EqualError(checkVoteOutputs(outputs10, references, producersMap, crsMap),
+		"vote larger than output amount")
+
+	// Check vote output of v1 with crc type and wrong votes
+	outputs11 := []*types.Output{{Type: types.OTNone}}
+	outputs11 = append(outputs11, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Value:       common.Fixed64(10),
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType:   outputpayload.CRC,
+					Candidates: [][]byte{candidate3},
+					Votes:      []common.Fixed64{20},
+				},
+			},
+		},
+	})
+	s.EqualError(checkVoteOutputs(outputs11, references, producersMap, crsMap),
+		"vote larger than output amount")
+
+	// Check vote output of v1 with wrong votes
+	outputs12 := []*types.Output{{Type: types.OTNone}}
+	outputs12 = append(outputs12, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Value:       common.Fixed64(10),
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType:   outputpayload.Delegate,
+					Candidates: [][]byte{candidate1},
+					Votes:      []common.Fixed64{20},
+				},
+				{
+					VoteType:   outputpayload.CRC,
+					Candidates: [][]byte{candidate3},
+					Votes:      []common.Fixed64{20},
+				},
+			},
+		},
+	})
+	s.EqualError(checkVoteOutputs(outputs12, references, producersMap, crsMap),
+		"vote larger than output amount")
+
+	// Check vote output v1 with correct votes
+	outputs13 := []*types.Output{{Type: types.OTNone}}
+	outputs13 = append(outputs13, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Value:       common.Fixed64(10),
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType:   outputpayload.Delegate,
+					Candidates: [][]byte{candidate1},
+					Votes:      []common.Fixed64{10},
+				},
+				{
+					VoteType:   outputpayload.CRC,
+					Candidates: [][]byte{candidate3},
+					Votes:      []common.Fixed64{10},
+				},
+			},
+		},
+	})
+	s.NoError(checkVoteOutputs(outputs13, references, producersMap, crsMap))
+
+	// Check vote output of v1 with wrong votes
+	outputs14 := []*types.Output{{Type: types.OTNone}}
+	outputs14 = append(outputs14, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Value:       common.Fixed64(10),
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType:   outputpayload.Delegate,
+					Candidates: [][]byte{candidate1},
+					Votes:      []common.Fixed64{1},
+				},
+				{
+					VoteType:   outputpayload.CRC,
+					Candidates: [][]byte{candidate3},
+					Votes:      []common.Fixed64{1},
+				},
+			},
+		},
+	})
+	s.NoError(checkVoteOutputs(outputs14, references, producersMap, crsMap))
 }
 
 func (s *txValidatorTestSuite) TestCheckOutputProgramHash() {

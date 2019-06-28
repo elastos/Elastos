@@ -356,7 +356,7 @@ func (b *BlockChain) checkCoinbaseTransactionContext(blockHeight uint32, coinbas
 		totalReward := totalTxFee + b.chainParams.RewardPerBlock
 		rewardDPOSArbiter := Fixed64(math.Ceil(float64(totalReward) * 0.35))
 		if totalReward-rewardDPOSArbiter+DefaultLedger.Arbitrators.
-			GetFinalRoundChange() != coinbase.Outputs[0].Value+
+				GetFinalRoundChange() != coinbase.Outputs[0].Value+
 			coinbase.Outputs[1].Value {
 			return errors.New("reward amount in coinbase not correct")
 		}
