@@ -15,6 +15,11 @@ import (
 
 const cachedCount = 6
 
+type ConfirmInfo struct {
+	Confirm *payload.Confirm
+	Height  uint32
+}
+
 type BlockPool struct {
 	Chain     *blockchain.BlockChain
 	Store     blockchain.IChainStore
@@ -141,9 +146,13 @@ func (bm *BlockPool) appendConfirm(confirm *payload.Confirm) (
 	if err != nil {
 		return inMainChain, isOrphan, err
 	}
+	block := bm.blocks[confirm.Proposal.BlockHash]
 
 	// notify new confirm accepted.
-	events.Notify(events.ETConfirmAccepted, confirm)
+	events.Notify(events.ETConfirmAccepted, &ConfirmInfo{
+		Confirm: confirm,
+		Height:  block.Height,
+	})
 
 	return inMainChain, isOrphan, nil
 }
