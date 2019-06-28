@@ -38,7 +38,7 @@ type BlockChain struct {
 	chainParams *config.Params
 	db          IChainStore
 	state       *state.State
-	crState     *crstate.State
+	crCommittee *crstate.Committee
 	GenesisHash Uint256
 
 	// The following fields are calculated based upon the provided chain
@@ -77,7 +77,7 @@ func New(db IChainStore, chainParams *config.Params, state *state.State) (*Block
 		chainParams:         chainParams,
 		db:                  db,
 		state:               state,
-		crState:             crstate.NewState(chainParams),
+		crCommittee:         crstate.NewCommittee(chainParams),
 		GenesisHash:         chainParams.GenesisBlock.Hash(),
 		minRetargetTimespan: targetTimespan / adjustmentFactor,
 		maxRetargetTimespan: targetTimespan * adjustmentFactor,
@@ -1013,7 +1013,7 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 	}
 
 	if inMainChain && !reorganized && (block.Height >= b.chainParams.VoteStartHeight ||
-		// In case of VoteStartHeight larger than (CRCOnlyDPOSHeight-PreConnectOffset)
+	// In case of VoteStartHeight larger than (CRCOnlyDPOSHeight-PreConnectOffset)
 		block.Height == b.chainParams.CRCOnlyDPOSHeight-b.chainParams.
 			PreConnectOffset) {
 		DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
