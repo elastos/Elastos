@@ -33,6 +33,9 @@ const (
 	// IOTimeout is the maximum duration for JSON-RPC reading or writing
 	// timeout.
 	IOTimeout = 60 * time.Second
+
+	// MaxRPCRead is the maximum buffer size for reading request.
+	MaxRPCRead = 1024 * 1024
 )
 
 func StartRPCServer() {
@@ -96,51 +99,55 @@ func StartRPCServer() {
 //this is the function that should be called in order to answer an rpc call
 //should be registered like "http.AddMethod("/", httpjsonrpc.Handle)"
 func Handle(w http.ResponseWriter, r *http.Request) {
-
-	//JSON RPC commands should be POSTs
 	isClientAllowed := clientAllowed(r)
 	if !isClientAllowed {
-		log.Warn("HTTP Client ip is not allowd")
-		http.Error(w, "Client ip is not allowd", http.StatusForbidden)
+		log.Warn("Client ip is not allowed")
+		RPCError(w, http.StatusForbidden, InternalError, "Client ip is not allowed")
 		return
 	}
 
+	// JSON RPC commands should be POSTs
 	if r.Method != "POST" {
-		log.Warn("HTTP JSON RPC Handle - Method!=\"POST\"")
-		http.Error(w, "JSON RPC protocol only allows POST method", http.StatusMethodNotAllowed)
+		log.Warn("JSON-RPC Handle - Method!=\"POST\"")
+		RPCError(w, http.StatusMethodNotAllowed, InternalError, "JSON-RPC protocol only allows POST method")
 		return
 	}
 	contentType, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if contentType != "application/json" {
-		http.Error(w, "need content type to be application/json", http.StatusUnsupportedMediaType)
+		RPCError(w, http.StatusUnsupportedMediaType, InternalError, "JSON-RPC need content type to be application/json")
 		return
 	}
 
 	isCheckAuthOk := checkAuth(r)
 	if !isCheckAuthOk {
-		log.Warn("client authenticate failed")
-		RPCError(w, http.StatusUnauthorized, InternalError, "client authenticate failed")
+		log.Warn("Client authenticate failed")
+		RPCError(w, http.StatusUnauthorized, InternalError, "Client authenticate failed")
 		return
 	}
 
 	//read the body of the request
-	body, _ := ioutil.ReadAll(r.Body)
+	body, err := ioutil.ReadAll(http.MaxBytesReader(w, r.Body, MaxRPCRead))
+	if err != nil {
+		RPCError(w, http.StatusBadRequest, InvalidRequest, "JSON-RPC request reading error:"+err.Error())
+		return
+	}
+
 	request := make(map[string]interface{})
-	error := json.Unmarshal(body, &request)
-	if error != nil {
-		log.Error("HTTP JSON RPC Handle - json.Unmarshal: ", error)
-		RPCError(w, http.StatusBadRequest, ParseError, "rpc json parse error:"+error.Error())
+	err = json.Unmarshal(body, &request)
+	if err != nil {
+		log.Error("JSON-RPC request parsing error: ", err)
+		RPCError(w, http.StatusBadRequest, ParseError, "JSON-RPC request parsing error:"+err.Error())
 		return
 	}
 	//get the corresponding function
 	requestMethod, ok := request["method"].(string)
 	if !ok {
-		RPCError(w, http.StatusBadRequest, InvalidRequest, "need a method!")
+		RPCError(w, http.StatusBadRequest, InvalidRequest, "JSON-RPC need a method")
 		return
 	}
 	method, ok := mainMux[requestMethod]
 	if !ok {
-		RPCError(w, http.StatusNotFound, MethodNotFound, "method "+requestMethod+" not found")
+		RPCError(w, http.StatusNotFound, MethodNotFound, "JSON-RPC method "+requestMethod+" not found")
 		return
 	}
 
