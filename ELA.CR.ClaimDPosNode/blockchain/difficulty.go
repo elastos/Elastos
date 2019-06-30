@@ -9,6 +9,42 @@ import (
 	"github.com/elastos/Elastos.ELA/common/log"
 )
 
+// GetNetworkHashPS return average network hashes per second based on the last 'lookup' blocks.
+func (b *BlockChain) GetNetworkHashPS() *big.Int {
+	tipHash := b.CurrentBlockHash()
+	tipNode, exist := b.LookupNodeInIndex(&tipHash)
+	if !exist {
+		return new(big.Int)
+	}
+	lookup := uint32(120)
+	firstNode := tipNode
+	minTime := firstNode.Timestamp
+	maxTime := minTime
+	for ; firstNode != nil && firstNode.Height != tipNode.Height-lookup; firstNode = firstNode.Parent {
+		time := firstNode.Timestamp
+		if time < minTime {
+			minTime = time
+		}
+		if time > maxTime {
+			maxTime = time
+		}
+	}
+	// In case there's a situation where minTime == maxTime, we don't want a divide by zero exception.
+	if minTime == maxTime {
+		return new(big.Int)
+	}
+
+	firstWorkSum := big.NewInt(0)
+	if firstNode != nil {
+		firstWorkSum = firstNode.WorkSum
+	}
+
+	workDiff := new(big.Int).Sub(tipNode.WorkSum, firstWorkSum)
+	timeDiff := big.NewInt(int64(maxTime - minTime))
+
+	return workDiff.Div(workDiff, timeDiff)
+}
+
 func (b *BlockChain) CalcCurrentDifficulty(currentBits uint32) string {
 	targetGenesisBlockBig := CompactToBig(b.chainParams.PowLimitBits)
 	targetCurrentBig := CompactToBig(currentBits)
