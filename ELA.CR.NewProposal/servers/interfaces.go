@@ -407,6 +407,31 @@ func AuxHelp(param Params) map[string]interface{} {
 	return ResponsePack(Success, "createauxblock==submitauxblock")
 }
 
+func GetMiningInfo(param Params) map[string]interface{} {
+	block, err := Store.GetBlock(Store.GetCurrentBlockHash())
+	if err != nil {
+		return ResponsePack(InternalError, "get tip block failed")
+	}
+
+	miningInfo := struct {
+		Blocks         uint32 `json:"blocks"`
+		CurrentBlockTx uint32 `json:"currentblocktx"`
+		Difficulty     string `json:"difficulty"`
+		NetWorkHashPS  string `json:"networkhashps"`
+		PooledTx       uint32 `json:"pooledtx"`
+		Chain          string `json:"chain"`
+	}{
+		Blocks:         Store.GetHeight() + 1,
+		CurrentBlockTx: uint32(len(block.Transactions)),
+		Difficulty:     Chain.CalcCurrentDifficulty(block.Bits),
+		NetWorkHashPS:  Chain.GetNetworkHashPS().String(),
+		PooledTx:       uint32(len(TxMemPool.GetTxsInPool())),
+		Chain:          Config.ActiveNet,
+	}
+
+	return ResponsePack(Success, miningInfo)
+}
+
 func ToggleMining(param Params) map[string]interface{} {
 	mining, ok := param.Bool("mining")
 	if !ok {

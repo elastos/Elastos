@@ -779,6 +779,36 @@ result sample:
 }
 ```
 
+#### getmininginfo
+
+description: returns a json object containing mining-related information 
+parameters: none
+
+argument sample:
+```json
+{
+  "method":"getmininginfo",
+  "params":{}
+}
+```
+
+result sample:
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "blocks": 397720,
+        "currentblocktx": 7,
+        "difficulty": "1553768014955882",
+        "networkhashps": "27618978773646499814",
+        "pooledtx": 0,
+        "chain": "mainnet"
+    }
+}
+```
+
 #### createauxblock
 
 description: generate an auxiliary block
