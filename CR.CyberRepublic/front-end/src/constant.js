@@ -4,6 +4,8 @@ const create = (list) => {
   return _.zipObject(list, list)
 }
 
+export const DATE_FORMAT = 'MMM D, YYYY'
+
 export const CR_LINKS = {
   FACEBOOK: 'https://www.facebook.com/ElastosCyberRepublic',
   GITHUB: 'https://github.com/cyber-republic',
@@ -234,6 +236,9 @@ export const CVOTE_RESULT_COLOR = {
   [CVOTE_RESULT.SUPPORT]: '#1DE9B6',
   [CVOTE_RESULT.REJECT]: '#BE1313',
 }
+
+export const CVOTE_TRACKING_STATUS = create(['DRAFT', 'REVIEWING', 'PUBLISHED', 'REJECT'])
+export const CVOTE_SUMMARY_STATUS = create(['DRAFT', 'REVIEWING', 'PUBLISHED', 'REJECT'])
 
 export const RESOURCE_TYPE_TO_TEXT = {
   CVote: 'Proposal',

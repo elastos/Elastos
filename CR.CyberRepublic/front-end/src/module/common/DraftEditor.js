@@ -4,6 +4,7 @@ import BaseComponent from '@/model/BaseComponent'
 import { Editor, createEditorState, StringToTypeMap, Block, HANDLED, NOT_HANDLED, resetBlockWithType, getCurrentBlock } from 'medium-draft'
 import { convertFromHTML, ContentState, EditorState } from 'draft-js'
 import { MEDIUM_DRAFT_TOOLBAR_OPTIONS } from '@/config/constant'
+import { CONTENT_TYPE } from '@/constant'
 
 // if using webpack
 import 'medium-draft/lib/index.css'
@@ -35,7 +36,7 @@ class Component extends BaseComponent {
     let editorState
     if (!content) {
       editorState = createEditorState()
-    } else if (contentType === 'MARKDOWN') {
+    } else if (contentType === CONTENT_TYPE.MARKDOWN) {
       editorState = createEditorState(JSON.parse(content))
     } else {
       const blocksFromHTML = convertFromHTML(content)

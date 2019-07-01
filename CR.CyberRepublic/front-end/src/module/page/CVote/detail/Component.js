@@ -18,22 +18,40 @@ import { createEditorState } from 'medium-draft'
 import mediumDraftExporter from 'medium-draft/lib/exporter'
 import VoteResultComponent from '../common/vote_result/Component'
 import Preamble from './Preamble'
+import Tracking from '../tracking/list/Container'
 
 import { Title, Label, ContentTitle, StyledAnchor, FixedHeader, Body } from './style'
 import './style.scss'
 
 const { TextArea } = Input
 
-const renderRichContent = (data, key, title) => (
-  <div>
-    {title && <ContentTitle id={key}>{title}</ContentTitle>}
-    <DraftEditor
-      content={data[key]}
-      contentType={data.contentType}
-      editorEnabled={false}
-    />
-  </div>
-)
+const renderRichContent = (data, key, title) => {
+  let content
+  if (_.isArray(data)) {
+    content = _.map(data, item => (
+      <DraftEditor
+        content={item[key]}
+        contentType={item.contentType}
+        editorEnabled={false}
+      />
+    ))
+  } else {
+    content = (
+      <DraftEditor
+        content={data[key]}
+        contentType={data.contentType}
+        editorEnabled={false}
+      />
+    )
+  }
+
+  return (
+    <div>
+      {title && <ContentTitle id={key}>{title}</ContentTitle>}
+      {content}
+    </div>
+  )
+}
 
 const getHTML = (data, key) => {
   const { contentType } = data
@@ -246,7 +264,9 @@ class C extends StandardPage {
 
   renderContent() {
     const { data } = this.state
+    // legacy data structure has content field
     if (_.has(data, 'content')) return renderRichContent(data, 'content')
+    const trackingNode = (data.status === CVOTE_STATUS.ACTIVE) && <Tracking proposal={data} />
     return (
       <div>
         <Preamble {...data} />
@@ -256,6 +276,7 @@ class C extends StandardPage {
         {renderRichContent(data, 'relevance', I18N.get('proposal.fields.relevance'))}
         {renderRichContent(data, 'budget', I18N.get('proposal.fields.budget'))}
         {renderRichContent(data, 'plan', I18N.get('proposal.fields.plan'))}
+        {trackingNode}
       </div>
     )
   }
