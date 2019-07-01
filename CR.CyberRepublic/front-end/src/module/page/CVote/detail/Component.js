@@ -266,7 +266,8 @@ class C extends StandardPage {
     const { data } = this.state
     // legacy data structure has content field
     if (_.has(data, 'content')) return renderRichContent(data, 'content')
-    const trackingNode = (data.status === CVOTE_STATUS.ACTIVE) && <Tracking proposal={data} />
+    const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.FINAL], data.status)
+    const trackingNode = isShowFollowingUp && <Tracking proposal={data} />
     return (
       <div>
         <Preamble {...data} />

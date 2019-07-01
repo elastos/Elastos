@@ -17,6 +17,12 @@ const mapDispatch = () => {
     async create(param) {
       return service.create(param)
     },
+    async reject(param) {
+      return service.reject(param)
+    },
+    async approve(param) {
+      return service.approve(param)
+    },
     async listData(param, isAuthorized = false) {
       return service.listData(param, isAuthorized)
     },
