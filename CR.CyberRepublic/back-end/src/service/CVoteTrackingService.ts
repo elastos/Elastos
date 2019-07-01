@@ -219,7 +219,7 @@ export default class extends Base {
     const db_user = this.getDBModel('User')
     const currentUserId = _.get(this.currentUser, '_id')
     const receivers = user ? [user] : await db_user.find({ role })
-    const toUsers = _.filter(receivers, user => !user._id.equals(currentUserId))
+    const toUsers = _.filter(receivers, user => (user._id && user._id.toString()) !== currentUserId)
     const toMails = _.map(toUsers, 'email')
 
     const recVariables = _.zipObject(toMails, _.map(toUsers, (user) => ({
