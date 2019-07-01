@@ -18,6 +18,7 @@ package core
 
 import (
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/common"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/common/hexutil"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/consensus"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/consensus/misc"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/core/state"
@@ -25,6 +26,8 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/core/vm"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/crypto"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/params"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/spv"
+	"math/big"
 )
 
 // StateProcessor is a basic Processor, which takes care of transitioning
@@ -97,8 +100,21 @@ func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *commo
 	vmenv := vm.NewEVM(context, statedb, config, cfg)
 	// Apply the transaction to the current state (included in the env)
 	_, gas, failed, err := ApplyMessage(vmenv, msg, gp)
+
 	if err != nil {
 		return nil, 0, err
+	}
+	if tx.To() != nil {
+		to := *tx.To()
+		var blackaddr common.Address
+		if len(tx.Data()) == 32 && to == blackaddr {
+			txhash := hexutil.Encode(tx.Data())
+			fee, addr, output := spv.FindOutputFeeAndaddressByTxHash(txhash)
+			if fee.Cmp(new(big.Int)) > 0 && output.Cmp(new(big.Int)) > 0 && addr != blackaddr {
+				statedb.SetState(blackaddr, common.HexToHash(txhash), tx.Hash())
+			}
+
+		}
 	}
 	// Update the state with pending changes
 	var root []byte
