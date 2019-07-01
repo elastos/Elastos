@@ -62,11 +62,13 @@ namespace Elastos {
 						  });
 		}
 
-		std::string MasterWalletManager::GenerateMnemonic(const std::string &language) const {
+		std::string MasterWalletManager::GenerateMnemonic(const std::string &language, int wordCount) const {
 			ArgInfo("{}", GetFunName());
 			ArgInfo("language: {}", language);
+			ArgInfo("wordCount: {}", wordCount);
 
-			std::string mnemonic = MasterWallet::GenerateMnemonic(language, _rootPath);
+			Mnemonic::WordCount count = Mnemonic::WordCount(wordCount);
+			std::string mnemonic = MasterWallet::GenerateMnemonic(language, _rootPath, count);
 
 			ArgInfo("r => {}", "*");
 			return mnemonic;

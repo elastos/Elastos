@@ -34,9 +34,10 @@ namespace Elastos {
 			 * Generate a mnemonic by random 128 entropy. We support English, Chinese, French, Italian, Japanese, and
 			 * 	Spanish 6 types of mnemonic currently.
 			 * @param language specify mnemonic language.
+			 * @param wordCount value can only be one of {12, 15, 18, 21, 24}.
 			 * @return a random mnemonic.
 			 */
-			virtual std::string GenerateMnemonic(const std::string &language) const;
+			virtual std::string GenerateMnemonic(const std::string &language, int wordCount = 12) const;
 
 			/**
 			 * Get public key for creating multi sign wallet with phrase.

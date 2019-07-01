@@ -177,8 +177,9 @@ namespace Elastos {
 
 		}
 
-		std::string MasterWallet::GenerateMnemonic(const std::string &language, const std::string &rootPath) {
-			return Mnemonic(boost::filesystem::path(rootPath)).Create(language);
+		std::string MasterWallet::GenerateMnemonic(const std::string &language, const std::string &rootPath,
+		                                           Mnemonic::WordCount wordCount) {
+			return Mnemonic(boost::filesystem::path(rootPath)).Create(language, wordCount);
 		}
 
 		void MasterWallet::ClearLocal() {

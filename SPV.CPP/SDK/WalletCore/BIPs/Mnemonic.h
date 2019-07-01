@@ -16,11 +16,11 @@ namespace Elastos {
 		class Mnemonic {
 		public:
 			enum WordCount {
-				WORDS_12,
-				WORDS_15,
-				WORDS_18,
-				WORDS_21,
-				WORDS_24
+				WORDS_12 = 12,
+				WORDS_15 = 15,
+				WORDS_18 = 18,
+				WORDS_21 = 21,
+				WORDS_24 = 24
 			};
 		public:
 			Mnemonic(const boost::filesystem::path &rootPath);

@@ -55,7 +55,8 @@ namespace Elastos {
 
 		public: //override from IMasterWallet
 
-			static std::string GenerateMnemonic(const std::string &language, const std::string &rootPath);
+			static std::string GenerateMnemonic(const std::string &language, const std::string &rootPath,
+			                                    Mnemonic::WordCount wordCount = Mnemonic::WordCount::WORDS_12);
 
 			virtual std::string GetId() const;
 
