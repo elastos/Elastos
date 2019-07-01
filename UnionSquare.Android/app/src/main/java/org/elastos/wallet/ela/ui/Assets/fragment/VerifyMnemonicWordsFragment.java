@@ -158,16 +158,8 @@ public class VerifyMnemonicWordsFragment extends BaseFragment implements Creater
     public void onCreateSubWallet(String data) {
         if (data != null) {
             //创建Mainchain子钱包
-
-            Wallet masterWallet = new Wallet();
-            masterWallet.setWalletName(createWalletBean.getMasterWalletName());
-            masterWallet.setWalletId(createWalletBean.getMasterWalletID());
-            masterWallet.setSingleAddress(createWalletBean.getSingleAddress());
-            realmUtil.updateWalletDetial(masterWallet);
-            SubWallet subWallet = new SubWallet();
-            subWallet.setBelongId(createWalletBean.getMasterWalletID());
-            subWallet.setChainId(data);
-            realmUtil.updateSubWalletDetial(subWallet, new RealmTransactionAbs() {
+            Wallet masterWallet = realmUtil.updateWalletDetial(createWalletBean.getMasterWalletName(), createWalletBean.getMasterWalletID(), data);
+            realmUtil.updateSubWalletDetial(createWalletBean.getMasterWalletID(),data, new RealmTransactionAbs() {
                 @Override
                 public void onSuccess() {
                     realmUtil.updateWalletDefault(createWalletBean.getMasterWalletID(), new RealmTransactionAbs() {

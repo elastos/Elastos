@@ -9,7 +9,6 @@ import io.realm.annotations.PrimaryKey;
 
 /**
  * 钱包表
- * Created by wangdongfeng on 2018/4/13.
  */
 
 public class Wallet extends RealmObject implements Parcelable {
@@ -24,6 +23,7 @@ public class Wallet extends RealmObject implements Parcelable {
     private boolean isDefault;//默認錢包 是否是默認的
     private boolean singleAddress;//是否单地址
     private RealmList<String> walletAddrList;//所有钱包地址*/
+    private int type=0;//0 普通单签 1单签只读 2普通多签 3多签只读
     private String filed1;//
     private String filed2;//
     private String filed3;//
@@ -41,11 +41,12 @@ public class Wallet extends RealmObject implements Parcelable {
         this.keyStore = wallet.getKeyStore();
         this.mnemonic = wallet.getMnemonic();
         this.isDefault = wallet.isDefault();
-        this.singleAddress = wallet. isSingleAddress();
+        this.singleAddress = wallet.isSingleAddress();
         this.walletAddrList = wallet.getWalletAddrList();
-        this.filed1 =  wallet.getFiled1();
-        this.filed2 =  wallet.getFiled2();
-        this.filed3 =  wallet.getFiled3();
+        this.type = wallet.getType();
+        this.filed1 = wallet.getFiled1();
+        this.filed2 = wallet.getFiled2();
+        this.filed3 = wallet.getFiled3();
     }
 
     public static final Creator<Wallet> CREATOR = new Creator<Wallet>() {
@@ -77,6 +78,7 @@ public class Wallet extends RealmObject implements Parcelable {
         dest.writeByte((byte) (isDefault ? 1 : 0));
         dest.writeByte((byte) (singleAddress ? 1 : 0));
         //dest.writeList(walletAddrList);
+        dest.writeInt(type);
         dest.writeString(filed1);
         dest.writeString(filed2);
         dest.writeString(filed3);
@@ -95,6 +97,7 @@ public class Wallet extends RealmObject implements Parcelable {
             walletAddrList = new RealmList<String>();
         }
         in.readList(walletAddrList, String.class.getClassLoader());*/
+        type = in.readInt();
         filed1 = in.readString();
         filed2 = in.readString();
         filed3 = in.readString();
@@ -172,6 +175,13 @@ public class Wallet extends RealmObject implements Parcelable {
         this.walletAddrList = walletAddrList;
     }
 
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
 
     public String getFiled1() {
         return filed1;
@@ -209,6 +219,7 @@ public class Wallet extends RealmObject implements Parcelable {
                 ", isDefault=" + isDefault +
                 ", singleAddress=" + singleAddress +
                 ", walletAddrList=" + walletAddrList +
+                ", type=" + type +
                 ", filed1='" + filed1 + '\'' +
                 ", filed2='" + filed2 + '\'' +
                 ", filed3='" + filed3 + '\'' +
