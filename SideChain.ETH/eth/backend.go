@@ -20,6 +20,7 @@ package eth
 import (
 	"errors"
 	"fmt"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/spv"
 	"math/big"
 	"runtime"
 	"sync"
@@ -522,6 +523,7 @@ func (s *Ethereum) Stop() error {
 	s.eventMux.Stop()
 
 	s.chainDb.Close()
+	spv.SpvService.GetDatabase().Close()
 	close(s.shutdownChan)
 	return nil
 }

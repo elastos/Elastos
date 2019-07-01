@@ -19,6 +19,7 @@ package les
 
 import (
 	"fmt"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/spv"
 	"sync"
 	"time"
 
@@ -258,6 +259,7 @@ func (s *LightEthereum) Stop() error {
 
 	time.Sleep(time.Millisecond * 200)
 	s.chainDb.Close()
+	spv.SpvService.GetDatabase().Close()
 	close(s.shutdownChan)
 
 	return nil
