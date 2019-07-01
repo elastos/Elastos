@@ -1,3 +1,5 @@
+import { CVOTE_TRACKING_STATUS } from '@/constant'
+
 export default {
   fields: {
     title: 'Title',
@@ -17,6 +19,18 @@ export default {
     plan: 'Execution Plan',
     tracking: 'Tracking Plan',
     summary: 'Summary',
+  },
+  btn: {
+    tracking: {
+      reject: 'Reject & Comment',
+      approve: 'Approve & Publish',
+    },
+  },
+  status: {
+    [CVOTE_TRACKING_STATUS.DRAFT]: 'DRAFT',
+    [CVOTE_TRACKING_STATUS.REVIEWING]: 'BEING REVIEWED',
+    [CVOTE_TRACKING_STATUS.PUBLISHED]: 'APPROVED ✓',
+    [CVOTE_TRACKING_STATUS.REJECT]: 'REJECTED !',
   },
   form: {
     note: {

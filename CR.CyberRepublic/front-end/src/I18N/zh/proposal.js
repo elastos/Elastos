@@ -1,3 +1,5 @@
+import { CVOTE_TRACKING_STATUS } from '@/constant'
+
 export default {
   fields: {
     title: '标题',
@@ -17,6 +19,18 @@ export default {
     plan: '执行计划',
     tracking: '跟踪',
     summary: '总结',
+  },
+  btn: {
+    tracking: {
+      reject: '驳回 & 评论',
+      approve: '批准 & 发布',
+    },
+  },
+  status: {
+    [CVOTE_TRACKING_STATUS.DRAFT]: '草稿',
+    [CVOTE_TRACKING_STATUS.REVIEWING]: '审阅中',
+    [CVOTE_TRACKING_STATUS.PUBLISHED]: '已批准 ✓',
+    [CVOTE_TRACKING_STATUS.REJECT]: '被驳回 !',
   },
   form: {
     note: {
