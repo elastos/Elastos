@@ -193,6 +193,7 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 		blackaddr     common.Address
 		blackcontract common.Address
 	)
+
 	msg := st.msg
 	sender := vm.AccountRef(msg.From())
 	homestead := st.evm.ChainConfig().IsHomestead(st.evm.BlockNumber)
@@ -202,38 +203,42 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 		fee, toaddr, output := spv.FindOutputFeeAndaddressByTxHash(txhash)
 		sender = vm.AccountRef(blackaddr)
 		completetxhash := evm.StateDB.GetState(blackaddr, common.HexToHash(txhash))
-		if completetxhash.String() != txhash && toaddr != blackaddr && output.Cmp(new(big.Int)) > 0 {
-			st.state.AddBalance(st.msg.From(), new(big.Int).SetUint64(evm.ChainConfig().PassBalance))
-			defer func() {
-				ethfee := new(big.Int).Mul(new(big.Int).SetUint64(st.gasUsed()), st.gasPrice)
-				if fee.Cmp(new(big.Int)) <= 0 || fee.Cmp(ethfee) < 0 || new(big.Int).Sub(st.state.GetBalance(toaddr), fee).Cmp(new(big.Int)) < 0 || vmerr != nil {
-					ret = nil
-					usedGas = 0
-					failed = false
-					if err == nil {
-						err = ErrGasLimitReached
+		if toaddr != blackaddr {
+			if (completetxhash == common.Hash{}) && output.Cmp(new(big.Int)) > 0 {
+				st.state.AddBalance(st.msg.From(), new(big.Int).SetUint64(evm.ChainConfig().PassBalance))
+				defer func() {
+					ethfee := new(big.Int).Mul(new(big.Int).SetUint64(st.gasUsed()), st.gasPrice)
+					if fee.Cmp(new(big.Int)) <= 0 || fee.Cmp(ethfee) < 0 || new(big.Int).Sub(st.state.GetBalance(toaddr), fee).Cmp(new(big.Int)) < 0 || vmerr != nil {
+						ret = nil
+						usedGas = 0
+						failed = false
+						if err == nil {
+							err = ErrGasLimitReached
+						}
+						evm.StateDB.RevertToSnapshot(snapshot)
+						return
+					} else {
+						st.state.SubBalance(toaddr, fee)
+						st.state.AddBalance(st.msg.From(), fee)
 					}
-					evm.StateDB.RevertToSnapshot(snapshot)
-					return
-				} else {
-					st.state.SubBalance(toaddr, fee)
-					st.state.AddBalance(st.msg.From(), fee)
-				}
 
-				if (new(big.Int).Sub(st.state.GetBalance(st.msg.From()), new(big.Int).SetUint64(evm.ChainConfig().PassBalance)).Cmp(new(big.Int))) < 0 {
-					ret = nil
-					usedGas = 0
-					failed = false
-					if err == nil {
-						err = ErrGasLimitReached
+					if (new(big.Int).Sub(st.state.GetBalance(st.msg.From()), new(big.Int).SetUint64(evm.ChainConfig().PassBalance)).Cmp(new(big.Int))) < 0 {
+						ret = nil
+						usedGas = 0
+						failed = false
+						if err == nil {
+							err = ErrGasLimitReached
+						}
+						evm.StateDB.RevertToSnapshot(snapshot)
+					} else {
+						st.state.SubBalance(st.msg.From(), new(big.Int).SetUint64(evm.ChainConfig().PassBalance))
 					}
-					evm.StateDB.RevertToSnapshot(snapshot)
-				} else {
-					st.state.SubBalance(st.msg.From(), new(big.Int).SetUint64(evm.ChainConfig().PassBalance))
-				}
-			}()
+				}()
+			} else {
+				return nil, 0, false, ErrMainTxHashPresence
+			}
 		} else {
-			return nil, 0, false, ErrMainTxHashPresence
+			return nil, 0, false, ErrElaToEthAddress
 		}
 	} else if contractCreation {
 		blackcontract = crypto.CreateAddress(sender.Address(), evm.StateDB.GetNonce(sender.Address()))

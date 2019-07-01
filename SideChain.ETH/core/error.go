@@ -35,4 +35,7 @@ var (
 
 	// ErrTxHashTooHigh  is returned if Main chain transaction has been processed
 	ErrMainTxHashPresence = errors.New("main txhash presence")
+
+	// ErrElaToEthAddress   is returned if Ethereum address is incorrect
+	ErrElaToEthAddress = errors.New("Ethereum address is incorrect ")
 )
