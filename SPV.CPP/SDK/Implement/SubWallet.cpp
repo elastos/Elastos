@@ -378,6 +378,10 @@ namespace Elastos {
 		}
 
 		void SubWallet::publishTransaction(const TransactionPtr &transaction) {
+			if (!_walletManager->getWallet()->ContainsTransaction(transaction)) {
+				ErrorChecker::ThrowLogicException(Error::WalletNotContainTx, "Wallet do not contain tx = " + transaction->GetHash().ToString());
+				return;
+			}
 			_walletManager->PublishTransaction(transaction);
 		}
 
