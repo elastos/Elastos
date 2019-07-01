@@ -156,7 +156,7 @@ func init() {
 		config.ConfigFile.PowConfiguration.MinTxFee = 100
 		config.ConfigFile.MinCrossChainTxFee = 10000
 		config.ConfigFile.ExchangeRate = 1.0
-		config.ConfigFile.SpvPrintLevel = 0
+		config.ConfigFile.SpvPrintLevel = 1
 		config.ConfigFile.MaxPerLogSize = 0
 		config.ConfigFile.MaxLogsSize = 0
 		config.ConfigFile.MainChainFoundationAddress = "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3"
