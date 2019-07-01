@@ -5,7 +5,7 @@ import BaseComponent from '@/model/BaseComponent'
 import DraftEditor from '@/module/common/DraftEditor'
 import CRPopover from '@/module/shared/Popover/Component'
 import {
-  Table, Row, Col, Button, Input, List
+  Table, Row, Col, Button, Input, List, Collapse
 } from 'antd'
 import I18N from '@/I18N'
 import { Link } from 'react-router-dom'
@@ -13,6 +13,8 @@ import { CONTENT_TYPE, DATE_FORMAT, CVOTE_TRACKING_STATUS } from '@/constant'
 import styled from 'styled-components'
 import { breakPoint } from '@/constants/breakPoint'
 import { bg } from '@/constants/color'
+
+const { Panel } = Collapse
 
 export default class extends BaseComponent {
   constructor(p) {
@@ -77,7 +79,7 @@ export default class extends BaseComponent {
   renderPrivateList() {
     const { privateList } = this.state
     if (!privateList) return null
-    return (
+    const body = (
       <List
         itemLayout="horizontal"
         grid={{ column: 1 }}
@@ -102,6 +104,13 @@ export default class extends BaseComponent {
           </StyledPrivateItem>
         )}
       />
+    )
+    return (
+      <StyledCollapse defaultActiveKey={['1']} expandIconPosition="right">
+        <Panel header={I18N.get('proposal.text.tracking.reviewDetails')} key="1">
+          {body}
+        </Panel>
+      </StyledCollapse>
     )
   }
 
@@ -251,8 +260,33 @@ const colorMap = {
 
 
 export const Container = styled.div`
-
 `
+export const StyledCollapse = styled(Collapse)`
+  border: none!important;
+  margin-top: 30px;
+  .ant-collapse-content-box {
+    padding: 0!important;
+  }
+  .ant-collapse-content {
+    border: none!important;
+  }
+  .ant-collapse-header {
+    text-align: center;
+    padding-left: 0!important;
+    color: #008D85!important;
+    background-color: white;
+    .ant-collapse-arrow {
+      right: calc(50% - 70px)!important;
+    }
+  }
+  > .ant-collapse-item {
+    border-bottom: none!important;
+  }
+  /* > .ant-collapse-item > .ant-collapse-header .ant-collapse-arrow {
+    right: calc(50% - 70px)!important;
+  } */
+`
+
 export const StyledRow = styled(Row)`
   margin: 0!important;
 `
