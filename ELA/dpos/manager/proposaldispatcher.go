@@ -507,9 +507,11 @@ func (p *ProposalDispatcher) OnInactiveArbitratorsReceived(id peer.PID,
 		log.Warn("[OnInactiveArbitratorsReceived] sign response message"+
 			" error, details: ", err.Error())
 	}
-	if err := p.cfg.Network.SendMessageToPeer(id, response); err != nil {
-		log.Warn("[OnInactiveArbitratorsReceived] send msg error: ", err)
-	}
+	go func() {
+		if err := p.cfg.Network.SendMessageToPeer(id, response); err != nil {
+			log.Warn("[OnInactiveArbitratorsReceived] send msg error: ", err)
+		}
+	}()
 
 	log.Info("[OnInactiveArbitratorsReceived] response inactive tx sign")
 }

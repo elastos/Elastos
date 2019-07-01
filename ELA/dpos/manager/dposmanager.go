@@ -304,7 +304,7 @@ func (d *DPOSManager) OnInv(id dpeer.PID, blockHash common.Uint256) {
 	log.Info("[ProcessInv] send getblock:", blockHash.String())
 	d.limitMap(d.requestedBlocks, maxRequestedBlocks)
 	d.requestedBlocks[blockHash] = struct{}{}
-	d.network.SendMessageToPeer(id, dmsg.NewGetBlock(blockHash))
+	go d.network.SendMessageToPeer(id, dmsg.NewGetBlock(blockHash))
 }
 
 func (d *DPOSManager) isBlockExist(blockHash common.Uint256) bool {
@@ -317,7 +317,7 @@ func (d *DPOSManager) OnGetBlock(id dpeer.PID, blockHash common.Uint256) {
 		return
 	}
 	if block, err := d.getBlock(blockHash); err == nil {
-		d.network.SendMessageToPeer(id, msg.NewBlock(block))
+		go d.network.SendMessageToPeer(id, msg.NewBlock(block))
 	}
 }
 
@@ -611,7 +611,7 @@ func (d *DPOSManager) OnRequestProposal(id dpeer.PID, hash common.Uint256) {
 	currentProposal := d.dispatcher.GetProcessingProposal()
 	if currentProposal != nil {
 		responseProposal := &dmsg.Proposal{Proposal: *currentProposal}
-		d.network.SendMessageToPeer(id, responseProposal)
+		go d.network.SendMessageToPeer(id, responseProposal)
 	}
 }
 
@@ -633,21 +633,23 @@ func (d *DPOSManager) changeOnDuty() {
 
 func (d *DPOSManager) processHeartBeat(id dpeer.PID, height uint32) {
 	if d.tryRequestBlocks(id, height) {
-		log.Info("Found higher block, requesting it.")
+		log.Info("Found higher block.")
 	}
 }
 
 func (d *DPOSManager) tryRequestBlocks(id dpeer.PID, sourceHeight uint32) bool {
-	height := blockchain.DefaultLedger.Blockchain.GetHeight()
-	if sourceHeight > height {
-		m := &dmsg.GetBlocks{
-			StartBlockHeight: height + 1,
-			EndBlockHeight:   sourceHeight}
-		d.network.SendMessageToPeer(id, m)
-
-		return true
-	}
+	// todo remove me later
 	return false
+	//height := blockchain.DefaultLedger.Blockchain.GetHeight()
+	//if sourceHeight > height {
+	//	m := &dmsg.GetBlocks{
+	//		StartBlockHeight: height + 1,
+	//		EndBlockHeight:   sourceHeight}
+	//	d.network.SendMessageToPeer(id, m)
+	//
+	//	return true
+	//}
+	//return false
 }
 
 func (d *DPOSManager) getBlock(blockHash common.Uint256) (*types.Block, error) {

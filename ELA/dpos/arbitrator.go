@@ -121,11 +121,17 @@ func (a *Arbitrator) OnSidechainIllegalEvidenceReceived(
 }
 
 func (a *Arbitrator) OnBlockReceived(b *types.Block, confirmed bool) {
+	if !a.cfg.Server.IsCurrent() {
+		return
+	}
 	log.Info("[OnBlockReceived] listener received block")
 	a.network.PostBlockReceivedTask(b, confirmed)
 }
 
 func (a *Arbitrator) OnConfirmReceived(p *mempool.ConfirmInfo) {
+	if !a.cfg.Server.IsCurrent() {
+		return
+	}
 	log.Info("[OnConfirmReceived] listener received confirm")
 	a.network.PostConfirmReceivedTask(p)
 }
@@ -230,10 +236,10 @@ func NewArbitrator(account account.Account, cfg Config) (*Arbitrator, error) {
 		switch e.Type {
 		case events.ETNewBlockReceived:
 			block := e.Data.(*types.DposBlock)
-			a.OnBlockReceived(block.Block, block.HaveConfirm)
+			go a.OnBlockReceived(block.Block, block.HaveConfirm)
 
 		case events.ETConfirmAccepted:
-			a.OnConfirmReceived(e.Data.(*mempool.ConfirmInfo))
+			go a.OnConfirmReceived(e.Data.(*mempool.ConfirmInfo))
 
 		case events.ETDirectPeersChanged:
 			a.OnPeersChanged(e.Data.([]peer.PID))
