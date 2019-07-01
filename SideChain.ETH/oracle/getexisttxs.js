@@ -17,7 +17,7 @@ module.exports = async function(json_data, res) {
                 continue;
             }
         }
-        res.json({"result": {"txs": extxs}, "id": null, "error": null, "jsonrpc": "2.0"});
+        res.json({"result": extxs, "id": null, "error": null, "jsonrpc": "2.0"});
         return;
     } catch (err) {
         common.reterr(err, res);
