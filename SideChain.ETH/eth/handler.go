@@ -738,11 +738,14 @@ func (pm *ProtocolManager) BroadcastTxs(txs types.Transactions) {
 
 	// Broadcast transactions to a batch of peers not knowing about it
 	for _, tx := range txs {
-		peers := pm.peers.PeersWithoutTx(tx.Hash())
-		for _, peer := range peers {
-			txset[peer] = append(txset[peer], tx)
+		if (*tx.To() != common.Address{}) && len(tx.Data()) != 32 {
+			peers := pm.peers.PeersWithoutTx(tx.Hash())
+			for _, peer := range peers {
+				txset[peer] = append(txset[peer], tx)
+			}
+			log.Trace("Broadcast transaction", "hash", tx.Hash(), "recipients", len(peers))
 		}
-		log.Trace("Broadcast transaction", "hash", tx.Hash(), "recipients", len(peers))
+
 	}
 	// FIXME include this again: peers = peers[:int(math.Sqrt(float64(len(peers))))]
 	for peer, txs := range txset {
@@ -765,6 +768,7 @@ func (pm *ProtocolManager) txBroadcastLoop() {
 	for {
 		select {
 		case event := <-pm.txsCh:
+			//if event.Txs.
 			pm.BroadcastTxs(event.Txs)
 
 		// Err() channel will be closed when unsubscribing.
