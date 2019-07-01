@@ -17,6 +17,7 @@ export default {
     relevance: 'Relevance',
     budget: 'Budget',
     plan: 'Execution Plan',
+    vote: 'Vote',
     tracking: 'Tracking Plan',
     summary: 'Summary',
   },
