@@ -200,7 +200,7 @@ func (evm *EVM) Call(caller ContractRef, addr common.Address, input []byte, gas 
 		completetxhash := evm.StateDB.GetState(blackaddr, common.HexToHash(txhash))
 		txhash = hexutil.Encode(input)
 		fee, addr, output := spv.FindOutputFeeAndaddressByTxHash(txhash)
-		if completetxhash.String() != txhash && addr != blackaddr && output.Cmp(new(big.Int)) > 0 {
+		if (completetxhash == common.Hash{}) && addr != blackaddr && output.Cmp(new(big.Int)) > 0 {
 			to = AccountRef(addr)
 			value = output
 			topics := make([]common.Hash, 4)
@@ -218,7 +218,6 @@ func (evm *EVM) Call(caller ContractRef, addr common.Address, input []byte, gas 
 			})
 		}
 		evm.StateDB.AddBalance(blackaddr, value)
-		evm.StateDB.SetState(blackaddr, common.HexToHash(txhash), common.HexToHash(txhash))
 		evm.StateDB.SetNonce(blackaddr, evm.StateDB.GetNonce(blackaddr)+1)
 
 	}
