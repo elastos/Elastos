@@ -30,6 +30,7 @@ DECL_TESTSUITE(get_info_test)
 DECL_TESTSUITE(friend_request_test)
 DECL_TESTSUITE(friend_label_test)
 DECL_TESTSUITE(friend_message_test)
+DECL_TESTSUITE(friend_offline_message_test)
 DECL_TESTSUITE(friend_invite_test)
 DECL_TESTSUITE(friend_invite_assembly_test)
 DECL_TESTSUITE(group_new_test)
@@ -47,6 +48,7 @@ DECL_TESTSUITE(group_list_test)
     DEFINE_TESTSUITE(friend_request_test), \
     DEFINE_TESTSUITE(friend_label_test), \
     DEFINE_TESTSUITE(friend_message_test), \
+    DEFINE_TESTSUITE(friend_offline_message_test), \
     DEFINE_TESTSUITE(friend_invite_test), \
     DEFINE_TESTSUITE(friend_invite_assembly_test), \
     DEFINE_TESTSUITE(group_new_test), \

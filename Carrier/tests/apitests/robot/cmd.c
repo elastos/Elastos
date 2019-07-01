@@ -41,6 +41,7 @@
 #include "easyfile.h"
 
 #include "cond.h"
+#include "robot.h"
 #include "cmd.h"
 #include "test_context.h"
 #include "test_helper.h"
@@ -51,19 +52,6 @@ const char *stream_state_name(ElaStreamState state);
         vlogE("Invalid command syntax"); \
         return; \
     }
-
-struct CarrierContextExtra {
-    char userid[ELA_MAX_ID_LEN + 1];
-    char *bundle;
-    char *data;
-    int len;
-    char gcookie[128];
-    int gcookie_len;
-    char gfrom[ELA_MAX_ID_LEN + 1];
-    char groupid[ELA_MAX_ID_LEN + 1];
-    char fileid[ELA_MAX_FILE_ID_LEN + 1];
-    char recv_file[ELA_MAX_FILE_NAME_LEN + 1];
-};
 
 struct SessionContextExtra {
     int init_flag;
@@ -517,6 +505,54 @@ static void wkill(TestContext *context, int argc, char *argv[])
 
     vlogI("Kill robot instance.");
     ela_kill(w);
+}
+
+static void killnode(TestContext *context, int argc, char *argv[])
+{
+    CarrierContextExtra *extra = context->carrier->extra;
+    ElaCarrier *w = context->carrier->carrier;
+
+    vlogI("Kill robot node instance.");
+    ela_kill(w);
+
+    pthread_join(extra->tid, NULL);
+    write_ack("killnode success\n");
+}
+
+static void restartnode(TestContext *context, int argc, char *argv[])
+{
+    CarrierContextExtra *extra = context->carrier->extra;
+    struct timeval timeout_interval;
+    struct timeval now;
+    extern void *carrier_run_entry(void *);
+
+    CHK_ARGS(argc == 2);
+
+    vlogI("Robot will be reborn.");
+
+    pthread_mutex_lock(&extra->mutex);
+    extra->test_offmsg = OffMsgCase_Single;
+
+    gettimeofday(&now, NULL);
+    timeout_interval.tv_sec = atoi(argv[1]);
+    timeout_interval.tv_usec = 0;
+    timeradd(&now, &timeout_interval, &extra->test_offmsg_expires);
+    pthread_mutex_unlock(&extra->mutex);
+
+    pthread_create(&extra->tid, 0, &carrier_run_entry, NULL);
+}
+
+static void setmsgheader(TestContext *context, int argc, char *argv[])
+{
+    CarrierContextExtra *extra = context->carrier->extra;
+
+    CHK_ARGS(argc == 2);
+
+    pthread_mutex_lock(&extra->mutex);
+    strcpy(extra->offmsg_header, argv[1]);
+    pthread_mutex_unlock(&extra->mutex);
+
+    write_ack("setmsgheader success\n");
 }
 
 static void robot_context_reset(TestContext *context)
@@ -1528,6 +1564,9 @@ static struct command {
     { "freplyinvite", freplyinvite },
     { "freplyinvite_bigdata", freplyinvite_bigdata },
     { "kill",         wkill        },
+    { "killnode",     killnode     },
+    { "restartnode",  restartnode  },
+    { "setmsgheader", setmsgheader },
     { "sinit",        sinit        },
     { "srequest",     srequest     },
     { "sreply",       sreply       },
