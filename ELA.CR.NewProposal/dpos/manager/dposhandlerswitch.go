@@ -160,27 +160,28 @@ func (h *DPOSHandlerSwitch) ProcessRejectVote(id peer.PID, p *payload.DPOSPropos
 }
 
 func (h *DPOSHandlerSwitch) ResponseGetBlocks(id peer.PID, startBlockHeight, endBlockHeight uint32) {
-	//todo limit max height range (endBlockHeight - startBlockHeight)
-	currentHeight := blockchain.DefaultLedger.Blockchain.GetHeight()
-
-	endHeight := endBlockHeight
-	if currentHeight < endBlockHeight {
-		endHeight = currentHeight
-	}
-	blockConfirms, err := blockchain.DefaultLedger.GetDposBlocks(startBlockHeight, endHeight)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	if currentBlock := h.proposalDispatcher.GetProcessingBlock(); currentBlock != nil {
-		blockConfirms = append(blockConfirms, &types.DposBlock{
-			Block: currentBlock,
-		})
-	}
-
-	msg := &msg.ResponseBlocks{Command: msg.CmdResponseBlocks, BlockConfirms: blockConfirms}
-	h.cfg.Network.SendMessageToPeer(id, msg)
+	// todo limit max height range (endBlockHeight - startBlockHeight)
+	// todo remove me later
+	//currentHeight := blockchain.DefaultLedger.Blockchain.GetHeight()
+	//
+	//endHeight := endBlockHeight
+	//if currentHeight < endBlockHeight {
+	//	endHeight = currentHeight
+	//}
+	//blockConfirms, err := blockchain.DefaultLedger.GetDposBlocks(startBlockHeight, endHeight)
+	//if err != nil {
+	//	log.Error(err)
+	//	return
+	//}
+	//
+	//if currentBlock := h.proposalDispatcher.GetProcessingBlock(); currentBlock != nil {
+	//	blockConfirms = append(blockConfirms, &types.DposBlock{
+	//		Block: currentBlock,
+	//	})
+	//}
+	//
+	//msg := &msg.ResponseBlocks{Command: msg.CmdResponseBlocks, BlockConfirms: blockConfirms}
+	//h.cfg.Network.SendMessageToPeer(id, msg)
 }
 
 func (h *DPOSHandlerSwitch) RequestAbnormalRecovering() {
@@ -207,7 +208,7 @@ func (h *DPOSHandlerSwitch) HelpToRecoverAbnormal(id peer.PID, height uint32) {
 	}
 
 	msg := &msg.ResponseConsensus{Consensus: *status}
-	h.cfg.Network.SendMessageToPeer(id, msg)
+	go h.cfg.Network.SendMessageToPeer(id, msg)
 }
 
 func (h *DPOSHandlerSwitch) RecoverAbnormal(status *msg.ConsensusStatus) {

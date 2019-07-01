@@ -305,7 +305,7 @@ func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
 	a.mtx.Unlock()
 
 	if a.started && notify {
-		events.Notify(events.ETDirectPeersChanged, a.GetNeedConnectArbiters())
+		go events.Notify(events.ETDirectPeersChanged, a.GetNeedConnectArbiters())
 	}
 }
 
@@ -884,7 +884,7 @@ func (a *arbitrators) DumpInfo(height uint32) {
 	defer a.mtx.Unlock()
 
 	var printer func(string, ...interface{})
-	changeType, _ := a.getChangeType(height)
+	changeType, _ := a.getChangeType(height + 1)
 	switch changeType {
 	case updateNext:
 		fallthrough
