@@ -282,9 +282,6 @@ export const StyledCollapse = styled(Collapse)`
   > .ant-collapse-item {
     border-bottom: none!important;
   }
-  /* > .ant-collapse-item > .ant-collapse-header .ant-collapse-arrow {
-    right: calc(50% - 70px)!important;
-  } */
 `
 
 export const StyledRow = styled(Row)`
