@@ -229,7 +229,7 @@ public class MyWallet {
 
             Log.d(TAG, "result " + subWallet.GetBasicInfo());
             //basicInfo = subWallet.GetBasicInfo();
-            return new CommmonStringEntity(SUCCESSCODE, chainID);
+            return new CommmonStringEntity(SUCCESSCODE, subWallet.GetBasicInfo());
         } catch (WalletException e) {
             return exceptionProcess(e, "Create " + formatWalletName(masterWalletID, chainID));
         }
@@ -474,7 +474,7 @@ public class MyWallet {
                 return errorProcess(errCodeImportReadonlyWallet + "", "Import read-only wallet" + formatWalletName(masterWalletID));
             }
 
-            return new CommmonStringEntity(SUCCESSCODE, masterWallet.GetBasicInfo());
+            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, masterWallet.GetBasicInfo(),"importReadonlyWallet");
         } catch (WalletException e) {
             return exceptionProcess(e, "Import read-only wallet " + formatWalletName(masterWalletID));
         }
@@ -529,7 +529,7 @@ public class MyWallet {
 
             String walletJson = mMasterWalletManager.ExportReadonlyWallet(masterWallet);
 
-            return new CommmonStringEntity(SUCCESSCODE, walletJson);
+            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, walletJson,"exportReadonlyWallet");
         } catch (WalletException e) {
             return exceptionProcess(e, "Export read-only wallet " + formatWalletName(masterWalletID));
         }

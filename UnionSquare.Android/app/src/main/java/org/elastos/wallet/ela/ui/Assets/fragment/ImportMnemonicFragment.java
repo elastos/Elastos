@@ -177,16 +177,8 @@ public class ImportMnemonicFragment extends BaseFragment implements ImportMnemon
         if (data != null) {
             //创建Mainchain子钱包
 
-            Wallet masterWallet = new Wallet();
-            masterWallet.setWalletName(walletName);
-            masterWallet.setWalletId(masterWalletID);
-            masterWallet.setSingleAddress(cb.isChecked());
-            realmUtil.updateWalletDetial(masterWallet);
-
-            SubWallet subWallet = new SubWallet();
-            subWallet.setBelongId(masterWalletID);
-            subWallet.setChainId(data);
-            realmUtil.updateSubWalletDetial(subWallet, new RealmTransactionAbs() {
+            Wallet masterWallet = realmUtil.updateWalletDetial(walletName, masterWalletID, data);
+            realmUtil.updateSubWalletDetial(masterWalletID,data, new RealmTransactionAbs() {
                 @Override
                 public void onSuccess() {
                     realmUtil.updateWalletDefault(masterWalletID, new RealmTransactionAbs() {

@@ -1,8 +1,6 @@
 package org.elastos.wallet.ela.utils;
 
-/**
- * Created by wangdongfeng on 2018/4/22.
- */
+
 
 public enum RxEnum {
     //

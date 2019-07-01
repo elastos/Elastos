@@ -13,7 +13,6 @@ import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.listener.RealmTransactionAbs;
-import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonCreateSubWalletPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.ImportKeystorePresenter;
@@ -22,8 +21,6 @@ import org.elastos.wallet.ela.ui.Assets.viewdata.ImportKeystoreViewData;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.ClearEditText;
 import org.elastos.wallet.ela.utils.RxEnum;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -54,6 +51,7 @@ public class ImportKeystoreFragment extends BaseFragment implements ImportKeysto
     private String walletName;
     private String masterWalletID;
     private boolean singleAddress;
+    private RealmUtil realmUtil;
 
     @Override
     protected int getLayoutId() {
@@ -63,6 +61,7 @@ public class ImportKeystoreFragment extends BaseFragment implements ImportKeysto
 
     @Override
     protected void initView(View view) {
+        realmUtil = new RealmUtil();
         presenter = new ImportKeystorePresenter();
     }
 
@@ -120,34 +119,15 @@ public class ImportKeystoreFragment extends BaseFragment implements ImportKeysto
     @Override
     public void onImportKeystore(String data) {
         new CommonCreateSubWalletPresenter().createSubWallet(masterWalletID, MyWallet.ELA, this);
-        try {
-            JSONObject exceptionJson = new JSONObject(data);
-            JSONObject account = exceptionJson.getJSONObject("Account");
-            if (account.has("SingleAddress")) {
-                singleAddress = account.getBoolean("SingleAddress");
-            }
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
     public void onCreateSubWallet(String data) {
-        RealmUtil realmUtil = new RealmUtil();
+
         if (data != null) {
             //创建Mainchain子钱包
-
-            Wallet masterWallet = new Wallet();
-            masterWallet.setWalletName(walletName);
-            masterWallet.setWalletId(masterWalletID);
-            masterWallet.setSingleAddress(singleAddress);
-            realmUtil.updateWalletDetial(masterWallet);
-
-            SubWallet subWallet = new SubWallet();
-            subWallet.setBelongId(masterWalletID);
-            subWallet.setChainId(data);
-            realmUtil.updateSubWalletDetial(subWallet, new RealmTransactionAbs() {
+            Wallet masterWallet = realmUtil.updateWalletDetial(walletName, masterWalletID, data);
+            realmUtil.updateSubWalletDetial(masterWalletID, data, new RealmTransactionAbs() {
                 @Override
                 public void onSuccess() {
                     realmUtil.updateWalletDefault(masterWalletID, new RealmTransactionAbs() {
