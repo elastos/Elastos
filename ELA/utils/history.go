@@ -1,4 +1,4 @@
-package state
+package utils
 
 import "fmt"
 
@@ -11,8 +11,8 @@ type change struct {
 	rollback func()
 }
 
-// heightChanges holds all changes on a particular height.
-type heightChanges struct {
+// HeightChanges holds all changes on a particular height.
+type HeightChanges struct {
 	// height is the height the changes happened.
 	height uint32
 
@@ -21,28 +21,28 @@ type heightChanges struct {
 }
 
 // append add a change into changes
-func (hc *heightChanges) append(c func(), r func()) {
+func (hc *HeightChanges) append(c func(), r func()) {
 	hc.changes = append(hc.changes, change{execute: c, rollback: r})
 }
 
 // commit execute the changes on the height.
-func (hc *heightChanges) commit() {
+func (hc *HeightChanges) commit() {
 	for _, change := range hc.changes {
 		change.execute()
 	}
 }
 
 // rollback cancel the changes on the height.
-func (hc *heightChanges) rollback() {
+func (hc *HeightChanges) rollback() {
 	for _, change := range hc.changes {
 		change.rollback()
 	}
 }
 
-// history is a helper to log all producers and votes changes for state, so we
+// History is a helper to log all producers and votes changes for state, so we
 // can handle block rollback by tracing the change history, no need to loop
 // though all transactions since the beginning of DPOS consensus.
-type history struct {
+type History struct {
 	// capacity is the max block changes stored by history.
 	capacity int
 
@@ -50,10 +50,10 @@ type history struct {
 	height uint32
 
 	// changes holds the changes by the height where the changes happens.
-	changes []heightChanges
+	changes []HeightChanges
 
 	// cachedChanges holds the changes that not committed yet.
-	cachedChanges *heightChanges
+	cachedChanges *HeightChanges
 
 	// tempChanges stores the temporary changes caused by illegal block evidence
 	// .  The changes will be rollback when next block comes.
@@ -64,8 +64,18 @@ type history struct {
 	seekHeight uint32
 }
 
-// append add a change and it's rollback into history.
-func (h *history) append(height uint32, execute func(), rollback func()) {
+// Height returns the best height the history knows.
+func (h *History) Height() uint32 {
+	return h.height
+}
+
+// Changes holds the changes by the height where the changes happens.
+func (h *History) Changes() []HeightChanges {
+	return h.changes
+}
+
+// Append add a change and it's rollback into history.
+func (h *History) Append(height uint32, execute func(), rollback func()) {
 	// if height==0 means this is a temporary change.
 	if height == 0 {
 		change := change{execute: execute, rollback: rollback}
@@ -88,7 +98,7 @@ func (h *history) append(height uint32, execute func(), rollback func()) {
 				" expect %d got %d", h.height+1, height)
 			panic(errMsg)
 		}
-		h.cachedChanges = &heightChanges{height: height}
+		h.cachedChanges = &HeightChanges{height: height}
 	}
 
 	// changes on one height must be committed or cleared together.
@@ -100,9 +110,9 @@ func (h *history) append(height uint32, execute func(), rollback func()) {
 	h.cachedChanges.append(execute, rollback)
 }
 
-// commit saves the pending changes into state.
-func (h *history) commit(height uint32) {
-	// if there are temporary changes, just commit them and return.
+// Commit saves the pending changes into state.
+func (h *History) Commit(height uint32) {
+	// if there are temporary changes, just Commit them and return.
 	if len(h.tempChanges) > 0 {
 		for _, change := range h.tempChanges {
 			change.execute()
@@ -124,10 +134,10 @@ func (h *history) commit(height uint32) {
 
 	// if no cached changes, create an empty height change.
 	if h.cachedChanges == nil {
-		h.cachedChanges = &heightChanges{height: height}
+		h.cachedChanges = &HeightChanges{height: height}
 	}
 
-	// commit cached changes and update history height.
+	// Commit cached changes and update history height.
 	h.cachedChanges.commit()
 	h.height = height
 	h.seekHeight = height
@@ -139,8 +149,8 @@ func (h *history) commit(height uint32) {
 	h.cachedChanges = nil
 }
 
-// seekTo changes state to a historical height in range of history capacity.
-func (h *history) seekTo(height uint32) error {
+// SeekTo changes state to a historical height in range of history capacity.
+func (h *History) SeekTo(height uint32) error {
 	// check whether history is enough to seek
 	limitHeight := h.height - uint32(len(h.changes))
 	if height < limitHeight {
@@ -165,9 +175,9 @@ func (h *history) seekTo(height uint32) error {
 	return nil
 }
 
-// rollbackTo restores state to height, and remove all histories after height.
+// RollbackTo restores state to height, and remove all histories after height.
 // If no enough histories to rollback return error.
-func (h *history) rollbackTo(height uint32) error {
+func (h *History) RollbackTo(height uint32) error {
 	// check whether history is enough for rollback
 	limitHeight := h.height - uint32(len(h.changes))
 	if height < limitHeight {
@@ -194,9 +204,9 @@ func (h *history) rollbackTo(height uint32) error {
 }
 
 // newHistory creates a new history instance.
-func newHistory(cap int) *history {
-	return &history{
+func NewHistory(cap int) *History {
+	return &History{
 		capacity: cap,
-		changes:  make([]heightChanges, 0, cap),
+		changes:  make([]HeightChanges, 0, cap),
 	}
 }
