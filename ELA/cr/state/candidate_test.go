@@ -25,26 +25,34 @@ func TestCandidate_Deserialize(t *testing.T) {
 }
 
 func candidateEqual(first *Candidate, second *Candidate) bool {
-	if !bytes.Equal(first.info.Code, second.info.Code) ||
-		!first.info.DID.IsEqual(second.info.DID) ||
-		first.info.NickName != second.info.NickName ||
-		first.info.Url != second.info.Url ||
-		first.info.Location != second.info.Location {
+	return crInfoEqual(&first.info, &second.info) &&
+		first.state == second.state && first.votes == second.votes
+}
+
+func crInfoEqual(first *payload.CRInfo, second *payload.CRInfo) bool {
+	if !bytes.Equal(first.Code, second.Code) ||
+		!first.DID.IsEqual(second.DID) ||
+		first.NickName != second.NickName ||
+		first.Url != second.Url ||
+		first.Location != second.Location {
 		return false
 	}
+	return true
+}
 
-	return first.state == second.state && first.votes == second.votes
+func randomCRInfo() *payload.CRInfo {
+	return &payload.CRInfo{
+		Code:     randomBytes(34),
+		DID:      *randomUint168(),
+		NickName: randomString(),
+		Url:      randomString(),
+		Location: rand2.Uint64(),
+	}
 }
 
 func randomCandidate() *Candidate {
 	return &Candidate{
-		info: payload.CRInfo{
-			Code:     randomBytes(34),
-			DID:      *randomUint168(),
-			NickName: randomString(),
-			Url:      randomString(),
-			Location: rand2.Uint64(),
-		},
+		info:  *randomCRInfo(),
 		state: CandidateState(rand2.Uint32()),
 		votes: common.Fixed64(rand2.Int63()),
 	}

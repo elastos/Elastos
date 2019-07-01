@@ -14,7 +14,7 @@ import (
 func TestNewCRCommittee(t *testing.T) {
 	committee := NewCommittee(&config.DefaultParams)
 
-	assert.Equal(t, uint32(0), committee.lastCommitteeHeight)
+	assert.Equal(t, uint32(0), committee.LastCommitteeHeight)
 	assert.Equal(t, 0, len(committee.GetMembersCodes()))
 	assert.Equal(t, 0, len(committee.GetMembersDIDs()))
 }
@@ -23,7 +23,7 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 	committee := NewCommittee(&config.DefaultParams)
 	round1, expectCandidates1 := generateCandidateSuite()
 	round2, expectCandidates2 := generateCandidateSuite()
-	committee.state.KeyFrame = *round1
+	committee.state.StateKeyFrame = *round1
 
 	// < CRCommitteeStartHeight
 	committee.ProcessBlock(&types.Block{
@@ -53,7 +53,7 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 	}
 
 	// > CRCommitteeStartHeight && < CRCommitteeStartHeight + CRDutyPeriod
-	committee.state.KeyFrame = *round2
+	committee.state.StateKeyFrame = *round2
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{
 			Height: config.DefaultParams.CRCommitteeStartHeight +
@@ -127,7 +127,7 @@ func TestCommittee_isInVotingPeriod(t *testing.T) {
 		},
 	}))
 
-	committee.lastCommitteeHeight = config.DefaultParams.
+	committee.LastCommitteeHeight = config.DefaultParams.
 		CRCommitteeStartHeight + config.DefaultParams.CRDutyPeriod
 
 	// < CRCommitteeStartHeight + CRDutyPeriod - CRVotingPeriod
@@ -167,8 +167,8 @@ func TestCommittee_isInVotingPeriod(t *testing.T) {
 	}))
 }
 
-func generateCandidateSuite() (*KeyFrame, []*Candidate) {
-	keyFrame := randomKeyFrame(12)
+func generateCandidateSuite() (*StateKeyFrame, []*Candidate) {
+	keyFrame := randomStateKeyFrame(12)
 	candidates := make([]*Candidate, 0, 12)
 	for _, v := range keyFrame.ActivityCandidates {
 		candidates = append(candidates, v)

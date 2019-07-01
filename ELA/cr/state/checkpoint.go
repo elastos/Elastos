@@ -4,11 +4,24 @@ import (
 	"io"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/utils"
 )
 
-// KeyFrame holds necessary state about state
+// CRMember defines CR committee member related info
+type CRMember struct {
+	Info             payload.CRInfo
+	ImpeachmentVotes common.Fixed64
+}
+
+// StateKeyFrame holds necessary state about CR committee
 type KeyFrame struct {
+	Members             []*CRMember
+	LastCommitteeHeight uint32
+}
+
+// StateKeyFrame holds necessary state about CR state
+type StateKeyFrame struct {
 	CodeDIDMap         map[string]common.Uint168
 	PendingCandidates  map[common.Uint168]*Candidate
 	ActivityCandidates map[common.Uint168]*Candidate
@@ -16,7 +29,76 @@ type KeyFrame struct {
 	Nicknames          map[string]struct{}
 }
 
+func (c *CRMember) Serialize(w io.Writer) (err error) {
+	if err = c.Info.SerializeUnsigned(w, payload.CRInfoVersion); err != nil {
+		return
+	}
+
+	return common.WriteUint64(w, uint64(c.ImpeachmentVotes))
+}
+
+func (c *CRMember) Deserialize(r io.Reader) (err error) {
+	if err = c.Info.DeserializeUnsigned(r, payload.CRInfoVersion); err != nil {
+		return
+	}
+
+	var votes uint64
+	if votes, err = common.ReadUint64(r); err != nil {
+		return
+	}
+
+	c.ImpeachmentVotes = common.Fixed64(votes)
+	return
+}
+
 func (k *KeyFrame) Serialize(w io.Writer) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(k.Members))); err != nil {
+		return
+	}
+
+	for _, v := range k.Members {
+		if err = v.Serialize(w); err != nil {
+			return
+		}
+	}
+
+	return common.WriteUint32(w, k.LastCommitteeHeight)
+}
+
+func (k *KeyFrame) Deserialize(r io.Reader) (err error) {
+	var memLen uint64
+	if memLen, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+
+	k.Members = make([]*CRMember, 0, memLen)
+	for i := uint64(0); i < memLen; i++ {
+		member := &CRMember{}
+		if err = member.Deserialize(r); err != nil {
+			return
+		}
+		k.Members = append(k.Members, member)
+	}
+
+	k.LastCommitteeHeight, err = common.ReadUint32(r)
+	return
+}
+
+func (k *KeyFrame) Snapshot() *KeyFrame {
+	frame := NewKeyFrame()
+	frame.LastCommitteeHeight = k.LastCommitteeHeight
+	frame.Members = k.Members
+	return frame
+}
+
+func NewKeyFrame() *KeyFrame {
+	return &KeyFrame{
+		Members:             make([]*CRMember, 0),
+		LastCommitteeHeight: 0,
+	}
+}
+
+func (k *StateKeyFrame) Serialize(w io.Writer) (err error) {
 	if err = k.SerializeCodeAddressMap(w, k.CodeDIDMap); err != nil {
 		return
 	}
@@ -40,7 +122,7 @@ func (k *KeyFrame) Serialize(w io.Writer) (err error) {
 	return
 }
 
-func (k *KeyFrame) Deserialize(r io.Reader) (err error) {
+func (k *StateKeyFrame) Deserialize(r io.Reader) (err error) {
 	if k.CodeDIDMap, err = k.DeserializeCodeAddressMap(r); err != nil {
 		return
 	}
@@ -63,7 +145,7 @@ func (k *KeyFrame) Deserialize(r io.Reader) (err error) {
 	return
 }
 
-func (k *KeyFrame) SerializeCodeAddressMap(w io.Writer,
+func (k *StateKeyFrame) SerializeCodeAddressMap(w io.Writer,
 	cmap map[string]common.Uint168) (err error) {
 	if err = common.WriteVarUint(w, uint64(len(cmap))); err != nil {
 		return
@@ -80,7 +162,7 @@ func (k *KeyFrame) SerializeCodeAddressMap(w io.Writer,
 	return
 }
 
-func (k *KeyFrame) DeserializeCodeAddressMap(r io.Reader) (
+func (k *StateKeyFrame) DeserializeCodeAddressMap(r io.Reader) (
 	cmap map[string]common.Uint168, err error) {
 	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {
@@ -102,7 +184,7 @@ func (k *KeyFrame) DeserializeCodeAddressMap(r io.Reader) (
 	return
 }
 
-func (k *KeyFrame) SerializeCandidateMap(w io.Writer,
+func (k *StateKeyFrame) SerializeCandidateMap(w io.Writer,
 	cmap map[common.Uint168]*Candidate) (err error) {
 	if err = common.WriteVarUint(w, uint64(len(cmap))); err != nil {
 		return
@@ -119,7 +201,7 @@ func (k *KeyFrame) SerializeCandidateMap(w io.Writer,
 	return
 }
 
-func (k *KeyFrame) DeserializeCandidateMap(
+func (k *StateKeyFrame) DeserializeCandidateMap(
 	r io.Reader) (cmap map[common.Uint168]*Candidate, err error) {
 	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {
@@ -140,9 +222,9 @@ func (k *KeyFrame) DeserializeCandidateMap(
 	return
 }
 
-// Snapshot will create a new KeyFrame object and deep copy all related data.
-func (k *KeyFrame) Snapshot() *KeyFrame {
-	state := NewKeyFrame()
+// Snapshot will create a new StateKeyFrame object and deep copy all related data.
+func (k *StateKeyFrame) Snapshot() *StateKeyFrame {
+	state := NewStateKeyFrame()
 	state.CodeDIDMap = copyCodeAddressMap(k.CodeDIDMap)
 	state.PendingCandidates = copyCandidateMap(k.PendingCandidates)
 	state.ActivityCandidates = copyCandidateMap(k.ActivityCandidates)
@@ -152,8 +234,8 @@ func (k *KeyFrame) Snapshot() *KeyFrame {
 	return state
 }
 
-func NewKeyFrame() *KeyFrame {
-	return &KeyFrame{
+func NewStateKeyFrame() *StateKeyFrame {
+	return &StateKeyFrame{
 		CodeDIDMap:         make(map[string]common.Uint168),
 		PendingCandidates:  make(map[common.Uint168]*Candidate),
 		ActivityCandidates: make(map[common.Uint168]*Candidate),
@@ -181,4 +263,13 @@ func copyCodeAddressMap(src map[string]common.Uint168) (
 		dst[k] = v
 	}
 	return
+}
+
+func copyCRMembers(src []*CRMember) []*CRMember {
+	dst := make([]*CRMember, 0, len(src))
+	for _, v := range src {
+		m := *v
+		dst = append(dst, &m)
+	}
+	return dst
 }

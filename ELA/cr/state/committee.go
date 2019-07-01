@@ -11,26 +11,19 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
 
-type CRMember struct {
-	Info             payload.CRInfo
-	ImpeachmentVotes common.Fixed64
-}
-
 type Committee struct {
-	mtx     sync.RWMutex
-	state   *State
-	members []*CRMember
-	params  *config.Params
-
-	lastCommitteeHeight uint32
+	KeyFrame
+	mtx    sync.RWMutex
+	state  *State
+	params *config.Params
 }
 
 func (c *Committee) GetMembersDIDs() []common.Uint168 {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
 
-	result := make([]common.Uint168, 0, len(c.members))
-	for _, v := range c.members {
+	result := make([]common.Uint168, 0, len(c.Members))
+	for _, v := range c.Members {
 		result = append(result, v.Info.DID)
 	}
 	return result
@@ -40,8 +33,8 @@ func (c *Committee) GetMembersCodes() [][]byte {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
 
-	result := make([][]byte, 0, len(c.members))
-	for _, v := range c.members {
+	result := make([][]byte, 0, len(c.Members))
+	for _, v := range c.Members {
 		result = append(result, v.Info.Code)
 	}
 	return result
@@ -69,7 +62,7 @@ func (c *Committee) ProcessBlock(block *types.Block,
 func (c *Committee) shouldChange(block *types.Block) bool {
 	//todo judge by change cr committee tx later
 	return block.Height >= c.params.CRCommitteeStartHeight &&
-		block.Height >= c.lastCommitteeHeight+c.params.CRDutyPeriod
+		block.Height >= c.LastCommitteeHeight+c.params.CRDutyPeriod
 }
 
 func (c *Committee) isInVotingPeriod(block *types.Block) bool {
@@ -79,10 +72,10 @@ func (c *Committee) isInVotingPeriod(block *types.Block) bool {
 			block.Height < committeeUpdateHeight
 	}
 
-	if c.lastCommitteeHeight <= c.params.CRCommitteeStartHeight {
+	if c.LastCommitteeHeight <= c.params.CRCommitteeStartHeight {
 		return inVotingPeriod(c.params.CRCommitteeStartHeight)
 	} else {
-		return inVotingPeriod(c.lastCommitteeHeight)
+		return inVotingPeriod(c.LastCommitteeHeight)
 	}
 }
 
@@ -92,12 +85,12 @@ func (c *Committee) changeCommitteeMembers(height uint32) error {
 		return err
 	}
 
-	c.members = make([]*CRMember, 0, c.params.CRMemberCount)
+	c.Members = make([]*CRMember, 0, c.params.CRMemberCount)
 	for i := 0; i < int(c.params.CRMemberCount); i++ {
-		c.members = append(c.members, c.generateMember(candidates[i]))
+		c.Members = append(c.Members, c.generateMember(candidates[i]))
 	}
 
-	c.lastCommitteeHeight = height
+	c.LastCommitteeHeight = height
 	return nil
 }
 
@@ -122,9 +115,8 @@ func (c *Committee) getActiveCRCandidatesDesc() ([]*Candidate, error) {
 
 func NewCommittee(params *config.Params) *Committee {
 	return &Committee{
-		state:               NewState(params),
-		members:             make([]*CRMember, 0),
-		params:              params,
-		lastCommitteeHeight: 0,
+		state:  NewState(params),
+		params: params,
+		KeyFrame: *NewKeyFrame(),
 	}
 }

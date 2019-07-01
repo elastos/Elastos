@@ -10,7 +10,7 @@ import (
 )
 
 type State struct {
-	KeyFrame
+	StateKeyFrame
 
 	mtx    sync.RWMutex
 	params *config.Params
@@ -144,7 +144,7 @@ func (s *State) getCandidateFromMap(cmap map[common.Uint168]*Candidate,
 
 func NewState(chainParams *config.Params) *State {
 	return &State{
-		KeyFrame: *NewKeyFrame(),
-		params:   chainParams,
+		StateKeyFrame: *NewStateKeyFrame(),
+		params:        chainParams,
 	}
 }
