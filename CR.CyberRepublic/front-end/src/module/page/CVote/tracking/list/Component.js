@@ -226,7 +226,7 @@ export default class extends BaseComponent {
     this.ord_loading(true)
     const { listData, canManage, currentUserId, proposal } = this.props
     const param = this.getQuery()
-    const isAuthorized = canManage || currentUserId === _.get(proposal, '_id')
+    const isAuthorized = canManage || currentUserId === _.get(proposal, 'proposer._id')
     try {
       const publicData = await listData(param, false)
       this.setState({ publicList: publicData.list })

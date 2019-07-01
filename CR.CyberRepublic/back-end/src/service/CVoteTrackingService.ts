@@ -268,7 +268,7 @@ export default class extends Base {
       <p>Thanks</p>
       <p>Cyber Republic</p>
     `
-    const user = this.getDBModel('User').getDBInstance().findOne({ email: cvote.proposedByEmail })
+    const user = this.getDBModel('User').getDBInstance().findOne({ _id: cvote.proposer })
 
     const mailObj = {
       subject,
@@ -289,7 +289,7 @@ export default class extends Base {
       <p>Thanks</p>
       <p>Cyber Republic</p>
     `
-    const user = this.getDBModel('User').getDBInstance().findOne({ email: cvote.proposedByEmail })
+    const user = this.getDBModel('User').getDBInstance().findOne({ _id: cvote.proposer })
 
     const mailObj = {
       subject,

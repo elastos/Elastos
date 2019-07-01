@@ -22,7 +22,7 @@ export default class extends Base {
   public async createDraft(param: any): Promise<Document> {
     const db_cvote = this.getDBModel('CVote')
     const {
-      title, proposedBy, proposedByEmail,
+      title, proposedBy, proposer,
     } = param
 
     const vid = await this.getNewVid()
@@ -34,7 +34,7 @@ export default class extends Base {
       published: false,
       contentType: constant.CONTENT_TYPE.MARKDOWN,
       proposedBy,
-      proposedByEmail,
+      proposer,
       createdBy: this.currentUser._id
     }
 
@@ -97,7 +97,7 @@ export default class extends Base {
     const db_suggestion = this.getDBModel('Suggestion')
     const currentUserId = _.get(this.currentUser, '_id')
     const {
-      title, published, proposedBy, proposedByEmail, motionId,
+      title, published, proposedBy, proposer, motionId,
       suggestionId, abstract, goal, motivation, relevance, budget, plan
     } = param
 
@@ -117,7 +117,7 @@ export default class extends Base {
       relevance,
       budget,
       plan,
-      proposedByEmail,
+      proposer,
       motionId,
       createdBy: this.currentUser._id
     }
@@ -436,6 +436,7 @@ export default class extends Base {
     const db_cvote = this.getDBModel('CVote')
     const rs = await db_cvote.getDBInstance().findOne({ _id: id })
       .populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR)
+      .populate('proposer', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
       .populate('reference', constant.DB_SELECTED_FIELDS.SUGGESTION.ID)
     return rs
   }
