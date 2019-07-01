@@ -45,7 +45,7 @@ var (
 		ConstantinopleBlock: nil,
 
 		Clique: &CliqueConfig{
-			Period: 5,
+			Period: 15,
 			Epoch:  30000,
 		},
 	}
@@ -73,7 +73,7 @@ var (
 		ConstantinopleBlock: nil,
 
 		Clique: &CliqueConfig{
-			Period: 5,
+			Period: 15,
 			Epoch:  30000,
 		},
 	}
@@ -101,7 +101,7 @@ var (
 		ConstantinopleBlock: nil,
 
 		Clique: &CliqueConfig{
-			Period: 5,
+			Period: 15,
 			Epoch:  30000,
 		},
 	}
