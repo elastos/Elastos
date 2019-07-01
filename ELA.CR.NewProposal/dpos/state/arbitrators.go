@@ -168,7 +168,7 @@ func (a *arbitrators) ProcessSpecialTxPayload(p types.Payload,
 }
 
 func (a *arbitrators) RollbackTo(height uint32) error {
-	if height > a.history.height {
+	if height > a.history.Height() {
 		return fmt.Errorf("can't rollback to height: %d", height)
 	}
 
@@ -410,7 +410,7 @@ func (a *arbitrators) distributeWithNormalArbitrators(
 func (a *arbitrators) DecreaseChainHeight(height uint32) error {
 	a.degradation.RollbackTo(height)
 
-	heightOffset := int(a.history.height - height)
+	heightOffset := int(a.history.Height() - height)
 	if a.dutyIndex == 0 || a.dutyIndex < heightOffset {
 		if err := a.ForceChange(height); err != nil {
 			return err
@@ -428,7 +428,7 @@ func (a *arbitrators) GetNeedConnectArbiters() []peer.PID {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
 
-	height := a.history.height + 1
+	height := a.history.Height() + 1
 	if height < a.chainParams.CRCOnlyDPOSHeight-a.chainParams.PreConnectOffset {
 		return nil
 	}
