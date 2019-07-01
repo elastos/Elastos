@@ -26,6 +26,15 @@ export default {
       approve: '批准 & 发布',
     },
   },
+  text: {
+    tracking: {
+      reviewDetails: '审阅详情',
+      notice: {
+        header: '',
+        footer: '',
+      }
+    }
+  },
   status: {
     [CVOTE_TRACKING_STATUS.DRAFT]: '草稿',
     [CVOTE_TRACKING_STATUS.REVIEWING]: '审阅中',

@@ -26,6 +26,15 @@ export default {
       approve: 'Approve & Publish',
     },
   },
+  text: {
+    tracking: {
+      reviewDetails: 'Review Details',
+      notice: {
+        header: '',
+        footer: '',
+      }
+    }
+  },
   status: {
     [CVOTE_TRACKING_STATUS.DRAFT]: 'DRAFT',
     [CVOTE_TRACKING_STATUS.REVIEWING]: 'BEING REVIEWED',
