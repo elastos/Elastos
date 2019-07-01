@@ -58,7 +58,7 @@ namespace Elastos {
 			static std::string GenerateMnemonic(const std::string &language, const std::string &rootPath,
 			                                    Mnemonic::WordCount wordCount = Mnemonic::WordCount::WORDS_12);
 
-			virtual std::string GetId() const;
+			virtual std::string GetID() const;
 
 			virtual nlohmann::json GetBasicInfo() const;
 
@@ -127,6 +127,7 @@ namespace Elastos {
 			MasterWallet(
 					const std::string &id,
 					const std::string &rootPath,
+					const std::string &dataPath,
 					bool p2pEnable,
 					MasterWalletInitFrom from);
 
@@ -138,6 +139,7 @@ namespace Elastos {
 					bool singleAddress,
 					bool p2pEnable,
 					const std::string &rootPath,
+					const std::string &dataPath,
 					MasterWalletInitFrom from);
 
 			MasterWallet(
@@ -146,6 +148,7 @@ namespace Elastos {
 					const std::string &backupPassword,
 					const std::string &payPassword,
 					const std::string &rootPath,
+					const std::string &dataPath,
 					bool p2pEnable,
 					MasterWalletInitFrom from);
 
@@ -153,6 +156,7 @@ namespace Elastos {
 					const std::string &id,
 					const nlohmann::json &readonlyWalletJson,
 					const std::string &rootPath,
+					const std::string &dataPath,
 					bool p2pEnable,
 					MasterWalletInitFrom from);
 
@@ -161,6 +165,7 @@ namespace Elastos {
 					const nlohmann::json &coSigners,
 					uint32_t requiredSignCount,
 					const std::string &rootPath,
+					const std::string &dataPath,
 					bool p2pEnable,
 					MasterWalletInitFrom from);
 
@@ -171,6 +176,7 @@ namespace Elastos {
 					const nlohmann::json &coSigners,
 					uint32_t requiredSignCount,
 					const std::string &rootPath,
+					const std::string &dataPath,
 					bool p2pEnable,
 					MasterWalletInitFrom from);
 
@@ -183,6 +189,7 @@ namespace Elastos {
 					uint32_t requiredSignCount,
 					bool p2pEnable,
 					const std::string &rootPath,
+					const std::string &dataPath,
 					MasterWalletInitFrom from);
 
 			nlohmann::json ExportReadonlyKeyStore();
@@ -212,6 +219,7 @@ namespace Elastos {
 
 			std::string _id;
 			std::string _rootPath;
+			std::string _dataPath;
 
 			ConfigPtr _config;
 			boost::shared_ptr<IDAgentImpl> _idAgentImpl;

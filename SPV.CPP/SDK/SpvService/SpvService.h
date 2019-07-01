@@ -44,7 +44,7 @@ namespace Elastos {
 
 			void RegisterPeerManagerListener(PeerManager::Listener *listener);
 
-			void PublishTransaction(const TransactionPtr &transaction);
+			void PublishTransaction(const TransactionPtr &tx);
 
 			virtual const WalletPtr &getWallet();
 

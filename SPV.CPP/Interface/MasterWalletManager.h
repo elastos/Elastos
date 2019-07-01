@@ -16,9 +16,10 @@ namespace Elastos {
 		public:
 			/**
 			 * Constructor
-			 * @param rootPath specify directory for all config files, including mnemonic config files and peer connection config files. Root should not be empty, otherwise will throw invalid argument exception.
+			 * @param rootPath Specify directory for all config files, including mnemonic config files. Root should not be empty, otherwise will throw invalid argument exception.
+			 * @param dataPath The path contains data of wallet created. If empty, data of wallet will store in rootPath.
 			 */
-			explicit MasterWalletManager(const std::string &rootPath);
+			explicit MasterWalletManager(const std::string &rootPath, const std::string &dataPath = "");
 
 			/**
 			 * Virtual destructor
@@ -223,7 +224,7 @@ namespace Elastos {
 		protected:
 			typedef std::map<std::string, IMasterWallet *> MasterWalletMap;
 
-			MasterWalletManager(const MasterWalletMap &walletMap, const std::string &rootPath);
+			MasterWalletManager(const MasterWalletMap &walletMap, const std::string &rootPath, const std::string &dataPath);
 
 			void initMasterWallets();
 
@@ -233,6 +234,7 @@ namespace Elastos {
 
 		protected:
 			std::string _rootPath;
+			std::string _dataPath;
 			bool _p2pEnable;
 			mutable MasterWalletMap _masterWalletMap;
 		};

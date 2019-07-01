@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <sqlite3.h>
+#include <boost/filesystem/operations.hpp>
 
 #include <Interface/MasterWalletManager.h>
 #include <Interface/IMasterWallet.h>
@@ -45,19 +46,12 @@ public:
 	virtual void OnTransactionStatusChanged(
 		const std::string &txid,const std::string &status,
 		const nlohmann::json &desc,uint32_t confirms) {
-		logger->debug("{} OnTransactionStatusChanged ----> txid = {}, confirms = {}", _walletID, txid, confirms);
-//		logger->debug("OnTransactionStatusChanged ----> desc = {}", desc.dump());
 	}
 
 	virtual void OnBlockSyncStarted() {
-		logger->debug("{} OnBlockSyncStarted", _walletID);
 	}
 
 	virtual void OnBlockSyncProgress(uint32_t currentBlockHeight, uint32_t estimatedHeight, time_t lastBlockTime) {
-		struct tm tm;
-
-		localtime_r(&lastBlockTime, &tm);
-		logger->debug("{} OnBlockSyncProgress ----> [ {} / {} ] {}", _walletID, currentBlockHeight, estimatedHeight, asctime(&tm));
 		if (currentBlockHeight >= estimatedHeight) {
 			if (_walletID.find(gMainchainSubWalletID) != std::string::npos) {
 
@@ -71,19 +65,15 @@ public:
 	}
 
 	virtual void OnBlockSyncStopped() {
-		logger->debug("{} OnBlockSyncStopped", _walletID);
 	}
 
 	virtual void OnBalanceChanged(const std::string &asset, const std::string &balance) {
-		logger->debug("{} OnBalanceChanged ----> {} = {}", _walletID, asset, balance);
 	}
 
 	virtual void OnTxPublished(const std::string &hash, const nlohmann::json &result) {
-		logger->debug("{} OnTxPublished ----> hash = {}, result = {}", _walletID, hash, result.dump());
 	}
 
 	virtual void OnAssetRegistered(const std::string &asset, const nlohmann::json &info) {
-		logger->debug("{} OnAssetRegistered ----> asset = {}, info = {}", _walletID, asset, info.dump());
 	}
 
 private:
@@ -480,9 +470,10 @@ static void InitWallets() {
 	}
 
 	for (size_t i = 0; i < masterWallets.size(); ++i) {
+		logger->debug("{} basic info -> {}", masterWallets[i]->GetID(), masterWallets[i]->GetBasicInfo().dump());
 		std::vector<ISubWallet *> subWallets = masterWallets[i]->GetAllSubWallets();
 		for (size_t j = 0; j < subWallets.size(); ++j) {
-			std::string walletID = masterWallets[i]->GetId() + ":" + subWallets[j]->GetChainID();
+			std::string walletID = masterWallets[i]->GetID() + ":" + subWallets[j]->GetChainID();
 			subWallets[j]->AddCallback(new SubWalletCallback(walletID));
 			logger->debug("{} basic info -> {}", walletID, subWallets[j]->GetBasicInfo().dump());
 			logger->debug("{} all addresses -> {}", walletID, subWallets[j]->GetAllAddress(0, 20).dump());

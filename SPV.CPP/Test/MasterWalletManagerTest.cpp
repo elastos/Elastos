@@ -23,7 +23,7 @@ using namespace Elastos::ElaWallet;
 class TestMasterWalletManager : public MasterWalletManager {
 public:
 	TestMasterWalletManager() :
-			MasterWalletManager(MasterWalletMap(), "Data") {
+			MasterWalletManager(MasterWalletMap(), "Data", "Data") {
 		_p2pEnable = false;
 	}
 };
@@ -48,7 +48,7 @@ TEST_CASE("Master wallet manager CreateMasterWallet test", "[CreateMasterWallet]
 
 		CHECK_NOTHROW(masterWallet->GetPublicKey());
 
-		masterWalletManager->DestroyWallet(masterWallet->GetId());
+		masterWalletManager->DestroyWallet(masterWallet->GetID());
 	}
 	SECTION("Master id should not be empty") {
 		REQUIRE_THROWS_AS(masterWalletManager->CreateMasterWallet("", mnemonic, phrasePassword, payPassword, singleAddress),
@@ -62,7 +62,7 @@ TEST_CASE("Master wallet manager CreateMasterWallet test", "[CreateMasterWallet]
 	SECTION("Create with phrase password can be empty") {
 		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic, "",
 																			  payPassword, singleAddress);
-		masterWalletManager->DestroyWallet(masterWallet->GetId());
+		masterWalletManager->DestroyWallet(masterWallet->GetID());
 	}
 	SECTION("Create with phrase password that is empty or less than 8") {
 		CHECK_THROWS_AS(masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic, "ilegal", payPassword, singleAddress),
@@ -401,7 +401,7 @@ TEST_CASE("test p2p net stop error use", "[MasterWalletManager]") {
 		sleep(1);
 		masterWallet->DestroyWallet(subWallet);
 
-		masterWalletManager->DestroyWallet(masterWallet->GetId());
+		masterWalletManager->DestroyWallet(masterWallet->GetID());
 	}
 }
 

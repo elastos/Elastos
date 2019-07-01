@@ -32,16 +32,18 @@ namespace Elastos {
 
 		MasterWallet::MasterWallet(const std::string &id,
 								   const std::string &rootPath,
+								   const std::string &dataPath,
 								   bool p2pEnable,
 								   MasterWalletInitFrom from) :
 				_id(id),
 				_rootPath(rootPath),
+				_dataPath(dataPath),
 				_p2pEnable(p2pEnable),
 				_initFrom(from) {
 
 			_config = ConfigPtr(new Config(_rootPath));
-			_localStore = LocalStorePtr(new LocalStore(_rootPath + "/" + _id));
-			_account = AccountPtr(new Account(_localStore, _rootPath));
+			_localStore = LocalStorePtr(new LocalStore(_dataPath + "/" + _id));
+			_account = AccountPtr(new Account(_localStore));
 
 			if (_account->GetSignType() == Account::MultiSign)
 				_idAgentImpl = nullptr;
@@ -56,9 +58,11 @@ namespace Elastos {
 								   bool singleAddress,
 								   bool p2pEnable,
 								   const std::string &rootPath,
+								   const std::string &dataPath,
 								   MasterWalletInitFrom from) :
 				_id(id),
 				_rootPath(rootPath),
+				_dataPath(dataPath),
 				_p2pEnable(p2pEnable),
 				_initFrom(from) {
 
@@ -66,9 +70,9 @@ namespace Elastos {
 			ErrorChecker::CheckLogic(!m.Validate(mnemonic), Error::Mnemonic, "Invalid mnemonic");
 
 			_config = ConfigPtr(new Config(_rootPath));
-			_localStore = LocalStorePtr(new LocalStore(_rootPath + "/" + _id, mnemonic, passphrase,
+			_localStore = LocalStorePtr(new LocalStore(_dataPath + "/" + _id, mnemonic, passphrase,
 													   singleAddress, payPassword));
-			_account = AccountPtr(new Account(_localStore, _rootPath));
+			_account = AccountPtr(new Account(_localStore));
 
 			_idAgentImpl = boost::shared_ptr<IDAgentImpl>(new IDAgentImpl(this));
 		}
@@ -78,10 +82,12 @@ namespace Elastos {
 								   const std::string &backupPassword,
 								   const std::string &payPassword,
 								   const std::string &rootPath,
+								   const std::string &dataPath,
 								   bool p2pEnable,
 								   MasterWalletInitFrom from) :
 				_id(id),
 				_rootPath(rootPath),
+				_dataPath(dataPath),
 				_p2pEnable(p2pEnable),
 				_initFrom(from) {
 
@@ -89,8 +95,8 @@ namespace Elastos {
 			keystore.Import(keystoreContent, backupPassword);
 
 			_config = ConfigPtr(new Config(_rootPath));
-			_localStore = LocalStorePtr(new LocalStore(_rootPath + "/" + _id, keystore.WalletJson(), payPassword));
-			_account = AccountPtr(new Account(_localStore, _rootPath));
+			_localStore = LocalStorePtr(new LocalStore(_dataPath + "/" + _id, keystore.WalletJson(), payPassword));
+			_account = AccountPtr(new Account(_localStore));
 
 			if (_account->GetSignType() == Account::MultiSign) {
 				_idAgentImpl = nullptr;
@@ -102,6 +108,7 @@ namespace Elastos {
 		MasterWallet::MasterWallet(const std::string &id,
 								   const nlohmann::json &readonlyWalletJson,
 								   const std::string &rootPath,
+								   const std::string &dataPath,
 								   bool p2pEnable,
 								   MasterWalletInitFrom from) :
 			_id(id), _rootPath(rootPath), _p2pEnable(p2pEnable), _initFrom(from) {
@@ -110,8 +117,8 @@ namespace Elastos {
 			keyStore.ImportReadonly(readonlyWalletJson);
 
 			_config = ConfigPtr(new Config(_rootPath));
-			_localStore = LocalStorePtr(new LocalStore(_rootPath + "/" + _id, keyStore.WalletJson(), ""));
-			_account = AccountPtr(new Account(_localStore, _rootPath));
+			_localStore = LocalStorePtr(new LocalStore(_dataPath + "/" + _id, keyStore.WalletJson(), ""));
+			_account = AccountPtr(new Account(_localStore));
 
 			if (_account->GetSignType() == Account::MultiSign) {
 				_idAgentImpl = nullptr;
@@ -123,10 +130,12 @@ namespace Elastos {
 		MasterWallet::MasterWallet(const std::string &id,
 								   const nlohmann::json &coSigners, uint32_t requiredSignCount,
 								   const std::string &rootPath,
+								   const std::string &dataPath,
 								   bool p2pEnable,
 								   MasterWalletInitFrom from) :
 				_id(id),
 				_rootPath(rootPath),
+				_dataPath(dataPath),
 				_p2pEnable(p2pEnable),
 				_initFrom(from),
 				_idAgentImpl(nullptr) {
@@ -134,15 +143,17 @@ namespace Elastos {
 			ErrorChecker::CheckParam(coSigners.size() < requiredSignCount, Error::InvalidArgument, "Invalid M");
 
 			_config = ConfigPtr(new Config(_rootPath));
-			_localStore = LocalStorePtr(new LocalStore(_rootPath + "/" + _id, coSigners, requiredSignCount));
-			_account = AccountPtr(new Account(_localStore, _rootPath));
+			_localStore = LocalStorePtr(new LocalStore(_dataPath + "/" + _id, coSigners, requiredSignCount));
+			_account = AccountPtr(new Account(_localStore));
 		}
 
 		MasterWallet::MasterWallet(const std::string &id, const std::string &privKey, const std::string &payPassword,
 								   const nlohmann::json &coSigners, uint32_t requiredSignCount,
-								   const std::string &rootPath, bool p2pEnable, MasterWalletInitFrom from) :
+								   const std::string &rootPath, const std::string &dataPath,
+								   bool p2pEnable, MasterWalletInitFrom from) :
 				_id(id),
 				_rootPath(rootPath),
+				_dataPath(dataPath),
 				_p2pEnable(p2pEnable),
 				_initFrom(from),
 				_idAgentImpl(nullptr) {
@@ -152,10 +163,13 @@ namespace Elastos {
 		MasterWallet::MasterWallet(const std::string &id, const std::string &mnemonic,
 								   const std::string &passphrase, const std::string &payPassword,
 								   const nlohmann::json &coSigners,
-								   uint32_t requiredSignCount, bool p2pEnable, const std::string &rootPath,
+								   uint32_t requiredSignCount, bool p2pEnable,
+								   const std::string &rootPath,
+								   const std::string &dataPath,
 								   MasterWalletInitFrom from) :
 				_id(id),
 				_rootPath(rootPath),
+				_dataPath(dataPath),
 				_p2pEnable(p2pEnable),
 				_initFrom(from),
 				_idAgentImpl(nullptr) {
@@ -164,13 +178,13 @@ namespace Elastos {
 			ErrorChecker::CheckParam(coSigners.size() + 1 < requiredSignCount, Error::InvalidArgument, "Invalid M");
 
 			_config = ConfigPtr(new Config(_rootPath));
-			_localStore = LocalStorePtr(new LocalStore(_rootPath + "/" + _id, mnemonic, passphrase, true, payPassword));
+			_localStore = LocalStorePtr(new LocalStore(_dataPath + "/" + _id, mnemonic, passphrase, true, payPassword));
 			for (nlohmann::json::const_iterator it = coSigners.cbegin(); it != coSigners.cend(); ++it)
 				_localStore->AddPublicKeyRing(PublicKeyRing((*it).get<std::string>()));
 
 			_localStore->SetM(requiredSignCount);
 			_localStore->SetN(_localStore->GetPublicKeyRing().size());
-			_account = AccountPtr(new Account(_localStore, _rootPath));
+			_account = AccountPtr(new Account(_localStore));
 		}
 
 		MasterWallet::~MasterWallet() {
@@ -184,10 +198,9 @@ namespace Elastos {
 
 		void MasterWallet::ClearLocal() {
 			boost::filesystem::path path = _rootPath;
-			path /= GetId();
+			path /= GetID();
 			if (boost::filesystem::exists(path))
 				boost::filesystem::remove_all(path);
-
 		}
 
 		void MasterWallet::Save() {
@@ -203,7 +216,7 @@ namespace Elastos {
 			_localStore->Save();
 		}
 
-		std::string MasterWallet::GetId() const {
+		std::string MasterWallet::GetID() const {
 			ArgInfo("{} {}", _id, GetFunName());
 			return _id;
 		}

@@ -60,14 +60,7 @@ namespace Elastos {
 			_reconnectExecutor.StopThread();
 		}
 
-		void SpvService::PublishTransaction(const TransactionPtr &transaction) {
-			nlohmann::json sendingTx = transaction->ToJson();
-			ByteStream byteStream;
-			transaction->Serialize(byteStream);
-
-			Log::debug("{} publish tx {}", _peerManager->GetID(), sendingTx.dump());
-			SPVLOG_DEBUG("raw tx {}", byteStream.GetBytes().getHex());
-
+		void SpvService::PublishTransaction(const TransactionPtr &tx) {
 			if (getPeerManager()->GetConnectStatus() != Peer::Connected) {
 				_peerManager->SetReconnectEnableStatus(false);
 				if (_reconnectTimer != nullptr)
@@ -77,7 +70,7 @@ namespace Elastos {
 				getPeerManager()->Connect();
 			}
 
-			getPeerManager()->PublishTransaction(transaction);
+			getPeerManager()->PublishTransaction(tx);
 		}
 
 		const WalletPtr &SpvService::getWallet() {

@@ -30,16 +30,18 @@ using namespace boost::filesystem;
 namespace Elastos {
 	namespace ElaWallet {
 
-		MasterWalletManager::MasterWalletManager(const std::string &rootPath) :
+		MasterWalletManager::MasterWalletManager(const std::string &rootPath, const std::string &dataPath) :
 				_rootPath(rootPath),
+				_dataPath(dataPath),
 				_p2pEnable(true) {
 			ErrorChecker::CheckParamNotEmpty(rootPath, "rootPath");
 			initMasterWallets();
 		}
 
-		MasterWalletManager::MasterWalletManager(const MasterWalletMap &walletMap, const std::string &rootPath) :
+		MasterWalletManager::MasterWalletManager(const MasterWalletMap &walletMap, const std::string &rootPath, const std::string &dataPath) :
 				_masterWalletMap(walletMap),
 				_rootPath(rootPath),
+				_dataPath(dataPath),
 				_p2pEnable(true) {
 		}
 
@@ -141,7 +143,7 @@ namespace Elastos {
 			}
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword,
-														  singleAddress, _p2pEnable, _rootPath, CreateNormal);
+														  singleAddress, _p2pEnable, _rootPath, _dataPath, CreateNormal);
 			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletId] = masterWallet;
 
@@ -166,7 +168,7 @@ namespace Elastos {
 			}
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, coSigners, requiredSignCount,
-														  _rootPath, _p2pEnable, CreateMultiSign);
+														  _rootPath, _dataPath, _p2pEnable, CreateMultiSign);
 			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletId] = masterWallet;
 
@@ -197,7 +199,7 @@ namespace Elastos {
 			}
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletID, privKey, payPassword, coSigners,
-														  requiredSignCount, _rootPath, _p2pEnable,
+														  requiredSignCount, _rootPath, _dataPath, _p2pEnable,
 														  CreateMultiSign);
 			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletID] = masterWallet;
@@ -234,7 +236,7 @@ namespace Elastos {
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword,
 														  coSigners, requiredSignCount, _p2pEnable,
-														  _rootPath, CreateMultiSign);
+														  _rootPath, _dataPath, CreateMultiSign);
 			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletId] = masterWallet;
 
@@ -327,7 +329,7 @@ namespace Elastos {
 
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletID, keystoreContent, backupPassword,
-														  payPassword, _rootPath, _p2pEnable,
+														  payPassword, _rootPath, _dataPath, _p2pEnable,
 														  ImportFromKeyStore);
 			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletID] = masterWallet;
@@ -360,7 +362,7 @@ namespace Elastos {
 			}
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword,
-														  singleAddress, _p2pEnable, _rootPath,
+														  singleAddress, _p2pEnable, _rootPath, _dataPath,
 														  ImportFromMnemonic);
 			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletId] = masterWallet;
@@ -384,7 +386,7 @@ namespace Elastos {
 				return _masterWalletMap[masterWalletID];
 			}
 
-			MasterWallet *masterWallet = new MasterWallet(masterWalletID, walletJson, _rootPath, _p2pEnable, ImportFromKeyStore);
+			MasterWallet *masterWallet = new MasterWallet(masterWalletID, walletJson, _rootPath, _dataPath, _p2pEnable, ImportFromKeyStore);
 
 			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletID] = masterWallet;
@@ -451,8 +453,14 @@ namespace Elastos {
 		void MasterWalletManager::initMasterWallets() {
 
 			path rootPath = _rootPath;
+			if (_dataPath.empty()) {
+				_dataPath = _rootPath;
+			}
 
-			Log::registerMultiLogger(rootPath.string());
+			ErrorChecker::CheckPathExists(_rootPath);
+			ErrorChecker::CheckPathExists(_dataPath);
+
+			Log::registerMultiLogger(_dataPath);
 
 			Log::setLevel(spdlog::level::from_str(SPVSDK_SPDLOG_LEVEL));
 			Log::info("spvsdk version {}", SPVSDK_VERSION_MESSAGE);
@@ -463,9 +471,8 @@ namespace Elastos {
 			REGISTER_MERKLEBLOCKPLUGIN(SideStandard, getIDPluginComponent);
 #endif
 
-			ErrorChecker::CheckPathExists(rootPath);
 
-			directory_iterator it{rootPath};
+			directory_iterator it{_dataPath};
 			while (it != directory_iterator{}) {
 
 				path temp = *it;
@@ -474,9 +481,13 @@ namespace Elastos {
 					continue;
 				}
 
-				std::string masterWalletId = temp.filename().string();
+				std::string masterWalletID = temp.filename().string();
 				if (exists((*it) / LOCAL_STORE_FILE) || exists((*it) / MASTER_WALLET_STORE_FILE)) {
-					GetMasterWallet(masterWalletId);
+					MasterWallet *masterWallet = new MasterWallet(masterWalletID, _rootPath, _dataPath, _p2pEnable, ImportFromLocalStore);
+
+					checkRedundant(masterWallet);
+					_masterWalletMap[masterWalletID] = masterWallet;
+					masterWallet->InitSubWallets();
 				}
 				++it;
 			}
@@ -513,8 +524,7 @@ namespace Elastos {
 				return _masterWalletMap[masterWalletId];
 			}
 
-			// TODO fix issue here
-			MasterWallet *masterWallet = new MasterWallet(masterWalletId, _rootPath, _p2pEnable, ImportFromLocalStore);
+			MasterWallet *masterWallet = new MasterWallet(masterWalletId, _rootPath, _dataPath, _p2pEnable, ImportFromLocalStore);
 
 			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletId] = masterWallet;
@@ -539,14 +549,32 @@ namespace Elastos {
 						  });
 
 			if (hasRedundant) {
-				Log::info("Destroying sub wallets.");
+				Log::info("{} Destroying redundant wallet", masterWallet->GetWalletID());
+
 				std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
 				for (int i = 0; i < subWallets.size(); ++i) {
 					masterWallet->DestroyWallet(subWallets[i]);
 				}
 
-				Log::info("({}) Clearing local.", masterWallet->GetId());
-				masterWallet->ClearLocal();
+				if (masterWallet->_initFrom == ImportFromLocalStore) {
+					boost::filesystem::path filepath = _dataPath;
+					filepath /= LOCAL_STORE_FILE;
+					if (boost::filesystem::exists(filepath)) {
+						Log::info("rename {}", filepath.string());
+						boost::filesystem::rename(filepath, filepath / ".bak");
+					}
+
+					filepath = _dataPath;
+					filepath /= MASTER_WALLET_STORE_FILE;
+					if (boost::filesystem::exists(filepath)) {
+						Log::info("rename {}", filepath.string());
+						boost::filesystem::rename(filepath, filepath / ".bak");
+					}
+				} else {
+					Log::info("Clearing local", masterWallet->GetID());
+					masterWallet->ClearLocal();
+				}
+
 				delete masterWallet;
 			}
 

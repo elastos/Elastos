@@ -32,28 +32,28 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 		Lockable lock;
 
 		LocalStorePtr localstore1(new LocalStore("./Data/1", mnemonic1, passphrase, false, payPasswd));
-		AccountPtr account1(new Account(localstore1, "Data"));
+		AccountPtr account1(new Account(localstore1));
 		SubAccountPtr subAccount1(new SubAccount(account1, coinIndex));
 		subAccount1->Init({}, &lock);
 		bytes_t multiSignPubKey1 = account1->RequestPubKey();
 		bytes_ptr ownerPubKey1 = account1->OwnerPubKey();
 
 		LocalStorePtr localStore2(new LocalStore("./Data/2", mnemonic2, passphrase, false, payPasswd));
-		AccountPtr account2(new Account(localStore2, "Data"));
+		AccountPtr account2(new Account(localStore2));
 		SubAccountPtr subAccount2(new SubAccount(account2, coinIndex));
 		subAccount2->Init({}, &lock);
 		bytes_t multiSignPubKey2 = account2->RequestPubKey();
 		bytes_ptr ownerPubKey2 = account2->OwnerPubKey();
 
 		LocalStorePtr localstore3(new LocalStore("./Data/3", mnemonic3, passphrase, false, payPasswd));
-		AccountPtr account3(new Account(localstore3, "Data"));
+		AccountPtr account3(new Account(localstore3));
 		SubAccountPtr subAccount3(new SubAccount(account3, coinIndex));
 		subAccount3->Init({}, &lock);
 		bytes_t multiSignPubKey3 = account3->RequestPubKey();
 		bytes_ptr ownerPubKey3 = account3->OwnerPubKey();
 
 		LocalStorePtr localstore4(new LocalStore("./Data/4", mnemonic4, passphrase, false, payPasswd));
-		AccountPtr account4(new Account(localstore4, "Data"));
+		AccountPtr account4(new Account(localstore4));
 		SubAccountPtr subAccount4(new SubAccount(account4, coinIndex));
 		subAccount4->Init({}, &lock);
 		bytes_t multiSignPubKey4 = account4->RequestPubKey();
@@ -141,7 +141,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 			coSigners.push_back(multiSignPubKey4.getHex());
 			LocalStorePtr localstore(new LocalStore("./Data/multisign", coSigners, requiredSignCount));
 
-			AccountPtr multiSignAccount(new Account(localstore, "Data"));
+			AccountPtr multiSignAccount(new Account(localstore));
 			SubAccountPtr multiSignSubAccount(new SubAccount(multiSignAccount, coinIndex));
 			multiSignSubAccount->Init({}, &lock);
 			std::vector<Address> addresses;
@@ -175,7 +175,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 			localstore1->AddPublicKeyRing(PublicKeyRing(account4->RequestPubKey().getHex()));
 			localstore1->SetM(requiredSignCount);
 			localstore1->SetN(localstore1->GetPublicKeyRing().size());
-			AccountPtr multiSignAccount1(new Account(localstore1, "Data"));
+			AccountPtr multiSignAccount1(new Account(localstore1));
 			SubAccountPtr ms1(new SubAccount(multiSignAccount1, coinIndex));
 			ms1->Init({}, &lock);
 			std::vector<Address> addresses1;
@@ -187,7 +187,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 			localstore2->AddPublicKeyRing(PublicKeyRing(account4->RequestPubKey().getHex()));
 			localstore2->SetM(requiredSignCount);
 			localstore2->SetN(localstore2->GetPublicKeyRing().size());
-			AccountPtr multiSignAccount2(new Account(localstore2, "Data"));
+			AccountPtr multiSignAccount2(new Account(localstore2));
 			SubAccountPtr ms2(new SubAccount(multiSignAccount2, coinIndex));
 			ms2->Init({}, &lock);
 			std::vector<Address> addresses2;
@@ -199,7 +199,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 			localstore3->AddPublicKeyRing(PublicKeyRing(account4->RequestPubKey().getHex()));
 			localstore3->SetM(requiredSignCount);
 			localstore3->SetN(localstore3->GetPublicKeyRing().size());
-			AccountPtr multiSignAccount3(new Account(localstore3, "Data"));
+			AccountPtr multiSignAccount3(new Account(localstore3));
 			SubAccountPtr ms3(new SubAccount(multiSignAccount3, coinIndex));
 			ms3->Init({}, &lock);
 			std::vector<Address> addresses3;
@@ -211,7 +211,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 			localstore4->AddPublicKeyRing(PublicKeyRing(account3->RequestPubKey().getHex()));
 			localstore4->SetM(requiredSignCount);
 			localstore4->SetN(localstore4->GetPublicKeyRing().size());
-			AccountPtr multiSignAccount4(new Account(localstore4, "Data"));
+			AccountPtr multiSignAccount4(new Account(localstore4));
 			SubAccountPtr ms4(new SubAccount(multiSignAccount4, coinIndex));
 			ms4->Init({}, &lock);
 			std::vector<Address> addresses4;
@@ -224,7 +224,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 			coSigners.push_back(multiSignPubKey4.getHex());
 			LocalStorePtr localstore(new LocalStore("./Data/multisign", coSigners, requiredSignCount));
 
-			AccountPtr multiSignAccount5(new Account(localstore, "Data"));
+			AccountPtr multiSignAccount5(new Account(localstore));
 
 			SubAccountPtr ms5(new SubAccount(multiSignAccount5, coinIndex));
 			ms5->Init({}, &lock);

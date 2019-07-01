@@ -33,13 +33,13 @@ namespace Elastos {
 				_config(config),
 				_syncStartHeight(0) {
 
-			fs::path subWalletDbPath = _parent->_rootPath;
-			subWalletDbPath /= parent->GetId();
-			subWalletDbPath /= _info->GetChainID() + DB_FILE_EXTENSION;
+			fs::path subWalletDBPath = _parent->_dataPath;
+			subWalletDBPath /= parent->GetID();
+			subWalletDBPath /= _info->GetChainID() + DB_FILE_EXTENSION;
 
 			_subAccount = SubAccountPtr(new SubAccount(_parent->_account, _config->Index()));
 			_walletManager = WalletManagerPtr(
-					new SpvService(_subAccount, subWalletDbPath,
+					new SpvService(_subAccount, subWalletDBPath,
 								   _info->GetEarliestPeerTime(), _config->DisconnectionTime(),
 								   _config->PluginType(), config->ChainParameters()));
 
@@ -47,7 +47,7 @@ namespace Elastos {
 			_walletManager->RegisterPeerManagerListener(this);
 
 			WalletPtr wallet = _walletManager->getWallet();
-			wallet->SetWalletID(_parent->GetId() + ":" + GetChainID());
+			wallet->SetWalletID(_parent->GetID() + ":" + GetChainID());
 
 			if (_info->GetFeePerKB() < _config->MinFee())
 				_info->SetFeePerKB(_config->MinFee());
@@ -566,8 +566,11 @@ namespace Elastos {
 		}
 
 		void SubWallet::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight, time_t lastBlockTime) {
+			struct tm tm;
+
+			localtime_r(&lastBlockTime, &tm);
 			ArgInfo("{} {} [ {} / {} ] {}", _walletManager->getWallet()->GetWalletID(), GetFunName(),
-					currentHeight, estimatedHeight, lastBlockTime);
+					currentHeight, estimatedHeight, asctime(&tm));
 
 			boost::mutex::scoped_lock scoped_lock(lock);
 

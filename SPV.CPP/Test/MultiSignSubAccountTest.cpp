@@ -24,7 +24,7 @@ TEST_CASE("MultiSign account test", "[Readonly account test]") {
 		coSigners.push_back("02f3346a807786c4d040c7f7df75b2f4b64cc6f9f95aaf0bed79099fb1c48fdb3f");
 
 		LocalStorePtr localstore(new LocalStore("Data/1", coSigners, 3));
-		AccountPtr account(new Account(localstore, "Data"));
+		AccountPtr account(new Account(localstore));
 
 		REQUIRE("8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3" == account->GetAddress().String());
 	}

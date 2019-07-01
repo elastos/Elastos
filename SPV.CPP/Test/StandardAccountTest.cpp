@@ -24,7 +24,7 @@ TEST_CASE("Derive id public and private key", "[Id agent]") {
 
 	SECTION("Address derived from public and private key should be same") {
 		LocalStorePtr localstore(new LocalStore("Data/1", mnemonic, phrasePasswd, false, payPasswd));
-		Account account(localstore, "Data");
+		Account account(localstore);
 
 		const HDKeychain &mpk = account.MasterPubKey();
 
@@ -47,7 +47,7 @@ TEST_CASE("Derive public and private key", "[HD wallet]") {
 		std::string mnemonic = "flat universe quantum uniform emerge blame lemon detail april sting aerobic disease";
 		LocalStorePtr localstore(new LocalStore("Data/1", mnemonic, "", false, payPasswd));
 		for (size_t i = 0; i < 1; ++i) {
-			AccountPtr account(new Account(localstore, "Data"));
+			AccountPtr account(new Account(localstore));
 			bytes_t pubkey = account->RootKey(payPasswd).getChild("44'/0'/0'/0/0").pubkey();
 			REQUIRE("EJuHg2CdT9a9bqdKUAtbrAn6DGwXtKA6uh" == Address(PrefixStandard, pubkey).String());
 		}

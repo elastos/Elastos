@@ -22,7 +22,7 @@ namespace Elastos {
 				MultiSign,
 			};
 		public:
-			Account(const LocalStorePtr &store, const std::string &rootpath);
+			Account(const LocalStorePtr &store);
 
 			bytes_t RequestPubKey() const;
 

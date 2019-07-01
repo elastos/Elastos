@@ -33,6 +33,7 @@ public:
 					 false,
 					 false,
 					 "Data",
+					 "Data",
 					 ImportFromMnemonic) {
 	}
 
@@ -45,28 +46,29 @@ public:
 						 false,
 						 false,
 						 "Data",
+						 "Data",
 						 ImportFromMnemonic) {
 	}
 
 	TestMasterWallet(const std::string &mnemonic,
 					 const std::string &phrasePassword,
 					 const std::string &payPassword) :
-			MasterWallet("MasterWalletTest", mnemonic, phrasePassword, payPassword, false, false, "Data", ImportFromMnemonic) {
+			MasterWallet("MasterWalletTest", mnemonic, phrasePassword, payPassword, false, false, "Data", "Data", ImportFromMnemonic) {
 	}
 
 	TestMasterWallet(const std::string &mnemonic,
 					 const std::string &phrasePassword,
 					 const std::string &payPassword,
 					 bool singleAddress) :
-			MasterWallet("MasterWalletTest", mnemonic, phrasePassword, payPassword, singleAddress, false, "Data", ImportFromMnemonic) {
+			MasterWallet("MasterWalletTest", mnemonic, phrasePassword, payPassword, singleAddress, false, "Data", "Data", ImportFromMnemonic) {
 	}
 
 	TestMasterWallet(const std::string &id) :
-			MasterWallet(id, "Data", false, ImportFromMnemonic) {
+			MasterWallet(id, "Data", "Data", false, ImportFromMnemonic) {
 	}
 
 	TestMasterWallet(const nlohmann::json &keystore, const std::string &backupPassword, const std::string &payPasswd) :
-		MasterWallet("MasterWalletTest", keystore, backupPassword, payPasswd, "Data", false, ImportFromKeyStore) {
+		MasterWallet("MasterWalletTest", keystore, backupPassword, payPasswd, "Data", "Data", false, ImportFromKeyStore) {
 
 	}
 
@@ -546,7 +548,7 @@ TEST_CASE("Master wallet GetAllSubWallets method test", "[GetAllSubWallets]") {
 
 		REQUIRE(masterWallet->GetAllSubWallets().size() == 0);
 
-		std::string masterWalletId = masterWallet->GetId();
+		std::string masterWalletId = masterWallet->GetID();
 
 		masterWallet->CreateSubWallet("ELA", feePerKB);
 		REQUIRE(masterWallet->GetAllSubWallets().size() == 1);

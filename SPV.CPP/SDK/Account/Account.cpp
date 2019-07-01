@@ -15,9 +15,8 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		Account::Account(const LocalStorePtr &store, const std::string &rootpath) :
-			_localstore(store),
-			_rootpath(rootpath) {
+		Account::Account(const LocalStorePtr &store) :
+			_localstore(store) {
 			if (_localstore->GetN() > 1) {
 				const std::vector<PublicKeyRing> &pubkeyRing = _localstore->GetPublicKeyRing();
 				std::vector<bytes_t> pubkeys;
@@ -27,7 +26,6 @@ namespace Elastos {
 				}
 				_address = Address(PrefixMultiSign, pubkeys, _localstore->GetM());
 			}
-
 		}
 
 		bytes_t Account::RequestPubKey() const {
