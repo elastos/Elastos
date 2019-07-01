@@ -160,6 +160,20 @@ type LogFilterer interface {
 	SubscribeFilterLogs(ctx context.Context, q FilterQuery, ch chan<- types.Log) (Subscription, error)
 }
 
+// TxMsg contains parameters for contract calls.
+type TXMsg struct {
+	From     common.Address
+	To       *common.Address
+	Gas      uint64
+	GasPrice *big.Int
+	Value    *big.Int
+	Nonce    uint64
+	// We accept "data" and "input" for backwards-compatibility reasons. "input" is the
+	// newer name and should be preferred by clients.
+	Data  []byte
+	Input []byte
+}
+
 // TransactionSender wraps transaction sending. The SendTransaction method injects a
 // signed transaction into the pending transaction pool for execution. If the transaction
 // was a contract creation, the TransactionReceipt method can be used to retrieve the
@@ -170,6 +184,7 @@ type LogFilterer interface {
 // next available nonce using PendingNonceAt.
 type TransactionSender interface {
 	SendTransaction(ctx context.Context, tx *types.Transaction) error
+	SendPublicTransaction(ctx context.Context, msg TXMsg) (common.Hash, error)
 }
 
 // GasPricer wraps the gas price oracle, which monitors the blockchain to determine the
