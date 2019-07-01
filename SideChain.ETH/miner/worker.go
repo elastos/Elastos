@@ -780,7 +780,17 @@ func (w *worker) commitTransactions(txs *types.TransactionsByPriceAndNonce, coin
 					core.RemoveLocalTx(w.eth.TxPool(), tx.Hash(), true)
 				}
 			}
-
+		case core.ErrMainTxHashPresence:
+			// Pop the current out-of-gas transaction without shifting in the next from the account
+			log.Trace("ErrTxHashTooHigh  is returned if Main chain transaction has been processed", "sender", from)
+			txs.Pop()
+			var addr common.Address
+			if tx.To() != nil {
+				to := *tx.To()
+				if len(tx.Data()) == 32 && to == addr {
+					core.RemoveLocalTx(w.eth.TxPool(), tx.Hash(), true)
+				}
+			}
 		case core.ErrNonceTooLow:
 			// New head notification data race between the transaction pool and miner, shift
 			log.Trace("Skipping transaction with low nonce", "sender", from, "nonce", tx.Nonce())
