@@ -122,6 +122,7 @@ class C extends StandardPage {
     const voteActionsNode = this.renderVoteActions()
     const adminActionsNode = this.renderAdminActions()
     const voteDetailNode = this.renderVoteResults()
+    const trackingNode = this.renderTracking()
     const translationBtn = this.renderTranslationBtn()
 
     return (
@@ -142,6 +143,7 @@ class C extends StandardPage {
             {voteActionsNode}
             {adminActionsNode}
             {voteDetailNode}
+            {trackingNode}
           </Body>
         </div>
         <Footer />
@@ -186,6 +188,9 @@ class C extends StandardPage {
   }
 
   renderAnchor() {
+    const { data } = this.state
+    const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.FINAL], data.status)
+    const tracking = isShowFollowingUp && <Anchor.Link href="#tracking" title={I18N.get('proposal.fields.tracking')} />
     return (
       <StyledAnchor offsetTop={420}>
         <Anchor.Link href="#preamble" title={I18N.get('proposal.fields.preamble')} />
@@ -200,9 +205,10 @@ class C extends StandardPage {
         </div>
         <Anchor.Link href="#plan" title={I18N.get('proposal.fields.plan')} />
         <div style={{ marginTop: 48 }}>
-          <Anchor.Link href="#tracking" title={I18N.get('proposal.fields.tracking')} />
+          <Anchor.Link href="#vote" title={I18N.get('proposal.fields.vote')} />
         </div>
-        <Anchor.Link href="#summary" title={I18N.get('proposal.fields.summary')} />
+        {tracking}
+        {/* <Anchor.Link href="#summary" title={I18N.get('proposal.fields.summary')} /> */}
       </StyledAnchor>
     )
   }
@@ -266,8 +272,6 @@ class C extends StandardPage {
     const { data } = this.state
     // legacy data structure has content field
     if (_.has(data, 'content')) return renderRichContent(data, 'content')
-    const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.FINAL], data.status)
-    const trackingNode = isShowFollowingUp && <Tracking proposal={data} />
     return (
       <div>
         <Preamble {...data} />
@@ -277,7 +281,6 @@ class C extends StandardPage {
         {renderRichContent(data, 'relevance', I18N.get('proposal.fields.relevance'))}
         {renderRichContent(data, 'budget', I18N.get('proposal.fields.budget'))}
         {renderRichContent(data, 'plan', I18N.get('proposal.fields.plan'))}
-        {trackingNode}
       </div>
     )
   }
@@ -410,6 +413,18 @@ class C extends StandardPage {
     )
   }
 
+  renderTracking() {
+    const { data } = this.state
+    const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.FINAL], data.status)
+    return isShowFollowingUp && <Tracking proposal={data} />
+  }
+
+  // renderSummary() {
+  //   const { data } = this.state
+  //   const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.FINAL], data.status)
+  //   return isShowFollowingUp && <Summary proposal={data} />
+  // }
+
   gotoEditPage = () => {
     const { _id: id } = this.state.data
     this.props.history.push(`/proposals/${id}/edit`)
@@ -482,7 +497,7 @@ class C extends StandardPage {
       }, {})
     }
 
-    const title = <h2>{I18N.get('council.voting.councilMembersVotes')}</h2>
+    const title = <h4>{I18N.get('council.voting.councilMembersVotes')}</h4>
     const detail = _.map(stats, (statArr, key) => {
       const type = (CVOTE_RESULT[key.toUpperCase()] || CVOTE_RESULT.UNDECIDED)
       const label = I18N.get(`council.voting.type.${type}`)
@@ -494,7 +509,7 @@ class C extends StandardPage {
       return <VoteResultComponent {...props} key={key} />
     })
     return (
-      <div>
+      <div id="vote">
         {title}
         <div>{detail}</div>
       </div>
