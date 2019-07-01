@@ -2,6 +2,7 @@ package state
 
 import (
 	"bytes"
+	"math/rand"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -18,21 +19,34 @@ func TestKeyFrame_Deserialize(t *testing.T) {
 	frame2 := &KeyFrame{}
 	frame2.Deserialize(buf)
 
-	assert.True(t, keyFrameEqual(frame, frame2))
+	assert.True(t, keyframeEqual(frame, frame2))
 }
 
 func TestKeyFrame_Snapshot(t *testing.T) {
 	frame := randomKeyFrame(5)
 	frame2 := frame.Snapshot()
-	assert.True(t, keyFrameEqual(frame, frame2))
+	assert.True(t, keyframeEqual(frame, frame2))
 }
 
-func keyFrameEqual(first *KeyFrame, second *KeyFrame) bool {
-	if len(first.Nicknames) != len(second.Nicknames) ||
-		len(first.CodeDIDMap) != len(second.CodeDIDMap) {
-		return false
-	}
+func TestStateKeyFrame_Deserialize(t *testing.T) {
+	frame := randomStateKeyFrame(5)
 
+	buf := new(bytes.Buffer)
+	frame.Serialize(buf)
+
+	frame2 := &StateKeyFrame{}
+	frame2.Deserialize(buf)
+
+	assert.True(t, stateKeyhrameEqual(frame, frame2))
+}
+
+func TestStateKeyFrame_Snapshot(t *testing.T) {
+	frame := randomStateKeyFrame(5)
+	frame2 := frame.Snapshot()
+	assert.True(t, stateKeyhrameEqual(frame, frame2))
+}
+
+func stateKeyhrameEqual(first *StateKeyFrame, second *StateKeyFrame) bool {
 	for k := range first.Nicknames {
 		if _, ok := second.Nicknames[k]; !ok {
 			return false
@@ -73,8 +87,47 @@ func candidatesMapEqual(first map[common.Uint168]*Candidate,
 	return true
 }
 
+func keyframeEqual(first *KeyFrame, second *KeyFrame) bool {
+	if first.LastCommitteeHeight != second.LastCommitteeHeight ||
+		len(first.Members) != len(second.Members) {
+		return false
+	}
+
+	for i := 0; i < len(first.Members); i++ {
+		if !crMemberEqual(first.Members[i], second.Members[i]) {
+			return false
+		}
+	}
+	return true
+}
+
 func randomKeyFrame(size int) *KeyFrame {
-	frame := NewKeyFrame()
+	frame := &KeyFrame{
+		LastCommitteeHeight: rand.Uint32(),
+	}
+
+	frame.Members = make([]*CRMember, 0, size)
+	for i := 0; i < size; i++ {
+		frame.Members = append(frame.Members, randomCRMember())
+	}
+
+	return frame
+}
+
+func crMemberEqual(first *CRMember, second *CRMember) bool {
+	return crInfoEqual(&first.Info, &second.Info) &&
+		first.ImpeachmentVotes == second.ImpeachmentVotes
+}
+
+func randomCRMember() *CRMember {
+	return &CRMember{
+		Info:             *randomCRInfo(),
+		ImpeachmentVotes: common.Fixed64(rand.Uint64()),
+	}
+}
+
+func randomStateKeyFrame(size int) *StateKeyFrame {
+	frame := NewStateKeyFrame()
 
 	for i := 0; i < size; i++ {
 		did := *randomUint168()
