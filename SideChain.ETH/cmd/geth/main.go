@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"path/filepath"
 	"runtime"
 	godebug "runtime/debug"
 	"sort"
@@ -303,7 +304,7 @@ func calculateGenesisAddress(genesisBlockHash string) (string, error) {
 	reversedGenesisBlockBytes := elacom.BytesReverse(genesisBlockBytes)
 	reversedGenesisBlockStr := elacom.BytesToHexString(reversedGenesisBlockBytes)
 
-	fmt.Println("genesis program hash:", reversedGenesisBlockStr)
+	log.Info(fmt.Sprintf("genesis program hash: %v", reversedGenesisBlockStr))
 
 	buf := new(bytes.Buffer)
 	buf.WriteByte(byte(len(reversedGenesisBlockBytes)))
@@ -326,7 +327,7 @@ func calculateGenesisAddress(genesisBlockHash string) (string, error) {
 	if err != nil {
 		return "", errors.New("genesis block hash to genesis address failed")
 	}
-	fmt.Println("genesis address: ", genesisAddress)
+	log.Info(fmt.Sprintf("genesis address: %v ", genesisAddress))
 
 	return genesisAddress, nil
 }
@@ -336,12 +337,24 @@ func calculateGenesisAddress(genesisBlockHash string) (string, error) {
 // miner.
 func startNode(ctx *cli.Context, stack *node.Node) {
 	debug.Memsize.Add("node", stack)
-
+	var SpvDataDir string
 	// Start up the node itself
 	utils.StartNode(stack)
+	switch {
+	case ctx.GlobalIsSet(utils.DataDirFlag.Name):
+		SpvDataDir = ctx.GlobalString(utils.DataDirFlag.Name)
+	case ctx.GlobalBool(utils.DeveloperFlag.Name):
+		SpvDataDir = "" // unless explicitly requested, use memory databases
+	case ctx.GlobalBool(utils.TestnetFlag.Name):
+		SpvDataDir = filepath.Join(node.DefaultDataDir(), "testnet")
+	case ctx.GlobalBool(utils.RinkebyFlag.Name):
+		SpvDataDir = filepath.Join(node.DefaultDataDir(), "rinkeby")
+	default:
+		SpvDataDir = node.DefaultDataDir()
+	}
 
 	var spvCfg = &spv.Config{
-		DataDir: ctx.GlobalString(utils.DataDirFlag.Name),
+		DataDir: SpvDataDir,
 	}
 	// prepare the SPV service config parameters
 	switch {
@@ -360,7 +373,7 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 	// to generate the corresponding ELA mainchain address for the SPV module to monitor on
 	if ctx.GlobalString(utils.SpvMonitoringAddrFlag.Name) != "" {
 		// --spvmoniaddr parameter is provided, set the SPV monitor address accordingly
-		fmt.Println("SPV Start Monitoring... ", ctx.GlobalString(utils.SpvMonitoringAddrFlag.Name))
+		log.Info("SPV Start Monitoring... ", "SpvMonitoringAddr", ctx.GlobalString(utils.SpvMonitoringAddrFlag.Name))
 		spvCfg.GenesisAddress = ctx.GlobalString(utils.SpvMonitoringAddrFlag.Name)
 	} else {
 		// --spvmoniaddr parameter is not provided
@@ -383,22 +396,22 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 		}
 
 		// calculate ELA mainchain address from the genesis block hash and set the SPV monitor address accordingly
-		fmt.Println("Genesis block hash: ", ghash.String())
+		log.Info(fmt.Sprintf("Genesis block hash: %v", ghash.String()))
 		if gaddr, err := calculateGenesisAddress(ghash.String()); err != nil {
 			utils.Fatalf("Cannot calculate: %v", err)
 		} else {
-			fmt.Println("SPV Start Monitoring... ", gaddr)
+			log.Info(fmt.Sprintf("SPV Start Monitoring... : %v", gaddr))
 			spvCfg.GenesisAddress = gaddr
 		}
 	}
 
 	//start the SPV service
-	fmt.Printf("Starting SPV service with config: %+v \n", *spvCfg)
-	if spvService, err := spv.NewService(spvCfg); err != nil {
+	log.Info(fmt.Sprintf("Starting SPV service with config: %+v \n", *spvCfg))
+	if spvService, err := spv.NewService(spvCfg, stack); err != nil {
 		utils.Fatalf("Cannot start mainchain SPV service: %v", err)
 	} else {
 		spvService.Start()
-		fmt.Println("Mainchain SPV module started successfully!")
+		log.Info("Mainchain SPV module started successfully!")
 	}
 
 	// Unlock any account  requested
