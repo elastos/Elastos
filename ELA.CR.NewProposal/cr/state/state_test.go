@@ -9,9 +9,9 @@ import (
 )
 
 func TestState_GetCandidatesRelated(t *testing.T) {
-	keyFrame := *randomKeyFrame(5)
+	keyFrame := *randomStateKeyFrame(5)
 	state := State{
-		KeyFrame: keyFrame,
+		StateKeyFrame: keyFrame,
 	}
 
 	// get single candidate
@@ -55,9 +55,9 @@ func TestState_GetCandidatesRelated(t *testing.T) {
 }
 
 func TestState_ExistCandidateRelated(t *testing.T) {
-	keyFrame := *randomKeyFrame(5)
+	keyFrame := *randomStateKeyFrame(5)
 	state := State{
-		KeyFrame: keyFrame,
+		StateKeyFrame: keyFrame,
 	}
 
 	assert.False(t, state.ExistCandidate(make([]byte, 34)))
