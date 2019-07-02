@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import moment from 'moment/moment'
 import { Row, Col } from 'antd'
 import I18N from '@/I18N'
+import _ from 'lodash'
 
 import styled from 'styled-components'
 
@@ -29,7 +30,7 @@ const Component = ({ vid, title, proposedBy, proposer, status, createdAt }) => {
   const proposerNode = (
     <Item>
       <Col span={6}><ItemTitle>{I18N.get('proposal.fields.preambleSub.proposer')}</ItemTitle></Col>
-      <Col span={18}><ItemText>{`${proposedBy} <${proposer.email}>`}</ItemText></Col>
+      <Col span={18}><ItemText>{`${proposedBy} <${_.get(proposer, 'email')}>`}</ItemText></Col>
     </Item>
   )
   // status
