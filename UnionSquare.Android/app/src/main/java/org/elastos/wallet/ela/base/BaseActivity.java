@@ -42,6 +42,14 @@ public abstract class BaseActivity<T extends BaseContract.Basepresenter> extends
 
     protected ActivityComponent mActivityComponent;
 
+    public SmartRefreshLayout getRefreshLayout() {
+        return refreshLayout;
+    }
+
+    public void setRefreshLayout(SmartRefreshLayout refreshLayout) {
+        this.refreshLayout = refreshLayout;
+    }
+
     private SmartRefreshLayout refreshLayout;
     private Unbinder unbinder;
 

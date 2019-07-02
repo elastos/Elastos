@@ -425,9 +425,10 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
         ClassicsHeader.REFRESH_HEADER_FAILED = getString(R.string.srl_header_failed);//"刷新失败";
         ClassicsHeader.REFRESH_HEADER_LASTTIME = getString(R.string.srl_header_update);//"上次更新 M-d HH:mm";
     }
-
+    SmartRefreshLayout smartRefreshLayout;
     /*请求异常回调*/
     protected void onErrorRefreshLayout(SmartRefreshLayout refreshLayout) {
+        this.smartRefreshLayout=refreshLayout;
         getBaseActivity().onErrorRefreshLayout(refreshLayout);
     }
 

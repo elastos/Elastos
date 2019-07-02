@@ -283,11 +283,13 @@
     <string name='error_20025'>(ERR_20025)多签错误</string>
     <string name='error_20026'>(ERR_20026)keystore错误</string>
     <string name='error_20027'>(ERR_20027)limit gap错误</string>
-    <string name='error_20028'>(ERR_20028)私钥错误</string>
-    <string name='error_20029'>(ERR_20029)二进制转字符串错误</string>
-    <string name='error_20030'>(ERR_20030)签名类型错误</string>
-    <string name='error_20031'>(ERR_20031)地址错误</string>
-    <string name='error_20032'>(ERR_20032)签名错误</string>
+    <string name='error_20028'>(ERR_20028)钱包包含无效交易</string>
+    <string name='error_20029'>(ERR_20029)私钥错误</string>
+    <string name='error_20030'>(ERR_20030)二进制转字符串错误</string>
+    <string name='error_20031'>(ERR_20031)签名类型错误</string>
+    <string name='error_20032'>(ERR_20032)地址错误</string>
+    <string name='error_20033'>(ERR_20033)签名错误</string>
+    <string name='error_20034'>(ERR_20034)keystore需要助记词密语</string>
     <string name='error_20035'>(ERR_20035)余额不足</string>
     <string name='error_30000'>(ERR_30000)JSON转换错误</string>
     <string name='error_20036'>(ERR_20036)Json格式错误</string>
@@ -304,6 +306,13 @@
     <string name='error_20047'>(ERR_20047)AES加密错误</string>
     <string name='error_20048'>(ERR_20048)验签失败</string>
     <string name='error_20049'>(ERR_20049)交易确认中</string>
+    <string name='error_20050'>(ERR_20050)错误的助记词数量 </string>
+    <string name='error_20051'>(ERR_20051)本地存储文件无效 </string>
+    <string name='error_20052'>(ERR_20052)主钱包文件不存在 </string>
+    <string name='error_20053'>(ERR_20053)无效的资产</string>
+    <string name='error_20054'>(ERR_20054)配置文件读取错误</string>
+    <string name='error_20055'>(ERR_20055)无效的chain id</string>
+    <string name='error_20056'>(ERR_20056)不支持旧的交易</string>
     <string name='error_29999'>(ERR_29999)其它错误</string>
 
 
@@ -360,6 +369,7 @@
     <string name="logkeepfail">日志生成失败</string>
     <string name="whetherexchange">检测到当前账户存在大量Utxo,是否零钱换整？</string>
     <string name="splashword">区 块 链 驱 动 的 智 能 万 维 网</string>
+    <string name="curentsdkversion">当前sdk版本号：</string>
     <string name="singlewallet">单签钱包</string>
     <string name="mulwallet">多签钱包</string>
     <string name="singlereadonlywallet">单签只读钱包</string>

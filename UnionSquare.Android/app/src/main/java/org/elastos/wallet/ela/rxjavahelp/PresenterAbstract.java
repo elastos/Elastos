@@ -194,6 +194,7 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
     @Override
     public void onCancel(DialogInterface dialog) {
         //解除观察者和被观察者的绑定
+        finish();
         if (mDisposable != null && !mDisposable.isDisposed()) {
             mDisposable.dispose();
         }

@@ -3,6 +3,7 @@ package org.elastos.wallet.ela.ui.vote.SuperNodeList;
 import android.content.Context;
 import android.util.Log;
 
+import org.elastos.wallet.ela.di.component.FragmentComponent;
 import org.elastos.wallet.ela.net.RetrofitManager;
 import org.elastos.wallet.ela.rxjavahelp.PresenterAbstract;
 
@@ -16,7 +17,15 @@ public class SuperNodeListPresenter extends PresenterAbstract {
     private static final String TAG = SuperNodeListPresenter.class.getName();
 
     //提交投票
-    public void getUrlJson(Context context, String url, NodeDotJsonViewData nodeDotJsonViewData) {
+    public void getUrlJson( String url, Context context,NodeDotJsonViewData nodeDotJsonViewData) {
+        String tempUrl = url;
+        if (url.endsWith("bpinfo.json")) {
+
+        } else if (url.endsWith("/")) {
+            url += "bpinfo.json";
+        } else {
+            url += "/bpinfo.json";
+        }
         Observer observer = new Observer<NodeInfoBean>() {
             @Override
             public void onSubscribe(Disposable d) {
@@ -27,7 +36,7 @@ public class SuperNodeListPresenter extends PresenterAbstract {
             @Override
             public void onNext(NodeInfoBean value) {
                 Log.e(TAG, "onNext.......:" + value);
-                nodeDotJsonViewData.onGetNodeDotJsonData(value);
+                nodeDotJsonViewData.onGetNodeDotJsonData(value, tempUrl);
 
 
             }

@@ -26,8 +26,8 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="10dp"
         android:text="@string/currentversionname"
-        android:textColor="@color/colorSubtitle"
-        android:textSize="12sp" />
+        android:textColor="#80ffffff"
+        android:textSize="13sp" />
 
     <TextView
         style="@style/settingItem_margin"
@@ -35,10 +35,11 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="38dp"
+        android:gravity="center"
         android:lineSpacingMultiplier="1.2"
         android:text="@string/tv_elaintroduce"
         android:textColor="@color/whiter"
-        android:textSize="13sp" />
+        android:textSize="14sp" />
 
     <View
         android:layout_width="match_parent"
@@ -84,6 +85,15 @@
             android:layout_height="wrap_content"
             android:text="@string/runlog" />
     </LinearLayout>
-
+    <TextView
+        android:layout_marginBottom="8dp"
+        android:id="@+id/tv_version_sdk"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginTop="88dp"
+        android:text="@string/curentsdkversion"
+        android:textColor="#80ffffff"
+        android:textSize="10sp" />
 
 </LinearLayout>
