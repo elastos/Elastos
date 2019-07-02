@@ -151,7 +151,6 @@ namespace Elastos {
 			_peers = peers;
 			SortPeers();
 
-			time_t now = time(nullptr);
 			const std::vector<CheckPoint> &Checkpoints = params->Checkpoints();
 			for (size_t i = 0; i < Checkpoints.size(); i++) {
 				MerkleBlockPtr checkBlock = Registry::Instance()->CreateMerkleBlock(_pluginType);

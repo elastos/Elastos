@@ -39,7 +39,8 @@ namespace Elastos {
 				_rootPath(rootPath),
 				_dataPath(dataPath),
 				_p2pEnable(p2pEnable),
-				_initFrom(from) {
+				_initFrom(from),
+				_earliestPeerTime(0) {
 
 			_config = ConfigPtr(new Config(_rootPath));
 			_localStore = LocalStorePtr(new LocalStore(_dataPath + "/" + _id));
@@ -59,11 +60,13 @@ namespace Elastos {
 								   bool p2pEnable,
 								   const std::string &rootPath,
 								   const std::string &dataPath,
+								   time_t earliestPeerTime,
 								   MasterWalletInitFrom from) :
 				_id(id),
 				_rootPath(rootPath),
 				_dataPath(dataPath),
 				_p2pEnable(p2pEnable),
+				_earliestPeerTime(earliestPeerTime),
 				_initFrom(from) {
 
 			Mnemonic m(_rootPath);
@@ -89,6 +92,7 @@ namespace Elastos {
 				_rootPath(rootPath),
 				_dataPath(dataPath),
 				_p2pEnable(p2pEnable),
+				_earliestPeerTime(0),
 				_initFrom(from) {
 
 			KeyStore keystore;
@@ -111,7 +115,7 @@ namespace Elastos {
 								   const std::string &dataPath,
 								   bool p2pEnable,
 								   MasterWalletInitFrom from) :
-			_id(id), _rootPath(rootPath), _p2pEnable(p2pEnable), _initFrom(from) {
+			_id(id), _rootPath(rootPath), _p2pEnable(p2pEnable), _initFrom(from), _earliestPeerTime(0) {
 
 			KeyStore keyStore;
 			keyStore.ImportReadonly(readonlyWalletJson);
@@ -128,61 +132,66 @@ namespace Elastos {
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
-								   const nlohmann::json &coSigners, uint32_t requiredSignCount,
+								   const nlohmann::json &publicKeys, uint32_t m,
 								   const std::string &rootPath,
 								   const std::string &dataPath,
 								   bool p2pEnable,
+								   time_t earliestPeerTime,
 								   MasterWalletInitFrom from) :
 				_id(id),
 				_rootPath(rootPath),
 				_dataPath(dataPath),
 				_p2pEnable(p2pEnable),
 				_initFrom(from),
+				_earliestPeerTime(earliestPeerTime),
 				_idAgentImpl(nullptr) {
-			ErrorChecker::CheckPubKeyJsonArray(coSigners, 1, "coSigner");
-			ErrorChecker::CheckParam(coSigners.size() < requiredSignCount, Error::InvalidArgument, "Invalid M");
+			ErrorChecker::CheckPubKeyJsonArray(publicKeys, 1, "coSigner");
+			ErrorChecker::CheckParam(publicKeys.size() < m, Error::InvalidArgument, "Invalid M");
 
 			_config = ConfigPtr(new Config(_rootPath));
-			_localStore = LocalStorePtr(new LocalStore(_dataPath + "/" + _id, coSigners, requiredSignCount));
+			_localStore = LocalStorePtr(new LocalStore(_dataPath + "/" + _id, publicKeys, m));
 			_account = AccountPtr(new Account(_localStore));
 		}
 
 		MasterWallet::MasterWallet(const std::string &id, const std::string &privKey, const std::string &payPassword,
-								   const nlohmann::json &coSigners, uint32_t requiredSignCount,
+								   const nlohmann::json &publicKeys, uint32_t m,
 								   const std::string &rootPath, const std::string &dataPath,
-								   bool p2pEnable, MasterWalletInitFrom from) :
+								   bool p2pEnable, time_t earliestPeerTime, MasterWalletInitFrom from) :
 				_id(id),
 				_rootPath(rootPath),
 				_dataPath(dataPath),
 				_p2pEnable(p2pEnable),
 				_initFrom(from),
+				_earliestPeerTime(earliestPeerTime),
 				_idAgentImpl(nullptr) {
 			ErrorChecker::ThrowLogicException(Error::KeyStore, "Deprecated interface: will refactor later");
 		}
 
 		MasterWallet::MasterWallet(const std::string &id, const std::string &mnemonic,
 								   const std::string &passphrase, const std::string &payPassword,
-								   const nlohmann::json &coSigners,
-								   uint32_t requiredSignCount, bool p2pEnable,
+								   const nlohmann::json &publicKeys, uint32_t m,
+								   bool p2pEnable,
 								   const std::string &rootPath,
 								   const std::string &dataPath,
+								   time_t earliestPeerTime,
 								   MasterWalletInitFrom from) :
 				_id(id),
 				_rootPath(rootPath),
 				_dataPath(dataPath),
 				_p2pEnable(p2pEnable),
 				_initFrom(from),
+				_earliestPeerTime(earliestPeerTime),
 				_idAgentImpl(nullptr) {
 
-			ErrorChecker::CheckPubKeyJsonArray(coSigners, 1, "coSigner");
-			ErrorChecker::CheckParam(coSigners.size() + 1 < requiredSignCount, Error::InvalidArgument, "Invalid M");
+			ErrorChecker::CheckPubKeyJsonArray(publicKeys, 1, "coSigner");
+			ErrorChecker::CheckParam(publicKeys.size() + 1 < m, Error::InvalidArgument, "Invalid M");
 
 			_config = ConfigPtr(new Config(_rootPath));
 			_localStore = LocalStorePtr(new LocalStore(_dataPath + "/" + _id, mnemonic, passphrase, true, payPassword));
-			for (nlohmann::json::const_iterator it = coSigners.cbegin(); it != coSigners.cend(); ++it)
+			for (nlohmann::json::const_iterator it = publicKeys.cbegin(); it != publicKeys.cend(); ++it)
 				_localStore->AddPublicKeyRing(PublicKeyRing((*it).get<std::string>()));
 
-			_localStore->SetM(requiredSignCount);
+			_localStore->SetM(m);
 			_localStore->SetN(_localStore->GetPublicKeyRing().size());
 			_account = AccountPtr(new Account(_localStore));
 		}
@@ -436,10 +445,18 @@ namespace Elastos {
 				Log::info("Create new master wallet");
 				info->SetEaliestPeerTime(config->ChainParameters()->LastCheckpoint().Timestamp());
 			} else if (_initFrom == CreateMultiSign) {
-				info->SetEaliestPeerTime(config->ChainParameters()->FirstCheckpoint().Timestamp());
+				if (_earliestPeerTime != 0) {
+					info->SetEaliestPeerTime(_earliestPeerTime);
+				} else {
+					info->SetEaliestPeerTime(config->ChainParameters()->FirstCheckpoint().Timestamp());
+				}
 				Log::info("Create new multi-sign master wallet");
 			} else if (_initFrom == ImportFromMnemonic) {
-				info->SetEaliestPeerTime(config->ChainParameters()->FirstCheckpoint().Timestamp());
+				if (_earliestPeerTime != 0) {
+					info->SetEaliestPeerTime(_earliestPeerTime);
+				} else {
+					info->SetEaliestPeerTime(config->ChainParameters()->FirstCheckpoint().Timestamp());
+				}
 				Log::info("Import master wallet with mnemonic");
 			} else if (_initFrom == ImportFromKeyStore) {
 				Log::info("Master wallet import with keystore");

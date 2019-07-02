@@ -59,31 +59,35 @@ namespace Elastos {
 
 			/**
 			  * Create a multi-sign master wallet by related co-signers, or return existing master wallet if current master wallet manager has the master wallet id. Note this creating method generate an readonly multi-sign account which can not append sign into a transaction.
-			  * @param masterWalletId is the unique identification of a master wallet object.
-			  * @param coSigners is an array of signers' public key.
-			  * @param requiredSignCount specify minimum count to accomplish related transactions.
+			  * @param masterWalletID is the unique identification of a master wallet object.
+			  * @param publicKeys is an array of signers' public key.
+			  * @param m specify minimum count of signature to accomplish related transaction.
+			  * @param timestamp the value of time in seconds since 1970-01-01 00:00:00. It means the time when the wallet contains the first transaction.
 			  * @return If success will return a pointer of master wallet interface.
 			  */
 			virtual IMasterWallet *CreateMultiSignMasterWallet(
-					const std::string &masterWalletId,
-					const nlohmann::json &coSigners,
-					uint32_t requiredSignCount) = 0;
+					const std::string &masterWalletID,
+					const nlohmann::json &publicKeys,
+					uint32_t m,
+					time_t timestamp = 0) = 0;
 
 			/**
 			  * Create a multi-sign master wallet by private key and related co-signers, or return existing master wallet if current master wallet manager has the master wallet id.
 			  * @param masterWalletId is the unique identification of a master wallet object.
 			  * @param privKey private key to do the sign job of related multi-sign accounts.
 			  * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
-			  * @param coSigners is an array of signers' public key.
-			  * @param requiredSignCount specify minimum count to accomplish related transactions.
+			  * @param publicKeys is an array of signers' public key.
+			  * @param m specify minimum count of signature to accomplish related transaction.
+			  * @param timestamp the value of time in seconds since 1970-01-01 00:00:00. It means the time when the wallet contains the first transaction.
 			  * @return If success will return a pointer of master wallet interface.
 			  */
 			virtual IMasterWallet *CreateMultiSignMasterWallet(
 					const std::string &masterWalletId,
 					const std::string &privKey,
 					const std::string &payPassword,
-					const nlohmann::json &coSigners,
-					uint32_t requiredSignCount) = 0;
+					const nlohmann::json &publicKeys,
+					uint32_t m,
+					time_t timestamp = 0) = 0;
 
 			/**
 			 * Create a multi-sign master wallet by private key and related co-signers, or return existing master wallet if current master wallet manager has the master wallet id.
@@ -91,8 +95,9 @@ namespace Elastos {
 			 * @param mnemonic use to generate seed which deriving the master private key and chain code.
 			 * @param phrasePassword combine with random seed to generate root key and chain code. Phrase password can be empty or between 8 and 128, otherwise will throw invalid argument exception.
 			 * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
-			 * @param coSigners is an array of signers' public key.
-			 * @param requiredSignCount specify minimum count to accomplish related transactions.
+			 * @param publicKeys is an array of signers' public key.
+			 * @param m specify minimum count of signature to accomplish related transactions.
+			 * @param timestamp the value of time in seconds since 1970-01-01 00:00:00. It means the time when the wallet contains the first transaction.
 			 * @return If success will return a pointer of master wallet interface.
 			 */
 			virtual IMasterWallet *CreateMultiSignMasterWallet(
@@ -100,8 +105,9 @@ namespace Elastos {
 					const std::string &mnemonic,
 					const std::string &phrasePassword,
 					const std::string &payPassword,
-					const nlohmann::json &coSigners,
-					uint32_t requiredSignCount) = 0;
+					const nlohmann::json &publicKeys,
+					uint32_t m,
+					time_t timestamp = 0) = 0;
 
 			/**
 			 * Get manager existing master wallets.
@@ -151,6 +157,7 @@ namespace Elastos {
 			 * @param phrasePassword combine with mnemonic to generate root key and chain code. Phrase password can be empty or between 8 and 128, otherwise will throw invalid argument exception.
 			 * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
 			 * @param singleAddress singleAddress if true created wallet will have only one address inside, otherwise sub wallet will manager a chain of addresses for security.
+			 * @param timestamp the value of time in seconds since 1970-01-01 00:00:00. It means the time when the wallet contains the first transaction.
 			 * @return If success will return a pointer of master wallet interface.
 			 */
 			virtual IMasterWallet *ImportWalletWithMnemonic(
@@ -158,7 +165,8 @@ namespace Elastos {
 					const std::string &mnemonic,
 					const std::string &phrasePassword,
 					const std::string &payPassword,
-					bool singleAddress) = 0;
+					bool singleAddress,
+					time_t timestamp = 0) = 0;
 
 			/**
 			 * Import read-only(watch) wallet which does not contain any private keys.

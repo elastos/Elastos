@@ -140,6 +140,7 @@ namespace Elastos {
 					bool p2pEnable,
 					const std::string &rootPath,
 					const std::string &dataPath,
+					time_t earliestPeerTime,
 					MasterWalletInitFrom from);
 
 			MasterWallet(
@@ -162,22 +163,24 @@ namespace Elastos {
 
 			MasterWallet(
 					const std::string &id,
-					const nlohmann::json &coSigners,
-					uint32_t requiredSignCount,
+					const nlohmann::json &publicKeys,
+					uint32_t m,
 					const std::string &rootPath,
 					const std::string &dataPath,
 					bool p2pEnable,
+					time_t earliestPeerTime,
 					MasterWalletInitFrom from);
 
 			MasterWallet(
 					const std::string &id,
 					const std::string &privKey,
 					const std::string &payPassword,
-					const nlohmann::json &coSigners,
-					uint32_t requiredSignCount,
+					const nlohmann::json &publicKeys,
+					uint32_t m,
 					const std::string &rootPath,
 					const std::string &dataPath,
 					bool p2pEnable,
+					time_t earliestPeerTime,
 					MasterWalletInitFrom from);
 
 			MasterWallet(
@@ -185,11 +188,12 @@ namespace Elastos {
 					const std::string &mnemonic,
 					const std::string &phrasePassword,
 					const std::string &payPassword,
-					const nlohmann::json &coSigners,
-					uint32_t requiredSignCount,
+					const nlohmann::json &publicKeys,
+					uint32_t m,
 					bool p2pEnable,
 					const std::string &rootPath,
 					const std::string &dataPath,
+					time_t earliestPeerTime,
 					MasterWalletInitFrom from);
 
 			nlohmann::json ExportReadonlyKeyStore();
@@ -220,6 +224,8 @@ namespace Elastos {
 			std::string _id;
 			std::string _rootPath;
 			std::string _dataPath;
+
+			time_t _earliestPeerTime;
 
 			ConfigPtr _config;
 			boost::shared_ptr<IDAgentImpl> _idAgentImpl;
