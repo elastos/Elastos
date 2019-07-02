@@ -16,8 +16,9 @@ local asset_id = m.get_asset_id()
 -- amount, fee, recipent
 local amount = 0.2
 local fee = 0.001
-local vote_type = 0
-local vote_candidates = {'034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16c'}
+local vote_type = 1
+-- candidate need to be code
+local vote_candidates = {'21039d419986f5c2bf6f2a6f59f0b6e111735b66570fb22107a038bca3e1005d1920ac'}
 local vote_candidate_votes = {'1.0'}
 
 -- payload
@@ -62,7 +63,7 @@ print("sending " .. hash)
 
 if (res ~= hash)
 then
-	print(res)
+    print(res)
 else
-	print("tx send success")
+    print("tx send success")
 end
