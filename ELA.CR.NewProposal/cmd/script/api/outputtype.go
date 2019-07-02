@@ -215,8 +215,10 @@ func RegisterVoteContentType(L *lua.LState) {
 func newVoteContent(L *lua.LState) int {
 	voteType := L.ToInt(1)
 	candidatesTable := L.ToTable(2)
+	candidateVotesTable := L.ToTable(3)
 
 	candidates := make([][]byte, 0)
+	candidateVotes := make([]common.Fixed64, 0)
 	candidatesTable.ForEach(func(i, value lua.LValue) {
 		//fmt.Println(lua.LVAsString(value))
 		publicKey := lua.LVAsString(value)
@@ -227,10 +229,17 @@ func newVoteContent(L *lua.LState) int {
 		}
 		candidates = append(candidates, pk)
 	})
+	candidateVotesTable.ForEach(func(i, value lua.LValue) {
+		//fmt.Println(lua.LVAsString(value))
+		voteStr := lua.LVAsString(value)
+		vote, _ := common.StringToFixed64(voteStr)
+		candidateVotes = append(candidateVotes, *vote)
+	})
 
 	voteContent := &outputpayload.VoteContent{
 		VoteType:   outputpayload.VoteType(voteType),
 		Candidates: candidates,
+		Votes:      candidateVotes,
 	}
 
 	ud := L.NewUserData()
