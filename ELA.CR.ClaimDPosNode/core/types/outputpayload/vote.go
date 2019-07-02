@@ -65,7 +65,7 @@ func (vc *VoteContent) Deserialize(r io.Reader, version byte) error {
 	}
 
 	for i := uint64(0); i < candidatesCount; i++ {
-		candidate, err := common.ReadVarBytes(r, crypto.COMPRESSEDLEN, "producer")
+		candidate, err := common.ReadVarBytes(r, crypto.MaxMultiSignCodeLength, "producer")
 		if err != nil {
 			return err
 		}
