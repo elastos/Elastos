@@ -29,33 +29,6 @@ const transform = value => {
   return result
 }
 
-const renderRichEditor = (data, key, getFieldDecorator, max) => {
-  const content = _.get(data, key, '')
-  const rules = [
-    {
-      required: true,
-      transform,
-      message: I18N.get('proposal.form.error.required')
-    },
-  ]
-  if (max) {
-    rules.push({
-      max,
-      transform,
-      message: I18N.get('proposal.form.error.tooLong')
-    })
-  }
-  const content_fn = getFieldDecorator(key, {
-    rules,
-    validateTrigger: 'onSubmit',
-    initialValue: content,
-  })
-  const content_el = (
-    <DraftEditor content={content} contentType={CONTENT_TYPE.MARKDOWN} />
-  )
-  return content_fn(content_el)
-}
-
 const formatValue = (value) => {
   let result
   try {
@@ -109,10 +82,23 @@ class C extends BaseComponent {
 
   getInputProps() {
     const { getFieldDecorator } = this.props.form
-    const content = renderRichEditor(undefined, 'content', getFieldDecorator)
-
+    const rules = [
+      {
+        required: true,
+        transform,
+        message: I18N.get('proposal.form.error.required')
+      },
+    ]
+    const content_fn = getFieldDecorator('content', {
+      rules,
+      validateTrigger: 'onSubmit',
+      initialValue: '',
+    })
+    const content_el = (
+      <DraftEditor contentType={CONTENT_TYPE.MARKDOWN} />
+    )
     return {
-      content,
+      content: content_fn(content_el),
     }
   }
 
