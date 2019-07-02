@@ -23,9 +23,9 @@ public class MasterWalletManager {
         return false;
     }
 
-    public MasterWalletManager(String rootPath) {
+    public MasterWalletManager(String rootPath, String dataPath) {
         mRootPath = rootPath;
-        mInstance = InitMasterWalletManager(mRootPath);
+        mInstance = InitMasterWalletManager(mRootPath, dataPath);
 
         long[] masterWalletProxies = GetAllMasterWallets(mInstance);
         for (int i = 0; i < masterWalletProxies.length; i++) {
@@ -124,7 +124,7 @@ public class MasterWalletManager {
 
     public MasterWallet ImportWalletWithMnemonic(
             String masterWalletId, String mnemonic, String phrasePassword, String payPassWord,
-            boolean singleAddress) throws WalletException {
+            boolean singleAddress, long timestamp) throws WalletException {
 
         if (MasterWalletExist(masterWalletId)) {
             Log.e(TAG, "Master wallet [" + masterWalletId + "] exist");
@@ -132,7 +132,7 @@ public class MasterWalletManager {
         }
 
         long masterProxy = ImportWalletWithMnemonic(mInstance, masterWalletId,
-                mnemonic, phrasePassword, payPassWord, singleAddress);
+                mnemonic, phrasePassword, payPassWord, singleAddress, timestamp);
 
         if (masterProxy == 0) {
             Log.e(TAG, "Import master wallet with mnemonic fail");
@@ -180,8 +180,16 @@ public class MasterWalletManager {
         return ExportReadonlyWallet(mInstance, masterWallet);
     }
 
-    public String GenerateMnemonic(String language) throws WalletException {
-        return GenerateMnemonic(mInstance, language);
+    public String ExportxPrivateKey(MasterWallet masterWallet, String payPasswd) {
+        return ExportxPrivateKey(mInstance, masterWallet, payPasswd);
+    }
+
+    public String ExportMasterPublicKey(MasterWallet masterWallet) {
+        return ExportMasterPublicKey(mInstance, masterWallet);
+    }
+
+    public String GenerateMnemonic(String language, int wordCount) throws WalletException {
+        return GenerateMnemonic(mInstance, language, wordCount);
     }
 
     public String GetMultiSignPubKeyWithMnemonic(String phrase, String phrasePassword)
@@ -199,7 +207,7 @@ public class MasterWalletManager {
     }
 
     public MasterWallet CreateMultiSignMasterWallet(String masterWalletID, String coSigners,
-                                                    int requiredSignCount) throws WalletException {
+                                                    int requiredSignCount, long timestamp) throws WalletException {
 
         if (MasterWalletExist(masterWalletID)) {
             Log.e(TAG, "Master wallet [" + masterWalletID + "] exist");
@@ -207,7 +215,7 @@ public class MasterWalletManager {
         }
 
         long masterProxy = CreateMultiSignMasterWallet(mInstance, masterWalletID,
-                coSigners, requiredSignCount);
+                coSigners, requiredSignCount, timestamp);
 
         if (masterProxy == 0) {
             Log.e(TAG, "Create multi sign master wallet fail");
@@ -222,7 +230,7 @@ public class MasterWalletManager {
 
     public MasterWallet CreateMultiSignMasterWallet(
             String masterWalletID, String privKey, String payPassword, String coSigners,
-            int requiredSignCount) throws WalletException {
+            int requiredSignCount, long timestamp) throws WalletException {
 
         if (MasterWalletExist(masterWalletID)) {
             Log.e(TAG, "Master wallet [" + masterWalletID + "] exist");
@@ -230,7 +238,7 @@ public class MasterWalletManager {
         }
 
         long masterProxy = CreateMultiSignMasterWalletWithPrivKey(mInstance, masterWalletID,
-                privKey, payPassword, coSigners, requiredSignCount);
+                privKey, payPassword, coSigners, requiredSignCount, timestamp);
 
         if (masterProxy == 0) {
             Log.e(TAG, "Create multi sign master wallet with private key fail");
@@ -245,7 +253,7 @@ public class MasterWalletManager {
 
     public MasterWallet CreateMultiSignMasterWallet(
             String masterWalletId, String mnemonic, String phrasePassword, String payPassword,
-            String coSigners, int requiredSignCount) throws WalletException {
+            String coSigners, int requiredSignCount, long timestamp) throws WalletException {
 
 
         if (MasterWalletExist(masterWalletId)) {
@@ -254,7 +262,7 @@ public class MasterWalletManager {
         }
 
         long masterProxy = CreateMultiSignMasterWalletWithMnemonic(mInstance, masterWalletId,
-                mnemonic, phrasePassword, payPassword, coSigners, requiredSignCount);
+                mnemonic, phrasePassword, payPassword, coSigners, requiredSignCount, timestamp);
 
         if (masterProxy == 0) {
             Log.e(TAG, "Create multi sign master wallet with mnemonic fail");
@@ -267,9 +275,13 @@ public class MasterWalletManager {
         return masterWallet;
     }
 
+    public String GetVersion() {
+        return GetVersion(mInstance);
+    }
+
     private native void SaveConfigs(long instance);
 
-    private native String GenerateMnemonic(long instance, String language);
+    private native String GenerateMnemonic(long instance, String language, int wordCount);
 
     private native String GetMultiSignPubKeyWithMnemonic(long instance, String phrase,
                                                          String phrasePassword);
@@ -281,15 +293,16 @@ public class MasterWalletManager {
             String payPassword, boolean singleAddress);
 
     private native long CreateMultiSignMasterWallet(long instance, String masterWalletId,
-                                                    String coSigners, int requiredSignCount);
+                                                    String coSigners, int requiredSignCount,
+                                                    long timestamp);
 
     private native long CreateMultiSignMasterWalletWithPrivKey(
             long instance, String masterWalletId, String privKey, String payPassword,
-            String coSigners, int requiredSignCount);
+            String coSigners, int requiredSignCount, long timestamp);
 
     private native long CreateMultiSignMasterWalletWithMnemonic(
             long instance, String masterWalletId, String mnemonic, String phrasePassword,
-            String payPassword, String coSigners, int requiredSignCount);
+            String payPassword, String coSigners, int requiredSignCount, long timestamp);
 
     private native long ImportWalletWithKeystore(
             long instance, String masterWalletId, String keystoreContent, String backupPassWord,
@@ -297,7 +310,7 @@ public class MasterWalletManager {
 
     private native long ImportWalletWithMnemonic(
             long instance, String masterWalletId, String mnemonic, String phrasePassword,
-            String payPassWord, boolean singleAddress);
+            String payPassWord, boolean singleAddress, long timestamp);
 
     private native long ImportReadonlyWallet(long instance, String masterWalletID, String walletJson);
 
@@ -309,6 +322,12 @@ public class MasterWalletManager {
 
     private native String ExportReadonlyWallet(long instance, MasterWallet masterWallet);
 
+    private native String ExportxPrivateKey(long instance, MasterWallet masterWallet, String payPasswd);
+
+    private native String ExportMasterPublicKey(long instance, MasterWallet masterWallet);
+
+    private native String GetVersion(long instance);
+
     private native void DestroyWallet(long instance, String masterWalletId);
 
     private native long[] GetAllMasterWallets(long instance);
@@ -317,7 +336,7 @@ public class MasterWalletManager {
 
     private native long GetMasterWallet(long instance, String masterWalletId);
 
-    private native long InitMasterWalletManager(String rootPath);
+    private native long InitMasterWalletManager(String rootPath, String dataPath);
 
     private native void DisposeNative(long instance);
 }

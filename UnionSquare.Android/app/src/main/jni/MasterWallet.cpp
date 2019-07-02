@@ -18,7 +18,7 @@ static jstring JNICALL GetID(JNIEnv *env, jobject clazz, jlong instance) {
     jstring id = NULL;
     try {
         IMasterWallet *masterWallet = (IMasterWallet *) instance;
-        std::string key = masterWallet->GetId();
+        std::string key = masterWallet->GetID();
         id = env->NewStringUTF(key.c_str());
     } catch (const std::exception &e) {
         ThrowWalletException(env, e.what());
