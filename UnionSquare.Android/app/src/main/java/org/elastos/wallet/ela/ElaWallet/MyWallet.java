@@ -228,7 +228,6 @@ public class MyWallet {
 
             }
 
-            Log.d(TAG, "result " + subWallet.GetBasicInfo());
             //basicInfo = subWallet.GetBasicInfo();
             return new CommmonStringEntity(SUCCESSCODE, subWallet.GetBasicInfo());
         } catch (WalletException e) {
@@ -246,7 +245,6 @@ public class MyWallet {
             }
 
             String basicInfo = masterWallet.GetBasicInfo();
-            Log.d(TAG, "result: " + basicInfo);
 
             return new CommmonStringEntity(SUCCESSCODE, basicInfo);
         } catch (WalletException e) {
@@ -257,9 +255,6 @@ public class MyWallet {
     public BaseEntity getAllMasterWallets() {
         try {
             ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
-            for (int i = 0; i < masterWalletList.size(); i++) {
-                Log.d(TAG, "result:  = " + masterWalletList.get(i).GetBasicInfo());
-            }
 
             return new CommmonObjectWithMethNameEntity(SUCCESSCODE, masterWalletList, "getAllMasterWallets");
         } catch (WalletException e) {
@@ -306,9 +301,6 @@ public class MyWallet {
                 newSubWalletList.add(newSubWallet);
             }
 
-
-            Log.d(TAG, "result: count = " + subWalletList.size());
-
             return new ISubWalletListEntity(SUCCESSCODE, newSubWalletList);
         } catch (WalletException e) {
             return exceptionProcess(e, "Get " + masterWalletID + " all subwallets");
@@ -340,7 +332,6 @@ public class MyWallet {
             }
 
             boolean valid = masterWallet.IsAddressValid(addr);
-            Log.d(TAG, "result: " + valid);
             return new CommmonBooleanEntity(SUCCESSCODE, valid);
         } catch (WalletException e) {
             return exceptionProcess(e, "Check address valid of " + formatWalletName(masterWalletID));
@@ -364,7 +355,6 @@ public class MyWallet {
             }
             createDIDManager(masterWallet);
 
-            Log.d(TAG, "result: " + masterWallet.GetBasicInfo());
             basicInfo = masterWallet.GetBasicInfo();
             //  successProcess(masterWallet.GetBasicInfo());
             return new CommmonStringEntity(SUCCESSCODE, basicInfo);
@@ -434,7 +424,6 @@ public class MyWallet {
 
             createDIDManager(masterWallet);
 
-            Log.d(TAG, "result: " + masterWallet.GetBasicInfo());
             return new CommmonStringEntity(SUCCESSCODE, masterWallet.GetBasicInfo());
 
         } catch (WalletException e) {
@@ -458,7 +447,6 @@ public class MyWallet {
 
             createDIDManager(masterWallet);
 
-            Log.d(TAG, "result: " + masterWallet.GetBasicInfo());
             return new CommmonStringEntity(SUCCESSCODE, masterWallet.GetBasicInfo());
 
         } catch (WalletException e) {
@@ -494,7 +482,6 @@ public class MyWallet {
 
             String keystore = mMasterWalletManager.ExportWalletWithKeystore(masterWallet, backupPassword, payPassword);
 
-            Log.d(TAG, "result: " + keystore);
             return new CommmonStringEntity(SUCCESSCODE, keystore);
         } catch (WalletException e) {
             return exceptionProcess(e, "Export " + formatWalletName(masterWalletID) + "to keystore");
