@@ -47,7 +47,7 @@ export default {
       btn: {
         submit: 'Submit for Review',
       },
-      add: 'Add',
+      add: 'Add Tracking Plan',
     },
     note: {
       abstract: 'Provide a brief description of the proposal content (no more than 200 words).',

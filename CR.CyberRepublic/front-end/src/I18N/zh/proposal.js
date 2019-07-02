@@ -45,9 +45,9 @@ export default {
   form: {
     tracking: {
       btn: {
-        submit: 'Submit for Review',
+        submit: '提交',
       },
-      add: 'Add',
+      add: '添加进度',
     },
     note: {
       abstract: '一个关于提案内容的简短描述（不超过200字）。',
