@@ -74,7 +74,7 @@ namespace Elastos {
 			/**
 			  * Create a multi-sign master wallet by private key and related co-signers, or return existing master wallet if current master wallet manager has the master wallet id.
 			  * @param masterWalletId is the unique identification of a master wallet object.
-			  * @param privKey private key to do the sign job of related multi-sign accounts.
+			  * @param xprv root extend private key of wallet.
 			  * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
 			  * @param publicKeys is an array of signers' public key.
 			  * @param m specify minimum count of signature to accomplish related transaction.
@@ -83,7 +83,7 @@ namespace Elastos {
 			  */
 			virtual IMasterWallet *CreateMultiSignMasterWallet(
 					const std::string &masterWalletId,
-					const std::string &privKey,
+					const std::string &xprv,
 					const std::string &payPassword,
 					const nlohmann::json &publicKeys,
 					uint32_t m,
@@ -211,7 +211,26 @@ namespace Elastos {
 			virtual nlohmann::json ExportReadonlyWallet(
 				IMasterWallet *masterWallet) const = 0;
 
+			/**
+			 * Export root extend private key of wallet.
+			 * @param masterWallet A pointer of master wallet interface created or imported by wallet factory object.
+			 * @param payPasswd use to decrypt and generate mnemonic temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+			 * @return extend private key.
+			 */
+			virtual std::string ExportxPrivateKey(
+				IMasterWallet *masterWallet,
+				const std::string &payPasswd) const = 0;
+
+			/**
+			 * Export master public key.
+			 * @param masterWallet A pointer of master wallet interface created or imported by wallet factory object.
+			 * @return master public key
+			 */
+			virtual std::string ExportMasterPublicKey(
+				IMasterWallet *masterWallet) const = 0;
+
 			virtual std::string GetVersion() const = 0;
+
 		};
 
 	}

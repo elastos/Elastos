@@ -48,6 +48,36 @@ namespace Elastos {
 			from_json(j, *this);
 		}
 
+		LocalStore::LocalStore(const std::string &path, const std::string &xprv, bool singleAddress,
+							   const std::string &payPasswd) :
+			_path(path),
+			_account(0),
+			_derivationStrategy("BIP44"),
+			_mnemonic(""),
+			_passphrase(""),
+			_mnemonicHasPassphrase(false),
+			_readonly(false),
+			_singleAddress(singleAddress) {
+
+			bytes_t payload;
+			ErrorChecker::CheckLogic(!Base58::CheckDecode(xprv, payload), Error::InvalidArgument, "Invalid xprv");
+
+			HDKeychain rootkey(payload);
+			_xPrivKey = AES::EncryptCCM(payload, payPasswd);
+			_xPubKey = Base58::CheckEncode(rootkey.getChild("44'/0'/0'").getPublic().extkey());
+
+			HDKeychain requestKey = rootkey.getChild("1'/0");
+			_requestPrivKey = AES::EncryptCCM(requestKey.privkey(), payPasswd);
+			_requestPubKey = requestKey.pubkey().getHex();
+
+			_publicKeyRing.emplace_back(_requestPubKey, _xPubKey);
+
+			_m = 1;
+			_n = 1;
+
+			_ownerPubKey = rootkey.getChild("44'/0'/1'/0/0").pubkey().getHex();
+		}
+
 		LocalStore::LocalStore(const std::string &path, const std::string &mnemonic, const std::string &passphrase,
 							   bool singleAddress, const std::string &payPasswd) :
 			_path(path),

@@ -153,7 +153,7 @@ namespace Elastos {
 			_account = AccountPtr(new Account(_localStore));
 		}
 
-		MasterWallet::MasterWallet(const std::string &id, const std::string &privKey, const std::string &payPassword,
+		MasterWallet::MasterWallet(const std::string &id, const std::string &xprv, const std::string &payPassword,
 								   const nlohmann::json &publicKeys, uint32_t m,
 								   const std::string &rootPath, const std::string &dataPath,
 								   bool p2pEnable, time_t earliestPeerTime, MasterWalletInitFrom from) :
@@ -164,7 +164,19 @@ namespace Elastos {
 				_initFrom(from),
 				_earliestPeerTime(earliestPeerTime),
 				_idAgentImpl(nullptr) {
-			ErrorChecker::ThrowLogicException(Error::KeyStore, "Deprecated interface: will refactor later");
+
+			ErrorChecker::CheckPubKeyJsonArray(publicKeys, 1, "coSigner");
+			ErrorChecker::CheckParam(publicKeys.size() + 1 < m, Error::InvalidArgument, "Invalid M");
+
+			_config = ConfigPtr(new Config(_rootPath));
+			_localStore = LocalStorePtr(new LocalStore(_dataPath + "/" + _id, xprv, true, payPassword));
+			for (nlohmann::json::const_iterator it = publicKeys.cbegin(); it != publicKeys.cend(); ++it) {
+				_localStore->AddPublicKeyRing(PublicKeyRing((*it).get<std::string>()));
+			}
+
+			_localStore->SetM(m);
+			_localStore->SetN(_localStore->GetPublicKeyRing().size());
+			_account = AccountPtr(new Account(_localStore));
 		}
 
 		MasterWallet::MasterWallet(const std::string &id, const std::string &mnemonic,
@@ -362,6 +374,29 @@ namespace Elastos {
 			std::string encryptedMnemonic = _localStore->GetMnemonic();
 			bytes_t bytes = AES::DecryptCCM(encryptedMnemonic, payPassword);
 			return std::string((char *)bytes.data(), bytes.size());
+		}
+
+		std::string MasterWallet::ExportxPrivateKey(const std::string &payPasswd) const {
+			ErrorChecker::CheckLogic(_localStore->Readonly(), Error::UnsupportOperation,
+									 "Unsupport operation: read-only wallet do not contain xprv");
+
+			if (_localStore->GetxPrivKey().empty())
+				_localStore->RegenerateKey(payPasswd);
+
+			ErrorChecker::CheckLogic(_localStore->GetxPrivKey().empty(), Error::InvalidLocalStore, "xprv is empty");
+
+			bytes_t bytes = AES::DecryptCCM(_localStore->GetxPrivKey(), payPasswd);
+
+			return Base58::CheckEncode(bytes);
+		}
+
+		std::string MasterWallet::ExportMasterPublicKey() const {
+			if (_localStore->GetxPubKey().empty()) {
+				ErrorChecker::ThrowLogicException(Error::UnsupportOperation,
+												  "Unsupport operation: xpub is empty");
+			}
+
+			return _localStore->GetxPubKey();
 		}
 
 		void MasterWallet::InitSubWallets() {

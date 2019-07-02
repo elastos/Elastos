@@ -46,7 +46,7 @@ namespace Elastos {
 
 			virtual IMasterWallet *CreateMultiSignMasterWallet(
 					const std::string &masterWalletId,
-					const std::string &privKey,
+					const std::string &xprv,
 					const std::string &payPassword,
 					const nlohmann::json &publicKeys,
 					uint32_t m,
@@ -99,6 +99,13 @@ namespace Elastos {
 					const std::string &payPassword) const;
 
 			virtual nlohmann::json ExportReadonlyWallet(
+				IMasterWallet *masterWallet) const;
+
+			virtual std::string ExportxPrivateKey(
+				IMasterWallet *masterWallet,
+				const std::string &payPasswd) const;
+
+			virtual std::string ExportMasterPublicKey(
 				IMasterWallet *masterWallet) const;
 
 			virtual std::string GetVersion() const;

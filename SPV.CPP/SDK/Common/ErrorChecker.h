@@ -74,6 +74,7 @@ namespace Elastos {
 				ReadConfigFileError = 20054,
 				InvalidChainID = 20055,
 				UnSupportOldTx = 20056,
+				UnsupportOperation = 20057,
 				Other = 29999,
 			} Code;
 		}

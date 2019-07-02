@@ -377,12 +377,12 @@ namespace Elastos {
 			return j;
 		}
 
-		void SubWallet::publishTransaction(const TransactionPtr &transaction) {
-			if (!_walletManager->getWallet()->ContainsTransaction(transaction)) {
-				ErrorChecker::ThrowLogicException(Error::WalletNotContainTx, "Wallet do not contain tx = " + transaction->GetHash().ToString());
-				return;
+		void SubWallet::publishTransaction(const TransactionPtr &tx) {
+			if (!_walletManager->getWallet()->ContainsTransaction(tx)) {
+				ErrorChecker::ThrowLogicException(Error::WalletNotContainTx, "tx do not belong to the current wallet");
 			}
-			_walletManager->PublishTransaction(transaction);
+
+			_walletManager->PublishTransaction(tx);
 		}
 
 		std::string SubWallet::Sign(const std::string &message, const std::string &payPassword) {

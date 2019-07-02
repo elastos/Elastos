@@ -149,6 +149,7 @@ static IMasterWallet *NewMultiSignWalletWithMnemonic() {
 	return manager->CreateMultiSignMasterWallet(gMasterWalletID, mnemonic, phrasePassword, payPasswd, coSigners, 3);
 }
 
+// deprecated
 static IMasterWallet *NewMultiSignWalletWithPrvKey() {
 	nlohmann::json coSigners = nlohmann::json::parse(
 		"[\"02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5\","
@@ -460,7 +461,6 @@ static void InitWallets() {
 //			masterWallet = NewWalletWithMnemonic();
 //			masterWallet = NewReadOnlyMultiSignWallet();
 //			masterWallet = NewMultiSignWalletWithMnemonic();
-//			masterWallet = NewMultiSignWalletWithPrvKey();
 
 			masterWallet->CreateSubWallet(gMainchainSubWalletID, 10000);
 			masterWallet->CreateSubWallet(gIDchainSubWalletID, 10000);
@@ -471,6 +471,8 @@ static void InitWallets() {
 
 	for (size_t i = 0; i < masterWallets.size(); ++i) {
 		logger->debug("{} basic info -> {}", masterWallets[i]->GetID(), masterWallets[i]->GetBasicInfo().dump());
+		logger->debug("{} xprv -> {}", masterWallets[i]->GetID(), manager->ExportxPrivateKey(masterWallets[i], payPasswd));
+		logger->debug("{} xpub -> {}", masterWallets[i]->GetID(), manager->ExportMasterPublicKey(masterWallets[i]));
 		std::vector<ISubWallet *> subWallets = masterWallets[i]->GetAllSubWallets();
 		for (size_t j = 0; j < subWallets.size(); ++j) {
 			std::string walletID = masterWallets[i]->GetID() + ":" + subWallets[j]->GetChainID();

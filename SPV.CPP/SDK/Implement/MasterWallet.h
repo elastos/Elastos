@@ -203,6 +203,10 @@ namespace Elastos {
 
 			std::string exportMnemonic(const std::string &payPassword);
 
+			std::string ExportxPrivateKey(const std::string &payPasswd) const;
+
+			std::string ExportMasterPublicKey() const;
+
 			SubWallet *SubWalletFactoryMethod(const CoinInfoPtr &info,
 											  const ChainConfigPtr &config,
 											  MasterWallet *parent);

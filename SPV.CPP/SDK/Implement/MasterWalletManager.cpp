@@ -179,20 +179,19 @@ namespace Elastos {
 		}
 
 		IMasterWallet *MasterWalletManager::CreateMultiSignMasterWallet(const std::string &masterWalletID,
-																		const std::string &privKey,
+																		const std::string &xprv,
 																		const std::string &payPassword,
 																		const nlohmann::json &publicKeys,
 																		uint32_t m, time_t timestamp) {
 			ArgInfo("{}", GetFunName());
 			ArgInfo("masterWalletID: {}", masterWalletID);
-			ArgInfo("prvkey: {}", "*");
+			ArgInfo("xprv: {}", "*");
 			ArgInfo("payPasswd: {}", "*");
 			ArgInfo("publicKeys: {}", publicKeys.dump());
 			ArgInfo("m: {}", m);
 			ArgInfo("timestamp: {}", timestamp);
 
 			ErrorChecker::CheckParamNotEmpty(masterWalletID, "Master wallet ID");
-			ErrorChecker::CheckPrivateKey(privKey);
 			ErrorChecker::CheckPassword(payPassword, "Pay");
 			ErrorChecker::CheckPubKeyJsonArray(publicKeys, m - 1, "Signers");
 
@@ -201,7 +200,7 @@ namespace Elastos {
 				return _masterWalletMap[masterWalletID];
 			}
 
-			MasterWallet *masterWallet = new MasterWallet(masterWalletID, privKey, payPassword, publicKeys,
+			MasterWallet *masterWallet = new MasterWallet(masterWalletID, xprv, payPassword, publicKeys,
 														  m, _rootPath, _dataPath, _p2pEnable, timestamp,
 														  CreateMultiSign);
 			checkRedundant(masterWallet);
@@ -447,6 +446,32 @@ namespace Elastos {
 
 			ArgInfo("r => {}", keystore.dump());
 			return keystore;
+		}
+
+		std::string MasterWalletManager::ExportxPrivateKey(IMasterWallet *masterWallet,
+														   const std::string &payPasswd) const {
+			ArgInfo("{}", GetFunName());
+
+			ErrorChecker::CheckParam(masterWallet == nullptr, Error::InvalidArgument, "master wallet is null");
+			MasterWallet *wallet = static_cast<MasterWallet *>(masterWallet);
+			ArgInfo("masterWallet: {}, 0x{:x}", wallet->GetWalletID(), (long)masterWallet);
+			ArgInfo("payPasswd: {}", "*");
+			ArgInfo("r => ", "*");
+
+			return wallet->ExportxPrivateKey(payPasswd);
+		}
+
+		std::string MasterWalletManager::ExportMasterPublicKey(IMasterWallet *masterWallet) const {
+			ArgInfo("{}", GetFunName());
+
+			ErrorChecker::CheckParam(masterWallet == nullptr, Error::InvalidArgument, "master wallet is null");
+			MasterWallet *wallet = static_cast<MasterWallet *>(masterWallet);
+			ArgInfo("masterWallet: {}, 0x{:x}", wallet->GetWalletID(), (long)masterWallet);
+
+			std::string xpub = wallet->ExportMasterPublicKey();
+			ArgInfo("r => {}", xpub);
+
+			return xpub;
 		}
 
 		std::string MasterWalletManager::GetVersion() const {

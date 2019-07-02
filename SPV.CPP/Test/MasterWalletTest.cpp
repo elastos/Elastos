@@ -34,6 +34,7 @@ public:
 					 false,
 					 "Data",
 					 "Data",
+					 0,
 					 ImportFromMnemonic) {
 	}
 
@@ -47,20 +48,21 @@ public:
 						 false,
 						 "Data",
 						 "Data",
+						 0,
 						 ImportFromMnemonic) {
 	}
 
 	TestMasterWallet(const std::string &mnemonic,
 					 const std::string &phrasePassword,
 					 const std::string &payPassword) :
-			MasterWallet("MasterWalletTest", mnemonic, phrasePassword, payPassword, false, false, "Data", "Data", ImportFromMnemonic) {
+			MasterWallet("MasterWalletTest", mnemonic, phrasePassword, payPassword, false, false, "Data", "Data", 0, ImportFromMnemonic) {
 	}
 
 	TestMasterWallet(const std::string &mnemonic,
 					 const std::string &phrasePassword,
 					 const std::string &payPassword,
 					 bool singleAddress) :
-			MasterWallet("MasterWalletTest", mnemonic, phrasePassword, payPassword, singleAddress, false, "Data", "Data", ImportFromMnemonic) {
+			MasterWallet("MasterWalletTest", mnemonic, phrasePassword, payPassword, singleAddress, false, "Data", "Data", 0, ImportFromMnemonic) {
 	}
 
 	TestMasterWallet(const std::string &id) :

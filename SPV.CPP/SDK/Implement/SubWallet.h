@@ -173,7 +173,7 @@ namespace Elastos {
 				const std::string &memo,
 				bool useVotedUTXO = false) const;
 
-			virtual void publishTransaction(const TransactionPtr &transaction);
+			virtual void publishTransaction(const TransactionPtr &tx);
 
 			bool filterByAddressOrTxId(const TransactionPtr &transaction, const std::string &addressOrTxid) const;
 

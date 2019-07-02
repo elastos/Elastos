@@ -25,6 +25,8 @@ namespace Elastos {
 
 			LocalStore(const std::string &path);
 
+			LocalStore(const std::string &path, const std::string &xprv, bool singleAddress, const std::string &payPasswd);
+
 			LocalStore(const std::string &path, const std::string &mnemonic, const std::string &passphrase,
 					   bool singleAddress, const std::string &payPasswd);
 
