@@ -110,9 +110,9 @@ export default class extends Base {
       proposalId,
     }
 
-    const cursor = this.model.getDBInstance().find(query).sort({
-      createdAt: 1
-    })
+    const cursor = this.model.getDBInstance().find(query)
+      .populate('comment.createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+      .sort({ createdAt: 1 })
     const totalCursor = this.model.getDBInstance().find(query).count()
 
     const list = await cursor
@@ -156,6 +156,7 @@ export default class extends Base {
   public async approve(param: any): Promise<any> {
     const { id } = param
     const cur = await this.getById(id)
+    const createdBy = _.get(this.currentUser, '_id')
 
     if (!cur) {
       throw 'invalid id'
@@ -167,7 +168,10 @@ export default class extends Base {
 
     await this.model.update({ _id: id }, {
       $set: {
-        status: constant.CVOTE_TRACKING_STATUS.PUBLISHED
+        status: constant.CVOTE_TRACKING_STATUS.PUBLISHED,
+        comment: {
+          createdBy,
+        }
       }
     })
 
