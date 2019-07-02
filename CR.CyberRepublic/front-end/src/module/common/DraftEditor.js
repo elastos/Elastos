@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import BaseComponent from '@/model/BaseComponent'
+import _ from 'lodash'
 import { Editor, createEditorState, StringToTypeMap, Block, HANDLED, NOT_HANDLED, resetBlockWithType, getCurrentBlock } from 'medium-draft'
 import { convertFromHTML, ContentState, EditorState } from 'draft-js'
 import { MEDIUM_DRAFT_TOOLBAR_OPTIONS } from '@/config/constant'
@@ -22,7 +23,6 @@ delete newTypeMap['##']
 class Component extends BaseComponent {
   constructor(props) {
     super(props)
-    this.updateContent()
 
     this.refsEditor = React.createRef()
   }
@@ -31,15 +31,17 @@ class Component extends BaseComponent {
     this.refsEditor.current && this.refsEditor.current.focus()
   }
 
-  updateContent = () => {
-    const { content, contentType } = this.props
+  generateEditorState = () => {
+    const { value, contentType } = this.props
     let editorState
-    if (!content) {
+    if (!value) {
       editorState = createEditorState()
+    } else if (_.isObject(value)) {
+      editorState = value
     } else if (contentType === CONTENT_TYPE.MARKDOWN) {
-      editorState = createEditorState(JSON.parse(content))
+      editorState = createEditorState(JSON.parse(value))
     } else {
-      const blocksFromHTML = convertFromHTML(content)
+      const blocksFromHTML = convertFromHTML(value)
       const state = ContentState.createFromBlockArray(
         blocksFromHTML.contentBlocks,
         blocksFromHTML.entityMap
@@ -47,14 +49,13 @@ class Component extends BaseComponent {
       editorState = EditorState.createWithContent(state)
     }
 
-    this.state = {
-      editorState,
-    }
+    return editorState
   }
 
   onChange = (editorState) => {
-    this.setState({ editorState })
-    this.props.onChange && this.props.onChange(editorState)
+    const { onChange } = this.props
+
+    if (onChange) onChange(editorState)
   }
 
   handleBeforeInput = (editorState, inputString, onChange) => {
@@ -107,16 +108,15 @@ class Component extends BaseComponent {
   }
 
   ord_render() {
-    const { editorEnabled } = this.props
     return (
       <Editor
+        {...this.props}
         ref={this.refsEditor}
         placeholder=""
-        editorEnabled={editorEnabled}
         sideButtons={[]}
         blockButtons={MEDIUM_DRAFT_TOOLBAR_OPTIONS.BLOCK_BUTTONS}
         inlineButtons={MEDIUM_DRAFT_TOOLBAR_OPTIONS.INLINE_BUTTONS}
-        editorState={this.state.editorState}
+        editorState={this.generateEditorState()}
         onChange={this.onChange}
         beforeInput={this.handleBeforeInput}
       />
