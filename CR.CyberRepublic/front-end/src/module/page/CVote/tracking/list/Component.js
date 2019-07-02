@@ -22,7 +22,6 @@ export default class extends BaseComponent {
 
     this.state = {
       loading: true,
-      visibleReject: false,
     }
   }
 
@@ -31,7 +30,6 @@ export default class extends BaseComponent {
   }
 
   ord_render() {
-    const { canManage, isCouncil } = this.props
     const title = this.renderTitle()
     const publicListNode = this.renderPublicList()
     const privateListNode = this.renderPrivateList()
@@ -112,9 +110,12 @@ export default class extends BaseComponent {
     )
   }
 
-  showRejectModal = (id) => {
-    const { visibleReject } = this.state
-    this.setState({ visibleReject: !visibleReject, trackingId: id })
+  showModal = (id) => {
+    this.setState({ trackingId: id })
+  }
+
+  hideModal = () => {
+    this.setState({ trackingId: '' })
   }
 
   reject = async ({ reason }) => {
@@ -129,7 +130,7 @@ export default class extends BaseComponent {
     } catch (e) {
       this.ord_loading(false)
     }
-    this.setState({ reason: '' })
+    this.setState({ reason: '', trackingId: '' })
   }
 
   approve = async (id) => {
@@ -148,10 +149,10 @@ export default class extends BaseComponent {
   }
 
   renderBtns(id) {
-    const { visibleReject } = this.state
+    const { trackingId } = this.state
     const btnReject = (
       <Button
-        onClick={this.showRejectModal.bind(this, id)}
+        onClick={this.showModal.bind(this, id)}
       >
         {I18N.get('proposal.btn.tracking.reject')}
       </Button>
@@ -170,8 +171,8 @@ export default class extends BaseComponent {
       <CRPopover
         btnType="primary"
         triggeredBy={btnReject}
-        visible={visibleReject}
-        onToggle={this.showRejectModal.bind(this, id)}
+        visible={trackingId === id}
+        onToggle={this.hideModal}
         onSubmit={this.reject}
       />
     )
