@@ -22,32 +22,11 @@ namespace Elastos {
 			 * Get the master wallet id.
 			 * @return master wallet id.
 			 */
-			virtual std::string GetId() const = 0;
+			virtual std::string GetID() const = 0;
 
 			/**
 			 * Here is a example of standard wallet basic info:
-			 * {
-			 * 	"Account":
-			 * 		{
-			 * 			"Type": "Standard"
-			 * 		}
-			 * }
-			 *
-			 * and an example of multi-sign(m = 2, n = 3) wallet basic info:
-			 * {
-			 * 	"Account":
-			 * 		{
-			 * 			"Type": "Multi-Sign"
-			 * 			"Details":
-			 * 				{
-			 * 					"Signers": [
-			 * 						"028763e9d2530d26708891037a183362ade43be4499a70d0dd22bc646236cc815f",
-			 * 						"0333f5633c66e7ef648e44ed622b7be788f834f11760689a9c56c96e20e3c3300d",
-			 * 						"022f2ac3763b5844cf0067c63e9806f2482496bb03119742543e719a71800bd929"],
-			 * 					"RequiredSignCount": 2
-			 * 				}
-			 * 		}
-			 * }
+			 * {"M":1,"N":1,"Readonly":false,"SingleAddress":false,"Type":"Standard"}
 			 * @return basic information of current master wallet.
 			 */
 			virtual nlohmann::json GetBasicInfo() const = 0;

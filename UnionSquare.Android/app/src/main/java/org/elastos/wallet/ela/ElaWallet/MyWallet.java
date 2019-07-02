@@ -8,6 +8,7 @@ import org.elastos.wallet.core.SubWallet;
 import org.elastos.wallet.core.SubWalletCallback;
 import org.elastos.wallet.core.WalletException;
 import org.elastos.wallet.ela.MyApplication;
+import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.CommonEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
@@ -59,7 +60,7 @@ public class MyWallet {
 
         mRootPath = MyApplication.getAppContext().getFilesDir().getParent();
 //		mDIDManagerSupervisor = new DIDManagerSupervisor(mRootPath);
-        mMasterWalletManager = new MasterWalletManager(mRootPath);
+        mMasterWalletManager = new MasterWalletManager(mRootPath, "");
     }
 
     private static String getTxHashBaseUrl() {
@@ -319,7 +320,7 @@ public class MyWallet {
     public BaseEntity generateMnemonic(String language) {
         String mnemonic = null;
         try {
-            mnemonic = mMasterWalletManager.GenerateMnemonic(language);
+            mnemonic = mMasterWalletManager.GenerateMnemonic(language, 12);
             return new CommmonStringEntity(SUCCESSCODE, mnemonic);
         } catch (WalletException e) {
             return exceptionProcess(e, "Generate mnemonic in '" + language + "'");
@@ -450,7 +451,7 @@ public class MyWallet {
                                                String payPassword, boolean singleAddress) {
         try {
             MasterWallet masterWallet = mMasterWalletManager.ImportWalletWithMnemonic(
-                    masterWalletID, mnemonic, phrasePassword, payPassword, singleAddress);
+                    masterWalletID, mnemonic, phrasePassword, payPassword, singleAddress, 0);
             if (masterWallet == null) {
                 return errorProcess(errCodeImportFromMnemonic + "", "Import " + formatWalletName(masterWalletID) + " with mnemonic");
             }
@@ -1179,7 +1180,12 @@ public class MyWallet {
     }
 
     public BaseEntity getVersion() {
-        return new CommmonStringWithiMethNameEntity(SUCCESSCODE, "", "getVersion");
+        try {
+            String version = mMasterWalletManager.GetVersion();
+            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, version, "getVersion");
+        } catch (WalletException e) {
+            return exceptionProcess(e, "Get version");
+        }
     }
 }
 
