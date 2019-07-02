@@ -20,9 +20,10 @@ const restrictedFields = {
 export default class extends Base {
   // create a DRAFT propoal with minimal info
   public async createDraft(param: any): Promise<Document> {
+    const db_suggestion = this.getDBModel('Suggestion')
     const db_cvote = this.getDBModel('CVote')
     const {
-      title, proposedBy,
+      title, proposedBy, proposer, suggestionId
     } = param
 
     const vid = await this.getNewVid()
@@ -34,8 +35,12 @@ export default class extends Base {
       published: false,
       contentType: constant.CONTENT_TYPE.MARKDOWN,
       proposedBy,
-      proposer: this.currentUser._id,
+      proposer: proposer ? proposer : this.currentUser._id,
       createdBy: this.currentUser._id
+    }
+    const suggestion = suggestionId && await db_suggestion.findById(suggestionId)
+    if (!_.isEmpty(suggestion)) {
+      doc.reference = suggestionId
     }
 
     try {
@@ -98,7 +103,7 @@ export default class extends Base {
     const db_suggestion = this.getDBModel('Suggestion')
     const currentUserId = _.get(this.currentUser, '_id')
     const {
-      title, published, proposedBy, proposer, motionId,
+      title, published, proposedBy, proposer,
       suggestionId, abstract, goal, motivation, relevance, budget, plan
     } = param
 
@@ -119,7 +124,6 @@ export default class extends Base {
       budget,
       plan,
       proposer,
-      motionId,
       createdBy: this.currentUser._id
     }
 
