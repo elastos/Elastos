@@ -1,3 +1,5 @@
+import { CVOTE_TRACKING_STATUS } from '@/constant'
+
 export default {
   fields: {
     title: 'Title',
@@ -15,10 +17,38 @@ export default {
     relevance: 'Relevance',
     budget: 'Budget',
     plan: 'Execution Plan',
+    vote: 'Vote',
     tracking: 'Tracking Plan',
     summary: 'Summary',
   },
+  btn: {
+    tracking: {
+      reject: 'Reject & Comment',
+      approve: 'Approve & Publish',
+    },
+  },
+  text: {
+    tracking: {
+      reviewDetails: 'Review Details',
+      notice: {
+        header: '',
+        footer: '',
+      }
+    }
+  },
+  status: {
+    [CVOTE_TRACKING_STATUS.DRAFT]: 'DRAFT',
+    [CVOTE_TRACKING_STATUS.REVIEWING]: 'BEING REVIEWED',
+    [CVOTE_TRACKING_STATUS.PUBLISHED]: 'APPROVED ✓',
+    [CVOTE_TRACKING_STATUS.REJECT]: 'REJECTED !',
+  },
   form: {
+    tracking: {
+      btn: {
+        submit: 'Submit for Review',
+      },
+      add: 'Add Tracking Plan',
+    },
     note: {
       abstract: 'Provide a brief description of the proposal content (no more than 200 words).',
       goal: 'Describe the desired results achieved by implementing the proposal. Goals should be clear and measurable.',

@@ -3,10 +3,11 @@ import PropTypes from 'prop-types'
 import moment from 'moment/moment'
 import { Row, Col } from 'antd'
 import I18N from '@/I18N'
+import _ from 'lodash'
 
 import styled from 'styled-components'
 
-const Component = ({ vid, title, proposedBy, proposedByEmail, status, createdAt }) => {
+const Component = ({ vid, title, proposedBy, proposer, status, createdAt }) => {
   // header
   const headerNode = <Header id="preamble">{I18N.get('proposal.fields.preamble')}</Header>
   // note
@@ -29,7 +30,7 @@ const Component = ({ vid, title, proposedBy, proposedByEmail, status, createdAt 
   const proposerNode = (
     <Item>
       <Col span={6}><ItemTitle>{I18N.get('proposal.fields.preambleSub.proposer')}</ItemTitle></Col>
-      <Col span={18}><ItemText>{`${proposedBy} <${proposedByEmail}>`}</ItemText></Col>
+      <Col span={18}><ItemText>{`${proposedBy} <${_.get(proposer, 'email')}>`}</ItemText></Col>
     </Item>
   )
   // status
@@ -63,7 +64,7 @@ const propTypes = {
   vid: PropTypes.number.isRequired,
   title: PropTypes.string.isRequired,
   proposedBy: PropTypes.string.isRequired,
-  proposedByEmail: PropTypes.string.isRequired,
+  proposer: PropTypes.object.isRequired,
   status: PropTypes.string.isRequired,
   createdAt: PropTypes.string.isRequired,
 }

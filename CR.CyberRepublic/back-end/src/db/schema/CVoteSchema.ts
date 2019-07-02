@@ -72,8 +72,9 @@ export const CVote = {
     type: String,
     required: true
   },
-  proposedByEmail: {
-    type: String,
+  proposer: {
+    type: Schema.Types.ObjectId,
+    ref: 'users',
     required: true
   },
   motionId: {

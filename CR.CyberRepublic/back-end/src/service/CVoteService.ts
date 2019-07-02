@@ -20,9 +20,10 @@ const restrictedFields = {
 export default class extends Base {
   // create a DRAFT propoal with minimal info
   public async createDraft(param: any): Promise<Document> {
+    const db_suggestion = this.getDBModel('Suggestion')
     const db_cvote = this.getDBModel('CVote')
     const {
-      title, proposedBy, proposedByEmail,
+      title, proposedBy, proposer, suggestionId
     } = param
 
     const vid = await this.getNewVid()
@@ -34,13 +35,18 @@ export default class extends Base {
       published: false,
       contentType: constant.CONTENT_TYPE.MARKDOWN,
       proposedBy,
-      proposedByEmail,
+      proposer: proposer ? proposer : this.currentUser._id,
       createdBy: this.currentUser._id
+    }
+    const suggestion = suggestionId && await db_suggestion.findById(suggestionId)
+    if (!_.isEmpty(suggestion)) {
+      doc.reference = suggestionId
     }
 
     try {
       return await db_cvote.save(doc)
     } catch (error) {
+      console.log(error)
       return
     }
   }
@@ -97,7 +103,7 @@ export default class extends Base {
     const db_suggestion = this.getDBModel('Suggestion')
     const currentUserId = _.get(this.currentUser, '_id')
     const {
-      title, published, proposedBy, proposedByEmail, motionId,
+      title, published, proposedBy, proposer,
       suggestionId, abstract, goal, motivation, relevance, budget, plan
     } = param
 
@@ -117,8 +123,7 @@ export default class extends Base {
       relevance,
       budget,
       plan,
-      proposedByEmail,
-      motionId,
+      proposer,
       createdBy: this.currentUser._id
     }
 
@@ -436,6 +441,7 @@ export default class extends Base {
     const db_cvote = this.getDBModel('CVote')
     const rs = await db_cvote.getDBInstance().findOne({ _id: id })
       .populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR)
+      .populate('proposer', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
       .populate('reference', constant.DB_SELECTED_FIELDS.SUGGESTION.ID)
     return rs
   }

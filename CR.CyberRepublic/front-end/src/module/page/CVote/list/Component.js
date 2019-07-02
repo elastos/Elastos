@@ -196,14 +196,14 @@ export default class extends BaseComponent {
   }
 
   createAndRedirect = async () => {
-    const { email, profile } = this.props.user
+    const { _id, profile } = this.props.user
     const fullName = `${profile.firstName} ${profile.lastName}`
     const {createDraft } = this.props
 
     const param = {
       title: 'New Proposal',
       proposedBy: fullName,
-      proposedByEmail: email,
+      proposer: _id,
     }
 
     this.ord_loading(true)

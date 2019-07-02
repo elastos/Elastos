@@ -130,6 +130,8 @@ export const TASK_CANDIDATE_CATEGORY = {
 
 // ACTIVE === PASSED, currently 'published' flag is used for 'DRAFT'
 export const CVOTE_STATUS = create(['DRAFT', 'PROPOSED', 'ACTIVE', 'REJECT', 'FINAL', 'DEFERRED'])
+export const CVOTE_TRACKING_STATUS = create(['DRAFT', 'REVIEWING', 'PUBLISHED', 'REJECT'])
+export const CVOTE_SUMMARY_STATUS = create(['DRAFT', 'REVIEWING', 'PUBLISHED', 'REJECT'])
 export const CVOTE_RESULT = {
     SUPPORT: 'support',
     REJECT: 'reject',

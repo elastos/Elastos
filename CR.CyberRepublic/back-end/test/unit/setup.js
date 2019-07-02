@@ -30,6 +30,15 @@ global.DB = {
         country: 'us',
         city: 'Fremont'
     },
+    SECRETARY_USER: {
+        username: `rebeccazhu`,
+        password: 'ebp12345',
+        email: 'rebeccazhu@elastosjs.com',
+        firstName: 'Rebecca',
+        lastName: 'Zhu',
+        country: 'cn',
+        city: 'Beijing'
+    },
     ADMIN_USER : {
         username: 'ebpadmin'
     },
