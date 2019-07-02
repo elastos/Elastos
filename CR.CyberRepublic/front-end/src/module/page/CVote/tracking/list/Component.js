@@ -4,15 +4,11 @@ import moment from 'moment/moment'
 import BaseComponent from '@/model/BaseComponent'
 import DraftEditor from '@/module/common/DraftEditor'
 import CRPopover from '@/module/shared/Popover/Component'
-import {
-  Table, Row, Col, Button, Input, List, Collapse
-} from 'antd'
+import { Row, Col, Button, List, Collapse } from 'antd'
 import I18N from '@/I18N'
-import { Link } from 'react-router-dom'
 import { CONTENT_TYPE, DATE_FORMAT, CVOTE_TRACKING_STATUS } from '@/constant'
 import styled from 'styled-components'
-import { breakPoint } from '@/constants/breakPoint'
-import { bg } from '@/constants/color'
+import userUtil from '@/util/user'
 
 const { Panel } = Collapse
 
@@ -197,11 +193,17 @@ export default class extends BaseComponent {
         </CommentCol>
       )
     } else if (item.status === CVOTE_TRACKING_STATUS.REJECT) {
+      const commenter = _.get(item, 'comment.createdBy')
+      const commenterName = commenter ? `${userUtil.formatUsername(commenter)}, ` : ''
+
       body = (
         <CommentCol span={21} status={item.status}>
           <CommentContent>
             <div>{item.comment.content}</div>
-            <CommentFooter>{moment(item.createdAt).format(DATE_FORMAT)}</CommentFooter>
+            <CommentFooter>
+              {commenterName}
+              {moment(item.createdAt).format(DATE_FORMAT)}
+            </CommentFooter>
           </CommentContent>
         </CommentCol>
       )
