@@ -29,6 +29,9 @@ export const Container = styled.div`
     .md-RichEditor-editor .public-DraftEditor-content {
       min-height: 150px;
     }
+    .md-editor-toolbar {
+      z-index: 100;
+    }
   }
 `
 
