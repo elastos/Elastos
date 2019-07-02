@@ -48,7 +48,7 @@ export default class extends BaseComponent {
 
   renderPublicList() {
     const { publicList } = this.props
-    if (!publicList) return null
+    if (!publicList || publicList.length === 0) return null
     return (
       <List
         itemLayout="horizontal"
@@ -74,7 +74,7 @@ export default class extends BaseComponent {
 
   renderPrivateList() {
     const { privateList } = this.props
-    if (!privateList) return null
+    if (!privateList || privateList.length === 0) return null
     const body = (
       <List
         itemLayout="horizontal"

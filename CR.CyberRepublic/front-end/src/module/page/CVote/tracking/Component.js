@@ -8,6 +8,9 @@ import CreateForm from './create/Container'
 
 export default class extends BaseComponent {
   ord_render() {
+    const { proposal } = this.props
+    const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.FINAL], proposal.status)
+    if (!isShowFollowingUp) return null
     return (
       <Container>
         {this.renderTracking()}
@@ -18,8 +21,7 @@ export default class extends BaseComponent {
 
   renderTracking() {
     const { proposal } = this.props
-    const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.FINAL], proposal.status)
-    return isShowFollowingUp && <Tracking proposal={proposal} />
+    return <Tracking proposal={proposal} />
   }
 
   renderForm() {
