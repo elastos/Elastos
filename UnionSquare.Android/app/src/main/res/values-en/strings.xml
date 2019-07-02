@@ -281,11 +281,13 @@
     <string name='error_20025'>(ERR_20025)Multi sign error</string>
     <string name='error_20026'>(ERR_20026)Key store error</string>
     <string name='error_20027'>(ERR_20027)Limit gap error</string>
-    <string name='error_20028'>(ERR_20028)Key error</string>
-    <string name='error_20029'>(ERR_20029)Hex to string error</string>
-    <string name='error_20030'>(ERR_20030)Sign type error</string>
-    <string name='error_20031'>(ERR_20031)Address error</string>
-    <string name='error_20032'>(ERR_20032)Sign error</string>
+    <string name='error_20028'>(ERR_20028)Wallet contain invalid tx</string>
+    <string name='error_20029'>(ERR_20029)Key error</string>
+    <string name='error_20030'>(ERR_20030)Hex to string error</string>
+    <string name='error_20031'>(ERR_20031)Sign type error</string>
+    <string name='error_20032'>(ERR_20032)Address error</string>
+    <string name='error_20033'>(ERR_20033)Sign error</string>
+    <string name='error_20034'>(ERR_20034)keystore need phrase password</string>
     <string name='error_20035'>(ERR_20035)Balance is not enough</string>
     <string name='error_30000'>(ERR_30000)JSON Conversion error</string>
     <string name='error_20036'>(ERR_20036)Json format error</string>
@@ -302,6 +304,13 @@
     <string name='error_20047'>(ERR_20047)AES encrypt error</string>
     <string name='error_20048'>(ERR_20048)Verify signature fail</string>
     <string name='error_20049'>(ERR_20049)The last transaction is pending</string>
+    <string name='error_20050'>(ERR_20050)Invalid mnemonic word count</string>
+    <string name='error_20051'>(ERR_20051)Invalid local store</string>
+    <string name='error_20052'>(ERR_20052)Master wallet is not exist</string>
+    <string name='error_20053'>(ERR_20053)Asset not found</string>
+    <string name='error_20054'>(ERR_20054)Read config file error</string>
+    <string name='error_20055'>(ERR_20055)Invalid chain id</string>
+    <string name='error_20056'>(ERR_20056)Unsupport old transaction</string>
     <string name='error_29999'>(ERR_29999)Other error</string>
 
     <!--  关于smartlrefreshayout-->
@@ -356,4 +365,5 @@
     <string name="logkeepfail">日志生成失败</string>
     <string name="whetherexchange">检测到当前账户存在大量Utxo,是否零钱换整？</string>
     <string name="splashword">Smartweb Powered by Blochchain</string>
+    <string name="curentsdkversion">当前sdk版本号：</string>
 </resources>

@@ -24,8 +24,18 @@ import java.io.OutputStream;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 
-public class LogFilePresenter extends PresenterAbstract {
+public class AboutPresenter extends PresenterAbstract {
 
+    public void getVersion(BaseFragment baseFragment) {
+        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().getVersion();
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
 
     public void moveLogFile(BaseFragment baseFragment) {
         Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
@@ -35,7 +45,7 @@ public class LogFilePresenter extends PresenterAbstract {
                 return new CommmonStringWithiMethNameEntity(MyWallet.SUCCESSCODE, moveLogFile(baseFragment.getContext()) + "", "moveLogFile");
             }
         });
-        subscriberObservable(observer, observable);
+        subscriberObservable(observer, observable, baseFragment);
     }
 
     private static String moveLogFile(Context context) {
@@ -66,7 +76,7 @@ public class LogFilePresenter extends PresenterAbstract {
             }
             is.close();
             fosto.close();
-            return file1.getAbsolutePath()+"/spvsdk.log";
+            return file1.getAbsolutePath() + "/spvsdk.log";
         } catch (Exception ex) {
             ex.printStackTrace();
             return null;

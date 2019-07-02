@@ -4,13 +4,10 @@ package org.elastos.wallet.ela.ui.vote.NodeInformation;
 import android.os.Bundle;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.allen.library.SuperButton;
-import com.blankj.utilcode.util.CacheDoubleUtils;
 import com.blankj.utilcode.util.ToastUtils;
 
 import org.elastos.wallet.R;
@@ -18,11 +15,11 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.vote.NodeCart.NodeCartFragment;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
+import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
-import org.elastos.wallet.ela.utils.GetDynanicUrl;
 import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 
@@ -31,7 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
@@ -94,17 +90,15 @@ public class NodeInformationFragment extends BaseFragment {
         setToobar(toolbar, toolbarTitle, getString(R.string.node_information));
 //        registReceiver();
         String url = bean.getUrl();
-        GlideApp.with(NodeInformationFragment.this).load(R.mipmap.found_vote_initial).
-                circleCrop().into(ivIcon);
-        GetDynanicUrl.getData(url, getContext(), new NodeDotJsonViewData() {
+        new SuperNodeListPresenter().getUrlJson(url, getContext(), new NodeDotJsonViewData() {
             @Override
-            public void onGetNodeDotJsonData(NodeInfoBean t) {
-                if (t == null || t.getOrg() == null || t.getOrg().getBranding() == null) {
+            public void onGetNodeDotJsonData(NodeInfoBean t,String url) {
+                if (t == null || t.getOrg() == null || t.getOrg().getBranding() == null|| t.getOrg().getBranding().getLogo_256() == null) {
                     return;
                 }
                 String imgUrl = t.getOrg().getBranding().getLogo_256();
-                GlideApp.with(NodeInformationFragment.this).load(imgUrl).placeholder(R.mipmap.found_vote_initial)
-                        .error(R.mipmap.found_vote_initial).circleCrop().into(ivIcon);
+                GlideApp.with(NodeInformationFragment.this).load(imgUrl)
+                        .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon);
             }
         });
         tvName.setText(bean.getNickname());

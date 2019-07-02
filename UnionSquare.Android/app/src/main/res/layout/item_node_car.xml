@@ -38,7 +38,7 @@
             android:layout_width="@dimen/px62"
             android:layout_height="@dimen/px62"
             android:scaleType="centerCrop"
-            android:src="@mipmap/found_vote_initial" />
+            android:src="@mipmap/found_vote_initial_circle" />
 
 
         <com.qmuiteam.qmui.layout.QMUILinearLayout

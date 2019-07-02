@@ -24,18 +24,16 @@ import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.net.ApiServer;
 import org.elastos.wallet.ela.net.RetrofitManager;
 import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
-import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonLongViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
+import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
 import org.elastos.wallet.ela.ui.vote.UpdateInformation.UpdateInformationFragment;
 import org.elastos.wallet.ela.ui.vote.bean.ElectoralAffairsBean;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
-import org.elastos.wallet.ela.utils.GetDynanicUrl;
 import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxSchedulers;
@@ -177,17 +175,16 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
         ElectoralAffairsBean bean = JSON.parseObject(data, ElectoralAffairsBean.class);
         tvName.setText(bean.getNickName());
         tvAddress.setText(AppUtlis.getLoc(getContext(), bean.getLocation() + ""));
-        GlideApp.with(ElectoralAffairsFragment.this).load(R.mipmap.found_vote_initial).circleCrop().into(ivIcon);
         String url = bean.getURL();
-        GetDynanicUrl.getData(url, getContext(), new NodeDotJsonViewData() {
+        new SuperNodeListPresenter().getUrlJson(url, getContext(), new NodeDotJsonViewData() {
             @Override
-            public void onGetNodeDotJsonData(NodeInfoBean t) {
+            public void onGetNodeDotJsonData(NodeInfoBean t, String url) {
                 if (t == null || t.getOrg() == null || t.getOrg().getBranding() == null) {
                     return;
                 }
                 String imgUrl = t.getOrg().getBranding().getLogo_256();
                 GlideApp.with(ElectoralAffairsFragment.this).load(imgUrl)
-                        .error(R.mipmap.found_vote_initial).circleCrop().into(ivIcon);
+                        .error(R.mipmap.found_vote_initial_circle).into(ivIcon);
             }
         });
         tvUrl.setText(url);

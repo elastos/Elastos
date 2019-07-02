@@ -12,29 +12,17 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.elastos.wallet.R;
-import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.base.BaseFragment;
-import org.elastos.wallet.ela.rxjavahelp.PresenterAbstract;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
-import org.elastos.wallet.ela.ui.mine.presenter.LogFilePresenter;
+import org.elastos.wallet.ela.ui.mine.presenter.AboutPresenter;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
-import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.MyUtil;
 import org.elastos.wallet.ela.utils.SPUtil;
-import org.elastos.wallet.ela.utils.ScanQRcodeUtil;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.prefs.AbstractPreferences;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -43,10 +31,12 @@ public class AboutFragment extends BaseFragment implements CommmonStringWithMeth
 
     @BindView(R.id.tv_title)
     TextView tvTitle;
+    @BindView(R.id.tv_version_sdk)
+    TextView tvVersionSdk;
 
     @BindView(R.id.tv_version_name)
     TextView tvVersionName;
-
+    AboutPresenter aboutPresenter;
 
     @Override
     protected int getLayoutId() {
@@ -62,7 +52,8 @@ public class AboutFragment extends BaseFragment implements CommmonStringWithMeth
     protected void initView(View view) {
         tvTitle.setText(getString(R.string.about));
         tvVersionName.setText(getString(R.string.currentversionname) + MyUtil.getVersionName(getContext()));
-
+        aboutPresenter = new AboutPresenter();
+        aboutPresenter.getVersion(this);
     }
 
 
@@ -80,7 +71,6 @@ public class AboutFragment extends BaseFragment implements CommmonStringWithMeth
             case R.id.tv_runlog:
                 //导出c运行日志
                 requstManifestPermission(getString(R.string.needpermissionstorage));
-                //shareFile();
                 break;
         }
     }
@@ -88,7 +78,7 @@ public class AboutFragment extends BaseFragment implements CommmonStringWithMeth
 
     @Override
     protected void requstPermissionOk() {
-        new LogFilePresenter().moveLogFile(this);
+        aboutPresenter.moveLogFile(this);
     }
 
     private void shareFile() {
@@ -109,13 +99,21 @@ public class AboutFragment extends BaseFragment implements CommmonStringWithMeth
 
     @Override
     public void onGetCommonData(String methodname, String data) {
-
-        if (!TextUtils.isEmpty(data)) {
-            showToast(getContext().getString(R.string.logkeppin) + data);
-            shareFile();
-        } else {
-            showToast(getContext().getString(R.string.logkeepfail));
+        switch (methodname) {
+            case "getVersion":
+                tvVersionSdk.setText(getString(R.string.curentsdkversion) + data);
+                break;
+            case "moveLogFile":
+                if (!TextUtils.isEmpty(data)) {
+                    showToast(getContext().getString(R.string.logkeppin) + data);
+                    shareFile();
+                } else {
+                    showToast(getContext().getString(R.string.logkeepfail));
+                }
+                break;
         }
+
+
     }
 
     private static void checkFileUriExposure() {

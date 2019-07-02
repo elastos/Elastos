@@ -190,6 +190,8 @@
         </com.scwang.smartrefresh.layout.SmartRefreshLayout>
     </com.qmuiteam.qmui.layout.QMUILinearLayout>
 
+    <View style="@style/line1" />
+
     <com.qmuiteam.qmui.layout.QMUILinearLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
@@ -197,8 +199,9 @@
 
         <android.support.v7.widget.AppCompatTextView
             android:id="@+id/tv_myvote"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
+            android:layout_marginLeft="30dp"
             android:layout_marginTop="@dimen/px13"
             android:layout_weight="1"
             android:drawableTop="@mipmap/bottom_my_vote"
@@ -209,9 +212,10 @@
 
         <TextView
             android:id="@+id/tv_signupfor"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_marginTop="@dimen/px13"
+            android:layout_marginRight="30dp"
             android:layout_weight="1"
             android:drawableTop="@mipmap/vote_attend"
             android:gravity="center"
@@ -221,10 +225,9 @@
 
 
         <com.qmuiteam.qmui.layout.QMUILinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="134dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@drawable/sc_26ffffff_2"
+            android:background="@color/a26ffffff"
             android:gravity="center"
             android:orientation="vertical">
 

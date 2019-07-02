@@ -474,7 +474,7 @@ public class MyWallet {
                 return errorProcess(errCodeImportReadonlyWallet + "", "Import read-only wallet" + formatWalletName(masterWalletID));
             }
 
-            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, masterWallet.GetBasicInfo(),"importReadonlyWallet");
+            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, masterWallet.GetBasicInfo(), "importReadonlyWallet");
         } catch (WalletException e) {
             return exceptionProcess(e, "Import read-only wallet " + formatWalletName(masterWalletID));
         }
@@ -529,7 +529,7 @@ public class MyWallet {
 
             String walletJson = mMasterWalletManager.ExportReadonlyWallet(masterWallet);
 
-            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, walletJson,"exportReadonlyWallet");
+            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, walletJson, "exportReadonlyWallet");
         } catch (WalletException e) {
             return exceptionProcess(e, "Export read-only wallet " + formatWalletName(masterWalletID));
         }
@@ -612,7 +612,6 @@ public class MyWallet {
             return exceptionProcess(e, "Create " + formatWalletName(masterWalletID, chainID) + " tx");
         }
     }
-
 
 
     // args[0]: String masterWalletID
@@ -1088,7 +1087,7 @@ public class MyWallet {
     // args[3]: String payloadJson
     // args[4]: String memo
     // args[5]: boolean useVotedUTXO
-    public BaseEntity createUpdateProducerTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, String memo,  boolean useVotedUTXO) {
+    public BaseEntity createUpdateProducerTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, String memo, boolean useVotedUTXO) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1163,6 +1162,7 @@ public class MyWallet {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + "createCombineUTXOTransaction");
         }
     }
+
     public BaseEntity getAllUTXOs(String masterWalletID, String chainID, int start, int count, String address) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
@@ -1174,8 +1174,12 @@ public class MyWallet {
             String utxoJson = subWallet.GetAllUTXOs(start, count, address);
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, utxoJson, "getAllUTXOs");
         } catch (WalletException e) {
-            return exceptionProcess(e, "Get " + formatWalletName(masterWalletID, chainID) + " all UTXOs"); }
+            return exceptionProcess(e, "Get " + formatWalletName(masterWalletID, chainID) + " all UTXOs");
+        }
     }
 
+    public BaseEntity getVersion() {
+        return new CommmonStringWithiMethNameEntity(SUCCESSCODE, "", "getVersion");
+    }
 }
 
