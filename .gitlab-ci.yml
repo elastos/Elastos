@@ -24,13 +24,19 @@ job_test1:
     - ln -s "${CI_PROJECT_DIR}" "${ELA_PROJECT_DIR}/Elastos.ELA"
   script:
     - cd "${ELA_PROJECT_DIR}/Elastos.ELA"
-    - go test -v -short ./...
+    - curl -o /bin/addlicense http://172.16.0.120/addlicense
+    - curl -o /bin/revive http://172.16.120/revive
+    - chmod +x /bin/addlicense /bin/revive && addlicense -check
+    - revive -config .revive.toml -formatter friendly $(go list ./... | grep -v /vendor/)
+    - go test $(go list ./... | grep -v /vendor/) -v -short -coverprofile .coverage
+    - go tool cover -func .coverage
     - make all
     - make dns
     - mkdir bin && cp ela ela-cli bin
     - bin/ela -v
     - ./util.sh test
     - cd $CI_PROJECT_DIR
+  coverage: '/^total:\t+\(statements\)\t+(\d+\.\d+)%/'
   artifacts:
     name: "$CI_COMMIT_REF_SLUG-$CI_PIPELINE_ID-${CI_BUILD_REF:0:8}"
     paths:
