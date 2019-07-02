@@ -55,7 +55,7 @@ export default class extends BaseComponent {
             <Row>
               <Col>
                 <DraftEditor
-                  content={item.content}
+                  value={item.content}
                   contentType={CONTENT_TYPE.MARKDOWN}
                   editorEnabled={false}
                 />
@@ -82,7 +82,7 @@ export default class extends BaseComponent {
             <StyledRow gutter={16}>
               <LeftCol span={21} status={item.status}>
                 <DraftEditor
-                  content={item.content}
+                  value={item.content}
                   contentType={CONTENT_TYPE.MARKDOWN}
                   editorEnabled={false}
                 />

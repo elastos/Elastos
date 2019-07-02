@@ -30,7 +30,7 @@ const renderRichContent = (data, key, title) => {
   if (_.isArray(data)) {
     content = _.map(data, item => (
       <DraftEditor
-        content={item[key]}
+        value={item[key]}
         contentType={item.contentType}
         editorEnabled={false}
       />
@@ -38,7 +38,7 @@ const renderRichContent = (data, key, title) => {
   } else {
     content = (
       <DraftEditor
-        content={data[key]}
+        value={data[key]}
         contentType={data.contentType}
         editorEnabled={false}
       />
