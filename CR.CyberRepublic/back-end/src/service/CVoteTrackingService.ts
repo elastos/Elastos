@@ -27,10 +27,10 @@ export default class extends Base {
     const doc: any = {
       content,
       proposalId,
-      status: constant.CVOTE_TRACKING_STATUS.DRAFT,
+      status: constant.CVOTE_TRACKING_STATUS.REVIEWING,
       createdBy: this.currentUser._id
     }
-    if (status === constant.CVOTE_TRACKING_STATUS.REVIEWING) {
+    if (status === constant.CVOTE_TRACKING_STATUS.DRAFT) {
       doc.status = status
     }
 
