@@ -22,7 +22,7 @@ export default class extends Base {
   public async createDraft(param: any): Promise<Document> {
     const db_cvote = this.getDBModel('CVote')
     const {
-      title, proposedBy, proposer,
+      title, proposedBy,
     } = param
 
     const vid = await this.getNewVid()
@@ -34,13 +34,14 @@ export default class extends Base {
       published: false,
       contentType: constant.CONTENT_TYPE.MARKDOWN,
       proposedBy,
-      proposer,
+      proposer: this.currentUser._id,
       createdBy: this.currentUser._id
     }
 
     try {
       return await db_cvote.save(doc)
     } catch (error) {
+      console.log(error)
       return
     }
   }
