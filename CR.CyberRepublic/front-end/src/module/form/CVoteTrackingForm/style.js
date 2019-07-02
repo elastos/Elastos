@@ -28,6 +28,7 @@ export const Container = styled.div`
     min-height: 150px;
     .md-RichEditor-editor .public-DraftEditor-content {
       min-height: 150px;
+      padding: 20px;
     }
     .md-editor-toolbar {
       z-index: 100;
