@@ -81,7 +81,7 @@ class C extends BaseComponent {
     this.setState({ loading: f })
   }
 
-  publishCVote = async (e) => {
+  onSubmit = async (e) => {
     e.preventDefault()
     const { form, create, onCreated, proposal } = this.props
 
@@ -124,7 +124,7 @@ class C extends BaseComponent {
 
     return (
       <Container>
-        <Form onSubmit={this.publishCVote}>
+        <Form onSubmit={this.onSubmit}>
           <Title>
             {this.props.header || I18N.get('proposal.form.tracking.add')}
           </Title>

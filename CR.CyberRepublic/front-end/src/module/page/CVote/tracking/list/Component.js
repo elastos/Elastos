@@ -22,8 +22,6 @@ export default class extends BaseComponent {
 
     this.state = {
       loading: true,
-      publicList: undefined,
-      privateList: undefined,
       visibleReject: false,
     }
   }
@@ -51,7 +49,7 @@ export default class extends BaseComponent {
   }
 
   renderPublicList() {
-    const { publicList } = this.state
+    const { publicList } = this.props
     if (!publicList) return null
     return (
       <List
@@ -77,7 +75,7 @@ export default class extends BaseComponent {
   }
 
   renderPrivateList() {
-    const { privateList } = this.state
+    const { privateList } = this.props
     if (!privateList) return null
     const body = (
       <List
@@ -228,11 +226,9 @@ export default class extends BaseComponent {
     const param = this.getQuery()
     const isAuthorized = canManage || currentUserId === _.get(proposal, 'proposer._id')
     try {
-      const publicData = await listData(param, false)
-      this.setState({ publicList: publicData.list })
+      await listData(param, false)
       if (isAuthorized) {
-        const privateData = await listData(param, isAuthorized)
-        this.setState({ privateList: privateData.list })
+        await listData(param, isAuthorized)
       }
     } catch (error) {
       // do sth
