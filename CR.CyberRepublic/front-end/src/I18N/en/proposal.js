@@ -43,6 +43,12 @@ export default {
     [CVOTE_TRACKING_STATUS.REJECT]: 'REJECTED !',
   },
   form: {
+    tracking: {
+      btn: {
+        submit: 'Submit for Review',
+      },
+      add: 'Add',
+    },
     note: {
       abstract: 'Provide a brief description of the proposal content (no more than 200 words).',
       goal: 'Describe the desired results achieved by implementing the proposal. Goals should be clear and measurable.',
