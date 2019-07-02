@@ -28,14 +28,15 @@ import (
 )
 
 var (
-	dataDir     = "./"
-	ipcClient   *ethclient.Client
-	stack       *node.Node
-	SpvService  *Service
-	spvTxhash   string
-	extraVanity = 32                           // Fixed number of extra-data prefix bytes reserved for signer vanity
-	extraSeal   = 65                           // Fixed number of extra-data suffix bytes reserved for signer seal
-	Signers     map[ethCommon.Address]struct{} // Set of authorized signers at this moment
+	dataDir          = "./"
+	ipcClient        *ethclient.Client
+	stack            *node.Node
+	SpvService       *Service
+	spvTxhash        string
+	spvTransactiondb ethdb.Database
+	extraVanity      = 32                           // Fixed number of extra-data prefix bytes reserved for signer vanity
+	extraSeal        = 65                           // Fixed number of extra-data suffix bytes reserved for signer seal
+	Signers          map[ethCommon.Address]struct{} // Set of authorized signers at this moment
 )
 
 const (
@@ -59,7 +60,15 @@ type Config struct {
 
 type Service struct {
 	spv.DPOSSPVService
-	db ethdb.Database
+}
+
+func SpvDbInit(spvdataDir string) {
+	db, err := ethdb.NewLDBDatabase(filepath.Join(spvdataDir, "spv_transaction_info.db"), databaseCache, handles)
+	if err != nil {
+		log.Error("spv Open db: %v", err)
+	}
+	db.Meter("eth/db/ela/")
+	spvTransactiondb = db
 }
 
 func NewService(cfg *Config, s *node.Node) (*Service, error) {
@@ -110,13 +119,8 @@ func NewService(cfg *Config, s *node.Node) (*Service, error) {
 		log.Error(fmt.Sprintf("Spv New DPOS SPVService: %v", err))
 		return nil, err
 	}
-	db, err := ethdb.NewLDBDatabase(filepath.Join(dataDir, "spv_transaction_info.db"), databaseCache, handles)
-	if err != nil {
-		log.Error("spv Open db: %v", err)
-		return nil, err
-	}
-	db.Meter("eth/db/ela/")
-	SpvService = &Service{DPOSSPVService: service, db: db}
+
+	SpvService = &Service{DPOSSPVService: service}
 	err = service.RegisterTransactionListener(&listener{
 		address: cfg.GenesisAddress,
 		service: service,
@@ -147,7 +151,7 @@ func NewService(cfg *Config, s *node.Node) (*Service, error) {
 }
 
 func (s *Service) GetDatabase() ethdb.Database {
-	return s.db
+	return spvTransactiondb
 }
 
 func (s *Service) VerifyTransaction(tx *types.Transaction) error {
@@ -252,18 +256,18 @@ func savePayloadInfo(elaTx core.Transaction) {
 		return
 	}
 	spvTxhash = elaTx.Hash().String()
-	err := SpvService.db.Put([]byte(elaTx.Hash().String()+"Fee"), []byte(fee))
+	err := spvTransactiondb.Put([]byte(elaTx.Hash().String()+"Fee"), []byte(fee))
 
 	if err != nil {
 		log.Error(fmt.Sprintf("SpvServicedb Put Fee: %v", err), "elaHash", elaTx.Hash().String())
 	}
 
-	err = SpvService.db.Put([]byte(elaTx.Hash().String()+"Address"), []byte(addr))
+	err = spvTransactiondb.Put([]byte(elaTx.Hash().String()+"Address"), []byte(addr))
 
 	if err != nil {
 		log.Error(fmt.Sprintf("SpvServicedb Put Address: %v", err), "elaHash", elaTx.Hash().String())
 	}
-	err = SpvService.db.Put([]byte(elaTx.Hash().String()+"Output"), []byte(output))
+	err = spvTransactiondb.Put([]byte(elaTx.Hash().String()+"Output"), []byte(output))
 
 	if err != nil {
 		log.Error(fmt.Sprintf("SpvServicedb Put Output: %v", err), "elaHash", elaTx.Hash().String())
@@ -295,7 +299,17 @@ func savePayloadInfo(elaTx core.Transaction) {
 		if gasLimit == 0 {
 			return
 		}
-		callmsg := ethereum.TXMsg{From: from, To: &ethCommon.Address{}, Gas: gasLimit, Data: elaTx.Hash().Bytes()}
+		f, err := common.StringToFixed64(fees[0])
+		if err != nil {
+			log.Error(fmt.Sprintf("SpvSendTransaction Fee StringToFixed64: %v", err), "elaHash", elaTx.Hash().String())
+			return
+
+		}
+		fe := new(big.Int).SetInt64(f.IntValue())
+		y := new(big.Int).SetInt64(10000000000)
+		fee := new(big.Int).Mul(fe, y)
+		price := new(big.Int).Quo(fee, new(big.Int).SetUint64(gasLimit))
+		callmsg := ethereum.TXMsg{From: from, To: &ethCommon.Address{}, Gas: gasLimit, Data: elaTx.Hash().Bytes(), GasPrice: price}
 		hash, err := ipcClient.SendPublicTransaction(context.Background(), callmsg)
 		if err != nil {
 			log.Error(fmt.Sprintf("IpcClient SendPublicTransaction: %v", err))
@@ -308,7 +322,10 @@ func savePayloadInfo(elaTx core.Transaction) {
 func FindOutputFeeAndaddressByTxHash(transactionHash string) (*big.Int, ethCommon.Address, *big.Int) {
 	var emptyaddr ethCommon.Address
 	transactionHash = strings.Replace(transactionHash, "0x", "", 1)
-	v, err := SpvService.db.Get([]byte(transactionHash + "Fee"))
+	if spvTransactiondb == nil {
+		return new(big.Int), emptyaddr, new(big.Int)
+	}
+	v, err := spvTransactiondb.Get([]byte(transactionHash + "Fee"))
 	if err != nil {
 		log.Error(fmt.Sprintf("SpvServicedb Get Fee: %v"), err, "elaHash", transactionHash)
 		return new(big.Int), emptyaddr, new(big.Int)
@@ -323,7 +340,7 @@ func FindOutputFeeAndaddressByTxHash(transactionHash string) (*big.Int, ethCommo
 	fe := new(big.Int).SetInt64(f.IntValue())
 	y := new(big.Int).SetInt64(10000000000)
 
-	addrss, err := SpvService.db.Get([]byte(transactionHash + "Address"))
+	addrss, err := spvTransactiondb.Get([]byte(transactionHash + "Address"))
 	if err != nil {
 		log.Error(fmt.Sprintf("SpvServicedb Get Address: %v", err), "elaHash", transactionHash)
 		return new(big.Int), emptyaddr, new(big.Int)
@@ -333,7 +350,7 @@ func FindOutputFeeAndaddressByTxHash(transactionHash string) (*big.Int, ethCommo
 	if !ethCommon.IsHexAddress(addrs[0]) {
 		return new(big.Int), emptyaddr, new(big.Int)
 	}
-	outputs, err := SpvService.db.Get([]byte(transactionHash + "Output"))
+	outputs, err := spvTransactiondb.Get([]byte(transactionHash + "Output"))
 	if err != nil {
 		log.Error(fmt.Sprintf("SpvServicedb Get elaHash: %v", err), "elaHash", transactionHash)
 		return new(big.Int), emptyaddr, new(big.Int)

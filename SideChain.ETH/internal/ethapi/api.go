@@ -42,7 +42,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/params"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/rlp"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/rpc"
-	"github.com/elastos/Elastos.ELA.SideChain.ETH/spv"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/util"
 )
@@ -1129,22 +1128,11 @@ func (args *SendTxArgs) setDefaults(ctx context.Context, b Backend) error {
 		*(*uint64)(args.Gas) = 90000
 	}
 	if args.GasPrice == nil {
-		if args.To != nil && args.Data != nil {
-			to := *args.To
-			var blackaddr common.Address
-			if len(*args.Data) == 32 && to == blackaddr {
-				txhash := hexutil.Encode(*args.Data)
-				fee, _, _ := spv.FindOutputFeeAndaddressByTxHash(txhash)
-				price := new(big.Int).Quo(fee, new(big.Int).SetUint64(*(*uint64)(args.Gas)))
-				args.GasPrice = (*hexutil.Big)(price)
-			}
-		} else {
-			price, err := b.SuggestPrice(ctx)
-			if err != nil {
-				return err
-			}
-			args.GasPrice = (*hexutil.Big)(price)
+		price, err := b.SuggestPrice(ctx)
+		if err != nil {
+			return err
 		}
+		args.GasPrice = (*hexutil.Big)(price)
 
 	}
 	if args.Value == nil {

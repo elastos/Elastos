@@ -20,8 +20,10 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/spv"
 	"io"
 	"os"
+	"path/filepath"
 	"reflect"
 	"unicode"
 
@@ -152,7 +154,20 @@ func enableWhisper(ctx *cli.Context) bool {
 
 func makeFullNode(ctx *cli.Context) *node.Node {
 	stack, cfg := makeConfigNode(ctx)
-
+	var SpvDbDir string
+	switch {
+	case ctx.GlobalIsSet(utils.DataDirFlag.Name):
+		SpvDbDir = ctx.GlobalString(utils.DataDirFlag.Name)
+	case ctx.GlobalBool(utils.DeveloperFlag.Name):
+		SpvDbDir = "" // unless explicitly requested, use memory databases
+	case ctx.GlobalBool(utils.TestnetFlag.Name):
+		SpvDbDir = filepath.Join(node.DefaultDataDir(), "testnet")
+	case ctx.GlobalBool(utils.RinkebyFlag.Name):
+		SpvDbDir = filepath.Join(node.DefaultDataDir(), "rinkeby")
+	default:
+		SpvDbDir = node.DefaultDataDir()
+	}
+	spv.SpvDbInit(SpvDbDir)
 	utils.RegisterEthService(stack, &cfg.Eth)
 
 	if ctx.GlobalBool(utils.DashboardEnabledFlag.Name) {
