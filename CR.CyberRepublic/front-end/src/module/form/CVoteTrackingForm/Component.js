@@ -99,6 +99,7 @@ class C extends BaseComponent {
         this.ord_loading(false)
         await onCreated()
         message.success(I18N.get('from.CVoteForm.message.updated.success'))
+        form.resetFields()
       } catch (error) {
         message.error(error.message)
         this.ord_loading(false)
