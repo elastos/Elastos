@@ -102,10 +102,20 @@ export default class extends Base {
    * @returns {Promise<Object>}
    */
   public async list(param: any): Promise<Object> {
+    const currentUserId = _.get(this.currentUser, '_id', '').toString()
     const { proposalId } = param
-    if (!proposalId) {
-      throw 'CVoteTrackingService.list - must specify a proposal id'
+    const proposal = this.getDBModel('CVote').getDBInstance().findOne({ _id: proposalId })
+    if (!proposalId || !proposal) {
+      throw 'CVoteTrackingService.list - invalid proposal'
     }
+
+    if ((currentUserId !== _.get(proposal, 'proposer', '').toString()) && !permissions.isSecretary(_.get(this.currentUser, 'role'))) {
+      return {
+        list: [],
+        total: 0
+      }
+    }    
+
     const query: any = {
       proposalId,
     }
