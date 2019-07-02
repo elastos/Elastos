@@ -52,7 +52,7 @@ const renderRichEditor = (data, key, getFieldDecorator, max) => {
     initialValue: content,
   })
   const content_el = (
-    <DraftEditor content={content} contentType={_.get(data, 'contentType')} />
+    <DraftEditor contentType={_.get(data, 'contentType')} />
   )
   return content_fn(content_el)
 }
