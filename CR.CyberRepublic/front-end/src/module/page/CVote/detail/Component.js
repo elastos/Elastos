@@ -18,7 +18,7 @@ import { createEditorState } from 'medium-draft'
 import mediumDraftExporter from 'medium-draft/lib/exporter'
 import VoteResultComponent from '../common/vote_result/Component'
 import Preamble from './Preamble'
-import Tracking from '../tracking/list/Container'
+import Tracking from '../tracking/Container'
 
 import { Title, Label, ContentTitle, StyledAnchor, FixedHeader, Body } from './style'
 import './style.scss'
@@ -415,8 +415,7 @@ class C extends StandardPage {
 
   renderTracking() {
     const { data } = this.state
-    const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.FINAL], data.status)
-    return isShowFollowingUp && <Tracking proposal={data} />
+    return <Tracking proposal={data} />
   }
 
   // renderSummary() {
