@@ -677,6 +677,23 @@ namespace Elastos {
 						direction = "Sent";
 						inputAmount += spentAmount;
 					}
+				} else {
+					CoinBaseUTXOPtr cb = wallet->CoinBaseTxForHash(_inputs[i].GetTransctionHash());
+					if (cb) {
+						const BigInt &spentAmount = cb->Amount();
+						addr = Address(cb->ProgramHash()).String();
+
+						if (detail) {
+							if (inputList.find(addr) == inputList.end()) {
+								inputList[addr] = spentAmount;
+							} else {
+								inputList[addr] += spentAmount;
+							}
+						}
+
+						direction = "Sent";
+						inputAmount += spentAmount;
+					}
 				}
 			}
 
