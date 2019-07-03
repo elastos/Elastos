@@ -34,11 +34,10 @@ export default class extends Base {
       doc.status = status
     }
 
-    console.log('doc is: ', doc)
     try {
       const rs = await this.model.save(doc)
-      if (status === constant.CVOTE_TRACKING_STATUS.REVIEWING) {
-        const proposal = this.getDBModel('CVote').getDBInstance().findOne({ _id: proposalId })
+      if (rs.status === constant.CVOTE_TRACKING_STATUS.REVIEWING) {
+        const proposal = await this.getProposalById(proposalId)
         if (proposal) this.notifySecretary(proposal)
       }
       return rs
@@ -85,7 +84,7 @@ export default class extends Base {
     try {
       await this.model.update({ _id }, doc)
       if (status === constant.CVOTE_TRACKING_STATUS.REVIEWING) {
-        const proposal = this.getDBModel('CVote').getDBInstance().findOne({ _id: cur.proposalId })
+        const proposal = await this.getProposalById(cur.proposalId)
         if (proposal) this.notifySecretary(proposal)
       }
 
@@ -104,7 +103,7 @@ export default class extends Base {
   public async list(param: any): Promise<Object> {
     const currentUserId = _.get(this.currentUser, '_id', '').toString()
     const { proposalId } = param
-    const proposal = await this.getDBModel('CVote').getDBInstance().findOne({ _id: proposalId })
+    const proposal = await this.getProposalById(proposalId)
     if (!proposalId || !proposal) {
       throw 'CVoteTrackingService.list - invalid proposal'
     }
@@ -187,7 +186,7 @@ export default class extends Base {
       }
     })
 
-    const proposal = this.getDBModel('CVote').getDBInstance().findOne({ _id: cur.proposalId })
+    const proposal = await this.getProposalById(cur.proposalId)
     if (proposal) this.notifyApproved(proposal)
 
     return await this.getById(id)
@@ -220,7 +219,7 @@ export default class extends Base {
       }
     })
 
-    const proposal = this.getDBModel('CVote').getDBInstance().findOne({ _id: cur.proposalId })
+    const proposal = await this.getProposalById(cur.proposalId)
     if (proposal) this.notifyRejected(proposal)
 
     return await this.getById(id)
@@ -228,6 +227,10 @@ export default class extends Base {
 
   public async getById(id): Promise<any> {
     return await this.model.getDBInstance().findOne({ _id: id })
+  }
+
+  public async getProposalById(id): Promise<any> {
+    return await this.getDBModel('CVote').getDBInstance().findOne({ _id: id })
   }
 
   private async notifyUsers(param: Mail) {
@@ -284,7 +287,7 @@ export default class extends Base {
       <p>Thanks</p>
       <p>Cyber Republic</p>
     `
-    const user = this.getDBModel('User').getDBInstance().findOne({ _id: cvote.proposer })
+    const user = await this.getDBModel('User').getDBInstance().findOne({ _id: cvote.proposer })
 
     const mailObj = {
       subject,
@@ -305,7 +308,7 @@ export default class extends Base {
       <p>Thanks</p>
       <p>Cyber Republic</p>
     `
-    const user = this.getDBModel('User').getDBInstance().findOne({ _id: cvote.proposer })
+    const user = await this.getDBModel('User').getDBInstance().findOne({ _id: cvote.proposer })
 
     const mailObj = {
       subject,
