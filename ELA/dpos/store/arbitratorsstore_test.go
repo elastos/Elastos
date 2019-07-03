@@ -285,8 +285,11 @@ func randomVotes() *types.Output {
 			Contents: []outputpayload.VoteContent{
 				{
 					VoteType: outputpayload.Delegate,
-					Candidates: [][]byte{
-						randomFakePK(),
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{
+							Candidate: randomFakePK(),
+							Votes:     common.Fixed64(rand.Uint64()),
+						},
 					},
 				},
 			},

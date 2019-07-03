@@ -260,7 +260,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 		err := checkVoteOutputs(txn.Outputs, references,
 			getProducerPublicKeysMap(producers), getCRCodesMap(candidates))
 		if err != nil {
-			log.Warn("[CheckVoteProducerOutputs],", err)
+			log.Warn("[CheckVoteProducerOutputs]", err)
 			return ErrInvalidOutput
 		}
 	}
@@ -269,12 +269,11 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 }
 
 func checkVoteOutputs(outputs []*Output, references map[*Input]*Output,
-	producers map[string]struct{}, crs map[string]struct{}) error {
+	pds map[string]struct{}, crs map[string]struct{}) error {
 	programHashes := make(map[common.Uint168]struct{})
 	for _, v := range references {
 		programHashes[v.ProgramHash] = struct{}{}
 	}
-
 	for _, o := range outputs {
 		if o.Type != OTVote {
 			continue
@@ -288,31 +287,57 @@ func checkVoteOutputs(outputs []*Output, references map[*Input]*Output,
 			return errors.New("invalid vote output payload")
 		}
 		for _, content := range payload.Contents {
-			candidates := make(map[string]struct{})
 			switch content.VoteType {
 			case outputpayload.Delegate:
-				candidates = producers
+				err := checkVoteProducerContent(
+					content, pds, payload.Version, o.Value)
+				if err != nil {
+					return err
+				}
 			case outputpayload.CRC:
-				candidates = crs
-			}
-			if content.VoteType == outputpayload.Delegate {
-				candidates = producers
-			}
-			for _, candidate := range content.Candidates {
-				if _, ok := candidates[common.BytesToHexString(candidate)]; !ok {
-					return fmt.Errorf("invalid vote output payload "+
-						"candidate: %s", common.BytesToHexString(candidate))
+				err := checkVoteCRContent(
+					content, crs, payload.Version, o.Value)
+				if err != nil {
+					return err
 				}
 			}
-			if payload.Version == byte(1) {
-				if len(content.Candidates) != len(content.Votes) {
-					return errors.New("invalid candidate and votes count")
-				}
-				for _, vote := range content.Votes {
-					if vote > o.Value {
-						return errors.New("vote larger than output amount")
-					}
-				}
+		}
+	}
+
+	return nil
+}
+
+func checkVoteProducerContent(content outputpayload.VoteContent,
+	pds map[string]struct{}, payloadVersion byte, amount common.Fixed64) error {
+	for _, cv := range content.CandidateVotes {
+		if _, ok := pds[common.BytesToHexString(cv.Candidate)]; !ok {
+			return fmt.Errorf("invalid vote output payload "+
+				"candidate: %s", common.BytesToHexString(cv.Candidate))
+		}
+	}
+	if payloadVersion == outputpayload.VoteProducerAndCRVersion {
+		for _, cv := range content.CandidateVotes {
+			if cv.Votes > amount {
+				return errors.New("vote larger than output amount")
+			}
+		}
+	}
+
+	return nil
+}
+
+func checkVoteCRContent(content outputpayload.VoteContent,
+	crs map[string]struct{}, payloadVersion byte, amount common.Fixed64) error {
+	for _, cv := range content.CandidateVotes {
+		if _, ok := crs[common.BytesToHexString(cv.Candidate)]; !ok {
+			return fmt.Errorf("invalid vote output payload "+
+				"candidate: %s", common.BytesToHexString(cv.Candidate))
+		}
+	}
+	if payloadVersion == outputpayload.VoteProducerAndCRVersion {
+		for _, cv := range content.CandidateVotes {
+			if cv.Votes > amount {
+				return errors.New("vote larger than output amount")
 			}
 		}
 	}

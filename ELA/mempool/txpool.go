@@ -294,8 +294,8 @@ func (mp *TxPool) cleanVoteAndUpdateProducer(ownerPublicKey []byte) error {
 					}
 					for _, content := range opPayload.Contents {
 						if content.VoteType == outputpayload.Delegate {
-							for _, pubKey := range content.Candidates {
-								if bytes.Equal(ownerPublicKey, pubKey) {
+							for _, cv := range content.CandidateVotes {
+								if bytes.Equal(ownerPublicKey, cv.Candidate) {
 									mp.removeTransaction(txn)
 								}
 							}
