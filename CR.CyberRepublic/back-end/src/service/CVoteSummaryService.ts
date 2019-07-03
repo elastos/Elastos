@@ -16,7 +16,7 @@ interface Mail {
 export default class extends Base {
   private model: any
   protected init() {
-    this.model = this.getDBModel('CVote_Tracking')
+    this.model = this.getDBModel('CVote_Summary')
   }
 
   public async create(param: any): Promise<Document> {
@@ -27,16 +27,16 @@ export default class extends Base {
     const doc: any = {
       content,
       proposalId,
-      status: constant.CVOTE_TRACKING_STATUS.REVIEWING,
+      status: constant.CVOTE_SUMMARY_STATUS.REVIEWING,
       createdBy: this.currentUser._id
     }
-    if (status === constant.CVOTE_TRACKING_STATUS.DRAFT) {
+    if (status === constant.CVOTE_SUMMARY_STATUS.DRAFT) {
       doc.status = status
     }
 
     try {
       const rs = await this.model.save(doc)
-      if (rs.status === constant.CVOTE_TRACKING_STATUS.REVIEWING) {
+      if (rs.status === constant.CVOTE_SUMMARY_STATUS.REVIEWING) {
         const proposal = await this.getProposalById(proposalId)
         if (proposal) this.notifySecretary(proposal)
       }
@@ -57,33 +57,33 @@ export default class extends Base {
     } = param
 
     if (!this.currentUser || !this.currentUser._id) {
-      throw 'CVoteTrackingService.updateDraft - invalid current user'
+      throw 'CVoteSummaryService.updateDraft - invalid current user'
     }
 
     const cur = await this.model.findOne({ _id })
     if (!cur) {
-      throw 'CVoteTrackingService.updateDraft - invalid id'
+      throw 'CVoteSummaryService.updateDraft - invalid id'
     }
 
-    if (cur.status !== constant.CVOTE_TRACKING_STATUS.DRAFT) {
-      throw 'CVoteTrackingService.updateDraft - only DRAFT can be updated'
+    if (cur.status !== constant.CVOTE_SUMMARY_STATUS.DRAFT) {
+      throw 'CVoteSummaryService.updateDraft - only DRAFT can be updated'
     }
 
     if (!this.isOwner(cur)) {
-      throw 'CVoteTrackingService.updateDraft - not owner'
+      throw 'CVoteSummaryService.updateDraft - not owner'
     }
 
     const doc: any = {
       content
     }
 
-    if (status && _.includes([constant.CVOTE_TRACKING_STATUS.DRAFT, constant.CVOTE_TRACKING_STATUS.REVIEWING], status)) {
+    if (status && _.includes([constant.CVOTE_SUMMARY_STATUS.DRAFT, constant.CVOTE_SUMMARY_STATUS.REVIEWING], status)) {
       doc.status = status
     }
 
     try {
       await this.model.update({ _id }, doc)
-      if (status === constant.CVOTE_TRACKING_STATUS.REVIEWING) {
+      if (status === constant.CVOTE_SUMMARY_STATUS.REVIEWING) {
         const proposal = await this.getProposalById(cur.proposalId)
         if (proposal) this.notifySecretary(proposal)
       }
@@ -105,7 +105,7 @@ export default class extends Base {
     const { proposalId } = param
     const proposal = await this.getProposalById(proposalId)
     if (!proposalId || !proposal) {
-      throw 'CVoteTrackingService.list - invalid proposal'
+      throw 'CVoteSummaryService.list - invalid proposal'
     }
     const proposerId = _.get(proposal, 'proposer', '').toString()
     const canViewPrivate = (currentUserId === proposerId) || permissions.isSecretary(_.get(this.currentUser, 'role'))
@@ -143,11 +143,11 @@ export default class extends Base {
   public async listPublic(param: any): Promise<Object> {
     const { proposalId } = param
     if (!proposalId) {
-      throw 'CVoteTrackingService.list - must specify a proposal id'
+      throw 'CVoteSummaryService.list - must specify a proposal id'
     }
     const query: any = {
       proposalId,
-      status: constant.CVOTE_TRACKING_STATUS.PUBLISHED,
+      status: constant.CVOTE_SUMMARY_STATUS.PUBLISHED,
     }
 
     const cursor = this.model.getDBInstance().find(query).sort({
@@ -173,13 +173,13 @@ export default class extends Base {
       throw 'invalid id'
     }
 
-    if (cur.status !== constant.CVOTE_TRACKING_STATUS.REVIEWING) {
-      throw 'CVoteTrackingService.updateDraft - only REVIEWING can be updated'
+    if (cur.status !== constant.CVOTE_SUMMARY_STATUS.REVIEWING) {
+      throw 'CVoteSummaryService.updateDraft - only REVIEWING can be updated'
     }
 
     await this.model.update({ _id: id }, {
       $set: {
-        status: constant.CVOTE_TRACKING_STATUS.PUBLISHED,
+        status: constant.CVOTE_SUMMARY_STATUS.PUBLISHED,
         comment: {
           createdBy,
         }
@@ -198,20 +198,20 @@ export default class extends Base {
     const createdBy = _.get(this.currentUser, '_id')
 
     if (!cur) {
-      throw 'CVoteTrackingService.reject - invalid id'
+      throw 'CVoteSummaryService.reject - invalid id'
     }
 
-    if (cur.status !== constant.CVOTE_TRACKING_STATUS.REVIEWING) {
-      throw 'CVoteTrackingService.reject - only REVIEWING can be updated'
+    if (cur.status !== constant.CVOTE_SUMMARY_STATUS.REVIEWING) {
+      throw 'CVoteSummaryService.reject - only REVIEWING can be updated'
     }
 
     if (!comment) {
-      throw 'CVoteTrackingService.reject - comment is required'
+      throw 'CVoteSummaryService.reject - comment is required'
     }
 
     await this.model.update({ _id: id }, {
       $set: {
-        status: constant.CVOTE_TRACKING_STATUS.REJECT,
+        status: constant.CVOTE_SUMMARY_STATUS.REJECT,
         comment: {
           content: comment,
           createdBy,
@@ -258,9 +258,9 @@ export default class extends Base {
   }
 
   private async notifySecretary(cvote: any) {
-    const subject = `[Review needed] Tracking plan is updated in Prop #${cvote.vid}`
+    const subject = `[Review needed] Summary is updated in Prop #${cvote.vid}`
     const body = `
-      <p>${cvote.proposedBy} has updated the tracking plan in proposal #${cvote.vid}</p>
+      <p>${cvote.proposedBy} has updated the summary in proposal #${cvote.vid}</p>
       <br />
       <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${cvote._id}</a></p>
       <br /> <br />
@@ -278,9 +278,9 @@ export default class extends Base {
   }
 
   private async notifyRejected(cvote: any) {
-    const subject = `[Tracking plan Rejected] Please respond in Prop #${cvote.vid}`
+    const subject = `[Summary Rejected] Please respond in Prop #${cvote.vid}`
     const body = `
-      <p>Your tracking plan update has been rejected in proposal #${cvote.vid}</p>
+      <p>Your summary update has been rejected in proposal #${cvote.vid}</p>
       <br />
       <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${cvote._id}</a></p>
       <br /> <br />
@@ -299,9 +299,9 @@ export default class extends Base {
   }
 
   private async notifyApproved(cvote: any) {
-    const subject = `[Tracking plan approved] Approved in Prop #${cvote.vid}`
+    const subject = `[Summary approved] Approved in Prop #${cvote.vid}`
     const body = `
-      <p>Your tracking plan update has been approved and published in proposal #${cvote.vid}</p>
+      <p>Your summary update has been approved and published in proposal #${cvote.vid}</p>
       <br />
       <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${cvote._id}</a></p>
       <br /> <br />
