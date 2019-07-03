@@ -6,6 +6,8 @@
     <dimen name="common_margin">30dp</dimen>
     <dimen name="common_margin_30">30dp</dimen>
     <dimen name="common_margin_button">63dp</dimen>
+    <dimen name="common_margin_button60">60dp</dimen>
     <dimen name="common_margin_asset">15dp</dimen>
     <dimen name="common_margin_15">15dp</dimen>
+    <dimen name="common_margin_45">45dp</dimen>
 </resources>

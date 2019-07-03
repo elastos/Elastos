@@ -1174,5 +1174,18 @@ public class MyWallet {
             return exceptionProcess(e, "Get version");
         }
     }
+
+    public BaseEntity exportxPrivateKey(String masterWalletID, String payPasswd) {
+        try {
+            MasterWallet masterWallet = getMasterWallet(masterWalletID);
+            if (masterWallet == null) {
+                return errorProcess(errCodeInvalidMasterWallet + "", "Get " + formatWalletName(masterWalletID));
+            }
+            String privateKey = mMasterWalletManager.ExportxPrivateKey(masterWallet, payPasswd);
+            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, privateKey, "exportxPrivateKey");
+        } catch (WalletException e) {
+            return exceptionProcess(e, "ExportxPrivateKey" + formatWalletName(masterWalletID));
+        }
+    }
 }
 

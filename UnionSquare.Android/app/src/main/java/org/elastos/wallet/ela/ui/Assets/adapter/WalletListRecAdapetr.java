@@ -17,10 +17,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 
-/**
- * Created by wangdongfeng on 2018/4/14.
- */
-
 public class WalletListRecAdapetr extends RecyclerView.Adapter<WalletListRecAdapetr.ViewHolder> {
 
 
@@ -32,10 +28,17 @@ public class WalletListRecAdapetr extends RecyclerView.Adapter<WalletListRecAdap
     private List<Wallet> list;
 
     private Context context;
+    private boolean showStatus;
 
     public WalletListRecAdapetr(Context context, List<Wallet> list) {
+        this(context, list, true);
+
+    }
+
+    public WalletListRecAdapetr(Context context, List<Wallet> list, boolean showStatus) {
         this.list = list;
         this.context = context;
+        this.showStatus = showStatus;
 
     }
 
@@ -49,7 +52,10 @@ public class WalletListRecAdapetr extends RecyclerView.Adapter<WalletListRecAdap
     @Override
     public void onBindViewHolder(ViewHolder holder, final int position) {
         Wallet data = list.get(position);
-        if (data.isDefault()) {
+
+        if (!showStatus) {
+            holder.view.setVisibility(View.GONE);
+        } else if (data.isDefault()) {
             holder.view.setVisibility(View.VISIBLE);
         } else {
             holder.view.setVisibility(View.GONE);

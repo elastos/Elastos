@@ -11,6 +11,8 @@ import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.utils.Constant;
+import org.elastos.wallet.ela.utils.RxEnum;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -59,7 +61,7 @@ public class OutportMnemonicFragment extends BaseFragment /*<MnemonicWordPresent
             case R.id.sb:
 
                 Bundle bundle = new Bundle();
-                bundle.putString("openType", "manager");
+                bundle.putInt("openType", RxEnum.MANAGER.ordinal());
                 bundle.putString("mnemonic", mnemonic);
                 start(VerifyMnemonicWordsFragment.class,bundle);
                 break;

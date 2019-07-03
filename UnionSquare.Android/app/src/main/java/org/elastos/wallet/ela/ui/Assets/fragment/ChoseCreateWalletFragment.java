@@ -7,6 +7,7 @@ import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.ui.Assets.fragment.mulsignwallet.CreateMulWalletFragment;
 import org.elastos.wallet.ela.utils.ScanQRcodeUtil;
 
 import butterknife.BindView;
@@ -38,6 +39,8 @@ public class ChoseCreateWalletFragment extends BaseFragment {
                 requstPermissionOk();
                 break;
             case R.id.rl_mul:
+                //多签钱包
+                start(CreateMulWalletFragment.class);
                 break;
         }
     }

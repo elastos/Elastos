@@ -7,11 +7,11 @@
     <color name="colorSubtitle">#999</color>
     <color name="vote_button">#0070C9</color>
     <color name="gap_vote">#808080</color>
-    <color name="hint_color">#AFAFAF</color>
+    <color name="hint_color">#80ffffff</color>
     <color name="gap_wallet">#E1E1E1</color>
     <color name="f8f8f8">#F8F8F8</color>
     <color name="wallet_textColor">#ffffff</color>
-    <color name="wallet_hintTextColor">#b3ffffff</color>
+    <color name="wallet_hintTextColor">#80ffffff</color>
     <color name="a26ffffff">#26ffffff</color>
     <color name="exmobi_white">#7f090000</color>
     <color name="whiter">#ffffff</color>

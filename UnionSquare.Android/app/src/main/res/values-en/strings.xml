@@ -370,5 +370,14 @@
     <string name="mulwallet">多签钱包</string>
     <string name="singlereadonlywallet">单签只读钱包</string>
     <string name="createsinglewallet">创建单签钱包</string>
+    <string name="createsinglereadonlywallet">创建单签只读钱包</string>
     <string name="surecreate">确认创建</string>
+    <string name="signnum">签名数量</string>
+    <string name="readonly">只读</string>
+    <string name="addmainkey">添加主私钥</string>
+    <string name="createmulwalllet">创建多签钱包</string>
+    <string name="createprivatekey">新建私钥</string>
+    <string name="importmnemonic">导入助记词</string>
+    <string name="useexistwallet">使用已有钱包</string>
+    <string name="editmainprivatekey">编辑主私钥</string>
 </resources>

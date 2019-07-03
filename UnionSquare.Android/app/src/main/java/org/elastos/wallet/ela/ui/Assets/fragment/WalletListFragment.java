@@ -1,32 +1,49 @@
 package org.elastos.wallet.ela.ui.Assets.fragment;
 
+import android.app.Dialog;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.bean.CreateWalletBean;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.listener.RealmTransactionAbs;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.adapter.WalletListRecAdapetr;
+import org.elastos.wallet.ela.ui.Assets.fragment.mulsignwallet.CreateMulWalletFragment;
+import org.elastos.wallet.ela.ui.Assets.presenter.mulwallet.CreatMulWalletPresenter;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
+import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.utils.Constant;
+import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
+import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import butterknife.Unbinder;
 
-public class WalletListFragment extends BaseFragment implements CommonRvListener {
+public class WalletListFragment extends BaseFragment implements CommonRvListener, WarmPromptListener, CommmonStringWithMethNameViewData {
     @BindView(R.id.tv_title)
     TextView tvTitle;
     @BindView(R.id.rv)
     RecyclerView rv;
+    @BindView(R.id.iv_add)
+    ImageView ivAdd;
+    Unbinder unbinder;
     private RealmUtil realmUtil;
+    private String openType;
+    private String pwd;
+    private Dialog dialog;
 
 
     @Override
@@ -40,15 +57,29 @@ public class WalletListFragment extends BaseFragment implements CommonRvListener
     }
 
     @Override
+    protected void setExtraData(Bundle data) {
+        // bundle.putString("openType","showList");
+        openType = data.getString("openType", "");
+        if (openType.equals("showList")) {
+            ivAdd.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
     protected void initView(View view) {
         realmUtil = new RealmUtil();
         List<Wallet> wallets = realmUtil.queryUserAllWallet();
         tvTitle.setText(R.string.walletlist);
-        setRecycleView(wallets);
+        if (openType.equals("showList")) {
+            ivAdd.setVisibility(View.GONE);
+            setRecycleView(wallets, false);
+            return;
+        }
+        setRecycleView(wallets, true);
     }
 
-    private void setRecycleView(List<Wallet> list) {
-        WalletListRecAdapetr adapter = new WalletListRecAdapetr(getContext(), list);
+    private void setRecycleView(List<Wallet> list, boolean showStatus) {
+        WalletListRecAdapetr adapter = new WalletListRecAdapetr(getContext(), list, showStatus);
         rv.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         rv.setAdapter(adapter);
         adapter.setCommonRvListener(this);
@@ -71,9 +102,16 @@ public class WalletListFragment extends BaseFragment implements CommonRvListener
         }
     }
 
+    private Wallet curentWallt;
+
     @Override
     public void onRvItemClick(int position, Object o) {
         //条目的点击事件
+        if (openType.equals("showList")) {
+            curentWallt = (Wallet) o;
+            dialog= new DialogUtil().showWarmPromptInput(getBaseActivity(), null, null, this);
+            return;
+        }
         realmUtil.updateWalletDefault(((Wallet) o).getWalletId(), new RealmTransactionAbs() {
             @Override
             public void onSuccess() {
@@ -82,5 +120,26 @@ public class WalletListFragment extends BaseFragment implements CommonRvListener
             }
         });
 
+    }
+
+    @Override
+    public void affireBtnClick(View view) {
+        pwd = ((EditText) view).getText().toString().trim();
+        if (TextUtils.isEmpty(pwd)) {
+            showToastMessage(getString(R.string.pwdnoempty));
+            return;
+        }
+        new CreatMulWalletPresenter().exportxPrivateKey(curentWallt.getWalletId(), pwd, this);
+    }
+
+    @Override
+    public void onGetCommonData(String methodname, String data) {
+        dialog.dismiss();
+        CreateWalletBean createWalletBean = new CreateWalletBean();
+        createWalletBean.setMasterWalletID(curentWallt.getWalletId());
+        createWalletBean.setPayPassword(pwd);
+        createWalletBean.setPrivateKey(data);
+        post(RxEnum.SELECTRIVATEKEY.ordinal(), "", createWalletBean);
+        popTo(CreateMulWalletFragment.class, false);
     }
 }

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/commonbg"
+    android:orientation="vertical">
+
+    <include layout="@layout/title" />
+
+    <RelativeLayout
+        android:id="@+id/rl_new"
+        style="@style/settingItem_margin"
+        android:layout_height="58dp"
+        android:background="@color/a26ffffff"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="17dp">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/createprivatekey"
+            android:textSize="15sp" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="21dp"
+            android:src="@mipmap/asset_list_arrow" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/rl_import"
+        style="@style/settingItem_margin"
+        android:layout_height="58dp"
+        android:layout_marginTop="10dp"
+        android:background="@color/a26ffffff"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="17dp">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/importmnemonic"
+            android:textSize="15sp" />
+
+        <ImageView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="21dp"
+            android:src="@mipmap/asset_list_arrow" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/rl_use"
+        style="@style/settingItem_margin"
+        android:layout_height="58dp"
+        android:layout_marginTop="10dp"
+        android:background="@color/a26ffffff"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="17dp">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/useexistwallet"
+            android:textSize="15sp" />
+
+        <ImageView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="21dp"
+            android:src="@mipmap/asset_list_arrow" />
+    </RelativeLayout>
+</LinearLayout>

@@ -210,7 +210,7 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
             tvRight.setVisibility(View.VISIBLE);
             tvRight.setText(text[1]);
         }
-        
+
     }
 
     public void showToast(String message) {
@@ -386,23 +386,31 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
         //popTo(MainFragment.class, false);
         Fragment mainFragment = getBaseActivity().getSupportFragmentManager().findFragmentByTag(MainFragment.class.getName());
         if (mainFragment != null) {
-            // Log.d("+++++++", "1");
             getBaseActivity().getSupportFragmentManager().popBackStackImmediate(MainFragment.class.getName(), 0);
         } else {
-            // Log.d("+++++++", "2");
             getBaseActivity().getSupportFragmentManager().popBackStackImmediate(null, 1);
             ((BaseActivity) _mActivity).loadRootFragment(R.id.mhoneframeLayout, MainFragment.newInstance());
         }
     }
 
     public void toHomeWalletFragment() {
-        getBaseActivity().getSupportFragmentManager().popBackStackImmediate(null, 1);
-        ((BaseActivity) _mActivity).loadRootFragment(R.id.mhoneframeLayout, HomeWalletFragment.newInstance());
-        //todo 优化  判断 MainFragment是否存在 存在退回到它并更新数据  不纯在执行下面的
-        //  popTo(MainFragment.class,false);
-
+        Fragment homeWalletFragment = getBaseActivity().getSupportFragmentManager().findFragmentByTag(HomeWalletFragment.class.getName());
+        if (homeWalletFragment != null) {
+            getBaseActivity().getSupportFragmentManager().popBackStackImmediate(HomeWalletFragment.class.getName(), 0);
+        } else {
+            getBaseActivity().getSupportFragmentManager().popBackStackImmediate(null, 1);
+            ((BaseActivity) _mActivity).loadRootFragment(R.id.mhoneframeLayout, HomeWalletFragment.newInstance());
+        }
     }
-
+    public void popToTagetFragment(Class<BaseFragment> aClass) {
+        Fragment fragment = getBaseActivity().getSupportFragmentManager().findFragmentByTag(aClass.getName());
+        if (fragment != null) {
+            getBaseActivity().getSupportFragmentManager().popBackStackImmediate(aClass.getName(), 0);
+        } else {
+            getBaseActivity().getSupportFragmentManager().popBackStackImmediate(null, 1);
+            ((BaseActivity) _mActivity).loadRootFragment(R.id.mhoneframeLayout, MainFragment.newInstance());
+        }
+    }
     public void registReceiver() {
         if (!EventBus.getDefault().isRegistered(this))
             EventBus.getDefault().register(this);
@@ -425,10 +433,12 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
         ClassicsHeader.REFRESH_HEADER_FAILED = getString(R.string.srl_header_failed);//"刷新失败";
         ClassicsHeader.REFRESH_HEADER_LASTTIME = getString(R.string.srl_header_update);//"上次更新 M-d HH:mm";
     }
+
     SmartRefreshLayout smartRefreshLayout;
+
     /*请求异常回调*/
     protected void onErrorRefreshLayout(SmartRefreshLayout refreshLayout) {
-        this.smartRefreshLayout=refreshLayout;
+        this.smartRefreshLayout = refreshLayout;
         getBaseActivity().onErrorRefreshLayout(refreshLayout);
     }
 
