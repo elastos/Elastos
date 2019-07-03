@@ -344,8 +344,8 @@ func randomVotes() *types.Output {
 			Contents: []outputpayload.VoteContent{
 				{
 					VoteType: outputpayload.Delegate,
-					Candidates: [][]byte{
-						randomFakePK(),
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{randomFakePK(), 0},
 					},
 				},
 			},

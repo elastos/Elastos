@@ -31,18 +31,18 @@ var (
 func TestVoteOutput_Serialize(t *testing.T) {
 	voteContent1 := VoteContent{
 		VoteType: Delegate,
-		Candidates: [][]byte{
-			candidate1,
-			candidate2,
-			candidate3,
-			candidate4,
+		CandidateVotes: []CandidateVotes{
+			{candidate1, 0},
+			{candidate2, 0},
+			{candidate3, 0},
+			{candidate4, 0},
 		},
 	}
 	voteContent2 := VoteContent{
 		VoteType: CRC,
-		Candidates: [][]byte{
-			candidate1,
-			candidate4,
+		CandidateVotes: []CandidateVotes{
+			{candidate1, 0},
+			{candidate4, 0},
 		},
 	}
 	voteOutput := VoteOutput{
@@ -82,19 +82,19 @@ func TestVoteOutput_Deserialize(t *testing.T) {
 	if vo.Contents[0].VoteType != Delegate {
 		t.Error("error vote type in content0")
 	}
-	if len(vo.Contents[0].Candidates) != 4 ||
-		!bytes.Equal(vo.Contents[0].Candidates[0], candidate1) ||
-		!bytes.Equal(vo.Contents[0].Candidates[1], candidate2) ||
-		!bytes.Equal(vo.Contents[0].Candidates[2], candidate3) ||
-		!bytes.Equal(vo.Contents[0].Candidates[3], candidate4) {
+	if len(vo.Contents[0].CandidateVotes) != 4 ||
+		!bytes.Equal(vo.Contents[0].CandidateVotes[0].Candidate, candidate1) ||
+		!bytes.Equal(vo.Contents[0].CandidateVotes[1].Candidate, candidate2) ||
+		!bytes.Equal(vo.Contents[0].CandidateVotes[2].Candidate, candidate3) ||
+		!bytes.Equal(vo.Contents[0].CandidateVotes[3].Candidate, candidate4) {
 		t.Error("error candidates in content0")
 	}
 	if vo.Contents[1].VoteType != CRC {
 		t.Error("error vote type in content1")
 	}
-	if len(vo.Contents[1].Candidates) != 2 ||
-		!bytes.Equal(vo.Contents[1].Candidates[0], candidate1) ||
-		!bytes.Equal(vo.Contents[1].Candidates[1], candidate4) {
+	if len(vo.Contents[1].CandidateVotes) != 2 ||
+		!bytes.Equal(vo.Contents[1].CandidateVotes[0].Candidate, candidate1) ||
+		!bytes.Equal(vo.Contents[1].CandidateVotes[1].Candidate, candidate4) {
 		t.Error("error candidates in content1")
 	}
 }
@@ -107,8 +107,8 @@ func TestVoteOutput_Validate(t *testing.T) {
 
 	// vo1
 	content1 := VoteContent{
-		VoteType:   Delegate,
-		Candidates: [][]byte{},
+		VoteType:       Delegate,
+		CandidateVotes: []CandidateVotes{},
 	}
 	vo1 := VoteOutput{
 		Version: 0,
@@ -122,14 +122,14 @@ func TestVoteOutput_Validate(t *testing.T) {
 	// vo2
 	content2 := VoteContent{
 		VoteType: Delegate,
-		Candidates: [][]byte{
-			candidate1,
+		CandidateVotes: []CandidateVotes{
+			{candidate1, 0},
 		},
 	}
 	content3 := VoteContent{
 		VoteType: Delegate,
-		Candidates: [][]byte{
-			candidate1,
+		CandidateVotes: []CandidateVotes{
+			{candidate1, 0},
 		},
 	}
 	vo2 := VoteOutput{
@@ -145,9 +145,9 @@ func TestVoteOutput_Validate(t *testing.T) {
 	// vo3
 	content4 := VoteContent{
 		VoteType: Delegate,
-		Candidates: [][]byte{
-			candidate1,
-			candidate1,
+		CandidateVotes: []CandidateVotes{
+			{candidate1, 0},
+			{candidate1, 0},
 		},
 	}
 	vo3 := VoteOutput{

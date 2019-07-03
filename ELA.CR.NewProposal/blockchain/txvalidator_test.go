@@ -631,9 +631,166 @@ func getCode(publicKey string) []byte {
 }
 
 func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
-	// 1. Generate a vote output
+	// 1. Generate a vote output v0
 	publicKeyStr1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+	outputs1 := []*types.Output{
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: 0,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 0},
+						},
+					},
+				},
+			},
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: 0,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType:       outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{},
+					},
+				},
+			},
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: 0,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 0},
+							{publicKey1, 0},
+						},
+					},
+				},
+			},
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: 2,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 0},
+						},
+					},
+				},
+			},
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: 0,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 0},
+						},
+					},
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 0},
+						},
+					},
+				},
+			},
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: 0,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: 2,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 0},
+						},
+					},
+				},
+			},
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: 0,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 0},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	// 2. Check output payload v0
+	err := outputs1[0].Payload.(*outputpayload.VoteOutput).Validate()
+	s.NoError(err)
+
+	err = outputs1[1].Payload.(*outputpayload.VoteOutput).Validate()
+	s.EqualError(err, "invalid public key count")
+
+	err = outputs1[2].Payload.(*outputpayload.VoteOutput).Validate()
+	s.EqualError(err, "duplicate candidate")
+
+	err = outputs1[3].Payload.(*outputpayload.VoteOutput).Validate()
+	s.EqualError(err, "invalid vote version")
+
+	err = outputs1[4].Payload.(*outputpayload.VoteOutput).Validate()
+	s.EqualError(err, "duplicate vote type")
+
+	err = outputs1[5].Payload.(*outputpayload.VoteOutput).Validate()
+	s.EqualError(err, "invalid vote type")
+
+	err = outputs1[6].Payload.(*outputpayload.VoteOutput).Validate()
+	s.NoError(err)
+
+	// 3. Generate a vote output v1
 	outputs := []*types.Output{
 		&types.Output{
 			AssetID:     common.Uint256{},
@@ -642,12 +799,12 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 			ProgramHash: common.Uint168{123},
 			Type:        types.OTVote,
 			Payload: &outputpayload.VoteOutput{
-				Version: 0,
+				Version: outputpayload.VoteProducerAndCRVersion,
 				Contents: []outputpayload.VoteContent{
 					outputpayload.VoteContent{
 						VoteType: outputpayload.Delegate,
-						Candidates: [][]byte{
-							publicKey1,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 1},
 						},
 					},
 				},
@@ -660,11 +817,11 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 			ProgramHash: common.Uint168{123},
 			Type:        types.OTVote,
 			Payload: &outputpayload.VoteOutput{
-				Version: 0,
+				Version: outputpayload.VoteProducerAndCRVersion,
 				Contents: []outputpayload.VoteContent{
 					outputpayload.VoteContent{
-						VoteType:   outputpayload.Delegate,
-						Candidates: [][]byte{},
+						VoteType:       outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{},
 					},
 				},
 			},
@@ -676,13 +833,91 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 			ProgramHash: common.Uint168{123},
 			Type:        types.OTVote,
 			Payload: &outputpayload.VoteOutput{
-				Version: 0,
+				Version: outputpayload.VoteProducerAndCRVersion,
 				Contents: []outputpayload.VoteContent{
 					outputpayload.VoteContent{
 						VoteType: outputpayload.Delegate,
-						Candidates: [][]byte{
-							publicKey1,
-							publicKey1,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 1},
+							{publicKey1, 1},
+						},
+					},
+				},
+			},
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: 2,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 1},
+						},
+					},
+				},
+			},
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: outputpayload.VoteProducerAndCRVersion,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 1},
+						},
+					},
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 1},
+						},
+					},
+				},
+			},
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: outputpayload.VoteProducerAndCRVersion,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: 2,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 1},
+						},
+					},
+				},
+			},
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: outputpayload.VoteProducerAndCRVersion,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 0},
 						},
 					},
 				},
@@ -690,8 +925,8 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 		},
 	}
 
-	// 2. Check output payload
-	err := outputs[0].Payload.(*outputpayload.VoteOutput).Validate()
+	// 2. Check output payload v1
+	err = outputs[0].Payload.(*outputpayload.VoteOutput).Validate()
 	s.NoError(err)
 
 	err = outputs[1].Payload.(*outputpayload.VoteOutput).Validate()
@@ -699,6 +934,18 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 
 	err = outputs[2].Payload.(*outputpayload.VoteOutput).Validate()
 	s.EqualError(err, "duplicate candidate")
+
+	err = outputs[3].Payload.(*outputpayload.VoteOutput).Validate()
+	s.EqualError(err, "invalid vote version")
+
+	err = outputs[4].Payload.(*outputpayload.VoteOutput).Validate()
+	s.EqualError(err, "duplicate vote type")
+
+	err = outputs[5].Payload.(*outputpayload.VoteOutput).Validate()
+	s.EqualError(err, "invalid vote type")
+
+	err = outputs[6].Payload.(*outputpayload.VoteOutput).Validate()
+	s.EqualError(err, "invalid candidate votes")
 }
 
 func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
@@ -1039,8 +1286,8 @@ func (s *txValidatorTestSuite) TestCheckOutputPayload() {
 				Contents: []outputpayload.VoteContent{
 					{
 						VoteType: outputpayload.Delegate,
-						Candidates: [][]byte{
-							publicKey1,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 0},
 						},
 					},
 				},
@@ -1056,8 +1303,8 @@ func (s *txValidatorTestSuite) TestCheckOutputPayload() {
 				Version: 0,
 				Contents: []outputpayload.VoteContent{
 					{
-						VoteType:   outputpayload.Delegate,
-						Candidates: [][]byte{},
+						VoteType:       outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{},
 					},
 				},
 			},
@@ -1073,9 +1320,9 @@ func (s *txValidatorTestSuite) TestCheckOutputPayload() {
 				Contents: []outputpayload.VoteContent{
 					{
 						VoteType: outputpayload.Delegate,
-						Candidates: [][]byte{
-							publicKey1,
-							publicKey1,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 0},
+							{publicKey1, 0},
 						},
 					},
 				},
@@ -1092,8 +1339,8 @@ func (s *txValidatorTestSuite) TestCheckOutputPayload() {
 				Contents: []outputpayload.VoteContent{
 					{
 						VoteType: outputpayload.Delegate,
-						Candidates: [][]byte{
-							publicKey1,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 0},
 						},
 					},
 				},
@@ -1147,8 +1394,10 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
 				{
-					VoteType:   outputpayload.Delegate,
-					Candidates: [][]byte{candidate1},
+					VoteType: outputpayload.Delegate,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate1, 0},
+					},
 				},
 			},
 		},
@@ -1165,8 +1414,10 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
 				{
-					VoteType:   outputpayload.CRC,
-					Candidates: [][]byte{candidate3},
+					VoteType: outputpayload.CRC,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate3, 0},
+					},
 				},
 			},
 		},
@@ -1183,12 +1434,16 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
 				{
-					VoteType:   outputpayload.Delegate,
-					Candidates: [][]byte{candidate1},
+					VoteType: outputpayload.Delegate,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate1, 0},
+					},
 				},
 				{
-					VoteType:   outputpayload.CRC,
-					Candidates: [][]byte{candidate3},
+					VoteType: outputpayload.CRC,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate3, 0},
+					},
 				},
 			},
 		},
@@ -1213,8 +1468,10 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
 				{
-					VoteType:   outputpayload.Delegate,
-					Candidates: [][]byte{candidate2},
+					VoteType: outputpayload.Delegate,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate2, 0},
+					},
 				},
 			},
 		},
@@ -1232,8 +1489,10 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
 				{
-					VoteType:   outputpayload.CRC,
-					Candidates: [][]byte{candidate2},
+					VoteType: outputpayload.CRC,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate2, 0},
+					},
 				},
 			},
 		},
@@ -1251,12 +1510,16 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
 				{
-					VoteType:   outputpayload.Delegate,
-					Candidates: [][]byte{candidate2},
+					VoteType: outputpayload.Delegate,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate2, 0},
+					},
 				},
 				{
-					VoteType:   outputpayload.CRC,
-					Candidates: [][]byte{candidate2},
+					VoteType: outputpayload.CRC,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate2, 0},
+					},
 				},
 			},
 		},
@@ -1270,64 +1533,71 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 	outputs7 = append(outputs7, &types.Output{
 		Type:        types.OTVote,
 		ProgramHash: *hash,
+		Value:       common.Fixed64(10),
 		Payload: &outputpayload.VoteOutput{
 			Version: 1,
 			Contents: []outputpayload.VoteContent{
 				{
-					VoteType:   outputpayload.Delegate,
-					Candidates: [][]byte{candidate1},
-					Votes:      []common.Fixed64{},
+					VoteType: outputpayload.Delegate,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate1, 20},
+					},
 				},
 			},
 		},
 	})
 	s.EqualError(checkVoteOutputs(outputs7, references, producersMap, crsMap),
-		"invalid candidate and votes count")
+		"vote larger than output amount")
 
 	// Check vote output of v1 with crc type and wrong votes
 	outputs8 := []*types.Output{{Type: types.OTNone}}
 	outputs8 = append(outputs8, &types.Output{
 		Type:        types.OTVote,
 		ProgramHash: *hash,
+		Value:       common.Fixed64(10),
 		Payload: &outputpayload.VoteOutput{
 			Version: 1,
 			Contents: []outputpayload.VoteContent{
 				{
-					VoteType:   outputpayload.CRC,
-					Candidates: [][]byte{candidate3},
-					Votes:      []common.Fixed64{},
+					VoteType: outputpayload.CRC,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate3, 20},
+					},
 				},
 			},
 		},
 	})
 	s.EqualError(checkVoteOutputs(outputs8, references, producersMap, crsMap),
-		"invalid candidate and votes count")
+		"vote larger than output amount")
 
 	// Check vote output of v1 with wrong votes
 	outputs9 := []*types.Output{{Type: types.OTNone}}
 	outputs9 = append(outputs9, &types.Output{
 		Type:        types.OTVote,
 		ProgramHash: *hash,
+		Value:       common.Fixed64(10),
 		Payload: &outputpayload.VoteOutput{
 			Version: 1,
 			Contents: []outputpayload.VoteContent{
 				{
-					VoteType:   outputpayload.Delegate,
-					Candidates: [][]byte{candidate1},
-					Votes:      []common.Fixed64{},
+					VoteType: outputpayload.Delegate,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate1, 20},
+					},
 				},
 				{
-					VoteType:   outputpayload.CRC,
-					Candidates: [][]byte{candidate3},
-					Votes:      []common.Fixed64{},
+					VoteType: outputpayload.CRC,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate3, 20},
+					},
 				},
 			},
 		},
 	})
 	s.EqualError(checkVoteOutputs(outputs9, references, producersMap, crsMap),
-		"invalid candidate and votes count")
+		"vote larger than output amount")
 
-	// Check vote output of v1 with delegate type and wrong votes
+	// Check vote output v1 with correct votes
 	outputs10 := []*types.Output{{Type: types.OTNone}}
 	outputs10 = append(outputs10, &types.Output{
 		Type:        types.OTVote,
@@ -1337,17 +1607,23 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			Version: 1,
 			Contents: []outputpayload.VoteContent{
 				{
-					VoteType:   outputpayload.Delegate,
-					Candidates: [][]byte{candidate1},
-					Votes:      []common.Fixed64{20},
+					VoteType: outputpayload.Delegate,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate1, 10},
+					},
+				},
+				{
+					VoteType: outputpayload.CRC,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate3, 10},
+					},
 				},
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs10, references, producersMap, crsMap),
-		"vote larger than output amount")
+	s.NoError(checkVoteOutputs(outputs10, references, producersMap, crsMap))
 
-	// Check vote output of v1 with crc type and wrong votes
+	// Check vote output of v1 with wrong votes
 	outputs11 := []*types.Output{{Type: types.OTNone}}
 	outputs11 = append(outputs11, &types.Output{
 		Type:        types.OTVote,
@@ -1357,88 +1633,21 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			Version: 1,
 			Contents: []outputpayload.VoteContent{
 				{
-					VoteType:   outputpayload.CRC,
-					Candidates: [][]byte{candidate3},
-					Votes:      []common.Fixed64{20},
+					VoteType: outputpayload.Delegate,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate1, 1},
+					},
+				},
+				{
+					VoteType: outputpayload.CRC,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate3, 1},
+					},
 				},
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs11, references, producersMap, crsMap),
-		"vote larger than output amount")
-
-	// Check vote output of v1 with wrong votes
-	outputs12 := []*types.Output{{Type: types.OTNone}}
-	outputs12 = append(outputs12, &types.Output{
-		Type:        types.OTVote,
-		ProgramHash: *hash,
-		Value:       common.Fixed64(10),
-		Payload: &outputpayload.VoteOutput{
-			Version: 1,
-			Contents: []outputpayload.VoteContent{
-				{
-					VoteType:   outputpayload.Delegate,
-					Candidates: [][]byte{candidate1},
-					Votes:      []common.Fixed64{20},
-				},
-				{
-					VoteType:   outputpayload.CRC,
-					Candidates: [][]byte{candidate3},
-					Votes:      []common.Fixed64{20},
-				},
-			},
-		},
-	})
-	s.EqualError(checkVoteOutputs(outputs12, references, producersMap, crsMap),
-		"vote larger than output amount")
-
-	// Check vote output v1 with correct votes
-	outputs13 := []*types.Output{{Type: types.OTNone}}
-	outputs13 = append(outputs13, &types.Output{
-		Type:        types.OTVote,
-		ProgramHash: *hash,
-		Value:       common.Fixed64(10),
-		Payload: &outputpayload.VoteOutput{
-			Version: 1,
-			Contents: []outputpayload.VoteContent{
-				{
-					VoteType:   outputpayload.Delegate,
-					Candidates: [][]byte{candidate1},
-					Votes:      []common.Fixed64{10},
-				},
-				{
-					VoteType:   outputpayload.CRC,
-					Candidates: [][]byte{candidate3},
-					Votes:      []common.Fixed64{10},
-				},
-			},
-		},
-	})
-	s.NoError(checkVoteOutputs(outputs13, references, producersMap, crsMap))
-
-	// Check vote output of v1 with wrong votes
-	outputs14 := []*types.Output{{Type: types.OTNone}}
-	outputs14 = append(outputs14, &types.Output{
-		Type:        types.OTVote,
-		ProgramHash: *hash,
-		Value:       common.Fixed64(10),
-		Payload: &outputpayload.VoteOutput{
-			Version: 1,
-			Contents: []outputpayload.VoteContent{
-				{
-					VoteType:   outputpayload.Delegate,
-					Candidates: [][]byte{candidate1},
-					Votes:      []common.Fixed64{1},
-				},
-				{
-					VoteType:   outputpayload.CRC,
-					Candidates: [][]byte{candidate3},
-					Votes:      []common.Fixed64{1},
-				},
-			},
-		},
-	})
-	s.NoError(checkVoteOutputs(outputs14, references, producersMap, crsMap))
+	s.NoError(checkVoteOutputs(outputs11, references, producersMap, crsMap))
 }
 
 func (s *txValidatorTestSuite) TestCheckOutputProgramHash() {

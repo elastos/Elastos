@@ -64,13 +64,18 @@ func mockActivateProducerTx(publicKey []byte) *types.Transaction {
 
 // mockVoteTx creates a vote transaction with the producers public keys.
 func mockVoteTx(publicKeys [][]byte) *types.Transaction {
+	candidateVotes := make([]outputpayload.CandidateVotes, 0, len(publicKeys))
+	for _, pk := range publicKeys {
+		candidateVotes = append(candidateVotes,
+			outputpayload.CandidateVotes{pk, 0})
+	}
 	output := &types.Output{
 		Value: 100,
 		Type:  types.OTVote,
 		Payload: &outputpayload.VoteOutput{
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
-				{outputpayload.Delegate, publicKeys, nil},
+				{outputpayload.Delegate, candidateVotes},
 			},
 		},
 	}

@@ -29,8 +29,10 @@ func TestOutput_Serialize(t *testing.T) {
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
 				outputpayload.VoteContent{
-					VoteType:   0,
-					Candidates: [][]byte{[]byte{1, 2, 3}},
+					VoteType: 0,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{[]byte{1, 2, 3}, 0},
+					},
 				},
 			},
 		},
