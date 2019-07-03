@@ -19,6 +19,7 @@ import mediumDraftExporter from 'medium-draft/lib/exporter'
 import VoteResultComponent from '../common/vote_result/Component'
 import Preamble from './Preamble'
 import Tracking from '../tracking/Container'
+import Summary from '../summary/Container'
 
 import { Title, Label, ContentTitle, StyledAnchor, FixedHeader, Body } from './style'
 import './style.scss'
@@ -118,12 +119,13 @@ class C extends StandardPage {
     const labelNode = this.renderLabelNode()
     const subTitleNode = this.renderSubTitle()
     const contentNode = this.renderContent()
+    const translationBtn = this.renderTranslationBtn()
     const notesNode = this.renderNotes()
     const voteActionsNode = this.renderVoteActions()
     const adminActionsNode = this.renderAdminActions()
     const voteDetailNode = this.renderVoteResults()
     const trackingNode = this.renderTracking()
-    const translationBtn = this.renderTranslationBtn()
+    const summaryNode = this.renderSummary()
 
     return (
       <div>
@@ -144,6 +146,7 @@ class C extends StandardPage {
             {adminActionsNode}
             {voteDetailNode}
             {trackingNode}
+            {summaryNode}
           </Body>
         </div>
         <Footer />
@@ -191,6 +194,8 @@ class C extends StandardPage {
     const { data } = this.state
     const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.FINAL], data.status)
     const tracking = isShowFollowingUp && <Anchor.Link href="#tracking" title={I18N.get('proposal.fields.tracking')} />
+    const summary = isShowFollowingUp && <Anchor.Link href="#summary" title={I18N.get('proposal.fields.summary')} />
+
     return (
       <StyledAnchor offsetTop={420}>
         <Anchor.Link href="#preamble" title={I18N.get('proposal.fields.preamble')} />
@@ -208,7 +213,7 @@ class C extends StandardPage {
           <Anchor.Link href="#vote" title={I18N.get('proposal.fields.vote')} />
         </div>
         {tracking}
-        {/* <Anchor.Link href="#summary" title={I18N.get('proposal.fields.summary')} /> */}
+        {summary}
       </StyledAnchor>
     )
   }
@@ -418,11 +423,10 @@ class C extends StandardPage {
     return <Tracking proposal={data} />
   }
 
-  // renderSummary() {
-  //   const { data } = this.state
-  //   const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.FINAL], data.status)
-  //   return isShowFollowingUp && <Summary proposal={data} />
-  // }
+  renderSummary() {
+    const { data } = this.state
+    return <Summary proposal={data} />
+  }
 
   gotoEditPage = () => {
     const { _id: id } = this.state.data

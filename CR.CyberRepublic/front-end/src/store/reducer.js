@@ -2,6 +2,7 @@ import {combineReducers} from 'redux'
 import {routerReducer} from 'react-router-redux'
 
 import cvoteTracking from './redux/cvoteTracking'
+import cvoteSummary from './redux/cvoteSummary'
 import task from './redux/task'
 import user from './redux/user'
 import team from './redux/team'
@@ -29,6 +30,7 @@ export default combineReducers({
   app: appReducer,
   router: routerReducer,
   cvoteTracking: cvoteTracking.getReducer(),
+  cvoteSummary: cvoteSummary.getReducer(),
   task: task.getReducer(),
   user: user.getReducer(),
   team: team.getReducer(),

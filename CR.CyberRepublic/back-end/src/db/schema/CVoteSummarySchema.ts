@@ -1,7 +1,20 @@
 import { Schema } from 'mongoose'
 import * as _ from 'lodash'
 import { constant } from '../../constant'
-import { CommentSchema } from './CommentSchema'
+
+const CommentSchema = {
+  createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'users',
+  },
+  content: {
+      type: String,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  }
+}
 
 export const CVote_Summary = {
   content: {

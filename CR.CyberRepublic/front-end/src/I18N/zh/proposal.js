@@ -1,4 +1,4 @@
-import { CVOTE_TRACKING_STATUS } from '@/constant'
+import { CVOTE_TRACKING_STATUS, CVOTE_SUMMARY_STATUS } from '@/constant'
 
 export default {
   fields: {
@@ -26,6 +26,10 @@ export default {
       reject: '驳回 & 评论',
       approve: '批准 & 发布',
     },
+    summary: {
+      reject: '驳回 & 评论',
+      approve: '批准 & 发布',
+    },
   },
   text: {
     tracking: {
@@ -34,13 +38,28 @@ export default {
         header: '',
         footer: '',
       }
-    }
+    },
+    summary: {
+      reviewDetails: '审阅详情',
+      notice: {
+        header: '',
+        footer: '',
+      }
+    },
   },
   status: {
-    [CVOTE_TRACKING_STATUS.DRAFT]: '草稿',
-    [CVOTE_TRACKING_STATUS.REVIEWING]: '审阅中',
-    [CVOTE_TRACKING_STATUS.PUBLISHED]: '已批准 ✓',
-    [CVOTE_TRACKING_STATUS.REJECT]: '被驳回 !',
+    tracking: {
+      [CVOTE_TRACKING_STATUS.DRAFT]: '草稿',
+      [CVOTE_TRACKING_STATUS.REVIEWING]: '审阅中',
+      [CVOTE_TRACKING_STATUS.PUBLISHED]: '已批准 ✓',
+      [CVOTE_TRACKING_STATUS.REJECT]: '被驳回 !',
+    },
+    summary: {
+      [CVOTE_SUMMARY_STATUS.DRAFT]: '草稿',
+      [CVOTE_SUMMARY_STATUS.REVIEWING]: '审阅中',
+      [CVOTE_SUMMARY_STATUS.PUBLISHED]: '已批准 ✓',
+      [CVOTE_SUMMARY_STATUS.REJECT]: '被驳回 !',
+    },
   },
   form: {
     tracking: {
@@ -48,6 +67,12 @@ export default {
         submit: '提交',
       },
       add: '添加进度',
+    },
+    summary: {
+      btn: {
+        submit: '提交',
+      },
+      add: '添加总结',
     },
     note: {
       abstract: '一个关于提案内容的简短描述（不超过200字）。',

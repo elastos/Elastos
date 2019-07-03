@@ -6,7 +6,7 @@ import DraftEditor from '@/module/common/DraftEditor'
 import CRPopover from '@/module/shared/Popover/Component'
 import { Row, Col, Button, List, Collapse } from 'antd'
 import I18N from '@/I18N'
-import { CONTENT_TYPE, DATE_FORMAT, CVOTE_TRACKING_STATUS } from '@/constant'
+import { CONTENT_TYPE, DATE_FORMAT, CVOTE_SUMMARY_STATUS } from '@/constant'
 import styled from 'styled-components'
 import userUtil from '@/util/user'
 
@@ -39,7 +39,7 @@ export default class extends BaseComponent {
   }
 
   renderTitle() {
-    return <ContentTitle id="tracking">{I18N.get('proposal.fields.tracking')}</ContentTitle>
+    return <ContentTitle id="summary">{I18N.get('proposal.fields.summary')}</ContentTitle>
   }
 
   renderPublicList() {
@@ -89,7 +89,7 @@ export default class extends BaseComponent {
                 <StyledFooter>{moment(item.createdAt).format(DATE_FORMAT)}</StyledFooter>
               </LeftCol>
               <RightCol span={3}>
-                <Status status={item.status}>{I18N.get(`proposal.status.tracking.${item.status}`)}</Status>
+                <Status status={item.status}>{I18N.get(`proposal.status.summary.${item.status}`)}</Status>
               </RightCol>
             </StyledRow>
             {this.renderActions(item)}
@@ -99,7 +99,7 @@ export default class extends BaseComponent {
     )
     return (
       <StyledCollapse defaultActiveKey={['1']} expandIconPosition="right">
-        <Panel header={I18N.get('proposal.text.tracking.reviewDetails')} key="1">
+        <Panel header={I18N.get('proposal.text.summary.reviewDetails')} key="1">
           {body}
         </Panel>
       </StyledCollapse>
@@ -107,16 +107,16 @@ export default class extends BaseComponent {
   }
 
   showModal = (id) => {
-    this.setState({ trackingId: id })
+    this.setState({ summaryId: id })
   }
 
   hideModal = () => {
-    this.setState({ trackingId: '' })
+    this.setState({ summaryId: '' })
   }
 
   reject = async ({ reason }) => {
     const { reject } = this.props
-    const param = { id: this.state.trackingId, comment: reason }
+    const param = { id: this.state.summaryId, comment: reason }
 
     this.ord_loading(true)
     try {
@@ -126,7 +126,7 @@ export default class extends BaseComponent {
     } catch (e) {
       this.ord_loading(false)
     }
-    this.setState({ reason: '', trackingId: '' })
+    this.setState({ reason: '', summaryId: '' })
   }
 
   approve = async (id) => {
@@ -145,12 +145,12 @@ export default class extends BaseComponent {
   }
 
   renderBtns(id) {
-    const { trackingId } = this.state
+    const { summaryId } = this.state
     const btnReject = (
       <Button
         onClick={this.showModal.bind(this, id)}
       >
-        {I18N.get('proposal.btn.tracking.reject')}
+        {I18N.get('proposal.btn.summary.reject')}
       </Button>
     )
     const btnApprove = (
@@ -159,7 +159,7 @@ export default class extends BaseComponent {
         onClick={this.approve.bind(this, id)}
         style={{ marginRight: -8 }}
       >
-        {I18N.get('proposal.btn.tracking.approve')}
+        {I18N.get('proposal.btn.summary.approve')}
       </Button>
     )
 
@@ -167,7 +167,7 @@ export default class extends BaseComponent {
       <CRPopover
         btnType="primary"
         triggeredBy={btnReject}
-        visible={trackingId === id}
+        visible={summaryId === id}
         onToggle={this.hideModal}
         onSubmit={this.reject}
       />
@@ -186,13 +186,13 @@ export default class extends BaseComponent {
     const { isSecretary } = this.props
 
     let body
-    if (isSecretary && item.status === CVOTE_TRACKING_STATUS.REVIEWING) {
+    if (isSecretary && item.status === CVOTE_SUMMARY_STATUS.REVIEWING) {
       body = (
         <CommentCol span={21} status={item.status}>
           {this.renderBtns(item._id)}
         </CommentCol>
       )
-    } else if (item.status === CVOTE_TRACKING_STATUS.REJECT) {
+    } else if (item.status === CVOTE_SUMMARY_STATUS.REJECT) {
       const commenter = _.get(item, 'comment.createdBy')
       const commenterName = commenter ? `${userUtil.formatUsername(commenter)}, ` : ''
 
