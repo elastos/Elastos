@@ -369,6 +369,6 @@
     <string name="logkeepfail">日志生成失败</string>
     <string name="whetherexchange">检测到当前账户存在大量Utxo,是否零钱换整？</string>
     <string name="splashword">区 块 链 驱 动 的 智 能 万 维 网</string>
-    <string name="curentsdkversion">当前sdk版本号：</string>
+    <string name="curentsdkversion">spvsdk版本号</string>
 
 </resources>
