@@ -14,15 +14,25 @@ const (
 )
 
 const (
+	// Delegate indicates the vote content is for vote producer.
 	Delegate VoteType = 0x00
-	CRC      VoteType = 0x01
 
-	VoteProducerVersion      = 0x00
+	// CRC indicates the vote content is for vote CRC.
+	CRC VoteType = 0x01
+
+	// VoteProducerVersion indicates the output version only support delegate
+	// vote type, and not support different votes for different candidates.
+	VoteProducerVersion = 0x00
+
+	// VoteProducerAndCRVersion indicates the output version support delegate
+	// and CRC vote type, and support different votes for different candidates.
 	VoteProducerAndCRVersion = 0x01
 )
 
+// VoteType indicates the type of vote content.
 type VoteType byte
 
+// CandidateVotes defines the voting information for individual candidates.
 type CandidateVotes struct {
 	Candidate []byte
 	Votes     common.Fixed64
@@ -62,6 +72,7 @@ func (cv *CandidateVotes) String() string {
 		"Candidates: ", cv.Votes, "}\n\t\t\t\t")
 }
 
+// VoteContent defines the vote type and vote information of candidates.
 type VoteContent struct {
 	VoteType       VoteType
 	CandidateVotes []CandidateVotes
@@ -123,6 +134,7 @@ func (vc VoteContent) String() string {
 		"CandidateVotes: ", vc.CandidateVotes, "}\n\t\t\t\t")
 }
 
+// VoteOutput defines the output payload for vote.
 type VoteOutput struct {
 	Version  byte
 	Contents []VoteContent

@@ -77,3 +77,15 @@ func (c *Candidate) Deserialize(r io.Reader) (err error) {
 
 	return
 }
+
+func (c *Candidate) Info() payload.CRInfo {
+	return c.info
+}
+
+func (c *Candidate) State() CandidateState {
+	return c.state
+}
+
+func (c *Candidate) Votes() common.Fixed64 {
+	return c.votes
+}

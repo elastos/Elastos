@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"fmt"
+	state2 "github.com/elastos/Elastos.ELA/cr/state"
 	"math"
 	mrand "math/rand"
 	"testing"
@@ -1110,13 +1111,15 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	hash1, _ := contract.PublicKeyToDepositProgramHash(publicKey1)
 	hash2, _ := contract.PublicKeyToDepositProgramHash(publicKey2)
 
+	nickName1 := "nickname 1"
+
 	txn := new(types.Transaction)
 	txn.TxType = types.RegisterCR
 	txn.Version = types.TxVersion09
 	rcPayload := &payload.CRInfo{
 		Code:     code1,
 		DID:      *did1,
-		NickName: "nickname 1",
+		NickName: nickName1,
 		Url:      "http://www.elastos_test.com",
 		Location: 1,
 	}
@@ -1142,7 +1145,21 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 		Payload:     new(outputpayload.DefaultOutput),
 	}}
 
-	fmt.Println("len(paramater):", len(rcPayload.Signature))
+	s.Chain.crState.Nicknames[nickName1] = struct{}{}
+	err = s.Chain.checkRegisterCRTransaction(txn)
+	s.EqualError(err, "nick name nickname 1 already inuse")
+
+	delete(s.Chain.crState.Nicknames, nickName1)
+	err = s.Chain.checkRegisterCRTransaction(txn)
+	s.NoError(err)
+
+	s.Chain.crState.CodeDIDMap[codeStr1] = *did1
+	s.Chain.crState.ActivityCandidates[*did1] = &state2.Candidate{}
+	err = s.Chain.checkRegisterCRTransaction(txn)
+	s.EqualError(err, "did "+
+		"67ae53989e21c3212dd9bfed6daeb56874782502dd already exist")
+
+	delete(s.Chain.crState.CodeDIDMap, codeStr1)
 	err = s.Chain.checkRegisterCRTransaction(txn)
 	s.NoError(err)
 

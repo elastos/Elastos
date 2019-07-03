@@ -11,6 +11,7 @@ import (
 
 const CRInfoVersion byte = 0x00
 
+// CRInfo defines the information of CR.
 type CRInfo struct {
 	Code      []byte
 	DID       common.Uint168
