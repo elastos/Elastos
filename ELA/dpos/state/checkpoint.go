@@ -6,6 +6,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/crypto"
+	"github.com/elastos/Elastos.ELA/utils"
 )
 
 // KeyFrame holds necessary state about arbitrators
@@ -68,7 +69,7 @@ func (s *StateKeyFrame) snapshot() *StateKeyFrame {
 		SpecialTxHashes:          make(map[common.Uint256]struct{}),
 		PreBlockArbiters:         make(map[string]struct{}),
 	}
-	state.NodeOwnerKeys = copyStringMap(s.NodeOwnerKeys)
+	state.NodeOwnerKeys = utils.CopyStringMap(s.NodeOwnerKeys)
 	state.PendingProducers = copyProducerMap(s.PendingProducers)
 	state.ActivityProducers = copyProducerMap(s.ActivityProducers)
 	state.InactiveProducers = copyProducerMap(s.InactiveProducers)
@@ -76,16 +77,16 @@ func (s *StateKeyFrame) snapshot() *StateKeyFrame {
 	state.IllegalProducers = copyProducerMap(s.IllegalProducers)
 	state.PendingCanceledProducers = copyProducerMap(s.PendingCanceledProducers)
 	state.Votes = copyVotesMap(s.Votes)
-	state.Nicknames = copyStringSet(s.Nicknames)
+	state.Nicknames = utils.CopyStringSet(s.Nicknames)
 	state.SpecialTxHashes = copyHashSet(s.SpecialTxHashes)
-	state.PreBlockArbiters = copyStringSet(s.PreBlockArbiters)
+	state.PreBlockArbiters = utils.CopyStringSet(s.PreBlockArbiters)
 
 	return &state
 }
 
 func (s *StateKeyFrame) Serialize(w io.Writer) (err error) {
 
-	if err = s.SerializeStringMap(s.NodeOwnerKeys, w); err != nil {
+	if err = utils.SerializeStringMap(w, s.NodeOwnerKeys); err != nil {
 		return
 	}
 
@@ -117,7 +118,7 @@ func (s *StateKeyFrame) Serialize(w io.Writer) (err error) {
 		return
 	}
 
-	if err = s.SerializeStringSet(s.Nicknames, w); err != nil {
+	if err = utils.SerializeStringSet(w, s.Nicknames); err != nil {
 		return
 	}
 
@@ -125,11 +126,12 @@ func (s *StateKeyFrame) Serialize(w io.Writer) (err error) {
 		return
 	}
 
-	if err = s.SerializeStringSet(s.PreBlockArbiters, w); err != nil {
+	if err = utils.SerializeStringSet(w, s.PreBlockArbiters); err != nil {
 		return
 	}
 
-	if err = s.SerializeStringSet(s.EmergencyInactiveArbiters, w); err != nil {
+	if err = utils.SerializeStringSet(w, s.EmergencyInactiveArbiters);
+		err != nil {
 		return
 	}
 
@@ -141,7 +143,7 @@ func (s *StateKeyFrame) Serialize(w io.Writer) (err error) {
 }
 
 func (s *StateKeyFrame) Deserialize(r io.Reader) (err error) {
-	if s.NodeOwnerKeys, err = s.DeserializeStringMap(r); err != nil {
+	if s.NodeOwnerKeys, err = utils.DeserializeStringMap(r); err != nil {
 		return
 	}
 
@@ -174,7 +176,7 @@ func (s *StateKeyFrame) Deserialize(r io.Reader) (err error) {
 		return
 	}
 
-	if s.Nicknames, err = s.DeserializeStringSet(r); err != nil {
+	if s.Nicknames, err = utils.DeserializeStringSet(r); err != nil {
 		return
 	}
 
@@ -182,11 +184,12 @@ func (s *StateKeyFrame) Deserialize(r io.Reader) (err error) {
 		return
 	}
 
-	if s.PreBlockArbiters, err = s.DeserializeStringSet(r); err != nil {
+	if s.PreBlockArbiters, err = utils.DeserializeStringSet(r); err != nil {
 		return
 	}
 
-	if s.EmergencyInactiveArbiters, err = s.DeserializeStringSet(r); err != nil {
+	if s.EmergencyInactiveArbiters, err = utils.DeserializeStringSet(r);
+		err != nil {
 		return
 	}
 
@@ -223,36 +226,6 @@ func (s *StateKeyFrame) DeserializeHashSet(
 	for i := uint64(0); i < count; i++ {
 		k := common.Uint256{}
 		if err = k.Deserialize(r); err != nil {
-			return
-		}
-		vmap[k] = struct{}{}
-	}
-	return
-}
-
-func (s *StateKeyFrame) SerializeStringSet(vmap map[string]struct{},
-	w io.Writer) (err error) {
-	if err = common.WriteVarUint(w, uint64(len(vmap))); err != nil {
-		return
-	}
-	for k := range vmap {
-		if err = common.WriteVarString(w, k); err != nil {
-			return
-		}
-	}
-	return
-}
-
-func (s *StateKeyFrame) DeserializeStringSet(
-	r io.Reader) (vmap map[string]struct{}, err error) {
-	var count uint64
-	if count, err = common.ReadVarUint(r, 0); err != nil {
-		return
-	}
-	vmap = make(map[string]struct{})
-	for i := uint64(0); i < count; i++ {
-		var k string
-		if k, err = common.ReadVarString(r); err != nil {
 			return
 		}
 		vmap[k] = struct{}{}
@@ -314,44 +287,6 @@ func (s *StateKeyFrame) DeserializeVotesMap(
 		} else {
 			vmap[k] = nil
 		}
-	}
-	return
-}
-
-func (s *StateKeyFrame) SerializeStringMap(smap map[string]string,
-	w io.Writer) (err error) {
-	if err = common.WriteVarUint(w, uint64(len(smap))); err != nil {
-		return
-	}
-	for k, v := range smap {
-		if err = common.WriteVarString(w, k); err != nil {
-			return
-		}
-
-		if err = common.WriteVarString(w, v); err != nil {
-			return
-		}
-	}
-	return
-}
-
-func (s *StateKeyFrame) DeserializeStringMap(
-	r io.Reader) (smap map[string]string, err error) {
-	var count uint64
-	if count, err = common.ReadVarUint(r, 0); err != nil {
-		return
-	}
-	smap = make(map[string]string)
-	for i := uint64(0); i < count; i++ {
-		var k string
-		if k, err = common.ReadVarString(r); err != nil {
-			return
-		}
-		var v string
-		if v, err = common.ReadVarString(r); err != nil {
-			return
-		}
-		smap[k] = v
 	}
 	return
 }
@@ -608,15 +543,6 @@ func copyProducerMap(src map[string]*Producer) (dst map[string]*Producer) {
 	return
 }
 
-func copyStringMap(src map[string]string) (dst map[string]string) {
-	dst = map[string]string{}
-	for k, v := range src {
-		p := v
-		dst[k] = p
-	}
-	return
-}
-
 func copyVotesMap(src map[string]*types.Output) (dst map[string]*types.Output) {
 	dst = map[string]*types.Output{}
 	for k, v := range src {
@@ -626,14 +552,6 @@ func copyVotesMap(src map[string]*types.Output) (dst map[string]*types.Output) {
 			p := *v
 			dst[k] = &p
 		}
-	}
-	return
-}
-
-func copyStringSet(src map[string]struct{}) (dst map[string]struct{}) {
-	dst = map[string]struct{}{}
-	for k := range src {
-		dst[k] = struct{}{}
 	}
 	return
 }

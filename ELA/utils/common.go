@@ -2,11 +2,14 @@ package utils
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
 	"strconv"
+
+	"github.com/elastos/Elastos.ELA/common"
 
 	"github.com/howeyc/gopass"
 )
@@ -55,4 +58,87 @@ func StartPProf(port uint32) {
 	http.Handle("/", profileRedirect)
 	ret := http.ListenAndServe(listenAddr, nil)
 	fmt.Printf("Profile server ListenAndServe return %v", ret)
+}
+
+// CopyStringSet copy the src map's key, and return the dst map.
+func CopyStringSet(src map[string]struct{}) (dst map[string]struct{}) {
+	dst = map[string]struct{}{}
+	for k := range src {
+		dst[k] = struct{}{}
+	}
+	return
+}
+
+// CopyStringMap copy the src map's key and value, and return the dst map.
+func CopyStringMap(src map[string]string) (dst map[string]string) {
+	dst = map[string]string{}
+	for k, v := range src {
+		p := v
+		dst[k] = p
+	}
+	return
+}
+
+func SerializeStringMap(w io.Writer, smap map[string]string) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(smap))); err != nil {
+		return
+	}
+	for k, v := range smap {
+		if err = common.WriteVarString(w, k); err != nil {
+			return
+		}
+
+		if err = common.WriteVarString(w, v); err != nil {
+			return
+		}
+	}
+	return
+}
+
+func DeserializeStringMap(r io.Reader) (smap map[string]string, err error) {
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+	smap = make(map[string]string)
+	for i := uint64(0); i < count; i++ {
+		var k string
+		if k, err = common.ReadVarString(r); err != nil {
+			return
+		}
+		var v string
+		if v, err = common.ReadVarString(r); err != nil {
+			return
+		}
+		smap[k] = v
+	}
+	return
+}
+
+func SerializeStringSet(w io.Writer, vmap map[string]struct{}) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(vmap))); err != nil {
+		return
+	}
+	for k := range vmap {
+		if err = common.WriteVarString(w, k); err != nil {
+			return
+		}
+	}
+	return
+}
+
+func DeserializeStringSet(r io.Reader) (vmap map[string]struct{}, err error) {
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+	vmap = make(map[string]struct{})
+	for i := uint64(0); i < count; i++ {
+		var k string
+		if k, err = common.ReadVarString(r); err != nil {
+			return
+		}
+		vmap[k] = struct{}{}
+	}
+	return
 }
