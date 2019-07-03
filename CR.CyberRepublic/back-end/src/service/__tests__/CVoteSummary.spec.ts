@@ -3,7 +3,7 @@ import { expect } from 'chai'
 import { constant } from '../../constant';
 import db from '../../db'
 import '../../config'
-import CVoteTrackingService from '../CVoteTrackingService'
+import CVoteSummaryService from '../CVoteSummaryService'
 import UserService from '../UserService'
 import CVoteService from '../CVoteService'
 
@@ -18,7 +18,7 @@ let proposal: any
 beforeAll(async () => {
   DB = await db.create()
 
-  await DB.getModel('CVote_Tracking').remove({})
+  await DB.getModel('CVote_Summary').remove({})
   await DB.getModel('User').remove({
     username: global.DB.SECRETARY_USER.username
   })
@@ -29,7 +29,7 @@ beforeAll(async () => {
   })
   user.secretary = await userService.registerNewUser(global.DB.SECRETARY_USER)
 
-  service.secretary = new CVoteTrackingService(DB, { user: user.secretary })
+  service.secretary = new CVoteSummaryService(DB, { user: user.secretary })
   const cvoteService = new CVoteService(DB, {
     user : user.secretary
   })
@@ -42,56 +42,56 @@ beforeAll(async () => {
 
 })
 
-describe('Tests for CVoteTracking', () => {
-  let tracking: any
+describe('Tests for CVoteSummary', () => {
+  let summary: any
 
-  test('attempt to create a DRAFT tracking should pass', async () => {
+  test('attempt to create a DRAFT summary should pass', async () => {
     try {
-      tracking = await service.secretary.create(
+      summary = await service.secretary.create(
         Object.assign(
-          global.DB.CVOTE_TRACKING, {
+          global.DB.CVOTE_SUMMARY, {
             createdBy: user.secretary._id,
             proposalId: proposal._id,
           }
         )
       );
-      expect(tracking.createdBy.toString()).to.be.equal(user.secretary._id.toString())
+      expect(summary.createdBy.toString()).to.be.equal(user.secretary._id.toString())
     } catch (err) {
       // expect(err).to.be.equal('')
     }
   })
 
-  test('attempt to approve DRAFT tracking should fail', async () => {
+  test('attempt to approve DRAFT summary should fail', async () => {
     try {
       const updateRs: any = await service.secretary.approve({
-        _id: tracking._id,
+        _id: summary._id,
       })
 
-      expect(updateRs.status).to.equal(constant.CVOTE_TRACKING_STATUS.DRAFT)
+      expect(updateRs.status).to.equal(constant.CVOTE_SUMMARY_STATUS.DRAFT)
 
     } catch (err) {
     }
   })
 
-  test('attempt to reject DRAFT tracking should fail', async () => {
+  test('attempt to reject DRAFT summary should fail', async () => {
     try {
       const updateRs: any = await service.secretary.reject({
-        _id: tracking._id,
+        _id: summary._id,
         comment: 'reject'
       })
 
-      expect(updateRs.status).to.equal(constant.CVOTE_TRACKING_STATUS.DRAFT)
+      expect(updateRs.status).to.equal(constant.CVOTE_SUMMARY_STATUS.DRAFT)
 
     } catch (err) {
     }
   })
 
-  test('attempt to update tracking should pass', async () => {
+  test('attempt to update summary should pass', async () => {
     try {
       const uuidVal = uuid.v4()
 
       const updateRs: any = await service.secretary.update({
-        _id: tracking._id,
+        _id: summary._id,
         content: uuidVal,
         status
       })
@@ -103,46 +103,46 @@ describe('Tests for CVoteTracking', () => {
     }
   })
 
-  test('attempt to approve REVIEWING tracking should pass', async () => {
+  test('attempt to approve REVIEWING summary should pass', async () => {
     try {
       const rs = service.secretary.approve({
-        _id: tracking._id,
+        _id: summary._id,
       })
-      expect(rs.status).to.be.equal(constant.CVOTE_TRACKING_STATUS.PUBLISHED)
+      expect(rs.status).to.be.equal(constant.CVOTE_SUMMARY_STATUS.PUBLISHED)
     } catch (err) {
     }
   })
 
-  test('attempt to create a REVIEWING tracking should pass', async () => {
+  test('attempt to create a REVIEWING summary should pass', async () => {
     try {
-      tracking = await service.secretary.create(
+      summary = await service.secretary.create(
         Object.assign(
-          global.DB.CVOTE_TRACKING, {
+          global.DB.CVOTE_SUMMARY, {
             createdBy: user.secretary._id,
             proposalId: proposal._id,
           }
         )
       );
-      expect(tracking.createdBy.toString()).to.be.equal(user.secretary._id.toString())
+      expect(summary.createdBy.toString()).to.be.equal(user.secretary._id.toString())
     } catch (err) {
       // expect(err).to.be.equal('')
     }
   })
 
-  test('attempt to reject REVIEWING tracking should pass', async () => {
+  test('attempt to reject REVIEWING summary should pass', async () => {
     try {
       const updateRs: any = await service.secretary.reject({
-        _id: tracking._id,
+        _id: summary._id,
         comment: 'reject'
       })
 
-      expect(updateRs.status).to.equal(constant.CVOTE_TRACKING_STATUS.REJECT)
+      expect(updateRs.status).to.equal(constant.CVOTE_SUMMARY_STATUS.REJECT)
 
     } catch (err) {
     }
   })
 
-  test('attempt to list tracking should pass', async () => {
+  test('attempt to list summary should pass', async () => {
     try {
       const rs = service.secretary.list()
       expect(rs.length).to.be.equal(2)
@@ -150,7 +150,7 @@ describe('Tests for CVoteTracking', () => {
     }
   })
 
-  test('attempt to list public tracking should pass', async () => {
+  test('attempt to list public summary should pass', async () => {
     try {
       const rs = service.secretary.listPublic()
       expect(rs.length).to.be.equal(1)
