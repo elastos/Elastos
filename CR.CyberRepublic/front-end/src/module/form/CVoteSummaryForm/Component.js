@@ -113,10 +113,10 @@ class C extends BaseComponent {
       <Container>
         <Form onSubmit={this.onSubmit}>
           <Title>
-            {this.props.header || I18N.get('proposal.form.tracking.add')}
+            {this.props.header || I18N.get('proposal.form.summary.add')}
           </Title>
           <StyledFormItem>
-            <Note>{I18N.get('proposal.form.note.tracking')}</Note>
+            <Note>{I18N.get('proposal.form.note.summary')}</Note>
             <FormItem>{formProps.content}</FormItem>
           </StyledFormItem>
           <Row gutter={8} type="flex" justify="center">
@@ -128,7 +128,7 @@ class C extends BaseComponent {
   }
 
   renderSaveBtn() {
-    const btnText = I18N.get('proposal.form.tracking.btn.submit')
+    const btnText = I18N.get('proposal.form.summary.btn.submit')
     return (
       <FormItem>
         <Button loading={this.state.loading} className="cr-btn cr-btn-primary" htmlType="submit">
