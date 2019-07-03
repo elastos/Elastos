@@ -1,11 +1,11 @@
 import Base from '../Base'
-import CVoteTrackingService from '../../service/CVoteTrackingService'
+import CVoteSummaryService from '../../service/CVoteSummaryService'
 
 export default class extends Base {
   protected needLogin = true
   async action() {
     const param = this.getParam()
-    const service = this.buildService(CVoteTrackingService)
+    const service = this.buildService(CVoteSummaryService)
 
     const rs = await service.reject(param)
     return this.result(1, rs)

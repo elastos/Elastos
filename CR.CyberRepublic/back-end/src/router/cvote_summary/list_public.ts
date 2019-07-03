@@ -1,6 +1,6 @@
 import * as _ from 'lodash'
 import Base from '../Base'
-import CVoteTrackingService from '../../service/CVoteTrackingService'
+import CVoteSummaryService from '../../service/CVoteSummaryService'
 
 export default class extends Base {
 
@@ -8,7 +8,7 @@ export default class extends Base {
 
   async action() {
     const param = this.getParam()
-    const service = this.buildService(CVoteTrackingService)
+    const service = this.buildService(CVoteSummaryService)
 
     // if (param.search) {
     //     param.$or = [
