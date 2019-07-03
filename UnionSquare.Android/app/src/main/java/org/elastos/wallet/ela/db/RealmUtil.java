@@ -10,7 +10,6 @@ import org.elastos.wallet.ela.db.table.Contact;
 import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.bean.SubWalletBasicInfo;
-import org.elastos.wallet.ela.ui.Assets.bean.SubWalletBasicInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -321,8 +320,7 @@ public class RealmUtil {
 
             }
             if (!flag) {
-                SubWalletBasicInfo walletBasicInfo = JSON.parseObject(masterWallet.GetBasicInfo(), SubWalletBasicInfo.class);
-                SubWalletBasicInfo.InfoBean.AccountBean account = walletBasicInfo.getInfo().getAccount();
+                SubWalletBasicInfo.InfoBean.AccountBean account = JSON.parseObject(masterWallet.GetBasicInfo(), SubWalletBasicInfo.InfoBean.AccountBean.class);
                 boolean singleAddress = account.isSingleAddress();
                 int type = getType(account);
                 Wallet newWallet = new Wallet();

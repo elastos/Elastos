@@ -9,7 +9,9 @@
     <!-- 圆角弧度 20 -->
     <corners android:radius="10dp" />
 
-
+    <stroke
+        android:width="4dp"
+        android:color="@color/transparent" />
     <!-- 变化率 -->
     <gradient
         android:endColor="@color/qmui_config_color_white"
