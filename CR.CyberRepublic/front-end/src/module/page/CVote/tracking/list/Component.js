@@ -89,7 +89,7 @@ export default class extends BaseComponent {
                 <StyledFooter>{moment(item.createdAt).format(DATE_FORMAT)}</StyledFooter>
               </LeftCol>
               <RightCol span={3}>
-                <Status status={item.status}>{I18N.get(`proposal.status.${item.status}`)}</Status>
+                <Status status={item.status}>{I18N.get(`proposal.status.tracking.${item.status}`)}</Status>
               </RightCol>
             </StyledRow>
             {this.renderActions(item)}

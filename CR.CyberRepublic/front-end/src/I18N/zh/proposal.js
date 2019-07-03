@@ -37,10 +37,12 @@ export default {
     }
   },
   status: {
-    [CVOTE_TRACKING_STATUS.DRAFT]: '草稿',
-    [CVOTE_TRACKING_STATUS.REVIEWING]: '审阅中',
-    [CVOTE_TRACKING_STATUS.PUBLISHED]: '已批准 ✓',
-    [CVOTE_TRACKING_STATUS.REJECT]: '被驳回 !',
+    tracking: {
+      [CVOTE_TRACKING_STATUS.DRAFT]: '草稿',
+      [CVOTE_TRACKING_STATUS.REVIEWING]: '审阅中',
+      [CVOTE_TRACKING_STATUS.PUBLISHED]: '已批准 ✓',
+      [CVOTE_TRACKING_STATUS.REJECT]: '被驳回 !',
+    },
   },
   form: {
     tracking: {
