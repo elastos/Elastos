@@ -318,7 +318,7 @@ func checkVoteProducerContent(content outputpayload.VoteContent,
 	if payloadVersion == outputpayload.VoteProducerAndCRVersion {
 		for _, cv := range content.CandidateVotes {
 			if cv.Votes > amount {
-				return errors.New("vote larger than output amount")
+				return errors.New("votes larger than output amount")
 			}
 		}
 	}
@@ -328,18 +328,21 @@ func checkVoteProducerContent(content outputpayload.VoteContent,
 
 func checkVoteCRContent(content outputpayload.VoteContent,
 	crs map[string]struct{}, payloadVersion byte, amount common.Fixed64) error {
+	if payloadVersion != outputpayload.VoteProducerAndCRVersion {
+		return errors.New("payload VoteProducerVersion not support vote CR")
+	}
 	for _, cv := range content.CandidateVotes {
 		if _, ok := crs[common.BytesToHexString(cv.Candidate)]; !ok {
 			return fmt.Errorf("invalid vote output payload "+
 				"candidate: %s", common.BytesToHexString(cv.Candidate))
 		}
 	}
-	if payloadVersion == outputpayload.VoteProducerAndCRVersion {
-		for _, cv := range content.CandidateVotes {
-			if cv.Votes > amount {
-				return errors.New("vote larger than output amount")
-			}
-		}
+	var totalVotes common.Fixed64
+	for _, cv := range content.CandidateVotes {
+		totalVotes += cv.Votes
+	}
+	if totalVotes > amount {
+		return errors.New("total votes larger than output amount")
 	}
 
 	return nil

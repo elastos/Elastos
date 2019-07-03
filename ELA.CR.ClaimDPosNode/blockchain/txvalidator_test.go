@@ -1411,7 +1411,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 		Type:        types.OTVote,
 		ProgramHash: *hash,
 		Payload: &outputpayload.VoteOutput{
-			Version: 0,
+			Version: 1,
 			Contents: []outputpayload.VoteContent{
 				{
 					VoteType: outputpayload.CRC,
@@ -1425,13 +1425,13 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 	s.EqualError(checkVoteOutputs(outputs2, references, producersMap, crsMap),
 		"the output address of vote tx should exist in its input")
 
-	// Check vote output of v0 with wrong output program hash
+	// Check vote output of v1 with wrong output program hash
 	outputs3 := []*types.Output{{Type: types.OTNone}}
 	outputs3 = append(outputs3, &types.Output{
 		Type:        types.OTVote,
 		ProgramHash: *hash,
 		Payload: &outputpayload.VoteOutput{
-			Version: 0,
+			Version: 1,
 			Contents: []outputpayload.VoteContent{
 				{
 					VoteType: outputpayload.Delegate,
@@ -1498,12 +1498,32 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 		},
 	})
 	s.EqualError(checkVoteOutputs(outputs5, references, producersMap, crsMap),
+		"payload VoteProducerVersion not support vote CR")
+
+	// Check vote output of v1 with crc type and invalid candidate
+	outputs6 := []*types.Output{{Type: types.OTNone}}
+	outputs6 = append(outputs6, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType: outputpayload.CRC,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate2, 0},
+					},
+				},
+			},
+		},
+	})
+	s.EqualError(checkVoteOutputs(outputs6, references, producersMap, crsMap),
 		"invalid vote output payload candidate: "+
 			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
 
 	// Check vote output of v0 with invalid candidate
-	outputs6 := []*types.Output{{Type: types.OTNone}}
-	outputs6 = append(outputs6, &types.Output{
+	outputs7 := []*types.Output{{Type: types.OTNone}}
+	outputs7 = append(outputs7, &types.Output{
 		Type:        types.OTVote,
 		ProgramHash: *hash,
 		Payload: &outputpayload.VoteOutput{
@@ -1524,32 +1544,13 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs6, references, producersMap, crsMap),
+	s.EqualError(checkVoteOutputs(outputs7, references, producersMap, crsMap),
 		"invalid vote output payload candidate: "+
 			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
 
-	// Check vote output of v1 with delegate type and wrong votes
-	outputs7 := []*types.Output{{Type: types.OTNone}}
-	outputs7 = append(outputs7, &types.Output{
-		Type:        types.OTVote,
-		ProgramHash: *hash,
-		Value:       common.Fixed64(10),
-		Payload: &outputpayload.VoteOutput{
-			Version: 1,
-			Contents: []outputpayload.VoteContent{
-				{
-					VoteType: outputpayload.Delegate,
-					CandidateVotes: []outputpayload.CandidateVotes{
-						{candidate1, 20},
-					},
-				},
-			},
-		},
-	})
-	s.EqualError(checkVoteOutputs(outputs7, references, producersMap, crsMap),
-		"vote larger than output amount")
+	crsMap[publicKey2] = struct{}{}
 
-	// Check vote output of v1 with crc type and wrong votes
+	// Check vote output of v1 with delegate type and wrong votes
 	outputs8 := []*types.Output{{Type: types.OTNone}}
 	outputs8 = append(outputs8, &types.Output{
 		Type:        types.OTVote,
@@ -1559,20 +1560,42 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			Version: 1,
 			Contents: []outputpayload.VoteContent{
 				{
-					VoteType: outputpayload.CRC,
+					VoteType: outputpayload.Delegate,
 					CandidateVotes: []outputpayload.CandidateVotes{
-						{candidate3, 20},
+						{candidate1, 20},
 					},
 				},
 			},
 		},
 	})
 	s.EqualError(checkVoteOutputs(outputs8, references, producersMap, crsMap),
-		"vote larger than output amount")
+		"votes larger than output amount")
 
-	// Check vote output of v1 with wrong votes
+	// Check vote output of v1 with crc type and wrong votes
 	outputs9 := []*types.Output{{Type: types.OTNone}}
 	outputs9 = append(outputs9, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Value:       common.Fixed64(10),
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType: outputpayload.CRC,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate2, 10},
+						{candidate3, 10},
+					},
+				},
+			},
+		},
+	})
+	s.EqualError(checkVoteOutputs(outputs9, references, producersMap, crsMap),
+		"total votes larger than output amount")
+
+	// Check vote output of v1 with wrong votes
+	outputs10 := []*types.Output{{Type: types.OTNone}}
+	outputs10 = append(outputs10, &types.Output{
 		Type:        types.OTVote,
 		ProgramHash: *hash,
 		Value:       common.Fixed64(10),
@@ -1594,12 +1617,12 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs9, references, producersMap, crsMap),
-		"vote larger than output amount")
+	s.EqualError(checkVoteOutputs(outputs10, references, producersMap, crsMap),
+		"votes larger than output amount")
 
 	// Check vote output v1 with correct votes
-	outputs10 := []*types.Output{{Type: types.OTNone}}
-	outputs10 = append(outputs10, &types.Output{
+	outputs11 := []*types.Output{{Type: types.OTNone}}
+	outputs11 = append(outputs11, &types.Output{
 		Type:        types.OTVote,
 		ProgramHash: *hash,
 		Value:       common.Fixed64(10),
@@ -1621,11 +1644,11 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.NoError(checkVoteOutputs(outputs10, references, producersMap, crsMap))
+	s.NoError(checkVoteOutputs(outputs11, references, producersMap, crsMap))
 
 	// Check vote output of v1 with wrong votes
-	outputs11 := []*types.Output{{Type: types.OTNone}}
-	outputs11 = append(outputs11, &types.Output{
+	outputs12 := []*types.Output{{Type: types.OTNone}}
+	outputs12 = append(outputs12, &types.Output{
 		Type:        types.OTVote,
 		ProgramHash: *hash,
 		Value:       common.Fixed64(10),
@@ -1647,7 +1670,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.NoError(checkVoteOutputs(outputs11, references, producersMap, crsMap))
+	s.NoError(checkVoteOutputs(outputs12, references, producersMap, crsMap))
 }
 
 func (s *txValidatorTestSuite) TestCheckOutputProgramHash() {
