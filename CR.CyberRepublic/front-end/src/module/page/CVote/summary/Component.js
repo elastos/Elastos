@@ -3,7 +3,7 @@ import BaseComponent from '@/model/BaseComponent'
 import _ from 'lodash'
 import styled from 'styled-components'
 import { CVOTE_STATUS } from '@/constant'
-import Tracking from './list/Container'
+import Summary from './list/Container'
 import CreateForm from './create/Container'
 
 export default class extends BaseComponent {
@@ -13,15 +13,15 @@ export default class extends BaseComponent {
     if (!isShowFollowingUp) return null
     return (
       <Container>
-        {this.renderTracking()}
+        {this.renderSummary()}
         {this.renderForm()}
       </Container>
     )
   }
 
-  renderTracking() {
+  renderSummary() {
     const { proposal } = this.props
-    return <Tracking proposal={proposal} />
+    return <Summary proposal={proposal} />
   }
 
   renderForm() {
