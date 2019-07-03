@@ -26,7 +26,9 @@ func TestCandidate_Deserialize(t *testing.T) {
 
 func candidateEqual(first *Candidate, second *Candidate) bool {
 	return crInfoEqual(&first.info, &second.info) &&
-		first.state == second.state && first.votes == second.votes
+		first.state == second.state && first.votes == second.votes &&
+		first.registerHeight == second.registerHeight &&
+		first.cancelHeight == second.cancelHeight
 }
 
 func crInfoEqual(first *payload.CRInfo, second *payload.CRInfo) bool {
@@ -52,9 +54,11 @@ func randomCRInfo() *payload.CRInfo {
 
 func randomCandidate() *Candidate {
 	return &Candidate{
-		info:  *randomCRInfo(),
-		state: CandidateState(rand2.Uint32()),
-		votes: common.Fixed64(rand2.Int63()),
+		info:           *randomCRInfo(),
+		state:          CandidateState(rand2.Uint32()),
+		votes:          common.Fixed64(rand2.Int63()),
+		registerHeight: rand2.Uint32(),
+		cancelHeight:   rand2.Uint32(),
 	}
 }
 
