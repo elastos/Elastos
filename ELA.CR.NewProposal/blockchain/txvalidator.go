@@ -256,7 +256,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 		if blockHeight < b.chainParams.PublicDPOSHeight {
 			producers = append(producers, b.state.GetPendingCanceledProducers()...)
 		}
-		candidates := b.crState.GetAllCandidates()
+		candidates := b.crState.GetCandidates(crstate.Active)
 		err := checkVoteOutputs(txn.Outputs, references,
 			getProducerPublicKeysMap(producers), getCRCodesMap(candidates))
 		if err != nil {
@@ -1264,9 +1264,14 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction) error {
 		return err
 	}
 
-	// todo check duplication of nickname.(need to check by cr state)
+	if b.crState.ExistCandidateByNickname(info.NickName) {
+		return fmt.Errorf("nick name %s already inuse", info.NickName)
+	}
 
-	// todo check duplication of DID.(need to check by cr state)
+	cr := b.crState.GetCandidate(info.Code)
+	if cr != nil && cr.State() != crstate.Returned {
+		return fmt.Errorf("did %s already exist", info.DID)
+	}
 
 	// get DID program hash
 	ct, err := contract.CreateCRDIDContractByCode(info.Code)
@@ -1347,8 +1352,19 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction) error {
 		return err
 	}
 
-	// todo check info.Code -----> DID(no matter CHECKSIG CHECKMULTISIG) must be registered
-	// todo if new nickname is not same as old nickname   check   duplication of nickname.(need to check by cr state)
+	cr := b.crState.GetCandidate(info.Code)
+	if cr == nil {
+		return errors.New("updating unknown CR")
+	}
+	if cr.State() != crstate.Pending && cr.State() != crstate.Active {
+		return errors.New("updating canceled CR")
+	}
+
+	// check nickname usage.
+	if cr.Info().NickName != info.NickName &&
+		b.crState.ExistCandidateByNickname(info.NickName) {
+		return fmt.Errorf("nick name %s already exist", info.NickName)
+	}
 
 	return nil
 }
@@ -1359,7 +1375,13 @@ func (b *BlockChain) checkUnRegisterCRTransaction(txn *Transaction) error {
 		return errors.New("invalid payload")
 	}
 
-	//todo check Register of CR(need to check by cr state)
+	cr := b.crState.GetCandidate(info.Code)
+	if cr == nil {
+		return errors.New("unregister unknown CR")
+	}
+	if cr.State() != crstate.Pending && cr.State() != crstate.Active {
+		return errors.New("unregister canceled CR")
+	}
 
 	signedBuf := new(bytes.Buffer)
 	err := info.SerializeUnsigned(signedBuf, payload.UnregisterCRVersion)
@@ -1369,7 +1391,7 @@ func (b *BlockChain) checkUnRegisterCRTransaction(txn *Transaction) error {
 	return checkCRTransactionSignature(info.Signature, info.Code, signedBuf.Bytes())
 }
 
-func getParameterbySignature(signature []byte) []byte {
+func getParameterBySignature(signature []byte) []byte {
 	buf := new(bytes.Buffer)
 	buf.WriteByte(byte(len(signature)))
 	buf.Write(signature)
@@ -1377,7 +1399,7 @@ func getParameterbySignature(signature []byte) []byte {
 }
 
 func checkCRTransactionSignature(signature []byte, code []byte, data []byte) error {
-	parameter := getParameterbySignature(signature)
+	parameter := getParameterBySignature(signature)
 	signType, err := crypto.GetScriptType(code)
 	if err != nil {
 		return errors.New("invalid code")
