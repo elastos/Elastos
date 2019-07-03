@@ -1,4 +1,4 @@
-import { CVOTE_TRACKING_STATUS } from '@/constant'
+import { CVOTE_TRACKING_STATUS, CVOTE_SUMMARY_STATUS } from '@/constant'
 
 export default {
   fields: {
@@ -26,9 +26,20 @@ export default {
       reject: 'Reject & Comment',
       approve: 'Approve & Publish',
     },
+    summary: {
+      reject: 'Reject & Comment',
+      approve: 'Approve & Publish',
+    },
   },
   text: {
     tracking: {
+      reviewDetails: 'Review Details',
+      notice: {
+        header: '',
+        footer: '',
+      }
+    },
+    summary: {
       reviewDetails: 'Review Details',
       notice: {
         header: '',
@@ -43,6 +54,12 @@ export default {
       [CVOTE_TRACKING_STATUS.PUBLISHED]: 'APPROVED ✓',
       [CVOTE_TRACKING_STATUS.REJECT]: 'REJECTED !',
     },
+    summary: {
+      [CVOTE_SUMMARY_STATUS.DRAFT]: 'DRAFT',
+      [CVOTE_SUMMARY_STATUS.REVIEWING]: 'BEING REVIEWED',
+      [CVOTE_SUMMARY_STATUS.PUBLISHED]: 'APPROVED ✓',
+      [CVOTE_SUMMARY_STATUS.REJECT]: 'REJECTED !',
+    },
   },
   form: {
     tracking: {
@@ -50,6 +67,12 @@ export default {
         submit: 'Submit for Review',
       },
       add: 'Add Tracking Plan',
+    },
+    summary: {
+      btn: {
+        submit: 'Submit for Review',
+      },
+      add: 'Add Summary',
     },
     note: {
       abstract: 'Provide a brief description of the proposal content (no more than 200 words).',
