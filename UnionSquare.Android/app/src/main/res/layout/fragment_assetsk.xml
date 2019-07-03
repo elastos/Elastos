@@ -8,8 +8,7 @@
     app:srlAccentColor="@android:color/white"
     app:srlDisableContentWhenLoading="true"
     app:srlDisableContentWhenRefresh="true"
-    app:srlEnablePreviewInEditMode="false"
-    tools:context=".ui.Assets.AssetskFragment">
+    app:srlEnablePreviewInEditMode="false">
 
     <com.scwang.smartrefresh.layout.header.ClassicsHeader
         android:layout_width="match_parent"
