@@ -29,7 +29,7 @@ func TestKeyFrame_Snapshot(t *testing.T) {
 }
 
 func TestStateKeyFrame_Deserialize(t *testing.T) {
-	frame := randomStateKeyFrame(5)
+	frame := randomStateKeyFrame(5, true)
 
 	buf := new(bytes.Buffer)
 	frame.Serialize(buf)
@@ -41,7 +41,7 @@ func TestStateKeyFrame_Deserialize(t *testing.T) {
 }
 
 func TestStateKeyFrame_Snapshot(t *testing.T) {
-	frame := randomStateKeyFrame(5)
+	frame := randomStateKeyFrame(5, true)
 	frame2 := frame.Snapshot()
 	assert.True(t, stateKeyhrameEqual(frame, frame2))
 }
@@ -126,7 +126,7 @@ func randomCRMember() *CRMember {
 	}
 }
 
-func randomStateKeyFrame(size int) *StateKeyFrame {
+func randomStateKeyFrame(size int, hasPending bool) *StateKeyFrame {
 	frame := NewStateKeyFrame()
 
 	for i := 0; i < size; i++ {
@@ -141,17 +141,19 @@ func randomStateKeyFrame(size int) *StateKeyFrame {
 		frame.PendingCandidates[did] = candidate
 		frame.Nicknames[nickname] = struct{}{}
 	}
-	for i := 0; i < size; i++ {
-		did := *randomUint168()
-		candidate := randomCandidate()
-		nickname := randomString()
-		code := randomBytes(34)
-		candidate.info.Code = code
-		candidate.info.NickName = nickname
-		candidate.info.DID = did
-		frame.CodeDIDMap[common.BytesToHexString(code)] = did
-		frame.ActivityCandidates[did] = candidate
-		frame.Nicknames[nickname] = struct{}{}
+	if hasPending {
+		for i := 0; i < size; i++ {
+			did := *randomUint168()
+			candidate := randomCandidate()
+			nickname := randomString()
+			code := randomBytes(34)
+			candidate.info.Code = code
+			candidate.info.NickName = nickname
+			candidate.info.DID = did
+			frame.CodeDIDMap[common.BytesToHexString(code)] = did
+			frame.ActivityCandidates[did] = candidate
+			frame.Nicknames[nickname] = struct{}{}
+		}
 	}
 	for i := 0; i < size; i++ {
 		did := *randomUint168()

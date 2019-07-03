@@ -5,6 +5,7 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 
@@ -48,8 +49,8 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 			assert.True(t,
 				expectCandidates1[i-1].votes > expectCandidates1[i].votes)
 		}
-		assert.True(t, bytes.Equal(expectCandidates1[i].info.Code, codes1[i]))
-		assert.True(t, expectCandidates1[i].info.DID.IsEqual(did1[i]))
+		assert.True(t, existCode(expectCandidates1[i].info.Code, codes1))
+		assert.True(t, existDID(expectCandidates1[i].info.DID, did1))
 	}
 
 	// > CRCommitteeStartHeight && < CRCommitteeStartHeight + CRDutyPeriod
@@ -63,8 +64,8 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 	codes2 := committee.GetMembersCodes()
 	did2 := committee.GetMembersDIDs()
 	for i := 0; i < len(expectCandidates1); i++ {
-		assert.True(t, bytes.Equal(expectCandidates1[i].info.Code, codes2[i]))
-		assert.True(t, expectCandidates1[i].info.DID.IsEqual(did2[i]))
+		assert.True(t, existCode(expectCandidates1[i].info.Code, codes2))
+		assert.True(t, existDID(expectCandidates1[i].info.DID, did2))
 	}
 
 	// CRCommitteeStartHeight + CRDutyPeriod
@@ -168,13 +169,39 @@ func TestCommittee_isInVotingPeriod(t *testing.T) {
 }
 
 func generateCandidateSuite() (*StateKeyFrame, []*Candidate) {
-	keyFrame := randomStateKeyFrame(12)
-	candidates := make([]*Candidate, 0, 12)
+	keyFrame := randomStateKeyFrame(24, false)
+	candidates := make([]*Candidate, 0, 24)
 	for _, v := range keyFrame.ActivityCandidates {
 		candidates = append(candidates, v)
 	}
 	sort.Slice(candidates, func(i, j int) bool {
 		return candidates[i].votes > candidates[j].votes
 	})
-	return keyFrame, candidates
+
+	topCandidates := make([]*Candidate, 0, 12)
+	for i, v := range candidates {
+		if i >= 12 {
+			break
+		}
+		topCandidates = append(topCandidates, v)
+	}
+	return keyFrame, topCandidates
+}
+
+func existCode(code []byte, codeArray [][]byte) bool {
+	for _, v := range codeArray {
+		if bytes.Equal(code, v) {
+			return true
+		}
+	}
+	return false
+}
+
+func existDID(did common.Uint168, didArray []common.Uint168) bool {
+	for _, v := range didArray {
+		if v.IsEqual(did) {
+			return true
+		}
+	}
+	return false
 }

@@ -41,9 +41,11 @@ func (ps CandidateState) String() string {
 
 // Candidate defines information about CR candidates during the CR vote period
 type Candidate struct {
-	info  payload.CRInfo
-	state CandidateState
-	votes common.Fixed64
+	info           payload.CRInfo
+	state          CandidateState
+	votes          common.Fixed64
+	registerHeight uint32
+	cancelHeight   uint32
 }
 
 func (c *Candidate) Serialize(w io.Writer) (err error) {
@@ -55,7 +57,15 @@ func (c *Candidate) Serialize(w io.Writer) (err error) {
 		return
 	}
 
-	return common.WriteUint64(w, uint64(c.votes))
+	if err = common.WriteUint64(w, uint64(c.votes)); err != nil {
+		return
+	}
+
+	if err = common.WriteUint32(w, c.registerHeight); err != nil {
+		return
+	}
+
+	return common.WriteUint32(w, c.cancelHeight)
 }
 
 func (c *Candidate) Deserialize(r io.Reader) (err error) {
@@ -75,6 +85,11 @@ func (c *Candidate) Deserialize(r io.Reader) (err error) {
 	}
 	c.votes = common.Fixed64(votes)
 
+	if c.registerHeight, err = common.ReadUint32(r); err != nil {
+		return
+	}
+
+	c.cancelHeight, err = common.ReadUint32(r)
 	return
 }
 
