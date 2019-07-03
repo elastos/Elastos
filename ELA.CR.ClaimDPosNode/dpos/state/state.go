@@ -829,8 +829,8 @@ func (s *State) processCancelVotes(tx *types.Transaction, height uint32) {
 func (s *State) processVoteOutput(output *types.Output, height uint32) {
 	payload := output.Payload.(*outputpayload.VoteOutput)
 	for _, vote := range payload.Contents {
-		for _, candidate := range vote.Candidates {
-			producer := s.getProducer(candidate)
+		for _, cv := range vote.CandidateVotes {
+			producer := s.getProducer(cv.Candidate)
 			if producer == nil {
 				continue
 			}
@@ -853,8 +853,8 @@ func (s *State) processVoteOutput(output *types.Output, height uint32) {
 func (s *State) processVoteCancel(output *types.Output, height uint32) {
 	payload := output.Payload.(*outputpayload.VoteOutput)
 	for _, vote := range payload.Contents {
-		for _, candidate := range vote.Candidates {
-			producer := s.getProducer(candidate)
+		for _, cv := range vote.CandidateVotes {
+			producer := s.getProducer(cv.Candidate)
 			if producer == nil {
 				// This should not happen, just in case.
 				continue

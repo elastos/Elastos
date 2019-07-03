@@ -205,17 +205,19 @@ func createVoteOutputs(output *OutputInfo, candidateList []string) ([]*types.Out
 	}
 
 	// create vote output payload
-	var candidates [][]byte
+	var cv []outputpayload.CandidateVotes
 	for _, candidateHex := range candidateList {
 		candidateBytes, err := common.HexStringToBytes(candidateHex)
 		if err != nil {
 			return nil, err
 		}
-		candidates = append(candidates, candidateBytes)
+		cv = append(cv, outputpayload.CandidateVotes{
+			Candidate: candidateBytes,
+		})
 	}
 	voteContent := outputpayload.VoteContent{
-		VoteType:   outputpayload.Delegate,
-		Candidates: candidates,
+		VoteType:       outputpayload.Delegate,
+		CandidateVotes: cv,
 	}
 	voteOutput := outputpayload.VoteOutput{
 		Version: 0,
