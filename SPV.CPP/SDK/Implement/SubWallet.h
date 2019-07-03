@@ -116,6 +116,10 @@ namespace Elastos {
 
 			virtual nlohmann::json DecodeTransaction(const nlohmann::json &encodedTx) const;
 
+			virtual void SyncStart();
+
+			virtual void SyncStop();
+
 		protected: //implement Wallet::Listener
 			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
 
@@ -159,6 +163,8 @@ namespace Elastos {
 			virtual void txPublished(const std::string &hash, const nlohmann::json &result);
 
 			virtual void syncIsInactive(uint32_t time) {}
+
+			virtual void connectStatusChanged(const std::string &status);
 
 		protected:
 			friend class MasterWallet;

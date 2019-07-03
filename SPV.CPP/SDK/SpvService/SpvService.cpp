@@ -45,19 +45,49 @@ namespace Elastos {
 			getPeerManager()->Connect();
 		}
 
+		void SpvService::SyncStart() {
+			getPeerManager()->ResetReconnectStep();
+			getPeerManager()->SetReconnectEnableStatus(true);
+			Peer::ConnectStatus status = getPeerManager()->GetConnectStatus();
+
+			Log::debug("connect status = {}, reconnect task = {}", status == Peer::Connected ? "Connected" :
+											 (status == Peer::Connecting ? "Connecting" : "Disconnected"),
+					   getPeerManager()->ReconnectTaskCount());
+
+			if (getPeerManager()->ReconnectTaskCount() > 0) {
+				_reconnectTimer->cancel();
+			}
+
+			if (status == Peer::Disconnected) {
+				getPeerManager()->Connect();
+			}
+		}
+
 		void SpvService::Stop() {
-			if (_reconnectTimer != nullptr) {
+			getPeerManager()->SetReconnectEnableStatus(false);
+
+			if (_reconnectTimer) {
 				_reconnectTimer->cancel();
 				_reconnectTimer = nullptr;
 			}
 
 			getPeerManager()->SetReconnectTaskCount(0);
-			getPeerManager()->SetReconnectEnableStatus(false);
-
 			getPeerManager()->Disconnect();
 
 			_executor.StopThread();
 			_reconnectExecutor.StopThread();
+		}
+
+		void SpvService::SyncStop() {
+			getPeerManager()->SetReconnectEnableStatus(false);
+
+			if (_reconnectTimer) {
+				_reconnectTimer->cancel();
+				_reconnectTimer = nullptr;
+			}
+
+			getPeerManager()->SetReconnectTaskCount(0);
+			getPeerManager()->Disconnect();
 		}
 
 		void SpvService::PublishTransaction(const TransactionPtr &tx) {
@@ -310,6 +340,13 @@ namespace Elastos {
 				_peerManager->SetReconnectEnableStatus(true);
 				StartReconnect(time);
 			}
+		}
+
+		void SpvService::connectStatusChanged(const std::string &status) {
+			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
+						  [&status](PeerManager::Listener *listener) {
+							  listener->connectStatusChanged(status);
+						  });
 		}
 
 		size_t SpvService::GetAllTransactionsCount() {

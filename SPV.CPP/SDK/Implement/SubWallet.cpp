@@ -605,6 +605,16 @@ namespace Elastos {
 			});
 		}
 
+		void SubWallet::connectStatusChanged(const std::string &status) {
+			ArgInfo("{} {} status: {}", _walletManager->getWallet()->GetWalletID(), GetFunName(), status);
+
+			boost::mutex::scoped_lock scopedLock(lock);
+
+			std::for_each(_callbacks.begin(), _callbacks.end(), [&status](ISubWalletCallback *callback) {
+				callback->OnConnectStatusChanged(status);
+			});
+		}
+
 		void SubWallet::fireTransactionStatusChanged(const uint256 &txid, const std::string &status,
 													 const nlohmann::json &desc, uint32_t confirms) {
 			boost::mutex::scoped_lock scoped_lock(lock);
@@ -707,6 +717,16 @@ namespace Elastos {
 			ArgInfo("r => {}", txJson.dump());
 
 			return txJson;
+		}
+
+		void SubWallet::SyncStart() {
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			_walletManager->SyncStart();
+		}
+
+		void SubWallet::SyncStop() {
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			_walletManager->SyncStop();
 		}
 
 		nlohmann::json SubWallet::GetBasicInfo() const {

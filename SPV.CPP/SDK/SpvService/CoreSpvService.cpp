@@ -134,6 +134,10 @@ namespace Elastos {
 
 		}
 
+		void CoreSpvService::connectStatusChanged(const std::string &status) {
+
+		}
+
 		std::vector<CoinBaseUTXOPtr> CoreSpvService::loadCoinBaseUTXOs() {
 			return std::vector<CoinBaseUTXOPtr>();
 		}
@@ -247,6 +251,14 @@ namespace Elastos {
 			}
 		}
 
+		void WrappedExceptionPeerManagerListener::connectStatusChanged(const std::string &status) {
+			try {
+				_listener->connectStatusChanged(status);
+			} catch (const std::exception &e) {
+				Log::error("connectStatusChanged exception: {}", e.what());
+			}
+		}
+
 		void WrappedExceptionPeerManagerListener::syncIsInactive(uint32_t time) {
 			try {
 				_listener->syncIsInactive(time);
@@ -346,6 +358,16 @@ namespace Elastos {
 					_listener->txPublished(hash, result);
 				} catch (const std::exception &e) {
 					Log::error("txPublished exception: {}", e.what());
+				}
+			}));
+		}
+
+		void WrappedExecutorPeerManagerListener::connectStatusChanged(const std::string &status) {
+			_executor->Execute(Runnable([this, status]() -> void {
+				try {
+					_listener->connectStatusChanged(status);
+				} catch (const std::exception &e) {
+					Log::error("connectStatusChanged exception: {}", e.what());
 				}
 			}));
 		}

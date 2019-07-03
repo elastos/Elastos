@@ -90,6 +90,14 @@ namespace Elastos {
 			}
 		}
 
+		void PeerManager::FireConnectStatusChanged(Peer::ConnectStatus status) {
+			if (!_listener.expired()) {
+				std::string st = status == Peer::Connecting ? "Connecting" :
+								 (status == Peer::Connected ? "Connected" : "Disconnected");
+				_listener.lock()->connectStatusChanged(st);
+			}
+		}
+
 		void PeerManager::FireThreadCleanup() {
 			if (!_listener.expired()) {
 			}
@@ -226,24 +234,24 @@ namespace Elastos {
 			return status;
 		}
 
-		bool PeerManager::SyncSucceeded() const {
-			lock.lock();
-			bool status = _syncSucceeded;
-			lock.unlock();
+		void PeerManager::ResetReconnectStep() {
+			boost::mutex::scoped_lock scopedLock(lock);
+			_reconnectStep = 1;
+		}
 
-			return status;
+		bool PeerManager::SyncSucceeded() const {
+			boost::mutex::scoped_lock scopedLock(lock);
+			return _syncSucceeded;
 		}
 
 		void PeerManager::SetSyncSucceeded(bool succeeded) {
-			lock.lock();
+			boost::mutex::scoped_lock scopedLock(lock);
 			_syncSucceeded = succeeded;
-			lock.unlock();
 		}
 
 		void PeerManager::SetReconnectEnableStatus(bool status) {
-			lock.lock();
+			boost::mutex::scoped_lock scopedLock(lock);
 			_enableReconnectTask = status;
-			lock.unlock();
 		}
 
 		bool PeerManager::GetReconnectEnableStatus() const {
@@ -310,6 +318,7 @@ namespace Elastos {
 			} else {
 				lock.unlock();
 			}
+			FireConnectStatusChanged(GetConnectStatus());
 		}
 
 		void PeerManager::Disconnect() {
@@ -844,9 +853,9 @@ namespace Elastos {
 		void PeerManager::OnConnected(const PeerPtr &peerPtr) {
 			time_t now = time(nullptr);
 
-			boost::mutex::scoped_lock scopedLock(lock);
 			PeerPtr peer = peerPtr;
 
+			lock.lock();
 			{
 				std::vector<uint256> recoverHashes;
 				for (size_t i = _publishedTx.size(); i > 0; i--) {
@@ -936,6 +945,8 @@ namespace Elastos {
 					LoadMempools();
 				}
 			}
+			lock.unlock();
+			FireConnectStatusChanged(GetConnectStatus());
 		}
 
 		void PeerManager::OnDisconnected(const PeerPtr &peer, int error) {
@@ -1042,6 +1053,7 @@ namespace Elastos {
 			if (willSave) FireSyncStopped(error);
 			if (willReconnect) FireSyncIsInactive(reconnectSeconds);
 			FireTxStatusUpdate();
+			FireConnectStatusChanged(GetConnectStatus());
 		}
 
 		void PeerManager::OnRelayedPeers(const PeerPtr &peer, const std::vector<PeerInfo> &peers) {

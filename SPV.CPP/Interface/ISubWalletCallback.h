@@ -68,6 +68,12 @@ namespace Elastos {
 			 */
 			virtual void OnAssetRegistered(const std::string &asset, const nlohmann::json &info) = 0;
 
+			/**
+			 * Callback method fired when status of connection changed.
+			 * @param status value can be one of below: "Connecting", "Connected", "Disconnected"
+			 */
+			virtual void OnConnectStatusChanged(const std::string &status) = 0;
+
 		};
 
 	}

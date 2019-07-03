@@ -255,6 +255,16 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json DecodeTransaction(const nlohmann::json &encodedTx) const = 0;
 
+			/**
+			 * Start sync of P2P network
+			 */
+			virtual void SyncStart() = 0;
+
+			/**
+			 * Stop sync of P2P network
+			 */
+			virtual void SyncStop() = 0;
+
 		};
 
 	}

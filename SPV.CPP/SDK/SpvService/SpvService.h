@@ -36,7 +36,11 @@ namespace Elastos {
 
 			void Start();
 
+			void SyncStart();
+
 			void Stop();
+
+			void SyncStop();
 
 			size_t GetAllTransactionsCount();
 
@@ -85,6 +89,8 @@ namespace Elastos {
 			virtual void txPublished(const std::string &hash, const nlohmann::json &result);
 
 			virtual void syncIsInactive(uint32_t time);
+
+			virtual void connectStatusChanged(const std::string &status);
 
 		protected:
 			virtual std::vector<CoinBaseUTXOPtr> loadCoinBaseUTXOs();

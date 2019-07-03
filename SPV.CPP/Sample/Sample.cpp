@@ -76,6 +76,9 @@ public:
 	virtual void OnAssetRegistered(const std::string &asset, const nlohmann::json &info) {
 	}
 
+	virtual void OnConnectStatusChanged(const std::string &status) {
+	}
+
 private:
 	std::string _walletID;
 
@@ -526,6 +529,22 @@ static void GetBalance(const std::string &masterWalletID, const std::string &sub
 	}
 }
 
+static void SyncStart(const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
+	if (!subWallet)
+		return;
+
+	subWallet->SyncStart();
+}
+
+static void SyncStop(const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
+	if (!subWallet)
+		return;
+
+	subWallet->SyncStop();
+}
+
 static void GetAllAssets(const std::string &masterWalletID, const std::string &subWalletID) {
 	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
 	if (!subWallet)
@@ -678,7 +697,9 @@ int main(int argc, char *argv[]) {
 			DIDTest();
 		} else if (c == 'c') {
 			// trigger p2p connect now
-
+			SyncStart(gMasterWalletID, gMainchainSubWalletID);
+		} else if (c == 's') {
+			SyncStop(gMasterWalletID, gMainchainSubWalletID);
 		}
 	}
 

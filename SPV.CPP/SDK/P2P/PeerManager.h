@@ -67,6 +67,8 @@ namespace Elastos {
 				virtual void txPublished(const std::string &hash, const nlohmann::json &result) = 0;
 
 				virtual void syncIsInactive(uint32_t time) = 0;
+
+				virtual void connectStatusChanged(const std::string &status) = 0;
 			};
 
 		public:
@@ -110,6 +112,8 @@ namespace Elastos {
 			double GetSyncProgress(uint32_t startHeight);
 
 			Peer::ConnectStatus GetConnectStatus() const;
+
+			void ResetReconnectStep();
 
 			bool SyncSucceeded() const;
 
@@ -201,6 +205,8 @@ namespace Elastos {
 			bool FireNetworkIsReachable();
 
 			void FireTxPublished(const uint256 &hash, int code, const std::string &reason);
+
+			void FireConnectStatusChanged(Peer::ConnectStatus status);
 
 			void FireThreadCleanup();
 
