@@ -185,11 +185,13 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 	case UpdateCR:
 		if err := b.checkUpdateCRTransaction(txn, blockHeight); err != nil {
 			log.Warn("[ checkUpdateCRTransaction],", err)
+			return ErrTransactionPayload
 		}
 
 	case UnregisterCR:
 		if err := b.checkUnRegisterCRTransaction(txn, blockHeight); err != nil {
 			log.Warn("[checkRegisterCRTransaction],", err)
+			return ErrTransactionPayload
 		}
 	}
 

@@ -15,7 +15,6 @@ import (
 	. "github.com/elastos/Elastos.ELA/core/contract/program"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/crypto"
-	"github.com/elastos/Elastos.ELA/vm"
 )
 
 func RunPrograms(data []byte, programHashes []common.Uint168, programs []*Program) error {
@@ -89,27 +88,6 @@ func GetTxProgramHashes(tx *Transaction, references map[*Input]*Output) ([]commo
 		uniqueHashes = append(uniqueHashes, k)
 	}
 	return uniqueHashes, nil
-}
-
-func checkSignature(program Program, data []byte) error {
-	signType, err := crypto.GetScriptType(program.Code)
-	if err != nil {
-		return errors.New("invalid code")
-	}
-	if signType == vm.CHECKSIG {
-		// check code and signature
-		if err := checkStandardSignature(program, data); err != nil {
-			return err
-		}
-	} else if signType == vm.CHECKMULTISIG {
-		// check code and signature
-		if err := checkMultiSigSignatures(program, data); err != nil {
-			return err
-		}
-	} else {
-		return errors.New("invalid code type")
-	}
-	return nil
 }
 
 func checkStandardSignature(program Program, data []byte) error {
