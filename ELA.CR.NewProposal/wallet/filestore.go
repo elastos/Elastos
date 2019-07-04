@@ -1,14 +1,17 @@
 package wallet
 
 import (
+	"bytes"
+	"encoding/binary"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/utils"
 )
 
 type AddressData struct {
@@ -18,7 +21,7 @@ type AddressData struct {
 
 type FileData struct {
 	Version   string
-	Height    string
+	Height    int32
 	Addresses []AddressData
 }
 
@@ -80,15 +83,15 @@ func (cs *FileStore) closeDB() {
 	}
 }
 
-func (cs *FileStore) BuildDatabase(path string) {
-	if _, err := os.Stat(path); err == nil || os.IsExist(err) {
-		fmt.Println(path + " file already exist")
+func (cs *FileStore) BuildDatabase(path string) error {
+	if utils.FileExisted(path) {
+		log.Warn(path + " file already exist")
 	}
 	jsonBlob, err := json.Marshal(cs.data)
 	if err != nil {
-		fmt.Println("Build DataBase Error")
+		log.Warn("Build DataBase Error")
 	}
-	cs.writeDB(jsonBlob)
+	return cs.writeDB(jsonBlob)
 }
 
 func (cs *FileStore) SaveAddressData(address string, code []byte) error {
@@ -116,9 +119,7 @@ func (cs *FileStore) SaveAddressData(address string, code []byte) error {
 	if err != nil {
 		return errors.New("error: marshal db")
 	}
-	cs.writeDB(JSONBlob)
-
-	return nil
+	return cs.writeDB(JSONBlob)
 }
 
 func (cs *FileStore) DeleteAddressData(address string) error {
@@ -140,9 +141,7 @@ func (cs *FileStore) DeleteAddressData(address string) error {
 	if err != nil {
 		return errors.New("error: marshal db")
 	}
-	cs.writeDB(JSONBlob)
-
-	return nil
+	return cs.writeDB(JSONBlob)
 }
 
 func (cs *FileStore) LoadAddressData() ([]AddressData, error) {
@@ -169,16 +168,17 @@ func (cs *FileStore) SaveStoredData(name string, value []byte) error {
 	case "Version":
 		cs.data.Version = string(value)
 	case "Height":
-		cs.data.Height = string(value)
+		var height int32
+		bytesBuffer := bytes.NewBuffer(value)
+		binary.Read(bytesBuffer, binary.LittleEndian, &height)
+		cs.data.Height = height
 
 	}
 	JSONBlob, err := json.Marshal(cs.data)
 	if err != nil {
 		return errors.New("error: marshal db")
 	}
-	cs.writeDB(JSONBlob)
-
-	return nil
+	return cs.writeDB(JSONBlob)
 }
 
 func (cs *FileStore) LoadStoredData(name string) ([]byte, error) {
@@ -193,7 +193,9 @@ func (cs *FileStore) LoadStoredData(name string) ([]byte, error) {
 	case "Version":
 		return []byte(cs.data.Version), nil
 	case "Height":
-		return common.HexStringToBytes(cs.data.Height)
+		bytesBuffer := new(bytes.Buffer)
+		binary.Write(bytesBuffer, binary.LittleEndian, cs.data.Height)
+		return bytesBuffer.Bytes(), nil
 	}
 
 	return nil, errors.New("can't find the key: " + name)
