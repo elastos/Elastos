@@ -256,7 +256,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 		if blockHeight < b.chainParams.PublicDPOSHeight {
 			producers = append(producers, b.state.GetPendingCanceledProducers()...)
 		}
-		candidates := b.crState.GetCandidates(crstate.Active)
+		candidates := b.crCommittee.GetState().GetCandidates(crstate.Active)
 		err := checkVoteOutputs(txn.Outputs, references,
 			getProducerPublicKeysMap(producers), getCRCodesMap(candidates))
 		if err != nil {
@@ -1264,11 +1264,11 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction) error {
 		return err
 	}
 
-	if b.crState.ExistCandidateByNickname(info.NickName) {
+	if b.crCommittee.GetState().ExistCandidateByNickname(info.NickName) {
 		return fmt.Errorf("nick name %s already inuse", info.NickName)
 	}
 
-	cr := b.crState.GetCandidate(info.Code)
+	cr := b.crCommittee.GetState().GetCandidate(info.Code)
 	if cr != nil && cr.State() != crstate.Returned {
 		return fmt.Errorf("did %s already exist", info.DID)
 	}
@@ -1352,7 +1352,7 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction) error {
 		return err
 	}
 
-	cr := b.crState.GetCandidate(info.Code)
+	cr := b.crCommittee.GetState().GetCandidate(info.Code)
 	if cr == nil {
 		return errors.New("updating unknown CR")
 	}
@@ -1362,7 +1362,7 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction) error {
 
 	// check nickname usage.
 	if cr.Info().NickName != info.NickName &&
-		b.crState.ExistCandidateByNickname(info.NickName) {
+		b.crCommittee.GetState().ExistCandidateByNickname(info.NickName) {
 		return fmt.Errorf("nick name %s already exist", info.NickName)
 	}
 
@@ -1375,7 +1375,7 @@ func (b *BlockChain) checkUnRegisterCRTransaction(txn *Transaction) error {
 		return errors.New("invalid payload")
 	}
 
-	cr := b.crState.GetCandidate(info.Code)
+	cr := b.crCommittee.GetState().GetCandidate(info.Code)
 	if cr == nil {
 		return errors.New("unregister unknown CR")
 	}
@@ -1638,8 +1638,8 @@ func checkCRCArbitratorsSignatures(program *program.Program) error {
 
 	crcArbitrators := DefaultLedger.Arbitrators.GetCRCArbitrators()
 	crcArbitratorsCount := len(crcArbitrators)
-	minSignCount := int(float64(crcArbitratorsCount)*
-		state.MajoritySignRatioNumerator/state.MajoritySignRatioDenominator) + 1
+	minSignCount := int(float64(crcArbitratorsCount) *
+		state.MajoritySignRatioNumerator / state.MajoritySignRatioDenominator) + 1
 	if m < 1 || m > n || n != crcArbitratorsCount || m < minSignCount {
 		fmt.Printf("m:%d n:%d minSignCount:%d crc:  %d", m, n, minSignCount, crcArbitratorsCount)
 		return errors.New("invalid multi sign script code")

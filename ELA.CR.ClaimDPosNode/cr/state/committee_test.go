@@ -91,81 +91,201 @@ func TestCommittee_isInVotingPeriod(t *testing.T) {
 	committee := NewCommittee(&config.DefaultParams)
 
 	// 0
-	assert.False(t, committee.isInVotingPeriod(&types.Block{
-		Header: types.Header{
-			Height: 0,
-		},
-	}))
+	assert.False(t, committee.isInVotingPeriod(0))
 
 	// < CRCommitteeStartHeight - CRVotingPeriod
-	assert.False(t, committee.isInVotingPeriod(&types.Block{
-		Header: types.Header{
-			Height: config.DefaultParams.CRCommitteeStartHeight -
-				config.DefaultParams.CRVotingPeriod - 1,
-		},
-	}))
+	assert.False(t, committee.isInVotingPeriod(
+		config.DefaultParams.CRCommitteeStartHeight-
+			config.DefaultParams.CRVotingPeriod-1))
 
 	// CRCommitteeStartHeight - CRVotingPeriod
-	assert.True(t, committee.isInVotingPeriod(&types.Block{
-		Header: types.Header{
-			Height: config.DefaultParams.CRCommitteeStartHeight -
-				config.DefaultParams.CRVotingPeriod,
-		},
-	}))
+	assert.True(t, committee.isInVotingPeriod(
+		config.DefaultParams.CRCommitteeStartHeight-
+			config.DefaultParams.CRVotingPeriod))
 
 	// [CRCommitteeStartHeight - CRVotingPeriod, CRCommitteeStartHeight)
-	assert.True(t, committee.isInVotingPeriod(&types.Block{
-		Header: types.Header{
-			Height: config.DefaultParams.CRCommitteeStartHeight -
-				config.DefaultParams.CRVotingPeriod + 1,
-		},
-	}))
+	assert.True(t, committee.isInVotingPeriod(
+		config.DefaultParams.CRCommitteeStartHeight-
+			config.DefaultParams.CRVotingPeriod+1))
 
 	// CRCommitteeStartHeight
-	assert.False(t, committee.isInVotingPeriod(&types.Block{
-		Header: types.Header{
-			Height: config.DefaultParams.CRCommitteeStartHeight,
-		},
-	}))
+	assert.False(t, committee.isInVotingPeriod(
+		config.DefaultParams.CRCommitteeStartHeight))
 
-	committee.LastCommitteeHeight = config.DefaultParams.
-		CRCommitteeStartHeight + config.DefaultParams.CRDutyPeriod
+	// change to first committee
+	committee.LastCommitteeHeight = config.DefaultParams.CRCommitteeStartHeight
 
 	// < CRCommitteeStartHeight + CRDutyPeriod - CRVotingPeriod
-	assert.False(t, committee.isInVotingPeriod(&types.Block{
-		Header: types.Header{
-			Height: config.DefaultParams.CRCommitteeStartHeight +
-				config.DefaultParams.CRDutyPeriod - config.DefaultParams.
-				CRVotingPeriod - 1,
-		},
-	}))
+	assert.False(t, committee.isInVotingPeriod(
+		config.DefaultParams.CRCommitteeStartHeight+
+			config.DefaultParams.CRDutyPeriod-config.DefaultParams.
+			CRVotingPeriod-1))
 
 	// CRCommitteeStartHeight + CRDutyPeriod - CRVotingPeriod
-	assert.True(t, committee.isInVotingPeriod(&types.Block{
-		Header: types.Header{
-			Height: config.DefaultParams.CRCommitteeStartHeight +
-				config.DefaultParams.CRDutyPeriod - config.DefaultParams.
-				CRVotingPeriod,
-		},
-	}))
+	assert.True(t, committee.isInVotingPeriod(
+		config.DefaultParams.CRCommitteeStartHeight+
+			config.DefaultParams.CRDutyPeriod-config.DefaultParams.
+			CRVotingPeriod))
 
 	// [CRCommitteeStartHeight + CRDutyPeriod - CRVotingPeriod,
 	// CRCommitteeStartHeight + CRDutyPeriod)
-	assert.True(t, committee.isInVotingPeriod(&types.Block{
-		Header: types.Header{
-			Height: config.DefaultParams.CRCommitteeStartHeight +
-				config.DefaultParams.CRDutyPeriod - config.DefaultParams.
-				CRVotingPeriod + 1,
-		},
-	}))
+	assert.True(t, committee.isInVotingPeriod(
+		config.DefaultParams.CRCommitteeStartHeight+
+			config.DefaultParams.CRDutyPeriod-config.DefaultParams.
+			CRVotingPeriod+1))
 
 	// CRCommitteeStartHeight + CRDutyPeriod
-	assert.False(t, committee.isInVotingPeriod(&types.Block{
+	assert.False(t, committee.isInVotingPeriod(
+		config.DefaultParams.CRCommitteeStartHeight+
+			config.DefaultParams.CRDutyPeriod))
+
+	// change to next committee
+	committee.LastCommitteeHeight = config.DefaultParams.
+		CRCommitteeStartHeight + config.DefaultParams.CRDutyPeriod
+
+	// < CRCommitteeStartHeight + CRDutyPeriod * 2 - CRVotingPeriod
+	assert.False(t, committee.isInVotingPeriod(
+		config.DefaultParams.CRCommitteeStartHeight+
+			config.DefaultParams.CRDutyPeriod*2-config.DefaultParams.
+			CRVotingPeriod-1))
+
+	// CRCommitteeStartHeight + CRDutyPeriod * 2 - CRVotingPeriod
+	assert.True(t, committee.isInVotingPeriod(
+		config.DefaultParams.CRCommitteeStartHeight+
+			config.DefaultParams.CRDutyPeriod*2-config.DefaultParams.
+			CRVotingPeriod))
+
+	// [CRCommitteeStartHeight + CRDutyPeriod - CRVotingPeriod,
+	// CRCommitteeStartHeight + CRDutyPeriod)
+	assert.True(t, committee.isInVotingPeriod(
+		config.DefaultParams.CRCommitteeStartHeight+
+			config.DefaultParams.CRDutyPeriod*2-config.DefaultParams.
+			CRVotingPeriod+1))
+
+	// CRCommitteeStartHeight + CRDutyPeriod * 2
+	assert.False(t, committee.isInVotingPeriod(
+		config.DefaultParams.CRCommitteeStartHeight+
+			config.DefaultParams.CRDutyPeriod*2))
+}
+
+func TestCommittee_RollbackTo_SameCommittee_VotingPeriod(t *testing.T) {
+	committee := NewCommittee(&config.DefaultParams)
+
+	code := randomBytes(34)
+	nickname := randomString()
+	did := *randomUint168()
+
+	// register candidate
+	height := config.DefaultParams.CRCommitteeStartHeight -
+		config.DefaultParams.CRVotingPeriod
+	committee.ProcessBlock(&types.Block{
 		Header: types.Header{
-			Height: config.DefaultParams.CRCommitteeStartHeight +
-				config.DefaultParams.CRDutyPeriod,
+			Height: height,
 		},
-	}))
+		Transactions: []*types.Transaction{
+			generateRegisterCR(code, did, nickname),
+		},
+	}, nil)
+	candidate := committee.GetState().GetCandidate(code)
+	assert.Equal(t, Pending, candidate.state)
+	assert.True(t, committee.GetState().ExistCandidateByNickname(nickname))
+	height++
+
+	// update candidate
+	nickname2 := randomString()
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: height,
+		},
+		Transactions: []*types.Transaction{
+			generateUpdateCR(code, did, nickname2),
+		},
+	}, nil)
+	assert.True(t, committee.GetState().ExistCandidateByNickname(nickname2))
+	height++
+
+	// change state of candidate from pending to active
+	for i := 0; i < 4; i++ {
+		committee.ProcessBlock(&types.Block{
+			Header: types.Header{
+				Height: height,
+			},
+			Transactions: []*types.Transaction{},
+		}, nil)
+		height++
+	}
+	assert.Equal(t, Active, candidate.state)
+
+	// rollback to pending state
+	assert.NoError(t, committee.RollbackTo(height-2))
+	assert.Equal(t, Pending, candidate.state)
+
+	// rollback to the nickname before update
+	assert.NoError(t, committee.RollbackTo(
+		config.DefaultParams.CRCommitteeStartHeight-
+			config.DefaultParams.CRVotingPeriod))
+	assert.True(t, committee.GetState().ExistCandidateByNickname(nickname))
+}
+
+func TestCommittee_RollbackTo_SameCommittee_BeforeVoting(t *testing.T) {
+	//let committee be the first committee started state
+	keyframe := randomKeyFrame(12,
+		config.DefaultParams.CRCommitteeStartHeight)
+	committee := NewCommittee(&config.DefaultParams)
+	committee.KeyFrame = *keyframe
+
+	// let processing height be 6 blocks before the second voting
+	height := config.DefaultParams.CRCommitteeStartHeight + config.
+		DefaultParams.CRDutyPeriod - config.DefaultParams.CRVotingPeriod - 6
+
+	// simulate processing register CR before and after CR
+	for i := 0; i < 10; i++ {
+		code := randomBytes(34)
+		nickname := randomString()
+		did := *randomUint168()
+
+		committee.ProcessBlock(&types.Block{
+			Header: types.Header{
+				Height: height,
+			},
+			Transactions: []*types.Transaction{
+				generateRegisterCR(code, did, nickname),
+			},
+		}, nil)
+		height++
+	}
+	assert.True(t, keyframeEqual(keyframe, &committee.KeyFrame))
+	assert.Equal(t, 4, len(committee.GetState().GetAllCandidates()))
+
+	// rollback within voting period, candidates' state changes but committee
+	// state stay the same
+	height -= 2
+	assert.NoError(t, committee.RollbackTo(height))
+	assert.True(t, keyframeEqual(keyframe, &committee.KeyFrame))
+	assert.Equal(t, 3, len(committee.GetState().GetAllCandidates()))
+
+	// rollback to the voting height
+	height = config.DefaultParams.CRCommitteeStartHeight + config.
+		DefaultParams.CRDutyPeriod - config.DefaultParams.CRVotingPeriod
+	assert.NoError(t, committee.RollbackTo(height))
+	assert.True(t, keyframeEqual(keyframe, &committee.KeyFrame))
+	assert.Equal(t, 1, len(committee.GetState().GetAllCandidates()))
+
+	// rollback to the height before voting
+	height--
+	assert.NoError(t, committee.RollbackTo(height))
+	assert.True(t, keyframeEqual(keyframe, &committee.KeyFrame))
+	assert.Equal(t, 0, len(committee.GetState().GetAllCandidates()))
+
+	// rollback to the height having no history
+	height--
+	assert.NoError(t, committee.RollbackTo(height))
+	assert.True(t, keyframeEqual(keyframe, &committee.KeyFrame))
+	assert.Equal(t, 0, len(committee.GetState().GetAllCandidates()))
+}
+
+func TestCommittee_RollbackTo_DifferenceCommittee(t *testing.T) {
+	//todo complete me when check point is done
 }
 
 func generateCandidateSuite() (*StateKeyFrame, []*Candidate) {

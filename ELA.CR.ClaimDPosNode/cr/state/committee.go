@@ -2,6 +2,7 @@ package state
 
 import (
 	"errors"
+	"fmt"
 	"sort"
 	"sync"
 
@@ -15,7 +16,12 @@ type Committee struct {
 	KeyFrame
 	mtx    sync.RWMutex
 	state  *State
+	store  ICRRecord
 	params *config.Params
+}
+
+func (c *Committee) GetState() *State {
+	return c.state
 }
 
 func (c *Committee) GetMembersDIDs() []common.Uint168 {
@@ -43,7 +49,7 @@ func (c *Committee) GetMembersCodes() [][]byte {
 func (c *Committee) ProcessBlock(block *types.Block,
 	confirm *payload.Confirm) {
 	c.mtx.RLock()
-	isVoting := c.isInVotingPeriod(block)
+	isVoting := c.isInVotingPeriod(block.Height)
 	c.mtx.RUnlock()
 
 	if isVoting {
@@ -53,10 +59,48 @@ func (c *Committee) ProcessBlock(block *types.Block,
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
 	if c.shouldChange(block) {
+		checkpoint := CheckPoint{
+			KeyFrame: c.KeyFrame,
+		}
+
 		if err := c.changeCommitteeMembers(block.Height); err != nil {
 			log.Error("[ProcessBlock] change committee members error: ", err)
 		}
+
+		checkpoint.StateKeyFrame = *c.state.FinishVoting()
+		if c.store != nil {
+			if err := c.store.SaveCheckpoint(&checkpoint); err != nil {
+				log.Error("[ProcessBlock] save checkpoint error: ", err)
+			}
+		}
 	}
+}
+
+func (c *Committee) RollbackTo(height uint32) error {
+	c.mtx.RLock()
+	lastCommitHeight := c.LastCommitteeHeight
+	c.mtx.RUnlock()
+
+	if height >= lastCommitHeight {
+		if height > c.state.history.Height() {
+			return fmt.Errorf("can't rollback to height: %d", height)
+		}
+
+		if err := c.state.RollbackTo(height); err != nil {
+			log.Warn("state rollback err: ", err)
+		}
+	} else {
+		if c.store == nil {
+			return errors.New("can't find check point store")
+		}
+		point, err := c.store.GetCheckpoint(height)
+		if err != nil {
+			return err
+		}
+		c.state.StateKeyFrame = point.StateKeyFrame
+		c.KeyFrame = point.KeyFrame
+	}
+	return nil
 }
 
 func (c *Committee) shouldChange(block *types.Block) bool {
@@ -65,17 +109,17 @@ func (c *Committee) shouldChange(block *types.Block) bool {
 		block.Height >= c.LastCommitteeHeight+c.params.CRDutyPeriod
 }
 
-func (c *Committee) isInVotingPeriod(block *types.Block) bool {
+func (c *Committee) isInVotingPeriod(height uint32) bool {
 	//todo consider emergency election later
 	inVotingPeriod := func(committeeUpdateHeight uint32) bool {
-		return block.Height >= committeeUpdateHeight-c.params.CRVotingPeriod &&
-			block.Height < committeeUpdateHeight
+		return height >= committeeUpdateHeight-c.params.CRVotingPeriod &&
+			height < committeeUpdateHeight
 	}
 
-	if c.LastCommitteeHeight <= c.params.CRCommitteeStartHeight {
+	if c.LastCommitteeHeight < c.params.CRCommitteeStartHeight {
 		return inVotingPeriod(c.params.CRCommitteeStartHeight)
 	} else {
-		return inVotingPeriod(c.LastCommitteeHeight)
+		return inVotingPeriod(c.LastCommitteeHeight + c.params.CRDutyPeriod)
 	}
 }
 
@@ -115,8 +159,9 @@ func (c *Committee) getActiveCRCandidatesDesc() ([]*Candidate, error) {
 
 func NewCommittee(params *config.Params) *Committee {
 	return &Committee{
-		state:  NewState(params),
-		params: params,
+		state:    NewState(params),
+		params:   params,
 		KeyFrame: *NewKeyFrame(),
+		store:    nil, // todo complete me
 	}
 }
