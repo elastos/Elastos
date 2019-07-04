@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/utils"
@@ -81,11 +82,19 @@ func New(dataDir string) *Wallet {
 
 	exist := utils.FileExisted(walletPath)
 	if !exist {
-		wallet.BuildDatabase(walletPath)
-		wallet.SaveStoredData("Version", []byte(WalletVersion))
-		wallet.SaveStoredData("Height", []byte("0"))
+		if err := wallet.BuildDatabase(walletPath); err != nil {
+			log.Warn("Build wallet failed, " + err.Error())
+		}
+		if err := wallet.SaveStoredData("Version", []byte(WalletVersion)); err != nil {
+			log.Warn("Save version field failed, " + err.Error())
+		}
+		if err := wallet.SaveStoredData("Height", []byte("0")); err != nil {
+			log.Warn("Save height field failed, " + err.Error())
+		}
 	} else {
-		wallet.LoadAddresses()
+		if err := wallet.LoadAddresses(); err != nil {
+			log.Warn("Build wallet failed" + err.Error())
+		}
 	}
 
 	return &wallet
