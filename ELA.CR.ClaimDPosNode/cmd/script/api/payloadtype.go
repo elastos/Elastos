@@ -627,6 +627,7 @@ func newRegisterCR(L *lua.LState) int {
 	}
 
 	ct, err := contract.CreateCRDIDContractByCode(code)
+
 	if err != nil {
 		fmt.Println("wrong cr public key")
 		os.Exit(1)
@@ -781,7 +782,7 @@ func checkUpdateCR(L *lua.LState, idx int) *payload.CRInfo {
 	if v, ok := ud.Value.(*payload.CRInfo); ok {
 		return v
 	}
-	L.ArgError(1, "ProducerInfo expected")
+	L.ArgError(1, "CRInfo expected")
 	return nil
 }
 
@@ -873,7 +874,7 @@ func checkUnregisterCR(L *lua.LState, idx int) *payload.UnregisterCR {
 	if v, ok := ud.Value.(*payload.UnregisterCR); ok {
 		return v
 	}
-	L.ArgError(1, "ProducerInfo expected")
+	L.ArgError(1, "UnregisterCR expected")
 	return nil
 }
 

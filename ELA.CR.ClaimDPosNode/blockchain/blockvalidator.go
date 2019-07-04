@@ -15,6 +15,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/auxpow"
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
@@ -120,6 +121,12 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 	return nil
 }
 
+func getDIDByCode(code []byte) (*Uint168, error) {
+	pk := code[1 : len(code)-1]
+	did, error := contract.PublicKeyToDepositProgramHash(pk)
+	return did, error
+}
+
 func checkDuplicateTx(block *Block) error {
 	existingSideTxs := make(map[Uint256]struct{})
 	existingProducer := make(map[string]struct{})
@@ -175,6 +182,18 @@ func checkDuplicateTx(block *Block) error {
 				return errors.New("[PowCheckBlockSanity] block contains duplicate producer node")
 			}
 			existingProducerNode[producerNode] = struct{}{}
+		case CancelProducer:
+			processProducerPayload, ok := txn.Payload.(*payload.ProcessProducer)
+			if !ok {
+				return errors.New("[PowCheckBlockSanity] invalid cancel producer payload")
+			}
+
+			producer := BytesToHexString(processProducerPayload.OwnerPublicKey)
+			// Check for duplicate producer in a block
+			if _, exists := existingProducer[producer]; exists {
+				return errors.New("[PowCheckBlockSanity] block contains duplicate producer")
+			}
+			existingProducer[producer] = struct{}{}
 		case RegisterCR:
 			crPayload, ok := txn.Payload.(*payload.CRInfo)
 			if !ok {
@@ -189,15 +208,29 @@ func checkDuplicateTx(block *Block) error {
 		case UpdateCR:
 			crPayload, ok := txn.Payload.(*payload.CRInfo)
 			if !ok {
-				return errors.New("[PowCheckBlockSanity] invalid register CR payload")
+				return errors.New("[PowCheckBlockSanity] invalid update CR payload")
 			}
 
-			// Check for duplicate CR in a block
+			// Check for duplicate  CR in a block
 			if _, exists := existingCR[crPayload.DID]; exists {
 				return errors.New("[PowCheckBlockSanity] block contains duplicate CR")
 			}
 			existingCR[crPayload.DID] = struct{}{}
+		case UnregisterCR:
+			unregisterCR, ok := txn.Payload.(*payload.UnregisterCR)
+			if !ok {
+				return errors.New("[PowCheckBlockSanity] invalid unregister CR payload")
+			}
+			didPointer, err := getDIDByCode(unregisterCR.Code)
+			if err != nil {
+				return errors.New("[PowCheckBlockSanity] invalid unregisterCR CR Code")
 
+			}
+			// Check for duplicate  CR in a block
+			if _, exists := existingCR[*didPointer]; exists {
+				return errors.New("[PowCheckBlockSanity] block contains duplicate CR")
+			}
+			existingCR[*didPointer] = struct{}{}
 		}
 	}
 	return nil
@@ -361,7 +394,7 @@ func (b *BlockChain) checkCoinbaseTransactionContext(blockHeight uint32, coinbas
 		totalReward := totalTxFee + b.chainParams.RewardPerBlock
 		rewardDPOSArbiter := Fixed64(math.Ceil(float64(totalReward) * 0.35))
 		if totalReward-rewardDPOSArbiter+DefaultLedger.Arbitrators.
-				GetFinalRoundChange() != coinbase.Outputs[0].Value+
+			GetFinalRoundChange() != coinbase.Outputs[0].Value+
 			coinbase.Outputs[1].Value {
 			return errors.New("reward amount in coinbase not correct")
 		}

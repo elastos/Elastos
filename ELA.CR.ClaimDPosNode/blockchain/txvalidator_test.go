@@ -968,7 +968,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 
 	txn := new(types.Transaction)
 	txn.TxType = types.RegisterProducer
-	updatePayload := &payload.ProducerInfo{
+	registerPayload := &payload.ProducerInfo{
 		OwnerPublicKey: publicKey1,
 		NodePublicKey:  publicKey1,
 		NickName:       "",
@@ -976,7 +976,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 		Location:       1,
 		NetAddress:     "",
 	}
-	txn.Payload = updatePayload
+	txn.Payload = registerPayload
 
 	txn.Programs = []*program.Program{{
 		Code:      getCode(publicKeyStr1),
@@ -988,6 +988,18 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 			txn,
 		},
 	}
+	s.Chain.state.ProcessBlock(block, nil)
+
+	txn.TxType = types.UpdateProducer
+	updatePayload := &payload.ProducerInfo{
+		OwnerPublicKey: publicKey1,
+		NodePublicKey:  publicKey1,
+		NickName:       "",
+		Url:            "",
+		Location:       2,
+		NetAddress:     "",
+	}
+	txn.Payload = updatePayload
 	s.Chain.state.ProcessBlock(block, nil)
 
 	s.EqualError(s.Chain.checkUpdateProducerTransaction(txn), "Field NickName has invalid string length.")
@@ -1099,44 +1111,209 @@ func (s *txValidatorTestSuite) TestCheckActivateProducerTransaction() {
 func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	// Generate a register CR transaction
 	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
-	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
 	privateKeyStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
-	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
 	publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
-	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
+	nickName1 := "nickname 1"
 
-	codeStr1 := "2103c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3ac"
-	codeStr2 := "21027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45ac"
-	code1, _ := common.HexStringToBytes(codeStr1)
-	code2, _ := common.HexStringToBytes(codeStr2)
+	hash1, _ := getDepositAddress(publicKeyStr1)
+	hash2, _ := getDepositAddress(publicKeyStr2)
+
+	txn := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
+
+	code1 := getCode(publicKeyStr1)
+	code2 := getCode(publicKeyStr2)
+	codeStr1 := common.BytesToHexString(code1)
+
+	did1 := getDid(code1)
+	did2 := getDid(code2)
+
+	votingHeight := config.DefaultParams.CRCommitteeStartHeight -
+		config.DefaultParams.CRVotingPeriod
+
+	// all ok
+	err := s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.NoError(err)
+
+	//invalid payload
+	txnUpdateCr := s.getUnregisterCRTx(publicKeyStr1, privateKeyStr1)
+	err = s.Chain.checkRegisterCRTransaction(txnUpdateCr, votingHeight)
+	s.EqualError(err, "invalid payload")
+
+	// Give an invalid NickName length 0 in payload
+	nickName := txn.Payload.(*payload.CRInfo).NickName
+	txn.Payload.(*payload.CRInfo).NickName = ""
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).NickName = nickName
+	s.EqualError(err, "Field NickName has invalid string length.")
+
+	// Give an invalid NickName length more than 100 in payload
+	txn.Payload.(*payload.CRInfo).NickName = "012345678901234567890123456789012345678901234567890" +
+		"12345678901234567890123456789012345678901234567890123456789"
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).NickName = nickName
+	s.EqualError(err, "Field NickName has invalid string length.")
+
+	// Give an invalid url length 0 in payload
+	url := txn.Payload.(*payload.CRInfo).Url
+	txn.Payload.(*payload.CRInfo).Url = ""
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).Url = url
+	s.EqualError(err, "Field Url has invalid string length.")
+
+	// Give an invalid url length more than 100 in payload
+	txn.Payload.(*payload.CRInfo).Url = "012345678901234567890123456789012345678901234567890" +
+		"12345678901234567890123456789012345678901234567890123456789"
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).Url = url
+	s.EqualError(err, "Field Url has invalid string length.")
+
+	//not in vote Period lower
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight-1)
+	s.EqualError(err, "should create tx during voting period")
+
+	//not in vote Period lower upper c.params.CRCommitteeStartHeight
+	err = s.Chain.checkRegisterCRTransaction(txn, config.DefaultParams.CRCommitteeStartHeight)
+	s.EqualError(err, "should create tx during voting period")
+
+	//nickname already in use
+	s.Chain.crCommittee.GetState().Nicknames[nickName1] = struct{}{}
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.EqualError(err, "nick name nickname 1 already inuse")
+
+	delete(s.Chain.crCommittee.GetState().Nicknames, nickName1)
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.NoError(err)
+
+	err = s.Chain.checkRegisterCRTransaction(txn, 0)
+	s.EqualError(err, "should create tx during voting period")
+
+	//did aready exist
+	s.Chain.crCommittee.GetState().CodeDIDMap[codeStr1] = *did1
+	s.Chain.crCommittee.GetState().ActivityCandidates[*did1] = &crstate.Candidate{}
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.EqualError(err, "did "+
+		"67ae53989e21c3212dd9bfed6daeb56874782502dd already exist")
+
+	delete(s.Chain.crCommittee.GetState().CodeDIDMap, codeStr1)
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.NoError(err)
+
+	// Give an invalid code in payload
+	txn.Payload.(*payload.CRInfo).Code = []byte{}
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).Code = code1
+	s.EqualError(err, "code is nil")
+
+	// Give an invalid DID in payload
+	txn.Payload.(*payload.CRInfo).DID = common.Uint168{1, 2, 3}
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).DID = *did1
+	s.EqualError(err, "invalid did address")
+
+	// Give a mismatching code and DID in payload
+	txn.Payload.(*payload.CRInfo).DID = *did2
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).DID = *did1
+	s.EqualError(err, "invalid did address")
+
+	// Invalidates the signature in payload
+	signatature := txn.Payload.(*payload.CRInfo).Signature
+	txn.Payload.(*payload.CRInfo).Signature = randomSignature()
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).Signature = signatature
+	s.EqualError(err, "[Validation], Verify failed.")
+
+	// Give a mismatching deposit address
+	outPuts := txn.Outputs
+	txn.Outputs = []*types.Output{&types.Output{
+		AssetID:     common.Uint256{},
+		Value:       5000 * 100000000,
+		OutputLock:  0,
+		ProgramHash: *hash2,
+		Payload:     new(outputpayload.DefaultOutput),
+	}}
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	txn.Outputs = outPuts
+	s.EqualError(err, "deposit address does not match the code in payload")
+
+	// Give a insufficient deposit coin
+	txn.Outputs = []*types.Output{&types.Output{
+		AssetID:     common.Uint256{},
+		Value:       4000,
+		OutputLock:  0,
+		ProgramHash: *hash1,
+		Payload:     new(outputpayload.DefaultOutput),
+	}}
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	txn.Outputs = outPuts
+	s.EqualError(err, "producer deposit amount is insufficient")
+
+	// Multi deposit addresses
+	txn.Outputs = []*types.Output{
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       5000 * 100000000,
+			OutputLock:  0,
+			ProgramHash: *hash1,
+			Payload:     new(outputpayload.DefaultOutput),
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       5000 * 100000000,
+			OutputLock:  0,
+			ProgramHash: *hash1,
+			Payload:     new(outputpayload.DefaultOutput),
+		}}
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	txn.Outputs = outPuts
+	s.EqualError(err, "there must be only one deposit address in outputs")
+}
+
+func getDepositAddress(publicKeyStr string) (*common.Uint168, error) {
+	publicKey, _ := common.HexStringToBytes(publicKeyStr)
+	hash, err := contract.PublicKeyToDepositProgramHash(publicKey)
+	if err != nil {
+		return nil, err
+	}
+	return hash, nil
+}
+
+func getDid(code []byte) *common.Uint168 {
+	ct1, _ := contract.CreateCRDIDContractByCode(code)
+	return ct1.ToProgramHash()
+}
+
+func (s *txValidatorTestSuite) getRegisterCRTx(publicKeyStr, privateKeyStr, nickName string) *types.Transaction {
+
+	publicKeyStr1 := publicKeyStr
+	privateKeyStr1 := privateKeyStr
+	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
+
+	code1 := getCode(publicKeyStr1)
 
 	ct1, _ := contract.CreateCRDIDContractByCode(code1)
 	did1 := ct1.ToProgramHash()
-	ct2, _ := contract.CreateCRDIDContractByCode(code2)
-	did2 := ct2.ToProgramHash()
 
 	hash1, _ := contract.PublicKeyToDepositProgramHash(publicKey1)
-	hash2, _ := contract.PublicKeyToDepositProgramHash(publicKey2)
-
-	nickName1 := "nickname 1"
 
 	txn := new(types.Transaction)
 	txn.TxType = types.RegisterCR
 	txn.Version = types.TxVersion09
-	rcPayload := &payload.CRInfo{
+	crInfoPayload := &payload.CRInfo{
 		Code:     code1,
 		DID:      *did1,
-		NickName: nickName1,
+		NickName: nickName,
 		Url:      "http://www.elastos_test.com",
 		Location: 1,
 	}
-	rcSignBuf := new(bytes.Buffer)
-	err := rcPayload.SerializeUnsigned(rcSignBuf, payload.CRInfoVersion)
+	signBuf := new(bytes.Buffer)
+	err := crInfoPayload.SerializeUnsigned(signBuf, payload.CRInfoVersion)
 	s.NoError(err)
-	rcSig1, err := crypto.Sign(privateKey1, rcSignBuf.Bytes())
+	rcSig1, err := crypto.Sign(privateKey1, signBuf.Bytes())
 	s.NoError(err)
-	rcPayload.Signature = rcSig1
-	txn.Payload = rcPayload
+	crInfoPayload.Signature = rcSig1
+	txn.Payload = crInfoPayload
 
 	txn.Programs = []*program.Program{&program.Program{
 		Code:      getCode(publicKeyStr1),
@@ -1151,152 +1328,68 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 		Type:        0,
 		Payload:     new(outputpayload.DefaultOutput),
 	}}
-
-	votingHeight := config.DefaultParams.CRCommitteeStartHeight -
-		config.DefaultParams.CRVotingPeriod
-
-	s.Chain.crCommittee.GetState().Nicknames[nickName1] = struct{}{}
-	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.EqualError(err, "nick name nickname 1 already inuse")
-
-	delete(s.Chain.crCommittee.GetState().Nicknames, nickName1)
-	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.NoError(err)
-
-	err = s.Chain.checkRegisterCRTransaction(txn, 0)
-	s.EqualError(err, "should create tx during voting period")
-
-	s.Chain.crCommittee.GetState().CodeDIDMap[codeStr1] = *did1
-	s.Chain.crCommittee.GetState().ActivityCandidates[*did1] = &crstate.Candidate{}
-	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.EqualError(err, "did "+
-		"67ae53989e21c3212dd9bfed6daeb56874782502dd already exist")
-
-	delete(s.Chain.crCommittee.GetState().CodeDIDMap, codeStr1)
-	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.NoError(err)
-
-	// Give an invalid code in payload
-	txn.Payload.(*payload.CRInfo).Code = []byte{}
-	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.EqualError(err, "code is nil")
-
-	// Give an invalid DID in payload
-	txn.Payload.(*payload.CRInfo).Code = code1
-	txn.Payload.(*payload.CRInfo).DID = common.Uint168{1, 2, 3}
-	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.EqualError(err, "invalid did address")
-
-	// Give a mismatching code and DID in payload
-	txn.Payload.(*payload.CRInfo).Code = code1
-	txn.Payload.(*payload.CRInfo).DID = *did2
-	rcSignBuf2 := new(bytes.Buffer)
-	err = rcPayload.SerializeUnsigned(rcSignBuf2, payload.CRInfoVersion)
-	s.NoError(err)
-	rcSig2, err := crypto.Sign(privateKey1, rcSignBuf2.Bytes())
-	s.NoError(err)
-	txn.Payload.(*payload.CRInfo).Signature = rcSig2
-	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.EqualError(err, "invalid did address")
-
-	// Invalidates the signature in payload
-	txn.Payload.(*payload.CRInfo).Code = code1
-	txn.Payload.(*payload.CRInfo).DID = *did2
-	txn.Payload.(*payload.CRInfo).Signature = rcSig1
-	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.EqualError(err, "invalid did address")
-
-	// Give an invalid url in payload
-	txn.Payload.(*payload.CRInfo).Code = code1
-	txn.Payload.(*payload.CRInfo).DID = *did1
-	txn.Payload.(*payload.CRInfo).Url = ""
-	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.EqualError(err, "Field Url has invalid string length.")
-
-	// Give a mismatching deposit address
-	rcPayload.Code = code1
-	rcPayload.DID = *did1
-	rcPayload.Url = "www.test.com"
-	rcSignBuf = new(bytes.Buffer)
-	err = rcPayload.SerializeUnsigned(rcSignBuf, payload.ProducerInfoVersion)
-	s.NoError(err)
-	rcSig1, err = crypto.Sign(privateKey1, rcSignBuf.Bytes())
-	s.NoError(err)
-	rcPayload.Signature = rcSig1
-	txn.Payload = rcPayload
-
-	txn.Outputs = []*types.Output{&types.Output{
-		AssetID:     common.Uint256{},
-		Value:       5000 * 100000000,
-		OutputLock:  0,
-		ProgramHash: *hash2,
-	}}
-	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.EqualError(err, "deposit address does not match the code in payload")
-
-	// Give a insufficient deposit coin
-	txn.Outputs = []*types.Output{&types.Output{
-		AssetID:     common.Uint256{},
-		Value:       4000,
-		OutputLock:  0,
-		ProgramHash: *hash1,
-	}}
-	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.EqualError(err, "producer deposit amount is insufficient")
-
-	// Multi deposit addresses
-	txn.Outputs = []*types.Output{
-		&types.Output{
-			AssetID:     common.Uint256{},
-			Value:       5000 * 100000000,
-			OutputLock:  0,
-			ProgramHash: *hash1,
-		},
-		&types.Output{
-			AssetID:     common.Uint256{},
-			Value:       5000 * 100000000,
-			OutputLock:  0,
-			ProgramHash: *hash1,
-		}}
-	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.EqualError(err, "there must be only one deposit address in outputs")
+	return txn
 }
+func (s *txValidatorTestSuite) getUpdateCRTx(publicKeyStr, privateKeyStr, nickName string) *types.Transaction {
 
-func (s *txValidatorTestSuite) TestGetProgramHash() {
-	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
-	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
-
-	pk1, _ := crypto.DecodePoint(publicKey1)
-	ct1, _ := contract.CreateStandardContract(pk1)
-	hash1, _ := contract.PublicKeyToDepositProgramHash(publicKey1)
+	publicKeyStr1 := publicKeyStr
+	privateKeyStr1 := privateKeyStr
+	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
+	code1 := getCode(publicKeyStr1)
+	ct1, _ := contract.CreateCRDIDContractByCode(code1)
+	did1 := ct1.ToProgramHash()
 
 	txn := new(types.Transaction)
 	txn.TxType = types.UpdateCR
 	txn.Version = types.TxVersion09
-
-	//Code initial with wrong value so return invalid code
-	//GetScriptType 	len(script) != PublicKeyScriptLength && len(script) < MinMultiSignCodeLength
-	rcPayload := &payload.CRInfo{
-		Code:     []byte{1, 2, 3, 4, 5},
-		DID:      *hash1,
-		NickName: "nickname 1",
+	crInfoPayload := &payload.CRInfo{
+		Code:     code1,
+		DID:      *did1,
+		NickName: nickName,
 		Url:      "http://www.elastos_test.com",
 		Location: 1,
 	}
-	_, err := s.Chain.getProgramHash(rcPayload)
-	s.EqualError(err, "invalid code")
-
-	//GetScriptType len(script) == PublicKeyScriptLength
-	rcPayload.Code = []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
-		18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35}
-	_, err = s.Chain.getProgramHash(rcPayload)
-	s.EqualError(err, "invalid code type")
-
-	rcPayload.Code = ct1.Code
-	_, err = s.Chain.getProgramHash(rcPayload)
+	signBuf := new(bytes.Buffer)
+	err := crInfoPayload.SerializeUnsigned(signBuf, payload.CRInfoVersion)
 	s.NoError(err)
+	rcSig1, err := crypto.Sign(privateKey1, signBuf.Bytes())
+	s.NoError(err)
+	crInfoPayload.Signature = rcSig1
+	txn.Payload = crInfoPayload
 
-	//todo CHECKMULTISIG
+	txn.Programs = []*program.Program{&program.Program{
+		Code:      getCode(publicKeyStr1),
+		Parameter: nil,
+	}}
+	return txn
+}
+func (s *txValidatorTestSuite) getUnregisterCRTx(publicKeyStr, privateKeyStr string) *types.Transaction {
+
+	publicKeyStr1 := publicKeyStr
+	privateKeyStr1 := privateKeyStr
+	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
+
+	code1 := getCode(publicKeyStr1)
+
+	txn := new(types.Transaction)
+	txn.TxType = types.UnregisterCR
+	txn.Version = types.TxVersion09
+	unregisterCRPayload := &payload.UnregisterCR{
+		Code: code1,
+	}
+	signBuf := new(bytes.Buffer)
+	err := unregisterCRPayload.SerializeUnsigned(signBuf, payload.UnregisterCRVersion)
+	s.NoError(err)
+	rcSig1, err := crypto.Sign(privateKey1, signBuf.Bytes())
+	s.NoError(err)
+	unregisterCRPayload.Signature = rcSig1
+	txn.Payload = unregisterCRPayload
+
+	txn.Programs = []*program.Program{&program.Program{
+		Code:      getCode(publicKeyStr1),
+		Parameter: nil,
+	}}
+	return txn
 }
 
 func (s *txValidatorTestSuite) TestCrInfoSanityCheck() {
@@ -1338,206 +1431,169 @@ func (s *txValidatorTestSuite) TestCrInfoSanityCheck() {
 }
 
 func (s *txValidatorTestSuite) TestCheckUpdateCRTransaction() {
+
 	// Generate a UpdateCR CR transaction
 	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
-	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
 	privateKeyStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
-	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
-	publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
-	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
 
-	pk1, _ := crypto.DecodePoint(publicKey1)
-	ct1, _ := contract.CreateStandardContract(pk1)
-	hash1, _ := contract.PublicKeyToDepositProgramHash(publicKey1)
-	hash2, _ := contract.PublicKeyToDepositProgramHash(publicKey2)
+	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
+	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
 
-	txn := new(types.Transaction)
-	txn.TxType = types.UpdateCR
-	txn.Version = types.TxVersion09
-	rcPayload := &payload.CRInfo{
-		Code:     ct1.Code,
-		DID:      *hash1,
-		NickName: "nickname 1",
-		Url:      "http://www.elastos_test.com",
-		Location: 1,
+	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
+	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
+
+	nickName1 := "nickname 1"
+	nickName2 := "nickname 2"
+	nickName3 := "nickname 3"
+
+	votingHeight := config.DefaultParams.CRCommitteeStartHeight -
+		config.DefaultParams.CRVotingPeriod
+	//
+	//registe an cr to update
+	registerCRTxn1 := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
+	registerCRTxn2 := s.getRegisterCRTx(publicKeyStr2, privateKeyStr2, nickName2)
+
+	block := &types.Block{
+		Transactions: []*types.Transaction{
+			registerCRTxn1,
+			registerCRTxn2,
+		},
 	}
+	s.Chain.crCommittee.GetState().ProcessBlock(block, nil)
 
-	rcSignBuf := new(bytes.Buffer)
-	err := rcPayload.SerializeUnsigned(rcSignBuf, payload.CRInfoVersion)
+	//ok nothing wrong
+	hash2, err := getDepositAddress(publicKeyStr2)
+	txn := s.getUpdateCRTx(publicKeyStr1, privateKeyStr1, nickName1)
+	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
 	s.NoError(err)
 
-	rcSig1, err := crypto.Sign(privateKey1, rcSignBuf.Bytes())
-	s.NoError(err)
-
-	//test ok
-	rcPayload.Signature = rcSig1
-	txn.Payload = rcPayload
-	txn.Programs = []*program.Program{&program.Program{
-		Code:      getCode(publicKeyStr1),
-		Parameter: nil,
-	}}
-	fmt.Println("len(paramater):", len(rcPayload.Signature))
-	err = s.Chain.checkUpdateCRTransaction(txn)
-	s.NoError(err)
-
+	//invalid payload
+	unregisterTx := s.getUnregisterCRTx(publicKeyStr1, privateKeyStr1)
+	err = s.Chain.checkUpdateCRTransaction(unregisterTx, votingHeight)
+	s.EqualError(err, "invalid payload")
 	// Give an invalid NickName length 0 in payload
-	txn.Payload.(*payload.CRInfo).Code = ct1.Code
-	txn.Payload.(*payload.CRInfo).DID = *hash1
-	txn.Payload.(*payload.CRInfo).Url = "http://www.elastos_test.com"
+	nickName := txn.Payload.(*payload.CRInfo).NickName
 	txn.Payload.(*payload.CRInfo).NickName = ""
-	err = s.Chain.checkUpdateCRTransaction(txn)
+	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).NickName = nickName
 	s.EqualError(err, "Field NickName has invalid string length.")
 
 	// Give an invalid NickName length more than 100 in payload
-	txn.Payload.(*payload.CRInfo).Code = ct1.Code
-	txn.Payload.(*payload.CRInfo).DID = *hash1
-	txn.Payload.(*payload.CRInfo).Url = "http://www.elastos_test.com"
 	txn.Payload.(*payload.CRInfo).NickName = "012345678901234567890123456789012345678901234567890" +
 		"12345678901234567890123456789012345678901234567890123456789"
-	err = s.Chain.checkUpdateCRTransaction(txn)
+	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).NickName = nickName
 	s.EqualError(err, "Field NickName has invalid string length.")
 
 	// Give an invalid url length 0 in payload
-	txn.Payload.(*payload.CRInfo).Code = ct1.Code
-	txn.Payload.(*payload.CRInfo).DID = *hash1
-	txn.Payload.(*payload.CRInfo).NickName = "nickname 1"
+	url := txn.Payload.(*payload.CRInfo).Url
 	txn.Payload.(*payload.CRInfo).Url = ""
-	err = s.Chain.checkUpdateCRTransaction(txn)
+	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).Url = url
 	s.EqualError(err, "Field Url has invalid string length.")
 
 	// Give an invalid url length more than 100 in payload
-	txn.Payload.(*payload.CRInfo).Code = ct1.Code
-	txn.Payload.(*payload.CRInfo).DID = *hash1
-	txn.Payload.(*payload.CRInfo).NickName = "nickname 1"
 	txn.Payload.(*payload.CRInfo).Url = "012345678901234567890123456789012345678901234567890" +
 		"12345678901234567890123456789012345678901234567890123456789"
-	err = s.Chain.checkUpdateCRTransaction(txn)
+	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).Url = url
 	s.EqualError(err, "Field Url has invalid string length.")
 
 	// Give an invalid code in payload
+	code := txn.Payload.(*payload.CRInfo).Code
 	txn.Payload.(*payload.CRInfo).Code = []byte{1, 2, 3, 4, 5}
-	txn.Payload.(*payload.CRInfo).DID = *hash1
-	txn.Payload.(*payload.CRInfo).Url = "http://www.elastos_test.com"
-	txn.Payload.(*payload.CRInfo).NickName = "nickname 1"
-	err = s.Chain.checkUpdateCRTransaction(txn)
-	s.EqualError(err, "invalid code")
+	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).Code = code
+	s.EqualError(err, "invalid did address")
 
 	// Give an invalid DID in payload
-	txn.Payload.(*payload.CRInfo).Code = ct1.Code
+	did := txn.Payload.(*payload.CRInfo).DID
 	txn.Payload.(*payload.CRInfo).DID = common.Uint168{1, 2, 3}
-	txn.Payload.(*payload.CRInfo).Url = "http://www.elastos_test.com"
-	txn.Payload.(*payload.CRInfo).NickName = "nickname 1"
-	err = s.Chain.checkUpdateCRTransaction(txn)
+	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).DID = did
 	s.EqualError(err, "invalid did address")
 
 	// Give a mismatching code and DID in payload
-	txn.Payload.(*payload.CRInfo).Code = ct1.Code
 	txn.Payload.(*payload.CRInfo).DID = *hash2
-	txn.Payload.(*payload.CRInfo).Url = "http://www.elastos_test.com"
-	txn.Payload.(*payload.CRInfo).NickName = "nickname 1"
-	rcSignBuf2 := new(bytes.Buffer)
-	err = rcPayload.SerializeUnsigned(rcSignBuf2, payload.CRInfoVersion)
-	s.NoError(err)
-	rcSig2, err := crypto.Sign(privateKey1, rcSignBuf2.Bytes())
-	s.NoError(err)
-	txn.Payload.(*payload.CRInfo).Signature = rcSig2
-	err = s.Chain.checkUpdateCRTransaction(txn)
+	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).DID = did
 	s.EqualError(err, "invalid did address")
 
 	// Invalidates the signature in payload
-	txn.Payload.(*payload.CRInfo).Code = ct1.Code
-	txn.Payload.(*payload.CRInfo).DID = *hash2
-	txn.Payload.(*payload.CRInfo).Url = "http://www.elastos_test.com"
-	txn.Payload.(*payload.CRInfo).NickName = "nickname 1"
-	txn.Payload.(*payload.CRInfo).Signature = rcSig1
-	err = s.Chain.checkUpdateCRTransaction(txn)
-	s.EqualError(err, "invalid did address")
+	signatur := txn.Payload.(*payload.CRInfo).Signature
+	txn.Payload.(*payload.CRInfo).Signature = randomSignature()
+	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).Signature = signatur
+	s.EqualError(err, "[Validation], Verify failed.")
 
-	// Give a mismatching deposit address
-	rcPayload.Code = ct1.Code
-	rcPayload.DID = *hash1
-	rcPayload.Url = "www.test.com"
-	txn.Payload.(*payload.CRInfo).NickName = "nickname 1"
-	rcSignBuf = new(bytes.Buffer)
-	err = rcPayload.SerializeUnsigned(rcSignBuf, payload.ProducerInfoVersion)
-	s.NoError(err)
+	//not in vote Period lower
+	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight-1)
+	s.EqualError(err, "should create tx during voting period")
 
-	rcSig1, err = crypto.Sign(privateKey1, rcSignBuf.Bytes())
-	s.NoError(err)
+	//not in vote Period lower upper c.params.CRCommitteeStartHeight
+	err = s.Chain.checkUpdateCRTransaction(txn, config.DefaultParams.CRCommitteeStartHeight)
+	s.EqualError(err, "should create tx during voting period")
 
-	rcPayload.Signature = rcSig1
-	txn.Payload = rcPayload
-	err = s.Chain.checkUpdateCRTransaction(txn)
-	s.NoError(err)
+	//updating unknown CR
+	txn3 := s.getUpdateCRTx(publicKeyStr3, privateKeyStr3, nickName3)
+	err = s.Chain.checkUpdateCRTransaction(txn3, votingHeight)
+	s.EqualError(err, "updating unknown CR")
+
+	//nick name already exist
+	txn1Copy := s.getUpdateCRTx(publicKeyStr1, privateKeyStr1, nickName2)
+	err = s.Chain.checkUpdateCRTransaction(txn1Copy, votingHeight)
+	str := fmt.Sprintf("nick name %s already exist", nickName2)
+	s.EqualError(err, str)
 
 }
 
 func (s *txValidatorTestSuite) TestCheckUnregisterCRTransaction() {
+
 	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
-	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
 	privateKeyStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
-	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
-	publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
-	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
 
-	pk1, _ := crypto.DecodePoint(publicKey1)
-	ct1, _ := contract.CreateStandardContract(pk1)
+	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
+	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
 
-	pk2, _ := crypto.DecodePoint(publicKey2)
-	ct2, _ := contract.CreateStandardContract(pk2)
+	votingHeight := config.DefaultParams.CRCommitteeStartHeight -
+		config.DefaultParams.CRVotingPeriod
+	nickName1 := "nickname 1"
 
-	hash1, _ := contract.PublicKeyToDepositProgramHash(publicKey1)
-	//hash2, _ := contract.PublicKeyToDepositProgramHash(publicKey2)
-
-	txn := new(types.Transaction)
-	txn.TxType = types.UnregisterCR
-	txn.Version = types.TxVersion09
-	unregisterPayload := &payload.UnregisterCR{
-		Code: ct1.Code,
+	//registe an cr to unregister
+	registerCRTxn := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
+	block := &types.Block{
+		Transactions: []*types.Transaction{
+			registerCRTxn,
+		},
 	}
-
-	rcSignBuf := new(bytes.Buffer)
-	err := unregisterPayload.SerializeUnsigned(rcSignBuf, payload.UnregisterCRVersion)
+	s.Chain.crCommittee.GetState().ProcessBlock(block, nil)
+	//ok
+	txn := s.getUnregisterCRTx(publicKeyStr1, privateKeyStr1)
+	err := s.Chain.checkUnRegisterCRTransaction(txn, votingHeight)
 	s.NoError(err)
 
-	rcSig1, err := crypto.Sign(privateKey1, rcSignBuf.Bytes())
-	s.NoError(err)
-
-	//test ok
-	unregisterPayload.Signature = rcSig1
-	txn.Payload = unregisterPayload
-	txn.Programs = []*program.Program{{
-		Code:      getCode(publicKeyStr1),
-		Parameter: nil,
-	}}
-	err = s.Chain.checkUnRegisterCRTransaction(txn)
-	s.NoError(err)
-
-	// Give an invalid payload
-	rcPayload := &payload.CRInfo{
-		Code:     ct1.Code,
-		DID:      *hash1,
-		NickName: "nickname 1",
-		Url:      "http://www.elastos_test.com",
-		Location: 1,
-	}
-	rcSignBuf = new(bytes.Buffer)
-	err = rcPayload.SerializeUnsigned(rcSignBuf, payload.UnregisterCRVersion)
-	s.NoError(err)
-	rcSig1, err = crypto.Sign(privateKey1, rcSignBuf.Bytes())
-	s.NoError(err)
-	rcPayload.Signature = rcSig1
-	txn.Payload = rcPayload
-	err = s.Chain.checkUnRegisterCRTransaction(txn)
+	//invalid payload need unregisterCR pass registerCr
+	registerTx := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
+	err = s.Chain.checkUnRegisterCRTransaction(registerTx, votingHeight)
 	s.EqualError(err, "invalid payload")
 
-	// Give an mismatching Signature
-	txn.Payload = unregisterPayload
-	txn.Payload.(*payload.UnregisterCR).Code = ct2.Code
-	txn.Payload.(*payload.UnregisterCR).Signature = rcSig1
-	err = s.Chain.checkUnRegisterCRTransaction(txn)
-	s.EqualError(err, "[Validation], Verify failed.")
+	//not in vote Period lower
+	err = s.Chain.checkUnRegisterCRTransaction(txn, votingHeight-1)
+	s.EqualError(err, "should create tx during voting period")
 
+	//not in vote Period lower upper c.params.CRCommitteeStartHeight
+	err = s.Chain.checkUnRegisterCRTransaction(txn, config.DefaultParams.CRCommitteeStartHeight)
+	s.EqualError(err, "should create tx during voting period")
+
+	//unregister unknown CR
+	txn2 := s.getUnregisterCRTx(publicKeyStr2, privateKeyStr2)
+	err = s.Chain.checkUnRegisterCRTransaction(txn2, votingHeight)
+	s.EqualError(err, "unregister unknown CR")
+
+	//wrong signature
+	txn.Payload.(*payload.UnregisterCR).Signature = randomSignature()
+	err = s.Chain.checkUnRegisterCRTransaction(txn, votingHeight)
+	s.EqualError(err, "[Validation], Verify failed.")
 }
 
 func (s *txValidatorTestSuite) TestCheckStringField() {
