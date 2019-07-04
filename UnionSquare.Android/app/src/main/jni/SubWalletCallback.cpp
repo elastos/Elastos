@@ -118,6 +118,18 @@ namespace Elastos {
             env->CallVoidMethod(_obj, methodId, jasset, jinfo);
         }
 
+        void SubWalletCallback::OnConnectStatusChanged(const std::string &status) {
+            JNIEnv *env = GetEnv();
+
+            jstring jstatus = env->NewStringUTF(status.c_str());
+
+            jclass clazz = env->GetObjectClass(_obj);
+            jmethodID methodID = env->GetMethodID(clazz, "OnConnectStatusChanged", "(Ljava/lang/String;)V");
+
+            env->CallVoidMethod(_obj, methodID, jstatus);
+        }
+
+
     }
 }
 

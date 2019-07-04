@@ -515,7 +515,6 @@ static jstring JNICALL DecodeTransaction(JNIEnv *env, jobject clazz, jlong jSubP
         ISubWallet *subWallet = (ISubWallet *) jSubProxy;
         nlohmann::json txJson = subWallet->DecodeTransaction(nlohmann::json::parse(tx));
         result = env->NewStringUTF(txJson.dump().c_str());
-
     } catch (const std::exception &e) {
         exception = true;
         msgException = e.what();
@@ -528,6 +527,42 @@ static jstring JNICALL DecodeTransaction(JNIEnv *env, jobject clazz, jlong jSubP
     }
 
     return result;
+}
+
+#define JNI_SyncStart "(J)V"
+
+static void JNICALL SyncStart(JNIEnv *env, jobject clazz, jlong jproxy) {
+    bool exception = false;
+    std::string msgException;
+
+    try {
+        ISubWallet *subWallet = (ISubWallet *) jproxy;
+        subWallet->SyncStart();
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    if (exception)
+        ThrowWalletException(env, msgException.c_str());
+}
+
+#define JNI_SyncStop "(J)V"
+
+static void JNICALL SyncStop(JNIEnv *env, jobject clazz, jlong jproxy) {
+     bool exception = false;
+    std::string msgException;
+
+    try {
+        ISubWallet *subWallet = (ISubWallet *) jproxy;
+        subWallet->SyncStop();
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    if (exception)
+        ThrowWalletException(env, msgException.c_str());
 }
 
 #define JNI_GetAllCoinBaseTransaction "(JIILjava/lang/String;)Ljava/lang/String;"
@@ -612,6 +647,8 @@ static const JNINativeMethod methods[] = {
         REGISTER_METHOD(DecodeTransaction),
         REGISTER_METHOD(GetAllCoinBaseTransaction),
         REGISTER_METHOD(GetAssetInfo),
+        REGISTER_METHOD(SyncStart),
+        REGISTER_METHOD(SyncStop)
 };
 
 jint RegisterSubWallet(JNIEnv *env, const std::string &path) {

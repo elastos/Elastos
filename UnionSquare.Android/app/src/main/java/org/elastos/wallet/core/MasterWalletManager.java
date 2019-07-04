@@ -23,7 +23,7 @@ public class MasterWalletManager {
         return false;
     }
 
-    public MasterWalletManager(String rootPath, String dataPath) {
+    public MasterWalletManager(String rootPath, String dataPath) throws WalletException {
         mRootPath = rootPath;
         mInstance = InitMasterWalletManager(mRootPath, dataPath);
 
@@ -144,7 +144,7 @@ public class MasterWalletManager {
         return masterWallet;
     }
 
-    public MasterWallet ImportReadonlyWallet(String masterWalletID, String walletJson) {
+    public MasterWallet ImportReadonlyWallet(String masterWalletID, String walletJson) throws WalletException {
         if (MasterWalletExist(masterWalletID)) {
             Log.e(TAG, "Master wallet [" + masterWalletID + "] exist");
             return null;
@@ -176,15 +176,15 @@ public class MasterWalletManager {
         return ExportWalletWithMnemonic(mInstance, masterWallet, payPassWord);
     }
 
-    public String ExportReadonlyWallet(MasterWallet masterWallet) {
+    public String ExportReadonlyWallet(MasterWallet masterWallet) throws WalletException {
         return ExportReadonlyWallet(mInstance, masterWallet);
     }
 
-    public String ExportxPrivateKey(MasterWallet masterWallet, String payPasswd) {
+    public String ExportxPrivateKey(MasterWallet masterWallet, String payPasswd) throws WalletException {
         return ExportxPrivateKey(mInstance, masterWallet, payPasswd);
     }
 
-    public String ExportMasterPublicKey(MasterWallet masterWallet) {
+    public String ExportMasterPublicKey(MasterWallet masterWallet) throws WalletException {
         return ExportMasterPublicKey(mInstance, masterWallet);
     }
 

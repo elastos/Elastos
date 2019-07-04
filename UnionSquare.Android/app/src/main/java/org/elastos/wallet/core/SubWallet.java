@@ -6,6 +6,8 @@ package org.elastos.wallet.core;
 
 import android.util.Log;
 
+import org.elastos.wallet.ela.db.table.Wallet;
+
 /**
  * SubWallet
  */
@@ -130,6 +132,14 @@ public class SubWallet {
         return GetAssetInfo(mInstance, assetID);
     }
 
+    public void SyncStart() throws WalletException {
+        SyncStart(mInstance);
+    }
+
+    public void SyncStop() throws WalletException {
+        SyncStop(mInstance);
+    }
+
 
     public SubWallet(long instance) {
         mInstance = instance;
@@ -184,4 +194,8 @@ public class SubWallet {
     private native String GetAllCoinBaseTransaction(long subProxy, int start, int count, String txid);
 
     private native String GetAssetInfo(long subProxy, String assetID);
+
+    private native void SyncStart(long proxy);
+
+    private native void SyncStop(long proxy);
 }
