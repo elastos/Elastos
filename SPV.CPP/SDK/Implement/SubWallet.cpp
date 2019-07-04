@@ -317,7 +317,7 @@ namespace Elastos {
 
 			nlohmann::json j;
 			const WalletPtr wallet = _walletManager->getWallet();
-			std::vector<CoinBaseUTXOPtr> cbs = wallet->GetAllCoinBaseUTXO("");
+			std::vector<CoinBaseUTXOPtr> cbs = wallet->GetAllCoinBaseTransactions();
 			size_t maxCount = cbs.size();
 			size_t pageCount = count, realCount = 0;
 

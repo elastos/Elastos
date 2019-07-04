@@ -633,6 +633,11 @@ namespace Elastos {
 			return _transactions;
 		}
 
+		std::vector<CoinBaseUTXOPtr> Wallet::GetAllCoinBaseTransactions() const {
+			boost::mutex::scoped_lock scopedLock(lock);
+			return _coinBaseUTXOs;
+		}
+
 		AssetPtr Wallet::GetAsset(const uint256 &assetID) const {
 			boost::mutex::scoped_lock scopedLock(lock);
 			if (!ContainsAsset(assetID)) {

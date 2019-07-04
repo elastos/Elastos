@@ -131,6 +131,8 @@ namespace Elastos {
 
 			std::vector<TransactionPtr> GetAllTransactions() const;
 
+			std::vector<CoinBaseUTXOPtr> GetAllCoinBaseTransactions() const;
+
 			bool TransactionIsValid(const TransactionPtr &transaction);
 
 #if 0
