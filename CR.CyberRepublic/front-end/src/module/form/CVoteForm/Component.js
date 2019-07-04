@@ -12,7 +12,7 @@ import DraftEditor from '@/module/common/DraftEditor'
 // if using webpack
 import 'medium-draft/lib/index.css'
 
-import { Container, Title, TabPaneInner, Note, NoteHighlight } from './style'
+import { Container, Title, TabPaneInner, Note, NoteHighlight, TabText } from './style'
 
 const FormItem = Form.Item
 const { TabPane } = Tabs
@@ -99,7 +99,11 @@ class C extends BaseComponent {
     const { edit, form, updateCVote, onEdit, suggestionId } = this.props
 
     form.validateFields(async (err, values) => {
-      if (err) return
+      if (err) {
+        // mark error keys
+        this.setState({ errKeys: _.keys(err)})
+        return
+      }
       const { title, abstract, goal, motivation, relevance, budget, plan } = values
       const param = {
         _id: edit,
@@ -217,19 +221,19 @@ class C extends BaseComponent {
             {formProps.title}
           </FormItem>
           <Tabs animated={false} tabBarGutter={5} activeKey={activeKey} onChange={this.onTabChange}>
-            <TabPane tab={`${I18N.get('proposal.fields.abstract')}*`} key="abstract">
+            <TabPane tab={this.renderTabText('abstract')} key="abstract">
               <TabPaneInner>
                 <Note>{I18N.get('proposal.form.note.abstract')}</Note>
                 <FormItem>{formProps.abstract}</FormItem>
               </TabPaneInner>
             </TabPane>
-            <TabPane tab={`${I18N.get('proposal.fields.goal')}*`} key="goal">
+            <TabPane tab={this.renderTabText('goal')} key="goal">
               <TabPaneInner>
                 <Note>{I18N.get('proposal.form.note.goal')}</Note>
                 <FormItem>{formProps.goal}</FormItem>
               </TabPaneInner>
             </TabPane>
-            <TabPane tab={`${I18N.get('proposal.fields.motivation')}*`} key="motivation">
+            <TabPane tab={this.renderTabText('motivation')} key="motivation">
               <TabPaneInner>
                 <Note>
                   {I18N.get('proposal.form.note.motivation')}
@@ -238,19 +242,19 @@ class C extends BaseComponent {
                 <FormItem>{formProps.motivation}</FormItem>
               </TabPaneInner>
             </TabPane>
-            <TabPane tab={`${I18N.get('proposal.fields.relevance')}*`} key="relevance">
+            <TabPane tab={this.renderTabText('relevance')} key="relevance">
               <TabPaneInner>
                 <Note>{I18N.get('proposal.form.note.relevance')}</Note>
                 <FormItem>{formProps.relevance}</FormItem>
               </TabPaneInner>
             </TabPane>
-            <TabPane tab={`${I18N.get('proposal.fields.budget')}*`} key="budget">
+            <TabPane tab={this.renderTabText('budget')} key="budget">
               <TabPaneInner>
                 <Note>{I18N.get('proposal.form.note.budget')}</Note>
                 <FormItem>{formProps.budget}</FormItem>
               </TabPaneInner>
             </TabPane>
-            <TabPane tab={`${I18N.get('proposal.fields.plan')}*`} key="plan">
+            <TabPane tab={this.renderTabText('plan')} key="plan">
               <TabPaneInner>
                 <Note>{I18N.get('proposal.form.note.plan')}</Note>
                 <FormItem>{formProps.plan}</FormItem>
@@ -267,6 +271,15 @@ class C extends BaseComponent {
           </Row>
         </Form>
       </Container>
+    )
+  }
+
+  renderTabText(key) {
+    const { errKeys } = this.state
+    const fullText = `${I18N.get(`proposal.fields.${key}`)}*`
+    const hasErr = _.includes(errKeys, key)
+    return (
+      <TabText hasErr={hasErr}>{fullText}</TabText>
     )
   }
 

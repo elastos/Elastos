@@ -43,6 +43,12 @@ export const Text = styled.div`
   text-align: center;
 `
 
+export const TabText = styled.span`
+  ${props => props.hasErr && `
+    color: red;
+  `}
+`
+
 export const TabPaneInner = styled.div`
   margin: 40px;
 `
