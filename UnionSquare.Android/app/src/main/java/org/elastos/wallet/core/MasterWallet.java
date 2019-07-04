@@ -22,7 +22,7 @@ public class MasterWallet {
     private long mInstance;
     private ArrayList<SubWallet> mSubWallets = new ArrayList<SubWallet>();
 
-    public MasterWallet(long instance) {
+    public MasterWallet(long instance) throws WalletException {
         mInstance = instance;
         Object[] allSubWallets = GetAllSubWallets(mInstance);
         for (int i = 0; i < allSubWallets.length; i++) {
@@ -34,11 +34,11 @@ public class MasterWallet {
         return GetID(mInstance);
     }
 
-    public String GetBasicInfo() {
+    public String GetBasicInfo() throws WalletException {
         return GetBasicInfo(mInstance);
     }
 
-    public ArrayList<SubWallet> GetAllSubWallets() {
+    public ArrayList<SubWallet> GetAllSubWallets() throws WalletException {
         Object[] allSubWallets = GetAllSubWallets(mInstance);
 
         for (int i = 0; i < allSubWallets.length; i++) {
@@ -57,7 +57,7 @@ public class MasterWallet {
         return mSubWallets;
     }
 
-    public SubWallet GetSubWallet(String chainID) {
+    public SubWallet GetSubWallet(String chainID) throws WalletException {
         for (int i = 0; i < mSubWallets.size(); i++) {
             if (chainID.equals(mSubWallets.get(i).GetChainID())) {
                 return mSubWallets.get(i);
@@ -99,7 +99,7 @@ public class MasterWallet {
         return subWallet;
     }
 
-    public void DestroyWallet(SubWallet wallet) {
+    public void DestroyWallet(SubWallet wallet) throws WalletException {
         for (int i = 0; i < mSubWallets.size(); ++i) {
             if (mSubWallets.get(i).GetChainID().equals(wallet.GetChainID())) {
                 mSubWallets.remove(i);
@@ -110,7 +110,7 @@ public class MasterWallet {
         DestroyWallet(mInstance, wallet.GetProxy());
     }
 
-    public String GetPublicKey() {
+    public String GetPublicKey() throws WalletException {
         return GetPublicKey(mInstance);
     }
 
@@ -123,11 +123,11 @@ public class MasterWallet {
     }
 
 
-    public boolean IsAddressValid(String address) {
+    public boolean IsAddressValid(String address) throws WalletException {
         return IsAddressValid(mInstance, address);
     }
 
-    public String[] GetSupportedChains() {
+    public String[] GetSupportedChains() throws WalletException {
         return GetSupportedChains(mInstance);
     }
 

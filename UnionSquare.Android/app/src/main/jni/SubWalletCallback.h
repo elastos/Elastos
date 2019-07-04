@@ -46,6 +46,8 @@ namespace Elastos {
 
             virtual void OnAssetRegistered(const std::string &asset, const nlohmann::json &info);
 
+            virtual void OnConnectStatusChanged(const std::string &status);
+
             virtual ~SubWalletCallback();
 
         private:

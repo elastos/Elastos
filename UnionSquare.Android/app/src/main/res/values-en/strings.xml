@@ -356,14 +356,14 @@
     <string name="tv_elaintroduce">ELA wallet is a secure and convenient Elastos SPV wallet that supports all the digital currency for Elastos\' ecosystem. </string>
     <string name="earn_records">DPoS Reward Records</string>
     <string name="copyearnaddress">Copy address</string>
-    <string name="towhole">Merge UTXO</string>
+    <string name="towhole">Consolidate</string>
     <string name="copyemailsuccess">Email copied to clipboard</string>
     <string name="cbsy">Coinbase Transaction</string>
     <string name="runlog">Runtime log</string>
     <string name="needpermissionstorage">Permission required</string>
     <string name="logkeppin">Saved runtime log to</string>
     <string name="logkeepfail">Get runtime log fail</string>
-    <string name="whetherexchange">Too much UTXO detected, merge?</string>
+    <string name="whetherexchange">Too much UTXO detected, Consolidate?</string>
     <string name="splashword">Smartweb Powered by Blochchain</string>
-    <string name="curentsdkversion">spvsdk version</string>
+    <string name="curentsdkversion">SPVSDK version</string>
 </resources>
