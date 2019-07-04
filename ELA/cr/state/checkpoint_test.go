@@ -11,7 +11,7 @@ import (
 )
 
 func TestKeyFrame_Deserialize(t *testing.T) {
-	frame := randomKeyFrame(5)
+	frame := randomKeyFrame(5, rand.Uint32())
 
 	buf := new(bytes.Buffer)
 	frame.Serialize(buf)
@@ -23,7 +23,7 @@ func TestKeyFrame_Deserialize(t *testing.T) {
 }
 
 func TestKeyFrame_Snapshot(t *testing.T) {
-	frame := randomKeyFrame(5)
+	frame := randomKeyFrame(5, rand.Uint32())
 	frame2 := frame.Snapshot()
 	assert.True(t, keyframeEqual(frame, frame2))
 }
@@ -37,16 +37,21 @@ func TestStateKeyFrame_Deserialize(t *testing.T) {
 	frame2 := &StateKeyFrame{}
 	frame2.Deserialize(buf)
 
-	assert.True(t, stateKeyhrameEqual(frame, frame2))
+	assert.True(t, stateKeyframeEqual(frame, frame2))
 }
 
 func TestStateKeyFrame_Snapshot(t *testing.T) {
 	frame := randomStateKeyFrame(5, true)
 	frame2 := frame.Snapshot()
-	assert.True(t, stateKeyhrameEqual(frame, frame2))
+	assert.True(t, stateKeyframeEqual(frame, frame2))
 }
 
-func stateKeyhrameEqual(first *StateKeyFrame, second *StateKeyFrame) bool {
+func stateKeyframeEqual(first *StateKeyFrame, second *StateKeyFrame) bool {
+	if len(first.Nicknames) != len(second.Nicknames) ||
+		len(first.CodeDIDMap) != len(second.CodeDIDMap) {
+		return false
+	}
+
 	for k := range first.Nicknames {
 		if _, ok := second.Nicknames[k]; !ok {
 			return false
@@ -101,9 +106,9 @@ func keyframeEqual(first *KeyFrame, second *KeyFrame) bool {
 	return true
 }
 
-func randomKeyFrame(size int) *KeyFrame {
+func randomKeyFrame(size int, commitHeight uint32) *KeyFrame {
 	frame := &KeyFrame{
-		LastCommitteeHeight: rand.Uint32(),
+		LastCommitteeHeight: commitHeight,
 	}
 
 	frame.Members = make([]*CRMember, 0, size)

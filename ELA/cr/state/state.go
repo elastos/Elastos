@@ -119,6 +119,14 @@ func (s *State) RollbackTo(height uint32) error {
 	return s.history.RollbackTo(height)
 }
 
+// FinishVoting will close all voting util next voting period
+func (s *State) FinishVoting() *StateKeyFrame {
+	result := &s.StateKeyFrame
+	s.StateKeyFrame = *NewStateKeyFrame()
+	s.history = utils.NewHistory(maxHistoryCapacity)
+	return result
+}
+
 // processTransactions takes the transactions and the height when they have been
 // packed into a block.  Then loop through the transactions to update CR
 // state and votes according to transactions content.
