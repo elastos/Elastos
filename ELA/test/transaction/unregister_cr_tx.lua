@@ -13,7 +13,7 @@ print(pubkey)
 local asset_id = m.get_asset_id()
 
 -- amount, fee
-local amount = 5000
+-- local amount = 5000
 local fee = 0.001
 
 -- deposit params
@@ -29,7 +29,7 @@ local tx = transaction.new(9, 0x22, 0, rp_payload, 0)
 print(tx:get())
 
 -- input: from, amount + fee
-local charge = tx:appendenough(addr, (amount + fee) * 100000000)
+local charge = tx:appendenough(addr, fee * 100000000)
 print(charge)
 
 -- outputpayload
