@@ -271,9 +271,8 @@ html[data-dpr="3"] .main .content .content_box {
 }
 .main .content {
   width: 95%;
-  height: 80vh;
+  height: 79vh;
   margin: 0 auto;
-  border-bottom: 1px solid #E1E1E1;
   position: relative;
 }
 .main .content .content_year {
@@ -288,8 +287,7 @@ html[data-dpr="3"] .main .content .content_box {
 .main .content .content_box {
   margin: 0.8rem auto;
   padding-left: 60px;
-  background: url("../images/point.png") no-repeat;
-  background-position: 0 0;
+  background: url("../images/point.png") top left no-repeat;
   -webkit-background-size: 0.58666667rem 0.58666667rem;
   background-size: 0.58666667rem 0.58666667rem;
 }
@@ -309,6 +307,9 @@ html[data-dpr="3"] .main .content .content_box {
 }
 .main .content .content_box p:nth-of-type(2) {
   color: #666;
+}
+.main footer {
+  border-top: 1px solid #E1E1E1;
 }
 .main footer a {
   display: block;
