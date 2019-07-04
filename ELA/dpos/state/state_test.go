@@ -87,6 +87,32 @@ func mockVoteTx(publicKeys [][]byte) *types.Transaction {
 	}
 }
 
+func mockNewVoteTx(publicKeys [][]byte) *types.Transaction {
+	candidateVotes := make([]outputpayload.CandidateVotes, 0, len(publicKeys))
+	for i, pk := range publicKeys {
+		candidateVotes = append(candidateVotes,
+			outputpayload.CandidateVotes{
+				Candidate: pk,
+				Votes:     common.Fixed64((i + 1) * 10)})
+	}
+	output := &types.Output{
+		Value: 100,
+		Type:  types.OTVote,
+		Payload: &outputpayload.VoteOutput{
+			Version: outputpayload.VoteProducerAndCRVersion,
+			Contents: []outputpayload.VoteContent{
+				{outputpayload.Delegate, candidateVotes},
+			},
+		},
+	}
+
+	return &types.Transaction{
+		Version: types.TxVersion09,
+		TxType:  types.TransferAsset,
+		Outputs: []*types.Output{output},
+	}
+}
+
 // mockVoteTx creates a cancel vote transaction with the previous vote
 // transaction.
 func mockCancelVoteTx(tx *types.Transaction) *types.Transaction {
@@ -199,15 +225,30 @@ func TestState_ProcessTransaction(t *testing.T) {
 
 	// Test vote producer.
 	publicKeys := make([][]byte, 5)
-	for i, p := range producers[1:6] {
+	for i, p := range producers[0:5] {
 		publicKeys[i] = p.OwnerPublicKey
 	}
 	tx = mockVoteTx(publicKeys)
-	state.ProcessBlock(mockBlock(13, tx), nil)
+
+	// Test new version vote producer.
+	publicKeys2 := make([][]byte, 5)
+	for i, p := range producers[5:10] {
+		publicKeys2[i] = p.OwnerPublicKey
+	}
+	tx2 := mockNewVoteTx(publicKeys2)
+
+	state.ProcessBlock(mockBlock(13, tx, tx2), nil)
 
 	for _, pk := range publicKeys {
 		p := state.getProducer(pk)
 		if !assert.Equal(t, common.Fixed64(100), p.votes) {
+			t.FailNow()
+		}
+	}
+
+	for i, pk := range publicKeys2 {
+		p := state.getProducer(pk)
+		if !assert.Equal(t, common.Fixed64((i+1)*10), p.votes) {
 			t.FailNow()
 		}
 	}

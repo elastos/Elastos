@@ -828,23 +828,38 @@ func (s *State) processCancelVotes(tx *types.Transaction, height uint32) {
 
 // processVoteOutput takes a transaction output with vote payload.
 func (s *State) processVoteOutput(output *types.Output, height uint32) {
-	payload := output.Payload.(*outputpayload.VoteOutput)
-	for _, vote := range payload.Contents {
+	countByGross := func(producer *Producer) {
+		s.history.Append(height, func() {
+			producer.votes += output.Value
+		}, func() {
+			producer.votes -= output.Value
+		})
+	}
+
+	countByVote := func(producer *Producer, vote common.Fixed64) {
+		s.history.Append(height, func() {
+			producer.votes += vote
+		}, func() {
+			producer.votes -= vote
+		})
+	}
+
+	p := output.Payload.(*outputpayload.VoteOutput)
+	for _, vote := range p.Contents {
 		for _, cv := range vote.CandidateVotes {
 			producer := s.getProducer(cv.Candidate)
 			if producer == nil {
 				continue
 			}
+
 			switch vote.VoteType {
-			case outputpayload.CRC:
-				// TODO separate CRC and Delegate votes.
-				fallthrough
 			case outputpayload.Delegate:
-				s.history.Append(height, func() {
-					producer.votes += output.Value
-				}, func() {
-					producer.votes -= output.Value
-				})
+				if p.Version == outputpayload.VoteProducerVersion {
+					countByGross(producer)
+				} else {
+					v := cv.Votes
+					countByVote(producer, v)
+				}
 			}
 		}
 	}
@@ -852,24 +867,37 @@ func (s *State) processVoteOutput(output *types.Output, height uint32) {
 
 // processVoteCancel takes a previous vote output and decrease producers votes.
 func (s *State) processVoteCancel(output *types.Output, height uint32) {
-	payload := output.Payload.(*outputpayload.VoteOutput)
-	for _, vote := range payload.Contents {
+	subtractByGross := func(producer *Producer) {
+		s.history.Append(height, func() {
+			producer.votes -= output.Value
+		}, func() {
+			producer.votes += output.Value
+		})
+	}
+
+	subtractByVote := func(producer *Producer, vote common.Fixed64) {
+		s.history.Append(height, func() {
+			producer.votes -= vote
+		}, func() {
+			producer.votes += vote
+		})
+	}
+
+	p := output.Payload.(*outputpayload.VoteOutput)
+	for _, vote := range p.Contents {
 		for _, cv := range vote.CandidateVotes {
 			producer := s.getProducer(cv.Candidate)
 			if producer == nil {
-				// This should not happen, just in case.
 				continue
 			}
 			switch vote.VoteType {
-			case outputpayload.CRC:
-				// TODO separate CRC and Delegate votes.
-				fallthrough
 			case outputpayload.Delegate:
-				s.history.Append(height, func() {
-					producer.votes -= output.Value
-				}, func() {
-					producer.votes += output.Value
-				})
+				if p.Version == outputpayload.VoteProducerVersion {
+					subtractByGross(producer)
+				} else {
+					v := cv.Votes
+					subtractByVote(producer, v)
+				}
 			}
 		}
 	}
