@@ -8,25 +8,31 @@ import (
 	"github.com/elastos/Elastos.ELA/utils"
 )
 
-// CRMember defines CR committee member related info
+// CRMember defines CR committee member related info.
 type CRMember struct {
 	Info             payload.CRInfo
 	ImpeachmentVotes common.Fixed64
 }
 
-// StateKeyFrame holds necessary state about CR committee
+// StateKeyFrame holds necessary state about CR committee.
 type KeyFrame struct {
 	Members             []*CRMember
 	LastCommitteeHeight uint32
 }
 
-// StateKeyFrame holds necessary state about CR state
+// StateKeyFrame holds necessary state about CR state.
 type StateKeyFrame struct {
 	CodeDIDMap         map[string]common.Uint168
 	PendingCandidates  map[common.Uint168]*Candidate
 	ActivityCandidates map[common.Uint168]*Candidate
 	CanceledCandidates map[common.Uint168]*Candidate
 	Nicknames          map[string]struct{}
+}
+
+// CheckPoint hold all CR related states to recover from scratch.
+type CheckPoint struct {
+	KeyFrame
+	StateKeyFrame
 }
 
 func (c *CRMember) Serialize(w io.Writer) (err error) {
@@ -99,19 +105,19 @@ func NewKeyFrame() *KeyFrame {
 }
 
 func (k *StateKeyFrame) Serialize(w io.Writer) (err error) {
-	if err = k.SerializeCodeAddressMap(w, k.CodeDIDMap); err != nil {
+	if err = k.serializeCodeAddressMap(w, k.CodeDIDMap); err != nil {
 		return
 	}
 
-	if err = k.SerializeCandidateMap(w, k.PendingCandidates); err != nil {
+	if err = k.serializeCandidateMap(w, k.PendingCandidates); err != nil {
 		return
 	}
 
-	if err = k.SerializeCandidateMap(w, k.ActivityCandidates); err != nil {
+	if err = k.serializeCandidateMap(w, k.ActivityCandidates); err != nil {
 		return
 	}
 
-	if err = k.SerializeCandidateMap(w, k.CanceledCandidates); err != nil {
+	if err = k.serializeCandidateMap(w, k.CanceledCandidates); err != nil {
 		return
 	}
 
@@ -123,19 +129,19 @@ func (k *StateKeyFrame) Serialize(w io.Writer) (err error) {
 }
 
 func (k *StateKeyFrame) Deserialize(r io.Reader) (err error) {
-	if k.CodeDIDMap, err = k.DeserializeCodeAddressMap(r); err != nil {
+	if k.CodeDIDMap, err = k.deserializeCodeAddressMap(r); err != nil {
 		return
 	}
 
-	if k.PendingCandidates, err = k.DeserializeCandidateMap(r); err != nil {
+	if k.PendingCandidates, err = k.deserializeCandidateMap(r); err != nil {
 		return
 	}
 
-	if k.ActivityCandidates, err = k.DeserializeCandidateMap(r); err != nil {
+	if k.ActivityCandidates, err = k.deserializeCandidateMap(r); err != nil {
 		return
 	}
 
-	if k.CanceledCandidates, err = k.DeserializeCandidateMap(r); err != nil {
+	if k.CanceledCandidates, err = k.deserializeCandidateMap(r); err != nil {
 		return
 	}
 
@@ -145,7 +151,7 @@ func (k *StateKeyFrame) Deserialize(r io.Reader) (err error) {
 	return
 }
 
-func (k *StateKeyFrame) SerializeCodeAddressMap(w io.Writer,
+func (k *StateKeyFrame) serializeCodeAddressMap(w io.Writer,
 	cmap map[string]common.Uint168) (err error) {
 	if err = common.WriteVarUint(w, uint64(len(cmap))); err != nil {
 		return
@@ -162,7 +168,7 @@ func (k *StateKeyFrame) SerializeCodeAddressMap(w io.Writer,
 	return
 }
 
-func (k *StateKeyFrame) DeserializeCodeAddressMap(r io.Reader) (
+func (k *StateKeyFrame) deserializeCodeAddressMap(r io.Reader) (
 	cmap map[string]common.Uint168, err error) {
 	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {
@@ -184,7 +190,7 @@ func (k *StateKeyFrame) DeserializeCodeAddressMap(r io.Reader) (
 	return
 }
 
-func (k *StateKeyFrame) SerializeCandidateMap(w io.Writer,
+func (k *StateKeyFrame) serializeCandidateMap(w io.Writer,
 	cmap map[common.Uint168]*Candidate) (err error) {
 	if err = common.WriteVarUint(w, uint64(len(cmap))); err != nil {
 		return
@@ -201,7 +207,7 @@ func (k *StateKeyFrame) SerializeCandidateMap(w io.Writer,
 	return
 }
 
-func (k *StateKeyFrame) DeserializeCandidateMap(
+func (k *StateKeyFrame) deserializeCandidateMap(
 	r io.Reader) (cmap map[common.Uint168]*Candidate, err error) {
 	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {
@@ -242,6 +248,22 @@ func NewStateKeyFrame() *StateKeyFrame {
 		CanceledCandidates: make(map[common.Uint168]*Candidate),
 		Nicknames:          make(map[string]struct{}),
 	}
+}
+
+func (c *CheckPoint) Serialize(w io.Writer) (err error) {
+	if err = c.KeyFrame.Serialize(w); err != nil {
+		return
+	}
+
+	return c.StateKeyFrame.Serialize(w)
+}
+
+func (c *CheckPoint) Deserialize(r io.Reader) (err error) {
+	if err = c.KeyFrame.Deserialize(r); err != nil {
+		return
+	}
+
+	return c.StateKeyFrame.Deserialize(r)
 }
 
 // copyCandidateMap copy the CR map's key and value, and return the dst map.

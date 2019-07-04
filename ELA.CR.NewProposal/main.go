@@ -14,6 +14,7 @@ import (
 	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
+	crstate "github.com/elastos/Elastos.ELA/cr/state"
 	"github.com/elastos/Elastos.ELA/dpos"
 	"github.com/elastos/Elastos.ELA/dpos/account"
 	dlog "github.com/elastos/Elastos.ELA/dpos/log"
@@ -186,7 +187,11 @@ func startNode(c *cli.Context) {
 	}
 	ledger.Arbitrators = arbiters // fixme
 
-	chain, err := blockchain.New(chainStore, activeNetParams, arbiters.State)
+	committee := crstate.NewCommittee(activeNetParams)
+	ledger.Committee = committee
+
+	chain, err := blockchain.New(chainStore, activeNetParams, arbiters.State,
+		committee)
 	if err != nil {
 		printErrorAndExit(err)
 	}

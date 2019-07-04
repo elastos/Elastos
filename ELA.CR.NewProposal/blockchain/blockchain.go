@@ -68,7 +68,8 @@ type BlockChain struct {
 	mutex          sync.RWMutex
 }
 
-func New(db IChainStore, chainParams *config.Params, state *state.State) (*BlockChain, error) {
+func New(db IChainStore, chainParams *config.Params, state *state.State,
+	committee *crstate.Committee) (*BlockChain, error) {
 
 	targetTimespan := int64(chainParams.TargetTimespan / time.Second)
 	targetTimePerBlock := int64(chainParams.TargetTimePerBlock / time.Second)
@@ -77,7 +78,7 @@ func New(db IChainStore, chainParams *config.Params, state *state.State) (*Block
 		chainParams:         chainParams,
 		db:                  db,
 		state:               state,
-		crCommittee:         crstate.NewCommittee(chainParams),
+		crCommittee:         committee,
 		GenesisHash:         chainParams.GenesisBlock.Hash(),
 		minRetargetTimespan: targetTimespan / adjustmentFactor,
 		maxRetargetTimespan: targetTimespan * adjustmentFactor,
@@ -167,6 +168,7 @@ func (b *BlockChain) InitProducerState(interrupt <-chan struct{},
 			}
 			confirm, _ := b.db.GetConfirm(block.Hash())
 			arbiters.ProcessBlock(block, confirm)
+			DefaultLedger.Committee.ProcessBlock(block, confirm)
 
 			// Notify process increase.
 			if increase != nil {
@@ -816,8 +818,13 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 
 		// roll back state about the last block before disconnect
 		if block.Height-1 >= b.chainParams.VoteStartHeight {
-			err = DefaultLedger.Arbitrators.RollbackTo(block.Height - 1)
-			if err != nil {
+			if err = DefaultLedger.Arbitrators.RollbackTo(block.Height - 1);
+				err != nil {
+				return err
+			}
+
+			if err = DefaultLedger.Committee.RollbackTo(block.Height - 1);
+				err != nil {
 				return err
 			}
 		}
@@ -847,6 +854,8 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 		if block.Height >= b.chainParams.VoteStartHeight {
 			DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
 			DefaultLedger.Arbitrators.DumpInfo(block.Height)
+
+			DefaultLedger.Committee.ProcessBlock(block, confirm)
 		}
 
 		delete(b.blockCache, *n.Hash)
@@ -878,8 +887,13 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block, confirm *pay
 
 	// Rollback state memory DB
 	if block.Height-1 >= b.chainParams.VoteStartHeight {
-		err := DefaultLedger.Arbitrators.RollbackTo(block.Height - 1)
-		if err != nil {
+		if err = DefaultLedger.Arbitrators.RollbackTo(block.Height - 1);
+			err != nil {
+			return err
+		}
+
+		if err = DefaultLedger.Committee.RollbackTo(block.Height - 1);
+			err != nil {
 			return err
 		}
 	}
@@ -1018,6 +1032,8 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 			PreConnectOffset) {
 		DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
 		DefaultLedger.Arbitrators.DumpInfo(block.Height)
+
+		DefaultLedger.Committee.ProcessBlock(block, confirm)
 	}
 
 	// Notify the caller that the new block was accepted into the block

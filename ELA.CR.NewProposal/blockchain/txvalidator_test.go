@@ -5,7 +5,6 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"fmt"
-	state2 "github.com/elastos/Elastos.ELA/cr/state"
 	"math"
 	mrand "math/rand"
 	"testing"
@@ -18,6 +17,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	crstate "github.com/elastos/Elastos.ELA/cr/state"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/utils/test"
@@ -46,7 +46,9 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	if err != nil {
 		s.Error(err)
 	}
-	s.Chain, err = New(chainStore, params, state.NewState(params, nil))
+	s.Chain, err = New(chainStore, params,
+		state.NewState(params, nil),
+		crstate.NewCommittee(params))
 	if err != nil {
 		s.Error(err)
 	}
@@ -1145,21 +1147,21 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 		Payload:     new(outputpayload.DefaultOutput),
 	}}
 
-	s.Chain.crState.Nicknames[nickName1] = struct{}{}
+	s.Chain.crCommittee.GetState().Nicknames[nickName1] = struct{}{}
 	err = s.Chain.checkRegisterCRTransaction(txn)
 	s.EqualError(err, "nick name nickname 1 already inuse")
 
-	delete(s.Chain.crState.Nicknames, nickName1)
+	delete(s.Chain.crCommittee.GetState().Nicknames, nickName1)
 	err = s.Chain.checkRegisterCRTransaction(txn)
 	s.NoError(err)
 
-	s.Chain.crState.CodeDIDMap[codeStr1] = *did1
-	s.Chain.crState.ActivityCandidates[*did1] = &state2.Candidate{}
+	s.Chain.crCommittee.GetState().CodeDIDMap[codeStr1] = *did1
+	s.Chain.crCommittee.GetState().ActivityCandidates[*did1] = &crstate.Candidate{}
 	err = s.Chain.checkRegisterCRTransaction(txn)
 	s.EqualError(err, "did "+
 		"67ae53989e21c3212dd9bfed6daeb56874782502dd already exist")
 
-	delete(s.Chain.crState.CodeDIDMap, codeStr1)
+	delete(s.Chain.crCommittee.GetState().CodeDIDMap, codeStr1)
 	err = s.Chain.checkRegisterCRTransaction(txn)
 	s.NoError(err)
 
