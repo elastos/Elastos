@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="52dp">
+
+
+    <org.elastos.wallet.ela.utils.ClearEditText
+        android:id="@+id/et_publickey"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_toLeftOf="@id/iv_scan"
+        android:background="@null"
+        android:ellipsize="end"
+        android:hint="@string/plsiptmulsignpublickey"
+        android:inputType="text"
+        android:maxLines="1"
+        android:layout_marginRight="5dp"
+        android:textColor="@color/white"
+        android:textColorHint="@color/whiter50" />
+
+    <ImageView
+        android:id="@+id/iv_scan"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@id/view"
+        android:padding="5dp"
+        android:src="@mipmap/setting_adding_scan" />
+
+    <View
+        android:id="@+id/view"
+        style="@style/linevertical"
+        android:layout_centerVertical="true"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        android:layout_toLeftOf="@id/iv_paste" />
+
+    <ImageView
+        android:id="@+id/iv_paste"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:padding="5dp"
+        android:src="@mipmap/asset_transfer_stick" />
+
+    <View
+        style="@style/line1"
+        android:layout_alignParentBottom="true" />
+</RelativeLayout>

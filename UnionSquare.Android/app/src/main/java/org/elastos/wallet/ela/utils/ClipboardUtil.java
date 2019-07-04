@@ -46,7 +46,7 @@ public class ClipboardUtil {
 
 
 
-    public static String paste(BaseActivity activity) {
+    public static String paste(Context activity) {
         ClipboardManager mClipboardManager = (ClipboardManager) (activity.getSystemService(CLIPBOARD_SERVICE));
         if (mClipboardManager.hasPrimaryClip()) {//判断剪切板是否有数据
             ClipData.Item item = mClipboardManager.getPrimaryClip().getItemAt(0);

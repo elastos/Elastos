@@ -384,5 +384,7 @@
     <string name="importmnemonic">导入助记词</string>
     <string name="useexistwallet">使用已有钱包</string>
     <string name="editmainprivatekey">编辑主私钥</string>
+    <string name="selectsignnum">请选择签名数量</string>
+    <string name="plsiptmulsignpublickey">请输入多签公钥</string>
 
 </resources>

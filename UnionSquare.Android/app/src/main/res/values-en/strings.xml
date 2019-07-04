@@ -380,4 +380,6 @@
     <string name="importmnemonic">Import With Mnemonic</string>
     <string name="useexistwallet">Select Existed Wallet</string>
     <string name="editmainprivatekey">Edit Private Key</string>
+    <string name="selectsignnum">请选择签名数量</string>
+    <string name="plsiptmulsignpublickey">请输入多签公钥</string>
 </resources>
