@@ -342,7 +342,7 @@ func mockNewVoteTx(programCodes [][]byte) *types.Transaction {
 		Payload: &outputpayload.VoteOutput{
 			Version: outputpayload.VoteProducerAndCRVersion,
 			Contents: []outputpayload.VoteContent{
-				{outputpayload.Delegate, candidateVotes},
+				{outputpayload.CRC, candidateVotes},
 			},
 		},
 	}
