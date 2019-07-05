@@ -368,18 +368,18 @@
     <string name="curentsdkversion">SPVSDK Version</string>
     <string name="singlewallet">Standard Wallet</string>
     <string name="mulwallet">Multi-Sign Wallet</string>
-    <string name="singlereadonlywallet">Standard Watch Wallet</string>
+    <string name="singlereadonlywallet">Standard Read-Only Wallet</string>
     <string name="createsinglewallet">Create Standard Wallet</string>
-    <string name="createsinglereadonlywallet">Create Standard Watch Wallet</string>
+    <string name="createsinglereadonlywallet">Create Standard Read-Only Wallet</string>
     <string name="surecreate">Confirm</string>
     <string name="signnum">Number of Signers</string>
-    <string name="readonly">Without Private Key</string>
+    <string name="readonly">Read-Only</string>
     <string name="addmainkey">Add Private Key</string>
     <string name="createmulwalllet">Create Multi-Sign Wallet</string>
     <string name="createprivatekey">Create Private Key</string>
     <string name="importmnemonic">Import With Mnemonic</string>
     <string name="useexistwallet">Select Existed Wallet</string>
     <string name="editmainprivatekey">Edit Private Key</string>
-    <string name="selectsignnum">请选择签名数量</string>
-    <string name="plsiptmulsignpublickey">请输入多签公钥</string>
+    <string name="selectsignnum">Select the Number of Signers</string>
+    <string name="plsiptmulsignpublickey">Inpupt Participant Multi-Sign Public Key</string>
 </resources>
