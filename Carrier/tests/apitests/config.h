@@ -35,6 +35,7 @@ typedef struct TestConfig {
 
     int shuffle;
     int log2file;
+    int exclude_offmsg;
 
     struct {
         int loglevel;

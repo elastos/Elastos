@@ -154,20 +154,22 @@ int main(int argc, char *argv[])
     char buffer[PATH_MAX];
 
     const char *config_file = NULL;
+    int exclude_offmsg = 0;
 
     int opt;
     int idx;
     struct option options[] = {
-        { "cases",          no_argument,        NULL, 1 },
-        { "robot",          no_argument,        NULL, 2 },
-        { "config",         required_argument,  NULL, 'c' },
-        { "udp-enabled",    required_argument,  NULL, 3 },
-        { "log-level",      required_argument,  NULL, 4 },
-        { "log-file",       required_argument,  NULL, 5 },
-        { "data-dir",       required_argument,  NULL, 6 },
-        { "debug",          no_argument,        NULL, 7 },
-        { "help",           no_argument,        NULL, 'h' },
-        { NULL,             0,                  NULL, 0 }
+        { "cases",                no_argument,        NULL, 1 },
+        { "robot",                no_argument,        NULL, 2 },
+        { "config",               required_argument,  NULL, 'c' },
+        { "udp-enabled",          required_argument,  NULL, 3 },
+        { "log-level",            required_argument,  NULL, 4 },
+        { "log-file",             required_argument,  NULL, 5 },
+        { "data-dir",             required_argument,  NULL, 6 },
+        { "debug",                no_argument,        NULL, 7 },
+        { "exclude-offmsg-cases", no_argument,        NULL, 'o' },
+        { "help",                 no_argument,        NULL, 'h' },
+        { NULL,                   0,                  NULL, 0 }
     };
 
 #ifdef HAVE_SYS_RESOURCE_H
@@ -180,7 +182,7 @@ int main(int argc, char *argv[])
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
 
-    while ((opt = getopt_long(argc, argv, "c:h:r:?", options, &idx)) != -1) {
+    while ((opt = getopt_long(argc, argv, "c:h:r:o?", options, &idx)) != -1) {
         switch (opt) {
         case 1:
         case 2:
@@ -205,6 +207,10 @@ int main(int argc, char *argv[])
 
         case 'c':
             config_file = optarg;
+            break;
+
+        case 'o':
+            exclude_offmsg = 1;
             break;
 
         case 'h':
@@ -243,6 +249,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    global_config.exclude_offmsg = exclude_offmsg;
     carrier_config_update(&global_config.shared_options, argc, argv);
 
     switch (mode) {

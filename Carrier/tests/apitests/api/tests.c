@@ -38,6 +38,9 @@
 #include "config.h"
 #include "suites.h"
 
+#define OFFLINE_MSG_TEST_NAME   "friend_offline_message_test"
+#define OFFLINE_MSG_TEST_FILE   "friend_offline_message_test.c"
+
 static void shuffle(int *order, int count)
 {
     int i;
@@ -196,14 +199,26 @@ int test_main(int argc, char *argv[])
 
     srand((unsigned int)time(NULL));
 
-    for (suites_cnt = 0; suites[suites_cnt].fileName; suites_cnt++)
+    for (i = 0, suites_cnt = 0; suites[i].fileName; i++) {
+        if (global_config.exclude_offmsg 
+            && strcmp(suites[i].fileName, OFFLINE_MSG_TEST_FILE) == 0)
+            continue;
+
         suites_order[suites_cnt] = suites_cnt;
+        suites_cnt++;
+    }
 
     if (suites_cnt > 1 && global_config.shuffle)
         shuffle(suites_order, suites_cnt);
 
     for (i = 0; i < suites_cnt; i++) {
-        int suite_idx = suites_order[i];
+        int suite_idx;
+
+        if (global_config.exclude_offmsg
+            && strcmp(suites[suite_idx].strName, OFFLINE_MSG_TEST_NAME) == 0)
+            continue;
+
+        suite_idx = suites_order[i];
         pSuite = CU_add_suite(suites[suite_idx].strName,
                               suites[suite_idx].pInit,
                               suites[suite_idx].pClean);
