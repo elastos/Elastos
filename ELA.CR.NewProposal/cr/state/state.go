@@ -121,6 +121,8 @@ func (s *State) RollbackTo(height uint32) error {
 
 // FinishVoting will close all voting util next voting period
 func (s *State) FinishVoting() *StateKeyFrame {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
 	result := &s.StateKeyFrame
 	s.StateKeyFrame = *NewStateKeyFrame()
 	s.history = utils.NewHistory(maxHistoryCapacity)
@@ -223,12 +225,13 @@ func (s *State) unregisterCR(info *payload.UnregisterCR, height uint32) {
 		}
 		delete(s.Nicknames, candidate.info.NickName)
 	}, func() {
-		candidate.state = Active
 		candidate.cancelHeight = 0
 		delete(s.CanceledCandidates, key)
 		if isPending {
+			candidate.state = Pending
 			s.PendingCandidates[key] = candidate
 		} else {
+			candidate.state = Active
 			s.ActivityCandidates[key] = candidate
 		}
 		s.Nicknames[candidate.info.NickName] = struct{}{}
