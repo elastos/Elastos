@@ -318,7 +318,7 @@ func (s *State) processVoteCancel(output *types.Output, height uint32) {
 				continue
 			}
 			switch vote.VoteType {
-			case outputpayload.Delegate:
+			case outputpayload.CRC:
 				v := cv.Votes
 				s.history.Append(height, func() {
 					producer.votes -= v
