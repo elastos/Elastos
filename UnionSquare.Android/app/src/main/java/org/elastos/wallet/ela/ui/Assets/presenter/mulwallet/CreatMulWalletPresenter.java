@@ -25,5 +25,44 @@ public class CreatMulWalletPresenter extends PresenterAbstract {
 
     }
 
+    public void createMultiSignMasterWalletReadOnly(String masterWalletID, String coSigners, int requiredSignCount, long timestamp, BaseFragment baseFragment) {
+        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().createMultiSignMasterWallet(masterWalletID, coSigners, requiredSignCount, timestamp);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
 
+    }
+
+
+    public void createMultiSignMasterWalletByPrivKey(String masterWalletID, String privKey, String payPassword,
+                                            String coSigners, int requiredSignCount, long timestamp, BaseFragment baseFragment) {
+        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().createMultiSignMasterWallet(masterWalletID, privKey, payPassword,
+                        coSigners, requiredSignCount, timestamp);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+
+    }
+
+    public void createMultiSignMasterWalletByMnemonic(String masterWalletId, String mnemonic, String phrasePassword, String payPassword,
+                                            String coSigners, int requiredSignCount, long timestamp, BaseFragment baseFragment) {
+        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().createMultiSignMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword,
+                        coSigners, requiredSignCount, timestamp);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+
+    }
 }

@@ -197,6 +197,16 @@ public class RealmUtil {
         return wallets;
     }
 
+    public List<Wallet> queryUnReadOnlyUserAllWallet() {
+        Realm realm = getInstanceRealm();
+        RealmResults<Wallet> list = realm.where(Wallet.class).beginGroup()
+                .equalTo("type", 0).or().equalTo("type", 2).endGroup()
+                .findAll();
+
+        List<Wallet> wallets = getWalletList(list);
+        closeRealm(realm);
+        return wallets;
+    }
 
     public Wallet queryUserWallet(String walletId) {
         Realm realm = getInstanceRealm();

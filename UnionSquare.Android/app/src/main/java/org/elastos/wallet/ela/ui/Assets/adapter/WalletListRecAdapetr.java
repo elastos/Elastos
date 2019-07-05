@@ -1,6 +1,7 @@
 package org.elastos.wallet.ela.ui.Assets.adapter;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -61,6 +62,23 @@ public class WalletListRecAdapetr extends RecyclerView.Adapter<WalletListRecAdap
             holder.view.setVisibility(View.GONE);
         }
         holder.tvName.setText(data.getWalletName());
+
+        Drawable drawable = context.getDrawable(R.mipmap.single_wallet);
+        switch (data.getType()) {
+            //0 普通单签 1单签只读 2普通多签 3多签只读
+            case 1:
+                drawable = context.getDrawable(R.mipmap.single_walllet_readonly);
+                break;
+            case 2:
+                drawable = context.getDrawable(R.mipmap.multi_wallet);
+                break;
+            case 3:
+                drawable = context.getDrawable(R.mipmap.multi_wallet_readonly);
+                break;
+        }
+        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+        holder.tvName.setCompoundDrawables(drawable, null, null, null);
+
         if (commonRvListener != null) {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

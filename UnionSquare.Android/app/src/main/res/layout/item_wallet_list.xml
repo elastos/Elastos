@@ -4,7 +4,7 @@
     android:layout_height="48dp"
     android:layout_marginBottom="10dp"
     android:background="@color/mainitembg">
-    <!-- android:background="@color/mainitembg">-->
+
 
     <View
         android:id="@+id/view"
@@ -15,42 +15,44 @@
         android:background="@color/whiter" />
 
     <TextView
-        android:layout_centerVertical="true"
         android:id="@+id/tv_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="17dp"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="15dp"
         android:layout_marginTop="15dp"
         android:layout_toRightOf="@id/view"
+        android:drawableLeft="@mipmap/single_wallet"
+        android:drawablePadding="5dp"
         android:text="钱包"
         android:textColor="#ffffffff"
         android:textSize="16sp" />
 
     <TextView
-        android:visibility="gone"
         android:id="@+id/tv_addr"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/tv_name"
-        android:layout_marginLeft="17dp"
+        android:layout_marginLeft="15dp"
         android:layout_marginTop="3dp"
         android:layout_toRightOf="@id/view"
         android:text="钱包"
         android:textColor="#ffffffff"
-        android:textSize="11sp" />
+        android:textSize="11sp"
+        android:visibility="gone" />
 
 
     <TextView
-        android:visibility="gone"
         android:id="@+id/tv_balance"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:layout_marginRight="16dp"
         android:layout_marginTop="15dp"
+        android:layout_marginRight="16dp"
         android:text="钱包"
         android:textColor="@color/whiter"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:visibility="gone" />
 
 
 </RelativeLayout>

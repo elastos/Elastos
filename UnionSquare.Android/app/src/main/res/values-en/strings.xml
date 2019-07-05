@@ -382,4 +382,8 @@
     <string name="editmainprivatekey">Edit Private Key</string>
     <string name="selectsignnum">Select the Number of Signers</string>
     <string name="plsiptmulsignpublickey">Inpupt Participant Multi-Sign Public Key</string>
+    <string name="publickeyneedmore">公钥数量过少</string>
+    <string name="mainprivatekeynotnull">根私钥不能为空</string>
+    <string name="publickeytoomany">公钥数量过多</string>
 </resources>
+

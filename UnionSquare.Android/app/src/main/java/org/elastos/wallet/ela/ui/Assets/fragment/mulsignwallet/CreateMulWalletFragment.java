@@ -1,13 +1,10 @@
 package org.elastos.wallet.ela.ui.Assets.fragment.mulsignwallet;
 
 import android.content.Intent;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -15,11 +12,22 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.gson.JsonArray;
+
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.bean.CreateWalletBean;
+import org.elastos.wallet.ela.db.RealmUtil;
+import org.elastos.wallet.ela.db.listener.RealmTransactionAbs;
+import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.adapter.AddMulSignPublicKeyAdapter;
+import org.elastos.wallet.ela.ui.Assets.presenter.CommonCreateSubWalletPresenter;
+import org.elastos.wallet.ela.ui.Assets.presenter.mulwallet.CreatMulWalletPresenter;
+import org.elastos.wallet.ela.ui.Assets.viewdata.CommonCreateSubWalletViewData;
+import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
+import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.ClearEditText;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.Log;
@@ -30,12 +38,13 @@ import org.elastos.wallet.ela.utils.widget.TextConfigNumberPicker;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.Map;
+
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
-public class CreateMulWalletFragment extends BaseFragment implements CompoundButton.OnCheckedChangeListener {
+public class CreateMulWalletFragment extends BaseFragment implements CompoundButton.OnCheckedChangeListener, CommmonStringWithMethNameViewData, CommonCreateSubWalletViewData {
 
     @BindView(R.id.tv_title)
     TextView tvTitle;
@@ -55,11 +64,13 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
     TextView tvStatus;
     @BindView(R.id.iv_add)
     ImageView ivAdd;
-    Unbinder unbinder;
     private CreateWalletBean createWalletBean;
     private AddMulSignPublicKeyAdapter adapter;
-
+    CreatMulWalletPresenter creatMulWalletPresenter;
     private int count = 2;
+    int integer = -1;
+    private String masterWalletID;
+    private String name;
 
     @Override
     protected int getLayoutId() {
@@ -72,10 +83,10 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
         cb.setOnCheckedChangeListener(this);
         registReceiver();
         setRecycleView();
-
         //使得iv充满且不能滑动
         rv.setNestedScrollingEnabled(false);
         rv.setFocusableInTouchMode(false);
+        creatMulWalletPresenter = new CreatMulWalletPresenter();
     }
 
     private void setRecycleView() {
@@ -99,7 +110,7 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
                 start(MainPrivateKeyFragment.class);
                 break;
             case R.id.tv_create:
-                Log.d("?????", adapter.getMap().toString());
+                createMulWallet(adapter.getMap());
                 break;
             case R.id.iv_add:
                 count++;
@@ -116,6 +127,56 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
                     }
                 });
                 break;
+        }
+    }
+
+    private void createMulWallet(Map<Integer, String> publicKey) {
+        name = etWalletname.getText().toString().trim();
+
+        if (TextUtils.isEmpty(name)) {
+            showToast(getString(R.string.inputWalletName));
+            return;
+        }
+        int needItem = Integer.parseInt(tvSignnum.getText().toString().trim());
+        JsonArray jsonArray = new JsonArray();
+        for (String value : publicKey.values()) {
+            jsonArray.add(value);
+        }
+        masterWalletID = AppUtlis.getStringRandom(8);
+        if (cb.isChecked()) {
+            //只读
+            if (publicKey.size() < needItem) {
+                showToast(getString(R.string.publickeyneedmore));
+                return;
+            }
+            creatMulWalletPresenter.createMultiSignMasterWalletReadOnly(masterWalletID, jsonArray.toString()
+                    , needItem, 0, this);
+
+        } else {
+            if (integer == -1) {
+                showToast(getString(R.string.mainprivatekeynotnull));
+                return;
+            }
+            if (publicKey.size() < needItem - 1) {
+                showToast(getString(R.string.publickeyneedmore));
+                return;
+            }
+            if (publicKey.size() > 5) {
+                showToast(getString(R.string.publickeytoomany));
+                return;
+            }
+            if (integer == RxEnum.CREATEPRIVATEKEY.ordinal() || integer == RxEnum.IMPORTRIVATEKEY.ordinal()) {
+                //非只读添加根私钥额回调 导入助记词回调
+                creatMulWalletPresenter.createMultiSignMasterWalletByMnemonic(masterWalletID, createWalletBean.getMnemonic(),
+                        createWalletBean.getPhrasePassword(), createWalletBean.getPayPassword(), jsonArray.toString()
+                        , needItem, 0, this);
+
+            } else if (integer == RxEnum.SELECTRIVATEKEY.ordinal()) {
+                //选择已有钱包回调
+                creatMulWalletPresenter.createMultiSignMasterWalletByPrivKey(masterWalletID, createWalletBean.getPrivateKey()
+                        , createWalletBean.getPayPassword(), jsonArray.toString(), needItem, 0, this);
+            }
+
         }
     }
 
@@ -137,23 +198,14 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void Event(BusEvent result) {
-        int integer = result.getCode();
-        if (integer == RxEnum.CREATEPRIVATEKEY.ordinal()) {
-            //添加主私钥额回调
-            createWalletBean = (CreateWalletBean) result.getObj();
-        }
-        if (integer == RxEnum.IMPORTRIVATEKEY.ordinal()) {
-            //导入助记词回调
-            createWalletBean = (CreateWalletBean) result.getObj();
-        }
-        if (integer == RxEnum.SELECTRIVATEKEY.ordinal()) {
-            //选择已有钱包回调
+        integer = result.getCode();
+        if (integer == RxEnum.CREATEPRIVATEKEY.ordinal() //添加根私钥额回调
+                || integer == RxEnum.IMPORTRIVATEKEY.ordinal()//导入助记词回调 //选择已有钱包回调
+                || integer == RxEnum.SELECTRIVATEKEY.ordinal()//选择已有钱包回调
+        ) {
             setMainPrivaKeyStatus();
             createWalletBean = (CreateWalletBean) result.getObj();
-
         }
-
-        //  Log.i("?????", createWalletBean.toString());
 
     }
 
@@ -185,5 +237,38 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
             }
         }
 
+    }
+
+    @Override
+    public void onGetCommonData(String methodname, String data) {
+
+        //无论何种createMultiSignMasterWallet方式创建的多签钱包都到这里
+        if (data != null) {
+            new CommonCreateSubWalletPresenter().createSubWallet(masterWalletID, MyWallet.ELA, this);
+        }
+
+    }
+
+    @Override
+    public void onCreateSubWallet(String data) {
+        if (data != null) {
+            //创建Mainchain子钱包
+            RealmUtil realmUtil = new RealmUtil();
+            Wallet masterWallet = realmUtil.updateWalletDetial(name, masterWalletID, data);
+            realmUtil.updateSubWalletDetial(masterWalletID, data, new RealmTransactionAbs() {
+                @Override
+                public void onSuccess() {
+                    realmUtil.updateWalletDefault(masterWalletID, new RealmTransactionAbs() {
+                        @Override
+                        public void onSuccess() {
+                            post(RxEnum.ONE.ordinal(), null, masterWallet);
+                            toMainFragment();
+                        }
+                    });
+                }
+            });
+
+
+        }
     }
 }

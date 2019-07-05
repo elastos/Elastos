@@ -23,6 +23,7 @@ import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
+import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 
@@ -60,22 +61,20 @@ public class WalletListFragment extends BaseFragment implements CommonRvListener
     protected void setExtraData(Bundle data) {
         // bundle.putString("openType","showList");
         openType = data.getString("openType", "");
-        if (openType.equals("showList")) {
-            ivAdd.setVisibility(View.GONE);
-        }
+
     }
 
     @Override
     protected void initView(View view) {
         realmUtil = new RealmUtil();
-        List<Wallet> wallets = realmUtil.queryUserAllWallet();
+
         tvTitle.setText(R.string.walletlist);
         if (openType.equals("showList")) {
             ivAdd.setVisibility(View.GONE);
-            setRecycleView(wallets, false);
+            setRecycleView(realmUtil.queryUnReadOnlyUserAllWallet(), false);
             return;
         }
-        setRecycleView(wallets, true);
+        setRecycleView(realmUtil.queryUserAllWallet(), true);
     }
 
     private void setRecycleView(List<Wallet> list, boolean showStatus) {
@@ -107,9 +106,11 @@ public class WalletListFragment extends BaseFragment implements CommonRvListener
     @Override
     public void onRvItemClick(int position, Object o) {
         //条目的点击事件
+
         if (openType.equals("showList")) {
             curentWallt = (Wallet) o;
-            dialog= new DialogUtil().showWarmPromptInput(getBaseActivity(), null, null, this);
+            Log.i("??", curentWallt.getWalletName() + position);
+            dialog = new DialogUtil().showWarmPromptInput(getBaseActivity(), null, null, this);
             return;
         }
         realmUtil.updateWalletDefault(((Wallet) o).getWalletId(), new RealmTransactionAbs() {

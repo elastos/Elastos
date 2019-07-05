@@ -54,9 +54,9 @@ public enum RxEnum {
     //opentype
     CREATEDEFAULT,//创建单签钱包时候的
     MANAGER,//钱包管理
-    PRIVATEKEY,//创建多签钱包时候添加主私钥使用
-    //添加主私钥
-    CREATEPRIVATEKEY,//新建主私钥成功
+    PRIVATEKEY,//创建多签钱包时候添加根私钥使用
+    //添加根私钥
+    CREATEPRIVATEKEY,//新建根私钥成功
     IMPORTRIVATEKEY,//导入助记词成功
     SELECTRIVATEKEY,//导入助记词成功
 

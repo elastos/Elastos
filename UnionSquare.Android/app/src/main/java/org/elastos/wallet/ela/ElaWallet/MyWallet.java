@@ -1187,5 +1187,40 @@ public class MyWallet {
             return exceptionProcess(e, "ExportxPrivateKey" + formatWalletName(masterWalletID));
         }
     }
+
+    public BaseEntity createMultiSignMasterWallet(String masterWalletID, String coSigners, int requiredSignCount, long timestamp) {
+        try {
+            MasterWallet masterWallet = mMasterWalletManager.CreateMultiSignMasterWallet(masterWalletID, coSigners,
+                    requiredSignCount, timestamp);
+            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, masterWallet.GetBasicInfo(), "createMultiSignMasterWallet");
+        } catch (WalletException e) {
+            return exceptionProcess(e, "createMultiSignMasterWallet" + formatWalletName(masterWalletID));
+        }
+    }
+
+    public BaseEntity createMultiSignMasterWallet(String masterWalletID, String privKey, String payPassword,
+                                                  String coSigners, int requiredSignCount, long timestamp) {
+        try {
+            MasterWallet masterWallet = mMasterWalletManager.CreateMultiSignMasterWallet(
+                    masterWalletID, privKey, payPassword, coSigners,
+                    requiredSignCount, timestamp);
+            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, masterWallet.GetBasicInfo(), "createMultiSignMasterWallet");
+        } catch (WalletException e) {
+            return exceptionProcess(e, "createMultiSignMasterWallet" + formatWalletName(masterWalletID));
+        }
+    }
+
+    public BaseEntity createMultiSignMasterWallet(
+            String masterWalletId, String mnemonic, String phrasePassword, String payPassword,
+            String coSigners, int requiredSignCount, long timestamp) {
+        try {
+            MasterWallet masterWallet = mMasterWalletManager.CreateMultiSignMasterWallet(
+                    masterWalletId, mnemonic, phrasePassword, payPassword,
+                    coSigners, requiredSignCount, timestamp);
+            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, masterWallet.GetBasicInfo(), "createMultiSignMasterWallet");
+        } catch (WalletException e) {
+            return exceptionProcess(e, "createMultiSignMasterWallet" + formatWalletName(masterWalletId));
+        }
+    }
 }
 
