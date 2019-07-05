@@ -11,12 +11,13 @@ module.exports = async function(json_data, res) {
         let extxs = new Array();
         for (let tx of txs) {
             if (tx.indexOf("0x") !== 0) tx = "0x" + tx;
-            let txexist = await common.contract.methods.txProcessed(tx).call();
-            if (txexist) {
+            let txprocessed = await common.web3.eth.getStorageAt(common.blackAdr, tx, common.latest)
+            if (txprocessed != common.zeroHash64) {
                 extxs.push(tx);
+                continue;
             }
         }
-        res.json({"result": {"txs": extxs}, "id": null, "error": null, "jsonrpc": "2.0"});
+        res.json({"result": extxs, "id": null, "error": null, "jsonrpc": "2.0"});
         return;
     } catch (err) {
         common.reterr(err, res);

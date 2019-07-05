@@ -17,11 +17,8 @@
 package vm
 
 import (
-	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/elastos/Elastos.ELA.SideChain.ETH/spv"
-
 	"math/big"
 
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/common"
@@ -937,52 +934,4 @@ func makeSwap(size int64) executionFunc {
 		stack.swap(int(size))
 		return nil, nil
 	}
-}
-
-// get payload data size
-func opSpvPayLoadSize(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
-	var length = big.NewInt(0)
-
-	transactionHash := stack.pop()
-	if transactionHash == nil {
-		transactionHash = big.NewInt(0)
-	} else {
-		data := spv.FindPayloadByTransactionHash(common.BigToHash(transactionHash).String())
-		length = big.NewInt(int64(len(data) / 2))
-	}
-	stack.push(length)
-	return nil, nil
-}
-
-// put payload data into memory
-func opSpvPayLoadCode(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
-	var (
-		transactionHash = stack.pop()
-		memOffset       = stack.pop()
-		codeOffset      = stack.pop()
-		length          = stack.pop()
-	)
-	data := spv.FindPayloadByTransactionHash(common.BigToHash(transactionHash).String())
-	bdata, _ := hex.DecodeString(data)
-	codeCopy := getDataBig(bdata, codeOffset, length)
-	memory.Set(memOffset.Uint64(), length.Uint64(), codeCopy)
-	interpreter.intPool.put(memOffset, codeOffset, length)
-	return nil, nil
-}
-
-// to judge an address is an arbiter 
-func opSpvIsArbiter(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
-	var isArbiter = big.NewInt(0)
-	address := stack.pop()
-	if address != nil {
-		isArbiter = big.NewInt(int64(spv.AddrIsArbiter(common.BigToAddress(address))))
-	}
-	stack.push(isArbiter)
-	return nil, nil
-}
-
-func getSubContractAddress(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
-	address :=	spv.GetSubContractAddress()
-	stack.push(address.Big())
-	return nil, nil
 }

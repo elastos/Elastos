@@ -8,6 +8,8 @@ const sendrechargetransaction = require("./sendrechargetransaction");
 const getTxInfo = require("./gettxinfo");
 const getBlkLogs = require("./getblklogs");
 const getExistTxs = require("./getexisttxs");
+const GetIllegalEvidenceByHeight=require("./getillegalevidencebyheight");
+const CheckIllegalEvidence=require("./checkillegalevidence");
 
 const app = express();
 
@@ -37,6 +39,14 @@ app.post("/", async function(req, res) {
         }
         if (json_data["method"] === "getexistdeposittransactions") {
             await getExistTxs(json_data, res);
+            return;
+        }
+        if (json_data["method"] === "getillegalevidencebyheight") {
+            await GetIllegalEvidenceByHeight(json_data, res);
+             return;
+    }
+        if (json_data["method"] === "checkillegalevidence") {
+            await CheckIllegalEvidence(json_data, res);
             return;
         }
     } catch (err) {

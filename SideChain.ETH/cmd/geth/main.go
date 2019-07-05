@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"path/filepath"
 	"runtime"
 	godebug "runtime/debug"
 	"sort"
@@ -143,6 +144,8 @@ var (
 		utils.EWASMInterpreterFlag,
 		utils.EVMInterpreterFlag,
 		configFileFlag,
+		utils.PassBalance,
+		utils.BlackContractAddr,
 	}
 
 	rpcFlags = []cli.Flag{
@@ -266,7 +269,7 @@ func init() {
 }
 
 func main() {
-	if err := app.Run(setDefaultSettings(os.Args)); err != nil {
+	if err := app.Run(os.Args); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
@@ -285,9 +288,9 @@ func geth(ctx *cli.Context) error {
 	return nil
 }
 
-// calculate the ELA mainchain address from the sidechain (ie. this chain) 
+// calculate the ELA mainchain address from the sidechain (ie. this chain)
 // genesis block hash for corresponding crosschain transactions
-// refer to https://github.com/elastos/Elastos.ELA.Client/blob/dev/cli/wallet/wallet.go 
+// refer to https://github.com/elastos/Elastos.ELA.Client/blob/dev/cli/wallet/wallet.go
 // for the original ELA-CLI implementation
 func calculateGenesisAddress(genesisBlockHash string) (string, error) {
 	// unlike Ethereum, the ELA hash values do not contain 0x prefix
@@ -301,7 +304,7 @@ func calculateGenesisAddress(genesisBlockHash string) (string, error) {
 	reversedGenesisBlockBytes := elacom.BytesReverse(genesisBlockBytes)
 	reversedGenesisBlockStr := elacom.BytesToHexString(reversedGenesisBlockBytes)
 
-	fmt.Println("genesis program hash:", reversedGenesisBlockStr)
+	log.Info(fmt.Sprintf("genesis program hash: %v", reversedGenesisBlockStr))
 
 	buf := new(bytes.Buffer)
 	buf.WriteByte(byte(len(reversedGenesisBlockBytes)))
@@ -324,7 +327,7 @@ func calculateGenesisAddress(genesisBlockHash string) (string, error) {
 	if err != nil {
 		return "", errors.New("genesis block hash to genesis address failed")
 	}
-	fmt.Println("genesis address: ", genesisAddress)
+	log.Info(fmt.Sprintf("genesis address: %v ", genesisAddress))
 
 	return genesisAddress, nil
 }
@@ -334,24 +337,43 @@ func calculateGenesisAddress(genesisBlockHash string) (string, error) {
 // miner.
 func startNode(ctx *cli.Context, stack *node.Node) {
 	debug.Memsize.Add("node", stack)
-
+	var SpvDataDir string
 	// Start up the node itself
 	utils.StartNode(stack)
+	switch {
+	case ctx.GlobalIsSet(utils.DataDirFlag.Name):
+		SpvDataDir = ctx.GlobalString(utils.DataDirFlag.Name)
+	case ctx.GlobalBool(utils.DeveloperFlag.Name):
+		SpvDataDir = "" // unless explicitly requested, use memory databases
+	case ctx.GlobalBool(utils.TestnetFlag.Name):
+		SpvDataDir = filepath.Join(node.DefaultDataDir(), "testnet")
+	case ctx.GlobalBool(utils.RinkebyFlag.Name):
+		SpvDataDir = filepath.Join(node.DefaultDataDir(), "rinkeby")
+	default:
+		SpvDataDir = node.DefaultDataDir()
+	}
 
+	var spvCfg = &spv.Config{
+		DataDir: SpvDataDir,
+	}
 	// prepare the SPV service config parameters
-	spvCfg := &spv.Config{
-		DataDir:   ctx.GlobalString(utils.DataDirFlag.Name),
-		ActiveNet: "t",
+	switch {
+	case ctx.GlobalBool(utils.TestnetFlag.Name):
+		spvCfg.ActiveNet = "t"
+
+	case ctx.GlobalBool(utils.RinkebyFlag.Name):
+		spvCfg.ActiveNet = "r"
+
 	}
 
 	// prepare to start the SPV module
-	// if --spvmoniaddr commandline parameter is present, use the parameter value 
+	// if --spvmoniaddr commandline parameter is present, use the parameter value
 	// as the ELA mainchain address for the SPV module to monitor on
-	// if no --spvmoniaddr commandline parameter is provided, use the sidechain genesis block hash 
+	// if no --spvmoniaddr commandline parameter is provided, use the sidechain genesis block hash
 	// to generate the corresponding ELA mainchain address for the SPV module to monitor on
 	if ctx.GlobalString(utils.SpvMonitoringAddrFlag.Name) != "" {
 		// --spvmoniaddr parameter is provided, set the SPV monitor address accordingly
-		fmt.Println("SPV Start Monitoring... ", ctx.GlobalString(utils.SpvMonitoringAddrFlag.Name))
+		log.Info("SPV Start Monitoring... ", "SpvMonitoringAddr", ctx.GlobalString(utils.SpvMonitoringAddrFlag.Name))
 		spvCfg.GenesisAddress = ctx.GlobalString(utils.SpvMonitoringAddrFlag.Name)
 	} else {
 		// --spvmoniaddr parameter is not provided
@@ -374,23 +396,22 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 		}
 
 		// calculate ELA mainchain address from the genesis block hash and set the SPV monitor address accordingly
-		fmt.Println("Genesis block hash: ", ghash.String())
+		log.Info(fmt.Sprintf("Genesis block hash: %v", ghash.String()))
 		if gaddr, err := calculateGenesisAddress(ghash.String()); err != nil {
 			utils.Fatalf("Cannot calculate: %v", err)
 		} else {
-			fmt.Println("SPV Start Monitoring... ", gaddr)
+			log.Info(fmt.Sprintf("SPV Start Monitoring... : %v", gaddr))
 			spvCfg.GenesisAddress = gaddr
 		}
 	}
 
-	//  注销掉spv模块启动的代码
-	// start the SPV service
-	fmt.Printf("Starting SPV service with config: %+v \n", *spvCfg)
-	if spvService, err := spv.NewService(spvCfg); err != nil {
+	//start the SPV service
+	log.Info(fmt.Sprintf("Starting SPV service with config: %+v \n", *spvCfg))
+	if spvService, err := spv.NewService(spvCfg, stack); err != nil {
 		utils.Fatalf("Cannot start mainchain SPV service: %v", err)
 	} else {
 		spvService.Start()
-		fmt.Println("Mainchain SPV module started successfully!")
+		log.Info("Mainchain SPV module started successfully!")
 	}
 
 	// Unlock any account  requested
@@ -454,6 +475,7 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 		if err := stack.Service(&ethereum); err != nil {
 			utils.Fatalf("Ethereum service not running: %v", err)
 		}
+
 		// Set the gas price to the limits from the CLI and start mining
 		gasprice := utils.GlobalBig(ctx, utils.MinerLegacyGasPriceFlag.Name)
 		if ctx.IsSet(utils.MinerGasPriceFlag.Name) {
@@ -468,59 +490,6 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 		if err := ethereum.StartMining(threads); err != nil {
 			utils.Fatalf("Failed to start mining: %v", err)
 		}
+
 	}
-}
-
-// Determine whether to complete the initialization command lidongqing
-func isNeedFixCmd(args []string) bool {
-	for _, arg := range args {
-		if strings.Contains("account attach bug console copydb dump dumpconfig export export-preimages import import-preimages init js license makecache makedag monitor removedb version wallet help h", arg) {
-			return false
-		}
-	}
-	return true
-}
-
-// Is contains cmd lidongqing
-func isContainsCmd(args []string, cmd string) bool {
-	for _, arg := range args {
-		if cmd == arg {
-			return true
-		}
-	}
-	return false
-}
-
-// Set default settings
-func setDefaultSettings(args []string) []string {
-	if isNeedFixCmd(args) {
-		if !isContainsCmd(args, "--datadir") {
-			args = append(args, "--datadir")
-			args = append(args, "./data")
-		}
-
-		if isContainsCmd(args, "--testnet") {
-			args = append(args, "--networkid")
-			args = append(args, "11")
-
-			if !isContainsCmd(args, "--bootnodes") {
-				args = append(args, "--bootnodes")
-				args = append(args, "enode://da476658b470ccfd35e7886cd8c971ef77fa0ae6557e963686af7ef3f09cf484ee3063301db2e33969b31dbbff480373911fa2e478cc583deb80ffa005c513c0@54.223.196.249:20000")
-			}
-		} else if isContainsCmd(args, "--rinkeby") {
-			args = append(args, "--networkid")
-			args = append(args, "12")
-
-			if !isContainsCmd(args, "--bootnodes") {
-				args = append(args, "--bootnodes")
-				args = append(args, "enode://da476658b470ccfd35e7886cd8c971ef77fa0ae6557e963686af7ef3f09cf484ee3063301db2e33969b31dbbff480373911fa2e478cc583deb80ffa005c513c0@54.223.196.249:20000")
-			}
-		} else {
-			if !isContainsCmd(args, "--bootnodes") {
-				args = append(args, "--bootnodes")
-				args = append(args, "enode://da476658b470ccfd35e7886cd8c971ef77fa0ae6557e963686af7ef3f09cf484ee3063301db2e33969b31dbbff480373911fa2e478cc583deb80ffa005c513c0@54.223.196.249:20000")
-			}
-		}
-	}
-	return args
 }

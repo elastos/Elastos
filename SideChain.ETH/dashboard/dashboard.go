@@ -93,7 +93,7 @@ func New(config *Config, commit string, logdir string) *Dashboard {
 		history: &Message{
 			General: &GeneralMessage{
 				Commit:  commit,
-				Version: fmt.Sprintf("v%d.%d.%d%s", params.VersionMajor, params.VersionMinor, params.VersionPatch, versionMeta),
+				Version: fmt.Sprintf("v%d.%d.%d.%d%s", params.VersionMajor, params.VersionMinor, params.VersionPatch, params.VersionCross, versionMeta),
 			},
 			System: &SystemMessage{
 				ActiveMemory:   emptyChartEntries(now, activeMemorySampleLimit, config.Refresh),

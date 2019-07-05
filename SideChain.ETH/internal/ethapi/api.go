@@ -1133,6 +1133,7 @@ func (args *SendTxArgs) setDefaults(ctx context.Context, b Backend) error {
 			return err
 		}
 		args.GasPrice = (*hexutil.Big)(price)
+
 	}
 	if args.Value == nil {
 		args.Value = new(hexutil.Big)

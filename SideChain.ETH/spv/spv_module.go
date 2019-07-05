@@ -2,26 +2,50 @@ package spv
 
 import (
 	"bytes"
-	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/elastos/Elastos.ELA.SPV/bloom"
-	spv "github.com/elastos/Elastos.ELA.SPV/interface"
-	ethCommon "github.com/elastos/Elastos.ELA.SideChain.ETH/common"
-	"github.com/elastos/Elastos.ELA.SideChain.ETH/crypto"
-	"github.com/elastos/Elastos.ELA.SideChain/types"
-	"github.com/elastos/Elastos.ELA/common"
-	core "github.com/elastos/Elastos.ELA/core/types"
-	com "github.com/elastos/Elastos.ELA.SideChain.ETH/common"
-	"github.com/syndtr/goleveldb/leveldb"
+	"golang.org/x/net/context"
+	"math/big"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/elastos/Elastos.ELA.SPV/bloom"
+	spv "github.com/elastos/Elastos.ELA.SPV/interface"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH"
+	ethCommon "github.com/elastos/Elastos.ELA.SideChain.ETH/common"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/crypto"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/ethclient"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/ethdb"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/log"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/node"
+	"github.com/elastos/Elastos.ELA.SideChain/types"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
+	core "github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/utils/signal"
 )
 
-var dataDir = "./"
+var (
+	dataDir          = "./"
+	ipcClient        *ethclient.Client
+	stack            *node.Node
+	SpvService       *Service
+	spvTxhash        string
+	spvTransactiondb ethdb.Database
+	extraVanity      = 32                           // Fixed number of extra-data prefix bytes reserved for signer vanity
+	extraSeal        = 65                           // Fixed number of extra-data suffix bytes reserved for signer seal
+	Signers          map[ethCommon.Address]struct{} // Set of authorized signers at this moment
+)
+
+const (
+	databaseCache  int   = 768
+	handles              = 16
+	txNotperformed int64 = iota
+)
+
+//type MinedBlockEvent struct{}
 
 type Config struct {
 	// DataDir is the data path to store db files peer addresses etc.
@@ -38,7 +62,17 @@ type Service struct {
 	spv.DPOSSPVService
 }
 
-func NewService(cfg *Config) (*Service, error) {
+func SpvDbInit(spvdataDir string) {
+	db, err := ethdb.NewLDBDatabase(filepath.Join(spvdataDir, "spv_transaction_info.db"), databaseCache, handles)
+	if err != nil {
+		log.Error("spv Open db: %v", err)
+	}
+	db.Meter("eth/db/ela/")
+	spvTransactiondb = db
+}
+
+func NewService(cfg *Config, s *node.Node) (*Service, error) {
+	stack = s
 	var chainParams *config.Params
 	switch strings.ToLower(cfg.ActiveNet) {
 	case "testnet", "test", "t":
@@ -47,32 +81,77 @@ func NewService(cfg *Config) (*Service, error) {
 		chainParams = config.DefaultParams.RegNet()
 	default:
 		chainParams = &config.DefaultParams
+		//chainParams = config.DefaultParams.TestNet()
+		chainParams.DNSSeeds = nil
+		chainParams.Magic = 2018201
+		//chainParams.DPoSMagic = 2019000
+		//chainParams.DPoSDefaultPort = 10119
+		t, _ := common.Uint168FromAddress("EgLe9ZAQyLmjxFZLp5em9VfqsYKvdhpGys")
+		chainParams.Foundation = *t
+		chainParams.GenesisBlock = config.GenesisBlock(t)
+		chainParams.OriginArbiters = []string{
+			"038eba1db314e7569aafc62a3c0fd1de9fe6359f88962521768a37786fce62dd37",
+			"02fb5528297b3c43e015d7e20a62b2fc70592cb0b08dfdec7ff95bcd11ff5a5fe6",
+			"03a9d3bbed3db04a4a6c167514b6a4e187b3eaeb3b8d4edd9a618d27b9fe4a0179",
+			"03022428a02e52ef0dd6adc1c7d95ea9cd93854057e9dd6a48486dc536ece71603",
+			"0251fc966a08f0e097711f54fa22ef69c90510ea8e8cf4431e8167c221cf3c7b86",
+		}
+		chainParams.CRCArbiters = []string{
+			"0342eeb0d664e2507d732382c66d0eedbd0a0f989179fd33d71679aa607d5d3b57",
+			"02cf7e80d1a1a76ab6259e0abdf2848c618655393f1fa3328901f80949ebed1476",
+		}
+		chainParams.CheckAddressHeight = 101
+		chainParams.VoteStartHeight = 100
+		chainParams.CRCOnlyDPOSHeight = 300
+		chainParams.PublicDPOSHeight = 308
 	}
 	spvCfg := spv.DPOSConfig{Config: spv.Config{
-			DataDir:        cfg.DataDir,
-			ChainParams:chainParams,
-		},
-		//可以有回调机制，在任何arbiters发生改变的时候，将arbiters信息推过来（需要实现该接口）
+		DataDir:        cfg.DataDir,
+		ChainParams:    chainParams,
+		PermanentPeers: []string{"192.168.205.33:10018", "192.168.205.33:10118"},
+	},
 	}
 	dataDir = cfg.DataDir
 	initLog(cfg.DataDir)
 
 	service, err := spv.NewDPOSSPVService(&spvCfg, signal.NewInterrupt().C)
 	if err != nil {
+		log.Error(fmt.Sprintf("Spv New DPOS SPVService: %v", err))
 		return nil, err
 	}
 
+	SpvService = &Service{DPOSSPVService: service}
 	err = service.RegisterTransactionListener(&listener{
 		address: cfg.GenesisAddress,
 		service: service,
 	})
-
 	if err != nil {
+		log.Error(fmt.Sprintf("Spv Register Transaction Listener: %v", err))
 		return nil, err
 	}
+	client, err := stack.Attach()
+	if err != nil {
+		log.Error("Attach client: %v", err)
+	}
+	ipcClient = ethclient.NewClient(client)
+	genesis, err := ipcClient.HeaderByNumber(context.Background(), new(big.Int).SetInt64(0))
+	if err != nil {
+		log.Error(fmt.Sprintf("IpcClient: %v", err))
+	}
+	signers := make([]ethCommon.Address, (len(genesis.Extra)-extraVanity-extraSeal)/ethCommon.AddressLength)
+	for i := 0; i < len(signers); i++ {
+		copy(signers[i][:], genesis.Extra[extraVanity+i*ethCommon.AddressLength:])
+	}
+	Signers = make(map[ethCommon.Address]struct{})
+	for _, signer := range signers {
+		Signers[signer] = struct{}{}
+	}
 
-	spvService = &Service{ service}
-	return &Service{DPOSSPVService: service}, nil
+	return SpvService, nil
+}
+
+func (s *Service) GetDatabase() ethdb.Database {
+	return spvTransactiondb
 }
 
 func (s *Service) VerifyTransaction(tx *types.Transaction) error {
@@ -143,84 +222,179 @@ func (l *listener) Flags() uint64 {
 
 func (l *listener) Notify(id common.Uint256, proof bloom.MerkleProof, tx core.Transaction) {
 	// Submit transaction receipt
-	fmt.Println(" ")
-	fmt.Println(" ")
-	fmt.Println("========================================================================================")
-	fmt.Println("mainchain transaction info")
-	fmt.Println("----------------------------------------------------------------------------------------")
-	fmt.Println(string(tx.String()))
-	fmt.Println("----------------------------------------------------------------------------------------")
-	fmt.Println(" ")
+	log.Info("========================================================================================")
+	log.Info("mainchain transaction info")
+	log.Info("----------------------------------------------------------------------------------------")
+	log.Info(string(tx.String()))
+	log.Info("----------------------------------------------------------------------------------------")
 	savePayloadInfo(tx)
-	defer l.service.SubmitTransactionReceipt(id, tx.Hash())
+	l.service.SubmitTransactionReceipt(id, tx.Hash())
 }
 
-func savePayloadInfo(elaTx core.Transaction) error {
-	db, err := leveldb.OpenFile(filepath.Join(dataDir, "spv_transaction_info.db"), nil)
-	if err != nil {
-		fmt.Println(err)
+func savePayloadInfo(elaTx core.Transaction) {
+	//db, err := leveldb.OpenFile(filepath.Join(dataDir, "spv_transaction_info.db"), nil)
+	//defer db.Close()
+	//if err != nil {
+	//	fmt.Println(err)
+	//}
+
+	nr := bytes.NewReader(elaTx.Payload.Data(elaTx.PayloadVersion))
+	p := new(payload.TransferCrossChainAsset)
+	p.Deserialize(nr, elaTx.PayloadVersion)
+	var fees []string
+	var address []string
+	var outputs []string
+	for i, amount := range p.CrossChainAmounts {
+		fees = append(fees, (elaTx.Outputs[i].Value - amount).String())
+		outputs = append(outputs, elaTx.Outputs[i].Value.String())
+		address = append(address, p.CrossChainAddresses[i])
 	}
-	defer db.Close()
-	err = db.Put([]byte(elaTx.Hash().String()), []byte(hex.EncodeToString(elaTx.Payload.Data(elaTx.PayloadVersion))), nil)
+	addr := strings.Join(address, ",")
+	fee := strings.Join(fees, ",")
+	output := strings.Join(outputs, ",")
+	if spvTxhash == elaTx.Hash().String() {
+		return
+	}
+	spvTxhash = elaTx.Hash().String()
+	err := spvTransactiondb.Put([]byte(elaTx.Hash().String()+"Fee"), []byte(fee))
 
 	if err != nil {
-		fmt.Println(err)
+		log.Error(fmt.Sprintf("SpvServicedb Put Fee: %v", err), "elaHash", elaTx.Hash().String())
 	}
-	return nil
+
+	err = spvTransactiondb.Put([]byte(elaTx.Hash().String()+"Address"), []byte(addr))
+
+	if err != nil {
+		log.Error(fmt.Sprintf("SpvServicedb Put Address: %v", err), "elaHash", elaTx.Hash().String())
+	}
+	err = spvTransactiondb.Put([]byte(elaTx.Hash().String()+"Output"), []byte(output))
+
+	if err != nil {
+		log.Error(fmt.Sprintf("SpvServicedb Put Output: %v", err), "elaHash", elaTx.Hash().String())
+	}
+
+	var from ethCommon.Address
+	if wallets := stack.AccountManager().Wallets(); len(wallets) > 0 {
+		if accounts := wallets[0].Accounts(); len(accounts) > 0 {
+			from = accounts[0].Address
+		}
+	}
+	if _, ok := Signers[from]; ok {
+		ethTx, err := ipcClient.StorageAt(context.Background(), ethCommon.Address{}, ethCommon.HexToHash("0x"+elaTx.Hash().String()), nil)
+		if err != nil {
+			log.Error(fmt.Sprintf("IpcClient StorageAt: %v", err))
+			return
+		}
+		h := ethCommon.Hash{}
+		if ethCommon.BytesToHash(ethTx) != h {
+			log.Warn("Cross-chain transactions have been processed", "elaHash", elaTx.Hash().String())
+			return
+		}
+		msg := ethereum.CallMsg{From: from, To: &ethCommon.Address{}, Data: elaTx.Hash().Bytes()}
+		gasLimit, err := ipcClient.EstimateGas(context.Background(), msg)
+		if err != nil {
+			log.Error(fmt.Sprintf("IpcClient EstimateGas: %v", err))
+			return
+		}
+		if gasLimit == 0 {
+			return
+		}
+		f, err := common.StringToFixed64(fees[0])
+		if err != nil {
+			log.Error(fmt.Sprintf("SpvSendTransaction Fee StringToFixed64: %v", err), "elaHash", elaTx.Hash().String())
+			return
+
+		}
+		fe := new(big.Int).SetInt64(f.IntValue())
+		y := new(big.Int).SetInt64(10000000000)
+		fee := new(big.Int).Mul(fe, y)
+		price := new(big.Int).Quo(fee, new(big.Int).SetUint64(gasLimit))
+		callmsg := ethereum.TXMsg{From: from, To: &ethCommon.Address{}, Gas: gasLimit, Data: elaTx.Hash().Bytes(), GasPrice: price}
+		hash, err := ipcClient.SendPublicTransaction(context.Background(), callmsg)
+		if err != nil {
+			log.Error(fmt.Sprintf("IpcClient SendPublicTransaction: %v", err))
+		}
+		log.Info("Cross chain Transaction", "elaTx", elaTx.Hash().String(), "ethTh", hash.String())
+	}
+	return
 }
 
-func FindPayloadByTransactionHash(transactionHash string) string {
-	if transactionHash == "" {
-		return "0"
-	}
-
+func FindOutputFeeAndaddressByTxHash(transactionHash string) (*big.Int, ethCommon.Address, *big.Int) {
+	var emptyaddr ethCommon.Address
 	transactionHash = strings.Replace(transactionHash, "0x", "", 1)
-	db, err := leveldb.OpenFile(filepath.Join(dataDir, "spv_transaction_info.db"), nil)
-	if err != nil {
-		fmt.Println(err)
-		return "0"
+	if spvTransactiondb == nil {
+		return new(big.Int), emptyaddr, new(big.Int)
 	}
-	defer db.Close()
-
-	v, err := db.Get([]byte(transactionHash), nil)
-
+	v, err := spvTransactiondb.Get([]byte(transactionHash + "Fee"))
 	if err != nil {
-		fmt.Println(err)
-		return "0"
+		log.Error(fmt.Sprintf("SpvServicedb Get Fee: %v"), err, "elaHash", transactionHash)
+		return new(big.Int), emptyaddr, new(big.Int)
 	}
+	fees := strings.Split(string(v), ",")
+	f, err := common.StringToFixed64(fees[0])
+	if err != nil {
+		log.Error(fmt.Sprintf("SpvServicedb Get Fee StringToFixed64: %v", err), "elaHash", transactionHash)
+		return new(big.Int), emptyaddr, new(big.Int)
 
-	return string(v)
+	}
+	fe := new(big.Int).SetInt64(f.IntValue())
+	y := new(big.Int).SetInt64(10000000000)
 
+	addrss, err := spvTransactiondb.Get([]byte(transactionHash + "Address"))
+	if err != nil {
+		log.Error(fmt.Sprintf("SpvServicedb Get Address: %v", err), "elaHash", transactionHash)
+		return new(big.Int), emptyaddr, new(big.Int)
+
+	}
+	addrs := strings.Split(string(addrss), ",")
+	if !ethCommon.IsHexAddress(addrs[0]) {
+		return new(big.Int), emptyaddr, new(big.Int)
+	}
+	outputs, err := spvTransactiondb.Get([]byte(transactionHash + "Output"))
+	if err != nil {
+		log.Error(fmt.Sprintf("SpvServicedb Get elaHash: %v", err), "elaHash", transactionHash)
+		return new(big.Int), emptyaddr, new(big.Int)
+
+	}
+	output := strings.Split(string(outputs), ",")
+	o, err := common.StringToFixed64(output[0])
+	if err != nil {
+		log.Error(fmt.Sprintf("SpvServicedb Get elaHash StringToFixed64: %v", err), "elaHash", transactionHash)
+		return new(big.Int), emptyaddr, new(big.Int)
+
+	}
+	op := new(big.Int).SetInt64(o.IntValue())
+	return new(big.Int).Mul(fe, y), ethCommon.HexToAddress(addrs[0]), new(big.Int).Mul(op, y)
 }
 
-// Get Ela Chain Height 
+// Get Ela Chain Height
 func GetElaChainHeight() uint32 {
 	var elaHeight uint32 = 0
-	if spvService == nil || spvService.DPOSSPVService == nil {
-		fmt.Println("spv service initiation does not finish yet !")
+	if SpvService == nil || SpvService.DPOSSPVService == nil {
+		log.Info("spv service initiation does not finish yet !")
 	} else {
-		elaHeight = spvService.DPOSSPVService.GetHeight()
+		elaHeight = SpvService.DPOSSPVService.GetHeight()
 	}
 	return elaHeight
 }
 
-// Until Get Ela Chain Height 
+// Until Get Ela Chain Height
 func UntilGetElaChainHeight() uint32 {
 	for {
-		if elaHeight := GetElaChainHeight(); elaHeight != 0  {
+		if elaHeight := GetElaChainHeight(); elaHeight != 0 {
 			return elaHeight
 		}
-		fmt.Println("can not get elas height, because ela height interface has no any response !")
-		time.Sleep(time.Millisecond*1000)
+		log.Info("can not get elas height, because ela height interface has no any response !")
+		time.Sleep(time.Millisecond * 1000)
 	}
 }
 
-// Determine whether an address is an arbiter 
+// Determine whether an address is an arbiter
 func AddrIsArbiter(address ethCommon.Address) int8 {
-	if spvService == nil || spvService.DPOSSPVService == nil {
-		fmt.Println("spv service initiation does not finish yet !")
+	if SpvService == nil || SpvService.DPOSSPVService == nil {
+		log.Info("spv service initiation does not finish yet !")
 	} else {
-		arbiters := spvService.DPOSSPVService.GetProducersByHeight(spvService.DPOSSPVService.GetHeight())
+		arbiters := SpvService.DPOSSPVService.GetProducersByHeight(SpvService.DPOSSPVService.GetHeight())
 		for _, arbiter := range arbiters {
 			publicKey, convertErr := crypto.UnmarshalPubkey(arbiter)
 			if convertErr == nil {
@@ -235,10 +409,10 @@ func AddrIsArbiter(address ethCommon.Address) int8 {
 
 // Determine whether an address is an arbiter
 func AddrIsArbiterWithElaHeight(address ethCommon.Address, elaHeight uint32) int8 {
-	if spvService == nil || spvService.DPOSSPVService == nil {
-		fmt.Println("spv service initiation does not finish yet !")
+	if SpvService == nil || SpvService.DPOSSPVService == nil {
+		log.Info("spv service initiation does not finish yet !")
 	} else {
-		arbiters := spvService.DPOSSPVService.GetProducersByHeight(elaHeight)
+		arbiters := SpvService.DPOSSPVService.GetProducersByHeight(elaHeight)
 		for _, arbiter := range arbiters {
 			publicKey, convertErr := crypto.UnmarshalPubkey(arbiter)
 			if convertErr == nil {
@@ -253,12 +427,12 @@ func AddrIsArbiterWithElaHeight(address ethCommon.Address, elaHeight uint32) int
 
 func GetCurrentProducers() [][]byte {
 	var arbiters [][]byte
-	if spvService == nil || spvService.DPOSSPVService == nil {
-		fmt.Println("spv service initiation does not finish yet !")
+	if SpvService == nil || SpvService.DPOSSPVService == nil {
+		log.Info("spv service initiation does not finish yet !")
 	} else {
-		arbiters := spvService.DPOSSPVService.GetProducersByHeight(GetCurrentElaHeight())
-		fmt.Println("---------------------------------------------------------------")
-		fmt.Println(arbiters)
+		arbiters := SpvService.DPOSSPVService.GetProducersByHeight(GetCurrentElaHeight())
+		log.Info("---------------------------------------------------------------")
+		log.Info("arbiters", arbiters)
 	}
 
 	return arbiters
@@ -266,34 +440,26 @@ func GetCurrentProducers() [][]byte {
 
 func GetCurrentElaHeight() uint32 {
 	var height uint32
-	if spvService == nil || spvService.DPOSSPVService == nil {
-		fmt.Println("spv service initiation does not finish yet !")
+	if SpvService == nil || SpvService.DPOSSPVService == nil {
+		log.Info("spv service initiation does not finish yet !")
 	} else {
-		height = spvService.DPOSSPVService.GetHeight()
-		fmt.Println("----GetCurrentElaHeight-----------------------------------------------------------")
-		fmt.Println(height)
+		height = SpvService.DPOSSPVService.GetHeight()
+		log.Info("----GetCurrentElaHeight-----------------------------------------------------------")
+		log.Info("ElaHeight", height)
 	}
 
 	return height
 }
 
-func GetSubContractAddress() com.Address {
-	return com.HexToAddress("0x322f033e93f548C721ed8963718Fbdb2d6aE7866")
-}
-
 func GetProducersByHeight(height uint32) [][]byte {
 	var arbiters [][]byte
 
-	if spvService == nil || spvService.DPOSSPVService == nil {
-		fmt.Println("spv service initiation does not finish yet !")
+	if SpvService == nil || SpvService.DPOSSPVService == nil {
+		log.Info("spv service initiation does not finish yet !")
 	} else {
-		arbiters := spvService.DPOSSPVService.GetProducersByHeight(height)
-		fmt.Println("---------------------------------------------------------------")
-		fmt.Println(arbiters)
+		arbiters := SpvService.DPOSSPVService.GetProducersByHeight(height)
+		log.Info("---------------------------------------------------------------")
+		log.Info("arbiters", arbiters)
 	}
 	return arbiters
 }
-
-//Service
-var spvService *Service
-

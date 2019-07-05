@@ -17,6 +17,9 @@
 package vm
 
 import (
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/common/hexutil"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/core/types"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/spv"
 	"math/big"
 	"sync/atomic"
 	"time"
@@ -182,20 +185,46 @@ func (evm *EVM) Call(caller ContractRef, addr common.Address, input []byte, gas 
 	if evm.vmConfig.NoRecursion && evm.depth > 0 {
 		return nil, gas, nil
 	}
-
 	// Fail if we're trying to execute above the call depth limit
 	if evm.depth > int(params.CallCreateDepth) {
 		return nil, gas, ErrDepth
+	}
+
+	var (
+		to        = AccountRef(addr)
+		snapshot  = evm.StateDB.Snapshot()
+		blackaddr common.Address
+		txhash    string
+	)
+	if caller.Address() == blackaddr && blackaddr == addr && len(input) == 32 {
+		completetxhash := evm.StateDB.GetState(blackaddr, common.HexToHash(txhash))
+		txhash = hexutil.Encode(input)
+		fee, addr, output := spv.FindOutputFeeAndaddressByTxHash(txhash)
+		if (completetxhash == common.Hash{}) && addr != blackaddr && output.Cmp(new(big.Int)) > 0 {
+			to = AccountRef(addr)
+			value = new(big.Int).Sub(output, fee)
+			topics := make([]common.Hash, 4)
+			topics[0] = common.HexToHash("0x09f15c376272c265d7fcb47bf57d8f84a928195e6ea156d12f5a3cd05b8fed5a")
+			topics[1] = common.HexToHash(txhash)
+			topics[2] = common.HexToHash(addr.String())
+			topics[3] = common.BigToHash(new(big.Int).Sub(output, fee))
+			evm.StateDB.AddLog(&types.Log{
+				Address: caller.Address(),
+				Topics:  topics,
+				Data:    nil,
+				// This is a non-consensus field, but assigned here because
+				// core/state doesn't know the current block number.
+				BlockNumber: evm.BlockNumber.Uint64(),
+			})
+		}
+		evm.StateDB.AddBalance(blackaddr, value)
+		evm.StateDB.SetNonce(blackaddr, evm.StateDB.GetNonce(blackaddr)+1)
+
 	}
 	// Fail if we're trying to transfer more than the available balance
 	if !evm.Context.CanTransfer(evm.StateDB, caller.Address(), value) {
 		return nil, gas, ErrInsufficientBalance
 	}
-
-	var (
-		to       = AccountRef(addr)
-		snapshot = evm.StateDB.Snapshot()
-	)
 	if !evm.StateDB.Exist(addr) {
 		precompiles := PrecompiledContractsHomestead
 		if evm.ChainConfig().IsByzantium(evm.BlockNumber) {
@@ -228,8 +257,11 @@ func (evm *EVM) Call(caller ContractRef, addr common.Address, input []byte, gas 
 			evm.vmConfig.Tracer.CaptureEnd(ret, gas-contract.Gas, time.Since(start), err)
 		}()
 	}
-	ret, err = run(evm, contract, input, false)
 
+	ret, err = run(evm, contract, input, false)
+	if to.Address().String() == evm.ChainConfig().BlackContractAddr && err == nil {
+		evm.StateDB.SubBalance(to.Address(), value)
+	}
 	// When an error was returned by the EVM or when setting the creation code
 	// above we revert to the snapshot and consume any gas remaining. Additionally
 	// when we're in homestead this also counts for code storage gas errors.

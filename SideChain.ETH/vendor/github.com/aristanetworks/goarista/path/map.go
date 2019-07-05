@@ -5,9 +5,9 @@
 package path
 
 import (
+	"bytes"
 	"fmt"
 	"sort"
-	"strings"
 
 	"github.com/aristanetworks/goarista/key"
 )
@@ -181,11 +181,6 @@ func (m *Map) visitSubtree(fn VisitorFunc) error {
 	return nil
 }
 
-// IsEmpty returns true if no paths have been registered, false otherwise.
-func (m *Map) IsEmpty() bool {
-	return m.wildcard == nil && len(m.children) == 0
-}
-
 // Get returns the value registered with an exact match of a
 // path p. If there is no exact match for p, Get returns nil
 // and false. If p has an exact match and it is set to true,
@@ -308,12 +303,12 @@ func (m *Map) Delete(p key.Path) bool {
 }
 
 func (m *Map) String() string {
-	var b strings.Builder
+	var b bytes.Buffer
 	m.write(&b, "")
 	return b.String()
 }
 
-func (m *Map) write(b *strings.Builder, indent string) {
+func (m *Map) write(b *bytes.Buffer, indent string) {
 	if m.ok {
 		b.WriteString(indent)
 		fmt.Fprintf(b, "Val: %v", m.val)

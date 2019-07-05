@@ -5,6 +5,7 @@
 package gnmi
 
 import (
+	"bytes"
 	"fmt"
 	"sort"
 	"strings"
@@ -84,10 +85,10 @@ func StrPath(path *pb.Path) string {
 
 // strPathV04 handles the v0.4 gnmi and later path.Elem member.
 func strPathV04(path *pb.Path) string {
-	b := &strings.Builder{}
+	buf := &bytes.Buffer{}
 	for _, elm := range path.Elem {
-		b.WriteRune('/')
-		writeSafeString(b, elm.Name, '/')
+		buf.WriteRune('/')
+		writeSafeString(buf, elm.Name, '/')
 		if len(elm.Key) > 0 {
 			// Sort the keys so that they print in a conistent
 			// order. We don't have the YANG AST information, so the
@@ -98,15 +99,15 @@ func strPathV04(path *pb.Path) string {
 			}
 			sort.Strings(keys)
 			for _, k := range keys {
-				b.WriteRune('[')
-				b.WriteString(k)
-				b.WriteRune('=')
-				writeSafeString(b, elm.Key[k], ']')
-				b.WriteRune(']')
+				buf.WriteRune('[')
+				buf.WriteString(k)
+				buf.WriteRune('=')
+				writeSafeString(buf, elm.Key[k], ']')
+				buf.WriteRune(']')
 			}
 		}
 	}
-	return b.String()
+	return buf.String()
 }
 
 // strPathV03 handles the v0.3 gnmi and earlier path.Element member.
@@ -114,36 +115,12 @@ func strPathV03(path *pb.Path) string {
 	return "/" + strings.Join(path.Element, "/")
 }
 
-// upgradePath modernizes a Path by translating the contents of the Element field to Elem
-func upgradePath(path *pb.Path) *pb.Path {
-	if len(path.Elem) == 0 {
-		var elems []*pb.PathElem
-		for _, element := range path.Element {
-			n, keys, _ := parseElement(element)
-			elems = append(elems, &pb.PathElem{Name: n, Key: keys})
-		}
-		path.Elem = elems
-		path.Element = nil
-	}
-	return path
-}
-
-// JoinPaths joins multiple gnmi paths and returns a string representation
-func JoinPaths(paths ...*pb.Path) *pb.Path {
-	var elems []*pb.PathElem
-	for _, path := range paths {
-		path = upgradePath(path)
-		elems = append(elems, path.Elem...)
-	}
-	return &pb.Path{Elem: elems}
-}
-
-func writeSafeString(b *strings.Builder, s string, esc rune) {
+func writeSafeString(buf *bytes.Buffer, s string, esc rune) {
 	for _, c := range s {
 		if c == esc || c == '\\' {
-			b.WriteRune('\\')
+			buf.WriteRune('\\')
 		}
-		b.WriteRune(c)
+		buf.WriteRune(c)
 	}
 }
 
@@ -233,19 +210,19 @@ func findUnescaped(s string, find byte) (string, int) {
 	}
 
 	// Find the first match, taking care of escaped chars.
-	var b strings.Builder
+	buf := &bytes.Buffer{}
 	var i int
 	len := len(s)
 	for i = 0; i < len; {
 		ch := s[i]
 		if ch == find {
-			return b.String(), i
+			return buf.String(), i
 		} else if ch == '\\' && i < len-1 {
 			i++
 			ch = s[i]
 		}
-		b.WriteByte(ch)
+		buf.WriteByte(ch)
 		i++
 	}
-	return b.String(), -1
+	return buf.String(), -1
 }

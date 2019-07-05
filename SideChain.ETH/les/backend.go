@@ -19,6 +19,7 @@ package les
 
 import (
 	"fmt"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/spv"
 	"sync"
 	"time"
 
@@ -83,6 +84,8 @@ func New(ctx *node.ServiceContext, config *eth.Config) (*LightEthereum, error) {
 		return nil, err
 	}
 	chainConfig, genesisHash, genesisErr := core.SetupGenesisBlock(chainDb, config.Genesis)
+	chainConfig.PassBalance = config.PassBalance
+	chainConfig.BlackContractAddr = config.BlackContractAddr
 	if _, isCompat := genesisErr.(*params.ConfigCompatError); genesisErr != nil && !isCompat {
 		return nil, genesisErr
 	}
@@ -256,6 +259,7 @@ func (s *LightEthereum) Stop() error {
 
 	time.Sleep(time.Millisecond * 200)
 	s.chainDb.Close()
+	spv.SpvService.GetDatabase().Close()
 	close(s.shutdownChan)
 
 	return nil

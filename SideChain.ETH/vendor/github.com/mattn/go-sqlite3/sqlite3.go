@@ -78,8 +78,38 @@ _sqlite3_exec(sqlite3* db, const char* pcmd, long long* rowid, long long* change
   return rv;
 }
 
+#ifdef SQLITE_ENABLE_UNLOCK_NOTIFY
+extern int _sqlite3_step_blocking(sqlite3_stmt *stmt);
+extern int _sqlite3_step_row_blocking(sqlite3_stmt* stmt, long long* rowid, long long* changes);
+extern int _sqlite3_prepare_v2_blocking(sqlite3 *db, const char *zSql, int nBytes, sqlite3_stmt **ppStmt, const char **pzTail);
+
 static int
-_sqlite3_step(sqlite3_stmt* stmt, long long* rowid, long long* changes)
+_sqlite3_step_internal(sqlite3_stmt *stmt)
+{
+  return _sqlite3_step_blocking(stmt);
+}
+
+static int
+_sqlite3_step_row_internal(sqlite3_stmt* stmt, long long* rowid, long long* changes)
+{
+  return _sqlite3_step_row_blocking(stmt, rowid, changes);
+}
+
+static int
+_sqlite3_prepare_v2_internal(sqlite3 *db, const char *zSql, int nBytes, sqlite3_stmt **ppStmt, const char **pzTail)
+{
+  return _sqlite3_prepare_v2_blocking(db, zSql, nBytes, ppStmt, pzTail);
+}
+
+#else
+static int
+_sqlite3_step_internal(sqlite3_stmt *stmt)
+{
+  return sqlite3_step(stmt);
+}
+
+static int
+_sqlite3_step_row_internal(sqlite3_stmt* stmt, long long* rowid, long long* changes)
 {
   int rv = sqlite3_step(stmt);
   sqlite3* db = sqlite3_db_handle(stmt);
@@ -87,6 +117,13 @@ _sqlite3_step(sqlite3_stmt* stmt, long long* rowid, long long* changes)
   *changes = (long long) sqlite3_changes(db);
   return rv;
 }
+
+static int
+_sqlite3_prepare_v2_internal(sqlite3 *db, const char *zSql, int nBytes, sqlite3_stmt **ppStmt, const char **pzTail)
+{
+  return sqlite3_prepare_v2(db, zSql, nBytes, ppStmt, pzTail);
+}
+#endif
 
 void _sqlite3_result_text(sqlite3_context* ctx, const char* s) {
   sqlite3_result_text(ctx, s, -1, &free);
@@ -703,6 +740,8 @@ func (c *SQLiteConn) RegisterAggregator(name string, impl interface{}, pure bool
 
 // AutoCommit return which currently auto commit or not.
 func (c *SQLiteConn) AutoCommit() bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	return int(C.sqlite3_get_autocommit(c.db)) != 0
 }
 
@@ -1303,6 +1342,9 @@ func (d *SQLiteDriver) Open(dsn string) (driver.Conn, error) {
 		mutex|C.SQLITE_OPEN_READWRITE|C.SQLITE_OPEN_CREATE,
 		nil)
 	if rv != 0 {
+		if db != nil {
+			C.sqlite3_close_v2(db)
+		}
 		return nil, Error{Code: ErrNo(rv)}
 	}
 	if db == nil {
@@ -1339,7 +1381,7 @@ func (d *SQLiteDriver) Open(dsn string) (driver.Conn, error) {
 	//  - Activate User Authentication
 	//		Check if the user wants to activate User Authentication.
 	//		If so then first create a temporary AuthConn to the database
-	//		This is possible because we are already succesfully authenticated.
+	//		This is possible because we are already successfully authenticated.
 	//
 	//	- Check if `sqlite_user`` table exists
 	//		YES				=> Add the provided user from DSN as Admin User and
@@ -1350,7 +1392,7 @@ func (d *SQLiteDriver) Open(dsn string) (driver.Conn, error) {
 	// Create connection to SQLite
 	conn := &SQLiteConn{db: db, loc: loc, txlock: txlock}
 
-	// Password Cipher has to be registerd before authentication
+	// Password Cipher has to be registered before authentication
 	if len(authCrypt) > 0 {
 		switch strings.ToUpper(authCrypt) {
 		case "SHA1":
@@ -1637,7 +1679,7 @@ func (c *SQLiteConn) prepare(ctx context.Context, query string) (driver.Stmt, er
 	defer C.free(unsafe.Pointer(pquery))
 	var s *C.sqlite3_stmt
 	var tail *C.char
-	rv := C.sqlite3_prepare_v2(c.db, pquery, -1, &s, &tail)
+	rv := C._sqlite3_prepare_v2_internal(c.db, pquery, C.int(-1), &s, &tail)
 	if rv != C.SQLITE_OK {
 		return nil, c.lastError()
 	}
@@ -1681,7 +1723,7 @@ func (c *SQLiteConn) GetFilename(schemaName string) string {
 // GetLimit returns the current value of a run-time limit.
 // See: sqlite3_limit, http://www.sqlite.org/c3ref/limit.html
 func (c *SQLiteConn) GetLimit(id int) int {
-	return int(C._sqlite3_limit(c.db, C.int(id), -1))
+	return int(C._sqlite3_limit(c.db, C.int(id), C.int(-1)))
 }
 
 // SetLimit changes the value of a run-time limits.
@@ -1871,7 +1913,7 @@ func (s *SQLiteStmt) exec(ctx context.Context, args []namedValue) (driver.Result
 	}
 
 	var rowid, changes C.longlong
-	rv := C._sqlite3_step(s.s, &rowid, &changes)
+	rv := C._sqlite3_step_row_internal(s.s, &rowid, &changes)
 	if rv != C.SQLITE_ROW && rv != C.SQLITE_OK && rv != C.SQLITE_DONE {
 		err := s.c.lastError()
 		C.sqlite3_reset(s.s)
@@ -1943,7 +1985,7 @@ func (rc *SQLiteRows) Next(dest []driver.Value) error {
 	if rc.s.closed {
 		return io.EOF
 	}
-	rv := C.sqlite3_step(rc.s.s)
+	rv := C._sqlite3_step_internal(rc.s.s)
 	if rv == C.SQLITE_DONE {
 		return io.EOF
 	}
@@ -1987,16 +2029,11 @@ func (rc *SQLiteRows) Next(dest []driver.Value) error {
 		case C.SQLITE_BLOB:
 			p := C.sqlite3_column_blob(rc.s.s, C.int(i))
 			if p == nil {
-				dest[i] = nil
+				dest[i] = []byte{}
 				continue
 			}
-			n := int(C.sqlite3_column_bytes(rc.s.s, C.int(i)))
-			switch dest[i].(type) {
-			default:
-				slice := make([]byte, n)
-				copy(slice[:], (*[1 << 30]byte)(p)[0:n])
-				dest[i] = slice
-			}
+			n := C.sqlite3_column_bytes(rc.s.s, C.int(i))
+			dest[i] = C.GoBytes(p, n)
 		case C.SQLITE_NULL:
 			dest[i] = nil
 		case C.SQLITE_TEXT:

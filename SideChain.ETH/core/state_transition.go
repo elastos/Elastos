@@ -18,13 +18,15 @@ package core
 
 import (
 	"errors"
-	"math"
-	"math/big"
-
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/common"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/common/hexutil"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/core/vm"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/crypto"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/log"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/params"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/spv"
+	"math"
+	"math/big"
 )
 
 var (
@@ -181,13 +183,85 @@ func (st *StateTransition) preCheck() error {
 // returning the result including the used gas. It returns an error if failed.
 // An error indicates a consensus issue.
 func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bool, err error) {
-	if err = st.preCheck(); err != nil {
-		return
-	}
+	var (
+		evm = st.evm
+		// vm errors do not effect consensus and are therefor
+		// not assigned to err, except for insufficient balance
+		// error.
+		vmerr         error
+		snapshot      = evm.StateDB.Snapshot()
+		blackaddr     common.Address
+		blackcontract common.Address
+	)
+
 	msg := st.msg
 	sender := vm.AccountRef(msg.From())
 	homestead := st.evm.ChainConfig().IsHomestead(st.evm.BlockNumber)
 	contractCreation := msg.To() == nil
+	txhash := hexutil.Encode(msg.Data())
+	if len(msg.Data()) == 32 && msg.To() != nil && *msg.To() == blackaddr {
+		fee, toaddr, output := spv.FindOutputFeeAndaddressByTxHash(txhash)
+		sender = vm.AccountRef(blackaddr)
+		completetxhash := evm.StateDB.GetState(blackaddr, common.HexToHash(txhash))
+		if toaddr != blackaddr {
+			if (completetxhash == common.Hash{}) && output.Cmp(new(big.Int)) > 0 {
+				st.state.AddBalance(st.msg.From(), new(big.Int).SetUint64(evm.ChainConfig().PassBalance))
+				defer func() {
+					ethfee := new(big.Int).Mul(new(big.Int).SetUint64(st.gasUsed()), st.gasPrice)
+					if fee.Cmp(new(big.Int)) <= 0 || fee.Cmp(ethfee) < 0 || new(big.Int).Sub(st.state.GetBalance(toaddr), fee).Cmp(new(big.Int)) < 0 || vmerr != nil {
+						ret = nil
+						usedGas = 0
+						failed = false
+						if err == nil {
+							err = ErrGasLimitReached
+						}
+						evm.StateDB.RevertToSnapshot(snapshot)
+						return
+					} else {
+						st.state.AddBalance(st.msg.From(), fee)
+					}
+
+					if (new(big.Int).Sub(st.state.GetBalance(st.msg.From()), new(big.Int).SetUint64(evm.ChainConfig().PassBalance)).Cmp(new(big.Int))) < 0 {
+						ret = nil
+						usedGas = 0
+						failed = false
+						if err == nil {
+							err = ErrGasLimitReached
+						}
+						evm.StateDB.RevertToSnapshot(snapshot)
+					} else {
+						st.state.SubBalance(st.msg.From(), new(big.Int).SetUint64(evm.ChainConfig().PassBalance))
+					}
+				}()
+			} else {
+				return nil, 0, false, ErrMainTxHashPresence
+			}
+		} else {
+			return nil, 0, false, ErrElaToEthAddress
+		}
+	} else if contractCreation {
+		blackcontract = crypto.CreateAddress(sender.Address(), evm.StateDB.GetNonce(sender.Address()))
+		if blackcontract.String() == evm.ChainConfig().BlackContractAddr {
+			st.state.AddBalance(st.msg.From(), new(big.Int).SetUint64(evm.ChainConfig().PassBalance))
+			defer func() {
+				if (new(big.Int).Sub(st.state.GetBalance(st.msg.From()), new(big.Int).SetUint64(evm.ChainConfig().PassBalance)).Cmp(new(big.Int))) < 0 {
+					ret = nil
+					usedGas = 0
+					failed = false
+					if err == nil {
+						err = ErrGasLimitReached
+					}
+					evm.StateDB.RevertToSnapshot(snapshot)
+				} else {
+					st.state.SubBalance(st.msg.From(), new(big.Int).SetUint64(evm.ChainConfig().PassBalance))
+				}
+			}()
+		}
+	}
+
+	if err = st.preCheck(); err != nil {
+		return
+	}
 
 	// Pay intrinsic gas
 	gas, err := IntrinsicGas(st.data, contractCreation, homestead)
@@ -198,13 +272,6 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 		return nil, 0, false, err
 	}
 
-	var (
-		evm = st.evm
-		// vm errors do not effect consensus and are therefor
-		// not assigned to err, except for insufficient balance
-		// error.
-		vmerr error
-	)
 	if contractCreation {
 		ret, _, st.gas, vmerr = evm.Create(sender, st.data, st.gas, st.value)
 	} else {
@@ -222,7 +289,12 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 		}
 	}
 	st.refundGas()
-	st.state.AddBalance(st.evm.Coinbase, new(big.Int).Mul(new(big.Int).SetUint64(st.gasUsed()), st.gasPrice))
+
+	if contractCreation && blackcontract.String() == evm.ChainConfig().BlackContractAddr {
+		st.state.AddBalance(st.msg.From(), new(big.Int).Mul(new(big.Int).SetUint64(st.gasUsed()), st.gasPrice))
+	} else {
+		st.state.AddBalance(st.evm.Coinbase, new(big.Int).Mul(new(big.Int).SetUint64(st.gasUsed()), st.gasPrice))
+	}
 
 	return ret, st.gasUsed(), vmerr != nil, err
 }
