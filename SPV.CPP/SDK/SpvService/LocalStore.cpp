@@ -450,5 +450,138 @@ namespace Elastos {
 			}
 		}
 
+		bool LocalStore::SingleAddress() const {
+			return _singleAddress;
+		}
+
+		void LocalStore::SetSingleAddress(bool status) {
+			_singleAddress = status;
+		}
+
+		const std::string &LocalStore::GetxPrivKey() const {
+			return _xPrivKey;
+		}
+
+		void LocalStore::SetxPrivKey(const std::string &xprvkey) {
+			_xPrivKey = xprvkey;
+		}
+
+		const std::string &LocalStore::GetRequestPrivKey() const {
+			return _requestPrivKey;
+		}
+
+		void LocalStore::SetRequestPrivKey(const std::string &prvkey) {
+			_requestPrivKey = prvkey;
+		}
+
+		const std::string &LocalStore::GetMnemonic() const {
+			return _mnemonic;
+		}
+
+		void LocalStore::SetMnemonic(const std::string &mnemonic) {
+			_mnemonic = mnemonic;
+		}
+
+		const std::string &LocalStore::GetPassPhrase() const {
+			return _passphrase;
+		}
+
+		void LocalStore::SetPassPhrase(const std::string &passphrase) {
+			_passphrase = passphrase;
+		}
+
+		const std::string &LocalStore::GetxPubKey() const {
+			return _xPubKey;
+		}
+
+		void LocalStore::SetxPubKey(const std::string &xpubkey) {
+			_xPubKey = xpubkey;
+		}
+
+		const std::string &LocalStore::GetRequestPubKey() const {
+			return _requestPubKey;
+		}
+
+		void LocalStore::SetRequestPubKey(const std::string &pubkey) {
+			_requestPubKey = pubkey;
+		}
+
+		const std::string &LocalStore::GetOwnerPubKey() const {
+			return _ownerPubKey;
+		}
+
+		void LocalStore::SetOwnerPubKey(const std::string &ownerPubKey) {
+			_ownerPubKey = ownerPubKey;
+		}
+
+		const std::vector<PublicKeyRing> &LocalStore::GetPublicKeyRing() const {
+			return _publicKeyRing;
+		}
+
+		void LocalStore::AddPublicKeyRing(const PublicKeyRing &ring) {
+			_publicKeyRing.push_back(ring);
+		}
+
+		void LocalStore::SetPublicKeyRing(const std::vector<PublicKeyRing> &pubKeyRing) {
+			_publicKeyRing = pubKeyRing;
+		}
+
+		int LocalStore::GetM() const {
+			return _m;
+		}
+
+		void LocalStore::SetM(int m) {
+			_m = m;
+		}
+
+		int LocalStore::GetN() const {
+			return _n;
+		}
+
+		void LocalStore::SetN(int n) {
+			_n = n;
+		}
+
+		bool LocalStore::HasPassPhrase() const {
+			return _mnemonicHasPassphrase;
+		}
+
+		void LocalStore::SetHasPassPhrase(bool has) {
+			_mnemonicHasPassphrase = has;
+		}
+
+		bool LocalStore::Readonly() const {
+			return _readonly;
+		}
+
+		void LocalStore::SetReadonly(bool status) {
+			_readonly = status;
+		}
+
+		const std::vector<CoinInfoPtr> &LocalStore::GetSubWalletInfoList() const {
+			return _subWalletsInfoList;
+		}
+
+		void LocalStore::AddSubWalletInfoList(const CoinInfoPtr &info) {
+			_subWalletsInfoList.push_back(info);
+		}
+
+		void LocalStore::RemoveSubWalletInfo(const CoinInfoPtr &info) {
+			for (std::vector<CoinInfoPtr>::iterator it = _subWalletsInfoList.begin(); it != _subWalletsInfoList.end(); ++it) {
+				if (info->GetChainID() == (*it)->GetChainID()) {
+					_subWalletsInfoList.erase(it);
+					break;
+				}
+			}
+		}
+
+		void LocalStore::SetSubWalletInfoList(const std::vector<CoinInfoPtr> &infoList) {
+			_subWalletsInfoList = infoList;
+		}
+
+		void LocalStore::ClearSubWalletInfoList() {
+			_subWalletsInfoList.clear();
+		}
+
 	}
 }

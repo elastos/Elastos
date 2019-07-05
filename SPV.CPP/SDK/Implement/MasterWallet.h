@@ -47,9 +47,7 @@ namespace Elastos {
 		public:
 			virtual ~MasterWallet();
 
-			virtual void Save();
-
-			virtual void ClearLocal();
+			virtual void RemoveLocalStore();
 
 			bool IsEqual(const MasterWallet &wallet) const;
 
@@ -215,6 +213,8 @@ namespace Elastos {
 			virtual void startPeerManager(SubWallet *wallet);
 
 			virtual void stopPeerManager(SubWallet *wallet);
+
+			virtual void CloseAllSubWallets();
 
 		protected:
 			WalletMap _createdWallets;

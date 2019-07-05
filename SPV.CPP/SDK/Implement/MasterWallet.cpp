@@ -78,6 +78,8 @@ namespace Elastos {
 			_account = AccountPtr(new Account(_localStore));
 
 			_idAgentImpl = boost::shared_ptr<IDAgentImpl>(new IDAgentImpl(this));
+
+			_localStore->Save();
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -107,6 +109,8 @@ namespace Elastos {
 			} else {
 				_idAgentImpl = boost::shared_ptr<IDAgentImpl>(new IDAgentImpl(this));
 			}
+
+			_localStore->Save();
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -129,6 +133,8 @@ namespace Elastos {
 			} else {
 				_idAgentImpl = boost::shared_ptr<IDAgentImpl>(new IDAgentImpl(this));
 			}
+
+			_localStore->Save();
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -151,6 +157,8 @@ namespace Elastos {
 			_config = ConfigPtr(new Config(_rootPath));
 			_localStore = LocalStorePtr(new LocalStore(_dataPath + "/" + _id, publicKeys, m));
 			_account = AccountPtr(new Account(_localStore));
+
+			_localStore->Save();
 		}
 
 		MasterWallet::MasterWallet(const std::string &id, const std::string &xprv, const std::string &payPassword,
@@ -177,6 +185,8 @@ namespace Elastos {
 			_localStore->SetM(m);
 			_localStore->SetN(_localStore->GetPublicKeyRing().size());
 			_account = AccountPtr(new Account(_localStore));
+
+			_localStore->Save();
 		}
 
 		MasterWallet::MasterWallet(const std::string &id, const std::string &mnemonic,
@@ -206,6 +216,8 @@ namespace Elastos {
 			_localStore->SetM(m);
 			_localStore->SetN(_localStore->GetPublicKeyRing().size());
 			_account = AccountPtr(new Account(_localStore));
+
+			_localStore->Save();
 		}
 
 		MasterWallet::~MasterWallet() {
@@ -217,24 +229,11 @@ namespace Elastos {
 			return Mnemonic(boost::filesystem::path(rootPath)).Create(language, wordCount);
 		}
 
-		void MasterWallet::ClearLocal() {
+		void MasterWallet::RemoveLocalStore() {
 			boost::filesystem::path path = _rootPath;
 			path /= GetID();
 			if (boost::filesystem::exists(path))
 				boost::filesystem::remove_all(path);
-		}
-
-		void MasterWallet::Save() {
-
-			_localStore->ClearSubWalletInfoList();
-			for (WalletMap::iterator it = _createdWallets.begin(); it != _createdWallets.end(); ++it) {
-				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
-				if (subWallet == nullptr) continue;
-
-				_localStore->AddSubWalletInfoList(subWallet->GetCoinInfo());
-			}
-
-			_localStore->Save();
 		}
 
 		std::string MasterWallet::GetID() const {
@@ -294,39 +293,49 @@ namespace Elastos {
 				info->SetFeePerKB(chainConfig->FeePerKB());
 			info->SetVisibleAsset(Asset::GetELAAssetID());
 
+			_localStore->AddSubWalletInfoList(info);
 			SubWallet *subWallet = SubWalletFactoryMethod(info, chainConfig, this);
 			_createdWallets[chainID] = subWallet;
+			_localStore->Save();
 			startPeerManager(subWallet);
-			Save();
 
 			ArgInfo("r => {}, 0x{:x}", subWallet->GetInfoChainID(), (long)subWallet);
 
 			return subWallet;
 		}
 
+		void MasterWallet::CloseAllSubWallets() {
+			for (WalletMap::iterator it = _createdWallets.begin(); it != _createdWallets.end(); ) {
+				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
+				stopPeerManager(subWallet);
+
+				it = _createdWallets.erase(it);
+
+				delete subWallet;
+			}
+		}
+
 		void MasterWallet::DestroyWallet(ISubWallet *wallet) {
 			ErrorChecker::CheckParam(wallet == nullptr, Error::Wallet, "Destroy wallet can't be null");
 			ErrorChecker::CheckParam(_createdWallets.empty(), Error::Wallet, "There is no sub wallet in this wallet.");
 
+			SubWallet *subWallet = dynamic_cast<SubWallet *>(wallet);
 			ArgInfo("{} {}", _id, GetFunName());
+			ArgInfo("subWallet: {}, 0x{:x}", subWallet->GetInfoChainID(), (long)wallet);
 
-			if (std::find_if(_createdWallets.begin(), _createdWallets.end(),
-							 [wallet](const WalletMap::value_type &item) {
-								 return item.second == wallet;
-							 }) == _createdWallets.end())
-				ErrorChecker::CheckCondition(true, Error::Wallet,
-											 "Specified sub wallet is not belong to current master wallet.");
+			if (_createdWallets.find(subWallet->GetInfoChainID()) == _createdWallets.end())
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "Sub wallet did not created");
 
-			SubWallet *walletInner = dynamic_cast<SubWallet *>(wallet);
-			ArgInfo("subWallet: {}, 0x{:x}", walletInner->GetInfoChainID(), (long)wallet);
-			assert(walletInner != nullptr);
-			stopPeerManager(walletInner);
+			_localStore->RemoveSubWalletInfo(subWallet->_info);
+			_localStore->Save();
 
-			_createdWallets.erase(std::find_if(_createdWallets.begin(), _createdWallets.end(),
-											   [wallet](const WalletMap::value_type &item) {
-												   return item.second == wallet;
-											   }));
-			delete walletInner;
+			stopPeerManager(subWallet);
+			WalletMap::iterator it = _createdWallets.find(subWallet->GetInfoChainID());
+			_createdWallets.erase(it);
+
+			delete subWallet;
+
+			ArgInfo("{} {} done", _id, GetFunName());
 		}
 
 		std::string MasterWallet::GetPublicKey() const {
@@ -342,13 +351,6 @@ namespace Elastos {
 
 			_localStore->GetReadOnlyWalletJson(keyStore.WalletJson());
 
-			keyStore.WalletJson().ClearCoinInfo();
-			std::for_each(_createdWallets.begin(), _createdWallets.end(),
-						  [&keyStore](const WalletMap::value_type &item) {
-							  SubWallet *subWallet = dynamic_cast<SubWallet *>(item.second);
-							  keyStore.WalletJson().AddCoinInfo(subWallet->_info);
-						  });
-
 			return keyStore.ExportReadonly();
 		}
 
@@ -357,15 +359,6 @@ namespace Elastos {
 			KeyStore keyStore;
 
 			_localStore->GetWalletJson(keyStore.WalletJson(), payPassword);
-
-			keyStore.WalletJson().ClearCoinInfo();
-			std::for_each(_createdWallets.begin(), _createdWallets.end(),
-						  [&keyStore](const WalletMap::value_type &item) {
-							  SubWallet *subWallet = dynamic_cast<SubWallet *>(item.second);
-							  keyStore.WalletJson().AddCoinInfo(subWallet->_info);
-						  });
-
-			Save();
 
 			return keyStore.Export(backupPassword, true);
 		}
@@ -410,13 +403,15 @@ namespace Elastos {
 					defaultInfo->SetFeePerKB(mainchainConfig->FeePerKB());
 					defaultInfo->SetVisibleAsset(Asset::GetELAAssetID());
 
-
 					ISubWallet *subWallet = SubWalletFactoryMethod(defaultInfo, mainchainConfig, this);
 					SubWallet *subWalletImpl = dynamic_cast<SubWallet *>(subWallet);
 					ErrorChecker::CheckCondition(subWalletImpl == nullptr, Error::CreateSubWalletError,
 												 "Recover sub wallet error");
 					startPeerManager(subWalletImpl);
 					_createdWallets[subWallet->GetChainID()] = subWallet;
+
+					_localStore->AddSubWalletInfoList(defaultInfo);
+					_localStore->Save();
 				}
 			}
 
@@ -434,8 +429,6 @@ namespace Elastos {
 				startPeerManager(subWalletImpl);
 				_createdWallets[subWallet->GetChainID()] = subWallet;
 			}
-
-			Save();
 		}
 
 

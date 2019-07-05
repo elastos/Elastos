@@ -460,7 +460,7 @@ namespace Elastos {
 
 			if (_walletManager->GetAllTransactionsCount() == 1) {
 				_info->SetEaliestPeerTime(timestamp);
-				_parent->Save();
+				_parent->_localStore->Save();
 			}
 
 			for (size_t i = 0; i < hashes.size(); ++i) {

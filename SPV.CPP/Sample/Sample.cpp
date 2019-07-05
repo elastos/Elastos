@@ -453,6 +453,19 @@ static void RegisterID(const std::string &masterWalletID, const std::string &DID
 	PublishTransaction(subWallet, tx);
 }
 
+static void CloseWallet(const std::string &masterWalletID, const std::string &subWalletID) {
+	IMasterWallet *masterWalelt = manager->GetMasterWallet(masterWalletID);
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
+
+	masterWalelt->DestroyWallet(subWallet);
+}
+
+static void OpenWallet(const std::string &masterWalletID, const std::string &subWalletID) {
+	IMasterWallet *masterWalelt = manager->GetMasterWallet(masterWalletID);
+
+	masterWalelt->CreateSubWallet(subWalletID, 10000);
+}
+
 static void InitWallets() {
 	std::vector<IMasterWallet *> masterWallets = manager->GetAllMasterWallets();
 	if (masterWallets.size() == 0) {
@@ -700,6 +713,18 @@ int main(int argc, char *argv[]) {
 			SyncStart(gMasterWalletID, gMainchainSubWalletID);
 		} else if (c == 's') {
 			SyncStop(gMasterWalletID, gMainchainSubWalletID);
+		} else if (c == 'e') {
+			CloseWallet(gMasterWalletID, gMainchainSubWalletID);
+		} else if (c == 'o') {
+			CloseWallet(gMasterWalletID, gTokenchainSubWalletID);
+		} else if (c == 'i') {
+			CloseWallet(gMasterWalletID, gIDchainSubWalletID);
+		} else if (c == 'E') {
+			OpenWallet(gMasterWalletID, gMainchainSubWalletID);
+		} else if (c == 'O') {
+			OpenWallet(gMasterWalletID, gTokenchainSubWalletID);
+		} else if (c == 'I') {
+			OpenWallet(gMasterWalletID, gIDchainSubWalletID);
 		}
 	}
 

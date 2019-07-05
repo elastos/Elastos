@@ -46,67 +46,69 @@ namespace Elastos {
 
 			void Save();
 
-			bool SingleAddress() const { return _singleAddress; }
+			bool SingleAddress() const;
 
-			void SetSingleAddress(bool status) { _singleAddress = status; }
+			void SetSingleAddress(bool status);
 
-			const std::string &GetxPrivKey() const { return _xPrivKey; }
+			const std::string &GetxPrivKey() const;
 
-			void SetxPrivKey(const std::string &xprvkey) { _xPrivKey = xprvkey; }
+			void SetxPrivKey(const std::string &xprvkey);
 
-			const std::string &GetRequestPrivKey() const { return _requestPrivKey; }
+			const std::string &GetRequestPrivKey() const;
 
-			void SetRequestPrivKey(const std::string &prvkey) { _requestPrivKey = prvkey; }
+			void SetRequestPrivKey(const std::string &prvkey);
 
-			const std::string &GetMnemonic() const { return _mnemonic; }
+			const std::string &GetMnemonic() const;
 
-			void SetMnemonic(const std::string &mnemonic) { _mnemonic = mnemonic; }
+			void SetMnemonic(const std::string &mnemonic);
 
-			const std::string &GetPassPhrase() const { return _passphrase; }
+			const std::string &GetPassPhrase() const;
 
-			void SetPassPhrase(const std::string &passphrase) { _passphrase = passphrase; }
+			void SetPassPhrase(const std::string &passphrase);
 
-			const std::string &GetxPubKey() const { return _xPubKey; }
+			const std::string &GetxPubKey() const;
 
-			void SetxPubKey(const std::string &xpubkey) { _xPubKey = xpubkey; }
+			void SetxPubKey(const std::string &xpubkey);
 
-			const std::string &GetRequestPubKey() const { return _requestPubKey; }
+			const std::string &GetRequestPubKey() const;
 
-			void SetRequestPubKey(const std::string &pubkey) { _requestPubKey = pubkey; }
+			void SetRequestPubKey(const std::string &pubkey);
 
-			const std::string &GetOwnerPubKey() const { return _ownerPubKey; }
+			const std::string &GetOwnerPubKey() const;
 
-			void SetOwnerPubKey(const std::string &ownerPubKey) { _ownerPubKey = ownerPubKey; }
+			void SetOwnerPubKey(const std::string &ownerPubKey);
 
-			const std::vector<PublicKeyRing> &GetPublicKeyRing() const { return _publicKeyRing; }
+			const std::vector<PublicKeyRing> &GetPublicKeyRing() const;
 
-			void AddPublicKeyRing(const PublicKeyRing &ring) { _publicKeyRing.push_back(ring); }
+			void AddPublicKeyRing(const PublicKeyRing &ring);
 
-			void SetPublicKeyRing(const std::vector<PublicKeyRing> &pubKeyRing) { _publicKeyRing = pubKeyRing; }
+			void SetPublicKeyRing(const std::vector<PublicKeyRing> &pubKeyRing);
 
-			int GetM() const { return _m; }
+			int GetM() const;
 
-			void SetM(int m) { _m = m; }
+			void SetM(int m);
 
-			int GetN() const { return _n; }
+			int GetN() const;
 
-			void SetN(int n) { _n = n; }
+			void SetN(int n);
 
-			bool HasPassPhrase() const { return _mnemonicHasPassphrase; }
+			bool HasPassPhrase() const;
 
-			void SetHasPassPhrase(bool has) { _mnemonicHasPassphrase = has; }
+			void SetHasPassPhrase(bool has);
 
-			bool Readonly() const { return _readonly; }
+			bool Readonly() const;
 
-			void SetReadonly(bool status) { _readonly = status; }
+			void SetReadonly(bool status);
 
-			const std::vector<CoinInfoPtr> &GetSubWalletInfoList() const { return _subWalletsInfoList; }
+			const std::vector<CoinInfoPtr> &GetSubWalletInfoList() const;
 
-			void AddSubWalletInfoList(const CoinInfoPtr &info) { _subWalletsInfoList.push_back(info); }
+			void AddSubWalletInfoList(const CoinInfoPtr &info);
 
-			void SetSubWalletInfoList(const std::vector<CoinInfoPtr> &infoList) { _subWalletsInfoList = infoList; }
+			void RemoveSubWalletInfo(const CoinInfoPtr &info);
 
-			void ClearSubWalletInfoList() { _subWalletsInfoList.clear(); }
+			void SetSubWalletInfoList(const std::vector<CoinInfoPtr> &infoList);
+
+			void ClearSubWalletInfoList();
 
 		private:
 			TO_JSON(LocalStore);
