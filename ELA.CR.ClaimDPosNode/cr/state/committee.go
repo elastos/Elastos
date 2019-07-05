@@ -48,16 +48,14 @@ func (c *Committee) GetMembersCodes() [][]byte {
 
 func (c *Committee) ProcessBlock(block *types.Block,
 	confirm *payload.Confirm) {
-	c.mtx.RLock()
+	c.mtx.Lock()
+	defer c.mtx.Unlock()
 	isVoting := c.isInVotingPeriod(block.Height)
-	c.mtx.RUnlock()
 
 	if isVoting {
 		c.state.ProcessBlock(block, confirm)
 	}
 
-	c.mtx.Lock()
-	defer c.mtx.Unlock()
 	if c.shouldChange(block) {
 		checkpoint := CheckPoint{
 			KeyFrame: c.KeyFrame,
@@ -65,21 +63,23 @@ func (c *Committee) ProcessBlock(block *types.Block,
 
 		if err := c.changeCommitteeMembers(block.Height); err != nil {
 			log.Error("[ProcessBlock] change committee members error: ", err)
+			return
 		}
 
 		checkpoint.StateKeyFrame = *c.state.FinishVoting()
 		if c.store != nil {
 			if err := c.store.SaveCheckpoint(&checkpoint); err != nil {
 				log.Error("[ProcessBlock] save checkpoint error: ", err)
+				return
 			}
 		}
 	}
 }
 
 func (c *Committee) RollbackTo(height uint32) error {
-	c.mtx.RLock()
+	c.mtx.Lock()
+	defer c.mtx.Unlock()
 	lastCommitHeight := c.LastCommitteeHeight
-	c.mtx.RUnlock()
 
 	if height >= lastCommitHeight {
 		if height > c.state.history.Height() {
@@ -97,6 +97,7 @@ func (c *Committee) RollbackTo(height uint32) error {
 		if err != nil {
 			return err
 		}
+
 		c.state.StateKeyFrame = point.StateKeyFrame
 		c.KeyFrame = point.KeyFrame
 	}
