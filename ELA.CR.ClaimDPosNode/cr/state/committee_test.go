@@ -87,55 +87,55 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 	}
 }
 
-func TestCommittee_isInVotingPeriod(t *testing.T) {
+func TestCommittee_IsInVotingPeriod(t *testing.T) {
 	committee := NewCommittee(&config.DefaultParams)
 
 	// 0
-	assert.False(t, committee.isInVotingPeriod(0))
+	assert.False(t, committee.IsInVotingPeriod(0))
 
 	// < CRCommitteeStartHeight - CRVotingPeriod
-	assert.False(t, committee.isInVotingPeriod(
+	assert.False(t, committee.IsInVotingPeriod(
 		config.DefaultParams.CRCommitteeStartHeight-
 			config.DefaultParams.CRVotingPeriod-1))
 
 	// CRCommitteeStartHeight - CRVotingPeriod
-	assert.True(t, committee.isInVotingPeriod(
+	assert.True(t, committee.IsInVotingPeriod(
 		config.DefaultParams.CRCommitteeStartHeight-
 			config.DefaultParams.CRVotingPeriod))
 
 	// [CRCommitteeStartHeight - CRVotingPeriod, CRCommitteeStartHeight)
-	assert.True(t, committee.isInVotingPeriod(
+	assert.True(t, committee.IsInVotingPeriod(
 		config.DefaultParams.CRCommitteeStartHeight-
 			config.DefaultParams.CRVotingPeriod+1))
 
 	// CRCommitteeStartHeight
-	assert.False(t, committee.isInVotingPeriod(
+	assert.False(t, committee.IsInVotingPeriod(
 		config.DefaultParams.CRCommitteeStartHeight))
 
 	// change to first committee
 	committee.LastCommitteeHeight = config.DefaultParams.CRCommitteeStartHeight
 
 	// < CRCommitteeStartHeight + CRDutyPeriod - CRVotingPeriod
-	assert.False(t, committee.isInVotingPeriod(
+	assert.False(t, committee.IsInVotingPeriod(
 		config.DefaultParams.CRCommitteeStartHeight+
 			config.DefaultParams.CRDutyPeriod-config.DefaultParams.
 			CRVotingPeriod-1))
 
 	// CRCommitteeStartHeight + CRDutyPeriod - CRVotingPeriod
-	assert.True(t, committee.isInVotingPeriod(
+	assert.True(t, committee.IsInVotingPeriod(
 		config.DefaultParams.CRCommitteeStartHeight+
 			config.DefaultParams.CRDutyPeriod-config.DefaultParams.
 			CRVotingPeriod))
 
 	// [CRCommitteeStartHeight + CRDutyPeriod - CRVotingPeriod,
 	// CRCommitteeStartHeight + CRDutyPeriod)
-	assert.True(t, committee.isInVotingPeriod(
+	assert.True(t, committee.IsInVotingPeriod(
 		config.DefaultParams.CRCommitteeStartHeight+
 			config.DefaultParams.CRDutyPeriod-config.DefaultParams.
 			CRVotingPeriod+1))
 
 	// CRCommitteeStartHeight + CRDutyPeriod
-	assert.False(t, committee.isInVotingPeriod(
+	assert.False(t, committee.IsInVotingPeriod(
 		config.DefaultParams.CRCommitteeStartHeight+
 			config.DefaultParams.CRDutyPeriod))
 
@@ -144,26 +144,26 @@ func TestCommittee_isInVotingPeriod(t *testing.T) {
 		CRCommitteeStartHeight + config.DefaultParams.CRDutyPeriod
 
 	// < CRCommitteeStartHeight + CRDutyPeriod * 2 - CRVotingPeriod
-	assert.False(t, committee.isInVotingPeriod(
+	assert.False(t, committee.IsInVotingPeriod(
 		config.DefaultParams.CRCommitteeStartHeight+
 			config.DefaultParams.CRDutyPeriod*2-config.DefaultParams.
 			CRVotingPeriod-1))
 
 	// CRCommitteeStartHeight + CRDutyPeriod * 2 - CRVotingPeriod
-	assert.True(t, committee.isInVotingPeriod(
+	assert.True(t, committee.IsInVotingPeriod(
 		config.DefaultParams.CRCommitteeStartHeight+
 			config.DefaultParams.CRDutyPeriod*2-config.DefaultParams.
 			CRVotingPeriod))
 
 	// [CRCommitteeStartHeight + CRDutyPeriod - CRVotingPeriod,
 	// CRCommitteeStartHeight + CRDutyPeriod)
-	assert.True(t, committee.isInVotingPeriod(
+	assert.True(t, committee.IsInVotingPeriod(
 		config.DefaultParams.CRCommitteeStartHeight+
 			config.DefaultParams.CRDutyPeriod*2-config.DefaultParams.
 			CRVotingPeriod+1))
 
 	// CRCommitteeStartHeight + CRDutyPeriod * 2
-	assert.False(t, committee.isInVotingPeriod(
+	assert.False(t, committee.IsInVotingPeriod(
 		config.DefaultParams.CRCommitteeStartHeight+
 			config.DefaultParams.CRDutyPeriod*2))
 }

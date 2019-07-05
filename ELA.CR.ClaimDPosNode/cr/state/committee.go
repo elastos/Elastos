@@ -24,6 +24,12 @@ func (c *Committee) GetState() *State {
 	return c.state
 }
 
+func (c *Committee) IsInVotingPeriod(height uint32) bool {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.isInVotingPeriod(height)
+}
+
 func (c *Committee) GetMembersDIDs() []common.Uint168 {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()

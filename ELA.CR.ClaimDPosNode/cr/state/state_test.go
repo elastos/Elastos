@@ -5,6 +5,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/utils"
 
@@ -274,6 +275,83 @@ func TestState_ProcessBlock_MixedCRProcessing(t *testing.T) {
 	assert.Equal(t, 20, len(state.GetCandidates(Active)))
 	assert.Equal(t, 3, len(state.GetCandidates(Canceled)))
 	assert.Equal(t, 2, len(state.GetCandidates(Returned)))
+}
+
+func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
+	keyframe := randomStateKeyFrame(5, true)
+	state := State{
+		StateKeyFrame: *keyframe,
+		history:       utils.NewHistory(maxHistoryCapacity),
+	}
+	height := uint32(1)
+
+	activeCodes := make([][]byte, 0, 5)
+	for _, v := range keyframe.ActivityCandidates {
+		v.votes = 0
+		activeCodes = append(activeCodes, v.info.Code)
+	}
+
+	// vote for the active candidates
+	voteTx := mockNewVoteTx(activeCodes)
+	state.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: height,
+		},
+		Transactions: []*types.Transaction{voteTx},
+	}, nil)
+	height++
+
+	for i, v := range activeCodes {
+		candidate := state.GetCandidate(v)
+		assert.Equal(t, common.Fixed64((i+1)*10), candidate.votes)
+	}
+
+	// cancel votes the active candidates
+	state.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: height,
+		},
+		Transactions: []*types.Transaction{
+			{
+				Inputs: []*types.Input{
+					{
+						Previous: *types.NewOutPoint(voteTx.Hash(), uint16(0)),
+					},
+				},
+			},
+		},
+	}, nil)
+
+	for _, v := range activeCodes {
+		candidate := state.GetCandidate(v)
+		assert.Equal(t, common.Fixed64(0), candidate.votes)
+	}
+}
+
+func mockNewVoteTx(programCodes [][]byte) *types.Transaction {
+	candidateVotes := make([]outputpayload.CandidateVotes, 0, len(programCodes))
+	for i, pk := range programCodes {
+		candidateVotes = append(candidateVotes,
+			outputpayload.CandidateVotes{
+				Candidate: pk,
+				Votes:     common.Fixed64((i + 1) * 10)})
+	}
+	output := &types.Output{
+		Value: 100,
+		Type:  types.OTVote,
+		Payload: &outputpayload.VoteOutput{
+			Version: outputpayload.VoteProducerAndCRVersion,
+			Contents: []outputpayload.VoteContent{
+				{outputpayload.Delegate, candidateVotes},
+			},
+		},
+	}
+
+	return &types.Transaction{
+		Version: types.TxVersion09,
+		TxType:  types.TransferAsset,
+		Outputs: []*types.Output{output},
+	}
 }
 
 func generateRegisterCR(code []byte, did common.Uint168,

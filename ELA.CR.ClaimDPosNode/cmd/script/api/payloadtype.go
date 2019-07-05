@@ -615,21 +615,20 @@ func newRegisterCR(L *lua.LState) int {
 		os.Exit(1)
 	}
 
-	ct, err := contract.CreateStandardContract(pk)
+	code, err := contract.CreateStandardRedeemScript(pk)
 	if err != nil {
 		fmt.Println("wrong cr public key")
 		os.Exit(1)
 	}
 
-	hash, err := contract.PublicKeyToDepositProgramHash(publicKey)
+	ct, err := contract.CreateCRDIDContractByCode(code)
 	if err != nil {
 		fmt.Println("wrong cr public key")
 		os.Exit(1)
 	}
-
 	registerCR := &payload.CRInfo{
-		Code:     ct.Code,
-		DID:      *hash,
+		Code:     code,
+		DID:      *ct.ToProgramHash(),
 		NickName: nickName,
 		Url:      url,
 		Location: uint64(location),
@@ -721,21 +720,21 @@ func newUpdateCR(L *lua.LState) int {
 		os.Exit(1)
 	}
 
-	ct, err := contract.CreateStandardContract(pk)
+	code, err := contract.CreateStandardRedeemScript(pk)
 	if err != nil {
 		fmt.Println("wrong cr public key")
 		os.Exit(1)
 	}
 
-	hash, err := contract.PublicKeyToDepositProgramHash(publicKey)
+	ct, err := contract.CreateCRDIDContractByCode(code)
 	if err != nil {
 		fmt.Println("wrong cr public key")
 		os.Exit(1)
 	}
 
-	registerCR := &payload.CRInfo{
+	updateCR := &payload.CRInfo{
 		Code:     ct.Code,
-		DID:      *hash,
+		DID:      *ct.ToProgramHash(),
 		NickName: nickName,
 		Url:      url,
 		Location: uint64(location),
@@ -743,7 +742,7 @@ func newUpdateCR(L *lua.LState) int {
 
 	if needSign {
 		rpSignBuf := new(bytes.Buffer)
-		err = registerCR.SerializeUnsigned(rpSignBuf, payload.ProducerInfoVersion)
+		err = updateCR.SerializeUnsigned(rpSignBuf, payload.ProducerInfoVersion)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -759,11 +758,11 @@ func newUpdateCR(L *lua.LState) int {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		registerCR.Signature = rpSig
+		updateCR.Signature = rpSig
 	}
 
 	ud := L.NewUserData()
-	ud.Value = registerCR
+	ud.Value = updateCR
 	L.SetMetatable(ud, L.GetTypeMetatable(luaUpdateCRName))
 	L.Push(ud)
 
