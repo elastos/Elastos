@@ -202,7 +202,7 @@ func (evm *EVM) Call(caller ContractRef, addr common.Address, input []byte, gas 
 		fee, addr, output := spv.FindOutputFeeAndaddressByTxHash(txhash)
 		if (completetxhash == common.Hash{}) && addr != blackaddr && output.Cmp(new(big.Int)) > 0 {
 			to = AccountRef(addr)
-			value = output
+			value = new(big.Int).Sub(output, fee)
 			topics := make([]common.Hash, 4)
 			topics[0] = common.HexToHash("0x09f15c376272c265d7fcb47bf57d8f84a928195e6ea156d12f5a3cd05b8fed5a")
 			topics[1] = common.HexToHash(txhash)

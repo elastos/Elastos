@@ -218,7 +218,6 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 						evm.StateDB.RevertToSnapshot(snapshot)
 						return
 					} else {
-						st.state.SubBalance(toaddr, fee)
 						st.state.AddBalance(st.msg.From(), fee)
 					}
 
