@@ -23,8 +23,6 @@ namespace Elastos {
 
 			virtual ~MasterWalletManager();
 
-			void SaveConfigs();
-
 			virtual std::string GenerateMnemonic(const std::string &language, int wordCount = 12) const;
 
 			virtual std::string GetMultiSignPubKey(const std::string &phrase, const std::string &phrasePassword) const;
@@ -116,8 +114,6 @@ namespace Elastos {
 			MasterWalletManager(const MasterWalletMap &walletMap, const std::string &rootPath, const std::string &dataPath);
 
 			void initMasterWallets();
-
-			void removeWallet(const std::string &masterWalletId, bool saveMaster = true);
 
 			void checkRedundant(IMasterWallet *wallet) const;
 
