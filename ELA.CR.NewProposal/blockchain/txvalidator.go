@@ -172,18 +172,18 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 		return Success
 
 	case RegisterCR:
-		if err := b.checkRegisterCRTransaction(txn); err != nil {
+		if err := b.checkRegisterCRTransaction(txn, blockHeight); err != nil {
 			log.Warn("[checkRegisterCRTransaction],", err)
 			return ErrTransactionPayload
 		}
 
 	case UpdateCR:
-		if err := b.checkUpdateCRTransaction(txn); err != nil {
+		if err := b.checkUpdateCRTransaction(txn, blockHeight); err != nil {
 			log.Warn("[ checkUpdateCRTransaction],", err)
 		}
 
 	case UnregisterCR:
-		if err := b.checkUnRegisterCRTransaction(txn); err != nil {
+		if err := b.checkUnRegisterCRTransaction(txn, blockHeight); err != nil {
 			log.Warn("[checkRegisterCRTransaction],", err)
 		}
 	}
@@ -1248,7 +1248,8 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 	return nil
 }
 
-func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction) error {
+func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
+	blockHeight uint32) error {
 	info, ok := txn.Payload.(*payload.CRInfo)
 	if !ok {
 		return errors.New("invalid payload")
@@ -1261,6 +1262,10 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction) error {
 	// check url
 	if err := checkStringField(info.Url, "Url"); err != nil {
 		return err
+	}
+
+	if !b.crCommittee.IsInVotingPeriod(blockHeight) {
+		return errors.New("should create tx during voting period")
 	}
 
 	if b.crCommittee.GetState().ExistCandidateByNickname(info.NickName) {
@@ -1316,7 +1321,8 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction) error {
 	return nil
 }
 
-func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction) error {
+func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction,
+	blockHeight uint32) error {
 	info, ok := txn.Payload.(*payload.CRInfo)
 	if !ok {
 		return errors.New("invalid payload")
@@ -1351,6 +1357,10 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction) error {
 		return err
 	}
 
+	if !b.crCommittee.IsInVotingPeriod(blockHeight) {
+		return errors.New("should create tx during voting period")
+	}
+
 	cr := b.crCommittee.GetState().GetCandidate(info.Code)
 	if cr == nil {
 		return errors.New("updating unknown CR")
@@ -1368,10 +1378,15 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction) error {
 	return nil
 }
 
-func (b *BlockChain) checkUnRegisterCRTransaction(txn *Transaction) error {
+func (b *BlockChain) checkUnRegisterCRTransaction(txn *Transaction,
+	blockHeight uint32) error {
 	info, ok := txn.Payload.(*payload.UnregisterCR)
 	if !ok {
 		return errors.New("invalid payload")
+	}
+
+	if !b.crCommittee.IsInVotingPeriod(blockHeight) {
+		return errors.New("should create tx during voting period")
 	}
 
 	cr := b.crCommittee.GetState().GetCandidate(info.Code)

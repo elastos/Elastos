@@ -1147,33 +1147,39 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 		Payload:     new(outputpayload.DefaultOutput),
 	}}
 
+	votingHeight := config.DefaultParams.CRCommitteeStartHeight -
+		config.DefaultParams.CRVotingPeriod
+
 	s.Chain.crCommittee.GetState().Nicknames[nickName1] = struct{}{}
-	err = s.Chain.checkRegisterCRTransaction(txn)
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
 	s.EqualError(err, "nick name nickname 1 already inuse")
 
 	delete(s.Chain.crCommittee.GetState().Nicknames, nickName1)
-	err = s.Chain.checkRegisterCRTransaction(txn)
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
 	s.NoError(err)
+
+	err = s.Chain.checkRegisterCRTransaction(txn, 0)
+	s.EqualError(err, "should create tx during voting period")
 
 	s.Chain.crCommittee.GetState().CodeDIDMap[codeStr1] = *did1
 	s.Chain.crCommittee.GetState().ActivityCandidates[*did1] = &crstate.Candidate{}
-	err = s.Chain.checkRegisterCRTransaction(txn)
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
 	s.EqualError(err, "did "+
 		"67ae53989e21c3212dd9bfed6daeb56874782502dd already exist")
 
 	delete(s.Chain.crCommittee.GetState().CodeDIDMap, codeStr1)
-	err = s.Chain.checkRegisterCRTransaction(txn)
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
 	s.NoError(err)
 
 	// Give an invalid code in payload
 	txn.Payload.(*payload.CRInfo).Code = []byte{}
-	err = s.Chain.checkRegisterCRTransaction(txn)
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
 	s.EqualError(err, "code is nil")
 
 	// Give an invalid DID in payload
 	txn.Payload.(*payload.CRInfo).Code = code1
 	txn.Payload.(*payload.CRInfo).DID = common.Uint168{1, 2, 3}
-	err = s.Chain.checkRegisterCRTransaction(txn)
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
 	s.EqualError(err, "invalid did address")
 
 	// Give a mismatching code and DID in payload
@@ -1185,21 +1191,21 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	rcSig2, err := crypto.Sign(privateKey1, rcSignBuf2.Bytes())
 	s.NoError(err)
 	txn.Payload.(*payload.CRInfo).Signature = rcSig2
-	err = s.Chain.checkRegisterCRTransaction(txn)
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
 	s.EqualError(err, "invalid did address")
 
 	// Invalidates the signature in payload
 	txn.Payload.(*payload.CRInfo).Code = code1
 	txn.Payload.(*payload.CRInfo).DID = *did2
 	txn.Payload.(*payload.CRInfo).Signature = rcSig1
-	err = s.Chain.checkRegisterCRTransaction(txn)
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
 	s.EqualError(err, "invalid did address")
 
 	// Give an invalid url in payload
 	txn.Payload.(*payload.CRInfo).Code = code1
 	txn.Payload.(*payload.CRInfo).DID = *did1
 	txn.Payload.(*payload.CRInfo).Url = ""
-	err = s.Chain.checkRegisterCRTransaction(txn)
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
 	s.EqualError(err, "Field Url has invalid string length.")
 
 	// Give a mismatching deposit address
@@ -1220,7 +1226,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 		OutputLock:  0,
 		ProgramHash: *hash2,
 	}}
-	err = s.Chain.checkRegisterCRTransaction(txn)
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
 	s.EqualError(err, "deposit address does not match the code in payload")
 
 	// Give a insufficient deposit coin
@@ -1230,7 +1236,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 		OutputLock:  0,
 		ProgramHash: *hash1,
 	}}
-	err = s.Chain.checkRegisterCRTransaction(txn)
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
 	s.EqualError(err, "producer deposit amount is insufficient")
 
 	// Multi deposit addresses
@@ -1247,7 +1253,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 			OutputLock:  0,
 			ProgramHash: *hash1,
 		}}
-	err = s.Chain.checkRegisterCRTransaction(txn)
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
 	s.EqualError(err, "there must be only one deposit address in outputs")
 }
 
