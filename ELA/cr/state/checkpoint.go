@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/utils"
 )
@@ -27,6 +28,7 @@ type StateKeyFrame struct {
 	ActivityCandidates map[common.Uint168]*Candidate
 	CanceledCandidates map[common.Uint168]*Candidate
 	Nicknames          map[string]struct{}
+	Votes              map[string]*types.Output
 }
 
 // CheckPoint hold all CR related states to recover from scratch.
@@ -125,7 +127,7 @@ func (k *StateKeyFrame) Serialize(w io.Writer) (err error) {
 		return
 	}
 
-	return
+	return k.serializeVotes(w, k.Votes)
 }
 
 func (k *StateKeyFrame) Deserialize(r io.Reader) (err error) {
@@ -146,6 +148,10 @@ func (k *StateKeyFrame) Deserialize(r io.Reader) (err error) {
 	}
 
 	if k.Nicknames, err = utils.DeserializeStringSet(r); err != nil {
+		return
+	}
+
+	if k.Votes, err = k.deserializeVotes(r); err != nil {
 		return
 	}
 	return
@@ -228,6 +234,45 @@ func (k *StateKeyFrame) deserializeCandidateMap(
 	return
 }
 
+func (k *StateKeyFrame) serializeVotes(w io.Writer,
+	vmap map[string]*types.Output) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(vmap))); err != nil {
+		return
+	}
+	for k, v := range vmap {
+		if err = common.WriteVarString(w, k); err != nil {
+			return
+		}
+		if err = v.Serialize(w, types.TxVersion09);
+			err != nil {
+			return
+		}
+	}
+	return
+}
+
+func (k *StateKeyFrame) deserializeVotes(r io.Reader) (
+	vmap map[string]*types.Output, err error) {
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+	vmap = make(map[string]*types.Output)
+	for i := uint64(0); i < count; i++ {
+		var k string
+		if k, err = common.ReadVarString(r); err != nil {
+			return
+		}
+		v := types.Output{}
+		if err = v.Deserialize(r, types.TxVersion09);
+			err != nil {
+			return
+		}
+		vmap[k] = &v
+	}
+	return
+}
+
 // Snapshot will create a new StateKeyFrame object and deep copy all related data.
 func (k *StateKeyFrame) Snapshot() *StateKeyFrame {
 	state := NewStateKeyFrame()
@@ -236,6 +281,7 @@ func (k *StateKeyFrame) Snapshot() *StateKeyFrame {
 	state.ActivityCandidates = copyCandidateMap(k.ActivityCandidates)
 	state.CanceledCandidates = copyCandidateMap(k.CanceledCandidates)
 	state.Nicknames = utils.CopyStringSet(k.Nicknames)
+	state.Votes = copyVotes(k.Votes)
 
 	return state
 }
@@ -247,6 +293,7 @@ func NewStateKeyFrame() *StateKeyFrame {
 		ActivityCandidates: make(map[common.Uint168]*Candidate),
 		CanceledCandidates: make(map[common.Uint168]*Candidate),
 		Nicknames:          make(map[string]struct{}),
+		Votes:              make(map[string]*types.Output),
 	}
 }
 
@@ -283,6 +330,15 @@ func copyCodeAddressMap(src map[string]common.Uint168) (
 	dst = map[string]common.Uint168{}
 	for k, v := range src {
 		dst[k] = v
+	}
+	return
+}
+
+func copyVotes(src map[string]*types.Output) (dst map[string]*types.Output) {
+	dst = map[string]*types.Output{}
+	for k, v := range src {
+		o := *v
+		dst[k] = &o
 	}
 	return
 }

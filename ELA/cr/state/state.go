@@ -6,6 +6,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/utils"
 )
@@ -173,7 +174,12 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 
 	case types.UnregisterCR:
 		s.unregisterCR(tx.Payload.(*payload.UnregisterCR), height)
+
+	case types.TransferAsset:
+		s.processVotes(tx, height)
 	}
+
+	s.processCancelVotes(tx, height)
 }
 
 // registerCR handles the register CR transaction.
@@ -250,6 +256,78 @@ func (s *State) updateCandidateInfo(origin *payload.CRInfo, update *payload.CRIn
 	}
 
 	candidate.info = *update
+}
+
+// processVotes takes a transaction, if the transaction including any vote
+// inputs or outputs, validate and update CR votes.
+func (s *State) processVotes(tx *types.Transaction, height uint32) {
+	if tx.Version >= types.TxVersion09 {
+		for i, output := range tx.Outputs {
+			if output.Type == types.OTVote {
+				op := types.NewOutPoint(tx.Hash(), uint16(i))
+				s.Votes[op.ReferKey()] = output
+				s.processVoteOutput(output, height)
+			}
+		}
+	}
+}
+
+// processVoteOutput takes a transaction output with vote payload.
+func (s *State) processVoteOutput(output *types.Output, height uint32) {
+	p := output.Payload.(*outputpayload.VoteOutput)
+	for _, vote := range p.Contents {
+		for _, cv := range vote.CandidateVotes {
+			candidate := s.getCandidate(cv.Candidate)
+			if candidate == nil {
+				continue
+			}
+
+			switch vote.VoteType {
+			case outputpayload.CRC:
+				v := cv.Votes
+				s.history.Append(height, func() {
+					candidate.votes += v
+				}, func() {
+					candidate.votes -= v
+				})
+			}
+		}
+	}
+}
+
+// processCancelVotes takes a transaction, if the transaction takes a previous
+// vote output then try to subtract the vote
+func (s *State) processCancelVotes(tx *types.Transaction, height uint32) {
+	for _, input := range tx.Inputs {
+		referKey := input.ReferKey()
+		output, ok := s.Votes[referKey]
+		if ok {
+			s.processVoteCancel(output, height)
+			s.Votes[referKey] = nil
+		}
+	}
+}
+
+// processVoteCancel takes a previous vote output and decrease CR votes.
+func (s *State) processVoteCancel(output *types.Output, height uint32) {
+	p := output.Payload.(*outputpayload.VoteOutput)
+	for _, vote := range p.Contents {
+		for _, cv := range vote.CandidateVotes {
+			producer := s.getCandidate(cv.Candidate)
+			if producer == nil {
+				continue
+			}
+			switch vote.VoteType {
+			case outputpayload.Delegate:
+				v := cv.Votes
+				s.history.Append(height, func() {
+					producer.votes -= v
+				}, func() {
+					producer.votes += v
+				})
+			}
+		}
+	}
 }
 
 func (s *State) getCandidateByDID(did common.Uint168) *Candidate {

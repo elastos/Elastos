@@ -81,3 +81,11 @@ func randomUint168() *common.Uint168 {
 
 	return result
 }
+
+func randomUint256() *common.Uint256 {
+	randBytes := make([]byte, 32)
+	rand.Read(randBytes)
+	result, _ := common.Uint256FromBytes(randBytes)
+
+	return result
+}

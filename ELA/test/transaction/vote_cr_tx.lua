@@ -19,7 +19,7 @@ local fee = 0.001
 local vote_type = 1
 -- candidate need to be code
 local vote_candidates = {'21039d419986f5c2bf6f2a6f59f0b6e111735b66570fb22107a038bca3e1005d1920ac'}
-local vote_candidate_votes = {'1.0'}
+local vote_candidate_votes = {'0.1'}
 
 -- payload
 local ta = transferasset.new()
@@ -36,7 +36,7 @@ local vote_content = votecontent.new(vote_type, vote_candidates, vote_candidate_
 print("vote_content", vote_content:get())
 
 -- outputpayload
-local vote_output = voteoutput.new(0, { vote_content })
+local vote_output = voteoutput.new(1, { vote_content })
 print("vote_output", vote_output:get())
 
 local default_output = defaultoutput.new()

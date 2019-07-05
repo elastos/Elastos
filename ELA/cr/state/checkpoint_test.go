@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -48,7 +50,8 @@ func TestStateKeyFrame_Snapshot(t *testing.T) {
 
 func stateKeyframeEqual(first *StateKeyFrame, second *StateKeyFrame) bool {
 	if len(first.Nicknames) != len(second.Nicknames) ||
-		len(first.CodeDIDMap) != len(second.CodeDIDMap) {
+		len(first.CodeDIDMap) != len(second.CodeDIDMap) ||
+		len(first.Votes) != len(second.Votes) {
 		return false
 	}
 
@@ -65,6 +68,19 @@ func stateKeyframeEqual(first *StateKeyFrame, second *StateKeyFrame) bool {
 		}
 
 		if !v.IsEqual(v2) {
+			return false
+		}
+	}
+
+	for k, v := range first.Votes {
+		v2, ok := second.Votes[k]
+		if !ok {
+			return false
+		}
+
+		if v.Type != v2.Type || v.Value != v2.Value ||
+			!v.ProgramHash.IsEqual(v2.ProgramHash) ||
+			v.OutputLock != v2.OutputLock || !v.AssetID.IsEqual(v2.AssetID) {
 			return false
 		}
 	}
@@ -177,5 +193,32 @@ func randomStateKeyFrame(size int, hasPending bool) *StateKeyFrame {
 		frame.CanceledCandidates[did] = candidate
 		frame.Nicknames[nickname] = struct{}{}
 	}
+	for i := 0; i < size; i++ {
+		frame.Votes[randomString()] = randomOutputs()
+	}
 	return frame
+}
+
+func randomOutputs() *types.Output {
+	return &types.Output{
+		AssetID:     *randomUint256(),
+		Value:       common.Fixed64(rand.Int63()),
+		OutputLock:  0,
+		ProgramHash: *randomUint168(),
+		Type:        types.OTVote,
+		Payload: &outputpayload.VoteOutput{
+			Version: outputpayload.VoteProducerAndCRVersion,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType: outputpayload.CRC,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{
+							Candidate: randomBytes(34),
+							Votes:     common.Fixed64(rand.Int63()),
+						},
+					},
+				},
+			},
+		},
+	}
 }

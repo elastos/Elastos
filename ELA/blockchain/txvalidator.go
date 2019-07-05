@@ -358,10 +358,9 @@ func getProducerPublicKeysMap(producers []*state.Producer) map[string]struct{} {
 
 func getCRCodesMap(crs []*crstate.Candidate) map[string]struct{} {
 	codes := make(map[string]struct{})
-	// todo get code from candidate info
-	//for _, c := range crs {
-	//	codes[common.BytesToHexString(c.Info().Code)] = struct{}{}
-	//}
+	for _, c := range crs {
+		codes[common.BytesToHexString(c.Info().Code)] = struct{}{}
+	}
 	return codes
 }
 
