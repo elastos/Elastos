@@ -328,6 +328,16 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     }
 
     @Override
+    public void OnAssetRegistered(JSONObject jsonObject) {
+
+    }
+
+    @Override
+    public void OnConnectStatusChanged(JSONObject jsonObject) {
+
+    }
+
+    @Override
     public void onRefresh(RefreshLayout refreshLayout) {
         List<org.elastos.wallet.ela.db.table.SubWallet> assetList = listMap.get(wallet.getWalletId());
         for (org.elastos.wallet.ela.db.table.SubWallet assetsItemEntity : assetList) {
