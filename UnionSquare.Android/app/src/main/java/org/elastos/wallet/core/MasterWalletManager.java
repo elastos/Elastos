@@ -202,10 +202,6 @@ public class MasterWalletManager {
         return GetMultiSignPubKeyWithPrivKey(mInstance, privKey);
     }
 
-    public void SaveConfigs() {
-        SaveConfigs(mInstance);
-    }
-
     public MasterWallet CreateMultiSignMasterWallet(String masterWalletID, String coSigners,
                                                     int requiredSignCount, long timestamp) throws WalletException {
 
@@ -278,8 +274,6 @@ public class MasterWalletManager {
     public String GetVersion() {
         return GetVersion(mInstance);
     }
-
-    private native void SaveConfigs(long instance);
 
     private native String GenerateMnemonic(long instance, String language, int wordCount);
 

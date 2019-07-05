@@ -665,17 +665,6 @@ GetMasterWallet(JNIEnv *env, jobject clazz, jlong instance, jstring jMasterWalle
     return (jlong) masterWallet;
 }
 
-#define JNI_SaveConfigs "(J)V"
-
-static void JNICALL SaveConfigs(JNIEnv *env, jobject clazz, jlong jWalletMgr) {
-    MasterWalletManager *walletManager = (MasterWalletManager *) jWalletMgr;
-    try {
-        walletManager->SaveConfigs();
-    } catch (const std::exception &e) {
-        ThrowWalletException(env, e.what());
-    }
-}
-
 #define JNI_InitMasterWalletManager "(Ljava/lang/String;Ljava/lang/String;)J"
 
 static jlong JNICALL InitMasterWalletManager(JNIEnv *env, jobject clazz, jstring jrootPath, jstring jdataPath) {
@@ -711,7 +700,6 @@ static void JNICALL DisposeNative(JNIEnv *env, jobject clazz, jlong instance) {
 }
 
 static const JNINativeMethod methods[] = {
-        REGISTER_METHOD(SaveConfigs),
         REGISTER_METHOD(GenerateMnemonic),
         REGISTER_METHOD(GetMultiSignPubKeyWithMnemonic),
         REGISTER_METHOD(GetMultiSignPubKeyWithPrivKey),

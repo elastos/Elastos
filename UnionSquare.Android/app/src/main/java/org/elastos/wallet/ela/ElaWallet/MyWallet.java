@@ -85,10 +85,6 @@ public class MyWallet {
 
     public void onPause(boolean multitasking) {
         Log.d(TAG, "onPause");
-        if (mMasterWalletManager != null) {
-            mMasterWalletManager.SaveConfigs();
-        }
-
     }
 
     /**
