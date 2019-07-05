@@ -34,9 +34,14 @@ type OutputPayloadInfo interface{}
 
 type DefaultOutputInfo struct{}
 
+type CandidateVotes struct {
+	Candidate string `json:"candidate"`
+	Votes     string `json:"votes"`
+}
+
 type VoteContentInfo struct {
 	VoteType       outputpayload.VoteType `json:"votetype"`
-	CandidatesInfo []string               `json:"candidates"`
+	CandidatesInfo []CandidateVotes       `json:"candidates"`
 }
 
 type VoteOutputInfo struct {
