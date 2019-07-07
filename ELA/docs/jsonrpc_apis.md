@@ -782,7 +782,20 @@ result sample:
 #### getmininginfo
 
 description: returns a json object containing mining-related information 
+
 parameters: none
+
+results:
+
+| name              | type      | description                                  |
+| ----------------- | --------- | -------------------------------------------- |
+| blocks            | integer   | the current block |
+| currentblocktx    | integer   | the number of block transactions of the last assembled block |
+| difficulty        | string    | the current difficulty |
+| networkhashps     | string    | the network hashes per second |
+| pooledtx          | integer   | the size of the mempool |
+| chain             | string    | current network name |
+
 
 argument sample:
 ```json
