@@ -44,7 +44,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
             android:textColor="#ffffffff"
-            android:textSize="13sp" />
+            android:textSize="11sp" />
     </LinearLayout>
 
     <LinearLayout

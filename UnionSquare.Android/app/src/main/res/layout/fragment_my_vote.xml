@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.qmuiteam.qmui.layout.QMUILinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@mipmap/found_bg"
@@ -15,8 +14,8 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/px240"
         android:layout_marginLeft="15dp"
-        android:layout_marginRight="15dp"
         android:layout_marginTop="@dimen/px33"
+        android:layout_marginRight="15dp"
         android:background="@drawable/sc_stroke">
 
 
@@ -64,8 +63,8 @@
                     android:layout_height="match_parent"
                     android:layout_marginStart="27dp"
                     android:layout_weight="1"
-                    android:drawablePadding="@dimen/px7"
                     android:drawableStart="@mipmap/my_vote_unlocked"
+                    android:drawablePadding="@dimen/px7"
                     android:gravity="center"
                     android:text="本次投票："
                     android:textColor="#ffffffff"
@@ -97,66 +96,75 @@
     </LinearLayout>
 
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="0dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_weight="1"
+        android:background="@drawable/sc_26ffffff_3"
+        android:padding="15dp">
 
-        <LinearLayout
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/last_voting_record"
+            android:textColor="#ffffffff" />
+
+        <TextView
+            android:id="@+id/tv_totle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:textColor="#ffffffff" />
+
+        <TextView
+            android:id="@+id/tv_blank"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="@string/no_voting_records"
+            android:textColor="@color/hint_color"
+            android:textSize="18sp" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginBottom="@dimen/px200"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
+            android:layout_below="@+id/tv_totle"
             android:layout_marginTop="15dp"
-            android:layout_weight="1"
-            android:background="@drawable/sc_26ffffff_3"
-            android:gravity="center">
+            android:visibility="gone" />
 
 
-            <TextView
-                android:id="@+id/tv_blank"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/no_voting_records"
-                android:textColor="#ffffffff"
-                android:textSize="18sp"
-                android:visibility="gone" />
-
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/recyclerview"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:visibility="visible"></android.support.v7.widget.RecyclerView>
+    </RelativeLayout>
 
 
-        </LinearLayout>
-
+    <LinearLayout
+        android:id="@+id/ll_bgtp"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:background="@color/qmui_config_color_25_pure_black"
+        android:orientation="vertical">
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1px"
             android:background="@color/qmui_config_color_white" />
 
-        <LinearLayout
-            android:id="@+id/ll_bgtp"
-            android:layout_width="match_parent"
-            android:layout_height="80dp"
-            android:background="@color/qmui_config_color_25_pure_black"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tv_goingtovote"
+            style="@style/button_margin"
+            android:layout_gravity="center_vertical"
+            android:layout_marginTop="15dp"
+            android:height="50dp"
+            android:background="@drawable/setting_item_select"
+            android:text="@string/vote_again"
+            android:textSize="17sp" />
 
 
-            <TextView
-                android:id="@+id/tv_goingtovote"
-                style="@style/button_margin"
-                android:height="50dp"
-                android:background="@drawable/setting_item_select"
-                android:text="@string/vote_again"
-                android:textSize="17sp" />
-
-        </LinearLayout>
     </LinearLayout>
 
 </com.qmuiteam.qmui.layout.QMUILinearLayout>

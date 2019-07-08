@@ -17,7 +17,7 @@
     <string name="voting_rules">投票规则</string>
     <string name="vote_qwtpzb">全网投票占比</string>
     <string name="the_current_number">当前票数</string>
-    <string name="number_of_voting_addresses">投票地址数量</string>
+    <string name="number_of_voting_addresses">节点数量</string>
     <string name="node_name">节点名称</string>
     <string name="node_addeer">节点地址</string>
     <string name="node_publickey">节点公钥</string>
@@ -355,7 +355,7 @@
     <string name="nodelist">参选节点列表</string>
     <string name="about">关于ELAWallet</string>
     <string name="currentversionname">当前版本号 </string>
-    <string name="feedback">问题反馈</string>
+    <string name="feedback">反馈邮件</string>
     <string name="showupdatalog">查看更新日志</string>
     <string name="tv_elaintroduce">ELAWallet是安全、便捷的专业亦来云SPV轻节点客户端钱包，支持亦来云全生态数字资产。</string>
     <string name="earn_records">收益记录</string>

@@ -169,7 +169,7 @@ public class SubWalletCallback {
             jsonObject.put("Action", "OnAssetRegistered");
 
             //todo add this interface on listener
-            mListener.OnAssetRegistered(jsonObject);
+           // mListener.OnAssetRegistered(jsonObject);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -185,7 +185,7 @@ public class SubWalletCallback {
             jsonObject.put("Action", "OnConnectStatusChanged");
 
             // todo add this interface on listener
-            mListener.OnConnectStatusChanged(jsonObject);
+          //  mListener.OnConnectStatusChanged(jsonObject);
         } catch (JSONException e) {
             e.printStackTrace();
         }

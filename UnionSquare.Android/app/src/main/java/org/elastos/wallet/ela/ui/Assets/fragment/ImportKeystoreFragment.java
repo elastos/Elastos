@@ -2,6 +2,7 @@ package org.elastos.wallet.ela.ui.Assets.fragment;
 
 
 import android.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.AppCompatEditText;
 import android.text.TextUtils;
 import android.view.View;
@@ -50,7 +51,6 @@ public class ImportKeystoreFragment extends BaseFragment implements ImportKeysto
     private String keystore;
     private String walletName;
     private String masterWalletID;
-    private boolean singleAddress;
     private RealmUtil realmUtil;
 
     @Override
@@ -61,6 +61,7 @@ public class ImportKeystoreFragment extends BaseFragment implements ImportKeysto
 
     @Override
     protected void initView(View view) {
+        mRootView.setBackgroundResource(R.color.transparent);
         realmUtil = new RealmUtil();
         presenter = new ImportKeystorePresenter();
     }

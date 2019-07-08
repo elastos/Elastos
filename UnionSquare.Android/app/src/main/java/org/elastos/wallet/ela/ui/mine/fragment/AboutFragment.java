@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.provider.MediaStore;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.ui.common.fragment.WebViewFragment;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.ui.mine.presenter.AboutPresenter;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
@@ -61,9 +63,12 @@ public class AboutFragment extends BaseFragment implements CommmonStringWithMeth
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.tv_updatalog:
-                Intent intent = new Intent("android.intent.action.VIEW");
+                Bundle bundle=new Bundle();
+                bundle.putString(Constant.FRAGMENTTAG,Constant.UpdateLog + "?langua =" + (new SPUtil(getContext()).getLanguage() == 0 ? "ch" : "en"));
+                start(WebViewFragment.class,bundle);
+               /* Intent intent = new Intent("android.intent.action.VIEW");
                 intent.setData(Uri.parse(Constant.UpdateLog + "?langua =" + (new SPUtil(getContext()).getLanguage() == 0 ? "ch" : "en")));
-                startActivity(intent);
+                startActivity(intent);*/
                 break;
             case R.id.tv_feedback:
                 ClipboardUtil.copyClipboar(getBaseActivity(), Constant.Email, getResources().getString(R.string.copyemailsuccess));

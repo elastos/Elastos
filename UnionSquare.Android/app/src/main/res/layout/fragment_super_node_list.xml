@@ -19,7 +19,7 @@
 
         <com.qmuiteam.qmui.layout.QMUILinearLayout
             android:layout_width="match_parent"
-            android:layout_height="@dimen/px250"
+            android:layout_height="@dimen/px200"
             android:layout_gravity="center"
             android:layout_marginLeft="@dimen/px10"
             android:layout_marginTop="@dimen/px25"
@@ -40,7 +40,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/vote_qwtpzb"
-                    android:textColor="#ffffffff"
+                    android:textColor="@color/whiter50"
                     android:textSize="11sp" />
 
                 <TextView
@@ -58,8 +58,9 @@
 
             <View
                 android:layout_width="1px"
-                android:layout_height="@dimen/px66"
-                android:layout_marginTop="@dimen/px48"
+                android:layout_height="match_parent"
+                android:layout_marginTop="@dimen/px70"
+                android:layout_marginBottom="@dimen/px70"
                 android:background="@color/qmui_config_color_white" />
 
             <com.qmuiteam.qmui.layout.QMUILinearLayout
@@ -73,7 +74,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/the_current_number"
-                    android:textColor="#ffffffff"
+                    android:textColor="@color/whiter50"
                     android:textSize="11sp" />
 
                 <TextView
@@ -88,8 +89,9 @@
 
             <View
                 android:layout_width="1px"
-                android:layout_height="@dimen/px66"
-                android:layout_marginTop="@dimen/px48"
+                android:layout_height="match_parent"
+                android:layout_marginTop="@dimen/px70"
+                android:layout_marginBottom="@dimen/px70"
                 android:background="@color/qmui_config_color_white" />
 
             <com.qmuiteam.qmui.layout.QMUILinearLayout
@@ -97,21 +99,20 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:orientation="vertical"
-                android:visibility="gone">
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/number_of_voting_addresses"
-                    android:textColor="#ffffffff"
+                    android:textColor="@color/whiter50"
                     android:textSize="11sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/px58"
-                    android:text="121786"
+                    android:id="@+id/tv_nodenum"
                     android:textColor="#ffffffff"
                     android:textSize="18sp" />
             </com.qmuiteam.qmui.layout.QMUILinearLayout>

@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -26,7 +27,6 @@ import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewDa
 import org.elastos.wallet.ela.ui.vote.NodeCart.NodeCartFragment;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.Arith;
-import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.klog.KLog;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,6 +38,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import butterknife.Unbinder;
 
 /**
  * 我的投票
@@ -66,6 +67,9 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
     @BindView(R.id.tv_goingtovote)
     TextView tvGoingtovote;
     MyVotePresenter presenter = new MyVotePresenter();
+    @BindView(R.id.tv_totle)
+    TextView tvTotle;
+    Unbinder unbinder;
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
     @BindView(R.id.ll_bgtp)
@@ -118,7 +122,7 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
         start(NodeCartFragment.class, bundle);
     }
 
-    Long value = 0L;
+    String value;
     List<String> keylist = new ArrayList();
     //  List<Long> vlauelist = new ArrayList();
 
@@ -132,25 +136,27 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
                     ivType.setBackgroundResource(R.mipmap.my_vote_go_img);
                     tvBlank.setVisibility(View.VISIBLE);
                     recyclerview.setVisibility(View.GONE);
+                    ll_bgtp.setVisibility(View.GONE);
                 } else {
+                    recyclerview.setVisibility(View.VISIBLE);
+                    tvBlank.setVisibility(View.GONE);
                     ivType.setBackgroundResource(R.mipmap.found_vote_mine_lock);
                     ll_bgtp.setVisibility(View.VISIBLE);
                     try {
                         JSONObject jsonObject = new JSONObject(data);
-                        ll_bgtp.setVisibility(View.VISIBLE);
-
-                        keylist.add(getString(R.string.last_voting_record));
-
                         Iterator it = jsonObject.keys();
 
                         while (it.hasNext()) {
                             String key = (String) it.next();
                             keylist.add(key);
-                            // value = jsonObject.getLong(key) / MyWallet.RATE + value;
+                            if (TextUtils.isEmpty(value)) {
+                                value = jsonObject.getString(key);
+                                tvTotle.setText(Arith.div(value, MyWallet.RATE_S).longValue() + "");
+                            }
                         }
                         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
                         recyclerview.setAdapter(new MyVoteAdapter(keylist,
-                                jsonObject, value + ""));
+                                jsonObject));
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -171,61 +177,38 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
 
 
     public class MyVoteAdapter extends BaseQuickAdapter<String, BaseViewHolder> {
-
-        String num;
         JSONObject jsonObject;
 
-        public MyVoteAdapter(@Nullable List<String> name, JSONObject jsonObject, String num) {
+        public MyVoteAdapter(@Nullable List<String> name, JSONObject jsonObject) {
             super(R.layout.item_myvoteafragment, name);
-            this.num = num;
             this.jsonObject = jsonObject;
         }
 
         @Override
         protected void convert(BaseViewHolder helper, String item) {
+            helper.setText(R.id.tv_name, getRecord(item).name);
+            helper.setText(R.id.tv_no, "NO." + getRecord(item).no);
 
 
-            switch (helper.getLayoutPosition()) {
-
-                case 0:
-                    helper.setText(R.id.tv_name, item);
-                    helper.setText(R.id.tv_no, "");
-                    break;
-                default:
-                    helper.setText(R.id.tv_name, getName(item));
-                    try {
-                        // helper.setText(R.id.tv_no, Long.parseLong(jsonObject.getString(item)) / MyWallet.RATE + "");
-                        //  helper.setText(R.id.tv_no, NumberiUtil.maxNumberFormat((Long.parseLong(jsonObject.getString(item)) / MyWallet.RATE_) + "", 12));
-                        helper.setText(R.id.tv_no, NumberiUtil.maxNumberFormat(Arith.div(jsonObject.getString(item), MyWallet.RATE_S), 12));
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-
-                    break;
-            }
         }
     }
 
     //获取名字
-    private String getName(String name) {
-
+    private Recorder getRecord(String publickey) {
+        Recorder recorder = new Recorder();
         for (int i = 0; i < netList.size(); i++) {
+            if (netList.get(i).getOwnerpublickey().equals(publickey)) {
+                recorder.no = i + 1;
+                recorder.name = netList.get(i).getNickname();
 
-            if (netList.get(i).getOwnerpublickey().equals(name)) {
-                return netList.get(i).getNickname();
             }
         }
-        return getString(R.string.unknown);
+        return recorder;
     }
 
-//    //获取名次
-//    private String getNo(String name) {
-//
-//        for (int i = 0; i < list.size(); i++) {
-//            if (list.get(i).getOwnerpublickey().equals(name)) {
-//                return i + 1 + "";
-//            }
-//        }
-//        return getString(R.string.unknown);
-//    }
+    private class Recorder {
+        int no;
+        String name;
+    }
+
 }
