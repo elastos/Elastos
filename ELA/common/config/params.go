@@ -156,6 +156,7 @@ var DefaultParams = Params{
 	VoteStartHeight:          290000,
 	CRCOnlyDPOSHeight:        343400,
 	PublicDPOSHeight:         402680,
+	CRVotingStartHeight:      1800000, // todo correct me when height has been confirmed
 	CRCommitteeStartHeight:   2000000, // todo correct me when height has been confirmed
 	ToleranceDuration:        5 * time.Second,
 	MaxInactiveRounds:        720 * 2,
@@ -212,6 +213,7 @@ func (p *Params) TestNet() *Params {
 	copy.VoteStartHeight = 200000
 	copy.CRCOnlyDPOSHeight = 246700
 	copy.PublicDPOSHeight = 300000
+	copy.CRVotingStartHeight = 900000     // todo correct me when height has been confirmed
 	copy.CRCommitteeStartHeight = 1000000 // todo correct me when height has been confirmed
 	return &copy
 }
@@ -259,6 +261,7 @@ func (p *Params) RegNet() *Params {
 	copy.VoteStartHeight = 170000
 	copy.CRCOnlyDPOSHeight = 211000
 	copy.PublicDPOSHeight = 234000
+	copy.CRVotingStartHeight = 900000     // todo correct me when height has been confirmed
 	copy.CRCommitteeStartHeight = 1000000 // todo correct me when height has been confirmed
 	return &copy
 }
@@ -353,7 +356,10 @@ type Params struct {
 	// elected producers participate in DPOS consensus.
 	PublicDPOSHeight uint32
 
-	// CRCommitteeStartHeight defines the height of CR Committee started
+	// CRVotingStartHeight defines the height of CR voting started.
+	CRVotingStartHeight uint32
+
+	// CRCommitteeStartHeight defines the height of CR Committee started.
 	CRCommitteeStartHeight uint32
 
 	// CRCArbiters defines the fixed CRC arbiters producing the block.
