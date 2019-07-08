@@ -50,65 +50,34 @@ typedef unsigned int uint;
 class uchar_vector : public std::vector<unsigned char>//, Allocator>
 {
 public:
-    uchar_vector() : std::vector<unsigned char>() { }
-    uchar_vector(size_type n, const unsigned char& value = 0) : std::vector<unsigned char>(n, value) { }
+    uchar_vector();
+    uchar_vector(size_type n, const unsigned char& value = 0);
     template <class InputIterator> uchar_vector(InputIterator first, InputIterator last) : std::vector<unsigned char>(first, last) { }
-    uchar_vector(const std::vector<unsigned char>& vec) : std::vector<unsigned char>(vec) { }
-    uchar_vector(const void *array, unsigned int size) : std::vector<unsigned char>((const unsigned char *)array, (const unsigned char *)array + size) { }
-    uchar_vector(const std::string& hex) { this->setHex(hex); }
+    uchar_vector(const std::vector<unsigned char>& vec);
+    uchar_vector(const void *array, unsigned int size);
+    uchar_vector(const std::string& hex);
 
-    bool operator <(const uchar_vector &rhs) const {
-        if (size() < rhs.size())
-            return true;
-        else if (size() > rhs.size())
-            return false;
-    	return memcmp(this->data(), rhs.data(), size()) < 0;
-    }
+    bool operator <(const uchar_vector &rhs) const;
 
-    bool operator ==(const uchar_vector &rhs) const {
-        return size() == rhs.size() && memcmp(this->data(), rhs.data(), size()) == 0;
-    }
+    bool operator ==(const uchar_vector &rhs) const;
 
-    bool operator !=(const uchar_vector &rhs) const {
-        return ! operator==(rhs);
-    }
+    bool operator !=(const uchar_vector &rhs) const;
 
-    uchar_vector& operator+=(const std::vector<unsigned char>& rhs)
-    {
-        this->insert(this->end(), rhs.begin(), rhs.end());
-        return *this;
-    }
+    uchar_vector& operator+=(const std::vector<unsigned char>& rhs);
 
-    uchar_vector& operator<<(const std::vector<unsigned char>& rhs)
-    {
-        this->insert(this->end(), rhs.begin(), rhs.end());
-        return *this;
-    }
+    uchar_vector& operator<<(const std::vector<unsigned char>& rhs);
 
-    uchar_vector& operator<<(unsigned char byte)
-    {
-        this->push_back(byte);
-        return *this;
-    }
+    uchar_vector& operator<<(unsigned char byte);
         
-    const uchar_vector operator+(const std::vector<unsigned char>& rightOperand) const { return uchar_vector(*this) += rightOperand; }
+    const uchar_vector operator+(const std::vector<unsigned char>& rightOperand) const;
 
-    uchar_vector& operator=(const std::string& hex) { this->setHex(hex); return *this; }
+    uchar_vector& operator=(const std::string& hex);
 
-    void copyToArray(unsigned char* array) { std::copy(this->begin(),this->end(), array); }
+    void copyToArray(unsigned char* array);
 
-    void padLeft(unsigned char pad, uint total_length)
-    {
-        this->reverse();
-        this->padRight(pad, total_length);
-        this->reverse();
-    }
+    void padLeft(unsigned char pad, uint total_length);
 
-    void padRight(unsigned char pad, uint total_length)
-    {
-        for (uint i = this->size(); i < total_length; i++)
-            this->push_back(pad);
-    }
+    void padRight(unsigned char pad, uint total_length);
 
     template <class T>
     void append(T n)
@@ -116,141 +85,27 @@ public:
     	operator+=(uchar_vector(&n, sizeof(T)));
     }
 
-    void append(const void *array, size_t size)
-    {
-    	operator+=(uchar_vector(array, size));
-    }
+    void append(const void *array, size_t size);
 
-    std::string getHex(bool spaceBytes = false) const
-    {
-        std::string hex;
-        hex.reserve(this->size() * 2);
-        for (uint i = 0; i < this->size(); i++) {
-            if (spaceBytes && (i > 0)) hex += " ";
-            hex += g_hexBytes[(*this)[i]];
-        }
-        return hex;
-    }
+    std::string getHex(bool spaceBytes = false) const;
 
-    void setHex(std::string hex)
-    {
-        this->clear();
+    void setHex(std::string hex);
 
-        // pad on the left if hex contains an odd number of digits.
-        if (hex.size() % 2 == 1)
-            hex = "0" + hex;
+    void reverse();
 
-        this->reserve(hex.size() / 2);
+    uchar_vector getReverse() const;
 
-        for (uint i = 0; i < hex.size(); i+=2) {
-            uint byte;
-            sscanf(hex.substr(i, 2).c_str(), "%x", &byte);
-            this->push_back(byte);
-        }
-    }
+    std::string getCharsAsString() const;
 
-    void reverse() { std::reverse(this->begin(), this->end()); }
+    void setCharsFromString(const std::string& chars);
 
-    uchar_vector getReverse() const
-    {
-        uchar_vector rval(*this);
-        rval.reverse();
-        return rval;
-    }
+    std::string getBase64() const;
 
-    std::string getCharsAsString() const
-    {
-        std::string chars;
-        chars.reserve(this->size());
-        for (uint i = 0; i < this->size(); i++)
-            chars += (*this)[i];
-        return chars;
-    }
+    void setBase64(const std::string &base64);
 
-    void setCharsFromString(const std::string& chars)
-    {
-        this->clear();
-        this->reserve(chars.size());
-        for (uint i = 0; i < chars.size(); i++)
-            this->push_back(chars[i]);
-    }
+    void clean();
 
-    std::string getBase64() const
-    {
-        unsigned int padding = (3 - (this->size() % 3)) % 3;
-        std::string base64;
-
-        uchar_vector paddedBytes = *this;
-        for (unsigned int i = 1; i <= padding; i++)
-            paddedBytes.push_back(0);
-
-        base64.reserve(4*(paddedBytes.size()) / 3);
-
-        for (unsigned int i = 0; i < paddedBytes.size(); i += 3) {
-            uint32_t triple = ((uint32_t)paddedBytes[i] << 16) | ((uint32_t)paddedBytes[i+1] << 8) | (uint32_t)paddedBytes[i+2];
-            base64 += base64chars[(triple & 0x00fc0000) >> 18];
-            base64 += base64chars[(triple & 0x0003f000) >> 12];
-            base64 += base64chars[(triple & 0x00000fc0) >> 6];
-            base64 += base64chars[triple & 0x0000003f];
-        }
-
-        for (unsigned int i = 1; i <= padding; i++)
-            base64[base64.size() - i] = '=';
-
-        return base64;
-    }
-
-    void setBase64(const std::string &base64)
-    {
-        unsigned int padding = (4 - (base64.size() % 4)) % 4;
-
-        std::string paddedBase64;
-        paddedBase64.reserve(base64.size() + padding);
-        paddedBase64 = base64;
-        paddedBase64.append(padding, '=');
-        padding = 0; // we'll count them again in the loop so we also get any that were already there.
-
-        this->clear();
-        this->reserve(3*paddedBase64.size() / 4);
-
-        bool bEnd = false;
-        for (unsigned int i = 0; (i < paddedBase64.size()) && (!bEnd); i+=4) {
-            uint32_t digits[4];
-            for (unsigned int j = 0; j < 4; j++) {
-                const char* pPos = strchr(base64chars, paddedBase64[i+j]);
-                if (!pPos) bEnd = true;
-                if (bEnd) {
-                    digits[j] = 0;
-                    padding++;
-                }
-                else
-                    digits[j] = (uint32_t)(pPos - base64chars);
-            }
-
-            uint32_t quadruple = (digits[0] << 18) | (digits[1] << 12) | (digits[2] << 6) | digits[3];
-
-            this->push_back((quadruple & 0x00ff0000) >> 16);
-            this->push_back((quadruple & 0x0000ff00) >> 8);
-            this->push_back(quadruple & 0x000000ff);
-        }
-
-        for (unsigned int i = 0; i < padding; i++)
-            this->pop_back();
-    }
-
-    void clean() {
-        memset(this->data(), 0, size());
-    }
-
-    bool isZero() {
-        for (size_t i = 0; i < this->size(); ++i) {
-            if ((*this)[i] != 0)
-                return false;
-        }
-
-        return true;
-    }
-
+    bool isZero();
 };
 
 typedef std::string string_secure;

@@ -131,10 +131,10 @@ TEST_CASE("Config test", "[Config]") {
 			REQUIRE(dnsSeed[5] == "node-regtest-107.eadd.co");
 
 			const std::vector<CheckPoint> &checkPoints = chainParams->Checkpoints();
-			REQUIRE(checkPoints[4].Hash() == uint256("40eec8f7f3c7f4d9ea4c7dbe5eb85456c72ee79f7e5940a5e7d5f4c80bc1e7a7"));
-			REQUIRE(checkPoints[4].Height() == 20160);
-			REQUIRE(checkPoints[5].Hash() == uint256("3d2269ae53697c648a40aabaf6841cd2a43bc38699264a64bcd166e000cd452a"));
-			REQUIRE(checkPoints[5].Height() == 26208);
+			REQUIRE(checkPoints[4].Hash() == uint256("3d2269ae53697c648a40aabaf6841cd2a43bc38699264a64bcd166e000cd452a"));
+			REQUIRE(checkPoints[4].Height() == 26208);
+			REQUIRE(checkPoints[5].Hash() == uint256("8dfe3ec6125c06c40bcd9a72963b6e60dc214b7a61ad2e805b138f60ac7e92de"));
+			REQUIRE(checkPoints[5].Height() == 34272);
 		}
 
 	}

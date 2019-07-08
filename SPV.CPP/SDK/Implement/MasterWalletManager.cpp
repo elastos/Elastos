@@ -261,16 +261,16 @@ namespace Elastos {
 			ArgInfo("{}", GetFunName());
 			ArgInfo("masterWalletID: {}", masterWalletID);
 
-			if (_masterWalletMap.find(masterWalletID) == _masterWalletMap.end()) {
-				ErrorChecker::ThrowParamException(Error::MasterWalletNotExist, "Master wallet is not exist");
+			if (_masterWalletMap.find(masterWalletID) != _masterWalletMap.end()) {
+				MasterWallet *masterWallet = static_cast<MasterWallet *>(_masterWalletMap[masterWalletID]);
+				masterWallet->RemoveLocalStore();
+
+				masterWallet->CloseAllSubWallets();
+				_masterWalletMap.erase(masterWallet->GetWalletID());
+				delete masterWallet;
+			} else {
+				Log::warn("Master wallet is not exist");
 			}
-
-			MasterWallet *masterWallet = static_cast<MasterWallet *>(_masterWalletMap[masterWalletID]);
-			masterWallet->RemoveLocalStore();
-
-			masterWallet->CloseAllSubWallets();
-			_masterWalletMap.erase(masterWallet->GetWalletID());
-			delete masterWallet;
 
 			ArgInfo("{} done", GetFunName());
 		}

@@ -189,7 +189,7 @@ TEST_CASE("Wallet factory basic", "[MasterWalletManager]") {
 }
 
 TEST_CASE("GetAllMasterWallets", "[MasterWalletManager]") {
-
+	Log::registerMultiLogger();
 	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
 
 	std::string phrasePassword = "phrasePassword";
@@ -431,7 +431,7 @@ TEST_CASE("WalletFactoryInner::importWalletInternal Test ", "[WalletFactoryInner
 
 
 TEST_CASE("MasterWalletManager create destroy wallet", "[MasterWalletManager]") {
-
+	Log::registerMultiLogger();
 	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";

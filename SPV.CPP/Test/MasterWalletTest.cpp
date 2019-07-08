@@ -256,6 +256,7 @@ TEST_CASE("Master wallet GenerateMnemonic method test", "[GenerateMnemonic]") {
 }
 
 TEST_CASE("Master wallet DestroyWallet method test", "[DestroyWallet]") {
+	Log::registerMultiLogger();
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
 	std::string chainID = "IDChain";
@@ -286,7 +287,7 @@ TEST_CASE("Master wallet DestroyWallet method test", "[DestroyWallet]") {
 		ISubWallet *subWallet1 = masterWallet1->CreateSubWallet(chainID, feePerKB);
 		ISubWallet *subWallet = masterWallet->CreateSubWallet(chainID, feePerKB);
 
-		REQUIRE_THROWS_AS(masterWallet->DestroyWallet(subWallet1), std::logic_error);
+		REQUIRE_THROWS(masterWallet->DestroyWallet(subWallet1));
 
 		REQUIRE_NOTHROW(masterWallet1->DestroyWallet(subWallet1));
 		REQUIRE_NOTHROW(masterWallet->DestroyWallet(subWallet));
@@ -606,7 +607,6 @@ TEST_CASE("Master wallet save and restore", "[Save&Restore]") {
 		boost::filesystem::path localStore = "Data";
 		localStore /= "MasterWalletTest";
 		localStore /= "MasterWalletStore.json";
-		masterWallet->Save();
 		masterWallet.reset(new TestMasterWallet("MasterWalletTest")); //save and reload in this line
 		REQUIRE_NOTHROW(masterWallet->Sign("MyMessage", newPassword));
 		masterWallet->InitSubWallets();

@@ -326,6 +326,9 @@ namespace Elastos {
 			if (_createdWallets.find(subWallet->GetInfoChainID()) == _createdWallets.end())
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "Sub wallet did not created");
 
+			if (_createdWallets[subWallet->GetInfoChainID()] != wallet)
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "Sub wallet does not belong to this master wallet");
+
 			_localStore->RemoveSubWalletInfo(subWallet->_info);
 			_localStore->Save();
 
