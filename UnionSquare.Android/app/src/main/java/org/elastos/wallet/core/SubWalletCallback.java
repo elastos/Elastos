@@ -167,7 +167,9 @@ public class SubWalletCallback {
             jsonObject.put("MasterWalletID", mMasterWalletID);
             jsonObject.put("ChaiID", mSubWalletID);
             jsonObject.put("Action", "OnAssetRegistered");
-            mListener.OnAssetRegistered(jsonObject);
+
+            //todo add this interface on listener
+           // mListener.OnAssetRegistered(jsonObject);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -181,7 +183,9 @@ public class SubWalletCallback {
             jsonObject.put("MasterWalletID", mMasterWalletID);
             jsonObject.put("ChainID", mSubWalletID);
             jsonObject.put("Action", "OnConnectStatusChanged");
-            mListener.OnConnectStatusChanged(jsonObject);
+
+            // todo add this interface on listener
+          //  mListener.OnConnectStatusChanged(jsonObject);
         } catch (JSONException e) {
             e.printStackTrace();
         }

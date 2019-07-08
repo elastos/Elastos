@@ -77,7 +77,8 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     @BindView(R.id.tv_zb)
     TextView tv_zb;
     @BindView(R.id.tv_num)
-    TextView tv_num;
+    TextView tv_num;@BindView(R.id.tv_nodenum)
+    TextView tvNodenum;
     @BindView(R.id.tv_signupfor)
     TextView tv_signupfor;
     @BindView(R.id.srl)
@@ -233,6 +234,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
             netList.clear();
         }
         netList.addAll(dataResponse.getData().getResult().getProducers());
+        tvNodenum.setText(netList.size()+"");
         //有自已的投票就排第一
         if (publicKey != null && netList != null) {
             for (int i = 0; i < netList.size(); i++) {

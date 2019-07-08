@@ -17,7 +17,7 @@
     <string name="voting_rules">Voting rules</string>
     <string name="vote_qwtpzb">Percentage of votes cast online</string>
     <string name="the_current_number">Current votes</string>
-    <string name="number_of_voting_addresses">Number of voters</string>
+    <string name="number_of_voting_addresses">Number of Node</string>
     <string name="node_name">Node Name</string>
     <string name="node_addeer">Node Address</string>
     <string name="node_publickey">Node Public Key</string>

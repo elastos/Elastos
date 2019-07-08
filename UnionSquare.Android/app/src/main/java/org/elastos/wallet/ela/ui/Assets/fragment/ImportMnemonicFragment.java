@@ -20,7 +20,6 @@ import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.listener.RealmTransactionAbs;
-import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonCreateSubWalletPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.ImportMnemonicPresenter;
@@ -75,6 +74,7 @@ public class ImportMnemonicFragment extends BaseFragment implements ImportMnemon
 
     @Override
     protected void initView(View view) {
+        mRootView.setBackgroundResource(R.color.transparent);
         stPws.setOnSuperTextViewClickListener(new SuperTextView.OnSuperTextViewClickListener() {
             @Override
             public void onClickListener(SuperTextView superTextView) {
@@ -178,7 +178,7 @@ public class ImportMnemonicFragment extends BaseFragment implements ImportMnemon
             //创建Mainchain子钱包
 
             Wallet masterWallet = realmUtil.updateWalletDetial(walletName, masterWalletID, data);
-            realmUtil.updateSubWalletDetial(masterWalletID,data, new RealmTransactionAbs() {
+            realmUtil.updateSubWalletDetial(masterWalletID, data, new RealmTransactionAbs() {
                 @Override
                 public void onSuccess() {
                     realmUtil.updateWalletDefault(masterWalletID, new RealmTransactionAbs() {
