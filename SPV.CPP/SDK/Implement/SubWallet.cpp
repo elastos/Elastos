@@ -47,7 +47,7 @@ namespace Elastos {
 			_walletManager->RegisterPeerManagerListener(this);
 
 			WalletPtr wallet = _walletManager->getWallet();
-			wallet->SetWalletID(_parent->GetID() + ":" + GetChainID());
+			wallet->SetWalletID(_parent->GetID() + ":" + _info->GetChainID());
 
 			if (_info->GetFeePerKB() < _config->MinFee())
 				_info->SetFeePerKB(_config->MinFee());

@@ -34,8 +34,8 @@
 #define MAX_MSG_LENGTH     0x02000000
 #define MIN_PROTO_VERSION  70002 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
 #define LOCAL_HOST         ((UInt128) { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0x7f, 0x00, 0x00, 0x01 })
-#define CONNECT_TIMEOUT    5.0
-#define MESSAGE_TIMEOUT    60.0
+#define CONNECT_TIMEOUT    3.0
+#define MESSAGE_TIMEOUT    10.0
 
 #define PTHREAD_STACK_SIZE  (512 * 1024)
 
@@ -205,7 +205,7 @@ namespace Elastos {
 					}
 					if (n < 0 && errno != EWOULDBLOCK) error = errno;
 					gettimeofday(&tv, NULL);
-//					if (!error && tv.tv_sec + (double) tv.tv_usec / 1000000 >= _disconnectTime) error = ETIMEDOUT;
+					if (!error && tv.tv_sec + (double) tv.tv_usec / 1000000 >= _disconnectTime) error = ETIMEDOUT;
 					socket = _socket;
 				}
 
@@ -324,7 +324,7 @@ namespace Elastos {
 
 						gettimeofday(&tv, NULL);
 						time = tv.tv_sec + (double) tv.tv_usec / 1000000;
-//						if (!error && time >= _disconnectTime) error = ETIMEDOUT;
+						if (!error && time >= _disconnectTime) error = ETIMEDOUT;
 
 						if (!error && time >= _mempoolTime) {
 							info("done waiting for mempool response");

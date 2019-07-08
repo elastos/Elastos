@@ -408,26 +408,26 @@ namespace Elastos {
 					ErrorChecker::CheckCondition(subWalletImpl == nullptr, Error::CreateSubWalletError,
 												 "Recover sub wallet error");
 					startPeerManager(subWalletImpl);
-					_createdWallets[subWallet->GetChainID()] = subWallet;
+					_createdWallets[subWalletImpl->GetInfoChainID()] = subWallet;
 
 					_localStore->AddSubWalletInfoList(defaultInfo);
 					_localStore->Save();
 				}
-			}
+			} else {
+				for (int i = 0; i < info.size(); ++i) {
+					const ChainConfigPtr &chainConfig = _config->GetChainConfig(info[i]->GetChainID());
+					if (chainConfig == nullptr) {
+						Log::error("Can not find config of chain ID: " + info[i]->GetChainID());
+						continue;
+					}
 
-			for (int i = 0; i < info.size(); ++i) {
-				const ChainConfigPtr &chainConfig = _config->GetChainConfig(info[i]->GetChainID());
-				if (chainConfig == nullptr) {
-					Log::error("Can not find config of chain ID: " + info[i]->GetChainID());
-					continue;
+					ISubWallet *subWallet = SubWalletFactoryMethod(info[i], chainConfig, this);
+					SubWallet *subWalletImpl = dynamic_cast<SubWallet *>(subWallet);
+					ErrorChecker::CheckCondition(subWalletImpl == nullptr, Error::CreateSubWalletError,
+												 "Recover sub wallet error");
+					startPeerManager(subWalletImpl);
+					_createdWallets[subWalletImpl->GetInfoChainID()] = subWallet;
 				}
-
-				ISubWallet *subWallet = SubWalletFactoryMethod(info[i], chainConfig, this);
-				SubWallet *subWalletImpl = dynamic_cast<SubWallet *>(subWallet);
-				ErrorChecker::CheckCondition(subWalletImpl == nullptr, Error::CreateSubWalletError,
-											 "Recover sub wallet error");
-				startPeerManager(subWalletImpl);
-				_createdWallets[subWallet->GetChainID()] = subWallet;
 			}
 		}
 
