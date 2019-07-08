@@ -39,6 +39,14 @@ export const Btn = styled(Button)`
   border-radius: 0;
 `
 
+export const CirContainer = styled.div`
+  width: 18px;
+  position: absolute;
+  bottom: 0;
+  right: 6px;
+  z-index: 10;
+`
+
 export const Text = styled.div`
   text-align: center;
 `

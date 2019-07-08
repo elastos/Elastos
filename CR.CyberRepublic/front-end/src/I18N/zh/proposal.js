@@ -87,7 +87,8 @@ export default {
     },
     error: {
       required: '必填项',
-      tooLong: '文字太长'
+      tooLong: '文字太长',
+      limit200: '不能超过200字',
     }
   },
 }

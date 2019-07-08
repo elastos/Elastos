@@ -33,6 +33,7 @@
     "quill-mention": "^2.1.1",
     "react": "16.3.2",
     "react-async-script": "^0.9.1",
+    "react-circular-progressbar": "^2.0.1",
     "react-dom": "16.3.2",
     "react-flags": "^0.1.13",
     "react-geocode": "^0.1.2",
