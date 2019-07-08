@@ -36,7 +36,7 @@ namespace Elastos {
 
 		nlohmann::json MainchainSubWallet::CreateDepositTransaction(const std::string &fromAddress,
 																	const std::string &lockedAddress,
-																	uint64_t amount,
+																	const std::string &amount,
 																	const std::string &sideChainAddress,
 																	const std::string &memo,
 																	bool useVotedUTXO) {
@@ -47,13 +47,15 @@ namespace Elastos {
 			ArgInfo("sideChainAddr: {}", sideChainAddress);
 			ArgInfo("memo: {}", memo);
 			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
+			BigInt value;
+			value.setDec(amount);
 
 			PayloadPtr payload = nullptr;
 			try {
 				std::vector<std::string> accounts = {sideChainAddress};
 				std::vector<uint64_t> indexs = {0};
-				std::vector<uint64_t> amounts = {amount};
 
+				std::vector<uint64_t> amounts = {value.getWord()};
 				payload = PayloadPtr(new PayloadTransferCrossChainAsset(accounts, indexs, amounts));
 			} catch (const nlohmann::detail::exception &e) {
 				ErrorChecker::ThrowParamException(Error::JsonFormatError,
@@ -62,7 +64,7 @@ namespace Elastos {
 
 			std::vector<TransactionOutput> outputs;
 			Address receiveAddr(lockedAddress);
-			outputs.emplace_back(BigInt(amount + _config->MinFee()), receiveAddr, Asset::GetELAAssetID());
+			outputs.emplace_back(value + _config->MinFee(), receiveAddr, Asset::GetELAAssetID());
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
@@ -152,7 +154,7 @@ namespace Elastos {
 		nlohmann::json MainchainSubWallet::CreateRegisterProducerTransaction(
 			const std::string &fromAddress,
 			const nlohmann::json &payloadJson,
-			uint64_t amount,
+			const std::string &amount,
 			const std::string &memo,
 			bool useVotedUTXO) {
 
@@ -163,7 +165,10 @@ namespace Elastos {
 			ArgInfo("memo: {}", memo);
 			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
 
-			ErrorChecker::CheckParam(amount < 500000000000, Error::VoteDepositAmountInsufficient,
+			BigInt bgAmount;
+			bgAmount.setDec(amount);
+
+			ErrorChecker::CheckParam(bgAmount < 500000000000, Error::VoteDepositAmountInsufficient,
 									 "Producer deposit amount is insufficient");
 
 			PayloadPtr payload = PayloadPtr(new PayloadRegisterProducer());
@@ -179,7 +184,7 @@ namespace Elastos {
 
 			std::vector<TransactionOutput> outputs;
 			Address receiveAddr(toAddress);
-			outputs.emplace_back(BigInt(amount), receiveAddr, Asset::GetELAAssetID());
+			outputs.emplace_back(bgAmount, receiveAddr, Asset::GetELAAssetID());
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
@@ -266,18 +271,21 @@ namespace Elastos {
 		}
 
 		nlohmann::json MainchainSubWallet::CreateRetrieveDepositTransaction(
-			uint64_t amount,
+			const std::string &amount,
 			const std::string &memo) {
 
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 			ArgInfo("amount: {}", amount);
 			ArgInfo("memo: {}", memo);
 
+			BigInt bgAmount;
+			bgAmount.setDec(amount);
+
 			std::string fromAddress = _walletManager->getWallet()->GetOwnerDepositAddress().String();
 
 			std::vector<TransactionOutput> outputs;
 			Address receiveAddr(CreateAddress());
-			outputs.emplace_back(BigInt(amount), receiveAddr, Asset::GetELAAssetID());
+			outputs.emplace_back(bgAmount, receiveAddr, Asset::GetELAAssetID());
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
 
@@ -312,7 +320,7 @@ namespace Elastos {
 		nlohmann::json
 		MainchainSubWallet::CreateVoteProducerTransaction(
 			const std::string &fromAddress,
-			uint64_t stake,
+			const std::string &stake,
 			const nlohmann::json &publicKeys,
 			const std::string &memo,
 			bool useVotedUTXO) {
@@ -324,8 +332,11 @@ namespace Elastos {
 			ArgInfo("memo: {}", memo);
 			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
 
+			BigInt bgStake;
+			bgStake.setDec(stake);
+
 			ErrorChecker::CheckJsonArray(publicKeys, 1, "Candidates public keys");
-			ErrorChecker::CheckParam(stake == 0, Error::Code::VoteStakeError, "Vote stake should not be zero");
+			ErrorChecker::CheckParam(bgStake == 0, Error::Code::VoteStakeError, "Vote stake should not be zero");
 
 			PayloadVote::VoteContent voteContent;
 			voteContent.type = PayloadVote::Type::Delegate;
@@ -342,7 +353,7 @@ namespace Elastos {
 
 			std::vector<TransactionOutput> outs;
 			Address receiveAddr(CreateAddress());
-			outs.emplace_back(BigInt(stake), receiveAddr, Asset::GetELAAssetID());
+			outs.emplace_back(bgStake, receiveAddr, Asset::GetELAAssetID());
 
 			TransactionPtr tx = CreateTx(fromAddress, outs, memo, useVotedUTXO);
 

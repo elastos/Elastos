@@ -33,7 +33,7 @@ namespace Elastos {
 			virtual nlohmann::json CreateDepositTransaction(
 					const std::string &fromAddress,
 					const std::string &lockedAddress,
-					uint64_t amount,
+					const std::string &amount,
 					const std::string &sideChainAddress,
 					const std::string &memo,
 					bool useVotedUTXO = false);
@@ -89,7 +89,7 @@ namespace Elastos {
 			virtual nlohmann::json CreateRegisterProducerTransaction(
 				const std::string &fromAddress,
 				const nlohmann::json &payload,
-				uint64_t amount,
+				const std::string &amount,
 				const std::string &memo,
 				bool useVotedUTXO = false);
 
@@ -136,7 +136,7 @@ namespace Elastos {
 			 * @return           The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateRetrieveDepositTransaction(
-				uint64_t amount,
+				const std::string &amount,
 				const std::string &memo);
 
 			virtual std::string GetOwnerPublicKey() const;
@@ -158,7 +158,7 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json CreateVoteProducerTransaction(
 					const std::string &fromAddress,
-					uint64_t stake,
+					const std::string &stake,
 					const nlohmann::json &publicKeys,
 					const std::string &memo,
 					bool useVotedUTXO = false);

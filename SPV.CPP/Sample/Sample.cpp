@@ -216,7 +216,7 @@ static void Transafer(const std::string &masterWalletID, const std::string &subW
 		ITokenchainSubWallet *tokenSubWallet = dynamic_cast<ITokenchainSubWallet *>(subWallet);
 		tx = tokenSubWallet->CreateTransaction(from, to, std::to_string(amount), assetID, memo);
 	} else {
-		tx = subWallet->CreateTransaction(from, to, amount, memo);
+		tx = subWallet->CreateTransaction(from, to, std::to_string(amount), memo);
 	}
 
 	logger->debug("tx after created = {}", tx.dump());
@@ -236,7 +236,7 @@ static void Vote(const std::string &masterWalletID, const std::string &subWallet
 		return;
 	}
 
-	nlohmann::json tx = mainchainSubWallet->CreateVoteProducerTransaction("", stake, publicKeys, memo, false);
+	nlohmann::json tx = mainchainSubWallet->CreateVoteProducerTransaction("", std::to_string(stake), publicKeys, memo, false);
 	logger->debug("tx = {}", tx.dump());
 
 	PublishTransaction(mainchainSubWallet, tx);
@@ -263,7 +263,7 @@ static void RegisterProducer(const std::string &masterWalletID, const std::strin
 	nlohmann::json payload = mainchainSubWallet->GenerateProducerPayload(pubKey, nodePubKey, nickName, url, ipAddress,
 																		 location, payPasswd);
 
-	nlohmann::json tx = mainchainSubWallet->CreateRegisterProducerTransaction("", payload, 500000000000 + 10000,
+	nlohmann::json tx = mainchainSubWallet->CreateRegisterProducerTransaction("", payload, std::to_string(500000000000 + 10000),
 																			  memo);
 
 	PublishTransaction(mainchainSubWallet, tx);
@@ -351,7 +351,7 @@ static void RetrieveDeposit(const std::string &masterWalletID, const std::string
 		return;
 	}
 
-	nlohmann::json tx = mainchainSubWallet->CreateRetrieveDepositTransaction(500000000000, memo);
+	nlohmann::json tx = mainchainSubWallet->CreateRetrieveDepositTransaction(std::to_string(500000000000), memo);
 
 	PublishTransaction(mainchainSubWallet, tx);
 }
@@ -385,7 +385,7 @@ static void Deposit(const std::string &fromMasterWalletID, const std::string &fr
 
 	std::string lockedAddress = sidechainSubWallet->GetGenesisAddress();
 
-	nlohmann::json tx = mainchainSubWallet->CreateDepositTransaction(from, lockedAddress, amount, sidechainAddress, memo);
+	nlohmann::json tx = mainchainSubWallet->CreateDepositTransaction(from, lockedAddress, std::to_string(amount), sidechainAddress, memo);
 
 	logger->debug("[{}:{}] deposit {} to {}", fromMasterWalletID, fromSubWalletID, amount, sidechainAddress);
 
@@ -406,7 +406,7 @@ static void Withdraw(const std::string &fromMasterWalletID, const std::string &f
 		return ;
 	}
 
-	nlohmann::json tx = sidechainSubWallet->CreateWithdrawTransaction(from, amount, mainchainAddress, memo);
+	nlohmann::json tx = sidechainSubWallet->CreateWithdrawTransaction(from, std::to_string(amount), mainchainAddress, memo);
 
 	logger->debug("[{}:{}] withdraw {} to {}", fromMasterWalletID, fromSubWalletID, amount, mainchainAddress);
 
@@ -630,7 +630,7 @@ static void RegisterAsset() {
 	nlohmann::json tx = tokenSubWallet->CreateRegisterAssetTransaction("Poon",
 				"Description: test spv interface",
 				"EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv",
-				1000000000000000, 10, memo);
+				std::to_string(1000000000000000), 10, memo);
 	logger->debug("tx after created = {}", tx.dump());
 
 	PublishTransaction(subWallet, tx);

@@ -30,7 +30,7 @@ namespace Elastos {
 				const std::string &name,
 				const std::string &description,
 				const std::string &registerToAddress,
-				uint64_t registerAmount,
+				const std::string &registerAmount,
 				uint8_t precision,
 				const std::string &memo) {
 
@@ -42,6 +42,9 @@ namespace Elastos {
 			ArgInfo("precision: {}", precision);
 			ArgInfo("memo: {}", memo);
 
+			BigInt assetAmount;
+			assetAmount.setDec(registerAmount);
+
 			ErrorChecker::CheckParam(_walletManager->getWallet()->AssetNameExist(name), Error::InvalidArgument,
 									 "asset name already registered");
 			Address address(registerToAddress);
@@ -49,7 +52,7 @@ namespace Elastos {
 			ErrorChecker::CheckParam(precision > Asset::MaxPrecision, Error::InvalidArgument, "precision too large");
 
 			AssetPtr asset(new Asset(name, description, precision));
-			PayloadPtr payload = PayloadPtr(new PayloadRegisterAsset(asset, registerAmount, address.ProgramHash()));
+			PayloadPtr payload = PayloadPtr(new PayloadRegisterAsset(asset, assetAmount.getWord(), address.ProgramHash()));
 
 			std::vector<TransactionOutput> outputs;
 			Address receiveAddr(CreateAddress());
@@ -59,7 +62,6 @@ namespace Elastos {
 
 			tx->SetTransactionType(Transaction::RegisterAsset, payload);
 
-			BigInt assetAmount(registerAmount);
 			assetAmount *= BigInt(TOKEN_ASSET_PRECISION, 10);
 			tx->AddOutput(TransactionOutput(assetAmount, address.ProgramHash(), asset->GetHash()));
 

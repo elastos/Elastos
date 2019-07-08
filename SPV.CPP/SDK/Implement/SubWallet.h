@@ -52,9 +52,9 @@ namespace Elastos {
 
 			virtual nlohmann::json GetBalanceInfo() const;
 
-			virtual uint64_t GetBalance(BalanceType type = Default) const;
+			virtual std::string GetBalance(BalanceType type = Default) const;
 
-			virtual uint64_t GetBalanceWithAddress(const std::string &address, BalanceType type = Default) const;
+			virtual std::string GetBalanceWithAddress(const std::string &address, BalanceType type = Default) const;
 
 			virtual std::string CreateAddress();
 
@@ -68,7 +68,7 @@ namespace Elastos {
 			virtual nlohmann::json CreateTransaction(
 					const std::string &fromAddress,
 					const std::string &toAddress,
-					uint64_t amount,
+					const std::string &amount,
 					const std::string &memo,
 					bool useVotedUTXO = false);
 

@@ -83,11 +83,11 @@ namespace Elastos {
 			return info;
 		}
 
-		uint64_t SubWallet::GetBalance(BalanceType type) const {
+		std::string SubWallet::GetBalance(BalanceType type) const {
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 			ArgInfo("type: {}", GetBalanceTypeString(type));
 
-			uint64_t balance = _walletManager->getWallet()->GetBalance(Asset::GetELAAssetID(), GroupedAsset::BalanceType(type)).getWord();
+			std::string balance = _walletManager->getWallet()->GetBalance(Asset::GetELAAssetID(), GroupedAsset::BalanceType(type)).getDec();
 
 			ArgInfo("r => {}", balance);
 
@@ -125,13 +125,13 @@ namespace Elastos {
 			return j;
 		}
 
-		uint64_t SubWallet::GetBalanceWithAddress(const std::string &address, BalanceType type) const {
+		std::string SubWallet::GetBalanceWithAddress(const std::string &address, BalanceType type) const {
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 			ArgInfo("addr: {}", address);
 			ArgInfo("type: {}", GetBalanceTypeString(type));
 
-			uint64_t balance = _walletManager->getWallet()->GetBalanceWithAddress(Asset::GetELAAssetID(), address,
-					GroupedAsset::BalanceType(type)).getWord();
+			std::string balance = _walletManager->getWallet()->GetBalanceWithAddress(Asset::GetELAAssetID(), address,
+					GroupedAsset::BalanceType(type)).getDec();
 
 			ArgInfo("r => {}", balance);
 			return balance;
@@ -178,7 +178,7 @@ namespace Elastos {
 		}
 
 		nlohmann::json SubWallet::CreateTransaction(const std::string &fromAddress, const std::string &toAddress,
-		                                            uint64_t amount, const std::string &memo, bool useVotedUTXO) {
+		                                            const std::string &amount, const std::string &memo, bool useVotedUTXO) {
 
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
@@ -188,7 +188,7 @@ namespace Elastos {
 			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
 
 			BigInt bnAmount;
-			bnAmount.setWord(amount);
+			bnAmount.setDec(amount);
 
 			std::vector<TransactionOutput> outputs;
 			Address receiveAddr(toAddress);
