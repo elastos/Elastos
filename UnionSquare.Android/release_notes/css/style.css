@@ -275,21 +275,28 @@ html[data-dpr="3"] .main .content .content_box {
   margin: 0 auto;
   position: relative;
 }
-.main .content .content_year {
-  position: absolute;
+.main .content .content_box:first-child .content_year {
   top: 0.26666667rem;
-  left: 0.28rem;
-  width: 1px;
-  height: 4.06666667rem;
-  background: #E1E1E1;
-  z-index: -1;
+}
+.main .content .content_box:last-child .content_year {
+  top: -1.33333333rem;
 }
 .main .content .content_box {
+  position: relative;
   margin: 0.8rem auto;
   padding-left: 60px;
   background: url("../images/point.png") top left no-repeat;
   -webkit-background-size: 0.58666667rem 0.58666667rem;
   background-size: 0.58666667rem 0.58666667rem;
+}
+.main .content .content_box .content_year {
+  position: absolute;
+  top: -0.53333333rem;
+  left: 0.28rem;
+  width: 1px;
+  height: 100%;
+  background: #E1E1E1;
+  z-index: -1;
 }
 .main .content .content_box h2 {
   font-size: 0.37333333rem;
