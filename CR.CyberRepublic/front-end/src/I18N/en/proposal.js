@@ -87,7 +87,8 @@ export default {
     },
     error: {
       required: 'This field is required',
-      tooLong: 'This field is too long'
+      tooLong: 'This field is too long',
+      limit200: 'You can only type 200 words max.',
     }
   },
 }
