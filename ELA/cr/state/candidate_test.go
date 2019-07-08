@@ -33,7 +33,9 @@ func candidateEqual(first *Candidate, second *Candidate) bool {
 	return crInfoEqual(&first.info, &second.info) &&
 		first.state == second.state && first.votes == second.votes &&
 		first.registerHeight == second.registerHeight &&
-		first.cancelHeight == second.cancelHeight
+		first.cancelHeight == second.cancelHeight &&
+		first.depositAmount == second.depositAmount &&
+		first.depositHash.IsEqual(second.depositHash)
 }
 
 func crInfoEqual(first *payload.CRInfo, second *payload.CRInfo) bool {
@@ -64,6 +66,8 @@ func randomCandidate() *Candidate {
 		votes:          common.Fixed64(rand2.Int63()),
 		registerHeight: rand2.Uint32(),
 		cancelHeight:   rand2.Uint32(),
+		depositAmount:  common.Fixed64(rand2.Int63()),
+		depositHash:    *randomUint168(),
 	}
 }
 

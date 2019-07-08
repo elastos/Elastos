@@ -6,6 +6,7 @@
 package state
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"sort"
@@ -27,6 +28,22 @@ type Committee struct {
 
 func (c *Committee) GetState() *State {
 	return c.state
+}
+
+func (c *Committee) ExistCR(programCode []byte) bool {
+	existCandidate := c.state.ExistCandidate(programCode)
+	if existCandidate {
+		return true
+	}
+
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	for _, v := range c.Members {
+		if bytes.Equal(programCode, v.Info.Code) {
+			return true
+		}
+	}
+	return false
 }
 
 func (c *Committee) IsInVotingPeriod(height uint32) bool {
@@ -129,7 +146,8 @@ func (c *Committee) isInVotingPeriod(height uint32) bool {
 	}
 
 	if c.LastCommitteeHeight < c.params.CRCommitteeStartHeight {
-		return inVotingPeriod(c.params.CRCommitteeStartHeight)
+		return height >= c.params.CRVotingStartHeight &&
+			height < c.params.CRCommitteeStartHeight
 	} else {
 		return inVotingPeriod(c.LastCommitteeHeight + c.params.CRDutyPeriod)
 	}
