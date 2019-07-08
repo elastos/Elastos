@@ -16,3 +16,7 @@ ehthumbs.db
 Thumbs.db
 *.jks
 
+/app/RegTest
+/app/TestNet
+/app/MainNetAlpha
+/app/MainNet
