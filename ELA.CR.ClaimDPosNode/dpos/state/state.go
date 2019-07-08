@@ -15,6 +15,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -72,6 +73,8 @@ type Producer struct {
 	illegalHeight          uint32
 	penalty                common.Fixed64
 	votes                  common.Fixed64
+	depositAmount          common.Fixed64
+	depositHash            common.Uint168
 }
 
 // Info returns a copy of the origin registered producer info.
@@ -123,6 +126,10 @@ func (p *Producer) ActivateRequestHeight() uint32 {
 	return p.activateRequestHeight
 }
 
+func (p *Producer) DepositAmount() common.Fixed64 {
+	return p.depositAmount
+}
+
 func (p *Producer) Serialize(w io.Writer) error {
 	if err := p.info.Serialize(w, payload.ProducerInfoVersion); err != nil {
 		return err
@@ -160,7 +167,11 @@ func (p *Producer) Serialize(w io.Writer) error {
 		return err
 	}
 
-	return common.WriteUint64(w, uint64(p.votes))
+	if err := common.WriteUint64(w, uint64(p.votes)); err != nil {
+		return err
+	}
+
+	return p.depositHash.Serialize(w)
 }
 
 func (p *Producer) Deserialize(r io.Reader) (err error) {
@@ -209,7 +220,8 @@ func (p *Producer) Deserialize(r io.Reader) (err error) {
 		return
 	}
 	p.votes = common.Fixed64(votes)
-	return
+
+	return p.depositHash.Deserialize(r)
 }
 
 const (
@@ -227,7 +239,9 @@ type State struct {
 	*StateKeyFrame
 
 	// getArbiters defines methods about get current arbiters
-	getArbiters func() [][]byte
+	getArbiters              func() [][]byte
+	getProducerDepositAmount func(programHash common.Uint168) (
+		common.Fixed64, error)
 	chainParams *config.Params
 
 	mtx     sync.RWMutex
@@ -328,6 +342,11 @@ func (s *State) GetProducers() []*Producer {
 // GetAllProducers returns all producers including pending, active, canceled, illegal and inactive producers.
 func (s *State) GetAllProducers() []*Producer {
 	s.mtx.RLock()
+	defer s.mtx.RUnlock()
+	return s.getAllProducers()
+}
+
+func (s *State) getAllProducers() []*Producer {
 	producers := make([]*Producer, 0, len(s.PendingProducers)+
 		len(s.ActivityProducers))
 	for _, producer := range s.PendingProducers {
@@ -345,7 +364,6 @@ func (s *State) GetAllProducers() []*Producer {
 	for _, producer := range s.IllegalProducers {
 		producers = append(producers, producer)
 	}
-	s.mtx.RUnlock()
 	return producers
 }
 
@@ -620,6 +638,7 @@ func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 
+	s.tryInitProducerAssetAmounts(block.Height)
 	s.processTransactions(block.Transactions, block.Height)
 
 	if confirm != nil {
@@ -688,12 +707,10 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 	switch tx.TxType {
 	case types.RegisterProducer:
-		s.registerProducer(tx.Payload.(*payload.ProducerInfo),
-			height)
+		s.registerProducer(tx, height)
 
 	case types.UpdateProducer:
-		s.updateProducer(tx.Payload.(*payload.ProducerInfo),
-			height)
+		s.updateProducer(tx.Payload.(*payload.ProducerInfo), height)
 
 	case types.CancelProducer:
 		s.cancelProducer(tx.Payload.(*payload.ProcessProducer), height)
@@ -703,6 +720,7 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 
 	case types.TransferAsset:
 		s.processVotes(tx, height)
+		s.processDeposit(tx, height)
 
 	case types.IllegalProposalEvidence, types.IllegalVoteEvidence,
 		types.IllegalBlockEvidence, types.IllegalSidechainEvidence:
@@ -725,18 +743,35 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 }
 
 // registerProducer handles the register producer transaction.
-func (s *State) registerProducer(payload *payload.ProducerInfo, height uint32) {
-	nickname := payload.NickName
-	nodeKey := hex.EncodeToString(payload.NodePublicKey)
-	ownerKey := hex.EncodeToString(payload.OwnerPublicKey)
+func (s *State) registerProducer(tx *types.Transaction, height uint32) {
+	info := tx.Payload.(*payload.ProducerInfo)
+	nickname := info.NickName
+	nodeKey := hex.EncodeToString(info.NodePublicKey)
+	ownerKey := hex.EncodeToString(info.OwnerPublicKey)
+	// ignore error here because this converting process has been ensured in
+	// the context check already
+	programHash, _ := contract.PublicKeyToDepositProgramHash(info.
+		OwnerPublicKey)
+
+	amount := common.Fixed64(0)
+	if height >= s.chainParams.CRVotingStartHeight {
+		for _, output := range tx.Outputs {
+			if output.ProgramHash.IsEqual(*programHash) {
+				amount += output.Value
+			}
+		}
+	}
+
 	producer := Producer{
-		info:                   *payload,
+		info:                   *info,
 		registerHeight:         height,
 		votes:                  0,
 		inactiveSince:          0,
 		inactiveCountingHeight: 0,
 		penalty:                common.Fixed64(0),
 		activateRequestHeight:  math.MaxUint32,
+		depositAmount:          amount,
+		depositHash:            *programHash,
 	}
 
 	s.history.Append(height, func() {
@@ -820,6 +855,88 @@ func (s *State) processVotes(tx *types.Transaction, height uint32) {
 	}
 }
 
+// tryInitProducerAssetAmounts will initialize deposit amount of all
+// producers after CR voting start height.
+func (s *State) tryInitProducerAssetAmounts(blockHeight uint32) {
+	if blockHeight != s.chainParams.CRVotingStartHeight {
+		return
+	}
+
+	setAmount := func(producer *Producer, amount common.Fixed64) {
+		s.history.Append(blockHeight, func() {
+			producer.depositAmount = amount
+		}, func() {
+			producer.depositAmount = common.Fixed64(0)
+		})
+	}
+
+	producers := s.getAllProducers()
+	for _, v := range producers {
+		programHash, err := contract.PublicKeyToStandardProgramHash(
+			v.info.OwnerPublicKey)
+		if err != nil {
+			log.Warn(err)
+			continue
+		}
+
+		amount, err := s.getProducerDepositAmount(*programHash)
+		if err != nil {
+			log.Warn(err)
+			continue
+		}
+
+		producer := v
+		setAmount(producer, amount)
+	}
+}
+
+// processDeposit takes a transaction output with deposit program hash.
+func (s *State) processDeposit(tx *types.Transaction, height uint32) {
+	if height >= s.chainParams.CRVotingStartHeight {
+		for _, output := range tx.Outputs {
+			if contract.GetPrefixType(output.ProgramHash) ==
+				contract.PrefixDeposit {
+				s.addProducerAssert(output, height)
+			}
+		}
+	}
+}
+
+// getProducerByDepositHash will try to get producer with specified program
+// hash, note the producer state should be pending active or inactive.
+func (s *State) getProducerByDepositHash(hash common.Uint168) *Producer {
+	for _, producer := range s.PendingProducers {
+		if producer.depositHash.IsEqual(hash) {
+			return producer
+		}
+	}
+	for _, producer := range s.ActivityProducers {
+		if producer.depositHash.IsEqual(hash) {
+			return producer
+		}
+	}
+	for _, producer := range s.InactiveProducers {
+		if producer.depositHash.IsEqual(hash) {
+			return producer
+		}
+	}
+	return nil
+}
+
+// addProducerAssert will plus deposit amount for producers referenced in
+// program hash of transaction output.
+func (s *State) addProducerAssert(output *types.Output, height uint32) {
+	if producer := s.getProducerByDepositHash(output.ProgramHash);
+		producer != nil {
+		s.history.Append(height, func() {
+			producer.depositAmount += output.Value
+		}, func() {
+			producer.depositAmount -= output.Value
+		})
+	}
+}
+
+// processCancelVotes takes a transaction output with vote payload.
 func (s *State) processCancelVotes(tx *types.Transaction, height uint32) {
 	for _, input := range tx.Inputs {
 		referKey := input.ReferKey()
@@ -910,18 +1027,29 @@ func (s *State) processVoteCancel(output *types.Output, height uint32) {
 
 // returnDeposit change producer state to ReturnedDeposit
 func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
+	var outputValue common.Fixed64
+	for _, output := range tx.Outputs {
+		outputValue += output.Value
+	}
 
 	returnAction := func(producer *Producer) {
 		s.history.Append(height, func() {
+			if height >= s.chainParams.CRVotingStartHeight {
+				producer.depositAmount -= outputValue
+			}
 			producer.state = Returned
 		}, func() {
+			if height >= s.chainParams.CRVotingStartHeight {
+				producer.depositAmount += outputValue
+			}
 			producer.state = Canceled
 		})
 	}
 
 	for _, program := range tx.Programs {
 		pk := program.Code[1 : len(program.Code)-1]
-		if producer := s.getProducer(pk); producer != nil && producer.state == Canceled {
+		if producer := s.getProducer(pk);
+			producer != nil && producer.state == Canceled {
 			returnAction(producer)
 		}
 	}
@@ -1231,11 +1359,14 @@ func (s *State) GetHistory(height uint32) (*StateKeyFrame, error) {
 }
 
 // NewState returns a new State instance.
-func NewState(chainParams *config.Params, getArbiters func() [][]byte) *State {
+func NewState(chainParams *config.Params, getArbiters func() [][]byte,
+	getProducerDepositAmount func(programHash common.Uint168) (common.Fixed64,
+	error)) *State {
 	return &State{
-		chainParams: chainParams,
-		getArbiters: getArbiters,
-		history:     utils.NewHistory(maxHistoryCapacity),
+		chainParams:              chainParams,
+		getArbiters:              getArbiters,
+		getProducerDepositAmount: getProducerDepositAmount,
+		history:                  utils.NewHistory(maxHistoryCapacity),
 		StateKeyFrame: &StateKeyFrame{
 			NodeOwnerKeys:             make(map[string]string),
 			PendingProducers:          make(map[string]*Producer),

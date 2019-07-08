@@ -8,6 +8,8 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -186,6 +188,18 @@ func startNode(c *cli.Context) {
 			}
 			blockchain.CalculateTxsFee(block)
 			return block, nil
+		}, func(programHash common.Uint168) (common.Fixed64,
+			error) {
+			amount := common.Fixed64(0)
+			utxos, err := blockchain.DefaultLedger.Store.
+				GetUnspentFromProgramHash(programHash, config.ELAAssetID)
+			if err != nil {
+				return amount, err
+			}
+			for _, utxo := range utxos {
+				amount += utxo.Value
+			}
+			return amount, nil
 		})
 	if err != nil {
 		printErrorAndExit(err)
