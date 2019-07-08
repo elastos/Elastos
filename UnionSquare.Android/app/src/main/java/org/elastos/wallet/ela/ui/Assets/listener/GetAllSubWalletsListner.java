@@ -9,6 +9,6 @@ public class GetAllSubWalletsListner extends SubscriberOnNextLisenner {
     @Override
     protected void onNextLisenner(BaseEntity t) {
         AssetsViewData viewData = (AssetsViewData) getViewData();
-        viewData.onGetAllSubWallets(((ISubWalletListEntity) t).getData());
+        viewData.onGetAllSubWallets(((ISubWalletListEntity) t).getData(), (Integer) getObj());
     }
 }

@@ -32,6 +32,7 @@ import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.AssetsViewData;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
+import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
@@ -51,7 +52,7 @@ import butterknife.OnClick;
 /**
  * 资产首页
  */
-public class AssetskFragment extends BaseFragment implements AssetsViewData, CommonRvListener1, ISubWalletListener, OnRefreshListener, CommonBalanceViewData {
+public class AssetskFragment extends BaseFragment implements AssetsViewData, CommonRvListener1, ISubWalletListener, OnRefreshListener, CommonBalanceViewData, CommmonStringWithMethNameViewData {
 
     private static final long WAIT_TIME = 2000L;
 
@@ -169,7 +170,15 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     }
 
     @Override
-    public void onGetAllSubWallets(List<SubWallet> data) {
+    public void onGetAllSubWallets(List<SubWallet> data, int type) {
+      /*  if (type == 1) {
+            for (SubWallet newSubWallet : data) {
+                if (newSubWallet.getBelongId().equals(wallet.getWalletId())) {
+                    assetsPresenter.syncStart(wallet.getWalletId(), newSubWallet.getChainId(), this);
+                }
+            }
+            return;
+        }*/
         if (data == null || data.size() == 0) {
             return;
         }
@@ -177,6 +186,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         List<SubWallet> assetList = listMap.get(currentBelongId);//原来的数据
 
         for (SubWallet newSubWallet : data) {
+
             First:
             {
                 if (assetList != null && assetList.size() != 0) {
@@ -191,12 +201,12 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                         }
 
                     }
-                    SubWallet subWallet = new RealmUtil().querySubWallet(newSubWallet.getBelongId(), newSubWallet.getChainId());
+                    SubWallet subWallet = realmUtil.querySubWallet(newSubWallet.getBelongId(), newSubWallet.getChainId());
                     newSubWallet.setProgress(subWallet.getProgress());
                     newSubWallet.setSyncTime(subWallet.getSyncTime());
                     assetsPresenter.registerWalletListener(currentBelongId, newSubWallet.getChainId(), this);
                 } else {
-                    SubWallet subWallet = new RealmUtil().querySubWallet(newSubWallet.getBelongId(), newSubWallet.getChainId());
+                    SubWallet subWallet = realmUtil.querySubWallet(newSubWallet.getBelongId(), newSubWallet.getChainId());
                     newSubWallet.setProgress(subWallet.getProgress());
                     newSubWallet.setSyncTime(subWallet.getSyncTime());
                     assetsPresenter.registerWalletListener(currentBelongId, newSubWallet.getChainId(), this);
@@ -349,6 +359,8 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         if (refreshLayout.getState() == RefreshState.Refreshing) {
             refreshLayout.finishRefresh();
         }
+        assetsPresenter.getAllSubWallets(wallet.getWalletId(), 1, this);
+
     }
 
     /**
@@ -420,5 +432,10 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         super.onDestroy();
         //存储所有同步状态
         realmUtil.updateSubWalletDetial(listMap);
+    }
+
+    @Override
+    public void onGetCommonData(String methodname, String data) {
+
     }
 }

@@ -123,7 +123,55 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
 
 
     }
+    protected Observer<BaseEntity> createObserver(Class<? extends SubscriberOnNextLisenner> listener, BaseFragment baseFragment,Object o) {
+        //初始化参数
+        this.context = baseFragment.getBaseActivity();
+        if (isShowDialog) {
+            initProgressDialog(context);
+        }
+        SubscriberOnNextLisenner lisener = LisenerFactor.create(listener);
+        lisener.setViewData((BaseViewData) baseFragment);
+        lisener.setObj(o);
+        //创建 Observer
+        return new Observer<BaseEntity>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                mDisposable = d;
+                Log.e(TAG, "onSubscribe");
+            }
 
+            @Override
+            public void onNext(BaseEntity value) {
+                if (isShowDialog) {
+                    dismissProgessDialog();
+                }
+                if (MyWallet.SUCCESSCODE.equals(value.getCode()) || "0".equals(value.getCode())) {
+                    lisener.onNextLisenner(value);
+                } else {
+                    showTips(value);
+                }
+                Log.e(TAG, "onNext:" + value);
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                if (isShowDialog) {
+                    dismissProgessDialog();
+                }
+                Log.e(TAG, "onError=" + e.getMessage());
+                Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onComplete() {
+                Log.e(TAG, "onComplete()");
+                finish();
+            }
+        };
+
+
+    }
     protected Observer<BaseEntity> createObserver(Class<? extends SubscriberOnNextLisenner> listener, BaseActivity baseActivity) {
         //初始化参数
         this.context = baseActivity;
