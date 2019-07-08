@@ -64,6 +64,7 @@ type Configuration struct {
 	VoteStartHeight        uint32            `json:"VoteStartHeight"`
 	CRCOnlyDPOSHeight      uint32            `json:"CRCOnlyDPOSHeight"`
 	PublicDPOSHeight       uint32            `json:"PublicDPOSHeight"`
+	CRVotingStartHeight    uint32            `json:"CRVotingStartHeight"`
 	CRCommitteeStartHeight uint32            `json:"CRCommitteeStartHeight"`
 	ProfilePort            uint32            `json:"ProfilePort"`
 	MaxBlockSize           uint32            `json"MaxBlockSize"`

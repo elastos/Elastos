@@ -919,7 +919,7 @@ func (a *arbitrators) getBlockDPOSReward(block *types.Block) common.Fixed64 {
 		totalTxFx += tx.Fee
 	}
 
-	return common.Fixed64(math.Ceil(float64(totalTxFx+
+	return common.Fixed64(math.Ceil(float64(totalTxFx +
 		a.chainParams.RewardPerBlock) * 0.35))
 }
 
@@ -1041,7 +1041,9 @@ func NewArbitrators(chainParams *config.Params,
 	store IArbitratorsRecord,
 	bestHeight func() uint32,
 	bestBlock func() (*types.Block, error),
-	getBlockByHeight func(uint32) (*types.Block, error)) (*arbitrators, error) {
+	getBlockByHeight func(uint32) (*types.Block, error),
+	getProducerDepositAmount func(programHash common.Uint168) (common.Fixed64,
+	error)) (*arbitrators, error) {
 
 	originArbiters := make([][]byte, len(chainParams.OriginArbiters))
 	originArbitersProgramHashes := make([]*common.Uint168, len(chainParams.OriginArbiters))
@@ -1121,7 +1123,7 @@ func NewArbitrators(chainParams *config.Params,
 			state:             DSNormal,
 		},
 	}
-	a.State = NewState(chainParams, a.GetArbitrators)
+	a.State = NewState(chainParams, a.GetArbitrators, getProducerDepositAmount)
 
 	if store != nil {
 		checkedHeights, err := store.GetHeightsDesc()

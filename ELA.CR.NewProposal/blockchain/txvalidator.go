@@ -63,7 +63,7 @@ func (b *BlockChain) CheckTransactionSanity(blockHeight uint32, txn *Transaction
 		return ErrAssetPrecision
 	}
 
-	if err := checkAttributeProgram(txn); err != nil {
+	if err := b.checkAttributeProgram(txn, blockHeight); err != nil {
 		log.Warn("[CheckAttributeProgram],", err)
 		return ErrAttributeProgram
 	}
@@ -709,7 +709,8 @@ func (b *BlockChain) checkTransactionFee(tx *Transaction, references map[*Input]
 	return nil
 }
 
-func checkAttributeProgram(tx *Transaction) error {
+func (b *BlockChain) checkAttributeProgram(tx *Transaction,
+	blockHeight uint32) error {
 	switch tx.TxType {
 	case CoinBase:
 		// Coinbase and illegal transactions do not check attribute and program
@@ -743,6 +744,12 @@ func checkAttributeProgram(tx *Transaction) error {
 				return errors.New("sideChainPow transactions should have no attributes and programs")
 			}
 			return nil
+		}
+	case ReturnDepositCoin:
+		if blockHeight >= b.chainParams.CRVotingStartHeight {
+			if len(tx.Programs) != 1 {
+				return errors.New("return deposit coin transactions should have one and only one program")
+			}
 		}
 	}
 
@@ -1164,20 +1171,24 @@ func (b *BlockChain) checkActivateProducerTransaction(txn *Transaction,
 		return errors.New("can only activate once during inactive state")
 	}
 
-	programHash, err := contract.PublicKeyToDepositProgramHash(
-		producer.OwnerPublicKey())
-	if err != nil {
-		return err
-	}
-
-	utxos, err := b.db.GetUnspentFromProgramHash(*programHash, config.ELAAssetID)
-	if err != nil {
-		return err
-	}
-
 	depositAmount := common.Fixed64(0)
-	for _, u := range utxos {
-		depositAmount += u.Value
+	if height < b.chainParams.CRVotingStartHeight {
+		programHash, err := contract.PublicKeyToDepositProgramHash(
+			producer.OwnerPublicKey())
+		if err != nil {
+			return err
+		}
+
+		utxos, err := b.db.GetUnspentFromProgramHash(*programHash, config.ELAAssetID)
+		if err != nil {
+			return err
+		}
+
+		for _, u := range utxos {
+			depositAmount += u.Value
+		}
+	} else {
+		depositAmount = producer.DepositAmount()
 	}
 
 	if depositAmount-producer.Penalty() < MinDepositAmount {

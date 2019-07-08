@@ -52,7 +52,7 @@ func (s *txValidatorTestSuite) SetupSuite() {
 		s.Error(err)
 	}
 	s.Chain, err = New(chainStore, params,
-		state.NewState(params, nil),
+		state.NewState(params, nil, nil),
 		crstate.NewCommittee(params))
 	if err != nil {
 		s.Error(err)
@@ -64,7 +64,7 @@ func (s *txValidatorTestSuite) SetupSuite() {
 		chainStore.GetHeight, func() (*types.Block, error) {
 			hash := chainStore.GetCurrentBlockHash()
 			return chainStore.GetBlock(hash)
-		}, nil)
+		}, nil, nil)
 	if err != nil {
 		s.Fail("initialize arbitrator failed")
 	}
@@ -310,7 +310,7 @@ func (s *txValidatorTestSuite) TestCheckAttributeProgram() {
 		attr := types.NewAttribute(usage, nil)
 		tx.Attributes = append(tx.Attributes, &attr)
 	}
-	err := checkAttributeProgram(tx)
+	err := s.Chain.checkAttributeProgram(tx, 0)
 	s.EqualError(err, "no programs found in transaction")
 
 	// invalid attributes
@@ -326,20 +326,20 @@ func (s *txValidatorTestSuite) TestCheckAttributeProgram() {
 	for i := 0; i < 10; i++ {
 		attr := types.NewAttribute(getInvalidUsage(), nil)
 		tx.Attributes = []*types.Attribute{&attr}
-		err := checkAttributeProgram(tx)
+		err := s.Chain.checkAttributeProgram(tx, 0)
 		s.EqualError(err, fmt.Sprintf("invalid attribute usage %v", attr.Usage))
 	}
 	tx.Attributes = nil
 
 	// empty programs
 	tx.Programs = []*program.Program{}
-	err = checkAttributeProgram(tx)
+	err = s.Chain.checkAttributeProgram(tx, 0)
 	s.EqualError(err, "no programs found in transaction")
 
 	// nil program code
 	p := &program.Program{}
 	tx.Programs = append(tx.Programs, p)
-	err = checkAttributeProgram(tx)
+	err = s.Chain.checkAttributeProgram(tx, 0)
 	s.EqualError(err, "invalid program code nil")
 
 	// nil program parameter
@@ -347,7 +347,7 @@ func (s *txValidatorTestSuite) TestCheckAttributeProgram() {
 	rand.Read(code)
 	p = &program.Program{Code: code}
 	tx.Programs = []*program.Program{p}
-	err = checkAttributeProgram(tx)
+	err = s.Chain.checkAttributeProgram(tx, 0)
 	s.EqualError(err, "invalid program parameter nil")
 }
 
