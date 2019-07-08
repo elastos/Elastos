@@ -253,7 +253,8 @@ static void friend_message_cb(ElaCarrier *w, const char *from,
             extra->test_offmsg = OffMsgCase_Zero;
         }
     } else {
-        write_ack("%.*s\n", len, msg);
+        if (strchr(msg, ':') == NULL)
+            write_ack("%.*s\n", len, msg);
     }
     pthread_mutex_unlock(&extra->mutex);
 }
