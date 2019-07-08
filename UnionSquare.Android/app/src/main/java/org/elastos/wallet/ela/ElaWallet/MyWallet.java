@@ -1170,5 +1170,19 @@ public class MyWallet {
             return exceptionProcess(e, "Get version");
         }
     }
+    public BaseEntity syncStart(String masterWalletID, String chainID) {
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
+
+            }
+
+             subWallet.SyncStart();
+            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, "", "syncStart");
+        } catch (WalletException e) {
+            return exceptionProcess(e, "syncStart " + formatWalletName(masterWalletID, chainID) + " all tx");
+        }
+    }
 }
 
