@@ -53,9 +53,10 @@ class Component extends BaseComponent {
   }
 
   onChange = (editorState) => {
-    const { onChange } = this.props
+    const { onChange, callback } = this.props
 
     if (onChange) onChange(editorState)
+    if (callback) callback()
   }
 
   handleBeforeInput = (editorState, inputString, onChange) => {
