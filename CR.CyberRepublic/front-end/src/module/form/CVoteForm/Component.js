@@ -8,11 +8,14 @@ import _ from 'lodash'
 import { CVOTE_STATUS } from '@/constant'
 import { convertToRaw } from 'draft-js'
 import DraftEditor from '@/module/common/DraftEditor'
+import CircularProgressbar from '@/module/common/CircularProgressbar'
 
 // if using webpack
 import 'medium-draft/lib/index.css'
 
-import { Container, Title, TabPaneInner, Note, NoteHighlight, TabText } from './style'
+import { Container, Title, TabPaneInner, Note, NoteHighlight, TabText, CirContainer } from './style'
+
+const WORD_LIMIT = 200
 
 const FormItem = Form.Item
 const { TabPane } = Tabs
@@ -30,7 +33,7 @@ const transform = value => {
   return result
 }
 
-const renderRichEditor = (data, key, getFieldDecorator, max) => {
+const renderRichEditor = (data, key, getFieldDecorator, max, callback) => {
   const content = _.get(data, key, '')
   const rules = [
     {
@@ -43,7 +46,7 @@ const renderRichEditor = (data, key, getFieldDecorator, max) => {
     rules.push({
       max,
       transform,
-      message: I18N.get('proposal.form.error.tooLong')
+      message: I18N.get(`proposal.form.error.limit${max}`)
     })
   }
   const content_fn = getFieldDecorator(key, {
@@ -52,7 +55,7 @@ const renderRichEditor = (data, key, getFieldDecorator, max) => {
     initialValue: content,
   })
   const content_el = (
-    <DraftEditor contentType={_.get(data, 'contentType')} />
+    <DraftEditor contentType={_.get(data, 'contentType')} callback={callback} />
   )
   return content_fn(content_el)
 }
@@ -171,7 +174,7 @@ class C extends BaseComponent {
       <Input size="large" type="text" />
     )
 
-    const abstract = renderRichEditor(data, 'abstract', getFieldDecorator, 200)
+    const abstract = renderRichEditor(data, 'abstract', getFieldDecorator, WORD_LIMIT, this.validateAbstract)
     const goal = renderRichEditor(data, 'goal', getFieldDecorator)
     const motivation = renderRichEditor(data, 'motivation', getFieldDecorator)
     const relevance = renderRichEditor(data, 'relevance', getFieldDecorator)
@@ -224,7 +227,12 @@ class C extends BaseComponent {
             <TabPane tab={this.renderTabText('abstract')} key="abstract">
               <TabPaneInner>
                 <Note>{I18N.get('proposal.form.note.abstract')}</Note>
-                <FormItem>{formProps.abstract}</FormItem>
+                <FormItem>
+                  <div style={{ position: 'relative' }}>
+                    {formProps.abstract}
+                    {this.renderWordLimit()}
+                  </div>
+                </FormItem>
               </TabPaneInner>
             </TabPane>
             <TabPane tab={this.renderTabText('goal')} key="goal">
@@ -272,6 +280,37 @@ class C extends BaseComponent {
         </Form>
       </Container>
     )
+  }
+
+  renderWordLimit() {
+    const { form } = this.props
+    const formValue = form.getFieldValue('abstract')
+    const value = transform(formValue)
+    const count = value.length
+
+    return (
+      <CirContainer>
+        <CircularProgressbar count={count} />
+      </CirContainer>
+    )
+  }
+
+  validateAbstract = () => {
+    const { form } = this.props
+    const formValue = form.getFieldValue('abstract')
+    const value = transform(formValue)
+    const err = transform(form.getFieldError('abstract'))
+    const count = value.length
+
+    if (err && count < WORD_LIMIT) {
+      form.setFields({
+        abstract: {
+          value: formValue,
+          errors: undefined,
+        },
+      })
+    }
+
   }
 
   renderTabText(key) {
