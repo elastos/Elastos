@@ -98,8 +98,12 @@ func TestCommittee_IsInVotingPeriod(t *testing.T) {
 	// 0
 	assert.False(t, committee.IsInVotingPeriod(0))
 
-	// < CRCommitteeStartHeight - CRVotingPeriod
+	// < CRVotingStartHeight
 	assert.False(t, committee.IsInVotingPeriod(
+		config.DefaultParams.CRVotingStartHeight-1))
+
+	// [CRVotingStartHeight, CRCommitteeStartHeight - CRVotingPeriod]
+	assert.True(t, committee.IsInVotingPeriod(
 		config.DefaultParams.CRCommitteeStartHeight-
 			config.DefaultParams.CRVotingPeriod-1))
 

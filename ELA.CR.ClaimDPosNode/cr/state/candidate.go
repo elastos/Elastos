@@ -51,6 +51,8 @@ type Candidate struct {
 	votes          common.Fixed64
 	registerHeight uint32
 	cancelHeight   uint32
+	depositAmount  common.Fixed64
+	depositHash    common.Uint168
 }
 
 func (c *Candidate) Serialize(w io.Writer) (err error) {
@@ -70,7 +72,15 @@ func (c *Candidate) Serialize(w io.Writer) (err error) {
 		return
 	}
 
-	return common.WriteUint32(w, c.cancelHeight)
+	if err = common.WriteUint32(w, c.cancelHeight); err != nil {
+		return
+	}
+
+	if err = common.WriteUint64(w, uint64(c.depositAmount)); err != nil {
+		return
+	}
+
+	return c.depositHash.Serialize(w)
 }
 
 func (c *Candidate) Deserialize(r io.Reader) (err error) {
@@ -95,7 +105,14 @@ func (c *Candidate) Deserialize(r io.Reader) (err error) {
 	}
 
 	c.cancelHeight, err = common.ReadUint32(r)
-	return
+
+	var depositAmount uint64
+	if depositAmount, err = common.ReadUint64(r); err != nil {
+		return
+	}
+	c.depositAmount = common.Fixed64(depositAmount)
+
+	return c.depositHash.Deserialize(r)
 }
 
 func (c *Candidate) Info() payload.CRInfo {
