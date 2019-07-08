@@ -10,6 +10,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -172,7 +173,7 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 	switch tx.TxType {
 	case types.RegisterCR:
-		s.registerCR(tx.Payload.(*payload.CRInfo), height)
+		s.registerCR(tx, height)
 
 	case types.UpdateCR:
 		s.updateCR(tx.Payload.(*payload.CRInfo), height)
@@ -182,21 +183,36 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 
 	case types.TransferAsset:
 		s.processVotes(tx, height)
+		s.processDeposit(tx, height)
+
+		// todo call returnDeposit() with tx type of return CR deposit
 	}
 
 	s.processCancelVotes(tx, height)
 }
 
 // registerCR handles the register CR transaction.
-func (s *State) registerCR(info *payload.CRInfo, height uint32) {
+func (s *State) registerCR(tx *types.Transaction, height uint32) {
+	info := tx.Payload.(*payload.CRInfo)
 	nickname := info.NickName
 	code := common.BytesToHexString(info.Code)
+
+	depositContract, _ := contract.CreateDepositContractByCode(info.Code)
 	candidate := Candidate{
 		info:           *info,
 		registerHeight: height,
 		votes:          0,
 		state:          Pending,
+		depositHash:    *depositContract.ToProgramHash(),
 	}
+
+	amount := common.Fixed64(0)
+	for _, output := range tx.Outputs {
+		if output.ProgramHash.IsEqual(candidate.depositHash) {
+			amount += output.Value
+		}
+	}
+	candidate.depositAmount = amount
 
 	s.history.Append(height, func() {
 		s.Nicknames[nickname] = struct{}{}
@@ -275,6 +291,69 @@ func (s *State) processVotes(tx *types.Transaction, height uint32) {
 			}
 		}
 	}
+}
+
+// processDeposit takes a transaction output with deposit program hash.
+func (s *State) processDeposit(tx *types.Transaction, height uint32) {
+	for _, output := range tx.Outputs {
+		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixDeposit {
+			s.addCandidateAssert(output, height)
+		}
+	}
+}
+
+// returnDeposit change producer state to ReturnedDeposit
+func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
+	var outputValue common.Fixed64
+	for _, output := range tx.Outputs {
+		outputValue += output.Value
+	}
+
+	returnAction := func(candidate *Candidate) {
+		s.history.Append(height, func() {
+			candidate.depositAmount -= outputValue
+			candidate.state = Returned
+		}, func() {
+			candidate.depositAmount += outputValue
+			candidate.state = Canceled
+		})
+	}
+
+	for _, program := range tx.Programs {
+		if producer := s.getCandidate(program.Code);
+			producer != nil && producer.state == Canceled {
+			returnAction(producer)
+		}
+	}
+}
+
+// addCandidateAssert will plus deposit amount for candidates referenced in
+// program hash of transaction output.
+func (s *State) addCandidateAssert(output *types.Output, height uint32) {
+	if candidate := s.getCandidateByDepositHash(output.ProgramHash);
+		candidate != nil {
+		s.history.Append(height, func() {
+			candidate.depositAmount += output.Value
+		}, func() {
+			candidate.depositAmount -= output.Value
+		})
+	}
+}
+
+// getCandidateByDepositHash will try to get candidate with specified program
+// hash, note the candidate state should be pending or active.
+func (s *State) getCandidateByDepositHash(hash common.Uint168) *Candidate {
+	for _, candidate := range s.PendingCandidates {
+		if candidate.depositHash.IsEqual(hash) {
+			return candidate
+		}
+	}
+	for _, candidate := range s.ActivityCandidates {
+		if candidate.depositHash.IsEqual(hash) {
+			return candidate
+		}
+	}
+	return nil
 }
 
 // processVoteOutput takes a transaction output with vote payload.

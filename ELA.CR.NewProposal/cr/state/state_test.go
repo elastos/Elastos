@@ -9,9 +9,12 @@ import (
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/contract"
+	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/utils"
 
 	"github.com/stretchr/testify/assert"
@@ -331,6 +334,115 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 		candidate := state.GetCandidate(v)
 		assert.Equal(t, common.Fixed64(0), candidate.votes)
 	}
+}
+
+func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
+	state := NewState(nil)
+	height := uint32(1)
+
+	_, pk, _ := crypto.GenerateKeyPair()
+	cont, _ := contract.CreateStandardContract(pk)
+	code := cont.Code
+	depositCont, _ := contract.CreateDepositContractByPubKey(pk)
+
+	// register CR
+	state.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: height,
+		},
+		Transactions: []*types.Transaction{
+			{
+				TxType: types.RegisterCR,
+				Payload: &payload.CRInfo{
+					Code:     code,
+					DID:      *randomUint168(),
+					NickName: randomString(),
+				},
+				Outputs: []*types.Output{
+					{
+						ProgramHash: *depositCont.ToProgramHash(),
+						Value:       common.Fixed64(100),
+					},
+				},
+			},
+		},
+	}, nil)
+	height++
+	candidate := state.GetCandidate(code)
+	assert.Equal(t, common.Fixed64(100), candidate.depositAmount)
+
+	// deposit though normal tx
+	state.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: height,
+		},
+		Transactions: []*types.Transaction{
+			{
+				TxType:  types.TransferAsset,
+				Payload: &payload.TransferAsset{},
+				Outputs: []*types.Output{
+					{
+						ProgramHash: *depositCont.ToProgramHash(),
+						Value:       common.Fixed64(200),
+					},
+				},
+			},
+		},
+	}, nil)
+	height++
+	assert.Equal(t, common.Fixed64(300), candidate.depositAmount)
+
+	// cancel candidate
+	for i := 0; i < 4; i++ {
+		state.ProcessBlock(&types.Block{
+			Header: types.Header{
+				Height: height,
+			},
+			Transactions: []*types.Transaction{},
+		}, nil)
+		height++
+	}
+	assert.Equal(t, Active, candidate.state)
+	state.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: height,
+		},
+		Transactions: []*types.Transaction{
+			generateUnregisterCR(code),
+		},
+	}, nil)
+	height++
+	for i := 0; i < 5; i++ {
+		state.ProcessBlock(&types.Block{
+			Header: types.Header{
+				Height: height,
+			},
+			Transactions: []*types.Transaction{},
+		}, nil)
+		height++
+	}
+	assert.Equal(t, Canceled, candidate.state)
+
+	// return deposit
+	// todo replace returnDeposit() with ProcessBlock() when return CR deposit
+	//  tx defined
+	state.returnDeposit(&types.Transaction{
+		Programs: []*program.Program{
+			{
+				Code: code,
+			},
+		},
+		Outputs: []*types.Output{
+			{
+				Value: 100,
+			},
+			{
+				Value: 200,
+			},
+		},
+	}, height)
+	state.history.Commit(height)
+	assert.Equal(t, common.Fixed64(0), candidate.depositAmount)
 }
 
 func mockNewVoteTx(programCodes [][]byte) *types.Transaction {

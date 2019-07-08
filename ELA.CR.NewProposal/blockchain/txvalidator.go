@@ -1038,6 +1038,20 @@ func (b *BlockChain) checkRegisterProducerTransaction(txn *Transaction) error {
 		return fmt.Errorf("nick name %s already inuse", info.NickName)
 	}
 
+	// check if public keys conflict with cr program code
+	ownerCode := info.OwnerPublicKey
+	ownerCode = append(ownerCode, vm.CHECKSIG)
+	if b.crCommittee.ExistCR(ownerCode) {
+		return fmt.Errorf("owner public key %s already exist in cr list",
+			common.BytesToHexString(info.OwnerPublicKey))
+	}
+	nodeCode := info.NodePublicKey
+	nodeCode = append(nodeCode, vm.CHECKSIG)
+	if b.crCommittee.ExistCR(nodeCode) {
+		return fmt.Errorf("node public key %s already exist in cr list",
+			common.BytesToHexString(info.OwnerPublicKey))
+	}
+
 	if err := b.additionalProducerInfoCheck(info); err != nil {
 		return err
 	}
@@ -1244,6 +1258,14 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 		return fmt.Errorf("nick name %s already exist", info.NickName)
 	}
 
+	// check if public keys conflict with cr program code
+	nodeCode := info.NodePublicKey
+	nodeCode = append(nodeCode, vm.CHECKSIG)
+	if b.crCommittee.ExistCR(nodeCode) {
+		return fmt.Errorf("node public key %s already exist in cr list",
+			common.BytesToHexString(info.NodePublicKey))
+	}
+
 	// check node public key duplication
 	if bytes.Equal(info.NodePublicKey, producer.Info().NodePublicKey) {
 		return nil
@@ -1299,6 +1321,14 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
 		return err
 	}
 	programHash := ct.ToProgramHash()
+
+	// check if program code conflict with producer public keys
+	if info.Code[len(info.Code)-1] == vm.CHECKSIG {
+		if b.state.ProducerExists(info.Code[0 : len(info.Code)-1]) {
+			return fmt.Errorf("public key %s already inuse in producer list",
+				common.BytesToHexString(info.Code[0:len(info.Code)-1]))
+		}
+	}
 
 	// check DID
 	if !info.DID.IsEqual(*programHash) {
