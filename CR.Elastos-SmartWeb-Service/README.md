@@ -1,1 +1,1 @@
-# gmu-master-api-service
+# GMU Master API Service
