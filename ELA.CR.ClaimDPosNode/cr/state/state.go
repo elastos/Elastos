@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -206,7 +206,8 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 		s.processVotes(tx, height)
 		s.processDeposit(tx, height)
 
-		// todo call returnDeposit() with tx type of return CR deposit
+	case types.ReturnCRDepositCoin:
+		s.returnDeposit(tx, height)
 	}
 
 	s.processCancelVotes(tx, height)
@@ -330,20 +331,19 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 		outputValue += output.Value
 	}
 
-	returnAction := func(candidate *Candidate) {
+	returnAction := func(candidate *Candidate, originState CandidateState) {
 		s.history.Append(height, func() {
 			candidate.depositAmount -= outputValue
 			candidate.state = Returned
 		}, func() {
 			candidate.depositAmount += outputValue
-			candidate.state = Canceled
+			candidate.state = originState
 		})
 	}
 
 	for _, program := range tx.Programs {
-		if producer := s.getCandidate(program.Code);
-			producer != nil && producer.state == Canceled {
-			returnAction(producer)
+		if candidate := s.getCandidate(program.Code); candidate != nil {
+			returnAction(candidate, candidate.state)
 		}
 	}
 }
@@ -351,8 +351,7 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 // addCandidateAssert will plus deposit amount for candidates referenced in
 // program hash of transaction output.
 func (s *State) addCandidateAssert(output *types.Output, height uint32) {
-	if candidate := s.getCandidateByDepositHash(output.ProgramHash);
-		candidate != nil {
+	if candidate := s.getCandidateByDepositHash(output.ProgramHash); candidate != nil {
 		s.history.Append(height, func() {
 			candidate.depositAmount += output.Value
 		}, func() {
