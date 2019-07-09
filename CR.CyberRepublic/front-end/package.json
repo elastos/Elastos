@@ -52,6 +52,7 @@
     "react-router-redux": "^5.0.0-alpha.9",
     "react-share": "^2.2.0",
     "react-slick": "^0.23.1",
+    "react-sticky": "^6.0.3",
     "react-timezone": "^2.1.0",
     "react-transition-group": "^2.3.1",
     "redux": "4.0.0",
