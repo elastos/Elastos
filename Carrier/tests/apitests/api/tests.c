@@ -70,9 +70,9 @@ static int connect_robot(const char *host, const char *port)
         cmd_sock = socket_connect(host, port);
         if (cmd_sock != INVALID_SOCKET) {
 #ifdef _WIN32
-            struct timeval timeout = {600000,0};//600s
+            struct timeval timeout = {900000,0};//900s
 #else
-            struct timeval timeout = {600,0};//600s
+            struct timeval timeout = {900,0};//900s
 #endif
             setsockopt(cmd_sock, SOL_SOCKET, SO_SNDTIMEO, (const char *)&timeout, sizeof(timeout));
             setsockopt(cmd_sock, SOL_SOCKET, SO_RCVTIMEO, (const char *)&timeout, sizeof(timeout));
