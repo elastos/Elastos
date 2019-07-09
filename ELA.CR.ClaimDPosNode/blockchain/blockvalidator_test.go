@@ -9,8 +9,6 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/core/types/payload"
-	"github.com/elastos/Elastos.ELA/crypto"
 	"math"
 	"math/rand"
 	"testing"
@@ -20,6 +18,8 @@ import (
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/utils/test"
 
@@ -179,9 +179,10 @@ func TestCheckCoinbaseArbitratorsReward(t *testing.T) {
 }
 
 func TestCRDuplicateTx(t *testing.T) {
-	code := getValideCode()
+	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
+	code := getValideCode(publicKeyStr1)
 	nickname := randomString()
-	didPointer := getValideDID()
+	didPointer := getValideDID(publicKeyStr1)
 	did := *didPointer
 
 	TestRegisterCR := func(t *testing.T) {
@@ -496,17 +497,14 @@ func randomUint168() *common.Uint168 {
 	return result
 }
 
-func getValideCode() []byte {
-	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
-	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+func getValideCode(publicKeyStr string) []byte {
+	publicKey1, _ := common.HexStringToBytes(publicKeyStr)
 	pk1, _ := crypto.DecodePoint(publicKey1)
 	ct1, _ := contract.CreateStandardContract(pk1)
 	return ct1.Code
 }
 
-func getValideDID() *common.Uint168 {
-	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
-	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
-	hash1, _ := contract.PublicKeyToDepositProgramHash(publicKey1)
-	return hash1
+func getValideDID(publicKeyStr string) *common.Uint168 {
+	code := getValideCode(publicKeyStr)
+	return getDid(code)
 }

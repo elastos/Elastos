@@ -122,9 +122,11 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 }
 
 func getDIDByCode(code []byte) (*Uint168, error) {
-	pk := code[1 : len(code)-1]
-	did, error := contract.PublicKeyToDepositProgramHash(pk)
-	return did, error
+	ct1, error := contract.CreateCRDIDContractByCode(code)
+	if error != nil {
+		return nil, error
+	}
+	return ct1.ToProgramHash(), error
 }
 
 func checkDuplicateTx(block *Block) error {
