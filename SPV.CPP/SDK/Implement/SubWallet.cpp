@@ -164,6 +164,9 @@ namespace Elastos {
 			for (const TransactionOutput &output : outputs) {
 				ErrorChecker::CheckParam(!output.GetAddress().Valid(), Error::CreateTransaction,
 				                         "invalid receiver address " + output.GetAddress().String());
+
+				ErrorChecker::CheckParam(output.GetAmount() < 0, Error::CreateTransaction,
+				                         "output amount should big than zero");
 			}
 
 			std::string memoFormated = "type:text,msg:" + memo;
