@@ -19,3 +19,23 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+
+LICENSE-3RD-PARTY:
+
+Btcd
+  Copyright (c) 2013-2016 The btcsuite developers
+  https://github.com/btcsuite/btcd
+  ISC License
+
+Upnp
+  Copyright (c) 2010 Jack Palevich. All rights reserved.
+  https://github.com/jackpal/Taipei-Torrent
+  MIT-like License
+
+Ecies
+  Copyright (c) 2013 Kyle Isom <kyle@tyrfingr.is>
+  Copyright (c) 2012 The Go Authors. All rights reserved.
+  https://github.com/obscuren/ecies
+  BSD3 License
+
