@@ -48,7 +48,7 @@ namespace Elastos {
 				const std::string &name,
 				const std::string &description,
 				const std::string &registerToAddress,
-				uint64_t registerAmount,
+				const std::string &registerAmount,
 				uint8_t precision,
 				const std::string &memo) = 0;
 

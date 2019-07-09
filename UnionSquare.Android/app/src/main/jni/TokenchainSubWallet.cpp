@@ -101,13 +101,13 @@ static jstring JNICALL GetBalanceWithAddress(JNIEnv *env, jobject clazz, jlong i
     return balance;
 }
 
-#define JNI_CreateRegisterAssetTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;JBLjava/lang/String;)Ljava/lang/String;"
+#define JNI_CreateRegisterAssetTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;BLjava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL CreateRegisterAssetTransaction(JNIEnv *env, jobject clazz, jlong instance,
                                                       jstring jname,
                                                       jstring jdescription,
                                                       jstring jregisterToAddress,
-                                                      jlong registerAmount,
+                                                      jstring jregisterAmount,
                                                       jbyte precision,
                                                       jstring jmemo) {
     bool exception = false;
@@ -116,6 +116,7 @@ static jstring JNICALL CreateRegisterAssetTransaction(JNIEnv *env, jobject clazz
     const char *name = env->GetStringUTFChars(jname, NULL);
     const char *descript = env->GetStringUTFChars(jdescription, NULL);
     const char *registerToAddress = env->GetStringUTFChars(jregisterToAddress, NULL);
+    const char *registerAmount = env->GetStringUTFChars(jregisterAmount, NULL);
     const char *memo = env->GetStringUTFChars(jmemo, NULL);
     jstring tx = NULL;
 
@@ -138,6 +139,7 @@ static jstring JNICALL CreateRegisterAssetTransaction(JNIEnv *env, jobject clazz
     env->ReleaseStringUTFChars(jname, name);
     env->ReleaseStringUTFChars(jdescription, descript);
     env->ReleaseStringUTFChars(jregisterToAddress, registerToAddress);
+    env->ReleaseStringUTFChars(jregisterAmount, registerAmount);
     env->ReleaseStringUTFChars(jmemo, memo);
 
     if (exception) {
