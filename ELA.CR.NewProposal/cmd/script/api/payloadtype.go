@@ -798,8 +798,6 @@ func updateCRGet(L *lua.LState) int {
 	return 0
 }
 
-//
-
 func RegisterUnregisterCRType(L *lua.LState) {
 	mt := L.NewTypeMetatable(luaUnregisterCRName)
 	L.SetGlobal("unregistercr", mt)
