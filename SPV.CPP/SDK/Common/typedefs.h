@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_TYPEDEFS_H__
 #define __ELASTOS_SDK_TYPEDEFS_H__
 
-#include <SDK/Common/uchar_vector.h>
+#include "uchar_vector.h"
 #include <vector>
 #include <set>
 #include <boost/shared_ptr.hpp>

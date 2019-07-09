@@ -135,7 +135,7 @@ add_library(${SPVSDK_OBJECT_TARGET} OBJECT
 	${SPVSDK_SOURCE_FILES}
 	${SPVCORE_SOURCE_FILES}
 )
-add_dependencies(${SPVSDK_OBJECT_TARGET} ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite walletcore fruit config++)
+add_dependencies(${SPVSDK_OBJECT_TARGET} ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite walletcore fruit config++ common)
 set_target_properties(${SPVSDK_OBJECT_TARGET} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 if("${BUILD_SHARED_LIBS}")
@@ -145,7 +145,7 @@ else()
 endif()
 
 set_target_properties(spvsdk PROPERTIES POSITION_INDEPENDENT_CODE ON)
-target_link_libraries(spvsdk dl ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite walletcore fruit config++)
+target_link_libraries(spvsdk dl ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite walletcore fruit config++ common)
 if(ANDROID)
 	target_link_libraries(spvsdk log atomic)
 endif()
@@ -178,6 +178,7 @@ if(UNIX AND NOT BUILD_SHARED_LIBS)
 		set(ALL_LIBRARIES ${ALL_LIBRARIES};$<TARGET_FILE:${OpenSSL_Library}>)
 	endforeach()
 	set(ALL_LIBRARIES ${ALL_LIBRARIES};$<TARGET_FILE:config++>)
+	set(ALL_LIBRARIES ${ALL_LIBRARIES};$<TARGET_FILE:common>)
 
 	string(REPLACE ";" "," ALL_LIBRARIES "${ALL_LIBRARIES}")
 	if(${SPV_PLATFORM} STREQUAL ${SPV_PLATFORM_IOS})

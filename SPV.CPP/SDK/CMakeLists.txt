@@ -1,9 +1,9 @@
 
 add_subdirectory(WalletCore)
+add_subdirectory(Common)
 
 file(GLOB_RECURSE SPVSDK_SOURCE_FILES
 	"Account/*.cpp"
-	"Common/*.cpp"
 	"Database/*.cpp"
 	"IDAgent/*.cpp"
 	"Implement/*.cpp"

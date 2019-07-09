@@ -241,7 +241,7 @@ namespace Elastos {
 			this->bn = bn;
 		}
 
-		bytes_t BigInt::getHexBytes(bool littleEndian ) const {
+		bytes_t BigInt::getHexBytes(bool littleEndian) const {
 			bytes_t bytes;
 			bytes.resize(BN_num_bytes(this->bn));
 
