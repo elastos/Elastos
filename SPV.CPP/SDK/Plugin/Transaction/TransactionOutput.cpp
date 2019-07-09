@@ -110,7 +110,9 @@ namespace Elastos {
 			ostream.WriteBytes(_assetID);
 
 			if (_assetID == Asset::GetELAAssetID()) {
-				uint64_t amount = _amount.getWord();
+				bytes_t bytes = _amount.getHexBytes(true);
+				uint64_t amount = 0;
+				memcpy(&amount, &bytes[0], bytes.size());
 				ostream.WriteUint64(amount);
 			} else {
 				ostream.WriteVarBytes(_amount.getHexBytes());
@@ -132,7 +134,7 @@ namespace Elastos {
 					Log::error("deserialize output amount error");
 					return false;
 				}
-				_amount.setWord(amount);
+				_amount.setHexBytes(bytes_t(&amount, sizeof(amount)), true);
 			} else {
 				bytes_t bytes;
 				if (!istream.ReadVarBytes(bytes)) {
