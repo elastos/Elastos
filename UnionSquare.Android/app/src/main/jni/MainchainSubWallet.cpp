@@ -8,12 +8,12 @@
 
 using namespace Elastos::ElaWallet;
 
-#define JNI_CreateDepositTransaction "(JLjava/lang/String;Ljava/lang/String;JLjava/lang/String;Ljava/lang/String;Z)Ljava/lang/String;"
+#define JNI_CreateDepositTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Ljava/lang/String;"
 
 static jstring JNICALL CreateDepositTransaction(JNIEnv *env, jobject clazz, jlong instance,
                                                 jstring jfromAddress,
                                                 jstring jlockedAddress,
-                                                jlong amount,
+                                                jstring jamount,
                                                 jstring jsideChainAddress,
                                                 jstring jmemo,
                                                 jboolean useVotedUTXO) {
@@ -22,6 +22,7 @@ static jstring JNICALL CreateDepositTransaction(JNIEnv *env, jobject clazz, jlon
 
     const char *fromAddress = env->GetStringUTFChars(jfromAddress, NULL);
     const char *lockedAddress = env->GetStringUTFChars(jlockedAddress, NULL);
+    const char *amount = env->GetStringUTFChars(jamount, NULL);
     const char *sideChainAddress = env->GetStringUTFChars(jsideChainAddress, NULL);
     const char *memo = env->GetStringUTFChars(jmemo, NULL);
 
@@ -40,6 +41,7 @@ static jstring JNICALL CreateDepositTransaction(JNIEnv *env, jobject clazz, jlon
 
     env->ReleaseStringUTFChars(jfromAddress, fromAddress);
     env->ReleaseStringUTFChars(jlockedAddress, lockedAddress);
+    env->ReleaseStringUTFChars(jamount, amount);
     env->ReleaseStringUTFChars(jsideChainAddress, sideChainAddress);
     env->ReleaseStringUTFChars(jmemo, memo);
 
@@ -127,12 +129,12 @@ static jstring JNICALL GenerateCancelProducerPayload(JNIEnv *env, jobject clazz,
     return payload;
 }
 
-#define JNI_CreateRegisterProducerTransaction "(JLjava/lang/String;Ljava/lang/String;JLjava/lang/String;Z)Ljava/lang/String;"
+#define JNI_CreateRegisterProducerTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Ljava/lang/String;"
 
 static jstring JNICALL CreateRegisterProducerTransaction(JNIEnv *env, jobject clazz, jlong jProxy,
                                                          jstring jFromAddress,
                                                          jstring jPayloadJson,
-                                                         jlong amount,
+                                                         jstring jamount,
                                                          jstring jMemo,
                                                          jboolean useVotedUTXO) {
     bool exception = false;
@@ -141,6 +143,7 @@ static jstring JNICALL CreateRegisterProducerTransaction(JNIEnv *env, jobject cl
 
     const char *fromAddress = env->GetStringUTFChars(jFromAddress, NULL);
     const char *payloadJson = env->GetStringUTFChars(jPayloadJson, NULL);
+    const char *amount = env->GetStringUTFChars(jamount, NULL);
     const char *memo = env->GetStringUTFChars(jMemo, NULL);
 
     try {
@@ -156,6 +159,7 @@ static jstring JNICALL CreateRegisterProducerTransaction(JNIEnv *env, jobject cl
 
     env->ReleaseStringUTFChars(jFromAddress, fromAddress);
     env->ReleaseStringUTFChars(jPayloadJson, payloadJson);
+    env->ReleaseStringUTFChars(jamount, amount);
     env->ReleaseStringUTFChars(jMemo, memo);
 
     if (exception) {
@@ -239,16 +243,17 @@ static jstring JNICALL CreateCancelProducerTransaction(JNIEnv *env, jobject claz
     return tx;
 }
 
-#define JNI_CreateRetrieveDepositTransaction "(JJLjava/lang/String;)Ljava/lang/String;"
+#define JNI_CreateRetrieveDepositTransaction "(JLjava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL CreateRetrieveDepositTransaction(JNIEnv *env, jobject clazz, jlong jProxy,
-                                                        jlong amount,
+                                                        jstring jamount,
                                                         jstring jMemo) {
     bool exception = false;
     std::string msgException;
     jstring tx = NULL;
 
     const char *memo = env->GetStringUTFChars(jMemo, NULL);
+    const char *amount = env->GetStringUTFChars(jamount, NULL);
 
     try {
         IMainchainSubWallet *wallet = (IMainchainSubWallet *) jProxy;
@@ -260,6 +265,7 @@ static jstring JNICALL CreateRetrieveDepositTransaction(JNIEnv *env, jobject cla
     }
 
     env->ReleaseStringUTFChars(jMemo, memo);
+    env->ReleaseStringUTFChars(jamount, amount);
 
     if (exception) {
         ThrowWalletException(env, msgException.c_str());
@@ -291,11 +297,11 @@ static jstring JNICALL GetOwnerPublicKey(JNIEnv *env, jobject clazz, jlong jProx
     return publicKey;
 }
 
-#define JNI_CreateVoteProducerTransaction "(JLjava/lang/String;JLjava/lang/String;Ljava/lang/String;Z)Ljava/lang/String;"
+#define JNI_CreateVoteProducerTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Ljava/lang/String;"
 
 static jstring JNICALL CreateVoteProducerTransaction(JNIEnv *env, jobject clazz, jlong jProxy,
                                                      jstring jfromAddress,
-                                                     jlong stake,
+                                                     jstring jstake,
                                                      jstring jPublicKeys,
                                                      jstring jMemo,
                                                      jboolean useVotedUTXO) {
@@ -304,6 +310,7 @@ static jstring JNICALL CreateVoteProducerTransaction(JNIEnv *env, jobject clazz,
     std::string msgException;
 
     const char *fromAddress = env->GetStringUTFChars(jfromAddress, NULL);
+    const char *stake = env->GetStringUTFChars(jstake, NULL);
     const char *publicKeys = env->GetStringUTFChars(jPublicKeys, NULL);
     const char *memo = env->GetStringUTFChars(jMemo, NULL);
 
@@ -322,6 +329,7 @@ static jstring JNICALL CreateVoteProducerTransaction(JNIEnv *env, jobject clazz,
     }
 
     env->ReleaseStringUTFChars(jfromAddress, fromAddress);
+    env->ReleaseStringUTFChars(jstake, stake);
     env->ReleaseStringUTFChars(jPublicKeys, publicKeys);
     env->ReleaseStringUTFChars(jMemo, memo);
 

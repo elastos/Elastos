@@ -60,14 +60,15 @@ static jstring JNICALL GetBalanceInfo(JNIEnv *env, jobject clazz, jlong jSubProx
     return info;
 }
 
-#define JNI_GetBalance "(JI)J"
+#define JNI_GetBalance "(JI)Ljava/lang/String;"
 
-static jlong JNICALL GetBalance(JNIEnv *env, jobject clazz, jlong jSubProxy, jint balanceType) {
-    jlong balance = 0;
+static jstring JNICALL GetBalance(JNIEnv *env, jobject clazz, jlong jSubProxy, jint balanceType) {
+    jstring balance = NULL;
 
     try {
         ISubWallet *subWallet = (ISubWallet *) jSubProxy;
-        balance = (jlong) subWallet->GetBalance(BalanceType(balanceType));
+        std::string amount = subWallet->GetBalance(BalanceType(balanceType));
+        balance = env->NewStringUTF(amount.c_str());
     } catch (const std::exception &e) {
         ThrowWalletException(env, e.what());
     }
@@ -109,20 +110,21 @@ static jstring JNICALL GetAllAddress(JNIEnv *env, jobject clazz, jlong jSubProxy
     return addresses;
 }
 
-#define JNI_GetBalanceWithAddress "(JLjava/lang/String;I)J"
+#define JNI_GetBalanceWithAddress "(JLjava/lang/String;I)Ljava/lang/String;"
 
-static jlong JNICALL GetBalanceWithAddress(JNIEnv *env, jobject clazz, jlong jSubProxy,
+static jstring JNICALL GetBalanceWithAddress(JNIEnv *env, jobject clazz, jlong jSubProxy,
                                            jstring jaddress,
                                            jint balanceType) {
     bool exception = false;
     std::string msgException;
 
     const char *address = env->GetStringUTFChars(jaddress, NULL);
-    jlong result = 0;
+    jstring result = NULL;
 
     try {
         ISubWallet *subWallet = (ISubWallet *) jSubProxy;
-        result = (jlong) subWallet->GetBalanceWithAddress(address, BalanceType(balanceType));
+        std::string amount = subWallet->GetBalanceWithAddress(address, BalanceType(balanceType));
+        result = env->NewStringUTF(amount.c_str());
     } catch (const std::exception &e) {
         exception = true;
         msgException = e.what();
@@ -134,7 +136,7 @@ static jlong JNICALL GetBalanceWithAddress(JNIEnv *env, jobject clazz, jlong jSu
         ThrowWalletException(env, msgException.c_str());
     }
 
-    return (jlong) result;
+    return result;
 }
 
 #define JNI_AddCallback "(JJ)V"
@@ -166,12 +168,12 @@ static void JNICALL RemoveCallback(JNIEnv *env, jobject clazz, jlong jSubProxy,
     }
 }
 
-#define JNI_CreateTransaction "(JLjava/lang/String;Ljava/lang/String;JLjava/lang/String;Z)Ljava/lang/String;"
+#define JNI_CreateTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Ljava/lang/String;"
 
 static jstring JNICALL CreateTransaction(JNIEnv *env, jobject clazz, jlong jSubProxy,
                                          jstring jfromAddress,
                                          jstring jtoAddress,
-                                         jlong amount,
+                                         jstring jamount,
                                          jstring jmemo,
                                          jboolean useVotedUTXO) {
     bool exception = false;
@@ -179,6 +181,7 @@ static jstring JNICALL CreateTransaction(JNIEnv *env, jobject clazz, jlong jSubP
 
     const char *fromAddress = env->GetStringUTFChars(jfromAddress, NULL);
     const char *toAddress = env->GetStringUTFChars(jtoAddress, NULL);
+    const char *amount = env->GetStringUTFChars(jamount, NULL);
     const char *memo = env->GetStringUTFChars(jmemo, NULL);
 
     ISubWallet *subWallet = (ISubWallet *) jSubProxy;
@@ -195,6 +198,7 @@ static jstring JNICALL CreateTransaction(JNIEnv *env, jobject clazz, jlong jSubP
 
     env->ReleaseStringUTFChars(jfromAddress, fromAddress);
     env->ReleaseStringUTFChars(jtoAddress, toAddress);
+    env->ReleaseStringUTFChars(jamount, amount);
     env->ReleaseStringUTFChars(jmemo, memo);
 
     if (exception) {

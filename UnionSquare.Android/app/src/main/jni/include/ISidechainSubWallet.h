@@ -27,7 +27,7 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json CreateWithdrawTransaction(
 					const std::string &fromAddress,
-					uint64_t amount,
+					const std::string &amount,
 					const std::string &mainChainAddress,
 					const std::string &memo) = 0;
 

@@ -34,7 +34,7 @@ public class SubWallet {
         return GetBalanceInfo(mInstance);
     }
 
-    public long GetBalance(BalanceType type) throws WalletException {
+    public String GetBalance(BalanceType type) throws WalletException {
         Log.d(TAG, "SubWallet [" + mInstance + "] get balance");
         return GetBalance(mInstance, type.ordinal());
     }
@@ -47,7 +47,7 @@ public class SubWallet {
         return GetAllAddress(mInstance, start, count);
     }
 
-    public long GetBalanceWithAddress(String address, BalanceType type) throws WalletException {
+    public String GetBalanceWithAddress(String address, BalanceType type) throws WalletException {
         return GetBalanceWithAddress(mInstance, address, type.ordinal());
     }
 
@@ -76,7 +76,7 @@ public class SubWallet {
         }
     }
 
-    public String CreateTransaction(String fromAddress, String toAddress, long amount, String memo, boolean useVotedUTXO) throws WalletException {
+    public String CreateTransaction(String fromAddress, String toAddress, String amount, String memo, boolean useVotedUTXO) throws WalletException {
         return CreateTransaction(mInstance, fromAddress, toAddress, amount, memo, useVotedUTXO);
     }
 
@@ -155,19 +155,19 @@ public class SubWallet {
 
     private native String GetBalanceInfo(long subProxy);
 
-    private native long GetBalance(long subProxy, int balanceType);
+    private native String GetBalance(long subProxy, int balanceType);
 
     private native String CreateAddress(long subProxy);
 
     private native String GetAllAddress(long subProxy, int start, int count);
 
-    private native long GetBalanceWithAddress(long subProxy, String address, int balanceType);
+    private native String GetBalanceWithAddress(long subProxy, String address, int balanceType);
 
     private native void AddCallback(long subProxy, long subCallback);
 
     private native void RemoveCallback(long subProxys, long subCallback);
 
-    private native String CreateTransaction(long subProxy, String fromAddress, String toAddress, long amount, String memo, boolean useVotedUTXO);
+    private native String CreateTransaction(long subProxy, String fromAddress, String toAddress, String amount, String memo, boolean useVotedUTXO);
 
     private native String GetAllUTXOs(long subProxy, int start, int count, String address);
 

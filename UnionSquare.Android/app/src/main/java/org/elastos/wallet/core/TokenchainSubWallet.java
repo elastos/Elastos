@@ -23,7 +23,7 @@ public class TokenchainSubWallet extends SidechainSubWallet {
     }
 
     public String CreateRegisterAssetTransaction(String name, String descript, String registerToAddr,
-                                                 long registerAmount, byte precision, String memo) {
+                                                 String registerAmount, byte precision, String memo) {
         return CreateRegisterAssetTransaction(mInstance, name, descript, registerToAddr, registerAmount,
                 precision, memo);
     }
@@ -53,7 +53,7 @@ public class TokenchainSubWallet extends SidechainSubWallet {
     private native String GetBalanceWithAddress(long instance, String assetID, String address);
 
     private native String CreateRegisterAssetTransaction(long instance, String name, String descript,
-                                                         String registerToAddr, long registerAmount,
+                                                         String registerToAddr, String registerAmount,
                                                          byte precision, String memo);
 
     private native String CreateTransaction(long instance, String fromAddr, String toAddr,

@@ -589,7 +589,7 @@ public class MyWallet {
                 return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
             }
 
-            String tx = subWallet.CreateTransaction(fromAddress, toAddress, amount, memo, useVotedUTXO);
+            String tx = subWallet.CreateTransaction(fromAddress, toAddress, Long.toString(amount), memo, useVotedUTXO);
 
             return new CommmonStringEntity(SUCCESSCODE, tx);
         } catch (WalletException e) {
@@ -707,7 +707,7 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String txJson = mainchainSubWallet.CreateDepositTransaction(fromAddress, lockedAddress, amount, sideChainAddress, memo, useVotedUTXO);
+            String txJson = mainchainSubWallet.CreateDepositTransaction(fromAddress, lockedAddress, Long.toString(amount), sideChainAddress, memo, useVotedUTXO);
 
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, txJson, "createDepositTransaction");
         } catch (WalletException e) {
@@ -774,7 +774,7 @@ public class MyWallet {
             }
 
             SidechainSubWallet sidechainSubWallet = (SidechainSubWallet) subWallet;
-            String tx = sidechainSubWallet.CreateWithdrawTransaction(fromAddress, amount, mainchainAddress, memo);
+            String tx = sidechainSubWallet.CreateWithdrawTransaction(fromAddress, Long.toString(amount), mainchainAddress, memo);
 
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, tx, "createWithdrawTransaction");
         } catch (WalletException e) {
@@ -864,7 +864,7 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String txJson = mainchainSubWallet.CreateRegisterProducerTransaction(fromAddress, payloadJson, amount, memo, useVotedUTXO);
+            String txJson = mainchainSubWallet.CreateRegisterProducerTransaction(fromAddress, payloadJson, Long.toString(amount), memo, useVotedUTXO);
 
             KLog.a(txJson);
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, txJson, "createRegisterProducerTransaction");
@@ -924,7 +924,7 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String txJson = mainchainSubWallet.CreateVoteProducerTransaction(fromAddress, stake, publicKeys, memo, useVotedUTXO);
+            String txJson = mainchainSubWallet.CreateVoteProducerTransaction(fromAddress, Long.toString(stake), publicKeys, memo, useVotedUTXO);
 
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, txJson, "createVoteProducerTransaction");
             // successProcess(cc, txJson);
@@ -1056,7 +1056,7 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String txJson = mainchainSubWallet.CreateRetrieveDepositTransaction(amount, memo);
+            String txJson = mainchainSubWallet.CreateRetrieveDepositTransaction(Long.toString(amount), memo);
 
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, txJson, "createRetrieveDepositTransaction");
         } catch (WalletException e) {

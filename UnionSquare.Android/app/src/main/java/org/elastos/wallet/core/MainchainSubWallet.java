@@ -15,7 +15,7 @@ public class MainchainSubWallet extends SubWallet {
         mMainchainProxy = proxy;
     }
 
-    public String CreateDepositTransaction(String fromAddress, String lockedAddress, long amount, String sideChainAddress, String memo, boolean useVotedUTXO) throws WalletException {
+    public String CreateDepositTransaction(String fromAddress, String lockedAddress, String amount, String sideChainAddress, String memo, boolean useVotedUTXO) throws WalletException {
         return CreateDepositTransaction(mMainchainProxy, fromAddress, lockedAddress, amount, sideChainAddress, memo, useVotedUTXO);
     }
 
@@ -27,7 +27,7 @@ public class MainchainSubWallet extends SubWallet {
         return GenerateCancelProducerPayload(mMainchainProxy, publicKey, payPasswd);
     }
 
-    public String CreateRegisterProducerTransaction(String fromAddress, String payloadJson, long amount, String memo, boolean useVotedUTXO) throws WalletException {
+    public String CreateRegisterProducerTransaction(String fromAddress, String payloadJson, String amount, String memo, boolean useVotedUTXO) throws WalletException {
         return CreateRegisterProducerTransaction(mMainchainProxy, fromAddress, payloadJson, amount, memo, useVotedUTXO);
     }
 
@@ -39,7 +39,7 @@ public class MainchainSubWallet extends SubWallet {
         return CreateCancelProducerTransaction(mMainchainProxy, fromAddress, payloadJson, memo, useVotedUTXO);
     }
 
-    public String CreateRetrieveDepositTransaction(long amount, String memo) throws WalletException {
+    public String CreateRetrieveDepositTransaction(String amount, String memo) throws WalletException {
         return CreateRetrieveDepositTransaction(mMainchainProxy, amount, memo);
     }
 
@@ -47,7 +47,7 @@ public class MainchainSubWallet extends SubWallet {
         return GetOwnerPublicKey(mMainchainProxy);
     }
 
-    public String CreateVoteProducerTransaction(String fromAddress, long stake, String publicKeys, String memo, boolean useVotedUTXO) throws WalletException {
+    public String CreateVoteProducerTransaction(String fromAddress, String stake, String publicKeys, String memo, boolean useVotedUTXO) throws WalletException {
         return CreateVoteProducerTransaction(mMainchainProxy, fromAddress, stake, publicKeys, memo, useVotedUTXO);
     }
 
@@ -64,7 +64,7 @@ public class MainchainSubWallet extends SubWallet {
     }
 
 
-    private native String CreateDepositTransaction(long proxy, String fromAddress, String lockedAddress, long amount,
+    private native String CreateDepositTransaction(long proxy, String fromAddress, String lockedAddress, String amount,
                                                    String sideChainAddress, String memo, boolean useVotedUTXO);
 
     private native String GenerateProducerPayload(long proxy, String publicKey, String nodePublicKey, String nickName,
@@ -72,18 +72,18 @@ public class MainchainSubWallet extends SubWallet {
 
     private native String GenerateCancelProducerPayload(long proxy, String publicKey, String payPasswd);
 
-    private native String CreateRegisterProducerTransaction(long proxy, String fromAddress, String payloadJson, long amount,
+    private native String CreateRegisterProducerTransaction(long proxy, String fromAddress, String payloadJson, String amount,
                                                             String memo, boolean useVotedUTXO);
 
     private native String CreateUpdateProducerTransaction(long proxy, String fromAddress, String payloadJson, String memo, boolean useVotedUTXO);
 
     private native String CreateCancelProducerTransaction(long proxy, String fromAddress, String payloadJson, String memo, boolean useVotedUTXO);
 
-    private native String CreateRetrieveDepositTransaction(long proxy, long amount, String memo);
+    private native String CreateRetrieveDepositTransaction(long proxy, String amount, String memo);
 
     private native String GetOwnerPublicKey(long proxy);
 
-    private native String CreateVoteProducerTransaction(long proxy, String fromAddress, long stake, String publicKeys, String memo, boolean useVotedUTXO);
+    private native String CreateVoteProducerTransaction(long proxy, String fromAddress, String stake, String publicKeys, String memo, boolean useVotedUTXO);
 
     private native String GetVotedProducerList(long proxy);
 
