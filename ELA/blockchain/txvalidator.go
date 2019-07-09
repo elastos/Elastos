@@ -34,7 +34,7 @@ const (
 	MinDepositAmount = 5000 * 100000000
 
 	// DepositLockupBlocks indicates how many blocks need to wait when cancel
-	// producer was triggered, and can submit return deposit coin request.
+	// producer or CRC was triggered, and can submit return deposit coin request.
 	DepositLockupBlocks = 2160
 
 	// MaxStringLength is the maximum length of a string field.
@@ -223,6 +223,13 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 
 	if txn.IsReturnDepositCoin() {
 		if err := b.checkReturnDepositCoinTransaction(txn, references); err != nil {
+			log.Warn("[CheckReturnDepositCoinTransaction],", err)
+			return ErrReturnDepositConsensus
+		}
+	}
+
+	if txn.IsReturnCRDepositCoinTx() {
+		if err := b.checkReturnCRDepositCoinTransaction(txn, references); err != nil {
 			log.Warn("[CheckReturnDepositCoinTransaction],", err)
 			return ErrReturnDepositConsensus
 		}
@@ -752,6 +759,10 @@ func (b *BlockChain) checkAttributeProgram(tx *Transaction,
 			if len(tx.Programs) != 1 {
 				return errors.New("return deposit coin transactions should have one and only one program")
 			}
+		}
+	case ReturnCRDepositCoin:
+		if len(tx.Programs) != 1 {
+			return errors.New("return CR deposit coin transactions should have one and only one program")
 		}
 	}
 
@@ -1546,6 +1557,61 @@ func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction,
 
 	if inputValue-penalty < b.chainParams.MinTransactionFee+outputValue {
 		return fmt.Errorf("overspend deposit")
+	}
+
+	return nil
+}
+
+func (b *BlockChain) checkReturnCRDepositCoinTransaction(txn *Transaction,
+	references map[*Input]*Output) error {
+
+	var outputValue common.Fixed64
+	var inputValue common.Fixed64
+	for _, output := range txn.Outputs {
+		outputValue += output.Value
+	}
+	for _, reference := range references {
+		inputValue += reference.Value
+	}
+
+	var penalty common.Fixed64
+	for _, program := range txn.Programs {
+		// Get candidate from code.
+		ct, err := contract.CreateCRDIDContractByCode(program.Code)
+		if err != nil {
+			return err
+		}
+		programHash := ct.ToProgramHash()
+		// todo get candiadte form not voting period state.
+		c := b.crCommittee.GetState().GetCandidateByDID(*programHash)
+		if c == nil {
+			return errors.New("candidate is not exist")
+		}
+
+		currentHeight := b.db.GetHeight()
+		if b.crCommittee.IsInVotingPeriod(currentHeight) {
+			// In voting period, state need to be canceled.
+			if c.State() != crstate.Canceled {
+				return errors.New("candidate state is not canceled")
+			}
+			// In voting period, need to wait 720*3 blocks before return
+			// deposit coin.
+			if currentHeight-c.CancelHeight() < DepositLockupBlocks {
+				return errors.New("candidate is not canceled 3 days")
+			}
+		} else {
+			// Not in voting period, state can be pending active or canceled
+			// and no need to wait 720*3 blocks.
+			if c.State() == crstate.Returned {
+				return errors.New("candidate is returned before")
+			}
+		}
+		penalty += c.Penalty()
+	}
+
+	// Check output amount.
+	if inputValue-penalty < b.chainParams.MinTransactionFee+outputValue {
+		return fmt.Errorf("candidate overspend deposit")
 	}
 
 	return nil

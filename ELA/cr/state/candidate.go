@@ -127,3 +127,15 @@ func (c *Candidate) State() CandidateState {
 func (c *Candidate) Votes() common.Fixed64 {
 	return c.votes
 }
+
+func (c *Candidate) RegisterHeight() uint32 {
+	return c.registerHeight
+}
+
+func (c *Candidate) CancelHeight() uint32 {
+	return c.cancelHeight
+}
+
+func (c *Candidate) Penalty() common.Fixed64 {
+	return c.penalty
+}
