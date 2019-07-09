@@ -35,6 +35,7 @@ func candidateEqual(first *Candidate, second *Candidate) bool {
 		first.registerHeight == second.registerHeight &&
 		first.cancelHeight == second.cancelHeight &&
 		first.depositAmount == second.depositAmount &&
+		first.penalty == second.penalty &&
 		first.depositHash.IsEqual(second.depositHash)
 }
 

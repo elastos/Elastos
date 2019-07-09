@@ -74,27 +74,28 @@ func (c *Committee) GetMembersCodes() [][]byte {
 	return result
 }
 
-func (c *Committee) ProcessBlock(block *types.Block,
-	confirm *payload.Confirm) {
+func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
 	isVoting := c.isInVotingPeriod(block.Height)
 
 	if isVoting {
 		c.state.ProcessBlock(block, confirm)
+	} else {
+		c.state.ProcessReturnDepositTxs(block)
 	}
 
 	if c.shouldChange(block) {
-		checkpoint := CheckPoint{
-			KeyFrame: c.KeyFrame,
-		}
-
-		if err := c.changeCommitteeMembers(block.Height); err != nil {
+		committeeDIDs, err := c.changeCommitteeMembers(block.Height)
+		if err != nil {
 			log.Error("[ProcessBlock] change committee members error: ", err)
 			return
 		}
 
-		checkpoint.StateKeyFrame = *c.state.FinishVoting()
+		checkpoint := CheckPoint{
+			KeyFrame: c.KeyFrame,
+		}
+		checkpoint.StateKeyFrame = *c.state.FinishVoting(committeeDIDs)
 		if c.store != nil {
 			if err := c.store.SaveCheckpoint(&checkpoint); err != nil {
 				log.Error("[ProcessBlock] save checkpoint error: ", err)
@@ -153,25 +154,31 @@ func (c *Committee) isInVotingPeriod(height uint32) bool {
 	}
 }
 
-func (c *Committee) changeCommitteeMembers(height uint32) error {
+func (c *Committee) changeCommitteeMembers(height uint32) (
+	[]common.Uint168, error) {
 	candidates, err := c.getActiveCRCandidatesDesc()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
+	result := make([]common.Uint168, 0, c.params.CRMemberCount)
 	c.Members = make([]*CRMember, 0, c.params.CRMemberCount)
 	for i := 0; i < int(c.params.CRMemberCount); i++ {
 		c.Members = append(c.Members, c.generateMember(candidates[i]))
+		result = append(result, candidates[i].info.DID)
 	}
 
 	c.LastCommitteeHeight = height
-	return nil
+	return result, nil
 }
 
 func (c *Committee) generateMember(candidate *Candidate) *CRMember {
 	return &CRMember{
 		Info:             candidate.info,
 		ImpeachmentVotes: 0,
+		DepositHash:      candidate.depositHash,
+		DepositAmount:    candidate.depositAmount,
+		Penalty:          candidate.penalty,
 	}
 }
 

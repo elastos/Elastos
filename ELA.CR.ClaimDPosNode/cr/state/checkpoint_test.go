@@ -142,7 +142,8 @@ func randomKeyFrame(size int, commitHeight uint32) *KeyFrame {
 
 func crMemberEqual(first *CRMember, second *CRMember) bool {
 	return crInfoEqual(&first.Info, &second.Info) &&
-		first.ImpeachmentVotes == second.ImpeachmentVotes
+		first.ImpeachmentVotes == second.ImpeachmentVotes &&
+		first.Penalty == second.Penalty
 }
 
 func randomCRMember() *CRMember {
