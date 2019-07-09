@@ -1063,7 +1063,11 @@ func CreateRawTransaction(param Params) map[string]interface{} {
 	txInputs := make([]*Input, 0)
 	for _, v := range inputs {
 		txIDStr := gjson.Get(v, "txid").String()
-		txID, err := common.Uint256FromHexString(txIDStr)
+		txIDBytes, err := common.HexStringToBytes(txIDStr)
+		if err != nil {
+			return ResponsePack(InvalidParams, "invalid txid when convert to bytes")
+		}
+		txID, err := common.Uint256FromBytes(common.BytesReverse(txIDBytes))
 		if err != nil {
 			return ResponsePack(InvalidParams, "invalid txid in inputs param")
 		}
@@ -1124,6 +1128,10 @@ func SignRawTransactionWithKey(param Params) map[string]interface{} {
 	if !ok {
 		return ResponsePack(InvalidParams, "need a parameter named data")
 	}
+	codesParam, ok := param.String("codes")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a parameter named codes")
+	}
 	privkeysParam, ok := param.String("privkeys")
 	if !ok {
 		return ResponsePack(InvalidParams, "need a parameter named privkeys")
@@ -1135,17 +1143,17 @@ func SignRawTransactionWithKey(param Params) map[string]interface{} {
 		return true
 	})
 
-	accounts := make(map[common.Uint168]*account.Account, 0)
+	accounts := make(map[common.Uint160]*account.Account, 0)
 	for _, privkeyStr := range privkeys {
 		privkey, err := common.HexStringToBytes(privkeyStr)
 		if err != nil {
-			return ResponsePack(InvalidTransaction, err.Error())
+			return ResponsePack(InvalidParams, err.Error())
 		}
 		acc, err := account.NewAccountWithPrivateKey(privkey)
 		if err != nil {
 			return ResponsePack(InvalidTransaction, err.Error())
 		}
-		accounts[acc.ProgramHash] = acc
+		accounts[acc.ProgramHash.ToCodeHash()] = acc
 	}
 
 	txBytes, err := common.HexStringToBytes(dataParam)
@@ -1157,6 +1165,29 @@ func SignRawTransactionWithKey(param Params) map[string]interface{} {
 		return ResponsePack(InvalidTransaction, err.Error())
 	}
 
+	codes := make([]string, 0)
+	gjson.Parse(codesParam).ForEach(func(key, value gjson.Result) bool {
+		codes = append(codes, value.String())
+		return true
+	})
+
+	programs := make([]*pg.Program, 0)
+	if len(txn.Programs) > 0 {
+		programs = txn.Programs
+	} else {
+		for _, codeStr := range codes {
+			code, err := common.HexStringToBytes(codeStr)
+			if err != nil {
+				return ResponsePack(InvalidParams, "invalid params codes")
+			}
+			program := &pg.Program{
+				Code:      code,
+				Parameter: nil,
+			}
+			programs = append(programs, program)
+		}
+	}
+
 	signData := new(bytes.Buffer)
 	if err := txn.SerializeUnsigned(signData); err != nil {
 		return ResponsePack(InvalidTransaction, err.Error())
@@ -1164,7 +1195,7 @@ func SignRawTransactionWithKey(param Params) map[string]interface{} {
 
 	references, err := Store.GetTxReference(&txn)
 	if err != nil {
-		return ResponsePack(InvalidTransaction, "get transaction reference failed, "+err.Error())
+		return ResponsePack(InvalidTransaction, err.Error())
 	}
 
 	programHashes, err := blockchain.GetTxProgramHashes(&txn, references)
@@ -1172,28 +1203,38 @@ func SignRawTransactionWithKey(param Params) map[string]interface{} {
 		return ResponsePack(InternalError, err.Error())
 	}
 
-	programs := make([]*pg.Program, 0)
-	for _, programHash := range programHashes {
+	if len(programs) != len(programHashes) {
+		return ResponsePack(InternalError, "the number of program hashes is different with number of programs")
+	}
+
+	// sort the program hashes of owner and programs of the transaction
+	common.SortProgramHashByCodeHash(programHashes)
+	blockchain.SortPrograms(programs)
+
+	for i, programHash := range programHashes {
+		program := programs[i]
+		codeHash := common.ToCodeHash(program.Code)
+		ownerHash := programHash.ToCodeHash()
+		if !codeHash.IsEqual(ownerHash) {
+			return ResponsePack(InternalError, "the program hashes is different with corresponding program code")
+		}
+
 		prefixType := contract.GetPrefixType(programHash)
-		if prefixType != contract.PrefixStandard {
-			return ResponsePack(InternalError, "not a standard address")
+		if prefixType == contract.PrefixStandard {
+			signedProgram, err := account.SignStandardTransaction(&txn, program, accounts)
+			if err != nil {
+				return ResponsePack(InternalError, err.Error())
+			}
+			programs[i] = signedProgram
+		} else if prefixType == contract.PrefixMultiSig {
+			signedProgram, err := account.SignMultiSignTransaction(&txn, program, accounts)
+			if err != nil {
+				return ResponsePack(InternalError, err.Error())
+			}
+			programs[i] = signedProgram
+		} else {
+			return ResponsePack(InternalError, "invalid program hash type")
 		}
-		acc, exist := accounts[programHash]
-		if !exist {
-			return ResponsePack(InternalError, "no suitable private key was found")
-		}
-		signature, err := acc.Sign(signData.Bytes())
-		if err != nil {
-			return ResponsePack(InternalError, err.Error())
-		}
-		sigBuf := new(bytes.Buffer)
-		sigBuf.WriteByte(byte(len(signature)))
-		sigBuf.Write(signature)
-		program := &pg.Program{
-			Code:      acc.RedeemScript,
-			Parameter: sigBuf.Bytes(),
-		}
-		programs = append(programs, program)
 	}
 	txn.Programs = programs
 

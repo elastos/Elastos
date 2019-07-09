@@ -30,7 +30,7 @@ func TestInit(t *testing.T) {
 	log.NewDefault(test.NodeLogPath, 0, 0, 0)
 
 	if !utils.FileExisted(filepath.Join(test.DataDir, "wallet.dat")) {
-		os.Mkdir(test.DataDir, 0740)
+		os.Mkdir(test.DataDir, 0700)
 	}
 }
 
