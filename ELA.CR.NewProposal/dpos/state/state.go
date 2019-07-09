@@ -608,17 +608,76 @@ func (s *State) IsDPOSTransaction(tx *types.Transaction) bool {
 		types.ReturnDepositCoin:
 		return true
 
-	// Transactions will change the votes state.
+	// Transactions will change the producer votes state.
 	case types.TransferAsset:
 		if tx.Version >= types.TxVersion09 {
 			// Votes to producers.
 			for _, output := range tx.Outputs {
-				if output.Type == types.OTVote {
+				if output.Type != types.OTVote {
+					continue
+				}
+				p, ok := output.Payload.(*outputpayload.VoteOutput)
+				if !ok {
+					continue
+				}
+				if p.Version == outputpayload.VoteProducerVersion {
 					return true
+				}
+				if p.Version == outputpayload.VoteProducerAndCRVersion {
+					for _, content := range p.Contents {
+						if content.VoteType == outputpayload.Delegate {
+							return true
+						}
+					}
 				}
 			}
 		}
+	}
 
+	// Cancel votes.
+	for _, input := range tx.Inputs {
+		_, ok := s.Votes[input.ReferKey()]
+		if ok {
+			return true
+		}
+	}
+
+	return false
+}
+
+// IsCRTransaction returns if a transaction will change the CRC and
+// votes state.
+func (s *State) IsCRTransaction(tx *types.Transaction) bool {
+	s.mtx.RLock()
+	defer s.mtx.RUnlock()
+
+	switch tx.TxType {
+	// Transactions will changes the CRC state.
+	case types.RegisterCR, types.UpdateCR, types.UnregisterCR,
+		types.ReturnCRDepositCoin:
+		return true
+
+	// Transactions will change the CRC votes state.
+	case types.TransferAsset:
+		if tx.Version >= types.TxVersion09 {
+			// Votes to producers.
+			for _, output := range tx.Outputs {
+				if output.Type != types.OTVote {
+					continue
+				}
+				p, ok := output.Payload.(*outputpayload.VoteOutput)
+				if !ok {
+					continue
+				}
+				if p.Version == outputpayload.VoteProducerAndCRVersion {
+					for _, content := range p.Contents {
+						if content.VoteType == outputpayload.CRC {
+							return true
+						}
+					}
+				}
+			}
+		}
 	}
 
 	// Cancel votes.
@@ -926,8 +985,7 @@ func (s *State) getProducerByDepositHash(hash common.Uint168) *Producer {
 // addProducerAssert will plus deposit amount for producers referenced in
 // program hash of transaction output.
 func (s *State) addProducerAssert(output *types.Output, height uint32) {
-	if producer := s.getProducerByDepositHash(output.ProgramHash);
-		producer != nil {
+	if producer := s.getProducerByDepositHash(output.ProgramHash); producer != nil {
 		s.history.Append(height, func() {
 			producer.depositAmount += output.Value
 		}, func() {
@@ -1048,8 +1106,7 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 
 	for _, program := range tx.Programs {
 		pk := program.Code[1 : len(program.Code)-1]
-		if producer := s.getProducer(pk);
-			producer != nil && producer.state == Canceled {
+		if producer := s.getProducer(pk); producer != nil && producer.state == Canceled {
 			returnAction(producer)
 		}
 	}
@@ -1361,7 +1418,7 @@ func (s *State) GetHistory(height uint32) (*StateKeyFrame, error) {
 // NewState returns a new State instance.
 func NewState(chainParams *config.Params, getArbiters func() [][]byte,
 	getProducerDepositAmount func(programHash common.Uint168) (common.Fixed64,
-	error)) *State {
+		error)) *State {
 	return &State{
 		chainParams:              chainParams,
 		getArbiters:              getArbiters,
