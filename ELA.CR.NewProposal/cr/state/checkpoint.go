@@ -18,6 +18,9 @@ import (
 type CRMember struct {
 	Info             payload.CRInfo
 	ImpeachmentVotes common.Fixed64
+	DepositAmount    common.Fixed64
+	DepositHash      common.Uint168
+	Penalty          common.Fixed64
 }
 
 // StateKeyFrame holds necessary state about CR committee.
@@ -47,7 +50,19 @@ func (c *CRMember) Serialize(w io.Writer) (err error) {
 		return
 	}
 
-	return common.WriteUint64(w, uint64(c.ImpeachmentVotes))
+	if err = common.WriteUint64(w, uint64(c.ImpeachmentVotes)); err != nil {
+		return
+	}
+
+	if err = common.WriteUint64(w, uint64(c.DepositAmount)); err != nil {
+		return
+	}
+
+	if err = common.WriteUint64(w, uint64(c.Penalty)); err != nil {
+		return
+	}
+
+	return c.DepositHash.Serialize(w)
 }
 
 func (c *CRMember) Deserialize(r io.Reader) (err error) {
@@ -59,9 +74,21 @@ func (c *CRMember) Deserialize(r io.Reader) (err error) {
 	if votes, err = common.ReadUint64(r); err != nil {
 		return
 	}
-
 	c.ImpeachmentVotes = common.Fixed64(votes)
-	return
+
+	var depositAmount uint64
+	if depositAmount, err = common.ReadUint64(r); err != nil {
+		return
+	}
+	c.DepositAmount = common.Fixed64(depositAmount)
+
+	var penalty uint64
+	if penalty, err = common.ReadUint64(r); err != nil {
+		return
+	}
+	c.Penalty = common.Fixed64(penalty)
+
+	return c.DepositHash.Deserialize(r)
 }
 
 func (k *KeyFrame) Serialize(w io.Writer) (err error) {
@@ -100,7 +127,7 @@ func (k *KeyFrame) Deserialize(r io.Reader) (err error) {
 func (k *KeyFrame) Snapshot() *KeyFrame {
 	frame := NewKeyFrame()
 	frame.LastCommitteeHeight = k.LastCommitteeHeight
-	frame.Members = k.Members
+	frame.Members = copyCRMembers(k.Members)
 	return frame
 }
 
