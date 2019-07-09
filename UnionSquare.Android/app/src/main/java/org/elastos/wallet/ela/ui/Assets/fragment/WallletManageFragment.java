@@ -3,7 +3,9 @@ package org.elastos.wallet.ela.ui.Assets.fragment;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -25,6 +27,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.List;
 
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
@@ -35,18 +38,26 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
     private static final String OUTPORTMN = "outportmm";
     @BindView(R.id.tv_title)
     TextView tvTitle;
-    @BindView(R.id.tv_1)
+    @BindView(R.id.tv_updatename)
     TextView tv1;
-    @BindView(R.id.ll_1)
-    LinearLayout ll1;
-    @BindView(R.id.ll_2)
-    LinearLayout ll2;
-    @BindView(R.id.ll_3)
-    LinearLayout ll3;
-    @BindView(R.id.ll_4)
-    LinearLayout ll4;
-
     Unbinder unbinder;
+    @BindView(R.id.tv_updatename)
+    TextView tvUpdatename;
+    @BindView(R.id.ll_updatename)
+    LinearLayout llUpdatename;
+    @BindView(R.id.ll_updatepwd)
+    LinearLayout llUpdatepwd;
+    @BindView(R.id.ll_exportkeystore)
+    LinearLayout llExportkeystore;
+    @BindView(R.id.ll_exportmnemonic)
+    LinearLayout llExportmnemonic;
+    @BindView(R.id.ll_sign)
+    LinearLayout llSign;
+    @BindView(R.id.ll_exportreadonly)
+    LinearLayout llExportreadonly;
+    @BindView(R.id.ll_showmulpublickey)
+    LinearLayout llShowmulpublickey;
+    Unbinder unbinder1;
     private DialogUtil dialogUtil;
     String dialogAction = null;
     private Dialog dialog;
@@ -72,9 +83,25 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
         dialogUtil = new DialogUtil();
         presenter = new WallletManagePresenter();
         registReceiver();
+        switch (wallet.getType()) {
+            //0 普通单签 1单签只读 2普通多签 3多签只读
+            case 0:
+                llExportreadonly.setVisibility(View.GONE);
+                llShowmulpublickey.setVisibility(View.GONE);
+                break;
+            case 1:
+                llUpdatepwd.setVisibility(View.GONE);
+                llExportmnemonic.setVisibility(View.GONE);
+                break;
+            case 2:
+                break;
+            case 3:
+                break;
+        }
     }
 
-    @OnClick({R.id.tv_delete, R.id.ll_1, R.id.ll_2, R.id.ll_3, R.id.ll_4, R.id.ll_5})
+    @OnClick({R.id.tv_delete, R.id.ll_updatename, R.id.ll_updatepwd, R.id.ll_exportkeystore, R.id.ll_exportmnemonic,
+            R.id.ll_sign, R.id.ll_exportreadonly, R.id.ll_showmulpublickey})
     public void onViewClicked(View view) {
         Bundle bundle = null;
         dialogAction = null;
@@ -89,34 +116,46 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
                     }
                 });
                 break;
-            case R.id.ll_1:
+            case R.id.ll_updatename:
                 //修改钱包名称
                 bundle = new Bundle();
                 bundle.putString("walletId", wallet.getWalletId());
                 start(WalletUpdateName.class, bundle);
                 break;
-            case R.id.ll_2:
+            case R.id.ll_updatepwd:
                 //修改密码
                 bundle = new Bundle();
                 bundle.putString("walletId", wallet.getWalletId());
                 start(WalletUpdataPwdFragment.class, bundle);
                 break;
-            case R.id.ll_3:
+            case R.id.ll_exportkeystore:
                 //导出keystore
                 bundle = new Bundle();
                 bundle.putParcelable("wallet", wallet);
                 start(OutportKeystoreFragment.class, bundle);
                 break;
-            case R.id.ll_4:
+            case R.id.ll_exportmnemonic:
                 //导出助记词弹框
                 dialog = dialogUtil.showWarmPromptInput(getBaseActivity(), null, null, this);
                 dialogAction = OUTPORTMN;
                 break;
-            case R.id.ll_5:
+            case R.id.ll_sign:
                 //签名
                 bundle = new Bundle();
                 bundle.putParcelable("wallet", wallet);
-                start(SignTransactionFragment.class,bundle);
+                start(SignTransactionFragment.class, bundle);
+                break;
+            case R.id.ll_exportreadonly:
+                //导出只读
+                bundle = new Bundle();
+                bundle.putParcelable("wallet", wallet);
+               // start(SignTransactionFragment.class, bundle);
+                break;
+            case R.id.ll_showmulpublickey:
+                //查看多签公钥
+                bundle = new Bundle();
+                bundle.putParcelable("wallet", wallet);
+               // start(SignTransactionFragment.class, bundle);
                 break;
 
         }
@@ -183,4 +222,6 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
         bundle.putString("mnemonic", data);
         start(OutportMnemonicFragment.class, bundle);
     }
+
+
 }

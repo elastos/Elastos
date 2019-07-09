@@ -389,5 +389,7 @@
     <string name="publickeyneedmore">公钥数量过少</string>
     <string name="mainprivatekeynotnull">根私钥不能为空</string>
     <string name="publickeytoomany">公钥数量过多</string>
+    <string name="exportreadonly">导出只读钱包</string>
+    <string name="showmulpublickey">查看多签公钥</string>
 
 </resources>

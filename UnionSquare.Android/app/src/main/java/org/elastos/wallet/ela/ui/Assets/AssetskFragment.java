@@ -1,9 +1,11 @@
 package org.elastos.wallet.ela.ui.Assets;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -36,6 +38,7 @@ import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewDa
 import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
+import org.elastos.wallet.ela.utils.ScanQRcodeUtil;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
@@ -99,9 +102,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         realmUtil = new RealmUtil();
         wallet = realmUtil.queryDefauleWallet();
         tvTitle.setText(wallet.getWalletName());
-        ivTitleRight.setVisibility(View.VISIBLE);
-        ivTitleLeft.setImageResource(R.mipmap.aaset_wallet_list);
-        ivTitleRight.setImageResource(R.mipmap.asset_wallet_setting);
+        setWalletView(wallet);
         List<Wallet> wallets = realmUtil.queryUserAllWallet();
         listMap = new HashMap<>();
         for (Wallet wallet : wallets) {
@@ -111,11 +112,12 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     }
 
 
-    @OnClick({R.id.iv_title_left, R.id.iv_title_right, R.id.iv_add})
+    @OnClick({R.id.iv_title_left, R.id.iv_title_right, R.id.iv_add, R.id.tv_title, R.id.iv_scan})
     public void onViewClicked(View view) {
         Bundle bundle = null;
         switch (view.getId()) {
             case R.id.iv_title_left:
+            case R.id.tv_title:
                 //钱包列表
                 ((BaseFragment) getParentFragment()).start(new WalletListFragment());
                 break;
@@ -124,6 +126,11 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 bundle = new Bundle();
                 bundle.putParcelable("wallet", wallet);
                 ((BaseFragment) getParentFragment()).start(WallletManageFragment.class, bundle);
+                break;
+            case R.id.iv_scan:
+                //扫一扫
+                requstManifestPermission(getString(R.string.needpermission));
+
                 break;
             case R.id.iv_add:
                 bundle = new Bundle();
@@ -147,9 +154,46 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         return fragment;
     }
 
+    @Override
+    protected void requstPermissionOk() {
+        new ScanQRcodeUtil().scanQRcode(this);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        //处理扫描结果（在界面上显示）
+        if (resultCode == RESULT_OK && requestCode == ScanQRcodeUtil.SCAN_QR_REQUEST_CODE && data != null) {
+            String result = data.getStringExtra("result");//&& matcherUtil.isMatcherAddr(result)
+            if (!TextUtils.isEmpty(result) /*&& matcherUtil.isMatcherAddr(result)*/) {
+                Log.d("lll", result);
+            }
+        }
+
+    }
 
     private void setWalletView(Wallet wallet) {
         tvTitle.setText(wallet.getWalletName());
+        switch (wallet.getType()) {
+            //0 普通单签 1单签只读 2普通多签 3多签只读
+            case 0:
+                ivTitleLeft.setImageResource(R.mipmap.single_wallet);
+                break;
+            case 1:
+                ivTitleLeft.setImageResource(R.mipmap.single_walllet_readonly);
+                break;
+            case 2:
+                ivTitleLeft.setImageResource(R.mipmap.multi_wallet);
+                break;
+            case 3:
+                ivTitleLeft.setImageResource(R.mipmap.multi_wallet_readonly);
+                break;
+        }
+
+    }
+
+    private void setWalletViewWithNew(Wallet wallet) {
+        setWalletView(wallet);
         assetsPresenter.getAllSubWallets(wallet.getWalletId(), this);
 
     }
@@ -387,12 +431,21 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void Event(BusEvent result) {
         int integer = result.getCode();
-        if (integer == RxEnum.WALLETUPDATE.ordinal() || integer == RxEnum.ONE.ordinal()) {
-            //切换钱包 或者创建钱包
+        if (integer == RxEnum.WALLETUPDATE.ordinal()) {
+            //切换钱包
             Wallet temp = (Wallet) result.getObj();
             if (!wallet.getWalletId().equals(temp.getWalletId())) {
                 wallet = temp;
                 setWalletView(wallet);
+            }
+
+        }
+        if (integer == RxEnum.ONE.ordinal()) {
+            //创建钱包
+            Wallet temp = (Wallet) result.getObj();
+            if (!wallet.getWalletId().equals(temp.getWalletId())) {
+                wallet = temp;
+                setWalletViewWithNew(wallet);
             }
 
         }
@@ -414,7 +467,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         }
         if (integer == RxEnum.UPDATAPROPERTY.ordinal()) {
             //子钱包改变  创建或删除
-            setWalletView(wallet);
+            setWalletViewWithNew(wallet);
         }
         if (integer == RxEnum.UPDATAPROGRESS.ordinal()) {
             //progress改变
