@@ -100,14 +100,14 @@ func (cl *Client) Sign(txn *types.Transaction) (*types.Transaction, error) {
 		// Look up transaction type
 		if signType == vm.CHECKSIG {
 			// Sign single transaction
-			signedProgram, err := cl.signStandardTransaction(txn, program)
+			signedProgram, err := SignStandardTransaction(txn, program, cl.accounts)
 			if err != nil {
 				return nil, err
 			}
 			signedPrograms = append(signedPrograms, signedProgram)
 		} else if signType == vm.CHECKMULTISIG {
 			// Sign multi sign transaction
-			signedProgram, err := cl.signMultiSignTransaction(txn, program)
+			signedProgram, err := SignMultiSignTransaction(txn, program, cl.accounts)
 			if err != nil {
 				return nil, err
 			}
@@ -117,75 +117,6 @@ func (cl *Client) Sign(txn *types.Transaction) (*types.Transaction, error) {
 	txn.Programs = signedPrograms
 
 	return txn, nil
-}
-
-func (cl *Client) signStandardTransaction(txn *types.Transaction, program *pg.Program) (*pg.Program, error) {
-	code := program.Code
-	acct := cl.GetAccountByCodeHash(*common.ToCodeHash(code))
-	if acct == nil {
-		return nil, errors.New("no available account in wallet to do single-sign")
-	}
-
-	// Sign transaction
-	signature, err := SignBySigner(txn, acct)
-	if err != nil {
-		return nil, err
-	}
-	// Add verify program for transaction
-	buf := new(bytes.Buffer)
-	buf.WriteByte(byte(len(signature)))
-	buf.Write(signature)
-
-	signedProgram := &pg.Program{
-		Code:      code,
-		Parameter: buf.Bytes(),
-	}
-
-	return signedProgram, nil
-}
-
-func (cl *Client) signMultiSignTransaction(txn *types.Transaction, program *pg.Program) (*pg.Program, error) {
-	code := program.Code
-	param := program.Parameter
-	// Check if current user is a valid signer
-	codeHashes, err := GetSigners(code)
-	if err != nil {
-		return nil, err
-	}
-	var signerIndex = -1
-	var acc *Account
-	for i, hash := range codeHashes {
-		acc = cl.GetAccountByCodeHash(*hash)
-		if acc != nil {
-			signerIndex = i
-			break
-		}
-	}
-	if signerIndex == -1 {
-		return nil, errors.New("no available account detected")
-	}
-	// Sign transaction
-	signature, err := SignBySigner(txn, acc)
-	if err != nil {
-		return nil, err
-	}
-
-	// Append signature
-	buf := new(bytes.Buffer)
-	if err := txn.SerializeUnsigned(buf); err != nil {
-		return nil, err
-	}
-	parameter, err := crypto.AppendSignature(signerIndex, signature, buf.Bytes(), code, param)
-	if err != nil {
-		return nil, err
-	}
-
-	signedProgram := &pg.Program{
-		Code:      code,
-		Parameter: parameter,
-	}
-
-	return signedProgram, nil
 }
 
 func (cl *Client) GetMainAccount() *Account {
@@ -479,4 +410,76 @@ func SignBySigner(txn *types.Transaction, acc *Account) ([]byte, error) {
 		return nil, errors.New("[Signature],SignBySigner failed")
 	}
 	return signature, nil
+}
+
+func SignStandardTransaction(txn *types.Transaction, program *pg.Program,
+	accounts map[common.Uint160]*Account) (*pg.Program, error) {
+	code := program.Code
+	acct, ok := accounts[*common.ToCodeHash(code)]
+	if !ok {
+		return nil, errors.New("no available account in wallet to do single-sign")
+	}
+
+	// Sign transaction
+	signature, err := SignBySigner(txn, acct)
+	if err != nil {
+		return nil, err
+	}
+	// Add verify program for transaction
+	buf := new(bytes.Buffer)
+	buf.WriteByte(byte(len(signature)))
+	buf.Write(signature)
+
+	signedProgram := &pg.Program{
+		Code:      code,
+		Parameter: buf.Bytes(),
+	}
+
+	return signedProgram, nil
+}
+
+func SignMultiSignTransaction(txn *types.Transaction, program *pg.Program,
+	accounts map[common.Uint160]*Account) (*pg.Program, error) {
+	code := program.Code
+	param := program.Parameter
+	// Check if current user is a valid signer
+	codeHashes, err := GetSigners(code)
+	if err != nil {
+		return nil, err
+	}
+	var signerIndex = -1
+	var acc *Account
+	for i, hash := range codeHashes {
+		var ok bool
+		acc, ok = accounts[*hash]
+		if ok {
+			signerIndex = i
+			break
+		}
+	}
+	if signerIndex == -1 {
+		return nil, errors.New("no available account detected")
+	}
+	// Sign transaction
+	signature, err := SignBySigner(txn, acc)
+	if err != nil {
+		return nil, err
+	}
+
+	// Append signature
+	buf := new(bytes.Buffer)
+	if err := txn.SerializeUnsigned(buf); err != nil {
+		return nil, err
+	}
+	parameter, err := crypto.AppendSignature(signerIndex, signature, buf.Bytes(), code, param)
+	if err != nil {
+		return nil, err
+	}
+
+	signedProgram := &pg.Program{
+		Code:      code,
+		Parameter: parameter,
+	}
+
+	return signedProgram, nil
 }
