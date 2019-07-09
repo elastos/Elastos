@@ -8,8 +8,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -19,6 +17,8 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	crstate "github.com/elastos/Elastos.ELA/cr/state"

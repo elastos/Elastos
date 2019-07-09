@@ -118,6 +118,20 @@ func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	s.history.Commit(block.Height)
 }
 
+// ProcessBlock takes a block and it's confirm to update CR state and
+// votes accordingly.
+func (s *State) ProcessReturnDepositTxs(block *types.Block) {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
+
+	for _, tx := range block.Transactions {
+		switch tx.TxType {
+		// todo call returnDeposit() with tx type of return CR deposit
+		}
+	}
+	s.history.Commit(block.Height)
+}
+
 // RollbackTo restores the database state to the given height, if no enough
 // history to rollback to return error.
 func (s *State) RollbackTo(height uint32) error {
@@ -127,12 +141,19 @@ func (s *State) RollbackTo(height uint32) error {
 }
 
 // FinishVoting will close all voting util next voting period
-func (s *State) FinishVoting() *StateKeyFrame {
+func (s *State) FinishVoting(dids []common.Uint168) *StateKeyFrame {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
-	result := &s.StateKeyFrame
-	s.StateKeyFrame = *NewStateKeyFrame()
+	for _, v := range dids {
+		if _, ok := s.ActivityCandidates[v]; !ok {
+			log.Warnf("not found active candidate %s when finish voting",
+				v.String())
+		}
+		delete(s.ActivityCandidates, v)
+	}
 	s.history = utils.NewHistory(maxHistoryCapacity)
+
+	result := s.StateKeyFrame.Snapshot()
 	return result
 }
 

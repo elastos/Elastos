@@ -53,6 +53,7 @@ type Candidate struct {
 	cancelHeight   uint32
 	depositAmount  common.Fixed64
 	depositHash    common.Uint168
+	penalty        common.Fixed64
 }
 
 func (c *Candidate) Serialize(w io.Writer) (err error) {
