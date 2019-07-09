@@ -10,7 +10,11 @@ export const Label = styled.span`
 `
 
 export const Title = styled.h2`
-  padding-bottom: 15px;
+  ${props => props.smallSpace && `
+    padding: 0;
+    margin: 0;
+    font-size: 24px;
+  `}
 `
 
 export const ContentTitle = styled.h4`
@@ -19,15 +23,27 @@ export const ContentTitle = styled.h4`
 `
 
 export const FixedHeader = styled.div`
-  position: fixed;
-  padding-top: 80px;
   background: white;
-  z-index: 1000;
-  width: 100%;
+`
+
+export const SubTitleHeading = styled.h4`
+  padding: 0;
+  margin: 0;
+  ${props => props.smallSpace && `
+    font-size: 14px;
+  `}
+
+  .value {
+    background: #1DE9B6;
+    padding: 0 5px;
+  }
+  .text {
+    font-size: 11px;
+    color: rgba(3, 30, 40, 0.4);
+  }
 `
 
 export const Body = styled.div`
-  padding-top: 270px;
 `
 
 export const StyledAnchor = styled(Anchor)`
