@@ -9,6 +9,7 @@ import get from './get'
 import update from './update'
 import vote from './vote'
 import finish from './finish'
+import unfinish from './unfinish'
 import update_notes from './update_notes'
 
 export default Base.setRouter([
@@ -55,7 +56,12 @@ export default Base.setRouter([
     {
         path : '/finish',
         router : finish,
-        method : 'get'
+        method : 'post'
+    },
+    {
+        path : '/unfinish',
+        router : unfinish,
+        method : 'post'
     },
     {
         path : '/update_notes',
