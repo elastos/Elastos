@@ -1,5 +1,4 @@
 pragma solidity ^0.4.25;
-pragma experimental ABIEncoderV2;
 
 library SafeMath {
     function add(uint256 _a, uint256 _b) internal pure returns (uint256) {
