@@ -210,7 +210,7 @@ export const TASK_AVATAR_DEFAULT = '/assets/images/Elastos_Logo.png'
 export const TEAM_AVATAR_DEFAULT = '/assets/images/team_blurred.svg'
 
 // council vote
-export const CVOTE_STATUS = create(['DRAFT', 'PROPOSED', 'ACTIVE', 'REJECT', 'FINAL', 'DEFERRED'])
+export const CVOTE_STATUS = create(['DRAFT', 'PROPOSED', 'ACTIVE', 'REJECT', 'FINAL', 'DEFERRED', 'INCOMPLETED'])
 
 export const CVOTE_STATUS_TEXT = {
   DRAFT: 'DRAFT',
@@ -219,6 +219,7 @@ export const CVOTE_STATUS_TEXT = {
   REJECT: 'REJECTED',
   DEFERRED: 'DEFERRED',
   FINAL: 'FINAL',
+  INCOMPLETED: 'INCOMPLETED'
 }
 
 export const CONTENT_TYPE = create(['MARKDOWN', 'HTML'])
