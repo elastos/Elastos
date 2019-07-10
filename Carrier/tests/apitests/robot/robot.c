@@ -58,6 +58,8 @@ static CarrierContextExtra extra = {
     .data   = NULL,
     .len    = 0,
     .test_offmsg = OffMsgCase_Zero,
+    .test_offmsg_count = 0,
+    .expected_offmsg_count = 0,
     .test_offmsg_expires = {0},
     .offmsg_header = {0},
     .gcookie = {0},
@@ -101,6 +103,14 @@ static void idle_cb(ElaCarrier *w, void *context)
         if (timercmp(&now, &extra->test_offmsg_expires, >)) {
             write_ack("offmsglost\n");
             extra->test_offmsg = OffMsgCase_Zero;
+        }
+    } else if(extra->test_offmsg == OffMsgCase_Bulk) {
+        gettimeofday(&now, NULL);
+        if (timercmp(&now, &extra->test_offmsg_expires, >)) {
+            write_ack("%d\n", extra->test_offmsg_count);
+            extra->test_offmsg = OffMsgCase_Zero;
+            extra->test_offmsg_count = 0;
+            extra->expected_offmsg_count = 0;
         }
     }
     pthread_mutex_unlock(&extra->mutex);
@@ -251,6 +261,16 @@ static void friend_message_cb(ElaCarrier *w, const char *from,
         if (strstr((const char*)msg, extra->offmsg_header)) {
             write_ack("%.*s\n", len, msg);
             extra->test_offmsg = OffMsgCase_Zero;
+        }
+    } else if (extra->test_offmsg == OffMsgCase_Bulk) {
+        if (strstr((const char*)msg, extra->offmsg_header)) {
+            extra->test_offmsg_count++;
+            if (extra->test_offmsg_count == extra->expected_offmsg_count) {
+                write_ack("%d\n", extra->test_offmsg_count);
+                extra->test_offmsg = OffMsgCase_Zero;
+                extra->test_offmsg_count = 0;
+                extra->expected_offmsg_count = 0;
+            }
         }
     } else {
         if (strchr(msg, ':') == NULL)

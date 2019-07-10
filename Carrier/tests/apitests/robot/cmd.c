@@ -526,12 +526,18 @@ static void restartnode(TestContext *context, int argc, char *argv[])
     struct timeval now;
     extern void *carrier_run_entry(void *);
 
-    CHK_ARGS(argc == 2);
+    CHK_ARGS(argc == 2 || argc == 3);
 
     vlogI("Robot will be reborn.");
 
     pthread_mutex_lock(&extra->mutex);
-    extra->test_offmsg = OffMsgCase_Single;
+    if (argc == 2) {
+        extra->test_offmsg = OffMsgCase_Single;
+    } else {
+        extra->test_offmsg = OffMsgCase_Bulk;
+        extra->test_offmsg_count = 0;
+        extra->expected_offmsg_count = atoi(argv[2]);
+    }
 
     gettimeofday(&now, NULL);
     timeout_interval.tv_sec = atoi(argv[1]);

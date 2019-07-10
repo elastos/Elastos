@@ -164,17 +164,18 @@ static void send_offmsg_to_friend(int count, int timeout)
     CU_ASSERT_STRING_EQUAL(buf[0], "setmsgheader");
     CU_ASSERT_STRING_EQUAL(buf[1], "success");
 
-    const char *out = NULL;
+    char out[32] = {0};
     for (i = 0; i < count; i++) {
-        char buffer[32] = {0};
-
-        sprintf(buffer, "%d", i);
-        out = strcat(header, buffer);
+        memset(out, 0, sizeof(out));
+        sprintf(out, "%s%d", header, (count > 1) ? (i + 1) : i);
         rc = ela_send_friend_message(wctxt->carrier, robotid, out, strlen(out));
         CU_ASSERT_EQUAL_FATAL(rc, 0);
     }
 
-    rc = write_cmd("restartnode %d\n", timeout);
+    if (count > 1)
+        rc = write_cmd("restartnode %d %d\n", timeout, count);
+    else
+        rc = write_cmd("restartnode %d\n", timeout);
     CU_ASSERT_FATAL(rc > 0);
 
     status_cond_wait(wctxt->friend_status_cond, ONLINE);
@@ -202,11 +203,17 @@ static void send_offmsg_to_friend(int count, int timeout)
 
 static void test_send_offline_msg_to_friend(void)
 {
-    send_offmsg_to_friend(1, 600);
+    send_offmsg_to_friend(1, 900);
+}
+
+static void test_send_offline_msgs_to_friend(void)
+{
+    send_offmsg_to_friend(10, 900);
 }
 
 static CU_TestInfo cases[] = {
     { "test_send_offline_msg_to_friend",   test_send_offline_msg_to_friend  },
+    { "test_send_offline_msgs_to_friend",  test_send_offline_msgs_to_friend },
     {NULL, NULL }
 };
 
