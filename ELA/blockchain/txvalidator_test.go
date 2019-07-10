@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -1168,11 +1168,11 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	s.EqualError(err, "Field Url has invalid string length.")
 
 	//not in vote Period lower
-	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight-1)
+	err = s.Chain.checkRegisterCRTransaction(txn, config.DefaultParams.CRVotingStartHeight-1)
 	s.EqualError(err, "should create tx during voting period")
 
 	//not in vote Period lower upper c.params.CRCommitteeStartHeight
-	err = s.Chain.checkRegisterCRTransaction(txn, config.DefaultParams.CRCommitteeStartHeight)
+	err = s.Chain.checkRegisterCRTransaction(txn, config.DefaultParams.CRCommitteeStartHeight+1)
 	s.EqualError(err, "should create tx during voting period")
 
 	//nickname already in use
@@ -1527,11 +1527,11 @@ func (s *txValidatorTestSuite) TestCheckUpdateCRTransaction() {
 	s.EqualError(err, "[Validation], Verify failed.")
 
 	//not in vote Period lower
-	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight-1)
+	err = s.Chain.checkUpdateCRTransaction(txn, config.DefaultParams.CRVotingStartHeight-1)
 	s.EqualError(err, "should create tx during voting period")
 
 	//not in vote Period lower upper c.params.CRCommitteeStartHeight
-	err = s.Chain.checkUpdateCRTransaction(txn, config.DefaultParams.CRCommitteeStartHeight)
+	err = s.Chain.checkUpdateCRTransaction(txn, config.DefaultParams.CRCommitteeStartHeight+1)
 	s.EqualError(err, "should create tx during voting period")
 
 	//updating unknown CR
@@ -1578,11 +1578,11 @@ func (s *txValidatorTestSuite) TestCheckUnregisterCRTransaction() {
 	s.EqualError(err, "invalid payload")
 
 	//not in vote Period lower
-	err = s.Chain.checkUnRegisterCRTransaction(txn, votingHeight-1)
+	err = s.Chain.checkUnRegisterCRTransaction(txn, config.DefaultParams.CRVotingStartHeight-1)
 	s.EqualError(err, "should create tx during voting period")
 
 	//not in vote Period lower upper c.params.CRCommitteeStartHeight
-	err = s.Chain.checkUnRegisterCRTransaction(txn, config.DefaultParams.CRCommitteeStartHeight)
+	err = s.Chain.checkUnRegisterCRTransaction(txn, config.DefaultParams.CRCommitteeStartHeight+1)
 	s.EqualError(err, "should create tx during voting period")
 
 	//unregister unknown CR
