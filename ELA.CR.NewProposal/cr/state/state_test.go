@@ -424,23 +424,14 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 	assert.Equal(t, Canceled, candidate.state)
 
 	// return deposit
-	// todo replace returnDeposit() with ProcessBlock() when return CR deposit
-	//  tx defined
-	state.returnDeposit(&types.Transaction{
-		Programs: []*program.Program{
-			{
-				Code: code,
-			},
+	state.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: height,
 		},
-		Outputs: []*types.Output{
-			{
-				Value: 100,
-			},
-			{
-				Value: 200,
-			},
+		Transactions: []*types.Transaction{
+			generateReturnCRDeposit(code),
 		},
-	}, height)
+	}, nil)
 	state.history.Commit(height)
 	assert.Equal(t, common.Fixed64(0), candidate.depositAmount)
 }
@@ -500,6 +491,18 @@ func generateUnregisterCR(code []byte) *types.Transaction {
 		TxType: types.UnregisterCR,
 		Payload: &payload.UnregisterCR{
 			Code: code,
+		},
+	}
+}
+
+func generateReturnCRDeposit(code []byte) *types.Transaction {
+	return &types.Transaction{
+		TxType:  types.ReturnCRDepositCoin,
+		Payload: &payload.ReturnDepositCoin{},
+		Programs: []*program.Program{
+			&program.Program{
+				Code: code,
+			},
 		},
 	}
 }

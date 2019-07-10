@@ -645,52 +645,6 @@ func (s *State) IsDPOSTransaction(tx *types.Transaction) bool {
 	return false
 }
 
-// IsCRTransaction returns if a transaction will change the CRC and
-// votes state.
-func (s *State) IsCRTransaction(tx *types.Transaction) bool {
-	s.mtx.RLock()
-	defer s.mtx.RUnlock()
-
-	switch tx.TxType {
-	// Transactions will changes the CRC state.
-	case types.RegisterCR, types.UpdateCR, types.UnregisterCR,
-		types.ReturnCRDepositCoin:
-		return true
-
-	// Transactions will change the CRC votes state.
-	case types.TransferAsset:
-		if tx.Version >= types.TxVersion09 {
-			// Votes to producers.
-			for _, output := range tx.Outputs {
-				if output.Type != types.OTVote {
-					continue
-				}
-				p, ok := output.Payload.(*outputpayload.VoteOutput)
-				if !ok {
-					continue
-				}
-				if p.Version == outputpayload.VoteProducerAndCRVersion {
-					for _, content := range p.Contents {
-						if content.VoteType == outputpayload.CRC {
-							return true
-						}
-					}
-				}
-			}
-		}
-	}
-
-	// Cancel votes.
-	for _, input := range tx.Inputs {
-		_, ok := s.Votes[input.ReferKey()]
-		if ok {
-			return true
-		}
-	}
-
-	return false
-}
-
 // ProcessBlock takes a block and it's confirm to update producers state and
 // votes accordingly.
 func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
@@ -905,10 +859,33 @@ func (s *State) processVotes(tx *types.Transaction, height uint32) {
 	if tx.Version >= types.TxVersion09 {
 		// Votes to producers.
 		for i, output := range tx.Outputs {
-			if output.Type == types.OTVote {
+			if output.Type != types.OTVote {
+				continue
+			}
+
+			p, ok := output.Payload.(*outputpayload.VoteOutput)
+			if !ok {
+				continue
+			}
+			if p.Version == outputpayload.VoteProducerVersion {
 				op := types.NewOutPoint(tx.Hash(), uint16(i))
 				s.Votes[op.ReferKey()] = output
 				s.processVoteOutput(output, height)
+				continue
+			}
+			if p.Version == outputpayload.VoteProducerAndCRVersion {
+				var exist bool
+				for _, content := range p.Contents {
+					if content.VoteType == outputpayload.Delegate {
+						exist = true
+						break
+					}
+				}
+				if exist {
+					op := types.NewOutPoint(tx.Hash(), uint16(i))
+					s.Votes[op.ReferKey()] = output
+					s.processVoteOutput(output, height)
+				}
 			}
 		}
 	}

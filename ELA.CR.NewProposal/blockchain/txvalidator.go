@@ -222,14 +222,16 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 	}
 
 	if txn.IsReturnDepositCoin() {
-		if err := b.checkReturnDepositCoinTransaction(txn, references); err != nil {
+		if err := b.checkReturnDepositCoinTransaction(
+			txn, references, b.db.GetHeight()); err != nil {
 			log.Warn("[CheckReturnDepositCoinTransaction],", err)
 			return ErrReturnDepositConsensus
 		}
 	}
 
 	if txn.IsReturnCRDepositCoinTx() {
-		if err := b.checkReturnCRDepositCoinTransaction(txn, references); err != nil {
+		if err := b.checkReturnCRDepositCoinTransaction(
+			txn, references, b.db.GetHeight(), b.crCommittee.IsInVotingPeriod); err != nil {
 			log.Warn("[CheckReturnDepositCoinTransaction],", err)
 			return ErrReturnDepositConsensus
 		}
@@ -652,11 +654,11 @@ func checkTransactionUTXOLock(txn *Transaction, references map[*Input]*Output) e
 func checkTransactionDepositUTXO(txn *Transaction, references map[*Input]*Output) error {
 	for _, output := range references {
 		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixDeposit {
-			if !txn.IsReturnDepositCoin() {
+			if !txn.IsReturnDepositCoin() && !txn.IsReturnCRDepositCoinTx() {
 				return errors.New("only the ReturnDepositCoin transaction can use the deposit UTXO")
 			}
 		} else {
-			if txn.IsReturnDepositCoin() {
+			if txn.IsReturnDepositCoin() || txn.IsReturnCRDepositCoinTx() {
 				return errors.New("the ReturnDepositCoin transaction can only use the deposit UTXO")
 			}
 		}
@@ -1529,7 +1531,7 @@ func (b *BlockChain) additionalProducerInfoCheck(
 }
 
 func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction,
-	references map[*Input]*Output) error {
+	references map[*Input]*Output, currentHeight uint32) error {
 
 	var outputValue common.Fixed64
 	var inputValue common.Fixed64
@@ -1549,7 +1551,7 @@ func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction,
 		if p.State() != state.Canceled {
 			return errors.New("producer must be canceled before return deposit coin")
 		}
-		if b.db.GetHeight()-p.CancelHeight() < DepositLockupBlocks {
+		if currentHeight-p.CancelHeight() < DepositLockupBlocks {
 			return errors.New("return deposit does not meet the lockup limit")
 		}
 		penalty += p.Penalty()
@@ -1563,7 +1565,8 @@ func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction,
 }
 
 func (b *BlockChain) checkReturnCRDepositCoinTransaction(txn *Transaction,
-	references map[*Input]*Output) error {
+	references map[*Input]*Output, currentHeight uint32,
+	isInVotingPeriod func(height uint32) bool) error {
 
 	var outputValue common.Fixed64
 	var inputValue common.Fixed64
@@ -1585,11 +1588,10 @@ func (b *BlockChain) checkReturnCRDepositCoinTransaction(txn *Transaction,
 		// todo get candiadte form not voting period state.
 		c := b.crCommittee.GetState().GetCandidateByDID(*programHash)
 		if c == nil {
-			return errors.New("candidate is not exist")
+			return errors.New("signer must be CR candidate")
 		}
 
-		currentHeight := b.db.GetHeight()
-		if b.crCommittee.IsInVotingPeriod(currentHeight) {
+		if isInVotingPeriod(currentHeight) {
 			// In voting period, state need to be canceled.
 			if c.State() != crstate.Canceled {
 				return errors.New("candidate state is not canceled")
@@ -1597,7 +1599,8 @@ func (b *BlockChain) checkReturnCRDepositCoinTransaction(txn *Transaction,
 			// In voting period, need to wait 720*3 blocks before return
 			// deposit coin.
 			if currentHeight-c.CancelHeight() < DepositLockupBlocks {
-				return errors.New("candidate is not canceled 3 days")
+				return errors.New("return CR deposit does not " +
+					"meet the lockup limit")
 			}
 		} else {
 			// Not in voting period, state can be pending active or canceled
