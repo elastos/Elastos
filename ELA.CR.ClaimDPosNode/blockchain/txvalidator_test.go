@@ -76,6 +76,64 @@ func (s *txValidatorTestSuite) TearDownSuite() {
 	DefaultLedger = s.OriginalLedger
 }
 
+func (s *txValidatorTestSuite) TestCheckTxHeightVersion() {
+	// set blockHeight1 less than CRVotingStartHeight and set blockHeight2
+	// to CRVotingStartHeight.
+	blockHeight1 := s.Chain.chainParams.CRVotingStartHeight - 1
+	blockHeight2 := s.Chain.chainParams.CRVotingStartHeight
+
+	// check height version of registerCR transaction.
+	registerCR := &types.Transaction{TxType: types.RegisterCR}
+	err := s.Chain.checkTxHeightVersion(registerCR, blockHeight1)
+	s.EqualError(err, "not support before CRVotingStartHeight")
+	err = s.Chain.checkTxHeightVersion(registerCR, blockHeight2)
+	s.NoError(err)
+
+	// check height version of updateCR transaction.
+	updateCR := &types.Transaction{TxType: types.UpdateCR}
+	err = s.Chain.checkTxHeightVersion(updateCR, blockHeight1)
+	s.EqualError(err, "not support before CRVotingStartHeight")
+	err = s.Chain.checkTxHeightVersion(updateCR, blockHeight2)
+	s.NoError(err)
+
+	// check height version of unregister transaction.
+	unregisterCR := &types.Transaction{TxType: types.UnregisterCR}
+	err = s.Chain.checkTxHeightVersion(unregisterCR, blockHeight1)
+	s.EqualError(err, "not support before CRVotingStartHeight")
+	err = s.Chain.checkTxHeightVersion(unregisterCR, blockHeight2)
+	s.NoError(err)
+
+	// check height version of unregister transaction.
+	returnCoin := &types.Transaction{TxType: types.ReturnCRDepositCoin}
+	err = s.Chain.checkTxHeightVersion(returnCoin, blockHeight1)
+	s.EqualError(err, "not support before CRVotingStartHeight")
+	err = s.Chain.checkTxHeightVersion(returnCoin, blockHeight2)
+	s.NoError(err)
+
+	// check height version of vote CR.
+	voteCR := &types.Transaction{
+		Version: 0x09,
+		TxType:  types.TransferAsset,
+		Outputs: []*types.Output{
+			{
+				AssetID:     common.Uint256{},
+				Value:       0,
+				OutputLock:  0,
+				ProgramHash: common.Uint168{},
+				Type:        types.OTVote,
+				Payload: &outputpayload.VoteOutput{
+					Version: outputpayload.VoteProducerAndCRVersion,
+				},
+			},
+		},
+	}
+	err = s.Chain.checkTxHeightVersion(voteCR, blockHeight1)
+	s.EqualError(err, "not support VoteProducerAndCRVersion "+
+		"before CRVotingStartHeight")
+	err = s.Chain.checkTxHeightVersion(voteCR, blockHeight2)
+	s.NoError(err)
+}
+
 func (s *txValidatorTestSuite) TestCheckTransactionSize() {
 	tx := buildTx()
 	buf := new(bytes.Buffer)
