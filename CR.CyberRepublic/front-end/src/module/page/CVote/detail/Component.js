@@ -90,7 +90,10 @@ class C extends StandardPage {
   }
 
   refetch = async () => {
-    const data = await this.props.getData(_.get(this.props.match, 'params.id'))
+    const param = {
+      id: _.get(this.props.match, 'params.id')
+    }
+    const data = await this.props.getData(param)
     this.setState({ data })
   }
 
@@ -112,7 +115,6 @@ class C extends StandardPage {
     const translationBtn = this.renderTranslationBtn()
     const notesNode = this.renderNotes()
     const voteActionsNode = this.renderVoteActions()
-    const adminActionsNode = this.renderAdminActions()
     const voteDetailNode = this.renderVoteResults()
     const trackingNode = this.renderTracking()
     const summaryNode = this.renderSummary()
@@ -133,7 +135,6 @@ class C extends StandardPage {
             {translationBtn}
             {notesNode}
             {voteActionsNode}
-            {adminActionsNode}
             {voteDetailNode}
             {trackingNode}
             {summaryNode}
@@ -359,7 +360,7 @@ class C extends StandardPage {
     const { isSecretary, isCouncil, currentUserId } = this.props
     const { status, createdBy, notes } = this.state.data
     const isSelf = currentUserId === createdBy
-    const isCompleted = status === CVOTE_STATUS.FINAL
+    const isCompleted = _.includes([CVOTE_STATUS.FINAL, CVOTE_STATUS.INCOMPLETED], status)
     const canManage = isSecretary || isCouncil
     const canEdit = _.includes([CVOTE_STATUS.DRAFT], status)
     const canComplete = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.REJECT, CVOTE_STATUS.DEFERRED], status)
@@ -368,35 +369,27 @@ class C extends StandardPage {
 
     const noteBtnText = notes ? I18N.get('council.voting.btnText.editNotes') : I18N.get('council.voting.btnText.notesSecretary')
     const addNoteBtn = isSecretary && (
-      <Button
-        // icon="profile"
-        onClick={this.showUpdateNotesModal}
-      >
+      <Button onClick={this.showUpdateNotesModal}>
         {noteBtnText}
       </Button>
     )
     const editProposalBtn = isSelf && canEdit && (
-      <Button
-        // icon="edit"
-        onClick={this.gotoEditPage}
-      >
+      <Button onClick={this.gotoEditPage}>
         {I18N.get('council.voting.btnText.editProposal')}
       </Button>
     )
     const completeProposalBtn = isSecretary && canComplete && (
-      <Button
-        // icon="check-square"
-        // type="primary"
-        onClick={this.completeProposal}
-      >
+      <Button onClick={this.completeProposal}>
         {I18N.get('council.voting.btnText.completeProposal')}
       </Button>
     )
+    const incompleteProposalBtn = isSecretary && canComplete && (
+      <Button onClick={this.incompleteProposal}>
+        {I18N.get('council.voting.btnText.closeIncomplete')}
+      </Button>
+    )
     const publishProposalBtn = isSelf && canEdit && (
-      <Button
-        type="primary"
-        onClick={this.publish}
-      >
+      <Button type="primary" onClick={this.publish}>
         {I18N.get('council.voting.btnText.publish')}
       </Button>
     )
@@ -405,6 +398,7 @@ class C extends StandardPage {
         {addNoteBtn}
         {editProposalBtn}
         {completeProposalBtn}
+        {incompleteProposalBtn}
         {publishProposalBtn}
       </div>
     )
@@ -511,6 +505,24 @@ class C extends StandardPage {
     )
   }
 
+  publish = async () => {
+    const { match, updateCVote } = this.props
+    const id = _.get(match, 'params.id')
+
+    const param = { _id: id, published: true }
+
+    this.ord_loading(true)
+    try {
+      await updateCVote(param)
+      message.success(I18N.get('from.CVoteForm.message.updated.success'))
+      this.refetch()
+      this.ord_loading(false)
+    } catch (e) {
+      message.error(e.message)
+      this.ord_loading(false)
+    }
+  }
+
   async vote({ value, reason }) {
     const { match, vote } = this.props
     const id = _.get(match, 'params.id')
@@ -560,16 +572,28 @@ class C extends StandardPage {
   }
 
   completeProposal = () => {
+    const title = I18N.get('council.voting.modal.complete')
+    const fn = this.props.finishCVote
+    this.finalizeProposal(title, fn)
+  }
+
+  incompleteProposal = () => {
+    const title = I18N.get('council.voting.modal.incomplete')
+    const fn = this.props.unfinishCVote
+    this.finalizeProposal(title, fn)
+  }
+
+  finalizeProposal = (title, fn) => {
     const id = _.get(this.props.match, 'params.id')
 
     Modal.confirm({
-      title: I18N.get('council.voting.modal.complete'),
+      title,
       content: '',
       okText: I18N.get('council.voting.modal.confirm'),
       cancelText: I18N.get('council.voting.modal.cancel'),
       onOk: () => {
         this.ord_loading(true)
-        this.props.finishCVote({
+        fn({
           id,
         }).then(() => {
           message.success(I18N.get('from.CVoteForm.message.proposal.update.success'))
