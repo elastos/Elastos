@@ -59,6 +59,7 @@ public enum RxEnum {
     CREATEPRIVATEKEY,//新建根私钥成功
     IMPORTRIVATEKEY,//导入助记词成功
     SELECTRIVATEKEY,//导入助记词成功
+    TOSIGN,//生成待签名交易
 
 
    /* enum Type {

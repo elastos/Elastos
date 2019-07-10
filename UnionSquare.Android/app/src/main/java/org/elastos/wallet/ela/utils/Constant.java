@@ -16,8 +16,8 @@ public class Constant {
     public static final String Email = "wallet@elastos.org";
     public static final String UpdateLog = "https://download.elastos.org/app/release-notes/ela-wallet/index.html";
     public static final String FRAGMENTTAG = "commonwebview";
-    public static final int CREATEREADONLY = 0x1;
-    public static final int CREATEMUL = 0x2;
+    public static final int CREATEREADONLY = 0x1;//打开创建单签只读钱包页面
+    public static final int CREATEMUL = 0x2;//打开创建多签钱包页面
 
     private static String getBaseUrl() {
         String baseUrl = "https://unionsquare.elastos.org/";

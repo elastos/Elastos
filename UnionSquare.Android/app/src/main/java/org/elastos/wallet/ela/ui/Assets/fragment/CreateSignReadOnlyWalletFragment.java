@@ -7,6 +7,9 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -51,6 +54,12 @@ public class CreateSignReadOnlyWalletFragment extends BaseFragment implements Co
     protected void setExtraData(Bundle data) {
         super.setExtraData(data);
         result = data.getString("result");
+        try {
+            JsonObject jsonObject = new JsonParser().parse(result).getAsJsonObject();
+            result = jsonObject.get("data").getAsString();
+        } catch (Exception e) {
+            result = null;
+        }
 
     }
 

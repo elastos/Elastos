@@ -63,7 +63,7 @@ public class ShowMulsignPublicKeyFragment extends BaseFragment implements Commmo
         JsonObject jsonData = new JsonParser().parse(data).getAsJsonObject();
         JsonObject jsonObject = new JsonObject();
 
-        jsonObject.addProperty("type", Constant.CREATEREADONLY);
+        jsonObject.addProperty("type", Constant.CREATEMUL);
         jsonObject.addProperty("data", data);
         if (jsonData.has("requestPubKey")) {
             String requestPubKey = jsonData.get("requestPubKey").getAsString();

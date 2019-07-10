@@ -149,13 +149,22 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
             Contact contact = (Contact) result.getObj();
             etPayeeaddr.setText(contact.getWalletAddr());
 
-        } else if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
+        }
+        if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
             new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
                 @Override
                 public void affireBtnClick(View view) {
                     popBackFragment();
                 }
             });
+
+        }
+        if (integer == RxEnum.TOSIGN.ordinal()) {
+            //生成待签名交易
+            String attributes = (String) result.getObj();
+            Bundle bundle = new Bundle();
+            bundle.putString("attributes", attributes);
+            start(SignFragment.class, bundle);
 
         }
     }

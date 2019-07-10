@@ -1,6 +1,7 @@
 package org.elastos.wallet.ela.ui.Assets.fragment.mulsignwallet;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -38,6 +39,7 @@ import org.elastos.wallet.ela.utils.widget.TextConfigNumberPicker;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.security.PublicKey;
 import java.util.Map;
 
 import butterknife.BindView;
@@ -71,12 +73,18 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
     int integer = -1;
     private String masterWalletID;
     private String name;
+    private String publicKey;
 
     @Override
     protected int getLayoutId() {
         return R.layout.fragment_create_mul;
     }
+    @Override
+    protected void setExtraData(Bundle data) {
+        super.setExtraData(data);
+        publicKey = data.getString("result");
 
+    }
     @Override
     protected void initView(View view) {
         tvTitle.setText(getString(R.string.createmulwalllet));

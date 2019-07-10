@@ -11,6 +11,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.constant.RefreshState;
@@ -26,8 +28,10 @@ import org.elastos.wallet.ela.ui.Assets.adapter.AssetskAdapter;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.fragment.AddAssetFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.AssetDetailsFragment;
+import org.elastos.wallet.ela.ui.Assets.fragment.CreateSignReadOnlyWalletFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.WalletListFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.WallletManageFragment;
+import org.elastos.wallet.ela.ui.Assets.fragment.mulsignwallet.CreateMulWalletFragment;
 import org.elastos.wallet.ela.ui.Assets.listener.ISubWalletListener;
 import org.elastos.wallet.ela.ui.Assets.presenter.AssetsPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
@@ -35,6 +39,7 @@ import org.elastos.wallet.ela.ui.Assets.viewdata.AssetsViewData;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
+import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
@@ -166,7 +171,23 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         if (resultCode == RESULT_OK && requestCode == ScanQRcodeUtil.SCAN_QR_REQUEST_CODE && data != null) {
             String result = data.getStringExtra("result");//&& matcherUtil.isMatcherAddr(result)
             if (!TextUtils.isEmpty(result) /*&& matcherUtil.isMatcherAddr(result)*/) {
-                Log.d("lll", result);
+                try {
+                    JsonObject jsonObject = new JsonParser().parse(result).getAsJsonObject();
+                    int type = jsonObject.get("type").getAsInt();
+                    Bundle bundle = new Bundle();
+                    bundle.putString("result", result);
+                    switch (type) {
+                        case Constant.CREATEREADONLY:
+                            start(CreateSignReadOnlyWalletFragment.class, bundle);
+                            break;
+                        case Constant.CREATEMUL:
+                            start(CreateMulWalletFragment.class, bundle);
+                            break;
+                    }
+                } catch (Exception e) {
+                    showToast(result);
+                }
+
             }
         }
 

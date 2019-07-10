@@ -3,6 +3,7 @@ package org.elastos.wallet.ela.ui.Assets.activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -105,12 +106,27 @@ public class TransferActivity extends BaseActivity {
         switch (view.getId()) {
             case R.id.tv_next:
                 //转账密码
-                registReceiver();
-                Intent intent = new Intent(this, PwdActivity.class);
-                intent.putExtra("wallet", wallet);
-                intent.putExtra("chainId", chainId);
-                intent.putExtra("attributes", attributes);
-                startActivity(intent);
+                switch (wallet.getType()) {
+                    //0 普通单签 1单签只读 2普通多签 3多签只读
+                    case 0:
+                        registReceiver();
+                        Intent intent = new Intent(this, PwdActivity.class);
+                        intent.putExtra("wallet", wallet);
+                        intent.putExtra("chainId", chainId);
+                        intent.putExtra("attributes", attributes);
+                        startActivity(intent);
+                        break;
+                    case 1:
+                        post(RxEnum.TOSIGN.ordinal(), "", attributes);
+                        finish();
+                        break;
+                    case 2:
+                        break;
+                    case 3:
+                        break;
+
+                }
+
                 break;
 
         }
