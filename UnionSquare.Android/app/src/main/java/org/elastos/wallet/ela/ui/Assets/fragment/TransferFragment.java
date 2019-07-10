@@ -206,7 +206,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
         }
         String remark = etRemark.getText().toString().trim();
         //presenter.createTransaction(wallet.getWalletId(), chainId, "", address, (long) (Double.parseDouble(amount) * MyWallet.RATE), "", remark, Checked, this);
-        presenter.createTransaction(wallet.getWalletId(), chainId, "", address, Arith.mul(amount, MyWallet.RATE_S).longValue(), remark, Checked, this);
+        presenter.createTransaction(wallet.getWalletId(), chainId, "", address, Arith.mul(amount, MyWallet.RATE_S).toPlainString(), remark, Checked, this);
     }
 
     @Override

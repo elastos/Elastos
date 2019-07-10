@@ -35,7 +35,7 @@ public class SideChainPresenter extends PresenterAbstract {
         subscriberObservable(observer, observable);
     }
 
-    public void createDepositTransaction(String masterWalletID, String chainID, String fromAddress, String lockedAddress, long amount
+    public void createDepositTransaction(String masterWalletID, String chainID, String fromAddress, String lockedAddress, String amount
             , String sideChainAddress, String memo,boolean useVotedUTXO, BaseFragment baseFragment) {
         Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
         Observable observable = createObservable(new ObservableListener() {
@@ -49,7 +49,7 @@ public class SideChainPresenter extends PresenterAbstract {
     }
 
 
-    public void createWithdrawTransaction(String walletId, String chainId,String fromAddress, long actualSpend, String address,String memo , BaseFragment baseFragment) {
+    public void createWithdrawTransaction(String walletId, String chainId,String fromAddress, String actualSpend, String address,String memo , BaseFragment baseFragment) {
 
         Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
         Observable observable = createObservable(new ObservableListener() {

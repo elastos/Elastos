@@ -26,7 +26,7 @@ public class TransferPresenter extends PresenterAbstract {
     }
 
 
-    public void createTransaction(String walletId, String chainId, String s, String address, long amount, String memo, boolean useVotedUTXO,BaseFragment baseFragment) {
+    public void createTransaction(String walletId, String chainId, String s, String address, String amount, String memo, boolean useVotedUTXO,BaseFragment baseFragment) {
         Observer observer = createObserver(CommonStringListner.class, baseFragment);
         Observable observable = createObservable(new ObservableListener() {
             @Override

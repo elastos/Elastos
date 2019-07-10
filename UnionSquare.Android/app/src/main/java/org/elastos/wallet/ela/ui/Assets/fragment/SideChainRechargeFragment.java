@@ -200,8 +200,7 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
         }
         String remark = etRemark.getText().toString().trim();
         //long actualSpend = (long) (Double.parseDouble(amount) * MyWallet.RATE);
-        long actualSpend = Arith.mul(amount, MyWallet.RATE_S).longValue();
-        presenter.createDepositTransaction(wallet.getWalletId(), chainId, "", genesisAddress, actualSpend, address, remark, true, this);
+        presenter.createDepositTransaction(wallet.getWalletId(), chainId, "", genesisAddress, Arith.mul(amount, MyWallet.RATE_S).toPlainString(), address, remark, true, this);
 
     }
 

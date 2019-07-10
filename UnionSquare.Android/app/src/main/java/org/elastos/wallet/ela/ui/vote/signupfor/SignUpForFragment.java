@@ -26,6 +26,7 @@ import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewDa
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
 import org.elastos.wallet.ela.ui.vote.fragment.AreaCodeFragment;
+import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClearEditText;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
@@ -194,7 +195,7 @@ public class SignUpForFragment extends BaseFragment implements CommmonStringWith
             //验证交易
             case "payload":
                 KLog.a(data);
-                presenter.createRegisterProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", data, MyWallet.RATE * 5000, "", true, this);
+                presenter.createRegisterProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", data, Arith.mul("5000", MyWallet.RATE_S).toPlainString(), "", true, this);
                 break;
             //创建交易
             case "createRegisterProducerTransaction":

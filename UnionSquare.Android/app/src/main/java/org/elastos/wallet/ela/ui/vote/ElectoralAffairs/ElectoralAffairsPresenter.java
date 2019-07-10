@@ -49,7 +49,7 @@ public class ElectoralAffairsPresenter extends PresenterAbstract {
 
 
     //取回押金交易
-    public void createRetrieveDepositTransaction(String masterWalletID, String chainID, long amount, String memo, BaseFragment baseFragment) {
+    public void createRetrieveDepositTransaction(String masterWalletID, String chainID, String amount, String memo, BaseFragment baseFragment) {
         Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
         Observable observable = createObservable(new ObservableListener() {
             @Override

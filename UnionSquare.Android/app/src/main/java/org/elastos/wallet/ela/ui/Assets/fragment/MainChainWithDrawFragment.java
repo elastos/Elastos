@@ -180,8 +180,7 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
             return;
         }
         String remark = etRemark.getText().toString().trim();
-        long actualSpend = Arith.mul(amount, MyWallet.RATE_S).longValue();
-        presenter.createWithdrawTransaction(wallet.getWalletId(), chainId, "", actualSpend, address, remark, this);
+        presenter.createWithdrawTransaction(wallet.getWalletId(), chainId, "", Arith.mul(amount, MyWallet.RATE_S).toPlainString(), address, remark, this);
 
     }
 

@@ -32,6 +32,7 @@ import org.elastos.wallet.ela.ui.vote.UpdateInformation.UpdateInformationFragmen
 import org.elastos.wallet.ela.ui.vote.bean.ElectoralAffairsBean;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
+import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.GlideApp;
@@ -218,7 +219,7 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
                 if (status.equals("Canceled")) {
                     //提取按钮
                     presenter.createRetrieveDepositTransaction(wallet.getWalletId(), MyWallet.ELA,
-                            available * MyWallet.RATE - 10000, "", this);
+                            Arith.sub(Arith.mul(available, MyWallet.RATE_S),"10000").toPlainString(), "", this);
                 } else {
                     //注销按钮
                     presenter.createCancelProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", data, "", false, this);
@@ -254,7 +255,7 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
     }
 
 
-    Long available;
+    String available;
 
     public void getdepositcoin() {
         Map<String, String> map = new HashMap();
@@ -265,7 +266,7 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
                 .subscribe(new Consumer<GetdePositcoinBean>() {
                     @Override
                     public void accept(GetdePositcoinBean dataResponse) {
-                        available = Long.parseLong(dataResponse.getData().getResult().getAvailable());
+                        available = dataResponse.getData().getResult().getAvailable();
                     }
                 }, new Consumer<Throwable>() {
                     @Override

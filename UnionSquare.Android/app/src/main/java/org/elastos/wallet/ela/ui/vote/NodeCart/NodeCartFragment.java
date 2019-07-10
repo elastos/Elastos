@@ -403,14 +403,12 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     @Override
     public void onGetCommonData(String methodname, String data) {
         //  Double sl = Double.parseDouble(num) * MyWallet.RATE_;
-        Long sl = Arith.mul(num, MyWallet.RATE_S).longValue();
-
         switch (methodname) {
             //验证密码
             case "exportWalletWithMnemonic":
                 //创建投票
                 presenter.createVoteProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "",
-                        sl, String.valueOf(jsonArray), "", true, this);
+                        Arith.mul(num, MyWallet.RATE_S).toPlainString(), String.valueOf(jsonArray), "", true, this);
                 break;
             //创建投票交易
             case "createVoteProducerTransaction":
