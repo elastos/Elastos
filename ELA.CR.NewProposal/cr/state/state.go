@@ -112,7 +112,8 @@ func (s *State) ExistCandidateByNickname(nickname string) bool {
 func (s *State) IsCRTransaction(tx *types.Transaction) bool {
 	switch tx.TxType {
 	// Transactions will changes the producers state.
-	case types.RegisterCR, types.UnregisterCR, types.ReturnCRDepositCoin:
+	case types.RegisterCR, types.UpdateCR,
+		types.UnregisterCR, types.ReturnCRDepositCoin:
 		return true
 
 	// Transactions will change the producer votes state.
@@ -123,10 +124,7 @@ func (s *State) IsCRTransaction(tx *types.Transaction) bool {
 				if output.Type != types.OTVote {
 					continue
 				}
-				p, ok := output.Payload.(*outputpayload.VoteOutput)
-				if !ok {
-					continue
-				}
+				p, _ := output.Payload.(*outputpayload.VoteOutput)
 				if p.Version < outputpayload.VoteProducerAndCRVersion {
 					continue
 				}
@@ -356,10 +354,7 @@ func (s *State) processVotes(tx *types.Transaction, height uint32) {
 			if output.Type != types.OTVote {
 				continue
 			}
-			p, ok := output.Payload.(*outputpayload.VoteOutput)
-			if !ok {
-				continue
-			}
+			p, _ := output.Payload.(*outputpayload.VoteOutput)
 			if p.Version < outputpayload.VoteProducerAndCRVersion {
 				continue
 			}
