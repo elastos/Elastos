@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -331,7 +331,7 @@ func checkVoteProducerContent(content outputpayload.VoteContent,
 				"candidate: %s", common.BytesToHexString(cv.Candidate))
 		}
 	}
-	if payloadVersion == outputpayload.VoteProducerAndCRVersion {
+	if payloadVersion >= outputpayload.VoteProducerAndCRVersion {
 		for _, cv := range content.CandidateVotes {
 			if cv.Votes > amount {
 				return errors.New("votes larger than output amount")
@@ -344,7 +344,7 @@ func checkVoteProducerContent(content outputpayload.VoteContent,
 
 func checkVoteCRContent(content outputpayload.VoteContent,
 	crs map[string]struct{}, payloadVersion byte, amount common.Fixed64) error {
-	if payloadVersion != outputpayload.VoteProducerAndCRVersion {
+	if payloadVersion < outputpayload.VoteProducerAndCRVersion {
 		return errors.New("payload VoteProducerVersion not support vote CR")
 	}
 	for _, cv := range content.CandidateVotes {
@@ -655,11 +655,13 @@ func checkTransactionDepositUTXO(txn *Transaction, references map[*Input]*Output
 	for _, output := range references {
 		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixDeposit {
 			if !txn.IsReturnDepositCoin() && !txn.IsReturnCRDepositCoinTx() {
-				return errors.New("only the ReturnDepositCoin transaction can use the deposit UTXO")
+				return errors.New("only the ReturnDepositCoin and " +
+					"ReturnCRDepositCoin transaction can use the deposit UTXO")
 			}
 		} else {
 			if txn.IsReturnDepositCoin() || txn.IsReturnCRDepositCoinTx() {
-				return errors.New("the ReturnDepositCoin transaction can only use the deposit UTXO")
+				return errors.New("the ReturnDepositCoin and ReturnCRDepositCoin " +
+					"transaction can only use the deposit UTXO")
 			}
 		}
 	}
@@ -1585,7 +1587,7 @@ func (b *BlockChain) checkReturnCRDepositCoinTransaction(txn *Transaction,
 			return err
 		}
 		programHash := ct.ToProgramHash()
-		// todo get candiadte form not voting period state.
+		// todo get candidate from not voting period state.
 		c := b.crCommittee.GetState().GetCandidateByDID(*programHash)
 		if c == nil {
 			return errors.New("signer must be CR candidate")

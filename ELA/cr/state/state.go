@@ -108,6 +108,50 @@ func (s *State) ExistCandidateByNickname(nickname string) bool {
 	return ok
 }
 
+// IsCRTransaction returns if a transaction will change the CR and votes state.
+func (s *State) IsCRTransaction(tx *types.Transaction) bool {
+	switch tx.TxType {
+	// Transactions will changes the producers state.
+	case types.RegisterCR, types.UnregisterCR, types.ReturnCRDepositCoin:
+		return true
+
+	// Transactions will change the producer votes state.
+	case types.TransferAsset:
+		if tx.Version >= types.TxVersion09 {
+			// Votes to producers.
+			for _, output := range tx.Outputs {
+				if output.Type != types.OTVote {
+					continue
+				}
+				p, ok := output.Payload.(*outputpayload.VoteOutput)
+				if !ok {
+					continue
+				}
+				if p.Version < outputpayload.VoteProducerAndCRVersion {
+					continue
+				}
+				for _, content := range p.Contents {
+					if content.VoteType == outputpayload.CRC {
+						return true
+					}
+				}
+			}
+		}
+	}
+
+	s.mtx.RLock()
+	defer s.mtx.RUnlock()
+	// Cancel votes.
+	for _, input := range tx.Inputs {
+		_, ok := s.Votes[input.ReferKey()]
+		if ok {
+			return true
+		}
+	}
+
+	return false
+}
+
 // ProcessBlock takes a block and it's confirm to update CR state and
 // votes accordingly.
 func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
@@ -316,18 +360,20 @@ func (s *State) processVotes(tx *types.Transaction, height uint32) {
 			if !ok {
 				continue
 			}
-			if p.Version == outputpayload.VoteProducerAndCRVersion {
-				var exist bool
-				for _, content := range p.Contents {
-					if content.VoteType == outputpayload.CRC {
-						exist = true
-					}
+			if p.Version < outputpayload.VoteProducerAndCRVersion {
+				continue
+			}
+			var exist bool
+			for _, content := range p.Contents {
+				if content.VoteType == outputpayload.CRC {
+					exist = true
+					break
 				}
-				if exist {
-					op := types.NewOutPoint(tx.Hash(), uint16(i))
-					s.Votes[op.ReferKey()] = output
-					s.processVoteOutput(output, height)
-				}
+			}
+			if exist {
+				op := types.NewOutPoint(tx.Hash(), uint16(i))
+				s.Votes[op.ReferKey()] = output
+				s.processVoteOutput(output, height)
 			}
 		}
 	}
@@ -430,6 +476,7 @@ func (s *State) processCancelVotes(tx *types.Transaction, height uint32) {
 		output, ok := s.Votes[referKey]
 		if ok {
 			s.processVoteCancel(output, height)
+			// todo consider rollback
 			s.Votes[referKey] = nil
 		}
 	}
