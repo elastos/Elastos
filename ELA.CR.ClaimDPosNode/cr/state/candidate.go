@@ -116,26 +116,37 @@ func (c *Candidate) Deserialize(r io.Reader) (err error) {
 	return c.depositHash.Deserialize(r)
 }
 
+// Info returns a copy of the origin registered CR info.
 func (c *Candidate) Info() payload.CRInfo {
 	return c.info
 }
 
+// State returns the CR's state, can be pending, active, canceled or returned.
 func (c *Candidate) State() CandidateState {
 	return c.state
 }
 
+// Votes returns the votes of the CR.
 func (c *Candidate) Votes() common.Fixed64 {
 	return c.votes
 }
 
+// RegisterHeight returns the height when the CR was registered.
 func (c *Candidate) RegisterHeight() uint32 {
 	return c.registerHeight
 }
 
+// RegisterHeight returns the height when the CR was unregistered.
 func (c *Candidate) CancelHeight() uint32 {
 	return c.cancelHeight
 }
 
+// Penalty returns the penalty amount of deposit coin.
 func (c *Candidate) Penalty() common.Fixed64 {
 	return c.penalty
+}
+
+// DepositAmount returns the deposit amount of the CR.
+func (c *Candidate) DepositAmount() common.Fixed64 {
+	return c.depositAmount
 }

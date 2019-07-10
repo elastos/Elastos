@@ -126,7 +126,8 @@ func (s *State) ProcessReturnDepositTxs(block *types.Block) {
 
 	for _, tx := range block.Transactions {
 		switch tx.TxType {
-		// todo call returnDeposit() with tx type of return CR deposit
+		case types.ReturnCRDepositCoin:
+			s.returnDeposit(tx, block.Height)
 		}
 	}
 	s.history.Commit(block.Height)
@@ -306,10 +307,25 @@ func (s *State) updateCandidateInfo(origin *payload.CRInfo, update *payload.CRIn
 func (s *State) processVotes(tx *types.Transaction, height uint32) {
 	if tx.Version >= types.TxVersion09 {
 		for i, output := range tx.Outputs {
-			if output.Type == types.OTVote {
-				op := types.NewOutPoint(tx.Hash(), uint16(i))
-				s.Votes[op.ReferKey()] = output
-				s.processVoteOutput(output, height)
+			if output.Type != types.OTVote {
+				continue
+			}
+			p, ok := output.Payload.(*outputpayload.VoteOutput)
+			if !ok {
+				continue
+			}
+			if p.Version == outputpayload.VoteProducerAndCRVersion {
+				var exist bool
+				for _, content := range p.Contents {
+					if content.VoteType == outputpayload.CRC {
+						exist = true
+					}
+				}
+				if exist {
+					op := types.NewOutPoint(tx.Hash(), uint16(i))
+					s.Votes[op.ReferKey()] = output
+					s.processVoteOutput(output, height)
+				}
 			}
 		}
 	}
