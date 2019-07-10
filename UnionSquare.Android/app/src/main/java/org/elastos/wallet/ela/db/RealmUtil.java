@@ -433,6 +433,7 @@ public class RealmUtil {
         for (Map.Entry<String, List<SubWallet>> entry : listMap.entrySet()) {
             List<SubWallet> assetList = entry.getValue();
             for (SubWallet subWallet : assetList) {
+                subWallet.setFiled1("Connecting");
                 subWallet.setWallletId(subWallet.getBelongId() + subWallet.getChainId());
                 realm.copyToRealmOrUpdate(subWallet);
             }

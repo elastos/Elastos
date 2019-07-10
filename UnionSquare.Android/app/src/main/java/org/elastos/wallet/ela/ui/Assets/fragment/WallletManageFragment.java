@@ -3,9 +3,7 @@ package org.elastos.wallet.ela.ui.Assets.fragment;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -27,7 +25,6 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.List;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
@@ -84,8 +81,7 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
         switch (wallet.getType()) {
             //0 普通单签 1单签只读 2普通多签 3多签只读
             case 0:
-                llExportreadonly.setVisibility(View.GONE);
-                llShowmulpublickey.setVisibility(View.GONE);
+
                 break;
             case 1:
                 llUpdatepwd.setVisibility(View.GONE);
@@ -147,13 +143,13 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
                 //导出只读
                 bundle = new Bundle();
                 bundle.putParcelable("wallet", wallet);
-               // start(SignTransactionFragment.class, bundle);
+                start(ExportReadOnlyFragment.class, bundle);
                 break;
             case R.id.ll_showmulpublickey:
                 //查看多签公钥
                 bundle = new Bundle();
                 bundle.putParcelable("wallet", wallet);
-               // start(SignTransactionFragment.class, bundle);
+                start(ShowMulsignPublicKeyFragment.class, bundle);
                 break;
 
         }

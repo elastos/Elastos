@@ -34,4 +34,15 @@ public class WallletManagePresenter extends PresenterAbstract {
         });
         subscriberObservable(observer, observable);
     }
+
+    public void exportReadonlyWallet(String walletId, BaseFragment baseFragment) {
+        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().exportReadonlyWallet(walletId);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
 }

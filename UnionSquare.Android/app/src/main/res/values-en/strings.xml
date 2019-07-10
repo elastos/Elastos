@@ -389,5 +389,9 @@
     <string name="showmulpublickey">查看多签公钥</string>
     <string name="connecting">连接中...</string>
     <string name="syncprogress">已同步进度</string>
+    <string name="scantocreatereadonly">扫描二维码可创建单签只读钱包</string>
+    <string name="mulsignpiblickey">多签公钥</string>
+    <string name="scancreatemulwallet">扫描二维码可创建多签钱包</string>
+    <string name="copymulpublickey">复制多签公钥</string>
 </resources>
 
