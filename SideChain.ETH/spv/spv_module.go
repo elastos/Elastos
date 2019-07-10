@@ -2,18 +2,23 @@ package spv
 
 import (
 	"bytes"
+	"encoding/binary"
 	"errors"
 	"fmt"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/event"
 	"golang.org/x/net/context"
 	"math/big"
 	"path/filepath"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	spv "github.com/elastos/Elastos.ELA.SPV/interface"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH"
 	ethCommon "github.com/elastos/Elastos.ELA.SideChain.ETH/common"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/core/events"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/crypto"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/ethclient"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/ethdb"
@@ -32,17 +37,43 @@ var (
 	ipcClient        *ethclient.Client
 	stack            *node.Node
 	SpvService       *Service
-	spvTxhash        string
-	spvTransactiondb ethdb.Database
-	extraVanity      = 32                           // Fixed number of extra-data prefix bytes reserved for signer vanity
-	extraSeal        = 65                           // Fixed number of extra-data suffix bytes reserved for signer seal
+	spvTxhash        string //Spv notification main chain hash
+	spvTransactiondb *ethdb.LDBDatabase
+	musend           sync.RWMutex
+	mufind           sync.RWMutex
+	muupti           sync.RWMutex
+	candSend         int32     //1 can send recharge transactions, 0 can not send recharge transactions
+	candIterator     int32 = 1 //1 Iteratively send recharge transactions, 0 can't iteratively send recharge transactions
+	MinedBlockSub    *event.TypeMuxSubscription
 	Signers          map[ethCommon.Address]struct{} // Set of authorized signers at this moment
 )
 
 const (
-	databaseCache  int   = 768
-	handles              = 16
-	txNotperformed int64 = iota
+	databaseCache int = 768
+
+	handles = 16
+
+	//Unprocessed refill transaction index prefix
+	UnTransaction string = "UnT-"
+
+	// missingNumber is returned by GetBlockNumber if no header with the
+	// given block hash has been stored in the database
+	missingNumber = uint64(0xffffffffffffffff)
+
+	//Cross-chain exchange rate
+	rate int64 = 10000000000
+
+	//Cross-chain recharge unprocessed transaction index
+	UnTransactionIndex = "UnTI"
+
+	//Cross-chain recharge unprocessed transaction seek
+	UnTransactionSeek = "UnTS"
+
+	// Fixed number of extra-data prefix bytes reserved for signer vanity
+	extraVanity = 32
+
+	// Fixed number of extra-data suffix bytes reserved for signer seal
+	extraSeal = 65
 )
 
 //type MinedBlockEvent struct{}
@@ -62,15 +93,18 @@ type Service struct {
 	spv.DPOSSPVService
 }
 
+//Spv database initialization
 func SpvDbInit(spvdataDir string) {
 	db, err := ethdb.NewLDBDatabase(filepath.Join(spvdataDir, "spv_transaction_info.db"), databaseCache, handles)
 	if err != nil {
 		log.Error("spv Open db: %v", err)
+		return
 	}
 	db.Meter("eth/db/ela/")
 	spvTransactiondb = db
 }
 
+//Spv service initialization
 func NewService(cfg *Config, s *node.Node) (*Service, error) {
 	stack = s
 	var chainParams *config.Params
@@ -80,35 +114,13 @@ func NewService(cfg *Config, s *node.Node) (*Service, error) {
 	case "regnet", "reg", "r":
 		chainParams = config.DefaultParams.RegNet()
 	default:
-		chainParams = &config.DefaultParams
-		//chainParams = config.DefaultParams.TestNet()
-		chainParams.DNSSeeds = nil
-		chainParams.Magic = 2018201
-		//chainParams.DPoSMagic = 2019000
-		//chainParams.DPoSDefaultPort = 10119
-		t, _ := common.Uint168FromAddress("EgLe9ZAQyLmjxFZLp5em9VfqsYKvdhpGys")
-		chainParams.Foundation = *t
-		chainParams.GenesisBlock = config.GenesisBlock(t)
-		chainParams.OriginArbiters = []string{
-			"038eba1db314e7569aafc62a3c0fd1de9fe6359f88962521768a37786fce62dd37",
-			"02fb5528297b3c43e015d7e20a62b2fc70592cb0b08dfdec7ff95bcd11ff5a5fe6",
-			"03a9d3bbed3db04a4a6c167514b6a4e187b3eaeb3b8d4edd9a618d27b9fe4a0179",
-			"03022428a02e52ef0dd6adc1c7d95ea9cd93854057e9dd6a48486dc536ece71603",
-			"0251fc966a08f0e097711f54fa22ef69c90510ea8e8cf4431e8167c221cf3c7b86",
-		}
-		chainParams.CRCArbiters = []string{
-			"0342eeb0d664e2507d732382c66d0eedbd0a0f989179fd33d71679aa607d5d3b57",
-			"02cf7e80d1a1a76ab6259e0abdf2848c618655393f1fa3328901f80949ebed1476",
-		}
-		chainParams.CheckAddressHeight = 101
-		chainParams.VoteStartHeight = 100
-		chainParams.CRCOnlyDPOSHeight = 300
-		chainParams.PublicDPOSHeight = 308
+
+		chainParams = config.DefaultParams.TestNet()
+
 	}
 	spvCfg := spv.DPOSConfig{Config: spv.Config{
-		DataDir:        cfg.DataDir,
-		ChainParams:    chainParams,
-		PermanentPeers: []string{"192.168.205.33:10018", "192.168.205.33:10118"},
+		DataDir:     cfg.DataDir,
+		ChainParams: chainParams,
 	},
 	}
 	dataDir = cfg.DataDir
@@ -146,8 +158,30 @@ func NewService(cfg *Config, s *node.Node) (*Service, error) {
 	for _, signer := range signers {
 		Signers[signer] = struct{}{}
 	}
-
+	MinedBlockSub = s.EventMux().Subscribe(events.MinedBlockEvent{})
+	go minedBroadcastLoop(MinedBlockSub)
 	return SpvService, nil
+}
+
+//minedBroadcastLoop Mining awareness, eth can initiate a recharge transaction after the block
+func minedBroadcastLoop(minedBlockSub *event.TypeMuxSubscription) {
+	var i = 0
+
+	for {
+		select {
+		case <-minedBlockSub.Chan():
+			i++
+			if i >= 2 {
+				atomic.StoreInt32(&candSend, 1)
+			}
+
+		case <-time.After(1 * time.Minute):
+			i = 0
+			atomic.StoreInt32(&candSend, 0)
+
+		}
+	}
+
 }
 
 func (s *Service) GetDatabase() ethdb.Database {
@@ -231,13 +265,8 @@ func (l *listener) Notify(id common.Uint256, proof bloom.MerkleProof, tx core.Tr
 	l.service.SubmitTransactionReceipt(id, tx.Hash())
 }
 
+//savePayloadInfo save and send spv perception
 func savePayloadInfo(elaTx core.Transaction) {
-	//db, err := leveldb.OpenFile(filepath.Join(dataDir, "spv_transaction_info.db"), nil)
-	//defer db.Close()
-	//if err != nil {
-	//	fmt.Println(err)
-	//}
-
 	nr := bytes.NewReader(elaTx.Payload.Data(elaTx.PayloadVersion))
 	p := new(payload.TransferCrossChainAsset)
 	p.Deserialize(nr, elaTx.PayloadVersion)
@@ -272,54 +301,162 @@ func savePayloadInfo(elaTx core.Transaction) {
 	if err != nil {
 		log.Error(fmt.Sprintf("SpvServicedb Put Output: %v", err), "elaHash", elaTx.Hash().String())
 	}
+	if atomic.LoadInt32(&candSend) == 1 {
 
-	var from ethCommon.Address
-	if wallets := stack.AccountManager().Wallets(); len(wallets) > 0 {
-		if accounts := wallets[0].Accounts(); len(accounts) > 0 {
-			from = accounts[0].Address
+		var from ethCommon.Address
+		if wallets := stack.AccountManager().Wallets(); len(wallets) > 0 {
+			if accounts := wallets[0].Accounts(); len(accounts) > 0 {
+				from = accounts[0].Address
+			}
 		}
-	}
-	if _, ok := Signers[from]; ok {
-		ethTx, err := ipcClient.StorageAt(context.Background(), ethCommon.Address{}, ethCommon.HexToHash("0x"+elaTx.Hash().String()), nil)
-		if err != nil {
-			log.Error(fmt.Sprintf("IpcClient StorageAt: %v", err))
-			return
-		}
-		h := ethCommon.Hash{}
-		if ethCommon.BytesToHash(ethTx) != h {
-			log.Warn("Cross-chain transactions have been processed", "elaHash", elaTx.Hash().String())
-			return
-		}
-		msg := ethereum.CallMsg{From: from, To: &ethCommon.Address{}, Data: elaTx.Hash().Bytes()}
-		gasLimit, err := ipcClient.EstimateGas(context.Background(), msg)
-		if err != nil {
-			log.Error(fmt.Sprintf("IpcClient EstimateGas: %v", err))
-			return
-		}
-		if gasLimit == 0 {
-			return
-		}
-		f, err := common.StringToFixed64(fees[0])
-		if err != nil {
-			log.Error(fmt.Sprintf("SpvSendTransaction Fee StringToFixed64: %v", err), "elaHash", elaTx.Hash().String())
-			return
+		if _, ok := Signers[from]; ok {
+			if atomic.LoadInt32(&candIterator) == 1 {
+				atomic.StoreInt32(&candIterator, 0)
+				go IteratorUnTransaction(from)
+			}
+			f, err := common.StringToFixed64(fees[0])
+			if err != nil {
+				log.Error(fmt.Sprintf("SpvSendTransaction Fee StringToFixed64: %v", err), "elaHash", elaTx)
+				return
 
+			}
+			fe := new(big.Int).SetInt64(f.IntValue())
+			y := new(big.Int).SetInt64(rate)
+			fee := new(big.Int).Mul(fe, y)
+			SendTransaction(from, elaTx.Hash().String(), fee)
 		}
-		fe := new(big.Int).SetInt64(f.IntValue())
-		y := new(big.Int).SetInt64(10000000000)
-		fee := new(big.Int).Mul(fe, y)
-		price := new(big.Int).Quo(fee, new(big.Int).SetUint64(gasLimit))
-		callmsg := ethereum.TXMsg{From: from, To: &ethCommon.Address{}, Gas: gasLimit, Data: elaTx.Hash().Bytes(), GasPrice: price}
-		hash, err := ipcClient.SendPublicTransaction(context.Background(), callmsg)
-		if err != nil {
-			log.Error(fmt.Sprintf("IpcClient SendPublicTransaction: %v", err))
-		}
-		log.Info("Cross chain Transaction", "elaTx", elaTx.Hash().String(), "ethTh", hash.String())
+	} else {
+		UpTransactionIndex(elaTx.Hash().String())
 	}
 	return
 }
 
+//UpTransactionIndex records spv-aware refill transaction index
+func UpTransactionIndex(elaTx string) {
+	muupti.Lock()
+	defer muupti.Unlock()
+	index := GetUnTransactionNum(spvTransactiondb, UnTransactionIndex)
+	if index == missingNumber {
+		index = 1
+	}
+	err := spvTransactiondb.Put(append([]byte(UnTransaction), encodeUnTransactionNumber(index)...), []byte(elaTx))
+	if err != nil {
+		log.Error(fmt.Sprintf("SpvServicedb Put UnTransaction: %v", err), "elaHash", elaTx)
+	}
+	log.Info(UnTransaction+"put", "index", index, "elaTx", elaTx)
+	err = spvTransactiondb.Put([]byte(UnTransactionIndex), encodeUnTransactionNumber(index+1))
+	if err != nil {
+		log.Error("UnTransactionIndexPut", err, index+1)
+		return
+	}
+	log.Info(UnTransactionIndex+"put", "index", index+1)
+
+}
+
+//IteratorUnTransaction iterates before mining and processes existing spv refill transactions
+func IteratorUnTransaction(from ethCommon.Address) {
+	for {
+		index := GetUnTransactionNum(spvTransactiondb, UnTransactionIndex)
+		if index == missingNumber {
+			atomic.StoreInt32(&candIterator, 1)
+			return
+		}
+		seek := GetUnTransactionNum(spvTransactiondb, UnTransactionSeek)
+		if seek == missingNumber {
+			seek = 1
+		}
+		if seek == index {
+			atomic.StoreInt32(&candIterator, 1)
+			return
+		}
+		txhash, err := spvTransactiondb.Get(append([]byte(UnTransaction), encodeUnTransactionNumber(seek)...))
+		if err != nil {
+			log.Error("get UnTransaction ", err, seek)
+			atomic.StoreInt32(&candIterator, 1)
+			return
+		}
+
+		fee, _, _ := FindOutputFeeAndaddressByTxHash(string(txhash))
+		SendTransaction(from, string(txhash), fee)
+		err = spvTransactiondb.Put([]byte(UnTransactionSeek), encodeUnTransactionNumber(seek+1))
+		log.Info(UnTransactionSeek+"put", seek+1)
+		if err != nil {
+			log.Error("UnTransactionIndexPutSeek ", err, seek+1)
+			atomic.StoreInt32(&candIterator, 1)
+			return
+		}
+		err = spvTransactiondb.Delete(append([]byte(UnTransaction), encodeUnTransactionNumber(seek)...))
+		log.Info(UnTransaction+"delete", "seek", seek)
+		if err != nil {
+			log.Error("UnTransactionIndexDeleteSeek ", err, seek)
+			atomic.StoreInt32(&candIterator, 1)
+			return
+		}
+	}
+}
+
+//SendTransaction sends a reload transaction to txpool
+func SendTransaction(from ethCommon.Address, elaTx string, fee *big.Int) {
+	musend.Lock()
+	defer musend.Unlock()
+	ethTx, err := ipcClient.StorageAt(context.Background(), ethCommon.Address{}, ethCommon.HexToHash("0x"+elaTx), nil)
+	if err != nil {
+		log.Error(fmt.Sprintf("IpcClient StorageAt: %v", err))
+		return
+	}
+	h := ethCommon.Hash{}
+	if ethCommon.BytesToHash(ethTx) != h {
+		log.Warn("Cross-chain transactions have been processed", "elaHash", elaTx)
+		return
+	}
+	data, err := common.HexStringToBytes(elaTx)
+	if err != nil {
+		log.Error(fmt.Sprintf("elaTx HexStringToBytes: %v"+elaTx, err))
+		return
+	}
+	msg := ethereum.CallMsg{From: from, To: &ethCommon.Address{}, Data: data}
+	gasLimit, err := ipcClient.EstimateGas(context.Background(), msg)
+	if err != nil {
+		log.Error(fmt.Sprintf("IpcClient EstimateGas: %v", err))
+		return
+	}
+	if gasLimit == 0 {
+		return
+	}
+
+	price := new(big.Int).Quo(fee, new(big.Int).SetUint64(gasLimit))
+	callmsg := ethereum.TXMsg{From: from, To: &ethCommon.Address{}, Gas: gasLimit, Data: data, GasPrice: price}
+	hash, err := ipcClient.SendPublicTransaction(context.Background(), callmsg)
+	if err != nil {
+		log.Error(fmt.Sprintf("IpcClient SendPublicTransaction: %v", err))
+		return
+	}
+	log.Info("Cross chain Transaction", "elaTx", elaTx, "ethTh", hash.String())
+}
+
+func encodeUnTransactionNumber(number uint64) []byte {
+	enc := make([]byte, 8)
+	binary.BigEndian.PutUint64(enc, number)
+	return enc
+}
+
+func GetUnTransactionNum(db DatabaseReader, Prefix string) uint64 {
+	data, _ := db.Get([]byte(Prefix))
+	if len(data) != 8 {
+		return missingNumber
+	}
+	return binary.BigEndian.Uint64(data)
+}
+
+// DatabaseReader wraps the Get method of a backing data store.
+type DatabaseReader interface {
+	Get(key []byte) (value []byte, err error)
+}
+
+//FindOutputFeeAndaddressByTxHash Finds the eth recharge address, recharge amount, and transaction fee based on the main chain hash.
 func FindOutputFeeAndaddressByTxHash(transactionHash string) (*big.Int, ethCommon.Address, *big.Int) {
+	mufind.Lock()
+	defer mufind.Unlock()
 	var emptyaddr ethCommon.Address
 	transactionHash = strings.Replace(transactionHash, "0x", "", 1)
 	if spvTransactiondb == nil {
@@ -338,7 +475,7 @@ func FindOutputFeeAndaddressByTxHash(transactionHash string) (*big.Int, ethCommo
 
 	}
 	fe := new(big.Int).SetInt64(f.IntValue())
-	y := new(big.Int).SetInt64(10000000000)
+	y := new(big.Int).SetInt64(rate)
 
 	addrss, err := spvTransactiondb.Get([]byte(transactionHash + "Address"))
 	if err != nil {
