@@ -29,6 +29,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/consensus"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/consensus/misc"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/core"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/core/events"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/core/state"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/core/types"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/core/vm"
@@ -591,7 +592,7 @@ func (w *worker) resultLoop() {
 
 			// Broadcast the block and announce chain insertion event
 			w.mux.Post(core.NewMinedBlockEvent{Block: block})
-
+			w.mux.Post(events.MinedBlockEvent{})
 			var events []interface{}
 			switch stat {
 			case core.CanonStatTy:
@@ -777,7 +778,7 @@ func (w *worker) commitTransactions(txs *types.TransactionsByPriceAndNonce, coin
 			if tx.To() != nil {
 				to := *tx.To()
 				if len(tx.Data()) == 32 && to == addr {
-					core.RemoveLocalTx(w.eth.TxPool(), tx.Hash(), true)
+					core.RemoveLocalTx(w.eth.TxPool(), tx.Hash(), true, true)
 				}
 			}
 		case core.ErrMainTxHashPresence:
@@ -788,7 +789,7 @@ func (w *worker) commitTransactions(txs *types.TransactionsByPriceAndNonce, coin
 			if tx.To() != nil {
 				to := *tx.To()
 				if len(tx.Data()) == 32 && to == addr {
-					core.RemoveLocalTx(w.eth.TxPool(), tx.Hash(), true)
+					core.RemoveLocalTx(w.eth.TxPool(), tx.Hash(), true, false)
 				}
 			}
 		case core.ErrNonceTooLow:
