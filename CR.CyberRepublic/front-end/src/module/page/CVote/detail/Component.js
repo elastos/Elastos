@@ -161,8 +161,7 @@ class C extends StandardPage {
           }
           const finalStyle = style ? {
             ...style,
-            top: _.get(style, 'top', 0) + 100,
-            zIndex: 10,
+            zIndex: 2,
           } : style
           return (
             <div style={finalStyle}>

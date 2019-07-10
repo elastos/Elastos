@@ -24,12 +24,12 @@ export const ContentTitle = styled.h4`
 
 export const FixedHeader = styled.div`
   background: white;
+  padding-bottom: 24px;
 `
 
 export const SubTitleContainer = styled.div`
   display: flex;
   align-items: flex-end;
-  margin-bottom: 24px;
   `
 
 export const SubTitleHeading = styled.div`

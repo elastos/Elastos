@@ -177,10 +177,6 @@
 }
 
 .c_Content.ant-layout-content {
-  padding-top: 110px;
-  @media only screen and (max-width: $mobile-width) {
-    padding-top: 80px;
-  }
 }
 
 .c_Header_Admin{
@@ -273,5 +269,11 @@
 .profile-overview-popup-modal {
   .ant-modal-body {
     padding: 0;
+  }
+}
+
+.p_standardPage {
+  .headroom-wrapper {
+    z-index: 10;
   }
 }
