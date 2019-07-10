@@ -39,6 +39,7 @@
     "react-geocode": "^0.1.2",
     "react-google-maps": "^9.4.5",
     "react-google-recaptcha": "^0.11.1",
+    "react-headroom": "^2.2.8",
     "react-helmet": "^5.2.0",
     "react-html5video": "^2.5.1",
     "react-infinite-scroller": "^1.2.2",
