@@ -23,8 +23,7 @@ import butterknife.BindView;
 public class FirstFragment extends BaseFragment implements CommmonObjectWithMethNameViewData {
 
     private ArrayList<MasterWallet> data;
-    @BindView(R.id.imageView)
-    ImageView imageView; @BindView(R.id.tv_word)
+    @BindView(R.id.tv_word)
     TextView tvWord;
 
     @Override

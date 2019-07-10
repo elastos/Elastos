@@ -194,7 +194,7 @@ public class SignUpForFragment extends BaseFragment implements CommmonStringWith
             //验证交易
             case "payload":
                 KLog.a(data);
-                presenter.createRegisterProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", data, MyWallet.RATE * 5000, "", false, this);
+                presenter.createRegisterProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", data, MyWallet.RATE * 5000, "", true, this);
                 break;
             //创建交易
             case "createRegisterProducerTransaction":
