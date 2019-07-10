@@ -396,9 +396,9 @@ func RegisterReturnDepositCoinType(L *lua.LState) {
 
 // Constructor
 func newReturnDepositCoin(L *lua.LState) int {
-	registerProducer := &payload.ReturnDepositCoin{}
+	returnDeposit := &payload.ReturnDepositCoin{}
 	ud := L.NewUserData()
-	ud.Value = registerProducer
+	ud.Value = returnDeposit
 	L.SetMetatable(ud, L.GetTypeMetatable(luaReturnDepositCoinName))
 	L.Push(ud)
 

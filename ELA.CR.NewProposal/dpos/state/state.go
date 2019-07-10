@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -596,9 +596,6 @@ func (s *State) SpecialTxExists(tx *types.Transaction) bool {
 // IsDPOSTransaction returns if a transaction will change the producers and
 // votes state.
 func (s *State) IsDPOSTransaction(tx *types.Transaction) bool {
-	s.mtx.RLock()
-	defer s.mtx.RUnlock()
-
 	switch tx.TxType {
 	// Transactions will changes the producers state.
 	case types.RegisterProducer, types.UpdateProducer, types.CancelProducer,
@@ -622,8 +619,7 @@ func (s *State) IsDPOSTransaction(tx *types.Transaction) bool {
 				}
 				if p.Version == outputpayload.VoteProducerVersion {
 					return true
-				}
-				if p.Version == outputpayload.VoteProducerAndCRVersion {
+				} else {
 					for _, content := range p.Contents {
 						if content.VoteType == outputpayload.Delegate {
 							return true
@@ -634,6 +630,8 @@ func (s *State) IsDPOSTransaction(tx *types.Transaction) bool {
 		}
 	}
 
+	s.mtx.RLock()
+	defer s.mtx.RUnlock()
 	// Cancel votes.
 	for _, input := range tx.Inputs {
 		_, ok := s.Votes[input.ReferKey()]
@@ -873,9 +871,7 @@ func (s *State) processVotes(tx *types.Transaction, height uint32) {
 				op := types.NewOutPoint(tx.Hash(), uint16(i))
 				s.Votes[op.ReferKey()] = output
 				s.processVoteOutput(output, height)
-				continue
-			}
-			if p.Version == outputpayload.VoteProducerAndCRVersion {
+			} else {
 				var exist bool
 				for _, content := range p.Contents {
 					if content.VoteType == outputpayload.Delegate {

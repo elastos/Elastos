@@ -1127,8 +1127,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	did1 := getDid(code1)
 	did2 := getDid(code2)
 
-	votingHeight := config.DefaultParams.CRCommitteeStartHeight -
-		config.DefaultParams.CRVotingPeriod
+	votingHeight := config.DefaultParams.CRVotingStartHeight
 
 	// all ok
 	err := s.Chain.checkRegisterCRTransaction(txn, votingHeight)
@@ -1446,8 +1445,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateCRTransaction() {
 	nickName2 := "nickname 2"
 	nickName3 := "nickname 3"
 
-	votingHeight := config.DefaultParams.CRCommitteeStartHeight -
-		config.DefaultParams.CRVotingPeriod
+	votingHeight := config.DefaultParams.CRVotingStartHeight
 	//
 	//registe an cr to update
 	registerCRTxn1 := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
@@ -1555,8 +1553,7 @@ func (s *txValidatorTestSuite) TestCheckUnregisterCRTransaction() {
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
 
-	votingHeight := config.DefaultParams.CRCommitteeStartHeight -
-		config.DefaultParams.CRVotingPeriod
+	votingHeight := config.DefaultParams.CRVotingStartHeight
 	nickName1 := "nickname 1"
 
 	//registe an cr to unregister
@@ -1615,7 +1612,8 @@ func (s *txValidatorTestSuite) TestCheckTransactionDepositUTXO() {
 	references[input] = depositOutput
 	txn.TxType = types.TransferAsset
 	err := checkTransactionDepositUTXO(&txn, references)
-	s.EqualError(err, "only the ReturnDepositCoin transaction can use the deposit UTXO")
+	s.EqualError(err, "only the ReturnDepositCoin and "+
+		"ReturnCRDepositCoin transaction can use the deposit UTXO")
 
 	// Use the deposit UTXO in a ReturnDepositCoin transaction
 	txn.TxType = types.ReturnDepositCoin
@@ -1630,7 +1628,8 @@ func (s *txValidatorTestSuite) TestCheckTransactionDepositUTXO() {
 	references[input] = normalOutput
 	txn.TxType = types.ReturnDepositCoin
 	err = checkTransactionDepositUTXO(&txn, references)
-	s.EqualError(err, "the ReturnDepositCoin transaction can only use the deposit UTXO")
+	s.EqualError(err, "the ReturnDepositCoin and ReturnCRDepositCoin "+
+		"transaction can only use the deposit UTXO")
 
 	// Use the deposit UTXO in a ReturnDepositCoin transaction
 	references[input] = depositOutput
@@ -1641,7 +1640,8 @@ func (s *txValidatorTestSuite) TestCheckTransactionDepositUTXO() {
 	references[input] = normalOutput
 	txn.TxType = types.ReturnCRDepositCoin
 	err = checkTransactionDepositUTXO(&txn, references)
-	s.EqualError(err, "the ReturnDepositCoin transaction can only use the deposit UTXO")
+	s.EqualError(err, "the ReturnDepositCoin and ReturnCRDepositCoin "+
+		"transaction can only use the deposit UTXO")
 }
 
 func (s txValidatorTestSuite) TestCheckReturnDepositCoinTransaction() {
@@ -1687,7 +1687,7 @@ func (s txValidatorTestSuite) TestCheckReturnDepositCoinTransaction() {
 	}
 	s.True(producer.State() == state.Active, "active producer failed")
 
-	// check a deposit coin transaction with wrong state.
+	// check a return deposit coin transaction with wrong state.
 	references := make(map[*types.Input]*types.Output)
 	references[&types.Input{}] = &types.Output{
 		ProgramHash: *randomUint168(),
@@ -1727,7 +1727,7 @@ func (s txValidatorTestSuite) TestCheckReturnDepositCoinTransaction() {
 	height++
 	s.True(producer.State() == state.Canceled, "cancel producer failed")
 
-	// check a deposit coin transaction with wrong code.
+	// check a return deposit coin transaction with wrong code.
 	publicKey2 := "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9"
 	pubKeyBytes2, _ := common.HexStringToBytes(publicKey2)
 	pubkey2, _ := crypto.DecodePoint(pubKeyBytes2)
@@ -1737,11 +1737,14 @@ func (s txValidatorTestSuite) TestCheckReturnDepositCoinTransaction() {
 		rdTx, references, 2160+canceledHeight)
 	s.EqualError(err, "signer must be producer")
 
+	// check a return deposit coin transaction when not reached the
+	// count of DepositLockupBlocks.
 	rdTx.Programs[0].Code = code1
 	err = s.Chain.checkReturnDepositCoinTransaction(
 		rdTx, references, 2159+canceledHeight)
 	s.EqualError(err, "return deposit does not meet the lockup limit")
 
+	// check a return deposit coin transaction with wrong output amount.
 	rdTx.Outputs[0].Value = 5000 * 100000000
 	err = s.Chain.checkReturnDepositCoinTransaction(
 		rdTx, references, 2160+canceledHeight)
@@ -1823,6 +1826,9 @@ func (s txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 		},
 	}
 	canceledHeight := uint32(8)
+
+	// check a return cr deposit coin transaction when not unregistered in
+	// voting period.
 	err := s.Chain.checkReturnCRDepositCoinTransaction(
 		rdTx, references, 2160+canceledHeight, isInVotingPeriod)
 	s.EqualError(err, "candidate state is not canceled")
@@ -1844,28 +1850,31 @@ func (s txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 	height++
 	s.True(candidate.State() == crstate.Canceled, "canceled CR failed")
 
-	// Check a deposit coin transaction with wrong code.
 	publicKey2 := "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9"
 	pubKeyBytes2, _ := common.HexStringToBytes(publicKey2)
 	pubkey2, _ := crypto.DecodePoint(pubKeyBytes2)
 	code2, _ := contract.CreateStandardRedeemScript(pubkey2)
 
-	// Check a deposit coin transaction with wrong code in voting period.
+	// check a return cr deposit coin transaction with wrong code in voting period.
 	rdTx.Programs[0].Code = code2
 	err = s.Chain.checkReturnCRDepositCoinTransaction(
 		rdTx, references, 2160+canceledHeight, isInVotingPeriod)
 	s.EqualError(err, "signer must be CR candidate")
 
+	// check a return cr deposit coin transaction when not reached the
+	// count of DepositLockupBlocks in voting period.
 	rdTx.Programs[0].Code = code
 	err = s.Chain.checkReturnCRDepositCoinTransaction(
 		rdTx, references, 2159+canceledHeight, isInVotingPeriod)
 	s.EqualError(err, "return CR deposit does not meet the lockup limit")
 
+	// check a return cr deposit coin transaction with wrong output amount.
 	rdTx.Outputs[0].Value = 5000 * 100000000
 	err = s.Chain.checkReturnCRDepositCoinTransaction(
 		rdTx, references, 2160+canceledHeight, isInVotingPeriod)
 	s.EqualError(err, "candidate overspend deposit")
 
+	// check a correct return cr deposit coin transaction.
 	rdTx.Outputs[0].Value = 4999 * 100000000
 	err = s.Chain.checkReturnCRDepositCoinTransaction(
 		rdTx, references, 2160+canceledHeight, notInVotingPeriod)
@@ -1882,6 +1891,7 @@ func (s txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 	}, nil)
 	height++
 
+	// check a return cr deposit coin transaction with the amount has returned.
 	err = s.Chain.checkReturnCRDepositCoinTransaction(
 		rdTx, references, 2160+canceledHeight, notInVotingPeriod)
 	s.EqualError(err, "candidate is returned before")
@@ -2343,18 +2353,4 @@ func newCoinBaseTransaction(coinBasePayload *payload.CoinBase,
 		LockTime:   currentHeight,
 		Programs:   []*program.Program{},
 	}
-}
-
-func randomString() string {
-	a := make([]byte, 20)
-	rand.Read(a)
-	return common.BytesToHexString(a)
-}
-
-func randomUint168() *common.Uint168 {
-	randBytes := make([]byte, 21)
-	rand.Read(randBytes)
-	result, _ := common.Uint168FromBytes(randBytes)
-
-	return result
 }
