@@ -768,9 +768,11 @@ func (s *State) registerProducer(tx *types.Transaction, height uint32) {
 
 	amount := common.Fixed64(0)
 	if height >= s.chainParams.CRVotingStartHeight {
-		for _, output := range tx.Outputs {
+		for i, output := range tx.Outputs {
 			if output.ProgramHash.IsEqual(*programHash) {
 				amount += output.Value
+				op := types.NewOutPoint(tx.Hash(), uint16(i))
+				s.DepositOutputs[op.ReferKey()] = output
 			}
 		}
 	}
@@ -929,10 +931,13 @@ func (s *State) tryInitProducerAssetAmounts(blockHeight uint32) {
 // processDeposit takes a transaction output with deposit program hash.
 func (s *State) processDeposit(tx *types.Transaction, height uint32) {
 	if height >= s.chainParams.CRVotingStartHeight {
-		for _, output := range tx.Outputs {
+		for i, output := range tx.Outputs {
 			if contract.GetPrefixType(output.ProgramHash) ==
 				contract.PrefixDeposit {
-				s.addProducerAssert(output, height)
+				if s.addProducerAssert(output, height) {
+					op := types.NewOutPoint(tx.Hash(), uint16(i))
+					s.DepositOutputs[op.ReferKey()] = output
+				}
 			}
 		}
 	}
@@ -961,14 +966,16 @@ func (s *State) getProducerByDepositHash(hash common.Uint168) *Producer {
 
 // addProducerAssert will plus deposit amount for producers referenced in
 // program hash of transaction output.
-func (s *State) addProducerAssert(output *types.Output, height uint32) {
+func (s *State) addProducerAssert(output *types.Output, height uint32) bool {
 	if producer := s.getProducerByDepositHash(output.ProgramHash); producer != nil {
 		s.history.Append(height, func() {
 			producer.depositAmount += output.Value
 		}, func() {
 			producer.depositAmount -= output.Value
 		})
+		return true
 	}
+	return false
 }
 
 // processCancelVotes takes a transaction output with vote payload.
@@ -978,6 +985,7 @@ func (s *State) processCancelVotes(tx *types.Transaction, height uint32) {
 		output, ok := s.Votes[referKey]
 		if ok {
 			s.processVoteCancel(output, height)
+			// todo consider rollback
 			s.Votes[referKey] = nil
 		}
 	}
@@ -1062,20 +1070,20 @@ func (s *State) processVoteCancel(output *types.Output, height uint32) {
 
 // returnDeposit change producer state to ReturnedDeposit
 func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
-	var outputValue common.Fixed64
-	for _, output := range tx.Outputs {
-		outputValue += output.Value
+	var inputValue common.Fixed64
+	for _, input := range tx.Inputs {
+		inputValue += s.DepositOutputs[input.ReferKey()].Value
 	}
 
 	returnAction := func(producer *Producer) {
 		s.history.Append(height, func() {
 			if height >= s.chainParams.CRVotingStartHeight {
-				producer.depositAmount -= outputValue
+				producer.depositAmount -= inputValue
 			}
 			producer.state = Returned
 		}, func() {
 			if height >= s.chainParams.CRVotingStartHeight {
-				producer.depositAmount += outputValue
+				producer.depositAmount += inputValue
 			}
 			producer.state = Canceled
 		})
@@ -1410,6 +1418,7 @@ func NewState(chainParams *config.Params, getArbiters func() [][]byte,
 			IllegalProducers:          make(map[string]*Producer),
 			PendingCanceledProducers:  make(map[string]*Producer),
 			Votes:                     make(map[string]*types.Output),
+			DepositOutputs:            make(map[string]*types.Output),
 			Nicknames:                 make(map[string]struct{}),
 			SpecialTxHashes:           make(map[common.Uint256]struct{}),
 			PreBlockArbiters:          make(map[string]struct{}),

@@ -1257,26 +1257,25 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 	depositCont, _ := contract.CreateDepositContractByPubKey(pk)
 
 	// register register cr before CRVotingStartHeight
+	registerTx := &types.Transaction{
+		TxType: types.RegisterProducer,
+		Payload: &payload.ProducerInfo{
+			OwnerPublicKey: pkBuf,
+			NodePublicKey:  pkBuf,
+			NickName:       randomString(),
+		},
+		Outputs: []*types.Output{
+			{
+				ProgramHash: *depositCont.ToProgramHash(),
+				Value:       common.Fixed64(100),
+			},
+		},
+	}
 	state.ProcessBlock(&types.Block{
 		Header: types.Header{
 			Height: height,
 		},
-		Transactions: []*types.Transaction{
-			{
-				TxType: types.RegisterProducer,
-				Payload: &payload.ProducerInfo{
-					OwnerPublicKey: pkBuf,
-					NodePublicKey:  pkBuf,
-					NickName:       randomString(),
-				},
-				Outputs: []*types.Output{
-					{
-						ProgramHash: *depositCont.ToProgramHash(),
-						Value:       common.Fixed64(100),
-					},
-				},
-			},
-		},
+		Transactions: []*types.Transaction{registerTx},
 	}, nil)
 	height++
 	candidate := state.getProducer(pkBuf)
@@ -1297,22 +1296,21 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 	assert.Equal(t, Pending, candidate.state)
 
 	// deposit though normal tx
+	tranferTx := &types.Transaction{
+		TxType:  types.TransferAsset,
+		Payload: &payload.TransferAsset{},
+		Outputs: []*types.Output{
+			{
+				ProgramHash: *depositCont.ToProgramHash(),
+				Value:       common.Fixed64(200),
+			},
+		},
+	}
 	state.ProcessBlock(&types.Block{
 		Header: types.Header{
 			Height: height,
 		},
-		Transactions: []*types.Transaction{
-			{
-				TxType:  types.TransferAsset,
-				Payload: &payload.TransferAsset{},
-				Outputs: []*types.Output{
-					{
-						ProgramHash: *depositCont.ToProgramHash(),
-						Value:       common.Fixed64(200),
-					},
-				},
-			},
-		},
+		Transactions: []*types.Transaction{tranferTx},
 	}, nil)
 	height++
 	assert.Equal(t, common.Fixed64(300), candidate.depositAmount)
@@ -1360,15 +1358,15 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 				Code: cont.Code,
 			},
 		},
-		Outputs: []*types.Output{
+		Inputs: []*types.Input{
 			{
-				Value: 100,
-			},
-			{
-				Value: 200,
+				Previous: types.OutPoint{
+					TxID:  tranferTx.Hash(),
+					Index: 0,
+				},
 			},
 		},
 	}, height)
 	state.history.Commit(height)
-	assert.Equal(t, common.Fixed64(0), candidate.depositAmount)
+	assert.Equal(t, common.Fixed64(100), candidate.depositAmount)
 }

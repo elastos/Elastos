@@ -37,6 +37,7 @@ type StateKeyFrame struct {
 	CanceledCandidates map[common.Uint168]*Candidate
 	Nicknames          map[string]struct{}
 	Votes              map[string]*types.Output
+	DepositOutputs     map[string]*types.Output
 }
 
 // CheckPoint hold all CR related states to recover from scratch.
@@ -159,7 +160,11 @@ func (k *StateKeyFrame) Serialize(w io.Writer) (err error) {
 		return
 	}
 
-	return k.serializeVotes(w, k.Votes)
+	if err = k.serializeOutputsMap(w, k.Votes); err != nil {
+		return
+	}
+
+	return k.serializeOutputsMap(w, k.DepositOutputs)
 }
 
 func (k *StateKeyFrame) Deserialize(r io.Reader) (err error) {
@@ -183,7 +188,11 @@ func (k *StateKeyFrame) Deserialize(r io.Reader) (err error) {
 		return
 	}
 
-	if k.Votes, err = k.deserializeVotes(r); err != nil {
+	if k.Votes, err = k.deserializeOutputsMap(r); err != nil {
+		return
+	}
+
+	if k.DepositOutputs, err = k.deserializeOutputsMap(r); err != nil {
 		return
 	}
 	return
@@ -266,7 +275,7 @@ func (k *StateKeyFrame) deserializeCandidateMap(
 	return
 }
 
-func (k *StateKeyFrame) serializeVotes(w io.Writer,
+func (k *StateKeyFrame) serializeOutputsMap(w io.Writer,
 	vmap map[string]*types.Output) (err error) {
 	if err = common.WriteVarUint(w, uint64(len(vmap))); err != nil {
 		return
@@ -275,15 +284,14 @@ func (k *StateKeyFrame) serializeVotes(w io.Writer,
 		if err = common.WriteVarString(w, k); err != nil {
 			return
 		}
-		if err = v.Serialize(w, types.TxVersion09);
-			err != nil {
+		if err = v.Serialize(w, types.TxVersion09); err != nil {
 			return
 		}
 	}
 	return
 }
 
-func (k *StateKeyFrame) deserializeVotes(r io.Reader) (
+func (k *StateKeyFrame) deserializeOutputsMap(r io.Reader) (
 	vmap map[string]*types.Output, err error) {
 	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {
@@ -296,8 +304,7 @@ func (k *StateKeyFrame) deserializeVotes(r io.Reader) (
 			return
 		}
 		v := types.Output{}
-		if err = v.Deserialize(r, types.TxVersion09);
-			err != nil {
+		if err = v.Deserialize(r, types.TxVersion09); err != nil {
 			return
 		}
 		vmap[k] = &v
@@ -313,7 +320,8 @@ func (k *StateKeyFrame) Snapshot() *StateKeyFrame {
 	state.ActivityCandidates = copyCandidateMap(k.ActivityCandidates)
 	state.CanceledCandidates = copyCandidateMap(k.CanceledCandidates)
 	state.Nicknames = utils.CopyStringSet(k.Nicknames)
-	state.Votes = copyVotes(k.Votes)
+	state.Votes = copyOutputsMap(k.Votes)
+	state.DepositOutputs = copyOutputsMap(k.DepositOutputs)
 
 	return state
 }
@@ -326,6 +334,7 @@ func NewStateKeyFrame() *StateKeyFrame {
 		CanceledCandidates: make(map[common.Uint168]*Candidate),
 		Nicknames:          make(map[string]struct{}),
 		Votes:              make(map[string]*types.Output),
+		DepositOutputs:     make(map[string]*types.Output),
 	}
 }
 
@@ -366,7 +375,7 @@ func copyCodeAddressMap(src map[string]common.Uint168) (
 	return
 }
 
-func copyVotes(src map[string]*types.Output) (dst map[string]*types.Output) {
+func copyOutputsMap(src map[string]*types.Output) (dst map[string]*types.Output) {
 	dst = map[string]*types.Output{}
 	for k, v := range src {
 		o := *v
