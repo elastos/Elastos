@@ -346,48 +346,46 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 	depositCont, _ := contract.CreateDepositContractByPubKey(pk)
 
 	// register CR
+	registerCRTx := &types.Transaction{
+		TxType: types.RegisterCR,
+		Payload: &payload.CRInfo{
+			Code:     code,
+			DID:      *randomUint168(),
+			NickName: randomString(),
+		},
+		Outputs: []*types.Output{
+			{
+				ProgramHash: *depositCont.ToProgramHash(),
+				Value:       common.Fixed64(100),
+			},
+		},
+	}
 	state.ProcessBlock(&types.Block{
 		Header: types.Header{
 			Height: height,
 		},
-		Transactions: []*types.Transaction{
-			{
-				TxType: types.RegisterCR,
-				Payload: &payload.CRInfo{
-					Code:     code,
-					DID:      *randomUint168(),
-					NickName: randomString(),
-				},
-				Outputs: []*types.Output{
-					{
-						ProgramHash: *depositCont.ToProgramHash(),
-						Value:       common.Fixed64(100),
-					},
-				},
-			},
-		},
+		Transactions: []*types.Transaction{registerCRTx},
 	}, nil)
 	height++
 	candidate := state.GetCandidate(code)
 	assert.Equal(t, common.Fixed64(100), candidate.depositAmount)
 
 	// deposit though normal tx
+	tranferTx := &types.Transaction{
+		TxType:  types.TransferAsset,
+		Payload: &payload.TransferAsset{},
+		Outputs: []*types.Output{
+			{
+				ProgramHash: *depositCont.ToProgramHash(),
+				Value:       common.Fixed64(200),
+			},
+		},
+	}
 	state.ProcessBlock(&types.Block{
 		Header: types.Header{
 			Height: height,
 		},
-		Transactions: []*types.Transaction{
-			{
-				TxType:  types.TransferAsset,
-				Payload: &payload.TransferAsset{},
-				Outputs: []*types.Output{
-					{
-						ProgramHash: *depositCont.ToProgramHash(),
-						Value:       common.Fixed64(200),
-					},
-				},
-			},
-		},
+		Transactions: []*types.Transaction{tranferTx},
 	}, nil)
 	height++
 	assert.Equal(t, common.Fixed64(300), candidate.depositAmount)
@@ -424,13 +422,26 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 	assert.Equal(t, Canceled, candidate.state)
 
 	// return deposit
+	rdTx := generateReturnCRDeposit(code)
+	rdTx.Inputs = []*types.Input{
+		{
+			Previous: types.OutPoint{
+				TxID:  registerCRTx.Hash(),
+				Index: 0,
+			},
+		},
+		{
+			Previous: types.OutPoint{
+				TxID:  tranferTx.Hash(),
+				Index: 0,
+			},
+		},
+	}
 	state.ProcessBlock(&types.Block{
 		Header: types.Header{
 			Height: height,
 		},
-		Transactions: []*types.Transaction{
-			generateReturnCRDeposit(code),
-		},
+		Transactions: []*types.Transaction{rdTx},
 	}, nil)
 	state.history.Commit(height)
 	assert.Equal(t, common.Fixed64(0), candidate.depositAmount)

@@ -230,9 +230,11 @@ func (s *State) registerCR(tx *types.Transaction, height uint32) {
 	}
 
 	amount := common.Fixed64(0)
-	for _, output := range tx.Outputs {
+	for i, output := range tx.Outputs {
 		if output.ProgramHash.IsEqual(candidate.depositHash) {
 			amount += output.Value
+			op := types.NewOutPoint(tx.Hash(), uint16(i))
+			s.DepositOutputs[op.ReferKey()] = output
 		}
 	}
 	candidate.depositAmount = amount
@@ -333,26 +335,29 @@ func (s *State) processVotes(tx *types.Transaction, height uint32) {
 
 // processDeposit takes a transaction output with deposit program hash.
 func (s *State) processDeposit(tx *types.Transaction, height uint32) {
-	for _, output := range tx.Outputs {
+	for i, output := range tx.Outputs {
 		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixDeposit {
-			s.addCandidateAssert(output, height)
+			if s.addCandidateAssert(output, height) {
+				op := types.NewOutPoint(tx.Hash(), uint16(i))
+				s.DepositOutputs[op.ReferKey()] = output
+			}
 		}
 	}
 }
 
 // returnDeposit change producer state to ReturnedDeposit
 func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
-	var outputValue common.Fixed64
-	for _, output := range tx.Outputs {
-		outputValue += output.Value
+	var inputValue common.Fixed64
+	for _, input := range tx.Inputs {
+		inputValue += s.DepositOutputs[input.ReferKey()].Value
 	}
 
 	returnAction := func(candidate *Candidate, originState CandidateState) {
 		s.history.Append(height, func() {
-			candidate.depositAmount -= outputValue
+			candidate.depositAmount -= inputValue
 			candidate.state = Returned
 		}, func() {
-			candidate.depositAmount += outputValue
+			candidate.depositAmount += inputValue
 			candidate.state = originState
 		})
 	}
@@ -366,14 +371,16 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 
 // addCandidateAssert will plus deposit amount for candidates referenced in
 // program hash of transaction output.
-func (s *State) addCandidateAssert(output *types.Output, height uint32) {
+func (s *State) addCandidateAssert(output *types.Output, height uint32) bool {
 	if candidate := s.getCandidateByDepositHash(output.ProgramHash); candidate != nil {
 		s.history.Append(height, func() {
 			candidate.depositAmount += output.Value
 		}, func() {
 			candidate.depositAmount -= output.Value
 		})
+		return true
 	}
+	return false
 }
 
 // getCandidateByDepositHash will try to get candidate with specified program
