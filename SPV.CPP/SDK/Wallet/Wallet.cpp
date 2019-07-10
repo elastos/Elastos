@@ -11,7 +11,7 @@
 #include <SDK/WalletCore/BIPs/Mnemonic.h>
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
-#include <SDK/Plugin/Transaction/Payload/PayloadRegisterAsset.h>
+#include <SDK/Plugin/Transaction/Payload/RegisterAsset.h>
 
 #include <Interface/ISubWallet.h>
 
@@ -321,7 +321,7 @@ namespace Elastos {
 			std::vector<uint256> hashes, coinBaseHashes, spentCoinBase;
 			bool needsUpdate = false;
 			std::map<uint256, BigInt> changedBalance;
-			std::vector<PayloadRegisterAsset *> payloads;
+			std::vector<RegisterAsset *> payloads;
 			CoinBaseUTXOPtr cb;
 			size_t i;
 
@@ -337,8 +337,8 @@ namespace Elastos {
 
 					if (tx->GetBlockHeight() == TX_UNCONFIRMED && blockHeight != TX_UNCONFIRMED) {
 						needsUpdate = true;
-						if (tx->GetTransactionType() == Transaction::RegisterAsset) {
-							PayloadRegisterAsset *p = dynamic_cast<PayloadRegisterAsset *>(tx->GetPayload());
+						if (tx->GetTransactionType() == Transaction::registerAsset) {
+							RegisterAsset *p = dynamic_cast<RegisterAsset *>(tx->GetPayload());
 							if (p) payloads.push_back(p);
 						}
 						UpdateSpentCoinBase(spentCoinBase, tx);
@@ -676,7 +676,7 @@ namespace Elastos {
 				return r;
 
 			// support register asset tx
-			if (tx->GetTransactionType() == Transaction::RegisterAsset) {
+			if (tx->GetTransactionType() == Transaction::registerAsset) {
 				return true;
 			}
 

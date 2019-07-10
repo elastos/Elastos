@@ -6,7 +6,7 @@
 #include "MasterWallet.h"
 
 #include <SDK/Common/ErrorChecker.h>
-#include <SDK/Plugin/Transaction/Payload/PayloadTransferCrossChainAsset.h>
+#include <SDK/Plugin/Transaction/Payload/TransferCrossChainAsset.h>
 #include <SDK/SpvService/Config.h>
 #include <SDK/WalletCore/KeyStore/CoinInfo.h>
 #include <Core/BRAddress.h>
@@ -50,7 +50,7 @@ namespace Elastos {
 				std::vector<uint64_t> indexs = {0};
 				std::vector<uint64_t> amounts = {bgAmount.getWord()};
 
-				payload = PayloadPtr(new PayloadTransferCrossChainAsset(accounts, indexs, amounts));
+				payload = PayloadPtr(new TransferCrossChainAsset(accounts, indexs, amounts));
 			} catch (const nlohmann::detail::exception &e) {
 				ErrorChecker::ThrowParamException(Error::JsonFormatError,
 												  "main chain message error: " + std::string(e.what()));
@@ -62,7 +62,7 @@ namespace Elastos {
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
 			ErrorChecker::CheckLogic(tx == nullptr, Error::CreateTransaction, "Create withdraw tx");
 
-			tx->SetTransactionType(Transaction::TransferCrossChainAsset, payload);
+			tx->SetTransactionType(Transaction::transferCrossChainAsset, payload);
 
 			nlohmann::json txJson = tx->ToJson();
 			ArgInfo("r => {}", txJson.dump());

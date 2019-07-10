@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "PayloadRegisterAsset.h"
+#include "RegisterAsset.h"
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Plugin/Transaction/Asset.h>
@@ -10,30 +10,30 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		PayloadRegisterAsset::PayloadRegisterAsset() :
+		RegisterAsset::RegisterAsset() :
 				_amount(0),
 				_asset(new Asset()) {
 		}
 
-		PayloadRegisterAsset::PayloadRegisterAsset(const AssetPtr &asset, uint64_t amount, const uint168 &controller) :
+		RegisterAsset::RegisterAsset(const AssetPtr &asset, uint64_t amount, const uint168 &controller) :
 			_amount(amount),
 			_asset(asset),
 			_controller(controller) {
 		}
 
-		PayloadRegisterAsset::PayloadRegisterAsset(const PayloadRegisterAsset &payload) {
+		RegisterAsset::RegisterAsset(const RegisterAsset &payload) {
 			operator=(payload);
 		}
 
-		PayloadRegisterAsset::~PayloadRegisterAsset() {
+		RegisterAsset::~RegisterAsset() {
 
 		}
 
-		bool PayloadRegisterAsset::IsValid() const {
+		bool RegisterAsset::IsValid() const {
 			return (_asset->GetPrecision() <= Asset::MaxPrecision);
 		}
 
-		size_t PayloadRegisterAsset::EstimateSize(uint8_t version) const {
+		size_t RegisterAsset::EstimateSize(uint8_t version) const {
 			size_t size = 0;
 
 			size += _asset->EstimateSize();
@@ -43,13 +43,13 @@ namespace Elastos {
 			return size;
 		}
 
-		void PayloadRegisterAsset::Serialize(ByteStream &ostream, uint8_t version) const {
+		void RegisterAsset::Serialize(ByteStream &ostream, uint8_t version) const {
 			_asset->Serialize(ostream);
 			ostream.WriteBytes(&_amount, sizeof(_amount));
 			ostream.WriteBytes(_controller);
 		}
 
-		bool PayloadRegisterAsset::Deserialize(const ByteStream &istream, uint8_t version) {
+		bool RegisterAsset::Deserialize(const ByteStream &istream, uint8_t version) {
 			if (!_asset->Deserialize(istream)) {
 				Log::error("Payload register asset deserialize asset fail");
 				return false;
@@ -68,7 +68,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadRegisterAsset::ToJson(uint8_t version) const {
+		nlohmann::json RegisterAsset::ToJson(uint8_t version) const {
 			nlohmann::json j;
 
 			j["Asset"] = _asset->ToJson();
@@ -78,24 +78,24 @@ namespace Elastos {
 			return j;
 		}
 
-		void PayloadRegisterAsset::FromJson(const nlohmann::json &j, uint8_t version) {
+		void RegisterAsset::FromJson(const nlohmann::json &j, uint8_t version) {
 			_asset->FromJson(j["Asset"]);
 			_amount = j["Amount"].get<uint64_t>();
 			_controller.SetHex(j["Controller"].get<std::string>());
 		}
 
-		IPayload &PayloadRegisterAsset::operator=(const IPayload &payload) {
+		IPayload &RegisterAsset::operator=(const IPayload &payload) {
 			try {
-				const PayloadRegisterAsset &payloadRegisterAsset = dynamic_cast<const PayloadRegisterAsset &>(payload);
+				const RegisterAsset &payloadRegisterAsset = dynamic_cast<const RegisterAsset &>(payload);
 				operator=(payloadRegisterAsset);
 			} catch (const std::bad_cast &e) {
-				Log::error("payload is not instance of PayloadRegisterAsset");
+				Log::error("payload is not instance of RegisterAsset");
 			}
 
 			return *this;
 		}
 
-		PayloadRegisterAsset &PayloadRegisterAsset::operator=(const PayloadRegisterAsset &payload) {
+		RegisterAsset &RegisterAsset::operator=(const RegisterAsset &payload) {
 			_asset = payload._asset;
 			_amount = payload._amount;
 			_controller = payload._controller;

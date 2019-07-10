@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "PayloadRegisterIdentification.h"
+#include "RegisterIdentification.h"
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/Common/Utils.h>
@@ -10,43 +10,43 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		PayloadRegisterIdentification::PayloadRegisterIdentification() :
+		RegisterIdentification::RegisterIdentification() :
 				_id("") {
 
 		}
 
-		PayloadRegisterIdentification::PayloadRegisterIdentification(const PayloadRegisterIdentification &payload) {
+		RegisterIdentification::RegisterIdentification(const RegisterIdentification &payload) {
 			operator=(payload);
 		}
 
-		PayloadRegisterIdentification::~PayloadRegisterIdentification() {
+		RegisterIdentification::~RegisterIdentification() {
 
 		}
 
-		const std::string &PayloadRegisterIdentification::GetID() const {
+		const std::string &RegisterIdentification::GetID() const {
 			return _id;
 		}
 
-		void PayloadRegisterIdentification::SetID(const std::string &id) {
+		void RegisterIdentification::SetID(const std::string &id) {
 			_id = id;
 		}
 
-		const bytes_t &PayloadRegisterIdentification::GetSign() const {
+		const bytes_t &RegisterIdentification::GetSign() const {
 			return _sign;
 		}
 
-		void PayloadRegisterIdentification::SetSign(const bytes_t &sign) {
+		void RegisterIdentification::SetSign(const bytes_t &sign) {
 			_sign = sign;
 		}
 
-		bool PayloadRegisterIdentification::IsValid() const {
+		bool RegisterIdentification::IsValid() const {
 			if (_id.empty() || _contents.empty() || _sign.size() <= 0) {
 				return false;
 			}
 			return true;
 		}
 
-		size_t PayloadRegisterIdentification::EstimateSize(uint8_t version) const {
+		size_t RegisterIdentification::EstimateSize(uint8_t version) const {
 			size_t size = 0;
 			ByteStream stream;
 
@@ -73,7 +73,7 @@ namespace Elastos {
 			return size;
 		}
 
-		void PayloadRegisterIdentification::Serialize(ByteStream &ostream, uint8_t version) const {
+		void RegisterIdentification::Serialize(ByteStream &ostream, uint8_t version) const {
 
 			assert(!_id.empty());
 			assert(!_contents.empty());
@@ -94,7 +94,7 @@ namespace Elastos {
 			}
 		}
 
-		bool PayloadRegisterIdentification::Deserialize(const ByteStream &istream, uint8_t version) {
+		bool RegisterIdentification::Deserialize(const ByteStream &istream, uint8_t version) {
 			if (!istream.ReadVarString(_id)) {
 				Log::error("Payload register identification deserialize id fail");
 				return false;
@@ -152,7 +152,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadRegisterIdentification::ToJson(uint8_t version) const {
+		nlohmann::json RegisterIdentification::ToJson(uint8_t version) const {
 			nlohmann::json j;
 			j["Id"] = _id;
 			j["Sign"] = _sign.getHex();
@@ -178,7 +178,7 @@ namespace Elastos {
 			return j;
 		}
 
-		void PayloadRegisterIdentification::FromJson(const nlohmann::json &j, uint8_t version) {
+		void RegisterIdentification::FromJson(const nlohmann::json &j, uint8_t version) {
 			_id = j["Id"].get<std::string>();
 			if (j.find("Sign") != j.end())
 				_sign.setHex(j["Sign"].get<std::string>());
@@ -204,67 +204,67 @@ namespace Elastos {
 			}
 		}
 
-		const std::string &PayloadRegisterIdentification::GetPath(size_t index) const {
+		const std::string &RegisterIdentification::GetPath(size_t index) const {
 			ErrorChecker::CheckCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
 
 			return _contents[index].Path;
 		}
 
-		void PayloadRegisterIdentification::SetPath(const std::string &path, size_t index) {
+		void RegisterIdentification::SetPath(const std::string &path, size_t index) {
 			ErrorChecker::CheckCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
 
 			_contents[index].Path = path;
 		}
 
-		const uint256 &PayloadRegisterIdentification::GetDataHash(size_t index, size_t valueIndex) const {
+		const uint256 &RegisterIdentification::GetDataHash(size_t index, size_t valueIndex) const {
 			ErrorChecker::CheckCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
 
 			return _contents[index].Values[valueIndex].DataHash;
 		}
 
-		void PayloadRegisterIdentification::SetDataHash(const uint256 &dataHash, size_t index, size_t valueIndex) {
+		void RegisterIdentification::SetDataHash(const uint256 &dataHash, size_t index, size_t valueIndex) {
 			ErrorChecker::CheckCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
 
 			_contents[index].Values[valueIndex].DataHash = dataHash;
 		}
 
-		const std::string &PayloadRegisterIdentification::GetProof(size_t index, size_t valueIndex) const {
+		const std::string &RegisterIdentification::GetProof(size_t index, size_t valueIndex) const {
 			ErrorChecker::CheckCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
 
 			return _contents[index].Values[valueIndex].Proof;
 		}
 
-		void PayloadRegisterIdentification::SetProof(const std::string &proof, size_t index, size_t valueIndex) {
+		void RegisterIdentification::SetProof(const std::string &proof, size_t index, size_t valueIndex) {
 			ErrorChecker::CheckCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
 
 			_contents[index].Values[valueIndex].Proof = proof;
 		}
 
-		size_t PayloadRegisterIdentification::GetContentCount() const {
+		size_t RegisterIdentification::GetContentCount() const {
 			return _contents.size();
 		}
 
-		void PayloadRegisterIdentification::AddContent(const PayloadRegisterIdentification::SignContent &content) {
+		void RegisterIdentification::AddContent(const RegisterIdentification::SignContent &content) {
 			_contents.push_back(content);
 		}
 
-		void PayloadRegisterIdentification::RemoveContent(size_t index) {
+		void RegisterIdentification::RemoveContent(size_t index) {
 			ErrorChecker::CheckCondition(index >= _contents.size(), Error::PayloadRegisterID, "Index too large");
 
 			_contents.erase(_contents.begin() + index);
 		}
 
-		IPayload &PayloadRegisterIdentification::operator=(const IPayload &payload) {
+		IPayload &RegisterIdentification::operator=(const IPayload &payload) {
 			try {
-				const PayloadRegisterIdentification &payloadRegisterIdentification = dynamic_cast<const PayloadRegisterIdentification &>(payload);
+				const RegisterIdentification &payloadRegisterIdentification = dynamic_cast<const RegisterIdentification &>(payload);
 				operator=(payloadRegisterIdentification);
 			} catch (const std::bad_cast &e) {
-				Log::error("payload is not instance of PayloadRegisterIdentification");
+				Log::error("payload is not instance of RegisterIdentification");
 			}
 			return *this;
 		}
 
-		PayloadRegisterIdentification &PayloadRegisterIdentification::operator=(const PayloadRegisterIdentification &payload) {
+		RegisterIdentification &RegisterIdentification::operator=(const RegisterIdentification &payload) {
 			_id = payload._id;
 			_sign = payload._sign;
 			_contents = payload._contents;

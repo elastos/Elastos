@@ -2,22 +2,31 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef __ELASTOS_SDK_PAYLOADTRANSFERASSET_H
-#define __ELASTOS_SDK_PAYLOADTRANSFERASSET_H
+#ifndef __ELASTOS_SDK_PAYLOADISSUETOKEN_H
+#define __ELASTOS_SDK_PAYLOADISSUETOKEN_H
 
+#include <SDK/Common/uint256.h>
 #include "IPayload.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class PayloadTransferAsset :
+		class RechargeToSideChain :
 				public IPayload {
 		public:
-			PayloadTransferAsset();
+			enum Version {
+				V0,
+				V1,
+			};
 
-			PayloadTransferAsset(const PayloadTransferAsset &payload);
+		public:
+			RechargeToSideChain();
 
-			~PayloadTransferAsset();
+			RechargeToSideChain(const bytes_t &merkeProff, const bytes_t &mainChainTransaction);
+
+			RechargeToSideChain(const RechargeToSideChain &payload);
+
+			~RechargeToSideChain();
 
 			virtual size_t EstimateSize(uint8_t version) const;
 
@@ -31,10 +40,14 @@ namespace Elastos {
 
 			virtual IPayload &operator=(const IPayload &payload);
 
-			PayloadTransferAsset &operator=(const PayloadTransferAsset &payload);
+			RechargeToSideChain &operator=(const RechargeToSideChain &payload);
 
+		private:
+			bytes_t _merkeProof;
+			bytes_t _mainChainTransaction;
+			uint256 _mainChainTxHash;
 		};
 	}
 }
 
-#endif //__ELASTOS_SDK_PAYLOADTRANSFERASSET_H
+#endif //__ELASTOS_SDK_PAYLOADISSUETOKEN_H

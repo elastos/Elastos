@@ -10,13 +10,13 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class PayloadRegisterProducer : public IPayload {
+		class ProducerInfo : public IPayload {
 		public:
-			PayloadRegisterProducer();
+			ProducerInfo();
 
-			PayloadRegisterProducer(const PayloadRegisterProducer &payload);
+			ProducerInfo(const ProducerInfo &payload);
 
-			~PayloadRegisterProducer();
+			~ProducerInfo();
 
 			const bytes_t &GetPublicKey() const;
 
@@ -62,7 +62,7 @@ namespace Elastos {
 
 			virtual IPayload &operator=(const IPayload &payload);
 
-			PayloadRegisterProducer &operator=(const PayloadRegisterProducer &payload);
+			ProducerInfo &operator=(const ProducerInfo &payload);
 
 		private:
 			bytes_t _ownerPublicKey;

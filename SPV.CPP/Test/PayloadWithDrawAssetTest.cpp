@@ -6,18 +6,18 @@
 
 #include <catch.hpp>
 #include "TestHelper.h"
-#include <SDK/Plugin/Transaction/Payload/PayloadWithDrawAsset.h>
+#include <SDK/Plugin/Transaction/Payload/WithdrawFromSideChain.h>
 #include <SDK/Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 
-TEST_CASE("PayloadWithDrawAsset Test", "[PayloadWithDrawAsset]") {
+TEST_CASE("WithdrawFromSideChain Test", "[WithdrawFromSideChain]") {
 	Log::registerMultiLogger();
 
 	srand(time(nullptr));
 
 	SECTION("Serialize and deserialize test") {
-		PayloadWithDrawAsset p1, p2;
+		WithdrawFromSideChain p1, p2;
 		ByteStream stream;
 
 		p1.SetBlockHeight(rand());
@@ -41,7 +41,7 @@ TEST_CASE("PayloadWithDrawAsset Test", "[PayloadWithDrawAsset]") {
 	}
 
 	SECTION("to json and from json") {
-		PayloadWithDrawAsset p1, p2;
+		WithdrawFromSideChain p1, p2;
 
 		p1.SetBlockHeight(rand());
 		p1.SetGenesisBlockAddress(getRandString(100));

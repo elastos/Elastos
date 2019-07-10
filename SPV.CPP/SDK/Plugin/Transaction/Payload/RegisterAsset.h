@@ -13,16 +13,16 @@ namespace Elastos {
 		class Asset;
 		typedef boost::shared_ptr<Asset> AssetPtr;
 
-		class PayloadRegisterAsset :
+		class RegisterAsset :
 				public IPayload {
 		public:
-			PayloadRegisterAsset();
+			RegisterAsset();
 
-			PayloadRegisterAsset(const AssetPtr &asset, uint64_t amount, const uint168 &controller);
+			RegisterAsset(const AssetPtr &asset, uint64_t amount, const uint168 &controller);
 
-			PayloadRegisterAsset(const PayloadRegisterAsset &payload);
+			RegisterAsset(const RegisterAsset &payload);
 
-			~PayloadRegisterAsset();
+			~RegisterAsset();
 
 			void SetAsset(const AssetPtr &asset) {
 				_asset = asset;
@@ -62,7 +62,7 @@ namespace Elastos {
 
 			virtual IPayload &operator=(const IPayload &payload);
 
-			PayloadRegisterAsset &operator=(const PayloadRegisterAsset &payload);
+			RegisterAsset &operator=(const RegisterAsset &payload);
 
 		private:
 			AssetPtr _asset;

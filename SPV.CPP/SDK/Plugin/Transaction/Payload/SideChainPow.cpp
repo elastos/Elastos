@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "PayloadSideMining.h"
+#include "SideChainPow.h"
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
 
@@ -11,60 +11,60 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		PayloadSideMining::PayloadSideMining() :
+		SideChainPow::SideChainPow() :
 			_blockHeight(0) {
 
 		}
 
-		PayloadSideMining::PayloadSideMining(const PayloadSideMining &payload) {
+		SideChainPow::SideChainPow(const SideChainPow &payload) {
 			operator=(payload);
 		}
 
 
-		PayloadSideMining::PayloadSideMining(const uint256 &sideBlockHash, const uint256 &sideGensisHash, uint32_t height, const bytes_t &signedData) {
+		SideChainPow::SideChainPow(const uint256 &sideBlockHash, const uint256 &sideGensisHash, uint32_t height, const bytes_t &signedData) {
 			_sideBlockHash = sideBlockHash;
 			_sideGenesisHash = sideGensisHash;
 			_blockHeight = height;
 			_signedData = signedData;
 		}
 
-		PayloadSideMining::~PayloadSideMining() {
+		SideChainPow::~SideChainPow() {
 
 		}
 
-		void PayloadSideMining::SetSideBlockHash(const uint256 &sideBlockHash) {
+		void SideChainPow::SetSideBlockHash(const uint256 &sideBlockHash) {
 			_sideBlockHash = sideBlockHash;
 		}
 
-		void PayloadSideMining::SetSideGenesisHash(const uint256 &sideGensisHash) {
+		void SideChainPow::SetSideGenesisHash(const uint256 &sideGensisHash) {
 			_sideGenesisHash = sideGensisHash;
 		}
 
-		void PayloadSideMining::SetBlockHeight(uint32_t height) {
+		void SideChainPow::SetBlockHeight(uint32_t height) {
 			_blockHeight = height;
 		}
 
-		void PayloadSideMining::SetSignedData(const bytes_t &signedData) {
+		void SideChainPow::SetSignedData(const bytes_t &signedData) {
 			_signedData = signedData;
 		}
 
-		const uint256 &PayloadSideMining::GetSideBlockHash() const {
+		const uint256 &SideChainPow::GetSideBlockHash() const {
 			return _sideBlockHash;
 		}
 
-		const uint256 &PayloadSideMining::GetSideGenesisHash() const {
+		const uint256 &SideChainPow::GetSideGenesisHash() const {
 			return _sideGenesisHash;
 		}
 
-		const uint32_t &PayloadSideMining::GetBlockHeight() const {
+		const uint32_t &SideChainPow::GetBlockHeight() const {
 			return _blockHeight;
 		}
 
-		const bytes_t &PayloadSideMining::GetSignedData() const {
+		const bytes_t &SideChainPow::GetSignedData() const {
 			return _signedData;
 		}
 
-		size_t PayloadSideMining::EstimateSize(uint8_t version) const {
+		size_t SideChainPow::EstimateSize(uint8_t version) const {
 			size_t size = 0;
 			ByteStream stream;
 
@@ -77,14 +77,14 @@ namespace Elastos {
 			return size;
 		}
 
-		void PayloadSideMining::Serialize(ByteStream &ostream, uint8_t version) const {
+		void SideChainPow::Serialize(ByteStream &ostream, uint8_t version) const {
 			ostream.WriteBytes(_sideBlockHash);
 			ostream.WriteBytes(_sideGenesisHash);
 			ostream.WriteUint32(_blockHeight);
 			ostream.WriteVarBytes(_signedData);
 		}
 
-		bool PayloadSideMining::Deserialize(const ByteStream &istream, uint8_t version) {
+		bool SideChainPow::Deserialize(const ByteStream &istream, uint8_t version) {
 			if (!istream.ReadBytes(_sideBlockHash))
 				return false;
 
@@ -98,7 +98,7 @@ namespace Elastos {
 
 		}
 
-		nlohmann::json PayloadSideMining::ToJson(uint8_t version) const {
+		nlohmann::json SideChainPow::ToJson(uint8_t version) const {
 			nlohmann::json j;
 
 			j["SideBlockHash"] = _sideBlockHash.GetHex();
@@ -109,25 +109,25 @@ namespace Elastos {
 			return j;
 		}
 
-		void PayloadSideMining::FromJson(const nlohmann::json &j, uint8_t version) {
+		void SideChainPow::FromJson(const nlohmann::json &j, uint8_t version) {
 			_sideBlockHash.SetHex(j["SideBlockHash"].get<std::string>());
 			_sideGenesisHash.SetHex(j["SideGenesisHash"].get<std::string>());
 			_blockHeight = j["BlockHeight"].get<uint32_t>();
 			_signedData.setHex(j["SignedData"].get<std::string>());
 		}
 
-		IPayload &PayloadSideMining::operator=(const IPayload &payload) {
+		IPayload &SideChainPow::operator=(const IPayload &payload) {
 			try {
-				const PayloadSideMining &payloadSideMining = dynamic_cast<const PayloadSideMining &>(payload);
+				const SideChainPow &payloadSideMining = dynamic_cast<const SideChainPow &>(payload);
 				operator=(payloadSideMining);
 			} catch (const std::bad_cast &e) {
-				Log::error("payload is not instance of PayloadSideMining");
+				Log::error("payload is not instance of SideChainPow");
 			}
 
 			return *this;
 		}
 
-		PayloadSideMining &PayloadSideMining::operator=(const PayloadSideMining &payload) {
+		SideChainPow &SideChainPow::operator=(const SideChainPow &payload) {
 			_sideBlockHash = payload._sideBlockHash;
 			_sideGenesisHash = payload._sideGenesisHash;
 			_blockHeight = payload._blockHeight;

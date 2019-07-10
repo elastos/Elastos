@@ -8,15 +8,15 @@
 #include "TestHelper.h"
 //#include "BRInt.h"
 #include <SDK/Common/Log.h>
-#include "SDK/Plugin/Transaction/Payload/PayloadCoinBase.h"
+#include "SDK/Plugin/Transaction/Payload/CoinBase.h"
 
 using namespace Elastos::ElaWallet;
 
-TEST_CASE("PayloadCoinBase Test", "[PayloadCoinBase]") {
+TEST_CASE("CoinBase Test", "[CoinBase]") {
 	Log::registerMultiLogger();
 
 	SECTION("Serialize and deserialize") {
-		PayloadCoinBase p1(getRandBytes(50)), p2;
+		CoinBase p1(getRandBytes(50)), p2;
 
 		ByteStream stream;
 		p1.Serialize(stream, 0);
@@ -26,7 +26,7 @@ TEST_CASE("PayloadCoinBase Test", "[PayloadCoinBase]") {
 	}
 
 	SECTION("to json and from json") {
-		PayloadCoinBase p1(getRandBytes(50)), p2;
+		CoinBase p1(getRandBytes(50)), p2;
 
 		nlohmann::json p1Json = p1.ToJson(0);
 		p2.FromJson(p1Json, 0);

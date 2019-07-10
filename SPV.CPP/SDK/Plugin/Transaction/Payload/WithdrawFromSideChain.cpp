@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "PayloadWithDrawAsset.h"
+#include "WithdrawFromSideChain.h"
 
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
@@ -10,51 +10,51 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		PayloadWithDrawAsset::PayloadWithDrawAsset() :
+		WithdrawFromSideChain::WithdrawFromSideChain() :
 				_blockHeight(0),
 				_genesisBlockAddress("") {
 
 		}
 
-		PayloadWithDrawAsset::PayloadWithDrawAsset(const PayloadWithDrawAsset &payload) {
+		WithdrawFromSideChain::WithdrawFromSideChain(const WithdrawFromSideChain &payload) {
 			operator=(payload);
 		}
 
-		PayloadWithDrawAsset::PayloadWithDrawAsset(uint32_t blockHeight, const std::string &genesisBlockAddress,
+		WithdrawFromSideChain::WithdrawFromSideChain(uint32_t blockHeight, const std::string &genesisBlockAddress,
 		                                           const std::vector<uint256> &sideChainTransactionHash) {
 			_blockHeight = blockHeight;
 			_genesisBlockAddress = genesisBlockAddress;
 			_sideChainTransactionHash = sideChainTransactionHash;
 		}
 
-		PayloadWithDrawAsset::~PayloadWithDrawAsset() {
+		WithdrawFromSideChain::~WithdrawFromSideChain() {
 		}
 
-		void PayloadWithDrawAsset::SetBlockHeight(uint32_t blockHeight) {
+		void WithdrawFromSideChain::SetBlockHeight(uint32_t blockHeight) {
 			_blockHeight = blockHeight;
 		}
 
-		uint32_t PayloadWithDrawAsset::GetBlockHeight() const {
+		uint32_t WithdrawFromSideChain::GetBlockHeight() const {
 			return _blockHeight;
 		}
 
-		void PayloadWithDrawAsset::SetGenesisBlockAddress(const std::string &genesisBlockAddress) {
+		void WithdrawFromSideChain::SetGenesisBlockAddress(const std::string &genesisBlockAddress) {
 			_genesisBlockAddress = genesisBlockAddress;
 		}
 
-		const std::string &PayloadWithDrawAsset::GetGenesisBlockAddress() const {
+		const std::string &WithdrawFromSideChain::GetGenesisBlockAddress() const {
 			return _genesisBlockAddress;
 		}
 
-		void PayloadWithDrawAsset::SetSideChainTransacitonHash(const std::vector<uint256> &sideChainTransactionHash) {
+		void WithdrawFromSideChain::SetSideChainTransacitonHash(const std::vector<uint256> &sideChainTransactionHash) {
 			_sideChainTransactionHash = sideChainTransactionHash;
 		}
 
-		const std::vector<uint256> &PayloadWithDrawAsset::GetSideChainTransacitonHash() const {
+		const std::vector<uint256> &WithdrawFromSideChain::GetSideChainTransacitonHash() const {
 			return _sideChainTransactionHash;
 		}
 
-		size_t PayloadWithDrawAsset::EstimateSize(uint8_t version) const {
+		size_t WithdrawFromSideChain::EstimateSize(uint8_t version) const {
 			size_t size = 0;
 			ByteStream stream;
 
@@ -69,7 +69,7 @@ namespace Elastos {
 			return size;
 		}
 
-		void PayloadWithDrawAsset::Serialize(ByteStream &ostream, uint8_t version) const {
+		void WithdrawFromSideChain::Serialize(ByteStream &ostream, uint8_t version) const {
 			ostream.WriteUint32(_blockHeight);
 			ostream.WriteVarString(_genesisBlockAddress);
 			ostream.WriteVarUint((uint64_t)_sideChainTransactionHash.size());
@@ -79,7 +79,7 @@ namespace Elastos {
 			}
 		}
 
-		bool PayloadWithDrawAsset::Deserialize(const ByteStream &istream, uint8_t version) {
+		bool WithdrawFromSideChain::Deserialize(const ByteStream &istream, uint8_t version) {
 			if (!istream.ReadUint32(_blockHeight)) {
 				Log::error("Payload with draw asset deserialize block height fail");
 				return false;
@@ -107,7 +107,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadWithDrawAsset::ToJson(uint8_t version) const {
+		nlohmann::json WithdrawFromSideChain::ToJson(uint8_t version) const {
 			nlohmann::json j;
 
 			j["BlockHeight"] = _blockHeight;
@@ -121,7 +121,7 @@ namespace Elastos {
 			return j;
 		}
 
-		void PayloadWithDrawAsset::FromJson(const nlohmann::json &j, uint8_t version) {
+		void WithdrawFromSideChain::FromJson(const nlohmann::json &j, uint8_t version) {
 			_blockHeight = j["BlockHeight"].get<uint32_t>();
 			_genesisBlockAddress = j["GenesisBlockAddress"].get<std::string>();
 
@@ -132,18 +132,18 @@ namespace Elastos {
 			}
 		}
 
-		IPayload &PayloadWithDrawAsset::operator=(const IPayload &payload) {
+		IPayload &WithdrawFromSideChain::operator=(const IPayload &payload) {
 			try {
-				const PayloadWithDrawAsset &payloadWithDrawAsset = dynamic_cast<const PayloadWithDrawAsset &>(payload);
+				const WithdrawFromSideChain &payloadWithDrawAsset = dynamic_cast<const WithdrawFromSideChain &>(payload);
 				operator=(payloadWithDrawAsset);
 			} catch (const std::bad_cast &e) {
-				Log::error("payload is not instance of PayloadWithDrawAsset");
+				Log::error("payload is not instance of WithdrawFromSideChain");
 			}
 
 			return *this;
 		}
 
-		PayloadWithDrawAsset &PayloadWithDrawAsset::operator=(const PayloadWithDrawAsset &payload) {
+		WithdrawFromSideChain &WithdrawFromSideChain::operator=(const WithdrawFromSideChain &payload) {
 			_blockHeight = payload._blockHeight;
 			_genesisBlockAddress = payload._genesisBlockAddress;
 			_sideChainTransactionHash = payload._sideChainTransactionHash;

@@ -9,7 +9,7 @@
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
 #include <SDK/WalletCore/KeyStore/CoinInfo.h>
-#include <SDK/Plugin/Transaction/Payload/PayloadRegisterIdentification.h>
+#include <SDK/Plugin/Transaction/Payload/RegisterIdentification.h>
 
 #include <set>
 #include <boost/scoped_ptr.hpp>
@@ -54,7 +54,7 @@ namespace Elastos {
 			try {
 				toAddress = payloadJson["ID"].get<std::string>();
 				program.FromJson(programJson);
-				payload = PayloadPtr(new PayloadRegisterIdentification());
+				payload = PayloadPtr(new RegisterIdentification());
 				payload->FromJson(payloadJson, 0);
 			} catch (const nlohmann::detail::exception &e) {
 				ErrorChecker::ThrowParamException(Error::JsonFormatError,
@@ -67,7 +67,7 @@ namespace Elastos {
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
 
-			tx->SetTransactionType(Transaction::RegisterIdentification, payload);
+			tx->SetTransactionType(Transaction::registerIdentification, payload);
 
 			tx->AddProgram(program);
 
@@ -79,13 +79,13 @@ namespace Elastos {
 		}
 
 		void IDChainSubWallet::onTxAdded(const TransactionPtr &transaction) {
-			if (transaction != nullptr && transaction->GetTransactionType() == Transaction::RegisterIdentification) {
+			if (transaction != nullptr && transaction->GetTransactionType() == Transaction::registerIdentification) {
 				std::string txHash = transaction->GetHash().GetHex();
 				ArgInfo("{} onTxAdded Hash: {}", _walletManager->getWallet()->GetWalletID(), txHash);
 
 				std::for_each(_callbacks.begin(), _callbacks.end(),
 							  [&transaction, &txHash](ISubWalletCallback *callback) {
-								  const PayloadRegisterIdentification *payload = static_cast<const PayloadRegisterIdentification *>(
+								  const RegisterIdentification *payload = static_cast<const RegisterIdentification *>(
 									  transaction->GetPayload());
 								  callback->OnTransactionStatusChanged(txHash, "Added", payload->ToJson(0), 0);
 							  });
@@ -98,7 +98,7 @@ namespace Elastos {
 			for (size_t i = 0; i < hashes.size(); ++i) {
 				TransactionPtr transaction = _walletManager->getWallet()->TransactionForHash(hashes[i]);
 				if (transaction != nullptr &&
-					transaction->GetTransactionType() == Transaction::RegisterIdentification) {
+					transaction->GetTransactionType() == Transaction::registerIdentification) {
 					uint32_t confirm = blockHeight >= transaction->GetBlockHeight() ? blockHeight -
 																					  transaction->GetBlockHeight() + 1
 																					: 0;
@@ -106,7 +106,7 @@ namespace Elastos {
 					std::for_each(_callbacks.begin(), _callbacks.end(),
 								  [&i, &hashes, &confirm, &transaction, this](ISubWalletCallback *callback) {
 
-									  const PayloadRegisterIdentification *payload = static_cast<const PayloadRegisterIdentification *>(
+									  const RegisterIdentification *payload = static_cast<const RegisterIdentification *>(
 										  transaction->GetPayload());
 									  callback->OnTransactionStatusChanged(hashes[i].GetHex(), "Updated", payload->ToJson(0),
 																		   confirm);

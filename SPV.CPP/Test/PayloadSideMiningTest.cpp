@@ -7,16 +7,16 @@
 #include "catch.hpp"
 #include "TestHelper.h"
 //#include "BRInt.h"
-#include <SDK/Plugin/Transaction/Payload/PayloadSideMining.h>
+#include <SDK/Plugin/Transaction/Payload/SideChainPow.h>
 #include <SDK/Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 
-TEST_CASE("PayloadSideMining Test", "[PayloadSideMining]") {
+TEST_CASE("SideChainPow Test", "[SideChainPow]") {
 	Log::registerMultiLogger();
 
 	SECTION("Serialize and deserialize") {
-		PayloadSideMining p1, p2;
+		SideChainPow p1, p2;
 
 		p1.SetSideBlockHash(getRanduint256());
 		p1.SetSideGenesisHash(getRanduint256());
@@ -35,7 +35,7 @@ TEST_CASE("PayloadSideMining Test", "[PayloadSideMining]") {
 	}
 
 	SECTION("to json and from json") {
-		PayloadSideMining p1, p2;
+		SideChainPow p1, p2;
 
 		p1.SetSideBlockHash(getRanduint256());
 		p1.SetSideGenesisHash(getRanduint256());

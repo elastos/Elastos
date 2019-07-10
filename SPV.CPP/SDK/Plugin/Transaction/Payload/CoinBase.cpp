@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "PayloadCoinBase.h"
+#include "CoinBase.h"
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
 
@@ -10,30 +10,30 @@
 
 namespace Elastos {
 	namespace ElaWallet {
-		PayloadCoinBase::PayloadCoinBase() {
+		CoinBase::CoinBase() {
 
 		}
 
-		PayloadCoinBase::PayloadCoinBase(const bytes_t &coinBaseData) {
+		CoinBase::CoinBase(const bytes_t &coinBaseData) {
 			_coinBaseData = coinBaseData;
 		}
 
-		PayloadCoinBase::PayloadCoinBase(const PayloadCoinBase &payload) {
+		CoinBase::CoinBase(const CoinBase &payload) {
 			operator=(payload);
 		}
 
-		PayloadCoinBase::~PayloadCoinBase() {
+		CoinBase::~CoinBase() {
 		}
 
-		void PayloadCoinBase::SetCoinBaseData(const bytes_t &coinBaseData) {
+		void CoinBase::SetCoinBaseData(const bytes_t &coinBaseData) {
 			_coinBaseData = coinBaseData;
 		}
 
-		const bytes_t &PayloadCoinBase::GetCoinBaseData() const {
+		const bytes_t &CoinBase::GetCoinBaseData() const {
 			return _coinBaseData;
 		}
 
-		size_t PayloadCoinBase::EstimateSize(uint8_t version) const {
+		size_t CoinBase::EstimateSize(uint8_t version) const {
 			size_t size = 0;
 			ByteStream stream;
 
@@ -43,37 +43,37 @@ namespace Elastos {
 			return size;
 		}
 
-		void PayloadCoinBase::Serialize(ByteStream &ostream, uint8_t version) const {
+		void CoinBase::Serialize(ByteStream &ostream, uint8_t version) const {
 			ostream.WriteVarBytes(_coinBaseData);
 		}
 
-		bool PayloadCoinBase::Deserialize(const ByteStream &istream, uint8_t version) {
+		bool CoinBase::Deserialize(const ByteStream &istream, uint8_t version) {
 			return istream.ReadVarBytes(_coinBaseData);
 		}
 
-		nlohmann::json PayloadCoinBase::ToJson(uint8_t version) const {
+		nlohmann::json CoinBase::ToJson(uint8_t version) const {
 			nlohmann::json j;
 			j["CoinBaseData"] = _coinBaseData.getHex();
 			return j;
 		}
 
-		void PayloadCoinBase::FromJson(const nlohmann::json &j, uint8_t version) {
+		void CoinBase::FromJson(const nlohmann::json &j, uint8_t version) {
 			_coinBaseData.setHex(j["CoinBaseData"].get<std::string>());
 
 		}
 
-		IPayload &PayloadCoinBase::operator=(const IPayload &payload) {
+		IPayload &CoinBase::operator=(const IPayload &payload) {
 			try {
-				const PayloadCoinBase &payloadCoinBase = dynamic_cast<const PayloadCoinBase &>(payload);
+				const CoinBase &payloadCoinBase = dynamic_cast<const CoinBase &>(payload);
 				operator=(payloadCoinBase);
 			} catch (const std::bad_cast &e) {
-				Log::error("payload is not instance of PayloadCoinBase");
+				Log::error("payload is not instance of CoinBase");
 			}
 
 			return *this;
 		}
 
-		PayloadCoinBase &PayloadCoinBase::operator=(const PayloadCoinBase &payload) {
+		CoinBase &CoinBase::operator=(const CoinBase &payload) {
 			_coinBaseData = payload._coinBaseData;
 			return *this;
 		}

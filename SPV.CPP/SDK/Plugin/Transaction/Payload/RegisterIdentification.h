@@ -11,7 +11,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class PayloadRegisterIdentification : public IPayload {
+		class RegisterIdentification : public IPayload {
 		public:
 			struct ValueItem {
 				uint256 DataHash;
@@ -25,11 +25,11 @@ namespace Elastos {
 			};
 
 		public:
-			PayloadRegisterIdentification();
+			RegisterIdentification();
 
-			PayloadRegisterIdentification(const PayloadRegisterIdentification &payload);
+			RegisterIdentification(const RegisterIdentification &payload);
 
-			~PayloadRegisterIdentification();
+			~RegisterIdentification();
 
 			const std::string &GetID() const;
 
@@ -71,7 +71,7 @@ namespace Elastos {
 
 			virtual IPayload &operator=(const IPayload &payload);
 
-			PayloadRegisterIdentification &operator=(const PayloadRegisterIdentification &payload);
+			RegisterIdentification &operator=(const RegisterIdentification &payload);
 
 		private:
 			std::string _id;

@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
-#include <SDK/Plugin/Transaction/Payload/PayloadRegisterIdentification.h>
+#include <SDK/Plugin/Transaction/Payload/RegisterIdentification.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
 
@@ -19,7 +19,7 @@ const std::string Content2_Path2 = "kyc/person/phone";
 const std::string Content2_Proof2 = "\"signature\":\"3046022100e888040388d0f569183eea8e6f608e00f38a0ed38e1d2f227a8638ef3efd8f6c022100ca1c2ec20a9a933c072f6e4e6b9660a5aa1bcace8af384abaa30941010d4a9cf\",\"notary\":\"COOIX\"";
 const std::string Content2_DataHash2 = "cf985a76d1eef80aa7aa4ce144edad2c042c217ecabb0f86cd91bd4dae3b7215";
 
-TEST_CASE("PayloadRegisterIdentification fromJson test", "[fromJson&toJson]") {
+TEST_CASE("RegisterIdentification fromJson test", "[fromJson&toJson]") {
 	Log::registerMultiLogger();
 
 	SECTION("Parse from existing json") {
@@ -53,26 +53,26 @@ TEST_CASE("PayloadRegisterIdentification fromJson test", "[fromJson&toJson]") {
 
 		std::string str = rawJson.dump();
 
-		PayloadRegisterIdentification payload;
+		RegisterIdentification payload;
 		REQUIRE_NOTHROW(payload.FromJson(rawJson, 0));
 	}
 
 	SECTION("Convert from and to json") {
 
-		PayloadRegisterIdentification payload;
+		RegisterIdentification payload;
 		payload.SetID(ID);
 
-		PayloadRegisterIdentification::SignContent content;
+		RegisterIdentification::SignContent content;
 		content.Path = Content1_Path1;
-		PayloadRegisterIdentification::ValueItem item;
+		RegisterIdentification::ValueItem item;
 		item.Proof = Content1_Proof1;
 		item.DataHash = uint256(Content1_DataHash1);
 		content.Values.push_back(item);
 		payload.AddContent(content);
 
-		PayloadRegisterIdentification::SignContent content2;
+		RegisterIdentification::SignContent content2;
 		content2.Path = Content2_Path2;
-		PayloadRegisterIdentification::ValueItem item2;
+		RegisterIdentification::ValueItem item2;
 		item2.Proof = Content2_Proof2;
 		item2.DataHash = uint256(Content2_DataHash2);
 		content2.Values.push_back(item2);
@@ -80,7 +80,7 @@ TEST_CASE("PayloadRegisterIdentification fromJson test", "[fromJson&toJson]") {
 
 		nlohmann::json j = payload.ToJson(0);
 
-		PayloadRegisterIdentification payload2;
+		RegisterIdentification payload2;
 		payload2.FromJson(j, 0);
 
 		REQUIRE(payload.GetID() == payload2.GetID());
@@ -95,24 +95,24 @@ TEST_CASE("PayloadRegisterIdentification fromJson test", "[fromJson&toJson]") {
 	}
 }
 
-TEST_CASE("PayloadRegisterIdentification serialize and deserialize test", "[Serialize&Deserialize]") {
+TEST_CASE("RegisterIdentification serialize and deserialize test", "[Serialize&Deserialize]") {
 
 	SECTION("Deserialize from a serialized payload") {
 
-		PayloadRegisterIdentification payload;
+		RegisterIdentification payload;
 		payload.SetID(ID);
 
-		PayloadRegisterIdentification::SignContent content;
+		RegisterIdentification::SignContent content;
 		content.Path = Content1_Path1;
-		PayloadRegisterIdentification::ValueItem item;
+		RegisterIdentification::ValueItem item;
 		item.Proof = Content1_Proof1;
 		item.DataHash = uint256(Content1_DataHash1);
 		content.Values.push_back(item);
 		payload.AddContent(content);
 
-		PayloadRegisterIdentification::SignContent content2;
+		RegisterIdentification::SignContent content2;
 		content2.Path = Content2_Path2;
-		PayloadRegisterIdentification::ValueItem item2;
+		RegisterIdentification::ValueItem item2;
 		item2.Proof = Content2_Proof2;
 		item2.DataHash = uint256(Content2_DataHash2);
 		content2.Values.push_back(item2);
@@ -121,7 +121,7 @@ TEST_CASE("PayloadRegisterIdentification serialize and deserialize test", "[Seri
 		ByteStream stream;
 		payload.Serialize(stream, 0);
 
-		PayloadRegisterIdentification payload2;
+		RegisterIdentification payload2;
 		payload2.Deserialize(stream, 0);
 
 		REQUIRE(payload.GetID() == payload2.GetID());

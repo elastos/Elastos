@@ -9,7 +9,7 @@
 
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
-#include <SDK/Plugin/Transaction/Payload/PayloadCoinBase.h>
+#include <SDK/Plugin/Transaction/Payload/CoinBase.h>
 #include <SDK/Plugin/Transaction/Attribute.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>

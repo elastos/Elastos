@@ -25,26 +25,34 @@ namespace Elastos {
 				public ELAMessageSerializable {
 		public:
 			enum Type {
-				CoinBase                = 0x00,
-				RegisterAsset           = 0x01,
-				TransferAsset           = 0x02,
-				Record                  = 0x03,
-				Deploy                  = 0x04,
-				SideChainPow            = 0x05,
-				RechargeToSideChain     = 0x06,
-				WithdrawFromSideChain   = 0x07,
-				TransferCrossChainAsset = 0x08,
+				coinBase                 = 0x00,
+				registerAsset            = 0x01,
+				transferAsset            = 0x02,
+				record                   = 0x03,
+				deploy                   = 0x04,
+				sideChainPow             = 0x05,
+				rechargeToSideChain      = 0x06,
+				withdrawFromSideChain    = 0x07,
+				transferCrossChainAsset  = 0x08,
 
-				RegisterProducer        = 0x09,
-				CancelProducer          = 0x0a,
-				UpdateProducer          = 0x0b,
-				ReturnDepositCoin       = 0x0c,
+				registerProducer         = 0x09,
+				cancelProducer           = 0x0a,
+				updateProducer           = 0x0b,
+				returnDepositCoin        = 0x0c,
+				activateProducer         = 0x0d,
 
-				IllegalProposalEvidence = 0x0d,
-				IllegalVoteEvidence     = 0x0e,
-				IllegalBlockEvidence    = 0x0f,
+				IllegalProposalEvidence  = 0x0e,
+				IllegalVoteEvidence      = 0x0f,
+				IllegalBlockEvidence     = 0x10,
+				IllegalSidechainEvidence = 0x11,
+				InactiveArbitrators      = 0x12,
+				UpdateVersion            = 0x13,
 
-				RegisterIdentification  = 0xFF, // will refactor later
+				registerCR               = 0x21,
+				unregisterCR             = 0x22,
+				updateCR                 = 0x23,
+
+				registerIdentification   = 0xFF, // will refactor later
 				TypeMaxCount
 			};
 

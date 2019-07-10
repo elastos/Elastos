@@ -2,31 +2,31 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef __ELASTOS_SDK_PAYLOADISSUETOKEN_H
-#define __ELASTOS_SDK_PAYLOADISSUETOKEN_H
+#ifndef __ELASTOS_SDK_PAYLOADCANCELPRODUCER_H__
+#define __ELASTOS_SDK_PAYLOADCANCELPRODUCER_H__
 
-#include <SDK/Common/uint256.h>
 #include "IPayload.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class PayloadRechargeToSideChain :
-				public IPayload {
+		class CancelProducer : public IPayload {
 		public:
-			enum Version {
-				V0,
-				V1,
-			};
+			CancelProducer();
 
-		public:
-			PayloadRechargeToSideChain();
+			CancelProducer(const CancelProducer &payload);
 
-			PayloadRechargeToSideChain(const bytes_t &merkeProff, const bytes_t &mainChainTransaction);
+			~CancelProducer();
 
-			PayloadRechargeToSideChain(const PayloadRechargeToSideChain &payload);
+			const bytes_t &GetPublicKey() const;
 
-			~PayloadRechargeToSideChain();
+			void SetPublicKey(const bytes_t &key);
+
+			void SetSignature(const bytes_t &signature);
+
+			void SerializeUnsigned(ByteStream &ostream, uint8_t version) const;
+
+			bool DeserializeUnsigned(const ByteStream &istream, uint8_t version);
 
 			virtual size_t EstimateSize(uint8_t version) const;
 
@@ -40,14 +40,14 @@ namespace Elastos {
 
 			virtual IPayload &operator=(const IPayload &payload);
 
-			PayloadRechargeToSideChain &operator=(const PayloadRechargeToSideChain &payload);
+			CancelProducer &operator=(const CancelProducer &payload);
 
 		private:
-			bytes_t _merkeProof;
-			bytes_t _mainChainTransaction;
-			uint256 _mainChainTxHash;
+			bytes_t _publicKey;
+			bytes_t _signature;
 		};
+
 	}
 }
 
-#endif //__ELASTOS_SDK_PAYLOADISSUETOKEN_H
+#endif // __ELASTOS_SDK_PAYLOADCANCELPRODUCER_H__

@@ -6,16 +6,16 @@
 
 #include "catch.hpp"
 #include "TestHelper.h"
-#include <SDK/Plugin/Transaction/Payload/PayloadRecord.h>
+#include <SDK/Plugin/Transaction/Payload/Record.h>
 #include <SDK/Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 
-TEST_CASE("PayloadRecord test", "PayloadRecord") {
+TEST_CASE("Record test", "Record") {
 	Log::registerMultiLogger();
 
 	SECTION("Serialize and deserialize") {
-		PayloadRecord p1(getRandString(20), getRandBytes(50)), p2;
+		Record p1(getRandString(20), getRandBytes(50)), p2;
 
 		ByteStream stream;
 
@@ -28,7 +28,7 @@ TEST_CASE("PayloadRecord test", "PayloadRecord") {
 	}
 
 	SECTION("to json and from json") {
-		PayloadRecord p1(getRandString(20), getRandBytes(50)), p2;
+		Record p1(getRandString(20), getRandBytes(50)), p2;
 
 		nlohmann::json p1Json = p1.ToJson(0);
 

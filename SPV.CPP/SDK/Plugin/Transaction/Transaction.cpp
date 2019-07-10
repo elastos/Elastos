@@ -3,19 +3,18 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "Transaction.h"
-#include "Payload/PayloadCoinBase.h"
-#include "SDK/Plugin/Transaction/Payload/PayloadRechargeToSideChain.h"
-#include "Payload/PayloadWithDrawAsset.h"
-#include "Payload/PayloadRecord.h"
-#include "Payload/PayloadRegisterAsset.h"
-#include "Payload/PayloadSideMining.h"
-#include "Payload/PayloadTransferCrossChainAsset.h"
-#include "Payload/PayloadTransferAsset.h"
-#include "Payload/PayloadRegisterIdentification.h"
-#include "Payload/PayloadRegisterProducer.h"
-#include "Payload/PayloadCancelProducer.h"
-#include "Payload/PayloadUpdateProducer.h"
-#include "Payload/PayloadReturnDepositCoin.h"
+#include "SDK/Plugin/Transaction/Payload/CoinBase.h"
+#include "SDK/Plugin/Transaction/Payload/RechargeToSideChain.h"
+#include "SDK/Plugin/Transaction/Payload/WithdrawFromSideChain.h"
+#include "SDK/Plugin/Transaction/Payload/Record.h"
+#include "SDK/Plugin/Transaction/Payload/RegisterAsset.h"
+#include "SDK/Plugin/Transaction/Payload/SideChainPow.h"
+#include "SDK/Plugin/Transaction/Payload/TransferCrossChainAsset.h"
+#include "SDK/Plugin/Transaction/Payload/TransferAsset.h"
+#include "SDK/Plugin/Transaction/Payload/RegisterIdentification.h"
+#include "SDK/Plugin/Transaction/Payload/ProducerInfo.h"
+#include "SDK/Plugin/Transaction/Payload/CancelProducer.h"
+#include "SDK/Plugin/Transaction/Payload/ReturnDepositCoin.h"
 
 #include <SDK/Common/Utils.h>
 #include <SDK/Wallet/Wallet.h>
@@ -30,7 +29,7 @@
 #include <cstring>
 
 #define STANDARD_FEE_PER_KB 10000
-#define DEFAULT_PAYLOAD_TYPE  TransferAsset
+#define DEFAULT_PAYLOAD_TYPE  transferAsset
 #define TX_LOCKTIME          0x00000000
 
 namespace Elastos {
@@ -270,7 +269,7 @@ namespace Elastos {
 		}
 
 		bool Transaction::IsSigned() const {
-			if (_type == Type::RechargeToSideChain || _type == Type::CoinBase)
+			if (_type == Type::rechargeToSideChain || _type == Type::coinBase)
 				return true;
 
 			if (_programs.size() == 0)
@@ -287,7 +286,7 @@ namespace Elastos {
 		}
 
 		bool Transaction::IsCoinBase() const {
-			return _type == Type::CoinBase;
+			return _type == Type::coinBase;
 		}
 
 		bool Transaction::IsValid() const {
@@ -818,35 +817,33 @@ namespace Elastos {
 		}
 
 		void Transaction::InitPayloadFromType(Type type) {
-			if (type == CoinBase) {
-				_payload = PayloadPtr(new PayloadCoinBase());
-			} else if (type == RegisterAsset) {
-				_payload = PayloadPtr(new PayloadRegisterAsset());
-			} else if (type == TransferAsset) {
-				_payload = PayloadPtr(new PayloadTransferAsset());
-			} else if (type == Record) {
-				_payload = PayloadPtr(new PayloadRecord());
-			} else if (type == Deploy) {
+			if (type == coinBase) {
+				_payload = PayloadPtr(new CoinBase());
+			} else if (type == registerAsset) {
+				_payload = PayloadPtr(new RegisterAsset());
+			} else if (type == transferAsset) {
+				_payload = PayloadPtr(new TransferAsset());
+			} else if (type == record) {
+				_payload = PayloadPtr(new Record());
+			} else if (type == deploy) {
 				//todo add deploy _payload
 				//_payload = boost::shared_ptr<PayloadDeploy>(new PayloadDeploy());
-			} else if (type == SideChainPow) {
-				_payload = PayloadPtr(new PayloadSideMining());
-			} else if (type == RechargeToSideChain) { // side chain payload
-				_payload = PayloadPtr(new PayloadRechargeToSideChain());
-			} else if (type == WithdrawFromSideChain) {
-				_payload = PayloadPtr(new PayloadWithDrawAsset());
-			} else if (type == TransferCrossChainAsset) {
-				_payload = PayloadPtr(new PayloadTransferCrossChainAsset());
-			} else if (type == RegisterProducer) {
-				_payload = PayloadPtr(new PayloadRegisterProducer());
-			} else if (type == CancelProducer) {
-				_payload = PayloadPtr(new PayloadCancelProducer());
-			} else if (type == UpdateProducer) {
-				_payload = PayloadPtr(new PayloadUpdateProducer());
-			} else if (type == ReturnDepositCoin) {
-				_payload = PayloadPtr(new PayloadReturnDepositCoin());
-			} else if (type == RegisterIdentification) { // ID chain payload
-				_payload = PayloadPtr(new PayloadRegisterIdentification());
+			} else if (type == sideChainPow) {
+				_payload = PayloadPtr(new SideChainPow());
+			} else if (type == rechargeToSideChain) { // side chain payload
+				_payload = PayloadPtr(new RechargeToSideChain());
+			} else if (type == withdrawFromSideChain) {
+				_payload = PayloadPtr(new WithdrawFromSideChain());
+			} else if (type == transferCrossChainAsset) {
+				_payload = PayloadPtr(new TransferCrossChainAsset());
+			} else if (type == registerProducer || type == updateProducer) {
+				_payload = PayloadPtr(new ProducerInfo());
+			} else if (type == cancelProducer) {
+				_payload = PayloadPtr(new CancelProducer());
+			} else if (type == returnDepositCoin) {
+				_payload = PayloadPtr(new ReturnDepositCoin());
+			} else if (type == registerIdentification) { // ID chain payload
+				_payload = PayloadPtr(new RegisterIdentification());
 			}
 		}
 

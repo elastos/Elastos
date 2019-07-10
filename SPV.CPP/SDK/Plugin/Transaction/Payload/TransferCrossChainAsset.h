@@ -12,19 +12,19 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class PayloadTransferCrossChainAsset :
+		class TransferCrossChainAsset :
 				public IPayload {
 		public:
-			PayloadTransferCrossChainAsset();
+			TransferCrossChainAsset();
 
-			PayloadTransferCrossChainAsset(const PayloadTransferCrossChainAsset &payload);
+			TransferCrossChainAsset(const TransferCrossChainAsset &payload);
 
-			PayloadTransferCrossChainAsset(
+			TransferCrossChainAsset(
 				const std::vector<std::string> &crossChainAddress,
 				const std::vector<uint64_t> &outputIndex,
 				const std::vector<uint64_t> &crossChainAmount);
 
-			~PayloadTransferCrossChainAsset();
+			~TransferCrossChainAsset();
 
 			void SetCrossChainData(const std::vector<std::string> &crossChainAddress,
 								   const std::vector<uint64_t> &outputIndex,
@@ -51,7 +51,7 @@ namespace Elastos {
 
 			virtual IPayload &operator=(const IPayload &payload);
 
-			PayloadTransferCrossChainAsset &operator=(const PayloadTransferCrossChainAsset &payload);
+			TransferCrossChainAsset &operator=(const TransferCrossChainAsset &payload);
 
 		private:
 			std::vector<std::string> _crossChainAddress;

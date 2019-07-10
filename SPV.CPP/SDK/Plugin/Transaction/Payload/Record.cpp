@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "PayloadRecord.h"
+#include "Record.h"
 
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
@@ -10,40 +10,40 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		PayloadRecord::PayloadRecord() :
+		Record::Record() :
 				_recordType("") {
 
 		}
 
-		PayloadRecord::PayloadRecord(const std::string &recordType, const bytes_t &recordData) {
+		Record::Record(const std::string &recordType, const bytes_t &recordData) {
 			_recordType = recordType;
 			_recordData = recordData;
 		}
 
-		PayloadRecord::PayloadRecord(const PayloadRecord &payload) {
+		Record::Record(const Record &payload) {
 			operator=(payload);
 		}
 
-		PayloadRecord::~PayloadRecord() {
+		Record::~Record() {
 		}
 
-		void PayloadRecord::SetRecordType(const std::string &recordType) {
+		void Record::SetRecordType(const std::string &recordType) {
 			_recordType = recordType;
 		}
 
-		void PayloadRecord::SetRecordData(const bytes_t &recordData) {
+		void Record::SetRecordData(const bytes_t &recordData) {
 			_recordData = recordData;
 		}
 
-		std::string PayloadRecord::GetRecordType() const {
+		std::string Record::GetRecordType() const {
 			return _recordType;
 		}
 
-		bytes_t PayloadRecord::GetRecordData() const {
+		bytes_t Record::GetRecordData() const {
 			return _recordData;
 		}
 
-		size_t PayloadRecord::EstimateSize(uint8_t version) const {
+		size_t Record::EstimateSize(uint8_t version) const {
 			size_t size = 0;
 			ByteStream stream;
 
@@ -55,12 +55,12 @@ namespace Elastos {
 			return size;
 		}
 
-		void PayloadRecord::Serialize(ByteStream &ostream, uint8_t version) const {
+		void Record::Serialize(ByteStream &ostream, uint8_t version) const {
 			ostream.WriteVarString(_recordType);
 			ostream.WriteVarBytes(_recordData);
 		}
 
-		bool PayloadRecord::Deserialize(const ByteStream &istream, uint8_t version) {
+		bool Record::Deserialize(const ByteStream &istream, uint8_t version) {
 			if (!istream.ReadVarString(_recordType)) {
 				Log::error("Payload record deserialize type fail");
 				return false;
@@ -74,7 +74,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadRecord::ToJson(uint8_t version) const {
+		nlohmann::json Record::ToJson(uint8_t version) const {
 			nlohmann::json j;
 
 			j["RecordType"] = _recordType;
@@ -83,23 +83,23 @@ namespace Elastos {
 			return j;
 		}
 
-		void PayloadRecord::FromJson(const nlohmann::json &j, uint8_t version) {
+		void Record::FromJson(const nlohmann::json &j, uint8_t version) {
 			_recordType = j["RecordType"].get<std::string>();
 			_recordData.setHex(j["RecordData"].get<std::string>());
 		}
 
-		IPayload &PayloadRecord::operator=(const IPayload &payload) {
+		IPayload &Record::operator=(const IPayload &payload) {
 			try {
-				const PayloadRecord &payloadRecord = dynamic_cast<const PayloadRecord &>(payload);
+				const Record &payloadRecord = dynamic_cast<const Record &>(payload);
 				operator=(payloadRecord);
 			} catch (const std::bad_cast &e) {
-				Log::error("payload is not instance of PayloadRecord");
+				Log::error("payload is not instance of Record");
 			}
 
 			return *this;
 		}
 
-		PayloadRecord &PayloadRecord::operator=(const PayloadRecord &payload) {
+		Record &Record::operator=(const Record &payload) {
 			_recordData = payload._recordData;
 			_recordType = payload._recordType;
 

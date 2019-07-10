@@ -8,7 +8,7 @@
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
-#include <SDK/Plugin/Transaction/Payload/PayloadRegisterAsset.h>
+#include <SDK/Plugin/Transaction/Payload/RegisterAsset.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
 
 namespace Elastos {

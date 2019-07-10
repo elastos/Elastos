@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "PayloadRegisterProducer.h"
+#include "ProducerInfo.h"
 
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
@@ -10,75 +10,75 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		PayloadRegisterProducer::PayloadRegisterProducer() {
+		ProducerInfo::ProducerInfo() {
 
 		}
 
-		PayloadRegisterProducer::PayloadRegisterProducer(const PayloadRegisterProducer &payload) {
+		ProducerInfo::ProducerInfo(const ProducerInfo &payload) {
 			operator=(payload);
 		}
 
-		PayloadRegisterProducer::~PayloadRegisterProducer() {
+		ProducerInfo::~ProducerInfo() {
 
 		}
 
-		const bytes_t &PayloadRegisterProducer::GetPublicKey() const {
+		const bytes_t &ProducerInfo::GetPublicKey() const {
 			return _ownerPublicKey;
 		}
 
-		void PayloadRegisterProducer::SetPublicKey(const bytes_t &key) {
+		void ProducerInfo::SetPublicKey(const bytes_t &key) {
 			_ownerPublicKey = key;
 		}
 
-		const bytes_t &PayloadRegisterProducer::GetNodePublicKey() const {
+		const bytes_t &ProducerInfo::GetNodePublicKey() const {
 			return _nodePublicKey;
 		}
 
-		void PayloadRegisterProducer::SetNodePublicKey(const bytes_t &key) {
+		void ProducerInfo::SetNodePublicKey(const bytes_t &key) {
 			_nodePublicKey = key;
 		}
 
-		const std::string &PayloadRegisterProducer::GetNickName() const {
+		const std::string &ProducerInfo::GetNickName() const {
 			return _nickName;
 		}
 
-		void PayloadRegisterProducer::SetNickName(const std::string &name) {
+		void ProducerInfo::SetNickName(const std::string &name) {
 			_nickName = name;
 		}
 
-		const std::string &PayloadRegisterProducer::GetUrl() const {
+		const std::string &ProducerInfo::GetUrl() const {
 			return _url;
 		}
 
-		void PayloadRegisterProducer::SetUrl(const std::string &url) {
+		void ProducerInfo::SetUrl(const std::string &url) {
 			_url = url;
 		}
 
-		uint64_t PayloadRegisterProducer::GetLocation() const {
+		uint64_t ProducerInfo::GetLocation() const {
 			return _location;
 		}
 
-		void PayloadRegisterProducer::SetLocation(uint64_t location) {
+		void ProducerInfo::SetLocation(uint64_t location) {
 			_location = location;
 		}
 
-		const std::string &PayloadRegisterProducer::GetAddress() const {
+		const std::string &ProducerInfo::GetAddress() const {
 			return _address;
 		}
 
-		void PayloadRegisterProducer::SetAddress(const std::string &address) {
+		void ProducerInfo::SetAddress(const std::string &address) {
 			_address = address;
 		}
 
-		const bytes_t &PayloadRegisterProducer::GetSignature() const {
+		const bytes_t &ProducerInfo::GetSignature() const {
 			return _signature;
 		}
 
-		void PayloadRegisterProducer::SetSignature(const bytes_t &signature) {
+		void ProducerInfo::SetSignature(const bytes_t &signature) {
 			_signature = signature;
 		}
 
-		void PayloadRegisterProducer::SerializeUnsigned(ByteStream &ostream, uint8_t version) const {
+		void ProducerInfo::SerializeUnsigned(ByteStream &ostream, uint8_t version) const {
 			ostream.WriteVarBytes(_ownerPublicKey);
 			ostream.WriteVarBytes(_nodePublicKey);
 			ostream.WriteVarString(_nickName);
@@ -87,7 +87,7 @@ namespace Elastos {
 			ostream.WriteVarString(_address);
 		}
 
-		bool PayloadRegisterProducer::DeserializeUnsigned(const ByteStream &istream, uint8_t version) {
+		bool ProducerInfo::DeserializeUnsigned(const ByteStream &istream, uint8_t version) {
 			if (!istream.ReadVarBytes(_ownerPublicKey)) {
 				Log::error("Deserialize: read public key");
 				return false;
@@ -116,7 +116,7 @@ namespace Elastos {
 			return true;
 		}
 
-		size_t PayloadRegisterProducer::EstimateSize(uint8_t version) const {
+		size_t ProducerInfo::EstimateSize(uint8_t version) const {
 			size_t size = 0;
 			ByteStream stream;
 
@@ -137,12 +137,12 @@ namespace Elastos {
 			return size;
 		}
 
-		void PayloadRegisterProducer::Serialize(ByteStream &ostream, uint8_t version) const {
+		void ProducerInfo::Serialize(ByteStream &ostream, uint8_t version) const {
 			SerializeUnsigned(ostream, version);
 			ostream.WriteVarBytes(_signature);
 		}
 
-		bool PayloadRegisterProducer::Deserialize(const ByteStream &istream, uint8_t version) {
+		bool ProducerInfo::Deserialize(const ByteStream &istream, uint8_t version) {
 			if (!DeserializeUnsigned(istream, version)) {
 				Log::error("Deserialize: register producer payload unsigned");
 				return false;
@@ -156,7 +156,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadRegisterProducer::ToJson(uint8_t version) const {
+		nlohmann::json ProducerInfo::ToJson(uint8_t version) const {
 			nlohmann::json j;
 			j["OwnerPublicKey"] = _ownerPublicKey.getHex();
 			j["NodePublicKey"] = _nodePublicKey.getHex();
@@ -168,7 +168,7 @@ namespace Elastos {
 			return j;
 		}
 
-		void PayloadRegisterProducer::FromJson(const nlohmann::json &j, uint8_t version) {
+		void ProducerInfo::FromJson(const nlohmann::json &j, uint8_t version) {
 			_ownerPublicKey.setHex(j["OwnerPublicKey"].get<std::string>());
 			_nodePublicKey.setHex(j["NodePublicKey"].get<std::string>());
 			_nickName = j["NickName"].get<std::string>();
@@ -178,18 +178,18 @@ namespace Elastos {
 			_signature.setHex(j["Signature"].get<std::string>());
 		}
 
-		IPayload &PayloadRegisterProducer::operator=(const IPayload &payload) {
+		IPayload &ProducerInfo::operator=(const IPayload &payload) {
 			try {
-				const PayloadRegisterProducer &payloadRegisterProducer = dynamic_cast<const PayloadRegisterProducer &>(payload);
+				const ProducerInfo &payloadRegisterProducer = dynamic_cast<const ProducerInfo &>(payload);
 				operator=(payloadRegisterProducer);
 			} catch (const std::bad_cast &e) {
-				Log::error("payload is not instance of PayloadRegisterProducer");
+				Log::error("payload is not instance of ProducerInfo");
 			}
 
 			return *this;
 		}
 
-		PayloadRegisterProducer &PayloadRegisterProducer::operator=(const PayloadRegisterProducer &payload) {
+		ProducerInfo &ProducerInfo::operator=(const ProducerInfo &payload) {
 			_ownerPublicKey = payload._ownerPublicKey;
 			_nodePublicKey = payload._nodePublicKey;
 			_nickName = payload._nickName;

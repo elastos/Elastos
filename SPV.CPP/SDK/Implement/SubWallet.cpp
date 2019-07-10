@@ -356,7 +356,7 @@ namespace Elastos {
 						cb["Height"] = cbptr->BlockHeight();
 						cb["Spent"] = cbptr->Spent();
 						cb["Address"] = Address(cbptr->ProgramHash()).String();
-						cb["Type"] = Transaction::CoinBase;
+						cb["Type"] = Transaction::coinBase;
 						jcbs.push_back(cb);
 						break;
 					}

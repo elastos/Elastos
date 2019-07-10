@@ -9,10 +9,9 @@
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/WalletCore/KeyStore/CoinInfo.h>
 #include <SDK/Plugin/Transaction/Asset.h>
-#include <SDK/Plugin/Transaction/Payload/PayloadTransferCrossChainAsset.h>
-#include <SDK/Plugin/Transaction/Payload/PayloadRegisterProducer.h>
-#include <SDK/Plugin/Transaction/Payload/PayloadCancelProducer.h>
-#include <SDK/Plugin/Transaction/Payload/PayloadUpdateProducer.h>
+#include <SDK/Plugin/Transaction/Payload/TransferCrossChainAsset.h>
+#include <SDK/Plugin/Transaction/Payload/ProducerInfo.h>
+#include <SDK/Plugin/Transaction/Payload/CancelProducer.h>
 #include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
 #include <SDK/SpvService/Config.h>
 #include <CMakeConfig.h>
@@ -56,7 +55,7 @@ namespace Elastos {
 				std::vector<uint64_t> indexs = {0};
 
 				std::vector<uint64_t> amounts = {value.getWord()};
-				payload = PayloadPtr(new PayloadTransferCrossChainAsset(accounts, indexs, amounts));
+				payload = PayloadPtr(new TransferCrossChainAsset(accounts, indexs, amounts));
 			} catch (const nlohmann::detail::exception &e) {
 				ErrorChecker::ThrowParamException(Error::JsonFormatError,
 												  "Side chain message error: " + std::string(e.what()));
@@ -68,7 +67,7 @@ namespace Elastos {
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
-			tx->SetTransactionType(Transaction::TransferCrossChainAsset, payload);
+			tx->SetTransactionType(Transaction::transferCrossChainAsset, payload);
 
 			nlohmann::json txJson = tx->ToJson();
 			ArgInfo("r => {}", txJson.dump());
@@ -102,7 +101,7 @@ namespace Elastos {
 			bytes_t nodePubKey = bytes_t(nodePublicKey);
 			verifyPubKey.SetPubKey(nodePubKey);
 
-			PayloadRegisterProducer pr;
+			ProducerInfo pr;
 			pr.SetPublicKey(ownerPubKey);
 			pr.SetNodePublicKey(nodePubKey);
 			pr.SetNickName(nickName);
@@ -136,7 +135,7 @@ namespace Elastos {
 			ErrorChecker::CheckParam(pubKeyLen != 33 && pubKeyLen != 65, Error::PubKeyLength,
 									 "Public key length should be 33 or 65 bytes");
 
-			PayloadCancelProducer pc;
+			CancelProducer pc;
 			pc.SetPublicKey(ownerPublicKey);
 
 			ByteStream ostream;
@@ -171,7 +170,7 @@ namespace Elastos {
 			ErrorChecker::CheckParam(bgAmount < 500000000000, Error::VoteDepositAmountInsufficient,
 									 "Producer deposit amount is insufficient");
 
-			PayloadPtr payload = PayloadPtr(new PayloadRegisterProducer());
+			PayloadPtr payload = PayloadPtr(new ProducerInfo());
 			try {
 				payload->FromJson(payloadJson, 0);
 			} catch (const nlohmann::detail::exception &e) {
@@ -179,7 +178,7 @@ namespace Elastos {
 												  "Payload format err: " + std::string(e.what()));
 			}
 
-			bytes_t pubkey = static_cast<PayloadRegisterProducer *>(payload.get())->GetPublicKey();
+			bytes_t pubkey = static_cast<ProducerInfo *>(payload.get())->GetPublicKey();
 			std::string toAddress = Address(PrefixDeposit, pubkey).String();
 
 			std::vector<TransactionOutput> outputs;
@@ -188,7 +187,7 @@ namespace Elastos {
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
-			tx->SetTransactionType(Transaction::RegisterProducer, payload);
+			tx->SetTransactionType(Transaction::registerProducer, payload);
 
 			nlohmann::json txJson = tx->ToJson();
 			ArgInfo("r => {}", txJson.dump());
@@ -207,7 +206,7 @@ namespace Elastos {
 			ArgInfo("memo: {}", memo);
 			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
 
-			PayloadPtr payload = PayloadPtr(new PayloadUpdateProducer());
+			PayloadPtr payload = PayloadPtr(new ProducerInfo());
 			try {
 				payload->FromJson(payloadJson, 0);
 			} catch (const nlohmann::detail::exception &e) {
@@ -221,7 +220,7 @@ namespace Elastos {
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
-			tx->SetTransactionType(Transaction::UpdateProducer, payload);
+			tx->SetTransactionType(Transaction::updateProducer, payload);
 
 			if (tx->GetOutputs().size() > 1) {
 				tx->GetOutputs().erase(tx->GetOutputs().begin());
@@ -245,7 +244,7 @@ namespace Elastos {
 			ArgInfo("memo: {}", memo);
 			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
 
-			PayloadPtr payload = PayloadPtr(new PayloadCancelProducer());
+			PayloadPtr payload = PayloadPtr(new CancelProducer());
 			try {
 				payload->FromJson(payloadJson, 0);
 			} catch (const nlohmann::detail::exception &e) {
@@ -259,7 +258,7 @@ namespace Elastos {
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
-			tx->SetTransactionType(Transaction::CancelProducer, payload);
+			tx->SetTransactionType(Transaction::cancelProducer, payload);
 
 			if (tx->GetOutputs().size() > 1) {
 				tx->GetOutputs().erase(tx->GetOutputs().begin());
@@ -289,7 +288,7 @@ namespace Elastos {
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
 
-			tx->SetTransactionType(Transaction::ReturnDepositCoin);
+			tx->SetTransactionType(Transaction::returnDepositCoin);
 
 			if (tx->GetOutputs().size() > 1) {
 				tx->GetOutputs().erase(tx->GetOutputs().begin() + tx->GetOutputs().size() - 1);
@@ -366,7 +365,7 @@ namespace Elastos {
 									 "Input index larger than output size.");
 			const uint168 &inputProgramHash = txInput->GetOutputs()[inputs[0].GetIndex()].GetProgramHash();
 
-			tx->SetTransactionType(Transaction::TransferAsset);
+			tx->SetTransactionType(Transaction::transferAsset);
 			std::vector<TransactionOutput> &outputs = tx->GetOutputs();
 			outputs[0].SetType(TransactionOutput::Type::VoteOutput);
 			outputs[0].SetPayload(payload);
@@ -391,7 +390,7 @@ namespace Elastos {
 				if (!tx || utxos[i].Index() >= tx->GetOutputs().size() ||
 					tx->GetOutputs()[utxos[i].Index()].GetType() != TransactionOutput::VoteOutput ||
 					tx->GetVersion() < Transaction::TxVersion::V09 ||
-					tx->GetTransactionType() != Transaction::TransferAsset) {
+					tx->GetTransactionType() != Transaction::transferAsset) {
 					continue;
 				}
 
@@ -440,38 +439,24 @@ namespace Elastos {
 					continue;
 				}
 
-				if (allTxs[i]->GetTransactionType() == Transaction::RegisterProducer) {
-					const PayloadRegisterProducer *pr = dynamic_cast<const PayloadRegisterProducer *>(allTxs[i]->GetPayload());
-					if (pr) {
+				if (allTxs[i]->GetTransactionType() == Transaction::registerProducer ||
+					allTxs[i]->GetTransactionType() == Transaction::updateProducer) {
+					const ProducerInfo *pinfo = dynamic_cast<const ProducerInfo *>(allTxs[i]->GetPayload());
+					if (pinfo) {
 						nlohmann::json info;
 
-						info["OwnerPublicKey"] = pr->GetPublicKey().getHex();
-						info["NodePublicKey"] = pr->GetNodePublicKey().getHex();
-						info["NickName"] = pr->GetNickName();
-						info["URL"] = pr->GetUrl();
-						info["Location"] = pr->GetLocation();
-						info["Address"] = pr->GetAddress();
+						info["OwnerPublicKey"] = pinfo->GetPublicKey().getHex();
+						info["NodePublicKey"] = pinfo->GetNodePublicKey().getHex();
+						info["NickName"] = pinfo->GetNickName();
+						info["URL"] = pinfo->GetUrl();
+						info["Location"] = pinfo->GetLocation();
+						info["Address"] = pinfo->GetAddress();
 
 						j["Status"] = "Registered";
 						j["Info"] = info;
 					}
-				} else if (allTxs[i]->GetTransactionType() == Transaction::UpdateProducer) {
-					const PayloadUpdateProducer *pu = dynamic_cast<const PayloadUpdateProducer *>(allTxs[i]->GetPayload());
-					if (pu) {
-						nlohmann::json info;
-
-						info["OwnerPublicKey"] = pu->GetPublicKey().getHex();
-						info["NodePublicKey"] = pu->GetNodePublicKey().getHex();
-						info["NickName"] = pu->GetNickName();
-						info["URL"] = pu->GetUrl();
-						info["Location"] = pu->GetLocation();
-						info["Address"] = pu->GetAddress();
-
-						j["Status"] = "Registered";
-						j["Info"] = info;
-					}
-				} else if (allTxs[i]->GetTransactionType() == Transaction::CancelProducer) {
-					const PayloadCancelProducer *pc = dynamic_cast<const PayloadCancelProducer *>(allTxs[i]->GetPayload());
+				} else if (allTxs[i]->GetTransactionType() == Transaction::cancelProducer) {
+					const CancelProducer *pc = dynamic_cast<const CancelProducer *>(allTxs[i]->GetPayload());
 					if (pc) {
 						uint32_t lastBlockHeight = _walletManager->getPeerManager()->GetLastBlockHeight();
 
@@ -482,7 +467,7 @@ namespace Elastos {
 						j["Status"] = "Canceled";
 						j["Info"] = info;
 					}
-				} else if (allTxs[i]->GetTransactionType() == Transaction::ReturnDepositCoin) {
+				} else if (allTxs[i]->GetTransactionType() == Transaction::returnDepositCoin) {
 					j["Status"] = "ReturnDeposit";
 					j["Info"] = nlohmann::json();
 				}

@@ -6,7 +6,7 @@
 #include "MasterWallet.h"
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/WalletCore/KeyStore/CoinInfo.h>
-#include <SDK/Plugin/Transaction/Payload/PayloadRegisterAsset.h>
+#include <SDK/Plugin/Transaction/Payload/RegisterAsset.h>
 
 #include <vector>
 #include <map>
@@ -52,7 +52,7 @@ namespace Elastos {
 			ErrorChecker::CheckParam(precision > Asset::MaxPrecision, Error::InvalidArgument, "precision too large");
 
 			AssetPtr asset(new Asset(name, description, precision));
-			PayloadPtr payload = PayloadPtr(new PayloadRegisterAsset(asset, assetAmount.getWord(), address.ProgramHash()));
+			PayloadPtr payload = PayloadPtr(new RegisterAsset(asset, assetAmount.getWord(), address.ProgramHash()));
 
 			std::vector<TransactionOutput> outputs;
 			Address receiveAddr(CreateAddress());
@@ -60,7 +60,7 @@ namespace Elastos {
 
 			TransactionPtr tx = CreateTx("", outputs, memo);
 
-			tx->SetTransactionType(Transaction::RegisterAsset, payload);
+			tx->SetTransactionType(Transaction::registerAsset, payload);
 
 			assetAmount *= BigInt(TOKEN_ASSET_PRECISION, 10);
 			tx->AddOutput(TransactionOutput(assetAmount, address.ProgramHash(), asset->GetHash()));

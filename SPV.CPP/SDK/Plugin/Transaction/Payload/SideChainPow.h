@@ -11,16 +11,16 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class PayloadSideMining :
+		class SideChainPow :
 				public IPayload {
 		public:
-			PayloadSideMining();
+			SideChainPow();
 
-			PayloadSideMining(const PayloadSideMining &payload);
+			SideChainPow(const SideChainPow &payload);
 
-			PayloadSideMining(const uint256 &sideBlockHash, const uint256 &sideGensisHash, uint32_t height, const bytes_t &signedData);
+			SideChainPow(const uint256 &sideBlockHash, const uint256 &sideGensisHash, uint32_t height, const bytes_t &signedData);
 
-			~PayloadSideMining();
+			~SideChainPow();
 
             void SetSideBlockHash(const uint256 &sideBlockHash);
 
@@ -51,7 +51,7 @@ namespace Elastos {
 
 			virtual IPayload &operator=(const IPayload &payload);
 
-			PayloadSideMining &operator=(const PayloadSideMining &payload);
+			SideChainPow &operator=(const SideChainPow &payload);
 
 		private:
 			uint256 _sideBlockHash;

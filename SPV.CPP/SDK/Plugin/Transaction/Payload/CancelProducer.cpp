@@ -2,46 +2,46 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "PayloadCancelProducer.h"
+#include "CancelProducer.h"
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		PayloadCancelProducer::PayloadCancelProducer() {
+		CancelProducer::CancelProducer() {
 
 		}
 
-		PayloadCancelProducer::PayloadCancelProducer(const PayloadCancelProducer &payload) {
+		CancelProducer::CancelProducer(const CancelProducer &payload) {
 			operator=(payload);
 		}
 
-		PayloadCancelProducer::~PayloadCancelProducer() {
+		CancelProducer::~CancelProducer() {
 
 		}
 
-		const bytes_t &PayloadCancelProducer::GetPublicKey() const {
+		const bytes_t &CancelProducer::GetPublicKey() const {
 			return _publicKey;
 		}
 
-		void PayloadCancelProducer::SetPublicKey(const bytes_t &key) {
+		void CancelProducer::SetPublicKey(const bytes_t &key) {
 			_publicKey = key;
 		}
 
-		void PayloadCancelProducer::SetSignature(const bytes_t &signature) {
+		void CancelProducer::SetSignature(const bytes_t &signature) {
 			_signature = signature;
 		}
 
-		void PayloadCancelProducer::SerializeUnsigned(ByteStream &ostream, uint8_t version) const {
+		void CancelProducer::SerializeUnsigned(ByteStream &ostream, uint8_t version) const {
 			ostream.WriteVarBytes(_publicKey);
 		}
 
-		bool PayloadCancelProducer::DeserializeUnsigned(const ByteStream &istream, uint8_t version) {
+		bool CancelProducer::DeserializeUnsigned(const ByteStream &istream, uint8_t version) {
 			return istream.ReadVarBytes(_publicKey);
 		}
 
-		size_t PayloadCancelProducer::EstimateSize(uint8_t version) const {
+		size_t CancelProducer::EstimateSize(uint8_t version) const {
 			size_t size = 0;
 			ByteStream stream;
 
@@ -53,12 +53,12 @@ namespace Elastos {
 			return size;
 		}
 
-		void PayloadCancelProducer::Serialize(ByteStream &ostream, uint8_t version) const {
+		void CancelProducer::Serialize(ByteStream &ostream, uint8_t version) const {
 			SerializeUnsigned(ostream, version);
 			ostream.WriteVarBytes(_signature);
 		}
 
-		bool PayloadCancelProducer::Deserialize(const ByteStream &istream, uint8_t version) {
+		bool CancelProducer::Deserialize(const ByteStream &istream, uint8_t version) {
 			if (!DeserializeUnsigned(istream, version)) {
 				Log::error("Deserialize: cancel producer payload read unsigned");
 				return false;
@@ -72,30 +72,30 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadCancelProducer::ToJson(uint8_t version) const {
+		nlohmann::json CancelProducer::ToJson(uint8_t version) const {
 			nlohmann::json j;
 			j["PublicKey"] = _publicKey.getHex();
 			j["Signature"] = _signature.getHex();
 			return j;
 		}
 
-		void PayloadCancelProducer::FromJson(const nlohmann::json &j, uint8_t version) {
+		void CancelProducer::FromJson(const nlohmann::json &j, uint8_t version) {
 			_publicKey.setHex(j["PublicKey"].get<std::string>());
 			_signature.setHex(j["Signature"].get<std::string>());
 		}
 
-		IPayload &PayloadCancelProducer::operator=(const IPayload &payload) {
+		IPayload &CancelProducer::operator=(const IPayload &payload) {
 			try {
-				const PayloadCancelProducer &payloadCancelProducer = dynamic_cast<const PayloadCancelProducer &>(payload);
+				const CancelProducer &payloadCancelProducer = dynamic_cast<const CancelProducer &>(payload);
 				operator=(payloadCancelProducer);
 			} catch (const std::bad_cast &e) {
-				Log::error("payload is not instance of PayloadCancelProducer");
+				Log::error("payload is not instance of CancelProducer");
 			}
 
 			return *this;
 		}
 
-		PayloadCancelProducer &PayloadCancelProducer::operator=(const PayloadCancelProducer &payload) {
+		CancelProducer &CancelProducer::operator=(const CancelProducer &payload) {
 			_publicKey = payload._publicKey;
 			_signature = payload._signature;
 			return *this;

@@ -2,25 +2,25 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef __ELASTOS_SDK_PAYLOADWITHDRAWASSET_H
-#define __ELASTOS_SDK_PAYLOADWITHDRAWASSET_H
+#ifndef __ELASTOS_SDK_WITHDRAWFROMSIDECHAIN_H
+#define __ELASTOS_SDK_WITHDRAWFROMSIDECHAIN_H
 
 #include "IPayload.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class PayloadWithDrawAsset :
+		class WithdrawFromSideChain :
 				public IPayload {
 		public:
-			PayloadWithDrawAsset();
+			WithdrawFromSideChain();
 
-			PayloadWithDrawAsset(const PayloadWithDrawAsset &payload);
+			WithdrawFromSideChain(const WithdrawFromSideChain &payload);
 
-			PayloadWithDrawAsset(uint32_t blockHeight, const std::string &genesisBlockAddress,
+			WithdrawFromSideChain(uint32_t blockHeight, const std::string &genesisBlockAddress,
 								 const std::vector<uint256> &sideChainTransactionHash);
 
-			~PayloadWithDrawAsset();
+			~WithdrawFromSideChain();
 
 			void SetBlockHeight(uint32_t blockHeight);
 
@@ -46,7 +46,7 @@ namespace Elastos {
 
 			virtual IPayload &operator=(const IPayload &payload);
 
-			PayloadWithDrawAsset &operator=(const PayloadWithDrawAsset &payload);
+			WithdrawFromSideChain &operator=(const WithdrawFromSideChain &payload);
 
 		private:
 			uint32_t _blockHeight;

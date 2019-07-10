@@ -2,31 +2,22 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef __ELASTOS_SDK_PAYLOADRECORD_H
-#define __ELASTOS_SDK_PAYLOADRECORD_H
+#ifndef __ELASTOS_SDK_PAYLOADTRANSFERASSET_H
+#define __ELASTOS_SDK_PAYLOADTRANSFERASSET_H
 
 #include "IPayload.h"
 
 namespace Elastos {
 	namespace ElaWallet {
-		class PayloadRecord :
+
+		class TransferAsset :
 				public IPayload {
 		public:
-			PayloadRecord();
+			TransferAsset();
 
-			PayloadRecord(const std::string &recordType, const bytes_t &recordData);
+			TransferAsset(const TransferAsset &payload);
 
-			PayloadRecord(const PayloadRecord &payload);
-
-			~PayloadRecord();
-
-			void SetRecordType(const std::string &recordType);
-
-			void SetRecordData(const bytes_t &recordData);
-
-			std::string GetRecordType() const;
-
-			bytes_t GetRecordData() const;
+			~TransferAsset();
 
 			virtual size_t EstimateSize(uint8_t version) const;
 
@@ -40,13 +31,10 @@ namespace Elastos {
 
 			virtual IPayload &operator=(const IPayload &payload);
 
-			PayloadRecord &operator=(const PayloadRecord &payload);
+			TransferAsset &operator=(const TransferAsset &payload);
 
-		private:
-			std::string _recordType;
-			bytes_t _recordData;
 		};
 	}
 }
 
-#endif //__ELASTOS_SDK_PAYLOADRECORD_H
+#endif //__ELASTOS_SDK_PAYLOADTRANSFERASSET_H

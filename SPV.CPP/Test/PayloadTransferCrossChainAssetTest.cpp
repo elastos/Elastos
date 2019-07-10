@@ -6,12 +6,12 @@
 
 #include "catch.hpp"
 #include "TestHelper.h"
-#include <SDK/Plugin/Transaction/Payload/PayloadTransferCrossChainAsset.h>
+#include <SDK/Plugin/Transaction/Payload/TransferCrossChainAsset.h>
 #include <SDK/Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 
-static void verifyPayload(const PayloadTransferCrossChainAsset &p1, const PayloadTransferCrossChainAsset &p2) {
+static void verifyPayload(const TransferCrossChainAsset &p1, const TransferCrossChainAsset &p2) {
 	const std::vector<std::string> &addresses1 = p1.GetCrossChainAddress();
 	const std::vector<std::string> &addresses2 = p2.GetCrossChainAddress();
 	REQUIRE(addresses1.size() == addresses2.size());
@@ -34,11 +34,11 @@ static void verifyPayload(const PayloadTransferCrossChainAsset &p1, const Payloa
 	}
 }
 
-TEST_CASE("PayloadTransferCrossChainAsset Test", "[PayloadTransferCrossChainAsset]") {
+TEST_CASE("TransferCrossChainAsset Test", "[TransferCrossChainAsset]") {
 	Log::registerMultiLogger();
 
 	SECTION("Default construct test") {
-		PayloadTransferCrossChainAsset p1, p2;
+		TransferCrossChainAsset p1, p2;
 
 		ByteStream stream1, stream2;
 		p1.Serialize(stream1, 0);
@@ -53,7 +53,7 @@ TEST_CASE("PayloadTransferCrossChainAsset Test", "[PayloadTransferCrossChainAsse
 	}
 
 	SECTION("Serialize and deserialize test") {
-		PayloadTransferCrossChainAsset p1, p2;
+		TransferCrossChainAsset p1, p2;
 
 		std::vector<std::string> crossChainAddress;
 		std::vector<uint64_t> crossChainIndex;
@@ -78,7 +78,7 @@ TEST_CASE("PayloadTransferCrossChainAsset Test", "[PayloadTransferCrossChainAsse
 	}
 
 	SECTION("to json and from json") {
-		PayloadTransferCrossChainAsset p1, p2;
+		TransferCrossChainAsset p1, p2;
 
 		std::vector<std::string> crossChainAddress;
 		std::vector<uint64_t> crossChainIndex;

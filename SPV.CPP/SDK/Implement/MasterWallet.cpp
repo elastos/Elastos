@@ -9,7 +9,7 @@
 #include "MasterWallet.h"
 #include "TokenchainSubWallet.h"
 
-#include <SDK/Plugin/Transaction/Payload/PayloadRegisterIdentification.h>
+#include <SDK/Plugin/Transaction/Payload/RegisterIdentification.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ErrorChecker.h>
@@ -529,7 +529,7 @@ namespace Elastos {
 			ArgInfo("msg: {}", message);
 			ArgInfo("passwd: {}", "*");
 
-			PayloadRegisterIdentification payload;
+			RegisterIdentification payload;
 			nlohmann::json payLoadJson = nlohmann::json::parse(message);
 			payload.FromJson(payLoadJson, 0);
 

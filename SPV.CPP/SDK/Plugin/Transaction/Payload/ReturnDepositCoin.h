@@ -2,27 +2,21 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef __ELASTOS_SDK_PAYLOADCOINBASE_H
-#define __ELASTOS_SDK_PAYLOADCOINBASE_H
+#ifndef __ELASTOS_SDK_PAYLOADRETURNDEPOSITCOIN_H__
+#define __ELASTOS_SDK_PAYLOADRETURNDEPOSITCOIN_H__
 
 #include "IPayload.h"
 
 namespace Elastos {
 	namespace ElaWallet {
-		class PayloadCoinBase :
-				public IPayload {
+
+		class ReturnDepositCoin : public IPayload {
 		public:
-			PayloadCoinBase();
+			ReturnDepositCoin();
 
-			PayloadCoinBase(const bytes_t &coinBaseData);
+			ReturnDepositCoin(const ReturnDepositCoin &payload);
 
-			PayloadCoinBase(const PayloadCoinBase &payload);
-
-			~PayloadCoinBase();
-
-			void SetCoinBaseData(const bytes_t &coinBaseData);
-
-			const bytes_t &GetCoinBaseData() const;
+			~ReturnDepositCoin();
 
 			virtual size_t EstimateSize(uint8_t version) const;
 
@@ -36,12 +30,10 @@ namespace Elastos {
 
 			virtual IPayload &operator=(const IPayload &payload);
 
-			PayloadCoinBase &operator=(const PayloadCoinBase &payload);
-
-		private:
-			bytes_t _coinBaseData;
+			ReturnDepositCoin &operator=(const ReturnDepositCoin &payload);
 		};
+
 	}
 }
 
-#endif //__ELASTOS_SDK_PAYLOADCOINBASE_H
+#endif // __ELASTOS_SDK_PAYLOADRETURNDEPOSITCOIN_H__

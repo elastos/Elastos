@@ -7,7 +7,7 @@
 #include "catch.hpp"
 #include "TestHelper.h"
 #include <SDK/Plugin/Transaction/Asset.h>
-#include <SDK/Plugin/Transaction/Payload/PayloadRegisterAsset.h>
+#include <SDK/Plugin/Transaction/Payload/RegisterAsset.h>
 #include <SDK/Common/Log.h>
 
 using namespace Elastos::ElaWallet;
@@ -22,11 +22,11 @@ static void initAsset(AssetPtr &asset) {
 	asset->GetHash();
 }
 
-TEST_CASE("PayloadRegisterAsset test", "[PayloadRegisterAsset]") {
+TEST_CASE("RegisterAsset test", "[RegisterAsset]") {
 	Log::registerMultiLogger();
 
 	SECTION("serialize and deserialize") {
-		PayloadRegisterAsset p1, p2;
+		RegisterAsset p1, p2;
 
 		AssetPtr asset(new Asset());
 		initAsset(asset);
@@ -54,7 +54,7 @@ TEST_CASE("PayloadRegisterAsset test", "[PayloadRegisterAsset]") {
 	}
 
 	SECTION("toJson fromJson test") {
-		PayloadRegisterAsset p1, p2;
+		RegisterAsset p1, p2;
 
 		AssetPtr asset(new Asset());
 		initAsset(asset);

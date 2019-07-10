@@ -7,20 +7,20 @@
 #include "catch.hpp"
 #include "TestHelper.h"
 
-#include <SDK/Plugin/Transaction/Payload/PayloadRechargeToSideChain.h>
+#include <SDK/Plugin/Transaction/Payload/RechargeToSideChain.h>
 #include <SDK/Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 
-TEST_CASE("PayloadRechargeToSideChain test", "[PayloadRechargeToSideChain]") {
+TEST_CASE("RechargeToSideChain test", "[RechargeToSideChain]") {
 	Log::registerMultiLogger();
 	bytes_t merkleProof = getRandBytes(50);
 	bytes_t mainChainTx = getRandBytes(100);
 
-	PayloadRechargeToSideChain p1(merkleProof, mainChainTx);
+	RechargeToSideChain p1(merkleProof, mainChainTx);
 	ByteStream stream;
 	p1.Serialize(stream, 0);
-	PayloadRechargeToSideChain p2;
+	RechargeToSideChain p2;
 	REQUIRE(p2.Deserialize(stream, 0));
 
 	bytes_t data1 = p1.GetData(0);
