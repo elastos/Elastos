@@ -1631,6 +1631,261 @@ func (s *txValidatorTestSuite) TestCheckTransactionDepositUTXO() {
 	txn.TxType = types.ReturnDepositCoin
 	err = checkTransactionDepositUTXO(&txn, references)
 	s.EqualError(err, "the ReturnDepositCoin transaction can only use the deposit UTXO")
+
+	// Use the deposit UTXO in a ReturnDepositCoin transaction
+	references[input] = depositOutput
+	txn.TxType = types.ReturnCRDepositCoin
+	err = checkTransactionDepositUTXO(&txn, references)
+	s.NoError(err)
+
+	references[input] = normalOutput
+	txn.TxType = types.ReturnCRDepositCoin
+	err = checkTransactionDepositUTXO(&txn, references)
+	s.EqualError(err, "the ReturnDepositCoin transaction can only use the deposit UTXO")
+}
+
+func (s txValidatorTestSuite) TestCheckReturnDepositCoinTransaction() {
+	height := uint32(1)
+	_, pk, _ := crypto.GenerateKeyPair()
+	depositCont, _ := contract.CreateDepositContractByPubKey(pk)
+	publicKey, _ := pk.EncodePoint(true)
+	// register CR
+	s.Chain.state.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: height,
+		},
+		Transactions: []*types.Transaction{
+			{
+				TxType: types.RegisterProducer,
+				Payload: &payload.ProducerInfo{
+					OwnerPublicKey: publicKey,
+					NodePublicKey:  publicKey,
+					NickName:       randomString(),
+					Url:            randomString(),
+				},
+				Outputs: []*types.Output{
+					{
+						ProgramHash: *depositCont.ToProgramHash(),
+						Value:       common.Fixed64(5000),
+					},
+				},
+			},
+		},
+	}, nil)
+	height++
+	producer := s.Chain.state.GetProducer(publicKey)
+	s.True(producer.State() == state.Pending, "register producer failed")
+
+	for i := 0; i < 6; i++ {
+		s.Chain.state.ProcessBlock(&types.Block{
+			Header: types.Header{
+				Height: height,
+			},
+			Transactions: []*types.Transaction{},
+		}, nil)
+		height++
+	}
+	s.True(producer.State() == state.Active, "active producer failed")
+
+	// check a deposit coin transaction with wrong state.
+	references := make(map[*types.Input]*types.Output)
+	references[&types.Input{}] = &types.Output{
+		ProgramHash: *randomUint168(),
+		Value:       common.Fixed64(5000 * 100000000),
+	}
+
+	code1, _ := contract.CreateStandardRedeemScript(pk)
+	rdTx := &types.Transaction{
+		TxType:  types.ReturnCRDepositCoin,
+		Payload: &payload.ReturnDepositCoin{},
+		Programs: []*program.Program{
+			{Code: code1},
+		},
+		Outputs: []*types.Output{
+			{Value: 4999 * 100000000},
+		},
+	}
+	canceledHeight := uint32(8)
+	err := s.Chain.checkReturnDepositCoinTransaction(
+		rdTx, references, 2160+canceledHeight)
+	s.EqualError(err, "producer must be canceled before return deposit coin")
+
+	// cancel CR
+	s.Chain.state.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: height,
+		},
+		Transactions: []*types.Transaction{
+			{
+				TxType: types.CancelProducer,
+				Payload: &payload.ProcessProducer{
+					OwnerPublicKey: publicKey,
+				},
+			},
+		},
+	}, nil)
+	height++
+	s.True(producer.State() == state.Canceled, "cancel producer failed")
+
+	// check a deposit coin transaction with wrong code.
+	publicKey2 := "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9"
+	pubKeyBytes2, _ := common.HexStringToBytes(publicKey2)
+	pubkey2, _ := crypto.DecodePoint(pubKeyBytes2)
+	code2, _ := contract.CreateStandardRedeemScript(pubkey2)
+	rdTx.Programs[0].Code = code2
+	err = s.Chain.checkReturnDepositCoinTransaction(
+		rdTx, references, 2160+canceledHeight)
+	s.EqualError(err, "signer must be producer")
+
+	rdTx.Programs[0].Code = code1
+	err = s.Chain.checkReturnDepositCoinTransaction(
+		rdTx, references, 2159+canceledHeight)
+	s.EqualError(err, "return deposit does not meet the lockup limit")
+
+	rdTx.Outputs[0].Value = 5000 * 100000000
+	err = s.Chain.checkReturnDepositCoinTransaction(
+		rdTx, references, 2160+canceledHeight)
+	s.EqualError(err, "overspend deposit")
+
+	// check a correct deposit coin transaction.
+	rdTx.Outputs[0].Value = 4999 * 100000000
+	err = s.Chain.checkReturnDepositCoinTransaction(
+		rdTx, references, 2160+canceledHeight)
+	s.NoError(err)
+}
+
+func (s txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
+	height := uint32(1)
+	_, pk, _ := crypto.GenerateKeyPair()
+	cont, _ := contract.CreateStandardContract(pk)
+	code := cont.Code
+	depositCont, _ := contract.CreateDepositContractByPubKey(pk)
+	ct, _ := contract.CreateCRDIDContractByCode(code)
+	did := ct.ToProgramHash()
+
+	// register CR
+	s.Chain.crCommittee.GetState().ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: height,
+		},
+		Transactions: []*types.Transaction{
+			{
+				TxType: types.RegisterCR,
+				Payload: &payload.CRInfo{
+					Code:     code,
+					DID:      *did,
+					NickName: randomString(),
+				},
+				Outputs: []*types.Output{
+					{
+						ProgramHash: *depositCont.ToProgramHash(),
+						Value:       common.Fixed64(5000),
+					},
+				},
+			},
+		},
+	}, nil)
+	height++
+	candidate := s.Chain.crCommittee.GetState().GetCandidate(code)
+	s.True(candidate.State() == crstate.Pending, "register CR failed")
+
+	for i := 0; i < 6; i++ {
+		s.Chain.crCommittee.GetState().ProcessBlock(&types.Block{
+			Header: types.Header{
+				Height: height,
+			},
+			Transactions: []*types.Transaction{},
+		}, nil)
+		height++
+	}
+	s.True(candidate.State() == crstate.Active, "active CR failed")
+
+	isInVotingPeriod := func(height uint32) bool {
+		return true
+	}
+	notInVotingPeriod := func(height uint32) bool {
+		return false
+	}
+
+	references := make(map[*types.Input]*types.Output)
+	references[&types.Input{}] = &types.Output{
+		ProgramHash: *randomUint168(),
+		Value:       common.Fixed64(5000 * 100000000),
+	}
+	rdTx := &types.Transaction{
+		TxType:  types.ReturnCRDepositCoin,
+		Payload: &payload.ReturnDepositCoin{},
+		Programs: []*program.Program{
+			{Code: code},
+		},
+		Outputs: []*types.Output{
+			{Value: 4999 * 100000000},
+		},
+	}
+	canceledHeight := uint32(8)
+	err := s.Chain.checkReturnCRDepositCoinTransaction(
+		rdTx, references, 2160+canceledHeight, isInVotingPeriod)
+	s.EqualError(err, "candidate state is not canceled")
+
+	// unregister CR
+	s.Chain.crCommittee.GetState().ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: height,
+		},
+		Transactions: []*types.Transaction{
+			{
+				TxType: types.UnregisterCR,
+				Payload: &payload.UnregisterCR{
+					Code: code,
+				},
+			},
+		},
+	}, nil)
+	height++
+	s.True(candidate.State() == crstate.Canceled, "canceled CR failed")
+
+	// Check a deposit coin transaction with wrong code.
+	publicKey2 := "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9"
+	pubKeyBytes2, _ := common.HexStringToBytes(publicKey2)
+	pubkey2, _ := crypto.DecodePoint(pubKeyBytes2)
+	code2, _ := contract.CreateStandardRedeemScript(pubkey2)
+
+	// Check a deposit coin transaction with wrong code in voting period.
+	rdTx.Programs[0].Code = code2
+	err = s.Chain.checkReturnCRDepositCoinTransaction(
+		rdTx, references, 2160+canceledHeight, isInVotingPeriod)
+	s.EqualError(err, "signer must be CR candidate")
+
+	rdTx.Programs[0].Code = code
+	err = s.Chain.checkReturnCRDepositCoinTransaction(
+		rdTx, references, 2159+canceledHeight, isInVotingPeriod)
+	s.EqualError(err, "return CR deposit does not meet the lockup limit")
+
+	rdTx.Outputs[0].Value = 5000 * 100000000
+	err = s.Chain.checkReturnCRDepositCoinTransaction(
+		rdTx, references, 2160+canceledHeight, isInVotingPeriod)
+	s.EqualError(err, "candidate overspend deposit")
+
+	rdTx.Outputs[0].Value = 4999 * 100000000
+	err = s.Chain.checkReturnCRDepositCoinTransaction(
+		rdTx, references, 2160+canceledHeight, notInVotingPeriod)
+	s.NoError(err)
+
+	// return CR deposit coin.
+	s.Chain.crCommittee.GetState().ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: height,
+		},
+		Transactions: []*types.Transaction{
+			rdTx,
+		},
+	}, nil)
+	height++
+
+	err = s.Chain.checkReturnCRDepositCoinTransaction(
+		rdTx, references, 2160+canceledHeight, notInVotingPeriod)
+	s.EqualError(err, "candidate is returned before")
+
 }
 
 func (s *txValidatorTestSuite) TestCheckOutputPayload() {
@@ -2088,4 +2343,18 @@ func newCoinBaseTransaction(coinBasePayload *payload.CoinBase,
 		LockTime:   currentHeight,
 		Programs:   []*program.Program{},
 	}
+}
+
+func randomString() string {
+	a := make([]byte, 20)
+	rand.Read(a)
+	return common.BytesToHexString(a)
+}
+
+func randomUint168() *common.Uint168 {
+	randBytes := make([]byte, 21)
+	rand.Read(randBytes)
+	result, _ := common.Uint168FromBytes(randBytes)
+
+	return result
 }
