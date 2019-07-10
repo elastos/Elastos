@@ -437,6 +437,28 @@ export default class extends Base {
     return rs
   }
 
+  public async unfinishById(id): Promise<any> {
+    const db_cvote = this.getDBModel('CVote')
+    const cur = await db_cvote.findOne({ _id: id })
+    if (!cur) {
+      throw 'invalid proposal id'
+    }
+    if (!this.canManageProposal()) {
+      throw 'cvoteservice.unfinishById - not council'
+    }
+    if (_.includes([constant.CVOTE_STATUS.FINAL, constant.CVOTE_STATUS.INCOMPLETED], cur.status)) {
+      throw 'proposal already completed.'
+    }
+
+    const rs = await db_cvote.update({ _id: id }, {
+      $set: {
+        status: constant.CVOTE_STATUS.INCOMPLETED
+      }
+    })
+
+    return rs
+  }
+
   public async getById(id): Promise<any> {
     const db_cvote = this.getDBModel('CVote')
     const rs = await db_cvote.getDBInstance().findOne({ _id: id })
