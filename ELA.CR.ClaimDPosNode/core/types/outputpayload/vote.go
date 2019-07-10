@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package outputpayload
 
@@ -47,7 +47,7 @@ func (cv *CandidateVotes) Serialize(w io.Writer, version byte) error {
 	if err := common.WriteVarBytes(w, cv.Candidate); err != nil {
 		return err
 	}
-	if version == VoteProducerAndCRVersion {
+	if version >= VoteProducerAndCRVersion {
 		if err := cv.Votes.Serialize(w); err != nil {
 			return err
 		}
@@ -63,7 +63,7 @@ func (cv *CandidateVotes) Deserialize(r io.Reader, version byte) error {
 	}
 	cv.Candidate = candidate
 
-	if version == VoteProducerAndCRVersion {
+	if version >= VoteProducerAndCRVersion {
 		if err := cv.Votes.Deserialize(r); err != nil {
 			return err
 		}
@@ -195,7 +195,7 @@ func (o *VoteOutput) Validate() error {
 	if o == nil {
 		return errors.New("vote output payload is nil")
 	}
-	if o.Version != VoteProducerVersion && o.Version != VoteProducerAndCRVersion {
+	if o.Version > VoteProducerAndCRVersion {
 		return errors.New("invalid vote version")
 	}
 	typeMap := make(map[VoteType]struct{})
@@ -222,7 +222,7 @@ func (o *VoteOutput) Validate() error {
 			}
 			candidateMap[c] = struct{}{}
 
-			if o.Version == VoteProducerAndCRVersion && cv.Votes <= 0 {
+			if o.Version >= VoteProducerAndCRVersion && cv.Votes <= 0 {
 				return errors.New("invalid candidate votes")
 			}
 		}
