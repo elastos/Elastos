@@ -16,12 +16,13 @@ import Translation from '@/module/common/Translation/Container'
 import DraftEditor from '@/module/common/DraftEditor'
 import { createEditorState } from 'medium-draft'
 import mediumDraftExporter from 'medium-draft/lib/exporter'
+import { StickyContainer, Sticky } from 'react-sticky'
 import VoteResultComponent from '../common/vote_result/Component'
 import Preamble from './Preamble'
 import Tracking from '../tracking/Container'
 import Summary from '../summary/Container'
 
-import { Title, Label, ContentTitle, StyledAnchor, FixedHeader, Body } from './style'
+import { Title, Label, ContentTitle, StyledAnchor, FixedHeader, Body, SubTitleHeading } from './style'
 import './style.scss'
 
 const { TextArea } = Input
@@ -79,6 +80,7 @@ class C extends StandardPage {
       visibleOppose: false,
       visibleAbstain: false,
       editing: false,
+      smallSpace: false,
     }
 
     this.isLogin = this.props.isLogin
@@ -106,11 +108,7 @@ class C extends StandardPage {
     if (!data) {
       return <div className="center"><Spin /></div>
     }
-    const metaNode = this.renderMeta()
     const anchorNode = this.renderAnchor()
-    const titleNode = this.renderTitle()
-    const labelNode = this.renderLabelNode()
-    const subTitleNode = this.renderSubTitle()
     const contentNode = this.renderContent()
     const translationBtn = this.renderTranslationBtn()
     const notesNode = this.renderNotes()
@@ -123,13 +121,9 @@ class C extends StandardPage {
       <div>
         {anchorNode}
         <div className="p_CVoteDetail">
-          <FixedHeader>
-            <BackLink link="/proposals" style={{ left: -150 }} />
-            {metaNode}
-            {titleNode}
-            {labelNode}
-            {subTitleNode}
-          </FixedHeader>
+        <StickyContainer>
+          <BackLink link="/proposals" style={{ left: 27, position: 'fixed' }} />
+          {this.renderStickyHeader()}
           <Body>
             {contentNode}
             {translationBtn}
@@ -139,9 +133,49 @@ class C extends StandardPage {
             {trackingNode}
             {summaryNode}
           </Body>
+        </StickyContainer>
         </div>
         <Footer />
       </div>
+    )
+  }
+
+  renderStickyHeader() {
+    const metaNode = this.renderMeta()
+    const titleNode = this.renderTitle()
+    const labelNode = this.renderLabelNode()
+    const subTitleNode = this.renderSubTitle()
+    const { smallSpace } = this.state
+    return (
+      <Sticky>
+        {({
+          style,
+          isSticky,
+          wasSticky,
+        }) => {
+          if (!wasSticky && isSticky && !smallSpace) {
+            this.setState({ smallSpace: true })
+          }
+          if (wasSticky && !isSticky && smallSpace) {
+            this.setState({ smallSpace: false })
+          }
+          const finalStyle = style ? {
+            ...style,
+            top: _.get(style, 'top', 0) + 100,
+            zIndex: 10,
+          } : style
+          return (
+            <div style={finalStyle}>
+              <FixedHeader>
+                {metaNode}
+                {titleNode}
+                {labelNode}
+                {subTitleNode}
+              </FixedHeader>
+            </div>
+          )
+        }}
+      </Sticky>
     )
   }
 
@@ -214,7 +248,7 @@ class C extends StandardPage {
 
   renderTitle() {
     const { title } = this.state.data
-    return <Title>{title}</Title>
+    return <Title smallSpace={this.state.smallSpace}>{title}</Title>
   }
 
   renderSubTitle() {
@@ -236,10 +270,10 @@ class C extends StandardPage {
     }
 
     const result = (
-      <div className="subtitle-item">
+      <SubTitleHeading smallSpace={this.state.smallSpace}>
         <div className="text">{statusObj.text}</div>
         <div className="value">{statusObj.value}</div>
-      </div>
+      </SubTitleHeading>
     )
     return result
   }
