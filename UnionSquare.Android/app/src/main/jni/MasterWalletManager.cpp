@@ -488,8 +488,8 @@ static jstring JNICALL ExportReadonlyWallet(JNIEnv *env, jobject clazz, jlong in
     jstring result = NULL;
 
     try {
-        std::string str = manager->ExportReadonlyWallet(masterWallet);
-        result = env->NewStringUTF(str.c_str());
+        nlohmann::json str = manager->ExportReadonlyWallet(masterWallet);
+        result = env->NewStringUTF(str.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
         msgException = e.what();
