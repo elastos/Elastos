@@ -719,6 +719,8 @@ const en = {
   'council.voting.btnText.editNotes': 'Edit Notes',
   'council.voting.btnText.editProposal': 'Edit Proposal',
   'council.voting.btnText.completeProposal': 'Complete Proposal',
+  'council.voting.btnText.closeIncomplete': 'Close with Incompletion',
+  'council.voting.btnText.publish': 'Publish',
 
   'council.voting.modal.complete': 'Are you sure to complete this proposal?',
   'council.voting.modal.updateNotes': 'Notes from Secretary',

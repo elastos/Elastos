@@ -65,16 +65,6 @@ const getHTML = (data, key) => {
   return content
 }
 
-const SubTitle = ({ dataList }) => {
-  const result = _.map(dataList, (data, key) => (
-    <h4 className="subtitle-item" key={key}>
-      <div className="text">{data.text}</div>
-      <div className="value">{data.value}</div>
-    </h4>
-  ))
-  return <div className="subtitle-container">{result}</div>
-}
-
 class C extends StandardPage {
   constructor(props) {
     super(props)
@@ -227,40 +217,30 @@ class C extends StandardPage {
   }
 
   renderSubTitle() {
+    const status = this.renderStatus()
+    const btns = this.renderAdminActions()
+    return (
+      <div className="subtitle-container">
+        {status}
+        {btns}
+      </div>
+    )
+  }
+
+  renderStatus() {
     const { data } = this.state
     const statusObj = {
       text: I18N.get('from.CVoteForm.label.voteStatus'),
       value: I18N.get(`cvoteStatus.${data.status}`) || '',
     }
 
-    const publishObj = {
-      text: I18N.get('from.CVoteForm.label.publish'),
-      value: data.published ? I18N.get('.yes') : I18N.get('.no'),
-    }
-
-    const typeMap = {
-      1: I18N.get('council.voting.type.newMotion'),
-      2: I18N.get('council.voting.type.motionAgainst'),
-      3: I18N.get('council.voting.type.anythingElse'),
-    }
-
-    const typeObj = {
-      text: I18N.get('from.CVoteForm.label.type'),
-      value: typeMap[data.type],
-    }
-
-    const voteObj = {
-      text: I18N.get('council.voting.ifConflicted'),
-      value: data.isConflict === 'YES' ? I18N.get('.yes') : I18N.get('.no'),
-    }
-
-    const dataList = [
-      statusObj,
-      // publishObj,
-      // typeObj,
-      // voteObj,
-    ]
-    return <SubTitle dataList={dataList} />
+    const result = (
+      <div className="subtitle-item">
+        <div className="text">{statusObj.text}</div>
+        <div className="value">{statusObj.value}</div>
+      </div>
+    )
+    return result
   }
 
   renderLabelNode() {
@@ -389,7 +369,7 @@ class C extends StandardPage {
     const noteBtnText = notes ? I18N.get('council.voting.btnText.editNotes') : I18N.get('council.voting.btnText.notesSecretary')
     const addNoteBtn = isSecretary && (
       <Button
-        icon="profile"
+        // icon="profile"
         onClick={this.showUpdateNotesModal}
       >
         {noteBtnText}
@@ -397,7 +377,7 @@ class C extends StandardPage {
     )
     const editProposalBtn = isSelf && canEdit && (
       <Button
-        icon="edit"
+        // icon="edit"
         onClick={this.gotoEditPage}
       >
         {I18N.get('council.voting.btnText.editProposal')}
@@ -405,11 +385,19 @@ class C extends StandardPage {
     )
     const completeProposalBtn = isSecretary && canComplete && (
       <Button
-        icon="check-square"
-        type="primary"
+        // icon="check-square"
+        // type="primary"
         onClick={this.completeProposal}
       >
         {I18N.get('council.voting.btnText.completeProposal')}
+      </Button>
+    )
+    const publishProposalBtn = isSelf && canEdit && (
+      <Button
+        type="primary"
+        onClick={this.publish}
+      >
+        {I18N.get('council.voting.btnText.publish')}
       </Button>
     )
     return (
@@ -417,6 +405,7 @@ class C extends StandardPage {
         {addNoteBtn}
         {editProposalBtn}
         {completeProposalBtn}
+        {publishProposalBtn}
       </div>
     )
   }

@@ -33,16 +33,10 @@
     color: rgba(3, 30, 40, 0.4);
   }
   .subtitle-item {
-    &:not(:first-child) {
-      padding-left: 30px;
-    }
-    &:first-child .value {
+    margin-right: 30px;
+    .value {
       background: #1DE9B6;
       padding: 0 5px;
-    }
-    &:not(:last-child) {
-      border-right: 1px solid #E5E5E5;
-      padding-right: 30px;
     }
     .text {
       font-size: 11px;
@@ -51,12 +45,10 @@
   }
   .vote-btn-group {
     display: flex;
-    margin-top: 60px;
-    margin-bottom: 60px;
   }
   .ant-btn {
     border-radius: 0 !important;
-    margin-right: 30px;
+    margin-right: 15px;
     box-sizing: border-box;
     flex: 0 0 210px;
   }

@@ -718,6 +718,8 @@ const zh = {
   'council.voting.btnText.editNotes': '编辑备注',
   'council.voting.btnText.editProposal': '编辑此提案',
   'council.voting.btnText.completeProposal': '标记提案为完成',
+  'council.voting.btnText.closeIncomplete': '标记提案为未完成',
+  'council.voting.btnText.publish': '发布',
 
   'council.voting.modal.complete': '您确定要标记此提案为完成状态吗？',
   'council.voting.modal.updateNotes': '秘书处备注',
