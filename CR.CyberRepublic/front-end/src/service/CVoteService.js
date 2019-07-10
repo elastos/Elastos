@@ -8,6 +8,17 @@ export default class extends BaseService {
     this.prefixPath = '/api/cvote'
   }
 
+  async getData(param) {
+    const path = `${this.prefixPath}/get/${param.id}`
+
+    const rs = await api_request({
+      path,
+      method: 'get',
+      // data: param,
+    })
+    return rs
+  }
+
   async createDraft(param) {
     const path = `${this.prefixPath}/create_draft`
 
@@ -52,12 +63,34 @@ export default class extends BaseService {
     return rs
   }
 
+  async vote(param) {
+    const path = `${this.prefixPath}/vote`
+
+    const rs = await api_request({
+      path,
+      method: 'post',
+      data: param,
+    })
+    return rs
+  }
+
   async finishCVote(param) {
     const path = `${this.prefixPath}/finish`
 
     const rs = await api_request({
       path,
-      method: 'get',
+      method: 'post',
+      data: param,
+    })
+    return rs
+  }
+
+  async unfinishCVote(param) {
+    const path = `${this.prefixPath}/unfinish`
+
+    const rs = await api_request({
+      path,
+      method: 'post',
       data: param,
     })
     return rs
