@@ -723,6 +723,7 @@ const en = {
   'council.voting.btnText.publish': 'Publish',
 
   'council.voting.modal.complete': 'Are you sure to complete this proposal?',
+  'council.voting.modal.incomplete': 'Are you sure to close with incompletion?',
   'council.voting.modal.updateNotes': 'Notes from Secretary',
   'council.voting.modal.voteYes': 'Are you sure to Vote Yes?',
   'council.voting.modal.voteAbstain': 'Are you sure to Abstain?',
@@ -1534,6 +1535,7 @@ en[`cvoteStatus.${CVOTE_STATUS.PROPOSED}`] = 'PROPOSED'
 en[`cvoteStatus.${CVOTE_STATUS.ACTIVE}`] = 'PASSED'
 en[`cvoteStatus.${CVOTE_STATUS.REJECT}`] = 'REJECTED'
 en[`cvoteStatus.${CVOTE_STATUS.FINAL}`] = 'FINAL'
+en[`cvoteStatus.${CVOTE_STATUS.INCOMPLETED}`] = 'INCOMPLETED'
 en[`cvoteStatus.${CVOTE_STATUS.DEFERRED}`] = 'DEFERRED'
 
 export default en

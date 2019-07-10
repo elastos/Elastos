@@ -722,6 +722,7 @@ const zh = {
   'council.voting.btnText.publish': '发布',
 
   'council.voting.modal.complete': '您确定要标记此提案为完成状态吗？',
+  'council.voting.modal.incomplete': '您确定要标记此提案为未完成状态吗？',
   'council.voting.modal.updateNotes': '秘书处备注',
   'council.voting.modal.voteYes': '您确定要投赞成票吗？',
   'council.voting.modal.voteAbstain': '您确定要弃权吗？',
@@ -1533,6 +1534,7 @@ zh[`cvoteStatus.${CVOTE_STATUS.PROPOSED}`] = '投票中'
 zh[`cvoteStatus.${CVOTE_STATUS.ACTIVE}`] = '已通过'
 zh[`cvoteStatus.${CVOTE_STATUS.REJECT}`] = '已否决'
 zh[`cvoteStatus.${CVOTE_STATUS.FINAL}`] = '已完成'
+zh[`cvoteStatus.${CVOTE_STATUS.INCOMPLETED}`] = '未完成'
 zh[`cvoteStatus.${CVOTE_STATUS.DEFERRED}`] = '已过期'
 
 export default zh
