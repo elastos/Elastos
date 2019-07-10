@@ -22,7 +22,7 @@ import Preamble from './Preamble'
 import Tracking from '../tracking/Container'
 import Summary from '../summary/Container'
 
-import { Title, Label, ContentTitle, StyledAnchor, FixedHeader, Body, SubTitleHeading } from './style'
+import { Title, Label, ContentTitle, StyledAnchor, FixedHeader, Body, SubTitleHeading, SubTitleContainer } from './style'
 import './style.scss'
 
 const { TextArea } = Input
@@ -255,10 +255,10 @@ class C extends StandardPage {
     const status = this.renderStatus()
     const btns = this.renderAdminActions()
     return (
-      <div className="subtitle-container">
+      <SubTitleContainer>
         {status}
         {btns}
-      </div>
+      </SubTitleContainer>
     )
   }
 

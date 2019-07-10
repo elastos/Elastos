@@ -26,9 +26,14 @@ export const FixedHeader = styled.div`
   background: white;
 `
 
-export const SubTitleHeading = styled.h4`
-  padding: 0;
-  margin: 0;
+export const SubTitleContainer = styled.div`
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 24px;
+  `
+
+export const SubTitleHeading = styled.div`
+  margin-right: 30px;
   ${props => props.smallSpace && `
     font-size: 14px;
   `}
