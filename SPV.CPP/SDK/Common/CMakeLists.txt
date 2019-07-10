@@ -5,6 +5,7 @@ include_directories(
 	${ThirdParty_BOOST_INC_DIR}
 	${ThirdParty_JSON_INC_DIR}
 	${ThirdParty_SPDLOG_INC_DIR}
+	${CMAKE_CURRENT_BINARY_DIR}/../../
 )
 
 add_library(common STATIC ${COMMON_SOURCE_FILES})

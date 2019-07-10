@@ -7,35 +7,15 @@
 
 #include "typedefs.h"
 
-#include <string>
-#include <cassert>
-#include <random>
-#include <functional>
-#include <set>
-
 namespace Elastos {
 	namespace ElaWallet {
 
 		class Utils {
 		public:
 
-			static inline uint8_t getRandomByte() {
-				std::random_device rd;
-				std::mt19937_64 gen(rd());
-				std::uniform_int_distribution<> dis(0, 255);
-				auto dice = std::bind(dis, gen);
-				return dice();
-			}
+			static uint8_t getRandomByte();
 
-			static bytes_t GetRandom(size_t bytes) {
-				bytes_t out(bytes);
-
-				for (size_t i = 0; i < out.size(); i++) {
-					out[i] = Utils::getRandomByte();
-				}
-
-				return out;
-			}
+			static bytes_t GetRandom(size_t bytes);
 		};
 	}
 }
