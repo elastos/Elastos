@@ -39,7 +39,10 @@ public class Arith {
         BigDecimal b2 = new BigDecimal(v2);
         return b1.subtract(b2);
     }
-
+    public static BigDecimal sub(BigDecimal b1, String v2) {
+        BigDecimal b2 = new BigDecimal(v2);
+        return b1.subtract(b2);
+    }
     /**
      * 提供精确的乘法运算。
      *
