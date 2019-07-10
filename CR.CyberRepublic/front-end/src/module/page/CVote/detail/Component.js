@@ -192,9 +192,12 @@ class C extends StandardPage {
 
   renderAnchor() {
     const { data } = this.state
+    const { trackingStatus, summaryStatus } = this.props
     const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.FINAL], data.status)
-    const tracking = isShowFollowingUp && <Anchor.Link href="#tracking" title={I18N.get('proposal.fields.tracking')} />
-    const summary = isShowFollowingUp && <Anchor.Link href="#summary" title={I18N.get('proposal.fields.summary')} />
+    const trackingTitle = trackingStatus ? <span>{I18N.get('proposal.fields.tracking')} <span style={{ fontSize: 10, color: '#aaa' }}>({I18N.get(`proposal.status.trackingRaw.${trackingStatus}`)})</span></span> : I18N.get('proposal.fields.tracking')
+    const summaryTitle = summaryStatus ? <span>{I18N.get('proposal.fields.summary')} <span style={{ fontSize: 10, color: '#aaa' }}>({I18N.get(`proposal.status.summaryRaw.${summaryStatus}`)})</span></span> : I18N.get('proposal.fields.summary')
+    const tracking = isShowFollowingUp && <Anchor.Link href="#tracking" title={trackingTitle} />
+    const summary = isShowFollowingUp && <Anchor.Link href="#summary" title={summaryTitle} />
 
     return (
       <StyledAnchor offsetTop={420}>

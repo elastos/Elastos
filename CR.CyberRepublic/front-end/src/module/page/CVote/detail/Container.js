@@ -1,6 +1,6 @@
 import { createContainer, api_request } from '@/util'
 import Component from './Component'
-import I18N from '@/I18N'
+import _ from 'lodash'
 import { avatar_map } from '@/constant'
 
 export default createContainer(Component, state => ({
@@ -11,18 +11,8 @@ export default createContainer(Component, state => ({
   isCouncil: state.user.is_council,
   canManage: state.user.is_secretary || state.user.is_council,
   avatar_map,
-  static: {
-    select_type: [
-      { name: I18N.get('council.voting.type.newMotion'), code: 1 },
-      { name: I18N.get('council.voting.type.motionAgainst'), code: 2 },
-      { name: I18N.get('council.voting.type.anythingElse'), code: 3 },
-    ],
-    select_vote: [
-      { name: 'Support', value: 'support' },
-      { name: 'Reject', value: 'reject' },
-      { name: 'Abstention', value: 'abstention' },
-    ],
-  },
+  trackingStatus: _.get(_.last(state.cvoteTracking.all_public), 'status'),
+  summaryStatus: _.get(_.last(state.cvoteSummary.all_public), 'status'),
 }), () => ({
   async getData(id) {
     const d = await api_request({

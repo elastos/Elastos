@@ -60,6 +60,20 @@ export default {
       [CVOTE_SUMMARY_STATUS.PUBLISHED]: 'APPROVED ✓',
       [CVOTE_SUMMARY_STATUS.REJECT]: 'REJECTED !',
     },
+    trackingRaw: {
+      undefined: '',
+      [CVOTE_TRACKING_STATUS.DRAFT]: 'DRAFT',
+      [CVOTE_TRACKING_STATUS.REVIEWING]: 'BEING REVIEWED',
+      [CVOTE_TRACKING_STATUS.PUBLISHED]: 'APPROVED',
+      [CVOTE_TRACKING_STATUS.REJECT]: 'REJECTED',
+    },
+    summaryRaw: {
+      undefined: '',
+      [CVOTE_SUMMARY_STATUS.DRAFT]: 'DRAFT',
+      [CVOTE_SUMMARY_STATUS.REVIEWING]: 'BEING REVIEWED',
+      [CVOTE_SUMMARY_STATUS.PUBLISHED]: 'APPROVED',
+      [CVOTE_SUMMARY_STATUS.REJECT]: 'REJECTED',
+    },
   },
   form: {
     tracking: {

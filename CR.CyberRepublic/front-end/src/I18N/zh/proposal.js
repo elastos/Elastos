@@ -60,6 +60,20 @@ export default {
       [CVOTE_SUMMARY_STATUS.PUBLISHED]: '已批准 ✓',
       [CVOTE_SUMMARY_STATUS.REJECT]: '被驳回 !',
     },
+    trackingRaw: {
+      undefined: '',
+      [CVOTE_TRACKING_STATUS.DRAFT]: '草稿',
+      [CVOTE_TRACKING_STATUS.REVIEWING]: '审阅中',
+      [CVOTE_TRACKING_STATUS.PUBLISHED]: '已批准',
+      [CVOTE_TRACKING_STATUS.REJECT]: '被驳回',
+    },
+    summaryRaw: {
+      undefined: '',
+      [CVOTE_SUMMARY_STATUS.DRAFT]: '草稿',
+      [CVOTE_SUMMARY_STATUS.REVIEWING]: '审阅中',
+      [CVOTE_SUMMARY_STATUS.PUBLISHED]: '已批准',
+      [CVOTE_SUMMARY_STATUS.REJECT]: '被驳回',
+    },
   },
   form: {
     tracking: {
