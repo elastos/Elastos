@@ -49,6 +49,7 @@ type SubscribeOptions struct {
 	SampleInterval    uint64
 	HeartbeatInterval uint64
 	Paths             [][]string
+	Origin            string
 }
 
 // Dial connects to a gnmi service and returns a client
@@ -137,7 +138,7 @@ func NewContext(ctx context.Context, cfg *Config) context.Context {
 }
 
 // NewGetRequest returns a GetRequest for the given paths
-func NewGetRequest(paths [][]string) (*pb.GetRequest, error) {
+func NewGetRequest(paths [][]string, origin string) (*pb.GetRequest, error) {
 	req := &pb.GetRequest{
 		Path: make([]*pb.Path, len(paths)),
 	}
@@ -147,6 +148,7 @@ func NewGetRequest(paths [][]string) (*pb.GetRequest, error) {
 			return nil, err
 		}
 		req.Path[i] = gnmiPath
+		req.Path[i].Origin = origin
 	}
 	return req, nil
 }
@@ -159,6 +161,8 @@ func NewSubscribeRequest(subscribeOptions *SubscribeOptions) (*pb.SubscribeReque
 		mode = pb.SubscriptionList_ONCE
 	case "poll":
 		mode = pb.SubscriptionList_POLL
+	case "":
+		fallthrough
 	case "stream":
 		mode = pb.SubscriptionList_STREAM
 	default:
@@ -171,6 +175,8 @@ func NewSubscribeRequest(subscribeOptions *SubscribeOptions) (*pb.SubscribeReque
 		streamMode = pb.SubscriptionMode_ON_CHANGE
 	case "sample":
 		streamMode = pb.SubscriptionMode_SAMPLE
+	case "":
+		fallthrough
 	case "target_defined":
 		streamMode = pb.SubscriptionMode_TARGET_DEFINED
 	default:
@@ -192,6 +198,7 @@ func NewSubscribeRequest(subscribeOptions *SubscribeOptions) (*pb.SubscribeReque
 		if err != nil {
 			return nil, err
 		}
+		gnmiPath.Origin = subscribeOptions.Origin
 		subList.Subscription[i] = &pb.Subscription{
 			Path:              gnmiPath,
 			Mode:              streamMode,

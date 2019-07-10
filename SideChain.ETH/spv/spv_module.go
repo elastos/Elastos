@@ -114,8 +114,7 @@ func NewService(cfg *Config, s *node.Node) (*Service, error) {
 	case "regnet", "reg", "r":
 		chainParams = config.DefaultParams.RegNet()
 	default:
-
-		chainParams = config.DefaultParams.TestNet()
+		chainParams = &config.DefaultParams
 
 	}
 	spvCfg := spv.DPOSConfig{Config: spv.Config{

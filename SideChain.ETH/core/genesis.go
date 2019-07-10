@@ -301,26 +301,83 @@ func GenesisBlockForTesting(db ethdb.Database, addr common.Address, balance *big
 
 // DefaultGenesisBlock returns the Ethereum main net genesis block.
 func DefaultGenesisBlock() *Genesis {
-	return &Genesis{
+	genesis := &Genesis{
 		Config:     params.MainnetChainConfig,
 		Timestamp:  0x5bda9da6,
-		ExtraData:  hexutil.MustDecode("0x000000000000000000000000000000000000000000000000000000000000000060c892e607f994e7cb79010055ba9cdb6336560d840534b46b3b3bf8c1c3e4c7d34bc86933de78148bf2e42de44c50e2966a98ddc0e2a79ce0e949f5d9758863f280c25b0d1f2f81705e3725ccd5ac49fd7f1f6e2c5157a33dda2e91f58f32862f864d700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
 		GasLimit:   0x2068F7700,
 		Difficulty: big.NewInt(1),
 		Alloc:      nil,
 	}
+	extra := make([]byte, 0)
+	extra = append(extra, bytes.Repeat([]byte{0x00}, 32)...)
+	addres1 := hexutil.MustDecode("0xd7b0ddec94d96d4c7870deac1a2fe3347b9b4b85")
+	addres2 := hexutil.MustDecode("0x4dd0dd5e78c10842544cc1e88b5e1fcc3532abe1")
+	addres3 := hexutil.MustDecode("0xbb6ef39991b88e0121689a298d16b34dfca43156")
+	addres4 := hexutil.MustDecode("0x1d8b61c0300fa3b6167bd76ad82c90feab038af0")
+	addres5 := hexutil.MustDecode("0xf3ca004f36ee4d3510553564bdb81ab5f1a5d4ed")
+	addres6 := hexutil.MustDecode("0x412a0777ad9bed14c4d53a883f618eb86de1723d")
+	addres7 := hexutil.MustDecode("0xedabf5d5fb905ef2148dcf3fdc08d53f03d534a5")
+	addres8 := hexutil.MustDecode("0x143b49ff57efc134816017a5cd0b99058946781f")
+	addres9 := hexutil.MustDecode("0x8c60febab3495b66047aaaac8639a2d0bd911737")
+	addres10 := hexutil.MustDecode("0x473e7ea53fbf71e091703893dd9b6d5b96a83db1")
+	addres11 := hexutil.MustDecode("0xb8ae7e3346330073552e1b7c8403f4e107406ff7")
+	addres12 := hexutil.MustDecode("0xd168f2f37649f1a5cf1cbc173e02e2897ccd83b1")
+	extra = append(extra, addres1...)
+	extra = append(extra, addres2...)
+	extra = append(extra, addres3...)
+	extra = append(extra, addres4...)
+	extra = append(extra, addres5...)
+	extra = append(extra, addres6...)
+	extra = append(extra, addres7...)
+	extra = append(extra, addres8...)
+	extra = append(extra, addres9...)
+	extra = append(extra, addres10...)
+	extra = append(extra, addres11...)
+	extra = append(extra, addres12...)
+	extra = append(extra, bytes.Repeat([]byte{0x00}, 65)...)
+	genesis.ExtraData = extra
+	return genesis
 }
 
 // DefaultTestnetGenesisBlock returns the Ropsten network genesis block.
 func DefaultTestnetGenesisBlock() *Genesis {
-	return &Genesis{
+	genesis := &Genesis{
 		Config:     params.TestnetChainConfig,
 		Timestamp:  0x5bda9da7,
-		ExtraData:  hexutil.MustDecode("0x000000000000000000000000000000000000000000000000000000000000000060c892e607f994e7cb79010055ba9cdb6336560d840534b46b3b3bf8c1c3e4c7d34bc86933de78148bf2e42de44c50e2966a98ddc0e2a79ce0e949f5d9758863f280c25b0d1f2f81705e3725ccd5ac49fd7f1f6e2c5157a33dda2e91f58f32862f864d700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
 		GasLimit:   0x2068F7700,
 		Difficulty: big.NewInt(1),
 		Alloc:      nil,
 	}
+	extra := make([]byte, 0)
+	extra = append(extra, bytes.Repeat([]byte{0x00}, 32)...)
+	addres1 := hexutil.MustDecode("0xd7b0ddec94d96d4c7870deac1a2fe3347b9b4b85")
+	addres2 := hexutil.MustDecode("0x4dd0dd5e78c10842544cc1e88b5e1fcc3532abe1")
+	addres3 := hexutil.MustDecode("0xbb6ef39991b88e0121689a298d16b34dfca43156")
+	addres4 := hexutil.MustDecode("0x1d8b61c0300fa3b6167bd76ad82c90feab038af0")
+	addres5 := hexutil.MustDecode("0xf3ca004f36ee4d3510553564bdb81ab5f1a5d4ed")
+	addres6 := hexutil.MustDecode("0x412a0777ad9bed14c4d53a883f618eb86de1723d")
+	addres7 := hexutil.MustDecode("0xedabf5d5fb905ef2148dcf3fdc08d53f03d534a5")
+	addres8 := hexutil.MustDecode("0x143b49ff57efc134816017a5cd0b99058946781f")
+	addres9 := hexutil.MustDecode("0x8c60febab3495b66047aaaac8639a2d0bd911737")
+	addres10 := hexutil.MustDecode("0x473e7ea53fbf71e091703893dd9b6d5b96a83db1")
+	addres11 := hexutil.MustDecode("0xb8ae7e3346330073552e1b7c8403f4e107406ff7")
+	addres12 := hexutil.MustDecode("0xd168f2f37649f1a5cf1cbc173e02e2897ccd83b1")
+	extra = append(extra, addres1...)
+	extra = append(extra, addres2...)
+	extra = append(extra, addres3...)
+	extra = append(extra, addres4...)
+	extra = append(extra, addres5...)
+	extra = append(extra, addres6...)
+	extra = append(extra, addres7...)
+	extra = append(extra, addres8...)
+	extra = append(extra, addres9...)
+	extra = append(extra, addres10...)
+	extra = append(extra, addres11...)
+	extra = append(extra, addres12...)
+	extra = append(extra, bytes.Repeat([]byte{0x00}, 65)...)
+	genesis.ExtraData = extra
+	return genesis
+
 }
 
 // DefaultRinkebyGenesisBlock returns the Rinkeby network genesis block.

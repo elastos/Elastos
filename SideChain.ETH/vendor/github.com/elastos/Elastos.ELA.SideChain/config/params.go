@@ -19,8 +19,8 @@ type Params struct {
 	// DefaultPort defines the default peer-to-peer port for the network.
 	DefaultPort uint16
 
-	// SeedList defines a list of seed peers.
-	SeedList []string
+	// DNSSeeds defines a list of DNS seeds for the network to discover peers.
+	DNSSeeds []string
 
 	// The interface/port to listen for connections
 	// (default all interfaces port: 20608, testnet: 21608)
@@ -78,21 +78,7 @@ type Params struct {
 	// transaction.
 	MinCrossChainTxFee int64
 
-	// SpvParams defines the parameters used by side chain SPV module.
-	SpvParams SpvParams
-}
-
-type SpvParams struct {
-	// Magic defines the magic number of the main chain peer-to-peer network.
-	Magic uint32
-
-	// The foundation address of the genesis block, which is different between
-	// MainNet, TestNet, RegNet etc.
-	Foundation string
-
-	// The public seed peers addresses.
-	SeedList []string
-
-	// NodePort is the default port for public peers provide services.
-	DefaultPort uint16
+	// CheckPowHeaderHeight defines the height where stating check if pow is coming
+	// from main chain.
+	CheckPowHeaderHeight uint32
 }
