@@ -239,7 +239,6 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                             //原有的数据保留
                             newSubWallet.setProgress(oldSubWallet.getProgress());
                             newSubWallet.setSyncTime(oldSubWallet.getSyncTime());
-                            // assetsPresenter.registerWalletListener(currentBelongId, newSubWallet.getChainId(), this);
                             break First;
 
                         }
@@ -314,18 +313,18 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         try {
             String MasterWalletID = jsonObject.getString("MasterWalletID");
             long lastBlockTime = jsonObject.getLong("lastBlockTime");
-            String ChaiID = jsonObject.getString("ChaiID");
+            String ChainID = jsonObject.getString("ChainID");
             int currentBlockHeight = jsonObject.getInt("currentBlockHeight");
             int estimatedHeight = jsonObject.getInt("estimatedHeight");
             //同步进行中
             int progress = (int) (1.0f * currentBlockHeight / estimatedHeight * 100);
             List<org.elastos.wallet.ela.db.table.SubWallet> assetList = listMap.get(MasterWalletID);
             for (org.elastos.wallet.ela.db.table.SubWallet subWallet : assetList) {
-                if (ChaiID.equals(subWallet.getChainId())) {
+                if (ChainID.equals(subWallet.getChainId())) {
                     subWallet.setProgress(progress);
                     if (lastBlockTime != 0) {
-                        String curentTime = DateUtil.time(lastBlockTime);
-                        subWallet.setSyncTime(curentTime);
+                        // String curentTime = DateUtil.time(lastBlockTime);
+                        subWallet.setSyncTime(lastBlockTime + "");
                     }
                     subWallet.setProgress(progress);
                     if (wallet.getWalletId().equals(MasterWalletID)) {
@@ -352,11 +351,11 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
         try {
             String MasterWalletID = jsonObject.getString("MasterWalletID");
-            String ChaiID = jsonObject.getString("ChaiID");
+            String ChainID = jsonObject.getString("ChainID");
             long balance = jsonObject.getLong("Balance");
             List<org.elastos.wallet.ela.db.table.SubWallet> assetList = listMap.get(MasterWalletID);
             for (org.elastos.wallet.ela.db.table.SubWallet assetsItemEntity : assetList) {
-                if (ChaiID.equals(assetsItemEntity.getChainId())) {
+                if (ChainID.equals(assetsItemEntity.getChainId())) {
                     assetsItemEntity.setBalance(balance + "");
                     if (wallet.getWalletId().equals(MasterWalletID)) {
                         post(RxEnum.BALANCECHANGE.ordinal(), null, assetsItemEntity);
@@ -387,7 +386,28 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     }
 
     @Override
-    public void OnConnectStatusChanged(JSONObject jsonObject) {
+    public synchronized void OnConnectStatusChanged(JSONObject jsonObject) {
+        //"Connecting", "Connected", "Disconnected"
+        // jsonObject.put("status", status);
+        //            jsonObject.put("MasterWalletID", mMasterWalletID);
+        //            jsonObject.put("ChainID", mSubWalletID);
+        //            jsonObject.put("Action", "OnConnectStatusChanged");
+        try {
+            String MasterWalletID = jsonObject.getString("MasterWalletID");
+            String ChainID = jsonObject.getString("ChainID");
+            String status = jsonObject.getString("status");
+            List<org.elastos.wallet.ela.db.table.SubWallet> assetList = listMap.get(MasterWalletID);
+            for (org.elastos.wallet.ela.db.table.SubWallet subWallet : assetList) {
+                if (ChainID.equals(subWallet.getChainId())) {
+                    subWallet.setFiled1(status);
+                    if (wallet.getWalletId().equals(MasterWalletID)) {
+                        post(RxEnum.UPDATAPROGRESS.ordinal(), null, subWallet);
+                    }
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
     }
 

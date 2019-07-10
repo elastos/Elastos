@@ -57,7 +57,7 @@ public class SubWalletCallback {
             jsonObject.put("desc", desc);
             jsonObject.put("confirms", confirms);
             jsonObject.put("MasterWalletID", mMasterWalletID);
-            jsonObject.put("ChaiID", mSubWalletID);
+            jsonObject.put("ChainID", mSubWalletID);
             jsonObject.put("Action", "OnTransactionStatusChanged");
 
             mListener.OnTransactionStatusChanged(jsonObject);
@@ -74,7 +74,7 @@ public class SubWalletCallback {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("MasterWalletID", mMasterWalletID);
-            jsonObject.put("ChaiID", mSubWalletID);
+            jsonObject.put("ChainID", mSubWalletID);
             jsonObject.put("Action", "OnBlockSyncStarted");
 
             mListener.OnBlockSyncStarted(jsonObject);
@@ -99,7 +99,7 @@ public class SubWalletCallback {
             jsonObject.put("estimatedHeight", estimatedHeight);
             jsonObject.put("lastBlockTime", lastBlockTime);
             jsonObject.put("MasterWalletID", mMasterWalletID);
-            jsonObject.put("ChaiID", mSubWalletID);
+            jsonObject.put("ChainID", mSubWalletID);
             jsonObject.put("Action", "OnBlockHeightIncreased");
 
             mListener.OnBlockSyncProgress(jsonObject);
@@ -117,7 +117,7 @@ public class SubWalletCallback {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("MasterWalletID", mMasterWalletID);
-            jsonObject.put("ChaiID", mSubWalletID);
+            jsonObject.put("ChainID", mSubWalletID);
             jsonObject.put("Action", "OnBlockSyncStopped");
 
             mListener.OnBlockSyncStopped(jsonObject);
@@ -133,7 +133,7 @@ public class SubWalletCallback {
             jsonObject.put("Asset", assetID);
             jsonObject.put("Balance", balance);
             jsonObject.put("MasterWalletID", mMasterWalletID);
-            jsonObject.put("ChaiID", mSubWalletID);
+            jsonObject.put("ChainID", mSubWalletID);
             jsonObject.put("Action", "OnBalanceChanged");
 
             mListener.OnBalanceChanged(jsonObject);
@@ -149,7 +149,7 @@ public class SubWalletCallback {
             jsonObject.put("hash", hash);
             jsonObject.put("result", result);
             jsonObject.put("MasterWalletID", mMasterWalletID);
-            jsonObject.put("ChaiID", mSubWalletID);
+            jsonObject.put("ChainID", mSubWalletID);
             jsonObject.put("Action", "OnTxPublished");
 
             mListener.OnTxPublished(jsonObject);
@@ -165,11 +165,9 @@ public class SubWalletCallback {
             jsonObject.put("asset", asset);
             jsonObject.put("info", info);
             jsonObject.put("MasterWalletID", mMasterWalletID);
-            jsonObject.put("ChaiID", mSubWalletID);
+            jsonObject.put("ChainID", mSubWalletID);
             jsonObject.put("Action", "OnAssetRegistered");
-
-            //todo add this interface on listener
-           // mListener.OnAssetRegistered(jsonObject);
+            mListener.OnAssetRegistered(jsonObject);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -183,9 +181,7 @@ public class SubWalletCallback {
             jsonObject.put("MasterWalletID", mMasterWalletID);
             jsonObject.put("ChainID", mSubWalletID);
             jsonObject.put("Action", "OnConnectStatusChanged");
-
-            // todo add this interface on listener
-          //  mListener.OnConnectStatusChanged(jsonObject);
+            mListener.OnConnectStatusChanged(jsonObject);
         } catch (JSONException e) {
             e.printStackTrace();
         }

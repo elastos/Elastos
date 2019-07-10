@@ -38,8 +38,6 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
     private static final String OUTPORTMN = "outportmm";
     @BindView(R.id.tv_title)
     TextView tvTitle;
-    @BindView(R.id.tv_updatename)
-    TextView tv1;
     Unbinder unbinder;
     @BindView(R.id.tv_updatename)
     TextView tvUpdatename;
@@ -74,7 +72,7 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
         super.setExtraData(data);
         wallet = data.getParcelable("wallet");
         if (wallet != null)
-            tv1.setText(wallet.getWalletName());
+            tvUpdatename.setText(wallet.getWalletName());
     }
 
     @Override
@@ -186,7 +184,7 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
         int integer = result.getCode();
         if (integer == RxEnum.UPDATA_WALLET_NAME.ordinal()) {
             wallet.setWalletName(result.getName());
-            tv1.setText(result.getName());
+            tvUpdatename.setText(result.getName());
 
         }
     }

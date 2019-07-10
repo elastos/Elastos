@@ -7,6 +7,9 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -15,6 +18,7 @@ import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
 import org.elastos.wallet.ela.utils.Arith;
+import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 
 import java.util.List;
@@ -54,12 +58,33 @@ public class AssetskAdapter extends RecyclerView.Adapter<AssetskAdapter.ViewHold
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
         org.elastos.wallet.ela.db.table.SubWallet assetsItemEntity = data.get(i);
         viewHolder.tvName.setText(assetsItemEntity.getChainId());
-        viewHolder.tvTime.setText(context.getString(R.string.lastsynctime) + assetsItemEntity.getSyncTime());
-        viewHolder.sbSuger.setEnabled(false);
-        viewHolder.sbSuger.setProgress(assetsItemEntity.getProgress());
+        viewHolder.tvTime.setText(DateUtil.time(assetsItemEntity.getSyncTime()));
+
         viewHolder.tvProgress.setText(assetsItemEntity.getProgress() + "%");
-        // viewHolder.tvNum.setText(NumberiUtil.maxNumberFormat((Double.parseDouble(assetsItemEntity.getBalance()) / MyWallet.RATE) + "", 12));
         viewHolder.tvNum.setText(NumberiUtil.maxNumberFormat(Arith.div(assetsItemEntity.getBalance(), MyWallet.RATE_S), 12));
+        switch (assetsItemEntity.getFiled1()) {
+            case "Connecting":
+            case "Disconnected":
+                viewHolder.tvTime.setVisibility(View.GONE);
+                viewHolder.tvStatus.setText(context.getString(R.string.connecting));
+                viewHolder.tvProgress.setVisibility(View.GONE);
+                viewHolder.ivSync.setVisibility(View.GONE);
+                break;
+            case "Connected":
+                viewHolder.tvTime.setVisibility(View.VISIBLE);
+                viewHolder.tvStatus.setText(context.getString(R.string.syncprogress));
+                viewHolder.tvProgress.setVisibility(View.VISIBLE);
+                viewHolder.ivSync.setVisibility(View.VISIBLE);
+                Animation hyperspaceJumpAnimation = AnimationUtils.loadAnimation(
+                        context, R.anim.load_animation);
+                hyperspaceJumpAnimation.setInterpolator(new LinearInterpolator());//匀速插值器
+                viewHolder.ivSync.startAnimation(hyperspaceJumpAnimation);
+                if (assetsItemEntity.getProgress()==100){
+                    viewHolder.tvStatus.setText(context.getString(R.string.lastsynctime));
+                    viewHolder.ivSync.setVisibility(View.GONE);
+                }
+                break;
+        }
         if (commonRvListener != null) {
             viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -81,14 +106,16 @@ public class AssetskAdapter extends RecyclerView.Adapter<AssetskAdapter.ViewHold
         ImageView ivIcon;
         @BindView(R.id.tv_name)
         TextView tvName;
-        @BindView(R.id.tv_progress)
-        TextView tvProgress;
         @BindView(R.id.tv_num)
         TextView tvNum;
-        @BindView(R.id.sb_suger)
-        AppCompatSeekBar sbSuger;
+        @BindView(R.id.tv_status)
+        TextView tvStatus;
         @BindView(R.id.tv_time)
         TextView tvTime;
+        @BindView(R.id.iv_sync)
+        ImageView ivSync;
+        @BindView(R.id.tv_progress)
+        TextView tvProgress;
 
         ViewHolder(View view) {
             super(view);

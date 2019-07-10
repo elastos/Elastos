@@ -11,32 +11,39 @@ public class DateUtil {
         return df.format(day);
 
     }
-    public static String time(String sd) {
 
-        Date dat = new Date(Long.parseLong(sd)*1000L);
-        GregorianCalendar gc = new GregorianCalendar();
-        gc.setTime(dat);
-     SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String sb = format.format(gc.getTime());
-        return sb;
+    public static String time(String sd) {
+        try {
+            Date dat = new Date(Long.parseLong(sd) * 1000L);
+            GregorianCalendar gc = new GregorianCalendar();
+            gc.setTime(dat);
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            return format.format(gc.getTime());
+        } catch (NumberFormatException e) {
+            return sd;
+        }
+
     }
+
     public static String time(long sd) {
 
-        Date dat = new Date(sd*1000L);
-        GregorianCalendar gc = new GregorianCalendar();
-        gc.setTime(dat);
-   SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String sb = format.format(gc.getTime());
-        return sb;
-
-    }
-    public static String time1(long sd) {
-
-        Date dat = new Date(sd*1000L);
+        Date dat = new Date(sd * 1000L);
         GregorianCalendar gc = new GregorianCalendar();
         gc.setTime(dat);
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String sb = format.format(gc.getTime());
         return sb;
 
-    }}
+    }
+
+    public static String time1(long sd) {
+
+        Date dat = new Date(sd * 1000L);
+        GregorianCalendar gc = new GregorianCalendar();
+        gc.setTime(dat);
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String sb = format.format(gc.getTime());
+        return sb;
+
+    }
+}

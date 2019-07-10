@@ -26,7 +26,7 @@ public class SubWallet extends RealmObject implements Parcelable ,Serializable{
     private String balance;
     private String syncTime;
     private int progress;
-    private String filed1;//
+    private String filed1="Connecting";//连接状态  不会在数据库里取这个字段 所有只启用备用字段字段了
     private String filed2;//
     private String filed3;//
 
