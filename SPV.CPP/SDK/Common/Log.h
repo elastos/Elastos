@@ -41,7 +41,7 @@ namespace Elastos {
 				std::string filepath = SPV_FILE_NAME;
 				if (path != "") {
 					filepath = path + "/" + SPV_FILE_NAME;
-					auto file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(filepath, 1024*1024*1, 1);
+					auto file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(filepath, 1024*1024*2, 1);
 					file_sink->set_level(spdlog::level::info);
 					sinks.push_back(file_sink);
 				}

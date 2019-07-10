@@ -119,7 +119,12 @@ namespace Elastos {
 								   const std::string &dataPath,
 								   bool p2pEnable,
 								   MasterWalletInitFrom from) :
-			_id(id), _rootPath(rootPath), _p2pEnable(p2pEnable), _initFrom(from), _earliestPeerTime(0) {
+			_id(id),
+			_rootPath(rootPath),
+			_dataPath(dataPath),
+			_p2pEnable(p2pEnable),
+			_initFrom(from),
+			_earliestPeerTime(0) {
 
 			KeyStore keyStore;
 			keyStore.ImportReadonly(readonlyWalletJson);
