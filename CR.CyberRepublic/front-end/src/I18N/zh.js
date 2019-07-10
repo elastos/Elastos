@@ -1090,6 +1090,7 @@ const zh = {
   'from.CVoteForm.button.add': '添加提案',
   'from.CVoteForm.button.cancel': '取消',
   'from.CVoteForm.button.continue': '继续',
+  'from.CVoteForm.button.preview': '预览',
   'from.CVoteForm.button.saveDraft': '保存为草案',
   'from.CVoteForm.button.saveAndPublish': '保存 & 发布',
   'from.CVoteForm.button.saveChanges': '保存更改',

@@ -209,11 +209,14 @@ class C extends BaseComponent {
     }
     const { activeKeyNum } = this.state
     const activeKey = activeKeys[activeKeyNum]
-    const continueBtn = (activeKeyNum !== activeKeys.length - 1) && (
-      <Row gutter={8} type="flex" justify="center">
-        {this.renderContinueBtn()}
-      </Row>
-    )
+    let actionBtn
+    if (activeKeyNum === activeKeys.length - 1 && _.get(data, 'status') === CVOTE_STATUS.DRAFT) {
+      actionBtn = this.renderPreviewBtn()
+    }
+    if (activeKeyNum !== activeKeys.length - 1) {
+      actionBtn = this.renderContinueBtn()
+    }
+
     return (
       <Container>
         <Form onSubmit={this.publishCVote}>
@@ -270,7 +273,9 @@ class C extends BaseComponent {
             </TabPane>
           </Tabs>
 
-          {continueBtn}
+          <Row gutter={8} type="flex" justify="center">
+            {actionBtn}
+          </Row>
 
           <Row gutter={8} type="flex" justify="center">
             {this.renderCancelBtn()}
@@ -336,11 +341,26 @@ class C extends BaseComponent {
     this.props.history.push('/proposals')
   }
 
+  gotoDetail = () => {
+    const { data: { _id } } = this.props
+    this.props.history.push(`/proposals/${_id}`)
+  }
+
   renderContinueBtn() {
     return (
       <FormItem>
         <Button onClick={this.gotoNextTab} className="cr-btn cr-btn-black" style={{ marginBottom: 10 }}>
           {I18N.get('from.CVoteForm.button.continue')}
+        </Button>
+      </FormItem>
+    )
+  }
+
+  renderPreviewBtn() {
+    return (
+      <FormItem>
+        <Button onClick={this.gotoDetail} className="cr-btn cr-btn-black" style={{ marginBottom: 10 }}>
+          {I18N.get('from.CVoteForm.button.preview')}
         </Button>
       </FormItem>
     )
