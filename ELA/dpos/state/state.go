@@ -613,10 +613,7 @@ func (s *State) IsDPOSTransaction(tx *types.Transaction) bool {
 				if output.Type != types.OTVote {
 					continue
 				}
-				p, ok := output.Payload.(*outputpayload.VoteOutput)
-				if !ok {
-					continue
-				}
+				p, _ := output.Payload.(*outputpayload.VoteOutput)
 				if p.Version == outputpayload.VoteProducerVersion {
 					return true
 				} else {
@@ -862,11 +859,7 @@ func (s *State) processVotes(tx *types.Transaction, height uint32) {
 			if output.Type != types.OTVote {
 				continue
 			}
-
-			p, ok := output.Payload.(*outputpayload.VoteOutput)
-			if !ok {
-				continue
-			}
+			p, _ := output.Payload.(*outputpayload.VoteOutput)
 			if p.Version == outputpayload.VoteProducerVersion {
 				op := types.NewOutPoint(tx.Hash(), uint16(i))
 				s.Votes[op.ReferKey()] = output

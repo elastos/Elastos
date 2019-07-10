@@ -43,6 +43,10 @@ const (
 
 // CheckTransactionSanity verifies received single transaction
 func (b *BlockChain) CheckTransactionSanity(blockHeight uint32, txn *Transaction) ErrCode {
+	if err := b.checkTxHeightVersion(txn, blockHeight); err != nil {
+		return ErrTransactionHeightVersion
+	}
+
 	if err := checkTransactionSize(txn); err != nil {
 		log.Warn("[CheckTransactionSize],", err)
 		return ErrTransactionSize
@@ -76,11 +80,6 @@ func (b *BlockChain) CheckTransactionSanity(blockHeight uint32, txn *Transaction
 	if err := checkDuplicateSidechainTx(txn); err != nil {
 		log.Warn("[CheckDuplicateSidechainTx],", err)
 		return ErrSidechainTxDuplicate
-	}
-
-	// check items above for Coinbase transaction
-	if txn.IsCoinBaseTx() {
-		return Success
 	}
 
 	return Success
@@ -845,7 +844,7 @@ func checkTransactionPayload(txn *Transaction) error {
 	return nil
 }
 
-//validate the transaction of duplicate sidechain transaction
+// validate the transaction of duplicate sidechain transaction
 func checkDuplicateSidechainTx(txn *Transaction) error {
 	if txn.IsWithdrawFromSideChainTx() {
 		witPayload := txn.Payload.(*payload.WithdrawFromSideChain)
@@ -857,6 +856,35 @@ func checkDuplicateSidechainTx(txn *Transaction) error {
 			existingHashs[hash] = struct{}{}
 		}
 	}
+	return nil
+}
+
+// validate the type of transaction is allowed or not at current height.
+func (b *BlockChain) checkTxHeightVersion(txn *Transaction, blockHeight uint32) error {
+	switch txn.TxType {
+	case RegisterCR, UpdateCR, UnregisterCR, ReturnCRDepositCoin:
+		if blockHeight < b.chainParams.CRVotingStartHeight {
+			return errors.New("not support before CRVotingStartHeight")
+		}
+	case TransferAsset:
+		if blockHeight >= b.chainParams.CRVotingStartHeight {
+			return nil
+		}
+		if txn.Version >= TxVersion09 {
+			// Votes to producers.
+			for _, output := range txn.Outputs {
+				if output.Type != OTVote {
+					continue
+				}
+				p, _ := output.Payload.(*outputpayload.VoteOutput)
+				if p.Version >= outputpayload.VoteProducerAndCRVersion {
+					return errors.New("not support " +
+						"VoteProducerAndCRVersion before CRVotingStartHeight")
+				}
+			}
+		}
+	}
+
 	return nil
 }
 
