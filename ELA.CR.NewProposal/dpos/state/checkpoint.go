@@ -29,6 +29,7 @@ type StateKeyFrame struct {
 	IllegalProducers         map[string]*Producer
 	PendingCanceledProducers map[string]*Producer
 	Votes                    map[string]*types.Output
+	DepositOutputs           map[string]*types.Output
 	Nicknames                map[string]struct{}
 	SpecialTxHashes          map[common.Uint256]struct{}
 	PreBlockArbiters         map[string]struct{}
@@ -70,6 +71,7 @@ func (s *StateKeyFrame) snapshot() *StateKeyFrame {
 		IllegalProducers:         make(map[string]*Producer),
 		PendingCanceledProducers: make(map[string]*Producer),
 		Votes:                    make(map[string]*types.Output),
+		DepositOutputs:           make(map[string]*types.Output),
 		Nicknames:                make(map[string]struct{}),
 		SpecialTxHashes:          make(map[common.Uint256]struct{}),
 		PreBlockArbiters:         make(map[string]struct{}),
@@ -81,7 +83,8 @@ func (s *StateKeyFrame) snapshot() *StateKeyFrame {
 	state.CanceledProducers = copyProducerMap(s.CanceledProducers)
 	state.IllegalProducers = copyProducerMap(s.IllegalProducers)
 	state.PendingCanceledProducers = copyProducerMap(s.PendingCanceledProducers)
-	state.Votes = copyVotesMap(s.Votes)
+	state.Votes = copyOutputsMap(s.Votes)
+	state.DepositOutputs = copyOutputsMap(s.DepositOutputs)
 	state.Nicknames = utils.CopyStringSet(s.Nicknames)
 	state.SpecialTxHashes = copyHashSet(s.SpecialTxHashes)
 	state.PreBlockArbiters = utils.CopyStringSet(s.PreBlockArbiters)
@@ -123,6 +126,10 @@ func (s *StateKeyFrame) Serialize(w io.Writer) (err error) {
 		return
 	}
 
+	if err = s.SerializeVotesMap(s.DepositOutputs, w); err != nil {
+		return
+	}
+
 	if err = utils.SerializeStringSet(w, s.Nicknames); err != nil {
 		return
 	}
@@ -135,8 +142,7 @@ func (s *StateKeyFrame) Serialize(w io.Writer) (err error) {
 		return
 	}
 
-	if err = utils.SerializeStringSet(w, s.EmergencyInactiveArbiters);
-		err != nil {
+	if err = utils.SerializeStringSet(w, s.EmergencyInactiveArbiters); err != nil {
 		return
 	}
 
@@ -172,12 +178,15 @@ func (s *StateKeyFrame) Deserialize(r io.Reader) (err error) {
 		return
 	}
 
-	if s.PendingCanceledProducers, err = s.DeserializeProducerMap(r);
-		err != nil {
+	if s.PendingCanceledProducers, err = s.DeserializeProducerMap(r); err != nil {
 		return
 	}
 
 	if s.Votes, err = s.DeserializeVotesMap(r); err != nil {
+		return
+	}
+
+	if s.DepositOutputs, err = s.DeserializeVotesMap(r); err != nil {
 		return
 	}
 
@@ -193,8 +202,7 @@ func (s *StateKeyFrame) Deserialize(r io.Reader) (err error) {
 		return
 	}
 
-	if s.EmergencyInactiveArbiters, err = utils.DeserializeStringSet(r);
-		err != nil {
+	if s.EmergencyInactiveArbiters, err = utils.DeserializeStringSet(r); err != nil {
 		return
 	}
 
@@ -355,8 +363,7 @@ func (d *RewardData) Serialize(w io.Writer) error {
 		}
 	}
 
-	if err := common.WriteUint64(w, uint64(d.TotalVotesInRound));
-		err != nil {
+	if err := common.WriteUint64(w, uint64(d.TotalVotesInRound)); err != nil {
 		return err
 	}
 
@@ -548,7 +555,7 @@ func copyProducerMap(src map[string]*Producer) (dst map[string]*Producer) {
 	return
 }
 
-func copyVotesMap(src map[string]*types.Output) (dst map[string]*types.Output) {
+func copyOutputsMap(src map[string]*types.Output) (dst map[string]*types.Output) {
 	dst = map[string]*types.Output{}
 	for k, v := range src {
 		if v == nil {
