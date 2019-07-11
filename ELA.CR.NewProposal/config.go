@@ -208,6 +208,9 @@ func loadConfigParams(cfg *config.Configuration) (*config.Configuration, error) 
 	if cfg.CRConfiguration.VotingPeriod > 0 {
 		activeNetParams.CRVotingPeriod = cfg.CRConfiguration.VotingPeriod
 	}
+	if cfg.EnableUtxoDB {
+		activeNetParams.EnableUtxoDB = cfg.EnableUtxoDB
+	}
 
 	return cfg, nil
 }

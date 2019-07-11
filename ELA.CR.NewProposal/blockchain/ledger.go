@@ -15,9 +15,11 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/state"
 )
 
-var FoundationAddress Uint168
-
-var DefaultLedger *Ledger
+var (
+	EnableUtxoDB      bool
+	FoundationAddress Uint168
+	DefaultLedger     *Ledger
+)
 
 // Ledger - the struct for ledger
 type Ledger struct {

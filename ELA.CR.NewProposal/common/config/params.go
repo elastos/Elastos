@@ -170,6 +170,7 @@ var DefaultParams = Params{
 	CRMemberCount:            12,
 	CRVotingPeriod:           30 * 720,
 	CRDutyPeriod:             365 * 720,
+	EnableUtxoDB:             false,
 }
 
 // TestNet returns the network parameters for the test network.
@@ -412,6 +413,9 @@ type Params struct {
 
 	// CkpManager holds checkpoints save automatically.
 	CkpManager *checkpoint.Manager
+
+	// EnableUtxoDB indicate whether to enable utxo database.
+	EnableUtxoDB bool
 }
 
 // rewardPerBlock calculates the reward for each block by a specified time
