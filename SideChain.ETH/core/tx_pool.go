@@ -938,7 +938,7 @@ func RemoveLocalTx(pool *TxPool, hash common.Hash, outofbound bool, removetx boo
 	// Remove the transaction from the pending lists and reset the account nonce
 	if pending := pool.pending[addr]; pending != nil {
 		if removed, invalids := pending.Remove(tx); removed {
-			if !removed {
+			if !removetx {
 				UptxhashIndex(pool, tx)
 			}
 			// If no more pending transactions are left, remove the list
