@@ -136,11 +136,7 @@ export default class extends Base {
     const voteResult = []
     if (published) {
       doc.proposedAt = Date.now()
-      _.each(councilMembers, user => {
-        // use ObjectId.equals
-        const value = currentUserId.equals(user._id) ? constant.CVOTE_RESULT.SUPPORT : constant.CVOTE_RESULT.UNDECIDED
-        voteResult.push({ votedBy: user._id, value })
-      })
+      _.each(councilMembers, user => voteResult.push({ votedBy: user._id, value: constant.CVOTE_RESULT.UNDECIDED }))
       doc.voteResult = voteResult
       doc.voteHistory = voteResult
     }
@@ -389,12 +385,7 @@ export default class extends Base {
       doc.proposedAt = Date.now()
       const councilMembers = await db_user.find({ role: constant.USER_ROLE.COUNCIL })
       const voteResult = []
-      _.each(councilMembers, user => {
-        // use ObjectId.equals
-        const value = currentUserId.equals(user._id) ? constant.CVOTE_RESULT.SUPPORT : constant.CVOTE_RESULT.UNDECIDED
-        voteResult.push({ votedBy: user._id, value })
-        // send email
-      })
+      _.each(councilMembers, user => voteResult.push({ votedBy: user._id, value: constant.CVOTE_RESULT.UNDECIDED }))
       doc.voteResult = voteResult
       doc.voteHistory = voteResult
     }
