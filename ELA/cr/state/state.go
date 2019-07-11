@@ -119,7 +119,6 @@ func (s *State) IsCRTransaction(tx *types.Transaction) bool {
 	// Transactions will change the producer votes state.
 	case types.TransferAsset:
 		if tx.Version >= types.TxVersion09 {
-			// Votes to producers.
 			for _, output := range tx.Outputs {
 				if output.Type != types.OTVote {
 					continue
