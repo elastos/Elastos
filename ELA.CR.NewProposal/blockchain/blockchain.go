@@ -225,6 +225,9 @@ func CalculateTxsFee(block *Block) {
 func (b *BlockChain) GetState() *state.State {
 	return b.state
 }
+func (b *BlockChain) GetCRCommittee() *crstate.Committee {
+	return b.crCommittee
+}
 
 func (b *BlockChain) GetHeight() uint32 {
 	return b.db.GetHeight()
@@ -823,13 +826,11 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 
 		// roll back state about the last block before disconnect
 		if block.Height-1 >= b.chainParams.VoteStartHeight {
-			if err = DefaultLedger.Arbitrators.RollbackTo(block.Height - 1);
-				err != nil {
+			if err = DefaultLedger.Arbitrators.RollbackTo(block.Height - 1); err != nil {
 				return err
 			}
 
-			if err = DefaultLedger.Committee.RollbackTo(block.Height - 1);
-				err != nil {
+			if err = DefaultLedger.Committee.RollbackTo(block.Height - 1); err != nil {
 				return err
 			}
 		}
@@ -892,13 +893,11 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block, confirm *pay
 
 	// Rollback state memory DB
 	if block.Height-1 >= b.chainParams.VoteStartHeight {
-		if err = DefaultLedger.Arbitrators.RollbackTo(block.Height - 1);
-			err != nil {
+		if err = DefaultLedger.Arbitrators.RollbackTo(block.Height - 1); err != nil {
 			return err
 		}
 
-		if err = DefaultLedger.Committee.RollbackTo(block.Height - 1);
-			err != nil {
+		if err = DefaultLedger.Committee.RollbackTo(block.Height - 1); err != nil {
 			return err
 		}
 	}
@@ -1032,7 +1031,7 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 	}
 
 	if inMainChain && !reorganized && (block.Height >= b.chainParams.VoteStartHeight ||
-	// In case of VoteStartHeight larger than (CRCOnlyDPOSHeight-PreConnectOffset)
+		// In case of VoteStartHeight larger than (CRCOnlyDPOSHeight-PreConnectOffset)
 		block.Height == b.chainParams.CRCOnlyDPOSHeight-b.chainParams.
 			PreConnectOffset) {
 		DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
