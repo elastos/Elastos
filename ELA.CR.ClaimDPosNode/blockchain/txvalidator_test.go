@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"crypto/elliptic"
 	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"math"
 	mrand "math/rand"
@@ -1170,7 +1171,10 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	// Generate a register CR transaction
 	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
 	privateKeyStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
-	publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
+	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
+	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
+	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
+	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
 	nickName1 := "nickname 1"
 
 	hash1, _ := getDepositAddress(publicKeyStr1)
@@ -1200,31 +1204,29 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	nickName := txn.Payload.(*payload.CRInfo).NickName
 	txn.Payload.(*payload.CRInfo).NickName = ""
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	txn.Payload.(*payload.CRInfo).NickName = nickName
 	s.EqualError(err, "Field NickName has invalid string length.")
 
 	// Give an invalid NickName length more than 100 in payload
 	txn.Payload.(*payload.CRInfo).NickName = "012345678901234567890123456789012345678901234567890" +
 		"12345678901234567890123456789012345678901234567890123456789"
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	txn.Payload.(*payload.CRInfo).NickName = nickName
 	s.EqualError(err, "Field NickName has invalid string length.")
 
 	// Give an invalid url length 0 in payload
 	url := txn.Payload.(*payload.CRInfo).Url
 	txn.Payload.(*payload.CRInfo).Url = ""
+	txn.Payload.(*payload.CRInfo).NickName = nickName
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	txn.Payload.(*payload.CRInfo).Url = url
 	s.EqualError(err, "Field Url has invalid string length.")
 
 	// Give an invalid url length more than 100 in payload
 	txn.Payload.(*payload.CRInfo).Url = "012345678901234567890123456789012345678901234567890" +
 		"12345678901234567890123456789012345678901234567890123456789"
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	txn.Payload.(*payload.CRInfo).Url = url
 	s.EqualError(err, "Field Url has invalid string length.")
 
 	//not in vote Period lower
+	txn.Payload.(*payload.CRInfo).Url = url
 	err = s.Chain.checkRegisterCRTransaction(txn, config.DefaultParams.CRVotingStartHeight-1)
 	s.EqualError(err, "should create tx during voting period")
 
@@ -1258,22 +1260,21 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	// Give an invalid code in payload
 	txn.Payload.(*payload.CRInfo).Code = []byte{}
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	txn.Payload.(*payload.CRInfo).Code = code1
 	s.EqualError(err, "code is nil")
 
 	// Give an invalid DID in payload
+	txn.Payload.(*payload.CRInfo).Code = code1
 	txn.Payload.(*payload.CRInfo).DID = common.Uint168{1, 2, 3}
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	txn.Payload.(*payload.CRInfo).DID = *did1
 	s.EqualError(err, "invalid did address")
 
 	// Give a mismatching code and DID in payload
 	txn.Payload.(*payload.CRInfo).DID = *did2
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	txn.Payload.(*payload.CRInfo).DID = *did1
 	s.EqualError(err, "invalid did address")
 
 	// Invalidates the signature in payload
+	txn.Payload.(*payload.CRInfo).DID = *did1
 	signatature := txn.Payload.(*payload.CRInfo).Signature
 	txn.Payload.(*payload.CRInfo).Signature = randomSignature()
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
@@ -1296,7 +1297,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	// Give a insufficient deposit coin
 	txn.Outputs = []*types.Output{&types.Output{
 		AssetID:     common.Uint256{},
-		Value:       4000,
+		Value:       4000 * 100000000,
 		OutputLock:  0,
 		ProgramHash: *hash1,
 		Payload:     new(outputpayload.DefaultOutput),
@@ -1324,6 +1325,25 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
 	txn.Outputs = outPuts
 	s.EqualError(err, "there must be only one deposit address in outputs")
+
+	// Check correct register CR transaction with multi sign code.
+	txn = s.getMultiSigRegisterCRTx(
+		[]string{publicKeyStr1, publicKeyStr2, publicKeyStr3},
+		[]string{privateKeyStr1, privateKeyStr2, privateKeyStr3}, nickName1)
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.EqualError(err, "CR not support multi sign code")
+
+	txn = s.getMultiSigRegisterCRTx(
+		[]string{publicKeyStr1, publicKeyStr2, publicKeyStr3},
+		[]string{privateKeyStr1, privateKeyStr2}, nickName1)
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.EqualError(err, "CR not support multi sign code")
+
+	txn = s.getMultiSigRegisterCRTx(
+		[]string{publicKeyStr1, publicKeyStr2, publicKeyStr3},
+		[]string{privateKeyStr1}, nickName1)
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.EqualError(err, "CR not support multi sign code")
 }
 
 func getDepositAddress(publicKeyStr string) (*common.Uint168, error) {
@@ -1365,10 +1385,8 @@ func (s *txValidatorTestSuite) getRegisterCRTx(publicKeyStr, privateKeyStr, nick
 		Location: 1,
 	}
 	signBuf := new(bytes.Buffer)
-	err := crInfoPayload.SerializeUnsigned(signBuf, payload.CRInfoVersion)
-	s.NoError(err)
-	rcSig1, err := crypto.Sign(privateKey1, signBuf.Bytes())
-	s.NoError(err)
+	crInfoPayload.SerializeUnsigned(signBuf, payload.CRInfoVersion)
+	rcSig1, _ := crypto.Sign(privateKey1, signBuf.Bytes())
 	crInfoPayload.Signature = rcSig1
 	txn.Payload = crInfoPayload
 
@@ -1387,6 +1405,61 @@ func (s *txValidatorTestSuite) getRegisterCRTx(publicKeyStr, privateKeyStr, nick
 	}}
 	return txn
 }
+
+func (s *txValidatorTestSuite) getMultiSigRegisterCRTx(
+	publicKeyStrs, privateKeyStrs []string, nickName string) *types.Transaction {
+
+	var publicKeys []*crypto.PublicKey
+	for _, publicKeyStr := range publicKeyStrs {
+		publicKeyBytes, _ := hex.DecodeString(publicKeyStr)
+		publicKey, _ := crypto.DecodePoint(publicKeyBytes)
+		publicKeys = append(publicKeys, publicKey)
+	}
+
+	multiCode, _ := contract.CreateMultiSigRedeemScript(len(publicKeys)*2/3, publicKeys)
+
+	ctDID, _ := contract.CreateCRDIDContractByCode(multiCode)
+	did := ctDID.ToProgramHash()
+
+	ctDeposit, _ := contract.CreateDepositContractByCode(multiCode)
+	deposit := ctDeposit.ToProgramHash()
+
+	txn := new(types.Transaction)
+	txn.TxType = types.RegisterCR
+	txn.Version = types.TxVersion09
+	crInfoPayload := &payload.CRInfo{
+		Code:     multiCode,
+		DID:      *did,
+		NickName: nickName,
+		Url:      "http://www.elastos_test.com",
+		Location: 1,
+	}
+
+	signBuf := new(bytes.Buffer)
+	crInfoPayload.SerializeUnsigned(signBuf, payload.CRInfoVersion)
+	for _, privateKeyStr := range privateKeyStrs {
+		privateKeyBytes, _ := hex.DecodeString(privateKeyStr)
+		sig, _ := crypto.Sign(privateKeyBytes, signBuf.Bytes())
+		crInfoPayload.Signature = append(crInfoPayload.Signature, byte(len(sig)))
+		crInfoPayload.Signature = append(crInfoPayload.Signature, sig...)
+	}
+
+	txn.Payload = crInfoPayload
+	txn.Programs = []*program.Program{&program.Program{
+		Code:      multiCode,
+		Parameter: nil,
+	}}
+	txn.Outputs = []*types.Output{&types.Output{
+		AssetID:     common.Uint256{},
+		Value:       5000 * 100000000,
+		OutputLock:  0,
+		ProgramHash: *deposit,
+		Type:        0,
+		Payload:     new(outputpayload.DefaultOutput),
+	}}
+	return txn
+}
+
 func (s *txValidatorTestSuite) getUpdateCRTx(publicKeyStr, privateKeyStr, nickName string) *types.Transaction {
 
 	publicKeyStr1 := publicKeyStr
@@ -1420,6 +1493,7 @@ func (s *txValidatorTestSuite) getUpdateCRTx(publicKeyStr, privateKeyStr, nickNa
 	}}
 	return txn
 }
+
 func (s *txValidatorTestSuite) getUnregisterCRTx(publicKeyStr, privateKeyStr string) *types.Transaction {
 
 	publicKeyStr1 := publicKeyStr

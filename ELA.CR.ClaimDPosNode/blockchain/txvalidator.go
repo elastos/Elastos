@@ -871,7 +871,6 @@ func (b *BlockChain) checkTxHeightVersion(txn *Transaction, blockHeight uint32) 
 			return nil
 		}
 		if txn.Version >= TxVersion09 {
-			// Votes to producers.
 			for _, output := range txn.Outputs {
 				if output.Type != OTVote {
 					continue
@@ -1503,7 +1502,6 @@ func getParameterBySignature(signature []byte) []byte {
 }
 
 func checkCRTransactionSignature(signature []byte, code []byte, data []byte) error {
-	parameter := getParameterBySignature(signature)
 	signType, err := crypto.GetScriptType(code)
 	if err != nil {
 		return errors.New("invalid code")
@@ -1512,15 +1510,17 @@ func checkCRTransactionSignature(signature []byte, code []byte, data []byte) err
 		// check code and signature
 		if err := checkStandardSignature(program.Program{
 			Code:      code,
-			Parameter: parameter,
+			Parameter: getParameterBySignature(signature),
 		}, data); err != nil {
 			return err
 		}
 	} else if signType == vm.CHECKMULTISIG {
+		return errors.New("CR not support multi sign code")
+
 		// check code and signature
 		if err := checkMultiSigSignatures(program.Program{
 			Code:      code,
-			Parameter: parameter,
+			Parameter: signature,
 		}, data); err != nil {
 			return err
 		}
