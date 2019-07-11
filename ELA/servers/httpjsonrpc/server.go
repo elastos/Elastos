@@ -35,7 +35,7 @@ const (
 	IOTimeout = 60 * time.Second
 
 	// MaxRPCRead is the maximum buffer size for reading request.
-	MaxRPCRead = 1024 * 1024
+	MaxRPCRead = 1024 * 1024 * 8
 )
 
 func StartRPCServer() {
