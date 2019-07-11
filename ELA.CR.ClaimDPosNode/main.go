@@ -270,7 +270,15 @@ func startNode(c *cli.Context) {
 		defer arbitrator.Stop()
 	}
 
-	wallet := wallet.New(flagDataDir)
+	coinCheckPoint := wallet.NewCoinCheckPoint()
+	activeNetParams.CkpManager.Register(coinCheckPoint)
+
+	wal := wallet.New(flagDataDir)
+	wallet.Wal = wal
+	wallet.Store = chainStore
+	wallet.CoinCP = coinCheckPoint
+	wallet.Config = cfg
+
 	servers.Compile = Version
 	servers.Config = cfg
 	servers.Chain = chain
@@ -278,7 +286,8 @@ func startNode(c *cli.Context) {
 	servers.TxMemPool = txMemPool
 	servers.Server = server
 	servers.Arbiters = arbiters
-	servers.Wallet = wallet
+	servers.Wallet = wal
+	servers.CoinCP = coinCheckPoint
 	servers.Pow = pow.NewService(&pow.Config{
 		PayToAddr:   cfg.PowConfiguration.PayToAddr,
 		MinerInfo:   cfg.PowConfiguration.MinerInfo,
