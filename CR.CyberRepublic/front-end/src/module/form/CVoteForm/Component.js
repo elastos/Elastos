@@ -126,7 +126,7 @@ class C extends BaseComponent {
         await updateCVote(param)
         this.ord_loading(false)
         await onEdit()
-        message.success(I18N.get('from.CVoteForm.message.updated.success'))
+        message.success(I18N.get('proposal.msg.proposalPublished'))
       } catch (error) {
         message.error(error.message)
         this.ord_loading(false)
