@@ -71,6 +71,7 @@ type Configuration struct {
 	CheckPointNoFlatFile   bool              `json:"CheckPointNoFlatFile"`
 	EnableHistory          bool              `json:"EnableHistory"`
 	HistoryStartHeight     uint32            `json:"HistoryStartHeight"`
+	EnableUtxoDB           bool              `json:"EnableUtxoDB"`
 }
 
 // DPoSConfiguration defines the DPoS consensus parameters.

@@ -148,8 +148,7 @@ func startNode(c *cli.Context) {
 
 	// Initializes the foundation address
 	blockchain.FoundationAddress = activeNetParams.Foundation
-
-	var dposStore store.IDposStore
+	blockchain.EnableUtxoDB = activeNetParams.EnableUtxoDB
 	chainStore, err := blockchain.NewChainStore(dataDir, activeNetParams.GenesisBlock)
 	if err != nil {
 		printErrorAndExit(err)
@@ -157,6 +156,7 @@ func startNode(c *cli.Context) {
 	defer chainStore.Close()
 	ledger.Store = chainStore // fixme
 
+	var dposStore store.IDposStore
 	dposStore, err = store.NewDposStore(dataDir, activeNetParams)
 	if err != nil {
 		printErrorAndExit(err)
