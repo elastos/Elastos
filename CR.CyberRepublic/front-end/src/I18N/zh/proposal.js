@@ -107,6 +107,7 @@ export default {
     msg: {
       rejected: '已驳回',
       approved: '已批准并发布',
+      draftSaved: '草稿保存成功，请前往提案列表查看',
     },
   },
 }

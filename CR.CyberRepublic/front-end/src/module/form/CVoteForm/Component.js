@@ -154,7 +154,7 @@ class C extends BaseComponent {
 
     try {
       await updateDraft(param)
-      if (ifShowMsg) message.success(I18N.get('from.CVoteForm.message.updated.success'))
+      if (ifShowMsg) message.success(I18N.get('proposal.msg.draftSaved'))
     } catch (error) {
       message.error(error.message)
     }

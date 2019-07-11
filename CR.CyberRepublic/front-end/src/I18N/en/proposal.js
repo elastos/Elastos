@@ -108,5 +108,6 @@ export default {
   msg: {
     rejected: 'Rejected successfully',
     approved: 'Approved and published successfully',
+    draftSaved: 'Saved as draft successfully, you can check it in proposal list page',
   },
 }
