@@ -354,7 +354,7 @@
     <string name="error_tag_empty">error1</string>
     <string name="nodelist">参选节点列表</string>
     <string name="about">关于ELAWallet</string>
-    <string name="currentversionname">当前版本号 </string>
+    <string name="currentversionname">当前版本号</string>
     <string name="feedback">反馈邮件</string>
     <string name="showupdatalog">查看更新日志</string>
     <string name="tv_elaintroduce">ELAWallet是安全、便捷的专业亦来云SPV轻节点客户端钱包，支持亦来云全生态数字资产。</string>
@@ -369,6 +369,6 @@
     <string name="logkeepfail">日志生成失败</string>
     <string name="whetherexchange">检测到当前账户存在大量Utxo,是否零钱换整？</string>
     <string name="splashword">区 块 链 驱 动 的 智 能 万 维 网</string>
-    <string name="curentsdkversion">spvsdk版本号</string>
+    <string name="curentsdkversion">SPVSDK版本号</string>
 
 </resources>

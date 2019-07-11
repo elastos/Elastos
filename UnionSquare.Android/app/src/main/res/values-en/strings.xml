@@ -16,7 +16,7 @@
     <string name="my_vote">My vote</string>
     <string name="voting_rules">Voting rules</string>
     <string name="vote_qwtpzb">Percentage of votes cast online</string>
-    <string name="the_current_number">Current votes</string>
+    <string name="the_current_number">Current Votes</string>
     <string name="number_of_voting_addresses">Number of Node</string>
     <string name="node_name">Node Name</string>
     <string name="node_addeer">Node Address</string>
@@ -31,7 +31,7 @@
     <string name="create_a_wallet">Create Wallet</string>
     <string name="create_a_wallet_title">Create Wallet（recommend）</string>
     <string name="import_the_wallet">Import Wallet</string>
-    <string name="please_enter_the_name_your_wallet">Enter Wallet Name</string>
+    <string name="please_enter_the_name_your_wallet">Enter wallet name</string>
     <string name="please_enter_wallet_password">Please enter your password(at least 8 characters long)</string>
     <string name="please_enter_your_password_again_confirm">Re-enter your password</string>
     <string name="single_address_wallet">Single-Address Wallet</string>
@@ -39,7 +39,7 @@
     <string name="next">Next</string>
     <string name="copy_down_your_wallet_mnemonic">Please write down mnemonic</string>
     <string name="text_mnemonic_prompt">Please write down mnemonic in paper,\n losing mnemonic means you lose your wallet</string>
-    <string name="mnemonic_password">Mnemonic password(optional)</string>
+    <string name="mnemonic_password">Mnemonic Password(optional)</string>
     <string name="please_set_bit_mnemonic_password">Please enter your password(at least 8 characters long)</string>
     <string name="please_repeat_the_mnemonic_password_you_entered">Please re-enter your password</string>
 
@@ -52,8 +52,8 @@
     <string name="wallet_management">Manage Wallet</string>
     <string name="add_the_currency">Add Currency</string>
     <string name="transfer">Transfer</string>
-    <string name="side_chain_top_up">Deposit to sidechain</string>
-    <string name="main_chain_withdraw">Withdraw from sidechain</string>
+    <string name="side_chain_top_up">Deposit to Sidechain</string>
+    <string name="main_chain_withdraw">Withdraw from Sidechain</string>
     <string name="collection">Receive</string>
     <string name="transaction_records">Transaction Records</string>
     <string name="create_a_wallet_text1">Password is used to protect private keys and transaction authorization. Please ensure you choose a strong password.</string>
@@ -97,13 +97,13 @@
     <string name="asset">Assets</string>
     <string name="find">Discover</string>
     <string name="addassset">Add asset</string>
-    <string name="walletlist">Wallet list</string>
-    <string name="modifywallletname">Change wallet name</string>
-    <string name="modifywallletpwd">Change wallet password</string>
+    <string name="walletlist">Wallet List</string>
+    <string name="modifywallletname">Change Wallet Name</string>
+    <string name="modifywallletpwd">Change Wallet Password</string>
     <string name="outportKeystore">Export Keystore</string>
     <string name="outportMnemonic">Export Mnemonic</string>
     <string name="deletwallet">Delete Wallet</string>
-    <string name="walletmanage">Manage your wallet</string>
+    <string name="walletmanage">Manage Your Wallet</string>
     <string name="securitycertificate">Security Check</string>
     <string name="deletewallletornot">Delete wallet?</string>
     <string name="pwdnoempty">Password musn\'t be empty</string>
@@ -114,23 +114,23 @@
     <string name="originpwdnotnull">Old password musn\'t be empty</string>
     <string name="newpwdnotnull">New password musn\'t be empty</string>
     <string name="aginpwdnotnull">Password musn\'t be empty</string>
-    <string name="setkeystorepwd">Please enter KeyStore password</string>
+    <string name="setkeystorepwd">Please enter keyStore password</string>
     <string name="setkeystorepwdagin">Please re-enter KeyStore password</string>
     <string name="keystorepwdnotnull">KeyStore password musn\'t be empty</string>
     <string name="walletpwdnotnull">Wallet password musn\'t be empty</string>
     <string name="keynotthesame">Different passwords</string>
     <string name="copytosafeplace">Please save the text in a safe place</string>
     <string name="copytoclipboard">Copy to clipboard</string>
-    <string name="enteraddresslist">Enter address list</string>
-    <string name="copyreceiptaddress">Copy address</string>
+    <string name="enteraddresslist">Enter Address List</string>
+    <string name="copyreceiptaddress">Copy Address</string>
     <string name="addresslist">Address List</string>
     <string name="transfernum">Transaction No.</string>
     <string name="transferamount">Amount</string>
     <string name="receiptamount">Amount</string>
     <string name="exchangedetail">Transaction Details</string>
     <string name="allmessageclicktransfercode">Click to see all the details</string>
-    <string name="suretime">Confirmation time</string>
-    <string name="suretimes">Number of confirmations</string>
+    <string name="suretime">Confirmation Time</string>
+    <string name="suretimes">Number of Confirmations</string>
     <string name="transfertype">Type</string>
     <string name="remark">Remark</string>
     <string name="receiptaddress">Input</string>
@@ -141,7 +141,7 @@
     <string name="inputbalance">Amount（Balance：%1$s）</string>
     <string name="inputbalancedefault">Amount (Balance：）</string>
     <string name="choosecontact">Choose Contact</string>
-    <string name="choosesidechain">Choose sidechain</string>
+    <string name="choosesidechain">Choose Sidechain</string>
     <string name="transferaddress">Transfer Address</string>
     <string name="transferdetail">Transfer Details</string>
     <string name="amount">Amount</string>
@@ -350,7 +350,7 @@
     <string name="error_tag_empty">error1</string>
     <string name="nodelist">Node List</string>
     <string name="about">About</string>
-    <string name="currentversionname">Version</string>
+    <string name="currentversionname">Version&#160;</string>
     <string name="feedback">Feedback</string>
     <string name="showupdatalog">What\'s New</string>
     <string name="tv_elaintroduce">ELA wallet is a secure and convenient Elastos SPV wallet that supports all the digital currency for Elastos\' ecosystem. </string>
@@ -365,5 +365,5 @@
     <string name="logkeepfail">Get runtime log fail</string>
     <string name="whetherexchange">Too much UTXO detected, Consolidate?</string>
     <string name="splashword">Smartweb Powered by Blochchain</string>
-    <string name="curentsdkversion">SPVSDK Version</string>
+    <string name="curentsdkversion">SPVSDK Version&#160;</string>
 </resources>
