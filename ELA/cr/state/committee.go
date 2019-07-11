@@ -63,6 +63,14 @@ func (c *Committee) GetMembersDIDs() []common.Uint168 {
 	return result
 }
 
+//get all CRMembers
+func (c *Committee) GetAllMembers() []*CRMember {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+
+	return copyCRMembers(c.Members)
+}
+
 func (c *Committee) GetMembersCodes() [][]byte {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()

@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package servers
 
@@ -22,6 +22,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	crstate "github.com/elastos/Elastos.ELA/cr/state"
 	"github.com/elastos/Elastos.ELA/dpos"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/elanet"
@@ -1167,7 +1168,8 @@ func GetExistWithdrawTransactions(param Params) map[string]interface{} {
 	return ResponsePack(Success, resultTxHashes)
 }
 
-type Producer struct {
+//single producer info
+type producerInfo struct {
 	OwnerPublicKey string `json:"ownerpublickey"`
 	NodePublicKey  string `json:"nodepublickey"`
 	Nickname       string `json:"nickname"`
@@ -1183,10 +1185,51 @@ type Producer struct {
 	Index          uint64 `json:"index"`
 }
 
-type Producers struct {
-	Producers   []Producer `json:"producers"`
-	TotalVotes  string     `json:"totalvotes"`
-	TotalCounts uint64     `json:"totalcounts"`
+//a group producer info  include TotalVotes and producer count
+type producersInfo struct {
+	ProducerInfoSlice []producerInfo `json:"producersinfo"`
+	TotalVotes        string         `json:"totalvotes"`
+	TotalCounts       uint64         `json:"totalcounts"`
+}
+
+//single cr candidate info
+type crCandidateInfo struct {
+	Code     string `json:"code"`
+	DID      string `json:"did"`
+	NickName string `json:"nickname"`
+	Url      string `json:"url"`
+	Location uint64 `json:"location"`
+	State    string `json:"state"`
+	Votes    string `json:"votes"`
+
+	Index uint64 `json:"index"`
+}
+
+//a group cr candidate info include TotalVotes and candidate count
+type crCandidatesInfo struct {
+	CRCandidateInfoSlice []crCandidateInfo `json:"crcandidatesinfo"`
+	TotalVotes           string            `json:"totalvotes"`
+	TotalCounts          uint64            `json:"totalcounts"`
+}
+
+//single cr member info
+type crMemberInfo struct {
+	Code             string         `json:"code"`
+	DID              string         `json:"did"`
+	NickName         string         `json:"nickname"`
+	Url              string         `json:"url"`
+	Location         uint64         `json:"location"`
+	ImpeachmentVotes common.Fixed64 `json:"impeachmentvotes"`
+	DepositAmount    string         `json:"depositamout"`
+	DepositHash      string         `json:"deposithash"`
+	Penalty          common.Fixed64 `json:"penalty"`
+	Index            uint64         `json:"index"`
+}
+
+//a group cr member info  include cr member count
+type crMembersInfo struct {
+	CRMemberInfoSlice []crMemberInfo `json:"crmembersinfo"`
+	TotalCounts       uint64         `json:"totalcounts"`
 }
 
 func ListProducers(param Params) map[string]interface{} {
@@ -1227,11 +1270,11 @@ func ListProducers(param Params) map[string]interface{} {
 		return producers[i].Votes() > producers[j].Votes()
 	})
 
-	var ps []Producer
+	var producerInfoSlice []producerInfo
 	var totalVotes common.Fixed64
 	for i, p := range producers {
 		totalVotes += p.Votes()
-		producer := Producer{
+		producerInfo := producerInfo{
 			OwnerPublicKey: hex.EncodeToString(p.Info().OwnerPublicKey),
 			NodePublicKey:  hex.EncodeToString(p.Info().NodePublicKey),
 			Nickname:       p.Info().NickName,
@@ -1246,14 +1289,14 @@ func ListProducers(param Params) map[string]interface{} {
 			IllegalHeight:  p.IllegalHeight(),
 			Index:          uint64(i),
 		}
-		ps = append(ps, producer)
+		producerInfoSlice = append(producerInfoSlice, producerInfo)
 	}
 
 	count := int64(len(producers))
 	if limit < 0 {
 		limit = count
 	}
-	var resultPs []Producer
+	var rsProducerInfoSlice []producerInfo
 	if start < count {
 		end := start
 		if start+limit <= count {
@@ -1261,13 +1304,134 @@ func ListProducers(param Params) map[string]interface{} {
 		} else {
 			end = count
 		}
-		resultPs = append(resultPs, ps[start:end]...)
+		rsProducerInfoSlice = append(rsProducerInfoSlice, producerInfoSlice[start:end]...)
 	}
 
-	result := &Producers{
-		Producers:   resultPs,
-		TotalVotes:  totalVotes.String(),
-		TotalCounts: uint64(count),
+	result := &producersInfo{
+		ProducerInfoSlice: rsProducerInfoSlice,
+		TotalVotes:        totalVotes.String(),
+		TotalCounts:       uint64(count),
+	}
+
+	return ResponsePack(Success, result)
+}
+
+//list cr candidates according to ( state , start and limit)
+func ListCRCandidates(param Params) map[string]interface{} {
+	start, _ := param.Int("start")
+	limit, ok := param.Int("limit")
+	if !ok {
+		limit = -1
+	}
+	s, ok := param.String("state")
+	if ok {
+		s = strings.ToLower(s)
+	}
+	var candidates []*crstate.Candidate
+	crState := Chain.GetCRCommittee().GetState()
+	switch s {
+	case "all":
+		candidates = crState.GetAllCandidates()
+	case "pending":
+		candidates = crState.GetCandidates(crstate.Pending)
+	case "active":
+		candidates = crState.GetCandidates(crstate.Active)
+	case "canceled":
+		candidates = crState.GetCandidates(crstate.Canceled)
+	case "returned":
+		candidates = crState.GetCandidates(crstate.Returned)
+	default:
+		candidates = crState.GetCandidates(crstate.Pending)
+		candidates = append(candidates, crState.GetCandidates(crstate.Active)...)
+	}
+	sort.Slice(candidates, func(i, j int) bool {
+		if candidates[i].Votes() == candidates[j].Votes() {
+			iCRInfo := candidates[i].Info()
+			jCRInfo := candidates[j].Info()
+			return iCRInfo.GetCodeHash().Compare(jCRInfo.GetCodeHash()) < 0
+		}
+		return candidates[i].Votes() > candidates[j].Votes()
+	})
+
+	var candidateInfoSlice []crCandidateInfo
+	var totalVotes common.Fixed64
+	for i, c := range candidates {
+		totalVotes += c.Votes()
+		candidateInfo := crCandidateInfo{
+			Code:     hex.EncodeToString(c.Info().Code),
+			DID:      c.Info().DID.String(),
+			NickName: c.Info().NickName,
+			Url:      c.Info().Url,
+			Location: c.Info().Location,
+			State:    c.State().String(),
+			Votes:    c.Votes().String(),
+			Index:    uint64(i),
+		}
+		candidateInfoSlice = append(candidateInfoSlice, candidateInfo)
+	}
+
+	count := int64(len(candidates))
+	if limit < 0 {
+		limit = count
+	}
+	var rSCandidateInfoSlice []crCandidateInfo
+	if start < count {
+		end := start
+		if start+limit <= count {
+			end = start + limit
+		} else {
+			end = count
+		}
+		rSCandidateInfoSlice = append(rSCandidateInfoSlice, candidateInfoSlice[start:end]...)
+	}
+
+	result := &crCandidatesInfo{
+		CRCandidateInfoSlice: rSCandidateInfoSlice,
+		TotalVotes:           totalVotes.String(),
+		TotalCounts:          uint64(count),
+	}
+
+	return ResponsePack(Success, result)
+}
+
+//list current crs according to (state)
+func ListCurrentCRS(param Params) map[string]interface{} {
+
+	s, ok := param.String("state")
+	if ok {
+		s = strings.ToLower(s)
+	}
+	var crMembers []*crstate.CRMember
+	crMembers = Chain.GetCRCommittee().GetAllMembers()
+
+	sort.Slice(crMembers, func(i, j int) bool {
+		return crMembers[i].Info.GetCodeHash().Compare(crMembers[j].Info.GetCodeHash()) < 0
+
+	})
+
+	var rsCRMemberInfoSlice []crMemberInfo
+
+	for i, cr := range crMembers {
+		memberInfo := crMemberInfo{
+			Code:             hex.EncodeToString(cr.Info.Code),
+			DID:              cr.Info.DID.String(),
+			NickName:         cr.Info.NickName,
+			Url:              cr.Info.Url,
+			Location:         cr.Info.Location,
+			ImpeachmentVotes: cr.ImpeachmentVotes,
+			DepositAmount:    cr.DepositAmount.String(),
+			DepositHash:      cr.DepositHash.String(),
+			Penalty:          cr.Penalty,
+			Index:            uint64(i),
+		}
+		rsCRMemberInfoSlice = append(rsCRMemberInfoSlice, memberInfo)
+	}
+
+	count := int64(len(crMembers))
+
+	result := &crMembersInfo{
+		CRMemberInfoSlice: rsCRMemberInfoSlice,
+		TotalCounts:       uint64(count),
 	}
 
 	return ResponsePack(Success, result)
