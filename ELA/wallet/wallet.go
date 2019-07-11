@@ -11,10 +11,6 @@ import (
 	"github.com/elastos/Elastos.ELA/utils"
 )
 
-const (
-	WalletVersion = "0.0.1"
-)
-
 type AddressInfo struct {
 	address string
 	code    []byte
@@ -61,7 +57,20 @@ func (w *Wallet) ImportPubkey(pubKey []byte) error {
 		return err
 	}
 
-	return w.SaveAddressData(address, sc.Code)
+	if err := w.SaveAddressData(address, sc.Code); err != nil {
+		return err
+	}
+
+	w.addressBook[address] = &AddressInfo{
+		address: address,
+		code:    sc.Code,
+	}
+
+	if Config.EnableUtxoDB {
+		return nil
+	}
+
+	return CoinCP.RescanWallet()
 }
 
 func (w *Wallet) ImportAddress(address string) error {
@@ -70,7 +79,20 @@ func (w *Wallet) ImportAddress(address string) error {
 		return errors.New("invalid address")
 	}
 
-	return w.SaveAddressData(address, nil)
+	if err := w.SaveAddressData(address, nil); err != nil {
+		return err
+	}
+
+	w.addressBook[address] = &AddressInfo{
+		address: address,
+		code:    nil,
+	}
+
+	if Config.EnableUtxoDB {
+		return nil
+	}
+
+	return CoinCP.RescanWallet()
 }
 
 func New(dataDir string) *Wallet {
