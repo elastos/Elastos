@@ -26,7 +26,7 @@ const (
 
 var wallet *Wallet
 
-func TestInit(t *testing.T) {
+func TestInitWallet(t *testing.T) {
 	log.NewDefault(test.NodeLogPath, 0, 0, 0)
 
 	if !utils.FileExisted(filepath.Join(test.DataDir, "wallet.dat")) {
