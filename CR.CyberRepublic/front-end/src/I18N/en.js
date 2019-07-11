@@ -737,7 +737,7 @@ const en = {
 
   'council.voting.voteResult.show': 'Show',
   'council.voting.voteResult.all': 'All',
-  'council.voting.voteResult.unvoted': 'Unvoted by You',
+  'council.voting.voteResult.unvoted': 'Unvoted by me',
 
   // Landing
   'landing.elastos': 'Elastos',
