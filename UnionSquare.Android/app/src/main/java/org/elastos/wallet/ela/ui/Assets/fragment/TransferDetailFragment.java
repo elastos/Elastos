@@ -436,6 +436,12 @@ public class TransferDetailFragment extends BaseFragment implements CommonRvList
         tvSuretimes.setText(transactionsBean.getConfirmStatus());
         tvRemark.setVisibility(View.GONE);
 
-
+        int transferType = getContext().getResources().getIdentifier("transfertype" + transactionsBean.getType(), "string",
+                getContext().getPackageName());
+        try {
+            tvType.setText(getString(transferType));
+        } catch (Exception e) {
+            tvType.setText(getString(R.string.transfertype13));
+        }
     }
 }

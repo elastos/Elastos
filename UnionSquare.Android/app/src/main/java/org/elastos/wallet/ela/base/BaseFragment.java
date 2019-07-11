@@ -36,6 +36,7 @@ import org.elastos.wallet.ela.di.moudule.FragmentModule;
 import org.elastos.wallet.ela.ui.Assets.fragment.HomeWalletFragment;
 import org.elastos.wallet.ela.ui.main.MainFragment;
 import org.elastos.wallet.ela.utils.Log;
+import org.elastos.wallet.ela.utils.SPUtil;
 import org.greenrobot.eventbus.EventBus;
 
 import butterknife.BindView;
@@ -91,7 +92,15 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         inflaterView(inflater, container);
-        mRootView.setBackgroundResource(R.drawable.commonbg);//为每个页面设置默认背景
+        int Language = new SPUtil(getContext()).getLanguage();
+        int id = R.drawable.commonbg;
+        if (Language == 0) {
+            id = MyApplication.chainID > 0 ? R.mipmap.bg_test : id;
+        } else {
+            id = MyApplication.chainID > 0 ? R.mipmap.bg_e_test : id;
+
+        }
+        mRootView.setBackgroundResource(id);//为每个页面设置默认背景
         unbinder = ButterKnife.bind(this, mRootView);
         showLoading();
         Bundle bundle = getArguments();
@@ -304,7 +313,8 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
      **/
     @SuppressLint("NeedOnRequestPermissionsResult")
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         BaseFragmentPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
     }
