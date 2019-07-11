@@ -1,21 +1,21 @@
 language: swift
-osx_image: xcode10
+os: osx
+osx_image: xcode10.2
 
 matrix:
   include:
-  - os: osx
-    env: BUILD_ENV=arm64 BUILD_TYPE=Release SDK=iphoneos12.0
+  - env: BUILD_ENV=arm64 SCHEME=ElastosCarrierSDK BUILD_TYPE=Debug SDK=iphoneos12.2
 
-  - os: osx
-    env: BUILD_ENV=x64 BUILD_TYPE=Release SDK=iphonesimulator12.0
+  - env: BUILD_ENV=x64 SCHEME=ElastosCarrierSDK BUILD_TYPE=Debug SDK=iphonesimulator12.2
+
+  - env: BUILD_ENV=macOS SCHEME=ElastosCarrierSDK_macOS BUILD_TYPE=Debug SDK=macosx10.14
 
 install:
   #- brew install appledoc
   - .script/download_libs.sh ${BUILD_ENV}
 
 script:
-  # - xcodebuild -showsdks
+  - xcodebuild -showsdks
   - xcodebuild -list -project ElastosCarrierSDK.xcodeproj
-  # default build release
-  - xcodebuild -scheme ElastosCarrierSDK build -sdk ${SDK}
+  - xcodebuild -scheme ${SCHEME} -configuration ${BUILD_TYPE} -sdk ${SDK} CODE_SIGNING_REQUIRED=NO
   #- ./docs.sh

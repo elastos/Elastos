@@ -6,12 +6,13 @@ SCRIPT_DIRNAME="$(basename "${SCRIPT_PATH}")"
 LIBPATH=${SCRIPT_PATH}/../NativeDistributions
 LIBPATTERN="/elastos.*ios_arm64.*gz"
 LIBDIR="-iphoneos"
-LIBPACKAGE="ios_arm64"
 
-if [ $1 != "arm64" ] ; then
+if [ $1 = "x64" ] ; then
     LIBPATTERN="/elastos.*ios_x64.*gz"
     LIBDIR="-iphonesimulator"
-    LIBPACKAGE="ios_x64"
+elif [ $1 = "macOS" ]; then
+    LIBPATTERN="/elastos.*darwin_x64.*gz"
+    LIBDIR="macosx"
 fi
 
 packageUrl=`curl https://github.com/elastos/Elastos.NET.Carrier.Native.SDK/releases/tag/internal-test | grep -e $LIBPATTERN -o`
