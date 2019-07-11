@@ -117,3 +117,6 @@ func (a *CRInfo) DeserializeUnsigned(r io.Reader, version byte) error {
 
 	return nil
 }
+func (a *CRInfo) GetCodeHash() common.Uint160 {
+	return *common.ToCodeHash(a.Code)
+}
