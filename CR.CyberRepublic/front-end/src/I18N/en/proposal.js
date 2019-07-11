@@ -105,4 +105,8 @@ export default {
       limit200: 'You can only type 200 words max.',
     }
   },
+  msg: {
+    rejected: 'Rejected successfully',
+    approved: 'Approved and published successfully',
+  },
 }

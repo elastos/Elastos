@@ -103,6 +103,10 @@ export default {
       required: '必填项',
       tooLong: '文字太长',
       limit200: '不能超过200字',
-    }
+    },
+    msg: {
+      rejected: '已驳回',
+      approved: '已批准并发布',
+    },
   },
 }

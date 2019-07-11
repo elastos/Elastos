@@ -4,7 +4,7 @@ import moment from 'moment/moment'
 import BaseComponent from '@/model/BaseComponent'
 import DraftEditor from '@/module/common/DraftEditor'
 import CRPopover from '@/module/shared/Popover/Component'
-import { Row, Col, Button, List, Collapse } from 'antd'
+import { Row, Col, Button, List, Collapse, message } from 'antd'
 import I18N from '@/I18N'
 import { CONTENT_TYPE, DATE_FORMAT, CVOTE_SUMMARY_STATUS } from '@/constant'
 import styled from 'styled-components'
@@ -121,6 +121,7 @@ export default class extends BaseComponent {
     this.ord_loading(true)
     try {
       await reject(param)
+      message.success(I18N.get('proposal.msg.rejected'))
       this.refetch()
       this.ord_loading(false)
     } catch (e) {
@@ -136,6 +137,7 @@ export default class extends BaseComponent {
     this.ord_loading(true)
     try {
       await approve(param)
+      message.success(I18N.get('proposal.msg.approved'))
       this.refetch()
       this.ord_loading(false)
     } catch (e) {
