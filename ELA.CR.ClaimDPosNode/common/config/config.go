@@ -69,6 +69,8 @@ type Configuration struct {
 	ProfilePort            uint32            `json:"ProfilePort"`
 	MaxBlockSize           uint32            `json"MaxBlockSize"`
 	CheckPointNoFlatFile   bool              `json:"CheckPointNoFlatFile"`
+	EnableHistory          bool              `json:"EnableHistory"`
+	HistoryStartHeight     uint32            `json:"HistoryStartHeight"`
 }
 
 // DPoSConfiguration defines the DPoS consensus parameters.
