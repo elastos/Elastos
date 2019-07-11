@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/checkpoint"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -408,6 +409,9 @@ type Params struct {
 	// CRDutyPeriod defines the duration of a normal duty period which
 	// measured by block height
 	CRDutyPeriod uint32
+
+	// CkpManager holds checkpoints save automatically.
+	CkpManager *checkpoint.Manager
 }
 
 // rewardPerBlock calculates the reward for each block by a specified time
