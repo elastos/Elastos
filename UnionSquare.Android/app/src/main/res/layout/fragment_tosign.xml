@@ -8,20 +8,48 @@
 
     <include layout="@layout/title" />
 
+
     <ImageView
-        android:padding="10dp"
         android:id="@+id/iv_qr"
         android:layout_width="190dp"
         android:layout_height="190dp"
         android:layout_marginTop="70dp"
-        android:background="@mipmap/asset_code_border" />
+        android:background="@mipmap/asset_code_border"
+        android:padding="10dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/tv_vptitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/px160"
+        android:gravity="center"
+        android:textColor="#ffffffff"
+        android:textSize="13sp" />
+
+    <LinearLayout
+        android:layout_width="260dp"
+        android:layout_height="190dp"
+        android:layout_marginTop="20dp"
+        android:background="@mipmap/asset_code_border"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <android.support.v4.view.ViewPager
+            android:id="@+id/viewpage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingLeft="35dp"
+            android:paddingRight="35dp" />
+    </LinearLayout>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/px70"
-        android:text="@string/pleasesign"
         android:gravity="center"
+        android:text="@string/pleasesign"
         android:textColor="#ffffffff"
         android:textSize="11sp" />
 
