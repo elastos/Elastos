@@ -1,11 +1,6 @@
 @import "@/style/color";
 
 .p_CVoteDetail {
-  padding: 30px 50px 80px 150px;
-  width: 80vw;
-  margin: 0 auto;
-  background: #ffffff;
-  text-align: left;
   .content {
     margin-top: 50px;
   }
@@ -43,10 +38,6 @@
       font-size: 11px;
       color: rgba(3, 30, 40, 0.4);
     }
-  }
-  .vote-btn-group {
-    display: flex;
-    margin-top: 30px;
   }
   .ant-btn {
     border-radius: 0 !important;

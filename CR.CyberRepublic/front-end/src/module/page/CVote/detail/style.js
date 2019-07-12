@@ -1,8 +1,39 @@
 import styled from 'styled-components'
 import { Anchor } from 'antd'
-// import { breakPoint } from '@/constants/breakPoint'
+import { breakPoint } from '@/constants/breakPoint'
 import { text } from '@/constants/color'
 // import { gap } from '@/constants/variable'
+
+export const Container = styled.div`
+  padding: 30px 50px 80px 150px;
+  width: 80vw;
+  margin: 0 auto;
+  background: #ffffff;
+  text-align: left;
+  .cr-backlink {
+    position: fixed;
+    left: 27px;
+  }
+  @media only screen and (max-width: ${breakPoint.mobile}) {
+    padding: 15px;
+    width: 100%;
+    overflow: hidden;
+    .cr-backlink {
+      display: none;
+    }
+  }
+`
+
+export const VoteBtnGroup = styled.div`
+  display: flex;
+  margin-top: 30px;
+  @media only screen and (max-width: ${breakPoint.mobile}) {
+    display: block;
+    .ant-btn {
+      margin-bottom: 10px;
+    }
+  }
+`
 
 export const Label = styled.span`
   background: #F2F6FB;
@@ -55,6 +86,9 @@ export const StyledAnchor = styled(Anchor)`
   position: fixed;
   top: 250px;
   left: 30px;
+  @media only screen and (max-width: ${breakPoint.mobile}) {
+    display: none;
+  }
   .ant-anchor-ink:before {
     width: 0;
   }

@@ -1,5 +1,6 @@
 import styled from 'styled-components'
 import { CVOTE_RESULT, CVOTE_RESULT_COLOR } from '@/constant'
+import { breakPoint } from '@/constants/breakPoint'
 
 export const Container = styled.div`
   display: flex;
@@ -15,6 +16,11 @@ export const Label = styled.div`
   text-align: right;
   margin-right: 50px;
   flex: 0 0 90px;
+  @media only screen and (max-width: ${breakPoint.mobile}) {
+    flex: 0 0 60px;
+    margin-right: 3px;
+    font-size: 0.8em;
+  }
 `
 
 export const List = styled.div`
@@ -36,11 +42,17 @@ export const List = styled.div`
     bottom: -7px;
     border-bottom: 1px solid #E5E5E5;
   }
+  @media only screen and (max-width: ${breakPoint.mobile}) {
+    padding: 5px;
+  }
 `
 
 export const Item = styled.div`
   text-align: center;
   margin-left: 28px;
+  @media only screen and (max-width: ${breakPoint.mobile}) {
+    margin-left: 5px;
+  }
 `
 
 export const Avatar = styled.img`
@@ -49,6 +61,10 @@ export const Avatar = styled.img`
   width: 100px;
   height: 100px;
   margin-bottom: 15px;
+  @media only screen and (max-width: ${breakPoint.mobile}) {
+    width: 50px;
+    height: 50px;
+  }
 `
 
 export const ResultRow = styled.div`
@@ -59,4 +75,8 @@ export const ResultRow = styled.div`
 export const Reason = styled.div`
   margin-left: 25px;
   margin-top: 10px;
+  @media only screen and (max-width: ${breakPoint.mobile}) {
+    margin-left: 10px;
+    margin-top: 0px;
+  }
 `

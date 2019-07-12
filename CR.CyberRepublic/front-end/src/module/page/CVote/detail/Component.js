@@ -1,7 +1,7 @@
 import React from 'react'
 import { Helmet } from 'react-helmet'
 import {
-  Form, Spin, Button, Input, message, Modal, Anchor,
+  Form, Spin, Button, Input, message, Modal, Anchor, Row, Col,
 } from 'antd'
 import { Link } from 'react-router-dom'
 import I18N from '@/I18N'
@@ -23,7 +23,7 @@ import Preamble from './Preamble'
 import Tracking from '../tracking/Container'
 import Summary from '../summary/Container'
 
-import { Title, Label, ContentTitle, StyledAnchor, FixedHeader, Body, SubTitleHeading, SubTitleContainer } from './style'
+import { Container, Title, Label, ContentTitle, StyledAnchor, FixedHeader, Body, SubTitleHeading, SubTitleContainer, VoteBtnGroup } from './style'
 import './style.scss'
 
 const { TextArea } = Input
@@ -127,9 +127,9 @@ class C extends StandardPage {
           <meta name="description" content={data.title} />
         </Helmet>
         {anchorNode}
-        <div className="p_CVoteDetail">
+        <Container className="p_CVoteDetail">
         <StickyContainer>
-          <BackLink link="/proposals" style={{ left: 27, position: 'fixed' }} />
+          <BackLink link="/proposals" />
           {this.renderStickyHeader()}
           <Body>
             {contentNode}
@@ -141,7 +141,7 @@ class C extends StandardPage {
             {summaryNode}
           </Body>
         </StickyContainer>
-        </div>
+        </Container>
         <Footer />
       </div>
     )
@@ -388,11 +388,11 @@ class C extends StandardPage {
     )
 
     return (
-      <div className="vote-btn-group">
+      <VoteBtnGroup>
         {popOverYes}
         {popOverOppose}
         {popOverAbstain}
-      </div>
+      </VoteBtnGroup>
     )
   }
 

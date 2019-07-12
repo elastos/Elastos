@@ -5,7 +5,7 @@ import I18N from '@/I18N'
 import { StyledLink, Arrow, Text } from './style'
 
 const Component = ({ link, style }) => (
-  <StyledLink to={link} style={style}>
+  <StyledLink to={link} style={style} class="cr-backlink">
     <Arrow src="/assets/images/arrow.svg" />
     <Text>{I18N.get('link.back')}</Text>
   </StyledLink>
