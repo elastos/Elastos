@@ -74,6 +74,7 @@ namespace Elastos {
 				InvalidChainID = 20055,
 				UnSupportOldTx = 20056,
 				UnsupportOperation = 20057,
+				BigInt = 20058,
 				Other = 29999,
 			} Code;
 		}

@@ -5,16 +5,19 @@
 // file LICENSE or http://www.opensource.org/licenses/mit-license.php.
 
 #include "BigInt.h"
+#include "ErrorChecker.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		void BigInt::allocate() {
 			this->autoclear = false;
-			if (!(this->bn = BN_new())) throw std::runtime_error("BIGNUM allocation error.");
+			if (!(this->bn = BN_new())) {
+				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt allocate error");
+			}
 			if (!(this->ctx = BN_CTX_new())) {
-				BN_free(this->bn);
-				throw std::runtime_error("BIGNUM allocation error.");
+				if (this->bn) BN_free(this->bn);
+				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt ctx new");
 			}
 		}
 
@@ -24,12 +27,13 @@ namespace Elastos {
 		}
 
 		BigInt::BigInt(const BigInt &bigint) {
-			if (!(this->bn = BN_dup(bigint.bn)))
-				throw std::runtime_error("BIGNUM allocation error.");
+			if (!(this->bn = BN_dup(bigint.bn))) {
+				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt dup");
+			}
 
 			if (!(this->ctx = BN_CTX_new())) {
 				BN_free(this->bn);
-				throw std::runtime_error("BIGNUM allocation error.");
+				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt ctx new");
 			}
 		}
 
@@ -66,7 +70,8 @@ namespace Elastos {
 		}
 
 		BigInt &BigInt::operator=(const BigInt &bigint) {
-			if (!(BN_copy(this->bn, bigint.bn))) throw std::runtime_error("BIGNUM allocation error.");
+			if (!(BN_copy(this->bn, bigint.bn)))
+				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt copy");
 			//if (!(this->bn = BN_dup(bigint.bn))) throw std::runtime_error("BIGNUM allocation error.");
 			//if (!(this->ctx = BN_CTX_new())) { BN_free(this->bn); throw std::runtime_error("BIGNUM allocation error."); }
 			return *this;
@@ -78,51 +83,59 @@ namespace Elastos {
 		}
 
 		BigInt &BigInt::operator+=(const BigInt &rhs) {
-			if (!BN_add(this->bn, this->bn, rhs.bn))
-				throw std::runtime_error("BN_add error.");
+			if (!BN_add(this->bn, this->bn, rhs.bn)) {
+				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt add");
+			}
 
 			return *this;
 		}
 
 		BigInt &BigInt::operator-=(const BigInt &rhs) {
-			if (!BN_sub(this->bn, this->bn, rhs.bn))
-				throw std::runtime_error("BN_sub error.");
+			if (!BN_sub(this->bn, this->bn, rhs.bn)) {
+				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt sub");
+			}
 			return *this;
 		}
 
 		BigInt &BigInt::operator*=(const BigInt &rhs) {
-			if (!BN_mul(this->bn, this->bn, rhs.bn, this->ctx))
-				throw std::runtime_error("BN_mul rror.");
+			if (!BN_mul(this->bn, this->bn, rhs.bn, this->ctx)) {
+				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt mul");
+			}
 			return *this;
 		}
 
 		BigInt &BigInt::operator/=(const BigInt &rhs) {
-			if (!BN_div(this->bn, NULL, this->bn, rhs.bn, this->ctx))
-				throw std::runtime_error("BN_div error.");
+			if (!BN_div(this->bn, NULL, this->bn, rhs.bn, this->ctx)) {
+				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt /");
+			}
 			return *this;
 		}
 
 		BigInt &BigInt::operator%=(const BigInt &rhs) {
-			if (!BN_div(NULL, this->bn, this->bn, rhs.bn, this->ctx))
-				throw std::runtime_error("BN_div error.");
+			if (!BN_div(NULL, this->bn, this->bn, rhs.bn, this->ctx)) {
+				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt %");
+			}
 			return *this;
 		}
 
 		BigInt &BigInt::operator+=(BN_ULONG rhs) {
-			if (!BN_add_word(this->bn, rhs))
-				throw std::runtime_error("BN_add_word error.");
+			if (!BN_add_word(this->bn, rhs)) {
+				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt +=");
+			}
 			return *this;
 		}
 
 		BigInt &BigInt::operator-=(BN_ULONG rhs) {
-			if (!BN_sub_word(this->bn, rhs))
-				throw std::runtime_error("BN_sub_word error.");
+			if (!BN_sub_word(this->bn, rhs)) {
+				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt -=");
+			}
 			return *this;
 		}
 
 		BigInt &BigInt::operator*=(BN_ULONG rhs) {
-			if (!BN_mul_word(this->bn, rhs))
-				throw std::runtime_error("BN_mul_word error.");
+			if (!BN_mul_word(this->bn, rhs)) {
+				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt *=");
+			}
 			return *this;
 		}
 
@@ -177,14 +190,16 @@ namespace Elastos {
 		}
 
 		BigInt &BigInt::operator<<=(int rhs) {
-			if (!BN_lshift(this->bn, this->bn, rhs))
-				throw std::runtime_error("BN_lshift error.");
+			if (!BN_lshift(this->bn, this->bn, rhs)) {
+				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt lshift");
+			}
 			return *this;
 		}
 
 		BigInt &BigInt::operator>>=(int rhs) {
-			if (!BN_rshift(this->bn, this->bn, rhs))
-				throw std::runtime_error("BN_rshift error.");
+			if (!BN_rshift(this->bn, this->bn, rhs)) {
+				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt rshift");
+			}
 			return *this;
 		}
 
@@ -229,8 +244,9 @@ namespace Elastos {
 		}
 
 		void BigInt::setWord(BN_ULONG num) {
-			if (!BN_set_word(this->bn, num))
-				throw std::runtime_error("BN_set_word error.");
+			if (!BN_set_word(this->bn, num)) {
+				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt set word");
+			}
 		}
 
 		void BigInt::setRaw(BIGNUM *bn) {
@@ -246,8 +262,9 @@ namespace Elastos {
 			bytes.resize(BN_num_bytes(this->bn));
 
 			char *hex = BN_bn2hex(this->bn);
-			if (!hex)
-				throw std::runtime_error("BN_bn2hex error.");
+			if (!hex) {
+				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt bn2hex");
+			}
 
 			bytes.setHex(std::string(hex));
 
@@ -283,7 +300,8 @@ namespace Elastos {
 
 		std::string BigInt::getHex() const {
 			char* hex = BN_bn2hex(this->bn);
-			if (!hex) throw std::runtime_error("BN_bn2hex error.");
+			if (!hex)
+				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt bn2hex");
 			std::string rval(hex);
 			OPENSSL_free(hex);
 			return rval;
@@ -298,7 +316,8 @@ namespace Elastos {
 
 		std::string BigInt::getDec() const {
 			char* dec = BN_bn2dec(this->bn);
-			if (!dec) throw std::runtime_error("BN_bn2dec error.");
+			if (!dec)
+				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt bn2dec");
 			std::string rval(dec);
 			OPENSSL_free(dec);
 			return rval;
