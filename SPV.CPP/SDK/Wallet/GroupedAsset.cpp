@@ -218,7 +218,8 @@ namespace Elastos {
 				}
 			}
 
-			std::vector<Address> addr = _parent->UnusedAddresses(1, 0);
+			std::vector<Address> addr;
+			_parent->GetAllAddresses(addr, 0, 1, 0);
 			ErrorChecker::CheckCondition(addr.empty(), Error::GetUnusedAddress, "get unused address fail");
 			TransactionOutput output(totalInputAmount - feeAmount, addr[0], _asset->GetHash());
 			tx->AddOutput(output);
