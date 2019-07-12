@@ -120,7 +120,7 @@
     <string name="walletpwdnotnull">Wallet password musn\'t be empty</string>
     <string name="keynotthesame">Different passwords</string>
     <string name="copytosafeplace">Please save the text in a safe place</string>
-    <string name="copytoclipboard">Copy to Clipboard</string>
+    <string name="copytoclipboard">Copy to clipboard</string>
     <string name="enteraddresslist">Enter Address List</string>
     <string name="copyreceiptaddress">Copy Address</string>
     <string name="addresslist">Address List</string>
@@ -187,12 +187,12 @@
     <string name="please_enter_ticket">Please enter number of votes</string>
     <string name="lack_of_balance">Insufficient balance</string>
     <string name="transfertype0">Coinbase Transaction</string>
-    <string name="transfertype1">Register Asset Transaction </string>
+    <string name="transfertype1">Create Asset Transaction </string>
     <string name="transfertype2">Transfer Transaction</string>
-    <string name="transfertype3">Record Transaction</string>
+    <string name="transfertype3">Memo Transaction</string>
     <string name="transfertype4">Deployment Transaction</string>
-    <string name="transfertype5">Sidechain Mining Transaction</string>
-    <string name="transfertype6">Sidechain Deposit Transaction</string>
+    <string name="transfertype5">Sidechain mining Transaction</string>
+    <string name="transfertype6">Sidechain deposit Transaction</string>
     <string name="transfertype7">Sidechain withdraw Transaction</string>
     <string name="transfertype8">Cross Chain transfer Transaction</string>
     <string name="transfertype9">Node Registration Transaction</string>
@@ -343,7 +343,7 @@
     <string name="inputmustnum">Input can only be numeric</string>
     <string name="importtip">Creating new wallet or importing an existing wallet using keystore is recommended for quick synchronization</string>
     <string name="nodata">No data available, please be patient!</string>
-    <string name="targetaddr">Target address</string>
+    <string name="targetaddr">Target Address</string>
     <string name="invalidaddress">Invalid address</string>
     <string name="ownerpublicKey">Owner Public Key</string>
     <string name="max36dot">Vote for maximum of 36 nodes</string>
@@ -355,11 +355,11 @@
     <string name="showupdatalog">What\'s New</string>
     <string name="tv_elaintroduce">ELA wallet is a secure and convenient Elastos SPV wallet that supports all the digital currency for Elastos\' ecosystem. </string>
     <string name="earn_records">DPoS Reward Records</string>
-    <string name="copyearnaddress">Copy address</string>
+    <string name="copyearnaddress">Copy Address</string>
     <string name="towhole">Consolidate</string>
     <string name="copyemailsuccess">Email copied to clipboard</string>
     <string name="cbsy">Coinbase Transaction</string>
-    <string name="runlog">Runtime log</string>
+    <string name="runlog">Runtime Log</string>
     <string name="needpermissionstorage">Permission required</string>
     <string name="logkeppin">Saved runtime log to</string>
     <string name="logkeepfail">Get runtime log fail</string>
@@ -393,5 +393,5 @@
     <string name="mulsignpiblickey">Multi-Sign Public Keys</string>
     <string name="scancreatemulwallet">Scan to create multi-sign wallet</string>
     <string name="copymulpublickey">Copy to Clipboard</string>
+    <string name="invalidnode">失效节点</string>
 </resources>
-

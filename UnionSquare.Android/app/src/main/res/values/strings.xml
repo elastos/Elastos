@@ -370,6 +370,7 @@
     <string name="whetherexchange">检测到当前账户存在大量Utxo,是否零钱换整？</string>
     <string name="splashword">区 块 链 驱 动 的 智 能 万 维 网</string>
     <string name="curentsdkversion">SPVSDK版本号</string>
+    <string name="invalidnode">失效节点</string>
     <string name="singlewallet">单签钱包</string>
     <string name="mulwallet">多签钱包</string>
     <string name="singlereadonlywallet">单签只读钱包</string>

@@ -106,15 +106,6 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
     //变更投票
     @OnClick(R.id.ll_bgtp)
     public void onViewClicked() {
-        /*List<VoteListBean.DataBean.ResultBean.ProducersBean> newlist = new ArrayList();
-        for (int i = 0; i < keylist.size(); i++) {
-            for (int j = 0; j < netList.size(); j++) {
-                if (netList.get(j).getOwnerpublickey().equals(keylist.get(i))) {
-                    newlist.add(netList.get(j));
-                }
-            }
-        }
-         CacheDoubleUtils.getInstance().put("list", (Serializable) newlist,  CacheDoubleUtils.DAY * 360);*/
         Bundle bundle = new Bundle();
         bundle.putString("type", "2");
         bundle.putString("zb", zb);
@@ -131,7 +122,9 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
         switch (methodname) {
 
             case "getVotedProducerList":
-                KLog.a(data);
+                if (netList == null || netList.size() == 0) {
+                    return;
+                }
                 if (data.equals("{}")) {
                     ivType.setBackgroundResource(R.mipmap.my_vote_go_img);
                     tvBlank.setVisibility(View.VISIBLE);
@@ -168,9 +161,6 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
 
     @Override
     public void onBalance(BalanceEntity data) {
-        KLog.a(data.getBalance());
-        //String str = string.substring(0, string.indexOf(".")) + string.substring(string.indexOf(".") + 1);
-        //Double num = Double.parseDouble(data.getBalance()) / MyWallet.RATE;
         int num = Arith.div(data.getBalance(), MyWallet.RATE_S).intValue();
         tvNumVote.setText(getString(R.string.right_to_vote_ticket) + num);
     }
@@ -187,7 +177,7 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
         @Override
         protected void convert(BaseViewHolder helper, String item) {
             helper.setText(R.id.tv_name, getRecord(item).name);
-            helper.setText(R.id.tv_no, "NO." + getRecord(item).no);
+            helper.setText(R.id.tv_no, getRecord(item).no);
 
 
         }
@@ -198,16 +188,18 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
         Recorder recorder = new Recorder();
         for (int i = 0; i < netList.size(); i++) {
             if (netList.get(i).getOwnerpublickey().equals(publickey)) {
-                recorder.no = i + 1;
+                recorder.no = "NO." + (i + 1);
                 recorder.name = netList.get(i).getNickname();
-
+                return recorder;
             }
         }
+        recorder.no = "- -";
+        recorder.name = getString(R.string.invalidnode);
         return recorder;
     }
 
     private class Recorder {
-        int no;
+        String no;
         String name;
     }
 
