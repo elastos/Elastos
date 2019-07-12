@@ -552,6 +552,10 @@ namespace Elastos {
 				}
 			} else if (_invalidTx.Contains(tx)) r = false;
 
+			if (tx->GetBlockHeight() != TX_UNCONFIRMED) {
+				return r;
+			}
+
 			for (size_t i = 0; r && i < tx->GetInputs().size(); i++) {
 				const TransactionPtr &t = _allTx.Get(tx->GetInputs()[i].GetTransctionHash());
 				if (t && !TransactionIsValid(t)) r = 0;
