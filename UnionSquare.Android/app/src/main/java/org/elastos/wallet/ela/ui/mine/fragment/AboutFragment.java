@@ -64,7 +64,7 @@ public class AboutFragment extends BaseFragment implements CommmonStringWithMeth
         switch (view.getId()) {
             case R.id.tv_updatalog:
                 Bundle bundle=new Bundle();
-                bundle.putString(Constant.FRAGMENTTAG,Constant.UpdateLog + "?langua =" + (new SPUtil(getContext()).getLanguage() == 0 ? "ch" : "en"));
+                bundle.putString(Constant.FRAGMENTTAG,Constant.UpdateLog + "?langua=" + (new SPUtil(getContext()).getLanguage() == 0 ? "ch" : "en"));
                 start(WebViewFragment.class,bundle);
                /* Intent intent = new Intent("android.intent.action.VIEW");
                 intent.setData(Uri.parse(Constant.UpdateLog + "?langua =" + (new SPUtil(getContext()).getLanguage() == 0 ? "ch" : "en")));
