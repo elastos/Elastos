@@ -19,6 +19,8 @@ namespace Elastos {
 		public:
 			UTXO();
 
+			UTXO(const UTXO &u);
+
 			UTXO(const uint256 &h, uint16_t i, const BigInt &a);
 
 			virtual ~UTXO();
@@ -36,6 +38,8 @@ namespace Elastos {
 			const BigInt &Amount() const;
 
 			void SetAmount(const BigInt &amount);
+
+			UTXO &operator=(const UTXO &u);
 
 		protected:
 			friend class UTXOList;
@@ -77,6 +81,8 @@ namespace Elastos {
 			void SetSpent(bool status);
 
 			uint32_t GetConfirms(uint32_t lastBlockHeight) const;
+
+
 
 		private:
 			uint256 _assetID;

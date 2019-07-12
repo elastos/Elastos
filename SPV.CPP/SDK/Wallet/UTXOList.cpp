@@ -18,6 +18,10 @@ namespace Elastos {
 		UTXO::UTXO() : _n(0) {
 		}
 
+		UTXO::UTXO(const UTXO &u) {
+			this->operator=(u);
+		}
+
 		UTXO::UTXO(const uint256 &h, uint16_t i, const BigInt &a) :
 			_hash(h),
 			_n(i) {
@@ -53,6 +57,13 @@ namespace Elastos {
 
 		void UTXO::SetAmount(const BigInt &amount) {
 			_amount = amount;
+		}
+
+		UTXO &UTXO::operator=(const UTXO &u) {
+			this->_n = u._n;
+			this->_amount = u._amount;
+			this->_hash = u._hash;
+			return *this;
 		}
 
 		CoinBaseUTXO::CoinBaseUTXO() :

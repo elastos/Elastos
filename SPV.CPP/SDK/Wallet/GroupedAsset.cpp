@@ -251,7 +251,7 @@ namespace Elastos {
 
 			_parent->Lock();
 
-			_utxos.SortBaseOnOutputAmount(totalOutputAmount, _parent->_feePerKb);
+//			_utxos.SortBaseOnOutputAmount(totalOutputAmount, _parent->_feePerKb);
 			if (_asset->GetName() == "ELA")
 				feeAmount = CalculateFee(_parent->_feePerKb, txn->EstimateSize());
 

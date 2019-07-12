@@ -27,14 +27,15 @@ namespace Elastos {
 		}
 
 		BigInt::BigInt(const BigInt &bigint) {
+			if (!(this->ctx = BN_CTX_new())) {
+				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt ctx new");
+			}
+
 			if (!(this->bn = BN_dup(bigint.bn))) {
+				if (this->ctx) BN_CTX_free(this->ctx);
 				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt dup");
 			}
 
-			if (!(this->ctx = BN_CTX_new())) {
-				BN_free(this->bn);
-				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt ctx new");
-			}
 		}
 
 		BigInt::BigInt(BN_ULONG num) {
