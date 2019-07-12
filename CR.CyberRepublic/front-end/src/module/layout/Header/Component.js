@@ -199,10 +199,6 @@ export default class extends BaseComponent {
   buildResourcesDropdown() {
     return (
       <Menu onClick={this.clickItem.bind(this)} className="help-menu">
-        <Menu.Item key="news">
-          {I18N.get('navigation.resources.submenu.news')}
-        </Menu.Item>
-
         <Menu.Item key="forum">
           {I18N.get('navigation.resources.submenu.forum')}
         </Menu.Item>
@@ -467,12 +463,6 @@ export default class extends BaseComponent {
       this.props.history.push('/profile/info')
     } else if (key === 'teams') {
       this.props.history.push('/developer/search?lookingFor=TEAM&sortBy=createdAt&sortOrder=DESC')
-    } else if (key === 'news') {
-      analytics.track('NEWS_CLICKED', {
-        url: location.href,
-      })
-      const linkTo = 'https://news.cyberrepublic.org'
-      window.location.href = linkTo
     } else if (key === 'blog') {
       analytics.track('BLOG_CLICKED', {
         url: location.href,
