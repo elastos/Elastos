@@ -4,6 +4,7 @@ import BasePage from '@/model/BasePage'
 import {Layout, BackTop} from 'antd'
 import {spring, presets, Motion} from 'react-motion'
 import { StickyContainer } from 'react-sticky'
+import Meta from '@/module/common/Meta'
 import Header from '../layout/Header/Container'
 import MobileMenu from './mobile/side_menu/Container'
 
@@ -40,6 +41,7 @@ export default class extends BasePage {
     return (
       <StickyContainer>
       <Layout className="p_standardPage">
+        <Meta />
         {this.state.showMobile && (
         <Motion {...mp}>
           {
