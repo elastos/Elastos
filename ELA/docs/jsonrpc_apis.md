@@ -40,7 +40,7 @@ Response:
 
 ```
 {
-  "id": null,
+  "id": 1,
   "jsonrpc": "2.0",
   "result": "68692d63a8bfc8887553b97f99f09e523d34a2b599bf5b388436b2ddc85ed76e",
   "error": null
@@ -106,7 +106,6 @@ Request:
   "params":{
   	"blockhash":"f3a7469bb59452ab665f8b8870e1fb30e6a7181e2ea70f377e218d5b13cfa8ed", 
   	"verbosity": 0},
-  "id": 1
 }
 ```
 
@@ -569,7 +568,7 @@ Response:
 ```json
 {
     "error": null,
-    "id": 123456,
+    "id": null,
     "jsonrpc": "2.0",
     "result": [
         "127.0.0.1:64890 (inbound)",
@@ -630,7 +629,7 @@ Response:
 
 {
     "error": null,
-    "id": 123456,
+    "id": null,
     "jsonrpc": "2.0",
     "result": {
         "compile": "v0.2.2-231-g75d2-dirty",
@@ -1880,4 +1879,143 @@ result sample:
 }
 ```
 
-####
+### importaddress
+
+Adds an address into wallet that can be watched.
+
+Note: This process can take a few minutes to complete for rescaning wallet utxo.
+
+#### parameter instruction
+
+| name    | type   | description         |
+| ------- | ------ | ------------------- |
+| address | string | the account address |
+
+Request:
+
+```
+ {
+  "method": "importaddress",
+  "params":{
+    "address": "EQ9e6phmxaUkEmVcKkTLRNzk3jvDiK1o1K"
+  }
+}
+```
+
+Response:
+
+```
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": 0
+}
+```
+
+### importpubkey
+
+Adds a public key into wallet that can be watched.
+
+Note: This process can take a few minutes to complete for rescaning wallet utxo.
+
+#### parameter instruction
+
+| name   | type   | description                |
+| ------ | ------ | -------------------------- |
+| pubkey | string | the hex-encoded public key |
+
+Request:
+
+```
+ {
+  "method": "importpubkey",
+  "params":{
+    "pubkey": "03c5b92b875b9820aba064dd1c93007c8a971fc43d318f7dc7fd6ea1509a424195"
+  }
+}
+```
+
+Response:
+
+```
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": 0
+}
+```
+
+### createrawtransaction
+
+Create a transaction spending the given inputs and creating new outputs.
+
+#### parameter instuction
+
+| name     | type          | description                        |
+| -------- | ------------- | ---------------------------------- |
+| inputs   | array[string] | inputs json array of json objects  |
+| outputs  | array[string] | outputs json array of json objects |
+| locktime | interger      | the transaction lock time number   |
+
+Request:
+
+```
+ {
+  "method": "createrawtransaction",
+  "params":{
+    "inputs":"[{\"txid\":\"a704c4c04c70043a2cce34fa95e20f3d33b0a3dc95dd948dee573673b701c7e7\",\"vout\":1}]",
+    "outputs": "[{\"address\":\"EKn3UGyEoycACJxKu7F8R5U1Pe6NUpni1H\",\"amount\":1},{\"address\":\"EUmvbPnoC59DJWnEx5VkcJNhK6GnjkoHao\",\"amount\":98.9}]",
+    "locktime": 0
+  }
+}
+```
+
+Response:
+
+```
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": "0902000001285f24620c18ddc75b7d1f3090efa619bd5b901a5355c30621dad1c2c6dcfbc000000000000002b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a300e1f5050000000000000000211cc5e2ab8654b4fe70949aceaacb017410df55c300b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3806c7d4d0200000000000000217f7946d05f62a92ed345ed9f1391869517bff44d000000000000"
+}
+```
+
+### signrawtransactionwithkey
+
+Sign the raw transaction with private key.
+
+#### parameter instruction
+
+| name     | type   | description                                |
+| -------- | ------ | ------------------------------------------ |
+| data     | string | the transaction hex string                 |
+| codes    | string | the codes json array of json objects       |
+| privkeys | string | the private key json array of json objects |
+
+
+Request:
+
+```
+ {
+  "method": "signrawtransactionwithkey",
+  "params":{
+    "data": "0902000001e7c701b7733657ee8d94dd95dca3b0333d0fe295fa34ce2c3a04704cc0c404a701000000000002b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a300e1f505000000000000000021121c2c946cb3d88b5272038621290e120193c7e600b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a380a2e2110200000000000000126aa11de1372f5763cd93e9eef71008be74a94693000000000000",
+    "codes": "[\"5321033b4606d3cec58a01a09da325f5849754909fec030e4cf626e6b4104328599fc7210251a471359b13d22cfdb2d8c8ec687a61f9e01c26e6475d58acf77c153c75d62121036e9eebad12dfbd6ea41a770baa735ec8db0a0be39e35db5ff8f5c87a47543e852103e630e917b0cfd076478780dcbfed89bc6db71f2865c2c124c6f95a4e3b9b307b54ae\"]",
+    "privkeys": "[\"ea3ddc681a780866577334de8a2f3e25cbb590c21671d705ce1fef46d84ffd81\"]"
+  }
+}
+```
+
+Response:
+
+```
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": "0902000001e7c701b7733657ee8d94dd95dca3b0333d0fe295fa34ce2c3a04704cc0c404a701000000000002b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a300e1f505000000000000000021121c2c946cb3d88b5272038621290e120193c7e600b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a380a2e2110200000000000000126aa11de1372f5763cd93e9eef71008be74a946930000000000014140e0bdb6879df338b0aa0039e900237471315342a06e4f40de2777903179c4fd77a48557058e6428bb403318ac2f101501761ce7ae2bb68bc0b5ccf47f5049aef38b5321033b4606d3cec58a01a09da325f5849754909fec030e4cf626e6b4104328599fc7210251a471359b13d22cfdb2d8c8ec687a61f9e01c26e6475d58acf77c153c75d62121036e9eebad12dfbd6ea41a770baa735ec8db0a0be39e35db5ff8f5c87a47543e852103e630e917b0cfd076478780dcbfed89bc6db71f2865c2c124c6f95a4e3b9b307b54ae"
+}
+```
