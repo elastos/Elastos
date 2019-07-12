@@ -101,7 +101,7 @@ namespace Elastos {
 			// transaction ordering is not guaranteed, so check the entire UTXO set against the entire spent output set
 			for (i = _utxos.size(); i > 0; --i) {
 				if (!_parent->_spentOutputs.Contains(_utxos[i - 1])) continue;
-				const TransactionPtr &t = _parent->_allTx.Get(_utxos[i - 1]._hash);
+				TransactionPtr t = _parent->_allTx.Get(_utxos[i - 1]._hash);
 				if (t == nullptr)
 					continue;
 
@@ -177,7 +177,7 @@ namespace Elastos {
 					continue;
 				}
 
-				const TransactionPtr txInput = _parent->_allTx.Get(_utxos[i].Hash());
+				TransactionPtr txInput = _parent->_allTx.Get(_utxos[i].Hash());
 				if (!txInput || _utxos[i].Index() >= txInput->GetOutputs().size())
 					continue;
 
@@ -262,7 +262,7 @@ namespace Elastos {
 						continue;
 					}
 
-					const TransactionPtr txInput = _parent->_allTx.Get(_utxos[i]._hash);
+					TransactionPtr txInput = _parent->_allTx.Get(_utxos[i]._hash);
 					if (!txInput || _utxos[i]._n >= txInput->GetOutputs().size())
 						continue;
 
@@ -343,7 +343,7 @@ namespace Elastos {
 					continue;
 				}
 
-				const TransactionPtr txInput = _parent->_allTx.Get(_utxos[i]._hash);
+				TransactionPtr txInput = _parent->_allTx.Get(_utxos[i]._hash);
 				if (!txInput || _utxos[i]._n >= txInput->GetOutputs().size())
 					continue;
 
@@ -459,7 +459,7 @@ namespace Elastos {
 
 			if (useVotedUTXO) {
 				for (i = 0; i < _utxos.size(); ++i) {
-					const TransactionPtr txInput = _parent->_allTx.Get(_utxos[i]._hash);
+					TransactionPtr txInput = _parent->_allTx.Get(_utxos[i]._hash);
 					if (!txInput || _utxos[i]._n >= txInput->GetOutputs().size())
 						continue;
 
@@ -522,7 +522,7 @@ namespace Elastos {
 
 			for (i = 0; i < _utxos.size() && totalInputAmount < feeAmount; ++i) {
 
-				const TransactionPtr txInput = _parent->_allTx.Get(_utxos[i]._hash);
+				TransactionPtr txInput = _parent->_allTx.Get(_utxos[i]._hash);
 				if (!txInput || _utxos[i]._n >= txInput->GetOutputs().size())
 					continue;
 
