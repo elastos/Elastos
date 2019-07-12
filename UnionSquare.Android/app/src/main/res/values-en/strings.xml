@@ -120,7 +120,7 @@
     <string name="walletpwdnotnull">Wallet password musn\'t be empty</string>
     <string name="keynotthesame">Different passwords</string>
     <string name="copytosafeplace">Please save the text in a safe place</string>
-    <string name="copytoclipboard">Copy to clipboard</string>
+    <string name="copytoclipboard">Copy to Clipboard</string>
     <string name="enteraddresslist">Enter Address List</string>
     <string name="copyreceiptaddress">Copy Address</string>
     <string name="addresslist">Address List</string>
@@ -187,12 +187,12 @@
     <string name="please_enter_ticket">Please enter number of votes</string>
     <string name="lack_of_balance">Insufficient balance</string>
     <string name="transfertype0">Coinbase Transaction</string>
-    <string name="transfertype1">Create Asset Transaction </string>
+    <string name="transfertype1">Register Asset Transaction </string>
     <string name="transfertype2">Transfer Transaction</string>
-    <string name="transfertype3">Memo Transaction</string>
+    <string name="transfertype3">Record Transaction</string>
     <string name="transfertype4">Deployment Transaction</string>
-    <string name="transfertype5">Sidechain mining Transaction</string>
-    <string name="transfertype6">Sidechain deposit Transaction</string>
+    <string name="transfertype5">Sidechain Mining Transaction</string>
+    <string name="transfertype6">Sidechain Deposit Transaction</string>
     <string name="transfertype7">Sidechain withdraw Transaction</string>
     <string name="transfertype8">Cross Chain transfer Transaction</string>
     <string name="transfertype9">Node Registration Transaction</string>
@@ -393,5 +393,7 @@
     <string name="mulsignpiblickey">Multi-Sign Public Keys</string>
     <string name="scancreatemulwallet">Scan to create multi-sign wallet</string>
     <string name="copymulpublickey">Copy to Clipboard</string>
+    <string name="pleasesign">请使用含有主私钥的钱包签名当前交易</string>
+    <string name="waitingsign">待签名交易</string>
     <string name="invalidnode">失效节点</string>
 </resources>

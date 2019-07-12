@@ -92,7 +92,7 @@ public class SubWalletCallback {
      * @param lastBlockTime      timestamp of the last block.
      */
     public void OnBlockSyncProgress(int currentBlockHeight, int estimatedHeight, long lastBlockTime) {
-//        Log.i(TAG, GetWalletID() + "[OnBlockSyncProgress] (" + currentBlockHeight + "/" + estimatedHeight + ") t = " + lastBlockTime);
+        Log.i(TAG, GetWalletID() + "[OnBlockSyncProgress] (" + currentBlockHeight + "/" + estimatedHeight + ") t = " + lastBlockTime);
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("currentBlockHeight", currentBlockHeight);
@@ -175,12 +175,15 @@ public class SubWalletCallback {
 
     public void OnConnectStatusChanged(String status) {
         JSONObject jsonObject = new JSONObject();
+        Log.i(TAG, GetWalletID() + "[OnConnectStatusChanged] status=" + status );
+
 
         try {
             jsonObject.put("status", status);
             jsonObject.put("MasterWalletID", mMasterWalletID);
             jsonObject.put("ChainID", mSubWalletID);
             jsonObject.put("Action", "OnConnectStatusChanged");
+            org.elastos.wallet.ela.utils.Log.i("xxxxxx",jsonObject.toString());
             mListener.OnConnectStatusChanged(jsonObject);
         } catch (JSONException e) {
             e.printStackTrace();

@@ -15,7 +15,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
-import com.scwang.smartrefresh.layout.constant.RefreshState;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
 import org.elastos.wallet.R;
@@ -32,6 +31,7 @@ import org.elastos.wallet.ela.ui.Assets.fragment.CreateSignReadOnlyWalletFragmen
 import org.elastos.wallet.ela.ui.Assets.fragment.WalletListFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.WallletManageFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.mulsignwallet.CreateMulWalletFragment;
+import org.elastos.wallet.ela.ui.Assets.fragment.transfer.SignFragment;
 import org.elastos.wallet.ela.ui.Assets.listener.ISubWalletListener;
 import org.elastos.wallet.ela.ui.Assets.presenter.AssetsPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
@@ -40,7 +40,6 @@ import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.utils.Constant;
-import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.ScanQRcodeUtil;
@@ -171,6 +170,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         if (resultCode == RESULT_OK && requestCode == ScanQRcodeUtil.SCAN_QR_REQUEST_CODE && data != null) {
             String result = data.getStringExtra("result");//&& matcherUtil.isMatcherAddr(result)
             if (!TextUtils.isEmpty(result) /*&& matcherUtil.isMatcherAddr(result)*/) {
+                Log.i("::", result);
                 try {
                     JsonObject jsonObject = new JsonParser().parse(result).getAsJsonObject();
                     int type = jsonObject.get("type").getAsInt();
@@ -178,14 +178,20 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                     bundle.putString("result", result);
                     switch (type) {
                         case Constant.CREATEREADONLY:
-                            start(CreateSignReadOnlyWalletFragment.class, bundle);
+                            //创建只读钱包
+                            ((BaseFragment) getParentFragment()).start(CreateSignReadOnlyWalletFragment.class, bundle);
                             break;
                         case Constant.CREATEMUL:
-                            start(CreateMulWalletFragment.class, bundle);
+                            //创建多签钱包
+                            ((BaseFragment) getParentFragment()).start(CreateMulWalletFragment.class, bundle);
+                            break;
+                        case Constant.SIGN:
+                            //去签名
+                            ((BaseFragment) getParentFragment()).start(SignFragment.class, bundle);
                             break;
                     }
                 } catch (Exception e) {
-                    showToast(result);
+                    showToast(result + "??");
                 }
 
             }
@@ -210,14 +216,18 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 ivTitleLeft.setImageResource(R.mipmap.multi_wallet_readonly);
                 break;
         }
-
     }
 
-    private void setWalletViewWithNew(Wallet wallet) {
+    /**
+     * 这里调用getAllSubWallets会刷新recycleview
+     *
+     * @param wallet
+     */
+    private void setWalletViewNew(Wallet wallet) {
         setWalletView(wallet);
         assetsPresenter.getAllSubWallets(wallet.getWalletId(), this);
-
     }
+
 
     private void setRecycleView() {
         List<org.elastos.wallet.ela.db.table.SubWallet> assetList = listMap.get(wallet.getWalletId());
@@ -235,7 +245,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     }
 
     @Override
-    public void onGetAllSubWallets(List<SubWallet> data, int type) {
+    public synchronized void onGetAllSubWallets(List<SubWallet> data, int type) {
       /*  if (type == 1) {
             for (SubWallet newSubWallet : data) {
                 if (newSubWallet.getBelongId().equals(wallet.getWalletId())) {
@@ -346,6 +356,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                     if (lastBlockTime != 0) {
                         // String curentTime = DateUtil.time(lastBlockTime);
                         subWallet.setSyncTime(lastBlockTime + "");
+                        subWallet.setFiled1("Connected");
                     }
                     subWallet.setProgress(progress);
                     if (wallet.getWalletId().equals(MasterWalletID)) {
@@ -439,12 +450,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             //初始化map
             commonGetBalancePresenter.getBalance(wallet.getWalletId(), assetsItemEntity.getChainId(), 2, this);
         }
-
-        // assetsPresenter.getAllSubWallets(wallet.getWalletId(), this); Sub wallet callback 3873434088 already exist
-        if (refreshLayout.getState() == RefreshState.Refreshing) {
-            refreshLayout.finishRefresh();
-        }
-        assetsPresenter.getAllSubWallets(wallet.getWalletId(), 1, this);
+        // assetsPresenter.getAllSubWallets(wallet.getWalletId(), 1, this);
 
     }
 
@@ -478,6 +484,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             if (!wallet.getWalletId().equals(temp.getWalletId())) {
                 wallet = temp;
                 setWalletView(wallet);
+                setRecycleView();
             }
 
         }
@@ -486,7 +493,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             Wallet temp = (Wallet) result.getObj();
             if (!wallet.getWalletId().equals(temp.getWalletId())) {
                 wallet = temp;
-                setWalletViewWithNew(wallet);
+                setWalletViewNew(wallet);
             }
 
         }
@@ -504,11 +511,12 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             if (wallet.getWalletId().equals(walletId)) {
                 wallet = realmUtil.queryDefauleWallet();
                 setWalletView(wallet);
+                setRecycleView();
             }
         }
         if (integer == RxEnum.UPDATAPROPERTY.ordinal()) {
             //子钱包改变  创建或删除
-            setWalletViewWithNew(wallet);
+            setWalletViewNew(wallet);
         }
         if (integer == RxEnum.UPDATAPROGRESS.ordinal()) {
             //progress改变
