@@ -1,4 +1,5 @@
 import React from 'react'
+import { Helmet } from 'react-helmet'
 import {
   Form, Spin, Button, Input, message, Modal, Anchor,
 } from 'antd'
@@ -119,6 +120,12 @@ class C extends StandardPage {
 
     return (
       <div>
+        <Helmet>
+          {/* <title>Proposal Detail</title> */}
+          <meta property="og:title" content="Proposal Detail" />
+          <meta property="og:description" content={data.title} />
+          <meta name="description" content={data.title} />
+        </Helmet>
         {anchorNode}
         <div className="p_CVoteDetail">
         <StickyContainer>
