@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef __ELASTOS_SDK_PAYLOADRETURNDEPOSITCOIN_H__
-#define __ELASTOS_SDK_PAYLOADRETURNDEPOSITCOIN_H__
+#ifndef __ELASTOS_SDK_RETURNDEPOSITCOIN_H__
+#define __ELASTOS_SDK_RETURNDEPOSITCOIN_H__
 
 #include "IPayload.h"
 

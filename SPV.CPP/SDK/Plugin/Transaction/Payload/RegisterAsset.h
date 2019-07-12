@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef __ELASTOS_SDK_PAYLOADREGISTERASSET_H__
-#define __ELASTOS_SDK_PAYLOADREGISTERASSET_H__
+#ifndef __ELASTOS_SDK_REGISTERASSET_H__
+#define __ELASTOS_SDK_REGISTERASSET_H__
 
 #include "IPayload.h"
 

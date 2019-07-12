@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef __ELASTOS_SDK_PAYLOADTRANSFERCROSSCHAINASSET_H
-#define __ELASTOS_SDK_PAYLOADTRANSFERCROSSCHAINASSET_H
+#ifndef __ELASTOS_SDK_TRANSFERCROSSCHAINASSET_H
+#define __ELASTOS_SDK_TRANSFERCROSSCHAINASSET_H
 
 #include "IPayload.h"
 

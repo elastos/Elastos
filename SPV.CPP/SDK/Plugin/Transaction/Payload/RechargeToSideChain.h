@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef __ELASTOS_SDK_PAYLOADISSUETOKEN_H
-#define __ELASTOS_SDK_PAYLOADISSUETOKEN_H
+#ifndef __ELASTOS_SDK_RECHARGETOSIDECHAIN_H
+#define __ELASTOS_SDK_RECHARGETOSIDECHAIN_H
 
 #include <SDK/Common/uint256.h>
 #include "IPayload.h"

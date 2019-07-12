@@ -1096,7 +1096,7 @@ namespace Elastos {
 				peersCount = _peers.size();
 
 				// remove peers more than 3 hours old, or until there are only 1000 left
-				while (peers.size() > 1000 && _peers.back().Timestamp + 3 * 60 * 60 < now) peersCount--;
+				while (peers.size() > 1000 && _peers[peersCount - 1].Timestamp + 3 * 60 * 60 < now) peersCount--;
 				_peers.resize(peersCount);
 				for (size_t i = 0; i < _peers.size(); ++i) {
 					save.push_back(_peers[i]);

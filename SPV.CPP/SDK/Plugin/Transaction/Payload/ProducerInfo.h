@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef __ELASTOS_SDK_PAYLOADREGISTERPRODUCER_H__
-#define __ELASTOS_SDK_PAYLOADREGISTERPRODUCER_H__
+#ifndef __ELASTOS_SDK_PRODUCERINFO_H__
+#define __ELASTOS_SDK_PRODUCERINFO_H__
 
 #include <SDK/Plugin/Transaction/Payload/IPayload.h>
 
