@@ -14,6 +14,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
@@ -79,12 +81,20 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
     protected int getLayoutId() {
         return R.layout.fragment_create_mul;
     }
+
     @Override
     protected void setExtraData(Bundle data) {
         super.setExtraData(data);
-        publicKey = data.getString("result");
+        String result = data.getString("result");
+        try {
+            JsonObject jsonObject = new JsonParser().parse(result).getAsJsonObject();
+            publicKey = jsonObject.get("data").getAsString();
+        } catch (Exception e) {
+            publicKey = null;
+        }
 
     }
+
     @Override
     protected void initView(View view) {
         tvTitle.setText(getString(R.string.createmulwalllet));
@@ -99,7 +109,7 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
 
     private void setRecycleView() {
         if (adapter == null) {
-            adapter = new AddMulSignPublicKeyAdapter(this);
+            adapter = new AddMulSignPublicKeyAdapter(this,publicKey);
             adapter.setCount(count);
             rv.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
             rv.setAdapter(adapter);

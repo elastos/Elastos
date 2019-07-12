@@ -40,6 +40,7 @@ import org.elastos.wallet.ela.ui.find.presenter.VoteFirstPresenter;
 import org.elastos.wallet.ela.ui.find.viewdata.RegisteredProducerInfoViewData;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
+import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
@@ -141,7 +142,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
         new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), chainId, 2, this);
         //String synctime = new RealmUtil().querySubWalletSyncTime(wallet.getWalletId(), chainId);
         if (subWallet != null) {
-            tvSynctime.setText(getString(R.string.lastsynctime) + subWallet.getSyncTime());
+            tvSynctime.setText(getString(R.string.lastsynctime) + DateUtil.time(subWallet.getSyncTime()));
         }
 
         registReceiver();
@@ -326,7 +327,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
             SubWallet subWallet = (SubWallet) result.getObj();
             if (subWallet != null && subWallet.getBelongId().equals(wallet.getWalletId()) &&
                     subWallet.getChainId().equals(chainId)) {
-                tvSynctime.setText(getString(R.string.lastsynctime) + subWallet.getSyncTime());
+                tvSynctime.setText(getString(R.string.lastsynctime) + DateUtil.time(subWallet.getSyncTime()));
             }
         }
 

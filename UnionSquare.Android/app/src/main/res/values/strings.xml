@@ -398,5 +398,7 @@
     <string name="mulsignpiblickey">多签公钥</string>
     <string name="scancreatemulwallet">扫描二维码可创建多签钱包</string>
     <string name="copymulpublickey">复制多签公钥</string>
+    <string name="pleasesign">请使用含有主私钥的钱包签名当前交易</string>
+    <string name="waitingsign">待签名交易</string>
 
 </resources>

@@ -58,7 +58,7 @@ public class CreateSignReadOnlyWalletFragment extends BaseFragment implements Co
             JsonObject jsonObject = new JsonParser().parse(result).getAsJsonObject();
             result = jsonObject.get("data").getAsString();
         } catch (Exception e) {
-            result = null;
+            //showToast(getString(R.string.error_20007));
         }
 
     }
@@ -85,6 +85,10 @@ public class CreateSignReadOnlyWalletFragment extends BaseFragment implements Co
 
         if (TextUtils.isEmpty(name)) {
             showToast(getString(R.string.inputWalletName));
+            return;
+        }
+        if (TextUtils.isEmpty(result)) {
+            showToast(getString(R.string.error_20001));
             return;
         }
         masterWalletID = AppUtlis.getStringRandom(8);

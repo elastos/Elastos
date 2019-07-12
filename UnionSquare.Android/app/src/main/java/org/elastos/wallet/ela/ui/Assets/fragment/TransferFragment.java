@@ -17,6 +17,7 @@ import org.elastos.wallet.ela.db.table.Contact;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
+import org.elastos.wallet.ela.ui.Assets.fragment.transfer.ToSignFragment;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
@@ -164,7 +165,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
             String attributes = (String) result.getObj();
             Bundle bundle = new Bundle();
             bundle.putString("attributes", attributes);
-            start(SignFragment.class, bundle);
+            start(ToSignFragment.class, bundle);
 
         }
     }

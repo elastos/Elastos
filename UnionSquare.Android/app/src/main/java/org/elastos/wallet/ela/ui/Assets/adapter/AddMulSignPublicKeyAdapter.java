@@ -35,8 +35,11 @@ public class AddMulSignPublicKeyAdapter extends RecyclerView.Adapter<AddMulSignP
 
     }
 
-    public AddMulSignPublicKeyAdapter(CreateMulWalletFragment baseFragment) {
+    private String defaultKey;
+
+    public AddMulSignPublicKeyAdapter(CreateMulWalletFragment baseFragment, String defaultKey) {
         this.baseFragment = baseFragment;
+        this.defaultKey = defaultKey;
         if (map == null) {
             map = new HashMap<>();
         } else {
@@ -53,7 +56,9 @@ public class AddMulSignPublicKeyAdapter extends RecyclerView.Adapter<AddMulSignP
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
-
+        if (!TextUtils.isEmpty(defaultKey) && i == 0 && TextUtils.isEmpty(viewHolder.etPublickey.getText().toString().trim())) {
+            viewHolder.etPublickey.setText(defaultKey);
+        }
         viewHolder.ivPaste.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
