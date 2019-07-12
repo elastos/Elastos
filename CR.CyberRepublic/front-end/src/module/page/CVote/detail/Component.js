@@ -121,7 +121,7 @@ class C extends StandardPage {
     return (
       <div>
         <Helmet>
-          {/* <title>Proposal Detail</title> */}
+          <title>{`${data.title} - Proposal Detail - Cyber Republic`}</title>
           <meta property="og:title" content="Proposal Detail" />
           <meta property="og:description" content={data.title} />
           <meta name="description" content={data.title} />

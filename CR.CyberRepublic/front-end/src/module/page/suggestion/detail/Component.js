@@ -66,7 +66,7 @@ export default class extends StandardPage {
     return (
       <div>
         <Helmet>
-          {/* <title>Suggestion Detail</title> */}
+          <title>{`${detail.title} - Suggestion Detail - Cyber Republic`}</title>
           <meta property="og:title" content="Suggestion Detail" />
           <meta property="og:description" content={detail.title} />
           <meta name="description" content={detail.title} />
