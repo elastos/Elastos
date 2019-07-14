@@ -1187,7 +1187,7 @@ type producerInfo struct {
 
 //a group producer info  include TotalVotes and producer count
 type producersInfo struct {
-	ProducerInfoSlice []producerInfo `json:"producersinfo"`
+	ProducerInfoSlice []producerInfo `json:"producers"`
 	TotalVotes        string         `json:"totalvotes"`
 	TotalCounts       uint64         `json:"totalcounts"`
 }
