@@ -11,7 +11,7 @@ RUN apk update
 # copy folders
 COPY service /restful-services/sidechain-service
 
-RUN sed -i 's#localhost:21606#sidechain-did-node:20606#g' /restful-services/sidechain-service/did.api/src/main/resources/application.properties
+RUN sed -i 's#localhost:21606#privnet-sidechain-did-1:20606#g' /restful-services/sidechain-service/did.api/src/main/resources/application.properties
 RUN sed -i 's#clark##g' /restful-services/sidechain-service/did.api/src/main/resources/application.properties
 RUN sed -i 's#123456##g' /restful-services/sidechain-service/did.api/src/main/resources/application.properties
 RUN sed -i 's#8091#8080#g' /restful-services/sidechain-service/did.api/src/main/resources/application.properties

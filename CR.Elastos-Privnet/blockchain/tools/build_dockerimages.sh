@@ -1,10 +1,8 @@
 #!/bin/bash
 
-while getopts ":p:l:" opt; do
+while getopts ":p:" opt; do
   case $opt in
     p) DOCKER_PUSH="$OPTARG"
-    ;;
-    l) DOCKER_PUSH_LATEST="$OPTARG"
     ;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
@@ -22,6 +20,8 @@ function build_binary_and_docker {
     WORKDIR="${3}"
     BINARY="${4}"
     DOCKERIMAGE="${5}"
+    DOCKER_PUSH_ALTTAG="${6}"
+    DOCKER_PUSH_LATEST="${7}"
 
     cd $REPO
     git checkout master
@@ -34,35 +34,38 @@ function build_binary_and_docker {
     docker build -t "$DOCKERIMAGE:latest" -f $TMPDIR/$WORKDIR/Dockerfile $TMPDIR/$WORKDIR/
     if [ "${DOCKER_PUSH}" == "yes" ]
     then
-        docker tag "$DOCKERIMAGE:latest" "$DOCKERIMAGE:$BRANCH"
-        docker push "$DOCKERIMAGE:$BRANCH"
-    fi
-    if [ "${DOCKER_PUSH_LATEST}" == "yes" ]
-    then
-        docker push "$DOCKERIMAGE:latest"
+        if [ ! -z "${DOCKER_PUSH_ALTTAG}" ]
+        then
+            docker tag "$DOCKERIMAGE:latest" "$DOCKERIMAGE:$DOCKER_PUSH_ALTTAG"
+            docker push "$DOCKERIMAGE:$DOCKER_PUSH_ALTTAG"
+        fi
+        if [ "${DOCKER_PUSH_LATEST}" == "yes" ]
+        then
+            docker push "$DOCKERIMAGE:latest"
+        fi
     fi
     cd $CURRENT_DIR
 }
 
 build_binary_and_docker "v0.3.3" "Elastos.ELA" "ela-mainchain" "ela" \
-    "cyberrepublic/elastos-mainchain-node"
+    "cyberrepublic/elastos-mainchain-node" "v0.3.3" "yes"
 
 build_binary_and_docker "v0.1.1" "Elastos.ELA.Arbiter" "ela-arbitrator" "arbiter" \
-    "cyberrepublic/elastos-arbitrator-node"
+    "cyberrepublic/elastos-arbitrator-node" "v0.1.1" "yes"
 
 build_binary_and_docker "v0.1.2" "Elastos.ELA.SideChain.ID" "ela-sidechain/did" "did" \
-    "cyberrepublic/elastos-sidechain-did-node"
+    "cyberrepublic/elastos-sidechain-did-node" "v0.1.2" "yes"
 
 build_binary_and_docker "v0.1.2" "Elastos.ELA.SideChain.Token" "ela-sidechain/token" "token" \
-    "cyberrepublic/elastos-sidechain-token-node"
+    "cyberrepublic/elastos-sidechain-token-node" "v0.1.2" "yes"
 
 build_binary_and_docker "master" "Elastos.ORG.Wallet.Service" "restful-services/wallet-service" "service" \
-    "cyberrepublic/elastos-wallet-service"
+    "cyberrepublic/elastos-wallet-service" "privnet-v0.4" "no"
 
 build_binary_and_docker "master" "Elastos.ORG.SideChain.Service" "restful-services/sidechain-service" "service" \
-    "cyberrepublic/elastos-sidechain-service"
+    "cyberrepublic/elastos-sidechain-service" "privnet-v0.4" "no"
 
 build_binary_and_docker "master" "Elastos.ORG.API.Misc" "restful-services/api-misc" "misc" \
-    "cyberrepublic/elastos-api-misc-service"
+    "cyberrepublic/elastos-api-misc-service" "privnet-v0.4" "no"
 
 cd $CURRENT_DIR

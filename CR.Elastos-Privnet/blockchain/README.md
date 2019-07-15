@@ -30,12 +30,12 @@ These are located in the `wallets` folder:
 
 ## Repos used to build 
 
-- [Elastos.ELA](https://github.com/elastos/Elastos.ELA): v0.3.2
+- [Elastos.ELA](https://github.com/elastos/Elastos.ELA): v0.3.3
 - [Elastos.ELA.Arbiter](https://github.com/elastos/Elastos.ELA.Arbiter): v0.1.1
 - [Elastos.ELA.SideChain.ID](https://github.com/elastos/Elastos.ELA.Sidechain.ID): v0.1.2
 - [Elastos.ELA.SideChain.Token](https://github.com/elastos/Elastos.ELA.SideChain.Token): v0.1.2
 - [Elastos.ORG.Wallet.Service](https://github.com/elastos/Elastos.ORG.Wallet.Service): master
-- [Elastos.ORG.DID.Service](https://github.com/elastos/Elastos.ORG.DID.Service): master
+- [Elastos.ORG.SideChain.Service](https://github.com/elastos/Elastos.ORG.SideChain.Service): master
 - [Elastos.ORG.API.Misc](https://github.com/elastos/Elastos.ORG.API.Misc): master
 
 ## Containers that are run

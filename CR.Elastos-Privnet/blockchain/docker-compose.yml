@@ -1,13 +1,13 @@
 version : "3"
 services:
 
-  ela-mainchain-normal-1:
-    container_name: ela-mainchain-normal-1
-    image: cyberrepublic/elastos-mainchain-node:v0.3.2
+  privnet-mainchain-node:
+    container_name: privnet-mainchain-node
+    image: cyberrepublic/elastos-mainchain-node:v0.3.3
     volumes:
-      - ~/.volumes/elastos-privnet/mainchain-normal-1:/ela/elastos
-      - ${PWD}/ela-mainchain/node_normal/mainchain-normal-1/config.json:/ela/config.json
-      - ${PWD}/ela-mainchain/node_normal/mainchain-normal-1/keystore.dat:/ela/keystore.dat
+      - ~/.volumes/elastos-privnet/mainchain-node:/ela/elastos
+      - ${PWD}/ela-mainchain/node_normal/mainchain-node/config.json:/ela/config.json
+      - ${PWD}/ela-mainchain/node_normal/mainchain-node/keystore.dat:/ela/keystore.dat
     ports:
       - 10011-10017:20333-20339
     healthcheck:
@@ -19,11 +19,11 @@ services:
       - blockchain
     tty: true
 
-  ela-mainchain-crc-1:
-    container_name: ela-mainchain-crc-1
-    image: cyberrepublic/elastos-mainchain-node:v0.3.2
+  privnet-mainchain-crc-1:
+    container_name: privnet-mainchain-crc-1
+    image: cyberrepublic/elastos-mainchain-node:v0.3.3
     depends_on:
-      - ela-mainchain-normal-1
+      - privnet-mainchain-node
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-crc-1:/ela/elastos
       - ${PWD}/ela-mainchain/node_crc/mainchain-crc-1/config.json:/ela/config.json
@@ -34,11 +34,11 @@ services:
       - blockchain
     tty: true
 
-  ela-mainchain-crc-2:
-    container_name: ela-mainchain-crc-2
-    image: cyberrepublic/elastos-mainchain-node:v0.3.2
+  privnet-mainchain-crc-2:
+    container_name: privnet-mainchain-crc-2
+    image: cyberrepublic/elastos-mainchain-node:v0.3.3
     depends_on:
-      - ela-mainchain-normal-1
+      - privnet-mainchain-node
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-crc-2:/ela/elastos
       - ${PWD}/ela-mainchain/node_crc/mainchain-crc-2/config.json:/ela/config.json
@@ -49,41 +49,11 @@ services:
       - blockchain
     tty: true
 
-  ela-mainchain-crc-3:
-    container_name: ela-mainchain-crc-3
-    image: cyberrepublic/elastos-mainchain-node:v0.3.2
+  privnet-mainchain-dpos-1:
+    container_name: privnet-mainchain-dpos-1
+    image: cyberrepublic/elastos-mainchain-node:v0.3.3
     depends_on:
-      - ela-mainchain-normal-1
-    volumes:
-      - ~/.volumes/elastos-privnet/mainchain-crc-3:/ela/elastos
-      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-3/config.json:/ela/config.json
-      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-3/keystore.dat:/ela/keystore.dat
-    ports:
-      - 10311-10317:20333-20339
-    networks:
-      - blockchain
-    tty: true
-
-  ela-mainchain-crc-4:
-    container_name: ela-mainchain-crc-4
-    image: cyberrepublic/elastos-mainchain-node:v0.3.2
-    depends_on:
-      - ela-mainchain-normal-1
-    volumes:
-      - ~/.volumes/elastos-privnet/mainchain-crc-4:/ela/elastos
-      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-4/config.json:/ela/config.json
-      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-4/keystore.dat:/ela/keystore.dat
-    ports:
-      - 10411-10417:20333-20339
-    networks:
-      - blockchain
-    tty: true
-
-  ela-mainchain-dpos-1:
-    container_name: ela-mainchain-dpos-1
-    image: cyberrepublic/elastos-mainchain-node:v0.3.2
-    depends_on:
-      - ela-mainchain-normal-1
+      - privnet-mainchain-node
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-dpos-1:/ela/elastos
       - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-1/config.json:/ela/config.json
@@ -94,11 +64,11 @@ services:
       - blockchain
     tty: true
 
-  ela-mainchain-dpos-2:
-    container_name: ela-mainchain-dpos-2
-    image: cyberrepublic/elastos-mainchain-node:v0.3.2
+  privnet-mainchain-dpos-2:
+    container_name: privnet-mainchain-dpos-2
+    image: cyberrepublic/elastos-mainchain-node:v0.3.3
     depends_on:
-      - ela-mainchain-normal-1
+      - privnet-mainchain-node
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-dpos-2:/ela/elastos
       - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-2/config.json:/ela/config.json
@@ -109,13 +79,13 @@ services:
       - blockchain
     tty: true
 
-  ela-arbitrator-crc-1:
-    container_name: ela-arbitrator-crc-1
+  privnet-arbitrator-crc-1:
+    container_name: privnet-arbitrator-crc-1
     image: cyberrepublic/elastos-arbitrator-node:v0.1.1
     depends_on:
-      - ela-mainchain-crc-1
-      - ela-sidechain-did-1
-      - ela-sidechain-token-1
+      - privnet-mainchain-crc-1
+      - privnet-sidechain-did-1
+      - privnet-sidechain-token-1
     volumes:
       - ~/.volumes/elastos-privnet/arbitrator-crc-1:/arbiter/elastos_arbiter
       - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-1/config.json:/arbiter/config.json
@@ -126,13 +96,13 @@ services:
       - blockchain
     tty: true
 
-  ela-arbitrator-crc-2:
-    container_name: ela-arbitrator-crc-2
+  privnet-arbitrator-crc-2:
+    container_name: privnet-arbitrator-crc-2
     image: cyberrepublic/elastos-arbitrator-node:v0.1.1
     depends_on:
-      - ela-mainchain-crc-2
-      - ela-sidechain-did-2
-      - ela-sidechain-token-2
+      - privnet-mainchain-crc-2
+      - privnet-sidechain-did-2
+      - privnet-sidechain-token-2
     volumes:
       - ~/.volumes/elastos-privnet/arbitrator-crc-2:/arbiter/elastos_arbiter
       - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-2/config.json:/arbiter/config.json
@@ -143,47 +113,13 @@ services:
       - blockchain
     tty: true
 
-  ela-arbitrator-crc-3:
-    container_name: ela-arbitrator-crc-3
+  privnet-arbitrator-origin-1:
+    container_name: privnet-arbitrator-origin-1
     image: cyberrepublic/elastos-arbitrator-node:v0.1.1
     depends_on:
-      - ela-mainchain-crc-3
-      - ela-sidechain-did-3
-      - ela-sidechain-token-3
-    volumes:
-      - ~/.volumes/elastos-privnet/arbitrator-crc-3:/arbiter/elastos_arbiter
-      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-3/config.json:/arbiter/config.json
-      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-3/keystore.dat:/arbiter/keystore.dat
-    ports:
-      - 50314-50318:20534-20538
-    networks:
-      - blockchain
-    tty: true
-
-  ela-arbitrator-crc-4:
-    container_name: ela-arbitrator-crc-4
-    image: cyberrepublic/elastos-arbitrator-node:v0.1.1
-    depends_on:
-      - ela-mainchain-crc-4
-      - ela-sidechain-did-4
-      - ela-sidechain-token-4
-    volumes:
-      - ~/.volumes/elastos-privnet/arbitrator-crc-4:/arbiter/elastos_arbiter
-      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-4/config.json:/arbiter/config.json
-      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-4/keystore.dat:/arbiter/keystore.dat
-    ports:
-      - 50414-50418:20534-20538
-    networks:
-      - blockchain
-    tty: true
-
-  ela-arbitrator-origin-1:
-    container_name: ela-arbitrator-origin-1
-    image: cyberrepublic/elastos-arbitrator-node:v0.1.1
-    depends_on:
-      - ela-mainchain-dpos-1
-      - ela-sidechain-did-1
-      - ela-sidechain-token-1
+      - privnet-mainchain-dpos-1
+      - privnet-sidechain-did-1
+      - privnet-sidechain-token-1
     volumes:
       - ~/.volumes/elastos-privnet/arbitrator-origin-1:/arbiter/elastos_arbiter
       - ${PWD}/ela-arbitrator/node_origin/arbitrator-origin-1/config.json:/arbiter/config.json
@@ -194,13 +130,13 @@ services:
       - blockchain
     tty: true
 
-  ela-arbitrator-origin-2:
-    container_name: ela-arbitrator-origin-2
+  privnet-arbitrator-origin-2:
+    container_name: privnet-arbitrator-origin-2
     image: cyberrepublic/elastos-arbitrator-node:v0.1.1
     depends_on:
-      - ela-mainchain-dpos-2
-      - ela-sidechain-did-2
-      - ela-sidechain-token-2
+      - privnet-mainchain-dpos-2
+      - privnet-sidechain-did-2
+      - privnet-sidechain-token-2
     volumes:
       - ~/.volumes/elastos-privnet/arbitrator-origin-2:/arbiter/elastos_arbiter
       - ${PWD}/ela-arbitrator/node_origin/arbitrator-origin-2/config.json:/arbiter/config.json
@@ -211,13 +147,13 @@ services:
       - blockchain
     tty: true
 
-  ela-sidechain-did-1:
-    container_name: ela-sidechain-did-1
+  privnet-sidechain-did-1:
+    container_name: privnet-sidechain-did-1
     image: cyberrepublic/elastos-sidechain-did-node:v0.1.2
     depends_on:
-      - ela-mainchain-normal-1
-      - ela-mainchain-dpos-1
-      - ela-mainchain-crc-1
+      - privnet-mainchain-node
+      - privnet-mainchain-dpos-1
+      - privnet-mainchain-crc-1
     volumes:
       - ~/.volumes/elastos-privnet/did-1:/did/elastos_did
       - ${PWD}/ela-sidechain/did/did-1/config.json:/did/config.json
@@ -227,13 +163,13 @@ services:
       - blockchain
     tty: true 
 
-  ela-sidechain-did-2:
-    container_name: ela-sidechain-did-2
+  privnet-sidechain-did-2:
+    container_name: privnet-sidechain-did-2
     image: cyberrepublic/elastos-sidechain-did-node:v0.1.2
     depends_on:
-      - ela-mainchain-normal-1
-      - ela-mainchain-dpos-2
-      - ela-mainchain-crc-2
+      - privnet-mainchain-node
+      - privnet-mainchain-dpos-2
+      - privnet-mainchain-crc-2
     volumes:
       - ~/.volumes/elastos-privnet/did-2:/did/elastos_did
       - ${PWD}/ela-sidechain/did/did-2/config.json:/did/config.json
@@ -243,43 +179,13 @@ services:
       - blockchain
     tty: true 
 
-  ela-sidechain-did-3:
-    container_name: ela-sidechain-did-3
-    image: cyberrepublic/elastos-sidechain-did-node:v0.1.2
-    depends_on:
-      - ela-mainchain-normal-1
-      - ela-mainchain-crc-3
-    volumes:
-      - ~/.volumes/elastos-privnet/did-3:/did/elastos_did
-      - ${PWD}/ela-sidechain/did/did-3/config.json:/did/config.json
-    ports:
-      - 30311-30315:20604-20608
-    networks:
-      - blockchain
-    tty: true 
-
-  ela-sidechain-did-4:
-    container_name: ela-sidechain-did-4
-    image: cyberrepublic/elastos-sidechain-did-node:v0.1.2
-    depends_on:
-      - ela-mainchain-normal-1
-      - ela-mainchain-crc-4
-    volumes:
-      - ~/.volumes/elastos-privnet/did-4:/did/elastos_did
-      - ${PWD}/ela-sidechain/did/did-4/config.json:/did/config.json
-    ports:
-      - 30411-30415:20604-20608
-    networks:
-      - blockchain
-    tty: true 
-
-  ela-sidechain-token-1:
-    container_name: ela-sidechain-token-1
+  privnet-sidechain-token-1:
+    container_name: privnet-sidechain-token-1
     image: cyberrepublic/elastos-sidechain-token-node:v0.1.2
     depends_on:
-      - ela-mainchain-normal-1
-      - ela-mainchain-dpos-1
-      - ela-mainchain-crc-1
+      - privnet-mainchain-node
+      - privnet-mainchain-dpos-1
+      - privnet-mainchain-crc-1
     volumes:
       - ~/.volumes/elastos-privnet/token-1:/token/elastos_token
       - ${PWD}/ela-sidechain/token/token-1/config.json:/token/config.json
@@ -289,13 +195,13 @@ services:
       - blockchain
     tty: true 
 
-  ela-sidechain-token-2:
-    container_name: ela-sidechain-token-2
+  privnet-sidechain-token-2:
+    container_name: privnet-sidechain-token-2
     image: cyberrepublic/elastos-sidechain-token-node:v0.1.2
     depends_on:
-      - ela-mainchain-normal-1
-      - ela-mainchain-dpos-2
-      - ela-mainchain-crc-2
+      - privnet-mainchain-node
+      - privnet-mainchain-dpos-2
+      - privnet-mainchain-crc-2
     volumes:
       - ~/.volumes/elastos-privnet/token-2:/token/elastos_token
       - ${PWD}/ela-sidechain/token/token-2/config.json:/token/config.json
@@ -305,41 +211,11 @@ services:
       - blockchain
     tty: true 
 
-  ela-sidechain-token-3:
-    container_name: ela-sidechain-token-3
-    image: cyberrepublic/elastos-sidechain-token-node:v0.1.2
+  privnet-wallet-service:
+    container_name: privnet-wallet-service
+    image: cyberrepublic/elastos-wallet-service:privnet-v0.4
     depends_on:
-      - ela-mainchain-normal-1
-      - ela-mainchain-crc-3
-    volumes:
-      - ~/.volumes/elastos-privnet/token-3:/token/elastos_token
-      - ${PWD}/ela-sidechain/token/token-3/config.json:/token/config.json
-    ports:
-      - 40311-40315:20614-20618
-    networks:
-      - blockchain
-    tty: true 
-
-  ela-sidechain-token-4:
-    container_name: ela-sidechain-token-4
-    image: cyberrepublic/elastos-sidechain-token-node:v0.1.2
-    depends_on:
-      - ela-mainchain-normal-1
-      - ela-mainchain-crc-4
-    volumes:
-      - ~/.volumes/elastos-privnet/token-4:/token/elastos_token
-      - ${PWD}/ela-sidechain/token/token-4/config.json:/token/config.json
-    ports:
-      - 40411-40415:20614-20618
-    networks:
-      - blockchain
-    tty: true 
-
-  ela-wallet-service:
-    container_name: ela-wallet-service
-    image: cyberrepublic/elastos-wallet-service:latest
-    depends_on:
-      - ela-mainchain-normal-1
+      - privnet-mainchain-node
     ports:
       - 8091:8080
     healthcheck:
@@ -351,12 +227,11 @@ services:
       - blockchain
     tty: true 
 
-  ela-did-service:
-    container_name: ela-did-service
-    image: cyberrepublic/elastos-did-service:latest
+  privnet-sidechain-service:
+    container_name: privnet-sidechain-service
+    image: cyberrepublic/elastos-sidechain-service:privnet-v0.4
     depends_on:
-      - ela-mainchain-normal-1
-      - ela-sidechain-did-1
+      - privnet-sidechain-did-1
     ports:
       - 8092:8080
     healthcheck:
@@ -368,15 +243,15 @@ services:
       - blockchain
     tty: true 
 
-  ela-api-misc-mainchain:
-    container_name: ela-api-misc-mainchain
-    image: cyberrepublic/elastos-api-misc-service:latest
+  privnet-api-misc-mainchain:
+    container_name: privnet-api-misc-mainchain
+    image: cyberrepublic/elastos-api-misc-service:privnet-v0.4
     volumes:
       - ${PWD}/restful-services/api-misc/mainchain/config.json:/home/elauser/config.json
       - ${PWD}/restful-services/api-misc/mainchain/deploy.sh:/home/elauser/deploy.sh
     depends_on:
-      - ela-mysql
-      - ela-mainchain-normal-1
+      - privnet-mysql
+      - privnet-mainchain-node
     ports:
       - 9091:8080
     healthcheck:
@@ -388,15 +263,15 @@ services:
       - blockchain
     tty: true
 
-  ela-api-misc-sidechain-did:
-    container_name: ela-api-misc-sidechain-did
-    image: cyberrepublic/elastos-api-misc-service:latest
+  privnet-api-misc-sidechain-did:
+    container_name: privnet-api-misc-sidechain-did
+    image: cyberrepublic/elastos-api-misc-service:privnet-v0.4
     volumes:
       - ${PWD}/restful-services/api-misc/sidechain/did/config.json:/home/elauser/config.json
       - ${PWD}/restful-services/api-misc/sidechain/did/deploy.sh:/home/elauser/deploy.sh
     depends_on:
-      - ela-mysql
-      - ela-sidechain-did-1
+      - privnet-mysql
+      - privnet-sidechain-did-1
     ports:
       - 9092:8080
     healthcheck:
@@ -408,9 +283,9 @@ services:
       - blockchain
     tty: true
 
-  ela-mysql:
-    container_name: ela-mysql
-    image: mysql:5.6
+  privnet-mysql:
+    container_name: privnet-mysql
+    image: mysql:5.7
     volumes:
       - ~/.volumes/elastos-privnet/mysql:/var/lib/mysql
     environment:

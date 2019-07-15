@@ -4,19 +4,15 @@
         "SPVMagic": 7630401,
         "SPVDisableDNS": true,
         "PermanentPeers": [
-            "ela-sidechain-token-1:20618",
-            "ela-sidechain-token-2:20618",
-            "ela-sidechain-token-3:20618",
-            "ela-sidechain-token-4:20618"
+            "privnet-sidechain-token-1:20618",
+            "privnet-sidechain-token-2:20618"
         ],
         "SPVPermanentPeers": [
-            "ela-mainchain-normal-1:20338",
-            "ela-mainchain-crc-1:20338",
-            "ela-mainchain-crc-2:20338",
-            "ela-mainchain-crc-3:20338",
-            "ela-mainchain-crc-4:20338",
-            "ela-mainchain-dpos-1:20338",
-            "ela-mainchain-dpos-2:20338"
+            "privnet-mainchain-node:20338",
+            "privnet-mainchain-crc-1:20338",
+            "privnet-mainchain-crc-2:20338",
+            "privnet-mainchain-dpos-1:20338",
+            "privnet-mainchain-dpos-2:20338"
         ],
         "ExchangeRate": 1.0,
         "MinCrossChainTxFee": 10000,
