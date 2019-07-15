@@ -2,14 +2,18 @@ package checkpoint
 
 import (
 	"bytes"
-	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/utils"
+	"errors"
+	"fmt"
 	"io/ioutil"
+	"math"
 	"os"
 	"path/filepath"
 	"strconv"
 	"sync"
+
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/utils"
 )
 
 const DefaultCheckpoint = "default"
@@ -47,16 +51,20 @@ type ICheckPoint interface {
 	// choose between multi-history checkpoints.
 	SetHeight(uint32)
 
-	// SavePeriod defines who long should we save the checkpoint.
+	// SavePeriod defines how long should we save the checkpoint.
 	SavePeriod() uint32
 
+	// EffectivePeriod defines the legal height a checkpoint can take
+	// effect.
 	EffectivePeriod() uint32
 
 	// DataExtension defines extension of checkpoint related data files.
 	DataExtension() string
 
+	// Generator returns a generator to create a checkpoint by a data buffer.
 	Generator() func(buf []byte) ICheckPoint
 
+	// LogError will output the specify error with custom log format.
 	LogError(err error)
 }
 
@@ -77,6 +85,7 @@ type Config struct {
 // Manager holds checkpoints save automatically.
 type Manager struct {
 	checkpoints map[string]ICheckPoint
+	channels    map[string]*fileChannels
 	cfg         *Config
 	mtx         sync.RWMutex
 }
@@ -87,32 +96,20 @@ func (m *Manager) OnBlockSaved(block *types.DposBlock,
 	filter func(point ICheckPoint) bool) {
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
-
-	for _, v := range m.checkpoints {
-		if filter != nil && filter(v) {
-			continue
-		}
-		v.OnBlockSaved(block)
-
-		if block.Height >= v.GetHeight()+v.SavePeriod() {
-			snapshot := v.Snapshot()
-			v.SetHeight(block.Height)
-			// save checkpoint to corresponding file asynchronously.
-			go func() {
-				if err := m.saveCheckpoint(snapshot); err != nil {
-					snapshot.LogError(err)
-				}
-			}()
-		} else if block.Height >= v.GetHeight()+v.EffectivePeriod() {
-
-		}
-	}
+	m.onBlockSaved(block, filter, true)
 }
 
 // OnRollbackTo is an event fired during the block chain rollback, since we
 // only tolerance 6 blocks rollback so out max rollback support can be 6 blocks
 // by default.
 func (m *Manager) OnRollbackTo(height uint32) error {
+	m.mtx.Lock()
+	defer m.mtx.Unlock()
+	for _, v := range m.checkpoints {
+		if err := v.OnRollbackTo(height); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -121,6 +118,7 @@ func (m *Manager) Register(checkpoint ICheckPoint) {
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
 	m.checkpoints[checkpoint.Key()] = checkpoint
+	m.channels[checkpoint.Key()] = NewFileChannels(m.cfg)
 }
 
 // Unregister will unregister a checkpoint with key in checkpoint as the
@@ -128,7 +126,14 @@ func (m *Manager) Register(checkpoint ICheckPoint) {
 func (m *Manager) Unregister(key string) {
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
+
+	if _, ok := m.channels[key]; !ok {
+		return
+	}
+
 	delete(m.checkpoints, key)
+	m.channels[key].Exit()
+	delete(m.channels, key)
 }
 
 // GetCheckpoint get a checkpoint by key and height. If height is lower than
@@ -155,54 +160,68 @@ func (m *Manager) GetCheckpoint(key string, height uint32) (
 	}
 }
 
-func (m *Manager) saveCheckpoint(checkpoint ICheckPoint) (err error) {
-	dir := m.getCheckpointDirectory(checkpoint)
-	if !utils.FileExisted(dir) {
-		if err = os.Mkdir(dir, 0700); err != nil {
+// Restore will load all data of each checkpoints file and store in
+// corresponding meta-data.
+func (m *Manager) Restore() (err error) {
+	m.mtx.Lock()
+	defer m.mtx.Unlock()
+
+	for _, v := range m.checkpoints {
+		if err = m.loadDefaultCheckpoint(v); err != nil {
 			return
 		}
 	}
-
-	filename := m.getFileFullPath(checkpoint)
-	var file *os.File
-	file, err = os.OpenFile(filename,
-		os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
-	if err != nil {
-		return
-	}
-
-	buf := new(bytes.Buffer)
-	if err = checkpoint.Serialize(buf); err != nil {
-		return
-	}
-
-	if _, err = file.Write(buf.Bytes()); err != nil {
-		return
-	}
-
-	if !m.cfg.EnableHistory {
-		// remove files if successfully saved
-		reserveName := m.getFileName(checkpoint, checkpoint.GetHeight())
-		var files []os.FileInfo
-		files, err = ioutil.ReadDir(dir)
-		if err != nil {
-			return err
-		}
-
-		for _, f := range files {
-			if f.Name() == reserveName {
-				continue
-			}
-			if e := os.Remove(filepath.Join(dir, f.Name())); e != nil {
-				checkpoint.LogError(e)
-			}
-		}
-	}
-	return nil
+	return
 }
 
-func (m *Manager) replaceCheckpoint(checkpoint ICheckPoint) (err error) {
-	return nil
+// SafeHeight returns the minimum height of all checkpoints from which we can
+// rescan block chain data.
+func (m *Manager) SafeHeight() uint32 {
+	m.mtx.RLock()
+	defer m.mtx.RUnlock()
+
+	height := uint32(math.MaxUint32)
+	for _, v := range m.checkpoints {
+		if v.GetHeight() < height {
+			height = v.GetHeight()
+		}
+	}
+	return height
+}
+
+// Close will clean all related resources.
+func (m *Manager) Close() {
+	m.mtx.Lock()
+	defer m.mtx.Unlock()
+	for _, v := range m.channels {
+		v.Exit()
+	}
+}
+
+func (m *Manager) onBlockSaved(block *types.DposBlock,
+	filter func(point ICheckPoint) bool, async bool) {
+	for _, v := range m.checkpoints {
+		if filter != nil && !filter(v) {
+			continue
+		}
+		v.OnBlockSaved(block)
+
+		reply := make(chan bool, 1)
+		hasReplied := true
+		if block.Height >= v.GetHeight()+v.SavePeriod() {
+			v.SetHeight(block.Height)
+			snapshot := v.Snapshot()
+			m.channels[v.Key()].Save(snapshot, reply)
+		} else if block.Height >= v.GetHeight()+v.EffectivePeriod() {
+			m.channels[v.Key()].Replace(v, reply)
+		} else {
+			hasReplied = false
+		}
+
+		if hasReplied && !async {
+			<-reply
+		}
+	}
 }
 
 func (m *Manager) findHistoryCheckpoint(current ICheckPoint,
@@ -217,49 +236,78 @@ func (m *Manager) findHistoryCheckpoint(current ICheckPoint,
 		bestHeight = 0
 	}
 
-	path := m.getFileFullPathByHeight(current, bestHeight)
+	path := getFilePathByHeight(m.cfg.DataPath, current, bestHeight)
+	return m.constructCheckpoint(current, path)
+}
+
+func (m *Manager) loadDefaultCheckpoint(current ICheckPoint) (err error) {
+	path := getDefaultPath(m.cfg.DataPath, current)
+	data, err := m.readFileBuffer(path)
+	if err != nil {
+		return err
+	}
+	buf := new(bytes.Buffer)
+	buf.Write(data)
+	return current.Deserialize(buf)
+}
+
+func (m *Manager) readFileBuffer(path string) (buf []byte, err error) {
 	if !utils.FileExisted(path) {
-		return nil, false
+		err = errors.New(fmt.Sprintf("can't find file: %s", path))
+		return
 	}
 	file, err := os.OpenFile(path, os.O_RDONLY, 0400)
 	if err != nil || file == nil {
-		current.LogError(err)
-		return nil, false
+		return
 	}
-	data, err := ioutil.ReadAll(file)
+	defer file.Close()
+	buf, err = ioutil.ReadAll(file)
+	return
+}
+
+func (m *Manager) constructCheckpoint(proto ICheckPoint, path string) (
+	ICheckPoint, bool) {
+	data, err := m.readFileBuffer(path)
 	if err != nil {
-		current.LogError(err)
+		proto.LogError(err)
 		return nil, false
 	}
-	return current.Generator()(data), true
+	return proto.Generator()(data), true
 }
 
-func (m *Manager) getFileFullPath(checkpoint ICheckPoint) string {
-	return m.getFileFullPathByHeight(checkpoint, checkpoint.GetHeight())
+func getFilePath(root string, checkpoint ICheckPoint) string {
+	return getFilePathByHeight(root, checkpoint, checkpoint.GetHeight())
 }
 
-func (m *Manager) getFileFullPathByHeight(checkpoint ICheckPoint,
+func getDefaultPath(root string, checkpoint ICheckPoint) string {
+	return filepath.Join(getCheckpointDirectory(root, checkpoint),
+		string(os.PathSeparator), getDefaultFileName(checkpoint))
+}
+
+func getFilePathByHeight(root string, checkpoint ICheckPoint,
 	height uint32) string {
-	return filepath.Join(m.getCheckpointDirectory(checkpoint),
-		string(os.PathSeparator), m.getFileName(checkpoint, height))
+	return filepath.Join(getCheckpointDirectory(root, checkpoint),
+		string(os.PathSeparator), getFileName(checkpoint, height))
 }
 
-func (m *Manager) getFileName(checkpoint ICheckPoint, height uint32) string {
+func getFileName(checkpoint ICheckPoint, height uint32) string {
 	return strconv.FormatUint(uint64(height), 10) +
 		checkpoint.DataExtension()
 }
 
-func (m *Manager) getDefaultFileName(checkpoint ICheckPoint) string {
+func getDefaultFileName(checkpoint ICheckPoint) string {
 	return DefaultCheckpoint + checkpoint.DataExtension()
 }
 
-func (m *Manager) getCheckpointDirectory(checkpoint ICheckPoint) string {
-	return filepath.Join(m.cfg.DataPath, checkpoint.Key())
+func getCheckpointDirectory(root string,
+	checkpoint ICheckPoint) string {
+	return filepath.Join(root, checkpoint.Key())
 }
 
 func NewManager(cfg *Config) *Manager {
 	m := &Manager{
 		checkpoints: make(map[string]ICheckPoint),
+		channels:    make(map[string]*fileChannels),
 		cfg:         cfg,
 	}
 	return m

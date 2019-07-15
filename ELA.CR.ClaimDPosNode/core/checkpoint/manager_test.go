@@ -4,13 +4,16 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/utils/test"
-	"github.com/stretchr/testify/assert"
 	"io"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/utils/test"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -108,6 +111,54 @@ func (c *checkpoint) OnRollbackTo(height uint32) error {
 	return nil
 }
 
+func TestManager_SaveAndRestore(t *testing.T) {
+	data := uint64(1)
+	currentHeight := uint32(10)
+	pt := &checkpoint{
+		data:   &data,
+		height: currentHeight,
+	}
+
+	manager := NewManager(&Config{
+		EnableHistory: false,
+	})
+	manager.Register(pt)
+
+	// save nothing
+	manager.onBlockSaved(&types.DposBlock{
+		Block: &types.Block{
+			Header: types.Header{Height: currentHeight},
+		},
+	}, nil, false)
+
+	// save current height
+	currentHeight += pt.SavePeriod()
+	manager.onBlockSaved(&types.DposBlock{
+		Block: &types.Block{
+			Header: types.Header{Height: currentHeight},
+		},
+	}, nil, false)
+
+	// replace to default.pt
+	currentHeight += pt.EffectivePeriod()
+	manager.onBlockSaved(&types.DposBlock{
+		Block: &types.Block{
+			Header: types.Header{Height: currentHeight},
+		},
+	}, nil, false)
+
+	// new a checkpoint manager and restore
+	manager2 := NewManager(&Config{
+		EnableHistory: false,
+	})
+	manager2.Register(&checkpoint{})
+	assert.NoError(t, manager2.Restore())
+	assert.Equal(t, currentHeight-pt.EffectivePeriod(),
+		manager2.checkpoints[test.DataDir].GetHeight())
+
+	cleanCheckpoints()
+}
+
 func TestManager_GetCheckpoint_DisableHistory(t *testing.T) {
 	data := uint64(1)
 	currentHeight := uint32(10)
@@ -132,54 +183,56 @@ func TestManager_GetCheckpoint_DisableHistory(t *testing.T) {
 	result, ok = manager.GetCheckpoint(pt.Key(), currentHeight+1)
 	assert.NotEqual(t, nil, result)
 	assert.Equal(t, true, ok)
+
+	manager.Unregister(pt.Key())
 }
 
 func TestManager_GetCheckpoint_EnableHistory(t *testing.T) {
-	//data := uint64(1)
-	//currentHeight := uint32(10)
-	//pt := &checkpoint{
-	//	data:   &data,
-	//	height: 0,
-	//}
-	//
-	//manager := NewManager(&Config{
-	//	EnableHistory:      true,
-	//	HistoryStartHeight: currentHeight,
-	//})
-	//manager.Register(pt)
-	//
-	//manager.OnBlockSaved(&types.DposBlock{
-	//	Block: &types.Block{
-	//		Header: types.Header{Height: currentHeight},
-	//	},
-	//}, nil)
-	//currentHeight += pt.SavePeriod()
-	//
-	//manager.OnBlockSaved(&types.DposBlock{
-	//	Block: &types.Block{
-	//		Header: types.Header{Height: currentHeight},
-	//	},
-	//}, nil)
-	//
-	//result, ok := manager.GetCheckpoint(pt.Key(),
-	//	currentHeight-pt.SavePeriod()-1)
-	//assert.Equal(t, nil, result)
-	//assert.Equal(t, false, ok)
-	//
-	//// less than current height will get history checkpoint
-	//result, ok = manager.GetCheckpoint(pt.Key(), currentHeight-1)
-	//assert.NotEqual(t, nil, result)
-	//assert.Equal(t, true, ok)
-	//
-	//result, ok = manager.GetCheckpoint(pt.Key(), currentHeight)
-	//assert.NotEqual(t, nil, result)
-	//assert.Equal(t, true, ok)
-	//
-	//result, ok = manager.GetCheckpoint(pt.Key(), currentHeight)
-	//assert.NotEqual(t, nil, result)
-	//assert.Equal(t, true, ok)
-	//
-	//cleanCheckpoints()
+	data := uint64(1)
+	currentHeight := uint32(10)
+	pt := &checkpoint{
+		data:   &data,
+		height: 0,
+	}
+
+	manager := NewManager(&Config{
+		EnableHistory:      true,
+		HistoryStartHeight: currentHeight,
+	})
+	manager.Register(pt)
+
+	manager.OnBlockSaved(&types.DposBlock{
+		Block: &types.Block{
+			Header: types.Header{Height: currentHeight},
+		},
+	}, nil)
+	currentHeight += pt.SavePeriod()
+
+	manager.OnBlockSaved(&types.DposBlock{
+		Block: &types.Block{
+			Header: types.Header{Height: currentHeight},
+		},
+	}, nil)
+
+	result, ok := manager.GetCheckpoint(pt.Key(),
+		currentHeight-pt.SavePeriod()-1)
+	assert.Equal(t, nil, result)
+	assert.Equal(t, false, ok)
+
+	// less than current height will get history checkpoint
+	result, ok = manager.GetCheckpoint(pt.Key(), currentHeight-1)
+	assert.NotEqual(t, nil, result)
+	assert.Equal(t, true, ok)
+
+	result, ok = manager.GetCheckpoint(pt.Key(), currentHeight)
+	assert.NotEqual(t, nil, result)
+	assert.Equal(t, true, ok)
+
+	result, ok = manager.GetCheckpoint(pt.Key(), currentHeight)
+	assert.NotEqual(t, nil, result)
+	assert.Equal(t, true, ok)
+
+	cleanCheckpoints()
 }
 
 func TestManager_OnRollbackTo(t *testing.T) {
@@ -196,9 +249,28 @@ func TestManager_OnRollbackTo(t *testing.T) {
 	})
 	manager.Register(pt)
 
+	originalHeight := currentHeight
+	currentHeight += pt.SavePeriod()
+	manager.onBlockSaved(&types.DposBlock{
+		Block: &types.Block{
+			Header: types.Header{Height: currentHeight},
+		},
+	}, nil, false)
+
+	assert.Equal(t, currentHeight, uint32(*pt.data))
+	assert.NoError(t, manager.OnRollbackTo(originalHeight))
+	assert.Equal(t, originalHeight, uint32(*pt.data))
+
 	cleanCheckpoints()
 }
 
 func cleanCheckpoints() {
-
+	var err error
+	var files []os.FileInfo
+	if files, err = ioutil.ReadDir(test.DataDir); err != nil {
+		return
+	}
+	for _, f := range files {
+		os.Remove(filepath.Join(test.DataDir, f.Name()))
+	}
 }
