@@ -358,12 +358,18 @@ namespace Elastos {
 
 			const std::vector<TransactionInput> &inputs = tx->GetInputs();
 
+			uint168 inputProgramHash;
 			TransactionPtr txInput = _walletManager->getWallet()->TransactionForHash(inputs[0].GetTransctionHash());
 
-			ErrorChecker::CheckLogic(txInput == nullptr, Error::GetTransactionInput, "Get tx input error");
-			ErrorChecker::CheckLogic(txInput->GetOutputs().size() <= inputs[0].GetIndex(), Error::GetTransactionInput,
+			if (txInput == nullptr) {
+				CoinBaseUTXOPtr cb = _walletManager->getWallet()->CoinBaseTxForHash(inputs[0].GetTransctionHash());
+				ErrorChecker::CheckLogic(cb == nullptr, Error::GetTransactionInput, "Get tx input error");
+				inputProgramHash = cb->ProgramHash();
+			} else {
+				ErrorChecker::CheckLogic(txInput->GetOutputs().size() <= inputs[0].GetIndex(), Error::GetTransactionInput,
 									 "Input index larger than output size.");
-			const uint168 &inputProgramHash = txInput->GetOutputs()[inputs[0].GetIndex()].GetProgramHash();
+				inputProgramHash = txInput->GetOutputs()[inputs[0].GetIndex()].GetProgramHash();
+			}
 
 			tx->SetTransactionType(Transaction::transferAsset);
 			std::vector<TransactionOutput> &outputs = tx->GetOutputs();
