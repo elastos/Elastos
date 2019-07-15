@@ -224,7 +224,7 @@ class C extends StandardPage {
   renderAnchor() {
     const { data } = this.state
     const { trackingStatus, summaryStatus } = this.props
-    const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.FINAL], data.status)
+    const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL], data.status)
     const trackingTitle = trackingStatus ? <span>{I18N.get('proposal.fields.tracking')} <span style={{ fontSize: 10, color: '#aaa' }}>({I18N.get(`proposal.status.trackingRaw.${trackingStatus}`)})</span></span> : I18N.get('proposal.fields.tracking')
     const summaryTitle = summaryStatus ? <span>{I18N.get('proposal.fields.summary')} <span style={{ fontSize: 10, color: '#aaa' }}>({I18N.get(`proposal.status.summaryRaw.${summaryStatus}`)})</span></span> : I18N.get('proposal.fields.summary')
     const tracking = isShowFollowingUp && <Anchor.Link href="#tracking" title={trackingTitle} />
@@ -446,11 +446,17 @@ class C extends StandardPage {
 
   renderTracking() {
     const { data } = this.state
+    const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL], data.status)
+    if (!isShowFollowingUp) return null
+
     return <Tracking proposal={data} />
   }
 
   renderSummary() {
     const { data } = this.state
+    const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL], data.status)
+    if (!isShowFollowingUp) return null
+
     return <Summary proposal={data} />
   }
 
