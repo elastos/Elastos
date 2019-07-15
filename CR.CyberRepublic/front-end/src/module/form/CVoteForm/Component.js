@@ -134,33 +134,40 @@ class C extends BaseComponent {
     })
   }
 
-  saveDraft = async (ifShowMsg = false) => {
+  saveDraft = async (isShowMsg = false, isShowErr = false) => {
     const { edit, form, updateDraft, suggestionId } = this.props
+    form.validateFields(async (err, values) => {
+      if (err) {
+        // mark error keys
+        if (isShowErr) {
+          this.setState({ errKeys: _.keys(err) })
+          return
+        }
+      }
+      const { title, abstract, goal, motivation, relevance, budget, plan } = values
+      const param = {
+        _id: edit,
+        title,
+      }
+      if (suggestionId) param.suggestionId = suggestionId
 
-    const values = form.getFieldsValue()
-    const { title, abstract, goal, motivation, relevance, budget, plan } = values
-    const param = {
-      _id: edit,
-      title,
-    }
-    if (suggestionId) param.suggestionId = suggestionId
+      if (!_.isEmpty(transform(abstract))) param.abstract = formatValue(abstract)
+      if (!_.isEmpty(transform(goal))) param.goal = formatValue(goal)
+      if (!_.isEmpty(transform(motivation))) param.motivation = formatValue(motivation)
+      if (!_.isEmpty(transform(relevance))) param.relevance = formatValue(relevance)
+      if (!_.isEmpty(transform(budget))) param.budget = formatValue(budget)
+      if (!_.isEmpty(transform(plan))) param.plan = formatValue(plan)
 
-    if (!_.isEmpty(transform(abstract))) param.abstract = formatValue(abstract)
-    if (!_.isEmpty(transform(goal))) param.goal = formatValue(goal)
-    if (!_.isEmpty(transform(motivation))) param.motivation = formatValue(motivation)
-    if (!_.isEmpty(transform(relevance))) param.relevance = formatValue(relevance)
-    if (!_.isEmpty(transform(budget))) param.budget = formatValue(budget)
-    if (!_.isEmpty(transform(plan))) param.plan = formatValue(plan)
-
-    try {
-      await updateDraft(param)
-      if (ifShowMsg) message.success(I18N.get('proposal.msg.draftSaved'))
-    } catch (error) {
-      message.error(error.message)
-    }
+      try {
+        await updateDraft(param)
+        if (isShowMsg) message.success(I18N.get('proposal.msg.draftSaved'))
+      } catch (error) {
+        message.error(error.message)
+      }
+    })
   }
 
-  saveDraftWithMsg = () => this.saveDraft(true)
+  saveDraftWithMsg = () => this.saveDraft(true, true)
 
   getInputProps(data) {
     const { edit } = this.props
@@ -333,8 +340,18 @@ class C extends BaseComponent {
   }
 
   gotoNextTab = () => {
+    const { form } = this.props
     const currentKeyNum = this.state.activeKeyNum
-    this.setState({ activeKeyNum: currentKeyNum + 1 })
+
+    form.validateFields(async (err, values) => {
+      // if (err) {
+      //   // mark error keys
+      // }
+      const errKeys = _.keys(err)
+      this.setState({ errKeys })
+      if (_.includes(errKeys, activeKeys[currentKeyNum])) return
+      this.setState({ activeKeyNum: currentKeyNum + 1 })
+    })
   }
 
   gotoList = () => {
@@ -342,8 +359,17 @@ class C extends BaseComponent {
   }
 
   gotoDetail = () => {
-    const { data: { _id } } = this.props
-    this.props.history.push(`/proposals/${_id}`)
+    const { form } = this.props
+
+    form.validateFields(async (err, values) => {
+      if (err) {
+        // mark error keys
+        this.setState({ errKeys: _.keys(err)})
+        return
+      }
+      const { data: { _id } } = this.props
+      this.props.history.push(`/proposals/${_id}`)
+    })
   }
 
   renderContinueBtn() {
