@@ -364,7 +364,7 @@
     <string name="logkeppin">Saved runtime log to</string>
     <string name="logkeepfail">Get runtime log fail</string>
     <string name="whetherexchange">Too much UTXO detected, Consolidate?</string>
-    <string name="splashword">Smartweb Powered by Blochchain</string>
+    <string name="splashword">Smartweb Powered by Blockchain</string>
     <string name="curentsdkversion">SPVSDK Version&#160;</string>
     <string name="singlewallet">Standard Wallet</string>
     <string name="mulwallet">Multi-Sign Wallet</string>
@@ -393,7 +393,7 @@
     <string name="mulsignpiblickey">Multi-Sign Public Keys</string>
     <string name="scancreatemulwallet">Scan to create multi-sign wallet</string>
     <string name="copymulpublickey">Copy to Clipboard</string>
-    <string name="pleasesign">请使用含有主私钥的钱包签名当前交易</string>
-    <string name="waitingsign">待签名交易</string>
-    <string name="invalidnode">失效节点</string>
+    <string name="pleasesign">Sign the transaction with a wallet containing the private key</string>
+    <string name="waitingsign">Transaction to be Signed</string>
+    <string name="invalidnode">Invalid Node</string>
 </resources>
