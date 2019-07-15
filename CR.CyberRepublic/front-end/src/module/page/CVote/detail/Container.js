@@ -12,8 +12,8 @@ const mapState = state => ({
   isCouncil: state.user.is_council,
   canManage: state.user.is_secretary || state.user.is_council,
   avatar_map,
-  trackingStatus: _.get(_.last(state.cvoteTracking.all_public), 'status'),
-  summaryStatus: _.get(_.last(state.cvoteSummary.all_public), 'status'),
+  trackingStatus: _.get(_.last([...state.cvoteTracking.all_public, ...state.cvoteTracking.all_private]), 'status'),
+  summaryStatus: _.get(_.last([...state.cvoteSummary.all_public, ...state.cvoteSummary.all_private]), 'status'),
 })
 
 const mapDispatch = () => {
