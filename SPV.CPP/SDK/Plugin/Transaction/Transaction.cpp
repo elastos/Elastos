@@ -786,7 +786,7 @@ namespace Elastos {
 								memo.find("text") != std::string::npos &&
 								memo.find("ciphertext") == std::string::npos &&
 								memo.find("msg:") != std::string::npos) {
-								memo = memo.substr(memo.find_first_of("msg:") + 4);
+								memo = memo.substr(memo.find("msg:") + 4);
 							}
 						}
 						break;
