@@ -242,7 +242,6 @@ namespace Elastos {
 		}
 
 		std::string MasterWallet::GetID() const {
-			ArgInfo("{} {}", _id, GetFunName());
 			return _id;
 		}
 

@@ -236,7 +236,7 @@ static void Vote(const std::string &masterWalletID, const std::string &subWallet
 		return;
 	}
 
-	nlohmann::json tx = mainchainSubWallet->CreateVoteProducerTransaction("", std::to_string(stake), publicKeys, memo, false);
+	nlohmann::json tx = mainchainSubWallet->CreateVoteProducerTransaction("", std::to_string(stake), publicKeys, memo, true);
 	logger->debug("tx = {}", tx.dump());
 
 	PublishTransaction(mainchainSubWallet, tx);
@@ -504,9 +504,10 @@ static void GetAllTxSummary(const std::string &masterWalletID, const std::string
 	if (!subWallet)
 		return;
 
-	nlohmann::json txSummary = subWallet->GetAllTransaction(0, 500, "");
+	nlohmann::json txSummary = subWallet->GetAllTransaction(0, 10, "");
 	logger->debug("[{}:{}] all tx -> {}", masterWalletID, subWalletID, txSummary.dump());
 
+#if 0
 	nlohmann::json txns = txSummary["Transactions"];
 	for (nlohmann::json::iterator it = txns.begin(); it != txns.end(); ++it) {
 		nlohmann::json tx = subWallet->GetAllTransaction(0, 500, (*it)["TxHash"]);
@@ -521,8 +522,9 @@ static void GetAllTxSummary(const std::string &masterWalletID, const std::string
 		nlohmann::json cb = subWallet->GetAllCoinBaseTransaction(0, 10000, (*it)["TxHash"]);
 		logger->debug("cb = {}", cb.dump());
 	}
+#endif
 
-	nlohmann::json utxoSummary = subWallet->GetAllUTXOs(0, 500, "Ed8ZSxSB98roeyuRZwwekrnRqcgnfiUDeQ");
+	nlohmann::json utxoSummary = subWallet->GetAllUTXOs(0, 10, "");
 	logger->debug("[{}:{}] all utxos -> {}", masterWalletID, subWalletID, utxoSummary.dump());
 }
 
@@ -537,7 +539,7 @@ static void GetBalance(const std::string &masterWalletID, const std::string &sub
 		logger->debug("{}:{} balance -> {}", masterWalletID, subWalletID, tokenSubWallet->GetBalance(assetID));
 		logger->debug("{}:{} balance info {}", masterWalletID, subWalletID, tokenSubWallet->GetBalanceInfo(assetID).dump());
 	} else {
-		logger->debug("{}:{} balance -> {}", masterWalletID, subWalletID, subWallet->GetBalance());
+		logger->debug("{}:{} balance -> {}", masterWalletID, subWalletID, subWallet->GetBalance(BalanceType::Total));
 		logger->debug("{}:{} balance info -> {}", masterWalletID, subWalletID, subWallet->GetBalanceInfo().dump());
 	}
 }
@@ -595,8 +597,8 @@ static void ELATest() {
 	}
 
 	if (!voteDone) {
-		Vote(gMasterWalletID, gMainchainSubWalletID, 100000000,
-			 {"03b273e27a6820b55fe5a6b7a445814f7c1db300e961661aaed3a06cbdfd3dca5d"});
+		Vote(gMasterWalletID, gMainchainSubWalletID, 5000000000,
+			 nlohmann::json::parse("[\"0205a250b3a96ccc776604fafb84b0f8623fdfda6ec8f42c9154aa727bd95edfe2\",\"03d55285f06683c9e5c6b5892a688affd046940c7161571611ea3a98330f72459f\",\"032459feb52daadef9d6336386bd962c4ca28077c54bda35c83b9430fc9ce7e049\",\"02b6d98b9e8f484e4ea83d5278099be59f945951bb6dc464b792ba0895eab1a774\",\"02f545384070dbee5e259502bd2c22382082c64505ff9df6bb36e3ba44f0607b7e\",\"0368044f3b3582000597d40c9293ea894237a88b2cd55f79a18193399937d22664\",\"022145c89fb500c02ce6b8ba9a51f608cd2c7d1dc99b43f11bdf8589161aa7d690\",\"030d3d2b2c49b7f4f4156f8807471b70a31d33a8ec8b5db7b644e6ae9286d73cb7\",\"024b527700491895b79fc5bfde8a60395307c5416a075503e6ac7d1df61c971c78\",\"02a85be1f6244b40b8778b626bde33e1d666b3b5863f195487e72dc0e2a6af33a1\",\"03b5a108c6e2f2327433b8157c1bfb0c6974b6fa708c2039576952889b9cace3d8\",\"03c0b8a45b51bd3cbb996663681ea79ef58d2925596eaeac3968d157514faffe90\",\"0279d982cda37fa7edc1906ec2f4b3d8da5af2c15723e14f368f3684bb4a1e0889\",\"02a5b07a250fce6147ab6e54febc1f04495f7218ba19fbb4928604e7704838afe4\",\"038659a36232f36f52fbfc67a2f606922c037ec8a53757a04e4e7623943a05fc03\"]"));
 		voteDone = true;
 	}
 

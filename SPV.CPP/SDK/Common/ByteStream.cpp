@@ -27,6 +27,11 @@ namespace Elastos {
 			_buf.clear();
 		}
 
+		void ByteStream::clear() {
+			_rpos = 0;
+			_buf.clear();
+		}
+
 		uint64_t ByteStream::size() const {
 			return _buf.size();
 		}

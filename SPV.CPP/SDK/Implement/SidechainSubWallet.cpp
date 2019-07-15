@@ -64,9 +64,11 @@ namespace Elastos {
 
 			tx->SetTransactionType(Transaction::transferCrossChainAsset, payload);
 
-			nlohmann::json txJson = tx->ToJson();
-			ArgInfo("r => {}", txJson.dump());
-			return txJson;
+			nlohmann::json result;
+			EncodeTx(result, tx);
+
+			ArgInfo("r => {}", result.dump());
+			return result;
 		}
 
 		std::string SidechainSubWallet::GetGenesisAddress() const {

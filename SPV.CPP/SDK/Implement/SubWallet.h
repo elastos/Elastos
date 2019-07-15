@@ -79,14 +79,14 @@ namespace Elastos {
 					bool useVotedUTXO = false);
 
 			virtual nlohmann::json SignTransaction(
-					const nlohmann::json &rawTransaction,
+					const nlohmann::json &createdTx,
 					const std::string &payPassword);
 
 			virtual nlohmann::json GetTransactionSignedSigners(
 					const nlohmann::json &rawTransaction) const;
 
 			virtual nlohmann::json PublishTransaction(
-					const nlohmann::json &rawTransaction);
+					const nlohmann::json &signedTx);
 
 			virtual nlohmann::json GetAllTransaction(
 					uint32_t start,
@@ -111,10 +111,6 @@ namespace Elastos {
 					const std::string &assetID) const;
 
 			virtual std::string GetPublicKey() const;
-
-			virtual nlohmann::json EncodeTransaction(const nlohmann::json &tx) const;
-
-			virtual nlohmann::json DecodeTransaction(const nlohmann::json &encodedTx) const;
 
 			virtual void SyncStart();
 
@@ -189,6 +185,10 @@ namespace Elastos {
 			const CoinInfoPtr &GetCoinInfo() const;
 
 			std::string GetBalanceTypeString(BalanceType type) const;
+
+			void EncodeTx(nlohmann::json &result, const TransactionPtr &tx) const;
+
+			TransactionPtr DecodeTx(const nlohmann::json &encodedTx) const;
 
 		protected:
 			WalletManagerPtr _walletManager;

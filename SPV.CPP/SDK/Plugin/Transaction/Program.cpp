@@ -182,12 +182,15 @@ namespace Elastos {
 			return size;
 		}
 
-		void Program::Serialize(ByteStream &ostream) const {
+		void Program::Serialize(ByteStream &ostream, bool extend) const {
 			ostream.WriteVarBytes(_parameter);
 			ostream.WriteVarBytes(_code);
+			if (extend) {
+				ostream.WriteVarString(_path);
+			}
 		}
 
-		bool Program::Deserialize(const ByteStream &istream) {
+		bool Program::Deserialize(const ByteStream &istream, bool extend) {
 			if (!istream.ReadVarBytes(_parameter)) {
 				Log::error("Program deserialize parameter fail");
 				return false;
@@ -196,6 +199,13 @@ namespace Elastos {
 			if (!istream.ReadVarBytes(_code)) {
 				Log::error("Program deserialize code fail");
 				return false;
+			}
+
+			if (extend) {
+				if (!istream.ReadVarString(_path)) {
+					Log::error("Program deserialize path fail");
+					return false;
+				}
 			}
 
 			return true;

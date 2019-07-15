@@ -33,7 +33,7 @@ namespace Elastos {
 				return false;
 			} else {
 				uint256 txHash = tx->GetHash();
-				_peer->debug("got tx: {}", txHash.GetHex());
+				_peer->debug("got tx");
 
 				FireRelayedTx(tx);
 
@@ -57,7 +57,6 @@ namespace Elastos {
 
 			ByteStream stream;
 			txParam.tx->Serialize(stream);
-			_peer->info("sending tx: tx hash = {}", txParam.tx->GetHash().GetHex());
 			SendMessage(stream.GetBytes(), Type());
 		}
 

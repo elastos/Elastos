@@ -33,6 +33,8 @@ namespace Elastos {
 
 			void Reset();
 
+			void clear();
+
 			uint64_t size() const;
 
 			void Skip(size_t bytes = 1) const;

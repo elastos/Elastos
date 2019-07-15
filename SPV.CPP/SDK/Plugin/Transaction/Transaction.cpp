@@ -375,12 +375,12 @@ namespace Elastos {
 			_programs.clear();
 		}
 
-		void Transaction::Serialize(ByteStream &ostream) const {
+		void Transaction::Serialize(ByteStream &ostream, bool extend) const {
 			SerializeUnsigned(ostream);
 
 			ostream.WriteVarUint(_programs.size());
 			for (size_t i = 0; i < _programs.size(); i++) {
-				_programs[i].Serialize(ostream);
+				_programs[i].Serialize(ostream, extend);
 			}
 		}
 
@@ -415,7 +415,7 @@ namespace Elastos {
 			ostream.WriteUint32(_lockTime);
 		}
 
-		bool Transaction::Deserialize(const ByteStream &istream) {
+		bool Transaction::Deserialize(const ByteStream &istream, bool extend) {
 			Reinit();
 
 			uint8_t flagByte = 0;
@@ -505,7 +505,7 @@ namespace Elastos {
 
 			for (size_t i = 0; i < programLength; i++) {
 				Program program;
-				if (!program.Deserialize(istream)) {
+				if (!program.Deserialize(istream, extend)) {
 					Log::error("deserialize program[{}] error", i);
 					return false;
 				}

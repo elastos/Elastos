@@ -14,8 +14,7 @@ namespace Elastos {
 
 		class Transaction;
 
-		class Program :
-				public ELAMessageSerializable {
+		class Program {
 		public:
 			Program();
 
@@ -45,11 +44,11 @@ namespace Elastos {
 
 			const std::string &GetPath() const;
 
-			virtual size_t EstimateSize() const;
+			size_t EstimateSize() const;
 
-			virtual void Serialize(ByteStream &ostream) const;
+			void Serialize(ByteStream &ostream, bool extend = false) const;
 
-			virtual bool Deserialize(const ByteStream &istream);
+			bool Deserialize(const ByteStream &istream, bool extend = false);
 
 			virtual nlohmann::json ToJson() const;
 

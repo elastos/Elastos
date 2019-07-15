@@ -52,11 +52,10 @@ TEST_CASE("Config test", "[Config]") {
 			REQUIRE(dnsSeed[4] == "node-mainnet-021.elastos.org");
 			REQUIRE(dnsSeed[5] == "node-mainnet-003.elastos.org");
 			REQUIRE(dnsSeed[6] == "node-mainnet-007.elastos.org");
-			REQUIRE(dnsSeed[7] == "node-mainnet-015.elastos.org");
-			REQUIRE(dnsSeed[8] == "node-mainnet-017.elastos.org");
-			REQUIRE(dnsSeed[9] == "node-mainnet-022.elastos.org");
-			REQUIRE(dnsSeed[10] == "node-mainnet-004.elastos.org");
-			REQUIRE(dnsSeed[11] == "node-mainnet-023.elastos.org");
+			REQUIRE(dnsSeed[7] == "node-mainnet-017.elastos.org");
+			REQUIRE(dnsSeed[8] == "node-mainnet-022.elastos.org");
+			REQUIRE(dnsSeed[9] == "node-mainnet-004.elastos.org");
+			REQUIRE(dnsSeed[10] == "node-mainnet-023.elastos.org");
 
 			const std::vector<CheckPoint> &checkPoints = chainParams->Checkpoints();
 			REQUIRE(checkPoints[1].Hash() == uint256("333d9a0e874cf1b165a998c061c2f8be8e03ce31712046d001823d528e1fec84"));
@@ -87,12 +86,9 @@ TEST_CASE("Config test", "[Config]") {
 			REQUIRE(chainParams->TargetTimePerBlock() == 120);
 
 			const std::vector<std::string> &dnsSeed = chainParams->DNSSeeds();
-			REQUIRE(dnsSeed[0] == "node-testnet-002.elastos.org");
-			REQUIRE(dnsSeed[1] == "node-testnet-003.elastos.org");
-			REQUIRE(dnsSeed[2] == "node-testnet-004.elastos.org");
-			REQUIRE(dnsSeed[3] == "node-testnet-005.elastos.org");
-			REQUIRE(dnsSeed[4] == "node-testnet-006.elastos.org");
-			REQUIRE(dnsSeed[5] == "node-testnet-007.elastos.org");
+			REQUIRE(dnsSeed[0] == "node-testnet-005.elastos.org");
+			REQUIRE(dnsSeed[1] == "node-testnet-006.elastos.org");
+			REQUIRE(dnsSeed[2] == "node-testnet-007.elastos.org");
 
 			const std::vector<CheckPoint> &checkPoints = chainParams->Checkpoints();
 			REQUIRE(checkPoints[4].Hash() == uint256("0fd0ecfabdd3f3405b9808e4f67749232d23404fd1c90a4e2c755ead8651e759"));
@@ -123,12 +119,9 @@ TEST_CASE("Config test", "[Config]") {
 			REQUIRE(chainParams->TargetTimePerBlock() == 120);
 
 			const std::vector<std::string> &dnsSeed = chainParams->DNSSeeds();
-			REQUIRE(dnsSeed[0] == "node-regtest-102.eadd.co");
-			REQUIRE(dnsSeed[1] == "node-regtest-103.eadd.co");
-			REQUIRE(dnsSeed[2] == "node-regtest-104.eadd.co");
-			REQUIRE(dnsSeed[3] == "node-regtest-105.eadd.co");
-			REQUIRE(dnsSeed[4] == "node-regtest-106.eadd.co");
-			REQUIRE(dnsSeed[5] == "node-regtest-107.eadd.co");
+			REQUIRE(dnsSeed[0] == "node-regtest-105.eadd.co");
+			REQUIRE(dnsSeed[1] == "node-regtest-106.eadd.co");
+			REQUIRE(dnsSeed[2] == "node-regtest-107.eadd.co");
 
 			const std::vector<CheckPoint> &checkPoints = chainParams->Checkpoints();
 			REQUIRE(checkPoints[4].Hash() == uint256("3d2269ae53697c648a40aabaf6841cd2a43bc38699264a64bcd166e000cd452a"));

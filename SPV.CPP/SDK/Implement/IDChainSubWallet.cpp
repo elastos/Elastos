@@ -71,11 +71,12 @@ namespace Elastos {
 
 			tx->AddProgram(program);
 
-			nlohmann::json txJson = tx->ToJson();
+			nlohmann::json result;
+			EncodeTx(result, tx);
 
-			ArgInfo("r => {}", txJson.dump());
+			ArgInfo("r => {}", result.dump());
 
-			return txJson;
+			return result;
 		}
 
 		void IDChainSubWallet::onTxAdded(const TransactionPtr &transaction) {

@@ -60,10 +60,7 @@ namespace Elastos {
 		}
 
 		std::string SubWallet::GetChainID() const {
-			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
-
-			std::string chainID = _info->GetChainID();
-			return chainID;
+			return _info->GetChainID();
 		}
 
 		const std::string &SubWallet::GetInfoChainID() const {
@@ -180,6 +177,55 @@ namespace Elastos {
 			return tx;
 		}
 
+		void SubWallet::EncodeTx(nlohmann::json &result, const TransactionPtr &tx) const {
+			ByteStream stream;
+			tx->Serialize(stream, true);
+			const bytes_t &hex = stream.GetBytes();
+
+			result["Algorithm"] = "base64";
+			result["Data"] = hex.getBase64();
+			result["ChainID"] = GetChainID();
+			result["Fee"] = tx->GetFee();
+		}
+
+		TransactionPtr SubWallet::DecodeTx(const nlohmann::json &encodedTx) const {
+			TransactionPtr tx(new Transaction());
+
+			if (encodedTx.find("Algorithm") == encodedTx.end() ||
+				encodedTx.find("Data") == encodedTx.end() ||
+				encodedTx.find("ChainID") == encodedTx.end()) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "Invalid input");
+			}
+
+			std::string algorithm, data, chainID;
+
+			try {
+				algorithm = encodedTx["Algorithm"].get<std::string>();
+				data = encodedTx["Data"].get<std::string>();
+				chainID = encodedTx["ChainID"].get<std::string>();
+			} catch (const std::exception &e) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "Invalid input: " + std::string(e.what()));
+			}
+
+			if (chainID != GetChainID()) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument,
+												  "Invalid input: tx is not belongs to current subwallet");
+			}
+
+			bytes_t rawHex;
+			if (algorithm == "base64") {
+				rawHex.setBase64(data);
+			} else {
+				ErrorChecker::CheckCondition(true, Error::InvalidArgument, "Decode tx with unknown algorithm");
+			}
+
+			ByteStream stream(rawHex);
+			ErrorChecker::CheckParam(!tx->Deserialize(stream, true), Error::InvalidArgument,
+									 "Invalid input: deserialize fail");
+
+			return tx;
+		}
+
 		nlohmann::json SubWallet::CreateTransaction(const std::string &fromAddress, const std::string &toAddress,
 		                                            const std::string &amount, const std::string &memo, bool useVotedUTXO) {
 
@@ -199,10 +245,46 @@ namespace Elastos {
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
-			nlohmann::json txJson = tx->ToJson();
+			nlohmann::json result;
+			EncodeTx(result, tx);
 
-			ArgInfo("r => {}", txJson.dump());
-			return txJson;
+			ArgInfo("r => {}", result.dump());
+			return result;
+		}
+
+		nlohmann::json SubWallet::SignTransaction(const nlohmann::json &createdTx,
+												  const std::string &payPassword) {
+
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("tx: {}", createdTx.dump());
+			ArgInfo("passwd: {}", "*");
+
+			TransactionPtr tx = DecodeTx(createdTx);
+
+			_walletManager->getWallet()->SignTransaction(tx, payPassword);
+
+
+			nlohmann::json result;
+			EncodeTx(result, tx);
+
+			ArgInfo("r => {}", result.dump());
+			return result;
+		}
+
+		nlohmann::json SubWallet::PublishTransaction(const nlohmann::json &signedTx) {
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("tx: {}", signedTx.dump());
+
+			TransactionPtr tx = DecodeTx(signedTx);
+
+			publishTransaction(tx);
+
+			nlohmann::json result;
+			result["TxHash"] = tx->GetHash().GetHex();
+			result["Fee"] = tx->GetFee();
+
+			ArgInfo("r => {}", result.dump());
+			return result;
 		}
 
 		nlohmann::json SubWallet::GetAllUTXOs(uint32_t start, uint32_t count, const std::string &address) const {
@@ -256,10 +338,11 @@ namespace Elastos {
 			if (_info->GetChainID() == "ELA")
 				tx->SetVersion(Transaction::TxVersion::V09);
 
-			nlohmann::json txJson = tx->ToJson();
+			nlohmann::json result;
+			EncodeTx(result, tx);
 
-			ArgInfo("r => {}", txJson.dump());
-			return txJson;
+			ArgInfo("r => {}", result.dump());
+			return result;
 		}
 
 		nlohmann::json SubWallet::GetAllTransaction(uint32_t start, uint32_t count, const std::string &addressOrTxid) const {
@@ -451,7 +534,7 @@ namespace Elastos {
 			const uint256 &txHash = tx->GetHash();
 			ArgInfo("{} onTxAdded Hash: {}", _walletManager->getWallet()->GetWalletID(), txHash.GetHex());
 
-			fireTransactionStatusChanged(txHash, "Added", tx->ToJson(), 0);
+			fireTransactionStatusChanged(txHash, "Added", nlohmann::json(), 0);
 		}
 
 		void SubWallet::onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp) {
@@ -489,39 +572,6 @@ namespace Elastos {
 						  [&asset, &amount, &controller](ISubWalletCallback *callback) {
 							  callback->OnAssetRegistered(asset->GetHash().GetHex(), asset->ToJson());
 			});
-		}
-
-		nlohmann::json SubWallet::SignTransaction(const nlohmann::json &txJson,
-												  const std::string &payPassword) {
-
-			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
-			ArgInfo("tx: {}", txJson.dump());
-			ArgInfo("passwd: {}", "*");
-
-			TransactionPtr tx(new Transaction());
-			tx->FromJson(txJson);
-			_walletManager->getWallet()->SignTransaction(tx, payPassword);
-			nlohmann::json txSigned = tx->ToJson();
-
-			ArgInfo("r => {}", txSigned.dump());
-			return txSigned;
-		}
-
-		nlohmann::json SubWallet::PublishTransaction(const nlohmann::json &rawTransaction) {
-			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
-			ArgInfo("tx: {}", rawTransaction.dump());
-
-			TransactionPtr transaction(new Transaction());
-			transaction->FromJson(rawTransaction);
-
-			publishTransaction(transaction);
-
-			nlohmann::json j;
-			j["TxHash"] = transaction->GetHash().GetHex();
-			j["Fee"] = transaction->GetFee();
-
-			ArgInfo("r => {}", j.dump());
-			return j;
 		}
 
 		bool SubWallet::filterByAddressOrTxId(const TransactionPtr &transaction, const std::string &addressOrTxid) const {
@@ -650,76 +700,6 @@ namespace Elastos {
 
 			ArgInfo("r => {}", pubKey);
 			return pubKey;
-		}
-
-		nlohmann::json SubWallet::EncodeTransaction(const nlohmann::json &tx) const {
-			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
-			ArgInfo("tx: {}", tx.dump());
-
-			Transaction txn;
-
-			txn.FromJson(tx);
-
-			ByteStream stream;
-			txn.Serialize(stream);
-			bytes_t hex = stream.GetBytes();
-
-			nlohmann::json result;
-
-			result["Algorithm"] = "base64";
-			result["Data"] = hex.getBase64();
-			result["ChainID"] = GetChainID();
-
-			ArgInfo("r => {}", result.dump());
-			return result;
-		}
-
-		nlohmann::json SubWallet::DecodeTransaction(const nlohmann::json &encodedTx) const {
-			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
-			ArgInfo("encodedTx: {}", encodedTx.dump());
-			Transaction txn;
-
-			if (encodedTx.find("Algorithm") == encodedTx.end() ||
-				encodedTx.find("Data") == encodedTx.end() ||
-				encodedTx.find("ChainID") == encodedTx.end()) {
-				ErrorChecker::ThrowParamException(Error::InvalidArgument, "Invalid input");
-			}
-
-			std::string algorithm, data, chainID;
-
-			try {
-				algorithm = encodedTx["Algorithm"].get<std::string>();
-				data = encodedTx["Data"].get<std::string>();
-				chainID = encodedTx["ChainID"].get<std::string>();
-			} catch (const std::exception &e) {
-				ErrorChecker::ThrowParamException(Error::InvalidArgument, "Invalid input: " + std::string(e.what()));
-			}
-
-			if (chainID != GetChainID()) {
-				ErrorChecker::ThrowParamException(Error::InvalidArgument,
-												  "Invalid input: tx is not belongs to current subwallet");
-			}
-
-			bytes_t rawHex;
-			if (algorithm == "base64") {
-				rawHex.setBase64(data);
-			} else if (algorithm == "base58") {
-				if (!Base58::CheckDecode(data, rawHex)) {
-					ErrorChecker::ThrowLogicException(Error::InvalidArgument, "Decode tx from base58 error");
-				}
-			} else {
-				ErrorChecker::CheckCondition(true, Error::InvalidArgument, "Decode tx with unknown algorithm");
-			}
-
-			ByteStream stream(rawHex);
-			ErrorChecker::CheckParam(!txn.Deserialize(stream), Error::InvalidArgument,
-									 "Invalid input: deserialize fail");
-
-			nlohmann::json txJson = txn.ToJson();
-
-			ArgInfo("r => {}", txJson.dump());
-
-			return txJson;
 		}
 
 		void SubWallet::SyncStart() {

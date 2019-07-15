@@ -69,9 +69,11 @@ namespace Elastos {
 
 			tx->SetTransactionType(Transaction::transferCrossChainAsset, payload);
 
-			nlohmann::json txJson = tx->ToJson();
-			ArgInfo("r => {}", txJson.dump());
-			return txJson;
+			nlohmann::json result;
+			EncodeTx(result, tx);
+
+			ArgInfo("r => {}", result.dump());
+			return result;
 		}
 
 		nlohmann::json MainchainSubWallet::GenerateProducerPayload(
@@ -189,9 +191,11 @@ namespace Elastos {
 
 			tx->SetTransactionType(Transaction::registerProducer, payload);
 
-			nlohmann::json txJson = tx->ToJson();
-			ArgInfo("r => {}", txJson.dump());
-			return txJson;
+			nlohmann::json result;
+			EncodeTx(result, tx);
+
+			ArgInfo("r => {}", result.dump());
+			return result;
 		}
 
 		nlohmann::json MainchainSubWallet::CreateUpdateProducerTransaction(
@@ -226,10 +230,11 @@ namespace Elastos {
 				tx->GetOutputs().erase(tx->GetOutputs().begin());
 			}
 
-			nlohmann::json txJson = tx->ToJson();
+			nlohmann::json result;
+			EncodeTx(result, tx);
 
-			ArgInfo("r => {}", txJson.dump());
-			return txJson;
+			ArgInfo("r => {}", result.dump());
+			return result;
 		}
 
 		nlohmann::json MainchainSubWallet::CreateCancelProducerTransaction(
@@ -264,9 +269,11 @@ namespace Elastos {
 				tx->GetOutputs().erase(tx->GetOutputs().begin());
 			}
 
-			nlohmann::json txJson = tx->ToJson();
-			ArgInfo("r => {}", txJson.dump());
-			return txJson;
+			nlohmann::json result;
+			EncodeTx(result, tx);
+
+			ArgInfo("r => {}", result.dump());
+			return result;
 		}
 
 		nlohmann::json MainchainSubWallet::CreateRetrieveDepositTransaction(
@@ -294,9 +301,11 @@ namespace Elastos {
 				tx->GetOutputs().erase(tx->GetOutputs().begin() + tx->GetOutputs().size() - 1);
 			}
 
-			nlohmann::json txJson = tx->ToJson();
-			ArgInfo("r => {}", txJson.dump());
-			return txJson;
+			nlohmann::json result;
+			EncodeTx(result, tx);
+
+			ArgInfo("r => {}", result.dump());
+			return result;
 		}
 
 		std::string MainchainSubWallet::GetOwnerPublicKey() const {
@@ -377,10 +386,12 @@ namespace Elastos {
 			outputs[0].SetPayload(payload);
 			outputs[0].SetProgramHash(inputProgramHash);
 
-			nlohmann::json txJson = tx->ToJson();
+			nlohmann::json result;
+			EncodeTx(result, tx);
 
-			ArgInfo("r => {}", txJson.dump());
-			return txJson;
+			ArgInfo("r => {}", result.dump());
+
+			return result;
 		}
 
 		nlohmann::json MainchainSubWallet::GetVotedProducerList() const {

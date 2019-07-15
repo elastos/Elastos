@@ -21,8 +21,7 @@ namespace Elastos {
 
 		class Wallet;
 
-		class Transaction :
-				public ELAMessageSerializable {
+		class Transaction {
 		public:
 			enum Type {
 				coinBase                 = 0x00,
@@ -70,9 +69,9 @@ namespace Elastos {
 
 			~Transaction();
 
-			virtual void Serialize(ByteStream &ostream) const;
+			void Serialize(ByteStream &ostream, bool extend = false) const;
 
-			virtual bool Deserialize(const ByteStream &istream);
+			bool Deserialize(const ByteStream &istream, bool extend = false);
 
 			uint64_t CalculateFee(uint64_t feePerKb);
 

@@ -1123,7 +1123,7 @@ namespace Elastos {
 
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
-				peer->info("relayed tx: {}", tx->GetHash().GetHex());
+				peer->info("relayed tx");
 
 				for (size_t i = _publishedTx.size(); i > 0; i--) { // see if tx is in list of published tx
 					if (_publishedTxHashes[i - 1] == tx->GetHash()) {
@@ -1224,7 +1224,7 @@ namespace Elastos {
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
 				TransactionPtr tx = _wallet->TransactionForHash(txHash);
-				peer->info("has tx: {}", txHash.GetHex());
+				peer->info("has tx");
 
 				for (size_t i = _publishedTx.size(); i > 0; i--) { // see if tx is in list of published tx
 					if (_publishedTxHashes[i - 1] == txHash) {
@@ -1273,7 +1273,7 @@ namespace Elastos {
 			PublishedTransaction pubTx;
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
-				peer->info("rejected tx: {}", txHash.GetHex());
+				peer->info("rejected tx");
 				TransactionPtr tx = _wallet->TransactionForHash(txHash);
 				RemovePeerFromList(peer, txHash, _txRequests);
 

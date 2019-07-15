@@ -68,10 +68,11 @@ namespace Elastos {
 			if (tx->GetOutputs().size() > 0)
 				tx->GetOutputs().erase(tx->GetOutputs().begin());
 
-			nlohmann::json txJson = tx->ToJson();
+			nlohmann::json result;
+			EncodeTx(result, tx);
 
-			ArgInfo("r => {}", txJson.dump());
-			return txJson;
+			ArgInfo("r => {}", result.dump());
+			return result;
 		}
 
 		nlohmann::json
@@ -108,10 +109,11 @@ namespace Elastos {
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
 
-			nlohmann::json txJson = tx->ToJson();
+			nlohmann::json result;
+			EncodeTx(result, tx);
 
-			ArgInfo("r => {}", txJson.dump());
-			return txJson;
+			ArgInfo("r => {}", result.dump());
+			return result;
 		}
 
 		nlohmann::json TokenchainSubWallet::CreateCombineUTXOTransaction(const std::string &assetID,
@@ -131,10 +133,11 @@ namespace Elastos {
 
 			TransactionPtr tx = CreateTx("", outputs, memo);
 
-			nlohmann::json txJson = tx->ToJson();
+			nlohmann::json result;
+			EncodeTx(result, tx);
 
-			ArgInfo("r => {}", txJson.dump());
-			return txJson;
+			ArgInfo("r => {}", result.dump());
+			return result;
 		}
 
 		nlohmann::json TokenchainSubWallet::GetBalanceInfo(const std::string &assetID) const {
