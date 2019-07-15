@@ -36,6 +36,7 @@ type ProposalDispatcher struct {
 	cfg ProposalDispatcherConfig
 
 	finishedHeight      uint32
+	finishedBlockHash   common.Uint256
 	processingBlock     *types.Block
 	processingProposal  *payload.DPOSProposal
 	acceptVotes         map[common.Uint256]*payload.DPOSProposalVote
@@ -73,6 +74,10 @@ func (p *ProposalDispatcher) GetFinishedHeight() uint32 {
 
 func (p *ProposalDispatcher) GetProcessingProposal() *payload.DPOSProposal {
 	return p.processingProposal
+}
+
+func (p *ProposalDispatcher) GetFinishedBlockHash() common.Uint256 {
+	return p.finishedBlockHash
 }
 
 func (p *ProposalDispatcher) ProcessVote(v *payload.DPOSProposalVote,
@@ -178,7 +183,7 @@ func (p *ProposalDispatcher) FinishProposal() bool {
 		Result:    true,
 	}
 	p.cfg.EventMonitor.OnProposalFinished(&proposalEvent)
-	p.FinishConsensus(p.processingBlock.Height)
+	p.FinishConsensus(p.processingBlock.Height, p.processingBlock.Hash())
 
 	return true
 }
@@ -262,7 +267,12 @@ func (p *ProposalDispatcher) ProcessProposal(id peer.PID, d *payload.DPOSProposa
 
 	if _, err := blockchain.DefaultLedger.Blockchain.GetBlockByHash(d.BlockHash); err == nil {
 		log.Info("already exist block in block chain")
-		return true, !self
+		return true, true
+	}
+
+	if d.BlockHash.IsEqual(p.finishedBlockHash) {
+		log.Info("already processed block")
+		return true, true
 	}
 
 	if d.ViewOffset != p.cfg.Consensus.GetViewOffset() {
@@ -365,12 +375,13 @@ func (p *ProposalDispatcher) UpdatePrecociousProposals() {
 	}
 }
 
-func (p *ProposalDispatcher) FinishConsensus(height uint32) {
+func (p *ProposalDispatcher) FinishConsensus(height uint32, blockHash common.Uint256) {
 	if p.cfg.Consensus.IsRunning() {
 		log.Info("[FinishConsensus] start")
 		defer log.Info("[FinishConsensus] end")
 
 		p.finishedHeight = height
+		p.finishedBlockHash = blockHash
 		p.cfg.Manager.changeOnDuty()
 		c := log.ConsensusEvent{EndTime: p.cfg.TimeSource.AdjustedTime(), Height: height}
 		p.cfg.EventMonitor.OnConsensusFinished(&c)
@@ -667,7 +678,9 @@ func (p *ProposalDispatcher) acceptProposal(d *payload.DPOSProposal) {
 	log.Info("[acceptProposal] start")
 	defer log.Info("[acceptProposal] end")
 
-	p.setProcessingProposal(d)
+	if p.setProcessingProposal(d) {
+		return
+	}
 	if !p.cfg.Manager.isCurrentArbiter() {
 		return
 	}
@@ -694,8 +707,9 @@ func (p *ProposalDispatcher) acceptProposal(d *payload.DPOSProposal) {
 }
 
 func (p *ProposalDispatcher) rejectProposal(d *payload.DPOSProposal) {
-	p.setProcessingProposal(d)
-
+	if p.setProcessingProposal(d) {
+		return
+	}
 	vote := &payload.DPOSProposalVote{ProposalHash: d.Hash(),
 		Signer: p.cfg.Manager.GetPublicKey(), Accept: false}
 	var err error
@@ -721,15 +735,19 @@ func (p *ProposalDispatcher) rejectProposal(d *payload.DPOSProposal) {
 	p.eventAnalyzer.AppendConsensusVote(vote)
 }
 
-func (p *ProposalDispatcher) setProcessingProposal(d *payload.DPOSProposal) {
+func (p *ProposalDispatcher) setProcessingProposal(d *payload.DPOSProposal) (finished bool) {
 	p.processingProposal = d
 
 	for _, v := range p.pendingVotes {
 		if v.ProposalHash.IsEqual(d.Hash()) {
-			p.ProcessVote(v, v.Accept)
+			_, finished = p.ProcessVote(v, v.Accept)
+			if finished {
+				return
+			}
 		}
 	}
 	p.pendingVotes = make(map[common.Uint256]*payload.DPOSProposalVote)
+	return false
 }
 
 func (p *ProposalDispatcher) CreateInactiveArbitrators() (
