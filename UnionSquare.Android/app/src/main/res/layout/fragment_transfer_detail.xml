@@ -526,9 +526,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="45dp"
                         android:layout_weight="1"
-                        android:ellipsize="middle"
                         android:gravity="right"
-                        android:singleLine="true"
                         android:textSize="13sp" />
                 </LinearLayout>
             </LinearLayout>

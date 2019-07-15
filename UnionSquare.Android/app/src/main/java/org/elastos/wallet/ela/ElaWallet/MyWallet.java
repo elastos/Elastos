@@ -1217,6 +1217,7 @@ public class MyWallet {
             return exceptionProcess(e, "createMultiSignMasterWallet" + formatWalletName(masterWalletId));
         }
     }
+
     public BaseEntity syncStart(String masterWalletID, String chainID) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
@@ -1228,7 +1229,7 @@ public class MyWallet {
             subWallet.SyncStart();
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, "", "syncStart");
         } catch (WalletException e) {
-            return exceptionProcess(e, "syncStart " + formatWalletName(masterWalletID, chainID) + " all tx");
+            return exceptionProcess(e, "syncStart " + formatWalletName(masterWalletID, chainID));
         }
     }
 }

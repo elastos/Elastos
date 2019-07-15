@@ -187,6 +187,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                             break;
                         case Constant.SIGN:
                             //去签名
+                            bundle.putParcelable("wallet", wallet);
                             ((BaseFragment) getParentFragment()).start(SignFragment.class, bundle);
                             break;
                     }

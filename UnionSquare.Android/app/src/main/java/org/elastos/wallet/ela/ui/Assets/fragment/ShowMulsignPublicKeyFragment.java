@@ -65,10 +65,7 @@ public class ShowMulsignPublicKeyFragment extends BaseFragment implements Commmo
 
         if (jsonData.has("requestPubKey")) {
             String requestPubKey = jsonData.get("requestPubKey").getAsString();
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("type", Constant.CREATEMUL);
-            jsonObject.addProperty("data", requestPubKey);
-            Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(jsonObject.toString(), ScreenUtil.dp2px(getContext(), 160), ScreenUtil.dp2px(getContext(), 160));
+            Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(requestPubKey, ScreenUtil.dp2px(getContext(), 160), ScreenUtil.dp2px(getContext(), 160),Constant.CREATEMUL);
             ivQr.setImageBitmap(mBitmap);
             tvAddress.setText(requestPubKey);
         }

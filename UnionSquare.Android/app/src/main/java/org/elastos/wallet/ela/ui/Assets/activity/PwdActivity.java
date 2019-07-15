@@ -52,7 +52,7 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
         chainId = data.getStringExtra("chainId");
         attributes = data.getStringExtra("attributes");
         wallet = data.getParcelableExtra("wallet");
-        type = data.getIntExtra("type", 0);//1只签名目前只有钱包管理的签名用到
+        type = data.getIntExtra("type", 0);//1签名成功不publish
       /*  tvAddress.setText(toAddress);
         tvAmount.setText(amount + " " + chainId);
         tvCharge.setText(NumberiUtil.maxNumberFormat(new BigDecimal(((double) fee) / MyWallet.RATE + "").toPlainString(), 12) + " " + chainId);//0.0001

@@ -3,25 +3,29 @@ package org.elastos.wallet.ela.ui.Assets.fragment.transfer;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
-
-import com.google.gson.JsonObject;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.adapter.SignViewPagetAdapter;
+import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
+import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.QRCodeUtils;
 import org.elastos.wallet.ela.utils.ScreenUtil;
 import org.elastos.wallet.ela.utils.ShareUtil;
 import org.elastos.wallet.ela.utils.widget.ScaleTransformer;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
@@ -36,7 +40,8 @@ public class ToSignFragment extends BaseFragment {
     ImageView ivQr;
     @BindView(R.id.viewpage)
     ViewPager viewpage;
-    private String attributes;
+    @BindView(R.id.ll_vp)
+    LinearLayout llVp;
 
     @Override
     protected int getLayoutId() {
@@ -45,7 +50,11 @@ public class ToSignFragment extends BaseFragment {
 
     @Override
     protected void setExtraData(Bundle data) {
-        attributes = data.getString("attributes");
+        String attributes = data.getString("attributes");
+        String chainId = data.getString("ChainId", "ELA");
+        Wallet wallet = data.getParcelable("wallet");
+
+        setData(attributes,wallet.getWalletId(),chainId);
     }
 
     @Override
@@ -53,27 +62,8 @@ public class ToSignFragment extends BaseFragment {
         tvTitle.setText(getString(R.string.waitingsign));
         ivTitleRight.setVisibility(View.VISIBLE);
         ivTitleRight.setImageResource(R.mipmap.top_share);
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("type", Constant.SIGN);
-        jsonObject.addProperty("data", attributes);
-        Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(jsonObject.toString(), ScreenUtil.dp2px(getContext(), 170), ScreenUtil.dp2px(getContext(), 170));
-        ivQr.setImageBitmap(mBitmap);
-        List<Bitmap> images = new ArrayList<>();
-        images.add(mBitmap);
-        images.add(mBitmap);
-        images.add(mBitmap);
-        SignViewPagetAdapter signViewPagetAdapter = new SignViewPagetAdapter(images, getContext());
-        viewpage.setAdapter(signViewPagetAdapter);
-        viewpage.setPageTransformer(true, new ScaleTransformer());
-        viewpage.setPageMargin(10);
-        tvVptitle.setText(1 +"/"+ images.size());
-        viewpage.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-            @Override
-            public void onPageSelected(int position) {
-                super.onPageSelected(position);
-                tvVptitle.setText((position + 1) +"/"+ images.size());
-            }
-        });
+
+
     }
 
     @OnClick({R.id.iv_title_right})
@@ -84,6 +74,35 @@ public class ToSignFragment extends BaseFragment {
                 ShareUtil.fxPic(getBaseActivity(), mRootView);
                 break;
         }
+    }
+
+
+    public void setData(String data,String walletId,String chainID) {
+        //encodeTransaction  加密后的结果
+        List<Bitmap> images = QRCodeUtils.createMulQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 170)
+                , ScreenUtil.dp2px(getContext(), 170), Constant.SIGN,walletId,chainID);
+        if (images.size() == 1) {
+            ivQr.setVisibility(View.VISIBLE);
+            llVp.setVisibility(View.GONE);
+            tvVptitle.setVisibility(View.GONE);
+            ivQr.setImageBitmap(images.get(0));
+            return;
+        }
+        ivQr.setVisibility(View.GONE);
+        llVp.setVisibility(View.VISIBLE);
+        tvVptitle.setVisibility(View.VISIBLE);
+        SignViewPagetAdapter signViewPagetAdapter = new SignViewPagetAdapter(images, getContext());
+        viewpage.setAdapter(signViewPagetAdapter);
+        viewpage.setPageTransformer(true, new ScaleTransformer());
+        viewpage.setPageMargin(10);
+        tvVptitle.setText(1 + "/" + images.size());
+        viewpage.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+                tvVptitle.setText((position + 1) + "/" + images.size());
+            }
+        });
     }
 
 }

@@ -49,10 +49,7 @@ public class ExportReadOnlyFragment extends BaseFragment implements CommmonStrin
 
     @Override
     public void onGetCommonData(String methodname, String data) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("type", Constant.CREATEREADONLY);
-        jsonObject.addProperty("data", data);
-        Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(jsonObject.toString(), ScreenUtil.dp2px(getContext(), 180), ScreenUtil.dp2px(getContext(), 180));
+        Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 180), ScreenUtil.dp2px(getContext(), 180), Constant.CREATEREADONLY);
         ivQr.setImageBitmap(mBitmap);
     }
 }

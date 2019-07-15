@@ -165,6 +165,8 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
             String attributes = (String) result.getObj();
             Bundle bundle = new Bundle();
             bundle.putString("attributes", attributes);
+            bundle.putParcelable("wallet", wallet);
+            bundle.putString("ChainId", chainId);
             start(ToSignFragment.class, bundle);
 
         }
