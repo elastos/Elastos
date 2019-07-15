@@ -473,66 +473,6 @@ static jstring JNICALL GetPublicKey(JNIEnv *env, jobject clazz, jlong jSubProxy)
     return key;
 }
 
-#define JNI_EncodeTransaction "(JLjava/lang/String;)Ljava/lang/String;"
-
-static jstring JNICALL EncodeTransaction(JNIEnv *env, jobject clazz, jlong jSubProxy,
-                                         jstring jtxJson) {
-    bool exception = false;
-    std::string msgException;
-
-    const char *txJson = env->GetStringUTFChars(jtxJson, NULL);
-
-    jstring result = NULL;
-
-    try {
-        ISubWallet *subWallet = (ISubWallet *) jSubProxy;
-
-        nlohmann::json stringJson = subWallet->EncodeTransaction(nlohmann::json::parse(txJson));
-        result = env->NewStringUTF(stringJson.dump().c_str());
-
-    } catch (const std::exception &e) {
-        exception = true;
-        msgException = e.what();
-    }
-
-    env->ReleaseStringUTFChars(jtxJson, txJson);
-
-    if (exception) {
-        ThrowWalletException(env, msgException.c_str());
-    }
-
-    return result;
-
-}
-
-#define JNI_DecodeTransaction "(JLjava/lang/String;)Ljava/lang/String;"
-
-static jstring JNICALL DecodeTransaction(JNIEnv *env, jobject clazz, jlong jSubProxy,
-                                         jstring jencodedTx) {
-    bool exception = false;
-    std::string msgException;
-
-    jstring result = NULL;
-    const char *tx = env->GetStringUTFChars(jencodedTx, NULL);
-
-    try {
-        ISubWallet *subWallet = (ISubWallet *) jSubProxy;
-        nlohmann::json txJson = subWallet->DecodeTransaction(nlohmann::json::parse(tx));
-        result = env->NewStringUTF(txJson.dump().c_str());
-    } catch (const std::exception &e) {
-        exception = true;
-        msgException = e.what();
-    }
-
-    env->ReleaseStringUTFChars(jencodedTx, tx);
-
-    if (exception) {
-        ThrowWalletException(env, msgException.c_str());
-    }
-
-    return result;
-}
-
 #define JNI_SyncStart "(J)V"
 
 static void JNICALL SyncStart(JNIEnv *env, jobject clazz, jlong jproxy) {
@@ -647,8 +587,6 @@ static const JNINativeMethod methods[] = {
         REGISTER_METHOD(Sign),
         REGISTER_METHOD(CheckSign),
         REGISTER_METHOD(GetPublicKey),
-        REGISTER_METHOD(EncodeTransaction),
-        REGISTER_METHOD(DecodeTransaction),
         REGISTER_METHOD(GetAllCoinBaseTransaction),
         REGISTER_METHOD(GetAssetInfo),
         REGISTER_METHOD(SyncStart),

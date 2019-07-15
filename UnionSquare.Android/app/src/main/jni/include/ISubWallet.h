@@ -150,12 +150,12 @@ namespace Elastos {
 
 			/**
 			 * Sign a transaction or append sign to a multi-sign transaction and return the content of transaction in json format.
-			 * @param tx content of transaction in json format.
+			 * @param createdTx content of transaction in json format.
 			 * @param payPassword use to decrypt the root private key temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
 			 * @return If success return the content of transaction in json format.
 			 */
 			virtual nlohmann::json SignTransaction(
-					const nlohmann::json &tx,
+					const nlohmann::json &createdTx,
 					const std::string &payPassword) = 0;
 
 			/**
@@ -173,12 +173,12 @@ namespace Elastos {
 
 			/**
 			 * Publish a transaction to p2p network.
-			 * @param tx content of transaction in json format.
+			 * @param signedTx content of transaction in json format.
 			 * @param fee specify fee for miners, fee must greater or equal than 1000 (sela).
 			 * @return Sent result in json format.
 			 */
 			virtual nlohmann::json PublishTransaction(
-					const nlohmann::json &tx) = 0;
+					const nlohmann::json &signedTx) = 0;
 
 			/**
 			 * Get all qualified normal transactions sorted by descent (newest first).
@@ -240,20 +240,6 @@ namespace Elastos {
 			 * @return root public key with hex string format.
 			 */
 			virtual std::string GetPublicKey() const = 0;
-
-			/**
-			 * Encode transaction serialized bytes into base64.
-			 * @param tx transaction in json format.
-			 * @return encoded transaction in json format.
-			 */
-			virtual nlohmann::json EncodeTransaction(const nlohmann::json &tx) const = 0;
-
-			/**
-			 * Decode transaction from encoded message.
-			 * @param encodedTx encoded message by EncodeTransaction().
-			 * @return transaction in json format.
-			 */
-			virtual nlohmann::json DecodeTransaction(const nlohmann::json &encodedTx) const = 0;
 
 			/**
 			 * Start sync of P2P network

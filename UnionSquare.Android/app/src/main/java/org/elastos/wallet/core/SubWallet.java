@@ -116,14 +116,6 @@ public class SubWallet {
         return GetPublicKey(mInstance);
     }
 
-    public String EncodeTransaction(String txJson) throws WalletException {
-        return EncodeTransaction(mInstance, txJson);
-    }
-
-    public String DecodeTransaction(String txJson) throws WalletException {
-        return DecodeTransaction(mInstance, txJson);
-    }
-
     public String GetAllCoinBaseTransaction(int start, int count, String txid) throws WalletException {
         return GetAllCoinBaseTransaction(mInstance, start, count, txid);
     }
@@ -186,10 +178,6 @@ public class SubWallet {
     private native boolean CheckSign(long subProxy, String publicKey, String message, String signature);
 
     private native String GetPublicKey(long subProxy);
-
-    private native String EncodeTransaction(long subProxy, String txJson);
-
-    private native String DecodeTransaction(long subProxy, String txJson);
 
     private native String GetAllCoinBaseTransaction(long subProxy, int start, int count, String txid);
 
