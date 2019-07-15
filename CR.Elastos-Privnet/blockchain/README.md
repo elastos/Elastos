@@ -385,9 +385,7 @@ These are located in the `wallets` folder:
         "127.0.0.1:10116",
         "127.0.0.1:10216",
         "127.0.0.1:10316",
-        "127.0.0.1:10416",
-        "127.0.0.1:10516",
-        "127.0.0.1:10616"
+        "127.0.0.1:10416"
       ],
       "HttpRestStart": true,
       "EnableRPC": true,
@@ -410,9 +408,7 @@ These are located in the `wallets` folder:
         ],
         "CRCArbiters": [
           "0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450",
-          "0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08",
-          "032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a",
-          "02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7"
+          "0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08"
         ],
         "NormalArbitratorsCount": 2,
         "CandidatesCount": 24,
@@ -838,8 +834,7 @@ Would return something like
 
 7. Remove all the files that are no longer needed
   ```
-  rm -rf ~/node/ela;
-  rm -f cli-config.json keystore.dat ready_to_send.txn to_be_signed.txnrm  wallet.db;
+  rm -f cli-config.json keystore.dat ready_to_send.txn to_be_signed.txn wallet.db;
   ```
 
 ### Stop docker services
