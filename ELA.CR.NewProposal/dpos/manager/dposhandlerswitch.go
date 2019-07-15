@@ -86,8 +86,8 @@ func (h *DPOSHandlerSwitch) SwitchTo(onDuty bool) {
 	h.consensus.SetOnDuty(onDuty)
 }
 
-func (h *DPOSHandlerSwitch) FinishConsensus(height uint32) {
-	h.proposalDispatcher.FinishConsensus(height)
+func (h *DPOSHandlerSwitch) FinishConsensus(height uint32, blockHash common.Uint256) {
+	h.proposalDispatcher.FinishConsensus(height, blockHash)
 }
 
 func (h *DPOSHandlerSwitch) ProcessProposal(id peer.PID, p *payload.DPOSProposal) (handled bool) {
