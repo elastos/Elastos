@@ -364,7 +364,7 @@
     <string name="logkeppin">Saved runtime log to</string>
     <string name="logkeepfail">Get runtime log fail</string>
     <string name="whetherexchange">Too much UTXO detected, Consolidate?</string>
-    <string name="splashword">Smartweb Powered by Blochchain</string>
+    <string name="splashword">Smartweb Powered by Blockchain</string>
     <string name="curentsdkversion">SPVSDK Version&#160;</string>
-    <string name="invalidnode">失效节点</string>
+    <string name="invalidnode">Invalid Node</string>
 </resources>
