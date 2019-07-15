@@ -209,8 +209,8 @@ func (d *DPOSManager) ProcessHigherBlock(b *types.Block) {
 	}
 }
 
-func (d *DPOSManager) ConfirmBlock(height uint32) {
-	d.handler.FinishConsensus(height)
+func (d *DPOSManager) ConfirmBlock(height uint32, blockHash common.Uint256) {
+	d.handler.FinishConsensus(height, blockHash)
 	d.notHandledProposal = make(map[string]struct{})
 }
 
@@ -474,7 +474,7 @@ func (d *DPOSManager) OnBlockReceived(b *types.Block, confirmed bool) {
 	defer log.Info("[OnBlockReceived] end")
 
 	if confirmed {
-		d.ConfirmBlock(b.Height)
+		d.ConfirmBlock(b.Height, b.Hash())
 		d.changeHeight()
 		d.dispatcher.illegalMonitor.CleanByBlock(b)
 		log.Info("[OnBlockReceived] received confirmed block")
@@ -509,7 +509,7 @@ func (d *DPOSManager) OnConfirmReceived(p *payload.Confirm, height uint32) {
 	if !d.isCurrentArbiter() {
 		return
 	}
-	d.ConfirmBlock(height)
+	d.ConfirmBlock(height, p.Proposal.BlockHash)
 	d.changeHeight()
 }
 
