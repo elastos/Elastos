@@ -252,7 +252,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
         setRecyclerview1(pos, is);
         zb = dataResponse.getData().getResult().getTotalvoterate();
         Double zb1 = Double.parseDouble(dataResponse.getData().getResult().getTotalvoterate()) * 100;
-        tv_zb.setText(NumberiUtil.numberFormat(zb1 + "", 5) + "%");
+        tv_zb.setText(NumberiUtil.numberFormat(zb1 + "", 2) + "%");
         tv_num.setText(dataResponse.getData().getResult().getTotalvotes().split("\\.")[0]);//totalvotes": "
     }
 
