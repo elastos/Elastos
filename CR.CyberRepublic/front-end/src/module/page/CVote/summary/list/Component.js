@@ -6,7 +6,7 @@ import DraftEditor from '@/module/common/DraftEditor'
 import CRPopover from '@/module/shared/Popover/Component'
 import { Row, Col, Button, List, Collapse, message } from 'antd'
 import I18N from '@/I18N'
-import { CONTENT_TYPE, DATE_FORMAT, CVOTE_SUMMARY_STATUS } from '@/constant'
+import { CONTENT_TYPE, DATE_FORMAT, CVOTE_SUMMARY_STATUS, CVOTE_STATUS } from '@/constant'
 import styled from 'styled-components'
 import userUtil from '@/util/user'
 
@@ -185,7 +185,8 @@ export default class extends BaseComponent {
   }
 
   renderActions(item) {
-    const { isSecretary } = this.props
+    const { isSecretary, proposal } = this.props
+    if (proposal.status === CVOTE_STATUS.FINAL) return null
 
     let body
     if (isSecretary && item.status === CVOTE_SUMMARY_STATUS.REVIEWING) {
