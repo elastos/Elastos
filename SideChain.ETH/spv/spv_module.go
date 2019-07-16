@@ -342,6 +342,9 @@ func savePayloadInfo(elaTx core.Transaction) {
 func UpTransactionIndex(elaTx string) {
 	muupti.Lock()
 	defer muupti.Unlock()
+	if strings.HasPrefix(elaTx, "0x") {
+		elaTx = elaTx[2:]
+	}
 	index := GetUnTransactionNum(spvTransactiondb, UnTransactionIndex)
 	if index == missingNumber {
 		index = 1
@@ -390,8 +393,10 @@ func IteratorUnTransaction(from ethCommon.Address) {
 				log.Error("get UnTransaction ", err, seek)
 				break
 			}
-
 			fee, _, _ := FindOutputFeeAndaddressByTxHash(string(txHash))
+			if fee.Uint64() <= 0{
+				break
+			}
 			SendTransaction(from, string(txHash), fee)
 			err = spvTransactiondb.Put([]byte(UnTransactionSeek), encodeUnTransactionNumber(seek+1))
 			log.Info(UnTransactionSeek+"put", seek+1)
