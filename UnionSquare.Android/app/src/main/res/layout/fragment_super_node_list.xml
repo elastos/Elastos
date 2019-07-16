@@ -26,8 +26,8 @@
             android:background="@drawable/sc_26ffffff_2"
             android:gravity="center"
             android:orientation="horizontal"
-            android:paddingTop="@dimen/px55"
-            android:paddingBottom="@dimen/px55">
+            android:paddingTop="@dimen/px45"
+            android:paddingBottom="@dimen/px45">
 
 
             <RelativeLayout
