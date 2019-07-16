@@ -70,7 +70,7 @@ const formatValue = (value) => {
   return result
 }
 
-const activeKeys = ['abstract', 'goal', 'motivation', 'relevance', 'budget', 'plan']
+const activeKeys = ['abstract', 'goal', 'motivation', 'plan', 'relevance', 'budget']
 
 class C extends BaseComponent {
   constructor(props) {
@@ -260,6 +260,12 @@ class C extends BaseComponent {
                 <FormItem>{formProps.motivation}</FormItem>
               </TabPaneInner>
             </TabPane>
+            <TabPane tab={this.renderTabText('plan')} key="plan">
+              <TabPaneInner>
+                <Note>{I18N.get('proposal.form.note.plan')}</Note>
+                <FormItem>{formProps.plan}</FormItem>
+              </TabPaneInner>
+            </TabPane>
             <TabPane tab={this.renderTabText('relevance')} key="relevance">
               <TabPaneInner>
                 <Note>{I18N.get('proposal.form.note.relevance')}</Note>
@@ -270,12 +276,6 @@ class C extends BaseComponent {
               <TabPaneInner>
                 <Note>{I18N.get('proposal.form.note.budget')}</Note>
                 <FormItem>{formProps.budget}</FormItem>
-              </TabPaneInner>
-            </TabPane>
-            <TabPane tab={this.renderTabText('plan')} key="plan">
-              <TabPaneInner>
-                <Note>{I18N.get('proposal.form.note.plan')}</Note>
-                <FormItem>{formProps.plan}</FormItem>
               </TabPaneInner>
             </TabPane>
           </Tabs>
