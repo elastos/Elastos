@@ -43,7 +43,7 @@ public class FindFragment extends BaseFragment implements CommonRvListener {
 
     @Override
     protected void initView(View view) {
-        tvTitle.setText(getString(R.string.find));
+        tvTitle.setText(getString(R.string.social));
         sp = new SPUtil(getContext());
         ivTitleLeft.setVisibility(View.GONE);
         list = new ArrayList<>();

@@ -371,5 +371,6 @@
     <string name="splashword">区 块 链 驱 动 的 智 能 万 维 网</string>
     <string name="curentsdkversion">SPVSDK版本号</string>
     <string name="invalidnode">失效节点</string>
+    <string name="social">社区</string>
 
 </resources>

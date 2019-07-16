@@ -367,4 +367,5 @@
     <string name="splashword">Smartweb Powered by Blockchain</string>
     <string name="curentsdkversion">SPVSDK Version&#160;</string>
     <string name="invalidnode">Invalid Node</string>
+    <string name="social">Community</string>
 </resources>
