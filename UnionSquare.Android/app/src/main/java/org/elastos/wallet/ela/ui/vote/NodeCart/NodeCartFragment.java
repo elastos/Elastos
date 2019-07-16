@@ -148,7 +148,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
             recyclerView.setVisibility(View.VISIBLE);
             tv_num.setText(getString(R.string.futuregenerations) + list.size() + ")");
             // 实例化自定义的MyAdapter
-            mAdapter = new MyAdapter(list, getContext());
+            mAdapter = new MyAdapter(list,this);
             // 绑定Adapter
             recyclerView.setAdapter(mAdapter);
             // checkBox.setChecked(true);

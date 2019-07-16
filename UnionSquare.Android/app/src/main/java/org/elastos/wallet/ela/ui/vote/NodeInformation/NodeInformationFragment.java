@@ -90,7 +90,7 @@ public class NodeInformationFragment extends BaseFragment {
         setToobar(toolbar, toolbarTitle, getString(R.string.node_information));
 //        registReceiver();
         String url = bean.getUrl();
-        new SuperNodeListPresenter().getUrlJson(url, getContext(), new NodeDotJsonViewData() {
+        new SuperNodeListPresenter().getUrlJson(url, this, new NodeDotJsonViewData() {
             @Override
             public void onGetNodeDotJsonData(NodeInfoBean t,String url) {
                 if (t == null || t.getOrg() == null || t.getOrg().getBranding() == null|| t.getOrg().getBranding().getLogo_256() == null) {
