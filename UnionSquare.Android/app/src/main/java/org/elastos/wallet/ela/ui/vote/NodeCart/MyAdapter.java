@@ -19,6 +19,7 @@ import com.bumptech.glide.request.target.CustomViewTarget;
 import com.bumptech.glide.request.transition.Transition;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
@@ -38,16 +39,16 @@ public class MyAdapter extends BaseAdapter {
     // 用来控制CheckBox的选中状况
     static HashMap<Integer, Boolean> isSelected;
     // 上下文
-    private Context context;
+    private BaseFragment context;
     // 用来导入布局
     private LayoutInflater inflater = null;
 
 
     // 构造器
-    public MyAdapter(List<VoteListBean.DataBean.ResultBean.ProducersBean> list, Context context) {
+    public MyAdapter(List<VoteListBean.DataBean.ResultBean.ProducersBean> list, BaseFragment context) {
         this.context = context;
         this.list = list;
-        inflater = LayoutInflater.from(context);
+        inflater = LayoutInflater.from(context.getContext());
         isSelected = new HashMap<Integer, Boolean>();
         // 初始化数据
         initDate();
@@ -109,7 +110,7 @@ public class MyAdapter extends BaseAdapter {
 
         holder.tv_zb.setText(NumberiUtil.numberFormat(Double.parseDouble(producersBean.getVoterate()) * 100 + "", 5) + "%");
         holder.tv_name.setText(producersBean.getNickname());
-        holder.tv_address.setText(AppUtlis.getLoc(context, producersBean.getLocation() + ""));
+        holder.tv_address.setText(AppUtlis.getLoc(context.getContext(), producersBean.getLocation() + ""));
         int id = producersBean.getIndex() + 1;
         holder.tv_id.setText("NO." + id);//12
         AppCompatImageView iv = holder.ivIcon;

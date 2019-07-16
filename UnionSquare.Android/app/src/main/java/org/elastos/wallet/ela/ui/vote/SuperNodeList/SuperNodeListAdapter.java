@@ -15,6 +15,7 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.GlideRequest;
@@ -29,13 +30,13 @@ import java.util.Map;
 public class SuperNodeListAdapter extends BaseQuickAdapter<VoteListBean.DataBean.ResultBean.ProducersBean, BaseViewHolder> {
 
     private final GlideRequest<Bitmap> glideRequest;
-    private Context context;
+    private BaseFragment context;
     private Map<String, Bitmap> map;
 
     private int pos;
     // private boolean is;
 
-    public SuperNodeListAdapter(Context context, @Nullable List<VoteListBean.DataBean.ResultBean.ProducersBean> data, int pos, boolean is) {
+    public SuperNodeListAdapter(BaseFragment context, @Nullable List<VoteListBean.DataBean.ResultBean.ProducersBean> data, int pos, boolean is) {
         super(R.layout.item_super_node_list, data);
         this.context = context;
         this.pos = pos;

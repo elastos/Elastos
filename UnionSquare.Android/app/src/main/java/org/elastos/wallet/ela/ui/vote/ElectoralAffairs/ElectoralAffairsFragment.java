@@ -177,7 +177,7 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
         tvName.setText(bean.getNickName());
         tvAddress.setText(AppUtlis.getLoc(getContext(), bean.getLocation() + ""));
         String url = bean.getURL();
-        new SuperNodeListPresenter().getUrlJson(url, getContext(), new NodeDotJsonViewData() {
+        new SuperNodeListPresenter().getUrlJson(url, this, new NodeDotJsonViewData() {
             @Override
             public void onGetNodeDotJsonData(NodeInfoBean t, String url) {
                 if (t == null || t.getOrg() == null || t.getOrg().getBranding() == null) {

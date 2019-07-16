@@ -192,7 +192,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
             recyclerview.setLayoutManager(new GridLayoutManager(getContext(), 3));
             DividerItemDecoration decoration = new DividerItemDecoration(getActivity(), DividerItemDecoration.BOTH_SET, 10, R.color.transparent);
             recyclerview.addItemDecoration(decoration);
-            adapter = new SuperNodeListAdapter(getContext(), netList, pos, is);
+            adapter = new SuperNodeListAdapter(this, netList, pos, is);
             adapter.setOnItemClickListener(this);
             recyclerview.setAdapter(adapter);
         } else {
@@ -203,7 +203,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     private void setRecyclerview1(int pos, boolean is) {
         if (adapter1 == null) {
             recyclerview1.setLayoutManager(new LinearLayoutManager(getContext()));
-            adapter1 = new SuperNodeListAdapter1(getContext(), netList, pos, is);
+            adapter1 = new SuperNodeListAdapter1(this, netList, pos, is);
             adapter1.setOnItemClickListener(this);
             recyclerview1.setAdapter(adapter1);
         } else {
