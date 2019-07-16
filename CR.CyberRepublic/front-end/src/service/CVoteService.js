@@ -4,18 +4,22 @@ import { api_request } from '@/util'
 export default class extends BaseService {
   constructor() {
     super()
-    // this.selfRedux = this.store.getRedux('cvote')
+    this.selfRedux = this.store.getRedux('cvote')
     this.prefixPath = '/api/cvote'
   }
 
   async getData(param) {
     const path = `${this.prefixPath}/get/${param.id}`
+    this.dispatch(this.selfRedux.actions.loading_update(true))
 
     const rs = await api_request({
       path,
       method: 'get',
       // data: param,
     })
+
+    this.dispatch(this.selfRedux.actions.data_update(rs))
+
     return rs
   }
 

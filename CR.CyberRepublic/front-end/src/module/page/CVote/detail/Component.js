@@ -75,7 +75,6 @@ class C extends StandardPage {
       persist: true,
       loading: false,
       language: LANGUAGES.english, // language for this specifc form only
-      data: undefined,
       reason: '',
       visibleYes: false,
       visibleOppose: false,
@@ -96,8 +95,7 @@ class C extends StandardPage {
     const param = {
       id: _.get(this.props.match, 'params.id')
     }
-    const data = await this.props.getData(param)
-    this.setState({ data })
+    await this.props.getData(param)
   }
 
   ord_loading(f = false) {
@@ -105,7 +103,7 @@ class C extends StandardPage {
   }
 
   ord_renderContent() {
-    const { data } = this.state
+    const { data } = this.props
     if (!data) {
       return <div className="center"><Spin /></div>
     }
@@ -186,7 +184,7 @@ class C extends StandardPage {
   }
 
   renderTranslationBtn() {
-    const { data } = this.state
+    const { data } = this.props
     const { title } = data
     const text = `
       <h1>${title}</h1>
@@ -214,7 +212,7 @@ class C extends StandardPage {
   }
 
   renderMeta() {
-    const { data } = this.state
+    const { data } = this.props
     data.author = data.proposedBy
     data.displayId = data.vid
     const postedByText = I18N.get('from.CVoteForm.label.proposedby')
@@ -222,7 +220,7 @@ class C extends StandardPage {
   }
 
   renderAnchor() {
-    const { data } = this.state
+    const { data } = this.props
     const { trackingStatus, summaryStatus } = this.props
     const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL], data.status)
     const trackingTitle = trackingStatus ? <span>{I18N.get('proposal.fields.tracking')} <span style={{ fontSize: 10, color: '#aaa' }}>({I18N.get(`proposal.status.trackingRaw.${trackingStatus}`)})</span></span> : I18N.get('proposal.fields.tracking')
@@ -253,7 +251,7 @@ class C extends StandardPage {
   }
 
   renderTitle() {
-    const { title } = this.state.data
+    const { title } = this.props.data
     return <Title smallSpace={this.state.smallSpace}>{title}</Title>
   }
 
@@ -269,7 +267,7 @@ class C extends StandardPage {
   }
 
   renderStatus() {
-    const { data } = this.state
+    const { data } = this.props
     const statusObj = {
       text: I18N.get('from.CVoteForm.label.voteStatus'),
       value: I18N.get(`cvoteStatus.${data.status}`) || '',
@@ -285,7 +283,7 @@ class C extends StandardPage {
   }
 
   renderLabelNode() {
-    const reference = _.get(this.state.data, 'reference')
+    const reference = _.get(this.props.data, 'reference')
     if (_.isEmpty(reference)) return null
     const { _id, displayId } = reference
     const linkText = `${I18N.get('suggestion.suggestion')} #${displayId}`
@@ -298,7 +296,7 @@ class C extends StandardPage {
   }
 
   renderContent() {
-    const { data } = this.state
+    const { data } = this.props
     // legacy data structure has content field
     if (_.has(data, 'content')) return renderRichContent(data, 'content')
     return (
@@ -315,7 +313,7 @@ class C extends StandardPage {
   }
 
   renderNotes() {
-    const { notes, notes_zh } = this.state.data
+    const { notes, notes_zh } = this.props.data
     if (!notes && !notes_zh) return null
     return (
       <div className="content notes">
@@ -328,7 +326,7 @@ class C extends StandardPage {
 
   renderVoteActions() {
     const { isCouncil } = this.props
-    const { status } = this.state.data
+    const { status } = this.props.data
     const canVote = isCouncil && status === CVOTE_STATUS.PROPOSED
 
     if (!canVote) return null
@@ -398,7 +396,7 @@ class C extends StandardPage {
 
   renderAdminActions() {
     const { isSecretary, isCouncil, currentUserId } = this.props
-    const { status, createdBy } = this.state.data
+    const { status, createdBy } = this.props.data
     const isSelf = currentUserId === createdBy
     const isCompleted = _.includes([CVOTE_STATUS.FINAL, CVOTE_STATUS.INCOMPLETED], status)
     const canManage = isSecretary || isCouncil
@@ -425,7 +423,7 @@ class C extends StandardPage {
   }
 
   renderTracking() {
-    const { data } = this.state
+    const { data } = this.props
     const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL], data.status)
     if (!isShowFollowingUp) return null
 
@@ -433,7 +431,7 @@ class C extends StandardPage {
   }
 
   renderSummary() {
-    const { data } = this.state
+    const { data } = this.props
     const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL], data.status)
     if (!isShowFollowingUp) return null
 
@@ -441,7 +439,7 @@ class C extends StandardPage {
   }
 
   gotoEditPage = () => {
-    const { _id: id } = this.state.data
+    const { _id: id } = this.props.data
     this.props.history.push(`/proposals/${id}/edit`)
   }
 
@@ -450,7 +448,7 @@ class C extends StandardPage {
   }
 
   showUpdateNotesModal = () => {
-    const { notes } = this.state.data
+    const { notes } = this.props.data
     Modal.confirm({
       title: I18N.get('council.voting.modal.updateNotes'),
       content: <TextArea onChange={this.onNotesChanged} defaultValue={notes} />,
@@ -481,7 +479,7 @@ class C extends StandardPage {
   }
 
   renderVoteResults() {
-    const { vote_map: voteMap, reason_map: reasonMap, voteResult, status } = this.state.data
+    const { vote_map: voteMap, reason_map: reasonMap, voteResult, status } = this.props.data
     const { avatar_map: avatarMap } = this.props
     let stats
 
