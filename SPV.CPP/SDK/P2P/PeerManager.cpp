@@ -28,7 +28,7 @@
 #include <arpa/inet.h>
 
 #define PROTOCOL_TIMEOUT      40.0
-#define MAX_CONNECT_FAILURES  20 // notify user of network problems after this many connect failures in a row
+#define MAX_CONNECT_FAILURES  40 // notify user of network problems after this many connect failures in a row
 #define PEER_FLAG_SYNCED      0x01
 #define PEER_FLAG_NEEDSUPDATE 0x02
 
@@ -922,6 +922,7 @@ namespace Elastos {
 				_isConnected = 1;
 				_reconnectStep = 1;
 				_estimatedHeight = peer->GetLastBlock();
+				_connectFailureCount = 0; // reset connect failure count
 				LoadBloomFilter(peer);
 				peer->SetCurrentBlockHeight(_lastBlock->GetHeight());
 				PublishPendingTx(peer);
@@ -941,7 +942,6 @@ namespace Elastos {
 //						peer->SendMessage(MSG_GETHEADERS, GetHeadersParameter(getBlockLocators(), uint256_ZERO));
 //					}
 				} else { // we're already synced
-					_connectFailureCount = 0; // reset connect failure count
 					LoadMempools();
 				}
 			}

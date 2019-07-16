@@ -515,10 +515,6 @@ namespace Elastos {
 			if (_peerManager->GetPeers().empty()) {
 				std::vector<PeerInfo> peers = loadPeers();
 				Log::info("{} load {} peers", _peerManager->GetID(), peers.size());
-				for (size_t i = 0; i < peers.size(); ++i) {
-					Log::debug("{} p[{}]: {}", _peerManager->GetID(), i, peers[i].GetHost());
-				}
-
 				_peerManager->SetPeers(peers);
 			}
 			_peerManager->Unlock();

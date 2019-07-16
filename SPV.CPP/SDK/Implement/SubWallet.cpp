@@ -495,8 +495,7 @@ namespace Elastos {
 		}
 
 		void SubWallet::balanceChanged(const uint256 &assetID, const BigInt &balance) {
-			ArgInfo("{} balanceChanged AssetID: {}, Balance: {}", _walletManager->getWallet()->GetWalletID(),
-					assetID.GetHex(), balance.getDec());
+			ArgInfo("{} balanceChanged Balance: {}", _walletManager->getWallet()->GetWalletID(), balance.getDec());
 			boost::mutex::scoped_lock scoped_lock(lock);
 
 			std::for_each(_callbacks.begin(), _callbacks.end(),
@@ -510,11 +509,9 @@ namespace Elastos {
 		}
 
 		void SubWallet::onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp) {
-			ArgInfo("{} onCoinBaseTxUpdated size: {}, height: {}, timestamp: {}: [{},{} {}]",
+			ArgInfo("{} onCoinBaseTxUpdated size: {}, height: {}, timestamp: {}",
 					   _walletManager->getWallet()->GetWalletID(),
-					   hashes.size(), blockHeight, timestamp, hashes.front().GetHex(),
-					   (hashes.size() > 2 ? " ...," : ""),
-					   (hashes.size() > 1 ? hashes.back().GetHex() : ""));
+					   hashes.size(), blockHeight, timestamp);
 		}
 
 		void SubWallet::onCoinBaseSpent(const std::vector<uint256> &spentHashes) {
@@ -538,11 +535,8 @@ namespace Elastos {
 		}
 
 		void SubWallet::onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp) {
-			ArgInfo("{} onTxUpdated size: {}, height: {}, timestamp: {}: [{},{} {}]",
-					_walletManager->getWallet()->GetWalletID(),
-					hashes.size(), blockHeight, timestamp, hashes.front().GetHex(),
-					(hashes.size() > 2 ? " ...," : ""),
-					(hashes.size() > 1 ? hashes.back().GetHex() : ""));
+			ArgInfo("{} onTxUpdated size: {}, height: {}, timestamp: {}", _walletManager->getWallet()->GetWalletID(),
+					hashes.size(), blockHeight, timestamp);
 
 			if (_walletManager->GetAllTransactionsCount() == 1) {
 				_info->SetEaliestPeerTime(timestamp);
