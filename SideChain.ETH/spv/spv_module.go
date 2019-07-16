@@ -40,10 +40,11 @@ var (
 	spvTxhash        string //Spv notification main chain hash
 	spvTransactiondb *ethdb.LDBDatabase
 	musend           sync.RWMutex
+	muiterator       sync.RWMutex
 	mufind           sync.RWMutex
 	muupti           sync.RWMutex
 	candSend         int32     //1 can send recharge transactions, 0 can not send recharge transactions
-	candIterator     int32 = 1 //1 Iteratively send recharge transactions, 0 can't iteratively send recharge transactions
+	candIterator     int32 = 0 //0 Iteratively send recharge transactions, 1 can't iteratively send recharge transactions
 	MinedBlockSub    *event.TypeMuxSubscription
 	Signers          map[ethCommon.Address]struct{} // Set of authorized signers at this moment
 )
@@ -172,9 +173,13 @@ func minedBroadcastLoop(minedBlockSub *event.TypeMuxSubscription) {
 			i++
 			if i >= 2 {
 				atomic.StoreInt32(&candSend, 1)
+				from, ok := getDefaultSingerAddr()
+				if ok {
+					IteratorUnTransaction(from)
+				}
 			}
 
-		case <-time.After(1 * time.Minute):
+		case <-time.After(3 * time.Minute):
 			i = 0
 			atomic.StoreInt32(&candSend, 0)
 
@@ -264,6 +269,18 @@ func (l *listener) Notify(id common.Uint256, proof bloom.MerkleProof, tx core.Tr
 	l.service.SubmitTransactionReceipt(id, tx.Hash())
 }
 
+// get default singer address
+func getDefaultSingerAddr() (ethCommon.Address, bool) {
+	var addr ethCommon.Address
+	if wallets := stack.AccountManager().Wallets(); len(wallets) > 0 {
+		if accounts := wallets[0].Accounts(); len(accounts) > 0 {
+			addr = accounts[0].Address
+		}
+	}
+	_, ok := Signers[addr]
+	return addr, ok
+}
+
 //savePayloadInfo save and send spv perception
 func savePayloadInfo(elaTx core.Transaction) {
 	nr := bytes.NewReader(elaTx.Payload.Data(elaTx.PayloadVersion))
@@ -301,18 +318,9 @@ func savePayloadInfo(elaTx core.Transaction) {
 		log.Error(fmt.Sprintf("SpvServicedb Put Output: %v", err), "elaHash", elaTx.Hash().String())
 	}
 	if atomic.LoadInt32(&candSend) == 1 {
-
-		var from ethCommon.Address
-		if wallets := stack.AccountManager().Wallets(); len(wallets) > 0 {
-			if accounts := wallets[0].Accounts(); len(accounts) > 0 {
-				from = accounts[0].Address
-			}
-		}
-		if _, ok := Signers[from]; ok {
-			if atomic.LoadInt32(&candIterator) == 1 {
-				atomic.StoreInt32(&candIterator, 0)
-				go IteratorUnTransaction(from)
-			}
+		from, ok := getDefaultSingerAddr()
+		if ok {
+			IteratorUnTransaction(from)
 			f, err := common.StringToFixed64(fees[0])
 			if err != nil {
 				log.Error(fmt.Sprintf("SpvSendTransaction Fee StringToFixed64: %v", err), "elaHash", elaTx)
@@ -334,6 +342,9 @@ func savePayloadInfo(elaTx core.Transaction) {
 func UpTransactionIndex(elaTx string) {
 	muupti.Lock()
 	defer muupti.Unlock()
+	if strings.HasPrefix(elaTx, "0x") {
+		elaTx = elaTx[2:]
+	}
 	index := GetUnTransactionNum(spvTransactiondb, UnTransactionIndex)
 	if index == missingNumber {
 		index = 1
@@ -354,44 +365,54 @@ func UpTransactionIndex(elaTx string) {
 
 //IteratorUnTransaction iterates before mining and processes existing spv refill transactions
 func IteratorUnTransaction(from ethCommon.Address) {
-	for {
-		index := GetUnTransactionNum(spvTransactiondb, UnTransactionIndex)
-		if index == missingNumber {
-			atomic.StoreInt32(&candIterator, 1)
-			return
-		}
-		seek := GetUnTransactionNum(spvTransactiondb, UnTransactionSeek)
-		if seek == missingNumber {
-			seek = 1
-		}
-		if seek == index {
-			atomic.StoreInt32(&candIterator, 1)
-			return
-		}
-		txhash, err := spvTransactiondb.Get(append([]byte(UnTransaction), encodeUnTransactionNumber(seek)...))
-		if err != nil {
-			log.Error("get UnTransaction ", err, seek)
-			atomic.StoreInt32(&candIterator, 1)
-			return
-		}
-
-		fee, _, _ := FindOutputFeeAndaddressByTxHash(string(txhash))
-		SendTransaction(from, string(txhash), fee)
-		err = spvTransactiondb.Put([]byte(UnTransactionSeek), encodeUnTransactionNumber(seek+1))
-		log.Info(UnTransactionSeek+"put", seek+1)
-		if err != nil {
-			log.Error("UnTransactionIndexPutSeek ", err, seek+1)
-			atomic.StoreInt32(&candIterator, 1)
-			return
-		}
-		err = spvTransactiondb.Delete(append([]byte(UnTransaction), encodeUnTransactionNumber(seek)...))
-		log.Info(UnTransaction+"delete", "seek", seek)
-		if err != nil {
-			log.Error("UnTransactionIndexDeleteSeek ", err, seek)
-			atomic.StoreInt32(&candIterator, 1)
-			return
-		}
+	muiterator.Lock()
+	defer muiterator.Unlock()
+	if atomic.LoadInt32(&candIterator) == 1 {
+		return
 	}
+	atomic.StoreInt32(&candIterator, 1)
+	go func(addr ethCommon.Address) {
+		for {
+			// stop send tx if candSend == 0
+			if atomic.LoadInt32(&candSend) == 0 {
+				break
+			}
+			index := GetUnTransactionNum(spvTransactiondb, UnTransactionIndex)
+			if index == missingNumber {
+				break
+			}
+			seek := GetUnTransactionNum(spvTransactiondb, UnTransactionSeek)
+			if seek == missingNumber {
+				seek = 1
+			}
+			if seek == index {
+				break
+			}
+			txHash, err := spvTransactiondb.Get(append([]byte(UnTransaction), encodeUnTransactionNumber(seek)...))
+			if err != nil {
+				log.Error("get UnTransaction ", err, seek)
+				break
+			}
+			fee, _, _ := FindOutputFeeAndaddressByTxHash(string(txHash))
+			if fee.Uint64() <= 0{
+				break
+			}
+			SendTransaction(from, string(txHash), fee)
+			err = spvTransactiondb.Put([]byte(UnTransactionSeek), encodeUnTransactionNumber(seek+1))
+			log.Info(UnTransactionSeek+"put", seek+1)
+			if err != nil {
+				log.Error("UnTransactionIndexPutSeek ", err, seek+1)
+				break
+			}
+			err = spvTransactiondb.Delete(append([]byte(UnTransaction), encodeUnTransactionNumber(seek)...))
+			log.Info(UnTransaction+"delete", "seek", seek)
+			if err != nil {
+				log.Error("UnTransactionIndexDeleteSeek ", err, seek)
+				break
+			}
+		}
+		atomic.StoreInt32(&candIterator, 0)
+	}(from)
 }
 
 //SendTransaction sends a reload transaction to txpool
