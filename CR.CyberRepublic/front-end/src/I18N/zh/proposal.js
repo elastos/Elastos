@@ -16,7 +16,7 @@ export default {
     motivation: '动机',
     relevance: '关联性',
     budget: '预算',
-    plan: '执行计划',
+    plan: '实施计划',
     vote: '投票',
     tracking: '跟踪',
     summary: '总结',

@@ -16,9 +16,9 @@ export default {
     motivation: 'Motivation',
     relevance: 'Relevance',
     budget: 'Budget',
-    plan: 'Execution Plan',
+    plan: 'Implementation Plan',
     vote: 'Vote',
-    tracking: 'Tracking Plan',
+    tracking: 'Tracking',
     summary: 'Summary',
   },
   btn: {
