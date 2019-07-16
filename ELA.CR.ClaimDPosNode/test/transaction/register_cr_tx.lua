@@ -18,15 +18,67 @@ print(pubkey)
 local asset_id = m.get_asset_id()
 
 -- amount, fee
-local amount = 5000
-local fee = 0.001
-
+--local amount = 5000
+--local fee = 0.001
 -- deposit params
-local deposit_address = "DgauQGNDXYkn3xvVhHHDy4utmoQUjCdJgM"
-local cr_publickey = "039d419986f5c2bf6f2a6f59f0b6e111735b66570fb22107a038bca3e1005d1920"
-local nick_name = "ela_test"
-local url = "ela_test.org"
-local location = "112211"
+--local deposit_address = "DgauQGNDXYkn3xvVhHHDy4utmoQUjCdJgM"
+--local cr_publickey = "039d419986f5c2bf6f2a6f59f0b6e111735b66570fb22107a038bca3e1005d1920"
+--local nick_name = "ela_test"
+--local url = "ela_test.org"
+--local location = "112211"
+
+local amount = getDepositAmount()
+local fee = getFee()
+local deposit_address = getDepositAddr()
+local cr_publickey = getPublicKey()
+local nick_name = getNickName()
+local url = getUrl()
+local location = getLocation()
+
+if amount == 0
+    then
+    amount = 5000
+end
+
+if fee == 0
+    then
+    fee = 0.1
+end
+
+if deposit_address == ""
+    then
+    print("deposit addr is nil, should use --depositaddr or -daddr to set it.")
+    return
+end
+
+if cr_publickey == ""
+then
+    print("pubic key is nil, should use --pubkey or -pk to set it.")
+    return
+end
+
+if nick_name == ""
+    then
+    nick_name = "nickname_test"
+end
+
+if url == ""
+    then
+    url = "url_test"
+end
+
+if location == ""
+    then
+    location = 123
+end
+
+print("deposit amount:", amount)
+print("fee:", fee)
+print("deposit addr:", deposit_address)
+print("public key:", cr_publickey)
+print("nick name:", nick_name)
+print("url:", url)
+print("location:", location)
 
 -- register cr payload: publickey, nickname, url, local, wallet
 local rp_payload =registercr.new(cr_publickey, nick_name, url, location, wallet)
