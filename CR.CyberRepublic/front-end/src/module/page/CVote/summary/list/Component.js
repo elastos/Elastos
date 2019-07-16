@@ -231,11 +231,16 @@ export default class extends BaseComponent {
     const { listData, canManage, currentUserId, proposal } = this.props
     const param = this.getQuery()
     const isAuthorized = canManage || currentUserId === _.get(proposal, 'proposer._id')
+    const paramCVote = {
+      id: proposal._id
+    }
+
     try {
       await listData(param, false)
       if (isAuthorized) {
         await listData(param, isAuthorized)
       }
+      await this.props.getCVoteData(paramCVote)
     } catch (error) {
       // do sth
     }
