@@ -3,18 +3,15 @@ import requests
 
 from flask import request
 from flask_restplus import Resource
-from master_api_service.api.nodes.business import create_user
-from master_api_service.api.nodes.serializers import user
 from master_api_service.api.restplus import api
-from master_api_service.database.models import User
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('testbed/user', description='List of users')
+ns = api.namespace('wallet', description='Has wallet services')
 
 
-@ns.route('/')
-class UserList(Resource):
+@ns.route('/createWallet')
+class Wallet(Resource):
 
     @api.marshal_list_with(user)
     def get(self):
@@ -25,9 +22,9 @@ class UserList(Resource):
         #json_data = requests.get(api_url_base).json()
         #print(json_data)
 
-        users = User.query.all()
+        #users = User.query.all()
         #users.name = json_data
-        return users
+        #return users
 
     @api.response(201, 'User successfully created.')
     @api.expect(user)
@@ -35,6 +32,6 @@ class UserList(Resource):
         """
         Creates a new user.
         """
-        data = request.json
-        create_user(data)
-        return None, 201
+        #data = request.json
+        #create_user(data)
+        #return None, 201
