@@ -4,7 +4,7 @@
 
 from datetime import datetime
 
-from rest_api_demo.database import db
+from master_api_service.database import db
 
 
 class User(db.Model):
