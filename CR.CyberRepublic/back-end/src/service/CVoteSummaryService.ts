@@ -188,6 +188,13 @@ export default class extends Base {
 
     const proposal = await this.getProposalById(cur.proposalId)
     if (proposal) this.notifyApproved(proposal)
+    // update proposal to FINAL
+    const db_cvote = this.getDBModel('CVote')
+    await db_cvote.update({ _id: cur.proposalId }, {
+      $set: {
+        status: constant.CVOTE_STATUS.FINAL
+      }
+    })
 
     return await this.getById(id)
   }
