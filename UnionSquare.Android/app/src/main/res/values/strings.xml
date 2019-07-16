@@ -401,5 +401,6 @@
     <string name="pleasesign">请使用含有主私钥的钱包签名当前交易</string>
     <string name="waitingsign">待签名交易</string>
     <string name="scanprocess">交易已读取%1$s，请继续扫描后续信息</string>
+    <string name="social">社区</string>
 
 </resources>
