@@ -39,9 +39,7 @@ var (
 	SpvService       *Service
 	spvTxhash        string //Spv notification main chain hash
 	spvTransactiondb *ethdb.LDBDatabase
-	musend           sync.RWMutex
 	muiterator       sync.RWMutex
-	mufind           sync.RWMutex
 	muupti           sync.RWMutex
 	candSend         int32     //1 can send recharge transactions, 0 can not send recharge transactions
 	candIterator     int32 = 0 //0 Iteratively send recharge transactions, 1 can't iteratively send recharge transactions
@@ -394,7 +392,7 @@ func IteratorUnTransaction(from ethCommon.Address) {
 				break
 			}
 			fee, _, _ := FindOutputFeeAndaddressByTxHash(string(txHash))
-			if fee.Uint64() <= 0{
+			if fee.Uint64() <= 0 {
 				break
 			}
 			SendTransaction(from, string(txHash), fee)
@@ -417,8 +415,6 @@ func IteratorUnTransaction(from ethCommon.Address) {
 
 //SendTransaction sends a reload transaction to txpool
 func SendTransaction(from ethCommon.Address, elaTx string, fee *big.Int) {
-	musend.Lock()
-	defer musend.Unlock()
 	ethTx, err := ipcClient.StorageAt(context.Background(), ethCommon.Address{}, ethCommon.HexToHash("0x"+elaTx), nil)
 	if err != nil {
 		log.Error(fmt.Sprintf("IpcClient StorageAt: %v", err))
@@ -475,8 +471,6 @@ type DatabaseReader interface {
 
 //FindOutputFeeAndaddressByTxHash Finds the eth recharge address, recharge amount, and transaction fee based on the main chain hash.
 func FindOutputFeeAndaddressByTxHash(transactionHash string) (*big.Int, ethCommon.Address, *big.Int) {
-	mufind.Lock()
-	defer mufind.Unlock()
 	var emptyaddr ethCommon.Address
 	transactionHash = strings.Replace(transactionHash, "0x", "", 1)
 	if spvTransactiondb == nil {
