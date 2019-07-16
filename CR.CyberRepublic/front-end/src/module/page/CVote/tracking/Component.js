@@ -2,6 +2,7 @@ import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import _ from 'lodash'
 import styled from 'styled-components'
+import { CVOTE_TRACKING_STATUS } from '@/constant'
 import Tracking from './list/Container'
 import CreateForm from './create/Container'
 
@@ -21,9 +22,10 @@ export default class extends BaseComponent {
   }
 
   renderForm() {
-    const { proposal, currentUserId } = this.props
+    const { proposal, currentUserId, latestStatus } = this.props
     const isOwner = _.get(proposal, 'proposer._id') === currentUserId
-    return isOwner && <CreateForm proposal={proposal} />
+    const notInReviewing = latestStatus !== CVOTE_TRACKING_STATUS.REVIEWING
+    return isOwner && notInReviewing && <CreateForm proposal={proposal} />
   }
 }
 
