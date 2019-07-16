@@ -398,34 +398,17 @@ class C extends StandardPage {
 
   renderAdminActions() {
     const { isSecretary, isCouncil, currentUserId } = this.props
-    const { status, createdBy, notes } = this.state.data
+    const { status, createdBy } = this.state.data
     const isSelf = currentUserId === createdBy
     const isCompleted = _.includes([CVOTE_STATUS.FINAL, CVOTE_STATUS.INCOMPLETED], status)
     const canManage = isSecretary || isCouncil
     const canEdit = _.includes([CVOTE_STATUS.DRAFT], status)
-    const canComplete = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.REJECT, CVOTE_STATUS.DEFERRED], status)
 
     if (!canManage || isCompleted) return null
 
-    const noteBtnText = notes ? I18N.get('council.voting.btnText.editNotes') : I18N.get('council.voting.btnText.notesSecretary')
-    const addNoteBtn = isSecretary && (
-      <Button onClick={this.showUpdateNotesModal}>
-        {noteBtnText}
-      </Button>
-    )
     const editProposalBtn = isSelf && canEdit && (
       <Button onClick={this.gotoEditPage}>
         {I18N.get('council.voting.btnText.editProposal')}
-      </Button>
-    )
-    const completeProposalBtn = isSecretary && canComplete && (
-      <Button onClick={this.completeProposal}>
-        {I18N.get('council.voting.btnText.completeProposal')}
-      </Button>
-    )
-    const incompleteProposalBtn = isSecretary && canComplete && (
-      <Button onClick={this.incompleteProposal}>
-        {I18N.get('council.voting.btnText.closeIncomplete')}
       </Button>
     )
     const publishProposalBtn = isSelf && canEdit && (
@@ -435,10 +418,7 @@ class C extends StandardPage {
     )
     return (
       <div className="vote-btn-group">
-        {addNoteBtn}
         {editProposalBtn}
-        {completeProposalBtn}
-        {incompleteProposalBtn}
         {publishProposalBtn}
       </div>
     )
