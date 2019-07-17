@@ -126,15 +126,15 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
 
     @Override
     protected void initView(View view) {
+        ivTitleRight.setVisibility(View.VISIBLE);
+        ivTitleRight.setImageResource(R.mipmap.found_vote_edit);
+        tvTitle.setText(mContext.getString(R.string.my_list_candidates));
         if (netList == null || netList.size() == 0) {
             //没有来着接口的节点列表数据
             return;
         }
         sb_suger.setEnabled(false);
         registReceiver();
-        ivTitleRight.setVisibility(View.VISIBLE);
-        ivTitleRight.setImageResource(R.mipmap.found_vote_edit);
-        tvTitle.setText(mContext.getString(R.string.my_list_candidates));
         // 为Adapter准备数据
         initDate();
         if (list == null || list.size() == 0) {
