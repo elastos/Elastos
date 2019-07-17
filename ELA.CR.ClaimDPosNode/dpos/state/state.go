@@ -1392,28 +1392,12 @@ func (s *State) GetHistory(height uint32) (*StateKeyFrame, error) {
 // NewState returns a new State instance.
 func NewState(chainParams *config.Params, getArbiters func() [][]byte,
 	getProducerDepositAmount func(programHash common.Uint168) (common.Fixed64,
-		error)) *State {
+	error)) *State {
 	return &State{
 		chainParams:              chainParams,
 		getArbiters:              getArbiters,
 		getProducerDepositAmount: getProducerDepositAmount,
 		history:                  utils.NewHistory(maxHistoryCapacity),
-		StateKeyFrame: &StateKeyFrame{
-			NodeOwnerKeys:             make(map[string]string),
-			PendingProducers:          make(map[string]*Producer),
-			ActivityProducers:         make(map[string]*Producer),
-			InactiveProducers:         make(map[string]*Producer),
-			CanceledProducers:         make(map[string]*Producer),
-			IllegalProducers:          make(map[string]*Producer),
-			PendingCanceledProducers:  make(map[string]*Producer),
-			Votes:                     make(map[string]*types.Output),
-			DepositOutputs:            make(map[string]*types.Output),
-			Nicknames:                 make(map[string]struct{}),
-			SpecialTxHashes:           make(map[common.Uint256]struct{}),
-			PreBlockArbiters:          make(map[string]struct{}),
-			EmergencyInactiveArbiters: make(map[string]struct{}),
-			VersionStartHeight:        0,
-			VersionEndHeight:          0,
-		},
+		StateKeyFrame:            NewStateKeyFrame(),
 	}
 }

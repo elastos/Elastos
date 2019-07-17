@@ -128,72 +128,26 @@ func New(db IChainStore, chainParams *config.Params, state *state.State,
 	return &chain, nil
 }
 
-// InitCheckPoint go through all blocks since the genesis block
+// InitCheckpoint go through all blocks since the genesis block
 // to initialize all checkpoint.
-func (b *BlockChain) InitCheckPoint(interrupt <-chan struct{},
-	start func(total uint32), increase func()) (err error) {
-	bestHeight := b.db.GetHeight()
-	log.Info("current block height ->", bestHeight)
-	done := make(chan struct{})
-	go func() {
-		// Notify initialize process start.
-		if start != nil {
-			start(bestHeight + 1)
-		}
-		for i := uint32(0); i <= bestHeight; i++ {
-			hash, e := b.db.GetBlockHash(i)
-			if e != nil {
-				err = e
-				break
-			}
-			block, e := b.db.GetBlock(hash)
-			if e != nil {
-				err = e
-				break
-			}
-			haveConfirm := true
-			confirm, e := b.db.GetConfirm(hash)
-			if e != nil {
-				haveConfirm = false
-			}
-			b.chainParams.CkpManager.OnBlockSaved(&DposBlock{
-				Block:       block,
-				HaveConfirm: haveConfirm,
-				Confirm:     confirm,
-			}, nil)
-
-			// Notify process increase.
-			if increase != nil {
-				increase()
-			}
-		}
-		done <- struct{}{}
-	}()
-
-	select {
-	case <-done:
-	case <-interrupt:
-	}
-
-	return err
-}
-
-// InitProducerState go through all blocks since the start of DPOS
-// consensus to initialize producers and votes state.
-func (b *BlockChain) InitProducerState(interrupt <-chan struct{},
+func (b *BlockChain) InitCheckpoint(interrupt <-chan struct{},
 	start func(total uint32), increase func()) (err error) {
 	bestHeight := b.db.GetHeight()
 	log.Info("current block height ->", bestHeight)
 	arbiters := DefaultLedger.Arbitrators
+	ckpManager := b.chainParams.CkpManager
 	done := make(chan struct{})
 	go func() {
 		// Notify initialize process start.
-		startHeight := b.chainParams.VoteStartHeight
-		if height, err := arbiters.RecoverFromCheckPoints(
-			bestHeight); err != nil {
-			log.Warn("recover form check points fail: ", err)
-		} else {
-			startHeight = height + 1
+		startHeight := uint32(0)
+
+		if err = ckpManager.Restore(); err != nil {
+			log.Warn(err)
+			err = nil
+		}
+		safeHeight := ckpManager.SafeHeight()
+		if startHeight < safeHeight {
+			startHeight = safeHeight + 1
 		}
 
 		log.Info("[RecoverFromCheckPoints] recover start height: ", startHeight)
@@ -222,7 +176,12 @@ func (b *BlockChain) InitProducerState(interrupt <-chan struct{},
 				break
 			}
 			confirm, _ := b.db.GetConfirm(block.Hash())
-			arbiters.ProcessBlock(block, confirm)
+
+			b.chainParams.CkpManager.OnBlockSaved(&DposBlock{
+				Block:       block,
+				HaveConfirm: confirm != nil,
+				Confirm:     confirm,
+			}, nil)
 			DefaultLedger.Committee.ProcessBlock(block, confirm)
 
 			// Notify process increase.
@@ -876,7 +835,9 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 
 		// roll back state about the last block before disconnect
 		if block.Height-1 >= b.chainParams.VoteStartHeight {
-			if err = DefaultLedger.Arbitrators.RollbackTo(block.Height - 1); err != nil {
+
+			err = b.chainParams.CkpManager.OnRollbackTo(block.Height - 1)
+			if err != nil {
 				return err
 			}
 
@@ -908,7 +869,11 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 
 		// update state after connected block
 		if block.Height >= b.chainParams.VoteStartHeight {
-			DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
+			b.chainParams.CkpManager.OnBlockSaved(&DposBlock{
+				Block:       block,
+				HaveConfirm: confirm != nil,
+				Confirm:     confirm,
+			}, nil)
 			DefaultLedger.Arbitrators.DumpInfo(block.Height)
 
 			DefaultLedger.Committee.ProcessBlock(block, confirm)
@@ -943,7 +908,9 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block, confirm *pay
 
 	// Rollback state memory DB
 	if block.Height-1 >= b.chainParams.VoteStartHeight {
-		if err = DefaultLedger.Arbitrators.RollbackTo(block.Height - 1); err != nil {
+
+		err := b.chainParams.CkpManager.OnRollbackTo(block.Height - 1)
+		if err != nil {
 			return err
 		}
 
@@ -984,7 +951,8 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payloa
 	}
 
 	if block.Height >= b.chainParams.CRCOnlyDPOSHeight {
-		if err := checkBlockWithConfirmation(block, confirm); err != nil {
+		if err := checkBlockWithConfirmation(block, confirm,
+			b.chainParams.CkpManager); err != nil {
 			return fmt.Errorf("block confirmation validate failed: %s", err)
 		}
 	}
@@ -1081,10 +1049,14 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 	}
 
 	if inMainChain && !reorganized && (block.Height >= b.chainParams.VoteStartHeight ||
-		// In case of VoteStartHeight larger than (CRCOnlyDPOSHeight-PreConnectOffset)
+	// In case of VoteStartHeight larger than (CRCOnlyDPOSHeight-PreConnectOffset)
 		block.Height == b.chainParams.CRCOnlyDPOSHeight-b.chainParams.
 			PreConnectOffset) {
-		DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
+		b.chainParams.CkpManager.OnBlockSaved(&DposBlock{
+			Block:       block,
+			HaveConfirm: confirm != nil,
+			Confirm:     confirm,
+		}, nil)
 		DefaultLedger.Arbitrators.DumpInfo(block.Height)
 
 		DefaultLedger.Committee.ProcessBlock(block, confirm)

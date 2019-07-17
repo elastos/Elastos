@@ -42,10 +42,6 @@ const (
 	// MaxSnapshotLength defines the max length the snapshot map should take
 	MaxSnapshotLength = 20
 
-	// CheckPointInterval defines interval height between two neighbor check
-	// points
-	CheckPointInterval = uint32(720)
-
 	none         = ChangeType(0x00)
 	updateNext   = ChangeType(0x01)
 	normalChange = ChangeType(0x02)
@@ -59,7 +55,6 @@ type arbitrators struct {
 	*State
 	*degradation
 	*KeyFrame
-	store            IArbitratorsRecord
 	chainParams      *config.Params
 	bestHeight       func() uint32
 	bestBlock        func() (*types.Block, error)
@@ -95,15 +90,7 @@ func (a *arbitrators) Start() {
 	a.mtx.Unlock()
 }
 
-func (a *arbitrators) RecoverFromCheckPoints(height uint32) (uint32, error) {
-	if a.store == nil {
-		return 0, errors.New("can't find dpos store object")
-	}
-	point, err := a.store.GetCheckPoint(height)
-	if err != nil {
-		return 0, err
-	}
-
+func (a *arbitrators) RecoverFromCheckPoints(point *CheckPoint) {
 	a.mtx.Lock()
 	a.dutyIndex = point.DutyIndex
 	a.CurrentArbitrators = point.CurrentArbitrators
@@ -114,8 +101,6 @@ func (a *arbitrators) RecoverFromCheckPoints(height uint32) (uint32, error) {
 	a.NextReward = point.NextReward
 	a.StateKeyFrame = &point.StateKeyFrame
 	a.mtx.Unlock()
-
-	return point.Height, err
 }
 
 func (a *arbitrators) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
@@ -923,39 +908,6 @@ func (a *arbitrators) getBlockDPOSReward(block *types.Block) common.Fixed64 {
 		a.chainParams.RewardPerBlock) * 0.35))
 }
 
-func (a *arbitrators) trySaveCheckPoint(height uint32) error {
-	if a.store == nil || height < a.lastCheckPointHeight+CheckPointInterval {
-		return nil
-	}
-
-	point := &CheckPoint{
-		Height:            height,
-		DutyIndex:         a.dutyIndex,
-		CurrentCandidates: make([][]byte, 0),
-		NextArbitrators:   make([][]byte, 0),
-		NextCandidates:    make([][]byte, 0),
-		CurrentReward:     *NewRewardData(),
-		NextReward:        *NewRewardData(),
-		KeyFrame: KeyFrame{
-			CurrentArbitrators: a.CurrentArbitrators,
-		},
-		StateKeyFrame: *a.State.snapshot(),
-	}
-	point.CurrentArbitrators = copyByteList(a.CurrentArbitrators)
-	point.CurrentCandidates = copyByteList(a.currentCandidates)
-	point.NextArbitrators = copyByteList(a.nextArbitrators)
-	point.NextCandidates = copyByteList(a.nextCandidates)
-	point.CurrentReward = *copyReward(&a.CurrentReward)
-	point.NextReward = *copyReward(&a.NextReward)
-
-	if err := a.store.SaveArbitersState(point); err != nil {
-		return err
-	}
-
-	a.lastCheckPointHeight = height
-	return nil
-}
-
 func (a *arbitrators) snapshot(height uint32) {
 	var frames []*KeyFrame
 	if v, ok := a.snapshots[height]; ok {
@@ -978,10 +930,6 @@ func (a *arbitrators) snapshot(height uint32) {
 	f.CurrentArbitrators = copyByteList(a.CurrentArbitrators)
 	frames = append(frames, f)
 	a.snapshots[height] = frames
-
-	if err := a.trySaveCheckPoint(height); err != nil {
-		log.Warn("[snapshot] save check point err: ", err)
-	}
 }
 
 func (a *arbitrators) GetSnapshot(height uint32) (result []*KeyFrame) {
@@ -1038,7 +986,6 @@ func getArbitersInfoWithoutOnduty(title string, arbiters [][]byte) (string, []in
 }
 
 func NewArbitrators(chainParams *config.Params,
-	store IArbitratorsRecord,
 	bestHeight func() uint32,
 	bestBlock func() (*types.Block, error),
 	getBlockByHeight func(uint32) (*types.Block, error),
@@ -1086,7 +1033,6 @@ func NewArbitrators(chainParams *config.Params,
 
 	a := &arbitrators{
 		chainParams:                 chainParams,
-		store:                       store,
 		bestHeight:                  bestHeight,
 		bestBlock:                   bestBlock,
 		getBlockByHeight:            getBlockByHeight,
@@ -1125,12 +1071,6 @@ func NewArbitrators(chainParams *config.Params,
 	}
 	a.State = NewState(chainParams, a.GetArbitrators, getProducerDepositAmount)
 
-	if store != nil {
-		checkedHeights, err := store.GetHeightsDesc()
-		if err == nil && len(checkedHeights) > 0 {
-			a.lastCheckPointHeight = checkedHeights[0]
-		}
-	}
-
+	chainParams.CkpManager.Register(NewCheckpoint(a))
 	return a, nil
 }

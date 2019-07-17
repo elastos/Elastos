@@ -171,6 +171,10 @@ var DefaultParams = Params{
 	CRVotingPeriod:           30 * 720,
 	CRDutyPeriod:             365 * 720,
 	EnableUtxoDB:             false,
+	CkpManager: checkpoint.NewManager(&checkpoint.Config{
+		EnableHistory: false,
+		HistoryStartHeight: uint32(0),
+	}),
 }
 
 // TestNet returns the network parameters for the test network.

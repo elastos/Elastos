@@ -8,6 +8,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"sync"
 
@@ -16,7 +17,19 @@ import (
 	"github.com/elastos/Elastos.ELA/utils"
 )
 
-const DefaultCheckpoint = "default"
+type Priority byte
+
+const (
+	DefaultCheckpoint = "default"
+
+	VeryHigh   Priority = 0x00
+	High       Priority = 0x01
+	MediumHigh Priority = 0x02
+	Medium     Priority = 0x03
+	MediumLow  Priority = 0x04
+	Low        Priority = 0x05
+	VeryLow    Priority = 0x06
+)
 
 // BlockListener defines events during block lifetime.
 type BlockListener interface {
@@ -66,6 +79,16 @@ type ICheckPoint interface {
 
 	// LogError will output the specify error with custom log format.
 	LogError(err error)
+
+	// Priority defines the priority by which we decide the order when
+	// process block and rollback block.
+	Priority() Priority
+
+	// OnInit fired after manager successfully loaded default checkpoint.
+	OnInit()
+
+	// GetHeight returns initial height checkpoint should start with.
+	StartHeight() uint32
 }
 
 // Config holds checkpoint related configurations.
@@ -105,7 +128,9 @@ func (m *Manager) OnBlockSaved(block *types.DposBlock,
 func (m *Manager) OnRollbackTo(height uint32) error {
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
-	for _, v := range m.checkpoints {
+
+	sortedPoints := m.getOrderedCheckpoints()
+	for _, v := range sortedPoints {
 		if err := v.OnRollbackTo(height); err != nil {
 			return err
 		}
@@ -166,10 +191,12 @@ func (m *Manager) Restore() (err error) {
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
 
-	for _, v := range m.checkpoints {
+	sortedPoints := m.getOrderedCheckpoints()
+	for _, v := range sortedPoints {
 		if err = m.loadDefaultCheckpoint(v); err != nil {
 			return
 		}
+		v.OnInit()
 	}
 	return
 }
@@ -182,8 +209,10 @@ func (m *Manager) SafeHeight() uint32 {
 
 	height := uint32(math.MaxUint32)
 	for _, v := range m.checkpoints {
-		if v.GetHeight() < height {
-			height = v.GetHeight()
+		safeHeight := uint32(math.Max(float64(v.GetHeight()),
+			float64(v.StartHeight())))
+		if safeHeight < height {
+			height = safeHeight
 		}
 	}
 	return height
@@ -198,28 +227,52 @@ func (m *Manager) Close() {
 	}
 }
 
+// SetDataPath set root path of all checkpoints.
+func (m *Manager) SetDataPath(path string) {
+	m.cfg.DataPath = path
+}
+
+func (m *Manager) getOrderedCheckpoints() []ICheckPoint {
+	sortedPoints := make([]ICheckPoint, 0, len(m.checkpoints))
+	for _, v := range m.checkpoints {
+		sortedPoints = append(sortedPoints, v)
+	}
+	sort.Slice(sortedPoints, func(i, j int) bool {
+		return sortedPoints[i].Priority() < sortedPoints[j].Priority()
+	})
+	return sortedPoints
+}
+
 func (m *Manager) onBlockSaved(block *types.DposBlock,
 	filter func(point ICheckPoint) bool, async bool) {
-	for _, v := range m.checkpoints {
+	sortedPoints := m.getOrderedCheckpoints()
+	for _, v := range sortedPoints {
 		if filter != nil && !filter(v) {
+			continue
+		}
+
+		if block.Height < v.StartHeight() {
 			continue
 		}
 		v.OnBlockSaved(block)
 
-		reply := make(chan bool, 1)
-		hasReplied := true
-		if block.Height >= v.GetHeight()+v.SavePeriod() {
-			v.SetHeight(block.Height)
-			snapshot := v.Snapshot()
-			m.channels[v.Key()].Save(snapshot, reply)
-		} else if block.Height >= v.GetHeight()+v.EffectivePeriod() {
+		originalHeight := v.GetHeight()
+		if block.Height >= originalHeight-v.SavePeriod()+v.EffectivePeriod() {
+			reply := make(chan bool, 1)
 			m.channels[v.Key()].Replace(v, reply)
-		} else {
-			hasReplied = false
+			if !async {
+				<-reply
+			}
 		}
 
-		if hasReplied && !async {
-			<-reply
+		if block.Height >= originalHeight+v.SavePeriod() {
+			v.SetHeight(block.Height)
+			snapshot := v.Snapshot()
+			reply := make(chan bool, 1)
+			m.channels[v.Key()].Save(snapshot, reply)
+			if !async {
+				<-reply
+			}
 		}
 	}
 }

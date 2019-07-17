@@ -3,9 +3,9 @@ package checkpoint
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"testing"
@@ -23,8 +23,20 @@ const (
 )
 
 type checkpoint struct {
-	data   *uint64
-	height uint32
+	data     *uint64
+	height   uint32
+	priority Priority
+}
+
+func (c *checkpoint) StartHeight() uint32 {
+	return 0
+}
+
+func (c *checkpoint) Priority() Priority {
+	return c.priority
+}
+
+func (c *checkpoint) OnInit() {
 }
 
 func (c *checkpoint) Generator() func(buf []byte) ICheckPoint {
@@ -42,7 +54,7 @@ func (c *checkpoint) Generator() func(buf []byte) ICheckPoint {
 }
 
 func (c *checkpoint) LogError(err error) {
-	fmt.Printf("check point error: %s", err.Error())
+	//fmt.Printf("check point error: %s", err.Error())
 }
 
 func (c *checkpoint) Serialize(w io.Writer) (err error) {
@@ -264,6 +276,24 @@ func TestManager_OnRollbackTo(t *testing.T) {
 	cleanCheckpoints()
 }
 
+func TestManager_getOrderedCheckpoints(t *testing.T) {
+	manager := NewManager(&Config{})
+
+	for i := 0; i < 10; i++ {
+		manager.checkpoints[randomString()] =
+			&checkpoint{priority: Priority(rand.Uint32())}
+	}
+
+	orderedPoints := manager.getOrderedCheckpoints()
+	for i := range orderedPoints {
+		if i == 0 {
+			continue
+		}
+		assert.True(t, orderedPoints[i-1].Priority() <=
+			orderedPoints[i].Priority())
+	}
+}
+
 func cleanCheckpoints() {
 	var err error
 	var files []os.FileInfo
@@ -273,4 +303,10 @@ func cleanCheckpoints() {
 	for _, f := range files {
 		os.Remove(filepath.Join(test.DataDir, f.Name()))
 	}
+}
+
+func randomString() string {
+	a := make([]byte, 20)
+	rand.Read(a)
+	return common.BytesToHexString(a)
 }
