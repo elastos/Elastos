@@ -77,10 +77,7 @@ type DPoSConfiguration struct {
 	Magic                    uint32         `json:"Magic"`
 	IPAddress                string         `json:"IPAddress"`
 	DPoSPort                 uint16         `json:"DPoSPort"`
-	PrintLevel               uint8          `json:"PrintLevel"`
 	SignTolerance            time.Duration  `json:"SignTolerance"`
-	MaxLogsSize              int64          `json:"MaxLogsSize"`
-	MaxPerLogSize            int64          `json:"MaxPerLogSize"`
 	OriginArbiters           []string       `json:"OriginArbiters"`
 	CRCArbiters              []string       `json:"CRCArbiters"`
 	NormalArbitratorsCount   int            `json:"NormalArbitratorsCount"`
