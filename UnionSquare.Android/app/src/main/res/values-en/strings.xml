@@ -128,7 +128,7 @@
     <string name="transferamount">Amount</string>
     <string name="receiptamount">Amount</string>
     <string name="exchangedetail">Transaction Details</string>
-    <string name="allmessageclicktransfercode">Click to see all the details</string>
+    <string name="allmessageclicktransfercode">Click transaction NO. to see all the details</string>
     <string name="suretime">Confirmation Time</string>
     <string name="suretimes">Number of Confirmations</string>
     <string name="transfertype">Type</string>
