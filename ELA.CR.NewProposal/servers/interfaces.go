@@ -1357,9 +1357,10 @@ func ListCRCandidates(param Params) map[string]interface{} {
 	var totalVotes common.Fixed64
 	for i, c := range candidates {
 		totalVotes += c.Votes()
+		didAddress, _ := c.Info().DID.ToAddress()
 		candidateInfo := crCandidateInfo{
 			Code:     hex.EncodeToString(c.Info().Code),
-			DID:      c.Info().DID.String(),
+			DID:      didAddress,
 			NickName: c.Info().NickName,
 			Url:      c.Info().Url,
 			Location: c.Info().Location,
@@ -1395,7 +1396,7 @@ func ListCRCandidates(param Params) map[string]interface{} {
 }
 
 //list current crs according to (state)
-func ListCurrentCRS(param Params) map[string]interface{} {
+func ListCurrentCRs(param Params) map[string]interface{} {
 
 	s, ok := param.String("state")
 	if ok {
@@ -1412,9 +1413,10 @@ func ListCurrentCRS(param Params) map[string]interface{} {
 	var rsCRMemberInfoSlice []crMemberInfo
 
 	for i, cr := range crMembers {
+		didAddress, _ := cr.Info.DID.ToAddress()
 		memberInfo := crMemberInfo{
 			Code:             hex.EncodeToString(cr.Info.Code),
-			DID:              cr.Info.DID.String(),
+			DID:              didAddress,
 			NickName:         cr.Info.NickName,
 			Url:              cr.Info.Url,
 			Location:         cr.Info.Location,
