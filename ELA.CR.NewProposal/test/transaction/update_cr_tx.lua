@@ -17,26 +17,25 @@ print(pubkey)
 -- asset_id
 local asset_id = m.get_asset_id()
 
--- amount, fee
---local amount = 5000
-local fee = 0.001
 
 -- deposit params
-
 --local deposit_address = "DW1jxCSjnrCrtkyvbkGcUp4aPvjacXBpAM"
 --local cr_publickey = "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 --local nick_name = "ela_test11"
 --local url = "ela_test.org11"
 --local location = "00112211"
+-- fee
+--local fee = 0.001
 
 local cr_publickey = getPublicKey()
 local nick_name = getNickName()
 local url = getUrl()
 local location = getLocation()
+local fee = getFee()
 
 if cr_publickey == ""
 	then
-		print("pubic key is nil, should use --publickey or -pk to set it.")
+		print("public key is nil, should use --publickey or -pk to set it.")
 		return
 end
 
@@ -53,6 +52,12 @@ end
 if location == ""
 	then
 		location = 123
+end
+
+if fee == ""
+	then
+		print("fee is nil, should use --fee to set it.")
+		return
 end
 
 print("public key:", cr_publickey)
