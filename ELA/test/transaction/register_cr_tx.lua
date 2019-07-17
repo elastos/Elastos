@@ -53,7 +53,7 @@ end
 
 if cr_publickey == ""
 then
-    print("pubic key is nil, should use --pubkey or -pk to set it.")
+    print("public key is nil, should use --pubkey or -pk to set it.")
     return
 end
 
