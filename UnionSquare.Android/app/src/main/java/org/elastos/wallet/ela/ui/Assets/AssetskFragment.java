@@ -23,6 +23,7 @@ import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.ui.Assets.activity.PwdActivity;
 import org.elastos.wallet.ela.ui.Assets.adapter.AssetskAdapter;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.fragment.AddAssetFragment;
@@ -52,6 +53,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -92,7 +94,6 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     @Override
 
     public void onSaveInstanceState(Bundle outState) {
-        Log.d(getClass().getName(), "onSaveInstanceState");
         realmUtil.updateSubWalletDetial(listMap);
         super.onSaveInstanceState(outState);
     }
@@ -170,29 +171,49 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         if (resultCode == RESULT_OK && requestCode == ScanQRcodeUtil.SCAN_QR_REQUEST_CODE && data != null) {
             String result = data.getStringExtra("result");//&& matcherUtil.isMatcherAddr(result)
             if (!TextUtils.isEmpty(result) /*&& matcherUtil.isMatcherAddr(result)*/) {
-                Log.i("::", result);
                 try {
                     JsonObject jsonObject = new JsonParser().parse(result).getAsJsonObject();
                     int type = jsonObject.get("type").getAsInt();
                     Bundle bundle = new Bundle();
-                    bundle.putString("result", result);
+
                     switch (type) {
                         case Constant.CREATEREADONLY:
                             //创建只读钱包
+                            bundle.putString("result", result);
                             ((BaseFragment) getParentFragment()).start(CreateSignReadOnlyWalletFragment.class, bundle);
                             break;
                         case Constant.CREATEMUL:
                             //创建多签钱包
+                            bundle.putString("result", result);
                             ((BaseFragment) getParentFragment()).start(CreateMulWalletFragment.class, bundle);
                             break;
                         case Constant.SIGN:
                             //去签名
+                            //数据完整后跳转//如果是其他数据  用新的数据
+                            //0 普通单签 1单签只读 2普通多签 3多签只读
+                            if (wallet.getType() == 1 || wallet.getType() == 3) {
+                                showToast(getString(R.string.nopermiss));
+                                return;
+                            }
+                            String attribute = getData(jsonObject, Constant.SIGN);
+                            if (!TextUtils.isEmpty(attribute)) {
+                                bundle.putParcelable("wallet", wallet);
+                                bundle.putString("attribute", attribute);
+                                ((BaseFragment) getParentFragment()).start(SignFragment.class, bundle);
+                            }
+                            break;
+                        case Constant.PUBLISH:
+                            //目前是复制当前页面
                             bundle.putParcelable("wallet", wallet);
+                            bundle.putString("result", result);
                             ((BaseFragment) getParentFragment()).start(SignFragment.class, bundle);
+                            break;
+                        default:
+                            toErroScan(result);
                             break;
                     }
                 } catch (Exception e) {
-                    showToast(result + "??");
+                    toErroScan(result);
                 }
 
             }
@@ -540,5 +561,49 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     @Override
     public void onGetCommonData(String methodname, String data) {
 
+    }
+
+    private int currentType = -1;
+    private Map<Integer, String> dataMap;
+
+    private String getData(JsonObject jsonObject, int type) {
+        if (dataMap == null) {
+            dataMap = new TreeMap<>();
+        }
+        if (type != currentType) {
+            currentType = type;
+            dataMap.clear();
+        }
+        try {
+            String mydata = jsonObject.get("data").getAsString();
+            int max = jsonObject.get("max").getAsInt();
+            int current = jsonObject.get("current").getAsInt();
+            dataMap.put(current, mydata);
+            String msg = String.format(getContext().getString(R.string.scanprocess), dataMap.size() + "/" + max);
+            showToast(msg);
+            if (dataMap.size() == max) {
+                StringBuilder signData = new StringBuilder();
+                for (String s : dataMap.values()) {
+                    signData.append(s);
+                }
+                currentType = -1;
+                dataMap.clear();
+                return signData.toString();
+            }
+            requstManifestPermission(getString(R.string.needpermission));
+        } catch (Exception e) {
+            toErroScan(jsonObject.toString());
+        }
+        return null;
+    }
+
+    private void toErroScan(String result) {
+        if (dataMap != null) {
+            dataMap.clear();
+        }
+        currentType = -1;
+        Bundle bundle = new Bundle();
+        bundle.putString("result", result);
+        ((BaseFragment) getParentFragment()).start(ErrorScanFragment.class, bundle);
     }
 }

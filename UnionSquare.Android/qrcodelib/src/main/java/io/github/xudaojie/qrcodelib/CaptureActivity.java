@@ -232,6 +232,9 @@ public class CaptureActivity extends Activity implements Callback {
             bundle.putString("result", resultString);
             resultIntent.putExtras(bundle);
             this.setResult(RESULT_OK, resultIntent);
+            //Log.d("???",resultString);
+            //12229703  纯数字重启   restartPreview();
+          //  restartPreview();
         }
         mActivity.finish();
     }

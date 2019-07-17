@@ -397,5 +397,8 @@
     <string name="waitingsign">Transaction to be Signed</string>
     <string name="invalidnode">Invalid Node</string>
     <string name="scanprocess">交易已读取%1$s，请继续扫描后续信息</string>
+    <string name="publishnow">已完成签名，立即广播</string>
+    <string name="signedtreat">已签名交易</string>
     <string name="social">Community</string>
+    <string name="nopermiss">当前钱包无权签名此交易</string>
 </resources>

@@ -5,8 +5,7 @@
     android:layout_height="match_parent"
     android:background="@mipmap/found_bg"
     android:gravity="center"
-    android:orientation="vertical"
-    tools:context=".ui.vote.NodeCart.NodeCartFragment">
+    android:orientation="vertical">
 
 
     <include layout="@layout/title"></include>

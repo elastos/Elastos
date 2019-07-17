@@ -17,10 +17,10 @@ public class Constant {
     public static final String UpdateLog = "https://download.elastos.org/app/release-notes/ela-wallet/index.html";
     public static final String FRAGMENTTAG = "commonwebview";
     public static final int CREATEREADONLY = 0x1;//打开创建单签只读钱包页面
-    public static final int CREATEMUL = 0x2;//打开创建多签钱包页面
+    public static final int CREATEMUL = 0x2;//打开创建多签钱包页面 已经打开了的情况直接填入
     public static final int SIGN = 0x3;//打开签名页面
     public static final int TRANSFER = 0x4;//打开转账页面
-    public static final int PUBLISH = 0x5;//打开发出交易页面
+    public static final int PUBLISH = 0x5;//打开发出交易页面 其实是复制已签名交易页面
 
     private static String getBaseUrl() {
         String baseUrl = "https://unionsquare.elastos.org/";

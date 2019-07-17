@@ -51,10 +51,7 @@ public class ToSignFragment extends BaseFragment {
     @Override
     protected void setExtraData(Bundle data) {
         String attributes = data.getString("attributes");
-        String chainId = data.getString("ChainId", "ELA");
-        Wallet wallet = data.getParcelable("wallet");
-
-        setData(attributes,wallet.getWalletId(),chainId);
+        setData(attributes);
     }
 
     @Override
@@ -77,10 +74,10 @@ public class ToSignFragment extends BaseFragment {
     }
 
 
-    public void setData(String data,String walletId,String chainID) {
+    public void setData(String data) {
         //encodeTransaction  加密后的结果
         List<Bitmap> images = QRCodeUtils.createMulQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 170)
-                , ScreenUtil.dp2px(getContext(), 170), Constant.SIGN,walletId,chainID);
+                , ScreenUtil.dp2px(getContext(), 170), Constant.SIGN);
         if (images.size() == 1) {
             ivQr.setVisibility(View.VISIBLE);
             llVp.setVisibility(View.GONE);

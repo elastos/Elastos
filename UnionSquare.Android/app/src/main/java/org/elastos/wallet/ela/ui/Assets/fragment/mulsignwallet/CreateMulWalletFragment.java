@@ -32,6 +32,7 @@ import org.elastos.wallet.ela.ui.Assets.viewdata.CommonCreateSubWalletViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.ClearEditText;
+import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
@@ -90,7 +91,7 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
             JsonObject jsonObject = new JsonParser().parse(result).getAsJsonObject();
             publicKey = jsonObject.get("data").getAsString();
         } catch (Exception e) {
-            publicKey = null;
+            publicKey = result;
         }
 
     }
@@ -109,7 +110,7 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
 
     private void setRecycleView() {
         if (adapter == null) {
-            adapter = new AddMulSignPublicKeyAdapter(this,publicKey);
+            adapter = new AddMulSignPublicKeyAdapter(this, publicKey);
             adapter.setCount(count);
             rv.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
             rv.setAdapter(adapter);
@@ -216,11 +217,12 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void Event(BusEvent result) {
-        integer = result.getCode();
-        if (integer == RxEnum.CREATEPRIVATEKEY.ordinal() //添加根私钥额回调
+        int code = result.getCode();
+        if (code == RxEnum.CREATEPRIVATEKEY.ordinal() //添加根私钥额回调
                 || integer == RxEnum.IMPORTRIVATEKEY.ordinal()//导入助记词回调 //选择已有钱包回调
                 || integer == RxEnum.SELECTRIVATEKEY.ordinal()//选择已有钱包回调
         ) {
+            integer = code;
             setMainPrivaKeyStatus();
             createWalletBean = (CreateWalletBean) result.getObj();
         }
@@ -249,9 +251,20 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
         super.onActivityResult(requestCode, resultCode, data);
         //处理扫描结果（在界面上显示）
         if (resultCode == RESULT_OK && requestCode == ScanQRcodeUtil.SCAN_QR_REQUEST_CODE && data != null) {
-            String result = data.getStringExtra("result");//&& matcherUtil.isMatcherAddr(result)
-            if (!TextUtils.isEmpty(result) /*&& matcherUtil.isMatcherAddr(result)*/) {
-                rvEditText.setText(result);
+            String result = data.getStringExtra("result");
+            if (!TextUtils.isEmpty(result)) {
+                try {
+                    JsonObject jsonObject = new JsonParser().parse(result).getAsJsonObject();
+                    int type = jsonObject.get("type").getAsInt();
+                    if (type == Constant.CREATEMUL) {
+                        rvEditText.setText(jsonObject.get("data").getAsString());
+                    } else {
+                        rvEditText.setText(result);
+                    }
+                } catch (Exception e) {
+                    rvEditText.setText(result);
+                }
+
             }
         }
 

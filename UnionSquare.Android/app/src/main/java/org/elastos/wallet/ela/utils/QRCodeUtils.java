@@ -383,9 +383,9 @@ public class QRCodeUtils {
      * @return 生成的二维码图片
      */
     public static List<Bitmap> createMulQrCodeBitmap(String content, int width, int height,
-                                                     int type, String walleltId, String chainId) {
+                                                     int type) {
         List<Bitmap> bitmaps = new ArrayList<>();
-        int factor = 300;
+        int factor = 350;
         int i = 0;
         while (i < content.length()) {
             int max = i + factor <= content.length() ? i + factor : content.length();

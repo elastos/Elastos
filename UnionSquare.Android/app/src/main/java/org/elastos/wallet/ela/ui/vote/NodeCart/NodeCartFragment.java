@@ -102,7 +102,6 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     private Wallet wallet = realmUtil.queryDefauleWallet();
 
     NodeCartPresenter presenter = new NodeCartPresenter();
-    SignUpPresenter signuppresenter = new SignUpPresenter();
     PwdPresenter pwdpresenter = new PwdPresenter();
     ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> netList;
 
@@ -126,15 +125,16 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
 
     @Override
     protected void initView(View view) {
+        ivTitleRight.setVisibility(View.VISIBLE);
+        ivTitleRight.setImageResource(R.mipmap.found_vote_edit);
+        tvTitle.setText(mContext.getString(R.string.my_list_candidates));
         if (netList == null || netList.size() == 0) {
             //没有来着接口的节点列表数据
             return;
         }
         sb_suger.setEnabled(false);
         registReceiver();
-        ivTitleRight.setVisibility(View.VISIBLE);
-        ivTitleRight.setImageResource(R.mipmap.found_vote_edit);
-        tvTitle.setText(mContext.getString(R.string.my_list_candidates));
+
         // 为Adapter准备数据
         initDate();
         if (list == null || list.size() == 0) {
@@ -148,7 +148,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
             recyclerView.setVisibility(View.VISIBLE);
             tv_num.setText(getString(R.string.futuregenerations) + list.size() + ")");
             // 实例化自定义的MyAdapter
-            mAdapter = new MyAdapter(list,this);
+            mAdapter = new MyAdapter(list, this);
             // 绑定Adapter
             recyclerView.setAdapter(mAdapter);
             // checkBox.setChecked(true);
@@ -396,7 +396,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
             showToastMessage(getString(R.string.pwdnoempty));
             return;
         }
-       new WallletManagePresenter().exportWalletWithMnemonic(wallet.getWalletId(), pwd, this);
+        new WallletManagePresenter().exportWalletWithMnemonic(wallet.getWalletId(), pwd, this);
     }
 
 
