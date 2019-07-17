@@ -135,7 +135,7 @@
     <string name="remark">Remark</string>
     <string name="receiptaddress">Input</string>
     <string name="exportaddress">Output</string>
-    <string name="sendamount">Ammount</string>
+    <string name="sendamount">Amount</string>
     <string name="charge">Fee</string>
     <string name="inputpayeeaddress">Receipt Address</string>
     <string name="inputbalance">Amount（Balance：%1$s）</string>
