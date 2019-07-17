@@ -52,7 +52,6 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
     LinearLayout llExportreadonly;
     @BindView(R.id.ll_showmulpublickey)
     LinearLayout llShowmulpublickey;
-    Unbinder unbinder1;
     private DialogUtil dialogUtil;
     String dialogAction = null;
     private Dialog dialog;
@@ -88,8 +87,15 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
                 llExportmnemonic.setVisibility(View.GONE);
                 break;
             case 2:
+                llExportmnemonic.setVisibility(View.GONE);
+                llExportreadonly.setVisibility(View.GONE);
+                llShowmulpublickey.setVisibility(View.GONE);
                 break;
             case 3:
+                llUpdatepwd.setVisibility(View.GONE);
+                llExportmnemonic.setVisibility(View.GONE);
+                llExportreadonly.setVisibility(View.GONE);
+                llShowmulpublickey.setVisibility(View.GONE);
                 break;
         }
     }
