@@ -205,7 +205,7 @@ func OutputTx(haveSign, needSign int, txn *types.Transaction) error {
 	}
 	fileName = fileName + ".txn"
 
-	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
 	if err != nil {
 		return err
 	}
@@ -231,7 +231,7 @@ func parseMultiOutput(path string) ([]*OutputInfo, error) {
 	if _, err := os.Stat(path); err != nil {
 		return nil, errors.New("invalid multi output file path")
 	}
-	file, err := os.OpenFile(path, os.O_RDONLY, 0666)
+	file, err := os.OpenFile(path, os.O_RDONLY, 0400)
 	if err != nil {
 		return nil, errors.New("open multi output file failed")
 	}
@@ -264,7 +264,7 @@ func parseCandidates(path string) ([]string, error) {
 	if _, err := os.Stat(path); err != nil {
 		return nil, errors.New("invalid candidates file path")
 	}
-	file, err := os.OpenFile(path, os.O_RDONLY, 0666)
+	file, err := os.OpenFile(path, os.O_RDONLY, 0400)
 	if err != nil {
 		return nil, errors.New("open candidates file failed")
 	}

@@ -244,8 +244,7 @@ func startNode(c *cli.Context) {
 
 	var arbitrator *dpos.Arbitrator
 	if act != nil {
-		dcfg := cfg.DPoSConfiguration
-		dlog.Init(dcfg.PrintLevel, dcfg.MaxPerLogSize, dcfg.MaxLogsSize)
+		dlog.Init(uint8(cfg.PrintLevel), cfg.MaxPerLogSize, cfg.MaxLogsSize)
 		arbitrator, err = dpos.NewArbitrator(act, dpos.Config{
 			EnableEventLog:    true,
 			EnableEventRecord: false,
