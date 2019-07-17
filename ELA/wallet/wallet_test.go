@@ -35,7 +35,7 @@ func TestInitWallet(t *testing.T) {
 }
 
 func TestWallet_New(t *testing.T) {
-	wallet = New(test.DataDir)
+	wallet = New(test.DataDir, nil)
 
 	version, err := wallet.LoadStoredData("Version")
 	assert.NoError(t, err)
@@ -50,7 +50,7 @@ func TestWallet_New(t *testing.T) {
 }
 
 func TestWallet_ImportAddress(t *testing.T) {
-	err := wallet.ImportAddress(address1)
+	err := wallet.ImportAddress(address1, true)
 	assert.NoError(t, err)
 
 	err = wallet.LoadAddresses()
@@ -69,7 +69,7 @@ func TestWallet_ImportPubkey(t *testing.T) {
 	pubkeyBytes, err := common.HexStringToBytes(pubkey2)
 	assert.NoError(t, err)
 
-	err = wallet.ImportPubkey(pubkeyBytes)
+	err = wallet.ImportPubkey(pubkeyBytes, true)
 	assert.NoError(t, err)
 
 	err = wallet.LoadAddresses()
