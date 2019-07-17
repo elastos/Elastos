@@ -212,6 +212,13 @@ func stateKeyFrameEqual(first *StateKeyFrame, second *StateKeyFrame) bool {
 		}
 	}
 
+	for k := range first.DepositOutputs {
+		_, ok := second.DepositOutputs[k]
+		if !ok {
+			return false
+		}
+	}
+
 	for k := range first.Nicknames {
 		_, ok := second.Nicknames[k]
 		if !ok {
@@ -254,6 +261,7 @@ func randomStateKeyFrame() *StateKeyFrame {
 		IllegalProducers:          make(map[string]*Producer),
 		PendingCanceledProducers:  make(map[string]*Producer),
 		Votes:                     make(map[string]*types.Output),
+		DepositOutputs:            make(map[string]*types.Output),
 		Nicknames:                 make(map[string]struct{}),
 		SpecialTxHashes:           make(map[common.Uint256]struct{}),
 		PreBlockArbiters:          make(map[string]struct{}),
@@ -271,6 +279,7 @@ func randomStateKeyFrame() *StateKeyFrame {
 		result.IllegalProducers[randomString()] = randomProducer()
 		result.PendingCanceledProducers[randomString()] = randomProducer()
 		result.Votes[randomString()] = randomVotes()
+		result.DepositOutputs[randomString()] = randomVotes()
 		result.Nicknames[randomString()] = struct{}{}
 		result.SpecialTxHashes[*randomHash()] = struct{}{}
 		result.PreBlockArbiters[randomString()] = struct{}{}

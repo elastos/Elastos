@@ -28,6 +28,9 @@ const (
 
 	// logPath indicates the path storing the node log.
 	nodeLogPath = "logs/node"
+
+	// checkpointPath indicates the path storing the checkpoint data
+	checkpointPath = "checkpoints"
 )
 
 var (
@@ -143,10 +146,12 @@ func loadConfigParams(cfg *config.Configuration) (*config.Configuration, error) 
 	if cfg.CRVotingStartHeight > 0 {
 		activeNetParams.CRVotingStartHeight = cfg.CRVotingStartHeight
 	}
-	activeNetParams.CkpManager = checkpoint.NewManager(&checkpoint.Config{
-		EnableHistory:      cfg.EnableHistory,
-		HistoryStartHeight: cfg.HistoryStartHeight,
-	})
+	if cfg.EnableHistory || cfg.HistoryStartHeight > 0 {
+		activeNetParams.CkpManager = checkpoint.NewManager(&checkpoint.Config{
+			EnableHistory:      cfg.EnableHistory,
+			HistoryStartHeight: cfg.HistoryStartHeight,
+		})
+	}
 
 	// When arbiter service enabled, IP address must be set.
 	if cfg.DPoSConfiguration.EnableArbiter {

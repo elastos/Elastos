@@ -24,7 +24,6 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 	dlog "github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/state"
-	"github.com/elastos/Elastos.ELA/dpos/store"
 	"github.com/elastos/Elastos.ELA/utils/http"
 	"github.com/elastos/Elastos.ELA/utils/signal"
 	"github.com/elastos/Elastos.ELA/utils/test"
@@ -177,12 +176,8 @@ func initLedger(L *lua.LState) int {
 	if err != nil {
 		fmt.Printf("Init chain store error: %s \n", err.Error())
 	}
-	dposStore, err := store.NewDposStore(test.DataPath, chainParams)
-	if err != nil {
-		fmt.Printf("Init dpos store error: %s \n", err.Error())
-	}
 
-	arbiters, err := state.NewArbitrators(chainParams, dposStore,
+	arbiters, err := state.NewArbitrators(chainParams,
 		chainStore.GetHeight,
 		func() (block *types.Block, e error) {
 			hash := chainStore.GetCurrentBlockHash()
@@ -209,7 +204,7 @@ func initLedger(L *lua.LState) int {
 	blockchain.DefaultLedger.Store = chainStore
 	blockchain.DefaultLedger.Arbitrators = arbiters
 
-	err = chain.InitProducerState(interrupt.C, nil, nil)
+	err = chain.InitCheckpoint(interrupt.C, nil, nil)
 	if err != nil {
 		fmt.Printf("Init producers state error: %s \n", err.Error())
 	}

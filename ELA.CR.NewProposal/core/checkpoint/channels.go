@@ -3,6 +3,7 @@ package checkpoint
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -68,7 +69,7 @@ func (c *fileChannels) saveCheckpoint(msg *fileMsg) (err error) {
 
 	dir := getCheckpointDirectory(c.cfg.DataPath, msg.checkpoint)
 	if !utils.FileExisted(dir) {
-		if err = os.Mkdir(dir, 0700); err != nil {
+		if err = os.MkdirAll(dir, 0700); err != nil {
 			return
 		}
 	}
@@ -104,7 +105,9 @@ func (c *fileChannels) cleanCheckpoints(msg *fileMsg,
 	}
 
 	dir := getCheckpointDirectory(c.cfg.DataPath, msg.checkpoint)
-	reserveName := getFileName(msg.checkpoint, msg.checkpoint.GetHeight())
+	reserveCurrentName := getFileName(msg.checkpoint, msg.checkpoint.GetHeight())
+	reservePrevName := getFileName(msg.checkpoint,
+		msg.checkpoint.GetHeight()-msg.checkpoint.SavePeriod())
 	defaultName := getDefaultFileName(msg.checkpoint)
 
 	var files []os.FileInfo
@@ -113,7 +116,8 @@ func (c *fileChannels) cleanCheckpoints(msg *fileMsg,
 	}
 
 	for _, f := range files {
-		if f.Name() == reserveName || f.Name() == defaultName {
+		if f.Name() == reserveCurrentName || f.Name() == reservePrevName ||
+			f.Name() == defaultName {
 			continue
 		}
 		if e := os.Remove(filepath.Join(dir, f.Name())); e != nil {
@@ -127,9 +131,12 @@ func (c *fileChannels) replaceCheckpoints(msg *fileMsg) (err error) {
 	defer c.replyMsg(msg)
 
 	defaultFullName := getDefaultPath(c.cfg.DataPath, msg.checkpoint)
-	sourceFullName := getFilePath(c.cfg.DataPath, msg.checkpoint)
+	// source file is the previous saved checkpoint
+	sourceFullName := getFilePathByHeight(c.cfg.DataPath, msg.checkpoint,
+		msg.checkpoint.GetHeight())
 	if !utils.FileExisted(sourceFullName) {
-		return errors.New("source file does not exist")
+		return errors.New(fmt.Sprintf("source file %s does not exist",
+			sourceFullName))
 	}
 
 	if utils.FileExisted(defaultFullName) {

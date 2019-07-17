@@ -125,6 +125,8 @@ func startNode(c *cli.Context) {
 
 	flagDataDir := c.String("datadir")
 	dataDir := filepath.Join(flagDataDir, dataPath)
+	activeNetParams.CkpManager.SetDataPath(
+		filepath.Join(dataDir, checkpointPath))
 
 	var act account.Account
 	if cfg.DPoSConfiguration.EnableArbiter {
@@ -169,7 +171,7 @@ func startNode(c *cli.Context) {
 
 	blockchain.DefaultLedger = &ledger // fixme
 
-	arbiters, err := state.NewArbitrators(activeNetParams, dposStore,
+	arbiters, err := state.NewArbitrators(activeNetParams,
 		chainStore.GetHeight, func() (*types.Block, error) {
 			hash := chainStore.GetCurrentBlockHash()
 			block, err := chainStore.GetBlock(hash)
@@ -300,16 +302,8 @@ func startNode(c *cli.Context) {
 		Arbitrators: arbiters,
 	})
 
-	// initialize all checkpoint
-	if err = chain.InitCheckPoint(interrupt.C, pgBar.Start,
-		pgBar.Increase); err != nil {
-		printErrorAndExit(err)
-	}
-	pgBar.Stop()
-
-	// TODO: refactor via checkpoint
 	// initialize producer state after arbiters has initialized.
-	if err = chain.InitProducerState(interrupt.C, pgBar.Start,
+	if err = chain.InitCheckpoint(interrupt.C, pgBar.Start,
 		pgBar.Increase); err != nil {
 		printErrorAndExit(err)
 	}

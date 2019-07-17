@@ -378,8 +378,12 @@ func copyCodeAddressMap(src map[string]common.Uint168) (
 func copyOutputsMap(src map[string]*types.Output) (dst map[string]*types.Output) {
 	dst = map[string]*types.Output{}
 	for k, v := range src {
-		o := *v
-		dst[k] = &o
+		if v == nil {
+			dst[k] = nil
+		} else {
+			p := *v
+			dst[k] = &p
+		}
 	}
 	return
 }

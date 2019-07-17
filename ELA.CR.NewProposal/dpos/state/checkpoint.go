@@ -6,46 +6,30 @@
 package state
 
 import (
+	"bytes"
 	"io"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/checkpoint"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/crypto"
-	"github.com/elastos/Elastos.ELA/utils"
 )
 
-// KeyFrame holds necessary state about arbitrators
-type KeyFrame struct {
-	CurrentArbitrators [][]byte
-}
+const (
+	// checkpointKey defines key of DPoS checkpoint.
+	checkpointKey = "dpos"
 
-// StateKeyFrame holds necessary state about State
-type StateKeyFrame struct {
-	NodeOwnerKeys            map[string]string // NodePublicKey as key, OwnerPublicKey as value
-	PendingProducers         map[string]*Producer
-	ActivityProducers        map[string]*Producer
-	InactiveProducers        map[string]*Producer
-	CanceledProducers        map[string]*Producer
-	IllegalProducers         map[string]*Producer
-	PendingCanceledProducers map[string]*Producer
-	Votes                    map[string]*types.Output
-	DepositOutputs           map[string]*types.Output
-	Nicknames                map[string]struct{}
-	SpecialTxHashes          map[common.Uint256]struct{}
-	PreBlockArbiters         map[string]struct{}
+	// checkpointExtension defines checkpoint file extension of DPoS checkpoint.
+	checkpointExtension = ".dcp"
 
-	EmergencyInactiveArbiters map[string]struct{}
-	VersionStartHeight        uint32
-	VersionEndHeight          uint32
-}
+	// CheckPointInterval defines interval height between two neighbor check
+	// points.
+	CheckPointInterval = uint32(720)
 
-// RewardData defines variables to calculate reward of a round
-type RewardData struct {
-	OwnerProgramHashes          []*common.Uint168
-	CandidateOwnerProgramHashes []*common.Uint168
-	OwnerVotesInRound           map[common.Uint168]common.Fixed64
-	TotalVotesInRound           common.Fixed64
-}
+	// checkpointEffectiveHeight defines the minimal height arbitrators obj
+	// should scan to recover effective state.
+	checkpointEffectiveHeight = uint32(720)
+)
 
 // CheckPoint defines all variables need record in database
 type CheckPoint struct {
@@ -58,388 +42,99 @@ type CheckPoint struct {
 	CurrentCandidates [][]byte
 	CurrentReward     RewardData
 	NextReward        RewardData
+
+	arbitrators *arbitrators
 }
 
-// snapshot takes a snapshot of current state and returns the copy.
-func (s *StateKeyFrame) snapshot() *StateKeyFrame {
-	state := StateKeyFrame{
-		NodeOwnerKeys:            make(map[string]string),
-		PendingProducers:         make(map[string]*Producer),
-		ActivityProducers:        make(map[string]*Producer),
-		InactiveProducers:        make(map[string]*Producer),
-		CanceledProducers:        make(map[string]*Producer),
-		IllegalProducers:         make(map[string]*Producer),
-		PendingCanceledProducers: make(map[string]*Producer),
-		Votes:                    make(map[string]*types.Output),
-		DepositOutputs:           make(map[string]*types.Output),
-		Nicknames:                make(map[string]struct{}),
-		SpecialTxHashes:          make(map[common.Uint256]struct{}),
-		PreBlockArbiters:         make(map[string]struct{}),
-	}
-	state.NodeOwnerKeys = utils.CopyStringMap(s.NodeOwnerKeys)
-	state.PendingProducers = copyProducerMap(s.PendingProducers)
-	state.ActivityProducers = copyProducerMap(s.ActivityProducers)
-	state.InactiveProducers = copyProducerMap(s.InactiveProducers)
-	state.CanceledProducers = copyProducerMap(s.CanceledProducers)
-	state.IllegalProducers = copyProducerMap(s.IllegalProducers)
-	state.PendingCanceledProducers = copyProducerMap(s.PendingCanceledProducers)
-	state.Votes = copyOutputsMap(s.Votes)
-	state.DepositOutputs = copyOutputsMap(s.DepositOutputs)
-	state.Nicknames = utils.CopyStringSet(s.Nicknames)
-	state.SpecialTxHashes = copyHashSet(s.SpecialTxHashes)
-	state.PreBlockArbiters = utils.CopyStringSet(s.PreBlockArbiters)
-
-	return &state
+func (c *CheckPoint) StartHeight() uint32 {
+	return c.arbitrators.chainParams.VoteStartHeight
 }
 
-func (s *StateKeyFrame) Serialize(w io.Writer) (err error) {
-
-	if err = utils.SerializeStringMap(w, s.NodeOwnerKeys); err != nil {
+func (c *CheckPoint) OnBlockSaved(block *types.DposBlock) {
+	if block.Height <= c.arbitrators.history.Height() {
 		return
 	}
-
-	if err = s.SerializeProducerMap(s.PendingProducers, w); err != nil {
-		return
-	}
-
-	if err = s.SerializeProducerMap(s.ActivityProducers, w); err != nil {
-		return
-	}
-
-	if err = s.SerializeProducerMap(s.InactiveProducers, w); err != nil {
-		return
-	}
-
-	if err = s.SerializeProducerMap(s.CanceledProducers, w); err != nil {
-		return
-	}
-
-	if err = s.SerializeProducerMap(s.IllegalProducers, w); err != nil {
-		return
-	}
-
-	if err = s.SerializeProducerMap(s.PendingCanceledProducers, w); err != nil {
-		return
-	}
-
-	if err = s.SerializeVotesMap(s.Votes, w); err != nil {
-		return
-	}
-
-	if err = s.SerializeVotesMap(s.DepositOutputs, w); err != nil {
-		return
-	}
-
-	if err = utils.SerializeStringSet(w, s.Nicknames); err != nil {
-		return
-	}
-
-	if err = s.SerializeHashSet(s.SpecialTxHashes, w); err != nil {
-		return
-	}
-
-	if err = utils.SerializeStringSet(w, s.PreBlockArbiters); err != nil {
-		return
-	}
-
-	if err = utils.SerializeStringSet(w, s.EmergencyInactiveArbiters); err != nil {
-		return
-	}
-
-	if err = common.WriteUint32(w, s.VersionStartHeight); err != nil {
-		return
-	}
-
-	return common.WriteUint32(w, s.VersionEndHeight)
+	c.arbitrators.ProcessBlock(block.Block, block.Confirm)
 }
 
-func (s *StateKeyFrame) Deserialize(r io.Reader) (err error) {
-	if s.NodeOwnerKeys, err = utils.DeserializeStringMap(r); err != nil {
-		return
-	}
-
-	if s.PendingProducers, err = s.DeserializeProducerMap(r); err != nil {
-		return
-	}
-
-	if s.ActivityProducers, err = s.DeserializeProducerMap(r); err != nil {
-		return
-	}
-
-	if s.InactiveProducers, err = s.DeserializeProducerMap(r); err != nil {
-		return
-	}
-
-	if s.CanceledProducers, err = s.DeserializeProducerMap(r); err != nil {
-		return
-	}
-
-	if s.IllegalProducers, err = s.DeserializeProducerMap(r); err != nil {
-		return
-	}
-
-	if s.PendingCanceledProducers, err = s.DeserializeProducerMap(r); err != nil {
-		return
-	}
-
-	if s.Votes, err = s.DeserializeVotesMap(r); err != nil {
-		return
-	}
-
-	if s.DepositOutputs, err = s.DeserializeVotesMap(r); err != nil {
-		return
-	}
-
-	if s.Nicknames, err = utils.DeserializeStringSet(r); err != nil {
-		return
-	}
-
-	if s.SpecialTxHashes, err = s.DeserializeHashSet(r); err != nil {
-		return
-	}
-
-	if s.PreBlockArbiters, err = utils.DeserializeStringSet(r); err != nil {
-		return
-	}
-
-	if s.EmergencyInactiveArbiters, err = utils.DeserializeStringSet(r); err != nil {
-		return
-	}
-
-	if s.VersionStartHeight, err = common.ReadUint32(r); err != nil {
-		return
-	}
-
-	if s.VersionEndHeight, err = common.ReadUint32(r); err != nil {
-		return
-	}
-	return
+func (c *CheckPoint) OnRollbackTo(height uint32) error {
+	return c.arbitrators.RollbackTo(height)
 }
 
-func (s *StateKeyFrame) SerializeHashSet(vmap map[common.Uint256]struct{},
-	w io.Writer) (err error) {
-	if err = common.WriteVarUint(w, uint64(len(vmap))); err != nil {
-		return
-	}
-	for k := range vmap {
-		if err = k.Serialize(w); err != nil {
-			return
-		}
-	}
-	return
+func (c *CheckPoint) Key() string {
+	return checkpointKey
 }
 
-func (s *StateKeyFrame) DeserializeHashSet(
-	r io.Reader) (vmap map[common.Uint256]struct{}, err error) {
-	var count uint64
-	if count, err = common.ReadVarUint(r, 0); err != nil {
-		return
-	}
-	vmap = make(map[common.Uint256]struct{})
-	for i := uint64(0); i < count; i++ {
-		k := common.Uint256{}
-		if err = k.Deserialize(r); err != nil {
-			return
-		}
-		vmap[k] = struct{}{}
-	}
-	return
+func (c *CheckPoint) OnInit() {
+	c.arbitrators.RecoverFromCheckPoints(c)
 }
 
-func (s *StateKeyFrame) SerializeVotesMap(vmap map[string]*types.Output,
-	w io.Writer) (err error) {
-	if err = common.WriteVarUint(w, uint64(len(vmap))); err != nil {
-		return
+func (c *CheckPoint) Snapshot() checkpoint.ICheckPoint {
+	point := &CheckPoint{
+		Height:            c.Height,
+		DutyIndex:         c.arbitrators.dutyIndex,
+		CurrentCandidates: make([][]byte, 0),
+		NextArbitrators:   make([][]byte, 0),
+		NextCandidates:    make([][]byte, 0),
+		CurrentReward:     *NewRewardData(),
+		NextReward:        *NewRewardData(),
+		KeyFrame: KeyFrame{
+			CurrentArbitrators: c.arbitrators.CurrentArbitrators,
+		},
+		StateKeyFrame: *c.arbitrators.StateKeyFrame.snapshot(),
 	}
-	for k, v := range vmap {
-		if err = common.WriteVarString(w, k); err != nil {
-			return
-		}
-
-		if v == nil {
-			if err = common.WriteUint8(w, 0); err != nil {
-				return
-			}
-		} else {
-			if err = common.WriteUint8(w, 1); err != nil {
-				return
-			}
-
-			if err = v.Serialize(w, types.TxVersion09); err != nil {
-				return
-			}
-		}
-	}
-	return
+	point.CurrentArbitrators = copyByteList(c.arbitrators.CurrentArbitrators)
+	point.CurrentCandidates = copyByteList(c.arbitrators.currentCandidates)
+	point.NextArbitrators = copyByteList(c.arbitrators.nextArbitrators)
+	point.NextCandidates = copyByteList(c.arbitrators.nextCandidates)
+	point.CurrentReward = *copyReward(&c.arbitrators.CurrentReward)
+	point.NextReward = *copyReward(&c.arbitrators.NextReward)
+	return point
 }
 
-func (s *StateKeyFrame) DeserializeVotesMap(
-	r io.Reader) (vmap map[string]*types.Output, err error) {
-	var count uint64
-	if count, err = common.ReadVarUint(r, 0); err != nil {
-		return
-	}
-	vmap = make(map[string]*types.Output)
-	for i := uint64(0); i < count; i++ {
-		var k string
-		if k, err = common.ReadVarString(r); err != nil {
-			return
-		}
-
-		var exist uint8
-		if exist, err = common.ReadUint8(r); err != nil {
-			return
-		}
-
-		if exist == 1 {
-			vote := &types.Output{}
-			if err = vote.Deserialize(r, types.TxVersion09); err != nil {
-				return
-			}
-			vmap[k] = vote
-		} else {
-			vmap[k] = nil
-		}
-	}
-	return
+func (c *CheckPoint) GetHeight() uint32 {
+	return c.Height
 }
 
-func (s *StateKeyFrame) SerializeProducerMap(pmap map[string]*Producer,
-	w io.Writer) (err error) {
-	if err = common.WriteVarUint(w, uint64(len(pmap))); err != nil {
-		return
-	}
-	for k, v := range pmap {
-		if err = common.WriteVarString(w, k); err != nil {
-			return
-		}
-
-		if err = v.Serialize(w); err != nil {
-			return
-		}
-	}
-	return
+func (c *CheckPoint) SetHeight(height uint32) {
+	c.Height = height
 }
 
-func (s *StateKeyFrame) DeserializeProducerMap(
-	r io.Reader) (pmap map[string]*Producer, err error) {
-	var count uint64
-	if count, err = common.ReadVarUint(r, 0); err != nil {
-		return
-	}
-	pmap = make(map[string]*Producer)
-	for i := uint64(0); i < count; i++ {
-		var k string
-		if k, err = common.ReadVarString(r); err != nil {
-			return
-		}
-		producer := &Producer{}
-		if err = producer.Deserialize(r); err != nil {
-			return
-		}
-		pmap[k] = producer
-	}
-	return
+func (c *CheckPoint) SavePeriod() uint32 {
+	return CheckPointInterval
 }
 
-func (d *RewardData) Serialize(w io.Writer) error {
-	if err := common.WriteVarUint(w,
-		uint64(len(d.OwnerProgramHashes))); err != nil {
-		return err
-	}
-	for _, v := range d.OwnerProgramHashes {
-		if err := v.Serialize(w); err != nil {
-			return err
-		}
-	}
-
-	if err := common.WriteVarUint(w,
-		uint64(len(d.CandidateOwnerProgramHashes))); err != nil {
-		return err
-	}
-	for _, v := range d.CandidateOwnerProgramHashes {
-		if err := v.Serialize(w); err != nil {
-			return err
-		}
-	}
-
-	if err := common.WriteUint64(w, uint64(d.TotalVotesInRound)); err != nil {
-		return err
-	}
-
-	if err := common.WriteVarUint(w,
-		uint64(len(d.OwnerVotesInRound))); err != nil {
-		return err
-	}
-	for k, v := range d.OwnerVotesInRound {
-		if err := k.Serialize(w); err != nil {
-			return err
-		}
-		if err := common.WriteUint64(w, uint64(v)); err != nil {
-			return err
-		}
-	}
-	return nil
+func (c *CheckPoint) EffectivePeriod() uint32 {
+	return checkpointEffectiveHeight
 }
 
-func (d *RewardData) Deserialize(r io.Reader) (err error) {
-	var count uint64
-	if count, err = common.ReadVarUint(r, 0); err != nil {
-		return
-	}
-	for i := uint64(0); i < count; i++ {
-		hash := &common.Uint168{}
-		if err = hash.Deserialize(r); err != nil {
-			return
-		}
-		d.OwnerProgramHashes = append(d.OwnerProgramHashes, hash)
-	}
-
-	if count, err = common.ReadVarUint(r, 0); err != nil {
-		return
-	}
-	for i := uint64(0); i < count; i++ {
-		hash := &common.Uint168{}
-		if err = hash.Deserialize(r); err != nil {
-			return
-		}
-		d.CandidateOwnerProgramHashes = append(
-			d.CandidateOwnerProgramHashes, hash)
-	}
-
-	var votes uint64
-	if votes, err = common.ReadUint64(r); err != nil {
-		return
-	}
-	d.TotalVotesInRound = common.Fixed64(votes)
-
-	if count, err = common.ReadVarUint(r, 0); err != nil {
-		return
-	}
-	d.OwnerVotesInRound = make(map[common.Uint168]common.Fixed64)
-	for i := uint64(0); i < count; i++ {
-		k := common.Uint168{}
-		if err = k.Deserialize(r); err != nil {
-			return
-		}
-		var v uint64
-		if v, err = common.ReadUint64(r); err != nil {
-			return
-		}
-		d.OwnerVotesInRound[k] = common.Fixed64(v)
-	}
-	return
+func (c *CheckPoint) DataExtension() string {
+	return checkpointExtension
 }
 
-func NewRewardData() *RewardData {
-	return &RewardData{
-		OwnerProgramHashes:          make([]*common.Uint168, 0),
-		CandidateOwnerProgramHashes: make([]*common.Uint168, 0),
-		OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
-		TotalVotesInRound:           0,
+func (c *CheckPoint) Priority() checkpoint.Priority {
+	return checkpoint.MediumHigh
+}
+
+func (c *CheckPoint) Generator() func(buf []byte) checkpoint.ICheckPoint {
+	return func(buf []byte) checkpoint.ICheckPoint {
+		stream := new(bytes.Buffer)
+		stream.Write(buf)
+
+		result := &CheckPoint{}
+		if err := result.Deserialize(stream); err != nil {
+			c.LogError(err)
+			return nil
+		}
+		return result
 	}
 }
 
+func (c *CheckPoint) LogError(err error) {
+	log.Warn("[CheckPoint] error: ", err.Error())
+}
+
+//Write data to writer
 func (c *CheckPoint) Serialize(w io.Writer) (err error) {
 	if err = common.WriteUint32(w, c.Height); err != nil {
 		return
@@ -472,19 +167,21 @@ func (c *CheckPoint) Serialize(w io.Writer) (err error) {
 	if err = c.NextReward.Serialize(w); err != nil {
 		return
 	}
+
 	return c.StateKeyFrame.Serialize(w)
 }
 
+//read data to reader
 func (c *CheckPoint) Deserialize(r io.Reader) (err error) {
 	if c.Height, err = common.ReadUint32(r); err != nil {
 		return
 	}
 
-	var index uint32
-	if index, err = common.ReadUint32(r); err != nil {
+	var dutyIndex uint32
+	if dutyIndex, err = common.ReadUint32(r); err != nil {
 		return
 	}
-	c.DutyIndex = int(index)
+	c.DutyIndex = int(dutyIndex)
 
 	if c.CurrentArbitrators, err = c.readBytesArray(r); err != nil {
 		return
@@ -513,18 +210,17 @@ func (c *CheckPoint) Deserialize(r io.Reader) (err error) {
 	return c.StateKeyFrame.Deserialize(r)
 }
 
-func (c *CheckPoint) writeBytesArray(value io.Writer,
-	bytesArray [][]byte) (err error) {
-	if err = common.WriteVarUint(value, uint64(len(bytesArray))); err != nil {
-		return
+func (c *CheckPoint) writeBytesArray(w io.Writer, bytesArray [][]byte) error {
+	if err := common.WriteVarUint(w, uint64(len(bytesArray))); err != nil {
+		return err
 	}
 
 	for _, b := range bytesArray {
-		if err = common.WriteVarBytes(value, b); err != nil {
-			return
+		if err := common.WriteVarBytes(w, b); err != nil {
+			return err
 		}
 	}
-	return
+	return nil
 }
 
 func (c *CheckPoint) readBytesArray(r io.Reader) ([][]byte, error) {
@@ -533,76 +229,28 @@ func (c *CheckPoint) readBytesArray(r io.Reader) ([][]byte, error) {
 		return nil, err
 	}
 
-	arbitrators := make([][]byte, 0)
+	bytesArray := make([][]byte, 0, count)
 	for i := uint64(0); i < count; i++ {
-		arbiter, err := common.ReadVarBytes(
-			r, crypto.NegativeBigLength, "arbiter")
+		arbiter, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "arbiter")
 		if err != nil {
 			return nil, err
 		}
-		arbitrators = append(arbitrators, arbiter)
+		bytesArray = append(bytesArray, arbiter)
 	}
-	return arbitrators, nil
+	return bytesArray, nil
 }
 
-// copyProducerMap copy the src map's key, value pairs into dst map.
-func copyProducerMap(src map[string]*Producer) (dst map[string]*Producer) {
-	dst = map[string]*Producer{}
-	for k, v := range src {
-		p := *v
-		dst[k] = &p
+func NewCheckpoint(ar *arbitrators) *CheckPoint {
+	return &CheckPoint{
+		CurrentCandidates: make([][]byte, 0),
+		NextArbitrators:   make([][]byte, 0),
+		NextCandidates:    make([][]byte, 0),
+		CurrentReward:     *NewRewardData(),
+		NextReward:        *NewRewardData(),
+		KeyFrame: KeyFrame{
+			CurrentArbitrators: make([][]byte, 0),
+		},
+		StateKeyFrame: *NewStateKeyFrame(),
+		arbitrators:   ar,
 	}
-	return
-}
-
-func copyOutputsMap(src map[string]*types.Output) (dst map[string]*types.Output) {
-	dst = map[string]*types.Output{}
-	for k, v := range src {
-		if v == nil {
-			dst[k] = nil
-		} else {
-			p := *v
-			dst[k] = &p
-		}
-	}
-	return
-}
-
-func copyHashSet(src map[common.Uint256]struct{}) (
-	dst map[common.Uint256]struct{}) {
-	dst = map[common.Uint256]struct{}{}
-	for k := range src {
-		dst[k] = struct{}{}
-	}
-	return
-}
-
-func copyByteList(src [][]byte) (dst [][]byte) {
-	for _, v := range src {
-		dst = append(dst, v)
-	}
-	return
-}
-
-func copyReward(src *RewardData) (dst *RewardData) {
-	dst = &RewardData{
-		OwnerVotesInRound: make(map[common.Uint168]common.Fixed64),
-	}
-	dst.TotalVotesInRound = src.TotalVotesInRound
-
-	for _, v := range src.OwnerProgramHashes {
-		p := *v
-		dst.OwnerProgramHashes = append(dst.OwnerProgramHashes, &p)
-	}
-
-	for _, v := range src.CandidateOwnerProgramHashes {
-		p := *v
-		dst.CandidateOwnerProgramHashes = append(
-			dst.CandidateOwnerProgramHashes, &p)
-	}
-
-	for k, v := range src.OwnerVotesInRound {
-		dst.OwnerVotesInRound[k] = v
-	}
-	return
 }

@@ -17,6 +17,17 @@ type CoinsCheckPoint struct {
 	coins  map[types.OutPoint]*Coin
 }
 
+func (ccp *CoinsCheckPoint) StartHeight() uint32 {
+	return 0
+}
+
+func (ccp *CoinsCheckPoint) Priority() checkpoint.Priority {
+	return checkpoint.High
+}
+
+func (ccp *CoinsCheckPoint) OnInit() {
+}
+
 func (ccp *CoinsCheckPoint) Serialize(w io.Writer) error {
 	if err := common.WriteUint32(w, ccp.height); err != nil {
 		return err
@@ -104,7 +115,7 @@ func (ccp *CoinsCheckPoint) Generator() func(buf []byte) checkpoint.ICheckPoint 
 }
 
 func (ccp *CoinsCheckPoint) LogError(err error) {
-	log.Error(err.Error())
+	log.Warn(err.Error())
 }
 
 func (ccp *CoinsCheckPoint) OnBlockSaved(block *types.DposBlock) {
