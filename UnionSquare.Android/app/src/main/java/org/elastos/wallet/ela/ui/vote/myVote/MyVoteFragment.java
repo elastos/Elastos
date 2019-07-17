@@ -33,6 +33,7 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -69,7 +70,6 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
     MyVotePresenter presenter = new MyVotePresenter();
     @BindView(R.id.tv_totle)
     TextView tvTotle;
-    Unbinder unbinder;
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
     @BindView(R.id.ll_bgtp)
@@ -114,7 +114,7 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
     }
 
     String value;
-    List<String> keylist = new ArrayList();
+    List<Recorder> keylist = new ArrayList();
     //  List<Long> vlauelist = new ArrayList();
 
     @Override
@@ -141,15 +141,15 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
 
                         while (it.hasNext()) {
                             String key = (String) it.next();
-                            keylist.add(key);
+                            keylist.add(getRecord(key));
                             if (TextUtils.isEmpty(value)) {
                                 value = jsonObject.getString(key);
                                 tvTotle.setText(Arith.div(value, MyWallet.RATE_S).longValue() + "");
                             }
                         }
                         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
-                        recyclerview.setAdapter(new MyVoteAdapter(keylist,
-                                jsonObject));
+                        Collections.sort(keylist);
+                        recyclerview.setAdapter(new MyVoteAdapter(keylist));
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -166,20 +166,23 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
     }
 
 
-    public class MyVoteAdapter extends BaseQuickAdapter<String, BaseViewHolder> {
-        JSONObject jsonObject;
+    public class MyVoteAdapter extends BaseQuickAdapter<Recorder, BaseViewHolder> {
 
-        public MyVoteAdapter(@Nullable List<String> name, JSONObject jsonObject) {
+
+        public MyVoteAdapter(@Nullable List<Recorder> name) {
             super(R.layout.item_myvoteafragment, name);
-            this.jsonObject = jsonObject;
+
         }
 
         @Override
-        protected void convert(BaseViewHolder helper, String item) {
-            helper.setText(R.id.tv_name, getRecord(item).name);
-            helper.setText(R.id.tv_no, getRecord(item).no);
+        protected void convert(BaseViewHolder helper, Recorder item) {
+            helper.setText(R.id.tv_name, item.name);
+            if (item.no == Integer.MAX_VALUE) {
+                helper.setText(R.id.tv_no, "- -");
+            } else {
+                helper.setText(R.id.tv_no, "NO." + item.no);
 
-
+            }
         }
     }
 
@@ -188,19 +191,24 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
         Recorder recorder = new Recorder();
         for (int i = 0; i < netList.size(); i++) {
             if (netList.get(i).getOwnerpublickey().equals(publickey)) {
-                recorder.no = "NO." + (i + 1);
+                recorder.no = (i + 1);
                 recorder.name = netList.get(i).getNickname();
                 return recorder;
             }
         }
-        recorder.no = "- -";
+        recorder.no = Integer.MAX_VALUE;
         recorder.name = getString(R.string.invalidnode);
         return recorder;
     }
 
-    private class Recorder {
-        String no;
+    private class Recorder implements Comparable<Recorder> {
+        int no;
         String name;
+
+        @Override
+        public int compareTo(Recorder o) {
+            return this.no - o.no;
+        }
     }
 
 }
