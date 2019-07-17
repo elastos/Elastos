@@ -41,6 +41,10 @@ import butterknife.OnClick;
 public class SignFragment extends BaseFragment implements CommmonStringWithMethNameViewData {
     @BindView(R.id.tv_title)
     TextView tvTitle;
+    @BindView(R.id.tv_multip)
+    TextView tvMultip;
+    @BindView(R.id.tv_onlycode)
+    TextView tvOnlycode;
     @BindView(R.id.tv_publish)
     TextView tvPublish;
     @BindView(R.id.tv_vptitle)
@@ -148,7 +152,17 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
             llVp.setVisibility(View.GONE);
             tvVptitle.setVisibility(View.GONE);
             ivQr.setImageBitmap(images.get(0));
+            tvOnlycode.setVisibility(View.GONE);
+            tvMultip.setVisibility(View.GONE);
             return;
+        }
+        try {
+            JsonObject JsonAttribute = new JsonParser().parse(data).getAsJsonObject();
+            String msg = String.format(getString(R.string.onlyid), JsonAttribute.get("ID").getAsString());
+            tvOnlycode.setText(msg);
+            tvOnlycode.setVisibility(View.VISIBLE);
+            tvMultip.setVisibility(View.VISIBLE);
+        } catch (Exception e) {
         }
         ivQr.setVisibility(View.GONE);
         llVp.setVisibility(View.VISIBLE);

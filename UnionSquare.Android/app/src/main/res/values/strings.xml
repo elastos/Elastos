@@ -405,5 +405,6 @@
     <string name="signedtreat">已签名交易</string>
     <string name="social">社区</string>
     <string name="nopermiss">当前钱包无权签名此交易</string>
+    <string name="onlyid">识别码 \n【 %1$s 】</string>
 
 </resources>

@@ -19,13 +19,15 @@
         android:visibility="gone" />
 
     <TextView
-        android:id="@+id/tv_vptitle"
+        android:id="@+id/tv_onlycode"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/px160"
+        android:layout_marginTop="@dimen/px70"
         android:gravity="center"
+        android:lineSpacingMultiplier="1.2"
+        android:text="@string/onlyid"
         android:textColor="#ffffffff"
-        android:textSize="13sp" />
+        android:textSize="11sp" />
 
     <LinearLayout
         android:id="@+id/ll_vp"
@@ -46,6 +48,15 @@
     </LinearLayout>
 
     <TextView
+        android:id="@+id/tv_vptitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/px30"
+        android:gravity="center"
+        android:textColor="#ffffffff"
+        android:textSize="13sp" />
+
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/px70"
@@ -53,5 +64,13 @@
         android:text="@string/pleasesign"
         android:textColor="#ffffffff"
         android:textSize="11sp" />
-
+    <TextView
+        android:id="@+id/tv_multip"
+        android:layout_marginTop="@dimen/px56"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="请连续扫描所有二维码"
+        android:textColor="#ffffffff"
+        android:textSize="13sp"
+        />
 </LinearLayout>
