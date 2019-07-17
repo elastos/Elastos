@@ -18,9 +18,29 @@ print(pubkey)
 local asset_id = m.get_asset_id()
 
 -- amount, fee, recipent
-local amount = 0.1
-local fee = 0.001
-local recipient = "EbWmBQQLW35s1LmKa5P55rQcjLxmfFChxT"
+local amount = getAmount()
+local fee = getFee()
+local recipient = getToAddr()
+
+if amount == 0
+then
+	amount = 1.0
+end
+
+if fee == 0
+then
+	fee = 0.1
+end
+
+if recipient == ""
+then
+	print("to addr is nil, should use --to to set it.")
+	return
+end
+
+print("amount:", amount)
+print("fee:", fee)
+print("recipient:", recipient)
 
 -- payload
 local ta = transferasset.new()
