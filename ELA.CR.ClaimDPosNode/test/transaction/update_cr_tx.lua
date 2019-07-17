@@ -1,7 +1,7 @@
 -- Copyright (c) 2017-2019 Elastos Foundation
 -- Use of this source code is governed by an MIT
 -- license that can be found in the LICENSE file.
--- 
+--
 
 local m = require("api")
 
@@ -24,10 +24,41 @@ local fee = 0.001
 -- deposit params
 
 --local deposit_address = "DW1jxCSjnrCrtkyvbkGcUp4aPvjacXBpAM"
-local cr_publickey = "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
-local nick_name = "ela_test11"
-local url = "ela_test.org11"
-local location = "00112211"
+--local cr_publickey = "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
+--local nick_name = "ela_test11"
+--local url = "ela_test.org11"
+--local location = "00112211"
+
+local cr_publickey = getPublicKey()
+local nick_name = getNickName()
+local url = getUrl()
+local location = getLocation()
+
+if cr_publickey == ""
+	then
+		print("pubic key is nil, should use --publickey or -pk to set it.")
+		return
+end
+
+if nick_name == ""
+	then
+		nick_name = "nickname_test"
+end
+
+if url == ""
+	then
+		url = "url_test"
+end
+
+if location == ""
+	then
+		location = 123
+end
+
+print("public key:", cr_publickey)
+print("nick_name:", nick_name)
+print("url:", url)
+print("location:", location)
 
 -- register cr payload: publickey, nickname, url, local, wallet
 local up_payload =updatecr.new(cr_publickey, nick_name, url, location, wallet)
