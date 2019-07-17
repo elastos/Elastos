@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 /*
 DNS is a peer-to-peer network address distribute service.  It is a special
 peer-to-peer server that only accept connections and send known addresses of

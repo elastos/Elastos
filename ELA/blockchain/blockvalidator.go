@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package blockchain
 
 import (
@@ -10,6 +15,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/auxpow"
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
@@ -73,13 +79,10 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 		}
 	}
 
-	txIDs := make([]Uint256, 0, len(transactions))
+	txIDs := make([]Uint256, 0, len(block.Transactions))
 	existingTxIDs := make(map[Uint256]struct{})
 	existingTxInputs := make(map[string]struct{})
-	existingSideTxs := make(map[Uint256]struct{})
-	existingProducer := make(map[string]struct{})
-	existingProducerNode := make(map[string]struct{})
-	for _, txn := range transactions {
+	for _, txn := range block.Transactions {
 		txID := txn.Hash()
 		// Check for duplicate transactions.
 		if _, exists := existingTxIDs[txID]; exists {
@@ -101,7 +104,39 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 			existingTxInputs[referKey] = struct{}{}
 		}
 
-		if txn.IsWithdrawFromSideChainTx() {
+		// Append transaction to list
+		txIDs = append(txIDs, txID)
+	}
+	if err := checkDuplicateTx(block); err != nil {
+		return err
+	}
+	calcTransactionsRoot, err := crypto.ComputeRoot(txIDs)
+	if err != nil {
+		return errors.New("[PowCheckBlockSanity] merkleTree compute failed")
+	}
+	if !header.MerkleRoot.IsEqual(calcTransactionsRoot) {
+		return errors.New("[PowCheckBlockSanity] block merkle root is invalid")
+	}
+
+	return nil
+}
+
+func getDIDByCode(code []byte) (*Uint168, error) {
+	ct1, error := contract.CreateCRDIDContractByCode(code)
+	if error != nil {
+		return nil, error
+	}
+	return ct1.ToProgramHash(), error
+}
+
+func checkDuplicateTx(block *Block) error {
+	existingSideTxs := make(map[Uint256]struct{})
+	existingProducer := make(map[string]struct{})
+	existingProducerNode := make(map[string]struct{})
+	existingCR := make(map[Uint168]struct{})
+	for _, txn := range block.Transactions {
+		switch txn.TxType {
+		case WithdrawFromSideChain:
 			witPayload := txn.Payload.(*payload.WithdrawFromSideChain)
 
 			// Check for duplicate sidechain tx in a block
@@ -111,9 +146,7 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 				}
 				existingSideTxs[hash] = struct{}{}
 			}
-		}
-
-		if txn.IsRegisterProducerTx() {
+		case RegisterProducer:
 			producerPayload, ok := txn.Payload.(*payload.ProducerInfo)
 			if !ok {
 				return errors.New("[PowCheckBlockSanity] invalid register producer payload")
@@ -132,9 +165,7 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 				return errors.New("[PowCheckBlockSanity] block contains duplicate producer node")
 			}
 			existingProducerNode[producerNode] = struct{}{}
-		}
-
-		if txn.IsUpdateProducerTx() {
+		case UpdateProducer:
 			producerPayload, ok := txn.Payload.(*payload.ProducerInfo)
 			if !ok {
 				return errors.New("[PowCheckBlockSanity] invalid update producer payload")
@@ -153,19 +184,57 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 				return errors.New("[PowCheckBlockSanity] block contains duplicate producer node")
 			}
 			existingProducerNode[producerNode] = struct{}{}
+		case CancelProducer:
+			processProducerPayload, ok := txn.Payload.(*payload.ProcessProducer)
+			if !ok {
+				return errors.New("[PowCheckBlockSanity] invalid cancel producer payload")
+			}
+
+			producer := BytesToHexString(processProducerPayload.OwnerPublicKey)
+			// Check for duplicate producer in a block
+			if _, exists := existingProducer[producer]; exists {
+				return errors.New("[PowCheckBlockSanity] block contains duplicate producer")
+			}
+			existingProducer[producer] = struct{}{}
+		case RegisterCR:
+			crPayload, ok := txn.Payload.(*payload.CRInfo)
+			if !ok {
+				return errors.New("[PowCheckBlockSanity] invalid register CR payload")
+			}
+
+			// Check for duplicate CR in a block
+			if _, exists := existingCR[crPayload.DID]; exists {
+				return errors.New("[PowCheckBlockSanity] block contains duplicate CR")
+			}
+			existingCR[crPayload.DID] = struct{}{}
+		case UpdateCR:
+			crPayload, ok := txn.Payload.(*payload.CRInfo)
+			if !ok {
+				return errors.New("[PowCheckBlockSanity] invalid update CR payload")
+			}
+
+			// Check for duplicate  CR in a block
+			if _, exists := existingCR[crPayload.DID]; exists {
+				return errors.New("[PowCheckBlockSanity] block contains duplicate CR")
+			}
+			existingCR[crPayload.DID] = struct{}{}
+		case UnregisterCR:
+			unregisterCR, ok := txn.Payload.(*payload.UnregisterCR)
+			if !ok {
+				return errors.New("[PowCheckBlockSanity] invalid unregister CR payload")
+			}
+			didPointer, err := getDIDByCode(unregisterCR.Code)
+			if err != nil {
+				return errors.New("[PowCheckBlockSanity] invalid unregisterCR CR Code")
+
+			}
+			// Check for duplicate  CR in a block
+			if _, exists := existingCR[*didPointer]; exists {
+				return errors.New("[PowCheckBlockSanity] block contains duplicate CR")
+			}
+			existingCR[*didPointer] = struct{}{}
 		}
-
-		// Append transaction to list
-		txIDs = append(txIDs, txID)
 	}
-	calcTransactionsRoot, err := crypto.ComputeRoot(txIDs)
-	if err != nil {
-		return errors.New("[PowCheckBlockSanity] merkleTree compute failed")
-	}
-	if !header.MerkleRoot.IsEqual(calcTransactionsRoot) {
-		return errors.New("[PowCheckBlockSanity] block merkle root is invalid")
-	}
-
 	return nil
 }
 

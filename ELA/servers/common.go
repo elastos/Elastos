@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package servers
 
 import (
@@ -34,9 +39,14 @@ type OutputPayloadInfo interface{}
 
 type DefaultOutputInfo struct{}
 
+type CandidateVotes struct {
+	Candidate string `json:"candidate"`
+	Votes     string `json:"votes"`
+}
+
 type VoteContentInfo struct {
 	VoteType       outputpayload.VoteType `json:"votetype"`
-	CandidatesInfo []string               `json:"candidates"`
+	CandidatesInfo []CandidateVotes       `json:"candidates"`
 }
 
 type VoteOutputInfo struct {

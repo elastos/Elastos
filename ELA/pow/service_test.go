@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package pow
 
 import (
@@ -56,7 +61,7 @@ func TestService_Init(t *testing.T) {
 	}
 
 	chain, err := blockchain.New(chainStore, params, state.NewState(params,
-		nil))
+		nil, nil), nil)
 	if err != nil {
 		t.Error(err)
 	}

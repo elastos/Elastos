@@ -1,3 +1,8 @@
+-- Copyright (c) 2017-2019 Elastos Foundation
+-- Use of this source code is governed by an MIT
+-- license that can be found in the LICENSE file.
+-- 
+
 local m = require("api")
 
 -- client: path, password, if create
@@ -18,6 +23,7 @@ local amount = 0.2
 local fee = 0.001
 local vote_type = 0
 local vote_candidates = {'034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16c'}
+local vote_candidate_votes = {'1.0'}
 
 -- payload
 local ta = transferasset.new()
@@ -29,8 +35,8 @@ local tx = transaction.new(9, 0x02, 0, ta, 0)
 local charge = tx:appendenough(addr, (amount + fee) * 100000000)
 print("charge", charge)
 
--- votecontent: vote_type, vote_candidates
-local vote_content = votecontent.new(vote_type, vote_candidates)
+-- votecontent: vote_type, vote_candidates, vote_candidate_votes
+local vote_content = votecontent.new(vote_type, vote_candidates, vote_candidate_votes)
 print("vote_content", vote_content:get())
 
 -- outputpayload

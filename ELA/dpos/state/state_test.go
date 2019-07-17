@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package state
 
 import (
@@ -7,9 +12,12 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/core/contract"
+	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -64,13 +72,44 @@ func mockActivateProducerTx(publicKey []byte) *types.Transaction {
 
 // mockVoteTx creates a vote transaction with the producers public keys.
 func mockVoteTx(publicKeys [][]byte) *types.Transaction {
+	candidateVotes := make([]outputpayload.CandidateVotes, 0, len(publicKeys))
+	for _, pk := range publicKeys {
+		candidateVotes = append(candidateVotes,
+			outputpayload.CandidateVotes{pk, 0})
+	}
 	output := &types.Output{
 		Value: 100,
 		Type:  types.OTVote,
 		Payload: &outputpayload.VoteOutput{
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
-				{outputpayload.Delegate, publicKeys},
+				{outputpayload.Delegate, candidateVotes},
+			},
+		},
+	}
+
+	return &types.Transaction{
+		Version: types.TxVersion09,
+		TxType:  types.TransferAsset,
+		Outputs: []*types.Output{output},
+	}
+}
+
+func mockNewVoteTx(publicKeys [][]byte) *types.Transaction {
+	candidateVotes := make([]outputpayload.CandidateVotes, 0, len(publicKeys))
+	for i, pk := range publicKeys {
+		candidateVotes = append(candidateVotes,
+			outputpayload.CandidateVotes{
+				Candidate: pk,
+				Votes:     common.Fixed64((i + 1) * 10)})
+	}
+	output := &types.Output{
+		Value: 100,
+		Type:  types.OTVote,
+		Payload: &outputpayload.VoteOutput{
+			Version: outputpayload.VoteProducerAndCRVersion,
+			Contents: []outputpayload.VoteContent{
+				{outputpayload.Delegate, candidateVotes},
 			},
 		},
 	}
@@ -126,17 +165,20 @@ func mockInactiveArbitratorsTx(publicKey []byte) *types.Transaction {
 	}
 }
 
+func randomOwnerPublicKey() []byte {
+	_, pub, _ := crypto.GenerateKeyPair()
+	result, _ := pub.EncodePoint(true)
+	return result
+}
+
 func TestState_ProcessTransaction(t *testing.T) {
-	state := NewState(&config.DefaultParams, nil)
+	state := NewState(&config.DefaultParams, nil, nil)
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: make([]byte, 33),
+			OwnerPublicKey: randomOwnerPublicKey(),
 			NodePublicKey:  make([]byte, 33),
-		}
-		for j := range p.OwnerPublicKey {
-			p.OwnerPublicKey[j] = byte(i)
 		}
 		rand.Read(p.NodePublicKey)
 		p.NickName = fmt.Sprintf("Producer-%d", i+1)
@@ -194,15 +236,30 @@ func TestState_ProcessTransaction(t *testing.T) {
 
 	// Test vote producer.
 	publicKeys := make([][]byte, 5)
-	for i, p := range producers[1:6] {
+	for i, p := range producers[0:5] {
 		publicKeys[i] = p.OwnerPublicKey
 	}
 	tx = mockVoteTx(publicKeys)
-	state.ProcessBlock(mockBlock(13, tx), nil)
+
+	// Test new version vote producer.
+	publicKeys2 := make([][]byte, 5)
+	for i, p := range producers[5:10] {
+		publicKeys2[i] = p.OwnerPublicKey
+	}
+	tx2 := mockNewVoteTx(publicKeys2)
+
+	state.ProcessBlock(mockBlock(13, tx, tx2), nil)
 
 	for _, pk := range publicKeys {
 		p := state.getProducer(pk)
 		if !assert.Equal(t, common.Fixed64(100), p.votes) {
+			t.FailNow()
+		}
+	}
+
+	for i, pk := range publicKeys2 {
+		p := state.getProducer(pk)
+		if !assert.Equal(t, common.Fixed64((i+1)*10), p.votes) {
 			t.FailNow()
 		}
 	}
@@ -229,17 +286,14 @@ func TestState_ProcessTransaction(t *testing.T) {
 }
 
 func TestState_ProcessBlock(t *testing.T) {
-	state := NewState(&config.DefaultParams, nil)
+	state := NewState(&config.DefaultParams, nil, nil)
 
 	// Create 100 producers info.
 	producers := make([]*payload.ProducerInfo, 100)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: make([]byte, 33),
+			OwnerPublicKey: randomOwnerPublicKey(),
 			NodePublicKey:  make([]byte, 33),
-		}
-		for j := range p.OwnerPublicKey {
-			p.OwnerPublicKey[j] = byte(i)
 		}
 		rand.Read(p.NodePublicKey)
 		p.NickName = fmt.Sprintf("Producer-%d", i+1)
@@ -342,11 +396,8 @@ func TestState_ProcessBlock(t *testing.T) {
 	// Mixed transactions 1 register, 2 cancel, 3 updates, 4 votes, 5 illegals.
 	txs = make([]*types.Transaction, 15)
 	info := &payload.ProducerInfo{
-		OwnerPublicKey: make([]byte, 33),
+		OwnerPublicKey: randomOwnerPublicKey(),
 		NodePublicKey:  make([]byte, 33),
-	}
-	for i := range info.OwnerPublicKey {
-		info.OwnerPublicKey[i] = byte(101)
 	}
 	rand.Read(info.NodePublicKey)
 	info.NickName = "Producer-101"
@@ -402,17 +453,14 @@ func TestState_ProcessBlock(t *testing.T) {
 }
 
 func TestState_ProcessIllegalBlockEvidence(t *testing.T) {
-	state := NewState(&config.DefaultParams, nil)
+	state := NewState(&config.DefaultParams, nil, nil)
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: make([]byte, 33),
+			OwnerPublicKey: randomOwnerPublicKey(),
 			NodePublicKey:  make([]byte, 33),
-		}
-		for j := range p.OwnerPublicKey {
-			p.OwnerPublicKey[j] = byte(i)
 		}
 		rand.Read(p.NodePublicKey)
 		p.NickName = fmt.Sprintf("Producer-%d", i+1)
@@ -458,17 +506,14 @@ func TestState_ProcessIllegalBlockEvidence(t *testing.T) {
 }
 
 func TestState_ProcessEmergencyInactiveArbitrators(t *testing.T) {
-	state := NewState(&config.DefaultParams, nil)
+	state := NewState(&config.DefaultParams, nil, nil)
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: make([]byte, 33),
+			OwnerPublicKey: randomOwnerPublicKey(),
 			NodePublicKey:  make([]byte, 33),
-		}
-		for j := range p.OwnerPublicKey {
-			p.OwnerPublicKey[j] = byte(i)
 		}
 		rand.Read(p.NodePublicKey)
 		p.NickName = fmt.Sprintf("Producer-%d", i+1)
@@ -517,17 +562,14 @@ func TestState_ProcessEmergencyInactiveArbitrators(t *testing.T) {
 }
 
 func TestState_Rollback(t *testing.T) {
-	state := NewState(&config.DefaultParams, nil)
+	state := NewState(&config.DefaultParams, nil, nil)
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: make([]byte, 33),
+			OwnerPublicKey: randomOwnerPublicKey(),
 			NodePublicKey:  make([]byte, 33),
-		}
-		for j := range p.OwnerPublicKey {
-			p.OwnerPublicKey[j] = byte(i)
 		}
 		rand.Read(p.NodePublicKey)
 		p.NickName = fmt.Sprintf("Producer-%d", i+1)
@@ -568,17 +610,14 @@ func TestState_Rollback(t *testing.T) {
 }
 
 func TestState_GetHistory(t *testing.T) {
-	state := NewState(&config.DefaultParams, nil)
+	state := NewState(&config.DefaultParams, nil, nil)
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: make([]byte, 33),
+			OwnerPublicKey: randomOwnerPublicKey(),
 			NodePublicKey:  make([]byte, 33),
-		}
-		for j := range p.OwnerPublicKey {
-			p.OwnerPublicKey[j] = byte(i)
 		}
 		rand.Read(p.NodePublicKey)
 		p.NickName = fmt.Sprintf("Producer-%d", i+1)
@@ -632,7 +671,7 @@ func TestState_GetHistory(t *testing.T) {
 	// At this point, we have 1 canceled, 1 pending, 7 active, 1 illegal and 8 in total producers.
 
 	_, err := state.GetHistory(0)
-	limitHeight := state.history.height - uint32(len(state.history.changes))
+	limitHeight := state.history.Height() - uint32(len(state.history.Changes()))
 	if !assert.EqualError(t, err, fmt.Sprintf("seek to %d overflow"+
 		" history capacity, at most seek to %d", 0, limitHeight)) {
 		t.FailNow()
@@ -717,17 +756,14 @@ func TestState_GetHistory(t *testing.T) {
 }
 
 func TestState_NicknameExists(t *testing.T) {
-	state := NewState(&config.DefaultParams, nil)
+	state := NewState(&config.DefaultParams, nil, nil)
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: make([]byte, 33),
+			OwnerPublicKey: randomOwnerPublicKey(),
 			NodePublicKey:  make([]byte, 33),
-		}
-		for j := range p.OwnerPublicKey {
-			p.OwnerPublicKey[j] = byte(i)
 		}
 		rand.Read(p.NodePublicKey)
 		p.NickName = fmt.Sprintf("Producer-%d", i+1)
@@ -782,17 +818,14 @@ func TestState_NicknameExists(t *testing.T) {
 }
 
 func TestState_ProducerExists(t *testing.T) {
-	state := NewState(&config.DefaultParams, nil)
+	state := NewState(&config.DefaultParams, nil, nil)
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: make([]byte, 33),
+			OwnerPublicKey: randomOwnerPublicKey(),
 			NodePublicKey:  make([]byte, 33),
-		}
-		for j := range p.OwnerPublicKey {
-			p.OwnerPublicKey[j] = byte(i)
 		}
 		rand.Read(p.NodePublicKey)
 		p.NickName = fmt.Sprintf("Producer-%d", i+1)
@@ -836,14 +869,13 @@ func TestState_ProducerExists(t *testing.T) {
 }
 
 func TestState_IsDPOSTransaction(t *testing.T) {
-	state := NewState(&config.DefaultParams, nil)
+	state := NewState(&config.DefaultParams, nil, nil)
 
 	producer := &payload.ProducerInfo{
-		OwnerPublicKey: make([]byte, 33),
+		OwnerPublicKey: randomOwnerPublicKey(),
 		NodePublicKey:  make([]byte, 33),
 		NickName:       "Producer",
 	}
-	rand.Read(producer.OwnerPublicKey)
 	rand.Read(producer.NodePublicKey)
 
 	tx := mockRegisterProducerTx(producer)
@@ -893,18 +925,15 @@ func TestState_IsDPOSTransaction(t *testing.T) {
 
 func TestState_InactiveProducer_Normal(t *testing.T) {
 	arbitrators := &ArbitratorsMock{}
-	state := NewState(&config.DefaultParams, arbitrators.GetArbitrators)
+	state := NewState(&config.DefaultParams, arbitrators.GetArbitrators, nil)
 	state.chainParams.InactivePenalty = 50
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: make([]byte, 33),
+			OwnerPublicKey: randomOwnerPublicKey(),
 			NodePublicKey:  make([]byte, 33),
-		}
-		for j := range p.OwnerPublicKey {
-			p.OwnerPublicKey[j] = byte(i)
 		}
 		rand.Read(p.NodePublicKey)
 		p.NickName = fmt.Sprintf("Producer-%d", i+1)
@@ -970,17 +999,14 @@ func TestState_InactiveProducer_Normal(t *testing.T) {
 
 func TestState_InactiveProducer_FailNoContinuous(t *testing.T) {
 	arbitrators := &ArbitratorsMock{}
-	state := NewState(&config.DefaultParams, arbitrators.GetArbitrators)
+	state := NewState(&config.DefaultParams, arbitrators.GetArbitrators, nil)
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: make([]byte, 33),
+			OwnerPublicKey: randomOwnerPublicKey(),
 			NodePublicKey:  make([]byte, 33),
-		}
-		for j := range p.OwnerPublicKey {
-			p.OwnerPublicKey[j] = byte(i)
 		}
 		rand.Read(p.NodePublicKey)
 		p.NickName = fmt.Sprintf("Producer-%d", i+1)
@@ -1049,17 +1075,14 @@ func TestState_InactiveProducer_FailNoContinuous(t *testing.T) {
 
 func TestState_InactiveProducer_RecoverFromInactiveState(t *testing.T) {
 	arbitrators := &ArbitratorsMock{}
-	state := NewState(&config.DefaultParams, arbitrators.GetArbitrators)
+	state := NewState(&config.DefaultParams, arbitrators.GetArbitrators, nil)
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: make([]byte, 33),
+			OwnerPublicKey: randomOwnerPublicKey(),
 			NodePublicKey:  make([]byte, 33),
-		}
-		for j := range p.OwnerPublicKey {
-			p.OwnerPublicKey[j] = byte(i)
 		}
 		rand.Read(p.NodePublicKey)
 		p.NickName = fmt.Sprintf("Producer-%d", i+1)
@@ -1143,18 +1166,15 @@ func TestState_InactiveProducer_RecoverFromInactiveState(t *testing.T) {
 
 func TestState_InactiveProducer_DuringUpdateVersion(t *testing.T) {
 	arbitrators := &ArbitratorsMock{}
-	state := NewState(&config.DefaultParams, arbitrators.GetArbitrators)
+	state := NewState(&config.DefaultParams, arbitrators.GetArbitrators, nil)
 	state.chainParams.InactivePenalty = 50
 
 	// Create 10 producers info.
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: make([]byte, 33),
+			OwnerPublicKey: randomOwnerPublicKey(),
 			NodePublicKey:  make([]byte, 33),
-		}
-		for j := range p.OwnerPublicKey {
-			p.OwnerPublicKey[j] = byte(i)
 		}
 		rand.Read(p.NodePublicKey)
 		p.NickName = fmt.Sprintf("Producer-%d", i+1)
@@ -1224,4 +1244,129 @@ func TestState_InactiveProducer_DuringUpdateVersion(t *testing.T) {
 	if !assert.Equal(t, inactiveProducer.Penalty(), common.Fixed64(0)) {
 		t.FailNow()
 	}
+}
+
+func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
+	arbitrators := &ArbitratorsMock{}
+	state := NewState(&config.DefaultParams, arbitrators.GetArbitrators, nil)
+	height := config.DefaultParams.CRVotingStartHeight - 1
+
+	_, pk, _ := crypto.GenerateKeyPair()
+	pkBuf, _ := pk.EncodePoint(true)
+	cont, _ := contract.CreateStandardContract(pk)
+	depositCont, _ := contract.CreateDepositContractByPubKey(pk)
+
+	// register register cr before CRVotingStartHeight
+	registerTx := &types.Transaction{
+		TxType: types.RegisterProducer,
+		Payload: &payload.ProducerInfo{
+			OwnerPublicKey: pkBuf,
+			NodePublicKey:  pkBuf,
+			NickName:       randomString(),
+		},
+		Outputs: []*types.Output{
+			{
+				ProgramHash: *depositCont.ToProgramHash(),
+				Value:       common.Fixed64(100),
+			},
+		},
+	}
+	state.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: height,
+		},
+		Transactions: []*types.Transaction{registerTx},
+	}, nil)
+	height++
+	candidate := state.getProducer(pkBuf)
+	assert.Equal(t, common.Fixed64(0), candidate.depositAmount)
+
+	state.getProducerDepositAmount = func(p common.Uint168) (
+		fixed64 common.Fixed64, e error) {
+		return common.Fixed64(100), nil
+	}
+	state.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: height,
+		},
+		Transactions: []*types.Transaction{},
+	}, nil)
+	height++
+	assert.Equal(t, common.Fixed64(100), candidate.depositAmount)
+	assert.Equal(t, Pending, candidate.state)
+
+	// deposit though normal tx
+	tranferTx := &types.Transaction{
+		TxType:  types.TransferAsset,
+		Payload: &payload.TransferAsset{},
+		Outputs: []*types.Output{
+			{
+				ProgramHash: *depositCont.ToProgramHash(),
+				Value:       common.Fixed64(200),
+			},
+		},
+	}
+	state.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: height,
+		},
+		Transactions: []*types.Transaction{tranferTx},
+	}, nil)
+	height++
+	assert.Equal(t, common.Fixed64(300), candidate.depositAmount)
+
+	// cancel candidate
+	for i := 0; i < 4; i++ {
+		state.ProcessBlock(&types.Block{
+			Header: types.Header{
+				Height: height,
+			},
+			Transactions: []*types.Transaction{},
+		}, nil)
+		height++
+	}
+	assert.Equal(t, Active, candidate.state)
+	state.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: height,
+		},
+		Transactions: []*types.Transaction{
+			{
+				TxType: types.CancelProducer,
+				Payload: &payload.ProcessProducer{
+					OwnerPublicKey: pkBuf,
+				},
+			},
+		},
+	}, nil)
+	height++
+	for i := 0; i < 5; i++ {
+		state.ProcessBlock(&types.Block{
+			Header: types.Header{
+				Height: height,
+			},
+			Transactions: []*types.Transaction{},
+		}, nil)
+		height++
+	}
+	assert.Equal(t, Canceled, candidate.state)
+
+	// return deposit
+	state.returnDeposit(&types.Transaction{
+		Programs: []*program.Program{
+			{
+				Code: cont.Code,
+			},
+		},
+		Inputs: []*types.Input{
+			{
+				Previous: types.OutPoint{
+					TxID:  tranferTx.Hash(),
+					Index: 0,
+				},
+			},
+		},
+	}, height)
+	state.history.Commit(height)
+	assert.Equal(t, common.Fixed64(100), candidate.depositAmount)
 }

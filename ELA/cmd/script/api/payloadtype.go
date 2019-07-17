@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package api
 
 import (
@@ -11,7 +16,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 
-	"github.com/yuin/gopher-lua"
+	lua "github.com/yuin/gopher-lua"
 )
 
 const (
@@ -23,6 +28,9 @@ const (
 	luaActivateProducerName  = "activateproducer"
 	luaReturnDepositCoinName = "returndepositcoin"
 	luaSideChainPowName      = "sidechainpow"
+	luaRegisterCRName        = "registercr"
+	luaUpdateCRName          = "updatecr"
+	luaUnregisterCRName      = "unregistercr"
 )
 
 func RegisterCoinBaseType(L *lua.LState) {
@@ -392,9 +400,9 @@ func RegisterReturnDepositCoinType(L *lua.LState) {
 
 // Constructor
 func newReturnDepositCoin(L *lua.LState) int {
-	registerProducer := &payload.ReturnDepositCoin{}
+	returnDeposit := &payload.ReturnDepositCoin{}
 	ud := L.NewUserData()
-	ud.Value = registerProducer
+	ud.Value = returnDeposit
 	L.SetMetatable(ud, L.GetTypeMetatable(luaReturnDepositCoinName))
 	L.Push(ud)
 
@@ -578,6 +586,307 @@ var returnSideChainPowMethods = map[string]lua.LGFunction{
 // Getter and setter for the Person#Name
 func returnSideChainPowGet(L *lua.LState) int {
 	p := checkSideChainPow(L, 1)
+	fmt.Println(p)
+
+	return 0
+}
+
+// Registers my person type to given L.
+func RegisterRegisterCRType(L *lua.LState) {
+	mt := L.NewTypeMetatable(luaRegisterCRName)
+	L.SetGlobal("registercr", mt)
+	// static attributes
+	L.SetField(mt, "new", L.NewFunction(newRegisterCR))
+	// methods
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), registerCRMethods))
+}
+
+// Constructor
+func newRegisterCR(L *lua.LState) int {
+	publicKeyStr := L.ToString(1)
+	nickName := L.ToString(2)
+	url := L.ToString(3)
+	location := L.ToInt64(4)
+	needSign := true
+	client, err := checkClient(L, 5)
+	if err != nil {
+		needSign = false
+	}
+	publicKey, err := common.HexStringToBytes(publicKeyStr)
+	if err != nil {
+		fmt.Println("wrong cr public key")
+		os.Exit(1)
+	}
+
+	pk, err := crypto.DecodePoint(publicKey)
+	if err != nil {
+		fmt.Println("wrong cr public key")
+		os.Exit(1)
+	}
+
+	code, err := contract.CreateStandardRedeemScript(pk)
+	if err != nil {
+		fmt.Println("wrong cr public key")
+		os.Exit(1)
+	}
+
+	ct, err := contract.CreateCRDIDContractByCode(code)
+
+	if err != nil {
+		fmt.Println("wrong cr public key")
+		os.Exit(1)
+	}
+	registerCR := &payload.CRInfo{
+		Code:     code,
+		DID:      *ct.ToProgramHash(),
+		NickName: nickName,
+		Url:      url,
+		Location: uint64(location),
+	}
+
+	if needSign {
+		rpSignBuf := new(bytes.Buffer)
+		err = registerCR.SerializeUnsigned(rpSignBuf, payload.ProducerInfoVersion)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		codeHash, err := contract.PublicKeyToStandardCodeHash(publicKey)
+		acc := client.GetAccountByCodeHash(*codeHash)
+		if acc == nil {
+			fmt.Println("no available account in wallet")
+			os.Exit(1)
+		}
+		rpSig, err := crypto.Sign(acc.PrivKey(), rpSignBuf.Bytes())
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		registerCR.Signature = rpSig
+	}
+
+	ud := L.NewUserData()
+	ud.Value = registerCR
+	L.SetMetatable(ud, L.GetTypeMetatable(luaRegisterCRName))
+	L.Push(ud)
+
+	return 1
+}
+
+// Checks whether the first lua argument is a *LUserData with *CRInfo and
+// returns this *CRInfo.
+func checkRegisterCR(L *lua.LState, idx int) *payload.CRInfo {
+	ud := L.CheckUserData(idx)
+	if v, ok := ud.Value.(*payload.CRInfo); ok {
+		return v
+	}
+	L.ArgError(1, "ProducerInfo expected")
+	return nil
+}
+
+var registerCRMethods = map[string]lua.LGFunction{
+	"get": registerCRGet,
+}
+
+// Getter and setter for the Person#Name
+func registerCRGet(L *lua.LState) int {
+	p := checkRegisterCR(L, 1)
+	fmt.Println(p)
+
+	return 0
+}
+
+//
+// Registers my person type to given L.
+func RegisterUpdateCRType(L *lua.LState) {
+	mt := L.NewTypeMetatable(luaUpdateCRName)
+	L.SetGlobal("updatecr", mt)
+	// static attributes
+	L.SetField(mt, "new", L.NewFunction(newUpdateCR))
+	// methods
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), updateCRMethods))
+}
+
+// Constructor
+func newUpdateCR(L *lua.LState) int {
+	publicKeyStr := L.ToString(1)
+	nickName := L.ToString(2)
+	url := L.ToString(3)
+	location := L.ToInt64(4)
+	needSign := true
+	client, err := checkClient(L, 5)
+	if err != nil {
+		needSign = false
+	}
+	publicKey, err := common.HexStringToBytes(publicKeyStr)
+	if err != nil {
+		fmt.Println("wrong cr public key")
+		os.Exit(1)
+	}
+
+	pk, err := crypto.DecodePoint(publicKey)
+	if err != nil {
+		fmt.Println("wrong cr public key")
+		os.Exit(1)
+	}
+
+	code, err := contract.CreateStandardRedeemScript(pk)
+	if err != nil {
+		fmt.Println("wrong cr public key")
+		os.Exit(1)
+	}
+
+	ct, err := contract.CreateCRDIDContractByCode(code)
+	if err != nil {
+		fmt.Println("wrong cr public key")
+		os.Exit(1)
+	}
+
+	updateCR := &payload.CRInfo{
+		Code:     ct.Code,
+		DID:      *ct.ToProgramHash(),
+		NickName: nickName,
+		Url:      url,
+		Location: uint64(location),
+	}
+
+	if needSign {
+		rpSignBuf := new(bytes.Buffer)
+		err = updateCR.SerializeUnsigned(rpSignBuf, payload.ProducerInfoVersion)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		codeHash, err := contract.PublicKeyToStandardCodeHash(publicKey)
+		acc := client.GetAccountByCodeHash(*codeHash)
+		if acc == nil {
+			fmt.Println("no available account in wallet")
+			os.Exit(1)
+		}
+		rpSig, err := crypto.Sign(acc.PrivKey(), rpSignBuf.Bytes())
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		updateCR.Signature = rpSig
+	}
+
+	ud := L.NewUserData()
+	ud.Value = updateCR
+	L.SetMetatable(ud, L.GetTypeMetatable(luaUpdateCRName))
+	L.Push(ud)
+
+	return 1
+}
+
+// Checks whether the first lua argument is a *LUserData with *CRInfo and
+// returns this *CRInfo.
+func checkUpdateCR(L *lua.LState, idx int) *payload.CRInfo {
+	ud := L.CheckUserData(idx)
+	if v, ok := ud.Value.(*payload.CRInfo); ok {
+		return v
+	}
+	L.ArgError(1, "CRInfo expected")
+	return nil
+}
+
+var updateCRMethods = map[string]lua.LGFunction{
+	"get": updateCRGet,
+}
+
+// Getter and setter for the Person#Name
+func updateCRGet(L *lua.LState) int {
+	p := checkUpdateCR(L, 1)
+	fmt.Println(p)
+
+	return 0
+}
+
+func RegisterUnregisterCRType(L *lua.LState) {
+	mt := L.NewTypeMetatable(luaUnregisterCRName)
+	L.SetGlobal("unregistercr", mt)
+	// static attributes
+	L.SetField(mt, "new", L.NewFunction(newUnregisterCR))
+	// methods
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), unregisterCRMethods))
+}
+
+// Constructor
+func newUnregisterCR(L *lua.LState) int {
+	publicKeyStr := L.ToString(1)
+	needSign := true
+	client, err := checkClient(L, 2)
+	if err != nil {
+		needSign = false
+	}
+	publicKey, err := common.HexStringToBytes(publicKeyStr)
+	if err != nil {
+		fmt.Println("wrong cr public key")
+		os.Exit(1)
+	}
+
+	pk, err := crypto.DecodePoint(publicKey)
+	if err != nil {
+		fmt.Println("wrong cr public key")
+		os.Exit(1)
+	}
+
+	ct, err := contract.CreateStandardContract(pk)
+	if err != nil {
+		fmt.Println("wrong cr public key")
+		os.Exit(1)
+	}
+	unregisterCR := &payload.UnregisterCR{
+		Code: ct.Code,
+	}
+
+	if needSign {
+		rpSignBuf := new(bytes.Buffer)
+		err = unregisterCR.SerializeUnsigned(rpSignBuf, payload.UnregisterCRVersion)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		codeHash, err := contract.PublicKeyToStandardCodeHash(publicKey)
+		acc := client.GetAccountByCodeHash(*codeHash)
+		if acc == nil {
+			fmt.Println("no available account in wallet")
+			os.Exit(1)
+		}
+		rpSig, err := crypto.Sign(acc.PrivKey(), rpSignBuf.Bytes())
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		unregisterCR.Signature = rpSig
+	}
+
+	ud := L.NewUserData()
+	ud.Value = unregisterCR
+	L.SetMetatable(ud, L.GetTypeMetatable(luaUnregisterCRName))
+	L.Push(ud)
+
+	return 1
+}
+
+// Checks whether the first lua argument is a *LUserData with *CRInfo and
+// returns this *CRInfo.
+func checkUnregisterCR(L *lua.LState, idx int) *payload.UnregisterCR {
+	ud := L.CheckUserData(idx)
+	if v, ok := ud.Value.(*payload.UnregisterCR); ok {
+		return v
+	}
+	L.ArgError(1, "UnregisterCR expected")
+	return nil
+}
+
+var unregisterCRMethods = map[string]lua.LGFunction{
+	"get": unregisterCRGet,
+}
+
+// Getter and setter for the Person#Name
+func unregisterCRGet(L *lua.LState) int {
+	p := checkUnregisterCR(L, 1)
 	fmt.Println(p)
 
 	return 0

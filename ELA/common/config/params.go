@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package config
 
 import (
@@ -151,6 +156,8 @@ var DefaultParams = Params{
 	VoteStartHeight:          290000,
 	CRCOnlyDPOSHeight:        343400,
 	PublicDPOSHeight:         402680,
+	CRVotingStartHeight:      1800000, // todo correct me when height has been confirmed
+	CRCommitteeStartHeight:   2000000, // todo correct me when height has been confirmed
 	ToleranceDuration:        5 * time.Second,
 	MaxInactiveRounds:        720 * 2,
 	InactivePenalty:          0, //there will be no penalty in this version
@@ -158,6 +165,10 @@ var DefaultParams = Params{
 	GeneralArbiters:          24,
 	CandidateArbiters:        72,
 	PreConnectOffset:         360,
+	CheckPointNoFlatFile:     false,
+	CRMemberCount:            12,
+	CRVotingPeriod:           30 * 720,
+	CRDutyPeriod:             365 * 720,
 }
 
 // TestNet returns the network parameters for the test network.
@@ -202,6 +213,8 @@ func (p *Params) TestNet() *Params {
 	copy.VoteStartHeight = 200000
 	copy.CRCOnlyDPOSHeight = 246700
 	copy.PublicDPOSHeight = 300000
+	copy.CRVotingStartHeight = 900000     // todo correct me when height has been confirmed
+	copy.CRCommitteeStartHeight = 1000000 // todo correct me when height has been confirmed
 	return &copy
 }
 
@@ -248,6 +261,8 @@ func (p *Params) RegNet() *Params {
 	copy.VoteStartHeight = 170000
 	copy.CRCOnlyDPOSHeight = 211000
 	copy.PublicDPOSHeight = 234000
+	copy.CRVotingStartHeight = 900000     // todo correct me when height has been confirmed
+	copy.CRCommitteeStartHeight = 1000000 // todo correct me when height has been confirmed
 	return &copy
 }
 
@@ -341,6 +356,12 @@ type Params struct {
 	// elected producers participate in DPOS consensus.
 	PublicDPOSHeight uint32
 
+	// CRVotingStartHeight defines the height of CR voting started.
+	CRVotingStartHeight uint32
+
+	// CRCommitteeStartHeight defines the height of CR Committee started.
+	CRCommitteeStartHeight uint32
+
 	// CRCArbiters defines the fixed CRC arbiters producing the block.
 	CRCArbiters []string
 
@@ -373,6 +394,20 @@ type Params struct {
 	// EmergencyInactivePenalty defines the penalty amount the emergency
 	// producer takes.
 	EmergencyInactivePenalty common.Fixed64
+
+	// CheckPointNoFlatFile defines if check point should store as flat file
+	CheckPointNoFlatFile bool
+
+	// CRMemberCount defines the number of CR committee members
+	CRMemberCount uint32
+
+	// CRVotingPeriod defines the duration of voting period which measured by
+	// block height
+	CRVotingPeriod uint32
+
+	// CRDutyPeriod defines the duration of a normal duty period which
+	// measured by block height
+	CRDutyPeriod uint32
 }
 
 // rewardPerBlock calculates the reward for each block by a specified time

@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package api
 
 import (
@@ -215,8 +220,10 @@ func RegisterVoteContentType(L *lua.LState) {
 func newVoteContent(L *lua.LState) int {
 	voteType := L.ToInt(1)
 	candidatesTable := L.ToTable(2)
+	candidateVotesTable := L.ToTable(3)
 
 	candidates := make([][]byte, 0)
+	votes := make([]common.Fixed64, 0)
 	candidatesTable.ForEach(func(i, value lua.LValue) {
 		//fmt.Println(lua.LVAsString(value))
 		publicKey := lua.LVAsString(value)
@@ -227,10 +234,24 @@ func newVoteContent(L *lua.LState) int {
 		}
 		candidates = append(candidates, pk)
 	})
+	candidateVotesTable.ForEach(func(i, value lua.LValue) {
+		//fmt.Println(lua.LVAsString(value))
+		voteStr := lua.LVAsString(value)
+		vote, _ := common.StringToFixed64(voteStr)
+		votes = append(votes, *vote)
+	})
+
+	candidateVotes := make([]outputpayload.CandidateVotes, 0, len(candidates))
+	for i := 0; i < len(candidates); i++ {
+		candidateVotes = append(candidateVotes, outputpayload.CandidateVotes{
+			Candidate: candidates[i],
+			Votes:     votes[i],
+		})
+	}
 
 	voteContent := &outputpayload.VoteContent{
-		VoteType:   outputpayload.VoteType(voteType),
-		Candidates: candidates,
+		VoteType:       outputpayload.VoteType(voteType),
+		CandidateVotes: candidateVotes,
 	}
 
 	ud := L.NewUserData()

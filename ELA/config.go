@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package main
 
 import (
@@ -101,6 +106,9 @@ func loadConfigParams(cfg *config.Configuration) (*config.Configuration, error) 
 	if cfg.MinCrossChainTxFee > 0 {
 		activeNetParams.MinCrossChainTxFee = cfg.MinCrossChainTxFee
 	}
+	if cfg.CheckPointNoFlatFile {
+		activeNetParams.CheckPointNoFlatFile = cfg.CheckPointNoFlatFile
+	}
 	if cfg.FoundationAddress != "" {
 		foundation, err := common.Uint168FromAddress(cfg.FoundationAddress)
 		if err != nil {
@@ -127,6 +135,12 @@ func loadConfigParams(cfg *config.Configuration) (*config.Configuration, error) 
 	}
 	if cfg.PublicDPOSHeight > 0 {
 		activeNetParams.PublicDPOSHeight = cfg.PublicDPOSHeight
+	}
+	if cfg.CRCommitteeStartHeight > 0 {
+		activeNetParams.CRCommitteeStartHeight = cfg.CRCommitteeStartHeight
+	}
+	if cfg.CRVotingStartHeight > 0 {
+		activeNetParams.CRVotingStartHeight = cfg.CRVotingStartHeight
 	}
 
 	// When arbiter service enabled, IP address must be set.
@@ -179,6 +193,15 @@ func loadConfigParams(cfg *config.Configuration) (*config.Configuration, error) 
 	if cfg.DPoSConfiguration.EmergencyInactivePenalty > 0 {
 		activeNetParams.EmergencyInactivePenalty =
 			cfg.DPoSConfiguration.EmergencyInactivePenalty
+	}
+	if cfg.CRConfiguration.MemberCount > 0 {
+		activeNetParams.CRMemberCount = cfg.CRConfiguration.MemberCount
+	}
+	if cfg.CRConfiguration.DutyPeriod > 0 {
+		activeNetParams.CRDutyPeriod = cfg.CRConfiguration.DutyPeriod
+	}
+	if cfg.CRConfiguration.VotingPeriod > 0 {
+		activeNetParams.CRVotingPeriod = cfg.CRConfiguration.VotingPeriod
 	}
 
 	return cfg, nil
