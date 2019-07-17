@@ -4,7 +4,7 @@
     <string name="loading" translatable="false">Loading...</string>
     <string name="text_empty" translatable="false">No data</string>
     <string name="text_nonet" translatable="false">Network Disconneted</string>
-    <string name="text_retry" translatable="false">Please retry</string>
+    <string name="text_retry" translatable="false">Please Retry</string>
     <string name="vote">Vote</string>
     <string name="sign_up_for">Registration</string>
     <string name="going_to_vote">Vote</string>
@@ -13,8 +13,8 @@
     <string name="please_select_country">Please select country/region</string>
     <string name="please_enter_the_url">Please enter node website URL</string>
     <string name="confirm_to_run">Confirm</string>
-    <string name="my_vote">My vote</string>
-    <string name="voting_rules">Voting rules</string>
+    <string name="my_vote">My Vote</string>
+    <string name="voting_rules">Voting Rules</string>
     <string name="vote_qwtpzb">Percentage of Votes Cast Online</string>
     <string name="the_current_number">Current Votes</string>
     <string name="number_of_voting_addresses">Number of Node</string>
@@ -23,13 +23,13 @@
     <string name="node_publickey">Node Public Key</string>
     <string name="vote_of">Voting Ratio</string>
     <string name="country_region">Country/Region</string>
-    <string name="candidate_list">Add to candidate list</string>
-    <string name="view_candidate_list">View candidate list</string>
+    <string name="candidate_list">Add to Candidate List</string>
+    <string name="view_candidate_list">View Candidate List</string>
     <string name="the_declaration_of_the_node">Node Slogan</string>
     <string name="node_information">Node Information</string>
     <string name="mmediately_to_vote">Vote</string>
     <string name="create_a_wallet">Create Wallet</string>
-    <string name="create_a_wallet_title">Create Wallet（recommend）</string>
+    <string name="create_a_wallet_title">Create Wallet（Recommended）</string>
     <string name="import_the_wallet">Import Wallet</string>
     <string name="please_enter_the_name_your_wallet">Enter wallet name</string>
     <string name="please_enter_wallet_password">Please enter your password(at least 8 characters long)</string>
@@ -39,11 +39,11 @@
     <string name="next">Next</string>
     <string name="copy_down_your_wallet_mnemonic">Please write down mnemonic</string>
     <string name="text_mnemonic_prompt">Please write down mnemonic in paper,\n losing mnemonic means you lose your wallet</string>
-    <string name="mnemonic_password">Mnemonic Password(optional)</string>
+    <string name="mnemonic_password">Mnemonic Password (Optional)</string>
     <string name="please_set_bit_mnemonic_password">Please enter your password(at least 8 characters long)</string>
     <string name="please_repeat_the_mnemonic_password_you_entered">Please re-enter your password</string>
 
-    <string name="verify_mnemonic_words">Verify mnemonic</string>
+    <string name="verify_mnemonic_words">Verify Mnemonic</string>
     <string name="mnemonic">Mnemonic</string>
     <string name="please_enter_your_mnemonic_password_current_wallet">Please enter mnemonic password</string>
     <string name="please_space_out_mnemonic_words">Mnemonic must be separated by a space</string>
@@ -212,7 +212,7 @@
     <string name="_5000">5000 ELA required, please try again</string>
     <string name="ticket">Ticket</string>
     <string name="cannot_be_added_repeatedly">You have registered already</string>
-    <string name="remove_candidate_list">Remove from candidate list</string>
+    <string name="remove_candidate_list">Remove from Candidate List</string>
     <string name="yi_remove_candidate_list">Removed</string>
     <string name="unknown">Unknown</string>
     <string name="has_been_selected">Selected</string>
@@ -228,14 +228,14 @@
     <string name="Pending">Pending</string>
     <string name="confirmed">Confirmed</string>
     <string name="mustcontain">8–16 characters long and contains at least two letters, numbers, and special characters</string>
-    <string name="has_chosen">Has chosen</string>
-    <string name="number_voting">Number of votes</string>
-    <string name="maximum_voting_rights">Maximum voting rights</string>
+    <string name="has_chosen">Has Chosen</string>
+    <string name="number_voting">Number of Votes</string>
+    <string name="maximum_voting_rights">Maximum Voting Rights</string>
     <string name="please_enter_the_correct_url">Please enter the correct URL</string>
     <string name="allamount">Total Balance：</string>
     <string name="voteuseamount">Vote Balance：</string>
-    <string name="update_information">Update information</string>
-    <string name="vote_again">Vote again</string>
+    <string name="update_information">Update Information</string>
+    <string name="vote_again">Vote Again</string>
     <string name="update_successful">The update is successful</string>
     <string name="useutxo">Whether to use voting utxo</string>
     <!--错误码-->
@@ -335,7 +335,7 @@
     <string name="noaskpermission">Please change permission in settings</string>
     <string name="needpermission">Need permission of memory and camera</string>
     <string name="submit_confirmation">Registration information has been submitted, please wait for transaction confirmation</string>
-    <string name="my_list_candidates">My candidates list</string>
+    <string name="my_list_candidates">My Candidates List</string>
     <string name="clickmneminic">Please click your mnemonic words in order</string>
 
     <string name="deletewalletsucess">Delete wallet successfully</string>
