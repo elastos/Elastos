@@ -6,7 +6,7 @@ import (
 
 const (
 	key             = "utxo"
-	dataExtension   = "upt"
+	dataExtension   = ".ucp"
 	savePeriod      = uint32(720)
 	effectivePeriod = uint32(720)
 
