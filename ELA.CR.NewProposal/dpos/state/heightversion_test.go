@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package state
 
 import (
@@ -42,9 +47,9 @@ func TestHeightVersionInit(t *testing.T) {
 	var err error
 	bestHeight = 0
 	arbiters, err = NewArbitrators(activeNetParams, nil,
-		func() uint32 { return bestHeight }, nil, nil)
+		func() uint32 { return bestHeight }, nil, nil, nil)
 	assert.NoError(t, err)
-	arbiters.State = NewState(activeNetParams, nil)
+	arbiters.State = NewState(activeNetParams, nil, nil)
 
 }
 

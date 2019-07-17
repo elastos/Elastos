@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package state
 
 import (
@@ -168,7 +173,7 @@ func (a *arbitrators) ProcessSpecialTxPayload(p types.Payload,
 }
 
 func (a *arbitrators) RollbackTo(height uint32) error {
-	if height > a.history.height {
+	if height > a.history.Height() {
 		return fmt.Errorf("can't rollback to height: %d", height)
 	}
 
@@ -410,7 +415,7 @@ func (a *arbitrators) distributeWithNormalArbitrators(
 func (a *arbitrators) DecreaseChainHeight(height uint32) error {
 	a.degradation.RollbackTo(height)
 
-	heightOffset := int(a.history.height - height)
+	heightOffset := int(a.history.Height() - height)
 	if a.dutyIndex == 0 || a.dutyIndex < heightOffset {
 		if err := a.ForceChange(height); err != nil {
 			return err
@@ -428,7 +433,7 @@ func (a *arbitrators) GetNeedConnectArbiters() []peer.PID {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
 
-	height := a.history.height + 1
+	height := a.history.Height() + 1
 	if height < a.chainParams.CRCOnlyDPOSHeight-a.chainParams.PreConnectOffset {
 		return nil
 	}
@@ -914,7 +919,7 @@ func (a *arbitrators) getBlockDPOSReward(block *types.Block) common.Fixed64 {
 		totalTxFx += tx.Fee
 	}
 
-	return common.Fixed64(math.Ceil(float64(totalTxFx+
+	return common.Fixed64(math.Ceil(float64(totalTxFx +
 		a.chainParams.RewardPerBlock) * 0.35))
 }
 
@@ -1036,7 +1041,9 @@ func NewArbitrators(chainParams *config.Params,
 	store IArbitratorsRecord,
 	bestHeight func() uint32,
 	bestBlock func() (*types.Block, error),
-	getBlockByHeight func(uint32) (*types.Block, error)) (*arbitrators, error) {
+	getBlockByHeight func(uint32) (*types.Block, error),
+	getProducerDepositAmount func(programHash common.Uint168) (common.Fixed64,
+	error)) (*arbitrators, error) {
 
 	originArbiters := make([][]byte, len(chainParams.OriginArbiters))
 	originArbitersProgramHashes := make([]*common.Uint168, len(chainParams.OriginArbiters))
@@ -1116,7 +1123,7 @@ func NewArbitrators(chainParams *config.Params,
 			state:             DSNormal,
 		},
 	}
-	a.State = NewState(chainParams, a.GetArbitrators)
+	a.State = NewState(chainParams, a.GetArbitrators, getProducerDepositAmount)
 
 	if store != nil {
 		checkedHeights, err := store.GetHeightsDesc()

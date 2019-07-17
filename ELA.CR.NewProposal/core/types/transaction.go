@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package types
 
 import (
@@ -43,6 +48,11 @@ const (
 	IllegalSidechainEvidence TxType = 0x11
 	InactiveArbitrators      TxType = 0x12
 	UpdateVersion            TxType = 0x13
+
+	RegisterCR          TxType = 0x21
+	UnregisterCR        TxType = 0x22
+	UpdateCR            TxType = 0x23
+	ReturnCRDepositCoin TxType = 0x24
 )
 
 func (self TxType) Name() string {
@@ -87,6 +97,14 @@ func (self TxType) Name() string {
 		return "InactiveArbitrators"
 	case UpdateVersion:
 		return "UpdateVersion"
+	case RegisterCR:
+		return "RegisterCR"
+	case UnregisterCR:
+		return "UnregisterCR"
+	case UpdateCR:
+		return "UpdateCR"
+	case ReturnCRDepositCoin:
+		return "ReturnCRDepositCoin"
 	default:
 		return "Unknown"
 	}
@@ -326,6 +344,22 @@ func (tx *Transaction) Hash() common.Uint256 {
 	return *tx.txHash
 }
 
+func (tx *Transaction) IsUpdateCRTx() bool {
+	return tx.TxType == UpdateCR
+}
+
+func (tx *Transaction) IsReturnCRDepositCoinTx() bool {
+	return tx.TxType == ReturnCRDepositCoin
+}
+
+func (tx *Transaction) IsUnregisterCRTx() bool {
+	return tx.TxType == UnregisterCR
+}
+
+func (tx *Transaction) IsRegisterCRTx() bool {
+	return tx.TxType == RegisterCR
+}
+
 func (tx *Transaction) IsIllegalTypeTx() bool {
 	return tx.IsIllegalProposalTx() || tx.IsIllegalVoteTx() || tx.IsIllegalBlockTx() || tx.IsSidechainIllegalDataTx()
 }
@@ -457,6 +491,14 @@ func GetPayload(txType TxType) (Payload, error) {
 		p = new(payload.InactiveArbitrators)
 	case UpdateVersion:
 		p = new(payload.UpdateVersion)
+	case RegisterCR:
+		p = new(payload.CRInfo)
+	case UpdateCR:
+		p = new(payload.CRInfo)
+	case UnregisterCR:
+		p = new(payload.UnregisterCR)
+	case ReturnCRDepositCoin:
+		p = new(payload.ReturnDepositCoin)
 	default:
 		return nil, errors.New("[Transaction], invalid transaction type.")
 	}

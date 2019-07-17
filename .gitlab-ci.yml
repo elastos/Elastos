@@ -9,7 +9,9 @@ job_test1:
     entrypoint: ["/bin/sh", "-c"]
   variables:
     GOPATH: /builds/go
-    ELA_PROJECT_DIR: "${GOPATH}/src/github.com/${CI_PROJECT_NAMESPACE}"
+    ORG_NAME: "elastos"
+    PROJECT_NAME: "Elastos.ELA"
+    ORG_DIR: "${GOPATH}/src/github.com/${ORG_NAME}"
   before_script:
     - mkdir -p "${GOPATH}/src"
     - cd "${GOPATH}/src"
@@ -20,17 +22,26 @@ job_test1:
     - tar xf gopkg.in.tgz
     - tar xf github.com.tgz
     - rm -f *.tgz
-    - mkdir -p $ELA_PROJECT_DIR
-    - ln -s "${CI_PROJECT_DIR}" "${ELA_PROJECT_DIR}/Elastos.ELA"
+    - mkdir -p "${ORG_DIR}"
+    - ln -s "${CI_PROJECT_DIR}" "${ORG_DIR}/${PROJECT_NAME}"
   script:
-    - cd "${ELA_PROJECT_DIR}/Elastos.ELA"
-    - go test -v -short ./...
+    - cd "${ORG_DIR}/${PROJECT_NAME}"
+    - curl -o /bin/addlicense http://172.16.0.120/addlicense
+    - curl -o /bin/revive http://172.16.120/revive
+    - curl -o /bin/checkcoverage http://172.16.120/checkcoverage
+    - chmod +x /bin/addlicense /bin/revive /bin/checkcoverage
+    - addlicense -check
+    - revive -config .revive.toml -formatter friendly $(go list ./... | grep -v /vendor/)
+    - go test $(go list ./... | grep -v /vendor/) -v -short -coverprofile .coverage
+    - go tool cover -func .coverage
+    - checkcoverage
     - make all
     - make dns
     - mkdir bin && cp ela ela-cli bin
     - bin/ela -v
     - ./util.sh test
     - cd $CI_PROJECT_DIR
+  coverage: '/^total:\t+\(statements\)\t+(\d+\.\d+)%/'
   artifacts:
     name: "$CI_COMMIT_REF_SLUG-$CI_PIPELINE_ID-${CI_BUILD_REF:0:8}"
     paths:
@@ -41,7 +52,9 @@ job_test2:
   image: python:3.6-jessie
   variables:
     GOPATH: /builds/go
-    ELA_PROJECT_DIR: "${GOPATH}/src/github.com/${CI_PROJECT_NAMESPACE}"
+    ORG_NAME: "elastos"
+    PROJECT_NAME: "Elastos.ELA"
+    ORG_DIR: "${GOPATH}/src/github.com/${ORG_NAME}"
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   cache:
     paths:
@@ -49,8 +62,8 @@ job_test2:
   dependencies:
     - job_test1
   before_script:
-    - mkdir -p $ELA_PROJECT_DIR
-    - ln -s "${CI_PROJECT_DIR}" "${ELA_PROJECT_DIR}/Elastos.ELA"
+    - mkdir -p "${ORG_DIR}"
+    - ln -s "${CI_PROJECT_DIR}" "${ORG_DIR}/${PROJECT_NAME}"
     - cp bin/* $CI_PROJECT_DIR
     - curl -O http://172.16.0.120/testingwork-testing_work.tar.gz
     - tar xf testingwork-testing_work.tar.gz

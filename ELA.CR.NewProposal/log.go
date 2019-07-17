@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package main
 
 import (
@@ -7,6 +12,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/common/log"
+	crstate "github.com/elastos/Elastos.ELA/cr/state"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/elanet"
 	"github.com/elastos/Elastos.ELA/elanet/netsync"
@@ -177,6 +183,7 @@ func setupLog(c *cli.Context) {
 	routlog := wrap(logger, cfg.PrintLevel)
 	elanlog := wrap(logger, cfg.PrintLevel)
 	statlog := wrap(logger, cfg.PrintLevel)
+	crstatlog := wrap(logger, cfg.PrintLevel)
 
 	addrmgr.UseLogger(admrlog)
 	connmgr.UseLogger(cmgrlog)
@@ -185,4 +192,5 @@ func setupLog(c *cli.Context) {
 	routes.UseLogger(routlog)
 	elanet.UseLogger(elanlog)
 	state.UseLogger(statlog)
+	crstate.UseLogger(crstatlog)
 }

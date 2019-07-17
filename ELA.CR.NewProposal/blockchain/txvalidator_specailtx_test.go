@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package blockchain
 
 import (
@@ -70,7 +75,7 @@ func (s *txValidatorSpecialTxTestSuite) SetupSuite() {
 		s.Error(err)
 	}
 	s.Chain, err = New(chainStore, &config.DefaultParams,
-		state.NewState(&config.DefaultParams, nil))
+		state.NewState(&config.DefaultParams, nil, nil), nil)
 	if err != nil {
 		s.Error(err)
 	}

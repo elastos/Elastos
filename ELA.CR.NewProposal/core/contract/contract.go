@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package contract
 
 import (
@@ -11,6 +16,7 @@ const (
 	PrefixMultiSig   PrefixType = 0x12
 	PrefixCrossChain PrefixType = 0x4B
 	PrefixDeposit    PrefixType = 0x1F
+	PrefixCRDID      PrefixType = 0x67
 )
 
 // Contract include the redeem script and hash prefix

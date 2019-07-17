@@ -876,7 +876,7 @@ warning: this interface is ready to be deprecated. So no api information will be
 
 #### listproducers
 
-description: show producers infromation
+description: show producers information
 parameters:
 
 | name  | type    | description                                                  |
@@ -1731,6 +1731,151 @@ result sample:
       "3edbcc839fd4f16c0b70869f2d477b56a006d31dc7a10d8cb49bd12628d6352e",
       "9132cf82a18d859d200c952aec548d7895e7b654fd1761d5d059b91edbad1768"
     ]
+}
+```
+
+#### listcrcandidates
+
+description: show cr candidates information
+
+parameters:
+
+| name  | type    | description                                                  |
+| ----- | ------- | ------------------------------------------------------------ |
+| start | integer | the start index of cr candidates                                 |
+| limit | integer | the limit count of cr candidates                                 |
+| state | string  | the cr candidates state you want<br/>"all": get cr candidates in any state<br/>"pending": get cr candidates in the pendding state<br/>
+"active": get cr candidates in the active state<br/>
+"canceled": get cr candidates in the canceled state<br/>
+"returned": get cr candidates in the returned state |
+if state flag not provided return the cr candidates in pending and active state.
+
+result:
+
+| name           | type   | description                               |
+| -------------- | ------ | ----------------------------------------- |
+| code           | string | the cr candiate code                      |
+| did            | string | the cr candiate did address               |
+| nickname       | string | the nick name of the cr candiate          |
+| url            | string | the url of the cr candiate                |
+| location       | uint64 | the location number of the cr candiate    |
+| state          | bool   | if cr candiate has confirmed              |
+| votes          | string | the votes currently held                  |
+| index          | uint64 | the index of the cr candiate              |
+| totalvotes     | string | the total votes of registered cr candiate |
+| totalcounts    | uint64 | the total counts of registered cr candiate|
+
+named arguments sample:
+
+```json
+{
+  "method": "listcrcandidates",
+  "params":{
+    "start": 0,
+    "limit": 3
+  }
+}
+```
+
+result sample:
+
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "crcandidatesinfo": [
+            {
+                "code": "21036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535ac",
+                "did": "6717f1eaffc451b043b82eb9ff9ca136341a725078",
+                "nickname": "ela_test11",
+                "url": "ela_test.org11",
+                "location": 38025,
+                "state": "Canceled",
+                "votes": "0",
+                "index": 0
+            }
+        ],
+        "totalvotes": "0",
+        "totalcounts": 1
+    }
+}
+```
+
+
+#### listcurrentcrs
+
+description: show current cr members information
+
+parameters:
+
+| name  | type    | description                                                  |
+| ----- | ------- | ------------------------------------------------------------ |
+| state | string  | the cr member state you want know <br/>
+result:
+
+| name            | type   | description                               |
+| --------------  | ------ | ----------------------------------------- |
+| code            | string | the cr member code                        |
+| did             | string | the cr member did address                 |
+| nickname        | string | the nick name of the cr member            |
+| url             | string | the url of the cr member                  |
+| location        | uint64 | the location number of the cr member      |
+| impeachmentvotes| int64  | impeachment votes of the cr member        |
+| depositamount   | string | the deposite amout of the cr member       |
+| deposithash     | string | the deposite address of the cr member     |
+| penalty         | int64  | the penalty of the cr member              |
+| index           | uint64 | the index of the cr member                |
+| totalcounts     | uint64 | the total counts of current cr member     |
+
+named arguments sample:
+
+```json
+{
+"method": "listcurrentcrs",
+  "params":{
+    "state":"all"
+  }
+}
+```
+
+result sample:
+
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "crmembersinfo": [
+            {
+                "code": "2102e23f70b9b967af35571c32b1442d787c180753bbed5cd6e7d5a5cfe75c7fc1ffac",
+                "did": "6756b347f27954f1061883cfe469839f8465cc7340",
+                "nickname": "ela_cr2",
+                "url": "ela_cr2.org",
+                "location": 112211,
+                "impeachmentvotes": 0,
+                "depositamout": "5000",
+                "deposithash": "1f56b347f27954f1061883cfe469839f8465cc7340",
+                "penalty": 0,
+                "index": 0
+            },
+            {
+                "code": "2103c3dd01baa4e3d0625f6c0026ad3d06d085e80c57477efa1a4aa2ab209c210e95ac",
+                "did": "670f11c336563d31ed1cf81ac4a83f9df7306f9967",
+                "nickname": "ela_cr1",
+                "url": "ela_cr1.org",
+                "location": 112211,
+                "impeachmentvotes": 0,
+                "depositamout": "5000",
+                "deposithash": "1f0f11c336563d31ed1cf81ac4a83f9df7306f9967",
+                "penalty": 0,
+                "index": 1
+            }
+        ],
+        "totalcounts": 2
+    }
 }
 ```
 
