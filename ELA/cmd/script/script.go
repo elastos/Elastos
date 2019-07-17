@@ -18,13 +18,15 @@ import (
 
 func registerParams(c *cli.Context, L *lua.LState) {
 	publicKey := c.String("pubkey")
+	code := c.String("code")
 	depositAddr := c.String("depositaddr")
 	nickname := c.String("nickname")
 	url := c.String("url")
 	location := c.Int64("location")
-	depositAmount := c.Int64("depositamount")
-	amount := c.Int64("amount")
-	fee := c.Int64("fee")
+	depositAmount := c.Float64("depositamount")
+	amount := c.Float64("amount")
+	fee := c.Float64("fee")
+	votes := c.Float64("votes")
 
 	getDepositAddr := func(L *lua.LState) int {
 		L.Push(lua.LString(depositAddr))
@@ -32,6 +34,10 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	}
 	getPublicKey := func(L *lua.LState) int {
 		L.Push(lua.LString(publicKey))
+		return 1
+	}
+	getCode := func(L *lua.LState) int {
+		L.Push(lua.LString(code))
 		return 1
 	}
 	getNickName := func(L *lua.LState) int {
@@ -58,14 +64,20 @@ func registerParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LNumber(fee))
 		return 1
 	}
+	getVotes := func(L *lua.LState) int {
+		L.Push(lua.LNumber(votes))
+		return 1
+	}
 	L.Register("getDepositAddr", getDepositAddr)
 	L.Register("getPublicKey", getPublicKey)
+	L.Register("getCode", getCode)
 	L.Register("getNickName", getNickName)
 	L.Register("getUrl", getUrl)
 	L.Register("getLocation", getLocation)
 	L.Register("getDepositAmount", getDepositAmount)
 	L.Register("getAmount", getAmount)
 	L.Register("getFee", getFee)
+	L.Register("getVotes", getVotes)
 }
 
 func scriptAction(c *cli.Context) error {
@@ -159,6 +171,14 @@ func NewCommand() *cli.Command {
 			cli.Float64Flag{
 				Name:  "fee",
 				Usage: "set the fee",
+			},
+			cli.StringFlag{
+				Name:  "code, c",
+				Usage: "set the code",
+			},
+			cli.Float64Flag{
+				Name:  "votes, v",
+				Usage: "set the votes",
 			},
 		},
 		Action: scriptAction,
