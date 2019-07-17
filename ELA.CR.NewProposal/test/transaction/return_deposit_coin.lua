@@ -19,10 +19,41 @@ print(pubkey)
 local assetID = m.get_asset_id()
 
 -- amount, fee
-local amount = 0.199
-local fee = 0.001
-local recipient = "EJMzC16Eorq9CuFCGtyMrq4Jmgw9jYCHQR"
-local deposit_addr = "DVgnDnVfPVuPa2y2E4JitaWjWgRGJDuyrD"
+--local amount = 0.199
+--local fee = 0.001
+--local recipient = "EJMzC16Eorq9CuFCGtyMrq4Jmgw9jYCHQR"
+--local deposit_addr = "DVgnDnVfPVuPa2y2E4JitaWjWgRGJDuyrD"
+
+local amount = getAmount()
+local fee = getFee()
+local recipient = getToAddr()
+local deposit_addr = getDepositAddr()
+
+if amount == 0
+then
+    amount = 4999
+end
+
+if fee == 0
+then
+    fee = 0.1
+end
+
+if recipient == ""
+then
+    recipient = "EJMzC16Eorq9CuFCGtyMrq4Jmgw9jYCHQR"
+end
+
+if deposit_addr == ""
+then
+    print("deposit address is nil, should use --depositaddr or -daddr to set it.")
+    return
+end
+
+print("return amount:", amount)
+print("fee:", fee)
+print("recipient:", recipient)
+print("deposit addr:", deposit_addr)
 
 -- return deposit payload
 local rp_payload = returndepositcoin.new()
