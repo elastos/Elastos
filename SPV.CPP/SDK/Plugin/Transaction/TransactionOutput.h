@@ -37,8 +37,8 @@ namespace Elastos {
 			TransactionOutput(const BigInt &amount, const Address &toAddress, const uint256 &assetID = Asset::GetELAAssetID(),
 							  Type type = Default, const OutputPayloadPtr &payload = nullptr);
 
-			TransactionOutput(const BigInt &amount, const uint168 &programHash, const uint256 &assetID = Asset::GetELAAssetID(),
-							  Type type = Default, const OutputPayloadPtr &payload = nullptr);
+//			TransactionOutput(const BigInt &amount, const uint168 &programHash, const uint256 &assetID = Asset::GetELAAssetID(),
+//							  Type type = Default, const OutputPayloadPtr &payload = nullptr);
 
 			~TransactionOutput();
 
@@ -54,21 +54,21 @@ namespace Elastos {
 
 			bool IsValid() const;
 
-			Address GetAddress() const;
+			Address Addr() const;
 
-			const BigInt &GetAmount() const;
+			const BigInt &Amount() const;
 
 			void SetAmount(const BigInt &amount);
 
-			const uint256 &GetAssetID() const;
+			const uint256 &AssetID() const;
 
 			void SetAssetID(const uint256 &assetId);
 
-			uint32_t GetOutputLock() const;
+			uint32_t OutputLock() const;
 
 			void SetOutputLock(uint32_t outputLock);
 
-			const uint168 &GetProgramHash() const;
+			const uint168 &ProgramHash() const;
 
 			void SetProgramHash(const uint168 &hash);
 
@@ -105,7 +105,7 @@ namespace Elastos {
 			OutputPayloadPtr _payload;
 		};
 
-		typedef boost::shared_ptr<TransactionOutput> TransactionOutputPtr;
+		typedef boost::shared_ptr<TransactionOutput> OutputPtr;
 
 	}
 }

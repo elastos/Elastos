@@ -11,7 +11,7 @@
 #include <SDK/Account/SubAccount.h>
 #include <SDK/Wallet/Wallet.h>
 
-#include <boost/thread.hpp>
+//#include <boost/thread.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -38,7 +38,7 @@ namespace Elastos {
 		public: //override from Wallet
 			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
 
-			virtual void onCoinBaseTxAdded(const CoinBaseUTXOPtr &cb);
+			virtual void onCoinBaseTxAdded(const UTXOPtr &cb);
 
 			virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 
@@ -76,7 +76,7 @@ namespace Elastos {
 			virtual void connectStatusChanged(const std::string &status);
 
 		protected:
-			virtual std::vector<CoinBaseUTXOPtr> loadCoinBaseUTXOs();
+			virtual std::vector<UTXOPtr> loadCoinBaseUTXOs();
 
 			virtual std::vector<TransactionPtr> loadTransactions();
 
@@ -183,7 +183,7 @@ namespace Elastos {
 
 			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
 
-			virtual void onCoinBaseTxAdded(const CoinBaseUTXOPtr &cb);
+			virtual void onCoinBaseTxAdded(const UTXOPtr &cb);
 
 			virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 
@@ -209,7 +209,7 @@ namespace Elastos {
 
 			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
 
-			virtual void onCoinBaseTxAdded(const CoinBaseUTXOPtr &cb);
+			virtual void onCoinBaseTxAdded(const UTXOPtr &cb);
 
 			virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 

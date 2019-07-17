@@ -22,8 +22,7 @@
 
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
-
-#include <Core/BRCrypto.h>
+#include <SDK/Common/hash.h>
 
 #include <arpa/inet.h>
 #include <cfloat>

@@ -56,30 +56,30 @@ namespace Elastos {
 			}
 		}
 
-		TransactionOutput::TransactionOutput(const BigInt &a, const uint168 &programHash, const uint256 &assetID,
-											 Type type, const OutputPayloadPtr &payload) :
-			_outputLock(0),
-			_outputType(type) {
-
-			_assetID = assetID;
-			_amount = a;
-			_programHash = programHash;
-
-			if (payload == nullptr) {
-				_payload = GeneratePayload(_outputType);
-			} else {
-				_payload = payload;
-			}
-		}
+//		TransactionOutput::TransactionOutput(const BigInt &a, const uint168 &programHash, const uint256 &assetID,
+//											 Type type, const OutputPayloadPtr &payload) :
+//			_outputLock(0),
+//			_outputType(type) {
+//
+//			_assetID = assetID;
+//			_amount = a;
+//			_programHash = programHash;
+//
+//			if (payload == nullptr) {
+//				_payload = GeneratePayload(_outputType);
+//			} else {
+//				_payload = payload;
+//			}
+//		}
 
 		TransactionOutput::~TransactionOutput() {
 		}
 
-		Address TransactionOutput::GetAddress() const {
+		Address TransactionOutput::Addr() const {
 			return Address(_programHash);
 		}
 
-		const BigInt &TransactionOutput::GetAmount() const {
+		const BigInt &TransactionOutput::Amount() const {
 			return _amount;
 		}
 
@@ -195,7 +195,7 @@ namespace Elastos {
 			return true;
 		}
 
-		const uint256 &TransactionOutput::GetAssetID() const {
+		const uint256 &TransactionOutput::AssetID() const {
 			return _assetID;
 		}
 
@@ -203,7 +203,7 @@ namespace Elastos {
 			_assetID = assetId;
 		}
 
-		uint32_t TransactionOutput::GetOutputLock() const {
+		uint32_t TransactionOutput::OutputLock() const {
 			return _outputLock;
 		}
 
@@ -211,7 +211,7 @@ namespace Elastos {
 			_outputLock = lock;
 		}
 
-		const uint168 &TransactionOutput::GetProgramHash() const {
+		const uint168 &TransactionOutput::ProgramHash() const {
 			return _programHash;
 		}
 

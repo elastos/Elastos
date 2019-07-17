@@ -10,8 +10,13 @@
 #include <SDK/Plugin/Block/AuxPow.h>
 #include <SDK/Plugin/Block/MerkleBlock.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
+#include <SDK/Plugin/Transaction/TransactionInput.h>
+#include <SDK/Plugin/Transaction/TransactionOutput.h>
+#include <SDK/Plugin/Transaction/Attribute.h>
+#include <SDK/Plugin/Transaction/Program.h>
 #include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
 #include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadDefault.h>
+#include <SDK/Common/BigInt.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -111,30 +116,30 @@ namespace Elastos {
 			tx.SetFee(getRandUInt64());
 
 			for (size_t i = 0; i < 20; ++i) {
-				TransactionInput input;
-				input.SetTransactionHash(getRanduint256());
-				input.SetIndex(getRandUInt16());
-				input.SetSequence(getRandUInt32());
+				InputPtr input(new TransactionInput());
+				input->SetTxHash(getRanduint256());
+				input->SetIndex(getRandUInt16());
+				input->SetSequence(getRandUInt32());
 				tx.AddInput(input);
 			}
 
 			for (size_t i = 0; i < 20; ++i) {
-				TransactionOutput output;
-				output.SetAmount(getRandUInt64());
-				output.SetAssetID(getRanduint256());
-				output.SetOutputLock(getRandUInt32());
-				output.SetProgramHash(getRandUInt168());
+				OutputPtr output(new TransactionOutput());
+				output->SetAmount(getRandUInt64());
+				output->SetAssetID(getRanduint256());
+				output->SetOutputLock(getRandUInt32());
+				output->SetProgramHash(getRandUInt168());
 				if (version >= Transaction::TxVersion::V09) {
-					output.SetType(TransactionOutput::Type(i % 2));
-					if (output.GetType() == TransactionOutput::VoteOutput) {
+					output->SetType(TransactionOutput::Type(i % 2));
+					if (output->GetType() == TransactionOutput::VoteOutput) {
 						std::vector<bytes_t> candidates;
 						for (size_t i = 0; i < 50; ++i) {
 							candidates.push_back(getRandBytes(33));
 						}
 						PayloadVote::VoteContent vc(PayloadVote::Delegate, candidates);
-						output.SetPayload(OutputPayloadPtr(new PayloadVote({vc})));
+						output->SetPayload(OutputPayloadPtr(new PayloadVote({vc})));
 					} else {
-						output.SetPayload(OutputPayloadPtr(new PayloadDefault()));
+						output->SetPayload(OutputPayloadPtr(new PayloadDefault()));
 					}
 				}
 				tx.AddOutput(output);
@@ -142,13 +147,13 @@ namespace Elastos {
 
 			for (size_t i = 0; i < 20; ++i) {
 				bytes_t data = getRandBytes(25);
-				tx.AddAttribute(Attribute(Attribute::Script, data));
+				tx.AddAttribute(AttributePtr(new Attribute(Attribute::Script, data)));
 			}
 
 			for (size_t i = 0; i < 20; ++i) {
 				bytes_t code = getRandBytes(25);
 				bytes_t parameter = getRandBytes(25);
-				tx.AddProgram(Program("", code, parameter));
+				tx.AddProgram(ProgramPtr(new Program("", code, parameter)));
 			}
 
 			tx.GetHash();
@@ -169,28 +174,28 @@ namespace Elastos {
 			REQUIRE(tx1.GetHash() == tx2.GetHash());
 			REQUIRE(tx1.GetInputs().size() == tx2.GetInputs().size());
 			for (size_t i = 0; i < tx1.GetInputs().size(); ++i) {
-				TransactionInput in1, in2;
+				InputPtr in1, in2;
 				in1 = tx1.GetInputs()[i];
 				in2 = tx2.GetInputs()[i];
-				REQUIRE(in1.GetTransctionHash() == in2.GetTransctionHash());
-				REQUIRE(in1.GetIndex() == in2.GetIndex());
-				REQUIRE(in1.GetSequence() == in2.GetSequence());
+				REQUIRE(in1->TxHash() == in2->TxHash());
+				REQUIRE(in1->Index() == in2->Index());
+				REQUIRE(in1->Sequence() == in2->Sequence());
 			}
 
 			REQUIRE(tx1.GetOutputs().size() == tx2.GetOutputs().size());
 			for (size_t i = 0; i < tx2.GetOutputs().size(); ++i) {
-				TransactionOutput o1, o2;
+				OutputPtr o1, o2;
 				o1 = tx1.GetOutputs()[i];
 				o2 = tx2.GetOutputs()[i];
-				REQUIRE(o2.GetAssetID() == o1.GetAssetID());
-				REQUIRE(o2.GetProgramHash() == o1.GetProgramHash());
-				REQUIRE(o2.GetOutputLock() == o1.GetOutputLock());
-				REQUIRE(o2.GetAmount() == o1.GetAmount());
+				REQUIRE(o2->AssetID() == o1->AssetID());
+				REQUIRE(o2->ProgramHash() == o1->ProgramHash());
+				REQUIRE(o2->OutputLock() == o1->OutputLock());
+				REQUIRE(o2->Amount() == o1->Amount());
 
-				REQUIRE(o1.GetType() == o2.GetType());
-				OutputPayloadPtr p1 = o1.GetPayload();
-				OutputPayloadPtr p2 = o2.GetPayload();
-				if (o1.GetType() == TransactionOutput::VoteOutput) {
+				REQUIRE(o1->GetType() == o2->GetType());
+				OutputPayloadPtr p1 = o1->GetPayload();
+				OutputPayloadPtr p2 = o2->GetPayload();
+				if (o1->GetType() == TransactionOutput::VoteOutput) {
 					const PayloadVote *pv1 = dynamic_cast<const PayloadVote *>(p1.get());
 					const PayloadVote *pv2 = dynamic_cast<const PayloadVote *>(p2.get());
 					REQUIRE(pv1 != nullptr);
@@ -219,20 +224,20 @@ namespace Elastos {
 
 			REQUIRE(tx1.GetAttributes().size() == tx2.GetAttributes().size());
 			for (size_t i = 0; i < tx1.GetAttributes().size(); ++i) {
-				Attribute attr1, attr2;
+				AttributePtr attr1, attr2;
 				attr1 = tx1.GetAttributes()[i];
 				attr2 = tx2.GetAttributes()[i];
-				REQUIRE(attr1.GetUsage() == attr2.GetUsage());
-				REQUIRE((attr1.GetData() == attr2.GetData()));
+				REQUIRE(attr1->GetUsage() == attr2->GetUsage());
+				REQUIRE((attr1->GetData() == attr2->GetData()));
 			}
 
 			REQUIRE(tx1.GetPrograms().size() == tx2.GetPrograms().size());
 			for (size_t i = 0; i < tx2.GetPrograms().size(); ++i) {
-				Program p1, p2;
+				ProgramPtr p1, p2;
 				p1 = tx1.GetPrograms()[i];
 				p2 = tx2.GetPrograms()[i];
-				REQUIRE((p1.GetCode() == p2.GetCode()));
-				REQUIRE((p1.GetParameter() == p2.GetParameter()));
+				REQUIRE((p1->GetCode() == p2->GetCode()));
+				REQUIRE((p1->GetParameter() == p2->GetParameter()));
 			}
 		}
 

@@ -58,7 +58,8 @@ namespace Elastos {
 
 		private:
 			std::vector<CoinInfoPtr> _coinInfoList;
-			std::string _passphrase __attribute((deprecated));
+//			std::string _passphrase __attribute((deprecated));
+			std::string _passphrase;
 			std::string _ownerPubKey;
 			bool _singleAddress;
 		};

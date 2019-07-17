@@ -11,7 +11,10 @@
 #include <SDK/WalletCore/BIPs/Mnemonic.h>
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
+#include <SDK/Plugin/Transaction/TransactionOutput.h>
+#include <SDK/Plugin/Transaction/TransactionInput.h>
 #include <SDK/Plugin/Transaction/Payload/RegisterAsset.h>
+#include <SDK/Wallet/UTXO.h>
 
 #include <Interface/ISubWallet.h>
 
@@ -25,13 +28,13 @@ namespace Elastos {
 
 		Wallet::Wallet(const std::vector<AssetPtr> &assetArray,
 					   const std::vector<TransactionPtr> &txns,
-					   const std::vector<CoinBaseUTXOPtr> &cbs,
+					   const std::vector<UTXOPtr> &cbUTXOs,
 					   const SubAccountPtr &subAccount,
 					   const boost::shared_ptr<Wallet::Listener> &listener) :
 				_feePerKb(DEFAULT_FEE_PER_KB) {
 
 			_subAccount = subAccount;
-			_coinBaseUTXOs = cbs;
+			_coinBaseUTXOs = cbUTXOs;
 			for (size_t i = 0; i < txns.size(); ++i) {
 				if (!txns[i]->IsSigned() || _allTx.Contains(txns[i])) continue;
 				_allTx.Insert(txns[i]);
@@ -66,33 +69,30 @@ namespace Elastos {
 			_listeningAddrs = addrs;
 		}
 
-		std::vector<UTXO> Wallet::GetAllUTXO(const std::string &address) const {
+		std::vector<UTXOPtr> Wallet::GetAllUTXO(const std::string &address) const {
 			boost::mutex::scoped_lock scopedLock(lock);
-			std::vector<UTXO> result;
+			std::vector<UTXOPtr> result;
 
 			for (GroupedAssetMap::iterator it = _groupedAssets.begin(); it != _groupedAssets.end(); ++it) {
-				const std::vector<UTXO> &utxos = it->second->GetUTXOs();
+				const std::vector<UTXOPtr> &utxos = it->second->GetUTXOs();
 				for (size_t i = 0; i < utxos.size(); ++i) {
-					TransactionPtr tx = _allTx.Get(utxos[i].Hash());
-					if (tx) {
-						const TransactionOutput &o = tx->GetOutputs()[utxos[i].Index()];
-						if (address.empty() || (!address.empty() && address == o.GetAddress().String()))
-							result.push_back(utxos[i]);
-					}
+					const OutputPtr &o = utxos[i]->Output();
+					if (address.empty() || (!address.empty() && address == o->Addr().String()))
+						result.push_back(UTXOPtr(new UTXO(*utxos[i])));
 				}
 			}
 
 			return result;
 		}
 
-		std::vector<CoinBaseUTXOPtr> Wallet::GetAllCoinBaseUTXO(const std::string &address) const {
-			std::vector<CoinBaseUTXOPtr> result;
+		std::vector<UTXOPtr> Wallet::GetAllCoinBaseUTXO(const std::string &address) const {
+			std::vector<UTXOPtr> result;
 			boost::mutex::scoped_lock scopedLock(lock);
 
 			for (GroupedAssetMap::iterator it = _groupedAssets.begin(); it != _groupedAssets.end(); ++it) {
-				const std::vector<CoinBaseUTXOPtr> &cbs = it->second->GetCoinBaseUTXOs();
+				const std::vector<UTXOPtr> &cbs = it->second->GetCoinBaseUTXOs();
 				for (size_t i = 0; i < cbs.size(); ++i) {
-					if (address.empty() || (!address.empty() && address == Address(cbs[i]->ProgramHash()).String()))
+					if (address.empty() || (!address.empty() && address == Address(cbs[i]->Output()->ProgramHash()).String()))
 						result.push_back(cbs[i]);
 
 				}
@@ -121,20 +121,20 @@ namespace Elastos {
 			boost::mutex::scoped_lock scopedLock(lock);
 
 			BigInt balance = 0;
-			std::vector<UTXO> utxos = GetUTXO(assetID);
+			std::vector<UTXOPtr> utxos = GetUTXO(assetID);
 
 			for (size_t i = 0; i < utxos.size(); ++i) {
-				const TransactionPtr tx = _allTx.Get(utxos[i].Hash());
+				const TransactionPtr tx = _allTx.Get(utxos[i]->Hash());
 				if (tx == nullptr ||
 					(type == GroupedAsset::Default &&
-						tx->GetOutputs()[utxos[i].Index()].GetType() != TransactionOutput::Type::Default) ||
+						tx->GetOutputs()[utxos[i]->Index()]->GetType() != TransactionOutput::Type::Default) ||
 					(type == GroupedAsset::Voted &&
-						tx->GetOutputs()[utxos[i].Index()].GetType() != TransactionOutput::Type::VoteOutput)) {
+						tx->GetOutputs()[utxos[i]->Index()]->GetType() != TransactionOutput::Type::VoteOutput)) {
 					continue;
 				}
 
-				if (tx->GetOutputs()[utxos[i].Index()].GetAddress() == address) {
-					balance += tx->GetOutputs()[utxos[i].Index()].GetAmount();
+				if (tx->GetOutputs()[utxos[i]->Index()]->Addr() == address) {
+					balance += tx->GetOutputs()[utxos[i]->Index()]->Amount();
 				}
 			}
 
@@ -179,17 +179,18 @@ namespace Elastos {
 		}
 
 		TransactionPtr Wallet::CreateTransaction(const Address &fromAddress,
-												 const std::vector<TransactionOutput> &outputs,
+												 const std::vector<OutputPtr> &outputs,
 												 const std::string &memo,
 												 bool useVotedUTXO, bool autoReduceOutputAmount) {
 
-			uint256 assetID = outputs.front().GetAssetID();
+			ErrorChecker::CheckParam(!IsAssetUnique(outputs), Error::InvalidAsset, "asset is not unique in outputs");
+
+			uint256 assetID = outputs.front()->AssetID();
 
 			Lock();
 			bool containAsset = ContainsAsset(assetID);
 			Unlock();
 
-			ErrorChecker::CheckParam(!IsAssetUnique(outputs), Error::InvalidAsset, "asset is not unique in outputs");
 			ErrorChecker::CheckParam(!containAsset, Error::InvalidAsset, "asset not found: " + assetID.GetHex());
 
 			TransactionPtr tx = _groupedAssets[assetID]->CreateTxForOutputs(outputs, fromAddress, memo, useVotedUTXO,
@@ -211,7 +212,7 @@ namespace Elastos {
 			std::map<uint256, BigInt> changedBalance;
 			std::map<uint256, BigInt>::iterator it;
 			uint16_t outputIndex = 0;
-			CoinBaseUTXOPtr cb = nullptr;
+			UTXOPtr cb = nullptr;
 
 			if (tx != nullptr && tx->IsSigned()) {
 				Lock();
@@ -272,7 +273,7 @@ namespace Elastos {
 					if (tx->IsEqual(t.get())) continue;
 
 					for (size_t j = 0; j < t->GetInputs().size(); j++) {
-						if (t->GetInputs()[j].GetTransctionHash() != txHash) continue;
+						if (t->GetInputs()[j]->TxHash() != txHash) continue;
 						hashes.push_back(t->GetHash());
 						break;
 					}
@@ -301,7 +302,7 @@ namespace Elastos {
 
 						for (size_t i = 0;
 							 i < tx->GetInputs().size(); i++) { // only recommend a rescan if all inputs are confirmed
-							TransactionPtr t = TransactionForHash(tx->GetInputs()[i].GetTransctionHash());
+							TransactionPtr t = TransactionForHash(tx->GetInputs()[i]->TxHash());
 							if (t && t->GetBlockHeight() != TX_UNCONFIRMED) continue;
 							recommendRescan = false;
 							break;
@@ -322,7 +323,7 @@ namespace Elastos {
 			bool needsUpdate = false;
 			std::map<uint256, BigInt> changedBalance;
 			std::vector<RegisterAsset *> payloads;
-			CoinBaseUTXOPtr cb;
+			UTXOPtr cb;
 			size_t i;
 
 			Lock();
@@ -355,9 +356,6 @@ namespace Elastos {
 							}
 						}
 						hashes.push_back(txHashes[i]);
-						if (_invalidTx.Contains(tx)) {
-							needsUpdate = true;
-						}
 					} else if (blockHeight != TX_UNCONFIRMED) { // remove and free confirmed non-wallet tx
 						_allTx.Remove(tx);
 					}
@@ -407,7 +405,7 @@ namespace Elastos {
 			return _allTx.Get(txHash);
 		}
 
-		CoinBaseUTXOPtr Wallet::CoinBaseTxForHash(const uint256 &txHash) const {
+		UTXOPtr Wallet::CoinBaseTxForHash(const uint256 &txHash) const {
 			boost::mutex::scoped_lock scopedLock(lock);
 			return CoinBaseForHash(txHash);
 		}
@@ -421,19 +419,19 @@ namespace Elastos {
 			// TODO: XXX conflicted tx with the same wallet outputs should be presented as the same tx to the user
 
 			if (tx->GetBlockHeight() == TX_UNCONFIRMED) { // only unconfirmed _transactions can be invalid
-				Lock();
-				if (!_allTx.Contains(tx)) {
-					for (size_t i = 0; r && i < tx->GetInputs().size(); ++i) {
-						if (_spentOutputs.Contains(tx->GetInputs()[i]))
-							r = false;
-					}
-				} else if (_invalidTx.Contains(tx)) {
-					r = false;
-				}
-				Unlock();
+//				Lock();
+//				if (!_allTx.Contains(tx)) {
+//					for (size_t i = 0; r && i < tx->GetInputs().size(); ++i) {
+//						if (_spentOutputs.Contains(tx->GetInputs()[i]))
+//							r = false;
+//					}
+//				} else if (_invalidTx.Contains(tx)) {
+//					r = false;
+//				}
+//				Unlock();
 
 				for (size_t i = 0; r && i < tx->GetInputs().size(); ++i) {
-					TransactionPtr t = TransactionForHash(tx->GetInputs()[i].GetTransctionHash());
+					TransactionPtr t = TransactionForHash(tx->GetInputs()[i]->TxHash());
 					if (t && !TransactionIsValid(t))
 						r = false;
 				}
@@ -470,7 +468,7 @@ namespace Elastos {
 				}
 
 				for (size_t i = 0; !r && i < transaction->GetOutputs().size(); i++) { // check that no outputs are dust
-					if (transaction->GetOutputs()[i].GetAmount() < TX_MIN_OUTPUT_AMOUNT) r = true;
+					if (transaction->GetOutputs()[i].Amount() < TX_MIN_OUTPUT_AMOUNT) r = true;
 				}
 
 				for (size_t i = 0;
@@ -509,12 +507,12 @@ namespace Elastos {
 
 			boost::mutex::scoped_lock scoped_lock(lock);
 			for (size_t i = 0; tx && i < tx->GetInputs().size(); i++) {
-				const TransactionPtr t = _allTx.Get(tx->GetInputs()[i].GetTransctionHash());
-				uint32_t n = tx->GetInputs()[i].GetIndex();
+				const TransactionPtr t = _allTx.Get(tx->GetInputs()[i]->TxHash());
+				uint32_t n = tx->GetInputs()[i]->Index();
 
 				if (t && n < t->GetOutputs().size() &&
-					_subAccount->ContainsAddress(t->GetOutputs()[n].GetAddress())) {
-					amount += t->GetOutputs()[n].GetAmount();
+					_subAccount->ContainsAddress(t->GetOutputs()[n]->Addr())) {
+					amount += t->GetOutputs()[n]->Amount();
 				}
 			}
 
@@ -633,7 +631,7 @@ namespace Elastos {
 			return _transactions;
 		}
 
-		std::vector<CoinBaseUTXOPtr> Wallet::GetAllCoinBaseTransactions() const {
+		std::vector<UTXOPtr> Wallet::GetAllCoinBaseTransactions() const {
 			boost::mutex::scoped_lock scopedLock(lock);
 			return _coinBaseUTXOs;
 		}
@@ -683,27 +681,27 @@ namespace Elastos {
 			size_t outCount = tx->GetOutputs().size();
 
 			for (size_t i = 0; !r && i < outCount; i++) {
-				if (_subAccount->ContainsAddress(tx->GetOutputs()[i].GetAddress())) {
+				if (_subAccount->ContainsAddress(tx->GetOutputs()[i]->Addr())) {
 					r = true;
 				}
 			}
 
 			for (size_t i = 0; !r && i < tx->GetInputs().size(); i++) {
-				const TransactionPtr t = _allTx.Get(tx->GetInputs()[i].GetTransctionHash());
-				uint32_t n = tx->GetInputs()[i].GetIndex();
+				const TransactionPtr t = _allTx.Get(tx->GetInputs()[i]->TxHash());
+				uint32_t n = tx->GetInputs()[i]->Index();
 
 				if (t == nullptr || n >= t->GetOutputs().size()) {
 					continue;
 				}
 
-				if (_subAccount->ContainsAddress(t->GetOutputs()[n].GetAddress()))
+				if (_subAccount->ContainsAddress(t->GetOutputs()[n]->Addr()))
 					r = true;
 			}
 
 			//for listening addresses
 			for (size_t i = 0; i < outCount; ++i) {
 				if (std::find(_listeningAddrs.begin(), _listeningAddrs.end(),
-							  tx->GetOutputs()[i].GetAddress().String()) != _listeningAddrs.end())
+							  tx->GetOutputs()[i]->Addr().String()) != _listeningAddrs.end())
 					r = true;
 			}
 
@@ -712,11 +710,11 @@ namespace Elastos {
 
 		void Wallet::UpdateSpentCoinBase(std::vector<uint256> &spentHashes, const TransactionPtr &tx) const {
 			for (size_t i = 0; i < tx->GetInputs().size(); ++i) {
-				const uint256 &hash = tx->GetInputs()[i].GetTransctionHash();
-				CoinBaseUTXOPtr cb = CoinBaseForHash(hash);
+				const uint256 &hash = tx->GetInputs()[i]->TxHash();
+				UTXOPtr cb = CoinBaseForHash(hash);
 				if (cb) {
 					cb->SetSpent(true);
-					spentHashes.push_back(tx->GetInputs()[i].GetTransctionHash());
+					spentHashes.push_back(tx->GetInputs()[i]->TxHash());
 				}
 			}
 		}
@@ -725,7 +723,7 @@ namespace Elastos {
 			return nullptr != CoinBaseForHash(txHash);
 		}
 
-		CoinBaseUTXOPtr Wallet::CoinBaseForHash(const uint256 &txHash) const {
+		UTXOPtr Wallet::CoinBaseForHash(const uint256 &txHash) const {
 			for (size_t i = 0; i < _coinBaseUTXOs.size(); ++i) {
 				if (_coinBaseUTXOs[i]->Hash() == txHash) {
 					return _coinBaseUTXOs[i];
@@ -735,19 +733,11 @@ namespace Elastos {
 			return nullptr;
 		}
 
-		CoinBaseUTXOPtr Wallet::RegisterCoinBaseTx(const TransactionPtr &tx) {
+		UTXOPtr Wallet::RegisterCoinBaseTx(const TransactionPtr &tx) {
 			for (uint16_t i = 0; i < tx->GetOutputs().size(); ++i) {
-				std::vector<TransactionOutput> &outputs = tx->GetOutputs();
-				if (_subAccount->ContainsAddress(outputs[i].GetAddress())) {
-					CoinBaseUTXOPtr cb(new CoinBaseUTXO());
-					cb->SetBlockHeight(tx->GetBlockHeight());
-					cb->SetTimestamp(tx->GetTimestamp());
-					cb->SetHash(tx->GetHash());
-					cb->SetIndex(i);
-					cb->SetAmount(outputs[i].GetAmount());
-					cb->SetProgramHash(outputs[i].GetProgramHash());
-					cb->SetAssetID(outputs[i].GetAssetID());
-					cb->SetOutputLock(outputs[i].GetOutputLock());
+				const std::vector<OutputPtr> &outputs = tx->GetOutputs();
+				if (_subAccount->ContainsAddress(outputs[i]->Addr())) {
+					UTXOPtr cb(new UTXO(tx->GetHash(), (uint16_t)i, tx->GetTimestamp(), tx->GetBlockHeight(), tx->GetOutputs()[i]));
 					_coinBaseUTXOs.push_back(cb);
 					return cb;
 				}
@@ -793,21 +783,21 @@ namespace Elastos {
 			if (tx1->GetBlockHeight() < tx2->GetBlockHeight()) return 0;
 
 			for (size_t i = 0; i < tx1->GetInputs().size(); i++) {
-				if (tx1->GetInputs()[i].GetTransctionHash() == tx2->GetHash()) return 1;
+				if (tx1->GetInputs()[i]->TxHash() == tx2->GetHash()) return 1;
 			}
 
 			for (size_t i = 0; i < tx2->GetInputs().size(); i++) {
-				if (tx2->GetInputs()[i].GetTransctionHash() == tx1->GetHash()) return 0;
+				if (tx2->GetInputs()[i]->TxHash() == tx1->GetHash()) return 0;
 			}
 
 			for (size_t i = 0; i < tx1->GetInputs().size(); i++) {
-				if (TxIsAscending(_allTx.Get(tx1->GetInputs()[i].GetTransctionHash()), tx2)) return 1;
+				if (TxIsAscending(_allTx.Get(tx1->GetInputs()[i]->TxHash()), tx2)) return 1;
 			}
 
 			return 0;
 		}
 
-		std::vector<UTXO> Wallet::GetUTXO(const uint256 &assetID) const {
+		std::vector<UTXOPtr> Wallet::GetUTXO(const uint256 &assetID) const {
 			if (!ContainsAsset(assetID)) {
 				Log::error("asset not found: {}", assetID.GetHex());
 				return {};
@@ -816,9 +806,9 @@ namespace Elastos {
 			return _groupedAssets[assetID]->GetUTXOs();
 		}
 
-		bool Wallet::IsAssetUnique(const std::vector<TransactionOutput> &outputs) const {
+		bool Wallet::IsAssetUnique(const std::vector<OutputPtr> &outputs) const {
 			for (size_t i = 1; i < outputs.size(); ++i) {
-				if (outputs[0].GetAssetID() != outputs[i].GetAssetID())
+				if (outputs[0]->AssetID() != outputs[i]->AssetID())
 					return false;
 			}
 
@@ -830,9 +820,8 @@ namespace Elastos {
 			int isInvalid;
 			size_t i, j;
 
-			_spentOutputs.Clear();
-			_spendingOutputs.Clear();
-			_invalidTx.Clear();
+			_spentOutputs.clear();
+			_spendingOutputs.clear();
 			_subAccount->ClearUsedAddresses();
 
 			GroupedAssetMap::iterator it;
@@ -844,8 +833,8 @@ namespace Elastos {
 				if (_coinBaseUTXOs[i]->BlockHeight() == TX_UNCONFIRMED || _coinBaseUTXOs[i]->Spent())
 					continue;
 
-				if (ContainsAsset(_coinBaseUTXOs[i]->AssetID())) {
-					_groupedAssets[_coinBaseUTXOs[i]->AssetID()]->AddCoinBaseUTXO(_coinBaseUTXOs[i]);
+				if (ContainsAsset(_coinBaseUTXOs[i]->Output()->AssetID())) {
+					_groupedAssets[_coinBaseUTXOs[i]->Output()->AssetID()]->AddCoinBaseUTXO(_coinBaseUTXOs[i]);
 				}
 			}
 
@@ -855,17 +844,14 @@ namespace Elastos {
 				// check if any inputs are invalid or already spent
 				if (tx->GetBlockHeight() == TX_UNCONFIRMED) {
 					for (j = 0, isInvalid = 0; !isInvalid && j < tx->GetInputs().size(); j++) {
-						if (_spentOutputs.Contains(tx->GetInputs()[j].GetTransctionHash(), tx->GetInputs()[j].GetIndex()) ||
-							_invalidTx.Contains(tx->GetInputs()[j].GetTransctionHash()))
+						if (IsInputSpent(tx->GetInputs()[j]))
 							isInvalid = 1;
 					}
 
-					if (isInvalid) {
-						_invalidTx.Insert(tx);
-					} else {
+					if (!isInvalid) {
 						// add inputs to spent output set
 						for (j = 0; j < tx->GetInputs().size(); j++) {
-							_spendingOutputs.AddByTxInput(tx->GetInputs()[j], 0);
+							AddSpendingUTXO(tx->GetInputs()[j]);
 						}
 					}
 					continue;
@@ -873,17 +859,18 @@ namespace Elastos {
 
 				// add inputs to spent output set
 				for (j = 0; j < tx->GetInputs().size(); j++) {
-					_spentOutputs.AddByTxInput(tx->GetInputs()[j], 0);
+					AddSpentUTXO(tx->GetInputs()[j]);
 				}
 
-				const std::vector<TransactionOutput> &outputs = tx->GetOutputs();
+				const std::vector<OutputPtr> &outputs = tx->GetOutputs();
 				for (j = 0; j < outputs.size(); j++) {
-					Address addr = outputs[j].GetAddress();
+					Address addr = outputs[j]->Addr();
 					if (_subAccount->ContainsAddress(addr)) {
 						_subAccount->AddUsedAddrs(addr);
-						uint256 assetID = outputs[j].GetAssetID();
+						const uint256 &assetID = outputs[j]->AssetID();
 						if (ContainsAsset(assetID)) {
-							_groupedAssets[assetID]->AddUTXO(UTXO(tx->GetHash(), (uint16_t) j, outputs[j].GetAmount()));
+							UTXOPtr utxo(new UTXO(tx->GetHash(), (uint16_t)j, tx->GetTimestamp(), tx->GetBlockHeight(), tx->GetOutputs()[j]));
+							_groupedAssets[assetID]->AddUTXO(utxo);
 						}
 					}
 				}
@@ -912,13 +899,51 @@ namespace Elastos {
 			assetRegistered(asset, 0, uint168());
 		}
 
+		bool Wallet::IsUTXOSpending(const UTXOPtr &utxo) const {
+			for (size_t i = 0; i < _spendingOutputs.size(); ++i) {
+				if (*utxo == *_spendingOutputs[i]) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		void Wallet::AddSpendingUTXO(const InputPtr &input) {
+			UTXOPtr txo(new UTXO(*input));
+			_spendingOutputs.push_back(txo);
+		}
+
+		void Wallet::AddSpentUTXO(const InputPtr &input) {
+			UTXOPtr txo(new UTXO(*input));
+			_spentOutputs.push_back(txo);
+		}
+
+		bool Wallet::IsInputSpent(const InputPtr &input) const {
+			for (std::vector<UTXOPtr>::const_iterator it = _spentOutputs.cbegin(); it != _spentOutputs.cend(); ++it) {
+				if ((*it)->Hash() == input->TxHash() && (*it)->Index() == input->Index())
+					return true;
+			}
+
+			return false;
+		}
+
+		bool Wallet::IsUTXOSpent(const UTXOPtr &utxo) const {
+			for (std::vector<UTXOPtr>::const_iterator it = _spentOutputs.cbegin(); it != _spentOutputs.cend(); ++it) {
+				if (*(*it) == *utxo)
+					return true;
+			}
+
+			return false;
+		}
+
 		void Wallet::balanceChanged(const uint256 &asset, const BigInt &balance) {
 			if (!_listener.expired()) {
 				_listener.lock()->balanceChanged(asset, balance);
 			}
 		}
 
-		void Wallet::coinBaseTxAdded(const CoinBaseUTXOPtr &cb) {
+		void Wallet::coinBaseTxAdded(const UTXOPtr &cb) {
 			if (!_listener.expired()) {
 				_listener.lock()->onCoinBaseTxAdded(cb);
 			}

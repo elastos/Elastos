@@ -2,103 +2,16 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <SDK/Common/ErrorChecker.h>
 #include "CoinBaseUTXODataStore.h"
+
+#include <SDK/Common/ErrorChecker.h>
+#include <SDK/Wallet/UTXO.h>
+#include <SDK/WalletCore/BIPs/Address.h>
+#include <SDK/Plugin/Transaction/TransactionOutput.h>
+#include <cstdint>
 
 namespace Elastos {
 	namespace ElaWallet {
-
-		CoinBaseUTXOEntity::CoinBaseUTXOEntity() :
-			_spent(false),
-			_index(0),
-			_outputLock(0),
-			_blockHeight(0),
-			_timestamp(0) {
-		}
-
-		CoinBaseUTXOEntity::~CoinBaseUTXOEntity() {
-		}
-
-		bool CoinBaseUTXOEntity::Spent() const {
-			return _spent;
-		}
-
-		void CoinBaseUTXOEntity::SetSpent(bool status) {
-			_spent = status;
-		}
-
-		const uint16_t &CoinBaseUTXOEntity::Index() const {
-			return _index;
-		}
-
-		void CoinBaseUTXOEntity::SetIndex(uint16_t index) {
-			_index = index;
-		}
-
-		const uint168 &CoinBaseUTXOEntity::ProgramHash() const {
-			return _programHash;
-		}
-
-		void CoinBaseUTXOEntity::SetProgramHash(const uint168 &hash) {
-			_programHash = hash;
-		}
-
-		const uint256 &CoinBaseUTXOEntity::AssetID() const {
-			return _assetID;
-		}
-
-		void CoinBaseUTXOEntity::SetAssetID(const uint256 &ID) {
-			_assetID = ID;
-		}
-
-		const uint32_t &CoinBaseUTXOEntity::OutputLock() const {
-			return _outputLock;
-		}
-
-		void CoinBaseUTXOEntity::SetOutputLock(uint32_t outputLock) {
-			_outputLock = outputLock;
-		}
-
-		const BigInt &CoinBaseUTXOEntity::Amount() const {
-			return _amount;
-		}
-
-		void CoinBaseUTXOEntity::SetAmount(const BigInt &amount) {
-			_amount = amount;
-		}
-
-		const bytes_ptr &CoinBaseUTXOEntity::Payload() const {
-			return _payload;
-		}
-
-		void CoinBaseUTXOEntity::SetPayload(const bytes_ptr &payload) {
-			_payload = payload;
-		}
-
-		const time_t &CoinBaseUTXOEntity::Timestamp() const {
-			return _timestamp;
-		}
-
-		void CoinBaseUTXOEntity::SetTimestamp(time_t timestamp) {
-			_timestamp = timestamp;
-		}
-
-		const uint32_t &CoinBaseUTXOEntity::BlockHeight() const {
-			return _blockHeight;
-		}
-
-		void CoinBaseUTXOEntity::SetBlockHeight(uint32_t blockHeight) {
-			_blockHeight = blockHeight;
-		}
-
-		const std::string &CoinBaseUTXOEntity::TxHash() const {
-			return _txHash;
-		}
-
-		void CoinBaseUTXOEntity::SetTxHash(const std::string &txHash) {
-			_txHash = txHash;
-		}
-
 
 		CoinBaseUTXODataStore::CoinBaseUTXODataStore(Sqlite *sqlite) :
 			TableBase(sqlite) {
@@ -109,7 +22,7 @@ namespace Elastos {
 
 		}
 
-		bool CoinBaseUTXODataStore::Put(const std::vector<CoinBaseUTXOEntity> &entitys) {
+		bool CoinBaseUTXODataStore::Put(const std::vector<UTXOPtr> &entitys) {
 			return DoTransaction([&entitys, this]() {
 				for (size_t i = 0; i < entitys.size(); ++i) {
 					this->PutInternal(entitys[i]);
@@ -117,7 +30,7 @@ namespace Elastos {
 			});
 		}
 
-		bool CoinBaseUTXODataStore::Put(const CoinBaseUTXOEntity &entity) {
+		bool CoinBaseUTXODataStore::Put(const UTXOPtr &entity) {
 			return DoTransaction([&entity, this]() {
 				this->PutInternal(entity);
 			});
@@ -157,8 +70,8 @@ namespace Elastos {
 			return count;
 		}
 
-		std::vector<CoinBaseUTXOEntityPtr> CoinBaseUTXODataStore::GetAll() const {
-			std::vector<CoinBaseUTXOEntityPtr> entitys;
+		std::vector<UTXOPtr> CoinBaseUTXODataStore::GetAll() const {
+			std::vector<UTXOPtr> entitys;
 
 			DoTransaction([&entitys, this]() {
 				std::string sql;
@@ -181,21 +94,23 @@ namespace Elastos {
 											 "Prepare sql " + sql);
 
 				while (SQLITE_ROW == _sqlite->Step(stmt)) {
-					CoinBaseUTXOEntityPtr entity(new CoinBaseUTXOEntity());
 
-					entity->SetTxHash(_sqlite->ColumnText(stmt, 0));
-					entity->SetBlockHeight((uint32_t) _sqlite->ColumnInt(stmt, 1));
-					entity->SetTimestamp((time_t) _sqlite->ColumnInt64(stmt, 2));
-					entity->SetIndex((uint16_t) _sqlite->ColumnInt(stmt, 3));
-					entity->SetProgramHash(uint168(*_sqlite->ColumnBlobBytes(stmt, 4)));
-					entity->SetAssetID(uint256(*_sqlite->ColumnBlobBytes(stmt, 5)));
-					entity->SetOutputLock((uint32_t) _sqlite->ColumnInt(stmt, 6));
+					uint256 txHash(_sqlite->ColumnText(stmt, 0));
+					uint32_t blockHeight = _sqlite->ColumnInt(stmt, 1);
+					time_t timestamp = _sqlite->ColumnInt64(stmt, 2);
+					uint16_t index = (uint16_t) _sqlite->ColumnInt(stmt, 3);
+					uint168 programHash(*_sqlite->ColumnBlobBytes(stmt, 4));
+					uint256 assetID(*_sqlite->ColumnBlobBytes(stmt, 5));
+					uint32_t outputLock = _sqlite->ColumnInt(stmt, 6);
 					BigInt amount;
 					amount.setDec(_sqlite->ColumnText(stmt, 7));
-					entity->SetAmount(amount);
-					entity->SetPayload(_sqlite->ColumnBlobBytes(stmt, 8));
-					entity->SetSpent(_sqlite->ColumnInt(stmt, 9) != 0);
+					_sqlite->ColumnBlobBytes(stmt, 8);
+					bool spent = _sqlite->ColumnInt(stmt, 9) != 0;
 
+					OutputPtr o(new TransactionOutput(amount, Address(programHash), assetID));
+					o->SetOutputLock(outputLock);
+
+					UTXOPtr entity(new UTXO(txHash, index, timestamp, blockHeight, o));
 					entitys.push_back(entity);
 				}
 
@@ -249,18 +164,18 @@ namespace Elastos {
 			});
 		}
 
-		bool CoinBaseUTXODataStore::Delete(const std::string &hash) {
+		bool CoinBaseUTXODataStore::Delete(const uint256 &hash) {
 			return DoTransaction([&hash, this]() {
 				std::string sql;
 
-				sql = "DELETE FROM " + _tableName + " WHERE " + _txHash + " = '" + hash + "';";
+				sql = "DELETE FROM " + _tableName + " WHERE " + _txHash + " = '" + hash.GetHex() + "';";
 
 				ErrorChecker::CheckCondition(!_sqlite->exec(sql, nullptr, nullptr), Error::SqliteError,
 											 "Exec sql " + sql);
 			});
 		}
 
-		bool CoinBaseUTXODataStore::PutInternal(const CoinBaseUTXOEntity &entity) {
+		bool CoinBaseUTXODataStore::PutInternal(const UTXOPtr &entity) {
 			std::string sql;
 
 			sql = "INSERT INTO " + _tableName + "("
@@ -280,19 +195,17 @@ namespace Elastos {
 			ErrorChecker::CheckCondition(!_sqlite->Prepare(sql, &stmt, nullptr), Error::SqliteError,
 										 "Prepare sql " + sql);
 
-			_sqlite->BindText(stmt, 1, entity.TxHash(), nullptr);
-			_sqlite->BindInt(stmt, 2, entity.BlockHeight());
-			_sqlite->BindInt64(stmt, 3, entity.Timestamp());
-			_sqlite->BindInt(stmt, 4, entity.Index());
-			_sqlite->BindBlob(stmt, 5, entity.ProgramHash().bytes(), nullptr);
-			_sqlite->BindBlob(stmt, 6, entity.AssetID().begin(), entity.AssetID().size(), nullptr);
-			_sqlite->BindInt(stmt, 7, entity.OutputLock());
-			_sqlite->BindText(stmt, 8, entity.Amount().getDec(), nullptr);
-			if (entity.Payload())
-				_sqlite->BindBlob(stmt, 9, *entity.Payload(), nullptr);
-			else
-				_sqlite->BindBlob(stmt, 9, nullptr, 0, nullptr);
-			_sqlite->BindInt(stmt, 10, entity.Spent());
+			std::string hash = entity->Hash().GetHex();
+			_sqlite->BindText(stmt, 1, hash, nullptr);
+			_sqlite->BindInt(stmt, 2, entity->BlockHeight());
+			_sqlite->BindInt64(stmt, 3, entity->Timestamp());
+			_sqlite->BindInt(stmt, 4, entity->Index());
+			_sqlite->BindBlob(stmt, 5, entity->Output()->ProgramHash().bytes(), nullptr);
+			_sqlite->BindBlob(stmt, 6, entity->Output()->AssetID().begin(), entity->Output()->AssetID().size(), nullptr);
+			_sqlite->BindInt(stmt, 7, entity->Output()->OutputLock());
+			_sqlite->BindText(stmt, 8, entity->Output()->Amount().getDec(), nullptr);
+			_sqlite->BindBlob(stmt, 9, nullptr, 0, nullptr);
+			_sqlite->BindInt(stmt, 10, entity->Spent());
 
 			_sqlite->Step(stmt);
 

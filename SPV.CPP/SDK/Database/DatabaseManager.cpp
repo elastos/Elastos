@@ -27,11 +27,11 @@ namespace Elastos {
 
 		}
 
-		bool DatabaseManager::PutCoinBase(const std::vector<CoinBaseUTXOEntity> &entitys) {
+		bool DatabaseManager::PutCoinBase(const std::vector<UTXOPtr> &entitys) {
 			return _coinbaseDataStore.Put(entitys);
 		}
 
-		bool DatabaseManager::PutCoinBase(const CoinBaseUTXOEntity &entity) {
+		bool DatabaseManager::PutCoinBase(const UTXOPtr &entity) {
 			return _coinbaseDataStore.Put(entity);
 		}
 
@@ -43,7 +43,7 @@ namespace Elastos {
 			return _coinbaseDataStore.GetTotalCount();
 		}
 
-		std::vector<CoinBaseUTXOEntityPtr> DatabaseManager::GetAllCoinBase() const {
+		std::vector<UTXOPtr> DatabaseManager::GetAllCoinBase() const {
 			return _coinbaseDataStore.GetAll();
 		}
 
@@ -56,7 +56,7 @@ namespace Elastos {
 			return _coinbaseDataStore.UpdateSpent(txHashes);
 		}
 
-		bool DatabaseManager::DeleteCoinBase(const std::string &hash) {
+		bool DatabaseManager::DeleteCoinBase(const uint256 &hash) {
 			return _coinbaseDataStore.Delete(hash);
 		}
 

@@ -121,7 +121,8 @@ namespace Elastos {
 			std::string _requestPrivKey;
 			std::string _mnemonic;
 			// only old version keystore and localstore of spvsdk contain this. will remove later
-			std::string _passphrase __attribute__((deprecated));
+//			std::string _passphrase __attribute__((deprecated));
+			std::string _passphrase;
 
 			// plain text
 			std::string _xPubKey;

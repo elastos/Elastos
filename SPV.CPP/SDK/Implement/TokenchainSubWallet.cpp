@@ -7,6 +7,8 @@
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/WalletCore/KeyStore/CoinInfo.h>
 #include <SDK/Plugin/Transaction/Payload/RegisterAsset.h>
+#include <SDK/Plugin/Transaction/Transaction.h>
+#include <SDK/Plugin/Transaction/TransactionOutput.h>
 
 #include <vector>
 #include <map>
@@ -54,19 +56,19 @@ namespace Elastos {
 			AssetPtr asset(new Asset(name, description, precision));
 			PayloadPtr payload = PayloadPtr(new RegisterAsset(asset, assetAmount.getWord(), address.ProgramHash()));
 
-			std::vector<TransactionOutput> outputs;
+			std::vector<OutputPtr> outputs;
 			Address receiveAddr(CreateAddress());
-			outputs.emplace_back(BigInt(1000000000), receiveAddr, Asset::GetELAAssetID());
+			outputs.emplace_back(OutputPtr(new TransactionOutput(BigInt(1000000000), receiveAddr, Asset::GetELAAssetID())));
 
 			TransactionPtr tx = CreateTx("", outputs, memo);
 
 			tx->SetTransactionType(Transaction::registerAsset, payload);
 
 			assetAmount *= BigInt(TOKEN_ASSET_PRECISION, 10);
-			tx->AddOutput(TransactionOutput(assetAmount, address.ProgramHash(), asset->GetHash()));
+			tx->AddOutput(OutputPtr(new TransactionOutput(assetAmount, address.ProgramHash(), asset->GetHash())));
 
 			if (tx->GetOutputs().size() > 0)
-				tx->GetOutputs().erase(tx->GetOutputs().begin());
+				tx->RemoveOutput(tx->GetOutputs().front());
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -103,9 +105,9 @@ namespace Elastos {
 
 			ErrorChecker::CheckParam((bnAmount % bn) != 0, Error::InvalidArgument, "amount exceed max presicion");
 
-			std::vector<TransactionOutput> outputs;
+			std::vector<OutputPtr> outputs;
 			Address receiveAddr(toAddress);
-			outputs.emplace_back(bnAmount, receiveAddr, asset);
+			outputs.push_back(OutputPtr(new TransactionOutput(bnAmount, receiveAddr, asset)));
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
 
@@ -128,8 +130,8 @@ namespace Elastos {
 
 			uint256 asset = uint256(assetID);
 
-			std::vector<TransactionOutput> outputs;
-			outputs.emplace_back(bnAmount, Address(addr), asset);
+			std::vector<OutputPtr> outputs;
+			outputs.push_back(OutputPtr(new TransactionOutput(bnAmount, Address(addr), asset)));
 
 			TransactionPtr tx = CreateTx("", outputs, memo);
 

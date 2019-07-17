@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_TRANSACTIONSET_H__
 
 #include <set>
+#include <SDK/Common/uint256.h>
 
 namespace Elastos {
 	namespace ElaWallet {

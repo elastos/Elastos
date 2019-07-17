@@ -8,11 +8,14 @@
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/WalletCore/KeyStore/CoinInfo.h>
+#include <SDK/Wallet/UTXO.h>
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Plugin/Transaction/Payload/TransferCrossChainAsset.h>
 #include <SDK/Plugin/Transaction/Payload/ProducerInfo.h>
 #include <SDK/Plugin/Transaction/Payload/CancelProducer.h>
 #include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
+#include <SDK/Plugin/Transaction/TransactionInput.h>
+#include <SDK/Plugin/Transaction/TransactionOutput.h>
 #include <SDK/SpvService/Config.h>
 #include <CMakeConfig.h>
 
@@ -61,9 +64,9 @@ namespace Elastos {
 												  "Side chain message error: " + std::string(e.what()));
 			}
 
-			std::vector<TransactionOutput> outputs;
+			std::vector<OutputPtr> outputs;
 			Address receiveAddr(lockedAddress);
-			outputs.emplace_back(value + _config->MinFee(), receiveAddr, Asset::GetELAAssetID());
+			outputs.emplace_back(OutputPtr(new TransactionOutput(value + _config->MinFee(), receiveAddr, Asset::GetELAAssetID())));
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
@@ -183,9 +186,9 @@ namespace Elastos {
 			bytes_t pubkey = static_cast<ProducerInfo *>(payload.get())->GetPublicKey();
 			std::string toAddress = Address(PrefixDeposit, pubkey).String();
 
-			std::vector<TransactionOutput> outputs;
+			std::vector<OutputPtr> outputs;
 			Address receiveAddr(toAddress);
-			outputs.emplace_back(bgAmount, receiveAddr, Asset::GetELAAssetID());
+			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, receiveAddr, Asset::GetELAAssetID())));
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
@@ -218,16 +221,16 @@ namespace Elastos {
 												  "Payload format err: " + std::string(e.what()));
 			}
 
-			std::vector<TransactionOutput> outputs;
+			std::vector<OutputPtr> outputs;
 			Address receiveAddr(CreateAddress());
-			outputs.emplace_back(BigInt(0), receiveAddr, Asset::GetELAAssetID());
+			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), receiveAddr, Asset::GetELAAssetID())));
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
 			tx->SetTransactionType(Transaction::updateProducer, payload);
 
 			if (tx->GetOutputs().size() > 1) {
-				tx->GetOutputs().erase(tx->GetOutputs().begin());
+				tx->RemoveOutput(tx->GetOutputs()[0]);
 			}
 
 			nlohmann::json result;
@@ -257,16 +260,16 @@ namespace Elastos {
 												  "Payload format err: " + std::string(e.what()));
 			}
 
-			std::vector<TransactionOutput> outputs;
+			std::vector<OutputPtr> outputs;
 			Address receiveAddr(CreateAddress());
-			outputs.emplace_back(BigInt(0), receiveAddr, Asset::GetELAAssetID());
+			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), receiveAddr, Asset::GetELAAssetID())));
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
 			tx->SetTransactionType(Transaction::cancelProducer, payload);
 
 			if (tx->GetOutputs().size() > 1) {
-				tx->GetOutputs().erase(tx->GetOutputs().begin());
+				tx->RemoveOutput(tx->GetOutputs()[0]);
 			}
 
 			nlohmann::json result;
@@ -289,16 +292,16 @@ namespace Elastos {
 
 			std::string fromAddress = _walletManager->getWallet()->GetOwnerDepositAddress().String();
 
-			std::vector<TransactionOutput> outputs;
+			std::vector<OutputPtr> outputs;
 			Address receiveAddr(CreateAddress());
-			outputs.emplace_back(bgAmount, receiveAddr, Asset::GetELAAssetID());
+			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, receiveAddr, Asset::GetELAAssetID())));
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
 
 			tx->SetTransactionType(Transaction::returnDepositCoin);
 
 			if (tx->GetOutputs().size() > 1) {
-				tx->GetOutputs().erase(tx->GetOutputs().begin() + tx->GetOutputs().size() - 1);
+				tx->RemoveOutput(tx->GetOutputs().back());
 			}
 
 			nlohmann::json result;
@@ -359,32 +362,32 @@ namespace Elastos {
 
 			OutputPayloadPtr payload = OutputPayloadPtr(new PayloadVote({voteContent}));
 
-			std::vector<TransactionOutput> outs;
+			std::vector<OutputPtr> outs;
 			Address receiveAddr(CreateAddress());
-			outs.emplace_back(bgStake, receiveAddr, Asset::GetELAAssetID());
+			outs.push_back(OutputPtr(new TransactionOutput(bgStake, receiveAddr, Asset::GetELAAssetID())));
 
 			TransactionPtr tx = CreateTx(fromAddress, outs, memo, useVotedUTXO);
 
-			const std::vector<TransactionInput> &inputs = tx->GetInputs();
+			const std::vector<InputPtr> &inputs = tx->GetInputs();
 
 			uint168 inputProgramHash;
-			TransactionPtr txInput = _walletManager->getWallet()->TransactionForHash(inputs[0].GetTransctionHash());
+			TransactionPtr txInput = _walletManager->getWallet()->TransactionForHash(inputs[0]->TxHash());
 
 			if (txInput == nullptr) {
-				CoinBaseUTXOPtr cb = _walletManager->getWallet()->CoinBaseTxForHash(inputs[0].GetTransctionHash());
+				UTXOPtr cb = _walletManager->getWallet()->CoinBaseTxForHash(inputs[0]->TxHash());
 				ErrorChecker::CheckLogic(cb == nullptr, Error::GetTransactionInput, "Get tx input error");
-				inputProgramHash = cb->ProgramHash();
+				inputProgramHash = cb->Output()->ProgramHash();
 			} else {
-				ErrorChecker::CheckLogic(txInput->GetOutputs().size() <= inputs[0].GetIndex(), Error::GetTransactionInput,
+				ErrorChecker::CheckLogic(txInput->GetOutputs().size() <= inputs[0]->Index(), Error::GetTransactionInput,
 									 "Input index larger than output size.");
-				inputProgramHash = txInput->GetOutputs()[inputs[0].GetIndex()].GetProgramHash();
+				inputProgramHash = txInput->GetOutputs()[inputs[0]->Index()]->ProgramHash();
 			}
 
 			tx->SetTransactionType(Transaction::transferAsset);
-			std::vector<TransactionOutput> &outputs = tx->GetOutputs();
-			outputs[0].SetType(TransactionOutput::Type::VoteOutput);
-			outputs[0].SetPayload(payload);
-			outputs[0].SetProgramHash(inputProgramHash);
+			const std::vector<OutputPtr> &outputs = tx->GetOutputs();
+			outputs[0]->SetType(TransactionOutput::Type::VoteOutput);
+			outputs[0]->SetPayload(payload);
+			outputs[0]->SetProgramHash(inputProgramHash);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -398,26 +401,22 @@ namespace Elastos {
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 
 			WalletPtr wallet = _walletManager->getWallet();
-			std::vector<UTXO> utxos = wallet->GetAllUTXO("");
+			std::vector<UTXOPtr> utxos = wallet->GetAllUTXO("");
 			nlohmann::json j;
 			std::map<std::string, uint64_t> votedList;
 
 			for (size_t i = 0; i < utxos.size(); ++i) {
-				TransactionPtr tx = wallet->TransactionForHash(utxos[i].Hash());
-				if (!tx || utxos[i].Index() >= tx->GetOutputs().size() ||
-					tx->GetOutputs()[utxos[i].Index()].GetType() != TransactionOutput::VoteOutput ||
-					tx->GetVersion() < Transaction::TxVersion::V09 ||
-					tx->GetTransactionType() != Transaction::transferAsset) {
+				const OutputPtr &output = utxos[i]->Output();
+				if (output->GetType() != TransactionOutput::VoteOutput) {
 					continue;
 				}
 
-				const TransactionOutput &output = tx->GetOutputs()[utxos[i].Index()];
-				const PayloadVote *pv = dynamic_cast<const PayloadVote *>(output.GetPayload().get());
+				const PayloadVote *pv = dynamic_cast<const PayloadVote *>(output->GetPayload().get());
 				if (pv == nullptr) {
 					continue;
 				}
 
-				uint64_t stake = output.GetAmount().getWord();
+				uint64_t stake = output->Amount().getWord();
 				const std::vector<PayloadVote::VoteContent> &voteContents = pv->GetVoteContent();
 				std::for_each(voteContents.cbegin(), voteContents.cend(),
 							  [&votedList, &stake](const PayloadVote::VoteContent &vc) {

@@ -10,6 +10,9 @@
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Plugin/Registry.h>
 #include <SDK/Plugin/Block/MerkleBlock.h>
+#include <SDK/Wallet/UTXO.h>
+#include <SDK/Plugin/Transaction/TransactionOutput.h>
+#include <SDK/Plugin/Transaction/TransactionInput.h>
 
 #include <Core/BRMerkleBlock.h>
 #include <Core/BRTransaction.h>
@@ -115,21 +118,9 @@ namespace Elastos {
 						  });
 		}
 
-		void SpvService::onCoinBaseTxAdded(const CoinBaseUTXOPtr &cb) {
-			CoinBaseUTXOEntity entity;
+		void SpvService::onCoinBaseTxAdded(const UTXOPtr &cb) {
 
-			entity.SetSpent(cb->Spent());
-			entity.SetTxHash(cb->Hash().GetHex());
-			entity.SetBlockHeight(cb->BlockHeight());
-			entity.SetTimestamp(cb->Timestamp());
-			entity.SetPayload(nullptr);
-			entity.SetAmount(cb->Amount());
-			entity.SetOutputLock(cb->OutputLock());
-			entity.SetAssetID(cb->AssetID());
-			entity.SetProgramHash(cb->ProgramHash());
-			entity.SetIndex(cb->Index());
-
-			_databaseManager.PutCoinBase(entity);
+			_databaseManager.PutCoinBase(cb);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&cb](Wallet::Listener *listener) {
@@ -157,7 +148,7 @@ namespace Elastos {
 		}
 
 		void SpvService::onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
-			_databaseManager.DeleteCoinBase(hash.GetHex());
+			_databaseManager.DeleteCoinBase(hash);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&hash, &notifyUser, &recommendRescan](Wallet::Listener *listener) {
@@ -353,33 +344,15 @@ namespace Elastos {
 			return _databaseManager.GetAllTransactionsCount(ISO);
 		}
 
-		std::vector<CoinBaseUTXOPtr> SpvService::loadCoinBaseUTXOs() {
-			std::vector<CoinBaseUTXOPtr> cbs;
-
-			std::vector<CoinBaseUTXOEntityPtr> cbEntitys = _databaseManager.GetAllCoinBase();
-			for (size_t i = 0; i < cbEntitys.size(); ++i) {
-				CoinBaseUTXOPtr cb(new CoinBaseUTXO());
-				cb->SetSpent(cbEntitys[i]->Spent());
-				cb->SetHash(uint256(cbEntitys[i]->TxHash()));
-				cb->SetBlockHeight(cbEntitys[i]->BlockHeight());
-				cb->SetTimestamp(cbEntitys[i]->Timestamp());
-
-				cb->SetAmount(cbEntitys[i]->Amount());
-				cb->SetOutputLock(cbEntitys[i]->OutputLock());
-				cb->SetAssetID(cbEntitys[i]->AssetID());
-				cb->SetProgramHash(cbEntitys[i]->ProgramHash());
-				cb->SetIndex(cbEntitys[i]->Index());
-				cbs.push_back(cb);
-			}
-
-			return cbs;
+		std::vector<UTXOPtr> SpvService::loadCoinBaseUTXOs() {
+			return _databaseManager.GetAllCoinBase();
 		}
 
 		// override protected methods
 		std::vector<TransactionPtr> SpvService::loadTransactions() {
 			std::vector<TransactionPtr> txs;
-			std::vector<CoinBaseUTXOEntity> coinBaseEntitys;
-			std::set<std::string> spentHashes;
+			std::vector<UTXOPtr> coinBaseEntitys;
+			std::set<uint256> spentHashes;
 			std::set<std::string> coinBaseHashes;
 
 			std::vector<TransactionEntity> txsEntity = _databaseManager.GetAllTransactions(ISO);
@@ -395,35 +368,24 @@ namespace Elastos {
 				if (tx->IsCoinBase()) {
 					coinBaseHashes.insert(tx->GetHash().GetHex());
 					for (uint16_t n = 0; n < tx->GetOutputs().size(); ++n) {
-						if (_subAccount->ContainsAddress(tx->GetOutputs()[n].GetAddress())) {
-							CoinBaseUTXOEntity entity;
-							entity.SetAmount(tx->GetOutputs()[n].GetAmount());
-							entity.SetOutputLock(tx->GetOutputs()[n].GetOutputLock());
-							entity.SetAssetID(tx->GetOutputs()[n].GetAssetID());
-							entity.SetProgramHash(tx->GetOutputs()[n].GetProgramHash());
-							entity.SetIndex(n);
-
-							entity.SetTxHash(tx->GetHash().GetHex());
-							entity.SetBlockHeight(tx->GetBlockHeight());
-							entity.SetTimestamp(tx->GetTimestamp());
-							entity.SetPayload(nullptr);
-
+						if (_subAccount->ContainsAddress(tx->GetOutputs()[n]->Addr())) {
+							UTXOPtr entity(new UTXO(tx->GetHash(), n, tx->GetTimestamp(), tx->GetBlockHeight(), tx->GetOutputs()[n]));
 							coinBaseEntitys.push_back(entity);
 							break;
 						}
 					}
 				} else {
 					for (uint16_t n = 0; n < tx->GetInputs().size(); ++n)
-						spentHashes.insert(tx->GetInputs()[n].GetTransctionHash().GetHex());
+						spentHashes.insert(tx->GetInputs()[n]->TxHash());
 
 					txs.push_back(tx);
 				}
 			}
 
-			std::for_each(spentHashes.begin(), spentHashes.end(), [&coinBaseEntitys](const std::string &hash) {
+			std::for_each(spentHashes.begin(), spentHashes.end(), [&coinBaseEntitys](const uint256 &hash) {
 				for (size_t i = 0; i < coinBaseEntitys.size(); ++i) {
-					if (coinBaseEntitys[i].TxHash() == hash) {
-						coinBaseEntitys[i].SetSpent(true);
+					if (coinBaseEntitys[i]->Hash() == hash) {
+						coinBaseEntitys[i]->SetSpent(true);
 						break;
 					}
 				}

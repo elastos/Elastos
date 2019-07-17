@@ -11,6 +11,9 @@
 #include "Message/InventoryMessage.h"
 
 #include <SDK/Plugin/Transaction/Asset.h>
+#include <SDK/Plugin/Transaction/Transaction.h>
+#include <SDK/Plugin/Transaction/TransactionInput.h>
+#include <SDK/Plugin/Transaction/TransactionOutput.h>
 #include <SDK/Plugin/Block/ELAMerkleBlock.h>
 #include <SDK/Plugin/Registry.h>
 #include <SDK/Plugin/Block/MerkleBlock.h>
@@ -19,6 +22,7 @@
 #include <SDK/WalletCore/BIPs/Base58.h>
 #include <SDK/WalletCore/BIPs/BloomFilter.h>
 #include <SDK/Wallet/Wallet.h>
+#include <SDK/Wallet/UTXO.h>
 #include <SDK/P2P/ChainParams.h>
 
 #include <netdb.h>
@@ -672,8 +676,8 @@ namespace Elastos {
 
 			std::vector<Address> addrs;
 			_wallet->GetAllAddresses(addrs, 0, size_t(-1), true);
-			std::vector<UTXO> utxos = _wallet->GetAllUTXO("");
-			std::vector<CoinBaseUTXOPtr> coinBaseUTXOs = _wallet->GetAllCoinBaseUTXO("");
+			std::vector<UTXOPtr> utxos = _wallet->GetAllUTXO("");
+			std::vector<UTXOPtr> coinBaseUTXOs = _wallet->GetAllCoinBaseUTXO("");
 			uint32_t blockHeight = (_lastBlock->GetHeight() > 100) ? _lastBlock->GetHeight() - 100 : 0;
 
 			std::vector<TransactionPtr> transactions = _wallet->TxUnconfirmedBefore(blockHeight);
@@ -716,8 +720,8 @@ namespace Elastos {
 			}
 
 			for (size_t i = 0; i < utxos.size(); i++) { // add UTXOs to watch for tx sending money from the wallet
-				bytes_t o = utxos[i].Hash().bytes();
-				o.append(utxos[i].Index());
+				bytes_t o = utxos[i]->Hash().bytes();
+				o.append(utxos[i]->Index());
 
 				if (!filter->ContainsData(o))
 					filter->InsertData(o);
@@ -733,14 +737,14 @@ namespace Elastos {
 
 			for (size_t i = 0; i < transactions.size(); i++) { // also add TXOs spent within the last 100 blocks
 				for (size_t j = 0; j < transactions[i]->GetInputs().size(); j++) {
-					const TransactionInput &input = transactions[i]->GetInputs()[j];
-					const TransactionPtr &tx = _wallet->TransactionForHash(input.GetTransctionHash());
+					const InputPtr &input = transactions[i]->GetInputs()[j];
+					const TransactionPtr &tx = _wallet->TransactionForHash(input->TxHash());
 
-					if (tx && input.GetIndex() < tx->GetOutputs().size() &&
-						_wallet->ContainsAddress(tx->GetOutputs()[input.GetIndex()].GetAddress())) {
+					if (tx && input->Index() < tx->GetOutputs().size() &&
+						_wallet->ContainsAddress(tx->GetOutputs()[input->Index()]->Addr())) {
 
-						bytes_t o = input.GetTransctionHash().bytes();
-						o.append(input.GetIndex());
+						bytes_t o = input->TxHash().bytes();
+						o.append(input->Index());
 						if (!filter->ContainsData(o))
 							filter->InsertData(o);
 					}
@@ -828,7 +832,7 @@ namespace Elastos {
 				_publishedTxHashes.push_back(tx->GetHash());
 
 				for (size_t i = 0; i < tx->GetInputs().size(); i++) {
-					AddTxToPublishList(_wallet->TransactionForHash(tx->GetInputs()[i].GetTransctionHash()),
+					AddTxToPublishList(_wallet->TransactionForHash(tx->GetInputs()[i]->TxHash()),
 									   Peer::PeerPubTxCallback());
 				}
 			}
@@ -1118,7 +1122,7 @@ namespace Elastos {
 			int isWalletTx = 0, hasPendingCallbacks = 0;
 			size_t relayCount = 0;
 			TransactionPtr tx = transaction;
-			CoinBaseUTXOPtr coinBase;
+			UTXOPtr coinBase;
 			PublishedTransaction pubTx;
 
 			{

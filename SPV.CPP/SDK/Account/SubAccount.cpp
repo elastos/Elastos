@@ -9,8 +9,9 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
-
-#include <Core/BRCrypto.h>
+#include <SDK/Plugin/Transaction/TransactionOutput.h>
+#include <SDK/Plugin/Transaction/Program.h>
+#include <SDK/Plugin/Transaction/Attribute.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -40,7 +41,7 @@ namespace Elastos {
 			for (size_t i = 0; i < tx.size(); i++) {
 				if (tx[i]->IsSigned()) {
 					for (size_t j = 0; j < tx[i]->GetOutputs().size(); ++j)
-						AddUsedAddrs(tx[i]->GetOutputs()[j].GetAddress());
+						AddUsedAddrs(tx[i]->GetOutputs()[j]->Addr());
 				}
 			}
 
@@ -170,14 +171,14 @@ namespace Elastos {
 
 			uint256 md = tx->GetShaData();
 
-			std::vector<Program> &programs = tx->GetPrograms();
+			const std::vector<ProgramPtr> &programs = tx->GetPrograms();
 			for (size_t i = 0; i < programs.size(); ++i) {
-				std::vector<bytes_t> publicKeys = programs[i].DecodePublicKey();
+				std::vector<bytes_t> publicKeys = programs[i]->DecodePublicKey();
 				ErrorChecker::CheckLogic(publicKeys.empty(), Error::InvalidRedeemScript, "Invalid redeem script");
-				ErrorChecker::CheckLogic(programs[i].GetPath().empty(), Error::UnSupportOldTx, "Unsupport old tx");
+				ErrorChecker::CheckLogic(programs[i]->GetPath().empty(), Error::UnSupportOldTx, "Unsupport old tx");
 
 				HDKeychain rootKey = _parent->RootKey(payPasswd);
-				key = rootKey.getChild(programs[i].GetPath());
+				key = rootKey.getChild(programs[i]->GetPath());
 				bool found = false;
 				for (size_t k = 0; k < publicKeys.size(); ++k) {
 					if (publicKeys[k] == key.PubKey()) {
@@ -188,17 +189,17 @@ namespace Elastos {
 				ErrorChecker::CheckLogic(!found, Error::PrivateKeyNotFound, "Private key not found");
 
 				stream.Reset();
-				if (programs[i].GetParameter().size() > 0) {
-					ByteStream verifyStream(programs[i].GetParameter());
+				if (programs[i]->GetParameter().size() > 0) {
+					ByteStream verifyStream(programs[i]->GetParameter());
 					while (verifyStream.ReadVarBytes(signature)) {
 						ErrorChecker::CheckLogic(key.Verify(md, signature), Error::AlreadySigned, "Already signed");
 					}
-					stream.WriteBytes(programs[i].GetParameter());
+					stream.WriteBytes(programs[i]->GetParameter());
 				}
 
 				signature = key.Sign(md);
 				stream.WriteVarBytes(signature);
-				programs[i].SetParameter(stream.GetBytes());
+				programs[i]->SetParameter(stream.GetBytes());
 			}
 		}
 
@@ -334,14 +335,14 @@ namespace Elastos {
 		size_t SubAccount::InternalChainIndex(const TransactionPtr &tx) const {
 			if (_parent->GetSignType() == Account::MultiSign) {
 				for (size_t i = 0; i < tx->GetOutputs().size(); ++i) {
-					if (tx->GetOutputs()[i].GetAddress() == _parent->GetAddress())
+					if (tx->GetOutputs()[i]->Addr() == _parent->GetAddress())
 						return 0;
 				}
 			}
 
 			for (size_t i = _internalChain.size(); i > 0; i--) {
 				for (size_t j = 0; j < tx->GetOutputs().size(); j++) {
-					if (tx->GetOutputs()[j].GetAddress() == _internalChain[i - 1])
+					if (tx->GetOutputs()[j]->Addr() == _internalChain[i - 1])
 						return i - 1;
 				}
 			}
@@ -352,14 +353,14 @@ namespace Elastos {
 		size_t SubAccount::ExternalChainIndex(const TransactionPtr &tx) const {
 			if (_parent->GetSignType() == Account::MultiSign) {
 				for (size_t i = 0; i < tx->GetOutputs().size(); ++i) {
-					if (tx->GetOutputs()[i].GetAddress() == _parent->GetAddress())
+					if (tx->GetOutputs()[i]->Addr() == _parent->GetAddress())
 						return 0;
 				}
 			}
 
 			for (size_t i = _externalChain.size(); i > 0; i--) {
 				for (size_t j = 0; j < tx->GetOutputs().size(); j++) {
-					if (tx->GetOutputs()[j].GetAddress() == _externalChain[i - 1])
+					if (tx->GetOutputs()[j]->Addr() == _externalChain[i - 1])
 						return i - 1;
 				}
 			}

@@ -31,7 +31,7 @@ namespace Elastos {
 			_reconnectSeconds = reconnectSeconds;
 
 			std::vector<TransactionPtr>  txs = loadTransactions();
-			std::vector<CoinBaseUTXOPtr> cbs = loadCoinBaseUTXOs();
+			std::vector<UTXOPtr> cbs = loadCoinBaseUTXOs();
 
 			if (_wallet == nullptr) {
 				_wallet = WalletPtr(new Wallet(loadAssets(), txs, cbs, _subAccount, createWalletListener()));
@@ -68,7 +68,7 @@ namespace Elastos {
 
 		}
 
-		void CoreSpvService::onCoinBaseTxAdded(const CoinBaseUTXOPtr &cb) {
+		void CoreSpvService::onCoinBaseTxAdded(const UTXOPtr &cb) {
 
 		}
 
@@ -138,8 +138,8 @@ namespace Elastos {
 
 		}
 
-		std::vector<CoinBaseUTXOPtr> CoreSpvService::loadCoinBaseUTXOs() {
-			return std::vector<CoinBaseUTXOPtr>();
+		std::vector<UTXOPtr> CoreSpvService::loadCoinBaseUTXOs() {
+			return std::vector<UTXOPtr>();
 		}
 
 		std::vector<TransactionPtr> CoreSpvService::loadTransactions() {
@@ -394,7 +394,7 @@ namespace Elastos {
 			}
 		}
 
-		void WrappedExceptionWalletListener::onCoinBaseTxAdded(const CoinBaseUTXOPtr &cb) {
+		void WrappedExceptionWalletListener::onCoinBaseTxAdded(const UTXOPtr &cb) {
 			try {
 				_listener->onCoinBaseTxAdded(cb);
 			} catch (const std::exception &e) {
@@ -483,7 +483,7 @@ namespace Elastos {
 			}));
 		}
 
-		void WrappedExecutorWalletListener::onCoinBaseTxAdded(const CoinBaseUTXOPtr &cb) {
+		void WrappedExecutorWalletListener::onCoinBaseTxAdded(const UTXOPtr &cb) {
 			_executor->Execute(Runnable([this, cb]() -> void {
 				try {
 					_listener->onCoinBaseTxAdded(cb);

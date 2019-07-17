@@ -19,19 +19,23 @@ namespace Elastos {
 		public:
 			TransactionInput();
 
+			TransactionInput(const TransactionInput &input);
+
+			TransactionInput &operator=(const TransactionInput &tx);
+
 			TransactionInput(const uint256 &txHash, uint32_t index);
 
 			~TransactionInput();
 
-			const uint256 &GetTransctionHash() const;
+			const uint256 &TxHash() const;
 
-			void SetTransactionHash(const uint256 &hash);
+			void SetTxHash(const uint256 &hash);
 
-			uint16_t GetIndex() const;
+			uint16_t Index() const;
 
 			void SetIndex(uint16_t index);
 
-			uint32_t GetSequence() const;
+			uint32_t Sequence() const;
 
 			void SetSequence(uint32_t sequence);
 

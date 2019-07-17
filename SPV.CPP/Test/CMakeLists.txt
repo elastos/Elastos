@@ -17,7 +17,7 @@ foreach(src ${TEST_SOURCE_FILES})
 	add_executable(${TEST_TARGET_NAME} ${src})
 	target_link_libraries(${TEST_TARGET_NAME} spvsdk)
 	target_link_libraries(${TEST_TARGET_NAME} dl)
-	add_dependencies(${TEST_TARGET_NAME} copy_test_data)
+	add_dependencies(${TEST_TARGET_NAME} copy_test_data spvsdk)
 
 	if("${AUTO_TEST_COMMAND}" STREQUAL "")
 		set(AUTO_TEST_COMMAND ./${TEST_TARGET_NAME})

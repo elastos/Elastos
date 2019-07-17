@@ -5,10 +5,10 @@
 #ifndef __ELASTOS_SDK__GROUPEDASSET_H__
 #define __ELASTOS_SDK__GROUPEDASSET_H__
 
-#include <SDK/Wallet/UTXOList.h>
 #include <SDK/Common/ElementSet.h>
 #include <SDK/Common/Lockable.h>
 #include <SDK/Account/SubAccount.h>
+#include <SDK/Common/BigInt.h>
 
 #include <map>
 #include <boost/function.hpp>
@@ -21,7 +21,12 @@ namespace Elastos {
 		class Asset;
 		class Transaction;
 		class TransactionOutput;
+		class TransactionInput;
+		class UTXO;
 		typedef boost::shared_ptr<Asset> AssetPtr;
+		typedef boost::shared_ptr<UTXO> UTXOPtr;
+		typedef boost::shared_ptr<TransactionOutput> OutputPtr;
+		typedef boost::shared_ptr<TransactionInput> InputPtr;
 
 		class GroupedAsset {
 		public:
@@ -40,9 +45,9 @@ namespace Elastos {
 
 			GroupedAsset &operator=(const GroupedAsset &proto);
 
-			const std::vector<UTXO> &GetUTXOs() const;
+			const std::vector<UTXOPtr> &GetUTXOs() const;
 
-			const std::vector<CoinBaseUTXOPtr> &GetCoinBaseUTXOs() const;
+			const std::vector<UTXOPtr> &GetCoinBaseUTXOs() const;
 
 			BigInt GetBalance(BalanceType type = Total) const;
 
@@ -54,7 +59,7 @@ namespace Elastos {
 
 			TransactionPtr CombineUTXO(const std::string &memo, bool useVotedUTXO);
 
-			TransactionPtr CreateTxForOutputs(const std::vector<TransactionOutput> &outputs,
+			TransactionPtr CreateTxForOutputs(const std::vector<OutputPtr> &outputs,
 											  const Address &fromAddress,
 											  const std::string &memo,
 											  bool useVotedUTXO,
@@ -64,17 +69,17 @@ namespace Elastos {
 
 			const AssetPtr &GetAsset() const;
 
-			void AddUTXO(const UTXO &o);
+			void AddUTXO(const UTXOPtr &o);
 
-			void AddCoinBaseUTXO(const CoinBaseUTXOPtr &coinbaseUTXO);
+			void AddCoinBaseUTXO(const UTXOPtr &coinbaseUTXO);
 
 		private:
 			uint64_t CalculateFee(uint64_t feePerKB, size_t size);
 
 		private:
 			BigInt _balance, _votedBalance, _lockedBalance, _depositBalance;
-			UTXOList _utxos;
-			std::vector<CoinBaseUTXOPtr> _coinBaseUTXOs;
+			std::vector<UTXOPtr> _utxos;
+			std::vector<UTXOPtr> _coinBaseUTXOs;
 
 			AssetPtr _asset;
 

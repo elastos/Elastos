@@ -193,7 +193,7 @@ namespace Elastos {
 			 *    }
 			 * }
 			 *
-			 * { "Status": "Canceled", "Info": { "Confirms": 2016 } }
+			 * { "Status": "Canceled", "Info": { "Confirms": 2160 } }
 			 *
 			 * { "Status": "ReturnDeposit", "Info": null }
 			 */

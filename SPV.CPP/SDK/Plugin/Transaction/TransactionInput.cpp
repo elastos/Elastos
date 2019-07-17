@@ -15,6 +15,17 @@ namespace Elastos {
 				_sequence(0) {
 		}
 
+		TransactionInput::TransactionInput(const TransactionInput &input) {
+			this->operator=(input);
+		}
+
+		TransactionInput &TransactionInput::operator=(const TransactionInput &input) {
+			_txHash = input._txHash;
+			_index = input._index;
+			_sequence = input._sequence;
+			return *this;
+		}
+
 		TransactionInput::TransactionInput(const uint256 &txHash, uint32_t index) :
 				_txHash(txHash),
 				_index(index),
@@ -26,15 +37,15 @@ namespace Elastos {
 
 		}
 
-		const uint256 &TransactionInput::GetTransctionHash() const {
+		const uint256 &TransactionInput::TxHash() const {
 			return _txHash;
 		}
 
-		void TransactionInput::SetTransactionHash(const uint256 &hash) {
+		void TransactionInput::SetTxHash(const uint256 &hash) {
 			_txHash = hash;
 		}
 
-		uint16_t TransactionInput::GetIndex() const {
+		uint16_t TransactionInput::Index() const {
 			return _index;
 		}
 
@@ -42,7 +53,7 @@ namespace Elastos {
 			_index = index;
 		}
 
-		uint32_t TransactionInput::GetSequence() const {
+		uint32_t TransactionInput::Sequence() const {
 			return _sequence;
 		}
 

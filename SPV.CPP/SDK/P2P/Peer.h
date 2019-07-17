@@ -10,6 +10,7 @@
 
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ElementSet.h>
+#include <SDK/Common/uint256.h>
 
 #include <deque>
 #include <boost/shared_ptr.hpp>

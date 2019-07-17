@@ -9,10 +9,12 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
+#include <SDK/Plugin/Transaction/TransactionInput.h>
 #include <SDK/Account/SubAccount.h>
 #include <SDK/WalletCore/BIPs/Base58.h>
 #include <SDK/WalletCore/KeyStore/CoinInfo.h>
 #include <SDK/SpvService/Config.h>
+#include <SDK/Wallet/UTXO.h>
 
 #include <algorithm>
 #include <boost/scoped_ptr.hpp>
@@ -153,16 +155,16 @@ namespace Elastos {
 			_callbacks.erase(std::remove(_callbacks.begin(), _callbacks.end(), subCallback), _callbacks.end());
 		}
 
-		TransactionPtr SubWallet::CreateTx(const std::string &fromAddress, const std::vector<TransactionOutput> &outputs,
+		TransactionPtr SubWallet::CreateTx(const std::string &fromAddress, const std::vector<OutputPtr> &outputs,
 		                                   const std::string &memo, bool useVotedUTXO) const {
 
 			const WalletPtr &wallet = _walletManager->getWallet();
 
-			for (const TransactionOutput &output : outputs) {
-				ErrorChecker::CheckParam(!output.GetAddress().Valid(), Error::CreateTransaction,
-				                         "invalid receiver address " + output.GetAddress().String());
+			for (const OutputPtr &output : outputs) {
+				ErrorChecker::CheckParam(!output->Addr().Valid(), Error::CreateTransaction,
+				                         "invalid receiver address " + output->Addr().String());
 
-				ErrorChecker::CheckParam(output.GetAmount() < 0, Error::CreateTransaction,
+				ErrorChecker::CheckParam(output->Amount() < 0, Error::CreateTransaction,
 				                         "output amount should big than zero");
 			}
 
@@ -240,9 +242,9 @@ namespace Elastos {
 			BigInt bnAmount;
 			bnAmount.setDec(amount);
 
-			std::vector<TransactionOutput> outputs;
+			std::vector<OutputPtr> outputs;
 			Address receiveAddr(toAddress);
-			outputs.emplace_back(bnAmount, receiveAddr);
+			outputs.push_back(OutputPtr(new TransactionOutput(bnAmount, receiveAddr)));
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
@@ -297,27 +299,27 @@ namespace Elastos {
 
 			const WalletPtr &wallet = _walletManager->getWallet();
 
-			std::vector<UTXO> UTXOs = wallet->GetAllUTXO(address);
-			std::vector<CoinBaseUTXOPtr> coinbaseUTXOs = wallet->GetAllCoinBaseUTXO(address);
+			std::vector<UTXOPtr> UTXOs = wallet->GetAllUTXO(address);
+			std::vector<UTXOPtr> coinbaseUTXOs = wallet->GetAllCoinBaseUTXO(address);
 
 			maxCount = UTXOs.size() + coinbaseUTXOs.size();
 			nlohmann::json j, jutxos;
 
 			for (size_t i = start; i < UTXOs.size() && pageCount < count; ++i) {
 				nlohmann::json item;
-				item["Hash"] = UTXOs[i].Hash().GetHex();
-				item["Index"] = UTXOs[i].Index();
-				item["Amount"] = UTXOs[i].Amount().getDec();
+				item["Hash"] = UTXOs[i]->Hash().GetHex();
+				item["Index"] = UTXOs[i]->Index();
+				item["Amount"] = UTXOs[i]->Output()->Amount().getDec();
 				jutxos.push_back(item);
 				pageCount++;
 			}
 
 			for (size_t i = start + pageCount; pageCount < count && i < UTXOs.size() + coinbaseUTXOs.size(); ++i) {
 				nlohmann::json item;
-				CoinBaseUTXOPtr cbp = coinbaseUTXOs[i - UTXOs.size()];
+				UTXOPtr cbp = coinbaseUTXOs[i - UTXOs.size()];
 				item["Hash"] = cbp->Hash().GetHex();
 				item["Index"] = cbp->Index();
-				item["Amount"] = cbp->Amount().getDec();
+				item["Amount"] = cbp->Output()->Amount().getDec();
 				jutxos.push_back(item);
 				pageCount++;
 			}
@@ -404,7 +406,7 @@ namespace Elastos {
 
 			nlohmann::json j;
 			const WalletPtr wallet = _walletManager->getWallet();
-			std::vector<CoinBaseUTXOPtr> cbs = wallet->GetAllCoinBaseTransactions();
+			std::vector<UTXOPtr> cbs = wallet->GetAllCoinBaseTransactions();
 			size_t maxCount = cbs.size();
 			size_t pageCount = count, realCount = 0;
 
@@ -424,7 +426,7 @@ namespace Elastos {
 			std::vector<nlohmann::json> jcbs;
 			jcbs.reserve(pageCount);
 			for (size_t i = maxCount - start; i > 0 && realCount < pageCount; --i) {
-				const CoinBaseUTXOPtr &cbptr = cbs[i - 1];
+				const UTXOPtr &cbptr = cbs[i - 1];
 				nlohmann::json cb;
 
 				if (!txID.empty()) {
@@ -432,14 +434,14 @@ namespace Elastos {
 						cb["TxHash"] = txID;
 						uint32_t confirms = cbptr->GetConfirms(_walletManager->getPeerManager()->GetLastBlockHeight());
 						cb["Timestamp"] = cbptr->Timestamp();
-						cb["Amount"] = cbptr->Amount().getDec();
+						cb["Amount"] = cbptr->Output()->Amount().getDec();
 						cb["Status"] = confirms <= 100 ? "Pending" : "Confirmed";
 						cb["Direction"] = "Received";
 
 						cb["ConfirmStatus"] = confirms <= 100 ? std::to_string(confirms) : "100+";
 						cb["Height"] = cbptr->BlockHeight();
 						cb["Spent"] = cbptr->Spent();
-						cb["Address"] = Address(cbptr->ProgramHash()).String();
+						cb["Address"] = Address(cbptr->Output()->ProgramHash()).String();
 						cb["Type"] = Transaction::coinBase;
 						jcbs.push_back(cb);
 						break;
@@ -450,7 +452,7 @@ namespace Elastos {
 					cb["TxHash"] = cbptr->Hash().GetHex();
 					uint32_t confirms = cbptr->GetConfirms(_walletManager->getPeerManager()->GetLastBlockHeight());
 					cb["Timestamp"] = cbptr->Timestamp();
-					cb["Amount"] = cbptr->Amount().getDec();
+					cb["Amount"] = cbptr->Output()->Amount().getDec();
 					cb["Status"] = confirms <= 100 ? "Pending" : "Confirmed";
 					cb["Direction"] = "Received";
 
@@ -505,7 +507,7 @@ namespace Elastos {
 						  });
 		}
 
-		void SubWallet::onCoinBaseTxAdded(const CoinBaseUTXOPtr &cb) {
+		void SubWallet::onCoinBaseTxAdded(const UTXOPtr &cb) {
 			ArgInfo("{} onCoinBaseTxAdded Hash:{}", _walletManager->getWallet()->GetWalletID(), cb->Hash().GetHex());
 		}
 
@@ -577,13 +579,13 @@ namespace Elastos {
 
 			const WalletPtr &wallet = _walletManager->getWallet();
 			for (size_t i = 0; i < transaction->GetInputs().size(); ++i) {
-				const TransactionPtr &tx = wallet->TransactionForHash(transaction->GetInputs()[i].GetTransctionHash());
-				if (tx && tx->GetOutputs()[transaction->GetInputs()[i].GetIndex()].GetAddress() == addressOrTxid) {
+				const TransactionPtr &tx = wallet->TransactionForHash(transaction->GetInputs()[i]->TxHash());
+				if (tx && tx->GetOutputs()[transaction->GetInputs()[i]->Index()]->Addr() == addressOrTxid) {
 					return true;
 				}
 			}
 			for (size_t i = 0; i < transaction->GetOutputs().size(); ++i) {
-				if (transaction->GetOutputs()[i].GetAddress() == addressOrTxid) {
+				if (transaction->GetOutputs()[i]->Addr() == addressOrTxid) {
 					return true;
 				}
 			}

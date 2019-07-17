@@ -8,6 +8,8 @@
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
+#include <SDK/WalletCore/BIPs/Address.h>
+#include <SDK/WalletCore/BIPs/Key.h>
 
 namespace Elastos {
 	namespace ElaWallet {

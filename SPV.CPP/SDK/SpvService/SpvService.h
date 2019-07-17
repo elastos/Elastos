@@ -11,7 +11,6 @@
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Database/DatabaseManager.h>
 #include <SDK/WalletCore/KeyStore/KeyStore.h>
-#include <SDK/Plugin/Transaction/Transaction.h>
 
 #include <nlohmann/json.hpp>
 #include <boost/function.hpp>
@@ -20,6 +19,10 @@
 
 namespace Elastos {
 	namespace ElaWallet {
+
+		class Transaction;
+
+		typedef boost::shared_ptr<Transaction> TransactionPtr;
 
 		class SpvService :
 				public CoreSpvService {
@@ -55,7 +58,7 @@ namespace Elastos {
 		public:
 			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
 
-			virtual void onCoinBaseTxAdded(const CoinBaseUTXOPtr &cb);
+			virtual void onCoinBaseTxAdded(const UTXOPtr &cb);
 
 			virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 
@@ -93,7 +96,7 @@ namespace Elastos {
 			virtual void connectStatusChanged(const std::string &status);
 
 		protected:
-			virtual std::vector<CoinBaseUTXOPtr> loadCoinBaseUTXOs();
+			virtual std::vector<UTXOPtr> loadCoinBaseUTXOs();
 
 			virtual std::vector<TransactionPtr> loadTransactions();
 

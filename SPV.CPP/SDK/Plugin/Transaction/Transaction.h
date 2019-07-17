@@ -5,12 +5,6 @@
 #ifndef __ELASTOS_SDK_TRANSACTION_H__
 #define __ELASTOS_SDK_TRANSACTION_H__
 
-#include "Program.h"
-#include "TransactionOutput.h"
-#include "Attribute.h"
-#include "TransactionInput.h"
-
-#include <SDK/WalletCore/BIPs/Key.h>
 #include <SDK/Plugin/Interface/ELAMessageSerializable.h>
 #include <SDK/Plugin/Transaction/Payload/IPayload.h>
 
@@ -20,6 +14,15 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class Wallet;
+		class TransactionOutput;
+		class TransactionInput;
+		class Program;
+		class Attribute;
+		typedef boost::shared_ptr<Wallet> WalletPtr;
+		typedef boost::shared_ptr<TransactionOutput> OutputPtr;
+		typedef boost::shared_ptr<TransactionInput> InputPtr;
+		typedef boost::shared_ptr<Program> ProgramPtr;
+		typedef boost::shared_ptr<Attribute> AttributePtr;
 
 		class Transaction {
 		public:
@@ -89,19 +92,19 @@ namespace Elastos {
 
 			void SetVersion(const TxVersion &version);
 
-			const std::vector<TransactionOutput> &GetOutputs() const;
+			const std::vector<OutputPtr> &GetOutputs() const;
 
-			std::vector<TransactionOutput> &GetOutputs();
+			void SetOutputs(const std::vector<OutputPtr> &outputs);
 
-			void SetOutputs(const std::vector<TransactionOutput> &outputs);
+			void AddOutput(const OutputPtr &output);
 
-			void AddOutput(const TransactionOutput &output);
+			void RemoveOutput(const OutputPtr &output);
 
-			const std::vector<TransactionInput> &GetInputs() const;
+			const std::vector<InputPtr> &GetInputs() const;
 
-			std::vector<TransactionInput> &GetInputs();
+			std::vector<InputPtr> &GetInputs();
 
-			void AddInput(const TransactionInput &Input);
+			void AddInput(const InputPtr &Input);
 
 			bool ContainInput(const uint256 &hash, uint32_t n) const;
 
@@ -145,21 +148,19 @@ namespace Elastos {
 
 			void SetPayload(const PayloadPtr &payload);
 
-			void AddAttribute(const Attribute &attribute);
+			void AddAttribute(const AttributePtr &attribute);
 
-			bool AddUniqueProgram(const Program &program);
+			bool AddUniqueProgram(const ProgramPtr &program);
 
-			void AddProgram(const Program &program);
+			void AddProgram(const ProgramPtr &program);
 
 			void ClearPrograms();
 
-			const std::vector<Attribute> &GetAttributes() const;
+			const std::vector<AttributePtr> &GetAttributes() const;
 
-			const std::vector<Program> &GetPrograms() const;
+			const std::vector<ProgramPtr> &GetPrograms() const;
 
-			std::vector<Program> &GetPrograms();
-
-			nlohmann::json GetSummary(const boost::shared_ptr<Wallet> &wallet, uint32_t confirms, bool detail);
+			nlohmann::json GetSummary(const WalletPtr &wallet, uint32_t confirms, bool detail);
 
 			uint8_t	GetPayloadVersion() const;
 
@@ -199,10 +200,10 @@ namespace Elastos {
 			uint8_t _payloadVersion;
 			uint64_t _fee;
 			PayloadPtr _payload;
-			std::vector<TransactionOutput> _outputs;
-			std::vector<TransactionInput> _inputs;
-			std::vector<Attribute> _attributes;
-			std::vector<Program> _programs;
+			std::vector<OutputPtr> _outputs;
+			std::vector<InputPtr> _inputs;
+			std::vector<AttributePtr> _attributes;
+			std::vector<ProgramPtr> _programs;
 		};
 
 		typedef boost::shared_ptr<Transaction> TransactionPtr;

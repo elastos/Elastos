@@ -8,9 +8,7 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Plugin/Registry.h>
-
-#include <Core/BRMerkleBlock.h>
-#include <Core/BRCrypto.h>
+#include <SDK/Common/hash.h>
 
 #include <sstream>
 

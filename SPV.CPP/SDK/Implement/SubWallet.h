@@ -119,7 +119,7 @@ namespace Elastos {
 		protected: //implement Wallet::Listener
 			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
 
-			virtual void onCoinBaseTxAdded(const CoinBaseUTXOPtr &cb);
+			virtual void onCoinBaseTxAdded(const UTXOPtr &cb);
 
 			virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 
@@ -171,7 +171,7 @@ namespace Elastos {
 
 			virtual TransactionPtr CreateTx(
 				const std::string &fromAddress,
-				const std::vector<TransactionOutput> &outputs,
+				const std::vector<OutputPtr> &outputs,
 				const std::string &memo,
 				bool useVotedUTXO = false) const;
 

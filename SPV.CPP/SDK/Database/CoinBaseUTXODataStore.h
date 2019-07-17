@@ -14,69 +14,8 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class CoinBaseUTXOEntity {
-		public:
-			CoinBaseUTXOEntity();
-
-			~CoinBaseUTXOEntity();
-
-			bool Spent() const;
-
-			void SetSpent(bool status);
-
-			const uint16_t &Index() const;
-
-			void SetIndex(uint16_t index);
-
-			const uint168 &ProgramHash() const;
-
-			void SetProgramHash(const uint168 &hash);
-
-			const uint256 &AssetID() const;
-
-			void SetAssetID(const uint256 &ID);
-
-			const uint32_t &OutputLock() const;
-
-			void SetOutputLock(uint32_t outputLock);
-
-			const BigInt &Amount() const;
-
-			void SetAmount(const BigInt &amount);
-
-			const bytes_ptr &Payload() const;
-
-			void SetPayload(const bytes_ptr &payload);
-
-			const time_t &Timestamp() const;
-
-			void SetTimestamp(time_t timestamp);
-
-			const uint32_t &BlockHeight() const;
-
-			void SetBlockHeight(uint32_t blockHeight);
-
-			const std::string &TxHash() const;
-
-			void SetTxHash(const std::string &txHash);
-
-		private:
-			bool _spent;
-
-			// output
-			uint16_t _index;
-			uint168 _programHash;
-			uint256 _assetID;
-			uint32_t _outputLock;
-			BigInt _amount;
-			bytes_ptr _payload;
-
-			time_t _timestamp;
-			uint32_t _blockHeight;
-			std::string _txHash;
-		};
-
-		typedef boost::shared_ptr<CoinBaseUTXOEntity> CoinBaseUTXOEntityPtr;
+		class UTXO;
+		typedef boost::shared_ptr<UTXO> UTXOPtr;
 
 		class CoinBaseUTXODataStore : public TableBase {
 		public:
@@ -84,24 +23,24 @@ namespace Elastos {
 
 			~CoinBaseUTXODataStore();
 
-			bool Put(const std::vector<CoinBaseUTXOEntity> &entitys);
+			bool Put(const std::vector<UTXOPtr> &entitys);
 
-			bool Put(const CoinBaseUTXOEntity &entity);
+			bool Put(const UTXOPtr &entity);
 
 			bool DeleteAll();
 
 			size_t GetTotalCount() const;
 
-			std::vector<CoinBaseUTXOEntityPtr> GetAll() const;
+			std::vector<UTXOPtr> GetAll() const;
 
 			bool Update(const std::vector<uint256> &txHashes, uint32_t blockHeight, time_t timestamp);
 
 			bool UpdateSpent(const std::vector<uint256> &txHashes);
 
-			bool Delete(const std::string &hash);
+			bool Delete(const uint256 &hash);
 
 		private:
-			bool PutInternal(const CoinBaseUTXOEntity &entity);
+			bool PutInternal(const UTXOPtr &entity);
 
 		private:
 			/*

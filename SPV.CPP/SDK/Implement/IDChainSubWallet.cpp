@@ -10,6 +10,8 @@
 #include <SDK/Common/Log.h>
 #include <SDK/WalletCore/KeyStore/CoinInfo.h>
 #include <SDK/Plugin/Transaction/Payload/RegisterIdentification.h>
+#include <SDK/Plugin/Transaction/Program.h>
+#include <SDK/Plugin/Transaction/TransactionOutput.h>
 
 #include <set>
 #include <boost/scoped_ptr.hpp>
@@ -49,11 +51,11 @@ namespace Elastos {
 			ArgInfo("memo: {}", memo);
 
 			std::string toAddress;
-			Program program;
+			ProgramPtr program(new Program());
 			PayloadPtr payload = nullptr;
 			try {
 				toAddress = payloadJson["ID"].get<std::string>();
-				program.FromJson(programJson);
+				program->FromJson(programJson);
 				payload = PayloadPtr(new RegisterIdentification());
 				payload->FromJson(payloadJson, 0);
 			} catch (const nlohmann::detail::exception &e) {
@@ -61,9 +63,9 @@ namespace Elastos {
 												  "Create id tx param error: " + std::string(e.what()));
 			}
 
-			std::vector<TransactionOutput> outputs;
+			std::vector<OutputPtr> outputs;
 			Address receiveAddr(toAddress);
-			outputs.emplace_back(0, receiveAddr, Asset::GetELAAssetID());
+			outputs.push_back(OutputPtr(new TransactionOutput(0, receiveAddr, Asset::GetELAAssetID())));
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
 

@@ -9,6 +9,7 @@
 #include <SDK/Plugin/Transaction/Payload/TransferCrossChainAsset.h>
 #include <SDK/SpvService/Config.h>
 #include <SDK/WalletCore/KeyStore/CoinInfo.h>
+#include <SDK/Plugin/Transaction/TransactionOutput.h>
 #include <Core/BRAddress.h>
 
 #include <vector>
@@ -56,8 +57,8 @@ namespace Elastos {
 												  "main chain message error: " + std::string(e.what()));
 			}
 
-			std::vector<TransactionOutput> outputs;
-			outputs.emplace_back(bgAmount + _config->MinFee(), Address(ELA_SIDECHAIN_DESTROY_ADDR), Asset::GetELAAssetID());
+			std::vector<OutputPtr> outputs;
+			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount + _config->MinFee(), Address(ELA_SIDECHAIN_DESTROY_ADDR), Asset::GetELAAssetID())));
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
 			ErrorChecker::CheckLogic(tx == nullptr, Error::CreateTransaction, "Create withdraw tx");

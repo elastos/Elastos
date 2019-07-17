@@ -70,7 +70,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 
 			TransactionPtr tx(new Transaction);
 			tx->FromJson(content);
-			tx->AddProgram(Program(path, redeemScript, bytes_t()));
+			tx->AddProgram(ProgramPtr(new Program(path, redeemScript, bytes_t())));
 
 
 			REQUIRE_THROWS(subAccount3->SignTransaction(tx, payPasswd));
@@ -80,9 +80,9 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 
 			subAccount2->GetAllAddresses(addresses, 0, 100, true);
 
-			tx->GetPrograms().clear();
+			tx->ClearPrograms();
 			REQUIRE(subAccount2->GetCodeAndPath(addresses[0], redeemScript, path));
-			tx->AddProgram(Program(path, redeemScript, bytes_t()));
+			tx->AddProgram(ProgramPtr(new Program(path, redeemScript, bytes_t())));
 			REQUIRE_THROWS(subAccount1->SignTransaction(tx, payPasswd));
 			REQUIRE_THROWS(subAccount3->SignTransaction(tx, payPasswd));
 
@@ -102,7 +102,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 			TransactionPtr tx(new Transaction);
 			tx->FromJson(content);
 
-			tx->AddProgram(Program(path, redeemScript, bytes_t()));
+			tx->AddProgram(ProgramPtr(new Program(path, redeemScript, bytes_t())));
 
 			REQUIRE_THROWS(subAccount2->SignTransaction(tx, payPasswd));
 			REQUIRE(!tx->IsSigned());
@@ -120,7 +120,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 			TransactionPtr tx(new Transaction);
 			tx->FromJson(content);
 
-			tx->AddProgram(Program(path, redeemScript, bytes_t()));
+			tx->AddProgram(ProgramPtr(new Program(path, redeemScript, bytes_t())));
 
 
 			REQUIRE_THROWS(subAccount2->SignTransaction(tx, payPasswd));
@@ -150,7 +150,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 			bytes_t redeemScript;
 			std::string path;
 			REQUIRE(multiSignSubAccount->GetCodeAndPath(addresses[0], redeemScript, path));
-			tx->AddProgram(Program(path, redeemScript, bytes_t()));
+			tx->AddProgram(ProgramPtr(new Program(path, redeemScript, bytes_t())));
 
 			REQUIRE_NOTHROW(subAccount1->SignTransaction(tx, payPasswd));
 			REQUIRE(!tx->IsSigned());
@@ -240,7 +240,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 			std::string path;
 			REQUIRE(ms1->GetCodeAndPath(addresses1[0], redeemScript, path));
 
-			tx->AddProgram(Program(path, redeemScript, bytes_t()));
+			tx->AddProgram(ProgramPtr(new Program(path, redeemScript, bytes_t())));
 
 
 			REQUIRE(!tx->IsSigned());

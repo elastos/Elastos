@@ -487,7 +487,7 @@ static void InitWallets() {
 
 	for (size_t i = 0; i < masterWallets.size(); ++i) {
 		logger->debug("{} basic info -> {}", masterWallets[i]->GetID(), masterWallets[i]->GetBasicInfo().dump());
-		logger->debug("{} xprv -> {}", masterWallets[i]->GetID(), manager->ExportxPrivateKey(masterWallets[i], payPasswd));
+//		logger->debug("{} xprv -> {}", masterWallets[i]->GetID(), manager->ExportxPrivateKey(masterWallets[i], payPasswd));
 		logger->debug("{} xpub -> {}", masterWallets[i]->GetID(), manager->ExportMasterPublicKey(masterWallets[i]));
 		std::vector<ISubWallet *> subWallets = masterWallets[i]->GetAllSubWallets();
 		for (size_t j = 0; j < subWallets.size(); ++j) {

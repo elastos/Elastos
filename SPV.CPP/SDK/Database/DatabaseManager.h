@@ -15,6 +15,9 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		class UTXO;
+		typedef boost::shared_ptr<UTXO> UTXOPtr;
+
 		class DatabaseManager {
 		public:
 			DatabaseManager(const boost::filesystem::path &path);
@@ -22,14 +25,14 @@ namespace Elastos {
 			~DatabaseManager();
 
 			// CoinBase UTXO database interface
-			bool PutCoinBase(const std::vector<CoinBaseUTXOEntity> &entitys);
-			bool PutCoinBase(const CoinBaseUTXOEntity &entity);
+			bool PutCoinBase(const std::vector<UTXOPtr> &entitys);
+			bool PutCoinBase(const UTXOPtr &entity);
 			bool DeleteAllCoinBase();
 			size_t GetCoinBaseTotalCount() const;
-			std::vector<CoinBaseUTXOEntityPtr> GetAllCoinBase() const;
+			std::vector<UTXOPtr> GetAllCoinBase() const;
 			bool UpdateCoinBase(const std::vector<uint256> &txHashes, uint32_t blockHeight, time_t timestamp);
 			bool UpdateSpentCoinBase(const std::vector<uint256> &txHashes);
-			bool DeleteCoinBase(const std::string &hash);
+			bool DeleteCoinBase(const uint256 &hash);
 
 			// Transaction's database interface
 			bool PutTransaction(const std::string &iso, const TransactionEntity &tx);
