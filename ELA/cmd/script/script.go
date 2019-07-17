@@ -17,8 +17,8 @@ import (
 )
 
 func registerParams(c *cli.Context, L *lua.LState) {
-	publicKey := c.String("publickey")
 	code := c.String("code")
+	publicKey := c.String("publickey")
 	depositAddr := c.String("depositaddr")
 	nickname := c.String("nickname")
 	url := c.String("url")
