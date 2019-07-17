@@ -21,12 +21,11 @@ import (
 )
 
 const (
-	// buffSize is the data buffer size for each pipe way, so is 2MB for each
-	// pipe instance.  Most of messages in pipe is smaller than 1MB, so one
-	// message can be distributed by one loop.  If there are 100 pipe instances,
-	// they will take 200MB memory cache, is not too large for a computer that
+	// buffSize is the data buffer size for each pipe way (1KB), and there are
+	// to ways for each pipe instance (2KB). If there are 100 pipe instances,
+	// they will take 200KB memory cache, is not too large for a computer that
 	// have a 8GB(1024MB*8) or larger memory.
-	buffSize = 1024 << 10 // 1MB
+	buffSize = 1024 // 1KB
 
 	// pipeTimeout defines the time duration to timeout a pipe.
 	pipeTimeout = 2 * time.Minute

@@ -59,7 +59,7 @@ func ReadFile(filePath string) (string, error) {
 	if _, err := os.Stat(filePath); err != nil {
 		return "", errors.New("invalid transaction file path")
 	}
-	file, err := os.OpenFile(filePath, os.O_RDONLY, 0666)
+	file, err := os.OpenFile(filePath, os.O_RDONLY, 0400)
 	if err != nil {
 		return "", errors.New("open transaction file failed")
 	}

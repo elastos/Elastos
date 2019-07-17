@@ -170,16 +170,18 @@ func signPayload(L *lua.LState) int {
 
 	switch txn.TxType {
 	case types.RegisterProducer:
-		registerProducer, ok := txn.Payload.(*payload.ProducerInfo)
+		fallthrough
+	case types.UpdateProducer:
+		producerInfo, ok := txn.Payload.(*payload.ProducerInfo)
 		if !ok {
-			cmdcom.PrintErrorAndExit("invalid register producer payload")
+			cmdcom.PrintErrorAndExit("invalid producer payload")
 		}
 		rpSignBuf := new(bytes.Buffer)
-		if err := registerProducer.SerializeUnsigned(rpSignBuf, payload.ProducerInfoVersion); err != nil {
+		if err := producerInfo.SerializeUnsigned(rpSignBuf, payload.ProducerInfoVersion); err != nil {
 			cmdcom.PrintErrorAndExit(err.Error())
 		}
 
-		codeHash, err := contract.PublicKeyToStandardCodeHash(registerProducer.OwnerPublicKey)
+		codeHash, err := contract.PublicKeyToStandardCodeHash(producerInfo.OwnerPublicKey)
 		if err != nil {
 			cmdcom.PrintErrorAndExit(err.Error())
 		}
@@ -191,10 +193,10 @@ func signPayload(L *lua.LState) int {
 		if err != nil {
 			cmdcom.PrintErrorAndExit(err.Error())
 		}
-		registerProducer.Signature = rpSig
-		txn.Payload = registerProducer
+		producerInfo.Signature = rpSig
+		txn.Payload = producerInfo
 	default:
-		cmdcom.PrintErrorAndExit("invalid payload")
+		cmdcom.PrintErrorAndExit("invalid producer payload")
 	}
 
 	udn := L.NewUserData()
