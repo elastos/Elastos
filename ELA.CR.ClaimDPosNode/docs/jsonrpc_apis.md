@@ -1788,7 +1788,7 @@ result sample:
         "crcandidatesinfo": [
             {
                 "code": "21036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535ac",
-                "did": "6717f1eaffc451b043b82eb9ff9ca136341a725078",
+                "did": "iUzjmMPTYZq2afqtR46coY6B7h2qD1PQbyq",
                 "nickname": "ela_test11",
                 "url": "ela_test.org11",
                 "location": 38025,
@@ -1851,7 +1851,7 @@ result sample:
         "crmembersinfo": [
             {
                 "code": "2102e23f70b9b967af35571c32b1442d787c180753bbed5cd6e7d5a5cfe75c7fc1ffac",
-                "did": "6756b347f27954f1061883cfe469839f8465cc7340",
+                "did": "iaiZJM922uWo2Uc2gYwZk1nEgiVV7NTtxR",
                 "nickname": "ela_cr2",
                 "url": "ela_cr2.org",
                 "location": 112211,
@@ -1863,7 +1863,7 @@ result sample:
             },
             {
                 "code": "2103c3dd01baa4e3d0625f6c0026ad3d06d085e80c57477efa1a4aa2ab209c210e95ac",
-                "did": "670f11c336563d31ed1cf81ac4a83f9df7306f9967",
+                "did": "iUBoqE5KnBA1zsd4EWeyj2mXMfUrm5rDmf",
                 "nickname": "ela_cr1",
                 "url": "ela_cr1.org",
                 "location": 112211,
