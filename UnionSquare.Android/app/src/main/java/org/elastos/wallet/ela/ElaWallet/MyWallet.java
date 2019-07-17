@@ -1138,7 +1138,7 @@ public class MyWallet {
 
             }
 
-            String result = subWallet.CreateCombineUTXOTransaction(memo, useVotedUTXO);
+            String result = subWallet.CreateConsolidateTransaction(memo, useVotedUTXO);
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, result, "createCombineUTXOTransaction");
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + "createCombineUTXOTransaction");
