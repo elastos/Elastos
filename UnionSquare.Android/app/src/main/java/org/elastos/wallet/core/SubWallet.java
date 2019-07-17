@@ -84,16 +84,16 @@ public class SubWallet {
         return GetAllUTXOs(mInstance, start, count, address);
     }
 
-    public String CreateCombineUTXOTransaction(String memo, boolean useVotedUTXO) throws WalletException {
-        return CreateCombineUTXOTransaction(mInstance, memo, useVotedUTXO);
+    public String CreateConsolidateTransaction(String memo, boolean useVotedUTXO) throws WalletException {
+        return CreateConsolidateTransaction(mInstance, memo, useVotedUTXO);
     }
 
     public String SignTransaction(String rawTransaction, String payPassword) throws WalletException {
         return SignTransaction(mInstance, rawTransaction, payPassword);
     }
 
-    public String GetTransactionSignedSigners(String rawTransaction) throws WalletException {
-        return GetTransactionSignedSigners(mInstance, rawTransaction);
+    public String GetTransactionSignedInfo(String rawTransaction) throws WalletException {
+        return GetTransactionSignedInfo(mInstance, rawTransaction);
     }
 
     public String PublishTransaction(String rawTransaction) throws WalletException {
@@ -163,11 +163,11 @@ public class SubWallet {
 
     private native String GetAllUTXOs(long subProxy, int start, int count, String address);
 
-    private native String CreateCombineUTXOTransaction(long subProxy, String memo, boolean useVotedUTXO);
+    private native String CreateConsolidateTransaction(long subProxy, String memo, boolean useVotedUTXO);
 
     private native String SignTransaction(long subProxy, String rawTransaction, String payPassword);
 
-    private native String GetTransactionSignedSigners(long subProxy, String rawTransaction);
+    private native String GetTransactionSignedInfo(long subProxy, String rawTransaction);
 
     private native String PublishTransaction(long subProxy, String rawTransaction);
 

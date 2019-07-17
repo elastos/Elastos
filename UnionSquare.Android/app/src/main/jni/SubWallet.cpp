@@ -236,9 +236,9 @@ static jstring JNICALL GetAllUTXOs(JNIEnv *env, jobject clazz, jlong jSubProxy,
     return result;
 }
 
-#define JNI_CreateCombineUTXOTransaction "(JLjava/lang/String;Z)Ljava/lang/String;"
+#define JNI_CreateConsolidateTransaction "(JLjava/lang/String;Z)Ljava/lang/String;"
 
-static jstring JNICALL CreateCombineUTXOTransaction(JNIEnv *env, jobject clazz, jlong jSubProxy,
+static jstring JNICALL CreateConsolidateTransaction(JNIEnv *env, jobject clazz, jlong jSubProxy,
                                                     jstring jmemo,
                                                     jboolean useVotedUTXO) {
     bool exception = false;
@@ -250,7 +250,7 @@ static jstring JNICALL CreateCombineUTXOTransaction(JNIEnv *env, jobject clazz, 
     jstring tx = NULL;
 
     try {
-        nlohmann::json result = subWallet->CreateCombineUTXOTransaction(memo, useVotedUTXO);
+        nlohmann::json result = subWallet->CreateConsolidateTransaction(memo, useVotedUTXO);
         tx = env->NewStringUTF(result.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
@@ -300,9 +300,9 @@ static jstring JNICALL SignTransaction(JNIEnv *env, jobject clazz, jlong jSubPro
     return tx;
 }
 
-#define JNI_GetTransactionSignedSigners "(JLjava/lang/String;)Ljava/lang/String;"
+#define JNI_GetTransactionSignedInfo "(JLjava/lang/String;)Ljava/lang/String;"
 
-static jstring JNICALL GetTransactionSignedSigners(JNIEnv *env, jobject clazz, jlong jSubProxy,
+static jstring JNICALL GetTransactionSignedInfo(JNIEnv *env, jobject clazz, jlong jSubProxy,
                                                    jstring jTransactionJson) {
     bool exception = false;
     std::string msgException;
@@ -312,7 +312,7 @@ static jstring JNICALL GetTransactionSignedSigners(JNIEnv *env, jobject clazz, j
 
     try {
         ISubWallet *subWallet = (ISubWallet *) jSubProxy;
-        nlohmann::json signers = subWallet->GetTransactionSignedSigners(
+        nlohmann::json signers = subWallet->GetTransactionSignedInfo(
                 nlohmann::json::parse(transactionJson));
         result = env->NewStringUTF(signers.dump().c_str());
     } catch (const std::exception &e) {
@@ -579,9 +579,9 @@ static const JNINativeMethod methods[] = {
         REGISTER_METHOD(RemoveCallback),
         REGISTER_METHOD(CreateTransaction),
         REGISTER_METHOD(GetAllUTXOs),
-        REGISTER_METHOD(CreateCombineUTXOTransaction),
+        REGISTER_METHOD(CreateConsolidateTransaction),
         REGISTER_METHOD(SignTransaction),
-        REGISTER_METHOD(GetTransactionSignedSigners),
+        REGISTER_METHOD(GetTransactionSignedInfo),
         REGISTER_METHOD(PublishTransaction),
         REGISTER_METHOD(GetAllTransaction),
         REGISTER_METHOD(Sign),
