@@ -168,7 +168,7 @@ namespace Elastos {
 
 			std::string memoFormated = "type:text,msg:" + memo;
 
-			TransactionPtr tx = wallet->CreateTransaction(fromAddress, outputs, memo, useVotedUTXO, false);
+			TransactionPtr tx = wallet->CreateTransaction(fromAddress, outputs, memoFormated, useVotedUTXO, false);
 
 			if (_info->GetChainID() == "ELA") {
 				tx->SetVersion(Transaction::TxVersion::V09);
