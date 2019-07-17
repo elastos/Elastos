@@ -236,11 +236,11 @@ class C extends StandardPage {
           <Anchor.Link href="#goal" title={I18N.get('proposal.fields.goal')} />
         </div>
         <Anchor.Link href="#motivation" title={I18N.get('proposal.fields.motivation')} />
+        <Anchor.Link href="#plan" title={I18N.get('proposal.fields.plan')} />
         <Anchor.Link href="#relevance" title={I18N.get('proposal.fields.relevance')} />
         <div style={{ marginTop: 48 }}>
           <Anchor.Link href="#budget" title={I18N.get('proposal.fields.budget')} />
         </div>
-        <Anchor.Link href="#plan" title={I18N.get('proposal.fields.plan')} />
         <div style={{ marginTop: 48 }}>
           <Anchor.Link href="#vote" title={I18N.get('proposal.fields.vote')} />
         </div>
