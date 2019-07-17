@@ -144,7 +144,7 @@ namespace Elastos {
 			 * @param useVotedUTXO If true, all voted UTXO will be picked. Otherwise, any voted UTXO will not be picked.
 			 * @return If success return the content of transaction in json format.
 			 */
-			virtual nlohmann::json CreateCombineUTXOTransaction(
+			virtual nlohmann::json CreateConsolidateTransaction(
 					const std::string &memo,
 					bool useVotedUTXO = false) = 0;
 
@@ -168,7 +168,7 @@ namespace Elastos {
 			 * [{"SignType":"Standard","Signers":["0207d8bc14c4bdd79ea4a30818455f705bcc9e17a4b843a5f8f4a95aa21fb03d77"]},{"SignType":"Standard","Signers":["02a58d1c4e4993572caf0133ece4486533261e0e44fb9054b1ea7a19842c35300e"]}]
 			 *
 			 */
-			virtual nlohmann::json GetTransactionSignedSigners(
+			virtual nlohmann::json GetTransactionSignedInfo(
 					const nlohmann::json &tx) const = 0;
 
 			/**
