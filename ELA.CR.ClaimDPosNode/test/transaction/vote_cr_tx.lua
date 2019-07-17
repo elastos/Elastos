@@ -60,7 +60,7 @@ vote_candidate_votes[0] = vote_candidate_vote
 print("amount:", amount)
 print("fee:", fee)
 print("code:", vote_candidate_code)
-print("votes:", votes)
+print("votes:", vote_candidate_vote)
 
 -- payload
 local ta = transferasset.new()
