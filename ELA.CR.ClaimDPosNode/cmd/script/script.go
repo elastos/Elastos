@@ -28,6 +28,9 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	fee := c.Float64("fee")
 	votes := c.Float64("votes")
 	toAddr := c.String("to")
+	ownPubkey := c.String("ownerpublickey")
+	nodePubkey := c.String("nodepublickey")
+	host := c.String("host")
 
 	getDepositAddr := func(L *lua.LState) int {
 		L.Push(lua.LString(depositAddr))
@@ -73,7 +76,18 @@ func registerParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LString(toAddr))
 		return 1
 	}
-
+	getOwnerPublicKey := func(L *lua.LState) int {
+		L.Push(lua.LString(ownPubkey))
+		return 1
+	}
+	getNodePublicKey := func(L *lua.LState) int {
+		L.Push(lua.LString(nodePubkey))
+		return 1
+	}
+	getHostAddr := func(L *lua.LState) int {
+		L.Push(lua.LString(host))
+		return 1
+	}
 	L.Register("getDepositAddr", getDepositAddr)
 	L.Register("getPublicKey", getPublicKey)
 	L.Register("getCode", getCode)
@@ -85,6 +99,9 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	L.Register("getFee", getFee)
 	L.Register("getVotes", getVotes)
 	L.Register("getToAddr", getToAddr)
+	L.Register("getOwnerPublicKey", getOwnerPublicKey)
+	L.Register("getNodePublicKey", getNodePublicKey)
+	L.Register("getHostAddr", getHostAddr)
 }
 
 func scriptAction(c *cli.Context) error {
@@ -190,6 +207,18 @@ func NewCommand() *cli.Command {
 			cli.StringFlag{
 				Name:  "to",
 				Usage: "set the output address",
+			},
+			cli.StringFlag{
+				Name:  "ownerpublickey, opk",
+				Usage: "set the node public key",
+			},
+			cli.StringFlag{
+				Name:  "nodepublickey, npk",
+				Usage: "set the owner public key",
+			},
+			cli.StringFlag{
+				Name:  "host",
+				Usage: "set the host address",
 			},
 		},
 		Action: scriptAction,
