@@ -19,11 +19,47 @@ print("pubkey", pubkey)
 local asset_id = m.get_asset_id()
 
 -- amount, fee, recipent
-local amount = 0.2
-local fee = 0.001
+--local amount = 0.2
+--local fee = 0.001
+--local vote_candidates = {'034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16c'}
+--local vote_candidate_votes = {'1.0'}
+
 local vote_type = 0
-local vote_candidates = {'034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16c'}
-local vote_candidate_votes = {'1.0'}
+local vote_candidates = {}
+local vote_candidate_votes = {}
+local amount = getAmount()
+local fee = getFee()
+local vote_candidate = getPublicKey()
+local vote_candidate_vote = getVotes()
+
+if amount == 0
+then
+	amount = 0.2
+end
+
+if fee == 0
+then
+	fee = 0.001
+end
+
+if vote_candidate_vote == 0
+then
+	vote_candidate_vote = 0.1
+end
+
+if vote_candidate == ""
+then
+	print("candidate public key is nil, should use --publickey or -pk to set it.")
+	return
+end
+
+vote_candidates[0] = vote_candidate
+vote_candidate_votes[0] = vote_candidate_vote
+
+print("amount:", amount)
+print("fee:", fee)
+print("public key:", vote_candidate)
+print("votes:", vote_candidate_vote)
 
 -- payload
 local ta = transferasset.new()
