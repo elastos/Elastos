@@ -14,8 +14,8 @@
             <!--<img src="./images/close.png" alt="">-->
         </div>
         <div>{{i18n.text}}</div>
-        <div style="opacity: 0">
-            <i onclick="language('ch')">中</i>/<i onclick="language('en')">EN</i>
+        <div>
+            <i @click="languages('ch')">中</i>/<i @click="languages('en')">EN</i>
         </div>
     </header>
     <div class="content">
@@ -55,33 +55,41 @@
 <script src="./js/vue.min.js"></script>
 <script src="./js/index.js"></script>
 <script>
-    const app = new Vue({
-        el: "#app",
-        data: {
-            i18n:{},
-        },
-        methods: {
-            language: function (lang) {
-                let that = this;
-                $.ajax({
-                    url: lang + '.json',
-                    type: 'get',
-                    dataType: "json",//jsonp数据类型
-                    success: function (data) {
-                        that.i18n = data;
-                        if (lang == 'en') {
-                            $('header').find('div').eq(2).find("i").eq(1).css("color", "#4A8AFF").prev().css("color", "#333");
-                        } else {
-                            $('header').find('div').eq(2).find("i").eq(0).css("color", "#4A8AFF").next().css("color", "#333");
-                        }
-                    }
-                })
-            }
-        },
-        mounted() {
-            this.language(getUrlParam("langua")||"ch");
-            console.log($('.content_box').eq(1).height())
-        },
+    $(function () {
+        let language = getUrlParam('langua') || 'ch';
+        init(language);
     })
+    function init(langua){
+        const app = new Vue({
+            el: "#app",
+            data: {
+                i18n:{},
+            },
+            methods: {
+                languages: function (langua) {
+                    let that = this;
+                    $.ajax({
+                        url: langua + '.json',
+                        type: 'get',
+                        dataType: "json",//jsonp数据类型
+                        success: function (data) {
+                            that.i18n = data;
+                            if (langua == 'en') {
+                                $('header').find('div').eq(2).find("i").eq(1).css("color", "#4A8AFF").prev().css("color", "#333");
+                            } else {
+                                $('header').find('div').eq(2).find("i").eq(0).css("color", "#4A8AFF").next().css("color", "#333");
+                            }
+                        }
+                    })
+                }
+            },
+            created(){
+
+            },
+            mounted() {
+                this.languages(getUrlParam("langua")||"ch");
+            },
+        })
+    }
 </script>
 </html>
