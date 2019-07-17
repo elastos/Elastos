@@ -995,7 +995,7 @@ func ListUnspent(param Params) map[string]interface{} {
 		}
 	}
 	for _, address := range addresses {
-		unspents, err := CoinCP.ListUnspent(address)
+		unspents, err := CoinCP.ListUnspent(address, Config.EnableUtxoDB)
 		if err != nil {
 			return ResponsePack(InvalidParams, "cannot get asset with program")
 		}
@@ -1249,7 +1249,7 @@ func ImportAddress(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "need a parameter named address")
 	}
 
-	if err := Wallet.ImportAddress(address); err != nil {
+	if err := Wallet.ImportAddress(address, Config.EnableUtxoDB); err != nil {
 		return ResponsePack(InternalError, "import address failed: "+err.Error())
 	}
 
@@ -1266,7 +1266,7 @@ func ImportPubkey(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "invalid pubkey")
 	}
 
-	if err := Wallet.ImportPubkey(pubKeyBytes); err != nil {
+	if err := Wallet.ImportPubkey(pubKeyBytes, Config.EnableUtxoDB); err != nil {
 		return ResponsePack(InternalError, "import public key failed: "+err.Error())
 	}
 

@@ -211,8 +211,9 @@ func (ccp *CoinsCheckPoint) getWalletUnspent(addresses []string) (map[types.OutP
 	return coins, nil
 }
 
-func (ccp *CoinsCheckPoint) ListUnspent(address string) (map[common.Uint256][]*blockchain.UTXO, error) {
-	if Config.EnableUtxoDB {
+func (ccp *CoinsCheckPoint) ListUnspent(address string, enableUtxoDB bool) (map[common.Uint256][]*blockchain.UTXO,
+	error) {
+	if enableUtxoDB {
 		programHash, err := common.Uint168FromAddress(address)
 		if err != nil {
 			return nil, err
