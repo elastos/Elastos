@@ -23,9 +23,9 @@ import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.db.table.Wallet;
-import org.elastos.wallet.ela.ui.Assets.activity.PwdActivity;
 import org.elastos.wallet.ela.ui.Assets.adapter.AssetskAdapter;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
+import org.elastos.wallet.ela.ui.Assets.bean.ParcelableMap;
 import org.elastos.wallet.ela.ui.Assets.fragment.AddAssetFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.AssetDetailsFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.CreateSignReadOnlyWalletFragment;
@@ -41,7 +41,6 @@ import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.utils.Constant;
-import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.ScanQRcodeUtil;
 import org.greenrobot.eventbus.Subscribe;
@@ -204,9 +203,13 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                             break;
                         case Constant.PUBLISH:
                             //目前是复制当前页面
-                            bundle.putParcelable("wallet", wallet);
-                            bundle.putString("result", result);
-                            ((BaseFragment) getParentFragment()).start(SignFragment.class, bundle);
+                            String signedattribute = getData(jsonObject, Constant.SIGN);
+                            if (!TextUtils.isEmpty(signedattribute)) {
+                                bundle.putParcelable("wallet", wallet);
+                                bundle.putString("attribute", signedattribute);
+                                bundle.putInt("type", Constant.PUBLISH);
+                                ((BaseFragment) getParentFragment()).start(SignFragment.class, bundle);
+                            }
                             break;
                         default:
                             toErroScan(result);
@@ -579,8 +582,6 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             int max = jsonObject.get("max").getAsInt();
             int current = jsonObject.get("current").getAsInt();
             dataMap.put(current, mydata);
-            String msg = String.format(getContext().getString(R.string.scanprocess), dataMap.size() + "/" + max);
-            showToast(msg);
             if (dataMap.size() == max) {
                 StringBuilder signData = new StringBuilder();
                 for (String s : dataMap.values()) {
@@ -590,6 +591,8 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 dataMap.clear();
                 return signData.toString();
             }
+            String msg = String.format(getContext().getString(R.string.scanprocess), dataMap.size() + "/" + max);
+            showToast(msg);
             requstManifestPermission(getString(R.string.needpermission));
         } catch (Exception e) {
             toErroScan(jsonObject.toString());

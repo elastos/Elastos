@@ -1,11 +1,9 @@
 package org.elastos.wallet.ela.ui.Assets.fragment.transfer;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -17,27 +15,17 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import org.elastos.wallet.R;
-import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.activity.PwdActivity;
 import org.elastos.wallet.ela.ui.Assets.adapter.SignViewPagetAdapter;
-import org.elastos.wallet.ela.ui.Assets.bean.TransferRecordDetailEntity;
-import org.elastos.wallet.ela.ui.Assets.fragment.CreateSignReadOnlyWalletFragment;
-import org.elastos.wallet.ela.ui.Assets.fragment.mulsignwallet.CreateMulWalletFragment;
 import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
-import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
-import org.elastos.wallet.ela.utils.Arith;
-import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
-import org.elastos.wallet.ela.utils.Log;
-import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.QRCodeUtils;
 import org.elastos.wallet.ela.utils.RxEnum;
-import org.elastos.wallet.ela.utils.ScanQRcodeUtil;
 import org.elastos.wallet.ela.utils.ScreenUtil;
 import org.elastos.wallet.ela.utils.ShareUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
@@ -45,15 +33,10 @@ import org.elastos.wallet.ela.utils.widget.ScaleTransformer;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import butterknife.Unbinder;
-import io.github.xudaojie.qrcodelib.CaptureActivity;
 
 public class SignFragment extends BaseFragment implements CommmonStringWithMethNameViewData {
     @BindView(R.id.tv_title)
@@ -85,7 +68,15 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
         super.setExtraData(data);
         wallet = data.getParcelable("wallet");
         String attribute = data.getString("attribute");
+        int type = data.getInt("type");
+        if (type == Constant.PUBLISH) {
+            //签过名了
+            showUI(attribute);
+            return;
+        }
+        //未签名
         try {
+
             JsonObject JsonAttribute = new JsonParser().parse(attribute).getAsJsonObject();
             Intent intent = new Intent(getBaseActivity(), PwdActivity.class);
             intent.putExtra("wallet", wallet);
@@ -96,7 +87,7 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
         } catch (Exception e) {
             showToast(getString(R.string.error_30000));
         }
-
+        registReceiver();
     }
 
 
@@ -104,7 +95,7 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
     protected void initView(View view) {
         tvTitle.setText(getString(R.string.signedtreat));
         ivTitleRight.setImageResource(R.mipmap.top_share);
-        registReceiver();
+        ivTitleRight.setVisibility(View.VISIBLE);
     }
 
     @OnClick({R.id.iv_title_right, R.id.tv_publish})
@@ -135,12 +126,17 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
     public void Event(BusEvent result) {
         int integer = result.getCode();
         if (integer == RxEnum.SIGNSUCCESS.ordinal()) {
-            signData = (String) result.getObj();
-            JSONObject json = JSON.parseObject(signData);
-            chainID = json.getString("ChainID");
-            tvPublish.setVisibility(View.VISIBLE);
-            setQr(signData);
+            String signData = (String) result.getObj();
+            showUI(signData);
         }
+    }
+
+    private void showUI(String signData) {
+        this.signData = signData;
+        JSONObject json = JSON.parseObject(signData);
+        chainID = json.getString("ChainID");
+        tvPublish.setVisibility(View.VISIBLE);
+        setQr(signData);
     }
 
     public void setQr(String data) {
