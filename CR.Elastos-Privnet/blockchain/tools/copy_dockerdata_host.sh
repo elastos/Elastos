@@ -39,3 +39,5 @@ setup_node "arbitrator" "node_origin"
 setup_node "sidechain" "did"
 
 setup_node "sidechain" "token"
+
+setup_node "sidechain" "eth"

@@ -4,14 +4,14 @@ docker-compose stop
 
 CURRENT_DIR=$(pwd)
 DOCKER_VOLUME=~/.volumes/elastos-privnet
-rm -rf ${DOCKER_VOLUME}
+sudo rm -rf ${DOCKER_VOLUME}
 mkdir -p ${DOCKER_VOLUME}
 
 function setup_node() {
     SRC_DIR=${1}
 
     cd ${SRC_DIR}
-    for dir in $(ls -d */)
+    for dir in $(ls -d */ | grep "-")
     do
         cp -r ${dir}/elastos* ${DOCKER_VOLUME}/${dir}
     done
@@ -28,3 +28,5 @@ setup_node "ela-arbitrator/node_origin"
 setup_node "ela-sidechain/did"
 
 setup_node "ela-sidechain/token"
+
+setup_node "ela-sidechain/eth"

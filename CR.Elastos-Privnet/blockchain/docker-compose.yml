@@ -22,8 +22,6 @@ services:
   privnet-mainchain-crc-1:
     container_name: privnet-mainchain-crc-1
     image: cyberrepublic/elastos-mainchain-node:v0.3.3
-    depends_on:
-      - privnet-mainchain-node
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-crc-1:/ela/elastos
       - ${PWD}/ela-mainchain/node_crc/mainchain-crc-1/config.json:/ela/config.json
@@ -37,8 +35,6 @@ services:
   privnet-mainchain-crc-2:
     container_name: privnet-mainchain-crc-2
     image: cyberrepublic/elastos-mainchain-node:v0.3.3
-    depends_on:
-      - privnet-mainchain-node
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-crc-2:/ela/elastos
       - ${PWD}/ela-mainchain/node_crc/mainchain-crc-2/config.json:/ela/config.json
@@ -52,8 +48,6 @@ services:
   privnet-mainchain-dpos-1:
     container_name: privnet-mainchain-dpos-1
     image: cyberrepublic/elastos-mainchain-node:v0.3.3
-    depends_on:
-      - privnet-mainchain-node
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-dpos-1:/ela/elastos
       - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-1/config.json:/ela/config.json
@@ -67,8 +61,6 @@ services:
   privnet-mainchain-dpos-2:
     container_name: privnet-mainchain-dpos-2
     image: cyberrepublic/elastos-mainchain-node:v0.3.3
-    depends_on:
-      - privnet-mainchain-node
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-dpos-2:/ela/elastos
       - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-2/config.json:/ela/config.json
@@ -84,8 +76,6 @@ services:
     image: cyberrepublic/elastos-arbitrator-node:v0.1.1
     depends_on:
       - privnet-mainchain-crc-1
-      - privnet-sidechain-did-1
-      - privnet-sidechain-token-1
     volumes:
       - ~/.volumes/elastos-privnet/arbitrator-crc-1:/arbiter/elastos_arbiter
       - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-1/config.json:/arbiter/config.json
@@ -101,8 +91,6 @@ services:
     image: cyberrepublic/elastos-arbitrator-node:v0.1.1
     depends_on:
       - privnet-mainchain-crc-2
-      - privnet-sidechain-did-2
-      - privnet-sidechain-token-2
     volumes:
       - ~/.volumes/elastos-privnet/arbitrator-crc-2:/arbiter/elastos_arbiter
       - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-2/config.json:/arbiter/config.json
@@ -118,8 +106,6 @@ services:
     image: cyberrepublic/elastos-arbitrator-node:v0.1.1
     depends_on:
       - privnet-mainchain-dpos-1
-      - privnet-sidechain-did-1
-      - privnet-sidechain-token-1
     volumes:
       - ~/.volumes/elastos-privnet/arbitrator-origin-1:/arbiter/elastos_arbiter
       - ${PWD}/ela-arbitrator/node_origin/arbitrator-origin-1/config.json:/arbiter/config.json
@@ -135,8 +121,6 @@ services:
     image: cyberrepublic/elastos-arbitrator-node:v0.1.1
     depends_on:
       - privnet-mainchain-dpos-2
-      - privnet-sidechain-did-2
-      - privnet-sidechain-token-2
     volumes:
       - ~/.volumes/elastos-privnet/arbitrator-origin-2:/arbiter/elastos_arbiter
       - ${PWD}/ela-arbitrator/node_origin/arbitrator-origin-2/config.json:/arbiter/config.json
@@ -150,10 +134,6 @@ services:
   privnet-sidechain-did-1:
     container_name: privnet-sidechain-did-1
     image: cyberrepublic/elastos-sidechain-did-node:v0.1.2
-    depends_on:
-      - privnet-mainchain-node
-      - privnet-mainchain-dpos-1
-      - privnet-mainchain-crc-1
     volumes:
       - ~/.volumes/elastos-privnet/did-1:/did/elastos_did
       - ${PWD}/ela-sidechain/did/did-1/config.json:/did/config.json
@@ -166,10 +146,6 @@ services:
   privnet-sidechain-did-2:
     container_name: privnet-sidechain-did-2
     image: cyberrepublic/elastos-sidechain-did-node:v0.1.2
-    depends_on:
-      - privnet-mainchain-node
-      - privnet-mainchain-dpos-2
-      - privnet-mainchain-crc-2
     volumes:
       - ~/.volumes/elastos-privnet/did-2:/did/elastos_did
       - ${PWD}/ela-sidechain/did/did-2/config.json:/did/config.json
@@ -182,10 +158,6 @@ services:
   privnet-sidechain-token-1:
     container_name: privnet-sidechain-token-1
     image: cyberrepublic/elastos-sidechain-token-node:v0.1.2
-    depends_on:
-      - privnet-mainchain-node
-      - privnet-mainchain-dpos-1
-      - privnet-mainchain-crc-1
     volumes:
       - ~/.volumes/elastos-privnet/token-1:/token/elastos_token
       - ${PWD}/ela-sidechain/token/token-1/config.json:/token/config.json
@@ -198,15 +170,63 @@ services:
   privnet-sidechain-token-2:
     container_name: privnet-sidechain-token-2
     image: cyberrepublic/elastos-sidechain-token-node:v0.1.2
-    depends_on:
-      - privnet-mainchain-node
-      - privnet-mainchain-dpos-2
-      - privnet-mainchain-crc-2
     volumes:
       - ~/.volumes/elastos-privnet/token-2:/token/elastos_token
       - ${PWD}/ela-sidechain/token/token-2/config.json:/token/config.json
     ports:
       - 40211-40215:20614-20618
+    networks:
+      - blockchain
+    tty: true 
+
+  privnet-sidechain-eth-1:
+    container_name: privnet-sidechain-eth-1
+    image: cyberrepublic/elastos-sidechain-eth-node:privnet-v0.4
+    volumes:
+      - ~/.volumes/elastos-privnet/eth-1:/eth/elastos_eth
+    ports:
+      - 60111:8545
+      - 60112:30303
+    networks:
+      - blockchain
+    tty: true 
+
+  privnet-sidechain-eth-2:
+    container_name: privnet-sidechain-eth-2
+    image: cyberrepublic/elastos-sidechain-eth-node:privnet-v0.4
+    depends_on:
+      - privnet-mainchain-node
+      - privnet-mainchain-dpos-2
+      - privnet-mainchain-crc-2
+    volumes:
+      - ~/.volumes/elastos-privnet/eth-2:/eth/elastos_eth
+    ports:
+      - 60211:8545
+      - 60212:30303
+    networks:
+      - blockchain
+    tty: true 
+
+  privnet-sidechain-eth-oracle-1:
+    container_name: privnet-sidechain-eth-oracle-1
+    image: cyberrepublic/elastos-sidechain-eth-oracle:privnet-v0.4
+    volumes:
+      - ${PWD}/ela-sidechain/eth/oracle/oracle-1/common.js:/oracle/common.js
+      - ${PWD}/ela-sidechain/eth/oracle/oracle-1/ctrt.js:/oracle/ctrt.js
+    ports:
+      - 60113:16666
+    networks:
+      - blockchain
+    tty: true 
+
+  privnet-sidechain-eth-oracle-2:
+    container_name: privnet-sidechain-eth-oracle-2
+    image: cyberrepublic/elastos-sidechain-eth-oracle:privnet-v0.4
+    volumes:
+      - ${PWD}/ela-sidechain/eth/oracle/oracle-2/common.js:/oracle/common.js
+      - ${PWD}/ela-sidechain/eth/oracle/oracle-2/ctrt.js:/oracle/ctrt.js
+    ports:
+      - 60213:16666
     networks:
       - blockchain
     tty: true 

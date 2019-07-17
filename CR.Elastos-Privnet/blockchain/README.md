@@ -34,6 +34,7 @@ These are located in the `wallets` folder:
 - [Elastos.ELA.Arbiter](https://github.com/elastos/Elastos.ELA.Arbiter): v0.1.1
 - [Elastos.ELA.SideChain.ID](https://github.com/elastos/Elastos.ELA.Sidechain.ID): v0.1.2
 - [Elastos.ELA.SideChain.Token](https://github.com/elastos/Elastos.ELA.SideChain.Token): v0.1.2
+- [Elastos.ELA.SideChain.ETH](https://github.com/elastos/Elastos.ELA.SideChain.ETH): dev
 - [Elastos.ORG.Wallet.Service](https://github.com/elastos/Elastos.ORG.Wallet.Service): master
 - [Elastos.ORG.SideChain.Service](https://github.com/elastos/Elastos.ORG.SideChain.Service): master
 - [Elastos.ORG.API.Misc](https://github.com/elastos/Elastos.ORG.API.Misc): master
@@ -376,8 +377,8 @@ These are located in the `wallets` folder:
         "127.0.0.1:10016",
         "127.0.0.1:10116",
         "127.0.0.1:10216",
-        "127.0.0.1:10316",
-        "127.0.0.1:10416"
+        "127.0.0.1:10516",
+        "127.0.0.1:10616"
       ],
       "HttpRestStart": true,
       "EnableRPC": true,

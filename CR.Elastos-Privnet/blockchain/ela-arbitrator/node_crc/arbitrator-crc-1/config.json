@@ -45,6 +45,19 @@
                 "MiningAddr":"EamRAVSKik9XTfC485KZpxcmk4KhmPZCea",
                 "PayToAddr":"EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U",
                 "PowChain":true
+            },
+            {
+                "Rpc":{
+                    "IpAddress":"privnet-sidechain-eth-oracle-1",
+                    "HttpJsonPort": 16666,
+                    "Pass":"",
+                    "User":""
+                },
+                "ExchangeRate": 1.0,
+                "GenesisBlock":"f876531be9c64bad24ca03960046f82d0f75dce18a5faf677d3af56f9f1f99df",
+                "MiningAddr":"EQDEN2Eg7EacPenfyBcaTA96PD5CBpKNTM",
+                "PayToAddr":"EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U",
+                "PowChain":false
             }
         ],
         "OriginCrossChainArbiters": [
