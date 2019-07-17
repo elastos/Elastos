@@ -2,7 +2,6 @@ package wallet
 
 import (
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/common/config"
 )
 
 const (
@@ -17,6 +16,5 @@ const (
 var (
 	Wal    *Wallet
 	Store  blockchain.IChainStore
-	Config *config.Configuration
 	CoinCP *CoinsCheckPoint
 )

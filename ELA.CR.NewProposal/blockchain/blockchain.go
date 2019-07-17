@@ -128,6 +128,56 @@ func New(db IChainStore, chainParams *config.Params, state *state.State,
 	return &chain, nil
 }
 
+// InitCheckPoint go through all blocks since the genesis block
+// to initialize all checkpoint.
+func (b *BlockChain) InitCheckPoint(interrupt <-chan struct{},
+	start func(total uint32), increase func()) (err error) {
+	bestHeight := b.db.GetHeight()
+	log.Info("current block height ->", bestHeight)
+	done := make(chan struct{})
+	go func() {
+		// Notify initialize process start.
+		if start != nil {
+			start(bestHeight + 1)
+		}
+		for i := uint32(0); i <= bestHeight; i++ {
+			hash, e := b.db.GetBlockHash(i)
+			if e != nil {
+				err = e
+				break
+			}
+			block, e := b.db.GetBlock(hash)
+			if e != nil {
+				err = e
+				break
+			}
+			haveConfirm := true
+			confirm, e := b.db.GetConfirm(hash)
+			if e != nil {
+				haveConfirm = false
+			}
+			b.chainParams.CkpManager.OnBlockSaved(&DposBlock{
+				Block:       block,
+				HaveConfirm: haveConfirm,
+				Confirm:     confirm,
+			}, nil)
+
+			// Notify process increase.
+			if increase != nil {
+				increase()
+			}
+		}
+		done <- struct{}{}
+	}()
+
+	select {
+	case <-done:
+	case <-interrupt:
+	}
+
+	return err
+}
+
 // InitProducerState go through all blocks since the start of DPOS
 // consensus to initialize producers and votes state.
 func (b *BlockChain) InitProducerState(interrupt <-chan struct{},

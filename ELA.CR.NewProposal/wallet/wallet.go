@@ -18,6 +18,7 @@ type AddressInfo struct {
 
 type Wallet struct {
 	addressBook map[string]*AddressInfo
+	coinsCP     *CoinsCheckPoint
 	FileStore
 }
 
@@ -43,7 +44,7 @@ func (w *Wallet) LoadAddresses() error {
 	return nil
 }
 
-func (w *Wallet) ImportPubkey(pubKey []byte) error {
+func (w *Wallet) ImportPubkey(pubKey []byte, enableUtxoDB bool) error {
 	pk, err := crypto.DecodePoint(pubKey)
 	if err != nil {
 		return errors.New("invalid public key")
@@ -66,14 +67,14 @@ func (w *Wallet) ImportPubkey(pubKey []byte) error {
 		code:    sc.Code,
 	}
 
-	if Config.EnableUtxoDB {
+	if enableUtxoDB {
 		return nil
 	}
 
-	return CoinCP.RescanWallet()
+	return w.coinsCP.RescanWallet()
 }
 
-func (w *Wallet) ImportAddress(address string) error {
+func (w *Wallet) ImportAddress(address string, enableUtxoDB bool) error {
 	_, err := common.Uint168FromAddress(address)
 	if err != nil {
 		return errors.New("invalid address")
@@ -88,18 +89,19 @@ func (w *Wallet) ImportAddress(address string) error {
 		code:    nil,
 	}
 
-	if Config.EnableUtxoDB {
+	if enableUtxoDB {
 		return nil
 	}
 
-	return CoinCP.RescanWallet()
+	return w.coinsCP.RescanWallet()
 }
 
-func New(dataDir string) *Wallet {
+func New(dataDir string, coinsCP *CoinsCheckPoint) *Wallet {
 	walletPath := filepath.Join(dataDir, "wallet.dat")
 	wallet := Wallet{
 		addressBook: make(map[string]*AddressInfo, 0),
 		FileStore:   FileStore{path: walletPath},
+		coinsCP:     coinsCP,
 	}
 
 	exist := utils.FileExisted(walletPath)
