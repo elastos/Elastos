@@ -23,6 +23,10 @@ export default class extends BaseService {
     return rs
   }
 
+  async resetData() {
+    this.dispatch(this.selfRedux.actions.data_update(undefined))
+  }
+
   async createDraft(param) {
     const path = `${this.prefixPath}/create_draft`
 

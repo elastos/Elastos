@@ -29,6 +29,9 @@ const mapDispatch = () => {
     async getData(param) {
       return service.getData(param)
     },
+    async resetData() {
+      return service.resetData()
+    },
     async createCVote(param) {
       return service.createCVote(param)
     },

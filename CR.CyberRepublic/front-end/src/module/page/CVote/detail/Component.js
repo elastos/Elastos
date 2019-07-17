@@ -91,6 +91,10 @@ class C extends StandardPage {
     await this.refetch()
   }
 
+  componentWillUnmount() {
+    this.props.resetData()
+  }
+
   refetch = async () => {
     const param = {
       id: _.get(this.props.match, 'params.id')
