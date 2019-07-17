@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package main
 
 import (
@@ -12,8 +17,11 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
+	crstate "github.com/elastos/Elastos.ELA/cr/state"
 	"github.com/elastos/Elastos.ELA/dpos"
 	"github.com/elastos/Elastos.ELA/dpos/account"
 	dlog "github.com/elastos/Elastos.ELA/dpos/log"
@@ -148,7 +156,7 @@ func startNode(c *cli.Context) {
 	defer chainStore.Close()
 	ledger.Store = chainStore // fixme
 
-	dposStore, err = store.NewDposStore(dataDir)
+	dposStore, err = store.NewDposStore(dataDir, activeNetParams)
 	if err != nil {
 		printErrorAndExit(err)
 	}
@@ -160,7 +168,7 @@ func startNode(c *cli.Context) {
 
 	blockchain.DefaultLedger = &ledger // fixme
 
-	arbiters, err := state.NewArbitrators(activeNetParams, nil,
+	arbiters, err := state.NewArbitrators(activeNetParams, dposStore,
 		chainStore.GetHeight, func() (*types.Block, error) {
 			hash := chainStore.GetCurrentBlockHash()
 			block, err := chainStore.GetBlock(hash)
@@ -180,13 +188,29 @@ func startNode(c *cli.Context) {
 			}
 			blockchain.CalculateTxsFee(block)
 			return block, nil
+		}, func(programHash common.Uint168) (common.Fixed64,
+			error) {
+			amount := common.Fixed64(0)
+			utxos, err := blockchain.DefaultLedger.Store.
+				GetUnspentFromProgramHash(programHash, config.ELAAssetID)
+			if err != nil {
+				return amount, err
+			}
+			for _, utxo := range utxos {
+				amount += utxo.Value
+			}
+			return amount, nil
 		})
 	if err != nil {
 		printErrorAndExit(err)
 	}
 	ledger.Arbitrators = arbiters // fixme
 
-	chain, err := blockchain.New(chainStore, activeNetParams, arbiters.State)
+	committee := crstate.NewCommittee(activeNetParams)
+	ledger.Committee = committee
+
+	chain, err := blockchain.New(chainStore, activeNetParams, arbiters.State,
+		committee)
 	if err != nil {
 		printErrorAndExit(err)
 	}

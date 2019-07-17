@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package api
 
 import (
@@ -172,7 +177,7 @@ func initLedger(L *lua.LState) int {
 	if err != nil {
 		fmt.Printf("Init chain store error: %s \n", err.Error())
 	}
-	dposStore, err := store.NewDposStore(test.DataPath)
+	dposStore, err := store.NewDposStore(test.DataPath, chainParams)
 	if err != nil {
 		fmt.Printf("Init dpos store error: %s \n", err.Error())
 	}
@@ -188,11 +193,11 @@ func initLedger(L *lua.LState) int {
 				return nil, err
 			}
 			return chainStore.GetBlock(hash)
-		})
+		}, nil)
 
 	var interrupt = signal.NewInterrupt()
 	chain, err := blockchain.New(chainStore, chainParams,
-		state.NewState(chainParams, arbiters.GetArbitrators))
+		state.NewState(chainParams, arbiters.GetArbitrators, nil), nil)
 	if err != nil {
 		fmt.Printf("Init block chain error: %s \n", err.Error())
 	}
@@ -269,6 +274,8 @@ func RegisterDataType(L *lua.LState) int {
 	RegisterStringsType(L)
 	RegisterSidechainPowType(L)
 	RegisterProgramType(L)
-
+	RegisterRegisterCRType(L)
+	RegisterUpdateCRType(L)
+	RegisterUnregisterCRType(L)
 	return 0
 }

@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package blockchain
 
 import (
@@ -72,9 +77,14 @@ func checkBlockWithConfirmation(block *Block, confirm *payload.Confirm) error {
 
 	if err := ConfirmContextCheck(confirm); err != nil {
 		// rollback to the state before this method
-		if e := DefaultLedger.Arbitrators.RollbackTo(block.
-			Height - 1); e != nil {
-			panic("rollback fail when check block with confirmation")
+		if e := DefaultLedger.Arbitrators.RollbackTo(block.Height - 1);
+			e != nil {
+			panic("rollback arbitrators fail when check block with" +
+				" confirmation")
+		}
+		if e := DefaultLedger.Committee.RollbackTo(block.Height - 1);
+			e != nil {
+			panic("rollback CRC fail when check block with confirmation")
 		}
 		return err
 	}

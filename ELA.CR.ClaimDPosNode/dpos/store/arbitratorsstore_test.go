@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package store
 
 import (
@@ -6,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -21,7 +27,7 @@ var arbitratorsStore *DposStore
 func TestArbitratorsStore_Open(t *testing.T) {
 	log.Init(0, 20, 100)
 
-	store, err := NewDposStore(test.DataPath)
+	store, err := NewDposStore(test.DataPath, &config.DefaultParams)
 	if err != nil {
 		t.Error("open database failed:", err.Error())
 	}
@@ -284,8 +290,11 @@ func randomVotes() *types.Output {
 			Contents: []outputpayload.VoteContent{
 				{
 					VoteType: outputpayload.Delegate,
-					Candidates: [][]byte{
-						randomFakePK(),
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{
+							Candidate: randomFakePK(),
+							Votes:     common.Fixed64(rand.Uint64()),
+						},
 					},
 				},
 			},

@@ -1,9 +1,15 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+//
+
 package blockchain
 
 import (
 	"bytes"
 	"crypto/elliptic"
 	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"math"
 	mrand "math/rand"
@@ -17,6 +23,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	crstate "github.com/elastos/Elastos.ELA/cr/state"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/utils/test"
@@ -45,7 +52,9 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	if err != nil {
 		s.Error(err)
 	}
-	s.Chain, err = New(chainStore, params, state.NewState(params, nil))
+	s.Chain, err = New(chainStore, params,
+		state.NewState(params, nil, nil),
+		crstate.NewCommittee(params))
 	if err != nil {
 		s.Error(err)
 	}
@@ -56,7 +65,7 @@ func (s *txValidatorTestSuite) SetupSuite() {
 		chainStore.GetHeight, func() (*types.Block, error) {
 			hash := chainStore.GetCurrentBlockHash()
 			return chainStore.GetBlock(hash)
-		}, nil)
+		}, nil, nil)
 	if err != nil {
 		s.Fail("initialize arbitrator failed")
 	}
@@ -66,6 +75,64 @@ func (s *txValidatorTestSuite) SetupSuite() {
 func (s *txValidatorTestSuite) TearDownSuite() {
 	s.Chain.db.Close()
 	DefaultLedger = s.OriginalLedger
+}
+
+func (s *txValidatorTestSuite) TestCheckTxHeightVersion() {
+	// set blockHeight1 less than CRVotingStartHeight and set blockHeight2
+	// to CRVotingStartHeight.
+	blockHeight1 := s.Chain.chainParams.CRVotingStartHeight - 1
+	blockHeight2 := s.Chain.chainParams.CRVotingStartHeight
+
+	// check height version of registerCR transaction.
+	registerCR := &types.Transaction{TxType: types.RegisterCR}
+	err := s.Chain.checkTxHeightVersion(registerCR, blockHeight1)
+	s.EqualError(err, "not support before CRVotingStartHeight")
+	err = s.Chain.checkTxHeightVersion(registerCR, blockHeight2)
+	s.NoError(err)
+
+	// check height version of updateCR transaction.
+	updateCR := &types.Transaction{TxType: types.UpdateCR}
+	err = s.Chain.checkTxHeightVersion(updateCR, blockHeight1)
+	s.EqualError(err, "not support before CRVotingStartHeight")
+	err = s.Chain.checkTxHeightVersion(updateCR, blockHeight2)
+	s.NoError(err)
+
+	// check height version of unregister transaction.
+	unregisterCR := &types.Transaction{TxType: types.UnregisterCR}
+	err = s.Chain.checkTxHeightVersion(unregisterCR, blockHeight1)
+	s.EqualError(err, "not support before CRVotingStartHeight")
+	err = s.Chain.checkTxHeightVersion(unregisterCR, blockHeight2)
+	s.NoError(err)
+
+	// check height version of unregister transaction.
+	returnCoin := &types.Transaction{TxType: types.ReturnCRDepositCoin}
+	err = s.Chain.checkTxHeightVersion(returnCoin, blockHeight1)
+	s.EqualError(err, "not support before CRVotingStartHeight")
+	err = s.Chain.checkTxHeightVersion(returnCoin, blockHeight2)
+	s.NoError(err)
+
+	// check height version of vote CR.
+	voteCR := &types.Transaction{
+		Version: 0x09,
+		TxType:  types.TransferAsset,
+		Outputs: []*types.Output{
+			{
+				AssetID:     common.Uint256{},
+				Value:       0,
+				OutputLock:  0,
+				ProgramHash: common.Uint168{},
+				Type:        types.OTVote,
+				Payload: &outputpayload.VoteOutput{
+					Version: outputpayload.VoteProducerAndCRVersion,
+				},
+			},
+		},
+	}
+	err = s.Chain.checkTxHeightVersion(voteCR, blockHeight1)
+	s.EqualError(err, "not support VoteProducerAndCRVersion "+
+		"before CRVotingStartHeight")
+	err = s.Chain.checkTxHeightVersion(voteCR, blockHeight2)
+	s.NoError(err)
 }
 
 func (s *txValidatorTestSuite) TestCheckTransactionSize() {
@@ -302,7 +369,7 @@ func (s *txValidatorTestSuite) TestCheckAttributeProgram() {
 		attr := types.NewAttribute(usage, nil)
 		tx.Attributes = append(tx.Attributes, &attr)
 	}
-	err := checkAttributeProgram(tx)
+	err := s.Chain.checkAttributeProgram(tx, 0)
 	s.EqualError(err, "no programs found in transaction")
 
 	// invalid attributes
@@ -318,20 +385,20 @@ func (s *txValidatorTestSuite) TestCheckAttributeProgram() {
 	for i := 0; i < 10; i++ {
 		attr := types.NewAttribute(getInvalidUsage(), nil)
 		tx.Attributes = []*types.Attribute{&attr}
-		err := checkAttributeProgram(tx)
+		err := s.Chain.checkAttributeProgram(tx, 0)
 		s.EqualError(err, fmt.Sprintf("invalid attribute usage %v", attr.Usage))
 	}
 	tx.Attributes = nil
 
 	// empty programs
 	tx.Programs = []*program.Program{}
-	err = checkAttributeProgram(tx)
+	err = s.Chain.checkAttributeProgram(tx, 0)
 	s.EqualError(err, "no programs found in transaction")
 
 	// nil program code
 	p := &program.Program{}
 	tx.Programs = append(tx.Programs, p)
-	err = checkAttributeProgram(tx)
+	err = s.Chain.checkAttributeProgram(tx, 0)
 	s.EqualError(err, "invalid program code nil")
 
 	// nil program parameter
@@ -339,7 +406,7 @@ func (s *txValidatorTestSuite) TestCheckAttributeProgram() {
 	rand.Read(code)
 	p = &program.Program{Code: code}
 	tx.Programs = []*program.Program{p}
-	err = checkAttributeProgram(tx)
+	err = s.Chain.checkAttributeProgram(tx, 0)
 	s.EqualError(err, "invalid program parameter nil")
 }
 
@@ -631,9 +698,166 @@ func getCode(publicKey string) []byte {
 }
 
 func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
-	// 1. Generate a vote output
+	// 1. Generate a vote output v0
 	publicKeyStr1 := "02b611f07341d5ddce51b5c4366aca7b889cfe0993bd63fd47e944507292ea08dd"
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+	outputs1 := []*types.Output{
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: 0,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 0},
+						},
+					},
+				},
+			},
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: 0,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType:       outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{},
+					},
+				},
+			},
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: 0,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 0},
+							{publicKey1, 0},
+						},
+					},
+				},
+			},
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: 2,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 0},
+						},
+					},
+				},
+			},
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: 0,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 0},
+						},
+					},
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 0},
+						},
+					},
+				},
+			},
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: 0,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: 2,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 0},
+						},
+					},
+				},
+			},
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: 0,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 0},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	// 2. Check output payload v0
+	err := outputs1[0].Payload.(*outputpayload.VoteOutput).Validate()
+	s.NoError(err)
+
+	err = outputs1[1].Payload.(*outputpayload.VoteOutput).Validate()
+	s.EqualError(err, "invalid public key count")
+
+	err = outputs1[2].Payload.(*outputpayload.VoteOutput).Validate()
+	s.EqualError(err, "duplicate candidate")
+
+	err = outputs1[3].Payload.(*outputpayload.VoteOutput).Validate()
+	s.EqualError(err, "invalid vote version")
+
+	err = outputs1[4].Payload.(*outputpayload.VoteOutput).Validate()
+	s.EqualError(err, "duplicate vote type")
+
+	err = outputs1[5].Payload.(*outputpayload.VoteOutput).Validate()
+	s.EqualError(err, "invalid vote type")
+
+	err = outputs1[6].Payload.(*outputpayload.VoteOutput).Validate()
+	s.NoError(err)
+
+	// 3. Generate a vote output v1
 	outputs := []*types.Output{
 		&types.Output{
 			AssetID:     common.Uint256{},
@@ -642,12 +866,12 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 			ProgramHash: common.Uint168{123},
 			Type:        types.OTVote,
 			Payload: &outputpayload.VoteOutput{
-				Version: 0,
+				Version: outputpayload.VoteProducerAndCRVersion,
 				Contents: []outputpayload.VoteContent{
 					outputpayload.VoteContent{
 						VoteType: outputpayload.Delegate,
-						Candidates: [][]byte{
-							publicKey1,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 1},
 						},
 					},
 				},
@@ -660,11 +884,11 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 			ProgramHash: common.Uint168{123},
 			Type:        types.OTVote,
 			Payload: &outputpayload.VoteOutput{
-				Version: 0,
+				Version: outputpayload.VoteProducerAndCRVersion,
 				Contents: []outputpayload.VoteContent{
 					outputpayload.VoteContent{
-						VoteType:   outputpayload.Delegate,
-						Candidates: [][]byte{},
+						VoteType:       outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{},
 					},
 				},
 			},
@@ -676,13 +900,91 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 			ProgramHash: common.Uint168{123},
 			Type:        types.OTVote,
 			Payload: &outputpayload.VoteOutput{
-				Version: 0,
+				Version: outputpayload.VoteProducerAndCRVersion,
 				Contents: []outputpayload.VoteContent{
 					outputpayload.VoteContent{
 						VoteType: outputpayload.Delegate,
-						Candidates: [][]byte{
-							publicKey1,
-							publicKey1,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 1},
+							{publicKey1, 1},
+						},
+					},
+				},
+			},
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: 2,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 1},
+						},
+					},
+				},
+			},
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: outputpayload.VoteProducerAndCRVersion,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 1},
+						},
+					},
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 1},
+						},
+					},
+				},
+			},
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: outputpayload.VoteProducerAndCRVersion,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: 2,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 1},
+						},
+					},
+				},
+			},
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       1.0,
+			OutputLock:  0,
+			ProgramHash: common.Uint168{123},
+			Type:        types.OTVote,
+			Payload: &outputpayload.VoteOutput{
+				Version: outputpayload.VoteProducerAndCRVersion,
+				Contents: []outputpayload.VoteContent{
+					outputpayload.VoteContent{
+						VoteType: outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 0},
 						},
 					},
 				},
@@ -690,8 +992,8 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 		},
 	}
 
-	// 2. Check output payload
-	err := outputs[0].Payload.(*outputpayload.VoteOutput).Validate()
+	// 2. Check output payload v1
+	err = outputs[0].Payload.(*outputpayload.VoteOutput).Validate()
 	s.NoError(err)
 
 	err = outputs[1].Payload.(*outputpayload.VoteOutput).Validate()
@@ -699,6 +1001,18 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 
 	err = outputs[2].Payload.(*outputpayload.VoteOutput).Validate()
 	s.EqualError(err, "duplicate candidate")
+
+	err = outputs[3].Payload.(*outputpayload.VoteOutput).Validate()
+	s.EqualError(err, "invalid vote version")
+
+	err = outputs[4].Payload.(*outputpayload.VoteOutput).Validate()
+	s.EqualError(err, "duplicate vote type")
+
+	err = outputs[5].Payload.(*outputpayload.VoteOutput).Validate()
+	s.EqualError(err, "invalid vote type")
+
+	err = outputs[6].Payload.(*outputpayload.VoteOutput).Validate()
+	s.EqualError(err, "invalid candidate votes")
 }
 
 func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
@@ -713,7 +1027,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 
 	txn := new(types.Transaction)
 	txn.TxType = types.RegisterProducer
-	updatePayload := &payload.ProducerInfo{
+	registerPayload := &payload.ProducerInfo{
 		OwnerPublicKey: publicKey1,
 		NodePublicKey:  publicKey1,
 		NickName:       "",
@@ -721,7 +1035,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 		Location:       1,
 		NetAddress:     "",
 	}
-	txn.Payload = updatePayload
+	txn.Payload = registerPayload
 
 	txn.Programs = []*program.Program{{
 		Code:      getCode(publicKeyStr1),
@@ -733,6 +1047,18 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 			txn,
 		},
 	}
+	s.Chain.state.ProcessBlock(block, nil)
+
+	txn.TxType = types.UpdateProducer
+	updatePayload := &payload.ProducerInfo{
+		OwnerPublicKey: publicKey1,
+		NodePublicKey:  publicKey1,
+		NickName:       "",
+		Url:            "",
+		Location:       2,
+		NetAddress:     "",
+	}
+	txn.Payload = updatePayload
 	s.Chain.state.ProcessBlock(block, nil)
 
 	s.EqualError(s.Chain.checkUpdateProducerTransaction(txn), "Field NickName has invalid string length.")
@@ -841,6 +1167,564 @@ func (s *txValidatorTestSuite) TestCheckActivateProducerTransaction() {
 		"invalid signature in payload")
 }
 
+func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
+	// Generate a register CR transaction
+	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
+	privateKeyStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
+	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
+	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
+	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
+	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
+	nickName1 := "nickname 1"
+
+	hash1, _ := getDepositAddress(publicKeyStr1)
+	hash2, _ := getDepositAddress(publicKeyStr2)
+
+	txn := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
+
+	code1 := getCode(publicKeyStr1)
+	code2 := getCode(publicKeyStr2)
+	codeStr1 := common.BytesToHexString(code1)
+
+	did1 := getDid(code1)
+	did2 := getDid(code2)
+
+	votingHeight := config.DefaultParams.CRVotingStartHeight
+
+	// all ok
+	err := s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.NoError(err)
+
+	//invalid payload
+	txnUpdateCr := s.getUnregisterCRTx(publicKeyStr1, privateKeyStr1)
+	err = s.Chain.checkRegisterCRTransaction(txnUpdateCr, votingHeight)
+	s.EqualError(err, "invalid payload")
+
+	// Give an invalid NickName length 0 in payload
+	nickName := txn.Payload.(*payload.CRInfo).NickName
+	txn.Payload.(*payload.CRInfo).NickName = ""
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.EqualError(err, "Field NickName has invalid string length.")
+
+	// Give an invalid NickName length more than 100 in payload
+	txn.Payload.(*payload.CRInfo).NickName = "012345678901234567890123456789012345678901234567890" +
+		"12345678901234567890123456789012345678901234567890123456789"
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.EqualError(err, "Field NickName has invalid string length.")
+
+	// Give an invalid url length 0 in payload
+	url := txn.Payload.(*payload.CRInfo).Url
+	txn.Payload.(*payload.CRInfo).Url = ""
+	txn.Payload.(*payload.CRInfo).NickName = nickName
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.EqualError(err, "Field Url has invalid string length.")
+
+	// Give an invalid url length more than 100 in payload
+	txn.Payload.(*payload.CRInfo).Url = "012345678901234567890123456789012345678901234567890" +
+		"12345678901234567890123456789012345678901234567890123456789"
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.EqualError(err, "Field Url has invalid string length.")
+
+	//not in vote Period lower
+	txn.Payload.(*payload.CRInfo).Url = url
+	err = s.Chain.checkRegisterCRTransaction(txn, config.DefaultParams.CRVotingStartHeight-1)
+	s.EqualError(err, "should create tx during voting period")
+
+	//not in vote Period lower upper c.params.CRCommitteeStartHeight
+	err = s.Chain.checkRegisterCRTransaction(txn, config.DefaultParams.CRCommitteeStartHeight+1)
+	s.EqualError(err, "should create tx during voting period")
+
+	//nickname already in use
+	s.Chain.crCommittee.GetState().Nicknames[nickName1] = struct{}{}
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.EqualError(err, "nick name nickname 1 already inuse")
+
+	delete(s.Chain.crCommittee.GetState().Nicknames, nickName1)
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.NoError(err)
+
+	err = s.Chain.checkRegisterCRTransaction(txn, 0)
+	s.EqualError(err, "should create tx during voting period")
+
+	//did aready exist
+	s.Chain.crCommittee.GetState().CodeDIDMap[codeStr1] = *did1
+	s.Chain.crCommittee.GetState().ActivityCandidates[*did1] = &crstate.Candidate{}
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.EqualError(err, "did "+
+		"67ae53989e21c3212dd9bfed6daeb56874782502dd already exist")
+
+	delete(s.Chain.crCommittee.GetState().CodeDIDMap, codeStr1)
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.NoError(err)
+
+	// Give an invalid code in payload
+	txn.Payload.(*payload.CRInfo).Code = []byte{}
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.EqualError(err, "code is nil")
+
+	// Give an invalid DID in payload
+	txn.Payload.(*payload.CRInfo).Code = code1
+	txn.Payload.(*payload.CRInfo).DID = common.Uint168{1, 2, 3}
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.EqualError(err, "invalid did address")
+
+	// Give a mismatching code and DID in payload
+	txn.Payload.(*payload.CRInfo).DID = *did2
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.EqualError(err, "invalid did address")
+
+	// Invalidates the signature in payload
+	txn.Payload.(*payload.CRInfo).DID = *did1
+	signatature := txn.Payload.(*payload.CRInfo).Signature
+	txn.Payload.(*payload.CRInfo).Signature = randomSignature()
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).Signature = signatature
+	s.EqualError(err, "[Validation], Verify failed.")
+
+	// Give a mismatching deposit address
+	outPuts := txn.Outputs
+	txn.Outputs = []*types.Output{&types.Output{
+		AssetID:     common.Uint256{},
+		Value:       5000 * 100000000,
+		OutputLock:  0,
+		ProgramHash: *hash2,
+		Payload:     new(outputpayload.DefaultOutput),
+	}}
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	txn.Outputs = outPuts
+	s.EqualError(err, "deposit address does not match the code in payload")
+
+	// Give a insufficient deposit coin
+	txn.Outputs = []*types.Output{&types.Output{
+		AssetID:     common.Uint256{},
+		Value:       4000 * 100000000,
+		OutputLock:  0,
+		ProgramHash: *hash1,
+		Payload:     new(outputpayload.DefaultOutput),
+	}}
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	txn.Outputs = outPuts
+	s.EqualError(err, "producer deposit amount is insufficient")
+
+	// Multi deposit addresses
+	txn.Outputs = []*types.Output{
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       5000 * 100000000,
+			OutputLock:  0,
+			ProgramHash: *hash1,
+			Payload:     new(outputpayload.DefaultOutput),
+		},
+		&types.Output{
+			AssetID:     common.Uint256{},
+			Value:       5000 * 100000000,
+			OutputLock:  0,
+			ProgramHash: *hash1,
+			Payload:     new(outputpayload.DefaultOutput),
+		}}
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	txn.Outputs = outPuts
+	s.EqualError(err, "there must be only one deposit address in outputs")
+
+	// Check correct register CR transaction with multi sign code.
+	txn = s.getMultiSigRegisterCRTx(
+		[]string{publicKeyStr1, publicKeyStr2, publicKeyStr3},
+		[]string{privateKeyStr1, privateKeyStr2, privateKeyStr3}, nickName1)
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.EqualError(err, "CR not support multi sign code")
+
+	txn = s.getMultiSigRegisterCRTx(
+		[]string{publicKeyStr1, publicKeyStr2, publicKeyStr3},
+		[]string{privateKeyStr1, privateKeyStr2}, nickName1)
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.EqualError(err, "CR not support multi sign code")
+
+	txn = s.getMultiSigRegisterCRTx(
+		[]string{publicKeyStr1, publicKeyStr2, publicKeyStr3},
+		[]string{privateKeyStr1}, nickName1)
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.EqualError(err, "CR not support multi sign code")
+}
+
+func getDepositAddress(publicKeyStr string) (*common.Uint168, error) {
+	publicKey, _ := common.HexStringToBytes(publicKeyStr)
+	hash, err := contract.PublicKeyToDepositProgramHash(publicKey)
+	if err != nil {
+		return nil, err
+	}
+	return hash, nil
+}
+
+func getDid(code []byte) *common.Uint168 {
+	ct1, _ := contract.CreateCRDIDContractByCode(code)
+	return ct1.ToProgramHash()
+}
+
+func (s *txValidatorTestSuite) getRegisterCRTx(publicKeyStr, privateKeyStr, nickName string) *types.Transaction {
+
+	publicKeyStr1 := publicKeyStr
+	privateKeyStr1 := privateKeyStr
+	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
+
+	code1 := getCode(publicKeyStr1)
+
+	ct1, _ := contract.CreateCRDIDContractByCode(code1)
+	did1 := ct1.ToProgramHash()
+
+	hash1, _ := contract.PublicKeyToDepositProgramHash(publicKey1)
+
+	txn := new(types.Transaction)
+	txn.TxType = types.RegisterCR
+	txn.Version = types.TxVersion09
+	crInfoPayload := &payload.CRInfo{
+		Code:     code1,
+		DID:      *did1,
+		NickName: nickName,
+		Url:      "http://www.elastos_test.com",
+		Location: 1,
+	}
+	signBuf := new(bytes.Buffer)
+	crInfoPayload.SerializeUnsigned(signBuf, payload.CRInfoVersion)
+	rcSig1, _ := crypto.Sign(privateKey1, signBuf.Bytes())
+	crInfoPayload.Signature = rcSig1
+	txn.Payload = crInfoPayload
+
+	txn.Programs = []*program.Program{&program.Program{
+		Code:      getCode(publicKeyStr1),
+		Parameter: nil,
+	}}
+
+	txn.Outputs = []*types.Output{&types.Output{
+		AssetID:     common.Uint256{},
+		Value:       5000 * 100000000,
+		OutputLock:  0,
+		ProgramHash: *hash1,
+		Type:        0,
+		Payload:     new(outputpayload.DefaultOutput),
+	}}
+	return txn
+}
+
+func (s *txValidatorTestSuite) getMultiSigRegisterCRTx(
+	publicKeyStrs, privateKeyStrs []string, nickName string) *types.Transaction {
+
+	var publicKeys []*crypto.PublicKey
+	for _, publicKeyStr := range publicKeyStrs {
+		publicKeyBytes, _ := hex.DecodeString(publicKeyStr)
+		publicKey, _ := crypto.DecodePoint(publicKeyBytes)
+		publicKeys = append(publicKeys, publicKey)
+	}
+
+	multiCode, _ := contract.CreateMultiSigRedeemScript(len(publicKeys)*2/3, publicKeys)
+
+	ctDID, _ := contract.CreateCRDIDContractByCode(multiCode)
+	did := ctDID.ToProgramHash()
+
+	ctDeposit, _ := contract.CreateDepositContractByCode(multiCode)
+	deposit := ctDeposit.ToProgramHash()
+
+	txn := new(types.Transaction)
+	txn.TxType = types.RegisterCR
+	txn.Version = types.TxVersion09
+	crInfoPayload := &payload.CRInfo{
+		Code:     multiCode,
+		DID:      *did,
+		NickName: nickName,
+		Url:      "http://www.elastos_test.com",
+		Location: 1,
+	}
+
+	signBuf := new(bytes.Buffer)
+	crInfoPayload.SerializeUnsigned(signBuf, payload.CRInfoVersion)
+	for _, privateKeyStr := range privateKeyStrs {
+		privateKeyBytes, _ := hex.DecodeString(privateKeyStr)
+		sig, _ := crypto.Sign(privateKeyBytes, signBuf.Bytes())
+		crInfoPayload.Signature = append(crInfoPayload.Signature, byte(len(sig)))
+		crInfoPayload.Signature = append(crInfoPayload.Signature, sig...)
+	}
+
+	txn.Payload = crInfoPayload
+	txn.Programs = []*program.Program{&program.Program{
+		Code:      multiCode,
+		Parameter: nil,
+	}}
+	txn.Outputs = []*types.Output{&types.Output{
+		AssetID:     common.Uint256{},
+		Value:       5000 * 100000000,
+		OutputLock:  0,
+		ProgramHash: *deposit,
+		Type:        0,
+		Payload:     new(outputpayload.DefaultOutput),
+	}}
+	return txn
+}
+
+func (s *txValidatorTestSuite) getUpdateCRTx(publicKeyStr, privateKeyStr, nickName string) *types.Transaction {
+
+	publicKeyStr1 := publicKeyStr
+	privateKeyStr1 := privateKeyStr
+	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
+	code1 := getCode(publicKeyStr1)
+	ct1, _ := contract.CreateCRDIDContractByCode(code1)
+	did1 := ct1.ToProgramHash()
+
+	txn := new(types.Transaction)
+	txn.TxType = types.UpdateCR
+	txn.Version = types.TxVersion09
+	crInfoPayload := &payload.CRInfo{
+		Code:     code1,
+		DID:      *did1,
+		NickName: nickName,
+		Url:      "http://www.elastos_test.com",
+		Location: 1,
+	}
+	signBuf := new(bytes.Buffer)
+	err := crInfoPayload.SerializeUnsigned(signBuf, payload.CRInfoVersion)
+	s.NoError(err)
+	rcSig1, err := crypto.Sign(privateKey1, signBuf.Bytes())
+	s.NoError(err)
+	crInfoPayload.Signature = rcSig1
+	txn.Payload = crInfoPayload
+
+	txn.Programs = []*program.Program{&program.Program{
+		Code:      getCode(publicKeyStr1),
+		Parameter: nil,
+	}}
+	return txn
+}
+
+func (s *txValidatorTestSuite) getUnregisterCRTx(publicKeyStr, privateKeyStr string) *types.Transaction {
+
+	publicKeyStr1 := publicKeyStr
+	privateKeyStr1 := privateKeyStr
+	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
+
+	code1 := getCode(publicKeyStr1)
+
+	txn := new(types.Transaction)
+	txn.TxType = types.UnregisterCR
+	txn.Version = types.TxVersion09
+	unregisterCRPayload := &payload.UnregisterCR{
+		Code: code1,
+	}
+	signBuf := new(bytes.Buffer)
+	err := unregisterCRPayload.SerializeUnsigned(signBuf, payload.UnregisterCRVersion)
+	s.NoError(err)
+	rcSig1, err := crypto.Sign(privateKey1, signBuf.Bytes())
+	s.NoError(err)
+	unregisterCRPayload.Signature = rcSig1
+	txn.Payload = unregisterCRPayload
+
+	txn.Programs = []*program.Program{&program.Program{
+		Code:      getCode(publicKeyStr1),
+		Parameter: nil,
+	}}
+	return txn
+}
+
+func (s *txValidatorTestSuite) TestCrInfoSanityCheck() {
+	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
+	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+
+	pk1, _ := crypto.DecodePoint(publicKey1)
+	ct1, _ := contract.CreateStandardContract(pk1)
+	hash1, _ := contract.PublicKeyToDepositProgramHash(publicKey1)
+
+	rcPayload := &payload.CRInfo{
+		Code:     ct1.Code,
+		DID:      *hash1,
+		NickName: "nickname 1",
+		Url:      "http://www.elastos_test.com",
+		Location: 1,
+	}
+
+	rcSignBuf := new(bytes.Buffer)
+	err := rcPayload.SerializeUnsigned(rcSignBuf, payload.CRInfoVersion)
+	s.NoError(err)
+
+	privateKeyStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
+	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
+	rcSig1, err := crypto.Sign(privateKey1, rcSignBuf.Bytes())
+	s.NoError(err)
+
+	//test ok
+	rcPayload.Signature = rcSig1
+	err = s.Chain.crInfoSanityCheck(rcPayload)
+	s.NoError(err)
+
+	//invalid code
+	rcPayload.Code = []byte{1, 2, 3, 4, 5}
+	err = s.Chain.crInfoSanityCheck(rcPayload)
+	s.EqualError(err, "invalid code")
+
+	//todo CHECKMULTISIG
+}
+
+func (s *txValidatorTestSuite) TestCheckUpdateCRTransaction() {
+
+	// Generate a UpdateCR CR transaction
+	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
+	privateKeyStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
+
+	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
+	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
+
+	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
+	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
+
+	nickName1 := "nickname 1"
+	nickName2 := "nickname 2"
+	nickName3 := "nickname 3"
+
+	votingHeight := config.DefaultParams.CRVotingStartHeight
+	//
+	//registe an cr to update
+	registerCRTxn1 := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
+	registerCRTxn2 := s.getRegisterCRTx(publicKeyStr2, privateKeyStr2, nickName2)
+
+	block := &types.Block{
+		Transactions: []*types.Transaction{
+			registerCRTxn1,
+			registerCRTxn2,
+		},
+	}
+	s.Chain.crCommittee.GetState().ProcessBlock(block, nil)
+
+	//ok nothing wrong
+	hash2, err := getDepositAddress(publicKeyStr2)
+	txn := s.getUpdateCRTx(publicKeyStr1, privateKeyStr1, nickName1)
+	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
+	s.NoError(err)
+
+	//invalid payload
+	unregisterTx := s.getUnregisterCRTx(publicKeyStr1, privateKeyStr1)
+	err = s.Chain.checkUpdateCRTransaction(unregisterTx, votingHeight)
+	s.EqualError(err, "invalid payload")
+	// Give an invalid NickName length 0 in payload
+	nickName := txn.Payload.(*payload.CRInfo).NickName
+	txn.Payload.(*payload.CRInfo).NickName = ""
+	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).NickName = nickName
+	s.EqualError(err, "Field NickName has invalid string length.")
+
+	// Give an invalid NickName length more than 100 in payload
+	txn.Payload.(*payload.CRInfo).NickName = "012345678901234567890123456789012345678901234567890" +
+		"12345678901234567890123456789012345678901234567890123456789"
+	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).NickName = nickName
+	s.EqualError(err, "Field NickName has invalid string length.")
+
+	// Give an invalid url length 0 in payload
+	url := txn.Payload.(*payload.CRInfo).Url
+	txn.Payload.(*payload.CRInfo).Url = ""
+	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).Url = url
+	s.EqualError(err, "Field Url has invalid string length.")
+
+	// Give an invalid url length more than 100 in payload
+	txn.Payload.(*payload.CRInfo).Url = "012345678901234567890123456789012345678901234567890" +
+		"12345678901234567890123456789012345678901234567890123456789"
+	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).Url = url
+	s.EqualError(err, "Field Url has invalid string length.")
+
+	// Give an invalid code in payload
+	code := txn.Payload.(*payload.CRInfo).Code
+	txn.Payload.(*payload.CRInfo).Code = []byte{1, 2, 3, 4, 5}
+	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).Code = code
+	s.EqualError(err, "invalid did address")
+
+	// Give an invalid DID in payload
+	did := txn.Payload.(*payload.CRInfo).DID
+	txn.Payload.(*payload.CRInfo).DID = common.Uint168{1, 2, 3}
+	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).DID = did
+	s.EqualError(err, "invalid did address")
+
+	// Give a mismatching code and DID in payload
+	txn.Payload.(*payload.CRInfo).DID = *hash2
+	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).DID = did
+	s.EqualError(err, "invalid did address")
+
+	// Invalidates the signature in payload
+	signatur := txn.Payload.(*payload.CRInfo).Signature
+	txn.Payload.(*payload.CRInfo).Signature = randomSignature()
+	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
+	txn.Payload.(*payload.CRInfo).Signature = signatur
+	s.EqualError(err, "[Validation], Verify failed.")
+
+	//not in vote Period lower
+	err = s.Chain.checkUpdateCRTransaction(txn, config.DefaultParams.CRVotingStartHeight-1)
+	s.EqualError(err, "should create tx during voting period")
+
+	//not in vote Period lower upper c.params.CRCommitteeStartHeight
+	err = s.Chain.checkUpdateCRTransaction(txn, config.DefaultParams.CRCommitteeStartHeight+1)
+	s.EqualError(err, "should create tx during voting period")
+
+	//updating unknown CR
+	txn3 := s.getUpdateCRTx(publicKeyStr3, privateKeyStr3, nickName3)
+	err = s.Chain.checkUpdateCRTransaction(txn3, votingHeight)
+	s.EqualError(err, "updating unknown CR")
+
+	//nick name already exist
+	txn1Copy := s.getUpdateCRTx(publicKeyStr1, privateKeyStr1, nickName2)
+	err = s.Chain.checkUpdateCRTransaction(txn1Copy, votingHeight)
+	str := fmt.Sprintf("nick name %s already exist", nickName2)
+	s.EqualError(err, str)
+
+}
+
+func (s *txValidatorTestSuite) TestCheckUnregisterCRTransaction() {
+
+	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
+	privateKeyStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
+
+	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
+	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
+
+	votingHeight := config.DefaultParams.CRVotingStartHeight
+	nickName1 := "nickname 1"
+
+	//registe an cr to unregister
+	registerCRTxn := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
+	block := &types.Block{
+		Transactions: []*types.Transaction{
+			registerCRTxn,
+		},
+	}
+	s.Chain.crCommittee.GetState().ProcessBlock(block, nil)
+	//ok
+	txn := s.getUnregisterCRTx(publicKeyStr1, privateKeyStr1)
+	err := s.Chain.checkUnRegisterCRTransaction(txn, votingHeight)
+	s.NoError(err)
+
+	//invalid payload need unregisterCR pass registerCr
+	registerTx := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
+	err = s.Chain.checkUnRegisterCRTransaction(registerTx, votingHeight)
+	s.EqualError(err, "invalid payload")
+
+	//not in vote Period lower
+	err = s.Chain.checkUnRegisterCRTransaction(txn, config.DefaultParams.CRVotingStartHeight-1)
+	s.EqualError(err, "should create tx during voting period")
+
+	//not in vote Period lower upper c.params.CRCommitteeStartHeight
+	err = s.Chain.checkUnRegisterCRTransaction(txn, config.DefaultParams.CRCommitteeStartHeight+1)
+	s.EqualError(err, "should create tx during voting period")
+
+	//unregister unknown CR
+	txn2 := s.getUnregisterCRTx(publicKeyStr2, privateKeyStr2)
+	err = s.Chain.checkUnRegisterCRTransaction(txn2, votingHeight)
+	s.EqualError(err, "unregister unknown CR")
+
+	//wrong signature
+	txn.Payload.(*payload.UnregisterCR).Signature = randomSignature()
+	err = s.Chain.checkUnRegisterCRTransaction(txn, votingHeight)
+	s.EqualError(err, "[Validation], Verify failed.")
+}
+
 func (s *txValidatorTestSuite) TestCheckStringField() {
 	s.NoError(checkStringField("Normal", "test"))
 	s.EqualError(checkStringField("", "test"), "Field test has invalid string length.")
@@ -860,7 +1744,8 @@ func (s *txValidatorTestSuite) TestCheckTransactionDepositUTXO() {
 	references[input] = depositOutput
 	txn.TxType = types.TransferAsset
 	err := checkTransactionDepositUTXO(&txn, references)
-	s.EqualError(err, "only the ReturnDepositCoin transaction can use the deposit UTXO")
+	s.EqualError(err, "only the ReturnDepositCoin and "+
+		"ReturnCRDepositCoin transaction can use the deposit UTXO")
 
 	// Use the deposit UTXO in a ReturnDepositCoin transaction
 	txn.TxType = types.ReturnDepositCoin
@@ -875,7 +1760,274 @@ func (s *txValidatorTestSuite) TestCheckTransactionDepositUTXO() {
 	references[input] = normalOutput
 	txn.TxType = types.ReturnDepositCoin
 	err = checkTransactionDepositUTXO(&txn, references)
-	s.EqualError(err, "the ReturnDepositCoin transaction can only use the deposit UTXO")
+	s.EqualError(err, "the ReturnDepositCoin and ReturnCRDepositCoin "+
+		"transaction can only use the deposit UTXO")
+
+	// Use the deposit UTXO in a ReturnDepositCoin transaction
+	references[input] = depositOutput
+	txn.TxType = types.ReturnCRDepositCoin
+	err = checkTransactionDepositUTXO(&txn, references)
+	s.NoError(err)
+
+	references[input] = normalOutput
+	txn.TxType = types.ReturnCRDepositCoin
+	err = checkTransactionDepositUTXO(&txn, references)
+	s.EqualError(err, "the ReturnDepositCoin and ReturnCRDepositCoin "+
+		"transaction can only use the deposit UTXO")
+}
+
+func (s txValidatorTestSuite) TestCheckReturnDepositCoinTransaction() {
+	height := uint32(1)
+	_, pk, _ := crypto.GenerateKeyPair()
+	depositCont, _ := contract.CreateDepositContractByPubKey(pk)
+	publicKey, _ := pk.EncodePoint(true)
+	// register CR
+	s.Chain.state.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: height,
+		},
+		Transactions: []*types.Transaction{
+			{
+				TxType: types.RegisterProducer,
+				Payload: &payload.ProducerInfo{
+					OwnerPublicKey: publicKey,
+					NodePublicKey:  publicKey,
+					NickName:       randomString(),
+					Url:            randomString(),
+				},
+				Outputs: []*types.Output{
+					{
+						ProgramHash: *depositCont.ToProgramHash(),
+						Value:       common.Fixed64(5000),
+					},
+				},
+			},
+		},
+	}, nil)
+	height++
+	producer := s.Chain.state.GetProducer(publicKey)
+	s.True(producer.State() == state.Pending, "register producer failed")
+
+	for i := 0; i < 6; i++ {
+		s.Chain.state.ProcessBlock(&types.Block{
+			Header: types.Header{
+				Height: height,
+			},
+			Transactions: []*types.Transaction{},
+		}, nil)
+		height++
+	}
+	s.True(producer.State() == state.Active, "active producer failed")
+
+	// check a return deposit coin transaction with wrong state.
+	references := make(map[*types.Input]*types.Output)
+	references[&types.Input{}] = &types.Output{
+		ProgramHash: *randomUint168(),
+		Value:       common.Fixed64(5000 * 100000000),
+	}
+
+	code1, _ := contract.CreateStandardRedeemScript(pk)
+	rdTx := &types.Transaction{
+		TxType:  types.ReturnCRDepositCoin,
+		Payload: &payload.ReturnDepositCoin{},
+		Programs: []*program.Program{
+			{Code: code1},
+		},
+		Outputs: []*types.Output{
+			{Value: 4999 * 100000000},
+		},
+	}
+	canceledHeight := uint32(8)
+	err := s.Chain.checkReturnDepositCoinTransaction(
+		rdTx, references, 2160+canceledHeight)
+	s.EqualError(err, "producer must be canceled before return deposit coin")
+
+	// cancel CR
+	s.Chain.state.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: height,
+		},
+		Transactions: []*types.Transaction{
+			{
+				TxType: types.CancelProducer,
+				Payload: &payload.ProcessProducer{
+					OwnerPublicKey: publicKey,
+				},
+			},
+		},
+	}, nil)
+	height++
+	s.True(producer.State() == state.Canceled, "cancel producer failed")
+
+	// check a return deposit coin transaction with wrong code.
+	publicKey2 := "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9"
+	pubKeyBytes2, _ := common.HexStringToBytes(publicKey2)
+	pubkey2, _ := crypto.DecodePoint(pubKeyBytes2)
+	code2, _ := contract.CreateStandardRedeemScript(pubkey2)
+	rdTx.Programs[0].Code = code2
+	err = s.Chain.checkReturnDepositCoinTransaction(
+		rdTx, references, 2160+canceledHeight)
+	s.EqualError(err, "signer must be producer")
+
+	// check a return deposit coin transaction when not reached the
+	// count of DepositLockupBlocks.
+	rdTx.Programs[0].Code = code1
+	err = s.Chain.checkReturnDepositCoinTransaction(
+		rdTx, references, 2159+canceledHeight)
+	s.EqualError(err, "return deposit does not meet the lockup limit")
+
+	// check a return deposit coin transaction with wrong output amount.
+	rdTx.Outputs[0].Value = 5000 * 100000000
+	err = s.Chain.checkReturnDepositCoinTransaction(
+		rdTx, references, 2160+canceledHeight)
+	s.EqualError(err, "overspend deposit")
+
+	// check a correct deposit coin transaction.
+	rdTx.Outputs[0].Value = 4999 * 100000000
+	err = s.Chain.checkReturnDepositCoinTransaction(
+		rdTx, references, 2160+canceledHeight)
+	s.NoError(err)
+}
+
+func (s txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
+	height := uint32(1)
+	_, pk, _ := crypto.GenerateKeyPair()
+	cont, _ := contract.CreateStandardContract(pk)
+	code := cont.Code
+	depositCont, _ := contract.CreateDepositContractByPubKey(pk)
+	ct, _ := contract.CreateCRDIDContractByCode(code)
+	did := ct.ToProgramHash()
+
+	// register CR
+	s.Chain.crCommittee.GetState().ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: height,
+		},
+		Transactions: []*types.Transaction{
+			{
+				TxType: types.RegisterCR,
+				Payload: &payload.CRInfo{
+					Code:     code,
+					DID:      *did,
+					NickName: randomString(),
+				},
+				Outputs: []*types.Output{
+					{
+						ProgramHash: *depositCont.ToProgramHash(),
+						Value:       common.Fixed64(5000),
+					},
+				},
+			},
+		},
+	}, nil)
+	height++
+	candidate := s.Chain.crCommittee.GetState().GetCandidate(code)
+	s.True(candidate.State() == crstate.Pending, "register CR failed")
+
+	for i := 0; i < 6; i++ {
+		s.Chain.crCommittee.GetState().ProcessBlock(&types.Block{
+			Header: types.Header{
+				Height: height,
+			},
+			Transactions: []*types.Transaction{},
+		}, nil)
+		height++
+	}
+	s.True(candidate.State() == crstate.Active, "active CR failed")
+
+	isInVotingPeriod := func(height uint32) bool {
+		return true
+	}
+	notInVotingPeriod := func(height uint32) bool {
+		return false
+	}
+
+	references := make(map[*types.Input]*types.Output)
+	references[&types.Input{}] = &types.Output{
+		ProgramHash: *randomUint168(),
+		Value:       common.Fixed64(5000 * 100000000),
+	}
+	rdTx := &types.Transaction{
+		TxType:  types.ReturnCRDepositCoin,
+		Payload: &payload.ReturnDepositCoin{},
+		Programs: []*program.Program{
+			{Code: code},
+		},
+		Outputs: []*types.Output{
+			{Value: 4999 * 100000000},
+		},
+	}
+	canceledHeight := uint32(8)
+
+	// check a return cr deposit coin transaction when not unregistered in
+	// voting period.
+	err := s.Chain.checkReturnCRDepositCoinTransaction(
+		rdTx, references, 2160+canceledHeight, isInVotingPeriod)
+	s.EqualError(err, "candidate state is not canceled")
+
+	// unregister CR
+	s.Chain.crCommittee.GetState().ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: height,
+		},
+		Transactions: []*types.Transaction{
+			{
+				TxType: types.UnregisterCR,
+				Payload: &payload.UnregisterCR{
+					Code: code,
+				},
+			},
+		},
+	}, nil)
+	height++
+	s.True(candidate.State() == crstate.Canceled, "canceled CR failed")
+
+	publicKey2 := "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9"
+	pubKeyBytes2, _ := common.HexStringToBytes(publicKey2)
+	pubkey2, _ := crypto.DecodePoint(pubKeyBytes2)
+	code2, _ := contract.CreateStandardRedeemScript(pubkey2)
+
+	// check a return cr deposit coin transaction with wrong code in voting period.
+	rdTx.Programs[0].Code = code2
+	err = s.Chain.checkReturnCRDepositCoinTransaction(
+		rdTx, references, 2160+canceledHeight, isInVotingPeriod)
+	s.EqualError(err, "signer must be CR candidate")
+
+	// check a return cr deposit coin transaction when not reached the
+	// count of DepositLockupBlocks in voting period.
+	rdTx.Programs[0].Code = code
+	err = s.Chain.checkReturnCRDepositCoinTransaction(
+		rdTx, references, 2159+canceledHeight, isInVotingPeriod)
+	s.EqualError(err, "return CR deposit does not meet the lockup limit")
+
+	// check a return cr deposit coin transaction with wrong output amount.
+	rdTx.Outputs[0].Value = 5000 * 100000000
+	err = s.Chain.checkReturnCRDepositCoinTransaction(
+		rdTx, references, 2160+canceledHeight, isInVotingPeriod)
+	s.EqualError(err, "candidate overspend deposit")
+
+	// check a correct return cr deposit coin transaction.
+	rdTx.Outputs[0].Value = 4999 * 100000000
+	err = s.Chain.checkReturnCRDepositCoinTransaction(
+		rdTx, references, 2160+canceledHeight, notInVotingPeriod)
+	s.NoError(err)
+
+	// return CR deposit coin.
+	s.Chain.crCommittee.GetState().ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: height,
+		},
+		Transactions: []*types.Transaction{
+			rdTx,
+		},
+	}, nil)
+	height++
+
+	// check a return cr deposit coin transaction with the amount has returned.
+	err = s.Chain.checkReturnCRDepositCoinTransaction(
+		rdTx, references, 2160+canceledHeight, notInVotingPeriod)
+	s.EqualError(err, "candidate is returned before")
+
 }
 
 func (s *txValidatorTestSuite) TestCheckOutputPayload() {
@@ -895,8 +2047,8 @@ func (s *txValidatorTestSuite) TestCheckOutputPayload() {
 				Contents: []outputpayload.VoteContent{
 					{
 						VoteType: outputpayload.Delegate,
-						Candidates: [][]byte{
-							publicKey1,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 0},
 						},
 					},
 				},
@@ -912,8 +2064,8 @@ func (s *txValidatorTestSuite) TestCheckOutputPayload() {
 				Version: 0,
 				Contents: []outputpayload.VoteContent{
 					{
-						VoteType:   outputpayload.Delegate,
-						Candidates: [][]byte{},
+						VoteType:       outputpayload.Delegate,
+						CandidateVotes: []outputpayload.CandidateVotes{},
 					},
 				},
 			},
@@ -929,9 +2081,9 @@ func (s *txValidatorTestSuite) TestCheckOutputPayload() {
 				Contents: []outputpayload.VoteContent{
 					{
 						VoteType: outputpayload.Delegate,
-						Candidates: [][]byte{
-							publicKey1,
-							publicKey1,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 0},
+							{publicKey1, 0},
 						},
 					},
 				},
@@ -948,8 +2100,8 @@ func (s *txValidatorTestSuite) TestCheckOutputPayload() {
 				Contents: []outputpayload.VoteContent{
 					{
 						VoteType: outputpayload.Delegate,
-						Candidates: [][]byte{
-							publicKey1,
+						CandidateVotes: []outputpayload.CandidateVotes{
+							{publicKey1, 0},
 						},
 					},
 				},
@@ -973,59 +2125,313 @@ func (s *txValidatorTestSuite) TestCheckOutputPayload() {
 	s.EqualError(err, "output address should be standard")
 }
 
-func (s *txValidatorTestSuite) TestCheckVoteProducerOutputs() {
-	outputs := []*types.Output{
-		{
-			Type: types.OTNone,
-		},
-	}
-	references := make(map[*types.Input]*types.Output)
+func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 
-	s.NoError(checkVoteProducerOutputs(outputs, references, nil))
+	references := make(map[*types.Input]*types.Output)
+	outputs := []*types.Output{{Type: types.OTNone}}
+	s.NoError(checkVoteOutputs(outputs, references, nil, nil))
 
 	publicKey1 := "023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a"
 	publicKey2 := "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9"
+	publicKey3 := "039d419986f5c2bf6f2a6f59f0b6e111735b66570fb22107a038bca3e1005d1920"
 	candidate1, _ := common.HexStringToBytes(publicKey1)
 	candidate2, _ := common.HexStringToBytes(publicKey2)
-	producers := [][]byte{candidate1}
+	candidate3, _ := common.HexStringToBytes(publicKey3)
+	producersMap := make(map[string]struct{})
+	producersMap[publicKey1] = struct{}{}
+	crsMap := make(map[string]struct{})
+	crsMap[publicKey3] = struct{}{}
 
 	hashStr := "21c5656c65028fe21f2222e8f0cd46a1ec734cbdb6"
 	hashByte, _ := common.HexStringToBytes(hashStr)
 	hash, _ := common.Uint168FromBytes(hashByte)
-	outputs = append(outputs, &types.Output{
+
+	// Check vote output of v0 with delegate type and wrong output program hash
+	outputs1 := []*types.Output{{Type: types.OTNone}}
+	outputs1 = append(outputs1, &types.Output{
 		Type:        types.OTVote,
 		ProgramHash: *hash,
 		Payload: &outputpayload.VoteOutput{
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
 				{
-					VoteType:   0,
-					Candidates: [][]byte{candidate1},
+					VoteType: outputpayload.Delegate,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate1, 0},
+					},
 				},
 			},
 		},
 	})
-	s.Error(checkVoteProducerOutputs(outputs, references, producers))
+	s.EqualError(checkVoteOutputs(outputs1, references, producersMap, crsMap),
+		"the output address of vote tx should exist in its input")
 
+	// Check vote output of v0 with crc type and with wrong output program hash
+	outputs2 := []*types.Output{{Type: types.OTNone}}
+	outputs2 = append(outputs2, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType: outputpayload.CRC,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate3, 0},
+					},
+				},
+			},
+		},
+	})
+	s.EqualError(checkVoteOutputs(outputs2, references, producersMap, crsMap),
+		"the output address of vote tx should exist in its input")
+
+	// Check vote output of v1 with wrong output program hash
+	outputs3 := []*types.Output{{Type: types.OTNone}}
+	outputs3 = append(outputs3, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType: outputpayload.Delegate,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate1, 0},
+					},
+				},
+				{
+					VoteType: outputpayload.CRC,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate3, 0},
+					},
+				},
+			},
+		},
+	})
+	s.EqualError(checkVoteOutputs(outputs3, references, producersMap, crsMap),
+		"the output address of vote tx should exist in its input")
+
+	// Check vote output v0 with correct ouput program hash
 	references[&types.Input{}] = &types.Output{
 		ProgramHash: *hash,
 	}
-	s.NoError(checkVoteProducerOutputs(outputs, references, producers))
+	s.NoError(checkVoteOutputs(outputs1, references, producersMap, crsMap))
+	s.NoError(checkVoteOutputs(outputs2, references, producersMap, crsMap))
+	s.NoError(checkVoteOutputs(outputs3, references, producersMap, crsMap))
 
-	outputs = append(outputs, &types.Output{
+	// Check vote output of v0 with delegate type and invalid candidate
+	outputs4 := []*types.Output{{Type: types.OTNone}}
+	outputs4 = append(outputs4, &types.Output{
 		Type:        types.OTVote,
 		ProgramHash: *hash,
 		Payload: &outputpayload.VoteOutput{
 			Version: 0,
 			Contents: []outputpayload.VoteContent{
 				{
-					VoteType:   0,
-					Candidates: [][]byte{candidate2},
+					VoteType: outputpayload.Delegate,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate2, 0},
+					},
 				},
 			},
 		},
 	})
-	s.Error(checkVoteProducerOutputs(outputs, references, producers))
+	s.EqualError(checkVoteOutputs(outputs4, references, producersMap, crsMap),
+		"invalid vote output payload candidate: "+
+			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
+
+	// Check vote output of v0 with crc type and invalid candidate
+	outputs5 := []*types.Output{{Type: types.OTNone}}
+	outputs5 = append(outputs5, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Payload: &outputpayload.VoteOutput{
+			Version: 0,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType: outputpayload.CRC,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate2, 0},
+					},
+				},
+			},
+		},
+	})
+	s.EqualError(checkVoteOutputs(outputs5, references, producersMap, crsMap),
+		"payload VoteProducerVersion not support vote CR")
+
+	// Check vote output of v1 with crc type and invalid candidate
+	outputs6 := []*types.Output{{Type: types.OTNone}}
+	outputs6 = append(outputs6, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType: outputpayload.CRC,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate2, 0},
+					},
+				},
+			},
+		},
+	})
+	s.EqualError(checkVoteOutputs(outputs6, references, producersMap, crsMap),
+		"invalid vote output payload candidate: "+
+			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
+
+	// Check vote output of v0 with invalid candidate
+	outputs7 := []*types.Output{{Type: types.OTNone}}
+	outputs7 = append(outputs7, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Payload: &outputpayload.VoteOutput{
+			Version: 0,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType: outputpayload.Delegate,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate2, 0},
+					},
+				},
+				{
+					VoteType: outputpayload.CRC,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate2, 0},
+					},
+				},
+			},
+		},
+	})
+	s.EqualError(checkVoteOutputs(outputs7, references, producersMap, crsMap),
+		"invalid vote output payload candidate: "+
+			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
+
+	crsMap[publicKey2] = struct{}{}
+
+	// Check vote output of v1 with delegate type and wrong votes
+	outputs8 := []*types.Output{{Type: types.OTNone}}
+	outputs8 = append(outputs8, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Value:       common.Fixed64(10),
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType: outputpayload.Delegate,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate1, 20},
+					},
+				},
+			},
+		},
+	})
+	s.EqualError(checkVoteOutputs(outputs8, references, producersMap, crsMap),
+		"votes larger than output amount")
+
+	// Check vote output of v1 with crc type and wrong votes
+	outputs9 := []*types.Output{{Type: types.OTNone}}
+	outputs9 = append(outputs9, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Value:       common.Fixed64(10),
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType: outputpayload.CRC,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate2, 10},
+						{candidate3, 10},
+					},
+				},
+			},
+		},
+	})
+	s.EqualError(checkVoteOutputs(outputs9, references, producersMap, crsMap),
+		"total votes larger than output amount")
+
+	// Check vote output of v1 with wrong votes
+	outputs10 := []*types.Output{{Type: types.OTNone}}
+	outputs10 = append(outputs10, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Value:       common.Fixed64(10),
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType: outputpayload.Delegate,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate1, 20},
+					},
+				},
+				{
+					VoteType: outputpayload.CRC,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate3, 20},
+					},
+				},
+			},
+		},
+	})
+	s.EqualError(checkVoteOutputs(outputs10, references, producersMap, crsMap),
+		"votes larger than output amount")
+
+	// Check vote output v1 with correct votes
+	outputs11 := []*types.Output{{Type: types.OTNone}}
+	outputs11 = append(outputs11, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Value:       common.Fixed64(10),
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType: outputpayload.Delegate,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate1, 10},
+					},
+				},
+				{
+					VoteType: outputpayload.CRC,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate3, 10},
+					},
+				},
+			},
+		},
+	})
+	s.NoError(checkVoteOutputs(outputs11, references, producersMap, crsMap))
+
+	// Check vote output of v1 with wrong votes
+	outputs12 := []*types.Output{{Type: types.OTNone}}
+	outputs12 = append(outputs12, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Value:       common.Fixed64(10),
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType: outputpayload.Delegate,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate1, 1},
+					},
+				},
+				{
+					VoteType: outputpayload.CRC,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate3, 1},
+					},
+				},
+			},
+		},
+	})
+	s.NoError(checkVoteOutputs(outputs12, references, producersMap, crsMap))
 }
 
 func (s *txValidatorTestSuite) TestCheckOutputProgramHash() {

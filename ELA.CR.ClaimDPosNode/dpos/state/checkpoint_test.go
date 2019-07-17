@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package state
 
 import (
@@ -35,6 +40,97 @@ func TestStateKeyFrame_Deserialize(t *testing.T) {
 	assert.NoError(t, cmpData.Deserialize(buf))
 
 	assert.True(t, stateKeyFrameEqual(originFrame, cmpData))
+}
+
+func TestCheckPoint_Deserialize(t *testing.T) {
+	originCheckPoint := generateCheckPoint(rand.Uint32())
+
+	buf := new(bytes.Buffer)
+	assert.NoError(t, originCheckPoint.Serialize(buf))
+
+	cmpData := &CheckPoint{}
+	assert.NoError(t, cmpData.Deserialize(buf))
+
+	assert.True(t, checkPointsEqual(originCheckPoint, cmpData))
+}
+
+func checkPointsEqual(first *CheckPoint, second *CheckPoint) bool {
+	if first.Height != second.Height || first.DutyIndex != second.DutyIndex ||
+		first.CurrentReward.TotalVotesInRound !=
+			second.CurrentReward.TotalVotesInRound ||
+		second.NextReward.TotalVotesInRound !=
+			second.NextReward.TotalVotesInRound {
+		return false
+	}
+
+	if !arrayEqual(first.CurrentArbitrators, second.CurrentArbitrators) ||
+		!arrayEqual(first.CurrentCandidates, second.CurrentCandidates) ||
+		!arrayEqual(first.NextArbitrators, second.NextArbitrators) ||
+		!arrayEqual(first.NextCandidates, second.NextCandidates) {
+		return false
+	}
+
+	if !hashesEqual(first.CurrentReward.OwnerProgramHashes,
+		second.CurrentReward.OwnerProgramHashes) ||
+		!hashesEqual(first.CurrentReward.CandidateOwnerProgramHashes,
+			second.CurrentReward.CandidateOwnerProgramHashes) ||
+		!hashesEqual(first.NextReward.OwnerProgramHashes,
+			second.NextReward.OwnerProgramHashes) ||
+		!hashesEqual(first.NextReward.CandidateOwnerProgramHashes,
+			second.NextReward.CandidateOwnerProgramHashes) {
+		return false
+	}
+
+	if !stateKeyFrameEqual(&first.StateKeyFrame, &second.StateKeyFrame) {
+		return false
+	}
+
+	return votesMapEqual(first.CurrentReward.OwnerVotesInRound,
+		second.CurrentReward.OwnerVotesInRound) &&
+		votesMapEqual(first.NextReward.OwnerVotesInRound,
+			second.NextReward.OwnerVotesInRound)
+}
+
+func generateCheckPoint(height uint32) *CheckPoint {
+	result := &CheckPoint{
+		Height:            height,
+		DutyIndex:         int(rand.Uint32()),
+		NextArbitrators:   [][]byte{},
+		NextCandidates:    [][]byte{},
+		CurrentCandidates: [][]byte{},
+		KeyFrame: KeyFrame{
+			CurrentArbitrators: [][]byte{},
+		},
+		CurrentReward: *NewRewardData(),
+		NextReward:    *NewRewardData(),
+		StateKeyFrame: *randomStateKeyFrame(),
+	}
+	result.CurrentReward.TotalVotesInRound = common.Fixed64(rand.Uint64())
+	result.NextReward.TotalVotesInRound = common.Fixed64(rand.Uint64())
+
+	for i := 0; i < 5; i++ {
+		result.CurrentArbitrators = append(result.CurrentArbitrators,
+			randomFakePK())
+		result.CurrentCandidates = append(result.CurrentCandidates, randomFakePK())
+		result.NextArbitrators = append(result.NextArbitrators, randomFakePK())
+		result.NextCandidates = append(result.NextCandidates, randomFakePK())
+
+		result.CurrentReward.OwnerVotesInRound[*randomProgramHash()] =
+			common.Fixed64(rand.Uint64())
+		result.CurrentReward.OwnerProgramHashes = append(
+			result.CurrentReward.OwnerProgramHashes, randomProgramHash())
+		result.CurrentReward.CandidateOwnerProgramHashes = append(
+			result.CurrentReward.CandidateOwnerProgramHashes, randomProgramHash())
+
+		result.NextReward.OwnerVotesInRound[*randomProgramHash()] =
+			common.Fixed64(rand.Uint64())
+		result.NextReward.OwnerProgramHashes = append(
+			result.NextReward.OwnerProgramHashes, randomProgramHash())
+		result.NextReward.CandidateOwnerProgramHashes = append(
+			result.NextReward.CandidateOwnerProgramHashes, randomProgramHash())
+	}
+
+	return result
 }
 
 func stateKeyFrameEqual(first *StateKeyFrame, second *StateKeyFrame) bool {
@@ -253,8 +349,8 @@ func randomVotes() *types.Output {
 			Contents: []outputpayload.VoteContent{
 				{
 					VoteType: outputpayload.Delegate,
-					Candidates: [][]byte{
-						randomFakePK(),
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{randomFakePK(), 0},
 					},
 				},
 			},
@@ -339,6 +435,26 @@ func votesMapEqual(first map[common.Uint168]common.Fixed64,
 
 	for k, vf := range first {
 		if vs, ok := second[k]; !ok || vs != vf {
+			return false
+		}
+	}
+	return true
+}
+
+func arrayEqual(first [][]byte, second [][]byte) bool {
+	if len(first) != len(second) {
+		return false
+	}
+
+	for _, vf := range first {
+		found := false
+		for _, vs := range second {
+			if bytes.Equal(vf, vs) {
+				found = true
+				break
+			}
+		}
+		if !found {
 			return false
 		}
 	}

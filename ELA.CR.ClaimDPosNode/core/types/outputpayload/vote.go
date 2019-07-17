@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+//
+
 package outputpayload
 
 import (
@@ -14,31 +19,79 @@ const (
 )
 
 const (
+	// Delegate indicates the vote content is for vote producer.
 	Delegate VoteType = 0x00
-	CRC      VoteType = 0x01
+
+	// CRC indicates the vote content is for vote CRC.
+	CRC VoteType = 0x01
+
+	// VoteProducerVersion indicates the output version only support delegate
+	// vote type, and not support different votes for different candidates.
+	VoteProducerVersion = 0x00
+
+	// VoteProducerAndCRVersion indicates the output version support delegate
+	// and CRC vote type, and support different votes for different candidates.
+	VoteProducerAndCRVersion = 0x01
 )
 
+// VoteType indicates the type of vote content.
 type VoteType byte
 
-var VoteTypes = []VoteType{
-	Delegate,
-	CRC,
+// CandidateVotes defines the voting information for individual candidates.
+type CandidateVotes struct {
+	Candidate []byte
+	Votes     common.Fixed64
 }
 
+func (cv *CandidateVotes) Serialize(w io.Writer, version byte) error {
+	if err := common.WriteVarBytes(w, cv.Candidate); err != nil {
+		return err
+	}
+	if version >= VoteProducerAndCRVersion {
+		if err := cv.Votes.Serialize(w); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (cv *CandidateVotes) Deserialize(r io.Reader, version byte) error {
+	candidate, err := common.ReadVarBytes(
+		r, crypto.MaxMultiSignCodeLength, "candidate votes")
+	if err != nil {
+		return err
+	}
+	cv.Candidate = candidate
+
+	if version >= VoteProducerAndCRVersion {
+		if err := cv.Votes.Deserialize(r); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (cv *CandidateVotes) String() string {
+	return fmt.Sprint("Content: {\n\t\t\t\t",
+		"Candidate: ", common.BytesToHexString(cv.Candidate), "\n\t\t\t\t",
+		"Candidates: ", cv.Votes, "}\n\t\t\t\t")
+}
+
+// VoteContent defines the vote type and vote information of candidates.
 type VoteContent struct {
-	VoteType   VoteType
-	Candidates [][]byte
+	VoteType       VoteType
+	CandidateVotes []CandidateVotes
 }
 
 func (vc *VoteContent) Serialize(w io.Writer, version byte) error {
 	if _, err := w.Write([]byte{byte(vc.VoteType)}); err != nil {
 		return err
 	}
-	if err := common.WriteVarUint(w, uint64(len(vc.Candidates))); err != nil {
+	if err := common.WriteVarUint(w, uint64(len(vc.CandidateVotes))); err != nil {
 		return err
 	}
-	for _, candidate := range vc.Candidates {
-		if err := common.WriteVarBytes(w, candidate); err != nil {
+	for _, candidate := range vc.CandidateVotes {
+		if err := candidate.Serialize(w, version); err != nil {
 			return err
 		}
 	}
@@ -59,11 +112,11 @@ func (vc *VoteContent) Deserialize(r io.Reader, version byte) error {
 	}
 
 	for i := uint64(0); i < candidatesCount; i++ {
-		candidate, err := common.ReadVarBytes(r, crypto.COMPRESSEDLEN, "producer")
-		if err != nil {
+		var cv CandidateVotes
+		if cv.Deserialize(r, version); err != nil {
 			return err
 		}
-		vc.Candidates = append(vc.Candidates, candidate)
+		vc.CandidateVotes = append(vc.CandidateVotes, cv)
 	}
 
 	return nil
@@ -71,14 +124,22 @@ func (vc *VoteContent) Deserialize(r io.Reader, version byte) error {
 
 func (vc VoteContent) String() string {
 	candidates := make([]string, 0)
-	for _, c := range vc.Candidates {
-		candidates = append(candidates, common.BytesToHexString(c))
+	for _, c := range vc.CandidateVotes {
+		candidates = append(candidates, common.BytesToHexString(c.Candidate))
 	}
+
+	if len(vc.CandidateVotes) != 0 && vc.CandidateVotes[0].Votes == 0 {
+		return fmt.Sprint("Content: {\n\t\t\t\t",
+			"VoteType: ", vc.VoteType, "\n\t\t\t\t",
+			"Candidates: ", candidates, "}\n\t\t\t\t")
+	}
+
 	return fmt.Sprint("Content: {\n\t\t\t\t",
 		"VoteType: ", vc.VoteType, "\n\t\t\t\t",
-		"Candidates: ", candidates, "}\n\t\t\t\t")
+		"CandidateVotes: ", vc.CandidateVotes, "}\n\t\t\t\t")
 }
 
+// VoteOutput defines the output payload for vote.
 type VoteOutput struct {
 	Version  byte
 	Contents []VoteContent
@@ -134,7 +195,7 @@ func (o *VoteOutput) Validate() error {
 	if o == nil {
 		return errors.New("vote output payload is nil")
 	}
-	if o.Version != byte(0) {
+	if o.Version > VoteProducerAndCRVersion {
 		return errors.New("invalid vote version")
 	}
 	typeMap := make(map[VoteType]struct{})
@@ -144,21 +205,26 @@ func (o *VoteOutput) Validate() error {
 		}
 		typeMap[content.VoteType] = struct{}{}
 
-		if len(content.Candidates) == 0 || len(content.Candidates) > MaxVoteProducersPerTransaction {
+		if len(content.CandidateVotes) == 0 ||
+			len(content.CandidateVotes) > MaxVoteProducersPerTransaction {
 			return errors.New("invalid public key count")
 		}
-		// only use Delegate as a vote type for now
-		if content.VoteType != Delegate {
+		// only use Delegate and CRC as a vote type for now
+		if content.VoteType != Delegate && content.VoteType != CRC {
 			return errors.New("invalid vote type")
 		}
 
 		candidateMap := make(map[string]struct{})
-		for _, candidate := range content.Candidates {
-			c := common.BytesToHexString(candidate)
+		for _, cv := range content.CandidateVotes {
+			c := common.BytesToHexString(cv.Candidate)
 			if _, exists := candidateMap[c]; exists {
 				return errors.New("duplicate candidate")
 			}
 			candidateMap[c] = struct{}{}
+
+			if o.Version >= VoteProducerAndCRVersion && cv.Votes <= 0 {
+				return errors.New("invalid candidate votes")
+			}
 		}
 	}
 

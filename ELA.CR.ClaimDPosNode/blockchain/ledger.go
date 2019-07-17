@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package blockchain
 
 import (
@@ -6,6 +11,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/common"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	crstate "github.com/elastos/Elastos.ELA/cr/state"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 )
 
@@ -18,6 +24,7 @@ type Ledger struct {
 	Blockchain  *BlockChain
 	Store       IChainStore
 	Arbitrators state.Arbitrators
+	Committee   *crstate.Committee
 }
 
 //check weather the transaction contains the doubleSpend.
