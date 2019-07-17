@@ -27,6 +27,7 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	amount := c.Float64("amount")
 	fee := c.Float64("fee")
 	votes := c.Float64("votes")
+	toAddr := c.String("to")
 
 	getDepositAddr := func(L *lua.LState) int {
 		L.Push(lua.LString(depositAddr))
@@ -68,6 +69,11 @@ func registerParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LNumber(votes))
 		return 1
 	}
+	getToAddr := func(L *lua.LState) int {
+		L.Push(lua.LString(toAddr))
+		return 1
+	}
+
 	L.Register("getDepositAddr", getDepositAddr)
 	L.Register("getPublicKey", getPublicKey)
 	L.Register("getCode", getCode)
@@ -78,6 +84,7 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	L.Register("getAmount", getAmount)
 	L.Register("getFee", getFee)
 	L.Register("getVotes", getVotes)
+	L.Register("getToAddr", getToAddr)
 }
 
 func scriptAction(c *cli.Context) error {
@@ -179,6 +186,10 @@ func NewCommand() *cli.Command {
 			cli.Float64Flag{
 				Name:  "votes, v",
 				Usage: "set the votes",
+			},
+			cli.StringFlag{
+				Name:  "to",
+				Usage: "set the output address",
 			},
 		},
 		Action: scriptAction,
