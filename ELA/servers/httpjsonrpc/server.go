@@ -74,7 +74,7 @@ func StartRPCServer() {
 	mainMux["discretemining"] = DiscreteMining
 	//cr interfaces
 	mainMux["listcrcandidates"] = ListCRCandidates
-	mainMux["listcurrentcrs"] = ListCurrentCRS
+	mainMux["listcurrentcrs"] = ListCurrentCRs
 	// vote interfaces
 	mainMux["listproducers"] = ListProducers
 	mainMux["producerstatus"] = ProducerStatus
