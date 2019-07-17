@@ -183,6 +183,7 @@ namespace Elastos {
 			const bytes_t &hex = stream.GetBytes();
 
 			result["Algorithm"] = "base64";
+			result["ID"] = tx->GetHash().GetHex().substr(0, 8);
 			result["Data"] = hex.getBase64();
 			result["ChainID"] = GetChainID();
 			result["Fee"] = tx->GetFee();
@@ -328,7 +329,7 @@ namespace Elastos {
 			return j;
 		}
 
-		nlohmann::json SubWallet::CreateCombineUTXOTransaction(const std::string &memo, bool useVotedUTXO) {
+		nlohmann::json SubWallet::CreateConsolidateTransaction(const std::string &memo, bool useVotedUTXO) {
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 			ArgInfo("memo: {}", memo);
 			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
@@ -717,12 +718,11 @@ namespace Elastos {
 			return j;
 		}
 
-		nlohmann::json SubWallet::GetTransactionSignedSigners(const nlohmann::json &rawTransaction) const {
+		nlohmann::json SubWallet::GetTransactionSignedInfo(const nlohmann::json &encodedTx) const {
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
-			ArgInfo("tx: {}", rawTransaction.dump());
+			ArgInfo("tx: {}", encodedTx.dump());
 
-			TransactionPtr tx(new Transaction);
-			tx->FromJson(rawTransaction);
+			TransactionPtr tx = DecodeTx(encodedTx);
 
 			nlohmann::json info = tx->GetSignedInfo();
 

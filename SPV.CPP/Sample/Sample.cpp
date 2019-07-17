@@ -197,7 +197,7 @@ static void CombineUTXO(const std::string &masterWalletID, const std::string &su
 		ITokenchainSubWallet *tokenchainSubWallet = dynamic_cast<ITokenchainSubWallet *>(subWallet);
 		tx = tokenchainSubWallet->CreateCombineUTXOTransaction(assetID, "memo combine utxo");
 	} else {
-		tx = subWallet->CreateCombineUTXOTransaction("memo combine utxo");
+		tx = subWallet->CreateConsolidateTransaction("memo combine utxo");
 	}
 	logger->debug("tx after created = {}", tx.dump());
 

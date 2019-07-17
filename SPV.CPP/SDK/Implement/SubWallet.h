@@ -74,7 +74,7 @@ namespace Elastos {
 
 			virtual nlohmann::json GetAllUTXOs(uint32_t start, uint32_t count, const std::string &address) const;
 
-			virtual nlohmann::json CreateCombineUTXOTransaction(
+			virtual nlohmann::json CreateConsolidateTransaction(
 					const std::string &memo,
 					bool useVotedUTXO = false);
 
@@ -82,7 +82,7 @@ namespace Elastos {
 					const nlohmann::json &createdTx,
 					const std::string &payPassword);
 
-			virtual nlohmann::json GetTransactionSignedSigners(
+			virtual nlohmann::json GetTransactionSignedInfo(
 					const nlohmann::json &rawTransaction) const;
 
 			virtual nlohmann::json PublishTransaction(
