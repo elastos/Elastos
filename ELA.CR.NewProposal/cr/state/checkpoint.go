@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"io"
 
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/checkpoint"
 	"github.com/elastos/Elastos.ELA/core/types"
 )
@@ -29,13 +30,23 @@ type Checkpoint struct {
 }
 
 func (c *Checkpoint) OnBlockSaved(block *types.DposBlock) {
-	if block.Height <= c.committee.state.history.Height() {
+	if block.Height <= c.GetHeight() {
 		return
 	}
 	c.committee.ProcessBlock(block.Block, block.Confirm)
 }
 
 func (c *Checkpoint) OnRollbackTo(height uint32) error {
+	if height < c.StartHeight() {
+		committee := &Committee{
+			state:    NewState(c.committee.params),
+			params:   c.committee.params,
+			KeyFrame: *NewKeyFrame(),
+		}
+		c.initFromCommittee(committee)
+		c.committee.Recover(c)
+		return nil
+	}
 	return c.committee.RollbackTo(height)
 }
 
@@ -108,6 +119,10 @@ func (c *Checkpoint) StartHeight() uint32 {
 }
 
 func (c *Checkpoint) Serialize(w io.Writer) (err error) {
+	if err = common.WriteUint32(w, c.height); err != nil {
+		return
+	}
+
 	if err = c.KeyFrame.Serialize(w); err != nil {
 		return
 	}
@@ -116,6 +131,10 @@ func (c *Checkpoint) Serialize(w io.Writer) (err error) {
 }
 
 func (c *Checkpoint) Deserialize(r io.Reader) (err error) {
+	if c.height, err = common.ReadUint32(r); err != nil {
+		return
+	}
+
 	if err = c.KeyFrame.Deserialize(r); err != nil {
 		return
 	}
@@ -123,13 +142,17 @@ func (c *Checkpoint) Deserialize(r io.Reader) (err error) {
 	return c.StateKeyFrame.Deserialize(r)
 }
 
+func (c *Checkpoint) initFromCommittee(committee *Committee) {
+	c.StateKeyFrame = committee.state.StateKeyFrame
+	c.KeyFrame = committee.KeyFrame
+}
+
 func NewCheckpoint(committee *Committee) *Checkpoint {
 	cp := &Checkpoint{
-		StateKeyFrame: *NewStateKeyFrame(),
-		KeyFrame:      *NewKeyFrame(),
-		height:        uint32(0),
-		committee:     committee,
+		height:    uint32(0),
+		committee: committee,
 	}
+	cp.initFromCommittee(committee)
 	committee.getCheckpoint = func(height uint32) *Checkpoint {
 		if height > cp.GetHeight() {
 			return cp

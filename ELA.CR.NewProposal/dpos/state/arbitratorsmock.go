@@ -285,5 +285,4 @@ func (a *ArbitratorsMock) HasArbitersMinorityCount(num int) bool {
 }
 
 func (a *ArbitratorsMock) DumpInfo(height uint32) {
-	panic("implement me")
 }

@@ -8,6 +8,7 @@ package state
 import (
 	"bytes"
 	"io"
+	"math"
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/checkpoint"
@@ -47,17 +48,28 @@ type CheckPoint struct {
 }
 
 func (c *CheckPoint) StartHeight() uint32 {
-	return c.arbitrators.chainParams.VoteStartHeight
+	return uint32(math.Min(float64(c.arbitrators.chainParams.VoteStartHeight),
+		float64(c.arbitrators.chainParams.CRCOnlyDPOSHeight-
+			c.arbitrators.chainParams.PreConnectOffset)))
 }
 
 func (c *CheckPoint) OnBlockSaved(block *types.DposBlock) {
-	if block.Height <= c.arbitrators.history.Height() {
+	if block.Height <= c.GetHeight() {
 		return
 	}
 	c.arbitrators.ProcessBlock(block.Block, block.Confirm)
 }
 
 func (c *CheckPoint) OnRollbackTo(height uint32) error {
+	if height < c.StartHeight() {
+		ar := &arbitrators{}
+		if err := ar.initArbitrators(c.arbitrators.chainParams); err != nil {
+			return err
+		}
+		c.initFromArbitrators(ar)
+		c.arbitrators.RecoverFromCheckPoints(c)
+		return nil
+	}
 	return c.arbitrators.RollbackTo(height)
 }
 
@@ -240,17 +252,22 @@ func (c *CheckPoint) readBytesArray(r io.Reader) ([][]byte, error) {
 	return bytesArray, nil
 }
 
-func NewCheckpoint(ar *arbitrators) *CheckPoint {
-	return &CheckPoint{
-		CurrentCandidates: make([][]byte, 0),
-		NextArbitrators:   make([][]byte, 0),
-		NextCandidates:    make([][]byte, 0),
-		CurrentReward:     *NewRewardData(),
-		NextReward:        *NewRewardData(),
-		KeyFrame: KeyFrame{
-			CurrentArbitrators: make([][]byte, 0),
-		},
-		StateKeyFrame: *NewStateKeyFrame(),
-		arbitrators:   ar,
+func (c *CheckPoint) initFromArbitrators(ar *arbitrators) {
+	c.CurrentCandidates = ar.currentCandidates
+	c.NextArbitrators = ar.nextArbitrators
+	c.NextCandidates = ar.nextCandidates
+	c.CurrentReward = ar.CurrentReward
+	c.NextReward = ar.NextReward
+	c.KeyFrame = KeyFrame{
+		CurrentArbitrators: ar.CurrentArbitrators,
 	}
+	c.StateKeyFrame = *ar.State.StateKeyFrame
+}
+
+func NewCheckpoint(ar *arbitrators) *CheckPoint {
+	cp := &CheckPoint{
+		arbitrators: ar,
+	}
+	cp.initFromArbitrators(ar)
+	return cp
 }

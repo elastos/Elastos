@@ -1279,7 +1279,7 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 	}, nil)
 	height++
 	candidate := state.getProducer(pkBuf)
-	assert.Equal(t, common.Fixed64(0), candidate.depositAmount)
+	assert.Equal(t, common.Fixed64(100), candidate.depositAmount)
 
 	state.getProducerDepositAmount = func(p common.Uint168) (
 		fixed64 common.Fixed64, e error) {
