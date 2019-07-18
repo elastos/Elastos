@@ -863,14 +863,12 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 		}
 
 		// update state after connected block
-		if block.Height >= b.chainParams.VoteStartHeight {
-			b.chainParams.CkpManager.OnBlockSaved(&DposBlock{
-				Block:       block,
-				HaveConfirm: confirm != nil,
-				Confirm:     confirm,
-			}, nil)
-			DefaultLedger.Arbitrators.DumpInfo(block.Height)
-		}
+		b.chainParams.CkpManager.OnBlockSaved(&DposBlock{
+			Block:       block,
+			HaveConfirm: confirm != nil,
+			Confirm:     confirm,
+		}, nil)
+		DefaultLedger.Arbitrators.DumpInfo(block.Height)
 
 		delete(b.blockCache, *n.Hash)
 		delete(b.confirmCache, *n.Hash)
@@ -1037,10 +1035,7 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 		return false, err
 	}
 
-	if inMainChain && !reorganized && (block.Height >= b.chainParams.VoteStartHeight ||
-	// In case of VoteStartHeight larger than (CRCOnlyDPOSHeight-PreConnectOffset)
-		block.Height == b.chainParams.CRCOnlyDPOSHeight-b.chainParams.
-			PreConnectOffset) {
+	if inMainChain && !reorganized {
 		b.chainParams.CkpManager.OnBlockSaved(&DposBlock{
 			Block:       block,
 			HaveConfirm: confirm != nil,

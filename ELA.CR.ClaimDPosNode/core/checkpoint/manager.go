@@ -262,7 +262,8 @@ func (m *Manager) onBlockSaved(block *types.DposBlock,
 		v.OnBlockSaved(block)
 
 		originalHeight := v.GetHeight()
-		if block.Height == originalHeight+v.EffectivePeriod() {
+		if originalHeight > 0 &&
+			block.Height == originalHeight+v.EffectivePeriod() {
 			reply := make(chan bool, 1)
 			m.channels[v.Key()].Replace(v, reply, originalHeight)
 			if !async {
