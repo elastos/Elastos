@@ -17,7 +17,7 @@ import (
 )
 
 func registerParams(c *cli.Context, L *lua.LState) {
-	publicKey := c.String("pubkey")
+	publicKey := c.String("publickey")
 	code := c.String("code")
 	depositAddr := c.String("depositaddr")
 	nickname := c.String("nickname")
@@ -165,7 +165,7 @@ func NewCommand() *cli.Command {
 				Usage: "white box test",
 			},
 			cli.StringFlag{
-				Name:  "pubkey, pk",
+				Name:  "publickey, pk",
 				Usage: "set the public key",
 			},
 			cli.StringFlag{

@@ -58,13 +58,13 @@ end
 
 if own_publickey == ""
 then
-    print("owner public key is nil, should use --ownerpubkey or -opk to set it.")
+    print("owner public key is nil, should use --ownerpublickey or -opk to set it.")
     return
 end
 
 if node_publickey == ""
 then
-    print("node public key is nil, should use --nodepubkey or -npk to set it.")
+    print("node public key is nil, should use --nodepublickey or -npk to set it.")
     return
 end
 
