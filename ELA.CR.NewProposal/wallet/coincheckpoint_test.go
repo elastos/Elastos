@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+//
+
 package wallet
 
 import (
@@ -80,11 +85,8 @@ func TestInitBlock(t *testing.T) {
 		},
 	}
 
-	Wal = &Wallet{
-		addressBook: make(map[string]*AddressInfo, 0),
-	}
-	Wal.addressBook[senderAddr] = nil
-	Wal.addressBook[recipientAddr] = nil
+	addressBook[senderAddr] = nil
+	addressBook[recipientAddr] = nil
 }
 
 func TestCoinsCheckPoint_BlockSaved(t *testing.T) {
@@ -105,8 +107,7 @@ func TestCoinsCheckPoint_Serialize_Deserialize(t *testing.T) {
 }
 
 func TestCoinsCheckPoint_ListUnspent(t *testing.T) {
-	coins, err := ccp.getWalletUnspent([]string{senderAddr, recipientAddr})
-	assert.NoError(t, err)
+	coins := ccp.getUnspent([]string{senderAddr, recipientAddr})
 
 	verifyCoins(coins, t)
 }

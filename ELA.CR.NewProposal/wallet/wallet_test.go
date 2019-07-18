@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+//
+
 package wallet
 
 import (
@@ -35,7 +40,7 @@ func TestInitWallet(t *testing.T) {
 }
 
 func TestWallet_New(t *testing.T) {
-	wallet = New(test.DataDir, nil)
+	wallet = New(test.DataDir)
 
 	version, err := wallet.LoadStoredData("Version")
 	assert.NoError(t, err)
@@ -56,7 +61,7 @@ func TestWallet_ImportAddress(t *testing.T) {
 	err = wallet.LoadAddresses()
 	assert.NoError(t, err)
 
-	addressInfo, ok := wallet.addressBook[address1]
+	addressInfo, ok := addressBook[address1]
 	assert.Equal(t, true, ok)
 	assert.Equal(t, address1, addressInfo.address)
 	assert.Equal(t, "", string(addressInfo.code))
@@ -75,7 +80,7 @@ func TestWallet_ImportPubkey(t *testing.T) {
 	err = wallet.LoadAddresses()
 	assert.NoError(t, err)
 
-	addressInfo, ok := wallet.addressBook[address2]
+	addressInfo, ok := addressBook[address2]
 	assert.Equal(t, true, ok)
 	assert.Equal(t, address2, addressInfo.address)
 

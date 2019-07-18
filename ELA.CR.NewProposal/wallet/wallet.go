@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+//
+
 package wallet
 
 import (
@@ -11,19 +16,22 @@ import (
 	"github.com/elastos/Elastos.ELA/utils"
 )
 
+var (
+	addressBook = make(map[string]*AddressInfo, 0)
+)
+
 type AddressInfo struct {
 	address string
 	code    []byte
 }
 
 type Wallet struct {
-	addressBook map[string]*AddressInfo
-	coinsCP     *CoinsCheckPoint
+	*CoinsCheckPoint
 	FileStore
 }
 
 func (w *Wallet) LoadAddresses() error {
-	addressBook := make(map[string]*AddressInfo, 0)
+	addrBook := make(map[string]*AddressInfo, 0)
 	storeAddresses, err := w.LoadAddressData()
 	if err != nil {
 		return err
@@ -37,9 +45,9 @@ func (w *Wallet) LoadAddresses() error {
 			address: addressData.Address,
 			code:    code,
 		}
-		addressBook[addressData.Address] = addressInfo
+		addrBook[addressData.Address] = addressInfo
 	}
-	w.addressBook = addressBook
+	addressBook = addrBook
 
 	return nil
 }
@@ -62,7 +70,7 @@ func (w *Wallet) ImportPubkey(pubKey []byte, enableUtxoDB bool) error {
 		return err
 	}
 
-	w.addressBook[address] = &AddressInfo{
+	addressBook[address] = &AddressInfo{
 		address: address,
 		code:    sc.Code,
 	}
@@ -71,7 +79,7 @@ func (w *Wallet) ImportPubkey(pubKey []byte, enableUtxoDB bool) error {
 		return nil
 	}
 
-	return w.coinsCP.RescanWallet()
+	return w.RescanWallet()
 }
 
 func (w *Wallet) ImportAddress(address string, enableUtxoDB bool) error {
@@ -84,7 +92,7 @@ func (w *Wallet) ImportAddress(address string, enableUtxoDB bool) error {
 		return err
 	}
 
-	w.addressBook[address] = &AddressInfo{
+	addressBook[address] = &AddressInfo{
 		address: address,
 		code:    nil,
 	}
@@ -93,15 +101,14 @@ func (w *Wallet) ImportAddress(address string, enableUtxoDB bool) error {
 		return nil
 	}
 
-	return w.coinsCP.RescanWallet()
+	return w.RescanWallet()
 }
 
-func New(dataDir string, coinsCP *CoinsCheckPoint) *Wallet {
+func New(dataDir string) *Wallet {
 	walletPath := filepath.Join(dataDir, "wallet.dat")
 	wallet := Wallet{
-		addressBook: make(map[string]*AddressInfo, 0),
-		FileStore:   FileStore{path: walletPath},
-		coinsCP:     coinsCP,
+		FileStore:       FileStore{path: walletPath},
+		CoinsCheckPoint: NewCoinCheckPoint(),
 	}
 
 	exist := utils.FileExisted(walletPath)
