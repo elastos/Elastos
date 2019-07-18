@@ -697,7 +697,8 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 			}
 		}
 	}
-	if len(s.IllegalProducers) > 0 {
+	if height >= s.chainParams.EnableActivateIllegalHeight &&
+		len(s.IllegalProducers) > 0 {
 		for key, producer := range s.IllegalProducers {
 			if height > producer.activateRequestHeight &&
 				height-producer.activateRequestHeight+1 >= ActivateDuration {

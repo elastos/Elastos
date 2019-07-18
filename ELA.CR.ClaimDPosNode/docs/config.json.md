@@ -88,7 +88,8 @@ Default config for `testnet`
     "CheckAddressHeight": 88812,   //Before the height will not check that if address is ela address
     "VoteStartHeight": 88812,      //Starting height of statistical voting
     "CRCOnlyDPOSHeight": 1008812,  //The height start DPOS by CRC producers
-    "PublicDPOSHeight": 1108812    //The height start DPOS by CRCProducers and voted producers 
+    "PublicDPOSHeight": 1108812,    //The height start DPOS by CRCProducers and voted producers
+    "EnableActivateIllegalHeight": 439000 //The start height to enable activate illegal producer though activate tx
   }
 }
 ```
