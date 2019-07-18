@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package main
 
@@ -272,12 +272,10 @@ func startNode(c *cli.Context) {
 		defer arbitrator.Stop()
 	}
 
-	coinCheckPoint := wallet.NewCoinCheckPoint()
-	activeNetParams.CkpManager.Register(coinCheckPoint)
-
-	wal := wallet.New(flagDataDir, coinCheckPoint)
-	wallet.Wal = wal
+	wal := wallet.New(flagDataDir)
 	wallet.Store = chainStore
+
+	activeNetParams.CkpManager.Register(wal)
 
 	servers.Compile = Version
 	servers.Config = cfg
@@ -287,7 +285,6 @@ func startNode(c *cli.Context) {
 	servers.Server = server
 	servers.Arbiters = arbiters
 	servers.Wallet = wal
-	servers.CoinCP = coinCheckPoint
 	servers.Pow = pow.NewService(&pow.Config{
 		PayToAddr:   cfg.PowConfiguration.PayToAddr,
 		MinerInfo:   cfg.PowConfiguration.MinerInfo,

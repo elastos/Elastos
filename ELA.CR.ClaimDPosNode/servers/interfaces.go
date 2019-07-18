@@ -49,7 +49,6 @@ var (
 	Arbiter   *dpos.Arbitrator
 	Arbiters  state.Arbitrators
 	Wallet    *wallet.Wallet
-	CoinCP    *wallet.CoinsCheckPoint
 )
 
 func ToReversedString(hash common.Uint256) string {
@@ -995,7 +994,7 @@ func ListUnspent(param Params) map[string]interface{} {
 		}
 	}
 	for _, address := range addresses {
-		unspents, err := CoinCP.ListUnspent(address, Config.EnableUtxoDB)
+		unspents, err := Wallet.ListUnspent(address, Config.EnableUtxoDB)
 		if err != nil {
 			return ResponsePack(InvalidParams, "cannot get asset with program")
 		}

@@ -1,6 +1,7 @@
 *.patch
 .idea/*.iml
 .idea/*.xml
+.idea/codeStyles
 .DS_Store
 *.orig
 *.rej

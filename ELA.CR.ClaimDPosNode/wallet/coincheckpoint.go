@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+//
+
 package wallet
 
 import (
@@ -12,9 +17,12 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 )
 
+// CoinsCheckPoint implement the ICheckPoint interface and store all coins
+// which be subscribed.
 type CoinsCheckPoint struct {
-	height uint32
-	coins  map[types.OutPoint]*Coin
+	height     uint32
+	coins      map[types.OutPoint]*Coin
+	ownedCoins OwnedCoins
 }
 
 func (ccp *CoinsCheckPoint) StartHeight() uint32 {
@@ -65,7 +73,9 @@ func (ccp *CoinsCheckPoint) Deserialize(r io.Reader) error {
 		if err := coin.Deserialize(r); err != nil {
 			return err
 		}
-		ccp.coins[op] = coin
+		if err := ccp.appendCoin(&op, coin); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -124,28 +134,21 @@ func (ccp *CoinsCheckPoint) OnBlockSaved(block *types.DposBlock) {
 		for _, input := range tx.Inputs {
 			_, exist := ccp.coins[input.Previous]
 			if exist {
-				delete(ccp.coins, input.Previous)
+				ccp.removeCoin(&input.Previous)
 			}
 		}
 
 		// add the new coins
 		for index, output := range tx.Outputs {
-			addr, err := output.ProgramHash.ToAddress()
-			if err != nil {
-				panic("invalid output program hash")
+			op := types.OutPoint{
+				TxID:  tx.Hash(),
+				Index: uint16(index),
 			}
-			_, exist := Wal.addressBook[addr]
-			if exist {
-				op := types.OutPoint{
-					TxID:  tx.Hash(),
-					Index: uint16(index),
-				}
-				ccp.coins[op] = &Coin{
-					TxVersion: tx.Version,
-					Output:    output,
-					Height:    block.Height,
-				}
-			}
+			ccp.appendCoin(&op, &Coin{
+				TxVersion: tx.Version,
+				Output:    output,
+				Height:    block.Height,
+			})
 		}
 	}
 }
@@ -171,10 +174,7 @@ func (ccp *CoinsCheckPoint) OnRollbackTo(height uint32) error {
 					TxID:  tx.Hash(),
 					Index: uint16(index),
 				}
-				_, exist := ccp.coins[op]
-				if exist {
-					delete(ccp.coins, op)
-				}
+				ccp.removeCoin(&op)
 			}
 			// recover coins from input
 			reference, err := Store.GetTxReference(tx)
@@ -186,13 +186,13 @@ func (ccp *CoinsCheckPoint) OnRollbackTo(height uint32) error {
 				if err != nil {
 					return err
 				}
-				_, exist := Wal.addressBook[addr]
+				_, exist := addressBook[addr]
 				if exist {
-					ccp.coins[input.Previous] = &Coin{
+					ccp.appendCoin(&input.Previous, &Coin{
 						TxVersion: tx.Version,
 						Output:    output,
 						Height:    i,
-					}
+					})
 				}
 			}
 		}
@@ -201,25 +201,52 @@ func (ccp *CoinsCheckPoint) OnRollbackTo(height uint32) error {
 	return nil
 }
 
-func (ccp *CoinsCheckPoint) getWalletUnspent(addresses []string) (map[types.OutPoint]*Coin, error) {
-	addressMap := make(map[string]struct{})
-	for _, addr := range addresses {
-		addressMap[addr] = struct{}{}
+func (ccp *CoinsCheckPoint) appendCoin(op *types.OutPoint, coin *Coin) error {
+	addr, err := coin.Output.ProgramHash.ToAddress()
+	if err != nil {
+		return err
+	}
+	_, exist := addressBook[addr]
+	if exist {
+		ccp.coins[*op] = coin
+		ccp.ownedCoins.append(addr, op)
 	}
 
-	coins := make(map[types.OutPoint]*Coin, 0)
-	for op, coin := range ccp.coins {
-		coinAddr, err := coin.Output.ProgramHash.ToAddress()
-		if err != nil {
-			return nil, err
-		}
-		_, exist := addressMap[coinAddr]
-		if exist {
-			coins[op] = coin
+	if coin.Output.Type == types.OTVote {
+		ccp.coins[*op] = coin
+		ccp.ownedCoins.append("vote", op)
+	}
+
+	return nil
+}
+
+func (ccp *CoinsCheckPoint) removeCoin(op *types.OutPoint) error {
+	coin, exist := ccp.coins[*op]
+	if !exist {
+		return nil
+	}
+	delete(ccp.coins, *op)
+	addr, err := coin.Output.ProgramHash.ToAddress()
+	if err != nil {
+		return err
+	}
+	ccp.ownedCoins.remove(addr, op)
+	ccp.ownedCoins.remove("vote", op)
+
+	return nil
+}
+
+func (ccp *CoinsCheckPoint) getUnspent(addresses []string) map[types.OutPoint]*Coin {
+	resultCoins := make(map[types.OutPoint]*Coin, 0)
+	for _, address := range addresses {
+		ops := ccp.ownedCoins.list(address)
+		for _, op := range ops {
+			coin := ccp.coins[*op]
+			resultCoins[*op] = coin
 		}
 	}
 
-	return coins, nil
+	return resultCoins
 }
 
 func (ccp *CoinsCheckPoint) ListUnspent(address string, enableUtxoDB bool) (map[common.Uint256][]*blockchain.UTXO,
@@ -237,10 +264,7 @@ func (ccp *CoinsCheckPoint) ListUnspent(address string, enableUtxoDB bool) (map[
 		return unspents, nil
 	}
 
-	coins, err := ccp.getWalletUnspent([]string{address})
-	if err != nil {
-		return nil, err
-	}
+	coins := ccp.getUnspent([]string{address})
 	utxos := make([]*blockchain.UTXO, 0)
 	for op, coin := range coins {
 		utxos = append(utxos, &blockchain.UTXO{
@@ -276,7 +300,8 @@ func (ccp *CoinsCheckPoint) RescanWallet() error {
 
 func NewCoinCheckPoint() *CoinsCheckPoint {
 	return &CoinsCheckPoint{
-		height: 0,
-		coins:  make(map[types.OutPoint]*Coin, 0),
+		height:     0,
+		coins:      make(map[types.OutPoint]*Coin, 0),
+		ownedCoins: NewOwnedCoins(),
 	}
 }
