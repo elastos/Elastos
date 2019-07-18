@@ -182,7 +182,6 @@ func (b *BlockChain) InitCheckpoint(interrupt <-chan struct{},
 				HaveConfirm: confirm != nil,
 				Confirm:     confirm,
 			}, nil)
-			DefaultLedger.Committee.ProcessBlock(block, confirm)
 
 			// Notify process increase.
 			if increase != nil {
@@ -840,10 +839,6 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 			if err != nil {
 				return err
 			}
-
-			if err = DefaultLedger.Committee.RollbackTo(block.Height - 1); err != nil {
-				return err
-			}
 		}
 
 		log.Info("disconnect block:", block.Height)
@@ -875,8 +870,6 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 				Confirm:     confirm,
 			}, nil)
 			DefaultLedger.Arbitrators.DumpInfo(block.Height)
-
-			DefaultLedger.Committee.ProcessBlock(block, confirm)
 		}
 
 		delete(b.blockCache, *n.Hash)
@@ -911,10 +904,6 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block, confirm *pay
 
 		err := b.chainParams.CkpManager.OnRollbackTo(block.Height - 1)
 		if err != nil {
-			return err
-		}
-
-		if err = DefaultLedger.Committee.RollbackTo(block.Height - 1); err != nil {
 			return err
 		}
 	}
@@ -1058,8 +1047,6 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 			Confirm:     confirm,
 		}, nil)
 		DefaultLedger.Arbitrators.DumpInfo(block.Height)
-
-		DefaultLedger.Committee.ProcessBlock(block, confirm)
 	}
 
 	// Notify the caller that the new block was accepted into the block

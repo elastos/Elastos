@@ -82,10 +82,6 @@ func checkBlockWithConfirmation(block *Block, confirm *payload.Confirm,
 		if e := manager.OnRollbackTo(block.Height - 1); e != nil {
 			panic("rollback fail when check block with confirmation")
 		}
-		if e := DefaultLedger.Committee.RollbackTo(block.Height - 1);
-			e != nil {
-			panic("rollback CRC fail when check block with confirmation")
-		}
 		return err
 	}
 

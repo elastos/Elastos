@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+//
+
 package checkpoint
 
 import (
@@ -26,7 +31,7 @@ func TestFileChannels_LifeCycle(t *testing.T) {
 
 	// replace
 	reply = make(chan bool)
-	channels.Replace(pt, reply)
+	channels.Replace(pt, reply, pt.height)
 	<-reply
 	assert.FileExists(t, getFilePath("", pt))
 	assert.FileExists(t, getDefaultPath("", pt))

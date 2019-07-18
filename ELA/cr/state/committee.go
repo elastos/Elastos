@@ -22,8 +22,9 @@ type Committee struct {
 	KeyFrame
 	mtx    sync.RWMutex
 	state  *State
-	store  ICRRecord
 	params *config.Params
+
+	getCheckpoint func(height uint32) *Checkpoint
 }
 
 func (c *Committee) GetState() *State {
@@ -100,16 +101,10 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 			return
 		}
 
-		checkpoint := CheckPoint{
+		checkpoint := Checkpoint{
 			KeyFrame: c.KeyFrame,
 		}
 		checkpoint.StateKeyFrame = *c.state.FinishVoting(committeeDIDs)
-		if c.store != nil {
-			if err := c.store.SaveCheckpoint(&checkpoint); err != nil {
-				log.Error("[ProcessBlock] save checkpoint error: ", err)
-				return
-			}
-		}
 	}
 }
 
@@ -127,18 +122,22 @@ func (c *Committee) RollbackTo(height uint32) error {
 			log.Warn("state rollback err: ", err)
 		}
 	} else {
-		if c.store == nil {
-			return errors.New("can't find check point store")
-		}
-		point, err := c.store.GetCheckpoint(height)
-		if err != nil {
-			return err
+		point := c.getCheckpoint(height)
+		if point == nil {
+			return errors.New("can't find checkpoint")
 		}
 
 		c.state.StateKeyFrame = point.StateKeyFrame
 		c.KeyFrame = point.KeyFrame
 	}
 	return nil
+}
+
+func (c *Committee) Recover(checkpoint *Checkpoint) {
+	c.mtx.Lock()
+	defer c.mtx.Unlock()
+	c.state.StateKeyFrame = checkpoint.StateKeyFrame
+	c.KeyFrame = checkpoint.KeyFrame
 }
 
 func (c *Committee) shouldChange(block *types.Block) bool {
@@ -203,10 +202,11 @@ func (c *Committee) getActiveCRCandidatesDesc() ([]*Candidate, error) {
 }
 
 func NewCommittee(params *config.Params) *Committee {
-	return &Committee{
+	committee := &Committee{
 		state:    NewState(params),
 		params:   params,
 		KeyFrame: *NewKeyFrame(),
-		store:    nil, // todo complete me
 	}
+	params.CkpManager.Register(NewCheckpoint(committee))
+	return committee
 }
