@@ -985,25 +985,19 @@ func getArbitersInfoWithoutOnduty(title string, arbiters [][]byte) (string, []in
 	return info, params
 }
 
-func NewArbitrators(chainParams *config.Params,
-	bestHeight func() uint32,
-	bestBlock func() (*types.Block, error),
-	getBlockByHeight func(uint32) (*types.Block, error),
-	getProducerDepositAmount func(programHash common.Uint168) (common.Fixed64,
-	error)) (*arbitrators, error) {
-
+func (a *arbitrators) initArbitrators(chainParams *config.Params) error {
 	originArbiters := make([][]byte, len(chainParams.OriginArbiters))
 	originArbitersProgramHashes := make([]*common.Uint168, len(chainParams.OriginArbiters))
 	for i, arbiter := range chainParams.OriginArbiters {
 		a, err := common.HexStringToBytes(arbiter)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		originArbiters[i] = a
 
 		hash, err := contract.PublicKeyToStandardProgramHash(a)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		originArbitersProgramHashes[i] = hash
 	}
@@ -1014,11 +1008,11 @@ func NewArbitrators(chainParams *config.Params,
 	for _, pk := range chainParams.CRCArbiters {
 		pubKey, err := hex.DecodeString(pk)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		hash, err := contract.PublicKeyToStandardProgramHash(pubKey)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		crcArbiters = append(crcArbiters, pubKey)
 		crcArbitratorsProgramHashes[*hash] = nil
@@ -1031,43 +1025,53 @@ func NewArbitrators(chainParams *config.Params,
 		}
 	}
 
+	a.nextArbitrators = originArbiters
+	a.crcArbiters = crcArbiters
+	a.crcArbitratorsNodePublicKey = crcNodeMap
+	a.crcArbitratorsProgramHashes = crcArbitratorsProgramHashes
+	a.KeyFrame = &KeyFrame{CurrentArbitrators: originArbiters}
+	a.CurrentReward = RewardData{
+		OwnerProgramHashes:          originArbitersProgramHashes,
+		CandidateOwnerProgramHashes: make([]*common.Uint168, 0),
+		OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
+		TotalVotesInRound:           0,
+	}
+	a.NextReward = RewardData{
+		OwnerProgramHashes:          originArbitersProgramHashes,
+		CandidateOwnerProgramHashes: make([]*common.Uint168, 0),
+		OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
+		TotalVotesInRound:           0,
+	}
+	return nil
+}
+
+func NewArbitrators(chainParams *config.Params,
+	bestHeight func() uint32,
+	bestBlock func() (*types.Block, error),
+	getBlockByHeight func(uint32) (*types.Block, error),
+	getProducerDepositAmount func(programHash common.Uint168) (common.Fixed64,
+	error)) (*arbitrators, error) {
 	a := &arbitrators{
-		chainParams:                 chainParams,
-		bestHeight:                  bestHeight,
-		bestBlock:                   bestBlock,
-		getBlockByHeight:            getBlockByHeight,
-		nextArbitrators:             originArbiters,
-		nextCandidates:              make([][]byte, 0),
-		crcArbiters:                 crcArbiters,
-		crcArbitratorsNodePublicKey: crcNodeMap,
-		crcArbitratorsProgramHashes: crcArbitratorsProgramHashes,
-		accumulativeReward:          common.Fixed64(0),
-		finalRoundChange:            common.Fixed64(0),
-		arbitersRoundReward:         nil,
-		illegalBlocksPayloadHashes:  make(map[common.Uint256]interface{}),
-		snapshots:                   make(map[uint32][]*KeyFrame),
-		snapshotKeysDesc:            make([]uint32, 0),
-		KeyFrame: &KeyFrame{
-			CurrentArbitrators: originArbiters,
-		},
-		CurrentReward: RewardData{
-			OwnerProgramHashes:          originArbitersProgramHashes,
-			CandidateOwnerProgramHashes: make([]*common.Uint168, 0),
-			OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
-			TotalVotesInRound:           0,
-		},
-		NextReward: RewardData{
-			OwnerProgramHashes:          originArbitersProgramHashes,
-			CandidateOwnerProgramHashes: make([]*common.Uint168, 0),
-			OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
-			TotalVotesInRound:           0,
-		},
+		chainParams:                chainParams,
+		bestHeight:                 bestHeight,
+		bestBlock:                  bestBlock,
+		getBlockByHeight:           getBlockByHeight,
+		nextCandidates:             make([][]byte, 0),
+		accumulativeReward:         common.Fixed64(0),
+		finalRoundChange:           common.Fixed64(0),
+		arbitersRoundReward:        nil,
+		illegalBlocksPayloadHashes: make(map[common.Uint256]interface{}),
+		snapshots:                  make(map[uint32][]*KeyFrame),
+		snapshotKeysDesc:           make([]uint32, 0),
 		degradation: &degradation{
 			inactiveTxs:       make(map[common.Uint256]interface{}),
 			inactivateHeight:  0,
 			understaffedSince: 0,
 			state:             DSNormal,
 		},
+	}
+	if err := a.initArbitrators(chainParams); err != nil {
+		return nil, err
 	}
 	a.State = NewState(chainParams, a.GetArbitrators, getProducerDepositAmount)
 

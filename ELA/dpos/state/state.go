@@ -762,13 +762,11 @@ func (s *State) registerProducer(tx *types.Transaction, height uint32) {
 		OwnerPublicKey)
 
 	amount := common.Fixed64(0)
-	if height >= s.chainParams.CRVotingStartHeight {
-		for i, output := range tx.Outputs {
-			if output.ProgramHash.IsEqual(*programHash) {
-				amount += output.Value
-				op := types.NewOutPoint(tx.Hash(), uint16(i))
-				s.DepositOutputs[op.ReferKey()] = output
-			}
+	for i, output := range tx.Outputs {
+		if output.ProgramHash.IsEqual(*programHash) {
+			amount += output.Value
+			op := types.NewOutPoint(tx.Hash(), uint16(i))
+			s.DepositOutputs[op.ReferKey()] = output
 		}
 	}
 
@@ -919,14 +917,12 @@ func (s *State) tryInitProducerAssetAmounts(blockHeight uint32) {
 
 // processDeposit takes a transaction output with deposit program hash.
 func (s *State) processDeposit(tx *types.Transaction, height uint32) {
-	if height >= s.chainParams.CRVotingStartHeight {
-		for i, output := range tx.Outputs {
-			if contract.GetPrefixType(output.ProgramHash) ==
-				contract.PrefixDeposit {
-				if s.addProducerAssert(output, height) {
-					op := types.NewOutPoint(tx.Hash(), uint16(i))
-					s.DepositOutputs[op.ReferKey()] = output
-				}
+	for i, output := range tx.Outputs {
+		if contract.GetPrefixType(output.ProgramHash) ==
+			contract.PrefixDeposit {
+			if s.addProducerAssert(output, height) {
+				op := types.NewOutPoint(tx.Hash(), uint16(i))
+				s.DepositOutputs[op.ReferKey()] = output
 			}
 		}
 	}
