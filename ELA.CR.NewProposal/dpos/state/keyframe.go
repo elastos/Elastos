@@ -102,11 +102,11 @@ func (s *StateKeyFrame) Serialize(w io.Writer) (err error) {
 		return
 	}
 
-	if err = s.SerializeVotesMap(s.Votes, w); err != nil {
+	if err = s.SerializeOutputsMap(s.Votes, w); err != nil {
 		return
 	}
 
-	if err = s.SerializeVotesMap(s.DepositOutputs, w); err != nil {
+	if err = s.SerializeOutputsMap(s.DepositOutputs, w); err != nil {
 		return
 	}
 
@@ -163,11 +163,11 @@ func (s *StateKeyFrame) Deserialize(r io.Reader) (err error) {
 		return
 	}
 
-	if s.Votes, err = s.DeserializeVotesMap(r); err != nil {
+	if s.Votes, err = s.DeserializeOutputsMap(r); err != nil {
 		return
 	}
 
-	if s.DepositOutputs, err = s.DeserializeVotesMap(r); err != nil {
+	if s.DepositOutputs, err = s.DeserializeOutputsMap(r); err != nil {
 		return
 	}
 
@@ -257,7 +257,7 @@ func (s *StateKeyFrame) DeserializeStringSet(
 	return
 }
 
-func (s *StateKeyFrame) SerializeVotesMap(vmap map[string]*types.Output,
+func (s *StateKeyFrame) SerializeOutputsMap(vmap map[string]*types.Output,
 	w io.Writer) (err error) {
 	if err = common.WriteVarUint(w, uint64(len(vmap))); err != nil {
 		return
@@ -284,7 +284,7 @@ func (s *StateKeyFrame) SerializeVotesMap(vmap map[string]*types.Output,
 	return
 }
 
-func (s *StateKeyFrame) DeserializeVotesMap(
+func (s *StateKeyFrame) DeserializeOutputsMap(
 	r io.Reader) (vmap map[string]*types.Output, err error) {
 	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {

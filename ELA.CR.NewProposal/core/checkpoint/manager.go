@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+//
+
 package checkpoint
 
 import (
@@ -257,9 +262,9 @@ func (m *Manager) onBlockSaved(block *types.DposBlock,
 		v.OnBlockSaved(block)
 
 		originalHeight := v.GetHeight()
-		if block.Height >= originalHeight-v.SavePeriod()+v.EffectivePeriod() {
+		if block.Height == originalHeight+v.EffectivePeriod() {
 			reply := make(chan bool, 1)
-			m.channels[v.Key()].Replace(v, reply)
+			m.channels[v.Key()].Replace(v, reply, originalHeight)
 			if !async {
 				<-reply
 			}

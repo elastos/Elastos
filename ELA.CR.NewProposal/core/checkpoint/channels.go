@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+//
+
 package checkpoint
 
 import (
@@ -17,12 +22,17 @@ type fileMsg struct {
 	reply      chan bool
 }
 
+type heightFileMsg struct {
+	fileMsg
+	height uint32
+}
+
 type fileChannels struct {
 	cfg *Config
 
 	save    chan fileMsg
 	clean   chan fileMsg
-	replace chan fileMsg
+	replace chan heightFileMsg
 	exit    chan struct{}
 }
 
@@ -34,8 +44,10 @@ func (c *fileChannels) Clean(checkpoint ICheckPoint, reply chan bool) {
 	c.clean <- fileMsg{checkpoint, reply}
 }
 
-func (c *fileChannels) Replace(checkpoint ICheckPoint, reply chan bool) {
-	c.replace <- fileMsg{checkpoint, reply}
+func (c *fileChannels) Replace(checkpoint ICheckPoint, reply chan bool,
+	height uint32) {
+	c.replace <- heightFileMsg{fileMsg{checkpoint, reply},
+		height}
 }
 
 func (c *fileChannels) Exit() {
@@ -45,6 +57,7 @@ func (c *fileChannels) Exit() {
 func (c *fileChannels) messageLoop() {
 	for {
 		var msg fileMsg
+		var heightMsg heightFileMsg
 		select {
 		case msg = <-c.save:
 			if err := c.saveCheckpoint(&msg); err != nil {
@@ -54,9 +67,9 @@ func (c *fileChannels) messageLoop() {
 			if err := c.cleanCheckpoints(&msg, true); err != nil {
 				msg.checkpoint.LogError(err)
 			}
-		case msg = <-c.replace:
-			if err := c.replaceCheckpoints(&msg); err != nil {
-				msg.checkpoint.LogError(err)
+		case heightMsg = <-c.replace:
+			if err := c.replaceCheckpoints(&heightMsg); err != nil {
+				heightMsg.checkpoint.LogError(err)
 			}
 		case <-c.exit:
 			return
@@ -127,13 +140,13 @@ func (c *fileChannels) cleanCheckpoints(msg *fileMsg,
 	return
 }
 
-func (c *fileChannels) replaceCheckpoints(msg *fileMsg) (err error) {
-	defer c.replyMsg(msg)
+func (c *fileChannels) replaceCheckpoints(msg *heightFileMsg) (err error) {
+	defer c.replyMsg(&msg.fileMsg)
 
 	defaultFullName := getDefaultPath(c.cfg.DataPath, msg.checkpoint)
 	// source file is the previous saved checkpoint
 	sourceFullName := getFilePathByHeight(c.cfg.DataPath, msg.checkpoint,
-		msg.checkpoint.GetHeight())
+		msg.height)
 	if !utils.FileExisted(sourceFullName) {
 		return errors.New(fmt.Sprintf("source file %s does not exist",
 			sourceFullName))
@@ -177,7 +190,7 @@ func NewFileChannels(cfg *Config) *fileChannels {
 		cfg:     cfg,
 		save:    make(chan fileMsg),
 		clean:   make(chan fileMsg),
-		replace: make(chan fileMsg),
+		replace: make(chan heightFileMsg),
 		exit:    make(chan struct{}),
 	}
 	go channels.messageLoop()
