@@ -128,6 +128,10 @@ func loadConfigParams(cfg *config.Configuration) (*config.Configuration, error) 
 	if cfg.PublicDPOSHeight > 0 {
 		activeNetParams.PublicDPOSHeight = cfg.PublicDPOSHeight
 	}
+	if cfg.EnableActivateIllegalHeight > 0 {
+		activeNetParams.EnableActivateIllegalHeight =
+			cfg.EnableActivateIllegalHeight
+	}
 
 	// When arbiter service enabled, IP address must be set.
 	if cfg.DPoSConfiguration.EnableArbiter {

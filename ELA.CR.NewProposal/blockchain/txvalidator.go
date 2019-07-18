@@ -1073,8 +1073,15 @@ func (b *BlockChain) checkActivateProducerTransaction(txn *Transaction,
 		return err
 	}
 
-	if producer.State() != state.Inactive && producer.State() != state.Illegal {
-		return errors.New("can not activate this producer")
+	if height < b.chainParams.EnableActivateIllegalHeight {
+		if producer.State() != state.Inactive {
+			return errors.New("can not activate this producer")
+		}
+	} else {
+		if producer.State() != state.Inactive &&
+			producer.State() != state.Illegal {
+			return errors.New("can not activate this producer")
+		}
 	}
 
 	if height > producer.ActivateRequestHeight() &&
