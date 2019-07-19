@@ -92,7 +92,7 @@ namespace Elastos {
 			return DoTransaction([&iso, this]() {
 				std::string sql;
 
-				sql = "DELETE FROM " + TX_TABLE_NAME + "';";
+				sql = "DELETE FROM " + TX_TABLE_NAME + ";";
 
 				ErrorChecker::CheckCondition(!_sqlite->exec(sql, nullptr, nullptr), Error::SqliteError,
 											 "Exec sql " + sql);
