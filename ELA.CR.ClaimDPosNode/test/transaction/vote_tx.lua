@@ -1,7 +1,7 @@
 -- Copyright (c) 2017-2019 Elastos Foundation
 -- Use of this source code is governed by an MIT
 -- license that can be found in the LICENSE file.
--- 
+--
 
 local m = require("api")
 
@@ -25,41 +25,44 @@ local asset_id = m.get_asset_id()
 --local vote_candidate_votes = {'1.0'}
 
 local vote_type = 0
-local vote_candidates = {}
-local vote_candidate_votes = {}
 local amount = getAmount()
 local fee = getFee()
-local vote_candidate = getPublicKey()
-local vote_candidate_vote = getVotes()
+local vote_candidates = getCandidates()
+local vote_candidate_votes = getCandidateVotes()
 
-if amount == 0
-then
+if amount == 0 then
 	amount = 0.2
 end
 
-if fee == 0
-then
+if fee == 0 then
 	fee = 0.001
 end
 
-if vote_candidate_vote == 0
-then
-	vote_candidate_vote = 0.1
+if next(vote_candidates) == nil then
+    print("candidates is nil, should use --candidates or -cds to set it.")
+    return
 end
 
-if vote_candidate == ""
-then
-	print("candidate public key is nil, should use --publickey or -pk to set it.")
-	return
+if next(vote_candidate_votes) == nil then
+    print("candidate votes is nil, should use --candidateVotes or -cvs to set it.")
+    return
 end
-
-vote_candidates[0] = vote_candidate
-vote_candidate_votes[0] = vote_candidate_vote
 
 print("amount:", amount)
 print("fee:", fee)
-print("public key:", vote_candidate)
-print("votes:", vote_candidate_vote)
+print("vote_candidates:", vote_candidates)
+print("-----------------------")
+for i, v in pairs(vote_candidates) do
+    print(i, v)
+end
+print("-----------------------")
+
+print("vote_candidate_votes:", vote_candidate_votes)
+print("-----------------------")
+for i, v in pairs(vote_candidate_votes) do
+    print(i, v)
+end
+print("-----------------------")
 
 -- payload
 local ta = transferasset.new()
