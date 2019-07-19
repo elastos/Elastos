@@ -1,7 +1,7 @@
 ## General Info
 
 - Prerequisite basic knowledge of docker is expected  
-- After starting, the miners will automatically start running and about 22 containers are created
+- After starting, the miners will automatically start running and about 18 containers are created
 - Pre-mined 900 ELA on Mainchain miner reward address, 100,000 ELA on one mainchain address, 100,000 ELA on another mainchain address, 100,000 ELA on DID sidechain address, 100,000 ELA on Token sidechain address and 100,000 ELA on ETH sidechain address. For more, see [Wallets](#Wallets)
 - For the docker images that might be used for connecting to mainnet, testnet, regnet or private net, check out [https://cloud.docker.com/u/cyberrepublic/repository/list](https://cloud.docker.com/u/cyberrepublic/repository/list)
 
@@ -49,24 +49,12 @@ These are located in the `wallets` folder:
 - Elected node 1: 10511-10517
 - Elected node 2: 10611-10617
 
-### DID Sidechain nodes
+### Sidechain nodes
 
-- DID sidechain node 1: 30111-30115
-- DID sidechain node 2: 30211-30215
-
-### Token Sidechain nodes
-
-- Token sidechain node 1: 40111-40115
-- Token sidechain node 2: 40211-40215
-
-### Ethereum Sidechain node
-
+- DID sidechain node: 30111-30115
+- Token sidechain node: 40111-40115
 - ETH sidechain node: 60011-60012
-
-### Ethereum Sidechain Oracle Services
-
-- ETH sidechain oracle 1: 60113
-- ETH sidechain oracle 2: 60213
+- ETH sidechain oracle node: 60113
 
 ### Arbitrator nodes
 
@@ -78,7 +66,7 @@ These are located in the `wallets` folder:
 ### Restful Services
 
 - Wallet Service REST API Portal: 8091
-- DID Service REST API Portal: 8092
+- Sidechain Service REST API Portal: 8092
 - MISC Service Mainchain REST API Portal: 9091
 - MISC Service DID Sidechain REST API Portal: 9092
 
@@ -850,7 +838,71 @@ COMING SOON
 
 ## Ethereum Sidechain Testing
 
-### Transfer some ELA from main chain to Eth Address
+### Transfer some ELA from main chain to ETH Sidechain
+1. Change directory
+  ```
+  cd $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-mainchain
+  ```
+
+2. Configure ela-cli config file
+
+    Create a file called "cli-config.json" and put the following content in that file:
+
+    ```
+    {
+      "Host": "127.0.0.1:10014",
+      "DepositAddress":"XZyAtNipJ7fdgBRhdzCoyS7A3PDSzR7u98"
+    }
+3. Create a new wallet using ela-cli-crosschain client for testing purposes
+
+    ```
+    ./ela-cli-crosschain wallet --create -p elastos
+    ```
+
+    Save ELA address, Public key and Private key to a variable so it can be used later
+    ```bash
+    ELAADDRESS=$(./ela-cli-crosschain wallet -a -p elastos | tail -2 | head -1 | cut -d' ' -f1)
+    PUBLICKEY=$(./ela-cli-crosschain wallet -a -p elastos | tail -2 | head -1 | cut -d' ' -f2)
+    PRIVATEKEY=$(./ela-cli-crosschain wallet --export -p elastos | tail -2 | head -1 | cut -d' ' -f2)
+    # Make sure your info is correct
+    echo $ELAADDRESS $PUBLICKEY $PRIVATEKEY
+    ```
+
+4. Transfer ELA from the resources wallet to this newly created wallet
+
+    ```
+    curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": '"$ELAADDRESS"',"amount": "100000"}]}' localhost:8091/api/1/transfer
+    ```
+
+    Check whether the ELA got transferred successfully
+
+    ```
+    ./ela-cli-crosschain wallet -l
+    ```
+5. Transfer ELA from main chain to eth sidechain
+
+    ```
+    ./ela-cli-crosschain wallet -t create --from $ELAADDRESS --deposit 0x4505b967d56f84647eb3a40f7c365f7d87a88bc3 --amount 99999 --fee 0.1;
+    ./ela-cli-crosschain wallet -t sign -p elastos --file to_be_signed.txn;
+    ./ela-cli-crosschain wallet -t send --file ready_to_send.txn;
+    ```
+6. Check eth balance:
+
+  ```
+  curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x4505b967d56f84647eb3a40f7c365f7d87a88bc3", "latest"],"id":1}' localhost:60011
+  ```
+
+  Should return something like:
+  ```
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": "0x152cf383e51ef1920000"
+  }
+  ```
+  0x152cf383e51ef1920000 is 99998900000000000000000 in decimal format which is the unit in wei. This equals to 99998.9 ETH ELA
+
+### Transfer some ETH ELA from ETH Sidechain to Mainchain
 1. Change directory
   ```
   cd $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-mainchain
