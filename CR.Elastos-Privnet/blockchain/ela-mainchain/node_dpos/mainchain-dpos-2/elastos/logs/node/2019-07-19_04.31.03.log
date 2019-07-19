@@ -1,0 +1,1262 @@
+2019/07/19 04:31:03.490879 [1;35m[INF][m GID 1, Node version: 
+2019/07/19 04:31:03.501694 [1;35m[INF][m GID 1, go version go1.11.5 linux/amd64
+2019/07/19 04:31:03.816898 [1;35m[INF][m GID 1, current block height -> 521
+2019/07/19 04:31:03.822045 [1;33m[WRN][m GID 67, recover form check points fail:  can't find dpos store object
+2019/07/19 04:31:03.865872 [1;35m[INF][m GID 67, [RecoverFromCheckPoints] recover start height:  100
+[ ========== BLOCKCHAIN INITIALIZE STARTED ========== ]
+ 0 / 421    0.00% 422 / 421  100.24% 0s
+[ ========== BLOCKCHAIN INITIALIZE FINISHED ========== ]
+2019/07/19 04:31:04.064896 [1;35m[INF][m GID 1, Start the P2P networks
+2019/07/19 04:31:04.064931 [1;35m[INF][m GID 1, Start services
+2019/07/19 04:31:06.452640 [1;35m[INF][m GID 69, New valid peer 172.23.0.5:41296 (inbound)
+2019/07/19 04:31:07.136079 [1;35m[INF][m GID 69, New valid peer 172.23.0.6:53762 (inbound)
+2019/07/19 04:31:07.137317 [1;35m[INF][m GID 69, New valid peer 172.23.0.10:49672 (inbound)
+2019/07/19 04:31:07.634903 [1;35m[INF][m GID 69, New valid peer 172.23.0.8:56160 (inbound)
+2019/07/19 04:31:07.808059 [1;35m[INF][m GID 69, New valid peer 172.23.0.12:35594 (inbound)
+2019/07/19 04:31:07.853344 [1;35m[INF][m GID 69, New valid peer 172.23.0.2:54540 (inbound)
+2019/07/19 04:31:08.119390 [1;35m[INF][m GID 69, New valid peer 172.23.0.3:54960 (inbound)
+2019/07/19 04:31:08.885208 [1;35m[INF][m GID 69, New valid peer 172.23.0.7:57870 (inbound)
+2019/07/19 04:31:09.001289 [1;35m[INF][m GID 69, New valid peer 172.23.0.11:44636 (inbound)
+2019/07/19 04:31:09.072552 [1;35m[INF][m GID 1, Start consensus
+2019/07/19 04:31:09.072604 [1;35m[INF][m GID 1, Start POW Services
+2019/07/19 04:31:09.072680 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:31:10.124858 [1;35m[INF][m GID 69, New valid peer 172.23.0.5:20338 (outbound)
+2019/07/19 04:31:11.153902 [1;35m[INF][m GID 69, New valid peer 172.23.0.8:20338 (outbound)
+2019/07/19 04:31:12.184363 [1;35m[INF][m GID 69, New valid peer 172.23.0.12:20338 (outbound)
+2019/07/19 04:31:12.185321 [1;35m[INF][m GID 69, New valid peer 172.23.0.7:20338 (outbound)
+2019/07/19 04:31:13.411027 [1;35m[INF][m GID 69, New valid peer 172.23.0.13:33308 (inbound)
+2019/07/19 04:31:13.633556 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 43882d3fe77ac0d1be903cf9e55e990213934c94ac649c8aff2674c026dd8140
+2019/07/19 04:31:24.381997 [1;35m[INF][m GID 445, [ConfirmBlock] block hash: 43882d3fe77ac0d1be903cf9e55e990213934c94ac649c8aff2674c026dd8140
+2019/07/19 04:31:24.382041 [1;35m[INF][m GID 445, [ConfirmBlock] block height: 522
+2019/07/19 04:31:24.382868 [1;35m[INF][m GID 445, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/07/19 04:31:36.530349 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:31:36.532602 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:31:51.483317 [1;35m[INF][m GID 69, Lost peer 172.23.0.5:41296 (inbound)
+2019/07/19 04:31:52.647960 [1;35m[INF][m GID 69, Lost peer 172.23.0.8:56160 (inbound)
+2019/07/19 04:31:52.813386 [1;35m[INF][m GID 69, Lost peer 172.23.0.12:35594 (inbound)
+2019/07/19 04:31:53.178106 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: f195b60a74c5a35d704d4e57a5975420cdcfbaefce39bbe6d3738f88eddc408f
+2019/07/19 04:31:53.200247 [1;35m[INF][m GID 557, [ConfirmBlock] block hash: f195b60a74c5a35d704d4e57a5975420cdcfbaefce39bbe6d3738f88eddc408f
+2019/07/19 04:31:53.200838 [1;35m[INF][m GID 557, [ConfirmBlock] block height: 523
+2019/07/19 04:31:53.902982 [1;35m[INF][m GID 69, Lost peer 172.23.0.7:57870 (inbound)
+2019/07/19 04:31:56.521705 [1;35m[INF][m GID 69, New valid peer 172.23.0.5:41706 (inbound)
+2019/07/19 04:31:57.651712 [1;35m[INF][m GID 69, New valid peer 172.23.0.8:56534 (inbound)
+2019/07/19 04:31:57.676330 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:31:57.676528 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:31:57.834612 [1;35m[INF][m GID 69, New valid peer 172.23.0.12:35962 (inbound)
+2019/07/19 04:31:58.898284 [1;35m[INF][m GID 69, New valid peer 172.23.0.7:58232 (inbound)
+2019-07-19 04:32:04.067 [INF] STAT: -> 523 [522 172.23.0.6:53762 (inbound), 522 172.23.0.10:49672 (inbound), 522 172.23.0.2:54540 (inbound), 523 172.23.0.8:56534 (inbound), 522 172.23.0.11:44636 (inbound), 523 172.23.0.12:35962 (inbound), 523 172.23.0.5:41706 (inbound), 522 172.23.0.3:54960 (inbound), 522 172.23.0.13:33308 (inbound), 523 172.23.0.7:58232 (inbound), 522 172.23.0.7:20338 (outbound), 522 172.23.0.5:20338 (outbound), 522 172.23.0.8:20338 (outbound), 522 172.23.0.12:20338 (outbound)]
+2019/07/19 04:32:18.072502 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 90714a45ec67c53f11430a7d460b519f6af802347da9c5514eef577968c20032
+2019/07/19 04:32:18.126751 [1;35m[INF][m GID 641, [ConfirmBlock] block hash: 90714a45ec67c53f11430a7d460b519f6af802347da9c5514eef577968c20032
+2019/07/19 04:32:18.126792 [1;35m[INF][m GID 641, [ConfirmBlock] block height: 524
+2019/07/19 04:32:21.367611 [1;35m[INF][m GID 48, [ConfirmBlock] block hash: 11a462f5a1c14eb2ac04a15888a32c9a45c6b79203da472347bdce378ead6f16
+2019/07/19 04:32:21.370473 [1;35m[INF][m GID 69, Rejected block 11a462f5a1c14eb2ac04a15888a32c9a45c6b79203da472347bdce378ead6f16 from 172.23.0.12:20338 (outbound): duplicate block in pool
+2019/07/19 04:32:21.418239 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 11a462f5a1c14eb2ac04a15888a32c9a45c6b79203da472347bdce378ead6f16
+2019/07/19 04:32:21.419026 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 525
+2019/07/19 04:32:21.468585 [1;35m[INF][m GID 690, [ConfirmBlock] block hash: 11a462f5a1c14eb2ac04a15888a32c9a45c6b79203da472347bdce378ead6f16
+2019/07/19 04:32:21.468666 [1;35m[INF][m GID 690, [ConfirmBlock] block height: 525
+2019/07/19 04:32:22.540370 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:32:22.540620 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:32:30.459918 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 8d406fd90ad37b8c2b60849cc22ff4db5842c780e9feeff9abf3e41b90f1cdbe
+2019/07/19 04:32:30.499015 [1;35m[INF][m GID 656, [ConfirmBlock] block hash: 8d406fd90ad37b8c2b60849cc22ff4db5842c780e9feeff9abf3e41b90f1cdbe
+2019/07/19 04:32:30.499043 [1;35m[INF][m GID 656, [ConfirmBlock] block height: 526
+2019/07/19 04:32:30.500515 [1;35m[INF][m GID 656, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/07/19 04:32:30.501517 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 8d406fd90ad37b8c2b60849cc22ff4db5842c780e9feeff9abf3e41b90f1cdbe
+2019/07/19 04:32:30.501553 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 526
+2019/07/19 04:32:32.060164 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 58a791cbc7675af61646faf206dcc18d4c9cd9bcd3a0f77cb1333b7525295acd
+2019/07/19 04:32:32.125191 [1;35m[INF][m GID 670, [ConfirmBlock] block hash: 58a791cbc7675af61646faf206dcc18d4c9cd9bcd3a0f77cb1333b7525295acd
+2019/07/19 04:32:32.125300 [1;35m[INF][m GID 670, [ConfirmBlock] block height: 527
+2019/07/19 04:32:32.144992 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 58a791cbc7675af61646faf206dcc18d4c9cd9bcd3a0f77cb1333b7525295acd
+2019/07/19 04:32:32.146885 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 527
+2019/07/19 04:32:49.886946 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:32:49.889396 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:32:50.331313 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:32:50.332337 [1;35m[INF][m GID 209, [ConfirmBlock] block hash: 46e0f02ba835b55749083a4e70d11641295dc32cb3c1b69ce7708fe209fce038
+2019/07/19 04:32:50.332989 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:32:50.367961 [1;35m[INF][m GID 359, 172.23.0.7:20338 (outbound) sent a reject message Code: REJECT_INVALID, Hash 46e0f02ba835b55749083a4e70d11641295dc32cb3c1b69ce7708fe209fce038, Reason: Rejected block 46e0f02ba835b55749083a4e70d11641295dc32cb3c1b69ce7708fe209fce038 from 172.23.0.4:55050 (inbound): duplicate block in pool
+2019/07/19 04:32:50.421364 [1;35m[INF][m GID 684, [ConfirmBlock] block hash: 46e0f02ba835b55749083a4e70d11641295dc32cb3c1b69ce7708fe209fce038
+2019/07/19 04:32:50.421470 [1;35m[INF][m GID 684, [ConfirmBlock] block height: 528
+2019/07/19 04:32:50.443054 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 46e0f02ba835b55749083a4e70d11641295dc32cb3c1b69ce7708fe209fce038
+2019/07/19 04:32:50.443267 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 528
+2019/07/19 04:32:54.868358 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 19884c2e56da6e5ca0a48ffc64ce27df807892555875b7c588cded41f25760ad
+2019/07/19 04:32:54.946096 [1;35m[INF][m GID 761, [ConfirmBlock] block hash: 19884c2e56da6e5ca0a48ffc64ce27df807892555875b7c588cded41f25760ad
+2019/07/19 04:32:54.946209 [1;35m[INF][m GID 761, [ConfirmBlock] block height: 529
+2019/07/19 04:32:54.979591 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 19884c2e56da6e5ca0a48ffc64ce27df807892555875b7c588cded41f25760ad
+2019/07/19 04:32:54.979792 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 529
+2019/07/19 04:33:03.265663 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 4e4d6e36489f21f3205e846224cb3b4fcc15a9b1263bfd2122670c3b3627c27b
+2019/07/19 04:33:03.309020 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 4e4d6e36489f21f3205e846224cb3b4fcc15a9b1263bfd2122670c3b3627c27b
+2019/07/19 04:33:03.309134 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 530
+2019/07/19 04:33:03.309516 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019-07-19 04:33:04.070 [INF] STAT: -> 530 [529 172.23.0.7:58232 (inbound), 527 172.23.0.3:54960 (inbound), 527 172.23.0.13:33308 (inbound), 529 172.23.0.5:41706 (inbound), 527 172.23.0.6:53762 (inbound), 527 172.23.0.10:49672 (inbound), 527 172.23.0.2:54540 (inbound), 529 172.23.0.8:56534 (inbound), 527 172.23.0.11:44636 (inbound), 529 172.23.0.12:35962 (inbound), 527 172.23.0.12:20338 (outbound), 527 172.23.0.7:20338 (outbound), 527 172.23.0.5:20338 (outbound), 527 172.23.0.8:20338 (outbound)]
+2019/07/19 04:33:17.591949 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: c13b76e39aa178bd17721a38734c65403833cb6cfea754fcc9e04d63f5915c6e
+2019/07/19 04:33:17.660588 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: c13b76e39aa178bd17721a38734c65403833cb6cfea754fcc9e04d63f5915c6e
+2019/07/19 04:33:17.667685 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 531
+2019/07/19 04:33:20.336230 [1;35m[INF][m GID 209, five second countdown ends. Re-generate block.
+2019/07/19 04:33:20.337040 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:33:28.594587 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: b6bd7965f31cacbdc2dbb66d2eed0b6173ca0b36ee3ae6c1080fb71cafcd85d7
+2019/07/19 04:33:28.606800 [1;35m[INF][m GID 372, 172.23.0.12:20338 (outbound) sent a reject message Code: REJECT_INVALID, Hash b6bd7965f31cacbdc2dbb66d2eed0b6173ca0b36ee3ae6c1080fb71cafcd85d7, Reason: Rejected block b6bd7965f31cacbdc2dbb66d2eed0b6173ca0b36ee3ae6c1080fb71cafcd85d7 from 172.23.0.4:36116 (inbound): duplicate block in pool
+2019/07/19 04:33:28.635992 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: b6bd7965f31cacbdc2dbb66d2eed0b6173ca0b36ee3ae6c1080fb71cafcd85d7
+2019/07/19 04:33:28.636118 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 532
+2019/07/19 04:33:28.659598 [1;35m[INF][m GID 866, [ConfirmBlock] block hash: b6bd7965f31cacbdc2dbb66d2eed0b6173ca0b36ee3ae6c1080fb71cafcd85d7
+2019/07/19 04:33:28.659703 [1;35m[INF][m GID 866, [ConfirmBlock] block height: 532
+2019/07/19 04:33:42.451164 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 3c70f1fcfbb330f6bfbe1fc530c0126ee6f4914b858e7c423e1ba86b1ecf6253
+2019/07/19 04:33:42.495967 [1;35m[INF][m GID 876, [ConfirmBlock] block hash: 3c70f1fcfbb330f6bfbe1fc530c0126ee6f4914b858e7c423e1ba86b1ecf6253
+2019/07/19 04:33:42.496074 [1;35m[INF][m GID 876, [ConfirmBlock] block height: 533
+2019/07/19 04:33:47.828905 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:33:47.829284 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:33:48.110784 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 3013d8f0fc7f65ec4e1f76b9c76a99f2fcad300855da64da1aa8d6ba539d1bc8
+2019/07/19 04:33:48.186330 [1;35m[INF][m GID 879, [ConfirmBlock] block hash: 3013d8f0fc7f65ec4e1f76b9c76a99f2fcad300855da64da1aa8d6ba539d1bc8
+2019/07/19 04:33:48.186436 [1;35m[INF][m GID 879, [ConfirmBlock] block height: 534
+2019/07/19 04:33:48.202380 [1;35m[INF][m GID 879, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/07/19 04:33:48.212740 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 3013d8f0fc7f65ec4e1f76b9c76a99f2fcad300855da64da1aa8d6ba539d1bc8
+2019/07/19 04:33:48.221763 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 534
+2019/07/19 04:33:50.479392 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:33:50.482599 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:33:57.020158 [1;35m[INF][m GID 48, [ConfirmBlock] block hash: 0097f42dec196dc0c36f21b1733c700aac8c50ffd436d6ee3cd613b14a96d12a
+2019/07/19 04:33:57.035553 [1;35m[INF][m GID 69, Rejected block 0097f42dec196dc0c36f21b1733c700aac8c50ffd436d6ee3cd613b14a96d12a from 172.23.0.8:20338 (outbound): duplicate block in pool
+2019/07/19 04:33:57.108622 [1;35m[INF][m GID 915, [ConfirmBlock] block hash: 0097f42dec196dc0c36f21b1733c700aac8c50ffd436d6ee3cd613b14a96d12a
+2019/07/19 04:33:57.108702 [1;35m[INF][m GID 915, [ConfirmBlock] block height: 535
+2019/07/19 04:33:57.121284 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 0097f42dec196dc0c36f21b1733c700aac8c50ffd436d6ee3cd613b14a96d12a
+2019/07/19 04:33:57.121329 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 535
+2019/07/19 04:34:02.409458 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:34:02.409631 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:34:03.846309 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: d8a7c97665fa0daffb736306dd5acb1eb72a3126eb30ebd37aa439ada56cfdc1
+2019/07/19 04:34:03.885028 [1;35m[INF][m GID 919, [ConfirmBlock] block hash: d8a7c97665fa0daffb736306dd5acb1eb72a3126eb30ebd37aa439ada56cfdc1
+2019/07/19 04:34:03.885159 [1;35m[INF][m GID 919, [ConfirmBlock] block height: 536
+2019-07-19 04:34:04.080 [INF] STAT: -> 536 [534 172.23.0.5:41706 (inbound), 532 172.23.0.6:53762 (inbound), 532 172.23.0.10:49672 (inbound), 532 172.23.0.2:54540 (inbound), 535 172.23.0.8:56534 (inbound), 532 172.23.0.11:44636 (inbound), 535 172.23.0.12:35962 (inbound), 535 172.23.0.7:58232 (inbound), 532 172.23.0.3:54960 (inbound), 533 172.23.0.13:33308 (inbound), 532 172.23.0.5:20338 (outbound), 532 172.23.0.8:20338 (outbound), 532 172.23.0.12:20338 (outbound), 532 172.23.0.7:20338 (outbound)]
+2019/07/19 04:34:04.613152 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:34:04.622666 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:34:12.905347 [1;35m[INF][m GID 48, [ConfirmBlock] block hash: 1c81cd7fc5d06f54e8a8b091b7e7904559d9b848a53fcd6a705c966ae90ee2ae
+2019/07/19 04:34:12.923358 [1;35m[INF][m GID 69, Rejected block 1c81cd7fc5d06f54e8a8b091b7e7904559d9b848a53fcd6a705c966ae90ee2ae from 172.23.0.7:20338 (outbound): duplicate block in pool
+2019/07/19 04:34:12.947846 [1;35m[INF][m GID 927, [ConfirmBlock] block hash: 1c81cd7fc5d06f54e8a8b091b7e7904559d9b848a53fcd6a705c966ae90ee2ae
+2019/07/19 04:34:12.947926 [1;35m[INF][m GID 927, [ConfirmBlock] block height: 537
+2019/07/19 04:34:16.682818 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:34:16.683687 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:34:17.069242 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:34:17.070616 [1;35m[INF][m GID 209, [ConfirmBlock] block hash: 384dcbc456f9d7daeb0bb25dfe00117d5d44a1d23c88356213246f749d127ca4
+2019/07/19 04:34:17.074870 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:34:17.146943 [1;35m[INF][m GID 980, [ConfirmBlock] block hash: 384dcbc456f9d7daeb0bb25dfe00117d5d44a1d23c88356213246f749d127ca4
+2019/07/19 04:34:17.147008 [1;35m[INF][m GID 980, [ConfirmBlock] block height: 538
+2019/07/19 04:34:17.147312 [1;35m[INF][m GID 980, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/07/19 04:34:26.155154 [1;35m[INF][m GID 48, [ConfirmBlock] block hash: 8cec8fe424ce5151db9bed8c2ad59abd574b5924ba6a7c9847d33ae6ebcda64d
+2019/07/19 04:34:26.155651 [1;35m[INF][m GID 69, Rejected block 8cec8fe424ce5151db9bed8c2ad59abd574b5924ba6a7c9847d33ae6ebcda64d from 172.23.0.12:20338 (outbound): duplicate block in pool
+2019/07/19 04:34:26.192741 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 8cec8fe424ce5151db9bed8c2ad59abd574b5924ba6a7c9847d33ae6ebcda64d
+2019/07/19 04:34:26.194053 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 539
+2019/07/19 04:34:40.961434 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: dc97fd5e51d0042569ed399aac017da973a2c949c1b90af2b608acede7c8b70b
+2019/07/19 04:34:40.997098 [1;35m[INF][m GID 1013, [ConfirmBlock] block hash: dc97fd5e51d0042569ed399aac017da973a2c949c1b90af2b608acede7c8b70b
+2019/07/19 04:34:40.997171 [1;35m[INF][m GID 1013, [ConfirmBlock] block height: 540
+2019/07/19 04:34:47.081592 [1;35m[INF][m GID 209, five second countdown ends. Re-generate block.
+2019/07/19 04:34:47.253994 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:34:57.848030 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 314c821623e96e243c8c3d8ab8d4c62f3f1275e693aad9a96dd8759f39eb542c
+2019/07/19 04:34:57.939671 [1;35m[INF][m GID 1025, [ConfirmBlock] block hash: 314c821623e96e243c8c3d8ab8d4c62f3f1275e693aad9a96dd8759f39eb542c
+2019/07/19 04:34:57.939795 [1;35m[INF][m GID 1025, [ConfirmBlock] block height: 541
+2019/07/19 04:34:57.991399 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 314c821623e96e243c8c3d8ab8d4c62f3f1275e693aad9a96dd8759f39eb542c
+2019/07/19 04:34:57.992208 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 541
+2019/07/19 04:35:01.947688 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:35:01.948003 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:35:03.694416 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:35:03.694574 [1;35m[INF][m GID 209, [ConfirmBlock] block hash: c5924fb52682e87f869affe4e03a8ef955dc0010f179826807a8c595f9e9a5c7
+2019/07/19 04:35:03.694693 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:35:03.717065 [1;35m[INF][m GID 372, 172.23.0.12:20338 (outbound) sent a reject message Code: REJECT_INVALID, Hash c5924fb52682e87f869affe4e03a8ef955dc0010f179826807a8c595f9e9a5c7, Reason: Rejected block c5924fb52682e87f869affe4e03a8ef955dc0010f179826807a8c595f9e9a5c7 from 172.23.0.4:36116 (inbound): duplicate block in pool
+2019/07/19 04:35:03.722913 [1;35m[INF][m GID 578, 172.23.0.5:41706 (inbound) sent a reject message Code: REJECT_INVALID, Hash c5924fb52682e87f869affe4e03a8ef955dc0010f179826807a8c595f9e9a5c7, Reason: Rejected block c5924fb52682e87f869affe4e03a8ef955dc0010f179826807a8c595f9e9a5c7 from 172.23.0.4:20338 (outbound): duplicate block in pool
+2019/07/19 04:35:03.726518 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: c5924fb52682e87f869affe4e03a8ef955dc0010f179826807a8c595f9e9a5c7
+2019/07/19 04:35:03.726676 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 542
+2019/07/19 04:35:03.728104 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019-07-19 04:35:04.069 [INF] STAT: -> 542 [540 172.23.0.12:35962 (inbound), 540 172.23.0.5:41706 (inbound), 539 172.23.0.6:53762 (inbound), 539 172.23.0.10:49672 (inbound), 539 172.23.0.2:54540 (inbound), 540 172.23.0.8:56534 (inbound), 539 172.23.0.11:44636 (inbound), 541 172.23.0.7:58232 (inbound), 539 172.23.0.3:54960 (inbound), 540 172.23.0.13:33308 (inbound), 540 172.23.0.8:20338 (outbound), 540 172.23.0.12:20338 (outbound), 540 172.23.0.7:20338 (outbound), 539 172.23.0.5:20338 (outbound)]
+2019/07/19 04:35:07.576795 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:35:07.577033 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:35:14.309853 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:35:14.310250 [1;35m[INF][m GID 209, [ConfirmBlock] block hash: 55d1f8c9fbc69f9a83dd7847ee615d2355f5227448902027430ad61e353980ec
+2019/07/19 04:35:14.310580 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:35:14.352460 [1;35m[INF][m GID 1102, [ConfirmBlock] block hash: 55d1f8c9fbc69f9a83dd7847ee615d2355f5227448902027430ad61e353980ec
+2019/07/19 04:35:14.352747 [1;35m[INF][m GID 1102, [ConfirmBlock] block height: 543
+2019/07/19 04:35:24.131458 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:35:24.131574 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:35:26.459469 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 2da181ca72fa690b9aebfc8c5d9a0497c6830527e86ac0e67edd6fa553ec4aa6
+2019/07/19 04:35:26.466194 [1;35m[INF][m GID 1089, [ConfirmBlock] block hash: 2da181ca72fa690b9aebfc8c5d9a0497c6830527e86ac0e67edd6fa553ec4aa6
+2019/07/19 04:35:26.466232 [1;35m[INF][m GID 1089, [ConfirmBlock] block height: 544
+2019/07/19 04:35:32.367608 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:35:32.373092 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:35:34.298407 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 8c5efbc69aaec8b876f19d7de15371096a7df091aa05ccb8ec5830b78b41c1cb
+2019/07/19 04:35:34.328810 [1;35m[INF][m GID 1057, [ConfirmBlock] block hash: 8c5efbc69aaec8b876f19d7de15371096a7df091aa05ccb8ec5830b78b41c1cb
+2019/07/19 04:35:34.332284 [1;35m[INF][m GID 1057, [ConfirmBlock] block height: 545
+2019/07/19 04:35:34.336439 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 8c5efbc69aaec8b876f19d7de15371096a7df091aa05ccb8ec5830b78b41c1cb
+2019/07/19 04:35:34.336513 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 545
+2019/07/19 04:35:46.023351 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 4bc157b12db9e8ba48747101ca1ab0b5d99f7b458207204d3afbd354f06cb64e
+2019/07/19 04:35:46.041821 [1;35m[INF][m GID 1147, [ConfirmBlock] block hash: 4bc157b12db9e8ba48747101ca1ab0b5d99f7b458207204d3afbd354f06cb64e
+2019/07/19 04:35:46.041853 [1;35m[INF][m GID 1147, [ConfirmBlock] block height: 546
+2019/07/19 04:35:46.042613 [1;35m[INF][m GID 1147, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/07/19 04:36:02.373811 [1;35m[INF][m GID 209, five second countdown ends. Re-generate block.
+2019/07/19 04:36:02.374329 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:36:03.817989 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 0b8bbca51240b2b812e3f61cf491d5d98de53431ca54166b21145a1e5e0336bf
+2019/07/19 04:36:03.847645 [1;35m[INF][m GID 1167, [ConfirmBlock] block hash: 0b8bbca51240b2b812e3f61cf491d5d98de53431ca54166b21145a1e5e0336bf
+2019/07/19 04:36:03.847773 [1;35m[INF][m GID 1167, [ConfirmBlock] block height: 547
+2019/07/19 04:36:03.876347 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 0b8bbca51240b2b812e3f61cf491d5d98de53431ca54166b21145a1e5e0336bf
+2019/07/19 04:36:03.876434 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 547
+2019-07-19 04:36:04.066 [INF] STAT: -> 547 [545 172.23.0.11:44636 (inbound), 546 172.23.0.12:35962 (inbound), 546 172.23.0.5:41706 (inbound), 545 172.23.0.6:53762 (inbound), 545 172.23.0.10:49672 (inbound), 545 172.23.0.2:54540 (inbound), 546 172.23.0.8:56534 (inbound), 546 172.23.0.7:58232 (inbound), 545 172.23.0.3:54960 (inbound), 545 172.23.0.13:33308 (inbound), 545 172.23.0.12:20338 (outbound), 545 172.23.0.7:20338 (outbound), 545 172.23.0.5:20338 (outbound), 545 172.23.0.8:20338 (outbound)]
+2019/07/19 04:36:18.229824 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 2c5e7d5a957af4f08c27625d8eb9f52198f17de7e1f69340c531fb9145d579f7
+2019/07/19 04:36:18.288884 [1;35m[INF][m GID 1198, [ConfirmBlock] block hash: 2c5e7d5a957af4f08c27625d8eb9f52198f17de7e1f69340c531fb9145d579f7
+2019/07/19 04:36:18.290507 [1;35m[INF][m GID 1198, [ConfirmBlock] block height: 548
+2019/07/19 04:36:18.337040 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 2c5e7d5a957af4f08c27625d8eb9f52198f17de7e1f69340c531fb9145d579f7
+2019/07/19 04:36:18.337181 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 548
+2019/07/19 04:36:23.335227 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 4061e8082421e22b93137f80aaeca3d62ba1b36b1a4bc5bada1568ead3cd7f87
+2019/07/19 04:36:23.360445 [1;35m[INF][m GID 1252, [ConfirmBlock] block hash: 4061e8082421e22b93137f80aaeca3d62ba1b36b1a4bc5bada1568ead3cd7f87
+2019/07/19 04:36:23.360601 [1;35m[INF][m GID 1252, [ConfirmBlock] block height: 549
+2019/07/19 04:36:28.734337 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:36:28.736195 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:36:31.028291 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:36:31.029221 [1;35m[INF][m GID 209, [ConfirmBlock] block hash: 5a2177bd1c9e526a05183a74d10b29936deba2e158c1bd27571dd4e2e48c80cd
+2019/07/19 04:36:31.029520 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:36:31.569400 [1;35m[INF][m GID 359, 172.23.0.7:20338 (outbound) sent a reject message Code: REJECT_INVALID, Hash 5a2177bd1c9e526a05183a74d10b29936deba2e158c1bd27571dd4e2e48c80cd, Reason: Rejected block 5a2177bd1c9e526a05183a74d10b29936deba2e158c1bd27571dd4e2e48c80cd from 172.23.0.4:55050 (inbound): duplicate block in pool
+2019/07/19 04:36:31.573662 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 5a2177bd1c9e526a05183a74d10b29936deba2e158c1bd27571dd4e2e48c80cd
+2019/07/19 04:36:31.576437 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 550
+2019/07/19 04:36:31.611758 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/07/19 04:36:43.754227 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: cda047d7844a0f65dce3a5c97af5e0ba56c5c1609158bb3944507b6c6f19cc4b
+2019/07/19 04:36:43.775446 [1;35m[INF][m GID 1297, [ConfirmBlock] block hash: cda047d7844a0f65dce3a5c97af5e0ba56c5c1609158bb3944507b6c6f19cc4b
+2019/07/19 04:36:43.775480 [1;35m[INF][m GID 1297, [ConfirmBlock] block height: 551
+2019/07/19 04:36:46.110421 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: d234441031f4be40047d1feb44dc44848153d83490b05d57f6ce2042fd35aea7
+2019/07/19 04:36:46.182825 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: d234441031f4be40047d1feb44dc44848153d83490b05d57f6ce2042fd35aea7
+2019/07/19 04:36:46.182877 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 552
+2019/07/19 04:36:47.067727 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:36:47.073006 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:36:49.785082 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 9762ff9139befe85c587c103d5be4e12876dd6034489ed5c14e2c3b4d42d4004
+2019/07/19 04:36:49.829301 [1;35m[INF][m GID 1347, [ConfirmBlock] block hash: 9762ff9139befe85c587c103d5be4e12876dd6034489ed5c14e2c3b4d42d4004
+2019/07/19 04:36:49.834921 [1;35m[INF][m GID 1347, [ConfirmBlock] block height: 553
+2019/07/19 04:36:53.583121 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 1be2c685a21f8b618ad4093780d2f8823f4935bae3c6c1c51d982288d0f9ca89
+2019/07/19 04:36:53.599009 [1;35m[INF][m GID 1339, [ConfirmBlock] block hash: 1be2c685a21f8b618ad4093780d2f8823f4935bae3c6c1c51d982288d0f9ca89
+2019/07/19 04:36:53.610199 [1;35m[INF][m GID 1339, [ConfirmBlock] block height: 554
+2019/07/19 04:36:53.610515 [1;35m[INF][m GID 1339, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/07/19 04:37:03.950139 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 36dd5c237f87fb34fd693e46ca0d8f263b005f118211d45600c4aa80838e1bf8
+2019/07/19 04:37:03.998282 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 36dd5c237f87fb34fd693e46ca0d8f263b005f118211d45600c4aa80838e1bf8
+2019/07/19 04:37:03.998496 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 555
+2019/07/19 04:37:04.023715 [1;35m[INF][m GID 1367, [ConfirmBlock] block hash: 36dd5c237f87fb34fd693e46ca0d8f263b005f118211d45600c4aa80838e1bf8
+2019/07/19 04:37:04.023752 [1;35m[INF][m GID 1367, [ConfirmBlock] block height: 555
+2019-07-19 04:37:04.065 [INF] STAT: -> 555 [554 172.23.0.7:58232 (inbound), 550 172.23.0.3:54960 (inbound), 550 172.23.0.13:33308 (inbound), 554 172.23.0.5:41706 (inbound), 550 172.23.0.6:53762 (inbound), 550 172.23.0.10:49672 (inbound), 550 172.23.0.2:54540 (inbound), 554 172.23.0.8:56534 (inbound), 550 172.23.0.11:44636 (inbound), 554 172.23.0.12:35962 (inbound), 550 172.23.0.12:20338 (outbound), 550 172.23.0.7:20338 (outbound), 550 172.23.0.5:20338 (outbound), 550 172.23.0.8:20338 (outbound)]
+2019/07/19 04:37:05.871979 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:37:05.872200 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:37:10.344604 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:37:10.345000 [1;35m[INF][m GID 209, [ConfirmBlock] block hash: 04825520e26c1331a38f4e3f97efa26b462662ed02b04d0c61a134a53ba6a95e
+2019/07/19 04:37:10.345756 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:37:10.399508 [1;35m[INF][m GID 372, 172.23.0.12:20338 (outbound) sent a reject message Code: REJECT_INVALID, Hash 04825520e26c1331a38f4e3f97efa26b462662ed02b04d0c61a134a53ba6a95e, Reason: Rejected block 04825520e26c1331a38f4e3f97efa26b462662ed02b04d0c61a134a53ba6a95e from 172.23.0.4:36116 (inbound): duplicate block in pool
+2019/07/19 04:37:10.424814 [1;35m[INF][m GID 1382, [ConfirmBlock] block hash: 04825520e26c1331a38f4e3f97efa26b462662ed02b04d0c61a134a53ba6a95e
+2019/07/19 04:37:10.424847 [1;35m[INF][m GID 1382, [ConfirmBlock] block height: 556
+2019/07/19 04:37:32.458804 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: de2b7948bb4521f5ed503114b8e151e5db29655b973f04ba55b45b6b4f2aee6e
+2019/07/19 04:37:32.499700 [1;35m[INF][m GID 1415, [ConfirmBlock] block hash: de2b7948bb4521f5ed503114b8e151e5db29655b973f04ba55b45b6b4f2aee6e
+2019/07/19 04:37:32.500450 [1;35m[INF][m GID 1415, [ConfirmBlock] block height: 557
+2019/07/19 04:37:32.504365 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: de2b7948bb4521f5ed503114b8e151e5db29655b973f04ba55b45b6b4f2aee6e
+2019/07/19 04:37:32.504488 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 557
+2019/07/19 04:37:39.981822 [1;35m[INF][m GID 48, [ConfirmBlock] block hash: 676f8a0a387db6bf78ff93c6f25a77cbf7b6b04cb5ba1f2b51cfb6306ad773ef
+2019/07/19 04:37:40.002160 [1;35m[INF][m GID 1449, [ConfirmBlock] block hash: 676f8a0a387db6bf78ff93c6f25a77cbf7b6b04cb5ba1f2b51cfb6306ad773ef
+2019/07/19 04:37:40.002199 [1;35m[INF][m GID 1449, [ConfirmBlock] block height: 558
+2019/07/19 04:37:40.003024 [1;35m[INF][m GID 1449, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/07/19 04:37:40.069619 [1;35m[INF][m GID 69, Rejected block 676f8a0a387db6bf78ff93c6f25a77cbf7b6b04cb5ba1f2b51cfb6306ad773ef from 172.23.0.7:58232 (inbound): duplicate block in pool
+2019/07/19 04:37:40.346012 [1;35m[INF][m GID 209, five second countdown ends. Re-generate block.
+2019/07/19 04:37:40.346104 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:37:46.756551 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:37:46.765299 [1;35m[INF][m GID 209, [ConfirmBlock] block hash: 70e17766f5b5f4a2b7c649da0da0c50f89ddd5f03d4aa77a80869849798aad49
+2019/07/19 04:37:46.765530 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:37:46.772539 [1;35m[INF][m GID 627, 172.23.0.7:58232 (inbound) sent a reject message Code: REJECT_INVALID, Hash 70e17766f5b5f4a2b7c649da0da0c50f89ddd5f03d4aa77a80869849798aad49, Reason: Rejected block 70e17766f5b5f4a2b7c649da0da0c50f89ddd5f03d4aa77a80869849798aad49 from 172.23.0.4:20338 (outbound): duplicate block in pool
+2019/07/19 04:37:46.868609 [1;35m[INF][m GID 1464, [ConfirmBlock] block hash: 70e17766f5b5f4a2b7c649da0da0c50f89ddd5f03d4aa77a80869849798aad49
+2019/07/19 04:37:46.876744 [1;35m[INF][m GID 1464, [ConfirmBlock] block height: 559
+2019/07/19 04:37:46.901958 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 70e17766f5b5f4a2b7c649da0da0c50f89ddd5f03d4aa77a80869849798aad49
+2019/07/19 04:37:46.911186 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 559
+2019/07/19 04:37:51.719630 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 81bb5ed240f36a836ff1f997f0182424436ac3aad64eb6f3bd5026165f42e571
+2019/07/19 04:37:51.759220 [1;35m[INF][m GID 1477, [ConfirmBlock] block hash: 81bb5ed240f36a836ff1f997f0182424436ac3aad64eb6f3bd5026165f42e571
+2019/07/19 04:37:51.759784 [1;35m[INF][m GID 1477, [ConfirmBlock] block height: 560
+2019/07/19 04:37:51.764434 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 81bb5ed240f36a836ff1f997f0182424436ac3aad64eb6f3bd5026165f42e571
+2019/07/19 04:37:51.764459 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 560
+2019-07-19 04:38:04.076 [INF] STAT: -> 560 [560 172.23.0.7:58232 (inbound), 557 172.23.0.3:54960 (inbound), 558 172.23.0.13:33308 (inbound), 560 172.23.0.5:41706 (inbound), 557 172.23.0.6:53762 (inbound), 557 172.23.0.10:49672 (inbound), 557 172.23.0.2:54540 (inbound), 560 172.23.0.8:56534 (inbound), 557 172.23.0.11:44636 (inbound), 560 172.23.0.12:35962 (inbound), 558 172.23.0.5:20338 (outbound), 558 172.23.0.8:20338 (outbound), 558 172.23.0.12:20338 (outbound), 558 172.23.0.7:20338 (outbound)]
+2019/07/19 04:38:06.612943 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 8489a2e844a8b4dac5cabeb1924ef0796464af4df01ad6cdff3e777e2080bc77
+2019/07/19 04:38:06.662413 [1;35m[INF][m GID 1504, [ConfirmBlock] block hash: 8489a2e844a8b4dac5cabeb1924ef0796464af4df01ad6cdff3e777e2080bc77
+2019/07/19 04:38:06.662449 [1;35m[INF][m GID 1504, [ConfirmBlock] block height: 561
+2019/07/19 04:38:06.676951 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 8489a2e844a8b4dac5cabeb1924ef0796464af4df01ad6cdff3e777e2080bc77
+2019/07/19 04:38:06.677039 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 561
+2019/07/19 04:38:16.774131 [1;35m[INF][m GID 209, five second countdown ends. Re-generate block.
+2019/07/19 04:38:16.775342 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:38:25.133737 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: ffac81d2718bf2456adca1439b8a2b7978f4f4f9a628b3bcaaebe3e1d8e75ba7
+2019/07/19 04:38:25.149619 [1;35m[INF][m GID 1513, [ConfirmBlock] block hash: ffac81d2718bf2456adca1439b8a2b7978f4f4f9a628b3bcaaebe3e1d8e75ba7
+2019/07/19 04:38:25.149796 [1;35m[INF][m GID 1513, [ConfirmBlock] block height: 562
+2019/07/19 04:38:25.150085 [1;35m[INF][m GID 1513, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/07/19 04:38:29.956404 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: c4d4f546c89efb61cc5f458f9733750c834b0a347039d90653c9ef37baf28619
+2019/07/19 04:38:29.987940 [1;35m[INF][m GID 1551, [ConfirmBlock] block hash: c4d4f546c89efb61cc5f458f9733750c834b0a347039d90653c9ef37baf28619
+2019/07/19 04:38:29.988186 [1;35m[INF][m GID 1551, [ConfirmBlock] block height: 563
+2019/07/19 04:38:38.210969 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:38:38.211207 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:38:39.540513 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: b5fd460f972c5ab73653b1b90cbe1e6ea4dfcf1529e1b2f1984d2fffb682bf2a
+2019/07/19 04:38:39.577033 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: b5fd460f972c5ab73653b1b90cbe1e6ea4dfcf1529e1b2f1984d2fffb682bf2a
+2019/07/19 04:38:39.590315 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 564
+2019/07/19 04:38:41.926995 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 5ce91fb2d4a0a26052499922ca5945675bcc6bc30769e6610fb553fdff226904
+2019/07/19 04:38:41.961483 [1;35m[INF][m GID 1605, [ConfirmBlock] block hash: 5ce91fb2d4a0a26052499922ca5945675bcc6bc30769e6610fb553fdff226904
+2019/07/19 04:38:41.961519 [1;35m[INF][m GID 1605, [ConfirmBlock] block height: 565
+2019/07/19 04:38:43.423948 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:38:43.424046 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:38:46.686871 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 2a0a998aaf4b1d28b78994d4f9b2492afd0730b0a83a957e1131bbd42efdc5c8
+2019/07/19 04:38:46.721283 [1;35m[INF][m GID 1581, [ConfirmBlock] block hash: 2a0a998aaf4b1d28b78994d4f9b2492afd0730b0a83a957e1131bbd42efdc5c8
+2019/07/19 04:38:46.721366 [1;35m[INF][m GID 1581, [ConfirmBlock] block height: 566
+2019/07/19 04:38:46.722441 [1;35m[INF][m GID 1581, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/07/19 04:38:54.295758 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 0a05ea8bf51658fc890d467bf509df9a07e241a14a98d3f495f66074266a9a39
+2019/07/19 04:38:54.320004 [1;35m[INF][m GID 1614, [ConfirmBlock] block hash: 0a05ea8bf51658fc890d467bf509df9a07e241a14a98d3f495f66074266a9a39
+2019/07/19 04:38:54.320127 [1;35m[INF][m GID 1614, [ConfirmBlock] block height: 567
+2019/07/19 04:38:59.423015 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:38:59.433686 [1;35m[INF][m GID 209, difficulty:  520095999
+2019-07-19 04:39:04.071 [INF] STAT: -> 567 [563 172.23.0.3:54960 (inbound), 565 172.23.0.13:33308 (inbound), 567 172.23.0.7:58232 (inbound), 563 172.23.0.6:53762 (inbound), 563 172.23.0.10:49672 (inbound), 563 172.23.0.2:54540 (inbound), 567 172.23.0.8:56534 (inbound), 563 172.23.0.11:44636 (inbound), 567 172.23.0.12:35962 (inbound), 567 172.23.0.5:41706 (inbound), 564 172.23.0.5:20338 (outbound), 564 172.23.0.8:20338 (outbound), 565 172.23.0.12:20338 (outbound), 565 172.23.0.7:20338 (outbound)]
+2019/07/19 04:39:07.516241 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 7b41a388ad354916237563fbe2f4f9d3a83e7910d213e84d9f96a3fcdbafb5de
+2019/07/19 04:39:07.559446 [1;35m[INF][m GID 1633, [ConfirmBlock] block hash: 7b41a388ad354916237563fbe2f4f9d3a83e7910d213e84d9f96a3fcdbafb5de
+2019/07/19 04:39:07.561629 [1;35m[INF][m GID 1633, [ConfirmBlock] block height: 568
+2019/07/19 04:39:07.578674 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 7b41a388ad354916237563fbe2f4f9d3a83e7910d213e84d9f96a3fcdbafb5de
+2019/07/19 04:39:07.579267 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 568
+2019/07/19 04:39:13.107421 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: c199248f8cc73918b76aaba63f26c5489df00c5932fefbe39897b1f10b508168
+2019/07/19 04:39:13.135309 [1;35m[INF][m GID 627, 172.23.0.7:58232 (inbound) sent a reject message Code: REJECT_INVALID, Hash c199248f8cc73918b76aaba63f26c5489df00c5932fefbe39897b1f10b508168, Reason: Rejected block c199248f8cc73918b76aaba63f26c5489df00c5932fefbe39897b1f10b508168 from 172.23.0.4:20338 (outbound): duplicate block in pool
+2019/07/19 04:39:13.144466 [1;35m[INF][m GID 1655, [ConfirmBlock] block hash: c199248f8cc73918b76aaba63f26c5489df00c5932fefbe39897b1f10b508168
+2019/07/19 04:39:13.144515 [1;35m[INF][m GID 1655, [ConfirmBlock] block height: 569
+2019/07/19 04:39:25.233082 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: c5773de02eae808f35655cb79365cfd458acdfe4d59d480eed80753b52e03ce2
+2019/07/19 04:39:25.238774 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:39:25.238970 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:39:25.259122 [1;35m[INF][m GID 1707, [ConfirmBlock] block hash: c5773de02eae808f35655cb79365cfd458acdfe4d59d480eed80753b52e03ce2
+2019/07/19 04:39:25.259154 [1;35m[INF][m GID 1707, [ConfirmBlock] block height: 570
+2019/07/19 04:39:25.260995 [1;35m[INF][m GID 1707, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/07/19 04:39:27.055370 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:39:27.056534 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:39:33.671666 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:39:33.672496 [1;35m[INF][m GID 209, [ConfirmBlock] block hash: 7b3a2894362522a6f11c50f6b1e9b3fb6a02d444a836f6788956c8e577392a55
+2019/07/19 04:39:33.672871 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:39:33.707710 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 7b3a2894362522a6f11c50f6b1e9b3fb6a02d444a836f6788956c8e577392a55
+2019/07/19 04:39:33.707755 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 571
+2019/07/19 04:39:35.254616 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:39:35.254717 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:39:38.176050 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:39:38.176328 [1;35m[INF][m GID 209, [ConfirmBlock] block hash: 5c71c06406ce6287824cdf3239f77b50d94636c9f9853a9df131dfd40bf38c3c
+2019/07/19 04:39:38.177793 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:39:38.215014 [1;35m[INF][m GID 612, 172.23.0.12:35962 (inbound) sent a reject message Code: REJECT_INVALID, Hash 5c71c06406ce6287824cdf3239f77b50d94636c9f9853a9df131dfd40bf38c3c, Reason: Rejected block 5c71c06406ce6287824cdf3239f77b50d94636c9f9853a9df131dfd40bf38c3c from 172.23.0.4:20338 (outbound): duplicate block in pool
+2019/07/19 04:39:38.243850 [1;35m[INF][m GID 1727, [ConfirmBlock] block hash: 5c71c06406ce6287824cdf3239f77b50d94636c9f9853a9df131dfd40bf38c3c
+2019/07/19 04:39:38.244073 [1;35m[INF][m GID 1727, [ConfirmBlock] block height: 572
+2019/07/19 04:39:38.274656 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 5c71c06406ce6287824cdf3239f77b50d94636c9f9853a9df131dfd40bf38c3c
+2019/07/19 04:39:38.274703 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 572
+2019/07/19 04:39:47.933695 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: be4330bab565331ba79fd6be58a554a22c2c4cba1d5ad07ba8267b68b6cc8056
+2019/07/19 04:39:47.971041 [1;35m[INF][m GID 1766, [ConfirmBlock] block hash: be4330bab565331ba79fd6be58a554a22c2c4cba1d5ad07ba8267b68b6cc8056
+2019/07/19 04:39:47.971074 [1;35m[INF][m GID 1766, [ConfirmBlock] block height: 573
+2019/07/19 04:39:54.673554 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: bac170e1a41057637fb874437c15b1b20fe3799a1a86039dffcf9b2420cafd03
+2019/07/19 04:39:54.711406 [1;35m[INF][m GID 1662, [ConfirmBlock] block hash: bac170e1a41057637fb874437c15b1b20fe3799a1a86039dffcf9b2420cafd03
+2019/07/19 04:39:54.711514 [1;35m[INF][m GID 1662, [ConfirmBlock] block height: 574
+2019/07/19 04:39:54.713117 [1;35m[INF][m GID 1662, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/07/19 04:39:54.933357 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:39:54.938843 [1;35m[INF][m GID 209, difficulty:  520095999
+2019-07-19 04:40:04.065 [INF] STAT: -> 574 [574 172.23.0.7:58232 (inbound), 571 172.23.0.3:54960 (inbound), 572 172.23.0.13:33308 (inbound), 574 172.23.0.8:56534 (inbound), 572 172.23.0.11:44636 (inbound), 574 172.23.0.12:35962 (inbound), 574 172.23.0.5:41706 (inbound), 571 172.23.0.6:53762 (inbound), 571 172.23.0.10:49672 (inbound), 571 172.23.0.2:54540 (inbound), 572 172.23.0.5:20338 (outbound), 572 172.23.0.8:20338 (outbound), 572 172.23.0.12:20338 (outbound), 572 172.23.0.7:20338 (outbound)]
+2019/07/19 04:40:06.407015 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:40:06.407366 [1;35m[INF][m GID 209, [ConfirmBlock] block hash: 451fa296e8d5e6e4ff841fef8c57a3cf9749c27b1298f7e978cacb2c054ed81b
+2019/07/19 04:40:06.407648 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:40:06.433651 [1;35m[INF][m GID 359, 172.23.0.7:20338 (outbound) sent a reject message Code: REJECT_INVALID, Hash 451fa296e8d5e6e4ff841fef8c57a3cf9749c27b1298f7e978cacb2c054ed81b, Reason: Rejected block 451fa296e8d5e6e4ff841fef8c57a3cf9749c27b1298f7e978cacb2c054ed81b from 172.23.0.4:55050 (inbound): duplicate block in pool
+2019/07/19 04:40:06.460472 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 451fa296e8d5e6e4ff841fef8c57a3cf9749c27b1298f7e978cacb2c054ed81b
+2019/07/19 04:40:06.460547 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 575
+2019/07/19 04:40:18.607296 [1;35m[INF][m GID 48, [ConfirmBlock] block hash: 05bd6523152524a11a39dbbab4692c7cc43b1d08e0dbcfe95ea660921a04a6c6
+2019/07/19 04:40:18.658482 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 05bd6523152524a11a39dbbab4692c7cc43b1d08e0dbcfe95ea660921a04a6c6
+2019/07/19 04:40:18.658516 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 576
+2019/07/19 04:40:18.674370 [1;35m[INF][m GID 1846, [ConfirmBlock] block hash: 05bd6523152524a11a39dbbab4692c7cc43b1d08e0dbcfe95ea660921a04a6c6
+2019/07/19 04:40:18.679589 [1;35m[INF][m GID 1846, [ConfirmBlock] block height: 576
+2019/07/19 04:40:27.228997 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 01662423b6948ad0c3302b26976380a86c474a2acf773d1b143fed132a66e3dd
+2019/07/19 04:40:27.251636 [1;35m[INF][m GID 1834, [ConfirmBlock] block hash: 01662423b6948ad0c3302b26976380a86c474a2acf773d1b143fed132a66e3dd
+2019/07/19 04:40:27.251688 [1;35m[INF][m GID 1834, [ConfirmBlock] block height: 577
+2019/07/19 04:40:27.272858 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 01662423b6948ad0c3302b26976380a86c474a2acf773d1b143fed132a66e3dd
+2019/07/19 04:40:27.272905 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 577
+2019/07/19 04:40:36.453840 [1;35m[INF][m GID 209, five second countdown ends. Re-generate block.
+2019/07/19 04:40:36.454054 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:40:46.496176 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 0b45bdb3444b187a6dfbbe6e914432999253fc7581d14cb4662f428fb2ffa29b
+2019/07/19 04:40:46.522698 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 0b45bdb3444b187a6dfbbe6e914432999253fc7581d14cb4662f428fb2ffa29b
+2019/07/19 04:40:46.523043 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 578
+2019/07/19 04:40:46.531597 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/07/19 04:40:49.730773 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:40:49.731000 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:40:51.315093 [1;35m[INF][m GID 48, [ConfirmBlock] block hash: fe686b2e030328a396d314e270d4b9569b1f11afcc7d3522c921c24165aa200f
+2019/07/19 04:40:51.329832 [1;35m[INF][m GID 69, Rejected block fe686b2e030328a396d314e270d4b9569b1f11afcc7d3522c921c24165aa200f from 172.23.0.8:20338 (outbound): duplicate block in pool
+2019/07/19 04:40:51.340072 [1;35m[INF][m GID 1894, [ConfirmBlock] block hash: fe686b2e030328a396d314e270d4b9569b1f11afcc7d3522c921c24165aa200f
+2019/07/19 04:40:51.340199 [1;35m[INF][m GID 1894, [ConfirmBlock] block height: 579
+2019/07/19 04:41:02.777648 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:41:02.783486 [1;35m[INF][m GID 209, difficulty:  520095999
+2019-07-19 04:41:04.070 [INF] STAT: -> 579 [579 172.23.0.5:41706 (inbound), 577 172.23.0.6:53762 (inbound), 577 172.23.0.10:49672 (inbound), 577 172.23.0.2:54540 (inbound), 579 172.23.0.8:56534 (inbound), 577 172.23.0.11:44636 (inbound), 579 172.23.0.12:35962 (inbound), 579 172.23.0.7:58232 (inbound), 577 172.23.0.3:54960 (inbound), 577 172.23.0.13:33308 (inbound), 577 172.23.0.5:20338 (outbound), 577 172.23.0.8:20338 (outbound), 577 172.23.0.12:20338 (outbound), 577 172.23.0.7:20338 (outbound)]
+2019/07/19 04:41:04.314591 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:41:04.316535 [1;35m[INF][m GID 209, [ConfirmBlock] block hash: 2f4afa175aabd85789dc4105a39e9a890d6c6dc91c53b805c7d396c850c7f486
+2019/07/19 04:41:04.316912 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:41:04.392411 [1;35m[INF][m GID 1936, [ConfirmBlock] block hash: 2f4afa175aabd85789dc4105a39e9a890d6c6dc91c53b805c7d396c850c7f486
+2019/07/19 04:41:04.392450 [1;35m[INF][m GID 1936, [ConfirmBlock] block height: 580
+2019/07/19 04:41:04.425051 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 2f4afa175aabd85789dc4105a39e9a890d6c6dc91c53b805c7d396c850c7f486
+2019/07/19 04:41:04.425255 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 580
+2019/07/19 04:41:25.882858 [1;35m[INF][m GID 48, [ConfirmBlock] block hash: 1e9a37f3216d68b4964d744a84ee5b1cf186b6fed6c995d0d2484320ff157451
+2019/07/19 04:41:25.931585 [1;35m[INF][m GID 69, Rejected block 1e9a37f3216d68b4964d744a84ee5b1cf186b6fed6c995d0d2484320ff157451 from 172.23.0.12:20338 (outbound): duplicate block in pool
+2019/07/19 04:41:25.939693 [1;35m[INF][m GID 1986, [ConfirmBlock] block hash: 1e9a37f3216d68b4964d744a84ee5b1cf186b6fed6c995d0d2484320ff157451
+2019/07/19 04:41:25.943217 [1;35m[INF][m GID 1986, [ConfirmBlock] block height: 581
+2019/07/19 04:41:25.968296 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:41:25.968742 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:41:29.426587 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:41:29.426719 [1;35m[INF][m GID 209, [ConfirmBlock] block hash: e027dfd6fb10738892a6b2f765d25b577a6ab580e8eabee3055c8b26370d38e6
+2019/07/19 04:41:29.426831 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:41:29.483567 [1;35m[INF][m GID 2002, [ConfirmBlock] block hash: e027dfd6fb10738892a6b2f765d25b577a6ab580e8eabee3055c8b26370d38e6
+2019/07/19 04:41:29.484178 [1;35m[INF][m GID 2002, [ConfirmBlock] block height: 582
+2019/07/19 04:41:29.485096 [1;35m[INF][m GID 2002, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/07/19 04:41:40.049682 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:41:40.052367 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:41:42.297981 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 36172fb1533e53bb8c54e66d16926373b3835d948d31625ea6ba0c5fb656e977
+2019/07/19 04:41:42.323477 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 36172fb1533e53bb8c54e66d16926373b3835d948d31625ea6ba0c5fb656e977
+2019/07/19 04:41:42.323568 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 583
+2019/07/19 04:41:47.330607 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 6a15d52d23c5e6b09bbb0c82adfbb0cb4ba12e519b7fa705440fbb5bfa515cd8
+2019/07/19 04:41:47.409508 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 6a15d52d23c5e6b09bbb0c82adfbb0cb4ba12e519b7fa705440fbb5bfa515cd8
+2019/07/19 04:41:47.418286 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 584
+2019/07/19 04:41:47.430442 [1;35m[INF][m GID 2051, [ConfirmBlock] block hash: 6a15d52d23c5e6b09bbb0c82adfbb0cb4ba12e519b7fa705440fbb5bfa515cd8
+2019/07/19 04:41:47.430581 [1;35m[INF][m GID 2051, [ConfirmBlock] block height: 584
+2019/07/19 04:41:53.747593 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:41:53.749168 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:41:58.048063 [1;35m[INF][m GID 48, [ConfirmBlock] block hash: f57260d07c8ce72434b14279a512043d7f2f12b741d4d73ef9b4a7bca042566a
+2019/07/19 04:41:58.059049 [1;35m[INF][m GID 69, Rejected block f57260d07c8ce72434b14279a512043d7f2f12b741d4d73ef9b4a7bca042566a from 172.23.0.5:20338 (outbound): duplicate block in pool
+2019/07/19 04:41:58.070935 [1;35m[INF][m GID 2059, [ConfirmBlock] block hash: f57260d07c8ce72434b14279a512043d7f2f12b741d4d73ef9b4a7bca042566a
+2019/07/19 04:41:58.072277 [1;35m[INF][m GID 2059, [ConfirmBlock] block height: 585
+2019-07-19 04:42:04.066 [INF] STAT: -> 585 [585 172.23.0.7:58232 (inbound), 582 172.23.0.3:54960 (inbound), 583 172.23.0.13:33308 (inbound), 582 172.23.0.11:44636 (inbound), 584 172.23.0.12:35962 (inbound), 584 172.23.0.5:41706 (inbound), 582 172.23.0.6:53762 (inbound), 582 172.23.0.10:49672 (inbound), 582 172.23.0.2:54540 (inbound), 584 172.23.0.8:56534 (inbound), 582 172.23.0.5:20338 (outbound), 582 172.23.0.8:20338 (outbound), 582 172.23.0.12:20338 (outbound), 582 172.23.0.7:20338 (outbound)]
+2019/07/19 04:42:04.532886 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:42:04.533126 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:42:09.650293 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:42:09.650535 [1;35m[INF][m GID 209, [ConfirmBlock] block hash: 992d63fa242774e75f96934336e3d3f5f3e6f2eb2d397775aa024be0f1e70cef
+2019/07/19 04:42:09.651642 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:42:09.668697 [1;35m[INF][m GID 627, 172.23.0.7:58232 (inbound) sent a reject message Code: REJECT_INVALID, Hash 992d63fa242774e75f96934336e3d3f5f3e6f2eb2d397775aa024be0f1e70cef, Reason: Rejected block 992d63fa242774e75f96934336e3d3f5f3e6f2eb2d397775aa024be0f1e70cef from 172.23.0.4:20338 (outbound): duplicate block in pool
+2019/07/19 04:42:09.682352 [1;35m[INF][m GID 2063, [ConfirmBlock] block hash: 992d63fa242774e75f96934336e3d3f5f3e6f2eb2d397775aa024be0f1e70cef
+2019/07/19 04:42:09.688293 [1;35m[INF][m GID 2063, [ConfirmBlock] block height: 586
+2019/07/19 04:42:09.697950 [1;35m[INF][m GID 2063, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/07/19 04:42:09.703880 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 992d63fa242774e75f96934336e3d3f5f3e6f2eb2d397775aa024be0f1e70cef
+2019/07/19 04:42:09.704679 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 586
+2019/07/19 04:42:11.029517 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:42:11.034828 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:42:13.864398 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:42:13.864647 [1;35m[INF][m GID 209, [ConfirmBlock] block hash: 05d9d64ab9bcb422e340e65167909af379d6d71acaf2c7f4eafe6b9ee158579a
+2019/07/19 04:42:13.865873 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:42:13.906185 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 05d9d64ab9bcb422e340e65167909af379d6d71acaf2c7f4eafe6b9ee158579a
+2019/07/19 04:42:13.914055 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 587
+2019/07/19 04:42:13.943891 [1;35m[INF][m GID 612, 172.23.0.12:35962 (inbound) sent a reject message Code: REJECT_INVALID, Hash 05d9d64ab9bcb422e340e65167909af379d6d71acaf2c7f4eafe6b9ee158579a, Reason: Rejected block 05d9d64ab9bcb422e340e65167909af379d6d71acaf2c7f4eafe6b9ee158579a from 172.23.0.4:20338 (outbound): duplicate block in pool
+2019/07/19 04:42:13.969650 [1;35m[INF][m GID 2115, [ConfirmBlock] block hash: 05d9d64ab9bcb422e340e65167909af379d6d71acaf2c7f4eafe6b9ee158579a
+2019/07/19 04:42:13.969808 [1;35m[INF][m GID 2115, [ConfirmBlock] block height: 587
+2019/07/19 04:42:24.742678 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 8d299b4089983c104c2605bcc901f14516c7ed644aa131e13fe27d00f9ca93bc
+2019/07/19 04:42:24.834678 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 8d299b4089983c104c2605bcc901f14516c7ed644aa131e13fe27d00f9ca93bc
+2019/07/19 04:42:24.834761 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 588
+2019/07/19 04:42:30.470259 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 9c354bfd7e79fcf972ca822550804a7e0a3198c7753403e90e722a175b2c8717
+2019/07/19 04:42:30.509140 [1;35m[INF][m GID 2149, [ConfirmBlock] block hash: 9c354bfd7e79fcf972ca822550804a7e0a3198c7753403e90e722a175b2c8717
+2019/07/19 04:42:30.509178 [1;35m[INF][m GID 2149, [ConfirmBlock] block height: 589
+2019/07/19 04:42:30.526751 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 9c354bfd7e79fcf972ca822550804a7e0a3198c7753403e90e722a175b2c8717
+2019/07/19 04:42:30.526790 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 589
+2019/07/19 04:42:37.349165 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 3678b7ccebce769b4bc53856ff6eab65801c21d57a4fa83ef1e6c46fd61e0a47
+2019/07/19 04:42:37.372176 [1;35m[INF][m GID 2155, [ConfirmBlock] block hash: 3678b7ccebce769b4bc53856ff6eab65801c21d57a4fa83ef1e6c46fd61e0a47
+2019/07/19 04:42:37.372274 [1;35m[INF][m GID 2155, [ConfirmBlock] block height: 590
+2019/07/19 04:42:37.403748 [1;35m[INF][m GID 2155, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/07/19 04:42:37.405029 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 3678b7ccebce769b4bc53856ff6eab65801c21d57a4fa83ef1e6c46fd61e0a47
+2019/07/19 04:42:37.405140 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 590
+2019/07/19 04:42:43.867678 [1;35m[INF][m GID 209, five second countdown ends. Re-generate block.
+2019/07/19 04:42:43.888921 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:42:52.086282 [1;35m[INF][m GID 48, [ConfirmBlock] block hash: 46d92e3c228e49563725ddc4dfd70ecc2b1af6bb419cf718cf778682a2a928c8
+2019/07/19 04:42:52.087063 [1;35m[INF][m GID 69, Rejected block 46d92e3c228e49563725ddc4dfd70ecc2b1af6bb419cf718cf778682a2a928c8 from 172.23.0.5:20338 (outbound): duplicate block in pool
+2019/07/19 04:42:52.136780 [1;35m[INF][m GID 2199, [ConfirmBlock] block hash: 46d92e3c228e49563725ddc4dfd70ecc2b1af6bb419cf718cf778682a2a928c8
+2019/07/19 04:42:52.141513 [1;35m[INF][m GID 2199, [ConfirmBlock] block height: 591
+2019/07/19 04:42:52.163561 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 46d92e3c228e49563725ddc4dfd70ecc2b1af6bb419cf718cf778682a2a928c8
+2019/07/19 04:42:52.164676 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 591
+2019/07/19 04:42:55.137821 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: d9e662a56c6ddf4c7ce46395777f9c901cd5d161270f7592734bfe30191630dd
+2019/07/19 04:42:55.188473 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: d9e662a56c6ddf4c7ce46395777f9c901cd5d161270f7592734bfe30191630dd
+2019/07/19 04:42:55.189324 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 592
+2019/07/19 04:43:03.102995 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:43:03.103161 [1;35m[INF][m GID 209, difficulty:  520095999
+2019-07-19 04:43:04.065 [INF] STAT: -> 592 [592 172.23.0.5:41706 (inbound), 589 172.23.0.6:53762 (inbound), 589 172.23.0.10:49672 (inbound), 590 172.23.0.2:54540 (inbound), 592 172.23.0.8:56534 (inbound), 590 172.23.0.11:44636 (inbound), 592 172.23.0.12:35962 (inbound), 592 172.23.0.7:58232 (inbound), 590 172.23.0.3:54960 (inbound), 590 172.23.0.13:33308 (inbound), 590 172.23.0.5:20338 (outbound), 590 172.23.0.8:20338 (outbound), 590 172.23.0.12:20338 (outbound), 590 172.23.0.7:20338 (outbound)]
+2019/07/19 04:43:09.230773 [1;35m[INF][m GID 48, [ConfirmBlock] block hash: 2e874bb51612cf83c2f40910f2e770f8d3b001ee54863e61deac0ef6bcb5a27d
+2019/07/19 04:43:09.254123 [1;35m[INF][m GID 69, Rejected block 2e874bb51612cf83c2f40910f2e770f8d3b001ee54863e61deac0ef6bcb5a27d from 172.23.0.8:56534 (inbound): duplicate block in pool
+2019/07/19 04:43:09.266976 [1;35m[INF][m GID 2213, [ConfirmBlock] block hash: 2e874bb51612cf83c2f40910f2e770f8d3b001ee54863e61deac0ef6bcb5a27d
+2019/07/19 04:43:09.267833 [1;35m[INF][m GID 2213, [ConfirmBlock] block height: 593
+2019/07/19 04:43:09.291019 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 2e874bb51612cf83c2f40910f2e770f8d3b001ee54863e61deac0ef6bcb5a27d
+2019/07/19 04:43:09.291055 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 593
+2019/07/19 04:43:11.234585 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:43:11.234749 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:43:16.340694 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: b162ebd282de548b200426d685d7b12605910dd2f40730af824c9a847f99faf2
+2019/07/19 04:43:16.355088 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: b162ebd282de548b200426d685d7b12605910dd2f40730af824c9a847f99faf2
+2019/07/19 04:43:16.355235 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 594
+2019/07/19 04:43:16.355648 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/07/19 04:43:26.092214 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:43:26.092716 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:43:33.557167 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:43:33.565708 [1;35m[INF][m GID 209, [ConfirmBlock] block hash: ee828db485df53e0e68fe340cce34e2a0633a19e9315272afb2383d851a570be
+2019/07/19 04:43:33.566328 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:43:33.607460 [1;35m[INF][m GID 2222, [ConfirmBlock] block hash: ee828db485df53e0e68fe340cce34e2a0633a19e9315272afb2383d851a570be
+2019/07/19 04:43:33.607521 [1;35m[INF][m GID 2222, [ConfirmBlock] block height: 595
+2019/07/19 04:43:42.703301 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: e4cfc8c0b6c4633a1e4fb059115b29f291ec2a08694312f2a3a24669a0abdcfe
+2019/07/19 04:43:42.752569 [1;35m[INF][m GID 2294, [ConfirmBlock] block hash: e4cfc8c0b6c4633a1e4fb059115b29f291ec2a08694312f2a3a24669a0abdcfe
+2019/07/19 04:43:42.760055 [1;35m[INF][m GID 2294, [ConfirmBlock] block height: 596
+2019/07/19 04:43:42.793078 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: e4cfc8c0b6c4633a1e4fb059115b29f291ec2a08694312f2a3a24669a0abdcfe
+2019/07/19 04:43:42.793119 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 596
+2019/07/19 04:43:44.818988 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:43:44.824170 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:43:47.205429 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 5d05b55bd2fb16c45494d019a9e310a9c943e106cb62a4542f634ec90d03f42d
+2019/07/19 04:43:47.270176 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 5d05b55bd2fb16c45494d019a9e310a9c943e106cb62a4542f634ec90d03f42d
+2019/07/19 04:43:47.270471 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 597
+2019/07/19 04:43:56.126905 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 0461066d50e21a2a3a8143bb4edb8b379492bd395c0942135fae7df84178e800
+2019/07/19 04:43:56.212496 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 0461066d50e21a2a3a8143bb4edb8b379492bd395c0942135fae7df84178e800
+2019/07/19 04:43:56.236935 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 598
+2019/07/19 04:43:56.249828 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/07/19 04:43:56.276904 [1;35m[INF][m GID 2342, [ConfirmBlock] block hash: 0461066d50e21a2a3a8143bb4edb8b379492bd395c0942135fae7df84178e800
+2019/07/19 04:43:56.278414 [1;35m[INF][m GID 2342, [ConfirmBlock] block height: 598
+2019/07/19 04:44:00.897195 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 968f566e9be7cc0aad4e401b1bbb2b8d4910c1dd8db5fe1ff014a4ba35021213
+2019/07/19 04:44:00.944672 [1;35m[INF][m GID 2346, [ConfirmBlock] block hash: 968f566e9be7cc0aad4e401b1bbb2b8d4910c1dd8db5fe1ff014a4ba35021213
+2019/07/19 04:44:00.944797 [1;35m[INF][m GID 2346, [ConfirmBlock] block height: 599
+2019-07-19 04:44:04.073 [INF] STAT: -> 599 [595 172.23.0.11:44636 (inbound), 598 172.23.0.12:35962 (inbound), 598 172.23.0.5:41706 (inbound), 595 172.23.0.6:53762 (inbound), 595 172.23.0.10:49672 (inbound), 595 172.23.0.2:54540 (inbound), 598 172.23.0.8:56534 (inbound), 598 172.23.0.7:58232 (inbound), 595 172.23.0.3:54960 (inbound), 596 172.23.0.13:33308 (inbound), 595 172.23.0.5:20338 (outbound), 595 172.23.0.8:20338 (outbound), 595 172.23.0.12:20338 (outbound), 595 172.23.0.7:20338 (outbound)]
+2019/07/19 04:44:11.173523 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:44:11.187491 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:44:20.012482 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:44:20.016475 [1;35m[INF][m GID 209, [ConfirmBlock] block hash: 52edebdae6e6c20b2932ba97190a3028c24a02517eb1b15cbec4146c5e82b5e6
+2019/07/19 04:44:20.016725 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:44:20.057434 [1;35m[INF][m GID 2406, [ConfirmBlock] block hash: 52edebdae6e6c20b2932ba97190a3028c24a02517eb1b15cbec4146c5e82b5e6
+2019/07/19 04:44:20.057538 [1;35m[INF][m GID 2406, [ConfirmBlock] block height: 600
+2019/07/19 04:44:20.077222 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 52edebdae6e6c20b2932ba97190a3028c24a02517eb1b15cbec4146c5e82b5e6
+2019/07/19 04:44:20.077343 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 600
+2019/07/19 04:44:23.794870 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:44:23.794962 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:44:42.619835 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: b25f00520f3d2cb3a0d2d435384516c64568bd58cc47b0be1e643fa6d59d0984
+2019/07/19 04:44:42.648846 [1;35m[INF][m GID 2414, [ConfirmBlock] block hash: b25f00520f3d2cb3a0d2d435384516c64568bd58cc47b0be1e643fa6d59d0984
+2019/07/19 04:44:42.649621 [1;35m[INF][m GID 2414, [ConfirmBlock] block height: 601
+2019/07/19 04:44:42.718284 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: b25f00520f3d2cb3a0d2d435384516c64568bd58cc47b0be1e643fa6d59d0984
+2019/07/19 04:44:42.718386 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 601
+2019/07/19 04:44:53.803050 [1;35m[INF][m GID 209, five second countdown ends. Re-generate block.
+2019/07/19 04:44:53.803275 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:44:55.411127 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 5b2a8bc07ccfdee23045775266ee45c6c4f7650e4b6cfa551ad12d0c26b733aa
+2019/07/19 04:44:55.483141 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 5b2a8bc07ccfdee23045775266ee45c6c4f7650e4b6cfa551ad12d0c26b733aa
+2019/07/19 04:44:55.483200 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 602
+2019/07/19 04:44:55.483839 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/07/19 04:44:55.484093 [1;35m[INF][m GID 315, 172.23.0.5:20338 (outbound) sent a reject message Code: REJECT_INVALID, Hash 5b2a8bc07ccfdee23045775266ee45c6c4f7650e4b6cfa551ad12d0c26b733aa, Reason: Rejected block 5b2a8bc07ccfdee23045775266ee45c6c4f7650e4b6cfa551ad12d0c26b733aa from 172.23.0.4:51872 (inbound): duplicate block in pool
+2019/07/19 04:44:55.487727 [1;35m[INF][m GID 2445, [ConfirmBlock] block hash: 5b2a8bc07ccfdee23045775266ee45c6c4f7650e4b6cfa551ad12d0c26b733aa
+2019/07/19 04:44:55.487757 [1;35m[INF][m GID 2445, [ConfirmBlock] block height: 602
+2019/07/19 04:45:00.693219 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:45:00.693741 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:45:03.203113 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:45:03.203375 [1;35m[INF][m GID 209, [ConfirmBlock] block hash: 75f00128431039fcfa7fcc147bcbc43d68d64d220e169b3a5ac45e4840632883
+2019/07/19 04:45:03.203623 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:45:03.269932 [1;35m[INF][m GID 2504, [ConfirmBlock] block hash: 75f00128431039fcfa7fcc147bcbc43d68d64d220e169b3a5ac45e4840632883
+2019/07/19 04:45:03.270023 [1;35m[INF][m GID 2504, [ConfirmBlock] block height: 603
+2019-07-19 04:45:04.072 [INF] STAT: -> 603 [602 172.23.0.7:58232 (inbound), 600 172.23.0.3:54960 (inbound), 601 172.23.0.13:33308 (inbound), 602 172.23.0.12:35962 (inbound), 602 172.23.0.5:41706 (inbound), 600 172.23.0.6:53762 (inbound), 600 172.23.0.10:49672 (inbound), 600 172.23.0.2:54540 (inbound), 602 172.23.0.8:56534 (inbound), 600 172.23.0.11:44636 (inbound), 600 172.23.0.12:20338 (outbound), 600 172.23.0.7:20338 (outbound), 600 172.23.0.5:20338 (outbound), 600 172.23.0.8:20338 (outbound)]
+2019/07/19 04:45:10.278630 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:45:10.278792 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:45:19.745591 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: c482957c3ac043caf0d8c80868928d6605192abe8704ed5629107dbd9c957130
+2019/07/19 04:45:19.820000 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: c482957c3ac043caf0d8c80868928d6605192abe8704ed5629107dbd9c957130
+2019/07/19 04:45:19.820049 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 604
+2019/07/19 04:45:24.531561 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:45:24.532385 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:45:41.151599 [1;35m[INF][m GID 48, [ConfirmBlock] block hash: ebac58be0e336e9cb3270447a28989f349ca83d850b068ffb6e13ef189e70850
+2019/07/19 04:45:41.169401 [1;35m[INF][m GID 69, Rejected block ebac58be0e336e9cb3270447a28989f349ca83d850b068ffb6e13ef189e70850 from 172.23.0.8:56534 (inbound): duplicate block in pool
+2019/07/19 04:45:41.267331 [1;35m[INF][m GID 2555, [ConfirmBlock] block hash: ebac58be0e336e9cb3270447a28989f349ca83d850b068ffb6e13ef189e70850
+2019/07/19 04:45:41.268014 [1;35m[INF][m GID 2555, [ConfirmBlock] block height: 605
+2019/07/19 04:45:41.297315 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: ebac58be0e336e9cb3270447a28989f349ca83d850b068ffb6e13ef189e70850
+2019/07/19 04:45:41.297542 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 605
+2019/07/19 04:45:47.050422 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:45:47.051609 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:45:52.822521 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 073d7a4c26f625555659b786ee9999cf0a3bf6698cf1c4d5497ee985c62bd7d9
+2019/07/19 04:45:52.858853 [1;35m[INF][m GID 2592, [ConfirmBlock] block hash: 073d7a4c26f625555659b786ee9999cf0a3bf6698cf1c4d5497ee985c62bd7d9
+2019/07/19 04:45:52.859333 [1;35m[INF][m GID 2592, [ConfirmBlock] block height: 606
+2019/07/19 04:45:52.869157 [1;35m[INF][m GID 2592, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/07/19 04:45:55.135658 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: ca7eddd6b898129be0df37521751e4ceefa8d42e7c44cad4549dce3b6a9d1014
+2019/07/19 04:45:55.185386 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: ca7eddd6b898129be0df37521751e4ceefa8d42e7c44cad4549dce3b6a9d1014
+2019/07/19 04:45:55.187643 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 607
+2019/07/19 04:45:55.242470 [1;35m[INF][m GID 2604, [ConfirmBlock] block hash: ca7eddd6b898129be0df37521751e4ceefa8d42e7c44cad4549dce3b6a9d1014
+2019/07/19 04:45:55.242590 [1;35m[INF][m GID 2604, [ConfirmBlock] block height: 607
+2019-07-19 04:46:04.065 [INF] STAT: -> 607 [607 172.23.0.7:58232 (inbound), 604 172.23.0.3:54960 (inbound), 605 172.23.0.13:33308 (inbound), 607 172.23.0.5:41706 (inbound), 604 172.23.0.6:53762 (inbound), 604 172.23.0.10:49672 (inbound), 604 172.23.0.2:54540 (inbound), 607 172.23.0.8:56534 (inbound), 604 172.23.0.11:44636 (inbound), 607 172.23.0.12:35962 (inbound), 604 172.23.0.8:20338 (outbound), 605 172.23.0.12:20338 (outbound), 605 172.23.0.7:20338 (outbound), 604 172.23.0.5:20338 (outbound)]
+2019/07/19 04:46:12.877474 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 4c0dce0abc18c515d82edde19a3c1c6f70652ab22b7b035388dfb26a947ef093
+2019/07/19 04:46:12.893160 [1;35m[INF][m GID 2625, [ConfirmBlock] block hash: 4c0dce0abc18c515d82edde19a3c1c6f70652ab22b7b035388dfb26a947ef093
+2019/07/19 04:46:12.893267 [1;35m[INF][m GID 2625, [ConfirmBlock] block height: 608
+2019/07/19 04:46:17.052634 [1;35m[INF][m GID 209, five second countdown ends. Re-generate block.
+2019/07/19 04:46:17.052897 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:46:23.447920 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:46:23.448194 [1;35m[INF][m GID 209, [ConfirmBlock] block hash: 852e7183d801055a11ba7b373f2257816e13c68226a3572da65ca324b2318fc3
+2019/07/19 04:46:23.448494 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:46:23.474287 [1;35m[INF][m GID 627, 172.23.0.7:58232 (inbound) sent a reject message Code: REJECT_INVALID, Hash 852e7183d801055a11ba7b373f2257816e13c68226a3572da65ca324b2318fc3, Reason: Rejected block 852e7183d801055a11ba7b373f2257816e13c68226a3572da65ca324b2318fc3 from 172.23.0.4:20338 (outbound): duplicate block in pool
+2019/07/19 04:46:23.485205 [1;35m[INF][m GID 2681, [ConfirmBlock] block hash: 852e7183d801055a11ba7b373f2257816e13c68226a3572da65ca324b2318fc3
+2019/07/19 04:46:23.485434 [1;35m[INF][m GID 2681, [ConfirmBlock] block height: 609
+2019/07/19 04:46:26.839048 [1;35m[INF][m GID 48, [ConfirmBlock] block hash: 78836d822f5f3cd9eb4ef94bcc44ce7d652a2d2e12bb7d60563e3859b9b683a7
+2019/07/19 04:46:26.844740 [1;35m[INF][m GID 69, Rejected block 78836d822f5f3cd9eb4ef94bcc44ce7d652a2d2e12bb7d60563e3859b9b683a7 from 172.23.0.7:58232 (inbound): duplicate block in pool
+2019/07/19 04:46:26.855799 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 78836d822f5f3cd9eb4ef94bcc44ce7d652a2d2e12bb7d60563e3859b9b683a7
+2019/07/19 04:46:26.857177 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 610
+2019/07/19 04:46:26.880562 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/07/19 04:46:26.881460 [1;35m[INF][m GID 2706, [ConfirmBlock] block hash: 78836d822f5f3cd9eb4ef94bcc44ce7d652a2d2e12bb7d60563e3859b9b683a7
+2019/07/19 04:46:26.881488 [1;35m[INF][m GID 2706, [ConfirmBlock] block height: 610
+2019/07/19 04:46:27.430908 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:46:27.431235 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:46:30.573506 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:46:30.579696 [1;35m[INF][m GID 209, [ConfirmBlock] block hash: b38ac2927f191f7c0d51f4ccd85f31b44d021601a965b63a0be604333d64ad87
+2019/07/19 04:46:30.585218 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:46:30.632382 [1;35m[INF][m GID 2709, [ConfirmBlock] block hash: b38ac2927f191f7c0d51f4ccd85f31b44d021601a965b63a0be604333d64ad87
+2019/07/19 04:46:30.632533 [1;35m[INF][m GID 2709, [ConfirmBlock] block height: 611
+2019/07/19 04:46:30.663600 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: b38ac2927f191f7c0d51f4ccd85f31b44d021601a965b63a0be604333d64ad87
+2019/07/19 04:46:30.663638 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 611
+2019/07/19 04:46:40.042027 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:46:40.042279 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:46:52.161813 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 9c33b89d374769360208ac9bc3af6893ccd64092c906de5d570de4689b834d7b
+2019/07/19 04:46:52.187068 [1;35m[INF][m GID 2770, [ConfirmBlock] block hash: 9c33b89d374769360208ac9bc3af6893ccd64092c906de5d570de4689b834d7b
+2019/07/19 04:46:52.187226 [1;35m[INF][m GID 2770, [ConfirmBlock] block height: 612
+2019/07/19 04:46:52.193179 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 9c33b89d374769360208ac9bc3af6893ccd64092c906de5d570de4689b834d7b
+2019/07/19 04:46:52.193638 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 612
+2019/07/19 04:46:57.482811 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: bfe2919e095bc7e11fd39723f9e1bec64e954b9b5f51c0a1aef7bce3213d8f9a
+2019/07/19 04:46:57.535998 [1;35m[INF][m GID 2749, [ConfirmBlock] block hash: bfe2919e095bc7e11fd39723f9e1bec64e954b9b5f51c0a1aef7bce3213d8f9a
+2019/07/19 04:46:57.536036 [1;35m[INF][m GID 2749, [ConfirmBlock] block height: 613
+2019/07/19 04:46:57.540609 [1;35m[INF][m GID 627, 172.23.0.7:58232 (inbound) sent a reject message Code: REJECT_INVALID, Hash bfe2919e095bc7e11fd39723f9e1bec64e954b9b5f51c0a1aef7bce3213d8f9a, Reason: Rejected block bfe2919e095bc7e11fd39723f9e1bec64e954b9b5f51c0a1aef7bce3213d8f9a from 172.23.0.4:20338 (outbound): duplicate block in pool
+2019-07-19 04:47:04.074 [INF] STAT: -> 613 [611 172.23.0.3:54960 (inbound), 611 172.23.0.13:33308 (inbound), 613 172.23.0.7:58232 (inbound), 611 172.23.0.10:49672 (inbound), 611 172.23.0.2:54540 (inbound), 613 172.23.0.8:56534 (inbound), 611 172.23.0.11:44636 (inbound), 613 172.23.0.12:35962 (inbound), 612 172.23.0.5:41706 (inbound), 611 172.23.0.6:53762 (inbound), 611 172.23.0.5:20338 (outbound), 611 172.23.0.8:20338 (outbound), 611 172.23.0.12:20338 (outbound), 611 172.23.0.7:20338 (outbound)]
+2019/07/19 04:47:08.586223 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: dc54b825b7f9dea72170f294fc23da27d7cb2cc29e24234604144964b4717710
+2019/07/19 04:47:08.621612 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: dc54b825b7f9dea72170f294fc23da27d7cb2cc29e24234604144964b4717710
+2019/07/19 04:47:08.621654 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 614
+2019/07/19 04:47:08.622034 [1;35m[INF][m GID 69, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/07/19 04:47:10.060736 [1;35m[INF][m GID 209, five second countdown ends. Re-generate block.
+2019/07/19 04:47:10.061050 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:47:16.007422 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:47:16.009592 [1;35m[INF][m GID 209, [ConfirmBlock] block hash: 8e96a3b49e8d2377511b9b982ab17c84efafd0f7a01e90e91e0d2606ad477184
+2019/07/19 04:47:16.016592 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:47:16.086094 [1;35m[INF][m GID 2794, [ConfirmBlock] block hash: 8e96a3b49e8d2377511b9b982ab17c84efafd0f7a01e90e91e0d2606ad477184
+2019/07/19 04:47:16.093614 [1;35m[INF][m GID 2794, [ConfirmBlock] block height: 615
+2019/07/19 04:47:16.101772 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 8e96a3b49e8d2377511b9b982ab17c84efafd0f7a01e90e91e0d2606ad477184
+2019/07/19 04:47:16.122407 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 615
+2019/07/19 04:47:23.532019 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:47:23.532443 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:47:33.813523 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: a3c01fe5554782e7356191257a3f549fb530f74e51c1f40dd78f2ced0de01e43
+2019/07/19 04:47:33.842121 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: a3c01fe5554782e7356191257a3f549fb530f74e51c1f40dd78f2ced0de01e43
+2019/07/19 04:47:33.842176 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 616
+2019/07/19 04:47:41.302521 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 92f96754cac4b29649c25a17b178500591a983601b2a138a4c75f46d0ed1b091
+2019/07/19 04:47:41.349117 [1;35m[INF][m GID 2884, [ConfirmBlock] block hash: 92f96754cac4b29649c25a17b178500591a983601b2a138a4c75f46d0ed1b091
+2019/07/19 04:47:41.349165 [1;35m[INF][m GID 2884, [ConfirmBlock] block height: 617
+2019/07/19 04:47:41.375099 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 92f96754cac4b29649c25a17b178500591a983601b2a138a4c75f46d0ed1b091
+2019/07/19 04:47:41.375455 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 617
+2019/07/19 04:47:41.381010 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: d85eff29c63a9ed17a48b00f59f4a856abe5b3501c1fcd295f897141facb58f1
+2019/07/19 04:47:49.534768 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: a6893a10e6ceddbcb83e5bef8e5d2e7c293432d747951da1b8a2d4dbd7ab5c29
+2019/07/19 04:47:49.550824 [1;35m[INF][m GID 2865, [ConfirmBlock] block hash: a6893a10e6ceddbcb83e5bef8e5d2e7c293432d747951da1b8a2d4dbd7ab5c29
+2019/07/19 04:47:49.550893 [1;35m[INF][m GID 2865, [ConfirmBlock] block height: 618
+2019/07/19 04:47:49.551246 [1;35m[INF][m GID 2865, 
+CURRENT ARBITERS
+DUTYINDEX: 0
+INDEX                                                          PUBLICKEY ONDUTY 
+----- ------------------------------------------------------------------ ------
+1     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556  false
+2     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25  false
+3     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08  false
+4     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450   true
+----- ------------------------------------------------------------------ ------
+NEXT ARBITERS
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+1     0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2     0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+3     0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+4     021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+----- ------------------------------------------------------------------
+CURRENT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+NEXT CANDIDATES
+INDEX                                                          PUBLICKEY
+----- ------------------------------------------------------------------
+----- ------------------------------------------------------------------
+2019/07/19 04:47:50.405004 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:47:50.409584 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:47:57.067263 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:47:57.067641 [1;35m[INF][m GID 209, [ConfirmBlock] block hash: 75cbf0b5487cd72d8c0ff4f3043617aeb32b38c52a5cab7d6ad9b0a0b5f4070c
+2019/07/19 04:47:57.067912 [1;35m[INF][m GID 209, difficulty:  520095999
+2019/07/19 04:47:57.107607 [1;35m[INF][m GID 359, 172.23.0.7:20338 (outbound) sent a reject message Code: REJECT_INVALID, Hash 75cbf0b5487cd72d8c0ff4f3043617aeb32b38c52a5cab7d6ad9b0a0b5f4070c, Reason: Rejected block 75cbf0b5487cd72d8c0ff4f3043617aeb32b38c52a5cab7d6ad9b0a0b5f4070c from 172.23.0.4:55050 (inbound): duplicate block in pool
+2019/07/19 04:47:57.126712 [1;35m[INF][m GID 372, 172.23.0.12:20338 (outbound) sent a reject message Code: REJECT_INVALID, Hash 75cbf0b5487cd72d8c0ff4f3043617aeb32b38c52a5cab7d6ad9b0a0b5f4070c, Reason: Rejected block 75cbf0b5487cd72d8c0ff4f3043617aeb32b38c52a5cab7d6ad9b0a0b5f4070c from 172.23.0.4:36116 (inbound): duplicate block in pool
+2019/07/19 04:47:57.148004 [1;35m[INF][m GID 2890, [ConfirmBlock] block hash: 75cbf0b5487cd72d8c0ff4f3043617aeb32b38c52a5cab7d6ad9b0a0b5f4070c
+2019/07/19 04:47:57.148049 [1;35m[INF][m GID 2890, [ConfirmBlock] block height: 619
+2019/07/19 04:47:57.171051 [1;35m[INF][m GID 69, [ConfirmBlock] block hash: 75cbf0b5487cd72d8c0ff4f3043617aeb32b38c52a5cab7d6ad9b0a0b5f4070c
+2019/07/19 04:47:57.171454 [1;35m[INF][m GID 69, [ConfirmBlock] block height: 619
+2019/07/19 04:48:04.039921 [1;35m[INF][m GID 209, <================Solved Block==============>
+2019/07/19 04:48:04.040184 [1;35m[INF][m GID 209, difficulty:  520095999
+2019-07-19 04:48:04.072 [INF] STAT: -> 619 [618 172.23.0.5:41706 (inbound), 616 172.23.0.6:53762 (inbound), 616 172.23.0.10:49672 (inbound), 616 172.23.0.2:54540 (inbound), 619 172.23.0.8:56534 (inbound), 616 172.23.0.11:44636 (inbound), 619 172.23.0.12:35962 (inbound), 619 172.23.0.7:58232 (inbound), 616 172.23.0.3:54960 (inbound), 617 172.23.0.13:33308 (inbound), 616 172.23.0.8:20338 (outbound), 617 172.23.0.12:20338 (outbound), 617 172.23.0.7:20338 (outbound), 616 172.23.0.5:20338 (outbound)]

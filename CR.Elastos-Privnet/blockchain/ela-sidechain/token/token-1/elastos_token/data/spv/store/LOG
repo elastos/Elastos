@@ -42,3 +42,12 @@
 19:50:10.017648 version@stat F·[2] S·822B[822B] Sc·[0.50]
 19:50:10.087696 db@janitor F·4 G·0
 19:50:10.087711 db@open done T·72.522398ms
+=============== Jul 19, 2019 (UTC) ===============
+04:31:02.943877 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+04:31:02.976926 version@stat F·[2] S·822B[822B] Sc·[0.50]
+04:31:02.976947 db@open opening
+04:31:02.976990 journal@recovery F·1
+04:31:02.977483 journal@recovery recovering @10
+04:31:02.978302 version@stat F·[2] S·822B[822B] Sc·[0.50]
+04:31:03.039435 db@janitor F·4 G·0
+04:31:03.039487 db@open done T·62.505915ms

@@ -76,14 +76,6 @@ function build_docker {
     cd $CURRENT_DIR
 }
 
-
-build_docker "ela-sidechain/eth/oracle" "oracle" \
-    "cyberrepublic/elastos-sidechain-eth-oracle" "privnet-v0.4" "no"
-
-build_binary_and_docker "dev" "Elastos.ELA.SideChain.ETH" "ela-sidechain/eth" "eth" \
-    "cyberrepublic/elastos-sidechain-eth-node" "privnet-v0.4" "no" "no"
-
-: '
 build_binary_and_docker "v0.3.3" "Elastos.ELA" "ela-mainchain" "ela" \
     "cyberrepublic/elastos-mainchain-node" "v0.3.3" "yes" "yes"
 
@@ -96,8 +88,11 @@ build_binary_and_docker "v0.1.2" "Elastos.ELA.SideChain.ID" "ela-sidechain/did" 
 build_binary_and_docker "v0.1.2" "Elastos.ELA.SideChain.Token" "ela-sidechain/token" "token" \
     "cyberrepublic/elastos-sidechain-token-node" "v0.1.2" "yes" "yes"
 
-build_docker "ela-sidechain/eth" "eth" \
-    "cyberrepublic/elastos-sidechain-eth-node" "privnet-v0.4" "no" "yes"
+build_binary_and_docker "dev" "Elastos.ELA.SideChain.ETH" "ela-sidechain/eth" "eth" \
+    "cyberrepublic/elastos-sidechain-eth-node" "privnet-v0.4" "no" "no"
+
+build_docker "ela-sidechain/eth/oracle" "oracle" \
+    "cyberrepublic/elastos-sidechain-eth-oracle" "privnet-v0.4" "no"
 
 build_binary_and_docker "master" "Elastos.ORG.Wallet.Service" "restful-services/wallet-service" "service" \
     "cyberrepublic/elastos-wallet-service" "privnet-v0.4" "no" "yes"

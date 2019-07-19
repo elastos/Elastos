@@ -14,5 +14,13 @@
     "publicKey": "03ffe3021db71a9a40100c37fbe0774434c74b3efc6343bc16f9afa4fc9f4fc39e",
     "address": "EUscMawPCr8uFxKDtVxaq93Wbjm1DdtzeW",
     "passwordforkeystore": "elastos"
+  },
+  "eth": {
+    "name": "Eth Sidechain Pre-Loaded Wallet",
+    "description": "Pre-loaded transferred ELA from the mainchain to ETH sidechain wallet: 100,000 ETH ELA",
+    "keystore_file": "wallets/preloaded/keystore-sidechain-eth.dat",
+    "address": "0x4505b967d56f84647eb3a40f7c365f7d87a88bc3",
+    "passwordforkeystore": "elastos-privnet"
   }
 }
+

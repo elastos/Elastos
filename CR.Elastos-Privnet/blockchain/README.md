@@ -1,7 +1,7 @@
 ## General Info
 
 - Prerequisite basic knowledge of docker is expected  
-- After starting, the miners will automatically start running and about 18 containers are created
+- After starting, the miners will automatically start running and about 22 containers are created
 - Pre-mined 900 ELA on Mainchain miner reward address, 100,000 ELA on one mainchain address, 100,000 ELA on another mainchain address, 100,000 ELA on DID sidechain address and 100,000 ELA on Token sidechain address. For more, see [Wallets](#Wallets)
 - For the docker images that might be used for connecting to mainnet, testnet, regnet or private net, check out [https://cloud.docker.com/u/cyberrepublic/repository/list](https://cloud.docker.com/u/cyberrepublic/repository/list)
 
@@ -59,10 +59,9 @@ These are located in the `wallets` folder:
 - Token sidechain node 1: 40111-40115
 - Token sidechain node 2: 40211-40215
 
-### Ethereum Sidechain nodes
+### Ethereum Sidechain node
 
-- ETH sidechain node 1: 60111-60112
-- ETH sidechain node 2: 60211-60212
+- ETH sidechain node: 60011-60012
 
 ### Ethereum Sidechain Oracle Services
 

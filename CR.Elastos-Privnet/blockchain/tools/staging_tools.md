@@ -232,6 +232,9 @@ npm install web3;
 npm install express;
 node crosschain_oracle.js;
 ```
+- Deploy oracle service contract 
+```node deployctrt.js```
+
 - Transfer some ELA from main chain to Eth Address
 1. Change directory
   ```
@@ -265,7 +268,7 @@ node crosschain_oracle.js;
 4. Transfer ELA from the resources wallet to this newly created wallet
 
     ```
-    curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": '"$ELAADDRESS"',"amount": "5000"}]}' localhost:8091/api/1/transfer
+    curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": '"$ELAADDRESS"',"amount": "100000"}]}' localhost:8091/api/1/transfer
     ```
 
     Check whether the ELA got transferred successfully
@@ -276,14 +279,21 @@ node crosschain_oracle.js;
 5. Transfer ELA from main chain to token sidechain
 
     ```
-    ./ela-cli-crosschain wallet -t create --from $ELAADDRESS --deposit 0x961386e437294f9171040e2d56d4522c4f55187d --amount 2000 --fee 0.1;
-    ./ela-cli-crosschain wallet -t sign -p elastos --file to_be_signed.txn;
-    ./ela-cli-crosschain wallet -t send --file ready_to_send.txn;
-
-    ./ela-cli-crosschain wallet -t create --from $ELAADDRESS --deposit 0x840534b46b3b3bf8c1c3e4c7d34bc86933de7814 --amount 2000 --fee 0.1;
+    ./ela-cli-crosschain wallet -t create --from $ELAADDRESS --deposit 0x4505b967d56f84647eb3a40f7c365f7d87a88bc3 --amount 99999 --fee 0.1;
     ./ela-cli-crosschain wallet -t sign -p elastos --file to_be_signed.txn;
     ./ela-cli-crosschain wallet -t send --file ready_to_send.txn;
     ```
 
-- Deploy oracle service contract 
-```node deployctrt.js```
+- Check eth balance:
+```curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x4505b967d56f84647eb3a40f7c365f7d87a88bc3", "latest"],"id":1}' localhost:60011```
+
+should return
+```
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": "0x152cf383e51ef1920000"
+}
+```
+0x152cf383e51ef1920000 is 99998900000000000000000 in decimal format which is the unit in wei. This equals to 99998.9 ETH ELA
+
