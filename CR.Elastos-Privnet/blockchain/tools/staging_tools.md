@@ -283,8 +283,7 @@ node crosschain_oracle.js;
     ./ela-cli-crosschain wallet -t sign -p elastos --file to_be_signed.txn;
     ./ela-cli-crosschain wallet -t send --file ready_to_send.txn;
     ```
-
-- Check eth balance:
+6. Check eth balance:
 ```curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x4505b967d56f84647eb3a40f7c365f7d87a88bc3", "latest"],"id":1}' localhost:60011 | jq .```
 
 should return
