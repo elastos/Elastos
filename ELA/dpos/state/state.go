@@ -1037,12 +1037,14 @@ func (s *State) processIllegalEvidence(payloadData types.Payload,
 				producer.state = Illegal
 				producer.illegalHeight = height
 				s.IllegalProducers[key] = producer
+				producer.activateRequestHeight = math.MaxUint32
 				delete(s.ActivityProducers, key)
 				delete(s.Nicknames, producer.info.NickName)
 			}, func() {
 				producer.state = Active
 				producer.illegalHeight = 0
 				s.ActivityProducers[key] = producer
+				producer.activateRequestHeight = math.MaxUint32
 				delete(s.IllegalProducers, key)
 				s.Nicknames[producer.info.NickName] = struct{}{}
 			})
