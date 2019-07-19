@@ -42,6 +42,8 @@ public class ToSignFragment extends BaseFragment {
     ViewPager viewpage;
     @BindView(R.id.ll_vp)
     LinearLayout llVp;
+    @BindView(R.id.tv_back)
+    TextView tvBack;
 
     @Override
     protected int getLayoutId() {
@@ -63,12 +65,15 @@ public class ToSignFragment extends BaseFragment {
 
     }
 
-    @OnClick({R.id.iv_title_right})
+    @OnClick({R.id.iv_title_right, R.id.tv_back})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.iv_title_right:
                 //截图分享
                 ShareUtil.fxPic(getBaseActivity(), mRootView);
+                break;
+            case R.id.tv_back:
+                toMainFragment();
                 break;
         }
     }

@@ -13,6 +13,7 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.ui.Assets.fragment.mulsignwallet.ShowMulWallletPublicKeyFragment;
 import org.elastos.wallet.ela.ui.Assets.presenter.WallletManagePresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.WalletManageViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
@@ -52,6 +53,8 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
     LinearLayout llExportreadonly;
     @BindView(R.id.ll_showmulpublickey)
     LinearLayout llShowmulpublickey;
+    @BindView(R.id.ll_showwalletpublickey)
+    LinearLayout llShowwalletpublickey;
     private DialogUtil dialogUtil;
     String dialogAction = null;
     private Dialog dialog;
@@ -80,11 +83,12 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
         switch (wallet.getType()) {
             //0 普通单签 1单签只读 2普通多签 3多签只读
             case 0:
-
+                llShowwalletpublickey.setVisibility(View.GONE);
                 break;
             case 1:
                 llUpdatepwd.setVisibility(View.GONE);
                 llExportmnemonic.setVisibility(View.GONE);
+                llShowwalletpublickey.setVisibility(View.GONE);
                 break;
             case 2:
                 llExportmnemonic.setVisibility(View.GONE);
@@ -101,7 +105,7 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
     }
 
     @OnClick({R.id.tv_delete, R.id.ll_updatename, R.id.ll_updatepwd, R.id.ll_exportkeystore, R.id.ll_exportmnemonic,
-            R.id.ll_sign, R.id.ll_exportreadonly, R.id.ll_showmulpublickey})
+            R.id.ll_sign, R.id.ll_exportreadonly, R.id.ll_showmulpublickey, R.id.ll_showwalletpublickey})
     public void onViewClicked(View view) {
         Bundle bundle = null;
         dialogAction = null;
@@ -156,6 +160,12 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
                 bundle = new Bundle();
                 bundle.putParcelable("wallet", wallet);
                 start(ShowMulsignPublicKeyFragment.class, bundle);
+                break;
+            case R.id.ll_showwalletpublickey:
+                //查看多签钱包公钥
+                bundle = new Bundle();
+                bundle.putParcelable("wallet", wallet);
+                start(ShowMulWallletPublicKeyFragment.class, bundle);
                 break;
 
         }

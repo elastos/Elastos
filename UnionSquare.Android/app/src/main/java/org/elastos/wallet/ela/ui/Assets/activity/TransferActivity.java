@@ -121,8 +121,12 @@ public class TransferActivity extends BaseActivity {
                         finish();
                         break;
                     case 2:
+                        post(RxEnum.TOSIGN.ordinal(), "", attributes);
+                        finish();
                         break;
                     case 3:
+                        post(RxEnum.TOSIGN.ordinal(), "", attributes);
+                        finish();
                         break;
 
                 }

@@ -5,15 +5,12 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.widget.DrawableUtils;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -46,13 +43,10 @@ import org.elastos.wallet.ela.utils.DividerItemDecoration;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.SPUtil;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
-import butterknife.Unbinder;
 
 /**
  * 超级节点选举
@@ -77,7 +71,8 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     @BindView(R.id.tv_zb)
     TextView tv_zb;
     @BindView(R.id.tv_num)
-    TextView tv_num;@BindView(R.id.tv_nodenum)
+    TextView tv_num;
+    @BindView(R.id.tv_nodenum)
     TextView tvNodenum;
     @BindView(R.id.tv_signupfor)
     TextView tv_signupfor;
@@ -234,7 +229,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
             netList.clear();
         }
         netList.addAll(dataResponse.getData().getResult().getProducers());
-        tvNodenum.setText(netList.size()+"");
+        tvNodenum.setText(netList.size() + "");
         //有自已的投票就排第一
         if (publicKey != null && netList != null) {
             for (int i = 0; i < netList.size(); i++) {

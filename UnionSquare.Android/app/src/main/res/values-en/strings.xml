@@ -402,4 +402,12 @@
     <string name="social">Community</string>
     <string name="nopermiss">当前钱包无权签名此交易</string>
     <string name="onlyid">识别码 \n【 %1$s 】</string>
+    <string name="signstatus">（已签名：%1$s，待签名：%2$s）</string>
+    <string name="showwallletpk">查看钱包公钥</string>
+    <string name="pknum">公钥数量</string>
+    <string name="pklist">公钥列表</string>
+    <string name="joinedpk">参与公钥</string>
+    <string name="currentpk">本地公钥</string>
+    <string name="scanallqr">请连续扫描所有二维码</string>
+    <string name="backtostart">返回首页</string>
 </resources>

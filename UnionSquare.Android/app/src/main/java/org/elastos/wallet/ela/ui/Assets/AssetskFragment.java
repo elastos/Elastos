@@ -189,25 +189,10 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                         case Constant.SIGN:
                             //去签名
                             //数据完整后跳转//如果是其他数据  用新的数据
-                            //0 普通单签 1单签只读 2普通多签 3多签只读
-                            if (wallet.getType() == 1 || wallet.getType() == 3) {
-                                showToast(getString(R.string.nopermiss));
-                                return;
-                            }
                             String attribute = getData(jsonObject, Constant.SIGN);
                             if (!TextUtils.isEmpty(attribute)) {
                                 bundle.putParcelable("wallet", wallet);
-                                bundle.putString("attribute", attribute);
-                                ((BaseFragment) getParentFragment()).start(SignFragment.class, bundle);
-                            }
-                            break;
-                        case Constant.PUBLISH:
-                            //目前是复制当前页面
-                            String signedattribute = getData(jsonObject, Constant.SIGN);
-                            if (!TextUtils.isEmpty(signedattribute)) {
-                                bundle.putParcelable("wallet", wallet);
-                                bundle.putString("attribute", signedattribute);
-                                bundle.putInt("type", Constant.PUBLISH);
+                                bundle.putString("attributes", attribute);
                                 ((BaseFragment) getParentFragment()).start(SignFragment.class, bundle);
                             }
                             break;

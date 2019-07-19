@@ -25,7 +25,6 @@
         android:layout_marginTop="@dimen/px70"
         android:gravity="center"
         android:lineSpacingMultiplier="1.2"
-        android:text="@string/onlyid"
         android:textColor="#ffffffff"
         android:textSize="11sp" />
 
@@ -46,6 +45,7 @@
             android:paddingLeft="35dp"
             android:paddingRight="35dp" />
     </LinearLayout>
+
     <TextView
         android:id="@+id/tv_vptitle"
         android:layout_width="match_parent"
@@ -54,6 +54,7 @@
         android:gravity="center"
         android:textColor="#ffffffff"
         android:textSize="13sp" />
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -62,25 +63,43 @@
         android:text="@string/pleasesign"
         android:textColor="#ffffffff"
         android:textSize="11sp" />
+
+    <TextView
+        android:visibility="gone"
+        android:id="@+id/tv_signstatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/signstatus"
+        android:textColor="#ffffffff"
+        android:textSize="11sp" />
+
     <TextView
         android:id="@+id/tv_multip"
-        android:layout_marginTop="@dimen/px56"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="请连续扫描所有二维码"
+        android:layout_marginTop="@dimen/px56"
+        android:text="@string/scanallqr"
         android:textColor="#ffffffff"
-        android:textSize="13sp"
-        />
+        android:textSize="13sp" />
+
     <View
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
 
     <TextView
-        android:visibility="gone"
         android:id="@+id/tv_publish"
         style="@style/button_margin"
         android:layout_marginBottom="@dimen/px180"
         android:text="@string/publishnow"
+        android:textSize="15sp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/tv_back"
+        style="@style/button_margin"
+        android:layout_marginBottom="@dimen/px180"
+        android:text="@string/backtostart"
         android:textSize="15sp" />
 </LinearLayout>

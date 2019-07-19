@@ -392,9 +392,9 @@ public class QRCodeUtils {
             String tempContent = content.substring(i, max);
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("type", type);
-            jsonObject.addProperty("data", tempContent);
             jsonObject.addProperty("max", Math.ceil(content.length() / (factor * 1f)));
             jsonObject.addProperty("current", Math.ceil(max / (factor * 1f)));
+            jsonObject.addProperty("data", tempContent);
             Bitmap bitmap = createQrCodeBitmap(jsonObject.toString(), width, height);
             bitmaps.add(bitmap);
             i = max;

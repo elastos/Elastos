@@ -1232,5 +1232,20 @@ public class MyWallet {
             return exceptionProcess(e, "syncStart " + formatWalletName(masterWalletID, chainID));
         }
     }
+
+    public BaseEntity getTransactionSignedInfo(String masterWalletID, String chainID, String rawTransaction) {
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
+
+            }
+
+            String result = subWallet.GetTransactionSignedInfo(rawTransaction);
+            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, result, "getTransactionSignedInfo");
+        } catch (WalletException e) {
+            return exceptionProcess(e, "getTransactionSignedInfo " + formatWalletName(masterWalletID, chainID));
+        }
+    }
 }
 

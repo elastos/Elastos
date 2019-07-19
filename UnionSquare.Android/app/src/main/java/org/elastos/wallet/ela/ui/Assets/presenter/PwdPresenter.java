@@ -47,7 +47,7 @@ public class PwdPresenter extends PresenterAbstract {
                 return baseFragment.getMyWallet().signTransaction(walletId, chainId, rawTransaction, pwd);
             }
         });
-        subscriberObservable(observer, observable);
+        subscriberObservable(observer, observable, baseFragment);
     }
 
     //步骤3
@@ -59,7 +59,18 @@ public class PwdPresenter extends PresenterAbstract {
                 return baseFragment.getMyWallet().publishTransaction(walletId, chainId, rawTransaction);
             }
         });
-        subscriberObservable(observer, observable);
+        subscriberObservable(observer, observable, baseFragment);
+    } //步骤3
+
+    public void getTransactionSignedInfo(String walletId, String chainId, String rawTransaction, BaseFragment baseFragment) {
+        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().getTransactionSignedInfo(walletId, chainId, rawTransaction);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
     }
 
 
