@@ -215,6 +215,7 @@ func (a *arbitrators) GetFinalRoundChange() common.Fixed64 {
 
 func (a *arbitrators) ForceChange(height uint32) error {
 	a.mtx.Lock()
+	defer a.mtx.Unlock()
 
 	block, err := a.getBlockByHeight(height)
 	if err != nil {
@@ -237,14 +238,12 @@ func (a *arbitrators) ForceChange(height uint32) error {
 		return err
 	}
 
-	a.mtx.Unlock()
-
 	if a.started {
 		go events.Notify(events.ETDirectPeersChanged,
 			a.GetNeedConnectArbiters())
 	}
 
-	a.DumpInfo(height)
+	a.dumpInfo(height)
 
 	return nil
 }
@@ -259,7 +258,7 @@ func (a *arbitrators) tryHandleError(height uint32, err error) error {
 	}
 }
 
-func (a *arbitrators) NormalChange(height uint32) error {
+func (a *arbitrators) normalChange(height uint32) error {
 	a.snapshot(height)
 
 	if err := a.changeCurrentArbitrators(); err != nil {
@@ -291,7 +290,7 @@ func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
 			panic(fmt.Sprintf("normal change fail when clear DPOS reward: "+
 				" transaction, height: %d, error: %s", block.Height, err))
 		}
-		if err := a.NormalChange(block.Height); err != nil {
+		if err := a.normalChange(block.Height); err != nil {
 			panic(fmt.Sprintf("normal change fail at height: %d, error: %s",
 				block.Height, err))
 		}
@@ -883,6 +882,10 @@ func (a *arbitrators) DumpInfo(height uint32) {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
 
+	a.dumpInfo(height)
+}
+
+func (a *arbitrators) dumpInfo(height uint32) {
 	var printer func(string, ...interface{})
 	changeType, _ := a.getChangeType(height + 1)
 	switch changeType {
