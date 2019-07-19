@@ -146,7 +146,7 @@ func (c *CheckPoint) LogError(err error) {
 	log.Warn("[CheckPoint] error: ", err.Error())
 }
 
-//Write data to writer
+// Serialize write data to writer
 func (c *CheckPoint) Serialize(w io.Writer) (err error) {
 	if err = common.WriteUint32(w, c.Height); err != nil {
 		return
@@ -183,7 +183,7 @@ func (c *CheckPoint) Serialize(w io.Writer) (err error) {
 	return c.StateKeyFrame.Serialize(w)
 }
 
-//read data to reader
+// Deserialize read data to reader
 func (c *CheckPoint) Deserialize(r io.Reader) (err error) {
 	if c.Height, err = common.ReadUint32(r); err != nil {
 		return
