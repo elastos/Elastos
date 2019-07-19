@@ -7,7 +7,7 @@ function setup_node() {
     SUB_DIR=${2}
 
     cd ela-${TYPE_DIR}/${SUB_DIR}
-    for dir in $(ls -d */)
+    for dir in $(ls -d */ | grep "-")
     do
         rm -rf ${dir}/backup 
         rm -rf ${dir}/elastos*
@@ -15,15 +15,15 @@ function setup_node() {
         container_name=$(echo $dir | sed 's:/*$::')
         if [ "${TYPE_DIR}" == "mainchain" ]
         then
-            docker cp ela-${container_name}:/root/ela/elastos ${absolute_path_dir}/backup
-            docker cp ela-${container_name}:/root/ela/elastos ${absolute_path_dir}/
+            docker cp privnet-${container_name}:/ela/elastos ${absolute_path_dir}/backup
+            docker cp privnet-${container_name}:/ela/elastos ${absolute_path_dir}/
         elif [ "${TYPE_DIR}" == "arbitrator" ]
         then
-            docker cp ela-${container_name}:/root/arbiter/elastos_arbiter ${absolute_path_dir}/backup
-            docker cp ela-${container_name}:/root/arbiter/elastos_arbiter ${absolute_path_dir}/
+            docker cp privnet-${container_name}:/arbiter/elastos_arbiter ${absolute_path_dir}/backup
+            docker cp privnet-${container_name}:/arbiter/elastos_arbiter ${absolute_path_dir}/
         else
-            docker cp ela-sidechain-${container_name}:/root/${SUB_DIR}/elastos_${SUB_DIR} ${absolute_path_dir}/backup
-            docker cp ela-sidechain-${container_name}:/root/${SUB_DIR}/elastos_${SUB_DIR} ${absolute_path_dir}/
+            docker cp privnet-sidechain-${container_name}:/${SUB_DIR}/elastos_${SUB_DIR} ${absolute_path_dir}/backup
+            docker cp privnet-sidechain-${container_name}:/${SUB_DIR}/elastos_${SUB_DIR} ${absolute_path_dir}/
         fi
     done
     cd ${CURRENT_DIR}

@@ -57,7 +57,17 @@ These are located in the `wallets` folder:
 ### Token Sidechain nodes
 
 - Token sidechain node 1: 40111-40115
-- Token sidechain node 2: 40111-40115
+- Token sidechain node 2: 40211-40215
+
+### Ethereum Sidechain nodes
+
+- ETH sidechain node 1: 60111-60112
+- ETH sidechain node 2: 60211-60212
+
+### Ethereum Sidechain Oracle Services
+
+- ETH sidechain oracle 1: 60113
+- ETH sidechain oracle 2: 60213
 
 ### Arbitrator nodes
 

@@ -43,7 +43,6 @@ ENV SRC_DIR="/eth"
 WORKDIR $SRC_DIR
 
 COPY --from=builder /go/src/github.com/elastos/Elastos.ELA.SideChain.ETH/build/bin/geth ${SRC_DIR}/geth
-COPY eth-accounts-pass.txt ${SRC_DIR}/eth-accounts-pass.txt
 
 RUN apk update \
     && apk add --no-cache curl ca-certificates \
@@ -54,4 +53,4 @@ USER elauser
 
 EXPOSE 8545 30303 30303/udp
 
-ENTRYPOINT ["/bin/sh", "-c", "./geth --testnet --datadir elastos_eth --ethash.dagdir elastos_ethash --rpc --rpcaddr 0.0.0.0 --rpccorsdomain '*' --rpcport 8545 --rpcapi 'personal,db,eth,net,web3,txpool,miner' --unlock 0x4505b967d56f84647eb3a40f7c365f7d87a88bc3,0x268b7f52010cbbca2d910b5e67260fc119afa5c9 --password ./eth-accounts-pass.txt"]
+ENTRYPOINT ["/bin/sh", "-c", "./geth --mine --datadir elastos_eth --ethash.dagdir elastos_ethash --rpc --rpcaddr 0.0.0.0 --rpccorsdomain '*' --rpcport 8545 --rpcapi 'personal,db,eth,net,web3,txpool,miner' --unlock 0x961386e437294f9171040e2d56d4522c4f55187d --password ./eth-accounts-pass.txt"]

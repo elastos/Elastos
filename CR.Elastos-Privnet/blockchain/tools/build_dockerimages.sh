@@ -76,10 +76,9 @@ function build_docker {
     cd $CURRENT_DIR
 }
 
-: '
+
 build_docker "ela-sidechain/eth/oracle" "oracle" \
     "cyberrepublic/elastos-sidechain-eth-oracle" "privnet-v0.4" "no"
-'
 
 build_binary_and_docker "dev" "Elastos.ELA.SideChain.ETH" "ela-sidechain/eth" "eth" \
     "cyberrepublic/elastos-sidechain-eth-node" "privnet-v0.4" "no" "no"

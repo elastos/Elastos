@@ -179,30 +179,15 @@ services:
       - blockchain
     tty: true 
 
-  privnet-sidechain-eth-1:
-    container_name: privnet-sidechain-eth-1
+  privnet-sidechain-eth-node:
+    container_name: privnet-sidechain-eth-node
     image: cyberrepublic/elastos-sidechain-eth-node:privnet-v0.4
     volumes:
-      - ~/.volumes/elastos-privnet/eth-1:/eth/elastos_eth
+      - ~/.volumes/elastos-privnet/eth-node:/eth/elastos_eth
+      - ${PWD}/ela-sidechain/eth/eth-node/eth-accounts-pass.txt:/eth/eth-accounts-pass.txt
     ports:
-      - 60111:8545
-      - 60112:30303
-    networks:
-      - blockchain
-    tty: true 
-
-  privnet-sidechain-eth-2:
-    container_name: privnet-sidechain-eth-2
-    image: cyberrepublic/elastos-sidechain-eth-node:privnet-v0.4
-    depends_on:
-      - privnet-mainchain-node
-      - privnet-mainchain-dpos-2
-      - privnet-mainchain-crc-2
-    volumes:
-      - ~/.volumes/elastos-privnet/eth-2:/eth/elastos_eth
-    ports:
-      - 60211:8545
-      - 60212:30303
+      - 60011:8545
+      - 60012:30303
     networks:
       - blockchain
     tty: true 
@@ -210,9 +195,8 @@ services:
   privnet-sidechain-eth-oracle-1:
     container_name: privnet-sidechain-eth-oracle-1
     image: cyberrepublic/elastos-sidechain-eth-oracle:privnet-v0.4
-    volumes:
-      - ${PWD}/ela-sidechain/eth/oracle/oracle-1/common.js:/oracle/common.js
-      - ${PWD}/ela-sidechain/eth/oracle/oracle-1/ctrt.js:/oracle/ctrt.js
+    depends_on:
+      - privnet-sidechain-eth-node
     ports:
       - 60113:16666
     networks:
@@ -222,9 +206,8 @@ services:
   privnet-sidechain-eth-oracle-2:
     container_name: privnet-sidechain-eth-oracle-2
     image: cyberrepublic/elastos-sidechain-eth-oracle:privnet-v0.4
-    volumes:
-      - ${PWD}/ela-sidechain/eth/oracle/oracle-2/common.js:/oracle/common.js
-      - ${PWD}/ela-sidechain/eth/oracle/oracle-2/ctrt.js:/oracle/ctrt.js
+    depends_on:
+      - privnet-sidechain-eth-node
     ports:
       - 60213:16666
     networks:

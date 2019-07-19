@@ -102,7 +102,22 @@ func NewService(cfg *Config, s *node.Node) (*Service, error) {
 	var spvCfg spv.DPOSConfig
 	switch strings.ToLower(cfg.ActiveNet) {
 	case "testnet", "test", "t":
-		//chainParams = config.DefaultParams.TestNet()
+		chainParams = config.DefaultParams.TestNet()
+		spvCfg = spv.DPOSConfig{
+			Config: spv.Config{
+				DataDir:     cfg.DataDir,
+				ChainParams: chainParams,
+			},
+		}
+	case "regnet", "reg", "r":
+		chainParams = config.DefaultParams.RegNet()
+		spvCfg = spv.DPOSConfig{
+			Config: spv.Config{
+				DataDir:     cfg.DataDir,
+				ChainParams: chainParams,
+			},
+		}
+	default:
 		chainParams = &config.DefaultParams
 		chainParams.DPoSMagic = 7630403
 		chainParams.DPoSDefaultPort = 20339
@@ -125,70 +140,61 @@ func NewService(cfg *Config, s *node.Node) (*Service, error) {
 		chainParams.PublicDPOSHeight = 500
 		spvCfg = spv.DPOSConfig{
 			Config: spv.Config{
-				DataDir:        cfg.DataDir,
-				ChainParams:    chainParams,
-				PermanentPeers: []string{"127.0.0.1:10016", "127.0.0.1:10116", "127.0.0.1:10216", "127.0.0.1:10516", "127.0.0.1:10616"},
-			},
-		}
-	case "regnet", "reg", "r":
-		chainParams = config.DefaultParams.RegNet()
-		spvCfg = spv.DPOSConfig{
-			Config: spv.Config{
 				DataDir:     cfg.DataDir,
 				ChainParams: chainParams,
+				PermanentPeers: []string{"privnet-mainchain-node:20338",
+					"privnet-mainchain-crc-1:20338",
+					"privnet-mainchain-crc-2:20338",
+					"privnet-mainchain-dpos-1:20338",
+					"privnet-mainchain-dpos-2:20338",
+				},
 			},
 		}
-	default:
-		chainParams = &config.DefaultParams
-		spvCfg = spv.DPOSConfig{
-			Config: spv.Config{
-				DataDir:     cfg.DataDir,
-				ChainParams: chainParams,
-			},
-		}
-	}
 
 	dataDir = cfg.DataDir
 	initLog(cfg.DataDir)
 ```
-- Modify params/bootnodes.go to add private net stuff
-```json
-var TestnetBootnodes = []string{
-	"enode://a3dd9132949575c702fe5ed19c481759507330c6e536bdb5cb1f3c3dab6c8f0df2781bbea0985411053b0db54aec6d87dbd8def4e29b4e402d63118d1cd3bfd4@127.0.0.1:30301",
-	//"enode://5e1d6f9f74e33b2d1e2fda87efaf60a788b338c08eefd3a435e9c7de98645bc041421c27d9ed3927c7b5195febd691aff30de881842749f3030089df0e135232@3.208.184.54:30301",
-	//"enode://30dc2b7986e2ec5902498ec26fad6fcecece617aa1652f227f684ede6a0939bb7a205ada1c91420d30b427c86bbdcc31fdfd6d955dd8f5854370f583025a0708@3.209.35.13:30301",
-	//"enode://b0357d45e9070c1660f63f077e0e3b0054a18d93785589d498586b6e0b7ec7c5b39ef608e82e7280ca95019db7c36455275d98a3e8684916ba8f3a7aab4ad38b@3.210.227.193:30301",
-}
-```
 - Modify core/genesis.go to add private net stuff
 ```json
-func DefaultTestnetGenesisBlock() *Genesis {
+func DefaultGenesisBlock() *Genesis {
 	genesis := &Genesis{
-		Config:     params.TestnetChainConfig,
-		Timestamp:  0x5bda9da7,
-		ExtraData:  hexutil.MustDecode("0x0000000000000000000000000000000000000000000000000000000000000000ab19cd830963611036c8f23b3aa1e143632342e70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
-		GasLimit:   0x2068F7700,
-		Difficulty: big.NewInt(1),
-		Alloc:      nil,
+		Config:     params.MainnetChainCon
+        ...
+        ...
+        ...
+    extra = append(extra, bytes.Repeat([]byte{0x00}, 32)...)
+	/*
+		address1 := hexutil.MustDecode("0xd7b0ddec94d96d4c7870deac1a2fe3347b9b4b85")
+    */
+    address := hexutil.MustDecode("0x961386e437294f9171040e2d56d4522c4f55187d")
+	extra = append(extra, address...)
+    extra = append(extra, bytes.Repeat([]byte{0x00}, 65)...)
+	genesis.ExtraData = extra
+	return genesis
+}
+```
+- Modify cmd/utils/flags.go to add private net stuff
+```json
+	BlackContractAddr = cli.StringFlag{
+		Name:  "black.contract.address",
+		Usage: "configue Black Contract address",
+		Value: "0x491bC043672B9286fA02FA7e0d6A3E5A0384A31A",
 	}
-    return genesis
 ```
-- ```go install ./...```
-- ```cp $GOPATH/bin/abigen  /home/kpachhai/dev/bin/bootnode  $GOPATH/bin/clef  $GOPATH/bin/ethkey  $GOPATH/bin/evm  /home/kpachhai/dev/bin/examples  /home/kpachhai/dev/bin/faucet  $GOPATH/bin/geth  /home/kpachhai/dev/bin/mimegen  /home/kpachhai/dev/bin/p2psim  /home/kpachhai/dev/bin/puppeth  /home/kpachhai/dev/bin/rlpdump  /home/kpachhai/dev/bin/simulations  /home/kpachhai/dev/bin/swarm  /home/kpachhai/dev/bin/swarm-smoke  /home/kpachhai/dev/bin/wnode build/bin/```
-- Create an account - create two accounts - one for mining and two for oracle service(have 2 eth sidechains running so need 2 oracle services)
-- Genesis Block Hash: 0xd81e19b9e917a297ef45babb6dc7c16705bb858fe14c67b25847768149f6396c
-- Genesis address: XEHPFZ9DUg7MaquN8vLKzwi1fSU9nLmFto
+
+- ```make geth```
+- Create an account for mining
+- Genesis Block Hash: b0cd29490c792dbcbe75adadee415270b9e5c8ae89dfed835440f2ac606eebfc
+- Genesis address: XZyAtNipJ7fdgBRhdzCoyS7A3PDSzR7u98
 ```
-./geth --testnet --datadir elastos_eth console;
+./geth --mine --datadir elastos_eth console;
 personal.newAccount("elastos-privnet");
 ```
 - Check keystore file at elastos_eth/keystore
-- Generate key file for bootnode:
-```./bootnode -genkey boot_test```
-- Start bootnode:
-```./bootnode -nodekey boot_test -addr ":30301" -nat "ip:127.0.0.1"```
+- Because we will only be running one eth node, we won't be using any bootnode
 - Start geth:
-```./geth --testnet --datadir elastos_eth --ethash.dagdir elastos_ethash --rpc --rpcaddr 0.0.0.0 --rpccorsdomain '*' --rpcport 8545 --rpcapi 'personal,db,eth,net,web3,txpool,miner' --unlock 0x4505b967d56f84647eb3a40f7c365f7d87a88bc3,0x268b7f52010cbbca2d910b5e67260fc119afa5c9 --password ./eth-accounts-pass.txt```
+```./geth --mine --datadir elastos_eth --ethash.dagdir elastos_ethash --rpc --rpcaddr 0.0.0.0 --rpccorsdomain '*' --rpcport 8545 --rpcapi 'personal,db,eth,net,web3,txpool,miner' --unlock 0x961386e437294f9171040e2d56d4522c4f55187d --password ./eth-accounts-pass.txt```
+    
 - Items needed for oracle:
 deployctrt.js
 ```
@@ -214,8 +220,8 @@ ks.js
 "use strict";
 
 module.exports = {
-   kstore: {"address":"82f9dc060f38e778cf7b719d3057e814318b7f55","crypto":{"cipher":"aes-128-ctr","ciphertext":"0da9f88336c0e5a587b5178923f6618b36719b76e884b6c61769651029cd3969","cipherparams":{"iv":"600f19c3343bbc996e6884c3d4eeee22"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"378427135244e7f532f99cace05acfe2fc1d6c0bebe06e5267acd9b0339f6066"},"mac":"188bb09bc0b342391203ae321da4ee88e5f91d1748624e09babccbef58560388"},"id":"d9624552-5d99-4953-ae80-55061766cb91","version":3},
-   kpass: ""
+   kstore: {"address":"840534b46b3b3bf8c1c3e4c7d34bc86933de7814","crypto":{"cipher":"aes-128-ctr","ciphertext":"2e8ed4f40c71538a12df95fa0b5b21707be75c7dd1b57e390e505659d6a4ab72","cipherparams":{"iv":"f8b3e54a710dc7ee7faae3e7870d0cc0"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"3affb21811ef5115de926976e9b3119f92545bcfa574ba51d9200cd4d2d8531d"},"mac":"526443e3cf1e3194afbfccc9f8f7aa8ce30b5dbb7653da513851a7d8d85407f9"},"id":"c66a6ceb-1542-429f-81db-0ca916b72fd3","version":3},
+   kpass: "12345678"
 }
 ```
 - Deploy oracle:
@@ -239,7 +245,7 @@ node crosschain_oracle.js;
     ```
     {
       "Host": "127.0.0.1:10014",
-      "DepositAddress":"XK6EsthrSvzkhHoeHyyodhWkmjcENtVBXy"
+      "DepositAddress":"XZyAtNipJ7fdgBRhdzCoyS7A3PDSzR7u98"
     }
 3. Create a new wallet using ela-cli-crosschain client for testing purposes
 
@@ -259,7 +265,7 @@ node crosschain_oracle.js;
 4. Transfer ELA from the resources wallet to this newly created wallet
 
     ```
-    curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": '"$ELAADDRESS"',"amount": "10100"}]}' localhost:8091/api/1/transfer
+    curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": '"$ELAADDRESS"',"amount": "5000"}]}' localhost:8091/api/1/transfer
     ```
 
     Check whether the ELA got transferred successfully
@@ -270,11 +276,11 @@ node crosschain_oracle.js;
 5. Transfer ELA from main chain to token sidechain
 
     ```
-    ./ela-cli-crosschain wallet -t create --from $ELAADDRESS --deposit 0x4505b967d56f84647eb3a40f7c365f7d87a88bc3 --amount 2000 --fee 0.1;
+    ./ela-cli-crosschain wallet -t create --from $ELAADDRESS --deposit 0x961386e437294f9171040e2d56d4522c4f55187d --amount 2000 --fee 0.1;
     ./ela-cli-crosschain wallet -t sign -p elastos --file to_be_signed.txn;
     ./ela-cli-crosschain wallet -t send --file ready_to_send.txn;
 
-    ./ela-cli-crosschain wallet -t create --from $ELAADDRESS --deposit 0x268b7f52010cbbca2d910b5e67260fc119afa5c9 --amount 2000 --fee 0.1;
+    ./ela-cli-crosschain wallet -t create --from $ELAADDRESS --deposit 0x840534b46b3b3bf8c1c3e4c7d34bc86933de7814 --amount 2000 --fee 0.1;
     ./ela-cli-crosschain wallet -t sign -p elastos --file to_be_signed.txn;
     ./ela-cli-crosschain wallet -t send --file ready_to_send.txn;
     ```

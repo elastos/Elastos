@@ -1,6 +1,6 @@
 "use strict";
 
 module.exports = {
-   kstore: {"address":"b94016d4b9dae697dffa637a549cbbde5583d0e2","crypto":{"cipher":"aes-128-ctr","ciphertext":"2d518f9f3db4cdd33a5af3d4d317c0b9af2dc84e0d8b45a2e7eddec5863fdba0","cipherparams":{"iv":"dcb4baa13f4277b43c30a9cea1fb2db6"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"7947acfb7055c06417221a44429f1a28b87ef01af481b79f346721754fde3470"},"mac":"8b1deba0c6763a50885e9d42728511afb3472fbcfaa7aee098c7ced47ab42cab"},"id":"35e420e1-10e1-4540-86c6-30ef2b87e0bb","version":3},
-   kpass: "elastos-privnet"
+   kstore: {"address":"840534b46b3b3bf8c1c3e4c7d34bc86933de7814","crypto":{"cipher":"aes-128-ctr","ciphertext":"2e8ed4f40c71538a12df95fa0b5b21707be75c7dd1b57e390e505659d6a4ab72","cipherparams":{"iv":"f8b3e54a710dc7ee7faae3e7870d0cc0"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"3affb21811ef5115de926976e9b3119f92545bcfa574ba51d9200cd4d2d8531d"},"mac":"526443e3cf1e3194afbfccc9f8f7aa8ce30b5dbb7653da513851a7d8d85407f9"},"id":"c66a6ceb-1542-429f-81db-0ca916b72fd3","version":3},
+   kpass: "12345678"
 }
