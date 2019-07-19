@@ -38,6 +38,9 @@ namespace Elastos {
 		}
 
 		void Registry::RegisterPlugin(const std::string &pluginType, fruit::Component<> (*pluginFun)()) {
+			if (_pluginInjectors.find(pluginType) != _pluginInjectors.end()) {
+				return;
+			}
 			_pluginInjectors[pluginType] = PluginInjectorPtr(new fruit::Injector<>(pluginFun));
 		}
 

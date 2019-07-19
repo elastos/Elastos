@@ -46,6 +46,8 @@ namespace Elastos {
 
 			void Save();
 
+			void SaveTo(const std::string &path);
+
 			bool SingleAddress() const;
 
 			void SetSingleAddress(bool status);

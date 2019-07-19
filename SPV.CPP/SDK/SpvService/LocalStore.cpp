@@ -291,6 +291,11 @@ namespace Elastos {
 			}
 		}
 
+		void LocalStore::SaveTo(const std::string &path) {
+			_path = path;
+			Save();
+		}
+
 		void to_json(nlohmann::json &j, const LocalStore &p) {
 			j["xPrivKey"] = p._xPrivKey;
 			j["xPubKey"] = p._xPubKey;
