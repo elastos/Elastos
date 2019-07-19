@@ -57,7 +57,6 @@ type arbitrators struct {
 	*KeyFrame
 	chainParams      *config.Params
 	bestHeight       func() uint32
-	bestBlock        func() (*types.Block, error)
 	getBlockByHeight func(uint32) (*types.Block, error)
 
 	mtx               sync.Mutex
@@ -208,7 +207,7 @@ func (a *arbitrators) ForceChange(height uint32) error {
 
 	block, err := a.getBlockByHeight(height)
 	if err != nil {
-		block, err = a.bestBlock()
+		block, err = a.getBlockByHeight(a.bestHeight())
 		if err != nil {
 			return err
 		}
@@ -1047,14 +1046,12 @@ func (a *arbitrators) initArbitrators(chainParams *config.Params) error {
 
 func NewArbitrators(chainParams *config.Params,
 	bestHeight func() uint32,
-	bestBlock func() (*types.Block, error),
 	getBlockByHeight func(uint32) (*types.Block, error),
 	getProducerDepositAmount func(programHash common.Uint168) (common.Fixed64,
 	error)) (*arbitrators, error) {
 	a := &arbitrators{
 		chainParams:                chainParams,
 		bestHeight:                 bestHeight,
-		bestBlock:                  bestBlock,
 		getBlockByHeight:           getBlockByHeight,
 		nextCandidates:             make([][]byte, 0),
 		accumulativeReward:         common.Fixed64(0),
