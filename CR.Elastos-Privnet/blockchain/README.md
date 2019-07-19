@@ -2,7 +2,7 @@
 
 - Prerequisite basic knowledge of docker is expected  
 - After starting, the miners will automatically start running and about 22 containers are created
-- Pre-mined 900 ELA on Mainchain miner reward address, 100,000 ELA on one mainchain address, 100,000 ELA on another mainchain address, 100,000 ELA on DID sidechain address and 100,000 ELA on Token sidechain address. For more, see [Wallets](#Wallets)
+- Pre-mined 900 ELA on Mainchain miner reward address, 100,000 ELA on one mainchain address, 100,000 ELA on another mainchain address, 100,000 ELA on DID sidechain address, 100,000 ELA on Token sidechain address and 100,000 ELA on ETH sidechain address. For more, see [Wallets](#Wallets)
 - For the docker images that might be used for connecting to mainnet, testnet, regnet or private net, check out [https://cloud.docker.com/u/cyberrepublic/repository/list](https://cloud.docker.com/u/cyberrepublic/repository/list)
 
 ## Tools 
@@ -26,7 +26,7 @@ These are located in the `wallets` folder:
 - `foundation.json` - This is where the genesis block's 33 million ELA is created(Note some ELA have been taken out of this account to other addresses for testing purposes)
 - `mainchain-miner-reward.json` - This is where the mining rewards from mainchain go
 - `preload/mainchains.json` - This is where the two mainchain addresses are located with 100,000 ELA and 100,000 ELA respectively
-- `preload/sidechains.json` - This is where the DID and Token sidechain addresses are located with 100,000 DID ELA and 100,000 TOKEN ELA respectively
+- `preload/sidechains.json` - This is where the DID and Token sidechain addresses are located with 100,000 DID ELA, 100,000 TOKEN ELA and 100,000 ETH ELA respectively
 
 ## Repos used to build 
 
@@ -118,7 +118,7 @@ These are located in the `wallets` folder:
     
     You should see at least 915 ELA in the miner wallet:
     ```
-    {"Desc":"Success","Error":0,"Result":"915.91409329"}
+    {"Desc":"Success","Error":0,"Result":"1005.60664465"}
     ```
     
 3. Verify the DID Sidechain is running by checking the pre-loaded wallet:
@@ -140,7 +140,7 @@ These are located in the `wallets` folder:
     
     You should see around 100,000 ELA in the miner wallet:
     ```
-    {"result":"94999.99895140","status":200}
+    {"result":"95046.51050338","status":200}
     ```
     
 5. Verify the DID Service is running by checking the pre-loaded DID sidechain wallet
@@ -182,7 +182,7 @@ These are located in the `wallets` folder:
       "error": null,
       "id": null,
       "jsonrpc": "2.0",
-      "result": "95010.81059521"
+      "result": "95049.05959013"
     }
     ```
 
@@ -197,7 +197,7 @@ These are located in the `wallets` folder:
       "error": null,
       "id": null,
       "jsonrpc": "2.0",
-      "result": "95020.74324360"
+      "result": "95069.63333583"
     }
     ```
 
@@ -509,7 +509,8 @@ These are located in the `wallets` folder:
 
   After some blocks, your vote will be seen. Let's verify this:
   ```
-  ./ela-cli info listproducers
+  ./ela-cli info listproducers --rpcuser user --rpcpassword password
+
   ```
 
   Should output something like:
@@ -839,12 +840,6 @@ Would return something like
   rm -f cli-config.json keystore.dat ready_to_send.txn to_be_signed.txn wallet.db;
   ```
 
-### Stop docker services
-
-  ```
-  cd $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain && docker-compose down
-  ```
-
 ### Create a fungible token 
 
 COMING SOON
@@ -855,8 +850,80 @@ COMING SOON
 
 ## Ethereum Sidechain Testing
 
+### Transfer some ELA from main chain to Eth Address
+1. Change directory
+  ```
+  cd $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-mainchain
+  ```
+
+2. Configure ela-cli config file
+
+    Create a file called "cli-config.json" and put the following content in that file:
+
+    ```
+    {
+      "Host": "127.0.0.1:10014",
+      "DepositAddress":"XZyAtNipJ7fdgBRhdzCoyS7A3PDSzR7u98"
+    }
+3. Create a new wallet using ela-cli-crosschain client for testing purposes
+
+    ```
+    ./ela-cli-crosschain wallet --create -p elastos
+    ```
+
+    Save ELA address, Public key and Private key to a variable so it can be used later
+    ```bash
+    ELAADDRESS=$(./ela-cli-crosschain wallet -a -p elastos | tail -2 | head -1 | cut -d' ' -f1)
+    PUBLICKEY=$(./ela-cli-crosschain wallet -a -p elastos | tail -2 | head -1 | cut -d' ' -f2)
+    PRIVATEKEY=$(./ela-cli-crosschain wallet --export -p elastos | tail -2 | head -1 | cut -d' ' -f2)
+    # Make sure your info is correct
+    echo $ELAADDRESS $PUBLICKEY $PRIVATEKEY
+    ```
+
+4. Transfer ELA from the resources wallet to this newly created wallet
+
+    ```
+    curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": '"$ELAADDRESS"',"amount": "100000"}]}' localhost:8091/api/1/transfer
+    ```
+
+    Check whether the ELA got transferred successfully
+
+    ```
+    ./ela-cli-crosschain wallet -l
+    ```
+5. Transfer ELA from main chain to eth sidechain
+
+    ```
+    ./ela-cli-crosschain wallet -t create --from $ELAADDRESS --deposit 0x4505b967d56f84647eb3a40f7c365f7d87a88bc3 --amount 99999 --fee 0.1;
+    ./ela-cli-crosschain wallet -t sign -p elastos --file to_be_signed.txn;
+    ./ela-cli-crosschain wallet -t send --file ready_to_send.txn;
+    ```
+6. Check eth balance:
+
+  ```
+  curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x4505b967d56f84647eb3a40f7c365f7d87a88bc3", "latest"],"id":1}' localhost:60011
+  ```
+
+  Should return something like:
+  ```
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": "0x152cf383e51ef1920000"
+  }
+  ```
+  0x152cf383e51ef1920000 is 99998900000000000000000 in decimal format which is the unit in wei. This equals to 99998.9 ETH ELA
+
+### Deploy a simple Ethereum smart contract
+
 COMING SOON
 
 ## NEO Sidechain Testing
 
 COMING SOON
+
+### Stop docker services
+
+  ```
+  cd $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain && docker-compose down
+  ```
