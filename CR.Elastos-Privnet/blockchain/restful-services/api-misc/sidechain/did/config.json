@@ -5,8 +5,8 @@
       "DbDriverSource":"elastos:12345678@tcp(privnet-mysql:3306)/chain_did"
   },
   "Ela":{
-      "Restful":"privnet-sidechain-did-1:20604",
-      "Jsonrpc":"privnet-sidechain-did-1:20606"
+      "Restful":"privnet-sidechain-did-node:20604",
+      "Jsonrpc":"privnet-sidechain-did-node:20606"
   },
   "Cmc":{
     "ApiKey":["d72b4bf0-00f3-4bab-8dca-45df2b0fb14c","cfa976fc-7642-4946-a0b2-858619fb2802"],

@@ -22,7 +22,7 @@
         "SideNodeList": [
             {
                 "Rpc": {
-                    "IpAddress": "privnet-sidechain-did-1",
+                    "IpAddress": "privnet-sidechain-did-node",
                     "HttpJsonPort": 20606,
                     "User": "",
                     "Pass": ""
@@ -35,7 +35,7 @@
             },
             {
                 "Rpc":{
-                    "IpAddress":"privnet-sidechain-token-1",
+                    "IpAddress":"privnet-sidechain-token-node",
                     "HttpJsonPort": 20616,
                     "Pass":"",
                     "User":""
@@ -48,7 +48,7 @@
             },
             {
                 "Rpc":{
-                    "IpAddress":"privnet-sidechain-eth-oracle-1",
+                    "IpAddress":"privnet-sidechain-eth-oracle-node",
                     "HttpJsonPort": 16666,
                     "Pass":"",
                     "User":""

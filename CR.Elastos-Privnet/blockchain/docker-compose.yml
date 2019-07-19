@@ -131,50 +131,26 @@ services:
       - blockchain
     tty: true
 
-  privnet-sidechain-did-1:
-    container_name: privnet-sidechain-did-1
+  privnet-sidechain-did-node:
+    container_name: privnet-sidechain-did-node
     image: cyberrepublic/elastos-sidechain-did-node:v0.1.2
     volumes:
-      - ~/.volumes/elastos-privnet/did-1:/did/elastos_did
-      - ${PWD}/ela-sidechain/did/did-1/config.json:/did/config.json
+      - ~/.volumes/elastos-privnet/did-node:/did/elastos_did
+      - ${PWD}/ela-sidechain/did/did-node/config.json:/did/config.json
     ports:
       - 30111-30115:20604-20608
     networks:
       - blockchain
     tty: true 
 
-  privnet-sidechain-did-2:
-    container_name: privnet-sidechain-did-2
-    image: cyberrepublic/elastos-sidechain-did-node:v0.1.2
-    volumes:
-      - ~/.volumes/elastos-privnet/did-2:/did/elastos_did
-      - ${PWD}/ela-sidechain/did/did-2/config.json:/did/config.json
-    ports:
-      - 30211-30215:20604-20608
-    networks:
-      - blockchain
-    tty: true 
-
-  privnet-sidechain-token-1:
-    container_name: privnet-sidechain-token-1
+  privnet-sidechain-token-node:
+    container_name: privnet-sidechain-token-node
     image: cyberrepublic/elastos-sidechain-token-node:v0.1.2
     volumes:
-      - ~/.volumes/elastos-privnet/token-1:/token/elastos_token
-      - ${PWD}/ela-sidechain/token/token-1/config.json:/token/config.json
+      - ~/.volumes/elastos-privnet/token-node:/token/elastos_token
+      - ${PWD}/ela-sidechain/token/token-node/config.json:/token/config.json
     ports:
       - 40111-40115:20614-20618
-    networks:
-      - blockchain
-    tty: true 
-
-  privnet-sidechain-token-2:
-    container_name: privnet-sidechain-token-2
-    image: cyberrepublic/elastos-sidechain-token-node:v0.1.2
-    volumes:
-      - ~/.volumes/elastos-privnet/token-2:/token/elastos_token
-      - ${PWD}/ela-sidechain/token/token-2/config.json:/token/config.json
-    ports:
-      - 40211-40215:20614-20618
     networks:
       - blockchain
     tty: true 
@@ -192,24 +168,13 @@ services:
       - blockchain
     tty: true 
 
-  privnet-sidechain-eth-oracle-1:
-    container_name: privnet-sidechain-eth-oracle-1
+  privnet-sidechain-eth-oracle-node:
+    container_name: privnet-sidechain-eth-oracle-node
     image: cyberrepublic/elastos-sidechain-eth-oracle:privnet-v0.4
     depends_on:
       - privnet-sidechain-eth-node
     ports:
       - 60113:16666
-    networks:
-      - blockchain
-    tty: true 
-
-  privnet-sidechain-eth-oracle-2:
-    container_name: privnet-sidechain-eth-oracle-2
-    image: cyberrepublic/elastos-sidechain-eth-oracle:privnet-v0.4
-    depends_on:
-      - privnet-sidechain-eth-node
-    ports:
-      - 60213:16666
     networks:
       - blockchain
     tty: true 
@@ -234,7 +199,7 @@ services:
     container_name: privnet-sidechain-service
     image: cyberrepublic/elastos-sidechain-service:privnet-v0.4
     depends_on:
-      - privnet-sidechain-did-1
+      - privnet-sidechain-did-node
     ports:
       - 8092:8080
     healthcheck:
@@ -274,7 +239,7 @@ services:
       - ${PWD}/restful-services/api-misc/sidechain/did/deploy.sh:/home/elauser/deploy.sh
     depends_on:
       - privnet-mysql
-      - privnet-sidechain-did-1
+      - privnet-sidechain-did-node
     ports:
       - 9092:8080
     healthcheck:
