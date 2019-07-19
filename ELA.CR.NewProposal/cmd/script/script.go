@@ -8,12 +8,13 @@ package script
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/cmd/script/api"
 
 	"github.com/urfave/cli"
-	"github.com/yuin/gopher-lua"
+	lua "github.com/yuin/gopher-lua"
 )
 
 func registerParams(c *cli.Context, L *lua.LState) {
@@ -31,6 +32,8 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	ownPubkey := c.String("ownerpublickey")
 	nodePubkey := c.String("nodepublickey")
 	host := c.String("host")
+	candidates := c.StringSlice("candidates")
+	candidateVotes := c.StringSlice("candidateVotes")
 
 	getDepositAddr := func(L *lua.LState) int {
 		L.Push(lua.LString(depositAddr))
@@ -88,6 +91,27 @@ func registerParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LString(host))
 		return 1
 	}
+	getCandidates := func(L *lua.LState) int {
+		table := L.NewTable()
+		L.SetMetatable(table, L.GetTypeMetatable("candidates"))
+		for _, c := range candidates {
+			table.Append(lua.LString(c))
+		}
+		L.Push(table)
+		return 1
+	}
+	getCandidateVotes := func(L *lua.LState) int {
+		table := L.NewTable()
+		L.SetMetatable(table, L.GetTypeMetatable("candidateVotes"))
+		for _, cv := range candidateVotes {
+			num, err := strconv.ParseFloat(cv, 64)
+			if err == nil {
+				table.Append(lua.LNumber(num))
+			}
+		}
+		L.Push(table)
+		return 1
+	}
 	L.Register("getDepositAddr", getDepositAddr)
 	L.Register("getPublicKey", getPublicKey)
 	L.Register("getCode", getCode)
@@ -102,6 +126,8 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	L.Register("getOwnerPublicKey", getOwnerPublicKey)
 	L.Register("getNodePublicKey", getNodePublicKey)
 	L.Register("getHostAddr", getHostAddr)
+	L.Register("getCandidates", getCandidates)
+	L.Register("getCandidateVotes", getCandidateVotes)
 }
 
 func scriptAction(c *cli.Context) error {
@@ -219,6 +245,14 @@ func NewCommand() *cli.Command {
 			cli.StringFlag{
 				Name:  "host",
 				Usage: "set the host address",
+			},
+			cli.StringSliceFlag{
+				Name:  "candidates, cds",
+				Usage: "set the candidates public key",
+			},
+			cli.StringSliceFlag{
+				Name:  "candidateVotes, cvs",
+				Usage: "set the candidateVotes values",
 			},
 		},
 		Action: scriptAction,
