@@ -15,9 +15,15 @@ import (
 )
 
 const (
+	// checkpointKey defines key of DPoS checkpoint.
 	checkpointKey = "cr"
 
+	// checkpointExtension defines checkpoint file extension of DPoS checkpoint.
 	checkpointExtension = ".ccp"
+
+	// checkpointHeight defines interval height between two neighbor check
+	// points.
+	checkpointHeight = uint32(720)
 )
 
 // Checkpoint hold all CR related states to recover from scratch.
@@ -77,11 +83,11 @@ func (c *Checkpoint) SetHeight(height uint32) {
 }
 
 func (c *Checkpoint) SavePeriod() uint32 {
-	return c.committee.params.CRDutyPeriod
+	return checkpointHeight
 }
 
 func (c *Checkpoint) EffectivePeriod() uint32 {
-	return c.committee.params.CRDutyPeriod
+	return checkpointHeight
 }
 
 func (c *Checkpoint) DataExtension() string {
