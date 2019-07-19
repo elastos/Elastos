@@ -21,7 +21,17 @@ local asset_id = m.get_asset_id()
 local fee = 0.001
 
 -- deposit params
-local own_publickey = "034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16c"
+--local own_publickey =
+--"034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16c"
+
+local own_publickey = getOwnerPublicKey()
+if own_publickey == ""
+then
+    print("owner public key is nil, should use --ownerpubkey or -opk to set it.")
+    return
+end
+print("owner public key:", own_publickey)
+
 
 -- cancel producer payload: publickey, wallet
 local cp_payload = cancelproducer.new(own_publickey, wallet)

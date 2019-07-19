@@ -29,6 +29,7 @@ then
     print("pubic key is nil, should use --pubkey or -pk to set it.")
     return
 end
+print("public key:", cr_publickey)
 
 --local cr_publickey =
 --"039d419986f5c2bf6f2a6f59f0b6e111735b66570fb22107a038bca3e1005d1920"
