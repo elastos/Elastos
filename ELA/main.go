@@ -172,15 +172,7 @@ func startNode(c *cli.Context) {
 	blockchain.DefaultLedger = &ledger // fixme
 
 	arbiters, err := state.NewArbitrators(activeNetParams,
-		chainStore.GetHeight, func() (*types.Block, error) {
-			hash := chainStore.GetCurrentBlockHash()
-			block, err := chainStore.GetBlock(hash)
-			if err != nil {
-				return nil, err
-			}
-			blockchain.CalculateTxsFee(block)
-			return block, nil
-		}, func(height uint32) (*types.Block, error) {
+		chainStore.GetHeight, func(height uint32) (*types.Block, error) {
 			hash, err := chainStore.GetBlockHash(height)
 			if err != nil {
 				return nil, err

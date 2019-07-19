@@ -179,10 +179,7 @@ func initLedger(L *lua.LState) int {
 
 	arbiters, err := state.NewArbitrators(chainParams,
 		chainStore.GetHeight,
-		func() (block *types.Block, e error) {
-			hash := chainStore.GetCurrentBlockHash()
-			return chainStore.GetBlock(hash)
-		}, func(height uint32) (*types.Block, error) {
+		func(height uint32) (*types.Block, error) {
 			hash, err := chainStore.GetBlockHash(height)
 			if err != nil {
 				return nil, err
