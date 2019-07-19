@@ -102,6 +102,5 @@ build_binary_and_docker "master" "Elastos.ORG.SideChain.Service" "restful-servic
 
 build_binary_and_docker "master" "Elastos.ORG.API.Misc" "restful-services/api-misc" "misc" \
     "cyberrepublic/elastos-api-misc-service" "privnet-v0.4" "no" "yes"
-'
 
 cd $CURRENT_DIR

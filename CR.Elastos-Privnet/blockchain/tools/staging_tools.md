@@ -276,7 +276,7 @@ node crosschain_oracle.js;
     ```
     ./ela-cli-crosschain wallet -l
     ```
-5. Transfer ELA from main chain to token sidechain
+5. Transfer ELA from main chain to eth sidechain
 
     ```
     ./ela-cli-crosschain wallet -t create --from $ELAADDRESS --deposit 0x4505b967d56f84647eb3a40f7c365f7d87a88bc3 --amount 99999 --fee 0.1;
@@ -285,7 +285,7 @@ node crosschain_oracle.js;
     ```
 
 - Check eth balance:
-```curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x4505b967d56f84647eb3a40f7c365f7d87a88bc3", "latest"],"id":1}' localhost:60011```
+```curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x4505b967d56f84647eb3a40f7c365f7d87a88bc3", "latest"],"id":1}' localhost:60011 | jq .```
 
 should return
 ```

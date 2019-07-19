@@ -92,16 +92,16 @@ These are located in the `wallets` folder:
     
     If you would like to reset the entire environment with fresh data, do the following. This basically removes all the blockchain data that may have been saved previously and resets it back to block height 510
     ```
-    tools/copy_freshdata_docker.sh
+    tools/copy_freshdata_docker.sh;
     docker-compose up --remove-orphans --build --force-recreate -d
     ```
     For users in China, if you get issues pulling images please refer to this post: https://segmentfault.com/a/1190000016083023
 
     If you would like to start all the nodes from block 0, do the following. Note that doing this means you won't have the pre-loaded ELAs on the wallet addresses anymore and you need to set up everything yourself
     ```
-    sudo tools/copy_freshdata_docker.sh
-    docker container prune
-    sudo rm -rf ~/.volumes/elastos-privnet
+    sudo tools/copy_freshdata_docker.sh;
+    docker container prune;
+    sudo rm -rf ~/.volumes/elastos-privnet;
     docker-compose up --remove-orphans --build --force-recreate -d
     ```
 
