@@ -54,10 +54,9 @@ if location == ""
 		location = 123
 end
 
-if fee == ""
+if fee == 0
 	then
-		print("fee is nil, should use --fee to set it.")
-		return
+		fee = 0.001
 end
 
 print("public key:", cr_publickey)
