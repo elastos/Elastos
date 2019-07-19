@@ -214,11 +214,11 @@ int test_main(int argc, char *argv[])
     for (i = 0; i < suites_cnt; i++) {
         int suite_idx;
 
+        suite_idx = suites_order[i];
         if (global_config.exclude_offmsg
             && strcmp(suites[suite_idx].strName, OFFLINE_MSG_TEST_NAME) == 0)
             continue;
 
-        suite_idx = suites_order[i];
         pSuite = CU_add_suite(suites[suite_idx].strName,
                               suites[suite_idx].pInit,
                               suites[suite_idx].pClean);
