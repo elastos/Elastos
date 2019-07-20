@@ -240,7 +240,7 @@ func (a *arbitrators) ForceChange(height uint32) error {
 
 	if a.started {
 		go events.Notify(events.ETDirectPeersChanged,
-			a.GetNeedConnectArbiters())
+			a.getNeedConnectArbiters())
 	}
 
 	a.dumpInfo(height)
@@ -427,6 +427,10 @@ func (a *arbitrators) GetNeedConnectArbiters() []peer.PID {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
 
+	return a.getNeedConnectArbiters()
+}
+
+func (a *arbitrators) getNeedConnectArbiters() []peer.PID {
 	height := a.history.height + 1
 	if height < a.chainParams.CRCOnlyDPOSHeight-a.chainParams.PreConnectOffset {
 		return nil
