@@ -26,7 +26,9 @@ export default ({ data, hideAuthor, postedByText }) => {
       <span>{`#${displayId}`}</span>
       {authorNode}
       <span>{moment(createdAt).format('MMM D, YYYY')}</span>
-      {descUpdatedAt && <span>updated: {moment(descUpdatedAt).format('MMM D, YYYY')}</span>}
+
+      {/* there is a hack here, we set descUpdatedAt always so we only are sorting on that field, remove this when we properly sort on a projected field */}
+      {descUpdatedAt && (!moment(descUpdatedAt).isSame(createdAt, 'day')) && <span>updated: {moment(descUpdatedAt).format('MMM D, YYYY')}</span>}
     </div>
   )
 }
