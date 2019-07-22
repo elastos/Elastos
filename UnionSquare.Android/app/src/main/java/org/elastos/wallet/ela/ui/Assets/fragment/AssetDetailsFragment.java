@@ -158,7 +158,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                 //转账
                 bundle = new Bundle();
                 bundle.putParcelable("wallet", wallet);
-                bundle.putString("ChainId", chainId);
+                bundle.putString("ChainID", chainId);
                 start(TransferFragment.class, bundle);
                 break;
             case R.id.tv_chain:

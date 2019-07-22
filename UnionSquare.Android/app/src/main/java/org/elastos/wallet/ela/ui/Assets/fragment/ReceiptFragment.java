@@ -12,6 +12,7 @@ import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.presenter.ReceiptPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.ReceiptViewData;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
+import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.QRCodeUtils;
 import org.elastos.wallet.ela.utils.ScreenUtil;
 
@@ -29,10 +30,8 @@ public class ReceiptFragment extends BaseFragment implements ReceiptViewData {
     Unbinder unbinder;
     @BindView(R.id.tv_wallet_list)
     TextView tvWalletList;
-    Unbinder unbinder1;
     private Wallet wallet;
     private String chainId;
-    ReceiptPresenter receiptPresenter;
 
     @Override
     protected int getLayoutId() {
@@ -76,7 +75,7 @@ public class ReceiptFragment extends BaseFragment implements ReceiptViewData {
     @Override
     public void onCreateAddress(String data) {
         tvAddress.setText(data);
-        Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 160), ScreenUtil.dp2px(getContext(), 160));
+        Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 160), ScreenUtil.dp2px(getContext(), 160), Constant.TRANSFER,chainId);
         ivQr.setImageBitmap(mBitmap);
     }
 }

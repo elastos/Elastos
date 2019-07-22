@@ -9,6 +9,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -159,7 +162,17 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
         if (resultCode == RESULT_OK && requestCode == ScanQRcodeUtil.SCAN_QR_REQUEST_CODE && data != null) {
             String result = data.getStringExtra("result");//&& matcherUtil.isMatcherAddr(result)
             if (!TextUtils.isEmpty(result) /*&& matcherUtil.isMatcherAddr(result)*/) {
-                etPayeeaddr.setText(result);
+                address = result;
+                try {
+                    JsonObject jsonObject = new JsonParser().parse(result).getAsJsonObject();
+                    int type = jsonObject.get("type").getAsInt();
+                    if (type == Constant.TRANSFER) {
+                        address = jsonObject.get("data").getAsString();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                etPayeeaddr.setText(address);
             }
         }
 

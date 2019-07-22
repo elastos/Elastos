@@ -29,6 +29,7 @@ import org.elastos.wallet.ela.ui.Assets.bean.ParcelableMap;
 import org.elastos.wallet.ela.ui.Assets.fragment.AddAssetFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.AssetDetailsFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.CreateSignReadOnlyWalletFragment;
+import org.elastos.wallet.ela.ui.Assets.fragment.TransferFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.WalletListFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.WallletManageFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.mulsignwallet.CreateMulWalletFragment;
@@ -176,6 +177,14 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                     Bundle bundle = new Bundle();
 
                     switch (type) {
+                        case Constant.TRANSFER:
+                            //扫描联系人到转账页面
+                            bundle.putParcelable("wallet", wallet);
+                            bundle.putString("ChainID", jsonObject.get("chainID").getAsString());
+                            bundle.putString("ChainID", jsonObject.get("chainID").getAsString());
+                            bundle.putString("address", jsonObject.get("data").getAsString());
+                            ((BaseFragment) getParentFragment()).start(TransferFragment.class, bundle);
+                            break;
                         case Constant.CREATEREADONLY:
                             //创建只读钱包
                             bundle.putString("result", result);

@@ -2,7 +2,6 @@ package org.elastos.wallet.ela.ui.Assets.adapter;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.support.v7.widget.AppCompatSeekBar;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -58,9 +57,6 @@ public class AssetskAdapter extends RecyclerView.Adapter<AssetskAdapter.ViewHold
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
         org.elastos.wallet.ela.db.table.SubWallet assetsItemEntity = data.get(i);
         viewHolder.tvName.setText(assetsItemEntity.getChainId());
-        viewHolder.tvTime.setText(DateUtil.time(assetsItemEntity.getSyncTime()));
-
-        viewHolder.tvProgress.setText(assetsItemEntity.getProgress() + "%");
         viewHolder.tvNum.setText(NumberiUtil.maxNumberFormat(Arith.div(assetsItemEntity.getBalance(), MyWallet.RATE_S), 12));
         switch (assetsItemEntity.getFiled1()) {
             case "Connecting":
@@ -72,15 +68,18 @@ public class AssetskAdapter extends RecyclerView.Adapter<AssetskAdapter.ViewHold
                 break;
             case "Connected":
                 viewHolder.tvTime.setVisibility(View.VISIBLE);
+                viewHolder.tvTime.setText(DateUtil.time(assetsItemEntity.getSyncTime()));
                 viewHolder.tvStatus.setText(context.getString(R.string.syncprogress));
                 viewHolder.tvProgress.setVisibility(View.VISIBLE);
+                viewHolder.tvProgress.setText(assetsItemEntity.getProgress() + "%");
                 viewHolder.ivSync.setVisibility(View.VISIBLE);
                 Animation hyperspaceJumpAnimation = AnimationUtils.loadAnimation(
                         context, R.anim.load_animation);
                 hyperspaceJumpAnimation.setInterpolator(new LinearInterpolator());//匀速插值器
                 viewHolder.ivSync.startAnimation(hyperspaceJumpAnimation);
-                if (assetsItemEntity.getProgress()==100){
+                if (assetsItemEntity.getProgress() == 100) {
                     viewHolder.tvStatus.setText(context.getString(R.string.lastsynctime));
+                    viewHolder.ivSync.clearAnimation();
                     viewHolder.ivSync.setVisibility(View.GONE);
                 }
                 break;

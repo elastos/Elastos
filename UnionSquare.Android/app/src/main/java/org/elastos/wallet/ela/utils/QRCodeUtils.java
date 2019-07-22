@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.text.TextUtils;
 
 import com.google.gson.JsonObject;
 import com.google.zxing.BarcodeFormat;
@@ -414,9 +415,22 @@ public class QRCodeUtils {
     public static Bitmap createQrCodeBitmap(String content, int width, int height, int type) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("type", type);
+        jsonObject.addProperty("max", 1);
+        jsonObject.addProperty("current", 1);
         jsonObject.addProperty("data", content);
-        // jsonObject.addProperty("max", Math.ceil(content.length() / 1024f));
-        // jsonObject.addProperty("current", Math.ceil(max / 1024f));
+        return createQrCodeBitmap(jsonObject.toString(), width, height);
+    }
+
+    public static Bitmap createQrCodeBitmap(String content, int width, int height, int type, String chainID) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("type", type);
+        jsonObject.addProperty("max", 1);
+        jsonObject.addProperty("current", 1);
+        if (TextUtils.isEmpty(chainID)) {
+            chainID = "ELA";
+        }
+        jsonObject.addProperty("chainID", chainID);
+        jsonObject.addProperty("data", content);
         return createQrCodeBitmap(jsonObject.toString(), width, height);
     }
 }
