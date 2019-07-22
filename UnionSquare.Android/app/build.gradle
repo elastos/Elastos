@@ -179,10 +179,10 @@ dependencies {
     implementation 'com.android.support:multidex:1.0.3'
     implementation 'com.squareup.okhttp3:logging-interceptor:3.5.0'
     implementation project(':qrcodelib')
-    //bug
+   /* //bug
     implementation 'com.tencent.bugly:crashreport:latest.release'
     //其中latest.release指代最新Bugly SDK版本号，也可以指定明确的版本号，例如2.1.9
-    implementation 'com.tencent.bugly:nativecrashreport:latest.release'
+    implementation 'com.tencent.bugly:nativecrashreport:latest.release'*/
 
 }
 repositories {

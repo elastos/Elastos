@@ -4,7 +4,7 @@ import android.content.Context;
 import android.support.multidex.MultiDexApplication;
 
 import com.blankj.utilcode.util.Utils;
-import com.tencent.bugly.crashreport.CrashReport;
+/*import com.tencent.bugly.crashreport.CrashReport;*/
 
 import org.elastos.wallet.BuildConfig;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
@@ -35,15 +35,15 @@ public class MyApplication extends MultiDexApplication {
 
         if (pachageName.endsWith("unionsquare")) {
             chainID = -1;
-            useBugly();
+            //useBugly();
         }
         if (pachageName.endsWith("testnet")) {
             chainID = 1;
-            useBugly();
+           // useBugly();
         }
         if (pachageName.endsWith("regtest")) {
             chainID = 2;
-            useBugly();
+           // useBugly();
         }
 
 
@@ -51,7 +51,7 @@ public class MyApplication extends MultiDexApplication {
 
     private void useBugly() {
         if (!BuildConfig.DEBUG) {
-            CrashReport.initCrashReport(getApplicationContext(), "9c89947c00", false);
+           // CrashReport.initCrashReport(getApplicationContext(), "9c89947c00", false);
         }
     }
 
