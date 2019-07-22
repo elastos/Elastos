@@ -99,15 +99,24 @@ func TestCoinsCheckPoint_Serialize_Deserialize(t *testing.T) {
 	buf := new(bytes.Buffer)
 	err := ccp.Serialize(buf)
 	assert.NoError(t, err)
+	verifyCoins(ccp.coins, t)
+
 	ccp2 := NewCoinCheckPoint()
 	err = ccp2.Deserialize(buf)
 	assert.NoError(t, err)
-
 	verifyCoins(ccp2.coins, t)
 }
 
-func TestCoinsCheckPoint_ListUnspent(t *testing.T) {
-	coins := ccp.getUnspent([]string{senderAddr, recipientAddr})
+func TestCoinsCheckPoint_ListCoins(t *testing.T) {
+	senderCoins := ccp.ListCoins(senderAddr)
+	recipientCoins := ccp.ListCoins(recipientAddr)
+	coins := make(map[types.OutPoint]*Coin, 0)
+	for k, v := range senderCoins {
+		coins[k] = v
+	}
+	for k, v := range recipientCoins {
+		coins[k] = v
+	}
 
 	verifyCoins(coins, t)
 }
