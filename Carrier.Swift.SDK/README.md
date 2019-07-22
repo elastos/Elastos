@@ -1,7 +1,7 @@
 Elastos Carrier Swift Framework
 =============================
 
-[![Build Status](https://travis-ci.org/elastos/Elastos.NET.Carrier.Swift.SDK.svg?)](https://travis-ci.org/elastos/Elastos.NET.Carrier.Swift.SDK)
+[![Build Status](https://travis-ci.com/elastos/Elastos.NET.Carrier.Swift.SDK.svg?)](https://travis-ci.com/elastos/Elastos.NET.Carrier.Swift.SDK)
 
 ## Summary
 
