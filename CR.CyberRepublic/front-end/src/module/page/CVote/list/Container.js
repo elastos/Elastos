@@ -1,31 +1,26 @@
-import { createContainer, api_request } from '@/util'
+import { createContainer } from '@/util'
 import Component from './Component'
+import CVoteService from '@/service/CVoteService'
 
-export default createContainer(Component, state => ({
+const mapState = state => ({
+  user: state.user,
   currentUserId: state.user.current_user_id,
   isLogin: state.user.is_login,
   isSecretary: state.user.is_secretary,
   isCouncil: state.user.is_council,
   canManage: state.user.is_secretary || state.user.is_council,
-}), () => ({
+})
 
-  async listData(param, isCouncil) {
-    let result
+const mapDispatch = () => {
+  const service = new CVoteService()
+  return {
+    async createDraft(param) {
+      return service.createDraft(param)
+    },
+    async listData(param, isCouncil) {
+      return service.listData(param, isCouncil)
+    },
+  }
+}
 
-    if (isCouncil) {
-      result = await api_request({
-        path: '/api/cvote/list',
-        method: 'get',
-        data: param,
-      })
-    } else {
-      result = await api_request({
-        path: '/api/cvote/list_public',
-        method: 'get',
-        data: param,
-      })
-    }
-
-    return result
-  },
-}))
+export default createContainer(Component, mapState, mapDispatch)

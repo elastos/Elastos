@@ -28,6 +28,7 @@ export const text = {
   green: '#1DE9B6',
   lightGray: 'rgba(0, 0, 0, 0.45)',
   lighterGray: 'rgba(3, 30, 40, 0.3)',
+  lighterGray2: 'rgba(3, 30, 40, 0.4)',
   middleGray: '#737E90',
   darkGray: '#545454',
   newGray: '#434D72',

@@ -332,14 +332,3 @@ h3.one-line {
     border-color: #66bda3 !important;
   }
 }
-
-.ql-editor h3,
-h3 {
-  @extend .komu-a;
-  font-size: 42px !important;
-
-  & > * {
-    @extend .komu-a;
-    font-size: 42px !important;
-  }
-}

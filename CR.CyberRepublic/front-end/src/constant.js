@@ -4,6 +4,8 @@ const create = (list) => {
   return _.zipObject(list, list)
 }
 
+export const DATE_FORMAT = 'MMM D, YYYY'
+
 export const CR_LINKS = {
   FACEBOOK: 'https://www.facebook.com/ElastosCyberRepublic',
   GITHUB: 'https://github.com/cyber-republic',
@@ -208,7 +210,7 @@ export const TASK_AVATAR_DEFAULT = '/assets/images/Elastos_Logo.png'
 export const TEAM_AVATAR_DEFAULT = '/assets/images/team_blurred.svg'
 
 // council vote
-export const CVOTE_STATUS = create(['DRAFT', 'PROPOSED', 'ACTIVE', 'REJECT', 'FINAL', 'DEFERRED'])
+export const CVOTE_STATUS = create(['DRAFT', 'PROPOSED', 'ACTIVE', 'REJECT', 'FINAL', 'DEFERRED', 'INCOMPLETED'])
 
 export const CVOTE_STATUS_TEXT = {
   DRAFT: 'DRAFT',
@@ -217,7 +219,10 @@ export const CVOTE_STATUS_TEXT = {
   REJECT: 'REJECTED',
   DEFERRED: 'DEFERRED',
   FINAL: 'FINAL',
+  INCOMPLETED: 'INCOMPLETED'
 }
+
+export const CONTENT_TYPE = create(['MARKDOWN', 'HTML'])
 
 export const CVOTE_RESULT = {
   SUPPORT: 'support',
@@ -226,20 +231,21 @@ export const CVOTE_RESULT = {
   UNDECIDED: 'undecided',
 }
 
-// export const CVOTE_RESULT_TEXT = {
-//   undefined: 'Undecided',
-//   undecided: 'Undecided',
-//   support: 'Yes',
-//   reject: 'No',
-//   abstention: 'Abstained',
-//   '-1': 'Undecided',
-// }
-
 export const CVOTE_RESULT_COLOR = {
   [CVOTE_RESULT.UNDECIDED]: '#CED6E3',
   [CVOTE_RESULT.ABSTENTION]: '#0F2631',
   [CVOTE_RESULT.SUPPORT]: '#1DE9B6',
   [CVOTE_RESULT.REJECT]: '#BE1313',
+}
+
+export const CVOTE_TRACKING_STATUS = create(['DRAFT', 'REVIEWING', 'PUBLISHED', 'REJECT'])
+export const CVOTE_SUMMARY_STATUS = create(['DRAFT', 'REVIEWING', 'PUBLISHED', 'REJECT'])
+
+export const CVOTE_TRACKING_STATUS_TEXT = {
+  [CVOTE_TRACKING_STATUS.DRAFT]: 'DRAFT',
+  [CVOTE_TRACKING_STATUS.REVIEWING]: 'REVIEWING',
+  [CVOTE_TRACKING_STATUS.PUBLISHED]: 'APPROVED',
+  [CVOTE_TRACKING_STATUS.REJECT]: 'REJECTED',
 }
 
 export const RESOURCE_TYPE_TO_TEXT = {

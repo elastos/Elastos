@@ -18,6 +18,84 @@ const restrictedFields = {
 }
 
 export default class extends Base {
+  // create a DRAFT propoal with minimal info
+  public async createDraft(param: any): Promise<Document> {
+    const db_suggestion = this.getDBModel('Suggestion')
+    const db_cvote = this.getDBModel('CVote')
+    const {
+      title, proposedBy, proposer, suggestionId
+    } = param
+
+    const vid = await this.getNewVid()
+
+    const doc: any = {
+      title,
+      vid,
+      status: constant.CVOTE_STATUS.DRAFT,
+      published: false,
+      contentType: constant.CONTENT_TYPE.MARKDOWN,
+      proposedBy,
+      proposer: proposer ? proposer : this.currentUser._id,
+      createdBy: this.currentUser._id
+    }
+    const suggestion = suggestionId && await db_suggestion.findById(suggestionId)
+    if (!_.isEmpty(suggestion)) {
+      doc.reference = suggestionId
+    }
+
+    try {
+      return await db_cvote.save(doc)
+    } catch (error) {
+      console.log(error)
+      return
+    }
+  }
+
+  /**
+   *
+   * @param param
+   * @returns {Promise<"mongoose".Document>}
+   */
+  public async updateDraft(param: any): Promise<Document> {
+    const db_cvote = this.getDBModel('CVote')
+    const {
+      _id, title, abstract, goal, motivation, relevance, budget, plan
+    } = param
+
+    if (!this.currentUser || !this.currentUser._id) {
+      throw 'cvoteservice.update - invalid current user'
+    }
+
+    if (!this.canManageProposal()) {
+      throw 'cvoteservice.update - not council'
+    }
+
+    const cur = await db_cvote.findOne({ _id })
+    if (!cur) {
+      throw 'cvoteservice.update - invalid proposal id'
+    }
+
+    const doc: any = {
+      contentType: constant.CONTENT_TYPE.MARKDOWN,
+    }
+
+    if (title) doc.title = title
+    if (abstract) doc.abstract = abstract
+    if (goal) doc.goal = goal
+    if (motivation) doc.motivation = motivation
+    if (relevance) doc.relevance = relevance
+    if (budget) doc.budget = budget
+    if (plan) doc.plan = plan
+
+    try {
+      await db_cvote.update({ _id }, doc)
+      const res = await this.getById(_id)
+      return res
+    } catch (error) {
+      console.log('error happened: ', error)
+      return
+    }
+  }
 
   public async create(param): Promise<Document> {
     const db_cvote = this.getDBModel('CVote')
@@ -25,8 +103,8 @@ export default class extends Base {
     const db_suggestion = this.getDBModel('Suggestion')
     const currentUserId = _.get(this.currentUser, '_id')
     const {
-      title, type, content, published, proposedBy, motionId, isConflict, notes,
-      suggestionId,
+      title, published, proposedBy, proposer,
+      suggestionId, abstract, goal, motivation, relevance, budget, plan
     } = param
 
     const vid = await this.getNewVid()
@@ -36,13 +114,16 @@ export default class extends Base {
       title,
       vid,
       status,
-      type,
       published,
-      content,
+      contentType: constant.CONTENT_TYPE.MARKDOWN,
       proposedBy,
-      motionId,
-      isConflict,
-      notes,
+      abstract,
+      goal,
+      motivation,
+      relevance,
+      budget,
+      plan,
+      proposer,
       createdBy: this.currentUser._id
     }
 
@@ -55,11 +136,7 @@ export default class extends Base {
     const voteResult = []
     if (published) {
       doc.proposedAt = Date.now()
-      _.each(councilMembers, user => {
-        // use ObjectId.equals
-        const value = currentUserId.equals(user._id) ? constant.CVOTE_RESULT.SUPPORT : constant.CVOTE_RESULT.UNDECIDED
-        voteResult.push({ votedBy: user._id, value })
-      })
+      _.each(councilMembers, user => voteResult.push({ votedBy: user._id, value: constant.CVOTE_RESULT.UNDECIDED }))
       doc.voteResult = voteResult
       doc.voteHistory = voteResult
     }
@@ -271,7 +348,10 @@ export default class extends Base {
     const db_user = this.getDBModel('User')
     const db_cvote = this.getDBModel('CVote')
     const currentUserId = _.get(this.currentUser, '_id')
-    const { _id, published, notes, content, isConflict, proposedBy, title, type } = param
+    const {
+      _id, published, notes, title,
+      abstract, goal, motivation, relevance, budget, plan
+    } = param
 
     if (!this.currentUser || !this.currentUser._id) {
       throw 'cvoteservice.update - invalid current user'
@@ -286,14 +366,18 @@ export default class extends Base {
       throw 'cvoteservice.update - invalid proposal id'
     }
 
-    const doc: any = {}
+    const doc: any = {
+      contentType: constant.CONTENT_TYPE.MARKDOWN,
+    }
     const willChangeToPublish = published === true && cur.status === constant.CVOTE_STATUS.DRAFT
 
-    if (content) doc.content = content
-    if (isConflict) doc.isConflict = isConflict
-    if (proposedBy) doc.proposedBy = proposedBy
     if (title) doc.title = title
-    if (type) doc.type = type
+    if (abstract) doc.abstract = abstract
+    if (goal) doc.goal = goal
+    if (motivation) doc.motivation = motivation
+    if (relevance) doc.relevance = relevance
+    if (budget) doc.budget = budget
+    if (plan) doc.plan = plan
 
     if (willChangeToPublish) {
       doc.status = constant.CVOTE_STATUS.PROPOSED
@@ -301,12 +385,7 @@ export default class extends Base {
       doc.proposedAt = Date.now()
       const councilMembers = await db_user.find({ role: constant.USER_ROLE.COUNCIL })
       const voteResult = []
-      _.each(councilMembers, user => {
-        // use ObjectId.equals
-        const value = currentUserId.equals(user._id) ? constant.CVOTE_RESULT.SUPPORT : constant.CVOTE_RESULT.UNDECIDED
-        voteResult.push({ votedBy: user._id, value })
-        // send email
-      })
+      _.each(councilMembers, user => voteResult.push({ votedBy: user._id, value: constant.CVOTE_RESULT.UNDECIDED }))
       doc.voteResult = voteResult
       doc.voteHistory = voteResult
     }
@@ -349,10 +428,33 @@ export default class extends Base {
     return rs
   }
 
+  public async unfinishById(id): Promise<any> {
+    const db_cvote = this.getDBModel('CVote')
+    const cur = await db_cvote.findOne({ _id: id })
+    if (!cur) {
+      throw 'invalid proposal id'
+    }
+    if (!this.canManageProposal()) {
+      throw 'cvoteservice.unfinishById - not council'
+    }
+    if (_.includes([constant.CVOTE_STATUS.FINAL, constant.CVOTE_STATUS.INCOMPLETED], cur.status)) {
+      throw 'proposal already completed.'
+    }
+
+    const rs = await db_cvote.update({ _id: id }, {
+      $set: {
+        status: constant.CVOTE_STATUS.INCOMPLETED
+      }
+    })
+
+    return rs
+  }
+
   public async getById(id): Promise<any> {
     const db_cvote = this.getDBModel('CVote')
     const rs = await db_cvote.getDBInstance().findOne({ _id: id })
       .populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR)
+      .populate('proposer', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
       .populate('reference', constant.DB_SELECTED_FIELDS.SUGGESTION.ID)
     return rs
   }

@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
+import { Helmet } from 'react-helmet'
 import _ from 'lodash'
 import { Row, Col, Spin, Divider, Modal, Input, Button } from 'antd'
 import { Link } from 'react-router-dom'
@@ -50,7 +51,8 @@ export default class extends StandardPage {
   }
 
   ord_renderContent() {
-    if (_.isEmpty(this.props.detail) || this.props.detail.loading) {
+    const { detail } = this.props
+    if (_.isEmpty(detail) || detail.loading) {
       return <div className="center"><Spin size="large" /></div>
     }
     const detailNode = this.renderDetail()
@@ -63,6 +65,13 @@ export default class extends StandardPage {
     const commentNode = this.renderCommentNode()
     return (
       <div>
+        <Helmet>
+          <title>{`${detail.title} - Suggestion Detail - Cyber Republic`}</title>
+          <meta property="og:title" content="Suggestion Detail" />
+          <meta property="og:description" content={detail.title} />
+          <meta name="description" content={detail.title} />
+        </Helmet>
+
         <Container className="c_SuggestionDetail">
           <MediaQuery maxWidth={LG_WIDTH}>
             <div><BackLink link="/suggestion" style={{ position: 'relative', left: 0, marginBottom: 15 }} /></div>

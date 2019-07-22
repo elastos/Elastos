@@ -2,6 +2,7 @@ import _ from 'lodash'
 
 export default {
   formatUsername(user) {
+    if (!user) return ''
     const firstName = user.profile && user.profile.firstName
     const lastName = user.profile && user.profile.lastName
 

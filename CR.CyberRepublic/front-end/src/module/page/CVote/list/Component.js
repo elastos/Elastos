@@ -6,9 +6,10 @@ import {
   Table, Row, Col, Button, Input,
 } from 'antd'
 import I18N from '@/I18N'
+import { Link } from 'react-router-dom'
+import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
 import VoteStats from '../stats/Component'
 import CreateForm from '../create/Container'
-import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
 
 // style
 import { Container, List, Item, ItemUndecided, StyledButton, StyledSearch, VoteFilter } from './style'
@@ -49,9 +50,8 @@ export default class extends BaseComponent {
         title: I18N.get('council.voting.number'),
         dataIndex: 'vid',
         render: (vid, item, index) => (
-          <a className="tableLink" onClick={this.toDetail.bind(this, item._id)}>
-#
-            {vid}
+          <a className="tableLink" onClick={this.toDetailPage.bind(this, item._id)}>
+            {`#${vid}`}
           </a>
         ),
       },
@@ -60,7 +60,7 @@ export default class extends BaseComponent {
         dataIndex: 'title',
         width: '30%',
         render: (title, item) => (
-          <a onClick={this.toDetail.bind(this, item._id)} className="tableLink">
+          <a onClick={this.toDetailPage.bind(this, item._id)} className="tableLink">
             {title}
           </a>
         ),
@@ -122,10 +122,13 @@ export default class extends BaseComponent {
       </List>
     )
 
-    const createFormNode = canManage && (
+    const createBtn = canManage && (
       <Row type="flex" align="middle" justify="end">
         <Col lg={8} md={12} sm={24} xs={24} style={{ textAlign: 'right' }}>
-          <CreateForm onCreated={this.refetch} />
+          <StyledButton onClick={this.createAndRedirect} className="cr-btn cr-btn-primary">
+            {/* <Link to="/proposals/new" style={{ color: 'white' }}>{I18N.get('from.CVoteForm.button.add')}</Link> */}
+            {I18N.get('from.CVoteForm.button.add')}
+          </StyledButton>
         </Col>
       </Row>
     )
@@ -148,9 +151,9 @@ export default class extends BaseComponent {
     )
     const title = (
       <Col lg={8} md={8} sm={12} xs={24}>
-        <h3 style={{ textAlign: 'left', paddingBottom: 0 }} className="komu-a cr-title-with-icon">
+        <h2 style={{ textAlign: 'left', paddingBottom: 0 }} className="komu-a cr-title-with-icon">
           {I18N.get('council.voting.proposalList')}
-        </h3>
+        </h2>
       </Col>
     )
     const searchInput = (
@@ -175,7 +178,7 @@ export default class extends BaseComponent {
     )
     return (
       <Container>
-        {createFormNode}
+        {createBtn}
         <Row type="flex" align="middle" justify="space-between" style={{ marginTop: 20 }}>
           {title}
           {searchInput}
@@ -187,9 +190,31 @@ export default class extends BaseComponent {
           dataSource={this.state.list}
           rowKey={record => record._id}
         />
-        {createFormNode}
+        {createBtn}
       </Container>
     )
+  }
+
+  createAndRedirect = async () => {
+    const { _id, profile } = this.props.user
+    const fullName = `${profile.firstName} ${profile.lastName}`
+    const {createDraft } = this.props
+
+    const param = {
+      title: 'New Proposal',
+      proposedBy: fullName,
+      proposer: _id,
+    }
+
+    this.ord_loading(true)
+
+    try {
+      const res = await createDraft(param)
+      this.ord_loading(false)
+      this.toEditPage(res._id)
+    } catch (error) {
+      this.ord_loading(false)
+    }
   }
 
   getQuery = () => {
@@ -248,8 +273,12 @@ export default class extends BaseComponent {
     this.setState({ voteResult }, this.refetch)
   }
 
-  toDetail(id) {
+  toDetailPage(id) {
     this.props.history.push(`/proposals/${id}`)
+  }
+
+  toEditPage(id) {
+    this.props.history.push(`/proposals/${id}/edit`)
   }
 
   voteDataByUser = (data) => {

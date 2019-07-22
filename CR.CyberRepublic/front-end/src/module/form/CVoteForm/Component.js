@@ -1,18 +1,76 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import {
-  Form, Input, Button, Select, Row, Col, message, Modal,
+  Form, Input, Button, Row, message, Modal, Tabs,
 } from 'antd'
-import ReactQuill from 'react-quill'
-import { TOOLBAR_OPTIONS } from '@/config/constant'
 import I18N from '@/I18N'
 import _ from 'lodash'
-import { CVOTE_STATUS, CVOTE_STATUS_TEXT } from '@/constant'
+import { CVOTE_STATUS } from '@/constant'
+import { convertToRaw } from 'draft-js'
+import DraftEditor from '@/module/common/DraftEditor'
+import CircularProgressbar from '@/module/common/CircularProgressbar'
 
-import { Container, Title, Btn } from './style'
+// if using webpack
+import 'medium-draft/lib/index.css'
+
+import { Container, Title, TabPaneInner, Note, NoteHighlight, TabText, CirContainer } from './style'
+
+const WORD_LIMIT = 200
 
 const FormItem = Form.Item
-const { TextArea } = Input
+const { TabPane } = Tabs
+
+const transform = value => {
+  // string or object
+  let result = value
+  if (_.isObject(value)) {
+    try {
+      result = value.getCurrentContent().getPlainText()
+    } catch (error) {
+      result = value
+    }
+  }
+  return result
+}
+
+const renderRichEditor = (data, key, getFieldDecorator, max, callback) => {
+  const content = _.get(data, key, '')
+  const rules = [
+    {
+      required: true,
+      transform,
+      message: I18N.get('proposal.form.error.required')
+    },
+  ]
+  if (max) {
+    rules.push({
+      max,
+      transform,
+      message: I18N.get(`proposal.form.error.limit${max}`)
+    })
+  }
+  const content_fn = getFieldDecorator(key, {
+    rules,
+    validateTrigger: 'onSubmit',
+    initialValue: content,
+  })
+  const content_el = (
+    <DraftEditor contentType={_.get(data, 'contentType')} callback={callback} />
+  )
+  return content_fn(content_el)
+}
+
+const formatValue = (value) => {
+  let result
+  try {
+    result = _.isString(value) ? value : JSON.stringify(convertToRaw(value.getCurrentContent()))
+  } catch (error) {
+    result = _.toString(value)
+  }
+  return result
+}
+
+const activeKeys = ['abstract', 'goal', 'motivation', 'plan', 'relevance', 'budget']
 
 class C extends BaseComponent {
   constructor(props) {
@@ -21,202 +79,210 @@ class C extends BaseComponent {
     this.state = {
       persist: true,
       loading: false,
+      activeKeyNum: 0,
     }
 
     this.user = this.props.user
+  }
+
+  componentDidMount = () => {
+    this.intervalId = setInterval(this.saveDraft, 5000)
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.intervalId)
   }
 
   ord_loading(f = false) {
     this.setState({ loading: f })
   }
 
-  handleSubmit = async (e, fields = {}) => {
+  publishCVote = async (e) => {
     e.preventDefault()
-    const fullName = `${this.user.profile.firstName} ${this.user.profile.lastName}`
-    const { edit, form, updateCVote, createCVote, onCreated, onEdit, suggestionId } = this.props
+    const { edit, form, updateCVote, onEdit, suggestionId } = this.props
 
     form.validateFields(async (err, values) => {
-      if (err) return
-      const { title, type, notes, motionId, isConflict, content } = values
-      const param = {
-        title,
-        type,
-        notes,
-        motionId,
-        isConflict,
-        content,
-        published: true,
-        ...fields,
+      if (err) {
+        // mark error keys
+        this.setState({ errKeys: _.keys(err)})
+        return
       }
-      if (!edit) param.proposedBy = fullName
+      const { title, abstract, goal, motivation, relevance, budget, plan } = values
+      const param = {
+        _id: edit,
+        title,
+        abstract: formatValue(abstract),
+        goal: formatValue(goal),
+        motivation: formatValue(motivation),
+        relevance: formatValue(relevance),
+        budget: formatValue(budget),
+        plan: formatValue(plan),
+        published: true,
+      }
       if (suggestionId) param.suggestionId = suggestionId
 
       this.ord_loading(true)
-      if (edit) {
-        try {
-          param._id = edit
-          await updateCVote(param)
-          this.ord_loading(false)
-          await onEdit()
-          message.success(I18N.get('from.CVoteForm.message.updated.success'))
-        } catch (error) {
-          message.error(error.message)
-          this.ord_loading(false)
-        }
-      } else {
-        try {
-          await createCVote(param)
-          this.ord_loading(false)
-          await onCreated()
-          message.success(I18N.get('from.CVoteForm.message.create.success'))
-        } catch (error) {
-          message.error(error.message)
-          this.ord_loading(false)
-        }
+      try {
+        await updateCVote(param)
+        this.ord_loading(false)
+        await onEdit()
+        message.success(I18N.get('proposal.msg.proposalPublished'))
+      } catch (error) {
+        message.error(error.message)
+        this.ord_loading(false)
       }
     })
   }
 
+  saveDraft = async (isShowMsg = false, isShowErr = false) => {
+    const { edit, form, updateDraft, suggestionId } = this.props
+    form.validateFields(async (err, values) => {
+      if (err) {
+        // mark error keys
+        if (isShowErr) {
+          this.setState({ errKeys: _.keys(err) })
+          return
+        }
+      }
+      const { title, abstract, goal, motivation, relevance, budget, plan } = values
+      const param = {
+        _id: edit,
+        title,
+      }
+      if (suggestionId) param.suggestionId = suggestionId
+
+      if (!_.isEmpty(transform(abstract))) param.abstract = formatValue(abstract)
+      if (!_.isEmpty(transform(goal))) param.goal = formatValue(goal)
+      if (!_.isEmpty(transform(motivation))) param.motivation = formatValue(motivation)
+      if (!_.isEmpty(transform(relevance))) param.relevance = formatValue(relevance)
+      if (!_.isEmpty(transform(budget))) param.budget = formatValue(budget)
+      if (!_.isEmpty(transform(plan))) param.plan = formatValue(plan)
+
+      try {
+        await updateDraft(param)
+        if (isShowMsg) message.success(I18N.get('proposal.msg.draftSaved'))
+      } catch (error) {
+        message.error(error.message)
+      }
+    })
+  }
+
+  saveDraftWithMsg = () => this.saveDraft(true, true)
+
   getInputProps(data) {
     const { edit } = this.props
-    const s = this.props.static
     const { getFieldDecorator } = this.props.form
 
     const title_fn = getFieldDecorator('title', {
-      rules: [{ required: true }],
+      rules: [{ required: true, message: I18N.get('proposal.form.error.required') }],
       initialValue: edit ? data.title : _.get(data, 'title', ''),
     })
     const title_el = (
       <Input size="large" type="text" />
     )
 
-    const type_fn = getFieldDecorator('type', {
-      rules: [{ required: true }],
-      readOnly: true,
-      initialValue: edit ? parseInt(data.type, 10) : 1,
-    })
-    const type_el = (
-      <Select>
-        {
-          _.map(s.select_type, (item, i) => (
-            <Select.Option key={i} value={item.code}>{item.name}</Select.Option>
-          ))
-        }
-      </Select>
-    )
-
-    const status_fn = getFieldDecorator('status', {
-      readOnly: true,
-      initialValue: edit ? I18N.get(`cvoteStatus.${data.status}`) : I18N.get(`cvoteStatus.${CVOTE_STATUS_TEXT.DRAFT}`),
-    })
-    const status_el = (
-      <Select disabled={true} />
-    )
-
-    const content_fn = getFieldDecorator('content', {
-      rules: [{ required: true }],
-      initialValue: edit ? data.content : _.get(data, 'content', ''),
-    })
-    const content_el = (
-      <ReactQuill
-        placeholder=""
-        style={{ background: 'white' }}
-        modules={{
-          toolbar: TOOLBAR_OPTIONS,
-          autoLinks: true,
-        }}
-      />
-    )
-
-    const isConflict_fn = getFieldDecorator('isConflict', {
-      initialValue: edit ? data.isConflict : 'NO',
-    })
-    const isConflict_el = (
-      <Select>
-        <Select.Option value="NO">{I18N.get('from.CVoteForm.no')}</Select.Option>
-        <Select.Option value="YES">{I18N.get('from.CVoteForm.yes')}</Select.Option>
-      </Select>
-    )
-
-    const notes_fn = getFieldDecorator('notes', {
-      initialValue: edit ? data.notes : '',
-    })
-    const notes_el = (
-      <TextArea rows={4} />
-    )
+    const abstract = renderRichEditor(data, 'abstract', getFieldDecorator, WORD_LIMIT, this.validateAbstract)
+    const goal = renderRichEditor(data, 'goal', getFieldDecorator)
+    const motivation = renderRichEditor(data, 'motivation', getFieldDecorator)
+    const relevance = renderRichEditor(data, 'relevance', getFieldDecorator)
+    const budget = renderRichEditor(data, 'budget', getFieldDecorator)
+    const plan = renderRichEditor(data, 'plan', getFieldDecorator)
 
     return {
       title: title_fn(title_el),
-      type: type_fn(type_el),
-      status: status_fn(status_el),
-      content: content_fn(content_el),
-      isConflict: isConflict_fn(isConflict_el),
-      notes: notes_fn(notes_el),
+      abstract,
+      goal,
+      motivation,
+      relevance,
+      budget,
+      plan,
     }
   }
 
-  togglePersist() {
-    const { persist } = this.state
-    this.setState({ persist: !persist })
-  }
-
   ord_render() {
-    const { edit, data, canManage, isSecretary } = this.props
+    const { edit, data, canManage } = this.props
     if (!canManage || (edit && !data)) {
       return null
     }
     const formProps = this.getInputProps(data)
-
     const formItemLayout = {
       labelCol: {
-        xs: { span: 24 },
-        sm: { span: 12 },
-        md: { span: 12 },
+        span: 2,
       },
       wrapperCol: {
-        xs: { span: 24 },
-        sm: { span: 12 },
-        md: { span: 12 },
+        span: 18,
       },
       colon: false,
     }
-    const formItemLayoutOneLine = {
-      labelCol: {
-        span: 24,
-      },
-      wrapperCol: {
-        span: 24,
-      },
-      colon: false,
+    const { activeKeyNum } = this.state
+    const activeKey = activeKeys[activeKeyNum]
+    let actionBtn
+    if (activeKeyNum === activeKeys.length - 1 && _.get(data, 'status') === CVOTE_STATUS.DRAFT) {
+      actionBtn = this.renderPreviewBtn()
+    }
+    if (activeKeyNum !== activeKeys.length - 1) {
+      actionBtn = this.renderContinueBtn()
     }
 
     return (
       <Container>
-        <Form onSubmit={this.handleSubmit}>
-          <Title>
+        <Form onSubmit={this.publishCVote}>
+          <Title className="komu-a cr-title-with-icon ">
             {this.props.header || I18N.get('from.CVoteForm.button.add')}
           </Title>
+          <FormItem label={`${I18N.get('proposal.fields.title')}*`} {...formItemLayout}>
+            {formProps.title}
+          </FormItem>
+          <Tabs animated={false} tabBarGutter={5} activeKey={activeKey} onChange={this.onTabChange}>
+            <TabPane tab={this.renderTabText('abstract')} key="abstract">
+              <TabPaneInner>
+                <Note>{I18N.get('proposal.form.note.abstract')}</Note>
+                <FormItem>
+                  <div style={{ position: 'relative' }}>
+                    {formProps.abstract}
+                    {this.renderWordLimit()}
+                  </div>
+                </FormItem>
+              </TabPaneInner>
+            </TabPane>
+            <TabPane tab={this.renderTabText('goal')} key="goal">
+              <TabPaneInner>
+                <Note>{I18N.get('proposal.form.note.goal')}</Note>
+                <FormItem>{formProps.goal}</FormItem>
+              </TabPaneInner>
+            </TabPane>
+            <TabPane tab={this.renderTabText('motivation')} key="motivation">
+              <TabPaneInner>
+                <Note>
+                  {I18N.get('proposal.form.note.motivation')}
+                  <NoteHighlight> {I18N.get('proposal.form.note.motivationHighlight')}</NoteHighlight>
+                </Note>
+                <FormItem>{formProps.motivation}</FormItem>
+              </TabPaneInner>
+            </TabPane>
+            <TabPane tab={this.renderTabText('plan')} key="plan">
+              <TabPaneInner>
+                <Note>{I18N.get('proposal.form.note.plan')}</Note>
+                <FormItem>{formProps.plan}</FormItem>
+              </TabPaneInner>
+            </TabPane>
+            <TabPane tab={this.renderTabText('relevance')} key="relevance">
+              <TabPaneInner>
+                <Note>{I18N.get('proposal.form.note.relevance')}</Note>
+                <FormItem>{formProps.relevance}</FormItem>
+              </TabPaneInner>
+            </TabPane>
+            <TabPane tab={this.renderTabText('budget')} key="budget">
+              <TabPaneInner>
+                <Note>{I18N.get('proposal.form.note.budget')}</Note>
+                <FormItem>{formProps.budget}</FormItem>
+              </TabPaneInner>
+            </TabPane>
+          </Tabs>
 
-          <Row gutter={16} type="flex" justify="space-between">
-            <Col sm={24} md={11} lg={11}>
-              <FormItem label={I18N.get('from.CVoteForm.label.type')} {...formItemLayout}>{formProps.type}</FormItem>
-            </Col>
-            <Col sm={24} md={11} lg={11}>
-              <FormItem label={`${I18N.get('council.voting.ifConflicted')}?`} {...formItemLayout}>{formProps.isConflict}</FormItem>
-            </Col>
+          <Row gutter={8} type="flex" justify="center">
+            {actionBtn}
           </Row>
-          <Row gutter={16} type="flex" justify="space-between">
-            <Col sm={24} md={11} lg={11}>
-              <FormItem disabled={true} label={I18N.get('from.CVoteForm.label.voteStatus')} {...formItemLayout}>{formProps.status}</FormItem>
-            </Col>
-          </Row>
-
-
-          <FormItem label={I18N.get('from.CVoteForm.label.title')} {...formItemLayoutOneLine}>{ formProps.title }</FormItem>
-
-          <FormItem label={I18N.get('from.CVoteForm.label.content')} {...formItemLayoutOneLine}>{formProps.content}</FormItem>
-
-          {isSecretary && <FormItem label={I18N.get('from.CVoteForm.label.note')} {...formItemLayoutOneLine}>{formProps.notes}</FormItem>}
 
           <Row gutter={8} type="flex" justify="center">
             {this.renderCancelBtn()}
@@ -228,18 +294,108 @@ class C extends BaseComponent {
     )
   }
 
+  renderWordLimit() {
+    const { form } = this.props
+    const formValue = form.getFieldValue('abstract')
+    const value = transform(formValue)
+    const count = value.length
+
+    return (
+      <CirContainer>
+        <CircularProgressbar count={count} />
+      </CirContainer>
+    )
+  }
+
+  validateAbstract = () => {
+    const { form } = this.props
+    const formValue = form.getFieldValue('abstract')
+    const value = transform(formValue)
+    const err = transform(form.getFieldError('abstract'))
+    const count = value.length
+
+    if (err && count < WORD_LIMIT) {
+      form.setFields({
+        abstract: {
+          value: formValue,
+          errors: undefined,
+        },
+      })
+    }
+
+  }
+
+  renderTabText(key) {
+    const { errKeys } = this.state
+    const fullText = `${I18N.get(`proposal.fields.${key}`)}*`
+    const hasErr = _.includes(errKeys, key)
+    return (
+      <TabText hasErr={hasErr}>{fullText}</TabText>
+    )
+  }
+
+  onTabChange = (activeKey) => {
+    const activeKeyNum = activeKeys.indexOf(activeKey)
+    this.setState({ activeKeyNum })
+  }
+
+  gotoNextTab = () => {
+    const { form } = this.props
+    const currentKeyNum = this.state.activeKeyNum
+
+    form.validateFields(async (err, values) => {
+      // if (err) {
+      //   // mark error keys
+      // }
+      const errKeys = _.keys(err)
+      this.setState({ errKeys })
+      if (_.includes(errKeys, activeKeys[currentKeyNum])) return
+      this.setState({ activeKeyNum: currentKeyNum + 1 })
+    })
+  }
+
   gotoList = () => {
     this.props.history.push('/proposals')
   }
 
-  saveDraft = (e) => {
-    this.handleSubmit(e, { published: false })
+  gotoDetail = () => {
+    const { form } = this.props
+
+    form.validateFields(async (err, values) => {
+      if (err) {
+        // mark error keys
+        this.setState({ errKeys: _.keys(err)})
+        return
+      }
+      const { data: { _id } } = this.props
+      this.props.history.push(`/proposals/${_id}`)
+    })
+  }
+
+  renderContinueBtn() {
+    return (
+      <FormItem>
+        <Button onClick={this.gotoNextTab} className="cr-btn cr-btn-black" style={{ marginBottom: 10 }}>
+          {I18N.get('from.CVoteForm.button.continue')}
+        </Button>
+      </FormItem>
+    )
+  }
+
+  renderPreviewBtn() {
+    return (
+      <FormItem>
+        <Button onClick={this.gotoDetail} className="cr-btn cr-btn-black" style={{ marginBottom: 10 }}>
+          {I18N.get('from.CVoteForm.button.preview')}
+        </Button>
+      </FormItem>
+    )
   }
 
   renderCancelBtn() {
     return (
       <FormItem>
-        <Button loading={this.state.loading} onClick={this.props.onCancel} className="cr-btn cr-btn-default" style={{ marginRight: 10 }}>
+        <Button onClick={this.props.onCancel} className="cr-btn cr-btn-default" style={{ marginRight: 10 }}>
           {I18N.get('from.CVoteForm.button.cancel')}
         </Button>
       </FormItem>
@@ -252,7 +408,7 @@ class C extends BaseComponent {
 
     return showButton && (
       <FormItem>
-        <Button loading={this.state.loading} className="cr-btn cr-btn-primary" onClick={this.saveDraft} style={{ marginRight: 10 }}>
+        <Button loading={this.state.loading} className="cr-btn cr-btn-primary" onClick={this.saveDraftWithMsg} style={{ marginRight: 10 }}>
           {I18N.get('from.CVoteForm.button.saveDraft')}
         </Button>
       </FormItem>

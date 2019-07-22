@@ -2,12 +2,14 @@ import { TASK_STATUS, TASK_TYPE, CVOTE_STATUS } from '@/constant'
 import council from './en/council'
 import home from './en/home'
 import release from './en/release'
+import proposal from './en/proposal'
 import getting_started from './en/getting_started'
 
 const en = {
   council,
   home,
   release,
+  proposal,
   getting_started,
   // Header
   '0000': 'ALPHA',
@@ -717,8 +719,11 @@ const en = {
   'council.voting.btnText.editNotes': 'Edit Notes',
   'council.voting.btnText.editProposal': 'Edit Proposal',
   'council.voting.btnText.completeProposal': 'Complete Proposal',
+  'council.voting.btnText.closeIncomplete': 'Close with Incompletion',
+  'council.voting.btnText.publish': 'Publish',
 
   'council.voting.modal.complete': 'Are you sure to complete this proposal?',
+  'council.voting.modal.incomplete': 'Are you sure to close with incompletion?',
   'council.voting.modal.updateNotes': 'Notes from Secretary',
   'council.voting.modal.voteYes': 'Are you sure to Vote Yes?',
   'council.voting.modal.voteAbstain': 'Are you sure to Abstain?',
@@ -732,7 +737,7 @@ const en = {
 
   'council.voting.voteResult.show': 'Show',
   'council.voting.voteResult.all': 'All',
-  'council.voting.voteResult.unvoted': 'Unvoted by You',
+  'council.voting.voteResult.unvoted': 'Unvoted by me',
 
   // Landing
   'landing.elastos': 'Elastos',
@@ -1088,6 +1093,8 @@ const en = {
 
   'from.CVoteForm.button.add': 'Add a Proposal',
   'from.CVoteForm.button.cancel': 'Cancel',
+  'from.CVoteForm.button.continue': 'Continue',
+  'from.CVoteForm.button.preview': 'Preivew',
   'from.CVoteForm.button.saveDraft': 'Save as Draft',
   'from.CVoteForm.button.saveAndPublish': 'Save & Publish',
   'from.CVoteForm.button.saveChanges': 'Save changes',
@@ -1528,6 +1535,7 @@ en[`cvoteStatus.${CVOTE_STATUS.PROPOSED}`] = 'PROPOSED'
 en[`cvoteStatus.${CVOTE_STATUS.ACTIVE}`] = 'PASSED'
 en[`cvoteStatus.${CVOTE_STATUS.REJECT}`] = 'REJECTED'
 en[`cvoteStatus.${CVOTE_STATUS.FINAL}`] = 'FINAL'
+en[`cvoteStatus.${CVOTE_STATUS.INCOMPLETED}`] = 'INCOMPLETED'
 en[`cvoteStatus.${CVOTE_STATUS.DEFERRED}`] = 'DEFERRED'
 
 export default en

@@ -186,6 +186,14 @@
   }
 }
 
+.ant-btn.cr-btn-black {
+  background: $bg_obsidian;
+  border-color: $bg_obsidian;
+  > span {
+    color: white;
+  }
+}
+
 .cr-input {
   .ant-select-selection {
     border-radius: 0;

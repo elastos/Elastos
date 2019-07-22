@@ -1,13 +1,13 @@
 import React from 'react'
-import { Modal, Col, Button } from 'antd'
-import BaseComponent from '@/model/BaseComponent'
+import StandardPage from '../../StandardPage'
 import CVoteForm from '@/module/form/CVoteForm/Container'
 import I18N from '@/I18N'
+import Footer from '@/module/layout/Footer/Container'
+import BackLink from '@/module/shared/BackLink/Component'
 
 import { Container } from './style'
-import { StyledButton } from '../../suggestion/detail/style'
 
-export default class extends BaseComponent {
+export default class extends StandardPage {
   constructor(props) {
     super(props)
     this.state = {
@@ -15,20 +15,16 @@ export default class extends BaseComponent {
     }
   }
 
-  ord_render() {
-    const { className, btnStyle, btnText } = this.props
-    const classNameLocal = `cr-btn cr-btn-primary ${className}`
-    const createBtn = (
-      <StyledButton onClick={this.switchCreateMode} className={classNameLocal} style={btnStyle}>
-        {btnText || I18N.get('from.CVoteForm.button.add')}
-      </StyledButton>
-    )
+  ord_renderContent() {
     const form = this.renderForm()
     return (
-      <span>
-        {createBtn}
-        {form}
-      </span>
+      <div>
+        <Container>
+          <BackLink link="/proposals" />
+          {form}
+        </Container>
+        <Footer />
+      </div>
     )
   }
 
@@ -36,35 +32,17 @@ export default class extends BaseComponent {
     const props = {
       ...this.props,
       onCreated: this.onCreated,
-      onCancel: this.switchCreateMode,
+      onCancel: this.onCancel,
       header: I18N.get('from.CVoteForm.button.add'),
     }
-    return (
-      <Modal
-        className="project-detail-nobar"
-        maskClosable={false}
-        visible={this.state.creating}
-        onOk={this.switchCreateMode}
-        onCancel={this.switchCreateMode}
-        footer={null}
-        width="70%"
-      >
-        <Container>
-          <CVoteForm {...props} />
-        </Container>
-      </Modal>
-    )
-  }
-
-  switchCreateMode = () => {
-    const { creating } = this.state
-    this.setState({
-      creating: !creating,
-    })
+    return <CVoteForm {...props} />
   }
 
   onCreated = () => {
-    this.switchCreateMode()
-    this.props.onCreated()
+    this.props.history.push('/proposals')
+  }
+
+  onCancel = () => {
+    this.onCreated()
   }
 }

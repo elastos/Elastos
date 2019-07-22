@@ -2,12 +2,14 @@ import { TASK_STATUS, CVOTE_STATUS } from '@/constant'
 import council from './zh/council'
 import home from './zh/home'
 import release from './zh/release'
+import proposal from './zh/proposal'
 import getting_started from './en/getting_started'
 
 const zh = {
   council,
   home,
   release,
+  proposal,
   getting_started,
   // Header
   '0000': 'ALPHA版本',
@@ -716,8 +718,11 @@ const zh = {
   'council.voting.btnText.editNotes': '编辑备注',
   'council.voting.btnText.editProposal': '编辑此提案',
   'council.voting.btnText.completeProposal': '标记提案为完成',
+  'council.voting.btnText.closeIncomplete': '标记提案为未完成',
+  'council.voting.btnText.publish': '发布',
 
   'council.voting.modal.complete': '您确定要标记此提案为完成状态吗？',
+  'council.voting.modal.incomplete': '您确定要标记此提案为未完成状态吗？',
   'council.voting.modal.updateNotes': '秘书处备注',
   'council.voting.modal.voteYes': '您确定要投赞成票吗？',
   'council.voting.modal.voteAbstain': '您确定要弃权吗？',
@@ -1087,6 +1092,8 @@ const zh = {
 
   'from.CVoteForm.button.add': '添加提案',
   'from.CVoteForm.button.cancel': '取消',
+  'from.CVoteForm.button.continue': '继续',
+  'from.CVoteForm.button.preview': '预览',
   'from.CVoteForm.button.saveDraft': '保存为草案',
   'from.CVoteForm.button.saveAndPublish': '保存 & 发布',
   'from.CVoteForm.button.saveChanges': '保存更改',
@@ -1527,6 +1534,7 @@ zh[`cvoteStatus.${CVOTE_STATUS.PROPOSED}`] = '投票中'
 zh[`cvoteStatus.${CVOTE_STATUS.ACTIVE}`] = '已通过'
 zh[`cvoteStatus.${CVOTE_STATUS.REJECT}`] = '已否决'
 zh[`cvoteStatus.${CVOTE_STATUS.FINAL}`] = '已完成'
+zh[`cvoteStatus.${CVOTE_STATUS.INCOMPLETED}`] = '未完成'
 zh[`cvoteStatus.${CVOTE_STATUS.DEFERRED}`] = '已过期'
 
 export default zh

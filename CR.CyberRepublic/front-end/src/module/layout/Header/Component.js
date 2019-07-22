@@ -12,6 +12,7 @@ import { USER_ROLE, USER_LANGUAGE } from '@/constant'
 import Flag from 'react-flags'
 import Data from '@/config/data'
 import UserEditForm from '@/module/form/UserEditForm/Container'
+import Headroom from 'react-headroom'
 
 const { Header } = Layout
 
@@ -230,6 +231,7 @@ export default class extends BaseComponent {
     const helpDropdown = this.buildHelpDropdown()
 
     return (
+      <Headroom>
       <Header className="c_Header">
         <Menu
           onClick={this.clickItem.bind(this)}
@@ -328,6 +330,7 @@ export default class extends BaseComponent {
         {this.renderProfileToast()}
         {this.renderCompleteProfileModal()}
       </Header>
+      </Headroom>
     )
   }
 

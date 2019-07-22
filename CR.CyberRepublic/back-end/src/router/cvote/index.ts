@@ -1,5 +1,7 @@
 import Base from '../Base'
 
+import create_draft from './create_draft'
+import update_draft from './update_draft'
 import create from './create'
 import list from './list'
 import list_public from './list_public'
@@ -7,9 +9,20 @@ import get from './get'
 import update from './update'
 import vote from './vote'
 import finish from './finish'
+import unfinish from './unfinish'
 import update_notes from './update_notes'
 
 export default Base.setRouter([
+    {
+        path : '/create_draft',
+        router : create_draft,
+        method : 'post'
+    },
+    {
+        path : '/update_draft',
+        router : update_draft,
+        method : 'post'
+    },
     {
         path : '/create',
         router : create,
@@ -43,7 +56,12 @@ export default Base.setRouter([
     {
         path : '/finish',
         router : finish,
-        method : 'get'
+        method : 'post'
+    },
+    {
+        path : '/unfinish',
+        router : unfinish,
+        method : 'post'
     },
     {
         path : '/update_notes',

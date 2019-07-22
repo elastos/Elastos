@@ -58,6 +58,10 @@ const tag = {
 
 export const Suggestion = {
   ...SuggestionCore,
+  contentType: {
+    type: String,
+    enum: _.values(constant.CONTENT_TYPE),
+  },
   editHistory: [{
     ...SuggestionCore,
     updatedAt: {

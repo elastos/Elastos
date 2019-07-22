@@ -1,35 +1,70 @@
 import React from 'react'
+import { Helmet } from 'react-helmet'
 import {
-  Form, Spin, Button, Input, message, Modal, Icon,
+  Form, Spin, Button, Input, message, Modal, Anchor, Row, Col,
 } from 'antd'
 import { Link } from 'react-router-dom'
 import I18N from '@/I18N'
 import _ from 'lodash'
-import sanitizeHtml from '@/util/html'
-import StandardPage from '../../StandardPage'
+import StandardPage from '@/module/page/StandardPage'
 import { LANGUAGES } from '@/config/constant'
 import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
-import MetaComponent from '@/module/shared/meta/Container'
-import VoteResultComponent from '../common/vote_result/Component'
-import EditForm from '../edit/Container'
 import Footer from '@/module/layout/Footer/Container'
 import BackLink from '@/module/shared/BackLink/Component'
 import CRPopover from '@/module/shared/Popover/Component'
+import MetaComponent from '@/module/shared/meta/Container'
 import Translation from '@/module/common/Translation/Container'
+import DraftEditor from '@/module/common/DraftEditor'
+import { createEditorState } from 'medium-draft'
+import mediumDraftExporter from 'medium-draft/lib/exporter'
+import { StickyContainer, Sticky } from 'react-sticky'
+import VoteResultComponent from '../common/vote_result/Component'
+import Preamble from './Preamble'
+import Tracking from '../tracking/Container'
+import Summary from '../summary/Container'
 
-import { Title, Label } from './style'
+import { Container, Title, Label, ContentTitle, StyledAnchor, FixedHeader, Body, SubTitleHeading, SubTitleContainer, VoteBtnGroup } from './style'
 import './style.scss'
 
 const { TextArea } = Input
 
-const SubTitle = ({ dataList }) => {
-  const result = _.map(dataList, (data, key) => (
-    <h4 className="subtitle-item" key={key}>
-      <div className="text">{data.text}</div>
-      <div className="value">{data.value}</div>
-    </h4>
-  ))
-  return <div className="subtitle-container">{result}</div>
+const renderRichContent = (data, key, title) => {
+  let content
+  if (_.isArray(data)) {
+    content = _.map(data, item => (
+      <DraftEditor
+        value={item[key]}
+        contentType={item.contentType}
+        editorEnabled={false}
+      />
+    ))
+  } else {
+    content = (
+      <DraftEditor
+        value={data[key]}
+        contentType={data.contentType}
+        editorEnabled={false}
+      />
+    )
+  }
+
+  return (
+    <div>
+      {title && <ContentTitle id={key}>{title}</ContentTitle>}
+      {content}
+    </div>
+  )
+}
+
+const getHTML = (data, key) => {
+  const { contentType } = data
+  const content = _.get(data, key, '')
+  let editorState
+  if (content && contentType === 'MARKDOWN') {
+    editorState = createEditorState(JSON.parse(content))
+    return mediumDraftExporter(editorState.getCurrentContent())
+  }
+  return content
 }
 
 class C extends StandardPage {
@@ -40,25 +75,31 @@ class C extends StandardPage {
       persist: true,
       loading: false,
       language: LANGUAGES.english, // language for this specifc form only
-      data: undefined,
       reason: '',
       visibleYes: false,
       visibleOppose: false,
       visibleAbstain: false,
       editing: false,
+      smallSpace: false,
     }
 
     this.isLogin = this.props.isLogin
     this.user = this.props.user
   }
 
-  componentDidMount() {
-    this.refetch()
+  async componentDidMount() {
+    await this.refetch()
+  }
+
+  componentWillUnmount() {
+    this.props.resetData()
   }
 
   refetch = async () => {
-    const data = await this.props.getData(_.get(this.props.match, 'params.id'))
-    this.setState({ data })
+    const param = {
+      id: _.get(this.props.match, 'params.id')
+    }
+    await this.props.getData(param)
   }
 
   ord_loading(f = false) {
@@ -66,47 +107,105 @@ class C extends StandardPage {
   }
 
   ord_renderContent() {
-    if (!this.state.data) {
+    const { data } = this.props
+    if (!data) {
       return <div className="center"><Spin /></div>
     }
-    const metaNode = this.renderMeta()
-    const titleNode = this.renderTitle()
-    const labelNode = this.renderLabelNode()
-    const subTitleNode = this.renderSubTitle()
+    const anchorNode = this.renderAnchor()
     const contentNode = this.renderContent()
+    const translationBtn = this.renderTranslationBtn()
     const notesNode = this.renderNotes()
     const voteActionsNode = this.renderVoteActions()
-    const adminActionsNode = this.renderAdminActions()
     const voteDetailNode = this.renderVoteResults()
-    const editFormNode = this.renderEditForm()
-    const translationBtn = this.renderTranslationBtn()
+    const trackingNode = this.renderTracking()
+    const summaryNode = this.renderSummary()
 
     return (
       <div>
-        <div className="p_CVoteDetail">
+        <Helmet>
+          <title>{`${data.title} - Proposal Detail - Cyber Republic`}</title>
+          <meta property="og:title" content="Proposal Detail" />
+          <meta property="og:description" content={data.title} />
+          <meta name="description" content={data.title} />
+        </Helmet>
+        {anchorNode}
+        <Container className="p_CVoteDetail">
+        <StickyContainer>
           <BackLink link="/proposals" />
-          {metaNode}
-          {titleNode}
-          {labelNode}
-          {subTitleNode}
-          {contentNode}
-          {translationBtn}
-          {notesNode}
-          {voteActionsNode}
-          {adminActionsNode}
-          {voteDetailNode}
-          {editFormNode}
-        </div>
+          {this.renderStickyHeader()}
+          <Body>
+            {contentNode}
+            {translationBtn}
+            {notesNode}
+            {voteActionsNode}
+            {voteDetailNode}
+            {trackingNode}
+            {summaryNode}
+          </Body>
+        </StickyContainer>
+        </Container>
         <Footer />
       </div>
     )
   }
 
+  renderStickyHeader() {
+    const metaNode = this.renderMeta()
+    const titleNode = this.renderTitle()
+    const labelNode = this.renderLabelNode()
+    const subTitleNode = this.renderSubTitle()
+    const { smallSpace } = this.state
+    return (
+      <Sticky>
+        {({
+          style,
+          isSticky,
+          wasSticky,
+        }) => {
+          if (!wasSticky && isSticky && !smallSpace) {
+            this.setState({ smallSpace: true })
+          }
+          if (wasSticky && !isSticky && smallSpace) {
+            this.setState({ smallSpace: false })
+          }
+          const finalStyle = style ? {
+            ...style,
+            zIndex: 2,
+          } : style
+          return (
+            <div style={finalStyle}>
+              <FixedHeader>
+                {metaNode}
+                {titleNode}
+                {labelNode}
+                {subTitleNode}
+              </FixedHeader>
+            </div>
+          )
+        }}
+      </Sticky>
+    )
+  }
+
   renderTranslationBtn() {
-    const { title, content } = this.state.data
+    const { data } = this.props
+    const { title } = data
     const text = `
       <h1>${title}</h1>
-      <p>${content}</p>
+      <br />
+      <br />
+      <h2>${I18N.get('proposal.fields.abstract')}</h2>
+      <p>${getHTML(data, 'abstract')}</p>
+      <h2>${I18N.get('proposal.fields.goal')}</h2>
+      <p>${getHTML(data, 'goal')}</p>
+      <h2>${I18N.get('proposal.fields.motivation')}</h2>
+      <p>${getHTML(data, 'motivation')}</p>
+      <h2>${I18N.get('proposal.fields.relevance')}</h2>
+      <p>${getHTML(data, 'relevance')}</p>
+      <h2>${I18N.get('proposal.fields.budget')}</h2>
+      <p>${getHTML(data, 'budget')}</p>
+      <h2>${I18N.get('proposal.fields.plan')}</h2>
+      <p>${getHTML(data, 'plan')}</p>
     `
 
     return (
@@ -116,86 +215,79 @@ class C extends StandardPage {
     )
   }
 
-  renderEditForm() {
-    return (
-      <Modal
-        className="project-detail-nobar"
-        maskClosable={false}
-        visible={this.state.editing}
-        onOk={this.switchEditMode}
-        onCancel={this.switchEditMode}
-        footer={null}
-        width="70%"
-      >
-        <EditForm onEdit={this.onEdit} onCancel={this.switchEditMode} />
-      </Modal>
-    )
-  }
-
-  switchEditMode = () => {
-    const { editing } = this.state
-    this.setState({
-      editing: !editing,
-    })
-  }
-
-  onEdit = () => {
-    this.switchEditMode()
-    this.refetch()
-  }
-
   renderMeta() {
-    const { data } = this.state
+    const { data } = this.props
     data.author = data.proposedBy
     data.displayId = data.vid
     const postedByText = I18N.get('from.CVoteForm.label.proposedby')
     return <MetaComponent data={data} postedByText={postedByText} />
   }
 
+  renderAnchor() {
+    const { data } = this.props
+    const { trackingStatus, summaryStatus } = this.props
+    const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL], data.status)
+    const trackingTitle = trackingStatus ? <span>{I18N.get('proposal.fields.tracking')} <span style={{ fontSize: 10, color: '#aaa' }}>({I18N.get(`proposal.status.trackingRaw.${trackingStatus}`)})</span></span> : I18N.get('proposal.fields.tracking')
+    const summaryTitle = summaryStatus ? <span>{I18N.get('proposal.fields.summary')} <span style={{ fontSize: 10, color: '#aaa' }}>({I18N.get(`proposal.status.summaryRaw.${summaryStatus}`)})</span></span> : I18N.get('proposal.fields.summary')
+    const tracking = isShowFollowingUp && <Anchor.Link href="#tracking" title={trackingTitle} />
+    const summary = isShowFollowingUp && <Anchor.Link href="#summary" title={summaryTitle} />
+
+    return (
+      <StyledAnchor offsetTop={420}>
+        <Anchor.Link href="#preamble" title={I18N.get('proposal.fields.preamble')} />
+        <Anchor.Link href="#abstract" title={I18N.get('proposal.fields.abstract')} />
+        <div style={{ marginTop: 48 }}>
+          <Anchor.Link href="#goal" title={I18N.get('proposal.fields.goal')} />
+        </div>
+        <Anchor.Link href="#motivation" title={I18N.get('proposal.fields.motivation')} />
+        <Anchor.Link href="#plan" title={I18N.get('proposal.fields.plan')} />
+        <Anchor.Link href="#relevance" title={I18N.get('proposal.fields.relevance')} />
+        <div style={{ marginTop: 48 }}>
+          <Anchor.Link href="#budget" title={I18N.get('proposal.fields.budget')} />
+        </div>
+        <div style={{ marginTop: 48 }}>
+          <Anchor.Link href="#vote" title={I18N.get('proposal.fields.vote')} />
+        </div>
+        {tracking}
+        {summary}
+      </StyledAnchor>
+    )
+  }
+
   renderTitle() {
-    const { title } = this.state.data
-    return <Title>{title}</Title>
+    const { title } = this.props.data
+    return <Title smallSpace={this.state.smallSpace}>{title}</Title>
   }
 
   renderSubTitle() {
-    const { data } = this.state
+    const status = this.renderStatus()
+    const btns = this.renderAdminActions()
+    return (
+      <SubTitleContainer>
+        {status}
+        {btns}
+      </SubTitleContainer>
+    )
+  }
+
+  renderStatus() {
+    const { data } = this.props
     const statusObj = {
       text: I18N.get('from.CVoteForm.label.voteStatus'),
       value: I18N.get(`cvoteStatus.${data.status}`) || '',
     }
 
-    const publishObj = {
-      text: I18N.get('from.CVoteForm.label.publish'),
-      value: data.published ? I18N.get('.yes') : I18N.get('.no'),
-    }
-
-    const typeMap = {
-      1: I18N.get('council.voting.type.newMotion'),
-      2: I18N.get('council.voting.type.motionAgainst'),
-      3: I18N.get('council.voting.type.anythingElse'),
-    }
-
-    const typeObj = {
-      text: I18N.get('from.CVoteForm.label.type'),
-      value: typeMap[data.type],
-    }
-
-    const voteObj = {
-      text: I18N.get('council.voting.ifConflicted'),
-      value: data.isConflict === 'YES' ? I18N.get('.yes') : I18N.get('.no'),
-    }
-
-    const dataList = [
-      statusObj,
-      publishObj,
-      typeObj,
-      voteObj,
-    ]
-    return <SubTitle dataList={dataList} />
+    const result = (
+      <SubTitleHeading smallSpace={this.state.smallSpace}>
+        <div className="text">{statusObj.text}</div>
+        <div className="value">{statusObj.value}</div>
+      </SubTitleHeading>
+    )
+    return result
   }
 
   renderLabelNode() {
-    const reference = _.get(this.state.data, 'reference')
+    const reference = _.get(this.props.data, 'reference')
     if (_.isEmpty(reference)) return null
     const { _id, displayId } = reference
     const linkText = `${I18N.get('suggestion.suggestion')} #${displayId}`
@@ -208,12 +300,24 @@ class C extends StandardPage {
   }
 
   renderContent() {
-    const { content } = this.state.data
-    return <div className="content ql-editor" dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
+    const { data } = this.props
+    // legacy data structure has content field
+    if (_.has(data, 'content')) return renderRichContent(data, 'content')
+    return (
+      <div>
+        <Preamble {...data} />
+        {renderRichContent(data, 'abstract', I18N.get('proposal.fields.abstract'))}
+        {renderRichContent(data, 'goal', I18N.get('proposal.fields.goal'))}
+        {renderRichContent(data, 'motivation', I18N.get('proposal.fields.motivation'))}
+        {renderRichContent(data, 'relevance', I18N.get('proposal.fields.relevance'))}
+        {renderRichContent(data, 'budget', I18N.get('proposal.fields.budget'))}
+        {renderRichContent(data, 'plan', I18N.get('proposal.fields.plan'))}
+      </div>
+    )
   }
 
   renderNotes() {
-    const { notes, notes_zh } = this.state.data
+    const { notes, notes_zh } = this.props.data
     if (!notes && !notes_zh) return null
     return (
       <div className="content notes">
@@ -226,7 +330,7 @@ class C extends StandardPage {
 
   renderVoteActions() {
     const { isCouncil } = this.props
-    const { status } = this.state.data
+    const { status } = this.props.data
     const canVote = isCouncil && status === CVOTE_STATUS.PROPOSED
 
     if (!canVote) return null
@@ -286,58 +390,61 @@ class C extends StandardPage {
     )
 
     return (
-      <div className="vote-btn-group">
+      <VoteBtnGroup>
         {popOverYes}
         {popOverOppose}
         {popOverAbstain}
-      </div>
+      </VoteBtnGroup>
     )
   }
 
   renderAdminActions() {
     const { isSecretary, isCouncil, currentUserId } = this.props
-    const { status, createdBy, notes } = this.state.data
+    const { status, createdBy } = this.props.data
     const isSelf = currentUserId === createdBy
-    const isCompleted = status === CVOTE_STATUS.FINAL
+    const isCompleted = _.includes([CVOTE_STATUS.FINAL, CVOTE_STATUS.INCOMPLETED], status)
     const canManage = isSecretary || isCouncil
     const canEdit = _.includes([CVOTE_STATUS.DRAFT], status)
-    const canComplete = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.REJECT, CVOTE_STATUS.DEFERRED], status)
 
     if (!canManage || isCompleted) return null
 
-    const noteBtnText = notes ? I18N.get('council.voting.btnText.editNotes') : I18N.get('council.voting.btnText.notesSecretary')
-    const addNoteBtn = isSecretary && (
-      <Button
-        icon="profile"
-        onClick={this.showUpdateNotesModal}
-      >
-        {noteBtnText}
-      </Button>
-    )
     const editProposalBtn = isSelf && canEdit && (
-      <Button
-        icon="edit"
-        onClick={this.switchEditMode}
-      >
+      <Button onClick={this.gotoEditPage}>
         {I18N.get('council.voting.btnText.editProposal')}
       </Button>
     )
-    const completeProposalBtn = isSecretary && canComplete && (
-      <Button
-        icon="check-square"
-        type="primary"
-        onClick={this.completeProposal}
-      >
-        {I18N.get('council.voting.btnText.completeProposal')}
+    const publishProposalBtn = isSelf && canEdit && (
+      <Button type="primary" onClick={this.publish}>
+        {I18N.get('council.voting.btnText.publish')}
       </Button>
     )
     return (
       <div className="vote-btn-group">
-        {addNoteBtn}
         {editProposalBtn}
-        {completeProposalBtn}
+        {publishProposalBtn}
       </div>
     )
+  }
+
+  renderTracking() {
+    const { data } = this.props
+    const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL], data.status)
+    if (!isShowFollowingUp) return null
+
+    return <Tracking proposal={data} />
+  }
+
+  renderSummary() {
+    const { data } = this.props
+    const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL], data.status)
+    if (!isShowFollowingUp) return null
+
+    return <Summary proposal={data} />
+  }
+
+  gotoEditPage = () => {
+    const { _id: id } = this.props.data
+    this.props.history.push(`/proposals/${id}/edit`)
   }
 
   onNotesChanged = (e) => {
@@ -345,7 +452,7 @@ class C extends StandardPage {
   }
 
   showUpdateNotesModal = () => {
-    const { notes } = this.state.data
+    const { notes } = this.props.data
     Modal.confirm({
       title: I18N.get('council.voting.modal.updateNotes'),
       content: <TextArea onChange={this.onNotesChanged} defaultValue={notes} />,
@@ -376,7 +483,7 @@ class C extends StandardPage {
   }
 
   renderVoteResults() {
-    const { vote_map: voteMap, reason_map: reasonMap, voteResult, status } = this.state.data
+    const { vote_map: voteMap, reason_map: reasonMap, voteResult, status } = this.props.data
     const { avatar_map: avatarMap } = this.props
     let stats
 
@@ -407,7 +514,7 @@ class C extends StandardPage {
       }, {})
     }
 
-    const title = <h2>{I18N.get('council.voting.councilMembersVotes')}</h2>
+    const title = <h4>{I18N.get('council.voting.councilMembersVotes')}</h4>
     const detail = _.map(stats, (statArr, key) => {
       const type = (CVOTE_RESULT[key.toUpperCase()] || CVOTE_RESULT.UNDECIDED)
       const label = I18N.get(`council.voting.type.${type}`)
@@ -419,11 +526,29 @@ class C extends StandardPage {
       return <VoteResultComponent {...props} key={key} />
     })
     return (
-      <div>
+      <div id="vote">
         {title}
         <div>{detail}</div>
       </div>
     )
+  }
+
+  publish = async () => {
+    const { match, updateCVote } = this.props
+    const id = _.get(match, 'params.id')
+
+    const param = { _id: id, published: true }
+
+    this.ord_loading(true)
+    try {
+      await updateCVote(param)
+      message.success(I18N.get('from.CVoteForm.message.updated.success'))
+      this.refetch()
+      this.ord_loading(false)
+    } catch (e) {
+      message.error(e.message)
+      this.ord_loading(false)
+    }
   }
 
   async vote({ value, reason }) {
@@ -475,16 +600,28 @@ class C extends StandardPage {
   }
 
   completeProposal = () => {
+    const title = I18N.get('council.voting.modal.complete')
+    const fn = this.props.finishCVote
+    this.finalizeProposal(title, fn)
+  }
+
+  incompleteProposal = () => {
+    const title = I18N.get('council.voting.modal.incomplete')
+    const fn = this.props.unfinishCVote
+    this.finalizeProposal(title, fn)
+  }
+
+  finalizeProposal = (title, fn) => {
     const id = _.get(this.props.match, 'params.id')
 
     Modal.confirm({
-      title: I18N.get('council.voting.modal.complete'),
+      title,
       content: '',
       okText: I18N.get('council.voting.modal.confirm'),
       cancelText: I18N.get('council.voting.modal.cancel'),
       onOk: () => {
         this.ord_loading(true)
-        this.props.finishCVote({
+        fn({
           id,
         }).then(() => {
           message.success(I18N.get('from.CVoteForm.message.proposal.update.success'))
