@@ -1,7 +1,7 @@
 Elastos Carrier Android SDK
 ===========================
 
-[![Build Status](https://travis-ci.org/elastos/Elastos.NET.Carrier.Android.SDK.svg)](https://travis-ci.org/elastos/Elastos.NET.Carrier.Android.SDK)
+[![Build Status](https://travis-ci.com/elastos/Elastos.NET.Carrier.Android.SDK.svg)](https://travis-ci.com/elastos/Elastos.NET.Carrier.Android.SDK)
 
 ## Introduction
 
