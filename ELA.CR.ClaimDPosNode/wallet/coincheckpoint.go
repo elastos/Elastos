@@ -8,9 +8,8 @@ package wallet
 import (
 	"bytes"
 	"io"
+	"sync"
 
-	"github.com/elastos/Elastos.ELA/account"
-	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/checkpoint"
@@ -23,6 +22,8 @@ type CoinsCheckPoint struct {
 	height     uint32
 	coins      map[types.OutPoint]*Coin
 	ownedCoins OwnedCoins
+
+	sync.RWMutex
 }
 
 func (ccp *CoinsCheckPoint) StartHeight() uint32 {
@@ -51,7 +52,8 @@ func (ccp *CoinsCheckPoint) Serialize(w io.Writer) error {
 			return err
 		}
 	}
-	return nil
+
+	return ccp.ownedCoins.Serialize(w)
 }
 
 func (ccp *CoinsCheckPoint) Deserialize(r io.Reader) error {
@@ -60,6 +62,7 @@ func (ccp *CoinsCheckPoint) Deserialize(r io.Reader) error {
 		return err
 	}
 	ccp.height = height
+
 	count, err := common.ReadUint32(r)
 	if err != nil {
 		return err
@@ -73,12 +76,10 @@ func (ccp *CoinsCheckPoint) Deserialize(r io.Reader) error {
 		if err := coin.Deserialize(r); err != nil {
 			return err
 		}
-		if err := ccp.appendCoin(&op, coin); err != nil {
-			return err
-		}
+		ccp.coins[op] = coin
 	}
 
-	return nil
+	return ccp.ownedCoins.Deserialize(r)
 }
 
 func (ccp *CoinsCheckPoint) Key() string {
@@ -129,6 +130,9 @@ func (ccp *CoinsCheckPoint) LogError(err error) {
 }
 
 func (ccp *CoinsCheckPoint) OnBlockSaved(block *types.DposBlock) {
+	ccp.Lock()
+	defer ccp.Unlock()
+
 	for _, tx := range block.Transactions {
 		// remove the spent coins
 		for _, input := range tx.Inputs {
@@ -144,7 +148,7 @@ func (ccp *CoinsCheckPoint) OnBlockSaved(block *types.DposBlock) {
 				TxID:  tx.Hash(),
 				Index: uint16(index),
 			}
-			ccp.appendCoin(&op, &Coin{
+			ccp.appendWalletCoin(&op, &Coin{
 				TxVersion: tx.Version,
 				Output:    output,
 				Height:    block.Height,
@@ -154,6 +158,9 @@ func (ccp *CoinsCheckPoint) OnBlockSaved(block *types.DposBlock) {
 }
 
 func (ccp *CoinsCheckPoint) OnRollbackTo(height uint32) error {
+	ccp.Lock()
+	defer ccp.Unlock()
+
 	bestHeight := Store.GetHeight()
 	if height >= bestHeight {
 		return nil
@@ -188,7 +195,7 @@ func (ccp *CoinsCheckPoint) OnRollbackTo(height uint32) error {
 				}
 				_, exist := addressBook[addr]
 				if exist {
-					ccp.appendCoin(&input.Previous, &Coin{
+					ccp.appendWalletCoin(&input.Previous, &Coin{
 						TxVersion: tx.Version,
 						Output:    output,
 						Height:    i,
@@ -201,7 +208,7 @@ func (ccp *CoinsCheckPoint) OnRollbackTo(height uint32) error {
 	return nil
 }
 
-func (ccp *CoinsCheckPoint) appendCoin(op *types.OutPoint, coin *Coin) error {
+func (ccp *CoinsCheckPoint) appendWalletCoin(op *types.OutPoint, coin *Coin) error {
 	addr, err := coin.Output.ProgramHash.ToAddress()
 	if err != nil {
 		return err
@@ -212,90 +219,58 @@ func (ccp *CoinsCheckPoint) appendCoin(op *types.OutPoint, coin *Coin) error {
 		ccp.ownedCoins.append(addr, op)
 	}
 
-	if coin.Output.Type == types.OTVote {
-		ccp.coins[*op] = coin
-		ccp.ownedCoins.append("vote", op)
-	}
-
 	return nil
 }
 
-func (ccp *CoinsCheckPoint) removeCoin(op *types.OutPoint) error {
+func (ccp *CoinsCheckPoint) removeCoin(op *types.OutPoint) {
 	coin, exist := ccp.coins[*op]
 	if !exist {
-		return nil
+		return
 	}
 	delete(ccp.coins, *op)
 	addr, err := coin.Output.ProgramHash.ToAddress()
 	if err != nil {
-		return err
+		panic("invalid coin in wallet")
 	}
 	ccp.ownedCoins.remove(addr, op)
-	ccp.ownedCoins.remove("vote", op)
-
-	return nil
 }
 
-func (ccp *CoinsCheckPoint) getUnspent(addresses []string) map[types.OutPoint]*Coin {
-	resultCoins := make(map[types.OutPoint]*Coin, 0)
-	for _, address := range addresses {
-		ops := ccp.ownedCoins.list(address)
-		for _, op := range ops {
-			coin := ccp.coins[*op]
-			resultCoins[*op] = coin
-		}
+func (ccp *CoinsCheckPoint) ListCoins(owner string) map[types.OutPoint]*Coin {
+	ccp.RLock()
+	defer ccp.RUnlock()
+
+	coins := make(map[types.OutPoint]*Coin, 0)
+	ops := ccp.ownedCoins.list(owner)
+	for _, op := range ops {
+		coin := ccp.coins[*op]
+		coins[*op] = coin
 	}
 
-	return resultCoins
+	return coins
 }
 
-func (ccp *CoinsCheckPoint) ListUnspent(address string, enableUtxoDB bool) (map[common.Uint256][]*blockchain.UTXO,
-	error) {
-	if enableUtxoDB {
-		programHash, err := common.Uint168FromAddress(address)
-		if err != nil {
-			return nil, err
-		}
-		unspents, err := Store.GetUnspentsFromProgramHash(*programHash)
-		if err != nil {
-			return nil, err
-		}
+func (ccp *CoinsCheckPoint) AppendCoin(owner string, op *types.OutPoint, coin *Coin) {
+	ccp.Lock()
+	defer ccp.Unlock()
 
-		return unspents, nil
-	}
-
-	coins := ccp.getUnspent([]string{address})
-	utxos := make([]*blockchain.UTXO, 0)
-	for op, coin := range coins {
-		utxos = append(utxos, &blockchain.UTXO{
-			TxID:  op.TxID,
-			Index: uint32(op.Index),
-			Value: coin.Output.Value,
-		})
-	}
-	unspents := make(map[common.Uint256][]*blockchain.UTXO, 0)
-	unspents[*account.SystemAssetID] = utxos
-
-	return unspents, nil
+	ccp.coins[*op] = coin
+	ccp.ownedCoins.append(owner, op)
 }
 
-func (ccp *CoinsCheckPoint) RescanWallet() error {
-	bestHeight := Store.GetHeight()
-	for i := uint32(0); i <= bestHeight; i++ {
-		hash, err := Store.GetBlockHash(i)
-		if err != nil {
-			return err
-		}
-		block, err := Store.GetBlock(hash)
-		if err != nil {
-			return err
-		}
-		ccp.OnBlockSaved(&types.DposBlock{
-			Block: block,
-		})
-	}
+func (ccp *CoinsCheckPoint) GetCoin(owner string, op *types.OutPoint) (*Coin, bool) {
+	ccp.RLock()
+	defer ccp.RUnlock()
 
-	return nil
+	if op == nil {
+		op = &types.OutPoint{}
+	}
+	_, exist := ccp.ownedCoins[CoinOwnership{owner, *op}]
+	if !exist {
+		return nil, false
+	}
+	coin, exist := ccp.coins[*op]
+
+	return coin, exist
 }
 
 func NewCoinCheckPoint() *CoinsCheckPoint {

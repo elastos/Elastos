@@ -6,6 +6,7 @@
 package wallet
 
 import (
+	"bytes"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -108,4 +109,28 @@ func TestOwnedCoins(t *testing.T) {
 	assert.Equal(t, CoinLinkedItem{prev: nil, next: nil}, item0)
 	_, exist = ownedCoins[CoinOwnership{"vote", *op3}]
 	assert.Equal(t, false, exist)
+}
+
+func TestOwnedCoins_Serialize_Deserialize(t *testing.T) {
+	ownedCoins := NewOwnedCoins()
+	ownedCoins.append("vote", op1)
+	ownedCoins.append("vote", op2)
+	ownedCoins.append("vote", op3)
+
+	buf := new(bytes.Buffer)
+	err := ownedCoins.Serialize(buf)
+	assert.NoError(t, err)
+
+	ownedCoins1 := NewOwnedCoins()
+	err = ownedCoins1.Deserialize(buf)
+	assert.NoError(t, err)
+
+	item0 := ownedCoins1.readHead("vote")
+	assert.Equal(t, CoinLinkedItem{prev: op3, next: op1}, item0)
+	item1 := ownedCoins1.read("vote", op1)
+	assert.Equal(t, CoinLinkedItem{prev: nil, next: op2}, item1)
+	item2 := ownedCoins1.read("vote", op2)
+	assert.Equal(t, CoinLinkedItem{prev: op1, next: op3}, item2)
+	item3 := ownedCoins1.read("vote", op3)
+	assert.Equal(t, CoinLinkedItem{prev: op2, next: nil}, item3)
 }
