@@ -6,6 +6,7 @@ import android.support.v7.widget.AppCompatTextView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
@@ -31,6 +32,7 @@ public class OutportMnemonicFragment extends BaseFragment /*<MnemonicWordPresent
 
     @Override
     protected int getLayoutId() {
+        getBaseActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         return R.layout.fragment_outport_mnemonic;
     }
 
@@ -72,16 +74,8 @@ public class OutportMnemonicFragment extends BaseFragment /*<MnemonicWordPresent
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // TODO: inflate a fragment view
-        View rootView = super.onCreateView(inflater, container, savedInstanceState);
-        unbinder = ButterKnife.bind(this, rootView);
-        return rootView;
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
+    public void onDestroy() {
+        super.onDestroy();
+        getBaseActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
     }
 }

@@ -12,6 +12,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,6 +36,7 @@ import org.elastos.wallet.ela.di.moudule.FragmentModule;
 import org.elastos.wallet.ela.ui.Assets.fragment.HomeWalletFragment;
 import org.elastos.wallet.ela.ui.main.MainFragment;
 import org.elastos.wallet.ela.utils.Log;
+import org.elastos.wallet.ela.utils.SPUtil;
 import org.greenrobot.eventbus.EventBus;
 
 import butterknife.BindView;
@@ -68,7 +70,7 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
 
     protected abstract void initView(View view);
 
-    private View mRootView;
+    protected View mRootView;
 
 
     @Override
@@ -90,6 +92,15 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         inflaterView(inflater, container);
+        int Language = new SPUtil(getContext()).getLanguage();
+        int id = R.drawable.commonbg;
+        if (Language == 0) {
+            id = MyApplication.chainID > 0 ? R.mipmap.bg_test : id;
+        } else {
+            id = MyApplication.chainID > 0 ? R.mipmap.bg_e_test : id;
+
+        }
+        mRootView.setBackgroundResource(id);//为每个页面设置默认背景
         unbinder = ButterKnife.bind(this, mRootView);
         showLoading();
         Bundle bundle = getArguments();
@@ -192,7 +203,7 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
     }
 
 
-    public void setToobar(Toolbar toolbar, TextView toolbar_title, String title) {
+    public void setToobar(Toolbar toolbar, TextView toolbar_title, String... text) {
         toolbar.setNavigationIcon(R.mipmap.top_nav_back);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -200,7 +211,15 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
                 _mActivity.onBackPressed();
             }
         });
-        toolbar_title.setText(title);
+
+        toolbar_title.setText(text[0]);
+
+        if (text.length > 1) {
+            TextView tvRight = toolbar.findViewById(R.id.tv_title_right);
+            tvRight.setVisibility(View.VISIBLE);
+            tvRight.setText(text[1]);
+        }
+
     }
 
     public void showToast(String message) {
@@ -294,7 +313,8 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
      **/
     @SuppressLint("NeedOnRequestPermissionsResult")
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         BaseFragmentPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
     }
@@ -376,10 +396,10 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
         //popTo(MainFragment.class, false);
         Fragment mainFragment = getBaseActivity().getSupportFragmentManager().findFragmentByTag(MainFragment.class.getName());
         if (mainFragment != null) {
-           // Log.d("+++++++", "1");
+            // Log.d("+++++++", "1");
             getBaseActivity().getSupportFragmentManager().popBackStackImmediate(MainFragment.class.getName(), 0);
         } else {
-           // Log.d("+++++++", "2");
+            // Log.d("+++++++", "2");
             getBaseActivity().getSupportFragmentManager().popBackStackImmediate(null, 1);
             ((BaseActivity) _mActivity).loadRootFragment(R.id.mhoneframeLayout, MainFragment.newInstance());
         }
@@ -416,8 +436,11 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
         ClassicsHeader.REFRESH_HEADER_LASTTIME = getString(R.string.srl_header_update);//"上次更新 M-d HH:mm";
     }
 
+    SmartRefreshLayout smartRefreshLayout;
+
     /*请求异常回调*/
     protected void onErrorRefreshLayout(SmartRefreshLayout refreshLayout) {
+        this.smartRefreshLayout = refreshLayout;
         getBaseActivity().onErrorRefreshLayout(refreshLayout);
     }
 

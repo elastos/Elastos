@@ -7,8 +7,8 @@ public class TransferRecordDetailEntity implements Serializable {
 
 
     /**
-     * MaxCount : 20
-     * Transactions : [{"Amount":0,"Attribute":[{"Data":"31343734323333323437","Usage":0}],"ConfirmStatus":"0","Direction":"Moved","Fee":10000,"Height":2147483647,"Inputs":{"EP3A2iJ4o7ywmUD7b12Q75ZDYvPmFaoJm2":1000000000,"EfK7oTYL3LevMwkwiJNKF8zRby8Cd3zDy3":9099810000},"OutputPayload":[{"Amount":10000000000,"Version":0,"VoteContent":[{"Candidates":["0216e8d9f61d7ae87624ac4e8ba54848abd830c62b6820ba8e83815507a1f998c4"],"Type":0}]}],"Outputs":{"EfK7oTYL3LevMwkwiJNKF8zRby8Cd3zDy3":10099800000},"Payload":null,"Remark":"","Status":"Pending","Timestamp":1551434018,"TxHash":"a2dd2723aada24c9f472946763711db3180282ff4b69f0c14039d5418d63a07e","Type":2}]
+     * MaxCount : 3
+     * Transactions : [{"Amount":"0","Attribute":[{"Data":"61747472696275746573","Usage":0}],"ConfirmStatus":"6+","Direction":"Moved","Fee":10000,"Height":186,"Inputs":{"Ed8ZSxSB98roeyuRZwwekrnRqcgnfiUDeQ":"99999990000"},"Memo":"","OutputPayload":[{"Amount":"10000000000","Version":0,"VoteContent":[{"Candidates":["03d916c2072fd8fb57224e9747e0f1e36a2c117689cedf39e0132f3cb4f8ee673d"],"Type":0}]}],"Outputs":{"Ed8ZSxSB98roeyuRZwwekrnRqcgnfiUDeQ":"99999980000"},"Payload":null,"Status":"Confirmed","Timestamp":1560855293,"TxHash":"965a30286ddd7df1803963c32195ea1348a5dcebf4017e4d9d47cc19f2e6d56a","Type":2}]
      */
 
     private int MaxCount;
@@ -33,31 +33,31 @@ public class TransferRecordDetailEntity implements Serializable {
     public static class TransactionsBean {
         /**
          * Amount : 0
-         * Attribute : [{"Data":"31343734323333323437","Usage":0}]
-         * ConfirmStatus : 0
+         * Attribute : [{"Data":"61747472696275746573","Usage":0}]
+         * ConfirmStatus : 6+
          * Direction : Moved
          * Fee : 10000
-         * Height : 2147483647
-         * Inputs : {"EP3A2iJ4o7ywmUD7b12Q75ZDYvPmFaoJm2":1000000000,"EfK7oTYL3LevMwkwiJNKF8zRby8Cd3zDy3":9099810000}
-         * OutputPayload : [{"Amount":10000000000,"Version":0,"VoteContent":[{"Candidates":["0216e8d9f61d7ae87624ac4e8ba54848abd830c62b6820ba8e83815507a1f998c4"],"Type":0}]}]
-         * Outputs : {"EfK7oTYL3LevMwkwiJNKF8zRby8Cd3zDy3":10099800000}
+         * Height : 186
+         * Inputs : {"Ed8ZSxSB98roeyuRZwwekrnRqcgnfiUDeQ":"99999990000"}
+         * Memo :
+         * OutputPayload : [{"Amount":"10000000000","Version":0,"VoteContent":[{"Candidates":["03d916c2072fd8fb57224e9747e0f1e36a2c117689cedf39e0132f3cb4f8ee673d"],"Type":0}]}]
+         * Outputs : {"Ed8ZSxSB98roeyuRZwwekrnRqcgnfiUDeQ":"99999980000"}
          * Payload : null
-         * Remark :
-         * Status : Pending
-         * Timestamp : 1551434018
-         * TxHash : a2dd2723aada24c9f472946763711db3180282ff4b69f0c14039d5418d63a07e
+         * Status : Confirmed
+         * Timestamp : 1560855293
+         * TxHash : 965a30286ddd7df1803963c32195ea1348a5dcebf4017e4d9d47cc19f2e6d56a
          * Type : 2
          */
 
-        private long Amount;
+        private String Amount;
         private String ConfirmStatus;
         private String Direction;
         private int Fee;
         private int Height;
         private String Inputs;
+        private String Memo;
         private String Outputs;
         private String Payload;
-        private String Remark;
         private String Status;
         private long Timestamp;
         private String TxHash;
@@ -65,11 +65,11 @@ public class TransferRecordDetailEntity implements Serializable {
         private List<AttributeBean> Attribute;
         private List<OutputPayloadBean> OutputPayload;
 
-        public long getAmount() {
+        public String getAmount() {
             return Amount;
         }
 
-        public void setAmount(long Amount) {
+        public void setAmount(String Amount) {
             this.Amount = Amount;
         }
 
@@ -113,6 +113,14 @@ public class TransferRecordDetailEntity implements Serializable {
             this.Inputs = Inputs;
         }
 
+        public String getMemo() {
+            return Memo;
+        }
+
+        public void setMemo(String Memo) {
+            this.Memo = Memo;
+        }
+
         public String getOutputs() {
             return Outputs;
         }
@@ -127,14 +135,6 @@ public class TransferRecordDetailEntity implements Serializable {
 
         public void setPayload(String Payload) {
             this.Payload = Payload;
-        }
-
-        public String getRemark() {
-            return Remark;
-        }
-
-        public void setRemark(String Remark) {
-            this.Remark = Remark;
         }
 
         public String getStatus() {
@@ -187,9 +187,11 @@ public class TransferRecordDetailEntity implements Serializable {
 
 
 
+
+
         public static class AttributeBean {
             /**
-             * Data : 31343734323333323437
+             * Data : 61747472696275746573
              * Usage : 0
              */
 
@@ -217,18 +219,18 @@ public class TransferRecordDetailEntity implements Serializable {
             /**
              * Amount : 10000000000
              * Version : 0
-             * VoteContent : [{"Candidates":["0216e8d9f61d7ae87624ac4e8ba54848abd830c62b6820ba8e83815507a1f998c4"],"Type":0}]
+             * VoteContent : [{"Candidates":["03d916c2072fd8fb57224e9747e0f1e36a2c117689cedf39e0132f3cb4f8ee673d"],"Type":0}]
              */
 
-            private double Amount;
+            private String Amount;
             private int Version;
             private List<VoteContentBean> VoteContent;
 
-            public double getAmount() {
+            public String getAmount() {
                 return Amount;
             }
 
-            public void setAmount(double Amount) {
+            public void setAmount(String Amount) {
                 this.Amount = Amount;
             }
 
@@ -250,7 +252,7 @@ public class TransferRecordDetailEntity implements Serializable {
 
             public static class VoteContentBean {
                 /**
-                 * Candidates : ["0216e8d9f61d7ae87624ac4e8ba54848abd830c62b6820ba8e83815507a1f998c4"]
+                 * Candidates : ["03d916c2072fd8fb57224e9747e0f1e36a2c117689cedf39e0132f3cb4f8ee673d"]
                  * Type : 0
                  */
 

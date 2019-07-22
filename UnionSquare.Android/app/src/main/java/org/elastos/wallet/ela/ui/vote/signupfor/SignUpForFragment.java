@@ -19,12 +19,14 @@ import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
+import org.elastos.wallet.ela.ui.Assets.presenter.WallletManagePresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonLongViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
 import org.elastos.wallet.ela.ui.vote.fragment.AreaCodeFragment;
+import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClearEditText;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
@@ -172,7 +174,7 @@ public class SignUpForFragment extends BaseFragment implements CommmonStringWith
         }
     }
 
-    String attributes, datakey;
+    String  datakey;
 
     @Override
     public void onGetCommonData(String methodname, String data) {
@@ -193,14 +195,19 @@ public class SignUpForFragment extends BaseFragment implements CommmonStringWith
             //验证交易
             case "payload":
                 KLog.a(data);
-                presenter.createRegisterProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", data, MyWallet.RATE * 5000, "", false, this);
+                presenter.createRegisterProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", data, Arith.mul("5000", MyWallet.RATE_S).toPlainString(), "", true, this);
                 break;
             //创建交易
             case "createRegisterProducerTransaction":
-                attributes = data;
-                //计算手续费
-                transferpresenter.calculateTransactionFee(wallet.getWalletId(), MyWallet.ELA, data, MyWallet.feePerKb, this);
-                KLog.a(data);
+                Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
+                intent.putExtra("wallet", wallet);
+                intent.putExtra("type", Constant.TRANFER);
+                intent.putExtra("amount", "5000");
+                intent.putExtra("chainId", MyWallet.ELA);
+                intent.putExtra("toAddress", publickey);
+                intent.putExtra("pwd", pwd);
+                intent.putExtra("attributes", data);
+                startActivity(intent);
                 dialogUtil.dialogDismiss();
                 break;
         }
@@ -215,7 +222,7 @@ public class SignUpForFragment extends BaseFragment implements CommmonStringWith
             return;
         }
 
-        presenter.exportWalletWithMnemonic(wallet.getWalletId(), pwd, this);
+        new WallletManagePresenter().exportWalletWithMnemonic(wallet.getWalletId(), pwd, this);
     }
 
     @Override
@@ -229,16 +236,7 @@ public class SignUpForFragment extends BaseFragment implements CommmonStringWith
 
     @Override
     public void onGetCommonData(long fee) {
-        Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
-        intent.putExtra("wallet", wallet);
-        intent.putExtra("type", Constant.TRANFER);
-        intent.putExtra("amount", "5000");
-        intent.putExtra("chainId", MyWallet.ELA);
-        intent.putExtra("toAddress", publickey);
-        intent.putExtra("pwd", pwd);
-        intent.putExtra("fee", fee);
-        intent.putExtra("attributes", attributes);
-        startActivity(intent);
+
     }
 
 }

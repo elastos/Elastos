@@ -47,11 +47,33 @@ namespace Elastos {
 			 */
 			virtual void OnBlockSyncStopped() = 0;
 
-			virtual void OnBalanceChanged(const std::string &asset, uint64_t balance) = 0;
+			/**
+			 * Callback method fired when balance changed.
+			 * @param asset ID.
+			 * @param balance after changed.
+			 */
+			virtual void OnBalanceChanged(const std::string &asset, const std::string &balance) = 0;
 
+			/**
+			 * Callback method fired when tx published.
+			 * @param hash of published tx.
+			 * @param result in json format.
+			 */
 			virtual void OnTxPublished(const std::string &hash, const nlohmann::json &result) = 0;
 
-			virtual void OnTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) = 0;
+			/**
+			 * Callback method fired when a new asset registered.
+			 * @param asset ID.
+			 * @param information of asset.
+			 */
+			virtual void OnAssetRegistered(const std::string &asset, const nlohmann::json &info) = 0;
+
+			/**
+			 * Callback method fired when status of connection changed.
+			 * @param status value can be one of below: "Connecting", "Connected", "Disconnected"
+			 */
+			virtual void OnConnectStatusChanged(const std::string &status) = 0;
+
 		};
 
 	}

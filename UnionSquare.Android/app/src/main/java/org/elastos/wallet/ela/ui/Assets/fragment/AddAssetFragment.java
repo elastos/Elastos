@@ -87,10 +87,7 @@ public class AddAssetFragment extends BaseFragment implements CommonRvListener1,
 
     @Override
     public void onCreateSubWallet(String data) {
-        SubWallet subWallet = new SubWallet();
-        subWallet.setBelongId(walletId);
-        subWallet.setChainId(data);
-        new RealmUtil().updateSubWalletDetial(subWallet, new RealmTransactionAbs() {
+        new RealmUtil().updateSubWalletDetial(walletId,data, new RealmTransactionAbs() {
             @Override
             public void onSuccess() {
                 post(RxEnum.UPDATAPROPERTY.ordinal(), null, null);

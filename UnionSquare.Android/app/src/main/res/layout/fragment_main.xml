@@ -45,10 +45,10 @@
             android:layout_weight="1"
             android:gravity="center"
             app:iconHeight="@dimen/px60"
-            app:iconNormal="@mipmap/tab_found"
-            app:iconSelected="@mipmap/tab_found_select"
+            app:iconNormal="@mipmap/tab_society_unselected"
+            app:iconSelected="@mipmap/tab_society_selected"
             app:iconWidth="@dimen/px60"
-            app:itemText="@string/find"
+            app:itemText="@string/social"
             app:itemTextSize="11sp"
             app:textColorNormal="@color/qmui_config_color_white"
             app:textColorSelected="@color/qmui_config_color_white" />

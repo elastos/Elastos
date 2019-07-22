@@ -20,8 +20,8 @@ public class InterceptorCom implements Interceptor {
 //                .addHeader("Connection", "keep-alive")
 //                .addHeader("Accept", "*/*")
 //                .addHeader("Cookie", "add cookies here")
-                .header("Content-Type", "application/json;charset=utf-8")
-                .header("Accept", "application/json")
+                //.header("Content-Type", "application/json;charset=utf-8")
+               // .header("Accept", "application/json")
                 .build();
         return chain.proceed(request);
     }

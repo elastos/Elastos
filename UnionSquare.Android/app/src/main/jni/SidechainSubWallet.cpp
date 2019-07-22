@@ -8,29 +8,28 @@
 
 using namespace Elastos::ElaWallet;
 
-#define JNI_CreateWithdrawTransaction "(JLjava/lang/String;JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+#define JNI_CreateWithdrawTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL
 CreateWithdrawTransaction(JNIEnv *env, jobject clazz, jlong jSideSubWalletProxy,
                           jstring jfromAddress,
-                          jlong amount,
+                          jstring jamount,
                           jstring jmainChainAddress,
-                          jstring jmemo,
-                          jstring jremark) {
+                          jstring jmemo) {
     bool exception = false;
     std::string msgException;
 
     const char *fromAddress = env->GetStringUTFChars(jfromAddress, NULL);
+    const char *amount = env->GetStringUTFChars(jamount, NULL);
     const char *mainChainAddress = env->GetStringUTFChars(jmainChainAddress, NULL);
     const char *memo = env->GetStringUTFChars(jmemo, NULL);
-    const char *remark = env->GetStringUTFChars(jremark, NULL);
 
     ISidechainSubWallet *wallet = (ISidechainSubWallet *) jSideSubWalletProxy;
     jstring tx = NULL;
 
     try {
         nlohmann::json txJson = wallet->CreateWithdrawTransaction(fromAddress, amount,
-                                                                  mainChainAddress, memo, remark);
+                                                                  mainChainAddress, memo);
 
         tx = env->NewStringUTF(txJson.dump().c_str());
     } catch (const std::exception &e) {
@@ -39,9 +38,9 @@ CreateWithdrawTransaction(JNIEnv *env, jobject clazz, jlong jSideSubWalletProxy,
     }
 
     env->ReleaseStringUTFChars(jfromAddress, fromAddress);
+    env->ReleaseStringUTFChars(jamount, amount);
     env->ReleaseStringUTFChars(jmainChainAddress, mainChainAddress);
     env->ReleaseStringUTFChars(jmemo, memo);
-    env->ReleaseStringUTFChars(jremark, remark);
 
     if (exception) {
         ThrowWalletException(env, msgException.c_str());

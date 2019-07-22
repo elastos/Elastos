@@ -5,7 +5,7 @@ import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 public class CommmonStringWithiMethNameEntity extends BaseEntity {
 
     private String data;
-    private String methodName;
+    private String methodName;//当前使用的方法名称
 
     public CommmonStringWithiMethNameEntity(String code, String data, String methodName) {
         this.setCode(code);

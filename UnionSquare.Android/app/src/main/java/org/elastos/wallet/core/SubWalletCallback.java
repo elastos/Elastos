@@ -49,7 +49,7 @@ public class SubWalletCallback {
      * @param confirms is confirm count util this callback fired.
      */
     public void OnTransactionStatusChanged(String txID, String status, String desc, int confirms) {
-        Log.i(TAG, GetWalletID() + "[OnTransactionStatusChanged] " + txID + "," + status + "," + confirms);
+//        Log.i(TAG, GetWalletID() + "[OnTransactionStatusChanged] " + txID + "," + status + "," + confirms);
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("txId", txID);
@@ -70,7 +70,7 @@ public class SubWalletCallback {
      * Callback method fired when block begin synchronizing with a peer. This callback could be used to show progress.
      */
     public void OnBlockSyncStarted() {
-        Log.i(TAG, GetWalletID() + "[OnBlockSyncStarted]");
+//        Log.i(TAG, GetWalletID() + "[OnBlockSyncStarted]");
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("MasterWalletID", mMasterWalletID);
@@ -92,7 +92,7 @@ public class SubWalletCallback {
      * @param lastBlockTime      timestamp of the last block.
      */
     public void OnBlockSyncProgress(int currentBlockHeight, int estimatedHeight, long lastBlockTime) {
-        Log.i(TAG, GetWalletID() + "[OnBlockSyncProgress] (" + currentBlockHeight + "/" + estimatedHeight + ") t = " + lastBlockTime);
+//        Log.i(TAG, GetWalletID() + "[OnBlockSyncProgress] (" + currentBlockHeight + "/" + estimatedHeight + ") t = " + lastBlockTime);
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("currentBlockHeight", currentBlockHeight);
@@ -113,7 +113,7 @@ public class SubWalletCallback {
      * Callback method fired when block end synchronizing with a peer. This callback could be used to show progress.
      */
     public void OnBlockSyncStopped() {
-        Log.i(TAG, GetWalletID() + "[OnBlockSyncStopped]");
+//        Log.i(TAG, GetWalletID() + "[OnBlockSyncStopped]");
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("MasterWalletID", mMasterWalletID);
@@ -126,8 +126,8 @@ public class SubWalletCallback {
         }
     }
 
-    public void OnBalanceChanged(String assetID, long balance) {
-        Log.i(TAG, GetWalletID() + "[OnBalanceChanged] " + assetID + " = " + balance);
+    public void OnBalanceChanged(String assetID, String balance) {
+//        Log.i(TAG, GetWalletID() + "[OnBalanceChanged] " + assetID + " = " + balance);
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("Asset", assetID);
@@ -143,7 +143,7 @@ public class SubWalletCallback {
     }
 
     public void OnTxPublished(String hash, String result) {
-        Log.i(TAG, GetWalletID() + "[OnTxPublished] " + hash + ", result: " + result);
+//        Log.i(TAG, GetWalletID() + "[OnTxPublished] " + hash + ", result: " + result);
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("hash", hash);
@@ -158,22 +158,39 @@ public class SubWalletCallback {
         }
     }
 
-    public void OnTxDeleted(String hash, boolean notifyUser, boolean recommendRescan) {
-        Log.i(TAG, GetWalletID() + "[OnTxDeleted] " + hash + ", notifyUser: " + notifyUser + ", recommendRescan: " + recommendRescan);
+    public void OnAssetRegistered(String asset, String info) {
+//        Log.i(TAG, GetWalletID() + "[OnAssetRegistered] " + asset + ", info: " + info);
         JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put("hash", hash);
-            jsonObject.put("notifyUser", notifyUser);
-            jsonObject.put("recommendRescan", recommendRescan);
+            jsonObject.put("asset", asset);
+            jsonObject.put("info", info);
             jsonObject.put("MasterWalletID", mMasterWalletID);
             jsonObject.put("ChaiID", mSubWalletID);
-            jsonObject.put("Action", "OnTxDeleted");
+            jsonObject.put("Action", "OnAssetRegistered");
 
-            mListener.OnTxDeleted(jsonObject);
+            //todo add this interface on listener
+           // mListener.OnAssetRegistered(jsonObject);
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
+
+    public void OnConnectStatusChanged(String status) {
+        JSONObject jsonObject = new JSONObject();
+
+        try {
+            jsonObject.put("status", status);
+            jsonObject.put("MasterWalletID", mMasterWalletID);
+            jsonObject.put("ChainID", mSubWalletID);
+            jsonObject.put("Action", "OnConnectStatusChanged");
+
+            // todo add this interface on listener
+          //  mListener.OnConnectStatusChanged(jsonObject);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private native long InitSubWalletCallback();
 

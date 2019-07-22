@@ -4,13 +4,10 @@ package org.elastos.wallet.ela.ui.vote.NodeInformation;
 import android.os.Bundle;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.allen.library.SuperButton;
-import com.blankj.utilcode.util.CacheDoubleUtils;
 import com.blankj.utilcode.util.ToastUtils;
 
 import org.elastos.wallet.R;
@@ -18,10 +15,11 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.vote.NodeCart.NodeCartFragment;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
+import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
+import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
-import org.elastos.wallet.ela.utils.GetDynanicUrl;
 import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 
@@ -30,7 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
@@ -93,15 +90,15 @@ public class NodeInformationFragment extends BaseFragment {
         setToobar(toolbar, toolbarTitle, getString(R.string.node_information));
 //        registReceiver();
         String url = bean.getUrl();
-        GetDynanicUrl.getData(url, getContext(), new NodeDotJsonViewData() {
+        new SuperNodeListPresenter().getUrlJson(url, this, new NodeDotJsonViewData() {
             @Override
-            public void onGetNodeDotJsonData(NodeInfoBean t) {
-                if (t == null || t.getOrg() == null || t.getOrg().getBranding() == null) {
+            public void onGetNodeDotJsonData(NodeInfoBean t,String url) {
+                if (t == null || t.getOrg() == null || t.getOrg().getBranding() == null|| t.getOrg().getBranding().getLogo_256() == null) {
                     return;
                 }
                 String imgUrl = t.getOrg().getBranding().getLogo_256();
                 GlideApp.with(NodeInformationFragment.this).load(imgUrl)
-                        .error(R.mipmap.found_vote_initial).into(ivIcon);
+                        .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon);
             }
         });
         tvName.setText(bean.getNickname());
@@ -119,7 +116,7 @@ public class NodeInformationFragment extends BaseFragment {
         }
 
         //  tvZl.setText(bean.getIp());
-        list = (List<VoteListBean.DataBean.ResultBean.ProducersBean>) CacheDoubleUtils.getInstance().getSerializable("list");
+        list = CacheUtil.getProducerList();
         if (list != null) {
             for (int i = 0; i < list.size(); i++) {
                 if (list.get(i).getOwnerpublickey().equals(bean.getOwnerpublickey())) {
@@ -144,7 +141,7 @@ public class NodeInformationFragment extends BaseFragment {
                             ToastUtils.showShort(getString(R.string.yi_remove_candidate_list));
                             sbJrhxlb.setText(getString(R.string.candidate_list));
                             list.remove(i);
-                            CacheDoubleUtils.getInstance().put("list", (Serializable) list, CacheDoubleUtils.DAY * 360);
+                            CacheUtil.setProducerList(list);
                         }
                     }
                     return;
@@ -156,7 +153,7 @@ public class NodeInformationFragment extends BaseFragment {
                         list = new ArrayList<>();
                     }
                     list.add(bean);
-                    CacheDoubleUtils.getInstance().put("list", (Serializable) list, CacheDoubleUtils.DAY * 360);
+                    CacheUtil.setProducerList(list);
                     sbJrhxlb.setText(getString(R.string.remove_candidate_list));
                     ToastUtils.showShort(getString(R.string.candidate_list));
                     return;
@@ -175,17 +172,4 @@ public class NodeInformationFragment extends BaseFragment {
     }
 
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // TODO: inflate a fragment view
-        View rootView = super.onCreateView(inflater, container, savedInstanceState);
-        unbinder = ButterKnife.bind(this, rootView);
-        return rootView;
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
-    }
 }

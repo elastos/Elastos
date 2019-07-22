@@ -40,12 +40,13 @@ namespace Elastos {
              */
             virtual void OnBlockSyncStopped();
 
-            virtual void OnBalanceChanged(const std::string &asset, uint64_t balance);
+            virtual void OnBalanceChanged(const std::string &asset, const std::string &balance);
 
             virtual void OnTxPublished(const std::string &hash, const nlohmann::json &result);
 
-            virtual void
-            OnTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan);
+            virtual void OnAssetRegistered(const std::string &asset, const nlohmann::json &info);
+
+            virtual void OnConnectStatusChanged(const std::string &status);
 
             virtual ~SubWalletCallback();
 

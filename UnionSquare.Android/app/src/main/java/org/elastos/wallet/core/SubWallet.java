@@ -6,6 +6,8 @@ package org.elastos.wallet.core;
 
 import android.util.Log;
 
+import org.elastos.wallet.ela.db.table.Wallet;
+
 /**
  * SubWallet
  */
@@ -32,7 +34,7 @@ public class SubWallet {
         return GetBalanceInfo(mInstance);
     }
 
-    public long GetBalance(BalanceType type) throws WalletException {
+    public String GetBalance(BalanceType type) throws WalletException {
         Log.d(TAG, "SubWallet [" + mInstance + "] get balance");
         return GetBalance(mInstance, type.ordinal());
     }
@@ -45,7 +47,7 @@ public class SubWallet {
         return GetAllAddress(mInstance, start, count);
     }
 
-    public long GetBalanceWithAddress(String address, BalanceType type) throws WalletException {
+    public String GetBalanceWithAddress(String address, BalanceType type) throws WalletException {
         return GetBalanceWithAddress(mInstance, address, type.ordinal());
     }
 
@@ -74,24 +76,24 @@ public class SubWallet {
         }
     }
 
-    public String CreateTransaction(String fromAddress, String toAddress, long amount, String memo, String remark, boolean useVotedUTXO) throws WalletException {
-        return CreateTransaction(mInstance, fromAddress, toAddress, amount, memo, remark, useVotedUTXO);
+    public String CreateTransaction(String fromAddress, String toAddress, String amount, String memo, boolean useVotedUTXO) throws WalletException {
+        return CreateTransaction(mInstance, fromAddress, toAddress, amount, memo, useVotedUTXO);
     }
 
-    public long CalculateTransactionFee(String rawTransaction, long feePerKb) throws WalletException {
-        return CalculateTransactionFee(mInstance, rawTransaction, feePerKb);
+    public String GetAllUTXOs(int start, int count, String address) {
+        return GetAllUTXOs(mInstance, start, count, address);
     }
 
-    public String UpdateTransactionFee(String rawTransaction, long fee, String fromAddress) throws WalletException {
-        return UpdateTransactionFee(mInstance, rawTransaction, fee, fromAddress);
+    public String CreateConsolidateTransaction(String memo, boolean useVotedUTXO) throws WalletException {
+        return CreateConsolidateTransaction(mInstance, memo, useVotedUTXO);
     }
 
     public String SignTransaction(String rawTransaction, String payPassword) throws WalletException {
         return SignTransaction(mInstance, rawTransaction, payPassword);
     }
 
-    public String GetTransactionSignedSigners(String rawTransaction) throws WalletException {
-        return GetTransactionSignedSigners(mInstance, rawTransaction);
+    public String GetTransactionSignedInfo(String rawTransaction) throws WalletException {
+        return GetTransactionSignedInfo(mInstance, rawTransaction);
     }
 
     public String PublishTransaction(String rawTransaction) throws WalletException {
@@ -114,6 +116,23 @@ public class SubWallet {
         return GetPublicKey(mInstance);
     }
 
+    public String GetAllCoinBaseTransaction(int start, int count, String txid) throws WalletException {
+        return GetAllCoinBaseTransaction(mInstance, start, count, txid);
+    }
+
+    public String GetAssetInfo(String assetID) throws WalletException {
+        return GetAssetInfo(mInstance, assetID);
+    }
+
+    public void SyncStart() throws WalletException {
+        SyncStart(mInstance);
+    }
+
+    public void SyncStop() throws WalletException {
+        SyncStop(mInstance);
+    }
+
+
     public SubWallet(long instance) {
         mInstance = instance;
     }
@@ -128,27 +147,27 @@ public class SubWallet {
 
     private native String GetBalanceInfo(long subProxy);
 
-    private native long GetBalance(long subProxy, int balanceType);
+    private native String GetBalance(long subProxy, int balanceType);
 
     private native String CreateAddress(long subProxy);
 
     private native String GetAllAddress(long subProxy, int start, int count);
 
-    private native long GetBalanceWithAddress(long subProxy, String address, int balanceType);
+    private native String GetBalanceWithAddress(long subProxy, String address, int balanceType);
 
     private native void AddCallback(long subProxy, long subCallback);
 
     private native void RemoveCallback(long subProxys, long subCallback);
 
-    private native String CreateTransaction(long subProxy, String fromAddress, String toAddress, long amount, String memo, String remark, boolean useVotedUTXO);
+    private native String CreateTransaction(long subProxy, String fromAddress, String toAddress, String amount, String memo, boolean useVotedUTXO);
 
-    private native long CalculateTransactionFee(long subProxy, String rawTransaction, long feePerKb);
+    private native String GetAllUTXOs(long subProxy, int start, int count, String address);
 
-    private native String UpdateTransactionFee(long subProxy, String rawTransaction, long fee, String fromAddress);
+    private native String CreateConsolidateTransaction(long subProxy, String memo, boolean useVotedUTXO);
 
     private native String SignTransaction(long subProxy, String rawTransaction, String payPassword);
 
-    private native String GetTransactionSignedSigners(long subProxy, String rawTransaction);
+    private native String GetTransactionSignedInfo(long subProxy, String rawTransaction);
 
     private native String PublishTransaction(long subProxy, String rawTransaction);
 
@@ -158,5 +177,13 @@ public class SubWallet {
 
     private native boolean CheckSign(long subProxy, String publicKey, String message, String signature);
 
-    private native String GetPublicKey(long jSubProxy);
+    private native String GetPublicKey(long subProxy);
+
+    private native String GetAllCoinBaseTransaction(long subProxy, int start, int count, String txid);
+
+    private native String GetAssetInfo(long subProxy, String assetID);
+
+    private native void SyncStart(long proxy);
+
+    private native void SyncStop(long proxy);
 }

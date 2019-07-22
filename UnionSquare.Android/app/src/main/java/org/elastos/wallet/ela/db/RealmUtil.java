@@ -2,13 +2,14 @@ package org.elastos.wallet.ela.db;
 
 import android.support.annotation.NonNull;
 
+import com.alibaba.fastjson.JSON;
+
 import org.elastos.wallet.core.MasterWallet;
 import org.elastos.wallet.ela.db.listener.RealmTransactionAbs;
 import org.elastos.wallet.ela.db.table.Contact;
 import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.db.table.Wallet;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.elastos.wallet.ela.ui.Assets.bean.SubWalletBasicInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,7 @@ import io.realm.RealmResults;
 
 public class RealmUtil {
 
-    public static final long DB_VERSION_CODE = 2;//当前数据库版本号
+    public static final long DB_VERSION_CODE = 3;//当前数据库版本号
     public static final String DB_NAME = "DB";//BuildConfig
 
     @Inject
@@ -97,13 +98,26 @@ public class RealmUtil {
 
     /*******************************钱包****************************************/
     /*更新钱包的名称 密码等信息*/
-    public void updateWalletDetial(@NonNull Wallet wallet) {
+    private void updateWalletDetial(@NonNull Wallet wallet) {
         Realm realm = getInstanceRealm();
         realm.beginTransaction();
         realm.copyToRealmOrUpdate(wallet);
         realm.commitTransaction();
         realm.close();
 
+    }
+
+    public Wallet updateWalletDetial(String walletName, String masterWalletID, String basecInfo) {
+        SubWalletBasicInfo walletBasicInfo = JSON.parseObject(basecInfo, SubWalletBasicInfo.class);
+        SubWalletBasicInfo.InfoBean.AccountBean account = walletBasicInfo.getInfo().getAccount();
+
+        Wallet masterWallet = new Wallet();
+        masterWallet.setWalletName(walletName);
+        masterWallet.setWalletId(masterWalletID);
+        masterWallet.setSingleAddress(account.isSingleAddress());
+        masterWallet.setType(getType(account));
+        updateWalletDetial(masterWallet);
+        return masterWallet;
     }
 
     public boolean queryUserWalletExist(String walletId) {
@@ -306,22 +320,18 @@ public class RealmUtil {
 
             }
             if (!flag) {
-                //增加钱包 id
-                // {"Account":{"SingleAddress":false,"Type":"Standard"}}
-                try {
-                    JSONObject jsonObject = new JSONObject(masterWallet.GetBasicInfo());
-                    JSONObject account = jsonObject.getJSONObject("Account");
-                    boolean singleAddress = account.getBoolean("SingleAddress");
-                    Wallet newWallet = new Wallet();
-                    newWallet.setWalletId(id);
-                    newWallet.setWalletName("Unknown");
-                    newWallet.setSingleAddress(singleAddress);
-                    realm.beginTransaction();
-                    realm.copyToRealmOrUpdate(newWallet);
-                    realm.commitTransaction();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                SubWalletBasicInfo.InfoBean.AccountBean account = JSON.parseObject(masterWallet.GetBasicInfo(), SubWalletBasicInfo.InfoBean.AccountBean.class);
+                boolean singleAddress = account.isSingleAddress();
+                int type = getType(account);
+                Wallet newWallet = new Wallet();
+                newWallet.setWalletId(id);
+                newWallet.setType(type);
+                newWallet.setWalletName("Unknown");
+                newWallet.setSingleAddress(singleAddress);
+                realm.beginTransaction();
+                realm.copyToRealmOrUpdate(newWallet);
+                realm.commitTransaction();
+
 
             }
 
@@ -359,9 +369,34 @@ public class RealmUtil {
         closeRealm(realm);
     }
 
+    private int getType(SubWalletBasicInfo.InfoBean.AccountBean account) {
+        boolean Readonly = account.isReadonly();
+        int N = account.getN();
+        int M = account.getM();
+        //0 普通单签 1单签只读 2普通多签 3多签只读
+        if (N > 1) {
+            //多签
+            if (Readonly) {
+                return 3;
+            } else {
+                return 2;
+            }
+
+        } else {
+            //单签
+            if (Readonly) {
+                return 1;
+            } else {
+                return 0;
+            }
+
+        }
+
+    }
+
     /***********子钱包*********************************/
     /*更新钱包的名称 密码等信息*/
-    public void updateSubWalletDetial(@NonNull SubWallet subWallet, RealmTransactionAbs listener) {
+    private void updateSubWalletDetial(@NonNull SubWallet subWallet, RealmTransactionAbs listener) {
         Realm realm = getInstanceRealm();
         realm.beginTransaction();
         subWallet.setWallletId(subWallet.getBelongId() + subWallet.getChainId());
@@ -369,6 +404,17 @@ public class RealmUtil {
         realm.commitTransaction();
         realm.close();
         listener.onSuccess();
+    }
+
+    public void updateSubWalletDetial(String masterWalletID, String baseInfo, RealmTransactionAbs listener) {
+
+        // 注意这里是SubWalletBasicInfo不是MasterWalletBasicInfo
+        SubWalletBasicInfo walletBasicInfo = JSON.parseObject(baseInfo, SubWalletBasicInfo.class);
+        SubWallet subWallet = new SubWallet();
+        subWallet.setBelongId(masterWalletID);
+        subWallet.setChainId(walletBasicInfo.getChainID());
+        updateSubWalletDetial(subWallet, listener);
+
     }
 
     public void updateSubWalletDetial(@NonNull Map<String, List<org.elastos.wallet.ela.db.table.SubWallet>> listMap) {

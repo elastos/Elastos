@@ -26,4 +26,6 @@
     <color name="blackbg">#262626</color>
     <color name="black">#000000</color>
     <color name="transparent">#00000000</color>
+    <color name="surebutton">#538888</color>
+    <color name="black1">#4D000000</color>
 </resources>

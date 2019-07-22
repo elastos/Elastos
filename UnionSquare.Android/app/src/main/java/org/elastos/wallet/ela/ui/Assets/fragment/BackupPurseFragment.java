@@ -58,10 +58,4 @@ public class BackupPurseFragment extends BaseFragment {
         }
     }
 
-    public static BackupPurseFragment newInstance() {
-        Bundle args = new Bundle();
-        BackupPurseFragment fragment = new BackupPurseFragment();
-        fragment.setArguments(args);
-        return fragment;
-    }
 }

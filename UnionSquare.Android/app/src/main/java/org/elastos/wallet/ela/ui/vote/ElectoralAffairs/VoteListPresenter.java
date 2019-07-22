@@ -20,7 +20,7 @@ public class VoteListPresenter extends PresenterAbstract {
         map.put("moreInfo", moreInfo);
         Observable observable = RetrofitManager.create(ApiServer.class, baseFragment.getContext()).votelistbean(map);
         Observer observer = createObserver(VotelistbeanListener.class, baseFragment);
-        subscriberObservable(observer, observable);
+        subscriberObservable(observer, observable,baseFragment);
     }
 
 }

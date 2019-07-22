@@ -15,6 +15,7 @@ import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.presenter.WallletManagePresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.WalletManageViewData;
+import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
@@ -27,7 +28,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
-public class WallletManageFragment extends BaseFragment implements WarmPromptListener, WalletManageViewData {
+public class WallletManageFragment extends BaseFragment implements WarmPromptListener, WalletManageViewData, CommmonStringWithMethNameViewData {
 
     private static final String DELETE = "delete";
 
@@ -73,7 +74,7 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
         registReceiver();
     }
 
-    @OnClick({R.id.tv_delete, R.id.ll_1, R.id.ll_2, R.id.ll_3, R.id.ll_4})
+    @OnClick({R.id.tv_delete, R.id.ll_1, R.id.ll_2, R.id.ll_3, R.id.ll_4, R.id.ll_5})
     public void onViewClicked(View view) {
         Bundle bundle = null;
         dialogAction = null;
@@ -111,6 +112,12 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
                 dialog = dialogUtil.showWarmPromptInput(getBaseActivity(), null, null, this);
                 dialogAction = OUTPORTMN;
                 break;
+            case R.id.ll_5:
+                //签名
+                bundle = new Bundle();
+                bundle.putParcelable("wallet", wallet);
+                start(SignTransactionFragment.class,bundle);
+                break;
 
         }
     }
@@ -130,7 +137,7 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
             presenter.exportWalletWithMnemonic(wallet.getWalletId(), pwd, this);
 
         } else if (DELETE.equals(dialogAction)) {
-            //删除钱包
+            //删除钱包  用来验证密码
             presenter.exportWalletWithMnemonic(wallet.getWalletId(), pwd, this);
         }
     }
@@ -145,18 +152,6 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
         }
     }
 
-    @Override
-    public void onOutportMnemonic(String data) {
-        dialog.dismiss();
-        if (DELETE.equals(dialogAction)) {
-            //删除的回调
-            presenter.destroyWallet(wallet.getWalletId(), this);
-            return;
-        }
-        Bundle bundle = new Bundle();
-        bundle.putString("mnemonic", data);
-        start(OutportMnemonicFragment.class, bundle);
-    }
 
     @Override
     public void onDestoryWallet(String data) {
@@ -173,5 +168,19 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
         post(RxEnum.DELETE.ordinal(), null, wallet.getWalletId());
         showToastMessage(getString(R.string.deletewalletsucess));
         popBackFragment();
+    }
+
+    @Override
+    public void onGetCommonData(String methodname, String data) {
+        //exportWalletWithMnemonic
+        dialog.dismiss();
+        if (DELETE.equals(dialogAction)) {
+            //删除的回调
+            presenter.destroyWallet(wallet.getWalletId(), this);
+            return;
+        }
+        Bundle bundle = new Bundle();
+        bundle.putString("mnemonic", data);
+        start(OutportMnemonicFragment.class, bundle);
     }
 }

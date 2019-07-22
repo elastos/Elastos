@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -26,18 +27,19 @@ import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewDa
 import org.elastos.wallet.ela.ui.vote.NodeCart.NodeCartFragment;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.Arith;
-import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.klog.KLog;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import butterknife.Unbinder;
 
 /**
  * 我的投票
@@ -66,6 +68,8 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
     @BindView(R.id.tv_goingtovote)
     TextView tvGoingtovote;
     MyVotePresenter presenter = new MyVotePresenter();
+    @BindView(R.id.tv_totle)
+    TextView tvTotle;
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
     @BindView(R.id.ll_bgtp)
@@ -102,15 +106,6 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
     //变更投票
     @OnClick(R.id.ll_bgtp)
     public void onViewClicked() {
-        /*List<VoteListBean.DataBean.ResultBean.ProducersBean> newlist = new ArrayList();
-        for (int i = 0; i < keylist.size(); i++) {
-            for (int j = 0; j < netList.size(); j++) {
-                if (netList.get(j).getOwnerpublickey().equals(keylist.get(i))) {
-                    newlist.add(netList.get(j));
-                }
-            }
-        }
-         CacheDoubleUtils.getInstance().put("list", (Serializable) newlist,  CacheDoubleUtils.DAY * 360);*/
         Bundle bundle = new Bundle();
         bundle.putString("type", "2");
         bundle.putString("zb", zb);
@@ -118,8 +113,8 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
         start(NodeCartFragment.class, bundle);
     }
 
-    Long value = 0L;
-    List<String> keylist = new ArrayList();
+    String value;
+    List<Recorder> keylist = new ArrayList();
     //  List<Long> vlauelist = new ArrayList();
 
     @Override
@@ -127,30 +122,34 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
         switch (methodname) {
 
             case "getVotedProducerList":
-                KLog.a(data);
+                if (netList == null || netList.size() == 0) {
+                    return;
+                }
                 if (data.equals("{}")) {
                     ivType.setBackgroundResource(R.mipmap.my_vote_go_img);
                     tvBlank.setVisibility(View.VISIBLE);
                     recyclerview.setVisibility(View.GONE);
+                    ll_bgtp.setVisibility(View.GONE);
                 } else {
+                    recyclerview.setVisibility(View.VISIBLE);
+                    tvBlank.setVisibility(View.GONE);
                     ivType.setBackgroundResource(R.mipmap.found_vote_mine_lock);
                     ll_bgtp.setVisibility(View.VISIBLE);
                     try {
                         JSONObject jsonObject = new JSONObject(data);
-                        ll_bgtp.setVisibility(View.VISIBLE);
-
-                        keylist.add(getString(R.string.last_voting_record));
-
                         Iterator it = jsonObject.keys();
 
                         while (it.hasNext()) {
                             String key = (String) it.next();
-                            keylist.add(key);
-                            // value = jsonObject.getLong(key) / MyWallet.RATE + value;
+                            keylist.add(getRecord(key));
+                            if (TextUtils.isEmpty(value)) {
+                                value = jsonObject.getString(key);
+                                tvTotle.setText(Arith.div(value, MyWallet.RATE_S).longValue() + "");
+                            }
                         }
                         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
-                        recyclerview.setAdapter(new MyVoteAdapter(keylist,
-                                jsonObject, value + ""));
+                        Collections.sort(keylist);
+                        recyclerview.setAdapter(new MyVoteAdapter(keylist));
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -162,70 +161,54 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
 
     @Override
     public void onBalance(BalanceEntity data) {
-        KLog.a(data.getBalance());
-        //String str = string.substring(0, string.indexOf(".")) + string.substring(string.indexOf(".") + 1);
-        //Double num = Double.parseDouble(data.getBalance()) / MyWallet.RATE;
         int num = Arith.div(data.getBalance(), MyWallet.RATE_S).intValue();
         tvNumVote.setText(getString(R.string.right_to_vote_ticket) + num);
     }
 
 
-    public class MyVoteAdapter extends BaseQuickAdapter<String, BaseViewHolder> {
+    public class MyVoteAdapter extends BaseQuickAdapter<Recorder, BaseViewHolder> {
 
-        String num;
-        JSONObject jsonObject;
 
-        public MyVoteAdapter(@Nullable List<String> name, JSONObject jsonObject, String num) {
+        public MyVoteAdapter(@Nullable List<Recorder> name) {
             super(R.layout.item_myvoteafragment, name);
-            this.num = num;
-            this.jsonObject = jsonObject;
+
         }
 
         @Override
-        protected void convert(BaseViewHolder helper, String item) {
+        protected void convert(BaseViewHolder helper, Recorder item) {
+            helper.setText(R.id.tv_name, item.name);
+            if (item.no == Integer.MAX_VALUE) {
+                helper.setText(R.id.tv_no, "- -");
+            } else {
+                helper.setText(R.id.tv_no, "NO." + item.no);
 
-
-            switch (helper.getLayoutPosition()) {
-
-                case 0:
-                    helper.setText(R.id.tv_name, item);
-                    helper.setText(R.id.tv_no, "");
-                    break;
-                default:
-                    helper.setText(R.id.tv_name, getName(item));
-                    try {
-                        // helper.setText(R.id.tv_no, Long.parseLong(jsonObject.getString(item)) / MyWallet.RATE + "");
-                        //  helper.setText(R.id.tv_no, NumberiUtil.maxNumberFormat((Long.parseLong(jsonObject.getString(item)) / MyWallet.RATE_) + "", 12));
-                        helper.setText(R.id.tv_no, NumberiUtil.maxNumberFormat(Arith.div(jsonObject.getString(item), MyWallet.RATE_S), 12));
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-
-                    break;
             }
         }
     }
 
     //获取名字
-    private String getName(String name) {
-
+    private Recorder getRecord(String publickey) {
+        Recorder recorder = new Recorder();
         for (int i = 0; i < netList.size(); i++) {
-
-            if (netList.get(i).getOwnerpublickey().equals(name)) {
-                return netList.get(i).getNickname();
+            if (netList.get(i).getOwnerpublickey().equals(publickey)) {
+                recorder.no = (i + 1);
+                recorder.name = netList.get(i).getNickname();
+                return recorder;
             }
         }
-        return getString(R.string.unknown);
+        recorder.no = Integer.MAX_VALUE;
+        recorder.name = getString(R.string.invalidnode);
+        return recorder;
     }
 
-//    //获取名次
-//    private String getNo(String name) {
-//
-//        for (int i = 0; i < list.size(); i++) {
-//            if (list.get(i).getOwnerpublickey().equals(name)) {
-//                return i + 1 + "";
-//            }
-//        }
-//        return getString(R.string.unknown);
-//    }
+    private class Recorder implements Comparable<Recorder> {
+        int no;
+        String name;
+
+        @Override
+        public int compareTo(Recorder o) {
+            return this.no - o.no;
+        }
+    }
+
 }

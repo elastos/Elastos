@@ -35,36 +35,27 @@ public class SideChainPresenter extends PresenterAbstract {
         subscriberObservable(observer, observable);
     }
 
-    public void createDepositTransaction(String masterWalletID, String chainID, String fromAddress, String lockedAddress, long amount
-            , String sideChainAddress, String memo,String remark,boolean useVotedUTXO, BaseFragment baseFragment) {
+    public void createDepositTransaction(String masterWalletID, String chainID, String fromAddress, String lockedAddress, String amount
+            , String sideChainAddress, String memo,boolean useVotedUTXO, BaseFragment baseFragment) {
         Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
                 return baseFragment.getMyWallet().createDepositTransaction( masterWalletID,  chainID,  fromAddress,  lockedAddress,  amount
-            ,  sideChainAddress,  memo, remark, useVotedUTXO);
-            }
-        });
-        subscriberObservable(observer, observable);
-    }
-    public void calculateTransactionFee(String walletId, String chainId, String data, long feePerKb, BaseFragment baseFragment) {
-        Observer observer = createObserver(CommonLongListener.class, baseFragment);
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().calculateTransactionFee(walletId, chainId,data,feePerKb);
+            ,  sideChainAddress,  memo,  useVotedUTXO);
             }
         });
         subscriberObservable(observer, observable);
     }
 
-    public void createWithdrawTransaction(String walletId, String chainId,String fromAddress, long actualSpend, String address,String memo   , String remark, BaseFragment baseFragment) {
+
+    public void createWithdrawTransaction(String walletId, String chainId,String fromAddress, String actualSpend, String address,String memo , BaseFragment baseFragment) {
 
         Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().createWithdrawTransaction(walletId, chainId,fromAddress, actualSpend, address, memo,remark);
+                return baseFragment.getMyWallet().createWithdrawTransaction(walletId, chainId,fromAddress, actualSpend, address, memo);
             }
         });
         subscriberObservable(observer, observable);

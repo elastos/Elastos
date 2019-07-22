@@ -44,16 +44,7 @@ public class ClipboardUtil {
         }
     }
 
-    public static void copyClipboar(BaseActivity context, String wallrtAddr, int yu) {
-        if (!TextUtils.isEmpty(wallrtAddr)) {
-            ClipboardManager cm = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-            ClipData mClipData = ClipData.newPlainText("Label", wallrtAddr);
-            cm.setPrimaryClip(mClipData);
-            //context.showToastMessage("已复制到剪切板");
-        } else {
-            context.showToastMessage(context.getString(R.string.copyfail));
-        }
-    }
+
 
     public static String paste(BaseActivity activity) {
         ClipboardManager mClipboardManager = (ClipboardManager) (activity.getSystemService(CLIPBOARD_SERVICE));

@@ -76,15 +76,16 @@ namespace Elastos {
 //            Detach();
         }
 
-        void SubWalletCallback::OnBalanceChanged(const std::string &asset, uint64_t balance) {
+        void SubWalletCallback::OnBalanceChanged(const std::string &asset, const std::string &balance) {
             JNIEnv *env = GetEnv();
 
             jstring assetID = env->NewStringUTF(asset.c_str());
+            jstring value = env->NewStringUTF(balance.c_str());
 
             jclass clazz = env->GetObjectClass(_obj);
             jmethodID methodId = env->GetMethodID(clazz, "OnBalanceChanged",
-                                                  "(Ljava/lang/String;J)V");
-            env->CallVoidMethod(_obj, methodId, assetID, balance);
+                                                  "(Ljava/lang/String;Ljava/lang/String;)V");
+            env->CallVoidMethod(_obj, methodId, assetID, value);
 
 //            Detach();
         }
@@ -104,18 +105,30 @@ namespace Elastos {
 //            Detach();
         }
 
-        void SubWalletCallback::OnTxDeleted(const std::string &hash, bool notifyUser,
-                                            bool recommendRescan) {
+        void
+        SubWalletCallback::OnAssetRegistered(const std::string &asset, const nlohmann::json &info) {
             JNIEnv *env = GetEnv();
 
-            jstring jHash = env->NewStringUTF(hash.c_str());
+            jstring jasset = env->NewStringUTF(asset.c_str());
+            jstring jinfo = env->NewStringUTF(info.dump().c_str());
 
             jclass clazz = env->GetObjectClass(_obj);
-            jmethodID methodId = env->GetMethodID(clazz, "OnTxDeleted", "(Ljava/lang/String;ZZ)V");
-            env->CallVoidMethod(_obj, methodId, jHash, notifyUser, recommendRescan);
-
-//            Detach();
+            jmethodID methodId = env->GetMethodID(clazz, "OnAssetRegistered",
+                                                  "(Ljava/lang/String;Ljava/lang/String;)V");
+            env->CallVoidMethod(_obj, methodId, jasset, jinfo);
         }
+
+        void SubWalletCallback::OnConnectStatusChanged(const std::string &status) {
+            JNIEnv *env = GetEnv();
+
+            jstring jstatus = env->NewStringUTF(status.c_str());
+
+            jclass clazz = env->GetObjectClass(_obj);
+            jmethodID methodID = env->GetMethodID(clazz, "OnConnectStatusChanged", "(Ljava/lang/String;)V");
+
+            env->CallVoidMethod(_obj, methodID, jstatus);
+        }
+
 
     }
 }

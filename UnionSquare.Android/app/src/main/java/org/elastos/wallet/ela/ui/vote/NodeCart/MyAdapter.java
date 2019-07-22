@@ -2,6 +2,9 @@ package org.elastos.wallet.ela.ui.vote.NodeCart;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.AppCompatImageView;
 import android.view.LayoutInflater;
@@ -9,14 +12,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.request.target.CustomViewTarget;
+import com.bumptech.glide.request.transition.Transition;
+
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
+import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
-import org.elastos.wallet.ela.utils.GetDynanicUrl;
 import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.GlideRequest;
 import org.elastos.wallet.ela.utils.NumberiUtil;
@@ -31,22 +39,20 @@ public class MyAdapter extends BaseAdapter {
     // 用来控制CheckBox的选中状况
     static HashMap<Integer, Boolean> isSelected;
     // 上下文
-    private Context context;
+    private BaseFragment context;
     // 用来导入布局
     private LayoutInflater inflater = null;
 
-    private String type;
 
     // 构造器
-    public MyAdapter(List<VoteListBean.DataBean.ResultBean.ProducersBean> list, Context context, String type) {
+    public MyAdapter(List<VoteListBean.DataBean.ResultBean.ProducersBean> list, BaseFragment context) {
         this.context = context;
         this.list = list;
-        inflater = LayoutInflater.from(context);
+        inflater = LayoutInflater.from(context.getContext());
         isSelected = new HashMap<Integer, Boolean>();
         // 初始化数据
-        this.type = type;
         initDate();
-        glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial).placeholder(R.mipmap.found_vote_initial);
+        glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial_circle).circleCrop();
     }
 
     // 初始化isSelected的数据
@@ -104,31 +110,58 @@ public class MyAdapter extends BaseAdapter {
 
         holder.tv_zb.setText(NumberiUtil.numberFormat(Double.parseDouble(producersBean.getVoterate()) * 100 + "", 5) + "%");
         holder.tv_name.setText(producersBean.getNickname());
-        holder.tv_address.setText(AppUtlis.getLoc(context, producersBean.getLocation() + ""));
+        holder.tv_address.setText(AppUtlis.getLoc(context.getContext(), producersBean.getLocation() + ""));
         int id = producersBean.getIndex() + 1;
         holder.tv_id.setText("NO." + id);//12
         AppCompatImageView iv = holder.ivIcon;
-        iv.setImageResource(R.mipmap.found_vote_initial);
-        iv.setTag(R.string.error_tag_empty, position + "");
-        if (iv.getTag(R.string.error_tag_empty) != null && iv.getTag(R.string.error_tag_empty).equals(position + "")) {
-            String url = producersBean.getUrl();
-            GetDynanicUrl.getData(url, context, new NodeDotJsonViewData() {
-                @Override
-                public void onGetNodeDotJsonData(NodeInfoBean t) {
-                    if (t == null || t.getOrg() == null || t.getOrg().getBranding() == null) {
-                        return;
-                    }
-                    String imgUrl = t.getOrg().getBranding().getLogo_256();
-                    iv.setTag(R.string.ownerpublicKey, imgUrl);
-                    if (iv.getTag(R.string.ownerpublicKey) != null && iv.getTag(R.string.ownerpublicKey).equals(imgUrl)) {
-                        glideRequest.load(imgUrl).into(iv);
-                    } else {
-                        GlideApp.with(context).clear(iv);
-                        iv.setImageResource(R.mipmap.found_vote_initial);
-                    }
-                }
-            });
+        iv.setImageResource(R.mipmap.found_vote_initial_circle);
+        GlideApp.with(context).clear(iv);
+        String baseUrl = producersBean.getUrl();
+        if (baseUrl == null) {
+            return convertView;
         }
+       /* if (map.get(baseUrl) != null) {
+             iv.setImageBitmap(map.get(baseUrl));
+            // glideRequest.load(map.get(baseUrl)).into(iv);
+            return;
+        }*/
+        iv.setTag(R.string.error_tag_empty, baseUrl);
+        new SuperNodeListPresenter().getUrlJson(baseUrl, context, new NodeDotJsonViewData() {
+            @Override
+            public void onGetNodeDotJsonData(NodeInfoBean t, String url) {
+                if (iv.getTag(R.string.error_tag_empty) == null || !(iv.getTag(R.string.error_tag_empty)).equals(url)) {
+                    return;
+                }
+                if (t == null || t.getOrg() == null || t.getOrg().getBranding() == null || t.getOrg().getBranding().getLogo_256() == null) {
+                    return;
+                }
+                String imgUrl = t.getOrg().getBranding().getLogo_256();
+
+                glideRequest.load(imgUrl).into(new CustomViewTarget<ImageView, Bitmap>(iv) {
+                    @Override
+                    public void onLoadFailed(@Nullable Drawable errorDrawable) {
+                        //GlideApp.with(context).clear(iv);
+                    }
+
+                    @Override
+                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                        if (iv.getTag(R.string.error_tag_empty) != null && (iv.getTag(R.string.error_tag_empty)).equals(url)) {
+                            glideRequest.load(resource).into(iv);
+                            //map.put(url, resource);
+                        } else {
+                            GlideApp.with(context).clear(iv);
+                        }
+                    }
+
+                    @Override
+                    protected void onResourceCleared(@Nullable Drawable placeholder) {
+                        // glideRequest.load(placeholder).into(iv);
+                    }
+                });
+
+
+            }
+        });
         return convertView;
     }
 

@@ -26,9 +26,26 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
     private boolean isShowDialog = true;
     private Context context;
 
+    @Deprecated
     protected void subscriberObservable(Observer subscriber,
                                         Observable observable) {
         observable.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .unsubscribeOn(Schedulers.io())
+                .subscribe(subscriber);
+    }
+
+    protected void subscriberObservable(Observer subscriber,
+                                        Observable observable, BaseFragment baseFragment) {
+        observable.compose(baseFragment.bindToLife()).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .unsubscribeOn(Schedulers.io())
+                .subscribe(subscriber);
+    }
+
+    protected void subscriberObservable(Observer subscriber,
+                                        Observable observable, BaseActivity baseActivity) {
+        observable.compose(baseActivity.bindToLife()).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .unsubscribeOn(Schedulers.io())
                 .subscribe(subscriber);
@@ -77,9 +94,9 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
             @Override
             public void onNext(BaseEntity value) {
                 if (isShowDialog) {
-                 dismissProgessDialog();
+                    dismissProgessDialog();
                 }
-                if (MyWallet.SUCESSCODE.equals(value.getCode())||"0".equals(value.getCode())) {
+                if (MyWallet.SUCCESSCODE.equals(value.getCode()) || "0".equals(value.getCode())) {
                     lisener.onNextLisenner(value);
                 } else {
                     showTips(value);
@@ -95,6 +112,7 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
                 }
                 Log.e(TAG, "onError=" + e.getMessage());
                 Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+                finish();
             }
 
             @Override
@@ -106,7 +124,56 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
 
 
     }
+    protected Observer<BaseEntity> createObserver(Class<? extends SubscriberOnNextLisenner> listener, BaseFragment baseFragment,Object o) {
+        //初始化参数
+        this.context = baseFragment.getBaseActivity();
+        if (isShowDialog) {
+            initProgressDialog(context);
+        }
+        SubscriberOnNextLisenner lisener = LisenerFactor.create(listener);
+        lisener.setViewData((BaseViewData) baseFragment);
+        lisener.setObj(o);
+        //创建 Observer
+        return new Observer<BaseEntity>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                mDisposable = d;
+                Log.e(TAG, "onSubscribe");
+            }
 
+            @Override
+            public void onNext(BaseEntity value) {
+                if (isShowDialog) {
+                    dismissProgessDialog();
+                }
+                if (MyWallet.SUCCESSCODE.equals(value.getCode()) || "0".equals(value.getCode())) {
+                    lisener.onNextLisenner(value);
+                } else {
+                    showTips(value);
+                }
+                Log.e(TAG, "onNext:" + value);
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                if (isShowDialog) {
+                    dismissProgessDialog();
+                }
+                Log.e(TAG, "onError=" + e.getMessage());
+                Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+                finish();
+            }
+
+            @Override
+            public void onComplete() {
+                Log.e(TAG, "onComplete()");
+                finish();
+            }
+        };
+
+
+    }
     protected Observer<BaseEntity> createObserver(Class<? extends SubscriberOnNextLisenner> listener, BaseActivity baseActivity) {
         //初始化参数
         this.context = baseActivity;
@@ -126,9 +193,9 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
             @Override
             public void onNext(BaseEntity value) {
                 if (isShowDialog) {
-                   dismissProgessDialog();
+                    dismissProgessDialog();
                 }
-                if (MyWallet.SUCESSCODE.equals(value.getCode())) {
+                if (MyWallet.SUCCESSCODE.equals(value.getCode())) {
                     lisener.onNextLisenner(value);
                 } else {
                     showTips(value);
@@ -145,6 +212,7 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
                 if (isShowDialog) {
                     dismissProgessDialog();
                 }
+                finish();
             }
 
             @Override
@@ -161,7 +229,7 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
     private void dismissProgessDialog() {
         if (DialogUtil.getHttpialog() != null && DialogUtil.getHttpialog().isShowing()) {
             DialogUtil.getHttpialog().dismiss();
-           DialogUtil.setHttpialogNull();
+            DialogUtil.setHttpialogNull();
         }
     }
 
@@ -177,6 +245,7 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
     @Override
     public void onCancel(DialogInterface dialog) {
         //解除观察者和被观察者的绑定
+        finish();
         if (mDisposable != null && !mDisposable.isDisposed()) {
             mDisposable.dispose();
         }

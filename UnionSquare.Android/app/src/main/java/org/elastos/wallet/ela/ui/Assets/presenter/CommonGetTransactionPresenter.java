@@ -19,6 +19,6 @@ public class CommonGetTransactionPresenter extends PresenterAbstract {
                 return baseFragment.getMyWallet().getAllTransaction(walletId, chainId, start, count, s);
             }
         });
-        subscriberObservable(observer, observable);
+        subscriberObservable(observer, observable, baseFragment);
     }
 }

@@ -19,6 +19,8 @@ import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -68,7 +70,17 @@ public class VoteTransferActivity extends BaseActivity implements CommmonStringW
         amount = data.getStringExtra("amount");
         toAddress = data.getStringExtra("toAddress");
         attributes = data.getStringExtra("attributes");
-        fee = data.getLongExtra("fee", MyWallet.feePerKb / MyWallet.RATE);
+        try {
+            JSONObject jsonObject = new JSONObject(attributes);
+
+            if (jsonObject.has("Fee")) {
+                fee = jsonObject.getLong("Fee");
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+            fee = MyWallet.feePerKb;
+        }
         wallet = data.getParcelableExtra("wallet");
         pwd = data.getStringExtra("pwd");
         tvAddress.setText(toAddress);
@@ -97,8 +109,7 @@ public class VoteTransferActivity extends BaseActivity implements CommmonStringW
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.tv_next:
-                //更新手续费
-                presenter.updateTransactionFee(wallet.getWalletId(), chainId, attributes, fee, "", this);
+                presenter.signTransaction(wallet.getWalletId(), chainId, attributes, pwd, this);
                 break;
 
         }
@@ -108,10 +119,6 @@ public class VoteTransferActivity extends BaseActivity implements CommmonStringW
     @Override
     public void onGetCommonData(String methodname, String data) {
         switch (methodname) {
-
-            case "updateTransactionFee":
-                presenter.signTransaction(wallet.getWalletId(), chainId, data, pwd, this);
-                break;
             case "signTransaction":
                 presenter.publishTransaction(wallet.getWalletId(), chainId, data, this);
                 break;

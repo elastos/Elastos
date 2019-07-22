@@ -3,19 +3,18 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "Utils.h"
-#include "IIdChainSubWallet.h"
+#include "IIDChainSubWallet.h"
 #include "nlohmann/json.hpp"
 
 using namespace Elastos::ElaWallet;
 
-#define JNI_CreateIdTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+#define JNI_CreateIdTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL CreateIdTransaction(JNIEnv *env, jobject clazz, jlong instance,
                                            jstring jfromAddress,
                                            jstring jpayloadJson,
                                            jstring jprogramJson,
-                                           jstring jmemo,
-                                           jstring jremark) {
+                                           jstring jmemo) {
     bool exception = false;
     std::string msgException;
 
@@ -23,16 +22,15 @@ static jstring JNICALL CreateIdTransaction(JNIEnv *env, jobject clazz, jlong ins
     const char *payloadJson = env->GetStringUTFChars(jpayloadJson, NULL);
     const char *programJson = env->GetStringUTFChars(jprogramJson, NULL);
     const char *memo = env->GetStringUTFChars(jmemo, NULL);
-    const char *remark = env->GetStringUTFChars(jremark, NULL);
 
-    IIdChainSubWallet *wallet = (IIdChainSubWallet *) instance;
+    IIDChainSubWallet *wallet = (IIDChainSubWallet *) instance;
     jstring tx = NULL;
 
     try {
-        nlohmann::json txJson = wallet->CreateIdTransaction(fromAddress,
+        nlohmann::json txJson = wallet->CreateIDTransaction(fromAddress,
                                                             nlohmann::json::parse(payloadJson),
                                                             nlohmann::json::parse(programJson),
-                                                            memo, remark);
+                                                            memo);
         tx = env->NewStringUTF(txJson.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
@@ -43,7 +41,6 @@ static jstring JNICALL CreateIdTransaction(JNIEnv *env, jobject clazz, jlong ins
     env->ReleaseStringUTFChars(jpayloadJson, payloadJson);
     env->ReleaseStringUTFChars(jprogramJson, programJson);
     env->ReleaseStringUTFChars(jmemo, memo);
-    env->ReleaseStringUTFChars(jremark, remark);
 
     if (exception) {
         ThrowWalletException(env, msgException.c_str());

@@ -10,7 +10,7 @@ using namespace Elastos::ElaWallet;
 const std::string CLASS_MCSUBWALLET = CLASS_PACKAGE_PATH + "MainchainSubWallet";
 const std::string CLASS_IDSUBWALLET = CLASS_PACKAGE_PATH + "IDChainSubWallet";
 const std::string CHAINID_MAINCHAIN = "ELA";
-const std::string CHAINID_IDCHAIN = "IdChain";
+const std::string CHAINID_IDCHAIN = "IDChain";
 
 #define JNI_GetID "(J)Ljava/lang/String;"
 
@@ -18,7 +18,7 @@ static jstring JNICALL GetID(JNIEnv *env, jobject clazz, jlong instance) {
     jstring id = NULL;
     try {
         IMasterWallet *masterWallet = (IMasterWallet *) instance;
-        std::string key = masterWallet->GetId();
+        std::string key = masterWallet->GetID();
         id = env->NewStringUTF(key.c_str());
     } catch (const std::exception &e) {
         ThrowWalletException(env, e.what());
@@ -58,7 +58,7 @@ static jobjectArray JNICALL GetAllSubWallets(JNIEnv *env, jobject clazz, jlong i
         jobjectArray subWalletArray = env->NewObjectArray(allSubWallets.size(), clazzObject, NULL);
 
         for (int i = 0; i < allSubWallets.size(); i++) {
-            std::string id = allSubWallets[i]->GetChainId();
+            std::string id = allSubWallets[i]->GetChainID();
             if (id == CHAINID_MAINCHAIN) {
                 clazzSubWallet = env->FindClass(CLASS_MCSUBWALLET.c_str());
                 subWalletConstructor = env->GetMethodID(clazzSubWallet, "<init>", "(J)V");

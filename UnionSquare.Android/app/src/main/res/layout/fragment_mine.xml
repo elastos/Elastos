@@ -127,6 +127,28 @@
                 android:background="@drawable/ass_border"
                 android:gravity="center"
                 android:visibility="gone" />
+            <RelativeLayout
+                android:id="@+id/rl_about"
+                style="@style/settingItem"
+                android:layout_marginTop="@dimen/px30"
+                android:background="@drawable/ass_border">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:text="@string/about"
+                    android:textColor="#ffffffff"
+                    android:textSize="14sp" />
+
+                <ImageView
+                    android:layout_width="@dimen/px44"
+                    android:layout_height="@dimen/px44"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="@dimen/px40"
+                    android:src="@mipmap/asset_list_arrow" />
+            </RelativeLayout>
         </LinearLayout>
     </android.support.v4.widget.NestedScrollView>
 </LinearLayout>

@@ -216,21 +216,28 @@ html[data-dpr="3"]{
     height: 79vh;
     margin: 0 auto;
     position: relative;
-    .content_year {
-      position: absolute;
+    .content_box:first-child .content_year{
       top: 20/@rem;
-      left: 21/@rem;
-      width: 1px;
-      height: 305/@rem;
-      background: #E1E1E1;
-      z-index: -1;
+    }
+    .content_box:last-child .content_year{
+      top: -100/@rem;
     }
     .content_box {
+      position: relative;
       margin: 60/@rem auto;
       padding-left: 60px;
       background: url("../images/point.png")top left no-repeat;
       -webkit-background-size: 44/@rem 44/@rem;
       background-size: 44/@rem 44/@rem;
+      .content_year {
+        position: absolute;
+        top: -40/@rem;
+        left: 21/@rem;
+        width: 1px;
+        height: 100%;
+        background: #E1E1E1;
+        z-index: -1;
+      }
       h2 {
         font-size: 28/@rem;
         color: #333333;

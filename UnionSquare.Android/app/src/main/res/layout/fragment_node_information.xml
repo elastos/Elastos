@@ -24,7 +24,7 @@
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:layout_marginTop="26dp"
-            android:src="@mipmap/found_vote_initial" />
+            android:src="@mipmap/found_vote_initial_circle"/>
 
 
         <LinearLayout
@@ -171,8 +171,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/px25"
             android:layout_marginTop="20dp"
+            android:layout_marginBottom="@dimen/px25"
             android:gravity="center"
             android:orientation="horizontal">
 
@@ -192,8 +192,8 @@
                 android:layout_marginLeft="15dp"
                 android:layout_marginRight="15dp"
                 android:layout_weight="1"
-                android:drawablePadding="10dp"
                 android:drawableRight="@mipmap/asset_transfer_copy"
+                android:drawablePadding="10dp"
                 android:ellipsize="end"
                 android:gravity="right"
                 android:maxLines="1"
@@ -221,8 +221,8 @@
         android:id="@+id/sb_ckhxlb"
         style="@style/PublicButton"
         android:layout_height="@dimen/px80"
-        android:layout_marginBottom="20dp"
         android:layout_marginTop="@dimen/px30"
+        android:layout_marginBottom="30dp"
         android:text="@string/view_candidate_list"
         app:sCornersRadius="0dp" />
 

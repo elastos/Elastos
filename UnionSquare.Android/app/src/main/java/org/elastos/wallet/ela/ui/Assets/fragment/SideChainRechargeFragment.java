@@ -41,7 +41,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
-public class SideChainRechargeFragment extends BaseFragment implements CommmonStringWithMethNameViewData, CommonBalanceViewData, CommmonBooleanViewData, CommmonLongViewData {
+public class SideChainRechargeFragment extends BaseFragment implements CommmonStringWithMethNameViewData, CommonBalanceViewData, CommmonBooleanViewData {
     @BindView(R.id.tv_title)
     TextView tvTitle;
     @BindView(R.id.iv_title_right)
@@ -61,16 +61,13 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
     Unbinder unbinder;
     @BindView(R.id.tv_tochain)
     TextView tvTochain;
-    Unbinder unbinder1;
     private String chainId;
     private Wallet wallet;
     private SideChainPresenter presenter;
     private String address;
     private String amount;
     private String genesisAddress;
-    private String attributes;
     private String chargeChain;
-    private String maxBalance="0";
 
     @Override
     protected int getLayoutId() {
@@ -91,7 +88,7 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
         ivTitleRight.setImageResource(R.mipmap.setting_adding_scan);
         registReceiver();
         presenter = new SideChainPresenter();
-        chargeChain = "IdChain";
+        chargeChain = "IDChain";
         tvTochain.setText(getString(R.string.chargerto) + chargeChain);
         presenter.getGenesisAddress(wallet.getWalletId(), chargeChain, this);
         etBalance.setFilters(new InputFilter[]{MatcherUtil.filter(4)});
@@ -176,15 +173,20 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
                 genesisAddress = data;
                 break;
             case "createDepositTransaction":
-                attributes = data;
-                presenter.calculateTransactionFee(wallet.getWalletId(), chainId, data, MyWallet.feePerKb, this);
+                Intent intent = new Intent(getActivity(), TransferActivity.class);
+                intent.putExtra("amount", amount);
+                intent.putExtra("toAddress", address);
+                intent.putExtra("wallet", wallet);
+                intent.putExtra("chainId", chainId);
+                intent.putExtra("attributes", data);
+                intent.putExtra("type", Constant.SIDEWITHDRAW);
+                startActivity(intent);
                 break;
         }
     }
 
     @Override
     public void onBalance(BalanceEntity data) {
-        maxBalance = data.getBalance();
         // String balance = String.format(getString(R.string.inputbalance), NumberiUtil.maxNumberFormat((Double.parseDouble(data.getBalance()) / MyWallet.RATE) + "", 12) + " " + data.getChainId());
         String balance = String.format(getString(R.string.inputbalance), NumberiUtil.maxNumberFormat(Arith.div(data.getBalance(), MyWallet.RATE_S), 12) + " " + data.getChainId());
         etBalance.setHint(balance);
@@ -198,8 +200,7 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
         }
         String remark = etRemark.getText().toString().trim();
         //long actualSpend = (long) (Double.parseDouble(amount) * MyWallet.RATE);
-        long actualSpend = Arith.mul(amount, MyWallet.RATE_S).longValue();
-        presenter.createDepositTransaction(wallet.getWalletId(), chainId, "", genesisAddress, actualSpend, address, "", remark, true, this);
+        presenter.createDepositTransaction(wallet.getWalletId(), chainId, "", genesisAddress, Arith.mul(amount, MyWallet.RATE_S).toPlainString(), address, remark, true, this);
 
     }
 
@@ -222,19 +223,5 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
         presenter.isAddressValid(wallet.getWalletId(), address, this);
     }
 
-    @Override
-    public void onGetCommonData(long fee) {
-        //获得calculateTransactionFee
 
-        Intent intent = new Intent(getActivity(), TransferActivity.class);
-        intent.putExtra("amount", amount);
-        intent.putExtra("toAddress", address);
-        intent.putExtra("wallet", wallet);
-        intent.putExtra("chainId", chainId);
-        intent.putExtra("fee", fee);
-        intent.putExtra("attributes", attributes);
-        intent.putExtra("type", Constant.SIDEWITHDRAW);
-        startActivity(intent);
-
-    }
 }

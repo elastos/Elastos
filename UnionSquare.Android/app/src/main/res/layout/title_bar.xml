@@ -11,6 +11,7 @@
         android:layout_height="@dimen/statusbar_view_height" />
 
     <android.support.v7.widget.Toolbar
+        android:layout_marginBottom="5dp"
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="48dp">
@@ -28,6 +29,15 @@
             android:textColor="@color/qmui_config_color_white"
             android:textSize="15sp" />
 
+        <TextView
+
+            android:id="@+id/tv_title_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right|center_vertical"
+            android:layout_marginRight="14dp"
+            android:textSize="12sp"
+            android:visibility="gone" />
     </android.support.v7.widget.Toolbar>
 
 </LinearLayout>

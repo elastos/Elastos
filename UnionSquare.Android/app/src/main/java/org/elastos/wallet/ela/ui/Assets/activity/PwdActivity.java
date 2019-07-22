@@ -25,12 +25,10 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
     ClearEditText etPwd;
     private Wallet wallet;
     private String chainId;
-    private String amount;
-    private long fee;
-    private String toAddress;
     private PwdPresenter presenter;
     private String attributes;
     private String pwd;
+    private int type;
 
     @Override
     protected int getLayoutId() {
@@ -52,11 +50,9 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
     @Override
     protected void setExtraData(Intent data) {
         chainId = data.getStringExtra("chainId");
-        amount = data.getStringExtra("amount");
-        toAddress = data.getStringExtra("toAddress");
-        fee = data.getLongExtra("fee", MyWallet.feePerKb);
         attributes = data.getStringExtra("attributes");
         wallet = data.getParcelableExtra("wallet");
+        type = data.getIntExtra("type", 0);//1只签名目前只有钱包管理的签名用到
       /*  tvAddress.setText(toAddress);
         tvAmount.setText(amount + " " + chainId);
         tvCharge.setText(NumberiUtil.maxNumberFormat(new BigDecimal(((double) fee) / MyWallet.RATE + "").toPlainString(), 12) + " " + chainId);//0.0001
@@ -73,9 +69,7 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
                     showToastMessage(getString(R.string.pwdnoempty));
                     return;
                 }
-                presenter.updateTransactionFee(wallet.getWalletId(), chainId, attributes, fee, "", this);
-
-
+                presenter.signTransaction(wallet.getWalletId(), chainId, attributes, pwd, this);
                 break;
 
         }
@@ -85,11 +79,12 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
     @Override
     public void onGetCommonData(String methodname, String data) {
         switch (methodname) {
-
-            case "updateTransactionFee":
-                presenter.signTransaction(wallet.getWalletId(), chainId, data, pwd, this);
-                break;
             case "signTransaction":
+                if (type == 1) {
+                    post(RxEnum.SIGNSUCCESS.ordinal(), "签名成功", data);
+                    finish();
+                    return;
+                }
                 presenter.publishTransaction(wallet.getWalletId(), chainId, data, this);
                 break;
             case "publishTransaction":

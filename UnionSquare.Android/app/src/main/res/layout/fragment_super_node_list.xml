@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.qmuiteam.qmui.layout.QMUILinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/qmuilinearlayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@mipmap/found_bg"
-    android:orientation="vertical"
-    tools:context=".ui.vote.SuperNodeList.SuperNodeListFragment">
+    android:orientation="vertical">
 
 
     <include layout="@layout/title_bar" />
@@ -19,114 +18,191 @@
 
         <com.qmuiteam.qmui.layout.QMUILinearLayout
             android:layout_width="match_parent"
-            android:layout_height="@dimen/px250"
+            android:layout_height="@dimen/px200"
             android:layout_gravity="center"
             android:layout_marginLeft="@dimen/px10"
             android:layout_marginTop="@dimen/px25"
             android:layout_marginRight="@dimen/px10"
             android:background="@drawable/sc_26ffffff_2"
             android:gravity="center"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:paddingTop="@dimen/px45"
+            android:paddingBottom="@dimen/px45">
 
 
-            <com.qmuiteam.qmui.layout.QMUILinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingLeft="7dp"
+                android:paddingRight="7dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:gravity="center"
                     android:text="@string/vote_qwtpzb"
-                    android:textColor="#ffffffff"
+                    android:textColor="@color/whiter50"
                     android:textSize="11sp" />
 
                 <TextView
                     android:id="@+id/tv_zb"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/px58"
+                    android:layout_alignParentBottom="true"
+                    android:layout_centerHorizontal="true"
                     android:text="0.0%"
-                    android:textColor="#ffffffff"
                     android:textSize="18sp" />
 
 
-            </com.qmuiteam.qmui.layout.QMUILinearLayout>
+            </RelativeLayout>
 
 
             <View
                 android:layout_width="1px"
-                android:layout_height="@dimen/px66"
-                android:layout_marginTop="@dimen/px48"
+                android:layout_height="match_parent"
+                android:layout_marginTop="@dimen/px10"
+                android:layout_marginBottom="@dimen/px10"
                 android:background="@color/qmui_config_color_white" />
 
-            <com.qmuiteam.qmui.layout.QMUILinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical">
+                android:paddingLeft="7dp"
+                android:paddingRight="7dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
                     android:text="@string/the_current_number"
-                    android:textColor="#ffffffff"
+                    android:textColor="@color/whiter50"
                     android:textSize="11sp" />
 
                 <TextView
                     android:id="@+id/tv_num"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/px58"
+                    android:layout_alignParentBottom="true"
+                    android:layout_centerHorizontal="true"
                     android:text="0"
                     android:textColor="#ffffffff"
                     android:textSize="18sp" />
-            </com.qmuiteam.qmui.layout.QMUILinearLayout>
+            </RelativeLayout>
 
             <View
                 android:layout_width="1px"
-                android:layout_height="@dimen/px66"
-                android:layout_marginTop="@dimen/px48"
+                android:layout_height="match_parent"
+                android:layout_marginTop="@dimen/px10"
+                android:layout_marginBottom="@dimen/px10"
                 android:background="@color/qmui_config_color_white" />
 
-            <com.qmuiteam.qmui.layout.QMUILinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:visibility="gone">
+                android:paddingLeft="7dp"
+                android:paddingRight="7dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:gravity="center"
                     android:text="@string/number_of_voting_addresses"
-                    android:textColor="#ffffffff"
+                    android:textColor="@color/whiter50"
                     android:textSize="11sp" />
 
                 <TextView
+                    android:id="@+id/tv_nodenum"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/px58"
-                    android:text="121786"
+                    android:layout_alignParentBottom="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="@dimen/px30"
+                    android:text="0"
                     android:textColor="#ffffffff"
                     android:textSize="18sp" />
-            </com.qmuiteam.qmui.layout.QMUILinearLayout>
+            </RelativeLayout>
         </com.qmuiteam.qmui.layout.QMUILinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/recyclerview"
+            <View
+                android:layout_width="4dp"
+                android:layout_height="14dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="4dp"
+                android:background="@color/whiter" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="7dp"
+                android:text="@string/nodelist"
+                android:textSize="13sp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <ImageView
+                android:id="@+id/iv_swichlist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:padding="15dp"
+                android:src="@mipmap/vote_switch_list" />
+
+        </LinearLayout>
+
+        <com.scwang.smartrefresh.layout.SmartRefreshLayout
+            android:id="@+id/srl"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginLeft="@dimen/px10"
-            android:layout_marginTop="@dimen/px22"
-            android:layout_marginRight="@dimen/px10" />
+            app:srlAccentColor="@android:color/white"
+            app:srlDisableContentWhenLoading="true"
+            app:srlDisableContentWhenRefresh="true"
+            app:srlEnablePreviewInEditMode="false">
 
+            <com.scwang.smartrefresh.layout.header.ClassicsHeader
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/recyclerview"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="@dimen/px10"
+                    android:layout_marginTop="@dimen/px22"
+                    android:layout_marginRight="@dimen/px10" />
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/recyclerview1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="@dimen/px10"
+                    android:layout_marginTop="@dimen/px22"
+                    android:layout_marginRight="@dimen/px10"
+                    android:visibility="gone" />
+            </RelativeLayout>
+        </com.scwang.smartrefresh.layout.SmartRefreshLayout>
     </com.qmuiteam.qmui.layout.QMUILinearLayout>
+
+    <View style="@style/line1" />
 
     <com.qmuiteam.qmui.layout.QMUILinearLayout
         android:layout_width="match_parent"
@@ -135,8 +211,9 @@
 
         <android.support.v7.widget.AppCompatTextView
             android:id="@+id/tv_myvote"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
+            android:layout_marginLeft="30dp"
             android:layout_marginTop="@dimen/px13"
             android:layout_weight="1"
             android:drawableTop="@mipmap/bottom_my_vote"
@@ -145,24 +222,24 @@
             android:textColor="#999999"
             android:textSize="@dimen/px18" />
 
-        <android.support.v7.widget.AppCompatTextView
-            android:id="@+id/tv_voting_rules"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/tv_signupfor"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_marginTop="@dimen/px13"
+            android:layout_marginRight="30dp"
             android:layout_weight="1"
-            android:drawableTop="@mipmap/bottom_vote_rule"
+            android:drawableTop="@mipmap/vote_attend"
             android:gravity="center"
-            android:text="@string/voting_rules"
+            android:text="@string/sign_up_for"
             android:textColor="#999999"
             android:textSize="@dimen/px18" />
 
 
         <com.qmuiteam.qmui.layout.QMUILinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="134dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@drawable/sc_26ffffff_2"
+            android:background="@color/a26ffffff"
             android:gravity="center"
             android:orientation="vertical">
 

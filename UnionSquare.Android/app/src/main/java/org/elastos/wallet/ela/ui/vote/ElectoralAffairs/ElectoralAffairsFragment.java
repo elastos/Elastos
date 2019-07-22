@@ -24,18 +24,17 @@ import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.net.ApiServer;
 import org.elastos.wallet.ela.net.RetrofitManager;
 import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
-import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonLongViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
+import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
 import org.elastos.wallet.ela.ui.vote.UpdateInformation.UpdateInformationFragment;
 import org.elastos.wallet.ela.ui.vote.bean.ElectoralAffairsBean;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
+import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
-import org.elastos.wallet.ela.utils.GetDynanicUrl;
 import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxSchedulers;
@@ -52,7 +51,7 @@ import io.reactivex.functions.Consumer;
 /**
  * 选举管理  getRegisteredProducerInfo
  */
-public class ElectoralAffairsFragment extends BaseFragment implements WarmPromptListener, CommmonStringWithMethNameViewData, CommmonLongViewData, VotelistViewData {
+public class ElectoralAffairsFragment extends BaseFragment implements WarmPromptListener, CommmonStringWithMethNameViewData, VotelistViewData {
 
     @BindView(R.id.toolbar_title)
     TextView toolbarTitle;
@@ -84,7 +83,6 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
     ElectoralAffairsPresenter presenter = new ElectoralAffairsPresenter();
-    TransferPresenter transferpresenter = new TransferPresenter();
     PwdPresenter pwdpresenter = new PwdPresenter();
     String status;
     private String ownerPublicKey;
@@ -179,15 +177,15 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
         tvName.setText(bean.getNickName());
         tvAddress.setText(AppUtlis.getLoc(getContext(), bean.getLocation() + ""));
         String url = bean.getURL();
-        GetDynanicUrl.getData(url, getContext(), new NodeDotJsonViewData() {
+        new SuperNodeListPresenter().getUrlJson(url, this, new NodeDotJsonViewData() {
             @Override
-            public void onGetNodeDotJsonData(NodeInfoBean t) {
+            public void onGetNodeDotJsonData(NodeInfoBean t, String url) {
                 if (t == null || t.getOrg() == null || t.getOrg().getBranding() == null) {
                     return;
                 }
                 String imgUrl = t.getOrg().getBranding().getLogo_256();
                 GlideApp.with(ElectoralAffairsFragment.this).load(imgUrl)
-                        .error(R.mipmap.found_vote_initial).into(ivIcon);
+                        .error(R.mipmap.found_vote_initial_circle).into(ivIcon);
             }
         });
         tvUrl.setText(url);
@@ -210,7 +208,6 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
         presenter.generateCancelProducerPayload(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey, pwd, this);
     }
 
-    String attributes;
 
     @Override
     public void onGetCommonData(String methodname, String data) {
@@ -222,21 +219,15 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
                 if (status.equals("Canceled")) {
                     //提取按钮
                     presenter.createRetrieveDepositTransaction(wallet.getWalletId(), MyWallet.ELA,
-                            available * MyWallet.RATE - 10000, "", "", this);
+                            Arith.sub(Arith.mul(available, MyWallet.RATE_S),"10000").toPlainString(), "", this);
                 } else {
                     //注销按钮
-                    presenter.createCancelProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", data, "", "", false, this);
+                    presenter.createCancelProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", data, "", false, this);
                 }
 
                 break;
             case "createRetrieveDepositTransaction":
             case "createCancelProducerTransaction":
-                attributes = data;
-                //计算手续费
-                transferpresenter.calculateTransactionFee(wallet.getWalletId(), MyWallet.ELA, data, MyWallet.feePerKb, this);
-                break;
-
-            case "updateTransactionFee":
                 pwdpresenter.signTransaction(wallet.getWalletId(), MyWallet.ELA, data, pwd, this);
                 break;
             case "signTransaction":
@@ -263,12 +254,8 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
         }
     }
 
-    @Override
-    public void onGetCommonData(long data) {
-        pwdpresenter.updateTransactionFee(wallet.getWalletId(), MyWallet.ELA, attributes, data, "", this);
-    }
 
-    Long available;
+    String available;
 
     public void getdepositcoin() {
         Map<String, String> map = new HashMap();
@@ -279,7 +266,7 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
                 .subscribe(new Consumer<GetdePositcoinBean>() {
                     @Override
                     public void accept(GetdePositcoinBean dataResponse) {
-                        available = Long.parseLong(dataResponse.getData().getResult().getAvailable());
+                        available = dataResponse.getData().getResult().getAvailable();
                     }
                 }, new Consumer<Throwable>() {
                     @Override
