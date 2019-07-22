@@ -236,7 +236,7 @@
     <string name="allamount">Total Balance：</string>
     <string name="voteuseamount">Vote Balance：</string>
     <string name="update_information">Update Information</string>
-    <string name="vote_again">Vote Again</string>
+    <string name="vote_again">Recast Vote</string>
     <string name="update_successful">The update is successful</string>
     <string name="useutxo">Whether to use voting utxo</string>
     <!--错误码-->
