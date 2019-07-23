@@ -1220,8 +1220,15 @@ func (b *BlockChain) checkActivateProducerTransaction(txn *Transaction,
 		return err
 	}
 
-	if producer.State() != state.Inactive {
-		return errors.New("can not activate this producer")
+	if height < b.chainParams.EnableActivateIllegalHeight {
+		if producer.State() != state.Inactive {
+			return errors.New("can not activate this producer")
+		}
+	} else {
+		if producer.State() != state.Inactive &&
+			producer.State() != state.Illegal {
+			return errors.New("can not activate this producer")
+		}
 	}
 
 	if height > producer.ActivateRequestHeight() &&
@@ -1799,8 +1806,8 @@ func checkCRCArbitratorsSignatures(program *program.Program) error {
 
 	crcArbitrators := DefaultLedger.Arbitrators.GetCRCArbitrators()
 	crcArbitratorsCount := len(crcArbitrators)
-	minSignCount := int(float64(crcArbitratorsCount)*
-		state.MajoritySignRatioNumerator/state.MajoritySignRatioDenominator) + 1
+	minSignCount := int(float64(crcArbitratorsCount) *
+		state.MajoritySignRatioNumerator / state.MajoritySignRatioDenominator) + 1
 	if m < 1 || m > n || n != crcArbitratorsCount || m < minSignCount {
 		fmt.Printf("m:%d n:%d minSignCount:%d crc:  %d", m, n, minSignCount, crcArbitratorsCount)
 		return errors.New("invalid multi sign script code")

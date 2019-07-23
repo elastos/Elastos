@@ -91,8 +91,8 @@ func (h *DPOSHandlerSwitch) SwitchTo(onDuty bool) {
 	h.consensus.SetOnDuty(onDuty)
 }
 
-func (h *DPOSHandlerSwitch) FinishConsensus() {
-	h.proposalDispatcher.FinishConsensus()
+func (h *DPOSHandlerSwitch) FinishConsensus(height uint32, blockHash common.Uint256) {
+	h.proposalDispatcher.FinishConsensus(height, blockHash)
 }
 
 func (h *DPOSHandlerSwitch) ProcessProposal(id peer.PID, p *payload.DPOSProposal) (handled bool) {
@@ -165,27 +165,28 @@ func (h *DPOSHandlerSwitch) ProcessRejectVote(id peer.PID, p *payload.DPOSPropos
 }
 
 func (h *DPOSHandlerSwitch) ResponseGetBlocks(id peer.PID, startBlockHeight, endBlockHeight uint32) {
-	//todo limit max height range (endBlockHeight - startBlockHeight)
-	currentHeight := blockchain.DefaultLedger.Blockchain.GetHeight()
-
-	endHeight := endBlockHeight
-	if currentHeight < endBlockHeight {
-		endHeight = currentHeight
-	}
-	blockConfirms, err := blockchain.DefaultLedger.GetDposBlocks(startBlockHeight, endHeight)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	if currentBlock := h.proposalDispatcher.GetProcessingBlock(); currentBlock != nil {
-		blockConfirms = append(blockConfirms, &types.DposBlock{
-			Block: currentBlock,
-		})
-	}
-
-	msg := &msg.ResponseBlocks{Command: msg.CmdResponseBlocks, BlockConfirms: blockConfirms}
-	h.cfg.Network.SendMessageToPeer(id, msg)
+	// todo limit max height range (endBlockHeight - startBlockHeight)
+	// todo remove me later
+	//currentHeight := blockchain.DefaultLedger.Blockchain.GetHeight()
+	//
+	//endHeight := endBlockHeight
+	//if currentHeight < endBlockHeight {
+	//	endHeight = currentHeight
+	//}
+	//blockConfirms, err := blockchain.DefaultLedger.GetDposBlocks(startBlockHeight, endHeight)
+	//if err != nil {
+	//	log.Error(err)
+	//	return
+	//}
+	//
+	//if currentBlock := h.proposalDispatcher.GetProcessingBlock(); currentBlock != nil {
+	//	blockConfirms = append(blockConfirms, &types.DposBlock{
+	//		Block: currentBlock,
+	//	})
+	//}
+	//
+	//msg := &msg.ResponseBlocks{Command: msg.CmdResponseBlocks, BlockConfirms: blockConfirms}
+	//h.cfg.Network.SendMessageToPeer(id, msg)
 }
 
 func (h *DPOSHandlerSwitch) RequestAbnormalRecovering() {
@@ -212,7 +213,7 @@ func (h *DPOSHandlerSwitch) HelpToRecoverAbnormal(id peer.PID, height uint32) {
 	}
 
 	msg := &msg.ResponseConsensus{Consensus: *status}
-	h.cfg.Network.SendMessageToPeer(id, msg)
+	go h.cfg.Network.SendMessageToPeer(id, msg)
 }
 
 func (h *DPOSHandlerSwitch) RecoverAbnormal(status *msg.ConsensusStatus) {
@@ -237,7 +238,9 @@ func (h *DPOSHandlerSwitch) OnViewChanged(isOnDuty bool) {
 	h.SwitchTo(isOnDuty)
 
 	firstBlockHash, ok := h.cfg.Manager.GetBlockCache().GetFirstArrivedBlockHash()
-	if isOnDuty && !ok {
+	block, existBlock := h.cfg.Manager.GetBlockCache().TryGetValue(firstBlockHash)
+	if isOnDuty && (!ok ||
+		!existBlock || block.Height <= h.proposalDispatcher.GetFinishedHeight()) {
 		log.Warn("[OnViewChanged] firstBlockHash is nil")
 		return
 	}
