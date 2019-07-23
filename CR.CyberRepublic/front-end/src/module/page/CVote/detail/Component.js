@@ -1,16 +1,6 @@
 import React from 'react'
 import { Helmet } from 'react-helmet'
-import {
-  Form,
-  Spin,
-  Button,
-  Input,
-  message,
-  Modal,
-  Anchor,
-  Row,
-  Col
-} from 'antd'
+import { Form, Spin, Button, Input, message, Modal, Anchor } from 'antd'
 import { Link } from 'react-router-dom'
 import I18N from '@/I18N'
 import _ from 'lodash'
