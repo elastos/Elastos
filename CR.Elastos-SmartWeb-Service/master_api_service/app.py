@@ -5,6 +5,7 @@ from flask import Flask, Blueprint
 from master_api_service import settings
 from master_api_service.api.nodes.endpoints.user import ns as nodes_user_namespace
 from master_api_service.api.wallet.endpoints.wallet import ns as nodes_user_namespace
+from master_api_service.api.common.endpoints.common import ns as nodes_user_namespace
 from master_api_service.api.restplus import api
 from master_api_service.database import db
 
