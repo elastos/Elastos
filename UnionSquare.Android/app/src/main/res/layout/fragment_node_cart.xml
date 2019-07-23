@@ -25,7 +25,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="30dp"
-                android:text="@string/percentage_of_votes_cast_online"
+                android:text="@string/vote_qwtpzb"
                 android:textColor="@color/white"
                 android:textSize="13sp" />
 
@@ -36,7 +36,6 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:layout_marginRight="30dp"
-                android:text="35.02%"
                 android:textColor="@color/white"
                 android:textSize="13sp" />
 

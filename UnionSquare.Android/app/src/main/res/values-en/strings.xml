@@ -172,7 +172,6 @@
     <string name="payeeaddrnotnull">Recipient Address mustn\'t be empty</string>
     <string name="transferamountnotnull">Amount mustn\'t be zero</string>
     <string name="future_generations">Select All</string>
-    <string name="percentage_of_votes_cast_online">Voting ratio</string>
     <string name="determine">Confirm</string>
     <string name="cancel">Cancel</string>
     <string name="dialog_text2">Exceeding the voting selection limit, did you select the top 36?</string>
