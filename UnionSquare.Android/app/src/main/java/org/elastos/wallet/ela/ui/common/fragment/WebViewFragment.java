@@ -71,10 +71,10 @@ public class WebViewFragment extends BaseFragment {
         super.onDestroy();
 
         QMUIStatusBarHelper.setStatusBarDarkMode(getActivity());
-        setLanguage();
+       // setLanguage();
     }
 
-    private void setLanguage() {
+   /* private void setLanguage() {
         if (new SPUtil(getContext()).getLanguage() == -1) {
             if (Locale.getDefault().getLanguage().equals("zh")) {
                 new SPUtil(getContext()).setLanguage(0);
@@ -99,5 +99,5 @@ public class WebViewFragment extends BaseFragment {
         Configuration conf = res.getConfiguration();
         conf.locale = myLocale;
         res.updateConfiguration(conf, dm);
-    }
+    }*/
 }

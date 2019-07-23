@@ -2,6 +2,7 @@ package org.elastos.wallet.ela;
 
 import android.content.Context;
 import android.support.multidex.MultiDexApplication;
+import android.webkit.WebView;
 
 import com.blankj.utilcode.util.Utils;
 import com.tencent.bugly.crashreport.CrashReport;
@@ -27,6 +28,7 @@ public class MyApplication extends MultiDexApplication {
     @Override
     public void onCreate() {
         super.onCreate();
+        new WebView(this).destroy();
         myApplication = this;
         initApplicationComponent();
         Utils.init(this);

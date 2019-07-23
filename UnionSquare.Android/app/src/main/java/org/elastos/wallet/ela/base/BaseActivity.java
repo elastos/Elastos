@@ -93,8 +93,7 @@ public abstract class BaseActivity<T extends BaseContract.Basepresenter> extends
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initActivityComponent();
-        int layoutId = getLayoutId();
-        setContentView(layoutId);
+        setContentView(getLayoutId());
         StatusBarUtil.setColor(this, getResources().getColor(R.color.white));
         initInjector();
         attachView();

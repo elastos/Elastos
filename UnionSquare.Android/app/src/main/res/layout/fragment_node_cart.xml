@@ -80,7 +80,7 @@
             android:footerDividersEnabled="false"
             android:headerDividersEnabled="false"
             android:scrollbars="none"
-            android:visibility="gone"></ListView>
+            android:visibility="gone"/>
 
 
         <LinearLayout
@@ -116,7 +116,8 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center|left"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:paddingLeft="@dimen/px40">
 
                 <CheckBox
                     android:id="@+id/sc_checkbox"
@@ -126,7 +127,7 @@
                 <android.support.v7.widget.AppCompatTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
+                    android:gravity="center|left"
                     android:text="@string/future_generations"
                     android:textColor="@color/white"
                     android:textSize="12sp" />
@@ -162,8 +163,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="horizontal">
+                android:gravity="center|left"
+                android:orientation="horizontal"
+                android:paddingLeft="@dimen/px40">
 
 
                 <CheckBox
@@ -187,7 +189,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:gravity="center"
+                android:gravity="center|left"
                 android:text="@string/has_chosen"
                 android:textColor="@color/white"
                 android:textSize="12sp" />
