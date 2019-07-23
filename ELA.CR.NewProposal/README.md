@@ -2,7 +2,7 @@ Elastos ELA
 ===========
 |Travis CI|Go Report Card|
 |:-:|:-:|
-|[![Build Status](https://travis-ci.org/elastos/Elastos.ELA.svg?branch=master)](https://travis-ci.org/elastos/Elastos.ELA)|[![Code Report](https://goreportcard.com/badge/github.com/elastos/Elastos.ELA)](https://goreportcard.com/report/github.com/elastos/Elastos.ELA)|
+|[![Build Status](https://travis-ci.com/elastos/Elastos.ELA.svg?branch=master)](https://travis-ci.com/elastos/Elastos.ELA)|[![Code Report](https://goreportcard.com/badge/github.com/elastos/Elastos.ELA)](https://goreportcard.com/report/github.com/elastos/Elastos.ELA)|
 
 ## Introduction
 
