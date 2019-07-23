@@ -7,6 +7,7 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ErrorChecker.h>
+#include <SDK/Plugin/Transaction/Transaction.h>
 
 #include <string>
 #include <string>
@@ -29,26 +30,28 @@ namespace Elastos {
 		TransactionDataStore::~TransactionDataStore() {
 		}
 
-		bool TransactionDataStore::PutTransaction(const std::string &iso, const TransactionEntity &transactionEntity) {
-			TransactionEntity txEntity;
+		bool TransactionDataStore::PutTransaction(const std::string &iso, const TransactionPtr &transaction) {
+			TransactionPtr tx;
 
-			if (SelectTxByHash(iso, transactionEntity.txHash, txEntity)) {
-				return DoTransaction([&iso, &transactionEntity, this]() {
+			if (SelectTxByHash(iso, transaction->GetHash().GetHex(), tx)) {
+				return DoTransaction([&iso, &transaction, this]() {
 					std::string sql;
 
 					sql = "UPDATE " + TX_TABLE_NAME + " SET "
 					   + TX_BUFF + " = ?, "
 					   + TX_BLOCK_HEIGHT + " = ?, "
 					   + TX_TIME_STAMP + " = ? "
-					   + " WHERE " + TX_COLUMN_ID + " = '" + transactionEntity.txHash + "';";
+					   + " WHERE " + TX_COLUMN_ID + " = '" + transaction->GetHash().GetHex() + "';";
 
 					sqlite3_stmt *stmt;
 					ErrorChecker::CheckCondition(!_sqlite->Prepare(sql, &stmt, nullptr), Error::SqliteError,
 												 "Prepare sql " + sql);
 
-					_sqlite->BindBlob(stmt, 1, transactionEntity.buff, nullptr);
-					_sqlite->BindInt(stmt, 2, transactionEntity.blockHeight);
-					_sqlite->BindInt(stmt, 3, transactionEntity.timeStamp);
+					ByteStream stream;
+					transaction->Serialize(stream);
+					_sqlite->BindBlob(stmt, 1, stream.GetBytes(), nullptr);
+					_sqlite->BindInt(stmt, 2, transaction->GetBlockHeight());
+					_sqlite->BindInt(stmt, 3, transaction->GetTimestamp());
 
 					_sqlite->Step(stmt);
 
@@ -56,7 +59,7 @@ namespace Elastos {
 				});
 			}
 
-			return DoTransaction([&iso, &transactionEntity, this]() {
+			return DoTransaction([&iso, &transaction, this]() {
 				std::string sql;
 
 				sql = "INSERT INTO " + TX_TABLE_NAME + "("
@@ -72,11 +75,13 @@ namespace Elastos {
 				sqlite3_stmt *stmt;
 				ErrorChecker::CheckCondition(!_sqlite->Prepare(sql, &stmt, nullptr), Error::SqliteError,
 											 "Prepare sql " + sql);
+				ByteStream stream;
+				transaction->Serialize(stream);
 
-				_sqlite->BindText(stmt, 1, transactionEntity.txHash, nullptr);
-				_sqlite->BindBlob(stmt, 2, transactionEntity.buff, nullptr);
-				_sqlite->BindInt(stmt, 3, transactionEntity.blockHeight);
-				_sqlite->BindInt(stmt, 4, transactionEntity.timeStamp);
+				_sqlite->BindText(stmt, 1, transaction->GetHash().GetHex(), nullptr);
+				_sqlite->BindBlob(stmt, 2, stream.GetBytes(), nullptr);
+				_sqlite->BindInt(stmt, 3, transaction->GetBlockHeight());
+				_sqlite->BindInt(stmt, 4, transaction->GetTimestamp());
 				_sqlite->BindText(stmt, 5, "", nullptr);
 				_sqlite->BindText(stmt, 6, "", nullptr);
 				_sqlite->BindText(stmt, 7, iso, nullptr);
@@ -122,8 +127,8 @@ namespace Elastos {
 			return count;
 		}
 
-		std::vector<TransactionEntity> TransactionDataStore::GetAllTransactions(const std::string &iso) const {
-			std::vector<TransactionEntity> transactions;
+		std::vector<TransactionPtr> TransactionDataStore::GetAllTransactions(const std::string &iso) const {
+			std::vector<TransactionPtr> transactions;
 
 			DoTransaction([&iso, &transactions, this]() {
 				std::string sql;
@@ -139,18 +144,26 @@ namespace Elastos {
 				ErrorChecker::CheckCondition(!_sqlite->Prepare(sql, &stmt, nullptr), Error::SqliteError,
 											 "Prepare sql " + sql);
 
-				TransactionEntity tx;
 				while (SQLITE_ROW == _sqlite->Step(stmt)) {
-					tx.txHash = _sqlite->ColumnText(stmt, 0);
+					TransactionPtr tx(new Transaction());
+
+					uint256 txHash(_sqlite->ColumnText(stmt, 0));
 
 					const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
 					size_t len = (size_t) _sqlite->ColumnBytes(stmt, 1);
 
-					tx.buff.assign(pdata, pdata + len);
-					tx.blockHeight = (uint32_t) _sqlite->ColumnInt(stmt, 2);
-					tx.timeStamp = (uint32_t) _sqlite->ColumnInt(stmt, 3);
+					ByteStream stream(pdata, len);
+					tx->Deserialize(stream);
+					uint32_t blockHeight = (uint32_t) _sqlite->ColumnInt(stmt, 2);
+					uint32_t timeStamp = (uint32_t) _sqlite->ColumnInt(stmt, 3);
+
+					tx->SetBlockHeight(blockHeight);
+					tx->SetTimestamp(timeStamp);
+
+					ErrorChecker::CheckCondition(txHash != tx->GetHash(), Error::InvalidTransaction, "tx data error");
 
 					transactions.push_back(tx);
+
 				}
 
 				_sqlite->Finalize(stmt);
@@ -209,10 +222,10 @@ namespace Elastos {
 		}
 
 		bool TransactionDataStore::SelectTxByHash(const std::string &iso, const std::string &hash,
-												  TransactionEntity &txEntity) const {
+		                                          TransactionPtr &transactionPtr) const {
 			bool found = false;
 
-			DoTransaction([&iso, &hash, &txEntity, &found, this]() {
+			DoTransaction([&iso, &hash, &transactionPtr, &found, this]() {
 				std::string sql;
 
 				sql = "SELECT "
@@ -229,14 +242,20 @@ namespace Elastos {
 				while (SQLITE_ROW == _sqlite->Step(stmt)) {
 					found = true;
 
-					txEntity.txHash = hash;
-
 					const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 0);
 					size_t len = (size_t) _sqlite->ColumnBytes(stmt, 0);
 
-					txEntity.buff.assign(pdata, pdata + len);
-					txEntity.blockHeight = (uint32_t) _sqlite->ColumnInt(stmt, 1);
-					txEntity.timeStamp = (uint32_t) _sqlite->ColumnInt(stmt, 2);
+					ByteStream stream(pdata, len);
+					transactionPtr->Deserialize(stream);
+
+					uint32_t blockHeight = (uint32_t) _sqlite->ColumnInt(stmt, 1);
+					uint32_t timeStamp = (uint32_t) _sqlite->ColumnInt(stmt, 2);
+
+					transactionPtr->SetBlockHeight(blockHeight);
+					transactionPtr->SetTimestamp(timeStamp);
+
+					ErrorChecker::CheckCondition(hash == transactionPtr->GetHash().GetHex(), Error::InvalidTransaction,
+					                             "tx data error");
 				}
 			});
 

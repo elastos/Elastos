@@ -6,6 +6,9 @@
 
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ErrorChecker.h>
+#include <SDK/Common/ByteStream.h>
+#include <SDK/Plugin/Interface/IMerkleBlock.h>
+#include <SDK/Plugin/Registry.h>
 
 #include <sstream>
 
@@ -25,36 +28,37 @@ namespace Elastos {
 		MerkleBlockDataSource::~MerkleBlockDataSource() {
 		}
 
-		bool MerkleBlockDataSource::PutMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity) {
-			return DoTransaction([&iso, &blockEntity, this]() {
-				this->PutMerkleBlockInternal(iso, blockEntity);
+		bool MerkleBlockDataSource::PutMerkleBlock(const std::string &iso, const MerkleBlockPtr &blockPtr) {
+			return DoTransaction([&iso, &blockPtr, this]() {
+				this->PutMerkleBlockInternal(iso, blockPtr);
 			});
 		}
 
 		bool MerkleBlockDataSource::PutMerkleBlocks(const std::string &iso,
-													const std::vector<MerkleBlockEntity> &blockEntities) {
-			return DoTransaction([&iso, &blockEntities, this]() {
-				for (size_t i = 0; i < blockEntities.size(); ++i) {
-					this->PutMerkleBlockInternal(iso, blockEntities[i]);
+													const std::vector<MerkleBlockPtr> &blocks) {
+			return DoTransaction([&iso, &blocks, this]() {
+				for (size_t i = 0; i < blocks.size(); ++i) {
+					if (blocks[i]->GetHeight() > 0) {
+						this->PutMerkleBlockInternal(iso, blocks[i]);
+					}
 				}
 			});
 		}
 
 		bool
-		MerkleBlockDataSource::PutMerkleBlockInternal(const std::string &iso, const MerkleBlockEntity &blockEntity) {
-			std::stringstream ss;
+		MerkleBlockDataSource::PutMerkleBlockInternal(const std::string &iso, const MerkleBlockPtr &blockPtr) {
+			std::string sql;
 
-			ss << "INSERT INTO " << MB_TABLE_NAME << " (" <<
-			   MB_BUFF << "," <<
-			   MB_HEIGHT << "," <<
-			   MB_ISO <<
-			   ") VALUES (?, ?, ?);";
+			sql = "INSERT INTO " + MB_TABLE_NAME + " (" + MB_BUFF + "," + MB_HEIGHT + "," + MB_ISO + ") VALUES (?, ?, ?);";
 
 			sqlite3_stmt *stmt;
-			ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
-										 "prepare sql " + ss.str());
-			_sqlite->BindBlob(stmt, 1, blockEntity.blockBytes, nullptr);
-			_sqlite->BindInt(stmt, 2, blockEntity.blockHeight);
+			ErrorChecker::CheckCondition(!_sqlite->Prepare(sql, &stmt, nullptr), Error::SqliteError,
+										 "prepare sql " + sql);
+
+			ByteStream stream;
+			blockPtr->Serialize(stream);
+			_sqlite->BindBlob(stmt, 1, stream.GetBytes(), nullptr);
+			_sqlite->BindInt(stmt, 2, blockPtr->GetHeight());
 			_sqlite->BindText(stmt, 3, iso, nullptr);
 
 			_sqlite->Step(stmt);
@@ -62,60 +66,52 @@ namespace Elastos {
 			return true;
 		}
 
-		bool MerkleBlockDataSource::DeleteMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity) {
-			return DoTransaction([&iso, &blockEntity, this]() {
-				std::stringstream ss;
+		bool MerkleBlockDataSource::DeleteMerkleBlock(const std::string &iso, long id) {
+			return DoTransaction([&iso, &id, this]() {
+				std::string sql;
 
-				ss << "DELETE FROM " << MB_TABLE_NAME <<
-				   " WHERE " << MB_COLUMN_ID << " = " << blockEntity.id <<
-				   " AND " << MB_ISO << " = " << "'" << iso << "';";
+				sql = "DELETE FROM " + MB_TABLE_NAME + " WHERE " + MB_COLUMN_ID + " = " + std::to_string(id) + ";";
 
-				ErrorChecker::CheckCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
-											 "exec sql " + ss.str());
+				ErrorChecker::CheckCondition(!_sqlite->exec(sql, nullptr, nullptr), Error::SqliteError,
+											 "exec sql " + sql);
 			});
 		}
 
 		bool MerkleBlockDataSource::DeleteAllBlocks(const std::string &iso) {
 			return DoTransaction([&iso, this]() {
-				std::stringstream ss;
+				std::string sql;
 
-				ss << "DELETE FROM " << MB_TABLE_NAME <<
-				   " WHERE " << MB_ISO << " = '" << iso << "';";
+				sql = "DELETE FROM " + MB_TABLE_NAME + ";";
 
-				ErrorChecker::CheckCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
-											 "exec sql " + ss.str());
+				ErrorChecker::CheckCondition(!_sqlite->exec(sql, nullptr, nullptr), Error::SqliteError,
+											 "exec sql " + sql);
 			});
 		}
 
-		std::vector<MerkleBlockEntity> MerkleBlockDataSource::GetAllMerkleBlocks(const std::string &iso) const {
-			std::vector<MerkleBlockEntity> merkleBlocks;
+		std::vector<MerkleBlockPtr> MerkleBlockDataSource::GetAllMerkleBlocks(const std::string &iso,
+		                                                                      const std::string &pluginType) const {
+			std::vector<MerkleBlockPtr> merkleBlocks;
 
-			DoTransaction([&iso, &merkleBlocks, this]() {
-				MerkleBlockEntity merkleBlock;
-				std::stringstream ss;
-				ss << "SELECT " <<
-				   MB_COLUMN_ID << ", " <<
-				   MB_BUFF << ", " <<
-				   MB_HEIGHT <<
-				   " FROM " << MB_TABLE_NAME <<
-				   " WHERE " << MB_ISO << " = '" << iso << "';";
+			DoTransaction([&iso, &pluginType, &merkleBlocks, this]() {
+
+				std::string sql;
+				sql = "SELECT " + MB_COLUMN_ID + ", " + MB_BUFF + ", " + MB_HEIGHT + " FROM " + MB_TABLE_NAME + ";";
 
 				sqlite3_stmt *stmt;
-				ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
-											 "prepare sql " + ss.str());
+				ErrorChecker::CheckCondition(!_sqlite->Prepare(sql, &stmt, nullptr), Error::SqliteError,
+											 "prepare sql " + sql);
 
 				while (SQLITE_ROW == _sqlite->Step(stmt)) {
-					// id
-					merkleBlock.id = _sqlite->ColumnInt(stmt, 0);
-
+					MerkleBlockPtr merkleBlock(Registry::Instance()->CreateMerkleBlock(pluginType));
 					// blockBytes
 					const uint8_t *pblob = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
 					size_t len = _sqlite->ColumnBytes(stmt, 1);
-
-					merkleBlock.blockBytes.assign(pblob, pblob + len);
+					ByteStream stream(pblob, len);
+					merkleBlock->Deserialize(stream);
 
 					// blockHeight
-					merkleBlock.blockHeight = _sqlite->ColumnInt(stmt, 2);
+					uint32_t blockHeight = _sqlite->ColumnInt(stmt, 2);
+					merkleBlock->SetHeight(blockHeight);
 
 					merkleBlocks.push_back(merkleBlock);
 				}

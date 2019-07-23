@@ -14,24 +14,8 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		struct MerkleBlockEntity {
-			MerkleBlockEntity() :
-				id(0),
-				blockHeight(0)
-			{
-			}
-
-			MerkleBlockEntity(long i, const bytes_t &bytes, uint32_t h) :
-				id(i),
-				blockBytes(bytes),
-				blockHeight(h)
-			{
-			}
-
-			long id;
-			bytes_t blockBytes;
-			uint32_t blockHeight;
-		};
+		class IMerkleBlock;
+		typedef boost::shared_ptr<IMerkleBlock> MerkleBlockPtr;
 
 		class MerkleBlockDataSource : public TableBase {
 
@@ -40,14 +24,14 @@ namespace Elastos {
 			MerkleBlockDataSource(SqliteTransactionType type, Sqlite *sqlite);
 			~MerkleBlockDataSource();
 
-			bool PutMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
-			bool PutMerkleBlocks(const std::string &iso, const std::vector<MerkleBlockEntity> &blockEntities);
-			bool DeleteMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
+			bool PutMerkleBlock(const std::string &iso, const MerkleBlockPtr &blockPtr);
+			bool PutMerkleBlocks(const std::string &iso, const std::vector<MerkleBlockPtr> &blocks);
+			bool DeleteMerkleBlock(const std::string &iso, long id);
 			bool DeleteAllBlocks(const std::string &iso);
-			std::vector<MerkleBlockEntity> GetAllMerkleBlocks(const std::string &iso) const;
+			std::vector<MerkleBlockPtr> GetAllMerkleBlocks(const std::string &iso, const std::string &pluginType) const;
 
 		private:
-			bool PutMerkleBlockInternal(const std::string &iso, const MerkleBlockEntity &blockEntity);
+			bool PutMerkleBlockInternal(const std::string &iso, const MerkleBlockPtr &blockPtr);
 
 
 		private:

@@ -13,6 +13,9 @@
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Wallet/UTXO.h>
+#include <SDK/Plugin/Registry.h>
+#include <SDK/Plugin/Block/MerkleBlock.h>
+#include <SDK/Plugin/ELAPlugin.h>
 
 #include <fstream>
 using namespace Elastos::ElaWallet;
@@ -22,7 +25,7 @@ using namespace Elastos::ElaWallet;
 
 TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 	Log::registerMultiLogger();
-
+	std::string pluginType = "ELA";
 #define DEFAULT_RECORD_CNT 20
 
 	SECTION("Prepare to test") {
@@ -92,17 +95,22 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 	SECTION("Merkle Block test ") {
 #define TEST_MERKLEBLOCK_RECORD_CNT DEFAULT_RECORD_CNT
-
-		static std::vector<MerkleBlockEntity> blocksToSave;
+#ifndef BUILD_SHARED_LIBS
+		REGISTER_MERKLEBLOCKPLUGIN(ELA, getELAPluginComponent);
+#endif
+		static std::vector<MerkleBlockPtr> blocksToSave;
 
 		SECTION("Merkle Block prepare for testing") {
 			for (uint64_t i = 0; i < TEST_MERKLEBLOCK_RECORD_CNT; ++i) {
-				MerkleBlockEntity block;
+				MerkleBlockPtr merkleBlock(Registry::Instance()->CreateMerkleBlock(pluginType));
 
-				block.blockBytes = getRandBytes(40);
-				block.blockHeight = static_cast<uint32_t>(i);
+				merkleBlock->SetHeight(static_cast<uint32_t>(i + 1));
+				merkleBlock->SetTimestamp(getRandUInt32());
+				merkleBlock->SetPrevBlockHash(uint256(getRandBytes(32)));
+				merkleBlock->SetTarget(getRandUInt32());
+				merkleBlock->SetNonce(getRandUInt32());
 
-				blocksToSave.push_back(block);
+				blocksToSave.push_back(merkleBlock);
 			}
 		}
 
@@ -114,11 +122,15 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 		SECTION("Merkle Block read test") {
 			DatabaseManager dbm(DBFILE);
-			std::vector<MerkleBlockEntity> blocksRead = dbm.GetAllMerkleBlocks(ISO);
+			std::vector<MerkleBlockPtr> blocksRead = dbm.GetAllMerkleBlocks(ISO, pluginType);
 			REQUIRE(blocksRead.size() == blocksToSave.size());
 			for (int i = 0; i < blocksRead.size(); ++i) {
-				REQUIRE(blocksToSave[i].blockBytes == blocksRead[i].blockBytes);
-				REQUIRE(blocksRead[i].blockHeight == blocksToSave[i].blockHeight);
+				REQUIRE(blocksToSave[i]->GetHeight() == blocksRead[i]->GetHeight());
+				REQUIRE(blocksToSave[i]->GetTimestamp() == blocksRead[i]->GetTimestamp());
+				REQUIRE(blocksToSave[i]->GetPrevBlockHash() == blocksRead[i]->GetPrevBlockHash());
+				REQUIRE(blocksToSave[i]->GetHash() == blocksRead[i]->GetHash());
+				REQUIRE(blocksToSave[i]->GetTarget() == blocksRead[i]->GetTarget());
+				REQUIRE(blocksToSave[i]->GetNonce() == blocksRead[i]->GetNonce());
 			}
 		}
 
@@ -127,7 +139,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 			REQUIRE(dbm.DeleteAllBlocks(ISO));
 
-			std::vector<MerkleBlockEntity> blocksAfterDelete = dbm.GetAllMerkleBlocks(ISO);
+			std::vector<MerkleBlockPtr> blocksAfterDelete = dbm.GetAllMerkleBlocks(ISO, pluginType);
 			REQUIRE(0 == blocksAfterDelete.size());
 		}
 
@@ -140,24 +152,28 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 		SECTION("Merkle Block read test") {
 			DatabaseManager dbm(DBFILE);
-			std::vector<MerkleBlockEntity> blocksRead = dbm.GetAllMerkleBlocks(ISO);
+			std::vector<MerkleBlockPtr> blocksRead = dbm.GetAllMerkleBlocks(ISO, pluginType);
 			REQUIRE(blocksRead.size() == blocksToSave.size());
 			for (int i = 0; i < blocksRead.size(); ++i) {
-				REQUIRE(blocksRead[i].blockHeight == blocksToSave[i].blockHeight);
-				REQUIRE(blocksToSave[i].blockBytes == blocksRead[i].blockBytes);
+				REQUIRE(blocksToSave[i]->GetHeight() == blocksRead[i]->GetHeight());
+				REQUIRE(blocksToSave[i]->GetTimestamp() == blocksRead[i]->GetTimestamp());
+				REQUIRE(blocksToSave[i]->GetPrevBlockHash() == blocksRead[i]->GetPrevBlockHash());
+				REQUIRE(blocksToSave[i]->GetHash() == blocksRead[i]->GetHash());
+				REQUIRE(blocksToSave[i]->GetTarget() == blocksRead[i]->GetTarget());
+				REQUIRE(blocksToSave[i]->GetNonce() == blocksRead[i]->GetNonce());
 			}
 		}
 
 		SECTION("Merkle Block delete one by one test") {
 			DatabaseManager dbm(DBFILE);
 
-			std::vector<MerkleBlockEntity> blocksBeforeDelete = dbm.GetAllMerkleBlocks(ISO);
+			std::vector<MerkleBlockPtr> blocksBeforeDelete = dbm.GetAllMerkleBlocks(ISO, pluginType);
 
 			for (int i = 0; i < blocksBeforeDelete.size(); ++i) {
-				REQUIRE(dbm.DeleteMerkleBlock(ISO, blocksBeforeDelete[i]));
+				REQUIRE(dbm.DeleteMerkleBlock(ISO, blocksBeforeDelete.size() + i + 1));
 			}
 
-			std::vector<MerkleBlockEntity> blocksAfterDelete = dbm.GetAllMerkleBlocks(ISO);
+			std::vector<MerkleBlockPtr> blocksAfterDelete = dbm.GetAllMerkleBlocks(ISO, pluginType);
 			REQUIRE(0 == blocksAfterDelete.size());
 		}
 	}
@@ -328,27 +344,35 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 	SECTION("Transaction test") {
 #define TEST_TX_RECORD_CNT DEFAULT_RECORD_CNT
-		static std::vector<TransactionEntity> txToSave;
-		static std::vector<TransactionEntity> txToUpdate;
+		static std::vector<TransactionPtr> txToSave;
+		static std::vector<TransactionPtr> txToUpdate;
 
 		SECTION("Transaction prepare for testing") {
 			for (uint64_t i = 0; i < TEST_TX_RECORD_CNT; ++i) {
-				TransactionEntity tx;
+				TransactionPtr tx(new Transaction());
 
-				tx.buff = getRandBytes(35);
-				tx.blockHeight = (uint32_t)rand();
-				tx.timeStamp = (uint32_t)rand();
-				tx.txHash = getRandHexString(64);
+				for (size_t i = 0; i < 2; ++i) {
+					InputPtr input(new TransactionInput());
+					input->SetTxHash(getRanduint256());
+					input->SetIndex(getRandUInt16());
+					input->SetSequence(getRandUInt32());
+					tx->AddInput(input);
+				}
+				for (size_t i = 0; i < 20; ++i) {
+					Address toAddress("EJKPFkAwx7G6dniGMvsb7eG1V8gmhxFU9Z");
+					OutputPtr output(new TransactionOutput(10, toAddress));
+					tx->AddOutput(output);
+				}
+				tx->SetBlockHeight(getRandUInt32());
+				tx->SetTimestamp(getRandUInt32());
 				txToSave.push_back(tx);
 			}
 
 			for (uint64_t i = 0; i < TEST_TX_RECORD_CNT; ++i) {
-				TransactionEntity tx;
-
-				tx.buff = getRandBytes(49);
-				tx.blockHeight = (uint32_t)1234;
-				tx.timeStamp = (uint32_t)12345678;
-				tx.txHash = txToSave[i].txHash;
+				TransactionPtr tx(new Transaction());
+				tx->FromJson(txToSave[i]->ToJson());
+				tx->SetBlockHeight((uint32_t)1234);
+				tx->SetTimestamp((uint32_t)12345678);
 				txToUpdate.push_back(tx);
 			}
 		}
@@ -362,14 +386,18 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 		SECTION("Transaction read test") {
 			DatabaseManager dbm(DBFILE);
-			std::vector<TransactionEntity> readTx = dbm.GetAllTransactions(ISO);
+			std::vector<TransactionPtr> readTx = dbm.GetAllTransactions(ISO);
 			REQUIRE(txToSave.size() == readTx.size());
 
 			for (int i = 0; i < readTx.size(); ++i) {
-				REQUIRE(txToSave[i].buff == readTx[i].buff);
-				REQUIRE(readTx[i].txHash == txToSave[i].txHash);
-				REQUIRE(readTx[i].timeStamp == txToSave[i].timeStamp);
-				REQUIRE(readTx[i].blockHeight == txToSave[i].blockHeight);
+				ByteStream toSaveStream;
+				txToSave[i]->Serialize(toSaveStream);
+				ByteStream readStream;
+				readTx[i]->Serialize(readStream);
+				REQUIRE(readStream.GetBytes() == toSaveStream.GetBytes());
+				REQUIRE(readTx[i]->GetHash() == txToSave[i]->GetHash());
+				REQUIRE(readTx[i]->GetTimestamp() == txToSave[i]->GetTimestamp());
+				REQUIRE(readTx[i]->GetBlockHeight() == txToSave[i]->GetBlockHeight());
 			}
 		}
 
@@ -378,21 +406,26 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 			std::vector<uint256> hashes;
 			for (int i = 0; i < txToUpdate.size(); ++i) {
-				hashes.push_back(uint256(txToUpdate[i].txHash));
+				hashes.push_back(uint256(txToUpdate[i]->GetHash()));
 			}
-			REQUIRE(dbm.UpdateTransaction(hashes, txToUpdate[0].blockHeight, txToUpdate[0].timeStamp));
+			REQUIRE(dbm.UpdateTransaction(hashes, txToUpdate[0]->GetBlockHeight(), txToUpdate[0]->GetTimestamp()));
 		}
 
 		SECTION("Transaction read after update test") {
 			DatabaseManager dbm(DBFILE);
-			std::vector<TransactionEntity> readTx = dbm.GetAllTransactions(ISO);
+			std::vector<TransactionPtr> readTx = dbm.GetAllTransactions(ISO);
 			REQUIRE(TEST_TX_RECORD_CNT == readTx.size());
 
 			for (int i = 0; i < readTx.size(); ++i) {
-				REQUIRE(txToSave[i].buff == readTx[i].buff);
-				REQUIRE(readTx[i].txHash == txToUpdate[i].txHash);
-				REQUIRE(readTx[i].timeStamp == txToUpdate[i].timeStamp);
-				REQUIRE(readTx[i].blockHeight == txToUpdate[i].blockHeight);
+				ByteStream updateStream;
+				txToUpdate[i]->Serialize(updateStream);
+				ByteStream readStream;
+				readTx[i]->Serialize(readStream);
+
+				REQUIRE(readStream.GetBytes() == updateStream.GetBytes());
+				REQUIRE(readTx[i]->GetHash() == txToUpdate[i]->GetHash());
+				REQUIRE(readTx[i]->GetTimestamp() == txToUpdate[i]->GetTimestamp());
+				REQUIRE(readTx[i]->GetBlockHeight() == txToUpdate[i]->GetBlockHeight());
 			}
 		}
 
@@ -400,10 +433,10 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			DatabaseManager dbm(DBFILE);
 
 			for (int i = 0; i < txToUpdate.size(); ++i) {
-				REQUIRE(dbm.DeleteTxByHash(ISO, txToUpdate[i].txHash));
+				REQUIRE(dbm.DeleteTxByHash(ISO, txToUpdate[i]->GetHash().ToString()));
 			}
 
-			std::vector<TransactionEntity> readTx = dbm.GetAllTransactions(ISO);
+			std::vector<TransactionPtr> readTx = dbm.GetAllTransactions(ISO);
 			REQUIRE(0 == readTx.size());
 		}
 

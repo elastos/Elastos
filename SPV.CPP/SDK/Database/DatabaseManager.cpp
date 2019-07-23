@@ -60,7 +60,7 @@ namespace Elastos {
 			return _coinbaseDataStore.Delete(hash);
 		}
 
-		bool DatabaseManager::PutTransaction(const std::string &iso, const TransactionEntity &tx) {
+		bool DatabaseManager::PutTransaction(const std::string &iso, const TransactionPtr &tx) {
 			return _transactionDataStore.PutTransaction(iso, tx);
 		}
 
@@ -72,7 +72,7 @@ namespace Elastos {
 			return _transactionDataStore.GetAllTransactionsCount(iso);
 		}
 
-		std::vector<TransactionEntity> DatabaseManager::GetAllTransactions(const std::string &iso) const {
+		std::vector<TransactionPtr> DatabaseManager::GetAllTransactions(const std::string &iso) const {
 			return _transactionDataStore.GetAllTransactions(iso);
 		}
 
@@ -113,25 +113,25 @@ namespace Elastos {
 			return _peerDataSource.GetAllPeersCount(iso);
 		}
 
-		bool DatabaseManager::PutMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity) {
-			return _merkleBlockDataSource.PutMerkleBlock(iso, blockEntity);
+		bool DatabaseManager::PutMerkleBlock(const std::string &iso, const MerkleBlockPtr &blockPtr) {
+			return _merkleBlockDataSource.PutMerkleBlock(iso, blockPtr);
 		}
 
 		bool DatabaseManager::PutMerkleBlocks(const std::string &iso,
-											  const std::vector<MerkleBlockEntity> &blockEntities) {
-			return _merkleBlockDataSource.PutMerkleBlocks(iso, blockEntities);
+											  const std::vector<MerkleBlockPtr> &blocks) {
+			return _merkleBlockDataSource.PutMerkleBlocks(iso, blocks);
 		}
 
-		bool DatabaseManager::DeleteMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity) {
-			return _merkleBlockDataSource.DeleteMerkleBlock(iso, blockEntity);
+		bool DatabaseManager::DeleteMerkleBlock(const std::string &iso, long id) {
+			return _merkleBlockDataSource.DeleteMerkleBlock(iso, id);
 		}
 
 		bool DatabaseManager::DeleteAllBlocks(const std::string &iso) {
 			return _merkleBlockDataSource.DeleteAllBlocks(iso);
 		}
 
-		std::vector<MerkleBlockEntity> DatabaseManager::GetAllMerkleBlocks(const std::string &iso) const {
-			return _merkleBlockDataSource.GetAllMerkleBlocks(iso);
+		std::vector<MerkleBlockPtr> DatabaseManager::GetAllMerkleBlocks(const std::string &iso, const std::string &pluginType) const {
+			return _merkleBlockDataSource.GetAllMerkleBlocks(iso, pluginType);
 		}
 
 		const boost::filesystem::path &DatabaseManager::GetPath() const {

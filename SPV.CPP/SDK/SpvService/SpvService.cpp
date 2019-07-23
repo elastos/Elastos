@@ -157,15 +157,7 @@ namespace Elastos {
 		}
 
 		void SpvService::onTxAdded(const TransactionPtr &tx) {
-			ByteStream stream;
-			tx->Serialize(stream);
-
-			bytes_t data = stream.GetBytes();
-
-			std::string txHash = tx->GetHash().GetHex();
-
-			TransactionEntity txEntity(data, tx->GetBlockHeight(), tx->GetTimestamp(), txHash);
-			_databaseManager.PutTransaction(ISO, txEntity);
+			_databaseManager.PutTransaction(ISO, tx);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&tx](Wallet::Listener *listener) {
@@ -240,31 +232,18 @@ namespace Elastos {
 				_databaseManager.DeleteAllBlocks(ISO);
 			}
 
-			ByteStream ostream;
-			std::vector<MerkleBlockEntity> merkleBlockList;
-			MerkleBlockEntity blockEntity;
-			for (size_t i = 0; i < blocks.size(); ++i) {
-				if (blocks[i]->GetHeight() == 0)
-					continue;
-
 #ifndef NDEBUG
-				if (blocks.size() == 1) {
-					Log::debug("{} checkpoint ====> ({},  \"{}\", {}, {});",
-							   _peerManager->GetID(),
-							   blocks[i]->GetHeight(),
-							   blocks[i]->GetHash().GetHex(),
-							   blocks[i]->GetTimestamp(),
-							   blocks[i]->GetTarget());
-				}
+			if (blocks.size() == 1) {
+				Log::debug("{} checkpoint ====> ({},  \"{}\", {}, {});",
+				           _peerManager->GetID(),
+				           blocks[0]->GetHeight(),
+				           blocks[0]->GetHash().GetHex(),
+				           blocks[0]->GetTimestamp(),
+				           blocks[0]->GetTarget());
+			}
 #endif
 
-				ostream.Reset();
-				blocks[i]->Serialize(ostream);
-				blockEntity.blockBytes = ostream.GetBytes();
-				blockEntity.blockHeight = blocks[i]->GetHeight();
-				merkleBlockList.push_back(blockEntity);
-			}
-			_databaseManager.PutMerkleBlocks(ISO, merkleBlockList);
+			_databaseManager.PutMerkleBlocks(ISO, blocks);
 
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
 						  [replace, &blocks](PeerManager::Listener *listener) {
@@ -355,15 +334,11 @@ namespace Elastos {
 			std::set<uint256> spentHashes;
 			std::set<std::string> coinBaseHashes;
 
-			std::vector<TransactionEntity> txsEntity = _databaseManager.GetAllTransactions(ISO);
+			std::vector<TransactionPtr> transactions = _databaseManager.GetAllTransactions(ISO);
 
-			for (size_t i = 0; i < txsEntity.size(); ++i) {
-				TransactionPtr tx(new Transaction());
-
-				ByteStream byteStream(txsEntity[i].buff);
-				tx->Deserialize(byteStream);
-				tx->SetBlockHeight(txsEntity[i].blockHeight);
-				tx->SetTimestamp(txsEntity[i].timeStamp);
+			size_t len = transactions.size();
+			for (size_t i = 0; i < len; ++i) {
+				const TransactionPtr &tx = transactions[i];
 
 				if (tx->IsCoinBase()) {
 					coinBaseHashes.insert(tx->GetHash().GetHex());
@@ -400,21 +375,7 @@ namespace Elastos {
 		}
 
 		std::vector<MerkleBlockPtr> SpvService::loadBlocks() {
-			std::vector<MerkleBlockPtr> blocks;
-
-			std::vector<MerkleBlockEntity> blocksEntity = _databaseManager.GetAllMerkleBlocks(ISO);
-
-			for (size_t i = 0; i < blocksEntity.size(); ++i) {
-				MerkleBlockPtr block(Registry::Instance()->CreateMerkleBlock(_pluginTypes));
-				block->SetHeight(blocksEntity[i].blockHeight);
-				ByteStream stream(blocksEntity[i].blockBytes);
-				if (!block->Deserialize(stream)) {
-					Log::error("{} block deserialize fail", _peerManager->GetID());
-				}
-				blocks.push_back(block);
-			}
-
-			return blocks;
+			return _databaseManager.GetAllMerkleBlocks(ISO, _pluginTypes);
 		}
 
 		std::vector<PeerInfo> SpvService::loadPeers() {

@@ -13,27 +13,8 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		struct TransactionEntity {
-			TransactionEntity() :
-				blockHeight(0),
-				timeStamp(0)
-			{
-			}
-
-			TransactionEntity(const bytes_t &buff, uint32_t blockHeight, uint32_t timeStamp,
-							  const std::string &txHash) :
-				buff(buff),
-				blockHeight(blockHeight),
-				timeStamp(timeStamp),
-				txHash(txHash)
-			{
-			}
-
-			bytes_t buff;
-			uint32_t blockHeight;
-			uint32_t timeStamp;
-			std::string txHash;
-		};
+		class Transaction;
+		typedef boost::shared_ptr<Transaction> TransactionPtr;
 
 		class TransactionDataStore : public TableBase {
 		public:
@@ -41,16 +22,16 @@ namespace Elastos {
 			TransactionDataStore(SqliteTransactionType type, Sqlite *sqlite);
 			~TransactionDataStore();
 
-			bool PutTransaction(const std::string &iso, const TransactionEntity &transactionEntity);
+			bool PutTransaction(const std::string &iso, const TransactionPtr &transaction);
 			bool DeleteAllTransactions(const std::string &iso);
 			size_t GetAllTransactionsCount(const std::string &iso) const;
-			std::vector<TransactionEntity> GetAllTransactions(const std::string &iso) const;
+			std::vector<TransactionPtr> GetAllTransactions(const std::string &iso) const;
 			bool UpdateTransaction(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 			bool DeleteTxByHash(const std::string &iso, const std::string &hash);
 			bool DeleteTxByHashes(const std::vector<std::string> &hashes);
 
 		private:
-			bool SelectTxByHash(const std::string &iso, const std::string &hash, TransactionEntity &txEntity) const;
+			bool SelectTxByHash(const std::string &iso, const std::string &hash, TransactionPtr &tx) const;
 
 		private:
 			/*

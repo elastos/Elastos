@@ -35,10 +35,10 @@ namespace Elastos {
 			bool DeleteCoinBase(const uint256 &hash);
 
 			// Transaction's database interface
-			bool PutTransaction(const std::string &iso, const TransactionEntity &tx);
+			bool PutTransaction(const std::string &iso, const TransactionPtr &tx);
 			bool DeleteAllTransactions(const std::string &iso);
 			size_t GetAllTransactionsCount(const std::string &iso) const;
-			std::vector<TransactionEntity> GetAllTransactions(const std::string &iso) const;
+			std::vector<TransactionPtr> GetAllTransactions(const std::string &iso) const;
 			bool UpdateTransaction(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 			bool DeleteTxByHash(const std::string &iso, const std::string &hash);
 			bool DeleteTxByHashes(const std::vector<std::string> &hashes);
@@ -52,11 +52,11 @@ namespace Elastos {
 			std::vector<PeerEntity> GetAllPeers(const std::string &iso) const;
 
 			// MerkleBlock's database interface
-			bool PutMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
-			bool PutMerkleBlocks(const std::string &iso, const std::vector<MerkleBlockEntity> &blockEntities);
-			bool DeleteMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
+			bool PutMerkleBlock(const std::string &iso, const MerkleBlockPtr &blockPtr);
+			bool PutMerkleBlocks(const std::string &iso, const std::vector<MerkleBlockPtr> &blocks);
+			bool DeleteMerkleBlock(const std::string &iso, long id);
 			bool DeleteAllBlocks(const std::string &iso);
-			std::vector<MerkleBlockEntity> GetAllMerkleBlocks(const std::string &iso) const;
+			std::vector<MerkleBlockPtr> GetAllMerkleBlocks(const std::string &iso, const std::string &pluginType) const;
 
 			// Asset's database interface
 			bool PutAsset(const std::string &iso, const AssetEntity &asset);

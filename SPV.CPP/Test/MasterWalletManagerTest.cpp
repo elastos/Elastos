@@ -1399,37 +1399,37 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 		Key key = HDKeychain(bytes).getChild(keyPath);
 
 		int txCount = 20;
-		std::vector<Transaction> txlist;
+		std::vector<TransactionPtr> txlist;
 		for (int i = 0; i < txCount; ++i) {
-			Transaction tx;
-			tx.SetVersion(Transaction::TxVersion::Default);
-			tx.SetLockTime(getRandUInt32());
-			tx.SetBlockHeight(i + 1);
-			tx.SetTimestamp(getRandUInt32());
-			tx.SetTransactionType(Transaction::transferAsset);
-			tx.SetPayloadVersion(getRandUInt8());
-			tx.SetFee(getRandUInt64());
+			TransactionPtr tx(new Transaction());
+			tx->SetVersion(Transaction::TxVersion::Default);
+			tx->SetLockTime(getRandUInt32());
+			tx->SetBlockHeight(i + 1);
+			tx->SetTimestamp(getRandUInt32());
+			tx->SetTransactionType(Transaction::transferAsset);
+			tx->SetPayloadVersion(getRandUInt8());
+			tx->SetFee(getRandUInt64());
 
 			for (size_t i = 0; i < 1; ++i) {
 				InputPtr input(new TransactionInput());
 				input->SetTxHash(getRanduint256());
 				input->SetIndex(getRandUInt16());
 				input->SetSequence(getRandUInt32());
-				tx.AddInput(input);
+				tx->AddInput(input);
 
 				Address address(PrefixStandard, key.PubKey());
 				ProgramPtr program(new Program(keyPath, address.RedeemScript(), bytes_t()));
-				tx.AddUniqueProgram(program);
+				tx->AddUniqueProgram(program);
 			}
 
 			for (size_t i = 0; i < 20; ++i) {
 				Address toAddress(PrefixStandard, key.PubKey());
 				OutputPtr output(new TransactionOutput(10, toAddress));
-				tx.AddOutput(output);
+				tx->AddOutput(output);
 			}
 
-			uint256 md = tx.GetShaData();
-			const std::vector<ProgramPtr> &programs = tx.GetPrograms();
+			uint256 md = tx->GetShaData();
+			const std::vector<ProgramPtr> &programs = tx->GetPrograms();
 			for (size_t i = 0; i < programs.size(); ++i) {
 				bytes_t parameter = key.Sign(md);
 				ByteStream stream;
@@ -1438,12 +1438,11 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 			}
 
 			ByteStream stream;
-			tx.Serialize(stream);
+			tx->Serialize(stream);
 			bytes_t data = stream.GetBytes();
-			std::string txHash = tx.GetHash().GetHex();
+			std::string txHash = tx->GetHash().GetHex();
 
-			TransactionEntity txEntity(data, tx.GetBlockHeight(), tx.GetTimestamp(), txHash);
-			dm.PutTransaction(iso, txEntity);
+			dm.PutTransaction(iso, tx);
 
 			txlist.push_back(tx);
 		}
@@ -1454,28 +1453,28 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 		//transfer to another address
 		BigInt transferAmount(2005);
 		BigInt totalInput(0);
-		Transaction tx;
-		tx.SetVersion(Transaction::TxVersion::Default);
-		tx.SetLockTime(getRandUInt32());
-		tx.SetBlockHeight(getRandUInt32());
-		tx.SetTimestamp(getRandUInt32());
-		tx.SetTransactionType(Transaction::transferAsset);
-		tx.SetPayloadVersion(getRandUInt8());
-		tx.SetFee(getRandUInt64());
+		TransactionPtr tx(new Transaction());
+		tx->SetVersion(Transaction::TxVersion::Default);
+		tx->SetLockTime(getRandUInt32());
+		tx->SetBlockHeight(getRandUInt32());
+		tx->SetTimestamp(getRandUInt32());
+		tx->SetTransactionType(Transaction::transferAsset);
+		tx->SetPayloadVersion(getRandUInt8());
+		tx->SetFee(getRandUInt64());
 
 		for (size_t i = 0; i < txCount; ++i) {
-			for (size_t j = 0; j < txlist[i].GetOutputs().size(); ++j) {
+			for (size_t j = 0; j < txlist[i]->GetOutputs().size(); ++j) {
 				InputPtr input(new TransactionInput());
-				input->SetTxHash(txlist[i].GetHash());
+				input->SetTxHash(txlist[i]->GetHash());
 				input->SetIndex(j);
 				input->SetSequence(getRandUInt32());
-				tx.AddInput(input);
+				tx->AddInput(input);
 
-				totalInput +=  txlist[i].GetOutputs()[j]->Amount();
+				totalInput +=  txlist[i]->GetOutputs()[j]->Amount();
 
 				Address address(PrefixStandard, key.PubKey());
 				ProgramPtr program(new Program(keyPath, address.RedeemScript(), bytes_t()));
-				tx.AddUniqueProgram(program);
+				tx->AddUniqueProgram(program);
 				if (totalInput > transferAmount) {
 					break;
 				}
@@ -1487,15 +1486,15 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 		BigInt fee = totalInput - transferAmount;
 		Address toAddress("Ed8ZSxSB98roeyuRZwwekrnRqcgnfiUDeQ");
 		OutputPtr output(new TransactionOutput(transferAmount, toAddress));
-		tx.AddOutput(output);
+		tx->AddOutput(output);
 		if (fee > 0) {
 			Address change(PrefixStandard, key.PubKey());
 			OutputPtr output(new TransactionOutput(fee, toAddress));
-			tx.AddOutput(output);
+			tx->AddOutput(output);
 		}
 
-		uint256 md = tx.GetShaData();
-		const std::vector<ProgramPtr> &programs = tx.GetPrograms();
+		uint256 md = tx->GetShaData();
+		const std::vector<ProgramPtr> &programs = tx->GetPrograms();
 		for (size_t i = 0; i < programs.size(); ++i) {
 			bytes_t parameter = key.Sign(md);
 			ByteStream stream;
@@ -1504,12 +1503,11 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 		}
 
 		ByteStream stream;
-		tx.Serialize(stream);
+		tx->Serialize(stream);
 		bytes_t data = stream.GetBytes();
-		std::string txHash = tx.GetHash().GetHex();
+		std::string txHash = tx->GetHash().GetHex();
 
-		TransactionEntity txEntity(data, tx.GetBlockHeight(), tx.GetTimestamp(), txHash);
-		dm.PutTransaction(iso, txEntity);
+		dm.PutTransaction(iso, tx);
 
 		REQUIRE(dm.GetAllTransactions(iso).size() == txCount + 1);
 
