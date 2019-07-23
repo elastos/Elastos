@@ -83,7 +83,7 @@ type NetworkEventListener interface {
 	OnRecoverTimeout()
 
 	OnBlockReceived(b *types.Block, confirmed bool)
-	OnConfirmReceived(p *payload.Confirm)
+	OnConfirmReceived(p *payload.Confirm, height uint32)
 	OnIllegalBlocksTxReceived(i *payload.DPOSIllegalBlocks)
 	OnSidechainIllegalEvidenceReceived(s *payload.SidechainIllegalData)
 	OnInactiveArbitratorsReceived(id dpeer.PID, tx *types.Transaction)
@@ -214,8 +214,8 @@ func (d *DPOSManager) ProcessHigherBlock(b *types.Block) {
 	}
 }
 
-func (d *DPOSManager) ConfirmBlock() {
-	d.handler.FinishConsensus()
+func (d *DPOSManager) ConfirmBlock(height uint32, blockHash common.Uint256) {
+	d.handler.FinishConsensus(height, blockHash)
 	d.notHandledProposal = make(map[string]struct{})
 }
 
@@ -309,7 +309,7 @@ func (d *DPOSManager) OnInv(id dpeer.PID, blockHash common.Uint256) {
 	log.Info("[ProcessInv] send getblock:", blockHash.String())
 	d.limitMap(d.requestedBlocks, maxRequestedBlocks)
 	d.requestedBlocks[blockHash] = struct{}{}
-	d.network.SendMessageToPeer(id, dmsg.NewGetBlock(blockHash))
+	go d.network.SendMessageToPeer(id, dmsg.NewGetBlock(blockHash))
 }
 
 func (d *DPOSManager) isBlockExist(blockHash common.Uint256) bool {
@@ -322,7 +322,7 @@ func (d *DPOSManager) OnGetBlock(id dpeer.PID, blockHash common.Uint256) {
 		return
 	}
 	if block, err := d.getBlock(blockHash); err == nil {
-		d.network.SendMessageToPeer(id, msg.NewBlock(block))
+		go d.network.SendMessageToPeer(id, msg.NewBlock(block))
 	}
 }
 
@@ -479,7 +479,7 @@ func (d *DPOSManager) OnBlockReceived(b *types.Block, confirmed bool) {
 	defer log.Info("[OnBlockReceived] end")
 
 	if confirmed {
-		d.ConfirmBlock()
+		d.ConfirmBlock(b.Height, b.Hash())
 		d.changeHeight()
 		d.dispatcher.illegalMonitor.CleanByBlock(b)
 		log.Info("[OnBlockReceived] received confirmed block")
@@ -500,20 +500,21 @@ func (d *DPOSManager) OnBlockReceived(b *types.Block, confirmed bool) {
 		}
 	}
 
-	if blockchain.DefaultLedger.Blockchain.GetHeight() < b.Height { //new height block coming
+	if b.Height > blockchain.DefaultLedger.Blockchain.GetHeight() &&
+		b.Height > d.dispatcher.GetFinishedHeight() { //new height block coming
 		d.ProcessHigherBlock(b)
 	} else {
 		log.Warn("a.Leger.LastBlock.Height", blockchain.DefaultLedger.Blockchain.GetHeight(), "b.Height", b.Height)
 	}
 }
 
-func (d *DPOSManager) OnConfirmReceived(p *payload.Confirm) {
+func (d *DPOSManager) OnConfirmReceived(p *payload.Confirm, height uint32) {
 	log.Info("[OnConfirmReceived] started, hash:", p.Proposal.BlockHash)
 	defer log.Info("[OnConfirmReceived] end")
 	if !d.isCurrentArbiter() {
 		return
 	}
-	d.ConfirmBlock()
+	d.ConfirmBlock(height, p.Proposal.BlockHash)
 	d.changeHeight()
 }
 
@@ -615,7 +616,7 @@ func (d *DPOSManager) OnRequestProposal(id dpeer.PID, hash common.Uint256) {
 	currentProposal := d.dispatcher.GetProcessingProposal()
 	if currentProposal != nil {
 		responseProposal := &dmsg.Proposal{Proposal: *currentProposal}
-		d.network.SendMessageToPeer(id, responseProposal)
+		go d.network.SendMessageToPeer(id, responseProposal)
 	}
 }
 
@@ -637,21 +638,23 @@ func (d *DPOSManager) changeOnDuty() {
 
 func (d *DPOSManager) processHeartBeat(id dpeer.PID, height uint32) {
 	if d.tryRequestBlocks(id, height) {
-		log.Info("Found higher block, requesting it.")
+		log.Info("Found higher block.")
 	}
 }
 
 func (d *DPOSManager) tryRequestBlocks(id dpeer.PID, sourceHeight uint32) bool {
-	height := blockchain.DefaultLedger.Blockchain.GetHeight()
-	if sourceHeight > height {
-		m := &dmsg.GetBlocks{
-			StartBlockHeight: height + 1,
-			EndBlockHeight:   sourceHeight}
-		d.network.SendMessageToPeer(id, m)
-
-		return true
-	}
+	// todo remove me later
 	return false
+	//height := blockchain.DefaultLedger.Blockchain.GetHeight()
+	//if sourceHeight > height {
+	//	m := &dmsg.GetBlocks{
+	//		StartBlockHeight: height + 1,
+	//		EndBlockHeight:   sourceHeight}
+	//	d.network.SendMessageToPeer(id, m)
+	//
+	//	return true
+	//}
+	//return false
 }
 
 func (d *DPOSManager) getBlock(blockHash common.Uint256) (*types.Block, error) {

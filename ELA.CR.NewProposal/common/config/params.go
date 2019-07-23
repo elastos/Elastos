@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package config
 
@@ -144,35 +144,36 @@ var DefaultParams = Params{
 		"02b95b000f087a97e988c24331bf6769b4a75e4b7d5d2a38105092a3aa841be33b",
 		"02a0aa9eac0e168f3474c2a0d04e50130833905740a5270e8a44d6c6e85cf6d98c",
 	},
-	PowLimit:                 powLimit,
-	PowLimitBits:             0x1f0008ff,
-	TargetTimespan:           24 * time.Hour,  // 24 hours
-	TargetTimePerBlock:       2 * time.Minute, // 2 minute
-	AdjustmentFactor:         4,               // 25% less, 400% more
-	RewardPerBlock:           rewardPerBlock(2 * time.Minute),
-	CoinbaseMaturity:         100,
-	MinTransactionFee:        100,
-	MinCrossChainTxFee:       10000,
-	CheckAddressHeight:       88812,
-	VoteStartHeight:          290000,
-	CRCOnlyDPOSHeight:        343400,
-	PublicDPOSHeight:         402680,
-	CRVotingStartHeight:      1800000, // todo correct me when height has been confirmed
-	CRCommitteeStartHeight:   2000000, // todo correct me when height has been confirmed
-	ToleranceDuration:        5 * time.Second,
-	MaxInactiveRounds:        720 * 2,
-	InactivePenalty:          0, //there will be no penalty in this version
-	EmergencyInactivePenalty: 0, //there will be no penalty in this version
-	GeneralArbiters:          24,
-	CandidateArbiters:        72,
-	PreConnectOffset:         360,
-	CheckPointNoFlatFile:     false,
-	CRMemberCount:            12,
-	CRVotingPeriod:           30 * 720,
-	CRDutyPeriod:             365 * 720,
-	EnableUtxoDB:             false,
+	PowLimit:                    powLimit,
+	PowLimitBits:                0x1f0008ff,
+	TargetTimespan:              24 * time.Hour,  // 24 hours
+	TargetTimePerBlock:          2 * time.Minute, // 2 minute
+	AdjustmentFactor:            4,               // 25% less, 400% more
+	RewardPerBlock:              rewardPerBlock(2 * time.Minute),
+	CoinbaseMaturity:            100,
+	MinTransactionFee:           100,
+	MinCrossChainTxFee:          10000,
+	CheckAddressHeight:          88812,
+	VoteStartHeight:             290000,
+	CRCOnlyDPOSHeight:           343400,
+	PublicDPOSHeight:            402680,
+	EnableActivateIllegalHeight: 439000,
+	CRVotingStartHeight:         1800000, // todo correct me when height has been confirmed
+	CRCommitteeStartHeight:      2000000, // todo correct me when height has been confirmed
+	ToleranceDuration:           5 * time.Second,
+	MaxInactiveRounds:           720 * 2,
+	InactivePenalty:             0, //there will be no penalty in this version
+	EmergencyInactivePenalty:    0, //there will be no penalty in this version
+	GeneralArbiters:             24,
+	CandidateArbiters:           72,
+	PreConnectOffset:            360,
+	CheckPointNoFlatFile:        false,
+	CRMemberCount:               12,
+	CRVotingPeriod:              30 * 720,
+	CRDutyPeriod:                365 * 720,
+	EnableUtxoDB:                false,
 	CkpManager: checkpoint.NewManager(&checkpoint.Config{
-		EnableHistory: false,
+		EnableHistory:      false,
 		HistoryStartHeight: uint32(0),
 	}),
 }
@@ -219,8 +220,9 @@ func (p *Params) TestNet() *Params {
 	copy.VoteStartHeight = 200000
 	copy.CRCOnlyDPOSHeight = 246700
 	copy.PublicDPOSHeight = 300000
-	copy.CRVotingStartHeight = 900000     // todo correct me when height has been confirmed
-	copy.CRCommitteeStartHeight = 1000000 // todo correct me when height has been confirmed
+	copy.CRVotingStartHeight = 900000          // todo correct me when height has been confirmed
+	copy.CRCommitteeStartHeight = 1000000      // todo correct me when height has been confirmed
+	copy.EnableActivateIllegalHeight = 1000000 //todo correct me later
 	return &copy
 }
 
@@ -267,8 +269,9 @@ func (p *Params) RegNet() *Params {
 	copy.VoteStartHeight = 170000
 	copy.CRCOnlyDPOSHeight = 211000
 	copy.PublicDPOSHeight = 234000
-	copy.CRVotingStartHeight = 900000     // todo correct me when height has been confirmed
-	copy.CRCommitteeStartHeight = 1000000 // todo correct me when height has been confirmed
+	copy.CRVotingStartHeight = 900000          // todo correct me when height has been confirmed
+	copy.CRCommitteeStartHeight = 1000000      // todo correct me when height has been confirmed
+	copy.EnableActivateIllegalHeight = 1000000 //todo correct me later
 	return &copy
 }
 
@@ -367,6 +370,10 @@ type Params struct {
 
 	// CRCommitteeStartHeight defines the height of CR Committee started.
 	CRCommitteeStartHeight uint32
+
+	// PublicDPOSHeight defines the start height to enable activate illegal
+	// producer though activate tx
+	EnableActivateIllegalHeight uint32
 
 	// CRCArbiters defines the fixed CRC arbiters producing the block.
 	CRCArbiters []string

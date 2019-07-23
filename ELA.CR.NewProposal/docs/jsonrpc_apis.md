@@ -774,7 +774,50 @@ Response:
 }
 ```
 
-### createauxblock
+#### getmininginfo
+
+description: returns a json object containing mining-related information 
+
+parameters: none
+
+results:
+
+| name              | type      | description                                  |
+| ----------------- | --------- | -------------------------------------------- |
+| blocks            | integer   | the current block |
+| currentblocktx    | integer   | the number of block transactions of the last assembled block |
+| difficulty        | string    | the current difficulty |
+| networkhashps     | string    | the network hashes per second |
+| pooledtx          | integer   | the size of the mempool |
+| chain             | string    | current network name |
+
+
+argument sample:
+```json
+{
+  "method":"getmininginfo",
+  "params":{}
+}
+```
+
+result sample:
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "blocks": 397720,
+        "currentblocktx": 7,
+        "difficulty": "1553768014955882",
+        "networkhashps": "27618978773646499814",
+        "pooledtx": 0,
+        "chain": "mainnet"
+    }
+}
+```
+
+#### createauxblock
 
 Generate an auxiliary block
 
@@ -1270,7 +1313,7 @@ Response:
   "id": null,
   "jsonrpc": "2.0",
   "result": {
-    "blockhash": "65fd07f4069a1ca6833d38e0baa9b0b4a9bac35131feb5c363bd2fb99f8d06d8"
+    "blockhash": "65fd07f4069a1ca6833d38e0baa9b0b4a9bac35131feb5c363bd2fb99f8d06d8",
     "sponsor": "024ac1cdf73e3cbe88843b2d7279e6afdc26fc71d221f28cfbecbefb2a48d48304",
     "viewoffset": 0,
     "votes": [
@@ -1330,7 +1373,7 @@ Response:
   "id": null,
   "jsonrpc": "2.0",
   "result": {
-    "blockhash": "65fd07f4069a1ca6833d38e0baa9b0b4a9bac35131feb5c363bd2fb99f8d06d8"
+    "blockhash": "65fd07f4069a1ca6833d38e0baa9b0b4a9bac35131feb5c363bd2fb99f8d06d8",
     "sponsor": "024ac1cdf73e3cbe88843b2d7279e6afdc26fc71d221f28cfbecbefb2a48d48304",
     "viewoffset": 0,
     "votes": [

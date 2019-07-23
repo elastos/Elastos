@@ -59,7 +59,7 @@ func (h *DPOSNormalHandler) tryGetCurrentProposal(id peer.PID, p *payload.DPOSPr
 	currentProposal := h.proposalDispatcher.GetProcessingProposal()
 	if currentProposal == nil {
 		requestProposal := &msg.RequestProposal{ProposalHash: p.ProposalHash}
-		h.cfg.Network.SendMessageToPeer(id, requestProposal)
+		go h.cfg.Network.SendMessageToPeer(id, requestProposal)
 		return common.Uint256{}, false
 	}
 	return currentProposal.Hash(), true
