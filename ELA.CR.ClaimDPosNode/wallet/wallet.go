@@ -19,10 +19,6 @@ import (
 	"github.com/elastos/Elastos.ELA/utils"
 )
 
-var (
-	addressBook = make(map[string]*AddressInfo, 0)
-)
-
 type AddressInfo struct {
 	address string
 	code    []byte
@@ -34,7 +30,6 @@ type Wallet struct {
 }
 
 func (w *Wallet) LoadAddresses() error {
-	addrBook := make(map[string]*AddressInfo, 0)
 	storeAddresses, err := w.LoadAddressData()
 	if err != nil {
 		return err
@@ -44,13 +39,11 @@ func (w *Wallet) LoadAddresses() error {
 		if err != nil {
 			return err
 		}
-		addressInfo := &AddressInfo{
+		SetWalletAccount(&AddressInfo{
 			address: addressData.Address,
 			code:    code,
-		}
-		addrBook[addressData.Address] = addressInfo
+		})
 	}
-	addressBook = addrBook
 
 	return nil
 }
@@ -73,10 +66,10 @@ func (w *Wallet) ImportPubkey(pubKey []byte, enableUtxoDB bool) error {
 		return err
 	}
 
-	addressBook[address] = &AddressInfo{
+	SetWalletAccount(&AddressInfo{
 		address: address,
 		code:    sc.Code,
-	}
+	})
 
 	if enableUtxoDB {
 		return nil
@@ -95,10 +88,10 @@ func (w *Wallet) ImportAddress(address string, enableUtxoDB bool) error {
 		return err
 	}
 
-	addressBook[address] = &AddressInfo{
+	SetWalletAccount(&AddressInfo{
 		address: address,
 		code:    nil,
-	}
+	})
 
 	if enableUtxoDB {
 		return nil
@@ -114,12 +107,12 @@ func (w *Wallet) ListUnspent(address string, enableUtxoDB bool) (map[common.Uint
 		if err != nil {
 			return nil, err
 		}
-		unspents, err := Store.GetUnspentsFromProgramHash(*programHash)
+		unspent, err := Store.GetUnspentsFromProgramHash(*programHash)
 		if err != nil {
 			return nil, err
 		}
 
-		return unspents, nil
+		return unspent, nil
 	}
 
 	coins := w.ListCoins(address)
@@ -131,10 +124,10 @@ func (w *Wallet) ListUnspent(address string, enableUtxoDB bool) (map[common.Uint
 			Value: coin.Output.Value,
 		})
 	}
-	unspents := make(map[common.Uint256][]*blockchain.UTXO, 0)
-	unspents[*account.SystemAssetID] = utxos
+	unspent := make(map[common.Uint256][]*blockchain.UTXO, 0)
+	unspent[*account.SystemAssetID] = utxos
 
-	return unspents, nil
+	return unspent, nil
 }
 
 func (w *Wallet) RescanWallet() error {
