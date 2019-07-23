@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package main
 
@@ -151,6 +151,10 @@ func loadConfigParams(cfg *config.Configuration) (*config.Configuration, error) 
 			EnableHistory:      cfg.EnableHistory,
 			HistoryStartHeight: cfg.HistoryStartHeight,
 		})
+	}
+	if cfg.EnableActivateIllegalHeight > 0 {
+		activeNetParams.EnableActivateIllegalHeight =
+			cfg.EnableActivateIllegalHeight
 	}
 
 	// When arbiter service enabled, IP address must be set.
