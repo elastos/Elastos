@@ -39,7 +39,7 @@ deploy:
   provider: GitHub
   artifacts:
   auth_token:
-    secure: Ydv3jxxAP6HvexomaFRj4cXpoUomi/NfumB/eWeGW2Qt/qA7xLdq+EXeQpdpVfi+
+    secure: eGlLMblbcB7nUDOMpJLphUAca1J0IipkAKgvIG4uNVos4y/ykyro1PGTdxjyyoMp
   draft: false
   prerelease: false
   on:
