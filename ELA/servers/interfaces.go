@@ -820,18 +820,17 @@ func GetAssetByHash(param Params) map[string]interface{} {
 }
 
 func GetBalanceByAddr(param Params) map[string]interface{} {
-	str, ok := param.String("addr")
+	address, ok := param.String("addr")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	programHash, err := common.Uint168FromAddress(str)
+	unspent, err := Wallet.ListUnspent(address, Config.EnableUtxoDB)
 	if err != nil {
-		return ResponsePack(InvalidParams, "")
+		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 	}
-	unspends, err := Store.GetUnspentsFromProgramHash(*programHash)
 	var balance common.Fixed64 = 0
-	for _, u := range unspends {
+	for _, u := range unspent {
 		for _, v := range u {
 			balance = balance + v.Value
 		}
@@ -840,16 +839,10 @@ func GetBalanceByAddr(param Params) map[string]interface{} {
 }
 
 func GetBalanceByAsset(param Params) map[string]interface{} {
-	addr, ok := param.String("addr")
+	address, ok := param.String("addr")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
-
-	programHash, err := common.Uint168FromAddress(addr)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
-
 	assetIDStr, ok := param.String("assetid")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
@@ -863,9 +856,12 @@ func GetBalanceByAsset(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	unspents, err := Store.GetUnspentsFromProgramHash(*programHash)
+	unspent, err := Wallet.ListUnspent(address, Config.EnableUtxoDB)
+	if err != nil {
+		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
+	}
 	var balance common.Fixed64 = 0
-	for k, u := range unspents {
+	for k, u := range unspent {
 		for _, v := range u {
 			if assetID.IsEqual(k) {
 				balance = balance + v.Value
@@ -880,21 +876,20 @@ func GetReceivedByAddress(param Params) map[string]interface{} {
 	if !ok {
 		return ResponsePack(InvalidParams, "need a parameter named address")
 	}
-	programHash, err := common.Uint168FromAddress(address)
+
+	unspent, err := Wallet.ListUnspent(address, Config.EnableUtxoDB)
 	if err != nil {
-		return ResponsePack(InvalidParams, "Invalid address: "+address)
-	}
-	UTXOsWithAssetID, err := Store.GetUnspentsFromProgramHash(*programHash)
-	if err != nil {
-		return ResponsePack(InvalidParams, err)
-	}
-	UTXOs := UTXOsWithAssetID[config.ELAAssetID]
-	var totalValue common.Fixed64
-	for _, unspent := range UTXOs {
-		totalValue += unspent.Value
+		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 	}
 
-	return ResponsePack(Success, totalValue.String())
+	var balance common.Fixed64 = 0
+	for _, u := range unspent {
+		for _, v := range u {
+			balance = balance + v.Value
+		}
+	}
+
+	return ResponsePack(Success, balance.String())
 }
 
 func GetUTXOsByAmount(param Params) map[string]interface{} {
@@ -913,13 +908,9 @@ func GetUTXOsByAmount(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidParams, "invalid amount!")
 	}
-	programHash, err := common.Uint168FromAddress(address)
+	unspent, err := Wallet.ListUnspent(address, Config.EnableUtxoDB)
 	if err != nil {
-		return ResponsePack(InvalidParams, "invalid address: "+address)
-	}
-	unspents, err := Store.GetUnspentsFromProgramHash(*programHash)
-	if err != nil {
-		return ResponsePack(InvalidParams, "cannot get asset with program")
+		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 	}
 	utxoType := "mixed"
 	if t, ok := param.String("utxotype"); ok {
@@ -931,7 +922,7 @@ func GetUTXOsByAmount(param Params) map[string]interface{} {
 		}
 	}
 	totalAmount := common.Fixed64(0)
-	for _, unspent := range unspents[config.ELAAssetID] {
+	for _, unspent := range unspent[config.ELAAssetID] {
 		if totalAmount >= *amount {
 			break
 		}
@@ -1019,12 +1010,12 @@ func ListUnspent(param Params) map[string]interface{} {
 		}
 	}
 	for _, address := range addresses {
-		unspents, err := Wallet.ListUnspent(address, Config.EnableUtxoDB)
+		unspent, err := Wallet.ListUnspent(address, Config.EnableUtxoDB)
 		if err != nil {
-			return ResponsePack(InvalidParams, "cannot get asset with program")
+			return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 		}
 
-		for _, unspent := range unspents[config.ELAAssetID] {
+		for _, unspent := range unspent[config.ELAAssetID] {
 			tx, height, err := Store.GetTransaction(unspent.TxID)
 			if err != nil {
 				return ResponsePack(InternalError,
@@ -1298,15 +1289,11 @@ func ImportPubkey(param Params) map[string]interface{} {
 }
 
 func GetUnspends(param Params) map[string]interface{} {
-	addr, ok := param.String("addr")
+	address, ok := param.String("addr")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	programHash, err := common.Uint168FromAddress(addr)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
 	type UTXOUnspentInfo struct {
 		TxID  string `json:"Txid"`
 		Index uint32 `json:"Index"`
@@ -1318,9 +1305,12 @@ func GetUnspends(param Params) map[string]interface{} {
 		Utxo      []UTXOUnspentInfo `json:"Utxo"`
 	}
 	var results []Result
-	unspends, err := Store.GetUnspentsFromProgramHash(*programHash)
 
-	for k, u := range unspends {
+	unspent, err := Wallet.ListUnspent(address, Config.EnableUtxoDB)
+	if err != nil {
+		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
+	}
+	for k, u := range unspent {
 		asset, err := Store.GetAsset(k)
 		if err != nil {
 			return ResponsePack(InternalError, "")
@@ -1737,14 +1727,18 @@ func VoteStatus(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidParams, "Invalid address: "+address)
 	}
-	unspents, err := Store.GetUnspentsFromProgramHash(*programHash)
-	if err != nil {
-		return ResponsePack(InvalidParams, "cannot get asset with program")
-	}
 
+	unspent, err := Wallet.ListUnspent(address, Config.EnableUtxoDB)
+	if err != nil {
+		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
+	}
 	var total common.Fixed64
+	_, exist := wallet.GetWalletAccount(address)
+	if !exist {
+		total = common.Fixed64(-1)
+	}
 	var voting common.Fixed64
-	for _, unspent := range unspents[config.ELAAssetID] {
+	for _, unspent := range unspent[config.ELAAssetID] {
 		tx, _, err := Store.GetTransaction(unspent.TxID)
 		if err != nil {
 			return ResponsePack(InternalError, "unknown transaction "+unspent.TxID.String()+" from persisted utxo")
@@ -1752,7 +1746,9 @@ func VoteStatus(param Params) map[string]interface{} {
 		if tx.Outputs[unspent.Index].Type == OTVote {
 			voting += unspent.Value
 		}
-		total += unspent.Value
+		if exist {
+			total += unspent.Value
+		}
 	}
 
 	pending := false
@@ -1801,9 +1797,17 @@ func GetDepositCoin(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidParams, "invalid publickey to programHash")
 	}
-	unspends, err := Store.GetUnspentsFromProgramHash(*programHash)
+	address, err := programHash.ToAddress()
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid programHash")
+	}
+
+	unspent, err := Wallet.ListUnspent(address, Config.EnableUtxoDB)
+	if err != nil {
+		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
+	}
 	var balance common.Fixed64 = 0
-	for _, u := range unspends {
+	for _, u := range unspent {
 		for _, v := range u {
 			balance = balance + v.Value
 		}
