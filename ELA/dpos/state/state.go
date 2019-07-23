@@ -678,7 +678,8 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 		})
 	}
 
-	// Check if any pending producers has got 6 confirms, set them to activate.
+	// Check if any pending inactive producers has got 6 confirms,
+	// then set them to activate.
 	activateProducerFromInactive := func(key string, producer *Producer) {
 		s.history.Append(height, func() {
 			producer.state = Active
@@ -687,6 +688,20 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 		}, func() {
 			producer.state = Inactive
 			s.InactiveProducers[key] = producer
+			delete(s.ActivityProducers, key)
+		})
+	}
+
+	// Check if any pending illegal producers has got 6 confirms,
+	// then set them to activate.
+	activateProducerFromIllegal := func(key string, producer *Producer) {
+		s.history.Append(height, func() {
+			producer.state = Active
+			s.ActivityProducers[key] = producer
+			delete(s.IllegalProducers, key)
+		}, func() {
+			producer.state = Illegal
+			s.IllegalProducers[key] = producer
 			delete(s.ActivityProducers, key)
 		})
 	}
@@ -704,6 +719,15 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 			if height > producer.activateRequestHeight &&
 				height-producer.activateRequestHeight+1 >= ActivateDuration {
 				activateProducerFromInactive(key, producer)
+			}
+		}
+	}
+	if height >= s.chainParams.EnableActivateIllegalHeight &&
+		len(s.IllegalProducers) > 0 {
+		for key, producer := range s.IllegalProducers {
+			if height > producer.activateRequestHeight &&
+				height-producer.activateRequestHeight+1 >= ActivateDuration {
+				activateProducerFromIllegal(key, producer)
 			}
 		}
 	}
@@ -821,13 +845,14 @@ func (s *State) cancelProducer(payload *payload.ProcessProducer, height uint32) 
 		}
 		delete(s.Nicknames, producer.info.NickName)
 	}, func() {
-		producer.state = Active
 		producer.cancelHeight = 0
 		delete(s.CanceledProducers, key)
 		if isPending {
+			producer.state = Pending
 			s.PendingProducers[key] = producer
 			delete(s.PendingCanceledProducers, key)
 		} else {
+			producer.state = Active
 			s.ActivityProducers[key] = producer
 		}
 		s.Nicknames[producer.info.NickName] = struct{}{}
@@ -1193,12 +1218,14 @@ func (s *State) processIllegalEvidence(payloadData types.Payload,
 				producer.state = Illegal
 				producer.illegalHeight = height
 				s.IllegalProducers[key] = producer
+				producer.activateRequestHeight = math.MaxUint32
 				delete(s.ActivityProducers, key)
 				delete(s.Nicknames, producer.info.NickName)
 			}, func() {
 				producer.state = Active
 				producer.illegalHeight = 0
 				s.ActivityProducers[key] = producer
+				producer.activateRequestHeight = math.MaxUint32
 				delete(s.IllegalProducers, key)
 				s.Nicknames[producer.info.NickName] = struct{}{}
 			})
