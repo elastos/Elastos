@@ -1,8 +1,6 @@
 import React from 'react'
 import { Helmet } from 'react-helmet'
-import {
-  Form, Spin, Button, Input, message, Modal, Anchor, Row, Col,
-} from 'antd'
+import { Form, Spin, Button, Input, message, Modal, Anchor } from 'antd'
 import { Link } from 'react-router-dom'
 import I18N from '@/I18N'
 import _ from 'lodash'
@@ -23,7 +21,18 @@ import Preamble from './Preamble'
 import Tracking from '../tracking/Container'
 import Summary from '../summary/Container'
 
-import { Container, Title, Label, ContentTitle, StyledAnchor, FixedHeader, Body, SubTitleHeading, SubTitleContainer, VoteBtnGroup } from './style'
+import {
+  Container,
+  Title,
+  Label,
+  ContentTitle,
+  StyledAnchor,
+  FixedHeader,
+  Body,
+  SubTitleHeading,
+  SubTitleContainer,
+  VoteBtnGroup
+} from './style'
 import './style.scss'
 
 const { TextArea } = Input
@@ -80,7 +89,7 @@ class C extends StandardPage {
       visibleOppose: false,
       visibleAbstain: false,
       editing: false,
-      smallSpace: false,
+      smallSpace: false
     }
 
     this.isLogin = this.props.isLogin
@@ -109,7 +118,11 @@ class C extends StandardPage {
   ord_renderContent() {
     const { data } = this.props
     if (!data) {
-      return <div className="center"><Spin /></div>
+      return (
+        <div className="center">
+          <Spin />
+        </div>
+      )
     }
     const anchorNode = this.renderAnchor()
     const contentNode = this.renderContent()
@@ -130,19 +143,19 @@ class C extends StandardPage {
         </Helmet>
         {anchorNode}
         <Container className="p_CVoteDetail">
-        <StickyContainer>
-          <BackLink link="/proposals" />
-          {this.renderStickyHeader()}
-          <Body>
-            {contentNode}
-            {translationBtn}
-            {notesNode}
-            {voteActionsNode}
-            {voteDetailNode}
-            {trackingNode}
-            {summaryNode}
-          </Body>
-        </StickyContainer>
+          <StickyContainer>
+            <BackLink link="/proposals" />
+            {this.renderStickyHeader()}
+            <Body>
+              {contentNode}
+              {translationBtn}
+              {notesNode}
+              {voteActionsNode}
+              {voteDetailNode}
+              {trackingNode}
+              {summaryNode}
+            </Body>
+          </StickyContainer>
         </Container>
         <Footer />
       </div>
@@ -157,21 +170,19 @@ class C extends StandardPage {
     const { smallSpace } = this.state
     return (
       <Sticky>
-        {({
-          style,
-          isSticky,
-          wasSticky,
-        }) => {
+        {({ style, isSticky, wasSticky }) => {
           if (!wasSticky && isSticky && !smallSpace) {
             this.setState({ smallSpace: true })
           }
           if (wasSticky && !isSticky && smallSpace) {
             this.setState({ smallSpace: false })
           }
-          const finalStyle = style ? {
-            ...style,
-            zIndex: 2,
-          } : style
+          const finalStyle = style
+            ? {
+                ...style,
+                zIndex: 2
+              }
+            : style
           return (
             <div style={finalStyle}>
               <FixedHeader>
@@ -200,12 +211,12 @@ class C extends StandardPage {
       <p>${getHTML(data, 'goal')}</p>
       <h2>${I18N.get('proposal.fields.motivation')}</h2>
       <p>${getHTML(data, 'motivation')}</p>
+      <h2>${I18N.get('proposal.fields.plan')}</h2>
+      <p>${getHTML(data, 'plan')}</p>
       <h2>${I18N.get('proposal.fields.relevance')}</h2>
       <p>${getHTML(data, 'relevance')}</p>
       <h2>${I18N.get('proposal.fields.budget')}</h2>
       <p>${getHTML(data, 'budget')}</p>
-      <h2>${I18N.get('proposal.fields.plan')}</h2>
-      <p>${getHTML(data, 'plan')}</p>
     `
 
     return (
@@ -226,24 +237,64 @@ class C extends StandardPage {
   renderAnchor() {
     const { data } = this.props
     const { trackingStatus, summaryStatus } = this.props
-    const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL], data.status)
-    const trackingTitle = trackingStatus ? <span>{I18N.get('proposal.fields.tracking')} <span style={{ fontSize: 10, color: '#aaa' }}>({I18N.get(`proposal.status.trackingRaw.${trackingStatus}`)})</span></span> : I18N.get('proposal.fields.tracking')
-    const summaryTitle = summaryStatus ? <span>{I18N.get('proposal.fields.summary')} <span style={{ fontSize: 10, color: '#aaa' }}>({I18N.get(`proposal.status.summaryRaw.${summaryStatus}`)})</span></span> : I18N.get('proposal.fields.summary')
-    const tracking = isShowFollowingUp && <Anchor.Link href="#tracking" title={trackingTitle} />
-    const summary = isShowFollowingUp && <Anchor.Link href="#summary" title={summaryTitle} />
+    const isShowFollowingUp = _.includes(
+      [CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL],
+      data.status
+    )
+    const trackingTitle = trackingStatus ? (
+      <span>
+        {I18N.get('proposal.fields.tracking')}{' '}
+        <span style={{ fontSize: 10, color: '#aaa' }}>
+          ({I18N.get(`proposal.status.trackingRaw.${trackingStatus}`)})
+        </span>
+      </span>
+    ) : (
+      I18N.get('proposal.fields.tracking')
+    )
+    const summaryTitle = summaryStatus ? (
+      <span>
+        {I18N.get('proposal.fields.summary')}{' '}
+        <span style={{ fontSize: 10, color: '#aaa' }}>
+          ({I18N.get(`proposal.status.summaryRaw.${summaryStatus}`)})
+        </span>
+      </span>
+    ) : (
+      I18N.get('proposal.fields.summary')
+    )
+    const tracking = isShowFollowingUp && (
+      <Anchor.Link href="#tracking" title={trackingTitle} />
+    )
+    const summary = isShowFollowingUp && (
+      <Anchor.Link href="#summary" title={summaryTitle} />
+    )
 
     return (
       <StyledAnchor offsetTop={420}>
-        <Anchor.Link href="#preamble" title={I18N.get('proposal.fields.preamble')} />
-        <Anchor.Link href="#abstract" title={I18N.get('proposal.fields.abstract')} />
+        <Anchor.Link
+          href="#preamble"
+          title={I18N.get('proposal.fields.preamble')}
+        />
+        <Anchor.Link
+          href="#abstract"
+          title={I18N.get('proposal.fields.abstract')}
+        />
         <div style={{ marginTop: 48 }}>
           <Anchor.Link href="#goal" title={I18N.get('proposal.fields.goal')} />
         </div>
-        <Anchor.Link href="#motivation" title={I18N.get('proposal.fields.motivation')} />
+        <Anchor.Link
+          href="#motivation"
+          title={I18N.get('proposal.fields.motivation')}
+        />
         <Anchor.Link href="#plan" title={I18N.get('proposal.fields.plan')} />
-        <Anchor.Link href="#relevance" title={I18N.get('proposal.fields.relevance')} />
+        <Anchor.Link
+          href="#relevance"
+          title={I18N.get('proposal.fields.relevance')}
+        />
         <div style={{ marginTop: 48 }}>
-          <Anchor.Link href="#budget" title={I18N.get('proposal.fields.budget')} />
+          <Anchor.Link
+            href="#budget"
+            title={I18N.get('proposal.fields.budget')}
+          />
         </div>
         <div style={{ marginTop: 48 }}>
           <Anchor.Link href="#vote" title={I18N.get('proposal.fields.vote')} />
@@ -274,7 +325,7 @@ class C extends StandardPage {
     const { data } = this.props
     const statusObj = {
       text: I18N.get('from.CVoteForm.label.voteStatus'),
-      value: I18N.get(`cvoteStatus.${data.status}`) || '',
+      value: I18N.get(`cvoteStatus.${data.status}`) || ''
     }
 
     const result = (
@@ -306,12 +357,24 @@ class C extends StandardPage {
     return (
       <div>
         <Preamble {...data} />
-        {renderRichContent(data, 'abstract', I18N.get('proposal.fields.abstract'))}
+        {renderRichContent(
+          data,
+          'abstract',
+          I18N.get('proposal.fields.abstract')
+        )}
         {renderRichContent(data, 'goal', I18N.get('proposal.fields.goal'))}
-        {renderRichContent(data, 'motivation', I18N.get('proposal.fields.motivation'))}
-        {renderRichContent(data, 'relevance', I18N.get('proposal.fields.relevance'))}
-        {renderRichContent(data, 'budget', I18N.get('proposal.fields.budget'))}
+        {renderRichContent(
+          data,
+          'motivation',
+          I18N.get('proposal.fields.motivation')
+        )}
         {renderRichContent(data, 'plan', I18N.get('proposal.fields.plan'))}
+        {renderRichContent(
+          data,
+          'relevance',
+          I18N.get('proposal.fields.relevance')
+        )}
+        {renderRichContent(data, 'budget', I18N.get('proposal.fields.budget'))}
       </div>
     )
   }
@@ -321,7 +384,9 @@ class C extends StandardPage {
     if (!notes && !notes_zh) return null
     return (
       <div className="content notes">
-        <h4 className="notes-title">{I18N.get('council.voting.btnText.notesSecretary')}</h4>
+        <h4 className="notes-title">
+          {I18N.get('council.voting.btnText.notesSecretary')}
+        </h4>
         <p className="notes-content">{notes}</p>
         <p className="notes-content">{notes_zh}</p>
       </div>
@@ -354,10 +419,7 @@ class C extends StandardPage {
       </Button>
     )
     const btnAbstain = (
-      <Button
-        icon="stop"
-        onClick={this.showVoteAbstainModal}
-      >
+      <Button icon="stop" onClick={this.showVoteAbstainModal}>
         {I18N.get('council.voting.btnText.abstention')}
       </Button>
     )
@@ -402,7 +464,10 @@ class C extends StandardPage {
     const { isSecretary, isCouncil, currentUserId } = this.props
     const { status, createdBy } = this.props.data
     const isSelf = currentUserId === createdBy
-    const isCompleted = _.includes([CVOTE_STATUS.FINAL, CVOTE_STATUS.INCOMPLETED], status)
+    const isCompleted = _.includes(
+      [CVOTE_STATUS.FINAL, CVOTE_STATUS.INCOMPLETED],
+      status
+    )
     const canManage = isSecretary || isCouncil
     const canEdit = _.includes([CVOTE_STATUS.DRAFT], status)
 
@@ -428,7 +493,10 @@ class C extends StandardPage {
 
   renderTracking() {
     const { data } = this.props
-    const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL], data.status)
+    const isShowFollowingUp = _.includes(
+      [CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL],
+      data.status
+    )
     if (!isShowFollowingUp) return null
 
     return <Tracking proposal={data} />
@@ -436,7 +504,10 @@ class C extends StandardPage {
 
   renderSummary() {
     const { data } = this.props
-    const isShowFollowingUp = _.includes([CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL], data.status)
+    const isShowFollowingUp = _.includes(
+      [CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL],
+      data.status
+    )
     if (!isShowFollowingUp) return null
 
     return <Summary proposal={data} />
@@ -447,7 +518,7 @@ class C extends StandardPage {
     this.props.history.push(`/proposals/${id}/edit`)
   }
 
-  onNotesChanged = (e) => {
+  onNotesChanged = e => {
     this.setState({ notes: e.target.value })
   }
 
@@ -458,7 +529,7 @@ class C extends StandardPage {
       content: <TextArea onChange={this.onNotesChanged} defaultValue={notes} />,
       okText: I18N.get('council.voting.modal.confirm'),
       cancelText: I18N.get('council.voting.modal.cancel'),
-      onOk: () => this.updateNotes(),
+      onOk: () => this.updateNotes()
     })
   }
 
@@ -471,7 +542,7 @@ class C extends StandardPage {
     try {
       await this.props.updateNotes({
         _id: id,
-        notes,
+        notes
       })
       message.success(I18N.get('from.CVoteForm.message.note.update.success'))
       this.refetch()
@@ -483,45 +554,65 @@ class C extends StandardPage {
   }
 
   renderVoteResults() {
-    const { vote_map: voteMap, reason_map: reasonMap, voteResult, status } = this.props.data
+    const {
+      vote_map: voteMap,
+      reason_map: reasonMap,
+      voteResult,
+      status
+    } = this.props.data
     const { avatar_map: avatarMap } = this.props
     let stats
 
     if (status === CVOTE_STATUS.DRAFT) return null
 
     if (!_.isEmpty(voteResult)) {
-      stats = _.reduce(voteResult, (prev, cur) => {
-        const item = {
-          name: `${_.get(cur, 'votedBy.profile.firstName')} ${_.get(cur, 'votedBy.profile.lastName')} `,
-          avatar: _.get(cur, 'votedBy.profile.avatar'),
-          reason: cur.reason,
-        }
-        if (prev[cur.value]) {
-          prev[cur.value].push(item)
-          return prev
-        }
-        return _.extend(prev, { [cur.value]: [item] })
-      }, {})
+      stats = _.reduce(
+        voteResult,
+        (prev, cur) => {
+          const item = {
+            name: `${_.get(cur, 'votedBy.profile.firstName')} ${_.get(
+              cur,
+              'votedBy.profile.lastName'
+            )} `,
+            avatar: _.get(cur, 'votedBy.profile.avatar'),
+            reason: cur.reason
+          }
+          if (prev[cur.value]) {
+            prev[cur.value].push(item)
+            return prev
+          }
+          return _.extend(prev, { [cur.value]: [item] })
+        },
+        {}
+      )
     } else if (!_.isEmpty(voteMap)) {
       // for legacy data structure
-      stats = _.reduce(voteMap, (prev, value, key) => {
-        const item = { name: key, avatar: _.get(avatarMap, key), reason: _.get(reasonMap, key) }
-        if (prev[value]) {
-          prev[value].push(item)
-          return prev
-        }
-        return _.extend(prev, { [value]: [item] })
-      }, {})
+      stats = _.reduce(
+        voteMap,
+        (prev, value, key) => {
+          const item = {
+            name: key,
+            avatar: _.get(avatarMap, key),
+            reason: _.get(reasonMap, key)
+          }
+          if (prev[value]) {
+            prev[value].push(item)
+            return prev
+          }
+          return _.extend(prev, { [value]: [item] })
+        },
+        {}
+      )
     }
 
     const title = <h4>{I18N.get('council.voting.councilMembersVotes')}</h4>
     const detail = _.map(stats, (statArr, key) => {
-      const type = (CVOTE_RESULT[key.toUpperCase()] || CVOTE_RESULT.UNDECIDED)
+      const type = CVOTE_RESULT[key.toUpperCase()] || CVOTE_RESULT.UNDECIDED
       const label = I18N.get(`council.voting.type.${type}`)
       const props = {
         dataList: statArr,
         type,
-        label,
+        label
       }
       return <VoteResultComponent {...props} key={key} />
     })
@@ -622,16 +713,20 @@ class C extends StandardPage {
       onOk: () => {
         this.ord_loading(true)
         fn({
-          id,
-        }).then(() => {
-          message.success(I18N.get('from.CVoteForm.message.proposal.update.success'))
-          this.refetch()
-          this.ord_loading(false)
-        }).catch((e) => {
-          message.error(e.message)
-          this.ord_loading(false)
+          id
         })
-      },
+          .then(() => {
+            message.success(
+              I18N.get('from.CVoteForm.message.proposal.update.success')
+            )
+            this.refetch()
+            this.ord_loading(false)
+          })
+          .catch(e => {
+            message.error(e.message)
+            this.ord_loading(false)
+          })
+      }
     })
   }
 }
