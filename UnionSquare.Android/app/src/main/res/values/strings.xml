@@ -172,7 +172,6 @@
     <string name="payeeaddrnotnull">收款人地址不能为空</string>
     <string name="transferamountnotnull">转账金额不能为空</string>
     <string name="future_generations">全选</string>
-    <string name="percentage_of_votes_cast_online">全网投票比例：</string>
     <string name="determine">确定</string>
     <string name="cancel">取消</string>
     <string name="dialog_text2">超出投票选择上限，是否在已选列表中按排名顺序选择前36名？</string>

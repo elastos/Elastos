@@ -7,7 +7,9 @@ video, input, select, button {
   border: 0;
   font-family: '微软雅黑', Arial;
 }
-
+[v-cloak]{
+  display: none;
+}
 /*input[type=search], input[type=text], input[type=password], input[type=datetime], input[type=datetime-local], input[type=date], input[type=month], input[type=time], input[type=week], input[type=number], input[type=email], input[type=url], input[type=tel], input[type=color], textarea {
     display: block;
     padding-top: 2px;
@@ -184,11 +186,11 @@ html[data-dpr="3"]{
 }
 .main {
   header {
-    display: flex;
+    //display: flex;
     height: 100/@rem;
     line-height: 100/@rem;
     div {
-      flex: 1;
+      //flex: 1;
       text-align: center;
       font-size: 32/@rem;
       font-family: PingFangSC-Regular;
@@ -199,42 +201,47 @@ html[data-dpr="3"]{
         vertical-align: middle;
       }
     }
-    div:nth-of-type(1) {
-      text-align: left;
-    }
-    div:nth-of-type(2) {
-      font-weight: 600;
-    }
-    div:nth-of-type(3) {
-      text-align: right;
-      font-size: 28/@rem;
-      margin-right: 30/@rem;
-    }
+    //div:nth-of-type(1) {
+    //  text-align: left;
+    //}
+    //div:nth-of-type(2) {
+    //  font-weight: 600;
+    //}
+    //div:nth-of-type(3) {
+    //  text-align: right;
+    //  font-size: 28/@rem;
+    //  margin-right: 30/@rem;
+    //}
   }
   .content {
     width: 95%;
     height: 79vh;
     margin: 0 auto;
     position: relative;
-    .content_box:first-child .content_year{
+    .content_box:nth-of-type(1) .content_year{
       top: 20/@rem;
     }
+    .content_box:nth-of-type(2) .content_year{
+      top: -50/@rem;
+    }
     .content_box:last-child .content_year{
-      top: -100/@rem;
+      top: -105/@rem;
     }
     .content_box {
       position: relative;
-      margin: 60/@rem auto;
+      margin: 60/@rem auto 0 auto;
       padding-left: 60px;
-      background: url("../images/point.png")top left no-repeat;
+      background-image: url("../images/point.png");
+      background-repeat: no-repeat;
+      background-position:0 -5/@rem;
       -webkit-background-size: 44/@rem 44/@rem;
       background-size: 44/@rem 44/@rem;
       .content_year {
         position: absolute;
-        top: -40/@rem;
+        top: 20/@rem;
         left: 21/@rem;
         width: 1px;
-        height: 100%;
+        height: 105%;
         background: #E1E1E1;
         z-index: -1;
       }
@@ -248,7 +255,7 @@ html[data-dpr="3"]{
         font-family: PingFangSC-Regular;
         color: #666;
       }
-      p:nth-of-type(1) {
+      p:first-child {
         color: #999;
         margin-bottom: 30/@rem;
       }
@@ -259,6 +266,8 @@ html[data-dpr="3"]{
   }
   footer {
     border-top: 1px solid #E1E1E1;
+    height: 115/@rem;
+    display: flex;
     a {
       display: block;
       width: 500/@rem;
@@ -267,7 +276,7 @@ html[data-dpr="3"]{
       -moz-border-radius: 10/@rem;
       border-radius: 10/@rem;
       line-height: 72/@rem;
-      margin: 20/@rem auto 0 auto;
+      margin:auto;
       background: #4A8AFF;
       color: white;
       text-align: center;

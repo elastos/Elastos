@@ -8,15 +8,15 @@
     <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
-<div class="main" id="app">
+<div class="main" id="app"  v-cloak>
     <header>
-        <div>
-            <!--<img src="./images/close.png" alt="">-->
-        </div>
+        <!--<div>-->
+            <!--&lt;!&ndash;<img src="./images/close.png" alt="">&ndash;&gt;-->
+        <!--</div>-->
         <div>{{i18n.text}}</div>
-        <div>
-            <i @click="languages('ch')">中</i>/<i @click="languages('en')">EN</i>
-        </div>
+        <!--<div>-->
+            <!--<i @click="languages('ch')">中</i>/<i @click="languages('en')">EN</i>-->
+        <!--</div>-->
     </header>
     <div class="content">
         <div class="content_box">
@@ -25,6 +25,7 @@
             <p>{{i18n.text11}}</p>
             <p>{{i18n.text12}}</p>
             <p>{{i18n.text13}}</p>
+            <p>{{i18n.text17}}</p>
             <p>{{i18n.text14}}</p>
             <p>{{i18n.text15}}</p>
             <p>{{i18n.text16}}</p>
@@ -58,7 +59,16 @@
     $(function () {
         let language = getUrlParam('langua') || 'ch';
         init(language);
-    })
+    });
+    // height();
+    // function height() {
+    //     let contentBox = $('.content_box').eq(0).height();
+    //     let contentBox1 = $('.content_box').eq(1).height();
+    //     let contentBox2 = $('.content_box').eq(2).height();
+    //     $('.content_year').eq(0).height(contentBox);
+    //     $('.content_year').eq(1).height(contentBox);
+    // }
+
     function init(langua){
         const app = new Vue({
             el: "#app",
