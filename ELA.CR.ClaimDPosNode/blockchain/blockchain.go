@@ -932,7 +932,7 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payloa
 
 	// The block must pass all of the validation rules which depend on the
 	// position of the block within the block chain.
-	if err := b.checkBlockContext(block, node.Parent); err != nil {
+	if err := b.CheckBlockContext(block, node.Parent); err != nil {
 		log.Error("PowCheckBlockContext error!", err)
 		return err
 	}

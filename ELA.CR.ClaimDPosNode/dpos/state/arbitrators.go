@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -204,6 +204,7 @@ func (a *arbitrators) GetFinalRoundChange() common.Fixed64 {
 
 func (a *arbitrators) ForceChange(height uint32) error {
 	a.mtx.Lock()
+	defer a.mtx.Unlock()
 
 	block, err := a.getBlockByHeight(height)
 	if err != nil {
@@ -226,14 +227,12 @@ func (a *arbitrators) ForceChange(height uint32) error {
 		return err
 	}
 
-	a.mtx.Unlock()
-
 	if a.started {
 		go events.Notify(events.ETDirectPeersChanged,
-			a.GetNeedConnectArbiters())
+			a.getNeedConnectArbiters())
 	}
 
-	a.DumpInfo(height)
+	a.dumpInfo(height)
 
 	return nil
 }
@@ -248,7 +247,7 @@ func (a *arbitrators) tryHandleError(height uint32, err error) error {
 	}
 }
 
-func (a *arbitrators) NormalChange(height uint32) error {
+func (a *arbitrators) normalChange(height uint32) error {
 	a.snapshot(height)
 
 	if err := a.changeCurrentArbitrators(); err != nil {
@@ -280,7 +279,7 @@ func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
 			panic(fmt.Sprintf("normal change fail when clear DPOS reward: "+
 				" transaction, height: %d, error: %s", block.Height, err))
 		}
-		if err := a.NormalChange(block.Height); err != nil {
+		if err := a.normalChange(block.Height); err != nil {
 			panic(fmt.Sprintf("normal change fail at height: %d, error: %s",
 				block.Height, err))
 		}
@@ -294,7 +293,7 @@ func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
 	a.mtx.Unlock()
 
 	if a.started && notify {
-		events.Notify(events.ETDirectPeersChanged, a.GetNeedConnectArbiters())
+		go events.Notify(events.ETDirectPeersChanged, a.GetNeedConnectArbiters())
 	}
 }
 
@@ -417,6 +416,10 @@ func (a *arbitrators) GetNeedConnectArbiters() []peer.PID {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
 
+	return a.getNeedConnectArbiters()
+}
+
+func (a *arbitrators) getNeedConnectArbiters() []peer.PID {
 	height := a.history.Height() + 1
 	if height < a.chainParams.CRCOnlyDPOSHeight-a.chainParams.PreConnectOffset {
 		return nil
@@ -872,8 +875,12 @@ func (a *arbitrators) DumpInfo(height uint32) {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
 
+	a.dumpInfo(height)
+}
+
+func (a *arbitrators) dumpInfo(height uint32) {
 	var printer func(string, ...interface{})
-	changeType, _ := a.getChangeType(height)
+	changeType, _ := a.getChangeType(height + 1)
 	switch changeType {
 	case updateNext:
 		fallthrough
@@ -903,7 +910,7 @@ func (a *arbitrators) getBlockDPOSReward(block *types.Block) common.Fixed64 {
 		totalTxFx += tx.Fee
 	}
 
-	return common.Fixed64(math.Ceil(float64(totalTxFx +
+	return common.Fixed64(math.Ceil(float64(totalTxFx+
 		a.chainParams.RewardPerBlock) * 0.35))
 }
 
@@ -1048,7 +1055,7 @@ func NewArbitrators(chainParams *config.Params,
 	bestHeight func() uint32,
 	getBlockByHeight func(uint32) (*types.Block, error),
 	getProducerDepositAmount func(programHash common.Uint168) (common.Fixed64,
-	error)) (*arbitrators, error) {
+		error)) (*arbitrators, error) {
 	a := &arbitrators{
 		chainParams:                chainParams,
 		bestHeight:                 bestHeight,
