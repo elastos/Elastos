@@ -14,6 +14,12 @@
   "text17":"And added small change consolidation feature.",
   "text14":"Optimized general interface and application background.",
   "text15":"Optimized Supernode Election interface.",
-  "text16":"Added “About ELA Wallet” page."
+  "text16":"Added “About ELA Wallet” page.",
 
+  "text18":"August 2, 2019",
+  "text19":"Optimized wallet startup speed;",
+  "text20":"Fixed two bugs that can crash the app;",
+  "text21":"Optimized system compatibility with older versions;",
+  "text22":"Modified the translation wording for English version;",
+  "text23":"Optimized UI interface details;"
 }
