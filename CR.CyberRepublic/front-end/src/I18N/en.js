@@ -1158,6 +1158,7 @@ const en = {
   'profile.detail.no': 'No',
 
   // Module form
+  'from.CVoteForm.message.delete.success': 'Delete success',
   'from.CVoteForm.message.updated.success': 'Update success',
   'from.CVoteForm.message.create.success': 'Create success',
   'from.CVoteForm.yes': 'YES',

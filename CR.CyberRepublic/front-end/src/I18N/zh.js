@@ -1120,6 +1120,7 @@ const zh = {
   'profile.detail.no': '否',
 
   // Module form
+  'from.CVoteForm.message.delete.success': '删除成功',
   'from.CVoteForm.message.updated.success': '更新成功',
   'from.CVoteForm.message.create.success': '创建成功',
   'from.CVoteForm.yes': '是',

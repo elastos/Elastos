@@ -648,6 +648,22 @@ class C extends StandardPage {
     }
   }
 
+  delete = async () => {
+    const { match, deleteCVote } = this.props
+    const id = _.get(match, 'params.id')
+    const param = { _id: id }
+    this.ord_loading(true)
+    try {
+      // deleteCVote(param)
+      message.success(I18N.get('from.CVoteForm.message.delete.success'))
+      // redirect to proposal list page
+      this.ord_loading(false)
+    } catch (e) {
+      message.error(e.message)
+      this.ord_loading(false)
+    }
+  }
+
   async vote({ value, reason }) {
     const { match, vote } = this.props
     const id = _.get(match, 'params.id')
