@@ -80,7 +80,6 @@ class C extends BaseComponent {
   }
 
   ord_render() {
-    console.log(this.props.loading);
     const p = this.getInputProps()
     return (
       <Form onSubmit={this.handleSubmit.bind(this)} className="c_loginForm">
