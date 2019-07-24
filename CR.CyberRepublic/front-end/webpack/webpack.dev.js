@@ -81,6 +81,9 @@ module.exports = merge(common, {
             aggregateTimeout: 2000,
             poll: 5000
         },
+        proxy: {
+            '/api': 'http://localhost:3000'
+        },
         compress: true,
         disableHostCheck: true
     },
@@ -98,7 +101,7 @@ module.exports = merge(common, {
             'process.env': {
                 NODE_ENV: JSON.stringify('development'),
                 PLATFORM_ENV: JSON.stringify('web'),
-                SERVER_URL: JSON.stringify('http://localhost:3000'),
+                SERVER_URL: JSON.stringify('http://localhost:3001'),
                 FORUM_URL: JSON.stringify('http://localhost:3100'),
                 SSO_URL: JSON.stringify('http://localhost:3100/session/sso_login'),
                 CR_VERSION: JSON.stringify(process.env.CR_VERSION)
