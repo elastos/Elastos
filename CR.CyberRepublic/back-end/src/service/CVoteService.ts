@@ -9,12 +9,7 @@ import { mail, user as userUtil } from '../utility'
 let tm = undefined
 
 const restrictedFields = {
-  update: [
-    '_id',
-    'createdBy',
-    'createdAt',
-    'proposedAt',
-  ]
+  update: ['_id', 'createdBy', 'createdAt', 'proposedAt']
 }
 
 export default class extends Base {
@@ -22,9 +17,7 @@ export default class extends Base {
   public async createDraft(param: any): Promise<Document> {
     const db_suggestion = this.getDBModel('Suggestion')
     const db_cvote = this.getDBModel('CVote')
-    const {
-      title, proposedBy, proposer, suggestionId
-    } = param
+    const { title, proposedBy, proposer, suggestionId } = param
 
     const vid = await this.getNewVid()
 
@@ -38,7 +31,8 @@ export default class extends Base {
       proposer: proposer ? proposer : this.currentUser._id,
       createdBy: this.currentUser._id
     }
-    const suggestion = suggestionId && await db_suggestion.findById(suggestionId)
+    const suggestion =
+      suggestionId && (await db_suggestion.findById(suggestionId))
     if (!_.isEmpty(suggestion)) {
       doc.reference = suggestionId
     }
@@ -59,7 +53,14 @@ export default class extends Base {
   public async updateDraft(param: any): Promise<Document> {
     const db_cvote = this.getDBModel('CVote')
     const {
-      _id, title, abstract, goal, motivation, relevance, budget, plan
+      _id,
+      title,
+      abstract,
+      goal,
+      motivation,
+      relevance,
+      budget,
+      plan
     } = param
 
     if (!this.currentUser || !this.currentUser._id) {
@@ -76,7 +77,7 @@ export default class extends Base {
     }
 
     const doc: any = {
-      contentType: constant.CONTENT_TYPE.MARKDOWN,
+      contentType: constant.CONTENT_TYPE.MARKDOWN
     }
 
     if (title) doc.title = title
@@ -103,12 +104,23 @@ export default class extends Base {
     const db_suggestion = this.getDBModel('Suggestion')
     const currentUserId = _.get(this.currentUser, '_id')
     const {
-      title, published, proposedBy, proposer,
-      suggestionId, abstract, goal, motivation, relevance, budget, plan
+      title,
+      published,
+      proposedBy,
+      proposer,
+      suggestionId,
+      abstract,
+      goal,
+      motivation,
+      relevance,
+      budget,
+      plan
     } = param
 
     const vid = await this.getNewVid()
-    const status = published ? constant.CVOTE_STATUS.PROPOSED : constant.CVOTE_STATUS.DRAFT
+    const status = published
+      ? constant.CVOTE_STATUS.PROPOSED
+      : constant.CVOTE_STATUS.DRAFT
 
     const doc: any = {
       title,
@@ -127,16 +139,24 @@ export default class extends Base {
       createdBy: this.currentUser._id
     }
 
-    const suggestion = suggestionId && await db_suggestion.findById(suggestionId)
+    const suggestion =
+      suggestionId && (await db_suggestion.findById(suggestionId))
     if (!_.isEmpty(suggestion)) {
       doc.reference = suggestionId
     }
 
-    const councilMembers = await db_user.find({ role: constant.USER_ROLE.COUNCIL })
+    const councilMembers = await db_user.find({
+      role: constant.USER_ROLE.COUNCIL
+    })
     const voteResult = []
     if (published) {
       doc.proposedAt = Date.now()
-      _.each(councilMembers, user => voteResult.push({ votedBy: user._id, value: constant.CVOTE_RESULT.UNDECIDED }))
+      _.each(councilMembers, user =>
+        voteResult.push({
+          votedBy: user._id,
+          value: constant.CVOTE_RESULT.UNDECIDED
+        })
+      )
       doc.voteResult = voteResult
       doc.voteHistory = voteResult
     }
@@ -145,7 +165,10 @@ export default class extends Base {
       const res = await db_cvote.save(doc)
       // add reference with suggestion
       if (!_.isEmpty(suggestion)) {
-        await db_suggestion.update({ _id: suggestionId }, { $addToSet: { reference: res._id }})
+        await db_suggestion.update(
+          { _id: suggestionId },
+          { $addToSet: { reference: res._id } }
+        )
         // notify creator and subscribers
         if (published) this.notifySubscribers(res)
       }
@@ -164,9 +187,11 @@ export default class extends Base {
     const db_suggestion = this.getDBModel('Suggestion')
     const suggestionId = _.get(cvote, 'reference')
     if (!suggestionId) return
-    const suggestion = await db_suggestion.getDBInstance().findById(suggestionId)
-    .populate('subscribers.user', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
-    .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+    const suggestion = await db_suggestion
+      .getDBInstance()
+      .findById(suggestionId)
+      .populate('subscribers.user', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
 
     // get users: creator and subscribers
     const toUsers = _.map(suggestion.subscribers, 'user') || []
@@ -176,27 +201,34 @@ export default class extends Base {
     // compose email object
     const subject = `The suggestion is referred in Proposal #${cvote.vid}`
     const body = `
-      <p>Council member ${cvote.proposedBy} has refer to your suggestion ${suggestion.title} in a proposal #${cvote.vid}.</p>
+      <p>Council member ${cvote.proposedBy} has refer to your suggestion ${
+      suggestion.title
+    } in a proposal #${cvote.vid}.</p>
       <br />
       <p>Click this link to view more details:</p>
-      <p><a href="${process.env.SERVER_URL}/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${cvote._id}</a></p>
+      <p><a href="${process.env.SERVER_URL}/proposals/${cvote._id}">${
+      process.env.SERVER_URL
+    }/proposals/${cvote._id}</a></p>
       <br /> <br />
       <p>Thanks</p>
       <p>Cyber Republic</p>
     `
-    const recVariables = _.zipObject(toMails, _.map(toUsers, (user) => {
-      return {
-        _id: user._id,
-        username: userUtil.formatUsername(user)
-      }
-    }))
+    const recVariables = _.zipObject(
+      toMails,
+      _.map(toUsers, user => {
+        return {
+          _id: user._id,
+          username: userUtil.formatUsername(user)
+        }
+      })
+    )
 
     const mailObj = {
       to: toMails,
       // toName: ownerToName,
       subject,
       body,
-      recVariables,
+      recVariables
     }
 
     // send email
@@ -206,8 +238,13 @@ export default class extends Base {
   private async notifyCouncil(cvote: any) {
     const db_user = this.getDBModel('User')
     const currentUserId = _.get(this.currentUser, '_id')
-    const councilMembers = await db_user.find({ role: constant.USER_ROLE.COUNCIL })
-    const toUsers = _.filter(councilMembers, user => !user._id.equals(currentUserId))
+    const councilMembers = await db_user.find({
+      role: constant.USER_ROLE.COUNCIL
+    })
+    const toUsers = _.filter(
+      councilMembers,
+      user => !user._id.equals(currentUserId)
+    )
     const toMails = _.map(toUsers, 'email')
 
     const subject = `New Proposal: ${cvote.title}`
@@ -216,25 +253,32 @@ export default class extends Base {
       <br />
       <p>${cvote.title}</p>
       <br />
-      <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${cvote._id}</a></p>
+      <p>Click this link to view more details: <a href="${
+        process.env.SERVER_URL
+      }/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${
+      cvote._id
+    }</a></p>
       <br /> <br />
       <p>Thanks</p>
       <p>Cyber Republic</p>
     `
 
-    const recVariables = _.zipObject(toMails, _.map(toUsers, (user) => {
-      return {
-        _id: user._id,
-        username: userUtil.formatUsername(user)
-      }
-    }))
+    const recVariables = _.zipObject(
+      toMails,
+      _.map(toUsers, user => {
+        return {
+          _id: user._id,
+          username: userUtil.formatUsername(user)
+        }
+      })
+    )
 
     const mailObj = {
       to: toMails,
       // toName: ownerToName,
       subject,
       body,
-      recVariables,
+      recVariables
     }
 
     mail.send(mailObj)
@@ -243,14 +287,22 @@ export default class extends Base {
   private async notifyCouncilToVote() {
     // find cvote before 1 day expiration without vote yet for each council member
     const db_cvote = this.getDBModel('CVote')
-    const nearExpiredTime = Date.now() - (constant.CVOTE_EXPIRATION - constant.ONE_DAY)
-    const unvotedCVotes = await db_cvote.getDBInstance().find(
-      {
-        proposedAt: { $lt: nearExpiredTime, $gt: (Date.now() - constant.CVOTE_EXPIRATION) },
+    const nearExpiredTime =
+      Date.now() - (constant.CVOTE_EXPIRATION - constant.ONE_DAY)
+    const unvotedCVotes = await db_cvote
+      .getDBInstance()
+      .find({
+        proposedAt: {
+          $lt: nearExpiredTime,
+          $gt: Date.now() - constant.CVOTE_EXPIRATION
+        },
         notified: { $ne: true },
         status: constant.CVOTE_STATUS.PROPOSED
-      }
-    ).populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+      })
+      .populate(
+        'voteResult.votedBy',
+        constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL
+      )
 
     _.each(unvotedCVotes, cvote => {
       _.each(cvote.voteResult, result => {
@@ -263,7 +315,11 @@ export default class extends Base {
             <br />
             <p>${title}</p>
             <br />
-            <p>Click this link to vote: <a href="${process.env.SERVER_URL}/proposals/${_id}">${process.env.SERVER_URL}/proposals/${_id}</a></p>
+            <p>Click this link to vote: <a href="${
+              process.env.SERVER_URL
+            }/proposals/${_id}">${
+            process.env.SERVER_URL
+          }/proposals/${_id}</a></p>
             <br /> <br />
             <p>Thanks</p>
             <p>Cyber Republic</p>
@@ -272,12 +328,12 @@ export default class extends Base {
             to: result.votedBy.email,
             toName: userUtil.formatUsername(result.votedBy),
             subject,
-            body,
+            body
           }
           mail.send(mailObj)
 
           // update notified to true
-          db_cvote.update({ _id: cvote._id }, { $set: { notified: true }})
+          db_cvote.update({ _id: cvote._id }, { $set: { notified: true } })
         }
       })
     })
@@ -297,7 +353,6 @@ export default class extends Base {
    * @returns {Promise<"mongoose".Document>}
    */
   public async list(param): Promise<Document> {
-
     const db_cvote = this.getDBModel('CVote')
     const db_user = this.getDBModel('User')
     const currentUserId = _.get(this.currentUser, '_id')
@@ -307,7 +362,10 @@ export default class extends Base {
     if (!param.published) {
       if (!this.isLoggedIn() || !this.canManageProposal()) {
         throw 'cvoteservice.list - unpublished proposals only visible to council/secretary'
-      } else if (param.voteResult === constant.CVOTE_RESULT.UNDECIDED && permissions.isCouncil(userRole)) {
+      } else if (
+        param.voteResult === constant.CVOTE_RESULT.UNDECIDED &&
+        permissions.isCouncil(userRole)
+      ) {
         // get unvoted by current council
         query.voteResult = {
           $elemMatch: {
@@ -324,10 +382,14 @@ export default class extends Base {
 
     if (param.$or) query.$or = param.$or
 
-    const list = await db_cvote.list(query, {
-      vid: -1,
-      // createdAt: -1
-    }, 100)
+    const list = await db_cvote.list(
+      query,
+      {
+        vid: -1
+        // createdAt: -1
+      },
+      100
+    )
 
     for (const item of list) {
       if (item.createdBy) {
@@ -349,8 +411,16 @@ export default class extends Base {
     const db_cvote = this.getDBModel('CVote')
     const currentUserId = _.get(this.currentUser, '_id')
     const {
-      _id, published, notes, title,
-      abstract, goal, motivation, relevance, budget, plan
+      _id,
+      published,
+      notes,
+      title,
+      abstract,
+      goal,
+      motivation,
+      relevance,
+      budget,
+      plan
     } = param
 
     if (!this.currentUser || !this.currentUser._id) {
@@ -367,9 +437,10 @@ export default class extends Base {
     }
 
     const doc: any = {
-      contentType: constant.CONTENT_TYPE.MARKDOWN,
+      contentType: constant.CONTENT_TYPE.MARKDOWN
     }
-    const willChangeToPublish = published === true && cur.status === constant.CVOTE_STATUS.DRAFT
+    const willChangeToPublish =
+      published === true && cur.status === constant.CVOTE_STATUS.DRAFT
 
     if (title) doc.title = title
     if (abstract) doc.abstract = abstract
@@ -383,9 +454,16 @@ export default class extends Base {
       doc.status = constant.CVOTE_STATUS.PROPOSED
       doc.published = published
       doc.proposedAt = Date.now()
-      const councilMembers = await db_user.find({ role: constant.USER_ROLE.COUNCIL })
+      const councilMembers = await db_user.find({
+        role: constant.USER_ROLE.COUNCIL
+      })
       const voteResult = []
-      _.each(councilMembers, user => voteResult.push({ votedBy: user._id, value: constant.CVOTE_RESULT.UNDECIDED }))
+      _.each(councilMembers, user =>
+        voteResult.push({
+          votedBy: user._id,
+          value: constant.CVOTE_RESULT.UNDECIDED
+        })
+      )
       doc.voteResult = voteResult
       doc.voteHistory = voteResult
     }
@@ -419,11 +497,14 @@ export default class extends Base {
       throw 'proposal already completed.'
     }
 
-    const rs = await db_cvote.update({ _id: id }, {
-      $set: {
-        status: constant.CVOTE_STATUS.FINAL
+    const rs = await db_cvote.update(
+      { _id: id },
+      {
+        $set: {
+          status: constant.CVOTE_STATUS.FINAL
+        }
       }
-    })
+    )
 
     return rs
   }
@@ -437,23 +518,36 @@ export default class extends Base {
     if (!this.canManageProposal()) {
       throw 'cvoteservice.unfinishById - not council'
     }
-    if (_.includes([constant.CVOTE_STATUS.FINAL, constant.CVOTE_STATUS.INCOMPLETED], cur.status)) {
+    if (
+      _.includes(
+        [constant.CVOTE_STATUS.FINAL, constant.CVOTE_STATUS.INCOMPLETED],
+        cur.status
+      )
+    ) {
       throw 'proposal already completed.'
     }
 
-    const rs = await db_cvote.update({ _id: id }, {
-      $set: {
-        status: constant.CVOTE_STATUS.INCOMPLETED
+    const rs = await db_cvote.update(
+      { _id: id },
+      {
+        $set: {
+          status: constant.CVOTE_STATUS.INCOMPLETED
+        }
       }
-    })
+    )
 
     return rs
   }
 
   public async getById(id): Promise<any> {
     const db_cvote = this.getDBModel('CVote')
-    const rs = await db_cvote.getDBInstance().findOne({ _id: id })
-      .populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR)
+    const rs = await db_cvote
+      .getDBInstance()
+      .findOne({ _id: id })
+      .populate(
+        'voteResult.votedBy',
+        constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
+      )
       .populate('proposer', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
       .populate('reference', constant.DB_SELECTED_FIELDS.SUGGESTION.ID)
     return rs
@@ -475,13 +569,15 @@ export default class extends Base {
 
   // proposal active/passed
   public isActive(data): Boolean {
-    const supportNum = _.countBy(data.voteResult, 'value')[constant.CVOTE_RESULT.SUPPORT] || 0
+    const supportNum =
+      _.countBy(data.voteResult, 'value')[constant.CVOTE_RESULT.SUPPORT] || 0
     return supportNum > data.voteResult.length * 0.5
   }
 
   // proposal rejected
   public isRejected(data): Boolean {
-    const rejectNum = _.countBy(data.voteResult, 'value')[constant.CVOTE_RESULT.REJECT] || 0
+    const rejectNum =
+      _.countBy(data.voteResult, 'value')[constant.CVOTE_RESULT.REJECT] || 0
     return rejectNum > data.voteResult.length * 0.5
   }
 
@@ -502,13 +598,13 @@ export default class extends Base {
       {
         $set: {
           'voteResult.$.value': value,
-          'voteResult.$.reason': reason || '',
+          'voteResult.$.reason': reason || ''
         },
         $push: {
           voteHistory: {
             value,
             reason,
-            votedBy,
+            votedBy
           }
         }
       }
@@ -532,11 +628,14 @@ export default class extends Base {
       throw 'only secretary could update notes'
     }
 
-    const rs = await db_cvote.update({ _id }, {
-      $set: {
-        notes: notes || ''
+    const rs = await db_cvote.update(
+      { _id },
+      {
+        $set: {
+          notes: notes || ''
+        }
       }
-    })
+    )
 
     return await this.getById(_id)
   }
@@ -550,7 +649,7 @@ export default class extends Base {
     const idsActive = []
     const idsRejected = []
 
-    _.each(list, (item) => {
+    _.each(list, item => {
       if (this.isExpired(item)) {
         if (this.isActive(item)) {
           idsActive.push(item._id)
@@ -561,27 +660,39 @@ export default class extends Base {
         }
       }
     })
-    await db_cvote.update({
-      _id: {
-        $in: idsDeferred
-      }
-    }, {
-      status: constant.CVOTE_STATUS.DEFERRED
-    }, { multi: true })
-    await db_cvote.update({
-      _id: {
-        $in: idsActive
-      }
-    }, {
-      status: constant.CVOTE_STATUS.ACTIVE
-    }, { multi: true })
-    await db_cvote.update({
-      _id: {
-        $in: idsRejected
-      }
-    }, {
-      status: constant.CVOTE_STATUS.REJECT
-    }, { multi: true })
+    await db_cvote.update(
+      {
+        _id: {
+          $in: idsDeferred
+        }
+      },
+      {
+        status: constant.CVOTE_STATUS.DEFERRED
+      },
+      { multi: true }
+    )
+    await db_cvote.update(
+      {
+        _id: {
+          $in: idsActive
+        }
+      },
+      {
+        status: constant.CVOTE_STATUS.ACTIVE
+      },
+      { multi: true }
+    )
+    await db_cvote.update(
+      {
+        _id: {
+          $in: idsRejected
+        }
+      },
+      {
+        status: constant.CVOTE_STATUS.REJECT
+      },
+      { multi: true }
+    )
 
     this.notifyCouncilToVote()
   }

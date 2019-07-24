@@ -3,7 +3,6 @@ import * as _ from 'lodash'
 import { constant } from '../../constant'
 import { SubscriberSchema } from './SubscriberSchema'
 
-
 export const CVoteResultSchema = {
   votedBy: {
     type: Schema.Types.ObjectId,
@@ -26,8 +25,8 @@ export const CVoteHistorySchema = {
   createdAt: {
     type: Date,
     required: true,
-    default: Date.now,
-  },
+    default: Date.now
+  }
 }
 
 export const CVote = {
@@ -41,25 +40,25 @@ export const CVote = {
   },
   contentType: {
     type: String,
-    enum: _.values(constant.CONTENT_TYPE),
+    enum: _.values(constant.CONTENT_TYPE)
   },
   abstract: {
-    type: String,
+    type: String
   },
   goal: {
-    type: String,
+    type: String
   },
   motivation: {
-    type: String,
+    type: String
   },
   relevance: {
-    type: String,
+    type: String
   },
   budget: {
-    type: String,
+    type: String
   },
   plan: {
-    type: String,
+    type: String
   },
   // tracking: {
   //   type: String,
@@ -78,7 +77,7 @@ export const CVote = {
     required: true
   },
   motionId: {
-    type: String,
+    type: String
   },
   notes: {
     type: String
@@ -93,10 +92,10 @@ export const CVote = {
 
   published: {
     type: Boolean,
-    default: false,
+    default: false
   },
   proposedAt: {
-    type: Date,
+    type: Date
     // default: Date.now,
   },
   status: {
@@ -106,10 +105,10 @@ export const CVote = {
   subscribers: [SubscriberSchema],
   notified: {
     type: Boolean,
-    default: false,
+    default: false
   },
   reference: {
     type: Schema.Types.ObjectId,
-    ref: 'suggestion',
+    ref: 'suggestion'
   }
 }
