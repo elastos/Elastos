@@ -16,6 +16,7 @@ export default {
     motivation: 'Motivation',
     relevance: 'Relevance',
     budget: 'Budget',
+    type: 'Type',
     plan: 'Implementation Plan',
     vote: 'Vote',
     tracking: 'Tracking',
@@ -101,6 +102,7 @@ export default {
         'If the proposal is related to other CRC proposals, the proposal number of each related proposal should be provided here. The relationship between the proposal and each related proposal should be described. If there are conflicts with Elastos technology or other CRC proposals, the proposal must describe these conflicts and explain how to deal with them.',
       budget:
         'If the implementation of the proposal requires financial support from the CRC, describe the overall budget and expenditure plan. This financial plan should be aligned with the implementation plan.',
+      type: 'Select a proposal type.',
       plan:
         'Describe what methods and processes will be used to achieve goals, and a brief introduction of the executing person or team should be listed here as well. If proposal has a long implementation timeline, it should set some checkpoints in the implementation process. The interval between two checkpoints should be no more than 3 months. The checkpoints should be clear and measurable as the proposed goals.',
       tracking:

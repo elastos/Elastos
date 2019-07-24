@@ -1,6 +1,6 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
-import { Form, Input, Button, Row, message, Modal, Tabs } from 'antd'
+import { Form, Input, Button, Row, message, Modal, Tabs, Radio } from 'antd'
 import I18N from '@/I18N'
 import _ from 'lodash'
 import { CVOTE_STATUS } from '@/constant'
@@ -39,6 +39,30 @@ const transform = value => {
   return result
 }
 
+const renderTypeRadioGroup = (data, key, getFieldDecorator) => {
+  const content = _.get(data, key, '1')
+  const rules = [
+    {
+      required: true,
+      message: I18N.get('proposal.form.error.required')
+    }
+  ]
+  const content_fn = getFieldDecorator(key, {
+    rules,
+    validateTrigger: 'onSubmit',
+    initialValue: content
+  })
+
+  const content_el = (
+    <Radio.Group>
+      <Radio value="1">{I18N.get('council.voting.type.newMotion')}</Radio>
+      <Radio value="2">{I18N.get('council.voting.type.motionAgainst')}</Radio>
+      <Radio value="3">{I18N.get('council.voting.type.anythingElse')}</Radio>
+    </Radio.Group>
+  )
+  return content_fn(content_el)
+}
+
 const renderRichEditor = (data, key, getFieldDecorator, max, callback) => {
   const content = _.get(data, key, '')
   const rules = [
@@ -60,6 +84,7 @@ const renderRichEditor = (data, key, getFieldDecorator, max, callback) => {
     validateTrigger: 'onSubmit',
     initialValue: content
   })
+
   const content_el = (
     <DraftEditor contentType={_.get(data, 'contentType')} callback={callback} />
   )
@@ -79,6 +104,7 @@ const formatValue = value => {
 }
 
 const activeKeys = [
+  'type',
   'abstract',
   'goal',
   'motivation',
@@ -124,6 +150,7 @@ class C extends BaseComponent {
       }
       const {
         title,
+        type,
         abstract,
         goal,
         motivation,
@@ -134,6 +161,7 @@ class C extends BaseComponent {
       const param = {
         _id: edit,
         title,
+        type,
         abstract: formatValue(abstract),
         goal: formatValue(goal),
         motivation: formatValue(motivation),
@@ -169,6 +197,7 @@ class C extends BaseComponent {
       }
       const {
         title,
+        type,
         abstract,
         goal,
         motivation,
@@ -178,7 +207,8 @@ class C extends BaseComponent {
       } = values
       const param = {
         _id: edit,
-        title
+        title,
+        type
       }
       if (suggestionId) param.suggestionId = suggestionId
 
@@ -227,6 +257,7 @@ class C extends BaseComponent {
     const relevance = renderRichEditor(data, 'relevance', getFieldDecorator)
     const budget = renderRichEditor(data, 'budget', getFieldDecorator)
     const plan = renderRichEditor(data, 'plan', getFieldDecorator)
+    const type = renderTypeRadioGroup(data, 'type', getFieldDecorator)
 
     return {
       title: title_fn(title_el),
@@ -235,7 +266,8 @@ class C extends BaseComponent {
       motivation,
       relevance,
       budget,
-      plan
+      plan,
+      type
     }
   }
 
@@ -285,6 +317,12 @@ class C extends BaseComponent {
             activeKey={activeKey}
             onChange={this.onTabChange}
           >
+            <TabPane tab={this.renderTabText('type')} key="type">
+              <TabPaneInner>
+                <Note>{I18N.get('proposal.form.note.type')}</Note>
+                <FormItem>{formProps.type}</FormItem>
+              </TabPaneInner>
+            </TabPane>
             <TabPane tab={this.renderTabText('abstract')} key="abstract">
               <TabPaneInner>
                 <Note>{I18N.get('proposal.form.note.abstract')}</Note>

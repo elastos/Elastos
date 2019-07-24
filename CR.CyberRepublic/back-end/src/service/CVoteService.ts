@@ -55,6 +55,7 @@ export default class extends Base {
     const {
       _id,
       title,
+      type,
       abstract,
       goal,
       motivation,
@@ -81,6 +82,7 @@ export default class extends Base {
     }
 
     if (title) doc.title = title
+    if (type) doc.type = type
     if (abstract) doc.abstract = abstract
     if (goal) doc.goal = goal
     if (motivation) doc.motivation = motivation
