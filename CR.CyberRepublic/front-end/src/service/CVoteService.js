@@ -14,7 +14,7 @@ export default class extends BaseService {
 
     const rs = await api_request({
       path,
-      method: 'get',
+      method: 'get'
       // data: param,
     })
 
@@ -33,7 +33,7 @@ export default class extends BaseService {
     const rs = await api_request({
       path,
       method: 'post',
-      data: param,
+      data: param
     })
     return rs
   }
@@ -44,7 +44,7 @@ export default class extends BaseService {
     const rs = await api_request({
       path,
       method: 'post',
-      data: param,
+      data: param
     })
     return rs
   }
@@ -55,7 +55,7 @@ export default class extends BaseService {
     const rs = await api_request({
       path,
       method: 'post',
-      data: param,
+      data: param
     })
     return rs
   }
@@ -66,7 +66,7 @@ export default class extends BaseService {
     const rs = await api_request({
       path,
       method: 'post',
-      data: param,
+      data: param
     })
     return rs
   }
@@ -77,7 +77,7 @@ export default class extends BaseService {
     const rs = await api_request({
       path,
       method: 'post',
-      data: param,
+      data: param
     })
     return rs
   }
@@ -88,7 +88,7 @@ export default class extends BaseService {
     const rs = await api_request({
       path,
       method: 'post',
-      data: param,
+      data: param
     })
     return rs
   }
@@ -99,7 +99,7 @@ export default class extends BaseService {
     const rs = await api_request({
       path,
       method: 'post',
-      data: param,
+      data: param
     })
     return rs
   }
@@ -110,7 +110,7 @@ export default class extends BaseService {
     const rs = await api_request({
       path,
       method: 'post',
-      data: param,
+      data: param
     })
     return rs
   }
@@ -122,17 +122,16 @@ export default class extends BaseService {
       result = await api_request({
         path: `${this.prefixPath}/list`,
         method: 'get',
-        data: param,
+        data: param
       })
     } else {
       result = await api_request({
         path: `${this.prefixPath}/list_public`,
         method: 'get',
-        data: param,
+        data: param
       })
     }
 
     return result
   }
-
 }
