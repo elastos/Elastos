@@ -49,6 +49,16 @@ export default class extends BaseService {
     return rs
   }
 
+  async deleteDraft(param) {
+    const path = `${this.prefixPath}/delete_draft`
+    const rs = await api_request({
+      path,
+      method: 'post',
+      data: param
+    })
+    return rs
+  }
+
   async createCVote(param) {
     const path = `${this.prefixPath}/create`
 

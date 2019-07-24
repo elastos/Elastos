@@ -35,6 +35,9 @@ const mapDispatch = () => {
     async createDraft(param) {
       return service.createDraft(param)
     },
+    async deleteDraft(param) {
+      return service.deleteDraft(param)
+    },
     async listData(param, isCouncil) {
       return service.listData(param, isCouncil)
     },

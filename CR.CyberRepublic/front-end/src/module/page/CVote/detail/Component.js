@@ -484,7 +484,7 @@ class C extends StandardPage {
       </Button>
     )
     const deleteDraftProposalBtn = isSelf && canEdit && (
-      <Button type="danger" onClick={this.delete}>
+      <Button type="danger" onClick={this.deleteDraftProposal}>
         {I18N.get('council.voting.btnText.delete')}
       </Button>
     )
@@ -648,15 +648,16 @@ class C extends StandardPage {
     }
   }
 
-  delete = async () => {
-    const { match, deleteCVote } = this.props
+  deleteDraftProposal = async () => {
+    const { match, deleteDraft } = this.props
     const id = _.get(match, 'params.id')
     const param = { _id: id }
     this.ord_loading(true)
     try {
-      // deleteCVote(param)
+      await deleteDraft(param)
       message.success(I18N.get('from.CVoteForm.message.delete.success'))
       // redirect to proposal list page
+      this.props.history.push('/proposals')
       this.ord_loading(false)
     } catch (e) {
       message.error(e.message)
