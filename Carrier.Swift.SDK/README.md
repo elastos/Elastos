@@ -85,16 +85,19 @@ $ ./docs.sh
 
 ```
 
+### 2. Object-C APIs Docs
+
+```shell
+$ ./docs.sh objc
+
+```
+
 About How to install appledoc, please refer to following github repository:
 
 ```
 https://github.com/tomaz/appledoc
 
 ```
-
-### 2. Object-C APIs Docs
-
-TODO.
 
 ## Thanks
 

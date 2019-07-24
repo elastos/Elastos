@@ -4,5 +4,6 @@
 xcuserdata
 contents.xcworkspacedata
 /NativeDistributions/lib
-/Docs
+/swift-docs
+/oc-docs
 /Products
