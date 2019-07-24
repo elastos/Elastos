@@ -1,8 +1,6 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
-import {
-  Form, Input, Button, Row, message, Modal, Tabs,
-} from 'antd'
+import { Form, Input, Button, Row, message, Modal, Tabs, Radio } from 'antd'
 import I18N from '@/I18N'
 import _ from 'lodash'
 import { CVOTE_STATUS } from '@/constant'
@@ -13,7 +11,15 @@ import CircularProgressbar from '@/module/common/CircularProgressbar'
 // if using webpack
 import 'medium-draft/lib/index.css'
 
-import { Container, Title, TabPaneInner, Note, NoteHighlight, TabText, CirContainer } from './style'
+import {
+  Container,
+  Title,
+  TabPaneInner,
+  Note,
+  NoteHighlight,
+  TabText,
+  CirContainer
+} from './style'
 
 const WORD_LIMIT = 200
 
@@ -33,6 +39,30 @@ const transform = value => {
   return result
 }
 
+const renderTypeRadioGroup = (data, key, getFieldDecorator) => {
+  const content = _.get(data, key, '1')
+  const rules = [
+    {
+      required: true,
+      message: I18N.get('proposal.form.error.required')
+    }
+  ]
+  const content_fn = getFieldDecorator(key, {
+    rules,
+    validateTrigger: 'onSubmit',
+    initialValue: content
+  })
+
+  const content_el = (
+    <Radio.Group>
+      <Radio value="1">{I18N.get('council.voting.type.newMotion')}</Radio>
+      <Radio value="2">{I18N.get('council.voting.type.motionAgainst')}</Radio>
+      <Radio value="3">{I18N.get('council.voting.type.anythingElse')}</Radio>
+    </Radio.Group>
+  )
+  return content_fn(content_el)
+}
+
 const renderRichEditor = (data, key, getFieldDecorator, max, callback) => {
   const content = _.get(data, key, '')
   const rules = [
@@ -40,7 +70,7 @@ const renderRichEditor = (data, key, getFieldDecorator, max, callback) => {
       required: true,
       transform,
       message: I18N.get('proposal.form.error.required')
-    },
+    }
   ]
   if (max) {
     rules.push({
@@ -52,25 +82,36 @@ const renderRichEditor = (data, key, getFieldDecorator, max, callback) => {
   const content_fn = getFieldDecorator(key, {
     rules,
     validateTrigger: 'onSubmit',
-    initialValue: content,
+    initialValue: content
   })
+
   const content_el = (
     <DraftEditor contentType={_.get(data, 'contentType')} callback={callback} />
   )
   return content_fn(content_el)
 }
 
-const formatValue = (value) => {
+const formatValue = value => {
   let result
   try {
-    result = _.isString(value) ? value : JSON.stringify(convertToRaw(value.getCurrentContent()))
+    result = _.isString(value)
+      ? value
+      : JSON.stringify(convertToRaw(value.getCurrentContent()))
   } catch (error) {
     result = _.toString(value)
   }
   return result
 }
 
-const activeKeys = ['abstract', 'goal', 'motivation', 'plan', 'relevance', 'budget']
+const activeKeys = [
+  'type',
+  'abstract',
+  'goal',
+  'motivation',
+  'plan',
+  'relevance',
+  'budget'
+]
 
 class C extends BaseComponent {
   constructor(props) {
@@ -79,7 +120,7 @@ class C extends BaseComponent {
     this.state = {
       persist: true,
       loading: false,
-      activeKeyNum: 0,
+      activeKeyNum: 0
     }
 
     this.user = this.props.user
@@ -97,27 +138,37 @@ class C extends BaseComponent {
     this.setState({ loading: f })
   }
 
-  publishCVote = async (e) => {
+  publishCVote = async e => {
     e.preventDefault()
     const { edit, form, updateCVote, onEdit, suggestionId } = this.props
 
     form.validateFields(async (err, values) => {
       if (err) {
         // mark error keys
-        this.setState({ errKeys: _.keys(err)})
+        this.setState({ errKeys: _.keys(err) })
         return
       }
-      const { title, abstract, goal, motivation, relevance, budget, plan } = values
+      const {
+        title,
+        type,
+        abstract,
+        goal,
+        motivation,
+        relevance,
+        budget,
+        plan
+      } = values
       const param = {
         _id: edit,
         title,
+        type,
         abstract: formatValue(abstract),
         goal: formatValue(goal),
         motivation: formatValue(motivation),
         relevance: formatValue(relevance),
         budget: formatValue(budget),
         plan: formatValue(plan),
-        published: true,
+        published: true
       }
       if (suggestionId) param.suggestionId = suggestionId
 
@@ -144,17 +195,30 @@ class C extends BaseComponent {
           return
         }
       }
-      const { title, abstract, goal, motivation, relevance, budget, plan } = values
+      const {
+        title,
+        type,
+        abstract,
+        goal,
+        motivation,
+        relevance,
+        budget,
+        plan
+      } = values
       const param = {
         _id: edit,
         title,
+        type
       }
       if (suggestionId) param.suggestionId = suggestionId
 
-      if (!_.isEmpty(transform(abstract))) param.abstract = formatValue(abstract)
+      if (!_.isEmpty(transform(abstract)))
+        param.abstract = formatValue(abstract)
       if (!_.isEmpty(transform(goal))) param.goal = formatValue(goal)
-      if (!_.isEmpty(transform(motivation))) param.motivation = formatValue(motivation)
-      if (!_.isEmpty(transform(relevance))) param.relevance = formatValue(relevance)
+      if (!_.isEmpty(transform(motivation)))
+        param.motivation = formatValue(motivation)
+      if (!_.isEmpty(transform(relevance)))
+        param.relevance = formatValue(relevance)
       if (!_.isEmpty(transform(budget))) param.budget = formatValue(budget)
       if (!_.isEmpty(transform(plan))) param.plan = formatValue(plan)
 
@@ -174,19 +238,26 @@ class C extends BaseComponent {
     const { getFieldDecorator } = this.props.form
 
     const title_fn = getFieldDecorator('title', {
-      rules: [{ required: true, message: I18N.get('proposal.form.error.required') }],
-      initialValue: edit ? data.title : _.get(data, 'title', ''),
+      rules: [
+        { required: true, message: I18N.get('proposal.form.error.required') }
+      ],
+      initialValue: edit ? data.title : _.get(data, 'title', '')
     })
-    const title_el = (
-      <Input size="large" type="text" />
-    )
+    const title_el = <Input size="large" type="text" />
 
-    const abstract = renderRichEditor(data, 'abstract', getFieldDecorator, WORD_LIMIT, this.validateAbstract)
+    const abstract = renderRichEditor(
+      data,
+      'abstract',
+      getFieldDecorator,
+      WORD_LIMIT,
+      this.validateAbstract
+    )
     const goal = renderRichEditor(data, 'goal', getFieldDecorator)
     const motivation = renderRichEditor(data, 'motivation', getFieldDecorator)
     const relevance = renderRichEditor(data, 'relevance', getFieldDecorator)
     const budget = renderRichEditor(data, 'budget', getFieldDecorator)
     const plan = renderRichEditor(data, 'plan', getFieldDecorator)
+    const type = renderTypeRadioGroup(data, 'type', getFieldDecorator)
 
     return {
       title: title_fn(title_el),
@@ -196,6 +267,7 @@ class C extends BaseComponent {
       relevance,
       budget,
       plan,
+      type
     }
   }
 
@@ -207,17 +279,20 @@ class C extends BaseComponent {
     const formProps = this.getInputProps(data)
     const formItemLayout = {
       labelCol: {
-        span: 2,
+        span: 2
       },
       wrapperCol: {
-        span: 18,
+        span: 18
       },
-      colon: false,
+      colon: false
     }
     const { activeKeyNum } = this.state
     const activeKey = activeKeys[activeKeyNum]
     let actionBtn
-    if (activeKeyNum === activeKeys.length - 1 && _.get(data, 'status') === CVOTE_STATUS.DRAFT) {
+    if (
+      activeKeyNum === activeKeys.length - 1 &&
+      _.get(data, 'status') === CVOTE_STATUS.DRAFT
+    ) {
       actionBtn = this.renderPreviewBtn()
     }
     if (activeKeyNum !== activeKeys.length - 1) {
@@ -230,10 +305,24 @@ class C extends BaseComponent {
           <Title className="komu-a cr-title-with-icon ">
             {this.props.header || I18N.get('from.CVoteForm.button.add')}
           </Title>
-          <FormItem label={`${I18N.get('proposal.fields.title')}*`} {...formItemLayout}>
+          <FormItem
+            label={`${I18N.get('proposal.fields.title')}*`}
+            {...formItemLayout}
+          >
             {formProps.title}
           </FormItem>
-          <Tabs animated={false} tabBarGutter={5} activeKey={activeKey} onChange={this.onTabChange}>
+          <Tabs
+            animated={false}
+            tabBarGutter={5}
+            activeKey={activeKey}
+            onChange={this.onTabChange}
+          >
+            <TabPane tab={this.renderTabText('type')} key="type">
+              <TabPaneInner>
+                <Note>{I18N.get('proposal.form.note.type')}</Note>
+                <FormItem>{formProps.type}</FormItem>
+              </TabPaneInner>
+            </TabPane>
             <TabPane tab={this.renderTabText('abstract')} key="abstract">
               <TabPaneInner>
                 <Note>{I18N.get('proposal.form.note.abstract')}</Note>
@@ -255,7 +344,10 @@ class C extends BaseComponent {
               <TabPaneInner>
                 <Note>
                   {I18N.get('proposal.form.note.motivation')}
-                  <NoteHighlight> {I18N.get('proposal.form.note.motivationHighlight')}</NoteHighlight>
+                  <NoteHighlight>
+                    {' '}
+                    {I18N.get('proposal.form.note.motivationHighlight')}
+                  </NoteHighlight>
                 </Note>
                 <FormItem>{formProps.motivation}</FormItem>
               </TabPaneInner>
@@ -318,23 +410,20 @@ class C extends BaseComponent {
       form.setFields({
         abstract: {
           value: formValue,
-          errors: undefined,
-        },
+          errors: undefined
+        }
       })
     }
-
   }
 
   renderTabText(key) {
     const { errKeys } = this.state
     const fullText = `${I18N.get(`proposal.fields.${key}`)}*`
     const hasErr = _.includes(errKeys, key)
-    return (
-      <TabText hasErr={hasErr}>{fullText}</TabText>
-    )
+    return <TabText hasErr={hasErr}>{fullText}</TabText>
   }
 
-  onTabChange = (activeKey) => {
+  onTabChange = activeKey => {
     const activeKeyNum = activeKeys.indexOf(activeKey)
     this.setState({ activeKeyNum })
   }
@@ -364,10 +453,12 @@ class C extends BaseComponent {
     form.validateFields(async (err, values) => {
       if (err) {
         // mark error keys
-        this.setState({ errKeys: _.keys(err)})
+        this.setState({ errKeys: _.keys(err) })
         return
       }
-      const { data: { _id } } = this.props
+      const {
+        data: { _id }
+      } = this.props
       this.props.history.push(`/proposals/${_id}`)
     })
   }
@@ -375,7 +466,11 @@ class C extends BaseComponent {
   renderContinueBtn() {
     return (
       <FormItem>
-        <Button onClick={this.gotoNextTab} className="cr-btn cr-btn-black" style={{ marginBottom: 10 }}>
+        <Button
+          onClick={this.gotoNextTab}
+          className="cr-btn cr-btn-black"
+          style={{ marginBottom: 10 }}
+        >
           {I18N.get('from.CVoteForm.button.continue')}
         </Button>
       </FormItem>
@@ -385,7 +480,11 @@ class C extends BaseComponent {
   renderPreviewBtn() {
     return (
       <FormItem>
-        <Button onClick={this.gotoDetail} className="cr-btn cr-btn-black" style={{ marginBottom: 10 }}>
+        <Button
+          onClick={this.gotoDetail}
+          className="cr-btn cr-btn-black"
+          style={{ marginBottom: 10 }}
+        >
           {I18N.get('from.CVoteForm.button.preview')}
         </Button>
       </FormItem>
@@ -395,7 +494,11 @@ class C extends BaseComponent {
   renderCancelBtn() {
     return (
       <FormItem>
-        <Button onClick={this.props.onCancel} className="cr-btn cr-btn-default" style={{ marginRight: 10 }}>
+        <Button
+          onClick={this.props.onCancel}
+          className="cr-btn cr-btn-default"
+          style={{ marginRight: 10 }}
+        >
           {I18N.get('from.CVoteForm.button.cancel')}
         </Button>
       </FormItem>
@@ -406,21 +509,35 @@ class C extends BaseComponent {
     const { edit, data } = this.props
     const showButton = !edit || _.get(data, 'status') === CVOTE_STATUS.DRAFT
 
-    return showButton && (
-      <FormItem>
-        <Button loading={this.state.loading} className="cr-btn cr-btn-primary" onClick={this.saveDraftWithMsg} style={{ marginRight: 10 }}>
-          {I18N.get('from.CVoteForm.button.saveDraft')}
-        </Button>
-      </FormItem>
+    return (
+      showButton && (
+        <FormItem>
+          <Button
+            loading={this.state.loading}
+            className="cr-btn cr-btn-primary"
+            onClick={this.saveDraftWithMsg}
+            style={{ marginRight: 10 }}
+          >
+            {I18N.get('from.CVoteForm.button.saveDraft')}
+          </Button>
+        </FormItem>
+      )
     )
   }
 
   renderSaveBtn() {
     const { edit, data } = this.props
-    const btnText = edit && data.published ? I18N.get('from.CVoteForm.button.saveChanges') : I18N.get('from.CVoteForm.button.saveAndPublish')
+    const btnText =
+      edit && data.published
+        ? I18N.get('from.CVoteForm.button.saveChanges')
+        : I18N.get('from.CVoteForm.button.saveAndPublish')
     return (
       <FormItem>
-        <Button loading={this.state.loading} className="cr-btn cr-btn-primary" htmlType="submit">
+        <Button
+          loading={this.state.loading}
+          className="cr-btn cr-btn-primary"
+          htmlType="submit"
+        >
           {btnText}
         </Button>
       </FormItem>
@@ -436,18 +553,22 @@ class C extends BaseComponent {
       cancelText: I18N.get('from.CVoteForm.modal.cancel'),
       onOk: () => {
         this.ord_loading(true)
-        this.props.finishCVote({
-          id,
-        }).then(() => {
-          message.success(I18N.get('from.CVoteForm.message.proposal.update.success'))
-          this.ord_loading(false)
-        }).catch((e) => {
-          message.error(e.message)
-          this.ord_loading(false)
-        })
+        this.props
+          .finishCVote({
+            id
+          })
+          .then(() => {
+            message.success(
+              I18N.get('from.CVoteForm.message.proposal.update.success')
+            )
+            this.ord_loading(false)
+          })
+          .catch(e => {
+            message.error(e.message)
+            this.ord_loading(false)
+          })
       },
-      onCancel() {
-      },
+      onCancel() {}
     })
   }
 }

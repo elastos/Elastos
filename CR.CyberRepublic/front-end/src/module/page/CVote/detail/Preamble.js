@@ -7,44 +7,100 @@ import _ from 'lodash'
 
 import styled from 'styled-components'
 
-const Component = ({ vid, title, proposedBy, proposer, status, createdAt }) => {
+const Component = ({
+  vid,
+  title,
+  proposedBy,
+  proposer,
+  type,
+  status,
+  createdAt
+}) => {
   // header
-  const headerNode = <Header id="preamble">{I18N.get('proposal.fields.preamble')}</Header>
+  const headerNode = (
+    <Header id="preamble">{I18N.get('proposal.fields.preamble')}</Header>
+  )
   // note
-  // const noteNode = <Note>Note: For confidential purpose, no one elase including council members is not able to access these files untill the bidding ended.</Note>
+  // const noteNode = (
+  //   <Note>
+  //     Note: For confidential purpose, no one elase including council members is
+  //     not able to access these files untill the bidding ended.
+  //   </Note>
+  // )
+
+  const typeMap = {
+    1: I18N.get('council.voting.type.newMotion'),
+    2: I18N.get('council.voting.type.motionAgainst'),
+    3: I18N.get('council.voting.type.anythingElse')
+  }
+  // type
+  const typeNode = (
+    <Item>
+      <Col span={6}>
+        <ItemTitle>{I18N.get('proposal.fields.type')}</ItemTitle>
+      </Col>
+      <Col span={18}>
+        <ItemText>{typeMap[type]}</ItemText>
+      </Col>
+    </Item>
+  )
   // id
   const idNode = (
     <Item>
-      <Col span={6}><ItemTitle>{I18N.get('proposal.fields.preambleSub.proposal')}</ItemTitle></Col>
-      <Col span={18}><ItemText>{`#${vid}`}</ItemText></Col>
+      <Col span={6}>
+        <ItemTitle>
+          {I18N.get('proposal.fields.preambleSub.proposal')}
+        </ItemTitle>
+      </Col>
+      <Col span={18}>
+        <ItemText>{`#${vid}`}</ItemText>
+      </Col>
     </Item>
   )
   // title
   const titleNode = (
     <Item>
-      <Col span={6}><ItemTitle>{I18N.get('proposal.fields.preambleSub.title')}</ItemTitle></Col>
-      <Col span={18}><ItemText>{title}</ItemText></Col>
+      <Col span={6}>
+        <ItemTitle>{I18N.get('proposal.fields.preambleSub.title')}</ItemTitle>
+      </Col>
+      <Col span={18}>
+        <ItemText>{title}</ItemText>
+      </Col>
     </Item>
   )
   // proposer
   const proposerNode = (
     <Item>
-      <Col span={6}><ItemTitle>{I18N.get('proposal.fields.preambleSub.proposer')}</ItemTitle></Col>
-      <Col span={18}><ItemText>{`${proposedBy} <${_.get(proposer, 'email')}>`}</ItemText></Col>
+      <Col span={6}>
+        <ItemTitle>
+          {I18N.get('proposal.fields.preambleSub.proposer')}
+        </ItemTitle>
+      </Col>
+      <Col span={18}>
+        <ItemText>{`${proposedBy} <${_.get(proposer, 'email')}>`}</ItemText>
+      </Col>
     </Item>
   )
   // status
   const statusNode = (
     <Item>
-      <Col span={6}><ItemTitle>{I18N.get('proposal.fields.preambleSub.status')}</ItemTitle></Col>
-      <Col span={18}><ItemText>{I18N.get(`cvoteStatus.${status}`)}</ItemText></Col>
+      <Col span={6}>
+        <ItemTitle>{I18N.get('proposal.fields.preambleSub.status')}</ItemTitle>
+      </Col>
+      <Col span={18}>
+        <ItemText>{I18N.get(`cvoteStatus.${status}`)}</ItemText>
+      </Col>
     </Item>
   )
   // created
   const createdNode = (
     <Item>
-      <Col span={6}><ItemTitle>{I18N.get('proposal.fields.preambleSub.created')}</ItemTitle></Col>
-      <Col span={18}><ItemText>{moment(createdAt).format('MMM D, YYYY')}</ItemText></Col>
+      <Col span={6}>
+        <ItemTitle>{I18N.get('proposal.fields.preambleSub.created')}</ItemTitle>
+      </Col>
+      <Col span={18}>
+        <ItemText>{moment(createdAt).format('MMM D, YYYY')}</ItemText>
+      </Col>
     </Item>
   )
   return (
@@ -54,6 +110,7 @@ const Component = ({ vid, title, proposedBy, proposer, status, createdAt }) => {
       {idNode}
       {titleNode}
       {proposerNode}
+      {typeNode}
       {statusNode}
       {createdNode}
     </div>
@@ -66,11 +123,10 @@ const propTypes = {
   proposedBy: PropTypes.string.isRequired,
   proposer: PropTypes.object.isRequired,
   status: PropTypes.string.isRequired,
-  createdAt: PropTypes.string.isRequired,
+  createdAt: PropTypes.string.isRequired
 }
 
 Component.propTypes = propTypes
-
 
 export default Component
 
@@ -85,7 +141,7 @@ const Item = styled(Row)`
 const ItemTitle = styled.div`
   font-weight: 400;
   :after {
-    content: ":";
+    content: ':';
   }
 `
 const ItemText = styled.div`
