@@ -129,7 +129,7 @@ script:
   - if [[ "$RUN_TEST" != "" ]]; then
       cd bin && export LD_LIBRARY_PATH=../lib;
       ./elatests --robot -c ../etc/carrier/tests.conf &
-      ./elatests --cases -c ../etc/carrier/tests.conf -r 3;
+      ./elatests --cases -c ../etc/carrier/tests.conf -r 3 -o;
     fi
 
 after_success:

@@ -30,7 +30,7 @@ for:
 
   test_script:
     - cd outputs\bin
-    - start /b elatests.exe --robot -c ..\etc\carrier\tests.conf && elatests.exe --cases -c ..\etc\carrier\tests.conf -r 3
+    - start /b elatests.exe --robot -c ..\etc\carrier\tests.conf && elatests.exe --cases -c ..\etc\carrier\tests.conf -r 3 -o
 
 artifacts:
   - path: '*.zip'
