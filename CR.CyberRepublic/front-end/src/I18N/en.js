@@ -773,6 +773,7 @@ const en = {
   'council.voting.btnText.completeProposal': 'Complete Proposal',
   'council.voting.btnText.closeIncomplete': 'Close with Incompletion',
   'council.voting.btnText.publish': 'Publish',
+  'council.voting.btnText.delete': 'Delete',
 
   'council.voting.modal.complete': 'Are you sure to complete this proposal?',
   'council.voting.modal.incomplete': 'Are you sure to close with incompletion?',

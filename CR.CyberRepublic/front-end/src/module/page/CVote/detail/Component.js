@@ -483,10 +483,16 @@ class C extends StandardPage {
         {I18N.get('council.voting.btnText.publish')}
       </Button>
     )
+    const deleteDraftProposalBtn = isSelf && canEdit && (
+      <Button type="danger" onClick={this.delete}>
+        {I18N.get('council.voting.btnText.delete')}
+      </Button>
+    )
     return (
       <div className="vote-btn-group">
         {editProposalBtn}
         {publishProposalBtn}
+        {deleteDraftProposalBtn}
       </div>
     )
   }
