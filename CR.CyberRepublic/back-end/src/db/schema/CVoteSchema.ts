@@ -44,7 +44,7 @@ export const CVote = {
   },
   type: {
     type: String,
-    enum: _.keys(constant.CVOTE_TYPE)
+    enum: _.values(constant.CVOTE_TYPE)
   },
   abstract: {
     type: String

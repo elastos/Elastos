@@ -10,9 +10,9 @@ const create = (constant_list: string[]): any => {
 }
 
 export const CVOTE_TYPE = {
-  1: 'New Motion',
-  2: 'Motion Against',
-  3: 'Anything Else'
+  NEW_MOTION: '1',
+  MOTION_AGAINST: '2',
+  ANYTHING_ELSE: '3'
 }
 
 export const USER_ROLE = {
