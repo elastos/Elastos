@@ -7,7 +7,15 @@ import _ from 'lodash'
 
 import styled from 'styled-components'
 
-const Component = ({ vid, title, proposedBy, proposer, status, createdAt }) => {
+const Component = ({
+  vid,
+  title,
+  proposedBy,
+  proposer,
+  type,
+  status,
+  createdAt
+}) => {
   // header
   const headerNode = (
     <Header id="preamble">{I18N.get('proposal.fields.preamble')}</Header>
@@ -19,6 +27,23 @@ const Component = ({ vid, title, proposedBy, proposer, status, createdAt }) => {
   //     not able to access these files untill the bidding ended.
   //   </Note>
   // )
+
+  const typeMap = {
+    1: I18N.get('council.voting.type.newMotion'),
+    2: I18N.get('council.voting.type.motionAgainst'),
+    3: I18N.get('council.voting.type.anythingElse')
+  }
+  // type
+  const typeNode = (
+    <Item>
+      <Col span={6}>
+        <ItemTitle>{I18N.get('proposal.fields.type')}</ItemTitle>
+      </Col>
+      <Col span={18}>
+        <ItemText>{typeMap[type]}</ItemText>
+      </Col>
+    </Item>
+  )
   // id
   const idNode = (
     <Item>
@@ -85,6 +110,7 @@ const Component = ({ vid, title, proposedBy, proposer, status, createdAt }) => {
       {idNode}
       {titleNode}
       {proposerNode}
+      {typeNode}
       {statusNode}
       {createdNode}
     </div>
