@@ -18,17 +18,22 @@ class C extends BaseComponent {
 
     this.state = {
       persist: true,
+      loading: false,
     }
   }
 
   handleSubmit(e) {
     e.preventDefault()
+    if (this.state.loading) return
+    this.setState({ loading: true })
+
     this.props.form.validateFields((err, values) => {
       if (!err) {
         this.props.login(values.username, values.password, this.state.persist).then(() => {
           if (_.isFunction(this.props.onHideModal)) {
             this.props.onHideModal()
           }
+          this.setState({ loading: false })
         })
       }
     })
@@ -89,7 +94,7 @@ class C extends BaseComponent {
           <a className="login-form-forgot pull-right" onClick={() => this.props.history.push('/forgot-password')}>{I18N.get('login.forget')}</a>
         </FormItem>
         <FormItem>
-          <Button loading={this.props.loading} type="ebp" htmlType="submit" className="d_btn d_btn_join">
+          <Button loading={this.state.loading} type="ebp" htmlType="submit" className="d_btn d_btn_join">
             {I18N.get('login.submit')}
           </Button>
         </FormItem>
