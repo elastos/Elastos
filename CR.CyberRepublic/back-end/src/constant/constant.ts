@@ -9,6 +9,12 @@ const create = (constant_list: string[]): any => {
   return map
 }
 
+export const CVOTE_TYPE = {
+  1: 'New Motion',
+  2: 'Motion Against',
+  3: 'Anything Else'
+}
+
 export const USER_ROLE = {
   ADMIN: 'ADMIN',
   COUNCIL: 'COUNCIL',
