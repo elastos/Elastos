@@ -230,4 +230,20 @@ describe('Tests for CVote', () => {
       suggestion.reference[suggestion.reference.length - 1].toString()
     )
   })
+
+  test('council attempt to delete a draft proposal should pass', async () => {
+    const cvoteService = new CVoteService(DB, {
+      user: user.council
+    })
+    // find a draft proposal document
+    const cvote = await DB.getModel('CVote').findOne({
+      status: constant.CVOTE_STATUS.DRAFT
+    })
+    // make sure the draft proposal exists
+    expect(cvote.status).to.be.equal(constant.CVOTE_STATUS.DRAFT)
+    const rs: any = await cvoteService.deleteDraft({
+      _id: cvote._id
+    })
+    expect(rs.deletedCount).to.be.equal(1)
+  })
 })
