@@ -1,6 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!--<string name="app_name" translatable="false">Elastos</string>-->
     <!-- 状态视图  -->
+    <item name="error_tag_empty" type="id"/>
     <string name="loading" translatable="false">加载中...</string>
     <string name="text_empty" translatable="false">还没有数据呢！</string>
     <string name="text_nonet" translatable="false">网络异常！</string>
@@ -351,7 +352,6 @@
     <string name="invalidaddress">不正确的钱包地址</string>
     <string name="ownerpublicKey">所有人公钥</string>
     <string name="max36dot">最多可选36个节点</string>
-    <string name="error_tag_empty">error1</string>
     <string name="nodelist">参选节点列表</string>
     <string name="about">关于ELAWallet</string>
     <string name="currentversionname">当前版本号</string>

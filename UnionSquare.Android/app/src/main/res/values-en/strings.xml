@@ -55,7 +55,7 @@
     <string name="side_chain_top_up">Deposit to Sidechain</string>
     <string name="main_chain_withdraw">Withdraw from Sidechain</string>
     <string name="collection">Receive</string>
-    <string name="transaction_records">Transaction Records</string>
+    <string name="transaction_records">Transactions</string>
     <string name="create_a_wallet_text1">Password is used to protect private keys and transaction authorization. Please ensure you choose a strong password.</string>
     <string name="create_a_wallet_text2">Elastos won\'t store your password and won\'t be able to retrieve it back.  Please keep your password safe and secure.</string>
     <string name="inputWalletName">Enter your name</string>
@@ -210,7 +210,7 @@
     <string name="export_node_keystore">Export node KeyStore</string>
     <string name="for_successful">Registration Success.</string>
     <string name="_5000">5000 ELA required, please try again</string>
-    <string name="ticket">Ticket</string>
+    <string name="ticket">Votes</string>
     <string name="cannot_be_added_repeatedly">You have registered already</string>
     <string name="remove_candidate_list">Remove from Candidate List</string>
     <string name="yi_remove_candidate_list">Removed</string>
@@ -347,14 +347,13 @@
     <string name="invalidaddress">Invalid address</string>
     <string name="ownerpublicKey">Owner Public Key</string>
     <string name="max36dot">Vote for maximum of 36 nodes</string>
-    <string name="error_tag_empty">error1</string>
     <string name="nodelist">Node List</string>
     <string name="about">About</string>
     <string name="currentversionname">Version&#160;</string>
     <string name="feedback">Feedback</string>
     <string name="showupdatalog">What\'s New</string>
     <string name="tv_elaintroduce">ELA Wallet is a secure and reliable SPV Wallet that supports DPoS elections and all digital assets in the Elastos ecosystem. </string>
-    <string name="earn_records">DPoS Reward Records</string>
+    <string name="earn_records">DPoS Rewards</string>
     <string name="copyearnaddress">Copy Address</string>
     <string name="towhole">Consolidate</string>
     <string name="copyemailsuccess">Email copied to clipboard</string>
