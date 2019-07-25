@@ -271,6 +271,7 @@ func startNode(c *cli.Context) {
 
 	servers.Compile = Version
 	servers.Config = cfg
+	servers.ChainParams = activeNetParams
 	servers.Chain = chain
 	servers.Store = chainStore
 	servers.TxMemPool = txMemPool
