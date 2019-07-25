@@ -1,6 +1,15 @@
 import React from 'react'
 import { Helmet } from 'react-helmet'
-import { Form, Spin, Button, Input, message, Modal, Anchor } from 'antd'
+import {
+  Form,
+  Spin,
+  Button,
+  Input,
+  message,
+  Modal,
+  Anchor,
+  Popconfirm
+} from 'antd'
 import { Link } from 'react-router-dom'
 import I18N from '@/I18N'
 import _ from 'lodash'
@@ -483,10 +492,23 @@ class C extends StandardPage {
         {I18N.get('council.voting.btnText.publish')}
       </Button>
     )
+    const deleteDraftProposalBtn = isSelf && canEdit && (
+      <Popconfirm
+        title={I18N.get('council.voting.modal.deleteDraft')}
+        onConfirm={() => this.deleteDraftProposal()}
+        okText={I18N.get('.yes')}
+        cancelText={I18N.get('.no')}
+      >
+        <Button type="danger">
+          {I18N.get('council.voting.btnText.delete')}
+        </Button>
+      </Popconfirm>
+    )
     return (
       <div className="vote-btn-group">
         {editProposalBtn}
         {publishProposalBtn}
+        {deleteDraftProposalBtn}
       </div>
     )
   }
@@ -635,6 +657,23 @@ class C extends StandardPage {
       await updateCVote(param)
       message.success(I18N.get('from.CVoteForm.message.updated.success'))
       this.refetch()
+      this.ord_loading(false)
+    } catch (e) {
+      message.error(e.message)
+      this.ord_loading(false)
+    }
+  }
+
+  deleteDraftProposal = async () => {
+    const { match, deleteDraft } = this.props
+    const id = _.get(match, 'params.id')
+    const param = { _id: id }
+    this.ord_loading(true)
+    try {
+      await deleteDraft(param)
+      message.success(I18N.get('from.CVoteForm.message.delete.success'))
+      // redirect to proposal list page
+      this.props.history.push('/proposals')
       this.ord_loading(false)
     } catch (e) {
       message.error(e.message)

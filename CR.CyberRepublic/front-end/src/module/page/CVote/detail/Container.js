@@ -13,8 +13,20 @@ const mapState = state => ({
   canManage: state.user.is_secretary || state.user.is_council,
   avatar_map,
   data: state.cvote.data,
-  trackingStatus: _.get(_.last([...state.cvoteTracking.all_public, ...state.cvoteTracking.all_private]), 'status'),
-  summaryStatus: _.get(_.last([...state.cvoteSummary.all_public, ...state.cvoteSummary.all_private]), 'status'),
+  trackingStatus: _.get(
+    _.last([
+      ...state.cvoteTracking.all_public,
+      ...state.cvoteTracking.all_private
+    ]),
+    'status'
+  ),
+  summaryStatus: _.get(
+    _.last([
+      ...state.cvoteSummary.all_public,
+      ...state.cvoteSummary.all_private
+    ]),
+    'status'
+  )
 })
 
 const mapDispatch = () => {
@@ -22,6 +34,9 @@ const mapDispatch = () => {
   return {
     async createDraft(param) {
       return service.createDraft(param)
+    },
+    async deleteDraft(param) {
+      return service.deleteDraft(param)
     },
     async listData(param, isCouncil) {
       return service.listData(param, isCouncil)
@@ -49,7 +64,7 @@ const mapDispatch = () => {
     },
     async updateNotes(param) {
       return service.updateNotes(param)
-    },
+    }
   }
 }
 

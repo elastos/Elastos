@@ -49,10 +49,10 @@ const zh = {
         news: '新闻',
         forum: '论坛',
         blog: '博客',
-        docs: '文档',
-      },
+        docs: '文档'
+      }
     },
-    profile: '我的Republic',
+    profile: '我的Republic'
   },
 
   '0200': '简介',
@@ -117,12 +117,17 @@ const zh = {
 
   // Pop-up Announcement
   'popup.changes.title': 'Cyber Republic的重要公告',
-  'popup.changes.2018-12-26.1': '经Cyber Republic理事会和亦来云团队成员们的深入讨论，我们近期将对CR网站进行改版，以更好地体现Cyber Republic 公开、透明和社区自治的理念。\n',
-  'popup.changes.2018-12-26.2': '改版期间CR 网站上的CR100/CRcle/大使计划等会暂停服务（即停止接受新的提案和申请）。针对已经进行中的社区活动和CR100项目，在接下来的几周我们会给出具体的处理方案。',
-  'popup.changes.2018-12-26.3': '新的CR论坛将于2018年12月31日开始启用，希望大家在新的网站平台上提出问题并表达你们的想法。由于因为中国社区无法访问Discord，我们将邀请Discord的所有用户也使用该论坛。',
+  'popup.changes.2018-12-26.1':
+    '经Cyber Republic理事会和亦来云团队成员们的深入讨论，我们近期将对CR网站进行改版，以更好地体现Cyber Republic 公开、透明和社区自治的理念。\n',
+  'popup.changes.2018-12-26.2':
+    '改版期间CR 网站上的CR100/CRcle/大使计划等会暂停服务（即停止接受新的提案和申请）。针对已经进行中的社区活动和CR100项目，在接下来的几周我们会给出具体的处理方案。',
+  'popup.changes.2018-12-26.3':
+    '新的CR论坛将于2018年12月31日开始启用，希望大家在新的网站平台上提出问题并表达你们的想法。由于因为中国社区无法访问Discord，我们将邀请Discord的所有用户也使用该论坛。',
   'popup.changes.2018-12-26.4': '您还可以通过右上角的链接自动登录论坛：',
-  'popup.changes.2018-12-26.5': '更新后的CR网站将于2019年1月15日重新上线，更多信息请参考：',
-  'popup.changes.2018-12-26.blog_link': 'https://blog.cyberrepublic.org/zh/2018/12/26/cyber-republic%E7%9A%84%E9%87%8D%E8%A6%81%E5%85%AC%E5%91%8A',
+  'popup.changes.2018-12-26.5':
+    '更新后的CR网站将于2019年1月15日重新上线，更多信息请参考：',
+  'popup.changes.2018-12-26.blog_link':
+    'https://blog.cyberrepublic.org/zh/2018/12/26/cyber-republic%E7%9A%84%E9%87%8D%E8%A6%81%E5%85%AC%E5%91%8A',
 
   // LoginForm
   'login.label_username': '请输入用户名或邮箱',
@@ -147,7 +152,8 @@ const zh = {
   // RegisterFrom
   'register.title': '成为贡献者',
   'register.description_1': '仅仅需要花费您几秒钟',
-  'register.description_2': '作为会员，您可以在Cyber Republic上申领任务来获取奖励',
+  'register.description_2':
+    '作为会员，您可以在Cyber Republic上申领任务来获取奖励',
   'register.required': '必填项',
   'register.error.code': '您输入的验证码不匹配',
   'register.error.passwords': '您两次输入的密码不一致',
@@ -279,9 +285,9 @@ const zh = {
       show: '显示',
       type: {
         UNDER_CONSIDERATION: '被考虑中',
-        INFO_NEEDED: '需要更多信息',
-      },
-    },
+        INFO_NEEDED: '需要更多信息'
+      }
+    }
   },
 
   // Suggestion Button Text
@@ -299,21 +305,27 @@ const zh = {
   'suggestion.rules': '规则',
   'suggestion.intro.1': '提出建议是可能成为',
   'suggestion.intro.1.proposals': '提案',
-  'suggestion.intro.1.1': '的第一步。委员会成员挑选最佳或最受欢迎的想法，将其形成提案，然后进入投票表决。',
+  'suggestion.intro.1.1':
+    '的第一步。委员会成员挑选最佳或最受欢迎的想法，将其形成提案，然后进入投票表决。',
   'suggestion.intro.2': '这个过程称为CR共识，基本信息请参阅我们的',
   'suggestion.intro.2.blog': '博客。',
   'suggestion.intro.3': '更多信息请参考：',
   'suggestion.rules.guidelines': '指南',
-  'suggestion.rules.guidelines.1': '您可以建议您的公司、团队或您自己作为提案候选人，而委员会成员将斟酌决定是否采纳这项建议',
+  'suggestion.rules.guidelines.1':
+    '您可以建议您的公司、团队或您自己作为提案候选人，而委员会成员将斟酌决定是否采纳这项建议',
   'suggestion.rules.guidelines.2': '请描述您觉得为什么这条建议对亦来云生态有益',
   'suggestion.rules.guidelines.3': '请描述有效执行该建议合理的时间表',
   'suggestion.rules.rulesAndGuidelines': '规则与指南',
   'suggestion.rules.guarantee': '无法确保一项建议会被委员会采纳',
   'suggestion.rules.response': '受欢迎的建议更有可能获得委员会成员的回复',
-  'suggestion.rules.1': '必须与Cyber republic有关，无论是政策变更、项目还是具体的可交付成果',
-  'suggestion.rules.2': '我们无法忍受灌水建议，请等待一段时间再修改并重新提交建议',
-  'suggestion.rules.3': '如果有可交付成果，则必须对成本和预期投资回报进行有根据的估算',
-  'suggestion.rules.infoRequest': '向亦来云基金会或CR的任何成员索要信息将不被受理，这超出了CR共识的范畴。对于这些问题，请联系社区经理。',
+  'suggestion.rules.1':
+    '必须与Cyber republic有关，无论是政策变更、项目还是具体的可交付成果',
+  'suggestion.rules.2':
+    '我们无法忍受灌水建议，请等待一段时间再修改并重新提交建议',
+  'suggestion.rules.3':
+    '如果有可交付成果，则必须对成本和预期投资回报进行有根据的估算',
+  'suggestion.rules.infoRequest':
+    '向亦来云基金会或CR的任何成员索要信息将不被受理，这超出了CR共识的范畴。对于这些问题，请联系社区经理。',
 
   // Roles & Permissions
   'permission.title': 'Roles & Permissions',
@@ -361,9 +373,12 @@ const zh = {
   'developer.cr100.application.view': '查看',
   'developer.cr100.projects': '项目',
   'developer.cr100.submit_whitepaper': '提交白皮书',
-  'developer.cr100.welcome.1': '本计划暂时中止，并很快会变成一组特别的提案。当新的Cyber Republic BETA版启动时，每个团队将优先向新选举产生的7人CR委员会推介他们的提案。',
-  'developer.cr100.welcome.2': '我们仍然重视在ALPHA版本期间已提交提案的每个人和每个团队，并对大家都经历过的疲惫与痛苦深感歉意。新的CR秘书团队将尽一切努力与这些团队联系并确保他们得到一对一的回应。\n',
-  'developer.cr100.welcome.3': '欢迎加入我们于2018年12月31日上线的新论坛，在那里提出您的建议并讨论CR的未来。',
+  'developer.cr100.welcome.1':
+    '本计划暂时中止，并很快会变成一组特别的提案。当新的Cyber Republic BETA版启动时，每个团队将优先向新选举产生的7人CR委员会推介他们的提案。',
+  'developer.cr100.welcome.2':
+    '我们仍然重视在ALPHA版本期间已提交提案的每个人和每个团队，并对大家都经历过的疲惫与痛苦深感歉意。新的CR秘书团队将尽一切努力与这些团队联系并确保他们得到一对一的回应。\n',
+  'developer.cr100.welcome.3':
+    '欢迎加入我们于2018年12月31日上线的新论坛，在那里提出您的建议并讨论CR的未来。',
   'developer.cr100.welcome.title': 'Cyber Republic 100',
   'developer.cr100.disclaimer': '上面描述的项目可能会发生变化，仅作为示例使用',
   'developer.cr100.disclaimer.title': '免责声明',
@@ -441,12 +456,16 @@ const zh = {
   'emp35.header.title.part1': 'CR',
   'emp35.header.title.part2': 'cles',
   'emp35.header.title.part3': ' & Empower35',
-  'emp35.header.content.1': '最近扩展到CRcle中的Empower 35计划将暂停。目前的愿景是，',
-  'emp35.header.content.2': '我们社区的技能人才将晋升为各自专长领域的理事会顾问。',
-  'emp35.header.content.3': '关于社区成员如何晋升到CR更固定的职位，我们随后将发布详细方案。',
+  'emp35.header.content.1':
+    '最近扩展到CRcle中的Empower 35计划将暂停。目前的愿景是，',
+  'emp35.header.content.2':
+    '我们社区的技能人才将晋升为各自专长领域的理事会顾问。',
+  'emp35.header.content.3':
+    '关于社区成员如何晋升到CR更固定的职位，我们随后将发布详细方案。',
 
   'emp35.empower.title': 'CRcles & Empower35',
-  'emp35.empower.content': '您最多可以加入2个圈子（CRcles）。加入CRcle，您就可以组建小团队，创建并申请任务并开始展现您的才华。 CRcles是一个在CR大网络里面的智能小网络群。随着CRcles的不断扩大，整个网络会随之不断扩大。',
+  'emp35.empower.content':
+    '您最多可以加入2个圈子（CRcles）。加入CRcle，您就可以组建小团队，创建并申请任务并开始展现您的才华。 CRcles是一个在CR大网络里面的智能小网络群。随着CRcles的不断扩大，整个网络会随之不断扩大。',
   'emp35.teamHeader.title': 'CRcles',
 
   'emp35.mycircles.title': '我的CRcles',
@@ -488,11 +507,14 @@ const zh = {
   'training.subscribeemail.text': '通过您的邮箱订阅来跟进最新进展。',
   'training.header.content.1': '我们正在初步规划一个开发者黑客马拉松',
   'training.header.content.2': '大使培训计划将推迟到这之后进行。',
-  'training.header.content.3': '我们重视每个人在世界各地组织和举办亦来云推广活动的辛勤工作，',
-  'training.header.content.4': '并将与现有大使继续合作。请持续关注我们的新闻动态，',
+  'training.header.content.3':
+    '我们重视每个人在世界各地组织和举办亦来云推广活动的辛勤工作，',
+  'training.header.content.4':
+    '并将与现有大使继续合作。请持续关注我们的新闻动态，',
   'training.header.content.5': '特别是我们的第二届亦来云周年庆典活动。',
   'training.evangelist.title': '培训目标',
-  'training.evangelist.content': '这个培训的目标是让参与者不仅能从亦来云团队那里学到技术，还能与市场营销和公关专业人士一起制作演示文稿，便于大使们向公众专业地展示亦来云。 Cyber Republic计划每年举行多次培训',
+  'training.evangelist.content':
+    '这个培训的目标是让参与者不仅能从亦来云团队那里学到技术，还能与市场营销和公关专业人士一起制作演示文稿，便于大使们向公众专业地展示亦来云。 Cyber Republic计划每年举行多次培训',
   'training.thanksForApplying': '感谢您的申请，我们会尽快与您取得联系！',
   'training.applyError': '出错了，请直接与我们联系。',
   'training.apply.title': '申请成为大使',
@@ -569,7 +591,8 @@ const zh = {
   'project.admin.statusHelp.created': '此项任务无需经过批准',
   'project.admin.statusHelp.pending': '此项任务正在等待批准',
   'project.admin.statusHelp.successReward': '此项任务正在等待ELA支付',
-  'project.admin.statusHelp.successNoReward': '此项任务不需要花费ELA，故无需下一步行动',
+  'project.admin.statusHelp.successNoReward':
+    '此项任务不需要花费ELA，故无需下一步行动',
   'project.admin.statusHelp.approvedBy': '此项任务的批准人',
   'project.admin.statusHelp.approvedOn': '此项任务已生效',
 
@@ -578,7 +601,8 @@ const zh = {
   'project.public.statusHelp.success': '一位管理员将会审阅并发放ELA奖励',
 
   'project.public.statusHelp.markAsComplete': '标记为已完成',
-  'project.public.statusHelp.markAsCompleteConfirm': '您确定要将此任务标记为已完成吗？',
+  'project.public.statusHelp.markAsCompleteConfirm':
+    '您确定要将此任务标记为已完成吗？',
 
   'team.owner': '领导人',
   'team.description': '描述',
@@ -674,7 +698,8 @@ const zh = {
   'community.selectcountry': '请选择一个国家',
   'community.guidecontainer.part1': '您好！ 看来我们还没有一位组织者',
   'community.guidecontainer.part2': '我们始终寻找新的组织者，特别是在新的社区',
-  'community.guidecontainer.part3': '如果您想成为您所在区域的组织者请注册，我们将会添加您的国家页面，您就可以申请成为该页面的组织者。',
+  'community.guidecontainer.part3':
+    '如果您想成为您所在区域的组织者请注册，我们将会添加您的国家页面，您就可以申请成为该页面的组织者。',
   'community.button.register': '点击注册',
   'community.button.selectcountry': '或者您可以从上面选择一个国家',
   'community.link.toevent': '查看活动',
@@ -720,7 +745,9 @@ const zh = {
   'council.voting.btnText.completeProposal': '标记提案为完成',
   'council.voting.btnText.closeIncomplete': '标记提案为未完成',
   'council.voting.btnText.publish': '发布',
+  'council.voting.btnText.delete': '删除',
 
+  'council.voting.modal.deleteDraft': '您确定要删除此草案吗？',
   'council.voting.modal.complete': '您确定要标记此提案为完成状态吗？',
   'council.voting.modal.incomplete': '您确定要标记此提案为未完成状态吗？',
   'council.voting.modal.updateNotes': '秘书处备注',
@@ -748,17 +775,22 @@ const zh = {
   'landing.stayUpdate': '跟进Cyber Republic最新动态',
   'landing.whatIs': '什么是亦来云?',
 
-  'landing.whatIs.content.1': '亦来云是第一个完全安全和去中心化的互联网环境。使用区块链构建，它提供了一个虚拟生态系统，来保护去中心化式应用程序不受互联网的直接访问，同时为数十亿用户提供近乎无限的可扩展性。',
-  'landing.whatIs.content.2': '亦来云是一个“Cyber Republic”，通过对数据和数字资产的确权和交换来产生财富。',
+  'landing.whatIs.content.1':
+    '亦来云是第一个完全安全和去中心化的互联网环境。使用区块链构建，它提供了一个虚拟生态系统，来保护去中心化式应用程序不受互联网的直接访问，同时为数十亿用户提供近乎无限的可扩展性。',
+  'landing.whatIs.content.2':
+    '亦来云是一个“Cyber Republic”，通过对数据和数字资产的确权和交换来产生财富。',
 
   'landing.cr100.content.1': '欢迎来到万物互联的世界，',
   'landing.cr100.content.2': '在这里，',
   'landing.cr100.content.3': '安全和自由天然存在。',
   'landing.cr100.content.4': '加入我们一起构建前100个项目。',
 
-  'landing.solution.explained.1': '主链处理基本的支付和哈希存储。其他所有信息，包括智能合约，都运行在侧链上，其中应用程序能够创建额外的侧链。',
-  'landing.solution.explained.2': '亦来云与比特币联合挖矿可以降低能源消耗并且为所有应用提供比特币网络安全。包含侧链，从而可以同时在多个链中使用比特币哈希算力。',
-  'landing.solution.explained.3': '使用PoW+DPoS作为亦来云区块链的共识模型，侧链可以选择与ELA进行PoW联合挖矿，或者在PoS、DPoS、DBFT等共识模型之间进行合并。',
+  'landing.solution.explained.1':
+    '主链处理基本的支付和哈希存储。其他所有信息，包括智能合约，都运行在侧链上，其中应用程序能够创建额外的侧链。',
+  'landing.solution.explained.2':
+    '亦来云与比特币联合挖矿可以降低能源消耗并且为所有应用提供比特币网络安全。包含侧链，从而可以同时在多个链中使用比特币哈希算力。',
+  'landing.solution.explained.3':
+    '使用PoW+DPoS作为亦来云区块链的共识模型，侧链可以选择与ELA进行PoW联合挖矿，或者在PoS、DPoS、DBFT等共识模型之间进行合并。',
 
   'landing.elaSol': '亦来云的解决方案',
   'landing.scalability': '可扩展性',
@@ -831,7 +863,8 @@ const zh = {
   'landing.vision.content.3': '运行环境。',
 
   'landing.application.header': '应用',
-  'landing.application.content.1': '亦来云上的应用程序将运行在利用区块链技术构建的可靠运行环境中。它通过提供一个“沙箱”环境来创建真正的安全性，在允许访问internet之前，该环境需要从区块链得到验证。这为构建任何类型的应用程序和任何用例或场景提供了巨大的潜力。',
+  'landing.application.content.1':
+    '亦来云上的应用程序将运行在利用区块链技术构建的可靠运行环境中。它通过提供一个“沙箱”环境来创建真正的安全性，在允许访问internet之前，该环境需要从区块链得到验证。这为构建任何类型的应用程序和任何用例或场景提供了巨大的潜力。',
   'landing.application.content.2': '下面是用例',
   'landing.application.content.3': '关于在亦来云上构建应用程序:',
 
@@ -848,13 +881,18 @@ const zh = {
   'landing.usecase.content.11': '可以在可信环境中得到保护。',
 
   'landing.elaToken': '亦来云令牌(ELA)',
-  'landing.elaToken.content.1': 'ELA令牌将用于在区块链上注册ID，打开通往亦来云生态系统的大门。 一旦加入，您将会获得无数的交流机会。',
-  'landing.elaToken.content.2': '您可以购买去中心化应用程序，获得云存储，购买和销售数字产品和资产，如歌曲、电影、书籍和视频，以及其他无限的资源。',
-  'landing.elaToken.content.3': '此外，ELA令牌持有者将有机会投资于众多项目。对于在亦来云上运行的每一个DApp，拥有ELA来注册数字资产将是非常重要的，从而为ELA令牌创造持续的必要性。',
+  'landing.elaToken.content.1':
+    'ELA令牌将用于在区块链上注册ID，打开通往亦来云生态系统的大门。 一旦加入，您将会获得无数的交流机会。',
+  'landing.elaToken.content.2':
+    '您可以购买去中心化应用程序，获得云存储，购买和销售数字产品和资产，如歌曲、电影、书籍和视频，以及其他无限的资源。',
+  'landing.elaToken.content.3':
+    '此外，ELA令牌持有者将有机会投资于众多项目。对于在亦来云上运行的每一个DApp，拥有ELA来注册数字资产将是非常重要的，从而为ELA令牌创造持续的必要性。',
 
   'landing.cr': 'Cyber Republic',
-  'landing.contribute.1': '我们是一个由领导者、开发者、组织者和设计师组成的多元化民主团体',
-  'landing.contribute.2': '成立的目的是在我们的社区推广亦来云。会员资格向所有人开放。',
+  'landing.contribute.1':
+    '我们是一个由领导者、开发者、组织者和设计师组成的多元化民主团体',
+  'landing.contribute.2':
+    '成立的目的是在我们的社区推广亦来云。会员资格向所有人开放。',
   'landing.contribute.mob.1': '我们是一个多元化的民主团体',
   'landing.contribute.mob.2': '领导者，开发者，组织者和',
   'landing.contribute.mob.3': '设计师们为了在我们的社区',
@@ -895,11 +933,15 @@ const zh = {
   'landing.footer.privacyPolicy': '隐私政策',
   'landing.footer.termsAndConditions': '条款与条件',
 
-  'landing.0220': 'ELA代币将用于在区块链上注册ID，打开通往亦来云生态系统的门。 一旦加入，将会有无数的交流机会。',
-  'landing.0221': '您可以购买去中心化应用程序，获得云存储，购买和销售数字产品和资产，如歌曲、电影、书籍和视频，以及无限的其他资源。',
-  'landing.0222': '此外，ELA代币持有者将有机会投资于众多项目。对于在亦来云上运行的每一个DApp，拥有ELA来注册数字资产将是非常重要的，从而为令牌创造持续的必要性。',
+  'landing.0220':
+    'ELA代币将用于在区块链上注册ID，打开通往亦来云生态系统的门。 一旦加入，将会有无数的交流机会。',
+  'landing.0221':
+    '您可以购买去中心化应用程序，获得云存储，购买和销售数字产品和资产，如歌曲、电影、书籍和视频，以及无限的其他资源。',
+  'landing.0222':
+    '此外，ELA代币持有者将有机会投资于众多项目。对于在亦来云上运行的每一个DApp，拥有ELA来注册数字资产将是非常重要的，从而为令牌创造持续的必要性。',
 
-  'landing.0230': '在亦来云上的应用程序将运行在区块链技术的可靠运行时环境中。它通过提供一个“沙箱”环境来创建真正的安全性，在允许访问互联网之前，该环境需要获得区块链上的验证。这为构建各种用例或场景的任何应用程序提供了巨大的潜力。',
+  'landing.0230':
+    '在亦来云上的应用程序将运行在区块链技术的可靠运行时环境中。它通过提供一个“沙箱”环境来创建真正的安全性，在允许访问互联网之前，该环境需要获得区块链上的验证。这为构建各种用例或场景的任何应用程序提供了巨大的潜力。',
   'landing.0231': '',
 
   // Project Detail
@@ -911,13 +953,19 @@ const zh = {
 
   // Our Vision
   'vision.00': '我们的愿景',
-  'vision.01': 'Cyber Republic的愿景开始于一个雄心勃勃的想法: 创建一个自主运营、自治的企业家和开发人员社区，它可以独立于亦来云发挥作用，但都有共同的目标——把亦来云发展为一个成功的全球性项目。',
-  'vision.02': '我们的新网站刚刚推出Alpha版本。保留了发现任务并获取ELA的基本功能。但是新增的CR100和Empower35项目仍处于早期阶段,它们不仅代表我们长期成功的愿景,更需要社区和Cyber Republic 未来的领导者来协助编制和塑造这些项目的工作机制、流程及社区生态经济。',
-  'vision.03': '事实上, 陈榕和亦来云基金会已经无私地将决定项目发展方向的重任和权力交给了国际社区。虽然Cyber Republic是亦来云的一部分，但她的未来发展和经济模式将由Cyber Republic的成员自行组织管理，而不是亦来云基金会。Cyber Republic将在许多方面完全独立于基金会，并控制自己的发展。这一愿景需要时间才能实现。',
-  'vision.04': '与此同时，我们已经组建了一个Cyber Republic委员会来决定在这个项目朝着完全民主去中心化的方向发展。这个委员会由张烽, 张戈, 和苏翼鹏组成，他们将利用来自社区的贡献，做出战略决定来不断壮大这个项目。随着时间的推移, Empower35项目的成员和Cyber Republic其他领导者将会组建社区自治“政府”。 我们的社区章程正在编制更新中。',
-  'vision.05': '亦来云的愿景是改变互联网，而Cyber Republic愿景是改变人们组织和构建国际化项目的方式，两者是并行的。Alpha版本为我们向一个完全现代和独特的网络共和国目标迈进提供了模板和框架。您的投入和积极的参与对让这个愿景得以继续发展并成形是非常必要的。',
+  'vision.01':
+    'Cyber Republic的愿景开始于一个雄心勃勃的想法: 创建一个自主运营、自治的企业家和开发人员社区，它可以独立于亦来云发挥作用，但都有共同的目标——把亦来云发展为一个成功的全球性项目。',
+  'vision.02':
+    '我们的新网站刚刚推出Alpha版本。保留了发现任务并获取ELA的基本功能。但是新增的CR100和Empower35项目仍处于早期阶段,它们不仅代表我们长期成功的愿景,更需要社区和Cyber Republic 未来的领导者来协助编制和塑造这些项目的工作机制、流程及社区生态经济。',
+  'vision.03':
+    '事实上, 陈榕和亦来云基金会已经无私地将决定项目发展方向的重任和权力交给了国际社区。虽然Cyber Republic是亦来云的一部分，但她的未来发展和经济模式将由Cyber Republic的成员自行组织管理，而不是亦来云基金会。Cyber Republic将在许多方面完全独立于基金会，并控制自己的发展。这一愿景需要时间才能实现。',
+  'vision.04':
+    '与此同时，我们已经组建了一个Cyber Republic委员会来决定在这个项目朝着完全民主去中心化的方向发展。这个委员会由张烽, 张戈, 和苏翼鹏组成，他们将利用来自社区的贡献，做出战略决定来不断壮大这个项目。随着时间的推移, Empower35项目的成员和Cyber Republic其他领导者将会组建社区自治“政府”。 我们的社区章程正在编制更新中。',
+  'vision.05':
+    '亦来云的愿景是改变互联网，而Cyber Republic愿景是改变人们组织和构建国际化项目的方式，两者是并行的。Alpha版本为我们向一个完全现代和独特的网络共和国目标迈进提供了模板和框架。您的投入和积极的参与对让这个愿景得以继续发展并成形是非常必要的。',
   'vision.06': '关于如何申请个人项目的更多信息和更多细节很快将会发布。',
-  'vision.07': '我们期待着为更安全、更透明、更自由的新型互联网建立一个创业和创新的国际化港湾。',
+  'vision.07':
+    '我们期待着为更安全、更透明、更自由的新型互联网建立一个创业和创新的国际化港湾。',
 
   // Role
   'role.member': '用户',
@@ -997,8 +1045,10 @@ const zh = {
   'profile.detail.complookup': '您想要多少ELA？',
   'profile.detail.solo': '告诉我们您为什么想要加入',
   'profile.detail.form.bid.required': '投标是必需的',
-  'profile.detail.upload.whitepaper': '如果您已经准备好了白皮书, 请将它拖到这里。',
-  'profile.detail.upload.comment': '用下面的评论功能与项目负责人对话，并查找更多信息。',
+  'profile.detail.upload.whitepaper':
+    '如果您已经准备好了白皮书, 请将它拖到这里。',
+  'profile.detail.upload.comment':
+    '用下面的评论功能与项目负责人对话，并查找更多信息。',
   'profile.detail.table.name': '名称',
   'profile.detail.table.action': '操作',
   'profile.detail.noapplications': '还没有任何申请',
@@ -1031,7 +1081,8 @@ const zh = {
   'social.columns.reward': '奖励',
   'social.columns.deadline': '截止日期',
   'social.generalevent.header': '一般活动和社区任务',
-  'social.generalevent.description': '这个计划让有兴趣帮助组织者计划活动，或者承担组织者创建的小任务的成员以帮助将亦来云推广到社区',
+  'social.generalevent.description':
+    '这个计划让有兴趣帮助组织者计划活动，或者承担组织者创建的小任务的成员以帮助将亦来云推广到社区',
   'social.addmember.success': '您已经加入了社区，谢谢！',
   'social.addmember.error': '申请加入社区时发生错误',
 
@@ -1070,12 +1121,14 @@ const zh = {
   'profile.detail.no': '否',
 
   // Module form
+  'from.CVoteForm.message.delete.success': '删除成功',
   'from.CVoteForm.message.updated.success': '更新成功',
   'from.CVoteForm.message.create.success': '创建成功',
   'from.CVoteForm.yes': '是',
   'from.CVoteForm.no': '否',
   'from.CVoteForm.proposal.title': 'Cyber Republic共治委员会委员提案表格',
-  'from.CVoteForm.proposal.content': 'Cyber Republic共治委员会委员可以使用这个表格提交动议。Cyber Republic的所有公民都可以查阅，并在线下分享他们自己的想法。所有的提案都会在共治委员会例会上进行讨论。所有结果都会公开披露。这是Cyber Republic的网站有这个功能前的暂行方案。',
+  'from.CVoteForm.proposal.content':
+    'Cyber Republic共治委员会委员可以使用这个表格提交动议。Cyber Republic的所有公民都可以查阅，并在线下分享他们自己的想法。所有的提案都会在共治委员会例会上进行讨论。所有结果都会公开披露。这是Cyber Republic的网站有这个功能前的暂行方案。',
   'from.CVoteForm.label.voteStatus': '投票状态',
   'from.CVoteForm.label.publish': '发布',
   'from.CVoteForm.label.title': '标题',
@@ -1083,7 +1136,8 @@ const zh = {
   'from.CVoteForm.label.content': '内容',
   'from.CVoteForm.label.proposedby': '提议者',
   'from.CVoteForm.label.motion': '动议',
-  'from.CVoteForm.label.motion.help': '如果这是针对现有的议案作出的提议，请指明现有的议案编号',
+  'from.CVoteForm.label.motion.help':
+    '如果这是针对现有的议案作出的提议，请指明现有的议案编号',
   'from.CVoteForm.label.conflict': '有冲突？',
   'from.CVoteForm.label.conflict.help': '该提案是否可能与现有的章程相冲突？',
   'from.CVoteForm.label.note': '秘书处记录',
@@ -1117,18 +1171,25 @@ const zh = {
   'from.OrganizerAppForm.fullLegalName': '法定全名',
   'from.OrganizerAppForm.Occupation': '职业',
   'from.OrganizerAppForm.Education': '教育',
-  'from.OrganizerAppForm.language': '您的母语是什么，谁是您的听众和他们所在的地区是哪里?您会使用哪（几）种语言去介绍亦来云。',
+  'from.OrganizerAppForm.language':
+    '您的母语是什么，谁是您的听众和他们所在的地区是哪里?您会使用哪（几）种语言去介绍亦来云。',
   'from.OrganizerAppForm.speaking': '请描述您公开演讲的经历并提供相关案例。',
-  'from.OrganizerAppForm.organizer': '您曾有过组织活动的经验吗？请提供相关案例。',
-  'from.OrganizerAppForm.contributions': '请列出任何您现在或以往对推广亦来云做出的贡献。',
+  'from.OrganizerAppForm.organizer':
+    '您曾有过组织活动的经验吗？请提供相关案例。',
+  'from.OrganizerAppForm.contributions':
+    '请列出任何您现在或以往对推广亦来云做出的贡献。',
   'from.OrganizerAppForm.areyoudeveloper': '您是开发人员吗？',
-  'from.OrganizerAppForm.notdeveloper': '如果您不是开发人员，请阐述您对亦来云的技术和我们想要解决的问题的理解。',
+  'from.OrganizerAppForm.notdeveloper':
+    '如果您不是开发人员，请阐述您对亦来云的技术和我们想要解决的问题的理解。',
   'from.OrganizerAppForm.describeElastos': '请用您自己的语言来解释亦来云。',
-  'from.OrganizerAppForm.inspired': '请简单说明是什么启发您加入 Cyber Republic的。',
-  'from.OrganizerAppForm.divider.submitvideo': '请提交一段视频介绍亦来云对您的意义。',
+  'from.OrganizerAppForm.inspired':
+    '请简单说明是什么启发您加入 Cyber Republic的。',
+  'from.OrganizerAppForm.divider.submitvideo':
+    '请提交一段视频介绍亦来云对您的意义。',
   'from.OrganizerAppForm.submit': '提交',
   'from.OrganizerAppForm.attachment': '附件',
-  'from.OrganizerAppForm.message.success': '提交成功——我们的管理员很快和您联系。',
+  'from.OrganizerAppForm.message.success':
+    '提交成功——我们的管理员很快和您联系。',
 
   'from.SubmissionCreateForm.title.required': '标题为必填项',
   'from.SubmissionCreateForm.type.required': '请选择问题类型',
@@ -1184,10 +1245,12 @@ const zh = {
   'from.TaskCreateForm.label.dateconfirm': '确认日期',
   'from.TaskCreateForm.label.location': '地点',
   'from.TaskCreateForm.label.paymentassigment': '付款和分配',
-  'from.TaskCreateForm.label.budgetlabor': '预算是用于开支/成本，奖励是用于人工和时间',
+  'from.TaskCreateForm.label.budgetlabor':
+    '预算是用于开支/成本，奖励是用于人工和时间',
   'from.TaskCreateForm.label.private': '私人的',
   'from.TaskCreateForm.label.taskyourself': '- 您想自己做这个任务',
-  'from.TaskCreateForm.label.proposing.approval': '- 您正在提出预算/奖励以获得批准',
+  'from.TaskCreateForm.label.proposing.approval':
+    '- 您正在提出预算/奖励以获得批准',
   'from.TaskCreateForm.label.notvisible': '- 其他人不会看到',
   'from.TaskCreateForm.label.public': '公开的',
   'from.TaskCreateForm.label.taskforother': '- 这是给别人的任务',
@@ -1199,7 +1262,8 @@ const zh = {
   'from.TaskCreateForm.label.usdreward': '美元奖励',
   'from.TaskCreateForm.label.elabudget': 'ELA预算',
   'from.TaskCreateForm.label.elareward': 'ELA奖励',
-  'from.TaskCreateForm.label.disclaimerrule': '我已经阅读完毕付款规则和免责声明',
+  'from.TaskCreateForm.label.disclaimerrule':
+    '我已经阅读完毕付款规则和免责声明',
   'from.TaskCreateForm.label.referbid': '参考出价',
   'from.TaskCreateForm.label.attachment': '附件',
   'from.TaskCreateForm.label.remove.attachment': '您确定要移除这个附件吗？',
@@ -1208,8 +1272,10 @@ const zh = {
   'from.TaskCreateForm.button.submitpropsal': '提交任务申请',
   'from.TaskCreateForm.label.paymentrules': '付款规则和免责声明',
   'from.TaskCreateForm.button.close': '关闭',
-  'from.TaskCreateForm.text.payment.billable': '任何可以计费的工作如果超出原来的任务描述范围，必须先得到批准',
-  'from.TaskCreateForm.text.payment.upon': '在完成任务/活动之后，须提交一份全面的报告以获取报酬',
+  'from.TaskCreateForm.text.payment.billable':
+    '任何可以计费的工作如果超出原来的任务描述范围，必须先得到批准',
+  'from.TaskCreateForm.text.payment.upon':
+    '在完成任务/活动之后，须提交一份全面的报告以获取报酬',
   'from.TaskCreateForm.text.payment.exchange': '如果报酬是以美元计价，将会使用',
   'from.TaskCreateForm.text.payment.used': '付款时的交易价格计算',
   'from.TaskCreateForm.text.payment.expenses': '所用开支需要提供发票或收据',
@@ -1243,13 +1309,18 @@ const zh = {
   'from.Training1Form.label.fullllegal': '法定全名',
   'from.Training1Form.label.occupation': '职业',
   'from.Training1Form.label.education': '教育背景',
-  'from.Training1Form.text.nativelanguage': '您的母语是什么，谁是您的听众和他们所在的地区是哪里?您会使用哪（几）种语言去介绍亦来云。',
-  'from.Training1Form.text.describeyour': '请描述您公开演讲的经历并提供相关案例。',
-  'from.Training1Form.text.listanycurrent': '请列出任何您现在或以往对推广亦来云做出的贡献。',
+  'from.Training1Form.text.nativelanguage':
+    '您的母语是什么，谁是您的听众和他们所在的地区是哪里?您会使用哪（几）种语言去介绍亦来云。',
+  'from.Training1Form.text.describeyour':
+    '请描述您公开演讲的经历并提供相关案例。',
+  'from.Training1Form.text.listanycurrent':
+    '请列出任何您现在或以往对推广亦来云做出的贡献。',
   'from.Training1Form.text.adeveloper': '您是开发人员吗？',
-  'from.Training1Form.text.explain': '如果您不是开发人员，请阐述您对亦来云的技术和我们想要解决的问题的理解。',
+  'from.Training1Form.text.explain':
+    '如果您不是开发人员，请阐述您对亦来云的技术和我们想要解决的问题的理解。',
   'from.Training1Form.text.describe': '请用您自己的语言来解释亦来云。',
-  'from.Training1Form.text.tellfeword': '请简单说明是什么启发您加入 Cyber Republic的。',
+  'from.Training1Form.text.tellfeword':
+    '请简单说明是什么启发您加入 Cyber Republic的。',
   'from.Training1Form.text.submitvideo': '请提交一段视频介绍亦来云对您的意义。',
   'from.Training1Form.label.attachment': '附件',
   'from.Training1Form.button.submit': '提交',
@@ -1257,7 +1328,8 @@ const zh = {
   'from.UserContactForm.message.success': '邮件发送成功',
   'from.UserContactForm.field.required': '这是必填项',
   'from.UserContactForm.placeholder.message': '信息',
-  'from.UserContactForm.text.emailreply': '邮件回复地址将设置为您注册帐户使用的电子邮箱，回复将直接发送到您的电子邮箱',
+  'from.UserContactForm.text.emailreply':
+    '邮件回复地址将设置为您注册帐户使用的电子邮箱，回复将直接发送到您的电子邮箱',
   'from.UserContactForm.button.send': '发送信息',
 
   'from.UserEditForm.label.bio': '自传',
@@ -1295,40 +1367,56 @@ const zh = {
   // CR Video / Earn ELA page
   'cr-video.here': '点击这里',
   'cr-video.header.1': '重新获得属于您的互联网',
-  'cr-video.header.2': 'Cyber Republic是一个由合作者组成的全球性社区，旨在共同打造区块链技术驱动的安全和公平的智能万维网。',
+  'cr-video.header.2':
+    'Cyber Republic是一个由合作者组成的全球性社区，旨在共同打造区块链技术驱动的安全和公平的智能万维网。',
   'cr-video.join': '现在就加入我们',
   'cr-video.q1': '当前的互联网存在哪些问题呢？',
   'cr-video.q1.title.1': '财富分配不均',
-  'cr-video.q1.paragraph.1': '现在的互联网架构促使权力与知识越来越集中于某几个跨国企业而难以规范，它们容易发生腐败，会对用户进行审查和滥用权力',
+  'cr-video.q1.paragraph.1':
+    '现在的互联网架构促使权力与知识越来越集中于某几个跨国企业而难以规范，它们容易发生腐败，会对用户进行审查和滥用权力',
   'cr-video.q1.title.2': '缺乏安全性',
-  'cr-video.q1.paragraph.2': '按照原有的设计发展，设备、操作系统和互联网变得越来越不安全，因为数据和身份容易受到黑客、恶意软件、间谍软件和漏洞的攻击。 中心化的数据和存储使黑客攻击和腐败变得低成本且易如反掌。在这种情况下，物联网（loT）设备在未来是不可能发展起来的。',
+  'cr-video.q1.paragraph.2':
+    '按照原有的设计发展，设备、操作系统和互联网变得越来越不安全，因为数据和身份容易受到黑客、恶意软件、间谍软件和漏洞的攻击。 中心化的数据和存储使黑客攻击和腐败变得低成本且易如反掌。在这种情况下，物联网（loT）设备在未来是不可能发展起来的。',
   'cr-video.q1.title.3': '缺乏数字资产保护',
-  'cr-video.q1.paragraph.3': '内容创作者（音乐家、艺术家、作家等）和创新者没有能力在现实世界中拥有、保护或出售他们的作品。 这让广告成为主要的获利手段，中间人因而主导了价值链，使创意产业中的人们长期得不到应有的回报。',
+  'cr-video.q1.paragraph.3':
+    '内容创作者（音乐家、艺术家、作家等）和创新者没有能力在现实世界中拥有、保护或出售他们的作品。 这让广告成为主要的获利手段，中间人因而主导了价值链，使创意产业中的人们长期得不到应有的回报。',
   'cr-video.q2': '那现在的互联网是残缺的。我们该如何修复它？',
-  'cr-video.q2.paragraph.1': '这个问题促使陈榕在2000年辞任微软高级软件开发研究员职务，并开始为排除安全、数据确权和财富分配中的障碍开发解决方案。垄断当今互联网服务的巨头们要么对这些问题视而不见，要么积极利用它们谋取利益。如今，这个解决方案已然成形，它就是亦来云——全球第一个互联网操作系统。',
+  'cr-video.q2.paragraph.1':
+    '这个问题促使陈榕在2000年辞任微软高级软件开发研究员职务，并开始为排除安全、数据确权和财富分配中的障碍开发解决方案。垄断当今互联网服务的巨头们要么对这些问题视而不见，要么积极利用它们谋取利益。如今，这个解决方案已然成形，它就是亦来云——全球第一个互联网操作系统。',
   'cr-video.q3': '亦来云：区块链驱动的智能万维网',
-  'cr-video.q3.paragraph.1': '亦来云是未来安全可靠的互联网。利用区块链构建，这一技术突破第一次创建了完全安全的网络环境，将去中心化的应用程序与互联网的分离开来，同时还能为数百万用户提供了全面的可扩展性。 亦来云通过对您的数据和数字资产的确权与交换来实现财富的创造。',
-  'cr-video.q3.paragraph.2': '亦来云不是一个区块链的项目，而是由区块链技术驱动的网络操作系统项目。所以这样来说，亦来云并没有直接与任何其他区块链项目竞争。它可以与其他项目合作，形成一个全新的生态系统：去中心化的应用程序直接在设备上而不是在区块链上运行，以及去中心化的点对点网络，在完全封闭的沙箱环境中传输资产，从而解决了当今的互联网中的三个支柱问题——安全性，可扩展性和去中心化。',
+  'cr-video.q3.paragraph.1':
+    '亦来云是未来安全可靠的互联网。利用区块链构建，这一技术突破第一次创建了完全安全的网络环境，将去中心化的应用程序与互联网的分离开来，同时还能为数百万用户提供了全面的可扩展性。 亦来云通过对您的数据和数字资产的确权与交换来实现财富的创造。',
+  'cr-video.q3.paragraph.2':
+    '亦来云不是一个区块链的项目，而是由区块链技术驱动的网络操作系统项目。所以这样来说，亦来云并没有直接与任何其他区块链项目竞争。它可以与其他项目合作，形成一个全新的生态系统：去中心化的应用程序直接在设备上而不是在区块链上运行，以及去中心化的点对点网络，在完全封闭的沙箱环境中传输资产，从而解决了当今的互联网中的三个支柱问题——安全性，可扩展性和去中心化。',
   'cr-video.q3.subtitle.1': '通过过以下资源了解有关亦来云的更多信息：',
   'cr-video.q3.link.1': '亦来云白皮书',
   'cr-video.q3.link.2': '亦来云开发者指南',
   'cr-video.q3.link.3': '亦来云非开发者指南',
   'cr-video.q3.link.4': 'Elastos.org',
   'cr-video.q4': 'Cyber Republic在亦来云智能互联网框架中处于什么位置？',
-  'cr-video.q4.paragraph.1': '虽然亦来云网络操作系统能够提供一个新的、更进步的互联网所需的安全环境，但它只是一个基础设施——如果没有人为指导、参与和协作，就无法管理或培养这个生态系统。',
-  'cr-video.q4.paragraph.2': '考虑到这一点，亦来云基金会创建了一个协作性的虚拟平台，让来自不同地点，拥有不同教育和专业背景、技能和思想体系的创新者可以共同构建亦来云的基础设施，编写互联网管治的新规则（不再被垄断！），最终让未来的虚拟经济服务每一个人，而不仅仅是少数特权阶层。 简而言之，Cyber Republic如同一个超越国界的“虚拟国家”，欢迎世界各地的所有人成为其公民、贡献者和管理者。',
-  'cr-video.q4.paragraph.3': '实际上，Cyber Republic（CR）为开发人员、设计师、企业家、组织者和其他成员共同开发项目提供了一个虚拟的会员平台。这些项目将会促进全球向着一个安全的、经济上可行的、机会平等的互联网转型，而亦来云操作系统将使这个愿景成为可能。',
-  'cr-video.q4.paragraph.4': '目前，大多数CR项目围绕着构建、增强和测试在亦来云上运行的去中心化应用程序（DApps）而开展，或者通过营销、写作、推广、媒体报道和其他推广渠道增加亦来云的曝光度。',
-  'cr-video.q4.paragraph.5': '贡献者可以做任何事情，从检查bug到企业级DApp的开发，从撰写博客到组织国际会议。您参与建设Cyber Republic是没有任何条条框框的，可以自由地制定和执行您的好主意。无论您的视野和专业知识包含什么，都将受到社区的欢迎。',
+  'cr-video.q4.paragraph.1':
+    '虽然亦来云网络操作系统能够提供一个新的、更进步的互联网所需的安全环境，但它只是一个基础设施——如果没有人为指导、参与和协作，就无法管理或培养这个生态系统。',
+  'cr-video.q4.paragraph.2':
+    '考虑到这一点，亦来云基金会创建了一个协作性的虚拟平台，让来自不同地点，拥有不同教育和专业背景、技能和思想体系的创新者可以共同构建亦来云的基础设施，编写互联网管治的新规则（不再被垄断！），最终让未来的虚拟经济服务每一个人，而不仅仅是少数特权阶层。 简而言之，Cyber Republic如同一个超越国界的“虚拟国家”，欢迎世界各地的所有人成为其公民、贡献者和管理者。',
+  'cr-video.q4.paragraph.3':
+    '实际上，Cyber Republic（CR）为开发人员、设计师、企业家、组织者和其他成员共同开发项目提供了一个虚拟的会员平台。这些项目将会促进全球向着一个安全的、经济上可行的、机会平等的互联网转型，而亦来云操作系统将使这个愿景成为可能。',
+  'cr-video.q4.paragraph.4':
+    '目前，大多数CR项目围绕着构建、增强和测试在亦来云上运行的去中心化应用程序（DApps）而开展，或者通过营销、写作、推广、媒体报道和其他推广渠道增加亦来云的曝光度。',
+  'cr-video.q4.paragraph.5':
+    '贡献者可以做任何事情，从检查bug到企业级DApp的开发，从撰写博客到组织国际会议。您参与建设Cyber Republic是没有任何条条框框的，可以自由地制定和执行您的好主意。无论您的视野和专业知识包含什么，都将受到社区的欢迎。',
   'cr-video.q5': '为何要加入Cyber Republic？',
-  'cr-video.q5.paragraph.1': '为何不呢？如果您正在阅读这篇文章，也许您已经察觉到需要一些目前的互联网无法提供的东西。那么谁是能够塑造您理想中的新型互联网的最佳选择呢？相信您已经知道答案了。所以请加入我们，注册、连接然后改变世界。 您就能成为一个新型智能互联网的联合创始人。',
+  'cr-video.q5.paragraph.1':
+    '为何不呢？如果您正在阅读这篇文章，也许您已经察觉到需要一些目前的互联网无法提供的东西。那么谁是能够塑造您理想中的新型互联网的最佳选择呢？相信您已经知道答案了。所以请加入我们，注册、连接然后改变世界。 您就能成为一个新型智能互联网的联合创始人。',
   'cr-video.q6': '如何加入Cyber Republic',
   'cr-video.q6.title.1': '第一步：在Cyber Republic平台上注册',
   'cr-video.q6.paragraph.1': '您可以轻松完成',
-  'cr-video.q6.title.1_2': '第一步：注册。看来您已经注册了，那么您完成接下来的步骤了吗？',
-  'cr-video.q6.paragraph.1_2': '加入CRcles，加入一个团队，寻找任务/项目，甚至作为一名企业家，组建一个CR100项目的团队',
+  'cr-video.q6.title.1_2':
+    '第一步：注册。看来您已经注册了，那么您完成接下来的步骤了吗？',
+  'cr-video.q6.paragraph.1_2':
+    '加入CRcles，加入一个团队，寻找任务/项目，甚至作为一名企业家，组建一个CR100项目的团队',
   'cr-video.q6.title.2': '第二步：加入不多于2个CRcles',
-  'cr-video.q6.paragraph.2': 'CRcles代表CR社区的不同功能的子社区，具有共享技能并愿意为特定类型的任务或项目做出贡献（例如，写作、营销、开发等）',
+  'cr-video.q6.paragraph.2':
+    'CRcles代表CR社区的不同功能的子社区，具有共享技能并愿意为特定类型的任务或项目做出贡献（例如，写作、营销、开发等）',
   'cr-video.q6.title.3': '第三步：与其他CRcle成员交流',
   'cr-video.q6.paragraph.3_2': '在讨论板上打个招呼, ',
   'cr-video.q6.paragraph.3.link': '加入Discord群聊, ',
@@ -1336,7 +1424,8 @@ const zh = {
   'cr-video.q6.title.4': '第四步：浏览CR社区里进行中的项目和任务',
   'cr-video.q6.paragraph.4': '申请那些您最感兴趣的任务，',
   'cr-video.q6.paragraph.4.link': '并凭借您的贡献获取ELA',
-  'cr-video.q6.title.5': '第五步：作为新型互联网的联合创始人，剩下的就交给您自己来决定。',
+  'cr-video.q6.title.5':
+    '第五步：作为新型互联网的联合创始人，剩下的就交给您自己来决定。',
   'cr-video.q6.paragraph.5': '大踏步前进，把您的想法变为现实吧！',
 
   'cr-video.q6.subtitle.1': '透过以下资源了解有关亦来云的更多信息：',
@@ -1449,34 +1538,34 @@ const zh = {
         toastMsg: '委员会和秘书处正在长期招聘哦。',
         howtoApply: {
           title: '如何申请？',
-          desc: '请发您的简历和申请到: secretariat@cyberrepublic.org',
+          desc: '请发您的简历和申请到: secretariat@cyberrepublic.org'
         },
         viewMore: '查看更多',
         position_1: {
           title: '科技及开发顾问',
-          desc: '针对提案为委员会成员提供专业的建议。',
+          desc: '针对提案为委员会成员提供专业的建议。'
         },
         position_2: {
           title: '投资顾问',
-          desc: '针对提案为委员会成员提供专业的建议。',
+          desc: '针对提案为委员会成员提供专业的建议。'
         },
         position_3: {
           title: 'BD/PR顾问',
-          desc: '针对提案为委员会成员提供专业的建议。',
+          desc: '针对提案为委员会成员提供专业的建议。'
         },
         position_4: {
           title: '项目经理',
-          desc: '负责提案的执行，管理项目并保证提案得到成功实施。',
-        },
-      },
+          desc: '负责提案的执行，管理项目并保证提案得到成功实施。'
+        }
+      }
     },
     rule: {
       tile: '委员会规则',
       show: {
         click: '点击',
         here: '这里',
-        view: '查阅委员会规则',
-      },
+        view: '查阅委员会规则'
+      }
     },
     contact: '联系',
     kevin: {
@@ -1496,8 +1585,8 @@ const zh = {
     },
     rebecca: {
       name: '朱凤',
-      intro: '亦来云基金会项目总监，常驻北京',
-    },
+      intro: '亦来云基金会项目总监，常驻北京'
+    }
   },
 
   // ConstitutionNavigator
@@ -1508,7 +1597,7 @@ const zh = {
   'counstitution.title1': '亦来云Cyber Republic章程',
   'counstitution.title2': '亦来云Cyber Republic委员会创始文件',
   'counstitution.title3': '亦来云Cyber Republic投票规则',
-  'counstitution.title4': '亦来云Cyber Republic委员会利益和分歧协调政策',
+  'counstitution.title4': '亦来云Cyber Republic委员会利益和分歧协调政策'
 }
 
 // lang mappings
