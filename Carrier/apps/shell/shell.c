@@ -830,6 +830,7 @@ static void friend_removed_callback(ElaCarrier *w, const char *friendid,
 
 static void send_message(ElaCarrier *w, int argc, char *argv[])
 {
+    bool is_offline;
     int rc;
 
     if (argc != 3) {
@@ -837,9 +838,10 @@ static void send_message(ElaCarrier *w, int argc, char *argv[])
         return;
     }
 
-    rc = ela_send_friend_message(w, argv[1], argv[2], strlen(argv[2]) + 1);
+    rc = ela_send_friend_message(w, argv[1], argv[2], strlen(argv[2]) + 1,
+                                 &is_offline);
     if (rc == 0)
-        output("Send message success.\n");
+        output("Send %s message success.\n", is_offline ? "offline" : "online");
     else
         output("Send message failed(0x%x).\n", ela_get_error());
 }
@@ -879,7 +881,7 @@ static void send_bulk_message(ElaCarrier *w, int argc, char *argv[])
         strcpy(msg, argv[3]);
         strcat(msg, index);
 
-        rc = ela_send_friend_message(w, argv[1], msg, strlen(msg) + 1);
+        rc = ela_send_friend_message(w, argv[1], msg, strlen(msg) + 1, NULL);
         if (rc < 0) {
             output("x(0x%x)", ela_get_error());
             failed_count++;
@@ -2120,9 +2122,9 @@ static void friend_request_callback(ElaCarrier *w, const char *userid,
 }
 
 static void message_callback(ElaCarrier *w, const char *from,
-                             const void *msg, size_t len, void *context)
+                             const void *msg, size_t len, bool is_offline, void *context)
 {
-    output("Message from friend[%s]: %.*s\n", from, (int)len, (const char *)msg);
+    output("Message(%s) from friend[%s]: %.*s\n", is_offline ? "offline" : "online", from, (int)len, (const char *)msg);
 }
 
 static void invite_request_callback(ElaCarrier *w, const char *from, const char *bundle,

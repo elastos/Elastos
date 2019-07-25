@@ -75,7 +75,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
 }
 
 static void friend_message_cb(ElaCarrier *w, const char *from, const void *msg, size_t len,
-                              void *context)
+                              bool is_offline, void *context)
 {
     CarrierContextExtra *extra = ((CarrierContext *)context)->extra;
 
@@ -131,6 +131,7 @@ static TestContext test_context = {
 static void test_send_message_to_friend(void)
 {
     CarrierContext *wctxt = test_context.carrier;
+    bool is_offline;
     int rc;
 
     test_context.context_reset(&test_context);
@@ -140,8 +141,9 @@ static void test_send_message_to_friend(void)
     CU_ASSERT_TRUE_FATAL(ela_is_friend(wctxt->carrier, robotid));
 
     const char* out = "message-test";
-    rc = ela_send_friend_message(wctxt->carrier, robotid, out, strlen(out));
+    rc = ela_send_friend_message(wctxt->carrier, robotid, out, strlen(out), &is_offline);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
+    CU_ASSERT_EQUAL_FATAL(is_offline, false);
 
     char in[64];
     rc = read_ack("%64s", in);
@@ -193,7 +195,7 @@ static void test_send_message_to_stranger(void)
     CU_ASSERT_FALSE_FATAL(ela_is_friend(wctxt->carrier, robotid));
 
     const char* msg = "test-message";
-    rc = ela_send_friend_message(wctxt->carrier, robotid, msg, strlen(msg));
+    rc = ela_send_friend_message(wctxt->carrier, robotid, msg, strlen(msg), NULL);
     CU_ASSERT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_NOT_EXIST));
 }
@@ -210,7 +212,7 @@ static void test_send_message_to_self(void)
 
     (void)ela_get_userid(wctxt->carrier, userid, sizeof(userid));
     (void)ela_get_nodeid(wctxt->carrier, nodeid, sizeof(nodeid));
-    rc = ela_send_friend_message(wctxt->carrier, userid, msg, strlen(msg));
+    rc = ela_send_friend_message(wctxt->carrier, userid, msg, strlen(msg), NULL);
     CU_ASSERT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL_FATAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 }

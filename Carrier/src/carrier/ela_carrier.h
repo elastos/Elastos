@@ -788,10 +788,13 @@ typedef struct ElaCallbacks {
      * @param
      *      len         [in] The message length in bytes.
      * @param
+     *      is_offline  [in] Which method does the sender use to send this message:
+     *                       true, offline; false, online.
+     * @param
      *      context     [in] The application defined context data.
      */
     void (*friend_message)(ElaCarrier *carrier, const char *from,
-                           const void *msg, size_t len, void *context);
+                           const void *msg, size_t len, bool is_offline, void *context);
 
     /**
      * \~English
@@ -1341,6 +1344,10 @@ int ela_remove_friend(ElaCarrier *carrier, const char *userid);
  *      msg         [in] The message content defined by application.
  * @param
  *      len         [in] The message length in bytes.
+ * @param
+ *      is_offline  [out] Whether the target user is offline when the message
+ *                        is sent: true, offline; false, online. This pointer
+ *                        can be NULL.
  *
  * @return
  *      0 if the text message successfully sent.
@@ -1349,7 +1356,7 @@ int ela_remove_friend(ElaCarrier *carrier, const char *userid);
  */
 CARRIER_API
 int ela_send_friend_message(ElaCarrier *carrier, const char *to,
-                            const void *msg, size_t len);
+                            const void *msg, size_t len, bool *is_offline);
 
 /**
  * \~English

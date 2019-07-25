@@ -346,16 +346,17 @@ void faccept(TestContext *context, int argc, char *argv[])
 static void fmsg(TestContext *context, int argc, char *argv[])
 {
     ElaCarrier *w = context->carrier->carrier;
+    bool is_offline;
     int rc;
 
     CHK_ARGS(argc == 3);
 
-    rc = ela_send_friend_message(w, argv[1], argv[2], strlen(argv[2]));
+    rc = ela_send_friend_message(w, argv[1], argv[2], strlen(argv[2]), &is_offline);
     if (rc < 0)
         vlogE("Send message to friend %s error (0x%x)",
               argv[1], ela_get_error());
     else
-        vlogD("Send message to friend %s success", argv[1]);
+        vlogD("Send %s message to friend %s success", is_offline ? "offline" : "online", argv[1]);
 }
 
 /*

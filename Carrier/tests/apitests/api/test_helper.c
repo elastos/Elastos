@@ -187,12 +187,13 @@ static void carrier_friend_removed_cb(ElaCarrier *w, const char *friendid,
 }
 
 static void carrier_friend_message_cb(ElaCarrier *w, const char *from,
-                                      const void *msg, size_t len, void *context)
+                                      const void *msg, size_t len,
+                                      bool is_offline, void *context)
 {
     ElaCallbacks *cbs = ((CarrierContext*)context)->cbs;
 
     if (cbs && cbs->friend_message)
-        cbs->friend_message(w, from, msg, len, context);
+        cbs->friend_message(w, from, msg, len, is_offline, context);
 }
 
 static void carrier_friend_invite_cb(ElaCarrier *w, const char *from,

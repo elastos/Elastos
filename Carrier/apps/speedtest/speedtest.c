@@ -279,6 +279,7 @@ static void friend_removed_callback(ElaCarrier *w, const char *friendid,
 
 static void send_message(ElaCarrier *w, int argc, char *argv[])
 {
+    bool is_offline;
     int rc;
 
     if (argc != 2) {
@@ -286,9 +287,9 @@ static void send_message(ElaCarrier *w, int argc, char *argv[])
         return;
     }
 
-    rc = ela_send_friend_message(w, argv[0], argv[1], strlen(argv[1]) + 1);
+    rc = ela_send_friend_message(w, argv[0], argv[1], strlen(argv[1]) + 1, &is_offline);
     if (rc == 0)
-        output("Send message successfully.\n");
+        output("Send %s message successfully.\n", is_offline ? "offline" : "online");
     else
         output("Send message unsuccessfully(0x%x).\n", ela_get_error());
 }
@@ -925,9 +926,9 @@ static void friend_request_callback(ElaCarrier *w, const char *userid,
 }
 
 static void message_callback(ElaCarrier *w, const char *from,
-                             const void *msg, size_t len, void *context)
+                             const void *msg, size_t len, bool is_offline, void *context)
 {
-    output("Message from friend[%s]: %.*s\n", from, (int)len, msg);
+    output("Message(%s) from friend[%s]: %.*s\n", is_offline ? "offline" : "online", from, (int)len, msg);
 
     if (g_mode == PASSIVE_MODE) {
         g_data_len = atoi((const char *)msg);

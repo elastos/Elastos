@@ -75,7 +75,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
 }
 
 static void friend_message_cb(ElaCarrier *w, const char *from, const void *msg, size_t len,
-                              void *context)
+                              bool is_offline, void *context)
 {
     CarrierContextExtra *extra = ((CarrierContext *)context)->extra;
 
@@ -136,6 +136,7 @@ static void send_offmsg_to_friend(int count, int timeout)
     char buf[2][32] = {0};
     char robot_id[ELA_MAX_ID_LEN + 1] = {0};
     char robot_addr[ELA_MAX_ADDRESS_LEN + 1] = {0};
+    bool is_offline;
     int rc;
     int i;
 
@@ -168,8 +169,9 @@ static void send_offmsg_to_friend(int count, int timeout)
     for (i = 0; i < count; i++) {
         memset(out, 0, sizeof(out));
         sprintf(out, "%s%d", header, (count > 1) ? (i + 1) : i);
-        rc = ela_send_friend_message(wctxt->carrier, robotid, out, strlen(out));
+        rc = ela_send_friend_message(wctxt->carrier, robotid, out, strlen(out), &is_offline);
         CU_ASSERT_EQUAL_FATAL(rc, 0);
+        CU_ASSERT_EQUAL_FATAL(is_offline, true);
     }
 
     if (count > 1)

@@ -112,10 +112,12 @@ static void try_send_offmsg(ElaCarrier *w, TestCtx *ctx)
 send_msg:
     while (msg_cnt-- > 0) {
         const char *msg = "hello";
+        bool is_offline;
         int ret = 0;
 
-        ret = ela_send_friend_message(w, ctx->remote_userid, msg, strlen(msg) + 1);
-        if (ret < 0) {
+        ret = ela_send_friend_message(w, ctx->remote_userid, msg, strlen(msg) + 1,
+                                      &is_offline);
+        if (ret < 0 || !is_offline) {
             vlogE("Error: Send offline message error: 0x%x", ela_get_error());
             error |= 1;
         }
@@ -224,11 +226,12 @@ static void friend_connection_callback(ElaCarrier *w, const char *friendid,
 }
 
 static void message_callback(ElaCarrier *w, const char *from,
-                             const void *msg, size_t len, void *context)
+                             const void *msg, size_t len,
+                             bool is_offline, void *context)
 {
     TestCtx *ctx = (TestCtx *)context;
 
-    vlogI("Message from friend[%s]: %.*s", from, (int)len, msg);
+    vlogI("Message(%s) from friend[%s]: %.*s", is_offline ? "offline" : "online", from, (int)len, msg);
 
     if (ctx->tasktype == Task_offmsg && ctx->mode == RunMode_receiver)
         ctx->msg_cnt++;

@@ -249,20 +249,21 @@ static void friend_removed_cb(ElaCarrier* w, const char* friendid, void *context
 }
 
 static void friend_message_cb(ElaCarrier *w, const char *from,
-                             const void *msg, size_t len, void *context)
+                              const void *msg, size_t len, bool is_offline,
+                              void *context)
 {
     CarrierContextExtra *extra = ((TestContext*)context)->carrier->extra;
 
-    vlogD("Received message from %s", from);
+    vlogD("Received %s message from %s", is_offline ? "offline" : "online", from);
     vlogD(" msg: %.*s", len, (const char *)msg);
 
     pthread_mutex_lock(&extra->mutex);
-    if (extra->test_offmsg == OffMsgCase_Single) {
+    if (is_offline && extra->test_offmsg == OffMsgCase_Single) {
         if (strstr((const char*)msg, extra->offmsg_header)) {
             write_ack("%.*s\n", len, msg);
             extra->test_offmsg = OffMsgCase_Zero;
         }
-    } else if (extra->test_offmsg == OffMsgCase_Bulk) {
+    } else if (is_offline && extra->test_offmsg == OffMsgCase_Bulk) {
         if (strstr((const char*)msg, extra->offmsg_header)) {
             extra->test_offmsg_count++;
             if (extra->test_offmsg_count == extra->expected_offmsg_count) {
@@ -273,7 +274,7 @@ static void friend_message_cb(ElaCarrier *w, const char *from,
             }
         }
     } else {
-        if (strchr(msg, ':') == NULL)
+        if (!is_offline)
             write_ack("%.*s\n", len, msg);
     }
     pthread_mutex_unlock(&extra->mutex);

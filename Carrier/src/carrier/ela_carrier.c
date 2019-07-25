@@ -1068,7 +1068,7 @@ static void handle_offline_msg(EventBase *event, ElaCarrier *w)
     if (!elacp_get_extension(cp) && ela_is_friend(w, ev->from) &&
         w->callbacks.friend_message)
         w->callbacks.friend_message(w, ev->from, elacp_get_raw_data(cp),
-                                    elacp_get_raw_data_length(cp),
+                                    elacp_get_raw_data_length(cp), true,
                                     w->context);
 }
 
@@ -1792,7 +1792,7 @@ void handle_friend_message(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
     len  = elacp_get_raw_data_length(cp);
 
     if (w->callbacks.friend_message && !name)
-        w->callbacks.friend_message(w, friendid, msg, len, w->context);
+        w->callbacks.friend_message(w, friendid, msg, len, false, w->context);
 }
 
 static
@@ -2938,8 +2938,8 @@ static void parse_address(const char *addr, char **uid, char **ext)
     }
 }
 
-int ela_send_friend_message(ElaCarrier *w, const char *to, const void *msg,
-                            size_t len)
+int ela_send_friend_message(ElaCarrier *w, const char *to,
+                            const void *msg, size_t len, bool *is_offline)
 {
     char *addr, *userid, *ext_name;
     FriendInfo *fi;
@@ -3015,6 +3015,9 @@ int ela_send_friend_message(ElaCarrier *w, const char *to, const void *msg,
         rc = dht_friend_message(&w->dht, friend_number, data, data_len);
         if (!rc) {
             free(data);
+            if (is_offline)
+                *is_offline = false;
+
             return 0;
         }
     }
@@ -3028,6 +3031,9 @@ int ela_send_friend_message(ElaCarrier *w, const char *to, const void *msg,
         ela_set_error(rc);
         return -1;
     }
+
+    if (is_offline)
+        *is_offline = true;
 
     return 0;
 }
