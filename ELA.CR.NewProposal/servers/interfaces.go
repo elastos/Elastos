@@ -61,7 +61,7 @@ func FromReversedString(reversed string) ([]byte, error) {
 	return common.BytesReverse(bytes), err
 }
 
-func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
+func GetTransactionInfo(tx *Transaction) *TransactionInfo {
 	inputs := make([]InputInfo, len(tx.Inputs))
 	for i, v := range tx.Inputs {
 		inputs[i].TxID = ToReversedString(v.Previous.TxID)
@@ -96,6 +96,24 @@ func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
 	var txHash = tx.Hash()
 	var txHashStr = ToReversedString(txHash)
 	var size = uint32(tx.GetSize())
+	return &TransactionInfo{
+		TxID:           txHashStr,
+		Hash:           txHashStr,
+		Size:           size,
+		VSize:          size,
+		Version:        tx.Version,
+		TxType:         tx.TxType,
+		PayloadVersion: tx.PayloadVersion,
+		Payload:        getPayloadInfo(tx.Payload),
+		Attributes:     attributes,
+		Inputs:         inputs,
+		Outputs:        outputs,
+		LockTime:       tx.LockTime,
+		Programs:       programs,
+	}
+}
+
+func GetTransactionContextInfo(header *Header, tx *Transaction) *TransactionContextInfo {
 	var blockHash string
 	var confirmations uint32
 	var time uint32
@@ -107,24 +125,14 @@ func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
 		blockTime = header.Timestamp
 	}
 
-	return &TransactionInfo{
-		TxID:           txHashStr,
-		Hash:           txHashStr,
-		Size:           size,
-		VSize:          size,
-		Version:        tx.Version,
-		LockTime:       tx.LockTime,
-		Inputs:         inputs,
-		Outputs:        outputs,
-		BlockHash:      blockHash,
-		Confirmations:  confirmations,
-		Time:           time,
-		BlockTime:      blockTime,
-		TxType:         tx.TxType,
-		PayloadVersion: tx.PayloadVersion,
-		Payload:        getPayloadInfo(tx.Payload),
-		Attributes:     attributes,
-		Programs:       programs,
+	txInfo := GetTransactionInfo(tx)
+
+	return &TransactionContextInfo{
+		TransactionInfo: txInfo,
+		BlockHash:       blockHash,
+		Confirmations:   confirmations,
+		Time:            time,
+		BlockTime:       blockTime,
 	}
 }
 
@@ -167,7 +175,7 @@ func GetRawTransaction(param Params) map[string]interface{} {
 
 	verbose, _ := param.Bool("verbose")
 	if verbose {
-		return ResponsePack(Success, GetTransactionInfo(header, tx))
+		return ResponsePack(Success, GetTransactionContextInfo(header, tx))
 	} else {
 		buf := new(bytes.Buffer)
 		tx.Serialize(buf)
@@ -492,9 +500,9 @@ func GetConnectionCount(param Params) map[string]interface{} {
 }
 
 func GetTransactionPool(param Params) map[string]interface{} {
-	txs := make([]*TransactionInfo, 0)
+	txs := make([]*TransactionContextInfo, 0)
 	for _, tx := range TxMemPool.GetTxsInPool() {
-		txs = append(txs, GetTransactionInfo(nil, tx))
+		txs = append(txs, GetTransactionContextInfo(nil, tx))
 	}
 	return ResponsePack(Success, txs)
 }
@@ -503,7 +511,7 @@ func GetBlockInfo(block *Block, verbose bool) BlockInfo {
 	var txs []interface{}
 	if verbose {
 		for _, tx := range block.Transactions {
-			txs = append(txs, GetTransactionInfo(&block.Header, tx))
+			txs = append(txs, GetTransactionContextInfo(&block.Header, tx))
 		}
 	} else {
 		for _, tx := range block.Transactions {
@@ -1399,7 +1407,7 @@ func GetTransactionByHash(param Params) map[string]interface{} {
 		return ResponsePack(UnknownBlock, "")
 	}
 
-	return ResponsePack(Success, GetTransactionInfo(header, txn))
+	return ResponsePack(Success, GetTransactionContextInfo(header, txn))
 }
 
 func GetExistWithdrawTransactions(param Params) map[string]interface{} {
@@ -1849,6 +1857,23 @@ func GetFeeRate(count int, confirm int) int {
 		gap = -1
 	}
 	return gap + 2
+}
+
+func DecodeRawTransaction(param Params) map[string]interface{} {
+	dataParam, ok := param.String("data")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a parameter named data")
+	}
+	txBytes, err := common.HexStringToBytes(dataParam)
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid raw tx data, "+err.Error())
+	}
+	var txn Transaction
+	if err := txn.Deserialize(bytes.NewReader(txBytes)); err != nil {
+		return ResponsePack(InvalidParams, "invalid raw tx data, "+err.Error())
+	}
+
+	return ResponsePack(Success, GetTransactionInfo(&txn))
 }
 
 func getPayloadInfo(p Payload) PayloadInfo {
