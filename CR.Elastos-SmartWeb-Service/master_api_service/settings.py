@@ -15,5 +15,11 @@ SQLALCHEMY_TRACK_MODIFICATIONS = False
 #GMU Net
 
 #Wallet Service
-WALLET_SERVICE_URL = 'http://localhost:8091/api/1'
-WALLET_API_BALANCE = '/balance'
+WALLET_SERVICE_URL = 'http://localhost:8091/api'
+WALLET_API_BALANCE = '/1/balance/EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U'
+WALLET_API_CREATE = '/1/createWallet'
+WALLET_API_DPOS_VOTE = '/1/dpos/vote'
+WALLET_API_TRANSACTIONS = '/1/tx'
+WALLET_API_TRANSACTION_HISTORY = '/1/history/EQoascGFzdQ1rLKfNEavJKTm3hMRhBaXBT'
+WALLET_API_TRANSFER = '/1/transfer'
+WALLET_API_MNEMONIC = '/1/eng/mnemonic'

@@ -1,6 +1,7 @@
 import logging
 import requests
-
+import json
+from flask import jsonify
 from flask import request
 from flask_restplus import Resource
 from master_api_service import settings
@@ -8,17 +9,16 @@ from master_api_service.api.restplus import api
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('wallet', description='Has wallet services')
-
+ns = api.namespace('wallet/service', description='Has wallet services')
 
 @ns.route('/createWallet')
 class Wallet(Resource):
 
     def get(self):
         """
-        Returns the wallet created.
+        Returns the wallet created
         """
-        api_url_base = "http://localhost:10012/api/v1/asset/balances/EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U"
+        api_url_base = settings.WALLET_SERVICE_URL + settings.WALLET_API_CREATE
         json_data = requests.get(api_url_base).json()
         return json_data
 
@@ -27,10 +27,71 @@ class Wallet(Resource):
 
     def get(self):
         """
-        Returns the wallet created.
+        Returns the balance of the provided public address
         """
-        sample_url = settings.WALLET_SERVICE_URL + settings.WALLET_API_BALANCE
-        api_url_base = "http://localhost:10012/api/v1/asset/balances/EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U"
+        api_url_base = settings.WALLET_SERVICE_URL + settings.WALLET_API_BALANCE
+        #api_url_base = "http://localhost:10012/api/1/balance/EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U"
+        json_data = requests.get(api_url_base).json()
+        return json_data
+
+@ns.route('/getDPOSVote', methods = ['POST'])
+class Wallet(Resource):
+
+    def post(self):
+        """
+        Uses private key to vote your producers
+        """
+        api_url_base = settings.WALLET_SERVICE_URL + settings.WALLET_API_DPOS_VOTE
+        headers = {'Content-type': 'application/json'}
+        req_data = request.get_json()
+        json_data = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
+        return json_data
+
+@ns.route('/getTransactions')
+class Wallet(Resource):
+
+    def get(self):
+        """
+        Get a list of transactions
+        """
+        api_url_base = settings.WALLET_SERVICE_URL + settings.WALLET_API_TRANSACTIONS
+        headers = {'Content-type': 'application/json'}
+        req_data = request.get_json()
+        json_data = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
+        return json_data
+
+@ns.route('/getTransactionHistory')
+class Wallet(Resource):
+
+    def get(self):
+        """
+        Get transaction history
+        """
+        api_url_base = settings.WALLET_SERVICE_URL + settings.WALLET_API_TRANSACTION_HISTORY
+        json_data = requests.get(api_url_base).json()
+        return json_data
+
+@ns.route('/TransferELA', methods = ['POST'])
+class Wallet(Resource):
+
+    def post(self):
+        """
+        Transfer ELA
+        """
+        api_url_base = settings.WALLET_SERVICE_URL + settings.WALLET_API_TRANSFER
+        headers = {'Content-type': 'application/json'}
+        req_data = request.get_json()
+        json_data = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
+        return json_data
+
+@ns.route('/getMnemonic')
+class Wallet(Resource):
+
+    def get(self):
+        """
+        Generates a mnemonic
+        """
+        api_url_base = settings.WALLET_SERVICE_URL + settings.WALLET_API_MNEMONIC
         json_data = requests.get(api_url_base).json()
         return json_data
 
