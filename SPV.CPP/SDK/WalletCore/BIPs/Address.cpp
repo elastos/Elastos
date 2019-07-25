@@ -114,6 +114,13 @@ namespace Elastos {
 			return type;
 		}
 
+		void Address::SetRedeemScript(Prefix prefix, const bytes_t &code) {
+			_code = code;
+			GenerateProgramHash(prefix);
+			CheckValid();
+			ErrorChecker::CheckCondition(!_isValid, Error::InvalidArgument, "redeemscript is invalid");
+		}
+
 		const bytes_t &Address::RedeemScript() const {
 			assert(!_code.empty());
 			return _code;

@@ -26,6 +26,12 @@ namespace Elastos {
 				_depositAddress = Address(PrefixDeposit, *ownerPubKey);
 				_ownerAddress = Address(PrefixStandard, *ownerPubKey);
 			}
+
+			if (_parent->GetSignType() != Account::MultiSign) {
+				HDKeychain mpk = _parent->MasterPubKey();
+				_crDepositAddress = Address(PrefixDeposit, mpk.getChild(0).getChild(0).pubkey());
+			}
+
 		}
 
 		nlohmann::json SubAccount::GetBasicInfo() const {
@@ -67,6 +73,14 @@ namespace Elastos {
 			}
 
 			return _ownerAddress == address;
+		}
+
+		bool SubAccount::IsCRDepositAddress(const Address &address) const {
+			if (!_crDepositAddress.Valid()) {
+				return false;
+			}
+
+			return _crDepositAddress == address;
 		}
 
 		void SubAccount::AddUsedAddrs(const Address &address) {
@@ -265,6 +279,10 @@ namespace Elastos {
 				return true;
 			}
 
+			if (IsCRDepositAddress(address)) {
+				return true;
+			}
+
 			if (_parent->GetSignType() == Account::MultiSign) {
 				return _parent->GetAddress() == address;
 			}
@@ -288,6 +306,12 @@ namespace Elastos {
 			if (IsOwnerAddress(addr)) {
 				code = _ownerAddress.RedeemScript();
 				path = "44'/0'/1'/0/0";
+				return true;
+			}
+
+			if (IsCRDepositAddress(addr)) {
+				code = _crDepositAddress.RedeemScript();
+				path = "44'/0'/0'/0/0";
 				return true;
 			}
 

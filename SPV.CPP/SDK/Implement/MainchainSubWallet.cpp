@@ -14,6 +14,8 @@
 #include <SDK/Plugin/Transaction/Payload/ProducerInfo.h>
 #include <SDK/Plugin/Transaction/Payload/CancelProducer.h>
 #include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
+#include <SDK/Plugin/Transaction/Payload/CRInfo.h>
+#include <SDK/Plugin/Transaction/Payload/UnregisterCR.h>
 #include <SDK/Plugin/Transaction/TransactionInput.h>
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
 #include <SDK/SpvService/Config.h>
@@ -172,7 +174,7 @@ namespace Elastos {
 			BigInt bgAmount;
 			bgAmount.setDec(amount);
 
-			ErrorChecker::CheckParam(bgAmount < 500000000000, Error::VoteDepositAmountInsufficient,
+			ErrorChecker::CheckParam(bgAmount < 500000000000, Error::DepositAmountInsufficient,
 									 "Producer deposit amount is insufficient");
 
 			PayloadPtr payload = PayloadPtr(new ProducerInfo());
@@ -491,6 +493,255 @@ namespace Elastos {
 
 			ArgInfo("r => {}", j.dump());
 			return j;
+		}
+
+		std::string MainchainSubWallet::GetCROwnerDID() const {
+			HDKeychain mpk = _subAccount->Parent()->MasterPubKey();
+			bytes_t pubKey = mpk.getChild(0).getChild(0).pubkey();
+			return Address(PrefixIDChain, pubKey).String();
+		}
+
+		std::string MainchainSubWallet::GetCROwnerPublicKey() const {
+			HDKeychain mpk = _subAccount->Parent()->MasterPubKey();
+			return mpk.getChild(0).getChild(0).pubkey().getHex();
+		}
+
+		nlohmann::json MainchainSubWallet::GenerateCRInfoPayload(
+				const std::string &crPublicKey,
+				const std::string &nickName,
+				const std::string &url,
+				uint64_t location,
+				const std::string &payPasswd) const {
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("crPublicKey: {}", crPublicKey);
+			ArgInfo("nickName: {}", nickName);
+			ArgInfo("url: {}", url);
+			ArgInfo("location: {}", location);
+			ArgInfo("payPasswd: {}", "*");
+
+			ErrorChecker::CheckPassword(payPasswd, "Generate payload");
+			size_t pubKeyLen = crPublicKey.size() >> 1;
+			ErrorChecker::CheckParam(pubKeyLen != 33 && pubKeyLen != 65, Error::PubKeyLength,
+			                         "Public key length should be 33 or 65 bytes");
+
+			Key publicKey;
+			publicKey.SetPubKey(bytes_t(crPublicKey));
+
+			Address address(PrefixDeposit, publicKey.PubKey());
+
+			CRInfo crInfo;
+			crInfo.SetCode(address.RedeemScript());
+			crInfo.SetNickName(nickName);
+			crInfo.SetUrl(url);
+			crInfo.SetLocation(location);
+
+			Address did;
+			did.SetRedeemScript(PrefixIDChain, crInfo.GetCode());
+			crInfo.SetDID(did.ProgramHash());
+
+			ByteStream ostream;
+			crInfo.SerializeUnsigned(ostream, 0);
+			bytes_t prUnsigned = ostream.GetBytes();
+
+			Key key;
+			bool res = _subAccount->FindKey(key, publicKey.PubKey(), payPasswd);
+			ErrorChecker::CheckCondition(!res, Error::PrivateKeyNotFound, "private key not found");
+
+			crInfo.SetSignature(key.Sign(prUnsigned));
+
+			nlohmann::json payloadJson = crInfo.ToJson(0);
+
+			ArgInfo("r => {}", payloadJson.dump());
+			return payloadJson;
+		}
+
+		nlohmann::json MainchainSubWallet::GenerateUnregisterCRPayload(
+				const std::string &crPublicKey,
+				const std::string &payPasswd) const {
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("publicKey: {}", crPublicKey);
+			ArgInfo("payPasswd: {}", "*");
+
+			ErrorChecker::CheckPassword(payPasswd, "Generate payload");
+			size_t pubKeyLen = crPublicKey.size() >> 1;
+			ErrorChecker::CheckParam(pubKeyLen != 33 && pubKeyLen != 65, Error::PubKeyLength,
+			                         "Public key length should be 33 or 65 bytes");
+
+			Key pubKey;
+			pubKey.SetPubKey(bytes_t(crPublicKey));
+
+			Address address(PrefixStandard, pubKey.PubKey());
+
+			UnregisterCR unregisterCR;
+			unregisterCR.SetCode(address.RedeemScript());
+
+			ByteStream ostream;
+			unregisterCR.SerializeUnsigned(ostream, 0);
+			bytes_t prUnsigned = ostream.GetBytes();
+
+			Key key;
+			bool res = _subAccount->FindKey(key, pubKey.PubKey(), payPasswd);
+			ErrorChecker::CheckCondition(!res, Error::PrivateKeyNotFound, "private key not found");
+
+			unregisterCR.SetSignature(key.Sign(prUnsigned));
+
+			nlohmann::json payloadJson = unregisterCR.ToJson(0);
+
+			ArgInfo("r => {}", payloadJson.dump());
+			return payloadJson;
+		}
+
+		nlohmann::json MainchainSubWallet::CreateRegisterCRTransaction(
+				const std::string &fromAddress,
+				const nlohmann::json &payload,
+				const std::string &amount,
+				const std::string &memo,
+				bool useVotedUTXO) {
+
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("fromAddr: {}", fromAddress);
+			ArgInfo("payload: {}", payload.dump());
+			ArgInfo("amount: {}", amount);
+			ArgInfo("memo: {}", memo);
+			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
+
+			BigInt bgAmount;
+			bgAmount.setDec(amount);
+
+			ErrorChecker::CheckParam(bgAmount < 500000000000, Error::DepositAmountInsufficient,
+			                         "cr deposit amount is insufficient");
+
+			PayloadPtr payloadPtr = PayloadPtr(new CRInfo());
+			try {
+				payloadPtr->FromJson(payload, 0);
+			} catch (const nlohmann::detail::exception &e) {
+				ErrorChecker::ThrowParamException(Error::JsonFormatError,
+				                                  "Payload format err: " + std::string(e.what()));
+			}
+
+			bytes_t code = static_cast<CRInfo *>(payloadPtr.get())->GetCode();
+			Address receiveAddr;
+			receiveAddr.SetRedeemScript(PrefixDeposit, code);
+
+			std::vector<OutputPtr> outputs;
+			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, receiveAddr, Asset::GetELAAssetID())));
+
+			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
+
+			tx->SetTransactionType(Transaction::registerCR, payloadPtr);
+
+			nlohmann::json result;
+			EncodeTx(result, tx);
+
+			ArgInfo("r => {}", result.dump());
+			return result;
+		}
+
+		nlohmann::json MainchainSubWallet::CreateUpdateCRTransaction(
+				const std::string &fromAddress,
+				const nlohmann::json &payload,
+				const std::string &memo,
+				bool useVotedUTXO) {
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("fromAddr: {}", fromAddress);
+			ArgInfo("payload: {}", payload.dump());
+			ArgInfo("memo: {}", memo);
+			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
+
+			PayloadPtr payloadPtr = PayloadPtr(new CRInfo());
+			try {
+				payloadPtr->FromJson(payload, 0);
+			} catch (const nlohmann::detail::exception &e) {
+				ErrorChecker::ThrowParamException(Error::JsonFormatError,
+				                                  "Payload format err: " + std::string(e.what()));
+			}
+
+			std::vector<OutputPtr> outputs;
+			Address receiveAddr(CreateAddress());
+			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), receiveAddr, Asset::GetELAAssetID())));
+
+			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
+
+			tx->SetTransactionType(Transaction::updateCR, payloadPtr);
+
+			if (tx->GetOutputs().size() > 1) {
+				tx->RemoveOutput(tx->GetOutputs()[0]);
+			}
+
+			nlohmann::json result;
+			EncodeTx(result, tx);
+
+			ArgInfo("r => {}", result.dump());
+			return result;
+
+		}
+
+		nlohmann::json MainchainSubWallet::CreateUnregisterCRTransaction(
+				const std::string &fromAddress,
+				const nlohmann::json &payload,
+				const std::string &memo,
+				bool useVotedUTXO) {
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("fromAddr: {}", fromAddress);
+			ArgInfo("payload: {}", payload.dump());
+			ArgInfo("memo: {}", memo);
+			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
+
+			PayloadPtr payloadPtr = PayloadPtr(new UnregisterCR());
+			try {
+				payloadPtr->FromJson(payload, 0);
+			} catch (const nlohmann::detail::exception &e) {
+				ErrorChecker::ThrowParamException(Error::JsonFormatError,
+				                                  "Payload format err: " + std::string(e.what()));
+			}
+
+			std::vector<OutputPtr> outputs;
+			Address receiveAddr(CreateAddress());
+			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), receiveAddr, Asset::GetELAAssetID())));
+
+			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
+
+			tx->SetTransactionType(Transaction::unregisterCR, payloadPtr);
+
+			if (tx->GetOutputs().size() > 1) {
+				tx->RemoveOutput(tx->GetOutputs()[0]);
+			}
+
+			nlohmann::json result;
+			EncodeTx(result, tx);
+
+			ArgInfo("r => {}", result.dump());
+			return result;
+		}
+
+		nlohmann::json MainchainSubWallet::CreateRetrieveCRDepositTransaction(
+				const std::string &amount,
+				const std::string &memo) {
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("amount: {}", amount);
+			ArgInfo("memo: {}", memo);
+
+			BigInt bgAmount;
+			bgAmount.setDec(amount);
+
+			Address fromAddress = Address(PrefixDeposit, GetCROwnerPublicKey());
+
+			std::vector<OutputPtr> outputs;
+			Address receiveAddr(CreateAddress());
+			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, receiveAddr, Asset::GetELAAssetID())));
+
+			TransactionPtr tx = CreateTx(fromAddress.String(), outputs, memo);
+
+			tx->SetTransactionType(Transaction::returnCRDepositCoin);
+
+			if (tx->GetOutputs().size() > 1) {
+				tx->RemoveOutput(tx->GetOutputs().back());
+			}
+
+			nlohmann::json result;
+			EncodeTx(result, tx);
+			ArgInfo("r => {}", result.dump());
+			return result;
 		}
 
 	}

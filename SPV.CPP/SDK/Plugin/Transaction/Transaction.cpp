@@ -20,6 +20,8 @@
 #include "SDK/Plugin/Transaction/Payload/ProducerInfo.h"
 #include "SDK/Plugin/Transaction/Payload/CancelProducer.h"
 #include "SDK/Plugin/Transaction/Payload/ReturnDepositCoin.h"
+#include "SDK/Plugin/Transaction/Payload/CRInfo.h"
+#include "SDK/Plugin/Transaction/Payload/UnregisterCR.h"
 #include <SDK/Wallet/UTXO.h>
 
 #include <SDK/Common/Utils.h>
@@ -847,6 +849,12 @@ namespace Elastos {
 				_payload = PayloadPtr(new ReturnDepositCoin());
 			} else if (type == registerIdentification) { // ID chain payload
 				_payload = PayloadPtr(new RegisterIdentification());
+			} else if (type == registerCR || type == updateCR) {
+				_payload = PayloadPtr(new CRInfo());
+			} else if (type == unregisterCR) {
+				_payload = PayloadPtr(new UnregisterCR());
+			} else if (type == returnCRDepositCoin) {
+				_payload = PayloadPtr(new ReturnDepositCoin());
 			}
 		}
 

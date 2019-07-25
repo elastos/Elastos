@@ -224,6 +224,89 @@ static void Transafer(const std::string &masterWalletID, const std::string &subW
 	PublishTransaction(subWallet, tx);
 }
 
+static void RegisterCr(const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
+	if (!subWallet)
+		return;
+
+	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
+	if (mainchainSubWallet == nullptr) {
+		logger->error("[{}:{}] is not instance of IMainchainSubWallet", masterWalletID, subWalletID);
+		return;
+	}
+
+	std::string pubKey = mainchainSubWallet->GetCROwnerPublicKey();
+	std::string nickName = "black";
+	std::string url = "test.com";
+	uint64_t location = 86;
+
+	nlohmann::json payload = mainchainSubWallet->GenerateCRInfoPayload(pubKey, nickName, url, location, payPasswd);
+
+	nlohmann::json tx = mainchainSubWallet->CreateRegisterCRTransaction("", payload, std::to_string(500000000000 + 10000),
+	                                                                          memo);
+
+	PublishTransaction(mainchainSubWallet, tx);
+}
+
+static void UpdateCR(const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
+	if (!subWallet)
+		return;
+
+	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
+	if (mainchainSubWallet == nullptr) {
+		logger->error("[{}:{}] is not instance of IMainchainSubWallet", masterWalletID, subWalletID);
+		return;
+	}
+
+	std::string pubKey = mainchainSubWallet->GetCROwnerPublicKey();
+	std::string nickName = "heropan";
+	std::string url = "heropan.com";
+	uint64_t location = 86;
+
+	nlohmann::json payload = mainchainSubWallet->GenerateCRInfoPayload(pubKey, nickName, url, location, payPasswd);
+
+	nlohmann::json tx = mainchainSubWallet->CreateUpdateCRTransaction("", payload, memo);
+
+	PublishTransaction(mainchainSubWallet, tx);
+}
+
+static void UnregisterCR(const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
+	if (!subWallet)
+		return;
+
+	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
+	if (mainchainSubWallet == nullptr) {
+		logger->error("[{}:{}] is not instance of IMainchainSubWallet", masterWalletID, subWalletID);
+		return;
+	}
+
+	std::string pubKey = mainchainSubWallet->GetCROwnerPublicKey();
+
+	nlohmann::json payload = mainchainSubWallet->GenerateUnregisterCRPayload(pubKey, payPasswd);
+
+	nlohmann::json tx = mainchainSubWallet->CreateUnregisterCRTransaction("", payload, memo);
+
+	PublishTransaction(mainchainSubWallet, tx);
+}
+
+static void RetrieveCRTransaction(const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
+	if (!subWallet)
+		return;
+
+	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
+	if (mainchainSubWallet == nullptr) {
+		logger->error("[{}:{}] is not instance of IMainchainSubWallet", masterWalletID, subWalletID);
+		return;
+	}
+
+	nlohmann::json tx = mainchainSubWallet->CreateRetrieveCRDepositTransaction (std::to_string(500000000000 - 10000), memo);
+
+	PublishTransaction(mainchainSubWallet, tx);
+}
+
 static void Vote(const std::string &masterWalletID, const std::string &subWalletID,
 				 uint64_t stake, const nlohmann::json &publicKeys) {
 	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
@@ -572,6 +655,7 @@ static void GetAllAssets(const std::string &masterWalletID, const std::string &s
 static void ELATest() {
 	static bool combineUTXODone = true, transferDone = true, depositDone = true;
 	static bool voteDone = true, registerProducer = true, updateProducer = true, cancelProducer = true, retrieveDeposit = true;
+	static bool registerCR = true, updateCR = true, unregisterCR = true, retrieveCr = true;
 
 	logger->debug("ELA {}", separator);
 	GetAllTxSummary(gMasterWalletID, gMainchainSubWalletID);
@@ -620,6 +704,26 @@ static void ELATest() {
 	if (!retrieveDeposit) {
 		RetrieveDeposit(gMasterWalletID, gMainchainSubWalletID);
 		retrieveDeposit = true;
+	}
+
+	if (!registerCR) {
+		RegisterCr(gMasterWalletID, gMainchainSubWalletID);
+		registerCR = true;
+	}
+
+	if (!updateCR) {
+		UpdateCR(gMasterWalletID, gMainchainSubWalletID);
+		updateCR = true;
+	}
+
+	if (!unregisterCR) {
+		UnregisterCR(gMasterWalletID, gMainchainSubWalletID);
+		unregisterCR = true;
+	}
+
+	if (!retrieveCr) {
+		RetrieveCRTransaction(gMasterWalletID, gMainchainSubWalletID);
+		retrieveCr = true;
 	}
 
 	logger->debug("ELA {}", separator);

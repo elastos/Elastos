@@ -53,6 +53,7 @@ namespace Elastos {
 				registerCR               = 0x21,
 				unregisterCR             = 0x22,
 				updateCR                 = 0x23,
+				returnCRDepositCoin      = 0x24,
 
 				registerIdentification   = 0xFF, // will refactor later
 				TypeMaxCount

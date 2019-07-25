@@ -518,6 +518,8 @@ namespace Elastos {
 
 		std::string
 		MasterWallet::DeriveIDAndKeyForPurpose(uint32_t purpose, uint32_t index) {
+
+			ErrorChecker::CheckLogic(_idAgentImpl == nullptr, Error::UnsupportOperation, "unsupport derive DID");
 			return _idAgentImpl->DeriveIDAndKeyForPurpose(purpose, index).String();
 		}
 

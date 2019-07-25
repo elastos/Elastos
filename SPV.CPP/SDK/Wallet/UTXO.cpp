@@ -23,7 +23,8 @@ namespace Elastos {
 			_output(new TransactionOutput()) {
 		}
 
-		UTXO::UTXO(const UTXO &u) {
+		UTXO::UTXO(const UTXO &u) :
+			_output(new TransactionOutput()) {
 			this->operator=(u);
 		}
 

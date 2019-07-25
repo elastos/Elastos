@@ -59,7 +59,7 @@ namespace Elastos {
 				GetUnusedAddress = 20040,
 				AccountNotSupportVote = 20041,
 				WalletNotContainTx = 20042,
-				VoteDepositAmountInsufficient = 20043,
+				DepositAmountInsufficient = 20043,
 				PrivateKeyNotFound = 20044,
 				InvalidRedeemScript = 20045,
 				AlreadySigned = 20046,
