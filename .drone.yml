@@ -1,0 +1,54 @@
+workspace:
+  path: /github.com/elastos/Elastos.ELA
+
+kind: pipeline
+name: elastos
+
+clone:
+  depth: 10
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: unit
+  image: golang:1.12
+  environment:
+    GOPATH: /drone
+  commands:
+  - glide install
+  - curl -o /bin/addlicense http://172.16.0.120/addlicense
+  - curl -o /bin/revive http://172.16.120/revive
+  - curl -o /bin/checkcoverage http://172.16.120/checkcoverage
+  - chmod +x /bin/addlicense /bin/revive /bin/checkcoverage
+  - addlicense -check
+  - revive -config .revive.toml -formatter friendly -exclude vendor/... $(go list ./...)
+  - go test $(go list ./... | grep -v /vendor/) -v -short -coverprofile .coverage
+  - go tool cover -func .coverage
+  - checkcoverage
+  - make all
+  - make dns
+  - mkdir bin && cp ela ela-cli bin
+  - bin/ela -v
+  - ./util.sh test
+  when:
+    event:
+    - push
+    - pull_request
+  #volumes:
+  #- name: gopath
+  #  path: /go
+
+- name: check
+  image: python:3.6-jessie
+  environment:
+    GOPATH: /drone
+  commands:
+    - curl -O http://172.16.0.120/testingwork-testing_work.tar.gz
+    - tar xf testingwork-testing_work.tar.gz
+    - python -V
+    - ./ela -v
+    - cd testingwork-testing_work
+    - python -m pip install -r requirements.txt
+    - python dpos_normal_test.py
