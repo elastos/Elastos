@@ -69,16 +69,16 @@ public class TransferRecordRecAdapetr extends RecyclerView.Adapter<TransferRecor
         switch (direction) {
             case "Moved":
                 //自己给自己
-                setViewData(holder, R.mipmap.asset_trade_record_self, NumberiUtil.maxNumberFormat(Arith.div(data.getAmount() + "", MyWallet.RATE_S), 12) + " ELA");
+                setViewData(holder, R.mipmap.asset_trade_record_self, NumberiUtil.maxNumberFormat(Arith.div(data.getAmount() + "", MyWallet.RATE_S), 12));
                 break;
             case "Received":
-                setViewData(holder, R.mipmap.asset_trade_record_in, "+" + NumberiUtil.maxNumberFormat(Arith.div(data.getAmount() + "", MyWallet.RATE_S), 12) + " ELA");
+                setViewData(holder, R.mipmap.asset_trade_record_in, "+" + NumberiUtil.maxNumberFormat(Arith.div(data.getAmount() + "", MyWallet.RATE_S), 12));
                 //接受
                 break;
             case "Sent":
             case "Deposit":
                 // setViewData(holder, R.mipmap.asset_trade_record_out, "-" + NumberiUtil.maxNumberFormat(((double) data.getAmount() / MyWallet.RATE) + "", 12) + " " + chainId);
-                setViewData(holder, R.mipmap.asset_trade_record_out, "-" + NumberiUtil.maxNumberFormat(Arith.div(data.getAmount() + "", MyWallet.RATE_S), 12) + " ELA");
+                setViewData(holder, R.mipmap.asset_trade_record_out, "-" + NumberiUtil.maxNumberFormat(Arith.div(data.getAmount() + "", MyWallet.RATE_S), 12));
                 //发出
                 break;
 
