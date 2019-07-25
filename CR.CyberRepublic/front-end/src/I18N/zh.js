@@ -747,6 +747,7 @@ const zh = {
   'council.voting.btnText.publish': '发布',
   'council.voting.btnText.delete': '删除',
 
+  'council.voting.modal.deleteDraft': '您确定要删除此草案吗？',
   'council.voting.modal.complete': '您确定要标记此提案为完成状态吗？',
   'council.voting.modal.incomplete': '您确定要标记此提案为未完成状态吗？',
   'council.voting.modal.updateNotes': '秘书处备注',

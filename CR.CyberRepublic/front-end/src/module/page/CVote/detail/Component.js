@@ -1,6 +1,15 @@
 import React from 'react'
 import { Helmet } from 'react-helmet'
-import { Form, Spin, Button, Input, message, Modal, Anchor } from 'antd'
+import {
+  Form,
+  Spin,
+  Button,
+  Input,
+  message,
+  Modal,
+  Anchor,
+  Popconfirm
+} from 'antd'
 import { Link } from 'react-router-dom'
 import I18N from '@/I18N'
 import _ from 'lodash'
@@ -484,9 +493,16 @@ class C extends StandardPage {
       </Button>
     )
     const deleteDraftProposalBtn = isSelf && canEdit && (
-      <Button type="danger" onClick={this.deleteDraftProposal}>
-        {I18N.get('council.voting.btnText.delete')}
-      </Button>
+      <Popconfirm
+        title={I18N.get('council.voting.modal.deleteDraft')}
+        onConfirm={() => this.deleteDraftProposal()}
+        okText={I18N.get('.yes')}
+        cancelText={I18N.get('.no')}
+      >
+        <Button type="danger">
+          {I18N.get('council.voting.btnText.delete')}
+        </Button>
+      </Popconfirm>
     )
     return (
       <div className="vote-btn-group">

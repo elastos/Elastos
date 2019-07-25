@@ -775,6 +775,8 @@ const en = {
   'council.voting.btnText.publish': 'Publish',
   'council.voting.btnText.delete': 'Delete',
 
+  'council.voting.modal.deleteDraft':
+    'Are you sure to delete this draft proposal?',
   'council.voting.modal.complete': 'Are you sure to complete this proposal?',
   'council.voting.modal.incomplete': 'Are you sure to close with incompletion?',
   'council.voting.modal.updateNotes': 'Notes from Secretary',
