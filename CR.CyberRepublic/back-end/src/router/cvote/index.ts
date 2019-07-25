@@ -2,6 +2,7 @@ import Base from '../Base'
 
 import create_draft from './create_draft'
 import update_draft from './update_draft'
+import delete_draft from './delete_draft'
 import create from './create'
 import list from './list'
 import list_public from './list_public'
@@ -21,6 +22,11 @@ export default Base.setRouter([
   {
     path: '/update_draft',
     router: update_draft,
+    method: 'post'
+  },
+  {
+    path: '/delete_draft',
+    router: delete_draft,
     method: 'post'
   },
   {
