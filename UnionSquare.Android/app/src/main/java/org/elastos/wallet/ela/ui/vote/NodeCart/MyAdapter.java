@@ -31,6 +31,7 @@ import org.elastos.wallet.ela.utils.NumberiUtil;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MyAdapter extends BaseAdapter {
     private final GlideRequest<Bitmap> glideRequest;
@@ -42,7 +43,7 @@ public class MyAdapter extends BaseAdapter {
     private BaseFragment context;
     // 用来导入布局
     private LayoutInflater inflater = null;
-
+    private Map<String, String> map;
 
     // 构造器
     public MyAdapter(List<VoteListBean.DataBean.ResultBean.ProducersBean> list, BaseFragment context) {
@@ -53,6 +54,11 @@ public class MyAdapter extends BaseAdapter {
         // 初始化数据
         initDate();
         glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial_circle).circleCrop();
+        if (map == null) {
+            map = new HashMap<>();
+        } else {
+            map.clear();
+        }
     }
 
     // 初始化isSelected的数据
@@ -115,53 +121,44 @@ public class MyAdapter extends BaseAdapter {
         holder.tv_id.setText("NO." + id);//12
         AppCompatImageView iv = holder.ivIcon;
         iv.setImageResource(R.mipmap.found_vote_initial_circle);
-        GlideApp.with(context).clear(iv);
         String baseUrl = producersBean.getUrl();
+        iv.setTag(R.id.error_tag_empty, baseUrl);
+        GlideApp.with(context).clear(iv);
         if (baseUrl == null) {
             return convertView;
         }
-       /* if (map.get(baseUrl) != null) {
-             iv.setImageBitmap(map.get(baseUrl));
-            // glideRequest.load(map.get(baseUrl)).into(iv);
-            return;
-        }*/
-        iv.setTag(R.string.error_tag_empty, baseUrl);
-        new SuperNodeListPresenter().getUrlJson(baseUrl, context, new NodeDotJsonViewData() {
+        if (map.get(baseUrl) != null) {
+            if ("".equals(map.get(baseUrl))) {
+                return convertView;
+            }
+            glideRequest.load(map.get(baseUrl)).into(iv);
+            return convertView;
+        }
+
+        new SuperNodeListPresenter().getUrlJson(iv, baseUrl, context, new NodeDotJsonViewData() {
             @Override
-            public void onGetNodeDotJsonData(NodeInfoBean t, String url) {
-                if (iv.getTag(R.string.error_tag_empty) == null || !(iv.getTag(R.string.error_tag_empty)).equals(url)) {
+            public void onError(String url) {
+                map.put(url, "");
+            }
+
+            @Override
+            public void onGetNodeDotJsonData(ImageView iv1, NodeInfoBean t, String url) {
+                //这个时候的iv已经不是那个iv了  所有传递iv试试
+                if (iv1.getTag(R.id.error_tag_empty) == null || !(iv1.getTag(R.id.error_tag_empty).toString()).equals(url)) {
                     return;
                 }
                 if (t == null || t.getOrg() == null || t.getOrg().getBranding() == null || t.getOrg().getBranding().getLogo_256() == null) {
+                    map.put(url, "");
                     return;
                 }
+
                 String imgUrl = t.getOrg().getBranding().getLogo_256();
-
-                glideRequest.load(imgUrl).into(new CustomViewTarget<ImageView, Bitmap>(iv) {
-                    @Override
-                    public void onLoadFailed(@Nullable Drawable errorDrawable) {
-                        //GlideApp.with(context).clear(iv);
-                    }
-
-                    @Override
-                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                        if (iv.getTag(R.string.error_tag_empty) != null && (iv.getTag(R.string.error_tag_empty)).equals(url)) {
-                            glideRequest.load(resource).into(iv);
-                            //map.put(url, resource);
-                        } else {
-                            GlideApp.with(context).clear(iv);
-                        }
-                    }
-
-                    @Override
-                    protected void onResourceCleared(@Nullable Drawable placeholder) {
-                        // glideRequest.load(placeholder).into(iv);
-                    }
-                });
-
-
+                map.put(url, imgUrl);
+                glideRequest.load(imgUrl).into(iv1);
             }
         });
+
+
         return convertView;
     }
 
