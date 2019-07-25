@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package servers
 
@@ -65,18 +65,22 @@ type TransactionInfo struct {
 	Size           uint32             `json:"size"`
 	VSize          uint32             `json:"vsize"`
 	Version        TransactionVersion `json:"version"`
-	LockTime       uint32             `json:"locktime"`
-	Inputs         []InputInfo        `json:"vin"`
-	Outputs        []OutputInfo       `json:"vout"`
-	BlockHash      string             `json:"blockhash"`
-	Confirmations  uint32             `json:"confirmations"`
-	Time           uint32             `json:"time"`
-	BlockTime      uint32             `json:"blocktime"`
 	TxType         TxType             `json:"type"`
 	PayloadVersion byte               `json:"payloadversion"`
 	Payload        PayloadInfo        `json:"payload"`
 	Attributes     []AttributeInfo    `json:"attributes"`
+	Inputs         []InputInfo        `json:"vin"`
+	Outputs        []OutputInfo       `json:"vout"`
+	LockTime       uint32             `json:"locktime"`
 	Programs       []ProgramInfo      `json:"programs"`
+}
+
+type TransactionContextInfo struct {
+	*TransactionInfo
+	BlockHash     string `json:"blockhash"`
+	Confirmations uint32 `json:"confirmations"`
+	Time          uint32 `json:"time"`
+	BlockTime     uint32 `json:"blocktime"`
 }
 
 type BlockInfo struct {
