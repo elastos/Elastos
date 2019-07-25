@@ -86,7 +86,8 @@ Default config for `testnet`
     "VoteStartHeight": 88812,      //Starting height of statistical voting
     "CRCOnlyDPOSHeight": 1008812,  //The height start DPOS by CRC producers
     "PublicDPOSHeight": 1108812,    //The height start DPOS by CRCProducers and voted producers
-    "EnableActivateIllegalHeight": 439000 //The start height to enable activate illegal producer though activate tx
+    "EnableActivateIllegalHeight": 439000, //The start height to enable activate illegal producer though activate tx
+    "EnableUtxoDB": true //Whether the db is enabled to store the UTXO
   }
 }
 ```
