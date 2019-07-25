@@ -102,22 +102,16 @@ export default class extends Base {
 
   // delete draft proposal by proposal id
   public async deleteDraft(param: any): Promise<any> {
-    const db_cvote = this.getDBModel('CVote')
-    if (!this.currentUser || !this.currentUser._id) {
-      throw 'cvoteservice.deleteDraft - invalid current user'
-    }
-    if (!this.canManageProposal()) {
-      throw 'cvoteservice.deleteDraft - not council'
-    }
-    const { _id } = param
-    const doc = await db_cvote.findOne({ _id })
-    if (!doc) {
-      throw 'cvoteservice.deleteDraft - invalid proposal id'
-    }
-    if (doc.status !== constant.CVOTE_STATUS.DRAFT) {
-      throw 'cvoteservice.deleteDraft - not draft proposal'
-    }
     try {
+      const db_cvote = this.getDBModel('CVote')
+      const { _id } = param
+      const doc = await db_cvote.findOne({ _id })
+      if (!doc) {
+        throw 'cvoteservice.deleteDraft - invalid proposal id'
+      }
+      if (doc.status !== constant.CVOTE_STATUS.DRAFT) {
+        throw 'cvoteservice.deleteDraft - not draft proposal'
+      }
       return await db_cvote.remove({ _id })
     } catch (error) {
       console.log('delete draft proposal err...', error)
