@@ -39,16 +39,17 @@ import (
 )
 
 var (
-	Compile   string
-	Config    *config.Configuration
-	Chain     *blockchain.BlockChain
-	Store     blockchain.IChainStore
-	TxMemPool *mempool.TxPool
-	Pow       *pow.Service
-	Server    elanet.Server
-	Arbiter   *dpos.Arbitrator
-	Arbiters  state.Arbitrators
-	Wallet    *wallet.Wallet
+	Compile     string
+	Config      *config.Configuration
+	ChainParams *config.Params
+	Chain       *blockchain.BlockChain
+	Store       blockchain.IChainStore
+	TxMemPool   *mempool.TxPool
+	Pow         *pow.Service
+	Server      elanet.Server
+	Arbiter     *dpos.Arbitrator
+	Arbiters    state.Arbitrators
+	Wallet      *wallet.Wallet
 )
 
 func ToReversedString(hash common.Uint256) string {
@@ -825,7 +826,7 @@ func GetBalanceByAddr(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	unspent, err := Wallet.ListUnspent(address, Config.EnableUtxoDB)
+	unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
 	if err != nil {
 		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 	}
@@ -856,7 +857,7 @@ func GetBalanceByAsset(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	unspent, err := Wallet.ListUnspent(address, Config.EnableUtxoDB)
+	unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
 	if err != nil {
 		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 	}
@@ -877,7 +878,7 @@ func GetReceivedByAddress(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "need a parameter named address")
 	}
 
-	unspent, err := Wallet.ListUnspent(address, Config.EnableUtxoDB)
+	unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
 	if err != nil {
 		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 	}
@@ -908,7 +909,7 @@ func GetUTXOsByAmount(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidParams, "invalid amount!")
 	}
-	unspent, err := Wallet.ListUnspent(address, Config.EnableUtxoDB)
+	unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
 	if err != nil {
 		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 	}
@@ -1010,7 +1011,7 @@ func ListUnspent(param Params) map[string]interface{} {
 		}
 	}
 	for _, address := range addresses {
-		unspent, err := Wallet.ListUnspent(address, Config.EnableUtxoDB)
+		unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
 		if err != nil {
 			return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 		}
@@ -1264,7 +1265,7 @@ func ImportAddress(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "need a parameter named address")
 	}
 
-	if err := Wallet.ImportAddress(address, Config.EnableUtxoDB); err != nil {
+	if err := Wallet.ImportAddress(address, ChainParams.EnableUtxoDB); err != nil {
 		return ResponsePack(InternalError, "import address failed: "+err.Error())
 	}
 
@@ -1281,7 +1282,7 @@ func ImportPubkey(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "invalid pubkey")
 	}
 
-	if err := Wallet.ImportPubkey(pubKeyBytes, Config.EnableUtxoDB); err != nil {
+	if err := Wallet.ImportPubkey(pubKeyBytes, ChainParams.EnableUtxoDB); err != nil {
 		return ResponsePack(InternalError, "import public key failed: "+err.Error())
 	}
 
@@ -1306,7 +1307,7 @@ func GetUnspends(param Params) map[string]interface{} {
 	}
 	var results []Result
 
-	unspent, err := Wallet.ListUnspent(address, Config.EnableUtxoDB)
+	unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
 	if err != nil {
 		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 	}
@@ -1728,7 +1729,7 @@ func VoteStatus(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "Invalid address: "+address)
 	}
 
-	unspent, err := Wallet.ListUnspent(address, Config.EnableUtxoDB)
+	unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
 	if err != nil {
 		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 	}
@@ -1802,7 +1803,7 @@ func GetDepositCoin(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "invalid programHash")
 	}
 
-	unspent, err := Wallet.ListUnspent(address, Config.EnableUtxoDB)
+	unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
 	if err != nil {
 		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 	}
