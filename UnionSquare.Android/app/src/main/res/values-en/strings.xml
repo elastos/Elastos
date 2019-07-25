@@ -346,7 +346,6 @@
     <string name="invalidaddress">Invalid address</string>
     <string name="ownerpublicKey">Owner Public Key</string>
     <string name="max36dot">Vote for maximum of 36 nodes</string>
-    <string name="error_tag_empty">error1</string>
     <string name="nodelist">Node List</string>
     <string name="about">About</string>
     <string name="currentversionname">Version&#160;</string>
@@ -409,4 +408,6 @@
     <string name="currentpk">本地公钥</string>
     <string name="scanallqr">请连续扫描所有二维码</string>
     <string name="backtostart">返回首页</string>
+    <string name="joininfo">参选信息</string>
+    <string name="nodeintro">节点简介</string>
 </resources>

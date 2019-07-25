@@ -108,11 +108,11 @@ public class RetrofitManager {
             synchronized (RetrofitManager.class) {
                 Cache cache = new Cache(new File(MyApplication.getAppContext().getCacheDir(), "HttpCache"), 1024 * 1024 * 100);
                 if (mOkHttpClient == null) {
-                    mOkHttpClient = builder.cache(cache)
+                    mOkHttpClient = builder//.cache(cache)
                             .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
                             .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
                             .writeTimeout(WRITE_TIMEOUT, TimeUnit.SECONDS)
-                            .addInterceptor(mRewriteCacheControlInterceptor)
+                           // .addInterceptor(mRewriteCacheControlInterceptor)
                             .addInterceptor(logInterceptor)
                             .addInterceptor(new InterceptorCom())
                             /*  .cookieJar(new CookiesManager())*/
@@ -141,11 +141,11 @@ public class RetrofitManager {
             synchronized (RetrofitManager.class) {
                 Cache cache = new Cache(new File(MyApplication.getAppContext().getCacheDir(), "HttpCache"), 1024 * 1024 * 100);
                 if (mOkHttpClient == null) {
-                    mOkHttpClient = builder.cache(cache)
+                    mOkHttpClient = builder//.cache(cache)
                             .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
                             .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
                             .writeTimeout(WRITE_TIMEOUT, TimeUnit.SECONDS)
-                            .addInterceptor(mRewriteCacheControlInterceptor)
+                            //.addInterceptor(mRewriteCacheControlInterceptor)
                             .addInterceptor(logInterceptor)
                             .addInterceptor(new InterceptorCom())
                             /*  .cookieJar(new CookiesManager())*/

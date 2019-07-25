@@ -250,6 +250,9 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
     private void setRecycleView() {
         List<org.elastos.wallet.ela.db.table.SubWallet> assetList = listMap.get(wallet.getWalletId());
+        if (assetList==null||assetList.size()==0){
+            return;
+        }
         if (assetskAdapter == null) {
             recyclerview.setAdapter(assetskAdapter = new AssetskAdapter(getContext(), assetList));
             recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));

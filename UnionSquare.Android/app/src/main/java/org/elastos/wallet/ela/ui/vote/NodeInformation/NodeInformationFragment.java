@@ -29,7 +29,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import butterknife.Unbinder;
 
 /**
  * 节点信息
@@ -60,10 +59,8 @@ public class NodeInformationFragment extends BaseFragment {
     List<VoteListBean.DataBean.ResultBean.ProducersBean> list;
     String zb;
     public String type;
-    //获取SignUpPresenter presenter = new SignUpPresenter();
     @BindView(R.id.tv_node_publickey)
     TextView tvNodePublickey;
-    Unbinder unbinder;
     @BindView(R.id.iv_icon)
     AppCompatImageView ivIcon;
     private ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> netlist;
@@ -92,8 +89,9 @@ public class NodeInformationFragment extends BaseFragment {
         String url = bean.getUrl();
         new SuperNodeListPresenter().getUrlJson(url, this, new NodeDotJsonViewData() {
             @Override
-            public void onGetNodeDotJsonData(NodeInfoBean t,String url) {
-                if (t == null || t.getOrg() == null || t.getOrg().getBranding() == null|| t.getOrg().getBranding().getLogo_256() == null) {
+            public void onGetNodeDotJsonData(NodeInfoBean t, String url) {
+                //获得icon
+                if (t == null || t.getOrg() == null || t.getOrg().getBranding() == null || t.getOrg().getBranding().getLogo_256() == null) {
                     return;
                 }
                 String imgUrl = t.getOrg().getBranding().getLogo_256();
