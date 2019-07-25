@@ -569,15 +569,14 @@ static void InitWallets() {
 	}
 
 	for (size_t i = 0; i < masterWallets.size(); ++i) {
-		logger->debug("{} basic info -> {}", masterWallets[i]->GetID(), masterWallets[i]->GetBasicInfo().dump());
 //		logger->debug("{} xprv -> {}", masterWallets[i]->GetID(), manager->ExportxPrivateKey(masterWallets[i], payPasswd));
-		logger->debug("{} xpub -> {}", masterWallets[i]->GetID(), manager->ExportMasterPublicKey(masterWallets[i]));
+		manager->ExportMasterPublicKey(masterWallets[i]);
 		std::vector<ISubWallet *> subWallets = masterWallets[i]->GetAllSubWallets();
 		for (size_t j = 0; j < subWallets.size(); ++j) {
 			std::string walletID = masterWallets[i]->GetID() + ":" + subWallets[j]->GetChainID();
 			subWallets[j]->AddCallback(new SubWalletCallback(walletID));
-			logger->debug("{} basic info -> {}", walletID, subWallets[j]->GetBasicInfo().dump());
-			logger->debug("{} all addresses -> {}", walletID, subWallets[j]->GetAllAddress(0, 20).dump());
+			subWallets[j]->GetBasicInfo();
+			subWallets[j]->GetAllAddress(0, 500);
 		}
 	}
 }
@@ -588,7 +587,6 @@ static void GetAllTxSummary(const std::string &masterWalletID, const std::string
 		return;
 
 	nlohmann::json txSummary = subWallet->GetAllTransaction(0, 10, "");
-	logger->debug("[{}:{}] all tx -> {}", masterWalletID, subWalletID, txSummary.dump());
 
 #if 0
 	nlohmann::json txns = txSummary["Transactions"];
@@ -607,8 +605,7 @@ static void GetAllTxSummary(const std::string &masterWalletID, const std::string
 	}
 #endif
 
-	nlohmann::json utxoSummary = subWallet->GetAllUTXOs(0, 10, "");
-	logger->debug("[{}:{}] all utxos -> {}", masterWalletID, subWalletID, utxoSummary.dump());
+	nlohmann::json utxoSummary = subWallet->GetAllUTXOs(0, 1000, "");
 }
 
 static void GetBalance(const std::string &masterWalletID, const std::string &subWalletID,
@@ -619,11 +616,11 @@ static void GetBalance(const std::string &masterWalletID, const std::string &sub
 
 	if (subWalletID == gTokenchainSubWalletID) {
 		ITokenchainSubWallet *tokenSubWallet = dynamic_cast<ITokenchainSubWallet *>(subWallet);
-		logger->debug("{}:{} balance -> {}", masterWalletID, subWalletID, tokenSubWallet->GetBalance(assetID));
-		logger->debug("{}:{} balance info {}", masterWalletID, subWalletID, tokenSubWallet->GetBalanceInfo(assetID).dump());
+		tokenSubWallet->GetBalance(assetID);
+		tokenSubWallet->GetBalanceInfo(assetID);
 	} else {
-		logger->debug("{}:{} balance -> {}", masterWalletID, subWalletID, subWallet->GetBalance(BalanceType::Total));
-		logger->debug("{}:{} balance info -> {}", masterWalletID, subWalletID, subWallet->GetBalanceInfo().dump());
+		subWallet->GetBalance(BalanceType::Total);
+		subWallet->GetBalanceInfo();
 	}
 }
 

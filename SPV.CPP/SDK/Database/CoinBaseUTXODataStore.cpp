@@ -23,6 +23,9 @@ namespace Elastos {
 		}
 
 		bool CoinBaseUTXODataStore::Put(const std::vector<UTXOPtr> &entitys) {
+			if (entitys.empty())
+				return true;
+
 			return DoTransaction([&entitys, this]() {
 				for (size_t i = 0; i < entitys.size(); ++i) {
 					this->PutInternal(entitys[i]);
@@ -40,7 +43,7 @@ namespace Elastos {
 			return DoTransaction([this]() {
 				std::string sql;
 
-				sql = "DELETE FROM "  + _tableName + "';";
+				sql = "DELETE FROM "  + _tableName + ";";
 
 				ErrorChecker::CheckCondition(!_sqlite->exec(sql, nullptr, nullptr), Error::SqliteError,
 											 "Exec sql " + sql);
@@ -109,8 +112,10 @@ namespace Elastos {
 
 					OutputPtr o(new TransactionOutput(amount, Address(programHash), assetID));
 					o->SetOutputLock(outputLock);
+					o->SetFixedIndex(index);
 
 					UTXOPtr entity(new UTXO(txHash, index, timestamp, blockHeight, o));
+					entity->SetSpent(spent);
 					entitys.push_back(entity);
 				}
 
@@ -122,6 +127,9 @@ namespace Elastos {
 
 		bool CoinBaseUTXODataStore::Update(const std::vector<uint256> &txHashes, uint32_t blockHeight,
 										   time_t timestamp) {
+			if (txHashes.empty())
+				return true;
+
 			return DoTransaction([&txHashes, &blockHeight, &timestamp, this]() {
 				std::string sql;
 
@@ -144,6 +152,9 @@ namespace Elastos {
 		}
 
 		bool CoinBaseUTXODataStore::UpdateSpent(const std::vector<uint256> &txHashes) {
+			if (txHashes.empty())
+				return true;
+
 			return DoTransaction([&txHashes, this]() {
 				std::string sql;
 

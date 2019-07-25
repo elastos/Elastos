@@ -22,16 +22,19 @@ namespace Elastos {
 			TransactionDataStore(SqliteTransactionType type, Sqlite *sqlite);
 			~TransactionDataStore();
 
-			bool PutTransaction(const std::string &iso, const TransactionPtr &transaction);
-			bool DeleteAllTransactions(const std::string &iso);
-			size_t GetAllTransactionsCount(const std::string &iso) const;
-			std::vector<TransactionPtr> GetAllTransactions(const std::string &iso) const;
+			bool PutTransaction(const std::string &iso, const TransactionPtr &tx);
+			bool PutTransactions(const std::string &iso, const std::vector<TransactionPtr> &txns);
+			bool DeleteAllTransactions();
+			size_t GetAllTransactionsCount() const;
+			std::vector<TransactionPtr> GetAllTransactions() const;
 			bool UpdateTransaction(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
-			bool DeleteTxByHash(const std::string &iso, const std::string &hash);
-			bool DeleteTxByHashes(const std::vector<std::string> &hashes);
+			bool DeleteTxByHash(const uint256 &hash);
+			bool DeleteTxByHashes(const std::vector<uint256> &hashes);
 
 		private:
 			bool SelectTxByHash(const std::string &iso, const std::string &hash, TransactionPtr &tx) const;
+
+			void PutTransactionInternal(const std::string &iso, const TransactionPtr &tx);
 
 		private:
 			/*

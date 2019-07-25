@@ -216,11 +216,13 @@ namespace Elastos {
 					}
 				}
 			}
-			_wallet->SetBlockHeight(_lastBlock->GetHeight());
-			_wallet->UpdateBalance();
 		}
 
 		PeerManager::~PeerManager() {
+		}
+
+		void PeerManager::SetWallet(const WalletPtr &wallet) {
+			_wallet = wallet;
 		}
 
 		Peer::ConnectStatus PeerManager::GetConnectStatus() const {
@@ -405,13 +407,8 @@ namespace Elastos {
 		}
 
 		uint32_t PeerManager::GetLastBlockHeight() const {
-			uint32_t height;
-
-			{
-				boost::mutex::scoped_lock scoped_lock(lock);
-				height = _lastBlock->GetHeight();
-			}
-			return height;
+			boost::mutex::scoped_lock scoped_lock(lock);
+			return _lastBlock->GetHeight();
 		}
 
 		uint32_t PeerManager::GetLastBlockTimestamp() const {
@@ -671,49 +668,41 @@ namespace Elastos {
 			_filterUpdateHeight = _lastBlock->GetHeight();
 			_fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
 
-			Address ownerDepositAddress = _wallet->GetOwnerDepositAddress();
-			Address ownerAddress = _wallet->GetOwnerAddress();
-
+			std::vector<Address> specialAddresses = _wallet->GetAllSpecialAddresses();
 			std::vector<Address> addrs;
 			_wallet->GetAllAddresses(addrs, 0, size_t(-1), true);
 			std::vector<UTXOPtr> utxos = _wallet->GetAllUTXO("");
-			std::vector<UTXOPtr> coinBaseUTXOs = _wallet->GetAllCoinBaseUTXO("");
 			uint32_t blockHeight = (_lastBlock->GetHeight() > 100) ? _lastBlock->GetHeight() - 100 : 0;
 
 			std::vector<TransactionPtr> transactions = _wallet->TxUnconfirmedBefore(blockHeight);
-			BloomFilterPtr filter = BloomFilterPtr(
-					new BloomFilter(_fpRate, 2 + addrs.size() + _wallet->GetListeningAddrs().size() +
-											 utxos.size() + transactions.size() + 100,
-									(uint32_t) peer->GetPeerInfo().GetHash(),
-									BLOOM_UPDATE_ALL)); // BUG: XXX txCount not the same as number of spent wallet outputs
+
+			size_t elementCount = specialAddresses.size() + addrs.size() + utxos.size() + transactions.size();
+			elementCount += _wallet->GetListeningAddrs().size();
+
+			BloomFilterPtr filter = BloomFilterPtr(new BloomFilter(_fpRate, elementCount + 100,
+																   (uint32_t) peer->GetPeerInfo().GetHash(),
+																   BLOOM_UPDATE_ALL)); // BUG: XXX txCount not the same as number of spent wallet outputs
 
 			bytes_t hash;
 
-			if (ownerDepositAddress.Valid()) {
-				hash = ownerDepositAddress.ProgramHash().bytes();
-				if (!filter->ContainsData(hash)) {
-					filter->InsertData(hash);
-				}
-			}
-
-			if (ownerAddress.Valid()) {
-				hash = ownerAddress.ProgramHash().bytes();
-				if (!filter->ContainsData(hash)) {
-					filter->InsertData(hash);
+			for (size_t i = 0; i < specialAddresses.size(); ++i) {
+				if (specialAddresses[i].Valid()) {
+					hash = specialAddresses[i].ProgramHash().bytes();
+					if (!filter->ContainsData(hash))
+						filter->InsertData(hash);
 				}
 			}
 
 			for (size_t i = 0; i < addrs.size(); i++) { // add addresses to watch for tx receiveing money to the wallet
-				hash = addrs[i].ProgramHash().bytes();
-
-				if (addrs[i].Valid() && !filter->ContainsData(hash)) {
-					filter->InsertData(hash);
+				if (addrs[i].Valid()) {
+					hash = addrs[i].ProgramHash().bytes();
+					if (!filter->ContainsData(hash))
+						filter->InsertData(hash);
 				}
 			}
 
 			for (size_t i = 0; i < _wallet->GetListeningAddrs().size(); ++i) {
 				hash = Address(_wallet->GetListeningAddrs()[i]).ProgramHash().bytes();
-
 				if (!filter->ContainsData(hash)) {
 					filter->InsertData(hash);
 				}
@@ -722,14 +711,6 @@ namespace Elastos {
 			for (size_t i = 0; i < utxos.size(); i++) { // add UTXOs to watch for tx sending money from the wallet
 				bytes_t o = utxos[i]->Hash().bytes();
 				o.append(utxos[i]->Index());
-
-				if (!filter->ContainsData(o))
-					filter->InsertData(o);
-			}
-
-			for (size_t i = 0; i < coinBaseUTXOs.size() && !coinBaseUTXOs[i]->Spent(); ++i) {
-				bytes_t o = coinBaseUTXOs[i]->Hash().bytes();
-				o.append(coinBaseUTXOs[i]->Index());
 
 				if (!filter->ContainsData(o))
 					filter->InsertData(o);
@@ -1126,6 +1107,7 @@ namespace Elastos {
 			PublishedTransaction pubTx;
 
 			{
+				_wallet->StripTransaction(tx);
 				boost::mutex::scoped_lock scopedLock(lock);
 				peer->info("relayed tx");
 
@@ -1550,12 +1532,9 @@ namespace Elastos {
 			if (saveBlocks.size() > 0)
 				FireSaveBlocks(saveBlocks.size() > 1, saveBlocks);
 
-			if (block && block->GetHeight() != BLOCK_UNKNOWN_HEIGHT && block->GetHeight() >= peer->GetLastBlock()) {
-				FireTxStatusUpdate(); // notify that transaction confirmations may have changed
-			}
-
-			if (block->GetHeight() == _estimatedHeight) {
-				_wallet->UpdateBalance();
+			if ((block->GetHeight() % 500) == 0 || txHashes.size() > 0 ||
+				block->GetHeight() >= peer->GetLastBlock()) {
+				_wallet->UpdateLockedBalance();
 			}
 
 			if (next) OnRelayedBlock(peer, next);

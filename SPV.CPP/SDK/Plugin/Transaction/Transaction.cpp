@@ -123,6 +123,10 @@ namespace Elastos {
 			return _txHash;
 		}
 
+		void Transaction::SetHash(const uint256 &hash) {
+			_txHash = hash;
+		}
+
 		const Transaction::TxVersion &Transaction::GetVersion() const {
 			return _version;
 		}
@@ -160,6 +164,16 @@ namespace Elastos {
 
 		const std::vector<OutputPtr> &Transaction::GetOutputs() const {
 			return _outputs;
+		}
+
+		OutputPtr Transaction::OutputOfIndex(uint16_t fixedIndex) const {
+			std::vector<OutputPtr>::const_iterator it;
+			for (it = _outputs.cbegin(); it != _outputs.cend(); ++it) {
+				if ((*it)->FixedIndex() == fixedIndex)
+					return (*it);
+			}
+
+			return nullptr;
 		}
 
 		void Transaction::SetOutputs(const std::vector<OutputPtr> &outputs) {
@@ -381,7 +395,7 @@ namespace Elastos {
 		}
 
 		void Transaction::Serialize(ByteStream &ostream, bool extend) const {
-			SerializeUnsigned(ostream);
+			SerializeUnsigned(ostream, extend);
 
 			ostream.WriteVarUint(_programs.size());
 			for (size_t i = 0; i < _programs.size(); i++) {
@@ -389,7 +403,7 @@ namespace Elastos {
 			}
 		}
 
-		void Transaction::SerializeUnsigned(ByteStream &ostream) const {
+		void Transaction::SerializeUnsigned(ByteStream &ostream, bool extend) const {
 			if (_version >= TxVersion::V09) {
 				ostream.WriteByte(_version);
 			}
@@ -414,7 +428,7 @@ namespace Elastos {
 
 			ostream.WriteVarUint(_outputs.size());
 			for (size_t i = 0; i < _outputs.size(); i++) {
-				_outputs[i]->Serialize(ostream, _version);
+				_outputs[i]->Serialize(ostream, _version, extend);
 			}
 
 			ostream.WriteUint32(_lockTime);
@@ -473,6 +487,12 @@ namespace Elastos {
 				return false;
 			}
 
+			if (inCount > UINT16_MAX) {
+				Log::error("deserialize tx: too much inputs: {}", inCount);
+				return false;
+			}
+
+			_inputs.reserve(inCount);
 			for (size_t i = 0; i < inCount; i++) {
 				InputPtr input(new TransactionInput());
 				if (!input->Deserialize(istream)) {
@@ -488,11 +508,21 @@ namespace Elastos {
 				return false;
 			}
 
+			if (outputLength > UINT16_MAX) {
+				Log::error("deserialize tx: too much outputs: {}", outputLength);
+				return false;
+			}
+
+			_outputs.reserve(outputLength);
 			for (size_t i = 0; i < outputLength; i++) {
 				OutputPtr output(new TransactionOutput());
-				if (!output->Deserialize(istream, _version)) {
+				if (!output->Deserialize(istream, _version, extend)) {
 					Log::error("deserialize tx output[{}] error", i);
 					return false;
+				}
+
+				if (!extend) {
+					output->SetFixedIndex((uint16_t) i);
 				}
 				_outputs.push_back(output);
 			}
@@ -505,6 +535,11 @@ namespace Elastos {
 			uint64_t programLength = 0;
 			if (!istream.ReadVarUint(programLength)) {
 				Log::error("deserialize tx program length error");
+				return false;
+			}
+
+			if (programLength > UINT16_MAX) {
+				Log::error("deserialize tx: too much programs: {}", programLength);
 				return false;
 			}
 
@@ -525,103 +560,102 @@ namespace Elastos {
 		}
 
 		nlohmann::json Transaction::ToJson() const {
-			nlohmann::json jsonData;
+			nlohmann::json j;
 
-			jsonData["IsRegistered"] = _isRegistered;
+			j["IsRegistered"] = _isRegistered;
 
-			jsonData["TxHash"] = GetHash().GetHex();
-			jsonData["Version"] = _version;
-			jsonData["LockTime"] = _lockTime;
-			jsonData["BlockHeight"] = _blockHeight;
-			jsonData["Timestamp"] = _timestamp;
+			j["TxHash"] = GetHash().GetHex();
+			j["Version"] = _version;
+			j["LockTime"] = _lockTime;
+			j["BlockHeight"] = _blockHeight;
+			j["Timestamp"] = _timestamp;
 
 			std::vector<nlohmann::json> inputsJson(_inputs.size());
 			for (size_t i = 0; i < _inputs.size(); ++i) {
 				inputsJson[i] = _inputs[i]->ToJson();
 			}
-			jsonData["Inputs"] = inputsJson;
+			j["Inputs"] = inputsJson;
 
-			jsonData["Type"] = (uint8_t) _type;
-			jsonData["PayloadVersion"] = _payloadVersion;
-			jsonData["PayLoad"] = _payload->ToJson(_payloadVersion);
+			j["Type"] = (uint8_t) _type;
+			j["PayloadVersion"] = _payloadVersion;
+			j["PayLoad"] = _payload->ToJson(_payloadVersion);
 
 			std::vector<nlohmann::json> attributesJson(_attributes.size());
 			for (size_t i = 0; i < _attributes.size(); ++i) {
 				attributesJson[i] = _attributes[i]->ToJson();
 			}
-			jsonData["Attributes"] = attributesJson;
+			j["Attributes"] = attributesJson;
 
 			std::vector<nlohmann::json> programsJson(_programs.size());
 			for (size_t i = 0; i < _programs.size(); ++i) {
 				programsJson[i] = _programs[i]->ToJson();
 			}
-			jsonData["Programs"] = programsJson;
+			j["Programs"] = programsJson;
 
 			std::vector<nlohmann::json> outputsJson(_outputs.size());
 			for (size_t i = 0; i < _outputs.size(); ++i) {
 				outputsJson[i] = _outputs[i]->ToJson(_version);
 			}
-			jsonData["Outputs"] = outputsJson;
+			j["Outputs"] = outputsJson;
 
-			jsonData["Fee"] = _fee;
+			j["Fee"] = _fee;
 
-			return jsonData;
+			return j;
 		}
 
-		void Transaction::FromJson(const nlohmann::json &jsonData) {
+		void Transaction::FromJson(const nlohmann::json &j) {
 			Reinit();
 
 			try {
-				_isRegistered = jsonData["IsRegistered"];
+				_isRegistered = j["IsRegistered"];
 
-				uint8_t version = jsonData["Version"].get<uint8_t>();
+				uint8_t version = j["Version"].get<uint8_t>();
 				_version = static_cast<TxVersion>(version);
-				_lockTime = jsonData["LockTime"].get<uint32_t>();
-				_blockHeight = jsonData["BlockHeight"].get<uint32_t>();
-				_timestamp = jsonData["Timestamp"].get<uint32_t>();
+				_lockTime = j["LockTime"].get<uint32_t>();
+				_blockHeight = j["BlockHeight"].get<uint32_t>();
+				_timestamp = j["Timestamp"].get<uint32_t>();
 
-				std::vector<nlohmann::json> inputJsons = jsonData["Inputs"];
+				std::vector<nlohmann::json> inputJsons = j["Inputs"];
 				for (size_t i = 0; i < inputJsons.size(); ++i) {
 					InputPtr input(new TransactionInput());
 					input->FromJson(inputJsons[i]);
 					_inputs.push_back(input);
 				}
 
-				_type = Type(jsonData["Type"].get<uint8_t>());
-				_payloadVersion = jsonData["PayloadVersion"];
+				_type = Type(j["Type"].get<uint8_t>());
+				_payloadVersion = j["PayloadVersion"];
 				InitPayloadFromType(_type);
 
 				if (_payload == nullptr) {
 					Log::error("_payload is nullptr when convert from json");
 				} else {
-					_payload->FromJson(jsonData["PayLoad"], _payloadVersion);
+					_payload->FromJson(j["PayLoad"], _payloadVersion);
 				}
 
-				std::vector<nlohmann::json> attributesJson = jsonData["Attributes"];
+				std::vector<nlohmann::json> attributesJson = j["Attributes"];
 				for (size_t i = 0; i < attributesJson.size(); ++i) {
 					AttributePtr attribute(new Attribute());
 					attribute->FromJson(attributesJson[i]);
 					_attributes.push_back(attribute);
 				}
 
-				std::vector<nlohmann::json> programsJson = jsonData["Programs"];
+				std::vector<nlohmann::json> programsJson = j["Programs"];
 				for (size_t i = 0; i < programsJson.size(); ++i) {
 					ProgramPtr program(new Program());
 					program->FromJson(programsJson[i]);
 					_programs.push_back(program);
 				}
 
-				std::vector<nlohmann::json> outputsJson = jsonData["Outputs"];
+				std::vector<nlohmann::json> outputsJson = j["Outputs"];
 				for (size_t i = 0; i < outputsJson.size(); ++i) {
 					OutputPtr output(new TransactionOutput());
 					output->FromJson(outputsJson[i], _version);
 					_outputs.push_back(output);
 				}
 
-				_fee = jsonData["Fee"].get<uint64_t>();
+				_fee = j["Fee"].get<uint64_t>();
 
-				_txHash = 0;
-				GetHash();
+				_txHash.SetHex(j["TxHash"].get<std::string>());
 			} catch (const nlohmann::detail::exception &e) {
 				ErrorChecker::ThrowLogicException(Error::Code::JsonFormatError, "tx from json: " +
 																				std::string(e.what()));

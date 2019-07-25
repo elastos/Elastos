@@ -21,8 +21,8 @@
 
 #define BACKGROUND_THREAD_COUNT 1
 
-#define DATABASE_PATH "spv_wallet.db"
-#define ISO "ela"
+#define ISO_OLD "ela"
+#define ISO "ela1"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -128,6 +128,11 @@ namespace Elastos {
 						  });
 		}
 
+		void SpvService::onCoinBaseUpdatedAll(const UTXOArray &cbs) {
+			_databaseManager.DeleteAllCoinBase();
+			_databaseManager.PutCoinBase(cbs);
+		}
+
 		void SpvService::onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight,
 											 time_t timestamp) {
 			_databaseManager.UpdateCoinBase(hashes, blockHeight, timestamp);
@@ -176,11 +181,21 @@ namespace Elastos {
 		}
 
 		void SpvService::onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
-			_databaseManager.DeleteTxByHash(ISO, hash.GetHex());
+			_databaseManager.DeleteTxByHash(hash);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&hash, &notifyUser, &recommendRescan](Wallet::Listener *listener) {
 							  listener->onTxDeleted(hash, notifyUser, recommendRescan);
+						  });
+		}
+
+		void SpvService::onTxUpdatedAll(const std::vector<TransactionPtr> &txns) {
+			_databaseManager.DeleteAllTransactions();
+			_databaseManager.PutTransactions(ISO, txns);
+
+			std::for_each(_walletListeners.begin(), _walletListeners.end(),
+						  [&txns](Wallet::Listener *listener) {
+								listener->onTxUpdatedAll(txns);
 						  });
 		}
 
@@ -254,7 +269,7 @@ namespace Elastos {
 		void SpvService::savePeers(bool replace, const std::vector<PeerInfo> &peers) {
 
 			if (replace) {
-				_databaseManager.DeleteAllPeers(ISO);
+				_databaseManager.DeleteAllPeers();
 			}
 
 			std::vector<PeerEntity> peerEntityList;
@@ -320,7 +335,7 @@ namespace Elastos {
 		}
 
 		size_t SpvService::GetAllTransactionsCount() {
-			return _databaseManager.GetAllTransactionsCount(ISO);
+			return _databaseManager.GetAllTransactionsCount();
 		}
 
 		std::vector<UTXOPtr> SpvService::loadCoinBaseUTXOs() {
@@ -329,49 +344,7 @@ namespace Elastos {
 
 		// override protected methods
 		std::vector<TransactionPtr> SpvService::loadTransactions() {
-			std::vector<TransactionPtr> txs;
-			std::vector<UTXOPtr> coinBaseEntitys;
-			std::set<uint256> spentHashes;
-			std::set<std::string> coinBaseHashes;
-
-			std::vector<TransactionPtr> transactions = _databaseManager.GetAllTransactions(ISO);
-
-			size_t len = transactions.size();
-			for (size_t i = 0; i < len; ++i) {
-				const TransactionPtr &tx = transactions[i];
-
-				if (tx->IsCoinBase()) {
-					coinBaseHashes.insert(tx->GetHash().GetHex());
-					for (uint16_t n = 0; n < tx->GetOutputs().size(); ++n) {
-						if (_subAccount->ContainsAddress(tx->GetOutputs()[n]->Addr())) {
-							UTXOPtr entity(new UTXO(tx->GetHash(), n, tx->GetTimestamp(), tx->GetBlockHeight(), tx->GetOutputs()[n]));
-							coinBaseEntitys.push_back(entity);
-							break;
-						}
-					}
-				} else {
-					for (uint16_t n = 0; n < tx->GetInputs().size(); ++n)
-						spentHashes.insert(tx->GetInputs()[n]->TxHash());
-
-					txs.push_back(tx);
-				}
-			}
-
-			std::for_each(spentHashes.begin(), spentHashes.end(), [&coinBaseEntitys](const uint256 &hash) {
-				for (size_t i = 0; i < coinBaseEntitys.size(); ++i) {
-					if (coinBaseEntitys[i]->Hash() == hash) {
-						coinBaseEntitys[i]->SetSpent(true);
-						break;
-					}
-				}
-			});
-
-			_databaseManager.PutCoinBase(coinBaseEntitys);
-
-			std::vector<std::string> removeHashes(coinBaseHashes.begin(), coinBaseHashes.end());
-			_databaseManager.DeleteTxByHashes(removeHashes);
-
-			return txs;
+			return _databaseManager.GetAllTransactions();
 		}
 
 		std::vector<MerkleBlockPtr> SpvService::loadBlocks() {

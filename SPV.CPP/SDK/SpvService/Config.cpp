@@ -51,7 +51,7 @@ namespace Elastos {
 
 		}
 
-		const ChainConfigPtr &Config::GetChainConfig(const std::string &id) const {
+		ChainConfigPtr Config::GetChainConfig(const std::string &id) const {
 			for (size_t i = 0; i < _chains.size(); ++i) {
 				if (_chains[i]->_id	 == id) {
 					return _chains[i];

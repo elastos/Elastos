@@ -40,6 +40,8 @@ namespace Elastos {
 
 			virtual void onCoinBaseTxAdded(const UTXOPtr &cb);
 
+			virtual void onCoinBaseUpdatedAll(const UTXOArray &cbs);
+
 			virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 
 			virtual void onCoinBaseSpent(const std::vector<uint256> &spentHashes);
@@ -51,6 +53,8 @@ namespace Elastos {
 			virtual void onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp);
 
 			virtual void onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
+
+			virtual void onTxUpdatedAll(const std::vector<TransactionPtr> &txns);
 
 			virtual void onAssetRegistered(const AssetPtr &asset, uint64_t amount, const uint168 &controller);
 
@@ -185,6 +189,8 @@ namespace Elastos {
 
 			virtual void onCoinBaseTxAdded(const UTXOPtr &cb);
 
+			virtual void onCoinBaseUpdatedAll(const UTXOArray &cbs);
+
 			virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 
 			virtual void onCoinBaseSpent(const std::vector<uint256> &spentHashes);
@@ -196,6 +202,8 @@ namespace Elastos {
 			virtual void onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp);
 
 			virtual void onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
+
+			virtual void onTxUpdatedAll(const std::vector<TransactionPtr> &txns);
 
 			virtual void onAssetRegistered(const AssetPtr &asset, uint64_t amount, const uint168 &controller);
 		private:
@@ -211,6 +219,8 @@ namespace Elastos {
 
 			virtual void onCoinBaseTxAdded(const UTXOPtr &cb);
 
+			virtual void onCoinBaseUpdatedAll(const UTXOArray &cbs);
+
 			virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 
 			virtual void onCoinBaseSpent(const std::vector<uint256> &spentHashes);
@@ -222,6 +232,8 @@ namespace Elastos {
 			virtual void onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp);
 
 			virtual void onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
+
+			virtual void onTxUpdatedAll(const std::vector<TransactionPtr> &txns);
 
 			virtual void onAssetRegistered(const AssetPtr &asset, uint64_t amount, const uint168 &controller);
 		private:

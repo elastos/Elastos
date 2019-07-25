@@ -37,96 +37,60 @@ namespace Elastos {
 
 		GroupedAsset &GroupedAsset::operator=(const GroupedAsset &proto) {
 			_balance = proto._balance;
-			_votedBalance = proto._votedBalance;
-			_lockedBalance = proto._lockedBalance;
-			_depositBalance = proto._depositBalance;
+			_balanceVote = proto._balanceVote;
+			_balanceLocked = proto._balanceLocked;
+			_balanceDeposit = proto._balanceDeposit;
 			_utxos = proto._utxos;
-			_coinBaseUTXOs = proto._coinBaseUTXOs;
+			_utxosVote = proto._utxosVote;
+			_utxosCoinbase = proto._utxosCoinbase;
+			_utxosDeposit = proto._utxosDeposit;
+			_utxosLocked = proto._utxosLocked;
 			*_asset = *proto._asset;
 			_parent = proto._parent;
 			return *this;
 		}
 
-		const std::vector<UTXOPtr> &GroupedAsset::GetUTXOs() const {
-			return _utxos;
+		std::vector<UTXOPtr> GroupedAsset::GetUTXOs(const std::string &addr) const {
+			UTXOArray result;
+			UTXOArray::const_iterator o;
+			for (o = _utxos.cbegin(); o != _utxos.cend(); ++o) {
+				if (addr.empty() || addr == (*o)->Output()->Addr().String())
+					result.push_back(*o);
+			}
+
+			for (o = _utxosVote.cbegin(); o != _utxosVote.cend(); ++o) {
+				if (addr.empty() || addr == (*o)->Output()->Addr().String())
+					result.push_back(*o);
+			}
+
+			for (o = _utxosCoinbase.cbegin(); o != _utxosCoinbase.cend(); ++o) {
+				if (addr.empty() || addr == (*o)->Output()->Addr().String())
+					result.push_back(*o);
+			}
+
+			for (o = _utxosDeposit.cbegin(); o != _utxosDeposit.cend(); ++o) {
+				if (addr.empty() || addr == (*o)->Output()->Addr().String())
+					result.push_back(*o);
+			}
+
+			for (o = _utxosLocked.cbegin(); o != _utxosLocked.cend(); ++o) {
+				if (addr.empty() || addr == (*o)->Output()->Addr().String())
+					result.push_back(*o);
+			}
+
+			return result;
 		}
 
 		const std::vector<UTXOPtr> &GroupedAsset::GetCoinBaseUTXOs() const {
-			return _coinBaseUTXOs;
+			return _utxosCoinbase;
 		}
 
 		BigInt GroupedAsset::GetBalance(BalanceType type) const {
 			if (type == BalanceType::Default) {
-				return _balance - _votedBalance;
+				return _balance - _balanceVote;
 			} else if (type == BalanceType::Voted) {
-				return _votedBalance;
+				return _balanceVote;
 			}
-
-			return _balance;
-		}
-
-		void GroupedAsset::CleanBalance() {
-			_utxos.clear();
-			_coinBaseUTXOs.clear();
-			_balance = 0;
-			_lockedBalance = 0;
-			_depositBalance = 0;
-			_votedBalance = 0;
-		}
-
-		BigInt GroupedAsset::UpdateBalance() {
-			BigInt balance(0), lockedBalance(0), depositBalance(0), votedBalance(0);
-			size_t i;
-
-			for (i = 0; i < _coinBaseUTXOs.size(); ++i) {
-				if (_coinBaseUTXOs[i]->GetConfirms(_parent->_blockHeight) <= 100) {
-					lockedBalance += _coinBaseUTXOs[i]->Output()->Amount();
-				} else {
-					balance += _coinBaseUTXOs[i]->Output()->Amount();
-				}
-			}
-
-			for (i = _utxos.size(); i > 0; --i) {
-				TransactionPtr tx = _parent->_allTx.Get(_utxos[i - 1]->Hash());
-				if (!tx || tx->IsCoinBase()) continue;
-
-				const OutputPtr &output = tx->GetOutputs()[_utxos[i - 1]->Index()];
-				Address addr = output->Addr();
-				if (_parent->_subAccount->IsDepositAddress(addr)) {
-					depositBalance += output->Amount();
-				} else if (output->OutputLock() > _parent->_blockHeight) {
-					lockedBalance += output->Amount();
-				} else {
-					balance += output->Amount();
-					if (output->GetType() == TransactionOutput::VoteOutput) {
-						votedBalance += output->Amount();
-					}
-				}
-			}
-
-
-			// transaction ordering is not guaranteed, so check the entire UTXO set against the entire spent output set
-			for (std::vector<UTXOPtr>::iterator it = _utxos.begin(); it != _utxos.end(); ) {
-				if (_parent->IsUTXOSpent(*it)) {
-
-					if (_parent->_subAccount->IsDepositAddress((*it)->Output()->Addr())) {
-						depositBalance -= (*it)->Output()->Amount();
-					} else {
-						balance -= (*it)->Output()->Amount();
-						if ((*it)->Output()->GetType() == TransactionOutput::Type::VoteOutput) {
-							votedBalance -= (*it)->Output()->Amount();
-						}
-					}
-					it = _utxos.erase(it);
-				} else {
-					++it;
-				}
-			}
-
-			_balance = balance;
-			_lockedBalance = lockedBalance;
-			_depositBalance = depositBalance;
-			_votedBalance = votedBalance;
 
 			return _balance;
 		}
@@ -135,17 +99,56 @@ namespace Elastos {
 			nlohmann::json info;
 
 			info["Balance"] = _balance.getDec();
-			info["LockedBalance"] = _lockedBalance.getDec();
-			info["DepositBalance"] = _depositBalance.getDec();
-			info["VotedBalance"] = _votedBalance.getDec();
+			info["LockedBalance"] = _balanceLocked.getDec();
+			info["DepositBalance"] = _balanceDeposit.getDec();
+			info["VotedBalance"] = _balanceVote.getDec();
 
 			return info;
 		}
 
-		TransactionPtr GroupedAsset::CombineUTXO(const std::string &memo, bool useVotedUTXO) {
+		TransactionPtr GroupedAsset::CreateRetrieveDepositTx(const OutputArray &outputs,
+															 const Address &fromAddress,
+															 const std::string &memo) {
+			TransactionPtr tx = TransactionPtr(new Transaction());
+
+			std::string nonce = std::to_string((std::rand() & 0xFFFFFFFF));
+			tx->AddAttribute(AttributePtr(new Attribute(Attribute::Nonce, bytes_t(nonce.c_str(), nonce.size()))));
+
+			if (!memo.empty())
+				tx->AddAttribute(AttributePtr(new Attribute(Attribute::Memo, bytes_t(memo.c_str(), memo.size()))));
+
+			tx->SetOutputs(outputs);
+
+			_parent->Lock();
+
+			for (UTXOArray::iterator u = _utxosDeposit.begin(); u != _utxosDeposit.end(); ++u) {
+				if (_parent->IsUTXOSpending(*u))
+					continue;
+
+				if ((*u)->GetConfirms(_parent->_blockHeight) < 2)
+					continue;
+
+				if (fromAddress == (*u)->Output()->Addr()) {
+					tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
+					bytes_t code;
+					std::string path;
+					_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
+					tx->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
+				}
+			}
+
+			_parent->Unlock();
+
+			if (tx->GetInputs().empty()) {
+				ErrorChecker::ThrowLogicException(Error::DepositNotFound, "Deposit utxo not found");
+			}
+
+			return tx;
+		}
+
+		TransactionPtr GroupedAsset::Consolidate(const std::string &memo, bool useVotedUTXO) {
 			TransactionPtr tx = TransactionPtr(new Transaction());
 			BigInt totalInputAmount(0);
-			size_t i;
 			uint64_t feeAmount = 0, txSize = 0;
 			bool lastUTXOPending = false;
 
@@ -156,56 +159,80 @@ namespace Elastos {
 
 			_parent->Lock();
 
-			for (i = 0; i < _coinBaseUTXOs.size() && txSize < TX_MAX_SIZE - 1000; ++i) {
-				if (_parent->IsUTXOSpending(_coinBaseUTXOs[i])) {
-					lastUTXOPending = true;
-					continue;
+			if (useVotedUTXO) {
+				for (UTXOArray::iterator u = _utxosVote.begin(); u != _utxosVote.end(); ++u) {
+					if (txSize >= TX_MAX_SIZE - 1000)
+						break;
+
+					if (_parent->IsUTXOSpending(*u)) {
+						lastUTXOPending = true;
+						continue;
+					}
+
+					if ((*u)->GetConfirms(_parent->_blockHeight) < 2)
+						continue;
+
+					tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
+					bytes_t code;
+					std::string path;
+					_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
+					tx->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
+
+					totalInputAmount += (*u)->Output()->Amount();
+
+					if (_asset->GetName() == "ELA")
+						feeAmount = CalculateFee(_parent->_feePerKb, txSize);
+
+					txSize = tx->EstimateSize();
 				}
-
-				if (_coinBaseUTXOs[i]->GetConfirms(_parent->_blockHeight) <= 100)
-					continue;
-
-				tx->AddInput(InputPtr(new TransactionInput(_coinBaseUTXOs[i]->Hash(), _coinBaseUTXOs[i]->Index())));
-
-				bytes_t code;
-				std::string path;
-				_parent->_subAccount->GetCodeAndPath(Address(_coinBaseUTXOs[i]->Output()->ProgramHash()), code, path);
-				tx->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
-
-				totalInputAmount += _coinBaseUTXOs[i]->Output()->Amount();
-
-				txSize = tx->EstimateSize();
-				if (_asset->GetName() == "ELA")
-					feeAmount = CalculateFee(_parent->_feePerKb, txSize);
 			}
 
-			for (i = 0; i < _utxos.size() && txSize < TX_MAX_SIZE - 1000; ++i) {
-				if (_parent->IsUTXOSpending(_utxos[i])) {
+			for (UTXOArray::iterator u = _utxosCoinbase.begin(); u != _utxosCoinbase.end(); ++u) {
+				if (txSize >= TX_MAX_SIZE - 1000)
+					break;
+
+				if (_parent->IsUTXOSpending(*u)) {
 					lastUTXOPending = true;
 					continue;
 				}
 
-				const OutputPtr &o = _utxos[i]->Output();
-				if (!useVotedUTXO && o->GetType() == TransactionOutput::Type::VoteOutput)
-					continue;
+				tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
 
-				if (_parent->_subAccount->IsDepositAddress(o->Addr()))
-					continue;
-
-				if (_utxos[i]->GetConfirms(_parent->_blockHeight) < 2)
-					continue;
-
-				tx->AddInput(InputPtr(new TransactionInput(_utxos[i]->Hash(), _utxos[i]->Index())));
 				bytes_t code;
 				std::string path;
-				_parent->_subAccount->GetCodeAndPath(o->Addr(), code, path);
+				_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
 				tx->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
 
-				totalInputAmount += o->Amount();
+				totalInputAmount += (*u)->Output()->Amount();
 
-				txSize = tx->EstimateSize();
 				if (_asset->GetName() == "ELA")
 					feeAmount = CalculateFee(_parent->_feePerKb, txSize);
+				txSize = tx->EstimateSize();
+			}
+
+			for (UTXOArray::iterator u = _utxos.begin(); u != _utxos.end(); ++u) {
+				if (txSize >= TX_MAX_SIZE - 1000)
+					break;
+
+				if (_parent->IsUTXOSpending(*u)) {
+					lastUTXOPending = true;
+					continue;
+				}
+
+				if ((*u)->GetConfirms(_parent->_blockHeight) < 2)
+					continue;
+
+				tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
+				bytes_t code;
+				std::string path;
+				_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
+				tx->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
+
+				totalInputAmount += (*u)->Output()->Amount();
+
+				if (_asset->GetName() == "ELA")
+					feeAmount = CalculateFee(_parent->_feePerKb, txSize);
+				txSize = tx->EstimateSize();
 			}
 
 			_parent->Unlock();
@@ -241,18 +268,16 @@ namespace Elastos {
 
 			TransactionPtr txn = TransactionPtr(new Transaction);
 			BigInt totalOutputAmount(0), totalInputAmount(0);
-			uint32_t confirms;
-			size_t i;
 			uint64_t txSize = 0, feeAmount = 0;
 			bool lastUTXOPending = false;
 
-			txn->AddAttribute(AttributePtr(new Attribute(Attribute::Nonce, bytes_t(std::to_string((std::rand() & 0xFFFFFFFF))))));
+			std::string nonce = std::to_string((std::rand() & 0xFFFFFFFF));
+			txn->AddAttribute(AttributePtr(new Attribute(Attribute::Nonce, bytes_t(nonce.c_str(), nonce.size()))));
 			if (!memo.empty())
 				txn->AddAttribute(AttributePtr(new Attribute(Attribute::Memo, bytes_t(memo.c_str(), memo.size()))));
 
-			for (size_t i = 0; i < outputs.size(); ++i) {
-				totalOutputAmount += outputs[i]->Amount();
-			}
+			for (OutputArray::const_iterator o = outputs.cbegin(); o != outputs.cend(); ++o)
+				totalOutputAmount += (*o)->Amount();
 			txn->SetOutputs(outputs);
 
 			_parent->Lock();
@@ -263,62 +288,46 @@ namespace Elastos {
 
 			if (useVotedUTXO) {
 				// voted utxo
-				for (i = 0; i < _utxos.size(); ++i) {
-					if (_parent->IsUTXOSpending(_utxos[i])) {
+				for (UTXOArray::iterator u = _utxosVote.begin(); u != _utxosVote.end(); ++u) {
+					if (_parent->IsUTXOSpending(*u)) {
 						lastUTXOPending = true;
 						continue;
 					}
 
-					const OutputPtr &o = _utxos[i]->Output();
-					if (o->GetType() != TransactionOutput::Type::VoteOutput) {
+					if ((*u)->GetConfirms(_parent->_blockHeight) < 2)
 						continue;
-					}
 
-					confirms = _utxos[i]->GetConfirms(_parent->_blockHeight);
-					if (confirms < 2) {
-						Log::warn("utxo: '{}' n: '{}', confirms: '{}', can't spend for now.",
-								  _utxos[i]->Hash().GetHex(), _utxos[i]->Index(), confirms);
-						continue;
-					}
-					txn->AddInput(InputPtr(new TransactionInput(_utxos[i]->Hash(), _utxos[i]->Index())));
+					txn->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
 					bytes_t code;
 					std::string path;
-					_parent->_subAccount->GetCodeAndPath(o->Addr(), code, path);
+					_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
 					txn->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
 
-					totalInputAmount += o->Amount();
+					totalInputAmount += (*u)->Output()->Amount();
 				}
 			}
 
 			// normal utxo
-			for (i = 0; i < _utxos.size() && totalInputAmount < totalOutputAmount + feeAmount; ++i) {
-				if (_parent->IsUTXOSpending(_utxos[i])) {
+			for (UTXOArray::iterator u = _utxos.begin(); u != _utxos.end(); ++u) {
+				if (totalInputAmount >= totalOutputAmount + feeAmount)
+					break;
+
+				if (_parent->IsUTXOSpending(*u)) {
 					lastUTXOPending = true;
 					continue;
 				}
 
-				const OutputPtr &o = _utxos[i]->Output();
-				if (o->GetType() == TransactionOutput::Type::VoteOutput ||
-					(_parent->_subAccount->IsDepositAddress(o->Addr()) && fromAddress != o->Addr())) {
-					Log::debug("skip utxo: {}, n: {}, addr: {}", _utxos[i]->Hash().GetHex(),
-							   _utxos[i]->Index(), o->Addr().String());
+				if (fromAddress.Valid() && fromAddress.ProgramHash() != (*u)->Output()->ProgramHash()) {
 					continue;
 				}
 
-				if (fromAddress.Valid() && fromAddress != o->Addr().String()) {
+				if ((*u)->GetConfirms(_parent->_blockHeight) < 2)
 					continue;
-				}
 
-				confirms = _utxos[i]->GetConfirms(_parent->_blockHeight);
-				if (confirms < 2) {
-					Log::warn("utxo: '{}' n: '{}', confirms: '{}', can't spend for now.",
-							  _utxos[i]->Hash().GetHex(), _utxos[i]->Index(), confirms);
-					continue;
-				}
-				txn->AddInput(InputPtr(new TransactionInput(_utxos[i]->Hash(), _utxos[i]->Index())));
+				txn->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
 				bytes_t code;
 				std::string path;
-				_parent->_subAccount->GetCodeAndPath(o->Addr(), code, path);
+				_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
 				txn->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
 
 				txSize = txn->EstimateSize();
@@ -346,33 +355,28 @@ namespace Elastos {
 					return txn;
 				}
 
-				totalInputAmount += o->Amount();
+				totalInputAmount += (*u)->Output()->Amount();
 				if (_asset->GetName() == "ELA")
 					feeAmount = CalculateFee(_parent->_feePerKb, txSize);
 			}
 
 			// coin base utxo
-			for (i = 0; i < _coinBaseUTXOs.size(); ++i) {
-				if (totalInputAmount >= totalOutputAmount + feeAmount && txSize >= TX_MAX_SIZE >> 2) {
+			for (UTXOArray::iterator u = _utxosCoinbase.begin(); u != _utxosCoinbase.end(); ++u) {
+				if (totalInputAmount >= totalOutputAmount + feeAmount)
 					break;
-				}
 
-				if (_parent->IsUTXOSpending(_coinBaseUTXOs[i])) {
+				if (_parent->IsUTXOSpending(*u)) {
 					lastUTXOPending = true;
 					continue;
 				}
 
-				confirms = _coinBaseUTXOs[i]->GetConfirms(_parent->_blockHeight);
-				if (confirms <= 100)
+				if (fromAddress.Valid() && fromAddress.ProgramHash() == (*u)->Output()->ProgramHash())
 					continue;
 
-				if (fromAddress.Valid() && fromAddress.ProgramHash() == _coinBaseUTXOs[i]->Output()->ProgramHash())
-					continue;
-
-				txn->AddInput(InputPtr(new TransactionInput(_coinBaseUTXOs[i]->Hash(), _coinBaseUTXOs[i]->Index())));
+				txn->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
 				bytes_t code;
 				std::string path;
-				_parent->_subAccount->GetCodeAndPath(Address(_coinBaseUTXOs[i]->Output()->ProgramHash()), code, path);
+				_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
 				txn->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
 
 				txSize = txn->EstimateSize();
@@ -400,7 +404,7 @@ namespace Elastos {
 
 					return txn;
 				}
-				totalInputAmount += _coinBaseUTXOs[i]->Output()->Amount();
+				totalInputAmount += (*u)->Output()->Amount();
 				if (_asset->GetName() == "ELA")
 					feeAmount = CalculateFee(_parent->_feePerKb, txSize);
 			}
@@ -437,9 +441,7 @@ namespace Elastos {
 
 		void GroupedAsset::AddFeeForTx(TransactionPtr &tx, bool useVotedUTXO) {
 			uint64_t feeAmount = 0, txSize = 0;
-			uint32_t confirms;
 			BigInt totalInputAmount(0);
-			size_t i;
 			bool lastUTXOPending = false;
 
 			if (tx == nullptr) {
@@ -459,48 +461,38 @@ namespace Elastos {
 			feeAmount = CalculateFee(_parent->_feePerKb, txSize);
 
 //			_utxos.SortBaseOnOutputAmount(feeAmount, _parent->_feePerKb);
-
 			if (useVotedUTXO) {
-				for (i = 0; i < _utxos.size(); ++i) {
-					if (_parent->IsUTXOSpending(_utxos[i])) {
+				for (UTXOArray::iterator u = _utxosVote.begin(); u != _utxosVote.end(); ++u) {
+					if (_parent->IsUTXOSpending(*u)) {
 						lastUTXOPending = true;
 						continue;
 					}
 
-					const OutputPtr &o = _utxos[i]->Output();
-					if (o->GetType() != TransactionOutput::Type::VoteOutput) {
+					if ((*u)->GetConfirms(_parent->_blockHeight) < 2)
 						continue;
-					}
 
-					confirms = _utxos[i]->GetConfirms(_parent->_blockHeight);
-					if (confirms < 2) {
-						Log::warn("utxo: '{}' n: '{}', confirms: '{}', can't spend for now.",
-								  _utxos[i]->Hash().GetHex(), _utxos[i]->Index(), confirms);
-						continue;
-					}
-					tx->AddInput(InputPtr(new TransactionInput(_utxos[i]->Hash(), _utxos[i]->Index())));
+					tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
+					totalInputAmount += (*u)->Output()->Amount();
 
-					totalInputAmount += o->Amount();
+					txSize = tx->EstimateSize();
+					if (_asset->GetName() == "ELA")
+						feeAmount = CalculateFee(_parent->_feePerKb, txSize);
 				}
 			}
 
-			for (i = 0; i < _coinBaseUTXOs.size() && totalInputAmount < feeAmount; ++i) {
-				if (_parent->IsUTXOSpending(_coinBaseUTXOs[i])) {
+			for (UTXOArray::iterator u = _utxosCoinbase.begin(); u != _utxosCoinbase.end(); ++u) {
+				if (totalInputAmount >= feeAmount)
+					break;
+
+				if (_parent->IsUTXOSpending(*u)) {
 					lastUTXOPending = true;
-					Log::info("coinbase utxo: {} n: {} is pending", _coinBaseUTXOs[i]->Hash().GetHex(),
-							  _coinBaseUTXOs[i]->Index());
 					continue;
 				}
 
-				confirms = _coinBaseUTXOs[i]->GetConfirms(_parent->_blockHeight);
-				if (confirms <= 100) {
-					continue;
-				}
-
-				tx->AddInput(InputPtr(new TransactionInput(_coinBaseUTXOs[i]->Hash(), _coinBaseUTXOs[i]->Index())));
+				tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
 				bytes_t code;
 				std::string path;
-				_parent->_subAccount->GetCodeAndPath(Address(_coinBaseUTXOs[i]->Output()->ProgramHash()), code, path);
+				_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
 				tx->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
 
 				txSize = tx->EstimateSize();
@@ -513,31 +505,23 @@ namespace Elastos {
 					_parent->Lock();
 					break;
 				}
-				totalInputAmount += _coinBaseUTXOs[i]->Output()->Amount();
+				totalInputAmount += (*u)->Output()->Amount();
 				if (_asset->GetName() == "ELA")
 					feeAmount = CalculateFee(_parent->_feePerKb, txSize);
 			}
 
-			for (i = 0; i < _utxos.size() && totalInputAmount < feeAmount; ++i) {
-				if (_parent->IsUTXOSpending(_utxos[i])) {
+			for (UTXOArray::iterator u = _utxos.begin(); u != _utxos.end(); ++u) {
+				if (totalInputAmount >= feeAmount)
+					break;
+
+				if (_parent->IsUTXOSpending(*u)) {
 					lastUTXOPending = true;
 					continue;
 				}
 
-				const OutputPtr &o = _utxos[i]->Output();
-				if (o->GetType() == TransactionOutput::Type::VoteOutput) {
-					Log::debug("skip utxo: {}, n: {}, addr: {}", _utxos[i]->Hash().GetHex(),
-							   _utxos[i]->Index(), o->Addr().String());
+				if ((*u)->GetConfirms(_parent->_blockHeight) < 2)
 					continue;
-				}
-
-				uint32_t confirms = _utxos[i]->GetConfirms(_parent->_blockHeight);
-				if (confirms < 2) {
-					Log::warn("utxo: '{}' n: '{}', confirms: '{}', can't spend for now.",
-							  _utxos[i]->Hash().GetHex(), _utxos[i]->Index(), confirms);
-					continue;
-				}
-				tx->AddInput(InputPtr(new TransactionInput(_utxos[i]->Hash(), _utxos[i]->Index())));
+				tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
 
 				txSize = tx->EstimateSize();
 				if (txSize > TX_MAX_SIZE) { // transaction size-in-bytes too large
@@ -550,8 +534,9 @@ namespace Elastos {
 					break;
 				}
 
-				totalInputAmount += o->Amount();
-				feeAmount = CalculateFee(_parent->_feePerKb, txSize);
+				totalInputAmount += (*u)->Output()->Amount();
+				if (_asset->GetName() == "ELA")
+					feeAmount = CalculateFee(_parent->_feePerKb, txSize);
 			}
 
 			_parent->Unlock();
@@ -582,11 +567,140 @@ namespace Elastos {
 		}
 
 		void GroupedAsset::AddUTXO(const UTXOPtr &o) {
-			_utxos.push_back(o);
+			if (_parent->_subAccount->IsDepositAddress(o->Output()->Addr())) {
+				_balanceDeposit += o->Output()->Amount();
+				_utxosDeposit.push_back(o);
+			} else {
+				if (o->Output()->GetType() == TransactionOutput::Type::VoteOutput) {
+					_balanceVote += o->Output()->Amount();
+					_utxosVote.push_back(o);
+				} else {
+					_utxos.push_back(o);
+				}
+				_balance += o->Output()->Amount();
+			}
 		}
 
-		void GroupedAsset::AddCoinBaseUTXO(const UTXOPtr &coinbaseUTXO) {
-			_coinBaseUTXOs.push_back(coinbaseUTXO);
+		void GroupedAsset::AddCoinBaseUTXO(const UTXOPtr &o) {
+			if (o->GetConfirms(_parent->_blockHeight) <= 100) {
+				_balanceLocked += o->Output()->Amount();
+				_utxosLocked.push_back(o);
+			} else {
+				_balance += o->Output()->Amount();
+				_utxosCoinbase.push_back(o);
+			}
+		}
+
+		bool GroupedAsset::RemoveSpentUTXO(const std::vector<InputPtr> &inputs) {
+			bool removed = false;
+
+			for (InputArray::const_iterator in = inputs.cbegin(); in != inputs.cend(); ++in) {
+				if (RemoveSpentUTXO(*in))
+					removed = true;
+			}
+
+			return removed;
+		}
+
+		bool GroupedAsset::RemoveSpentUTXO(const InputPtr &input) {
+			return RemoveSpentUTXO(input->TxHash(), input->Index());
+		}
+
+		bool GroupedAsset::RemoveSpentUTXO(const uint256 &hash, uint16_t n) {
+			for (UTXOArray::iterator it = _utxosCoinbase.begin(); it != _utxosCoinbase.end(); ++it) {
+				if ((*it)->Equal(hash, n)) {
+					assert(_balance >= (*it)->Output()->Amount());
+					(*it)->SetSpent(true);
+					_balance -= (*it)->Output()->Amount();
+					_utxosCoinbase.erase(it);
+					return true;
+				}
+			}
+
+			for (UTXOArray::iterator it = _utxosVote.begin(); it != _utxosVote.end(); ++it) {
+				if ((*it)->Equal(hash, n)) {
+					assert(_balanceVote >= (*it)->Output()->Amount());
+					assert(_balance >= (*it)->Output()->Amount());
+					_balanceVote -= (*it)->Output()->Amount();
+					_balance -= (*it)->Output()->Amount();
+					_utxosVote.erase(it);
+					return true;
+				}
+			}
+
+			for (UTXOArray::iterator it = _utxos.begin(); it != _utxos.end(); ++it) {
+				if ((*it)->Equal(hash, n)) {
+					assert(_balance >= (*it)->Output()->Amount());
+					_balance -= (*it)->Output()->Amount();
+					_utxos.erase(it);
+					return true;
+				}
+			}
+
+			for (UTXOArray::iterator it = _utxosDeposit.begin(); it != _utxosDeposit.end(); ++it) {
+				if ((*it)->Equal(hash, n)) {
+					assert(_balanceDeposit >= (*it)->Output()->Amount());
+					_balanceDeposit -= (*it)->Output()->Amount();
+					_utxosDeposit.erase(it);
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		void GroupedAsset::GetSpentCoinbase(const InputArray &inputs, std::vector<uint256> &spentCoinbase) const {
+			for (InputArray::const_iterator in = inputs.cbegin(); in != inputs.cend(); ++in) {
+				for (UTXOArray::const_iterator o = _utxosCoinbase.begin(); o != _utxosCoinbase.end(); ++o) {
+					if ((*o)->Equal((*in))) {
+						spentCoinbase.push_back((*o)->Hash());
+						break;
+					}
+				}
+			}
+		}
+
+		bool GroupedAsset::UpdateLockedBalance() {
+			bool changed = false;
+
+			for (UTXOArray::iterator locked = _utxosLocked.begin(); locked != _utxosLocked.end();) {
+				if ((*locked)->GetConfirms(_parent->_blockHeight) > 100) {
+					_balanceLocked -= (*locked)->Output()->Amount();
+					_balance += (*locked)->Output()->Amount();
+					_utxosCoinbase.push_back(*locked);
+					locked = _utxosLocked.erase(locked);
+					changed = true;
+				} else {
+					++locked;
+				}
+			}
+
+			return changed;
+		}
+
+		UTXOPtr GroupedAsset::FindUTXO(const InputPtr &input) const {
+			for (UTXOArray::const_iterator it = _utxosVote.cbegin(); it != _utxosVote.cend(); ++it) {
+				if ((*it)->Equal(input))
+					return (*it);
+			}
+
+			for (UTXOArray::const_iterator it = _utxos.cbegin(); it != _utxos.cend(); ++it) {
+				if ((*it)->Equal(input))
+					return (*it);
+			}
+
+			for (UTXOArray::const_iterator it = _utxosCoinbase.cbegin(); it != _utxosCoinbase.cend(); ++it) {
+				if ((*it)->Equal(input))
+					return (*it);
+			}
+
+			for (UTXOArray::const_iterator it = _utxosDeposit.cbegin(); it != _utxosDeposit.cend(); ++it) {
+				if ((*it)->Equal(input)) {
+					return (*it);
+				}
+			}
+
+			return nullptr;
 		}
 
 		uint64_t GroupedAsset::CalculateFee(uint64_t feePerKB, size_t size) {

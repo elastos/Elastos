@@ -87,6 +87,8 @@ namespace Elastos {
 
 			const uint256 &GetHash() const;
 
+			void SetHash(const uint256 &hash);
+
 			void ResetHash();
 
 			const TxVersion &GetVersion() const;
@@ -94,6 +96,8 @@ namespace Elastos {
 			void SetVersion(const TxVersion &version);
 
 			const std::vector<OutputPtr> &GetOutputs() const;
+
+			OutputPtr OutputOfIndex(uint16_t fixedIndex) const;
 
 			void SetOutputs(const std::vector<OutputPtr> &outputs);
 
@@ -139,7 +143,7 @@ namespace Elastos {
 
 			virtual nlohmann::json ToJson() const;
 
-			virtual void FromJson(const nlohmann::json &jsonData);
+			virtual void FromJson(const nlohmann::json &j);
 
 			static uint64_t GetMinOutputAmount();
 
@@ -171,7 +175,7 @@ namespace Elastos {
 
 			void SetFee(uint64_t fee);
 
-			void SerializeUnsigned(ByteStream &ostream) const;
+			void SerializeUnsigned(ByteStream &ostream, bool extend = false) const;
 
 			uint256 GetShaData() const;
 

@@ -280,8 +280,7 @@ namespace Elastos {
 
 			if (_createdWallets.find(chainID) != _createdWallets.end()) {
 				ISubWallet *subWallet = _createdWallets[chainID];
-				ArgInfo("r => already created {}, 0x{:x}", dynamic_cast<SubWallet *>(subWallet)->GetInfoChainID(),
-						(long)subWallet);
+				ArgInfo("r => already created");
 				return subWallet;
 			}
 
@@ -303,7 +302,8 @@ namespace Elastos {
 			_localStore->Save();
 			startPeerManager(subWallet);
 
-			ArgInfo("r => {}, 0x{:x}", subWallet->GetInfoChainID(), (long)subWallet);
+			ArgInfo("r => create subwallet");
+			subWallet->GetBasicInfo();
 
 			return subWallet;
 		}
@@ -325,7 +325,7 @@ namespace Elastos {
 
 			SubWallet *subWallet = dynamic_cast<SubWallet *>(wallet);
 			ArgInfo("{} {}", _id, GetFunName());
-			ArgInfo("subWallet: {}, 0x{:x}", subWallet->GetInfoChainID(), (long)wallet);
+			ArgInfo("subWallet: {}", subWallet->GetInfoChainID());
 
 			if (_createdWallets.find(subWallet->GetInfoChainID()) == _createdWallets.end())
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "Sub wallet did not created");
@@ -403,7 +403,7 @@ namespace Elastos {
 			const std::vector<CoinInfoPtr> &info = _localStore->GetSubWalletInfoList();
 
 			if (info.size() == 0) {
-				const ChainConfigPtr &mainchainConfig = _config->GetChainConfig("ELA");
+				ChainConfigPtr mainchainConfig = _config->GetChainConfig("ELA");
 				if (mainchainConfig) {
 					CoinInfoPtr defaultInfo(new CoinInfo());
 					defaultInfo->SetChainID(mainchainConfig->ID());
@@ -422,7 +422,7 @@ namespace Elastos {
 				}
 			} else {
 				for (int i = 0; i < info.size(); ++i) {
-					const ChainConfigPtr &chainConfig = _config->GetChainConfig(info[i]->GetChainID());
+					ChainConfigPtr chainConfig = _config->GetChainConfig(info[i]->GetChainID());
 					if (chainConfig == nullptr) {
 						Log::error("Can not find config of chain ID: " + info[i]->GetChainID());
 						continue;
@@ -442,7 +442,7 @@ namespace Elastos {
 		std::string MasterWallet::Sign(const std::string &message, const std::string &payPassword) {
 			ArgInfo("{} {}", _id, GetFunName());
 			ArgInfo("msg: {}", message);
-			ArgInfo("payPasswd: {}", "*");
+			ArgInfo("payPasswd: *");
 
 			ErrorChecker::CheckParamNotEmpty(message, "Sign message");
 			ErrorChecker::CheckPassword(payPassword, "Pay");
@@ -528,7 +528,7 @@ namespace Elastos {
 			ArgInfo("{} {}", _id, GetFunName());
 			ArgInfo("id: {}", id);
 			ArgInfo("msg: {}", message);
-			ArgInfo("passwd: {}", "*");
+			ArgInfo("passwd: *");
 
 			RegisterIdentification payload;
 			nlohmann::json payLoadJson = nlohmann::json::parse(message);
@@ -553,7 +553,7 @@ namespace Elastos {
 			ArgInfo("{} {}", _id, GetFunName());
 			ArgInfo("id: {}", id);
 			ArgInfo("msg: {}", message);
-			ArgInfo("payPasswd: {}", "*");
+			ArgInfo("payPasswd: *");
 
 			ErrorChecker::CheckParamNotEmpty(id, "Master wallet id");
 			ErrorChecker::CheckParamNotEmpty(message, "Master wallet sign message");
@@ -623,8 +623,8 @@ namespace Elastos {
 
 		void MasterWallet::ChangePassword(const std::string &oldPassword, const std::string &newPassword) {
 			ArgInfo("{} {}", _id, GetFunName());
-			ArgInfo("old: {}", "*");
-			ArgInfo("new: {}", "*");
+			ArgInfo("old: *");
+			ArgInfo("new: *");
 
 			_account->ChangePassword(oldPassword, newPassword);
 		}
@@ -632,7 +632,7 @@ namespace Elastos {
 		IIDAgent *MasterWallet::GetIIDAgent() {
 			ArgInfo("{} {}", _id, GetFunName());
 
-			ArgInfo("r => 0x{:x}", (long)this);
+			ArgInfo("r => get iid agent");
 			return this;
 		}
 

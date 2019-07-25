@@ -27,7 +27,7 @@ TEST_CASE("Config test", "[Config]") {
 			const std::string netType = "MainNet";
 			Config config("Data", netType);
 
-			const ChainConfigPtr &chainConfig = config.GetChainConfig(chainID);
+			ChainConfigPtr chainConfig = config.GetChainConfig(chainID);
 			REQUIRE(chainConfig->ID() == chainID);
 			REQUIRE(chainConfig->Index() == index);
 			REQUIRE(chainConfig->NetType() == "MainNet");
@@ -68,7 +68,7 @@ TEST_CASE("Config test", "[Config]") {
 			const std::string netType = "TestNet";
 			Config config("Data", netType);
 
-			const ChainConfigPtr &chainConfig = config.GetChainConfig(chainID);
+			ChainConfigPtr chainConfig = config.GetChainConfig(chainID);
 			REQUIRE(chainConfig->ID() == chainID);
 			REQUIRE(chainConfig->Index() == index);
 			REQUIRE(chainConfig->NetType() == "MainNet");
@@ -101,7 +101,7 @@ TEST_CASE("Config test", "[Config]") {
 			const std::string netType = "RegTest";
 			Config config("Data", netType);
 
-			const ChainConfigPtr &chainConfig = config.GetChainConfig(chainID);
+			ChainConfigPtr chainConfig = config.GetChainConfig(chainID);
 			REQUIRE(chainConfig->ID() == chainID);
 			REQUIRE(chainConfig->Index() == index);
 			REQUIRE(chainConfig->NetType() == "MainNet");
@@ -142,7 +142,7 @@ TEST_CASE("Config test", "[Config]") {
 			const std::string netType = "MainNet";
 			Config config("Data", netType);
 
-			const ChainConfigPtr &chainConfig = config.GetChainConfig(chainID);
+			ChainConfigPtr chainConfig = config.GetChainConfig(chainID);
 			REQUIRE(chainConfig->ID() == chainID);
 			REQUIRE(chainConfig->Index()== index);
 			REQUIRE(chainConfig->NetType() == "MainNet");
@@ -182,7 +182,7 @@ TEST_CASE("Config test", "[Config]") {
 			const std::string netType = "TestNet";
 			Config config("Data", netType);
 
-			const ChainConfigPtr &chainConfig = config.GetChainConfig(chainID);
+			ChainConfigPtr chainConfig = config.GetChainConfig(chainID);
 			REQUIRE(chainConfig->ID() == chainID);
 			REQUIRE(chainConfig->Index() == index);
 			REQUIRE(chainConfig->NetType() == "MainNet");
@@ -217,7 +217,7 @@ TEST_CASE("Config test", "[Config]") {
 			const std::string netType = "RegTest";
 			Config config("Data", netType);
 
-			const ChainConfigPtr &chainConfig = config.GetChainConfig(chainID);
+			ChainConfigPtr chainConfig = config.GetChainConfig(chainID);
 			REQUIRE(chainConfig->ID() == chainID);
 			REQUIRE(chainConfig->Index() == index);
 			REQUIRE(chainConfig->NetType() == "MainNet");
@@ -259,7 +259,7 @@ TEST_CASE("Config test", "[Config]") {
 			const std::string netType = "MainNet";
 			Config config("Data", netType);
 
-			const ChainConfigPtr &chainConfig = config.GetChainConfig(chainID);
+			ChainConfigPtr chainConfig = config.GetChainConfig(chainID);
 			REQUIRE(chainConfig->ID() == chainID);
 			REQUIRE(chainConfig->Index()== index);
 			REQUIRE(chainConfig->NetType() == "MainNet");
@@ -297,7 +297,7 @@ TEST_CASE("Config test", "[Config]") {
 			const std::string netType = "TestNet";
 			Config config("Data", netType);
 
-			const ChainConfigPtr &chainConfig = config.GetChainConfig(chainID);
+			ChainConfigPtr chainConfig = config.GetChainConfig(chainID);
 			REQUIRE(chainConfig->ID() == chainID);
 			REQUIRE(chainConfig->Index() == index);
 			REQUIRE(chainConfig->NetType() == "MainNet");
@@ -332,7 +332,7 @@ TEST_CASE("Config test", "[Config]") {
 			const std::string netType = "RegTest";
 			Config config("Data", netType);
 
-			const ChainConfigPtr &chainConfig = config.GetChainConfig(chainID);
+			ChainConfigPtr chainConfig = config.GetChainConfig(chainID);
 			REQUIRE(chainConfig->ID() == chainID);
 			REQUIRE(chainConfig->Index() == index);
 			REQUIRE(chainConfig->NetType() == "MainNet");

@@ -132,7 +132,9 @@ namespace Elastos {
 		};
 
 #ifdef ARGUMENT_LOG_ENABLE
-#define ArgInfo(fmt, ...) Log::info(std::string("+++ ") + fmt, __VA_ARGS__)
+#define __va_first(first, ...) first
+#define __va_rest(first, ...) __VA_ARGS__
+#define ArgInfo(...) Log::info(std::string("+++ ") + __va_first(__VA_ARGS__, NULL), __va_rest(__VA_ARGS__, NULL))
 #endif
 
 #define SPVLOG_DEBUG(...) SPDLOG_DEBUG(spdlog::get(SPV_DEFAULT_LOG), __VA_ARGS__)

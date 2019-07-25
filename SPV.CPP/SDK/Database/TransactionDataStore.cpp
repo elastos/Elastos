@@ -18,83 +18,69 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		TransactionDataStore::TransactionDataStore(Sqlite *sqlite) :
-				TableBase(sqlite) {
+			TableBase(sqlite) {
 			InitializeTable(TX_DATABASE_CREATE);
 		}
 
 		TransactionDataStore::TransactionDataStore(SqliteTransactionType type, Sqlite *sqlite) :
-				TableBase(type, sqlite) {
+			TableBase(type, sqlite) {
 			InitializeTable(TX_DATABASE_CREATE);
 		}
 
 		TransactionDataStore::~TransactionDataStore() {
 		}
 
-		bool TransactionDataStore::PutTransaction(const std::string &iso, const TransactionPtr &transaction) {
-			TransactionPtr tx;
+		void TransactionDataStore::PutTransactionInternal(const std::string &iso, const TransactionPtr &tx) {
+			std::string sql;
 
-			if (SelectTxByHash(iso, transaction->GetHash().GetHex(), tx)) {
-				return DoTransaction([&iso, &transaction, this]() {
-					std::string sql;
+			sql = "INSERT INTO " + TX_TABLE_NAME + "("
+				  + TX_COLUMN_ID + ","
+				  + TX_BUFF + ","
+				  + TX_BLOCK_HEIGHT + ","
+				  + TX_TIME_STAMP + ","
+				  + TX_REMARK + ","
+				  + TX_ASSETID + ","
+				  + TX_ISO
+				  + ") VALUES (?, ?, ?, ?, ?, ?, ?);";
 
-					sql = "UPDATE " + TX_TABLE_NAME + " SET "
-					   + TX_BUFF + " = ?, "
-					   + TX_BLOCK_HEIGHT + " = ?, "
-					   + TX_TIME_STAMP + " = ? "
-					   + " WHERE " + TX_COLUMN_ID + " = '" + transaction->GetHash().GetHex() + "';";
+			sqlite3_stmt *stmt;
+			ErrorChecker::CheckCondition(!_sqlite->Prepare(sql, &stmt, nullptr), Error::SqliteError,
+										 "Prepare sql " + sql);
+			ByteStream stream;
+			tx->Serialize(stream, true);
 
-					sqlite3_stmt *stmt;
-					ErrorChecker::CheckCondition(!_sqlite->Prepare(sql, &stmt, nullptr), Error::SqliteError,
-												 "Prepare sql " + sql);
+			_sqlite->BindText(stmt, 1, tx->GetHash().GetHex(), nullptr);
+			_sqlite->BindBlob(stmt, 2, stream.GetBytes(), nullptr);
+			_sqlite->BindInt(stmt, 3, tx->GetBlockHeight());
+			_sqlite->BindInt64(stmt, 4, tx->GetTimestamp());
+			_sqlite->BindText(stmt, 5, "", nullptr);
+			_sqlite->BindText(stmt, 6, "", nullptr);
+			_sqlite->BindText(stmt, 7, iso, nullptr);
 
-					ByteStream stream;
-					transaction->Serialize(stream);
-					_sqlite->BindBlob(stmt, 1, stream.GetBytes(), nullptr);
-					_sqlite->BindInt(stmt, 2, transaction->GetBlockHeight());
-					_sqlite->BindInt(stmt, 3, transaction->GetTimestamp());
+			_sqlite->Step(stmt);
 
-					_sqlite->Step(stmt);
-
-					_sqlite->Finalize(stmt);
-				});
-			}
-
-			return DoTransaction([&iso, &transaction, this]() {
-				std::string sql;
-
-				sql = "INSERT INTO " + TX_TABLE_NAME + "("
-				   + TX_COLUMN_ID + ","
-				   + TX_BUFF + ","
-				   + TX_BLOCK_HEIGHT + ","
-				   + TX_TIME_STAMP + ","
-				   + TX_REMARK + ","
-				   + TX_ASSETID + ","
-				   + TX_ISO
-				   + ") VALUES (?, ?, ?, ?, ?, ?, ?);";
-
-				sqlite3_stmt *stmt;
-				ErrorChecker::CheckCondition(!_sqlite->Prepare(sql, &stmt, nullptr), Error::SqliteError,
-											 "Prepare sql " + sql);
-				ByteStream stream;
-				transaction->Serialize(stream);
-
-				_sqlite->BindText(stmt, 1, transaction->GetHash().GetHex(), nullptr);
-				_sqlite->BindBlob(stmt, 2, stream.GetBytes(), nullptr);
-				_sqlite->BindInt(stmt, 3, transaction->GetBlockHeight());
-				_sqlite->BindInt(stmt, 4, transaction->GetTimestamp());
-				_sqlite->BindText(stmt, 5, "", nullptr);
-				_sqlite->BindText(stmt, 6, "", nullptr);
-				_sqlite->BindText(stmt, 7, iso, nullptr);
-
-				_sqlite->Step(stmt);
-
-				_sqlite->Finalize(stmt);
-			});
-
+			_sqlite->Finalize(stmt);
 		}
 
-		bool TransactionDataStore::DeleteAllTransactions(const std::string &iso) {
-			return DoTransaction([&iso, this]() {
+		bool TransactionDataStore::PutTransaction(const std::string &iso, const TransactionPtr &tx) {
+			return DoTransaction([&iso, &tx, this]() {
+				this->PutTransactionInternal(iso, tx);
+			});
+		}
+
+		bool TransactionDataStore::PutTransactions(const std::string &iso, const std::vector<TransactionPtr> &txns) {
+			if (txns.empty())
+				return true;
+
+			return DoTransaction([&iso, &txns, this]() {
+				for (size_t i = 0; i < txns.size(); ++i) {
+					this->PutTransactionInternal(iso, txns[i]);
+				}
+			});
+		}
+
+		bool TransactionDataStore::DeleteAllTransactions() {
+			return DoTransaction([this]() {
 				std::string sql;
 
 				sql = "DELETE FROM " + TX_TABLE_NAME + ";";
@@ -104,14 +90,14 @@ namespace Elastos {
 			});
 		}
 
-		size_t TransactionDataStore::GetAllTransactionsCount(const std::string &iso) const {
+		size_t TransactionDataStore::GetAllTransactionsCount() const {
 			size_t count = 0;
 
-			DoTransaction([&iso, &count, this]() {
+			DoTransaction([&count, this]() {
 				std::string sql;
 
 				sql = std::string("SELECT ") + " COUNT(" + TX_COLUMN_ID + ") AS nums " +
-				   " FROM " + TX_TABLE_NAME + ";";
+					  " FROM " + TX_TABLE_NAME + ";";
 
 				sqlite3_stmt *stmt;
 				ErrorChecker::CheckCondition(!_sqlite->Prepare(sql, &stmt, nullptr), Error::SqliteError,
@@ -127,18 +113,18 @@ namespace Elastos {
 			return count;
 		}
 
-		std::vector<TransactionPtr> TransactionDataStore::GetAllTransactions(const std::string &iso) const {
-			std::vector<TransactionPtr> transactions;
-
-			DoTransaction([&iso, &transactions, this]() {
+		std::vector<TransactionPtr> TransactionDataStore::GetAllTransactions() const {
+			std::vector<TransactionPtr> txns;
+			DoTransaction([&txns, this]() {
 				std::string sql;
 
 				sql = "SELECT "
-				   + TX_COLUMN_ID + ", "
-				   + TX_BUFF + ", "
-				   + TX_BLOCK_HEIGHT + ", "
-				   + TX_TIME_STAMP
-				   + " FROM " + TX_TABLE_NAME + ";";
+					  + TX_COLUMN_ID + ","
+					  + TX_BUFF + ","
+					  + TX_BLOCK_HEIGHT + ","
+					  + TX_TIME_STAMP + ","
+					  + TX_ISO
+					  + " FROM " + TX_TABLE_NAME + ";";
 
 				sqlite3_stmt *stmt;
 				ErrorChecker::CheckCondition(!_sqlite->Prepare(sql, &stmt, nullptr), Error::SqliteError,
@@ -147,29 +133,33 @@ namespace Elastos {
 				while (SQLITE_ROW == _sqlite->Step(stmt)) {
 					TransactionPtr tx(new Transaction());
 
+					std::string iso = _sqlite->ColumnText(stmt, 4);
 					uint256 txHash(_sqlite->ColumnText(stmt, 0));
 
 					const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
 					size_t len = (size_t) _sqlite->ColumnBytes(stmt, 1);
 
 					ByteStream stream(pdata, len);
-					tx->Deserialize(stream);
+					if (iso == "ela") {
+						tx->Deserialize(stream);
+						assert(txHash == tx->GetHash());
+					} else if (iso == "ela1") {
+						tx->Deserialize(stream, true);
+						tx->SetHash(txHash);
+					}
+
 					uint32_t blockHeight = (uint32_t) _sqlite->ColumnInt(stmt, 2);
 					uint32_t timeStamp = (uint32_t) _sqlite->ColumnInt(stmt, 3);
 
 					tx->SetBlockHeight(blockHeight);
 					tx->SetTimestamp(timeStamp);
 
-					ErrorChecker::CheckCondition(txHash != tx->GetHash(), Error::InvalidTransaction, "tx data error");
-
-					transactions.push_back(tx);
-
+					txns.push_back(tx);
 				}
 
 				_sqlite->Finalize(stmt);
 			});
-
-			return transactions;
+			return txns;
 		}
 
 		bool TransactionDataStore::UpdateTransaction(const std::vector<uint256> &hashes, uint32_t blockHeight,
@@ -179,9 +169,9 @@ namespace Elastos {
 
 				for (size_t i = 0; i < hashes.size(); ++i) {
 					sql = "UPDATE " + TX_TABLE_NAME + " SET "
-					   + TX_BLOCK_HEIGHT + " = ?, "
-					   + TX_TIME_STAMP + " = ? "
-					   + " WHERE " + TX_COLUMN_ID + " = '" + hashes[i].GetHex() + "';";
+						  + TX_BLOCK_HEIGHT + " = ?, "
+						  + TX_TIME_STAMP + " = ? "
+						  + " WHERE " + TX_COLUMN_ID + " = '" + hashes[i].GetHex() + "';";
 
 					sqlite3_stmt *stmt;
 					ErrorChecker::CheckCondition(!_sqlite->Prepare(sql, &stmt, nullptr), Error::SqliteError,
@@ -197,23 +187,25 @@ namespace Elastos {
 			});
 		}
 
-		bool TransactionDataStore::DeleteTxByHash(const std::string &iso, const std::string &hash) {
-			return DoTransaction([&iso, &hash, this]() {
+		bool TransactionDataStore::DeleteTxByHash(const uint256 &hash) {
+			return DoTransaction([&hash, this]() {
 				std::string sql;
 
-				sql = "DELETE FROM "
-				   + TX_TABLE_NAME + " WHERE " + TX_COLUMN_ID + " = '" + hash + "';";
+				sql = "DELETE FROM " + TX_TABLE_NAME + " WHERE " + TX_COLUMN_ID + " = '" + hash.GetHex() + "';";
 
 				ErrorChecker::CheckCondition(!_sqlite->exec(sql, nullptr, nullptr), Error::SqliteError,
 											 "Exec sql " + sql);
 			});
 		}
 
-		bool TransactionDataStore::DeleteTxByHashes(const std::vector<std::string> &hashes) {
+		bool TransactionDataStore::DeleteTxByHashes(const std::vector<uint256> &hashes) {
+			if (hashes.empty())
+				return true;
+
 			return DoTransaction([&hashes, this]() {
 				std::string sql;
 				for (size_t i = 0; i < hashes.size(); ++i) {
-					sql = "DELETE FROM " + TX_TABLE_NAME + " WHERE " + TX_COLUMN_ID + " = '" + hashes[i] + "';";
+					sql = "DELETE FROM " + TX_TABLE_NAME + " WHERE " + TX_COLUMN_ID + " = '" + hashes[i].GetHex() + "';";
 
 					ErrorChecker::CheckCondition(!_sqlite->exec(sql, nullptr, nullptr), Error::SqliteError,
 												 "Exec sql " + sql);
@@ -222,18 +214,15 @@ namespace Elastos {
 		}
 
 		bool TransactionDataStore::SelectTxByHash(const std::string &iso, const std::string &hash,
-		                                          TransactionPtr &transactionPtr) const {
+												  TransactionPtr &tx) const {
 			bool found = false;
 
-			DoTransaction([&iso, &hash, &transactionPtr, &found, this]() {
+			DoTransaction([&iso, &hash, &tx, &found, this]() {
 				std::string sql;
 
-				sql = "SELECT "
-				   + TX_BUFF + ", "
-				   + TX_BLOCK_HEIGHT + ", "
-				   + TX_TIME_STAMP
-				   + " FROM " + TX_TABLE_NAME
-				   + " WHERE " + TX_COLUMN_ID + " = '" + hash + "';";
+				sql = "SELECT " + TX_COLUMN_ID + "," + TX_BUFF + "," + TX_BLOCK_HEIGHT + "," + TX_TIME_STAMP + "," + TX_ISO +
+					  " FROM " + TX_TABLE_NAME +
+					  " WHERE " + TX_COLUMN_ID + " = '" + hash + "';";
 
 				sqlite3_stmt *stmt;
 				ErrorChecker::CheckCondition(!_sqlite->Prepare(sql, &stmt, nullptr), Error::SqliteError,
@@ -242,20 +231,26 @@ namespace Elastos {
 				while (SQLITE_ROW == _sqlite->Step(stmt)) {
 					found = true;
 
-					const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 0);
-					size_t len = (size_t) _sqlite->ColumnBytes(stmt, 0);
+					std::string iso = _sqlite->ColumnText(stmt, 4);
+					uint256 txHash(_sqlite->ColumnText(stmt, 0));
+
+					const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
+					size_t len = (size_t) _sqlite->ColumnBytes(stmt, 1);
 
 					ByteStream stream(pdata, len);
-					transactionPtr->Deserialize(stream);
+					if (iso == "ela") {
+						tx->Deserialize(stream);
+						assert(txHash == tx->GetHash());
+					} else if (iso == "ela1") {
+						tx->Deserialize(stream, true);
+						tx->SetHash(txHash);
+					}
 
-					uint32_t blockHeight = (uint32_t) _sqlite->ColumnInt(stmt, 1);
-					uint32_t timeStamp = (uint32_t) _sqlite->ColumnInt(stmt, 2);
+					uint32_t blockHeight = (uint32_t) _sqlite->ColumnInt(stmt, 2);
+					uint32_t timeStamp = (uint32_t) _sqlite->ColumnInt(stmt, 3);
 
-					transactionPtr->SetBlockHeight(blockHeight);
-					transactionPtr->SetTimestamp(timeStamp);
-
-					ErrorChecker::CheckCondition(hash == transactionPtr->GetHash().GetHex(), Error::InvalidTransaction,
-					                             "tx data error");
+					tx->SetBlockHeight(blockHeight);
+					tx->SetTimestamp(timeStamp);
 				}
 			});
 

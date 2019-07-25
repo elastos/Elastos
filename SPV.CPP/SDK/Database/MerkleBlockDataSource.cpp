@@ -36,6 +36,9 @@ namespace Elastos {
 
 		bool MerkleBlockDataSource::PutMerkleBlocks(const std::string &iso,
 													const std::vector<MerkleBlockPtr> &blocks) {
+			if (blocks.empty())
+				return true;
+
 			return DoTransaction([&iso, &blocks, this]() {
 				for (size_t i = 0; i < blocks.size(); ++i) {
 					if (blocks[i]->GetHeight() > 0) {

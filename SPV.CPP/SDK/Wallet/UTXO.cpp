@@ -114,6 +114,14 @@ namespace Elastos {
 			return lastBlockHeight >= _blockHeight ? lastBlockHeight - _blockHeight + 1 : 0;
 		}
 
+		bool UTXO::Equal(const InputPtr &input) const {
+			return _hash == input->TxHash() && _n == input->Index();
+		}
+
+		bool UTXO::Equal(const uint256 &hash, uint16_t index) const {
+			return _hash == hash && index == _n;
+		}
+
 	}
 }
 

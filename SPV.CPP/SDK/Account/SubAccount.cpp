@@ -45,10 +45,8 @@ namespace Elastos {
 			_lock = lock;
 
 			for (size_t i = 0; i < tx.size(); i++) {
-				if (tx[i]->IsSigned()) {
-					for (size_t j = 0; j < tx[i]->GetOutputs().size(); ++j)
-						AddUsedAddrs(tx[i]->GetOutputs()[j]->Addr());
-				}
+				for (size_t j = 0; j < tx[i]->GetOutputs().size(); ++j)
+					AddUsedAddrs(tx[i]->GetOutputs()[j]->Addr());
 			}
 
 			UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL + 100, 0);
@@ -173,6 +171,10 @@ namespace Elastos {
 			return _parent->OwnerPubKey();
 		}
 
+		bytes_t SubAccount::DIDPubKey() const {
+			return _parent->MasterPubKey().getChild(0).getChild(0).pubkey();
+		}
+
 		void SubAccount::SignTransaction(const TransactionPtr &tx, const std::string &payPasswd) {
 			std::string addr;
 			Key key;
@@ -220,6 +222,10 @@ namespace Elastos {
 		Key SubAccount::DeriveOwnerKey(const std::string &payPasswd) {
 			// 44'/coinIndex'/account'/change/index
 			return _parent->RootKey(payPasswd).getChild("44'/0'/1'/0/0");
+		}
+
+		Key SubAccount::DeriveDIDKey(const std::string &payPasswd) {
+			return _parent->RootKey(payPasswd).getChild("44'/0'/0'/0/0");
 		}
 
 		bool SubAccount::FindKey(Key &key, const bytes_t &pubKey, const std::string &payPasswd) {

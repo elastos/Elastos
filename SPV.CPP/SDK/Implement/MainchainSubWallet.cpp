@@ -68,7 +68,7 @@ namespace Elastos {
 
 			std::vector<OutputPtr> outputs;
 			Address receiveAddr(lockedAddress);
-			outputs.emplace_back(OutputPtr(new TransactionOutput(value + _config->MinFee(), receiveAddr, Asset::GetELAAssetID())));
+			outputs.emplace_back(OutputPtr(new TransactionOutput(value + _config->MinFee(), receiveAddr)));
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
@@ -190,7 +190,7 @@ namespace Elastos {
 
 			std::vector<OutputPtr> outputs;
 			Address receiveAddr(toAddress);
-			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, receiveAddr, Asset::GetELAAssetID())));
+			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, receiveAddr)));
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
@@ -225,7 +225,7 @@ namespace Elastos {
 
 			std::vector<OutputPtr> outputs;
 			Address receiveAddr(CreateAddress());
-			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), receiveAddr, Asset::GetELAAssetID())));
+			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), receiveAddr)));
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
@@ -264,7 +264,7 @@ namespace Elastos {
 
 			std::vector<OutputPtr> outputs;
 			Address receiveAddr(CreateAddress());
-			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), receiveAddr, Asset::GetELAAssetID())));
+			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), receiveAddr)));
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
@@ -296,7 +296,7 @@ namespace Elastos {
 
 			std::vector<OutputPtr> outputs;
 			Address receiveAddr(CreateAddress());
-			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, receiveAddr, Asset::GetELAAssetID())));
+			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, receiveAddr)));
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
 
@@ -366,7 +366,7 @@ namespace Elastos {
 
 			std::vector<OutputPtr> outs;
 			Address receiveAddr(CreateAddress());
-			outs.push_back(OutputPtr(new TransactionOutput(bgStake, receiveAddr, Asset::GetELAAssetID())));
+			outs.push_back(OutputPtr(new TransactionOutput(bgStake, receiveAddr)));
 
 			TransactionPtr tx = CreateTx(fromAddress, outs, memo, useVotedUTXO);
 
@@ -496,14 +496,19 @@ namespace Elastos {
 		}
 
 		std::string MainchainSubWallet::GetCROwnerDID() const {
-			HDKeychain mpk = _subAccount->Parent()->MasterPubKey();
-			bytes_t pubKey = mpk.getChild(0).getChild(0).pubkey();
-			return Address(PrefixIDChain, pubKey).String();
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			bytes_t pubKey = _subAccount->DIDPubKey();
+			std::string addr = Address(PrefixIDChain, pubKey).String();
+
+			ArgInfo("r => {}", addr);
+			return addr;
 		}
 
 		std::string MainchainSubWallet::GetCROwnerPublicKey() const {
-			HDKeychain mpk = _subAccount->Parent()->MasterPubKey();
-			return mpk.getChild(0).getChild(0).pubkey().getHex();
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			std::string pubkey = _subAccount->DIDPubKey().getHex();
+			ArgInfo("r => {}", pubkey);
+			return pubkey;
 		}
 
 		nlohmann::json MainchainSubWallet::GenerateCRInfoPayload(
@@ -524,10 +529,9 @@ namespace Elastos {
 			ErrorChecker::CheckParam(pubKeyLen != 33 && pubKeyLen != 65, Error::PubKeyLength,
 			                         "Public key length should be 33 or 65 bytes");
 
-			Key publicKey;
-			publicKey.SetPubKey(bytes_t(crPublicKey));
+			bytes_t pubkey(crPublicKey);
 
-			Address address(PrefixDeposit, publicKey.PubKey());
+			Address address(PrefixStandard, pubkey);
 
 			CRInfo crInfo;
 			crInfo.SetCode(address.RedeemScript());
@@ -543,9 +547,7 @@ namespace Elastos {
 			crInfo.SerializeUnsigned(ostream, 0);
 			bytes_t prUnsigned = ostream.GetBytes();
 
-			Key key;
-			bool res = _subAccount->FindKey(key, publicKey.PubKey(), payPasswd);
-			ErrorChecker::CheckCondition(!res, Error::PrivateKeyNotFound, "private key not found");
+			Key key = _subAccount->DeriveDIDKey(payPasswd);
 
 			crInfo.SetSignature(key.Sign(prUnsigned));
 
@@ -579,9 +581,7 @@ namespace Elastos {
 			unregisterCR.SerializeUnsigned(ostream, 0);
 			bytes_t prUnsigned = ostream.GetBytes();
 
-			Key key;
-			bool res = _subAccount->FindKey(key, pubKey.PubKey(), payPasswd);
-			ErrorChecker::CheckCondition(!res, Error::PrivateKeyNotFound, "private key not found");
+			Key key = _subAccount->DeriveDIDKey(payPasswd);
 
 			unregisterCR.SetSignature(key.Sign(prUnsigned));
 
@@ -624,7 +624,7 @@ namespace Elastos {
 			receiveAddr.SetRedeemScript(PrefixDeposit, code);
 
 			std::vector<OutputPtr> outputs;
-			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, receiveAddr, Asset::GetELAAssetID())));
+			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, receiveAddr)));
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
@@ -658,7 +658,7 @@ namespace Elastos {
 
 			std::vector<OutputPtr> outputs;
 			Address receiveAddr(CreateAddress());
-			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), receiveAddr, Asset::GetELAAssetID())));
+			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), receiveAddr)));
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
@@ -697,7 +697,7 @@ namespace Elastos {
 
 			std::vector<OutputPtr> outputs;
 			Address receiveAddr(CreateAddress());
-			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), receiveAddr, Asset::GetELAAssetID())));
+			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), receiveAddr)));
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
@@ -724,11 +724,11 @@ namespace Elastos {
 			BigInt bgAmount;
 			bgAmount.setDec(amount);
 
-			Address fromAddress = Address(PrefixDeposit, GetCROwnerPublicKey());
+			Address fromAddress = Address(PrefixDeposit, _subAccount->DIDPubKey());
 
 			std::vector<OutputPtr> outputs;
 			Address receiveAddr(CreateAddress());
-			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, receiveAddr, Asset::GetELAAssetID())));
+			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, receiveAddr)));
 
 			TransactionPtr tx = CreateTx(fromAddress.String(), outputs, memo);
 

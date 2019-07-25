@@ -25,8 +25,11 @@ namespace Elastos {
 		class UTXO;
 		typedef boost::shared_ptr<Asset> AssetPtr;
 		typedef boost::shared_ptr<UTXO> UTXOPtr;
+		typedef std::vector<UTXOPtr> UTXOArray;
 		typedef boost::shared_ptr<TransactionOutput> OutputPtr;
+		typedef std::vector<OutputPtr> OutputArray;
 		typedef boost::shared_ptr<TransactionInput> InputPtr;
+		typedef std::vector<InputPtr> InputArray;
 
 		class GroupedAsset {
 		public:
@@ -45,19 +48,19 @@ namespace Elastos {
 
 			GroupedAsset &operator=(const GroupedAsset &proto);
 
-			const std::vector<UTXOPtr> &GetUTXOs() const;
+			UTXOArray GetUTXOs(const std::string &addr) const;
 
-			const std::vector<UTXOPtr> &GetCoinBaseUTXOs() const;
+			const UTXOArray &GetCoinBaseUTXOs() const;
 
 			BigInt GetBalance(BalanceType type = Total) const;
 
-			void CleanBalance();
-
-			BigInt UpdateBalance();
-
 			nlohmann::json GetBalanceInfo();
 
-			TransactionPtr CombineUTXO(const std::string &memo, bool useVotedUTXO);
+			TransactionPtr CreateRetrieveDepositTx(const OutputArray &outputs,
+												   const Address &fromAddress,
+												   const std::string &memo);
+
+			TransactionPtr Consolidate(const std::string &memo, bool useVotedUTXO);
 
 			TransactionPtr CreateTxForOutputs(const std::vector<OutputPtr> &outputs,
 											  const Address &fromAddress,
@@ -71,15 +74,26 @@ namespace Elastos {
 
 			void AddUTXO(const UTXOPtr &o);
 
-			void AddCoinBaseUTXO(const UTXOPtr &coinbaseUTXO);
+			void AddCoinBaseUTXO(const UTXOPtr &o);
+
+			bool RemoveSpentUTXO(const std::vector<InputPtr> &inputs);
+
+			bool RemoveSpentUTXO(const InputPtr &input);
+
+			bool RemoveSpentUTXO(const uint256 &hash, uint16_t n);
+
+			void GetSpentCoinbase(const InputArray &inputs, std::vector<uint256> &spentCoinbase) const;
+
+			bool UpdateLockedBalance();
+
+			UTXOPtr FindUTXO(const InputPtr &input) const;
 
 		private:
 			uint64_t CalculateFee(uint64_t feePerKB, size_t size);
 
 		private:
-			BigInt _balance, _votedBalance, _lockedBalance, _depositBalance;
-			std::vector<UTXOPtr> _utxos;
-			std::vector<UTXOPtr> _coinBaseUTXOs;
+			BigInt _balance, _balanceVote, _balanceDeposit, _balanceLocked;
+			UTXOArray _utxos, _utxosVote, _utxosCoinbase, _utxosDeposit, _utxosLocked;
 
 			AssetPtr _asset;
 

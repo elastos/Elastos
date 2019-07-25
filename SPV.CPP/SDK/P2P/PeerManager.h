@@ -83,6 +83,7 @@ namespace Elastos {
 
 			~PeerManager();
 
+			void SetWallet(const WalletPtr &wallet);
 			/**
 			* Connect to bitcoin peer-to-peer network (also call this whenever networkIsReachable()
 			* status changes)

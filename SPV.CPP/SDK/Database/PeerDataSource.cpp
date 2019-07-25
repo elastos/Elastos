@@ -32,6 +32,9 @@ namespace Elastos {
 		}
 
 		bool PeerDataSource::PutPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities) {
+			if (peerEntities.empty())
+				return true;
+
 			return DoTransaction([&iso, &peerEntities, this] {
 				for (size_t i = 0; i < peerEntities.size(); ++i) {
 					this->PutPeerInternal(iso, peerEntities[i]);
@@ -70,20 +73,18 @@ namespace Elastos {
 				std::stringstream ss;
 
 				ss << "DELETE FROM " << PEER_TABLE_NAME <<
-				   " WHERE " << PEER_COLUMN_ID << " = " << peerEntity.id <<
-				   " AND " << PEER_ISO << " = '" << iso << "';";
+				   " WHERE " << PEER_COLUMN_ID << " = " << peerEntity.id << ";";
 
 				ErrorChecker::CheckCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
 											 "Exec sql " + ss.str());
 			});
 		}
 
-		bool PeerDataSource::DeleteAllPeers(const std::string &iso) {
-			return DoTransaction([&iso, this]() {
+		bool PeerDataSource::DeleteAllPeers() {
+			return DoTransaction([this]() {
 				std::stringstream ss;
 
-				ss << "DELETE FROM " << PEER_TABLE_NAME <<
-				   " WHERE " << PEER_ISO << " = '" << iso << "';";
+				ss << "DELETE FROM " << PEER_TABLE_NAME << ";";
 
 				ErrorChecker::CheckCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
 											 "Exec sql " + ss.str());
@@ -93,7 +94,7 @@ namespace Elastos {
 		std::vector<PeerEntity> PeerDataSource::GetAllPeers(const std::string &iso) const {
 			std::vector<PeerEntity> peers;
 
-			DoTransaction([&iso, &peers, this]() {
+			DoTransaction([&peers, this]() {
 				PeerEntity peer;
 				std::stringstream ss;
 
@@ -102,8 +103,7 @@ namespace Elastos {
 				   PEER_ADDRESS << ", " <<
 				   PEER_PORT << ", " <<
 				   PEER_TIMESTAMP <<
-				   " FROM " << PEER_TABLE_NAME <<
-				   " WHERE " << PEER_ISO << " = '" << iso << "';";
+				   " FROM " << PEER_TABLE_NAME << ";";
 
 				sqlite3_stmt *stmt;
 				ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
@@ -138,7 +138,7 @@ namespace Elastos {
 		size_t PeerDataSource::GetAllPeersCount(const std::string &iso) const {
 			size_t count = 0;
 
-			DoTransaction([&iso, &count, this]() {
+			DoTransaction([&count, this]() {
 				std::stringstream ss;
 
 				ss << "SELECT " <<

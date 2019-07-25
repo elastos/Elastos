@@ -20,7 +20,7 @@
 #include <fstream>
 using namespace Elastos::ElaWallet;
 
-#define ISO "els"
+#define ISO "ela1"
 #define DBFILE "wallet.db"
 
 TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
@@ -213,7 +213,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 		SECTION("Peer delete test") {
 			DatabaseManager *dbm = new DatabaseManager(DBFILE);
-			REQUIRE(dbm->DeleteAllPeers(ISO));
+			REQUIRE(dbm->DeleteAllPeers());
 			std::vector<PeerEntity> peers = dbm->GetAllPeers(ISO);
 			REQUIRE(peers.size() == 0);
 			delete dbm;
@@ -386,7 +386,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 		SECTION("Transaction read test") {
 			DatabaseManager dbm(DBFILE);
-			std::vector<TransactionPtr> readTx = dbm.GetAllTransactions(ISO);
+			std::vector<TransactionPtr> readTx = dbm.GetAllTransactions();
 			REQUIRE(txToSave.size() == readTx.size());
 
 			for (int i = 0; i < readTx.size(); ++i) {
@@ -413,7 +413,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 		SECTION("Transaction read after update test") {
 			DatabaseManager dbm(DBFILE);
-			std::vector<TransactionPtr> readTx = dbm.GetAllTransactions(ISO);
+			std::vector<TransactionPtr> readTx = dbm.GetAllTransactions();
 			REQUIRE(TEST_TX_RECORD_CNT == readTx.size());
 
 			for (int i = 0; i < readTx.size(); ++i) {
@@ -433,10 +433,10 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			DatabaseManager dbm(DBFILE);
 
 			for (int i = 0; i < txToUpdate.size(); ++i) {
-				REQUIRE(dbm.DeleteTxByHash(ISO, txToUpdate[i]->GetHash().ToString()));
+				REQUIRE(dbm.DeleteTxByHash(txToUpdate[i]->GetHash()));
 			}
 
-			std::vector<TransactionPtr> readTx = dbm.GetAllTransactions(ISO);
+			std::vector<TransactionPtr> readTx = dbm.GetAllTransactions();
 			REQUIRE(0 == readTx.size());
 		}
 

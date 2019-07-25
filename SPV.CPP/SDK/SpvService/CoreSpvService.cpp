@@ -33,14 +33,10 @@ namespace Elastos {
 			std::vector<TransactionPtr>  txs = loadTransactions();
 			std::vector<UTXOPtr> cbs = loadCoinBaseUTXOs();
 
-			if (_wallet == nullptr) {
-				_wallet = WalletPtr(new Wallet(loadAssets(), txs, cbs, _subAccount, createWalletListener()));
-			}
-
 			if (_peerManager == nullptr) {
 				_peerManager = PeerManagerPtr(new PeerManager(
 						_chainParams,
-						getWallet(),
+						nullptr,
 						earliestPeerTime,
 						_reconnectSeconds,
 						loadBlocks(),
@@ -49,8 +45,14 @@ namespace Elastos {
 						_pluginTypes));
 			}
 
+			if (_wallet == nullptr) {
+				_wallet = WalletPtr(new Wallet(_peerManager->GetLastBlockHeight(), loadAssets(), txs, cbs, _subAccount, createWalletListener()));
+				_peerManager->SetWallet(_wallet);
+			}
+
 			for (size_t i = 0; i < txs.size(); ++i) {
-				if (txs[i]->GetBlockHeight() == TX_UNCONFIRMED && _wallet->AmountSentByTx(txs[i]) > 0) {
+				if (!txs[i]->IsCoinBase() && txs[i]->GetBlockHeight() == TX_UNCONFIRMED &&
+					!_wallet->IsReceiveTransaction(txs[i])) {
 					_peerManager->PublishTransaction(txs[i]);
 				}
 			}
@@ -69,6 +71,10 @@ namespace Elastos {
 		}
 
 		void CoreSpvService::onCoinBaseTxAdded(const UTXOPtr &cb) {
+
+		}
+
+		void CoreSpvService::onCoinBaseUpdatedAll(const UTXOArray &cbs) {
 
 		}
 
@@ -94,6 +100,10 @@ namespace Elastos {
 		}
 
 		void CoreSpvService::onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
+
+		}
+
+		void CoreSpvService::onTxUpdatedAll(const std::vector<TransactionPtr> &txns) {
 
 		}
 
@@ -402,6 +412,14 @@ namespace Elastos {
 			}
 		}
 
+		void WrappedExceptionWalletListener::onCoinBaseUpdatedAll(const UTXOArray &cbs) {
+			try {
+				_listener->onCoinBaseUpdatedAll(cbs);
+			} catch (const std::exception &e) {
+				Log::error("onCoinBaseUpdatedAll exception: {}", e.what());
+			}
+		}
+
 		void WrappedExceptionWalletListener::onCoinBaseTxUpdated(const std::vector<uint256> &hashes,
 																 uint32_t blockHeight,
 																 time_t timestamp) {
@@ -456,6 +474,14 @@ namespace Elastos {
 			}
 		}
 
+		void WrappedExceptionWalletListener::onTxUpdatedAll(const std::vector<TransactionPtr> &txns) {
+			try {
+				_listener->onTxUpdatedAll(txns);
+			} catch (const std::exception &e) {
+				Log::error("onTxUpdatedAll exception: {}", e.what());
+			}
+		}
+
 		void WrappedExceptionWalletListener::onAssetRegistered(const AssetPtr &asset,
 																	   uint64_t amount,
 																	   const uint168 &controller) {
@@ -489,6 +515,16 @@ namespace Elastos {
 					_listener->onCoinBaseTxAdded(cb);
 				} catch (const std::exception &e) {
 					Log::error("onCoinBaseTxAdded exception: {}", e.what());
+				}
+			}));
+		}
+
+		void WrappedExecutorWalletListener::onCoinBaseUpdatedAll(const UTXOArray &cbs) {
+			_executor->Execute(Runnable([this, cbs]() -> void {
+				try {
+					_listener->onCoinBaseUpdatedAll(cbs);
+				} catch (const std::exception &e) {
+					Log::error("onCoinBaseUpdatedAll exception: {}", e.what());
 				}
 			}));
 		}
@@ -554,6 +590,16 @@ namespace Elastos {
 					_listener->onTxDeleted(hash, notifyUser, recommendRescan);
 				} catch (const std::exception &e) {
 					Log::error("onTxDeleted exception: {}", e.what());
+				}
+			}));
+		}
+
+		void WrappedExecutorWalletListener::onTxUpdatedAll(const std::vector<TransactionPtr> &txns) {
+			_executor->Execute(Runnable([this, txns]() -> void {
+				try {
+					_listener->onTxUpdatedAll(txns);
+				} catch (const std::exception &e) {
+					Log::error("onTxUpdatedAll exception: {}", e.what());
 				}
 			}));
 		}

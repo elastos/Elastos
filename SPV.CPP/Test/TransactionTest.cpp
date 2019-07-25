@@ -75,6 +75,7 @@ TEST_CASE("Convert to and from json", "[Transaction]") {
 			"LockTime":0,
 			"Outputs":[
 			{
+				"FixedIndex": 0,
 				"Address":"ERSqjfWDwTYw7iLrCZYLHKzSzEYzF4QZUz",
 				"Amount":2300000000,
 				"AssetId":"a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
@@ -116,6 +117,7 @@ TEST_CASE("Convert to and from json", "[Transaction]") {
 				"ProgramHash":"8d3cab1fc7ed2da20317e2b111f0f91ff5f0f45a21"
 			},
 			{
+				"FixedIndex": 1,
 				"Address":"ERSqjfWDwTYw7iLrCZYLHKzSzEYzF4QZUz",
 				"Amount":2687533220000,
 				"AssetId":"a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",

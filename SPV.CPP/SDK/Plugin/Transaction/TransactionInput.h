@@ -57,6 +57,9 @@ namespace Elastos {
 			uint32_t _sequence;
 		};
 
+		typedef boost::shared_ptr<TransactionInput> InputPtr;
+		typedef std::vector<InputPtr> InputArray;
+
 	}
 }
 

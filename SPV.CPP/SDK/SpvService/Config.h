@@ -70,7 +70,7 @@ namespace Elastos {
 
 			~Config();
 
-			const ChainConfigPtr &GetChainConfig(const std::string &id) const;
+			ChainConfigPtr GetChainConfig(const std::string &id) const;
 
 			const std::vector<ChainConfigPtr> &GetChainConfigs() const;
 

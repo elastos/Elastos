@@ -36,18 +36,19 @@ namespace Elastos {
 
 			// Transaction's database interface
 			bool PutTransaction(const std::string &iso, const TransactionPtr &tx);
-			bool DeleteAllTransactions(const std::string &iso);
-			size_t GetAllTransactionsCount(const std::string &iso) const;
-			std::vector<TransactionPtr> GetAllTransactions(const std::string &iso) const;
+			bool PutTransactions(const std::string &iso, const std::vector<TransactionPtr> &txns);
+			bool DeleteAllTransactions();
+			size_t GetAllTransactionsCount() const;
+			std::vector<TransactionPtr> GetAllTransactions() const;
 			bool UpdateTransaction(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
-			bool DeleteTxByHash(const std::string &iso, const std::string &hash);
-			bool DeleteTxByHashes(const std::vector<std::string> &hashes);
+			bool DeleteTxByHash(const uint256 &hash);
+			bool DeleteTxByHashes(const std::vector<uint256> &hashes);
 
 			// Peer's database interface
 			bool PutPeer(const std::string &iso, const PeerEntity &peerEntity);
 			bool PutPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities);
 			bool DeletePeer(const std::string &iso, const PeerEntity &peerEntity);
-			bool DeleteAllPeers(const std::string &iso);
+			bool DeleteAllPeers();
 			size_t GetAllPeersCount(const std::string &iso) const;
 			std::vector<PeerEntity> GetAllPeers(const std::string &iso) const;
 

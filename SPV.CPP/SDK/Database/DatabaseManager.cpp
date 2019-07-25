@@ -64,16 +64,20 @@ namespace Elastos {
 			return _transactionDataStore.PutTransaction(iso, tx);
 		}
 
-		bool DatabaseManager::DeleteAllTransactions(const std::string &iso) {
-			return _transactionDataStore.DeleteAllTransactions(iso);
+		bool DatabaseManager::PutTransactions(const std::string &iso, const std::vector<TransactionPtr> &txns) {
+			return _transactionDataStore.PutTransactions(iso, txns);
 		}
 
-		size_t DatabaseManager::GetAllTransactionsCount(const std::string &iso) const {
-			return _transactionDataStore.GetAllTransactionsCount(iso);
+		bool DatabaseManager::DeleteAllTransactions() {
+			return _transactionDataStore.DeleteAllTransactions();
 		}
 
-		std::vector<TransactionPtr> DatabaseManager::GetAllTransactions(const std::string &iso) const {
-			return _transactionDataStore.GetAllTransactions(iso);
+		size_t DatabaseManager::GetAllTransactionsCount() const {
+			return _transactionDataStore.GetAllTransactionsCount();
+		}
+
+		std::vector<TransactionPtr> DatabaseManager::GetAllTransactions() const {
+			return _transactionDataStore.GetAllTransactions();
 		}
 
 		bool DatabaseManager::UpdateTransaction(const std::vector<uint256> &hashes, uint32_t blockHeight,
@@ -81,11 +85,11 @@ namespace Elastos {
 			return _transactionDataStore.UpdateTransaction(hashes, blockHeight, timestamp);
 		}
 
-		bool DatabaseManager::DeleteTxByHash(const std::string &iso, const std::string &hash) {
-			return _transactionDataStore.DeleteTxByHash(iso, hash);
+		bool DatabaseManager::DeleteTxByHash(const uint256 &hash) {
+			return _transactionDataStore.DeleteTxByHash(hash);
 		}
 
-		bool DatabaseManager::DeleteTxByHashes(const std::vector<std::string> &hashes) {
+		bool DatabaseManager::DeleteTxByHashes(const std::vector<uint256> &hashes) {
 			return _transactionDataStore.DeleteTxByHashes(hashes);
 		}
 
@@ -101,8 +105,8 @@ namespace Elastos {
 			return _peerDataSource.DeletePeer(iso, peerEntity);
 		}
 
-		bool DatabaseManager::DeleteAllPeers(const std::string &iso) {
-			return _peerDataSource.DeleteAllPeers(iso);
+		bool DatabaseManager::DeleteAllPeers() {
+			return _peerDataSource.DeleteAllPeers();
 		}
 
 		std::vector<PeerEntity> DatabaseManager::GetAllPeers(const std::string &iso) const {

@@ -1391,7 +1391,7 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 		LocalStore ls(nlohmann::json::parse("{\"account\":0,\"coinInfo\":[{\"ChainID\":\"ELA\",\"EarliestPeerTime\":1513936800,\"FeePerKB\":10000,\"VisibleAssets\":[\"a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0\"]}],\"derivationStrategy\":\"BIP44\",\"m\":1,\"mnemonic\":\"P0C/7w2/h13rLqA8qgI+BwwDZrcK9g8ixjdPFFIEC6+G62Qsm4WsmoNbxJE+shQ2jy7tTsPsDYLKCow9hsGrWchJuBV5ULwwcnRhYimP9TlAYA6uTdk3aQgolw==\",\"mnemonicHasPassphrase\":true,\"n\":1,\"ownerPubKey\":\"027c876ac77226d6f25d198983b1ae58baa39b136ff0e09386e064b40d646767a1\",\"passphrase\":\"\",\"publicKeyRing\":[{\"requestPubKey\":\"027d917aa4732ebffcb496a40cce2bf5b57237570c106b97b98fa5be433c6b743d\",\"xPubKey\":\"xpub6CWoR5hv1BestMgnyWLPR1RXdttXhFLK9vTjri9J79SgYdCnpjTCNF5JiwyZXsaW4pMonQ8gaHWv5xUi9DgBLMzdWE75EULLzU444PkpF7E\"}],\"readonly\":false,\"requestPrivKey\":\"HiFHrGoxzoY3yCbshyUtMtY1fIO2rFw5265BALZgv08Vuen9c1llzg==\",\"requestPubKey\":\"027d917aa4732ebffcb496a40cce2bf5b57237570c106b97b98fa5be433c6b743d\",\"singleAddress\":false,\"xPrivKey\":\"SK1ian/e9X2YQdBdioAjo/P11xkGlaXp9AFXcSIYUmPuQwz8aepAkk4hUG7KfqqEtzwb4kOTt0Tm+ZiYiRXtLmVkaVLMaQD1ab49rIHlRj9zw2fSft8=\",\"xPubKey\":\"xpub6CWoR5hv1BestMgnyWLPR1RXdttXhFLK9vTjri9J79SgYdCnpjTCNF5JiwyZXsaW4pMonQ8gaHWv5xUi9DgBLMzdWE75EULLzU444PkpF7E\"}"));
 		ls.SaveTo(path);
 
-		std::string iso = "TEST";
+		std::string iso = "ela1";
 		DatabaseManager dm("Data/" + masterWalletId + "/ELA.db");
 
 		std::string xprv = ls.GetxPrivKey();
@@ -1448,7 +1448,7 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 		}
 
 
-		REQUIRE(dm.GetAllTransactions(iso).size() == txCount);
+		REQUIRE(dm.GetAllTransactions().size() == txCount);
 
 		//transfer to another address
 		BigInt transferAmount(2005);
@@ -1509,7 +1509,7 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 
 		dm.PutTransaction(iso, tx);
 
-		REQUIRE(dm.GetAllTransactions(iso).size() == txCount + 1);
+		REQUIRE(dm.GetAllTransactions().size() == txCount + 1);
 
 		//put coinbase tx
 		for (int i = 0; i < txCount; ++i) {

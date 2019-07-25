@@ -18,8 +18,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class TransactionOutput :
-				public ELAMessageSerializable {
+		class TransactionOutput {
 
 		public:
 			enum Type {
@@ -44,13 +43,9 @@ namespace Elastos {
 
 			size_t EstimateSize() const;
 
-			virtual void Serialize(ByteStream &ostream) const;
+			void Serialize(ByteStream &ostream, uint8_t txVersion, bool extend = false) const;
 
-			virtual bool Deserialize(const ByteStream &istream);
-
-			void Serialize(ByteStream &ostream, uint8_t txVersion) const;
-
-			bool Deserialize(const ByteStream &istream, uint8_t txVersion);
+			bool Deserialize(const ByteStream &istream, uint8_t txVersion, bool extend = false);
 
 			bool IsValid() const;
 
@@ -84,17 +79,19 @@ namespace Elastos {
 
 			OutputPayloadPtr GeneratePayload(const Type &type);
 
-			virtual nlohmann::json ToJson() const;
-
-			virtual void FromJson(const nlohmann::json &j);
-
 			nlohmann::json ToJson(uint8_t txVersion) const;
 
 			void FromJson(const nlohmann::json &j, uint8_t txVersion);
 
 			size_t GetSize() const;
 
+			uint16_t FixedIndex() const;
+
+			void SetFixedIndex(uint16_t index);
+
 		private:
+			uint16_t _fixedIndex;
+
 			BigInt _amount; // to support token chain
 			uint256 _assetID;
 			uint32_t _outputLock;
@@ -106,6 +103,7 @@ namespace Elastos {
 		};
 
 		typedef boost::shared_ptr<TransactionOutput> OutputPtr;
+		typedef std::vector<OutputPtr> OutputArray;
 
 	}
 }

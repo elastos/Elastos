@@ -16,6 +16,7 @@ namespace Elastos {
 		class TransactionOutput;
 		class BigInt;
 		typedef boost::shared_ptr<TransactionOutput> OutputPtr;
+		typedef boost::shared_ptr<TransactionInput> InputPtr;
 
 		class UTXO {
 		public:
@@ -57,6 +58,10 @@ namespace Elastos {
 
 			uint32_t GetConfirms(uint32_t lastBlockHeight) const;
 
+			bool Equal(const InputPtr &input) const;
+
+			bool Equal(const uint256 &hash, uint16_t index) const;
+
 		protected:
 			time_t _timestamp;
 			uint32_t _blockHeight;
@@ -67,6 +72,7 @@ namespace Elastos {
 			uint16_t _n;
 		};
 		typedef boost::shared_ptr<UTXO> UTXOPtr;
+		typedef std::vector<UTXOPtr> UTXOArray;
 
 	}
 }
