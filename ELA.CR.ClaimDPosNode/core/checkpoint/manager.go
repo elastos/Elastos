@@ -206,6 +206,15 @@ func (m *Manager) Restore() (err error) {
 	return
 }
 
+func (m *Manager) Reset(filter func(point ICheckPoint) bool) {
+	for _, v := range m.checkpoints {
+		if filter != nil && !filter(v) {
+			continue
+		}
+		m.channels[v.Key()].Reset(v, nil)
+	}
+}
+
 // SafeHeight returns the minimum height of all checkpoints from which we can
 // rescan block chain data.
 func (m *Manager) SafeHeight() uint32 {
