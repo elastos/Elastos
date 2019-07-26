@@ -3,11 +3,29 @@
 const Web3 = require("web3");
 const web3 = new Web3("http://127.0.0.1:8545");
 const ctrt = require("./ctrt");
+
 const contract = new web3.eth.Contract(ctrt.abi);
-contract.options.address = ctrt.address;
+console.log(process.env.env);
+switch (process.env.env) {
+    case "rinkeby":
+        console.log("");
+        contract.options.address = "";
+        break;
+    case "testnet":
+        console.log("0x491bC043672B9286fA02FA7e0d6A3E5A0384A31A");
+        contract.options.address = "0x491bC043672B9286fA02FA7e0d6A3E5A0384A31A";
+        break;
+    case "mainnet":
+        console.log("");
+        contract.options.address = "";
+        break;
+    default:
+        console.log("config address");
+        contract.options.address = ctrt.address;
+}
 const payloadReceived = {name: null, inputs: null, signature: null};
 const blackAdr = "0x0000000000000000000000000000000000000000";
-const zeroHash64 = "0x0000000000000000000000000000000000000000000000000000000000000000"
+const zeroHash64 = "0x0000000000000000000000000000000000000000000000000000000000000000";
 const latest = "latest";
 
 for (const event of ctrt.abi) {
@@ -36,4 +54,4 @@ module.exports = {
         let m = num.toExponential().match(/\d(?:\.(\d*))?e([+-]\d+)/);
         return num.toFixed(Math.max(0, (m[1] || '').length - m[2]));
     }
-}
+};
