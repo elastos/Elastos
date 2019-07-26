@@ -140,5 +140,5 @@ testImport:
   - assert
   - require
 - package: gopkg.in/check.v1
-ignore:
-- crypto/ed25519
+#ignore:
+#- crypto/ed25519
