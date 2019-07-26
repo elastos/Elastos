@@ -8,11 +8,24 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"io"
 	"io/ioutil"
+	"os"
 	"reflect"
 	"strings"
 	"testing"
 )
+
+func TestParseDumpNothing(t *testing.T) {
+	extra := &bytes.Buffer{}
+	c, err := ParseDump(bytes.NewBufferString("\n"), extra, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c != nil {
+		t.Fatalf("unexpected %v", c)
+	}
+}
 
 func TestParseDump1(t *testing.T) {
 	// One call from main, one from stdlib, one from third party.
@@ -203,6 +216,42 @@ func TestParseDumpAsm(t *testing.T) {
 	compareString(t, "panic: reflect.Set: value of type\n\n", extra.String())
 }
 
+func TestParseDumpAsmGo1dot13(t *testing.T) {
+	data := []string{
+		"panic: reflect.Set: value of type",
+		"",
+		"goroutine 16 [garbage collection]:",
+		"runtime.switchtoM()",
+		"\t/goroot/src/runtime/asm_amd64.s:198 fp=0xc20cfb80d8 sp=0xc20cfb80d0 pc=0x5007be",
+		"",
+	}
+	extra := &bytes.Buffer{}
+	c, err := ParseDump(bytes.NewBufferString(strings.Join(data, "\n")), extra, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := []*Goroutine{
+		{
+			Signature: Signature{
+				State: "garbage collection",
+				Stack: Stack{
+					Calls: []Call{
+						{
+							SrcPath: "/goroot/src/runtime/asm_amd64.s",
+							Line:    198,
+							Func:    Func{Raw: "runtime.switchtoM"},
+						},
+					},
+				},
+			},
+			ID:    16,
+			First: true,
+		},
+	}
+	compareGoroutines(t, expected, c.Goroutines)
+	compareString(t, "panic: reflect.Set: value of type\n\n", extra.String())
+}
+
 func TestParseDumpLineErr(t *testing.T) {
 	data := []string{
 		"panic: reflect.Set: value of type",
@@ -231,6 +280,44 @@ func TestParseDumpLineErr(t *testing.T) {
 	compareGoroutines(t, expected, c.Goroutines)
 }
 
+func TestParseDumpCreatedErr(t *testing.T) {
+	data := []string{
+		"panic: reflect.Set: value of type",
+		"",
+		"goroutine 1 [running]:",
+		"github.com/maruel/panicparse/stack/stack.recurseType()",
+		"\t/gopath/src/github.com/maruel/panicparse/stack/stack.go:1",
+		"created by testing.RunTests",
+		"\t/goroot/src/testing/testing.go:123456789012345678901 +0xa8b",
+		"",
+	}
+	extra := &bytes.Buffer{}
+	c, err := ParseDump(bytes.NewBufferString(strings.Join(data, "\n")), extra, false)
+	compareErr(t, errors.New("failed to parse int on line: \"/goroot/src/testing/testing.go:123456789012345678901 +0xa8b\""), err)
+	expected := []*Goroutine{
+		{
+			Signature: Signature{
+				State: "running",
+				Stack: Stack{
+					Calls: []Call{
+						{
+							SrcPath: "/gopath/src/github.com/maruel/panicparse/stack/stack.go",
+							Line:    1,
+							Func:    Func{Raw: "github.com/maruel/panicparse/stack/stack.recurseType"},
+						},
+					},
+				},
+				CreatedBy: Call{
+					Func: Func{Raw: "testing.RunTests"},
+				},
+			},
+			ID:    1,
+			First: true,
+		},
+	}
+	compareGoroutines(t, expected, c.Goroutines)
+}
+
 func TestParseDumpValueErr(t *testing.T) {
 	data := []string{
 		"panic: reflect.Set: value of type",
@@ -245,15 +332,48 @@ func TestParseDumpValueErr(t *testing.T) {
 	compareErr(t, errors.New("failed to parse int on line: \"github.com/maruel/panicparse/stack/stack.recurseType(123456789012345678901)\""), err)
 	expected := []*Goroutine{
 		{
-			Signature: Signature{State: "running"},
-			ID:        1,
-			First:     true,
+			Signature: Signature{
+				State: "running",
+				Stack: Stack{
+					Calls: []Call{{Func: Func{Raw: "github.com/maruel/panicparse/stack/stack.recurseType"}}},
+				},
+			},
+			ID:    1,
+			First: true,
 		},
 	}
 	for i := range expected {
 		expected[i].updateLocations(c.GOROOT, c.localgoroot, c.GOPATHs)
 	}
 	compareGoroutines(t, expected, c.Goroutines)
+}
+
+func TestParseDumpInconsistentIndent(t *testing.T) {
+	data := []string{
+		"  goroutine 1 [running]:",
+		"  github.com/maruel/panicparse/stack/stack.recurseType()",
+		" \t/gopath/src/github.com/maruel/panicparse/stack/stack.go:1",
+		"",
+	}
+	extra := &bytes.Buffer{}
+	c, err := ParseDump(bytes.NewBufferString(strings.Join(data, "\n")), extra, false)
+	compareErr(t, errors.New(`inconsistent indentation: " \t/gopath/src/github.com/maruel/panicparse/stack/stack.go:1", expected "  "`), err)
+	expected := []*Goroutine{
+		{
+			Signature: Signature{
+				State: "running",
+				Stack: Stack{
+					Calls: []Call{
+						{Func: Func{Raw: "github.com/maruel/panicparse/stack/stack.recurseType"}},
+					},
+				},
+			},
+			ID:    1,
+			First: true,
+		},
+	}
+	compareGoroutines(t, expected, c.Goroutines)
+	compareString(t, "", extra.String())
 }
 
 func TestParseDumpOrderErr(t *testing.T) {
@@ -268,7 +388,7 @@ func TestParseDumpOrderErr(t *testing.T) {
 	}
 	extra := &bytes.Buffer{}
 	c, err := ParseDump(bytes.NewBufferString(strings.Join(data, "\n")), extra, false)
-	compareErr(t, errors.New("unexpected order on line: \"/gopath/src/gopkg.in/yaml.v2/yaml.go:153 +0xc6\""), err)
+	compareErr(t, errors.New("expected a function after a goroutine header, got: \"/gopath/src/gopkg.in/yaml.v2/yaml.go:153 +0xc6\""), err)
 	expected := []*Goroutine{
 		{
 			Signature: Signature{State: "garbage collection"},
@@ -408,7 +528,7 @@ func TestParseDumpSysCall(t *testing.T) {
 	compareString(t, "panic: reflect.Set: value of type\n\n", extra.String())
 }
 
-func TestParseDumpUnavail(t *testing.T) {
+func TestParseDumpUnavailCreated(t *testing.T) {
 	data := []string{
 		"panic: reflect.Set: value of type",
 		"",
@@ -434,6 +554,63 @@ func TestParseDumpUnavail(t *testing.T) {
 					SrcPath: "/gopath/src/github.com/maruel/panicparse/stack/stack.go",
 					Line:    131,
 					Func:    Func{Raw: "github.com/maruel/panicparse/stack.New"},
+				},
+			},
+			ID:    24,
+			First: true,
+		},
+	}
+	compareGoroutines(t, expected, c.Goroutines)
+	compareString(t, "panic: reflect.Set: value of type\n\n", extra.String())
+}
+
+func TestParseDumpUnavail(t *testing.T) {
+	data := []string{
+		"panic: reflect.Set: value of type",
+		"",
+		"goroutine 24 [running]:",
+		"\tgoroutine running on other thread; stack unavailable",
+		"",
+		"",
+	}
+	extra := &bytes.Buffer{}
+	c, err := ParseDump(bytes.NewBufferString(strings.Join(data, "\n")), extra, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := []*Goroutine{
+		{
+			Signature: Signature{
+				State: "running",
+				Stack: Stack{
+					Calls: []Call{{SrcPath: "<unavailable>"}},
+				},
+			},
+			ID:    24,
+			First: true,
+		},
+	}
+	compareGoroutines(t, expected, c.Goroutines)
+	compareString(t, "panic: reflect.Set: value of type\n\n", extra.String())
+}
+
+func TestParseDumpUnavailError(t *testing.T) {
+	data := []string{
+		"panic: reflect.Set: value of type",
+		"",
+		"goroutine 24 [running]:",
+		"\tgoroutine running on other thread; stack unavailable",
+		"junk",
+	}
+	extra := &bytes.Buffer{}
+	c, err := ParseDump(bytes.NewBufferString(strings.Join(data, "\n")), extra, false)
+	compareErr(t, errors.New("expected empty line after unavailable stack, got: \"junk\""), err)
+	expected := []*Goroutine{
+		{
+			Signature: Signature{
+				State: "running",
+				Stack: Stack{
+					Calls: []Call{{SrcPath: "<unavailable>"}},
 				},
 			},
 			ID:    24,
@@ -485,7 +662,7 @@ func TestParseDumpNoOffset(t *testing.T) {
 	compareGoroutines(t, expectedGR, c.Goroutines)
 }
 
-func TestParseDumpJunk(t *testing.T) {
+func TestParseDumpHeaderError(t *testing.T) {
 	// For coverage of scanLines.
 	data := []string{
 		"panic: reflect.Set: value of type",
@@ -493,18 +670,131 @@ func TestParseDumpJunk(t *testing.T) {
 		"goroutine 1 [running]:",
 		"junk",
 	}
-	c, err := ParseDump(bytes.NewBufferString(strings.Join(data, "\n")), ioutil.Discard, false)
-	if err != nil {
-		t.Fatal(err)
-	}
-	expectedGR := []*Goroutine{
+	extra := &bytes.Buffer{}
+	c, err := ParseDump(bytes.NewBufferString(strings.Join(data, "\n")), extra, false)
+	compareErr(t, errors.New("expected a function after a goroutine header, got: \"junk\""), err)
+	expected := []*Goroutine{
 		{
 			Signature: Signature{State: "running"},
 			ID:        1,
 			First:     true,
 		},
 	}
-	compareGoroutines(t, expectedGR, c.Goroutines)
+	compareGoroutines(t, expected, c.Goroutines)
+	compareString(t, "panic: reflect.Set: value of type\n\n", extra.String())
+}
+
+func TestParseDumpFileError(t *testing.T) {
+	// For coverage of scanLines.
+	data := []string{
+		"panic: reflect.Set: value of type",
+		"",
+		"goroutine 1 [running]:",
+		"github.com/maruel/panicparse/stack.func·002()",
+		"junk",
+	}
+	extra := &bytes.Buffer{}
+	c, err := ParseDump(bytes.NewBufferString(strings.Join(data, "\n")), extra, false)
+	compareErr(t, errors.New("expected a file after a function, got: \"junk\""), err)
+	expected := []*Goroutine{
+		{
+			Signature: Signature{
+				State: "running",
+				Stack: Stack{
+					Calls: []Call{
+						{Func: Func{Raw: "github.com/maruel/panicparse/stack.func·002"}},
+					},
+				},
+			},
+			ID:    1,
+			First: true,
+		},
+	}
+	compareGoroutines(t, expected, c.Goroutines)
+	compareString(t, "panic: reflect.Set: value of type\n\n", extra.String())
+}
+
+func TestParseDumpCreated(t *testing.T) {
+	// For coverage of scanLines.
+	data := []string{
+		"panic: reflect.Set: value of type",
+		"",
+		"goroutine 1 [running]:",
+		"github.com/maruel/panicparse/stack.func·002()",
+		"	/gopath/src/github.com/maruel/panicparse/stack/stack.go:110",
+		"created by github.com/maruel/panicparse/stack.New",
+		"\t/gopath/src/github.com/maruel/panicparse/stack/stack.go:131 +0x381",
+		"exit status 2",
+	}
+	extra := &bytes.Buffer{}
+	c, err := ParseDump(bytes.NewBufferString(strings.Join(data, "\n")), extra, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := []*Goroutine{
+		{
+			Signature: Signature{
+				State: "running",
+				Stack: Stack{
+					Calls: []Call{
+						{
+							SrcPath: "/gopath/src/github.com/maruel/panicparse/stack/stack.go",
+							Line:    110,
+							Func:    Func{Raw: "github.com/maruel/panicparse/stack.func·002"},
+						},
+					},
+				},
+				CreatedBy: Call{
+					SrcPath: "/gopath/src/github.com/maruel/panicparse/stack/stack.go",
+					Line:    131,
+					Func:    Func{Raw: "github.com/maruel/panicparse/stack.New"},
+				},
+			},
+			ID:    1,
+			First: true,
+		},
+	}
+	compareGoroutines(t, expected, c.Goroutines)
+	compareString(t, "panic: reflect.Set: value of type\n\nexit status 2", extra.String())
+}
+
+func TestParseDumpCreatedError(t *testing.T) {
+	// For coverage of scanLines.
+	data := []string{
+		"panic: reflect.Set: value of type",
+		"",
+		"goroutine 1 [running]:",
+		"github.com/maruel/panicparse/stack.func·002()",
+		"	/gopath/src/github.com/maruel/panicparse/stack/stack.go:110",
+		"created by github.com/maruel/panicparse/stack.New",
+		"junk",
+	}
+	extra := &bytes.Buffer{}
+	c, err := ParseDump(bytes.NewBufferString(strings.Join(data, "\n")), extra, false)
+	compareErr(t, errors.New("expected a file after a created line, got: \"junk\""), err)
+	expected := []*Goroutine{
+		{
+			Signature: Signature{
+				State: "running",
+				Stack: Stack{
+					Calls: []Call{
+						{
+							SrcPath: "/gopath/src/github.com/maruel/panicparse/stack/stack.go",
+							Line:    110,
+							Func:    Func{Raw: "github.com/maruel/panicparse/stack.func·002"},
+						},
+					},
+				},
+				CreatedBy: Call{
+					Func: Func{Raw: "github.com/maruel/panicparse/stack.New"},
+				},
+			},
+			ID:    1,
+			First: true,
+		},
+	}
+	compareGoroutines(t, expected, c.Goroutines)
+	compareString(t, "panic: reflect.Set: value of type\n\n", extra.String())
 }
 
 func TestParseDumpCCode(t *testing.T) {
@@ -651,10 +941,214 @@ func TestParseDumpWithCarriageReturn(t *testing.T) {
 	compareGoroutines(t, expected, c.Goroutines)
 }
 
+func TestParseDumpIndented(t *testing.T) {
+	// goconvey is culprit of this.
+	data := []string{
+		"Failures:",
+		"",
+		"  * /home/maruel/go/src/foo/bar_test.go",
+		"  Line 209:",
+		"  Expected: '(*errors.errorString){s:\"context canceled\"}'",
+		"  Actual:   'nil'",
+		"  (Should resemble)!",
+		"  goroutine 8 [running]:",
+		"  foo/bar.TestArchiveFail.func1.2()",
+		"        /home/maruel/go/foo/bar_test.go:209 +0x469",
+		"  foo/bar.TestArchiveFail(0xc000338200)",
+		"        /home/maruel/go/src/foo/bar_test.go:155 +0xf1",
+		"  testing.tRunner(0xc000338200, 0x1615bf8)",
+		"        /home/maruel/golang/go/src/testing/testing.go:865 +0xc0",
+		"  created by testing.(*T).Run",
+		"        /home/maruel/golang/go/src/testing/testing.go:916 +0x35a",
+		"",
+		"",
+	}
+	extra := bytes.Buffer{}
+	c, err := ParseDump(bytes.NewBufferString(strings.Join(data, "\n")), &extra, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	compareString(t, strings.Join(data[:7], "\n")+"\n", extra.String())
+	expected := []*Goroutine{
+		{
+			Signature: Signature{
+				State: "running",
+				Stack: Stack{
+					Calls: []Call{
+						{
+							SrcPath: "/home/maruel/go/foo/bar_test.go",
+							Line:    209,
+							Func:    Func{Raw: "foo/bar.TestArchiveFail.func1.2"},
+						},
+						{
+							SrcPath: "/home/maruel/go/src/foo/bar_test.go",
+							Line:    155,
+							Func:    Func{Raw: "foo/bar.TestArchiveFail"},
+							Args:    Args{Values: []Arg{{Value: 0xc000338200, Name: "#1"}}},
+						},
+						{
+							SrcPath: "/home/maruel/golang/go/src/testing/testing.go",
+							Line:    865,
+							Func:    Func{Raw: "testing.tRunner"},
+							Args:    Args{Values: []Arg{{Value: 0xc000338200, Name: "#1"}, {Value: 0x1615bf8}}},
+						},
+					},
+				},
+				CreatedBy: Call{
+					SrcPath: "/home/maruel/golang/go/src/testing/testing.go",
+					Line:    916,
+					Func:    Func{Raw: "testing.(*T).Run"},
+				},
+			},
+			ID:    8,
+			First: true,
+		},
+	}
+	compareGoroutines(t, expected, c.Goroutines)
+}
+
+func TestParseDumpRace(t *testing.T) {
+	// Generated with "panic race":
+	data := []string{
+		"==================",
+		"WARNING: DATA RACE",
+		"Read at 0x00c0000e4030 by goroutine 7:",
+		"  main.panicRace.func1()",
+		"      /go/src/github.com/maruel/panicparse/cmd/panic/main_race.go:37 +0x38",
+		"",
+		"Previous write at 0x00c0000e4030 by goroutine 6:",
+		"  main.panicRace.func1()",
+		"      /go/src/github.com/maruel/panicparse/cmd/panic/main_race.go:37 +0x4e",
+		"",
+		"Goroutine 7 (running) created at:",
+		"  main.panicRace()",
+		"      /go/src/github.com/maruel/panicparse/cmd/panic/main_race.go:35 +0x88",
+		"  main.main()",
+		"      /go/src/github.com/maruel/panicparse/cmd/panic/main.go:252 +0x2d9",
+		"",
+		"Goroutine 6 (running) created at:",
+		"  main.panicRace()",
+		"      /go/src/github.com/maruel/panicparse/cmd/panic/main_race.go:35 +0x88",
+		"  main.main()",
+		"      /go/src/github.com/maruel/panicparse/cmd/panic/main.go:252 +0x2d9",
+		"==================",
+		"",
+	}
+	extra := &bytes.Buffer{}
+	c, err := ParseDump(bytes.NewBufferString(strings.Join(data, "\n")), extra, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Confirm that it doesn't work yet.
+	if c != nil {
+		t.Fatal("expected c to be nil")
+	}
+	compareString(t, strings.Join(data, "\n"), extra.String())
+}
+
+// This test should be deleted once Context state.raceDetectionEnabled is
+// removed and the race detector results is stored in Context.
+func TestRaceManual(t *testing.T) {
+	// Generated with "panic race":
+	data := []string{
+		"==================",
+		"WARNING: DATA RACE",
+		"Read at 0x00c0000e4030 by goroutine 7:",
+		"  main.panicRace.func1()",
+		"      /go/src/github.com/maruel/panicparse/cmd/panic/main_race.go:37 +0x38",
+		"",
+		"Previous write at 0x00c0000e4030 by goroutine 6:",
+		"  main.panicRace.func1()",
+		"      /go/src/github.com/maruel/panicparse/cmd/panic/main_race.go:37 +0x4e",
+		"",
+		"Goroutine 7 (running) created at:",
+		"  main.panicRace()",
+		"      /go/src/github.com/maruel/panicparse/cmd/panic/main_race.go:35 +0x88",
+		"  main.main()",
+		"      /go/src/github.com/maruel/panicparse/cmd/panic/main.go:252 +0x2d9",
+		"",
+		"Goroutine 6 (running) created at:",
+		"  main.panicRace()",
+		"      /go/src/github.com/maruel/panicparse/cmd/panic/main_race.go:35 +0x88",
+		"  main.main()",
+		"      /go/src/github.com/maruel/panicparse/cmd/panic/main.go:252 +0x2d9",
+		"==================",
+		"",
+	}
+	extra := &bytes.Buffer{}
+	expected := []*Goroutine{
+		{
+			Signature: Signature{
+				State: "running",
+				Stack: Stack{
+					Calls: []Call{
+						{
+							SrcPath: "/go/src/github.com/maruel/panicparse/cmd/panic/main.go",
+							Line:    252,
+							Func:    Func{Raw: "main.panicRace"},
+						},
+					},
+				},
+			},
+			ID:    7,
+			First: true,
+		},
+		{
+			Signature: Signature{
+				State: "running",
+				Stack: Stack{
+					Calls: []Call{
+						{
+							SrcPath: "/go/src/github.com/maruel/panicparse/cmd/panic/main.go",
+							Line:    252,
+							Func:    Func{Raw: "main.panicRace"},
+						},
+					},
+				},
+			},
+			ID: 6,
+		},
+	}
+	scanner := bufio.NewScanner(bytes.NewBufferString(strings.Join(data, "\n")))
+	scanner.Split(scanLines)
+	s := scanningState{raceDetectionEnabled: true}
+	for scanner.Scan() {
+		line, err := s.scan(scanner.Text())
+		if line != "" {
+			_, _ = io.WriteString(extra, line)
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	compareGoroutines(t, expected, s.goroutines)
+	expectedOps := []raceOp{{false, 0xc0000e4030, 7}, {true, 0xc0000e4030, 6}}
+	if !reflect.DeepEqual(expectedOps, s.races) {
+		t.Fatalf("%v", s.races)
+	}
+}
+
+func TestSplitPath(t *testing.T) {
+	if p := splitPath(""); p != nil {
+		t.Fatalf("expected nil, got: %v", p)
+	}
+}
+
+func TestGetGOPATHS(t *testing.T) {
+	old := os.Getenv("GOPATH")
+	defer func() {
+		os.Setenv("GOPATH", old)
+	}()
+	os.Setenv("GOPATH", "")
+	if p := getGOPATHs(); len(p) != 1 {
+		t.Fatalf("expected only one path: %v", p)
+	}
+}
+
 //
 
 func compareErr(t *testing.T, expected, actual error) {
-	if expected.Error() != actual.Error() {
+	if actual == nil || expected.Error() != actual.Error() {
 		t.Fatalf("%v != %v", expected, actual)
 	}
 }
@@ -665,7 +1159,7 @@ func compareGoroutines(t *testing.T, expected, actual []*Goroutine) {
 	}
 	for i := range expected {
 		if !reflect.DeepEqual(expected[i], actual[i]) {
-			t.Fatalf("Different Goroutine:\n- %v\n- %v", expected[i], actual[i])
+			t.Fatalf("Different Goroutine:\n- %#v\n- %#v", expected[i], actual[i])
 		}
 	}
 }

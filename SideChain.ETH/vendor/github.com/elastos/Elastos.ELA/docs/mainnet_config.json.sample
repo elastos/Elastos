@@ -1,0 +1,17 @@
+{
+  "Configuration": {
+    "PowConfiguration": {
+      "PayToAddr": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
+      "MinerInfo": "ELA",
+      "MinTxFee": 100
+    },
+    "EnableRPC": true,
+    "RpcConfiguration": {
+      "User": "User",
+      "Pass": "Password",
+      "WhiteIPList": [
+        "127.0.0.1"
+      ]
+    }
+  }
+}

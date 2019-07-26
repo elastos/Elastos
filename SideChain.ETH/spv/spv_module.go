@@ -397,7 +397,7 @@ func IteratorUnTransaction(from ethCommon.Address) {
 			}
 			SendTransaction(from, string(txHash), fee)
 			err = spvTransactiondb.Put([]byte(UnTransactionSeek), encodeUnTransactionNumber(seek+1))
-			log.Info(UnTransactionSeek+"put", seek+1)
+			log.Info(UnTransactionSeek+"put", "seek", seek+1)
 			if err != nil {
 				log.Error("UnTransactionIndexPutSeek ", err, seek+1)
 				break
@@ -433,7 +433,7 @@ func SendTransaction(from ethCommon.Address, elaTx string, fee *big.Int) {
 	msg := ethereum.CallMsg{From: from, To: &ethCommon.Address{}, Data: data}
 	gasLimit, err := ipcClient.EstimateGas(context.Background(), msg)
 	if err != nil {
-		log.Error(fmt.Sprintf("IpcClient EstimateGas: %v", err))
+		log.Error(fmt.Sprintf("IpcClient EstimateGas: %v", err, "main txhash", elaTx))
 		return
 	}
 	if gasLimit == 0 {
