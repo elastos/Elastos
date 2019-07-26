@@ -187,6 +187,30 @@ class C extends BaseComponent {
 
   saveDraft = async (isShowMsg = false, isShowErr = false) => {
     const { edit, form, updateDraft, suggestionId } = this.props
+    // Don't check field value when automatically save draft
+    if (!isShowErr) {
+      const values = {}
+      values._id = edit
+      values.title = form.getFieldValue('title')
+      values.type = form.getFieldValue('type')
+      const keys = [
+        'abstract',
+        'goal',
+        'motivation',
+        'plan',
+        'relevance',
+        'budget'
+      ]
+      keys.forEach(key => {
+        values[key] = formatValue(form.getFieldValue(key))
+      })
+      try {
+        return await updateDraft(values)
+      } catch (error) {
+        message.error(error.message)
+      }
+    }
+
     form.validateFields(async (err, values) => {
       if (err) {
         // mark error keys
