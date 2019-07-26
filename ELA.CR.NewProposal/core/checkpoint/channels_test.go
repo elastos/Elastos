@@ -52,6 +52,11 @@ func TestFileChannels_LifeCycle(t *testing.T) {
 	assert.False(t, utils.FileExisted(getFilePath("", pt)))
 	assert.FileExists(t, getDefaultPath("", pt))
 
+	// reset should clean all reserved files
+	channels.Reset(pt, reply)
+	<-reply
+	assert.False(t, utils.FileExisted(getDefaultPath("", pt)))
+
 	// exit
 	channels.Exit()
 

@@ -32,6 +32,7 @@ type fileChannels struct {
 
 	save    chan fileMsg
 	clean   chan fileMsg
+	reset   chan fileMsg
 	replace chan heightFileMsg
 	exit    chan struct{}
 }
@@ -50,6 +51,10 @@ func (c *fileChannels) Replace(checkpoint ICheckPoint, reply chan bool,
 		height}
 }
 
+func (c *fileChannels) Reset(checkpoint ICheckPoint, reply chan bool) {
+	c.reset <- fileMsg{checkpoint, reply}
+}
+
 func (c *fileChannels) Exit() {
 	c.exit <- struct{}{}
 }
@@ -64,7 +69,11 @@ func (c *fileChannels) messageLoop() {
 				msg.checkpoint.LogError(err)
 			}
 		case msg = <-c.clean:
-			if err := c.cleanCheckpoints(&msg, true); err != nil {
+			if err := c.cleanCheckpoints(&msg, true, false); err != nil {
+				msg.checkpoint.LogError(err)
+			}
+		case msg = <-c.reset:
+			if err := c.cleanCheckpoints(&msg, true, true); err != nil {
 				msg.checkpoint.LogError(err)
 			}
 		case heightMsg = <-c.replace:
@@ -106,13 +115,13 @@ func (c *fileChannels) saveCheckpoint(msg *fileMsg) (err error) {
 	}
 
 	if !c.cfg.EnableHistory {
-		return c.cleanCheckpoints(msg, false)
+		return c.cleanCheckpoints(msg, false, false)
 	}
 	return nil
 }
 
 func (c *fileChannels) cleanCheckpoints(msg *fileMsg,
-	needReplay bool) (err error) {
+	needReplay, cleanAll bool) (err error) {
 	if needReplay {
 		defer c.replyMsg(msg)
 	}
@@ -129,9 +138,11 @@ func (c *fileChannels) cleanCheckpoints(msg *fileMsg,
 	}
 
 	for _, f := range files {
-		if f.Name() == reserveCurrentName || f.Name() == reservePrevName ||
-			f.Name() == defaultName {
-			continue
+		if !cleanAll {
+			if f.Name() == reserveCurrentName || f.Name() == reservePrevName ||
+				f.Name() == defaultName {
+				continue
+			}
 		}
 		if e := os.Remove(filepath.Join(dir, f.Name())); e != nil {
 			msg.checkpoint.LogError(e)
@@ -190,6 +201,7 @@ func NewFileChannels(cfg *Config) *fileChannels {
 		cfg:     cfg,
 		save:    make(chan fileMsg),
 		clean:   make(chan fileMsg),
+		reset:   make(chan fileMsg),
 		replace: make(chan heightFileMsg),
 		exit:    make(chan struct{}),
 	}
