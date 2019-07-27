@@ -14,15 +14,13 @@ log = logging.getLogger(__name__)
 ns = api.namespace('mainchain', description='Has mainchain node services')
 
 @ns.route('/getblockhash', methods = ['POST'])
-class Wallet(Resource):
+class GetBlockHash(Resource):
 
     def post(self):
         """
         Returns the getblockhash
         """
-        #parameters = {}
         req_data = request.get_json()
-        print("---> ",req_data)
         headers = {
            'Accepts': 'application/json',
            'Content-Type': 'application/json'
@@ -36,13 +34,12 @@ class Wallet(Resource):
         return data
 
 @ns.route('/getbestblockhash')
-class Wallet(Resource):
+class GetBestBlockHash(Resource):
 
     def get(self):
         """
         Returns the getbestblockhash
         """
-        #parameters = {}
         headers = {
            'Accepts': 'application/json',
            'Content-Type': 'application/json'
