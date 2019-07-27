@@ -3,6 +3,7 @@ import requests
 import json
 from flask import jsonify
 from flask import request
+from flask_api import FlaskAPI, status, exceptions
 from flask_restplus import Resource
 from master_api_service import settings
 from master_api_service.api.restplus import api
@@ -20,6 +21,7 @@ class Wallet(Resource):
         """
         api_url_base = settings.WALLET_SERVICE_URL + settings.WALLET_API_CREATE
         json_data = requests.get(api_url_base).json()
+        print("--->status "+json_data.status_code)
         return json_data
 
 @ns.route('/getBalance')
@@ -30,7 +32,6 @@ class Wallet(Resource):
         Returns the balance of the provided public address
         """
         api_url_base = settings.WALLET_SERVICE_URL + settings.WALLET_API_BALANCE
-        #api_url_base = "http://localhost:10012/api/1/balance/EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U"
         json_data = requests.get(api_url_base).json()
         return json_data
 
