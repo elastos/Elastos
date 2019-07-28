@@ -1,10 +1,7 @@
 import React from 'react'
 import './style.scss'
-import { Col, Row, Icon, Button, Divider, Avatar, Card, Spin } from 'antd'
+import { Col, Row, Icon, Button, Divider, Avatar, Spin } from 'antd'
 import {
-  TwitterShareCount,
-  TelegramShareCount,
-  EmailShareCount,
   FacebookShareButton,
   LinkedinShareButton,
   TwitterShareButton,
@@ -32,8 +29,6 @@ import { getSafeUrl } from '@/util/url'
 
 process.env.NODE_ENV === 'production' &&
   Geocode.setApiKey(process.env.GOOGLE_MAPS_API_KEY)
-
-const { Meta } = Card
 
 export default class extends EmptyPage {
   state = {
