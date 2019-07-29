@@ -20,7 +20,6 @@
     "@types/http-status": "0.2.30",
     "@types/optimist": "0.0.29",
     "aws-sdk": "^2.245.1",
-    "bcrypt": "^2.0",
     "body-parser": "1.18.2",
     "compression": "^1.7.3",
     "connect-mongo": "^2.0.1",
