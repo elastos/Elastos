@@ -1214,7 +1214,7 @@ func SignRawTransactionWithKey(param Params) map[string]interface{} {
 		return ResponsePack(InvalidTransaction, err.Error())
 	}
 
-	references, err := Store.GetTxReference(&txn)
+	references, err := Store.GetTxReferenceInfo(&txn)
 	if err != nil {
 		return ResponsePack(InvalidTransaction, err.Error())
 	}

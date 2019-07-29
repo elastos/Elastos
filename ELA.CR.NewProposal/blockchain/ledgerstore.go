@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -26,6 +26,7 @@ type IChainStore interface {
 
 	GetTransaction(txID Uint256) (*Transaction, uint32, error)
 	GetTxReference(tx *Transaction) (map[*Input]*Output, error)
+	GetTxReferenceInfo(tx *Transaction) (map[*Input]*TxReference, error)
 
 	PersistAsset(assetid Uint256, asset payload.Asset) error
 	GetAsset(hash Uint256) (*payload.Asset, error)
