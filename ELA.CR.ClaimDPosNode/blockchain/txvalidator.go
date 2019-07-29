@@ -86,7 +86,8 @@ func (b *BlockChain) CheckTransactionSanity(blockHeight uint32, txn *Transaction
 }
 
 // CheckTransactionContext verifies a transaction with history transaction in ledger
-func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transaction) ErrCode {
+func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
+	txn *Transaction, references map[*Input]*TxReference) ErrCode {
 	// check if duplicated with transaction in ledger
 	if exist := b.db.IsTxHashDuplicate(txn.Hash()); exist {
 		log.Warn("[CheckTransactionContext] duplicate transaction check failed.")
@@ -200,12 +201,6 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 		return ErrDoubleSpend
 	}
 
-	references, err := DefaultLedger.Store.GetTxReference(txn)
-	if err != nil {
-		log.Warn("[CheckTransactionContext] get transaction reference failed")
-		return ErrUnknownReferredTx
-	}
-
 	if txn.IsWithdrawFromSideChainTx() {
 		if err := b.checkWithdrawFromSideChainTransaction(txn, references); err != nil {
 			log.Warn("[CheckWithdrawFromSideChainTransaction],", err)
@@ -261,7 +256,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 		return ErrTransactionSignature
 	}
 
-	if err := b.checkInvalidUTXO(txn); err != nil {
+	if err := b.checkInvalidUTXO(references); err != nil {
 		log.Warn("[CheckTransactionCoinbaseLock]", err)
 		return ErrIneffectiveCoinbase
 	}
@@ -283,11 +278,11 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 	return Success
 }
 
-func checkVoteOutputs(outputs []*Output, references map[*Input]*Output,
+func checkVoteOutputs(outputs []*Output, references map[*Input]*TxReference,
 	pds map[string]struct{}, crs map[string]struct{}) error {
 	programHashes := make(map[common.Uint168]struct{})
 	for _, v := range references {
-		programHashes[v.ProgramHash] = struct{}{}
+		programHashes[v.output.ProgramHash] = struct{}{}
 	}
 	for _, o := range outputs {
 		if o.Type != OTVote {
@@ -379,54 +374,28 @@ func getCRCodesMap(crs []*crstate.Candidate) map[string]struct{} {
 	return codes
 }
 
-func checkDestructionAddress(references map[*Input]*Output) error {
-	for _, output := range references {
-		if output.ProgramHash == config.DestructionAddress {
+func checkDestructionAddress(references map[*Input]*TxReference) error {
+	for _, refer := range references {
+		if refer.output.ProgramHash == config.DestructionAddress {
 			return errors.New("cannot use utxo from the destruction address")
 		}
 	}
 	return nil
 }
 
-func (b *BlockChain) checkInvalidUTXO(txn *Transaction) error {
-	type lockTxInfo struct {
-		isCoinbaseTx bool
-		locktime     uint32
-	}
-	transactionCache := make(map[common.Uint256]lockTxInfo)
+func (b *BlockChain) checkInvalidUTXO(references map[*Input]*TxReference) error {
 	currentHeight := DefaultLedger.Blockchain.GetHeight()
-	var referTxn *Transaction
-	for _, input := range txn.Inputs {
-		var lockHeight uint32
-		var isCoinbase bool
-		referHash := input.Previous.TxID
-		if _, ok := transactionCache[referHash]; ok {
-			lockHeight = transactionCache[referHash].locktime
-			isCoinbase = transactionCache[referHash].isCoinbaseTx
-		} else {
-			var err error
-			referTxn, _, err = DefaultLedger.Store.GetTransaction(referHash)
-			// TODO
-			// we have executed DefaultLedger.Store.GetTxReference(txn) before.
-			// So if we can't find referTxn here, there must be a data inconsistent problem,
-			// because we do not add lock correctly. This problem will be fixed later on.
-			if err != nil {
-				return errors.New("[checkInvalidUTXO] get tx reference failed:" + err.Error())
-			}
-			lockHeight = referTxn.LockTime
-			isCoinbase = referTxn.IsCoinBaseTx()
-			transactionCache[referHash] = lockTxInfo{isCoinbase, lockHeight}
-
-			// check new sideChainPow
-			if referTxn.IsNewSideChainPowTx() {
-				return errors.New("cannot spend the utxo from a new sideChainPow tx")
-			}
+	for _, refer := range references {
+		// check new sideChainPow
+		if refer.txtype == SideChainPow && refer.inputsCount == 0 {
+			return errors.New("cannot spend the utxo from a new sideChainPow tx")
 		}
 
-		if isCoinbase && currentHeight-lockHeight < b.chainParams.CoinbaseMaturity {
+		if refer.txtype == CoinBase && currentHeight-refer.locktime < b.chainParams.CoinbaseMaturity {
 			return errors.New("the utxo of coinbase is locking")
 		}
 	}
+
 	return nil
 }
 
@@ -630,29 +599,29 @@ func checkOutputPayload(txType TxType, output *Output) error {
 	return output.Payload.Validate()
 }
 
-func checkTransactionUTXOLock(txn *Transaction, references map[*Input]*Output) error {
+func checkTransactionUTXOLock(txn *Transaction, references map[*Input]*TxReference) error {
 	if txn.IsCoinBaseTx() {
 		return nil
 	}
-	for input, output := range references {
+	for input, refer := range references {
 
-		if output.OutputLock == 0 {
+		if refer.output.OutputLock == 0 {
 			//check next utxo
 			continue
 		}
 		if input.Sequence != math.MaxUint32-1 {
 			return errors.New("Invalid input sequence")
 		}
-		if txn.LockTime < output.OutputLock {
+		if txn.LockTime < refer.output.OutputLock {
 			return errors.New("UTXO output locked")
 		}
 	}
 	return nil
 }
 
-func checkTransactionDepositUTXO(txn *Transaction, references map[*Input]*Output) error {
-	for _, output := range references {
-		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixDeposit {
+func checkTransactionDepositUTXO(txn *Transaction, references map[*Input]*TxReference) error {
+	for _, refer := range references {
+		if contract.GetPrefixType(refer.output.ProgramHash) == contract.PrefixDeposit {
 			if !txn.IsReturnDepositCoin() && !txn.IsReturnCRDepositCoinTx() {
 				return errors.New("only the ReturnDepositCoin and " +
 					"ReturnCRDepositCoin transaction can use the deposit UTXO")
@@ -701,14 +670,14 @@ func checkAssetPrecision(txn *Transaction) error {
 	return nil
 }
 
-func (b *BlockChain) checkTransactionFee(tx *Transaction, references map[*Input]*Output) error {
+func (b *BlockChain) checkTransactionFee(tx *Transaction, references map[*Input]*TxReference) error {
 	var outputValue common.Fixed64
 	var inputValue common.Fixed64
 	for _, output := range tx.Outputs {
 		outputValue += output.Value
 	}
 	for _, reference := range references {
-		inputValue += reference.Value
+		inputValue += reference.output.Value
 	}
 	if inputValue < b.chainParams.MinTransactionFee+outputValue {
 		return fmt.Errorf("transaction fee not enough")
@@ -791,7 +760,7 @@ func (b *BlockChain) checkAttributeProgram(tx *Transaction,
 	return nil
 }
 
-func checkTransactionSignature(tx *Transaction, references map[*Input]*Output) error {
+func checkTransactionSignature(tx *Transaction, references map[*Input]*TxReference) error {
 	programHashes, err := GetTxProgramHashes(tx, references)
 	if err != nil {
 		return err
@@ -912,7 +881,7 @@ func CheckSideChainPowConsensus(txn *Transaction, arbitrator []byte) error {
 	return nil
 }
 
-func (b *BlockChain) checkWithdrawFromSideChainTransaction(txn *Transaction, references map[*Input]*Output) error {
+func (b *BlockChain) checkWithdrawFromSideChainTransaction(txn *Transaction, references map[*Input]*TxReference) error {
 	witPayload, ok := txn.Payload.(*payload.WithdrawFromSideChain)
 	if !ok {
 		return errors.New("Invalid withdraw from side chain payload type")
@@ -924,7 +893,7 @@ func (b *BlockChain) checkWithdrawFromSideChainTransaction(txn *Transaction, ref
 	}
 
 	for _, v := range references {
-		if bytes.Compare(v.ProgramHash[0:1], []byte{byte(contract.PrefixCrossChain)}) != 0 {
+		if bytes.Compare(v.output.ProgramHash[0:1], []byte{byte(contract.PrefixCrossChain)}) != 0 {
 			return errors.New("Invalid transaction inputs address, without \"X\" at beginning")
 		}
 	}
@@ -979,7 +948,7 @@ func (b *BlockChain) checkCrossChainArbitrators(publicKeys [][]byte) error {
 	return nil
 }
 
-func (b *BlockChain) checkTransferCrossChainAssetTransaction(txn *Transaction, references map[*Input]*Output) error {
+func (b *BlockChain) checkTransferCrossChainAssetTransaction(txn *Transaction, references map[*Input]*TxReference) error {
 	payloadObj, ok := txn.Payload.(*payload.TransferCrossChainAsset)
 	if !ok {
 		return errors.New("Invalid transfer cross chain asset payload type")
@@ -1026,7 +995,7 @@ func (b *BlockChain) checkTransferCrossChainAssetTransaction(txn *Transaction, r
 	//check transaction fee
 	var totalInput common.Fixed64
 	for _, v := range references {
-		totalInput += v.Value
+		totalInput += v.output.Value
 	}
 
 	var totalOutput common.Fixed64
@@ -1568,7 +1537,7 @@ func (b *BlockChain) additionalProducerInfoCheck(
 }
 
 func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction,
-	references map[*Input]*Output, currentHeight uint32) error {
+	references map[*Input]*TxReference, currentHeight uint32) error {
 
 	var outputValue common.Fixed64
 	var inputValue common.Fixed64
@@ -1576,7 +1545,7 @@ func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction,
 		outputValue += output.Value
 	}
 	for _, reference := range references {
-		inputValue += reference.Value
+		inputValue += reference.output.Value
 	}
 
 	var penalty common.Fixed64
@@ -1602,7 +1571,7 @@ func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction,
 }
 
 func (b *BlockChain) checkReturnCRDepositCoinTransaction(txn *Transaction,
-	references map[*Input]*Output, currentHeight uint32,
+	references map[*Input]*TxReference, currentHeight uint32,
 	isInVotingPeriod func(height uint32) bool) error {
 
 	var outputValue common.Fixed64
@@ -1611,7 +1580,7 @@ func (b *BlockChain) checkReturnCRDepositCoinTransaction(txn *Transaction,
 		outputValue += output.Value
 	}
 	for _, reference := range references {
-		inputValue += reference.Value
+		inputValue += reference.output.Value
 	}
 
 	var penalty common.Fixed64
@@ -1806,8 +1775,8 @@ func checkCRCArbitratorsSignatures(program *program.Program) error {
 
 	crcArbitrators := DefaultLedger.Arbitrators.GetCRCArbitrators()
 	crcArbitratorsCount := len(crcArbitrators)
-	minSignCount := int(float64(crcArbitratorsCount) *
-		state.MajoritySignRatioNumerator / state.MajoritySignRatioDenominator) + 1
+	minSignCount := int(float64(crcArbitratorsCount)*
+		state.MajoritySignRatioNumerator/state.MajoritySignRatioDenominator) + 1
 	if m < 1 || m > n || n != crcArbitratorsCount || m < minSignCount {
 		fmt.Printf("m:%d n:%d minSignCount:%d crc:  %d", m, n, minSignCount, crcArbitratorsCount)
 		return errors.New("invalid multi sign script code")

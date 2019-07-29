@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -350,6 +350,59 @@ func (c *ChainStore) GetTransaction(txID Uint256) (*Transaction, uint32, error) 
 	}
 
 	return &txn, height, nil
+}
+
+type TxReference struct {
+	output      *Output
+	txtype      TxType
+	locktime    uint32
+	inputsCount int
+}
+
+func (c *ChainStore) GetTxReferenceInfo(tx *Transaction) (map[*Input]*TxReference, error) {
+	if tx.TxType == RegisterAsset {
+		return nil, nil
+	}
+	txOutputsCache := make(map[Uint256][]*TxReference)
+	//UTXO input /  Outputs
+	reference := make(map[*Input]*TxReference)
+	// Key index，v UTXOInput
+	for _, input := range tx.Inputs {
+		txID := input.Previous.TxID
+		index := input.Previous.Index
+		if outputs, ok := txOutputsCache[txID]; ok {
+			reference[input] = outputs[index]
+		} else {
+			transaction, _, err := c.GetTransaction(txID)
+
+			if err != nil {
+				return nil, errors.New("GetTxReferenceInfo failed, " +
+					"previous transaction not found")
+			}
+			if int(index) >= len(transaction.Outputs) {
+				return nil, errors.New("GetTxReferenceInfo failed, " +
+					"refIdx out of range.")
+			}
+			refer := &TxReference{
+				output:      transaction.Outputs[index],
+				txtype:      transaction.TxType,
+				locktime:    transaction.LockTime,
+				inputsCount: len(transaction.Inputs),
+			}
+
+			reference[input] = refer
+			for _, o := range transaction.Outputs {
+				reference := &TxReference{
+					output:      o,
+					txtype:      transaction.TxType,
+					locktime:    transaction.LockTime,
+					inputsCount: len(transaction.Inputs),
+				}
+				txOutputsCache[txID] = append(txOutputsCache[txID], reference)
+			}
+		}
+	}
+	return reference, nil
 }
 
 func (c *ChainStore) GetTxReference(tx *Transaction) (map[*Input]*Output, error) {

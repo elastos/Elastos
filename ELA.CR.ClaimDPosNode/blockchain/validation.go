@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -58,15 +58,15 @@ func RunPrograms(data []byte, programHashes []common.Uint168, programs []*Progra
 	return nil
 }
 
-func GetTxProgramHashes(tx *Transaction, references map[*Input]*Output) ([]common.Uint168, error) {
+func GetTxProgramHashes(tx *Transaction, references map[*Input]*TxReference) ([]common.Uint168, error) {
 	if tx == nil {
 		return nil, errors.New("[Transaction],GetProgramHashes transaction is nil")
 	}
 	hashes := make([]common.Uint168, 0)
 	uniqueHashes := make([]common.Uint168, 0)
 	// add inputUTXO's transaction
-	for _, output := range references {
-		programHash := output.ProgramHash
+	for _, refer := range references {
+		programHash := refer.output.ProgramHash
 		hashes = append(hashes, programHash)
 	}
 	for _, attribute := range tx.Attributes {

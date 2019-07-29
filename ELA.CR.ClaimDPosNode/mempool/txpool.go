@@ -73,7 +73,12 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) ErrCode {
 		log.Warn("[TxPool CheckTransactionSanity] failed", tx.Hash())
 		return errCode
 	}
-	if errCode := chain.CheckTransactionContext(bestHeight+1, tx); errCode != Success {
+	references, err := blockchain.DefaultLedger.Store.GetTxReferenceInfo(tx)
+	if err != nil {
+		log.Warn("[CheckTransactionContext] get transaction reference failed")
+		return ErrUnknownReferredTx
+	}
+	if errCode := chain.CheckTransactionContext(bestHeight+1, tx, references); errCode != Success {
 		log.Warn("[TxPool CheckTransactionContext] failed", tx.Hash())
 		return errCode
 	}
