@@ -8,7 +8,6 @@ package blockchain
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"path/filepath"
 	"sync"
 	"sync/atomic"
@@ -59,7 +58,6 @@ type ChainStore struct {
 func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
 	db, err := NewLevelDB(filepath.Join(dataDir, "chain"))
 	if err != nil {
-		fmt.Println("dataDir:", dataDir)
 		return nil, err
 	}
 
