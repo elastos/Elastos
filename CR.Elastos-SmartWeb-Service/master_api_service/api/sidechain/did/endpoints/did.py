@@ -27,6 +27,19 @@ class CreateDid(Resource):
         else:
             return response.status_code
 
+@ns.route('/setDidInfo', methods = ['POST'])
+class SetDidInfo(Resource):
+
+    def post(self):
+        """
+        Set DID information
+        """
+        api_url_base = settings.DID_SERVICE_URL + settings.DID_SERVICE_SET_DID_INFO
+        headers = {'Content-type': 'application/json'}
+        req_data = request.get_json()
+        json_data = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
+        return json_data
+
 @ns.route('/sign', methods = ['POST'])
 class Sign(Resource):
 
@@ -35,6 +48,19 @@ class Sign(Resource):
         Sign any message using your private key
         """
         api_url_base = settings.DID_SERVICE_URL + settings.DID_SERVICE_SIGN
+        headers = {'Content-type': 'application/json'}
+        req_data = request.get_json()
+        json_data = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
+        return json_data
+
+@ns.route('/verify', methods = ['POST'])
+class Verify(Resource):
+
+    def post(self):
+        """
+        Verify the message that was signed using your private key
+        """
+        api_url_base = settings.DID_SERVICE_URL + settings.DID_SERVICE_VERIFY
         headers = {'Content-type': 'application/json'}
         req_data = request.get_json()
         json_data = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
