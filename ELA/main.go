@@ -76,10 +76,12 @@ func setupNode() *cli.App {
 		cmdcom.ConfigFileFlag,
 		cmdcom.DataDirFlag,
 		cmdcom.AccountPasswordFlag,
+		cmdcom.DnsFlag,
 	}
 	app.Action = func(c *cli.Context) {
 		setupConfig(c)
 		setupLog(c)
+		setupParams(c)
 		startNode(c)
 	}
 	app.Before = func(c *cli.Context) error {
@@ -115,6 +117,24 @@ func setupConfig(c *cli.Context) {
 		cmdcom.PrintErrorMsg(err.Error())
 		os.Exit(1)
 	}
+}
+
+func setupParams(c *cli.Context) {
+	dnsSeed := c.String("dns")
+	if dnsSeed != "" {
+		activeNetParams.DNSSeeds = []string{dnsSeed}
+	}
+
+	magicStr := c.String("magic")
+	if magicStr != "" {
+		magic, err := strconv.ParseUint(magicStr, 10, 32)
+		if err != nil {
+			cmdcom.PrintErrorMsg(err.Error())
+			os.Exit(1)
+		}
+		activeNetParams.Magic = uint32(magic)
+	}
+	log.Debug("parsed cmd values: dnsSeed-", dnsSeed, " , magic-", magicStr)
 }
 
 func startNode(c *cli.Context) {
