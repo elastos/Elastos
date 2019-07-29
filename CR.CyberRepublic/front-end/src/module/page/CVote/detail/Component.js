@@ -133,6 +133,7 @@ class C extends StandardPage {
         </div>
       )
     }
+
     const anchorNode = this.renderAnchor()
     const contentNode = this.renderContent()
     const translationBtn = this.renderTranslationBtn()
@@ -142,13 +143,26 @@ class C extends StandardPage {
     const trackingNode = this.renderTracking()
     const summaryNode = this.renderSummary()
 
+    // get the first line pure text of abstract
+    let abstract = ''
+    try {
+      if (data.abstract) {
+        const result = JSON.parse(data.abstract)
+        if (result && result.blocks && result.blocks.length) {
+          abstract = result.blocks[0].text
+        }
+      }
+    } catch (error) {
+      console.log('parse abstract err...', error)
+    }
+
     return (
       <div>
         <Helmet>
           <title>{`${data.title} - Proposal Detail - Cyber Republic`}</title>
-          <meta property="og:title" content="Proposal Detail" />
-          <meta property="og:description" content={data.title} />
-          <meta name="description" content={data.title} />
+          <meta property="og:title" content={data.title} />
+          <meta property="og:description" content={abstract} />
+          <meta name="description" content={abstract} />
         </Helmet>
         {anchorNode}
         <Container className="p_CVoteDetail">
