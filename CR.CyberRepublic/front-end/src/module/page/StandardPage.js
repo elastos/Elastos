@@ -78,7 +78,9 @@ export default class extends BasePage {
   }
 
   ord_renderMeta(f = true) {
-    return f
+    const { match } = this.props
+    const flag = match && match.path === '/suggestion/:id'
+    return flag ? false : f
   }
 
   ord_loading(f = false) {

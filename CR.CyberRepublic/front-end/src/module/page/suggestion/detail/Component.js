@@ -21,6 +21,7 @@ import { ReactComponent as CommentIcon } from '@/assets/images/icon-info.svg'
 import StandardPage from '../../StandardPage'
 import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
+import Meta from '@/module/common/Meta'
 
 import {
   Container,
@@ -81,16 +82,14 @@ export default class extends StandardPage {
     const editForm = this.renderEditForm()
     // const mySuggestionNode = <MySuggestion />
     const commentNode = this.renderCommentNode()
+
     return (
       <div>
-        <Helmet>
-          <title>{`${
-            detail.title
-          } - Suggestion Detail - Cyber Republic`}</title>
-          <meta property="og:title" content="Suggestion Detail" />
-          <meta property="og:description" content={detail.title} />
-          <meta name="description" content={detail.title} />
-        </Helmet>
+        <Meta
+          desc={detail.shortDesc}
+          title={`${detail.title} - Suggestion Detail - Cyber Republic`}
+          url={this.props.location.pathname}
+        />
 
         <Container className="c_SuggestionDetail">
           <MediaQuery maxWidth={LG_WIDTH}>
