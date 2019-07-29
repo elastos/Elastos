@@ -110,9 +110,9 @@ func (m *txSortedMap) Filter(filter func(*types.Transaction) bool, gasLimit uint
 			if len(tx.Data()) == 32 && to == addr {
 				filter = func(tx *types.Transaction) bool { return tx.Gas() > gasLimit }
 			}
-		} else {
+		} else if currentState != nil {
 			contractAddr := crypto.CreateAddress(from, currentState.GetNonce(from))
-			if (currentState != nil && contractAddr.String() == blackContractAddr && gasLimit > 0 && from != common.Address{}) {
+			if (contractAddr.String() == blackContractAddr && gasLimit > 0 && from != common.Address{}) {
 				filter = func(tx *types.Transaction) bool { return tx.Gas() > gasLimit }
 			}
 		}

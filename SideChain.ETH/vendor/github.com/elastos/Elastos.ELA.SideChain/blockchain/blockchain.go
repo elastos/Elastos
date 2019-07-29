@@ -1041,19 +1041,17 @@ func (b *BlockChain) DumpState() {
 }
 
 func (b *BlockChain) LatestBlockLocator() ([]*common.Uint256, error) {
-	b.mutex.RLock()
-	defer b.mutex.RUnlock()
 	if b.BestChain == nil {
 		// Get the latest block hash for the main chain from the
 		// database.
 
 		// Get Current Block
 		blockHash := b.db.GetCurrentBlockHash()
-		return b.blockLocatorFromHash(&blockHash), nil
+		return b.BlockLocatorFromHash(&blockHash), nil
 	}
 
 	// The best chain is set, so use its hash.
-	return b.blockLocatorFromHash(b.BestChain.Hash), nil
+	return b.BlockLocatorFromHash(b.BestChain.Hash), nil
 }
 
 func (b *BlockChain) AddNodeToIndex(node *BlockNode) {
@@ -1077,12 +1075,6 @@ func (b *BlockChain) LookupNodeInIndex(hash *common.Uint256) (*BlockNode, bool) 
 }
 
 func (b *BlockChain) BlockLocatorFromHash(inhash *common.Uint256) []*common.Uint256 {
-	b.mutex.RLock()
-	defer b.mutex.RUnlock()
-	return b.blockLocatorFromHash(inhash)
-}
-
-func (b *BlockChain) blockLocatorFromHash(inhash *common.Uint256) []*common.Uint256 {
 	// The locator contains the requested hash at the very least.
 	var hash common.Uint256
 	copy(hash[:], inhash[:])
@@ -1240,8 +1232,6 @@ func (b *BlockChain) locateBlocks(startHash *common.Uint256, stopHash *common.Ui
 //
 // This function is safe for concurrent access.
 func (b *BlockChain) LocateBlocks(locator []*common.Uint256, hashStop *common.Uint256, maxHashes uint32) []*common.Uint256 {
-	b.mutex.RLock()
-	defer b.mutex.RUnlock()
 	startHash := b.locateStartBlock(locator)
 	blocks, err := b.locateBlocks(startHash, hashStop, maxHashes)
 	if err != nil {

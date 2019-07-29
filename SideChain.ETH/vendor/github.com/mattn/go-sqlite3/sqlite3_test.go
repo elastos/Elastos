@@ -34,20 +34,32 @@ func TempFilename(t *testing.T) string {
 }
 
 func doTestOpen(t *testing.T, option string) (string, error) {
-	var url string
 	tempFilename := TempFilename(t)
-	defer os.Remove(tempFilename)
-	if option != "" {
-		url = tempFilename + option
-	} else {
-		url = tempFilename
-	}
+	url := tempFilename + option
+
+	defer func() {
+		err := os.Remove(tempFilename)
+		if err != nil {
+			t.Error("temp file remove error:", err)
+		}
+	}()
+
 	db, err := sql.Open("sqlite3", url)
 	if err != nil {
 		return "Failed to open database:", err
 	}
-	defer os.Remove(tempFilename)
-	defer db.Close()
+
+	defer func() {
+		err = db.Close()
+		if err != nil {
+			t.Error("db close error:", err)
+		}
+	}()
+
+	err = db.Ping()
+	if err != nil {
+		return "ping error:", err
+	}
 
 	_, err = db.Exec("drop table foo")
 	_, err = db.Exec("create table foo (id integer)")
@@ -1667,6 +1679,26 @@ func TestAuthorizer(t *testing.T) {
 		if err == nil {
 			t.Fatalf("Authorizer didn't worked - nil received, but error expected: [%v]", statement)
 		}
+	}
+}
+
+func TestNonColumnString(t *testing.T) {
+	db, err := sql.Open("sqlite3", ":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	var x interface{}
+	if err := db.QueryRow("SELECT 'hello'").Scan(&x); err != nil {
+		t.Fatal(err)
+	}
+	s, ok := x.(string)
+	if !ok {
+		t.Fatalf("non-column string must return string but got %T", x)
+	}
+	if s != "hello" {
+		t.Fatalf("non-column string must return %q but got %q", "hello", s)
 	}
 }
 

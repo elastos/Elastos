@@ -196,29 +196,30 @@ func (evm *EVM) Call(caller ContractRef, addr common.Address, input []byte, gas 
 		blackaddr common.Address
 		txhash    string
 	)
-	if caller.Address() == blackaddr && blackaddr == addr && len(input) == 32 {
-		completetxhash := evm.StateDB.GetState(blackaddr, common.HexToHash(txhash))
+	if blackaddr == addr && len(input) == 32 {
 		txhash = hexutil.Encode(input)
-		fee, addr, output := spv.FindOutputFeeAndaddressByTxHash(txhash)
-		if (completetxhash == common.Hash{}) && addr != blackaddr && output.Cmp(new(big.Int)) > 0 {
+		completetxhash := evm.StateDB.GetState(blackaddr, common.HexToHash(txhash))
+		fee, addrr, output := spv.FindOutputFeeAndaddressByTxHash(txhash)
+		addr = addrr
+		if (completetxhash == common.Hash{}) && addr != blackaddr && output.Cmp(fee) > 0 {
 			to = AccountRef(addr)
 			value = new(big.Int).Sub(output, fee)
-			topics := make([]common.Hash, 4)
+			topics := make([]common.Hash, 5)
 			topics[0] = common.HexToHash("0x09f15c376272c265d7fcb47bf57d8f84a928195e6ea156d12f5a3cd05b8fed5a")
-			topics[1] = common.HexToHash(txhash)
-			topics[2] = common.HexToHash(addr.String())
-			topics[3] = common.BigToHash(new(big.Int).Sub(output, fee))
+			topics[1] = common.HexToHash(caller.Address().String())
+			topics[2] = common.HexToHash(txhash)
+			topics[3] = common.HexToHash(addr.String())
+			topics[4] = common.BigToHash(value)
 			evm.StateDB.AddLog(&types.Log{
-				Address: caller.Address(),
+				Address: blackaddr,
 				Topics:  topics,
 				Data:    nil,
 				// This is a non-consensus field, but assigned here because
 				// core/state doesn't know the current block number.
 				BlockNumber: evm.BlockNumber.Uint64(),
 			})
+			evm.StateDB.AddBalance(caller.Address(), value)
 		}
-		evm.StateDB.AddBalance(blackaddr, value)
-		evm.StateDB.SetNonce(blackaddr, evm.StateDB.GetNonce(blackaddr)+1)
 
 	}
 	// Fail if we're trying to transfer more than the available balance

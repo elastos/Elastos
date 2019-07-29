@@ -227,8 +227,39 @@ func (p *TxPool) cleanTransactionList(txns []*types.Transaction) error {
 		if txn.TxType == types.CoinBase {
 			continue
 		}
-		if p.delFromTxList(txn.Hash()) {
-			cleaned++
+		inputUtxos, err := p.validator.db.GetTxReference(txn)
+		if err != nil {
+			log.Info(fmt.Sprintf("Transaction =%x not Exist in Pool when delete.", txn.Hash()), err)
+			continue
+		}
+		for input := range inputUtxos {
+			// we search transactions in transaction pool which have the same utxos with those transactions
+			// in block. That is, if a transaction in the new-coming block uses the same utxo which a transaction
+			// in transaction pool uses, then the latter one should be deleted, because one of its utxos has been used
+			// by a confirmed transaction packed in the new-coming block.
+			if tx := p.getInputUTXOList(input); tx != nil {
+				if tx.Hash() == txn.Hash() {
+					// it is evidently that two transactions with the same transaction id has exactly the same utxos with each
+					// other. This is a special case of what we've said above.
+					log.Debugf("duplicated transactions detected when adding a new block. "+
+						" Delete transaction in the transaction pool. Transaction id: %x", tx.Hash())
+				} else {
+					log.Debugf("double spent UTXO inputs detected in transaction pool when adding a new block. "+
+						"Delete transaction in the transaction pool. "+
+						"block transaction hash: %x, transaction hash: %x, the same input: %s, index: %d",
+						txn.Hash(), tx.Hash(), input.Previous.TxID, input.Previous.Index)
+				}
+
+				//1.remove from txnList
+				delete(p.txnList, tx.Hash())
+
+				//2.remove from UTXO list map
+				for _, input := range tx.Inputs {
+					p.delInputUTXOList(input)
+				}
+
+				cleaned++
+			}
 		}
 	}
 

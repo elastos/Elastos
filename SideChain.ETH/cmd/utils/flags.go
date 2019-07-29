@@ -629,7 +629,7 @@ var (
 	BlackContractAddr = cli.StringFlag{
 		Name:  "black.contract.address",
 		Usage: "configue Black Contract address",
-		Value: "0x491bC043672B9286fA02FA7e0d6A3E5A0384A31A",
+		Value: "0x975A52a3f6e5356EA19a1FEa158ADa8E2418057e",
 	}
 	PassBalance = cli.Int64Flag{
 		Name:  "pass.balance",
@@ -1230,6 +1230,7 @@ func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *eth.Config) {
 		if !ctx.GlobalIsSet(NetworkIdFlag.Name) {
 			cfg.NetworkId = 3
 		}
+		cfg.BlackContractAddr = "0x491bC043672B9286fA02FA7e0d6A3E5A0384A31A"
 		cfg.Genesis = core.DefaultTestnetGenesisBlock()
 	case ctx.GlobalBool(RinkebyFlag.Name):
 		if !ctx.GlobalIsSet(NetworkIdFlag.Name) {

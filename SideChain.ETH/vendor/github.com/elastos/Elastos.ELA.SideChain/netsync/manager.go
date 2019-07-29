@@ -172,6 +172,11 @@ func (sm *SyncManager) startSync() {
 
 	// Start syncing from the best peer if one was selected.
 	if bestPeer != nil {
+		// Do not start syncing if we have the same height with best peer.
+		if bestPeer.Height() == bestHeight {
+			return
+		}
+
 		// Clear the requestedBlocks if the sync peer changes, otherwise
 		// we may ignore blocks we need that the last sync peer failed
 		// to send.
@@ -314,8 +319,10 @@ func (sm *SyncManager) handleTxMsg(tmsg *txMsg) {
 		sm.rejectedTxns[txHash] = struct{}{}
 		sm.limitMap(sm.rejectedTxns, maxRejectedTxns)
 
-		peer.PushRejectMsg(p2p.CmdTx, msg.RejectInvalid, err.Error(),
-			&txHash, false)
+		// Convert the error into an appropriate reject message and
+		// send it.
+		code, reason := mempool.ErrToRejectErr(err)
+		peer.PushRejectMsg(p2p.CmdTx, code, reason, &txHash, false)
 		return
 	}
 
@@ -431,14 +438,7 @@ func (sm *SyncManager) handleInvMsg(imsg *invMsg) {
 
 	// Attempt to find the final block in the inventory list.  There may
 	// not be one.
-	lastBlock := -1
 	invVects := imsg.inv.InvList
-	for i := len(invVects) - 1; i >= 0; i-- {
-		if invVects[i].Type == msg.InvTypeBlock {
-			lastBlock = i
-			break
-		}
-	}
 
 	// Ignore invs from peers that aren't the sync if we are not current.
 	// Helps prevent fetching a mass of orphans.
@@ -450,7 +450,7 @@ func (sm *SyncManager) handleInvMsg(imsg *invMsg) {
 	// request parent blocks of orphans if we receive one we already have.
 	// Finally, attempt to detect potential stalls due to long side chains
 	// we already have and request more blocks to prevent them.
-	for i, iv := range invVects {
+	for _, iv := range invVects {
 		// Ignore unsupported inventory types.
 		switch iv.Type {
 		case msg.InvTypeBlock:
@@ -510,18 +510,6 @@ func (sm *SyncManager) handleInvMsg(imsg *invMsg) {
 				}
 				peer.PushGetBlocksMsg(locator, orphanRoot)
 				continue
-			}
-
-			// We already have the final block advertised by this
-			// inventory message, so force a request for more.  This
-			// should only happen if we're on a really long side
-			// chain.
-			if i == lastBlock {
-				// Request blocks after this one up to the
-				// final one the remote peer knows about (zero
-				// stop hash).
-				locator := sm.chain.BlockLocatorFromHash(&iv.Hash)
-				peer.PushGetBlocksMsg(locator, &zeroHash)
 			}
 		}
 	}

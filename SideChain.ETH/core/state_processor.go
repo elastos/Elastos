@@ -112,6 +112,7 @@ func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *commo
 			fee, addr, output := spv.FindOutputFeeAndaddressByTxHash(txhash)
 			if fee.Cmp(new(big.Int)) > 0 && output.Cmp(new(big.Int)) > 0 && addr != blackaddr {
 				statedb.SetState(blackaddr, common.HexToHash(txhash), tx.Hash())
+				statedb.SetNonce(blackaddr, statedb.GetNonce(blackaddr)+1)
 			}
 
 		}

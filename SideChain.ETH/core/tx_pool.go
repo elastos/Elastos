@@ -921,10 +921,78 @@ func (pool *TxPool) Get(hash common.Hash) *types.Transaction {
 
 // removeLocalTx removes a single transaction from the queue, moving all subsequent
 // transactions back to the future queue.
-func RemoveLocalTx(pool *TxPool, hash common.Hash, outofbound bool) {
+func RemoveLocalTx(pool *TxPool, hash common.Hash, outofbound bool, removetx bool) {
 	pool.mu.Lock()
 	defer pool.mu.Unlock()
-	pool.removeTx(hash, outofbound)
+	tx := pool.all.Get(hash)
+	if tx == nil {
+		return
+	}
+	addr, _ := types.Sender(pool.signer, tx) // already validated during insertion
+
+	// Remove it from the list of known transactions
+	pool.all.Remove(hash)
+	if outofbound {
+		pool.priced.Removed()
+	}
+	// Remove the transaction from the pending lists and reset the account nonce
+	if pending := pool.pending[addr]; pending != nil {
+		if removed, invalids := pending.Remove(tx); removed {
+			if !removetx {
+				UptxhashIndex(pool, tx)
+			}
+			// If no more pending transactions are left, remove the list
+			if pending.Empty() {
+				delete(pool.pending, addr)
+				delete(pool.beats, addr)
+			}
+			// Postpone any invalidated transactions
+			for _, tx := range invalids {
+				pool.enqueueTx(tx.Hash(), tx)
+			}
+			// Update the account nonce if needed
+			if nonce := tx.Nonce(); pool.pendingState.GetNonce(addr) > nonce {
+				pool.pendingState.SetNonce(addr, nonce)
+			}
+		}
+	}
+	// Transaction is in the future queue
+	if future := pool.queue[addr]; future != nil {
+		queuetxs := future.Flatten()
+		for _, tx := range queuetxs {
+			if UptxhashIndex(pool, tx) {
+				future.Remove(tx)
+			}
+
+		}
+
+		if future.Empty() {
+			delete(pool.queue, addr)
+		}
+	}
+}
+
+func UptxhashIndex(pool *TxPool, tx *types.Transaction) bool {
+	if tx.To() != nil {
+		to := *tx.To()
+		var blackaddr common.Address
+		if len(tx.Data()) == 32 && to == blackaddr {
+			txhash := hexutil.Encode(tx.Data())
+			completetxhash := pool.currentState.GetState(blackaddr, common.HexToHash(txhash))
+			if (completetxhash != common.Hash{}) {
+				spv.UpTransactionIndex(string(txhash))
+				return true
+			} else {
+				return false
+			}
+
+		} else {
+			return false
+		}
+	} else {
+		return false
+	}
+
 }
 
 // removeTx removes a single transaction from the queue, moving all subsequent
