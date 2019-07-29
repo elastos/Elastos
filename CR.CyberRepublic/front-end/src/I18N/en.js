@@ -1635,7 +1635,7 @@ const en = {
     kevin: {
       name: 'Kevin Zhang',
       intro: 'Head of Elastos Global Adoption Team, based in Silicon Valley',
-      email: 'kevinzhang@elastos.org'
+      email: 'kevin.zhang.canada@gmail.com'
     },
     yipeng: {
       name: 'Yipeng Su',
