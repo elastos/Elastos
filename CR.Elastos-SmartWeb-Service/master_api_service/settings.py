@@ -33,3 +33,6 @@ DID_SERVICE_VERIFY = '/1/verify'
 
 #Mainchain
 MAINCHAIN_RPC_URL = 'http://localhost:10014'
+
+#Sidechain
+SIDECHAIN_RPC_URL = 'http://localhost:30113'

@@ -10,7 +10,7 @@ from master_api_service.api.restplus import api
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('1/sidechain/did', description='Has did services')
+ns = api.namespace('1/service/sidechain/did', description='Has did services')
 
 @ns.route('/createDid')
 class CreateDid(Resource):

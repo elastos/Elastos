@@ -10,7 +10,7 @@ from master_api_service.api.restplus import api
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('1/wallet/service', description='Has wallet services')
+ns = api.namespace('1/service/mainchain', description='Has wallet services')
 
 @ns.route('/createWallet')
 class CreateWallet(Resource):
