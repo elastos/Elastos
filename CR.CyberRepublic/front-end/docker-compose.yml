@@ -14,3 +14,4 @@ services:
       - ./docs:/www/dist/docs
       - ./elastos:/www/dist/elastos
       - ./experimental-docs:/www/dist/experimental-docs
+      - ./cr-regions:/www/dist/cr-regions
