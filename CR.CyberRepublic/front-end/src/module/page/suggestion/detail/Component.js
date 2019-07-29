@@ -21,8 +21,23 @@ import { ReactComponent as CommentIcon } from '@/assets/images/icon-info.svg'
 import StandardPage from '../../StandardPage'
 import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
+import Meta from '@/module/common/Meta'
 
-import { Container, Title, CoverImg, ShortDesc, DescLabel, Label, LabelPointer, Desc, BtnGroup, StyledButton, DescBody, CouncilComments, IconWrap } from './style'
+import {
+  Container,
+  Title,
+  CoverImg,
+  ShortDesc,
+  DescLabel,
+  Label,
+  LabelPointer,
+  Desc,
+  BtnGroup,
+  StyledButton,
+  DescBody,
+  CouncilComments,
+  IconWrap
+} from './style'
 
 import './style.scss'
 
@@ -53,7 +68,11 @@ export default class extends StandardPage {
   ord_renderContent() {
     const { detail } = this.props
     if (_.isEmpty(detail) || detail.loading) {
-      return <div className="center"><Spin size="large" /></div>
+      return (
+        <div className="center">
+          <Spin size="large" />
+        </div>
+      )
     }
     const detailNode = this.renderDetail()
     const translationBtn = this.renderTranslationBtn()
@@ -63,18 +82,23 @@ export default class extends StandardPage {
     const editForm = this.renderEditForm()
     // const mySuggestionNode = <MySuggestion />
     const commentNode = this.renderCommentNode()
+
     return (
       <div>
-        <Helmet>
-          <title>{`${detail.title} - Suggestion Detail - Cyber Republic`}</title>
-          <meta property="og:title" content="Suggestion Detail" />
-          <meta property="og:description" content={detail.title} />
-          <meta name="description" content={detail.title} />
-        </Helmet>
+        <Meta
+          desc={detail.shortDesc}
+          title={`${detail.title} - Suggestion Detail - Cyber Republic`}
+          url={this.props.location.pathname}
+        />
 
         <Container className="c_SuggestionDetail">
           <MediaQuery maxWidth={LG_WIDTH}>
-            <div><BackLink link="/suggestion" style={{ position: 'relative', left: 0, marginBottom: 15 }} /></div>
+            <div>
+              <BackLink
+                link="/suggestion"
+                style={{ position: 'relative', left: 0, marginBottom: 15 }}
+              />
+            </div>
             <div>
               {detailNode}
               {translationBtn}
@@ -125,9 +149,9 @@ export default class extends StandardPage {
         {coverNode}
         {tagsNode}
         {shortDescNode}
-        <Divider/>
+        <Divider />
         {descNode}
-        <Divider/>
+        <Divider />
         {benefitsNode}
         {fundingNode}
         {timelineNode}
@@ -143,25 +167,17 @@ export default class extends StandardPage {
 
   renderTitleNode() {
     const { detail } = this.props
-    return (
-      <Title>{detail.title}</Title>
-    )
+    return <Title>{detail.title}</Title>
   }
 
   renderCoverNode() {
     const { detail } = this.props
-    return (
-      detail.coverImg ? <CoverImg src={detail.coverImg}/> : ''
-    )
+    return detail.coverImg ? <CoverImg src={detail.coverImg} /> : ''
   }
 
   renderShortDescNode() {
     const { detail } = this.props
-    return (
-      <ShortDesc>
-        {detail.shortDesc}
-      </ShortDesc>
-    )
+    return <ShortDesc>{detail.shortDesc}</ShortDesc>
   }
 
   renderLabelNode() {
@@ -183,35 +199,38 @@ export default class extends StandardPage {
   renderTagsNode() {
     const tags = _.get(this.props.detail, 'tags')
     if (_.isEmpty(tags)) return null
-    const res = _.map(tags, (tag) => {
+    const res = _.map(tags, tag => {
       const { type, _id, desc } = tag
       return (
-        <div key={_id} >
-          {
-            type === SUGGESTION_TAG_TYPE.INFO_NEEDED &&
-              <LabelPointer type={type} data-desc={desc.replace(/(['"])/g, '\\$1')}
-                            onClick={() => this.setState({needsInfoVisible: true})}>
-                {I18N.get(`suggestion.tag.type.${type}`)} &nbsp;
-                <IconWrap>
-                  <CommentIcon className="more-info-icon"/>
-                </IconWrap>
-              </LabelPointer>
-          }
+        <div key={_id}>
+          {type === SUGGESTION_TAG_TYPE.INFO_NEEDED && (
+            <LabelPointer
+              type={type}
+              data-desc={desc.replace(/(['"])/g, '\\$1')}
+              onClick={() => this.setState({ needsInfoVisible: true })}
+            >
+              {I18N.get(`suggestion.tag.type.${type}`)} &nbsp;
+              <IconWrap>
+                <CommentIcon className="more-info-icon" />
+              </IconWrap>
+            </LabelPointer>
+          )}
           <Modal
             title={I18N.get(`suggestion.tag.type.${type}`)}
             visible={this.state.needsInfoVisible}
             onCancel={this.closeNeedsInfoModal.bind(this)}
             footer={[
-              <Button key="close" onClick={this.closeNeedsInfoModal.bind(this)}>Close</Button>
+              <Button key="close" onClick={this.closeNeedsInfoModal.bind(this)}>
+                Close
+              </Button>
             ]}
           >
-            <div style={{fontWeight: 200, paddingBottom: '18px'}}>
+            <div style={{ fontWeight: 200, paddingBottom: '18px' }}>
               {I18N.get('suggestion.modal.pleaseUpdate')}
             </div>
-            {I18N.get('suggestion.modal.commentsFromCouncil')}<br/>
-            <CouncilComments>
-              {desc}
-            </CouncilComments>
+            {I18N.get('suggestion.modal.commentsFromCouncil')}
+            <br />
+            <CouncilComments>{desc}</CouncilComments>
           </Modal>
         </div>
       )
@@ -222,7 +241,6 @@ export default class extends StandardPage {
   closeNeedsInfoModal() {
     this.setState({
       needsInfoVisible: false
-
     })
   }
 
@@ -231,7 +249,10 @@ export default class extends StandardPage {
     return (
       <Desc>
         <DescLabel>{I18N.get('suggestion.form.fields.fullDesc')}</DescLabel>
-        <DescBody className="ql-editor" dangerouslySetInnerHTML={{ __html: sanitizeHtml(detail.desc) }} />
+        <DescBody
+          className="ql-editor"
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(detail.desc) }}
+        />
       </Desc>
     )
   }
@@ -285,7 +306,17 @@ export default class extends StandardPage {
     return (
       <Desc>
         <DescLabel>{I18N.get('suggestion.form.fields.links')}</DescLabel>
-        {_.map(link, href => <div key={href}><a href={getSafeUrl(href)} target="_blank" rel="noopener noreferrer">{href}</a></div>)}
+        {_.map(link, href => (
+          <div key={href}>
+            <a
+              href={getSafeUrl(href)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {href}
+            </a>
+          </div>
+        ))}
       </Desc>
     )
   }
@@ -296,8 +327,12 @@ export default class extends StandardPage {
       <h1>${title}</h1>
       <h4>${I18N.get('suggestion.form.fields.desc')}</h4>
       ${desc}
-      ${benefits ? `<h4>${I18N.get('suggestion.form.fields.benefits')}</h4>
-      <p>${benefits}</p>` : ''}
+      ${
+        benefits
+          ? `<h4>${I18N.get('suggestion.form.fields.benefits')}</h4>
+      <p>${benefits}</p>`
+          : ''
+      }
     `
 
     return (
@@ -321,7 +356,11 @@ export default class extends StandardPage {
     const { detail, currentUserId, isAdmin } = this.props
     const isOwner = currentUserId === _.get(detail, 'createdBy._id') || isAdmin
     const res = isOwner && (
-      <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={this.showEditForm}>
+      <StyledButton
+        type="ebp"
+        className="cr-btn cr-btn-default"
+        onClick={this.showEditForm}
+      >
         {I18N.get('suggestion.btnText.edit')}
       </StyledButton>
     )
@@ -348,24 +387,32 @@ export default class extends StandardPage {
     const props = {
       data: {
         title,
-        content: proposalContent,
+        content: proposalContent
       },
       suggestionDisplayId: displayId,
       suggestionId: _id,
       onCreated: this.onCreated,
       btnText: I18N.get('suggestion.btnText.makeIntoProposal'),
-      btnStyle: { width: 200 },
+      btnStyle: { width: 200 }
     }
     const considerBtn = (isCouncil || isAdmin) && (
       <Col xs={24} sm={8}>
-        <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={this.consider}>
+        <StyledButton
+          type="ebp"
+          className="cr-btn cr-btn-default"
+          onClick={this.consider}
+        >
           {I18N.get('suggestion.btnText.markConsider')}
         </StyledButton>
       </Col>
     )
     const needMoreInfoBtn = (isCouncil || isAdmin) && (
       <Col xs={24} sm={8}>
-        <StyledButton type="ebp" className="cr-btn cr-btn-default" onClick={this.showAddTagModal}>
+        <StyledButton
+          type="ebp"
+          className="cr-btn cr-btn-default"
+          onClick={this.showAddTagModal}
+        >
           {I18N.get('suggestion.btnText.needMoreInfo')}
         </StyledButton>
       </Col>
@@ -406,7 +453,7 @@ export default class extends StandardPage {
     try {
       await this.props.addTag({
         id: _id,
-        type: SUGGESTION_TAG_TYPE.UNDER_CONSIDERATION,
+        type: SUGGESTION_TAG_TYPE.UNDER_CONSIDERATION
       })
       this.refetch()
     } catch (error) {
@@ -421,7 +468,7 @@ export default class extends StandardPage {
       await this.props.addTag({
         id: _id,
         type: SUGGESTION_TAG_TYPE.INFO_NEEDED,
-        desc: comment,
+        desc: comment
       })
       // this.showAddTagModal()
       this.refetch()
@@ -436,15 +483,15 @@ export default class extends StandardPage {
       content: <TextArea onChange={this.onCommentChanged} />,
       okText: I18N.get('suggestion.modal.confirm'),
       cancelText: I18N.get('suggestion.modal.cancel'),
-      onOk: () => this.needMoreInfo(),
+      onOk: () => this.needMoreInfo()
     })
   }
 
-  onCommentChanged = (e) => {
+  onCommentChanged = e => {
     this.setState({ comment: e.target.value })
   }
 
-  onFormSubmit = async (param) => {
+  onFormSubmit = async param => {
     try {
       await this.props.update(param)
       this.showEditForm()
@@ -461,7 +508,7 @@ export default class extends StandardPage {
       onFormCancel: this.showEditForm,
       onFormSubmit: this.onFormSubmit,
       header: I18N.get('suggestion.header.edit'),
-      data: detail,
+      data: detail
     }
 
     return (
@@ -474,9 +521,7 @@ export default class extends StandardPage {
         footer={null}
         width="70%"
       >
-        { this.state.showForm
-          && <SuggestionForm {...props} />
-        }
+        {this.state.showForm && <SuggestionForm {...props} />}
       </Modal>
     )
   }
@@ -485,18 +530,18 @@ export default class extends StandardPage {
     const { showForm } = this.state
 
     this.setState({
-      showForm: !showForm,
+      showForm: !showForm
     })
   }
 
   showDropdownActions = () => {
     const { isDropdownActionOpen } = this.state
     this.setState({
-      isDropdownActionOpen: !isDropdownActionOpen,
+      isDropdownActionOpen: !isDropdownActionOpen
     })
   }
 
-  refetch = async (incViewsNum) => {
+  refetch = async incViewsNum => {
     const id = _.get(this.props, 'match.params.id')
     await this.props.resetDetail()
     this.props.getDetail({ id, incViewsNum: !!incViewsNum })

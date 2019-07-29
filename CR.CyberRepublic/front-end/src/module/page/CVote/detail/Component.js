@@ -29,6 +29,7 @@ import VoteResultComponent from '../common/vote_result/Component'
 import Preamble from './Preamble'
 import Tracking from '../tracking/Container'
 import Summary from '../summary/Container'
+import Meta from '@/module/common/Meta'
 
 import {
   Container,
@@ -124,6 +125,10 @@ class C extends StandardPage {
     this.setState({ loading: f })
   }
 
+  ord_renderMeta(f = false) {
+    return f
+  }
+
   ord_renderContent() {
     const { data } = this.props
     if (!data) {
@@ -133,6 +138,7 @@ class C extends StandardPage {
         </div>
       )
     }
+
     const anchorNode = this.renderAnchor()
     const contentNode = this.renderContent()
     const translationBtn = this.renderTranslationBtn()
@@ -142,14 +148,26 @@ class C extends StandardPage {
     const trackingNode = this.renderTracking()
     const summaryNode = this.renderSummary()
 
+    // get the first line pure text of abstract
+    let abstract = ''
+    try {
+      if (data.abstract) {
+        const result = JSON.parse(data.abstract)
+        if (result && result.blocks && result.blocks.length) {
+          abstract = result.blocks[0].text
+        }
+      }
+    } catch (error) {
+      console.log('parse abstract err...', error)
+    }
+
     return (
       <div>
-        <Helmet>
-          <title>{`${data.title} - Proposal Detail - Cyber Republic`}</title>
-          <meta property="og:title" content="Proposal Detail" />
-          <meta property="og:description" content={data.title} />
-          <meta name="description" content={data.title} />
-        </Helmet>
+        <Meta
+          desc={abstract}
+          title={`${data.title} - Proposal Detail - Cyber Republic`}
+          url={this.props.location.pathname}
+        />
         {anchorNode}
         <Container className="p_CVoteDetail">
           <StickyContainer>

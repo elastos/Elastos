@@ -1,15 +1,14 @@
 /* global location, analytics */
 import React from 'react'
 import BasePage from '@/model/BasePage'
-import {Layout, BackTop} from 'antd'
-import {spring, presets, Motion} from 'react-motion'
+import { Layout, BackTop } from 'antd'
+import { spring, presets, Motion } from 'react-motion'
 import { StickyContainer } from 'react-sticky'
 import Meta from '@/module/common/Meta'
 import Header from '../layout/Header/Container'
 import MobileMenu from './mobile/side_menu/Container'
 
 export default class extends BasePage {
-
   constructor(props) {
     super(props)
 
@@ -27,7 +26,6 @@ export default class extends BasePage {
   }
 
   ord_renderPage() {
-
     const s = this.ord_animate()
     const mp = {
       defaultStyle: {
@@ -40,32 +38,34 @@ export default class extends BasePage {
 
     return (
       <StickyContainer>
-      <Layout className="p_standardPage">
-        <Meta />
-        {this.state.showMobile && (
-        <Motion {...mp}>
-          {
-            (tar) => {
-              return <MobileMenu animateStyle={s.style_fn(tar)} toggleMobileMenu={this.toggleMobileMenu.bind(this)}/>
-            }
-          }
-        </Motion>
-        )}
-        <Header toggleMobileMenu={this.toggleMobileMenu.bind(this)}/>
-        <Layout.Content className="c_Content">
-          {this.ord_renderContent()}
-        </Layout.Content>
-        <BackTop/>
-      </Layout>
+        <Layout className="p_standardPage">
+          {this.ord_renderMeta() && <Meta />}
+          {this.state.showMobile && (
+            <Motion {...mp}>
+              {tar => {
+                return (
+                  <MobileMenu
+                    animateStyle={s.style_fn(tar)}
+                    toggleMobileMenu={this.toggleMobileMenu.bind(this)}
+                  />
+                )
+              }}
+            </Motion>
+          )}
+          <Header toggleMobileMenu={this.toggleMobileMenu.bind(this)} />
+          <Layout.Content className="c_Content">
+            {this.ord_renderContent()}
+          </Layout.Content>
+          <BackTop />
+        </Layout>
       </StickyContainer>
     )
   }
 
   ord_animate() {
-
     // the width of the menu is 80vw
     return {
-      style_fn: (val) => {
+      style_fn: val => {
         return {
           left: `${val.left}vw`
         }
@@ -77,7 +77,13 @@ export default class extends BasePage {
     return null
   }
 
+  ord_renderMeta(f = true) {
+    const { match } = this.props
+    const flag = match && match.path === '/suggestion/:id'
+    return flag ? false : f
+  }
+
   ord_loading(f = false) {
-    this.setState({loading: f})
+    this.setState({ loading: f })
   }
 }
