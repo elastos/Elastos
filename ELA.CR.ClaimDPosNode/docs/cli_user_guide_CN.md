@@ -447,6 +447,39 @@ Hex:  0902000100133931333133393830343439313038373335313101b9932e31681c63ce0425ee
 File:  to_be_signed.txn
 ```
 
+##### 2.1.4.3 构造跨链交易
+
+```
+NAME:
+   ela-cli wallet buildtx crosschain - Build a cross chain tx
+
+USAGE:
+   ela-cli wallet buildtx crosschain [command options] [arguments...]
+
+OPTIONS:
+   --saddress <address>        the locked <address> on main chain represents one side chain
+   --amount <amount>           the transfer <amount> of the transaction
+   --from <address>            the sender <address> of the transaction
+   --to <address>              the recipient <address> of the transaction
+   --fee <fee>                 the transfer <fee> of the transaction
+   --wallet <file>, -w <file>  wallet <file> path (default: "keystore.dat")
+```
+
+--saddress 用于指定侧链冻结地址（地址在主链上）
+
+--to 用于指定侧链上的目标地址
+
+```
+./ela-cli wallet buildtx crosschain --saddress XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ --to EKn3UGyEoycACJxKu7F8R5U1Pe6NUpni1H --amount 1 --fee 0.1
+```
+
+返回如下：
+
+```
+Hex:  0908000122454b6e33554779456f796341434a784b75374638523555315065364e55706e69314800804a5d050000000001001332373635333731343930333630363035373639019c050bc9bee2fde996792b7b7225922a8be739a5e6408d209ad8a2b622c48f900100ffffffff02b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a300e1f50500000000000000004b5929cbd09401eb2ce4134cb5ee117a01152c387e00b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3ae03ec030000000000000000214cbc08129018f205d99007d8b57be7600c772afe00000000000100232103c5b92b875b9820aba064dd1c93007c8a971fc43d318f7dc7fd6ea1509a424195ac
+File:  to_be_signed.txn
+```
+
 ### 2.2 对交易签名
 
 使用 buildtx 命令构造的交易，需要通过花费地址的私钥签名后，才是有效的交易。
