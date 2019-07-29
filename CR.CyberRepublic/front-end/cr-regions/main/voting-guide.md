@@ -22,25 +22,31 @@ grow the Elastos ecosystem.
 
 1. Click the "Community" link at the bottom bar
 
-  ![](https://www.cyberrepublic.org/cr-regions/images/howtovote-1.png)   
+  ![](https://www.cyberrepublic.org/cr-regions/images/howtovote-1.png ':size=300')   
 
 2. Select our CR Region supernodes from the list
 
-  ![](https://www.cyberrepublic.org/cr-regions/images/howtovote-2.png)
+  ![](https://www.cyberrepublic.org/cr-regions/images/howtovote-2.png ':size=300')
   
 3. Add the node to the Candidate List
 
-  ![](https://www.cyberrepublic.org/cr-regions/images/howtovote-3.png)
+  ![](https://www.cyberrepublic.org/cr-regions/images/howtovote-3.png ':size=300')
   
 4. Click the Vote Button
 
-  ![](https://www.cyberrepublic.org/cr-regions/images/howtovote-4.png)
+  ![](https://www.cyberrepublic.org/cr-regions/images/howtovote-4.png ':size=300')
   
 5. Enter the amount of ELA to vote with and then your wallet password to vote
 
-  ![](https://www.cyberrepublic.org/cr-regions/images/howtovote-5.png)
+  ![](https://www.cyberrepublic.org/cr-regions/images/howtovote-5.png ':size=300')
 
+?> If you did everything correctly you should see a new transaction for 0 ELA for your wallet
 
+!> If you ever spend or move your ELA you will need to recast your votes
+
+### Thanks again for voting for us!
+
+From your CR Region teams
 
 
  

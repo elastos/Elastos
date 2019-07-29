@@ -4,7 +4,7 @@
     - [CR Regions List](/main/directory.md)
     - [Roadmap](/main/roadmap.md)
     - [Voting Guide](/main/voting-guide.md)
-    - [About Me - Clarence Liu](/main/clarence-about.md)
+    - [CR Regions Lead - Clarence Liu](/main/clarence-about.md)
     
 - SUPERNODES
     - [CR Regions Global Fund](/supernodes/global-fund.md)
