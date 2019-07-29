@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package wallet
 
@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"os"
 	"strconv"
 
 	"github.com/elastos/Elastos.ELA/account"
@@ -28,6 +29,12 @@ import (
 type OutputInfo struct {
 	Recipient string
 	Amount    *common.Fixed64
+}
+
+type CrossChainOutput struct {
+	Recipient         string
+	Amount            *common.Fixed64
+	CrossChainAddress string
 }
 
 func CreateTransaction(c *cli.Context) error {
@@ -433,4 +440,118 @@ func CreateVoteTransaction(c *cli.Context) error {
 	OutputTx(0, 1, txn)
 
 	return nil
+}
+
+func CreateCrossChainTransaction(c *cli.Context) error {
+	walletPath := c.String("wallet")
+
+	from := c.String("from")
+	to := c.String("to")
+	if to == "" {
+		return errors.New("use --to to specify a side chain address which want to recharge")
+	}
+	sAddress := c.String("saddress")
+	if sAddress == "" {
+		return errors.New("use --saddress to specify a locked address of side chain")
+	}
+
+	feeStr := c.String("fee")
+	if feeStr == "" {
+		return errors.New("use --fee to specify transfer fee")
+	}
+	fee, err := common.StringToFixed64(feeStr)
+	if err != nil {
+		return errors.New("invalid transaction fee")
+	}
+
+	amountStr := c.String("amount")
+	if amountStr == "" {
+		return errors.New("use --amount to specify transfer amount")
+	}
+	amount, err := common.StringToFixed64(amountStr)
+	if err != nil {
+		return errors.New("invalid transaction amount")
+	}
+
+	txn, err := createCrossChainTransaction(walletPath, from, *fee, 0, &CrossChainOutput{
+		Recipient:         sAddress,
+		Amount:            amount,
+		CrossChainAddress: to,
+	})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	OutputTx(0, 1, txn)
+
+	return nil
+}
+
+func createCrossChainTransaction(walletPath string, from string, fee common.Fixed64, lockedUntil uint32,
+	crossChainOutputs ...*CrossChainOutput) (*types.Transaction, error) {
+	// check output
+	if len(crossChainOutputs) == 0 {
+		return nil, errors.New("invalid transaction target")
+	}
+
+	outputs := make([]*OutputInfo, 0)
+	perAccountFee := fee / common.Fixed64(len(crossChainOutputs))
+
+	// create payload
+	payload := &payload.TransferCrossChainAsset{}
+	for index, output := range crossChainOutputs {
+		payload.CrossChainAddresses = append(payload.CrossChainAddresses, output.CrossChainAddress)
+		payload.OutputIndexes = append(payload.OutputIndexes, uint64(index))
+		payload.CrossChainAmounts = append(payload.CrossChainAmounts, *output.Amount-perAccountFee)
+		outputs = append(outputs, &OutputInfo{
+			Recipient: output.Recipient,
+			Amount:    output.Amount,
+		})
+	}
+
+	// create outputs
+	txOutputs, totalAmount, err := createNormalOutputs(outputs, fee, lockedUntil)
+	if err != nil {
+		return nil, err
+	}
+
+	// get sender in wallet by from address
+	sender, err := getSender(walletPath, from)
+	if err != nil {
+		return nil, err
+	}
+
+	// create inputs
+	txInputs, changeOutputs, err := createInputs(sender, totalAmount)
+	if err != nil {
+		return nil, err
+	}
+	txOutputs = append(txOutputs, changeOutputs...)
+
+	redeemScript, err := common.HexStringToBytes(sender.RedeemScript)
+	if err != nil {
+		return nil, err
+	}
+	// create attributes
+	txAttr := types.NewAttribute(types.Nonce, []byte(strconv.FormatInt(rand.Int63(), 10)))
+	txAttributes := make([]*types.Attribute, 0)
+	txAttributes = append(txAttributes, &txAttr)
+
+	// create program
+	var txProgram = &pg.Program{
+		Code:      redeemScript,
+		Parameter: nil,
+	}
+
+	return &types.Transaction{
+		Version:    types.TxVersion09,
+		TxType:     types.TransferCrossChainAsset,
+		Payload:    payload,
+		Attributes: txAttributes,
+		Inputs:     txInputs,
+		Outputs:    txOutputs,
+		Programs:   []*pg.Program{txProgram},
+		LockTime:   0,
+	}, nil
 }
