@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 // This benchmark is plan to profile blockchain related processing and
 // searching. The benchmark base on RegTest and chain height should higher than
@@ -15,10 +15,12 @@
 package blockchain
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -102,6 +104,10 @@ func benchBegin() *BlockChain {
 		return nil
 	}
 
+	store, _ := NewLevelDB(filepath.Join(test.DataPath, "chain"))
+	rollbackTo(chainHeight, &ChainStore{IStore: store})
+	store.Close()
+
 	log.NewDefault(test.NodeLogPath, 0, 0, 0)
 	params := config.DefaultParams.RegNet()
 	chainStore, err := NewChainStore(test.DataPath, params.GenesisBlock)
@@ -146,9 +152,6 @@ func benchBegin() *BlockChain {
 		Arbitrators: arbiters,
 	}
 
-	// rollback to specific height
-	rollbackTo(chainHeight, chain)
-
 	var interrupt = signal.NewInterrupt()
 	chain.InitCheckpoint(interrupt.C, nil, nil)
 
@@ -171,9 +174,15 @@ func newBlock() (*types.Block, *payload.Confirm) {
 	return block, confirm
 }
 
-func rollbackTo(targetHeight uint32, chain *BlockChain) {
-	store := chain.db.(*ChainStore)
-	currentHeight := chain.GetHeight()
+func rollbackTo(targetHeight uint32, store *ChainStore) {
+	data, err := store.Get([]byte{byte(SYSCurrentBlock)})
+	if err != nil {
+		return
+	}
+	currentHeight, err := common.ReadUint32(bytes.NewReader(data[32:]))
+	if err != nil {
+		return
+	}
 	for i := currentHeight; i > targetHeight; i-- {
 		blockHash, _ := store.GetBlockHash(i)
 		block, _ := store.GetBlock(blockHash)
