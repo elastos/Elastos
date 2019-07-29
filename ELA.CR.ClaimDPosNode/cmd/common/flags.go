@@ -117,6 +117,14 @@ var (
 		Usage: "block data and logs storage `<path>`",
 		Value: defaultDataDir,
 	}
+	MagicFlag = cli.StringFlag{
+		Name:  "magic",
+		Usage: "magic number for node to initialize p2p connection",
+	}
+	DnsFlag = cli.StringFlag{
+		Name:  "dns",
+		Usage: "dns seeds for node to initialize p2p connection",
+	}
 )
 
 // MoveRPCFlags finds the rpc argument and moves it to the front
