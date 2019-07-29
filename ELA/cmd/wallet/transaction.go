@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package wallet
 
@@ -114,6 +114,29 @@ var buildTxCommand = []cli.Command{
 				return nil
 			}
 			if err := CreateVoteTransaction(c); err != nil {
+				fmt.Println("error:", err)
+				os.Exit(1)
+			}
+			return nil
+		},
+	},
+	{
+		Name:  "crosschain",
+		Usage: "Build a cross chain tx",
+		Flags: []cli.Flag{
+			cmdcom.TransactionSAddressFlag,
+			cmdcom.TransactionAmountFlag,
+			cmdcom.TransactionFromFlag,
+			cmdcom.TransactionToFlag,
+			cmdcom.TransactionFeeFlag,
+			cmdcom.AccountWalletFlag,
+		},
+		Action: func(c *cli.Context) error {
+			if c.NumFlags() == 0 {
+				cli.ShowSubcommandHelp(c)
+				return nil
+			}
+			if err := CreateCrossChainTransaction(c); err != nil {
 				fmt.Println("error:", err)
 				os.Exit(1)
 			}

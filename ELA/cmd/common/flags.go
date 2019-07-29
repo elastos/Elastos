@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package common
 
@@ -74,6 +74,10 @@ var (
 	TransactionForFlag = cli.StringFlag{
 		Name:  "for",
 		Usage: "the `<file>` path that holds the list of candidates",
+	}
+	TransactionSAddressFlag = cli.StringFlag{
+		Name:  "saddress",
+		Usage: "the locked `<address>` on main chain represents one side chain",
 	}
 
 	// RPC flags
