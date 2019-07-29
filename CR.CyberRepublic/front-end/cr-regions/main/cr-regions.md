@@ -12,7 +12,9 @@ through meetups, events, workshops, happy hours, media and more. The goals of El
 are a betterment to all, we believe in a future of data ownership, security and the right
 to monetization and control our own data as we see fit.  
 
-### Vote for our Global Fund Supernode!
+!> Read our internal strategy document [here!](https://docs.google.com/document/d/1E1YH_ygXBjDEf0Y8SGfn9JXbTVqy9qLYwMOKyh44FcI)
+
+### Vote for our Global Fund Supernode! Hosted by&nbsp;[Clarence Liu - VP of Development](/main/clarence-about.md)
 
 All funds from our CR Regions Global Fund supernode are used to fund our regional teams 
 and events that we believe will bring the most people to our community.
