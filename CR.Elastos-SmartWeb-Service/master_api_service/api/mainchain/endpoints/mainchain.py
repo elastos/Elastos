@@ -11,7 +11,7 @@ from master_api_service.api.restplus import api
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('mainchain', description='Has mainchain node services')
+ns = api.namespace('1/mainchain', description='Has mainchain node services')
 
 @ns.route('/getblockhash', methods = ['POST'])
 class GetBlockHash(Resource):

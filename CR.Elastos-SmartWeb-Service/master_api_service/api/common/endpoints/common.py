@@ -10,7 +10,7 @@ from master_api_service.api.restplus import api
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('common', description='Implements common services')
+ns = api.namespace('1/common', description='Implements common services')
 
 @ns.route('/generateAPIKey')
 class Generate(Resource):
