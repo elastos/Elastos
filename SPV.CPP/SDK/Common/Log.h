@@ -49,11 +49,7 @@ namespace Elastos {
 				auto logger = std::make_shared<spdlog::logger>(SPV_DEFAULT_LOG, sinks.begin(), sinks.end());
 				spdlog::register_logger(logger);
 
-#if defined(__ANDROID__)
-				spdlog::get(SPV_DEFAULT_LOG)->set_pattern("%v");
-#else
 				spdlog::get(SPV_DEFAULT_LOG)->set_pattern("%m-%d %T.%e %P %t %^%L%$ %n %v");
-#endif
 				spdlog::get(SPV_DEFAULT_LOG)->flush_on(spdlog::level::warn);
 			}
 

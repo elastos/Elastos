@@ -315,13 +315,9 @@ namespace Elastos {
 
 				_peerManager->SetReconnectTaskCount(_peerManager->ReconnectTaskCount() + 1);
 
-				_executor.StopThread();
 				_peerManager->SetReconnectEnableStatus(false);
-				if (_peerManager->GetConnectStatus() == Peer::Connected) {
-					_peerManager->Disconnect();
-				}
+				_peerManager->Disconnect();
 
-				_executor.InitThread(BACKGROUND_THREAD_COUNT);
 				_peerManager->SetReconnectEnableStatus(true);
 				StartReconnect(time);
 			}

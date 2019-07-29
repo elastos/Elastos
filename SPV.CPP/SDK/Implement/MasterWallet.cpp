@@ -257,13 +257,9 @@ namespace Elastos {
 				result.push_back(it->second);
 			}
 
-			std::string chainIDs = "";
-			for (size_t i = 0; i < result.size(); ++i) {
-				SubWallet *wallet = dynamic_cast<SubWallet *>(result[i]);
-				chainIDs += wallet->GetInfoChainID() + ",";
-			}
-
-			ArgInfo("r => size: {} list: {}", result.size(), chainIDs);
+			ArgInfo("r => {}: {}", GetFunName(), result.size());
+			for (size_t i = 0; i < result.size(); ++i)
+				result[i]->GetBasicInfo();
 
 			return result;
 		}

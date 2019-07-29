@@ -19,6 +19,8 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+#define SELA_PER_ELA 100000000
+
 		class MasterWallet;
 		class Transaction;
 		class ChainConfig;

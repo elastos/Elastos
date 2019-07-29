@@ -218,7 +218,7 @@ namespace Elastos {
 			ErrorChecker::CheckParam(!containAsset, Error::InvalidAsset, "asset not found: " + assetID.GetHex());
 
 			TransactionPtr tx;
-			if (fromAddress.Valid() && _subAccount->IsDepositAddress(fromAddress))
+			if (fromAddress.Valid() && (_subAccount->IsDepositAddress(fromAddress) || _subAccount->IsCRDepositAddress(fromAddress)))
 				tx = _groupedAssets[assetID]->CreateRetrieveDepositTx(outputs, fromAddress, memo);
 			else
 				tx = _groupedAssets[assetID]->CreateTxForOutputs(outputs, fromAddress, memo, useVotedUTXO,
@@ -873,7 +873,7 @@ namespace Elastos {
 			if (tx->GetBlockHeight() != TX_UNCONFIRMED) {
 				for (it = _groupedAssets.begin(); it != _groupedAssets.end(); ++it) {
 					if (it->second->RemoveSpentUTXO(tx->GetInputs())) {
-						changedBalance[it->first] = 0;
+						changedBalance[it->first] = it->second->GetBalance();
 					}
 				}
 
@@ -885,7 +885,7 @@ namespace Elastos {
 							uint16_t n = (*o)->FixedIndex();
 							UTXOPtr utxo(new UTXO(tx->GetHash(), n, tx->GetTimestamp(), tx->GetBlockHeight(), (*o)));
 							_groupedAssets[asset]->AddUTXO(utxo);
-							changedBalance[asset] = 0;
+							changedBalance[asset] = _groupedAssets[asset]->GetBalance();
 						}
 					}
 				}
@@ -894,7 +894,7 @@ namespace Elastos {
 				for (OutputArray::const_iterator o = outputs.cbegin(); o != outputs.cend(); ++o) {
 					if (_subAccount->ContainsAddress((*o)->Addr()) && ContainsAsset((*o)->AssetID())) {
 						if (_groupedAssets[(*o)->AssetID()]->RemoveSpentUTXO(tx->GetHash(), (*o)->FixedIndex())) {
-							changedBalance[(*o)->AssetID()] = 0;
+							changedBalance[(*o)->AssetID()] = _groupedAssets[(*o)->AssetID()]->GetBalance();
 						}
 					}
 				}
@@ -908,7 +908,7 @@ namespace Elastos {
 							if (_subAccount->ContainsAddress((*o)->Addr()) && ContainsAsset((*o)->AssetID())) {
 								UTXOPtr utxo(new UTXO(txInput->GetHash(), (*o)->FixedIndex(), txInput->GetTimestamp(), txInput->GetBlockHeight(), (*o)));
 								_groupedAssets[(*o)->AssetID()]->AddUTXO(utxo);
-								changedBalance[(*o)->AssetID()] = 0;
+								changedBalance[(*o)->AssetID()] = _groupedAssets[(*o)->AssetID()]->GetBalance();
 							}
 						}
 					} else if ((cb = CoinBaseForHashInternal((*in)->TxHash())) != nullptr) {
@@ -916,14 +916,10 @@ namespace Elastos {
 						cb->SetSpent(false);
 						if (ContainsAsset(cb->Output()->AssetID())) {
 							_groupedAssets[cb->Output()->AssetID()]->AddCoinBaseUTXO(cb);
-							changedBalance[cb->Output()->AssetID()] = 0;
+							changedBalance[cb->Output()->AssetID()] = _groupedAssets[cb->Output()->AssetID()]->GetBalance();
 						}
 					}
 				}
-			}
-
-			for (it = _groupedAssets.begin(); it != _groupedAssets.end(); ++it) {
-				changedBalance[it->first] = it->second->GetBalance();
 			}
 
 			return changedBalance;

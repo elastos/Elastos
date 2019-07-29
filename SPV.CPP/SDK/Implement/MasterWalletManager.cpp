@@ -490,6 +490,7 @@ namespace Elastos {
 
 					checkRedundant(masterWallet);
 					_masterWalletMap[masterWalletID] = masterWallet;
+					ExportReadonlyWallet(masterWallet);
 					masterWallet->InitSubWallets();
 				}
 				++it;
@@ -506,10 +507,10 @@ namespace Elastos {
 						  });
 
 			std::string chainID = "";
-			for(size_t i = 0; i < result.size(); ++i) {
+			for (size_t i = 0; i < result.size(); ++i)
 				chainID += result[i] + ", ";
-			}
-			ArgInfo("r => size: {} list: {}", result.size(), chainID);
+
+			ArgInfo("r => {}: {}", GetFunName(), chainID);
 
 			return result;
 		}
@@ -531,7 +532,8 @@ namespace Elastos {
 			_masterWalletMap[masterWalletId] = masterWallet;
 			masterWallet->InitSubWallets();
 
-			ArgInfo("r => get master wallet");
+			ArgInfo("r => {}", GetFunName());
+			ExportReadonlyWallet(masterWallet);
 			masterWallet->GetBasicInfo();
 
 			return masterWallet;

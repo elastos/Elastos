@@ -28,6 +28,8 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+#define DEPOSIT_MIN_ELA 5000
+
 		MainchainSubWallet::MainchainSubWallet(const CoinInfoPtr &info,
 											   const ChainConfigPtr &config,
 											   MasterWallet *parent) :
@@ -97,7 +99,7 @@ namespace Elastos {
 			ArgInfo("url: {}", url);
 			ArgInfo("ipAddress: {}", ipAddress);
 			ArgInfo("location: {}", location);
-			ArgInfo("payPasswd: {}", "*");
+			ArgInfo("payPasswd: *");
 
 			ErrorChecker::CheckPassword(payPasswd, "Generate payload");
 
@@ -135,7 +137,7 @@ namespace Elastos {
 
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 			ArgInfo("ownerPubKey: {}", ownerPublicKey);
-			ArgInfo("payPasswd: {}", "*");
+			ArgInfo("payPasswd: *");
 
 			ErrorChecker::CheckPassword(payPasswd, "Generate payload");
 			size_t pubKeyLen = ownerPublicKey.size() >> 1;
@@ -171,10 +173,12 @@ namespace Elastos {
 			ArgInfo("memo: {}", memo);
 			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
 
-			BigInt bgAmount;
+			BigInt bgAmount, minAmount(DEPOSIT_MIN_ELA);
 			bgAmount.setDec(amount);
 
-			ErrorChecker::CheckParam(bgAmount < 500000000000, Error::DepositAmountInsufficient,
+			minAmount *= SELA_PER_ELA;
+
+			ErrorChecker::CheckParam(bgAmount < minAmount, Error::DepositAmountInsufficient,
 									 "Producer deposit amount is insufficient");
 
 			PayloadPtr payload = PayloadPtr(new ProducerInfo());
@@ -522,7 +526,7 @@ namespace Elastos {
 			ArgInfo("nickName: {}", nickName);
 			ArgInfo("url: {}", url);
 			ArgInfo("location: {}", location);
-			ArgInfo("payPasswd: {}", "*");
+			ArgInfo("payPasswd: *");
 
 			ErrorChecker::CheckPassword(payPasswd, "Generate payload");
 			size_t pubKeyLen = crPublicKey.size() >> 1;
@@ -562,7 +566,7 @@ namespace Elastos {
 				const std::string &payPasswd) const {
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 			ArgInfo("publicKey: {}", crPublicKey);
-			ArgInfo("payPasswd: {}", "*");
+			ArgInfo("payPasswd: *");
 
 			ErrorChecker::CheckPassword(payPasswd, "Generate payload");
 			size_t pubKeyLen = crPublicKey.size() >> 1;
@@ -605,10 +609,12 @@ namespace Elastos {
 			ArgInfo("memo: {}", memo);
 			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
 
-			BigInt bgAmount;
+			BigInt bgAmount, minAmount(DEPOSIT_MIN_ELA);
 			bgAmount.setDec(amount);
 
-			ErrorChecker::CheckParam(bgAmount < 500000000000, Error::DepositAmountInsufficient,
+			minAmount *= SELA_PER_ELA;
+
+			ErrorChecker::CheckParam(bgAmount < minAmount, Error::DepositAmountInsufficient,
 			                         "cr deposit amount is insufficient");
 
 			PayloadPtr payloadPtr = PayloadPtr(new CRInfo());

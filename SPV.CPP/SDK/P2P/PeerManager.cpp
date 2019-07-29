@@ -1532,8 +1532,7 @@ namespace Elastos {
 			if (saveBlocks.size() > 0)
 				FireSaveBlocks(saveBlocks.size() > 1, saveBlocks);
 
-			if ((block->GetHeight() % 500) == 0 || txHashes.size() > 0 ||
-				block->GetHeight() >= peer->GetLastBlock()) {
+			if ((block->GetHeight() % 500) == 0 || block->GetHeight() >= peer->GetLastBlock()) {
 				_wallet->UpdateLockedBalance();
 			}
 
