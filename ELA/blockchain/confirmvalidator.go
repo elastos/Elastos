@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -97,7 +97,7 @@ func PreProcessSpecialTx(block *Block) error {
 			if err := CheckInactiveArbitrators(tx); err != nil {
 				return err
 			}
-			if err := checkTransactionSignature(tx, map[*Input]*Output{}); err != nil {
+			if err := checkTransactionSignature(tx, map[*Input]*TxReference{}); err != nil {
 				return err
 			}
 

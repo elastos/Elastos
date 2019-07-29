@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package pow
 
@@ -274,7 +274,13 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 		if !blockchain.IsFinalizedTransaction(tx, nextBlockHeight) {
 			continue
 		}
-		if errCode := pow.chain.CheckTransactionContext(nextBlockHeight, tx); errCode != elaerr.Success {
+		references, err := blockchain.DefaultLedger.Store.GetTxReferenceInfo(tx)
+		if err != nil {
+			log.Warn("check transaction context failed, get transaction reference failed")
+			break
+		}
+		errCode := pow.chain.CheckTransactionContext(nextBlockHeight, tx, references)
+		if errCode != elaerr.Success {
 			log.Warn("check transaction context failed, wrong transaction:", tx.Hash().String())
 			continue
 		}

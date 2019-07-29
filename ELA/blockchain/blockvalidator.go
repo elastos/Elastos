@@ -244,12 +244,19 @@ func (b *BlockChain) checkTxsContext(block *Block) error {
 	var totalTxFee = Fixed64(0)
 
 	for i := 1; i < len(block.Transactions); i++ {
-		if errCode := b.CheckTransactionContext(block.Height, block.Transactions[i]); errCode != Success {
+		references, err := DefaultLedger.Store.GetTxReferenceInfo(block.Transactions[i])
+		if err != nil {
+			log.Warn("CheckTransactionContext get transaction reference failed")
+			return ErrUnknownReferredTx
+		}
+
+		if errCode := b.CheckTransactionContext(block.Height,
+			block.Transactions[i], references); errCode != Success {
 			return errors.New("CheckTransactionContext failed when verify block")
 		}
 
 		// Calculate transaction fee
-		totalTxFee += GetTxFee(block.Transactions[i], config.ELAAssetID)
+		totalTxFee += GetTxFee(block.Transactions[i], config.ELAAssetID, references)
 	}
 
 	err := b.checkCoinbaseTransactionContext(block.Height,
@@ -354,8 +361,8 @@ func IsFinalizedTransaction(msgTx *Transaction, blockHeight uint32) bool {
 	return true
 }
 
-func GetTxFee(tx *Transaction, assetId Uint256) Fixed64 {
-	feeMap, err := GetTxFeeMap(tx)
+func GetTxFee(tx *Transaction, assetId Uint256, references map[*Input]*TxReference) Fixed64 {
+	feeMap, err := GetTxFeeMap(tx, references)
 	if err != nil {
 		return 0
 	}
@@ -363,21 +370,17 @@ func GetTxFee(tx *Transaction, assetId Uint256) Fixed64 {
 	return feeMap[assetId]
 }
 
-func GetTxFeeMap(tx *Transaction) (map[Uint256]Fixed64, error) {
+func GetTxFeeMap(tx *Transaction, references map[*Input]*TxReference) (map[Uint256]Fixed64, error) {
 	feeMap := make(map[Uint256]Fixed64)
-	reference, err := DefaultLedger.Store.GetTxReference(tx)
-	if err != nil {
-		return nil, err
-	}
 
 	var inputs = make(map[Uint256]Fixed64)
 	var outputs = make(map[Uint256]Fixed64)
-	for _, v := range reference {
-		amout, ok := inputs[v.AssetID]
+	for _, v := range references {
+		amout, ok := inputs[v.output.AssetID]
 		if ok {
-			inputs[v.AssetID] = amout + v.Value
+			inputs[v.output.AssetID] = amout + v.output.Value
 		} else {
-			inputs[v.AssetID] = v.Value
+			inputs[v.output.AssetID] = v.output.Value
 		}
 	}
 
