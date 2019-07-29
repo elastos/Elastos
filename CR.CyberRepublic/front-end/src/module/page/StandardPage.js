@@ -39,7 +39,7 @@ export default class extends BasePage {
     return (
       <StickyContainer>
         <Layout className="p_standardPage">
-          <Meta />
+          {this.ord_renderMeta() && <Meta />}
           {this.state.showMobile && (
             <Motion {...mp}>
               {tar => {
@@ -75,6 +75,10 @@ export default class extends BasePage {
 
   ord_renderContent() {
     return null
+  }
+
+  ord_renderMeta(f = true) {
+    return f
   }
 
   ord_loading(f = false) {

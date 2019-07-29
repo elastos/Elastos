@@ -29,6 +29,7 @@ import VoteResultComponent from '../common/vote_result/Component'
 import Preamble from './Preamble'
 import Tracking from '../tracking/Container'
 import Summary from '../summary/Container'
+import Meta from '@/module/common/Meta'
 
 import {
   Container,
@@ -124,6 +125,10 @@ class C extends StandardPage {
     this.setState({ loading: f })
   }
 
+  ord_renderMeta(f = false) {
+    return f
+  }
+
   ord_renderContent() {
     const { data } = this.props
     if (!data) {
@@ -158,12 +163,11 @@ class C extends StandardPage {
 
     return (
       <div>
-        <Helmet>
-          <title>{`${data.title} - Proposal Detail - Cyber Republic`}</title>
-          <meta property="og:title" content={data.title} />
-          <meta property="og:description" content={abstract} />
-          <meta name="description" content={abstract} />
-        </Helmet>
+        <Meta
+          desc={abstract}
+          title={`${data.title} - Proposal Detail - Cyber Republic`}
+          url={this.props.location.pathname}
+        />
         {anchorNode}
         <Container className="p_CVoteDetail">
           <StickyContainer>
