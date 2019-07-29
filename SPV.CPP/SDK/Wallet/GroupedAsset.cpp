@@ -180,10 +180,9 @@ namespace Elastos {
 
 					totalInputAmount += (*u)->Output()->Amount();
 
+					txSize = tx->EstimateSize();
 					if (_asset->GetName() == "ELA")
 						feeAmount = CalculateFee(_parent->_feePerKb, txSize);
-
-					txSize = tx->EstimateSize();
 				}
 			}
 
@@ -205,9 +204,9 @@ namespace Elastos {
 
 				totalInputAmount += (*u)->Output()->Amount();
 
+				txSize = tx->EstimateSize();
 				if (_asset->GetName() == "ELA")
 					feeAmount = CalculateFee(_parent->_feePerKb, txSize);
-				txSize = tx->EstimateSize();
 			}
 
 			for (UTXOArray::iterator u = _utxos.begin(); u != _utxos.end(); ++u) {
@@ -230,9 +229,9 @@ namespace Elastos {
 
 				totalInputAmount += (*u)->Output()->Amount();
 
+				txSize = tx->EstimateSize();
 				if (_asset->GetName() == "ELA")
 					feeAmount = CalculateFee(_parent->_feePerKb, txSize);
-				txSize = tx->EstimateSize();
 			}
 
 			_parent->Unlock();
@@ -249,6 +248,7 @@ namespace Elastos {
 				}
 			}
 
+			SPVLOG_DEBUG("input: {}, fee: {}", totalInputAmount.getDec(), feeAmount);
 			std::vector<Address> addr;
 			_parent->GetAllAddresses(addr, 0, 1, 0);
 			ErrorChecker::CheckCondition(addr.empty(), Error::GetUnusedAddress, "get unused address fail");
@@ -449,7 +449,7 @@ namespace Elastos {
 				return;
 			}
 
-			ErrorChecker::CheckLogic(tx->GetOutputs().size() < 1, Error::CreateTransaction, "No output in tx");
+			ErrorChecker::CheckLogic(tx->GetOutputs().empty(), Error::CreateTransaction, "No output in tx");
 
 			if (_asset->GetHash() != Asset::GetELAAssetID()) {
 				Log::error("asset '{}' do not support to add fee for tx", _asset->GetHash().GetHex());
@@ -567,6 +567,9 @@ namespace Elastos {
 		}
 
 		void GroupedAsset::AddUTXO(const UTXOPtr &o) {
+			if (ContainUTXO(o))
+				return;
+
 			if (_parent->_subAccount->IsDepositAddress(o->Output()->Addr())) {
 				_balanceDeposit += o->Output()->Amount();
 				_utxosDeposit.push_back(o);
@@ -582,6 +585,9 @@ namespace Elastos {
 		}
 
 		void GroupedAsset::AddCoinBaseUTXO(const UTXOPtr &o) {
+			if (ContainUTXO(o))
+				return;
+
 			if (o->GetConfirms(_parent->_blockHeight) <= 100) {
 				_balanceLocked += o->Output()->Amount();
 				_utxosLocked.push_back(o);
@@ -701,6 +707,31 @@ namespace Elastos {
 			}
 
 			return nullptr;
+		}
+
+		bool GroupedAsset::ContainUTXO(const UTXOPtr &o) const {
+			for (UTXOArray::const_iterator it = _utxosVote.cbegin(); it != _utxosVote.cend(); ++it) {
+				if (**it == *o)
+					return true;
+			}
+
+			for (UTXOArray::const_iterator it = _utxos.cbegin(); it != _utxos.cend(); ++it) {
+				if (**it == *o)
+					return true;
+			}
+
+			for (UTXOArray::const_iterator it = _utxosCoinbase.cbegin(); it != _utxosCoinbase.cend(); ++it) {
+				if (**it == *o)
+					return true;
+			}
+
+			for (UTXOArray::const_iterator it = _utxosDeposit.cbegin(); it != _utxosDeposit.cend(); ++it) {
+				if (**it == *o) {
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		uint64_t GroupedAsset::CalculateFee(uint64_t feePerKB, size_t size) {

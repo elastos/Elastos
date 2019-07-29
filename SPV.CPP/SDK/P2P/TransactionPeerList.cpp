@@ -24,8 +24,17 @@ namespace Elastos {
 			_peers.push_back(peer);
 		}
 
-		void TransactionPeerList::RemovePeerAt(size_t index) {
-			_peers.erase(_peers.begin() + index);
+		bool TransactionPeerList::RemovePeer(const PeerPtr &peer) {
+			bool removed = false;
+			for (std::vector<PeerPtr>::iterator p = _peers.begin(); p != _peers.end();) {
+				if ((*p) == peer) {
+					p = _peers.erase(p);
+					removed = true;
+				} else {
+					++p;
+				}
+			}
+			return removed;
 		}
 	}
 }

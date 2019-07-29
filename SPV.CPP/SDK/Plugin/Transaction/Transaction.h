@@ -20,9 +20,13 @@ namespace Elastos {
 		class Attribute;
 		typedef boost::shared_ptr<Wallet> WalletPtr;
 		typedef boost::shared_ptr<TransactionOutput> OutputPtr;
+		typedef std::vector<OutputPtr> OutputArray;
 		typedef boost::shared_ptr<TransactionInput> InputPtr;
+		typedef std::vector<InputPtr> InputArray;
 		typedef boost::shared_ptr<Program> ProgramPtr;
+		typedef std::vector<ProgramPtr> ProgramArray;
 		typedef boost::shared_ptr<Attribute> AttributePtr;
+		typedef std::vector<AttributePtr> AttributeArray;
 
 		class Transaction {
 		public:
@@ -96,6 +100,8 @@ namespace Elastos {
 			void SetVersion(const TxVersion &version);
 
 			const std::vector<OutputPtr> &GetOutputs() const;
+
+			void FixIndex();
 
 			OutputPtr OutputOfIndex(uint16_t fixedIndex) const;
 
@@ -205,10 +211,10 @@ namespace Elastos {
 			uint8_t _payloadVersion;
 			uint64_t _fee;
 			PayloadPtr _payload;
-			std::vector<OutputPtr> _outputs;
-			std::vector<InputPtr> _inputs;
-			std::vector<AttributePtr> _attributes;
-			std::vector<ProgramPtr> _programs;
+			OutputArray _outputs;
+			InputArray _inputs;
+			AttributeArray _attributes;
+			ProgramArray _programs;
 		};
 
 		typedef boost::shared_ptr<Transaction> TransactionPtr;

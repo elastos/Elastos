@@ -252,16 +252,17 @@ namespace Elastos {
 		std::vector<ISubWallet *> MasterWallet::GetAllSubWallets() const {
 			ArgInfo("{} {}", _id, GetFunName());
 
-			std::vector<ISubWallet *> result;
+			std::vector<ISubWallet *> subwallets;
 			for (WalletMap::const_iterator it = _createdWallets.cbegin(); it != _createdWallets.cend(); ++it) {
-				result.push_back(it->second);
+				subwallets.push_back(it->second);
 			}
 
-			ArgInfo("r => {}: {}", GetFunName(), result.size());
-			for (size_t i = 0; i < result.size(); ++i)
-				result[i]->GetBasicInfo();
+			std::string result;
+			for (size_t i = 0; i < subwallets.size(); ++i)
+				result += subwallets[i]->GetChainID() + ",";
 
-			return result;
+			ArgInfo("r => {}", result);
+			return subwallets;
 		}
 
 		ISubWallet *
@@ -307,6 +308,7 @@ namespace Elastos {
 		void MasterWallet::CloseAllSubWallets() {
 			for (WalletMap::iterator it = _createdWallets.begin(); it != _createdWallets.end(); ) {
 				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
+				Log::info("{}:{} closing subwallet...", _id, subWallet->GetChainID());
 				stopPeerManager(subWallet);
 
 				it = _createdWallets.erase(it);

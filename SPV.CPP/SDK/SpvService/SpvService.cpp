@@ -315,10 +315,8 @@ namespace Elastos {
 
 				_peerManager->SetReconnectTaskCount(_peerManager->ReconnectTaskCount() + 1);
 
-				_peerManager->SetReconnectEnableStatus(false);
 				_peerManager->Disconnect();
 
-				_peerManager->SetReconnectEnableStatus(true);
 				StartReconnect(time);
 			}
 		}

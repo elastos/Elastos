@@ -180,10 +180,7 @@ static ISubWallet *GetSubWallet(const std::string &masterWalletID, const std::st
 
 static void PublishTransaction(ISubWallet *subWallet, const nlohmann::json &tx) {
 	nlohmann::json signedTx = subWallet->SignTransaction(tx, payPasswd);
-	logger->debug("tx after signed -> {}", signedTx.dump());
-
-	nlohmann::json result = subWallet->PublishTransaction(signedTx);
-	logger->debug("published tx result -> {}", result.dump());
+	subWallet->PublishTransaction(signedTx);
 }
 
 static void CombineUTXO(const std::string &masterWalletID, const std::string &subWalletID,
@@ -199,7 +196,6 @@ static void CombineUTXO(const std::string &masterWalletID, const std::string &su
 	} else {
 		tx = subWallet->CreateConsolidateTransaction("memo combine utxo");
 	}
-	logger->debug("tx after created = {}", tx.dump());
 
 	PublishTransaction(subWallet, tx);
 }
@@ -216,10 +212,8 @@ static void Transafer(const std::string &masterWalletID, const std::string &subW
 		ITokenchainSubWallet *tokenSubWallet = dynamic_cast<ITokenchainSubWallet *>(subWallet);
 		tx = tokenSubWallet->CreateTransaction(from, to, std::to_string(amount), assetID, memo);
 	} else {
-		tx = subWallet->CreateTransaction(from, to, std::to_string(amount), memo);
+		tx = subWallet->CreateTransaction(from, to, std::to_string(amount), memo, true);
 	}
-
-	logger->debug("tx after created = {}", tx.dump());
 
 	PublishTransaction(subWallet, tx);
 }
@@ -608,20 +602,24 @@ static void GetAllTxSummary(const std::string &masterWalletID, const std::string
 	nlohmann::json utxoSummary = subWallet->GetAllUTXOs(0, 1000, "");
 }
 
-static void GetBalance(const std::string &masterWalletID, const std::string &subWalletID,
+static std::string GetBalance(const std::string &masterWalletID, const std::string &subWalletID,
 					   const std::string &assetID = "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0") {
 	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
 	if (!subWallet)
-		return;
+		return "0";
+
+	std::string amount;
 
 	if (subWalletID == gTokenchainSubWalletID) {
 		ITokenchainSubWallet *tokenSubWallet = dynamic_cast<ITokenchainSubWallet *>(subWallet);
-		tokenSubWallet->GetBalance(assetID);
+		amount = tokenSubWallet->GetBalance(assetID);
 		tokenSubWallet->GetBalanceInfo(assetID);
 	} else {
-		subWallet->GetBalance(BalanceType::Total);
+		amount = subWallet->GetBalance(BalanceType::Total);
 		subWallet->GetBalanceInfo();
 	}
+
+	return amount;
 }
 
 static void SyncStart(const std::string &masterWalletID, const std::string &subWalletID) {
@@ -656,7 +654,7 @@ static void ELATest() {
 
 	logger->debug("ELA {}", separator);
 	GetAllTxSummary(gMasterWalletID, gMainchainSubWalletID);
-	GetBalance(gMasterWalletID, gMainchainSubWalletID);
+	std::string balance = GetBalance(gMasterWalletID, gMainchainSubWalletID);
 	GetVotedList(gMasterWalletID, gMainchainSubWalletID);
 	GetRegisteredProducerInfo(gMasterWalletID, gMainchainSubWalletID);
 
@@ -666,8 +664,9 @@ static void ELATest() {
 	}
 
 	if (!transferDone) {
+		uint64_t amount = strtol(balance.c_str(), nullptr, 10);
 		Transafer(gMasterWalletID, gMainchainSubWalletID,
-				  "", "EYMVuGs1FscpgmghSzg243R6PzPiszrgj7", 100000000);
+				  "", "ET42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP", amount - 10000);
 		transferDone = true;
 	}
 

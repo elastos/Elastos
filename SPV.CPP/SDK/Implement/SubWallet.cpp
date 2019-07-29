@@ -176,6 +176,8 @@ namespace Elastos {
 				tx->SetVersion(Transaction::TxVersion::V09);
 			}
 
+			tx->FixIndex();
+
 			return tx;
 		}
 
@@ -248,6 +250,7 @@ namespace Elastos {
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
+			SPVLOG_DEBUG("created tx: {}", tx->ToJson().dump());
 			nlohmann::json result;
 			EncodeTx(result, tx);
 
@@ -260,13 +263,13 @@ namespace Elastos {
 
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 			ArgInfo("tx: {}", createdTx.dump());
-			ArgInfo("passwd: {}", "*");
+			ArgInfo("passwd: *");
 
 			TransactionPtr tx = DecodeTx(createdTx);
 
 			_walletManager->getWallet()->SignTransaction(tx, payPassword);
 
-
+			SPVLOG_DEBUG("signed tx: {}", tx->ToJson().dump());
 			nlohmann::json result;
 			EncodeTx(result, tx);
 
@@ -280,6 +283,7 @@ namespace Elastos {
 
 			TransactionPtr tx = DecodeTx(signedTx);
 
+			SPVLOG_DEBUG("publishing tx: {}", tx->ToJson().dump());
 			publishTransaction(tx);
 
 			nlohmann::json result;
@@ -325,10 +329,14 @@ namespace Elastos {
 			ArgInfo("memo: {}", memo);
 			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
 
-			TransactionPtr tx = _walletManager->getWallet()->Consolidate(memo, Asset::GetELAAssetID(), useVotedUTXO);
+			std::string memoFormated = "type:text,msg:" + memo;
+
+			TransactionPtr tx = _walletManager->getWallet()->Consolidate(memoFormated, Asset::GetELAAssetID(), useVotedUTXO);
 
 			if (_info->GetChainID() == "ELA")
 				tx->SetVersion(Transaction::TxVersion::V09);
+
+			SPVLOG_DEBUG("created tx: {}", tx->ToJson().dump());
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -571,27 +579,29 @@ namespace Elastos {
 			});
 		}
 
-		bool SubWallet::filterByAddressOrTxId(const TransactionPtr &transaction, const std::string &addressOrTxid) const {
+		bool SubWallet::filterByAddressOrTxId(const TransactionPtr &tx, const std::string &addressOrTxid) const {
 
 			if (addressOrTxid.empty()) {
 				return true;
 			}
 
 			const WalletPtr &wallet = _walletManager->getWallet();
-			for (size_t i = 0; i < transaction->GetInputs().size(); ++i) {
-				const TransactionPtr &tx = wallet->TransactionForHash(transaction->GetInputs()[i]->TxHash());
-				if (tx && tx->GetOutputs()[transaction->GetInputs()[i]->Index()]->Addr() == addressOrTxid) {
-					return true;
+			for (InputArray::const_iterator in = tx->GetInputs().cbegin(); in != tx->GetInputs().cend(); ++in) {
+				TransactionPtr t = wallet->TransactionForHash((*in)->TxHash());
+				if (t) {
+					OutputPtr o = t->OutputOfIndex((*in)->Index());
+					if (o && o->Addr().String() == addressOrTxid)
+						return true;
 				}
 			}
-			for (size_t i = 0; i < transaction->GetOutputs().size(); ++i) {
-				if (transaction->GetOutputs()[i]->Addr() == addressOrTxid) {
+			for (OutputArray::const_iterator o = tx->GetOutputs().cbegin(); o != tx->GetOutputs().cend(); ++o) {
+				if ((*o)->Addr().String() == addressOrTxid) {
 					return true;
 				}
 			}
 
 			if (addressOrTxid.length() == 64) {
-				if (uint256(addressOrTxid) == transaction->GetHash()) {
+				if (uint256(addressOrTxid) == tx->GetHash()) {
 					return true;
 				}
 			}

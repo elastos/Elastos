@@ -236,7 +236,8 @@ namespace Elastos {
 			tx->SetTransactionType(Transaction::updateProducer, payload);
 
 			if (tx->GetOutputs().size() > 1) {
-				tx->RemoveOutput(tx->GetOutputs()[0]);
+				tx->RemoveOutput(tx->GetOutputs().front());
+				tx->FixIndex();
 			}
 
 			nlohmann::json result;
@@ -275,7 +276,8 @@ namespace Elastos {
 			tx->SetTransactionType(Transaction::cancelProducer, payload);
 
 			if (tx->GetOutputs().size() > 1) {
-				tx->RemoveOutput(tx->GetOutputs()[0]);
+				tx->RemoveOutput(tx->GetOutputs().front());
+				tx->FixIndex();
 			}
 
 			nlohmann::json result;
@@ -308,6 +310,7 @@ namespace Elastos {
 
 			if (tx->GetOutputs().size() > 1) {
 				tx->RemoveOutput(tx->GetOutputs().back());
+				tx->FixIndex();
 			}
 
 			nlohmann::json result;
@@ -384,16 +387,16 @@ namespace Elastos {
 				ErrorChecker::CheckLogic(cb == nullptr, Error::GetTransactionInput, "Get tx input error");
 				inputProgramHash = cb->Output()->ProgramHash();
 			} else {
-				ErrorChecker::CheckLogic(txInput->GetOutputs().size() <= inputs[0]->Index(), Error::GetTransactionInput,
+				ErrorChecker::CheckLogic(txInput->OutputOfIndex(inputs[0]->Index()) == nullptr, Error::GetTransactionInput,
 									 "Input index larger than output size.");
-				inputProgramHash = txInput->GetOutputs()[inputs[0]->Index()]->ProgramHash();
+				inputProgramHash = txInput->OutputOfIndex(inputs[0]->Index())->ProgramHash();
 			}
 
 			tx->SetTransactionType(Transaction::transferAsset);
 			const std::vector<OutputPtr> &outputs = tx->GetOutputs();
-			outputs[0]->SetType(TransactionOutput::Type::VoteOutput);
-			outputs[0]->SetPayload(payload);
-			outputs[0]->SetProgramHash(inputProgramHash);
+			outputs.front()->SetType(TransactionOutput::Type::VoteOutput);
+			outputs.front()->SetPayload(payload);
+			outputs.front()->SetProgramHash(inputProgramHash);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -671,7 +674,8 @@ namespace Elastos {
 			tx->SetTransactionType(Transaction::updateCR, payloadPtr);
 
 			if (tx->GetOutputs().size() > 1) {
-				tx->RemoveOutput(tx->GetOutputs()[0]);
+				tx->RemoveOutput(tx->GetOutputs().front());
+				tx->FixIndex();
 			}
 
 			nlohmann::json result;
@@ -710,7 +714,8 @@ namespace Elastos {
 			tx->SetTransactionType(Transaction::unregisterCR, payloadPtr);
 
 			if (tx->GetOutputs().size() > 1) {
-				tx->RemoveOutput(tx->GetOutputs()[0]);
+				tx->RemoveOutput(tx->GetOutputs().front());
+				tx->FixIndex();
 			}
 
 			nlohmann::json result;
@@ -742,6 +747,7 @@ namespace Elastos {
 
 			if (tx->GetOutputs().size() > 1) {
 				tx->RemoveOutput(tx->GetOutputs().back());
+				tx->FixIndex();
 			}
 
 			nlohmann::json result;

@@ -48,6 +48,7 @@ namespace Elastos {
 		MasterWalletManager::~MasterWalletManager() {
 			for (MasterWalletMap::iterator it = _masterWalletMap.begin(); it != _masterWalletMap.end();) {
 				MasterWallet *masterWallet = static_cast<MasterWallet *>(it->second);
+				Log::info("{} closing master wallet...", masterWallet->GetID());
 				masterWallet->CloseAllSubWallets();
 				it = _masterWalletMap.erase(it);
 
@@ -167,7 +168,7 @@ namespace Elastos {
 			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletID] = masterWallet;
 
-			ArgInfo("r => create multi sign");
+			ArgInfo("r => create multi sign wallet");
 			masterWallet->GetBasicInfo();
 
 			return masterWallet;
@@ -201,7 +202,7 @@ namespace Elastos {
 			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletID] = masterWallet;
 
-			ArgInfo("r => create multi sign");
+			ArgInfo("r => create multi sign wallet");
 			masterWallet->GetBasicInfo();
 
 			return masterWallet;
@@ -240,7 +241,7 @@ namespace Elastos {
 			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletId] = masterWallet;
 
-			ArgInfo("r => create multi sign");
+			ArgInfo("r => create multi sign wallet");
 			masterWallet->GetBasicInfo();
 			return masterWallet;
 		}
@@ -253,7 +254,7 @@ namespace Elastos {
 				result.push_back(it->second);
 			}
 
-			ArgInfo("r => size: {}", result.size());
+			ArgInfo("r => all master wallet count: {}", result.size());
 
 			for (int i = 0; i < result.size(); ++i)
 				result[i]->GetBasicInfo();

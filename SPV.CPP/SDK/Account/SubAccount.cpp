@@ -45,8 +45,9 @@ namespace Elastos {
 			_lock = lock;
 
 			for (size_t i = 0; i < tx.size(); i++) {
-				for (size_t j = 0; j < tx[i]->GetOutputs().size(); ++j)
-					AddUsedAddrs(tx[i]->GetOutputs()[j]->Addr());
+				const OutputArray &outputs = tx[i]->GetOutputs();
+				for (OutputArray::const_iterator o = outputs.cbegin(); o != outputs.cend(); ++o)
+					AddUsedAddrs((*o)->Addr());
 			}
 
 			UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL + 100, 0);
@@ -363,16 +364,17 @@ namespace Elastos {
 		}
 
 		size_t SubAccount::InternalChainIndex(const TransactionPtr &tx) const {
+			const OutputArray &outputs = tx->GetOutputs();
 			if (_parent->GetSignType() == Account::MultiSign) {
-				for (size_t i = 0; i < tx->GetOutputs().size(); ++i) {
-					if (tx->GetOutputs()[i]->Addr() == _parent->GetAddress())
+				for (OutputArray::const_iterator o = outputs.cbegin(); o != outputs.cend(); ++o) {
+					if ((*o)->Addr() == _parent->GetAddress())
 						return 0;
 				}
 			}
 
 			for (size_t i = _internalChain.size(); i > 0; i--) {
-				for (size_t j = 0; j < tx->GetOutputs().size(); j++) {
-					if (tx->GetOutputs()[j]->Addr() == _internalChain[i - 1])
+				for (OutputArray::const_iterator o = outputs.cbegin(); o != outputs.cend(); ++o) {
+					if ((*o)->Addr() == _internalChain[i - 1])
 						return i - 1;
 				}
 			}
@@ -381,16 +383,17 @@ namespace Elastos {
 		}
 
 		size_t SubAccount::ExternalChainIndex(const TransactionPtr &tx) const {
+			const OutputArray &outputs = tx->GetOutputs();
 			if (_parent->GetSignType() == Account::MultiSign) {
-				for (size_t i = 0; i < tx->GetOutputs().size(); ++i) {
-					if (tx->GetOutputs()[i]->Addr() == _parent->GetAddress())
+				for (OutputArray::const_iterator o = outputs.cbegin(); o != outputs.cend(); ++o) {
+					if ((*o)->Addr() == _parent->GetAddress())
 						return 0;
 				}
 			}
 
 			for (size_t i = _externalChain.size(); i > 0; i--) {
-				for (size_t j = 0; j < tx->GetOutputs().size(); j++) {
-					if (tx->GetOutputs()[j]->Addr() == _externalChain[i - 1])
+				for (OutputArray::const_iterator o = outputs.cbegin(); o != outputs.cend(); ++o) {
+					if ((*o)->Addr() == _externalChain[i - 1])
 						return i - 1;
 				}
 			}

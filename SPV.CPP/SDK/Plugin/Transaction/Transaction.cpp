@@ -166,6 +166,11 @@ namespace Elastos {
 			return _outputs;
 		}
 
+		void Transaction::FixIndex() {
+			for (uint16_t i = 0; i < _outputs.size(); ++i)
+				_outputs[i]->SetFixedIndex(i);
+		}
+
 		OutputPtr Transaction::OutputOfIndex(uint16_t fixedIndex) const {
 			std::vector<OutputPtr>::const_iterator it;
 			for (it = _outputs.cbegin(); it != _outputs.cend(); ++it) {
@@ -185,10 +190,12 @@ namespace Elastos {
 		}
 
 		void Transaction::RemoveOutput(const OutputPtr &output) {
-			for (std::vector<OutputPtr>::iterator it = _outputs.begin(); it != _outputs.end(); it++) {
+			for (std::vector<OutputPtr>::iterator it = _outputs.begin(); it != _outputs.end(); ) {
 				if (output == (*it)) {
-					_outputs.erase(it);
+					it = _outputs.erase(it);
 					break;
+				} else {
+					++it;
 				}
 			}
 		}
@@ -696,27 +703,28 @@ namespace Elastos {
 			std::map<std::string, BigInt>::iterator it;
 
 			std::map<std::string, BigInt> inputList;
-			for (size_t i = 0; i < _inputs.size(); i++) {
-				TransactionPtr tx = wallet->TransactionForHash(_inputs[i]->TxHash());
+			for (InputArray::iterator in = _inputs.begin(); in != _inputs.end(); ++in) {
+				TransactionPtr tx = wallet->TransactionForHash((*in)->TxHash());
 				if (tx) {
-					const BigInt &spentAmount = tx->GetOutputs()[_inputs[i]->Index()]->Amount();
-					addr = tx->GetOutputs()[_inputs[i]->Index()]->Addr().String();
+					const OutputPtr o = tx->OutputOfIndex((*in)->Index());
+					if (o && wallet->ContainsAddress(o->Addr()) && !wallet->IsVoteDepositAddress(o->Addr())) {
+						const BigInt &spentAmount = o->Amount();
+						addr = o->Addr().String();
 
-					if (detail) {
-						if (inputList.find(addr) == inputList.end()) {
-							inputList[addr] = spentAmount;
-						} else {
-							inputList[addr] += spentAmount;
+						if (detail) {
+							if (inputList.find(addr) == inputList.end()) {
+								inputList[addr] = spentAmount;
+							} else {
+								inputList[addr] += spentAmount;
+							}
 						}
-					}
 
-					if (wallet->ContainsAddress(addr) && !wallet->IsVoteDepositAddress(addr)) {
 						// sent or moved
 						direction = "Sent";
 						inputAmount += spentAmount;
 					}
 				} else {
-					UTXOPtr cb = wallet->CoinBaseTxForHash(_inputs[i]->TxHash());
+					UTXOPtr cb = wallet->CoinBaseTxForHash((*in)->TxHash());
 					if (cb) {
 						const BigInt &spentAmount = cb->Output()->Amount();
 						addr = Address(cb->Output()->ProgramHash()).String();
@@ -744,24 +752,19 @@ namespace Elastos {
 
 			bool containAddress;
 			std::map<std::string, BigInt> outputList;
-			for (size_t i = 0; i < _outputs.size(); ++i) {
-				const BigInt &oAmount = _outputs[i]->Amount();
-				addr = _outputs[i]->Addr().String();
+			for (OutputArray::iterator o = _outputs.begin(); o != _outputs.end(); ++o) {
+				const BigInt &oAmount = (*o)->Amount();
+				addr = (*o)->Addr().String();
 
-				if (_outputs[i]->GetType() == TransactionOutput::VoteOutput) {
-					outputPayload = _outputs[i]->GetPayload()->ToJson();
+				if ((*o)->GetType() == TransactionOutput::VoteOutput) {
+					outputPayload = (*o)->GetPayload()->ToJson();
 					outputPayload["Amount"] = oAmount.getDec();
 					outputPayloads.push_back(outputPayload);
 				}
 
 				containAddress = wallet->ContainsAddress(addr);
-				if (containAddress) {
-					if (wallet->IsVoteDepositAddress(addr)) {
-						direction = "Deposit";
-						outputAmount += oAmount;
-					} else {
-						changeAmount += oAmount;
-					}
+				if (containAddress && !wallet->IsVoteDepositAddress(addr)) {
+					changeAmount += oAmount;
 				} else {
 					outputAmount += oAmount;
 				}
@@ -780,7 +783,7 @@ namespace Elastos {
 				outputJson[it->first] = it->second.getDec();
 			}
 
-			if (direction != "Deposit" && direction == "Sent" && outputAmount == 0) {
+			if (direction == "Sent" && outputAmount == BigInt(0)) {
 				direction = "Moved";
 			}
 
@@ -794,8 +797,6 @@ namespace Elastos {
 			if (direction == "Received") {
 				amount = changeAmount;
 			} else if (direction == "Sent") {
-				amount = outputAmount;
-			} else if (direction == "Deposit") {
 				amount = outputAmount;
 			} else {
 				amount = 0;

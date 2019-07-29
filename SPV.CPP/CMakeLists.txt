@@ -99,7 +99,7 @@ if(NOT DEFINED CMAKE_INSTALL_PREFIX)
 endif(NOT DEFINED CMAKE_INSTALL_PREFIX)
 
 option(ARGUMENT_LOG_ENABLE "Eenable print argument that caller pass through" ON)
-option(SPVSDK_DEBUG "SPV debug" OFF)
+option(SPDSDK_DEBUG_ON "SPD debug" OFF)
 option(SPV_BUILD_TEST_CASES "Build test cases" OFF)
 option(SPV_BUILD_SAMPLE "Build sample" OFF)
 option(SPV_EXTRA_WARNINGS "Enable Maximum Warnings Level" OFF)
@@ -107,11 +107,6 @@ option(SPV_EXTRA_WARNINGS "Enable Maximum Warnings Level" OFF)
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_RELEASE NDEBUG)
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL NDEBUG)
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO NDEBUG)
-
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	add_definitions(-DSPDLOG_DEBUG_ON)
-	add_definitions(-DSPDLOG_TRACE_ON)
-endif()
 
 configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/CMakeConfig.h.in

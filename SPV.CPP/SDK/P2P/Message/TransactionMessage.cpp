@@ -5,6 +5,7 @@
 #include "TransactionMessage.h"
 
 #include <SDK/P2P/Peer.h>
+#include <SDK/P2P/PeerManager.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
@@ -33,7 +34,8 @@ namespace Elastos {
 				return false;
 			} else {
 				uint256 txHash = tx->GetHash();
-				_peer->debug("got tx");
+
+				PEER_DEBUG(_peer, "got tx {}", txHash.GetHex());
 
 				FireRelayedTx(tx);
 

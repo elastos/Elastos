@@ -88,6 +88,8 @@ namespace Elastos {
 
 			UTXOPtr FindUTXO(const InputPtr &input) const;
 
+			bool ContainUTXO(const UTXOPtr &o) const;
+
 		private:
 			uint64_t CalculateFee(uint64_t feePerKB, size_t size);
 

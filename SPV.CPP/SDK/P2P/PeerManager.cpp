@@ -378,9 +378,12 @@ namespace Elastos {
 				}
 
 				if (_downloadPeer) { // disconnect the current download peer so a new random one will be selected
-					for (size_t i = _peers.size(); i > 0; i--) {
-						if (_peers[i - 1] == _downloadPeer->GetPeerInfo())
-							_peers.erase(_peers.begin() + i - 1);
+					for (std::vector<PeerInfo>::iterator p = _peers.begin(); p != _peers.end();) {
+						if ((*p) == _downloadPeer->GetPeerInfo()) {
+							p = _peers.erase(p);
+						} else {
+							++p;
+						}
 					}
 
 					_downloadPeer->Disconnect();
@@ -529,7 +532,6 @@ namespace Elastos {
 		void PeerManager::PublishTransaction(const TransactionPtr &tx,
 											 const Peer::PeerPubTxCallback &callback) {
 
-			assert(tx != NULL && tx->IsSigned());
 			bool txValid = (tx != nullptr);
 			if (tx) lock.lock();
 
@@ -717,17 +719,17 @@ namespace Elastos {
 			}
 
 			for (size_t i = 0; i < transactions.size(); i++) { // also add TXOs spent within the last 100 blocks
-				for (size_t j = 0; j < transactions[i]->GetInputs().size(); j++) {
-					const InputPtr &input = transactions[i]->GetInputs()[j];
-					const TransactionPtr &tx = _wallet->TransactionForHash(input->TxHash());
-
-					if (tx && input->Index() < tx->GetOutputs().size() &&
-						_wallet->ContainsAddress(tx->GetOutputs()[input->Index()]->Addr())) {
-
-						bytes_t o = input->TxHash().bytes();
-						o.append(input->Index());
-						if (!filter->ContainsData(o))
-							filter->InsertData(o);
+				const InputArray &inputs = transactions[i]->GetInputs();
+				for (InputArray::const_iterator in = inputs.cbegin(); in != inputs.cend(); ++in) {
+					const TransactionPtr &tx = _wallet->TransactionForHash((*in)->TxHash());
+					if (tx) {
+						OutputPtr output = tx->OutputOfIndex((*in)->Index());
+						if (output && _wallet->ContainsAddress(output->Addr())) {
+							bytes_t o = (*in)->TxHash().bytes();
+							o.append((*in)->Index());
+							if (!filter->ContainsData(o))
+								filter->InsertData(o);
+						}
 					}
 				}
 			}
@@ -937,7 +939,6 @@ namespace Elastos {
 		void PeerManager::OnDisconnected(const PeerPtr &peer, int error) {
 			int willSave = 0, txError = 0;
 			TransactionPeerList *peerList;
-			std::vector<PublishedTransaction> pubTx;
 			uint32_t reconnectSeconds = 1;
 			bool willReconnect = false;
 
@@ -948,9 +949,12 @@ namespace Elastos {
 					_connectFailureCount++;
 					PeerMisbehaving(peer);
 				} else if (error) { // timeout or some non-protocol related network error
-					for (size_t i = _peers.size(); i > 0; i--) {
-						if (_peers[i - 1] == peer->GetPeerInfo())
-							_peers.erase(_peers.begin() + i - 1);
+					for (std::vector<PeerInfo>::iterator p = _peers.begin(); p != _peers.cend();) {
+						if ((*p) == peer->GetPeerInfo()) {
+							p = _peers.erase(p);
+						} else {
+							++p;
+						}
 					}
 
 					_connectFailureCount++;
@@ -963,12 +967,7 @@ namespace Elastos {
 				}
 
 				for (size_t i = _txRelays.size(); i > 0; i--) {
-					peerList = &_txRelays[i - 1];
-
-					for (size_t j = peerList->GetPeers().size(); j > 0; j--) {
-						if (peerList->GetPeers()[j - 1]->IsEqual(peer.get()))
-							peerList->RemovePeerAt(j - 1);
-					}
+					_txRelays[i - 1].RemovePeer(peer);
 				}
 
 				if (peer == _downloadPeer) { // download peer disconnected
@@ -992,24 +991,8 @@ namespace Elastos {
 					willReconnect = true;
 				}
 
-				peer->info("connect failure = {}, enable reconnect = {}, reconnect task count = {}",
+				peer->info("failure = {}, reconnect = {}, task count = {}",
 						   _connectFailureCount, _enableReconnectTask, _reconnectTaskCount);
-				if (txError) {
-					for (size_t i = _publishedTx.size(); i > 0; i--) {
-						if (!_publishedTx[i - 1].HasCallback()) continue;
-						peer->error("transaction canceled: {}", strerror(txError));
-						pubTx.push_back(_publishedTx[i - 1]);
-//						_publishedTx[i - 1].ResetCallback();
-					}
-				}
-
-				for (size_t i = _connectedPeers.size(); i > 0; i--) {
-					if (_connectedPeers[i - 1] != peer)
-						continue;
-					_connectedPeers.erase(_connectedPeers.begin() + i - 1);
-					break;
-				}
-
 
 				if (willReconnect) {
 					reconnectSeconds = _reconnectStep;
@@ -1017,21 +1000,17 @@ namespace Elastos {
 						// doubling the step back each time
 						_reconnectStep <<= 1;
 					}
+				}
 
-					for (size_t i = 0; i < _publishedTx.size(); ++i) {
-						if (_publishedTx[i].HasCallback() && reconnectSeconds > 3) {
-							// have pending tx
-							reconnectSeconds = 3;
-							break;
-						}
+				for (std::vector<PeerPtr>::iterator p = _connectedPeers.begin(); p != _connectedPeers.end();) {
+					if ((*p) == peer) {
+						p = _connectedPeers.erase(p);
+						break;
+					} else {
+						++p;
 					}
 				}
-			}
-
-			if (willReconnect == false) {
-				for (size_t i = 0; i < pubTx.size(); i++) {
-					pubTx[i].FireCallback(txError, "tx canceled");
-				}
+				peer->info("connected peer size: {}", _connectedPeers.size());
 			}
 
 			if (willSave) FireSavePeers(true, {});
@@ -1659,25 +1638,24 @@ namespace Elastos {
 
 		bool PeerManager::RemovePeerFromList(const PeerPtr &peer, const uint256 &txHash,
 											 std::vector<TransactionPeerList> &list) {
+			bool removed = false;
 			for (size_t i = list.size(); i > 0; i--) {
-				if (list[i - 1].GetTransactionHash() != txHash) continue;
-
-				for (size_t j = list[i - 1].GetPeers().size(); j > 0; j--) {
-					if (!list[i - 1].GetPeers()[j - 1]->IsEqual(peer.get())) continue;
-					list[i - 1].RemovePeerAt(j - 1);
-					return true;
+				if (list[i - 1].GetTransactionHash() == txHash) {
+					removed = list[i - 1].RemovePeer(peer);
+					break;
 				}
-
-				break;
 			}
 
-			return false;
+			return removed;
 		}
 
 		void PeerManager::PeerMisbehaving(const PeerPtr &peer) {
-			for (size_t i = _peers.size(); i > 0; i--) {
-				if (_peers[i - 1] == peer->GetPeerInfo())
-					_peers.erase(_peers.begin() + i - 1);
+			for (std::vector<PeerInfo>::iterator p = _peers.begin(); p != _peers.end();) {
+				if ((*p) == peer->GetPeerInfo()) {
+					p = _peers.erase(p);
+				} else {
+					++p;
+				}
 			}
 
 			if (++_misbehavinCount >= 10) { // clear out stored peers so we get a fresh list from DNS for next connect
@@ -1990,6 +1968,7 @@ namespace Elastos {
 			std::vector<uint256> txHashes;
 
 			for (size_t i = 0; i < tx.size(); i++) {
+				PEER_DEBUG(peer, "tx[{}]: {}", i, tx[i]->ToJson().dump());
 				if (!PeerListHasPeer(_txRelays, tx[i]->GetHash(), peer) &&
 					!PeerListHasPeer(_txRequests, tx[i]->GetHash(), peer)) {
 					txHashes.push_back(tx[i]->GetHash());

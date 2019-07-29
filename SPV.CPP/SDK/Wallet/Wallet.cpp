@@ -151,15 +151,13 @@ namespace Elastos {
 
 			for (size_t i = 0; i < utxos.size(); ++i) {
 				const TransactionPtr tx = _allTx.Get(utxos[i]->Hash());
-				if (tx == nullptr ||
-					(type == GroupedAsset::Default &&
-						tx->GetOutputs()[utxos[i]->Index()]->GetType() != TransactionOutput::Type::Default) ||
-					(type == GroupedAsset::Voted &&
-						tx->GetOutputs()[utxos[i]->Index()]->GetType() != TransactionOutput::Type::VoteOutput)) {
-					continue;
+				if (tx) {
+					OutputPtr o = tx->OutputOfIndex(utxos[i]->Index());
+					if (o && ((type == GroupedAsset::Default && o->GetType() == TransactionOutput::Type::Default) ||
+							  (type == GroupedAsset::Voted && o->GetType() == TransactionOutput::Type::VoteOutput))) {
+						balance += tx->OutputOfIndex(utxos[i]->Index())->Amount();
+					}
 				}
-
-				balance += tx->GetOutputs()[utxos[i]->Index()]->Amount();
 			}
 
 			return balance;
@@ -198,6 +196,8 @@ namespace Elastos {
 
 			if (assetID != Asset::GetELAAssetID())
 				_groupedAssets[Asset::GetELAAssetID()]->AddFeeForTx(tx, false);
+
+			tx->FixIndex();
 
 			return tx;
 		}
@@ -350,10 +350,12 @@ namespace Elastos {
 			for (i = 0; i < txHashes.size(); i++) {
 				TransactionPtr tx = _allTx.Get(txHashes[i]);
 				if (tx) {
+					bool needUpdate = false;
 					if (tx->GetBlockHeight() == blockHeight && tx->GetTimestamp() == timestamp)
 						continue;
 
 					if (tx->GetBlockHeight() == TX_UNCONFIRMED && blockHeight != TX_UNCONFIRMED) {
+						needUpdate = true;
 						if (tx->GetTransactionType() == Transaction::registerAsset) {
 							RegisterAsset *p = dynamic_cast<RegisterAsset *>(tx->GetPayload());
 							if (p) payloads.push_back(p);
@@ -373,7 +375,8 @@ namespace Elastos {
 						hashes.push_back(txHashes[i]);
 						RemoveSpendingUTXO(tx->GetInputs());
 						GetSpentCoinbase(tx->GetInputs(), spentCoinBase);
-						changedBalance = BalanceAfterUpdatedTx(tx);
+						if (needUpdate)
+							changedBalance = BalanceAfterUpdatedTx(tx);
 					} else if (blockHeight != TX_UNCONFIRMED) { // remove and free confirmed non-wallet tx
 						_allTx.Remove(tx);
 					}
@@ -520,13 +523,16 @@ namespace Elastos {
 			BigInt amount(0);
 
 			boost::mutex::scoped_lock scopedLock(lock);
-			for (size_t i = 0; tx && i < tx->GetInputs().size(); i++) {
-				TransactionPtr t = _allTx.Get(tx->GetInputs()[i]->TxHash());
-				uint32_t n = tx->GetInputs()[i]->Index();
+			if (!tx)
+				return amount;
 
-				if (t && n < t->GetOutputs().size() &&
-					_subAccount->ContainsAddress(t->GetOutputs()[n]->Addr())) {
-					amount += t->GetOutputs()[n]->Amount();
+			for (InputArray::iterator in = tx->GetInputs().begin(); in != tx->GetInputs().end(); ++in) {
+				TransactionPtr t = _allTx.Get((*in)->TxHash());
+				if (t) {
+					OutputPtr o = t->OutputOfIndex((*in)->Index());
+					if (o && _subAccount->ContainsAddress(o->Addr())) {
+						amount += o->Amount();
+					}
 				}
 			}
 
@@ -537,7 +543,6 @@ namespace Elastos {
 			boost::mutex::scoped_lock scopedLock(lock);
 			bool status = true;
 			for (InputArray::iterator in = tx->GetInputs().begin(); in != tx->GetInputs().end(); ++in) {
-				UTXOPtr cb;
 				TransactionPtr t = _allTx.Get((*in)->TxHash());
 				if (t) {
 					OutputPtr output = t->OutputOfIndex((*in)->Index());
@@ -545,7 +550,7 @@ namespace Elastos {
 						status = false;
 						break;
 					}
-				} else if ((cb = CoinBaseForHashInternal((*in)->TxHash())) != nullptr) {
+				} else if (CoinBaseForHashInternal((*in)->TxHash()) != nullptr) {
 					status = false;
 					break;
 				}
@@ -555,15 +560,15 @@ namespace Elastos {
 		}
 
 		bool Wallet::StripTransaction(const TransactionPtr &tx) const {
-			if (IsReceiveTransaction(tx) && tx->GetOutputs().size() > 2) {
+			if (IsReceiveTransaction(tx) && tx->GetOutputs().size() > 2 &&
+				tx->GetOutputs().size() - 1 == tx->GetOutputs().back()->FixedIndex()) {
+				SPVLOG_DEBUG("{} strip tx {}", _walletID, tx->GetHash().GetHex());
 				boost::mutex::scoped_lock scopedLock(lock);
 				std::vector<OutputPtr> newOutputs;
 				const std::vector<OutputPtr> &outputs = tx->GetOutputs();
-				for (size_t i = 0; i < outputs.size(); ++i) {
-					if (_subAccount->ContainsAddress(outputs[i]->Addr())) {
-						outputs[i]->SetFixedIndex((uint16_t)i);
-						newOutputs.push_back(outputs[i]);
-					}
+				for (OutputArray::const_iterator o = outputs.cbegin(); o != outputs.cend(); ++o) {
+					if (_subAccount->ContainsAddress((*o)->Addr()))
+						newOutputs.push_back(*o);
 				}
 				tx->SetOutputs(newOutputs);
 				return true;
@@ -646,16 +651,16 @@ namespace Elastos {
 
 		std::vector<TransactionPtr> Wallet::TxUnconfirmedBefore(uint32_t blockHeight) {
 			boost::mutex::scoped_lock scopedLock(lock);
-			size_t total, n = 0;
 			std::vector<TransactionPtr> result;
 
-			total = _transactions.size();
-			while (n < total && _transactions[(total - n) - 1]->GetBlockHeight() >= blockHeight) n++;
-
-			result.reserve(n);
-			for (size_t i = 0; i < n; i++) {
-				result.push_back(_transactions[(total - n) + i]);
+			for (size_t i = _transactions.size(); i > 0; --i) {
+				if (_transactions[i - 1]->GetBlockHeight() >= blockHeight) {
+					result.push_back(_transactions[i - 1]);
+				} else {
+					break;
+				}
 			}
+			std::reverse(result.begin(), result.end());
 
 			return result;
 		}
@@ -745,9 +750,8 @@ namespace Elastos {
 				return true;
 			}
 
-			const std::vector<OutputPtr> &outputs = tx->GetOutputs();
-			std::vector<OutputPtr>::const_iterator it;
-			for (it = outputs.cbegin(); !r && it != outputs.cend(); ++it) {
+			const OutputArray &outputs = tx->GetOutputs();
+			for (OutputArray::const_iterator it = outputs.cbegin(); !r && it != outputs.cend(); ++it) {
 				if (_subAccount->ContainsAddress((*it)->Addr()))
 					r = true;
 
@@ -756,15 +760,13 @@ namespace Elastos {
 					r = true;
 			}
 
-			for (size_t i = 0; !r && i < tx->GetInputs().size(); i++) {
-				const TransactionPtr t = _allTx.Get(tx->GetInputs()[i]->TxHash());
+			const InputArray &inputs = tx->GetInputs();
+			for (InputArray::const_iterator in = inputs.cbegin(); !r && in != inputs.cend(); ++in) {
+				const TransactionPtr t = _allTx.Get((*in)->TxHash());
 				if (!t) continue;
 
-				uint32_t n = tx->GetInputs()[i]->Index();
-				OutputPtr output = t->OutputOfIndex(tx->GetInputs()[i]->Index());
-				if (!output) continue;
-
-				if (_subAccount->ContainsAddress(output->Addr()))
+				OutputPtr output = t->OutputOfIndex((*in)->Index());
+				if (output && _subAccount->ContainsAddress(output->Addr()))
 					r = true;
 			}
 
@@ -858,9 +860,9 @@ namespace Elastos {
 			return _groupedAssets[assetID]->GetUTXOs(addr);
 		}
 
-		bool Wallet::IsAssetUnique(const std::vector<OutputPtr> &outputs) const {
-			for (size_t i = 1; i < outputs.size(); ++i) {
-				if (outputs[0]->AssetID() != outputs[i]->AssetID())
+		bool Wallet::IsAssetUnique(const OutputArray &outputs) const {
+			for (OutputArray::const_iterator o = outputs.cbegin(); o != outputs.cend(); ++o) {
+				if (outputs.front()->AssetID() != (*o)->AssetID())
 					return false;
 			}
 
