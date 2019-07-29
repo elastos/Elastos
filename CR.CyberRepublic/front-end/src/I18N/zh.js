@@ -1482,7 +1482,7 @@ const zh = {
     kevin: {
       name: '张戈',
       intro: '亦来云全球推广负责人, 常驻硅谷',
-      email: 'kevinzhang@elastos.org'
+      email: 'kevin.zhang.canada@gmail.com'
     },
     yipeng: {
       name: '苏翼鹏',
