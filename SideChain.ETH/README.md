@@ -123,7 +123,8 @@ acc.signTransaction(tx).then((res)=>{
    console.log(stx.rawTransaction);
    web3.eth.sendSignedTransaction(stx.rawTransaction).then(console)});
 ```
-**Note: ELA testnet server Deploy Contract Address: `0x491bC043672B9286fA02FA7e0d6A3E5A0384A31A`, ELA mainnet server Deploy Contract Address: `0xC445f9487bF570fF508eA9Ac320b59730e81e503`!**
+*Note: ELA testnet server Deploy Contract Address: `0x491bC043672B9286fA02FA7e0d6A3E5A0384A31A`
+ELA mainnet server Deploy Contract Address: `0xC445f9487bF570fF508eA9Ac320b59730e81e503`*
 
 ### Configuration
 
