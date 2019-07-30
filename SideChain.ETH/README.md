@@ -40,7 +40,7 @@ Going through all the possible command line flags is out of scope here (please c
 enumerated a few common parameter combos to get you up to speed quickly on how you can run your
 own Geth instance.
 
-### Full node on the main Ethereum network
+### Full node on the main ELA Ethereum network
 
 By far the most common scenario is people wanting to simply interact with the Ethereum network:
 create accounts; transfer funds; deploy and interact with contracts. For this particular use-case
@@ -62,7 +62,7 @@ This command will:
    This tool is optional and if you leave it out you can always attach to an already running Geth instance
    with `geth attach`.
 
-### Full node on the Ethereum test network
+### Full node on the ELA testnet network
 
 Transitioning towards developers, if you'd like to play around with creating Ethereum contracts, you
 almost certainly would like to do that without any real money involved until you get the hang of the
@@ -78,8 +78,8 @@ testnet too. Please see above for their explanations if you've skipped to here.
 
 Specifying the `--testnet` flag however will reconfigure your Geth instance a bit:
 
- * Instead of using the default data directory (`~/.ethereum` on Linux for example), Geth will nest
-   itself one level deeper into a `testnet` subfolder (`~/.ethereum/testnet` on Linux). Note, on OSX
+ * Instead of using the default data directory (`~/.ela_ethereum` on Linux for example), Geth will nest
+   itself one level deeper into a `testnet` subfolder (`~/.ela_ethereum/testnet` on Linux). Note, on OSX
    and Linux this also means that attaching to a running testnet node requires the use of a custom
    endpoint since `geth attach` will try to attach to a production node endpoint by default. E.g.
    `geth attach <datadir>/testnet/geth.ipc`. Windows users are not affected by this.
@@ -91,12 +91,37 @@ over between the main network and test network, you should make sure to always u
 for play-money and real-money. Unless you manually move accounts, Geth will by default correctly
 separate the two networks and will not make any accounts available between them.*
 
-### Full node on the Rinkeby test network
+### How to topup ELA to ETH
+* use compile [ELA-Client](https://github.com/elastos/Elastos.ELA.Client)
+* create topup transaction: `./ela-cli wallet -t create --deposit eth_address(ETH address) --amount recharge_value(amount ela units) --fee recharge_fee(fee ela units)`
+* sign transaction: `./ela-cli wallet -t sign --file to_be_signed.txn -p yourpassword(your keystore password)`
+* send transaction: `./ela-cli wallet -t send --file ready_to_send.txn`
 
-The above test network is a cross client one based on the ethash proof-of-work consensus algorithm. As such, it has certain extra overhead and is more susceptible to reorganization attacks due to the network's low difficulty / security. Go Ethereum also supports connecting to a proof-of-authority based test network called [*Rinkeby*](https://www.rinkeby.io) (operated by members of the community). This network is lighter, more secure, but is only supported by Elastos.ELA.SideChain.ETH.
+### How to withdraw ETH to ELA
+* use geth console: `geth console`
+* use contract deploy code:
 
 ```
-$ geth --rinkeby console
+Web3 = require("web3");
+// set web3 uri
+web3 = new Web3("http://127.0.0.1:8545"); 
+// set withdraw contract
+contract = new web3.eth.Contract([{"constant":false,"inputs":[{"name":"_addrs","type":"string[]"},{"name":"_amounts","type":"uint256[]"},{"name":"_fee","type":"uint256"}],"name":"receivePayload","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"anonymous":false,"inputs":[{"indexed":false,"name":"_addr","type":"string"},{"indexed":false,"name":"_amount","type":"uint256"},{"indexed":false,"name":"_crosschainamount","type":"uint256"},{"indexed":true,"name":"_sender","type":"address"}],"name":"PayloadReceived","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_sender","type":"address"},{"indexed":false,"name":"_amount","type":"uint256"},{"indexed":true,"name":"_black","type":"address"}],"name":"EtherDeposited","type":"event"}])   
+//deploy account contract address
+contract.options.address="0x491bC043672B9286fA02FA7e0d6A3E5A0384A31A"   
+// set deploy account contract keystore info
+acc = web3.eth.accounts.decrypt({"address":"840534b46b3b3bf8c1c3e4c7d34bc86933de7814","crypto":{"cipher":"aes-128-ctr","ciphertext":"2e8ed4f40c71538a12df95fa0b5b21707be75c7dd1b57e390e505659d6a4ab72","cipherparams":{"iv":"f8b3e54a710dc7ee7faae3e7870d0cc0"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"3affb21811ef5115de926976e9b3119f92545bcfa574ba51d9200cd4d2d8531d"},"mac":"526443e3cf1e3194afbfccc9f8f7aa8ce30b5dbb7653da513851a7d8d85407f9"},"id":"c66a6ceb-1542-429f-81db-0ca916b72fd3","version":3}, "12345678");   
+// call receivePayload function，params：(ELA main chain address，amount(In ela up to convert wei 10000000000)，fee)
+cdata  = contract.methods.receivePayload("EbK2L365FMA1t1WUybatPt7tAetQL7Y688", "200000000000000000", "100010000000000").encodeABI()
+// gas minimum is 3000000，gasPrice is any value
+tx = {data: cdata,to:contract.options.address, from:acc.address, gas: "3000000", gasPrice: "20000000000"};
+// send transaction amount(use receivePayload function amount)
+tx.value="200000000000000000"
+acc.signTransaction(tx).then((res)=>{
+   console.log("coming")
+   stx = res;
+   console.log(stx.rawTransaction)
+   web3.eth.sendSignedTransaction(stx.rawTransaction).then(console)});
 ```
 
 ### Configuration
