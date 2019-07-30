@@ -58,7 +58,7 @@ class Verify(Resource):
 
     def post(self):
         """
-        Verify the message that was signed using your private key
+        Verify the message that was signed using your Private Key
         """
         api_url_base = settings.DID_SERVICE_URL + settings.DID_SERVICE_VERIFY
         headers = {'Content-type': 'application/json'}
