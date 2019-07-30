@@ -10,8 +10,8 @@ RUN apk update
 # copy folders
 COPY service /restful-services/wallet-service
 
-RUN cp /restful-services/wallet-service/base.api/src/main/resources/application.properties.in /restful-services/wallet-service/base.api/src/main/resources/application.properties
-RUN sed -i "s#@ELA_REST_API@#http://ela-mainchain-normal-1:20334#g" /restful-services/wallet-service/base.api/src/main/resources/application.properties
+RUN sed -i 's#localhost:20334#privnet-mainchain-node:20334#g' /restful-services/wallet-service/base.api/src/main/resources/application.properties
+RUN sed -i 's#8090#8080#g' /restful-services/wallet-service/base.api/src/main/resources/application.properties
 RUN cd /restful-services/wallet-service \
     && mvn clean                        \
     && mvn install -Dmaven.test.skip -Dgpg.skip
@@ -31,6 +31,6 @@ RUN apk update \
 
 USER elauser
 
-EXPOSE 8080
+EXPOSE 8090
 
 ENTRYPOINT ["java", "-jar", "./base.api-0.1.0.jar"]

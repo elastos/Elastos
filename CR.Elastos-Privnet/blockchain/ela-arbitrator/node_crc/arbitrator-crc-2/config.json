@@ -8,13 +8,13 @@
         "MaxPerLogSize": 0,
         "MainNode": {
             "Rpc": {
-                "IpAddress": "ela-mainchain-crc-2",
+                "IpAddress": "privnet-mainchain-crc-2",
                 "HttpJsonPort": 20336,
                 "User": "",
                 "Pass": ""
             },
             "SpvSeedList": [
-                "ela-mainchain-crc-2:20338"
+                "privnet-mainchain-crc-2:20338"
             ],
             "Magic": 7630401,
             "FoundationAddress": "ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw"
@@ -22,7 +22,7 @@
         "SideNodeList": [
             {
                 "Rpc": {
-                    "IpAddress": "ela-sidechain-did-2",
+                    "IpAddress": "privnet-sidechain-did-node",
                     "HttpJsonPort": 20606,
                     "User": "",
                     "Pass": ""
@@ -35,7 +35,7 @@
             },
             {
                 "Rpc":{
-                    "IpAddress":"ela-sidechain-token-2",
+                    "IpAddress":"privnet-sidechain-token-node",
                     "HttpJsonPort": 20616,
                     "Pass":"",
                     "User":""
@@ -45,6 +45,19 @@
                 "MiningAddr":"EHnxz2oRXehfAy5QrCH7gqZtUZQPx7hprH",
                 "PayToAddr":"EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U",
                 "PowChain":true
+            },
+            {
+                "Rpc":{
+                    "IpAddress":"privnet-sidechain-eth-oracle-node",
+                    "HttpJsonPort": 16666,
+                    "Pass":"",
+                    "User":""
+                },
+                "ExchangeRate": 1.0,
+                "GenesisBlock":"b0cd29490c792dbcbe75adadee415270b9e5c8ae89dfed835440f2ac606eebfc",
+                "MiningAddr":"EcUt3XJfTdc1APi8uiaoGPZhqPm47iixHL",
+                "PayToAddr":"EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U",
+                "PowChain":false
             }
         ],
         "OriginCrossChainArbiters": [
@@ -53,11 +66,9 @@
         ],
         "CRCCrossChainArbiters": [
             "0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450",
-            "0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08",
-            "032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a",
-            "02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7"
+            "0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08"
         ],
-        "DPoSNetAddress": "ela-mainchain-crc-2:20339",
+        "DPoSNetAddress": "privnet-mainchain-crc-2:20339",
         "CRCOnlyDPOSHeight": 200,
         "SyncInterval": 1000,
         "SideChainMonitorScanInterval": 1000,

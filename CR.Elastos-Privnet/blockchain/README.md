@@ -1,8 +1,8 @@
 ## General Info
 
 - Prerequisite basic knowledge of docker is expected  
-- After starting, the miners will automatically start running and about 25 containers are created
-- Pre-mined 900 ELA on Mainchain miner reward address, 100,000 ELA on one mainchain address, 100,000 ELA on another mainchain address, 100,000 ELA on DID sidechain address and 100,000 ELA on Token sidechain address. For more, see [Wallets](#Wallets)
+- After starting, the miners will automatically start running and about 18 containers are created
+- Pre-mined 1000 ELA on Mainchain miner reward address, 100,000 ELA on one mainchain address, 100,000 ELA on another mainchain address, 100,000 ELA on DID sidechain address, 100,000 ELA on Token sidechain address and 100,000 ELA on ETH sidechain address. For more, see [Wallets](#Wallets)
 - For the docker images that might be used for connecting to mainnet, testnet, regnet or private net, check out [https://cloud.docker.com/u/cyberrepublic/repository/list](https://cloud.docker.com/u/cyberrepublic/repository/list)
 
 ## Tools 
@@ -17,6 +17,8 @@
 - [action_storeinfoon_didchain.json](./test/action_storeinfoon_didchain.json): This file is used for DID sidechain testing 
 - [did_example.json](./test/did_example.json): This file contains info that is produced when you create a new DID. The DID sidechain test that's used later on uses this already created DID to make the process easier
 - [register_mainchain-dpos-1.lua](./test/register_mainchain-dpos-1.lua): This script is executed when registering for one of the dpos supernodes locally. Please do not use this on production environment
+- [cancel_producer_mainchain-dpos-1.lua](./test/cancel_producer_mainchain-dpos-1.lua): This script is executed when cancelling one of the dpos supernodes locally. Please do not use this on production environment
+- [return_deposit_mainchain-dpos-1.lua](./test/return_deposit_mainchain-dpos-1.lua): This script is executed when getting the original deposit back for one of the dpos supernodes locally. Please do not use this on production environment
 - [register_mainchain-dpos-2.lua](./test/register_mainchain-dpos-2.lua): This script is executed when registering for one of the dpos supernodes locally. Please do not use this on production environment
 
 ## Wallets
@@ -26,43 +28,42 @@ These are located in the `wallets` folder:
 - `foundation.json` - This is where the genesis block's 33 million ELA is created(Note some ELA have been taken out of this account to other addresses for testing purposes)
 - `mainchain-miner-reward.json` - This is where the mining rewards from mainchain go
 - `preload/mainchains.json` - This is where the two mainchain addresses are located with 100,000 ELA and 100,000 ELA respectively
-- `preload/sidechains.json` - This is where the DID and Token sidechain addresses are located with 100,000 DID ELA and 100,000 TOKEN ELA respectively
+- `preload/sidechains.json` - This is where the DID and Token sidechain addresses are located with 100,000 DID ELA, 100,000 TOKEN ELA and 100,000 ETH ELA respectively
 
 ## Repos used to build 
 
-- [Elastos.ELA](https://github.com/elastos/Elastos.ELA): v0.3.2
+- [Elastos.ELA](https://github.com/elastos/Elastos.ELA): v0.3.4
 - [Elastos.ELA.Arbiter](https://github.com/elastos/Elastos.ELA.Arbiter): v0.1.1
 - [Elastos.ELA.SideChain.ID](https://github.com/elastos/Elastos.ELA.Sidechain.ID): v0.1.2
 - [Elastos.ELA.SideChain.Token](https://github.com/elastos/Elastos.ELA.SideChain.Token): v0.1.2
+- [Elastos.ELA.SideChain.ETH](https://github.com/elastos/Elastos.ELA.SideChain.ETH): dev
 - [Elastos.ORG.Wallet.Service](https://github.com/elastos/Elastos.ORG.Wallet.Service): master
-- [Elastos.ORG.DID.Service](https://github.com/elastos/Elastos.ORG.DID.Service): master
+- [Elastos.ORG.SideChain.Service](https://github.com/elastos/Elastos.ORG.SideChain.Service): master
 - [Elastos.ORG.API.Misc](https://github.com/elastos/Elastos.ORG.API.Misc): master
 
 ## Containers that are run
 
 ### Mainchain nodes
 
-- Normal node 1: 10011-10017
+- Normal node: 10011-10017
 - CRC node 1: 10111-10117
 - CRC node 2: 10211-10217
-- CRC node 3: 10311-10317
-- CRC node 4: 10411-10417
 - Elected node 1: 10511-10517
 - Elected node 2: 10611-10617
 
-### DID Sidechain nodes
+### Sidechain nodes
 
-- DID sidechain node 1: 30111-30115
-- DID sidechain node 2: 30211-30215
-- DID sidechain node 3: 30311-30315
-- DID sidechain node 4: 30411-30415
+- DID sidechain node: 30111-30115
+- Token sidechain node: 40111-40115
+- ETH sidechain node: 60011-60012
+- ETH sidechain oracle node: 60113
 
-### Token Sidechain nodes
+### Arbitrator nodes
 
-- Token sidechain node 1: 40111-40115
-- Token sidechain node 2: 40111-40115
-- Token sidechain node 3: 40111-40115
-- Token sidechain node 4: 40111-40115
+- CRC node 1: 50114-50115
+- CRC node 2: 50214-50215
+- Origin node 1: 50514-50515
+- Origin node 2: 50614-50615
 
 ### Arbitrator nodes
 
@@ -76,7 +77,7 @@ These are located in the `wallets` folder:
 ### Restful Services
 
 - Wallet Service REST API Portal: 8091
-- DID Service REST API Portal: 8092
+- Sidechain Service REST API Portal: 8092
 - MISC Service Mainchain REST API Portal: 9091
 - MISC Service DID Sidechain REST API Portal: 9092
 
@@ -90,16 +91,16 @@ These are located in the `wallets` folder:
     
     If you would like to reset the entire environment with fresh data, do the following. This basically removes all the blockchain data that may have been saved previously and resets it back to block height 510
     ```
-    tools/copy_freshdata_docker.sh
+    tools/copy_freshdata_docker.sh;
     docker-compose up --remove-orphans --build --force-recreate -d
     ```
     For users in China, if you get issues pulling images please refer to this post: https://segmentfault.com/a/1190000016083023
 
     If you would like to start all the nodes from block 0, do the following. Note that doing this means you won't have the pre-loaded ELAs on the wallet addresses anymore and you need to set up everything yourself
     ```
-    sudo tools/copy_freshdata_docker.sh
-    docker container prune
-    sudo rm -rf ~/.volumes/elastos-privnet
+    sudo tools/copy_freshdata_docker.sh;
+    docker container prune;
+    sudo rm -rf ~/.volumes/elastos-privnet;
     docker-compose up --remove-orphans --build --force-recreate -d
     ```
 
@@ -114,9 +115,9 @@ These are located in the `wallets` folder:
     curl http://localhost:10012/api/v1/asset/balances/EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U
     ```    
     
-    You should see at least 915 ELA in the miner wallet:
+    You should see at least 1005 ELA in the miner wallet:
     ```
-    {"Desc":"Success","Error":0,"Result":"915.91409329"}
+    {"Desc":"Success","Error":0,"Result":"1005.60664465"}
     ```
     
 3. Verify the DID Sidechain is running by checking the pre-loaded wallet:
@@ -138,7 +139,7 @@ These are located in the `wallets` folder:
     
     You should see around 100,000 ELA in the miner wallet:
     ```
-    {"result":"94999.99895140","status":200}
+    {"result":"95046.51050338","status":200}
     ```
     
 5. Verify the DID Service is running by checking the pre-loaded DID sidechain wallet
@@ -180,7 +181,7 @@ These are located in the `wallets` folder:
       "error": null,
       "id": null,
       "jsonrpc": "2.0",
-      "result": "95010.81059521"
+      "result": "95049.05959013"
     }
     ```
 
@@ -195,7 +196,7 @@ These are located in the `wallets` folder:
       "error": null,
       "id": null,
       "jsonrpc": "2.0",
-      "result": "95020.74324360"
+      "result": "95069.63333583"
     }
     ```
 
@@ -325,16 +326,17 @@ These are located in the `wallets` folder:
   ```
   mkdir -p ~/node/ela;
   cd ~/node/ela;
-  wget https://github.com/elastos/Elastos.ELA/releases/download/v0.3.2/ela;
-  chmod +x ela;
-  wget https://github.com/elastos/Elastos.ELA/releases/download/v0.3.2/ela-cli;
-  chmod +x ela-cli;
+  wget https://download.elastos.org/elastos-ela/elastos-ela-0.3.4/elastos-ela-v0.3.4-linux-x86_64.tgz;
+  tar -xzvf elastos-ela-v0.3.4-linux-x86_64.tgz;
+  mv elastos-ela-v0.3.4/ela .;
+  mv elastos-ela-v0.3.4/ela-cli .;
+  rm -rf elastos-ela-v0.3.4-linux-x86_64.tgz elastos-ela-v0.3.4/
   ```
 
 2. Let's create a new wallet that we will use to register for our supernode so we'll be both an owner and a node
 
   ```
-  ./ela-cli wallet create -p elastos
+  ./ela-cli --rpcport 10014 wallet create -p elastos
   ```
 
   Should return something like:
@@ -362,7 +364,7 @@ These are located in the `wallets` folder:
 
   Wait for the transaction to confirm(around 6 blocks) and then check your new balance:
   ```
-  ./ela-cli wallet b
+  ./ela-cli --rpcport 10014 wallet b
   ```
 
   Should return something like:
@@ -384,8 +386,6 @@ These are located in the `wallets` folder:
         "127.0.0.1:10016",
         "127.0.0.1:10116",
         "127.0.0.1:10216",
-        "127.0.0.1:10316",
-        "127.0.0.1:10416",
         "127.0.0.1:10516",
         "127.0.0.1:10616"
       ],
@@ -410,9 +410,7 @@ These are located in the `wallets` folder:
         ],
         "CRCArbiters": [
           "0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450",
-          "0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08",
-          "032e74c386af5d672cb196334f2b6ee6451d61f2257f0837ea7af340ef4dea4e1a",
-          "02eafcd36390b064431b82a4b2934f6d93fddfcfa4a86602b2ae32d858b8d3bcd7"
+          "0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08"
         ],
         "NormalArbitratorsCount": 2,
         "CandidatesCount": 24,
@@ -454,7 +452,7 @@ These are located in the `wallets` folder:
 
   Get deposit_address:
   ```
-  ./ela-cli wallet depositaddr $ELAADDRESS
+  ./ela-cli --rpcport 10014 wallet depositaddr $ELAADDRESS
   ```
 
   Should output your "deposit_address" that you enter on register_new_supernode.lua script. 
@@ -464,7 +462,7 @@ These are located in the `wallets` folder:
   ```
 
   ```
-  ./ela-cli wallet account -p elastos
+  ./ela-cli --rpcport 10014 wallet account -p elastos
   ```
 
   Should output your public key that you can enter for both "own_publickey" and "node_publickey" for testing purposes
@@ -474,7 +472,7 @@ These are located in the `wallets` folder:
 7. Register your supernode
 
   ```
-  ./ela-cli script --file ./register_new_supernode.lua
+  ./ela-cli --rpcport 10014 script --file ./register_new_supernode.lua
   ```
 
   If the transaction is successful, it should say "tx send success" at the end of the output
@@ -482,7 +480,7 @@ These are located in the `wallets` folder:
 8. Verify your supernode got registered successfully
 
   ```
-  ./ela-cli info listproducers
+  ./ela-cli --rpcport 10014 info listproducers
   ```
 
   You should see your new supernode listed there
@@ -511,7 +509,8 @@ These are located in the `wallets` folder:
 
   After some blocks, your vote will be seen. Let's verify this:
   ```
-  ./ela-cli info listproducers
+  ./ela-cli --rpcport 10014 info listproducers --rpcuser user --rpcpassword password
+
   ```
 
   Should output something like:
@@ -582,7 +581,7 @@ These are located in the `wallets` folder:
 
 ### Creating a DID, and Storing/Retrieving Metadata
 
-Generally you will use the DID Service running on port `8092` for this - [https://didservice.readthedocs.io](https://didservice.readthedocs.io).
+Generally you will use the DID Service running on port `8092` for this - [https://didservice.readthedocs.io](https://didservice.readthedocs.io)
 
 See "Create DID" for how to create a DID, you will receive both a did and a private key, store this somewhere.
 
@@ -664,7 +663,7 @@ Don't be alarmed. Just wait a couple of minutes and try again.
 
 ### Retrieving the DID info must be on the Misc.API DID Sidechain - port 9092
 
-Even if you use DID.Service to store DID property, you need to use Misc.API for DID sidechain to retrieve the DID property which should be running on port `9092`.
+Even if you use DID Sidechain Service to store DID property, you need to use Misc.API for DID sidechain to retrieve the DID property which should be running on port `9092`.
 
 The API call should be `http://localhost:9092/api/1/did/{did}/{key}`
 
@@ -838,14 +837,7 @@ Would return something like
 
 7. Remove all the files that are no longer needed
   ```
-  rm -rf ~/node/ela;
-  rm -f cli-config.json keystore.dat ready_to_send.txn to_be_signed.txnrm  wallet.db;
-  ```
-
-### Stop docker services
-
-  ```
-  cd $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain && docker-compose down
+  rm -f cli-config.json keystore.dat ready_to_send.txn to_be_signed.txn wallet.db;
   ```
 
 ### Create a fungible token 
@@ -858,8 +850,83 @@ COMING SOON
 
 ## Ethereum Sidechain Testing
 
+### Transfer some ELA from main chain to ETH Sidechain
+1. Change directory
+  ```
+  cd $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-mainchain
+  ```
+
+2. Configure ela-cli config file
+
+    Create a file called "cli-config.json" and put the following content in that file:
+
+    ```
+    {
+      "Host": "127.0.0.1:10014",
+      "DepositAddress":"XZyAtNipJ7fdgBRhdzCoyS7A3PDSzR7u98"
+    }
+3. Create a new wallet using ela-cli-crosschain client for testing purposes
+
+    ```
+    ./ela-cli-crosschain wallet --create -p elastos
+    ```
+
+    Save ELA address, Public key and Private key to a variable so it can be used later
+    ```bash
+    ELAADDRESS=$(./ela-cli-crosschain wallet -a -p elastos | tail -2 | head -1 | cut -d' ' -f1)
+    PUBLICKEY=$(./ela-cli-crosschain wallet -a -p elastos | tail -2 | head -1 | cut -d' ' -f2)
+    PRIVATEKEY=$(./ela-cli-crosschain wallet --export -p elastos | tail -2 | head -1 | cut -d' ' -f2)
+    # Make sure your info is correct
+    echo $ELAADDRESS $PUBLICKEY $PRIVATEKEY
+    ```
+
+4. Transfer ELA from the resources wallet to this newly created wallet
+
+    ```
+    curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": '"$ELAADDRESS"',"amount": "100000"}]}' localhost:8091/api/1/transfer
+    ```
+
+    Check whether the ELA got transferred successfully
+
+    ```
+    ./ela-cli-crosschain wallet -l
+    ```
+5. Transfer ELA from main chain to eth sidechain
+
+    ```
+    ./ela-cli-crosschain wallet -t create --from $ELAADDRESS --deposit 0x4505b967d56f84647eb3a40f7c365f7d87a88bc3 --amount 99999 --fee 0.1;
+    ./ela-cli-crosschain wallet -t sign -p elastos --file to_be_signed.txn;
+    ./ela-cli-crosschain wallet -t send --file ready_to_send.txn;
+    ```
+6. Check eth balance:
+
+  ```
+  curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x4505b967d56f84647eb3a40f7c365f7d87a88bc3", "latest"],"id":1}' localhost:60011
+  ```
+
+  Should return something like:
+  ```
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": "0x152cf383e51ef1920000"
+  }
+  ```
+  0x152cf383e51ef1920000 is 99998900000000000000000 in decimal format which is the unit in wei. This equals to 99998.9 ETH ELA
+
+### Transfer some ETH ELA from ETH Sidechain to Mainchain
+COMING SOON
+
+### Deploy a simple Ethereum smart contract
+
 COMING SOON
 
 ## NEO Sidechain Testing
 
 COMING SOON
+
+### Stop docker services
+
+  ```
+  cd $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain && docker-compose down
+  ```

@@ -1,0 +1,35 @@
+{
+        "Magic": 7630405,
+        "DisableDNS": true,
+        "SPVMagic": 7630401,
+        "SPVDisableDNS": true,
+        "PermanentPeers": [
+            "privnet-sidechain-token-1:20618",
+            "privnet-sidechain-token-2:20618"
+        ],
+        "SPVPermanentPeers": [
+            "privnet-mainchain-node:20338",
+            "privnet-mainchain-crc-1:20338",
+            "privnet-mainchain-crc-2:20338",
+            "privnet-mainchain-dpos-1:20338",
+            "privnet-mainchain-dpos-2:20338"
+        ],
+        "ExchangeRate": 1.0,
+        "MinCrossChainTxFee": 10000,
+        "EnableREST": true,
+        "EnableRPC": true,
+        "RPCUser": "",
+        "RPCPass": "",
+        "RPCWhiteList": [
+            "0.0.0.0"
+        ],
+        "Loglevel": 1,
+        "LogsFolderSize": 0,
+        "PerLogFileSize": 0,
+        "FoundationAddress": "ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw",
+        "DisableTxFilters": false,
+        "EnableMining": true,
+        "InstantBlock": false,
+        "PayToAddr": "EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U",
+        "MinerInfo": "ELA"
+}

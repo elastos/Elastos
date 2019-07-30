@@ -18,7 +18,7 @@ cd /home/elauser
 maxcounter=30
 
 counter=1
-while ! mysql -h ela-mysql -P 3306 -u root --password="12345678" -e "show databases;" > /dev/null; do
+while ! mysql -h privnet-mysql -P 3306 -u root --password="12345678" -e "show databases;" > /dev/null; do
     sleep 2
     echo "Waiting MySQL..." | tee ~/deploy.log
     counter=`expr $counter + 1`
@@ -29,15 +29,15 @@ while ! mysql -h ela-mysql -P 3306 -u root --password="12345678" -e "show databa
 done
 
 # Run the SQL
-mysql -h ela-mysql -P 3306 -u root --password="12345678" -e "CREATE DATABASE IF NOT EXISTS chain_did"
-mysql -h ela-mysql -P 3306 -u root --password="12345678" -e "GRANT ALL PRIVILEGES ON chain_did.* TO 'elastos'@'%'"
-mysql -h ela-mysql -P 3306 -u root --password="12345678" -D chain_did < ./sql/global_setting.sql
-mysql -h ela-mysql -P 3306 -u elastos --password="12345678" -D chain_did < ./sql/chain_chain_block_header.sql
-mysql -h ela-mysql -P 3306 -u elastos --password="12345678" -D chain_did < ./sql/chain_chain_block_transaction_history.sql
-mysql -h ela-mysql -P 3306 -u elastos --password="12345678" -D chain_did < ./sql/chain_chain_did_property.sql
-mysql -h ela-mysql -P 3306 -u elastos --password="12345678" -D chain_did < ./sql/chain_chain_cmc_price.sql
-mysql -h ela-mysql -P 3306 -u elastos --password="12345678" -D chain_did < ./sql/chain_chain_vote_info.sql
-mysql -h ela-mysql -P 3306 -u elastos --password="12345678" -D chain_did < ./sql/chain_chain_producer_info.sql
+mysql -h privnet-mysql -P 3306 -u root --password="12345678" -e "CREATE DATABASE IF NOT EXISTS chain_did"
+mysql -h privnet-mysql -P 3306 -u root --password="12345678" -e "GRANT ALL PRIVILEGES ON chain_did.* TO 'elastos'@'%'"
+mysql -h privnet-mysql -P 3306 -u root --password="12345678" -D chain_did < ./sql/global_setting.sql
+mysql -h privnet-mysql -P 3306 -u elastos --password="12345678" -D chain_did < ./sql/chain_chain_block_header.sql
+mysql -h privnet-mysql -P 3306 -u elastos --password="12345678" -D chain_did < ./sql/chain_chain_block_transaction_history.sql
+mysql -h privnet-mysql -P 3306 -u elastos --password="12345678" -D chain_did < ./sql/chain_chain_did_property.sql
+mysql -h privnet-mysql -P 3306 -u elastos --password="12345678" -D chain_did < ./sql/chain_chain_cmc_price.sql
+mysql -h privnet-mysql -P 3306 -u elastos --password="12345678" -D chain_did < ./sql/chain_chain_vote_info.sql
+mysql -h privnet-mysql -P 3306 -u elastos --password="12345678" -D chain_did < ./sql/chain_chain_producer_info.sql
 
 print_progress "\nELA API Misc Sidechain DID" | tee ~/deploy.log
 

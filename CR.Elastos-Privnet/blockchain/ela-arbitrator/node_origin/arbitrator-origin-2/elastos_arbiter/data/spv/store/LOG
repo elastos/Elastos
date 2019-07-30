@@ -42,3 +42,22 @@
 19:50:17.417161 version@stat F·[2] S·1KiB[1KiB] Sc·[0.50]
 19:50:17.509713 db@janitor F·4 G·0
 19:50:17.509730 db@open done T·94.522735ms
+=============== Jul 19, 2019 (UTC) ===============
+13:02:33.608799 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+13:02:33.608977 version@stat F·[2] S·1KiB[1KiB] Sc·[0.50]
+13:02:33.608997 db@open opening
+13:02:33.609034 journal@recovery F·1
+13:02:33.609406 journal@recovery recovering @10
+13:02:33.609636 version@stat F·[2] S·1KiB[1KiB] Sc·[0.50]
+13:02:33.626842 db@janitor F·4 G·0
+13:02:33.626862 db@open done T·17.860345ms
+=============== Jul 30, 2019 (UTC) ===============
+19:33:16.859565 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+19:33:16.933976 version@stat F·[2] S·1KiB[1KiB] Sc·[0.50]
+19:33:16.934015 db@open opening
+19:33:16.934083 journal@recovery F·1
+19:33:16.936587 journal@recovery recovering @12
+19:33:16.990989 memdb@flush created L0@14 N·9 S·639B "AK\xf8..\x03\xc4\x12,v26":"U\x00\x00..0b\xf0,v29"
+19:33:16.992300 version@stat F·[3] S·1KiB[1KiB] Sc·[0.75]
+19:33:17.019646 db@janitor F·5 G·0
+19:33:17.019669 db@open done T·85.648217ms
