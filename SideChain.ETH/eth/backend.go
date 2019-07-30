@@ -523,8 +523,13 @@ func (s *Ethereum) Stop() error {
 	s.eventMux.Stop()
 
 	s.chainDb.Close()
-	spv.MinedBlockSub.Unsubscribe()
-	spv.SpvService.GetDatabase().Close()
+	if nil != spv.MinedBlockSub {
+		spv.MinedBlockSub.Unsubscribe()
+	}
+	spvdb := spv.SpvService.GetDatabase()
+	if spvdb != nil {
+		spvdb.Close()
+	}
 	close(s.shutdownChan)
 	return nil
 }
