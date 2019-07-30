@@ -1,0 +1,1629 @@
+2019/07/30 19:33:08.722137 [1;35m[INF][m GID 59, Loaded 0 addresses from file 'elastos/data/dpos/peers.json'
+2019/07/30 19:33:08.722812 [1;35m[INF][m GID 28, Server listening on [::]:20339
+2019/07/30 19:33:08.722865 [1;35m[INF][m GID 27, Server listening on 0.0.0.0:20339
+2019/07/30 19:33:08.784578 [1;35m[INF][m GID 1, [UpdatePeers] peers: 4  height:  571
+2019/07/30 19:33:17.736937 [1;35m[INF][m GID 373, [OnBlockReceived] listener received block
+2019/07/30 19:33:17.737073 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:33:17.737996 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:33:17.738891 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:33:17.739003 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received first unsigned block, start consensus
+2019/07/30 19:33:17.739903 [1;35m[INF][m GID 60, [StartConsensus] consensus start
+2019/07/30 19:33:17.740630 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, StartTime: 2019-07-30 19:33:17.739 +0000 UTC, Offset: 0, Height: 572
+2019/07/30 19:33:17.740672 [1;35m[INF][m GID 60, [StartConsensus] consensus end
+2019/07/30 19:33:17.740767 [1;35m[INF][m GID 60, [OnConsensusStarted] StartTime: 2019-07-30 19:33:17.74 +0000 UTC, Height: 572
+2019/07/30 19:33:17.740840 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:33:22.106007 [1;35m[INF][m GID 60, [HelpToRecoverAbnormal] peer id: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/07/30 19:33:22.106073 [1;35m[INF][m GID 60, [CollectConsensusStatus] status.ConsensusStatus: 1
+2019/07/30 19:33:22.756291 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:33:22.756414 [1;35m[INF][m GID 60, current onduty arbiter: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/07/30 19:33:22.756468 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 300c1644a1b9525ab4261b93965000a3f2c4925baf990620f67f0ae59b1061ed onduty: false
+2019/07/30 19:33:22.756505 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:33:22.756534 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:33:22.756644 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-07-30 19:33:22.756 +0000 UTC, Offset: 1, Height: 572
+2019/07/30 19:33:22.756670 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:33:23.490179 [1;35m[INF][m GID 60, [OnVoteReceived] started
+2019/07/30 19:33:23.490236 [1;35m[INF][m GID 60, [Normal-ProcessAcceptVote] start
+2019/07/30 19:33:23.490296 [1;35m[INF][m GID 60, [Normal-ProcessAcceptVote] end
+2019/07/30 19:33:23.490418 [1;35m[INF][m GID 60, [OnVoteArrived] Signer: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, ProposalHash: 97035083102dc9bee08125bc7ecfa38332786689617ff0b1dae73149de4556cf, ReceivedTime: 2019-07-30 19:33:23.49 +0000 UTC, Result: true
+2019/07/30 19:33:23.490468 [1;35m[INF][m GID 60, [OnVoteReceived] end
+2019/07/30 19:33:23.532318 [1;35m[INF][m GID 380, [OnConfirmReceived] listener received confirm
+2019/07/30 19:33:23.532413 [1;35m[INF][m GID 60, [OnConfirmReceived] started, hash: 300c1644a1b9525ab4261b93965000a3f2c4925baf990620f67f0ae59b1061ed
+2019/07/30 19:33:23.532506 [1;35m[INF][m GID 60, [FinishConsensus] start
+2019/07/30 19:33:23.532701 [1;35m[INF][m GID 60, [onDutyArbitratorChanged] not onduty
+2019/07/30 19:33:23.532526 [1;35m[INF][m GID 381, [OnBlockReceived] listener received block
+2019/07/30 19:33:23.533262 [1;35m[INF][m GID 60, [OnConsensusFinished] EndTime: 2019-07-30 19:33:23.532 +0000 UTC, Height: 572
+2019/07/30 19:33:23.534532 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:33:23.534631 [1;35m[INF][m GID 60, [FinishConsensus] end
+2019/07/30 19:33:23.534730 [1;35m[INF][m GID 60, [onDutyArbitratorChanged] not onduty
+2019/07/30 19:33:23.534853 [1;35m[INF][m GID 60, [OnConfirmReceived] end
+2019/07/30 19:33:23.534934 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:33:23.535117 [1;35m[INF][m GID 60, [onDutyArbitratorChanged] not onduty
+2019/07/30 19:33:23.535184 [1;35m[INF][m GID 60, [OnBlockReceived] received confirmed block
+2019/07/30 19:33:23.535214 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:33:23.865570 [1;35m[INF][m GID 60, [onDutyArbitratorChanged] not onduty
+2019/07/30 19:33:23.865647 [1;35m[INF][m GID 60, [RequestAbnormalRecovering] broadcast message to peers
+2019/07/30 19:33:23.865674 [1;35m[INF][m GID 60, [BroadcastMessage] msg: req_con
+2019/07/30 19:33:23.866687 [1;35m[INF][m GID 60, [OnResponseConsensus] status: {0 0 2019-07-30 19:33:22.727 +0000 UTC [] [] [] []}
+2019/07/30 19:33:23.866763 [1;35m[INF][m GID 60, [OnResponseConsensus] collect recover status
+2019/07/30 19:33:23.885788 [1;35m[INF][m GID 60, [OnResponseConsensus] status: {0 0 2019-07-30 19:33:22.731 +0000 UTC [] [] [] []}
+2019/07/30 19:33:23.895478 [1;35m[INF][m GID 60, [OnResponseConsensus] collect recover status
+2019/07/30 19:33:23.900862 [1;35m[INF][m GID 60, [OnResponseConsensus] status: {0 0 2019-07-30 19:33:22.729 +0000 UTC [] [] [] []}
+2019/07/30 19:33:23.901029 [1;35m[INF][m GID 60, [OnResponseConsensus] collect recover status
+2019/07/30 19:33:24.377867 [1;35m[INF][m GID 60, [HelpToRecoverAbnormal] peer id: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/07/30 19:33:24.378084 [1;35m[INF][m GID 60, [CollectConsensusStatus] status.ConsensusStatus: 0
+2019/07/30 19:33:24.679988 [1;35m[INF][m GID 60, [HelpToRecoverAbnormal] peer id: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/07/30 19:33:24.680259 [1;35m[INF][m GID 60, [CollectConsensusStatus] status.ConsensusStatus: 0
+2019/07/30 19:33:37.697229 [1;35m[INF][m GID 514, [OnBlockReceived] listener received block
+2019/07/30 19:33:37.711622 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:33:37.711999 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:33:37.712043 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:33:37.728399 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received first unsigned block, start consensus
+2019/07/30 19:33:37.737099 [1;35m[INF][m GID 60, [StartConsensus] consensus start
+2019/07/30 19:33:37.737205 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-07-30 19:33:37.736 +0000 UTC, Offset: 0, Height: 573
+2019/07/30 19:33:37.737236 [1;35m[INF][m GID 60, [StartConsensus] consensus end
+2019/07/30 19:33:37.737263 [1;35m[INF][m GID 60, [OnConsensusStarted] StartTime: 2019-07-30 19:33:37.736 +0000 UTC, Height: 573
+2019/07/30 19:33:37.737285 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:33:42.818410 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:33:42.819632 [1;35m[INF][m GID 60, current onduty arbiter: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/07/30 19:33:42.819778 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:33:42.819877 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:33:42.819988 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:33:42.821472 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-07-30 19:33:42.819 +0000 UTC, Offset: 1, Height: 573
+2019/07/30 19:33:42.821559 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:33:46.102457 [1;35m[INF][m GID 495, [OnBlockReceived] listener received block
+2019/07/30 19:33:46.102774 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:33:46.102838 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:33:46.102867 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:33:46.102937 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:33:46.103001 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:33:47.840595 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:33:47.840655 [1;35m[INF][m GID 60, current onduty arbiter: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/07/30 19:33:47.841108 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:33:47.841149 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:33:47.841256 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:33:47.841797 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-07-30 19:33:47.84 +0000 UTC, Offset: 2, Height: 573
+2019/07/30 19:33:47.841826 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:33:50.884332 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 684ce169793606fddd8c5c2b59a25dddbd1e58d3a1efe546cc70eddab84c459f
+2019/07/30 19:33:50.888903 [1;35m[INF][m GID 520, [OnBlockReceived] listener received block
+2019/07/30 19:33:50.889084 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:33:50.889207 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:33:50.889376 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:33:50.889511 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:33:50.889677 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:33:52.848014 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:33:52.848627 [1;35m[INF][m GID 60, current onduty arbiter: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/07/30 19:33:52.848729 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: true
+2019/07/30 19:33:52.849710 [1;35m[INF][m GID 60, [OnViewChanged] start proposal
+2019/07/30 19:33:52.849808 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:33:52.849888 [1;35m[INF][m GID 60, [StartProposal] start
+2019/07/30 19:33:52.853199 [1;35m[INF][m GID 60, [StartProposal] sponsor: [2 28 250 222 62 221 208 87 216 202 23 128 87 168 140 70 84 177 92 26 218 126 233 171 101 81 127 0 190 182 151 117 86]
+2019/07/30 19:33:52.853474 [1;35m[INF][m GID 60, [StartProposal] send proposal message finished, Proposal Hash:  9c1d46e054c2842c95c1a4683dcbaffc088fcc7ff96a2240ea3d115cd9ff07d8
+2019/07/30 19:33:52.859551 [1;35m[INF][m GID 60, [BroadcastMessage] msg: proposal
+2019/07/30 19:33:52.859746 [1;35m[INF][m GID 60, [OnProposalArrived] Sponsor: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, BlockHash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0, ReceivedTime: 2019-07-30 19:33:52.858 +0000 UTC, Result: false, ViewOffset: 3, ProposalHash: 6567b60fb7311e12cc8edde31f62b8655f31985b2f50531b0c63b64033d309ca
+2019/07/30 19:33:52.859988 [1;35m[INF][m GID 60, [acceptProposal] start
+2019/07/30 19:33:52.861428 [1;35m[INF][m GID 60, [ProcessVote] start
+2019/07/30 19:33:52.862108 [1;35m[INF][m GID 60, [countAcceptedVote] start
+2019/07/30 19:33:52.862241 [1;35m[INF][m GID 60, [countAcceptedVote] Received needed sign, collect it into AcceptVotes!
+2019/07/30 19:33:52.862362 [1;35m[INF][m GID 60, [countAcceptedVote] end
+2019/07/30 19:33:52.862480 [1;35m[INF][m GID 60, [ProcessVote] end
+2019/07/30 19:33:52.862595 [1;35m[INF][m GID 60, [BroadcastMessage] msg: acc_vote
+2019/07/30 19:33:52.862711 [1;35m[INF][m GID 60, [acceptProposal] send acc_vote msg: a2e62383e808ed1181d279f9a4dd1e46245d0a6ef55129c120bfaf754664b395
+2019/07/30 19:33:52.862896 [1;35m[INF][m GID 60, [OnVoteArrived] Signer: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, ProposalHash: 6567b60fb7311e12cc8edde31f62b8655f31985b2f50531b0c63b64033d309ca, ReceivedTime: 2019-07-30 19:33:52.861 +0000 UTC, Result: true
+2019/07/30 19:33:52.863022 [1;35m[INF][m GID 60, [acceptProposal] end
+2019/07/30 19:33:52.863120 [1;35m[INF][m GID 60, [StartProposal] end
+2019/07/30 19:33:52.863233 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, StartTime: 2019-07-30 19:33:52.862 +0000 UTC, Offset: 3, Height: 573
+2019/07/30 19:33:52.863280 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:33:53.608728 [1;35m[INF][m GID 551, [OnBlockReceived] listener received block
+2019/07/30 19:33:53.608788 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:33:53.608870 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:33:53.608898 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:33:56.531444 [1;35m[INF][m GID 541, [OnBlockReceived] listener received block
+2019/07/30 19:33:56.531623 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:33:56.531822 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:33:56.534386 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:33:57.411870 [1;35m[INF][m GID 522, [OnBlockReceived] listener received block
+2019/07/30 19:33:57.411981 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:33:57.412102 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:33:57.412230 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:33:57.866524 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:33:57.866727 [1;35m[INF][m GID 60, current onduty arbiter: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/07/30 19:33:57.866826 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:33:57.866858 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:33:57.867470 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:33:57.867591 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-07-30 19:33:57.866 +0000 UTC, Offset: 4, Height: 573
+2019/07/30 19:33:57.867619 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:33:58.348361 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 69cdefc75daf917300a37f821b68571dc809d1f8e60d666474cfcaea802ee280
+2019/07/30 19:33:58.366251 [1;35m[INF][m GID 554, [OnBlockReceived] listener received block
+2019/07/30 19:33:58.378851 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:33:58.378894 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:33:58.378989 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:33:58.379023 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:33:58.379092 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:33:58.379297 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:33:59.393241 [1;35m[INF][m GID 594, [OnBlockReceived] listener received block
+2019/07/30 19:33:59.393448 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:33:59.393519 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:33:59.397767 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:33:59.397842 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:33:59.397977 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:00.673364 [1;35m[INF][m GID 60, [ProcessInv] send getblock: eac964bcf45265e72b38ceede5a617cd0e104bf224c1890c4bd9c76319303118
+2019/07/30 19:34:00.674145 [1;35m[INF][m GID 610, [OnBlockReceived] listener received block
+2019/07/30 19:34:00.674248 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:00.674346 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:34:00.674455 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:34:00.674592 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:00.674709 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:03.006401 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:03.006688 [1;35m[INF][m GID 60, current onduty arbiter: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/07/30 19:34:03.006769 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:34:03.006822 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:34:03.006871 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:34:03.006984 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-07-30 19:34:03.005 +0000 UTC, Offset: 5, Height: 573
+2019/07/30 19:34:03.007022 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:05.406693 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 82a3a829e19812069914ddff66ceeba032d060211f1b36b54701e26e9568608f
+2019/07/30 19:34:05.410978 [1;35m[INF][m GID 597, [OnBlockReceived] listener received block
+2019/07/30 19:34:05.411132 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:05.411218 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:34:05.411249 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:34:05.411363 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:05.411444 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:05.419166 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:34:05.541372 [1;35m[INF][m GID 598, [OnBlockReceived] listener received block
+2019/07/30 19:34:05.541637 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:05.541764 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:34:05.541867 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:34:05.542073 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:05.543257 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:08.010573 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:08.010656 [1;35m[INF][m GID 60, current onduty arbiter: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/07/30 19:34:08.010995 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:34:08.011052 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:34:08.014563 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:34:08.015194 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-07-30 19:34:08.013 +0000 UTC, Offset: 6, Height: 573
+2019/07/30 19:34:08.015232 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:12.535525 [1;35m[INF][m GID 667, [OnBlockReceived] listener received block
+2019/07/30 19:34:12.535610 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:12.535638 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:34:12.535670 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:34:12.535701 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:12.535728 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:12.608674 [1;35m[INF][m GID 617, [OnBlockReceived] listener received block
+2019/07/30 19:34:12.609462 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:12.609886 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:34:12.609935 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:34:12.610002 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:12.610027 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:13.050911 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:13.051020 [1;35m[INF][m GID 60, current onduty arbiter: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/07/30 19:34:13.056030 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: true
+2019/07/30 19:34:13.057522 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, StartTime: 2019-07-30 19:34:13.056 +0000 UTC, Offset: 7, Height: 573
+2019/07/30 19:34:13.057585 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:14.477553 [1;35m[INF][m GID 60, [ProcessInv] send getblock: ef566a9e778186f2a0a005be0175906417d8d484e45ee1602d2bc50827a0ea36
+2019/07/30 19:34:14.483369 [1;35m[INF][m GID 600, [OnBlockReceived] listener received block
+2019/07/30 19:34:14.483442 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:14.483477 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:14.483530 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:15.538618 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 843eeae3a0f2b32695df937a72fd6e23fa54f9e413a1d29326dd21bcd06ed732
+2019/07/30 19:34:15.539729 [1;35m[INF][m GID 620, [OnBlockReceived] listener received block
+2019/07/30 19:34:15.539810 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:15.539842 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:15.540738 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:15.541033 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:34:16.911887 [1;35m[INF][m GID 690, [OnBlockReceived] listener received block
+2019/07/30 19:34:16.912329 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:16.912619 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:16.912704 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:18.077005 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:18.077111 [1;35m[INF][m GID 60, current onduty arbiter: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/07/30 19:34:18.077197 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:34:18.077648 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:34:18.078149 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:34:18.078253 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-07-30 19:34:18.077 +0000 UTC, Offset: 8, Height: 573
+2019/07/30 19:34:18.078555 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:19.058290 [1;35m[INF][m GID 625, [OnBlockReceived] listener received block
+2019/07/30 19:34:19.058356 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:19.058439 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:34:19.058480 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:34:19.058549 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:19.058604 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:23.088401 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:23.088498 [1;35m[INF][m GID 60, current onduty arbiter: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/07/30 19:34:23.088599 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:34:23.088668 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:34:23.088698 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:34:23.088779 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-07-30 19:34:23.087 +0000 UTC, Offset: 9, Height: 573
+2019/07/30 19:34:23.088809 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:26.592307 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 80227f7aeff3a633a11622b3acf050fa9581e644191815ad92068499885be774
+2019/07/30 19:34:26.599225 [1;35m[INF][m GID 714, [OnBlockReceived] listener received block
+2019/07/30 19:34:26.599327 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:26.599356 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:34:26.599383 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:34:26.599440 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:26.599477 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:26.607332 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:34:28.094066 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:28.094222 [1;35m[INF][m GID 60, current onduty arbiter: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/07/30 19:34:28.094422 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:34:28.094580 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:34:28.094721 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:34:28.094917 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-07-30 19:34:28.093 +0000 UTC, Offset: 10, Height: 573
+2019/07/30 19:34:28.095059 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:28.769329 [1;35m[INF][m GID 700, [OnBlockReceived] listener received block
+2019/07/30 19:34:28.769362 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:28.769458 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:34:28.769509 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:34:28.769632 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:28.769679 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:29.891837 [1;35m[INF][m GID 704, [OnBlockReceived] listener received block
+2019/07/30 19:34:29.891900 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:29.891971 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:34:29.892035 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:34:29.892143 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:29.892201 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:30.444438 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 9eac5c4bd16725c53a7e5d72d3e519986a64b37f89b8b376fc470a73000dbeee
+2019/07/30 19:34:30.456729 [1;35m[INF][m GID 722, [OnBlockReceived] listener received block
+2019/07/30 19:34:30.456972 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:30.457006 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:34:30.457216 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:34:30.458037 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:30.462494 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:30.740714 [1;35m[INF][m GID 685, [OnBlockReceived] listener received block
+2019/07/30 19:34:30.740780 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:30.740811 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:34:30.740834 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:34:30.740866 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:30.740887 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:32.529087 [1;35m[INF][m GID 687, [OnBlockReceived] listener received block
+2019/07/30 19:34:32.529168 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:32.529266 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:34:32.529343 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:34:32.529455 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:32.529508 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:32.874074 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 231954166295e09c28c94273b2a45349263218048875702ac6fe4680c16c71f0
+2019/07/30 19:34:32.875594 [1;35m[INF][m GID 604, [OnBlockReceived] listener received block
+2019/07/30 19:34:32.875799 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:32.876111 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:34:32.876459 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:34:32.877108 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:32.877347 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:33.125580 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:33.125639 [1;35m[INF][m GID 60, current onduty arbiter: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/07/30 19:34:33.125678 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: true
+2019/07/30 19:34:33.127046 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, StartTime: 2019-07-30 19:34:33.124 +0000 UTC, Offset: 11, Height: 573
+2019/07/30 19:34:33.127114 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:34.603405 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 1e6a76ac3b2843c7573697f69b10f698ac18176337529f8bcadfdbccd04e957d
+2019/07/30 19:34:34.618086 [1;35m[INF][m GID 689, [OnBlockReceived] listener received block
+2019/07/30 19:34:34.618186 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:34:34.620712 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:34.620753 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:34.620802 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:37.697683 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 2c2054480693068bab74fb0483bd483dc5d515c2057e7c6cd3eba26c7cf66c66
+2019/07/30 19:34:37.699617 [1;35m[INF][m GID 754, [OnBlockReceived] listener received block
+2019/07/30 19:34:37.699669 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:37.699701 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:37.699723 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:37.725094 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:34:38.134674 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:38.134761 [1;35m[INF][m GID 60, current onduty arbiter: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/07/30 19:34:38.134795 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:34:38.134846 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:34:38.134877 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:34:38.134971 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-07-30 19:34:38.133 +0000 UTC, Offset: 12, Height: 573
+2019/07/30 19:34:38.134995 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:42.394510 [1;35m[INF][m GID 60, [ProcessInv] send getblock: e7d15460964c4a2690c7146e3a5e7b1eedc596d08b0122b206aa145c6bd402f7
+2019/07/30 19:34:42.414359 [1;35m[INF][m GID 606, [OnBlockReceived] listener received block
+2019/07/30 19:34:42.414383 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:42.414404 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:34:42.414424 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:34:42.414469 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:42.414549 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:43.142111 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:43.142224 [1;35m[INF][m GID 60, current onduty arbiter: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/07/30 19:34:43.142369 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:34:43.142413 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:34:43.142496 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:34:43.142691 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-07-30 19:34:43.141 +0000 UTC, Offset: 13, Height: 573
+2019/07/30 19:34:43.142724 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:43.799184 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 3a5e93a151cac1edfdfccf3ff0ae19b6417533f84d50c716cb86a767bd6d33c1
+2019/07/30 19:34:43.799931 [1;35m[INF][m GID 749, [OnBlockReceived] listener received block
+2019/07/30 19:34:43.799971 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:34:43.800064 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:43.800144 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:34:43.800247 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:34:43.800307 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:43.800399 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:44.508988 [1;35m[INF][m GID 60, [ProcessInv] send getblock: e452e73c032bd8903b905dfeab1488e9d900d47a8fd975f06b80e53ae8283fb5
+2019/07/30 19:34:44.510792 [1;35m[INF][m GID 759, [OnBlockReceived] listener received block
+2019/07/30 19:34:44.510946 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:44.510964 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:34:44.511034 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:34:44.511085 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:44.511132 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:44.529075 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:34:48.178610 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:48.178876 [1;35m[INF][m GID 60, current onduty arbiter: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/07/30 19:34:48.179054 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:34:48.179182 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:34:48.179346 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:34:48.180037 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-07-30 19:34:48.178 +0000 UTC, Offset: 14, Height: 573
+2019/07/30 19:34:48.180207 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:49.089364 [1;35m[INF][m GID 729, [OnBlockReceived] listener received block
+2019/07/30 19:34:49.089430 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:49.089465 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:34:49.089501 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:34:49.090084 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:49.090145 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:50.430421 [1;35m[INF][m GID 768, [OnBlockReceived] listener received block
+2019/07/30 19:34:50.430471 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:50.430521 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:34:50.430554 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:34:50.430580 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:50.430602 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:53.195940 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:53.196023 [1;35m[INF][m GID 60, current onduty arbiter: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/07/30 19:34:53.196078 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: true
+2019/07/30 19:34:53.196257 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, StartTime: 2019-07-30 19:34:53.195 +0000 UTC, Offset: 15, Height: 573
+2019/07/30 19:34:53.196288 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:53.551687 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 860b10011e41db6cf9e7fc8d626f71a7938fcc7bd79c5d8cca9041ff2757dee6
+2019/07/30 19:34:53.553995 [1;35m[INF][m GID 802, [OnBlockReceived] listener received block
+2019/07/30 19:34:53.554040 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:53.554097 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:53.554133 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:34:53.555658 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:34:58.207285 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:58.207483 [1;35m[INF][m GID 60, current onduty arbiter: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/07/30 19:34:58.207644 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:34:58.207794 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:34:58.207906 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:34:58.208057 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-07-30 19:34:58.206 +0000 UTC, Offset: 16, Height: 573
+2019/07/30 19:34:58.208176 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:34:59.278069 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 9210556e75dec7f299f1676a506aa8194b64bc37d4e907a5039cfd182aa35c65
+2019/07/30 19:34:59.278712 [1;35m[INF][m GID 809, [OnBlockReceived] listener received block
+2019/07/30 19:34:59.278790 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:34:59.278833 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:34:59.278863 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:34:59.278931 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:34:59.278955 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:35:03.223142 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:35:03.223214 [1;35m[INF][m GID 60, current onduty arbiter: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/07/30 19:35:03.223246 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:35:03.223269 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:35:03.223292 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:35:03.223351 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-07-30 19:35:03.222 +0000 UTC, Offset: 17, Height: 573
+2019/07/30 19:35:03.223371 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:35:07.839914 [1;35m[INF][m GID 815, [OnBlockReceived] listener received block
+2019/07/30 19:35:07.840047 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:35:07.840647 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:35:07.842897 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:35:07.849257 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:35:07.849383 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:35:08.227675 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:35:08.227764 [1;35m[INF][m GID 60, current onduty arbiter: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/07/30 19:35:08.227856 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:35:08.227893 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:35:08.227985 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:35:08.228049 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-07-30 19:35:08.227 +0000 UTC, Offset: 18, Height: 573
+2019/07/30 19:35:08.228106 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:35:08.440535 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 382f98aeec038a31d21039e1d15b1aa1e03f428a3bff4f5451c0ed686bf0c2ad
+2019/07/30 19:35:08.515392 [1;35m[INF][m GID 820, [OnBlockReceived] listener received block
+2019/07/30 19:35:08.515480 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:35:08.515510 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:35:08.515566 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:35:08.515603 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:35:08.515627 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:35:08.609692 [1;35m[INF][m GID 821, [OnBlockReceived] listener received block
+2019/07/30 19:35:08.609971 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:35:08.610025 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:35:08.610270 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:35:08.615980 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:35:08.620737 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:35:12.584607 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 4350df4b4eee1cec3a66606bbb1e9c2506d1c58151c4ddd2a41b4433f4058c79
+2019/07/30 19:35:12.591378 [1;35m[INF][m GID 817, [OnBlockReceived] listener received block
+2019/07/30 19:35:12.591412 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:35:12.591588 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:35:12.591651 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:35:12.591769 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:35:12.591833 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:35:13.249429 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:35:13.249526 [1;35m[INF][m GID 60, current onduty arbiter: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/07/30 19:35:13.249637 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: true
+2019/07/30 19:35:13.249827 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, StartTime: 2019-07-30 19:35:13.248 +0000 UTC, Offset: 19, Height: 573
+2019/07/30 19:35:13.249854 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:35:15.668193 [1;35m[INF][m GID 840, [OnBlockReceived] listener received block
+2019/07/30 19:35:15.668265 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:35:15.668395 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:35:15.668469 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:35:15.926143 [1;35m[INF][m GID 843, [OnBlockReceived] listener received block
+2019/07/30 19:35:15.926240 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:35:15.926326 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:35:15.927932 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:35:18.262495 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:35:18.262741 [1;35m[INF][m GID 60, current onduty arbiter: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/07/30 19:35:18.262858 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:35:18.262982 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:35:18.263096 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:35:18.263245 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-07-30 19:35:18.262 +0000 UTC, Offset: 20, Height: 573
+2019/07/30 19:35:18.263367 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:35:22.661716 [1;35m[INF][m GID 784, [OnBlockReceived] listener received block
+2019/07/30 19:35:22.661757 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:35:22.661787 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:35:22.661818 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:35:22.661848 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:35:22.661874 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:35:23.284169 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:35:23.284375 [1;35m[INF][m GID 60, current onduty arbiter: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/07/30 19:35:23.284499 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:35:23.284645 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:35:23.284677 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:35:23.284853 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-07-30 19:35:23.283 +0000 UTC, Offset: 21, Height: 573
+2019/07/30 19:35:23.284986 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:35:25.626123 [1;35m[INF][m GID 859, [OnBlockReceived] listener received block
+2019/07/30 19:35:25.626154 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:35:25.626176 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:35:25.626569 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:35:25.626635 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:35:25.626849 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:35:28.304491 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:35:28.304674 [1;35m[INF][m GID 60, current onduty arbiter: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/07/30 19:35:28.304790 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:35:28.304916 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:35:28.305059 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:35:28.305201 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-07-30 19:35:28.304 +0000 UTC, Offset: 22, Height: 573
+2019/07/30 19:35:28.305334 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:35:31.797506 [1;35m[INF][m GID 863, [OnBlockReceived] listener received block
+2019/07/30 19:35:31.820827 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:35:31.820875 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:35:31.820903 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:35:31.820930 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:35:31.821296 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:35:33.325383 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:35:33.325436 [1;35m[INF][m GID 60, current onduty arbiter: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/07/30 19:35:33.325468 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: true
+2019/07/30 19:35:33.325536 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, StartTime: 2019-07-30 19:35:33.324 +0000 UTC, Offset: 23, Height: 573
+2019/07/30 19:35:33.325556 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:35:34.721320 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 8cffb6d0f1e5acbb496d5b22652305952b438e65b0974509eb1a0ea3d71e7008
+2019/07/30 19:35:34.738424 [1;35m[INF][m GID 898, [OnBlockReceived] listener received block
+2019/07/30 19:35:34.738736 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:35:34.738772 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:35:34.738804 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:35:34.738955 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:35:38.355746 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:35:38.355979 [1;35m[INF][m GID 60, current onduty arbiter: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/07/30 19:35:38.356125 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:35:38.356298 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:35:38.356460 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:35:38.367438 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-07-30 19:35:38.355 +0000 UTC, Offset: 24, Height: 573
+2019/07/30 19:35:38.367489 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:35:40.153949 [1;35m[INF][m GID 915, [OnBlockReceived] listener received block
+2019/07/30 19:35:40.153983 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:35:40.154008 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:35:40.154053 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:35:40.154098 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:35:40.154147 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:35:40.277692 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 11d63275c30261333811d7c370fd52ed74db61c856024269dea49164270b4d33
+2019/07/30 19:35:40.279568 [1;35m[INF][m GID 916, [OnBlockReceived] listener received block
+2019/07/30 19:35:40.279614 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:35:40.279640 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:35:40.279665 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:35:40.279833 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:35:40.279881 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:35:40.284602 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:35:43.364659 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:35:43.364900 [1;35m[INF][m GID 60, current onduty arbiter: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/07/30 19:35:43.364999 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:35:43.365107 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:35:43.365205 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:35:43.365344 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-07-30 19:35:43.364 +0000 UTC, Offset: 25, Height: 573
+2019/07/30 19:35:43.365436 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:35:46.180168 [1;35m[INF][m GID 60, [ProcessInv] send getblock: a76d2658cd46de2c3214003899f5c21ba111415a1ee43f0561473b6f098b50a4
+2019/07/30 19:35:46.188127 [1;35m[INF][m GID 897, [OnBlockReceived] listener received block
+2019/07/30 19:35:46.188192 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:35:46.188292 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:35:46.188446 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:35:46.188601 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:35:46.188819 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:35:46.195483 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:35:46.483620 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 2013b183e104ac015b4c615fc21ba874475a271c14a2bc686f2cbd141f897d57
+2019/07/30 19:35:46.489989 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:35:46.490141 [1;35m[INF][m GID 930, [OnBlockReceived] listener received block
+2019/07/30 19:35:46.490292 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:35:46.490351 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:35:46.490452 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:35:46.490590 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:35:46.492054 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:35:48.373552 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:35:48.373630 [1;35m[INF][m GID 60, current onduty arbiter: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/07/30 19:35:48.373666 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:35:48.373724 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:35:48.373776 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:35:48.373835 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-07-30 19:35:48.372 +0000 UTC, Offset: 26, Height: 573
+2019/07/30 19:35:48.373862 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:35:50.898472 [1;35m[INF][m GID 932, [OnBlockReceived] listener received block
+2019/07/30 19:35:50.898670 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 83fd2b04e951d85d2f80e7f37e76828ff1ff2856164fb9c6d7cd166df336926d
+2019/07/30 19:35:50.898802 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:35:50.898980 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:35:50.899118 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:35:50.899256 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:35:50.899495 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:35:50.902010 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:35:51.432204 [1;35m[INF][m GID 906, [OnBlockReceived] listener received block
+2019/07/30 19:35:51.438768 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:35:51.447422 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:35:51.451739 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:35:51.451774 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:35:51.451883 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:35:52.629659 [1;35m[INF][m GID 60, [ProcessInv] send getblock: cd232ec4ed1a6d77b513e5fda9bf46fa98bc4a11f276248bee1a6f7fb1d9d074
+2019/07/30 19:35:52.630997 [1;35m[INF][m GID 908, [OnBlockReceived] listener received block
+2019/07/30 19:35:52.631123 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:35:52.631359 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:35:52.631493 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:35:52.631622 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:35:52.631770 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:35:52.632294 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:35:53.388715 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:35:53.388911 [1;35m[INF][m GID 60, current onduty arbiter: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/07/30 19:35:53.388961 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: true
+2019/07/30 19:35:53.389051 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, StartTime: 2019-07-30 19:35:53.388 +0000 UTC, Offset: 27, Height: 573
+2019/07/30 19:35:53.389086 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:35:53.801544 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 194fd3c3feb1c65e89cdab6445c400ac4ea5a03be1d5d50aad0fbf5a49206833
+2019/07/30 19:35:53.802994 [1;35m[INF][m GID 910, [OnBlockReceived] listener received block
+2019/07/30 19:35:53.803238 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:35:53.803377 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:35:53.803491 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:35:53.805534 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:35:56.669139 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 9761f0c5b5d9ea37bb7cd7e70e9be4cde48a17fe452e9ad16f419316820cf507
+2019/07/30 19:35:56.672980 [1;35m[INF][m GID 912, [OnBlockReceived] listener received block
+2019/07/30 19:35:56.673747 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:35:56.673851 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:35:56.674889 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:35:56.698241 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:35:58.427038 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:35:58.427202 [1;35m[INF][m GID 60, current onduty arbiter: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/07/30 19:35:58.427248 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:35:58.427321 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:35:58.427365 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:35:58.427464 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-07-30 19:35:58.426 +0000 UTC, Offset: 28, Height: 573
+2019/07/30 19:35:58.427642 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:00.531384 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 940c7e0d8f4ca9cb0cfadcd3bad0c0272da138e2c1ac2326911a527948808c0c
+2019/07/30 19:36:00.533503 [1;35m[INF][m GID 966, [OnBlockReceived] listener received block
+2019/07/30 19:36:00.533534 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:36:00.533589 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:36:00.533622 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:36:00.533671 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:36:00.533703 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:36:00.534847 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:36:03.459766 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:03.459929 [1;35m[INF][m GID 60, current onduty arbiter: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/07/30 19:36:03.459975 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:36:03.460004 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:36:03.460034 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:36:03.460170 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-07-30 19:36:03.459 +0000 UTC, Offset: 29, Height: 573
+2019/07/30 19:36:03.460202 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:08.463603 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:08.463680 [1;35m[INF][m GID 60, current onduty arbiter: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/07/30 19:36:08.463715 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:36:08.463738 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:36:08.463763 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:36:08.463823 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-07-30 19:36:08.462 +0000 UTC, Offset: 30, Height: 573
+2019/07/30 19:36:08.463839 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:12.750466 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 5a27368b9ec746ff3c1f5fd7f158cbfa631c9cf036c51391c8e3d2e64a4e678e
+2019/07/30 19:36:12.763618 [1;35m[INF][m GID 1010, [OnBlockReceived] listener received block
+2019/07/30 19:36:12.763663 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:36:12.763688 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:36:12.763711 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:36:12.763743 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:36:12.764156 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:36:12.764195 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:36:13.491403 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:13.491527 [1;35m[INF][m GID 60, current onduty arbiter: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/07/30 19:36:13.491599 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: true
+2019/07/30 19:36:13.491794 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, StartTime: 2019-07-30 19:36:13.49 +0000 UTC, Offset: 31, Height: 573
+2019/07/30 19:36:13.491823 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:18.509917 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:18.510049 [1;35m[INF][m GID 60, current onduty arbiter: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/07/30 19:36:18.510100 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:36:18.510148 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:36:18.510178 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:36:18.510242 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-07-30 19:36:18.509 +0000 UTC, Offset: 32, Height: 573
+2019/07/30 19:36:18.510284 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:20.402579 [1;35m[INF][m GID 1018, [OnBlockReceived] listener received block
+2019/07/30 19:36:20.402615 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:36:20.402637 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:36:20.402669 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:36:20.402698 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:36:20.402724 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:36:20.764531 [1;35m[INF][m GID 1026, [OnBlockReceived] listener received block
+2019/07/30 19:36:20.764947 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:36:20.765057 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:36:20.765260 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:36:20.765324 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:36:20.765381 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:36:23.103212 [1;35m[INF][m GID 1030, [OnBlockReceived] listener received block
+2019/07/30 19:36:23.103332 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:36:23.103476 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:36:23.103516 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:36:23.103636 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:36:23.103697 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:36:23.538678 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:23.538828 [1;35m[INF][m GID 60, current onduty arbiter: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/07/30 19:36:23.538894 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:36:23.538929 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:36:23.538957 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:36:23.539018 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-07-30 19:36:23.537 +0000 UTC, Offset: 33, Height: 573
+2019/07/30 19:36:23.539039 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:23.590114 [1;35m[INF][m GID 60, [ProcessInv] send getblock: b69775ea411d2f6e7a32e3661e42604c69d49dda96020eb4c059006ccb78aa42
+2019/07/30 19:36:23.620614 [1;35m[INF][m GID 1032, [OnBlockReceived] listener received block
+2019/07/30 19:36:23.620671 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:36:23.620752 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:36:23.620867 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:36:23.621002 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:36:23.621038 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:36:28.548890 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:28.548954 [1;35m[INF][m GID 60, current onduty arbiter: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/07/30 19:36:28.549095 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:36:28.549153 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:36:28.549198 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:36:28.549265 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-07-30 19:36:28.548 +0000 UTC, Offset: 34, Height: 573
+2019/07/30 19:36:28.549286 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:30.110212 [1;35m[INF][m GID 1008, [OnBlockReceived] listener received block
+2019/07/30 19:36:30.110353 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:36:30.110425 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:36:30.110452 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:36:30.110574 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:36:30.110674 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:36:30.540980 [1;35m[INF][m GID 1038, [OnBlockReceived] listener received block
+2019/07/30 19:36:30.541043 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:36:30.541170 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:36:30.541275 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:36:30.541355 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:36:30.546513 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:36:30.606129 [1;35m[INF][m GID 1042, [OnBlockReceived] listener received block
+2019/07/30 19:36:30.606233 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:36:30.606312 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:36:30.606363 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:36:30.606446 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:36:30.606482 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:36:32.666752 [1;35m[INF][m GID 60, [ProcessInv] send getblock: b8858576054fdbc16e11f6481ea0cfce37f21933de08084eaacc858d23a020f3
+2019/07/30 19:36:32.677941 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:36:32.694767 [1;35m[INF][m GID 1025, [OnBlockReceived] listener received block
+2019/07/30 19:36:32.695033 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:36:32.695134 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:36:32.695244 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:36:32.695364 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:36:32.695713 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:36:33.554054 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:33.554118 [1;35m[INF][m GID 60, current onduty arbiter: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/07/30 19:36:33.554162 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: true
+2019/07/30 19:36:33.554317 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, StartTime: 2019-07-30 19:36:33.553 +0000 UTC, Offset: 35, Height: 573
+2019/07/30 19:36:33.554360 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:33.676209 [1;35m[INF][m GID 60, [ProcessInv] send getblock: d178b34590d2ad8726f0150ed8046a5866b7895991854120a374ce8ddd6aa4a5
+2019/07/30 19:36:33.686087 [1;35m[INF][m GID 1074, [OnBlockReceived] listener received block
+2019/07/30 19:36:33.686183 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:36:33.686228 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:36:33.686317 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:36:33.686393 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:36:38.578096 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:38.578179 [1;35m[INF][m GID 60, current onduty arbiter: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/07/30 19:36:38.578427 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:36:38.578532 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:36:38.578628 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:36:38.578773 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-07-30 19:36:38.577 +0000 UTC, Offset: 36, Height: 573
+2019/07/30 19:36:38.578829 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:43.591015 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:43.591226 [1;35m[INF][m GID 60, current onduty arbiter: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/07/30 19:36:43.591316 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:36:43.591416 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:36:43.591514 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:36:43.591661 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-07-30 19:36:43.59 +0000 UTC, Offset: 37, Height: 573
+2019/07/30 19:36:43.591871 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:47.589061 [1;35m[INF][m GID 1051, [OnBlockReceived] listener received block
+2019/07/30 19:36:47.589344 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:36:47.589393 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:36:47.589460 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:36:47.589495 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:36:47.589518 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:36:47.707643 [1;35m[INF][m GID 1052, [OnBlockReceived] listener received block
+2019/07/30 19:36:47.707675 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:36:47.707694 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:36:47.707727 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:36:47.707752 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:36:47.707775 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:36:48.593628 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:48.593900 [1;35m[INF][m GID 60, current onduty arbiter: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/07/30 19:36:48.593998 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:36:48.594038 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:36:48.594073 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:36:48.594165 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-07-30 19:36:48.593 +0000 UTC, Offset: 38, Height: 573
+2019/07/30 19:36:48.594214 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:50.968230 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 920dfeae4505e4475f6c1c901c2380f3713082ba0626fcfad447ecd1c4b8edf4
+2019/07/30 19:36:50.978439 [1;35m[INF][m GID 1055, [OnBlockReceived] listener received block
+2019/07/30 19:36:50.978476 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:36:50.978503 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:36:50.978653 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:36:50.978693 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:36:50.978718 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:36:50.986337 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:36:51.660854 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 25071e5371463181d9fae611e224c6822a58637e1221f805cb6086df8867f038
+2019/07/30 19:36:51.662132 [1;35m[INF][m GID 1084, [OnBlockReceived] listener received block
+2019/07/30 19:36:51.662184 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:36:51.662216 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:36:51.662541 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:36:51.662605 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:36:51.665953 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:36:51.668429 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:36:53.630923 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:53.630989 [1;35m[INF][m GID 60, current onduty arbiter: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/07/30 19:36:53.631063 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: true
+2019/07/30 19:36:53.631159 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, StartTime: 2019-07-30 19:36:53.63 +0000 UTC, Offset: 39, Height: 573
+2019/07/30 19:36:53.631189 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:58.588259 [1;35m[INF][m GID 1085, [OnBlockReceived] listener received block
+2019/07/30 19:36:58.588936 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:36:58.589000 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:36:58.589025 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:36:58.703033 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:58.703087 [1;35m[INF][m GID 60, current onduty arbiter: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/07/30 19:36:58.711940 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:36:58.713369 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:36:58.713441 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:36:58.713532 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-07-30 19:36:58.712 +0000 UTC, Offset: 40, Height: 573
+2019/07/30 19:36:58.713569 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:36:59.603664 [1;35m[INF][m GID 1087, [OnBlockReceived] listener received block
+2019/07/30 19:36:59.603817 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:36:59.603847 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:36:59.604035 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:36:59.604067 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:36:59.604230 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:03.716023 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:03.716105 [1;35m[INF][m GID 60, current onduty arbiter: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/07/30 19:37:03.716159 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:37:03.716184 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:37:03.716212 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:37:03.716260 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-07-30 19:37:03.715 +0000 UTC, Offset: 41, Height: 573
+2019/07/30 19:37:03.716285 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:04.631280 [1;35m[INF][m GID 1125, [OnBlockReceived] listener received block
+2019/07/30 19:37:04.631395 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:04.631453 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:37:04.631509 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:37:04.631696 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:04.631883 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:07.194911 [1;35m[INF][m GID 1088, [OnBlockReceived] listener received block
+2019/07/30 19:37:07.195173 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:07.195310 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:37:07.195495 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:37:07.195606 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:07.195707 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:08.614263 [1;35m[INF][m GID 60, [ProcessInv] send getblock: f01f1fd169175e240057634c7506d5ea91aeb8c723a8b2c0ade836d43d0339cf
+2019/07/30 19:37:08.617148 [1;35m[INF][m GID 1155, [OnBlockReceived] listener received block
+2019/07/30 19:37:08.617177 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:08.617274 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:37:08.617341 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:37:08.617389 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:08.617569 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:08.620325 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:37:08.729270 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:08.729471 [1;35m[INF][m GID 60, current onduty arbiter: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/07/30 19:37:08.730116 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:37:08.730233 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:37:08.730283 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:37:08.730487 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-07-30 19:37:08.729 +0000 UTC, Offset: 42, Height: 573
+2019/07/30 19:37:08.730608 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:12.252982 [1;35m[INF][m GID 1160, [OnBlockReceived] listener received block
+2019/07/30 19:37:12.253018 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:12.253069 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:37:12.253175 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:37:12.253345 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:12.253378 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:12.751079 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:12.751163 [1;35m[INF][m GID 60, current onduty arbiter: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/07/30 19:37:12.751230 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: true
+2019/07/30 19:37:12.751309 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, StartTime: 2019-07-30 19:37:12.75 +0000 UTC, Offset: 43, Height: 573
+2019/07/30 19:37:12.751351 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:13.552270 [1;35m[INF][m GID 1130, [OnBlockReceived] listener received block
+2019/07/30 19:37:13.553175 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:13.553859 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:13.553920 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:15.873233 [1;35m[INF][m GID 1131, [OnBlockReceived] listener received block
+2019/07/30 19:37:15.873529 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:15.873586 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:15.873611 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:16.418562 [1;35m[INF][m GID 1132, [OnBlockReceived] listener received block
+2019/07/30 19:37:16.418591 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:16.418690 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:16.418755 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:17.125940 [1;35m[INF][m GID 1133, [OnBlockReceived] listener received block
+2019/07/30 19:37:17.126030 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:17.126070 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:17.126144 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:17.188391 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 9b0257caa08dcda32c20ceaa39eda5f016a766bc46f63bebb2635c71e10fe874
+2019/07/30 19:37:17.191763 [1;35m[INF][m GID 1152, [OnBlockReceived] listener received block
+2019/07/30 19:37:17.192043 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:37:17.192153 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:17.192303 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:17.192423 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:17.779748 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:17.779940 [1;35m[INF][m GID 60, current onduty arbiter: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/07/30 19:37:17.780031 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:37:17.780121 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:37:17.780205 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:37:17.780387 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-07-30 19:37:17.779 +0000 UTC, Offset: 44, Height: 573
+2019/07/30 19:37:17.780457 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:17.782840 [1;35m[INF][m GID 1168, [OnBlockReceived] listener received block
+2019/07/30 19:37:17.782911 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:17.782984 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:37:17.783041 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:37:17.783119 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:17.783141 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:17.966583 [1;35m[INF][m GID 1169, [OnBlockReceived] listener received block
+2019/07/30 19:37:17.966759 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:17.966923 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:37:17.967043 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:37:17.967168 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:17.967323 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:22.846946 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:22.847034 [1;35m[INF][m GID 60, current onduty arbiter: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/07/30 19:37:22.847076 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:37:22.847126 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:37:22.847156 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:37:22.847218 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-07-30 19:37:22.846 +0000 UTC, Offset: 45, Height: 573
+2019/07/30 19:37:22.847236 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:23.057396 [1;35m[INF][m GID 1202, [OnBlockReceived] listener received block
+2019/07/30 19:37:23.057424 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:23.057443 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:37:23.057467 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:37:23.057610 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:23.057638 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:24.733273 [1;35m[INF][m GID 1196, [OnBlockReceived] listener received block
+2019/07/30 19:37:24.733312 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:24.733339 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:37:24.733367 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:37:24.733396 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:24.733414 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:25.282047 [1;35m[INF][m GID 60, [ProcessInv] send getblock: e3428b24197f08bf178836c237077a738d4be3e61009ccb09d329425af4e5dcc
+2019/07/30 19:37:25.282994 [1;35m[INF][m GID 1198, [OnBlockReceived] listener received block
+2019/07/30 19:37:25.283052 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:25.283105 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:37:25.283131 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:37:25.283157 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:25.283211 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:25.286592 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:37:26.536712 [1;35m[INF][m GID 1201, [OnBlockReceived] listener received block
+2019/07/30 19:37:26.536809 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:26.536868 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:37:26.537027 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:37:26.537120 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:26.537150 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:27.299625 [1;35m[INF][m GID 1223, [OnBlockReceived] listener received block
+2019/07/30 19:37:27.299677 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:27.299699 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:37:27.299730 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:37:27.299755 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:27.299867 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:27.573153 [1;35m[INF][m GID 1236, [OnBlockReceived] listener received block
+2019/07/30 19:37:27.573186 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:27.573273 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:37:27.573367 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:37:27.573478 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:27.573567 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:27.863112 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:27.865187 [1;35m[INF][m GID 60, current onduty arbiter: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/07/30 19:37:27.865313 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:37:27.865413 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:37:27.867190 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:37:27.871437 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-07-30 19:37:27.866 +0000 UTC, Offset: 46, Height: 573
+2019/07/30 19:37:27.871470 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:29.537284 [1;35m[INF][m GID 1181, [OnBlockReceived] listener received block
+2019/07/30 19:37:29.537409 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:29.537552 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:37:29.537655 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:37:29.537776 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:29.537883 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:30.573228 [1;35m[INF][m GID 1238, [OnBlockReceived] listener received block
+2019/07/30 19:37:30.574323 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:30.574456 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:37:30.574580 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:37:30.574689 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:30.574786 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:32.633735 [1;35m[INF][m GID 60, [ProcessInv] send getblock: d666ecbb2375dfe48ed87122794bf2c7cf147f66af713127811ae31b4cc87c37
+2019/07/30 19:37:32.643900 [1;35m[INF][m GID 1183, [OnBlockReceived] listener received block
+2019/07/30 19:37:32.644008 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:37:32.644127 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:32.644299 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:37:32.644384 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:37:32.644473 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:32.644575 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:32.880250 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:32.880397 [1;35m[INF][m GID 60, current onduty arbiter: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/07/30 19:37:32.880672 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: true
+2019/07/30 19:37:32.880888 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, StartTime: 2019-07-30 19:37:32.879 +0000 UTC, Offset: 47, Height: 573
+2019/07/30 19:37:32.889876 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:37.178400 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 6f37c66a5a512b86b6ab3ed522ed74b62c7a9154743a642bdb8707c3031ce8c6
+2019/07/30 19:37:37.179390 [1;35m[INF][m GID 1243, [OnBlockReceived] listener received block
+2019/07/30 19:37:37.179495 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:37.179653 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:37.179689 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:37.180036 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:37:37.891276 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:37.891357 [1;35m[INF][m GID 60, current onduty arbiter: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/07/30 19:37:37.891392 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:37:37.891539 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:37:37.891594 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:37:37.891696 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-07-30 19:37:37.89 +0000 UTC, Offset: 48, Height: 573
+2019/07/30 19:37:37.891740 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:39.856023 [1;35m[INF][m GID 1256, [OnBlockReceived] listener received block
+2019/07/30 19:37:39.856082 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:39.856110 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:37:39.856140 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:37:39.856167 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:39.856191 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:43.057484 [1;35m[INF][m GID 1245, [OnBlockReceived] listener received block
+2019/07/30 19:37:43.057616 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:43.057649 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:37:43.057734 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:37:43.057769 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:43.057866 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:43.062809 [1;35m[INF][m GID 60, [ProcessInv] send getblock: e00bd71406deac7eb56b2ca0d0d5fe39538e69ae0bded33c6aa38cfab084b2c8
+2019/07/30 19:37:43.071310 [1;35m[INF][m GID 1270, [OnBlockReceived] listener received block
+2019/07/30 19:37:43.071359 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:43.071386 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:37:43.071468 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:37:43.071559 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:43.071587 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:43.096905 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:37:43.236816 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:43.237150 [1;35m[INF][m GID 60, current onduty arbiter: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/07/30 19:37:43.237301 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:37:43.237518 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:37:43.237630 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:37:43.237782 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-07-30 19:37:43.236 +0000 UTC, Offset: 49, Height: 573
+2019/07/30 19:37:43.238031 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:43.260481 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 9a4760607a3679679effc6dbe7ebd064d89805b8950fd23faf640b928a2a9766
+2019/07/30 19:37:43.261494 [1;35m[INF][m GID 1272, [OnBlockReceived] listener received block
+2019/07/30 19:37:43.261527 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:37:43.261619 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:43.261669 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:37:43.261765 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:37:43.261798 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:43.261885 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:44.382652 [1;35m[INF][m GID 1215, [OnBlockReceived] listener received block
+2019/07/30 19:37:44.382683 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:44.382826 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:37:44.382858 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:37:44.382917 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:44.382939 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:48.247028 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:48.247135 [1;35m[INF][m GID 60, current onduty arbiter: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/07/30 19:37:48.247182 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:37:48.247214 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:37:48.247272 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:37:48.247361 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-07-30 19:37:48.246 +0000 UTC, Offset: 50, Height: 573
+2019/07/30 19:37:48.247432 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:53.262947 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:53.263777 [1;35m[INF][m GID 60, current onduty arbiter: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/07/30 19:37:53.263986 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: true
+2019/07/30 19:37:53.264401 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, StartTime: 2019-07-30 19:37:53.263 +0000 UTC, Offset: 51, Height: 573
+2019/07/30 19:37:53.264561 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:58.519319 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:58.520371 [1;35m[INF][m GID 60, current onduty arbiter: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/07/30 19:37:58.520710 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:37:58.521162 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:37:58.521494 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:37:58.521760 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-07-30 19:37:58.52 +0000 UTC, Offset: 52, Height: 573
+2019/07/30 19:37:58.522403 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:37:59.070700 [1;35m[INF][m GID 1296, [OnBlockReceived] listener received block
+2019/07/30 19:37:59.070757 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:59.070922 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:37:59.071009 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:37:59.071178 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:59.071263 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:37:59.153809 [1;35m[INF][m GID 1302, [OnBlockReceived] listener received block
+2019/07/30 19:37:59.153876 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:37:59.153910 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:37:59.153970 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:37:59.154014 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:37:59.154067 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:38:02.713571 [1;35m[INF][m GID 1305, [OnBlockReceived] listener received block
+2019/07/30 19:38:02.713640 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:38:02.713727 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:38:02.713758 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:38:02.713850 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:38:02.713945 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:38:03.536258 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:03.542154 [1;35m[INF][m GID 60, current onduty arbiter: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/07/30 19:38:03.542213 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:38:03.542241 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:38:03.542269 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:38:03.542319 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-07-30 19:38:03.541 +0000 UTC, Offset: 53, Height: 573
+2019/07/30 19:38:03.542340 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:04.746584 [1;35m[INF][m GID 1330, [OnBlockReceived] listener received block
+2019/07/30 19:38:04.746702 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:38:04.746820 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:38:04.746951 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:38:04.747087 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:38:04.747198 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:38:08.547978 [1;35m[INF][m GID 1297, [OnBlockReceived] listener received block
+2019/07/30 19:38:08.548165 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:38:08.548666 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:38:08.548949 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:38:08.549020 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:38:08.549050 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:38:08.551289 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:08.551474 [1;35m[INF][m GID 60, current onduty arbiter: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/07/30 19:38:08.551830 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:38:08.552038 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:38:08.552222 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:38:08.552321 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-07-30 19:38:08.551 +0000 UTC, Offset: 54, Height: 573
+2019/07/30 19:38:08.552397 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:12.869296 [1;35m[INF][m GID 1348, [OnBlockReceived] listener received block
+2019/07/30 19:38:12.869329 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:38:12.869461 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:38:12.869766 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:38:12.878672 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:38:12.878813 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:38:13.570163 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:13.570334 [1;35m[INF][m GID 60, current onduty arbiter: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/07/30 19:38:13.570477 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: true
+2019/07/30 19:38:13.570691 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, StartTime: 2019-07-30 19:38:13.569 +0000 UTC, Offset: 55, Height: 573
+2019/07/30 19:38:13.570781 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:18.579163 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:18.579236 [1;35m[INF][m GID 60, current onduty arbiter: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/07/30 19:38:18.579716 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:38:18.579773 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:38:18.580001 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:38:18.580076 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-07-30 19:38:18.579 +0000 UTC, Offset: 56, Height: 573
+2019/07/30 19:38:18.580100 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:23.587658 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:23.587747 [1;35m[INF][m GID 60, current onduty arbiter: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/07/30 19:38:23.587805 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:38:23.587835 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:38:23.587860 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:38:23.587938 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-07-30 19:38:23.586 +0000 UTC, Offset: 57, Height: 573
+2019/07/30 19:38:23.587961 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:26.025769 [1;35m[INF][m GID 1366, [OnBlockReceived] listener received block
+2019/07/30 19:38:26.025813 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:38:26.025844 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:38:26.025879 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:38:26.025914 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:38:26.025959 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:38:27.921393 [1;35m[INF][m GID 1340, [OnBlockReceived] listener received block
+2019/07/30 19:38:27.921428 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:38:27.921450 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:38:27.921492 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:38:27.921527 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:38:27.921555 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:38:28.773399 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:28.783686 [1;35m[INF][m GID 60, current onduty arbiter: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/07/30 19:38:28.783790 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:38:28.783855 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:38:28.783894 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:38:28.784033 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-07-30 19:38:28.782 +0000 UTC, Offset: 58, Height: 573
+2019/07/30 19:38:28.784076 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:32.062671 [1;35m[INF][m GID 60, [ProcessInv] send getblock: d9a6ccdb9574c44c870fd708668a8646a3afa1a8e9113cd75ca75c73d54f9500
+2019/07/30 19:38:32.079923 [1;35m[INF][m GID 1399, [OnBlockReceived] listener received block
+2019/07/30 19:38:32.079985 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:38:32.080041 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:38:32.080234 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:38:32.080269 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:38:32.081458 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:38:32.083725 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:38:32.773911 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:32.774039 [1;35m[INF][m GID 60, current onduty arbiter: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/07/30 19:38:32.774105 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: true
+2019/07/30 19:38:32.774246 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, StartTime: 2019-07-30 19:38:32.773 +0000 UTC, Offset: 59, Height: 573
+2019/07/30 19:38:32.774338 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:33.797495 [1;35m[INF][m GID 1368, [OnBlockReceived] listener received block
+2019/07/30 19:38:33.797574 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:38:33.797608 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:38:33.797704 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:38:34.758440 [1;35m[INF][m GID 1385, [OnBlockReceived] listener received block
+2019/07/30 19:38:34.758566 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:38:34.762401 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:38:34.765999 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:38:35.177060 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 0b274d26c848e72d51a22f50dd82178b9705753d6f8b8f94e10a845aa88aeaa6
+2019/07/30 19:38:35.178883 [1;35m[INF][m GID 1386, [OnBlockReceived] listener received block
+2019/07/30 19:38:35.181328 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:38:35.181393 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:38:35.181512 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:38:35.181577 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:38:36.889705 [1;35m[INF][m GID 1387, [OnBlockReceived] listener received block
+2019/07/30 19:38:36.889857 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:38:36.891405 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:38:36.891582 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:38:37.874277 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:37.874454 [1;35m[INF][m GID 60, current onduty arbiter: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/07/30 19:38:37.874558 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:38:37.874596 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:38:37.874673 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:38:37.874769 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-07-30 19:38:37.873 +0000 UTC, Offset: 60, Height: 573
+2019/07/30 19:38:37.874838 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:41.219186 [1;35m[INF][m GID 1393, [OnBlockReceived] listener received block
+2019/07/30 19:38:41.219458 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:38:41.219565 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:38:41.227850 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:38:41.228119 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:38:41.228185 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:38:42.819157 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:42.819321 [1;35m[INF][m GID 60, current onduty arbiter: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/07/30 19:38:42.819419 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:38:42.819460 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:38:42.819569 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:38:42.819683 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-07-30 19:38:42.818 +0000 UTC, Offset: 61, Height: 573
+2019/07/30 19:38:42.819714 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:44.609801 [1;35m[INF][m GID 60, [ProcessInv] send getblock: da33a767dec1aa2894e02f196834855d156ed048999cb24e5e90faaa7131d3b5
+2019/07/30 19:38:44.623335 [1;35m[INF][m GID 1413, [OnBlockReceived] listener received block
+2019/07/30 19:38:44.623391 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:38:44.623451 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:38:44.624031 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:38:44.624075 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:38:44.624103 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:38:44.844057 [1;35m[INF][m GID 60, [ProcessInv] send getblock: ebb5b183badfa6180a7f2679267edaad05b7ce88d86cceffcc4ca9891717d6a1
+2019/07/30 19:38:44.845621 [1;35m[INF][m GID 1375, [OnBlockReceived] listener received block
+2019/07/30 19:38:44.845679 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:38:44.845712 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:38:44.845841 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:38:44.845903 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:38:44.846052 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:38:45.335478 [1;35m[INF][m GID 60, [ProcessInv] send getblock: b47b2cdaff3920bcf7626abbdfe9573c898e2c1bb6f77bf1ec2625257348797e
+2019/07/30 19:38:45.361257 [1;35m[INF][m GID 1414, [OnBlockReceived] listener received block
+2019/07/30 19:38:45.361324 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:38:45.361485 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:38:45.370631 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:38:45.370698 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:38:45.370730 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:38:45.751475 [1;35m[INF][m GID 1429, [OnBlockReceived] listener received block
+2019/07/30 19:38:45.751691 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:38:45.751758 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:38:45.751901 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:38:45.752014 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:38:45.752076 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:38:47.846815 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:47.846952 [1;35m[INF][m GID 60, current onduty arbiter: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/07/30 19:38:47.846998 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:38:47.847025 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:38:47.847135 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:38:47.847239 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-07-30 19:38:47.846 +0000 UTC, Offset: 62, Height: 573
+2019/07/30 19:38:47.847317 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:50.229543 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 3a1c577378a16323c3cd38265bd032e39e5b38b685ac1a2857421c6201240985
+2019/07/30 19:38:50.243632 [1;35m[INF][m GID 1462, [OnBlockReceived] listener received block
+2019/07/30 19:38:50.243675 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:38:50.243705 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:38:50.245412 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:38:50.255132 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:38:50.255551 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:38:50.255661 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:38:50.345301 [1;35m[INF][m GID 1443, [OnBlockReceived] listener received block
+2019/07/30 19:38:50.345344 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:38:50.345482 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:38:50.345524 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:38:50.345630 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:38:50.345740 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:38:51.678706 [1;35m[INF][m GID 1445, [OnBlockReceived] listener received block
+2019/07/30 19:38:51.679895 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:38:51.680814 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:38:51.680915 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:38:51.681591 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:38:51.681756 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:38:52.862991 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:52.863157 [1;35m[INF][m GID 60, current onduty arbiter: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/07/30 19:38:52.863227 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: true
+2019/07/30 19:38:52.863332 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, StartTime: 2019-07-30 19:38:52.862 +0000 UTC, Offset: 63, Height: 573
+2019/07/30 19:38:52.863362 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:57.889764 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:57.889869 [1;35m[INF][m GID 60, current onduty arbiter: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/07/30 19:38:57.889909 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:38:57.889975 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:38:57.890190 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:38:57.890315 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-07-30 19:38:57.889 +0000 UTC, Offset: 64, Height: 573
+2019/07/30 19:38:57.890456 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:38:58.111593 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 3d729a7348575553eb81036825954ee94db66fb6a6ff19ee9e1207129b288264
+2019/07/30 19:38:58.130387 [1;35m[INF][m GID 1434, [OnBlockReceived] listener received block
+2019/07/30 19:38:58.131906 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:38:58.131955 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:38:58.132018 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:38:58.132061 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:38:58.132168 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:38:58.132544 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:38:59.129559 [1;35m[INF][m GID 1466, [OnBlockReceived] listener received block
+2019/07/30 19:38:59.129624 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:38:59.129653 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:38:59.129680 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:38:59.129729 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:38:59.129778 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:39:01.964280 [1;35m[INF][m GID 1454, [OnBlockReceived] listener received block
+2019/07/30 19:39:01.964331 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:39:01.964358 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:39:01.964482 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:39:01.964571 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:39:01.964602 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:39:02.902764 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:39:02.902958 [1;35m[INF][m GID 60, current onduty arbiter: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/07/30 19:39:02.903070 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:39:02.903180 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:39:02.903272 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:39:02.903389 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-07-30 19:39:02.902 +0000 UTC, Offset: 65, Height: 573
+2019/07/30 19:39:02.903522 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:39:03.022479 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 42700cf3da60251a793e3b637291f71de3e7186d672859390198dce578de19c5
+2019/07/30 19:39:03.038559 [1;35m[INF][m GID 1474, [OnBlockReceived] listener received block
+2019/07/30 19:39:03.038589 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:39:03.038640 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:39:03.038668 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:39:03.038695 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:39:03.038884 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:39:03.226281 [1;35m[INF][m GID 1468, [OnBlockReceived] listener received block
+2019/07/30 19:39:03.226313 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:39:03.226337 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:39:03.227804 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:39:03.227841 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:39:03.227959 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:39:05.522764 [1;35m[INF][m GID 1490, [OnBlockReceived] listener received block
+2019/07/30 19:39:05.522856 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:39:05.522891 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:39:05.522928 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:39:05.522961 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:39:05.522992 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:39:07.912057 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:39:07.912148 [1;35m[INF][m GID 60, current onduty arbiter: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/07/30 19:39:07.912214 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:39:07.912264 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:39:07.912295 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:39:07.912369 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-07-30 19:39:07.911 +0000 UTC, Offset: 66, Height: 573
+2019/07/30 19:39:07.912393 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:39:08.456389 [1;35m[INF][m GID 1492, [OnBlockReceived] listener received block
+2019/07/30 19:39:08.456427 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:39:08.456452 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:39:08.456478 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:39:08.456501 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:39:08.456523 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:39:09.075826 [1;35m[INF][m GID 1493, [OnBlockReceived] listener received block
+2019/07/30 19:39:09.075900 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:39:09.075925 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:39:09.075967 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:39:09.075993 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:39:09.076012 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:39:10.101024 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 9551b2878cecd9aa6a9d3b84e77515c03c5a4f96e659b9b4e2ee37b8c3a61d75
+2019/07/30 19:39:10.123909 [1;35m[INF][m GID 1495, [OnBlockReceived] listener received block
+2019/07/30 19:39:10.123953 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:39:10.124077 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:39:10.124125 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:39:10.124263 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:39:10.124292 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:39:10.154759 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:39:13.033546 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:39:13.033639 [1;35m[INF][m GID 60, current onduty arbiter: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/07/30 19:39:13.034054 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: true
+2019/07/30 19:39:13.034296 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, StartTime: 2019-07-30 19:39:13.033 +0000 UTC, Offset: 67, Height: 573
+2019/07/30 19:39:13.034344 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:39:17.015382 [1;35m[INF][m GID 1479, [OnBlockReceived] listener received block
+2019/07/30 19:39:17.015444 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:39:17.015500 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:39:17.015524 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:39:18.039467 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:39:18.039670 [1;35m[INF][m GID 60, current onduty arbiter: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/07/30 19:39:18.039805 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:39:18.039914 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:39:18.040039 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:39:18.040194 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-07-30 19:39:18.039 +0000 UTC, Offset: 68, Height: 573
+2019/07/30 19:39:18.040355 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:39:18.927393 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 7b505efac4c6274bf58ac869c534810248fb666bb2cbd3c2b46ea058b99976ee
+2019/07/30 19:39:18.946723 [1;35m[INF][m GID 1520, [OnBlockReceived] listener received block
+2019/07/30 19:39:18.946879 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:39:18.946993 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:39:18.947098 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:39:18.947210 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:39:18.947353 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:39:23.055299 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:39:23.055637 [1;35m[INF][m GID 60, current onduty arbiter: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/07/30 19:39:23.055773 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:39:23.055808 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:39:23.055899 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:39:23.056005 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-07-30 19:39:23.054 +0000 UTC, Offset: 69, Height: 573
+2019/07/30 19:39:23.056074 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:39:23.842135 [1;35m[INF][m GID 1538, [OnBlockReceived] listener received block
+2019/07/30 19:39:23.842488 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:39:23.842540 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:39:23.842569 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:39:23.842597 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:39:23.842615 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:39:26.481177 [1;35m[INF][m GID 60, [ProcessInv] send getblock: e354147ecb84611c4d65c68f9be62bb8b99d244430524850af9918628da1e9d4
+2019/07/30 19:39:26.485064 [1;35m[INF][m GID 1529, [OnBlockReceived] listener received block
+2019/07/30 19:39:26.485109 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:39:26.485132 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:39:26.485154 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:39:26.485182 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:39:26.485209 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:39:26.485234 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:39:26.810775 [1;35m[INF][m GID 60, [ProcessInv] send getblock: e0d96706cfc083270508284e741ff0051e39be1a418d535938bbd8e943e27225
+2019/07/30 19:39:26.817573 [1;35m[INF][m GID 1489, [OnBlockReceived] listener received block
+2019/07/30 19:39:26.817733 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:39:26.817763 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:39:26.817849 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:39:26.817880 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:39:26.817972 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:39:26.818089 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:39:28.061924 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:39:28.066626 [1;35m[INF][m GID 60, current onduty arbiter: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/07/30 19:39:28.066727 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:39:28.066855 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:39:28.066981 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:39:28.067126 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-07-30 19:39:28.066 +0000 UTC, Offset: 70, Height: 573
+2019/07/30 19:39:28.067254 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:39:29.095957 [1;35m[INF][m GID 60, [ProcessInv] send getblock: d64ff4b1d97d1244af8c7e1393c231e2c1012b4403ce084bcd5872c852774fda
+2019/07/30 19:39:29.110128 [1;35m[INF][m GID 1570, [OnBlockReceived] listener received block
+2019/07/30 19:39:29.113971 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:39:29.114004 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:39:29.114051 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:39:29.114112 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:39:29.114191 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:39:29.114468 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:39:31.883686 [1;35m[INF][m GID 1572, [OnBlockReceived] listener received block
+2019/07/30 19:39:31.883789 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:39:31.883849 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:39:31.883876 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:39:31.884183 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:39:31.884406 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:39:33.066483 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:39:33.066809 [1;35m[INF][m GID 60, current onduty arbiter: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/07/30 19:39:33.066968 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: true
+2019/07/30 19:39:33.067167 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, StartTime: 2019-07-30 19:39:33.066 +0000 UTC, Offset: 71, Height: 573
+2019/07/30 19:39:33.067313 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:39:38.075067 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:39:38.075283 [1;35m[INF][m GID 60, current onduty arbiter: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/07/30 19:39:38.075434 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:39:38.075544 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:39:38.075655 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:39:38.075804 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-07-30 19:39:38.074 +0000 UTC, Offset: 72, Height: 573
+2019/07/30 19:39:38.075880 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:39:40.445899 [1;35m[INF][m GID 1581, [OnBlockReceived] listener received block
+2019/07/30 19:39:40.446019 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:39:40.446082 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:39:40.446154 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:39:40.446220 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:39:40.446343 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:39:40.715770 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 0ef73e55787d481955f48db29f66f66d4c9cf6484711b3aa2765c17edfbb8a6d
+2019/07/30 19:39:40.722470 [1;35m[INF][m GID 1535, [OnBlockReceived] listener received block
+2019/07/30 19:39:40.723595 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:39:40.723736 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:39:40.724117 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:39:40.724664 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:39:40.725059 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:39:41.444755 [1;35m[INF][m GID 60, [ProcessInv] send getblock: e407bfde1956794074bb84c728d6ff298d3f580b20a446ef535b7e7fd9500466
+2019/07/30 19:39:41.464238 [1;35m[INF][m GID 1537, [OnBlockReceived] listener received block
+2019/07/30 19:39:41.464308 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:39:41.464484 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:39:41.464529 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:39:41.464947 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:39:41.464988 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:39:41.483000 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:39:43.078865 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:39:43.090866 [1;35m[INF][m GID 60, current onduty arbiter: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/07/30 19:39:43.095946 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:39:43.096134 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:39:43.096308 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:39:43.096556 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-07-30 19:39:43.095 +0000 UTC, Offset: 73, Height: 573
+2019/07/30 19:39:43.096582 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:39:48.098531 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:39:48.098697 [1;35m[INF][m GID 60, current onduty arbiter: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/07/30 19:39:48.098817 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:39:48.098965 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:39:48.099145 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:39:48.099291 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-07-30 19:39:48.098 +0000 UTC, Offset: 74, Height: 573
+2019/07/30 19:39:48.099376 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:39:49.104440 [1;35m[INF][m GID 1548, [OnBlockReceived] listener received block
+2019/07/30 19:39:49.104526 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:39:49.104604 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:39:49.104680 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:39:49.104817 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:39:49.104927 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:39:49.294424 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 32da16d2f5f48ce438971e105864e4e197086b827a988d0fb3c845193c413631
+2019/07/30 19:39:49.297918 [1;35m[INF][m GID 1620, [OnBlockReceived] listener received block
+2019/07/30 19:39:49.298191 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:39:49.298292 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:39:49.298373 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:39:49.298430 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:39:49.298527 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:39:49.298616 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:39:53.114061 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:39:53.114166 [1;35m[INF][m GID 60, current onduty arbiter: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/07/30 19:39:53.114404 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: true
+2019/07/30 19:39:53.114551 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, StartTime: 2019-07-30 19:39:53.113 +0000 UTC, Offset: 75, Height: 573
+2019/07/30 19:39:53.114674 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:39:53.294754 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 2f0241a36bddfcafdabe4e15fb1b72302572ba562cde217c496fc1a27a12858e
+2019/07/30 19:39:53.312249 [1;35m[INF][m GID 1550, [OnBlockReceived] listener received block
+2019/07/30 19:39:53.312292 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:39:53.312326 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:39:53.312349 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:39:53.312576 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:39:57.729111 [1;35m[INF][m GID 60, [ProcessInv] send getblock: d39209498f7499cc793e5f08297825c19e699cfdbb27066a06653b8d475a868f
+2019/07/30 19:39:57.733657 [1;35m[INF][m GID 1606, [OnBlockReceived] listener received block
+2019/07/30 19:39:57.733728 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:39:57.733764 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:39:57.733818 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:39:57.763384 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:39:58.135267 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:39:58.143547 [1;35m[INF][m GID 60, current onduty arbiter: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/07/30 19:39:58.143605 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:39:58.145986 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:39:58.146025 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:39:58.146175 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-07-30 19:39:58.145 +0000 UTC, Offset: 76, Height: 573
+2019/07/30 19:39:58.146312 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:40:02.763325 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 96ff195c2861972c41b57cfd00a9c2a5a8516a7106185b464846f353c9d6872c
+2019/07/30 19:40:02.768119 [1;35m[INF][m GID 1631, [OnBlockReceived] listener received block
+2019/07/30 19:40:02.768237 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:40:02.768270 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:40:02.768421 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:40:02.768529 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:40:02.768588 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:40:03.140767 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:40:03.140951 [1;35m[INF][m GID 60, current onduty arbiter: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/07/30 19:40:03.140998 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:40:03.141144 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:40:03.141264 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:40:03.141405 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-07-30 19:40:03.14 +0000 UTC, Offset: 77, Height: 573
+2019/07/30 19:40:03.141461 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:40:05.123056 [1;35m[INF][m GID 60, [ProcessInv] send getblock: ec798b0a2ea7a0592d091f3a53b4b029564db03ecbef3198d1e50439c013e71c
+2019/07/30 19:40:05.129563 [1;35m[INF][m GID 1600, [OnBlockReceived] listener received block
+2019/07/30 19:40:05.129642 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:40:05.129719 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:40:05.129795 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:40:05.129885 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:40:05.129933 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:40:06.473400 [1;35m[INF][m GID 1639, [OnBlockReceived] listener received block
+2019/07/30 19:40:06.473551 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:40:06.473634 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:40:06.473730 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:40:06.473863 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:40:06.473991 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:40:07.343145 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 08d7aade94611e6f20783bbb50ebabb0b28b674d73a8f71f603357388313802c
+2019/07/30 19:40:07.356124 [1;35m[INF][m GID 1651, [OnBlockReceived] listener received block
+2019/07/30 19:40:07.356310 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:40:07.356398 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:40:07.356471 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:40:07.356568 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:40:07.356652 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:40:08.161385 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:40:08.161573 [1;35m[INF][m GID 60, current onduty arbiter: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/07/30 19:40:08.161702 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:40:08.161815 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:40:08.161904 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:40:08.162056 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-07-30 19:40:08.16 +0000 UTC, Offset: 78, Height: 573
+2019/07/30 19:40:08.162149 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:40:12.562460 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 4e5d0ab7fabbf03c3bfc8b0a3b324d1a909c4301cc2482bf93a1b5c38a2aa3f7
+2019/07/30 19:40:12.581499 [1;35m[INF][m GID 1669, [OnBlockReceived] listener received block
+2019/07/30 19:40:12.581542 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:40:12.581561 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:40:12.581582 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:40:12.581610 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:40:12.581628 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:40:13.184987 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:40:13.185137 [1;35m[INF][m GID 60, current onduty arbiter: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/07/30 19:40:13.185307 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: true
+2019/07/30 19:40:13.185481 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, StartTime: 2019-07-30 19:40:13.184 +0000 UTC, Offset: 79, Height: 573
+2019/07/30 19:40:13.185513 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:40:17.625464 [1;35m[INF][m GID 1660, [OnBlockReceived] listener received block
+2019/07/30 19:40:17.625568 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:40:17.625657 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:40:17.625718 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:40:18.005460 [1;35m[INF][m GID 1676, [OnBlockReceived] listener received block
+2019/07/30 19:40:18.005716 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:40:18.006445 [1;35m[INF][m GID 60, [OnDuty][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:40:18.006570 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:40:18.193920 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:40:18.194000 [1;35m[INF][m GID 60, current onduty arbiter: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/07/30 19:40:18.194062 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:40:18.194096 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:40:18.194119 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:40:18.194194 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-07-30 19:40:18.193 +0000 UTC, Offset: 80, Height: 573
+2019/07/30 19:40:18.194310 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:40:18.422520 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 4d54017fec6ed4b866786b85e694803582a430b409c28db7ef9664b11aacc78d
+2019/07/30 19:40:18.431074 [1;35m[INF][m GID 1661, [OnBlockReceived] listener received block
+2019/07/30 19:40:18.431280 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:40:18.431344 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:40:18.431463 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:40:18.431496 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:40:18.431678 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:40:18.432322 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:40:23.165411 [1;35m[INF][m GID 1647, [OnBlockReceived] listener received block
+2019/07/30 19:40:23.165657 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:40:23.165872 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:40:23.165993 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:40:23.166112 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:40:23.166222 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:40:23.202779 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:40:23.202927 [1;35m[INF][m GID 60, current onduty arbiter: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/07/30 19:40:23.202971 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:40:23.203115 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:40:23.203228 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:40:23.212743 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-07-30 19:40:23.202 +0000 UTC, Offset: 81, Height: 573
+2019/07/30 19:40:23.212897 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:40:25.486194 [1;35m[INF][m GID 1714, [OnBlockReceived] listener received block
+2019/07/30 19:40:25.486257 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:40:25.486287 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:40:25.486343 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:40:25.486380 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:40:25.486442 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:40:26.487179 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 99c9235f2ab2080d03c890f75ed713720eacc0e269388cdf00b22c910fbb5ed5
+2019/07/30 19:40:26.488302 [1;35m[INF][m GID 1716, [OnBlockReceived] listener received block
+2019/07/30 19:40:26.488371 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:40:26.488423 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:40:26.488468 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:40:26.488524 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:40:26.488551 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:40:28.212336 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:40:28.212567 [1;35m[INF][m GID 60, current onduty arbiter: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/07/30 19:40:28.213216 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:40:28.213328 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:40:28.213402 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:40:28.213519 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-07-30 19:40:28.212 +0000 UTC, Offset: 82, Height: 573
+2019/07/30 19:40:28.213607 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:40:28.239954 [1;35m[INF][m GID 1730, [OnBlockReceived] listener received block
+2019/07/30 19:40:28.242036 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:40:28.242169 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:40:28.242365 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:40:28.247841 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:40:28.247932 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:40:33.227131 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:40:33.227356 [1;35m[INF][m GID 60, current onduty arbiter: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556
+2019/07/30 19:40:33.227460 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: true
+2019/07/30 19:40:33.227632 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 021cfade3eddd057d8ca178057a88c4654b15c1ada7ee9ab65517f00beb6977556, StartTime: 2019-07-30 19:40:33.226 +0000 UTC, Offset: 83, Height: 573
+2019/07/30 19:40:33.227692 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:40:38.234729 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:40:38.234809 [1;35m[INF][m GID 60, current onduty arbiter: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25
+2019/07/30 19:40:38.234847 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:40:38.234875 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:40:38.235039 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:40:38.235196 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0295890a17feb7d5191da656089b5daad83f596edcc491f5c91d025b42955a9f25, StartTime: 2019-07-30 19:40:38.234 +0000 UTC, Offset: 84, Height: 573
+2019/07/30 19:40:38.235301 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:40:39.047617 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 2b40589abcafd4d123d9af1b8d122f49bcdcef15055a6b4b54ccc3c152d16903
+2019/07/30 19:40:39.059029 [1;35m[INF][m GID 1694, [OnBlockReceived] listener received block
+2019/07/30 19:40:39.067773 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:40:39.068496 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:40:39.069253 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:40:39.069339 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:40:39.069447 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:40:39.069615 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:40:39.967816 [1;35m[INF][m GID 1723, [OnBlockReceived] listener received block
+2019/07/30 19:40:39.967908 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:40:39.968009 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:40:39.968087 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:40:39.968646 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:40:39.968677 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:40:43.240845 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:40:43.241051 [1;35m[INF][m GID 60, current onduty arbiter: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08
+2019/07/30 19:40:43.241233 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:40:43.241363 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:40:43.241506 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:40:43.241686 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08, StartTime: 2019-07-30 19:40:43.24 +0000 UTC, Offset: 85, Height: 573
+2019/07/30 19:40:43.241850 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:40:44.264908 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 04d182e2f7c8ba09b46664d2bc542f8d510f20539f0cd72e8ffbbe3d0b13b815
+2019/07/30 19:40:44.284442 [1;35m[INF][m GID 1746, [OnBlockReceived] listener received block
+2019/07/30 19:40:44.284567 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:40:44.284603 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:40:44.284641 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:40:44.284748 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:40:44.284789 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:40:44.397369 [1;35m[INF][m GID 60, [ProcessInv] send getblock: 376dd15e1e6e12b66a0dc4eda5e5c19b8a7b2eecb2f46e83e30e37b16b85e119
+2019/07/30 19:40:44.412445 [1;35m[INF][m GID 1725, [OnBlockReceived] listener received block
+2019/07/30 19:40:44.412528 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:40:44.412626 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:40:44.412728 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:40:44.412796 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:40:44.412901 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:40:44.413255 [1;31m[ERR][m GID 60, [OnBlock] err:  duplicate block in pool
+2019/07/30 19:40:45.560865 [1;35m[INF][m GID 1762, [OnBlockReceived] listener received block
+2019/07/30 19:40:45.560962 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:40:45.560993 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:40:45.561073 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:40:45.561101 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:40:45.561183 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:40:47.365839 [1;35m[INF][m GID 1763, [OnBlockReceived] listener received block
+2019/07/30 19:40:47.365950 [1;35m[INF][m GID 60, [OnBlockReceived] start
+2019/07/30 19:40:47.365979 [1;35m[INF][m GID 60, [ProcessHigherBlock] broadcast inv and try start new consensus
+2019/07/30 19:40:47.366021 [1;35m[INF][m GID 60, [BroadcastMessage] msg: inv
+2019/07/30 19:40:47.366069 [1;35m[INF][m GID 60, [Normal][OnBlockReceived] received unsigned block, record block
+2019/07/30 19:40:47.366097 [1;35m[INF][m GID 60, [OnBlockReceived] end
+2019/07/30 19:40:48.263095 [1;35m[INF][m GID 60, [TryChangeView] succeed
+2019/07/30 19:40:48.263293 [1;35m[INF][m GID 60, current onduty arbiter: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450
+2019/07/30 19:40:48.263344 [1;35m[INF][m GID 60, OnViewChanged, getBlock from first block hash: 4623143ac5fdd8010082b40beaa0beead620cb58193da5f2ff7ecdddb503c8f0 onduty: false
+2019/07/30 19:40:48.263519 [1;35m[INF][m GID 60, [OnViewChanged] clean proposal
+2019/07/30 19:40:48.263625 [1;35m[INF][m GID 60, Clean proposals
+2019/07/30 19:40:48.264039 [1;35m[INF][m GID 60, [OnViewStarted] OnDutyArbitrator: 0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450, StartTime: 2019-07-30 19:40:48.262 +0000 UTC, Offset: 86, Height: 573
+2019/07/30 19:40:48.267001 [1;35m[INF][m GID 60, [TryChangeView] succeed

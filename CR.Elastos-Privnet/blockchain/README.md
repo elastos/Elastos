@@ -2,7 +2,7 @@
 
 - Prerequisite basic knowledge of docker is expected  
 - After starting, the miners will automatically start running and about 18 containers are created
-- Pre-mined 900 ELA on Mainchain miner reward address, 100,000 ELA on one mainchain address, 100,000 ELA on another mainchain address, 100,000 ELA on DID sidechain address, 100,000 ELA on Token sidechain address and 100,000 ELA on ETH sidechain address. For more, see [Wallets](#Wallets)
+- Pre-mined 1000 ELA on Mainchain miner reward address, 100,000 ELA on one mainchain address, 100,000 ELA on another mainchain address, 100,000 ELA on DID sidechain address, 100,000 ELA on Token sidechain address and 100,000 ELA on ETH sidechain address. For more, see [Wallets](#Wallets)
 - For the docker images that might be used for connecting to mainnet, testnet, regnet or private net, check out [https://cloud.docker.com/u/cyberrepublic/repository/list](https://cloud.docker.com/u/cyberrepublic/repository/list)
 
 ## Tools 
@@ -17,6 +17,8 @@
 - [action_storeinfoon_didchain.json](./test/action_storeinfoon_didchain.json): This file is used for DID sidechain testing 
 - [did_example.json](./test/did_example.json): This file contains info that is produced when you create a new DID. The DID sidechain test that's used later on uses this already created DID to make the process easier
 - [register_mainchain-dpos-1.lua](./test/register_mainchain-dpos-1.lua): This script is executed when registering for one of the dpos supernodes locally. Please do not use this on production environment
+- [cancel_producer_mainchain-dpos-1.lua](./test/cancel_producer_mainchain-dpos-1.lua): This script is executed when cancelling one of the dpos supernodes locally. Please do not use this on production environment
+- [return_deposit_mainchain-dpos-1.lua](./test/return_deposit_mainchain-dpos-1.lua): This script is executed when getting the original deposit back for one of the dpos supernodes locally. Please do not use this on production environment
 - [register_mainchain-dpos-2.lua](./test/register_mainchain-dpos-2.lua): This script is executed when registering for one of the dpos supernodes locally. Please do not use this on production environment
 
 ## Wallets
@@ -104,7 +106,7 @@ These are located in the `wallets` folder:
     curl http://localhost:10012/api/v1/asset/balances/EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U
     ```    
     
-    You should see at least 915 ELA in the miner wallet:
+    You should see at least 1005 ELA in the miner wallet:
     ```
     {"Desc":"Success","Error":0,"Result":"1005.60664465"}
     ```
@@ -315,16 +317,17 @@ These are located in the `wallets` folder:
   ```
   mkdir -p ~/node/ela;
   cd ~/node/ela;
-  wget https://github.com/elastos/Elastos.ELA/releases/download/v0.3.2/ela;
-  chmod +x ela;
-  wget https://github.com/elastos/Elastos.ELA/releases/download/v0.3.2/ela-cli;
-  chmod +x ela-cli;
+  wget https://download.elastos.org/elastos-ela/elastos-ela-0.3.4/elastos-ela-v0.3.4-linux-x86_64.tgz;
+  tar -xzvf elastos-ela-v0.3.4-linux-x86_64.tgz;
+  mv elastos-ela-v0.3.4/ela .;
+  mv elastos-ela-v0.3.4/ela-cli .;
+  rm -rf elastos-ela-v0.3.4-linux-x86_64.tgz elastos-ela-v0.3.4/
   ```
 
 2. Let's create a new wallet that we will use to register for our supernode so we'll be both an owner and a node
 
   ```
-  ./ela-cli wallet create -p elastos
+  ./ela-cli --rpcport 10014 wallet create -p elastos
   ```
 
   Should return something like:
@@ -352,7 +355,7 @@ These are located in the `wallets` folder:
 
   Wait for the transaction to confirm(around 6 blocks) and then check your new balance:
   ```
-  ./ela-cli wallet b
+  ./ela-cli --rpcport 10014 wallet b
   ```
 
   Should return something like:
@@ -440,7 +443,7 @@ These are located in the `wallets` folder:
 
   Get deposit_address:
   ```
-  ./ela-cli wallet depositaddr $ELAADDRESS
+  ./ela-cli --rpcport 10014 wallet depositaddr $ELAADDRESS
   ```
 
   Should output your "deposit_address" that you enter on register_new_supernode.lua script. 
@@ -450,7 +453,7 @@ These are located in the `wallets` folder:
   ```
 
   ```
-  ./ela-cli wallet account -p elastos
+  ./ela-cli --rpcport 10014 wallet account -p elastos
   ```
 
   Should output your public key that you can enter for both "own_publickey" and "node_publickey" for testing purposes
@@ -460,7 +463,7 @@ These are located in the `wallets` folder:
 7. Register your supernode
 
   ```
-  ./ela-cli script --file ./register_new_supernode.lua
+  ./ela-cli --rpcport 10014 script --file ./register_new_supernode.lua
   ```
 
   If the transaction is successful, it should say "tx send success" at the end of the output
@@ -468,7 +471,7 @@ These are located in the `wallets` folder:
 8. Verify your supernode got registered successfully
 
   ```
-  ./ela-cli info listproducers
+  ./ela-cli --rpcport 10014 info listproducers
   ```
 
   You should see your new supernode listed there
@@ -497,7 +500,7 @@ These are located in the `wallets` folder:
 
   After some blocks, your vote will be seen. Let's verify this:
   ```
-  ./ela-cli info listproducers --rpcuser user --rpcpassword password
+  ./ela-cli --rpcport 10014 info listproducers --rpcuser user --rpcpassword password
 
   ```
 

@@ -28,6 +28,11 @@ services:
       - ${PWD}/ela-mainchain/node_crc/mainchain-crc-1/keystore.dat:/ela/keystore.dat
     ports:
       - 10111-10117:20333-20339
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10112/api/v1/block/height"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
     networks:
       - blockchain
     tty: true
@@ -41,6 +46,11 @@ services:
       - ${PWD}/ela-mainchain/node_crc/mainchain-crc-2/keystore.dat:/ela/keystore.dat
     ports:
       - 10211-10217:20333-20339
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10212/api/v1/block/height"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
     networks:
       - blockchain
     tty: true
@@ -54,6 +64,11 @@ services:
       - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-1/keystore.dat:/ela/keystore.dat
     ports:
       - 10511-10517:20333-20339
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10512/api/v1/block/height"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
     networks:
       - blockchain
     tty: true
@@ -67,6 +82,11 @@ services:
       - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-2/keystore.dat:/ela/keystore.dat
     ports:
       - 10611-10617:20333-20339
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10612/api/v1/block/height"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
     networks:
       - blockchain
     tty: true

@@ -77,3 +77,14 @@
 13:11:15.609476 version@stat F·[0 1] S·120KiB[0B 120KiB] Sc·[0.00 0.00]
 13:11:15.616823 table@compaction committed F-1 S-5KiB Ke·0 D·37 T·14.526403ms
 13:11:15.616981 table@remove removed @16
+=============== Jul 30, 2019 (UTC) ===============
+19:33:06.463800 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+19:33:06.463923 version@stat F·[0 1] S·120KiB[0B 120KiB] Sc·[0.00 0.00]
+19:33:06.466952 db@open opening
+19:33:06.467191 journal@recovery F·1
+19:33:06.468479 journal@recovery recovering @18
+19:33:06.498760 memdb@flush created L0@21 N·153 S·19KiB "B,v1725":"I<\x02\x00\x00,v1726"
+19:33:06.500149 version@stat F·[1 1] S·140KiB[19KiB 120KiB] Sc·[0.25 0.00]
+19:33:06.541354 db@janitor F·5 G·1
+19:33:06.541376 db@janitor removing table-17
+19:33:06.541421 db@open done T·74.44913ms
