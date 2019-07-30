@@ -82,7 +82,7 @@ module.exports = merge(common, {
             poll: 5000
         },
         proxy: {
-            '/api': 'http://localhost:3000'
+            '/api': 'http://localhost:5000'
         },
         compress: true,
         disableHostCheck: true

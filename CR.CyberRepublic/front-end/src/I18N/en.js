@@ -3,6 +3,7 @@ import council from './en/council'
 import home from './en/home'
 import release from './en/release'
 import proposal from './en/proposal'
+import suggestion from './en/suggestion'
 import getting_started from './en/getting_started'
 
 const en = {
@@ -10,6 +11,7 @@ const en = {
   home,
   release,
   proposal,
+  suggestion,
   getting_started,
   // Header
   '0000': 'ALPHA',
