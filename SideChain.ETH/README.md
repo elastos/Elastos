@@ -106,23 +106,24 @@ Web3 = require("web3");
 // set web3 uri
 web3 = new Web3("http://127.0.0.1:8545"); 
 // set withdraw contract
-contract = new web3.eth.Contract([{"constant":false,"inputs":[{"name":"_addr","type":"string"},{"name":"_amount","type":"uint256"},{"name":"_fee","type":"uint256"}],"name":"receivePayload","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"anonymous":false,"inputs":[{"indexed":false,"name":"_addr","type":"string"},{"indexed":false,"name":"_amount","type":"uint256"},{"indexed":false,"name":"_crosschainamount","type":"uint256"},{"indexed":true,"name":"_sender","type":"address"}],"name":"PayloadReceived","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_sender","type":"address"},{"indexed":false,"name":"_amount","type":"uint256"},{"indexed":true,"name":"_black","type":"address"}],"name":"EtherDeposited","type":"event"}])
+contract = new web3.eth.Contract([{"constant":false,"inputs":[{"name":"_addr","type":"string"},{"name":"_amount","type":"uint256"},{"name":"_fee","type":"uint256"}],"name":"receivePayload","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"anonymous":false,"inputs":[{"indexed":false,"name":"_addr","type":"string"},{"indexed":false,"name":"_amount","type":"uint256"},{"indexed":false,"name":"_crosschainamount","type":"uint256"},{"indexed":true,"name":"_sender","type":"address"}],"name":"PayloadReceived","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_sender","type":"address"},{"indexed":false,"name":"_amount","type":"uint256"},{"indexed":true,"name":"_black","type":"address"}],"name":"EtherDeposited","type":"event"}]);
 // set eth account address
-contract.options.address = eth_address
-// set deploy account contract keystore info
+contract.options.address = deploy_contract_address;
+// set account contract keystore info
 acc = web3.eth.accounts.decrypt(keystore_content, ketstore_password);   
 // call receivePayload function，params：(ELA main chain address，amount(In ela up to convert wei 10000000000)，fee)
-cdata  = contract.methods.receivePayload(ELA_address, withdraw_amount, fee).encodeABI()
+cdata  = contract.methods.receivePayload(ELA_address, withdraw_amount, fee).encodeABI();
 // gas minimum is 3000000，gasPrice is any value
 tx = {data: cdata, to: contract.options.address, from: acc.address, gas: "3000000", gasPrice: "20000000000"};
 // send transaction amount(use receivePayload function amount)
-tx.value = withdraw_amount
+tx.value = withdraw_amount;
 acc.signTransaction(tx).then((res)=>{
-   console.log("coming")
+   console.log("coming");
    stx = res;
-   console.log(stx.rawTransaction)
+   console.log(stx.rawTransaction);
    web3.eth.sendSignedTransaction(stx.rawTransaction).then(console)});
 ```
+**Note: ELA testnet server Deploy Contract Address: `0x491bC043672B9286fA02FA7e0d6A3E5A0384A31A`, ELA mainnet server Deploy Contract Address: `0xC445f9487bF570fF508eA9Ac320b59730e81e503`!**
 
 ### Configuration
 
