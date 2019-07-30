@@ -15,6 +15,7 @@ import {
 import { convertFromHTML, ContentState, EditorState } from 'draft-js'
 import { MEDIUM_DRAFT_TOOLBAR_OPTIONS } from '@/config/constant'
 import { CONTENT_TYPE } from '@/constant'
+import ImageSideButton from './ImageSideButton'
 
 // if using webpack
 import 'medium-draft/lib/index.css'
@@ -125,7 +126,12 @@ class Component extends BaseComponent {
         {...this.props}
         ref={this.refsEditor}
         placeholder=""
-        sideButtons={[]}
+        sideButtons={[
+          {
+            title: 'Image',
+            component: ImageSideButton
+          }
+        ]}
         blockButtons={MEDIUM_DRAFT_TOOLBAR_OPTIONS.BLOCK_BUTTONS}
         inlineButtons={MEDIUM_DRAFT_TOOLBAR_OPTIONS.INLINE_BUTTONS}
         editorState={this.generateEditorState()}
