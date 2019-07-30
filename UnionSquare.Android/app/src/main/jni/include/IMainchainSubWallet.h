@@ -209,6 +209,116 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json GetRegisteredProducerInfo() const = 0;
 
+
+			/**
+			 * Generate payload for registering or updating cr.
+			 *
+			 * @param crPublicKey    The public key to identify a cr. Can't change later.
+			 * @param nickName       Nickname of cr.
+			 * @param url            URL of cr.
+			 * @param location       Location code.
+			 * @param payPasswd      Pay password is using for signing the payload with the owner private key.
+			 *
+			 * @return               The payload in JSON format.
+			 */
+			virtual nlohmann::json GenerateCRInfoPayload(
+					const std::string &crPublicKey,
+					const std::string &nickName,
+					const std::string &url,
+					uint64_t location,
+					const std::string &payPasswd) const = 0;
+
+			/**
+			 * Get cr owner DID.
+			 *
+			 * @return Owner cr DID.
+			 */
+			virtual std::string GetCROwnerDID() const = 0;
+
+			/**
+			 * Get cr owner public key.
+			 *
+			 * @return Owner cr public key.
+			 */
+			virtual std::string GetCROwnerPublicKey() const = 0;
+
+			/**
+			 * Generate payload for unregister or updating cr.
+			 *
+			 * @param crPublicKey      The public key to identify a cr. Can't change later.
+			 *                       be sent to address of this public key.
+			 * @param payPasswd      Pay password is using for signing the payload with the owner private key.
+			 *
+			 * @return               The payload in JSON format.
+			 */
+			virtual nlohmann::json GenerateUnregisterCRPayload(
+					const std::string &crPublicKey,
+					const std::string &payPasswd) const = 0;
+
+			/**
+			 * Create register cr transaction.
+			 *
+			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
+			 *                     Otherwise, pick UTXO from the specific address.
+			 * @param payload      Generate by GenerateCRInfoPayload().
+			 * @param amount       Amount must lager than 500,000,000,000 sela
+			 * @param memo         Remarks string. Can be empty string.
+			 * @param useVotedUTXO If true, all voted UTXO will be picked. Otherwise, any voted UTXO will not be picked.
+			 *
+			 * @return             The transaction in JSON format to be signed and published.
+			 */
+			virtual nlohmann::json CreateRegisterCRTransaction(
+					const std::string &fromAddress,
+					const nlohmann::json &payload,
+					const std::string &amount,
+					const std::string &memo,
+					bool useVotedUTXO = false) = 0;
+
+			/**
+			 * Create update cr transaction.
+			 *
+			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
+			 *                     Otherwise, pick UTXO from the specific address.
+			 * @param payload      Generate by GenerateCRInfoPayload().
+			 * @param memo         Remarks string. Can be empty string.
+			 * @param useVotedUTXO If true, all voted UTXO will be picked. Otherwise, any voted UTXO will not be picked.
+			 *
+			 * @return             The transaction in JSON format to be signed and published.
+			 */
+			virtual nlohmann::json CreateUpdateCRTransaction(
+					const std::string &fromAddress,
+					const nlohmann::json &payload,
+					const std::string &memo,
+					bool useVotedUTXO = false) = 0;
+
+			/**
+			 * Create unregister cr transaction.
+			 *
+			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
+			 *                     Otherwise, pick UTXO from the specific address.
+			 * @param payload      Generate by GenerateUnregisterCRPayload().
+			 * @param memo         Remarks string. Can be empty string.
+			 * @param useVotedUTXO If true, all voted UTXO will be picked. Otherwise, any voted UTXO will not be picked.
+			 *
+			 * @return             The transaction in JSON format to be signed and published.
+			 */
+			virtual nlohmann::json CreateUnregisterCRTransaction(
+					const std::string &fromAddress,
+					const nlohmann::json &payload,
+					const std::string &memo,
+					bool useVotedUTXO = false) = 0;
+
+			/**
+			 * Create retrieve deposit cr transaction.
+			 *
+			 * @param amount     The available amount to be retrieved back.
+			 * @param memo       Remarks string. Can be empty string.
+			 *
+			 * @return           The transaction in JSON format to be signed and published.
+			 */
+			virtual nlohmann::json CreateRetrieveCRDepositTransaction(
+					const std::string &amount,
+					const std::string &memo) = 0;
 		};
 
 	}
