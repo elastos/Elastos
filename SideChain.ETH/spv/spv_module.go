@@ -148,13 +148,16 @@ func NewService(cfg *Config, s *node.Node) (*Service, error) {
 	if err != nil {
 		log.Error("IpcClient: ", "err", err)
 	}
-	signers := make([]ethCommon.Address, (len(genesis.Extra)-extraVanity-extraSeal)/ethCommon.AddressLength)
-	for i := 0; i < len(signers); i++ {
-		copy(signers[i][:], genesis.Extra[extraVanity+i*ethCommon.AddressLength:])
-	}
-	Signers = make(map[ethCommon.Address]struct{})
-	for _, signer := range signers {
-		Signers[signer] = struct{}{}
+	singersNum := (len(genesis.Extra) - extraVanity - extraSeal) / ethCommon.AddressLength
+	if singersNum > 0 {
+		signers := make([]ethCommon.Address, singersNum)
+		for i := 0; i < singersNum; i++ {
+			copy(signers[i][:], genesis.Extra[extraVanity+i*ethCommon.AddressLength:])
+		}
+		Signers = make(map[ethCommon.Address]struct{})
+		for _, signer := range signers {
+			Signers[signer] = struct{}{}
+		}
 	}
 	MinedBlockSub = s.EventMux().Subscribe(events.MinedBlockEvent{})
 	go minedBroadcastLoop(MinedBlockSub)
@@ -186,7 +189,7 @@ func minedBroadcastLoop(minedBlockSub *event.TypeMuxSubscription) {
 
 }
 
-func (s *Service) GetDatabase() ethdb.Database {
+func (s *Service) GetDatabase() *ethdb.LDBDatabase {
 	return spvTransactiondb
 }
 
