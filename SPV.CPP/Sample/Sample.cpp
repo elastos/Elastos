@@ -319,6 +319,23 @@ static void Vote(const std::string &masterWalletID, const std::string &subWallet
 	PublishTransaction(mainchainSubWallet, tx);
 }
 
+static void VoteCR(const std::string &masterWalletID, const std::string &subWalletID, const nlohmann::json &votes) {
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
+	if (!subWallet)
+		return;
+
+	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
+	if (mainchainSubWallet == nullptr) {
+		logger->error("[{}:{}] is not instance of IMainchainSubWallet", masterWalletID, subWalletID);
+		return;
+	}
+
+	nlohmann::json tx = mainchainSubWallet->CreateVoteCRTransaction("", votes, memo, true);
+	logger->debug("tx = {}", tx.dump());
+
+	PublishTransaction(mainchainSubWallet, tx);
+}
+
 static void RegisterProducer(const std::string &masterWalletID, const std::string &subWalletID) {
 	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
 	if (!subWallet)
@@ -650,7 +667,7 @@ static void GetAllAssets(const std::string &masterWalletID, const std::string &s
 static void ELATest() {
 	static bool combineUTXODone = true, transferDone = true, depositDone = true;
 	static bool voteDone = true, registerProducer = true, updateProducer = true, cancelProducer = true, retrieveDeposit = true;
-	static bool registerCR = true, updateCR = true, unregisterCR = true, retrieveCr = true;
+	static bool registerCR = true, updateCR = true, unregisterCR = true, retrieveCr = true, voteCR = true;
 
 	logger->debug("ELA {}", separator);
 	GetAllTxSummary(gMasterWalletID, gMainchainSubWalletID);
@@ -720,6 +737,12 @@ static void ELATest() {
 	if (!retrieveCr) {
 		RetrieveCRTransaction(gMasterWalletID, gMainchainSubWalletID);
 		retrieveCr = true;
+	}
+
+	if (!voteCR) {
+		VoteCR(gMasterWalletID, gMainchainSubWalletID,
+		     nlohmann::json::parse("{\"0205a250b3a96ccc776604fafb84b0f8623fdfda6ec8f42c9154aa727bd95edfe2\":23,\"03d55285f06683c9e5c6b5892a688affd046940c7161571611ea3a98330f72459f\":34}"));
+		voteCR = true;
 	}
 
 	logger->debug("ELA {}", separator);

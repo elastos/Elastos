@@ -132,12 +132,14 @@ namespace Elastos {
 				if (version >= Transaction::TxVersion::V09) {
 					output->SetType(TransactionOutput::Type(i % 2));
 					if (output->GetType() == TransactionOutput::VoteOutput) {
-						std::vector<bytes_t> candidates;
+						std::vector<CandidateVotes> candidates;
+						uint8_t v = rand() % 2;
 						for (size_t i = 0; i < 50; ++i) {
-							candidates.push_back(getRandBytes(33));
+							candidates.push_back(CandidateVotes(getRandBytes(33), v == VOTE_PRODUCER_CR_VERSION ? getRandUInt64() : 0));
 						}
-						PayloadVote::VoteContent vc(PayloadVote::Delegate, candidates);
-						output->SetPayload(OutputPayloadPtr(new PayloadVote({vc})));
+
+						VoteContent vc(VoteContent::Delegate, candidates);
+						output->SetPayload(OutputPayloadPtr(new PayloadVote({vc}, v)));
 					} else {
 						output->SetPayload(OutputPayloadPtr(new PayloadDefault()));
 					}
@@ -200,18 +202,19 @@ namespace Elastos {
 					const PayloadVote *pv2 = dynamic_cast<const PayloadVote *>(p2.get());
 					REQUIRE(pv1 != nullptr);
 					REQUIRE(pv2 != nullptr);
-					const std::vector<PayloadVote::VoteContent> &vc1 = pv1->GetVoteContent();
-					const std::vector<PayloadVote::VoteContent> &vc2 = pv2->GetVoteContent();
+					const std::vector<VoteContent> &vc1 = pv1->GetVoteContent();
+					const std::vector<VoteContent> &vc2 = pv2->GetVoteContent();
 					REQUIRE(vc1.size() == vc2.size());
 
 					for (size_t j = 0; j < vc1.size(); ++j) {
-						REQUIRE(vc1[j].type == vc2[j].type);
-						const std::vector<bytes_t> &cand1 = vc1[j].candidates;
-						const std::vector<bytes_t> &cand2 = vc2[j].candidates;
+						REQUIRE(vc1[j].GetType() == vc2[j].GetType());
+						const std::vector<CandidateVotes> &cand1 = vc1[j].GetCandidates();
+						const std::vector<CandidateVotes> &cand2 = vc2[j].GetCandidates();
 
 						REQUIRE(cand1.size() == cand2.size());
 						for (size_t k = 0; k < cand1.size(); ++k) {
-							REQUIRE(cand1[k] == cand2[k]);
+							REQUIRE(cand1[k].GetCandidate() == cand2[k].GetCandidate());
+							REQUIRE(cand1[k].GetVotes() == cand2[k].GetVotes());
 						}
 					}
 				} else {

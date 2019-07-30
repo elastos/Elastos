@@ -1427,6 +1427,7 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 				OutputPtr output(new TransactionOutput(10, toAddress));
 				tx->AddOutput(output);
 			}
+			tx->FixIndex();
 
 			uint256 md = tx->GetShaData();
 			const std::vector<ProgramPtr> &programs = tx->GetPrograms();
@@ -1438,7 +1439,7 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 			}
 
 			ByteStream stream;
-			tx->Serialize(stream);
+			tx->Serialize(stream, true);
 			bytes_t data = stream.GetBytes();
 			std::string txHash = tx->GetHash().GetHex();
 
@@ -1492,6 +1493,7 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 			OutputPtr output(new TransactionOutput(fee, toAddress));
 			tx->AddOutput(output);
 		}
+		tx->FixIndex();
 
 		uint256 md = tx->GetShaData();
 		const std::vector<ProgramPtr> &programs = tx->GetPrograms();
@@ -1503,7 +1505,7 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 		}
 
 		ByteStream stream;
-		tx->Serialize(stream);
+		tx->Serialize(stream, true);
 		bytes_t data = stream.GetBytes();
 		std::string txHash = tx->GetHash().GetHex();
 

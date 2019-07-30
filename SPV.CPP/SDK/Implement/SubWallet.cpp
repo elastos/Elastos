@@ -182,6 +182,8 @@ namespace Elastos {
 		}
 
 		void SubWallet::EncodeTx(nlohmann::json &result, const TransactionPtr &tx) const {
+			SPVLOG_DEBUG("raw tx: {}", tx->ToJson().dump());
+
 			ByteStream stream;
 			tx->Serialize(stream, true);
 			const bytes_t &hex = stream.GetBytes();
@@ -250,7 +252,6 @@ namespace Elastos {
 
 			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
 
-			SPVLOG_DEBUG("created tx: {}", tx->ToJson().dump());
 			nlohmann::json result;
 			EncodeTx(result, tx);
 
@@ -269,7 +270,6 @@ namespace Elastos {
 
 			_walletManager->getWallet()->SignTransaction(tx, payPassword);
 
-			SPVLOG_DEBUG("signed tx: {}", tx->ToJson().dump());
 			nlohmann::json result;
 			EncodeTx(result, tx);
 
@@ -335,8 +335,6 @@ namespace Elastos {
 
 			if (_info->GetChainID() == "ELA")
 				tx->SetVersion(Transaction::TxVersion::V09);
-
-			SPVLOG_DEBUG("created tx: {}", tx->ToJson().dump());
 
 			nlohmann::json result;
 			EncodeTx(result, tx);

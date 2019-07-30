@@ -15,13 +15,13 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 	Log::registerMultiLogger();
 
 	SECTION("Serialize and deserialize") {
-		std::vector<PayloadVote::VoteContent> voteContent;
+		std::vector<VoteContent> voteContent;
 		for (size_t i = 0; i < 10; ++i) {
-			std::vector<bytes_t> candidates;
+			std::vector<CandidateVotes> candidates;
 			for (size_t c = 0; c < 10; c++) {
 				candidates.push_back(getRandBytes(33));
 			}
-			voteContent.emplace_back(PayloadVote::Type(i % PayloadVote::Type::Max), candidates);
+			voteContent.emplace_back(VoteContent::Type(i % VoteContent::Type::Max), candidates);
 		}
 		PayloadVote p1(voteContent), p2;
 
@@ -30,90 +30,94 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 
 		REQUIRE(p2.Deserialize(stream));
 
-		const std::vector<PayloadVote::VoteContent> &vc1 = p1.GetVoteContent();
-		const std::vector<PayloadVote::VoteContent> &vc2 = p2.GetVoteContent();
+		const std::vector<VoteContent> &vc1 = p1.GetVoteContent();
+		const std::vector<VoteContent> &vc2 = p2.GetVoteContent();
 		REQUIRE(vc1.size() == vc2.size());
 		for (size_t i = 0; i < vc1.size(); ++i) {
-			REQUIRE(vc1[i].type == vc2[i].type);
-			REQUIRE((vc1[i].candidates.size() == vc2[i].candidates.size()));
-			for (size_t c = 0; c < vc1[i].candidates.size(); c++) {
-				REQUIRE((vc1[i].candidates[c] == vc2[i].candidates[c]));
+			REQUIRE(vc1[i].GetType() == vc2[i].GetType());
+			REQUIRE((vc1[i].GetCandidates().size() == vc2[i].GetCandidates().size()));
+			for (size_t c = 0; c < vc1[i].GetCandidates().size(); c++) {
+				REQUIRE((vc1[i].GetCandidates()[c].GetCandidate() == vc2[i].GetCandidates()[c].GetCandidate()));
+				REQUIRE((vc1[i].GetCandidates()[c].GetVotes() == vc2[i].GetCandidates()[c].GetVotes()));
 			}
 		}
 	}
 
 	SECTION("to json and from json") {
-		std::vector<PayloadVote::VoteContent> voteContent;
+		std::vector<VoteContent> voteContent;
 		for (size_t i = 0; i < 10; ++i) {
-			std::vector<bytes_t> candidates;
+			std::vector<CandidateVotes> candidates;
 			for (size_t c = 0; c < 10; c++) {
 				candidates.push_back(getRandBytes(33));
 			}
-			voteContent.emplace_back(PayloadVote::Type(i % PayloadVote::Type::Max), candidates);
+			voteContent.emplace_back(VoteContent::Type(i % VoteContent::Type::Max), candidates);
 		}
 		PayloadVote p1(voteContent), p2;
 
 		nlohmann::json p1Json = p1.ToJson();
 		REQUIRE_NOTHROW(p2.FromJson(p1Json));
 
-		const std::vector<PayloadVote::VoteContent> &vc1 = p1.GetVoteContent();
-		const std::vector<PayloadVote::VoteContent> &vc2 = p2.GetVoteContent();
+		const std::vector<VoteContent> &vc1 = p1.GetVoteContent();
+		const std::vector<VoteContent> &vc2 = p2.GetVoteContent();
 		REQUIRE(vc1.size() == vc2.size());
 		for (size_t i = 0; i < vc1.size(); ++i) {
-			REQUIRE(vc1[i].type == vc2[i].type);
-			REQUIRE((vc1[i].candidates.size() == vc2[i].candidates.size()));
-			for (size_t c = 0; c < vc1[i].candidates.size(); c++) {
-				REQUIRE((vc1[i].candidates[c] == vc2[i].candidates[c]));
+			REQUIRE(vc1[i].GetType() == vc2[i].GetType());
+			REQUIRE((vc1[i].GetCandidates().size() == vc2[i].GetCandidates().size()));
+			for (size_t c = 0; c < vc1[i].GetCandidates().size(); c++) {
+				REQUIRE((vc1[i].GetCandidates()[c].GetCandidate() == vc2[i].GetCandidates()[c].GetCandidate()));
+				REQUIRE((vc1[i].GetCandidates()[c].GetVotes() == vc2[i].GetCandidates()[c].GetVotes()));
 			}
 		}
 	}
 
 	SECTION("operator= test") {
-		std::vector<PayloadVote::VoteContent> voteContent;
+		std::vector<VoteContent> voteContent;
 		for (size_t i = 0; i < 10; ++i) {
-			std::vector<bytes_t> candidates;
+			std::vector<CandidateVotes> candidates;
 			for (size_t c = 0; c < 10; c++) {
 				candidates.push_back(getRandBytes(33));
 			}
-			voteContent.emplace_back(PayloadVote::Type(i % PayloadVote::Type::Max), candidates);
+			voteContent.emplace_back(VoteContent::Type(i % VoteContent::Type::Max), candidates);
 		}
 		PayloadVote p1(voteContent), p2;
 
 		p2 = p1;
 
-		const std::vector<PayloadVote::VoteContent> &vc1 = p1.GetVoteContent();
-		const std::vector<PayloadVote::VoteContent> &vc2 = p2.GetVoteContent();
+		const std::vector<VoteContent> &vc1 = p1.GetVoteContent();
+		const std::vector<VoteContent> &vc2 = p2.GetVoteContent();
 		REQUIRE(vc1.size() == vc2.size());
 		for (size_t i = 0; i < vc1.size(); ++i) {
-			REQUIRE(vc1[i].type == vc2[i].type);
-			REQUIRE((vc1[i].candidates.size() == vc2[i].candidates.size()));
-			for (size_t c = 0; c < vc1[i].candidates.size(); c++) {
-				REQUIRE((vc1[i].candidates[c] == vc2[i].candidates[c]));
+			REQUIRE(vc1[i].GetType() == vc2[i].GetType());
+			REQUIRE((vc1[i].GetCandidates().size() == vc2[i].GetCandidates().size()));
+			for (size_t c = 0; c < vc1[i].GetCandidates().size(); c++) {
+				REQUIRE((vc1[i].GetCandidates()[c].GetCandidate() == vc2[i].GetCandidates()[c].GetCandidate()));
+				REQUIRE((vc1[i].GetCandidates()[c].GetVotes() == vc2[i].GetCandidates()[c].GetVotes()));
 			}
 		}
 	}
 
 	SECTION("copy construct test") {
-		std::vector<PayloadVote::VoteContent> voteContent;
+		std::vector<VoteContent> voteContent;
 		for (size_t i = 0; i < 10; ++i) {
-			std::vector<bytes_t> candidates;
+			std::vector<CandidateVotes> candidates;
 			for (size_t c = 0; c < 10; c++) {
 				candidates.push_back(getRandBytes(33));
 			}
-			voteContent.emplace_back(PayloadVote::Type(i % PayloadVote::Type::Max), candidates);
+			voteContent.emplace_back(VoteContent::Type(i % VoteContent::Type::Max), candidates);
 		}
 		PayloadVote p1(voteContent);
 
 		PayloadVote p2(p1);
 
-		const std::vector<PayloadVote::VoteContent> &vc1 = p1.GetVoteContent();
-		const std::vector<PayloadVote::VoteContent> &vc2 = p2.GetVoteContent();
+		const std::vector<VoteContent> &vc1 = p1.GetVoteContent();
+		const std::vector<VoteContent> &vc2 = p2.GetVoteContent();
 		REQUIRE(vc1.size() == vc2.size());
 		for (size_t i = 0; i < vc1.size(); ++i) {
-			REQUIRE(vc1[i].type == vc2[i].type);
-			REQUIRE((vc1[i].candidates.size() == vc2[i].candidates.size()));
-			for (size_t c = 0; c < vc1[i].candidates.size(); c++) {
-				REQUIRE((vc1[i].candidates[c] == vc2[i].candidates[c]));
+			REQUIRE(vc1[i].GetType() == vc2[i].GetType());
+			REQUIRE((vc1[i].GetCandidates().size() == vc2[i].GetCandidates().size()));
+			for (size_t c = 0; c < vc1[i].GetCandidates().size(); c++) {
+				REQUIRE((vc1[i].GetCandidates()[c].GetCandidate() == vc2[i].GetCandidates()[c].GetCandidate()));
+				REQUIRE((vc1[i].GetCandidates()[c].GetVotes() == vc2[i].GetCandidates()[c].GetVotes()));
 			}
 		}
 	}

@@ -358,15 +358,13 @@ namespace Elastos {
 			ErrorChecker::CheckJsonArray(publicKeys, 1, "Candidates public keys");
 			ErrorChecker::CheckParam(bgStake == 0, Error::Code::VoteStakeError, "Vote stake should not be zero");
 
-			PayloadVote::VoteContent voteContent;
-			voteContent.type = PayloadVote::Type::Delegate;
+			VoteContent voteContent;
 			for (nlohmann::json::const_iterator it = publicKeys.cbegin(); it != publicKeys.cend(); ++it) {
 				if (!(*it).is_string()) {
 					ErrorChecker::ThrowParamException(Error::Code::JsonFormatError,
 													  "Vote produce public keys is not string");
 				}
-
-				voteContent.candidates.push_back((*it).get<std::string>());
+				voteContent.AddCandidate(CandidateVotes((*it).get<std::string>()));
 			}
 
 			OutputPayloadPtr payload = OutputPayloadPtr(new PayloadVote({voteContent}));
@@ -388,7 +386,7 @@ namespace Elastos {
 				inputProgramHash = cb->Output()->ProgramHash();
 			} else {
 				ErrorChecker::CheckLogic(txInput->OutputOfIndex(inputs[0]->Index()) == nullptr, Error::GetTransactionInput,
-									 "Input index larger than output size.");
+				                         "Input index larger than output size.");
 				inputProgramHash = txInput->OutputOfIndex(inputs[0]->Index())->ProgramHash();
 			}
 
@@ -402,7 +400,6 @@ namespace Elastos {
 			EncodeTx(result, tx);
 
 			ArgInfo("r => {}", result.dump());
-
 			return result;
 		}
 
@@ -426,21 +423,21 @@ namespace Elastos {
 				}
 
 				uint64_t stake = output->Amount().getWord();
-				const std::vector<PayloadVote::VoteContent> &voteContents = pv->GetVoteContent();
+				const std::vector<VoteContent> &voteContents = pv->GetVoteContent();
 				std::for_each(voteContents.cbegin(), voteContents.cend(),
-							  [&votedList, &stake](const PayloadVote::VoteContent &vc) {
-								  if (vc.type == PayloadVote::Type::Delegate) {
-									  std::for_each(vc.candidates.cbegin(), vc.candidates.cend(),
-													[&votedList, &stake](const bytes_t &candidate) {
-														std::string c = candidate.getHex();
-														if (votedList.find(c) != votedList.end()) {
-															votedList[c] += stake;
-														} else {
-															votedList[c] = stake;
-														}
-													});
-								  }
-							  });
+				              [&votedList, &stake](const VoteContent &vc) {
+					              if (vc.GetType() == VoteContent::Type::Delegate) {
+						              std::for_each(vc.GetCandidates().cbegin(), vc.GetCandidates().cend(),
+						                            [&votedList, &stake](const CandidateVotes &candidate) {
+							                            std::string c = candidate.GetCandidate().getHex();
+							                            if (votedList.find(c) != votedList.end()) {
+								                            votedList[c] += stake;
+							                            } else {
+								                            votedList[c] = stake;
+							                            }
+						                            });
+					              }
+				              });
 
 			}
 
@@ -465,7 +462,7 @@ namespace Elastos {
 				}
 
 				if (allTxs[i]->GetTransactionType() == Transaction::registerProducer ||
-					allTxs[i]->GetTransactionType() == Transaction::updateProducer) {
+				    allTxs[i]->GetTransactionType() == Transaction::updateProducer) {
 					const ProducerInfo *pinfo = dynamic_cast<const ProducerInfo *>(allTxs[i]->GetPayload());
 					if (pinfo) {
 						nlohmann::json info;
@@ -756,5 +753,68 @@ namespace Elastos {
 			return result;
 		}
 
+		nlohmann::json MainchainSubWallet::CreateVoteCRTransaction(
+				const std::string &fromAddress,
+				const nlohmann::json &votes,
+				const std::string &memo,
+				bool useVotedUTXO) {
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("fromAddr: {}", fromAddress);
+			ArgInfo("votes: {}", votes.dump());
+			ArgInfo("memo: {}", memo);
+			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
+
+			ErrorChecker::CheckParam(!votes.is_object(), Error::Code::JsonFormatError, "votes is error json format");
+
+			BigInt bgStake = 0;
+
+			std::vector<CandidateVotes> candidates;
+			for (nlohmann::json::const_iterator it = votes.cbegin(); it != votes.cend(); ++it) {
+				std::string pubkey = it.key();
+				uint64_t value = it.value().get<std::uint64_t>();
+
+				Address address(PrefixStandard, pubkey);
+				candidates.push_back(CandidateVotes(address.RedeemScript(), value));
+				bgStake += value;
+			}
+			VoteContent voteContent(VoteContent::Type::CRC, candidates);
+
+			OutputPayloadPtr payload = OutputPayloadPtr(new PayloadVote({voteContent}, VOTE_PRODUCER_CR_VERSION));
+
+			std::vector<OutputPtr> outs;
+			Address receiveAddr(CreateAddress());
+			outs.push_back(OutputPtr(new TransactionOutput(bgStake, receiveAddr)));
+
+			TransactionPtr tx = CreateTx(fromAddress, outs, memo, useVotedUTXO);
+
+			const std::vector<InputPtr> &inputs = tx->GetInputs();
+
+			uint168 inputProgramHash;
+			TransactionPtr txInput = _walletManager->getWallet()->TransactionForHash(inputs[0]->TxHash());
+
+			if (txInput == nullptr) {
+				UTXOPtr cb = _walletManager->getWallet()->CoinBaseTxForHash(inputs[0]->TxHash());
+				ErrorChecker::CheckLogic(cb == nullptr, Error::GetTransactionInput, "Get tx input error");
+				inputProgramHash = cb->Output()->ProgramHash();
+			} else {
+				ErrorChecker::CheckLogic(txInput->OutputOfIndex(inputs[0]->Index()) == nullptr, Error::GetTransactionInput,
+				                         "Input index larger than output size.");
+				inputProgramHash = txInput->OutputOfIndex(inputs[0]->Index())->ProgramHash();
+			}
+
+			tx->SetTransactionType(Transaction::transferAsset);
+
+			const std::vector<OutputPtr> &outputs = tx->GetOutputs();
+			outputs[0]->SetType(TransactionOutput::Type::VoteOutput);
+			outputs[0]->SetPayload(payload);
+			outputs[0]->SetProgramHash(inputProgramHash);
+
+			nlohmann::json result;
+			EncodeTx(result, tx);
+
+			ArgInfo("r => {}", result.dump());
+
+			return result;
+		}
 	}
 }

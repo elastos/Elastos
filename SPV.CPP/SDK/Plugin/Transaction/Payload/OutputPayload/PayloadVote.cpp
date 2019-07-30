@@ -9,16 +9,155 @@
 
 namespace Elastos {
 	namespace ElaWallet {
-		PayloadVote::PayloadVote() :
-			_version(0) {
+		CandidateVotes::CandidateVotes() : _votes(0) {
+
 		}
 
-		PayloadVote::PayloadVote(const std::vector<VoteContent> &voteContents) :
-			_content(voteContents),
-			_version(0) {
+		CandidateVotes::CandidateVotes(const bytes_t &candidate, uint64_t votes) :
+				_candidate(candidate), _votes(votes) {
+
 		}
 
-		PayloadVote::PayloadVote(const PayloadVote &payload){
+		CandidateVotes::~CandidateVotes() {
+
+		}
+
+		const bytes_t &CandidateVotes::GetCandidate() const {
+			return _candidate;
+		}
+
+		uint64_t CandidateVotes::GetVotes() const {
+			return _votes;
+		}
+
+		void CandidateVotes::Serialize(ByteStream &ostream, uint8_t version) const {
+			ostream.WriteVarBytes(_candidate);
+
+			if (version >= VOTE_PRODUCER_CR_VERSION) {
+				ostream.WriteUint64(_votes);
+			}
+		}
+
+		bool CandidateVotes::Deserialize(const ByteStream &istream, uint8_t version) {
+			if (!istream.ReadVarBytes(_candidate)) {
+				return false;
+			}
+
+			if (version >= VOTE_PRODUCER_CR_VERSION && !istream.ReadUint64(_votes)) {
+				return false;
+			}
+
+			return true;
+		}
+
+		nlohmann::json CandidateVotes::ToJson(uint8_t version) const {
+			nlohmann::json j;
+			j["Candidate"] = _candidate.getHex();
+			if (version >= VOTE_PRODUCER_CR_VERSION) {
+				j["Votes"] = _votes;
+			}
+			return j;
+		}
+
+		void CandidateVotes::FromJson(const nlohmann::json &j, uint8_t version) {
+			_candidate.setHex(j["Candidate"].get<std::string>());
+			if (version >= VOTE_PRODUCER_CR_VERSION) {
+				_votes = j["Votes"].get<uint64_t>();
+			}
+		}
+
+		VoteContent::VoteContent() : _type(Delegate) {
+
+		}
+
+		VoteContent::VoteContent(Type t, const std::vector<CandidateVotes> &c) : _type(Delegate), _candidates(c) {
+
+		}
+
+		VoteContent::~VoteContent() {
+
+		}
+
+		void VoteContent::AddCandidate(const CandidateVotes &candidateVotes) {
+			_candidates.push_back(candidateVotes);
+		}
+
+		const VoteContent::Type &VoteContent::GetType() const {
+			return _type;
+		}
+
+		const std::vector<CandidateVotes> &VoteContent::GetCandidates() const {
+			return _candidates;
+		}
+
+		void VoteContent::Serialize(ByteStream &ostream, uint8_t version) const {
+			ostream.WriteUint8(_type);
+
+			ostream.WriteVarUint(_candidates.size());
+			for (size_t i = 0; i < _candidates.size(); ++i) {
+				_candidates[i].Serialize(ostream, version);
+			}
+		}
+
+		bool VoteContent::Deserialize(const ByteStream &istream, uint8_t version) {
+			uint8_t type = 0;
+			if (!istream.ReadUint8(type)) {
+				Log::error("VoteContent deserialize type error");
+			}
+			_type = Type(type);
+
+			uint64_t size = 0;
+			if (!istream.ReadVarUint(size)) {
+				Log::error("VoteContent deserialize candidates count error");
+				return false;
+			}
+
+			_candidates.resize(size);
+			for (size_t i = 0; i < size; ++i) {
+				if (!_candidates[i].Deserialize(istream, version)) {
+					Log::error("VoteContent deserialize candidates error");
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		nlohmann::json VoteContent::ToJson(uint8_t version) const {
+			nlohmann::json j;
+			j["Type"] = _type;
+
+			std::vector<nlohmann::json> candidates;
+			for (size_t i = 0; i < _candidates.size(); ++i) {
+				candidates.push_back(_candidates[i].ToJson(version));
+			}
+			j["Candidates"] = candidates;
+
+			return j;
+		}
+
+		void VoteContent::FromJson(const nlohmann::json &j, uint8_t version) {
+			uint8_t type = j["Type"].get<uint8_t>();
+			_type = Type(type);
+
+			std::vector<nlohmann::json> candidates = j["Candidates"];
+			_candidates.resize(candidates.size());
+			for (size_t i = 0; i < candidates.size(); ++i) {
+				_candidates[i].FromJson(candidates[i], version);
+			}
+		}
+
+
+		PayloadVote::PayloadVote(uint8_t version) :
+				_version(version) {
+		}
+
+		PayloadVote::PayloadVote(const std::vector<VoteContent> &voteContents, uint8_t version) :
+				_content(voteContents),
+				_version(version) {
+		}
+
+		PayloadVote::PayloadVote(const PayloadVote &payload) {
 			operator=(payload);
 		}
 
@@ -26,11 +165,11 @@ namespace Elastos {
 
 		}
 
-		void PayloadVote::SetVoteContent(const std::vector<VoteContent> &voteContent){
+		void PayloadVote::SetVoteContent(const std::vector<VoteContent> &voteContent) {
 			_content = voteContent;
 		}
 
-		const std::vector<PayloadVote::VoteContent> &PayloadVote::GetVoteContent() const {
+		const std::vector<VoteContent> &PayloadVote::GetVoteContent() const {
 			return _content;
 		}
 
@@ -42,9 +181,14 @@ namespace Elastos {
 			size += stream.WriteVarUint(_content.size());
 			for (size_t i = 0; i < _content.size(); ++i) {
 				size += 1;
-				size += stream.WriteVarUint(_content[i].candidates.size());
-				for (size_t j = 0; j < _content[i].candidates.size(); ++j) {
-					size += _content[i].candidates[j].size();
+				size += stream.WriteVarUint(_content[i].GetCandidates().size());
+				for (size_t j = 0; j < _content[i].GetCandidates().size(); ++j) {
+					size += stream.WriteVarUint(_content[i].GetCandidates()[j].GetCandidate().size());
+					size += _content[i].GetCandidates()[j].GetCandidate().size();
+
+					if (_version >= VOTE_PRODUCER_CR_VERSION) {
+						size += stream.WriteVarUint(_content[i].GetCandidates()[j].GetVotes());
+					}
 				}
 			}
 
@@ -56,12 +200,7 @@ namespace Elastos {
 
 			ostream.WriteVarUint(_content.size());
 			for (size_t i = 0; i < _content.size(); ++i) {
-				ostream.WriteUint8(_content[i].type);
-				const std::vector<bytes_t> &candidates = _content[i].candidates;
-				ostream.WriteVarUint(candidates.size());
-				for (size_t j = 0; j < candidates.size(); ++j) {
-					ostream.WriteVarBytes(candidates[j]);
-				}
+				_content[i].Serialize(ostream, _version);
 			}
 		}
 
@@ -77,30 +216,12 @@ namespace Elastos {
 				return false;
 			}
 
-			_content.clear();
+			_content.resize(contentCount);
 			for (size_t i = 0; i < contentCount; ++i) {
-				uint8_t type;
-				if (!istream.ReadUint8(type)) {
-					Log::error("payload vote deserialize type error");
+				if (!_content[i].Deserialize(istream, _version)) {
+					Log::error("payload vote deserialize content error");
 					return false;
 				}
-				uint64_t candidateCount = 0;
-				if (!istream.ReadVarUint(candidateCount)) {
-					Log::error("payload vote deserialize candidate count error");
-					return false;
-				}
-
-				std::vector<bytes_t> candidates;
-				for (size_t j = 0; j < candidateCount; ++j) {
-					bytes_t candidate;
-					if (!istream.ReadVarBytes(candidate)) {
-						Log::error("payload vote deserialize candidate error");
-						return false;
-					}
-					candidates.push_back(candidate);
-				}
-
-				_content.emplace_back(Type(type), candidates);
 			}
 
 			return true;
@@ -109,16 +230,10 @@ namespace Elastos {
 		nlohmann::json PayloadVote::ToJson() const {
 			nlohmann::json j;
 			j["Version"] = _version;
+
 			std::vector<nlohmann::json> voteContent;
 			for (size_t i = 0; i < _content.size(); ++i) {
-				nlohmann::json content;
-				content["Type"] = _content[i].type;
-				std::vector<std::string> candidates;
-				for (size_t j = 0; j < _content[i].candidates.size(); ++j) {
-					candidates.push_back(_content[i].candidates[j].getHex());
-				}
-				content["Candidates"] = candidates;
-				voteContent.push_back(content);
+				voteContent.push_back(_content[i].ToJson(_version));
 			}
 			j["VoteContent"] = voteContent;
 
@@ -127,17 +242,11 @@ namespace Elastos {
 
 		void PayloadVote::FromJson(const nlohmann::json &j) {
 			_version = j["Version"];
-			_content.clear();
-			nlohmann::json voteContent = j["VoteContent"];
-			for (nlohmann::json::iterator it = voteContent.begin(); it != voteContent.end(); ++it) {
-				Type type = (*it)["Type"];
-				std::vector<bytes_t> candidates;
-				nlohmann::json candidatesJson = (*it)["Candidates"];
-				for (nlohmann::json::iterator cit = candidatesJson.begin(); cit != candidatesJson.end(); ++cit) {
-					if ((*cit).is_string())
-						candidates.push_back(bytes_t((*cit).get<std::string>()));
-				}
-				_content.emplace_back(type, candidates);
+			std::vector<nlohmann::json> voteContent = j["VoteContent"];
+			_content.resize(voteContent.size());
+
+			for (size_t i = 0; i < voteContent.size(); ++i) {
+				_content[i].FromJson(voteContent[i], _version);
 			}
 		}
 
@@ -152,7 +261,7 @@ namespace Elastos {
 			return *this;
 		}
 
-		PayloadVote& PayloadVote::operator=(const PayloadVote &payload) {
+		PayloadVote &PayloadVote::operator=(const PayloadVote &payload) {
 			_version = payload._version;
 			_content = payload._content;
 

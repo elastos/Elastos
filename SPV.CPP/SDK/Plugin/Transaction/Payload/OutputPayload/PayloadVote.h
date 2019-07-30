@@ -7,11 +7,36 @@
 
 #include <SDK/Plugin/Transaction/Payload/OutputPayload/IOutputPayload.h>
 
+#define VOTE_PRODUCER_CR_VERSION  0x01
+
 namespace Elastos {
 	namespace ElaWallet {
 
+		class CandidateVotes {
+		public:
+			CandidateVotes();
 
-		class PayloadVote : public IOutputPayload {
+			CandidateVotes(const bytes_t &candidate, uint64_t votes = 0);
+
+			~CandidateVotes();
+		public:
+			const bytes_t & GetCandidate() const;
+
+			uint64_t GetVotes() const;
+
+			void Serialize(ByteStream &ostream, uint8_t version) const;
+
+			bool Deserialize(const ByteStream &istream, uint8_t version);
+
+			nlohmann::json ToJson(uint8_t version) const;
+
+			void FromJson(const nlohmann::json &j, uint8_t version);
+		private:
+			bytes_t  _candidate;
+			uint64_t _votes;
+		};
+
+		class VoteContent {
 		public:
 			enum Type {
 				Delegate,
@@ -19,21 +44,35 @@ namespace Elastos {
 				Max,
 			};
 
-			struct VoteContent {
-				VoteContent() : type(Type::Delegate) {
-				}
+			VoteContent();
 
-				VoteContent(Type t, const std::vector<bytes_t> &c) : type(t), candidates(c) {
-				}
+			VoteContent(Type t, const std::vector<CandidateVotes> &c);
 
-				Type type;
-				std::vector<bytes_t> candidates;
-			};
-
+			~VoteContent();
 		public:
-			PayloadVote();
+			void AddCandidate(const CandidateVotes &candidateVotes);
 
-			PayloadVote(const std::vector<VoteContent> &voteContents);
+			const Type &GetType() const;
+
+			const std::vector<CandidateVotes> &GetCandidates() const;
+
+			void Serialize(ByteStream &ostream, uint8_t version) const;
+
+			bool Deserialize(const ByteStream &istream, uint8_t version);
+
+			nlohmann::json ToJson(uint8_t version) const;
+
+			void FromJson(const nlohmann::json &j, uint8_t version);
+		private:
+			Type _type;
+			std::vector<CandidateVotes> _candidates;
+		};
+
+		class PayloadVote : public IOutputPayload {
+		public:
+			PayloadVote(uint8_t version = 0);
+
+			PayloadVote(const std::vector<VoteContent> &voteContents, uint8_t version = 0);
 
 			PayloadVote(const PayloadVote &payload);
 
