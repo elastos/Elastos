@@ -76,8 +76,8 @@ function build_docker {
     cd $CURRENT_DIR
 }
 
-build_binary_and_docker "v0.3.3" "Elastos.ELA" "ela-mainchain" "ela" \
-    "cyberrepublic/elastos-mainchain-node" "v0.3.3" "yes" "yes"
+build_binary_and_docker "v0.3.4" "Elastos.ELA" "ela-mainchain" "ela" \
+    "cyberrepublic/elastos-mainchain-node" "v0.3.4" "yes" "yes"
 
 build_binary_and_docker "v0.1.1" "Elastos.ELA.Arbiter" "ela-arbitrator" "arbiter" \
     "cyberrepublic/elastos-arbitrator-node" "v0.1.1" "yes" "yes"

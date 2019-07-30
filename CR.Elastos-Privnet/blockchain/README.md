@@ -30,7 +30,7 @@ These are located in the `wallets` folder:
 
 ## Repos used to build 
 
-- [Elastos.ELA](https://github.com/elastos/Elastos.ELA): v0.3.3
+- [Elastos.ELA](https://github.com/elastos/Elastos.ELA): v0.3.4
 - [Elastos.ELA.Arbiter](https://github.com/elastos/Elastos.ELA.Arbiter): v0.1.1
 - [Elastos.ELA.SideChain.ID](https://github.com/elastos/Elastos.ELA.Sidechain.ID): v0.1.2
 - [Elastos.ELA.SideChain.Token](https://github.com/elastos/Elastos.ELA.SideChain.Token): v0.1.2
@@ -569,7 +569,7 @@ These are located in the `wallets` folder:
 
 ### Creating a DID, and Storing/Retrieving Metadata
 
-Generally you will use the DID Service running on port `8092` for this - [https://didservice.readthedocs.io](https://didservice.readthedocs.io).
+Generally you will use the DID Service running on port `8092` for this - [https://didservice.readthedocs.io](https://didservice.readthedocs.io)
 
 See "Create DID" for how to create a DID, you will receive both a did and a private key, store this somewhere.
 
@@ -651,7 +651,7 @@ Don't be alarmed. Just wait a couple of minutes and try again.
 
 ### Retrieving the DID info must be on the Misc.API DID Sidechain - port 9092
 
-Even if you use DID.Service to store DID property, you need to use Misc.API for DID sidechain to retrieve the DID property which should be running on port `9092`.
+Even if you use DID Sidechain Service to store DID property, you need to use Misc.API for DID sidechain to retrieve the DID property which should be running on port `9092`.
 
 The API call should be `http://localhost:9092/api/1/did/{did}/{key}`
 
@@ -903,68 +903,7 @@ COMING SOON
   0x152cf383e51ef1920000 is 99998900000000000000000 in decimal format which is the unit in wei. This equals to 99998.9 ETH ELA
 
 ### Transfer some ETH ELA from ETH Sidechain to Mainchain
-1. Change directory
-  ```
-  cd $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-mainchain
-  ```
-
-2. Configure ela-cli config file
-
-    Create a file called "cli-config.json" and put the following content in that file:
-
-    ```
-    {
-      "Host": "127.0.0.1:10014",
-      "DepositAddress":"XZyAtNipJ7fdgBRhdzCoyS7A3PDSzR7u98"
-    }
-3. Create a new wallet using ela-cli-crosschain client for testing purposes
-
-    ```
-    ./ela-cli-crosschain wallet --create -p elastos
-    ```
-
-    Save ELA address, Public key and Private key to a variable so it can be used later
-    ```bash
-    ELAADDRESS=$(./ela-cli-crosschain wallet -a -p elastos | tail -2 | head -1 | cut -d' ' -f1)
-    PUBLICKEY=$(./ela-cli-crosschain wallet -a -p elastos | tail -2 | head -1 | cut -d' ' -f2)
-    PRIVATEKEY=$(./ela-cli-crosschain wallet --export -p elastos | tail -2 | head -1 | cut -d' ' -f2)
-    # Make sure your info is correct
-    echo $ELAADDRESS $PUBLICKEY $PRIVATEKEY
-    ```
-
-4. Transfer ELA from the resources wallet to this newly created wallet
-
-    ```
-    curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": '"$ELAADDRESS"',"amount": "100000"}]}' localhost:8091/api/1/transfer
-    ```
-
-    Check whether the ELA got transferred successfully
-
-    ```
-    ./ela-cli-crosschain wallet -l
-    ```
-5. Transfer ELA from main chain to eth sidechain
-
-    ```
-    ./ela-cli-crosschain wallet -t create --from $ELAADDRESS --deposit 0x4505b967d56f84647eb3a40f7c365f7d87a88bc3 --amount 99999 --fee 0.1;
-    ./ela-cli-crosschain wallet -t sign -p elastos --file to_be_signed.txn;
-    ./ela-cli-crosschain wallet -t send --file ready_to_send.txn;
-    ```
-6. Check eth balance:
-
-  ```
-  curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x4505b967d56f84647eb3a40f7c365f7d87a88bc3", "latest"],"id":1}' localhost:60011
-  ```
-
-  Should return something like:
-  ```
-  {
-    "jsonrpc": "2.0",
-    "id": 1,
-    "result": "0x152cf383e51ef1920000"
-  }
-  ```
-  0x152cf383e51ef1920000 is 99998900000000000000000 in decimal format which is the unit in wei. This equals to 99998.9 ETH ELA
+COMING SOON
 
 ### Deploy a simple Ethereum smart contract
 
