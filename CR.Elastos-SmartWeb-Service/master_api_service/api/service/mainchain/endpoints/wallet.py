@@ -1,12 +1,15 @@
 import logging
 import requests
 import json
+import datetime
 from flask import jsonify
 from flask import request
+from flask import Response
 from flask_api import FlaskAPI, status, exceptions
 from flask_restplus import Resource
 from master_api_service import settings
 from master_api_service.api.restplus import api
+from master_api_service.api.common.common_service import validate_api_key
 
 log = logging.getLogger(__name__)
 
@@ -19,6 +22,15 @@ class CreateWallet(Resource):
         """
         Returns the wallet created
         """
+        api_key = request.headers.get('api_key')
+        api_status = validate_api_key(api_key)
+        if not api_status:
+            data = {"error message":"API Key could not be verified","status":401, "timestamp":datetime.datetime.now().timestamp(),"path":request.url}
+            return Response(json.dumps(data), 
+                status=401,
+                mimetype='application/json'
+            )
+
         api_url_base = settings.WALLET_SERVICE_URL + settings.WALLET_API_CREATE
         myResponse = requests.get(api_url_base).json()
         response = jsonify(myResponse)
