@@ -65,6 +65,15 @@ These are located in the `wallets` folder:
 - Origin node 1: 50514-50515
 - Origin node 2: 50614-50615
 
+### Arbitrator nodes
+
+- CRC node 1: 50114-50115
+- CRC node 2: 50214-50215
+- CRC node 3: 50314-50315
+- CRC node 4: 50414-50415
+- Origin node 1: 50514-50515
+- Origin node 2: 50614-50615
+
 ### Restful Services
 
 - Wallet Service REST API Portal: 8091
