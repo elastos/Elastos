@@ -405,15 +405,6 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 		}
 	}
 
-	//start the SPV service
-	log.Info(fmt.Sprintf("Starting SPV service with config: %+v \n", *spvCfg))
-	if spvService, err := spv.NewService(spvCfg, stack); err != nil {
-		utils.Fatalf("Cannot start mainchain SPV service: %v", err)
-	} else {
-		spvService.Start()
-		log.Info("Mainchain SPV module started successfully!")
-	}
-
 	// Unlock any account  requested
 	ks := stack.AccountManager().Backends(keystore.KeyStoreType)[0].(*keystore.KeyStore)
 
@@ -427,7 +418,14 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 	// Register wallet event handlers to open and auto-derive wallets
 	events := make(chan accounts.WalletEvent, 16)
 	stack.AccountManager().Subscribe(events)
-
+	//start the SPV service
+	//log.Info(fmt.Sprintf("Starting SPV service with config: %+v \n", *spvCfg))
+	if spvService, err := spv.NewService(spvCfg, stack); err != nil {
+		utils.Fatalf("Cannot start mainchain SPV service: %v", err)
+	} else {
+		spvService.Start()
+		log.Info("Mainchain SPV module started successfully!")
+	}
 	go func() {
 		// Create a chain state reader for self-derivation
 		rpcClient, err := stack.Attach()
