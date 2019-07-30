@@ -3,7 +3,7 @@ services:
 
   privnet-mainchain-node:
     container_name: privnet-mainchain-node
-    image: cyberrepublic/elastos-mainchain-node:v0.3.4
+    image: cyberrepublic/elastos-mainchain-node:privnet-v0.4
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-node:/ela/elastos
       - ${PWD}/ela-mainchain/node_normal/mainchain-node/config.json:/ela/config.json
@@ -13,7 +13,7 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:10012/api/v1/block/height"]
       interval: 30s
-      timeout: 10s
+      timeout: 120s
       retries: 5
     networks:
       - blockchain
@@ -21,7 +21,7 @@ services:
 
   privnet-mainchain-crc-1:
     container_name: privnet-mainchain-crc-1
-    image: cyberrepublic/elastos-mainchain-node:v0.3.4
+    image: cyberrepublic/elastos-mainchain-node:privnet-v0.4
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-crc-1:/ela/elastos
       - ${PWD}/ela-mainchain/node_crc/mainchain-crc-1/config.json:/ela/config.json
@@ -34,7 +34,7 @@ services:
 
   privnet-mainchain-crc-2:
     container_name: privnet-mainchain-crc-2
-    image: cyberrepublic/elastos-mainchain-node:v0.3.4
+    image: cyberrepublic/elastos-mainchain-node:privnet-v0.4
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-crc-2:/ela/elastos
       - ${PWD}/ela-mainchain/node_crc/mainchain-crc-2/config.json:/ela/config.json
@@ -47,7 +47,7 @@ services:
 
   privnet-mainchain-dpos-1:
     container_name: privnet-mainchain-dpos-1
-    image: cyberrepublic/elastos-mainchain-node:v0.3.4
+    image: cyberrepublic/elastos-mainchain-node:privnet-v0.4
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-dpos-1:/ela/elastos
       - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-1/config.json:/ela/config.json
@@ -60,7 +60,7 @@ services:
 
   privnet-mainchain-dpos-2:
     container_name: privnet-mainchain-dpos-2
-    image: cyberrepublic/elastos-mainchain-node:v0.3.4
+    image: cyberrepublic/elastos-mainchain-node:privnet-v0.4
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-dpos-2:/ela/elastos
       - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-2/config.json:/ela/config.json
@@ -73,7 +73,7 @@ services:
 
   privnet-arbitrator-crc-1:
     container_name: privnet-arbitrator-crc-1
-    image: cyberrepublic/elastos-arbitrator-node:v0.1.1
+    image: cyberrepublic/elastos-arbitrator-node:privnet-v0.4
     depends_on:
       - privnet-mainchain-crc-1
     volumes:
@@ -88,7 +88,7 @@ services:
 
   privnet-arbitrator-crc-2:
     container_name: privnet-arbitrator-crc-2
-    image: cyberrepublic/elastos-arbitrator-node:v0.1.1
+    image: cyberrepublic/elastos-arbitrator-node:privnet-v0.4
     depends_on:
       - privnet-mainchain-crc-2
     volumes:
@@ -103,7 +103,7 @@ services:
 
   privnet-arbitrator-origin-1:
     container_name: privnet-arbitrator-origin-1
-    image: cyberrepublic/elastos-arbitrator-node:v0.1.1
+    image: cyberrepublic/elastos-arbitrator-node:privnet-v0.4
     depends_on:
       - privnet-mainchain-dpos-1
     volumes:
@@ -118,7 +118,7 @@ services:
 
   privnet-arbitrator-origin-2:
     container_name: privnet-arbitrator-origin-2
-    image: cyberrepublic/elastos-arbitrator-node:v0.1.1
+    image: cyberrepublic/elastos-arbitrator-node:privnet-v0.4
     depends_on:
       - privnet-mainchain-dpos-2
     volumes:
@@ -133,7 +133,7 @@ services:
 
   privnet-sidechain-did-node:
     container_name: privnet-sidechain-did-node
-    image: cyberrepublic/elastos-sidechain-did-node:v0.1.2
+    image: cyberrepublic/elastos-sidechain-did-node:privnet-v0.4
     volumes:
       - ~/.volumes/elastos-privnet/did-node:/did/elastos_did
       - ${PWD}/ela-sidechain/did/did-node/config.json:/did/config.json
@@ -145,7 +145,7 @@ services:
 
   privnet-sidechain-token-node:
     container_name: privnet-sidechain-token-node
-    image: cyberrepublic/elastos-sidechain-token-node:v0.1.2
+    image: cyberrepublic/elastos-sidechain-token-node:privnet-v0.4
     volumes:
       - ~/.volumes/elastos-privnet/token-node:/token/elastos_token
       - ${PWD}/ela-sidechain/token/token-node/config.json:/token/config.json
@@ -189,7 +189,7 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8091/api/1/currHeight"]
       interval: 30s
-      timeout: 10s
+      timeout: 120s
       retries: 5
     networks:
       - blockchain
@@ -205,7 +205,7 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8092/api/1/currHeight"]
       interval: 30s
-      timeout: 10s
+      timeout: 120s
       retries: 5
     networks:
       - blockchain
@@ -223,9 +223,9 @@ services:
     ports:
       - 9091:8080
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9091/api/1/ping"]
+      test: ["CMD", "curl", "-f", "http://localhost:9091/api/1/history/checking/sync"]
       interval: 30s
-      timeout: 10s
+      timeout: 120s
       retries: 5
     networks:
       - blockchain
@@ -243,9 +243,9 @@ services:
     ports:
       - 9092:8080
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9092/api/1/ping"]
+      test: ["CMD", "curl", "-f", "http://localhost:9092/api/1/history/checking/sync"]
       interval: 30s
-      timeout: 10s
+      timeout: 120s
       retries: 5
     networks:
       - blockchain
@@ -264,9 +264,9 @@ services:
     ports:
       - 3307:3306
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p12345678"]
       interval: 30s
-      timeout: 10s
+      timeout: 120s
       retries: 5
     networks:
       - blockchain

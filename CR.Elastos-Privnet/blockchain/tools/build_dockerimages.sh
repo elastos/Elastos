@@ -1,5 +1,7 @@
 #!/bin/bash
 
+PRIVNET_TAG="privnet-v0.4"
+
 while getopts ":p:" opt; do
   case $opt in
     p) DOCKER_PUSH="$OPTARG"
@@ -20,9 +22,8 @@ function build_binary_and_docker {
     WORKDIR="${3}"
     BINARY="${4}"
     DOCKERIMAGE="${5}"
-    DOCKER_PUSH_ALTTAG="${6}"
-    DOCKER_PUSH_LATEST="${7}"
-    GITHUB_PULL="${8}"
+    GITHUB_PULL="${6}"
+    DOCKER_PUSH_TAGS="${7}"
 
     cd $REPO
     if [ "${GITHUB_PULL}" == "yes" ]
@@ -38,15 +39,14 @@ function build_binary_and_docker {
     docker build -t "$DOCKERIMAGE:latest" -f $TMPDIR/$WORKDIR/Dockerfile $TMPDIR/$WORKDIR/
     if [ "${DOCKER_PUSH}" == "yes" ]
     then
-        if [ ! -z "${DOCKER_PUSH_ALTTAG}" ]
+        if [ ! -z "${DOCKER_PUSH_TAGS}" ]
         then
-            docker tag "$DOCKERIMAGE:latest" "$DOCKERIMAGE:$DOCKER_PUSH_ALTTAG"
-            docker push "$DOCKERIMAGE:$DOCKER_PUSH_ALTTAG"
+            docker tag "$DOCKERIMAGE:latest" "$DOCKERIMAGE:$BRANCH"
+            docker push "$DOCKERIMAGE:$BRANCH"
+            docker tag "$DOCKERIMAGE:latest" "$DOCKERIMAGE:$PRIVNET_TAG"
+            docker push "$DOCKERIMAGE:$PRIVNET_TAG"
         fi
-        if [ "${DOCKER_PUSH_LATEST}" == "yes" ]
-        then
-            docker push "$DOCKERIMAGE:latest"
-        fi
+        docker push "$DOCKERIMAGE:latest"
     fi
     cd $CURRENT_DIR
 }
@@ -55,52 +55,51 @@ function build_docker {
     WORKDIR="${1}"
     BINARY="${2}"
     DOCKERIMAGE="${3}"
-    DOCKER_PUSH_ALTTAG="${4}"
-    DOCKER_PUSH_LATEST="${5}"
+    DOCKER_PUSH_BRANCH_TAG="${4}"
+    DOCKER_PUSH_TAGS="${5}"
 
     mkdir -p $TMPDIR/$WORKDIR/$BINARY
     cp -r $CURRENT_DIR/$WORKDIR/* $TMPDIR/$WORKDIR/
     docker build -t "$DOCKERIMAGE:latest" -f $TMPDIR/$WORKDIR/Dockerfile $TMPDIR/$WORKDIR/
     if [ "${DOCKER_PUSH}" == "yes" ]
     then
-        if [ ! -z "${DOCKER_PUSH_ALTTAG}" ]
+        if [ ! -z "${DOCKER_PUSH_TAGS}" ]
         then
-            docker tag "$DOCKERIMAGE:latest" "$DOCKERIMAGE:$DOCKER_PUSH_ALTTAG"
-            docker push "$DOCKERIMAGE:$DOCKER_PUSH_ALTTAG"
+            docker tag "$DOCKERIMAGE:latest" "$DOCKERIMAGE:$DOCKER_PUSH_BRANCH_TAG"
+            docker push "$DOCKERIMAGE:$DOCKER_PUSH_BRANCH_TAG"
+            docker tag "$DOCKERIMAGE:latest" "$DOCKERIMAGE:$PRIVNET_TAG"
+            docker push "$DOCKERIMAGE:$PRIVNET_TAG"
         fi
-        if [ "${DOCKER_PUSH_LATEST}" == "yes" ]
-        then
-            docker push "$DOCKERIMAGE:latest"
-        fi
+        docker push "$DOCKERIMAGE:latest"
     fi
     cd $CURRENT_DIR
 }
 
 build_binary_and_docker "v0.3.4" "Elastos.ELA" "ela-mainchain" "ela" \
-    "cyberrepublic/elastos-mainchain-node" "v0.3.4" "yes" "yes"
+    "cyberrepublic/elastos-mainchain-node" "yes" "yes"
 
 build_binary_and_docker "v0.1.1" "Elastos.ELA.Arbiter" "ela-arbitrator" "arbiter" \
-    "cyberrepublic/elastos-arbitrator-node" "v0.1.1" "yes" "yes"
+    "cyberrepublic/elastos-arbitrator-node" "yes" "yes"
 
 build_binary_and_docker "v0.1.2" "Elastos.ELA.SideChain.ID" "ela-sidechain/did" "did" \
-    "cyberrepublic/elastos-sidechain-did-node" "v0.1.2" "yes" "yes"
+    "cyberrepublic/elastos-sidechain-did-node" "yes" "yes"
 
 build_binary_and_docker "v0.1.2" "Elastos.ELA.SideChain.Token" "ela-sidechain/token" "token" \
-    "cyberrepublic/elastos-sidechain-token-node" "v0.1.2" "yes" "yes"
+    "cyberrepublic/elastos-sidechain-token-node" "yes" "yes"
 
 build_binary_and_docker "dev" "Elastos.ELA.SideChain.ETH" "ela-sidechain/eth" "eth" \
-    "cyberrepublic/elastos-sidechain-eth-node" "privnet-v0.4" "no" "no"
+    "cyberrepublic/elastos-sidechain-eth-node" "no" "no"
 
 build_docker "ela-sidechain/eth/oracle" "oracle" \
-    "cyberrepublic/elastos-sidechain-eth-oracle" "privnet-v0.4" "no"
+    "cyberrepublic/elastos-sidechain-eth-oracle" "dev" "yes"
 
 build_binary_and_docker "master" "Elastos.ORG.Wallet.Service" "restful-services/wallet-service" "service" \
-    "cyberrepublic/elastos-wallet-service" "privnet-v0.4" "no" "yes"
+    "cyberrepublic/elastos-wallet-service" "yes" "no"
 
 build_binary_and_docker "master" "Elastos.ORG.SideChain.Service" "restful-services/sidechain-service" "service" \
-    "cyberrepublic/elastos-sidechain-service" "privnet-v0.4" "no" "yes"
+    "cyberrepublic/elastos-sidechain-service" "yes" "no"
 
 build_binary_and_docker "master" "Elastos.ORG.API.Misc" "restful-services/api-misc" "misc" \
-    "cyberrepublic/elastos-api-misc-service" "privnet-v0.4" "no" "yes"
+    "cyberrepublic/elastos-api-misc-service" "yes" "no"
 
 cd $CURRENT_DIR
