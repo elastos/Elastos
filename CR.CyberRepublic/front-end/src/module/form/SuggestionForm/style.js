@@ -1,31 +1,70 @@
 import styled from 'styled-components'
-import { Form } from 'antd'
-
-const FormItem = Form.Item
+import { Button } from 'antd'
 
 export const Container = styled.div`
-`
-
-export const CoverImg = styled.img`
-  width: 100%;
-  cursor: pointer;
-`
-
-export const StyledFormItem = styled(FormItem)`
-  input, textarea {
+  text-align: left;
+  .ant-form-item-label {
+    text-align: left;
+  }
+  .ant-form-item-required:before {
+    display: none;
+  }
+  .ant-select-selection,
+  .ant-input {
     border-radius: 0;
-    &::placeholder {
-      font-size: 14px;
-      color: rgba(0, 0, 0, 0.65);
-      font-style: italic;
-    }
+  }
+  .ant-form-item-label label {
+    white-space: normal;
+    /* line-height: 1.4rem; */
+    display: block;
+  }
+  .ant-tabs {
+    overflow: initial;
+  }
+  .md-RichEditor-root {
+    padding: 15px 30px;
+    margin-top: 0;
+    border: 1px solid #d9d9d9;
   }
 `
 
-export const StyledFormDesc = styled(FormItem)`
-  min-height: 300px;
-  margin-bottom: 30px;
-  .ql-container {
-    height: 245px;
-  }
+export const Title = styled.h2`
+`
+
+export const Btn = styled(Button)`
+  width: 100%;
+  background: #66bda3;
+  color: #fff;
+  border-color: #009999;
+  border-radius: 0;
+`
+
+export const CirContainer = styled.div`
+  width: 18px;
+  position: absolute;
+  bottom: 0;
+  right: 6px;
+  z-index: 10;
+`
+
+export const Text = styled.div`
+  text-align: center;
+`
+
+export const TabText = styled.span`
+  ${props => props.hasErr && `
+    color: red;
+  `}
+`
+
+export const TabPaneInner = styled.div`
+  margin: 40px;
+`
+
+export const Note = styled.div`
+  margin-bottom: 15px;
+`
+
+export const NoteHighlight = styled.span`
+  color: red;
 `
