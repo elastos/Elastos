@@ -39,15 +39,15 @@ class CreateWallet(Resource):
         else:
             return response.status_code
 
-@ns.route('/getBalance')
+@ns.route('/getBalance/<string:balance_address>')
 class GetBalance(Resource):
 
-    def get(self):
+    def get(self, balance_address):
         """
         Returns the balance of the provided public address
         """
-        api_url_base = settings.WALLET_SERVICE_URL + settings.WALLET_API_BALANCE
-        json_data = requests.get(api_url_base).json()
+        api_url_base = settings.WALLET_SERVICE_URL + settings.WALLET_API_BALANCE + "{}"
+        json_data = requests.get(api_url_base.format(balance_address)).json()
         return json_data
 
 @ns.route('/getDPOSVote', methods = ['POST'])
