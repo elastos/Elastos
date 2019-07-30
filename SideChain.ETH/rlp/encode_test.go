@@ -135,6 +135,7 @@ var encTests = []encTest{
 	{val: "", output: "80"},
 	{val: "\x7E", output: "7E"},
 	{val: "\x7F", output: "7F"},
+	{val: "\x80", output: "8180"},
 	{val: "dog", output: "83646F67"},
 	{
 		val:    "Lorem ipsum dolor sit amet, consectetur adipisicing eli",
@@ -250,8 +251,7 @@ var encTests = []encTest{
 
 func runEncTests(t *testing.T, f func(val interface{}) ([]byte, error)) {
 	for i, test := range encTests {
-		fmt.Println(test)
-		output, err := f(test.output)
+		output, err := f(test.val)
 		if err != nil && test.error == "" {
 			t.Errorf("test %d: unexpected error: %v\nvalue %#v\ntype %T",
 				i, err, test.val, test.val)

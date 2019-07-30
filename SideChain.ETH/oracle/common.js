@@ -5,7 +5,7 @@ const web3 = new Web3("http://127.0.0.1:8545");
 const ctrt = require("./ctrt");
 
 const contract = new web3.eth.Contract(ctrt.abi);
-console.log(process.env.env);
+console.log(JSON.stringify(process.env.env));
 switch (process.env.env) {
     case "rinkeby":
         console.log("");
@@ -16,8 +16,8 @@ switch (process.env.env) {
         contract.options.address = "0x491bC043672B9286fA02FA7e0d6A3E5A0384A31A";
         break;
     case "mainnet":
-        console.log("");
-        contract.options.address = "";
+        console.log("0xC445f9487bF570fF508eA9Ac320b59730e81e503");
+        contract.options.address = "0xC445f9487bF570fF508eA9Ac320b59730e81e503";
         break;
     default:
         console.log("config address");

@@ -1,7 +1,7 @@
 package spv
 
 import (
-	"fmt"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/log"
 	"io"
 	"os"
 	"path/filepath"
@@ -56,5 +56,5 @@ func initLog(dataDir string) {
 	sync.UseLogger(synclog)
 	wallet.UseLogger(waltlog)
 
-	fmt.Println("SPV Logs initialized at: ", filepath.Join(dataDir, LogPath))
+	log.Info("SPV Logs initialized at: ", "dir", filepath.Join(dataDir, LogPath))
 }
