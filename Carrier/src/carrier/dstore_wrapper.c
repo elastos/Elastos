@@ -258,69 +258,25 @@ void dstore_enqueue_pollmsg(DStoreWrapper *ctx)
     pthread_cond_signal(&ctx->cond);
 }
 
-static int redeem_dstore_file(ElaCarrier *w, char *data_path, size_t length)
-{
-    const char *conf_str = NULL;
-    FILE *fp;
-    size_t nwr;
-    int rc;
-    int i;
-
-    assert(data_path);
-
-    rc = snprintf(data_path, length, "%s/%s", w->pref.data_location,
-                  dstore_data_filename);
-    if (rc < 0 || rc >= (int)length)
-        return -1;
-
-    if (!access(data_path, F_OK))
-        return 0;
-
-    for (i = 0; i < w->pref.hive_bootstraps_size && !conf_str; ++i) {
-        if (w->pref.hive_bootstraps[i].ipv4[0])
-            conf_str = hive_generate_conf(w->pref.hive_bootstraps[i].ipv4,
-                                          w->pref.hive_bootstraps[i].port);
-
-        if (!conf_str && w->pref.hive_bootstraps[i].ipv6[0])
-            conf_str = hive_generate_conf(w->pref.hive_bootstraps[i].ipv6,
-                                          w->pref.hive_bootstraps[i].port);
-    }
-
-    if (!conf_str) {
-        vlogE("Carrier: Generating dstore bootstrap seeds error");
-        return -1;
-    }
-
-    fp = fopen(data_path, "w");
-    if (!fp) {
-        free((void *)conf_str);
-        return -1;
-    }
-
-    nwr = fwrite(conf_str, strlen(conf_str), 1, fp);
-    fclose(fp);
-    free((void *)conf_str);
-
-    return (nwr != 1) ? -1 : 0;
-}
-
 static void *dstore_msgs_dispatch(void *arg)
 {
     DStoreWrapper *ctx = (DStoreWrapper *)arg;
     ElaCarrier *w = ctx->carrier;
     char conf_path[PATH_MAX];
     DStoreMsg *msg;
+    dstorec_node *nodes;
     int rc;
+    int i;
 
-    rc = redeem_dstore_file(w, conf_path, sizeof(conf_path));
-    if (rc < 0) {
-        vlogE("Carrier: Redeem hive bootstraps nodes");
-        deref(ctx);
-        deref(ctx->carrier);
-        return NULL;
+    nodes = alloca(sizeof(dstorec_node) * w->pref.hive_bootstraps_size);
+    memset(nodes, 0, sizeof(dstorec_node) * w->pref.hive_bootstraps_size);
+    for (i = 0; i < w->pref.hive_bootstraps_size; ++i) {
+        nodes[i].ipv4 = w->pref.hive_bootstraps[i].ipv4;
+        nodes[i].ipv6 = w->pref.hive_bootstraps[i].ipv6;
+        nodes[i].port = w->pref.hive_bootstraps[i].port;
     }
 
-    ctx->dstore = dstore_create(conf_path);
+    ctx->dstore = dstore_create(nodes, w->pref.hive_bootstraps_size);
     if (!ctx->dstore) {
         vlogE("Carrier: Create Dstore object error");
         deref(ctx);
@@ -328,8 +284,6 @@ static void *dstore_msgs_dispatch(void *arg)
         return NULL;
     }
     vlogI("Carrier: Dstore is ready now.");
-
-    dstore_enqueue_pollmsg(ctx); // First time to poll receiving messages.
 
     pthread_mutex_lock(&ctx->lock);
     while(!ctx->stopped) {
