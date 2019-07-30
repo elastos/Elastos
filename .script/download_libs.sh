@@ -10,9 +10,11 @@ HOST="$(uname -s)"
 case "${HOST}" in
     "Darwin")
         STRIP_ARG="--strip-components=1"
+        BAK_ARG="''"
         ;;
     "Linux")
         STRIP_ARG="--strip-components 1"
+        BAK_ARG=""
         ;;
     *)
         echo "Error: Unsupported platform"
@@ -27,7 +29,7 @@ else
     curl https://github.com/elastos/Elastos.NET.Carrier.Native.SDK/releases/tag/internal-test | grep "/elastos.*android.*gz" -o >carrier_libs.txt
 fi
 
-sed -i 's/^/https:\/\/github.com/g' carrier_libs.txt
+sed -i $BAK_ARG 's/^/https:\/\/github.com/g' carrier_libs.txt
 cat carrier_libs.txt
 wget -i carrier_libs.txt
 
