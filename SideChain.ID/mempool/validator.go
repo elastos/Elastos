@@ -6,12 +6,17 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain.ID/pact"
 	id "github.com/elastos/Elastos.ELA.SideChain.ID/types"
-
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
+
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract"
+)
+
+const (
+	CheckRegisterDIDFuncName = "checkregisterdid"
+	CheckUpdateDIDFuncName   = "checkupdatedid"
 )
 
 type validator struct {
@@ -31,6 +36,9 @@ func NewValidator(cfg *mempool.Config) *mempool.Validator {
 
 	val.RegisterSanityFunc(mempool.FuncNames.CheckTransactionOutput, val.checkTransactionOutput)
 	val.RegisterSanityFunc(mempool.FuncNames.CheckTransactionPayload, val.checkTransactionPayload)
+	val.RegisterSanityFunc(CheckRegisterDIDFuncName, val.checkRegisterDID)
+	val.RegisterSanityFunc(CheckUpdateDIDFuncName, val.checkUpdateDID)
+
 	val.RegisterContextFunc(mempool.FuncNames.CheckTransactionSignature, val.checkTransactionSignature)
 	return val.Validator
 }
@@ -50,6 +58,7 @@ func (v *validator) checkTransactionPayload(txn *types.Transaction) error {
 	case *types.PayloadRechargeToSideChain:
 	case *types.PayloadTransferCrossChainAsset:
 	case *id.PayloadRegisterIdentification:
+	case *id.PayloadDID:
 	default:
 		return errors.New("[ID CheckTransactionPayload] [txValidator],invalidate transaction payload type.")
 	}
@@ -129,7 +138,7 @@ func (v *validator) checkTransactionSignature(txn *types.Transaction) error {
 	}
 
 	// Add ID program hash to hashes
-	if id.IsRegisterIdentificationTx(txn) {
+	if id.IsRegisterIdentificationTx(txn) || id.IsRegisterDIDTx(txn) || id.IsUpdateDIDTx(txn) {
 		for _, output := range txn.Outputs {
 			if output.ProgramHash[0] == pact.PrefixRegisterId {
 				hashes = append(hashes, output.ProgramHash)
@@ -149,5 +158,15 @@ func (v *validator) checkTransactionSignature(txn *types.Transaction) error {
 		return errors.New("[ID checkTransactionSignature] Run program error:" + err.Error())
 	}
 
+	return nil
+}
+
+func (v *validator) checkRegisterDID(txn *types.Transaction) error {
+	// todo complete me, check if exist
+	return nil
+}
+
+func (v *validator) checkUpdateDID(txn *types.Transaction) error {
+	// todo complete me, check if exist
 	return nil
 }

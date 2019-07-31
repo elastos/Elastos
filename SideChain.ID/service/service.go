@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/elastos/Elastos.ELA.SideChain/interfaces"
 
 	"github.com/elastos/Elastos.ELA.SideChain.ID/blockchain"
 	id "github.com/elastos/Elastos.ELA.SideChain.ID/types"
+	"github.com/elastos/Elastos.ELA.SideChain/interfaces"
 	"github.com/elastos/Elastos.ELA.SideChain/service"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
