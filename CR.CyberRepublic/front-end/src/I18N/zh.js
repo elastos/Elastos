@@ -1121,6 +1121,8 @@ const zh = {
   'profile.detail.no': '否',
 
   // Module form
+  'from.CVoteForm.upload.type.error': '上传的文件不是图片',
+  'from.CVoteForm.upload.size.error': '上传的文件大小不能超过500KB',
   'from.CVoteForm.message.delete.success': '删除成功',
   'from.CVoteForm.message.updated.success': '更新成功',
   'from.CVoteForm.message.create.success': '创建成功',

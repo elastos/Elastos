@@ -1,6 +1,7 @@
 import React from 'react'
 import { addNewBlock, ImageSideButton, Block } from 'medium-draft'
 import { message } from 'antd'
+import I18N from '@/I18N'
 
 const IMAGE_SIZE = {
   MAX_WIDTH: 720,
@@ -41,12 +42,12 @@ class ImageButton extends ImageSideButton {
     const file = e.target.files[0]
     // check if the uploaded file is an image
     if (!file.type.includes('image/')) {
-      message.error(`File ${file.name} is not an image.`)
+      message.error(I18N.get('from.CVoteForm.upload.type.error'))
       return false
     }
 
     if (file.size > 502400) {
-      message.error(`The maximum upload file size is less than 500KB`)
+      message.error(I18N.get('from.CVoteForm.upload.size.error'))
       return false
     }
 
