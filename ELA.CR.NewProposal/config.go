@@ -132,6 +132,10 @@ func loadConfigParams(cfg *config.Configuration) (*config.Configuration, error) 
 		activeNetParams.EnableActivateIllegalHeight =
 			cfg.EnableActivateIllegalHeight
 	}
+	if cfg.CheckRewardHeight > 0 {
+		activeNetParams.CheckRewardHeight =
+			cfg.CheckRewardHeight
+	}
 
 	// When arbiter service enabled, IP address must be set.
 	if cfg.DPoSConfiguration.EnableArbiter {
