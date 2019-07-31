@@ -11,6 +11,8 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 )
 
+const IX_DID blockchain.EntryPrefix = 0x95
+
 type IDChainStore struct {
 	*blockchain.ChainStore
 }
@@ -37,30 +39,33 @@ func (c *IDChainStore) persistTransactions(batch database.Batch, b *types.Block)
 			return err
 		}
 
-		if txn.TxType == types.RegisterAsset {
+		switch txn.TxType {
+		case types.RegisterAsset:
 			regPayload := txn.Payload.(*types.PayloadRegisterAsset)
 			if err := c.PersistAsset(batch, txn.Hash(), regPayload.Asset); err != nil {
 				return err
 			}
-		}
-
-		if txn.TxType == types.RechargeToSideChain {
+		case types.RechargeToSideChain:
 			rechargePayload := txn.Payload.(*types.PayloadRechargeToSideChain)
 			hash, err := rechargePayload.GetMainchainTxHash(txn.PayloadVersion)
 			if err != nil {
 				return err
 			}
 			c.PersistMainchainTx(batch, *hash)
-		}
-
-		if txn.TxType == id.RegisterIdentification {
+		case id.RegisterIdentification:
 			regPayload := txn.Payload.(*id.PayloadRegisterIdentification)
 			for _, content := range regPayload.Contents {
 				buf := new(bytes.Buffer)
 				buf.WriteString(regPayload.ID)
 				buf.WriteString(content.Path)
-				c.PersistRegisterIdentificationTx(batch, buf.Bytes(), txn.Hash())
+				c.persistRegisterIdentificationTx(batch, buf.Bytes(), txn.Hash())
 			}
+		case id.RegisterDID:
+			// todo complete me
+
+
+		case id.UpdateDID:
+			// todo complete me
 		}
 	}
 	return nil
@@ -71,34 +76,38 @@ func (c *IDChainStore) rollbackTransactions(batch database.Batch, b *types.Block
 		if err := c.RollbackTransaction(batch, txn); err != nil {
 			return err
 		}
-		if txn.TxType == types.RegisterAsset {
+
+		switch txn.TxType {
+		case types.RegisterAsset:
 			if err := c.RollbackAsset(batch, txn.Hash()); err != nil {
 				return err
 			}
-		}
-		if txn.TxType == types.RechargeToSideChain {
+		case types.RechargeToSideChain:
 			rechargePayload := txn.Payload.(*types.PayloadRechargeToSideChain)
 			hash, err := rechargePayload.GetMainchainTxHash(txn.PayloadVersion)
 			if err != nil {
 				return err
 			}
 			c.RollbackMainchainTx(batch, *hash)
-		}
-		if txn.TxType == id.RegisterIdentification {
+		case id.RegisterIdentification:
 			regPayload := txn.Payload.(*id.PayloadRegisterIdentification)
 			for _, content := range regPayload.Contents {
 				buf := new(bytes.Buffer)
 				buf.WriteString(regPayload.ID)
 				buf.WriteString(content.Path)
-				c.RollbackRegisterIdentificationTx(batch, buf.Bytes())
+				c.rollbackRegisterIdentificationTx(batch, buf.Bytes())
 			}
+		case id.RegisterDID:
+			// todo complete me
+		case id.UpdateDID:
+			// tod complete me
 		}
 	}
 
 	return nil
 }
 
-func (c *IDChainStore) PersistRegisterIdentificationTx(batch database.Batch, idKey []byte, txHash common.Uint256) {
+func (c *IDChainStore) persistRegisterIdentificationTx(batch database.Batch, idKey []byte, txHash common.Uint256) {
 	key := []byte{byte(blockchain.IX_Identification)}
 	key = append(key, idKey...)
 
@@ -106,7 +115,7 @@ func (c *IDChainStore) PersistRegisterIdentificationTx(batch database.Batch, idK
 	batch.Put(key, txHash.Bytes())
 }
 
-func (c *IDChainStore) RollbackRegisterIdentificationTx(batch database.Batch, idKey []byte) {
+func (c *IDChainStore) rollbackRegisterIdentificationTx(batch database.Batch, idKey []byte) {
 	key := []byte{byte(blockchain.IX_Identification)}
 	key = append(key, idKey...)
 
@@ -122,4 +131,14 @@ func (c *IDChainStore) GetRegisterIdentificationTx(idKey []byte) ([]byte, error)
 	}
 
 	return data, nil
+}
+
+func (c *IDChainStore) GetLastRegisterDIDTx(idKey []byte) ([]byte, error) {
+	// todo get txs list by id, then get first tx
+	return nil, nil
+}
+
+func (c *IDChainStore) GetRegisterDIDTx(idKey []byte) ([][]byte, error) {
+	// todo get txs list by id, then get all txs
+	return nil, nil
 }
