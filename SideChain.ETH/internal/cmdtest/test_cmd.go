@@ -176,6 +176,8 @@ func (tt *TestCmd) ExpectExit() {
 	if tt.Cleanup != nil {
 		tt.Cleanup()
 	}
+	if len(output) > 0 {
+	}
 
 }
 
