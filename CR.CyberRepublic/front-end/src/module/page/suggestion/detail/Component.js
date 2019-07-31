@@ -209,7 +209,9 @@ export default class extends StandardPage {
               data-desc={desc.replace(/(['"])/g, '\\$1')}
               onClick={() => this.setState({ needsInfoVisible: true })}
             >
-              {I18N.get(`suggestion.tag.type.${type}`)} &nbsp;
+              {I18N.get(`suggestion.tag.type.${type}`)}
+              {' '}
+&nbsp;
               <IconWrap>
                 <CommentIcon className="more-info-icon" />
               </IconWrap>
@@ -328,11 +330,11 @@ export default class extends StandardPage {
       <h4>${I18N.get('suggestion.form.fields.desc')}</h4>
       ${desc}
       ${
-        benefits
-          ? `<h4>${I18N.get('suggestion.form.fields.benefits')}</h4>
+  benefits
+    ? `<h4>${I18N.get('suggestion.form.fields.benefits')}</h4>
       <p>${benefits}</p>`
-          : ''
-      }
+    : ''
+}
     `
 
     return (

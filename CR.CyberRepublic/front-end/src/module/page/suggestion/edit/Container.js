@@ -15,8 +15,14 @@ export default createContainer(Component, (state) => {
   const service = new SuggestionService()
 
   return {
-    createSuggestion(suggestion) {
-      return service.create(suggestion)
+    getDetail(id) {
+      return service.getDetail({
+        id,
+        incViewsNum: false,
+      })
+    },
+    updateSuggestion(suggestion) {
+      return service.update(suggestion)
     }
   }
 })

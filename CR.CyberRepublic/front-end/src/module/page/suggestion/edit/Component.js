@@ -49,18 +49,32 @@ export default class extends StandardPage {
 
     // we use the props from the redux store if its retained
     this.state = {
-      isDropdownActionOpen: false,
-      showMobile: false,
-      showForm: false,
-      needsInfoVisible: false
+      data: null,
+      loading: true,
+      error: null
     }
   }
 
+  componentDidMount() {
+    super.componentDidMount()
+    this.props.getDetail(_.get(this.props, 'match.params.id'))
+      .then(data => this.setState({ data, loading: false }))
+      .catch(err => this.setState({ error: err, loading: false }))
+  }
+
   ord_renderContent() {
+    if (this.state.loading) {
+      return (
+        <div className="center">
+          <Spin size="large" />
+        </div>
+      )
+    }
+
     return (
       <div>
         <Meta
-          title="Add Suggestion Detail - Cyber Republic"
+          title="Edit Suggestion Detail - Cyber Republic"
           url={this.props.location.pathname}
         />
 
@@ -81,7 +95,9 @@ export default class extends StandardPage {
             <Title className="komu-a cr-title-with-icon ">
               {I18N.get('from.CVoteForm.button.add')}
             </Title>
-            <SuggestionForm onSubmit={this.props.createSuggestion} />
+            <SuggestionForm
+              initialValues={this.state.data}
+              onSubmit={(model) => this.props.updateSuggestion({ id: this.state.data._id, ...model })} />
           </div>
         </Container>
         <Footer />
