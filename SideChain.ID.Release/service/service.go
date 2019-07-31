@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/elastos/Elastos.ELA.SideChain/interfaces"
 
 	"github.com/elastos/Elastos.ELA.SideChain.ID/blockchain"
 	id "github.com/elastos/Elastos.ELA.SideChain.ID/types"
@@ -215,7 +216,7 @@ func GetTransactionInfoFromBytes(txInfoBytes []byte) (*service.TransactionInfo, 
 	return &txInfo, nil
 }
 
-func GetTransactionInfo(cfg *service.Config, header *types.Header, tx *types.Transaction) *service.TransactionInfo {
+func GetTransactionInfo(cfg *service.Config, header interfaces.Header, tx *types.Transaction) *service.TransactionInfo {
 	inputs := make([]service.InputInfo, len(tx.Inputs))
 	for i, v := range tx.Inputs {
 		inputs[i].TxID = service.ToReversedString(v.Previous.TxID)
@@ -253,10 +254,10 @@ func GetTransactionInfo(cfg *service.Config, header *types.Header, tx *types.Tra
 	var time uint32
 	var blockTime uint32
 	if header != nil {
-		confirmations = cfg.Chain.GetBestHeight() - header.Height + 1
+		confirmations = cfg.Chain.GetBestHeight() - header.GetHeight() + 1
 		blockHash = service.ToReversedString(header.Hash())
-		time = header.Timestamp
-		blockTime = header.Timestamp
+		time = header.GetTimeStamp()
+		blockTime = header.GetTimeStamp()
 	}
 
 	return &service.TransactionInfo{

@@ -33,7 +33,7 @@ func NewChainStore(genesisBlock *types.Block, dataPath string) (*IDChainStore, e
 
 func (c *IDChainStore) persistTransactions(batch database.Batch, b *types.Block) error {
 	for _, txn := range b.Transactions {
-		if err := c.PersistTransaction(batch, txn, b.Header.Height); err != nil {
+		if err := c.PersistTransaction(batch, txn, b.Header.GetHeight()); err != nil {
 			return err
 		}
 
