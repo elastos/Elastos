@@ -269,10 +269,6 @@ export default [
     page: SuggestionEditPage,
   },
   {
-    path: '/suggestion/:id/propose',
-    page: SuggestionListPage,
-  },
-  {
     path: '/suggestion/:id',
     page: SuggestionDetailPage,
   },

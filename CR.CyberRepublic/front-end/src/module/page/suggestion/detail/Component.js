@@ -56,7 +56,8 @@ export default class extends StandardPage {
       isDropdownActionOpen: false,
       showMobile: false,
       showForm: false,
-      needsInfoVisible: false
+      needsInfoVisible: false,
+      proposeLoading: false
     }
   }
 
@@ -475,7 +476,8 @@ export default class extends StandardPage {
         <StyledButton
           type="ebp"
           className="cr-btn cr-btn-default"
-          onClick={this.redirectToPropose}
+          disabled={this.state.proposeLoading}
+          onClick={this.makeIntoPropose}
         >
           {I18N.get('suggestion.btn.makeIntoProposal')}
         </StyledButton>
@@ -610,8 +612,25 @@ export default class extends StandardPage {
     this.props.history.push(`/suggestion/${suggestionId}`)
   }
 
-  redirectToPropose = () => {
+  makeIntoPropose = async () => {
     const id = _.get(this.props, 'match.params.id')
-    this.props.history.push(`/suggestion/${id}/propose`)
+    const { current_user_id, profile, history } = this.props.user
+    const fullName = `${profile.firstName} ${profile.lastName}`
+    const { createDraft } = this.props
+debugger
+    const param = {
+      proposedBy: fullName,
+      proposer: current_user_id,
+      suggestionId: id
+    }
+
+    this.setState({ proposeLoading: true })
+
+    try {
+      const res = await createDraft(param)
+      this.props.history.push(`/proposals/${res._id}/edit`)
+    } catch (error) {
+      this.setState({ proposeLoading: false })
+    }
   }
 }
