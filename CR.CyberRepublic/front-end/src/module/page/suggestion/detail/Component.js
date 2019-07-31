@@ -617,7 +617,7 @@ export default class extends StandardPage {
     const { current_user_id, profile, history } = this.props.user
     const fullName = `${profile.firstName} ${profile.lastName}`
     const { createDraft } = this.props
-debugger
+
     const param = {
       proposedBy: fullName,
       proposer: current_user_id,

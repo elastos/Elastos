@@ -123,7 +123,8 @@ class C extends BaseComponent {
     const hasError = _.has(this.state.errorKeys, id)
     return (
       <TabText hasErr={hasError}>
-        {I18N.get(`suggestion.fields.${id}`)}*
+        {I18N.get(`suggestion.fields.${id}`)}
+*
       </TabText>
     )
   }
