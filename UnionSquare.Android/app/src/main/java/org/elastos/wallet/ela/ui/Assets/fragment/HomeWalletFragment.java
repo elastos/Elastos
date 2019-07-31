@@ -78,16 +78,11 @@ public class HomeWalletFragment extends BaseFragment {
      */
     @Override
     public boolean onBackPressedSupport() {
+
         if (Constant.INNER.equals(type)) {
             return super.onBackPressedSupport();
         } else {
-            if (System.currentTimeMillis() - TOUCH_TIME < WAIT_TIME) {
-                _mActivity.finish();
-            } else {
-                TOUCH_TIME = System.currentTimeMillis();
-                Toast.makeText(_mActivity, getString(R.string.press_exit_again), Toast.LENGTH_SHORT).show();
-            }
-            return true;
+           return closeApp();
         }
     }
 }

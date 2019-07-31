@@ -256,13 +256,7 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
      */
     @Override
     public boolean onBackPressedSupport() {
-        if (System.currentTimeMillis() - TOUCH_TIME < WAIT_TIME) {
-            _mActivity.finish();
-        } else {
-            TOUCH_TIME = System.currentTimeMillis();
-            Toast.makeText(_mActivity, "再按一次退出", Toast.LENGTH_SHORT).show();
-        }
-        return true;
+        return closeApp();
     }
 
 
