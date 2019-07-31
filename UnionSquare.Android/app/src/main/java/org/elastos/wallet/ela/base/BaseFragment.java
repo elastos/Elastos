@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.blankj.utilcode.util.ToastUtils;
 import com.classic.common.MultipleStatusView;
@@ -447,4 +448,16 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
     private void onDestroyRefreshLayout() {
         getBaseActivity().onDestroyRefreshLayout();
     }
+    private static final long WAIT_TIME = 2000L;
+    private long TOUCH_TIME = 0;
+    public boolean closeApp() {
+        if (System.currentTimeMillis() - TOUCH_TIME < WAIT_TIME) {
+            _mActivity.finish();
+        } else {
+            TOUCH_TIME = System.currentTimeMillis();
+            Toast.makeText(_mActivity, getString(R.string.press_exit_again), Toast.LENGTH_SHORT).show();
+        }
+        return true;
+    }
+
 }
