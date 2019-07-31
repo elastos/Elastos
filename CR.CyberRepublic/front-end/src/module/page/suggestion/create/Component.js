@@ -46,14 +46,17 @@ const { TextArea } = Input
 export default class extends StandardPage {
   constructor(props) {
     super(props)
+    this.state = { error: null }
+  }
 
-    // we use the props from the redux store if its retained
-    this.state = {
-      isDropdownActionOpen: false,
-      showMobile: false,
-      showForm: false,
-      needsInfoVisible: false
-    }
+  historyBack = () => {
+    this.props.history.push('/suggestion')
+  }
+
+  onSubmit = (model) => {
+    return this.props.createSuggestion(model)
+      .then(() => this.historyBack())
+      .catch(err => this.setState({ error: err }))
   }
 
   ord_renderContent() {
@@ -81,7 +84,7 @@ export default class extends StandardPage {
             <Title className="komu-a cr-title-with-icon ">
               {I18N.get('from.CVoteForm.button.add')}
             </Title>
-            <SuggestionForm onSubmit={this.props.createSuggestion} />
+            <SuggestionForm onSubmit={this.onSubmit} onCancel={this.historyBack} />
           </div>
         </Container>
         <Footer />

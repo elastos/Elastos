@@ -116,15 +116,14 @@ class C extends BaseComponent {
       ],
       validateTrigger: 'onSubmit',
       initialValue: initialValues[id],
-    })(<DraftEditor contentType={CONTENT_TYPE.HTML} /* callback={callback} */ />)
+    })(<DraftEditor contentType={CONTENT_TYPE.MARKDOWN} /* callback={callback} */ />)
   }
 
   renderTabText(id) {
     const hasError = _.has(this.state.errorKeys, id)
     return (
       <TabText hasErr={hasError}>
-        {I18N.get(`suggestion.fields.${id}`)}
-*
+        {I18N.get(`suggestion.fields.${id}`)}*
       </TabText>
     )
   }

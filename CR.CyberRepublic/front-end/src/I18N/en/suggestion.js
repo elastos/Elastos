@@ -30,7 +30,8 @@ export default {
     summary: {
       reject: 'Reject & Comment',
       approve: 'Approve & Publish'
-    }
+    },
+    makeIntoProposal: 'Make Into Proposal'
   },
   text: {
     tracking: {

@@ -47,7 +47,6 @@ export default class extends StandardPage {
   constructor(props) {
     super(props)
 
-    // we use the props from the redux store if its retained
     this.state = {
       data: null,
       loading: true,
@@ -60,6 +59,18 @@ export default class extends StandardPage {
     this.props.getDetail(_.get(this.props, 'match.params.id'))
       .then(data => this.setState({ data, loading: false }))
       .catch(err => this.setState({ error: err, loading: false }))
+  }
+
+  historyBack = () => {
+    const id = this.state.data._id
+    this.props.history.push(`/suggestion/${id}`)
+  }
+
+  onSubmit = (model) => {
+    const id = this.state.data._id
+    return this.props.updateSuggestion({ id, ...model })
+      .then(() => this.historyBack())
+      .catch(err => this.setState({ error: err }))
   }
 
   ord_renderContent() {
@@ -97,7 +108,9 @@ export default class extends StandardPage {
             </Title>
             <SuggestionForm
               initialValues={this.state.data}
-              onSubmit={(model) => this.props.updateSuggestion({ id: this.state.data._id, ...model })} />
+              onSubmit={this.onSubmit}
+              onCancel={this.historyBack}
+            />
           </div>
         </Container>
         <Footer />
