@@ -34,15 +34,15 @@ matrix:
         - go run build/ci.go test -coverage $TEST_PACKAGES
 
     # This builder only tests code linters on latest version of Go
-    - os: linux
-      dist: trusty
-      go: 1.11.x
-      env:
-        - lint
-      git:
-        submodules: false # avoid cloning ethereum/tests
-      script:
-        - go run build/ci.go lint
+#    - os: linux
+#      dist: trusty
+#      go: 1.11.x
+#      env:
+#        - lint
+#      git:
+#        submodules: false # avoid cloning ethereum/tests
+#      script:
+#        - go run build/ci.go lint
 
     # This builder does the Ubuntu PPA upload
     - if: type = push
