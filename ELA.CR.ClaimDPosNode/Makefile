@@ -5,6 +5,10 @@ all:
 	$(BUILD) -o ela log.go config.go main.go
 	$(BUILD) -o ela-cli cmd/ela-cli.go
 
+linux:
+	GOARCH=amd64 GOOS=linux $(BUILD) -o ela log.go config.go main.go
+	GOARCH=amd64 GOOS=linux $(BUILD) -o ela-cli cmd/ela-cli.go
+
 cli:
 	$(BUILD) -o ela-cli cmd/ela-cli.go
 
