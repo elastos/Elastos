@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import BaseComponent from '@/model/BaseComponent'
 import _ from 'lodash'
 import { Editor, createEditorState, StringToTypeMap, Block, HANDLED, NOT_HANDLED, resetBlockWithType, getCurrentBlock } from 'medium-draft'
-import { convertFromHTML, ContentState, EditorState } from 'draft-js'
+import { convertFromHTML, convertFromRaw, ContentState, EditorState } from 'draft-js'
 import { MEDIUM_DRAFT_TOOLBAR_OPTIONS } from '@/config/constant'
 import { CONTENT_TYPE } from '@/constant'
 
@@ -33,14 +33,18 @@ class Component extends BaseComponent {
 
   generateEditorState = () => {
     const { value, contentType } = this.props
-    let editorState
+    let editorState = null;
     if (!value) {
       editorState = createEditorState()
     } else if (_.isObject(value)) {
       editorState = value
     } else if (contentType === CONTENT_TYPE.MARKDOWN) {
-      editorState = createEditorState(JSON.parse(value))
-    } else {
+      try {
+        editorState = createEditorState(JSON.parse(value))
+      } catch(err) {}
+    }
+
+    if (!editorState) {
       const blocksFromHTML = convertFromHTML(value)
       const state = ContentState.createFromBlockArray(
         blocksFromHTML.contentBlocks,
