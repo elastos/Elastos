@@ -9,7 +9,7 @@ RESTPLUS_MASK_SWAGGER = False
 RESTPLUS_ERROR_404_HELP = False
 
 # SQLAlchemy settings
-SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:postgres@localhost:5432/elastos_admin'
+SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:postgres@localhost:5432/elastos_console'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 #GMU Net
@@ -20,7 +20,7 @@ WALLET_API_BALANCE = '/1/balance/'
 WALLET_API_CREATE = '/1/createWallet'
 WALLET_API_DPOS_VOTE = '/1/dpos/vote'
 WALLET_API_TRANSACTIONS = '/1/tx'
-WALLET_API_TRANSACTION_HISTORY = '/1/history/EQoascGFzdQ1rLKfNEavJKTm3hMRhBaXBT'
+WALLET_API_TRANSACTION_HISTORY = '/1/history/'
 WALLET_API_TRANSFER = '/1/transfer'
 WALLET_API_MNEMONIC = '/1/eng/mnemonic'
 

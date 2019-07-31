@@ -76,16 +76,20 @@ class GetTransactions(Resource):
         json_data = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
         return json_data
 
-@ns.route('/getTransactionHistory')
+@ns.route('/getTransactionHistory/<string:transaction_address>')
 class GetTransactionHistory(Resource):
 
-    def get(self):
+    def get(self, transaction_address):
         """
         Get transaction history
         """
-        api_url_base = settings.WALLET_SERVICE_URL + settings.WALLET_API_TRANSACTION_HISTORY
-        json_data = requests.get(api_url_base).json()
-        return json_data
+        api_url_base = settings.WALLET_SERVICE_URL + settings.WALLET_API_TRANSACTION_HISTORY + "{}"
+        myResponse = requests.get(api_url_base.format(transaction_address)).json()
+        response = jsonify(myResponse)
+        if (response.status_code == 200):
+            return response
+        else:
+            return response.status_code
 
 @ns.route('/transferELA', methods = ['POST'])
 class TransferELA(Resource):
