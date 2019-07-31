@@ -366,23 +366,23 @@ View the
 
                     <div className="lock-group" data-num="1">
                       <div className="lock top part">
-                  <div className="locktop"><img src="assets/images/parts/pillar1-locktop.svg"/></div>
-                  <div className="lock-line" />
-                </div>
+                        <div className="locktop"><img src="assets/images/parts/pillar1-locktop.svg"/></div>
+                        <div className="lock-line" />
+                      </div>
                       <div className="lock bot part"><img src="assets/images/parts/pillar1-lockbot.svg"/></div>
                     </div>
                     <div className="lock-group" data-num="2">
                       <div className="lock top part">
-                  <div className="locktop"><img src="assets/images/parts/pillar1-locktop.svg"/></div>
-                  <div className="lock-line" />
-                </div>
+                        <div className="locktop"><img src="assets/images/parts/pillar1-locktop.svg"/></div>
+                        <div className="lock-line" />
+                      </div>
                       <div className="lock bot part"><img src="assets/images/parts/pillar1-lockbot.svg"/></div>
                     </div>
                     <div className="lock-group" data-num="3">
                       <div className="lock top part">
-                  <div className="locktop"><img src="assets/images/parts/pillar1-locktop.svg"/></div>
-                  <div className="lock-line" />
-                </div>
+                        <div className="locktop"><img src="assets/images/parts/pillar1-locktop.svg"/></div>
+                        <div className="lock-line" />
+                      </div>
                       <div className="lock bot part"><img src="assets/images/parts/pillar1-lockbot.svg"/></div>
                     </div>
                   </div>
@@ -504,8 +504,8 @@ View the
 
                     <div className="curve-path" data-num="1">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44.86413 112.88758">
-                  <title>pillar4-curve1</title>
-                  <path id="pillar-path1"
+                        <title>pillar4-curve1</title>
+                        <path id="pillar-path1"
                         d="M.681,112.88758V15.74908A10.87551,10.87551,0,0,1,11.55651,4.87357h0A10.87551,10.87551,0,0,1,22.43207,15.74906V68.25822h0A10.87551,10.87551,0,0,0,33.30756,79.13374h0a10.87551,10.87551,0,0,0,10.8755-10.87552V0"
                         style={{
                           fill: 'none',
@@ -513,13 +513,13 @@ View the
                           strokeMiterlimit: 10,
                           strokeWidth: '1.36px'
                         }}/>
-                </svg>
+                      </svg>
                       <div className="dot path-move" data-num="1" />
                     </div>
                     <div className="curve-path" data-num="2">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66.61518 124.64787">
-                  <title>pillar4-curve2</title>
-                  <path id="pillar-path2"
+                        <title>pillar4-curve2</title>
+                        <path id="pillar-path2"
                         d="M.681,0V68.93029a10.87549,10.87549,0,0,0,10.87547,10.8755h0A10.87555,10.87555,0,0,0,22.43206,68.93024V38.2958A10.87568,10.87568,0,0,1,33.30765,27.42025h0A10.87548,10.87548,0,0,1,44.18316,38.2957v74.79559a10.87556,10.87556,0,0,0,10.8755,10.87555h0a10.87548,10.87548,0,0,0,10.87547-10.87549V62.82553"
                         style={{
                           fill: 'none',
@@ -527,7 +527,7 @@ View the
                           strokeMiterlimit: 10,
                           strokeWidth: '1.36px'
                         }}/>
-                </svg>
+                      </svg>
                       <div className="dot path-move" data-num="2" />
                     </div>
 
@@ -829,12 +829,12 @@ View the
                     </h2>
                   ) : (
                     <h2 className="hasStatic">
-                {I18N.get('landing.vision.content.1')}
-                <br/>
-                {I18N.get('landing.vision.content.2')}
-                <br/>
-                {I18N.get('landing.vision.content.3')}
-              </h2>
+                      {I18N.get('landing.vision.content.1')}
+                      <br/>
+                      {I18N.get('landing.vision.content.2')}
+                      <br/>
+                      {I18N.get('landing.vision.content.3')}
+                    </h2>
                   )
                 }
                   <div className="arrow arrow-next sized"><img src="assets/images/arrow.svg"/></div>
@@ -905,40 +905,40 @@ View the
                     <div className="build-wrap" data-num="1">
                       <div className="building part"><img src="assets/images/parts/app2-building.svg"/></div>
                       <div className="roof part">
-                  <div className="roof-color"><img src="assets/images/parts/app2-roof1.svg"/></div>
-                  <div className="roof-color top"><img src="assets/images/parts/app2-roof2.svg"/></div>
-                </div>
+                        <div className="roof-color"><img src="assets/images/parts/app2-roof1.svg"/></div>
+                        <div className="roof-color top"><img src="assets/images/parts/app2-roof2.svg"/></div>
+                      </div>
                       <img src="assets/images/parts/app2-slot.svg" className="slot"/>
                       <div className="coin-wrap part-wrap">
-                  <div className="coin part" data-num="1"><img src="assets/images/parts/app2-coin1.svg"/></div>
-                  <div className="coin part" data-num="2"><img src="assets/images/parts/app2-coin2.svg"/></div>
-                </div>
+                        <div className="coin part" data-num="1"><img src="assets/images/parts/app2-coin1.svg"/></div>
+                        <div className="coin part" data-num="2"><img src="assets/images/parts/app2-coin2.svg"/></div>
+                      </div>
                     </div>
 
                     <div className="build-wrap" data-num="2">
                       <div className="building part"><img src="assets/images/parts/app2-building.svg"/></div>
                       <div className="roof part">
-                  <div className="roof-color"><img src="assets/images/parts/app2-roof2.svg"/></div>
-                  <div className="roof-color top"><img src="assets/images/parts/app2-roof1.svg"/></div>
-                </div>
+                        <div className="roof-color"><img src="assets/images/parts/app2-roof2.svg"/></div>
+                        <div className="roof-color top"><img src="assets/images/parts/app2-roof1.svg"/></div>
+                      </div>
                       <img src="assets/images/parts/app2-slot.svg" className="slot"/>
                       <div className="coin-wrap part-wrap">
-                  <div className="coin part" data-num="1"><img src="assets/images/parts/app2-coin2.svg"/></div>
-                  <div className="coin part" data-num="2"><img src="assets/images/parts/app2-coin1.svg"/></div>
-                </div>
+                        <div className="coin part" data-num="1"><img src="assets/images/parts/app2-coin2.svg"/></div>
+                        <div className="coin part" data-num="2"><img src="assets/images/parts/app2-coin1.svg"/></div>
+                      </div>
                     </div>
 
                     <div className="build-wrap" data-num="3">
                       <div className="building part"><img src="assets/images/parts/app2-building.svg"/></div>
                       <div className="roof part">
-                  <div className="roof-color"><img src="assets/images/parts/app2-roof1.svg"/></div>
-                  <div className="roof-color top"><img src="assets/images/parts/app2-roof2.svg"/></div>
-                </div>
+                        <div className="roof-color"><img src="assets/images/parts/app2-roof1.svg"/></div>
+                        <div className="roof-color top"><img src="assets/images/parts/app2-roof2.svg"/></div>
+                      </div>
                       <img src="assets/images/parts/app2-slot.svg" className="slot"/>
                       <div className="coin-wrap part-wrap">
-                  <div className="coin part" data-num="1"><img src="assets/images/parts/app2-coin1.svg"/></div>
-                  <div className="coin part" data-num="2"><img src="assets/images/parts/app2-coin2.svg"/></div>
-                </div>
+                        <div className="coin part" data-num="1"><img src="assets/images/parts/app2-coin1.svg"/></div>
+                        <div className="coin part" data-num="2"><img src="assets/images/parts/app2-coin2.svg"/></div>
+                      </div>
                     </div>
 
                   </div>
@@ -975,77 +975,77 @@ View the
                       <div className="print part"><img src="assets/images/parts/app3-print.svg"/></div>
 
                       <div className="print-line" data-num="1">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54 24">
-                        <path id="app-path1" d="M.12476,1.67685A52.14724,52.14724,0,0,1,53.746,23.58424"
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54 24">
+                          <path id="app-path1" d="M.12476,1.67685A52.14724,52.14724,0,0,1,53.746,23.58424"
                           style={{
                             fill: 'none',
                             stroke: '#1de9b6',
                             strokeMiterlimit: 10,
                             strokeWidth: '1.25px'
                           }}/>
-                      </svg>
-                  <div className="dot" />
-                </div>
+                        </svg>
+                        <div className="dot" />
+                      </div>
                       <div className="print-line" data-num="2">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 37.6 8">
-                        <path id="app-path2" d="M.35051,7.2935A39.1712,39.1712,0,0,1,37.35907,3.67705"
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 37.6 8">
+                          <path id="app-path2" d="M.35051,7.2935A39.1712,39.1712,0,0,1,37.35907,3.67705"
                           style={{
                             fill: 'none',
                             stroke: '#1de9b6',
                             strokeMiterlimit: 10,
                             strokeWidth: '1.25px'
                           }}/>
-                      </svg>
-                  <div className="dot" />
-                </div>
+                        </svg>
+                        <div className="dot" />
+                      </div>
                       <div className="print-line" data-num="3">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 43">
-                        <path id="app-path3" d="M.625,43.09323V22.17561A38.85743,38.85743,0,0,1,7.32708.3509"
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 43">
+                          <path id="app-path3" d="M.625,43.09323V22.17561A38.85743,38.85743,0,0,1,7.32708.3509"
                           style={{
                             fill: 'none',
                             stroke: '#1de9b6',
                             strokeMiterlimit: 10,
                             strokeWidth: '1.25px'
                           }}/>
-                      </svg>
-                  <div className="dot" />
-                </div>
+                        </svg>
+                        <div className="dot" />
+                      </div>
                       <div className="print-line" data-num="4">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5 48">
-                        <path id="app-path4" d="M4.72147,48.12952A51.762,51.762,0,0,1,.625,27.89V0"
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5 48">
+                          <path id="app-path4" d="M4.72147,48.12952A51.762,51.762,0,0,1,.625,27.89V0"
                           style={{
                             fill: 'none',
                             stroke: '#1de9b6',
                             strokeMiterlimit: 10,
                             strokeWidth: '1.25px'
                           }}/>
-                      </svg>
-                  <div className="dot" />
-                </div>
+                        </svg>
+                        <div className="dot" />
+                      </div>
                       <div className="print-line" data-num="5">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 23 32.5">
-                        <path id="app-path5" d="M22.36567,0V20.91749a10.87033,10.87033,0,1,1-21.74067,0h0"
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 23 32.5">
+                          <path id="app-path5" d="M22.36567,0V20.91749a10.87033,10.87033,0,1,1-21.74067,0h0"
                           style={{
                             fill: 'none',
                             stroke: '#1de9b6',
                             strokeMiterlimit: 10,
                             strokeWidth: '1.25px'
                           }}/>
-                      </svg>
-                  <div className="dot" />
-                </div>
+                        </svg>
+                        <div className="dot" />
+                      </div>
                       <div className="print-line" data-num="6">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32.5 62.5">
-                        <path id="app-path6" d="M32.051,0V13.945A52.19366,52.19366,0,0,1,.24412,61.89471"
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32.5 62.5">
+                          <path id="app-path6" d="M32.051,0V13.945A52.19366,52.19366,0,0,1,.24412,61.89471"
                           style={{
                             fill: 'none',
                             stroke: '#1de9b6',
                             strokeMiterlimit: 10,
                             strokeWidth: '1.25px'
                           }}/>
-                      </svg>
-                  <div className="dot" />
-                </div>
+                        </svg>
+                        <div className="dot" />
+                      </div>
 
                     </div>
 
@@ -1151,10 +1151,10 @@ View the
 
                     <div className="print-wrap part-wrap">
                       <div className="print-scroll">
-                  <img src="assets/images/parts/token-print.svg" className="print-img"/>
-                  <div className="line" />
-                  <img src="assets/images/parts/token-print.svg" className="print-img"/>
-                </div>
+                        <img src="assets/images/parts/token-print.svg" className="print-img"/>
+                        <div className="line" />
+                        <img src="assets/images/parts/token-print.svg" className="print-img"/>
+                      </div>
                     </div>
 
                     <div className="type-wrap part-wrap">

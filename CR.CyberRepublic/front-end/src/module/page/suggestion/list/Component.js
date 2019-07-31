@@ -93,14 +93,15 @@ export default class extends StandardPage {
         </div>
         <SuggestionContainer className="p_SuggestionList">
           <MediaQuery maxWidth={LG_WIDTH}>
-            {this.state.showArchived === false ?
+            {this.state.showArchived === false ? (
               <Row>
                 <Col>
                   {addButtonNode}
                   {viewArchivedButtonNode}
                   {/* mySuggestionNode */}
                 </Col>
-              </Row> :
+              </Row>
+            ) :
               <Row/>
             }
             <Row>
@@ -114,7 +115,9 @@ export default class extends StandardPage {
                 {filterNode}
                 {listNode}
               </Col>
-            </Row> :
+            </Row>
+            {' '}
+:
             <Row/>
           </MediaQuery>
           <MediaQuery minWidth={LG_WIDTH + 1}>
@@ -208,7 +211,9 @@ export default class extends StandardPage {
     return (
       <div>
         <SuggestionContainer
-          className="title komu-a cr-title-with-icon">{this.props.header || I18N.get('suggestion.title').toUpperCase()}</SuggestionContainer>
+          className="title komu-a cr-title-with-icon">
+          {this.props.header || I18N.get('suggestion.title').toUpperCase()}
+        </SuggestionContainer>
 
         <HeaderDiagramContainer>
           <SuggestionContainer>
@@ -224,12 +229,17 @@ export default class extends StandardPage {
             <br/>
             <br/>
             {I18N.get('suggestion.intro.3')}
-            {localStorage.getItem('lang') === 'en' ?
+            {localStorage.getItem('lang') === 'en' ? (
               <a href="https://www.cyberrepublic.org/docs/#/guide/suggestions"
-                 target="_blank">https://www.cyberrepublic.org/docs/#/guide/suggestions</a> :
+                 target="_blank">
+https://www.cyberrepublic.org/docs/#/guide/suggestions
+              </a>
+            ) : (
               <a href="https://www.cyberrepublic.org/docs/#/zh/guide/suggestions"
-                 target="_blank">https://www.cyberrepublic.org/docs/#/zh/guide/suggestions</a>
-            }
+                 target="_blank">
+https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
+              </a>
+            )}
           </HeaderDesc>
         </SuggestionContainer>
       </div>
@@ -256,7 +266,8 @@ export default class extends StandardPage {
           </h2>
         </div>
         <MediaQuery maxWidth={LG_WIDTH}>
-          {I18N.get('suggestion.sort')}: &nbsp;
+          {I18N.get('suggestion.sort')}
+: &nbsp;
           <Select
             name="type"
             style={{width: 200}}
@@ -271,7 +282,8 @@ export default class extends StandardPage {
           </Select>
         </MediaQuery>
         <MediaQuery minWidth={LG_WIDTH + 1}>
-          {I18N.get('suggestion.sort')}: &nbsp;
+          {I18N.get('suggestion.sort')}
+: &nbsp;
           <Button.Group className="filter-group">
             {_.map(SORT_BY, value => (
               <Button
@@ -323,7 +335,10 @@ export default class extends StandardPage {
     return (
       <Row>
         <Col sm={24} md={3}>
-          <span>{I18N.get('suggestion.tag.show')}:</span>
+          <span>
+            {I18N.get('suggestion.tag.show')}
+:
+          </span>
         </Col>
         <Col sm={24} md={7}>
           <Checkbox defaultChecked={underConsideration} onChange={this.onUnderConsiderationChange}/>

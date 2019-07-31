@@ -6,13 +6,13 @@ import {
 import _ from 'lodash'
 import I18N from '@/I18N'
 import MediaQuery from 'react-responsive'
-import Flyout from './Flyout'
 import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC } from '@/config/constant'
 import { USER_ROLE, USER_LANGUAGE } from '@/constant'
 import Flag from 'react-flags'
 import Data from '@/config/data'
 import UserEditForm from '@/module/form/UserEditForm/Container'
 import Headroom from 'react-headroom'
+import Flyout from './Flyout'
 
 const { Header } = Layout
 
@@ -232,104 +232,104 @@ export default class extends BaseComponent {
 
     return (
       <Headroom>
-      <Header className="c_Header">
-        <Menu
+        <Header className="c_Header">
+          <Menu
           onClick={this.clickItem.bind(this)}
           className="c_Header_Menu pull-left"
           selectedKeys={this.getSelectedKeys()}
           mode="horizontal"
         >
-          <Menu.Item className="c_MenuItem logo" key="landing">
-            <MediaQuery minWidth={MIN_WIDTH_PC}>
-              <img src="/assets/images/logo.svg" alt="Cyber Republic" />
-            </MediaQuery>
-            <MediaQuery maxWidth={MAX_WIDTH_MOBILE}>
-              <img src="/assets/images/logo-mark.svg" alt="Cyber Republic"/>
-            </MediaQuery>
-            {/* <div className="alpha-tag dsk">ALPHA</div> */}
-          </Menu.Item>
-        </Menu>
+            <Menu.Item className="c_MenuItem logo" key="landing">
+              <MediaQuery minWidth={MIN_WIDTH_PC}>
+                <img src="/assets/images/logo.svg" alt="Cyber Republic" />
+              </MediaQuery>
+              <MediaQuery maxWidth={MAX_WIDTH_MOBILE}>
+                <img src="/assets/images/logo-mark.svg" alt="Cyber Republic"/>
+              </MediaQuery>
+              {/* <div className="alpha-tag dsk">ALPHA</div> */}
+            </Menu.Item>
+          </Menu>
 
-        <Menu className="c_Header_Menu c_Side_Menu pull-right">
-          <Menu.Item className="c_MenuItem help no-margin" key="help">
-            <MediaQuery minWidth={MIN_WIDTH_PC}>
-              <Dropdown overlay={helpDropdown} style={{marginTop: '24px'}}>
-                <a className="ant-dropdown-link">
-                  <Hamburger />
-                </a>
-              </Dropdown>
-            </MediaQuery>
-          </Menu.Item>
-          <Menu.Item className="c_MenuItem mobile" key="mobileMenu" onClick={this.props.toggleMobileMenu}>
-            <Icon type="menu-fold" style={{fontSize: '24px'}}/>
-          </Menu.Item>
-          <Menu.Item className="mobile-language-dropdown" style={{ marginTop: 13 }}>
-            <MediaQuery maxWidth={MAX_WIDTH_MOBILE}>
-              <div className="pull-right language-dropdown mobile">
-                {this.buildLanguageDropdown()}
-              </div>
-            </MediaQuery>
-          </Menu.Item>
-        </Menu>
+          <Menu className="c_Header_Menu c_Side_Menu pull-right">
+            <Menu.Item className="c_MenuItem help no-margin" key="help">
+              <MediaQuery minWidth={MIN_WIDTH_PC}>
+                <Dropdown overlay={helpDropdown} style={{marginTop: '24px'}}>
+                  <a className="ant-dropdown-link">
+                    <Hamburger />
+                  </a>
+                </Dropdown>
+              </MediaQuery>
+            </Menu.Item>
+            <Menu.Item className="c_MenuItem mobile" key="mobileMenu" onClick={this.props.toggleMobileMenu}>
+              <Icon type="menu-fold" style={{fontSize: '24px'}}/>
+            </Menu.Item>
+            <Menu.Item className="mobile-language-dropdown" style={{ marginTop: 13 }}>
+              <MediaQuery maxWidth={MAX_WIDTH_MOBILE}>
+                <div className="pull-right language-dropdown mobile">
+                  {this.buildLanguageDropdown()}
+                </div>
+              </MediaQuery>
+            </Menu.Item>
+          </Menu>
 
-        <MediaQuery minWidth={MIN_WIDTH_PC}>
-          <div className="pull-right language-dropdown">
-            {this.buildLanguageDropdown()}
-          </div>
-        </MediaQuery>
+          <MediaQuery minWidth={MIN_WIDTH_PC}>
+            <div className="pull-right language-dropdown">
+              {this.buildLanguageDropdown()}
+            </div>
+          </MediaQuery>
 
-        <Menu
+          <Menu
           onClick={this.clickItem.bind(this)}
           className="c_Header_Menu pull-right"
           selectedKeys={this.getSelectedKeys()}
           mode="horizontal"
         >
 
-          <Menu.Item className="c_MenuItem link" key="council">
-            {I18N.get('navigation.council')}
-          </Menu.Item>
+            <Menu.Item className="c_MenuItem link" key="council">
+              {I18N.get('navigation.council')}
+            </Menu.Item>
 
-          <Menu.Item className="c_MenuItem link" key="constitution/1">
-            {I18N.get('navigation.constitution')}
-          </Menu.Item>
+            <Menu.Item className="c_MenuItem link" key="constitution/1">
+              {I18N.get('navigation.constitution')}
+            </Menu.Item>
 
-          <Menu.Item className="c_MenuItem link" key="suggestion">
-            {I18N.get('navigation.suggestion')}
-          </Menu.Item>
+            <Menu.Item className="c_MenuItem link" key="suggestion">
+              {I18N.get('navigation.suggestion')}
+            </Menu.Item>
 
-          <Menu.Item className="c_MenuItem link" key="proposals">
-            {I18N.get('navigation.proposal')}
-          </Menu.Item>
+            <Menu.Item className="c_MenuItem link" key="proposals">
+              {I18N.get('navigation.proposal')}
+            </Menu.Item>
 
-          <Menu.Item className="c_MenuItem link" key="what-is-new">
-            {I18N.get('navigation.whatsNew')}
-          </Menu.Item>
+            <Menu.Item className="c_MenuItem link" key="what-is-new">
+              {I18N.get('navigation.whatsNew')}
+            </Menu.Item>
 
-          <Menu.Item className="c_MenuItem link" key="resources">
-            <Dropdown overlay={this.buildResourcesDropdown()} placement="bottomCenter">
-              <a className="ant-dropdown-link">
-                {I18N.get('navigation.resources.title')}
-                {/* <Hamburger /> */}
-              </a>
-            </Dropdown>
-          </Menu.Item>
+            <Menu.Item className="c_MenuItem link" key="resources">
+              <Dropdown overlay={this.buildResourcesDropdown()} placement="bottomCenter">
+                <a className="ant-dropdown-link">
+                  {I18N.get('navigation.resources.title')}
+                  {/* <Hamburger /> */}
+                </a>
+              </Dropdown>
+            </Menu.Item>
 
-          {this.props.isLogin
-            ? (
-              <Menu.Item className="c_MenuItem link" key="profile">
-                {I18N.get('navigation.profile')}
-              </Menu.Item>
-            ) : (
-              <Menu.Item className="c_MenuItem link" key="login">
-                {I18N.get('0201')}
-              </Menu.Item>
-            )
+            {this.props.isLogin
+              ? (
+                <Menu.Item className="c_MenuItem link" key="profile">
+                  {I18N.get('navigation.profile')}
+                </Menu.Item>
+              ) : (
+                <Menu.Item className="c_MenuItem link" key="login">
+                  {I18N.get('0201')}
+                </Menu.Item>
+              )
           }
-        </Menu>
-        <div className="clearfix" />
-        {this.renderProfileToast()}
-        {this.renderCompleteProfileModal()}
-      </Header>
+          </Menu>
+          <div className="clearfix" />
+          {this.renderProfileToast()}
+          {this.renderCompleteProfileModal()}
+        </Header>
       </Headroom>
     )
   }

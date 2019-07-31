@@ -22,7 +22,7 @@ export default class extends BaseComponent {
       'Cyber Republic is a global, ' +
       'citizen led decentralised community helping build on the new internet on the secure Elastos Smartweb'
 
-    const description = desc ? desc : slogan
+    const description = desc || slogan
 
     const meta = [
       {
@@ -31,7 +31,7 @@ export default class extends BaseComponent {
       },
       {
         property: 'og:title',
-        content: title ? title : 'Cyber Republic - Elastos'
+        content: title || 'Cyber Republic - Elastos'
       },
       {
         property: 'og:description',

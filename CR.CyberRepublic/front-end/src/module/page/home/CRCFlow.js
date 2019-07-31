@@ -33,19 +33,31 @@ export default class extends React.Component {
                 <StyledImg src={images.StripDarkImg} alt="StripDarkImg" style={{ position: 'absolute', left: -32, top: -10 }} />
                 <StyledImg src={images.SuggestionImg} alt="SuggestionImg" />
               </ImgContainer>
-              <Desc>{I18N.get('home.crc.flow.suggestion')} #1</Desc>
+              <Desc>
+                {I18N.get('home.crc.flow.suggestion')}
+                {' '}
+#1
+              </Desc>
               <Desc><StyledImg src={images.ArrowV} alt="ArrowV" /></Desc>
             </StyledCol>
             <StyledCol span={8}>
               <Desc><StyledImg src={images.ArrowV} alt="ArrowV" /></Desc>
               <StyledImg src={images.SuggestionImg} alt="SuggestionImg" />
-              <Desc>{I18N.get('home.crc.flow.suggestion')} #2</Desc>
+              <Desc>
+                {I18N.get('home.crc.flow.suggestion')}
+                {' '}
+#2
+              </Desc>
               <Desc><StyledImg src={images.ArrowV} alt="ArrowV" /></Desc>
             </StyledCol>
             <StyledCol span={8}>
               <Desc><StyledImg src={images.ArrowV} alt="ArrowV" /></Desc>
               <StyledImg src={images.SuggestionImg} alt="SuggestionImg" />
-              <Desc>{I18N.get('home.crc.flow.suggestion')} #3</Desc>
+              <Desc>
+                {I18N.get('home.crc.flow.suggestion')}
+                {' '}
+#3
+              </Desc>
               <Desc><StyledImg src={images.ArrowV} alt="ArrowV" /></Desc>
             </StyledCol>
           </StyledRow>
@@ -53,21 +65,33 @@ export default class extends React.Component {
             <StyledRow>
               <StyledCol span={8}>
                 <StyledImg src={images.SuggestionImg} alt="SuggestionImg" />
-                <Desc>{I18N.get('home.crc.flow.suggestion')} #1</Desc>
+                <Desc>
+                  {I18N.get('home.crc.flow.suggestion')}
+                  {' '}
+#1
+                </Desc>
               </StyledCol>
               <StyledCol span={8}>
                 <ImgContainer>
                   <StyledImg src={images.StripDarkImg} alt="StripDarkImg" style={{ position: 'absolute', right: -40, bottom: -10 }} />
                   <StyledImg src={images.SuggestionImg} alt="SuggestionImg" />
                 </ImgContainer>
-                <Desc>{I18N.get('home.crc.flow.suggestion')} #2</Desc>
+                <Desc>
+                  {I18N.get('home.crc.flow.suggestion')}
+                  {' '}
+#2
+                </Desc>
               </StyledCol>
               <StyledCol span={8}>
                 <ImgContainer>
                   <StyledImg src={images.CircleImg} alt="CircleImg" style={{ position: 'absolute', right: -22, top: -23 }} />
                   <StyledImg src={images.SuggestionImg} alt="SuggestionImg" />
                 </ImgContainer>
-                <Desc>{I18N.get('home.crc.flow.suggestion')} #3</Desc>
+                <Desc>
+                  {I18N.get('home.crc.flow.suggestion')}
+                  {' '}
+#3
+                </Desc>
               </StyledCol>
             </StyledRow>
           </SuggestionContainer>
@@ -94,7 +118,11 @@ export default class extends React.Component {
             <StyledCol span={7}>
               <CouncilArrow src={images.ArrowH} alt="ArrowH" />
               <ProposalImg src={images.CouncilImg} alt="CouncilImg" />
-              <Desc style={{ color: '#1DE9B6' }}>{I18N.get('home.crc.flow.council')} #1</Desc>
+              <Desc style={{ color: '#1DE9B6' }}>
+                {I18N.get('home.crc.flow.council')}
+                {' '}
+#1
+              </Desc>
             </StyledCol>
           </StyledRow>
           <VotingContainer>
@@ -102,27 +130,63 @@ export default class extends React.Component {
             <StyledRow gutter={8}>
               <StyledCol span={4}>
                 <CouncilImg src={images.CouncilImg} alt="CouncilImg" />
-                <Desc>{I18N.get('home.crc.flow.council')} <br /> #2</Desc>
+                <Desc>
+                  {I18N.get('home.crc.flow.council')}
+                  {' '}
+                  <br />
+                  {' '}
+#2
+                </Desc>
               </StyledCol>
               <StyledCol span={4}>
                 <CouncilImg src={images.CouncilImg} alt="CouncilImg" />
-                <Desc>{I18N.get('home.crc.flow.council')} <br /> #3</Desc>
+                <Desc>
+                  {I18N.get('home.crc.flow.council')}
+                  {' '}
+                  <br />
+                  {' '}
+#3
+                </Desc>
               </StyledCol>
               <StyledCol span={4}>
                 <CouncilImg src={images.CouncilImg} alt="CouncilImg" />
-                <Desc>{I18N.get('home.crc.flow.council')} <br /> #4</Desc>
+                <Desc>
+                  {I18N.get('home.crc.flow.council')}
+                  {' '}
+                  <br />
+                  {' '}
+#4
+                </Desc>
               </StyledCol>
               <StyledCol span={4}>
                 <CouncilImg src={images.CouncilImg} alt="CouncilImg" />
-                <Desc>{I18N.get('home.crc.flow.council')} <br /> #5</Desc>
+                <Desc>
+                  {I18N.get('home.crc.flow.council')}
+                  {' '}
+                  <br />
+                  {' '}
+#5
+                </Desc>
               </StyledCol>
               <StyledCol span={4}>
                 <CouncilImg src={images.CouncilImg} alt="CouncilImg" />
-                <Desc>{I18N.get('home.crc.flow.council')} <br /> #6</Desc>
+                <Desc>
+                  {I18N.get('home.crc.flow.council')}
+                  {' '}
+                  <br />
+                  {' '}
+#6
+                </Desc>
               </StyledCol>
               <StyledCol span={4}>
                 <CouncilImg src={images.CouncilImg} alt="CouncilImg" />
-                <Desc>{I18N.get('home.crc.flow.council')} <br /> #7</Desc>
+                <Desc>
+                  {I18N.get('home.crc.flow.council')}
+                  {' '}
+                  <br />
+                  {' '}
+#7
+                </Desc>
               </StyledCol>
             </StyledRow>
           </VotingContainer>
@@ -230,4 +294,3 @@ const VotingTitle = styled.div`
   color: white;
   margin-bottom: 10px;
 `
-

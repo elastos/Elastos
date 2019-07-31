@@ -56,75 +56,51 @@ class C extends BaseComponent {
 
     this.state = {
       loading: false,
-      activeKey: 'abstract'
+      activeKey: 'abstract',
+      errorKeys: {},
     }
   }
 
   handleSubmit = async e => {
-    e.preventDefault()
-    const { edit, form, updateCVote, onEdit, suggestionId } = this.props
+    const { onSubmit, form } = this.props
+    this.setState({ loading: true })
 
-    form.validateFields(async (err, values) => {
-      debugger
+    e.preventDefault()
+    form.validateFields((err, values) => {
       if (err) {
-        // mark error keys
-        this.setState({ errKeys: _.keys(err) })
+        this.setState({ loading: false, errorKeys: err, activeKey: Object.keys(err)[0] })
         return
       }
-      const {
-        title,
-        type,
-        abstract,
-        goal,
-        motivation,
-        relevance,
-        budget,
-        plan
-      } = values
-      const param = {
-        _id: edit,
-        title,
-        type,
-        abstract: formatValue(abstract),
-        goal: formatValue(goal),
-        motivation: formatValue(motivation),
-        relevance: formatValue(relevance),
-        budget: formatValue(budget),
-        plan: formatValue(plan),
-        published: true
-      }
-      // if (suggestionId) param.suggestionId = suggestionId
 
-      // this.ord_loading(true)
-      // try {
-      //   await updateCVote(param)
-      //   this.ord_loading(false)
-      //   await onEdit()
-      //   message.success(I18N.get('proposal.msg.proposalPublished'))
-      // } catch (error) {
-      //   message.error(error.message)
-      //   this.ord_loading(false)
-      // }
+      onSubmit({
+        title: values.title,
+        abstract: formatValue(values.abstract),
+        goal: formatValue(values.goal),
+        motivation: formatValue(values.motivation),
+        relevance: formatValue(values.relevance),
+        budget: formatValue(values.budget),
+        plan: formatValue(values.plan)
+      }).finally(() => this.setState({ loading: false }))
     })
   }
 
   getTitleInput() {
-    const { initialValues = {} } = this.props;
-    const { getFieldDecorator } = this.props.form;
+    const { initialValues = {} } = this.props
+    const { getFieldDecorator } = this.props.form
 
     return getFieldDecorator('title', {
       rules: [
         { required: true, message: I18N.get('suggestion.form.error.required') }
       ],
-      initialValue: initialValues['title']
+      initialValue: initialValues.title
     })(
       <Input size="large" type="text" />
-    );
+    )
   }
 
   getTextarea(id) {
-    const { initialValues = {} } = this.props;
-    const { getFieldDecorator } = this.props.form;
+    const { initialValues = {} } = this.props
+    const { getFieldDecorator } = this.props.form
     return getFieldDecorator(id, {
       rules: [
         {
@@ -135,18 +111,22 @@ class C extends BaseComponent {
         {
           max: 200,
           transform: editorTransform,
-          message: I18N.get(`proposal.form.error.limit200`)
+          message: I18N.get('proposal.form.error.limit200')
         }
       ],
       validateTrigger: 'onSubmit',
       initialValue: initialValues[id],
-    })(<DraftEditor contentType={CONTENT_TYPE.HTML} /*callback={callback}*/ />);
+    })(<DraftEditor contentType={CONTENT_TYPE.HTML} /* callback={callback} */ />)
   }
 
   renderTabText(id) {
-    const { getFieldError, isFieldTouched } = this.props.form;
-    const hasError = getFieldError(id);
-    return <TabText hasError={!!hasError}>{I18N.get(`suggestion.fields.${id}`)}*</TabText>;
+    const hasError = _.has(this.state.errorKeys, id)
+    return (
+      <TabText hasErr={hasError}>
+        {I18N.get(`suggestion.fields.${id}`)}
+*
+      </TabText>
+    )
   }
 
   ord_render() {
@@ -158,7 +138,9 @@ class C extends BaseComponent {
             labelCol={{span: 2}}
             wrapperCol={{span: 18}}
             colon={false}
-          >{this.getTitleInput()}</FormItem>
+          >
+            {this.getTitleInput()}
+          </FormItem>
 
           <Tabs
             animated={false}
@@ -226,9 +208,7 @@ class C extends BaseComponent {
   }
 
   onTabChange = activeKey => {
-    this.setState({ activeKey });
-    // const activeKeyNum = activeKeys.indexOf(activeKey)
-    // this.setState({ activeKeyNum })
+    this.setState({ activeKey })
   }
 }
 

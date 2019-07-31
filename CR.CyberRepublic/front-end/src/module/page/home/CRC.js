@@ -31,15 +31,32 @@ export default class extends React.Component {
                 </Timeline.Item>
                 <Timeline.Item>
                   <ItemTitle>{I18N.get('home.crc.list.2.date')}</ItemTitle>
-                  <ItemDesc>{I18N.get('home.crc.list.2.text')} - <a href="/constitution/1">{I18N.get('home.crc.list.2.link')}</a>.</ItemDesc>
+                  <ItemDesc>
+                    {I18N.get('home.crc.list.2.text')}
+                    {' '}
+-
+                    {' '}
+                    <a href="/constitution/1">{I18N.get('home.crc.list.2.link')}</a>
+.
+                  </ItemDesc>
                 </Timeline.Item>
                 <Timeline.Item>
                   <ItemTitle>{I18N.get('home.crc.list.3.date')}</ItemTitle>
-                  <ItemDesc>{I18N.get('home.crc.list.3.text')} <a href="https://www.cyberrepublic.org/docs/#/overview/crc" target="_blank">{I18N.get('home.crc.list.3.link')}</a>.</ItemDesc>
+                  <ItemDesc>
+                    {I18N.get('home.crc.list.3.text')}
+                    {' '}
+                    <a href="https://www.cyberrepublic.org/docs/#/overview/crc" target="_blank">{I18N.get('home.crc.list.3.link')}</a>
+.
+                  </ItemDesc>
                 </Timeline.Item>
                 <Timeline.Item>
                   <ItemTitle>{I18N.get('home.crc.list.4.date')}</ItemTitle>
-                  <ItemDesc>{I18N.get('home.crc.list.4.text')} <a href="/proposals">{I18N.get('home.crc.list.4.link')}</a>.</ItemDesc>
+                  <ItemDesc>
+                    {I18N.get('home.crc.list.4.text')}
+                    {' '}
+                    <a href="/proposals">{I18N.get('home.crc.list.4.link')}</a>
+.
+                  </ItemDesc>
                 </Timeline.Item>
               </Timeline>
             </CRCDesc>

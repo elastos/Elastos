@@ -30,12 +30,12 @@ export const Btn = styled(Button)`
   background-color: ${props => (props.type === 'default' && '#fff!important')
     || (props.type === 'danger' && '#BE1313!important')
     || (props.type === 'primary' && '#008D85!important')
-  };
+};
 
   border-color: ${props => (props.type === 'default' && props.colored && '#66bda3!important')
-  };
+};
 
 color: ${props => (props.type === 'default' && props.colored && '#66bda3!important')
     || (props.type === 'danger' && '#fff!important')
-  };
+};
 `

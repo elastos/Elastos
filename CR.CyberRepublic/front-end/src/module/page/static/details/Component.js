@@ -148,8 +148,8 @@ export default class extends EmptyPage {
     const eventName = this.props.task.name || ''
     const hostedBy = this.props.task.createdBy
       ? `${this.props.task.createdBy.profile.firstName} ${
-          this.props.task.createdBy.profile.lastName
-        }`
+        this.props.task.createdBy.profile.lastName
+      }`
       : 'unknown user'
     const hostedByID = this.props.task.createdBy
       ? this.props.task.createdBy._id
@@ -160,8 +160,8 @@ export default class extends EmptyPage {
     const eventLocation = this.props.task.location || 'TBD'
     const eventDate = this.props.task.eventDateRangeStart
       ? moment(this.props.task.eventDateRangeStart).format(
-          'MMMM Do YYYY. h:mm a'
-        )
+        'MMMM Do YYYY. h:mm a'
+      )
       : 'TBD'
     const eventType = this.props.task.type
       ? this.props.task.type[0] +

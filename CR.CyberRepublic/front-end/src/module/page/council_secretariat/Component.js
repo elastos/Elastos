@@ -68,7 +68,12 @@ export default class extends StandardPage {
               <div className="content">
                 <h3 className="name">{I18N.get('cs.kevin.name')}</h3>
                 <span className="self-intro">{I18N.get('cs.kevin.intro')}</span>
-                <Email>{I18N.get('cs.contact')}: {I18N.get('cs.kevin.email')}</Email>
+                <Email>
+                  {I18N.get('cs.contact')}
+:
+                  {' '}
+                  {I18N.get('cs.kevin.email')}
+                </Email>
               </div>
             </div>
           </Col>
@@ -81,7 +86,12 @@ export default class extends StandardPage {
               <div className="content">
                 <h3 className="name">{I18N.get('cs.yipeng.name')}</h3>
                 <span className="self-intro">{I18N.get('cs.yipeng.intro')}</span>
-                <Email>{I18N.get('cs.contact')}: {I18N.get('cs.yipeng.email')}</Email>
+                <Email>
+                  {I18N.get('cs.contact')}
+:
+                  {' '}
+                  {I18N.get('cs.yipeng.email')}
+                </Email>
               </div>
             </div>
           </Col>
@@ -94,7 +104,12 @@ export default class extends StandardPage {
               <div className="content">
                 <h3 className="name">{I18N.get('cs.feng.name')}</h3>
                 <span className="self-intro">{I18N.get('cs.feng.intro')}</span>
-                <Email>{I18N.get('cs.contact')}: {I18N.get('cs.feng.email')}</Email>
+                <Email>
+                  {I18N.get('cs.contact')}
+:
+                  {' '}
+                  {I18N.get('cs.feng.email')}
+                </Email>
               </div>
             </div>
           </Col>
