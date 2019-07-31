@@ -202,7 +202,7 @@
     <string name="transfertype13">Unknown Transaction </string>
     <string name="votetrade">Vote Transaction</string>
     <string name="last_voting_record">Last Voting Record</string>
-    <string name="right_to_vote_ticket">Voting Power</string>
+    <string name="right_to_vote_ticket">Voting Power：</string>
     <string name="vote_success">Success</string>
     <string name="ela_cancelle">ELA（Cancelled）</string>
     <string name="_72">You are able to retrieve your deposit for supernode election 72 hours after cancellation</string>
