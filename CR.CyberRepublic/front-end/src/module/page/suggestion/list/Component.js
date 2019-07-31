@@ -20,9 +20,11 @@ import suggestionZhImg from '@/assets/images/SuggestionToProposal.zh.png'
 import { breakPoint } from '@/constants/breakPoint'
 import { text, bg } from '@/constants/color'
 import { SUGGESTION_TAG_TYPE } from '@/constant'
+import DraftEditor from '@/module/common/DraftEditor'
 
 import {
   SUGGESTION_STATUS,
+  CONTENT_TYPE
 } from '@/constant'
 
 import MediaQuery from 'react-responsive'
@@ -189,9 +191,10 @@ export default class extends StandardPage {
       history.push('/login')
       return
     }
-    this.setState({
-      showForm: !showForm,
-    })
+    this.props.history.push('/suggestion/create')
+    // this.setState({
+    //   showForm: !showForm,
+    // })
   }
 
   toggleArchivedList = async () => {
@@ -424,7 +427,8 @@ https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
         {title}
         {tagsNode}
         <ShortDesc>
-          {data.shortDesc}
+          {/* {data.shortDesc} */}
+          <DraftEditor value={data.abstract} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
           {_.isArray(data.link) && (data.link.map((link) => {
             return <ItemLinkWrapper key={link}><a target="_blank" href={link}>{link}</a></ItemLinkWrapper>
           }))}

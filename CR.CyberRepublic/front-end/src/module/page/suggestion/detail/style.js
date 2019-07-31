@@ -2,7 +2,7 @@ import { breakPoint } from '@/constants/breakPoint'
 import { text, bg, primary, border } from '@/constants/color'
 import { gap } from '@/constants/variable'
 import styled from 'styled-components'
-import { Button } from 'antd'
+import { Button, Row } from 'antd'
 
 export const Container = styled.div`
   max-width: 1200px;
@@ -122,4 +122,19 @@ export const IconWrap = styled.div`
   display: inline-block;
   position: relative;
   top: 4px;
+`
+
+export const Item = styled(Row)`
+  margin-top: 10px;
+  font-size: 13px;
+  font-style: italic;
+`
+export const ItemTitle = styled.div`
+  font-weight: 400;
+  :after {
+    content: ':';
+  }
+`
+export const ItemText = styled.div`
+  font-weight: 200;
 `
