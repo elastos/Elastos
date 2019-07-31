@@ -34,7 +34,27 @@ const SuggestionCore = {
   },
   link: [String],
 
-  coverImg: String
+  coverImg: String,
+
+  // new fields
+  abstract: {
+    type: String
+  },
+  goal: {
+    type: String
+  },
+  motivation: {
+    type: String
+  },
+  relevance: {
+    type: String
+  },
+  budget: {
+    type: String
+  },
+  plan: {
+    type: String
+  },
 }
 
 const tag = {

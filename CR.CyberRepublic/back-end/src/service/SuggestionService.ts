@@ -3,13 +3,15 @@ import * as _ from 'lodash'
 import { constant } from '../constant'
 import { validate, mail, user as userUtil, permissions } from '../utility'
 
+const BASE_FIELDS = ['title', 'abstract', 'goal', 'motivation', 'relevance', 'budget', 'plan'];
 const emptyDoc = {
   title: '',
-  shortDesc: '',
-  desc: '',
-  benefits: '',
-  funding: '',
-  timeline: undefined,
+  abstract: '',
+  goal: '',
+  motivation: '',
+  relevance: '',
+  budget: '',
+  plan: '',
   link: [],
 }
 
@@ -25,47 +27,22 @@ export default class extends Base {
   }
 
   public async create(param: any): Promise<Document> {
-    // get param
-    const { title, shortDesc, desc, coverImg, benefits, funding, timeline, link, } = param
-    // validation
-    this.validateTitle(title)
-    this.validateDesc(desc)
-
-    const docCore: any = {
-      title,
-      shortDesc,
-      desc,
-      coverImg,
-      benefits,
-    }
-    if (_.isNumber(funding)) {
-      docCore.funding = funding
-    }
-    if (!_.isEmpty(timeline)) {
-      docCore.timeline = timeline
-    }
-    if (!_.isEmpty(link)) {
-      docCore.link = link
-    }
-
-    // build document object
     const doc = {
-      ...docCore,
+      ...param,
       createdBy: _.get(this.currentUser, '_id'),
 
       // this is a hack for now, we should really be using aggregate pipeline + projection
       // in the sort query
       descUpdatedAt: new Date(),
-      editHistory: [emptyDoc, docCore],
+      editHistory: [emptyDoc, param],
     }
     // save the document
     const result = await this.model.save(doc)
 
-    // parse rich text mention: @</span>username
-    const mentions = desc.match(/@\<\/span\>\w+/g)
-    if (mentions) {
-      this.sendMentionEmails(result, mentions)
-    }
+    // const mentions = desc.match(/@\<\/span\>\w+/g)
+    // if (mentions) {
+    //   this.sendMentionEmails(result, mentions)
+    // }
 
     return result
   }
@@ -124,8 +101,7 @@ export default class extends Base {
   }
 
   public async update(param: any): Promise<Document> {
-    // get param
-    const { id, title, shortDesc, desc, coverImg, benefits, funding, timeline, link } = param
+    const { id } = param
     const userId = _.get(this.currentUser, '_id')
     const currDoc = await this.model.getDBInstance().findById(id)
 
@@ -137,49 +113,10 @@ export default class extends Base {
       throw 'Only owner can edit suggestion'
     }
 
-    // validation
-    this.validateTitle(title)
-    this.validateDesc(desc)
+    const doc = _.pick(param, BASE_FIELDS);
+    await this.model.update({_id: id}, {$set: doc, $push: { editHistory: doc }})
 
-    // build document object
-    const doc: any = {
-      title,
-      shortDesc,
-      desc,
-      coverImg,
-      benefits,
-      funding,
-      timeline,
-      link,
-    }
-    if (_.isEmpty(link)) {
-      doc.link = []
-    }
-
-    // we set the descUpdatedAt if it changes
-    if (currDoc.desc !== doc.desc) {
-      doc.descUpdatedAt = new Date()
-    }
-
-    // update the document
-    if (!_.isEmpty(currDoc.editHistory)) {
-      await this.model.update({_id: id}, {$set: doc, $push: { editHistory: doc }})
-    } else {
-      const firstHistoryItem = {
-        title: currDoc.title,
-        shortDesc: currDoc.shortDesc,
-        desc: currDoc.desc,
-        coverImg: currDoc.coverImg,
-        benefits: currDoc.benefits,
-        funding: currDoc.funding,
-        timeline: currDoc.timeline,
-        link: currDoc.link,
-      }
-      // for old data
-      await this.model.update({_id: id}, {$set: { ...doc, editHistory: [emptyDoc, firstHistoryItem, doc] }})
-    }
-
-    return await this.show({ id })
+    return this.show({ id })
   }
 
   public async list(param: any): Promise<Object> {
