@@ -81,7 +81,7 @@ var (
 
 	// GenesisBlock represent the genesis block of the ID chain.
 	GenesisBlock = &types.Block{
-		Header:       genesisHeader,
+		Header:       &genesisHeader,
 		Transactions: []*types.Transaction{&elaAsset},
 	}
 )
