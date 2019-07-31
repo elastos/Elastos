@@ -256,11 +256,17 @@ func (b *BlockChain) checkTxsContext(block *Block) error {
 		block.Transactions[0], totalTxFee)
 	if err != nil {
 		buf := new(bytes.Buffer)
-		if err = block.Serialize(buf); err != nil {
-			return err
+		if block.Height < b.chainParams.CheckRewardHeight {
+			if err = block.Serialize(buf); err != nil {
+				return err
+			}
+		} else {
+			if e := block.Serialize(buf); e != nil {
+				return e
+			}
 		}
 		log.Errorf("checkCoinbaseTransactionContext failed,"+
-			" err:%s block:%s", err, BytesToHexString(buf.Bytes()))
+			"block:%s", BytesToHexString(buf.Bytes()))
 		log.Error("checkCoinbaseTransactionContext failed,round reward:",
 			DefaultLedger.Arbitrators.GetArbitersRoundReward())
 		log.Error("checkCoinbaseTransactionContext failed,final round change:",
