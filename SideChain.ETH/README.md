@@ -98,7 +98,7 @@ separate the two networks and will not make any accounts available between them.
 * send transaction: `./ela-cli wallet -t send --file ready_to_send.txn`
 
 ### How to withdraw ETH to ELA
-* use geth console: `geth console`
+* use node console: `node`
 * use contract code:
 
 ```
