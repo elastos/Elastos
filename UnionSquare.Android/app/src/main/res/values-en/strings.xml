@@ -224,7 +224,7 @@
     <string name="votingrules_1">When you participate in ELA supernode voting, the ELA in your wallet address are locked in a sense. Voting does not consume ELA other than a small voting transaction fee associated with each time you initiate a new voting transaction. Each vote can be cast to a maximum of 36 supernodes. If you cancel or change your votes, the actual result will take time to propagate.</string>
     <string name="votingrules_2">Up to 36 supernodes can be selected for each vote, and there is a certain delay in revocation or change of the vote。</string>
     <string name="inputkeystorepwd">Enter the Keystore password</string>
-    <string name="lastsynctime">Last Block Time:</string>
+    <string name="lastsynctime">Last Block Time：</string>
     <string name="Pending">Pending</string>
     <string name="confirmed">Confirmed</string>
     <string name="mustcontain">8–16 characters long and contains at least two letters, numbers, and special characters</string>

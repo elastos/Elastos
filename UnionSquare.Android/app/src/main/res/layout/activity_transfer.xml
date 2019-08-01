@@ -144,16 +144,19 @@
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp" />
 
-        <View
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1" />
+            android:layout_weight="1">
 
-        <TextView
-            android:id="@+id/tv_next"
-            style="@style/button_margin"
-            android:layout_marginBottom="26dp"
-            android:text="@string/next" />
+            <TextView
+                android:id="@+id/tv_next"
+                style="@style/button_margin"
+                android:layout_gravity="center"
+                android:text="@string/next" />
+        </LinearLayout>
+
+
     </LinearLayout>
 
 

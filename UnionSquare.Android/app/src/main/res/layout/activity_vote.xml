@@ -59,6 +59,7 @@
                 android:id="@+id/et_pwd"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginRight="15dp"
                 android:layout_weight="1"
                 android:background="@null"
                 android:clickable="true"
@@ -67,12 +68,10 @@
                 android:hint="@string/please_enter_ticket"
                 android:inputType="number"
                 android:padding="15dp"
-                android:layout_marginRight="15dp"
                 android:textSize="15sp" />
 
 
             <TextView
-                android:visibility="gone"
                 android:id="@+id/tv_max"
                 android:layout_width="40dp"
                 android:layout_height="20dp"
@@ -80,7 +79,8 @@
                 android:background="@drawable/sc_stroke"
                 android:gravity="center"
                 android:text="MAX"
-                android:textColor="@color/white" />
+                android:textColor="@color/white"
+                android:visibility="gone" />
 
         </LinearLayout>
 
@@ -109,7 +109,7 @@
         <TextView
             android:id="@+id/tv_sure"
             style="@style/button_margin"
-            android:layout_marginBottom="26dp"
+            android:layout_marginBottom="56dp"
             android:text="@string/sure" />
     </LinearLayout>
 

@@ -226,7 +226,7 @@
     <string name="votingrules_1">参与ELA超级节点投票，需锁仓ELA。投票不消耗ELA数量；</string>
     <string name="votingrules_2">每次投票最多可选择 36 个超级节点，撤销或更改再次投票生效有一定的延迟。</string>
     <string name="inputkeystorepwd">请输入Keystore密码</string>
-    <string name="lastsynctime">已同步区块时间:</string>
+    <string name="lastsynctime">已同步区块时间：</string>
     <string name="Pending">确认中</string>
     <string name="confirmed">已确认</string>
     <string name="mustcontain">长度8-16位，且至少包含字母、数字和特殊字符中的2种</string>
@@ -354,7 +354,7 @@
     <string name="max36dot">最多可选36个节点</string>
     <string name="nodelist">参选节点列表</string>
     <string name="about">关于ELAWallet</string>
-    <string name="currentversionname">当前版本号</string>
+    <string name="currentversionname">当前版本号&#160;</string>
     <string name="feedback">反馈邮件</string>
     <string name="showupdatalog">查看更新日志</string>
     <string name="tv_elaintroduce">ELA Wallet是安全、可信的SPV轻节点钱包，支持DPoS选举及亦来云全生态数字资产。</string>
@@ -369,7 +369,7 @@
     <string name="logkeepfail">日志生成失败</string>
     <string name="whetherexchange">检测到当前账户存在大量UTXO,是否零钱换整？</string>
     <string name="splashword">区 块 链 驱 动 的 智 能 万 维 网</string>
-    <string name="curentsdkversion">SPVSDK版本号</string>
+    <string name="curentsdkversion">SPVSDK版本号&#160;</string>
     <string name="invalidnode">失效节点</string>
     <string name="social">社区</string>
 
