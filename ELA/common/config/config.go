@@ -69,7 +69,6 @@ type Configuration struct {
 	CRCommitteeStartHeight      uint32            `json:"CRCommitteeStartHeight"`
 	ProfilePort                 uint32            `json:"ProfilePort"`
 	MaxBlockSize                uint32            `json"MaxBlockSize"`
-	CheckPointNoFlatFile        bool              `json:"CheckPointNoFlatFile"`
 	EnableHistory               bool              `json:"EnableHistory"`
 	HistoryStartHeight          uint32            `json:"HistoryStartHeight"`
 	EnableUtxoDB                bool              `json:"EnableUtxoDB"`
