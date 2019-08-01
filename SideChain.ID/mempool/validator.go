@@ -58,7 +58,7 @@ func (v *validator) checkTransactionPayload(txn *types.Transaction) error {
 	case *types.PayloadRechargeToSideChain:
 	case *types.PayloadTransferCrossChainAsset:
 	case *id.PayloadRegisterIdentification:
-	case *id.PayloadDID:
+	case *id.PayloadDIDInfo:
 	default:
 		return errors.New("[ID CheckTransactionPayload] [txValidator],invalidate transaction payload type.")
 	}

@@ -2,6 +2,8 @@ package types
 
 import (
 	"bytes"
+	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"io"
 
@@ -10,6 +12,7 @@ import (
 
 const DIDInfoVersion = 0x00
 
+// header of DID transaction payload
 type DIDHeaderInfo struct {
 	Specification string `json:"specification"`
 	Operation     string `json"operation"`
@@ -42,6 +45,7 @@ func (d *DIDHeaderInfo) Deserialize(r io.Reader, version byte) error {
 	return nil
 }
 
+// proof of DID transaction payload
 type DIDProofInfo struct {
 	Type               string `json:"type"`
 	VerificationMethod string `json:"verificationMethod"`
@@ -82,52 +86,81 @@ func (d *DIDProofInfo) Deserialize(r io.Reader, version byte) error {
 	return nil
 }
 
-type PayloadDID struct {
+// public keys of payload in DID transaction payload
+type DIDPublicKeyInfo struct {
+	ID              string `json:"id"`
+	Type            string `json:"type"`
+	Controller      string `json:"controller"`
+	PublicKeyBase58 string `json:"publicKeyBase58"`
+}
+
+// payload in DID transaction payload
+type DIDPayloadInfo struct {
+	ID             string             `json:"id"`
+	PublicKey      []DIDPublicKeyInfo `json:"publicKey"`
+	Authentication []interface{}      `json:"authentication"`
+	Authorization  []interface{}      `json:"authorization"`
+}
+
+// payload of DID transaction
+type PayloadDIDInfo struct {
 	Header  DIDHeaderInfo `json:"header"`
 	Payload string        `json:"payload"`
 	Proof   DIDProofInfo  `json:"proof"`
+
+	PayloadInfo *DIDPayloadInfo
 }
 
-func (p *PayloadDID) Data(version byte) []byte {
+func (p *PayloadDIDInfo) Data(version byte) []byte {
 	buf := new(bytes.Buffer)
 	p.Serialize(buf, DIDInfoVersion)
 	return buf.Bytes()
 }
 
-func (p *PayloadDID) Serialize(w io.Writer, version byte) error {
+func (p *PayloadDIDInfo) Serialize(w io.Writer, version byte) error {
 	if err := p.Header.Serialize(w, DIDInfoVersion); err != nil {
-		return errors.New("[PayloadDID], Header serialize failed," + err.Error())
+		return errors.New("[PayloadDIDInfo], Header serialize failed," + err.Error())
 	}
 
 	if err := common.WriteVarString(w, p.Payload); err != nil {
-		return errors.New("[PayloadDID], Payload serialize failed," + err.Error())
+		return errors.New("[PayloadDIDInfo], Payload serialize failed")
 	}
 
 	if err := p.Proof.Serialize(w, DIDInfoVersion); err != nil {
-		return errors.New("[PayloadDID], Proof serialize failed," + err.Error())
+		return errors.New("[PayloadDIDInfo], Proof serialize failed," + err.Error())
 	}
 
 	return nil
 }
 
-func (p *PayloadDID) Deserialize(r io.Reader, version byte) error {
-
+func (p *PayloadDIDInfo) Deserialize(r io.Reader, version byte) error {
 	if err := p.Header.Deserialize(r, version); err != nil {
-		return errors.New("[DIDInfo], Header deserialize failed.")
+		return errors.New("[DIDInfo], Header deserialize failed" + err.Error())
 	}
 
 	payload, err := common.ReadVarString(r)
 	if err != nil {
-		return errors.New("[DIDInfo], payload deserialize failed.")
+		return errors.New("[DIDInfo], payload deserialize failed")
 	}
 	p.Payload = payload
 
 	if err := p.Proof.Deserialize(r, version); err != nil {
-		return errors.New("[DIDInfo], Proof deserialize failed.")
+		return errors.New("[DIDInfo], Proof deserialize failed," + err.Error())
 	}
+
+	// get DIDPayloadInfo from payload data
+	pBytes, err := hex.DecodeString(p.Payload)
+	if err != nil {
+		return errors.New("[DIDInfo], payload decode failed")
+	}
+	payloadInfo := new(DIDPayloadInfo)
+	if err := json.Unmarshal(pBytes, payloadInfo); err != nil {
+		return errors.New("[DIDInfo], payload unmarshal failed")
+	}
+	p.PayloadInfo = payloadInfo
 	return nil
 }
 
-func (p *PayloadDID) GetData() []byte {
+func (p *PayloadDIDInfo) GetData() []byte {
 	return p.Data(DIDInfoVersion)
 }
