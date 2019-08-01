@@ -128,13 +128,13 @@ func startNode(c *cli.Context) {
 	activeNetParams.CkpManager.SetDataPath(
 		filepath.Join(dataDir, checkpointPath))
 
-	var act account.Account
+	var dposAccount account.Account
 	if cfg.DPoSConfiguration.EnableArbiter {
 		password, err := cmdcom.GetFlagPassword(c)
 		if err != nil {
 			printErrorAndExit(err)
 		}
-		act, err = account.Open(password)
+		dposAccount, err = account.Open(password)
 		if err != nil {
 			printErrorAndExit(err)
 		}
@@ -213,12 +213,12 @@ func startNode(c *cli.Context) {
 	blockMemPool.Chain = chain
 
 	routesCfg := &routes.Config{TimeSource: chain.TimeSource}
-	if act != nil {
-		routesCfg.PID = act.PublicKeyBytes()
+	if dposAccount != nil {
+		routesCfg.PID = dposAccount.PublicKeyBytes()
 		routesCfg.Addr = fmt.Sprintf("%s:%d",
 			cfg.DPoSConfiguration.IPAddress,
 			cfg.DPoSConfiguration.DPoSPort)
-		routesCfg.Sign = act.Sign
+		routesCfg.Sign = dposAccount.Sign
 	}
 
 	route := routes.New(routesCfg)
@@ -238,9 +238,9 @@ func startNode(c *cli.Context) {
 	blockMemPool.IsCurrent = server.IsCurrent
 
 	var arbitrator *dpos.Arbitrator
-	if act != nil {
+	if dposAccount != nil {
 		dlog.Init(uint8(cfg.PrintLevel), cfg.MaxPerLogSize, cfg.MaxLogsSize)
-		arbitrator, err = dpos.NewArbitrator(act, dpos.Config{
+		arbitrator, err = dpos.NewArbitrator(dposAccount, dpos.Config{
 			EnableEventLog:    true,
 			EnableEventRecord: false,
 			Localhost:         cfg.DPoSConfiguration.IPAddress,
@@ -264,8 +264,9 @@ func startNode(c *cli.Context) {
 		defer arbitrator.Stop()
 	}
 
-	wal := wallet.New(flagDataDir)
+	wal := wallet.New("./")
 	wallet.Store = chainStore
+	wallet.ChainParam = activeNetParams
 
 	activeNetParams.CkpManager.Register(wal)
 

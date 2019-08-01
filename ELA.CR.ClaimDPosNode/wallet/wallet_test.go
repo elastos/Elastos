@@ -6,15 +6,11 @@
 package wallet
 
 import (
-	"bytes"
-	"encoding/binary"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
-	"github.com/elastos/Elastos.ELA/utils"
 	"github.com/elastos/Elastos.ELA/utils/test"
 
 	"github.com/stretchr/testify/assert"
@@ -31,27 +27,15 @@ const (
 
 var wallet *Wallet
 
-func TestInitWallet(t *testing.T) {
-	log.NewDefault(test.NodeLogPath, 0, 0, 0)
-
-	if !utils.FileExisted(filepath.Join(test.DataDir, "wallet.dat")) {
-		os.Mkdir(test.DataDir, 0700)
-	}
-}
-
 func TestWallet_New(t *testing.T) {
+	log.NewDefault(test.NodeLogPath, 0, 0, 0)
+	ChainParam = &config.DefaultParams
+
 	wallet = New(test.DataDir)
 
 	version, err := wallet.LoadStoredData("Version")
 	assert.NoError(t, err)
-	assert.Equal(t, WalletVersion, string(version))
-
-	tmp, err := wallet.LoadStoredData("Height")
-	assert.NoError(t, err)
-	bytesBuffer := bytes.NewBuffer(tmp)
-	var height int32
-	binary.Read(bytesBuffer, binary.LittleEndian, &height)
-	assert.Equal(t, int32(0), height)
+	assert.Equal(t, "1.0.0", string(version))
 }
 
 func TestWallet_ImportAddress(t *testing.T) {
@@ -66,7 +50,7 @@ func TestWallet_ImportAddress(t *testing.T) {
 	assert.Equal(t, address1, addressInfo.address)
 	assert.Equal(t, "", string(addressInfo.code))
 
-	err = wallet.DeleteAddressData(address1)
+	err = wallet.DeleteAccountData(address1)
 	assert.NoError(t, err)
 }
 
@@ -88,6 +72,6 @@ func TestWallet_ImportPubkey(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, code2Bytes, addressInfo.code)
 
-	err = wallet.DeleteAddressData(address2)
+	err = wallet.DeleteAccountData(address2)
 	assert.NoError(t, err)
 }

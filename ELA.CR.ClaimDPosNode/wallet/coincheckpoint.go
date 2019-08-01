@@ -84,7 +84,7 @@ func (ccp *CoinsCheckPoint) Deserialize(r io.Reader) error {
 }
 
 func (ccp *CoinsCheckPoint) Key() string {
-	return key
+	return utxoCheckPointKey
 }
 
 func (ccp *CoinsCheckPoint) Snapshot() checkpoint.ICheckPoint {

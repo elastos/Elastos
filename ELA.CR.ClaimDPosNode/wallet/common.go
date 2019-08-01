@@ -9,19 +9,12 @@ import (
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-)
-
-const (
-	key             = "utxo"
-	dataExtension   = ".ucp"
-	savePeriod      = uint32(720)
-	effectivePeriod = uint32(720)
-
-	WalletVersion = "0.0.1"
+	"github.com/elastos/Elastos.ELA/common/config"
 )
 
 var (
-	Store blockchain.IChainStore
+	Store      blockchain.IChainStore
+	ChainParam *config.Params
 
 	addressBook = make(map[string]*AddressInfo, 0)
 	abMutex     sync.RWMutex

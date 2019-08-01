@@ -7,16 +7,32 @@ package wallet
 
 import (
 	"errors"
+	"os"
 	"path/filepath"
 
 	"github.com/elastos/Elastos.ELA/account"
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/core/checkpoint"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/utils"
+)
+
+const (
+	// utxoCheckPointKey defines key of utxo checkpoint.
+	utxoCheckPointKey = "utxo"
+
+	// dataExtension defines checkpoint file extension of utxo checkpoint.
+	dataExtension = ".ucp"
+
+	// savePeriod defines interval height between two neighbor check
+	// points.
+	savePeriod = uint32(720)
+
+	effectivePeriod = uint32(720)
 )
 
 type AddressInfo struct {
@@ -26,21 +42,21 @@ type AddressInfo struct {
 
 type Wallet struct {
 	*CoinsCheckPoint
-	FileStore
+	*account.Client
 }
 
 func (w *Wallet) LoadAddresses() error {
-	storeAddresses, err := w.LoadAddressData()
+	storeAccounts, err := w.LoadAccountData()
 	if err != nil {
 		return err
 	}
-	for _, addressData := range storeAddresses {
-		code, err := common.HexStringToBytes(addressData.Code)
+	for _, account := range storeAccounts {
+		code, err := common.HexStringToBytes(account.RedeemScript)
 		if err != nil {
 			return err
 		}
 		SetWalletAccount(&AddressInfo{
-			address: addressData.Address,
+			address: account.Address,
 			code:    code,
 		})
 	}
@@ -61,14 +77,15 @@ func (w *Wallet) ImportPubkey(pubKey []byte, enableUtxoDB bool) error {
 	if err != nil {
 		return err
 	}
-
-	if err := w.SaveAddressData(address, sc.Code); err != nil {
+	if err := w.SaveAccountData(sc.ToProgramHash(), sc.Code, nil); err != nil {
 		return err
 	}
-
 	SetWalletAccount(&AddressInfo{
 		address: address,
 		code:    sc.Code,
+	})
+	ChainParam.CkpManager.Reset(func(point checkpoint.ICheckPoint) bool {
+		return point.Key() == utxoCheckPointKey
 	})
 
 	if enableUtxoDB {
@@ -79,18 +96,19 @@ func (w *Wallet) ImportPubkey(pubKey []byte, enableUtxoDB bool) error {
 }
 
 func (w *Wallet) ImportAddress(address string, enableUtxoDB bool) error {
-	_, err := common.Uint168FromAddress(address)
+	programHash, err := common.Uint168FromAddress(address)
 	if err != nil {
 		return errors.New("invalid address")
 	}
-
-	if err := w.SaveAddressData(address, nil); err != nil {
+	if err := w.SaveAccountData(programHash, nil, nil); err != nil {
 		return err
 	}
-
 	SetWalletAccount(&AddressInfo{
 		address: address,
 		code:    nil,
+	})
+	ChainParam.CkpManager.Reset(func(point checkpoint.ICheckPoint) bool {
+		return point.Key() == utxoCheckPointKey
 	})
 
 	if enableUtxoDB {
@@ -150,24 +168,34 @@ func (w *Wallet) RescanWallet() error {
 }
 
 func New(dataDir string) *Wallet {
-	walletPath := filepath.Join(dataDir, "wallet.dat")
+	path := filepath.Join(dataDir, account.KeystoreFileName)
 	wallet := Wallet{
-		FileStore:       FileStore{path: walletPath},
 		CoinsCheckPoint: NewCoinCheckPoint(),
 	}
 
-	exist := utils.FileExisted(walletPath)
+	exist := utils.FileExisted(path)
 	if !exist {
-		if err := wallet.BuildDatabase(walletPath); err != nil {
-			log.Warn("Build wallet failed, " + err.Error())
+		pwd, err := utils.GetConfirmedPassword()
+		if err != nil {
+			log.Warn("Get password failed, use an empty password. " + err.Error())
 		}
-		if err := wallet.SaveStoredData("Version", []byte(WalletVersion)); err != nil {
-			log.Warn("Save version field failed, " + err.Error())
+		client, err := account.Create(path, pwd)
+		if err != nil {
+			log.Warn("Create wallet failed, " + err.Error())
+			os.Exit(1)
 		}
-		if err := wallet.SaveStoredData("Height", []byte("0")); err != nil {
-			log.Warn("Save height field failed, " + err.Error())
-		}
+		wallet.Client = client
 	} else {
+		pwd, err := utils.GetPassword()
+		if err != nil {
+			log.Warn("Get password failed, use an empty password. " + err.Error())
+		}
+		client, err := account.Open(path, pwd)
+		if err != nil {
+			log.Warn("Open wallet failed, " + err.Error())
+			os.Exit(1)
+		}
+		wallet.Client = client
 		if err := wallet.LoadAddresses(); err != nil {
 			log.Warn("Build wallet failed" + err.Error())
 		}
