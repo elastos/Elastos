@@ -1439,7 +1439,7 @@ const en = {
   // Council & Secretariat
   cs: {
     incumbent: 'INCUMBENT',
-    council: 'COUNCIL',
+    council: 'CYBER REPUBLIC INTERIM COUNCIL',
     secretariat: {
       title: 'SECRETARIAT',
       general: 'SECRETARIAT GENERAL',

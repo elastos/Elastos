@@ -1438,7 +1438,7 @@ const zh = {
   // Council & Secretariat
   cs: {
     incumbent: '现任委员',
-    council: '委员会',
+    council: 'CYBER REPUBLIC 筹委会',
     secretariat: {
       title: '秘书处',
       general: '秘书长',
