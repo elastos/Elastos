@@ -40,8 +40,9 @@ namespace Elastos {
 			subWalletDBPath /= _info->GetChainID() + DB_FILE_EXTENSION;
 
 			_subAccount = SubAccountPtr(new SubAccount(_parent->_account, _config->Index()));
+			std::string walletID = _parent->GetID() + ":" + _info->GetChainID();
 			_walletManager = WalletManagerPtr(
-					new SpvService(_subAccount, subWalletDBPath,
+					new SpvService(walletID, _subAccount, subWalletDBPath,
 								   _info->GetEarliestPeerTime(), _config->DisconnectionTime(),
 								   _config->PluginType(), config->ChainParameters()));
 
@@ -49,7 +50,6 @@ namespace Elastos {
 			_walletManager->RegisterPeerManagerListener(this);
 
 			WalletPtr wallet = _walletManager->getWallet();
-			wallet->SetWalletID(_parent->GetID() + ":" + _info->GetChainID());
 
 			if (_info->GetFeePerKB() < _config->MinFee())
 				_info->SetFeePerKB(_config->MinFee());
@@ -532,7 +532,7 @@ namespace Elastos {
 
 		void SubWallet::onTxAdded(const TransactionPtr &tx) {
 			const uint256 &txHash = tx->GetHash();
-			ArgInfo("{} {} Hash: {}", _walletManager->getWallet()->GetWalletID(), GetFunName(), txHash.GetHex());
+			ArgInfo("{} {} Hash: {}, h: {}", _walletManager->getWallet()->GetWalletID(), GetFunName(), txHash.GetHex(), tx->GetBlockHeight());
 
 			fireTransactionStatusChanged(txHash, "Added", nlohmann::json(), 0);
 		}
@@ -697,6 +697,10 @@ namespace Elastos {
 
 		void SubWallet::StopP2P() {
 			_walletManager->Stop();
+		}
+
+		void SubWallet::FlushData() {
+			_walletManager->DatabaseFlush();
 		}
 
 		std::string SubWallet::GetPublicKey() const {

@@ -52,6 +52,7 @@ namespace Elastos {
 			size_t GetAllPeersCount(const std::string &iso) const;
 			std::vector<PeerEntity> GetAllPeers(const std::string &iso) const;
 
+			void flush();
 		private:
 			bool PutPeerInternal(const std::string &iso, const PeerEntity &peerEntity);
 

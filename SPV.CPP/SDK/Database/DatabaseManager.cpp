@@ -162,5 +162,13 @@ namespace Elastos {
 			return _assetDataStore.GetAllAssets();
 		}
 
+		void DatabaseManager::flush() {
+			_transactionDataStore.flush();
+			_coinbaseDataStore.flush();
+			_merkleBlockDataSource.flush();
+			_peerDataSource.flush();
+			_assetDataStore.flush();
+		}
+
 	}
 }

@@ -28,12 +28,13 @@ namespace Elastos {
 				public CoreSpvService {
 		public:
 
-			SpvService(const SubAccountPtr &subAccount,
-						  const boost::filesystem::path &dbPath,
-						  time_t earliestPeerTime,
-						  uint32_t reconnectSeconds,
-						  const PluginType &pluginTypes,
-						  const ChainParamsPtr &chainParams);
+			SpvService(const std::string &walletID,
+					   const SubAccountPtr &subAccount,
+					   const boost::filesystem::path &dbPath,
+					   time_t earliestPeerTime,
+					   uint32_t reconnectSeconds,
+					   const PluginType &pluginTypes,
+					   const ChainParamsPtr &chainParams);
 
 			virtual ~SpvService();
 
@@ -52,6 +53,8 @@ namespace Elastos {
 			void RegisterPeerManagerListener(PeerManager::Listener *listener);
 
 			void PublishTransaction(const TransactionPtr &tx);
+
+			void DatabaseFlush();
 
 			virtual const WalletPtr &getWallet();
 

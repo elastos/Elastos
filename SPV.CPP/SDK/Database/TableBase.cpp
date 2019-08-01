@@ -31,7 +31,7 @@ namespace Elastos {
 				fun();
 			} catch (const std::exception &e) {
 				result = false;
-				Log::error("Data base error: ", e.what());
+				Log::error("Data base error: {}", e.what());
 			} catch (...) {
 				result = false;
 				Log::error("Unknown data base error.");

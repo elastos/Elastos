@@ -211,8 +211,6 @@ namespace Elastos {
 
 			void FireThreadCleanup();
 
-			void FireBlockHeightIncreased(uint32_t height);
-
 			void FireSyncIsInactive(uint32_t time);
 
 			int VerifyDifficulty(const ChainParamsPtr &params, const MerkleBlockPtr &block,

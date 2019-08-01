@@ -30,6 +30,7 @@ namespace Elastos {
 			bool DeleteAllBlocks(const std::string &iso);
 			std::vector<MerkleBlockPtr> GetAllMerkleBlocks(const std::string &iso, const std::string &pluginType) const;
 
+			void flush();
 		private:
 			bool PutMerkleBlockInternal(const std::string &iso, const MerkleBlockPtr &blockPtr);
 

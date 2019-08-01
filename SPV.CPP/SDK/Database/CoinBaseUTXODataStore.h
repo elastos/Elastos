@@ -39,6 +39,7 @@ namespace Elastos {
 
 			bool Delete(const uint256 &hash);
 
+			void flush();
 		private:
 			bool PutInternal(const UTXOPtr &entity);
 

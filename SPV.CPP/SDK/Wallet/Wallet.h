@@ -78,6 +78,7 @@ namespace Elastos {
 		public:
 
 			Wallet(uint32_t lastBlockHeight,
+				   const std::string &walletID,
 				   const std::vector<AssetPtr> &assetArray,
 				   const std::vector<TransactionPtr> &txns,
 				   const std::vector<UTXOPtr> &utxos,
@@ -89,8 +90,6 @@ namespace Elastos {
 			void InitListeningAddresses(const std::vector<std::string> &addrs);
 
 			const std::string &GetWalletID() const;
-
-			void SetWalletID(const std::string &walletID);
 
 			void SetBlockHeight(uint32_t height);
 

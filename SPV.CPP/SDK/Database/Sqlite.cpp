@@ -112,6 +112,12 @@ namespace Elastos {
 			return IsValid() && SQLITE_OK == sqlite3_bind_text(pStmt, idx, text.c_str(), text.length(), callBack);
 		}
 
+		void Sqlite::flush() {
+			if (SQLITE_OK != sqlite3_db_cacheflush(_dataBasePtr)) {
+				Log::error("sqlite flush to disk error");
+			}
+		}
+
 		bytes_ptr Sqlite::ColumnBlobBytes(sqlite3_stmt *pStmt, int iCol) {
 			uint8_t *data = (uint8_t *)ColumnBlob(pStmt, iCol);
 			size_t len = (size_t) ColumnBytes(pStmt, iCol);

@@ -46,6 +46,7 @@ namespace Elastos {
 
 			std::vector<AssetEntity> GetAllAssets() const;
 
+			void flush();
 		private:
 			bool SelectAsset(const std::string &assetID, AssetEntity &asset) const;
 

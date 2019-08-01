@@ -186,6 +186,10 @@ namespace Elastos {
 			});
 		}
 
+		void CoinBaseUTXODataStore::flush() {
+			_sqlite->flush();
+		}
+
 		bool CoinBaseUTXODataStore::PutInternal(const UTXOPtr &entity) {
 			std::string sql;
 

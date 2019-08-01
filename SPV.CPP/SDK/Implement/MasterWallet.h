@@ -51,6 +51,8 @@ namespace Elastos {
 
 			bool IsEqual(const MasterWallet &wallet) const;
 
+			void FlushData();
+
 		public: //override from IMasterWallet
 
 			static std::string GenerateMnemonic(const std::string &language, const std::string &rootPath,

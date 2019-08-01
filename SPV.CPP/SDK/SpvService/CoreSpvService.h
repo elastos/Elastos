@@ -29,7 +29,10 @@ namespace Elastos {
 
 			virtual ~CoreSpvService();
 
-			void init(const SubAccountPtr &subAccount, time_t earliestPeerTime, uint32_t reconnectSeconds);
+			void init(const std::string &walletID,
+					  const SubAccountPtr &subAccount,
+					  time_t earliestPeerTime,
+					  uint32_t reconnectSeconds);
 
 			virtual const WalletPtr &getWallet();
 

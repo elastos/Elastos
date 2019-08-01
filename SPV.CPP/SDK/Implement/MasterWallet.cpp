@@ -308,12 +308,14 @@ namespace Elastos {
 		void MasterWallet::CloseAllSubWallets() {
 			for (WalletMap::iterator it = _createdWallets.begin(); it != _createdWallets.end(); ) {
 				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
-				Log::info("{}:{} closing subwallet...", _id, subWallet->GetChainID());
+				std::string id = _id + ":" + subWallet->GetChainID();
+				Log::info("closing subWallet ({})...", id);
 				stopPeerManager(subWallet);
 
 				it = _createdWallets.erase(it);
 
 				delete subWallet;
+				Log::info("closed subWalelt ({})", id);
 			}
 		}
 
@@ -499,7 +501,7 @@ namespace Elastos {
 				Log::error("Should not be here");
 				info->SetEaliestPeerTime(config->ChainParameters()->FirstCheckpoint().Timestamp());
 			}
-			Log::info("Ealiest peer time: {}", info->GetEarliestPeerTime());
+			Log::info("{}:{} Ealiest peer time: {}", _id, info->GetChainID(), info->GetEarliestPeerTime());
 
 			if (info->GetChainID() == "ELA") {
 				return new MainchainSubWallet(info, config, parent);
@@ -645,6 +647,13 @@ namespace Elastos {
 
 		bool MasterWallet::IsEqual(const MasterWallet &wallet) const {
 			return _account->Equal(*wallet._account);
+		}
+
+		void MasterWallet::FlushData() {
+			for (WalletMap::const_iterator it = _createdWallets.cbegin(); it != _createdWallets.cend(); ++it) {
+				SubWallet *subWallet = dynamic_cast<SubWallet*>(it->second);
+				subWallet->FlushData();
+			}
 		}
 
 	}

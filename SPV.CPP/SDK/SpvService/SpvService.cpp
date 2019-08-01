@@ -27,15 +27,19 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		SpvService::SpvService(const SubAccountPtr &subAccount, const boost::filesystem::path &dbPath,
-							   time_t earliestPeerTime, uint32_t reconnectSeconds,
-							   const PluginType &pluginTypes, const ChainParamsPtr &chainParams) :
+		SpvService::SpvService(const std::string &walletID,
+							   const SubAccountPtr &subAccount,
+							   const boost::filesystem::path &dbPath,
+							   time_t earliestPeerTime,
+							   uint32_t reconnectSeconds,
+							   const PluginType &pluginTypes,
+							   const ChainParamsPtr &chainParams) :
 				CoreSpvService(pluginTypes, chainParams),
 				_executor(BACKGROUND_THREAD_COUNT),
 				_reconnectExecutor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(dbPath),
 				_reconnectTimer(nullptr) {
-			init(subAccount, earliestPeerTime, reconnectSeconds);
+			init(walletID, subAccount, earliestPeerTime, reconnectSeconds);
 		}
 
 		SpvService::~SpvService() {
@@ -106,6 +110,10 @@ namespace Elastos {
 			getPeerManager()->PublishTransaction(tx);
 		}
 
+		void SpvService::DatabaseFlush() {
+			_databaseManager.flush();
+		}
+
 		const WalletPtr &SpvService::getWallet() {
 			return CoreSpvService::getWallet();
 		}
@@ -171,7 +179,6 @@ namespace Elastos {
 		}
 
 		void SpvService::onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp) {
-
 			_databaseManager.UpdateTransaction(hashes, blockHeight, timestamp);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),

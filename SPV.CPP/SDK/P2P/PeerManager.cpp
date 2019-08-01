@@ -843,16 +843,6 @@ namespace Elastos {
 			PeerPtr peer = peerPtr;
 
 			lock.lock();
-			{
-				std::vector<uint256> recoverHashes;
-				for (size_t i = _publishedTx.size(); i > 0; i--) {
-					if (!_publishedTx[i - 1].HasCallback()) {
-						peer->info("recover tx {} to known tx list of peer", _publishedTxHashes[i - 1].GetHex());
-						recoverHashes.push_back(_publishedTxHashes[i - 1]);
-					}
-				}
-				peer->AddKnownTxHashes(recoverHashes);
-			}
 
 			if (peer->GetTimestamp() > now + 2 * 60 * 60 || peer->GetTimestamp() < now - 2 * 60 * 60)
 				peer->SetTimestamp(now); // sanity check
@@ -1249,6 +1239,7 @@ namespace Elastos {
 							_publishedTx[i - 1].ResetCallback();
 							_publishedTx.erase(_publishedTx.begin() + (i - 1));
 							_publishedTxHashes.erase(_publishedTxHashes.begin() + (i - 1));
+							break;
 						}
 					}
 				}
@@ -1587,14 +1578,17 @@ namespace Elastos {
 		}
 
 		void PeerManager::PublishPendingTx(const PeerPtr &peer) {
+			std::vector<uint256> pendingHashes;
 			for (size_t i = _publishedTx.size(); i > 0; i--) {
-				if (!_publishedTx[i - 1].HasCallback()) continue;
+				if (!_publishedTx[i - 1].HasCallback() ||
+					_publishedTx[i - 1].GetTransaction()->GetBlockHeight() != TX_UNCONFIRMED)
+					continue;
 				peer->ScheduleDisconnect(PROTOCOL_TIMEOUT);  // schedule publish timeout
-				break;
+				pendingHashes.push_back(_publishedTx[i - 1].GetTransaction()->GetHash());
 			}
 
 			InventoryParameter inventoryParameter;
-			inventoryParameter.txHashes = _publishedTxHashes;
+			inventoryParameter.txHashes = pendingHashes;
 			peer->SendMessage(MSG_INV, inventoryParameter);
 		}
 
@@ -1968,7 +1962,6 @@ namespace Elastos {
 			std::vector<uint256> txHashes;
 
 			for (size_t i = 0; i < tx.size(); i++) {
-				PEER_DEBUG(peer, "tx[{}]: {}", i, tx[i]->ToJson().dump());
 				if (!PeerListHasPeer(_txRelays, tx[i]->GetHash(), peer) &&
 					!PeerListHasPeer(_txRequests, tx[i]->GetHash(), peer)) {
 					txHashes.push_back(tx[i]->GetHash());

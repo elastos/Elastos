@@ -48,11 +48,13 @@ namespace Elastos {
 		MasterWalletManager::~MasterWalletManager() {
 			for (MasterWalletMap::iterator it = _masterWalletMap.begin(); it != _masterWalletMap.end();) {
 				MasterWallet *masterWallet = static_cast<MasterWallet *>(it->second);
-				Log::info("{} closing master wallet...", masterWallet->GetID());
+				std::string id = masterWallet->GetID();
+				Log::info("closing master wallet (ID = {})...", id);
 				masterWallet->CloseAllSubWallets();
 				it = _masterWalletMap.erase(it);
 
 				delete masterWallet;
+				Log::info("closed master wallet (ID = {})", id);
 			}
 		}
 
@@ -452,6 +454,16 @@ namespace Elastos {
 			ArgInfo("{}", GetFunName());
 			ArgInfo("r => {}", SPVSDK_VERSION_MESSAGE);
 			return SPVSDK_VERSION_MESSAGE;
+		}
+
+		void MasterWalletManager::FlushData() {
+			std::for_each(_masterWalletMap.begin(), _masterWalletMap.end(),
+						  [](const MasterWalletMap::value_type &item) {
+							  if (item.second != nullptr) {
+								  MasterWallet *masterWallet = dynamic_cast<MasterWallet *>(item.second);
+								  masterWallet->FlushData();
+							  }
+						  });
 		}
 
 		void MasterWalletManager::initMasterWallets() {

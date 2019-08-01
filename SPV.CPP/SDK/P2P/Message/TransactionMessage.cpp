@@ -57,6 +57,8 @@ namespace Elastos {
 		void TransactionMessage::Send(const SendMessageParameter &param) {
 			const TransactionParameter &txParam = static_cast<const TransactionParameter &>(param);
 
+			PEER_DEBUG(_peer, "sending tx {}", txParam.tx->GetHash().GetHex());
+
 			ByteStream stream;
 			txParam.tx->Serialize(stream);
 			SendMessage(stream.GetBytes(), Type());

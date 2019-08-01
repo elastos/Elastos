@@ -52,10 +52,10 @@ namespace Elastos {
 
 				if (needRelayPing && !hasPendingTx) {
 					FireRelayedPingMsg();
-				} else if (hasPendingTx) {
-					MempoolParameter mempoolParameter;
-					mempoolParameter.CompletionCallback = boost::function<void(int)>();
-					_peer->SendMessage(MSG_MEMPOOL, mempoolParameter);
+//				} else if (hasPendingTx) {
+//					MempoolParameter mempoolParameter;
+//					mempoolParameter.CompletionCallback = boost::function<void(int)>();
+//					_peer->SendMessage(MSG_MEMPOOL, mempoolParameter);
 				}
 			}
 

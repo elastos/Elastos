@@ -31,8 +31,9 @@ namespace Elastos {
 			bool DeleteTxByHash(const uint256 &hash);
 			bool DeleteTxByHashes(const std::vector<uint256> &hashes);
 
+			void flush();
 		private:
-			bool SelectTxByHash(const std::string &iso, const std::string &hash, TransactionPtr &tx) const;
+			TransactionPtr SelectTxByHash(const std::string &hash) const;
 
 			void PutTransactionInternal(const std::string &iso, const TransactionPtr &tx);
 

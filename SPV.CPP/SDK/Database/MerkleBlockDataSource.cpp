@@ -125,6 +125,10 @@ namespace Elastos {
 			return merkleBlocks;
 		}
 
+		void MerkleBlockDataSource::flush() {
+			_sqlite->flush();
+		}
+
 	}
 }
 

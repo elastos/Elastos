@@ -68,6 +68,8 @@ namespace Elastos {
 
 			const boost::filesystem::path &GetPath() const;
 
+			void flush();
+
 		private:
 			boost::filesystem::path _path;
 			Sqlite                	_sqlite;

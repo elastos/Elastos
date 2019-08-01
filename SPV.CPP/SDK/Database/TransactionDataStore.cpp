@@ -31,7 +31,7 @@ namespace Elastos {
 		}
 
 		void TransactionDataStore::PutTransactionInternal(const std::string &iso, const TransactionPtr &tx) {
-			std::string sql;
+			std::string sql, txHash;
 
 			sql = "INSERT INTO " + TX_TABLE_NAME + "("
 				  + TX_COLUMN_ID + ","
@@ -49,7 +49,8 @@ namespace Elastos {
 			ByteStream stream;
 			tx->Serialize(stream, true);
 
-			_sqlite->BindText(stmt, 1, tx->GetHash().GetHex(), nullptr);
+			txHash = tx->GetHash().GetHex();
+			_sqlite->BindText(stmt, 1, txHash, nullptr);
 			_sqlite->BindBlob(stmt, 2, stream.GetBytes(), nullptr);
 			_sqlite->BindInt(stmt, 3, tx->GetBlockHeight());
 			_sqlite->BindInt64(stmt, 4, tx->GetTimestamp());
@@ -63,6 +64,14 @@ namespace Elastos {
 		}
 
 		bool TransactionDataStore::PutTransaction(const std::string &iso, const TransactionPtr &tx) {
+#ifdef SPDLOG_DEBUG_ON
+			std::string txHash = tx->GetHash().GetHex();
+			if (SelectTxByHash(txHash)) {
+				Log::error("should not put in existed tx {}", tx->GetHash().GetHex());
+				return false;
+			}
+#endif
+
 			return DoTransaction([&iso, &tx, this]() {
 				this->PutTransactionInternal(iso, tx);
 			});
@@ -133,13 +142,16 @@ namespace Elastos {
 				while (SQLITE_ROW == _sqlite->Step(stmt)) {
 					TransactionPtr tx(new Transaction());
 
-					std::string iso = _sqlite->ColumnText(stmt, 4);
 					uint256 txHash(_sqlite->ColumnText(stmt, 0));
 
 					const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
 					size_t len = (size_t) _sqlite->ColumnBytes(stmt, 1);
-
 					ByteStream stream(pdata, len);
+
+					uint32_t blockHeight = (uint32_t) _sqlite->ColumnInt(stmt, 2);
+					uint32_t timeStamp = (uint32_t) _sqlite->ColumnInt(stmt, 3);
+					std::string iso = _sqlite->ColumnText(stmt, 4);
+
 					if (iso == "ela") {
 						tx->Deserialize(stream);
 						assert(txHash == tx->GetHash());
@@ -147,9 +159,6 @@ namespace Elastos {
 						tx->Deserialize(stream, true);
 						tx->SetHash(txHash);
 					}
-
-					uint32_t blockHeight = (uint32_t) _sqlite->ColumnInt(stmt, 2);
-					uint32_t timeStamp = (uint32_t) _sqlite->ColumnInt(stmt, 3);
 
 					tx->SetBlockHeight(blockHeight);
 					tx->SetTimestamp(timeStamp);
@@ -174,15 +183,13 @@ namespace Elastos {
 						  + " WHERE " + TX_COLUMN_ID + " = '" + hashes[i].GetHex() + "';";
 
 					sqlite3_stmt *stmt;
-					ErrorChecker::CheckCondition(!_sqlite->Prepare(sql, &stmt, nullptr), Error::SqliteError,
-												 "Prepare sql " + sql);
+					ErrorChecker::CheckLogic(!_sqlite->Prepare(sql, &stmt, nullptr), Error::SqliteError,
+											 "Prepare sql " + sql);
 
-					_sqlite->BindInt(stmt, 1, blockHeight);
-					_sqlite->BindInt64(stmt, 2, timestamp);
+					ErrorChecker::CheckLogic(!_sqlite->BindInt(stmt, 1, blockHeight), Error::SqliteError, "bindint");
+					ErrorChecker::CheckLogic(!_sqlite->BindInt64(stmt, 2, timestamp), Error::SqliteError, "bindint64");
 
-					_sqlite->Step(stmt);
-
-					_sqlite->Finalize(stmt);
+					ErrorChecker::CheckLogic(!_sqlite->Finalize(stmt), Error::SqliteError, "finalize");
 				}
 			});
 		}
@@ -213,11 +220,14 @@ namespace Elastos {
 			});
 		}
 
-		bool TransactionDataStore::SelectTxByHash(const std::string &iso, const std::string &hash,
-												  TransactionPtr &tx) const {
-			bool found = false;
+		void TransactionDataStore::flush() {
+			_sqlite->flush();
+		}
 
-			DoTransaction([&iso, &hash, &tx, &found, this]() {
+		TransactionPtr TransactionDataStore::SelectTxByHash(const std::string &hash) const {
+			TransactionPtr tx = nullptr;
+
+			DoTransaction([&hash, &tx, this]() {
 				std::string sql;
 
 				sql = "SELECT " + TX_COLUMN_ID + "," + TX_BUFF + "," + TX_BLOCK_HEIGHT + "," + TX_TIME_STAMP + "," + TX_ISO +
@@ -229,32 +239,33 @@ namespace Elastos {
 											 "Prepare sql " + sql);
 
 				while (SQLITE_ROW == _sqlite->Step(stmt)) {
-					found = true;
+					TransactionPtr t(new Transaction());
 
-					std::string iso = _sqlite->ColumnText(stmt, 4);
 					uint256 txHash(_sqlite->ColumnText(stmt, 0));
 
 					const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
 					size_t len = (size_t) _sqlite->ColumnBytes(stmt, 1);
-
 					ByteStream stream(pdata, len);
-					if (iso == "ela") {
-						tx->Deserialize(stream);
-						assert(txHash == tx->GetHash());
-					} else if (iso == "ela1") {
-						tx->Deserialize(stream, true);
-						tx->SetHash(txHash);
-					}
 
 					uint32_t blockHeight = (uint32_t) _sqlite->ColumnInt(stmt, 2);
 					uint32_t timeStamp = (uint32_t) _sqlite->ColumnInt(stmt, 3);
+					std::string iso = _sqlite->ColumnText(stmt, 4);
 
-					tx->SetBlockHeight(blockHeight);
-					tx->SetTimestamp(timeStamp);
+					if (iso == "ela") {
+						t->Deserialize(stream);
+						assert(txHash == tx->GetHash());
+					} else if (iso == "ela1") {
+						t->Deserialize(stream, true);
+						t->SetHash(txHash);
+					}
+
+					t->SetBlockHeight(blockHeight);
+					t->SetTimestamp(timeStamp);
+					tx = t;
 				}
 			});
 
-			return found;
+			return tx;
 		}
 
 	}

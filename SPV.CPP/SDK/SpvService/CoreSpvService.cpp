@@ -26,7 +26,10 @@ namespace Elastos {
 
 		}
 
-		void CoreSpvService::init(const SubAccountPtr &subAccount, time_t earliestPeerTime, uint32_t reconnectSeconds) {
+		void CoreSpvService::init(const std::string &walletID,
+								  const SubAccountPtr &subAccount,
+								  time_t earliestPeerTime,
+								  uint32_t reconnectSeconds) {
 			_subAccount = subAccount;
 			_reconnectSeconds = reconnectSeconds;
 
@@ -46,15 +49,10 @@ namespace Elastos {
 			}
 
 			if (_wallet == nullptr) {
-				_wallet = WalletPtr(new Wallet(_peerManager->GetLastBlockHeight(), loadAssets(), txs, cbs, _subAccount, createWalletListener()));
+				_wallet = WalletPtr(new Wallet(_peerManager->GetLastBlockHeight(), walletID,
+											   loadAssets(), txs, cbs,
+											   _subAccount, createWalletListener()));
 				_peerManager->SetWallet(_wallet);
-			}
-
-			for (size_t i = 0; i < txs.size(); ++i) {
-				if (!txs[i]->IsCoinBase() && txs[i]->GetBlockHeight() == TX_UNCONFIRMED &&
-					!_wallet->IsReceiveTransaction(txs[i])) {
-					_peerManager->PublishTransaction(txs[i]);
-				}
 			}
 		}
 
