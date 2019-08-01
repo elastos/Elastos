@@ -183,7 +183,6 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Debug("RPC method:", requestMethod)
-	log.Debug("RPC params:", params)
 
 	response := method(params)
 	var data []byte
