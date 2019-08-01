@@ -57,9 +57,9 @@ func init() {
 		case RegisterIdentification:
 			return &PayloadRegisterIdentification{}, nil
 		case RegisterDID:
-			return &PayloadDID{}, nil
+			return &PayloadDIDInfo{}, nil
 		case UpdateDID:
-			return &PayloadDID{}, nil
+			return &PayloadDIDInfo{}, nil
 		}
 		return getPayloadByTxType(txType)
 	}
