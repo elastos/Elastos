@@ -45,23 +45,23 @@ matrix:
 #        - go run build/ci.go lint
 
     # This builder does the Ubuntu PPA upload
-    - if: type = push
-      os: linux
-      dist: trusty
-      go: 1.11.x
-      env:
-        - ubuntu-ppa
-      git:
-        submodules: false # avoid cloning ethereum/tests
-      addons:
-        apt:
-          packages:
-            - devscripts
-            - debhelper
-            - dput
-            - fakeroot
-      script:
-        - go run build/ci.go debsrc -signer "Go Ethereum Linux Builder <geth-ci@ethereum.org>" -upload ppa:ethereum/ethereum
+#    - if: type = push
+#      os: linux
+#      dist: trusty
+#      go: 1.11.x
+#      env:
+#        - ubuntu-ppa
+#      git:
+#        submodules: false # avoid cloning ethereum/tests
+#      addons:
+#        apt:
+#          packages:
+#            - devscripts
+#            - debhelper
+#            - dput
+#            - fakeroot
+#      script:
+#        - go run build/ci.go debsrc -signer "Go Ethereum Linux Builder <geth-ci@ethereum.org>" -upload ppa:ethereum/ethereum
 
     # This builder does the Linux Azure uploads
 #    - if: type = push
