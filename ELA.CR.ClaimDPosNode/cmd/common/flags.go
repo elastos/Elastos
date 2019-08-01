@@ -121,9 +121,91 @@ var (
 		Name:  "magic",
 		Usage: "magic number for node to initialize p2p connection",
 	}
-	DnsFlag = cli.StringFlag{
+	EnableDnsFlag = cli.StringFlag{
+		Name:  "dnsseed",
+		Usage: "enable dns seeds for node to initialize p2p connection",
+	}
+	DnsSeedFlag = cli.StringFlag{
 		Name:  "dns",
 		Usage: "dns seeds for node to initialize p2p connection",
+	}
+	PortFlag = cli.StringFlag{
+		Name:  "port",
+		Usage: "default peer-to-peer port for the network",
+	}
+	MinTxFeeFlag = cli.StringFlag{
+		Name:  "mintxfee",
+		Usage: "specify minimum transaction fee",
+	}
+	VoteStartHeightFlag = cli.StringFlag{
+		Name: "votestartheight",
+		Usage: "indicates the height of starting register producer and " +
+			"vote related",
+	}
+	CheckAddressHeightFlag = cli.StringFlag{
+		Name:  "checkaddressheight",
+		Usage: "defines the height begin to check output hash",
+	}
+	CRCOnlyDPOSHeightFlag = cli.StringFlag{
+		Name: "crconlydposheight",
+		Usage: "(H1) indicates the height of DPOS consensus begins with only " +
+			"CRC producers participate in producing block",
+	}
+	PublicDPOSHeightFlag = cli.StringFlag{
+		Name: "publicdposheight",
+		Usage: "(H2) indicates the height when public registered and elected " +
+			"producers participate in DPOS consensus",
+	}
+	CRCommitteeStartHeightFlag = cli.StringFlag{
+		Name:  "crcommitteestartheight",
+		Usage: "defines the height of CR Committee started",
+	}
+	CRVotingStartHeightFlag = cli.StringFlag{
+		Name:  "crvotingstartheight",
+		Usage: "defines the height of CR voting started",
+	}
+	EnableActivateIllegalHeightFlag = cli.StringFlag{
+		Name: "enableactivateillegalheight",
+		Usage: "defines the start height to enable activate illegal producer" +
+			" though activate tx",
+	}
+	DPoSMagicFlag = cli.StringFlag{
+		Name:  "dposmagic",
+		Usage: "defines the magic number used in the DPoS network",
+	}
+	DPoSPortFlag = cli.StringFlag{
+		Name:  "dposport",
+		Usage: "defines the default port for the DPoS network",
+	}
+	PreConnectOffsetFlag = cli.StringFlag{
+		Name:  "preconnectoffset",
+		Usage: "defines the offset blocks to pre-connect to the block producers",
+	}
+	NormalArbitratorsCountFlag = cli.StringFlag{
+		Name:  "normalarbitratorscount",
+		Usage: "defines the number of general(no-CRC) arbiters",
+	}
+	CandidatesCountFlag = cli.StringFlag{
+		Name:  "candidatescount",
+		Usage: "defines the number of needed candidate arbiters",
+	}
+	MaxInactiveRoundsFlag = cli.StringFlag{
+		Name:  "maxinactiverounds",
+		Usage: "defines the maximum inactive rounds before producer takes penalty",
+	}
+	CRMemberCountFlag = cli.StringFlag{
+		Name:  "crmembercount",
+		Usage: "defines the number of CR committee members",
+	}
+	CRDutyPeriodFlag = cli.StringFlag{
+		Name: "crdutyperiod",
+		Usage: "defines the duration of a normal duty period which measured " +
+			"by block height",
+	}
+	CRVotingPeriodFlag = cli.StringFlag{
+		Name: "crvotingperiod",
+		Usage: "defines the duration of voting period which measured by " +
+			"block height",
 	}
 )
 
