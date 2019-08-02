@@ -158,6 +158,7 @@ var DefaultParams = Params{
 	CRCOnlyDPOSHeight:           343400,
 	PublicDPOSHeight:            402680,
 	EnableActivateIllegalHeight: 439000,
+	CheckRewardHeight:           436812,
 	CRVotingStartHeight:         1800000, // todo correct me when height has been confirmed
 	CRCommitteeStartHeight:      2000000, // todo correct me when height has been confirmed
 	ToleranceDuration:           5 * time.Second,
@@ -223,6 +224,7 @@ func (p *Params) TestNet() *Params {
 	copy.CRVotingStartHeight = 900000          // todo correct me when height has been confirmed
 	copy.CRCommitteeStartHeight = 1000000      // todo correct me when height has been confirmed
 	copy.EnableActivateIllegalHeight = 1000000 //todo correct me later
+	copy.CheckRewardHeight = 1000000           //todo correct me later
 	return &copy
 }
 
@@ -272,6 +274,7 @@ func (p *Params) RegNet() *Params {
 	copy.CRVotingStartHeight = 900000          // todo correct me when height has been confirmed
 	copy.CRCommitteeStartHeight = 1000000      // todo correct me when height has been confirmed
 	copy.EnableActivateIllegalHeight = 1000000 //todo correct me later
+	copy.CheckRewardHeight = 1000000           //todo correct me later
 	return &copy
 }
 
@@ -374,6 +377,10 @@ type Params struct {
 	// PublicDPOSHeight defines the start height to enable activate illegal
 	// producer though activate tx
 	EnableActivateIllegalHeight uint32
+
+	// CheckRewardHeight defines the height to check reward in coin base
+	// with new check function
+	CheckRewardHeight uint32
 
 	// CRCArbiters defines the fixed CRC arbiters producing the block.
 	CRCArbiters []string
