@@ -275,6 +275,8 @@ public class MasterWalletManager {
         return GetVersion(mInstance);
     }
 
+    public void FlushData() { FlushData(mInstance); }
+
     private native String GenerateMnemonic(long instance, String language, int wordCount);
 
     private native String GetMultiSignPubKeyWithMnemonic(long instance, String phrase,
@@ -323,6 +325,8 @@ public class MasterWalletManager {
     private native String GetVersion(long instance);
 
     private native void DestroyWallet(long instance, String masterWalletId);
+
+    private native void FlushData(long mInstance);
 
     private native long[] GetAllMasterWallets(long instance);
 

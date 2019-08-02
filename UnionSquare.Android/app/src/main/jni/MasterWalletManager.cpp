@@ -591,6 +591,26 @@ static jstring JNICALL GetVersion(JNIEnv *env, jobject clazz, jlong instance) {
     return result;
 }
 
+#define JNI_FlushData "(J)V"
+
+static void JNICALL FlushData(JNIEnv *env, jobject clazz, jlong instance) {
+    bool exception = false;
+    std::string msgException;
+
+    MasterWalletManager *manager = (MasterWalletManager *) instance;
+
+    try {
+        manager->FlushData();
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+}
+
 #define JNI_GetAllMasterWallets "(J)[J"
 
 static jlongArray JNICALL GetAllMasterWallets(JNIEnv *env, jobject clazz, jlong instance) {
@@ -722,6 +742,7 @@ static const JNINativeMethod methods[] = {
         REGISTER_METHOD(GetVersion),
         REGISTER_METHOD(InitMasterWalletManager),
         REGISTER_METHOD(DisposeNative),
+        REGISTER_METHOD(FlushData),
 };
 
 jint RegisterMasterWalletManager(JNIEnv *env, const std::string &path) {

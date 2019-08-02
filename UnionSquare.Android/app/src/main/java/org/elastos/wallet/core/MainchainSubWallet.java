@@ -96,6 +96,10 @@ public class MainchainSubWallet extends SubWallet {
         return CreateRetrieveCRDepositTransaction(mMainchainProxy, amount, memo);
     }
 
+    public String CreateVoteCRTransaction(String fromAddress, String votes, String memo, boolean useVotedUTXO) throws WalletException {
+        return CreateVoteCRTransaction(mMainchainProxy, fromAddress, votes, memo, useVotedUTXO);
+    }
+
     private native String CreateDepositTransaction(long proxy, String fromAddress, String lockedAddress, String amount,
                                                    String sideChainAddress, String memo, boolean useVotedUTXO);
 
@@ -138,5 +142,7 @@ public class MainchainSubWallet extends SubWallet {
     private native String CreateUnregisterCRTransaction(long proxy, String fromAddress, String payload, String memo, boolean useVotedUTXO);
 
     private native String CreateRetrieveCRDepositTransaction(long Proxy, String amount, String memo);
+
+    private native String CreateVoteCRTransaction(long Proxy, String fromAddress, String votes, String memo, boolean useVotedUTXO);
 
 }

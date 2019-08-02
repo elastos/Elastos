@@ -83,6 +83,7 @@ public class MyWallet {
 
     public void onPause(boolean multitasking) {
         Log.d(TAG, "onPause");
+        flushData();
     }
 
     /**
@@ -1317,6 +1318,33 @@ public class MyWallet {
         }
     }
 
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: String amount
+    // args[3]: String memo
+    public BaseEntity createVoteCRTransaction(String masterWalletID, String chainID, String fromAddress, String votes, String memo, boolean useVotedUTXO) {
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
+
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                return errorProcess("" + errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+
+            String tx = mainchainSubWallet.CreateVoteCRTransaction(fromAddress, votes, memo, useVotedUTXO);
+
+            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, tx, "createVoteCRTransaction");
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + "create vote cr tx");
+        }
+    }
+
     /********************************************多签改动版本*******************************************/
     public BaseEntity getOwnerAddress(String masterWalletID, String chainID) {
         try {
@@ -1391,6 +1419,64 @@ public class MyWallet {
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, version, "getVersion");
         } catch (WalletException e) {
             return exceptionProcess(e, "Get version");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    public BaseEntity flushData() {
+        try {
+            mMasterWalletManager.FlushData();
+            return new CommmonStringEntity(SUCCESSCODE, "成功");
+        } catch (WalletException e) {
+            return exceptionProcess(e, "flushData");
+        }
+    }
+
+    public BaseEntity exportxPrivateKey(String masterWalletID, String payPasswd) {
+        try {
+            MasterWallet masterWallet = getMasterWallet(masterWalletID);
+            if (masterWallet == null) {
+                return errorProcess(errCodeInvalidMasterWallet + "", "Get " + formatWalletName(masterWalletID));
+            }
+            String privateKey = mMasterWalletManager.ExportxPrivateKey(masterWallet, payPasswd);
+            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, privateKey, "exportxPrivateKey");
+        } catch (WalletException e) {
+            return exceptionProcess(e, "ExportxPrivateKey" + formatWalletName(masterWalletID));
+        }
+    }
+
+    public BaseEntity createMultiSignMasterWallet(String masterWalletID, String coSigners, int requiredSignCount, long timestamp) {
+        try {
+            MasterWallet masterWallet = mMasterWalletManager.CreateMultiSignMasterWallet(masterWalletID, coSigners,
+                    requiredSignCount, timestamp);
+            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, masterWallet.GetBasicInfo(), "createMultiSignMasterWallet");
+        } catch (WalletException e) {
+            return exceptionProcess(e, "createMultiSignMasterWallet" + formatWalletName(masterWalletID));
+        }
+    }
+
+    public BaseEntity createMultiSignMasterWallet(String masterWalletID, String privKey, String payPassword,
+                                                  String coSigners, int requiredSignCount, long timestamp) {
+        try {
+            MasterWallet masterWallet = mMasterWalletManager.CreateMultiSignMasterWallet(
+                    masterWalletID, privKey, payPassword, coSigners,
+                    requiredSignCount, timestamp);
+            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, masterWallet.GetBasicInfo(), "createMultiSignMasterWallet");
+        } catch (WalletException e) {
+            return exceptionProcess(e, "createMultiSignMasterWallet" + formatWalletName(masterWalletID));
+        }
+    }
+
+    public BaseEntity createMultiSignMasterWallet(
+            String masterWalletId, String mnemonic, String phrasePassword, String payPassword,
+            String coSigners, int requiredSignCount, long timestamp) {
+        try {
+            MasterWallet masterWallet = mMasterWalletManager.CreateMultiSignMasterWallet(
+                    masterWalletId, mnemonic, phrasePassword, payPassword,
+                    coSigners, requiredSignCount, timestamp);
+            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, masterWallet.GetBasicInfo(), "createMultiSignMasterWallet");
+        } catch (WalletException e) {
+            return exceptionProcess(e, "createMultiSignMasterWallet" + formatWalletName(masterWalletId));
         }
     }
 
