@@ -189,6 +189,8 @@ namespace Elastos {
 					ErrorChecker::CheckLogic(!_sqlite->BindInt(stmt, 1, blockHeight), Error::SqliteError, "bindint");
 					ErrorChecker::CheckLogic(!_sqlite->BindInt64(stmt, 2, timestamp), Error::SqliteError, "bindint64");
 
+					_sqlite->Step(stmt);
+
 					ErrorChecker::CheckLogic(!_sqlite->Finalize(stmt), Error::SqliteError, "finalize");
 				}
 			});

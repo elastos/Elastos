@@ -249,6 +249,7 @@ TEST_CASE("Config test", "[Config]") {
 		}
 	}
 
+#if 0
 	SECTION("TokenChain") {
 		const std::string chainID = "TokenChain";
 		const std::string genesisAddress = "XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4";
@@ -292,6 +293,7 @@ TEST_CASE("Config test", "[Config]") {
 			REQUIRE(checkPoints[5].Hash() == uint256("58b25e8f4aed9346b8e23b224242ddb2f42d8d6c7d00077beaf97684ca02474e"));
 			REQUIRE(checkPoints[5].Height() == 10080);
 		}
+
 
 		SECTION("TestNet") {
 			const std::string netType = "TestNet";
@@ -362,5 +364,6 @@ TEST_CASE("Config test", "[Config]") {
 			REQUIRE(checkPoints[0].Height() == 0);
 		}
 	}
+#endif
 
 }

@@ -536,7 +536,7 @@ TEST_CASE("Master wallet GetSupportedChains method test", "[GetSupportedChains]"
 	SECTION("Normal test") {
 		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet());
 		std::vector<std::string> chainIDList = masterWallet->GetSupportedChains();
-		REQUIRE(chainIDList.size() == 3);
+		REQUIRE(chainIDList.size() == 2);
 	}
 }
 
