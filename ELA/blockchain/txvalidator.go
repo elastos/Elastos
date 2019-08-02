@@ -1083,13 +1083,13 @@ func (b *BlockChain) checkRegisterProducerTransaction(txn *Transaction) error {
 	}
 
 	// check if public keys conflict with cr program code
-	ownerCode := info.OwnerPublicKey
+	ownerCode := append([]byte{byte(COMPRESSEDLEN)}, info.OwnerPublicKey...)
 	ownerCode = append(ownerCode, vm.CHECKSIG)
 	if b.crCommittee.ExistCR(ownerCode) {
 		return fmt.Errorf("owner public key %s already exist in cr list",
 			common.BytesToHexString(info.OwnerPublicKey))
 	}
-	nodeCode := info.NodePublicKey
+	nodeCode := append([]byte{byte(COMPRESSEDLEN)}, info.NodePublicKey...)
 	nodeCode = append(nodeCode, vm.CHECKSIG)
 	if b.crCommittee.ExistCR(nodeCode) {
 		return fmt.Errorf("node public key %s already exist in cr list",
@@ -1375,9 +1375,9 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
 
 	// check if program code conflict with producer public keys
 	if info.Code[len(info.Code)-1] == vm.CHECKSIG {
-		if b.state.ProducerExists(info.Code[0 : len(info.Code)-1]) {
+		if b.state.ProducerExists(info.Code[1 : len(info.Code)-1]) {
 			return fmt.Errorf("public key %s already inuse in producer list",
-				common.BytesToHexString(info.Code[0:len(info.Code)-1]))
+				common.BytesToHexString(info.Code[1:len(info.Code)-1]))
 		}
 	}
 
@@ -1806,8 +1806,8 @@ func checkCRCArbitratorsSignatures(program *program.Program) error {
 
 	crcArbitrators := DefaultLedger.Arbitrators.GetCRCArbitrators()
 	crcArbitratorsCount := len(crcArbitrators)
-	minSignCount := int(float64(crcArbitratorsCount) *
-		state.MajoritySignRatioNumerator / state.MajoritySignRatioDenominator) + 1
+	minSignCount := int(float64(crcArbitratorsCount)*
+		state.MajoritySignRatioNumerator/state.MajoritySignRatioDenominator) + 1
 	if m < 1 || m > n || n != crcArbitratorsCount || m < minSignCount {
 		fmt.Printf("m:%d n:%d minSignCount:%d crc:  %d", m, n, minSignCount, crcArbitratorsCount)
 		return errors.New("invalid multi sign script code")
