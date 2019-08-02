@@ -3020,7 +3020,8 @@ int ela_send_friend_message(ElaCarrier *w, const char *to,
 
             return 0;
         }
-    }
+    } else
+        rc = ELA_DHT_ERROR(ELAERR_FRIEND_OFFLINE);
 
     if (w->dstorectx)
         rc = dstore_enqueue_offmsg(w->dstorectx, to, data, data_len);
