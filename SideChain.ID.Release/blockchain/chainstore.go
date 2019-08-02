@@ -2,7 +2,8 @@ package blockchain
 
 import (
 	"bytes"
-
+	"encoding/hex"
+	"errors"
 	id "github.com/elastos/Elastos.ELA.SideChain.ID/types"
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
@@ -11,7 +12,10 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 )
 
-const IX_DID blockchain.EntryPrefix = 0x95
+const (
+	IX_DIDTXHash  blockchain.EntryPrefix = 0x95
+	IX_DIDPayload blockchain.EntryPrefix = 0x96
+)
 
 type IDChainStore struct {
 	*blockchain.ChainStore
@@ -58,14 +62,17 @@ func (c *IDChainStore) persistTransactions(batch database.Batch, b *types.Block)
 				buf := new(bytes.Buffer)
 				buf.WriteString(regPayload.ID)
 				buf.WriteString(content.Path)
-				c.persistRegisterIdentificationTx(batch, buf.Bytes(), txn.Hash())
+				if err := c.persistRegisterIdentificationTx(batch,
+					buf.Bytes(), txn.Hash()); err != nil {
+					return err
+				}
 			}
-		case id.RegisterDID:
-			// todo complete me
-
-
-		case id.UpdateDID:
-			// todo complete me
+		case id.RegisterDID, id.UpdateDID:
+			regPayload := txn.Payload.(*id.PayloadDIDInfo)
+			id, _ := hex.DecodeString(regPayload.PayloadInfo.ID)
+			if err := c.persistRegisterDIDTx(batch, id, txn); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -95,32 +102,39 @@ func (c *IDChainStore) rollbackTransactions(batch database.Batch, b *types.Block
 				buf := new(bytes.Buffer)
 				buf.WriteString(regPayload.ID)
 				buf.WriteString(content.Path)
-				c.rollbackRegisterIdentificationTx(batch, buf.Bytes())
+				err := c.rollbackRegisterIdentificationTx(batch, buf.Bytes())
+				if err != nil {
+					return err
+				}
 			}
-		case id.RegisterDID:
-			// todo complete me
-		case id.UpdateDID:
-			// tod complete me
+		case id.RegisterDID, id.UpdateDID:
+			regPayload := txn.Payload.(*id.PayloadDIDInfo)
+			id, _ := hex.DecodeString(regPayload.PayloadInfo.ID)
+			if err := c.rollbackRegisterDIDTx(batch, id, txn); err != nil {
+				return err
+			}
 		}
 	}
 
 	return nil
 }
 
-func (c *IDChainStore) persistRegisterIdentificationTx(batch database.Batch, idKey []byte, txHash common.Uint256) {
+func (c *IDChainStore) persistRegisterIdentificationTx(batch database.Batch,
+	idKey []byte, txHash common.Uint256) error {
 	key := []byte{byte(blockchain.IX_Identification)}
 	key = append(key, idKey...)
 
 	// PUT VALUE
-	batch.Put(key, txHash.Bytes())
+	return batch.Put(key, txHash.Bytes())
 }
 
-func (c *IDChainStore) rollbackRegisterIdentificationTx(batch database.Batch, idKey []byte) {
+func (c *IDChainStore) rollbackRegisterIdentificationTx(batch database.Batch,
+	idKey []byte) error {
 	key := []byte{byte(blockchain.IX_Identification)}
 	key = append(key, idKey...)
 
 	// PUT VALUE
-	batch.Delete(key)
+	return batch.Delete(key)
 }
 
 func (c *IDChainStore) GetRegisterIdentificationTx(idKey []byte) ([]byte, error) {
@@ -133,12 +147,193 @@ func (c *IDChainStore) GetRegisterIdentificationTx(idKey []byte) ([]byte, error)
 	return data, nil
 }
 
+func (c *IDChainStore) persistRegisterDIDTx(batch database.Batch,
+	idKey []byte, tx *types.Transaction) error {
+	if err := c.persistRegisterDIDTxHash(batch, idKey, tx.Hash()); err != nil {
+		return err
+	}
+
+	if err := c.persistRegisterDIDPayload(batch, tx.Hash(),
+		tx.Payload.(*id.PayloadDIDInfo)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *IDChainStore) persistRegisterDIDTxHash(batch database.Batch,
+	idKey []byte, txHash common.Uint256) error {
+	key := []byte{byte(IX_DIDTXHash)}
+	key = append(key, idKey...)
+
+	data, err := c.Get(key)
+	if err != nil {
+		// when not exist, only put the current payload hash into db.
+		buf := new(bytes.Buffer)
+		if err := common.WriteVarUint(buf, 1); err != nil {
+			return err
+		}
+
+		if err := txHash.Serialize(buf); err != nil {
+			return err
+		}
+
+		return batch.Put(key, buf.Bytes())
+	}
+
+	// when exist, should add current payload hash to the end of the list.
+	r := bytes.NewReader(data)
+	count, err := common.ReadVarUint(r, 0)
+	if err != nil {
+		return err
+	}
+	count++
+
+	buf := new(bytes.Buffer)
+
+	// write count
+	if err := common.WriteVarUint(buf, count); err != nil {
+		return err
+	}
+
+	// write current payload hash
+	if err := txHash.Serialize(buf); err != nil {
+		return err
+	}
+
+	// write old hashes
+	if _, err := r.WriteTo(buf); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *IDChainStore) rollbackRegisterDIDTx(batch database.Batch,
+	idKey []byte, tx *types.Transaction) error {
+	key := []byte{byte(IX_DIDTXHash)}
+	key = append(key, idKey...)
+
+	data, err := c.Get(key)
+	if err != nil {
+		return err
+	}
+
+	r := bytes.NewReader(data)
+	// get the count of tx hashes
+	count, err := common.ReadVarUint(r, 0)
+	if err != nil {
+		return err
+	}
+	if count == 0 {
+		return errors.New("not exist")
+	}
+	// get the newest tx hash
+	var txHash common.Uint256
+	if err := txHash.Deserialize(r); err != nil {
+		return err
+	}
+	// if not rollback the newest tx hash return error
+	if !txHash.IsEqual(tx.Hash()) {
+		return errors.New("not rollback the last one")
+	}
+
+	keyPayload := []byte{byte(IX_DIDPayload)}
+	keyPayload = append(key, txHash.Bytes()...)
+	c.Delete(keyPayload)
+
+	if count == 1 {
+		return c.Delete(key)
+	}
+
+	buf := new(bytes.Buffer)
+
+	// write count
+	if err := common.WriteVarUint(buf, count-1); err != nil {
+		return err
+	}
+
+	// write old hashes
+	if _, err := r.WriteTo(buf); err != nil {
+		return err
+	}
+
+	return batch.Put(key, buf.Bytes())
+}
+
+func (c *IDChainStore) persistRegisterDIDPayload(batch database.Batch,
+	txHash common.Uint256, p *id.PayloadDIDInfo) error {
+	key := []byte{byte(IX_DIDPayload)}
+	key = append(key, txHash.Bytes()...)
+
+	buf := new(bytes.Buffer)
+	p.Serialize(buf, id.DIDInfoVersion)
+	return batch.Put(key, buf.Bytes())
+}
+
 func (c *IDChainStore) GetLastRegisterDIDTx(idKey []byte) ([]byte, error) {
-	// todo get txs list by id, then get first tx
-	return nil, nil
+	key := []byte{byte(IX_DIDTXHash)}
+	key = append(key, idKey...)
+
+	data, err := c.Get(key)
+	if err != nil {
+		return nil, err
+	}
+
+	r := bytes.NewReader(data)
+	count, err := common.ReadVarUint(r, 0)
+	if err != nil {
+		return nil, err
+	}
+	if count == 0 {
+		return nil, errors.New("not exist")
+	}
+	var txHash common.Uint256
+	if err := txHash.Deserialize(r); err != nil {
+		return nil, err
+	}
+
+	keyPayload := []byte{byte(IX_DIDPayload)}
+	keyPayload = append(key, txHash.Bytes()...)
+
+	dataPayload, err := c.Get(keyPayload)
+	if err != nil {
+		return nil, err
+	}
+
+	return dataPayload, nil
 }
 
 func (c *IDChainStore) GetRegisterDIDTx(idKey []byte) ([][]byte, error) {
-	// todo get txs list by id, then get all txs
-	return nil, nil
+	key := []byte{byte(IX_DIDTXHash)}
+	key = append(key, idKey...)
+
+	data, err := c.Get(key)
+	if err != nil {
+		return nil, err
+	}
+
+	r := bytes.NewReader(data)
+	count, err := common.ReadVarUint(r, 0)
+	if err != nil {
+		return nil, err
+	}
+	var payloadList [][]byte
+	for i := uint64(0); i < count; i++ {
+		var txHash common.Uint256
+		if err := txHash.Deserialize(r); err != nil {
+			return nil, err
+		}
+
+		keyPayload := []byte{byte(IX_DIDPayload)}
+		keyPayload = append(key, txHash.Bytes()...)
+
+		payloadData, err := c.Get(keyPayload)
+		if err != nil {
+			return nil, err
+		}
+		payloadList = append(payloadList, payloadData)
+	}
+
+	return payloadList, nil
 }
