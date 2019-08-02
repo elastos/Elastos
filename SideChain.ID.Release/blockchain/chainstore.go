@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"errors"
+
 	id "github.com/elastos/Elastos.ELA.SideChain.ID/types"
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
@@ -206,7 +207,7 @@ func (c *IDChainStore) persistRegisterDIDTxHash(batch database.Batch,
 		return err
 	}
 
-	return nil
+	return batch.Put(key, buf.Bytes())
 }
 
 func (c *IDChainStore) rollbackRegisterDIDTx(batch database.Batch,
@@ -239,11 +240,11 @@ func (c *IDChainStore) rollbackRegisterDIDTx(batch database.Batch,
 	}
 
 	keyPayload := []byte{byte(IX_DIDPayload)}
-	keyPayload = append(key, txHash.Bytes()...)
-	c.Delete(keyPayload)
+	keyPayload = append(keyPayload, txHash.Bytes()...)
+	batch.Delete(keyPayload)
 
 	if count == 1 {
-		return c.Delete(key)
+		return batch.Delete(key)
 	}
 
 	buf := new(bytes.Buffer)
@@ -271,7 +272,7 @@ func (c *IDChainStore) persistRegisterDIDPayload(batch database.Batch,
 	return batch.Put(key, buf.Bytes())
 }
 
-func (c *IDChainStore) GetLastRegisterDIDTx(idKey []byte) ([]byte, error) {
+func (c *IDChainStore) GetLastDIDTxPayload(idKey []byte) ([]byte, error) {
 	key := []byte{byte(IX_DIDTXHash)}
 	key = append(key, idKey...)
 
@@ -294,7 +295,7 @@ func (c *IDChainStore) GetLastRegisterDIDTx(idKey []byte) ([]byte, error) {
 	}
 
 	keyPayload := []byte{byte(IX_DIDPayload)}
-	keyPayload = append(key, txHash.Bytes()...)
+	keyPayload = append(keyPayload, txHash.Bytes()...)
 
 	dataPayload, err := c.Get(keyPayload)
 	if err != nil {
@@ -304,7 +305,7 @@ func (c *IDChainStore) GetLastRegisterDIDTx(idKey []byte) ([]byte, error) {
 	return dataPayload, nil
 }
 
-func (c *IDChainStore) GetRegisterDIDTx(idKey []byte) ([][]byte, error) {
+func (c *IDChainStore) GetDIDTxPayload(idKey []byte) ([][]byte, error) {
 	key := []byte{byte(IX_DIDTXHash)}
 	key = append(key, idKey...)
 
@@ -326,7 +327,7 @@ func (c *IDChainStore) GetRegisterDIDTx(idKey []byte) ([][]byte, error) {
 		}
 
 		keyPayload := []byte{byte(IX_DIDPayload)}
-		keyPayload = append(key, txHash.Bytes()...)
+		keyPayload = append(keyPayload, txHash.Bytes()...)
 
 		payloadData, err := c.Get(keyPayload)
 		if err != nil {
