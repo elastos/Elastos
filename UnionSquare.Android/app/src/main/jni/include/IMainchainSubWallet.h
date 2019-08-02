@@ -174,6 +174,23 @@ namespace Elastos {
 					bool useVotedUTXO = false) = 0;
 
 			/**
+			 * Create vote cr transaction.
+			 *
+			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
+			 *                     Otherwise, pick UTXO from the specific address.
+			 * @param votes        Candidate publicKeys and votes array in JSON format.such as: {"02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5": 1, "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D": 2}
+			 * @param memo         Remarks string. Can be empty string.
+			 * @param useVotedUTXO If true, all voted UTXO will be picked. Otherwise, any voted UTXO will not be picked.
+			 *
+			 * @return             The transaction in JSON format to be signed and published.
+			 */
+			virtual nlohmann::json CreateVoteCRTransaction(
+					const std::string &fromAddress,
+					const nlohmann::json &votes,
+					const std::string &memo,
+					bool useVotedUTXO = false) = 0;
+
+			/**
 			 * Get vote information of current wallet.
 			 *
 			 * @return Vote information in JSON format. The key is the public key, and the value is the stake. Such as:
