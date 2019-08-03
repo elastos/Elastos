@@ -21,45 +21,21 @@ namespace Elastos {
 		}
 
 		bool PingMessage::Accept(const bytes_t &msg) {
-			bool r = true;
+			ByteStream stream(msg);
+			uint64_t height;
 
-			if (sizeof(uint64_t) > msg.size()) {
-				_peer->warn("malformed ping message, length is {}, should be {}", msg.size(), sizeof(uint64_t));
-				r = false;
-			} else {
-				_peer->info("got ping");
-				bool needRelayPing = false, hasPendingTx = false;
-				PeerManager *manager = _peer->GetPeerManager();
-
-				PongParameter pongParameter;
-				pongParameter.lastBlockHeight = manager->GetLastBlockHeight();
-				_peer->SendMessage(MSG_PONG, pongParameter);
-
-				if (manager->GetConnectStatus() == Peer::Connected && manager->SyncSucceeded() &&
-					time_after(time(nullptr), manager->GetKeepAliveTimestamp() + 30)) {
-					needRelayPing = true;
-				}
-
-				std::vector<PublishedTransaction> publishedTx = manager->GetPublishedTransaction();
-				for (size_t i = publishedTx.size(); i > 0; i--) {
-					if (publishedTx[i - 1].HasCallback()) {
-						_peer->info("publish pending tx hash = {}, do not disconnect",
-									publishedTx[i - 1].GetTransaction()->GetHash().GetHex());
-						hasPendingTx = true;
-						break;
-					}
-				}
-
-				if (needRelayPing && !hasPendingTx) {
-					FireRelayedPingMsg();
-//				} else if (hasPendingTx) {
-//					MempoolParameter mempoolParameter;
-//					mempoolParameter.CompletionCallback = boost::function<void(int)>();
-//					_peer->SendMessage(MSG_MEMPOOL, mempoolParameter);
-				}
+			if (!stream.ReadUint64(height)) {
+				_peer->error("malformed ping message, length is {}, should be 8", msg.size());
+				return false;
 			}
 
-			return r;
+			_peer->info("got ping");
+			PongParameter pongParam(height);
+			_peer->SendMessage(MSG_PONG, pongParam);
+
+			FireRelayedPing();
+
+			return true;
 		}
 
 		void PingMessage::Send(const SendMessageParameter &param) {

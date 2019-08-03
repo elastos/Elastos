@@ -78,8 +78,6 @@ namespace Elastos {
 
 			virtual void txPublished(const std::string &hash, const nlohmann::json &result);
 
-			virtual void syncIsInactive(uint32_t time) {}
-
 			virtual void connectStatusChanged(const std::string &status);
 
 		protected:
@@ -139,8 +137,6 @@ namespace Elastos {
 
 			virtual void txPublished(const std::string &hash, const nlohmann::json &result);
 
-			virtual void syncIsInactive(uint32_t time);
-
 			virtual void connectStatusChanged(const std::string &status);
 
 		private:
@@ -154,7 +150,6 @@ namespace Elastos {
 		public:
 			WrappedExecutorPeerManagerListener(PeerManager::Listener *listener,
 											   Executor *executor,
-											   Executor *reconnectExecutor,
 											   const PluginType &pluginType);
 
 			virtual void syncStarted();
@@ -173,14 +168,11 @@ namespace Elastos {
 
 			virtual void txPublished(const std::string &hash, const nlohmann::json &result);
 
-			virtual void syncIsInactive(uint32_t time);
-
 			virtual void connectStatusChanged(const std::string &status);
 
 		private:
 			PeerManager::Listener *_listener;
 			Executor *_executor;
-			Executor *_reconnectExecutor;
 		};
 
 		class WrappedExceptionWalletListener :

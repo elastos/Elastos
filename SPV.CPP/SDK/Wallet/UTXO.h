@@ -28,7 +28,7 @@ namespace Elastos {
 
 			UTXO(const uint256 &hash, uint16_t i, time_t t, uint32_t h, const OutputPtr &o);
 
-			UTXO(const TransactionInput &input);
+			UTXO(const InputPtr &input);
 
 			virtual ~UTXO();
 

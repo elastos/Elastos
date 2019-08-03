@@ -38,13 +38,11 @@ namespace Elastos {
 
 			virtual ~SpvService();
 
-			void Start();
-
 			void SyncStart();
 
-			void Stop();
-
 			void SyncStop();
+
+			void Stop();
 
 			size_t GetAllTransactionsCount();
 
@@ -98,8 +96,6 @@ namespace Elastos {
 
 			virtual void txPublished(const std::string &hash, const nlohmann::json &result);
 
-			virtual void syncIsInactive(uint32_t time);
-
 			virtual void connectStatusChanged(const std::string &status);
 
 		protected:
@@ -117,17 +113,9 @@ namespace Elastos {
 
 			virtual const WalletListenerPtr &createWalletListener();
 
-			void StartReconnect(uint32_t time);
-
-			void ResetReconnect();
-
 		private:
 			DatabaseManager _databaseManager;
 			BackgroundExecutor _executor;
-			BackgroundExecutor _reconnectExecutor;
-
-			boost::asio::io_service _reconnectService;
-			boost::shared_ptr<boost::asio::deadline_timer> _reconnectTimer;
 
 			std::vector<Wallet::Listener *> _walletListeners;
 			std::vector<PeerManager::Listener *> _peerManagerListeners;

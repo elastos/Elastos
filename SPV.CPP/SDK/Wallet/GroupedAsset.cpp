@@ -566,27 +566,29 @@ namespace Elastos {
 			return _asset;
 		}
 
-		void GroupedAsset::AddUTXO(const UTXOPtr &o) {
+		bool GroupedAsset::AddUTXO(const UTXOPtr &o) {
 			if (ContainUTXO(o))
-				return;
+				return false;
 
 			if (_parent->_subAccount->IsDepositAddress(o->Output()->Addr())) {
 				_balanceDeposit += o->Output()->Amount();
 				_utxosDeposit.push_back(o);
 			} else {
+				_balance += o->Output()->Amount();
 				if (o->Output()->GetType() == TransactionOutput::Type::VoteOutput) {
 					_balanceVote += o->Output()->Amount();
 					_utxosVote.push_back(o);
 				} else {
 					_utxos.push_back(o);
 				}
-				_balance += o->Output()->Amount();
 			}
+
+			return true;
 		}
 
-		void GroupedAsset::AddCoinBaseUTXO(const UTXOPtr &o) {
+		bool GroupedAsset::AddCoinBaseUTXO(const UTXOPtr &o) {
 			if (ContainUTXO(o))
-				return;
+				return false;
 
 			if (o->GetConfirms(_parent->_blockHeight) <= 100) {
 				_balanceLocked += o->Output()->Amount();
@@ -595,6 +597,8 @@ namespace Elastos {
 				_balance += o->Output()->Amount();
 				_utxosCoinbase.push_back(o);
 			}
+
+			return true;
 		}
 
 		bool GroupedAsset::RemoveSpentUTXO(const std::vector<InputPtr> &inputs) {

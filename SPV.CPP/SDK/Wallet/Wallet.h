@@ -93,6 +93,8 @@ namespace Elastos {
 
 			void SetBlockHeight(uint32_t height);
 
+			uint32_t LastBlockHeight() const;
+
 			nlohmann::json GetBalanceInfo();
 
 			BigInt GetBalanceWithAddress(const uint256 &assetID, const std::string &addr, GroupedAsset::BalanceType type) const;
@@ -208,15 +210,11 @@ namespace Elastos {
 
 			void RemoveSpendingUTXO(const InputArray &inputs);
 
-			void AddSpendingUTXO(const InputArray &inputs);
-
 			void InstallAssets(const std::vector<AssetPtr> &assets);
 
 			void InstallDefaultAsset();
 
 			bool IsUTXOSpending(const UTXOPtr &utxo) const;
-
-			void AddSpendingUTXO(const InputPtr &input);
 
 			void GetSpentCoinbase(const InputArray &inputs, std::vector<uint256> &coinbase) const;
 

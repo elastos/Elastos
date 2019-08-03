@@ -88,7 +88,7 @@ namespace Elastos {
 
 			void FireRelayedBlock(const MerkleBlockPtr &block);
 
-			void FireRelayedPingMsg();
+			void FireRelayedPing();
 
 			void FireNotfound(const std::vector<uint256> &txHashes, const std::vector<uint256> &blockHashes);
 

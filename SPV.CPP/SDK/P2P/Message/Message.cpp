@@ -54,9 +54,9 @@ namespace Elastos {
 				_peer->_listener->OnRelayedBlock(_peer->shared_from_this(), block);
 		}
 
-		void Message::FireRelayedPingMsg() {
+		void Message::FireRelayedPing() {
 			if (_peer->_listener != nullptr)
-				_peer->_listener->OnRelayedPingMsg(_peer->shared_from_this());
+				_peer->_listener->OnRelayedPing(_peer->shared_from_this());
 		}
 
 		void Message::FireNotfound(const std::vector<uint256> &txHashes, const std::vector<uint256> &blockHashes) {

@@ -72,9 +72,9 @@ namespace Elastos {
 
 			const AssetPtr &GetAsset() const;
 
-			void AddUTXO(const UTXOPtr &o);
+			bool AddUTXO(const UTXOPtr &o);
 
-			void AddCoinBaseUTXO(const UTXOPtr &o);
+			bool AddCoinBaseUTXO(const UTXOPtr &o);
 
 			bool RemoveSpentUTXO(const std::vector<InputPtr> &inputs);
 

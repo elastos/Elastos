@@ -762,8 +762,8 @@ namespace Elastos {
 					outputPayloads.push_back(outputPayload);
 				}
 
-				containAddress = wallet->ContainsAddress(addr);
-				if (containAddress && !wallet->IsVoteDepositAddress(addr)) {
+				containAddress = wallet->ContainsAddress((*o)->Addr());
+				if (containAddress && !wallet->IsVoteDepositAddress((*o)->Addr())) {
 					changeAmount += oAmount;
 				} else {
 					outputAmount += oAmount;

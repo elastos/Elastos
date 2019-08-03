@@ -327,9 +327,7 @@ namespace Elastos {
 
 						if (!error && time >= _mempoolTime) {
 							info("done waiting for mempool response");
-							PingParameter pingParameter;
-							pingParameter.callback = _mempoolCallback;
-							pingParameter.lastBlockHeight = _manager->GetLastBlockHeight();
+							PingParameter pingParameter(_manager->GetLastBlockHeight(), _mempoolCallback);
 							SendMessage(MSG_PING, pingParameter);
 							_mempoolCallback = PeerCallback();
 							_mempoolTime = DBL_MAX;

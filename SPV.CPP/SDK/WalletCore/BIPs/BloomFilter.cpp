@@ -34,7 +34,7 @@ namespace Elastos {
 			ostream.WriteVarBytes(_filter);
 			ostream.WriteUint32(_hashFuncs);
 			ostream.WriteUint32(_tweak);
-			ostream.WriteByte(_flags);
+			//ostream.WriteByte(_flags);
 		}
 
 		//todo add max size check of BLOOM_MAX_FILTER_LENGTH

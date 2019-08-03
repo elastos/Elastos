@@ -205,8 +205,6 @@ namespace Elastos {
 			CoinInfoPtr _info;
 			ChainConfigPtr _config;
 			SubAccountPtr _subAccount;
-
-			uint32_t _syncStartHeight;
 		};
 
 	}

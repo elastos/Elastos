@@ -32,8 +32,7 @@ namespace Elastos {
 				PeerManager::Listener(),
 				_parent(parent),
 				_info(info),
-				_config(config),
-				_syncStartHeight(0) {
+				_config(config) {
 
 			fs::path subWalletDBPath = _parent->_dataPath;
 			subWalletDBPath /= parent->GetID();
@@ -378,7 +377,7 @@ namespace Elastos {
 			std::vector<nlohmann::json> jsonList(realCount);
 			for (size_t i = 0; i < realCount; ++i) {
 				uint32_t confirms = 0;
-				uint32_t lastBlockHeight = _walletManager->getPeerManager()->GetLastBlockHeight();
+				uint32_t lastBlockHeight = _walletManager->getWallet()->LastBlockHeight();
 				std::string hash = transactions[i]->GetHash().GetHex();
 
 				confirms = transactions[i]->GetConfirms(lastBlockHeight);
@@ -427,7 +426,7 @@ namespace Elastos {
 				if (!txID.empty()) {
 					if (cbptr->Hash().GetHex() == txID) {
 						cb["TxHash"] = txID;
-						uint32_t confirms = cbptr->GetConfirms(_walletManager->getPeerManager()->GetLastBlockHeight());
+						uint32_t confirms = cbptr->GetConfirms(_walletManager->getWallet()->LastBlockHeight());
 						cb["Timestamp"] = cbptr->Timestamp();
 						cb["Amount"] = cbptr->Output()->Amount().getDec();
 						cb["Status"] = confirms <= 100 ? "Pending" : "Confirmed";
@@ -445,7 +444,7 @@ namespace Elastos {
 					nlohmann::json cb;
 
 					cb["TxHash"] = cbptr->Hash().GetHex();
-					uint32_t confirms = cbptr->GetConfirms(_walletManager->getPeerManager()->GetLastBlockHeight());
+					uint32_t confirms = cbptr->GetConfirms(_walletManager->getWallet()->LastBlockHeight());
 					cb["Timestamp"] = cbptr->Timestamp();
 					cb["Amount"] = cbptr->Output()->Amount().getDec();
 					cb["Status"] = confirms <= 100 ? "Pending" : "Confirmed";
@@ -608,19 +607,6 @@ namespace Elastos {
 		}
 
 		void SubWallet::syncStarted() {
-			_syncStartHeight = _walletManager->getPeerManager()->GetSyncStartHeight();
-			if (_info->GetEarliestPeerTime() == 0) {
-				_info->SetEaliestPeerTime(time(nullptr));
-			}
-
-			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
-
-			boost::mutex::scoped_lock scoped_lock(lock);
-
-			std::for_each(_callbacks.begin(), _callbacks.end(),
-						  [](ISubWalletCallback *callback) {
-							  callback->OnBlockSyncStarted();
-						  });
 		}
 
 		void SubWallet::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight, time_t lastBlockTime) {
@@ -639,15 +625,6 @@ namespace Elastos {
 		}
 
 		void SubWallet::syncStopped(const std::string &error) {
-			_syncStartHeight = 0;
-
-			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
-			boost::mutex::scoped_lock scoped_lock(lock);
-
-			std::for_each(_callbacks.begin(), _callbacks.end(),
-						  [](ISubWalletCallback *callback) {
-							  callback->OnBlockSyncStopped();
-						  });
 		}
 
 		void SubWallet::saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks) {
@@ -692,11 +669,11 @@ namespace Elastos {
 		}
 
 		void SubWallet::StartP2P() {
-			_walletManager->Start();
+			_walletManager->SyncStart();
 		}
 
 		void SubWallet::StopP2P() {
-			_walletManager->Stop();
+			_walletManager->SyncStop();
 		}
 
 		void SubWallet::FlushData() {

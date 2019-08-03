@@ -12,6 +12,10 @@ namespace Elastos {
 
 		struct PongParameter : public SendMessageParameter {
 			uint64_t lastBlockHeight;
+
+			PongParameter(uint64_t height) :
+				lastBlockHeight(height)
+			{}
 		};
 
 		class PongMessage :

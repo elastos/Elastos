@@ -480,7 +480,7 @@ namespace Elastos {
 				} else if (allTxs[i]->GetTransactionType() == Transaction::cancelProducer) {
 					const CancelProducer *pc = dynamic_cast<const CancelProducer *>(allTxs[i]->GetPayload());
 					if (pc) {
-						uint32_t lastBlockHeight = _walletManager->getPeerManager()->GetLastBlockHeight();
+						uint32_t lastBlockHeight = _walletManager->getWallet()->LastBlockHeight();
 
 						nlohmann::json info;
 

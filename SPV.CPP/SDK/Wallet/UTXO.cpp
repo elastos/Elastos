@@ -47,13 +47,13 @@ namespace Elastos {
 			_spent(false) {
 		}
 
-		UTXO::UTXO(const TransactionInput &input) :
+		UTXO::UTXO(const InputPtr &input) :
 			_timestamp(0),
 			_blockHeight(0),
 			_spent(true),
 			_output(nullptr) {
-			_hash = input.TxHash();
-			_n = input.Index();
+			_hash = input->TxHash();
+			_n = input->Index();
 		}
 
 		UTXO::~UTXO() {

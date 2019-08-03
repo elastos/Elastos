@@ -36,75 +36,28 @@ namespace Elastos {
 							   const ChainParamsPtr &chainParams) :
 				CoreSpvService(pluginTypes, chainParams),
 				_executor(BACKGROUND_THREAD_COUNT),
-				_reconnectExecutor(BACKGROUND_THREAD_COUNT),
-				_databaseManager(dbPath),
-				_reconnectTimer(nullptr) {
+				_databaseManager(dbPath) {
 			init(walletID, subAccount, earliestPeerTime, reconnectSeconds);
 		}
 
 		SpvService::~SpvService() {
-
-		}
-
-		void SpvService::Start() {
-			getPeerManager()->SetReconnectEnableStatus(true);
-
-			getPeerManager()->Connect();
+			_executor.StopThread();
 		}
 
 		void SpvService::SyncStart() {
-			getPeerManager()->ResetReconnectStep();
-			getPeerManager()->SetReconnectEnableStatus(true);
-			Peer::ConnectStatus status = getPeerManager()->GetConnectStatus();
-
-			Log::debug("connect status = {}, reconnect task = {}", status == Peer::Connected ? "Connected" :
-											 (status == Peer::Connecting ? "Connecting" : "Disconnected"),
-					   getPeerManager()->ReconnectTaskCount());
-
-			if (getPeerManager()->ReconnectTaskCount() > 0) {
-				_reconnectTimer->cancel();
-			}
-
-			if (status == Peer::Disconnected) {
-				getPeerManager()->Connect();
-			}
-		}
-
-		void SpvService::Stop() {
-			getPeerManager()->SetReconnectEnableStatus(false);
-
-			if (_reconnectTimer) {
-				_reconnectTimer->cancel();
-				_reconnectTimer = nullptr;
-			}
-
-			getPeerManager()->SetReconnectTaskCount(0);
-			getPeerManager()->Disconnect();
-
-			_executor.StopThread();
-			_reconnectExecutor.StopThread();
+			_peerManager->SetKeepAliveTimestamp(time(NULL));
+			_peerManager->ResetReconnectStep();
+			_peerManager->ConnectLaster(0);
 		}
 
 		void SpvService::SyncStop() {
-			getPeerManager()->SetReconnectEnableStatus(false);
-
-			if (_reconnectTimer) {
-				_reconnectTimer->cancel();
-				_reconnectTimer = nullptr;
-			}
-
-			getPeerManager()->SetReconnectTaskCount(0);
-			getPeerManager()->Disconnect();
+			_peerManager->CancelTimer();
+			_peerManager->Disconnect();
 		}
 
 		void SpvService::PublishTransaction(const TransactionPtr &tx) {
 			if (getPeerManager()->GetConnectStatus() != Peer::Connected) {
-				_peerManager->SetReconnectEnableStatus(false);
-				if (_reconnectTimer != nullptr)
-					_reconnectTimer->cancel();
-				_peerManager->Disconnect();
-				_peerManager->SetReconnectEnableStatus(true);
-				getPeerManager()->Connect();
+				getPeerManager()->ConnectLaster(0);
 			}
 
 			getPeerManager()->PublishTransaction(tx);
@@ -312,22 +265,6 @@ namespace Elastos {
 						  });
 		}
 
-		void SpvService::syncIsInactive(uint32_t time) {
-			if (_peerManager->GetReconnectEnableStatus() && _peerManager->ReconnectTaskCount() == 0) {
-				Log::info("{} disconnect, reconnect {}s later", _peerManager->GetID(), time);
-				if (_reconnectTimer != nullptr) {
-					_reconnectTimer->cancel();
-					_reconnectTimer = nullptr;
-				}
-
-				_peerManager->SetReconnectTaskCount(_peerManager->ReconnectTaskCount() + 1);
-
-				_peerManager->Disconnect();
-
-				StartReconnect(time);
-			}
-		}
-
 		void SpvService::connectStatusChanged(const std::string &status) {
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
 						  [&status](PeerManager::Listener *listener) {
@@ -384,7 +321,7 @@ namespace Elastos {
 		const CoreSpvService::PeerManagerListenerPtr &SpvService::createPeerManagerListener() {
 			if (_peerManagerListener == nullptr) {
 				_peerManagerListener = PeerManagerListenerPtr(
-						new WrappedExecutorPeerManagerListener(this, &_executor, &_reconnectExecutor, _pluginTypes));
+						new WrappedExecutorPeerManagerListener(this, &_executor, _pluginTypes));
 			}
 			return _peerManagerListener;
 		}
@@ -402,30 +339,6 @@ namespace Elastos {
 
 		void SpvService::RegisterPeerManagerListener(PeerManager::Listener *listener) {
 			_peerManagerListeners.push_back(listener);
-		}
-
-		void SpvService::StartReconnect(uint32_t time) {
-			_reconnectTimer = boost::shared_ptr<boost::asio::deadline_timer>(new boost::asio::deadline_timer(
-					_reconnectService, boost::posix_time::seconds(time)));
-
-			_peerManager->Lock();
-			if (_peerManager->GetPeers().empty()) {
-				std::vector<PeerInfo> peers = loadPeers();
-				Log::info("{} load {} peers", _peerManager->GetID(), peers.size());
-				_peerManager->SetPeers(peers);
-			}
-			_peerManager->Unlock();
-
-			_reconnectTimer->async_wait(
-					boost::bind(&PeerManager::AsyncConnect, _peerManager.get(), boost::asio::placeholders::error));
-			_reconnectService.restart();
-			_reconnectService.run_one();
-		}
-
-		void SpvService::ResetReconnect() {
-			_reconnectTimer->expires_at(_reconnectTimer->expires_at() + boost::posix_time::seconds(_reconnectSeconds));
-			_reconnectTimer->async_wait(
-					boost::bind(&PeerManager::AsyncConnect, _peerManager.get(), boost::asio::placeholders::error));
 		}
 
 	}

@@ -67,7 +67,7 @@ namespace Elastos {
 
 				virtual void OnRelayedBlock(const PeerPtr &peer, const MerkleBlockPtr &block) = 0;
 
-				virtual void OnRelayedPingMsg(const PeerPtr &peer) = 0;
+				virtual void OnRelayedPing(const PeerPtr &peer) = 0;
 
 				virtual void
 				OnNotfound(const PeerPtr &peer, const std::vector<uint256> &txHashes,

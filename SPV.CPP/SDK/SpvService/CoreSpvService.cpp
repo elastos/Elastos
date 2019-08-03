@@ -267,22 +267,12 @@ namespace Elastos {
 			}
 		}
 
-		void WrappedExceptionPeerManagerListener::syncIsInactive(uint32_t time) {
-			try {
-				_listener->syncIsInactive(time);
-			} catch (const std::exception &e) {
-				Log::error("syncIsInactive exception: {}", e.what());
-			}
-		}
-
 		WrappedExecutorPeerManagerListener::WrappedExecutorPeerManagerListener(
 				PeerManager::Listener *listener,
 				Executor *executor,
-				Executor *reconnectExecutor,
 				const PluginType &pluginType) :
 				_listener(listener),
-				_executor(executor),
-				_reconnectExecutor(reconnectExecutor) {
+				_executor(executor) {
 		}
 
 		void WrappedExecutorPeerManagerListener::syncStarted() {
@@ -376,16 +366,6 @@ namespace Elastos {
 					_listener->connectStatusChanged(status);
 				} catch (const std::exception &e) {
 					Log::error("connectStatusChanged exception: {}", e.what());
-				}
-			}));
-		}
-
-		void WrappedExecutorPeerManagerListener::syncIsInactive(uint32_t time) {
-			_reconnectExecutor->Execute(Runnable([this, time]() -> void {
-				try {
-					_listener->syncIsInactive(time);
-				} catch (const std::exception &e) {
-					Log::error("Peer manager callback (syncIsInactive) error: {}", e.what());
 				}
 			}));
 		}

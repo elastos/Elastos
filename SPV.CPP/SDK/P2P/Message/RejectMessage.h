@@ -10,8 +10,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class RejectMessage :
-			public Message {
+		class RejectMessage : public Message {
 		public:
 			RejectMessage(const MessagePeerPtr &peer);
 

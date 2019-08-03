@@ -597,15 +597,14 @@ static void GetAllTxSummary(const std::string &masterWalletID, const std::string
 	if (!subWallet)
 		return;
 
-	nlohmann::json txSummary = subWallet->GetAllTransaction(0, 10, "");
+	nlohmann::json txSummary = subWallet->GetAllTransaction(0, 300, "");
 
 #if 0
 	nlohmann::json txns = txSummary["Transactions"];
 	for (nlohmann::json::iterator it = txns.begin(); it != txns.end(); ++it) {
-		nlohmann::json tx = subWallet->GetAllTransaction(0, 500, (*it)["TxHash"]);
+		nlohmann::json tx = subWallet->GetAllTransaction(0, 40, (*it)["TxHash"]);
 		logger->debug("tx = {}", tx.dump());
 	}
-
 	nlohmann::json cbSummary = subWallet->GetAllCoinBaseTransaction(0, 10000, "");
 	logger->debug("[{}:{}] all coinbase tx -> {}", masterWalletID, subWalletID, cbSummary.dump());
 
@@ -615,7 +614,6 @@ static void GetAllTxSummary(const std::string &masterWalletID, const std::string
 		logger->debug("cb = {}", cb.dump());
 	}
 #endif
-
 	nlohmann::json utxoSummary = subWallet->GetAllUTXOs(0, 1000, "");
 }
 

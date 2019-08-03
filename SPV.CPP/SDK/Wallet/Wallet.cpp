@@ -120,6 +120,7 @@ namespace Elastos {
 				Log::info("contain not striped tx, update all tx");
 				txUpdatedAll(_transactions);
 			}
+			SPVLOG_DEBUG("balance info {}", GetBalanceInfo().dump());
 		}
 
 		Wallet::~Wallet() {
@@ -253,6 +254,7 @@ namespace Elastos {
 		bool Wallet::RegisterTransaction(const TransactionPtr &tx) {
 			bool r = true, wasAdded = false;
 			UTXOPtr cb = nullptr;
+			std::map<uint256, BigInt> changedBalance;
 
 			bool IsReceiveTx = IsReceiveTransaction(tx);
 			if (tx != nullptr && (IsReceiveTx || (!IsReceiveTx && tx->IsSigned()))) {
@@ -264,7 +266,7 @@ namespace Elastos {
 						//       (for now, replacements appear invalid until confirmation)
 						_allTx.Insert(tx);
 						InsertTx(tx);
-						AddSpendingUTXO(tx->GetInputs());
+						changedBalance = BalanceAfterUpdatedTx(tx);
 						wasAdded = true;
 					} else { // keep track of unconfirmed non-wallet tx for invalid tx checks and child-pays-for-parent fees
 						// BUG: limit total non-wallet unconfirmed tx to avoid memory exhaustion attack
@@ -287,6 +289,9 @@ namespace Elastos {
 			} else if (cb) {
 				coinBaseTxAdded(cb);
 			}
+
+			for (std::map<uint256, BigInt>::iterator it = changedBalance.begin(); it != changedBalance.end(); ++it)
+				balanceChanged(it->first, it->second);
 
 			return r;
 		}
@@ -459,6 +464,7 @@ namespace Elastos {
 			// TODO: XXX attempted double spends should cause conflicted tx to remain unverified until they're confirmed
 			// TODO: XXX conflicted tx with the same wallet outputs should be presented as the same tx to the user
 
+#if 0
 			if (tx->GetBlockHeight() == TX_UNCONFIRMED) { // only unconfirmed _transactions can be invalid
 //				Lock();
 //				if (!_allTx.Contains(tx)) {
@@ -477,6 +483,7 @@ namespace Elastos {
 						r = false;
 				}
 			}
+#endif
 
 			return r;
 		}
@@ -589,7 +596,7 @@ namespace Elastos {
 		bool Wallet::StripTransaction(const TransactionPtr &tx) const {
 			if (IsReceiveTransaction(tx) && tx->GetOutputs().size() > 2 &&
 				tx->GetOutputs().size() - 1 == tx->GetOutputs().back()->FixedIndex()) {
-				SPVLOG_DEBUG("{} strip tx {}", _walletID, tx->GetHash().GetHex());
+				size_t sizeBeforeStrip = tx->GetOutputs().size();
 				boost::mutex::scoped_lock scopedLock(lock);
 				std::vector<OutputPtr> newOutputs;
 				const std::vector<OutputPtr> &outputs = tx->GetOutputs();
@@ -597,8 +604,12 @@ namespace Elastos {
 					if (_subAccount->ContainsAddress((*o)->Addr()))
 						newOutputs.push_back(*o);
 				}
-				tx->SetOutputs(newOutputs);
-				return true;
+
+				if (newOutputs.size() != sizeBeforeStrip) {
+					tx->SetOutputs(newOutputs);
+					SPVLOG_DEBUG("{} strip tx {}, h: {}", _walletID, tx->GetHash().GetHex(), tx->GetBlockHeight());
+					return true;
+				}
 			}
 			return false;
 		}
@@ -665,6 +676,11 @@ namespace Elastos {
 		void Wallet::SetBlockHeight(uint32_t height) {
 			boost::mutex::scoped_lock scopedLock(lock);
 			_blockHeight = height;
+		}
+
+		uint32_t Wallet::LastBlockHeight() const {
+			boost::mutex::scoped_lock scopedLock(lock);
+			return _blockHeight;
 		}
 
 		void Wallet::SignTransaction(const TransactionPtr &tx, const std::string &payPassword) {
@@ -898,25 +914,29 @@ namespace Elastos {
 					if (it->second->RemoveSpentUTXO(tx->GetInputs())) {
 						changedBalance[it->first] = it->second->GetBalance();
 					}
+					RemoveSpendingUTXO(tx->GetInputs());
 				}
 
 				const OutputArray &outputs = tx->GetOutputs();
 				for (OutputArray::const_iterator o = outputs.cbegin(); o != outputs.cend(); ++o) {
 					if (_subAccount->ContainsAddress((*o)->Addr())) {
+						_subAccount->AddUsedAddrs((*o)->Addr());
 						const uint256 &asset = (*o)->AssetID();
 						if (ContainsAsset(asset)) {
 							uint16_t n = (*o)->FixedIndex();
 							UTXOPtr utxo(new UTXO(tx->GetHash(), n, tx->GetTimestamp(), tx->GetBlockHeight(), (*o)));
-							_groupedAssets[asset]->AddUTXO(utxo);
-							changedBalance[asset] = _groupedAssets[asset]->GetBalance();
+							if (_groupedAssets[asset]->AddUTXO(utxo))
+								changedBalance[asset] = _groupedAssets[asset]->GetBalance();
 						}
 					}
 				}
 			} else {
 				const OutputArray &outputs = tx->GetOutputs();
 				for (OutputArray::const_iterator o = outputs.cbegin(); o != outputs.cend(); ++o) {
-					if (_subAccount->ContainsAddress((*o)->Addr()) && ContainsAsset((*o)->AssetID())) {
-						if (_groupedAssets[(*o)->AssetID()]->RemoveSpentUTXO(tx->GetHash(), (*o)->FixedIndex())) {
+					if (_subAccount->ContainsAddress((*o)->Addr())) {
+						_subAccount->AddUsedAddrs((*o)->Addr());
+						if (ContainsAsset((*o)->AssetID()) &&
+							_groupedAssets[(*o)->AssetID()]->RemoveSpentUTXO(tx->GetHash(), (*o)->FixedIndex())) {
 							changedBalance[(*o)->AssetID()] = _groupedAssets[(*o)->AssetID()]->GetBalance();
 						}
 					}
@@ -927,19 +947,22 @@ namespace Elastos {
 					const TransactionPtr txInput = _allTx.Get((*in)->TxHash());
 					UTXOPtr cb;
 					if (txInput && txInput->GetBlockHeight() != TX_UNCONFIRMED) {
-						for (OutputArray::const_iterator o = txInput->GetOutputs().cbegin(); o != txInput->GetOutputs().cend(); ++o) {
-							if (_subAccount->ContainsAddress((*o)->Addr()) && ContainsAsset((*o)->AssetID())) {
-								UTXOPtr utxo(new UTXO(txInput->GetHash(), (*o)->FixedIndex(), txInput->GetTimestamp(), txInput->GetBlockHeight(), (*o)));
-								_groupedAssets[(*o)->AssetID()]->AddUTXO(utxo);
-								changedBalance[(*o)->AssetID()] = _groupedAssets[(*o)->AssetID()]->GetBalance();
+						OutputPtr o = txInput->OutputOfIndex((*in)->Index());
+						if (o) {
+							_spendingOutputs.push_back(UTXOPtr(new UTXO(*in)));
+							if (_subAccount->ContainsAddress(o->Addr()) && ContainsAsset(o->AssetID())) {
+								UTXOPtr utxo(new UTXO(txInput->GetHash(), o->FixedIndex(), txInput->GetTimestamp(), txInput->GetBlockHeight(), o));
+								if (_groupedAssets[o->AssetID()]->AddUTXO(utxo))
+									changedBalance[o->AssetID()] = _groupedAssets[o->AssetID()]->GetBalance();
 							}
 						}
 					} else if ((cb = CoinBaseForHashInternal((*in)->TxHash())) != nullptr) {
+						_spendingOutputs.push_back(UTXOPtr(new UTXO(*in)));
 						// TODO BUG update spent status to database
 						cb->SetSpent(false);
 						if (ContainsAsset(cb->Output()->AssetID())) {
-							_groupedAssets[cb->Output()->AssetID()]->AddCoinBaseUTXO(cb);
-							changedBalance[cb->Output()->AssetID()] = _groupedAssets[cb->Output()->AssetID()]->GetBalance();
+							if (_groupedAssets[cb->Output()->AssetID()]->AddCoinBaseUTXO(cb))
+								changedBalance[cb->Output()->AssetID()] = _groupedAssets[cb->Output()->AssetID()]->GetBalance();
 						}
 					}
 				}
@@ -961,18 +984,6 @@ namespace Elastos {
 				for (UTXOArray::iterator o = _spendingOutputs.begin(); o != _spendingOutputs.end(); ++o) {
 					if ((*o)->Equal(*input)) {
 						_spendingOutputs.erase(o);
-						break;
-					}
-				}
-			}
-		}
-
-		void Wallet::AddSpendingUTXO(const InputArray &inputs) {
-			for (InputArray::const_iterator input = inputs.cbegin(); input != inputs.cend(); ++input) {
-				for (GroupedAssetMap::iterator it = _groupedAssets.begin(); it != _groupedAssets.end(); ++it) {
-					UTXOPtr cb = it->second->FindUTXO(*input);
-					if (cb) {
-						_spendingOutputs.push_back(cb);
 						break;
 					}
 				}
@@ -1018,11 +1029,6 @@ namespace Elastos {
 			}
 
 			return false;
-		}
-
-		void Wallet::AddSpendingUTXO(const InputPtr &input) {
-			UTXOPtr txo(new UTXO(*input));
-			_spendingOutputs.push_back(txo);
 		}
 
 		void Wallet::GetSpentCoinbase(const InputArray &inputs, std::vector<uint256> &coinbase) const {
