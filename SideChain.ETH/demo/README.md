@@ -55,7 +55,7 @@
 3. Modify the --bootnodes parameter in the **start.sh** files under the ~/elastos*[n]*/Geth/ directories according to the IP address of the server hosting the elastos1 deployment
 
    ```shell
-   --bootnodes "enode://0e96be781e9e2bc7a960e60bf597847f6aec476c2dcf4b14d7cc5f1722c5e70184b71c955c2fb4b263f3c02b7ebb1395346b828e3c0a25fcafc18e47a505f033@127.0.0.1:30301"
+   --bootnodes "enode://0e96be781e9e2bc7a960e60bf597847f6aec476c2dcf4b14d7cc5f1722c5e70184b71c955c2fb4b263f3c02b7ebb1395346b828e3c0a25fcafc18e47a505f033@127.0.0.1:20630"
    ```
 
 4. Start the ELA nodes 
