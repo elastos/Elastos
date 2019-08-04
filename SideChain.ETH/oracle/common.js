@@ -1,15 +1,15 @@
 "use strict";
 
 const Web3 = require("web3");
-const web3 = new Web3("http://127.0.0.1:8545");
+const web3 = new Web3("http://127.0.0.1:20636");
 const ctrt = require("./ctrt");
 
 const contract = new web3.eth.Contract(ctrt.abi);
 console.log(JSON.stringify(process.env.env));
 switch (process.env.env) {
     case "rinkeby":
-        console.log("");
-        contract.options.address = "";
+        console.log("0x491bC043672B9286fA02FA7e0d6A3E5A0384A31A");
+        contract.options.address = "0x491bC043672B9286fA02FA7e0d6A3E5A0384A31A";
         break;
     case "testnet":
         console.log("0x491bC043672B9286fA02FA7e0d6A3E5A0384A31A");
