@@ -8,7 +8,7 @@ RUN \
   apk del go git make gcc musl-dev linux-headers && \
   rm -rf /Elastos.ELA.SideChain.ETH && rm -rf /var/cache/apk/*
 
-EXPOSE 8545
-EXPOSE 30303
+EXPOSE 20636
+EXPOSE 20638
 
 ENTRYPOINT ["/geth"]

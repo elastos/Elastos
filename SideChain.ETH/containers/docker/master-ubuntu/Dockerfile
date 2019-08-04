@@ -11,7 +11,7 @@ RUN \
   apt-get remove -y golang-1.9 git make gcc libc-dev && apt autoremove -y && apt-get clean && \
   rm -rf /Elastos.ELA.SideChain.ETH
 
-EXPOSE 8545
-EXPOSE 30303
+EXPOSE 20636
+EXPOSE 20638
 
 ENTRYPOINT ["/geth"]

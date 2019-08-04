@@ -382,14 +382,42 @@ func DefaultTestnetGenesisBlock() *Genesis {
 
 // DefaultRinkebyGenesisBlock returns the Rinkeby network genesis block.
 func DefaultRinkebyGenesisBlock() *Genesis {
-	return &Genesis{
+	genesis := &Genesis{
 		Config:     params.RinkebyChainConfig,
 		Timestamp:  0x5bda9da8,
-		ExtraData:  hexutil.MustDecode("0x0000000000000000000000000000000000000000000000000000000000000000d9758863f280c25b0d1f2f81705e3725ccd5ac490000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
 		GasLimit:   0x2068F7700,
 		Difficulty: big.NewInt(1),
 		Alloc:      nil,
 	}
+	extra := make([]byte, 0)
+	extra = append(extra, bytes.Repeat([]byte{0x00}, 32)...)
+	address1 := hexutil.MustDecode("0x7117360e9165f11c51c4231be16c602a5dd250b6")
+	address2 := hexutil.MustDecode("0xaeabe3dd7b80adf0a884e572e84daf5eba0aa4ae")
+	address3 := hexutil.MustDecode("0x8bb95e8f1ec991b71789497a09fd4997c468c3c2")
+	address4 := hexutil.MustDecode("0x77cd931d4864039fa48220f817519f5a8b0715b3")
+	address5 := hexutil.MustDecode("0x34185174992c36c79f78da5e009b9c22732738d6")
+	address6 := hexutil.MustDecode("0x35ae1cbf8c5a01a40943aff7e0c8d5d3c625bf96")
+	address7 := hexutil.MustDecode("0x971037c3e90bb239b5b219b7ac14c8e301dca5f8")
+	address8 := hexutil.MustDecode("0x75ed22d90568dd99c56cb34c8d5204d610cb2b61")
+	address9 := hexutil.MustDecode("0x07ebaaee24a9d8dd625ca9863af2347656df876a")
+	address10 := hexutil.MustDecode("0x369c5f2b099abb3c050b8ba4355cf0dc29ebf429")
+	address11 := hexutil.MustDecode("0x6e32b1fff289d05e719a58e1ad1fff1a924014c8")
+	address12 := hexutil.MustDecode("0x72064cd776e12d7163d329cc003bffb1b8b9de44")
+	extra = append(extra, address1...)
+	extra = append(extra, address2...)
+	extra = append(extra, address3...)
+	extra = append(extra, address4...)
+	extra = append(extra, address5...)
+	extra = append(extra, address6...)
+	extra = append(extra, address7...)
+	extra = append(extra, address8...)
+	extra = append(extra, address9...)
+	extra = append(extra, address10...)
+	extra = append(extra, address11...)
+	extra = append(extra, address12...)
+	extra = append(extra, bytes.Repeat([]byte{0x00}, 65)...)
+	genesis.ExtraData = extra
+	return genesis
 }
 
 // Convert a string to an int
