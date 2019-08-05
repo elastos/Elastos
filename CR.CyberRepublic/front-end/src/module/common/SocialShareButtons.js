@@ -11,6 +11,7 @@ import {
 } from 'react-share'
 import styled from 'styled-components'
 import QRCode from 'qrcode.react'
+import I18N from '@/I18N'
 
 import BaseComponent from '@/model/BaseComponent'
 import WeiboIcon from './WeiboIcon'
@@ -52,7 +53,7 @@ class SocialShareButtons extends BaseComponent {
           <WechatIcon size={32} />
           <Modal visible={this.state.toggle} footer={null}>
             <InnerWrapper>
-              <Desc>打开微信“扫一扫”，打开网页后点击屏幕右上角分享按钮</Desc>
+              <Desc>{I18N.get('socialShare.wechat.desc')}</Desc>
               <QRCode value={window.location.href} size={256} />
             </InnerWrapper>
           </Modal>
