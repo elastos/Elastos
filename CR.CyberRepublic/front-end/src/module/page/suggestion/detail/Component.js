@@ -22,6 +22,7 @@ import StandardPage from '../../StandardPage'
 import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
 import Meta from '@/module/common/Meta'
+import SocialShareButtons from '@/module/common/SocialShareButtons'
 
 import {
   Container,
@@ -82,6 +83,7 @@ export default class extends StandardPage {
     const editForm = this.renderEditForm()
     // const mySuggestionNode = <MySuggestion />
     const commentNode = this.renderCommentNode()
+    const socialShareButtonsNode = this.renderSocialShareButtonsNode()
 
     return (
       <div>
@@ -102,6 +104,7 @@ export default class extends StandardPage {
             <div>
               {detailNode}
               {translationBtn}
+              {socialShareButtonsNode}
               {actionsNode}
               {ownerActionsNode}
               {councilActionsNode}
@@ -115,6 +118,7 @@ export default class extends StandardPage {
               <Col span={24}>
                 {detailNode}
                 {translationBtn}
+                {socialShareButtonsNode}
                 {actionsNode}
                 {ownerActionsNode}
                 {councilActionsNode}
@@ -157,6 +161,15 @@ export default class extends StandardPage {
         {timelineNode}
         {linkNode}
       </div>
+    )
+  }
+
+  renderSocialShareButtonsNode() {
+    const { detail } = this.props
+    return (
+      <SocialShareButtons
+        shareQuote={`${detail.title} - Suggestion Detail - Cyber Republic`}
+      />
     )
   }
 
