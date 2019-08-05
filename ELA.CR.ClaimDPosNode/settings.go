@@ -13,6 +13,7 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -22,6 +23,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/checkpoint"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"github.com/elastos/Elastos.ELA/utils/elalog"
+	"github.com/elastos/Elastos.ELA/utils/gpath"
 
 	"github.com/urfave/cli"
 )
@@ -35,6 +37,10 @@ const (
 
 	// checkpointPath indicates the path storing the checkpoint data
 	checkpointPath = "checkpoints"
+
+	// cmdValueSplitter defines the splitter to split raw string into a
+	// string array
+	cmdValueSplitter = ","
 )
 
 var (
@@ -50,23 +56,94 @@ type settingItem struct {
 	ConfigPath   string
 	ParamName    string
 	ConfigSetter func(string, *config.Params, *config.Configuration) error
+	CliSetter    func(interface{}, *config.Params) error
 }
 
 func (s *settingItem) TryInitValue(params *config.Params,
 	conf *config.Configuration, c *cli.Context) error {
-	if c.IsSet(s.Flag.GetName()) {
-		// todo set params by cli context
+	if s.Flag != nil && c.IsSet(s.Flag.GetName()) {
+		value, err := s.getCliValue(c)
+		if err != nil {
+			return err
+		}
+
+		if s.CliSetter != nil {
+			return s.CliSetter(value, params)
+		} else {
+			return gpath.Set(params, value, s.ParamName)
+		}
 	} else {
-		if s.notDefault(conf) {
+		needSet, err := s.notDefault(conf)
+		if err != nil {
+			return err
+		}
+		if needSet {
 			return s.initByConfig(params, conf)
 		}
 	}
 	return nil
 }
 
-func (s *settingItem) notDefault(conf *config.Configuration) bool {
-	// todo compare with default value
-	return false
+func (s *settingItem) getCliValue(c *cli.Context) (interface{}, error) {
+	value := c.String(s.Flag.GetName())
+	switch s.DefaultValue.(type) {
+	case common.Fixed64:
+		v, err := strconv.ParseInt(value, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		return common.Fixed64(v), nil
+	case time.Duration:
+		v, err := strconv.ParseInt(value, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		return time.Duration(v), nil
+	case uint16:
+		v, err := strconv.ParseInt(value, 10, 16)
+		if err != nil {
+			return nil, err
+		}
+		return uint16(v), nil
+	case uint32:
+		v, err := strconv.ParseInt(value, 10, 32)
+		if err != nil {
+			return nil, err
+		}
+		return uint32(v), nil
+	case int:
+		v, err := strconv.ParseInt(value, 10, 32)
+		if err != nil {
+			return nil, err
+		}
+		return int(v), nil
+	case int64:
+		v, err := strconv.ParseInt(value, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		return v, nil
+	case bool:
+		v, err := strconv.ParseBool(value)
+		if err != nil {
+			return nil, err
+		}
+		return v, nil
+	case string:
+		return value, nil
+	case []string:
+		return strings.Split(value, cmdValueSplitter), nil
+	default:
+		return nil, errors.New("known value type")
+	}
+}
+
+func (s *settingItem) notDefault(conf *config.Configuration) (bool, error) {
+	value, err := gpath.At(conf, s.ConfigPath)
+	if err != nil {
+		return false, err
+	}
+	return !gpath.Equal(s.DefaultValue, value), nil
 }
 
 func (s *settingItem) initByConfig(params *config.Params,
@@ -74,9 +151,12 @@ func (s *settingItem) initByConfig(params *config.Params,
 	if s.ConfigSetter != nil {
 		return s.ConfigSetter(s.ConfigPath, params, conf)
 	} else {
-		// todo set by direct value of configuration
+		value, err := gpath.At(conf, s.ConfigPath)
+		if err != nil {
+			return err
+		}
+		return gpath.Set(params, value, s.ParamName)
 	}
-	return nil
 }
 
 type settings struct {
@@ -170,7 +250,7 @@ func newSettings() *settings {
 	result.Add(&settingItem{
 		Flag:         cmdcom.PortFlag,
 		DefaultValue: uint16(0),
-		ConfigPath:   "DefaultPort",
+		ConfigPath:   "NodePort",
 		ParamName:    "DefaultPort"})
 
 	result.Add(&settingItem{
@@ -181,14 +261,24 @@ func newSettings() *settings {
 
 	result.Add(&settingItem{
 		Flag:         cmdcom.EnableDnsFlag,
-		DefaultValue: true,
+		DefaultValue: false,
 		ConfigPath:   "DisableDNS",
 		ConfigSetter: func(path string, params *config.Params,
 			conf *config.Configuration) error {
 			params.DNSSeeds = nil
 			return nil
 		},
-		ParamName: "DNSSeeds"})
+		CliSetter: func(value interface{}, params *config.Params) error {
+			disable, ok := value.(bool)
+			if !ok {
+				return errors.New("invalid dns seeds switch setting")
+			}
+			if disable {
+				params.DNSSeeds = nil
+			}
+			return nil
+		},
+		ParamName: ""})
 
 	result.Add(&settingItem{
 		Flag:         cmdcom.MinTxFeeFlag,
@@ -387,12 +477,12 @@ func newSettings() *settings {
 		Flag:         cmdcom.CRMemberCountFlag,
 		DefaultValue: common.Fixed64(0),
 		ConfigPath:   "CRConfiguration.MemberCount",
-		ParamName:    "MemberCount"})
+		ParamName:    "CRMemberCount"})
 
 	result.Add(&settingItem{
 		Flag:         cmdcom.CRDutyPeriodFlag,
 		DefaultValue: uint32(0),
-		ConfigPath:   "CRConfiguration.CRDutyPeriod",
+		ConfigPath:   "CRConfiguration.DutyPeriod",
 		ParamName:    "CRDutyPeriod"})
 
 	result.Add(&settingItem{
