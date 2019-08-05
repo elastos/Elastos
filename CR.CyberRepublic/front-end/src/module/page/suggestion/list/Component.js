@@ -17,15 +17,10 @@ import MetaContainer from '../common/meta/Container'
 import TagsContainer from '../common/tags/Container'
 import suggestionImg from '@/assets/images/SuggestionToProposal.png'
 import suggestionZhImg from '@/assets/images/SuggestionToProposal.zh.png'
+import { SUGGESTION_STATUS, CONTENT_TYPE, SUGGESTION_TAG_TYPE } from '@/constant'
 import { breakPoint } from '@/constants/breakPoint'
 import { text, bg } from '@/constants/color'
-import { SUGGESTION_TAG_TYPE } from '@/constant'
 import DraftEditor from '@/module/common/DraftEditor'
-
-import {
-  SUGGESTION_STATUS,
-  CONTENT_TYPE
-} from '@/constant'
 
 import MediaQuery from 'react-responsive'
 import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC, LG_WIDTH } from '@/config/constant'

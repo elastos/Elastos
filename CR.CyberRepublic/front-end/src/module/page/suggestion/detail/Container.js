@@ -41,6 +41,9 @@ export default createContainer(Component, (state) => {
     async createDraft(param) {
       return cVoteService.createDraft(param)
     },
+    async proposeSuggestion(param) {
+      return cVoteService.proposeSuggestion(param);
+    },
     async update(param) {
       return service.update(param)
     },

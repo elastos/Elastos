@@ -1,30 +1,25 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
-import { Form, Input, Button, Row, message, Modal, Tabs, Radio } from 'antd'
+import { Form, Input, Button, Row, Tabs } from 'antd'
 import I18N from '@/I18N'
 import _ from 'lodash'
-import { CVOTE_STATUS, CONTENT_TYPE } from '@/constant'
+import { CONTENT_TYPE } from '@/constant'
 import { convertToRaw } from 'draft-js'
 import DraftEditor from '@/module/common/DraftEditor'
-import CircularProgressbar from '@/module/common/CircularProgressbar'
 
 import 'medium-draft/lib/index.css'
-
 import {
   Container,
-  Title,
   TabPaneInner,
   Note,
-  NoteHighlight,
   TabText,
-  CirContainer
 } from './style'
 
 const FormItem = Form.Item
 const { TabPane } = Tabs
 
 const WORD_LIMIT = 200
-
+const TAB_KEYS = ['abstract', 'goal', 'motivation', 'plan', 'relevance', 'budget']
 const editorTransform = value => {
   // string or object
   let result = value
@@ -54,11 +49,27 @@ class C extends BaseComponent {
   constructor(props) {
     super(props)
 
+    this.timer = -1;
     this.state = {
       loading: false,
-      activeKey: 'abstract',
+      activeKey: TAB_KEYS[0],
       errorKeys: {},
     }
+  }
+
+  componentDidMount() {
+    // this.timer = setInterval(() => {
+    //   this.handleSaveDraft();
+    // }, 5000)
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.timer);
+  }
+
+  getActiveKey(key) {
+    if (!TAB_KEYS.includes(key)) return this.state.activeKey
+    return key
   }
 
   handleSubmit = async e => {
@@ -68,7 +79,7 @@ class C extends BaseComponent {
     e.preventDefault()
     form.validateFields((err, values) => {
       if (err) {
-        this.setState({ loading: false, errorKeys: err, activeKey: Object.keys(err)[0] })
+        this.setState({ loading: false, errorKeys: err, activeKey: this.getActiveKey(Object.keys(err)[0]) })
         return
       }
 
@@ -82,6 +93,15 @@ class C extends BaseComponent {
         plan: formatValue(values.plan)
       }).finally(() => this.setState({ loading: false }))
     })
+  }
+
+  handleSaveDraft = () => {
+    const { form } = this.props
+    if (this.props.onSaveDraft) {
+      const values = form.getFieldsValue();
+      TAB_KEYS.forEach(key => values[key] = formatValue(values[key]))
+      this.props.onSaveDraft(values);
+    }
   }
 
   getTitleInput() {
@@ -101,30 +121,32 @@ class C extends BaseComponent {
   getTextarea(id) {
     const { initialValues = {} } = this.props
     const { getFieldDecorator } = this.props.form
+
+    const rules = [{
+      required: true,
+      transform: editorTransform,
+      message: I18N.get('suggestion.form.error.required')
+    }];
+    if (id !== 'abstract') {
+      rules.push({
+        max: 200,
+        transform: editorTransform,
+        message: I18N.get('proposal.form.error.limit200')
+      })
+    }
+
     return getFieldDecorator(id, {
-      rules: [
-        {
-          required: true,
-          transform: editorTransform,
-          message: I18N.get('suggestion.form.error.required')
-        },
-        {
-          max: 200,
-          transform: editorTransform,
-          message: I18N.get('proposal.form.error.limit200')
-        }
-      ],
+      rules,
       validateTrigger: 'onSubmit',
       initialValue: initialValues[id],
-    })(<DraftEditor contentType={CONTENT_TYPE.MARKDOWN} /* callback={callback} */ />)
+    })(<DraftEditor contentType={CONTENT_TYPE.MARKDOWN} />)
   }
 
   renderTabText(id) {
     const hasError = _.has(this.state.errorKeys, id)
     return (
       <TabText hasErr={hasError}>
-        {I18N.get(`suggestion.fields.${id}`)}
-*
+        {I18N.get(`suggestion.fields.${id}`)}*
       </TabText>
     )
   }
@@ -186,20 +208,47 @@ class C extends BaseComponent {
             </TabPane>
           </Tabs>
 
+          <Row gutter={8} type="flex" justify="center" style={{marginBottom: '30px'}}>
+            <Button
+              onClick={() => {
+                const index = TAB_KEYS.findIndex(item => item === this.state.activeKey)
+                if (index === TAB_KEYS.length - 1) {
+                  this.handleSubmit({ preventDefault: () => {} })
+                } else {
+                  this.setState({ activeKey: TAB_KEYS[index + 1] })
+                }
+              }}
+              className="cr-btn cr-btn-black"
+              htmlType="button"
+            >
+              {I18N.get('suggestion.form.button.continue')}
+            </Button>
+          </Row>
+
           <Row gutter={8} type="flex" justify="center">
+            <Button
+              onClick={this.props.onCancel}
+              className="cr-btn cr-btn-default"
+              htmlType="button"
+              style={{ marginRight: 10 }}
+            >
+              {I18N.get('suggestion.form.button.cancel')}
+            </Button>
+            <Button
+              onClick={this.handleSaveDraft}
+              loading={this.state.loading}
+              className="cr-btn cr-btn-primary"
+              htmlType="button"
+              style={{ marginRight: 10 }}
+            >
+              {I18N.get('suggestion.form.button.saveDraft')}
+            </Button>
             <Button
               loading={this.state.loading}
               className="cr-btn cr-btn-primary"
               htmlType="submit"
             >
-              {I18N.get('from.CVoteForm.button.saveChanges')}
-            </Button>
-            <Button
-              onClick={this.props.onCancel}
-              className="cr-btn cr-btn-default"
-              style={{ marginRight: 10 }}
-            >
-              {I18N.get('from.CVoteForm.button.cancel')}
+              {I18N.get('suggestion.form.button.save')}
             </Button>
           </Row>
         </Form>

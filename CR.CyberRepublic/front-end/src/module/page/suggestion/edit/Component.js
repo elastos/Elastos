@@ -72,6 +72,11 @@ export default class extends StandardPage {
       .then(() => this.historyBack())
       .catch(err => this.setState({ error: err }))
   }
+  onSaveDraft = (model) => {
+    const id = this.state.data._id
+    this.props.updateSuggestion({ id, ...model })
+      .catch(err => console.log(err))
+  }
 
   ord_renderContent() {
     if (this.state.loading) {
@@ -93,7 +98,7 @@ export default class extends StandardPage {
           <MediaQuery maxWidth={LG_WIDTH}>
             <div>
               <BackLink
-                link="/suggestion"
+                link={`/suggestion/${_.get(this.props, 'match.params.id')}`}
                 style={{ position: 'relative', left: 0, marginBottom: 15 }}
               />
             </div>
@@ -103,13 +108,14 @@ export default class extends StandardPage {
           </MediaQuery>
 
           <div>
-            <Title className="komu-a cr-title-with-icon ">
-              {I18N.get('from.CVoteForm.button.add')}
-            </Title>
+            <h2 className="komu-a cr-title-with-icon ">
+              {I18N.get('suggestion.title.edit')}
+            </h2>
             <SuggestionForm
               initialValues={this.state.data}
               onSubmit={this.onSubmit}
               onCancel={this.historyBack}
+              onSaveDraft={this.onSaveDraft}
             />
           </div>
         </Container>

@@ -1,8 +1,7 @@
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
-import { Helmet } from 'react-helmet'
 import _ from 'lodash'
-import { Row, Col, Spin, Divider, Modal, Input, Button } from 'antd'
+import { Row, Col, Spin, Modal, Input, Button, Anchor } from 'antd'
 import { Link } from 'react-router-dom'
 import MediaQuery from 'react-responsive'
 import moment from 'moment/moment'
@@ -11,10 +10,9 @@ import Footer from '@/module/layout/Footer/Container'
 import BackLink from '@/module/shared/BackLink/Component'
 import Translation from '@/module/common/Translation/Container'
 import SuggestionForm from '@/module/form/SuggestionForm/Container'
-import ProposalForm from '@/module/page/CVote/create/Container'
 import I18N from '@/I18N'
 import { LG_WIDTH } from '@/config/constant'
-import { CVOTE_STATUS, SUGGESTION_TAG_TYPE } from '@/constant'
+import { CVOTE_STATUS, SUGGESTION_TAG_TYPE, CONTENT_TYPE } from '@/constant'
 import { getSafeUrl } from '@/util/url'
 import sanitizeHtml from '@/util/html'
 import { ReactComponent as CommentIcon } from '@/assets/images/icon-info.svg'
@@ -41,7 +39,8 @@ import {
   IconWrap,
   Item,
   ItemTitle,
-  ItemText
+  ItemText,
+  StyledAnchor
 } from './style'
 
 import './style.scss'
@@ -71,6 +70,38 @@ export default class extends StandardPage {
     this.props.resetDetail()
   }
 
+  renderAnchors() {
+    return (
+      <StyledAnchor>
+        <Anchor.Link
+          href="#preamble"
+          title={I18N.get('suggestion.fields.preamble')}
+        />
+        <Anchor.Link
+          href="#abstract"
+          title={I18N.get('suggestion.fields.abstract')}
+        />
+        <div style={{ marginTop: 48 }}>
+          <Anchor.Link href="#goal" title={I18N.get('suggestion.fields.goal')} />
+        </div>
+        <Anchor.Link
+          href="#motivation"
+          title={I18N.get('suggestion.fields.motivation')}
+        />
+        <Anchor.Link href="#plan" title={I18N.get('suggestion.fields.plan')} />
+        <Anchor.Link
+          href="#relevance"
+          title={I18N.get('suggestion.fields.relevance')}
+        />
+        <div style={{ marginTop: 48 }}>
+          <Anchor.Link
+            href="#budget"
+            title={I18N.get('suggestion.fields.budget')}
+          />
+        </div>
+      </StyledAnchor>
+    )
+  }
   ord_renderContent() {
     const { detail } = this.props
     if (_.isEmpty(detail) || detail.loading) {
@@ -105,6 +136,7 @@ export default class extends StandardPage {
                 link="/suggestion"
                 style={{ position: 'relative', left: 0, marginBottom: 15 }}
               />
+              {this.renderAnchors()}
             </div>
             <div>
               {detailNode}
@@ -119,6 +151,7 @@ export default class extends StandardPage {
           </MediaQuery>
           <MediaQuery minWidth={LG_WIDTH + 1}>
             <BackLink link="/suggestion" />
+            {this.renderAnchors()}
             <Row gutter={24}>
               <Col span={24}>
                 {detailNode}
@@ -172,24 +205,24 @@ export default class extends StandardPage {
         {titleNode}
         {tagsNode}
 
-        <DescLabel>{I18N.get('suggestion.fields.preamble')}</DescLabel>
+        <DescLabel id="preamble">{I18N.get('suggestion.fields.preamble')}</DescLabel>
         {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.proposal'), `#${detail.displayId}`)}
         {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.title'), detail.title)}
         {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.proposer'), detail.createdBy.username)}
         {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.status'), detail.status)}
         {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.created'), moment(detail.createdAt).format('MMM D, YYYY'))}
 
-        <DescLabel>{I18N.get('suggestion.fields.abstract')}</DescLabel>
+        <DescLabel id="abstract">{I18N.get('suggestion.fields.abstract')}</DescLabel>
         <DraftEditor value={detail.abstract} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
-        <DescLabel>{I18N.get('suggestion.fields.goal')}</DescLabel>
+        <DescLabel id="goal">{I18N.get('suggestion.fields.goal')}</DescLabel>
         <DraftEditor value={detail.goal} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
-        <DescLabel>{I18N.get('suggestion.fields.motivation')}</DescLabel>
+        <DescLabel id="motivation">{I18N.get('suggestion.fields.motivation')}</DescLabel>
         <DraftEditor value={detail.motivation} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
-        <DescLabel>{I18N.get('suggestion.fields.plan')}</DescLabel>
+        <DescLabel id="plan">{I18N.get('suggestion.fields.plan')}</DescLabel>
         <DraftEditor value={detail.plan} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
-        <DescLabel>{I18N.get('suggestion.fields.relevance')}</DescLabel>
+        <DescLabel id="relevance">{I18N.get('suggestion.fields.relevance')}</DescLabel>
         <DraftEditor value={detail.relevance} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
-        <DescLabel>{I18N.get('suggestion.fields.budget')}</DescLabel>
+        <DescLabel id="budget">{I18N.get('suggestion.fields.budget')}</DescLabel>
         <DraftEditor value={detail.budget} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
         {/* {coverNode} */}
         {/* {shortDescNode} */}
@@ -629,7 +662,7 @@ export default class extends StandardPage {
     const id = _.get(this.props, 'match.params.id')
     const { current_user_id, profile, history } = this.props.user
     const fullName = `${profile.firstName} ${profile.lastName}`
-    const { createDraft } = this.props
+    const { proposeSuggestion } = this.props
 
     const param = {
       proposedBy: fullName,
@@ -640,8 +673,8 @@ export default class extends StandardPage {
     this.setState({ proposeLoading: true })
 
     try {
-      const res = await createDraft(param)
-      this.props.history.push(`/proposals/${res._id}/edit`)
+      const res = await proposeSuggestion(param)
+      this.props.history.push(`/proposals/${res._id}`)
     } catch (error) {
       this.setState({ proposeLoading: false })
     }
