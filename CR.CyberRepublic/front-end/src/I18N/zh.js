@@ -1121,6 +1121,8 @@ const zh = {
   'profile.detail.no': '否',
 
   // Module form
+  'from.CVoteForm.upload.type.error': '上传的文件不是图片',
+  'from.CVoteForm.upload.size.error': '上传的文件大小不能超过500KB',
   'from.CVoteForm.message.delete.success': '删除成功',
   'from.CVoteForm.message.updated.success': '更新成功',
   'from.CVoteForm.message.create.success': '创建成功',
@@ -1527,7 +1529,7 @@ const zh = {
   // Council & Secretariat
   cs: {
     incumbent: '现任委员',
-    council: '委员会',
+    council: 'CYBER REPUBLIC 筹委会',
     secretariat: {
       title: '秘书处',
       general: '秘书长',

@@ -1147,6 +1147,8 @@ const en = {
   'profile.detail.no': 'No',
 
   // Module form
+  'from.CVoteForm.upload.type.error': 'The upload file is not an image.',
+  'from.CVoteForm.upload.size.error': 'The maximum upload file size is less than 500KB.',
   'from.CVoteForm.message.delete.success': 'Delete success',
   'from.CVoteForm.message.updated.success': 'Update success',
   'from.CVoteForm.message.create.success': 'Create success',
@@ -1574,7 +1576,7 @@ const en = {
   // Council & Secretariat
   cs: {
     incumbent: 'INCUMBENT',
-    council: 'COUNCIL',
+    council: 'CYBER REPUBLIC INTERIM COUNCIL',
     secretariat: {
       title: 'SECRETARIAT',
       general: 'SECRETARIAT GENERAL',

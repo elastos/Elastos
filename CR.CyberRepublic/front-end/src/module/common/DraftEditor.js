@@ -2,10 +2,20 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import BaseComponent from '@/model/BaseComponent'
 import _ from 'lodash'
-import { Editor, createEditorState, StringToTypeMap, Block, HANDLED, NOT_HANDLED, resetBlockWithType, getCurrentBlock } from 'medium-draft'
-import { convertFromHTML, convertFromRaw, ContentState, EditorState } from 'draft-js'
+import {
+  Editor,
+  createEditorState,
+  StringToTypeMap,
+  Block,
+  HANDLED,
+  NOT_HANDLED,
+  resetBlockWithType,
+  getCurrentBlock
+} from 'medium-draft'
+import { convertFromHTML, ContentState, EditorState } from 'draft-js'
 import { MEDIUM_DRAFT_TOOLBAR_OPTIONS } from '@/config/constant'
 import { CONTENT_TYPE } from '@/constant'
+import ImageSideButton from './ImageSideButton'
 
 // if using webpack
 import 'medium-draft/lib/index.css'
@@ -16,7 +26,7 @@ const newTypeMap = {
   '### ': Block.H3,
   '#### ': Block.H4,
   '##### ': Block.H5,
-  '###### ': Block.H6,
+  '###### ': Block.H6
 }
 delete newTypeMap['##']
 
@@ -56,7 +66,7 @@ class Component extends BaseComponent {
     return editorState
   }
 
-  onChange = (editorState) => {
+  onChange = editorState => {
     const { onChange, callback } = this.props
 
     if (onChange) onChange(editorState)
@@ -106,9 +116,11 @@ class Component extends BaseComponent {
         fType = finalType[2]
       }
     }
-    onChange(resetBlockWithType(editorState, fType, {
-      text: '',
-    }))
+    onChange(
+      resetBlockWithType(editorState, fType, {
+        text: ''
+      })
+    )
     return HANDLED
   }
 
@@ -118,7 +130,12 @@ class Component extends BaseComponent {
         {...this.props}
         ref={this.refsEditor}
         placeholder=""
-        sideButtons={[]}
+        sideButtons={[
+          {
+            title: 'Image',
+            component: ImageSideButton
+          }
+        ]}
         blockButtons={MEDIUM_DRAFT_TOOLBAR_OPTIONS.BLOCK_BUTTONS}
         inlineButtons={MEDIUM_DRAFT_TOOLBAR_OPTIONS.INLINE_BUTTONS}
         editorState={this.generateEditorState()}
@@ -132,10 +149,9 @@ class Component extends BaseComponent {
 const propTypes = {
   contentType: PropTypes.string,
   content: PropTypes.string,
-  editorEnabled: PropTypes.bool,
+  editorEnabled: PropTypes.bool
 }
 
 Component.propTypes = propTypes
-
 
 export default Component
