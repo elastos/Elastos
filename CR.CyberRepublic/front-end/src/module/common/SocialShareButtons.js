@@ -15,7 +15,7 @@ import I18N from '@/I18N'
 
 import BaseComponent from '@/model/BaseComponent'
 import WeiboIcon from './WeiboIcon'
-import WechatIcon from './WechatIcon'
+import WeChatIcon from './WeChatIcon'
 
 class SocialShareButtons extends BaseComponent {
   ord_states() {
@@ -49,15 +49,15 @@ class SocialShareButtons extends BaseComponent {
         <WeiboShareButton url={window.location.href} title={shareQuote}>
           <WeiboIcon size={32} />
         </WeiboShareButton>
-        <WechatShareButton onClick={this.toggleWechat} className="wechat">
-          <WechatIcon size={32} />
+        <WeChatShareButton onClick={this.toggleWechat} className="wechat">
+          <WeChatIcon size={32} />
           <Modal visible={this.state.toggle} footer={null}>
             <InnerWrapper>
               <Desc>{I18N.get('socialShare.wechat.desc')}</Desc>
               <QRCode value={window.location.href} size={256} />
             </InnerWrapper>
           </Modal>
-        </WechatShareButton>
+        </WeChatShareButton>
       </Wrapper>
     )
   }
@@ -78,7 +78,7 @@ const Wrapper = styled.div`
     }
   }
 `
-const WechatShareButton = styled.div`
+const WeChatShareButton = styled.div`
   margin-left: 4px;
 `
 const Desc = styled.div`
