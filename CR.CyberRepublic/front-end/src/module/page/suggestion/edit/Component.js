@@ -74,7 +74,8 @@ export default class extends StandardPage {
   }
   onSaveDraft = (model) => {
     const id = this.state.data._id
-    return this.props.updateSuggestion({ id, ...model })
+    this.props.updateSuggestion({ id, ...model })
+      .catch(err => console.log(err))
   }
 
   ord_renderContent() {

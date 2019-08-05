@@ -48,6 +48,39 @@ export default class extends Base {
     }
   }
 
+  public async proposeSuggestion(param: any): Promise<Document> {
+    const db_suggestion = this.getDBModel('Suggestion')
+    const db_cvote = this.getDBModel('CVote')
+    const { suggestionId } = param
+
+    const suggestion = suggestionId && (await db_suggestion.findById(suggestionId))
+    if (!suggestion) {
+      throw 'cannot find suggestion'
+    }
+
+    const vid = await this.getNewVid()
+
+    const doc: any = {
+      vid,
+      status: constant.CVOTE_STATUS.PROPOSED,
+      published: false,
+      contentType: constant.CONTENT_TYPE.MARKDOWN,
+      proposedBy: this.currentUser._id,
+      proposer: suggestion.createdBy,
+      createdBy: this.currentUser._id,
+      reference: suggestionId
+    }
+
+    Object.assign(doc, _.pick(suggestion, BASE_FIELDS));
+
+    try {
+      return await db_cvote.save(doc)
+    } catch (error) {
+      console.log(error)
+      return
+    }
+  }
+
   /**
    *
    * @param param

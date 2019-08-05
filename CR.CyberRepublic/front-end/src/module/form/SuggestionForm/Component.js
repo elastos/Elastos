@@ -58,9 +58,9 @@ class C extends BaseComponent {
   }
 
   componentDidMount() {
-    this.timer = setInterval(() => {
-      this.handleSaveDraft();
-    }, 5000)
+    // this.timer = setInterval(() => {
+    //   this.handleSaveDraft();
+    // }, 5000)
   }
 
   componentWillUnmount() {
@@ -235,7 +235,7 @@ class C extends BaseComponent {
               {I18N.get('suggestion.form.button.cancel')}
             </Button>
             <Button
-              onClick={this.props.onSaveDraft}
+              onClick={this.handleSaveDraft}
               loading={this.state.loading}
               className="cr-btn cr-btn-primary"
               htmlType="button"

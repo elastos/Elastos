@@ -38,6 +38,17 @@ export default class extends BaseService {
     return rs
   }
 
+  async proposeSuggestion(param) {
+    const path = `${this.prefixPath}/propose_suggestion`
+
+    const rs = await api_request({
+      path,
+      method: 'post',
+      data: param
+    })
+    return rs
+  }
+
   async updateDraft(param) {
     const path = `${this.prefixPath}/update_draft`
 

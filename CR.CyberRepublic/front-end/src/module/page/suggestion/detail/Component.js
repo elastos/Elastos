@@ -613,7 +613,7 @@ export default class extends StandardPage {
     const id = _.get(this.props, 'match.params.id')
     const { current_user_id, profile, history } = this.props.user
     const fullName = `${profile.firstName} ${profile.lastName}`
-    const { createDraft } = this.props
+    const { proposeSuggestion } = this.props
 
     const param = {
       proposedBy: fullName,
@@ -624,8 +624,8 @@ export default class extends StandardPage {
     this.setState({ proposeLoading: true })
 
     try {
-      const res = await createDraft(param)
-      this.props.history.push(`/proposals/${res._id}/edit`)
+      const res = await proposeSuggestion(param)
+      this.props.history.push(`/proposals/${res._id}`)
     } catch (error) {
       this.setState({ proposeLoading: false })
     }
