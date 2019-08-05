@@ -49,7 +49,7 @@ class SocialShareButtons extends BaseComponent {
         <WeiboShareButton url={window.location.href} title={shareQuote}>
           <WeiboIcon size={32} />
         </WeiboShareButton>
-        <WechatShareButton onClick={this.toggleWechat}>
+        <WechatShareButton onClick={this.toggleWechat} className="wechat">
           <WechatIcon size={32} />
           <Modal visible={this.state.toggle} footer={null}>
             <InnerWrapper>
@@ -71,6 +71,11 @@ const Wrapper = styled.div`
   div {
     margin-right: 4px;
     cursor: pointer;
+  }
+  .wechat {
+    @media (max-width: 768px) {
+      display: none;
+    }
   }
 `
 const WechatShareButton = styled.div`
