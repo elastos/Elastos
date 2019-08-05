@@ -236,13 +236,10 @@ class C extends BaseComponent {
       }
       if (suggestionId) param.suggestionId = suggestionId
 
-      if (!_.isEmpty(transform(abstract)))
-        param.abstract = formatValue(abstract)
+      if (!_.isEmpty(transform(abstract))) param.abstract = formatValue(abstract)
       if (!_.isEmpty(transform(goal))) param.goal = formatValue(goal)
-      if (!_.isEmpty(transform(motivation)))
-        param.motivation = formatValue(motivation)
-      if (!_.isEmpty(transform(relevance)))
-        param.relevance = formatValue(relevance)
+      if (!_.isEmpty(transform(motivation))) param.motivation = formatValue(motivation)
+      if (!_.isEmpty(transform(relevance))) param.relevance = formatValue(relevance)
       if (!_.isEmpty(transform(budget))) param.budget = formatValue(budget)
       if (!_.isEmpty(transform(plan))) param.plan = formatValue(plan)
 

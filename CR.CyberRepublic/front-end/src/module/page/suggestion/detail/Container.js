@@ -4,6 +4,7 @@ import {
 import Component from './Component'
 import SuggestionService from '@/service/SuggestionService'
 import CommentService from '@/service/CommentService'
+import CVoteService from '@/service/CVoteService'
 
 export default createContainer(Component, (state) => {
   let page = 'PUBLIC' // default
@@ -17,6 +18,7 @@ export default createContainer(Component, (state) => {
   return {
     ...state.suggestion,
     page,
+    user: state.user,
     currentUserId: state.user.current_user_id,
     isCouncil: state.user.is_council,
     isAdmin: state.user.is_admin
@@ -24,6 +26,7 @@ export default createContainer(Component, (state) => {
 }, () => {
   const service = new SuggestionService()
   const commentService = new CommentService()
+  const cVoteService = new CVoteService()
 
   return {
     async getDetail({
@@ -34,6 +37,9 @@ export default createContainer(Component, (state) => {
         id,
         incViewsNum,
       })
+    },
+    async createDraft(param) {
+      return cVoteService.createDraft(param)
     },
     async update(param) {
       return service.update(param)

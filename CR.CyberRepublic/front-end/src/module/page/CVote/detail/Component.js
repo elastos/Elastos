@@ -209,9 +209,9 @@ class C extends StandardPage {
           }
           const finalStyle = style
             ? {
-                ...style,
-                zIndex: 2
-              }
+              ...style,
+              zIndex: 2
+            }
             : style
           return (
             <div style={finalStyle}>
@@ -273,9 +273,12 @@ class C extends StandardPage {
     )
     const trackingTitle = trackingStatus ? (
       <span>
-        {I18N.get('proposal.fields.tracking')}{' '}
+        {I18N.get('proposal.fields.tracking')}
+        {' '}
         <span style={{ fontSize: 10, color: '#aaa' }}>
-          ({I18N.get(`proposal.status.trackingRaw.${trackingStatus}`)})
+          (
+          {I18N.get(`proposal.status.trackingRaw.${trackingStatus}`)}
+)
         </span>
       </span>
     ) : (
@@ -283,9 +286,12 @@ class C extends StandardPage {
     )
     const summaryTitle = summaryStatus ? (
       <span>
-        {I18N.get('proposal.fields.summary')}{' '}
+        {I18N.get('proposal.fields.summary')}
+        {' '}
         <span style={{ fontSize: 10, color: '#aaa' }}>
-          ({I18N.get(`proposal.status.summaryRaw.${summaryStatus}`)})
+          (
+          {I18N.get(`proposal.status.summaryRaw.${summaryStatus}`)}
+)
         </span>
       </span>
     ) : (

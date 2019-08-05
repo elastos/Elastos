@@ -3,6 +3,7 @@ import council from './en/council'
 import home from './en/home'
 import release from './en/release'
 import proposal from './en/proposal'
+import suggestion from './en/suggestion'
 import getting_started from './en/getting_started'
 
 const en = {
@@ -10,6 +11,7 @@ const en = {
   home,
   release,
   proposal,
+  suggestion,
   getting_started,
   // Header
   '0000': 'ALPHA',
@@ -276,24 +278,9 @@ const en = {
   'suggestion.form.fields.links': 'Links',
   'suggestion.form.fields.linksSplit': 'Links (Split By Comma)',
 
-  suggestion: {
-    modal: {
-      addTagComment: 'Add Comment',
-      confirm: 'Confirm',
-      cancel: 'Cancel',
-      pleaseUpdate:
-        'Please update the Suggestion with the requested info and notify the council/community through a comment.',
-      commentsFromCouncil: 'Comments from Council/Admin:'
-    },
-    tag: {
-      show: 'Show',
-      type: {
-        UNDER_CONSIDERATION: 'Under Council Consideration',
-        INFO_NEEDED: 'More Info Required',
-        ADDED_TO_PROPOSAL: 'Added to Proposal'
-      }
-    }
-  },
+  // suggestion: {
+
+  // },
 
   // social share
   'socialShare.wechat.desc': 'Scan QR code below using WeChat, then share this web page with your WeChat friends.',

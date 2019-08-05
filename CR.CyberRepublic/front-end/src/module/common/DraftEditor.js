@@ -43,14 +43,18 @@ class Component extends BaseComponent {
 
   generateEditorState = () => {
     const { value, contentType } = this.props
-    let editorState
+    let editorState = null
     if (!value) {
       editorState = createEditorState()
     } else if (_.isObject(value)) {
       editorState = value
     } else if (contentType === CONTENT_TYPE.MARKDOWN) {
-      editorState = createEditorState(JSON.parse(value))
-    } else {
+      try {
+        editorState = createEditorState(JSON.parse(value))
+      } catch (err) {}
+    }
+
+    if (!editorState) {
       const blocksFromHTML = convertFromHTML(value)
       const state = ContentState.createFromBlockArray(
         blocksFromHTML.contentBlocks,

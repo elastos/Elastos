@@ -23,7 +23,8 @@ import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
 import Meta from '@/module/common/Meta'
 import SocialShareButtons from '@/module/common/SocialShareButtons'
-
+import { CONTENT_TYPE } from '@/constant'
+import DraftEditor from '@/module/common/DraftEditor'
 import {
   Container,
   Title,
@@ -37,7 +38,10 @@ import {
   StyledButton,
   DescBody,
   CouncilComments,
-  IconWrap
+  IconWrap,
+  Item,
+  ItemTitle,
+  ItemText
 } from './style'
 
 import './style.scss'
@@ -53,7 +57,8 @@ export default class extends StandardPage {
       isDropdownActionOpen: false,
       showMobile: false,
       showForm: false,
-      needsInfoVisible: false
+      needsInfoVisible: false,
+      proposeLoading: false
     }
   }
 
@@ -134,7 +139,22 @@ export default class extends StandardPage {
     )
   }
 
+  renderPreambleItem(header, content) {
+    return (
+      <Item>
+        <Col span={6}>
+          <ItemTitle>{header}</ItemTitle>
+        </Col>
+        <Col span={18}>
+          <ItemText>{content}</ItemText>
+        </Col>
+      </Item>
+    )
+  }
+
   renderDetail() {
+    const { detail } = this.props
+
     const metaNode = this.renderMetaNode()
     const titleNode = this.renderTitleNode()
     const coverNode = this.renderCoverNode()
@@ -150,16 +170,36 @@ export default class extends StandardPage {
       <div>
         {metaNode}
         {titleNode}
-        {coverNode}
         {tagsNode}
-        {shortDescNode}
-        <Divider />
-        {descNode}
-        <Divider />
-        {benefitsNode}
-        {fundingNode}
-        {timelineNode}
-        {linkNode}
+
+        <DescLabel>{I18N.get('suggestion.fields.preamble')}</DescLabel>
+        {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.proposal'), `#${detail.displayId}`)}
+        {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.title'), detail.title)}
+        {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.proposer'), detail.createdBy.username)}
+        {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.status'), detail.status)}
+        {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.created'), moment(detail.createdAt).format('MMM D, YYYY'))}
+
+        <DescLabel>{I18N.get('suggestion.fields.abstract')}</DescLabel>
+        <DraftEditor value={detail.abstract} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
+        <DescLabel>{I18N.get('suggestion.fields.goal')}</DescLabel>
+        <DraftEditor value={detail.goal} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
+        <DescLabel>{I18N.get('suggestion.fields.motivation')}</DescLabel>
+        <DraftEditor value={detail.motivation} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
+        <DescLabel>{I18N.get('suggestion.fields.plan')}</DescLabel>
+        <DraftEditor value={detail.plan} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
+        <DescLabel>{I18N.get('suggestion.fields.relevance')}</DescLabel>
+        <DraftEditor value={detail.relevance} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
+        <DescLabel>{I18N.get('suggestion.fields.budget')}</DescLabel>
+        <DraftEditor value={detail.budget} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
+        {/* {coverNode} */}
+        {/* {shortDescNode} */}
+        {/* <Divider /> */}
+        {/* {descNode} */}
+        {/* <Divider /> */}
+        {/* {benefitsNode} */}
+        {/* {fundingNode} */}
+        {/* {timelineNode} */}
+        {/* {linkNode} */}
       </div>
     )
   }
@@ -222,7 +262,9 @@ export default class extends StandardPage {
               data-desc={desc.replace(/(['"])/g, '\\$1')}
               onClick={() => this.setState({ needsInfoVisible: true })}
             >
-              {I18N.get(`suggestion.tag.type.${type}`)} &nbsp;
+              {I18N.get(`suggestion.tag.type.${type}`)}
+              {' '}
+&nbsp;
               <IconWrap>
                 <CommentIcon className="more-info-icon" />
               </IconWrap>
@@ -341,11 +383,11 @@ export default class extends StandardPage {
       <h4>${I18N.get('suggestion.form.fields.desc')}</h4>
       ${desc}
       ${
-        benefits
-          ? `<h4>${I18N.get('suggestion.form.fields.benefits')}</h4>
+  benefits
+    ? `<h4>${I18N.get('suggestion.form.fields.benefits')}</h4>
       <p>${benefits}</p>`
-          : ''
-      }
+    : ''
+}
     `
 
     return (
@@ -381,6 +423,18 @@ export default class extends StandardPage {
   }
 
   renderCouncilActionsNode() {
+    // const { isCouncil, match } = this.props
+
+    // return isCouncil && (
+    //   <StyledButton
+    //     type="ebp"
+    //     className="cr-btn cr-btn-default"
+    //     onClick={this.}
+    //   >
+    //     {I18N.get('suggestion.btnText.edit')}
+    //   </StyledButton>
+    // )
+
     const { isCouncil, isAdmin, detail } = this.props
     const { _id, displayId, title } = detail
     const descNode = this.renderDescNode()
@@ -432,7 +486,14 @@ export default class extends StandardPage {
     )
     const createFormBtn = isCouncil && (
       <Col xs={24} sm={8}>
-        <ProposalForm {...props} />
+        <StyledButton
+          type="ebp"
+          className="cr-btn cr-btn-default"
+          disabled={this.state.proposeLoading}
+          onClick={this.makeIntoPropose}
+        >
+          {I18N.get('suggestion.btn.makeIntoProposal')}
+        </StyledButton>
       </Col>
     )
 
@@ -540,11 +601,11 @@ export default class extends StandardPage {
   }
 
   showEditForm = () => {
-    const { showForm } = this.state
-
-    this.setState({
-      showForm: !showForm
-    })
+    const id = _.get(this.props, 'match.params.id')
+    this.props.history.push(`/suggestion/${id}/edit`)
+    // this.setState({
+    //   showForm: !showForm
+    // })
   }
 
   showDropdownActions = () => {
@@ -562,5 +623,27 @@ export default class extends StandardPage {
 
   linkSuggestionDetail(suggestionId) {
     this.props.history.push(`/suggestion/${suggestionId}`)
+  }
+
+  makeIntoPropose = async () => {
+    const id = _.get(this.props, 'match.params.id')
+    const { current_user_id, profile, history } = this.props.user
+    const fullName = `${profile.firstName} ${profile.lastName}`
+    const { createDraft } = this.props
+
+    const param = {
+      proposedBy: fullName,
+      proposer: current_user_id,
+      suggestionId: id
+    }
+
+    this.setState({ proposeLoading: true })
+
+    try {
+      const res = await createDraft(param)
+      this.props.history.push(`/proposals/${res._id}/edit`)
+    } catch (error) {
+      this.setState({ proposeLoading: false })
+    }
   }
 }
