@@ -282,6 +282,9 @@ const en = {
 
   // },
 
+  // social share
+  'socialShare.wechat.desc': 'Scan QR code below using WeChat, then share this web page with your WeChat friends.',
+
   // Suggestion Button Text
   'suggestion.btnText.edit': 'Edit Suggestion',
   'suggestion.btnText.consider': 'Under Consideration',
