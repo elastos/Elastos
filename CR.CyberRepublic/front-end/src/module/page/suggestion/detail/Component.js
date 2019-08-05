@@ -21,7 +21,6 @@ import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
 import Meta from '@/module/common/Meta'
 import SocialShareButtons from '@/module/common/SocialShareButtons'
-import { CONTENT_TYPE } from '@/constant'
 import DraftEditor from '@/module/common/DraftEditor'
 import {
   Container,
