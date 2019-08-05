@@ -11,6 +11,7 @@ import {
 import styled from 'styled-components'
 
 import WeiboIcon from './WeiboIcon'
+import WechatIcon from './WechatIcon'
 
 const SocialShareButtons = ({ shareQuote }) => {
   return (
@@ -30,8 +31,11 @@ const SocialShareButtons = ({ shareQuote }) => {
         <RedditIcon size={32} round={true} />
       </RedditShareButton>
       <WeiboShareButton url={window.location.href} title={shareQuote}>
-        <WeiboIcon size={31} />
+        <WeiboIcon size={32} />
       </WeiboShareButton>
+      <WechatShareButton>
+        <WechatIcon size={32} />
+      </WechatShareButton>
     </Wrapper>
   )
 }
@@ -45,4 +49,7 @@ const Wrapper = styled.div`
     margin-right: 4px;
     cursor: pointer;
   }
+`
+const WechatShareButton = styled.div`
+  margin-left: 4px;
 `
