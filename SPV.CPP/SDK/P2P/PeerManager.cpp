@@ -368,13 +368,7 @@ namespace Elastos {
 			_enableReconnect = false;
 			lock.unlock();
 
-			time_t expect = time(NULL) + 2;
-			while (peerCount == 0 && time(NULL) < expect) {
-				lock.lock();
-				peerCount = _connectedPeers.size();
-				lock.unlock();
-				usleep(100000);
-			}
+			usleep(1000);
 
 			lock.lock();
 			peerCount = _connectedPeers.size();
@@ -386,7 +380,7 @@ namespace Elastos {
 			lock.unlock();
 
 			ts.tv_sec = 0;
-			ts.tv_nsec = 1;
+			ts.tv_nsec = 1000;
 
 			while (peerCount > 0 || dnsThreadCount > 0) {
 				nanosleep(&ts, NULL); // pthread_yield() isn't POSIX standard :(

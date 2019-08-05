@@ -42,8 +42,6 @@ namespace Elastos {
 
 			void SyncStop();
 
-			void Stop();
-
 			size_t GetAllTransactionsCount();
 
 			void RegisterWalletListener(Wallet::Listener *listener);
