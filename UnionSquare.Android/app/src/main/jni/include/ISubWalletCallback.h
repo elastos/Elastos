@@ -30,22 +30,12 @@ namespace Elastos {
 					uint32_t confirms) = 0;
 
 			/**
-			 * Callback method fired when block begin synchronizing with a peer. This callback could be used to show progress.
-			 */
-			virtual void OnBlockSyncStarted() = 0;
-
-			/**
 			 * Callback method fired when best block chain height increased. This callback could be used to show progress.
 			 * @param currentBlockHeight is the of current block when callback fired.
 			 * @param estimatedHeight is max height of blockchain.
 			 * @param lastBlockTime timestamp of the last block.
 			 */
 			virtual void OnBlockSyncProgress(uint32_t currentBlockHeight, uint32_t estimatedHeight, time_t lastBlockTime) = 0;
-
-			/**
-			 * Callback method fired when block end synchronizing with a peer. This callback could be used to show progress.
-			 */
-			virtual void OnBlockSyncStopped() = 0;
 
 			/**
 			 * Callback method fired when balance changed.

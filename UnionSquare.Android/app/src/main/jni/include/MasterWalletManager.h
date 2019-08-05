@@ -108,6 +108,8 @@ namespace Elastos {
 
 			virtual std::string GetVersion() const;
 
+			virtual void FlushData();
+
 		protected:
 			typedef std::map<std::string, IMasterWallet *> MasterWalletMap;
 

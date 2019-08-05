@@ -24,8 +24,6 @@ namespace Elastos {
                     const nlohmann::json &desc,
                     uint32_t confirms);
 
-            virtual void OnBlockSyncStarted();
-
             /**
 			 * Callback method fired when best block chain height increased. This callback could be used to show progress.
 			 * @param currentBlockHeight is the of current block when callback fired.
@@ -34,11 +32,6 @@ namespace Elastos {
 			 */
             virtual void OnBlockSyncProgress(uint32_t currentBlockHeight, uint32_t estimatedHeight,
                                              time_t lastBlockTime);
-
-            /**
-             * Callback method fired when block end synchronizing with a peer. This callback could be used to show progress.
-             */
-            virtual void OnBlockSyncStopped();
 
             virtual void OnBalanceChanged(const std::string &asset, const std::string &balance);
 

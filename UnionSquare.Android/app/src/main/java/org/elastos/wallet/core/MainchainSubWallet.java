@@ -63,6 +63,38 @@ public class MainchainSubWallet extends SubWallet {
         return GetOwnerAddress(mMainchainProxy);
     }
 
+    public String GenerateCRInfoPayload(String crPublickey, String nickName, String url,
+                                        long location, String payPasswd) throws WalletException {
+        return GenerateCRInfoPayload(mMainchainProxy, crPublickey, nickName, url, location, payPasswd);
+    }
+
+    public String GenerateUnregisterCRPayload(String crPublickey, String payPasswd) throws WalletException {
+        return GenerateUnregisterCRPayload(mMainchainProxy, crPublickey, payPasswd);
+    }
+
+    public String GetCROwnerDID() throws WalletException {
+        return GetCROwnerDID(mMainchainProxy);
+    }
+
+    public String GetCROwnerPublicKey() throws WalletException {
+        return GetCROwnerPublicKey(mMainchainProxy);
+    }
+
+    public String CreateRegisterCRTransaction(String fromAddress, String payload, String amount, String memo, boolean useVotedUTXO) throws WalletException {
+        return CreateRegisterCRTransaction(mMainchainProxy, fromAddress, payload, amount, memo, useVotedUTXO);
+    }
+
+    public String CreateUpdateCRTransaction(String fromAddress, String payload, String memo, boolean useVotedUTXO) throws WalletException {
+        return CreateUpdateCRTransaction(mMainchainProxy, fromAddress, payload, memo, useVotedUTXO);
+    }
+
+    public String CreateUnregisterCRTransaction(String fromAddress, String payload, String memo, boolean useVotedUTXO) throws WalletException {
+        return CreateUnregisterCRTransaction(mMainchainProxy, fromAddress, payload,  memo, useVotedUTXO);
+    }
+
+    public String CreateRetrieveCRDepositTransaction(String amount, String memo) throws WalletException {
+        return CreateRetrieveCRDepositTransaction(mMainchainProxy, amount, memo);
+    }
 
     private native String CreateDepositTransaction(long proxy, String fromAddress, String lockedAddress, String amount,
                                                    String sideChainAddress, String memo, boolean useVotedUTXO);
@@ -90,5 +122,21 @@ public class MainchainSubWallet extends SubWallet {
     private native String GetRegisteredProducerInfo(long proxy);
 
     private native String GetOwnerAddress(long proxy);
+
+    private native String GenerateCRInfoPayload(long proxy, String crPublickey, String nickName, String url, long location, String payPasswd);
+
+    private native String GenerateUnregisterCRPayload(long proxy, String crPublicKey, String payPasswd);
+
+    private native String GetCROwnerDID(long proxy);
+
+    private native String GetCROwnerPublicKey(long proxy);
+
+    private native String CreateRegisterCRTransaction(long proxy, String fromAddress, String payload, String amount, String memo, boolean useVotedUTXO);
+
+    private native String CreateUpdateCRTransaction(long proxy, String fromAddress, String payload, String memo, boolean useVotedUTXO);
+
+    private native String CreateUnregisterCRTransaction(long proxy, String fromAddress, String payload, String memo, boolean useVotedUTXO);
+
+    private native String CreateRetrieveCRDepositTransaction(long Proxy, String amount, String memo);
 
 }

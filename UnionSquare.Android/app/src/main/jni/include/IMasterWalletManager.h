@@ -231,6 +231,8 @@ namespace Elastos {
 
 			virtual std::string GetVersion() const = 0;
 
+			virtual void FlushData() = 0;
+
 		};
 
 	}
