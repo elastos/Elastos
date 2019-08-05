@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import _ from 'lodash'
-import { Row, Col, Spin, Modal, Input, Button } from 'antd'
+import { Row, Col, Spin, Modal, Input, Button, Anchor } from 'antd'
 import { Link } from 'react-router-dom'
 import MediaQuery from 'react-responsive'
 import moment from 'moment/moment'
@@ -37,7 +37,8 @@ import {
   IconWrap,
   Item,
   ItemTitle,
-  ItemText
+  ItemText,
+  StyledAnchor
 } from './style'
 
 import './style.scss'
@@ -67,6 +68,38 @@ export default class extends StandardPage {
     this.props.resetDetail()
   }
 
+  renderAnchors() {
+    return (
+      <StyledAnchor>
+        <Anchor.Link
+          href="#preamble"
+          title={I18N.get('suggestion.fields.preamble')}
+        />
+        <Anchor.Link
+          href="#abstract"
+          title={I18N.get('suggestion.fields.abstract')}
+        />
+        <div style={{ marginTop: 48 }}>
+          <Anchor.Link href="#goal" title={I18N.get('suggestion.fields.goal')} />
+        </div>
+        <Anchor.Link
+          href="#motivation"
+          title={I18N.get('suggestion.fields.motivation')}
+        />
+        <Anchor.Link href="#plan" title={I18N.get('suggestion.fields.plan')} />
+        <Anchor.Link
+          href="#relevance"
+          title={I18N.get('suggestion.fields.relevance')}
+        />
+        <div style={{ marginTop: 48 }}>
+          <Anchor.Link
+            href="#budget"
+            title={I18N.get('suggestion.fields.budget')}
+          />
+        </div>
+      </StyledAnchor>
+    )
+  }
   ord_renderContent() {
     const { detail } = this.props
     if (_.isEmpty(detail) || detail.loading) {
@@ -100,6 +133,7 @@ export default class extends StandardPage {
                 link="/suggestion"
                 style={{ position: 'relative', left: 0, marginBottom: 15 }}
               />
+              {this.renderAnchors()}
             </div>
             <div>
               {detailNode}
@@ -113,6 +147,7 @@ export default class extends StandardPage {
           </MediaQuery>
           <MediaQuery minWidth={LG_WIDTH + 1}>
             <BackLink link="/suggestion" />
+            {this.renderAnchors()}
             <Row gutter={24}>
               <Col span={24}>
                 {detailNode}
@@ -165,24 +200,24 @@ export default class extends StandardPage {
         {titleNode}
         {tagsNode}
 
-        <DescLabel>{I18N.get('suggestion.fields.preamble')}</DescLabel>
+        <DescLabel id="preamble">{I18N.get('suggestion.fields.preamble')}</DescLabel>
         {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.proposal'), `#${detail.displayId}`)}
         {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.title'), detail.title)}
         {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.proposer'), detail.createdBy.username)}
         {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.status'), detail.status)}
         {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.created'), moment(detail.createdAt).format('MMM D, YYYY'))}
 
-        <DescLabel>{I18N.get('suggestion.fields.abstract')}</DescLabel>
+        <DescLabel id="abstract">{I18N.get('suggestion.fields.abstract')}</DescLabel>
         <DraftEditor value={detail.abstract} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
-        <DescLabel>{I18N.get('suggestion.fields.goal')}</DescLabel>
+        <DescLabel id="goal">{I18N.get('suggestion.fields.goal')}</DescLabel>
         <DraftEditor value={detail.goal} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
-        <DescLabel>{I18N.get('suggestion.fields.motivation')}</DescLabel>
+        <DescLabel id="motivation">{I18N.get('suggestion.fields.motivation')}</DescLabel>
         <DraftEditor value={detail.motivation} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
-        <DescLabel>{I18N.get('suggestion.fields.plan')}</DescLabel>
+        <DescLabel id="plan">{I18N.get('suggestion.fields.plan')}</DescLabel>
         <DraftEditor value={detail.plan} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
-        <DescLabel>{I18N.get('suggestion.fields.relevance')}</DescLabel>
+        <DescLabel id="relevance">{I18N.get('suggestion.fields.relevance')}</DescLabel>
         <DraftEditor value={detail.relevance} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
-        <DescLabel>{I18N.get('suggestion.fields.budget')}</DescLabel>
+        <DescLabel id="budget">{I18N.get('suggestion.fields.budget')}</DescLabel>
         <DraftEditor value={detail.budget} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
         {/* {coverNode} */}
         {/* {shortDescNode} */}

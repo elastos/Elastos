@@ -2,20 +2,19 @@ import { breakPoint } from '@/constants/breakPoint'
 import { text, bg, primary, border } from '@/constants/color'
 import { gap } from '@/constants/variable'
 import styled from 'styled-components'
-import { Button, Row } from 'antd'
+import { Button, Row, Anchor } from 'antd'
 
 export const Container = styled.div`
   max-width: 1200px;
-  margin: 80px auto;
+  margin: 80px auto 80px 210px;
 
   @media only screen and (max-width: ${breakPoint.xl}) {
-    margin-left: 108px;
+    margin-left: 210px;
     margin-right: 5%;
   }
 
   @media only screen and (max-width: ${breakPoint.lg}) {
-    margin-left: 5%;
-
+    margin-left: 210px;
   }
   @media only screen and (max-width: ${breakPoint.mobile}) {
 
@@ -137,4 +136,35 @@ export const ItemTitle = styled.div`
 `
 export const ItemText = styled.div`
   font-weight: 200;
+`
+
+export const StyledAnchor = styled(Anchor)`
+  position: fixed;
+  top: 250px;
+  left: 30px;
+  @media only screen and (max-width: ${breakPoint.mobile}) {
+    display: none;
+  }
+  .ant-anchor-ink:before {
+    width: 0;
+  }
+  .ant-anchor-ink-ball.visible {
+    display: none;
+  }
+  .ant-anchor-link-title {
+    display: inline;
+  }
+  .ant-anchor-link-active > .ant-anchor-link-title {
+    color: initial;
+    :after {
+      content: "";
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 0.5em;
+      border-bottom: 8px solid ${text.green};
+      z-index: -1;
+    }
+  }
 `
