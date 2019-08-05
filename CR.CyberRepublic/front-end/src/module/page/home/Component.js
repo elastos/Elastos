@@ -51,7 +51,8 @@ export default class extends StandardPage {
           <CRLogoMobContainer>
             <Logo src={images.CRLogo} />
             <CRLogoMobText>
-              {I18N.get('home.mob.logo.title')}<br/>
+              {I18N.get('home.mob.logo.title')}
+              <br/>
               <br/>
               <a target="_blank" href="https://www.elastos.org">{I18N.get('home.mob.logo.subtitle')}</a>
             </CRLogoMobText>
@@ -61,7 +62,11 @@ export default class extends StandardPage {
             <InfoImgContainerCR>
               <InfoImg src={images.CREcosystemFundImg} />
             </InfoImgContainerCR>
-            <InfoDesc>{I18N.get('home.hero.cr.fund.1')}<br/>{I18N.get('home.hero.cr.fund.2')}</InfoDesc>
+            <InfoDesc>
+              {I18N.get('home.hero.cr.fund.1')}
+              <br/>
+              {I18N.get('home.hero.cr.fund.2')}
+            </InfoDesc>
           </InfoRowMob>
 
           <InfoRowMob>
@@ -105,14 +110,22 @@ export default class extends StandardPage {
               <InfoImgContainer>
                 <InfoImg src={images.ElaApplicationImg}/>
               </InfoImgContainer>
-              <InfoDesc>{I18N.get('home.hero.ela.application.1')}<br/>{I18N.get('home.hero.ela.application.2')}</InfoDesc>
+              <InfoDesc>
+                {I18N.get('home.hero.ela.application.1')}
+                <br/>
+                {I18N.get('home.hero.ela.application.2')}
+              </InfoDesc>
             </InfoColMid>
             {/* Moving this up a bit */}
             <InfoColRight span={8}>
               <InfoImgContainer>
                 <InfoImg src={images.ElaSidechainImg} />
               </InfoImgContainer>
-              <InfoDesc>{I18N.get('home.hero.ela.sidechain')}<br/>(ETH, NEO, DID)</InfoDesc>
+              <InfoDesc>
+                {I18N.get('home.hero.ela.sidechain')}
+                <br/>
+(ETH, NEO, DID)
+              </InfoDesc>
             </InfoColRight>
           </ElaRow>
         </ElaContainer>
@@ -125,7 +138,11 @@ export default class extends StandardPage {
               <InfoImgContainerCR>
                 <InfoImg src={images.CREcosystemFundImg} />
               </InfoImgContainerCR>
-              <InfoDesc>{I18N.get('home.hero.cr.fund.1')}<br/>{I18N.get('home.hero.cr.fund.2')}</InfoDesc>
+              <InfoDesc>
+                {I18N.get('home.hero.cr.fund.1')}
+                <br/>
+                {I18N.get('home.hero.cr.fund.2')}
+              </InfoDesc>
             </InfoCol>
             <InfoCol span={8}>
               <InfoImgContainerCR>
@@ -157,7 +174,11 @@ export default class extends StandardPage {
         <Row className="top-section" type="flex" justify="center" gutter={32}>
           <Col className={`box-wrap ${selectedBox === 0 ? 'selected-box' : ''}`} xs={24} sm={24} md={24} lg={8} onClick={this.switchToBox.bind(this, 0)}>
             <div className="box box-hover">
-              <TriColTitle>{I18N.get('home.box_1.title')}<br/><br/></TriColTitle>
+              <TriColTitle>
+                {I18N.get('home.box_1.title')}
+                <br/>
+                <br/>
+              </TriColTitle>
               <TriColDesc className={`synthese${selectedBox === 0 ? ' selected-text' : 0}`}>{I18N.get('home.box_1.description')}</TriColDesc>
             </div>
             <div className="container">

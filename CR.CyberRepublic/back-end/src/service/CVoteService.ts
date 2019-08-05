@@ -8,6 +8,7 @@ import { mail, user as userUtil } from '../utility'
 
 let tm = undefined
 
+const BASE_FIELDS = ['title', 'abstract', 'goal', 'motivation', 'relevance', 'budget', 'plan'];
 const restrictedFields = {
   update: ['_id', 'createdBy', 'createdAt', 'proposedAt']
 }
@@ -36,6 +37,8 @@ export default class extends Base {
     if (!_.isEmpty(suggestion)) {
       doc.reference = suggestionId
     }
+
+    Object.assign(doc, _.pick(suggestion, BASE_FIELDS));
 
     try {
       return await db_cvote.save(doc)

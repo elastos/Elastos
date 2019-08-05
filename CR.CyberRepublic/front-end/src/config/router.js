@@ -86,6 +86,8 @@ import ReleaseList from '@/module/page/release/list/Container'
 
 // suggestion
 import SuggestionListPage from '@/module/page/suggestion/list/Container'
+import SuggestionCreatePage from '@/module/page/suggestion/create/Container'
+import SuggestionEditPage from '@/module/page/suggestion/edit/Container'
 import SuggestionDetailPage from '@/module/page/suggestion/detail/Container'
 import SuggestionEditHistoryPage from '@/module/page/suggestion/edit_history/Container'
 
@@ -257,6 +259,14 @@ export default [
   {
     path: '/suggestion',
     page: SuggestionListPage,
+  },
+  {
+    path: '/suggestion/create',
+    page: SuggestionCreatePage,
+  },
+  {
+    path: '/suggestion/:id/edit',
+    page: SuggestionEditPage,
   },
   {
     path: '/suggestion/:id',
