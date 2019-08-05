@@ -29,6 +29,7 @@ import Preamble from './Preamble'
 import Tracking from '../tracking/Container'
 import Summary from '../summary/Container'
 import Meta from '@/module/common/Meta'
+import SocialShareButtons from '@/module/common/SocialShareButtons'
 
 import {
   Container,
@@ -181,6 +182,9 @@ class C extends StandardPage {
               {trackingNode}
               {summaryNode}
             </Body>
+            <SocialShareButtons
+              shareQuote={`${data.title} - Proposal Detail - Cyber Republic`}
+            />
           </StickyContainer>
         </Container>
         <Footer />
