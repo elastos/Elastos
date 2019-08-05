@@ -1,52 +1,27 @@
 import React from 'react'
-import ReactDOMServer from 'react-dom/server'
-import { Helmet } from 'react-helmet'
-import _ from 'lodash'
-import { Row, Col, Spin, Divider, Modal, Input, Button } from 'antd'
-import { Link } from 'react-router-dom'
 import MediaQuery from 'react-responsive'
-import moment from 'moment/moment'
-import Comments from '@/module/common/comments/Container'
 import Footer from '@/module/layout/Footer/Container'
 import BackLink from '@/module/shared/BackLink/Component'
-import Translation from '@/module/common/Translation/Container'
 import SuggestionForm from '@/module/form/SuggestionForm/Component'
-import ProposalForm from '@/module/page/CVote/create/Container'
 import I18N from '@/I18N'
 import { LG_WIDTH } from '@/config/constant'
-import { CVOTE_STATUS, SUGGESTION_TAG_TYPE } from '@/constant'
-import { getSafeUrl } from '@/util/url'
-import sanitizeHtml from '@/util/html'
-import { ReactComponent as CommentIcon } from '@/assets/images/icon-info.svg'
-import StandardPage from '../../StandardPage'
-import ActionsContainer from '../common/actions/Container'
-import MetaContainer from '../common/meta/Container'
 import Meta from '@/module/common/Meta'
+import StandardPage from '../../StandardPage'
 
-import {
-  Container,
-  Title,
-  CoverImg,
-  ShortDesc,
-  DescLabel,
-  Label,
-  LabelPointer,
-  Desc,
-  BtnGroup,
-  StyledButton,
-  DescBody,
-  CouncilComments,
-  IconWrap
-} from './style'
-
+import { Container, Title } from './style'
 import './style.scss'
 
-const { TextArea } = Input
+const LOCALSTORAGE_DRAFT = 'draft-suggestion';
 
 export default class extends StandardPage {
   constructor(props) {
     super(props)
-    this.state = { error: null }
+
+    const draftSuggestion = localStorage.getItem(LOCALSTORAGE_DRAFT);
+    this.state = {
+      error: null,
+      draftSuggestion: draftSuggestion ? JSON.parse(draftSuggestion) : {}
+    }
   }
 
   historyBack = () => {
@@ -56,7 +31,12 @@ export default class extends StandardPage {
   onSubmit = (model) => {
     return this.props.createSuggestion(model)
       .then(() => this.historyBack())
+      .then(() => localStorage.removeItem(LOCALSTORAGE_DRAFT))
       .catch(err => this.setState({ error: err }))
+  }
+
+  onSaveDraft = (model) => {
+    localStorage.setItem(LOCALSTORAGE_DRAFT, JSON.stringify(model));
   }
 
   ord_renderContent() {
@@ -81,10 +61,15 @@ export default class extends StandardPage {
           </MediaQuery>
 
           <div>
-            <Title className="komu-a cr-title-with-icon ">
-              {I18N.get('from.CVoteForm.button.add')}
-            </Title>
-            <SuggestionForm onSubmit={this.onSubmit} onCancel={this.historyBack} />
+            <h2 className="komu-a cr-title-with-icon">
+              {I18N.get('suggestion.title.add')}
+            </h2>
+            <SuggestionForm
+              initialValues={this.state.draftSuggestion}
+              onSubmit={this.onSubmit}
+              onCancel={this.historyBack}
+              onSaveDraft={this.onSaveDraft}
+            />
           </div>
         </Container>
         <Footer />

@@ -1,6 +1,10 @@
 import { CVOTE_TRACKING_STATUS, CVOTE_SUMMARY_STATUS } from '@/constant'
 
 export default {
+  title: {
+    add: 'ADD A SUGGESTION',
+    edit: 'EDIT SUGGESTION'
+  },
   fields: {
     title: 'Title',
     preamble: 'Preamble',
@@ -78,6 +82,12 @@ export default {
     }
   },
   form: {
+    button: {
+      continue: 'Continue',
+      cancel: 'Cancel',
+      saveDraft: 'Save as Draft',
+      save: 'Save'
+    },
     tracking: {
       btn: {
         submit: 'Submit for Review'
