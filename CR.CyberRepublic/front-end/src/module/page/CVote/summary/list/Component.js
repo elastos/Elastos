@@ -54,11 +54,13 @@ export default class extends BaseComponent {
           <StyledItem>
             <Row>
               <Col>
-                <DraftEditor
-                  value={item.content}
-                  contentType={CONTENT_TYPE.MARKDOWN}
-                  editorEnabled={false}
-                />
+                <StyledRichContent>
+                  <DraftEditor
+                    value={item.content}
+                    contentType={CONTENT_TYPE.MARKDOWN}
+                    editorEnabled={false}
+                  />
+                </StyledRichContent>
                 <StyledFooter>{moment(item.createdAt).format(DATE_FORMAT)}</StyledFooter>
               </Col>
             </Row>
@@ -81,11 +83,13 @@ export default class extends BaseComponent {
           <StyledPrivateItem actions={[]}>
             <StyledRow gutter={16}>
               <LeftCol span={21} status={item.status}>
-                <DraftEditor
-                  value={item.content}
-                  contentType={CONTENT_TYPE.MARKDOWN}
-                  editorEnabled={false}
-                />
+                <StyledRichContent>
+                  <DraftEditor
+                    value={item.content}
+                    contentType={CONTENT_TYPE.MARKDOWN}
+                    editorEnabled={false}
+                  />
+                </StyledRichContent>
                 <StyledFooter>{moment(item.createdAt).format(DATE_FORMAT)}</StyledFooter>
               </LeftCol>
               <RightCol span={3}>
@@ -267,6 +271,16 @@ const colorMap = {
 
 
 export const Container = styled.div`
+`
+export const StyledRichContent = styled.div`
+  .md-RichEditor-root {
+    figure.md-block-image {
+      background: none;
+    }
+    figure.md-block-image figcaption .public-DraftStyleDefault-block {
+      text-align: left;
+    }
+  }
 `
 export const StyledCollapse = styled(Collapse)`
   border: none!important;

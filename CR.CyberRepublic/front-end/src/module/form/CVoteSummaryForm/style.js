@@ -22,10 +22,24 @@ export const Container = styled.div`
     overflow: initial;
   }
   .md-RichEditor-root {
-    padding: 15px 30px;
+    padding: 15px 40px;
     margin-top: 0;
     border: 1px solid #d9d9d9;
     min-height: 150px;
+    .md-RichEditor-editor {
+      padding: 8px 16px;
+    }
+    .md-add-button {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    figure.md-block-image {
+      background: none;
+    }
+    figure.md-block-image figcaption .public-DraftStyleDefault-block {
+      text-align: left;
+    }
     .md-RichEditor-editor .public-DraftEditor-content {
       min-height: 150px;
       padding: 20px;
