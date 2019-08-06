@@ -81,6 +81,8 @@ type arbitrators struct {
 	snapshots            map[uint32][]*CheckPoint
 	snapshotKeysDesc     []uint32
 	lastCheckPointHeight uint32
+
+	forceChanged bool
 }
 
 func (a *arbitrators) Start() {
@@ -247,8 +249,9 @@ func (a *arbitrators) ForceChange(height uint32) error {
 			a.getNeedConnectArbiters())
 	}
 
-	a.dumpInfo(height)
+	a.forceChanged = true
 
+	a.dumpInfo(height)
 	return nil
 }
 
@@ -319,11 +322,14 @@ func (a *arbitrators) accumulateReward(block *types.Block) {
 		return
 	}
 
-	dposReward := a.getBlockDPOSReward(block)
-	a.accumulativeReward += dposReward
+	if block.Height < a.chainParams.CRVotingStartHeight || !a.forceChanged {
+		dposReward := a.getBlockDPOSReward(block)
+		a.accumulativeReward += dposReward
+	}
 
 	a.arbitersRoundReward = nil
 	a.finalRoundChange = 0
+	a.forceChanged = false
 }
 
 func (a *arbitrators) clearingDPOSReward(block *types.Block,
