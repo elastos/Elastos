@@ -23,12 +23,22 @@ class AdminNavbarLinks extends Component {
     return (
       <div>
         <Nav>
-          <NavDropdown eventKey={2} title="Services" id="basic-nav-dropdown">
-            <MenuItem eventKey={2.1}>API Service 1</MenuItem>
-            <MenuItem eventKey={2.2}>API Service 2</MenuItem>
-            <MenuItem eventKey={2.3}>API Service 3</MenuItem>
-            <MenuItem eventKey={2.4}>API Service 4</MenuItem>
-            <MenuItem eventKey={2.5}>API Service 5</MenuItem>
+          <NavDropdown eventKey={2} title="Dropdown" id="basic-nav-dropdown">
+            <MenuItem href="/serviceone" eventKey={2.1}>
+              API Service 1
+            </MenuItem>
+            <MenuItem href="/servicetwo" eventKey={2.2}>
+              API Service 2
+            </MenuItem>
+            <MenuItem href="/servicethree" eventKey={2.3}>
+              API Service 3
+            </MenuItem>
+            <MenuItem href="/servicefour" eventKey={2.4}>
+              API Service 4
+            </MenuItem>
+            <MenuItem href="/servicefive" eventKey={2.5}>
+              API Service 5
+            </MenuItem>
           </NavDropdown>
         </Nav>
         <Nav pullRight>

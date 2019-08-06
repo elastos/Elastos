@@ -16,45 +16,53 @@
 
 */
 import Dashboard from "views/Dashboard.jsx";
-import UserProfile from "views/UserProfile.jsx";
-import TableList from "views/TableList.jsx";
-import Typography from "views/Typography.jsx";
-import Icons from "views/Icons.jsx";
+import ServiceOne from "views/ServiceOne.jsx";
+import ServiceTwo from "views/ServiceTwo.jsx";
+import ServiceThree from "views/ServiceThree.jsx";
+import ServiceFour from "views/ServiceFour.jsx";
+import ServiceFive from "views/ServiceFive.jsx";
 
 const dashboardRoutes = [
   {
     path: "/dashboard",
-    name: "API Service 1",
+    name: "Dashboard",
     icon: "pe-7s-tools",
     component: Dashboard,
     layout: "/admin"
   },
   {
-    path: "/user",
+    path: "/serviceone",
+    name: "API Service 1",
+    icon: "pe-7s-tools",
+    component: ServiceOne,
+    layout: "/admin"
+  },
+  {
+    path: "/servicetwo",
     name: "API Service 2",
     icon: "pe-7s-tools",
-    component: UserProfile,
+    component: ServiceTwo,
     layout: "/admin"
   },
   {
-    path: "/table",
+    path: "/servicethree",
     name: "API Service 3",
     icon: "pe-7s-tools",
-    component: TableList,
+    component: ServiceThree,
     layout: "/admin"
   },
   {
-    path: "/typography",
+    path: "/servicefour",
     name: "API Service 4",
     icon: "pe-7s-tools",
-    component: Typography,
+    component: ServiceFour,
     layout: "/admin"
   },
   {
-    path: "/icons",
+    path: "/servicefive",
     name: "API Service 5",
     icon: "pe-7s-tools",
-    component: Icons,
+    component: ServiceFive,
     layout: "/admin"
   }
 ];
