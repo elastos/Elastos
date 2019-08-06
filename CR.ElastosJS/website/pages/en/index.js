@@ -64,8 +64,8 @@ class HomeSplash extends React.Component {
         <div className="inner">
           <ProjectTitle siteConfig={siteConfig} />
           <PromoSection>
-            <Button href="#try">Elastos Blockchain</Button>
-            <Button href={docUrl('doc1.html')}>Cyber Republic DAO</Button>
+            <Button href="https://www.elastos.org" target="_blank">Official Website</Button>
+            <Button href="https://www.cyberrepublic.org" target="_blank"><b>Bounty:</b> Port Your ETH DApp</Button>
             <Button href={docUrl('doc2.html')}>Get Funded By Cyber Republic</Button>
           </PromoSection>
         </div>
@@ -97,9 +97,39 @@ class Index extends React.Component {
       <div
         className="productShowcaseSection paddingBottom"
         style={{textAlign: 'center'}}>
-        <h2>Feature Callout</h2>
-        <MarkdownBlock>These are features of this project</MarkdownBlock>
+        <MarkdownBlock>
+
+        </MarkdownBlock>
       </div>
+    );
+
+    const Explainer = () => (
+    <div
+    className="explainer paddingBottom"
+    style={{textAlign: 'center'}}>
+      <div className="wrapper">
+        <MarkdownBlock>
+          ```
+          Elastos replaces the EVM's PoW consensus with its own DPoS consensus allowing
+          for much higher TPS. Our DPoS is backed by voting through our native PoW token (ELA) with over
+          40% of Bitcoin's hashpower. This is a separate chain from Ethereum but more performant and secure.
+          ```
+
+        </MarkdownBlock>
+        <a href="https://coinmarketcap.com/currencies/elastos" target="_blank">
+          Our Native Token (ELA)
+        </a>
+        <MarkdownBlock>
+          ```
+          This puts Elastos' resistance to 51% attack at over "3x" that of Ethereum,
+          without factoring in additional robustness guarantees through DPoS validators.
+          ```
+        </MarkdownBlock>
+        <a href="https://www.noderators.org/elastossummary" target="_blank">
+          Elastos Hashrate Statistics - https://www.noderators.org/elastossummary
+        </a>
+      </div>
+    </div>
     );
 
     const ElastosBlockchain = () => (
@@ -168,6 +198,7 @@ class Index extends React.Component {
       <div>
         <HomeSplash siteConfig={siteConfig} language={language} />
         <div className="mainContainer">
+          <Explainer />
           <Features />
           <ElastosDark />
           <Infographic />
