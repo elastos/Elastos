@@ -362,7 +362,7 @@
     <string name="needpermissionstorage">Permission required</string>
     <string name="logkeppin">Saved runtime log to</string>
     <string name="logkeepfail">Get runtime log fail</string>
-    <string name="whetherexchange">Too much UTXO detected, Consolidate?</string>
+    <string name="whetherexchange">The number of UTXO is %1$s, consolidate?</string>
     <string name="splashword">Smartweb Powered by Blockchain</string>
     <string name="curentsdkversion">SPVSDK Version&#160;</string>
     <string name="invalidnode">Invalid Node</string>

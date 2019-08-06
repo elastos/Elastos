@@ -23,7 +23,6 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.adapter.TransferDetailRecAdapetr;
 import org.elastos.wallet.ela.ui.Assets.bean.CoinBaseTransferRecordEntity;
-import org.elastos.wallet.ela.ui.Assets.bean.Payload;
 import org.elastos.wallet.ela.ui.Assets.bean.RecorderAddressEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.TransferRecordDetailEntity;
 import org.elastos.wallet.ela.ui.Assets.presenter.AssetDetailPresenter;
@@ -276,12 +275,10 @@ public class TransferDetailFragment extends BaseFragment implements CommonRvList
         //提现或者充值的特别情况
         if (transactionsBean.getType() == 8) {
             llTarget.setVisibility(View.VISIBLE);
-            Payload payload = JSON.parseObject(transactionsBean.getPayload(), Payload.class);
-            if (payload != null && payload.getCrossChainAddress() != null && payload.getCrossChainAddress().size() != 0) {
-                tvAddressTarget1.setText(payload.getCrossChainAddress().get(0));
-            }
-            if (payload != null && payload.getCrossChainAmount() != null && payload.getCrossChainAmount().size() != 0) {
-                tvAmountTarget1.setText(NumberiUtil.maxNumberFormat(Arith.div(payload.getCrossChainAmount().get(0), MyWallet.RATE_S), 12) + " ELA");
+            if (transactionsBean.getPayload() != null && transactionsBean.getPayload().size() != 0) {
+                TransferRecordDetailEntity.TransactionsBean.PayloadBean payloadBean = transactionsBean.getPayload().get(0);
+                tvAddressTarget1.setText(payloadBean.getCrossChainAddress());
+                tvAmountTarget1.setText(NumberiUtil.maxNumberFormat(Arith.div(payloadBean.getCrossChainAmount(), MyWallet.RATE_S), 12) + " ELA");
             }
         }
         int transferType = getContext().getResources().getIdentifier("transfertype" + transactionsBean.getType(), "string",
