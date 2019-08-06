@@ -1310,7 +1310,7 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 	}
 
 	// check if public keys conflict with cr program code
-	nodeCode := info.NodePublicKey
+	nodeCode := append([]byte{byte(COMPRESSEDLEN)}, info.NodePublicKey...)
 	nodeCode = append(nodeCode, vm.CHECKSIG)
 	if b.crCommittee.ExistCR(nodeCode) {
 		return fmt.Errorf("node public key %s already exist in cr list",

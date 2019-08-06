@@ -1019,9 +1019,9 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 }
 
 func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
-	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
+	publicKeyStr1 := "031e12374bae471aa09ad479f66c2306f4bcc4ca5b754609a82a1839b94b4721b9"
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
-	privateKeyStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
+	privateKeyStr1 := "94396a69462208b8fd96d83842855b867d3b0e663203cb31d0dfaec0362ec034"
 	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
 	publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
 	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
