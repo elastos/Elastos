@@ -2,8 +2,9 @@ package blockchain
 
 import (
 	"bytes"
-	"encoding/hex"
 	"errors"
+	"strings"
+	"time"
 
 	id "github.com/elastos/Elastos.ELA.SideChain.ID/types"
 
@@ -14,8 +15,9 @@ import (
 )
 
 const (
-	IX_DIDTXHash  blockchain.EntryPrefix = 0x95
-	IX_DIDPayload blockchain.EntryPrefix = 0x96
+	IX_DIDTXHash        blockchain.EntryPrefix = 0x95
+	IX_DIDPayload       blockchain.EntryPrefix = 0x96
+	IX_DIDExpiresHeight blockchain.EntryPrefix = 0x97
 )
 
 type IDChainStore struct {
@@ -68,15 +70,28 @@ func (c *IDChainStore) persistTransactions(batch database.Batch, b *types.Block)
 					return err
 				}
 			}
-		case id.RegisterDID, id.UpdateDID:
+		case id.RegisterDID:
 			regPayload := txn.Payload.(*id.PayloadDIDInfo)
-			id, _ := hex.DecodeString(regPayload.PayloadInfo.ID)
-			if err := c.persistRegisterDIDTx(batch, id, txn); err != nil {
+
+			id := c.GetIDFromUri(regPayload.PayloadInfo.ID)
+			if id == "" {
+				return errors.New("invalid regPayload.PayloadInfo.ID")
+			}
+			if err := c.persistRegisterDIDTx(batch, []byte(id),
+				txn, b.GetHeight(), b.GetTimeStamp()); err != nil {
 				return err
 			}
 		}
 	}
 	return nil
+}
+
+func (c *IDChainStore) GetIDFromUri(idURI string) string {
+	index := strings.LastIndex(idURI, ":")
+	if index == -1 {
+		return ""
+	}
+	return idURI[index+1:]
 }
 
 func (c *IDChainStore) rollbackTransactions(batch database.Batch, b *types.Block) error {
@@ -108,10 +123,13 @@ func (c *IDChainStore) rollbackTransactions(batch database.Batch, b *types.Block
 					return err
 				}
 			}
-		case id.RegisterDID, id.UpdateDID:
+		case id.RegisterDID:
 			regPayload := txn.Payload.(*id.PayloadDIDInfo)
-			id, _ := hex.DecodeString(regPayload.PayloadInfo.ID)
-			if err := c.rollbackRegisterDIDTx(batch, id, txn); err != nil {
+			id := c.GetIDFromUri(regPayload.PayloadInfo.ID)
+			if id == "" {
+				return errors.New("invalid regPayload.PayloadInfo.ID")
+			}
+			if err := c.rollbackRegisterDIDTx(batch, []byte(id), txn); err != nil {
 				return err
 			}
 		}
@@ -148,8 +166,49 @@ func (c *IDChainStore) GetRegisterIdentificationTx(idKey []byte) ([]byte, error)
 	return data, nil
 }
 
+func getExpiresHeight(txn *types.Transaction, blockHeight uint32,
+	blockTimeStamp uint32) (uint32, error) {
+	payloadDidInfo, ok := txn.Payload.(*id.PayloadDIDInfo)
+	if !ok {
+		return 0, errors.New("invalid PayloadDIDInfo")
+	}
+	if payloadDidInfo.PayloadInfo == nil {
+		return 0, errors.New("invalid PayloadInfo")
+	}
+
+	expiresTime, err := time.Parse(time.RFC3339, payloadDidInfo.PayloadInfo.Expires)
+	if err != nil {
+		return 0, errors.New("invalid Expires")
+	}
+
+	fiveYearSec := uint32(5 * 365 * 24 * 60 * 60)
+	var timeSpanSec, expiresSec uint32
+	expiresSec = uint32(expiresTime.Unix())
+	timeSpanSec = expiresSec - blockTimeStamp
+
+	if expiresSec < blockTimeStamp {
+		return 0, errors.New("invalid Expires less than current block time")
+	}
+	if timeSpanSec > fiveYearSec {
+		return 0, errors.New("invalid Expires more than 5 years")
+	}
+	needsBlocks := timeSpanSec / (2 * 60)
+	expiresHeight := blockHeight + needsBlocks
+	return expiresHeight, nil
+}
+
 func (c *IDChainStore) persistRegisterDIDTx(batch database.Batch,
-	idKey []byte, tx *types.Transaction) error {
+	idKey []byte, tx *types.Transaction, blockHeight uint32,
+	blockTimeStamp uint32) error {
+
+	expiresHeight, err := getExpiresHeight(tx, blockHeight, blockTimeStamp)
+	if err != nil {
+		return err
+	}
+
+	if err := c.persistRegisterDIDExpiresHeight(batch, idKey, expiresHeight); err != nil {
+		return err
+	}
 	if err := c.persistRegisterDIDTxHash(batch, idKey, tx.Hash()); err != nil {
 		return err
 	}
@@ -161,7 +220,48 @@ func (c *IDChainStore) persistRegisterDIDTx(batch database.Batch,
 
 	return nil
 }
+func (c *IDChainStore) persistRegisterDIDExpiresHeight(batch database.Batch,
+	idKey []byte, expiresHeight uint32) error {
+	key := []byte{byte(IX_DIDExpiresHeight)}
+	key = append(key, idKey...)
 
+	data, err := c.Get(key)
+	if err != nil {
+		// when not exist, only put the current expires height into db.
+		buf := new(bytes.Buffer)
+		if err := common.WriteVarUint(buf, 1); err != nil {
+			return err
+		}
+		if err := common.WriteUint32(buf, expiresHeight); err != nil {
+			return err
+		}
+
+		return batch.Put(key, buf.Bytes())
+	}
+
+	// when exist, should add current expires height to the end of the list.
+	r := bytes.NewReader(data)
+	count, err := common.ReadVarUint(r, 0)
+	if err != nil {
+		return err
+	}
+	count++
+
+	buf := new(bytes.Buffer)
+
+	// write count
+	if err := common.WriteVarUint(buf, count); err != nil {
+		return err
+	}
+	if err := common.WriteUint32(buf, expiresHeight); err != nil {
+		return err
+	}
+	if _, err := r.WriteTo(buf); err != nil {
+		return err
+	}
+
+	return batch.Put(key, buf.Bytes())
+}
 func (c *IDChainStore) persistRegisterDIDTxHash(batch database.Batch,
 	idKey []byte, txHash common.Uint256) error {
 	key := []byte{byte(IX_DIDTXHash)}
@@ -210,6 +310,50 @@ func (c *IDChainStore) persistRegisterDIDTxHash(batch database.Batch,
 	return batch.Put(key, buf.Bytes())
 }
 
+func (c *IDChainStore) rollbackRegisterDIDExpiresHeight(batch database.Batch,
+	idKey []byte) error {
+
+	key := []byte{byte(IX_DIDExpiresHeight)}
+	key = append(key, idKey...)
+
+	data, err := c.Get(key)
+	if err != nil {
+		return err
+	}
+
+	r := bytes.NewReader(data)
+	// get the count of expires height
+	count, err := common.ReadVarUint(r, 0)
+	if err != nil {
+		return err
+	}
+	if count == 0 {
+		return errors.New("not exist")
+	}
+
+	if _, err = common.ReadUint32(r); err != nil {
+		return err
+	}
+
+	if count == 1 {
+		return batch.Delete(key)
+	}
+
+	buf := new(bytes.Buffer)
+
+	// write count
+	if err := common.WriteVarUint(buf, count-1); err != nil {
+		return err
+	}
+
+	// write old expires height
+	if _, err := r.WriteTo(buf); err != nil {
+		return err
+	}
+
+	return batch.Put(key, buf.Bytes())
+}
+
 func (c *IDChainStore) rollbackRegisterDIDTx(batch database.Batch,
 	idKey []byte, tx *types.Transaction) error {
 	key := []byte{byte(IX_DIDTXHash)}
@@ -243,22 +387,25 @@ func (c *IDChainStore) rollbackRegisterDIDTx(batch database.Batch,
 	keyPayload = append(keyPayload, txHash.Bytes()...)
 	batch.Delete(keyPayload)
 
+	//rollback expires height
+	err = c.rollbackRegisterDIDExpiresHeight(batch, idKey)
+	if err != nil {
+		return err
+	}
+
 	if count == 1 {
 		return batch.Delete(key)
 	}
 
 	buf := new(bytes.Buffer)
-
 	// write count
 	if err := common.WriteVarUint(buf, count-1); err != nil {
 		return err
 	}
-
 	// write old hashes
 	if _, err := r.WriteTo(buf); err != nil {
 		return err
 	}
-
 	return batch.Put(key, buf.Bytes())
 }
 
@@ -304,7 +451,30 @@ func (c *IDChainStore) GetLastDIDTxPayload(idKey []byte) ([]byte, error) {
 
 	return dataPayload, nil
 }
+func (c *IDChainStore) GetExpiresHeight(idKey []byte) (uint32, error) {
+	key := []byte{byte(IX_DIDExpiresHeight)}
+	key = append(key, idKey...)
 
+	var expiresBlockHeight uint32
+	data, err := c.Get(key)
+	if err != nil {
+		return 0, err
+	}
+
+	r := bytes.NewReader(data)
+	count, err := common.ReadVarUint(r, 0)
+	if err != nil {
+		return 0, err
+	}
+	if count == 0 {
+		return 0, errors.New("not exist")
+	}
+	if expiresBlockHeight, err = common.ReadUint32(r); err != nil {
+		return 0, err
+	}
+
+	return expiresBlockHeight, nil
+}
 func (c *IDChainStore) GetDIDTxPayload(idKey []byte) ([][]byte, error) {
 	key := []byte{byte(IX_DIDTXHash)}
 	key = append(key, idKey...)

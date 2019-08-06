@@ -9,7 +9,6 @@ import (
 
 const (
 	RegisterDID types.TxType = 0x0a
-	UpdateDID   types.TxType = 0x0b
 )
 
 func IsRegisterIdentificationTx(tx *types.Transaction) bool {
@@ -18,10 +17,6 @@ func IsRegisterIdentificationTx(tx *types.Transaction) bool {
 
 func IsRegisterDIDTx(tx *types.Transaction) bool {
 	return tx.TxType == RegisterDID
-}
-
-func IsUpdateDIDTx(tx *types.Transaction) bool {
-	return tx.TxType == UpdateDID
 }
 
 func init() {
@@ -43,10 +38,6 @@ func init() {
 					return tx.Payload.(*PayloadRegisterIdentification)
 				}
 			}
-		case RegisterDID:
-			// todo comlete me
-		case UpdateDID:
-			// todo complete me
 		}
 		return getDataContainer(programHash, tx)
 	}
@@ -57,8 +48,6 @@ func init() {
 		case RegisterIdentification:
 			return &PayloadRegisterIdentification{}, nil
 		case RegisterDID:
-			return &PayloadDIDInfo{}, nil
-		case UpdateDID:
 			return &PayloadDIDInfo{}, nil
 		}
 		return getPayloadByTxType(txType)

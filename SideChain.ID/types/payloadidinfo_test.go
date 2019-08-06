@@ -3,8 +3,11 @@ package types
 import (
 	"bytes"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -47,7 +50,8 @@ var didPayloadBytes = []byte(
 		"\"type\": \"ECDSAsecp256r1\"," +
 		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
 		"\"publicKeyBase58\": \"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV\"" +
-		"}]" +
+		"}]," +
+		"\"expires\": \"2024-02-10T17:00:00Z\"" +
 		"}",
 )
 
@@ -69,6 +73,37 @@ func TestPayloadDID_Serialize(t *testing.T) {
 	payload2.Deserialize(buf, DIDInfoVersion)
 
 	assert.True(t, paylaodDIDInfoEqual(payload1, payload2))
+
+}
+
+func TestJavaDigest(t *testing.T) {
+	targetDigest := "B7943F86927374CA7A7ECFBAF8F2F2405BEBF781AD8843A551012A2B188FA5A5"
+	var payloadDid PayloadDIDInfo
+	payloadDid.Header.Specification = "elastos/did/1.0"
+	payloadDid.Header.Operation = "create"
+	payloadDid.Payload = "ICAiZG9jIjogewogICAgImlkIjogImRpZDplbGFzdG9zOmljSjR6MkRVTHJIRXpZU3ZqS05KcEt5aH\n" +
+		"FGRHh2WVY3cE4iLAogICAgInB1YmxpY0tleSI6IFt7CiAgICAgICJpZCI6ICIjbWFzdGVyLWtleSIsC\n" +
+		"iAgICAgICJwdWJsaWNLZXlCYXNlNTgiOiAiek54b1phWkxkYWNrWlFOTWFzN3NDa1BSSFpzSjNCdGRq\n" +
+		"RXZNMnk1Z052S0oiCiAgICB9LCB7CiAgICAgICJpZCI6ICIja2V5LTIiLAogICAgICAicHVibGljS2V\n" +
+		"5QmFzZTU4IjogIjI3M2o4ZlExWlpWTTZVNmQ1WEUzWDhTeVVMdUp3anlZWGJ4Tm9wWFZ1ZnRCZSIKIC\n" +
+		"AgIH0sIHsKICAgICAgImlkIjogIiNyZWNvdmVyeS1rZXkiLAogICAgICAiY29udHJvbGxlciI6ICJka\n" +
+		"WQ6ZWxhc3RvczppcDdudERvMm1ldEduVTh3R1A0Rm55S0NVZGJIbTRCUERoIiwKICAgICAgInB1Ymxp\n" +
+		"Y0tleUJhc2U1OCI6ICJ6cHB5MzNpMnIzdUMxTFQzUkZjTHFKSlBGcFl1WlBEdUtNZUtaNVRkQXNrTSI\n" +
+		"KICAgIH1dLAogICAgImF1dGhlbnRpY2F0aW9uIjogWwogICAgICAibWFzdGVyLWtleXMiLAogICAgIC\n" +
+		"AiI2tleS0yIiwKICAgIF0sCiAgICAuLi4KICB9LA"
+
+	dataString := payloadDid.Header.Specification + payloadDid.Header.
+		Operation + payloadDid.Payload
+
+	digest := sha256.Sum256([]byte(dataString))
+
+	digestHexStr := hex.EncodeToString(digest[:])
+
+	upperDigestHexStr := strings.ToUpper(digestHexStr)
+	assert.Equal(t, upperDigestHexStr, targetDigest)
+	fmt.Println(upperDigestHexStr)
+	fmt.Println(digestHexStr)
+
 }
 
 func paylaodDIDInfoEqual(first *PayloadDIDInfo, second *PayloadDIDInfo) bool {
@@ -167,4 +202,109 @@ func randomString() string {
 	a := make([]byte, 20)
 	rand.Read(a)
 	return common.BytesToHexString(a)
+}
+
+func TestRandomPlayDID(t *testing.T) {
+	payLoadDidInfo := randomPayloadDIDAll()
+	fmt.Printf("payLoadDidInfo %+v \n", payLoadDidInfo)
+
+	data, err := json.Marshal(payLoadDidInfo)
+	assert.NoError(t, err)
+	fmt.Printf("payLoadDidInfo %s\n", data)
+}
+
+func randomPayloadDIDNoAuth() *PayloadDIDInfo {
+	info := &DIDPayloadInfo{
+		ID: randomString(),
+		PublicKey: []DIDPublicKeyInfo{
+			{
+				ID:              randomString(),
+				Type:            randomString(),
+				Controller:      randomString(),
+				PublicKeyBase58: randomString(),
+			},
+		},
+	}
+	fmt.Printf("randomPayloadDIDAll DIDPayloadInfo %+v \n", info)
+	return &PayloadDIDInfo{
+		Header: DIDHeaderInfo{
+			Specification: randomString(),
+			Operation:     randomString(),
+		},
+		Payload: randomString(),
+		Proof: DIDProofInfo{
+			Type:               randomString(),
+			VerificationMethod: randomString(),
+			Signature:          randomString(),
+		},
+		PayloadInfo: info,
+	}
+}
+
+func randomPayloadDIDAll() *PayloadDIDInfo {
+	info := &DIDPayloadInfo{
+		ID: randomString(),
+		PublicKey: []DIDPublicKeyInfo{
+			{
+				ID:              randomString(),
+				Type:            randomString(),
+				Controller:      randomString(),
+				PublicKeyBase58: randomString(),
+			},
+		},
+		Authentication: []interface{}{
+			randomString(),
+		},
+		Authorization: []interface{}{
+			randomString(),
+		},
+	}
+
+	fmt.Printf("randomPayloadDIDAll DIDPayloadInfo %+v \n", info)
+	return &PayloadDIDInfo{
+		Header: DIDHeaderInfo{
+			Specification: randomString(),
+			Operation:     randomString(),
+		},
+		Payload: randomString(),
+		Proof: DIDProofInfo{
+			Type:               randomString(),
+			VerificationMethod: randomString(),
+			Signature:          randomString(),
+		},
+		PayloadInfo: info,
+	}
+}
+
+func randomPayloadNoContrller() *PayloadDIDInfo {
+	info := &DIDPayloadInfo{
+		ID: randomString(),
+		PublicKey: []DIDPublicKeyInfo{
+			{
+				ID:              randomString(),
+				Type:            randomString(),
+				PublicKeyBase58: randomString(),
+			},
+		},
+		Authentication: []interface{}{
+			randomString(),
+		},
+		Authorization: []interface{}{
+			randomString(),
+		},
+	}
+	fmt.Printf("randomPayloadDIDAll DIDPayloadInfo %+v \n", info)
+	return &PayloadDIDInfo{
+		Header: DIDHeaderInfo{
+			Specification: randomString(),
+			Operation:     randomString(),
+		},
+		Payload: randomString(),
+		Proof: DIDProofInfo{
+			Type:               randomString(),
+			VerificationMethod: randomString(),
+			Signature:          randomString(),
+		},
+		PayloadInfo: info,
+	}
 }

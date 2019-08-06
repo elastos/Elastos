@@ -75,6 +75,66 @@ func (s *HttpService) GetNodeState(param http.Params) (interface{}, error) {
 	}, nil
 }
 
+func (s *HttpService) GetIdentificationTxById(param http.Params) (interface{}, error) {
+	idParam, ok := param.String("id")
+	if !ok {
+		return nil, http.NewError(int(service.InvalidParams), "id is null")
+	}
+	_, err := common.Uint168FromAddress(idParam)
+	if err != nil {
+		return nil, http.NewError(int(service.InvalidParams), "invalid id")
+	}
+	isGetAll, ok := param.Bool("getall")
+	if !ok {
+		return nil, http.NewError(int(service.InvalidParams), "getall is null")
+	}
+
+	buf := new(bytes.Buffer)
+	buf.WriteString(idParam)
+
+	expiresHeight, err := s.store.GetExpiresHeight(buf.Bytes())
+	if err != nil {
+		return nil, http.NewError(int(service.UnknownTransaction), "get identification transaction failed")
+	}
+	if s.store.ChainStore.GetHeight() > expiresHeight {
+		return nil, http.NewError(int(service.InvalidParams), "DID is expired")
+	}
+
+	var payloadDids []id.PayloadDIDInfo
+	var payloadDid id.PayloadDIDInfo
+
+	var didInfosByte [][]byte
+	if isGetAll {
+		didInfosByte, err = s.store.GetDIDTxPayload(buf.Bytes())
+		if err != nil {
+			return nil, http.NewError(int(service.UnknownTransaction),
+				"get did transaction failed")
+		}
+
+	} else {
+		didInfoByte, err := s.store.GetLastDIDTxPayload(buf.Bytes())
+		if err != nil {
+			return nil, http.NewError(int(service.UnknownTransaction),
+				"get did transactions failed")
+		}
+		if len(didInfoByte) > 0 {
+			didInfosByte = append(didInfosByte, didInfoByte)
+		}
+	}
+	for _, didInfo := range didInfosByte {
+		r := bytes.NewReader(didInfo)
+
+		err = payloadDid.Deserialize(r, id.DIDInfoVersion)
+		if err != nil {
+			return nil, http.NewError(int(service.InvalidTransaction),
+				"payloaddid Deserialize failed")
+		}
+		payloadDids = append(payloadDids, payloadDid)
+	}
+	return payloadDids, nil
+
+}
+
 func (s *HttpService) GetIdentificationTxByIdAndPath(param http.Params) (interface{}, error) {
 	id, ok := param.String("id")
 	if !ok {
