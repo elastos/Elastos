@@ -74,7 +74,10 @@ export default class extends Base {
     Object.assign(doc, _.pick(suggestion, BASE_FIELDS));
 
     try {
-      return await db_cvote.save(doc)
+      const res = await db_cvote.save(doc)
+      this.notifySubscribers(res)
+      this.notifyCouncil(res)
+      return res
     } catch (error) {
       console.log(error)
       return
