@@ -1375,9 +1375,14 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
 
 	// check if program code conflict with producer public keys
 	if info.Code[len(info.Code)-1] == vm.CHECKSIG {
-		if b.state.ProducerExists(info.Code[1 : len(info.Code)-1]) {
+		pk := info.Code[1 : len(info.Code)-1]
+		if b.state.ProducerExists(pk) {
 			return fmt.Errorf("public key %s already inuse in producer list",
 				common.BytesToHexString(info.Code[1:len(info.Code)-1]))
+		}
+		if DefaultLedger.Arbitrators.IsCRCArbitrator(pk) {
+			return fmt.Errorf("public key %s already inuse in CRC list",
+				common.BytesToHexString(info.Code[0:len(info.Code)-1]))
 		}
 	}
 
