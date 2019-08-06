@@ -4,6 +4,7 @@ import home from './zh/home'
 import release from './zh/release'
 import proposal from './zh/proposal'
 import getting_started from './en/getting_started'
+import suggestion from './zh/suggestion'
 
 const zh = {
   council,
@@ -11,6 +12,7 @@ const zh = {
   release,
   proposal,
   getting_started,
+  suggestion,
   // Header
   '0000': 'ALPHA版本',
   '0001': '奖励计划',

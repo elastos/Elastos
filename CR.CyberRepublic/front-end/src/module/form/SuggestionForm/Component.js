@@ -104,6 +104,25 @@ class C extends BaseComponent {
     }
   }
 
+  handleContinue = (e) => {
+    const { form } = this.props
+    e.preventDefault()
+
+    form.validateFields((err, values) => {
+      if (err) {
+        this.setState({ loading: false, errorKeys: err, activeKey: this.getActiveKey(Object.keys(err)[0]) })
+        return
+      }
+
+      const index = TAB_KEYS.findIndex(item => item === this.state.activeKey)
+      if (index === TAB_KEYS.length - 1) {
+        this.handleSubmit({ preventDefault: () => {} })
+      } else {
+        this.setState({ activeKey: TAB_KEYS[index + 1] })
+      }
+    });
+  }
+
   getTitleInput() {
     const { initialValues = {} } = this.props
     const { getFieldDecorator } = this.props.form
@@ -210,14 +229,7 @@ class C extends BaseComponent {
 
           <Row gutter={8} type="flex" justify="center" style={{marginBottom: '30px'}}>
             <Button
-              onClick={() => {
-                const index = TAB_KEYS.findIndex(item => item === this.state.activeKey)
-                if (index === TAB_KEYS.length - 1) {
-                  this.handleSubmit({ preventDefault: () => {} })
-                } else {
-                  this.setState({ activeKey: TAB_KEYS[index + 1] })
-                }
-              }}
+              onClick={this.handleContinue}
               className="cr-btn cr-btn-black"
               htmlType="button"
             >
