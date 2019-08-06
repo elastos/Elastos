@@ -49,7 +49,6 @@ const renderTypeRadioGroup = (data, key, getFieldDecorator) => {
   ]
   const content_fn = getFieldDecorator(key, {
     rules,
-    validateTrigger: 'onSubmit',
     initialValue: content
   })
 
@@ -81,7 +80,6 @@ const renderRichEditor = (data, key, getFieldDecorator, max, callback) => {
   }
   const content_fn = getFieldDecorator(key, {
     rules,
-    validateTrigger: 'onSubmit',
     initialValue: content
   })
 
@@ -454,9 +452,6 @@ class C extends BaseComponent {
     const currentKeyNum = this.state.activeKeyNum
 
     form.validateFields(async (err, values) => {
-      // if (err) {
-      //   // mark error keys
-      // }
       const errKeys = _.keys(err)
       this.setState({ errKeys })
       if (_.includes(errKeys, activeKeys[currentKeyNum])) return

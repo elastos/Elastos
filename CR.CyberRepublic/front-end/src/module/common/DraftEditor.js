@@ -129,7 +129,7 @@ class Component extends BaseComponent {
       <Editor
         {...this.props}
         ref={this.refsEditor}
-        placeholder=""
+        placeholder="write someting..."
         sideButtons={[
           {
             title: 'Image',
