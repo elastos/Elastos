@@ -1,4 +1,5 @@
 language: c
+dist: trusty
 
 env:
   global:
@@ -7,7 +8,6 @@ env:
 
 _android: &_android
   language: android
-  dist: trusty
   os: linux
   # jdk: oraclejdk8
   sudo: true
