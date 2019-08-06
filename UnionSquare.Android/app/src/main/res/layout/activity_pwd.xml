@@ -67,7 +67,7 @@
         <TextView
             android:id="@+id/tv_sure"
             style="@style/button_margin"
-            android:layout_marginBottom="26dp"
+            android:layout_marginBottom="56dp"
             android:text="@string/sure" />
     </LinearLayout>
 

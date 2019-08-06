@@ -386,7 +386,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                 if (jsonObject.containsKey("MaxCount")) {
                     int maxCount = jsonObject.getInteger("MaxCount");
                     if (maxCount > 1500) {
-                        exchange();
+                        exchange(maxCount);
                     }
                 }
                 break;
@@ -409,8 +409,10 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
         }
     }
 
-    private void exchange() {
-        new DialogUtil().showWarmPrompt1(getBaseActivity(), getString(R.string.whetherexchange), new WarmPromptListener() {
+    private void exchange(int maxCount) {
+        String tip = String.format(getString(R.string.whetherexchange), maxCount + "");
+
+        new DialogUtil().showWarmPrompt1(getBaseActivity(), tip, new WarmPromptListener() {
             @Override
             public void affireBtnClick(View view) {
                 assetDetailPresenter.createCombineUTXOTransaction(wallet.getWalletId(), chainId, "", false, AssetDetailsFragment.this);

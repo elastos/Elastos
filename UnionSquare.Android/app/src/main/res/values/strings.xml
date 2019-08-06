@@ -366,7 +366,7 @@
     <string name="needpermissionstorage">需要您的存储权限</string>
     <string name="logkeppin">运行日志已保存到</string>
     <string name="logkeepfail">日志生成失败</string>
-    <string name="whetherexchange">检测到当前账户存在大量UTXO,是否零钱换整？</string>
+    <string name="whetherexchange">账户Utxo数量为%1$s个，是否零钱换整？</string>
     <string name="splashword">区 块 链 驱 动 的 智 能 万 维 网</string>
     <string name="curentsdkversion">SPVSDK版本号&#160;</string>
     <string name="invalidnode">失效节点</string>

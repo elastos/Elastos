@@ -57,13 +57,21 @@ public class TransferRecordDetailEntity implements Serializable {
         private String Inputs;
         private String Memo;
         private String Outputs;
-        private String Payload;
+        private List<PayloadBean> Payload;
         private String Status;
         private long Timestamp;
         private String TxHash;
         private int Type;
         private List<AttributeBean> Attribute;
         private List<OutputPayloadBean> OutputPayload;
+
+        public List<PayloadBean> getPayload() {
+            return Payload;
+        }
+
+        public void setPayload(List<PayloadBean> payload) {
+            Payload = payload;
+        }
 
         public String getAmount() {
             return Amount;
@@ -129,13 +137,6 @@ public class TransferRecordDetailEntity implements Serializable {
             this.Outputs = Outputs;
         }
 
-        public String getPayload() {
-            return Payload;
-        }
-
-        public void setPayload(String Payload) {
-            this.Payload = Payload;
-        }
 
         public String getStatus() {
             return Status;
@@ -186,8 +187,42 @@ public class TransferRecordDetailEntity implements Serializable {
         }
 
 
+        public static class PayloadBean {
 
+            /**
+             * CrossChainAddress : EKZ4YMJgYY4GajBQBhWck5C2nqdLPuJ12e
+             * CrossChainAmount : 339980000
+             * OutputIndex : 0
+             */
 
+            private String CrossChainAddress;
+            private String CrossChainAmount;
+            private int OutputIndex;
+
+            public String getCrossChainAddress() {
+                return CrossChainAddress;
+            }
+
+            public void setCrossChainAddress(String CrossChainAddress) {
+                this.CrossChainAddress = CrossChainAddress;
+            }
+
+            public String getCrossChainAmount() {
+                return CrossChainAmount;
+            }
+
+            public void setCrossChainAmount(String CrossChainAmount) {
+                this.CrossChainAmount = CrossChainAmount;
+            }
+
+            public int getOutputIndex() {
+                return OutputIndex;
+            }
+
+            public void setOutputIndex(int OutputIndex) {
+                this.OutputIndex = OutputIndex;
+            }
+        }
 
         public static class AttributeBean {
             /**
