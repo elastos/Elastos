@@ -187,7 +187,7 @@ namespace Elastos {
 			}
 
 			for (UTXOArray::iterator u = _utxosCoinbase.begin(); u != _utxosCoinbase.end(); ++u) {
-				if (txSize >= TX_MAX_SIZE - 1000)
+				if (txSize >= TX_MAX_SIZE - 1000 || tx->GetInputs().size() >= 500)
 					break;
 
 				if (_parent->IsUTXOSpending(*u)) {
@@ -210,7 +210,7 @@ namespace Elastos {
 			}
 
 			for (UTXOArray::iterator u = _utxos.begin(); u != _utxos.end(); ++u) {
-				if (txSize >= TX_MAX_SIZE - 1000)
+				if (txSize >= TX_MAX_SIZE - 1000 || tx->GetInputs().size() >= 500)
 					break;
 
 				if (_parent->IsUTXOSpending(*u)) {
