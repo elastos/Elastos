@@ -25,6 +25,21 @@
     }
   }
 
+  .explainer {
+    p {
+      line-height: 2;
+      font-weight: 400;
+      font-size: 1.2rem;
+    }
+
+    a {
+      display: block;
+      font-size: 1.4rem;
+      color: $tertiary_color;
+      padding-bottom: 1vh;
+    }
+  }
+
   .imageAlignTop .blockImage {
     max-width: none;
 

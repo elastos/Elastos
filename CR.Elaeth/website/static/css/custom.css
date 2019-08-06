@@ -39,6 +39,17 @@ header .navigationSlider .slidingNav > .nav-site > li > a {
     color: white;
     margin: 0; }
 
+.mainContainer .explainer p {
+  line-height: 2;
+  font-weight: 400;
+  font-size: 1.2rem; }
+
+.mainContainer .explainer a {
+  display: block;
+  font-size: 1.4rem;
+  color: #4f789c;
+  padding-bottom: 1vh; }
+
 .mainContainer .imageAlignTop .blockImage {
   max-width: none; }
   .mainContainer .imageAlignTop .blockImage > img {
