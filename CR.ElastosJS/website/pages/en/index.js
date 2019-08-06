@@ -35,9 +35,9 @@ class HomeSplash extends React.Component {
       </div>
     );
 
-    const ProjectTitle = () => (
+    const ProjectTitle = props => (
       <h2 className="projectTitle">
-        {siteConfig.title}
+        <img src="/img/logo.png" alt="Elastos Logo" width="25%"/>
         <small>{siteConfig.tagline}</small>
       </h2>
     );
@@ -60,13 +60,13 @@ class HomeSplash extends React.Component {
 
     return (
       <SplashContainer>
-        <Logo img_src={`${baseUrl}img/undraw_monitor.svg`} />
+        {/* }<Logo img_src={`${baseUrl}img/undraw_monitor.svg`} /> -- */}
         <div className="inner">
           <ProjectTitle siteConfig={siteConfig} />
           <PromoSection>
-            <Button href="#try">Try It Out</Button>
-            <Button href={docUrl('doc1.html')}>Example Link</Button>
-            <Button href={docUrl('doc2.html')}>Example Link 2</Button>
+            <Button href="#try">Elastos Blockchain</Button>
+            <Button href={docUrl('doc1.html')}>Cyber Republic DAO</Button>
+            <Button href={docUrl('doc2.html')}>Get Funded By Cyber Republic</Button>
           </PromoSection>
         </div>
       </SplashContainer>
@@ -76,6 +76,7 @@ class HomeSplash extends React.Component {
 
 class Index extends React.Component {
   render() {
+
     const {config: siteConfig, language = ''} = this.props;
     const {baseUrl} = siteConfig;
 
@@ -92,7 +93,7 @@ class Index extends React.Component {
       </Container>
     );
 
-    const FeatureCallout = () => (
+    const Infographic = () => (
       <div
         className="productShowcaseSection paddingBottom"
         style={{textAlign: 'center'}}>
@@ -101,38 +102,8 @@ class Index extends React.Component {
       </div>
     );
 
-    const TryOut = () => (
-      <Block id="try">
-        {[
-          {
-            content:
-              'To make your landing page more attractive, use illustrations! Check out ' +
-              '[**unDraw**](https://undraw.co/) which provides you with customizable illustrations which are free to use. ' +
-              'The illustrations you see on this page are from unDraw.',
-            image: `${baseUrl}img/undraw_code_review.svg`,
-            imageAlign: 'left',
-            title: 'Wonderful SVG Illustrations',
-          },
-        ]}
-      </Block>
-    );
-
-    const Description = () => (
+    const ElastosBlockchain = () => (
       <Block background="dark">
-        {[
-          {
-            content:
-              'This is another description of how this project is useful',
-            image: `${baseUrl}img/undraw_note_list.svg`,
-            imageAlign: 'right',
-            title: 'Description',
-          },
-        ]}
-      </Block>
-    );
-
-    const LearnHow = () => (
-      <Block background="light">
         {[
           {
             content:
@@ -145,52 +116,52 @@ class Index extends React.Component {
       </Block>
     );
 
+    const ElastosDark = () => (
+    <div
+    className="productShowcaseSection"
+    style={{textAlign: 'center'}}>
+      <img src="/img/Elastos_Logo_Horizontal_KO_RGB.png" width="30%"/>
+    </div>
+    );
+
     const Features = () => (
       <Block layout="fourColumn">
         {[
           {
-            content: 'This is the content of my feature',
-            image: `${baseUrl}img/undraw_react.svg`,
+            title: 'Secured By Bitcoin<br/>Through Merge Mining',
+            content: 'Elastos has over 40% of BTC\'s hashpower',
+            image: `${baseUrl}img/hashrate.jpg`,
             imageAlign: 'top',
-            title: 'Feature One',
           },
           {
-            content: 'The content of my second feature',
-            image: `${baseUrl}img/undraw_operating_system.svg`,
+            title: '3x More Expensive to<br/>Attack Than Ethereum',
+            content: 'Our hybrid AuxPoW/DPoS Consensus',
+            image: `${baseUrl}img/ethereum_logo.svg`,
             imageAlign: 'top',
-            title: 'Feature Two',
+
           },
+          {
+            title: 'Solidity Smart Contracts<br/>On Our Own Secure Chain',
+            content: 'Easy migrations, usable 400+ TPS speeds',
+            image: `${baseUrl}img/ethereum_logo.svg`,
+            imageAlign: 'top',
+          }
         ]}
       </Block>
     );
 
     const Showcase = () => {
-      if ((siteConfig.users || []).length === 0) {
-        return null;
-      }
-
-      const showcase = siteConfig.users
-        .filter(user => user.pinned)
-        .map(user => (
-          <a href={user.infoLink} key={user.infoLink}>
-            <img src={user.image} alt={user.caption} title={user.caption} />
-          </a>
-        ));
-
-      const pageUrl = page => baseUrl + (language ? `${language}/` : '') + page;
-
-      return (
-        <div className="productShowcaseSection paddingBottom">
-          <h2>Who is Using This?</h2>
-          <p>This project is used by all these people</p>
-          <div className="logos">{showcase}</div>
-          <div className="more-users">
-            <a className="button" href={pageUrl('users.html')}>
-              More {siteConfig.title} Users
-            </a>
-          </div>
-        </div>
-      );
+      return <Block background="light">
+        {[
+          {
+            content:
+            'Each new Docusaurus project has **randomly-generated** theme colors.',
+            image: `${baseUrl}img/undraw_youtube_tutorial.svg`,
+            imageAlign: 'right',
+            title: 'Randomly Generated Theme Colors',
+          },
+        ]}
+      </Block>
     };
 
     return (
@@ -198,10 +169,9 @@ class Index extends React.Component {
         <HomeSplash siteConfig={siteConfig} language={language} />
         <div className="mainContainer">
           <Features />
-          <FeatureCallout />
-          <LearnHow />
-          <TryOut />
-          <Description />
+          <ElastosDark />
+          <Infographic />
+          <ElastosBlockchain />
           <Showcase />
         </div>
       </div>

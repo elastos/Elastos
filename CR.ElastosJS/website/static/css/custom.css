@@ -1,16 +1,49 @@
-/* your custom css */
+@import url("https://use.typekit.net/ild6syp.css");
+html,
+body,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+ul,
+li {
+  font-family: "Bio Sans", sans-serif; }
 
-@media only screen and (min-device-width: 360px) and (max-device-width: 736px) {
-}
+.darkBackground {
+  background-color: #1c2f4a; }
 
-@media only screen and (min-width: 1024px) {
-}
+.docMainWrapper h3 {
+  font-weight: 500; }
 
-@media only screen and (max-width: 1023px) {
-}
+.docMainWrapper p {
+  font-weight: 300; }
 
-@media only screen and (min-width: 1400px) {
-}
+header .navigationSlider .slidingNav > .nav-site > li > a {
+  color: #333;
+  font-weight: 500; }
 
-@media only screen and (min-width: 1500px) {
-}
+.homeContainer {
+  background-color: #ffffff; }
+  .homeContainer .projectTitle > img {
+    padding-left: 25px; }
+  .homeContainer .projectTitle > small {
+    color: #4f789c; }
+
+.mainContainer .productShowcaseSection {
+  padding-top: 5vh;
+  background-color: #1c2f4a; }
+  .mainContainer .productShowcaseSection h2 {
+    color: white;
+    margin: 0; }
+
+.mainContainer .imageAlignTop .blockImage {
+  max-width: none; }
+  .mainContainer .imageAlignTop .blockImage > img {
+    max-height: 100px; }
+
+.promoRow .button {
+  color: #333;
+  border-color: #0b687c; }

@@ -1,0 +1,102 @@
+$text_default_color: #333;
+$text_light_gray: rgba(0, 0, 0, 0.45);
+$text_lighter_gray: rgba(3, 30, 40, 0.3);
+$text_dark_gray: #545454;
+$text_new_gray: #434D72;
+
+$primary_color: #0b687c;
+$secondary_color: #1c2f4a;
+$tertiary_color: #4f789c;
+
+$background_white: #ffffff;
+
+
+
+@import url("https://use.typekit.net/ild6syp.css");
+
+html,
+body,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+ul,
+li {
+  font-family: "Bio Sans", sans-serif;
+}
+
+.darkBackground {
+  background-color: $secondary_color;
+
+}
+
+
+
+.docMainWrapper {
+
+  h3 {
+    font-weight: 500;
+  }
+
+  p {
+    font-weight: 300;
+  }
+}
+
+
+
+header {
+
+  .navigationSlider .slidingNav > .nav-site > li > a {
+    color: $text_default_color;
+    font-weight: 500;
+  }
+
+}
+
+
+
+.homeContainer {
+  background-color: $background_white;
+
+  .projectTitle {
+    > img {
+      padding-left: 25px;
+    }
+
+    > small {
+      color: $tertiary_color;
+    }
+  }
+}
+
+.mainContainer {
+  .productShowcaseSection {
+    padding-top: 5vh;
+    background-color: $secondary_color;
+
+    h2 {
+      color: white;
+      margin: 0;
+    }
+  }
+
+  .imageAlignTop .blockImage {
+    max-width: none;
+
+    > img {
+      max-height: 100px;
+    }
+  }
+}
+
+.promoRow {
+
+  .button {
+    color: $text_default_color;
+    border-color: $primary_color;
+  }
+}
