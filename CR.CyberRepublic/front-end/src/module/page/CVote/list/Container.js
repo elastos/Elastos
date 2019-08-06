@@ -17,6 +17,9 @@ const mapDispatch = () => {
     async listData(param, isCouncil) {
       return service.listData(param, isCouncil)
     },
+    async createDraft(param) {
+      return service.createDraft(param)
+    }
   }
 }
 
