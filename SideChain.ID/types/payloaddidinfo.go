@@ -12,6 +12,8 @@ import (
 
 const DIDInfoVersion = 0x00
 
+const MasterKeyStr = "#master-key"
+
 // header of DID transaction payload
 type DIDHeaderInfo struct {
 	Specification string `json:"specification"`
@@ -94,12 +96,59 @@ type DIDPublicKeyInfo struct {
 	PublicKeyBase58 string `json:"publicKeyBase58"`
 }
 
+func (p *DIDPublicKeyInfo) Serialize(w io.Writer, version byte) error {
+
+	if err := common.WriteVarString(w, p.ID); err != nil {
+		return errors.New("[DIDPublicKeyInfo], ID serialize failed.")
+	}
+	if err := common.WriteVarString(w, p.Type); err != nil {
+		return errors.New("[DIDPublicKeyInfo], Type serialize failed.")
+	}
+	if err := common.WriteVarString(w, p.Controller); err != nil {
+		return errors.New("[DIDPublicKeyInfo], Controller serialize failed.")
+	}
+	if err := common.WriteVarString(w, p.PublicKeyBase58); err != nil {
+		return errors.New("[DIDPublicKeyInfo], PublicKeyBase58 serialize failed.")
+	}
+
+	return nil
+}
+
+func (p *DIDPublicKeyInfo) Deserialize(r io.Reader, version byte) error {
+	id, err := common.ReadVarString(r)
+	if err != nil {
+		return errors.New("[DIDPublicKeyInfo], ID deserialize failed")
+	}
+	p.ID = id
+
+	typePkInfo, err := common.ReadVarString(r)
+	if err != nil {
+		return errors.New("[DIDPublicKeyInfo], Type deserialize failed")
+	}
+	p.Type = typePkInfo
+
+	controller, err := common.ReadVarString(r)
+	if err != nil {
+		return errors.New("[DIDPublicKeyInfo], Controller deserialize failed")
+	}
+	p.Controller = controller
+
+	pkBase58, err := common.ReadVarString(r)
+	if err != nil {
+		return errors.New("[DIDPublicKeyInfo], PublicKeyBase58 deserialize failed")
+	}
+	p.PublicKeyBase58 = pkBase58
+
+	return nil
+}
+
 // payload in DID transaction payload
 type DIDPayloadInfo struct {
 	ID             string             `json:"id"`
 	PublicKey      []DIDPublicKeyInfo `json:"publicKey"`
 	Authentication []interface{}      `json:"authentication"`
 	Authorization  []interface{}      `json:"authorization"`
+	Expires        string             `json:expires`
 }
 
 // payload of DID transaction
@@ -113,12 +162,17 @@ type PayloadDIDInfo struct {
 
 func (p *PayloadDIDInfo) Data(version byte) []byte {
 	buf := new(bytes.Buffer)
-	p.Serialize(buf, DIDInfoVersion)
+	if err := p.Header.Serialize(buf, version); err != nil {
+		return nil
+	}
+	if err := common.WriteVarString(buf, p.Payload); err != nil {
+		return nil
+	}
 	return buf.Bytes()
 }
 
 func (p *PayloadDIDInfo) Serialize(w io.Writer, version byte) error {
-	if err := p.Header.Serialize(w, DIDInfoVersion); err != nil {
+	if err := p.Header.Serialize(w, version); err != nil {
 		return errors.New("[PayloadDIDInfo], Header serialize failed," + err.Error())
 	}
 
@@ -126,7 +180,7 @@ func (p *PayloadDIDInfo) Serialize(w io.Writer, version byte) error {
 		return errors.New("[PayloadDIDInfo], Payload serialize failed")
 	}
 
-	if err := p.Proof.Serialize(w, DIDInfoVersion); err != nil {
+	if err := p.Proof.Serialize(w, version); err != nil {
 		return errors.New("[PayloadDIDInfo], Proof serialize failed," + err.Error())
 	}
 
