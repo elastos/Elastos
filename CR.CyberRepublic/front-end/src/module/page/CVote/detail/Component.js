@@ -41,7 +41,8 @@ import {
   Body,
   SubTitleHeading,
   SubTitleContainer,
-  VoteBtnGroup
+  VoteBtnGroup,
+  StyledRichContent
 } from './style'
 import './style.scss'
 
@@ -51,19 +52,23 @@ const renderRichContent = (data, key, title) => {
   let content
   if (_.isArray(data)) {
     content = _.map(data, item => (
-      <DraftEditor
-        value={item[key]}
-        contentType={item.contentType}
-        editorEnabled={false}
-      />
+      <StyledRichContent>
+        <DraftEditor
+          value={item[key]}
+          contentType={item.contentType}
+          editorEnabled={false}
+        />
+      </StyledRichContent>
     ))
   } else {
     content = (
-      <DraftEditor
-        value={data[key]}
-        contentType={data.contentType}
-        editorEnabled={false}
-      />
+      <StyledRichContent>
+        <DraftEditor
+          value={data[key]}
+          contentType={data.contentType}
+          editorEnabled={false}
+        />
+      </StyledRichContent>
     )
   }
 
