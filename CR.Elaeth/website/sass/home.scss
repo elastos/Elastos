@@ -1,0 +1,43 @@
+
+
+.homeContainer {
+  background-color: $background_white;
+
+  .projectTitle {
+    > img {
+      padding-left: 25px;
+    }
+
+    > small {
+      color: $tertiary_color;
+    }
+  }
+}
+
+.mainContainer {
+  .productShowcaseSection {
+    padding-top: 5vh;
+    background-color: $secondary_color;
+
+    h2 {
+      color: white;
+      margin: 0;
+    }
+  }
+
+  .imageAlignTop .blockImage {
+    max-width: none;
+
+    > img {
+      max-height: 100px;
+    }
+  }
+}
+
+.promoRow {
+
+  .button {
+    color: $text_default_color;
+    border-color: $primary_color;
+  }
+}
