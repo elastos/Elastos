@@ -62,17 +62,16 @@ export default class extends StandardPage {
         <Row className="members">
           <Col lg={8} md={8} sm={24} className="member">
             <div className="small-rect">
-              <Avatar src="/assets/images/council/council-kevin.jpeg" shape="square" size={220} icon="user" />
+              <Avatar src="/assets/images/council/council-nicola.jpeg" shape="square" size={220} icon="user" />
             </div>
             <div className="big-rect">
               <div className="content">
-                <h3 className="name">{I18N.get('cs.kevin.name')}</h3>
-                <span className="self-intro">{I18N.get('cs.kevin.intro')}</span>
+                <h3 className="name">{I18N.get('cs.nicola.name')}</h3>
+                <span className="self-intro">{I18N.get('cs.nicola.intro')}</span>
                 <Email>
-                  {I18N.get('cs.contact')}
-:
+                  {I18N.get('cs.contact')}:
                   {' '}
-                  {I18N.get('cs.kevin.email')}
+                  {I18N.get('cs.nicola.email')}
                 </Email>
               </div>
             </div>
@@ -233,4 +232,5 @@ const TabTitle = styled.div`
 `
 const Email = styled.div`
   color: white;
+  margin-top: 5px
 `

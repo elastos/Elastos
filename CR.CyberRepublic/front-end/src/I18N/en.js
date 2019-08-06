@@ -1624,10 +1624,10 @@ const en = {
       }
     },
     contact: 'Contact',
-    kevin: {
-      name: 'Kevin Zhang',
-      intro: 'Head of Elastos Global Adoption Team, based in Silicon Valley',
-      email: 'kevin.zhang.canada@gmail.com'
+    nicola: {
+      name: 'Nicola Cedric Zimmermann',
+      intro: 'Community Manager of Elastos, Founding member of Elastos Orchard, based in Switzerland',
+      email: 'nicola@cyberrepublic.org'
     },
     yipeng: {
       name: 'Yipeng Su',

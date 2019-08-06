@@ -7,7 +7,9 @@ import {
   message,
   Modal,
   Anchor,
-  Popconfirm
+  Popconfirm,
+  Row,
+  Col
 } from 'antd'
 import { Link } from 'react-router-dom'
 import I18N from '@/I18N'
@@ -273,12 +275,9 @@ class C extends StandardPage {
     )
     const trackingTitle = trackingStatus ? (
       <span>
-        {I18N.get('proposal.fields.tracking')}
-        {' '}
+        {I18N.get('proposal.fields.tracking')}{' '}
         <span style={{ fontSize: 10, color: '#aaa' }}>
-          (
-          {I18N.get(`proposal.status.trackingRaw.${trackingStatus}`)}
-)
+          ({I18N.get(`proposal.status.trackingRaw.${trackingStatus}`)})
         </span>
       </span>
     ) : (
@@ -286,12 +285,9 @@ class C extends StandardPage {
     )
     const summaryTitle = summaryStatus ? (
       <span>
-        {I18N.get('proposal.fields.summary')}
-        {' '}
+        {I18N.get('proposal.fields.summary')}{' '}
         <span style={{ fontSize: 10, color: '#aaa' }}>
-          (
-          {I18N.get(`proposal.status.summaryRaw.${summaryStatus}`)}
-)
+          ({I18N.get(`proposal.status.summaryRaw.${summaryStatus}`)})
         </span>
       </span>
     ) : (

@@ -1573,10 +1573,10 @@ const zh = {
       }
     },
     contact: '联系',
-    kevin: {
-      name: '张戈',
-      intro: '亦来云全球推广负责人, 常驻硅谷',
-      email: 'kevin.zhang.canada@gmail.com'
+    nicola: {
+      name: 'Nicola Cedric Zimmermann',
+      intro: 'Elastos社区经理, Elastos Orchard创始成员, 常驻瑞士',
+      email: 'nicola@cyberrepublic.org'
     },
     yipeng: {
       name: '苏翼鹏',
