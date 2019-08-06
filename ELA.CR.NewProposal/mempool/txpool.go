@@ -1,12 +1,13 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package mempool
 
 import (
 	"bytes"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"sync"
@@ -19,9 +20,11 @@ import (
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
+	"github.com/elastos/Elastos.ELA/vm"
 )
 
 type TxPool struct {
@@ -241,6 +244,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 						continue
 					}
 					mp.delCRDID(rcPayload.DID)
+					mp.delPublicKeyByCode(rcPayload.Code)
 				case UpdateCR:
 					rcPayload, ok := tx.Payload.(*payload.CRInfo)
 					if !ok {
@@ -361,50 +365,44 @@ func (mp *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 func (mp *TxPool) verifyProducerRelatedTx(txn *Transaction) ErrCode {
 	switch txn.TxType {
 	case RegisterProducer:
-		payload, ok := txn.Payload.(*payload.ProducerInfo)
+		p, ok := txn.Payload.(*payload.ProducerInfo)
 		if !ok {
 			log.Error("register producer payload cast failed, tx:", txn.Hash())
 			return ErrProducerProcessing
 		}
-		if err := mp.verifyDuplicateOwner(BytesToHexString(payload.OwnerPublicKey)); err != nil {
+		if err := mp.verifyDuplicateOwnerAndNode(BytesToHexString(p.OwnerPublicKey),
+			BytesToHexString(p.NodePublicKey)); err != nil {
 			log.Warn(err)
 			return ErrProducerProcessing
 		}
-		if err := mp.verifyDuplicateNode(BytesToHexString(payload.NodePublicKey)); err != nil {
-			log.Warn(err)
-			return ErrProducerNodeProcessing
-		}
 	case UpdateProducer:
-		payload, ok := txn.Payload.(*payload.ProducerInfo)
+		p, ok := txn.Payload.(*payload.ProducerInfo)
 		if !ok {
 			log.Error("update producer payload cast failed, tx:", txn.Hash())
 			return ErrProducerProcessing
 		}
-		if err := mp.verifyDuplicateOwner(BytesToHexString(payload.OwnerPublicKey)); err != nil {
+		if err := mp.verifyDuplicateOwnerAndNode(BytesToHexString(p.OwnerPublicKey),
+			BytesToHexString(p.NodePublicKey)); err != nil {
 			log.Warn(err)
 			return ErrProducerProcessing
 		}
-		if err := mp.verifyDuplicateNode(BytesToHexString(payload.NodePublicKey)); err != nil {
-			log.Warn(err)
-			return ErrProducerNodeProcessing
-		}
 	case CancelProducer:
-		payload, ok := txn.Payload.(*payload.ProcessProducer)
+		p, ok := txn.Payload.(*payload.ProcessProducer)
 		if !ok {
 			log.Error("cancel producer payload cast failed, tx:", txn.Hash())
 			return ErrProducerProcessing
 		}
-		if err := mp.verifyDuplicateOwner(BytesToHexString(payload.OwnerPublicKey)); err != nil {
+		if err := mp.verifyDuplicateOwner(BytesToHexString(p.OwnerPublicKey)); err != nil {
 			log.Warn(err)
 			return ErrProducerProcessing
 		}
 	case ActivateProducer:
-		payload, ok := txn.Payload.(*payload.ActivateProducer)
+		p, ok := txn.Payload.(*payload.ActivateProducer)
 		if !ok {
 			log.Error("activate producer payload cast failed, tx:", txn.Hash())
 			return ErrProducerProcessing
 		}
-		if err := mp.verifyDuplicateNode(BytesToHexString(payload.NodePublicKey)); err != nil {
+		if err := mp.verifyDuplicateNode(BytesToHexString(p.NodePublicKey)); err != nil {
 			log.Warn(err)
 			return ErrProducerNodeProcessing
 		}
@@ -429,32 +427,32 @@ func (mp *TxPool) verifyProducerRelatedTx(txn *Transaction) ErrCode {
 func (mp *TxPool) verifyCRRelatedTx(txn *Transaction) ErrCode {
 	switch txn.TxType {
 	case RegisterCR:
-		payload, ok := txn.Payload.(*payload.CRInfo)
+		p, ok := txn.Payload.(*payload.CRInfo)
 		if !ok {
 			log.Error("register CR payload cast failed, tx:", txn.Hash())
 			return ErrCRProcessing
 		}
-		if err := mp.verifyDuplicateCR(payload.DID); err != nil {
+		if err := mp.verifyDuplicateCRAndProducer(p.DID, p.Code); err != nil {
 			log.Warn(err)
 			return ErrCRProcessing
 		}
 	case UpdateCR:
-		payload, ok := txn.Payload.(*payload.CRInfo)
+		p, ok := txn.Payload.(*payload.CRInfo)
 		if !ok {
 			log.Error("update producer payload cast failed, tx:", txn.Hash())
 			return ErrCRProcessing
 		}
-		if err := mp.verifyDuplicateCR(payload.DID); err != nil {
+		if err := mp.verifyDuplicateCR(p.DID); err != nil {
 			log.Warn(err)
 			return ErrCRProcessing
 		}
 	case UnregisterCR:
-		payload, ok := txn.Payload.(*payload.UnregisterCR)
+		p, ok := txn.Payload.(*payload.UnregisterCR)
 		if !ok {
 			log.Error("update producer payload cast failed, tx:", txn.Hash())
 			return ErrCRProcessing
 		}
-		ct, err := contract.CreateCRDIDContractByCode(payload.Code)
+		ct, err := contract.CreateCRDIDContractByCode(p.Code)
 		if err != nil {
 			log.Error("invalid unregister CR code, tx:", txn.Hash())
 			return ErrCRProcessing
@@ -535,6 +533,21 @@ func (mp *TxPool) verifyDuplicateSidechainTx(txn *Transaction) error {
 	return nil
 }
 
+func (mp *TxPool) verifyDuplicateOwnerAndNode(ownerPublicKey string, nodePublicKey string) error {
+	_, ok := mp.ownerPublicKeys[ownerPublicKey]
+	if ok {
+		return errors.New("this producer in being processed")
+	}
+	_, ok = mp.nodePublicKeys[nodePublicKey]
+	if ok {
+		return errors.New("this producer node in being processed")
+	}
+	mp.addOwnerPublicKey(ownerPublicKey)
+	mp.addNodePublicKey(nodePublicKey)
+
+	return nil
+}
+
 func (mp *TxPool) verifyDuplicateOwner(ownerPublicKey string) error {
 	_, ok := mp.ownerPublicKeys[ownerPublicKey]
 	if ok {
@@ -581,12 +594,53 @@ func (mp *TxPool) verifyDuplicateCR(did Uint168) error {
 	return nil
 }
 
+func (mp *TxPool) verifyDuplicateCRAndProducer(did Uint168, code []byte) error {
+	_, ok := mp.crDIDs[did]
+	if ok {
+		return errors.New("this CR in being processed")
+	}
+	signType, err := crypto.GetScriptType(code)
+	if err != nil {
+		return err
+	}
+
+	if signType == vm.CHECKSIG {
+		pk := hex.EncodeToString(code[1 : len(code)-1])
+		if _, ok := mp.ownerPublicKeys[pk]; ok {
+			return errors.New("this public key in being" +
+				" processed by producer owner public key")
+		}
+
+		if _, ok := mp.nodePublicKeys[pk]; ok {
+			return errors.New("this public key in being" +
+				" processed by producer node public key")
+		}
+		mp.addOwnerPublicKey(pk)
+		mp.addNodePublicKey(pk)
+	}
+
+	mp.addCRDID(did)
+	return nil
+}
+
 func (mp *TxPool) addCRDID(did Uint168) {
 	mp.crDIDs[did] = struct{}{}
 }
 
 func (mp *TxPool) delCRDID(did Uint168) {
 	delete(mp.crDIDs, did)
+}
+
+func (mp *TxPool) delPublicKeyByCode(code []byte) {
+	signType, err := crypto.GetScriptType(code)
+	if err != nil {
+		return
+	}
+	if signType == vm.CHECKSIG {
+		pk := hex.EncodeToString(code[1 : len(code)-1])
+		delete(mp.ownerPublicKeys, pk)
+		delete(mp.nodePublicKeys, pk)
+	}
 }
 
 func (mp *TxPool) addSpecialTx(hash *Uint256) {
