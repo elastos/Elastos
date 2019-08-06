@@ -54,7 +54,7 @@ namespace Elastos {
 			ErrorChecker::CheckParam(precision > Asset::MaxPrecision, Error::InvalidArgument, "precision too large");
 
 			AssetPtr asset(new Asset(name, description, precision));
-			PayloadPtr payload = PayloadPtr(new RegisterAsset(asset, assetAmount.getWord(), address.ProgramHash()));
+			PayloadPtr payload = PayloadPtr(new RegisterAsset(asset, assetAmount.getUint64(), address.ProgramHash()));
 
 			std::vector<OutputPtr> outputs;
 			Address receiveAddr(CreateAddress());

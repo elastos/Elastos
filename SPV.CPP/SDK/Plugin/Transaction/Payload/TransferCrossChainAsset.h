@@ -8,9 +8,36 @@
 #include "IPayload.h"
 
 #include <map>
+#include <SDK/Common/BigInt.h>
 
 namespace Elastos {
 	namespace ElaWallet {
+
+		class TransferCrossChainAsset;
+
+		class TransferInfo {
+		public:
+			TransferInfo();
+
+			TransferInfo(const std::string &address, uint16_t index, const BigInt &amount);
+
+			const std::string &CrossChainAddress() const;
+
+			uint16_t OutputIndex() const;
+
+			const BigInt &CrossChainAmount() const;
+
+			virtual nlohmann::json ToJson(uint8_t version) const;
+
+			virtual void FromJson(const nlohmann::json &j, uint8_t version);
+
+		private:
+			friend TransferCrossChainAsset;
+
+			std::string _crossChainAddress;
+			uint16_t _outputIndex;
+			BigInt _crossChainAmount;
+		};
 
 		class TransferCrossChainAsset :
 				public IPayload {
@@ -19,23 +46,11 @@ namespace Elastos {
 
 			TransferCrossChainAsset(const TransferCrossChainAsset &payload);
 
-			TransferCrossChainAsset(
-				const std::vector<std::string> &crossChainAddress,
-				const std::vector<uint64_t> &outputIndex,
-				const std::vector<uint64_t> &crossChainAmount);
+			TransferCrossChainAsset(const std::vector<TransferInfo> &info);
 
 			~TransferCrossChainAsset();
 
-			void SetCrossChainData(const std::vector<std::string> &crossChainAddress,
-								   const std::vector<uint64_t> &outputIndex,
-								   const std::vector<uint64_t> &crossChainAmount);
-
-			const std::vector<std::string> &GetCrossChainAddress() const;
-
-			const std::vector<uint64_t> &GetOutputIndex() const;
-
-			const std::vector<uint64_t> &GetCrossChainAmout() const;
-
+			const std::vector<TransferInfo> &Info() const;
 
 			virtual size_t EstimateSize(uint8_t version) const;
 
@@ -54,9 +69,7 @@ namespace Elastos {
 			TransferCrossChainAsset &operator=(const TransferCrossChainAsset &payload);
 
 		private:
-			std::vector<std::string> _crossChainAddress;
-			std::vector<uint64_t> _outputIndex;
-			std::vector<uint64_t> _crossChainAmount;
+			std::vector<TransferInfo> _info;
 		};
 	}
 }

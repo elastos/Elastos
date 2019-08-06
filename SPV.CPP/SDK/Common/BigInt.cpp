@@ -240,6 +240,21 @@ namespace Elastos {
 			return BN_is_zero(this->bn);
 		}
 
+		uint64_t BigInt::getUint64() const {
+			uint64_t num = 0;
+
+			bytes_t bytes = getHexBytes(true);
+			memcpy(&num, &bytes[0], MIN(sizeof(num), bytes.size()));
+
+			return num;
+		}
+
+		void BigInt::setUint64(uint64_t num) {
+			bytes_t bytes(&num, sizeof(num));
+			setHexBytes(bytes, true);
+		}
+
+		// this method is not safe, will be deprecated
 		BN_ULONG BigInt::getWord() const {
 			return BN_get_word(this->bn);
 		}

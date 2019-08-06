@@ -47,11 +47,8 @@ namespace Elastos {
 
 			PayloadPtr payload = nullptr;
 			try {
-				std::vector<std::string> accounts = {mainChainAddress};
-				std::vector<uint64_t> indexs = {0};
-				std::vector<uint64_t> amounts = {bgAmount.getWord()};
-
-				payload = PayloadPtr(new TransferCrossChainAsset(accounts, indexs, amounts));
+				TransferInfo info(mainChainAddress, 0, bgAmount);
+				payload = PayloadPtr(new TransferCrossChainAsset({info}));
 			} catch (const nlohmann::detail::exception &e) {
 				ErrorChecker::ThrowParamException(Error::JsonFormatError,
 												  "main chain message error: " + std::string(e.what()));

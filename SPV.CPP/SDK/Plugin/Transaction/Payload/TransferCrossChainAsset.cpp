@@ -11,93 +11,100 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		TransferInfo::TransferInfo() :
+			_crossChainAddress(""), _outputIndex(0), _crossChainAmount(0) {
+
+		}
+
+		TransferInfo::TransferInfo(const std::string &address, uint16_t index, const BigInt &amount) :
+			_crossChainAddress(address), _outputIndex(index), _crossChainAmount(amount) {
+		}
+
+		const std::string &TransferInfo::CrossChainAddress() const {
+			return _crossChainAddress;
+		}
+
+		uint16_t TransferInfo::OutputIndex() const {
+			return _outputIndex;
+		}
+
+		const BigInt &TransferInfo::CrossChainAmount() const {
+			return _crossChainAmount;
+		}
+
+		nlohmann::json TransferInfo::ToJson(uint8_t version) const {
+			nlohmann::json j;
+
+			j["CrossChainAddress"] = _crossChainAddress;
+			j["OutputIndex"] = _outputIndex;
+			j["CrossChainAmount"] = _crossChainAmount.getDec();
+
+			return j;
+		}
+
+		void TransferInfo::FromJson(const nlohmann::json &j, uint8_t version) {
+			_crossChainAddress = j["CrossChainAddress"].get<std::string>();
+			_outputIndex = j["OutputIndex"].get<uint16_t>();
+			_crossChainAmount.setDec(j["CrossChainAmount"].get<std::string>());
+		}
+
 		TransferCrossChainAsset::TransferCrossChainAsset() {
 
 		}
 
 		TransferCrossChainAsset::TransferCrossChainAsset(const TransferCrossChainAsset &payload) {
-			operator=(payload);
+			this->operator=(payload);
 		}
 
-		TransferCrossChainAsset::TransferCrossChainAsset(
-			const std::vector<std::string> &crossChainAddress,
-			const std::vector<uint64_t> &outputIndex,
-			const std::vector<uint64_t> &crossChainAmount) {
-			SetCrossChainData(crossChainAddress, outputIndex, crossChainAmount);
+		TransferCrossChainAsset::TransferCrossChainAsset(const std::vector<TransferInfo> &info) :
+			_info(info) {
 		}
 
 		TransferCrossChainAsset::~TransferCrossChainAsset() {
 
 		}
 
-		void TransferCrossChainAsset::SetCrossChainData(
-			const std::vector<std::string> &crossChainAddress,
-			const std::vector<uint64_t> &outputIndex,
-			const std::vector<uint64_t> &crossChainAmount) {
-			_crossChainAddress = crossChainAddress;
-			_outputIndex = outputIndex;
-			_crossChainAmount = crossChainAmount;
-		}
-
 		bool TransferCrossChainAsset::IsValid() const {
-			size_t len = _crossChainAddress.size();
-			if (len <= 0 || len != _outputIndex.size() || len != _crossChainAmount.size()) {
+			if (_info.empty())
 				return false;
-			}
 
-			for (size_t i = 0; i < len; ++i) {
-				if (!Address(_crossChainAddress[i]).Valid())
+			for (size_t i = 0; i < _info.size(); ++i) {
+				if (!Address(_info[i]._crossChainAddress).Valid())
 					return false;
 
-				if (_crossChainAmount[i] <= 0) {
+				if (_info[i]._crossChainAmount == 0)
 					return false;
-				}
 			}
 
 			return true;
 		}
 
-		const std::vector<std::string> &TransferCrossChainAsset::GetCrossChainAddress() const {
-			return _crossChainAddress;
-		}
-
-		const std::vector<uint64_t> &TransferCrossChainAsset::GetOutputIndex() const {
-			return _outputIndex;
-		}
-
-		const std::vector<uint64_t> &TransferCrossChainAsset::GetCrossChainAmout() const {
-			return _crossChainAmount;
+		const std::vector<TransferInfo> &TransferCrossChainAsset::Info() const {
+			return _info;
 		}
 
 		size_t TransferCrossChainAsset::EstimateSize(uint8_t version) const {
 			size_t size = 0;
 			ByteStream stream;
 
-			size += stream.WriteVarUint(_crossChainAddress.size());
-			for (size_t i = 0; i < _crossChainAddress.size(); ++i) {
-				size += stream.WriteVarUint(_crossChainAddress[i].size());
-				size += _crossChainAddress[i].size();
-				size += stream.WriteVarUint(_outputIndex[i]);
-				size += sizeof(uint64_t);
+			size += stream.WriteVarUint(_info.size());
+			for (size_t i = 0; i < _info.size(); ++i) {
+				size += stream.WriteVarUint(_info[i]._crossChainAddress.size());
+				size += _info[i]._crossChainAddress.size();
+				size += stream.WriteVarUint(_info[i]._outputIndex);
+				size += sizeof(_info[i]._outputIndex);
 			}
 
 			return size;
 		}
 
 		void TransferCrossChainAsset::Serialize(ByteStream &ostream, uint8_t version) const {
-			if (_crossChainAddress.size() != _outputIndex.size() || _outputIndex.size() != _crossChainAmount.size()) {
-				Log::error("Invalid cross chain asset: len(crossChainAddress)={},"
-							" len(outputIndex)={}, len(crossChainAddress)={}", _crossChainAddress.size(),
-										_outputIndex.size(), _crossChainAmount.size());
-				return ;
-			}
-
-			size_t len = _crossChainAddress.size();
+			size_t len = _info.size();
 			ostream.WriteVarUint((uint64_t)len);
-			for (size_t i = 0; i < len; ++i) {
-				ostream.WriteVarString(_crossChainAddress[i]);
-				ostream.WriteVarUint(_outputIndex[i]);
-				ostream.WriteUint64(_crossChainAmount[i]);
+			for (size_t i = 0; i < _info.size(); ++i) {
+				ostream.WriteVarString(_info[i]._crossChainAddress);
+				ostream.WriteVarUint(_info[i]._outputIndex);
+				ostream.WriteUint64(_info[i]._crossChainAmount.getUint64());
 			}
 		}
 
@@ -108,25 +115,28 @@ namespace Elastos {
 				return false;
 			}
 
-			_crossChainAddress.resize(len);
-			_outputIndex.resize(len);
-			_crossChainAmount.resize(len);
-
+			TransferInfo info;
 			for (uint64_t i = 0; i < len; ++i) {
-				if (!istream.ReadVarString(_crossChainAddress[i])) {
+				if (!istream.ReadVarString(info._crossChainAddress)) {
 					Log::error("Payload transfer cross chain asset deserialize cross chain address fail");
 					return false;
 				}
 
-				if (!istream.ReadVarUint(_outputIndex[i])) {
+				uint64_t index;
+				if (!istream.ReadVarUint(index)) {
 					Log::error("Payload transfer cross chain asset deserialize output index fail");
 					return false;
 				}
+				info._outputIndex = (uint16_t) index;
 
-				if (!istream.ReadUint64(_crossChainAmount[i])) {
+				uint64_t amount;
+				if (!istream.ReadUint64(amount)) {
 					Log::error("Payload transfer cross chain asset deserialize cross chain amount fail");
 					return false;
 				}
+				info._crossChainAmount.setUint64(amount);
+
+				_info.push_back(info);
 			}
 
 			return true;
@@ -135,23 +145,30 @@ namespace Elastos {
 		nlohmann::json TransferCrossChainAsset::ToJson(uint8_t version) const {
 			nlohmann::json j;
 
-			j["CrossChainAddress"] = _crossChainAddress;
-			j["OutputIndex"] = _outputIndex;
-			j["CrossChainAmount"] = _crossChainAmount;
+			for (size_t i = 0; i < _info.size(); ++i) {
+				j.push_back(_info[i].ToJson(version));
+			}
 
 			return j;
 		}
 
 		void TransferCrossChainAsset::FromJson(const nlohmann::json &j, uint8_t version) {
-			_crossChainAddress = j["CrossChainAddress"].get<std::vector<std::string>>();
-			_outputIndex = j["OutputIndex"].get<std::vector<uint64_t>>();
-			_crossChainAmount = j["CrossChainAmount"].get<std::vector<uint64_t >>();
+			if (!j.is_array()) {
+				Log::error("cross chain info json should be array");
+				return;
+			}
+
+			for (nlohmann::json::const_iterator it = j.cbegin(); it != j.cend(); ++it) {
+				TransferInfo info;
+				info.FromJson(*it, version);
+				_info.push_back(info);
+			}
 		}
 
 		IPayload &TransferCrossChainAsset::operator=(const IPayload &payload) {
 			try {
 				const TransferCrossChainAsset &payloadTransferCrossChainAsset = dynamic_cast<const TransferCrossChainAsset&>(payload);
-				operator=(payloadTransferCrossChainAsset);
+				this->operator=(payloadTransferCrossChainAsset);
 			} catch (const std::bad_cast &e) {
 				Log::error("payload is not instance of TransferCrossChainAsset");
 			}
@@ -160,9 +177,7 @@ namespace Elastos {
 		}
 
 		TransferCrossChainAsset &TransferCrossChainAsset::operator=(const TransferCrossChainAsset &payload) {
-			_crossChainAddress = payload._crossChainAddress;
-			_outputIndex = payload._outputIndex;
-			_crossChainAmount = payload._crossChainAmount;
+			_info = payload._info;
 
 			return *this;
 		}

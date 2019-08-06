@@ -115,7 +115,7 @@ namespace Elastos {
 			if (_assetID == Asset::GetELAAssetID()) {
 				bytes_t bytes = _amount.getHexBytes(true);
 				uint64_t amount = 0;
-				memcpy(&amount, &bytes[0], bytes.size());
+				memcpy(&amount, &bytes[0], MIN(bytes.size(), sizeof(uint64_t)));
 				ostream.WriteUint64(amount);
 			} else {
 				ostream.WriteVarBytes(_amount.getHexBytes());

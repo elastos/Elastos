@@ -688,7 +688,7 @@ namespace Elastos {
 			}
 
 			if (inputAmount >= outputAmount)
-				fee = (inputAmount - outputAmount).getWord();
+				fee = (inputAmount - outputAmount).getUint64();
 
 			return fee;
 		}
@@ -788,7 +788,7 @@ namespace Elastos {
 			}
 
 			if (inputAmount > (outputAmount + changeAmount)) {
-				fee = (inputAmount - outputAmount - changeAmount).getWord();
+				fee = (inputAmount - outputAmount - changeAmount).getUint64();
 			} else {
 				fee = 0;
 			}

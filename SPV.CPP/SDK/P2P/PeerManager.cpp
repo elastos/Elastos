@@ -410,6 +410,7 @@ namespace Elastos {
 					for (std::vector<PeerInfo>::iterator p = _peers.begin(); p != _peers.end();) {
 						if ((*p) == _downloadPeer->GetPeerInfo()) {
 							p = _peers.erase(p);
+							break;
 						} else {
 							++p;
 						}

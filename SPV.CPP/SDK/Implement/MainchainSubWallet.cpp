@@ -56,13 +56,11 @@ namespace Elastos {
 			BigInt value;
 			value.setDec(amount);
 
+
 			PayloadPtr payload = nullptr;
 			try {
-				std::vector<std::string> accounts = {sideChainAddress};
-				std::vector<uint64_t> indexs = {0};
-
-				std::vector<uint64_t> amounts = {value.getWord()};
-				payload = PayloadPtr(new TransferCrossChainAsset(accounts, indexs, amounts));
+				TransferInfo info(sideChainAddress, 0, value);
+				payload = PayloadPtr(new TransferCrossChainAsset({info}));
 			} catch (const nlohmann::detail::exception &e) {
 				ErrorChecker::ThrowParamException(Error::JsonFormatError,
 												  "Side chain message error: " + std::string(e.what()));
@@ -422,7 +420,7 @@ namespace Elastos {
 					continue;
 				}
 
-				uint64_t stake = output->Amount().getWord();
+				uint64_t stake = output->Amount().getUint64();
 				const std::vector<VoteContent> &voteContents = pv->GetVoteContent();
 				std::for_each(voteContents.cbegin(), voteContents.cend(),
 				              [&votedList, &stake](const VoteContent &vc) {

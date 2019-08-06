@@ -98,6 +98,10 @@ namespace Elastos {
             bool operator>=(const BigInt& rhs) const;
             bool isZero() const;
 
+            uint64_t getUint64() const;
+
+            void setUint64(uint64_t num);
+
             // Accessor Methods
             BN_ULONG getWord() const;
             void setWord(BN_ULONG num);
