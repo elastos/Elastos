@@ -64,7 +64,7 @@ class HomeSplash extends React.Component {
         <div className="inner">
           <ProjectTitle siteConfig={siteConfig} />
           <PromoSection>
-            <Button href="https://www.elastos.org" target="_blank">Official Website</Button>
+            <Button href="https://developer.elastos.org" target="_blank">developer.elastos.org</Button>
             <Button href="https://www.cyberrepublic.org" target="_blank"><b>Bounty:</b> Port Your ETH DApp</Button>
             <Button href={docUrl('doc2.html')}>Get Funded By Cyber Republic</Button>
           </PromoSection>
@@ -115,8 +115,9 @@ class Index extends React.Component {
         </a>
         <MarkdownBlock>
           ```
-          This puts Elastos' resistance to 51% attack at over "3x" that of Ethereum,
+          This puts Elastos' hourly cost for a 51% attack at over "3x" that of Ethereum,
           without factoring in additional robustness guarantees through DPoS validators.
+          (BTC: 900k+, ELA: 300k+, ETH: 120k - USD/hour)
           ```
         </MarkdownBlock>
         <a href="https://www.noderators.org/elastossummary" target="_blank">
@@ -153,7 +154,7 @@ class Index extends React.Component {
 
 <span class="normal">ENS</span> &#x27A1; In Progress by our ETH Team
     
-<a class="button" href=${docUrl('advanced.html')}>Jump into our Advanced Tutorial for Ethereum Developers</a>`,
+<a class="button" href=${docUrl('advanced.html')}>View Our Advanced Tutorial for Ethereum Developers</a>`,
           image: `${baseUrl}img/metamask-logo-eyes.png`,
           imageAlign: 'right',
         },

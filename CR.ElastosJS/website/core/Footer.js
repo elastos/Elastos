@@ -36,41 +36,44 @@ class Footer extends React.Component {
             )}
           </a>
           <div>
-            <h5>Docs</h5>
-            <a href={this.docUrl('doc1.html', this.props.language)}>
-              Getting Started (or other categories)
+            <h5>Developer Resources</h5>
+            <a href="https://developer.elastos.org" target="_blank">
+              Official Developer Site
             </a>
-            <a href={this.docUrl('doc2.html', this.props.language)}>
-              Guides (or other categories)
+            <a href="https://elastos.academy" target="_blank">
+              Elastos Academy
             </a>
-            <a href={this.docUrl('doc3.html', this.props.language)}>
-              API Reference (or other categories)
+            <a href="https://www.elastos.org" target="_blank">
+              Elastos Official Website
+            </a>
+            <a href="https://github.com/elastos" target="_blank">
+              Elastos Github
             </a>
           </div>
           <div>
             <h5>Community</h5>
-            <a href={this.pageUrl('users.html', this.props.language)}>
-              User Showcase
+            <a href="https://t.me/elastosdev" target="_blank">
+              Developers Telegram
             </a>
-            <a
-              href="https://stackoverflow.com/questions/tagged/"
-              target="_blank"
-              rel="noreferrer noopener">
-              Stack Overflow
+            <a href="https://t.me/elastosgroup" target="_blank">
+              Elastos Telegram
             </a>
-            <a href="https://discordapp.com/">Project Chat</a>
-            <a
-              href="https://twitter.com/"
-              target="_blank"
-              rel="noreferrer noopener">
+            <a href="https://twitter.com/Cyber__Republic" target="_blank">
               Twitter
+            </a>
+            <a href="https://www.reddit.com/r/Elastos" target="_blank">
+              Reddit
+            </a>
+            <a href="mailto:contact@cyberrepublic.org" target="_blank">
+              Contact Us
             </a>
           </div>
           <div>
             <h5>More</h5>
-            <a href={`${this.props.config.baseUrl}blog`}>Blog</a>
-            <a href="https://github.com/">GitHub</a>
-            <a
+            <a href="https://news.elastos.org" target="_blank">Elastos News</a>
+            <a href="https://elanews.net" target="_blank">Community News</a>
+            <a href="https://github.com/cyber-republic/elastosjs" target="_blank">Our GitHub</a>
+            {/*<a
               className="github-button"
               href={this.props.config.repoUrl}
               data-icon="octicon-star"
@@ -80,30 +83,7 @@ class Footer extends React.Component {
               aria-label="Star this project on GitHub">
               Star
             </a>
-            {this.props.config.twitterUsername && (
-              <div className="social">
-                <a
-                  href={`https://twitter.com/${
-                    this.props.config.twitterUsername
-                  }`}
-                  className="twitter-follow-button">
-                  Follow @{this.props.config.twitterUsername}
-                </a>
-              </div>
-            )}
-            {this.props.config.facebookAppId && (
-              <div className="social">
-                <div
-                  className="fb-like"
-                  data-href={this.props.config.url}
-                  data-colorscheme="dark"
-                  data-layout="standard"
-                  data-share="true"
-                  data-width="225"
-                  data-show-faces="false"
-                />
-              </div>
-            )}
+            */}
           </div>
         </section>
 
