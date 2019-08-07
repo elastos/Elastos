@@ -2,320 +2,326 @@ package org.elastos.wallet.ela.ui.vote.SuperNodeList;
 
 public class NodeInfoBean {
     /**
-     * org : {"website":"","social":{"youtube":"","twitter":"","github":"","facebook":"","reddit":"","wechat":"","telegram":"","keybase":""},"branding":{"logo_256":"http://52.80.54.227:9000/nodelogo256.png","logo_1024":"http://52.80.54.227:9000/nodelogo1024.png","logo_svg":"http://52.80.54.227:9000/nodelogovsg.png"},"location":{"country":"中国","latitude":0,"name":"知春路","longitude":0},"candidate_name":"","ownership_disclosure":"","code_of_conduct":"","email":""}
      * arbiter_public_key :
+     * org : {"candidate_name":"","candidate_info":{"en":"English  introductionEnglish  introductionEnglish  introductionEnglish  introductionEnglish  introductionEnglish  introductionEnglish  introductionEnglish  introduction","zh":"中文简介中文简介中文简介中文简介中文简介中文简介中文简介中文简介中文简介中文简介中文简介","ja":""},"website":"","code_of_conduct":"","ownership_disclosure":"","email":"","branding":{"logo_256":"http://photocdn.sohu.com/20120128/Img333056814.jpg","logo_1024":"","logo_svg":""},"location":{"name":"","country":"","latitude":0,"longitude":0},"social":{"twitter":"","youtube":"","facebook":"","github":"","reddit":"","keybase":"","telegram":"","wechat":""}}
      */
-    private OrgEntity org;
-    private String arbiter_public_key;
 
-    public void setOrg(OrgEntity org) {
-        this.org = org;
+    private String arbiter_public_key;
+    private OrgBean org;
+
+    public String getArbiter_public_key() {
+        return arbiter_public_key;
     }
 
     public void setArbiter_public_key(String arbiter_public_key) {
         this.arbiter_public_key = arbiter_public_key;
     }
 
-    public OrgEntity getOrg() {
+    public OrgBean getOrg() {
         return org;
     }
 
-    public String getArbiter_public_key() {
-        return arbiter_public_key;
+    public void setOrg(OrgBean org) {
+        this.org = org;
     }
 
-    public class OrgEntity {
+    public static class OrgBean {
         /**
-         * website :
-         * social : {"youtube":"","twitter":"","github":"","facebook":"","reddit":"","wechat":"","telegram":"","keybase":""}
-         * branding : {"logo_256":"http://52.80.54.227:9000/nodelogo256.png","logo_1024":"http://52.80.54.227:9000/nodelogo1024.png","logo_svg":"http://52.80.54.227:9000/nodelogovsg.png"}
-         * location : {"country":"中国","latitude":0,"name":"知春路","longitude":0}
          * candidate_name :
-         * ownership_disclosure :
+         * candidate_info : {"en":"English  introductionEnglish  introductionEnglish  introductionEnglish  introductionEnglish  introductionEnglish  introductionEnglish  introductionEnglish  introduction","zh":"中文简介中文简介中文简介中文简介中文简介中文简介中文简介中文简介中文简介中文简介中文简介","ja":""}
+         * website :
          * code_of_conduct :
+         * ownership_disclosure :
          * email :
+         * branding : {"logo_256":"http://photocdn.sohu.com/20120128/Img333056814.jpg","logo_1024":"","logo_svg":""}
+         * location : {"name":"","country":"","latitude":0,"longitude":0}
+         * social : {"twitter":"","youtube":"","facebook":"","github":"","reddit":"","keybase":"","telegram":"","wechat":""}
          */
-        private String website;
-        private SocialEntity social;
-        private BrandingEntity branding;
-        private LocationEntity location;
+
         private String candidate_name;
-        private String ownership_disclosure;
+        private CandidateInfoBean candidate_info;
+        private String website;
         private String code_of_conduct;
+        private String ownership_disclosure;
         private String email;
+        private BrandingBean branding;
+        private LocationBean location;
+        private SocialBean social;
 
-        public void setWebsite(String website) {
-            this.website = website;
-        }
-
-        public void setSocial(SocialEntity social) {
-            this.social = social;
-        }
-
-        public void setBranding(BrandingEntity branding) {
-            this.branding = branding;
-        }
-
-        public void setLocation(LocationEntity location) {
-            this.location = location;
+        public String getCandidate_name() {
+            return candidate_name;
         }
 
         public void setCandidate_name(String candidate_name) {
             this.candidate_name = candidate_name;
         }
 
-        public void setOwnership_disclosure(String ownership_disclosure) {
-            this.ownership_disclosure = ownership_disclosure;
+        public CandidateInfoBean getCandidate_info() {
+            return candidate_info;
         }
 
-        public void setCode_of_conduct(String code_of_conduct) {
-            this.code_of_conduct = code_of_conduct;
-        }
-
-        public void setEmail(String email) {
-            this.email = email;
+        public void setCandidate_info(CandidateInfoBean candidate_info) {
+            this.candidate_info = candidate_info;
         }
 
         public String getWebsite() {
             return website;
         }
 
-        public SocialEntity getSocial() {
-            return social;
-        }
-
-        public BrandingEntity getBranding() {
-            return branding;
-        }
-
-        public LocationEntity getLocation() {
-            return location;
-        }
-
-        public String getCandidate_name() {
-            return candidate_name;
-        }
-
-        public String getOwnership_disclosure() {
-            return ownership_disclosure;
+        public void setWebsite(String website) {
+            this.website = website;
         }
 
         public String getCode_of_conduct() {
             return code_of_conduct;
         }
 
+        public void setCode_of_conduct(String code_of_conduct) {
+            this.code_of_conduct = code_of_conduct;
+        }
+
+        public String getOwnership_disclosure() {
+            return ownership_disclosure;
+        }
+
+        public void setOwnership_disclosure(String ownership_disclosure) {
+            this.ownership_disclosure = ownership_disclosure;
+        }
+
         public String getEmail() {
             return email;
         }
 
-        public class SocialEntity {
+        public void setEmail(String email) {
+            this.email = email;
+        }
+
+        public BrandingBean getBranding() {
+            return branding;
+        }
+
+        public void setBranding(BrandingBean branding) {
+            this.branding = branding;
+        }
+
+        public LocationBean getLocation() {
+            return location;
+        }
+
+        public void setLocation(LocationBean location) {
+            this.location = location;
+        }
+
+        public SocialBean getSocial() {
+            return social;
+        }
+
+        public void setSocial(SocialBean social) {
+            this.social = social;
+        }
+
+        public static class CandidateInfoBean {
             /**
-             * youtube :
-             * twitter :
-             * github :
-             * facebook :
-             * reddit :
-             * wechat :
-             * telegram :
-             * keybase :
+             * en : English  introductionEnglish  introductionEnglish  introductionEnglish  introductionEnglish  introductionEnglish  introductionEnglish  introductionEnglish  introduction
+             * zh : 中文简介中文简介中文简介中文简介中文简介中文简介中文简介中文简介中文简介中文简介中文简介
+             * ja :
              */
-            private String youtube;
-            private String twitter;
-            private String github;
-            private String facebook;
-            private String reddit;
-            private String wechat;
-            private String telegram;
-            private String keybase;
 
-            public void setYoutube(String youtube) {
-                this.youtube = youtube;
+            private String en;
+            private String zh;
+            private String ja;
+
+            public String getEn() {
+                return en;
             }
 
-            public void setTwitter(String twitter) {
-                this.twitter = twitter;
+            public void setEn(String en) {
+                this.en = en;
             }
 
-            public void setGithub(String github) {
-                this.github = github;
+            public String getZh() {
+                return zh;
             }
 
-            public void setFacebook(String facebook) {
-                this.facebook = facebook;
+            public void setZh(String zh) {
+                this.zh = zh;
             }
 
-            public void setReddit(String reddit) {
-                this.reddit = reddit;
+            public String getJa() {
+                return ja;
             }
 
-            public void setWechat(String wechat) {
-                this.wechat = wechat;
-            }
-
-            public void setTelegram(String telegram) {
-                this.telegram = telegram;
-            }
-
-            public void setKeybase(String keybase) {
-                this.keybase = keybase;
-            }
-
-            public String getYoutube() {
-                return youtube;
-            }
-
-            public String getTwitter() {
-                return twitter;
-            }
-
-            public String getGithub() {
-                return github;
-            }
-
-            public String getFacebook() {
-                return facebook;
-            }
-
-            public String getReddit() {
-                return reddit;
-            }
-
-            public String getWechat() {
-                return wechat;
-            }
-
-            public String getTelegram() {
-                return telegram;
-            }
-
-            public String getKeybase() {
-                return keybase;
-            }
-
-            @Override
-            public String toString() {
-                return "SocialEntity{" +
-                        "youtube='" + youtube + '\'' +
-                        ", twitter='" + twitter + '\'' +
-                        ", github='" + github + '\'' +
-                        ", facebook='" + facebook + '\'' +
-                        ", reddit='" + reddit + '\'' +
-                        ", wechat='" + wechat + '\'' +
-                        ", telegram='" + telegram + '\'' +
-                        ", keybase='" + keybase + '\'' +
-                        '}';
+            public void setJa(String ja) {
+                this.ja = ja;
             }
         }
 
-        public class BrandingEntity {
+        public static class BrandingBean {
             /**
-             * logo_256 : http://52.80.54.227:9000/nodelogo256.png
-             * logo_1024 : http://52.80.54.227:9000/nodelogo1024.png
-             * logo_svg : http://52.80.54.227:9000/nodelogovsg.png
+             * logo_256 : http://photocdn.sohu.com/20120128/Img333056814.jpg
+             * logo_1024 :
+             * logo_svg :
              */
+
             private String logo_256;
             private String logo_1024;
             private String logo_svg;
 
-            public void setLogo_256(String logo_256) {
-                this.logo_256 = logo_256;
-            }
-
-            public void setLogo_1024(String logo_1024) {
-                this.logo_1024 = logo_1024;
-            }
-
-            public void setLogo_svg(String logo_svg) {
-                this.logo_svg = logo_svg;
-            }
-
             public String getLogo_256() {
                 return logo_256;
+            }
+
+            public void setLogo_256(String logo_256) {
+                this.logo_256 = logo_256;
             }
 
             public String getLogo_1024() {
                 return logo_1024;
             }
 
+            public void setLogo_1024(String logo_1024) {
+                this.logo_1024 = logo_1024;
+            }
+
             public String getLogo_svg() {
                 return logo_svg;
             }
 
-            @Override
-            public String toString() {
-                return "BrandingEntity{" +
-                        "logo_256='" + logo_256 + '\'' +
-                        ", logo_1024='" + logo_1024 + '\'' +
-                        ", logo_svg='" + logo_svg + '\'' +
-                        '}';
+            public void setLogo_svg(String logo_svg) {
+                this.logo_svg = logo_svg;
             }
         }
 
-        public class LocationEntity {
+        public static class LocationBean {
             /**
-             * country : 中国
+             * name :
+             * country :
              * latitude : 0
-             * name : 知春路
              * longitude : 0
              */
+
+            private String name;
             private String country;
             private int latitude;
-            private String name;
             private int longitude;
 
-            public void setCountry(String country) {
-                this.country = country;
-            }
-
-            public void setLatitude(int latitude) {
-                this.latitude = latitude;
+            public String getName() {
+                return name;
             }
 
             public void setName(String name) {
                 this.name = name;
             }
 
-            public void setLongitude(int longitude) {
-                this.longitude = longitude;
-            }
-
             public String getCountry() {
                 return country;
+            }
+
+            public void setCountry(String country) {
+                this.country = country;
             }
 
             public int getLatitude() {
                 return latitude;
             }
 
-            public String getName() {
-                return name;
+            public void setLatitude(int latitude) {
+                this.latitude = latitude;
             }
 
             public int getLongitude() {
                 return longitude;
             }
+
+            public void setLongitude(int longitude) {
+                this.longitude = longitude;
+            }
         }
 
-        @Override
-        public String toString() {
-            return "OrgEntity{" +
-                    "website='" + website + '\'' +
-                    ", social=" + social +
-                    ", branding=" + branding +
-                    ", location=" + location +
-                    ", candidate_name='" + candidate_name + '\'' +
-                    ", ownership_disclosure='" + ownership_disclosure + '\'' +
-                    ", code_of_conduct='" + code_of_conduct + '\'' +
-                    ", email='" + email + '\'' +
-                    '}';
-        }
-    }
+        public static class SocialBean {
+            /**
+             * twitter :
+             * youtube :
+             * facebook :
+             * github :
+             * reddit :
+             * keybase :
+             * telegram :
+             * wechat :
+             */
 
-    @Override
-    public String toString() {
-        return "NodeInfoBean{" +
-                "org=" + org +
-                ", arbiter_public_key='" + arbiter_public_key + '\'' +
-                '}';
+            private String twitter;
+            private String youtube;
+            private String facebook;
+            private String github;
+            private String reddit;
+            private String keybase;
+            private String telegram;
+            private String wechat;
+
+            public String getTwitter() {
+                return twitter;
+            }
+
+            public void setTwitter(String twitter) {
+                this.twitter = twitter;
+            }
+
+            public String getYoutube() {
+                return youtube;
+            }
+
+            public void setYoutube(String youtube) {
+                this.youtube = youtube;
+            }
+
+            public String getFacebook() {
+                return facebook;
+            }
+
+            public void setFacebook(String facebook) {
+                this.facebook = facebook;
+            }
+
+            public String getGithub() {
+                return github;
+            }
+
+            public void setGithub(String github) {
+                this.github = github;
+            }
+
+            public String getReddit() {
+                return reddit;
+            }
+
+            public void setReddit(String reddit) {
+                this.reddit = reddit;
+            }
+
+            public String getKeybase() {
+                return keybase;
+            }
+
+            public void setKeybase(String keybase) {
+                this.keybase = keybase;
+            }
+
+            public String getTelegram() {
+                return telegram;
+            }
+
+            public void setTelegram(String telegram) {
+                this.telegram = telegram;
+            }
+
+            public String getWechat() {
+                return wechat;
+            }
+
+            public void setWechat(String wechat) {
+                this.wechat = wechat;
+            }
+        }
     }
 }

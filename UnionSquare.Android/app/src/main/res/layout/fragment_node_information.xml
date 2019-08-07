@@ -38,7 +38,7 @@
             android:id="@+id/ll_tab"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/px60"
+            android:layout_marginTop="@dimen/px40"
             android:orientation="horizontal"
             android:visibility="gone"
             android:weightSum="2">
@@ -92,17 +92,18 @@
         </LinearLayout>
 
         <TextView
-            android:id="@+id/tv_nodeintro"
+            android:id="@+id/tv_intro_detail"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="15dp"
-            android:layout_marginTop="15dp"
+            android:layout_height="220dp"
+            android:layout_marginTop="22dp"
+            android:padding="15dp"
             android:visibility="gone" />
 
         <LinearLayout
+            android:id="@+id/ll_infodetail"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
+            android:layout_height="220dp"
+            android:layout_marginTop="22dp"
             android:orientation="vertical">
 
             <LinearLayout
@@ -126,7 +127,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="40dp"
                     android:layout_marginRight="15dp"
-                    android:layout_weight="1"
+                    android:layout_weight="3"
                     android:gravity="right"
                     android:textColor="@color/qmui_config_color_white"
                     android:textSize="13sp" />
@@ -153,9 +154,11 @@
 
                 <TextView
                     android:id="@+id/tv_num_vote"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="15dp"
+                    android:layout_weight="3"
+                    android:gravity="right"
                     android:textColor="@color/qmui_config_color_white"
                     android:textSize="13sp" />
 
@@ -181,9 +184,11 @@
 
                 <TextView
                     android:id="@+id/tv_zl"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="15dp"
+                    android:layout_weight="3"
+                    android:gravity="right"
                     android:textColor="@color/qmui_config_color_white"
                     android:textSize="13sp" />
 
@@ -209,9 +214,11 @@
 
                 <TextView
                     android:id="@+id/tv_addrs"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="15dp"
+                    android:layout_weight="3"
+                    android:gravity="right"
                     android:textColor="@color/qmui_config_color_white"
                     android:textSize="13sp" />
 
@@ -228,9 +235,10 @@
 
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="15dp"
+                    android:layout_weight="1"
                     android:text="URL"
                     android:textColor="@color/qmui_config_color_50_white"
                     android:textSize="13sp" />
@@ -241,7 +249,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="15dp"
                     android:layout_marginRight="15dp"
-                    android:layout_weight="1"
+                    android:layout_weight="3"
                     android:drawableRight="@mipmap/asset_transfer_copy"
                     android:drawablePadding="10dp"
                     android:ellipsize="end"

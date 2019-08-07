@@ -385,7 +385,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                 JSONObject jsonObject = JSON.parseObject(data);
                 if (jsonObject.containsKey("MaxCount")) {
                     int maxCount = jsonObject.getInteger("MaxCount");
-                    if (maxCount > 1500) {
+                    if (maxCount > 500) {
                         exchange(maxCount);
                     }
                 }
