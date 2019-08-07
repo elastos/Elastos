@@ -834,8 +834,10 @@ int main(int argc, char *argv[]) {
 		} else if (c == 'c') {
 			// trigger p2p connect now
 			SyncStart(gMasterWalletID, gMainchainSubWalletID);
+			SyncStart(gMasterWalletID, gIDchainSubWalletID);
 		} else if (c == 's') {
 			SyncStop(gMasterWalletID, gMainchainSubWalletID);
+			SyncStop(gMasterWalletID, gIDchainSubWalletID);
 		} else if (c == 'e') {
 			CloseWallet(gMasterWalletID, gMainchainSubWalletID);
 		} else if (c == 'o') {

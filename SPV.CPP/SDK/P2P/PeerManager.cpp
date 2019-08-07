@@ -236,6 +236,7 @@ namespace Elastos {
 		void PeerManager::ResetReconnectStep() {
 			boost::mutex::scoped_lock scopedLock(lock);
 			_reconnectStep = 1;
+			_connectFailureCount = 0;
 		}
 
 		bool PeerManager::SyncSucceeded() const {
@@ -997,7 +998,7 @@ namespace Elastos {
 
 				if (willReconnect) {
 					reconnectSeconds = _reconnectStep;
-					if (_reconnectStep < 60) {
+					if (_reconnectStep < 10) {
 						// doubling the step back each time
 						_reconnectStep <<= 1;
 					}
