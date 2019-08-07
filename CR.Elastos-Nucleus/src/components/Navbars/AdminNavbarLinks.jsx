@@ -17,27 +17,58 @@
 */
 import React, { Component } from "react";
 import { Nav, NavDropdown, MenuItem } from "react-bootstrap";
+import { NavLink } from "react-router-dom";
 
 class AdminNavbarLinks extends Component {
   render() {
     return (
       <div>
         <Nav>
-          <NavDropdown eventKey={2} title="Dropdown" id="basic-nav-dropdown">
-            <MenuItem href="/serviceone" eventKey={2.1}>
-              API Service 1
+          <NavDropdown title="Services" id="basic-nav-dropdown">
+            <MenuItem>
+             <NavLink
+                      to="/admin/serviceone"
+                      className="nav-link"
+                      activeClassName="active"
+                    >
+                     API Service 1
+                    </NavLink>
             </MenuItem>
-            <MenuItem href="/servicetwo" eventKey={2.2}>
-              API Service 2
+            <MenuItem>
+             <NavLink
+                      to="/admin/servicetwo"
+                      className="nav-link"
+                      activeClassName="active"
+                    >
+                     API Service 2
+                    </NavLink>
             </MenuItem>
-            <MenuItem href="/servicethree" eventKey={2.3}>
-              API Service 3
+                        <MenuItem>
+             <NavLink
+                      to="/admin/servicethree"
+                      className="nav-link"
+                      activeClassName="active"
+                    >
+                     API Service 3
+                    </NavLink>
             </MenuItem>
-            <MenuItem href="/servicefour" eventKey={2.4}>
-              API Service 4
+                        <MenuItem>
+             <NavLink
+                      to="/admin/servicefour"
+                      className="nav-link"
+                      activeClassName="active"
+                    >
+                     API Service 4
+                    </NavLink>
             </MenuItem>
-            <MenuItem href="/servicefive" eventKey={2.5}>
-              API Service 5
+                        <MenuItem>
+             <NavLink
+                      to="/admin/servicefive"
+                      className="nav-link"
+                      activeClassName="active"
+                    >
+                     API Service 5
+                    </NavLink>
             </MenuItem>
           </NavDropdown>
         </Nav>
