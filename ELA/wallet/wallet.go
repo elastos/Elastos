@@ -167,6 +167,12 @@ func (w *Wallet) RescanWallet() error {
 	return nil
 }
 
+func NewWallet() *Wallet {
+	return &Wallet{
+		CoinsCheckPoint: NewCoinCheckPoint(),
+	}
+}
+
 func New(dataDir string) *Wallet {
 	path := filepath.Join(dataDir, account.KeystoreFileName)
 	wallet := Wallet{

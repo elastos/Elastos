@@ -1109,6 +1109,8 @@ Show producer vote status
 
 #### Result
 
+Note: If the EnableUtxoDB configuration entry is true, the total field is computed, otherwise the total field returns -1
+
 | name      | type   | description             |
 | --------- | ------ | ----------------------- |
 | total     | string | the total voting rights |
@@ -1978,81 +1980,11 @@ Response:
 }
 ```
 
-### importaddress
-
-Adds an address into wallet that can be watched.
-
-Note: This process can take a few minutes to complete for rescaning wallet utxo.
-
-#### Parameter 
-
-| name    | type   | description         |
-| ------- | ------ | ------------------- |
-| address | string | the account address |
-
-#### Example
-
-Request:
-
-```
- {
-  "method": "importaddress",
-  "params":{
-    "address": "EQ9e6phmxaUkEmVcKkTLRNzk3jvDiK1o1K"
-  }
-}
-```
-
-Response:
-
-```
-{
-    "error": null,
-    "id": null,
-    "jsonrpc": "2.0",
-    "result": 0
-}
-```
-
-### importpubkey
-
-Adds a public key into wallet that can be watched.
-
-Note: This process can take a few minutes to complete for rescaning wallet utxo.
-
-#### Parameter 
-
-| name   | type   | description                |
-| ------ | ------ | -------------------------- |
-| pubkey | string | the hex-encoded public key |
-
-#### Example
-
-Request:
-
-```
- {
-  "method": "importpubkey",
-  "params":{
-    "pubkey": "03c5b92b875b9820aba064dd1c93007c8a971fc43d318f7dc7fd6ea1509a424195"
-  }
-}
-```
-
-Response:
-
-```
-{
-    "error": null,
-    "id": null,
-    "jsonrpc": "2.0",
-    "result": 0
-}
-```
-
 ### createrawtransaction
 
 Create a transaction spending the given inputs and creating new outputs.
+Warning: you should calculate the change output and append it to transaction outputs, otherwise the change should
+ be given to the miners.
 
 #### Parameter 
 

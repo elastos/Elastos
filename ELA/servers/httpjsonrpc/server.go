@@ -72,8 +72,6 @@ func StartRPCServer() {
 	mainMux["createrawtransaction"] = CreateRawTransaction
 	mainMux["decoderawtransaction"] = DecodeRawTransaction
 	mainMux["signrawtransactionwithkey"] = SignRawTransactionWithKey
-	mainMux["importaddress"] = ImportAddress
-	mainMux["importpubkey"] = ImportPubkey
 	// aux interfaces
 	mainMux["help"] = AuxHelp
 	mainMux["submitauxblock"] = SubmitAuxBlock
