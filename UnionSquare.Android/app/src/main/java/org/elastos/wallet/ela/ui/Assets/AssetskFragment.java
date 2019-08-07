@@ -9,7 +9,6 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -25,7 +24,6 @@ import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.adapter.AssetskAdapter;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
-import org.elastos.wallet.ela.ui.Assets.bean.ParcelableMap;
 import org.elastos.wallet.ela.ui.Assets.fragment.AddAssetFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.AssetDetailsFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.CreateSignReadOnlyWalletFragment;
@@ -250,7 +248,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
     private void setRecycleView() {
         List<org.elastos.wallet.ela.db.table.SubWallet> assetList = listMap.get(wallet.getWalletId());
-        if (assetList==null||assetList.size()==0){
+        if (assetList == null || assetList.size() == 0) {
             return;
         }
         if (assetskAdapter == null) {
@@ -268,14 +266,6 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
     @Override
     public synchronized void onGetAllSubWallets(List<SubWallet> data, int type) {
-      /*  if (type == 1) {
-            for (SubWallet newSubWallet : data) {
-                if (newSubWallet.getBelongId().equals(wallet.getWalletId())) {
-                    assetsPresenter.syncStart(wallet.getWalletId(), newSubWallet.getChainId(), this);
-                }
-            }
-            return;
-        }*/
         if (data == null || data.size() == 0) {
             return;
         }
@@ -469,10 +459,9 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     public void onRefresh(RefreshLayout refreshLayout) {
         List<org.elastos.wallet.ela.db.table.SubWallet> assetList = listMap.get(wallet.getWalletId());
         for (org.elastos.wallet.ela.db.table.SubWallet assetsItemEntity : assetList) {
-            //初始化map
             commonGetBalancePresenter.getBalance(wallet.getWalletId(), assetsItemEntity.getChainId(), 2, this);
+            assetsPresenter.syncStart(wallet.getWalletId(), assetsItemEntity.getChainId(), this);
         }
-        // assetsPresenter.getAllSubWallets(wallet.getWalletId(), 1, this);
 
     }
 
@@ -483,7 +472,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
      */
     @Override
     public boolean onBackPressedSupport() {
-      return closeApp();
+        return closeApp();
     }
 
     /**
