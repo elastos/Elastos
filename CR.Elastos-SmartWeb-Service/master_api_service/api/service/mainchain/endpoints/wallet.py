@@ -31,7 +31,7 @@ class CreateWallet(Resource):
                 status=401,
                 mimetype='application/json'
             )
-
+        
         api_url_base = settings.WALLET_SERVICE_URL + settings.WALLET_API_CREATE
         myResponse = requests.get(api_url_base).json()
         response = jsonify(myResponse)
