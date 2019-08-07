@@ -97,10 +97,12 @@ namespace Elastos {
 
 			_coinBaseUTXOs.insert(_coinBaseUTXOs.end(), cbUTXOs.begin(), cbUTXOs.end());
 
+			std::vector<uint256> updatedSpent;
 			for (std::set<uint256>::iterator it = spentHashes.begin(); it != spentHashes.end(); ++it) {
 				for (UTXOArray::iterator cb = _coinBaseUTXOs.begin(); cb != _coinBaseUTXOs.end(); ++cb) {
 					if ((*it) == (*cb)->Hash()) {
 						(*cb)->SetSpent(true);
+						updatedSpent.push_back(*it);
 						break;
 					}
 				}
@@ -111,16 +113,21 @@ namespace Elastos {
 					_groupedAssets[(*o)->Output()->AssetID()]->AddCoinBaseUTXO((*o));
 			}
 
+			if (!updatedSpent.empty()) {
+				SPVLOG_DEBUG("{} update spent hash count {}", _walletID, updatedSpent.size());
+				coinBaseSpent(updatedSpent);
+			}
+
 			if (movedToCoinbase) {
-				Log::info("mv coinbase tx to single table");
+				SPVLOG_DEBUG("{} mv coinbase tx to single table", _walletID);
 				coinBaseUpdatedAll(_coinBaseUTXOs);
 			}
 
 			if (stripped) {
-				Log::info("contain not striped tx, update all tx");
+				SPVLOG_DEBUG("{} contain not striped tx, update all tx", _walletID);
 				txUpdatedAll(_transactions);
 			}
-			SPVLOG_DEBUG("balance info {}", GetBalanceInfo().dump());
+			SPVLOG_DEBUG("{} balance info {}", _walletID, GetBalanceInfo().dump());
 		}
 
 		Wallet::~Wallet() {

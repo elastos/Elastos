@@ -688,31 +688,6 @@ namespace Elastos {
 			return changed;
 		}
 
-		UTXOPtr GroupedAsset::FindUTXO(const InputPtr &input) const {
-			for (UTXOArray::const_iterator it = _utxosVote.cbegin(); it != _utxosVote.cend(); ++it) {
-				if ((*it)->Equal(input))
-					return (*it);
-			}
-
-			for (UTXOArray::const_iterator it = _utxos.cbegin(); it != _utxos.cend(); ++it) {
-				if ((*it)->Equal(input))
-					return (*it);
-			}
-
-			for (UTXOArray::const_iterator it = _utxosCoinbase.cbegin(); it != _utxosCoinbase.cend(); ++it) {
-				if ((*it)->Equal(input))
-					return (*it);
-			}
-
-			for (UTXOArray::const_iterator it = _utxosDeposit.cbegin(); it != _utxosDeposit.cend(); ++it) {
-				if ((*it)->Equal(input)) {
-					return (*it);
-				}
-			}
-
-			return nullptr;
-		}
-
 		bool GroupedAsset::ContainUTXO(const UTXOPtr &o) const {
 			for (UTXOArray::const_iterator it = _utxosVote.cbegin(); it != _utxosVote.cend(); ++it) {
 				if (**it == *o)
@@ -730,6 +705,12 @@ namespace Elastos {
 			}
 
 			for (UTXOArray::const_iterator it = _utxosDeposit.cbegin(); it != _utxosDeposit.cend(); ++it) {
+				if (**it == *o) {
+					return true;
+				}
+			}
+
+			for (UTXOArray::const_iterator it = _utxosLocked.cbegin(); it != _utxosLocked.cend(); ++it) {
 				if (**it == *o) {
 					return true;
 				}

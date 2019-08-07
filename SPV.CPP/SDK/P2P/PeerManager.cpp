@@ -1311,7 +1311,9 @@ namespace Elastos {
 				// track the observed bloom filter false positive rate using a low pass filter to smooth out variance
 				if (peer == _downloadPeer && block->GetTransactionCount() > 0) {
 					for (i = 0; i < txHashes.size(); i++) { // wallet tx are not false-positives
-						if (_wallet->TransactionForHash(txHashes[i]) == nullptr) fpCount++;
+						if (_wallet->TransactionForHash(txHashes[i]) == nullptr &&
+							_wallet->CoinBaseTxForHash(txHashes[i]) == nullptr)
+							fpCount++;
 					}
 
 					// moving average number of tx-per-block
@@ -1517,7 +1519,7 @@ namespace Elastos {
 			if (saveBlocks.size() > 0)
 				FireSaveBlocks(saveBlocks.size() > 1, saveBlocks);
 
-			if ((block->GetHeight() % 500) == 0 || block->GetHeight() >= peer->GetLastBlock()) {
+			if (block && block->GetHeight() != BLOCK_UNKNOWN_HEIGHT) {
 				_wallet->UpdateLockedBalance();
 			}
 

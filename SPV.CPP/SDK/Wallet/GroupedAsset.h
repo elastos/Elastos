@@ -86,8 +86,6 @@ namespace Elastos {
 
 			bool UpdateLockedBalance();
 
-			UTXOPtr FindUTXO(const InputPtr &input) const;
-
 			bool ContainUTXO(const UTXOPtr &o) const;
 
 		private:
