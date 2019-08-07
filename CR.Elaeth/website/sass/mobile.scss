@@ -1,0 +1,31 @@
+
+@media only screen and (min-device-width: 360px) and (max-device-width: 736px) {
+
+}
+
+@media only screen and (max-width: 736px) {
+  .elastosFeatures.container {
+    border-top: 1px solid $primary_light_color;
+    padding-top: 5vh;
+    margin-top: 5vh;
+  }
+}
+
+@media only screen and (min-width: 1024px) {
+}
+
+@media only screen and (max-width: 1023px) {
+
+  // hide the Metamask logo below with of 1024px
+  .mainContainer .elastosETH .blockImage {
+    display: none;
+  }
+
+}
+
+@media only screen and (min-width: 1400px) {
+
+}
+
+@media only screen and (min-width: 1500px) {
+}

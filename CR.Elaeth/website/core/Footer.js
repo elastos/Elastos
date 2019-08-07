@@ -30,7 +30,7 @@ class Footer extends React.Component {
               <img
                 src={this.props.config.baseUrl + this.props.config.footerIcon}
                 alt={this.props.config.title}
-                width="66"
+                width="58"
                 height="58"
               />
             )}
@@ -107,6 +107,9 @@ class Footer extends React.Component {
           </div>
         </section>
 
+        <section className="center text-white">
+          This is a community developed website, all information, materials and views expressed are not that of Elastos Foundation.
+        </section>
         <section className="copyright">{this.props.config.copyright}</section>
       </footer>
     );

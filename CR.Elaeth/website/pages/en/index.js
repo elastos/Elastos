@@ -37,7 +37,7 @@ class HomeSplash extends React.Component {
 
     const ProjectTitle = props => (
       <h2 className="projectTitle">
-        <img src="/img/logo.png" alt="Elastos Logo" width="25%"/>
+        <img src="/img/elastosJS.svg" alt="Elastos Logo" width="25%"/>
         <small>{siteConfig.tagline}</small>
       </h2>
     );
@@ -78,29 +78,23 @@ class Index extends React.Component {
   render() {
 
     const {config: siteConfig, language = ''} = this.props;
-    const {baseUrl} = siteConfig;
+    const {baseUrl, docsUrl} = siteConfig;
+    const docsPart = `${docsUrl ? `${docsUrl}/` : ''}`;
+    const langPart = `${language ? `${language}/` : ''}`;
+    const docUrl = doc => `${baseUrl}${docsPart}${langPart}${doc}`;
 
     const Block = props => (
       <Container
         padding={['bottom', 'top']}
         id={props.id}
+        className={props.className}
         background={props.background}>
         <GridBlock
-          align="center"
+          align={props.align || 'center'}
           contents={props.children}
           layout={props.layout}
         />
       </Container>
-    );
-
-    const Infographic = () => (
-      <div
-        className="productShowcaseSection paddingBottom"
-        style={{textAlign: 'center'}}>
-        <MarkdownBlock>
-
-        </MarkdownBlock>
-      </div>
     );
 
     const Explainer = () => (
@@ -132,41 +126,54 @@ class Index extends React.Component {
     </div>
     );
 
-    const ElastosBlockchain = () => (
-      <Block background="dark">
-        {[
-          {
-            content:
-              'Each new Docusaurus project has **randomly-generated** theme colors.',
-            image: `${baseUrl}img/undraw_youtube_tutorial.svg`,
-            imageAlign: 'right',
-            title: 'Randomly Generated Theme Colors',
-          },
-        ]}
-      </Block>
-    );
-
-    const ElastosDark = () => (
+    const ElastosETHHeader = () => (
     <div
-    className="productShowcaseSection"
+    className="productShowcaseSection elaBackground"
     style={{textAlign: 'center'}}>
-      <img src="/img/Elastos_Logo_Horizontal_KO_RGB.png" width="30%"/>
+      <img src="/img/Elastos_Logo_Horizontal_KO_RGB.png" style={{width: '30vw'}}/>
+      <br/>
+      ELA ETH Sidechain for Ethereum Developers
     </div>
     );
 
+    const ElastosETH = () => (
+    <Block align="left" className="elastosETH elaBackground darkBackground">
+      {[
+        {
+          title: 'A familiar stack for Ethereum Developers',
+          content: `<span class="normal" style="font-size: 13px;">Elastos is building equivalent versions of your favorite tools</span>
+          
+<span class="normal">MetaMask</span> &#x27A1; Elastos Chainlink developed by <a href="https://trade.gaex.com" target="_blank">GAEX</a>
+
+<span class="normal">Remix</span> &#x27A1; Under Development
+
+<span class="normal">Truffle</span> &#x27A1; In Progress by our ETH Team
+
+<span class="normal">Myetherwallet</span> &#x27A1; Looking for Developers
+
+<span class="normal">ENS</span> &#x27A1; In Progress by our ETH Team
+    
+<a class="button" href=${docUrl('advanced.html')}>Jump into our Advanced Tutorial for Ethereum Developers</a>`,
+          image: `${baseUrl}img/metamask-logo-eyes.png`,
+          imageAlign: 'right',
+        },
+      ]}
+    </Block>
+    );
+
     const Features = () => (
-      <Block layout="fourColumn">
+      <Block className="elastosFeatures" layout="fourColumn">
         {[
           {
             title: 'Secured By Bitcoin<br/>Through Merge Mining',
             content: 'Elastos has over 40% of BTC\'s hashpower',
-            image: `${baseUrl}img/hashrate.jpg`,
+            image: `${baseUrl}img/ela_hashrate.png`,
             imageAlign: 'top',
           },
           {
             title: '3x More Expensive to<br/>Attack Than Ethereum',
             content: 'Our hybrid AuxPoW/DPoS Consensus',
-            image: `${baseUrl}img/ethereum_logo.svg`,
+            image: `${baseUrl}img/bucket_eth_info_blk.png`,
             imageAlign: 'top',
 
           },
@@ -180,15 +187,23 @@ class Index extends React.Component {
       </Block>
     );
 
-    const Showcase = () => {
-      return <Block background="light">
+    const ElastosBlockchain = () => {
+      return <Block className="elastosBlockchain">
         {[
           {
-            content:
-            'Each new Docusaurus project has **randomly-generated** theme colors.',
-            image: `${baseUrl}img/undraw_youtube_tutorial.svg`,
-            imageAlign: 'right',
-            title: 'Randomly Generated Theme Colors',
+            title: 'Build on the Modern Internet',
+            content: `
+<ul>
+<li>Elastos is open source with over 100 repos - <a href="https://github.com/elastos" target="_blank">github.com/elastos</a></li>
+<li>Our Ethereum Sidechain is only one of multiple services, including Elastos Carrier (P2P decentralized persistent), Elastos Hive (IPFS/Storage Solutions) and more.</li>
+<li>We are a global network of over 70 developers building the Modern Internet</li>
+</ul>
+<br/><a class="button" href="https://elastos.academy" target="_blank">Want to Learn More? Visit the Elastos Academy</a>
+<a class="button" href="https://t.me/elastosgroup" target="_blank">Join Us on Telegram <i class="icon icon-telegram"></i></a></a>
+`,
+            image: `${baseUrl}img/elastos_merge_2.png`,
+            imageAlign: 'left',
+
           },
         ]}
       </Block>
@@ -200,10 +215,9 @@ class Index extends React.Component {
         <div className="mainContainer">
           <Explainer />
           <Features />
-          <ElastosDark />
-          <Infographic />
+          <ElastosETHHeader />
+          <ElastosETH />
           <ElastosBlockchain />
-          <Showcase />
         </div>
       </div>
     );

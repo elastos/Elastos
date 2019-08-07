@@ -9,6 +9,7 @@
 // site configuration options.
 
 // List of projects/orgs using your project for the users page.
+/*
 const users = [
   {
     caption: 'User1',
@@ -19,6 +20,7 @@ const users = [
     pinned: true,
   },
 ];
+ */
 
 const siteConfig = {
   title: 'ElastosJS', // Title for your website.
@@ -40,13 +42,14 @@ const siteConfig = {
   headerLinks: [
     {doc: 'doc1', label: 'Getting Started'},
     {doc: 'doc1', label: 'Tutorials'},
+    {doc: 'doc1', label: 'Ethereum Developers'},
     {doc: 'doc4', label: 'Docs'},
-    {page: 'help', label: 'Help'},
-    {blog: true, label: 'Blog'},
+    {blog: true, label: 'Updates'},
+    {page: 'help', label: 'Help'}
   ],
 
   // If you have users set above, you add it here:
-  users,
+  // users,
 
   /* path to images for header/footer */
   headerIcon: 'img/Elastos_Icon_RGB.png',
@@ -83,6 +86,7 @@ const siteConfig = {
 
   // Add custom scripts here that would be placed in <script> tags.
   scripts: ['https://buttons.github.io/buttons.js'],
+  stylesheets: ['/css/icons.css'],
 
   // On page navigation for the current documentation page.
   onPageNav: 'separate',
@@ -92,6 +96,8 @@ const siteConfig = {
   // Open Graph and Twitter card images.
   ogImage: 'img/undraw_online.svg',
   twitterImage: 'img/undraw_tweetstorm.svg',
+
+  gaTrackingId: 'UA-123722031-5',
 
   // For sites with a sizable amount of content, set collapsible to true.
   // Expand/collapse the links and subcategories under categories.
