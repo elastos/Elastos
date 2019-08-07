@@ -12,8 +12,11 @@ ul,
 li {
   font-family: "Bio Sans", sans-serif; }
 
-.darkBackground {
-  background-color: #1c2f4a; }
+.normal {
+  font-weight: 400; }
+
+.text-white {
+  color: #ffffff; }
 
 .docMainWrapper h3 {
   font-weight: 500; }
@@ -21,9 +24,16 @@ li {
 .docMainWrapper p {
   font-weight: 300; }
 
-header .navigationSlider .slidingNav > .nav-site > li > a {
-  color: #333;
-  font-weight: 500; }
+.nav-footer {
+  background-image: url("/img/industry_identity_bg.png");
+  background-size: cover;
+  background-position: center top; }
+
+header .navigationSlider .slidingNav > ul.nav-site {
+  background-color: #ffffff; }
+  header .navigationSlider .slidingNav > ul.nav-site > li > a {
+    color: #333;
+    font-weight: 500; }
 
 .homeContainer {
   background-color: #ffffff; }
@@ -34,8 +44,12 @@ header .navigationSlider .slidingNav > .nav-site > li > a {
 
 .mainContainer .productShowcaseSection {
   padding-top: 5vh;
-  background-color: #1c2f4a; }
-  .mainContainer .productShowcaseSection h2 {
+  background-color: #1c2f4a;
+  color: white; }
+  .mainContainer .productShowcaseSection.elaBackground {
+    background-image: url("/img/footer_bg_3.png");
+    background-position-y: 25%; }
+  .mainContainer .productShowcaseSection div, .mainContainer .productShowcaseSection p, .mainContainer .productShowcaseSection h2 {
     color: white;
     margin: 0; }
 
@@ -50,6 +64,38 @@ header .navigationSlider .slidingNav > .nav-site > li > a {
   color: #4f789c;
   padding-bottom: 1vh; }
 
+.mainContainer .elastosETH {
+  text-align: left; }
+  .mainContainer .elastosETH.elaBackground {
+    background-image: url("/img/footer_bg.png"); }
+  .mainContainer .elastosETH .blockContent p {
+    margin-bottom: 15px;
+    font-weight: 300; }
+  .mainContainer .elastosETH a {
+    color: #92b6cc;
+    font-weight: 400; }
+    .mainContainer .elastosETH a.button {
+      color: #ffffff;
+      background-color: #0b687c; }
+      .mainContainer .elastosETH a.button:hover {
+        background-color: #4f789c; }
+  .mainContainer .elastosETH .blockImage img {
+    max-height: 400px; }
+
+.mainContainer .elastosBlockchain .blockContent {
+  text-align: left; }
+
+.mainContainer .elastosBlockchain ul li {
+  margin-bottom: 12px; }
+
+.mainContainer .elastosBlockchain a {
+  color: #4f789c; }
+  .mainContainer .elastosBlockchain a.button {
+    color: #ffffff;
+    background-color: #0b687c; }
+    .mainContainer .elastosBlockchain a.button:hover {
+      background-color: #4f789c; }
+
 .mainContainer .imageAlignTop .blockImage {
   max-width: none; }
   .mainContainer .imageAlignTop .blockImage > img {
@@ -58,3 +104,15 @@ header .navigationSlider .slidingNav > .nav-site > li > a {
 .promoRow .button {
   color: #333;
   border-color: #0b687c; }
+  .promoRow .button:hover {
+    background-color: #efefef; }
+
+@media only screen and (max-width: 736px) {
+  .elastosFeatures.container {
+    border-top: 1px solid #92b6cc;
+    padding-top: 5vh;
+    margin-top: 5vh; } }
+
+@media only screen and (max-width: 1023px) {
+  .mainContainer .elastosETH .blockImage {
+    display: none; } }

@@ -2,9 +2,14 @@
 
 header {
 
-  .navigationSlider .slidingNav > .nav-site > li > a {
-    color: $text_default_color;
-    font-weight: 500;
+  .navigationSlider .slidingNav > ul.nav-site {
+
+    background-color: $background_white;
+
+    > li > a {
+      color: $text_default_color;
+      font-weight: 500;
+    }
   }
 
 }
