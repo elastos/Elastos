@@ -7,7 +7,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
@@ -54,8 +53,6 @@ import butterknife.OnClick;
  */
 public class AssetskFragment extends BaseFragment implements AssetsViewData, CommonRvListener1, ISubWalletListener, OnRefreshListener, CommonBalanceViewData, CommmonStringWithMethNameViewData {
 
-    private static final long WAIT_TIME = 2000L;
-
     @BindView(R.id.iv_title_left)
     ImageView ivTitleLeft;
     @BindView(R.id.tv_title)
@@ -64,7 +61,6 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     ImageView ivTitleRight;
     @BindView(R.id.iv_add)
     ImageView ivAdd;
-    private long TOUCH_TIME = 0;
     @BindView(R.id.recyclerview)
     RecyclerView recyclerview;
     @BindView(R.id.srl)
@@ -173,15 +169,15 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     }
 
     @Override
-    public void onGetAllSubWallets(List<SubWallet> data, int type) {
-      /*  if (type == 1) {
+    public synchronized void onGetAllSubWallets(List<SubWallet> data, int type) {
+        if (type == 1) {
             for (SubWallet newSubWallet : data) {
                 if (newSubWallet.getBelongId().equals(wallet.getWalletId())) {
                     assetsPresenter.syncStart(wallet.getWalletId(), newSubWallet.getChainId(), this);
                 }
             }
             return;
-        }*/
+        }
         if (data == null || data.size() == 0) {
             return;
         }
@@ -363,7 +359,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
      */
     @Override
     public boolean onBackPressedSupport() {
-      return closeApp();
+        return closeApp();
     }
 
     /**
