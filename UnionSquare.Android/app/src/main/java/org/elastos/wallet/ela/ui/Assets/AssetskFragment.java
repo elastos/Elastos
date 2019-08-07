@@ -170,14 +170,6 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
     @Override
     public synchronized void onGetAllSubWallets(List<SubWallet> data, int type) {
-        if (type == 1) {
-            for (SubWallet newSubWallet : data) {
-                if (newSubWallet.getBelongId().equals(wallet.getWalletId())) {
-                    assetsPresenter.syncStart(wallet.getWalletId(), newSubWallet.getChainId(), this);
-                }
-            }
-            return;
-        }
         if (data == null || data.size() == 0) {
             return;
         }
@@ -342,13 +334,11 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         for (org.elastos.wallet.ela.db.table.SubWallet assetsItemEntity : assetList) {
             //初始化map
             commonGetBalancePresenter.getBalance(wallet.getWalletId(), assetsItemEntity.getChainId(), 2, this);
+            assetsPresenter.syncStart(wallet.getWalletId(), assetsItemEntity.getChainId(), this);
         }
-
-        // assetsPresenter.getAllSubWallets(wallet.getWalletId(), this); Sub wallet callback 3873434088 already exist
         if (refreshLayout.getState() == RefreshState.Refreshing) {
             refreshLayout.finishRefresh();
         }
-        assetsPresenter.getAllSubWallets(wallet.getWalletId(), 1, this);
 
     }
 
