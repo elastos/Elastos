@@ -264,11 +264,9 @@ func startNode(c *cli.Context) {
 		defer arbitrator.Stop()
 	}
 
-	wal := wallet.New("./")
+	wal := wallet.NewWallet()
 	wallet.Store = chainStore
 	wallet.ChainParam = activeNetParams
-
-	activeNetParams.CkpManager.Register(wal)
 
 	servers.Compile = Version
 	servers.Config = cfg
