@@ -171,7 +171,7 @@ var DefaultParams = Params{
 	CRMemberCount:               12,
 	CRVotingPeriod:              30 * 720,
 	CRDutyPeriod:                365 * 720,
-	EnableUtxoDB:                false,
+	EnableUtxoDB:                true,
 	CkpManager: checkpoint.NewManager(&checkpoint.Config{
 		EnableHistory:      false,
 		HistoryStartHeight: uint32(0),
