@@ -8,7 +8,7 @@ from master_api_service.database import db
 from sqlalchemy import ForeignKey
 
 
-class User(db.Model):
+class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.String(20), unique=True, nullable=False)
     did = db.Column(db.String(50), unique=True, nullable=False)

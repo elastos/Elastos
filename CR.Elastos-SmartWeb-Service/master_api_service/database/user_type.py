@@ -3,7 +3,7 @@ from datetime import datetime
 from master_api_service.database import db
 
 
-class User_Type(db.Model):
+class UserType(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String(20), nullable=False)
 
