@@ -1,10 +1,15 @@
 
 
 .docMainWrapper {
+
   a,
   .toc .toggleNav ul > li.navListItemActive a {
     color: $primary_color;
     font-weight: 400;
+
+    &:hover {
+      color: $primary_light_color !important;
+    }
   }
 
   h3,
