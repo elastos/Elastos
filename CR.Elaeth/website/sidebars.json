@@ -1,10 +1,40 @@
 {
-  "docs": {
-    "Docusaurus": ["doc1"],
-    "First Category": ["doc2"],
-    "Second Category": ["doc3"]
+  "gettingStarted": {
+    "Getting Started": [
+      "getting-started/intro",
+      "getting-started/create-wallet",
+      "getting-started/faucet",
+      "getting-started/transfer-sidechain",
+      "getting-started/smart-contract",
+      "getting-started/next-steps"
+    ],
+    "Elastos Fundamentals": [
+      "getting-started/ecosystem",
+      "getting-started/types-of-apps"
+    ],
+    "Decentralized Apps": [
+      "getting-started/why-decentralize",
+      "getting-started/decentralized-identity",
+      "getting-started/digital-assets"
+    ]
   },
-  "docs-other": {
-    "First Category": ["doc4", "doc5"]
+  "tutorials": {
+    "Tutorials": [
+      "tutorial/index",
+      "tutorial/did-auth"
+    ]
+  },
+  "advanced": {
+    "For Ethereum Developers": [
+      "advanced/intro",
+      "advanced/migration-guide",
+      "advanced/tools",
+      "advanced/detailed-analysis"
+    ]
+  },
+  "docs": {
+    "Reference Documentation": [
+      "docs/index"
+    ]
   }
 }

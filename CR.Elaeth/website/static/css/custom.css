@@ -18,10 +18,17 @@ li {
 .text-white {
   color: #ffffff; }
 
-.docMainWrapper h3 {
+.docMainWrapper a,
+.docMainWrapper .toc .toggleNav ul > li.navListItemActive a {
+  color: #0b687c;
+  font-weight: 400; }
+
+.docMainWrapper h3,
+.docMainWrapper strong {
   font-weight: 500; }
 
-.docMainWrapper p {
+.docMainWrapper p,
+.docMainWrapper span {
   font-weight: 300; }
 
 .nav-footer {
