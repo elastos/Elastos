@@ -1,22 +1,5 @@
-/*!
-
-=========================================================
-* Light Bootstrap Dashboard React - v1.3.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/light-bootstrap-dashboard-react
-* Copyright 2019 Creative Tim (https://www.creative-tim.com)
-* Licensed under MIT (https://github.com/creativetimofficial/light-bootstrap-dashboard-react/blob/master/LICENSE.md)
-
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
 import React, { Component } from "react";
-import { Grid, Row, Col, FormGroup, FormControl } from "react-bootstrap";
+import { Grid, Row, Col, FormGroup } from "react-bootstrap";
 
 import { Card } from "components/Card/Card.jsx";
 import Button from "components/CustomButton/CustomButton.jsx";
@@ -27,20 +10,28 @@ class UserProfile extends Component {
       <div className="content">
         <Grid fluid>
           <Row>
-            <Col md={4}>
+            <Col md={12}>
               <Card
-                title="Input Section"
+                title="Generate Wallet"
                 content={
                   <form>
                     <Row>
                       <Col md={12}>
                         <FormGroup controlId="formControlsTextarea">
-                          <FormControl
-                            rows="5"
-                            componentClass="textarea"
-                            bsClass="form-control"
-                            placeholder="Here can be your description"
-                          />
+                          <p>
+                            <span className="category" />
+                            Lorem ipsum dolor sit amet, consectetuer adipiscing
+                            elit, sed diem nonummy nibh euismod tincidunt ut
+                            lacreet dolore magna aliguam erat volutpat. Ut wisis
+                            enim ad minim veniam, quis nostrud exerci tution
+                            ullam corper suscipit lobortis nisi ut aliquip ex ea
+                            commodo consequat. Duis te feugi facilisi. Duis
+                            autem dolor in hendrerit in vulputate velit esse
+                            molestie consequat, vel illum dolore eu feugiat
+                            nulla facilisis at vero eros et accumsan et iusto
+                            odio dignissim qui blandit praesent luptatum zzril
+                            delenit au gue duis dolore te feugat nulla facilisi.
+                          </p>
                         </FormGroup>
                       </Col>
                     </Row>
@@ -52,23 +43,141 @@ class UserProfile extends Component {
                 }
               />
             </Col>
-            <Col md={4}>
+          </Row>
+          <Row>
+            <Col md={12}>
               <Card
-                title="Output Section"
+                title="Generate Wallet"
                 content={
                   <form>
                     <Row>
                       <Col md={12}>
                         <FormGroup controlId="formControlsTextarea">
-                          <FormControl
-                            rows="5"
-                            componentClass="textarea"
-                            bsClass="form-control"
-                            placeholder="Here can be your description"
-                          />
+                          <p>
+                            <span className="category" />
+                            Lorem ipsum dolor sit amet, consectetuer adipiscing
+                            elit, sed diem nonummy nibh euismod tincidunt ut
+                            lacreet dolore magna aliguam erat volutpat. Ut wisis
+                            enim ad minim veniam, quis nostrud exerci tution
+                            ullam corper suscipit lobortis nisi ut aliquip ex ea
+                            commodo consequat. Duis te feugi facilisi. Duis
+                            autem dolor in hendrerit in vulputate velit esse
+                            molestie consequat, vel illum dolore eu feugiat
+                            nulla facilisis at vero eros et accumsan et iusto
+                            odio dignissim qui blandit praesent luptatum zzril
+                            delenit au gue duis dolore te feugat nulla facilisi.
+                          </p>
                         </FormGroup>
                       </Col>
                     </Row>
+                    <Button bsStyle="info" pullRight fill type="submit">
+                      Enter
+                    </Button>
+                    <div className="clearfix" />
+                  </form>
+                }
+              />
+            </Col>
+          </Row>
+          <Row>
+            <Col md={12}>
+              <Card
+                title="Generate Wallet"
+                content={
+                  <form>
+                    <Row>
+                      <Col md={12}>
+                        <FormGroup controlId="formControlsTextarea">
+                          <p>
+                            <span className="category" />
+                            Lorem ipsum dolor sit amet, consectetuer adipiscing
+                            elit, sed diem nonummy nibh euismod tincidunt ut
+                            lacreet dolore magna aliguam erat volutpat. Ut wisis
+                            enim ad minim veniam, quis nostrud exerci tution
+                            ullam corper suscipit lobortis nisi ut aliquip ex ea
+                            commodo consequat. Duis te feugi facilisi. Duis
+                            autem dolor in hendrerit in vulputate velit esse
+                            molestie consequat, vel illum dolore eu feugiat
+                            nulla facilisis at vero eros et accumsan et iusto
+                            odio dignissim qui blandit praesent luptatum zzril
+                            delenit au gue duis dolore te feugat nulla facilisi.
+                          </p>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Button bsStyle="info" pullRight fill type="submit">
+                      Enter
+                    </Button>
+                    <div className="clearfix" />
+                  </form>
+                }
+              />
+            </Col>
+          </Row>
+          <Row>
+            <Col md={12}>
+              <Card
+                title="Generate Wallet"
+                content={
+                  <form>
+                    <Row>
+                      <Col md={12}>
+                        <FormGroup controlId="formControlsTextarea">
+                          <p>
+                            <span className="category" />
+                            Lorem ipsum dolor sit amet, consectetuer adipiscing
+                            elit, sed diem nonummy nibh euismod tincidunt ut
+                            lacreet dolore magna aliguam erat volutpat. Ut wisis
+                            enim ad minim veniam, quis nostrud exerci tution
+                            ullam corper suscipit lobortis nisi ut aliquip ex ea
+                            commodo consequat. Duis te feugi facilisi. Duis
+                            autem dolor in hendrerit in vulputate velit esse
+                            molestie consequat, vel illum dolore eu feugiat
+                            nulla facilisis at vero eros et accumsan et iusto
+                            odio dignissim qui blandit praesent luptatum zzril
+                            delenit au gue duis dolore te feugat nulla facilisi.
+                          </p>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Button bsStyle="info" pullRight fill type="submit">
+                      Enter
+                    </Button>
+                    <div className="clearfix" />
+                  </form>
+                }
+              />
+            </Col>
+          </Row>
+          <Row>
+            <Col md={12}>
+              <Card
+                title="Generate Wallet"
+                content={
+                  <form>
+                    <Row>
+                      <Col md={12}>
+                        <FormGroup controlId="formControlsTextarea">
+                          <p>
+                            <span className="category" />
+                            Lorem ipsum dolor sit amet, consectetuer adipiscing
+                            elit, sed diem nonummy nibh euismod tincidunt ut
+                            lacreet dolore magna aliguam erat volutpat. Ut wisis
+                            enim ad minim veniam, quis nostrud exerci tution
+                            ullam corper suscipit lobortis nisi ut aliquip ex ea
+                            commodo consequat. Duis te feugi facilisi. Duis
+                            autem dolor in hendrerit in vulputate velit esse
+                            molestie consequat, vel illum dolore eu feugiat
+                            nulla facilisis at vero eros et accumsan et iusto
+                            odio dignissim qui blandit praesent luptatum zzril
+                            delenit au gue duis dolore te feugat nulla facilisi.
+                          </p>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Button bsStyle="info" pullRight fill type="submit">
+                      Enter
+                    </Button>
                     <div className="clearfix" />
                   </form>
                 }
