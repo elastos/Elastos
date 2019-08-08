@@ -3,10 +3,13 @@ import requests
 import json
 from flask import jsonify
 from flask import request
+from flask import Response
 from flask_api import FlaskAPI, status, exceptions
 from flask_restplus import Resource
 from master_api_service import settings
 from master_api_service.api.restplus import api
+from master_api_service.api.common.common_service import validate_api_key
+from master_api_service.api.common.common_service import getTime
 
 log = logging.getLogger(__name__)
 
@@ -19,13 +22,21 @@ class CreateDid(Resource):
         """
         Returns the DID created
         """
+        api_key = request.headers.get('api_key')
+        api_status = validate_api_key(api_key)
+        if not api_status:
+            data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
+            return Response(json.dumps(data), 
+                status=401,
+                mimetype='application/json'
+            )
+
         api_url_base = settings.DID_SERVICE_URL + settings.DID_SERVICE_GEN_DID
         myResponse = requests.get(api_url_base).json()
-        response = jsonify(myResponse)
-        if(response.status_code == 200):
-            return response
-        else:
-            return response.status_code
+        return Response(json.dumps(myResponse), 
+                status=myResponse['status'],
+                mimetype='application/json'
+            )
 
 @ns.route('/setDidInfo', methods = ['POST'])
 class SetDidInfo(Resource):
@@ -34,11 +45,23 @@ class SetDidInfo(Resource):
         """
         Set DID information
         """
+        api_key = request.headers.get('api_key')
+        api_status = validate_api_key(api_key)
+        if not api_status:
+            data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
+            return Response(json.dumps(data), 
+                status=401,
+                mimetype='application/json'
+            )
+
         api_url_base = settings.DID_SERVICE_URL + settings.DID_SERVICE_SET_DID_INFO
         headers = {'Content-type': 'application/json'}
         req_data = request.get_json()
-        json_data = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
-        return json_data
+        myResponse = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
+        return Response(json.dumps(myResponse), 
+                status=myResponse['status'],
+                mimetype='application/json'
+            )
 
 @ns.route('/sign', methods = ['POST'])
 class Sign(Resource):
@@ -47,11 +70,23 @@ class Sign(Resource):
         """
         Sign any message using your private key
         """
+        api_key = request.headers.get('api_key')
+        api_status = validate_api_key(api_key)
+        if not api_status:
+            data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
+            return Response(json.dumps(data), 
+                status=401,
+                mimetype='application/json'
+            )
+
         api_url_base = settings.DID_SERVICE_URL + settings.DID_SERVICE_SIGN
         headers = {'Content-type': 'application/json'}
         req_data = request.get_json()
-        json_data = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
-        return json_data
+        myResponse = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
+        return Response(json.dumps(myResponse), 
+                status=myResponse['status'],
+                mimetype='application/json'
+            )
 
 @ns.route('/verify', methods = ['POST'])
 class Verify(Resource):
@@ -60,11 +95,23 @@ class Verify(Resource):
         """
         Verify the message that was signed using your Private Key
         """
+        api_key = request.headers.get('api_key')
+        api_status = validate_api_key(api_key)
+        if not api_status:
+            data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
+            return Response(json.dumps(data), 
+                status=401,
+                mimetype='application/json'
+            )
+
         api_url_base = settings.DID_SERVICE_URL + settings.DID_SERVICE_VERIFY
         headers = {'Content-type': 'application/json'}
         req_data = request.get_json()
-        json_data = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
-        return json_data
+        myResponse = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
+        return Response(json.dumps(myResponse), 
+                status=myResponse['status'],
+                mimetype='application/json'
+            )
 
 
   

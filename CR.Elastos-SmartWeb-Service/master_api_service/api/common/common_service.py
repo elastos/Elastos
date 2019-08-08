@@ -1,3 +1,5 @@
+import datetime
+import pytz
 from master_api_service.database import db
 from master_api_service.database.user_api_relation import UserApiRelation
 
@@ -6,3 +8,6 @@ def validate_api_key(api_key):
 	if user_api_rel is None:
 		return False
 	return True
+
+def getTime():
+	return datetime.datetime.now(pytz.timezone('America/New_York')).strftime("%Y-%m-%d %H:%M:%S %z")

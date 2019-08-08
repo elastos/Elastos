@@ -4,10 +4,13 @@ from requests import Request, Session
 import json
 from flask import jsonify
 from flask import request
+from flask import Response
 from flask_api import FlaskAPI, status, exceptions
 from flask_restplus import Resource
 from master_api_service import settings
 from master_api_service.api.restplus import api
+from master_api_service.api.common.common_service import validate_api_key
+from master_api_service.api.common.common_service import getTime
 
 log = logging.getLogger(__name__)
 
@@ -20,6 +23,15 @@ class GetBlockHash(Resource):
         """
         Returns the getblockhash
         """
+        api_key = request.headers.get('api_key')
+        api_status = validate_api_key(api_key)
+        if not api_status:
+            data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
+            return Response(json.dumps(data), 
+                status=401,
+                mimetype='application/json'
+            )
+
         req_data = request.get_json()
         headers = {
            'Accepts': 'application/json',
@@ -31,7 +43,10 @@ class GetBlockHash(Resource):
         d = {"method": "getblockhash", "params": req_data}
         response = session.post(URL_BLOCKCONFIRM, data=json.dumps(d))
         data = json.loads(response.text)
-        return data
+        return Response(json.dumps(data), 
+                status=200,
+                mimetype='application/json'
+            )
 
 @ns.route('/getbestblockhash')
 class GetBestBlockHash(Resource):
@@ -40,6 +55,15 @@ class GetBestBlockHash(Resource):
         """
         Returns the getbestblockhash
         """
+        api_key = request.headers.get('api_key')
+        api_status = validate_api_key(api_key)
+        if not api_status:
+            data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
+            return Response(json.dumps(data), 
+                status=401,
+                mimetype='application/json'
+            )
+            
         headers = {
            'Accepts': 'application/json',
            'Content-Type': 'application/json'
@@ -50,4 +74,7 @@ class GetBestBlockHash(Resource):
         d = {"method": "getbestblockhash"}
         response = session.post(URL_BLOCKCONFIRM, data=json.dumps(d))
         data = json.loads(response.text)
-        return data
+        return Response(json.dumps(data), 
+                status=200,
+                mimetype='application/json'
+            )

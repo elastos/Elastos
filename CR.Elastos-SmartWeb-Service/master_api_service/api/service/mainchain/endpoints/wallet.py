@@ -10,7 +10,7 @@ from flask_restplus import Resource
 from master_api_service import settings
 from master_api_service.api.restplus import api
 from master_api_service.api.common.common_service import validate_api_key
-from master_api_service.database.user_api_relation import UserApiRelation
+from master_api_service.api.common.common_service import getTime
 
 log = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ class CreateWallet(Resource):
         api_key = request.headers.get('api_key')
         api_status = validate_api_key(api_key)
         if not api_status:
-            data = {"error message":"API Key could not be verified","status":401, "timestamp":datetime.datetime.now().timestamp(),"path":request.url}
+            data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
             return Response(json.dumps(data), 
                 status=401,
                 mimetype='application/json'
@@ -49,7 +49,7 @@ class GetBalance(Resource):
         api_key = request.headers.get('api_key')
         api_status = validate_api_key(api_key)
         if not api_status:
-            data = {"error message":"API Key could not be verified","status":401, "timestamp":datetime.datetime.now().timestamp(),"path":request.url}
+            data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
             return Response(json.dumps(data), 
                 status=401,
                 mimetype='application/json'
@@ -72,7 +72,7 @@ class GetDPOSVote(Resource):
         api_key = request.headers.get('api_key')
         api_status = validate_api_key(api_key)
         if not api_status:
-            data = {"error message":"API Key could not be verified","status":401, "timestamp":datetime.datetime.now().timestamp(),"path":request.url}
+            data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
             return Response(json.dumps(data), 
                 status=401,
                 mimetype='application/json'
@@ -97,7 +97,7 @@ class GetTransactions(Resource):
         api_key = request.headers.get('api_key')
         api_status = validate_api_key(api_key)
         if not api_status:
-            data = {"error message":"API Key could not be verified","status":401, "timestamp":datetime.datetime.now().timestamp(),"path":request.url}
+            data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
             return Response(json.dumps(data), 
                 status=401,
                 mimetype='application/json'
@@ -122,7 +122,7 @@ class GetTransactionHistory(Resource):
         api_key = request.headers.get('api_key')
         api_status = validate_api_key(api_key)
         if not api_status:
-            data = {"error message":"API Key could not be verified","status":401, "timestamp":datetime.datetime.now().timestamp(),"path":request.url}
+            data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
             return Response(json.dumps(data), 
                 status=401,
                 mimetype='application/json'
@@ -145,7 +145,7 @@ class TransferELA(Resource):
         api_key = request.headers.get('api_key')
         api_status = validate_api_key(api_key)
         if not api_status:
-            data = {"error message":"API Key could not be verified","status":401, "timestamp":datetime.datetime.now().timestamp(),"path":request.url}
+            data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
             return Response(json.dumps(data), 
                 status=401,
                 mimetype='application/json'
@@ -170,7 +170,7 @@ class GetMnemonic(Resource):
         api_key = request.headers.get('api_key')
         api_status = validate_api_key(api_key)
         if not api_status:
-            data = {"error message":"API Key could not be verified","status":401, "timestamp":datetime.datetime.now().timestamp(),"path":request.url}
+            data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
             return Response(json.dumps(data), 
                 status=401,
                 mimetype='application/json'
