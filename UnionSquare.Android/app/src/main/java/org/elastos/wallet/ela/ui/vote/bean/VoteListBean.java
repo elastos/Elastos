@@ -264,6 +264,21 @@ public class VoteListBean extends BaseEntity implements Serializable {
                     this.voterate = voterate;
                 }
 
+                @Override
+                public String toString() {
+                    return "ProducersBean{" +
+                            "ownerpublickey='" + ownerpublickey + '\'' +
+                            ", nodepublickey='" + nodepublickey + '\'' +
+                            ", nickname='" + nickname + '\'' +
+                            ", url='" + url + '\'' +
+                            ", location=" + location +
+                            ", active=" + active +
+                            ", votes='" + votes + '\'' +
+                            ", netaddress='" + netaddress + '\'' +
+                            ", index=" + index +
+                            ", voterate='" + voterate + '\'' +
+                            '}';
+                }
 
                 @Override
                 public int compareTo(@NonNull ProducersBean o) {

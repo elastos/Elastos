@@ -415,5 +415,7 @@
     <string name="backtostart">返回首页</string>
     <string name="joininfo">参选信息</string>
     <string name="nodeintro">节点简介</string>
+    <string name="selectlist">已选列表</string>
+    <string name="unseletList">未选列表</string>
 
 </resources>

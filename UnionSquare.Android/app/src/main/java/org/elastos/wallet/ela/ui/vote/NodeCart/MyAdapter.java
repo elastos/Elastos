@@ -1,10 +1,6 @@
 package org.elastos.wallet.ela.ui.vote.NodeCart;
 
-import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.AppCompatImageView;
 import android.view.LayoutInflater;
@@ -14,9 +10,6 @@ import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import com.bumptech.glide.request.target.CustomViewTarget;
-import com.bumptech.glide.request.transition.Transition;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -29,30 +22,32 @@ import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.GlideRequest;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class MyAdapter extends BaseAdapter {
     private final GlideRequest<Bitmap> glideRequest;
+
+
     // 填充数据的list
     private List<VoteListBean.DataBean.ResultBean.ProducersBean> list;
     // 用来控制CheckBox的选中状况
-    static HashMap<Integer, Boolean> isSelected;
+    private HashMap<Integer, Boolean> dataMap;
     // 上下文
     private BaseFragment context;
-    // 用来导入布局
-    private LayoutInflater inflater = null;
+
     private Map<String, String> map;
 
     // 构造器
-    public MyAdapter(List<VoteListBean.DataBean.ResultBean.ProducersBean> list, BaseFragment context) {
+    MyAdapter(List<VoteListBean.DataBean.ResultBean.ProducersBean> list, BaseFragment context) {
         this.context = context;
         this.list = list;
-        inflater = LayoutInflater.from(context.getContext());
-        isSelected = new HashMap<Integer, Boolean>();
+
+        dataMap = new HashMap<Integer, Boolean>();
         // 初始化数据
-        initDate();
+        initDateStaus(false);
         glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial_circle).circleCrop();
         if (map == null) {
             map = new HashMap<>();
@@ -61,13 +56,33 @@ public class MyAdapter extends BaseAdapter {
         }
     }
 
-    // 初始化isSelected的数据
-    private void initDate() {
+    // 初始化dataMap的数据
+    void initDateStaus(boolean status) {
         if (list != null) {
             for (int i = 0; i < list.size(); i++) {
-                getIsSelected().put(i, false);
+                dataMap.put(i, status);
             }
         }
+    }
+
+    void setDateStaus(int size, boolean status) {
+        if (list != null) {
+            for (int i = 0; i < size; i++) {
+                dataMap.put(i, status);
+            }
+        }
+    }
+
+    int getCheckNum() {
+        int sum = 0;
+        if (list != null) {
+            for (int i = 0; i < list.size(); i++) {
+                if (dataMap.get(i)!=null&&dataMap.get(i)) {
+                    sum++;
+                }
+            }
+        }
+        return sum;
     }
 
     @Override
@@ -89,10 +104,8 @@ public class MyAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder = null;
         if (convertView == null) {
-            // 获得ViewHolder对象
             holder = new ViewHolder();
-            // 导入布局并赋值给convertview
-            convertView = inflater.inflate(R.layout.item_node_car, null);
+            convertView = LayoutInflater.from(context.getContext()).inflate(R.layout.item_node_car, null);
             //holder.tv = (TextView) convertView.findViewById(R.id.item_tv);
             holder.cb = (AppCompatCheckBox) convertView.findViewById(R.id.checkbox);
             holder.tv_name = (TextView) convertView.findViewById(R.id.tv_name);
@@ -109,8 +122,8 @@ public class MyAdapter extends BaseAdapter {
         // 设置list中TextView的显示
         //   holder.tv.setText(list.get(position));
         // 根据isSelected来设置checkbox的选中状况
-        if (getIsSelected().get(position) != null) {
-            holder.cb.setChecked(getIsSelected().get(position));
+        if (dataMap.get(position) != null) {
+            holder.cb.setChecked(dataMap.get(position));
         }
         VoteListBean.DataBean.ResultBean.ProducersBean producersBean = list.get(position);
 
@@ -162,16 +175,32 @@ public class MyAdapter extends BaseAdapter {
         return convertView;
     }
 
-    public static HashMap<Integer, Boolean> getIsSelected() {
-        return isSelected;
+    public List<VoteListBean.DataBean.ResultBean.ProducersBean> getAllSelectList() {
+        List<VoteListBean.DataBean.ResultBean.ProducersBean> selectList = new ArrayList();
+        if (list != null) {
+            for (int i = 0; i < list.size(); i++) {
+                if (dataMap.get(i) != null && dataMap.get(i)) {
+                    selectList.add(list.get(i));
+                }
+            }
+        }
+        return selectList;
     }
 
-    public static void delSelected(int i) {
-        MyAdapter.isSelected.remove(i);
+    public HashMap<Integer, Boolean> getDataMap() {
+        return dataMap;
     }
 
-    public void setIsSelected(HashMap<Integer, Boolean> isSelected) {
-        MyAdapter.isSelected = isSelected;
+    public void setDataMap(HashMap<Integer, Boolean> dataMap) {
+        this.dataMap = dataMap;
+    }
+
+    public List<VoteListBean.DataBean.ResultBean.ProducersBean> getList() {
+        return list;
+    }
+
+    public void setList(List<VoteListBean.DataBean.ResultBean.ProducersBean> list) {
+        this.list = list;
     }
 
     public class ViewHolder {
@@ -193,4 +222,5 @@ public class MyAdapter extends BaseAdapter {
         }
 
     }
+
 }
