@@ -40,12 +40,12 @@ const siteConfig = {
 
   // For no header links in the top nav bar -> headerLinks: [],
   headerLinks: [
-    {doc: 'doc1', label: 'Getting Started'},
-    {doc: 'doc1', label: 'Tutorials'},
-    {doc: 'doc1', label: 'Ethereum Developers'},
-    {doc: 'doc4', label: 'Docs'},
+    {doc: 'getting-started/intro', label: 'Getting Started'},
+    {doc: 'tutorial/index', label: 'Tutorials'},
+    {doc: 'advanced/intro', label: 'Ethereum Developers'},
+    {doc: 'docs/index', label: 'Reference Docs'},
+    {page: 'help', label: 'Community'},
     {blog: true, label: 'Updates'},
-    {page: 'help', label: 'Help'}
   ],
 
   // If you have users set above, you add it here:

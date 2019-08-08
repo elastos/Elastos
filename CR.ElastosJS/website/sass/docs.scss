@@ -1,0 +1,20 @@
+
+
+.docMainWrapper {
+  a,
+  .toc .toggleNav ul > li.navListItemActive a {
+    color: $primary_color;
+    font-weight: 400;
+  }
+
+  h3,
+  strong {
+    font-weight: 500;
+  }
+
+  p,
+  span {
+    font-weight: 300;
+  }
+
+}
