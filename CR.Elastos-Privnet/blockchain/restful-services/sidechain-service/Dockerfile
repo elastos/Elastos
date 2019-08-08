@@ -28,8 +28,9 @@ WORKDIR $SRC_DIR
 COPY --from=builder /restful-services/sidechain-service/did.api/target/did.api-0.0.6.jar ${SRC_DIR}/did.api-0.0.6.jar
 
 RUN apk update \
-    && apk add --no-cache curl \
-    && adduser -h $SRC_DIR -D -g '' elauser \
+    && apk add --no-cache curl ca-certificates \
+    && addgroup -g 1000 -S elauser \
+    && adduser -h $SRC_DIR -u 1000 -S elauser -G elauser -s \
     && chown -R elauser:elauser $SRC_DIR
 
 USER elauser

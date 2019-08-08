@@ -32,7 +32,7 @@ These are located in the `wallets` folder:
 
 ## Repos used to build 
 
-- [Elastos.ELA](https://github.com/elastos/Elastos.ELA): v0.3.4
+- [Elastos.ELA](https://github.com/elastos/Elastos.ELA): v0.3.5
 - [Elastos.ELA.Arbiter](https://github.com/elastos/Elastos.ELA.Arbiter): v0.1.1
 - [Elastos.ELA.SideChain.ID](https://github.com/elastos/Elastos.ELA.Sidechain.ID): v0.1.2
 - [Elastos.ELA.SideChain.Token](https://github.com/elastos/Elastos.ELA.SideChain.Token): v0.1.2
@@ -91,6 +91,7 @@ These are located in the `wallets` folder:
     
     If you would like to reset the entire environment with fresh data, do the following. This basically removes all the blockchain data that may have been saved previously and resets it back to block height 510
     ```
+    mkdir -p ~/.volumes;
     tools/copy_freshdata_docker.sh;
     docker-compose up --remove-orphans --build --force-recreate -d
     ```
@@ -322,15 +323,15 @@ These are located in the `wallets` folder:
 
 1. Create a directory to work off of:
 
-  This uses release v0.3.2 binary for ela program but if there's a newer version, make sure to grab that instead
+  This uses release v0.3.5 binary for ela program but if there's a newer version, make sure to grab that instead
   ```
   mkdir -p ~/node/ela;
   cd ~/node/ela;
-  wget https://download.elastos.org/elastos-ela/elastos-ela-0.3.4/elastos-ela-v0.3.4-linux-x86_64.tgz;
-  tar -xzvf elastos-ela-v0.3.4-linux-x86_64.tgz;
-  mv elastos-ela-v0.3.4/ela .;
-  mv elastos-ela-v0.3.4/ela-cli .;
-  rm -rf elastos-ela-v0.3.4-linux-x86_64.tgz elastos-ela-v0.3.4/
+  wget https://download.elastos.org/elastos-ela/elastos-ela-0.3.5/elastos-ela-v0.3.5-linux-x86_64.tgz;
+  tar -xzvf elastos-ela-v0.3.5-linux-x86_64.tgz;
+  mv elastos-ela-v0.3.5/ela .;
+  mv elastos-ela-v0.3.5/ela-cli .;
+  rm -rf elastos-ela-v0.3.5-linux-x86_64.tgz elastos-ela-v0.3.5/
   ```
 
 2. Let's create a new wallet that we will use to register for our supernode so we'll be both an owner and a node
