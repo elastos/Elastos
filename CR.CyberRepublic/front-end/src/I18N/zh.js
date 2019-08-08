@@ -1159,6 +1159,7 @@ const zh = {
   'from.CVoteForm.button.saveAndPublish': '保存 & 发布',
   'from.CVoteForm.button.saveChanges': '保存更改',
 
+  'from.CVoteForm.modal.publish': '您确定要发布这份提案?',
   'from.CVoteForm.modal.title': '您是否确定完成了这份提案？',
   'from.CVoteForm.modal.confirm': '确定',
   'from.CVoteForm.modal.cancel': '取消',

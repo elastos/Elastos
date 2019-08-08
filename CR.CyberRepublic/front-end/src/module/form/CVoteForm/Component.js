@@ -1,6 +1,6 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
-import { Form, Input, Button, Row, message, Modal, Tabs, Radio } from 'antd'
+import { Form, Input, Button, Row, message, Modal, Tabs, Radio, Popconfirm } from 'antd'
 import I18N from '@/I18N'
 import _ from 'lodash'
 import { CVOTE_STATUS } from '@/constant'
@@ -543,19 +543,35 @@ class C extends BaseComponent {
 
   renderSaveBtn() {
     const { edit, data } = this.props
-    const btnText =
-      edit && data.published
-        ? I18N.get('from.CVoteForm.button.saveChanges')
-        : I18N.get('from.CVoteForm.button.saveAndPublish')
-    return (
-      <FormItem>
+    const saveChangesBtn = (
+      <Button
+        loading={this.state.loading}
+        className="cr-btn cr-btn-primary"
+        htmlType="submit"
+      >
+        {I18N.get('from.CVoteForm.button.saveChanges')}
+      </Button>
+    )
+
+    const saveAndPublishBtn = (
+      <Popconfirm
+        title={I18N.get('from.CVoteForm.modal.publish')}
+        onConfirm={(e) => this.publishCVote(e)}
+        okText={I18N.get('.yes')}
+        cancelText={I18N.get('.no')}
+      >
         <Button
           loading={this.state.loading}
           className="cr-btn cr-btn-primary"
-          htmlType="submit"
         >
-          {btnText}
+          {I18N.get('from.CVoteForm.button.saveAndPublish')}
         </Button>
+      </Popconfirm>
+    )
+
+    return (
+      <FormItem>
+        {edit && data.published ? saveChangesBtn : saveAndPublishBtn}
       </FormItem>
     )
   }
