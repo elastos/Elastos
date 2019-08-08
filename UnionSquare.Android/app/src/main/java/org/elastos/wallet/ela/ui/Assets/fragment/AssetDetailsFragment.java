@@ -30,6 +30,7 @@ import org.elastos.wallet.ela.ui.Assets.adapter.TransferRecordRecAdapetr;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.TransferRecordEntity;
 import org.elastos.wallet.ela.ui.Assets.presenter.AssetDetailPresenter;
+import org.elastos.wallet.ela.ui.Assets.presenter.AssetsPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetTransactionPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
@@ -293,6 +294,8 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
             startCount = 0;
             presenter.getAllTransaction(wallet.getWalletId(), chainId, startCount, pageCount, "", this);
         }
+        new AssetsPresenter().syncStart(wallet.getWalletId(), chainId, this);
+
     }
 
     @Override
