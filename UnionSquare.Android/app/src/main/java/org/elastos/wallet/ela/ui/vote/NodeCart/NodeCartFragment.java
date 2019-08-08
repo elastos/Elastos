@@ -231,7 +231,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
 
 
     boolean is = false;//状态值
-    List nodelist = new ArrayList();
+    List nodelist;
 
 
     @OnClick({R.id.iv_title_left, R.id.iv_title_right, R.id.tv_ljtp, R.id.ll_select, R.id.ll_unselect, R.id.checkbox})
@@ -298,7 +298,11 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         if (list == null || list.size() == 0) {
             return;
         }
-        nodelist.clear();
+        if (nodelist == null) {
+            nodelist = new ArrayList();
+        } else {
+            nodelist.clear();
+        }
         for (int i = 0; i < list.size(); i++) {
             if (mAdapter.getDataMap().get(i)) {
                 nodelist.add(list.get(i).getOwnerpublickey());
