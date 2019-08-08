@@ -194,8 +194,8 @@ services:
       - ~/.volumes/elastos-privnet/eth-node:/eth/elastos_eth
       - ${PWD}/ela-sidechain/eth/eth-node/eth-accounts-pass.txt:/eth/eth-accounts-pass.txt
     ports:
-      - 60011:8545
-      - 60012:30303
+      - 60111:8545
+      - 60112:30303
     networks:
       - blockchain
     tty: true 

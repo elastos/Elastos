@@ -55,7 +55,7 @@ These are located in the `wallets` folder:
 
 - DID sidechain node: 30111-30115
 - Token sidechain node: 40111-40115
-- ETH sidechain node: 60011-60012
+- ETH sidechain node: 60111-60112
 - ETH sidechain oracle node: 60113
 
 ### Arbitrator nodes
@@ -902,7 +902,7 @@ COMING SOON
 6. Check eth balance:
 
   ```
-  curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x4505b967d56f84647eb3a40f7c365f7d87a88bc3", "latest"],"id":1}' localhost:60011
+  curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x4505b967d56f84647eb3a40f7c365f7d87a88bc3", "latest"],"id":1}' localhost:60111
   ```
 
   Should return something like:
