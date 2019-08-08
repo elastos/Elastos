@@ -37,11 +37,13 @@ func (e *EventStoreAnalyzer) ParseInactiveArbitrators() (result []string) {
 	type sortItem struct {
 		Ratio float64
 		PK    string
-		CRC   bool
 	}
 	var sortItems []sortItem
 	currentArbitrators := e.cfg.Arbitrators.GetArbitrators()
 	for _, v := range currentArbitrators {
+		if e.cfg.Arbitrators.IsCRCArbitrator(v) {
+			continue
+		}
 		hexPk := common.BytesToHexString(v)
 
 		ratio := float64(0)
@@ -52,7 +54,6 @@ func (e *EventStoreAnalyzer) ParseInactiveArbitrators() (result []string) {
 		sortItems = append(sortItems, sortItem{
 			Ratio: ratio,
 			PK:    hexPk,
-			CRC:   e.cfg.Arbitrators.IsCRCArbitrator(v),
 		})
 	}
 
@@ -63,9 +64,7 @@ func (e *EventStoreAnalyzer) ParseInactiveArbitrators() (result []string) {
 	inactiveEliminateCount := len(currentArbitrators) / 3
 	for i := 0; i < len(sortItems) &&
 		i < int(inactiveEliminateCount); i++ {
-		if !sortItems[i].CRC {
-			result = append(result, sortItems[i].PK)
-		}
+		result = append(result, sortItems[i].PK)
 	}
 
 	sort.Strings(result)

@@ -17,7 +17,7 @@ const (
 	EBIP001Version uint32 = 10001
 
 	// MaxTxPerBlock is the maximux number of transactions allowed per block.
-	MaxTxPerBlock = 10000
+	MaxTxPerBlock = 100
 
 	// MaxBlocksPerMsg is the maximum number of blocks allowed per message.
 	MaxBlocksPerMsg = 500
