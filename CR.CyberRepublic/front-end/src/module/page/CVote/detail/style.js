@@ -38,6 +38,8 @@ export const VoteBtnGroup = styled.div`
 export const Label = styled.span`
   background: #F2F6FB;
   padding: 3px 10px;
+  margin-bottom: 16px;
+  display: inline-block;
 `
 
 export const Title = styled.h2`
