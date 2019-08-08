@@ -147,18 +147,15 @@ namespace Elastos {
 			_subWalletsInfoList = json.GetCoinInfoList();
 		}
 
-		LocalStore::LocalStore(const std::string &path, const std::vector<std::string> &pubkeys, int m) :
+		LocalStore::LocalStore(const std::string &path, const std::vector<PublicKeyRing> &pubkeyRings, int m) :
 			_path(path),
 			_account(0),
 			_derivationStrategy("BIP44"),
 			_m(m),
 			_singleAddress(true),
 			_readonly(true),
-			_mnemonicHasPassphrase(false) {
-
-			for (size_t i = 0; i < pubkeys.size(); ++i) {
-				_publicKeyRing.emplace_back(pubkeys[i]);
-			}
+			_mnemonicHasPassphrase(false),
+			_publicKeyRing(pubkeyRings) {
 
 			_n = _publicKeyRing.size();
 		}

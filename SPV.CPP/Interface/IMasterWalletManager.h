@@ -60,14 +60,14 @@ namespace Elastos {
 			/**
 			  * Create a multi-sign master wallet by related co-signers, or return existing master wallet if current master wallet manager has the master wallet id. Note this creating method generate an readonly multi-sign account which can not append sign into a transaction.
 			  * @param masterWalletID is the unique identification of a master wallet object.
-			  * @param publicKeys is an array of signers' public key.
+			  * @param publicKeyRings is an array of signers' public key. it's as json fotmat like {"xPubKey":"xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg","requestPubKey":"03ec571bba042036f93c17c2507f6b03f82d5b364e525715c40f16f723d4e5fac1"}
 			  * @param m specify minimum count of signature to accomplish related transaction.
 			  * @param timestamp the value of time in seconds since 1970-01-01 00:00:00. It means the time when the wallet contains the first transaction.
 			  * @return If success will return a pointer of master wallet interface.
 			  */
 			virtual IMasterWallet *CreateMultiSignMasterWallet(
 					const std::string &masterWalletID,
-					const nlohmann::json &publicKeys,
+					const nlohmann::json &publicKeyRings,
 					uint32_t m,
 					time_t timestamp = 0) = 0;
 
@@ -76,7 +76,7 @@ namespace Elastos {
 			  * @param masterWalletId is the unique identification of a master wallet object.
 			  * @param xprv root extend private key of wallet.
 			  * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
-			  * @param publicKeys is an array of signers' public key.
+			  * @param publicKeyRings is an array of signers' public key. it's as json fotmat like {"xPubKey":"xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg","requestPubKey":"03ec571bba042036f93c17c2507f6b03f82d5b364e525715c40f16f723d4e5fac1"}
 			  * @param m specify minimum count of signature to accomplish related transaction.
 			  * @param timestamp the value of time in seconds since 1970-01-01 00:00:00. It means the time when the wallet contains the first transaction.
 			  * @return If success will return a pointer of master wallet interface.
@@ -85,7 +85,7 @@ namespace Elastos {
 					const std::string &masterWalletId,
 					const std::string &xprv,
 					const std::string &payPassword,
-					const nlohmann::json &publicKeys,
+					const nlohmann::json &publicKeyRings,
 					uint32_t m,
 					time_t timestamp = 0) = 0;
 
@@ -95,7 +95,7 @@ namespace Elastos {
 			 * @param mnemonic use to generate seed which deriving the master private key and chain code.
 			 * @param phrasePassword combine with random seed to generate root key and chain code. Phrase password can be empty or between 8 and 128, otherwise will throw invalid argument exception.
 			 * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
-			 * @param publicKeys is an array of signers' public key.
+			 * @param publicKeyRings is an array of signers' public key. it's as json fotmat like {"xPubKey":"xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg","requestPubKey":"03ec571bba042036f93c17c2507f6b03f82d5b364e525715c40f16f723d4e5fac1"}
 			 * @param m specify minimum count of signature to accomplish related transactions.
 			 * @param timestamp the value of time in seconds since 1970-01-01 00:00:00. It means the time when the wallet contains the first transaction.
 			 * @return If success will return a pointer of master wallet interface.
@@ -105,7 +105,7 @@ namespace Elastos {
 					const std::string &mnemonic,
 					const std::string &phrasePassword,
 					const std::string &payPassword,
-					const nlohmann::json &publicKeys,
+					const nlohmann::json &publicKeyRings,
 					uint32_t m,
 					time_t timestamp = 0) = 0;
 

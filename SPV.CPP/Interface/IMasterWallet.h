@@ -54,10 +54,18 @@ namespace Elastos {
 			virtual void DestroyWallet(ISubWallet *wallet) = 0;
 
 			/**
-			 * Get public key of the root private key belongs to the master wallet.
-			 * @return public key of the root private key
+			 * Get public key ring of current wallet
+			 * {"xPubKey":"xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg","requestPubKey":"03ec571bba042036f93c17c2507f6b03f82d5b364e525715c40f16f723d4e5fac1"}
+			 * @return PublicKeyRing of json format
 			 */
-			virtual std::string GetPublicKey() const = 0;
+			virtual nlohmann::json GetOwnerPublicKeyRing() const = 0;
+
+			/**
+			 * Get all public key ring of current wallet
+			 * [{"xPubKey":"xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg","requestPubKey":"03ec571bba042036f93c17c2507f6b03f82d5b364e525715c40f16f723d4e5fac1"}]
+			 * @return PublicKeyRing of json format
+			 */
+			virtual nlohmann::json GetPublicKeyRing() const = 0;
 
 			/**
 			 * Sign message through root private key of the master wallet.

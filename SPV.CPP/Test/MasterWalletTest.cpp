@@ -113,7 +113,9 @@ TEST_CASE("Master wallet constructor with language only", "[Constructor1]") {
 		std::string message = "mymessage";
 		std::string signedMessage = masterWallet->Sign(message, payPassword);
 		REQUIRE_FALSE(signedMessage.empty());
-		REQUIRE(masterWallet->CheckSign(masterWallet->GetPublicKey(), message, signedMessage));
+		nlohmann::json pubKeyRing = masterWallet->GetOwnerPublicKeyRing();
+		REQUIRE(!pubKeyRing.empty());
+		REQUIRE(masterWallet->CheckSign(pubKeyRing["requestPubKey"].get<std::string>(), message, signedMessage));
 
 		REQUIRE_NOTHROW(masterWallet->DestroyWallet(subWallet));
 	}
@@ -135,7 +137,9 @@ TEST_CASE("Master wallet constructor with phrase password and pay password", "[C
 		std::string message = "mymessage";
 		std::string signedMessage = masterWallet->Sign(message, payPassword);
 		REQUIRE_FALSE(signedMessage.empty());
-		REQUIRE(masterWallet->CheckSign(masterWallet->GetPublicKey(), message, signedMessage));
+		nlohmann::json pubKeyRing = masterWallet->GetOwnerPublicKeyRing();
+		REQUIRE(!pubKeyRing.empty());
+		REQUIRE(masterWallet->CheckSign(pubKeyRing["requestPubKey"].get<std::string>(), message, signedMessage));
 
 		REQUIRE_NOTHROW(masterWallet->DestroyWallet(subWallet));
 	}
@@ -383,14 +387,16 @@ TEST_CASE("Master wallet CheckSign method test", "[CheckSign]") {
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword));
 	std::string message = "mymessage";
 	std::string signedData = masterWallet->Sign(message, payPassword);
+	nlohmann::json publicKeyRing = masterWallet->GetOwnerPublicKeyRing();
+	std::string publicKey = publicKeyRing["requestPubKey"].get<std::string>();
 	SECTION("Normal check sign") {
-		REQUIRE(masterWallet->CheckSign(masterWallet->GetPublicKey(), message, signedData));
+		REQUIRE(masterWallet->CheckSign(publicKey, message, signedData));
 	}
 	SECTION("Check sign with wrong message") {
-		REQUIRE_FALSE(masterWallet->CheckSign(masterWallet->GetPublicKey(), "wrongMessage", signedData));
+		REQUIRE_FALSE(masterWallet->CheckSign(publicKey, "wrongMessage", signedData));
 	}
 	SECTION("Check sign with wrong signed data") {
-		REQUIRE_FALSE(masterWallet->CheckSign(masterWallet->GetPublicKey(), message, "wrangData"));
+		REQUIRE_FALSE(masterWallet->CheckSign(publicKey, message, "wrangData"));
 	}
 }
 
@@ -400,8 +406,10 @@ TEST_CASE("Master wallet GetPublicKey method test", "[GetPublicKey]") {
 
 	SECTION("Normal test") {
 		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword));
-
-		REQUIRE(masterWallet->GetPublicKey() == "02dbac277ae44dc791320d571341e55177ebe6df6d2e55badb0cbbc31e6f179230");
+		nlohmann::json publicKeyRing = masterWallet->GetOwnerPublicKeyRing();
+		REQUIRE(!publicKeyRing.empty());
+		std::string publicKey = publicKeyRing["requestPubKey"].get<std::string>();
+		REQUIRE(publicKey == "02dbac277ae44dc791320d571341e55177ebe6df6d2e55badb0cbbc31e6f179230");
 	}
 }
 

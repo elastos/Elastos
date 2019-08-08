@@ -101,29 +101,6 @@ namespace Elastos {
 			               "Path '" + path.string() + "' do not exist");
 		}
 
-		void ErrorChecker::CheckPubKeyJsonArray(const nlohmann::json &jsonArray, size_t checkCount,
-		                                        const std::string &msg) {
-
-			CheckJsonArray(jsonArray, checkCount, msg + " pubkey");
-
-			for (nlohmann::json::const_iterator it = jsonArray.begin(); it != jsonArray.end(); ++it) {
-				ErrorChecker::CheckParam(!(*it).is_string(), Error::PubKeyFormat, msg + " is not string");
-
-				std::string pubKey = (*it).get<std::string>();
-
-				// TODO fix here later
-				ErrorChecker::CheckCondition(pubKey.find("xpub") != -1, Error::PubKeyFormat,
-				                             msg + " public key is not support xpub");
-
-				ErrorChecker::CheckCondition(pubKey.length() != 33 * 2 && pubKey.length() != 65 * 2,
-				                             Error::PubKeyLength, "Public key length should be 33 or 65 bytes");
-				for (nlohmann::json::const_iterator it1 = it + 1; it1 != jsonArray.end(); ++it1) {
-					ErrorChecker::CheckParam(pubKey == (*it1).get<std::string>(),
-					                         Error::PubKeyFormat, msg + " contain the same");
-				}
-			}
-		}
-
 		void ErrorChecker::CheckPrivateKey(const std::string &key) {
 			// TODO fix here later
 			ErrorChecker::CheckCondition(key.find("xprv") != -1, Error::InvalidArgument,

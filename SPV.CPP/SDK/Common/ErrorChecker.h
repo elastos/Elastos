@@ -119,8 +119,6 @@ namespace Elastos {
 
 			static void CheckPathExists(const boost::filesystem::path &path);
 
-			static void CheckPubKeyJsonArray(const nlohmann::json &jsonArray, size_t checkCount, const std::string &msg);
-
 			static void CheckPrivateKey(const std::string &key);
 
 		};

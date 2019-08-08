@@ -680,11 +680,11 @@ namespace Elastos {
 			_walletManager->DatabaseFlush();
 		}
 
-		std::string SubWallet::GetPublicKey() const {
+		nlohmann::json SubWallet::GetOwnerPublicKeyRing() const {
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
-			std::string pubKey = _parent->GetPublicKey();
+			nlohmann::json pubKey = _parent->GetOwnerPublicKeyRing();
 
-			ArgInfo("r => {}", pubKey);
+			ArgInfo("r => {}", pubKey.dump());
 			return pubKey;
 		}
 

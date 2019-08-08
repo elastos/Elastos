@@ -134,11 +134,11 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 			TransactionPtr tx(new Transaction);
 			tx->FromJson(content);
 
-			std::vector<std::string> coSigners;
-			coSigners.push_back(multiSignPubKey1.getHex());
-			coSigners.push_back(multiSignPubKey2.getHex());
-			coSigners.push_back(multiSignPubKey3.getHex());
-			coSigners.push_back(multiSignPubKey4.getHex());
+			std::vector<PublicKeyRing> coSigners;
+			coSigners.push_back(PublicKeyRing(multiSignPubKey1.getHex()));
+			coSigners.push_back(PublicKeyRing(multiSignPubKey2.getHex()));
+			coSigners.push_back(PublicKeyRing(multiSignPubKey3.getHex()));
+			coSigners.push_back(PublicKeyRing(multiSignPubKey4.getHex()));
 			LocalStorePtr localstore(new LocalStore("./Data/multisign", coSigners, requiredSignCount));
 
 			AccountPtr multiSignAccount(new Account(localstore));
@@ -217,11 +217,11 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 			std::vector<Address> addresses4;
 			ms4->GetAllAddresses(addresses4, 0, 10, true);
 
-			std::vector<std::string> coSigners;
-			coSigners.push_back(multiSignPubKey1.getHex());
-			coSigners.push_back(multiSignPubKey2.getHex());
-			coSigners.push_back(multiSignPubKey3.getHex());
-			coSigners.push_back(multiSignPubKey4.getHex());
+			std::vector<PublicKeyRing> coSigners;
+			coSigners.push_back(PublicKeyRing(multiSignPubKey1.getHex()));
+			coSigners.push_back(PublicKeyRing(multiSignPubKey2.getHex()));
+			coSigners.push_back(PublicKeyRing(multiSignPubKey3.getHex()));
+			coSigners.push_back(PublicKeyRing(multiSignPubKey4.getHex()));
 			LocalStorePtr localstore(new LocalStore("./Data/multisign", coSigners, requiredSignCount));
 
 			AccountPtr multiSignAccount5(new Account(localstore));

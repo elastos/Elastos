@@ -32,7 +32,7 @@ namespace Elastos {
 
 			LocalStore(const std::string &path, const ElaNewWalletJson &json, const std::string &payPasswd);
 
-			LocalStore(const std::string &path, const std::vector<std::string> &pubkeys, int m);
+			LocalStore(const std::string &path, const std::vector<PublicKeyRing> &pubkeyRings, int m);
 
 			~LocalStore();
 

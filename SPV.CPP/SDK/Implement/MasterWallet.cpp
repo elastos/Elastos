@@ -143,7 +143,7 @@ namespace Elastos {
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
-								   const nlohmann::json &publicKeys, uint32_t m,
+								   const std::vector<PublicKeyRing> &publicKeyRings, uint32_t m,
 								   const std::string &rootPath,
 								   const std::string &dataPath,
 								   bool p2pEnable,
@@ -156,18 +156,17 @@ namespace Elastos {
 				_initFrom(from),
 				_earliestPeerTime(earliestPeerTime),
 				_idAgentImpl(nullptr) {
-			ErrorChecker::CheckPubKeyJsonArray(publicKeys, 1, "coSigner");
-			ErrorChecker::CheckParam(publicKeys.size() < m, Error::InvalidArgument, "Invalid M");
+			ErrorChecker::CheckParam(publicKeyRings.size() < m, Error::InvalidArgument, "Invalid M");
 
 			_config = ConfigPtr(new Config(_rootPath));
-			_localStore = LocalStorePtr(new LocalStore(_dataPath + "/" + _id, publicKeys, m));
+			_localStore = LocalStorePtr(new LocalStore(_dataPath + "/" + _id, publicKeyRings, m));
 			_account = AccountPtr(new Account(_localStore));
 
 			_localStore->Save();
 		}
 
 		MasterWallet::MasterWallet(const std::string &id, const std::string &xprv, const std::string &payPassword,
-								   const nlohmann::json &publicKeys, uint32_t m,
+								   const std::vector<PublicKeyRing> &publicKeyRings, uint32_t m,
 								   const std::string &rootPath, const std::string &dataPath,
 								   bool p2pEnable, time_t earliestPeerTime, MasterWalletInitFrom from) :
 				_id(id),
@@ -178,15 +177,13 @@ namespace Elastos {
 				_earliestPeerTime(earliestPeerTime),
 				_idAgentImpl(nullptr) {
 
-			ErrorChecker::CheckPubKeyJsonArray(publicKeys, 1, "coSigner");
-			ErrorChecker::CheckParam(publicKeys.size() + 1 < m, Error::InvalidArgument, "Invalid M");
+			ErrorChecker::CheckParam(publicKeyRings.size() + 1 < m, Error::InvalidArgument, "Invalid M");
 
 			_config = ConfigPtr(new Config(_rootPath));
 			_localStore = LocalStorePtr(new LocalStore(_dataPath + "/" + _id, xprv, true, payPassword));
-			for (nlohmann::json::const_iterator it = publicKeys.cbegin(); it != publicKeys.cend(); ++it) {
-				_localStore->AddPublicKeyRing(PublicKeyRing((*it).get<std::string>()));
+			for (size_t i = 0; i < publicKeyRings.size(); ++i) {
+				_localStore->AddPublicKeyRing(publicKeyRings[i]);
 			}
-
 			_localStore->SetM(m);
 			_localStore->SetN(_localStore->GetPublicKeyRing().size());
 			_account = AccountPtr(new Account(_localStore));
@@ -196,7 +193,7 @@ namespace Elastos {
 
 		MasterWallet::MasterWallet(const std::string &id, const std::string &mnemonic,
 								   const std::string &passphrase, const std::string &payPassword,
-								   const nlohmann::json &publicKeys, uint32_t m,
+								   const std::vector<PublicKeyRing> &publicKeyRings, uint32_t m,
 								   bool p2pEnable,
 								   const std::string &rootPath,
 								   const std::string &dataPath,
@@ -210,14 +207,13 @@ namespace Elastos {
 				_earliestPeerTime(earliestPeerTime),
 				_idAgentImpl(nullptr) {
 
-			ErrorChecker::CheckPubKeyJsonArray(publicKeys, 1, "coSigner");
-			ErrorChecker::CheckParam(publicKeys.size() + 1 < m, Error::InvalidArgument, "Invalid M");
+			ErrorChecker::CheckParam(publicKeyRings.size() + 1 < m, Error::InvalidArgument, "Invalid M");
 
 			_config = ConfigPtr(new Config(_rootPath));
 			_localStore = LocalStorePtr(new LocalStore(_dataPath + "/" + _id, mnemonic, passphrase, true, payPassword));
-			for (nlohmann::json::const_iterator it = publicKeys.cbegin(); it != publicKeys.cend(); ++it)
-				_localStore->AddPublicKeyRing(PublicKeyRing((*it).get<std::string>()));
-
+			for (size_t i = 0; i < publicKeyRings.size(); ++i) {
+				_localStore->AddPublicKeyRing(publicKeyRings[i]);
+			}
 			_localStore->SetM(m);
 			_localStore->SetN(_localStore->GetPublicKeyRing().size());
 			_account = AccountPtr(new Account(_localStore));
@@ -345,12 +341,35 @@ namespace Elastos {
 			ArgInfo("{} {} done", _id, GetFunName());
 		}
 
-		std::string MasterWallet::GetPublicKey() const {
+		nlohmann::json MasterWallet::GetOwnerPublicKeyRing() const {
 			ArgInfo("{} {}", _id, GetFunName());
 
-			std::string publicKey = _localStore->GetRequestPubKey();
-			ArgInfo("r => {}", publicKey);
-			return publicKey;
+			nlohmann::json j;
+			std::string ownerRequestPubKey = _localStore->GetRequestPubKey();
+
+			const std::vector<PublicKeyRing> &publicKeyRings = _localStore->GetPublicKeyRing();
+			for (size_t i = 0; i < publicKeyRings.size(); ++i) {
+				if (publicKeyRings[i].GetRequestPubKey() == ownerRequestPubKey) {
+					j =  publicKeyRings[i].ToJson();
+					break;
+				}
+			}
+
+			ArgInfo("r => {}", j.dump());
+			return j;
+		}
+
+		nlohmann::json MasterWallet::GetPublicKeyRing() const {
+			ArgInfo("{} {}", _id, GetFunName());
+
+			nlohmann::json j;
+			const std::vector<PublicKeyRing> &publicKeyRings = _localStore->GetPublicKeyRing();
+			for (size_t i = 0; i < publicKeyRings.size(); ++i) {
+				j.push_back(publicKeyRings[i].ToJson());
+			}
+
+			ArgInfo("r => {}", j.dump());
+			return j;
 		}
 
 		nlohmann::json MasterWallet::ExportReadonlyKeyStore() {

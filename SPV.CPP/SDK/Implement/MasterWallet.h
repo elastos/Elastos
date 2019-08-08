@@ -70,7 +70,9 @@ namespace Elastos {
 
 			virtual void DestroyWallet(ISubWallet *wallet);
 
-			virtual std::string GetPublicKey() const;
+			virtual nlohmann::json GetOwnerPublicKeyRing() const;
+
+			virtual nlohmann::json GetPublicKeyRing() const;
 
 			virtual std::string Sign(
 					const std::string &message,
@@ -163,7 +165,7 @@ namespace Elastos {
 
 			MasterWallet(
 					const std::string &id,
-					const nlohmann::json &publicKeys,
+					const std::vector<PublicKeyRing> &publicKeyRings,
 					uint32_t m,
 					const std::string &rootPath,
 					const std::string &dataPath,
@@ -175,7 +177,7 @@ namespace Elastos {
 					const std::string &id,
 					const std::string &privKey,
 					const std::string &payPassword,
-					const nlohmann::json &publicKeys,
+					const std::vector<PublicKeyRing> &publicKeyRings,
 					uint32_t m,
 					const std::string &rootPath,
 					const std::string &dataPath,
@@ -188,7 +190,7 @@ namespace Elastos {
 					const std::string &mnemonic,
 					const std::string &phrasePassword,
 					const std::string &payPassword,
-					const nlohmann::json &publicKeys,
+					const std::vector<PublicKeyRing> &publicKeyRings,
 					uint32_t m,
 					bool p2pEnable,
 					const std::string &rootPath,

@@ -149,23 +149,39 @@ namespace Elastos {
 		}
 
 		IMasterWallet *MasterWalletManager::CreateMultiSignMasterWallet(const std::string &masterWalletID,
-																		const nlohmann::json &publicKeys,
+																		const nlohmann::json &publicKeyRings,
 																		uint32_t m, time_t timestamp) {
 			ArgInfo("{}", GetFunName());
 			ArgInfo("masterWalletID: {}", masterWalletID);
-			ArgInfo("signers: {}", publicKeys.dump());
+			ArgInfo("signers: {}", publicKeyRings.dump());
 			ArgInfo("m: {}", m);
 			ArgInfo("timestamp: {}", timestamp);
 
 			ErrorChecker::CheckParamNotEmpty(masterWalletID, "Master wallet ID");
-			ErrorChecker::CheckPubKeyJsonArray(publicKeys, m, "Signers");
 
 			if (_masterWalletMap.find(masterWalletID) != _masterWalletMap.end()) {
 				ArgInfo("r => already exist");
 				return _masterWalletMap[masterWalletID];
 			}
 
-			MasterWallet *masterWallet = new MasterWallet(masterWalletID, publicKeys, m, _rootPath, _dataPath,
+			std::vector<PublicKeyRing> pubKeyRings;
+			for (nlohmann::json::const_iterator it = publicKeyRings.begin(); it != publicKeyRings.end(); ++it) {
+				std::string requestPubKey = (*it)["requestPubKey"].get<std::string>();
+				std::string xPubKey = (*it)["xPubKey"].get<std::string>();
+
+				try {
+					Key key(requestPubKey);
+					bytes_t bytes;
+					ErrorChecker::CheckCondition(!Base58::CheckDecode(xPubKey, bytes), Error::Code::PubKeyFormat,
+					                             "xPublickey format error");
+				} catch (const std::exception &e)  {
+					ErrorChecker::ThrowLogicException(Error::Code::PubKeyFormat, "pubKeyRing format error");
+				}
+
+				pubKeyRings.push_back(PublicKeyRing(requestPubKey, xPubKey));
+			}
+
+			MasterWallet *masterWallet = new MasterWallet(masterWalletID, pubKeyRings, m, _rootPath, _dataPath,
 														  _p2pEnable, timestamp, CreateMultiSign);
 			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletID] = masterWallet;
@@ -179,26 +195,42 @@ namespace Elastos {
 		IMasterWallet *MasterWalletManager::CreateMultiSignMasterWallet(const std::string &masterWalletID,
 																		const std::string &xprv,
 																		const std::string &payPassword,
-																		const nlohmann::json &publicKeys,
+																		const nlohmann::json &publicKeyRings,
 																		uint32_t m, time_t timestamp) {
 			ArgInfo("{}", GetFunName());
 			ArgInfo("masterWalletID: {}", masterWalletID);
 			ArgInfo("xprv: *");
 			ArgInfo("payPasswd: *");
-			ArgInfo("publicKeys: {}", publicKeys.dump());
+			ArgInfo("publicKeyRings: {}", publicKeyRings.dump());
 			ArgInfo("m: {}", m);
 			ArgInfo("timestamp: {}", timestamp);
 
 			ErrorChecker::CheckParamNotEmpty(masterWalletID, "Master wallet ID");
 			ErrorChecker::CheckPassword(payPassword, "Pay");
-			ErrorChecker::CheckPubKeyJsonArray(publicKeys, m - 1, "Signers");
 
 			if (_masterWalletMap.find(masterWalletID) != _masterWalletMap.end()) {
 				ArgInfo("r => already exist");
 				return _masterWalletMap[masterWalletID];
 			}
 
-			MasterWallet *masterWallet = new MasterWallet(masterWalletID, xprv, payPassword, publicKeys,
+			std::vector<PublicKeyRing> pubKeyRings;
+			for (nlohmann::json::const_iterator it = publicKeyRings.begin(); it != publicKeyRings.end(); ++it) {
+				std::string requestPubKey = (*it)["requestPubKey"].get<std::string>();
+				std::string xPubKey = (*it)["xPubKey"].get<std::string>();
+
+				try {
+					Key key(requestPubKey);
+					bytes_t bytes;
+					ErrorChecker::CheckCondition(!Base58::CheckDecode(xPubKey, bytes), Error::Code::PubKeyFormat,
+					                             "xPublickey format error");
+				} catch (const std::exception &e)  {
+					ErrorChecker::ThrowLogicException(Error::Code::PubKeyFormat, "pubKeyRing format error");
+				}
+
+				pubKeyRings.push_back(PublicKeyRing(requestPubKey, xPubKey));
+			}
+
+			MasterWallet *masterWallet = new MasterWallet(masterWalletID, xprv, payPassword, pubKeyRings,
 														  m, _rootPath, _dataPath, _p2pEnable, timestamp,
 														  CreateMultiSign);
 			checkRedundant(masterWallet);
@@ -214,7 +246,7 @@ namespace Elastos {
 																		const std::string &mnemonic,
 																		const std::string &phrasePassword,
 																		const std::string &payPassword,
-																		const nlohmann::json &publicKeys,
+																		const nlohmann::json &publicKeyRings,
 																		uint32_t m, time_t timestamp) {
 
 			ArgInfo("{}", GetFunName());
@@ -222,7 +254,7 @@ namespace Elastos {
 			ArgInfo("mnemonic: *");
 			ArgInfo("passphrase: *, empty: {}", phrasePassword.empty());
 			ArgInfo("payPasswd: *");
-			ArgInfo("signers: {}", publicKeys.dump());
+			ArgInfo("signers: {}", publicKeyRings.dump());
 			ArgInfo("m: {}", m);
 			ArgInfo("timestamp: {}", timestamp);
 
@@ -230,19 +262,35 @@ namespace Elastos {
 			ErrorChecker::CheckParamNotEmpty(mnemonic, "Mnemonic");
 			ErrorChecker::CheckPassword(payPassword, "Pay");
 			ErrorChecker::CheckPasswordWithNullLegal(phrasePassword, "Phrase");
-			ErrorChecker::CheckPubKeyJsonArray(publicKeys, m - 1, "Signers");
 
 			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end()) {
 				ArgInfo("r => already exist");
 				return _masterWalletMap[masterWalletId];
 			}
 
+			std::vector<PublicKeyRing> pubKeyRings;
+			for (nlohmann::json::const_iterator it = publicKeyRings.begin(); it != publicKeyRings.end(); ++it) {
+				std::string requestPubKey = (*it)["requestPubKey"].get<std::string>();
+				std::string xPubKey = (*it)["xPubKey"].get<std::string>();
+
+				try {
+					Key key(requestPubKey);
+					bytes_t bytes;
+					ErrorChecker::CheckCondition(!Base58::CheckDecode(xPubKey, bytes), Error::Code::PubKeyFormat,
+					                             "xPublickey format error");
+				} catch (const std::exception &e)  {
+					ErrorChecker::ThrowLogicException(Error::Code::PubKeyFormat, "pubKeyRing format error");
+				}
+
+				pubKeyRings.push_back(PublicKeyRing(requestPubKey, xPubKey));
+			}
+
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword,
-														  publicKeys, m, _p2pEnable, _rootPath, _dataPath, timestamp,
+			                                              publicKeyRings, m, _p2pEnable, _rootPath, _dataPath, timestamp,
 														  CreateMultiSign);
 			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletId] = masterWallet;
-
+			ArgInfo("privatekey:{}", masterWallet->ExportxPrivateKey(payPassword));
 			ArgInfo("r => create multi sign wallet");
 			masterWallet->GetBasicInfo();
 			return masterWallet;

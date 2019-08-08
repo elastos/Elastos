@@ -236,10 +236,11 @@ namespace Elastos {
 					const std::string &assetID) const = 0;
 
 			/**
-			 * Get root public key of current sub wallet.
-			 * @return root public key with hex string format.
+			 * Get public key ring of yourself publickey ring
+			 * {"xPubKey":***,"requestPubKey":***"}
+			 * @return PublicKeyRing of json format
 			 */
-			virtual std::string GetPublicKey() const = 0;
+			virtual nlohmann::json GetOwnerPublicKeyRing() const = 0;
 
 			/**
 			 * Start sync of P2P network

@@ -114,7 +114,7 @@ namespace Elastos {
 			virtual nlohmann::json GetAssetInfo(
 					const std::string &assetID) const;
 
-			virtual std::string GetPublicKey() const;
+			virtual nlohmann::json GetOwnerPublicKeyRing() const;
 
 			virtual void SyncStart();
 

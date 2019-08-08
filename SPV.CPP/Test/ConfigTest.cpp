@@ -91,10 +91,10 @@ TEST_CASE("Config test", "[Config]") {
 			REQUIRE(dnsSeed[2] == "node-testnet-007.elastos.org");
 
 			const std::vector<CheckPoint> &checkPoints = chainParams->Checkpoints();
-			REQUIRE(checkPoints[4].Hash() == uint256("0fd0ecfabdd3f3405b9808e4f67749232d23404fd1c90a4e2c755ead8651e759"));
-			REQUIRE(checkPoints[4].Height() == 20160);
-			REQUIRE(checkPoints[5].Hash() == uint256("d3ab4cdccac516981d90b4eed4956d23a5c6cda76b033386754a7493f3e2e54c"));
-			REQUIRE(checkPoints[5].Height() == 26208);
+			REQUIRE(checkPoints[4].Hash() == uint256("5a9f2456d12b5f335a4d1ecfad28cadd600b7a38957a72d0c087573f4aa8280e"));
+			REQUIRE(checkPoints[4].Height() == 30240);
+			REQUIRE(checkPoints[5].Hash() == uint256("ea313df1089b8b001c40565aa5e90d17da51885a29459b966d0019ac7dd90002"));
+			REQUIRE(checkPoints[5].Height() == 38304);
 		}
 
 		SECTION("RegTest") {
