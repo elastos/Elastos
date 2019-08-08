@@ -278,10 +278,6 @@ const en = {
   'suggestion.form.fields.links': 'Links',
   'suggestion.form.fields.linksSplit': 'Links (Split By Comma)',
 
-  // suggestion: {
-
-  // },
-
   // social share
   'socialShare.wechat.desc': 'Scan QR code below using WeChat, then share this web page with your WeChat friends.',
 
