@@ -190,7 +190,6 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
             recyclerView.setVisibility(View.VISIBLE);
             if (mAdapter == null) {
                 mAdapter = new MyAdapter(list, this);
-                recyclerView.setAdapter(mAdapter);
                 if (curentPage == 0) {
                     this.mAdapter = mAdapter;
                 } else if (curentPage == 1) {
@@ -200,8 +199,9 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
                 }
             } else {
                 mAdapter.setList(list);
-                ((MyAdapter) recyclerView.getAdapter()).notifyDataSetChanged();
             }
+            recyclerView.setAdapter(mAdapter);//一个rv  多个adpter  这里用来切换adapter  不能notifydatachange'
+
             setSelectAllStatus(mAdapter);
         }
     }
