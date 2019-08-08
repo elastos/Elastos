@@ -152,11 +152,11 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         initDate();
         // 绑定listView的监听器
         if (list != null && list.size() != 0) {
-            Collections.sort(list);
             tv_num.setText(getString(R.string.futuregenerations) + list.size() + ")");//全选
             setRecyclerView(mAdapter, list);
         }
-
+        //这里list已经排序
+        CacheUtil.setProducerList(list);
         recyclerView.setOnItemClickListener(this);
     }
 
@@ -181,7 +181,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     }
 
     public void setRecyclerView(MyAdapter mAdapter, List<VoteListBean.DataBean.ResultBean.ProducersBean> list) {
-
+        Collections.sort(list);
         if (list == null || list.size() == 0) {
             ll_blank.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
@@ -198,6 +198,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
                     this.unSelectAdapter = mAdapter;
                 }
             } else {
+
                 mAdapter.setList(list);
             }
             recyclerView.setAdapter(mAdapter);//一个rv  多个adpter  这里用来切换adapter  不能notifydatachange'
@@ -224,7 +225,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         unSelectlist.removeAll(newlist);//netList变成了未选择
         list.clear();
         list.addAll(newlist);
-        CacheUtil.setProducerList(list);
+
 
     }
 
@@ -329,7 +330,9 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         unSelectlist.addAll(deleteList);
         tv_yxz.setText(0 + getString(R.string.has_been_selected));
         InitAllAdapterDataMap();
-        setRecyclerView(curentAdapter, list);
+        Collections.sort(list);
+        curentAdapter.setList(list);
+        curentAdapter.notifyDataSetChanged();
         tv_num.setText(getString(R.string.futuregenerations) + list.size() + ")");
         tv_yxz.setText("0" + getString(R.string.has_been_selected));
         CacheUtil.setProducerList(list);
@@ -346,7 +349,9 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         list.addAll(addList);
         unSelectlist.removeAll(addList);
         InitAllAdapterDataMap();
-        setRecyclerView(curentAdapter, unSelectlist);
+        Collections.sort(list);
+        curentAdapter.setList(unSelectlist);
+        curentAdapter.notifyDataSetChanged();
         tv_yxz.setText("0" + getString(R.string.has_been_selected));
         tv_num.setText(getString(R.string.futuregenerations) + unSelectlist.size() + ")");
         CacheUtil.setProducerList(list);
