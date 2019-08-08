@@ -22,6 +22,10 @@
     "Tutorials": [
       "tutorial/index",
       "tutorial/did-auth"
+    ],
+    "Demos": [
+      "demo/lottery-game",
+      "demo/crowd-funding"
     ]
   },
   "advanced": {

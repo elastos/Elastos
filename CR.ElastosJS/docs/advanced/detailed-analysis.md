@@ -13,8 +13,13 @@ there should be no noticeable difference to developers.
 
 ### Elastos ETH Sidechain Performance
 
-The Elastos ETH Sidechain has the same 15 second blocks as Ethereum, but it has a much higher block has limit.
+The Elastos ETH Sidechain has the same 15 second blocks as Ethereum, but it has a much higher block gas limit.
 
 - Ethereum block has limit = ~8,000,000
 - Elastos ETH Sidechain = 8,700,000,000
+
+This higher block has limit allows us to fit approximately 6,000 transactions in a 15 second block giving us about a
+400 TPS performance metric.
+
+
 
