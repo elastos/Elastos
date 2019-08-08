@@ -1,6 +1,6 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
-import { Form, Input, Button, Row, Tabs } from 'antd'
+import { Form, Input, Button, Row, Tabs, Radio } from 'antd'
 import I18N from '@/I18N'
 import _ from 'lodash'
 import { CONTENT_TYPE } from '@/constant'
@@ -19,7 +19,7 @@ const FormItem = Form.Item
 const { TabPane } = Tabs
 
 const WORD_LIMIT = 200
-const TAB_KEYS = ['abstract', 'goal', 'motivation', 'plan', 'relevance', 'budget']
+const TAB_KEYS = ['type', 'abstract', 'goal', 'motivation', 'plan', 'relevance', 'budget']
 const editorTransform = value => {
   // string or object
   let result = value
@@ -85,6 +85,7 @@ class C extends BaseComponent {
 
       onSubmit({
         title: values.title,
+        type: values.type,
         abstract: formatValue(values.abstract),
         goal: formatValue(values.goal),
         motivation: formatValue(values.motivation),
@@ -135,6 +136,24 @@ class C extends BaseComponent {
     })(
       <Input size="large" type="text" />
     )
+  }
+
+  getTypeRadioGroup = (key) => {
+    const { getFieldDecorator } = this.props.form
+    const rules = [
+      {
+        required: true,
+        message: I18N.get('suggestion.form.error.required')
+      }
+    ]
+    return getFieldDecorator(key, {
+      rules,
+      initialValue: '1'
+    })(<Radio.Group>
+      <Radio value="1">{I18N.get('suggestion.form.type.newMotion')}</Radio>
+      <Radio value="2">{I18N.get('suggestion.form.type.motionAgainst')}</Radio>
+      <Radio value="3">{I18N.get('suggestion.form.type.anythingElse')}</Radio>
+    </Radio.Group>)
   }
 
   getTextarea(id) {
@@ -189,6 +208,12 @@ class C extends BaseComponent {
             activeKey={this.state.activeKey}
             onChange={this.onTabChange}
           >
+            <TabPane tab={this.renderTabText('type')} key="type">
+              <TabPaneInner>
+                <Note>{I18N.get('suggestion.form.note.type')}</Note>
+                <FormItem>{this.getTypeRadioGroup('type')}</FormItem>
+              </TabPaneInner>
+            </TabPane>
             <TabPane tab={this.renderTabText('abstract')} key="abstract">
               <TabPaneInner>
                 <Note>{I18N.get('suggestion.form.note.abstract')}</Note>

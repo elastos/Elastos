@@ -37,6 +37,10 @@ const SuggestionCore = {
   coverImg: String,
 
   // new fields
+  type: {
+    type: String,
+    enum: _.values(constant.SUGGESTION_TYPE)
+  },
   abstract: {
     type: String
   },

@@ -103,7 +103,13 @@ export default {
     fields: {
       title: 'Title',
     },
+    type: {
+      newMotion: 'New Motion',
+      motionAgainst: 'Motion Against',
+      anythingElse: 'Anything Else'
+    },
     note: {
+      type: 'Select a suggestion type.',
       abstract:
         'Provide a brief description of the proposal content (no more than 200 words).',
       goal:

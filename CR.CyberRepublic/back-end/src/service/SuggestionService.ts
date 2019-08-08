@@ -3,9 +3,10 @@ import * as _ from 'lodash'
 import { constant } from '../constant'
 import { validate, mail, user as userUtil, permissions } from '../utility'
 
-const BASE_FIELDS = ['title', 'abstract', 'goal', 'motivation', 'relevance', 'budget', 'plan'];
+const BASE_FIELDS = ['title', 'type', 'abstract', 'goal', 'motivation', 'relevance', 'budget', 'plan'];
 const emptyDoc = {
   title: '',
+  type: constant.SUGGESTION_TYPE.NEW_MOTION,
   abstract: '',
   goal: '',
   motivation: '',
