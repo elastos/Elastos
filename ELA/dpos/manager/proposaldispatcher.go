@@ -458,6 +458,7 @@ func (p *ProposalDispatcher) IsCRCBadNetWork() bool {
 }
 
 func (p *ProposalDispatcher) IsViewChangedTimeOut() bool {
+	return false
 	if p.crcBadNetwork {
 		if !p.IsCRCBadNetWork() {
 			p.crcBadNetwork = false
