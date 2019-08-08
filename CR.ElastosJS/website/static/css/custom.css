@@ -22,6 +22,9 @@ li {
 .docMainWrapper .toc .toggleNav ul > li.navListItemActive a {
   color: #0b687c;
   font-weight: 400; }
+  .docMainWrapper a:hover,
+  .docMainWrapper .toc .toggleNav ul > li.navListItemActive a:hover {
+    color: #92b6cc !important; }
 
 .docMainWrapper h3,
 .docMainWrapper strong {
