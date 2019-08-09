@@ -200,7 +200,7 @@ export default class extends StandardPage {
     const fundingNode = this.renderFundingNode()
     const timelineNode = this.renderTimelineNode()
     const linkNode = this.renderLinkNode()
-    
+
     return (
       <div>
         {metaNode}
@@ -290,41 +290,48 @@ export default class extends StandardPage {
     if (_.isEmpty(tags)) return null
     const res = _.map(tags, tag => {
       const { type, _id, desc } = tag
-      return (
-        <div key={_id}>
-          {type === SUGGESTION_TAG_TYPE.INFO_NEEDED && (
+      if (type === SUGGESTION_TAG_TYPE.INFO_NEEDED) {
+        return (
+          <div key={_id}>
             <LabelPointer
               type={type}
               data-desc={desc.replace(/(['"])/g, '\\$1')}
               onClick={() => this.setState({ needsInfoVisible: true })}
             >
               {I18N.get(`suggestion.tag.type.${type}`)}
-              {' '}
-&nbsp;
+              {'  '}
               <IconWrap>
                 <CommentIcon className="more-info-icon" />
               </IconWrap>
             </LabelPointer>
-          )}
-          <Modal
-            title={I18N.get(`suggestion.tag.type.${type}`)}
-            visible={this.state.needsInfoVisible}
-            onCancel={this.closeNeedsInfoModal.bind(this)}
-            footer={[
-              <Button key="close" onClick={this.closeNeedsInfoModal.bind(this)}>
-                Close
-              </Button>
-            ]}
-          >
-            <div style={{ fontWeight: 200, paddingBottom: '18px' }}>
-              {I18N.get('suggestion.modal.pleaseUpdate')}
-            </div>
-            {I18N.get('suggestion.modal.commentsFromCouncil')}
-            <br />
-            <CouncilComments>{desc}</CouncilComments>
-          </Modal>
-        </div>
-      )
+            <Modal
+              title={I18N.get(`suggestion.tag.type.${type}`)}
+              visible={this.state.needsInfoVisible}
+              onCancel={this.closeNeedsInfoModal.bind(this)}
+              footer={[
+                <Button key="close" onClick={this.closeNeedsInfoModal.bind(this)}>
+                  Close
+                </Button>
+              ]}
+            >
+              <div style={{ fontWeight: 200, paddingBottom: '18px' }}>
+                {I18N.get('suggestion.modal.pleaseUpdate')}
+              </div>
+              {I18N.get('suggestion.modal.commentsFromCouncil')}
+              <br />
+              <CouncilComments>{desc}</CouncilComments>
+            </Modal>
+          </div>
+        )
+      }
+
+      if (type === SUGGESTION_TAG_TYPE.UNDER_CONSIDERATION) {
+        return (
+          <LabelPointer type={type}>
+            {I18N.get(`suggestion.tag.type.${type}`)}
+          </LabelPointer>
+        )
+      }
     })
     return res
   }
