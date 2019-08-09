@@ -82,7 +82,7 @@ class UserProfile extends Component {
           <Row>
             <Col md={12}>
               <Card
-                title="Generate Wallet"
+                title="Get Transaction History"
                 content={
                   <form>
                     <Row>
@@ -117,7 +117,7 @@ class UserProfile extends Component {
           <Row>
             <Col md={12}>
               <Card
-                title="Generate Wallet"
+                title="Get Balance"
                 content={
                   <form>
                     <Row>
@@ -152,7 +152,7 @@ class UserProfile extends Component {
           <Row>
             <Col md={12}>
               <Card
-                title="Generate Wallet"
+                title="Transfer ELA"
                 content={
                   <form>
                     <Row>
