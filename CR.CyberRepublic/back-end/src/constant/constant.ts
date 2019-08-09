@@ -9,6 +9,12 @@ const create = (constant_list: string[]): any => {
   return map
 }
 
+export const SUGGESTION_TYPE = {
+  NEW_MOTION: '1',
+  MOTION_AGAINST: '2',
+  ANYTHING_ELSE: '3'
+}
+
 export const CVOTE_TYPE = {
   NEW_MOTION: '1',
   MOTION_AGAINST: '2',

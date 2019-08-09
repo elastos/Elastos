@@ -275,23 +275,6 @@ const zh = {
   'suggestion.form.fields.links': '相关链接',
   'suggestion.form.fields.linksSplit': '相关链接 (逗号分隔)',
 
-  suggestion: {
-    modal: {
-      addTagComment: '添加评论',
-      confirm: '确认',
-      cancel: '取消',
-      pleaseUpdate: '请使用所需信息更新建议，并通过评论通知委员/社区。',
-      commentsFromCouncil: '委员的评论：'
-    },
-    tag: {
-      show: '显示',
-      type: {
-        UNDER_CONSIDERATION: '被考虑中',
-        INFO_NEEDED: '需要更多信息'
-      }
-    }
-  },
-
   // social share
   'socialShare.wechat.desc': '打开微信“扫一扫”，打开网页后点击屏幕右上角分享按钮。',
 
@@ -1159,6 +1142,7 @@ const zh = {
   'from.CVoteForm.button.saveAndPublish': '保存 & 发布',
   'from.CVoteForm.button.saveChanges': '保存更改',
 
+  'from.CVoteForm.modal.publish': '您确定要发布这份提案?',
   'from.CVoteForm.modal.title': '您是否确定完成了这份提案？',
   'from.CVoteForm.modal.confirm': '确定',
   'from.CVoteForm.modal.cancel': '取消',

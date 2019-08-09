@@ -103,7 +103,13 @@ export default {
     fields: {
       title: 'Title',
     },
+    type: {
+      newMotion: 'New Motion',
+      motionAgainst: 'Motion Against',
+      anythingElse: 'Anything Else'
+    },
     note: {
+      type: 'Select a suggestion type.',
       abstract:
         'Provide a brief description of the proposal content (no more than 200 words).',
       goal:
@@ -143,7 +149,8 @@ export default {
     cancel: 'Cancel',
     pleaseUpdate:
       'Please update the Suggestion with the requested info and notify the council/community through a comment.',
-    commentsFromCouncil: 'Comments from Council/Admin:'
+    commentsFromCouncil: 'Comments from Council/Admin:',
+    consideration: 'Marked as under council consideration'
   },
   tag: {
     show: 'Show',

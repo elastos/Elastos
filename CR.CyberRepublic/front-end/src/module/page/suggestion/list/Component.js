@@ -575,6 +575,17 @@ const ItemLinkWrapper = styled.div`
 const ShortDesc = styled.div`
   margin-top: 8px;
   font-weight: 200;
+  .md-RichEditor-editor .public-DraftEditor-content {
+    min-height: 10px;
+  }
+  .md-RichEditor-root {
+    figure.md-block-image {
+      background: none;
+    }
+    figure.md-block-image figcaption .public-DraftStyleDefault-block {
+      text-align: left;
+    }
+  }
 `
 
 const HeaderDesc = styled.div`

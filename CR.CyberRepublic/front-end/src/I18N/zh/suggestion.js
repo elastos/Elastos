@@ -103,7 +103,13 @@ export default {
     fields: {
       title: '标题',
     },
+    type: {
+      newMotion: '新动议',
+      motionAgainst: '反对动议',
+      anythingElse: '其它事宜'
+    },
     note: {
+      type: '选择一个建议类型。',
       abstract: '一个关于提案内容的简短描述（不超过200字）。',
       goal: '描述通过执行提案期望达到的效果。目标应该是清晰且可度量的。',
       motivation:
@@ -140,7 +146,8 @@ export default {
     cancel: 'Cancel',
     pleaseUpdate:
       'Please update the Suggestion with the requested info and notify the council/community through a comment.',
-    commentsFromCouncil: 'Comments from Council/Admin:'
+    commentsFromCouncil: 'Comments from Council/Admin:',
+    consideration: '标记为委员会正在审议中'
   },
   tag: {
     show: 'Show',
