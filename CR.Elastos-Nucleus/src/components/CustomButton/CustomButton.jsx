@@ -9,8 +9,8 @@ class CustomButton extends Component {
   }
 
   routeChange() {
-    alert('ji')
-    let path = `/admin/APIService`;
+    alert("ji");
+    let path = `/admin/generatewallet`;
     this.props.history.push(path);
   }
 
@@ -25,7 +25,9 @@ class CustomButton extends Component {
       "btn-round": round
     });
 
-    return <Button className={btnClasses} {...rest} href='/admin/apiservice' />;
+    return (
+      <Button className={btnClasses} {...rest} href="/admin/generatewallet" />
+    );
   }
 }
 

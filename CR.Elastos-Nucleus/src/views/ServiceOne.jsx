@@ -47,7 +47,7 @@ class UserProfile extends Component {
           <Row>
             <Col md={12}>
               <Card
-                title="Generate Wallet"
+                title="Get Transactions"
                 content={
                   <form>
                     <Row>

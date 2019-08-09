@@ -4,7 +4,7 @@ import ServiceTwo from "views/ServiceTwo.jsx";
 import ServiceThree from "views/ServiceThree.jsx";
 import ServiceFour from "views/ServiceFour.jsx";
 import ServiceFive from "views/ServiceFive.jsx";
-import APIService from "views/APIService.jsx"
+import GenerateWallet from "views/GenerateWallet.jsx";
 
 const dashboardRoutes = [
   {
@@ -49,11 +49,11 @@ const dashboardRoutes = [
     component: ServiceFive,
     layout: "/admin"
   },
-   {
-    path: "/apiservice",
+  {
+    path: "/generatewallet",
     name: "apipage",
     icon: "pe-7s-tools",
-    component: APIService,
+    component: GenerateWallet,
     layout: "/admin"
   }
 ];
