@@ -176,8 +176,20 @@ namespace Elastos {
 			size_t size = 0;
 			ByteStream stream;
 
-			size += stream.WriteVarUint(_parameter.size());
-			size += _parameter.size();
+			if (_parameter.empty()) {
+				if (SignType(_code.back()) == SignTypeMultiSign) {
+					uint8_t m = (uint8_t)(_code[0] - OP_1 + 1);
+					uint64_t signLen = m * 64ul;
+					size += stream.WriteVarUint(signLen);
+					size += signLen;
+				} else if (SignType(_code.back()) == SignTypeStandard) {
+					size += 65;
+				}
+			} else {
+				size += stream.WriteVarUint(_parameter.size());
+				size += _parameter.size();
+			}
+
 			size += stream.WriteVarUint(_code.size());
 			size += _code.size();
 

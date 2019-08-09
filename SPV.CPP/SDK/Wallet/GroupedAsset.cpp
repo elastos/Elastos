@@ -159,6 +159,10 @@ namespace Elastos {
 
 			_parent->Lock();
 
+			std::sort(_utxos.begin(), _utxos.end(), [](const UTXOPtr &a, const UTXOPtr &b) {
+				return a->Output()->Amount() > b->Output()->Amount();
+			});
+
 			if (useVotedUTXO) {
 				for (UTXOArray::iterator u = _utxosVote.begin(); u != _utxosVote.end(); ++u) {
 					if (txSize >= TX_MAX_SIZE - 1000)
@@ -186,29 +190,6 @@ namespace Elastos {
 				}
 			}
 
-			for (UTXOArray::iterator u = _utxosCoinbase.begin(); u != _utxosCoinbase.end(); ++u) {
-				if (txSize >= TX_MAX_SIZE - 1000 || tx->GetInputs().size() >= 500)
-					break;
-
-				if (_parent->IsUTXOSpending(*u)) {
-					lastUTXOPending = true;
-					continue;
-				}
-
-				tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
-
-				bytes_t code;
-				std::string path;
-				_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
-				tx->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
-
-				totalInputAmount += (*u)->Output()->Amount();
-
-				txSize = tx->EstimateSize();
-				if (_asset->GetName() == "ELA")
-					feeAmount = CalculateFee(_parent->_feePerKb, txSize);
-			}
-
 			for (UTXOArray::iterator u = _utxos.begin(); u != _utxos.end(); ++u) {
 				if (txSize >= TX_MAX_SIZE - 1000 || tx->GetInputs().size() >= 500)
 					break;
@@ -222,6 +203,29 @@ namespace Elastos {
 					continue;
 
 				tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
+				bytes_t code;
+				std::string path;
+				_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
+				tx->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
+
+				totalInputAmount += (*u)->Output()->Amount();
+
+				txSize = tx->EstimateSize();
+				if (_asset->GetName() == "ELA")
+					feeAmount = CalculateFee(_parent->_feePerKb, txSize);
+			}
+
+			for (UTXOArray::iterator u = _utxosCoinbase.begin(); u != _utxosCoinbase.end(); ++u) {
+				if (txSize >= TX_MAX_SIZE - 1000 || tx->GetInputs().size() >= 500)
+					break;
+
+				if (_parent->IsUTXOSpending(*u)) {
+					lastUTXOPending = true;
+					continue;
+				}
+
+				tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
+
 				bytes_t code;
 				std::string path;
 				_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
@@ -282,7 +286,10 @@ namespace Elastos {
 
 			_parent->Lock();
 
-//			_utxos.SortBaseOnOutputAmount(totalOutputAmount, _parent->_feePerKb);
+			std::sort(_utxos.begin(), _utxos.end(), [](const UTXOPtr &a, const UTXOPtr &b) {
+				return a->Output()->Amount() > b->Output()->Amount();
+			});
+
 			if (_asset->GetName() == "ELA")
 				feeAmount = CalculateFee(_parent->_feePerKb, txn->EstimateSize());
 
@@ -309,7 +316,7 @@ namespace Elastos {
 
 			// normal utxo
 			for (UTXOArray::iterator u = _utxos.begin(); u != _utxos.end(); ++u) {
-				if (totalInputAmount >= totalOutputAmount + feeAmount)
+				if (totalInputAmount >= totalOutputAmount + feeAmount && txSize >= 2000)
 					break;
 
 				if (_parent->IsUTXOSpending(*u)) {
@@ -362,7 +369,7 @@ namespace Elastos {
 
 			// coin base utxo
 			for (UTXOArray::iterator u = _utxosCoinbase.begin(); u != _utxosCoinbase.end(); ++u) {
-				if (totalInputAmount >= totalOutputAmount + feeAmount)
+				if (totalInputAmount >= totalOutputAmount + feeAmount && txSize >= 2000)
 					break;
 
 				if (_parent->IsUTXOSpending(*u)) {
@@ -412,6 +419,10 @@ namespace Elastos {
 			_parent->Unlock();
 
 			if (txn) {
+				if (txn->GetInputs().size() > 500) {
+					ErrorChecker::ThrowLogicException(Error::TooMuchInputs, "Too much inputs, need to consolidate first");
+				}
+
 				if (totalInputAmount < totalOutputAmount + feeAmount) {
 					BigInt maxAvailable(0);
 					if (totalInputAmount >= feeAmount)
@@ -419,12 +430,12 @@ namespace Elastos {
 
 					if (lastUTXOPending) {
 						ErrorChecker::ThrowLogicException(Error::TxPending,
-														  "Last transaction is pending, max available amount: "
-														  + maxAvailable.getDec());
+														  "Last transaction is pending, max available amount: " +
+														  maxAvailable.getDec());
 					} else {
 						ErrorChecker::ThrowLogicException(Error::BalanceNotEnough,
-														  "Available balance is not enough, max available amount: "
-														  + maxAvailable.getDec());
+														  "Available balance is not enough, max available amount: " +
+														  maxAvailable.getDec());
 					}
 				} else if (totalInputAmount > totalOutputAmount + feeAmount) {
 					uint256 assetID = txn->GetOutputs()[0]->AssetID();

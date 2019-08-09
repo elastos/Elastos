@@ -76,6 +76,7 @@ namespace Elastos {
 				UnsupportOperation = 20057,
 				BigInt = 20058,
 				DepositNotFound = 20059,
+				TooMuchInputs = 20060,
 				Other = 29999,
 			} Code;
 		}
