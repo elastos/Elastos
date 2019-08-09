@@ -6,13 +6,21 @@
   },
   "Ela":{
       "Restful":"privnet-sidechain-did-node:20604",
-      "Jsonrpc":"privnet-sidechain-did-node:20606"
+      "Jsonrpc":"privnet-sidechain-did-node:20606",
+      "Enable":true
+  },
+  "Eth":{
+    "Endpoint":"https://eth-mainnet.alchemyapi.io/jsonrpc/-vPGIFwUyjlMRF9beTLXiGQUK6Nf3k8z",
+    "StartHeight":7000000,
+    "BatchSize":10,
+    "Retry":10,
+    "Enable":false
   },
   "Cmc":{
-    "ApiKey":["d72b4bf0-00f3-4bab-8dca-45df2b0fb14c","cfa976fc-7642-4946-a0b2-858619fb2802"],
+    "ApiKey":["521e2027-4f7e-4fa3-8a13-37ba061023f4"],
     "Inteval":"30m",
-    "NumOfCoin":200
+    "NumOfCoin":200,
+    "Enable":true
   },
-  "VisitKey":"729E2BB0AEEC048FF9DC7996D394889687BF76AFA832F07E011AA5A3BE272310",
-  "DposStartHeight":240000
+  "EnableCors":false
 }

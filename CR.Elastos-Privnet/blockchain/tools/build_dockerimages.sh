@@ -23,7 +23,8 @@ function build_binary_and_docker {
     BINARY="${4}"
     DOCKERIMAGE="${5}"
     GITHUB_PULL="${6}"
-    DOCKER_PUSH_TAGS="${7}"
+    DOCKER_PUSH_TAG_BRANCH="${7}"
+    DOCKER_PUSH_TAG_PRIVNET="${8}"
 
     cd $REPO
     if [ "${GITHUB_PULL}" == "yes" ]
@@ -39,10 +40,13 @@ function build_binary_and_docker {
     docker build -t "$DOCKERIMAGE:latest" -f $TMPDIR/$WORKDIR/Dockerfile $TMPDIR/$WORKDIR/
     if [ "${DOCKER_PUSH}" == "yes" ]
     then
-        if [ ! -z "${DOCKER_PUSH_TAGS}" ]
+        if [ ! -z "${DOCKER_PUSH_TAG_BRANCH}" ]
         then
-            docker tag "$DOCKERIMAGE:latest" "$DOCKERIMAGE:$BRANCH"
-            docker push "$DOCKERIMAGE:$BRANCH"
+            docker tag "$DOCKERIMAGE:latest" "$DOCKERIMAGE:$DOCKER_PUSH_TAG_BRANCH"
+            docker push "$DOCKERIMAGE:$DOCKER_PUSH_TAG_BRANCH"
+        fi
+        if [ "${DOCKER_PUSH_TAG_PRIVNET}" == "yes" ]
+        then
             docker tag "$DOCKERIMAGE:latest" "$DOCKERIMAGE:$PRIVNET_TAG"
             docker push "$DOCKERIMAGE:$PRIVNET_TAG"
         fi
@@ -55,18 +59,21 @@ function build_docker {
     WORKDIR="${1}"
     BINARY="${2}"
     DOCKERIMAGE="${3}"
-    DOCKER_PUSH_BRANCH_TAG="${4}"
-    DOCKER_PUSH_TAGS="${5}"
+    DOCKER_PUSH_TAG_BRANCH="${4}"
+    DOCKER_PUSH_TAG_PRIVNET="${5}"
 
     mkdir -p $TMPDIR/$WORKDIR/$BINARY
     cp -r $CURRENT_DIR/$WORKDIR/* $TMPDIR/$WORKDIR/
     docker build -t "$DOCKERIMAGE:latest" -f $TMPDIR/$WORKDIR/Dockerfile $TMPDIR/$WORKDIR/
     if [ "${DOCKER_PUSH}" == "yes" ]
     then
-        if [ ! -z "${DOCKER_PUSH_TAGS}" ]
+        if [ ! -z "${DOCKER_PUSH_TAG_BRANCH}" ]
         then
-            docker tag "$DOCKERIMAGE:latest" "$DOCKERIMAGE:$DOCKER_PUSH_BRANCH_TAG"
-            docker push "$DOCKERIMAGE:$DOCKER_PUSH_BRANCH_TAG"
+            docker tag "$DOCKERIMAGE:latest" "$DOCKERIMAGE:$DOCKER_PUSH_TAG_BRANCH"
+            docker push "$DOCKERIMAGE:$DOCKER_PUSH_TAG_BRANCH"
+        fi
+        if [ "${DOCKER_PUSH_TAG_PRIVNET}" == "yes" ]
+        then
             docker tag "$DOCKERIMAGE:latest" "$DOCKERIMAGE:$PRIVNET_TAG"
             docker push "$DOCKERIMAGE:$PRIVNET_TAG"
         fi
@@ -76,30 +83,30 @@ function build_docker {
 }
 
 build_binary_and_docker "v0.3.6" "Elastos.ELA" "ela-mainchain" "ela" \
-    "cyberrepublic/elastos-mainchain-node" "yes" "yes"
+    "cyberrepublic/elastos-mainchain-node" "yes" "v0.3.6" "yes"
 
 build_binary_and_docker "v0.1.1" "Elastos.ELA.Arbiter" "ela-arbitrator" "arbiter" \
-    "cyberrepublic/elastos-arbitrator-node" "yes" "yes"
+    "cyberrepublic/elastos-arbitrator-node" "yes" "v0.1.1" "yes"
 
 build_binary_and_docker "v0.1.2" "Elastos.ELA.SideChain.ID" "ela-sidechain/did" "did" \
-    "cyberrepublic/elastos-sidechain-did-node" "yes" "yes"
+    "cyberrepublic/elastos-sidechain-did-node" "yes" "v0.1.2" "yes"
 
 build_binary_and_docker "v0.1.2" "Elastos.ELA.SideChain.Token" "ela-sidechain/token" "token" \
-    "cyberrepublic/elastos-sidechain-token-node" "yes" "yes"
+    "cyberrepublic/elastos-sidechain-token-node" "yes" "v0.1.2" "yes"
 
 build_binary_and_docker "dev" "Elastos.ELA.SideChain.ETH" "ela-sidechain/eth" "eth" \
-    "cyberrepublic/elastos-sidechain-eth-node" "no" "no"
+    "cyberrepublic/elastos-sidechain-eth-node" "no" "" "yes"
 
 build_docker "ela-sidechain/eth/oracle" "oracle" \
-    "cyberrepublic/elastos-sidechain-eth-oracle" "dev" "yes"
+    "cyberrepublic/elastos-sidechain-eth-oracle" "" "yes"
 
 build_binary_and_docker "master" "Elastos.ORG.Wallet.Service" "restful-services/wallet-service" "service" \
-    "cyberrepublic/elastos-wallet-service" "yes" "no"
+    "cyberrepublic/elastos-wallet-service" "yes" "" "yes"
 
 build_binary_and_docker "master" "Elastos.ORG.SideChain.Service" "restful-services/sidechain-service" "service" \
-    "cyberrepublic/elastos-sidechain-service" "yes" "no"
+    "cyberrepublic/elastos-sidechain-service" "yes" "" "yes"
 
 build_binary_and_docker "master" "Elastos.ORG.API.Misc" "restful-services/api-misc" "misc" \
-    "cyberrepublic/elastos-api-misc-service" "yes" "no"
+    "cyberrepublic/elastos-api-misc-service" "yes" "" "yes"
 
 cd $CURRENT_DIR

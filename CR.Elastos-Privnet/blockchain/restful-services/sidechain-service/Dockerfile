@@ -30,7 +30,7 @@ COPY --from=builder /restful-services/sidechain-service/did.api/target/did.api-0
 RUN apk update \
     && apk add --no-cache curl ca-certificates \
     && addgroup -g 1000 -S elauser \
-    && adduser -h $SRC_DIR -u 1000 -S elauser -G elauser -s \
+    && adduser -h $SRC_DIR -u 1000 -S elauser -G elauser \
     && chown -R elauser:elauser $SRC_DIR
 
 USER elauser
