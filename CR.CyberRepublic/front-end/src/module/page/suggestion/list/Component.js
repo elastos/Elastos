@@ -575,6 +575,9 @@ const ItemLinkWrapper = styled.div`
 const ShortDesc = styled.div`
   margin-top: 8px;
   font-weight: 200;
+  .md-RichEditor-editor .public-DraftEditor-content {
+    min-height: 10px;
+  }
 `
 
 const HeaderDesc = styled.div`
