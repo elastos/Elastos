@@ -578,6 +578,14 @@ const ShortDesc = styled.div`
   .md-RichEditor-editor .public-DraftEditor-content {
     min-height: 10px;
   }
+  .md-RichEditor-root {
+    figure.md-block-image {
+      background: none;
+    }
+    figure.md-block-image figcaption .public-DraftStyleDefault-block {
+      text-align: left;
+    }
+  }
 `
 
 const HeaderDesc = styled.div`

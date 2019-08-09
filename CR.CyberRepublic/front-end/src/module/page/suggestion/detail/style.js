@@ -168,3 +168,14 @@ export const StyledAnchor = styled(Anchor)`
     }
   }
 `
+
+export const StyledRichContent = styled.div`
+  .md-RichEditor-root {
+    figure.md-block-image {
+      background: none;
+    }
+    figure.md-block-image figcaption .public-DraftStyleDefault-block {
+      text-align: left;
+    }
+  }
+`

@@ -39,7 +39,8 @@ import {
   Item,
   ItemTitle,
   ItemText,
-  StyledAnchor
+  StyledAnchor,
+  StyledRichContent
 } from './style'
 
 import './style.scss'
@@ -186,6 +187,7 @@ export default class extends StandardPage {
 
   renderDetail() {
     const { detail } = this.props
+    const sections = ['abstract', 'goal', 'motivation', 'plan', 'relevance', 'budget']
 
     const metaNode = this.renderMetaNode()
     const titleNode = this.renderTitleNode()
@@ -198,6 +200,7 @@ export default class extends StandardPage {
     const fundingNode = this.renderFundingNode()
     const timelineNode = this.renderTimelineNode()
     const linkNode = this.renderLinkNode()
+    
     return (
       <div>
         {metaNode}
@@ -210,19 +213,20 @@ export default class extends StandardPage {
         {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.proposer'), detail.createdBy.username)}
         {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.status'), detail.status)}
         {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.created'), moment(detail.createdAt).format('MMM D, YYYY'))}
-
-        <DescLabel id="abstract">{I18N.get('suggestion.fields.abstract')}</DescLabel>
-        <DraftEditor value={detail.abstract} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
-        <DescLabel id="goal">{I18N.get('suggestion.fields.goal')}</DescLabel>
-        <DraftEditor value={detail.goal} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
-        <DescLabel id="motivation">{I18N.get('suggestion.fields.motivation')}</DescLabel>
-        <DraftEditor value={detail.motivation} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
-        <DescLabel id="plan">{I18N.get('suggestion.fields.plan')}</DescLabel>
-        <DraftEditor value={detail.plan} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
-        <DescLabel id="relevance">{I18N.get('suggestion.fields.relevance')}</DescLabel>
-        <DraftEditor value={detail.relevance} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
-        <DescLabel id="budget">{I18N.get('suggestion.fields.budget')}</DescLabel>
-        <DraftEditor value={detail.budget} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
+        {
+          sections.map(section => (
+            <div>
+              <DescLabel id="budget">{I18N.get(`suggestion.fields.${section}`)}</DescLabel>
+              <StyledRichContent>
+                <DraftEditor
+                  value={detail[section]}
+                  editorEnabled={false}
+                  contentType={CONTENT_TYPE.MARKDOWN}
+                />
+              </StyledRichContent>
+            </div>
+          ))
+        }
         {/* {coverNode} */}
         {/* {shortDescNode} */}
         {/* <Divider /> */}
