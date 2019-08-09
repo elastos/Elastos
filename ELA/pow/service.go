@@ -28,6 +28,7 @@ import (
 const (
 	maxNonce       = ^uint32(0) // 2^32 - 1
 	updateInterval = 30 * time.Second
+	maxTxPerBlock  = 100
 )
 
 type Config struct {
@@ -261,7 +262,7 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 			continue
 		}
 		totalTxsSize = size
-		if txCount >= pact.MaxTxPerBlock {
+		if txCount >= maxTxPerBlock {
 			log.Warn("txCount reached max MaxTxPerBlock")
 			break
 		}
