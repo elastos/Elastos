@@ -356,11 +356,13 @@ void carrier_config_update(ElaOptions *options, int argc, char *argv[])
         { NULL,             0,                  NULL, 0 }
     };
 
-    optind = 0;
+    // Reset optind to 1 to rescan the same command line.
+    optind = 1;
     opterr = 0;
     optopt = 0;
 
-    while ((opt = getopt_long(argc, argv, "c:h?", cmd_options, &idx)) != -1) {
+    // Use a plus sign('+') to avoid permuting the contents of argv while scanning it.
+    while ((opt = getopt_long(argc, argv, "+c:h?", cmd_options, &idx)) != -1) {
         switch (opt) {
         case 1:
             if (isdigit(*optarg))
@@ -394,7 +396,8 @@ void carrier_config_update(ElaOptions *options, int argc, char *argv[])
         }
     }
 
-    optind = 0;
+    // Reset optind to 1 to rescan the same command line.
+    optind = 1;
     opterr = 0;
     optopt = 0;
 }
