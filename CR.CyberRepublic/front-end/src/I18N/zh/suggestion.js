@@ -146,7 +146,8 @@ export default {
     cancel: 'Cancel',
     pleaseUpdate:
       'Please update the Suggestion with the requested info and notify the council/community through a comment.',
-    commentsFromCouncil: 'Comments from Council/Admin:'
+    commentsFromCouncil: 'Comments from Council/Admin:',
+    consideration: '标记为委员会正在审议中'
   },
   tag: {
     show: 'Show',

@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import _ from 'lodash'
-import { Row, Col, Spin, Modal, Input, Button, Anchor } from 'antd'
+import { Row, Col, Spin, Modal, Input, Button, Anchor, Popconfirm } from 'antd'
 import { Link } from 'react-router-dom'
 import MediaQuery from 'react-responsive'
 import moment from 'moment/moment'
@@ -496,13 +496,19 @@ export default class extends StandardPage {
     }
     const considerBtn = (isCouncil || isAdmin) && (
       <Col xs={24} sm={8}>
+        <Popconfirm
+          title={I18N.get('suggestion.modal.consideration')}
+          onConfirm={() => this.consider()}
+          okText={I18N.get('.yes')}
+          cancelText={I18N.get('.no')}
+        >
         <StyledButton
           type="ebp"
           className="cr-btn cr-btn-default"
-          onClick={this.consider}
         >
           {I18N.get('suggestion.btnText.markConsider')}
         </StyledButton>
+        </Popconfirm>
       </Col>
     )
     const needMoreInfoBtn = (isCouncil || isAdmin) && (

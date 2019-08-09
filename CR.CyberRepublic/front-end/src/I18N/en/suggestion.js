@@ -149,7 +149,8 @@ export default {
     cancel: 'Cancel',
     pleaseUpdate:
       'Please update the Suggestion with the requested info and notify the council/community through a comment.',
-    commentsFromCouncil: 'Comments from Council/Admin:'
+    commentsFromCouncil: 'Comments from Council/Admin:',
+    consideration: 'Marked as under council consideration'
   },
   tag: {
     show: 'Show',
