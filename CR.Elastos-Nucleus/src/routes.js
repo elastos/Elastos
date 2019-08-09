@@ -4,6 +4,7 @@ import ServiceTwo from "views/ServiceTwo.jsx";
 import ServiceThree from "views/ServiceThree.jsx";
 import ServiceFour from "views/ServiceFour.jsx";
 import ServiceFive from "views/ServiceFive.jsx";
+import APIService from "views/APIService.jsx"
 
 const dashboardRoutes = [
   {
@@ -46,6 +47,13 @@ const dashboardRoutes = [
     name: "Generate API Key",
     icon: "pe-7s-tools",
     component: ServiceFive,
+    layout: "/admin"
+  },
+   {
+    path: "/apiservice",
+    name: "apipage",
+    icon: "pe-7s-tools",
+    component: APIService,
     layout: "/admin"
   }
 ];

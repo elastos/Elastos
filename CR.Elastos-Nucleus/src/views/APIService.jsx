@@ -4,7 +4,7 @@ import { Grid, Row, Col, FormGroup } from "react-bootstrap";
 import { Card } from "components/Card/Card.jsx";
 import Button from "components/CustomButton/CustomButton.jsx";
 
-class UserProfile extends Component {
+class APIService extends Component {
   render() {
     return (
       <div className="content">
@@ -50,4 +50,4 @@ class UserProfile extends Component {
   }
 }
 
-export default UserProfile;
+export default APIService;

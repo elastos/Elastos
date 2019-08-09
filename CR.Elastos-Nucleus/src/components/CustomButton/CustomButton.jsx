@@ -4,6 +4,16 @@ import cx from "classnames";
 import PropTypes from "prop-types";
 
 class CustomButton extends Component {
+  constuctor() {
+    this.routeChange = this.routeChange.bind(this);
+  }
+
+  routeChange() {
+    alert('ji')
+    let path = `/admin/APIService`;
+    this.props.history.push(path);
+  }
+
   render() {
     const { fill, simple, pullRight, round, block, ...rest } = this.props;
 
@@ -15,7 +25,7 @@ class CustomButton extends Component {
       "btn-round": round
     });
 
-    return <Button className={btnClasses} {...rest} />;
+    return <Button className={btnClasses} {...rest} href='/admin/apiservice' />;
   }
 }
 
