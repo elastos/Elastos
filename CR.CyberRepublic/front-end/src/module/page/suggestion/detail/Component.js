@@ -215,8 +215,8 @@ export default class extends StandardPage {
         {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.created'), moment(detail.createdAt).format('MMM D, YYYY'))}
         {
           sections.map(section => (
-            <div>
-              <DescLabel id="budget">{I18N.get(`suggestion.fields.${section}`)}</DescLabel>
+            <div key={section}>
+              <DescLabel id={section}>{I18N.get(`suggestion.fields.${section}`)}</DescLabel>
               <StyledRichContent>
                 <DraftEditor
                   value={detail[section]}
