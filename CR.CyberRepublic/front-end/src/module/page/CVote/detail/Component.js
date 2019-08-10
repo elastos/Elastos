@@ -272,12 +272,16 @@ class C extends StandardPage {
   }
 
   renderAnchor() {
-    const { data } = this.props
+    const { data, currentUserId } = this.props
     const { trackingStatus, summaryStatus } = this.props
-    const isShowFollowingUp = _.includes(
+    let isShowFollowingUp = _.includes(
       [CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL],
       data.status
     )
+    if (data.status === CVOTE_STATUS.PROPOSED && currentUserId === _.get(data, 'proposer._id')) {
+      isShowFollowingUp = true;
+    }
+
     const trackingTitle = trackingStatus ? (
       <span>
         {I18N.get('proposal.fields.tracking')}{' '}
@@ -542,22 +546,29 @@ class C extends StandardPage {
   }
 
   renderTracking() {
-    const { data } = this.props
-    const isShowFollowingUp = _.includes(
+    const { data, currentUserId } = this.props
+    let isShowFollowingUp = _.includes(
       [CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL],
       data.status
     )
+    if (data.status === CVOTE_STATUS.PROPOSED && currentUserId === _.get(data, 'proposer._id')) {
+      isShowFollowingUp = true;
+    }
     if (!isShowFollowingUp) return null
 
     return <Tracking proposal={data} />
   }
 
   renderSummary() {
-    const { data } = this.props
-    const isShowFollowingUp = _.includes(
+    const { data, currentUserId } = this.props
+    let isShowFollowingUp = _.includes(
       [CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL],
       data.status
     )
+
+    if (data.status === CVOTE_STATUS.PROPOSED && currentUserId === _.get(data, 'proposer._id')) {
+      isShowFollowingUp = true;
+    }
     if (!isShowFollowingUp) return null
 
     return <Summary proposal={data} />

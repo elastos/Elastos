@@ -9,9 +9,9 @@ export default {
     title: 'Title',
     preamble: 'Preamble',
     preambleSub: {
-      proposal: 'CRC Proposal',
+      suggestion: 'Suggestion',
       title: 'Title',
-      proposer: 'Proposer',
+      creator: 'Creator',
       status: 'Status',
       created: 'Created'
     },
@@ -79,14 +79,18 @@ export default {
       [CVOTE_SUMMARY_STATUS.REVIEWING]: 'BEING REVIEWED',
       [CVOTE_SUMMARY_STATUS.PUBLISHED]: 'APPROVED',
       [CVOTE_SUMMARY_STATUS.REJECT]: 'REJECTED'
-    }
+    },
+    posted: 'Posted',
+    underConsideration: 'Under Council Consideration',
+    moreInfoRequired: 'More Info Required',
+    referred: 'Referred in Proposal'
   },
   form: {
     button: {
       continue: 'Continue',
       cancel: 'Cancel',
       saveDraft: 'Save as Draft',
-      save: 'Save'
+      save: 'Save & Post'
     },
     tracking: {
       btn: {

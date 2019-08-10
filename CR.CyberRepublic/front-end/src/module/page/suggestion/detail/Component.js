@@ -22,6 +22,7 @@ import MetaContainer from '../common/meta/Container'
 import Meta from '@/module/common/Meta'
 import SocialShareButtons from '@/module/common/SocialShareButtons'
 import DraftEditor from '@/module/common/DraftEditor'
+import TagsContainer from '../common/tags/Container'
 import {
   Container,
   Title,
@@ -93,12 +94,10 @@ export default class extends StandardPage {
           href="#relevance"
           title={I18N.get('suggestion.fields.relevance')}
         />
-        <div style={{ marginTop: 48 }}>
-          <Anchor.Link
-            href="#budget"
-            title={I18N.get('suggestion.fields.budget')}
-          />
-        </div>
+        <Anchor.Link
+          href="#budget"
+          title={I18N.get('suggestion.fields.budget')}
+        />
       </StyledAnchor>
     )
   }
@@ -200,7 +199,16 @@ export default class extends StandardPage {
     const fundingNode = this.renderFundingNode()
     const timelineNode = this.renderTimelineNode()
     const linkNode = this.renderLinkNode()
-    
+
+    let status = I18N.get('suggestion.status.posted')
+    if (_.get(detail, 'reference.0.vid')) {
+      status = <TagsContainer data={detail} />
+    } else if (_.some(detail.tags, tag => tag.type === 'INFO_NEEDED')) {
+      status = I18N.get('suggestion.status.moreInfoRequired')
+    } else if (_.some(detail.tags, tag => tag.type === 'UNDER_CONSIDERATION')) {
+      status = I18N.get('Under Council Consideration')
+    }
+
     return (
       <div>
         {metaNode}
@@ -208,11 +216,11 @@ export default class extends StandardPage {
         {tagsNode}
 
         <DescLabel id="preamble">{I18N.get('suggestion.fields.preamble')}</DescLabel>
-        {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.proposal'), `#${detail.displayId}`)}
-        {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.title'), detail.title)}
-        {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.proposer'), detail.createdBy.username)}
-        {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.status'), detail.status)}
-        {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.created'), moment(detail.createdAt).format('MMM D, YYYY'))}
+        {this.renderPreambleItem(I18N.get('suggestion.fields.preambleSub.suggestion'), `#${detail.displayId}`)}
+        {this.renderPreambleItem(I18N.get('suggestion.fields.preambleSub.title'), detail.title)}
+        {this.renderPreambleItem(I18N.get('suggestion.fields.preambleSub.creator'), detail.createdBy.username)}
+        {this.renderPreambleItem(I18N.get('suggestion.fields.preambleSub.status'), status)}
+        {this.renderPreambleItem(I18N.get('suggestion.fields.preambleSub.created'), moment(detail.createdAt).format('MMM D, YYYY'))}
         {
           sections.map(section => (
             <div key={section}>
@@ -290,41 +298,48 @@ export default class extends StandardPage {
     if (_.isEmpty(tags)) return null
     const res = _.map(tags, tag => {
       const { type, _id, desc } = tag
-      return (
-        <div key={_id}>
-          {type === SUGGESTION_TAG_TYPE.INFO_NEEDED && (
+      if (type === SUGGESTION_TAG_TYPE.INFO_NEEDED) {
+        return (
+          <div key={_id}>
             <LabelPointer
               type={type}
               data-desc={desc.replace(/(['"])/g, '\\$1')}
               onClick={() => this.setState({ needsInfoVisible: true })}
             >
               {I18N.get(`suggestion.tag.type.${type}`)}
-              {' '}
-&nbsp;
+              {'  '}
               <IconWrap>
                 <CommentIcon className="more-info-icon" />
               </IconWrap>
             </LabelPointer>
-          )}
-          <Modal
-            title={I18N.get(`suggestion.tag.type.${type}`)}
-            visible={this.state.needsInfoVisible}
-            onCancel={this.closeNeedsInfoModal.bind(this)}
-            footer={[
-              <Button key="close" onClick={this.closeNeedsInfoModal.bind(this)}>
-                Close
-              </Button>
-            ]}
-          >
-            <div style={{ fontWeight: 200, paddingBottom: '18px' }}>
-              {I18N.get('suggestion.modal.pleaseUpdate')}
-            </div>
-            {I18N.get('suggestion.modal.commentsFromCouncil')}
-            <br />
-            <CouncilComments>{desc}</CouncilComments>
-          </Modal>
-        </div>
-      )
+            <Modal
+              title={I18N.get(`suggestion.tag.type.${type}`)}
+              visible={this.state.needsInfoVisible}
+              onCancel={this.closeNeedsInfoModal.bind(this)}
+              footer={[
+                <Button key="close" onClick={this.closeNeedsInfoModal.bind(this)}>
+                  Close
+                </Button>
+              ]}
+            >
+              <div style={{ fontWeight: 200, paddingBottom: '18px' }}>
+                {I18N.get('suggestion.modal.pleaseUpdate')}
+              </div>
+              {I18N.get('suggestion.modal.commentsFromCouncil')}
+              <br />
+              <CouncilComments>{desc}</CouncilComments>
+            </Modal>
+          </div>
+        )
+      }
+
+      if (type === SUGGESTION_TAG_TYPE.UNDER_CONSIDERATION) {
+        return (
+          <LabelPointer type={type}>
+            {I18N.get(`suggestion.tag.type.${type}`)}
+          </LabelPointer>
+        )
+      }
     })
     return res
   }

@@ -165,7 +165,7 @@ class C extends BaseComponent {
       transform: editorTransform,
       message: I18N.get('suggestion.form.error.required')
     }];
-    if (id !== 'abstract') {
+    if (id === 'abstract') {
       rules.push({
         max: 200,
         transform: editorTransform,
@@ -271,7 +271,7 @@ class C extends BaseComponent {
             >
               {I18N.get('suggestion.form.button.cancel')}
             </Button>
-            <Button
+            {/* <Button
               onClick={this.handleSaveDraft}
               loading={this.state.loading}
               className="cr-btn cr-btn-primary"
@@ -279,7 +279,7 @@ class C extends BaseComponent {
               style={{ marginRight: 10 }}
             >
               {I18N.get('suggestion.form.button.saveDraft')}
-            </Button>
+            </Button> */}
             <Button
               loading={this.state.loading}
               className="cr-btn cr-btn-primary"
