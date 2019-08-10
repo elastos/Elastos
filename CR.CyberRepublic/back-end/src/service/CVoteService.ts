@@ -51,7 +51,7 @@ export default class extends Base {
   public async proposeSuggestion(param: any): Promise<Document> {
     const db_suggestion = this.getDBModel('Suggestion')
     const db_cvote = this.getDBModel('CVote')
-    const { suggestionId } = param
+    const { suggestionId, proposedBy } = param
 
     const suggestion = suggestionId && (await db_suggestion.findById(suggestionId))
     if (!suggestion) {
@@ -65,7 +65,7 @@ export default class extends Base {
       status: constant.CVOTE_STATUS.PROPOSED,
       published: false,
       contentType: constant.CONTENT_TYPE.MARKDOWN,
-      proposedBy: this.currentUser._id,
+      proposedBy,
       proposer: suggestion.createdBy,
       createdBy: this.currentUser._id,
       reference: suggestionId

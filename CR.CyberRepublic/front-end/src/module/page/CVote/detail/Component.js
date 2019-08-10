@@ -546,7 +546,7 @@ class C extends StandardPage {
   }
 
   renderTracking() {
-    const { data } = this.props
+    const { data, currentUserId } = this.props
     let isShowFollowingUp = _.includes(
       [CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL],
       data.status
@@ -560,7 +560,7 @@ class C extends StandardPage {
   }
 
   renderSummary() {
-    const { data } = this.props
+    const { data, currentUserId } = this.props
     let isShowFollowingUp = _.includes(
       [CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL],
       data.status
