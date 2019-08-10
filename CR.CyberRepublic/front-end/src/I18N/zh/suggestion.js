@@ -9,9 +9,9 @@ export default {
     title: '标题',
     preamble: '前导',
     preambleSub: {
-      proposal: 'CRC提案号',
+      suggestion: '建议号',
       title: '标题',
-      proposer: '提案人',
+      creator: '创建人',
       status: '状态',
       created: '创建日期'
     },
@@ -79,7 +79,11 @@ export default {
       [CVOTE_SUMMARY_STATUS.REVIEWING]: 'BEING REVIEWED',
       [CVOTE_SUMMARY_STATUS.PUBLISHED]: 'APPROVED',
       [CVOTE_SUMMARY_STATUS.REJECT]: 'REJECTED'
-    }
+    },
+    posted: '发布',
+    underConsideration: '正在审议中',
+    moreInfoRequired: '需要更多信息',
+    referred: '相关提案'
   },
   form: {
     button: {

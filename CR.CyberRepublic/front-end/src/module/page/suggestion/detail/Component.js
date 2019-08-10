@@ -22,6 +22,7 @@ import MetaContainer from '../common/meta/Container'
 import Meta from '@/module/common/Meta'
 import SocialShareButtons from '@/module/common/SocialShareButtons'
 import DraftEditor from '@/module/common/DraftEditor'
+import TagsContainer from '../common/tags/Container'
 import {
   Container,
   Title,
@@ -199,6 +200,15 @@ export default class extends StandardPage {
     const timelineNode = this.renderTimelineNode()
     const linkNode = this.renderLinkNode()
 
+    let status = I18N.get('suggestion.status.posted')
+    if (_.get(detail, 'reference.0.vid')) {
+      status = <TagsContainer data={detail} />
+    } else if (_.some(detail.tags, tag => tag.type === 'INFO_NEEDED')) {
+      status = I18N.get('suggestion.status.moreInfoRequired')
+    } else if (_.some(detail.tags, tag => tag.type === 'UNDER_CONSIDERATION')) {
+      status = I18N.get('Under Council Consideration')
+    }
+
     return (
       <div>
         {metaNode}
@@ -206,11 +216,11 @@ export default class extends StandardPage {
         {tagsNode}
 
         <DescLabel id="preamble">{I18N.get('suggestion.fields.preamble')}</DescLabel>
-        {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.proposal'), `#${detail.displayId}`)}
-        {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.title'), detail.title)}
-        {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.proposer'), detail.createdBy.username)}
-        {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.status'), detail.status)}
-        {this.renderPreambleItem(I18N.get('proposal.fields.preambleSub.created'), moment(detail.createdAt).format('MMM D, YYYY'))}
+        {this.renderPreambleItem(I18N.get('suggestion.fields.preambleSub.suggestion'), `#${detail.displayId}`)}
+        {this.renderPreambleItem(I18N.get('suggestion.fields.preambleSub.title'), detail.title)}
+        {this.renderPreambleItem(I18N.get('suggestion.fields.preambleSub.creator'), detail.createdBy.username)}
+        {this.renderPreambleItem(I18N.get('suggestion.fields.preambleSub.status'), status)}
+        {this.renderPreambleItem(I18N.get('suggestion.fields.preambleSub.created'), moment(detail.createdAt).format('MMM D, YYYY'))}
         {
           sections.map(section => (
             <div>
