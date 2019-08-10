@@ -547,10 +547,13 @@ class C extends StandardPage {
 
   renderTracking() {
     const { data } = this.props
-    const isShowFollowingUp = _.includes(
+    let isShowFollowingUp = _.includes(
       [CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL],
       data.status
     )
+    if (data.status === CVOTE_STATUS.PROPOSED && currentUserId === _.get(data, 'proposer._id')) {
+      isShowFollowingUp = true;
+    }
     if (!isShowFollowingUp) return null
 
     return <Tracking proposal={data} />
@@ -558,10 +561,14 @@ class C extends StandardPage {
 
   renderSummary() {
     const { data } = this.props
-    const isShowFollowingUp = _.includes(
+    let isShowFollowingUp = _.includes(
       [CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL],
       data.status
     )
+
+    if (data.status === CVOTE_STATUS.PROPOSED && currentUserId === _.get(data, 'proposer._id')) {
+      isShowFollowingUp = true;
+    }
     if (!isShowFollowingUp) return null
 
     return <Summary proposal={data} />
