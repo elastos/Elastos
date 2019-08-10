@@ -86,7 +86,7 @@ export default {
       continue: '继续',
       cancel: '取消',
       saveDraft: '保存草稿',
-      save: '保存'
+      save: '保存并发布'
     },
     tracking: {
       btn: {

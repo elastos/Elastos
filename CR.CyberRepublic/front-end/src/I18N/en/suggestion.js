@@ -86,7 +86,7 @@ export default {
       continue: 'Continue',
       cancel: 'Cancel',
       saveDraft: 'Save as Draft',
-      save: 'Save'
+      save: 'Save & Post'
     },
     tracking: {
       btn: {
