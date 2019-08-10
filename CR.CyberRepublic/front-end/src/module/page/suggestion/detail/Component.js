@@ -93,12 +93,10 @@ export default class extends StandardPage {
           href="#relevance"
           title={I18N.get('suggestion.fields.relevance')}
         />
-        <div style={{ marginTop: 48 }}>
-          <Anchor.Link
-            href="#budget"
-            title={I18N.get('suggestion.fields.budget')}
-          />
-        </div>
+        <Anchor.Link
+          href="#budget"
+          title={I18N.get('suggestion.fields.budget')}
+        />
       </StyledAnchor>
     )
   }
