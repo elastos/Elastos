@@ -6,7 +6,7 @@ import { Button, Row, Anchor } from 'antd'
 
 export const Container = styled.div`
   max-width: 1200px;
-  margin: 80px auto 80px 210px;
+  margin: 30px auto 80px 290px;
 
   @media only screen and (max-width: ${breakPoint.xl}) {
     margin-left: 210px;
