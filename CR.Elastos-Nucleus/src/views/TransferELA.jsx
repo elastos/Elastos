@@ -35,7 +35,7 @@ class UserProfile extends Component {
                         </FormGroup>
                       </Col>
                     </Row>
-                     <CustomButton text="Submit" pullRight bsStyle="info" fill />
+                    <CustomButton text="Submit" pullRight bsStyle="info" fill />
                     <div className="clearfix" />
                   </form>
                 }

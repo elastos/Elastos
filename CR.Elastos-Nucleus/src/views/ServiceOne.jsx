@@ -35,7 +35,13 @@ class UserProfile extends Component {
                         </FormGroup>
                       </Col>
                     </Row>
-                    <CustomButton text="Generate Wallet" path="/admin/generatewallet" pullRight bsStyle="info" fill />
+                    <CustomButton
+                      text="Generate Wallet"
+                      path="/admin/generatewallet"
+                      pullRight
+                      bsStyle="info"
+                      fill
+                    />
                     <div className="clearfix" />
                   </form>
                 }
@@ -68,7 +74,13 @@ class UserProfile extends Component {
                         </FormGroup>
                       </Col>
                     </Row>
-                    <CustomButton text="Get Transactions" path="/admin/transactions" pullRight bsStyle="info" fill />
+                    <CustomButton
+                      text="Get Transactions"
+                      path="/admin/transactions"
+                      pullRight
+                      bsStyle="info"
+                      fill
+                    />
                     <div className="clearfix" />
                   </form>
                 }
@@ -101,7 +113,13 @@ class UserProfile extends Component {
                         </FormGroup>
                       </Col>
                     </Row>
-                    <CustomButton text="Get Transaction History" path="/admin/transactionhistory" pullRight bsStyle="info" fill />
+                    <CustomButton
+                      text="Get Transaction History"
+                      path="/admin/transactionhistory"
+                      pullRight
+                      bsStyle="info"
+                      fill
+                    />
                     <div className="clearfix" />
                   </form>
                 }
@@ -134,7 +152,13 @@ class UserProfile extends Component {
                         </FormGroup>
                       </Col>
                     </Row>
-                    <CustomButton text="Get Balance" path="/admin/balance" pullRight bsStyle="info" fill />
+                    <CustomButton
+                      text="Get Balance"
+                      path="/admin/getbalance"
+                      pullRight
+                      bsStyle="info"
+                      fill
+                    />
                     <div className="clearfix" />
                   </form>
                 }
@@ -167,7 +191,13 @@ class UserProfile extends Component {
                         </FormGroup>
                       </Col>
                     </Row>
-                    <CustomButton text="Transfer ELA" path="/admin/transfer" pullRight bsStyle="info" fill />
+                    <CustomButton
+                      text="Transfer ELA"
+                      path="/admin/transfer"
+                      pullRight
+                      bsStyle="info"
+                      fill
+                    />
                     <div className="clearfix" />
                   </form>
                 }

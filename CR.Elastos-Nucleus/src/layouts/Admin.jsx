@@ -8,7 +8,7 @@ import Sidebar from "components/Sidebar/Sidebar";
 
 import { style } from "variables/Variables.jsx";
 import sidebarRoutes from "routes.js";
-import appRoutes from "approutes.js"
+import appRoutes from "approutes.js";
 
 class Admin extends Component {
   constructor(props) {
@@ -102,8 +102,8 @@ class Admin extends Component {
         <div id="main-panel" className="main-panel" ref="mainPanel">
           <AdminNavbar {...this.props} />
           <Switch>
-          {this.getRoutes(sidebarRoutes)}
-          {this.getAppRoutes(appRoutes)}
+            {this.getRoutes(sidebarRoutes)}
+            {this.getAppRoutes(appRoutes)}
           </Switch>
           <Footer />
         </div>
