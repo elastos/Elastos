@@ -73,7 +73,7 @@ export default class extends StandardPage {
 
   renderAnchors() {
     return (
-      <StyledAnchor>
+      <StyledAnchor offsetTop={420}>
         <Anchor.Link
           href="#preamble"
           title={I18N.get('suggestion.fields.preamble')}
@@ -149,7 +149,7 @@ export default class extends StandardPage {
             <div style={{ marginTop: 60 }}>{commentNode}</div>
           </MediaQuery>
           <MediaQuery minWidth={LG_WIDTH + 1}>
-            <BackLink link="/suggestion" />
+            <BackLink link="/suggestion" style={{ position: 'fixed', left: '27px', top: '189px' }} />
             {this.renderAnchors()}
             <Row gutter={24}>
               <Col span={24}>
