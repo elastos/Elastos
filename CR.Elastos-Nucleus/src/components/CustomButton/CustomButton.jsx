@@ -2,31 +2,37 @@ import React, { Component } from "react";
 import { Button } from "react-bootstrap";
 import cx from "classnames";
 import PropTypes from "prop-types";
+import { withRouter } from 'react-router-dom'
+
 
 class CustomButton extends Component {
-  constuctor() {
-    this.routeChange = this.routeChange.bind(this);
+ constructor(props) {
+    super(props);
+    this.state = {};
+    this.handleClick = this.handleClick.bind(this);
   }
 
-  routeChange() {
-    alert("ji");
-    let path = `/admin/generatewallet`;
-    this.props.history.push(path);
-  }
+ handleClick(){
+    console.log(this.props.path);
+     this.props.history.push(this.props.path);
+ }
 
   render() {
-    const { fill, simple, pullRight, round, block, ...rest } = this.props;
+    const { fill, simple, pullRight, round, block,info} = this.props;
 
     const btnClasses = cx({
       "btn-fill": fill,
       "btn-simple": simple,
       "pull-right": pullRight,
       "btn-block": block,
-      "btn-round": round
+      "btn-round": round,
+      "bsStyle": info
     });
 
     return (
-      <Button className={btnClasses} {...rest} href="/admin/generatewallet" />
+      <Button className={btnClasses} onClick={this.handleClick}>
+      {this.props.text}
+      </Button>
     );
   }
 }
@@ -39,4 +45,4 @@ CustomButton.propTypes = {
   round: PropTypes.bool
 };
 
-export default CustomButton;
+export default withRouter(CustomButton);

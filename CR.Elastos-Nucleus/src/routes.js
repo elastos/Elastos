@@ -4,9 +4,8 @@ import ServiceTwo from "views/ServiceTwo.jsx";
 import ServiceThree from "views/ServiceThree.jsx";
 import ServiceFour from "views/ServiceFour.jsx";
 import ServiceFive from "views/ServiceFive.jsx";
-import GenerateWallet from "views/GenerateWallet.jsx";
 
-const dashboardRoutes = [
+const sidebarRoutes = [
   {
     path: "/dashboard",
     name: "Dashboard",
@@ -48,14 +47,7 @@ const dashboardRoutes = [
     icon: "pe-7s-tools",
     component: ServiceFive,
     layout: "/admin"
-  },
-  {
-    path: "/generatewallet",
-    name: "apipage",
-    icon: "pe-7s-tools",
-    component: GenerateWallet,
-    layout: "/admin"
   }
 ];
 
-export default dashboardRoutes;
+export default sidebarRoutes;

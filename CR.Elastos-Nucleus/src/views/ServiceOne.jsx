@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Grid, Row, Col, FormGroup } from "react-bootstrap";
 
 import { Card } from "components/Card/Card.jsx";
-import Button from "components/CustomButton/CustomButton.jsx";
+import CustomButton from "components/CustomButton/CustomButton.jsx";
 
 class UserProfile extends Component {
   render() {
@@ -35,9 +35,7 @@ class UserProfile extends Component {
                         </FormGroup>
                       </Col>
                     </Row>
-                    <Button bsStyle="info" pullRight fill type="submit">
-                      Enter
-                    </Button>
+                    <CustomButton text="Generate Wallet" path="/admin/generatewallet" pullRight bsStyle="info" fill />
                     <div className="clearfix" />
                   </form>
                 }
@@ -70,9 +68,7 @@ class UserProfile extends Component {
                         </FormGroup>
                       </Col>
                     </Row>
-                    <Button bsStyle="info" pullRight fill type="submit">
-                      Enter
-                    </Button>
+                    <CustomButton text="Get Transactions" path="/admin/transactions" pullRight bsStyle="info" fill />
                     <div className="clearfix" />
                   </form>
                 }
@@ -105,9 +101,7 @@ class UserProfile extends Component {
                         </FormGroup>
                       </Col>
                     </Row>
-                    <Button bsStyle="info" pullRight fill type="submit">
-                      Enter
-                    </Button>
+                    <CustomButton text="Get Transaction History" path="/admin/transactionhistory" pullRight bsStyle="info" fill />
                     <div className="clearfix" />
                   </form>
                 }
@@ -140,9 +134,7 @@ class UserProfile extends Component {
                         </FormGroup>
                       </Col>
                     </Row>
-                    <Button bsStyle="info" pullRight fill type="submit">
-                      Enter
-                    </Button>
+                    <CustomButton text="Get Balance" path="/admin/balance" pullRight bsStyle="info" fill />
                     <div className="clearfix" />
                   </form>
                 }
@@ -175,9 +167,7 @@ class UserProfile extends Component {
                         </FormGroup>
                       </Col>
                     </Row>
-                    <Button bsStyle="info" pullRight fill type="submit">
-                      Enter
-                    </Button>
+                    <CustomButton text="Transfer ELA" path="/admin/transfer" pullRight bsStyle="info" fill />
                     <div className="clearfix" />
                   </form>
                 }
@@ -190,4 +180,19 @@ class UserProfile extends Component {
   }
 }
 
+/*
+<Button bsStyle="info" pullRight fill type="submit">
+                      Enter
+                    </Button>
+                    <Button>
+                      Enter
+                    </Button>
+                     <Button bsStyle="info" pullRight fill type="submit">
+                      Enter
+                    </Button>
+                    <Button bsStyle="info" pullRight fill type="submit">
+                      Enter
+                    </Button>
+
+*/
 export default UserProfile;

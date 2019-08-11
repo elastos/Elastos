@@ -7,7 +7,8 @@ import Footer from "components/Footer/Footer";
 import Sidebar from "components/Sidebar/Sidebar";
 
 import { style } from "variables/Variables.jsx";
-import routes from "routes.js";
+import sidebarRoutes from "routes.js";
+import appRoutes from "approutes.js"
 
 class Admin extends Component {
   constructor(props) {
@@ -18,8 +19,8 @@ class Admin extends Component {
       fixedClasses: "dropdown show-dropdown open"
     };
   }
-  getRoutes = routes => {
-    return routes.map((prop, key) => {
+  getRoutes = sidebarRoutes => {
+    return sidebarRoutes.map((prop, key) => {
       if (prop.layout === "/admin") {
         return (
           <Route
@@ -28,6 +29,26 @@ class Admin extends Component {
               <prop.component
                 {...props}
                 handleClick={this.handleNotificationClick}
+              />
+            )}
+            key={key}
+          />
+        );
+      } else {
+        return null;
+      }
+    });
+  };
+  getAppRoutes = appRoutes => {
+    return appRoutes.map((prop, key) => {
+      if (prop.layout === "/admin") {
+        return (
+          <Route
+            path={prop.layout + prop.path}
+            render={props => (
+              <prop.component
+                {...props}
+                //handleClick={this.handleNotificationClick}
               />
             )}
             key={key}
@@ -74,13 +95,16 @@ class Admin extends Component {
         <NotificationSystem ref="notificationSystem" style={style} />
         <Sidebar
           {...this.props}
-          routes={routes}
+          routes={sidebarRoutes}
           color={this.state.color}
           hasImage={this.state.hasImage}
         />
         <div id="main-panel" className="main-panel" ref="mainPanel">
           <AdminNavbar {...this.props} />
-          <Switch>{this.getRoutes(routes)}</Switch>
+          <Switch>
+          {this.getRoutes(sidebarRoutes)}
+          {this.getAppRoutes(appRoutes)}
+          </Switch>
           <Footer />
         </div>
       </div>

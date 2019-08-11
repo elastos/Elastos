@@ -9,7 +9,7 @@ import {
 } from "react-bootstrap";
 
 import { Card } from "components/Card/Card.jsx";
-import Button from "components/CustomButton/CustomButton.jsx";
+import CustomButton from "components/CustomButton/CustomButton.jsx";
 
 class UserProfile extends Component {
   render() {
@@ -35,9 +35,7 @@ class UserProfile extends Component {
                         </FormGroup>
                       </Col>
                     </Row>
-                    <Button bsStyle="info" pullRight fill type="submit">
-                      Enter
-                    </Button>
+                     <CustomButton text="Submit" pullRight bsStyle="info" fill />
                     <div className="clearfix" />
                   </form>
                 }
