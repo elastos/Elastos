@@ -192,7 +192,7 @@ export default class extends StandardPage {
     const titleNode = this.renderTitleNode()
     const coverNode = this.renderCoverNode()
     const shortDescNode = this.renderShortDescNode()
-    // const labelNode = this.renderLabelNode()
+    const labelNode = this.renderLabelNode()
     const tagsNode = this.renderTagsNode()
     const descNode = this.renderDescNode()
     const benefitsNode = this.renderBenefitsNode()
@@ -213,6 +213,7 @@ export default class extends StandardPage {
       <div>
         {metaNode}
         {titleNode}
+        {labelNode}
         <div>{tagsNode}</div>
 
         <DescLabel id="preamble">{I18N.get('suggestion.fields.preamble')}</DescLabel>
@@ -285,7 +286,7 @@ export default class extends StandardPage {
     if (status === CVOTE_STATUS.DRAFT) return null
     const linkText = `${I18N.get('council.voting.proposal')} #${vid}`
     return (
-      <Label>
+      <Label style={{ margin: '8px 0', display: 'block', border: 'none' }}>
         {`${I18N.get('suggestion.referred')} `}
         <Link to={`/proposals/${_id}`}>{linkText}</Link>
         {` (${I18N.get(`cvoteStatus.${status}`)})`}
