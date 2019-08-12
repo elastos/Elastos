@@ -844,24 +844,6 @@ typedef struct ElaCallbacks {
 
 /**
  * \~English
- * initialize log options for Carrier. The default level to control log output
- * is 'Info'.
- *
- * @param
- *      level       [in] The log level to control internal log output.
- * @param
- *      log_file    [in] the log file name.
- *                       If the log_file is NULL, Carrier will not write
- *                       log to file.
- * @param
- *      log_printer [in] the user defined log printer. can be NULL.
- */
-CARRIER_API
-void ela_log_init(ElaLogLevel level, const char *log_file,
-                  void (*log_printer)(const char *format, va_list args));
-
-/**
- * \~English
  * Check if the carrier address is valid.
  *
  * @param

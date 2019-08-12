@@ -307,12 +307,6 @@ ela_get_version
 .. doxygenfunction:: ela_get_version
    :project: CarrierAPI
 
-ela_log_init
-~~~~~~~~~~~~
-
-.. doxygenfunction:: ela_log_init
-   :project: CarrierAPI
-
 ela_address_is_valid
 ~~~~~~~~~~~~~~~~~~~~
 
