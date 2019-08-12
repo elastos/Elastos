@@ -213,7 +213,7 @@ export default class extends StandardPage {
       <div>
         {metaNode}
         {titleNode}
-        {tagsNode}
+        <div>{tagsNode}</div>
 
         <DescLabel id="preamble">{I18N.get('suggestion.fields.preamble')}</DescLabel>
         {this.renderPreambleItem(I18N.get('suggestion.fields.preambleSub.suggestion'), `#${detail.displayId}`)}
@@ -300,7 +300,7 @@ export default class extends StandardPage {
       const { type, _id, desc } = tag
       if (type === SUGGESTION_TAG_TYPE.INFO_NEEDED) {
         return (
-          <div key={_id}>
+          <div key={_id} style={{ display: 'inline' }}>
             <LabelPointer
               type={type}
               data-desc={desc.replace(/(['"])/g, '\\$1')}

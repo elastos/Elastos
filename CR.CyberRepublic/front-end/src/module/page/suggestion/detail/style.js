@@ -58,6 +58,7 @@ export const Label = styled.span`
 
 export const LabelPointer = styled(Label)`
   cursor: pointer;
+  display: inline;
   &:hover {
     background-color: ${primary.light};
   }
