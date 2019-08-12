@@ -130,18 +130,10 @@ class GetTransactionHistory(Resource):
 
         api_url_base = settings.WALLET_SERVICE_URL + settings.WALLET_API_TRANSACTION_HISTORY + "{}"
         myResponse = requests.get(api_url_base.format(transaction_address)).json()
-<<<<<<< HEAD
-        print(myResponse.status_code)
-        #if (response.status_code == 200):
-        return myResponse
-        #else:
-         #   return response.status_code
-=======
         return Response(json.dumps(myResponse), 
                 status=myResponse['status'],
                 mimetype='application/json'
             )
->>>>>>> 0567c61ef9efe2a1ea13c453229505616f16f09e
 
 @ns.route('/transferELA', methods = ['POST'])
 class TransferELA(Resource):
