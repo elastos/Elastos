@@ -7,7 +7,6 @@
 
 ## Tools 
 
-- [build_dockerimages.sh](./tools/build_dockerimages.sh): This shell script automatically builds all the binaries for main chain, all the sidechains, services, etc and then packages them to be run inside docker images and if the flags "-p" and "-l" are set to "yes", the built docker images are automatically pushed to [Cyber Republic Docker Hub](https://cloud.docker.com/u/cyberrepublic/repository/list). Note that you need permission to push to the CR dockerhub but you can still build the images locally if you so choose
 - [staging_tools.md](./tools/staging_tools.md): This README file contains all the commands that are used in building the private net from scratch(if that's your cup of tea)
 - [copy_dockerdata_host.sh](./tools/copy_dockerdata_host.sh): This script automatically copies the appropriate data folders from the running docker container and saves them with the names "backup" in each corresponding nodes directories. This is a very handy tool when you're building your own private net from scratch and want to save the progress
 - [copy_freshdata_docker.sh](./tools/copy_freshdata_docker.sh): This script removes all the previous data from your previously ran docker containers and resets it to use the data that is committed to this github repository for each nodes. This is a very handy tool when you want to purge everything from your docker containers and want to reset the data back to the original data(with preloaded wallets and such)
