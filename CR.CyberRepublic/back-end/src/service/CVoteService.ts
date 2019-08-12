@@ -51,6 +51,7 @@ export default class extends Base {
   public async proposeSuggestion(param: any): Promise<Document> {
     const db_suggestion = this.getDBModel('Suggestion')
     const db_cvote = this.getDBModel('CVote')
+    const db_user = this.getDBModel('User')
     const { suggestionId, proposedBy } = param
 
     const suggestion = suggestionId && (await db_suggestion.findById(suggestionId))
@@ -73,8 +74,26 @@ export default class extends Base {
 
     Object.assign(doc, _.pick(suggestion, BASE_FIELDS));
 
+    const councilMembers = await db_user.find({
+      role: constant.USER_ROLE.COUNCIL
+    })
+    const voteResult = []
+    doc.proposedAt = Date.now()
+    _.each(councilMembers, user =>
+      voteResult.push({
+        votedBy: user._id,
+        value: constant.CVOTE_RESULT.UNDECIDED
+      })
+    )
+    doc.voteResult = voteResult
+    doc.voteHistory = voteResult
+
     try {
       const res = await db_cvote.save(doc)
+      await db_suggestion.update(
+        { _id: suggestionId },
+        { $addToSet: { reference: res._id } }
+      )
       this.notifySubscribers(res)
       this.notifyCouncil(res)
       return res
