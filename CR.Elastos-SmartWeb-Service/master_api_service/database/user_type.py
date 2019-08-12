@@ -3,6 +3,10 @@ from datetime import datetime
 from master_api_service.database import db
 
 
+"""
+UserType table is mapped to the elastos_console database. It contains the different types of users that the console has eg., Administrator, developer.
+"""
+
 class UserType(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String(20), nullable=False)
