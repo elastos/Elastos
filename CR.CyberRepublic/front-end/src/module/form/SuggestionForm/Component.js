@@ -58,9 +58,9 @@ class C extends BaseComponent {
   }
 
   componentDidMount() {
-    // this.timer = setInterval(() => {
-    //   this.handleSaveDraft();
-    // }, 5000)
+    this.timer = setInterval(() => {
+      this.handleSaveDraft();
+    }, 5000)
   }
 
   componentWillUnmount() {

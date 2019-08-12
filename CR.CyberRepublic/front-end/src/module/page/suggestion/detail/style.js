@@ -6,7 +6,7 @@ import { Button, Row, Anchor } from 'antd'
 
 export const Container = styled.div`
   max-width: 1200px;
-  margin: 30px auto 80px 290px;
+  margin: 30px 30px 80px 290px;
 
   @media only screen and (max-width: ${breakPoint.xl}) {
     margin-left: 210px;
@@ -58,6 +58,7 @@ export const Label = styled.span`
 
 export const LabelPointer = styled(Label)`
   cursor: pointer;
+  display: inline;
   &:hover {
     background-color: ${primary.light};
   }
