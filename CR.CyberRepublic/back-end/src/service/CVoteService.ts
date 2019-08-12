@@ -63,6 +63,7 @@ export default class extends Base {
 
     const doc: any = {
       vid,
+      type: suggestion.type,
       status: constant.CVOTE_STATUS.PROPOSED,
       published: false,
       contentType: constant.CONTENT_TYPE.MARKDOWN,
