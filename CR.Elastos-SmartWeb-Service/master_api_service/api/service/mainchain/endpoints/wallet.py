@@ -10,7 +10,7 @@ from flask_restplus import Resource
 from master_api_service import settings
 from master_api_service.api.restplus import api
 from master_api_service.api.common.common_service import validate_api_key
-from master_api_service.database.user_api_relation import UserApiRelation
+from master_api_service.api.common.common_service import getTime
 
 log = logging.getLogger(__name__)
 
@@ -26,19 +26,18 @@ class CreateWallet(Resource):
         api_key = request.headers.get('api_key')
         api_status = validate_api_key(api_key)
         if not api_status:
-            data = {"error message":"API Key could not be verified","status":401, "timestamp":datetime.datetime.now().timestamp(),"path":request.url}
+            data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
             return Response(json.dumps(data), 
                 status=401,
                 mimetype='application/json'
             )
-        
+
         api_url_base = settings.WALLET_SERVICE_URL + settings.WALLET_API_CREATE
         myResponse = requests.get(api_url_base).json()
-        response = jsonify(myResponse)
-        if(response.status_code == 200):
-            return response
-        else:
-            return response.status_code
+        return Response(json.dumps(myResponse), 
+                status=myResponse['status'],
+                mimetype='application/json'
+            )
 
 @ns.route('/getBalance/<string:balance_address>')
 class GetBalance(Resource):
@@ -47,9 +46,21 @@ class GetBalance(Resource):
         """
         Returns the balance of the provided public address
         """
+        api_key = request.headers.get('api_key')
+        api_status = validate_api_key(api_key)
+        if not api_status:
+            data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
+            return Response(json.dumps(data), 
+                status=401,
+                mimetype='application/json'
+            )
+
         api_url_base = settings.WALLET_SERVICE_URL + settings.WALLET_API_BALANCE + "{}"
-        json_data = requests.get(api_url_base.format(balance_address)).json()
-        return json_data
+        myResponse = requests.get(api_url_base.format(balance_address)).json()
+        return Response(json.dumps(myResponse), 
+                status=myResponse['status'],
+                mimetype='application/json'
+            )
 
 @ns.route('/getDPOSVote', methods = ['POST'])
 class GetDPOSVote(Resource):
@@ -58,11 +69,23 @@ class GetDPOSVote(Resource):
         """
         Uses private key to vote your producers
         """
+        api_key = request.headers.get('api_key')
+        api_status = validate_api_key(api_key)
+        if not api_status:
+            data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
+            return Response(json.dumps(data), 
+                status=401,
+                mimetype='application/json'
+            )
+
         api_url_base = settings.WALLET_SERVICE_URL + settings.WALLET_API_DPOS_VOTE
         headers = {'Content-type': 'application/json'}
         req_data = request.get_json()
-        json_data = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
-        return json_data
+        myResponse = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
+        return Response(json.dumps(myResponse), 
+                status=myResponse['status'],
+                mimetype='application/json'
+            )
 
 @ns.route('/getTransactions')
 class GetTransactions(Resource):
@@ -71,11 +94,23 @@ class GetTransactions(Resource):
         """
         Get a list of transactions
         """
+        api_key = request.headers.get('api_key')
+        api_status = validate_api_key(api_key)
+        if not api_status:
+            data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
+            return Response(json.dumps(data), 
+                status=401,
+                mimetype='application/json'
+            )
+
         api_url_base = settings.WALLET_SERVICE_URL + settings.WALLET_API_TRANSACTIONS
         headers = {'Content-type': 'application/json'}
         req_data = request.get_json()
-        json_data = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
-        return json_data
+        myResponse = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
+        return Response(json.dumps(myResponse), 
+                status=myResponse['status'],
+                mimetype='application/json'
+            )
 
 @ns.route('/getTransactionHistory/<string:transaction_address>')
 class GetTransactionHistory(Resource):
@@ -84,13 +119,29 @@ class GetTransactionHistory(Resource):
         """
         Get transaction history
         """
+        api_key = request.headers.get('api_key')
+        api_status = validate_api_key(api_key)
+        if not api_status:
+            data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
+            return Response(json.dumps(data), 
+                status=401,
+                mimetype='application/json'
+            )
+
         api_url_base = settings.WALLET_SERVICE_URL + settings.WALLET_API_TRANSACTION_HISTORY + "{}"
         myResponse = requests.get(api_url_base.format(transaction_address)).json()
+<<<<<<< HEAD
         print(myResponse.status_code)
         #if (response.status_code == 200):
         return myResponse
         #else:
          #   return response.status_code
+=======
+        return Response(json.dumps(myResponse), 
+                status=myResponse['status'],
+                mimetype='application/json'
+            )
+>>>>>>> 0567c61ef9efe2a1ea13c453229505616f16f09e
 
 @ns.route('/transferELA', methods = ['POST'])
 class TransferELA(Resource):
@@ -99,11 +150,23 @@ class TransferELA(Resource):
         """
         Transfer ELA
         """
+        api_key = request.headers.get('api_key')
+        api_status = validate_api_key(api_key)
+        if not api_status:
+            data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
+            return Response(json.dumps(data), 
+                status=401,
+                mimetype='application/json'
+            )
+
         api_url_base = settings.WALLET_SERVICE_URL + settings.WALLET_API_TRANSFER
         headers = {'Content-type': 'application/json'}
         req_data = request.get_json()
-        json_data = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
-        return json_data
+        myResponse = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
+        return Response(json.dumps(myResponse), 
+                status=myResponse['status'],
+                mimetype='application/json'
+            )
 
 @ns.route('/getMnemonic')
 class GetMnemonic(Resource):
@@ -112,8 +175,20 @@ class GetMnemonic(Resource):
         """
         Generates a mnemonic
         """
+        api_key = request.headers.get('api_key')
+        api_status = validate_api_key(api_key)
+        if not api_status:
+            data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
+            return Response(json.dumps(data), 
+                status=401,
+                mimetype='application/json'
+            )
+
         api_url_base = settings.WALLET_SERVICE_URL + settings.WALLET_API_MNEMONIC
-        json_data = requests.get(api_url_base).json()
-        return json_data
+        myResponse = requests.get(api_url_base).json()
+        return Response(json.dumps(myResponse), 
+                status=myResponse['status'],
+                mimetype='application/json'
+            )
 
   
