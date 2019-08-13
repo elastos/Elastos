@@ -27,59 +27,9 @@ export default {
     summary: '总结'
   },
   btn: {
-    tracking: {
-      reject: 'Reject & Comment',
-      approve: 'Approve & Publish'
-    },
-    summary: {
-      reject: 'Reject & Comment',
-      approve: 'Approve & Publish'
-    },
     makeIntoProposal: '发布为提案'
   },
-  text: {
-    tracking: {
-      reviewDetails: 'Review Details',
-      notice: {
-        header: '',
-        footer: ''
-      }
-    },
-    summary: {
-      reviewDetails: 'Review Details',
-      notice: {
-        header: '',
-        footer: ''
-      }
-    }
-  },
   status: {
-    tracking: {
-      [CVOTE_TRACKING_STATUS.DRAFT]: 'DRAFT',
-      [CVOTE_TRACKING_STATUS.REVIEWING]: 'BEING REVIEWED',
-      [CVOTE_TRACKING_STATUS.PUBLISHED]: 'APPROVED ✓',
-      [CVOTE_TRACKING_STATUS.REJECT]: 'REJECTED !'
-    },
-    summary: {
-      [CVOTE_SUMMARY_STATUS.DRAFT]: 'DRAFT',
-      [CVOTE_SUMMARY_STATUS.REVIEWING]: 'BEING REVIEWED',
-      [CVOTE_SUMMARY_STATUS.PUBLISHED]: 'APPROVED ✓',
-      [CVOTE_SUMMARY_STATUS.REJECT]: 'REJECTED !'
-    },
-    trackingRaw: {
-      undefined: '',
-      [CVOTE_TRACKING_STATUS.DRAFT]: 'DRAFT',
-      [CVOTE_TRACKING_STATUS.REVIEWING]: 'BEING REVIEWED',
-      [CVOTE_TRACKING_STATUS.PUBLISHED]: 'APPROVED',
-      [CVOTE_TRACKING_STATUS.REJECT]: 'REJECTED'
-    },
-    summaryRaw: {
-      undefined: '',
-      [CVOTE_SUMMARY_STATUS.DRAFT]: 'DRAFT',
-      [CVOTE_SUMMARY_STATUS.REVIEWING]: 'BEING REVIEWED',
-      [CVOTE_SUMMARY_STATUS.PUBLISHED]: 'APPROVED',
-      [CVOTE_SUMMARY_STATUS.REJECT]: 'REJECTED'
-    },
     posted: '发布',
     underConsideration: '正在审议中',
     moreInfoRequired: '需要更多信息',
@@ -91,18 +41,6 @@ export default {
       cancel: '取消',
       saveDraft: '保存草稿',
       save: '保存并发布'
-    },
-    tracking: {
-      btn: {
-        submit: 'Submit for Review'
-      },
-      add: 'Add Tracking Plan'
-    },
-    summary: {
-      btn: {
-        submit: 'Submit for Review'
-      },
-      add: 'Add Summary'
     },
     fields: {
       title: '标题',
@@ -137,28 +75,20 @@ export default {
       limit200: '不能超过200字'
     }
   },
-  msg: {
-    rejected: 'Rejected successfully',
-    approved: 'Approved and published successfully',
-    draftSaved:
-      'Saved as draft successfully, you can check it in proposal list page',
-    proposalPublished: 'Proposal published successfully'
-  },
   modal: {
-    addTagComment: 'Add Comment',
-    confirm: 'Confirm',
-    cancel: 'Cancel',
-    pleaseUpdate:
-      'Please update the Suggestion with the requested info and notify the council/community through a comment.',
-    commentsFromCouncil: 'Comments from Council/Admin:',
+    addTagComment: '添加评论',
+    confirm: '确定',
+    cancel: '取消',
+    pleaseUpdate: '请按照需求更新建议，并通过评论通知委员或社区',
+    commentsFromCouncil: '来自委员或管理员的评论:',
     consideration: '标记为委员会正在审议中'
   },
   tag: {
-    show: 'Show',
+    show: '展示',
     type: {
-      UNDER_CONSIDERATION: 'Under Council Consideration',
-      INFO_NEEDED: 'More Info Required',
-      ADDED_TO_PROPOSAL: 'Added to Proposal'
+      UNDER_CONSIDERATION: '委员会正在审议中',
+      INFO_NEEDED: '需要更多信息',
+      ADDED_TO_PROPOSAL: '已添加到提案'
     }
   }
 }

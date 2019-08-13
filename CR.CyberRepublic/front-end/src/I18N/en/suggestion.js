@@ -27,59 +27,9 @@ export default {
     summary: 'Summary'
   },
   btn: {
-    tracking: {
-      reject: 'Reject & Comment',
-      approve: 'Approve & Publish'
-    },
-    summary: {
-      reject: 'Reject & Comment',
-      approve: 'Approve & Publish'
-    },
     makeIntoProposal: 'Make Into Proposal'
   },
-  text: {
-    tracking: {
-      reviewDetails: 'Review Details',
-      notice: {
-        header: '',
-        footer: ''
-      }
-    },
-    summary: {
-      reviewDetails: 'Review Details',
-      notice: {
-        header: '',
-        footer: ''
-      }
-    }
-  },
   status: {
-    tracking: {
-      [CVOTE_TRACKING_STATUS.DRAFT]: 'DRAFT',
-      [CVOTE_TRACKING_STATUS.REVIEWING]: 'BEING REVIEWED',
-      [CVOTE_TRACKING_STATUS.PUBLISHED]: 'APPROVED ✓',
-      [CVOTE_TRACKING_STATUS.REJECT]: 'REJECTED !'
-    },
-    summary: {
-      [CVOTE_SUMMARY_STATUS.DRAFT]: 'DRAFT',
-      [CVOTE_SUMMARY_STATUS.REVIEWING]: 'BEING REVIEWED',
-      [CVOTE_SUMMARY_STATUS.PUBLISHED]: 'APPROVED ✓',
-      [CVOTE_SUMMARY_STATUS.REJECT]: 'REJECTED !'
-    },
-    trackingRaw: {
-      undefined: '',
-      [CVOTE_TRACKING_STATUS.DRAFT]: 'DRAFT',
-      [CVOTE_TRACKING_STATUS.REVIEWING]: 'BEING REVIEWED',
-      [CVOTE_TRACKING_STATUS.PUBLISHED]: 'APPROVED',
-      [CVOTE_TRACKING_STATUS.REJECT]: 'REJECTED'
-    },
-    summaryRaw: {
-      undefined: '',
-      [CVOTE_SUMMARY_STATUS.DRAFT]: 'DRAFT',
-      [CVOTE_SUMMARY_STATUS.REVIEWING]: 'BEING REVIEWED',
-      [CVOTE_SUMMARY_STATUS.PUBLISHED]: 'APPROVED',
-      [CVOTE_SUMMARY_STATUS.REJECT]: 'REJECTED'
-    },
     posted: 'Posted',
     underConsideration: 'Under Council Consideration',
     moreInfoRequired: 'More Info Required',
@@ -91,18 +41,6 @@ export default {
       cancel: 'Cancel',
       saveDraft: 'Save as Draft',
       save: 'Save & Post'
-    },
-    tracking: {
-      btn: {
-        submit: 'Submit for Review'
-      },
-      add: 'Add Tracking Plan'
-    },
-    summary: {
-      btn: {
-        submit: 'Submit for Review'
-      },
-      add: 'Add Summary'
     },
     fields: {
       title: 'Title',
@@ -139,13 +77,6 @@ export default {
       tooLong: 'This field is too long',
       limit200: 'You can only type 200 words max.'
     }
-  },
-  msg: {
-    rejected: 'Rejected successfully',
-    approved: 'Approved and published successfully',
-    draftSaved:
-      'Saved as draft successfully, you can check it in proposal list page',
-    proposalPublished: 'Proposal published successfully'
   },
   modal: {
     addTagComment: 'Add Comment',
