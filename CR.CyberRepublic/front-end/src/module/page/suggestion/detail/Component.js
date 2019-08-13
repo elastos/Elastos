@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import _ from 'lodash'
-import { Row, Col, Spin, Modal, Input, Button, Anchor, Popconfirm } from 'antd'
+import { Row, Col, Spin, Modal, Input, Button, Anchor, Popconfirm, message } from 'antd'
 import { Link } from 'react-router-dom'
 import MediaQuery from 'react-responsive'
 import moment from 'moment/moment'
@@ -588,6 +588,7 @@ export default class extends StandardPage {
         type: SUGGESTION_TAG_TYPE.UNDER_CONSIDERATION
       })
       this.refetch()
+      message.success(I18N.get('suggestion.msg.consideration'))
     } catch (error) {
       // console.log(error)
     }

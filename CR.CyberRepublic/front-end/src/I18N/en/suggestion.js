@@ -85,7 +85,7 @@ export default {
     pleaseUpdate:
       'Please update the Suggestion with the requested info and notify the council/community through a comment.',
     commentsFromCouncil: 'Comments from Council/Admin:',
-    consideration: 'Marked as under council consideration'
+    consideration: 'Are you sure to mark this suggestion as under council consideration?'
   },
   tag: {
     show: 'Show',
@@ -94,5 +94,8 @@ export default {
       INFO_NEEDED: 'More Info Required',
       ADDED_TO_PROPOSAL: 'Added to Proposal'
     }
+  },
+  msg: {
+    consideration: 'Marked as under council consideration'
   }
 }

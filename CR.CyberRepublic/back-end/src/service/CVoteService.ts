@@ -54,19 +54,13 @@ export default class extends Base {
     const db_user = this.getDBModel('User')
     const { suggestionId } = param
 
-    const suggestion = suggestionId && (await db_suggestion.findById(suggestionId)/*.populate('createdBy')*/)
+    const suggestion = suggestionId && (await db_suggestion.findById(suggestionId))
     if (!suggestion) {
       throw 'cannot find suggestion'
     }
 
     const creator = await db_user.findById(suggestion.createdBy);
     const vid = await this.getNewVid()
-
-    // let proposedBy = suggestion.createdBy.username
-    // const profile = suggestion.createdBy.profile
-    // if (profile && profile.firstName && profile.lastName) {
-    //   proposedBy = `${profile.firstName} ${profile.lastName}`
-    // }
 
     const doc: any = {
       vid,

@@ -81,7 +81,7 @@ export default {
     cancel: '取消',
     pleaseUpdate: '请按照需求更新建议，并通过评论通知委员或社区',
     commentsFromCouncil: '来自委员或管理员的评论:',
-    consideration: '标记为委员会正在审议中'
+    consideration: '您确定要将此建议标记为委员会正在审议中？'
   },
   tag: {
     show: '展示',
@@ -90,5 +90,8 @@ export default {
       INFO_NEEDED: '需要更多信息',
       ADDED_TO_PROPOSAL: '已添加到提案'
     }
+  },
+  msg: {
+    consideration: '已标记为委员会正在审议中'
   }
 }
