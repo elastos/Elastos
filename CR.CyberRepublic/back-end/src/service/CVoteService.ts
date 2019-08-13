@@ -52,15 +52,21 @@ export default class extends Base {
     const db_suggestion = this.getDBModel('Suggestion')
     const db_cvote = this.getDBModel('CVote')
     const db_user = this.getDBModel('User')
-    const { suggestionId, proposedBy } = param
+    const { suggestionId } = param
 
-    const suggestion = suggestionId && (await db_suggestion.findById(suggestionId))
+    const suggestion = suggestionId && (await db_suggestion.findById(suggestionId).populate('createdBy'))
     if (!suggestion) {
       throw 'cannot find suggestion'
     }
 
     const vid = await this.getNewVid()
 
+    let proposedBy = suggestion.createdBy.username
+    const profile = suggestion.createdBy.profile
+    if (profile && profile.firstName && profile.lastName) {
+      proposedBy = `${profile.firstName} ${profile.lastName}`
+    }
+  
     const doc: any = {
       vid,
       type: suggestion.type,
@@ -99,7 +105,7 @@ export default class extends Base {
       this.notifyCouncil(res)
       return res
     } catch (error) {
-      console.log(error)
+      console.log('proposeSuggestion error...', error)
       return
     }
   }
