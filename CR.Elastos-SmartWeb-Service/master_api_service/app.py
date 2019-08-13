@@ -8,6 +8,8 @@ from master_api_service.api.mainchain.endpoints.mainchain import ns as nodes_use
 from master_api_service.api.sidechain.did.endpoints.sidechain import ns as nodes_user_namespace
 from master_api_service.api.service.mainchain.endpoints.wallet import ns as nodes_user_namespace
 from master_api_service.api.service.sidechain.did.endpoints.did import ns as nodes_user_namespace
+from master_api_service.api.console.endpoints.console import ns as nodes_user_namespace
+from master_api_service.api.hive.endpoints.hive import ns as nodes_user_namespace
 from master_api_service.api.restplus import api
 from master_api_service.database import db
 

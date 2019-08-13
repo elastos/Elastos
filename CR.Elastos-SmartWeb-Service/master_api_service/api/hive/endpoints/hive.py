@@ -24,12 +24,13 @@ class Add(Resource):
 		Returns Hash key of the content added.
 		"""
 		api_url_base = 'http://10.192.113.16:9095/api/v0/file/add'
-        headers = {'Content-type': 'application/json'}
-        req_data = request.get_json()
-        myResponse = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
-        return Response(json.dumps(myResponse), 
-                mimetype='application/json'
-            )
+		headers = {'Content-type': 'application/json'}
+		req_data = request.form
+		print(req_data)
+		myResponse = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
+		return Response(json.dumps(myResponse), 
+        	mimetype='application/json'
+        	)
 
 
   
