@@ -421,7 +421,7 @@ func (a *AddrManager) loadPeers() {
 		a.reset()
 		return
 	}
-	log.Infof("Loaded %d addresses from file '%s'", a.numAddresses(), a.peersFile)
+//	log.Infof("Loaded %d addresses from file '%s'", a.numAddresses(), a.peersFile)
 }
 
 func (a *AddrManager) deserializePeers(filePath string) error {

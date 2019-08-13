@@ -177,8 +177,8 @@ func (tt *TestCmd) ExpectExit() {
 		tt.Cleanup()
 	}
 	if len(output) > 0 {
-		tt.Errorf("Unmatched stdout text:\n%s", output)
 	}
+
 }
 
 func (tt *TestCmd) WaitExit() {

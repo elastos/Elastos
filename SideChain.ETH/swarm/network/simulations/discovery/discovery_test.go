@@ -16,35 +16,9 @@
 
 package discovery
 
-import (
-	"context"
-	"encoding/json"
-	"errors"
-	"flag"
-	"fmt"
-	"io/ioutil"
-	"math/rand"
-	"os"
-	"path"
-	"strings"
-	"sync"
-	"testing"
-	"time"
-
-	"github.com/elastos/Elastos.ELA.SideChain.ETH/log"
-	"github.com/elastos/Elastos.ELA.SideChain.ETH/node"
-	"github.com/elastos/Elastos.ELA.SideChain.ETH/p2p"
-	"github.com/elastos/Elastos.ELA.SideChain.ETH/p2p/enode"
-	"github.com/elastos/Elastos.ELA.SideChain.ETH/p2p/simulations"
-	"github.com/elastos/Elastos.ELA.SideChain.ETH/p2p/simulations/adapters"
-	"github.com/elastos/Elastos.ELA.SideChain.ETH/swarm/network"
-	"github.com/elastos/Elastos.ELA.SideChain.ETH/swarm/state"
-	colorable "github.com/mattn/go-colorable"
-)
-
 // serviceName is used with the exec adapter so the exec'd binary knows which
 // service to execute
-const serviceName = "discovery"
+/*const serviceName = "discovery"
 const testMinProxBinSize = 2
 const discoveryPersistenceDatadir = "discovery_persistence_test_store"
 
@@ -580,3 +554,4 @@ func newService(ctx *adapters.ServiceContext) (node.Service, error) {
 
 	return network.NewBzz(config, kad, nil, nil, nil), nil
 }
+*/

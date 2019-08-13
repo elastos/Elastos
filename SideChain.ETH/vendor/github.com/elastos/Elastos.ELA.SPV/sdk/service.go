@@ -461,7 +461,7 @@ func (s *service) Start() {
 	s.start()
 	s.syncManager.Start()
 	s.IServer.Start()
-	log.Info("SPV service started...")
+//	log.Info("SPV service started...")
 }
 
 func (s *service) Stop() {
