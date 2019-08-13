@@ -195,7 +195,7 @@ class C extends BaseComponent {
     const { form } = this.props
     const formValue = form.getFieldValue('abstract')
     const value = editorTransform(formValue)
-    const count = value.length
+    const count = _.get(value, 'length', 0)
 
     return (
       <CirContainer>
