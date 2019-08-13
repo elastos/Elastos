@@ -56,8 +56,8 @@ export const Btn = styled(Button)`
 export const CirContainer = styled.div`
   width: 18px;
   position: absolute;
-  bottom: 0;
-  right: 6px;
+  bottom: 50px;
+  right: 50px;
   z-index: 10;
 `
 

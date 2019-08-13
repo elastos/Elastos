@@ -6,6 +6,7 @@ import _ from 'lodash'
 import { CONTENT_TYPE } from '@/constant'
 import { convertToRaw } from 'draft-js'
 import DraftEditor from '@/module/common/DraftEditor'
+import CircularProgressbar from '@/module/common/CircularProgressbar'
 
 import 'medium-draft/lib/index.css'
 import {
@@ -13,6 +14,7 @@ import {
   TabPaneInner,
   Note,
   TabText,
+  CirContainer
 } from './style'
 
 const FormItem = Form.Item
@@ -189,6 +191,19 @@ class C extends BaseComponent {
     )
   }
 
+  renderWordLimit() {
+    const { form } = this.props
+    const formValue = form.getFieldValue('abstract')
+    const value = editorTransform(formValue)
+    const count = value.length
+
+    return (
+      <CirContainer>
+        <CircularProgressbar count={count} />
+      </CirContainer>
+    )
+  }
+
   ord_render() {
     return (
       <Container>
@@ -217,7 +232,10 @@ class C extends BaseComponent {
             <TabPane tab={this.renderTabText('abstract')} key="abstract">
               <TabPaneInner>
                 <Note>{I18N.get('suggestion.form.note.abstract')}</Note>
-                <FormItem>{this.getTextarea('abstract')}</FormItem>
+                <FormItem>
+                  {this.getTextarea('abstract')}
+                </FormItem>
+                {this.renderWordLimit()}
               </TabPaneInner>
             </TabPane>
             <TabPane tab={this.renderTabText('goal')} key="goal">
