@@ -503,7 +503,6 @@ namespace Elastos {
 
 					checkRedundant(masterWallet);
 					_masterWalletMap[masterWalletID] = masterWallet;
-					ExportReadonlyWallet(masterWallet);
 					masterWallet->InitSubWallets();
 				}
 				++it;
