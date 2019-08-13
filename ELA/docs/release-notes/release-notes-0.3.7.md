@@ -1,8 +1,8 @@
-Elastos.ELA version 0.3.6 is now available from:
+Elastos.ELA version 0.3.7 is now available from:
 
-  <https://download.elastos.org/elastos-ela/elastos-ela-v0.3.6/>
+  <https://download.elastos.org/elastos-ela/elastos-ela-v0.3.7/>
 
-This release fix an error that DPOS node can not confirm block.
+This is a new minor version release, fix transaction count check error when sync block, fix rollback failed error, compatible with relese_v0.3.6 version.
 
 Please report bugs using the issue tracker at GitHub:
 
@@ -11,11 +11,8 @@ Please report bugs using the issue tracker at GitHub:
 How to Upgrade
 ==============
 
-If you are running an older version, you should shut it down and wait until
+If you are running version relese_v0.3.5 and before, you should shut it down and wait until
  it has completely closed, then just copy over `ela` (on Linux).
-
-Note that the DPOS node will have no timeout when change view occurred
-in version `0.3.6`.
 
 However, as usual, config, keystore and chaindata files are compatible.
 
@@ -35,11 +32,13 @@ distribution provides binaries for the x86_64 platform.
 Notable changes
 ===============
 
-An issue was solved which DPOS node can not confirm block.
+Fixed new nodes that could not be synchronized from scratch
 
-0.3.6 change log
+
+0.3.7 change log
 =================
 
-### Block and transaction handling
+Detailed release notes follow
 
-- #1164 Change dpos inactive strategy
+- #1170 `c853031` fix transaction count check error when sync block
+- #1177 `19045cd` fix rollback failed error
