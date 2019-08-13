@@ -120,8 +120,6 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
             JSONObject jsonObject = JSON.parseObject(info);
             long height = jsonObject.getLong("Confirms");
             if (height >= 2160) {
-                //注销可提取
-                sbtq.setVisibility(View.VISIBLE);
                 //获取交易所需公钥
                 presenter.getPublicKeyForVote(wallet.getWalletId(), MyWallet.ELA, this);
             }
@@ -267,6 +265,8 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
                     @Override
                     public void accept(GetdePositcoinBean dataResponse) {
                         available = dataResponse.getData().getResult().getAvailable();
+                        //注销可提取
+                        sbtq.setVisibility(View.VISIBLE);
                     }
                 }, new Consumer<Throwable>() {
                     @Override
