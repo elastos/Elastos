@@ -50,6 +50,8 @@ namespace Elastos {
 
 			UTXOArray GetUTXOs(const std::string &addr) const;
 
+			const UTXOArray &GetVoteUTXO() const;
+
 			const UTXOArray &GetCoinBaseUTXOs() const;
 
 			BigInt GetBalance(BalanceType type = Total) const;

@@ -278,15 +278,11 @@ namespace Elastos {
 		}
 
 		bool SubAccount::ContainsAddress(const Address &address) const {
-			if (IsDepositAddress(address)) {
+			if (IsDepositAddress(address) || IsCRDepositAddress(address)) {
 				return true;
 			}
 
 			if (IsOwnerAddress(address)) {
-				return true;
-			}
-
-			if (IsCRDepositAddress(address)) {
 				return true;
 			}
 

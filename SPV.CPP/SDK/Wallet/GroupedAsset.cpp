@@ -50,7 +50,7 @@ namespace Elastos {
 			return *this;
 		}
 
-		std::vector<UTXOPtr> GroupedAsset::GetUTXOs(const std::string &addr) const {
+		UTXOArray GroupedAsset::GetUTXOs(const std::string &addr) const {
 			UTXOArray result;
 			UTXOArray::const_iterator o;
 			for (o = _utxos.cbegin(); o != _utxos.cend(); ++o) {
@@ -81,7 +81,11 @@ namespace Elastos {
 			return result;
 		}
 
-		const std::vector<UTXOPtr> &GroupedAsset::GetCoinBaseUTXOs() const {
+		const UTXOArray &GroupedAsset::GetVoteUTXO() const {
+			return _utxosVote;
+		}
+
+		const UTXOArray &GroupedAsset::GetCoinBaseUTXOs() const {
 			return _utxosCoinbase;
 		}
 
@@ -330,7 +334,6 @@ namespace Elastos {
 
 				if ((*u)->GetConfirms(_parent->_blockHeight) < 2)
 					continue;
-
 				txn->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
 				bytes_t code;
 				std::string path;
@@ -379,7 +382,6 @@ namespace Elastos {
 
 				if (fromAddress.Valid() && fromAddress.ProgramHash() == (*u)->Output()->ProgramHash())
 					continue;
-
 				txn->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
 				bytes_t code;
 				std::string path;
@@ -581,7 +583,7 @@ namespace Elastos {
 			if (ContainUTXO(o))
 				return false;
 
-			if (_parent->_subAccount->IsDepositAddress(o->Output()->Addr())) {
+			if (_parent->_subAccount->IsDepositAddress(o->Output()->Addr()) || _parent->_subAccount->IsCRDepositAddress(o->Output()->Addr())) {
 				_balanceDeposit += o->Output()->Amount();
 				_utxosDeposit.push_back(o);
 			} else {
@@ -663,6 +665,14 @@ namespace Elastos {
 					assert(_balanceDeposit >= (*it)->Output()->Amount());
 					_balanceDeposit -= (*it)->Output()->Amount();
 					_utxosDeposit.erase(it);
+					return true;
+				}
+			}
+
+			for (UTXOArray::iterator it = _utxosLocked.begin(); it != _utxosLocked.end(); ++it) {
+				if ((*it)->Equal(hash, n)) {
+					_balanceLocked -= (*it)->Output()->Amount();
+					_utxosLocked.erase(it);
 					return true;
 				}
 			}

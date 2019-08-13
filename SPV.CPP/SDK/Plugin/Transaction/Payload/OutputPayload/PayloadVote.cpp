@@ -70,7 +70,7 @@ namespace Elastos {
 
 		}
 
-		VoteContent::VoteContent(Type t, const std::vector<CandidateVotes> &c) : _type(Delegate), _candidates(c) {
+		VoteContent::VoteContent(Type t, const std::vector<CandidateVotes> &c) : _type(t), _candidates(c) {
 
 		}
 

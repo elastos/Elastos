@@ -331,7 +331,6 @@ static void VoteCR(const std::string &masterWalletID, const std::string &subWall
 	}
 
 	nlohmann::json tx = mainchainSubWallet->CreateVoteCRTransaction("", votes, memo, true);
-	logger->debug("tx = {}", tx.dump());
 
 	PublishTransaction(mainchainSubWallet, tx);
 }
@@ -425,6 +424,20 @@ static void GetRegisteredProducerInfo(const std::string &masterWalletID, const s
 	logger->debug("registered producer info = {}", info.dump());
 }
 
+static void GetRegisteredCrInfo(const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
+	if (!subWallet)
+		return;
+
+	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
+	if (mainchainSubWallet == nullptr) {
+		logger->error("[{}:{}] is not instance of IMainchainSubWallet", masterWalletID, subWalletID);
+		return;
+	}
+
+	mainchainSubWallet->GetRegisteredCRInfo();
+}
+
 static void GetVotedList(const std::string &masterWalletID, const std::string &subWalletID) {
 	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
 	if (!subWallet)
@@ -432,7 +445,8 @@ static void GetVotedList(const std::string &masterWalletID, const std::string &s
 
 	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
 
-	logger->debug("voted list = {}", mainchainSubWallet->GetVotedProducerList().dump());
+	mainchainSubWallet->GetVotedProducerList();
+	mainchainSubWallet->GetVotedCRList()
 }
 
 static void RetrieveDeposit(const std::string &masterWalletID, const std::string &subWalletID) {
@@ -674,6 +688,7 @@ static void ELATest() {
 	std::string balance = GetBalance(gMasterWalletID, gMainchainSubWalletID);
 	GetVotedList(gMasterWalletID, gMainchainSubWalletID);
 	GetRegisteredProducerInfo(gMasterWalletID, gMainchainSubWalletID);
+	GetRegisteredCrInfo(gMasterWalletID, gMainchainSubWalletID);
 
 	if (!combineUTXODone) {
 		CombineUTXO(gMasterWalletID, gMainchainSubWalletID);

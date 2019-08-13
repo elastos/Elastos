@@ -167,7 +167,9 @@ namespace Elastos {
 
 			void UpdateLockedBalance();
 
-			std::vector<UTXOPtr> GetAllUTXO(const std::string &address) const;
+			UTXOArray GetAllUTXO(const std::string &address) const;
+
+			UTXOArray GetVoteUTXO() const;
 
 			std::vector<TransactionPtr> TxUnconfirmedBefore(uint32_t blockHeight);
 

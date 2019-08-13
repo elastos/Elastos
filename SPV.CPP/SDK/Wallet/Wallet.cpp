@@ -140,12 +140,25 @@ namespace Elastos {
 
 		std::vector<UTXOPtr> Wallet::GetAllUTXO(const std::string &address) const {
 			boost::mutex::scoped_lock scopedLock(lock);
-			std::vector<UTXOPtr> result;
+			UTXOArray result;
 
 			for (GroupedAssetMap::iterator it = _groupedAssets.begin(); it != _groupedAssets.end(); ++it) {
-				std::vector<UTXOPtr> utxos = it->second->GetUTXOs(address);
+				UTXOArray utxos = it->second->GetUTXOs(address);
 				result.insert(result.end(), utxos.begin(), utxos.end());
 			}
+
+			return result;
+		}
+
+		std::vector<UTXOPtr> Wallet::GetVoteUTXO() const {
+			boost::mutex::scoped_lock scopedLock(lock);
+			UTXOArray result;
+
+			std::for_each(_groupedAssets.begin(), _groupedAssets.end(),
+						  [&result](GroupedAssetMap::reference &asset) {
+							  const UTXOArray &utxos = asset.second->GetVoteUTXO();
+							  result.insert(result.end(), utxos.begin(), utxos.end());
+			});
 
 			return result;
 		}

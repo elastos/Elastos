@@ -209,7 +209,7 @@ namespace Elastos {
 
 #ifndef NDEBUG
 			if (blocks.size() == 1) {
-				Log::debug("{} checkpoint ====> ({},  \"{}\", {}, {});",
+				Log::debug("{} checkpoint ====> ({},  \"{}\", {}, {}),",
 				           _peerManager->GetID(),
 				           blocks[0]->GetHeight(),
 				           blocks[0]->GetHash().GetHex(),

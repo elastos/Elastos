@@ -405,7 +405,7 @@ namespace Elastos {
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 
 			WalletPtr wallet = _walletManager->getWallet();
-			std::vector<UTXOPtr> utxos = wallet->GetAllUTXO("");
+			UTXOArray utxos = wallet->GetVoteUTXO();
 			nlohmann::json j;
 			std::map<std::string, uint64_t> votedList;
 
@@ -775,6 +775,7 @@ namespace Elastos {
 				candidates.push_back(CandidateVotes(address.RedeemScript(), value));
 				bgStake += value;
 			}
+
 			VoteContent voteContent(VoteContent::Type::CRC, candidates);
 
 			OutputPayloadPtr payload = OutputPayloadPtr(new PayloadVote({voteContent}, VOTE_PRODUCER_CR_VERSION));
@@ -814,5 +815,101 @@ namespace Elastos {
 
 			return result;
 		}
+
+		nlohmann::json MainchainSubWallet::GetVotedCRList() const {
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+
+			WalletPtr wallet = _walletManager->getWallet();
+			UTXOArray utxos = wallet->GetVoteUTXO();
+			nlohmann::json j;
+			std::map<std::string, uint64_t> votedList;
+
+			for (size_t i = 0; i < utxos.size(); ++i) {
+				const OutputPtr &output = utxos[i]->Output();
+				if (output->GetType() != TransactionOutput::VoteOutput) {
+					continue;
+				}
+
+				const PayloadVote *pv = dynamic_cast<const PayloadVote *>(output->GetPayload().get());
+				if (pv == nullptr) {
+					continue;
+				}
+
+				uint64_t stake = output->Amount().getUint64();
+				const std::vector<VoteContent> &voteContents = pv->GetVoteContent();
+				std::for_each(voteContents.cbegin(), voteContents.cend(),
+				              [&votedList, &stake](const VoteContent &vc) {
+					              if (vc.GetType() == VoteContent::Type::CRC) {
+						              std::for_each(vc.GetCandidates().cbegin(), vc.GetCandidates().cend(),
+						                            [&votedList, &stake](const CandidateVotes &candidate) {
+							                            std::string c = candidate.GetCandidate().getHex();
+							                            if (votedList.find(c) != votedList.end()) {
+								                            votedList[c] += candidate.GetVotes();
+							                            } else {
+								                            votedList[c] = candidate.GetVotes();
+							                            }
+						                            });
+					              }
+				              });
+
+			}
+
+			j = votedList;
+
+			ArgInfo("r => {}", j.dump());
+
+			return j;
+		}
+
+		nlohmann::json MainchainSubWallet::GetRegisteredCRInfo() const {
+			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+
+			std::vector<TransactionPtr> allTxs = _walletManager->getWallet()->GetAllTransactions();
+			nlohmann::json j;
+
+			j["Status"] = "Unregistered";
+			j["Info"] = nlohmann::json();
+			for (size_t i = 0; i < allTxs.size(); ++i) {
+				if (allTxs[i]->GetBlockHeight() == TX_UNCONFIRMED) {
+					continue;
+				}
+
+				if (allTxs[i]->GetTransactionType() == Transaction::registerCR ||
+					allTxs[i]->GetTransactionType() == Transaction::updateCR) {
+					const CRInfo *pinfo = dynamic_cast<const CRInfo *>(allTxs[i]->GetPayload());
+					if (pinfo) {
+						nlohmann::json info;
+
+						info["Code"] = pinfo->GetCode().getHex();
+						info["DID"] = pinfo->GetDID().GetHex();
+						info["NickName"] = pinfo->GetNickName();
+						info["Url"] = pinfo->GetUrl();
+						info["Location"] = pinfo->GetLocation();
+
+						j["Status"] = "Registered";
+						j["Info"] = info;
+					}
+				} else if (allTxs[i]->GetTransactionType() == Transaction::unregisterCR) {
+					const UnregisterCR *pc = dynamic_cast<const UnregisterCR *>(allTxs[i]->GetPayload());
+					if (pc) {
+						uint32_t lastBlockHeight = _walletManager->getWallet()->LastBlockHeight();
+
+						nlohmann::json info;
+
+						info["Confirms"] = allTxs[i]->GetConfirms(lastBlockHeight);
+
+						j["Status"] = "UnRegistered";
+						j["Info"] = info;
+					}
+				} else if (allTxs[i]->GetTransactionType() == Transaction::returnCRDepositCoin) {
+					j["Status"] = "ReturnDeposit";
+					j["Info"] = nlohmann::json();
+				}
+			}
+
+			ArgInfo("r => {}", j.dump());
+			return j;
+		}
+
 	}
 }

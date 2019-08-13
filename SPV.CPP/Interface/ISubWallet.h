@@ -174,7 +174,6 @@ namespace Elastos {
 			/**
 			 * Publish a transaction to p2p network.
 			 * @param signedTx content of transaction in json format.
-			 * @param fee specify fee for miners, fee must greater or equal than 1000 (sela).
 			 * @return Sent result in json format.
 			 */
 			virtual nlohmann::json PublishTransaction(
