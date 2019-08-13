@@ -579,6 +579,7 @@ const ShortDesc = styled.div`
     min-height: 10px;
   }
   .md-RichEditor-root {
+    padding: 0;
     figure.md-block-image {
       background: none;
     }
