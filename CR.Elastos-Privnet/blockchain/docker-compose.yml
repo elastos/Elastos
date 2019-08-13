@@ -3,7 +3,7 @@ services:
 
   privnet-mainchain-node:
     container_name: privnet-mainchain-node
-    image: cyberrepublic/elastos-mainchain-node:privnet-v0.4
+    image: cyberrepublic/elastos-mainchain-node:privnet-v0.5
     user: "${UID}:${GID}"
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-node:/ela/elastos
@@ -22,7 +22,7 @@ services:
 
   privnet-mainchain-crc-1:
     container_name: privnet-mainchain-crc-1
-    image: cyberrepublic/elastos-mainchain-node:privnet-v0.4
+    image: cyberrepublic/elastos-mainchain-node:privnet-v0.5
     user: "${UID}:${GID}"
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-crc-1:/ela/elastos
@@ -41,7 +41,7 @@ services:
 
   privnet-mainchain-crc-2:
     container_name: privnet-mainchain-crc-2
-    image: cyberrepublic/elastos-mainchain-node:privnet-v0.4
+    image: cyberrepublic/elastos-mainchain-node:privnet-v0.5
     user: "${UID}:${GID}"
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-crc-2:/ela/elastos
@@ -60,7 +60,7 @@ services:
 
   privnet-mainchain-dpos-1:
     container_name: privnet-mainchain-dpos-1
-    image: cyberrepublic/elastos-mainchain-node:privnet-v0.4
+    image: cyberrepublic/elastos-mainchain-node:privnet-v0.5
     user: "${UID}:${GID}"
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-dpos-1:/ela/elastos
@@ -79,7 +79,7 @@ services:
 
   privnet-mainchain-dpos-2:
     container_name: privnet-mainchain-dpos-2
-    image: cyberrepublic/elastos-mainchain-node:privnet-v0.4
+    image: cyberrepublic/elastos-mainchain-node:privnet-v0.5
     user: "${UID}:${GID}"
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-dpos-2:/ela/elastos
@@ -98,7 +98,7 @@ services:
 
   privnet-arbitrator-crc-1:
     container_name: privnet-arbitrator-crc-1
-    image: cyberrepublic/elastos-arbitrator-node:privnet-v0.4
+    image: cyberrepublic/elastos-arbitrator-node:privnet-v0.5
     user: "${UID}:${GID}"
     depends_on:
       - privnet-mainchain-crc-1
@@ -114,7 +114,7 @@ services:
 
   privnet-arbitrator-crc-2:
     container_name: privnet-arbitrator-crc-2
-    image: cyberrepublic/elastos-arbitrator-node:privnet-v0.4
+    image: cyberrepublic/elastos-arbitrator-node:privnet-v0.5
     user: "${UID}:${GID}"
     depends_on:
       - privnet-mainchain-crc-2
@@ -130,7 +130,7 @@ services:
 
   privnet-arbitrator-origin-1:
     container_name: privnet-arbitrator-origin-1
-    image: cyberrepublic/elastos-arbitrator-node:privnet-v0.4
+    image: cyberrepublic/elastos-arbitrator-node:privnet-v0.5
     user: "${UID}:${GID}"
     depends_on:
       - privnet-mainchain-dpos-1
@@ -146,7 +146,7 @@ services:
 
   privnet-arbitrator-origin-2:
     container_name: privnet-arbitrator-origin-2
-    image: cyberrepublic/elastos-arbitrator-node:privnet-v0.4
+    image: cyberrepublic/elastos-arbitrator-node:privnet-v0.5
     user: "${UID}:${GID}"
     depends_on:
       - privnet-mainchain-dpos-2
@@ -162,7 +162,7 @@ services:
 
   privnet-sidechain-did-node:
     container_name: privnet-sidechain-did-node
-    image: cyberrepublic/elastos-sidechain-did-node:privnet-v0.4
+    image: cyberrepublic/elastos-sidechain-did-node:privnet-v0.5
     user: "${UID}:${GID}"
     volumes:
       - ~/.volumes/elastos-privnet/did-node:/did/elastos_did
@@ -175,7 +175,7 @@ services:
 
   privnet-sidechain-token-node:
     container_name: privnet-sidechain-token-node
-    image: cyberrepublic/elastos-sidechain-token-node:privnet-v0.4
+    image: cyberrepublic/elastos-sidechain-token-node:privnet-v0.5
     user: "${UID}:${GID}"
     volumes:
       - ~/.volumes/elastos-privnet/token-node:/token/elastos_token
@@ -188,7 +188,7 @@ services:
 
   privnet-sidechain-eth-node:
     container_name: privnet-sidechain-eth-node
-    image: cyberrepublic/elastos-sidechain-eth-node:privnet-v0.4
+    image: cyberrepublic/elastos-sidechain-eth-node:privnet-v0.5
     user: "${UID}:${GID}"
     volumes:
       - ~/.volumes/elastos-privnet/eth-node:/eth/elastos_eth
@@ -202,7 +202,7 @@ services:
 
   privnet-sidechain-eth-oracle-node:
     container_name: privnet-sidechain-eth-oracle-node
-    image: cyberrepublic/elastos-sidechain-eth-oracle:privnet-v0.4
+    image: cyberrepublic/elastos-sidechain-eth-oracle:privnet-v0.5
     user: "${UID}:${GID}"
     depends_on:
       - privnet-sidechain-eth-node
@@ -214,7 +214,7 @@ services:
 
   privnet-wallet-service:
     container_name: privnet-wallet-service
-    image: cyberrepublic/elastos-wallet-service:privnet-v0.4
+    image: cyberrepublic/elastos-wallet-service:privnet-v0.5
     user: "${UID}:${GID}"
     depends_on:
       - privnet-mainchain-node
@@ -231,7 +231,7 @@ services:
 
   privnet-sidechain-service:
     container_name: privnet-sidechain-service
-    image: cyberrepublic/elastos-sidechain-service:privnet-v0.4
+    image: cyberrepublic/elastos-sidechain-service:privnet-v0.5
     user: "${UID}:${GID}"
     depends_on:
       - privnet-sidechain-did-node
@@ -248,7 +248,7 @@ services:
 
   privnet-api-misc-mainchain:
     container_name: privnet-api-misc-mainchain
-    image: cyberrepublic/elastos-api-misc-service:privnet-v0.4
+    image: cyberrepublic/elastos-api-misc-service:privnet-v0.5
     user: "${UID}:${GID}"
     volumes:
       - ${PWD}/restful-services/api-misc/mainchain/config.json:/home/elauser/config.json
@@ -269,7 +269,7 @@ services:
 
   privnet-api-misc-sidechain-did:
     container_name: privnet-api-misc-sidechain-did
-    image: cyberrepublic/elastos-api-misc-service:privnet-v0.4
+    image: cyberrepublic/elastos-api-misc-service:privnet-v0.5
     user: "${UID}:${GID}"
     volumes:
       - ${PWD}/restful-services/api-misc/sidechain/did/config.json:/home/elauser/config.json
