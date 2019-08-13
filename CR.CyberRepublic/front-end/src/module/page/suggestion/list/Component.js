@@ -586,6 +586,9 @@ const ShortDesc = styled.div`
     figure.md-block-image figcaption .public-DraftStyleDefault-block {
       text-align: left;
     }
+    .public-DraftEditor-content {
+      padding: 0px 15px;
+    }
   }
 `
 
