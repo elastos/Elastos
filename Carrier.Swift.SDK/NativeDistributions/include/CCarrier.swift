@@ -717,9 +717,13 @@ internal struct CCallbacks {
      * @param
      *      context     [in] The application defined context data.
      */
-    var group_invite: (@convention(c) (OperationQueue?, UnsafePointer<Int8>?, UnsafeRawPointer?, Int,
+    var group_invite: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UnsafePointer<Int8>?, Int,
         UnsafeMutableRawPointer?) -> Swift.Void)!
-
+//    var group_invite: (@convention(c) (OpaquePointer?, UnsafePointer<Int8>?, UnsafePointer<Int8>?, Int, UnsafeMutableRawPointer?) -> Swift.Void)!
+//    void (*group_invite)(ElaCarrier *w, const char *from,
+//    const void *cookie, size_t len, void *context);
+//    void (*friend_message)(ElaCarrier *carrier, const char *from,
+//    const void *msg, size_t len, void *context);
     /**
      * \~English
      * Group related callbacks.

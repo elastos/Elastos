@@ -195,8 +195,8 @@ private func onFriendInvite(_: OpaquePointer?, cfrom: UnsafePointer<Int8>?,
     handler.didReceiveFriendInviteRequest?(carrier, from, data)
 }
 
-private func onGroupInvite(_: OperationQueue?, cfrom: UnsafePointer<Int8>?,
-                           _ ccookie: UnsafeRawPointer?, _ length: Int,
+private func onGroupInvite(_: OpaquePointer?, cfrom: UnsafePointer<Int8>?,
+                           _ ccookie: UnsafePointer<Int8>?, _ length: Int,
                            cctxt: UnsafeMutableRawPointer?) {
     let carrier = getCarrier(cctxt!)
     let handler = carrier.delegate!
