@@ -84,7 +84,7 @@ const renderRichEditor = (data, key, getFieldDecorator, max, callback) => {
   })
 
   const content_el = (
-    <DraftEditor contentType={_.get(data, 'contentType')} callback={callback} />
+    <DraftEditor contentType={_.get(data, 'contentType')} callback={callback} activeKey={key} />
   )
   return content_fn(content_el)
 }
@@ -185,29 +185,6 @@ class C extends BaseComponent {
 
   saveDraft = async (isShowMsg = false, isShowErr = false) => {
     const { edit, form, updateDraft, suggestionId } = this.props
-    // Don't check field value when automatically save draft
-    if (!isShowErr) {
-      const values = {}
-      values._id = edit
-      values.title = form.getFieldValue('title')
-      values.type = form.getFieldValue('type')
-      const keys = [
-        'abstract',
-        'goal',
-        'motivation',
-        'plan',
-        'relevance',
-        'budget'
-      ]
-      keys.forEach(key => {
-        values[key] = formatValue(form.getFieldValue(key))
-      })
-      try {
-        return await updateDraft(values)
-      } catch (error) {
-        message.error(error.message)
-      }
-    }
 
     form.validateFields(async (err, values) => {
       if (err) {
@@ -252,6 +229,21 @@ class C extends BaseComponent {
 
   saveDraftWithMsg = () => this.saveDraft(true, true)
 
+  onInputChange = (activeKey) => {
+    const { form } = this.props
+    const err = transform(form.getFieldError(activeKey))
+    const { errKeys } = this.state
+    let errorKeys = []
+    if (errKeys) errorKeys = [...errKeys]
+    if (err) {
+      if(_.includes(errorKeys, activeKey)) return
+      this.setState({ errKeys: [...errorKeys, activeKey] })
+    } else {
+      const keys = _.filter(errorKeys, key => key !== activeKey)
+      this.setState({ errKeys: keys })
+    }
+  }
+
   getInputProps(data) {
     const { edit } = this.props
     const { getFieldDecorator } = this.props.form
@@ -271,13 +263,14 @@ class C extends BaseComponent {
       WORD_LIMIT,
       this.validateAbstract
     )
-    const goal = renderRichEditor(data, 'goal', getFieldDecorator)
-    const motivation = renderRichEditor(data, 'motivation', getFieldDecorator)
-    const relevance = renderRichEditor(data, 'relevance', getFieldDecorator)
-    const budget = renderRichEditor(data, 'budget', getFieldDecorator)
-    const plan = renderRichEditor(data, 'plan', getFieldDecorator)
-    const type = renderTypeRadioGroup(data, 'type', getFieldDecorator)
 
+    const goal = renderRichEditor(data, 'goal', getFieldDecorator, null, this.onInputChange)
+    const motivation = renderRichEditor(data, 'motivation', getFieldDecorator, null, this.onInputChange)
+    const relevance = renderRichEditor(data, 'relevance', getFieldDecorator, null, this.onInputChange)
+    const budget = renderRichEditor(data, 'budget', getFieldDecorator, null, this.onInputChange)
+    const plan = renderRichEditor(data, 'plan', getFieldDecorator, null, this.onInputChange)
+    const type = renderTypeRadioGroup(data, 'type', getFieldDecorator, null, this.onInputChange)
+    
     return {
       title: title_fn(title_el),
       abstract,
