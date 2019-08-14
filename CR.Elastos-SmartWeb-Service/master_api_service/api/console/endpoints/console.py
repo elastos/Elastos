@@ -31,5 +31,53 @@ class Upload(Resource):
 				mimetype='application/json'
 			)
 
+@ns.route('/uploadAndSign')
+class UploadAndSign(Resource):
+
+	def get(self):
+		"""
+		Returns Hash key of the content added.
+		"""
+		api_url_base = 'http://10.192.113.16:9095/api/v0/file/add'
+		headers = {'Content-type': 'application/json'}
+		req_data = request.form
+		print(req_data)
+		myResponse = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
+		return Response(json.dumps(myResponse), 
+        	mimetype='application/json'
+        	)
+
+@ns.route('/verifyAndShow')
+class VerifyAndShow(Resource):
+
+	def get(self):
+		"""
+		Returns content of the hash key.
+		"""
+		api_url_base = 'http://10.192.113.16:9095/api/v0/file/add'
+		headers = {'Content-type': 'application/json'}
+		req_data = request.form
+		print(req_data)
+		myResponse = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
+		return Response(json.dumps(myResponse), 
+        	mimetype='application/json'
+        	)
+
+@ns.route('/transferELADemo')
+class TransferELADemo(Resource):
+
+	def get(self):
+		"""
+		Returns content of the hash key.
+		"""
+		api_url_base = 'http://10.192.113.16:9095/api/v0/file/add'
+		headers = {'Content-type': 'application/json'}
+		req_data = request.form
+		print(req_data)
+		myResponse = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
+		return Response(json.dumps(myResponse), 
+        	mimetype='application/json'
+        	)
+
 
   
