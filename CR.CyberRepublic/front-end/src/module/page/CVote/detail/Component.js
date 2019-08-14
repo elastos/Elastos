@@ -24,6 +24,7 @@ import MetaComponent from '@/module/shared/meta/Container'
 import Translation from '@/module/common/Translation/Container'
 import DraftEditor from '@/module/common/DraftEditor'
 import { createEditorState } from 'medium-draft'
+import { convertFromHTML, ContentState, EditorState } from 'draft-js'
 import mediumDraftExporter from 'medium-draft/lib/exporter'
 import { StickyContainer, Sticky } from 'react-sticky'
 import VoteResultComponent from '../common/vote_result/Component'
@@ -86,11 +87,25 @@ const getHTML = (data, key) => {
   const { contentType } = data
   const content = _.get(data, key, '')
   let editorState
-  if (content && contentType === 'MARKDOWN') {
-    editorState = createEditorState(JSON.parse(content))
-    return mediumDraftExporter(editorState.getCurrentContent())
+  if (!content) {
+    editorState = createEditorState()
+  } else if (contentType === 'MARKDOWN') {
+    try {
+      editorState = createEditorState(JSON.parse(content))
+    } catch(err) {}
   }
-  return content
+
+  if (!editorState) {
+    const blocksFromHTML = convertFromHTML(content)
+    const state = ContentState.createFromBlockArray(
+      blocksFromHTML.contentBlocks,
+      blocksFromHTML.entityMap
+    )
+    editorState = EditorState.createWithContent(state)
+  }
+
+  return mediumDraftExporter(editorState.getCurrentContent())
+  // return content
 }
 
 class C extends StandardPage {
