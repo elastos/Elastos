@@ -12,7 +12,7 @@ services:
     ports:
       - 10011-10017:20333-20339
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:10012/api/v1/block/height"]
+      test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"method\":\"getbestblockhash\"}'", "http://localhost:10014"]
       interval: 30s
       timeout: 120s
       retries: 5
@@ -31,7 +31,7 @@ services:
     ports:
       - 10111-10117:20333-20339
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:10112/api/v1/block/height"]
+      test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"method\":\"getbestblockhash\"}'", "http://localhost:10114"]
       interval: 30s
       timeout: 120s
       retries: 5
@@ -50,7 +50,7 @@ services:
     ports:
       - 10211-10217:20333-20339
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:10212/api/v1/block/height"]
+      test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"method\":\"getbestblockhash\"}'", "http://localhost:10214"]
       interval: 30s
       timeout: 120s
       retries: 5
@@ -69,7 +69,7 @@ services:
     ports:
       - 10511-10517:20333-20339
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:10512/api/v1/block/height"]
+      test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"method\":\"getbestblockhash\"}'", "http://localhost:10514"]
       interval: 30s
       timeout: 120s
       retries: 5
@@ -88,7 +88,7 @@ services:
     ports:
       - 10611-10617:20333-20339
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:10612/api/v1/block/height"]
+      test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"method\":\"getbestblockhash\"}'", "http://localhost:10614"]
       interval: 30s
       timeout: 120s
       retries: 5
@@ -169,6 +169,11 @@ services:
       - ${PWD}/ela-sidechain/did/did-node/config.json:/did/config.json
     ports:
       - 30111-30115:20604-20608
+    healthcheck:
+      test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"method\":\"getbestblockhash\"}'", "http://localhost:30113"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
     networks:
       - blockchain
     tty: true 
@@ -182,6 +187,11 @@ services:
       - ${PWD}/ela-sidechain/token/token-node/config.json:/token/config.json
     ports:
       - 40111-40115:20614-20618
+    healthcheck:
+      test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"method\":\"getbestblockhash\"}'", "http://localhost:40113"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
     networks:
       - blockchain
     tty: true 
@@ -197,6 +207,11 @@ services:
       - 60111:20636
       - 60112:20638
       - 60113:8080
+    healthcheck:
+      test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\",\"params\":[], \"id\":1}'", "http://localhost:60111"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
     networks:
       - blockchain
     tty: true 
