@@ -213,7 +213,7 @@ export default class extends StandardPage {
       <div>
         {metaNode}
         {titleNode}
-        {labelNode}
+        <div style={{ margin: '14px 0' }}>{labelNode}</div>
         <div>{tagsNode}</div>
 
         <DescLabel id="preamble">{I18N.get('suggestion.fields.preamble')}</DescLabel>
@@ -286,7 +286,7 @@ export default class extends StandardPage {
     if (status === CVOTE_STATUS.DRAFT) return null
     const linkText = `${I18N.get('council.voting.proposal')} #${vid}`
     return (
-      <Label style={{ margin: '8px 0', display: 'block', border: 'none' }}>
+      <Label style={{ border: 'none' }}>
         {`${I18N.get('suggestion.referred')} `}
         <Link to={`/proposals/${_id}`}>{linkText}</Link>
         {` (${I18N.get(`cvoteStatus.${status}`)})`}

@@ -27,8 +27,8 @@ export const Title = styled.div`
   color: ${text.newGray};
   margin-top: 26px;
   margin-bottom: 8px;
-  background-color: ${bg.blue};
-  border: 1px solid ${border.lightBlue};
+  /* background-color: ${bg.blue}; */
+  /* border: 1px solid ${border.lightBlue}; */
   /* border-radius: 4px; */
   padding: 4px 8px;
  `
