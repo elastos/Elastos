@@ -6,6 +6,8 @@
 package blockchain
 
 import (
+	"time"
+
 	. "github.com/elastos/Elastos.ELA/common"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -44,6 +46,26 @@ type IChainStore interface {
 
 	IsTxHashDuplicate(txhash Uint256) bool
 	IsSidechainTxHashDuplicate(sidechainTxHash Uint256) bool
+	IsBlockInStore(hash *Uint256) bool
+
+	Close()
+}
+
+// IChainStore provides func with store package.
+type IFFLDBChainStore interface {
+	SaveBlock(b *Block, node *BlockNode, confirm *payload.Confirm,
+		medianTimePast time.Time) error
+	RollbackBlock(hash Uint256) error
+
+	GetBlock(hash Uint256) (*Block, error)
+	GetConfirm(hash Uint256) (*payload.Confirm, error)
+	GetHeader(hash Uint256) (*Header, error)
+
+	GetTransaction(txID Uint256) (*Transaction, uint32, error)
+	GetTxReference(tx *Transaction) (map[*Input]*Output, error)
+	GetTxReferenceInfo(tx *Transaction) (map[*Input]*TxReference, error)
+
+	IsTxHashDuplicate(txhash Uint256) bool
 	IsBlockInStore(hash *Uint256) bool
 
 	Close()

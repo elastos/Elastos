@@ -10,6 +10,7 @@ import (
 	"container/list"
 	"errors"
 	"fmt"
+	"github.com/elastos/Elastos.ELA/database"
 	"math/big"
 	"sort"
 	"sync"
@@ -42,6 +43,7 @@ var (
 type BlockChain struct {
 	chainParams *config.Params
 	db          IChainStore
+	fflDB       database.DB
 	state       *state.State
 	crCommittee *crstate.Committee
 	UTXOCache   *UTXOCache
@@ -57,6 +59,7 @@ type BlockChain struct {
 
 	BestChain *BlockNode
 	Root      *BlockNode
+	Nodes     []*BlockNode
 	Index     map[Uint256]*BlockNode
 	IndexLock sync.RWMutex
 	DepNodes  map[Uint256][]*BlockNode
@@ -74,7 +77,7 @@ type BlockChain struct {
 	mutex          sync.RWMutex
 }
 
-func New(db IChainStore, chainParams *config.Params, state *state.State,
+func New(db IChainStore, ffldb database.DB, chainParams *config.Params, state *state.State,
 	committee *crstate.Committee) (*BlockChain, error) {
 
 	targetTimespan := int64(chainParams.TargetTimespan / time.Second)
@@ -83,6 +86,7 @@ func New(db IChainStore, chainParams *config.Params, state *state.State,
 	chain := BlockChain{
 		chainParams:         chainParams,
 		db:                  db,
+		fflDB:               ffldb,
 		state:               state,
 		crCommittee:         committee,
 		UTXOCache:           NewUTXOCache(db),
@@ -92,6 +96,7 @@ func New(db IChainStore, chainParams *config.Params, state *state.State,
 		blocksPerRetarget:   uint32(targetTimespan / targetTimePerBlock),
 		Root:                nil,
 		BestChain:           nil,
+		Nodes:               make([]*BlockNode, 0),
 		Index:               make(map[Uint256]*BlockNode),
 		DepNodes:            make(map[Uint256][]*BlockNode),
 		oldestOrphan:        nil,
@@ -103,29 +108,38 @@ func New(db IChainStore, chainParams *config.Params, state *state.State,
 		TimeSource:          NewMedianTime(),
 	}
 
-	endHeight := chain.db.GetHeight()
-	startHeight := uint32(0)
-	if endHeight > minMemoryNodes {
-		startHeight = endHeight - minMemoryNodes
+	// Initialize the chain state from the passed database.  When the db
+	// does not yet contain any chain state, both it and the chain state
+	// will be initialized to contain only the genesis block.
+	if err := chain.initChainState(); err != nil {
+		return nil, err
 	}
 
-	for start := startHeight; start <= endHeight; start++ {
-		hash, err := chain.db.GetBlockHash(start)
-		if err != nil {
-			return nil, err
-		}
-		header, err := chain.db.GetHeader(hash)
-		if err != nil {
-			return nil, err
-		}
-		node, err := chain.LoadBlockNode(header, &hash)
-		if err != nil {
-			return nil, err
-		}
-
-		// This node is now the end of the best chain.
-		chain.BestChain = node
-	}
+	// todo first from old db
+	//endHeight := chain.db.GetHeight()
+	//startHeight := uint32(0)
+	//if endHeight > minMemoryNodes {
+	//	startHeight = endHeight - minMemoryNodes
+	//}
+	//
+	//for start := startHeight; start <= endHeight; start++ {
+	//	hash, err := chain.db.GetBlockHash(start)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	header, err := chain.db.GetHeader(hash)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	node, err := chain.LoadBlockNode(header, &hash)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	chain.AddNodeToNodes(node)
+	//
+	//	// This node is now the end of the best chain.
+	//	chain.BestChain = node
+	//}
 
 	return &chain, nil
 }
@@ -261,6 +275,28 @@ func (b *BlockChain) GetHeader(hash Uint256) (*Header, error) {
 // Get block with block hash.
 func (b *BlockChain) GetBlockByHash(hash Uint256) (*Block, error) {
 	return b.db.GetBlock(hash)
+}
+
+// Get block with block hash.
+func (b *BlockChain) GetBlockHash(height uint32) (Uint256, error) {
+	b.IndexLock.RLock()
+	defer b.IndexLock.RUnlock()
+
+	if height >= uint32(len(b.Nodes)) {
+		return Uint256{}, errors.New("not found block")
+	}
+	return *b.Nodes[height].Hash, nil
+}
+
+// Get block with block hash.
+func (b *BlockChain) GetBlockNode(height uint32) *BlockNode {
+	b.IndexLock.RLock()
+	defer b.IndexLock.RUnlock()
+
+	if height >= uint32(len(b.Nodes)) {
+		return nil
+	}
+	return b.Nodes[height]
 }
 
 // Get DPOS block with block hash.
@@ -894,10 +930,13 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block, confirm *pay
 		return err
 	}
 
-	err = b.db.RollbackBlock(*node.Hash)
-	if err != nil {
-		return err
-	}
+	err = b.RollbackBlock(block, node, confirm, b.MedianTimePast)
+
+	// todo complete me
+	//err = b.db.RollbackBlock(*node.Hash)
+	//if err != nil {
+	//	return err
+	//}
 
 	// Rollback state memory DB
 	if block.Height-1 >= b.chainParams.VoteStartHeight {
@@ -912,6 +951,9 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block, confirm *pay
 	node.InMainChain = false
 	b.blockCache[*node.Hash] = block
 	b.confirmCache[*node.Hash] = confirm
+
+	// Remove block node from Nodes
+	b.RemoveNodeFromNodes(node)
 
 	//// This node's parent is now the end of the best chain.
 	b.BestChain = node.Parent
@@ -954,7 +996,7 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payloa
 	}
 
 	// Insert the block into the database which houses the main chain.
-	if err := b.db.SaveBlock(block, confirm); err != nil {
+	if err := b.SaveBlock(block, node, confirm, b.MedianTimePast); err != nil {
 		return err
 	}
 
@@ -962,6 +1004,7 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payloa
 	// lookups.
 	node.InMainChain = true
 	//b.Index[*node.Hash] = node
+	b.AddNodeToNodes(node)
 	b.AddNodeToIndex(node)
 	b.DepNodes[*prevHash] = append(b.DepNodes[*prevHash], node)
 
@@ -1273,15 +1316,26 @@ func (b *BlockChain) LatestBlockLocator() ([]*Uint256, error) {
 
 func (b *BlockChain) AddNodeToIndex(node *BlockNode) {
 	b.IndexLock.Lock()
-	defer b.IndexLock.Unlock()
-
 	b.Index[*node.Hash] = node
+	b.IndexLock.Unlock()
+}
+
+func (b *BlockChain) AddNodeToNodes(node *BlockNode) {
+	b.IndexLock.Lock()
+	b.Nodes = append(b.Nodes, node)
+	b.IndexLock.Unlock()
 }
 
 func (b *BlockChain) RemoveNodeFromIndex(node *BlockNode) {
 	b.IndexLock.Lock()
 	defer b.IndexLock.Unlock()
 	delete(b.Index, *node.Hash)
+}
+
+func (b *BlockChain) RemoveNodeFromNodes(node *BlockNode) {
+	b.IndexLock.Lock()
+	b.Nodes = b.Nodes[0:node.Height]
+	b.IndexLock.Unlock()
 }
 
 func (b *BlockChain) LookupNodeInIndex(hash *Uint256) (*BlockNode, bool) {
