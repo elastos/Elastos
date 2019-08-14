@@ -25,7 +25,7 @@ type Header struct {
 }
 
 func (header *Header) Serialize(w io.Writer) error {
-	err := header.serializeNoAux(w)
+	err := header.SerializeNoAux(w)
 	if err != nil {
 		return err
 	}
@@ -64,7 +64,7 @@ func (header *Header) Deserialize(r io.Reader) error {
 	return nil
 }
 
-func (header *Header) serializeNoAux(w io.Writer) error {
+func (header *Header) SerializeNoAux(w io.Writer) error {
 	return common.WriteElements(w,
 		header.Version,
 		&header.Previous,
@@ -78,6 +78,6 @@ func (header *Header) serializeNoAux(w io.Writer) error {
 
 func (header *Header) Hash() common.Uint256 {
 	buf := new(bytes.Buffer)
-	header.serializeNoAux(buf)
+	header.SerializeNoAux(buf)
 	return common.Uint256(common.Sha256D(buf.Bytes()))
 }
