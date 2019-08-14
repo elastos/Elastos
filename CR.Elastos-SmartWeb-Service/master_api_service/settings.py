@@ -15,7 +15,7 @@ SQLALCHEMY_TRACK_MODIFICATIONS = False
 #GMU Net
 
 #Wallet Service
-WALLET_SERVICE_URL = 'http://localhost:8091/api'
+WALLET_SERVICE_URL = 'http://10.192.113.16:8091/api'
 WALLET_API_BALANCE = '/1/balance/'
 WALLET_API_CREATE = '/1/createWallet'
 WALLET_API_DPOS_VOTE = '/1/dpos/vote'
@@ -25,14 +25,14 @@ WALLET_API_TRANSFER = '/1/transfer'
 WALLET_API_MNEMONIC = '/1/eng/mnemonic'
 
 #DID sidechain
-DID_SERVICE_URL = 'http://localhost:8092/api'
+DID_SERVICE_URL = 'http://10.192.113.16:8092/api'
 DID_SERVICE_GEN_DID = '/1/gen/did'
 DID_SERVICE_SET_DID_INFO = '/1/setDidInfo'
 DID_SERVICE_SIGN = '/1/sign'
 DID_SERVICE_VERIFY = '/1/verify'
 
 #Mainchain
-MAINCHAIN_RPC_URL = 'http://localhost:10014'
+MAINCHAIN_RPC_URL = 'http://10.192.113.16:10014'
 
 #Sidechain
-SIDECHAIN_RPC_URL = 'http://localhost:30113'
+SIDECHAIN_RPC_URL = 'http://10.192.113.16:30113'
