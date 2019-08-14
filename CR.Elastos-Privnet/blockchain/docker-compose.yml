@@ -195,7 +195,8 @@ services:
       - ${PWD}/ela-sidechain/eth/eth-node/eth-accounts-pass.txt:/eth/eth-accounts-pass.txt
     ports:
       - 60111:20636
-      - 60112:30303
+      - 60112:20638
+      - 60113:8080
     networks:
       - blockchain
     tty: true 
@@ -207,7 +208,7 @@ services:
     depends_on:
       - privnet-sidechain-eth-node
     ports:
-      - 60113:20632
+      - 60114:20632
     networks:
       - blockchain
     tty: true 

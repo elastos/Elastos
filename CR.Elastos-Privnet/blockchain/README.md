@@ -76,8 +76,8 @@ These are located in the `wallets` folder:
 ### Sidechain nodes
 - DID sidechain node: 30111-30115
 - Token sidechain node: 40111-40115
-- ETH sidechain node: 60111-60112
-- ETH sidechain oracle node: 60113
+- ETH sidechain node: 60111-60113
+- ETH sidechain oracle node: 60114
 
 ### Arbitrator nodes
 - CRC node 1: 50114-50115
