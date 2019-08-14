@@ -70,3 +70,15 @@ func (b *Block) GetSize() int {
 func (b *Block) Hash() common.Uint256 {
 	return b.Header.Hash()
 }
+
+
+// SerializeSizeStripped returns the number of bytes it would take to serialize
+// the block, excluding any witness data (if any).
+func (b *Block) SerializeSizeStripped() int {
+
+	// todo add cache for size according to btcd
+	buf  := new(bytes.Buffer)
+	b.Serialize(buf)
+
+	return len(buf.Bytes())
+}

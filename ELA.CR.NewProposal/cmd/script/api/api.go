@@ -172,6 +172,7 @@ func initLedger(L *lua.LState) int {
 	log.NewDefault(test.NodeLogPath, logLevel, 0, 0)
 	dlog.Init(logLevel, 0, 0)
 
+	ledger := blockchain.Ledger{}
 	chainStore, err := blockchain.NewChainStore(test.DataPath, chainParams.GenesisBlock)
 	if err != nil {
 		fmt.Printf("Init chain store error: %s \n", err.Error())
@@ -180,21 +181,26 @@ func initLedger(L *lua.LState) int {
 	arbiters, err := state.NewArbitrators(chainParams,
 		chainStore.GetHeight,
 		func(height uint32) (*types.Block, error) {
-			hash, err := chainStore.GetBlockHash(height)
+			hash, err := ledger.Blockchain.GetBlockHash(height)
 			if err != nil {
 				return nil, err
 			}
 			return chainStore.GetBlock(hash)
 		}, nil)
 
+	fflDB, err := blockchain.LoadBlockDB(test.DataPath)
+	if err != nil {
+		fmt.Printf("Init fflDB error: %s \n", err.Error())
+	}
+	defer fflDB.Close()
+
 	var interrupt = signal.NewInterrupt()
-	chain, err := blockchain.New(chainStore, chainParams,
+	chain, err := blockchain.New(chainStore, fflDB, chainParams,
 		state.NewState(chainParams, arbiters.GetArbitrators, nil), nil)
 	if err != nil {
 		fmt.Printf("Init block chain error: %s \n", err.Error())
 	}
 
-	ledger := blockchain.Ledger{}
 	blockchain.FoundationAddress = chainParams.Foundation
 	blockchain.DefaultLedger = &ledger // fixme
 	blockchain.DefaultLedger.Blockchain = chain

@@ -158,6 +158,12 @@ func startNode(c *cli.Context) {
 	defer chainStore.Close()
 	ledger.Store = chainStore // fixme
 
+	fflDB, err := blockchain.LoadBlockDB(dataPath)
+	if err != nil {
+		printErrorAndExit(err)
+	}
+	defer fflDB.Close()
+
 	var dposStore store.IDposStore
 	dposStore, err = store.NewDposStore(dataDir, activeNetParams)
 	if err != nil {
@@ -173,7 +179,7 @@ func startNode(c *cli.Context) {
 
 	arbiters, err := state.NewArbitrators(activeNetParams,
 		chainStore.GetHeight, func(height uint32) (*types.Block, error) {
-			hash, err := chainStore.GetBlockHash(height)
+			hash, err := blockchain.DefaultLedger.Blockchain.GetBlockHash(height)
 			if err != nil {
 				return nil, err
 			}
@@ -204,8 +210,8 @@ func startNode(c *cli.Context) {
 	committee := crstate.NewCommittee(activeNetParams)
 	ledger.Committee = committee
 
-	chain, err := blockchain.New(chainStore, activeNetParams, arbiters.State,
-		committee)
+	chain, err := blockchain.New(chainStore, fflDB, activeNetParams,
+		arbiters.State, committee)
 	if err != nil {
 		printErrorAndExit(err)
 	}
