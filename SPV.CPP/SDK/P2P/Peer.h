@@ -211,6 +211,8 @@ namespace Elastos {
 
 			void AddKnownTxHashes(const std::vector<uint256> &txHashes);
 
+			void RemoveKnownTxHashes(const std::vector<uint256> &txHashes);
+
 			bool IsIPv4() const;
 
 			double GetStartTime() const;

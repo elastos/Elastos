@@ -572,6 +572,22 @@ namespace Elastos {
 			}
 		}
 
+		void Peer::RemoveKnownTxHashes(const std::vector<uint256> &txHashes) {
+			for (size_t i = 0; i < txHashes.size(); ++i) {
+				if (_knownTxHashSet.find(txHashes[i]) != _knownTxHashSet.end()) {
+					_knownTxHashSet.erase(txHashes[i]);
+				}
+
+				for (std::vector<uint256>::iterator it = _knownTxHashes.begin(); it != _knownTxHashes.end();) {
+					if ((*it) == txHashes[i]) {
+						it = _knownTxHashes.erase(it);
+					} else {
+						++it;
+					}
+				}
+			}
+		}
+
 		std::string Peer::FormatError(int errnum) {
 			return std::string(strerror(errnum));
 		}

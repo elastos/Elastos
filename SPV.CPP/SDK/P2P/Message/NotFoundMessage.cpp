@@ -59,6 +59,7 @@ namespace Elastos {
 				}
 			}
 
+			_peer->RemoveKnownTxHashes(txHashes);
 			FireNotfound(txHashes, blockHashes);
 
 			return true;
