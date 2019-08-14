@@ -47,6 +47,8 @@ tags
 .*.py
 *.bak
 .DS_Store
+doxygen.cfg
+doc/
 
 cmake-*
 
