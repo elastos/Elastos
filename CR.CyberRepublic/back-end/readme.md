@@ -35,3 +35,22 @@ swagger doc is running on **http://localhost:9001**
 
 ### Currently tests must be `runInBand`
 
+## Migrations
+### Suggestions
+```
+db.getCollection('suggestions').find({ abstract: { $exists: false } }).forEach(
+  function(item) {
+    db.suggestions.update(
+      { "_id": item._id },
+      {
+        "$set": {
+          "abstract": item.shortDesc,
+          "goal": item.benefits,
+          "motivation": item.desc,
+          "budget": "{\"blocks\":[{\"key\":\"1c8g9\",\"text\":\"" + item.funding + "\",\"type\":\"unstyled\",\"depth\":0,\"inlineStyleRanges\":[],\"entityRanges\":[],\"data\":{}}],\"entityMap\":{}}"
+        }
+      }, false, true
+    )
+  }
+)
+```

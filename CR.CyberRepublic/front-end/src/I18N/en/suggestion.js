@@ -1,13 +1,17 @@
 import { CVOTE_TRACKING_STATUS, CVOTE_SUMMARY_STATUS } from '@/constant'
 
 export default {
+  title: {
+    add: 'ADD A SUGGESTION',
+    edit: 'EDIT SUGGESTION'
+  },
   fields: {
     title: 'Title',
     preamble: 'Preamble',
     preambleSub: {
-      proposal: 'CRC Proposal',
+      suggestion: 'Suggestion',
       title: 'Title',
-      proposer: 'Proposer',
+      creator: 'Creator',
       status: 'Status',
       created: 'Created'
     },
@@ -23,73 +27,31 @@ export default {
     summary: 'Summary'
   },
   btn: {
-    tracking: {
-      reject: 'Reject & Comment',
-      approve: 'Approve & Publish'
-    },
-    summary: {
-      reject: 'Reject & Comment',
-      approve: 'Approve & Publish'
-    }
-  },
-  text: {
-    tracking: {
-      reviewDetails: 'Review Details',
-      notice: {
-        header: '',
-        footer: ''
-      }
-    },
-    summary: {
-      reviewDetails: 'Review Details',
-      notice: {
-        header: '',
-        footer: ''
-      }
-    }
+    makeIntoProposal: 'Make Into Proposal'
   },
   status: {
-    tracking: {
-      [CVOTE_TRACKING_STATUS.DRAFT]: 'DRAFT',
-      [CVOTE_TRACKING_STATUS.REVIEWING]: 'BEING REVIEWED',
-      [CVOTE_TRACKING_STATUS.PUBLISHED]: 'APPROVED ✓',
-      [CVOTE_TRACKING_STATUS.REJECT]: 'REJECTED !'
-    },
-    summary: {
-      [CVOTE_SUMMARY_STATUS.DRAFT]: 'DRAFT',
-      [CVOTE_SUMMARY_STATUS.REVIEWING]: 'BEING REVIEWED',
-      [CVOTE_SUMMARY_STATUS.PUBLISHED]: 'APPROVED ✓',
-      [CVOTE_SUMMARY_STATUS.REJECT]: 'REJECTED !'
-    },
-    trackingRaw: {
-      undefined: '',
-      [CVOTE_TRACKING_STATUS.DRAFT]: 'DRAFT',
-      [CVOTE_TRACKING_STATUS.REVIEWING]: 'BEING REVIEWED',
-      [CVOTE_TRACKING_STATUS.PUBLISHED]: 'APPROVED',
-      [CVOTE_TRACKING_STATUS.REJECT]: 'REJECTED'
-    },
-    summaryRaw: {
-      undefined: '',
-      [CVOTE_SUMMARY_STATUS.DRAFT]: 'DRAFT',
-      [CVOTE_SUMMARY_STATUS.REVIEWING]: 'BEING REVIEWED',
-      [CVOTE_SUMMARY_STATUS.PUBLISHED]: 'APPROVED',
-      [CVOTE_SUMMARY_STATUS.REJECT]: 'REJECTED'
-    }
+    posted: 'Posted',
+    underConsideration: 'Under Council Consideration',
+    moreInfoRequired: 'More Info Required',
+    referred: 'Referred in Proposal'
   },
   form: {
-    tracking: {
-      btn: {
-        submit: 'Submit for Review'
-      },
-      add: 'Add Tracking Plan'
+    button: {
+      continue: 'Continue',
+      cancel: 'Cancel',
+      saveDraft: 'Save as Draft',
+      save: 'Save & Post'
     },
-    summary: {
-      btn: {
-        submit: 'Submit for Review'
-      },
-      add: 'Add Summary'
+    fields: {
+      title: 'Title',
+    },
+    type: {
+      newMotion: 'New Motion',
+      motionAgainst: 'Motion Against',
+      anythingElse: 'Anything Else'
     },
     note: {
+      type: 'Select a suggestion type.',
       abstract:
         'Provide a brief description of the proposal content (no more than 200 words).',
       goal:
@@ -116,11 +78,24 @@ export default {
       limit200: 'You can only type 200 words max.'
     }
   },
+  modal: {
+    addTagComment: 'Add Comment',
+    confirm: 'Confirm',
+    cancel: 'Cancel',
+    pleaseUpdate:
+      'Please update the Suggestion with the requested info and notify the council/community through a comment.',
+    commentsFromCouncil: 'Comments from Council/Admin:',
+    consideration: 'Are you sure to mark this suggestion as under council consideration?'
+  },
+  tag: {
+    show: 'Show',
+    type: {
+      UNDER_CONSIDERATION: 'Under Council Consideration',
+      INFO_NEEDED: 'More Info Required',
+      ADDED_TO_PROPOSAL: 'Added to Proposal'
+    }
+  },
   msg: {
-    rejected: 'Rejected successfully',
-    approved: 'Approved and published successfully',
-    draftSaved:
-      'Saved as draft successfully, you can check it in proposal list page',
-    proposalPublished: 'Proposal published successfully'
+    consideration: 'Marked as under council consideration'
   }
 }

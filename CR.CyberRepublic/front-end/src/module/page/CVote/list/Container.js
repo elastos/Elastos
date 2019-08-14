@@ -14,12 +14,12 @@ const mapState = state => ({
 const mapDispatch = () => {
   const service = new CVoteService()
   return {
-    async createDraft(param) {
-      return service.createDraft(param)
-    },
     async listData(param, isCouncil) {
       return service.listData(param, isCouncil)
     },
+    async createDraft(param) {
+      return service.createDraft(param)
+    }
   }
 }
 

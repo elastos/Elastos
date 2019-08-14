@@ -38,6 +38,8 @@ export const VoteBtnGroup = styled.div`
 export const Label = styled.span`
   background: #F2F6FB;
   padding: 3px 10px;
+  margin-bottom: 16px;
+  display: inline-block;
 `
 
 export const Title = styled.h2`
@@ -109,6 +111,17 @@ export const StyledAnchor = styled(Anchor)`
       height: 0.5em;
       border-bottom: 8px solid ${text.green};
       z-index: -1;
+    }
+  }
+`
+
+export const StyledRichContent = styled.div`
+  .md-RichEditor-root {
+    figure.md-block-image {
+      background: none;
+    }
+    figure.md-block-image figcaption .public-DraftStyleDefault-block {
+      text-align: left;
     }
   }
 `

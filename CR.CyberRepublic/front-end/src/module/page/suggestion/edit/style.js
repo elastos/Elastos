@@ -2,11 +2,11 @@ import { breakPoint } from '@/constants/breakPoint'
 import { text, bg, primary, border } from '@/constants/color'
 import { gap } from '@/constants/variable'
 import styled from 'styled-components'
-import { Button, Row, Anchor } from 'antd'
+import { Button } from 'antd'
 
 export const Container = styled.div`
   max-width: 1200px;
-  margin: 30px 30px 80px 290px;
+  margin: 80px auto 80px 210px;
 
   @media only screen and (max-width: ${breakPoint.xl}) {
     margin-left: 210px;
@@ -15,6 +15,7 @@ export const Container = styled.div`
 
   @media only screen and (max-width: ${breakPoint.lg}) {
     margin-left: 210px;
+
   }
   @media only screen and (max-width: ${breakPoint.mobile}) {
 
@@ -27,8 +28,8 @@ export const Title = styled.div`
   color: ${text.newGray};
   margin-top: 26px;
   margin-bottom: 8px;
-  /* background-color: ${bg.blue}; */
-  /* border: 1px solid ${border.lightBlue}; */
+  background-color: ${bg.blue};
+  border: 1px solid ${border.lightBlue};
   /* border-radius: 4px; */
   padding: 4px 8px;
  `
@@ -58,7 +59,6 @@ export const Label = styled.span`
 
 export const LabelPointer = styled(Label)`
   cursor: pointer;
-  display: inline;
   &:hover {
     background-color: ${primary.light};
   }
@@ -122,62 +122,4 @@ export const IconWrap = styled.div`
   display: inline-block;
   position: relative;
   top: 4px;
-`
-
-export const Item = styled(Row)`
-  margin-top: 10px;
-  font-size: 13px;
-  font-style: italic;
-`
-export const ItemTitle = styled.div`
-  font-weight: 400;
-  :after {
-    content: ':';
-  }
-`
-export const ItemText = styled.div`
-  font-weight: 200;
-`
-
-export const StyledAnchor = styled(Anchor)`
-  position: fixed;
-  top: 250px;
-  left: 30px;
-  @media only screen and (max-width: ${breakPoint.mobile}) {
-    display: none;
-  }
-  .ant-anchor-ink:before {
-    width: 0;
-  }
-  .ant-anchor-ink-ball.visible {
-    display: none;
-  }
-  .ant-anchor-link-title {
-    display: inline;
-  }
-  .ant-anchor-link-active > .ant-anchor-link-title {
-    color: initial;
-    :after {
-      content: "";
-      position: absolute;
-      bottom: -2px;
-      left: 0;
-      right: 0;
-      height: 0.5em;
-      border-bottom: 8px solid ${text.green};
-      z-index: -1;
-    }
-  }
-`
-
-export const StyledRichContent = styled.div`
-  .md-RichEditor-root {
-    padding: 0;
-    figure.md-block-image {
-      background: none;
-    }
-    figure.md-block-image figcaption .public-DraftStyleDefault-block {
-      text-align: left;
-    }
-  }
 `

@@ -1,5 +1,4 @@
 import React from 'react'
-import { Helmet } from 'react-helmet'
 import {
   Form,
   Spin,
@@ -8,6 +7,7 @@ import {
   message,
   Modal,
   Anchor,
+  Popconfirm,
   Row,
   Col
 } from 'antd'
@@ -30,6 +30,8 @@ import VoteResultComponent from '../common/vote_result/Component'
 import Preamble from './Preamble'
 import Tracking from '../tracking/Container'
 import Summary from '../summary/Container'
+import Meta from '@/module/common/Meta'
+import SocialShareButtons from '@/module/common/SocialShareButtons'
 
 import {
   Container,
@@ -41,7 +43,8 @@ import {
   Body,
   SubTitleHeading,
   SubTitleContainer,
-  VoteBtnGroup
+  VoteBtnGroup,
+  StyledRichContent
 } from './style'
 import './style.scss'
 
@@ -51,19 +54,23 @@ const renderRichContent = (data, key, title) => {
   let content
   if (_.isArray(data)) {
     content = _.map(data, item => (
-      <DraftEditor
-        value={item[key]}
-        contentType={item.contentType}
-        editorEnabled={false}
-      />
+      <StyledRichContent>
+        <DraftEditor
+          value={item[key]}
+          contentType={item.contentType}
+          editorEnabled={false}
+        />
+      </StyledRichContent>
     ))
   } else {
     content = (
-      <DraftEditor
-        value={data[key]}
-        contentType={data.contentType}
-        editorEnabled={false}
-      />
+      <StyledRichContent>
+        <DraftEditor
+          value={data[key]}
+          contentType={data.contentType}
+          editorEnabled={false}
+        />
+      </StyledRichContent>
     )
   }
 
@@ -125,6 +132,10 @@ class C extends StandardPage {
     this.setState({ loading: f })
   }
 
+  ord_renderMeta(f = false) {
+    return f
+  }
+
   ord_renderContent() {
     const { data } = this.props
     if (!data) {
@@ -134,6 +145,7 @@ class C extends StandardPage {
         </div>
       )
     }
+
     const anchorNode = this.renderAnchor()
     const contentNode = this.renderContent()
     const translationBtn = this.renderTranslationBtn()
@@ -143,14 +155,26 @@ class C extends StandardPage {
     const trackingNode = this.renderTracking()
     const summaryNode = this.renderSummary()
 
+    // get the first line pure text of abstract
+    let abstract = ''
+    try {
+      if (data.abstract) {
+        const result = JSON.parse(data.abstract)
+        if (result && result.blocks && result.blocks.length) {
+          abstract = result.blocks[0].text
+        }
+      }
+    } catch (error) {
+      console.log('parse abstract err...', error)
+    }
+
     return (
       <div>
-        <Helmet>
-          <title>{`${data.title} - Proposal Detail - Cyber Republic`}</title>
-          <meta property="og:title" content="Proposal Detail" />
-          <meta property="og:description" content={data.title} />
-          <meta name="description" content={data.title} />
-        </Helmet>
+        <Meta
+          desc={abstract}
+          title={`${data.title} - Proposal Detail - Cyber Republic`}
+          url={this.props.location.pathname}
+        />
         {anchorNode}
         <Container className="p_CVoteDetail">
           <StickyContainer>
@@ -165,6 +189,9 @@ class C extends StandardPage {
               {trackingNode}
               {summaryNode}
             </Body>
+            <SocialShareButtons
+              shareQuote={`${data.title} - Proposal Detail - Cyber Republic`}
+            />
           </StickyContainer>
         </Container>
         <Footer />
@@ -189,9 +216,9 @@ class C extends StandardPage {
           }
           const finalStyle = style
             ? {
-                ...style,
-                zIndex: 2
-              }
+              ...style,
+              zIndex: 2
+            }
             : style
           return (
             <div style={finalStyle}>
@@ -245,12 +272,16 @@ class C extends StandardPage {
   }
 
   renderAnchor() {
-    const { data } = this.props
+    const { data, currentUserId } = this.props
     const { trackingStatus, summaryStatus } = this.props
-    const isShowFollowingUp = _.includes(
+    let isShowFollowingUp = _.includes(
       [CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL],
       data.status
     )
+    if (data.status === CVOTE_STATUS.PROPOSED && currentUserId === _.get(data, 'proposer._id')) {
+      isShowFollowingUp = true;
+    }
+
     const trackingTitle = trackingStatus ? (
       <span>
         {I18N.get('proposal.fields.tracking')}{' '}
@@ -493,31 +524,51 @@ class C extends StandardPage {
         {I18N.get('council.voting.btnText.publish')}
       </Button>
     )
+    const deleteDraftProposalBtn = isSelf && canEdit && (
+      <Popconfirm
+        title={I18N.get('council.voting.modal.deleteDraft')}
+        onConfirm={() => this.deleteDraftProposal()}
+        okText={I18N.get('.yes')}
+        cancelText={I18N.get('.no')}
+      >
+        <Button type="danger">
+          {I18N.get('council.voting.btnText.delete')}
+        </Button>
+      </Popconfirm>
+    )
     return (
       <div className="vote-btn-group">
         {editProposalBtn}
         {publishProposalBtn}
+        {deleteDraftProposalBtn}
       </div>
     )
   }
 
   renderTracking() {
-    const { data } = this.props
-    const isShowFollowingUp = _.includes(
+    const { data, currentUserId } = this.props
+    let isShowFollowingUp = _.includes(
       [CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL],
       data.status
     )
+    if (data.status === CVOTE_STATUS.PROPOSED && currentUserId === _.get(data, 'proposer._id')) {
+      isShowFollowingUp = true;
+    }
     if (!isShowFollowingUp) return null
 
     return <Tracking proposal={data} />
   }
 
   renderSummary() {
-    const { data } = this.props
-    const isShowFollowingUp = _.includes(
+    const { data, currentUserId } = this.props
+    let isShowFollowingUp = _.includes(
       [CVOTE_STATUS.ACTIVE, CVOTE_STATUS.INCOMPLETED, CVOTE_STATUS.FINAL],
       data.status
     )
+
+    if (data.status === CVOTE_STATUS.PROPOSED && currentUserId === _.get(data, 'proposer._id')) {
+      isShowFollowingUp = true;
+    }
     if (!isShowFollowingUp) return null
 
     return <Summary proposal={data} />
@@ -645,6 +696,23 @@ class C extends StandardPage {
       await updateCVote(param)
       message.success(I18N.get('from.CVoteForm.message.updated.success'))
       this.refetch()
+      this.ord_loading(false)
+    } catch (e) {
+      message.error(e.message)
+      this.ord_loading(false)
+    }
+  }
+
+  deleteDraftProposal = async () => {
+    const { match, deleteDraft } = this.props
+    const id = _.get(match, 'params.id')
+    const param = { _id: id }
+    this.ord_loading(true)
+    try {
+      await deleteDraft(param)
+      message.success(I18N.get('from.CVoteForm.message.delete.success'))
+      // redirect to proposal list page
+      this.props.history.push('/proposals')
       this.ord_loading(false)
     } catch (e) {
       message.error(e.message)

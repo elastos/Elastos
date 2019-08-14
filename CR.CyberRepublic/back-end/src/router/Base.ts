@@ -73,7 +73,8 @@ export default abstract class {
             }
 
         }catch(e){
-            process.env.NODE_ENV === 'dev' && console.error(e)
+            // process.env.NODE_ENV === 'dev' &&
+            console.error(e)
             this.res.json(this.result(-1, e))
         }
     }

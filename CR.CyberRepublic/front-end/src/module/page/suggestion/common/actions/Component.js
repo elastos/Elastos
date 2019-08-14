@@ -137,13 +137,14 @@ export default class extends BaseComponent {
           onClick={this.handleClick('isAbused')}
           className={`abuse-icon ${isAbused ? 'selected' : ''}`}
         />
-        {(this.props.isAdmin || this.props.isCouncil) ?
-        <IconText
+        {(this.props.isAdmin || this.props.isCouncil) ? (
+          <IconText
           component={!!ArchiveIcon && <ArchiveIcon />}
           text={isArchived ? I18N.get('suggestion.unarchive') : I18N.get('suggestion.archive')}
           onClick={this.handleClick('isArchived')}
           className="archive-icon"
-        /> : ''}
+        />
+        ) : ''}
       </div>
     )
     return (
@@ -215,9 +216,11 @@ export default class extends BaseComponent {
         refetch()
       } else {
         if (state === 'isLiked') {
-          this.setState({ likesNum: isLiked ? likesNum - 1 : likesNum + 1 })
+          const likesCount = likesNum > 0 ? likesNum - 1 : 0
+          this.setState({ likesNum: isLiked ? likesCount : likesNum + 1 })
         } else if (state === 'isDisliked') {
-          this.setState({ dislikesNum: isDisliked ? dislikesNum - 1 : dislikesNum + 1 })
+          const dislikesCount = dislikesNum > 0 ? dislikesNum - 1 : 0
+          this.setState({ dislikesNum: isDisliked ? dislikesCount : dislikesNum + 1 })
         } else if (state === 'isArchived') {
           this.listRefetch()
         }
@@ -225,7 +228,7 @@ export default class extends BaseComponent {
         this.setState({ [state]: !this.state[state] })
       }
     } catch (error) {
-      // err happened
+      console.log('suggestion actions error...', error)
     }
   }
 }

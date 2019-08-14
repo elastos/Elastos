@@ -69,8 +69,7 @@ export default class extends StandardPage {
                 <h3 className="name">{I18N.get('cs.nicola.name')}</h3>
                 <span className="self-intro">{I18N.get('cs.nicola.intro')}</span>
                 <Email>
-                  {I18N.get('cs.contact')}
-:
+                  {I18N.get('cs.contact')}:
                   {' '}
                   {I18N.get('cs.nicola.email')}
                 </Email>

@@ -1,13 +1,17 @@
 import { CVOTE_TRACKING_STATUS, CVOTE_SUMMARY_STATUS } from '@/constant'
 
 export default {
+  title: {
+    add: '添加新建议',
+    edit: '编辑建议'
+  },
   fields: {
     title: '标题',
     preamble: '前导',
     preambleSub: {
-      proposal: 'CRC提案号',
+      suggestion: '建议号',
       title: '标题',
-      proposer: '提案人',
+      creator: '创建人',
       status: '状态',
       created: '创建日期'
     },
@@ -23,73 +27,31 @@ export default {
     summary: '总结'
   },
   btn: {
-    tracking: {
-      reject: '驳回 & 评论',
-      approve: '批准 & 发布'
-    },
-    summary: {
-      reject: '驳回 & 评论',
-      approve: '批准 & 发布'
-    }
-  },
-  text: {
-    tracking: {
-      reviewDetails: '审阅详情',
-      notice: {
-        header: '',
-        footer: ''
-      }
-    },
-    summary: {
-      reviewDetails: '审阅详情',
-      notice: {
-        header: '',
-        footer: ''
-      }
-    }
+    makeIntoProposal: '发布为提案'
   },
   status: {
-    tracking: {
-      [CVOTE_TRACKING_STATUS.DRAFT]: '草稿',
-      [CVOTE_TRACKING_STATUS.REVIEWING]: '审阅中',
-      [CVOTE_TRACKING_STATUS.PUBLISHED]: '已批准 ✓',
-      [CVOTE_TRACKING_STATUS.REJECT]: '被驳回 !'
-    },
-    summary: {
-      [CVOTE_SUMMARY_STATUS.DRAFT]: '草稿',
-      [CVOTE_SUMMARY_STATUS.REVIEWING]: '审阅中',
-      [CVOTE_SUMMARY_STATUS.PUBLISHED]: '已批准 ✓',
-      [CVOTE_SUMMARY_STATUS.REJECT]: '被驳回 !'
-    },
-    trackingRaw: {
-      undefined: '',
-      [CVOTE_TRACKING_STATUS.DRAFT]: '草稿',
-      [CVOTE_TRACKING_STATUS.REVIEWING]: '审阅中',
-      [CVOTE_TRACKING_STATUS.PUBLISHED]: '已批准',
-      [CVOTE_TRACKING_STATUS.REJECT]: '被驳回'
-    },
-    summaryRaw: {
-      undefined: '',
-      [CVOTE_SUMMARY_STATUS.DRAFT]: '草稿',
-      [CVOTE_SUMMARY_STATUS.REVIEWING]: '审阅中',
-      [CVOTE_SUMMARY_STATUS.PUBLISHED]: '已批准',
-      [CVOTE_SUMMARY_STATUS.REJECT]: '被驳回'
-    }
+    posted: '发布',
+    underConsideration: '正在审议中',
+    moreInfoRequired: '需要更多信息',
+    referred: '相关提案'
   },
   form: {
-    tracking: {
-      btn: {
-        submit: '提交'
-      },
-      add: '添加进度'
+    button: {
+      continue: '继续',
+      cancel: '取消',
+      saveDraft: '保存草稿',
+      save: '保存并发布'
     },
-    summary: {
-      btn: {
-        submit: '提交'
-      },
-      add: '添加总结'
+    fields: {
+      title: '标题',
+    },
+    type: {
+      newMotion: '新动议',
+      motionAgainst: '反对动议',
+      anythingElse: '其它事宜'
     },
     note: {
+      type: '选择一个建议类型。',
       abstract: '一个关于提案内容的简短描述（不超过200字）。',
       goal: '描述通过执行提案期望达到的效果。目标应该是清晰且可度量的。',
       motivation:
@@ -111,12 +73,25 @@ export default {
       required: '必填项',
       tooLong: '文字太长',
       limit200: '不能超过200字'
-    },
-    msg: {
-      rejected: '已驳回',
-      approved: '已批准并发布',
-      draftSaved: '草稿保存成功，请前往提案列表查看',
-      proposalPublished: '提案发布成功'
     }
+  },
+  modal: {
+    addTagComment: '添加评论',
+    confirm: '确定',
+    cancel: '取消',
+    pleaseUpdate: '请按照需求更新建议，并通过评论通知委员或社区',
+    commentsFromCouncil: '来自委员或管理员的评论:',
+    consideration: '您确定要将此建议标记为委员会正在审议中？'
+  },
+  tag: {
+    show: '展示',
+    type: {
+      UNDER_CONSIDERATION: '委员会正在审议中',
+      INFO_NEEDED: '需要更多信息',
+      ADDED_TO_PROPOSAL: '已添加到提案'
+    }
+  },
+  msg: {
+    consideration: '已标记为委员会正在审议中'
   }
 }

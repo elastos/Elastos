@@ -1,429 +1,318 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
-import _ from 'lodash'
-import {
-  Row,
-  Col,
-  Form,
-  Input,
-  InputNumber,
-  Button,
-  Icon,
-  DatePicker,
-  Upload,
-  Popover
-} from 'antd'
-import moment from 'moment/moment'
+import { Form, Input, Button, Row, Tabs, Radio } from 'antd'
 import I18N from '@/I18N'
-import ReactQuill from 'react-quill'
-import QuillMention from 'quill-mention'
-import { TOOLBAR_OPTIONS, quillMention } from '@/config/constant'
-import { upload_file } from '@/util'
-import Translation from '@/module/common/Translation/Container'
-import userUtil from '@/util/user'
-import { CoverImg } from './style'
-import './style.scss'
+import _ from 'lodash'
+import { CONTENT_TYPE } from '@/constant'
+import { convertToRaw } from 'draft-js'
+import DraftEditor from '@/module/common/DraftEditor'
+import CircularProgressbar from '@/module/common/CircularProgressbar'
 
-// const atValues = [
-//   { id: 1, value: 'Fredrik Sundqvist' },
-//   { id: 2, value: 'Patrik Sjölin' }
-// ];
-// const hashValues = [
-//   { id: 3, value: 'Fredrik Sundqvist 2' },
-//   { id: 4, value: 'Patrik Sjölin 2' }
-// ]
-
+import 'medium-draft/lib/index.css'
+import {
+  Container,
+  TabPaneInner,
+  Note,
+  TabText,
+  CirContainer
+} from './style'
 
 const FormItem = Form.Item
+const { TabPane } = Tabs
 
-// TOTO: add mention module
-// https://github.com/afconsult/quill-mention
+const WORD_LIMIT = 200
+const TAB_KEYS = ['type', 'abstract', 'goal', 'motivation', 'plan', 'relevance', 'budget']
+const editorTransform = value => {
+  // string or object
+  let result = value
+  if (_.isObject(value)) {
+    try {
+      result = value.getCurrentContent().getPlainText()
+    } catch (error) {
+      result = value
+    }
+  }
+  return result
+}
+
+const formatValue = value => {
+  let result
+  try {
+    result = _.isString(value)
+      ? value
+      : JSON.stringify(convertToRaw(value.getCurrentContent()))
+  } catch (error) {
+    result = _.toString(value)
+  }
+  return result
+}
 
 class C extends BaseComponent {
   constructor(props) {
     super(props)
 
+    this.timer = -1;
     this.state = {
-      showRules: false,
-      coverImg: this.props.data ? this.props.data.coverImg : undefined,
-      text: '',
+      loading: false,
+      activeKey: TAB_KEYS[0],
+      errorKeys: {},
     }
-  }
-
-  handleChange = (value) => {
-    this.setState({text: value})
   }
 
   componentDidMount() {
-    // get council members used for mentions
-    this.props.getCouncilMembers()
+    this.timer = setInterval(() => {
+      this.handleSaveDraft();
+    }, 5000)
   }
 
-  handleSubmit(e) {
+  componentWillUnmount() {
+    clearInterval(this.timer);
+  }
+
+  getActiveKey(key) {
+    if (!TAB_KEYS.includes(key)) return this.state.activeKey
+    return key
+  }
+
+  handleSubmit = async e => {
+    const { onSubmit, form } = this.props
+    this.setState({ loading: true })
+
+    e.preventDefault()
+    form.validateFields((err, values) => {
+      if (err) {
+        this.setState({ loading: false, errorKeys: err, activeKey: this.getActiveKey(Object.keys(err)[0]) })
+        return
+      }
+
+      onSubmit({
+        title: values.title,
+        type: values.type,
+        abstract: formatValue(values.abstract),
+        goal: formatValue(values.goal),
+        motivation: formatValue(values.motivation),
+        relevance: formatValue(values.relevance),
+        budget: formatValue(values.budget),
+        plan: formatValue(values.plan)
+      }).finally(() => this.setState({ loading: false }))
+    })
+  }
+
+  handleSaveDraft = () => {
+    const { form } = this.props
+    if (this.props.onSaveDraft) {
+      const values = form.getFieldsValue();
+      TAB_KEYS.forEach(key => values[key] = formatValue(values[key]))
+      this.props.onSaveDraft(values);
+    }
+  }
+
+  handleContinue = (e) => {
+    const { form } = this.props
     e.preventDefault()
 
-    const {form, onFormSubmit, data} = this.props
-
-    form.validateFields(async (err, values) => {
-      if (!err) {
-        const param = {
-          title: values.title,
-          shortDesc: values.shortDesc,
-          desc: values.description,
-          benefits: values.benefits,
-        }
-        if (values.funding) {
-          param.funding = values.funding
-        }
-        if (!_.isEmpty(values.timeline)) {
-          param.timeline = values.timeline
-        }
-        if (!_.isEmpty(values.link)) {
-          param.link = _.map(_.split(values.link, ','), value => _.trim(value))
-        }
-        if (_.get(data, '_id')) {
-          param.id = _.get(data, '_id')
-        }
-        if (this.state.coverImg) {
-          param.coverImg = this.state.coverImg
-        }
-
-        onFormSubmit(param)
+    form.validateFields((err, values) => {
+      if (err) {
+        this.setState({ loading: false, errorKeys: err, activeKey: this.getActiveKey(Object.keys(err)[0]) })
+        return
       }
-    })
-  }
 
-  mentionModule = {
-    allowedChars: /^[A-Za-z\s]*$/,
-    mentionDenotationChars: ['@'],
-    source: (searchTerm, renderList, mentionChar) => {
-      const values = [{ id: 1, value: `ALL (${I18N.get('suggestion.form.mention.allCouncil')})` }]
-      _.each(this.props.councilMembers, obj => {
-        const mentionStr = `${obj.username} (${userUtil.formatUsername(obj)})`
-        values.push({ id: obj._id, value: mentionStr })
-      })
-
-      if (searchTerm.length === 0) {
-        renderList(values, searchTerm)
+      const index = TAB_KEYS.findIndex(item => item === this.state.activeKey)
+      if (index === TAB_KEYS.length - 1) {
+        this.handleSubmit({ preventDefault: () => {} })
       } else {
-        const matches = []
-        for (let i = 0; i < values.length; i++) {
-          if (values[i].value.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1) {
-            matches.push(values[i])
-          }
-        }
-        renderList(matches, searchTerm)
+        this.setState({ activeKey: TAB_KEYS[index + 1] })
       }
-    },
+    });
   }
 
-  getInputProps() {
+  getTitleInput() {
+    const { initialValues = {} } = this.props
     const { getFieldDecorator } = this.props.form
-    const { data } = this.props
 
-    const input_el = <Input size="large"/>
-    const shortDesc_el = <Input size="large"/>
+    return getFieldDecorator('title', {
+      rules: [
+        { required: true, message: I18N.get('suggestion.form.error.required') }
+      ],
+      initialValue: initialValues.title
+    })(
+      <Input size="large" type="text" />
+    )
+  }
 
-    const p_cover = {
-      showUploadList: false,
-      customRequest: (info) => {
-        upload_file(info.file).then(async (d) => {
-          this.setState({
-            coverImg: d.url
-          })
-        })
+  getTypeRadioGroup = (key) => {
+    const { getFieldDecorator } = this.props.form
+    const rules = [
+      {
+        required: true,
+        message: I18N.get('suggestion.form.error.required')
       }
-    }
-    const cover_el = (
-      <div>
-        {this.state.coverImg ?
-        <div>
-          <Upload
-          name="cover"
-          listType="picture"
-          {...p_cover}
-          >
-            <Popover content="click to change">
-              <CoverImg src={this.state.coverImg}/>
-            </Popover>
-          </Upload>
-          <br/>
-          <a onClick={this.removeCoverImg}>Remove Image</a>
-        </div> :
-        <Upload
-        name="cover"
-        listType="picture"
-        {...p_cover}
-        >
-          <Button>Upload a Cover Image</Button>
-        </Upload>
-        }
-
-      </div>
-    )
-
-    // console.log('------atValues: ', atValues)
-    const textarea_el = (
-      <ReactQuill
-        modules={{
-          toolbar: TOOLBAR_OPTIONS,
-          autoLinks: true,
-          mention: this.mentionModule,
-        }}
-        style={{backgroundColor: 'white'}}
-      />
-    )
-    const benefits_el = <Input.TextArea/>
-    const funding_el = <InputNumber size="large" style={{width: '100%'}} />
-    const timeline_el = <DatePicker size="large" placeholder="" style={{width: '100%'}}/>
-    const link_el = <Input size="large"/>
-
-    const title_fn = getFieldDecorator('title', {
-      rules: [
-        {required: true, message: I18N.get('suggestion.create.error.required')},
-        {min: 4, message: I18N.get('suggestion.create.error.tooShort')},
-      ],
-      initialValue: _.get(data, 'title', ''),
-    })
-
-    const shortDesc_fn = getFieldDecorator('shortDesc', {
-      rules: [
-        {required: true, message: I18N.get('suggestion.create.error.required')},
-        {min: 20, message: I18N.get('suggestion.create.error.tooShort')},
-        {max: 255, message: I18N.get('from.OrganizerAppForm.field.max')},
-      ],
-      initialValue: _.get(data, 'shortDesc', ''),
-    })
-
-    const cover_fn = getFieldDecorator('cover', {
-      rules: []
-    })
-
-    const description_fn = getFieldDecorator('description', {
-      rules: [
-        {required: true, message: I18N.get('suggestion.create.error.required')},
-        {min: 20, message: I18N.get('suggestion.create.error.tooShort')},
-      ],
-      initialValue: _.get(data, 'desc', ''),
-    })
-
-    const benefits_fn = getFieldDecorator('benefits', {
-      rules: [
-        {required: true, message: I18N.get('suggestion.create.error.required')},
-        {min: 20, message: I18N.get('suggestion.create.error.tooShort')},
-      ],
-      initialValue: _.get(data, 'benefits', ''),
-    })
-
-    const funding_fn = getFieldDecorator('funding', {
-      rules: [
-        {required: false},
-      ],
-      initialValue: _.get(data, 'funding', ''),
-    })
-
-    const timeline_fn = getFieldDecorator('timeline', {
-      rules: [
-        {required: false},
-      ],
-      initialValue: _.get(data, 'timeline') ? moment(_.get(data, 'timeline')) : undefined,
-    })
-
-    const link_fn = getFieldDecorator('link', {
-      rules: [
-        // { type: 'url' },
-        { required: false },
-      ],
-      initialValue: _.join(_.get(data, 'link', ''), ','),
-    })
-
-    return {
-      title: title_fn(input_el),
-      shortDesc: shortDesc_fn(shortDesc_el),
-      description: description_fn(textarea_el),
-      cover: cover_fn(cover_el),
-      benefits: benefits_fn(benefits_el),
-      funding: funding_fn(funding_el),
-      timeline: timeline_fn(timeline_el),
-      link: link_fn(link_el),
-    }
+    ]
+    return getFieldDecorator(key, {
+      rules,
+      initialValue: '1'
+    })(<Radio.Group>
+      <Radio value="1">{I18N.get('suggestion.form.type.newMotion')}</Radio>
+      <Radio value="2">{I18N.get('suggestion.form.type.motionAgainst')}</Radio>
+      <Radio value="3">{I18N.get('suggestion.form.type.anythingElse')}</Radio>
+    </Radio.Group>)
   }
 
-  renderTranslationBtn() {
-    const {title, description, benefits} = this.props.form.getFieldsValue(['title', 'description', 'benefits'])
-    const text = `
-      <h1>${title}</h1>
-      <h4>${I18N.get('suggestion.form.fields.desc')}</h4>
-      ${description}
-      <h4>${I18N.get('suggestion.form.fields.benefits')}</h4>
-      <p>${benefits}</p>
-    `
+  getTextarea(id) {
+    const { initialValues = {} } = this.props
+    const { getFieldDecorator } = this.props.form
+
+    const rules = [{
+      required: true,
+      transform: editorTransform,
+      message: I18N.get('suggestion.form.error.required')
+    }];
+    if (id === 'abstract') {
+      rules.push({
+        max: 200,
+        transform: editorTransform,
+        message: I18N.get('proposal.form.error.limit200')
+      })
+    }
+
+    return getFieldDecorator(id, {
+      rules,
+      validateTrigger: 'onSubmit',
+      initialValue: initialValues[id],
+    })(<DraftEditor contentType={CONTENT_TYPE.MARKDOWN} />)
+  }
+
+  renderTabText(id) {
+    const hasError = _.has(this.state.errorKeys, id)
+    return (
+      <TabText hasErr={hasError}>
+        {I18N.get(`suggestion.fields.${id}`)}*
+      </TabText>
+    )
+  }
+
+  renderWordLimit() {
+    const { form } = this.props
+    const formValue = form.getFieldValue('abstract')
+    const value = editorTransform(formValue)
+    const count = _.get(value, 'length', 0)
 
     return (
-      <div>
-        <Translation text={text}/>
-      </div>
+      <CirContainer>
+        <CircularProgressbar count={count} />
+      </CirContainer>
     )
-  }
-
-  renderHeader() {
-    let header = this.props.header || I18N.get('suggestion.add').toUpperCase()
-    if (this.state.showRules) {
-      header = I18N.get('suggestion.rules.rulesAndGuidelines')
-    }
-    return (
-      <Row>
-        <Col span={18}>
-          <h2 className="title komu-a">
-            {header}
-          </h2>
-        </Col>
-        <Col span={6}>
-          <h5 className="alignRight">
-            <a onClick={() => {
-              this.setState({showRules: !this.state.showRules})
-            }}>
-              {I18N.get('suggestion.rules.rulesAndGuidelines')}
-              {' '}
-              <Icon type="question-circle"/>
-            </a>
-          </h5>
-        </Col>
-      </Row>
-    )
-  }
-
-  renderRules() {
-    return (
-      <div>
-        <h4>
-          {I18N.get('suggestion.rules.guarantee')}
-        </h4>
-
-        <p>
-          {I18N.get('suggestion.rules.response')}
-        </p>
-
-        <h4>
-          {I18N.get('suggestion.rules.guidelines')}
-        </h4>
-
-        <ol>
-          <li>{I18N.get('suggestion.rules.guidelines.1')}</li>
-          <li>{I18N.get('suggestion.rules.guidelines.2')}</li>
-          <li>{I18N.get('suggestion.rules.guidelines.3')}</li>
-        </ol>
-
-        <h4>
-          {I18N.get('suggestion.rules')}
-        </h4>
-
-        <ol>
-          <li>{I18N.get('suggestion.rules.1')}</li>
-          <li>{I18N.get('suggestion.rules.2')}</li>
-          <li>{I18N.get('suggestion.rules.3')}</li>
-        </ol>
-
-        <p>
-          {I18N.get('suggestion.rules.infoRequest')}
-        </p>
-
-        <Button class="pull-right" onClick={() => {
-          this.setState({showRules: false})
-        }}>
-          {I18N.get('suggestion.back')}
-        </Button>
-        <div className="clearfix">
-          <br/>
-        </div>
-      </div>
-    )
-  }
-
-  removeCoverImg = async () => {
-    await this.setState({
-      coverImg: undefined
-    })
   }
 
   ord_render() {
-    if (!this.props.councilMembers.length === 0) return 'loading...'
-    const headerNode = this.renderHeader()
-    const rulesNode = this.renderRules()
-    const p = this.getInputProps()
-    const translationBtn = this.renderTranslationBtn()
-
-    const formItemLayout = {
-      labelCol: {
-        span: 24,
-      },
-      wrapperCol: {
-        span: 24,
-      },
-      colon: false,
-    }
-    const formContent = (
-      <div>
-        <FormItem className="form-item" label={I18N.get('suggestion.form.fields.subject')} {...formItemLayout}>
-          {p.title}
-        </FormItem>
-        <FormItem className="form-item" label={I18N.get('suggestion.form.fields.shortDesc')} {...formItemLayout}>
-          {p.shortDesc}
-        </FormItem>
-        <FormItem className="form-item" label={I18N.get('suggestion.form.fields.coverImg')} {...formItemLayout}>
-          {p.cover}
-        </FormItem>
-        <FormItem className="form-desc" label={I18N.get('suggestion.form.fields.desc')} {...formItemLayout}>
-          {p.description}
-        </FormItem>
-        <FormItem className="form-item" label={I18N.get('suggestion.form.fields.benefits')} {...formItemLayout}>
-          {p.benefits}
-        </FormItem>
-        <Row gutter={12}>
-          <Col span={12}>
-            <FormItem className="form-item" label={I18N.get('suggestion.form.fields.funding')} {...formItemLayout}>
-              {p.funding}
-            </FormItem>
-          </Col>
-          <Col span={12}>
-            <FormItem className="form-item" label={I18N.get('suggestion.form.fields.timeline')} {...formItemLayout}>
-              {p.timeline}
-            </FormItem>
-          </Col>
-        </Row>
-        <FormItem className="form-item" label={I18N.get('suggestion.form.fields.linksSplit')} {...formItemLayout}>
-          {p.link}
-        </FormItem>
-        <FormItem className="form-item">
-          {translationBtn}
-        </FormItem>
-        <Row type="flex" justify="center">
-          <Col xs={24} sm={12} md={6}>
-            <Button type="ebp" className="cr-btn cr-btn-default" onClick={this.props.onFormCancel}>
-              {I18N.get('suggestion.cancel')}
-            </Button>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Button loading={this.props.loading} type="ebp" htmlType="submit" className="cr-btn cr-btn-primary">
-              {I18N.get('suggestion.submit')}
-            </Button>
-          </Col>
-        </Row>
-      </div>
-    )
-
     return (
-      <div className="c_SuggestionForm">
-        {headerNode}
-        {this.state.showRules ?
-          rulesNode : (
-            <Form onSubmit={this.handleSubmit.bind(this)} className="d_SuggestionForm">
-              {formContent}
-            </Form>
-          )
-        }
-      </div>
+      <Container>
+        <Form onSubmit={this.handleSubmit}>
+          <FormItem
+            label={`${I18N.get('suggestion.form.fields.title')}*`}
+            labelCol={{span: 2}}
+            wrapperCol={{span: 18}}
+            colon={false}
+          >
+            {this.getTitleInput()}
+          </FormItem>
+
+          <Tabs
+            animated={false}
+            tabBarGutter={5}
+            activeKey={this.state.activeKey}
+            onChange={this.onTabChange}
+          >
+            <TabPane tab={this.renderTabText('type')} key="type">
+              <TabPaneInner>
+                <Note>{I18N.get('suggestion.form.note.type')}</Note>
+                <FormItem>{this.getTypeRadioGroup('type')}</FormItem>
+              </TabPaneInner>
+            </TabPane>
+            <TabPane tab={this.renderTabText('abstract')} key="abstract">
+              <TabPaneInner>
+                <Note>{I18N.get('suggestion.form.note.abstract')}</Note>
+                <FormItem>
+                  {this.getTextarea('abstract')}
+                </FormItem>
+                {this.renderWordLimit()}
+              </TabPaneInner>
+            </TabPane>
+            <TabPane tab={this.renderTabText('goal')} key="goal">
+              <TabPaneInner>
+                <Note>{I18N.get('suggestion.form.note.goal')}</Note>
+                <FormItem>{this.getTextarea('goal')}</FormItem>
+              </TabPaneInner>
+            </TabPane>
+            <TabPane tab={this.renderTabText('motivation')} key="motivation">
+              <TabPaneInner>
+                <Note>{I18N.get('suggestion.form.note.motivation')}</Note>
+                <FormItem>{this.getTextarea('motivation')}</FormItem>
+              </TabPaneInner>
+            </TabPane>
+            <TabPane tab={this.renderTabText('plan')} key="plan">
+              <TabPaneInner>
+                <Note>{I18N.get('suggestion.form.note.plan')}</Note>
+                <FormItem>{this.getTextarea('plan')}</FormItem>
+              </TabPaneInner>
+            </TabPane>
+            <TabPane tab={this.renderTabText('relevance')} key="relevance">
+              <TabPaneInner>
+                <Note>{I18N.get('suggestion.form.note.relevance')}</Note>
+                <FormItem>{this.getTextarea('relevance')}</FormItem>
+              </TabPaneInner>
+            </TabPane>
+            <TabPane tab={this.renderTabText('budget')} key="budget">
+              <TabPaneInner>
+                <Note>{I18N.get('suggestion.form.note.budget')}</Note>
+                <FormItem>{this.getTextarea('budget')}</FormItem>
+              </TabPaneInner>
+            </TabPane>
+          </Tabs>
+
+          <Row gutter={8} type="flex" justify="center" style={{marginBottom: '30px'}}>
+            <Button
+              onClick={this.handleContinue}
+              className="cr-btn cr-btn-black"
+              htmlType="button"
+            >
+              {I18N.get('suggestion.form.button.continue')}
+            </Button>
+          </Row>
+
+          <Row gutter={8} type="flex" justify="center">
+            <Button
+              onClick={this.props.onCancel}
+              className="cr-btn cr-btn-default"
+              htmlType="button"
+              style={{ marginRight: 10 }}
+            >
+              {I18N.get('suggestion.form.button.cancel')}
+            </Button>
+            {/* <Button
+              onClick={this.handleSaveDraft}
+              loading={this.state.loading}
+              className="cr-btn cr-btn-primary"
+              htmlType="button"
+              style={{ marginRight: 10 }}
+            >
+              {I18N.get('suggestion.form.button.saveDraft')}
+            </Button> */}
+            <Button
+              loading={this.state.loading}
+              className="cr-btn cr-btn-primary"
+              htmlType="submit"
+            >
+              {I18N.get('suggestion.form.button.save')}
+            </Button>
+          </Row>
+        </Form>
+      </Container>
     )
+  }
+
+  onTabChange = activeKey => {
+    this.setState({ activeKey })
   }
 }
 

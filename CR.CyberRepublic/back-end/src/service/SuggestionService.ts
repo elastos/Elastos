@@ -3,13 +3,16 @@ import * as _ from 'lodash'
 import { constant } from '../constant'
 import { validate, mail, user as userUtil, permissions } from '../utility'
 
+const BASE_FIELDS = ['title', 'type', 'abstract', 'goal', 'motivation', 'relevance', 'budget', 'plan'];
 const emptyDoc = {
   title: '',
-  shortDesc: '',
-  desc: '',
-  benefits: '',
-  funding: '',
-  timeline: undefined,
+  type: constant.SUGGESTION_TYPE.NEW_MOTION,
+  abstract: '',
+  goal: '',
+  motivation: '',
+  relevance: '',
+  budget: '',
+  plan: '',
   link: [],
 }
 
@@ -25,47 +28,22 @@ export default class extends Base {
   }
 
   public async create(param: any): Promise<Document> {
-    // get param
-    const { title, shortDesc, desc, coverImg, benefits, funding, timeline, link, } = param
-    // validation
-    this.validateTitle(title)
-    this.validateDesc(desc)
-
-    const docCore: any = {
-      title,
-      shortDesc,
-      desc,
-      coverImg,
-      benefits,
-    }
-    if (_.isNumber(funding)) {
-      docCore.funding = funding
-    }
-    if (!_.isEmpty(timeline)) {
-      docCore.timeline = timeline
-    }
-    if (!_.isEmpty(link)) {
-      docCore.link = link
-    }
-
-    // build document object
     const doc = {
-      ...docCore,
+      ...param,
       createdBy: _.get(this.currentUser, '_id'),
 
       // this is a hack for now, we should really be using aggregate pipeline + projection
       // in the sort query
       descUpdatedAt: new Date(),
-      editHistory: [emptyDoc, docCore],
+      editHistory: [emptyDoc, param],
     }
     // save the document
     const result = await this.model.save(doc)
 
-    // parse rich text mention: @</span>username
-    const mentions = desc.match(/@\<\/span\>\w+/g)
-    if (mentions) {
-      this.sendMentionEmails(result, mentions)
-    }
+    // const mentions = desc.match(/@\<\/span\>\w+/g)
+    // if (mentions) {
+    //   this.sendMentionEmails(result, mentions)
+    // }
 
     return result
   }
@@ -124,8 +102,7 @@ export default class extends Base {
   }
 
   public async update(param: any): Promise<Document> {
-    // get param
-    const { id, title, shortDesc, desc, coverImg, benefits, funding, timeline, link } = param
+    const { id } = param
     const userId = _.get(this.currentUser, '_id')
     const currDoc = await this.model.getDBInstance().findById(id)
 
@@ -137,49 +114,10 @@ export default class extends Base {
       throw 'Only owner can edit suggestion'
     }
 
-    // validation
-    this.validateTitle(title)
-    this.validateDesc(desc)
+    const doc = _.pick(param, BASE_FIELDS);
+    await this.model.update({_id: id}, {$set: doc, $push: { editHistory: doc }})
 
-    // build document object
-    const doc: any = {
-      title,
-      shortDesc,
-      desc,
-      coverImg,
-      benefits,
-      funding,
-      timeline,
-      link,
-    }
-    if (_.isEmpty(link)) {
-      doc.link = []
-    }
-
-    // we set the descUpdatedAt if it changes
-    if (currDoc.desc !== doc.desc) {
-      doc.descUpdatedAt = new Date()
-    }
-
-    // update the document
-    if (!_.isEmpty(currDoc.editHistory)) {
-      await this.model.update({_id: id}, {$set: doc, $push: { editHistory: doc }})
-    } else {
-      const firstHistoryItem = {
-        title: currDoc.title,
-        shortDesc: currDoc.shortDesc,
-        desc: currDoc.desc,
-        coverImg: currDoc.coverImg,
-        benefits: currDoc.benefits,
-        funding: currDoc.funding,
-        timeline: currDoc.timeline,
-        link: currDoc.link,
-      }
-      // for old data
-      await this.model.update({_id: id}, {$set: { ...doc, editHistory: [emptyDoc, firstHistoryItem, doc] }})
-    }
-
-    return await this.show({ id })
+    return this.show({ id })
   }
 
   public async list(param: any): Promise<Object> {
@@ -329,20 +267,21 @@ export default class extends Base {
    * Council only
    */
   private async notifySubscribers(suggestionId: String) {
-    const db_user = this.getDBModel('User');
-    const currentUserId = _.get(this.currentUser, '_id')
-    const councilMember = await db_user.findById(currentUserId)
-    const suggestion = await this.model.getDBInstance().findById(suggestionId)
-    .populate('subscribers.user', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
-    .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+    try {
+      const db_user = this.getDBModel('User');
+      const currentUserId = _.get(this.currentUser, '_id')
+      const councilMember = await db_user.findById(currentUserId)
+      const suggestion = await this.model.getDBInstance().findById(suggestionId)
+        .populate('subscribers.user', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
 
-    // get users: creator and subscribers
-    const toUsers = _.map(suggestion.subscribers, 'user') || []
-    toUsers.push(suggestion.createdBy)
-    const toMails = _.map(toUsers, 'email')
+      // get users: creator and subscribers
+      const toUsers = _.map(suggestion.subscribers, 'user') || []
+      toUsers.push(suggestion.createdBy)
+      const toMails = _.map(toUsers, 'email')
 
-    const subject = 'The suggestion is under consideration of Council.'
-    const body = `
+      const subject = 'The suggestion is under consideration of Council.'
+      const body = `
       <p>Council member ${userUtil.formatUsername(councilMember)} has marked this suggestion ${suggestion.title} as "Under Consideration"</p>
       <br />
       <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/suggestion/${suggestion._id}">${process.env.SERVER_URL}/suggestion/${suggestion._id}</a></p>
@@ -351,91 +290,102 @@ export default class extends Base {
       <p>Cyber Republic</p>
     `
 
-    const recVariables = _.zipObject(toMails, _.map(toUsers, (user) => {
-      return {
-        _id: user._id,
-        username: userUtil.formatUsername(user)
+      const recVariables = _.zipObject(toMails, _.map(toUsers, (user) => {
+        return {
+          _id: user._id,
+          username: userUtil.formatUsername(user)
+        }
+      }))
+
+      const mailObj = {
+        to: toMails,
+        // toName: ownerToName,
+        subject,
+        body,
+        recVariables,
       }
-    }))
 
-    const mailObj = {
-      to: toMails,
-      // toName: ownerToName,
-      subject,
-      body,
-      recVariables,
+      mail.send(mailObj)
+    } catch(error) {
+      console.log('suggestion service notifySubscribers error...', error)
     }
-
-    mail.send(mailObj)
   }
 
   private async notifyOwner(suggestionId: String, desc: String) {
-    const db_user = this.getDBModel('User');
-    const currentUserId = _.get(this.currentUser, '_id')
-    const councilMember = await db_user.findById(currentUserId)
-    const suggestion = await this.model.getDBInstance().findById(suggestionId)
-    .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+    try {
+      const db_user = this.getDBModel('User');
+      const currentUserId = _.get(this.currentUser, '_id')
+      const councilMember = await db_user.findById(currentUserId)
+      const suggestion = await this.model.getDBInstance().findById(suggestionId)
+      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
 
-    // get users: creator and subscribers
-    const toUsers = [suggestion.createdBy]
-    const toMails = _.map(toUsers, 'email')
+      // get users: creator and subscribers
+      const toUsers = [suggestion.createdBy]
+      const toMails = _.map(toUsers, 'email')
 
-    const subject = 'Your suggestion needs more info for Council.'
-    const body = `
-      <p>Council member ${userUtil.formatUsername(councilMember)} has marked your suggestion ${suggestion.title} as "Need more information".</p>
-      <br />
-      <p>"${desc}"</p>
-      <br />
-      <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/suggestion/${suggestion._id}">${process.env.SERVER_URL}/suggestion/${suggestion._id}</a></p>
-      <br /> <br />
-      <p>Thanks</p>
-      <p>Cyber Republic</p>
-    `
+      const subject = 'Your suggestion needs more info for Council.'
+      const body = `
+        <p>Council member ${userUtil.formatUsername(councilMember)} has marked your suggestion ${suggestion.title} as "Need more information".</p>
+        <br />
+        <p>"${desc}"</p>
+        <br />
+        <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/suggestion/${suggestion._id}">${process.env.SERVER_URL}/suggestion/${suggestion._id}</a></p>
+        <br /> <br />
+        <p>Thanks</p>
+        <p>Cyber Republic</p>
+      `
 
-    const recVariables = _.zipObject(toMails, _.map(toUsers, (user) => {
-      return {
-        _id: user._id,
-        username: userUtil.formatUsername(user)
+      const recVariables = _.zipObject(toMails, _.map(toUsers, (user) => {
+        return {
+          _id: user._id,
+          username: userUtil.formatUsername(user)
+        }
+      }))
+
+      const mailObj = {
+        to: toMails,
+        // toName: ownerToName,
+        subject,
+        body,
+        recVariables,
       }
-    }))
 
-    const mailObj = {
-      to: toMails,
-      // toName: ownerToName,
-      subject,
-      body,
-      recVariables,
+      mail.send(mailObj)
+    } catch (error) {
+      console.log('suggestion service notifyOwner error...', error)
     }
-
-    mail.send(mailObj)
   }
 
   public async addTag(param: any): Promise<Document> {
-    const { id: _id, type, desc } = param
-    const currDoc = await this.model.getDBInstance().findById(_id)
+    try {
+      const { id: _id, type, desc } = param
+      const currDoc = await this.model.getDBInstance().findById(_id)
 
-    if (!currDoc) {
-      throw 'Current document does not exist'
-    }
+      if (!currDoc) {
+        throw 'Current document does not exist'
+      }
 
-    if (_.findIndex(currDoc.tags, (tagObj: any) => tagObj.type === type) !== -1) return currDoc
+      if (_.findIndex(currDoc.tags, (tagObj: any) => tagObj.type === type) !== -1) return currDoc
 
-    const tag: any = {
-      type,
-      createdBy: _.get(this.currentUser, '_id'),
-    }
-    if (desc) tag.desc = desc
-    const updateObject = {
-      $addToSet: { tags: tag }
-    }
+      const tag: any = {
+        type,
+        createdBy: _.get(this.currentUser, '_id'),
+      }
+      if (desc) tag.desc = desc
+      const updateObject = {
+        $addToSet: { tags: tag }
+      }
 
-    await this.model.findOneAndUpdate({ _id }, updateObject)
-    if (type === constant.SUGGESTION_TAG_TYPE.UNDER_CONSIDERATION) {
-      this.notifySubscribers(_id)
-    } else if (type === constant.SUGGESTION_TAG_TYPE.INFO_NEEDED) {
-      this.notifyOwner(_id, desc)
+      await this.model.findOneAndUpdate({ _id }, updateObject)
+      if (type === constant.SUGGESTION_TAG_TYPE.UNDER_CONSIDERATION) {
+        this.notifySubscribers(_id)
+      } else if (type === constant.SUGGESTION_TAG_TYPE.INFO_NEEDED) {
+        this.notifyOwner(_id, desc)
+      }
+      return this.model.findById(_id)
+    } catch(error) {
+      console.log('suggestion service addTag error...', error)
     }
-    return this.model.findById(_id)
   }
 
   public async abuse(param: any): Promise<Document> {
