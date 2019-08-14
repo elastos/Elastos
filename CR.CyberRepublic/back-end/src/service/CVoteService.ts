@@ -66,7 +66,7 @@ export default class extends Base {
       vid,
       type: suggestion.type,
       status: constant.CVOTE_STATUS.PROPOSED,
-      published: false,
+      published: true,
       contentType: constant.CONTENT_TYPE.MARKDOWN,
       proposedBy: `${_.get(creator, 'profile.firstName')} ${_.get(creator, 'profile.lastName')}`,
       proposer: suggestion.createdBy,
