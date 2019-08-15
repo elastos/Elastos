@@ -188,6 +188,7 @@ export default class extends BaseComponent {
           rowKey={record => record._id}
           pagination={{
             current: page,
+            pageSize: 10,
             total: list.length,
             onChange: this.onPageChange,
           }}
@@ -226,10 +227,8 @@ export default class extends BaseComponent {
 
   getQuery = () => {
     const query = {}
-    if (this.state.voteResult === FILTERS.UNVOTED) {
-      query.voteResult = FILTERS.UNVOTED
-    }
-
+    const voteResult = sessionStorage.getItem('voteResult') || this.state.voteResult
+    query.voteResult = voteResult
     if (!_.isEmpty(this.state.search)) {
       query.search = this.state.search
     }
@@ -244,7 +243,8 @@ export default class extends BaseComponent {
     try {
       const list = await listData(param, canManage)
       const page = sessionStorage.getItem('proposalPage')
-      this.setState({ list, page: page && parseInt(page) || 1 })
+      const voteResult = sessionStorage.getItem('voteResult') || this.state.voteResult
+      this.setState({ list, page: page && parseInt(page) || 1, voteResult })
     } catch (error) {
       // should use rollbar
       console.log('refetch proposal err...', error)
@@ -274,11 +274,13 @@ export default class extends BaseComponent {
 
   clearFilters = () => {
     sessionStorage.removeItem('proposalPage')
+    sessionStorage.setItem('voteResult', FILTERS.ALL)
     this.setState({ voteResult: FILTERS.ALL }, this.refetch)
   }
 
   setFilter = (voteResult) => {
     sessionStorage.removeItem('proposalPage')
+    sessionStorage.setItem('voteResult', voteResult)
     this.setState({ voteResult }, this.refetch)
   }
 
