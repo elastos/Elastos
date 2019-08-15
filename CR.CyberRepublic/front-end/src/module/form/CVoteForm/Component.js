@@ -261,7 +261,7 @@ class C extends BaseComponent {
       'abstract',
       getFieldDecorator,
       WORD_LIMIT,
-      this.validateAbstract
+      this.onInputChange
     )
 
     const goal = renderRichEditor(data, 'goal', getFieldDecorator, null, this.onInputChange)
@@ -409,23 +409,6 @@ class C extends BaseComponent {
         <CircularProgressbar count={count} />
       </CirContainer>
     )
-  }
-
-  validateAbstract = () => {
-    const { form } = this.props
-    const formValue = form.getFieldValue('abstract')
-    const value = transform(formValue)
-    const err = transform(form.getFieldError('abstract'))
-    const count = value.length
-
-    if (err && count < WORD_LIMIT) {
-      form.setFields({
-        abstract: {
-          value: formValue,
-          errors: undefined
-        }
-      })
-    }
   }
 
   renderTabText(key) {
