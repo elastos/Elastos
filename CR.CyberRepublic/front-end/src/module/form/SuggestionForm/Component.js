@@ -158,6 +158,19 @@ class C extends BaseComponent {
     </Radio.Group>)
   }
 
+  onTextareaChange = (activeKey) => {
+    const { form } = this.props
+    const err = editorTransform(form.getFieldError(activeKey))
+    const { errorKeys } = this.state
+    if (err) {
+      this.setState({ errorKeys: Object.assign({}, errorKeys, { [activeKey]: err }) })
+    } else {
+      const newState = Object.assign({}, errorKeys)
+      delete newState[activeKey]
+      this.setState({ errorKeys: newState })
+    }
+  }
+
   getTextarea(id) {
     const { initialValues = {} } = this.props
     const { getFieldDecorator } = this.props.form
@@ -177,9 +190,8 @@ class C extends BaseComponent {
 
     return getFieldDecorator(id, {
       rules,
-      validateTrigger: 'onSubmit',
       initialValue: initialValues[id],
-    })(<DraftEditor contentType={CONTENT_TYPE.MARKDOWN} />)
+    })(<DraftEditor contentType={CONTENT_TYPE.MARKDOWN} callback={this.onTextareaChange} activeKey={id} />)
   }
 
   renderTabText(id) {
