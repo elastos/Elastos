@@ -244,7 +244,7 @@ func (b *BlockChain) checkTxsContext(block *Block) error {
 	var totalTxFee = Fixed64(0)
 
 	for i := 1; i < len(block.Transactions); i++ {
-		references, err := DefaultLedger.Store.GetTxReferenceInfo(block.Transactions[i])
+		references, err := b.UTXOCache.GetTxReferenceInfo(block.Transactions[i])
 		if err != nil {
 			log.Warn("CheckTransactionContext get transaction reference failed")
 			return ErrUnknownReferredTx
@@ -361,7 +361,7 @@ func IsFinalizedTransaction(msgTx *Transaction, blockHeight uint32) bool {
 	return true
 }
 
-func GetTxFee(tx *Transaction, assetId Uint256, references map[*Input]*TxReference) Fixed64 {
+func GetTxFee(tx *Transaction, assetId Uint256, references map[*Input]*OutputInfo) Fixed64 {
 	feeMap, err := GetTxFeeMap(tx, references)
 	if err != nil {
 		return 0
@@ -370,7 +370,7 @@ func GetTxFee(tx *Transaction, assetId Uint256, references map[*Input]*TxReferen
 	return feeMap[assetId]
 }
 
-func GetTxFeeMap(tx *Transaction, references map[*Input]*TxReference) (map[Uint256]Fixed64, error) {
+func GetTxFeeMap(tx *Transaction, references map[*Input]*OutputInfo) (map[Uint256]Fixed64, error) {
 	feeMap := make(map[Uint256]Fixed64)
 
 	var inputs = make(map[Uint256]Fixed64)

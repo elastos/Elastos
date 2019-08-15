@@ -58,7 +58,7 @@ func RunPrograms(data []byte, programHashes []common.Uint168, programs []*Progra
 	return nil
 }
 
-func GetTxProgramHashes(tx *Transaction, references map[*Input]*TxReference) ([]common.Uint168, error) {
+func GetTxProgramHashes(tx *Transaction, references map[*Input]*OutputInfo) ([]common.Uint168, error) {
 	if tx == nil {
 		return nil, errors.New("[Transaction],GetProgramHashes transaction is nil")
 	}
