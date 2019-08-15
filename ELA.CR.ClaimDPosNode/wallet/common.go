@@ -20,4 +20,5 @@ const (
 
 var (
 	Store blockchain.IChainStore
+	Chain  *blockchain.BlockChain
 )

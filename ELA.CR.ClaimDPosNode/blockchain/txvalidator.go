@@ -89,7 +89,7 @@ func (b *BlockChain) CheckTransactionSanity(blockHeight uint32, txn *Transaction
 func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 	txn *Transaction, references map[*Input]*OutputInfo) ErrCode {
 	// check if duplicated with transaction in ledger
-	if exist := b.db.IsTxHashDuplicate(txn.Hash()); exist {
+	if exist := b.IsTxHashDuplicate(txn.Hash()); exist {
 		log.Warn("[CheckTransactionContext] duplicate transaction check failed.")
 		return ErrTransactionDuplicate
 	}
@@ -217,7 +217,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 
 	if txn.IsReturnDepositCoin() {
 		if err := b.checkReturnDepositCoinTransaction(
-			txn, references, b.db.GetHeight()); err != nil {
+			txn, references, b.GetHeight()); err != nil {
 			log.Warn("[CheckReturnDepositCoinTransaction],", err)
 			return ErrReturnDepositConsensus
 		}
@@ -225,7 +225,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 
 	if txn.IsReturnCRDepositCoinTx() {
 		if err := b.checkReturnCRDepositCoinTransaction(
-			txn, references, b.db.GetHeight(), b.crCommittee.IsInVotingPeriod); err != nil {
+			txn, references, b.GetHeight(), b.crCommittee.IsInVotingPeriod); err != nil {
 			log.Warn("[CheckReturnDepositCoinTransaction],", err)
 			return ErrReturnDepositConsensus
 		}
@@ -1213,7 +1213,7 @@ func (b *BlockChain) checkActivateProducerTransaction(txn *Transaction,
 			return err
 		}
 
-		utxos, err := b.db.GetUnspentFromProgramHash(*programHash, config.ELAAssetID)
+		utxos, err := b.GetUnspentFromProgramHash(*programHash, config.ELAAssetID)
 		if err != nil {
 			return err
 		}
