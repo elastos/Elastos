@@ -79,8 +79,12 @@ export default class extends BaseComponent {
           if (item.status === CVOTE_STATUS.DRAFT) return null
           // only show when status is PROPOSED
           const endsInFloat = moment.duration(moment(proposedAt || item.createdAt).add(7, 'd').diff(moment())).as('days')
-          if (item.status !== CVOTE_STATUS.PROPOSED || endsInFloat <= 0) return I18N.get('council.voting.votingEndsIn.ended')
-          if (endsInFloat > 0 && endsInFloat <= 1) return <span style={{ color: 'red' }}>{`1 ${I18N.get('council.voting.votingEndsIn.day')}`}</span>
+          if (item.status !== CVOTE_STATUS.PROPOSED || endsInFloat <= 0) {
+            return I18N.get('council.voting.votingEndsIn.ended')
+          }
+          if (endsInFloat > 0 && endsInFloat <= 1) {
+            return <span style={{ color: 'red' }}>{`1 ${I18N.get('council.voting.votingEndsIn.day')}`}</span>
+          }
           return `${Math.ceil(endsInFloat)} ${I18N.get('council.voting.votingEndsIn.days')}`
         },
       },
