@@ -166,7 +166,8 @@ func (c *IDChainStore) GetRegisterIdentificationTx(idKey []byte) ([]byte, error)
 	return data, nil
 }
 
-func getExpiresHeight(txn *types.Transaction, blockHeight uint32,
+func (c *IDChainStore) TryGetExpiresHeight(txn *types.Transaction,
+	blockHeight uint32,
 	blockTimeStamp uint32) (uint32, error) {
 	payloadDidInfo, ok := txn.Payload.(*id.PayloadDIDInfo)
 	if !ok {
@@ -181,16 +182,12 @@ func getExpiresHeight(txn *types.Transaction, blockHeight uint32,
 		return 0, errors.New("invalid Expires")
 	}
 
-	fiveYearSec := uint32(5 * 365 * 24 * 60 * 60)
 	var timeSpanSec, expiresSec uint32
 	expiresSec = uint32(expiresTime.Unix())
 	timeSpanSec = expiresSec - blockTimeStamp
 
 	if expiresSec < blockTimeStamp {
-		return 0, errors.New("invalid Expires less than current block time")
-	}
-	if timeSpanSec > fiveYearSec {
-		return 0, errors.New("invalid Expires more than 5 years")
+		timeSpanSec = 0
 	}
 	needsBlocks := timeSpanSec / (2 * 60)
 	expiresHeight := blockHeight + needsBlocks
@@ -201,7 +198,7 @@ func (c *IDChainStore) persistRegisterDIDTx(batch database.Batch,
 	idKey []byte, tx *types.Transaction, blockHeight uint32,
 	blockTimeStamp uint32) error {
 
-	expiresHeight, err := getExpiresHeight(tx, blockHeight, blockTimeStamp)
+	expiresHeight, err := c.TryGetExpiresHeight(tx, blockHeight, blockTimeStamp)
 	if err != nil {
 		return err
 	}
