@@ -23,7 +23,7 @@ export default class extends BaseComponent {
       list: [],
       loading: true,
       voteResult: FILTERS.ALL,
-      search: '',
+      search: sessionStorage.getItem('proposalSearch') || '',
       page: 1
     }
 
@@ -233,8 +233,9 @@ export default class extends BaseComponent {
     const query = {}
     const voteResult = sessionStorage.getItem('voteResult') || this.state.voteResult
     query.voteResult = voteResult
-    if (!_.isEmpty(this.state.search)) {
-      query.search = this.state.search
+    const searchStr = this.state.search || sessionStorage.getItem('proposalSearch')
+    if (searchStr) {
+      query.search = searchStr
     }
 
     return query
@@ -248,7 +249,11 @@ export default class extends BaseComponent {
       const list = await listData(param, canManage)
       const page = sessionStorage.getItem('proposalPage')
       const voteResult = sessionStorage.getItem('voteResult') || this.state.voteResult
-      this.setState({ list, page: page && parseInt(page) || 1, voteResult })
+      this.setState({
+        list,
+        page: page && parseInt(page) || 1,
+        voteResult
+      })
     } catch (error) {
       // should use rollbar
       console.log('refetch proposal err...', error)
@@ -259,6 +264,7 @@ export default class extends BaseComponent {
 
   searchChangedHandler = (search) => {
     sessionStorage.removeItem('proposalPage')
+    sessionStorage.setItem('proposalSearch', search)
     this.setState({ search }, this.debouncedRefetch)
   }
 
