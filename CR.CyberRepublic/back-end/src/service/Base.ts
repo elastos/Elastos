@@ -1,70 +1,78 @@
 import * as _ from 'lodash'
-import {constant} from '../constant'
+import { constant } from '../constant'
 
 export default class Base {
-    protected db
-    private session
-    protected currentUser
+  protected db
+  private session
+  protected currentUser
 
-    constructor(db, session){
-        this.db = db
-        this.session = session
-        this.currentUser = session.user
+  constructor(db, session) {
+    this.db = db
+    this.session = session
+    this.currentUser = session.user
 
-        this.init()
+    this.init()
+  }
+
+  protected init() {}
+
+  public getDBModel(name: string) {
+    return this.db.getModel(name)
+  }
+
+  protected getService<T extends Base>(service: { new (...args): T }): T {
+    return new service(this.db, this.session)
+  }
+
+  protected async markLastSeenComment(commentable, createdBy, db_commentable) {
+    if (!this.currentUser) {
+      return
     }
 
-    protected init(){}
+    if (commentable.comments && commentable.comments.length) {
+      const subscriberInfo = _.find(commentable.subscribers, subscriber => {
+        return (
+          subscriber.user &&
+          subscriber.user._id.toString() === this.currentUser._id.toString()
+        )
+      })
 
-    public getDBModel(name: string){
-        return this.db.getModel(name)
-    }
+      if (subscriberInfo) {
+        subscriberInfo.lastSeen = new Date()
+      } else if (
+        createdBy &&
+        createdBy._id.toString() === this.currentUser._id.toString()
+      ) {
+        commentable.lastCommentSeenByOwner = new Date()
+      }
 
-    protected getService<T extends Base>(service: { new(...args): T }): T{
-        return new service(this.db, this.session)
-    }
-
-    protected async markLastSeenComment(commentable, createdBy, db_commentable) {
-        if (!this.currentUser) {
-            return
+      await db_commentable.update(
+        { _id: commentable._id },
+        {
+          subscribers: commentable.subscribers,
+          lastCommentSeenByOwner: commentable.lastCommentSeenByOwner
         }
+      )
+    }
+  }
 
-        if (commentable.comments && commentable.comments.length) {
-            const subscriberInfo = _.find(commentable.subscribers, (subscriber) => {
-                return subscriber.user && subscriber.user._id.toString() === this.currentUser._id.toString()
-            })
+  /**
+   * We trust this.currentUser because it was fetched during each request in the middleware
+   * via a back-end encrypted token of the userId
+   *
+   * @returns {boolean}
+   */
+  protected isLoggedIn() {
+    let isLoggedIn = false
 
-            if (subscriberInfo) {
-                subscriberInfo.lastSeen = new Date()
-            } else if (createdBy && createdBy._id.toString() === this.currentUser._id.toString()) {
-                commentable.lastCommentSeenByOwner = new Date()
-            }
-
-            await db_commentable.update({_id: commentable._id}, {
-                subscribers: commentable.subscribers,
-                lastCommentSeenByOwner: commentable.lastCommentSeenByOwner
-            })
-        }
+    if (this.currentUser && this.currentUser._id) {
+      isLoggedIn = true
     }
 
-    /**
-     * We trust this.currentUser because it was fetched during each request in the middleware
-     * via a back-end encrypted token of the userId
-     *
-     * @returns {boolean}
-     */
-    protected isLoggedIn() {
+    return isLoggedIn
+  }
 
-        let isLoggedIn = false
-
-        if (this.currentUser && this.currentUser._id){
-            isLoggedIn = true
-        }
-
-        return isLoggedIn
-    }
-
-    protected isAdmin() {
-        return this.currentUser.role === constant.USER_ROLE.ADMIN
-    }
+  protected isAdmin() {
+    return this.currentUser.role === constant.USER_ROLE.ADMIN
+  }
 }
