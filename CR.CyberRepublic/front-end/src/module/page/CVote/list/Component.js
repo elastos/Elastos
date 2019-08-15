@@ -22,9 +22,9 @@ export default class extends BaseComponent {
     this.state = {
       list: [],
       loading: true,
-      voteResult: FILTERS.ALL,
+      voteResult: sessionStorage.getItem('voteResult') || FILTERS.ALL,
       search: sessionStorage.getItem('proposalSearch') || '',
-      page: 1
+      page: parseInt(sessionStorage.getItem('proposalPage')) || 1
     }
 
     this.debouncedRefetch = _.debounce(this.refetch.bind(this), 300)
@@ -247,13 +247,7 @@ export default class extends BaseComponent {
     const param = this.getQuery()
     try {
       const list = await listData(param, canManage)
-      const page = sessionStorage.getItem('proposalPage')
-      const voteResult = sessionStorage.getItem('voteResult') || this.state.voteResult
-      this.setState({
-        list,
-        page: page && parseInt(page) || 1,
-        voteResult
-      })
+      this.setState({ list })
     } catch (error) {
       // should use rollbar
       console.log('refetch proposal err...', error)
