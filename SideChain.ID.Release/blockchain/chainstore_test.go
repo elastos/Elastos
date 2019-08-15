@@ -239,7 +239,7 @@ func TestIDChainStore_PersistDIDTx(t *testing.T) {
 	assert.True(t, bytes.Equal(txs[0], buf1.Bytes()))
 
 	height, err := idChainStore.GetExpiresHeight(id1)
-	targetExpHeight, _ := getExpiresHeight(tx1, blockHeight1, blockTimeStamp1)
+	targetExpHeight, _ := idChainStore.TryGetExpiresHeight(tx1, blockHeight1, blockTimeStamp1)
 	assert.True(t, err == nil)
 	assert.Equal(t, targetExpHeight, height)
 
@@ -273,7 +273,7 @@ func TestIDChainStore_PersistDIDTx(t *testing.T) {
 	assert.True(t, bytes.Equal(p2, buf2.Bytes()))
 
 	height2, err := idChainStore.GetExpiresHeight(id2)
-	targetExpHeight2, _ := getExpiresHeight(tx2, blockHeight2, blockTimeStamp2)
+	targetExpHeight2, _ := idChainStore.TryGetExpiresHeight(tx2, blockHeight2, blockTimeStamp2)
 	assert.True(t, err == nil)
 	assert.Equal(t, targetExpHeight2, height2)
 
@@ -284,7 +284,7 @@ func TestIDChainStore_PersistDIDTx(t *testing.T) {
 	batch.Commit()
 
 	height3, err := idChainStore.GetExpiresHeight(id2)
-	targetExpHeight3, _ := getExpiresHeight(tx2, blockHeight3, blockTimeStamp3)
+	targetExpHeight3, _ := idChainStore.TryGetExpiresHeight(tx2, blockHeight3, blockTimeStamp3)
 	assert.True(t, err == nil)
 	assert.Equal(t, targetExpHeight3, height3)
 

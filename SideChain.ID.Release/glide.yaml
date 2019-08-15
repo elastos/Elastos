@@ -9,6 +9,7 @@ import:
 - package: github.com/elastos/Elastos.ELA.SideChain
   version: dev
 - package: github.com/mattn/go-sqlite3
+- package: github.com/btcsuite/btcutil
 - package: github.com/syndtr/goleveldb
   subpackages:
   - leveldb
