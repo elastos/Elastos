@@ -17,6 +17,10 @@ import (
 	"github.com/elastos/Elastos.ELA/database"
 )
 
+func (c *BlockChain) Close() {
+	c.fflDB.Close()
+}
+
 func (c *BlockChain) SaveBlock(b *Block, node *BlockNode,
 	confirm *payload.Confirm, medianTimePast time.Time) error {
 	log.Debug("SaveBlock()")
@@ -39,23 +43,52 @@ func (c *BlockChain) RollbackBlock(b *Block, node *BlockNode,
 	return err
 }
 
-func (c *BlockChain) Close() {
-	c.fflDB.Close()
+func (c *BlockChain) GetBlockByHash(hash Uint256) (*Block, error) {
+	var blkBytes []byte
+	err := c.fflDB.View(func(dbTx database.Tx) error {
+		var err error
+		blkBytes, err = dbTx.FetchBlock(&hash)
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	b := new(Block)
+	err = b.Deserialize(bytes.NewReader(blkBytes))
+	if err != nil {
+		return nil, errors.New("failed to deserialize block")
+	}
+
+	return b, nil
 }
 
-func (c *BlockChain) init(genesisBlock *Block) error {
-	// todo complete me
-	return nil
+func (c *BlockChain) GetHeader(hash Uint256) (*Header, error) {
+	var headerBytes []byte
+	err := c.fflDB.View(func(tx database.Tx) error {
+		var e error
+		headerBytes, e = tx.FetchBlockHeader(&hash)
+		if e != nil {
+			return e
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, errors.New("[BlockChain], GetHeader failed")
+	}
+
+	var header Header
+	err = header.Deserialize(bytes.NewReader(headerBytes))
+	if err != nil {
+		return nil, errors.New("[BlockChain], GetHeader deserialize failed")
+	}
+
+	return &header, nil
 }
 
 func (c *BlockChain) IsTxHashDuplicate(txhash Uint256) bool {
 	// todo complete me
 	return false
-}
-
-func (c *BlockChain) GetHeaderByHash(hash Uint256) (*Header, error) {
-	// todo complete me
-	return nil, nil
 }
 
 func (c *BlockChain) GetTransaction(txID Uint256) (*Transaction, uint32, error) {
@@ -84,8 +117,8 @@ func (c *BlockChain) GetTxReferenceInfo(tx *Transaction) (map[*Input]*TxReferenc
 					"previous transaction not found")
 			}
 			if int(index) >= len(transaction.Outputs) {
-				return nil, errors.New("GetTxReferenceInfo failed, " +
-					"refIdx out of range.")
+				return nil, errors.New("GetTxReferenceInfo failed," +
+					" refIdx out of range")
 			}
 			refer := &TxReference{
 				output:      transaction.Outputs[index],
@@ -126,36 +159,18 @@ func (c *BlockChain) GetTxReference(tx *Transaction) (map[*Input]*Output, error)
 			transaction, _, err := c.GetTransaction(txID)
 
 			if err != nil {
-				return nil, errors.New("GetTxReference failed, previous transaction not found")
+				return nil, errors.New("GetTxReference failed," +
+					" previous transaction not found")
 			}
 			if int(index) >= len(transaction.Outputs) {
-				return nil, errors.New("GetTxReference failed, refIdx out of range.")
+				return nil, errors.New("GetTxReference failed," +
+					" refIdx out of range")
 			}
 			reference[input] = transaction.Outputs[index]
 			txOutputsCache[txID] = transaction.Outputs
 		}
 	}
 	return reference, nil
-}
-
-func (c *BlockChain) GetBlock(hash Uint256) (*Block, error) {
-	var blkBytes []byte
-	err := c.fflDB.View(func(dbTx database.Tx) error {
-		var err error
-		blkBytes, err = dbTx.FetchBlock(&hash)
-		return err
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	b := new(Block)
-	err = b.Deserialize(bytes.NewReader(blkBytes))
-	if err != nil {
-		return nil, errors.New("failed to deserialize block")
-	}
-
-	return b, nil
 }
 
 func (c *BlockChain) handlePersistBlockTask(b *Block, node *BlockNode,
@@ -350,4 +365,9 @@ func (c *BlockChain) blockExists(hash *Uint256) (bool, error) {
 		return err
 	})
 	return exists, err
+}
+
+func (c *BlockChain) GetUnspentFromProgramHash(programHash Uint168, assetid Uint256) ([]*UTXO, error) {
+	// todo complete me
+	return nil, nil
 }

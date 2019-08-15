@@ -148,7 +148,7 @@ func New(db IChainStore, ffldb database.DB, chainParams *config.Params, state *s
 // to initialize all checkpoint.
 func (b *BlockChain) InitCheckpoint(interrupt <-chan struct{},
 	start func(total uint32), increase func()) (err error) {
-	bestHeight := b.db.GetHeight()
+	bestHeight := b.GetHeight()
 	log.Info("current block height ->", bestHeight)
 	arbiters := DefaultLedger.Arbitrators
 	ckpManager := b.chainParams.CkpManager
@@ -171,12 +171,12 @@ func (b *BlockChain) InitCheckpoint(interrupt <-chan struct{},
 			start(bestHeight - startHeight)
 		}
 		for i := startHeight; i <= bestHeight; i++ {
-			hash, e := b.db.GetBlockHash(i)
+			hash, e := b.GetBlockHash(i)
 			if e != nil {
 				err = e
 				break
 			}
-			block, e := b.db.GetBlock(hash)
+			block, e := b.GetBlockByHash(hash)
 			if e != nil {
 				err = e
 				break
@@ -191,7 +191,7 @@ func (b *BlockChain) InitCheckpoint(interrupt <-chan struct{},
 				err = e
 				break
 			}
-			confirm, _ := b.db.GetConfirm(block.Hash())
+			confirm, _ := b.GetConfirm(block.Hash())
 
 			b.chainParams.CkpManager.OnBlockSaved(&DposBlock{
 				Block:       block,
@@ -254,7 +254,10 @@ func (b *BlockChain) GetCRCommittee() *crstate.Committee {
 }
 
 func (b *BlockChain) GetHeight() uint32 {
-	return b.db.GetHeight()
+	b.IndexLock.RLock()
+	defer b.IndexLock.RUnlock()
+
+	return uint32(len(b.Nodes) - 1)
 }
 
 func (b *BlockChain) ProcessBlock(block *Block, confirm *payload.Confirm) (bool, bool, error) {
@@ -262,19 +265,6 @@ func (b *BlockChain) ProcessBlock(block *Block, confirm *payload.Confirm) (bool,
 	defer b.mutex.Unlock()
 
 	return b.processBlock(block, confirm)
-}
-
-func (b *BlockChain) GetHeader(hash Uint256) (*Header, error) {
-	header, err := b.db.GetHeader(hash)
-	if err != nil {
-		return nil, errors.New("[BlockChain], GetHeader failed.")
-	}
-	return header, nil
-}
-
-// Get block with block hash.
-func (b *BlockChain) GetBlockByHash(hash Uint256) (*Block, error) {
-	return b.db.GetBlock(hash)
 }
 
 // Get block with block hash.
@@ -301,8 +291,8 @@ func (b *BlockChain) GetBlockNode(height uint32) *BlockNode {
 
 // Get DPOS block with block hash.
 func (b *BlockChain) GetDposBlockByHash(hash Uint256) (*DposBlock, error) {
-	if block, _ := b.db.GetBlock(hash); block != nil {
-		confirm, _ := b.db.GetConfirm(hash)
+	if block, _ := b.GetBlockByHash(hash); block != nil {
+		confirm, _ := b.GetConfirm(hash)
 		return &DposBlock{
 			Block:       block,
 			HaveConfirm: confirm != nil,
@@ -327,15 +317,18 @@ func (b *BlockChain) GetDposBlockByHash(hash Uint256) (*DposBlock, error) {
 
 func (b *BlockChain) ContainsTransaction(hash Uint256) bool {
 	//TODO: implement error catch
-	_, _, err := b.db.GetTransaction(hash)
+	_, _, err := b.GetTransaction(hash)
 	if err != nil {
 		return false
 	}
 	return true
 }
 
-func (b *BlockChain) CurrentBlockHash() Uint256 {
-	return b.db.GetCurrentBlockHash()
+func (b *BlockChain) GetCurrentBlockHash() Uint256 {
+	b.IndexLock.RLock()
+	defer b.IndexLock.RUnlock()
+
+	return *b.Nodes[len(b.Nodes)].Hash
 }
 
 func (b *BlockChain) ProcessIllegalBlock(payload *payload.DPOSIllegalBlocks) {
@@ -864,11 +857,11 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 	// Disconnect blocks from the main chain.
 	for e := detachNodes.Front(); e != nil; e = e.Next() {
 		n := e.Value.(*BlockNode)
-		block, err := b.db.GetBlock(*n.Hash)
+		block, err := b.GetBlockByHash(*n.Hash)
 		if err != nil {
 			return err
 		}
-		confirm, _ := b.db.GetConfirm(*n.Hash)
+		confirm, _ := b.GetConfirm(*n.Hash)
 
 		// roll back state about the last block before disconnect
 		if block.Height-1 >= b.chainParams.VoteStartHeight {
@@ -1032,7 +1025,7 @@ func (b *BlockChain) BlockExists(hash *Uint256) bool {
 	}
 
 	// Check in database (rest of main chain not in memory).
-	return b.db.IsBlockInStore(hash)
+	return b.IsBlockInStore(hash)
 }
 
 func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (bool, error) {
@@ -1306,7 +1299,7 @@ func (b *BlockChain) LatestBlockLocator() ([]*Uint256, error) {
 		// database.
 
 		// Get Current Block
-		blockHash := b.db.GetCurrentBlockHash()
+		blockHash := b.GetCurrentBlockHash()
 		return b.BlockLocatorFromHash(&blockHash), nil
 	}
 
@@ -1370,7 +1363,7 @@ func (b *BlockChain) BlockLocatorFromHash(inhash *Uint256) []*Uint256 {
 		// error means it doesn't exist and just return the locator for
 		// the block itself.
 
-		block, err := b.db.GetBlock(hash)
+		block, err := b.GetBlockByHash(hash)
 		if err != nil {
 			return locator
 		}
@@ -1397,7 +1390,7 @@ func (b *BlockChain) BlockLocatorFromHash(inhash *Uint256) []*Uint256 {
 		// The desired block height is in the main chain, so look it up
 		// from the main chain database.
 
-		h, err := b.db.GetBlockHash(uint32(blockHeight))
+		h, err := b.GetBlockHash(uint32(blockHeight))
 		if err != nil {
 			log.Debugf("Lookup of known valid height failed %v", blockHeight)
 			continue
@@ -1415,7 +1408,7 @@ func (b *BlockChain) BlockLocatorFromHash(inhash *Uint256) []*Uint256 {
 func (b *BlockChain) locateStartBlock(locator []*Uint256) *Uint256 {
 	var startHash Uint256
 	for _, hash := range locator {
-		_, err := b.db.GetBlock(*hash)
+		_, err := b.GetBlockByHash(*hash)
 		if err == nil {
 			startHash = *hash
 			break
@@ -1428,7 +1421,7 @@ func (b *BlockChain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBloc
 	var count = uint32(0)
 	var startHeight uint32
 	var stopHeight uint32
-	curHeight := b.db.GetHeight()
+	curHeight := b.GetHeight()
 	if stopHash.IsEqual(EmptyHash) {
 		if startHash.IsEqual(EmptyHash) {
 			if curHeight > maxBlockHashes {
@@ -1437,7 +1430,7 @@ func (b *BlockChain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBloc
 				count = curHeight
 			}
 		} else {
-			startHeader, err := b.db.GetHeader(*startHash)
+			startHeader, err := b.GetHeader(*startHash)
 			if err != nil {
 				return nil, err
 			}
@@ -1448,13 +1441,13 @@ func (b *BlockChain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBloc
 			}
 		}
 	} else {
-		stopHeader, err := b.db.GetHeader(*stopHash)
+		stopHeader, err := b.GetHeader(*stopHash)
 		if err != nil {
 			return nil, err
 		}
 		stopHeight = stopHeader.Height
 		if !startHash.IsEqual(EmptyHash) {
-			startHeader, err := b.db.GetHeader(*startHash)
+			startHeader, err := b.GetHeader(*startHash)
 			if err != nil {
 				return nil, err
 			}
@@ -1480,7 +1473,7 @@ func (b *BlockChain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBloc
 
 	hashes := make([]*Uint256, 0)
 	for i := uint32(1); i <= count; i++ {
-		hash, err := b.db.GetBlockHash(startHeight + i)
+		hash, err := b.GetBlockHash(startHeight + i)
 		if err != nil {
 			return nil, err
 		}
