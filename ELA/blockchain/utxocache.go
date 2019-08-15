@@ -27,17 +27,6 @@ type UTXOCache struct {
 	reference map[*types.Input]*OutputInfo
 }
 
-func (up *UTXOCache) CleanSpentUTXOs(block *types.Block) {
-	up.Lock()
-	defer up.Unlock()
-
-	for _, tx := range block.Transactions[1:] {
-		for _, input := range tx.Inputs {
-			delete(up.reference, input)
-		}
-	}
-}
-
 func (up *UTXOCache) GetTxReferenceInfo(tx *types.Transaction) (map[*types.Input]*OutputInfo, error) {
 	up.Lock()
 	defer up.Unlock()
@@ -74,6 +63,24 @@ func (up *UTXOCache) GetTxReferenceInfo(tx *types.Transaction) (map[*types.Input
 	}
 
 	return result, nil
+}
+
+func (up *UTXOCache) CleanSpentUTXOs(block *types.Block) {
+	up.Lock()
+	defer up.Unlock()
+
+	for _, tx := range block.Transactions[1:] {
+		for _, input := range tx.Inputs {
+			delete(up.reference, input)
+		}
+	}
+}
+
+func (up *UTXOCache) CleanCache() {
+	up.Lock()
+	defer up.Unlock()
+
+	up.reference = make(map[*types.Input]*OutputInfo)
 }
 
 func NewUTXOCache(db IChainStore) *UTXOCache {
