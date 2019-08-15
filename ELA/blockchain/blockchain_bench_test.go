@@ -56,6 +56,15 @@ var (
 	chain                 = benchBegin()
 )
 
+func BenchmarkBlockChain_CheckBlockContext(b *testing.B) {
+	block, _ := newBlock()
+	for i := 0; i < 10; i++ {
+		if err := chain.CheckBlockContext(block, chain.BestChain); err != nil {
+			b.Error(err)
+		}
+	}
+}
+
 func BenchmarkBlockChain_ProcessBlock(b *testing.B) {
 	_, _, err := chain.ProcessBlock(newBlock())
 	if err != nil {
