@@ -97,7 +97,7 @@ func PreProcessSpecialTx(block *Block) error {
 			if err := CheckInactiveArbitrators(tx); err != nil {
 				return err
 			}
-			if err := checkTransactionSignature(tx, map[*Input]*TxReference{}); err != nil {
+			if err := checkTransactionSignature(tx, map[*Input]*OutputInfo{}); err != nil {
 				return err
 			}
 

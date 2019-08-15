@@ -44,6 +44,7 @@ type BlockChain struct {
 	db          IChainStore
 	state       *state.State
 	crCommittee *crstate.Committee
+	UTXOCache   *UTXOCache
 	GenesisHash Uint256
 
 	// The following fields are calculated based upon the provided chain
@@ -84,6 +85,7 @@ func New(db IChainStore, chainParams *config.Params, state *state.State,
 		db:                  db,
 		state:               state,
 		crCommittee:         committee,
+		UTXOCache:           NewUTXOCache(db),
 		GenesisHash:         chainParams.GenesisBlock.Hash(),
 		minRetargetTimespan: targetTimespan / adjustmentFactor,
 		maxRetargetTimespan: targetTimespan * adjustmentFactor,
@@ -207,7 +209,7 @@ func CalculateTxsFee(block *Block) {
 		if tx.IsCoinBaseTx() {
 			continue
 		}
-		references, err := DefaultLedger.Store.GetTxReference(tx)
+		references, err := DefaultLedger.Blockchain.UTXOCache.GetTxReferenceInfo(tx)
 		if err != nil {
 			log.Error("get transaction reference failed")
 			return
@@ -217,8 +219,8 @@ func CalculateTxsFee(block *Block) {
 		for _, output := range tx.Outputs {
 			outputValue += output.Value
 		}
-		for _, reference := range references {
-			inputValue += reference.Value
+		for _, outputInfo := range references {
+			inputValue += outputInfo.output.Value
 		}
 		// set Fee and FeePerKB if check has passed
 		tx.Fee = inputValue - outputValue

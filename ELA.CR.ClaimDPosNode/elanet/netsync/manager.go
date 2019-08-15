@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package netsync
 
@@ -773,6 +773,9 @@ func (sm *SyncManager) handleBlockchainEvents(event *events.Event) {
 		// Remove all of the transactions (except the coinbase) in the
 		// connected block from the transaction pool.
 		sm.txMemPool.CleanSubmittedTransactions(block)
+
+		// Remove the spent UTXOs from cache when the transaction pool is cleaned.
+		sm.chain.UTXOCache.CleanSpentUTXOs(block)
 
 		// Remove the block and its confirmation which is connected from
 		// the block pool.
