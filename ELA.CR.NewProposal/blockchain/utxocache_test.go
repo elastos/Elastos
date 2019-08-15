@@ -135,6 +135,35 @@ func TestUTXOCache_CleanSpentUTXOs(t *testing.T) {
 	assert.Equal(t, "GetTxReferenceInfo failed, previous transaction not found", err.Error())
 }
 
+func TestUTXOCache_CleanCache(t *testing.T) {
+	err := testUTXOCacheDB.persistTransaction(referTx, 0)
+	assert.NoError(t, err)
+	testUTXOCacheDB.BatchCommit()
+
+	reference, err := utxoCache.GetTxReferenceInfo(spendTx)
+	assert.NoError(t, err)
+	for input, outputInfo := range reference {
+		assert.Equal(t, referTx.Hash(), input.Previous.TxID)
+		assert.Equal(t, uint16(0), input.Previous.Index)
+		assert.Equal(t, uint32(0), input.Sequence)
+
+		assert.Equal(t, common.Fixed64(100), outputInfo.output.Value)
+		assert.Equal(t, types.OTVote, outputInfo.output.Type)
+		assert.Equal(t, 1, outputInfo.inputsCount)
+		assert.Equal(t, uint32(5), outputInfo.locktime)
+		assert.Equal(t, types.TransferAsset, outputInfo.txtype)
+	}
+
+	err = deleteTestDBTx(referTx)
+	assert.NoError(t, err)
+	_, _, err = testUTXOCacheDB.GetTransaction(referTx.Hash())
+	assert.Equal(t, "leveldb: not found", err.Error())
+
+	utxoCache.CleanCache()
+	_, err = utxoCache.GetTxReferenceInfo(spendTx)
+	assert.Equal(t, "GetTxReferenceInfo failed, previous transaction not found", err.Error())
+}
+
 func deleteTestDBTx(tx *types.Transaction) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATATransaction))
