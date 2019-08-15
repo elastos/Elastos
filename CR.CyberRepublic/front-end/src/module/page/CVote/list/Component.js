@@ -2,7 +2,7 @@ import React from 'react'
 import _ from 'lodash'
 import moment from 'moment/moment'
 import BaseComponent from '@/model/BaseComponent'
-import { Table, Row, Col, Button } from 'antd'
+import { Table, Row, Col, Button, Pagination } from 'antd'
 import I18N from '@/I18N'
 import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
 import VoteStats from '../stats/Component'
@@ -20,10 +20,11 @@ export default class extends BaseComponent {
     super(p)
 
     this.state = {
-      list: null,
+      list: [],
       loading: true,
       voteResult: FILTERS.ALL,
-      search: ''
+      search: '',
+      page: 1
     }
 
     this.debouncedRefetch = _.debounce(this.refetch.bind(this), 300)
@@ -171,6 +172,7 @@ export default class extends BaseComponent {
         )}
       </Col>
     )
+    const { list, loading, page } = this.state
     return (
       <Container>
         {createBtn}
@@ -181,13 +183,23 @@ export default class extends BaseComponent {
         </Row>
         <Table
           columns={columns}
-          loading={this.state.loading}
-          dataSource={this.state.list}
+          loading={loading}
+          dataSource={list}
           rowKey={record => record._id}
+          pagination={{
+            current: page,
+            total: list.length,
+            onChange: this.onPageChange,
+          }}
         />
         {createBtn}
       </Container>
     )
+  }
+
+  onPageChange = (page, pageSize) => {
+    this.setState({ page: parseInt(page) })
+    sessionStorage.setItem('proposalPage', page)
   }
 
   createAndRedirect = async () => {
@@ -231,19 +243,19 @@ export default class extends BaseComponent {
     const param = this.getQuery()
     try {
       const list = await listData(param, canManage)
-      this.setState({ list })
+      const page = sessionStorage.getItem('proposalPage')
+      this.setState({ list, page: page && parseInt(page) || 1 })
     } catch (error) {
-      // do sth
+      // should use rollbar
+      console.log('refetch proposal err...', error)
     }
 
     this.ord_loading(false)
   }
 
   searchChangedHandler = (search) => {
-    this.setState({
-      search,
-      page: 1
-    }, this.debouncedRefetch)
+    sessionStorage.removeItem('proposalPage')
+    this.setState({ search }, this.debouncedRefetch)
   }
 
   onFilterChanged = (value) => {
@@ -261,10 +273,12 @@ export default class extends BaseComponent {
   }
 
   clearFilters = () => {
+    sessionStorage.removeItem('proposalPage')
     this.setState({ voteResult: FILTERS.ALL }, this.refetch)
   }
 
   setFilter = (voteResult) => {
+    sessionStorage.removeItem('proposalPage')
     this.setState({ voteResult }, this.refetch)
   }
 
