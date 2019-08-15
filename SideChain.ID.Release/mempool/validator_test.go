@@ -5,11 +5,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/itchyny/base58-go"
 	"math/big"
 	"testing"
 
-	base58Btcd "github.com/btcsuite/btcutil/base58"
+	"github.com/btcsuite/btcutil/base58"
 	"github.com/elastos/Elastos.ELA.SideChain.ID/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain.ID/params"
 	"github.com/elastos/Elastos.ELA.SideChain.ID/types"
@@ -43,8 +42,6 @@ const (
 	publicKeyStr3 = "035d3adebb69db5fbd8005c37d225cd2fd9ec50ec7fcb38ff7c4fcf9b90455cf5f"
 )
 
-//45个*4= 180
-//273j8fQ1ZZVM6U6d5XE3X8SyULuJwjyYXbxNopXVuftBe  zNxoZaZLdackZQNMas7sCkPRHZsJ3BtdjEvM2y5gNvKJ
 var didPayloadBytes = []byte(
 	"{" +
 		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
@@ -81,7 +78,8 @@ var didPayloadBytes = []byte(
 		"\"type\": \"ECDSAsecp256r1\"," +
 		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
 		"\"publicKeyBase58\": \"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV\"" +
-		"}]" +
+		"}]," +
+		"\"expires\": \"2014-02-10T17:00:00Z\"" +
 		"}",
 )
 
@@ -105,13 +103,8 @@ func TestIDChainStore_CreateDIDTx(t *testing.T) {
 	didAddress, _ := i.ToAddress()
 	fmt.Println("didAddress", didAddress)
 
-	btcdBase58Pk := base58Btcd.Encode(data)
-
 	bi := new(big.Int).SetBytes(data).String()
-	base58PK, _ := base58.BitcoinEncoding.Encode([]byte(bi))
-
-	fmt.Println("btcdBase58Pk", string(btcdBase58Pk))
-	fmt.Println("len(btcdBase58Pk)", len(btcdBase58Pk))
+	base58PK := base58.Encode([]byte(bi))
 
 	fmt.Println("base58PK", string(base58PK))
 	fmt.Println("len(base58PK）", len(base58PK))
