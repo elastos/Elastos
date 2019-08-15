@@ -2,14 +2,10 @@ import React from 'react'
 import _ from 'lodash'
 import moment from 'moment/moment'
 import BaseComponent from '@/model/BaseComponent'
-import {
-  Table, Row, Col, Button, Input,
-} from 'antd'
+import { Table, Row, Col, Button } from 'antd'
 import I18N from '@/I18N'
-import { Link } from 'react-router-dom'
 import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
 import VoteStats from '../stats/Component'
-import CreateForm from '../create/Container'
 
 // style
 import { Container, List, Item, ItemUndecided, StyledButton, StyledSearch, VoteFilter } from './style'
@@ -126,7 +122,6 @@ export default class extends BaseComponent {
       <Row type="flex" align="middle" justify="end">
         <Col lg={8} md={12} sm={24} xs={24} style={{ textAlign: 'right' }}>
           <StyledButton onClick={this.createAndRedirect} className="cr-btn cr-btn-primary">
-            {/* <Link to="/proposals/new" style={{ color: 'white' }}>{I18N.get('from.CVoteForm.button.add')}</Link> */}
             {I18N.get('from.CVoteForm.button.add')}
           </StyledButton>
         </Col>
