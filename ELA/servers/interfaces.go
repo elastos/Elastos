@@ -100,7 +100,7 @@ func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
 	var time uint32
 	var blockTime uint32
 	if header != nil {
-		confirmations = Store.GetHeight() - header.Height + 1
+		confirmations = Chain.GetHeight() - header.Height + 1
 		blockHash = ToReversedString(header.Hash())
 		time = header.Timestamp
 		blockTime = header.Timestamp
@@ -145,7 +145,7 @@ func GetRawTransaction(param Params) map[string]interface{} {
 	}
 
 	var header *Header
-	tx, height, err := Store.GetTransaction(hash)
+	tx, height, err := Chain.GetTransaction(hash)
 	if err != nil {
 		//try to find transaction in transaction pool.
 		tx = TxMemPool.GetTransaction(hash)
@@ -154,7 +154,7 @@ func GetRawTransaction(param Params) map[string]interface{} {
 				"cannot find transaction in blockchain and transactionpool")
 		}
 	} else {
-		hash, err := Store.GetBlockHash(height)
+		hash, err := Chain.GetBlockHash(height)
 		if err != nil {
 			return ResponsePack(UnknownTransaction, "")
 		}
@@ -249,11 +249,11 @@ func CreateAuxBlock(param Params) map[string]interface{} {
 
 	SendToAux := AuxBlock{
 		ChainID:           aux.AuxPowChainID,
-		Height:            Store.GetHeight(),
+		Height:            Chain.GetHeight(),
 		CoinBaseValue:     block.Transactions[0].Outputs[1].Value,
 		Bits:              fmt.Sprintf("%x", block.Header.Bits),
 		Hash:              block.Hash().String(),
-		PreviousBlockHash: Chain.CurrentBlockHash().String(),
+		PreviousBlockHash: Chain.GetCurrentBlockHash().String(),
 	}
 	return ResponsePack(Success, &SendToAux)
 }
@@ -365,8 +365,8 @@ func GetArbitersInfo(params Params) map[string]interface{} {
 		NextCandidates: make([]string, 0),
 		OnDutyArbiter:  common.BytesToHexString(Arbiters.GetOnDutyArbitrator()),
 
-		CurrentTurnStartHeight: int(Store.GetHeight()) - dutyIndex,
-		NextTurnStartHeight: int(Store.GetHeight()) +
+		CurrentTurnStartHeight: int(Chain.GetHeight()) - dutyIndex,
+		NextTurnStartHeight: int(Chain.GetHeight()) +
 			Arbiters.GetArbitersCount() - dutyIndex,
 	}
 	for _, v := range Arbiters.GetArbitrators() {
@@ -403,7 +403,7 @@ func GetInfo(param Params) map[string]interface{} {
 	}{
 		Version:       pact.DPOSStartVersion,
 		Balance:       0,
-		Blocks:        Store.GetHeight(),
+		Blocks:        Chain.GetHeight(),
 		Timeoffset:    0,
 		Connections:   Server.ConnectedCount(),
 		Keypoololdest: 0,
@@ -420,7 +420,7 @@ func AuxHelp(param Params) map[string]interface{} {
 }
 
 func GetMiningInfo(param Params) map[string]interface{} {
-	block, err := Store.GetBlock(Store.GetCurrentBlockHash())
+	block, err := Chain.GetBlockByHash(Chain.GetCurrentBlockHash())
 	if err != nil {
 		return ResponsePack(InternalError, "get tip block failed")
 	}
@@ -433,7 +433,7 @@ func GetMiningInfo(param Params) map[string]interface{} {
 		PooledTx       uint32 `json:"pooledtx"`
 		Chain          string `json:"chain"`
 	}{
-		Blocks:         Store.GetHeight() + 1,
+		Blocks:         Chain.GetHeight() + 1,
 		CurrentBlockTx: uint32(len(block.Transactions)),
 		Difficulty:     Chain.CalcCurrentDifficulty(block.Bits),
 		NetWorkHashPS:  Chain.GetNetworkHashPS().String(),
@@ -513,16 +513,16 @@ func GetBlockInfo(block *Block, verbose bool) BlockInfo {
 	binary.BigEndian.PutUint32(versionBytes[:], block.Header.Version)
 
 	var chainWork [4]byte
-	binary.BigEndian.PutUint32(chainWork[:], Store.GetHeight()-block.Header.Height)
+	binary.BigEndian.PutUint32(chainWork[:], Chain.GetHeight()-block.Header.Height)
 
-	nextBlockHash, _ := Store.GetBlockHash(block.Header.Height + 1)
+	nextBlockHash, _ := Chain.GetBlockHash(block.Header.Height + 1)
 
 	auxPow := new(bytes.Buffer)
 	block.Header.AuxPow.Serialize(auxPow)
 
 	return BlockInfo{
 		Hash:              ToReversedString(block.Hash()),
-		Confirmations:     Store.GetHeight() - block.Header.Height + 1,
+		Confirmations:     Chain.GetHeight() - block.Header.Height + 1,
 		StrippedSize:      uint32(block.GetSize()),
 		Size:              uint32(block.GetSize()),
 		Weight:            uint32(block.GetSize() * 4),
@@ -562,7 +562,7 @@ func GetConfirmInfo(confirm *payload.Confirm) ConfirmInfo {
 }
 
 func getBlock(hash common.Uint256, verbose uint32) (interface{}, ErrCode) {
-	block, err := Store.GetBlock(hash)
+	block, err := Chain.GetBlockByHash(hash)
 	if err != nil {
 		return "", UnknownBlock
 	}
@@ -578,7 +578,7 @@ func getBlock(hash common.Uint256, verbose uint32) (interface{}, ErrCode) {
 }
 
 func getConfirm(hash common.Uint256, verbose uint32) (interface{}, ErrCode) {
-	confirm, err := Store.GetConfirm(hash)
+	confirm, err := Chain.GetConfirm(hash)
 	if err != nil {
 		return "", UnknownBlock
 	}
@@ -622,7 +622,7 @@ func GetConfirmByHeight(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
 	}
 
-	hash, err := Store.GetBlockHash(height)
+	hash, err := Chain.GetBlockHash(height)
 	if err != nil {
 		return ResponsePack(UnknownBlock, err.Error())
 	}
@@ -683,11 +683,11 @@ func SendRawTransaction(param Params) map[string]interface{} {
 }
 
 func GetBlockHeight(param Params) map[string]interface{} {
-	return ResponsePack(Success, Store.GetHeight())
+	return ResponsePack(Success, Chain.GetHeight())
 }
 
 func GetBestBlockHash(param Params) map[string]interface{} {
-	hash, err := Store.GetBlockHash(Store.GetHeight())
+	hash, err := Chain.GetBlockHash(Chain.GetHeight())
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -695,7 +695,7 @@ func GetBestBlockHash(param Params) map[string]interface{} {
 }
 
 func GetBlockCount(param Params) map[string]interface{} {
-	return ResponsePack(Success, Store.GetHeight()+1)
+	return ResponsePack(Success, Chain.GetHeight()+1)
 }
 
 func GetBlockHash(param Params) map[string]interface{} {
@@ -704,7 +704,7 @@ func GetBlockHash(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
 	}
 
-	hash, err := Store.GetBlockHash(height)
+	hash, err := Chain.GetBlockHash(height)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -735,12 +735,12 @@ func GetTransactionsByHeight(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
 	}
 
-	hash, err := Store.GetBlockHash(height)
+	hash, err := Chain.GetBlockHash(height)
 	if err != nil {
 		return ResponsePack(UnknownBlock, "")
 
 	}
-	block, err := Store.GetBlock(hash)
+	block, err := Chain.GetBlockByHash(hash)
 	if err != nil {
 		return ResponsePack(UnknownBlock, "")
 	}
@@ -753,7 +753,7 @@ func GetBlockByHeight(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
 	}
 
-	hash, err := Store.GetBlockHash(height)
+	hash, err := Chain.GetBlockHash(height)
 	if err != nil {
 		return ResponsePack(UnknownBlock, err.Error())
 	}
@@ -769,12 +769,12 @@ func GetArbitratorGroupByHeight(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
 	}
 
-	hash, err := Store.GetBlockHash(height)
+	hash, err := Chain.GetBlockHash(height)
 	if err != nil {
 		return ResponsePack(UnknownBlock, "not found block hash at given height")
 	}
 
-	block, _ := Store.GetBlock(hash)
+	block, _ := Chain.GetBlockByHash(hash)
 	if block == nil {
 		return ResponsePack(InternalError, "not found block at given height")
 	}
@@ -898,7 +898,7 @@ func GetReceivedByAddress(param Params) map[string]interface{} {
 }
 
 func GetUTXOsByAmount(param Params) map[string]interface{} {
-	bestHeight := Store.GetHeight()
+	bestHeight := Chain.GetHeight()
 
 	result := make([]UTXOInfo, 0)
 	address, ok := param.String("address")
@@ -935,7 +935,7 @@ func GetUTXOsByAmount(param Params) map[string]interface{} {
 		if totalAmount >= *amount {
 			break
 		}
-		tx, height, err := Store.GetTransaction(unspent.TxID)
+		tx, height, err := Chain.GetTransaction(unspent.TxID)
 		if err != nil {
 			return ResponsePack(InternalError, "unknown transaction "+
 				unspent.TxID.String()+" from persisted utxo")
@@ -990,7 +990,7 @@ func GetAmountByInputs(param Params) map[string]interface{} {
 		if err := input.Deserialize(r); err != nil {
 			return ResponsePack(InvalidParams, "invalid inputs")
 		}
-		tx, _, err := Store.GetTransaction(input.Previous.TxID)
+		tx, _, err := Chain.GetTransaction(input.Previous.TxID)
 		if err != nil {
 			return ResponsePack(InternalError, "unknown transaction "+
 				input.Previous.TxID.String()+" from persisted utxo")
@@ -1002,7 +1002,7 @@ func GetAmountByInputs(param Params) map[string]interface{} {
 }
 
 func ListUnspent(param Params) map[string]interface{} {
-	bestHeight := Store.GetHeight()
+	bestHeight := Chain.GetHeight()
 
 	var result []UTXOInfo
 	addresses, ok := param.ArrayString("addresses")
@@ -1025,7 +1025,7 @@ func ListUnspent(param Params) map[string]interface{} {
 		}
 
 		for _, unspent := range unspents[config.ELAAssetID] {
-			tx, height, err := Store.GetTransaction(unspent.TxID)
+			tx, height, err := Chain.GetTransaction(unspent.TxID)
 			if err != nil {
 				return ResponsePack(InternalError,
 					"unknown transaction "+unspent.TxID.String()+" from persisted utxo")
@@ -1361,7 +1361,7 @@ func GetUnspendOutput(param Params) map[string]interface{} {
 		Index uint32 `json:"Index"`
 		Value string `json:"Value"`
 	}
-	infos, err := Store.GetUnspentFromProgramHash(*programHash, assetHash)
+	infos, err := Chain.GetUnspentFromProgramHash(*programHash, assetHash)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 
@@ -1390,7 +1390,7 @@ func GetTransactionByHash(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidTransaction, "")
 	}
-	txn, height, err := Store.GetTransaction(hash)
+	txn, height, err := Chain.GetTransaction(hash)
 	if err != nil {
 		return ResponsePack(UnknownTransaction, "")
 	}
@@ -1399,7 +1399,7 @@ func GetTransactionByHash(param Params) map[string]interface{} {
 		txn.Serialize(w)
 		return ResponsePack(Success, common.BytesToHexString(w.Bytes()))
 	}
-	bHash, err := Store.GetBlockHash(height)
+	bHash, err := Chain.GetBlockHash(height)
 	if err != nil {
 		return ResponsePack(UnknownBlock, "")
 	}
@@ -1745,7 +1745,7 @@ func VoteStatus(param Params) map[string]interface{} {
 	var total common.Fixed64
 	var voting common.Fixed64
 	for _, unspent := range unspents[config.ELAAssetID] {
-		tx, _, err := Store.GetTransaction(unspent.TxID)
+		tx, _, err := Chain.GetTransaction(unspent.TxID)
 		if err != nil {
 			return ResponsePack(InternalError, "unknown transaction "+unspent.TxID.String()+" from persisted utxo")
 		}
@@ -1758,7 +1758,7 @@ func VoteStatus(param Params) map[string]interface{} {
 	pending := false
 	for _, t := range TxMemPool.GetTxsInPool() {
 		for _, i := range t.Inputs {
-			tx, _, err := Store.GetTransaction(i.Previous.TxID)
+			tx, _, err := Chain.GetTransaction(i.Previous.TxID)
 			if err != nil {
 				return ResponsePack(InternalError, "unknown transaction "+i.Previous.TxID.String()+" from persisted utxo")
 			}

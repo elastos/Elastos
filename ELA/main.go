@@ -183,7 +183,7 @@ func startNode(c *cli.Context) {
 			if err != nil {
 				return nil, err
 			}
-			block, err := chainStore.GetBlock(hash)
+			block, err := blockchain.DefaultLedger.Blockchain.GetBlockByHash(hash)
 			if err != nil {
 				return nil, err
 			}
@@ -272,6 +272,7 @@ func startNode(c *cli.Context) {
 
 	wal := wallet.New(flagDataDir)
 	wallet.Store = chainStore
+	wallet.Chain = chain
 
 	activeNetParams.CkpManager.Register(wal)
 
