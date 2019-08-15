@@ -438,6 +438,7 @@ namespace Elastos {
 						cb["Address"] = Address(cbptr->Output()->ProgramHash()).String();
 						cb["Type"] = Transaction::coinBase;
 						jcbs.push_back(cb);
+						realCount++;
 						break;
 					}
 				} else {
@@ -451,6 +452,7 @@ namespace Elastos {
 					cb["Direction"] = "Received";
 
 					jcbs.push_back(cb);
+					realCount++;
 				}
 			}
 			j["Transactions"] = jcbs;
