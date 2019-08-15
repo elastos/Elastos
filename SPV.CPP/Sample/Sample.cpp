@@ -446,7 +446,7 @@ static void GetVotedList(const std::string &masterWalletID, const std::string &s
 	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
 
 	mainchainSubWallet->GetVotedProducerList();
-	mainchainSubWallet->GetVotedCRList()
+	mainchainSubWallet->GetVotedCRList();
 }
 
 static void RetrieveDeposit(const std::string &masterWalletID, const std::string &subWalletID) {

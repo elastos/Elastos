@@ -354,7 +354,7 @@ namespace Elastos {
 			 *    }
 			 * }
 			 *
-			 * { "Status": "Canceled", "Info": { "Confirms": 2016 } }
+			 * { "Status": "UnRegistered", "Info": { "Confirms": 2016 } }
 			 *
 			 * { "Status": "ReturnDeposit", "Info": null }
 			 */

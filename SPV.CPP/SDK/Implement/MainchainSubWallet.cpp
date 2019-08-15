@@ -879,9 +879,12 @@ namespace Elastos {
 					const CRInfo *pinfo = dynamic_cast<const CRInfo *>(allTxs[i]->GetPayload());
 					if (pinfo) {
 						nlohmann::json info;
+						ByteStream stream(pinfo->GetCode());
+						bytes_t pubKey;
+						stream.ReadVarBytes(pubKey);
 
-						info["Code"] = pinfo->GetCode().getHex();
-						info["DID"] = pinfo->GetDID().GetHex();
+						info["CROwnerPublicKey"] = pubKey.getHex();
+						info["CROwnerDID"] = pinfo->GetDID().GetHex();
 						info["NickName"] = pinfo->GetNickName();
 						info["Url"] = pinfo->GetUrl();
 						info["Location"] = pinfo->GetLocation();
