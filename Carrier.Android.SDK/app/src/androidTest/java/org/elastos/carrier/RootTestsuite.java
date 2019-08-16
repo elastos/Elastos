@@ -24,6 +24,7 @@ import static org.junit.Assert.fail;
 		FriendInviteTest.class,
 		FriendLabelTest.class,
 		FriendMessageTest.class,
+		// FriendOfflineMessageTest.class,
 		GetIDTest.class,
 		GetInfoTest.class,
 		GetVersionTest.class,
