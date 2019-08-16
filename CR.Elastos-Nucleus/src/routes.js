@@ -1,4 +1,4 @@
-import Dashboard from "views/Dashboard.jsx";
+import Apigenerator from "views/Apigenerator.jsx";
 import ServiceOne from "views/ServiceOne.jsx";
 import ServiceTwo from "views/ServiceTwo.jsx";
 import ServiceThree from "views/ServiceThree.jsx";
@@ -6,12 +6,13 @@ import ServiceFour from "views/ServiceFour.jsx";
 import ServiceFive from "views/ServiceFive.jsx";
 import ServiceSix from "views/ServiceSix.jsx";
 
+
 const sidebarRoutes = [
   {
-    path: "/dashboard",
-    name: "Dashboard",
+    path: "/generate-api-key",
+    name: "Generate API KEY",
     icon: "pe-7s-tools",
-    component: Dashboard,
+    component: Apigenerator,
     layout: "/admin"
   },
   {
