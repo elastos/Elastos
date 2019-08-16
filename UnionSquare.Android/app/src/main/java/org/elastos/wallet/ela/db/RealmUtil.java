@@ -424,6 +424,7 @@ public class RealmUtil {
             List<SubWallet> assetList = entry.getValue();
             for (SubWallet subWallet : assetList) {
                 subWallet.setWallletId(subWallet.getBelongId() + subWallet.getChainId());
+                subWallet.setFiled2("false");
                 realm.copyToRealmOrUpdate(subWallet);
             }
         }

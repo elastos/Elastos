@@ -132,8 +132,9 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
             viewLine.setVisibility(View.VISIBLE);
             tvTowhole.setVisibility(View.VISIBLE);
             new VoteFirstPresenter().getRegisteredProducerInfo(wallet.getWalletId(), chainId, this);
-            assetDetailPresenter.getAllUTXOs(wallet.getWalletId(), chainId, 0, 1, "", this);
-
+            if ("true".equals(subWallet.getFiled2())) {
+                assetDetailPresenter.getAllUTXOs(wallet.getWalletId(), chainId, 0, 1, "", this);
+            }
         }
         presenter = new CommonGetTransactionPresenter();
         presenter.getAllTransaction(wallet.getWalletId(), chainId, startCount, pageCount, "", this);

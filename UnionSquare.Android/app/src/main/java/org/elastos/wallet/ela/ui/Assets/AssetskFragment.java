@@ -81,7 +81,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     @Override
 
     public void onSaveInstanceState(Bundle outState) {
-        Log.d(getClass().getName(), "onSaveInstanceState");
+       // Log.d(getClass().getName(), "onSaveInstanceState");
         realmUtil.updateSubWalletDetial(listMap);
         super.onSaveInstanceState(outState);
     }
@@ -275,6 +275,9 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                         subWallet.setSyncTime(curentTime);
                     }
                     subWallet.setProgress(progress);
+                    if (progress==100){
+                        subWallet.setFiled2("true");
+                    }
                     if (wallet.getWalletId().equals(MasterWalletID)) {
                         post(RxEnum.UPDATAPROGRESS.ordinal(), null, subWallet);
                     }
