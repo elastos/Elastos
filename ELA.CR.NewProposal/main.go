@@ -211,7 +211,7 @@ func startNode(c *cli.Context, st *settings) {
 	server, err := elanet.NewServer(dataDir, &elanet.Config{
 		Chain:          chain,
 		ChainParams:    st.Params(),
-		PermanentPeers: st.Config().PermanentPeers,
+		PermanentPeers: st.Params().PermanentPeers,
 		TxMemPool:      txMemPool,
 		BlockMemPool:   blockMemPool,
 		Routes:         route,
