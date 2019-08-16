@@ -8,6 +8,7 @@ package blockchain
 import (
 	"bytes"
 	"errors"
+	"sync"
 	"time"
 
 	. "github.com/elastos/Elastos.ELA/common"
@@ -17,11 +18,19 @@ import (
 	"github.com/elastos/Elastos.ELA/database"
 )
 
-func (c *BlockChain) Close() {
+type ffldbChainStore struct {
+	fflDB database.DB
+
+	mtx              sync.RWMutex
+	blockHashesCache []Uint256
+	blocksCache      map[Uint256]*Block
+}
+
+func (c *ffldbChainStore) Close() {
 	c.fflDB.Close()
 }
 
-func (c *BlockChain) SaveBlock(b *Block, node *BlockNode,
+func (c *ffldbChainStore) SaveBlock(b *Block, node *BlockNode,
 	confirm *payload.Confirm, medianTimePast time.Time) error {
 	log.Debug("SaveBlock()")
 
@@ -34,7 +43,7 @@ func (c *BlockChain) SaveBlock(b *Block, node *BlockNode,
 	return err
 }
 
-func (c *BlockChain) RollbackBlock(b *Block, node *BlockNode,
+func (c *ffldbChainStore) RollbackBlock(b *Block, node *BlockNode,
 	confirm *payload.Confirm, medianTimePast time.Time) error {
 	now := time.Now()
 	err := c.handleRollbackBlockTask(b, node, confirm, medianTimePast)
@@ -43,7 +52,7 @@ func (c *BlockChain) RollbackBlock(b *Block, node *BlockNode,
 	return err
 }
 
-func (c *BlockChain) GetBlockByHash(hash Uint256) (*Block, error) {
+func (c *ffldbChainStore) GetBlockByHash(hash Uint256) (*Block, error) {
 	var blkBytes []byte
 	err := c.fflDB.View(func(dbTx database.Tx) error {
 		var err error
@@ -63,7 +72,7 @@ func (c *BlockChain) GetBlockByHash(hash Uint256) (*Block, error) {
 	return b, nil
 }
 
-func (c *BlockChain) GetHeader(hash Uint256) (*Header, error) {
+func (c *ffldbChainStore) GetHeader(hash Uint256) (*Header, error) {
 	var headerBytes []byte
 	err := c.fflDB.View(func(tx database.Tx) error {
 		var e error
@@ -86,94 +95,7 @@ func (c *BlockChain) GetHeader(hash Uint256) (*Header, error) {
 	return &header, nil
 }
 
-func (c *BlockChain) IsTxHashDuplicate(txhash Uint256) bool {
-	// todo complete me
-	return false
-}
-
-func (c *BlockChain) GetTransaction(txID Uint256) (*Transaction, uint32, error) {
-	// todo complete me
-	return nil, 0, nil
-}
-
-func (c *BlockChain) GetTxReferenceInfo(tx *Transaction) (map[*Input]*TxReference, error) {
-	if tx.TxType == RegisterAsset {
-		return nil, nil
-	}
-	txOutputsCache := make(map[Uint256][]*TxReference)
-	//UTXO input /  Outputs
-	reference := make(map[*Input]*TxReference)
-	// Key index，v UTXOInput
-	for _, input := range tx.Inputs {
-		txID := input.Previous.TxID
-		index := input.Previous.Index
-		if outputs, ok := txOutputsCache[txID]; ok {
-			reference[input] = outputs[index]
-		} else {
-			transaction, _, err := c.GetTransaction(txID)
-
-			if err != nil {
-				return nil, errors.New("GetTxReferenceInfo failed, " +
-					"previous transaction not found")
-			}
-			if int(index) >= len(transaction.Outputs) {
-				return nil, errors.New("GetTxReferenceInfo failed," +
-					" refIdx out of range")
-			}
-			refer := &TxReference{
-				output:      transaction.Outputs[index],
-				txtype:      transaction.TxType,
-				locktime:    transaction.LockTime,
-				inputsCount: len(transaction.Inputs),
-			}
-
-			reference[input] = refer
-			for _, o := range transaction.Outputs {
-				reference := &TxReference{
-					output:      o,
-					txtype:      transaction.TxType,
-					locktime:    transaction.LockTime,
-					inputsCount: len(transaction.Inputs),
-				}
-				txOutputsCache[txID] = append(txOutputsCache[txID], reference)
-			}
-		}
-	}
-	return reference, nil
-}
-
-func (c *BlockChain) GetTxReference(tx *Transaction) (map[*Input]*Output, error) {
-	if tx.TxType == RegisterAsset {
-		return nil, nil
-	}
-	txOutputsCache := make(map[Uint256][]*Output)
-	//UTXO input /  Outputs
-	reference := make(map[*Input]*Output)
-	// Key index，v UTXOInput
-	for _, input := range tx.Inputs {
-		txID := input.Previous.TxID
-		index := input.Previous.Index
-		if outputs, ok := txOutputsCache[txID]; ok {
-			reference[input] = outputs[index]
-		} else {
-			transaction, _, err := c.GetTransaction(txID)
-
-			if err != nil {
-				return nil, errors.New("GetTxReference failed," +
-					" previous transaction not found")
-			}
-			if int(index) >= len(transaction.Outputs) {
-				return nil, errors.New("GetTxReference failed," +
-					" refIdx out of range")
-			}
-			reference[input] = transaction.Outputs[index]
-			txOutputsCache[txID] = transaction.Outputs
-		}
-	}
-	return reference, nil
-}
-
-func (c *BlockChain) handlePersistBlockTask(b *Block, node *BlockNode,
+func (c *ffldbChainStore) handlePersistBlockTask(b *Block, node *BlockNode,
 	confirm *payload.Confirm, medianTimePast time.Time) error {
 	if b.Header.Height <= c.BestChain.Height {
 		return errors.New("block height less than current block height")
@@ -244,7 +166,7 @@ func (c *BlockChain) handlePersistBlockTask(b *Block, node *BlockNode,
 	return c.persistConfirm(confirm)
 }
 
-func (c *BlockChain) handleRollbackBlockTask(b *Block, node *BlockNode,
+func (c *ffldbChainStore) handleRollbackBlockTask(b *Block, node *BlockNode,
 	confirm *payload.Confirm, medianTimePast time.Time) error {
 	// Make sure the node being disconnected is the end of the best chain.
 	if !node.Hash.IsEqual(*c.BestChain.Hash) {
@@ -295,7 +217,7 @@ func (c *BlockChain) handleRollbackBlockTask(b *Block, node *BlockNode,
 	return c.rollbackConfirm(confirm)
 }
 
-func (c *BlockChain) persistConfirm(confirm *payload.Confirm) error {
+func (c *ffldbChainStore) persistConfirm(confirm *payload.Confirm) error {
 	if confirm == nil {
 		return nil
 	}
@@ -303,7 +225,7 @@ func (c *BlockChain) persistConfirm(confirm *payload.Confirm) error {
 	return nil
 }
 
-func (c *BlockChain) rollbackConfirm(confirm *payload.Confirm) error {
+func (c *ffldbChainStore) rollbackConfirm(confirm *payload.Confirm) error {
 	if confirm == nil {
 		return nil
 	}
@@ -316,7 +238,7 @@ func (c *BlockChain) GetConfirm(hash Uint256) (*payload.Confirm, error) {
 	return nil, nil
 }
 
-func (c *BlockChain) IsBlockInStore(hash *Uint256) bool {
+func (c *ffldbChainStore) IsBlockInStore(hash *Uint256) bool {
 	var hasBlock bool
 	err := c.fflDB.View(func(dbTx database.Tx) error {
 		var err error
@@ -332,13 +254,7 @@ func (c *BlockChain) IsBlockInStore(hash *Uint256) bool {
 // the main chain or any side chains.
 //
 // This function is safe for concurrent access.
-func (c *BlockChain) blockExists(hash *Uint256) (bool, error) {
-	// Check block index first (could be main chain or side chain blocks).
-	_, exist := c.LookupNodeInIndex(hash)
-	if exist {
-		return true, nil
-	}
-
+func (c *ffldbChainStore) blockExists(hash *Uint256) (bool, error) {
 	// Check in the database.
 	var exists bool
 	err := c.fflDB.View(func(dbTx database.Tx) error {
@@ -365,9 +281,4 @@ func (c *BlockChain) blockExists(hash *Uint256) (bool, error) {
 		return err
 	})
 	return exists, err
-}
-
-func (c *BlockChain) GetUnspentFromProgramHash(programHash Uint168, assetid Uint256) ([]*UTXO, error) {
-	// todo complete me
-	return nil, nil
 }
