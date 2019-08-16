@@ -61,8 +61,6 @@ import butterknife.OnClick;
  */
 public class AssetskFragment extends BaseFragment implements AssetsViewData, CommonRvListener1, ISubWalletListener, OnRefreshListener, CommonBalanceViewData, CommmonStringWithMethNameViewData {
 
-    private static final long WAIT_TIME = 2000L;
-
     @BindView(R.id.iv_title_left)
     ImageView ivTitleLeft;
     @BindView(R.id.tv_title)
@@ -71,7 +69,6 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     ImageView ivTitleRight;
     @BindView(R.id.iv_add)
     ImageView ivAdd;
-    private long TOUCH_TIME = 0;
     @BindView(R.id.recyclerview)
     RecyclerView recyclerview;
     @BindView(R.id.srl)
@@ -371,6 +368,9 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                         subWallet.setFiled1("Connected");
                     }
                     subWallet.setProgress(progress);
+                    if (progress==100){
+                        subWallet.setFiled2("true");
+                    }
                     if (wallet.getWalletId().equals(MasterWalletID)) {
                         post(RxEnum.UPDATAPROGRESS.ordinal(), null, subWallet);
                     }
