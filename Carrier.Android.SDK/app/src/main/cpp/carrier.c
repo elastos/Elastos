@@ -532,12 +532,13 @@ jboolean removeFriend(JNIEnv* env, jobject thiz, jstring jfriendId)
 }
 
 static
-jboolean sendMessage(JNIEnv* env, jobject thiz, jstring jto, jbyteArray jmsg)
+jint sendMessage(JNIEnv* env, jobject thiz, jstring jto, jbyteArray jmsg)
 {
     const char *to;
     jbyte *msg;
     jsize len;
     int rc;
+    bool is_offline;
 
     assert(jto);
     assert(jmsg);
@@ -545,7 +546,7 @@ jboolean sendMessage(JNIEnv* env, jobject thiz, jstring jto, jbyteArray jmsg)
     to = (*env)->GetStringUTFChars(env, jto, NULL);
     if (!to) {
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
-        return JNI_FALSE;
+        return -1;
     }
 
     msg = (*env)->GetByteArrayElements(env, jmsg, NULL);
@@ -553,15 +554,15 @@ jboolean sendMessage(JNIEnv* env, jobject thiz, jstring jto, jbyteArray jmsg)
     assert(msg);
     assert(len);
 
-    rc = ela_send_friend_message(getCarrier(env, thiz), to, msg, (size_t)len);
+    rc = ela_send_friend_message(getCarrier(env, thiz), to, msg, (size_t)len, &is_offline);
     (*env)->ReleaseStringUTFChars(env, jto, to);
 
     if (rc < 0) {
-        logE("Call ela_send_friend_message API error");
         setErrorCode(ela_get_error());
-        return JNI_FALSE;
+        return -1;
     }
-    return JNI_TRUE;
+
+    return (is_offline ? 1 : 0);
 }
 
 static
@@ -742,7 +743,7 @@ static JNINativeMethod gMethods[] = {
         {"add_friend",         "("_J("String;")_J("String;)Z"),    (void *) addFriend          },
         {"accept_friend",      "("_J("String;)Z"),                 (void *) acceptFriend       },
         {"remove_friend",      "("_J("String;)Z"),                 (void *) removeFriend       },
-        {"send_message",       "("_J("String;[B)Z"),               (void *) sendMessage        },
+        {"send_message",       "("_J("String;[B)I"),               (void *) sendMessage        },
         {"friend_invite",      "("_J("String;")_J("String;")_W("FriendInviteResponseHandler;)Z"), \
                                                                    (void*)inviteFriend         },
         {"reply_friend_invite","("_J("String;I")_J("String;")_J("String;)Z"),\

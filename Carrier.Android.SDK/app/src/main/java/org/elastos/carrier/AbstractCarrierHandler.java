@@ -170,7 +170,7 @@ public abstract class AbstractCarrierHandler implements CarrierHandler {
 	 * 		message   	The message content
 	 */
 	@Override
-	public void onFriendMessage(Carrier carrier, String from, byte[] message) {}
+	public void onFriendMessage(Carrier carrier, String from, byte[] message, boolean isOffline) {}
 
 	/**
 	 * The callback function to process the friend invite request.

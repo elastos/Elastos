@@ -367,7 +367,7 @@ void cbOnFriendRequest(ElaCarrier* carrier, const char* userId, const ElaUserInf
 
 static
 void cbOnFriendMessage(ElaCarrier* carrier, const char* friendId, const void* message, size_t length,
-                       void* context)
+                       bool isOffline, void* context)
 {
     HandlerContext* hc = (HandlerContext*)context;
     jstring jfriendId;
@@ -396,8 +396,9 @@ void cbOnFriendMessage(ElaCarrier* carrier, const char* friendId, const void* me
 
     if (!callVoidMethod(hc->env, hc->clazz, hc->callbacks,
                         "onFriendMessage",
-                        "("_W("Carrier;")_J("String;[B)V"),
-                        hc->carrier, jfriendId, jmessage)) {
+                        "("_W("Carrier;")_J("String;[BZ)V"),
+                        hc->carrier, jfriendId, jmessage,
+                        isOffline ? JNI_TRUE : JNI_FALSE)) {
         logE("Call Carrier.Callbacks.onFriendMessage error");
     }
 

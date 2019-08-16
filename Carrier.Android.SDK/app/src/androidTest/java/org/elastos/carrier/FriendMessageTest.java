@@ -73,7 +73,7 @@ public class FriendMessageTest {
 		}
 
 		@Override
-		public void onFriendMessage(Carrier carrier, String from, byte[] message) {
+		public void onFriendMessage(Carrier carrier, String from, byte[] message, boolean isOffline) {
 			TestContext.Bundle bundle = mContext.getExtra();
 			bundle.setFrom(from);
 			bundle.setExtraData(new String(message));
@@ -93,7 +93,8 @@ public class FriendMessageTest {
 			assertTrue(carrier.isFriend(robot.getNodeid()));
 			String out = "message-test";
 
-			carrier.sendFriendMessage(robot.getNodeid(), out);
+			boolean isOnline = carrier.sendFriendMessage(robot.getNodeid(), out);
+			assertTrue(isOnline);
 
 			String[] args = robot.readAck();
 			assertTrue(args != null && args.length == 1);
