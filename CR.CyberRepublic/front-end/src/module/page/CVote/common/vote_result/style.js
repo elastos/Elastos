@@ -1,6 +1,7 @@
 import styled from 'styled-components'
 import { CVOTE_RESULT, CVOTE_RESULT_COLOR } from '@/constant'
 import { breakPoint } from '@/constants/breakPoint'
+import AvatarIcon from './AvatarIcon'
 
 export const Container = styled.div`
   display: flex;
@@ -58,6 +59,18 @@ export const Item = styled.div`
 export const Avatar = styled.img`
   display: block;
   border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  margin-bottom: 15px;
+  @media only screen and (max-width: ${breakPoint.mobile}) {
+    width: 50px;
+    height: 50px;
+  }
+`
+
+export const StyledAvatarIcon = styled(AvatarIcon)`
+  display: block;
+  fill: #ddd;
   width: 100px;
   height: 100px;
   margin-bottom: 15px;
