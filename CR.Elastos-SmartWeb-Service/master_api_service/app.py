@@ -1,4 +1,5 @@
 import logging.config
+from flask_cors import CORS
 
 import os
 from flask import Flask, Blueprint
@@ -14,6 +15,7 @@ from master_api_service.api.restplus import api
 from master_api_service.database import db
 
 app = Flask(__name__)
+CORS(app)
 logging_conf_path = os.path.normpath(os.path.join(os.path.dirname(__file__), '../logging.conf'))
 logging.config.fileConfig(logging_conf_path)
 log = logging.getLogger(__name__)
