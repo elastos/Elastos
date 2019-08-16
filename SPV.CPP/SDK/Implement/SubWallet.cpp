@@ -676,6 +676,7 @@ namespace Elastos {
 
 		void SubWallet::StopP2P() {
 			_walletManager->SyncStop();
+			_walletManager->ExecutorStop();
 		}
 
 		void SubWallet::FlushData() {
