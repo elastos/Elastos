@@ -1,4 +1,6 @@
 import React, { Component } from "react";
+import Dropzone from "react-dropzone";
+
 import {
   Grid,
   Row,
@@ -17,48 +19,115 @@ class UserProfile extends Component {
       <div className="content">
         <Grid fluid>
           <Row>
-            <Col md={6}>
+            <Col md={12}>
               <Card
-                title="Input Section"
+                title="Upload Files"
                 content={
                   <form>
                     <Row>
                       <Col md={12}>
-                        <FormGroup controlId="formControlsTextarea">
-                          <ControlLabel>Input text</ControlLabel>
-                          <FormControl
-                            rows="5"
-                            componentClass="textarea"
-                            bsClass="form-control"
-                            placeholder="Enter infromation here"
-                          />
-                        </FormGroup>
+                        <Dropzone
+                          onDrop={acceptedFiles => console.log(acceptedFiles)}
+                        >
+                          {({ getRootProps, getInputProps }) => (
+                            <section>
+                              <div {...getRootProps()}>
+                                <input {...getInputProps()} />
+                                <p>
+                                  Drag 'n' drop some files here, or click to
+                                  select files
+                                </p>
+                              </div>
+                            </section>
+                          )}
+                        </Dropzone>
                       </Col>
                     </Row>
-                    <CustomButton text="Submit" pullRight bsStyle="info" fill />
+                    <CustomButton
+                      text="Upload"
+                      path="/admin/generatewallet"
+                      pullRight
+                      bsStyle="info"
+                      fill
+                    />
                     <div className="clearfix" />
                   </form>
                 }
               />
             </Col>
-            <Col md={6}>
+          </Row>
+          <Row>
+            <Col md={12}>
               <Card
-                title="Output Section"
+                title="Documentation"
                 content={
                   <form>
                     <Row>
                       <Col md={12}>
                         <FormGroup controlId="formControlsTextarea">
-                          <ControlLabel>Output text</ControlLabel>
-                          <FormControl
-                            rows="5"
-                            componentClass="textarea"
-                            bsClass="form-control"
-                            placeholder="Display output here"
-                          />
+                          <p>
+                            <span className="category" />
+                            Lorem ipsum dolor sit amet, consectetuer adipiscing
+                            elit, sed diem nonummy nibh euismod tincidunt ut
+                            lacreet dolore magna aliguam erat volutpat. Ut wisis
+                            enim ad minim veniam, quis nostrud exerci tution
+                            ullam corper suscipit lobortis nisi ut aliquip ex ea
+                            commodo consequat. Duis te feugi facilisi. Duis
+                            autem dolor in hendrerit in vulputate velit esse
+                            molestie consequat, vel illum dolore eu feugiat
+                            nulla facilisis at vero eros et accumsan et iusto
+                            odio dignissim qui blandit praesent luptatum zzril
+                            delenit au gue duis dolore te feugat nulla facilisi.
+                          </p>
                         </FormGroup>
                       </Col>
                     </Row>
+                    <CustomButton
+                      text="Show Content"
+                      path="/admin/transactions"
+                      pullRight
+                      bsStyle="info"
+                      fill
+                    />
+                    <div className="clearfix" />
+                  </form>
+                }
+              />
+            </Col>
+          </Row>
+          <Row>
+            <Col md={12}>
+              <Card
+                title="Code Snippet"
+                content={
+                  <form>
+                    <Row>
+                      <Col md={12}>
+                        <FormGroup controlId="formControlsTextarea">
+                          <p>
+                            <span className="category" />
+                            Lorem ipsum dolor sit amet, consectetuer adipiscing
+                            elit, sed diem nonummy nibh euismod tincidunt ut
+                            lacreet dolore magna aliguam erat volutpat. Ut wisis
+                            enim ad minim veniam, quis nostrud exerci tution
+                            ullam corper suscipit lobortis nisi ut aliquip ex ea
+                            commodo consequat. Duis te feugi facilisi. Duis
+                            autem dolor in hendrerit in vulputate velit esse
+                            molestie consequat, vel illum dolore eu feugiat
+                            nulla facilisis at vero eros et accumsan et iusto
+                            odio dignissim qui blandit praesent luptatum zzril
+                            delenit au gue duis dolore te feugat nulla facilisi.
+                          </p>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <CustomButton
+                      text="Show Content"
+                      path="/admin/transactions"
+                      pullRight
+                      bsStyle="info"
+                      fill
+                    />
                     <div className="clearfix" />
                   </form>
                 }
