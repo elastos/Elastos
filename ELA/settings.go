@@ -254,6 +254,12 @@ func newSettings() *settings {
 		ParamName:    "DefaultPort"})
 
 	result.Add(&settingItem{
+		Flag:         cmdcom.PeersFlag,
+		DefaultValue: []string{},
+		ConfigPath:   "PermanentPeers",
+		ParamName:    "PermanentPeers"})
+
+	result.Add(&settingItem{
 		Flag:         cmdcom.DnsSeedFlag,
 		DefaultValue: []string{},
 		ConfigPath:   "DNSSeeds",

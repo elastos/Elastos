@@ -296,6 +296,9 @@ type Params struct {
 	// The interface/port to listen for connections.
 	ListenAddrs []string
 
+	// PermanentPeers defines peers seeds for node to initialize p2p connection.
+	PermanentPeers []string
+
 	// Foundation defines the foundation address which receiving mining
 	// rewards.
 	Foundation common.Uint168
