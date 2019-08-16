@@ -13,6 +13,7 @@ SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:postgres@localhost:5432/elastos
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 #GMU Net
+GMU_NET_IP_ADDRESS = 'http://10.192.113.16:'
 
 #Wallet Service
 WALLET_SERVICE_URL = 'http://10.192.113.16:8091/api'
@@ -36,3 +37,8 @@ MAINCHAIN_RPC_URL = 'http://10.192.113.16:10014'
 
 #Sidechain
 SIDECHAIN_RPC_URL = 'http://10.192.113.16:30113'
+
+#Hive
+HIVE_PORT = '9095'
+HIVE_ADD = '/api/v0/file/add'
+SHOW_CONTENT = '/api/v0/file/cat?arg='

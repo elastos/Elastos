@@ -23,30 +23,45 @@ class Add(Resource):
 		"""
 		Returns Hash key of the content added.
 		"""
-		api_url_base = 'http://10.192.113.16:9095/api/v0/file/add'
+		api_key = request.headers.get('api_key')
+		api_status = validate_api_key(api_key)
+		if not api_status:
+			data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
+			return Response(json.dumps(data), 
+				status=401,
+				mimetype='application/json'
+			)
+
+		api_url_base = settings.GMU_NET_IP_ADDRESS + settings.HIVE_PORT + settings.HIVE_ADD
 		headers = {'Content-type': 'application/json'}
 		req_data = request.form
-		print(req_data)
 		myResponse = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
 		return Response(json.dumps(myResponse), 
         	mimetype='application/json'
         	)
 
-@ns.route('/showContent')
+@ns.route('/showContent/<string:hash_key>')
 class ShowContent(Resource):
 
 	def get(self):
 		"""
 		Returns content of the hash key.
 		"""
-		api_url_base = 'http://10.192.113.16:9095/api/v0/file/add'
-		headers = {'Content-type': 'application/json'}
-		req_data = request.form
-		print(req_data)
-		myResponse = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
+		api_key = request.headers.get('api_key')
+		api_status = validate_api_key(api_key)
+		if not api_status:
+			data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
+			return Response(json.dumps(data), 
+				status=401,
+				mimetype='application/json'
+			)
+
+		api_url_base = settings.GMU_NET_IP_ADDRESS + settings.HIVE_PORT + settings.SHOW_CONTENT + "{}"
+		myResponse = requests.get(api_url_base.format(hash_key)).json()
 		return Response(json.dumps(myResponse), 
-        	mimetype='application/json'
-        	)
+				status=200,
+				mimetype='application/json'
+			)
 
 
   
