@@ -129,6 +129,10 @@ var (
 		Name:  "dns",
 		Usage: "dns seeds for node to initialize p2p connection",
 	}
+	PeersFlag = cli.StringFlag{
+		Name:  "peers",
+		Usage: "peers seeds for node to initialize p2p connection",
+	}
 	PortFlag = cli.StringFlag{
 		Name:  "port",
 		Usage: "default peer-to-peer port for the network",
