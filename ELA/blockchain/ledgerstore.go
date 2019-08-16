@@ -61,11 +61,6 @@ type IFFLDBChainStore interface {
 	GetConfirm(hash Uint256) (*payload.Confirm, error)
 	GetHeader(hash Uint256) (*Header, error)
 
-	GetTransaction(txID Uint256) (*Transaction, uint32, error)
-	GetTxReference(tx *Transaction) (map[*Input]*Output, error)
-	GetTxReferenceInfo(tx *Transaction) (map[*Input]*TxReference, error)
-
-	IsTxHashDuplicate(txhash Uint256) bool
 	IsBlockInStore(hash *Uint256) bool
 
 	Close()
