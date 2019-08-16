@@ -280,15 +280,29 @@ func (s *State) registerCR(tx *types.Transaction, height uint32) {
 	}
 	candidate.depositAmount = amount
 
-	s.history.Append(height, func() {
-		s.Nicknames[nickname] = struct{}{}
-		s.CodeDIDMap[code] = info.DID
-		s.PendingCandidates[info.DID] = &candidate
-	}, func() {
-		delete(s.Nicknames, nickname)
-		delete(s.CodeDIDMap, code)
-		delete(s.PendingCandidates, info.DID)
-	})
+	c := s.getCandidateByDID(info.DID)
+	if c == nil {
+		s.history.Append(height, func() {
+			s.Nicknames[nickname] = struct{}{}
+			s.CodeDIDMap[code] = info.DID
+			s.PendingCandidates[info.DID] = &candidate
+		}, func() {
+			delete(s.Nicknames, nickname)
+			delete(s.CodeDIDMap, code)
+			delete(s.PendingCandidates, info.DID)
+		})
+	} else {
+		s.history.Append(height, func() {
+			delete(s.CanceledCandidates, c.Info().DID)
+			s.Nicknames[nickname] = struct{}{}
+			s.PendingCandidates[info.DID] = &candidate
+		}, func() {
+			delete(s.PendingCandidates, info.DID)
+			delete(s.Nicknames, nickname)
+			s.CanceledCandidates[c.Info().DID] = c
+		})
+	}
+
 }
 
 // updateCR handles the update CR transaction.
@@ -396,9 +410,11 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 		s.history.Append(height, func() {
 			candidate.depositAmount -= inputValue
 			candidate.state = Returned
+			delete(s.Nicknames, candidate.info.NickName)
 		}, func() {
 			candidate.depositAmount += inputValue
 			candidate.state = originState
+			s.Nicknames[candidate.info.NickName] = struct{}{}
 		})
 	}
 
