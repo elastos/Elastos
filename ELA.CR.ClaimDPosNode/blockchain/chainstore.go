@@ -507,7 +507,9 @@ func (c *ChainStore) rollback(b *Block) error {
 	if err := c.RollbackConfirm(b); err != nil {
 		return err
 	}
-	return c.BatchCommit()
+	if err := c.BatchCommit(); err != nil {
+		return err
+	}
 
 	atomic.StoreUint32(&c.currentBlockHeight, b.Height-1)
 
