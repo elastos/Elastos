@@ -244,11 +244,11 @@ namespace Elastos {
 				if (lastUTXOPending) {
 					ErrorChecker::ThrowLogicException(Error::TxPending,
 													  "merge utxo fail, last tx is pending, fee: " +
-													  std::to_string(feeAmount));
+													  std::to_string(feeAmount) + " sela");
 				} else {
 					ErrorChecker::ThrowLogicException(Error::BalanceNotEnough,
 													  "merge utxo fail, available balance is not enough, fee: " +
-													  std::to_string(feeAmount));
+													  std::to_string(feeAmount) + " sela");
 				}
 			}
 
@@ -356,7 +356,7 @@ namespace Elastos {
 					} else {
 						BigInt maxAmount = totalInputAmount - feeAmount;
 						ErrorChecker::CheckCondition(true, Error::CreateTransactionExceedSize,
-													 "Tx size too large, max available amount: " + maxAmount.getDec());
+													 "Tx size too large, max available amount: " + maxAmount.getDec() + " sela");
 					}
 
 					return txn;
@@ -405,8 +405,8 @@ namespace Elastos {
 					} else {
 						BigInt maxAmount = totalInputAmount - feeAmount;
 						ErrorChecker::CheckCondition(true, Error::CreateTransactionExceedSize,
-													 "Tx size too large, max available amount: " + maxAmount.getDec() +
-													 ", fee amount: " + std::to_string(feeAmount));
+													 "Tx size too large, max available amount: " + maxAmount.getDec() + " sela" +
+													 ", fee amount: " + std::to_string(feeAmount) + " sela");
 					}
 
 					return txn;
@@ -431,11 +431,11 @@ namespace Elastos {
 					if (lastUTXOPending) {
 						ErrorChecker::ThrowLogicException(Error::TxPending,
 														  "Last transaction is pending, max available amount: " +
-														  maxAvailable.getDec());
+														  maxAvailable.getDec() + " sela");
 					} else {
 						ErrorChecker::ThrowLogicException(Error::BalanceNotEnough,
 														  "Available balance is not enough, max available amount: " +
-														  maxAvailable.getDec());
+														  maxAvailable.getDec() + " sela");
 					}
 				} else if (totalInputAmount > totalOutputAmount + feeAmount) {
 					uint256 assetID = txn->GetOutputs()[0]->AssetID();
@@ -512,7 +512,7 @@ namespace Elastos {
 
 					ErrorChecker::CheckCondition(true, Error::CreateTransactionExceedSize,
 												 "Tx size too large, max available amount for fee: " +
-												 totalInputAmount.getDec());
+												 totalInputAmount.getDec() + " sela");
 					_parent->Lock();
 					break;
 				}
@@ -540,7 +540,7 @@ namespace Elastos {
 
 					ErrorChecker::CheckCondition(true, Error::CreateTransactionExceedSize,
 												 "Tx size too large, max available amount for fee: " +
-												 totalInputAmount.getDec());
+												 totalInputAmount.getDec() + " sela");
 					_parent->Lock();
 					break;
 				}
@@ -556,11 +556,11 @@ namespace Elastos {
 				if (lastUTXOPending) {
 					ErrorChecker::ThrowLogicException(Error::TxPending,
 													  "Last transaction is pending, max available amount: " +
-													  totalInputAmount.getDec());
+													  totalInputAmount.getDec() + " sela");
 				} else {
 					ErrorChecker::ThrowLogicException(Error::BalanceNotEnough,
 													  "Available balance is not enough, max available amount: " +
-													  totalInputAmount.getDec());
+													  totalInputAmount.getDec() + " sela");
 				}
 			} else if (totalInputAmount > feeAmount) {
 				uint256 assetID = Asset::GetELAAssetID();
