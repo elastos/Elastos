@@ -419,9 +419,9 @@ namespace Elastos {
 			_parent->Unlock();
 
 			if (txn) {
-				if (txn->GetInputs().size() > 500) {
-					ErrorChecker::ThrowLogicException(Error::TooMuchInputs, "Too much inputs, need to consolidate first");
-				}
+//				if (txn->GetInputs().size() > 500) {
+//					ErrorChecker::ThrowLogicException(Error::TooMuchInputs, "Too much inputs, need to consolidate first");
+//				}
 
 				if (totalInputAmount < totalOutputAmount + feeAmount) {
 					BigInt maxAvailable(0);
