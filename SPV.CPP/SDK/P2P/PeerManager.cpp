@@ -1345,6 +1345,7 @@ namespace Elastos {
 							"bloom filter false positive rate {} too high after {} blocks, disconnecting...",
 							_fpRate, _lastBlock->GetHeight() + 1 - _filterUpdateHeight);
 						peer->Disconnect();
+						return;
 					} else if (_lastBlock->GetHeight() + 500 < peer->GetLastBlock() &&
 							   _fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE * 10.0) {
 						UpdateBloomFilter(); // rebuild bloom filter when it starts to degrade
