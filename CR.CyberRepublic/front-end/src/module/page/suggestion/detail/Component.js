@@ -15,6 +15,7 @@ import { LG_WIDTH } from '@/config/constant'
 import { CVOTE_STATUS, SUGGESTION_TAG_TYPE, CONTENT_TYPE } from '@/constant'
 import { getSafeUrl } from '@/util/url'
 import sanitizeHtml from '@/util/html'
+import { getHTML } from '@/util/editor'
 import { ReactComponent as CommentIcon } from '@/assets/images/icon-info.svg'
 import StandardPage from '../../StandardPage'
 import ActionsContainer from '../common/actions/Container'
@@ -429,17 +430,23 @@ export default class extends StandardPage {
   }
 
   renderTranslationBtn() {
-    const { title, desc, benefits } = this.props.detail
+    const { detail } = this.props
     const text = `
-      <h1>${title}</h1>
-      <h4>${I18N.get('suggestion.form.fields.desc')}</h4>
-      ${desc}
-      ${
-  benefits
-    ? `<h4>${I18N.get('suggestion.form.fields.benefits')}</h4>
-      <p>${benefits}</p>`
-    : ''
-}
+      <h1>${detail.title}</h1>
+      <br />
+      <br />
+      <h2>${I18N.get('suggestion.fields.abstract')}</h2>
+      <p>${getHTML(detail, 'abstract')}</p>
+      <h2>${I18N.get('suggestion.fields.goal')}</h2>
+      <p>${getHTML(detail, 'goal')}</p>
+      <h2>${I18N.get('suggestion.fields.motivation')}</h2>
+      <p>${getHTML(detail, 'motivation')}</p>
+      <h2>${I18N.get('suggestion.fields.plan')}</h2>
+      <p>${getHTML(detail, 'plan')}</p>
+      <h2>${I18N.get('suggestion.fields.relevance')}</h2>
+      <p>${getHTML(detail, 'relevance')}</p>
+      <h2>${I18N.get('suggestion.fields.budget')}</h2>
+      <p>${getHTML(detail, 'budget')}</p>
     `
 
     return (
