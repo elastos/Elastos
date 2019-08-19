@@ -42,7 +42,7 @@ class Sidebar extends Component {
               <img src={logo} alt="logo_image" />
             </div>
           </a>
-          <a href="/" className="simple-text logo-normal">
+          <a href="/admin/dashboard" className="simple-text logo-normal">
             Console
           </a>
         </div>
