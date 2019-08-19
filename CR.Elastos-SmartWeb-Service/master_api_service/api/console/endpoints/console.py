@@ -127,22 +127,40 @@ class VerifyAndShow(Resource):
 		api_url_base = settings.DID_SERVICE_URL + settings.DID_SERVICE_VERIFY
 		headers = {'Content-type': 'application/json'}
 		req_data = request.get_json()
+		signed_message = req_data['msg']
+		file_hash = req_data['hash']
 		json_data = {
 						"msg": req_data['msg'],
 						"pub": req_data['pub'],
     					"sig": req_data['sig']
 					}
 		myResponse1 = requests.post(api_url_base, data=json.dumps(json_data), headers=headers).json()
-		if myResponse1['status'] != 200:
+		if not myResponse1['result']:
 			data = {"error message":"Hask key could not be verified","status":404, "timestamp":getTime(),"path":request.url}
 			return Response(json.dumps(data), 
 				status=404,
 				mimetype='application/json'
 			)
 
+		#verify the given input message using private key
+		private_key = request.headers.get('private_key')
+		api_url_base = settings.DID_SERVICE_URL + settings.DID_SERVICE_SIGN
+		headers = {'Content-type': 'application/json'}
+		req_data = 	{
+      					"privateKey":private_key,
+      					"msg":req_data['hash']
+  					}
+		myResponse2 = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
+		if myResponse2['result']['msg'] != signed_message:
+			data = {"error message":"Hash Key and messsage could not be verified","status":401, "timestamp":getTime(),"path":request.url}
+			return Response(json.dumps(data), 
+				status=401,
+				mimetype='application/json'
+			)
+
         #show content
 		api_url_base = settings.GMU_NET_IP_ADDRESS + settings.HIVE_PORT + settings.SHOW_CONTENT + "{}"
-		myResponse = requests.get(api_url_base.format(req_data['hash']))
+		myResponse = requests.get(api_url_base.format(file_hash))
 		return Response(myResponse, 
 				status=200,
 				mimetype='application/json'
@@ -193,7 +211,24 @@ class TransferELADemo(Resource):
 				      ]
 				  }
 		myResponse2 = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
-		return Response(json.dumps(myResponse2), 
+		json_output = 	{
+							"sender":[
+				          	{
+				            	"address":"EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s",
+				            	"transferred_amount":"100"
+				          	}
+				      		],
+				      		"receiver":[
+				        	{
+				        		"privateKey":myResponse1['result']['privateKey'],
+				        		"publicKey":myResponse1['result']['publicKey'],
+				            	"address":myResponse1['result']['address']
+				          	}
+				      		],
+				      		"transaction_id": myResponse2['result'],
+    						"status": myResponse2['status']
+						}
+		return Response(json.dumps(json_output), 
 				status=myResponse2['status'],
 				mimetype='application/json'
 			)
