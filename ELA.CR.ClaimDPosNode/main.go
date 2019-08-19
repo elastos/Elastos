@@ -158,19 +158,6 @@ func startNode(c *cli.Context) {
 	defer chainStore.Close()
 	ledger.Store = chainStore // fixme
 
-	fflDB, err := blockchain.LoadBlockDB(dataPath)
-	if err != nil {
-		printErrorAndExit(err)
-	}
-	//defer fflDB.Close()
-	fdb, err := blockchain.NewFFLDBChainStore(dataDir,
-		fflDB, activeNetParams.GenesisBlock)
-	if err != nil {
-		printErrorAndExit(err)
-	}
-	defer fdb.Close()
-	ledger.FFLDB = fdb
-
 	var dposStore store.IDposStore
 	dposStore, err = store.NewDposStore(dataDir, activeNetParams)
 	if err != nil {
@@ -206,7 +193,7 @@ func startNode(c *cli.Context) {
 	committee := crstate.NewCommittee(activeNetParams)
 	ledger.Committee = committee
 
-	chain, err := blockchain.New(chainStore, fdb, fflDB, activeNetParams,
+	chain, err := blockchain.New(chainStore, activeNetParams,
 		arbiters.State, committee)
 	if err != nil {
 		printErrorAndExit(err)
@@ -219,7 +206,7 @@ func startNode(c *cli.Context) {
 			if err != nil {
 				return nil, err
 			}
-			block, err := fdb.GetBlock(hash)
+			block, err := chainStore.GetFFLDB().GetBlock(hash)
 			if err != nil {
 				return nil, err
 			}
@@ -281,7 +268,6 @@ func startNode(c *cli.Context) {
 
 	wal := wallet.New(flagDataDir)
 	wallet.Store = chainStore
-	wallet.FFLDB = fdb
 	wallet.Chain = chain
 
 	activeNetParams.CkpManager.Register(wal)

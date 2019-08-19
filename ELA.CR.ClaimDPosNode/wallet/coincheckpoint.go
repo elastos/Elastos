@@ -170,7 +170,7 @@ func (ccp *CoinsCheckPoint) OnRollbackTo(height uint32) error {
 		if err != nil {
 			return err
 		}
-		block, err := FFLDB.GetBlock(hash)
+		block, err := Store.GetFFLDB().GetBlock(hash)
 		if err != nil {
 			return err
 		}

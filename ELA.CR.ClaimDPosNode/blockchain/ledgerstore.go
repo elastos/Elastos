@@ -6,6 +6,7 @@
 package blockchain
 
 import (
+	"github.com/elastos/Elastos.ELA/database"
 	"time"
 
 	. "github.com/elastos/Elastos.ELA/common"
@@ -15,7 +16,10 @@ import (
 
 // IChainStore provides func with store package.
 type IChainStore interface {
-	SaveBlock(b *Block, confirm *payload.Confirm) error
+	GetFFLDB() IFFLDBChainStore
+
+	SaveBlock(b *Block, node *BlockNode, confirm *payload.Confirm,
+		medianTimePast time.Time) error
 	GetBlock(hash Uint256) (*Block, error)
 	GetBlockHash(height uint32) (Uint256, error)
 	IsDoubleSpend(tx *Transaction) bool
@@ -24,7 +28,8 @@ type IChainStore interface {
 
 	GetHeader(hash Uint256) (*Header, error)
 
-	RollbackBlock(hash Uint256) error
+	RollbackBlock(b *Block, node *BlockNode,
+		confirm *payload.Confirm, medianTimePast time.Time) error
 
 	GetTransaction(txID Uint256) (*Transaction, uint32, error)
 	GetTxReference(tx *Transaction) (map[*Input]*Output, error)
@@ -53,6 +58,8 @@ type IChainStore interface {
 
 // IChainStore provides func with store package.
 type IFFLDBChainStore interface {
+	database.DB
+
 	SaveBlock(b *Block, node *BlockNode, confirm *payload.Confirm,
 		medianTimePast time.Time) error
 	RollbackBlock(b *Block, node *BlockNode,
@@ -62,6 +69,4 @@ type IFFLDBChainStore interface {
 	GetHeader(hash Uint256) (*Header, error)
 
 	IsBlockInStore(hash *Uint256) bool
-
-	Close()
 }
