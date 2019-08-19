@@ -10,6 +10,7 @@ from flask import Response
 from flask_restplus import Resource
 from master_api_service import settings
 from master_api_service.api.restplus import api
+from master_api_service.api.common.common_service import validate_api_key
 from master_api_service.api.common.common_service import getTime
 
 log = logging.getLogger(__name__)
@@ -33,9 +34,9 @@ class Add(Resource):
 			)
 
 		api_url_base = settings.GMU_NET_IP_ADDRESS + settings.HIVE_PORT + settings.HIVE_ADD
-		headers = {'Content-type': 'application/json'}
-		req_data = request.form
-		myResponse = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
+		headers = {'Content-Disposition': 'multipart/form-data;boundary=--------------------------608819652137318562927303'}
+		req_data = request.form.to_dict()
+		myResponse = requests.get(api_url_base, files=req_data, headers=headers).json()
 		return Response(json.dumps(myResponse), 
         	mimetype='application/json'
         	)
@@ -43,7 +44,7 @@ class Add(Resource):
 @ns.route('/showContent/<string:hash_key>')
 class ShowContent(Resource):
 
-	def get(self):
+	def get(self, hash_key):
 		"""
 		Returns content of the hash key.
 		"""
@@ -57,8 +58,8 @@ class ShowContent(Resource):
 			)
 
 		api_url_base = settings.GMU_NET_IP_ADDRESS + settings.HIVE_PORT + settings.SHOW_CONTENT + "{}"
-		myResponse = requests.get(api_url_base.format(hash_key)).json()
-		return Response(json.dumps(myResponse), 
+		myResponse = requests.get(api_url_base.format(hash_key))
+		return Response(myResponse, 
 				status=200,
 				mimetype='application/json'
 			)
