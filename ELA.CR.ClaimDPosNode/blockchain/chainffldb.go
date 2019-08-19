@@ -18,19 +18,40 @@ import (
 	"github.com/elastos/Elastos.ELA/database"
 )
 
-type ffldbChainStore struct {
-	fflDB database.DB
+type FFLDBChainStore struct {
+	db database.DB
 
 	mtx              sync.RWMutex
 	blockHashesCache []Uint256
 	blocksCache      map[Uint256]*Block
 }
 
-func (c *ffldbChainStore) Close() {
-	c.fflDB.Close()
+func NewFFLDBChainStore(dataDir string, db database.DB, genesisBlock *Block) (IFFLDBChainStore, error) {
+	s := &FFLDBChainStore{
+		db:               db,
+		blockHashesCache: make([]Uint256, 0, BlocksCacheSize),
+		blocksCache:      make(map[Uint256]*Block),
+	}
+
+	s.init(genesisBlock)
+
+	return s, nil
 }
 
-func (c *ffldbChainStore) SaveBlock(b *Block, node *BlockNode,
+func (c *FFLDBChainStore) init(genesisBlock *Block) {
+	//// GenesisBlock should exist in chain
+	//// Or the bookkeepers are not consistent with the chain
+	//hash := genesisBlock.Hash()
+	//if !c.IsBlockInStore(&hash) {
+	//	c.SaveBlock(b, )
+	//}
+}
+
+func (c *FFLDBChainStore) Close() {
+	c.db.Close()
+}
+
+func (c *FFLDBChainStore) SaveBlock(b *Block, node *BlockNode,
 	confirm *payload.Confirm, medianTimePast time.Time) error {
 	log.Debug("SaveBlock()")
 
@@ -43,7 +64,7 @@ func (c *ffldbChainStore) SaveBlock(b *Block, node *BlockNode,
 	return err
 }
 
-func (c *ffldbChainStore) RollbackBlock(b *Block, node *BlockNode,
+func (c *FFLDBChainStore) RollbackBlock(b *Block, node *BlockNode,
 	confirm *payload.Confirm, medianTimePast time.Time) error {
 	now := time.Now()
 	err := c.handleRollbackBlockTask(b, node, confirm, medianTimePast)
@@ -52,9 +73,9 @@ func (c *ffldbChainStore) RollbackBlock(b *Block, node *BlockNode,
 	return err
 }
 
-func (c *ffldbChainStore) GetBlockByHash(hash Uint256) (*Block, error) {
+func (c *FFLDBChainStore) GetBlock(hash Uint256) (*Block, error) {
 	var blkBytes []byte
-	err := c.fflDB.View(func(dbTx database.Tx) error {
+	err := c.db.View(func(dbTx database.Tx) error {
 		var err error
 		blkBytes, err = dbTx.FetchBlock(&hash)
 		return err
@@ -72,9 +93,9 @@ func (c *ffldbChainStore) GetBlockByHash(hash Uint256) (*Block, error) {
 	return b, nil
 }
 
-func (c *ffldbChainStore) GetHeader(hash Uint256) (*Header, error) {
+func (c *FFLDBChainStore) GetHeader(hash Uint256) (*Header, error) {
 	var headerBytes []byte
-	err := c.fflDB.View(func(tx database.Tx) error {
+	err := c.db.View(func(tx database.Tx) error {
 		var e error
 		headerBytes, e = tx.FetchBlockHeader(&hash)
 		if e != nil {
@@ -95,11 +116,8 @@ func (c *ffldbChainStore) GetHeader(hash Uint256) (*Header, error) {
 	return &header, nil
 }
 
-func (c *ffldbChainStore) handlePersistBlockTask(b *Block, node *BlockNode,
+func (c *FFLDBChainStore) handlePersistBlockTask(b *Block, node *BlockNode,
 	confirm *payload.Confirm, medianTimePast time.Time) error {
-	if b.Header.Height <= c.BestChain.Height {
-		return errors.New("block height less than current block height")
-	}
 
 	// Insert the block into the database if it's not already there.  Even
 	// though it is possible the block will ultimately fail to connect, it
@@ -110,7 +128,7 @@ func (c *ffldbChainStore) handlePersistBlockTask(b *Block, node *BlockNode,
 	// expensive connection logic.  It also has some other nice properties
 	// such as making blocks that never become part of the main chain or
 	// blocks that fail to connect available for further analysis.
-	err := c.fflDB.Update(func(dbTx database.Tx) error {
+	err := c.db.Update(func(dbTx database.Tx) error {
 		return dbStoreBlock(dbTx, b)
 	})
 	if err != nil {
@@ -131,7 +149,7 @@ func (c *ffldbChainStore) handlePersistBlockTask(b *Block, node *BlockNode,
 	state := newBestState(node, blockSize, blockWeight, numTxns, medianTimePast)
 
 	// Atomically insert info into the database.
-	err = c.fflDB.Update(func(dbTx database.Tx) error {
+	err = c.db.Update(func(dbTx database.Tx) error {
 		// Update best block state.
 		err := dbPutBestState(dbTx, state, node.WorkSum)
 		if err != nil {
@@ -166,18 +184,13 @@ func (c *ffldbChainStore) handlePersistBlockTask(b *Block, node *BlockNode,
 	return c.persistConfirm(confirm)
 }
 
-func (c *ffldbChainStore) handleRollbackBlockTask(b *Block, node *BlockNode,
+func (c *FFLDBChainStore) handleRollbackBlockTask(b *Block, node *BlockNode,
 	confirm *payload.Confirm, medianTimePast time.Time) error {
-	// Make sure the node being disconnected is the end of the best chain.
-	if !node.Hash.IsEqual(*c.BestChain.Hash) {
-		return errors.New("disconnectBlock must be called with the " +
-			"block at the end of the main chain")
-	}
 
 	// Load the previous block since some details for it are needed below.
 	prevNode := node.Parent
 	var prevBlock *Block
-	err := c.fflDB.View(func(dbTx database.Tx) error {
+	err := c.db.View(func(dbTx database.Tx) error {
 		var err error
 		prevBlock, err = dbFetchBlockByNode(dbTx, prevNode)
 		return err
@@ -194,7 +207,7 @@ func (c *ffldbChainStore) handleRollbackBlockTask(b *Block, node *BlockNode,
 
 	blockHash := b.Hash()
 
-	err = c.fflDB.Update(func(dbTx database.Tx) error {
+	err = c.db.Update(func(dbTx database.Tx) error {
 		// Update best block state.
 		err := dbPutBestState(dbTx, state, node.WorkSum)
 		if err != nil {
@@ -217,7 +230,7 @@ func (c *ffldbChainStore) handleRollbackBlockTask(b *Block, node *BlockNode,
 	return c.rollbackConfirm(confirm)
 }
 
-func (c *ffldbChainStore) persistConfirm(confirm *payload.Confirm) error {
+func (c *FFLDBChainStore) persistConfirm(confirm *payload.Confirm) error {
 	if confirm == nil {
 		return nil
 	}
@@ -225,7 +238,7 @@ func (c *ffldbChainStore) persistConfirm(confirm *payload.Confirm) error {
 	return nil
 }
 
-func (c *ffldbChainStore) rollbackConfirm(confirm *payload.Confirm) error {
+func (c *FFLDBChainStore) rollbackConfirm(confirm *payload.Confirm) error {
 	if confirm == nil {
 		return nil
 	}
@@ -233,19 +246,16 @@ func (c *ffldbChainStore) rollbackConfirm(confirm *payload.Confirm) error {
 	return nil
 }
 
-func (c *BlockChain) GetConfirm(hash Uint256) (*payload.Confirm, error) {
-	// todo complete me
-	return nil, nil
-}
-
-func (c *ffldbChainStore) IsBlockInStore(hash *Uint256) bool {
+func (c *FFLDBChainStore) IsBlockInStore(hash *Uint256) bool {
 	var hasBlock bool
-	err := c.fflDB.View(func(dbTx database.Tx) error {
+	err := c.db.View(func(dbTx database.Tx) error {
 		var err error
 		hasBlock, err = dbTx.HasBlock(*hash)
 		return err
 	})
-	log.Warn("[IsBlockInStore] get failed", err.Error())
+	if err != nil {
+		log.Warn("[IsBlockInStore] get failed", err.Error())
+	}
 
 	return hasBlock
 }
@@ -254,10 +264,10 @@ func (c *ffldbChainStore) IsBlockInStore(hash *Uint256) bool {
 // the main chain or any side chains.
 //
 // This function is safe for concurrent access.
-func (c *ffldbChainStore) blockExists(hash *Uint256) (bool, error) {
+func (c *FFLDBChainStore) blockExists(hash *Uint256) (bool, error) {
 	// Check in the database.
 	var exists bool
-	err := c.fflDB.View(func(dbTx database.Tx) error {
+	err := c.db.View(func(dbTx database.Tx) error {
 		var err error
 		exists, err = dbTx.HasBlock(*hash)
 		if err != nil || !exists {

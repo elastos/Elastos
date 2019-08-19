@@ -55,10 +55,10 @@ type IChainStore interface {
 type IFFLDBChainStore interface {
 	SaveBlock(b *Block, node *BlockNode, confirm *payload.Confirm,
 		medianTimePast time.Time) error
-	RollbackBlock(hash Uint256) error
+	RollbackBlock(b *Block, node *BlockNode,
+		confirm *payload.Confirm, medianTimePast time.Time) error
 
 	GetBlock(hash Uint256) (*Block, error)
-	GetConfirm(hash Uint256) (*payload.Confirm, error)
 	GetHeader(hash Uint256) (*Header, error)
 
 	IsBlockInStore(hash *Uint256) bool

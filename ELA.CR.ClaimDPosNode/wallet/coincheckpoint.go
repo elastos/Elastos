@@ -170,7 +170,7 @@ func (ccp *CoinsCheckPoint) OnRollbackTo(height uint32) error {
 		if err != nil {
 			return err
 		}
-		block, err := Chain.GetBlockByHash(hash)
+		block, err := FFLDB.GetBlock(hash)
 		if err != nil {
 			return err
 		}
@@ -184,7 +184,7 @@ func (ccp *CoinsCheckPoint) OnRollbackTo(height uint32) error {
 				ccp.removeCoin(&op)
 			}
 			// recover coins from input
-			reference, err := Chain.GetTxReference(tx)
+			reference, err := Store.GetTxReference(tx)
 			if err != nil {
 				return err
 			}
