@@ -11,7 +11,6 @@ import (
 	"container/list"
 	"encoding/binary"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/common"
 	"hash/crc32"
 	"io"
 	"os"
@@ -20,6 +19,7 @@ import (
 
 	"github.com/btcsuite/btcd/wire"
 
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/database"
 )
 

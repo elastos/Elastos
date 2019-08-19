@@ -78,7 +78,7 @@ type BlockChain struct {
 }
 
 func New(db IChainStore, chainParams *config.Params, state *state.State,
-	committee *crstate.Committee) (*BlockChain, error) {
+	committee *crstate.Committee) (*BlockChain, bool, error) {
 
 	targetTimespan := int64(chainParams.TargetTimespan / time.Second)
 	targetTimePerBlock := int64(chainParams.TargetTimePerBlock / time.Second)
@@ -111,59 +111,82 @@ func New(db IChainStore, chainParams *config.Params, state *state.State,
 	// Initialize the chain state from the passed database.  When the db
 	// does not yet contain any chain state, both it and the chain state
 	// will be initialized to contain only the genesis block.
-	var initialized bool
-	var err error
-	if initialized, err = chain.initChainState(); err != nil {
-		return nil, err
+	initialized, err := chain.initChainState()
+	return &chain, initialized, err
+}
+
+func (b *BlockChain) InitFFLDBFromChainStore(interrupt <-chan struct{},
+	barStart func(total uint32), increase func()) (err error) {
+	endHeight := b.db.GetHeight()
+	startHeight := b.GetHeight() + 1
+	done := make(chan bool)
+
+	go func() {
+		log.Info("[InitFFLDBFromChainStore] start height: ", startHeight, "end height:", endHeight)
+		if barStart != nil {
+			barStart(endHeight - startHeight)
+		}
+
+		for start := startHeight; start <= endHeight; start++ {
+
+			hash, err := b.db.GetBlockHash(start)
+			if err != nil {
+				done <- false
+				break
+			}
+			block, err := b.db.GetBlock(hash)
+			if err != nil {
+				done <- false
+				break
+			}
+			confirm, _ := b.db.GetConfirm(hash)
+			node, err := b.LoadBlockNode(&block.Header, &hash)
+			if err != nil {
+				done <- false
+				break
+			}
+			b.AddNodeToNodes(node)
+
+			b.dirty[&block.Header] = struct{}{}
+			err = b.flushToDB()
+			if err != nil {
+				done <- false
+				break
+			}
+
+			err = b.db.GetFFLDB().SaveBlock(block, node, confirm, CalcPastMedianTime(node))
+			if err != nil {
+				done <- false
+				break
+			}
+			// This node is now the end of the best chain.
+			b.BestChain = node
+			// Notify process increase.
+			if increase != nil {
+				increase()
+			}
+		}
+		done <- true
+	}()
+	var result error
+	select {
+	case ok := <-done:
+		if ok {
+			log.Info("process block finished.")
+		} else {
+			result = errors.New("process block failed")
+		}
+
+	case <-interrupt:
+		result = errors.New("process block interrupted")
 	}
-
-	if initialized {
-		log.Info("init block information from fflDB")
-		return &chain, nil
-	}
-
-	endHeight := chain.db.GetHeight()
-	startHeight := uint32(1)
-	for start := startHeight; start <= endHeight; start++ {
-		hash, err := chain.db.GetBlockHash(start)
-		if err != nil {
-			return nil, err
-		}
-		block, err := chain.db.GetBlock(hash)
-		if err != nil {
-			return nil, err
-		}
-		confirm, _ := chain.db.GetConfirm(hash)
-		node, err := chain.LoadBlockNode(&block.Header, &hash)
-		if err != nil {
-			return nil, err
-		}
-		chain.AddNodeToNodes(node)
-
-		chain.dirty[&block.Header] = struct{}{}
-		err = chain.flushToDB()
-		if err != nil {
-			return nil, err
-		}
-
-		err = chain.db.GetFFLDB().SaveBlock(block, node, confirm, CalcPastMedianTime(node))
-		if err != nil {
-			return nil, err
-		}
-		// This node is now the end of the best chain.
-		chain.BestChain = node
-		if start%10000 == 0 {
-			log.Info("process block :", start)
-		}
-	}
-
-	return &chain, nil
+	return result
 }
 
 // InitCheckpoint go through all blocks since the genesis block
 // to initialize all checkpoint.
 func (b *BlockChain) InitCheckpoint(interrupt <-chan struct{},
-	start func(total uint32), increase func()) (err error) {
+	barStart func(total uint32), increase func()) (err error) {
 	bestHeight := b.GetHeight()
 	log.Info("current block height ->", bestHeight)
 	arbiters := DefaultLedger.Arbitrators
@@ -183,8 +206,8 @@ func (b *BlockChain) InitCheckpoint(interrupt <-chan struct{},
 		}
 
 		log.Info("[RecoverFromCheckPoints] recover start height: ", startHeight)
-		if start != nil && bestHeight >= startHeight {
-			start(bestHeight - startHeight)
+		if barStart != nil && bestHeight >= startHeight {
+			barStart(bestHeight - startHeight)
 		}
 		for i := startHeight; i <= bestHeight; i++ {
 			hash, e := b.GetBlockHash(i)
@@ -1014,6 +1037,11 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payloa
 			"that extends the main chain")
 	}
 
+	b.dirty[&block.Header] = struct{}{}
+	if err := b.flushToDB(); err != nil {
+		return err
+	}
+
 	// Insert the block into the database which houses the main chain.
 	if err := b.db.SaveBlock(block, node, confirm, b.MedianTimePast); err != nil {
 		return err
@@ -1116,11 +1144,6 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 		newNode.WorkSum.Add(prevNode.WorkSum, newNode.WorkSum)
 	}
 
-	b.dirty[&block.Header] = struct{}{}
-	err = b.flushToDB()
-	if err != nil {
-		return false, err
-	}
 	// Connect the passed block to the chain while respecting proper chain
 	// selection according to the chain with the most proof of work.  This
 	// also handles validation of the transaction scripts.

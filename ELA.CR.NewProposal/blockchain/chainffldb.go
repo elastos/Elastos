@@ -129,7 +129,7 @@ func (c *FFLDBChainStore) GetHeader(hash Uint256) (*Header, error) {
 	}
 
 	var header Header
-	err = header.Deserialize(bytes.NewReader(headerBytes))
+	err = header.DeserializeNoAux(bytes.NewReader(headerBytes))
 	if err != nil {
 		return nil, errors.New("[BlockChain], GetHeader deserialize failed")
 	}

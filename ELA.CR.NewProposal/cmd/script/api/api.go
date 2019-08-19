@@ -192,10 +192,13 @@ func initLedger(L *lua.LState) int {
 		})
 
 	var interrupt = signal.NewInterrupt()
-	chain, err := blockchain.New(chainStore, chainParams,
+	chain, initialized, err := blockchain.New(chainStore, chainParams,
 		state.NewState(chainParams, arbiters.GetArbitrators, nil), nil)
 	if err != nil {
 		fmt.Printf("Init block chain error: %s \n", err.Error())
+	}
+	if !initialized {
+		chain.InitFFLDBFromChainStore(interrupt.C, nil, nil)
 	}
 
 	blockchain.FoundationAddress = chainParams.Foundation

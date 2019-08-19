@@ -110,7 +110,7 @@ func migrateBlockIndex(db database.DB) error {
 
 			if chainContext.height == -1 {
 				return fmt.Errorf("Unable to calculate chain height for "+
-					"stored block %s", hash)
+					"stored block %s ", hash)
 			}
 
 			// Mark blocks as valid if they are part of the main chain.
