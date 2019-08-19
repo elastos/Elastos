@@ -75,7 +75,7 @@ func (s *HttpService) GetNodeState(param http.Params) (interface{}, error) {
 	}, nil
 }
 
-func (s *HttpService) GetIdentificationTxById(param http.Params) (interface{}, error) {
+func (s *HttpService) GetIdTxsPayloads(param http.Params) (interface{}, error) {
 	idParam, ok := param.String("id")
 	if !ok {
 		return nil, http.NewError(int(service.InvalidParams), "id is null")
@@ -84,7 +84,7 @@ func (s *HttpService) GetIdentificationTxById(param http.Params) (interface{}, e
 	if err != nil {
 		return nil, http.NewError(int(service.InvalidParams), "invalid id")
 	}
-	isGetAll, ok := param.Bool("getall")
+	isGetAll, ok := param.Bool("all")
 	if !ok {
 		return nil, http.NewError(int(service.InvalidParams), "getall is null")
 	}
@@ -94,7 +94,7 @@ func (s *HttpService) GetIdentificationTxById(param http.Params) (interface{}, e
 
 	expiresHeight, err := s.store.GetExpiresHeight(buf.Bytes())
 	if err != nil {
-		return nil, http.NewError(int(service.UnknownTransaction), "get identification transaction failed")
+		return nil, http.NewError(int(service.UnknownTransaction), "GetExpiresHeight failed")
 	}
 	if s.store.ChainStore.GetHeight() > expiresHeight {
 		return nil, http.NewError(int(service.InvalidParams), "DID is expired")

@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	mathrand "math/rand"
 	"strings"
 	"testing"
 
@@ -15,65 +16,59 @@ import (
 )
 
 var didPayloadBytes = []byte(
-	"{" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKey\": [{" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"zNxoZaZLdackZQNMas7sCkPRHZsJ3BtdjEvM2y5gNvKJ\"" +
-		"}, {" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#key2\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"273j8fQ1ZZVM6U6d5XE3X8SyULuJwjyYXbxNopXVuftBe\"" +
-		"}, {" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#recovery\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:ip7ntDo2metGnU8wGP4FnyKCUdbHm4BPDh\"," +
-		"\"publicKeyBase58\": \"zppy33i2r3uC1LT3RFcLqJJPFpYuZPDuKMeKZ5TdAskM\"" +
-		"}]," +
-		"\"authentication\": [" +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default\"," +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#key2\"," +
-		"{" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#keys3\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV\"" +
-		"}]," +
-		"\"authorization\": [" +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default\"," +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#key2\"," +
-		"{" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#keys3\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV\"" +
-		"}]," +
-		"\"expires\": \"2024-02-10T17:00:00Z\"" +
-		"}",
-)
+	`{
+        "id" : "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN",
+        "publicKey":[{ "id": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default",
+                       "type":"ECDSAsecp256r1",
+                       "controller":"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN",
+                       "publicKeyBase58":"27bqfhMew6TjL4NMz2u8b2cFCvGovaELqr19Xytt1rDmd"
+                      }
+                    ],
+        "authentication":["did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default",
+                          {
+                               "id": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default",
+                               "type":"ECDSAsecp256r1",
+                               "controller":"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN",
+                               "publicKeyBase58":"zNxoZaZLdackZQNMas7sCkPRHZsJ3BtdjEvM2y5gNvKJ"
+                           }
+                         ],
+        "authorization":["did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default"],
+        "expires" : "2023-02-10T17:00:00Z"
+	}`)
+
+var didPayloadBytesNoAuth = []byte(
+	`{
+        "id" : "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN",
+        "publicKey":[{ "id": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default",
+                       "type":"ECDSAsecp256r1",
+                       "controller":"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN",
+                       "publicKeyBase58":"27bqfhMew6TjL4NMz2u8b2cFCvGovaELqr19Xytt1rDmd"
+                      }
+                    ],
+        "authorization":["did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default"],
+        "expires" : "2023-02-10T17:00:00Z"
+	}`)
 
 func TestDIDPayloadInfo(t *testing.T) {
 	// test for unmarshal did payload from bytes
 	info := new(DIDPayloadInfo)
 	err := json.Unmarshal(didPayloadBytes, info)
 	assert.True(t, err == nil)
+
+	infoNoAuth := new(DIDPayloadInfo)
+	err = json.Unmarshal(didPayloadBytesNoAuth, infoNoAuth)
+	assert.True(t, err == nil)
+
 }
 
 func TestPayloadDID_Serialize(t *testing.T) {
 	// test for payloadDIDInfo serialize and deserialize
 	payload1 := randomPayloadDID()
-
 	buf := new(bytes.Buffer)
 	payload1.Serialize(buf, DIDInfoVersion)
-
 	payload2 := &PayloadDIDInfo{}
 	payload2.Deserialize(buf, DIDInfoVersion)
-
 	assert.True(t, paylaodDIDInfoEqual(payload1, payload2))
-
 }
 
 func TestJavaDigest(t *testing.T) {
@@ -94,16 +89,12 @@ func TestJavaDigest(t *testing.T) {
 
 	dataString := payloadDid.Header.Specification + payloadDid.Header.
 		Operation + payloadDid.Payload
-
 	digest := sha256.Sum256([]byte(dataString))
-
 	digestHexStr := hex.EncodeToString(digest[:])
-
 	upperDigestHexStr := strings.ToUpper(digestHexStr)
 	assert.Equal(t, upperDigestHexStr, targetDigest)
 	fmt.Println(upperDigestHexStr)
 	fmt.Println(digestHexStr)
-
 }
 
 func paylaodDIDInfoEqual(first *PayloadDIDInfo, second *PayloadDIDInfo) bool {
@@ -128,7 +119,8 @@ func didPayloadEqual(first *DIDPayloadInfo, second *DIDPayloadInfo) bool {
 	return first.ID == second.ID &&
 		didPublicKeysEqual(first.PublicKey, second.PublicKey) &&
 		didAuthEqual(first.Authentication, second.Authentication) &&
-		didAuthEqual(first.Authorization, second.Authorization)
+		didAuthEqual(first.Authorization, second.Authorization) &&
+		first.Expires == second.Expires
 }
 
 func didPublicKeysEqual(first []DIDPublicKeyInfo, second []DIDPublicKeyInfo) bool {
@@ -185,8 +177,8 @@ func randomPayloadDID() *PayloadDIDInfo {
 
 	return &PayloadDIDInfo{
 		Header: DIDHeaderInfo{
-			Specification: randomString(),
-			Operation:     randomString(),
+			Specification: "elastos/did/1.0",
+			Operation:     getRandomOperation(),
 		},
 		Payload: hex.EncodeToString(didPayloadBytes),
 		Proof: DIDProofInfo{
@@ -228,8 +220,8 @@ func randomPayloadDIDNoAuth() *PayloadDIDInfo {
 	fmt.Printf("randomPayloadDIDAll DIDPayloadInfo %+v \n", info)
 	return &PayloadDIDInfo{
 		Header: DIDHeaderInfo{
-			Specification: randomString(),
-			Operation:     randomString(),
+			Specification: "elastos/did/1.0",
+			Operation:     getRandomOperation(),
 		},
 		Payload: randomString(),
 		Proof: DIDProofInfo{
@@ -263,8 +255,8 @@ func randomPayloadDIDAll() *PayloadDIDInfo {
 	fmt.Printf("randomPayloadDIDAll DIDPayloadInfo %+v \n", info)
 	return &PayloadDIDInfo{
 		Header: DIDHeaderInfo{
-			Specification: randomString(),
-			Operation:     randomString(),
+			Specification: "elastos/did/1.0",
+			Operation:     getRandomOperation(),
 		},
 		Payload: randomString(),
 		Proof: DIDProofInfo{
@@ -296,8 +288,8 @@ func randomPayloadNoContrller() *PayloadDIDInfo {
 	fmt.Printf("randomPayloadDIDAll DIDPayloadInfo %+v \n", info)
 	return &PayloadDIDInfo{
 		Header: DIDHeaderInfo{
-			Specification: randomString(),
-			Operation:     randomString(),
+			Specification: "elastos/did/1.0",
+			Operation:     getRandomOperation(),
 		},
 		Payload: randomString(),
 		Proof: DIDProofInfo{
@@ -307,4 +299,10 @@ func randomPayloadNoContrller() *PayloadDIDInfo {
 		},
 		PayloadInfo: info,
 	}
+}
+
+func getRandomOperation() string {
+	operations := []string{"create", "update"}
+	index := mathrand.Int() % 2
+	return operations[index]
 }
