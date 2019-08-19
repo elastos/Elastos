@@ -26,9 +26,14 @@ type FFLDBChainStore struct {
 	blocksCache      map[Uint256]*Block
 }
 
-func NewFFLDBChainStore(dataDir string, db database.DB, genesisBlock *Block) (IFFLDBChainStore, error) {
+func NewFFLDBChainStore(dataDir string, genesisBlock *Block) (IFFLDBChainStore, error) {
+	fflDB, err := LoadBlockDB(dataDir)
+	if err != nil {
+		return nil, err
+	}
+
 	s := &FFLDBChainStore{
-		db:               db,
+		db:               fflDB,
 		blockHashesCache: make([]Uint256, 0, BlocksCacheSize),
 		blocksCache:      make(map[Uint256]*Block),
 	}
@@ -47,8 +52,24 @@ func (c *FFLDBChainStore) init(genesisBlock *Block) {
 	//}
 }
 
-func (c *FFLDBChainStore) Close() {
-	c.db.Close()
+func (c *FFLDBChainStore) Type() string {
+	return c.db.Type()
+}
+
+func (c *FFLDBChainStore) Begin(writable bool) (database.Tx, error) {
+	return c.db.Begin(writable)
+}
+
+func (c *FFLDBChainStore) View(fn func(tx database.Tx) error) error {
+	return c.db.View(fn)
+}
+
+func (c *FFLDBChainStore) Update(fn func(tx database.Tx) error) error {
+	return c.db.Update(fn)
+}
+
+func (c *FFLDBChainStore) Close() error {
+	return c.db.Close()
 }
 
 func (c *FFLDBChainStore) SaveBlock(b *Block, node *BlockNode,
