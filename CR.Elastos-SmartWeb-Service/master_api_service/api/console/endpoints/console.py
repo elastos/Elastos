@@ -34,7 +34,7 @@ class Upload(Resource):
 			)
 
 		#reading the file content
-		request_file = request.files['data_file']
+		request_file = request.files['file']
 		if not request_file:
 			data = {"error message":"No file attached","status":404, "timestamp":getTime(),"path":request.url}
 			return Response(json.dumps(data), 
@@ -46,14 +46,12 @@ class Upload(Resource):
 
 		#upload file to hive
 		api_url_base = settings.GMU_NET_IP_ADDRESS + settings.HIVE_PORT + settings.HIVE_ADD
-		headers = {'Content-type': 'application/json'}
-		myResponse1 = requests.post(api_url_base, data=file_contents, headers=headers).json()
-		if not myResponse1:
-			data = {"error message":"File could not be uploaded","status":404, "timestamp":getTime(),"path":request.url}
-			return Response(json.dumps(data), 
-				status=404,
-				mimetype='application/json'
-			)
+		headers = {'Content-Disposition': 'multipart/form-data;boundary=--------------------------608819652137318562927303'}
+		myResponse = requests.get(api_url_base, files={'file':file_contents}, headers=headers).json()
+		return Response(json.dumps(myResponse), 
+				status=200,
+        		mimetype='application/json'
+        	)
 
 @ns.route('/uploadAndSign')
 class UploadAndSign(Resource):
@@ -72,7 +70,7 @@ class UploadAndSign(Resource):
 			)
 
 		#reading the file content
-		request_file = request.files['data_file']
+		request_file = request.files['file']
 		if not request_file:
 			data = {"error message":"No file attached","status":404, "timestamp":getTime(),"path":request.url}
 			return Response(json.dumps(data), 
@@ -84,8 +82,8 @@ class UploadAndSign(Resource):
 
 		#upload file to hive
 		api_url_base = settings.GMU_NET_IP_ADDRESS + settings.HIVE_PORT + settings.HIVE_ADD
-		headers = {'Content-type': 'application/json'}
-		myResponse1 = requests.post(api_url_base, data=file_contents, headers=headers).json()
+		headers = {'Content-Disposition': 'multipart/form-data;boundary=--------------------------608819652137318562927303'}
+		myResponse1 = requests.get(api_url_base, files={'file':file_contents}, headers=headers).json()
 		if not myResponse1:
 			data = {"error message":"File could not be uploaded","status":404, "timestamp":getTime(),"path":request.url}
 			return Response(json.dumps(data), 
@@ -95,9 +93,15 @@ class UploadAndSign(Resource):
 
 
 		#signing the hash key
+		private_key = request.headers.get('private_key')
 		api_url_base = settings.DID_SERVICE_URL + settings.DID_SERVICE_SIGN
 		headers = {'Content-type': 'application/json'}
-		myResponse2 = requests.post(api_url_base, data=myResponse1['Hash'], headers=headers).json()
+		req_data = 	{
+      					"privateKey":private_key,
+      					"msg":myResponse1['Hash']
+  					}
+		myResponse2 = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
+		myResponse2.update({'hash': myResponse1['Hash']})
 		return Response(json.dumps(myResponse2), 
 				status=myResponse2['status'],
 				mimetype='application/json'
@@ -123,7 +127,12 @@ class VerifyAndShow(Resource):
 		api_url_base = settings.DID_SERVICE_URL + settings.DID_SERVICE_VERIFY
 		headers = {'Content-type': 'application/json'}
 		req_data = request.get_json()
-		myResponse = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
+		json_data = {
+						"msg": req_data['msg'],
+						"pub": req_data['pub'],
+    					"sig": req_data['sig']
+					}
+		myResponse1 = requests.post(api_url_base, data=json.dumps(json_data), headers=headers).json()
 		if myResponse1['status'] != 200:
 			data = {"error message":"Hask key could not be verified","status":404, "timestamp":getTime(),"path":request.url}
 			return Response(json.dumps(data), 
@@ -133,8 +142,8 @@ class VerifyAndShow(Resource):
 
         #show content
 		api_url_base = settings.GMU_NET_IP_ADDRESS + settings.HIVE_PORT + settings.SHOW_CONTENT + "{}"
-		myResponse = requests.get(api_url_base.format(req_data['msg'])).json()
-		return Response(json.dumps(myResponse), 
+		myResponse = requests.get(api_url_base.format(req_data['hash']))
+		return Response(myResponse, 
 				status=200,
 				mimetype='application/json'
 			)
