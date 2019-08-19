@@ -7,7 +7,6 @@ import (
 	"time"
 
 	id "github.com/elastos/Elastos.ELA.SideChain.ID/types"
-
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/database"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
@@ -217,6 +216,7 @@ func (c *IDChainStore) persistRegisterDIDTx(batch database.Batch,
 
 	return nil
 }
+
 func (c *IDChainStore) persistRegisterDIDExpiresHeight(batch database.Batch,
 	idKey []byte, expiresHeight uint32) error {
 	key := []byte{byte(IX_DIDExpiresHeight)}
@@ -259,6 +259,7 @@ func (c *IDChainStore) persistRegisterDIDExpiresHeight(batch database.Batch,
 
 	return batch.Put(key, buf.Bytes())
 }
+
 func (c *IDChainStore) persistRegisterDIDTxHash(batch database.Batch,
 	idKey []byte, txHash common.Uint256) error {
 	key := []byte{byte(IX_DIDTXHash)}
@@ -448,6 +449,7 @@ func (c *IDChainStore) GetLastDIDTxPayload(idKey []byte) ([]byte, error) {
 
 	return dataPayload, nil
 }
+
 func (c *IDChainStore) GetExpiresHeight(idKey []byte) (uint32, error) {
 	key := []byte{byte(IX_DIDExpiresHeight)}
 	key = append(key, idKey...)
@@ -472,6 +474,7 @@ func (c *IDChainStore) GetExpiresHeight(idKey []byte) (uint32, error) {
 
 	return expiresBlockHeight, nil
 }
+
 func (c *IDChainStore) GetDIDTxPayload(idKey []byte) ([][]byte, error) {
 	key := []byte{byte(IX_DIDTXHash)}
 	key = append(key, idKey...)
