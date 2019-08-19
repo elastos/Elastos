@@ -1,4 +1,6 @@
 import Apigenerator from "views/Apigenerator.jsx";
+import Dashboard from "views/Dashboard.jsx";
+
 import ServiceOne from "views/GenerateWallet.jsx";
 import ServiceTwo from "views/ServiceTwo.jsx";
 import ServiceThree from "views/ServiceThree.jsx";
@@ -71,6 +73,13 @@ const sidebarRoutes = [
     name: "Documentation",
     icon: "pe-7s-tools",
     component: ServiceSix,
+    layout: "/admin"
+  },
+  {
+    path: "/dashboard",
+    name: "Dashboard",
+    icon: "pe-7s-tools",
+    component: Dashboard,
     layout: "/admin"
   }
 ];
