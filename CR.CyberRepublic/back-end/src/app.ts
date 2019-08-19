@@ -1,5 +1,4 @@
 import * as express from 'express'
-import * as Rollbar from 'rollbar'
 import * as bodyParser from 'body-parser'
 import * as helmet from 'helmet'
 import * as morgan from 'morgan'
@@ -12,16 +11,11 @@ import * as compression from 'compression'
 import * as fs from 'fs'
 import AccessControl from './utility/accessControl'
 import db from './db'
+import { logger } from './utility'
 
 import router, {middleware} from './router'
 
 import './config'
-
-let rollbar = undefined
-
-if (process.env.NODE_ENV === 'production') {
-    rollbar = new Rollbar({ accessToken: process.env.ROLLBAR_TOKEN })
-}
 
 (async ()=>{
     const app = express()
@@ -76,8 +70,8 @@ if (process.env.NODE_ENV === 'production') {
 
     app.use(prefix, router)
 
-    if (process.env.NODE_ENV === 'production') {
-        app.use(rollbar.errorHandler())
+    if (logger.rollbar()) {
+        app.use(logger.rollbar().errorHandler())
     }
 
     const port = process.env.SERVER_PORT
@@ -86,4 +80,3 @@ if (process.env.NODE_ENV === 'production') {
     })
 
 })()
-
