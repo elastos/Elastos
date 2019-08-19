@@ -43,8 +43,6 @@ var (
 type BlockChain struct {
 	chainParams *config.Params
 	db          IChainStore
-	fdb         IFFLDBChainStore
-	fflDB       database.DB
 	state       *state.State
 	crCommittee *crstate.Committee
 	UTXOCache   *UTXOCache
@@ -79,7 +77,7 @@ type BlockChain struct {
 	mutex          sync.RWMutex
 }
 
-func New(db IChainStore, fdb IFFLDBChainStore, ffldb database.DB, chainParams *config.Params, state *state.State,
+func New(db IChainStore, chainParams *config.Params, state *state.State,
 	committee *crstate.Committee) (*BlockChain, error) {
 
 	targetTimespan := int64(chainParams.TargetTimespan / time.Second)
@@ -88,8 +86,6 @@ func New(db IChainStore, fdb IFFLDBChainStore, ffldb database.DB, chainParams *c
 	chain := BlockChain{
 		chainParams:         chainParams,
 		db:                  db,
-		fdb:                 fdb,
-		fflDB:               ffldb,
 		state:               state,
 		crCommittee:         committee,
 		UTXOCache:           NewUTXOCache(db),
@@ -150,7 +146,7 @@ func New(db IChainStore, fdb IFFLDBChainStore, ffldb database.DB, chainParams *c
 			return nil, err
 		}
 
-		err = chain.fdb.SaveBlock(block, node, confirm, CalcPastMedianTime(node))
+		err = chain.db.GetFFLDB().SaveBlock(block, node, confirm, CalcPastMedianTime(node))
 		if err != nil {
 			return nil, err
 		}
@@ -196,7 +192,7 @@ func (b *BlockChain) InitCheckpoint(interrupt <-chan struct{},
 				err = e
 				break
 			}
-			block, e := b.fdb.GetBlock(hash)
+			block, e := b.db.GetFFLDB().GetBlock(hash)
 			if e != nil {
 				err = e
 				break
@@ -288,7 +284,7 @@ func (b *BlockChain) ProcessBlock(block *Block, confirm *payload.Confirm) (bool,
 }
 
 func (b *BlockChain) GetHeader(hash Uint256) (*Header, error) {
-	header, err := b.fdb.GetHeader(hash)
+	header, err := b.db.GetFFLDB().GetHeader(hash)
 	if err != nil {
 		return nil, errors.New("[BlockChain], GetHeader failed.")
 	}
@@ -297,7 +293,7 @@ func (b *BlockChain) GetHeader(hash Uint256) (*Header, error) {
 
 // Get block with block hash.
 func (b *BlockChain) GetBlockByHash(hash Uint256) (*Block, error) {
-	return b.fdb.GetBlock(hash)
+	return b.db.GetFFLDB().GetBlock(hash)
 }
 
 // Get block with block hash.
@@ -324,7 +320,7 @@ func (b *BlockChain) GetBlockNode(height uint32) *BlockNode {
 
 // Get DPOS block with block hash.
 func (b *BlockChain) GetDposBlockByHash(hash Uint256) (*DposBlock, error) {
-	if block, _ := b.fdb.GetBlock(hash); block != nil {
+	if block, _ := b.db.GetFFLDB().GetBlock(hash); block != nil {
 		confirm, _ := b.db.GetConfirm(hash)
 		return &DposBlock{
 			Block:       block,
@@ -783,7 +779,7 @@ func (b *BlockChain) getPrevNodeFromBlock(block *Block) (*BlockNode, error) {
 		return bn, nil
 	}
 
-	header, err := b.fdb.GetHeader(prevHash)
+	header, err := b.db.GetFFLDB().GetHeader(prevHash)
 	if err != nil {
 		return nil, err
 	}
@@ -812,7 +808,7 @@ func (b *BlockChain) getPrevNodeFromNode(node *BlockNode) (*BlockNode, error) {
 		return nil, nil
 	}
 
-	header, err := b.fdb.GetHeader(*node.ParentHash)
+	header, err := b.db.GetFFLDB().GetHeader(*node.ParentHash)
 	if err != nil {
 		return nil, err
 	}
@@ -890,7 +886,7 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 	// Disconnect blocks from the main chain.
 	for e := detachNodes.Front(); e != nil; e = e.Next() {
 		n := e.Value.(*BlockNode)
-		block, err := b.fdb.GetBlock(*n.Hash)
+		block, err := b.db.GetFFLDB().GetBlock(*n.Hash)
 		if err != nil {
 			return err
 		}
@@ -956,21 +952,10 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block, confirm *pay
 		return err
 	}
 
-	// Make sure the node being disconnected is the end of the best chain.
-	if !node.Hash.IsEqual(*b.BestChain.Hash) {
-		return errors.New("disconnectBlock must be called with the " +
-			"block at the end of the main chain")
-	}
-
-	err = b.fdb.RollbackBlock(block, node, confirm, b.MedianTimePast)
+	err = b.db.RollbackBlock(block, node, confirm, b.MedianTimePast)
 	if err != nil {
 		return err
 	}
-	// todo complete me
-	//err = b.db.RollbackBlock(*node.Hash)
-	//if err != nil {
-	//	return err
-	//}
 
 	// Rollback state memory DB
 	if block.Height-1 >= b.chainParams.VoteStartHeight {
@@ -1029,17 +1014,8 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payloa
 			"that extends the main chain")
 	}
 
-	if block.Header.Height <= b.BestChain.Height {
-		return errors.New("block height less than current block height")
-	}
-
 	// Insert the block into the database which houses the main chain.
-	if err := b.fdb.SaveBlock(block, node, confirm, b.MedianTimePast); err != nil {
-		return err
-	}
-
-	// Insert the block into the database which houses the main chain.
-	if err := b.db.SaveBlock(block, confirm); err != nil {
+	if err := b.db.SaveBlock(block, node, confirm, b.MedianTimePast); err != nil {
 		return err
 	}
 
@@ -1075,7 +1051,7 @@ func (b *BlockChain) BlockExists(hash *Uint256) bool {
 	}
 
 	// Check in database (rest of main chain not in memory).
-	return b.fdb.IsBlockInStore(hash)
+	return b.db.GetFFLDB().IsBlockInStore(hash)
 }
 
 // flushToDB writes all dirty block nodes to the database. If all writes
@@ -1085,7 +1061,7 @@ func (b *BlockChain) flushToDB() error {
 		return nil
 	}
 
-	err := b.fflDB.Update(func(dbTx database.Tx) error {
+	err := b.db.GetFFLDB().Update(func(dbTx database.Tx) error {
 		for header := range b.dirty {
 			err := dbStoreBlockNode(dbTx, header)
 			if err != nil {
@@ -1443,7 +1419,7 @@ func (b *BlockChain) BlockLocatorFromHash(inhash *Uint256) []*Uint256 {
 		// error means it doesn't exist and just return the locator for
 		// the block itself.
 
-		block, err := b.fdb.GetBlock(hash)
+		block, err := b.db.GetFFLDB().GetBlock(hash)
 		if err != nil {
 			return locator
 		}
@@ -1488,7 +1464,7 @@ func (b *BlockChain) BlockLocatorFromHash(inhash *Uint256) []*Uint256 {
 func (b *BlockChain) locateStartBlock(locator []*Uint256) *Uint256 {
 	var startHash Uint256
 	for _, hash := range locator {
-		_, err := b.fdb.GetBlock(*hash)
+		_, err := b.db.GetFFLDB().GetBlock(*hash)
 		if err == nil {
 			startHash = *hash
 			break
@@ -1510,7 +1486,7 @@ func (b *BlockChain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBloc
 				count = curHeight
 			}
 		} else {
-			startHeader, err := b.fdb.GetHeader(*startHash)
+			startHeader, err := b.db.GetFFLDB().GetHeader(*startHash)
 			if err != nil {
 				return nil, err
 			}
@@ -1521,13 +1497,13 @@ func (b *BlockChain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBloc
 			}
 		}
 	} else {
-		stopHeader, err := b.fdb.GetHeader(*stopHash)
+		stopHeader, err := b.db.GetFFLDB().GetHeader(*stopHash)
 		if err != nil {
 			return nil, err
 		}
 		stopHeight = stopHeader.Height
 		if !startHash.IsEqual(EmptyHash) {
-			startHeader, err := b.fdb.GetHeader(*startHash)
+			startHeader, err := b.db.GetFFLDB().GetHeader(*startHash)
 			if err != nil {
 				return nil, err
 			}

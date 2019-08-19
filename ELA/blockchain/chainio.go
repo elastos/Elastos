@@ -305,7 +305,7 @@ func (b *BlockChain) createChainState() error {
 	state := newBestState(node, blockSize, blockWeight, numTxns, b.MedianTimePast)
 	// Create the initial the database chain state including creating the
 	// necessary index buckets and inserting the genesis block.
-	err := b.fflDB.Update(func(dbTx database.Tx) error {
+	err := b.db.GetFFLDB().Update(func(dbTx database.Tx) error {
 		meta := dbTx.Metadata()
 
 		// Create the bucket that houses the block index data.
@@ -376,7 +376,7 @@ func (b *BlockChain) initChainState() (bool, error) {
 	// Determine the state of the chain database. We may need to initialize
 	// everything from scratch or upgrade certain buckets.
 	var initialized, hasBlockIndex bool
-	err := b.fflDB.View(func(dbTx database.Tx) error {
+	err := b.db.GetFFLDB().View(func(dbTx database.Tx) error {
 		initialized = dbTx.Metadata().Get(chainStateKeyName) != nil
 		hasBlockIndex = dbTx.Metadata().Bucket(blockIndexBucketName) != nil
 		return nil
@@ -392,7 +392,7 @@ func (b *BlockChain) initChainState() (bool, error) {
 	}
 
 	if !hasBlockIndex {
-		err = migrateBlockIndex(b.fflDB)
+		err = migrateBlockIndex(b.db.GetFFLDB())
 		if err != nil {
 			return initialized, nil
 		}
@@ -400,7 +400,7 @@ func (b *BlockChain) initChainState() (bool, error) {
 	}
 
 	// Attempt to load the chain state from the database.
-	err = b.fflDB.View(func(dbTx database.Tx) error {
+	err = b.db.GetFFLDB().View(func(dbTx database.Tx) error {
 		// Fetch the stored chain state from the database metadata.
 		// When it doesn't exist, it means the database hasn't been
 		// initialized for use with chain yet, so break out now to allow

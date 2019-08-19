@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -25,7 +25,6 @@ var (
 type Ledger struct {
 	Blockchain  *BlockChain
 	Store       IChainStore
-	FFLDB       IFFLDBChainStore
 	Arbitrators state.Arbitrators
 	Committee   *crstate.Committee
 }
@@ -53,7 +52,7 @@ func (l *Ledger) GetBlockWithHeight(height uint32) (*Block, error) {
 	if err != nil {
 		return nil, errors.New("[Ledger],GetBlockWithHeight failed with height=" + string(height))
 	}
-	bk, err := DefaultLedger.FFLDB.GetBlock(temp)
+	bk, err := DefaultLedger.Store.GetFFLDB().GetBlock(temp)
 	if err != nil {
 		return nil, errors.New("[Ledger],GetBlockWithHeight failed with hash=" + temp.String())
 	}
@@ -62,7 +61,7 @@ func (l *Ledger) GetBlockWithHeight(height uint32) (*Block, error) {
 
 //Get block with block hash.
 func (l *Ledger) GetBlockWithHash(hash Uint256) (*Block, error) {
-	bk, err := l.FFLDB.GetBlock(hash)
+	bk, err := l.Store.GetFFLDB().GetBlock(hash)
 	if err != nil {
 		return nil, errors.New("[Ledger],GetBlockWithHeight failed with hash=" + hash.String())
 	}
