@@ -254,7 +254,7 @@ class C extends StandardPage {
     const { data } = this.props
     const { title } = data
     const text = `
-      <h1>${title}</h1>
+      <h3>${title}</h3>
       <br />
       <br />
       <h2>${I18N.get('proposal.fields.abstract')}</h2>
