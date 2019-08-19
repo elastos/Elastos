@@ -41,6 +41,9 @@ const (
 	Returned
 )
 
+// CacheVotesSize indicate the size to cache votes information.
+const CacheVotesSize = 6
+
 // producerStateStrings is a array of producer states back to their constant
 // names for pretty printing.
 var producerStateStrings = []string{"Pending", "Active", "Inactive",
@@ -232,6 +235,9 @@ type State struct {
 
 	mtx     sync.RWMutex
 	history *history
+
+	votesCacheKeys map[uint32][]string
+	votesCache     map[string]*types.Output
 
 	cursor int
 }
@@ -611,6 +617,10 @@ func (s *State) IsDPOSTransaction(tx *types.Transaction) bool {
 		if ok {
 			return true
 		}
+		_, ok = s.votesCache[input.ReferKey()]
+		if ok {
+			return true
+		}
 	}
 
 	return false
@@ -636,6 +646,19 @@ func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 // packed into a block.  Then loop through the transactions to update producers
 // state and votes according to transactions content.
 func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
+
+	// Remove cached votes
+	if len(s.votesCacheKeys) >= CacheVotesSize {
+		for k, v := range s.votesCacheKeys {
+			if k <= height-CacheVotesSize {
+				for _, referKey := range v {
+					delete(s.votesCache, referKey)
+				}
+				delete(s.votesCacheKeys, k)
+			}
+		}
+	}
+
 	for _, tx := range txs {
 		s.processTransaction(tx, height)
 	}
@@ -852,7 +875,21 @@ func (s *State) processCancelVotes(tx *types.Transaction, height uint32) {
 		referKey := input.ReferKey()
 		output, ok := s.Votes[referKey]
 		if ok {
+			if output == nil {
+				output, ok = s.votesCache[referKey]
+				if !ok {
+					log.Errorf("invalid votes output")
+					return
+				}
+			}
 			s.processVoteCancel(output, height)
+
+			if _, exist := s.votesCacheKeys[height]; !exist {
+				s.votesCacheKeys[height] = make([]string, 0)
+			}
+			s.votesCacheKeys[height] = append(s.votesCacheKeys[height], referKey)
+			s.votesCache[referKey] = output
+
 			s.Votes[referKey] = nil
 		}
 	}
@@ -1253,5 +1290,7 @@ func NewState(chainParams *config.Params, getArbiters func() [][]byte) *State {
 			VersionStartHeight:        0,
 			VersionEndHeight:          0,
 		},
+		votesCacheKeys: make(map[uint32][]string),
+		votesCache:     make(map[string]*types.Output),
 	}
 }
