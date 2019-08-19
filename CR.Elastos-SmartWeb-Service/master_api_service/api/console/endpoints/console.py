@@ -101,7 +101,7 @@ class UploadAndSign(Resource):
       					"msg":myResponse1['Hash']
   					}
 		myResponse2 = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
-		myResponse2.update({'hash': myResponse1['Hash']})
+		myResponse2['result']['hash'] = myResponse1['Hash']
 		return Response(json.dumps(myResponse2), 
 				status=myResponse2['status'],
 				mimetype='application/json'
