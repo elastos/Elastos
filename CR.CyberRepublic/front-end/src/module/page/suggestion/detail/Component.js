@@ -432,7 +432,7 @@ export default class extends StandardPage {
   renderTranslationBtn() {
     const { detail } = this.props
     const text = `
-      <h1>${detail.title}</h1>
+      <h3>${detail.title}</h3>
       <br />
       <br />
       <h2>${I18N.get('suggestion.fields.abstract')}</h2>
