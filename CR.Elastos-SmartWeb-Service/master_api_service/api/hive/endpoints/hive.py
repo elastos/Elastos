@@ -38,7 +38,8 @@ class Add(Resource):
 		req_data = request.form.to_dict()
 		myResponse = requests.get(api_url_base, files=req_data, headers=headers).json()
 		return Response(json.dumps(myResponse), 
-        	mimetype='application/json'
+				status=200,
+        		mimetype='application/json'
         	)
 
 @ns.route('/showContent/<string:hash_key>')

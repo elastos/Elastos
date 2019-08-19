@@ -10,6 +10,7 @@ from flask import Response
 from flask_restplus import Resource
 from master_api_service import settings
 from master_api_service.api.restplus import api
+from master_api_service.api.common.common_service import validate_api_key
 from master_api_service.api.common.common_service import getTime
 
 log = logging.getLogger(__name__)
@@ -177,7 +178,7 @@ class TransferELADemo(Resource):
 				      "memo":"测试",
 				      "receiver":[
 				          {
-				              "address":myResponse1['address'],
+				              "address":myResponse1['result']['address'],
 				              "amount":"100"
 				          }
 				      ]
