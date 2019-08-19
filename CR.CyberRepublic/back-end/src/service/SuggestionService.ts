@@ -31,6 +31,7 @@ export default class extends Base {
     const doc = {
       ...param,
       createdBy: _.get(this.currentUser, '_id'),
+      contentType: constant.CONTENT_TYPE.MARKDOWN,
 
       // this is a hack for now, we should really be using aggregate pipeline + projection
       // in the sort query
