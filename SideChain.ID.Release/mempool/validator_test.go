@@ -9,81 +9,86 @@ import (
 	"testing"
 
 	"github.com/btcsuite/btcutil/base58"
-	"github.com/elastos/Elastos.ELA.SideChain.ID/blockchain"
+	"github.com/stretchr/testify/suite"
+
+	bc "github.com/elastos/Elastos.ELA.SideChain.ID/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain.ID/params"
 	"github.com/elastos/Elastos.ELA.SideChain.ID/types"
+	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
+	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	types2 "github.com/elastos/Elastos.ELA.SideChain/types"
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/crypto"
-	"github.com/stretchr/testify/assert"
 )
 
-var validator_test validator
+type txValidatorTestSuite struct {
+	suite.Suite
+	validator validator
+	Chain     *blockchain.BlockChain
+}
 
-func init() {
-
-	idChainStore, err := blockchain.NewChainStore(params.GenesisBlock,
+func (s *txValidatorTestSuite) SetupSuite() {
+	idChainStore, err := bc.NewChainStore(params.
+		GenesisBlock,
 		"Chain_UnitTest")
 	if err != nil {
 		return
 	}
-	validator_test.Store = idChainStore
+	s.validator.Validator = &mempool.Validator{}
+	s.validator.Store = idChainStore
 }
 
-//03bfd8bd2b10e887ec785360f9b329c2ae567975c784daca2f223cb19840b51914
+func TestTxValidatorTest(t *testing.T) {
+	suite.Run(t, new(txValidatorTestSuite))
+}
+
+func (s *txValidatorTestSuite) TestCheckDIDOperation() {
+	//no create ------>update
+	payloadUpdateDIDInfo := getPayloadUpdateDID()
+	err := s.validator.checkDIDOperation(&payloadUpdateDIDInfo.Header,
+		payloadUpdateDIDInfo.PayloadInfo.ID)
+	s.Equal(err.Error(), "DID WRONG OPERATION NOT EXIST")
+
+	//doubale create
+	payloadCreate := getPayloadCreateDID()
+	err = s.validator.checkDIDOperation(&payloadCreate.Header,
+		payloadCreate.PayloadInfo.ID)
+	s.NoError(err)
+}
+
 const (
 	PayloadPrivateKey = "5fe87de21fa55d751583bd0d74532c3cc679caf67919261e0c9b2a56f547c38d"
-	//my 5fe87de21fa55d751583bd0d74532c3cc679caf67919261e0c9b2a56f547c38d
-	//other 7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1
-	TxPrivateKey  = "5fe87de21fa55d751583bd0d74532c3cc679caf67919261e0c9b2a56f547c38d"
-	publicKeyStr1 = "031e12374bae471aa09ad479f66c2306f4bcc4ca5b754609a82a1839b94b4721b9"
-	publicKeyStr2 = "03bfd8bd2b10e887ec785360f9b329c2ae567975c784daca2f223cb19840b51914"
-	publicKeyStr3 = "035d3adebb69db5fbd8005c37d225cd2fd9ec50ec7fcb38ff7c4fcf9b90455cf5f"
+	TxPrivateKey      = "5fe87de21fa55d751583bd0d74532c3cc679caf67919261e0c9b2a56f547c38d"
+	publicKeyStr1     = "035d3adebb69db5fbd8005c37d225cd2fd9ec50ec7fcb38ff7c4fcf9b90455cf5f"
+	publicKeyStr2     = "03bfd8bd2b10e887ec785360f9b329c2ae567975c784daca2f223cb19840b51914"
+	publicKeyStr3     = "035d3adebb69db5fbd8005c37d225cd2fd9ec50ec7fcb38ff7c4fcf9b90455cf5f"
+	ID                = "icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN"
+	operationCreate   = "create"
+	operationUpdate   = "update"
 )
 
 var didPayloadBytes = []byte(
-	"{" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKey\": [{" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"27bqfhMew6TjL4NMz2u8b2cFCvGovaELqr19Xytt1rDmd\"" +
-		"}, {" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#key2\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"273j8fQ1ZZVM6U6d5XE3X8SyULuJwjyYXbxNopXVuftBe\"" +
-		"}, {" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#recovery\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:ip7ntDo2metGnU8wGP4FnyKCUdbHm4BPDh\"," +
-		"\"publicKeyBase58\": \"zppy33i2r3uC1LT3RFcLqJJPFpYuZPDuKMeKZ5TdAskM\"" +
-		"}]," +
-		"\"authentication\": [" +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default\"," +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#key2\"," +
-		"{" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#keys3\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV\"" +
-		"}]," +
-		"\"authorization\": [" +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default\"," +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#key2\"," +
-		"{" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#keys3\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV\"" +
-		"}]," +
-		"\"expires\": \"2014-02-10T17:00:00Z\"" +
-		"}",
-)
+	`{
+        "id" : "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN",
+        "publicKey":[{ "id": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default",
+                       "type":"ECDSAsecp256r1",
+                       "controller":"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN",
+                       "publicKeyBase58":"27bqfhMew6TjL4NMz2u8b2cFCvGovaELqr19Xytt1rDmd"
+                      }
+                    ],
+        "authentication":["did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default",
+                          {
+                               "id": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default",
+                               "type":"ECDSAsecp256r1",
+                               "controller":"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN",
+                               "publicKeyBase58":"zNxoZaZLdackZQNMas7sCkPRHZsJ3BtdjEvM2y5gNvKJ"
+                           }
+                         ],
+        "authorization":["did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default"],
+        "expires" : "2023-02-10T17:00:00Z"
+	}`)
 
-func TestIDChainStore_CreateDIDTx(t *testing.T) {
+func (s *txValidatorTestSuite) TestIDChainStore_CreateDIDTx() {
 	tx := &types2.Transaction{
 		TxType:         0x0a,
 		PayloadVersion: 0,
@@ -109,56 +114,18 @@ func TestIDChainStore_CreateDIDTx(t *testing.T) {
 	fmt.Println("base58PK", string(base58PK))
 	fmt.Println("len(base58PK）", len(base58PK))
 
-	err2 := validator_test.checkRegisterDID(tx)
-	assert.NoError(t, err2)
-
+	err2 := s.validator.checkRegisterDID(tx)
+	s.NoError(err2)
 }
 
-func TestCheckDIDOperation(t *testing.T) {
-
-	//no create ------>update
-	payloadUpdateDIDInfo := getPayloadUpdateDID()
-	err := validator_test.checkDIDOperation(&payloadUpdateDIDInfo.Header,
-		payloadUpdateDIDInfo.PayloadInfo.ID)
-	assert.Equal(t, err.Error(), "DID WRONG OPERATION NOT EXIST")
-
-	//doubale create
-	payloadCreate := getPayloadCreateDID()
-	err = validator_test.checkDIDOperation(&payloadCreate.Header,
-		payloadCreate.PayloadInfo.ID)
-	assert.NoError(t, err)
-	//todo process tx
-	//err = validator_test.checkDIDOperation(&payloadCreate.Header,
-	//	payloadCreate.PayloadInfo.ID)
-	//assert.Equal(t, err.Error(), "DID WRONG OPERATION ALREADY EXIST")
-
-}
-
-func TestGetIDFromUri(t *testing.T) {
+func (s *txValidatorTestSuite) TestGetIDFromUri() {
 	validUriFormat := "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN"
-	id := validator_test.Store.GetIDFromUri(validUriFormat)
-	assert.Equal(t, id, "icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN")
+	id := s.validator.Store.GetIDFromUri(validUriFormat)
+	s.Equal(id, "icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN")
 
 	InvalidUriFormat := "icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN"
-	id = validator_test.Store.GetIDFromUri(InvalidUriFormat)
-	assert.Equal(t, id, "")
-}
-
-func getDIDByPublicKey(publicKey []byte) (*common.Uint168, error) {
-	pk, _ := crypto.DecodePoint(publicKey)
-	redeemScript, err := contract.CreateStandardRedeemScript(pk)
-	if err != nil {
-		return nil, err
-	}
-	return getDIDByCode(redeemScript)
-}
-
-func getDIDByCode(code []byte) (*common.Uint168, error) {
-	ct1, error := contract.CreateCRDIDContractByCode(code)
-	if error != nil {
-		return nil, error
-	}
-	return ct1.ToProgramHash(), error
+	id = s.validator.Store.GetIDFromUri(InvalidUriFormat)
+	s.Equal(id, "")
 }
 
 func getPayloadCreateDID() *types.PayloadDIDInfo {
@@ -179,7 +146,6 @@ func getPayloadCreateDID() *types.PayloadDIDInfo {
 	}
 
 	privateKey1, _ := common.HexStringToBytes(PayloadPrivateKey)
-
 	sign, _ := crypto.Sign(privateKey1, p.Data(types.DIDInfoVersion))
 	p.Proof.Signature = hex.EncodeToString(sign)
 
@@ -209,4 +175,54 @@ func randomString() string {
 	a := make([]byte, 20)
 	rand.Read(a)
 	return common.BytesToHexString(a)
+}
+
+func getDIDPayloadBytes(id string) []byte {
+	return []byte(
+		"{" +
+			"\"id\": \"did:elastos:" + id + "\"," +
+			"\"publicKey\": [{" +
+			"\"id\": \"did:elastos:" + id + "\"," +
+			"\"type\": \"ECDSAsecp256r1\"," +
+			"\"controller\": \"did:elastos:" + id + "\"," +
+			"\"publicKeyBase58\": \"zxt6NyoorFUFMXA8mDBULjnuH3v6iNdZm42PyG4c1YdC\"" +
+			"}]," +
+			"\"authentication\": [" +
+			"\"did:elastos:" + id + "\"" +
+			"]," +
+			"\"authorization\": [" +
+			"\"did:elastos:" + id + "\"" +
+			"]," +
+			"\"expires\": \"2020-08-15T17:00:00Z\"" +
+			"}",
+	)
+}
+
+func getPayloadDIDInfo(id string, didOperation string) *types.PayloadDIDInfo {
+	pBytes := getDIDPayloadBytes(id)
+	info := new(types.DIDPayloadInfo)
+	json.Unmarshal(pBytes, info)
+	p := &types.PayloadDIDInfo{
+		Header: types.DIDHeaderInfo{
+			Specification: "elastos/did/1.0",
+			Operation:     didOperation,
+		},
+		Payload: hex.EncodeToString(pBytes),
+		Proof: types.DIDProofInfo{
+			Type:               "ECDSAsecp256r1",
+			VerificationMethod: "did:elastos:" + id,
+		},
+		PayloadInfo: info,
+	}
+	return p
+}
+
+//didOperation must be create or update
+func getDIDTx(id, didOperation string) *types2.Transaction {
+
+	payloadDidInfo := getPayloadDIDInfo(id, didOperation)
+	txn := new(types2.Transaction)
+	txn.TxType = types.RegisterDID
+	txn.Payload = payloadDidInfo
+	return txn
 }

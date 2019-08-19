@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"math"
+	"strings"
 
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/syndtr/goleveldb/leveldb"
@@ -170,20 +171,24 @@ func (v *validator) checkTransactionSignature(txn *types.Transaction) error {
 	return nil
 }
 
-//DIDProofInfo VerificationMethod must be "#master-key" or in
-// DIDPayloadInfo Authentication
-func checkVerificationMethod(proof *id.DIDProofInfo,
-	payloadInfo *id.DIDPayloadInfo) error {
-
-	if proof.VerificationMethod == id.MasterKeyStr {
-		return nil
+func getUriSegment(uri string) string {
+	index := strings.LastIndex(uri, "#")
+	if index == -1 {
+		return ""
 	}
-	//if not "#master-key" must in Authentication
+	return uri[index:]
+}
+
+//DIDProofInfo VerificationMethod must be in DIDPayloadInfo Authentication or
+//is did publickKey
+func (v *validator) checkVerificationMethod(proof *id.DIDProofInfo,
+	payloadInfo *id.DIDPayloadInfo) error {
+	proofUriSegment := getUriSegment(proof.VerificationMethod)
 	for _, auth := range payloadInfo.Authentication {
 		switch auth.(type) {
 		case string:
 			keyString := auth.(string)
-			if proof.VerificationMethod == keyString {
+			if proofUriSegment == getUriSegment(keyString) {
 				return nil
 			}
 		case map[string]interface{}:
@@ -196,21 +201,64 @@ func checkVerificationMethod(proof *id.DIDProofInfo,
 			if err != nil {
 				return err
 			}
-			if proof.VerificationMethod == didPublicKeyInfo.ID {
+			if proofUriSegment == getUriSegment(didPublicKeyInfo.ID) {
 				return nil
 			}
 		default:
 			return errors.New("[ID checkVerificationMethod] invalid  auth.(type)")
 		}
 	}
-
+	//if not in Authentication
+	//VerificationMethod uri -------->to find publicKeyBase58 in publicKey array which id is
+	//VerificationMethod uri and publicKeyBase58 can derive id address
+	for i := 0; i < len(payloadInfo.PublicKey); i++ {
+		//get PublicKeyBase58 accord to VerificationMethod
+		if proofUriSegment == getUriSegment(payloadInfo.PublicKey[i].ID) {
+			pubKeyByte := base58.Decode(payloadInfo.PublicKey[i].PublicKeyBase58)
+			//get did address
+			didAddress, err := getDIDAdress(pubKeyByte)
+			if err != nil {
+				return err
+			}
+			//didAddress must equal address in DID
+			if didAddress == v.Store.GetIDFromUri(payloadInfo.ID) {
+				return nil
+			}
+		}
+	}
 	return errors.New("[ID checkVerificationMethod] wrong public key by VerificationMethod ")
 }
 
-func getPublicKey(proof *id.DIDProofInfo,
-	payloadInfo *id.DIDPayloadInfo) string {
+func getDIDByPublicKey(publicKey []byte) (*common.Uint168, error) {
+	pk, _ := crypto.DecodePoint(publicKey)
+	redeemScript, err := contract.CreateStandardRedeemScript(pk)
+	if err != nil {
+		return nil, err
+	}
+	return getDIDHashByCode(redeemScript)
+}
+
+func getDIDHashByCode(code []byte) (*common.Uint168, error) {
+	ct1, error := contract.CreateCRDIDContractByCode(code)
+	if error != nil {
+		return nil, error
+	}
+	return ct1.ToProgramHash(), error
+}
+
+func getDIDAdress(publicKey []byte) (string, error) {
+	hash, err := getDIDByPublicKey(publicKey)
+	if err != nil {
+		return "", err
+	}
+	return hash.ToAddress()
+}
+
+func getPublicKey(proof *id.DIDProofInfo, payloadInfo *id.DIDPayloadInfo) string {
+	proofUriSegment := getUriSegment(proof.VerificationMethod)
+
 	for _, pkInfo := range payloadInfo.PublicKey {
-		if proof.VerificationMethod == pkInfo.ID {
+		if proofUriSegment == getUriSegment(pkInfo.ID) {
 			return pkInfo.PublicKeyBase58
 		}
 	}
@@ -311,9 +359,8 @@ func (v *validator) checkRegisterDID(txn *types.Transaction) error {
 		return err
 	}
 
-	//DIDProofInfo VerificationMethod must be "#master-key" or in
-	// DIDPayloadInfo Authentication
-	if err := checkVerificationMethod(&payloadDidInfo.Proof, payloadDidInfo.PayloadInfo); err != nil {
+	if err := v.checkVerificationMethod(&payloadDidInfo.Proof,
+		payloadDidInfo.PayloadInfo); err != nil {
 		return err
 	}
 
