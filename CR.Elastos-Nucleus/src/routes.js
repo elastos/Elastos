@@ -20,7 +20,7 @@ const sidebarRoutes = [
     layout: "/admin"
   },
   {
-    path: "/serviceone",
+    path: "/file-upload",
     name: "File Upload",
     icon: "pe-7s-tools",
     component: ServiceOne,
@@ -41,35 +41,35 @@ const sidebarRoutes = [
     layout: "/admin"
   },
   {
-    path: "/servicefour",
+    path: "/verify-content",
     name: "Verify and Show Content",
     icon: "pe-7s-tools",
     component: ServiceFour,
     layout: "/admin"
   },
   {
-    path: "/servicetwo",
+    path: "/sign-message",
     name: "Sign A Message",
     icon: "pe-7s-tools",
     component: ServiceTwo,
     layout: "/admin"
   },
   {
-    path: "/servicethree",
+    path: "/verify-message",
     name: "Verify A Message",
     icon: "pe-7s-tools",
     component: ServiceThree,
     layout: "/admin"
   },
   {
-    path: "/servicefive",
+    path: "/transfer-ela",
     name: "Transfer ELA Demo",
     icon: "pe-7s-tools",
     component: ServiceFive,
     layout: "/admin"
   },
   {
-    path: "/servicesix",
+    path: "/documentation",
     name: "Documentation",
     icon: "pe-7s-tools",
     component: ServiceSix,

@@ -1,12 +1,11 @@
 import React, { Component } from "react";
 import Dropzone from "react-dropzone";
 import SyntaxHighlighter from "react-syntax-highlighter";
-import { docco } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import { gruvboxDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 import { Grid, Row, Col, FormGroup } from "react-bootstrap";
 
 import { Card } from "components/Card/Card.jsx";
-import CustomButton from "components/CustomButton/CustomButton.jsx";
 
 class UserProfile extends Component {
   render() {
@@ -21,28 +20,20 @@ class UserProfile extends Component {
                   <form>
                     <Row>
                       <Col md={12}>
-                        <Dropzone onDrop={acceptedFiles => console.log("test")}>
+                        <Dropzone
+                          onDrop={acceptedFiles => console.log("test1")}
+                        >
                           {({ getRootProps, getInputProps }) => (
                             <section>
                               <div {...getRootProps()}>
                                 <input {...getInputProps()} />
-                                <p>
-                                  Drag 'n' drop some files here, or click to
-                                  select files
-                                </p>
+                                <p>Select or Drop your file here</p>
                               </div>
                             </section>
                           )}
                         </Dropzone>
                       </Col>
                     </Row>
-                    <CustomButton
-                      text="Upload"
-                      path="/admin/generatewallet"
-                      pullRight
-                      bsStyle="info"
-                      fill
-                    />
                     <div className="clearfix" />
                   </form>
                 }
@@ -73,15 +64,39 @@ class UserProfile extends Component {
                             delenit au gue duis dolore te feugat nulla facilisi.
                           </p>
                         </FormGroup>
+                        <SyntaxHighlighter
+                          language="javascript"
+                          style={gruvboxDark}
+                        >
+                          {`POST /api/1/sign HTTP/1.1
+Host: localhost:8090
+Content-Type: application/json
+
+  {
+      "privateKey":"0D5D7566CA36BC05CFF8E3287C43977DCBB492990EA1822643656D85B3CB0226",
+      "msg":"Hello World"
+  }`}
+                        </SyntaxHighlighter>
+                        <SyntaxHighlighter
+                          language="javascript"
+                          style={gruvboxDark}
+                        >
+                          {`HTTP/1.1 200 OK
+Vary: Accept
+Content-Type: application/json
+
+{
+    "result": {
+        "msg": "E4BDA0E5A5BDEFBC8CE4B896E7958C",
+        "pub": "02C3F59F337814C6715BBE684EC525B9A3CFCE55D9DEEC53E1EDDB0B352DBB4A54",
+        "sig": "E6BB279CBD4727B41F2AA8B18E99B3F99DECBB8737D284FFDD408B356C912EE21AD478BCC0ABD65246938F17DDE64258FD8A9684C0649B23AE1318F7B9CEEEC7"
+    },
+    "status": 200
+}`}
+                        </SyntaxHighlighter>
                       </Col>
                     </Row>
-                    <CustomButton
-                      text="Show Content"
-                      path="/admin/transactions"
-                      pullRight
-                      bsStyle="info"
-                      fill
-                    />
+
                     <div className="clearfix" />
                   </form>
                 }
@@ -96,7 +111,7 @@ class UserProfile extends Component {
                   <form>
                     <Row>
                       <Col md={12}>
-                        <SyntaxHighlighter language="javascript" style={docco}>
+                        <SyntaxHighlighter language="jsx" style={gruvboxDark}>
                           {`import React from 'react';
 import ReactDOM from "react-dom";
 
@@ -122,13 +137,7 @@ ReactDOM.render(
                         </SyntaxHighlighter>
                       </Col>
                     </Row>
-                    <CustomButton
-                      text="Show Content"
-                      path="/admin/transactions"
-                      pullRight
-                      bsStyle="info"
-                      fill
-                    />
+
                     <div className="clearfix" />
                   </form>
                 }
