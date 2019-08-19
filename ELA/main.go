@@ -162,7 +162,14 @@ func startNode(c *cli.Context) {
 	if err != nil {
 		printErrorAndExit(err)
 	}
-	defer fflDB.Close()
+	//defer fflDB.Close()
+	fdb, err := blockchain.NewFFLDBChainStore(dataDir,
+		fflDB, activeNetParams.GenesisBlock)
+	if err != nil {
+		printErrorAndExit(err)
+	}
+	defer fdb.Close()
+	ledger.FFLDB = fdb
 
 	var dposStore store.IDposStore
 	dposStore, err = store.NewDposStore(dataDir, activeNetParams)
@@ -178,18 +185,7 @@ func startNode(c *cli.Context) {
 	blockchain.DefaultLedger = &ledger // fixme
 
 	arbiters, err := state.NewArbitrators(activeNetParams,
-		chainStore.GetHeight, func(height uint32) (*types.Block, error) {
-			hash, err := blockchain.DefaultLedger.Blockchain.GetBlockHash(height)
-			if err != nil {
-				return nil, err
-			}
-			block, err := blockchain.DefaultLedger.Blockchain.GetBlockByHash(hash)
-			if err != nil {
-				return nil, err
-			}
-			blockchain.CalculateTxsFee(block)
-			return block, nil
-		}, func(programHash common.Uint168) (common.Fixed64,
+		func(programHash common.Uint168) (common.Fixed64,
 			error) {
 			amount := common.Fixed64(0)
 			utxos, err := blockchain.DefaultLedger.Store.
@@ -210,13 +206,26 @@ func startNode(c *cli.Context) {
 	committee := crstate.NewCommittee(activeNetParams)
 	ledger.Committee = committee
 
-	chain, err := blockchain.New(chainStore, fflDB, activeNetParams,
+	chain, err := blockchain.New(chainStore, fdb, fflDB, activeNetParams,
 		arbiters.State, committee)
 	if err != nil {
 		printErrorAndExit(err)
 	}
 	ledger.Blockchain = chain // fixme
 	blockMemPool.Chain = chain
+	arbiters.RegisterFunction(chain.GetHeight,
+		func(height uint32) (*types.Block, error) {
+			hash, err := chain.GetBlockHash(height)
+			if err != nil {
+				return nil, err
+			}
+			block, err := fdb.GetBlock(hash)
+			if err != nil {
+				return nil, err
+			}
+			blockchain.CalculateTxsFee(block)
+			return block, nil
+		})
 
 	routesCfg := &routes.Config{TimeSource: chain.TimeSource}
 	if act != nil {
@@ -272,6 +281,7 @@ func startNode(c *cli.Context) {
 
 	wal := wallet.New(flagDataDir)
 	wallet.Store = chainStore
+	wallet.FFLDB = fdb
 	wallet.Chain = chain
 
 	activeNetParams.CkpManager.Register(wal)
@@ -323,7 +333,7 @@ func startNode(c *cli.Context) {
 		go httpnodeinfo.StartServer()
 	}
 
-	go printSyncState(chainStore, server)
+	go printSyncState(chain, server)
 
 	waitForSyncFinish(server, interrupt.C)
 	if interrupt.Interrupted() {
@@ -361,7 +371,7 @@ out:
 	}
 }
 
-func printSyncState(db blockchain.IChainStore, server elanet.Server) {
+func printSyncState(bc *blockchain.BlockChain, server elanet.Server) {
 	statlog := elalog.NewBackend(logger.Writer()).Logger("STAT",
 		elalog.LevelInfo)
 
@@ -371,7 +381,7 @@ func printSyncState(db blockchain.IChainStore, server elanet.Server) {
 	for range ticker.C {
 		var buf bytes.Buffer
 		buf.WriteString("-> ")
-		buf.WriteString(strconv.FormatUint(uint64(db.GetHeight()), 10))
+		buf.WriteString(strconv.FormatUint(uint64(bc.GetHeight()), 10))
 		peers := server.ConnectedPeers()
 		buf.WriteString(" [")
 		for i, p := range peers {

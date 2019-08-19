@@ -145,7 +145,7 @@ func GetRawTransaction(param Params) map[string]interface{} {
 	}
 
 	var header *Header
-	tx, height, err := Chain.GetTransaction(hash)
+	tx, height, err := Store.GetTransaction(hash)
 	if err != nil {
 		//try to find transaction in transaction pool.
 		tx = TxMemPool.GetTransaction(hash)
@@ -578,7 +578,7 @@ func getBlock(hash common.Uint256, verbose uint32) (interface{}, ErrCode) {
 }
 
 func getConfirm(hash common.Uint256, verbose uint32) (interface{}, ErrCode) {
-	confirm, err := Chain.GetConfirm(hash)
+	confirm, err := Store.GetConfirm(hash)
 	if err != nil {
 		return "", UnknownBlock
 	}
@@ -935,7 +935,7 @@ func GetUTXOsByAmount(param Params) map[string]interface{} {
 		if totalAmount >= *amount {
 			break
 		}
-		tx, height, err := Chain.GetTransaction(unspent.TxID)
+		tx, height, err := Store.GetTransaction(unspent.TxID)
 		if err != nil {
 			return ResponsePack(InternalError, "unknown transaction "+
 				unspent.TxID.String()+" from persisted utxo")
@@ -990,7 +990,7 @@ func GetAmountByInputs(param Params) map[string]interface{} {
 		if err := input.Deserialize(r); err != nil {
 			return ResponsePack(InvalidParams, "invalid inputs")
 		}
-		tx, _, err := Chain.GetTransaction(input.Previous.TxID)
+		tx, _, err := Store.GetTransaction(input.Previous.TxID)
 		if err != nil {
 			return ResponsePack(InternalError, "unknown transaction "+
 				input.Previous.TxID.String()+" from persisted utxo")
@@ -1025,7 +1025,7 @@ func ListUnspent(param Params) map[string]interface{} {
 		}
 
 		for _, unspent := range unspents[config.ELAAssetID] {
-			tx, height, err := Chain.GetTransaction(unspent.TxID)
+			tx, height, err := Store.GetTransaction(unspent.TxID)
 			if err != nil {
 				return ResponsePack(InternalError,
 					"unknown transaction "+unspent.TxID.String()+" from persisted utxo")
@@ -1361,7 +1361,7 @@ func GetUnspendOutput(param Params) map[string]interface{} {
 		Index uint32 `json:"Index"`
 		Value string `json:"Value"`
 	}
-	infos, err := Chain.GetUnspentFromProgramHash(*programHash, assetHash)
+	infos, err := Store.GetUnspentFromProgramHash(*programHash, assetHash)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 
@@ -1390,7 +1390,7 @@ func GetTransactionByHash(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidTransaction, "")
 	}
-	txn, height, err := Chain.GetTransaction(hash)
+	txn, height, err := Store.GetTransaction(hash)
 	if err != nil {
 		return ResponsePack(UnknownTransaction, "")
 	}
@@ -1745,7 +1745,7 @@ func VoteStatus(param Params) map[string]interface{} {
 	var total common.Fixed64
 	var voting common.Fixed64
 	for _, unspent := range unspents[config.ELAAssetID] {
-		tx, _, err := Chain.GetTransaction(unspent.TxID)
+		tx, _, err := Store.GetTransaction(unspent.TxID)
 		if err != nil {
 			return ResponsePack(InternalError, "unknown transaction "+unspent.TxID.String()+" from persisted utxo")
 		}
@@ -1758,7 +1758,7 @@ func VoteStatus(param Params) map[string]interface{} {
 	pending := false
 	for _, t := range TxMemPool.GetTxsInPool() {
 		for _, i := range t.Inputs {
-			tx, _, err := Chain.GetTransaction(i.Previous.TxID)
+			tx, _, err := Store.GetTransaction(i.Previous.TxID)
 			if err != nil {
 				return ResponsePack(InternalError, "unknown transaction "+i.Previous.TxID.String()+" from persisted utxo")
 			}

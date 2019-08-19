@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package types
 
@@ -74,6 +74,23 @@ func (header *Header) SerializeNoAux(w io.Writer) error {
 		header.Nonce,
 		header.Height,
 	)
+}
+
+func (header *Header) DeserializeNoAux(r io.Reader) error {
+	err := common.ReadElements(r,
+		&header.Version,
+		&header.Previous,
+		&header.MerkleRoot,
+		&header.Timestamp,
+		&header.Bits,
+		&header.Nonce,
+		&header.Height,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (header *Header) Hash() common.Uint256 {

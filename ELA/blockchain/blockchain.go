@@ -43,6 +43,7 @@ var (
 type BlockChain struct {
 	chainParams *config.Params
 	db          IChainStore
+	fdb         IFFLDBChainStore
 	fflDB       database.DB
 	state       *state.State
 	crCommittee *crstate.Committee
@@ -61,6 +62,7 @@ type BlockChain struct {
 	Root      *BlockNode
 	Nodes     []*BlockNode
 	Index     map[Uint256]*BlockNode
+	dirty     map[*Header]struct{}
 	IndexLock sync.RWMutex
 	DepNodes  map[Uint256][]*BlockNode
 
@@ -77,7 +79,7 @@ type BlockChain struct {
 	mutex          sync.RWMutex
 }
 
-func New(db IChainStore, ffldb database.DB, chainParams *config.Params, state *state.State,
+func New(db IChainStore, fdb IFFLDBChainStore, ffldb database.DB, chainParams *config.Params, state *state.State,
 	committee *crstate.Committee) (*BlockChain, error) {
 
 	targetTimespan := int64(chainParams.TargetTimespan / time.Second)
@@ -86,6 +88,7 @@ func New(db IChainStore, ffldb database.DB, chainParams *config.Params, state *s
 	chain := BlockChain{
 		chainParams:         chainParams,
 		db:                  db,
+		fdb:                 fdb,
 		fflDB:               ffldb,
 		state:               state,
 		crCommittee:         committee,
@@ -98,6 +101,7 @@ func New(db IChainStore, ffldb database.DB, chainParams *config.Params, state *s
 		BestChain:           nil,
 		Nodes:               make([]*BlockNode, 0),
 		Index:               make(map[Uint256]*BlockNode),
+		dirty:               map[*Header]struct{}{},
 		DepNodes:            make(map[Uint256][]*BlockNode),
 		oldestOrphan:        nil,
 		orphans:             make(map[Uint256]*OrphanBlock),
@@ -111,35 +115,51 @@ func New(db IChainStore, ffldb database.DB, chainParams *config.Params, state *s
 	// Initialize the chain state from the passed database.  When the db
 	// does not yet contain any chain state, both it and the chain state
 	// will be initialized to contain only the genesis block.
-	if err := chain.initChainState(); err != nil {
+	var initialized bool
+	var err error
+	if initialized, err = chain.initChainState(); err != nil {
 		return nil, err
 	}
 
-	// todo first from old db
-	//endHeight := chain.db.GetHeight()
-	//startHeight := uint32(0)
-	//if endHeight > minMemoryNodes {
-	//	startHeight = endHeight - minMemoryNodes
-	//}
-	//
-	//for start := startHeight; start <= endHeight; start++ {
-	//	hash, err := chain.db.GetBlockHash(start)
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//	header, err := chain.db.GetHeader(hash)
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//	node, err := chain.LoadBlockNode(header, &hash)
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//	chain.AddNodeToNodes(node)
-	//
-	//	// This node is now the end of the best chain.
-	//	chain.BestChain = node
-	//}
+	if initialized {
+		log.Info("init block information from fflDB")
+		return &chain, nil
+	}
+
+	endHeight := chain.db.GetHeight()
+	startHeight := uint32(1)
+	for start := startHeight; start <= endHeight; start++ {
+		hash, err := chain.db.GetBlockHash(start)
+		if err != nil {
+			return nil, err
+		}
+		block, err := chain.db.GetBlock(hash)
+		if err != nil {
+			return nil, err
+		}
+		confirm, _ := chain.db.GetConfirm(hash)
+		node, err := chain.LoadBlockNode(&block.Header, &hash)
+		if err != nil {
+			return nil, err
+		}
+		chain.AddNodeToNodes(node)
+
+		chain.dirty[&block.Header] = struct{}{}
+		err = chain.flushToDB()
+		if err != nil {
+			return nil, err
+		}
+
+		err = chain.fdb.SaveBlock(block, node, confirm, CalcPastMedianTime(node))
+		if err != nil {
+			return nil, err
+		}
+		// This node is now the end of the best chain.
+		chain.BestChain = node
+		if start%10000 == 0 {
+			log.Info("process block :", start)
+		}
+	}
 
 	return &chain, nil
 }
@@ -176,7 +196,7 @@ func (b *BlockChain) InitCheckpoint(interrupt <-chan struct{},
 				err = e
 				break
 			}
-			block, e := b.GetBlockByHash(hash)
+			block, e := b.fdb.GetBlock(hash)
 			if e != nil {
 				err = e
 				break
@@ -191,7 +211,7 @@ func (b *BlockChain) InitCheckpoint(interrupt <-chan struct{},
 				err = e
 				break
 			}
-			confirm, _ := b.GetConfirm(block.Hash())
+			confirm, _ := b.db.GetConfirm(block.Hash())
 
 			b.chainParams.CkpManager.OnBlockSaved(&DposBlock{
 				Block:       block,
@@ -267,6 +287,19 @@ func (b *BlockChain) ProcessBlock(block *Block, confirm *payload.Confirm) (bool,
 	return b.processBlock(block, confirm)
 }
 
+func (b *BlockChain) GetHeader(hash Uint256) (*Header, error) {
+	header, err := b.fdb.GetHeader(hash)
+	if err != nil {
+		return nil, errors.New("[BlockChain], GetHeader failed.")
+	}
+	return header, nil
+}
+
+// Get block with block hash.
+func (b *BlockChain) GetBlockByHash(hash Uint256) (*Block, error) {
+	return b.fdb.GetBlock(hash)
+}
+
 // Get block with block hash.
 func (b *BlockChain) GetBlockHash(height uint32) (Uint256, error) {
 	b.IndexLock.RLock()
@@ -291,8 +324,8 @@ func (b *BlockChain) GetBlockNode(height uint32) *BlockNode {
 
 // Get DPOS block with block hash.
 func (b *BlockChain) GetDposBlockByHash(hash Uint256) (*DposBlock, error) {
-	if block, _ := b.GetBlockByHash(hash); block != nil {
-		confirm, _ := b.GetConfirm(hash)
+	if block, _ := b.fdb.GetBlock(hash); block != nil {
+		confirm, _ := b.db.GetConfirm(hash)
 		return &DposBlock{
 			Block:       block,
 			HaveConfirm: confirm != nil,
@@ -317,7 +350,7 @@ func (b *BlockChain) GetDposBlockByHash(hash Uint256) (*DposBlock, error) {
 
 func (b *BlockChain) ContainsTransaction(hash Uint256) bool {
 	//TODO: implement error catch
-	_, _, err := b.GetTransaction(hash)
+	_, _, err := b.db.GetTransaction(hash)
 	if err != nil {
 		return false
 	}
@@ -750,7 +783,7 @@ func (b *BlockChain) getPrevNodeFromBlock(block *Block) (*BlockNode, error) {
 		return bn, nil
 	}
 
-	header, err := b.GetHeader(prevHash)
+	header, err := b.fdb.GetHeader(prevHash)
 	if err != nil {
 		return nil, err
 	}
@@ -779,7 +812,7 @@ func (b *BlockChain) getPrevNodeFromNode(node *BlockNode) (*BlockNode, error) {
 		return nil, nil
 	}
 
-	header, err := b.GetHeader(*node.ParentHash)
+	header, err := b.fdb.GetHeader(*node.ParentHash)
 	if err != nil {
 		return nil, err
 	}
@@ -857,11 +890,11 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 	// Disconnect blocks from the main chain.
 	for e := detachNodes.Front(); e != nil; e = e.Next() {
 		n := e.Value.(*BlockNode)
-		block, err := b.GetBlockByHash(*n.Hash)
+		block, err := b.fdb.GetBlock(*n.Hash)
 		if err != nil {
 			return err
 		}
-		confirm, _ := b.GetConfirm(*n.Hash)
+		confirm, _ := b.db.GetConfirm(*n.Hash)
 
 		// roll back state about the last block before disconnect
 		if block.Height-1 >= b.chainParams.VoteStartHeight {
@@ -923,8 +956,16 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block, confirm *pay
 		return err
 	}
 
-	err = b.RollbackBlock(block, node, confirm, b.MedianTimePast)
+	// Make sure the node being disconnected is the end of the best chain.
+	if !node.Hash.IsEqual(*b.BestChain.Hash) {
+		return errors.New("disconnectBlock must be called with the " +
+			"block at the end of the main chain")
+	}
 
+	err = b.fdb.RollbackBlock(block, node, confirm, b.MedianTimePast)
+	if err != nil {
+		return err
+	}
 	// todo complete me
 	//err = b.db.RollbackBlock(*node.Hash)
 	//if err != nil {
@@ -988,8 +1029,17 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payloa
 			"that extends the main chain")
 	}
 
+	if block.Header.Height <= b.BestChain.Height {
+		return errors.New("block height less than current block height")
+	}
+
 	// Insert the block into the database which houses the main chain.
-	if err := b.SaveBlock(block, node, confirm, b.MedianTimePast); err != nil {
+	if err := b.fdb.SaveBlock(block, node, confirm, b.MedianTimePast); err != nil {
+		return err
+	}
+
+	// Insert the block into the database which houses the main chain.
+	if err := b.db.SaveBlock(block, confirm); err != nil {
 		return err
 	}
 
@@ -1025,7 +1075,32 @@ func (b *BlockChain) BlockExists(hash *Uint256) bool {
 	}
 
 	// Check in database (rest of main chain not in memory).
-	return b.IsBlockInStore(hash)
+	return b.fdb.IsBlockInStore(hash)
+}
+
+// flushToDB writes all dirty block nodes to the database. If all writes
+// succeed, this clears the dirty set.
+func (b *BlockChain) flushToDB() error {
+	if len(b.dirty) == 0 {
+		return nil
+	}
+
+	err := b.fflDB.Update(func(dbTx database.Tx) error {
+		for header := range b.dirty {
+			err := dbStoreBlockNode(dbTx, header)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
+	// If write was successful, clear the dirty set.
+	if err == nil {
+		b.dirty = make(map[*Header]struct{})
+	}
+
+	return err
 }
 
 func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (bool, error) {
@@ -1065,6 +1140,11 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 		newNode.WorkSum.Add(prevNode.WorkSum, newNode.WorkSum)
 	}
 
+	b.dirty[&block.Header] = struct{}{}
+	err = b.flushToDB()
+	if err != nil {
+		return false, err
+	}
 	// Connect the passed block to the chain while respecting proper chain
 	// selection according to the chain with the most proof of work.  This
 	// also handles validation of the transaction scripts.
@@ -1363,7 +1443,7 @@ func (b *BlockChain) BlockLocatorFromHash(inhash *Uint256) []*Uint256 {
 		// error means it doesn't exist and just return the locator for
 		// the block itself.
 
-		block, err := b.GetBlockByHash(hash)
+		block, err := b.fdb.GetBlock(hash)
 		if err != nil {
 			return locator
 		}
@@ -1408,7 +1488,7 @@ func (b *BlockChain) BlockLocatorFromHash(inhash *Uint256) []*Uint256 {
 func (b *BlockChain) locateStartBlock(locator []*Uint256) *Uint256 {
 	var startHash Uint256
 	for _, hash := range locator {
-		_, err := b.GetBlockByHash(*hash)
+		_, err := b.fdb.GetBlock(*hash)
 		if err == nil {
 			startHash = *hash
 			break
@@ -1430,7 +1510,7 @@ func (b *BlockChain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBloc
 				count = curHeight
 			}
 		} else {
-			startHeader, err := b.GetHeader(*startHash)
+			startHeader, err := b.fdb.GetHeader(*startHash)
 			if err != nil {
 				return nil, err
 			}
@@ -1441,13 +1521,13 @@ func (b *BlockChain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBloc
 			}
 		}
 	} else {
-		stopHeader, err := b.GetHeader(*stopHash)
+		stopHeader, err := b.fdb.GetHeader(*stopHash)
 		if err != nil {
 			return nil, err
 		}
 		stopHeight = stopHeader.Height
 		if !startHash.IsEqual(EmptyHash) {
-			startHeader, err := b.GetHeader(*startHash)
+			startHeader, err := b.fdb.GetHeader(*startHash)
 			if err != nil {
 				return nil, err
 			}

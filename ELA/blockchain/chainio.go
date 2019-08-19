@@ -5,12 +5,13 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/database"
-	"github.com/elastos/Elastos.ELA/dpos/log"
 	"math/big"
 	"time"
+
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/database"
 )
 
 const (
@@ -19,6 +20,38 @@ const (
 
 	// blockHdrNoAuxSize is the size of block header without aux.
 	blockHdrNoAuxSize = 84
+
+	// latestUtxoSetBucketVersion is the current version of the utxo set
+	// bucket that is used to track all unspent outputs.
+	latestUtxoSetBucketVersion = 2
+
+	// latestSpendJournalBucketVersion is the current version of the spend
+	// journal bucket that is used to track all spent transactions for use
+	// in reorgs.
+	latestSpendJournalBucketVersion = 1
+)
+
+// blockStatus is a bit field representing the validation state of the block.
+type blockStatus byte
+
+const (
+	// statusDataStored indicates that the block's payload is stored on disk.
+	statusDataStored blockStatus = 1 << iota
+
+	// statusValid indicates that the block has been fully validated.
+	statusValid
+
+	// statusValidateFailed indicates that the block has failed validation.
+	statusValidateFailed
+
+	// statusInvalidAncestor indicates that one of the block's ancestors has
+	// has failed validation, thus the block is also invalid.
+	statusInvalidAncestor
+
+	// statusNone indicates that the block has no validation state flags set.
+	//
+	// NOTE: This must be defined last in order to avoid influencing iota.
+	statusNone blockStatus = 0
 )
 
 var (
@@ -339,7 +372,7 @@ func (b *BlockChain) createChainState() error {
 // initChainState attempts to load and initialize the chain state from the
 // database.  When the db does not yet contain any chain state, both it and the
 // chain state are initialized to the genesis block.
-func (b *BlockChain) initChainState() error {
+func (b *BlockChain) initChainState() (bool, error) {
 	// Determine the state of the chain database. We may need to initialize
 	// everything from scratch or upgrade certain buckets.
 	var initialized, hasBlockIndex bool
@@ -349,21 +382,21 @@ func (b *BlockChain) initChainState() error {
 		return nil
 	})
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	if !initialized {
 		// At this point the database has not already been initialized, so
 		// initialize both it and the chain state to the genesis block.
-		return b.createChainState()
+		return initialized, b.createChainState()
 	}
 
 	if !hasBlockIndex {
-		//err := migrateBlockIndex(b.db)
-		//if err != nil {
-		//	return nil
-		//}
-		return errors.New("initChainState failed")
+		err = migrateBlockIndex(b.fflDB)
+		if err != nil {
+			return initialized, nil
+		}
+		return initialized, errors.New("initChainState failed")
 	}
 
 	// Attempt to load the chain state from the database.
@@ -467,14 +500,14 @@ func (b *BlockChain) initChainState() error {
 		return nil
 	})
 	if err != nil {
-		return err
+		return true, err
 	}
 
 	//// As we might have updated the index after it was loaded, we'll
 	//// attempt to flush the index to the DB. This will only result in a
 	//// write if the elements are dirty, so it'll usually be a noop.
 	//return b.index.flushToDB()
-	return nil
+	return true, nil
 }
 
 // deserializeBlockRow parses a value in the block index bucket into a block
@@ -483,7 +516,7 @@ func deserializeBlockRow(blockRow []byte) (*types.Header, error) {
 	buffer := bytes.NewReader(blockRow)
 
 	var header types.Header
-	err := header.Deserialize(buffer)
+	err := header.DeserializeNoAux(buffer)
 	if err != nil {
 		return nil, err
 	}
@@ -496,7 +529,7 @@ func deserializeBlockRow(blockRow []byte) (*types.Header, error) {
 func dbStoreBlockNode(dbTx database.Tx, header *types.Header) error {
 	// Serialize block data to be stored.
 
-	w := bytes.NewBuffer(make([]byte, 0, blockHdrNoAuxSize+1))
+	w := bytes.NewBuffer(make([]byte, 0, blockHdrNoAuxSize))
 	err := header.SerializeNoAux(w)
 	if err != nil {
 		return err

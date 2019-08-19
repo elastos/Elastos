@@ -89,7 +89,7 @@ func (b *BlockChain) CheckTransactionSanity(blockHeight uint32, txn *Transaction
 func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 	txn *Transaction, references map[*Input]*OutputInfo) ErrCode {
 	// check if duplicated with transaction in ledger
-	if exist := b.IsTxHashDuplicate(txn.Hash()); exist {
+	if exist := b.db.IsTxHashDuplicate(txn.Hash()); exist {
 		log.Warn("[CheckTransactionContext] duplicate transaction check failed.")
 		return ErrTransactionDuplicate
 	}
@@ -1213,7 +1213,7 @@ func (b *BlockChain) checkActivateProducerTransaction(txn *Transaction,
 			return err
 		}
 
-		utxos, err := b.GetUnspentFromProgramHash(*programHash, config.ELAAssetID)
+		utxos, err := b.db.GetUnspentFromProgramHash(*programHash, config.ELAAssetID)
 		if err != nil {
 			return err
 		}
