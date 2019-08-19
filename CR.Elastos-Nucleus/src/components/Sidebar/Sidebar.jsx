@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 
 import AdminNavbarLinks from "../Navbars/AdminNavbarLinks.jsx";
 
-import logo from "assets/img/Elastos_Current_Logo.png";
+import logo from "assets/img/Elastos_Icon_KO_RGB.png";
 
 class Sidebar extends Component {
   constructor(props) {
@@ -43,7 +43,7 @@ class Sidebar extends Component {
             </div>
           </a>
           <a href="/" className="simple-text logo-normal">
-            Develop
+            Console
           </a>
         </div>
         <div className="sidebar-wrapper">
