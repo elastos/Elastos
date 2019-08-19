@@ -114,26 +114,3 @@ type QueItem struct {
 	Height     uint32
 	LastNotify time.Time
 }
-
-// DPOSStore extends the DataStore interface to support DPOS producer mapping.
-type DPOSStore interface {
-	DataStore
-
-	// Mapping save a owner public key and side producer ID mapping into
-	// database.  The mapping will be activity after 6 blocks confirmation.
-	Mapping(ownerPublicKey, sideProducerID []byte, height uint32) error
-
-	// Archive saves the current producers on the specific height.
-	Archive(currentProducers [][]byte, height uint32,
-		blockHash *common.Uint256) error
-
-	// GetBlockHash returns the block hash on of the specific height.
-	GetBlockHash(height uint32) (*common.Uint256, error)
-
-	// GetProducers returns the side producer IDs who are participated in block
-	// producing.
-	GetProducers(height uint32) ([][]byte, error)
-
-	// Rollback restore the Mapping database to previous height.
-	Rollback() error
-}

@@ -12,7 +12,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/syndtr/goleveldb/leveldb"
-	"github.com/syndtr/goleveldb/leveldb/errors"
 )
 
 // Ensure Database implement headers interface
@@ -32,12 +31,7 @@ var (
 )
 
 func NewDatabase(dataDir string) (*Database, error) {
-	file := filepath.Join(dataDir, "header")
-
-	db, err := leveldb.OpenFile(file, nil)
-	if _, corrupted := err.(*errors.ErrCorrupted); corrupted {
-		db, err = leveldb.RecoverFile(file, nil)
-	}
+	db, err := leveldb.OpenFile(filepath.Join(dataDir, "header"), nil)
 	if err != nil {
 		return nil, err
 	}

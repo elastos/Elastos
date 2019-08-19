@@ -19,7 +19,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.ETH"
 	ethCommon "github.com/elastos/Elastos.ELA.SideChain.ETH/common"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/core/events"
-	"github.com/elastos/Elastos.ELA.SideChain.ETH/crypto"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/ethclient"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/ethdb"
 	"github.com/elastos/Elastos.ELA.SideChain.ETH/log"
@@ -29,7 +28,6 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	core "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
-	"github.com/elastos/Elastos.ELA/utils/signal"
 )
 
 var (
@@ -89,7 +87,7 @@ type Config struct {
 }
 
 type Service struct {
-	spv.DPOSSPVService
+	spv.SPVService
 }
 
 //Spv database initialization
@@ -116,21 +114,21 @@ func NewService(cfg *Config, s *node.Node) (*Service, error) {
 		chainParams = &config.DefaultParams
 
 	}
-	spvCfg := spv.DPOSConfig{Config: spv.Config{
+	spvCfg := spv.Config{
 		DataDir:     cfg.DataDir,
 		ChainParams: chainParams,
-	},
+		OnRollback:  nil, // Not implemented yet
 	}
 	dataDir = cfg.DataDir
 	initLog(cfg.DataDir)
 
-	service, err := spv.NewDPOSSPVService(&spvCfg, signal.NewInterrupt().C)
+	service, err := spv.NewSPVService(&spvCfg)
 	if err != nil {
 		log.Error("Spv New DPOS SPVService: ", "err", err)
 		return nil, err
 	}
 
-	SpvService = &Service{DPOSSPVService: service}
+	SpvService = &Service{service}
 	err = service.RegisterTransactionListener(&listener{
 		address: cfg.GenesisAddress,
 		service: service,
@@ -215,7 +213,7 @@ func (s *Service) VerifyTransaction(tx *types.Transaction) error {
 			return errors.New("[VerifyTransaction] RechargeToSideChain mainChainTransaction deserialize failed")
 		}
 
-		if err := s.DPOSSPVService.VerifyTransaction(*proof, *mainChainTransaction); err != nil {
+		if err := s.SPVService.VerifyTransaction(*proof, *mainChainTransaction); err != nil {
 			return errors.New("[VerifyTransaction] SPV module verify transaction failed.")
 		}
 
@@ -244,7 +242,7 @@ func (s *Service) VerifyElaHeader(hash *common.Uint256) error {
 
 type listener struct {
 	address string
-	service spv.DPOSSPVService
+	service spv.SPVService
 }
 
 func (l *listener) Address() string {
@@ -519,101 +517,4 @@ func FindOutputFeeAndaddressByTxHash(transactionHash string) (*big.Int, ethCommo
 	}
 	op := new(big.Int).SetInt64(o.IntValue())
 	return new(big.Int).Mul(fe, y), ethCommon.HexToAddress(addrs[0]), new(big.Int).Mul(op, y)
-}
-
-// Get Ela Chain Height
-func GetElaChainHeight() uint32 {
-	var elaHeight uint32 = 0
-	if SpvService == nil || SpvService.DPOSSPVService == nil {
-		log.Info("spv service initiation does not finish yet !")
-	} else {
-		elaHeight = SpvService.DPOSSPVService.GetHeight()
-	}
-	return elaHeight
-}
-
-// Until Get Ela Chain Height
-func UntilGetElaChainHeight() uint32 {
-	for {
-		if elaHeight := GetElaChainHeight(); elaHeight != 0 {
-			return elaHeight
-		}
-		log.Info("can not get elas height, because ela height interface has no any response !")
-		time.Sleep(time.Millisecond * 1000)
-	}
-}
-
-// Determine whether an address is an arbiter
-func AddrIsArbiter(address ethCommon.Address) int8 {
-	if SpvService == nil || SpvService.DPOSSPVService == nil {
-		log.Info("spv service initiation does not finish yet !")
-	} else {
-		arbiters := SpvService.DPOSSPVService.GetProducersByHeight(SpvService.DPOSSPVService.GetHeight())
-		for _, arbiter := range arbiters {
-			publicKey, convertErr := crypto.UnmarshalPubkey(arbiter)
-			if convertErr == nil {
-				if abiterAddress := crypto.PubkeyToAddress(*publicKey); abiterAddress == address {
-					return 1
-				}
-			}
-		}
-	}
-	return 0
-}
-
-// Determine whether an address is an arbiter
-func AddrIsArbiterWithElaHeight(address ethCommon.Address, elaHeight uint32) int8 {
-	if SpvService == nil || SpvService.DPOSSPVService == nil {
-		log.Info("spv service initiation does not finish yet !")
-	} else {
-		arbiters := SpvService.DPOSSPVService.GetProducersByHeight(elaHeight)
-		for _, arbiter := range arbiters {
-			publicKey, convertErr := crypto.UnmarshalPubkey(arbiter)
-			if convertErr == nil {
-				if abiterAddress := crypto.PubkeyToAddress(*publicKey); abiterAddress == address {
-					return 1
-				}
-			}
-		}
-	}
-	return 0
-}
-
-func GetCurrentProducers() [][]byte {
-	var arbiters [][]byte
-	if SpvService == nil || SpvService.DPOSSPVService == nil {
-		log.Info("spv service initiation does not finish yet !")
-	} else {
-		arbiters := SpvService.DPOSSPVService.GetProducersByHeight(GetCurrentElaHeight())
-		log.Info("---------------------------------------------------------------")
-		log.Info("arbiters", arbiters)
-	}
-
-	return arbiters
-}
-
-func GetCurrentElaHeight() uint32 {
-	var height uint32
-	if SpvService == nil || SpvService.DPOSSPVService == nil {
-		log.Info("spv service initiation does not finish yet !")
-	} else {
-		height = SpvService.DPOSSPVService.GetHeight()
-		log.Info("----GetCurrentElaHeight-----------------------------------------------------------")
-		log.Info("ElaHeight", height)
-	}
-
-	return height
-}
-
-func GetProducersByHeight(height uint32) [][]byte {
-	var arbiters [][]byte
-
-	if SpvService == nil || SpvService.DPOSSPVService == nil {
-		log.Info("spv service initiation does not finish yet !")
-	} else {
-		arbiters := SpvService.DPOSSPVService.GetProducersByHeight(height)
-		log.Info("---------------------------------------------------------------")
-		log.Info("arbiters", arbiters)
-	}
-	return arbiters
 }
