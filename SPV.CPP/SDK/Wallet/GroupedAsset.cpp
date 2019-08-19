@@ -248,11 +248,11 @@ namespace Elastos {
 				if (lastUTXOPending) {
 					ErrorChecker::ThrowLogicException(Error::TxPending,
 													  "merge utxo fail, last tx is pending, fee: " +
-													  std::to_string(feeAmount));
+													  std::to_string(feeAmount) + " sela");
 				} else {
 					ErrorChecker::ThrowLogicException(Error::BalanceNotEnough,
 													  "merge utxo fail, available balance is not enough, fee: " +
-													  std::to_string(feeAmount));
+													  std::to_string(feeAmount) + " sela");
 				}
 			}
 
@@ -359,7 +359,7 @@ namespace Elastos {
 					} else {
 						BigInt maxAmount = totalInputAmount - feeAmount;
 						ErrorChecker::CheckCondition(true, Error::CreateTransactionExceedSize,
-													 "Tx size too large, max available amount: " + maxAmount.getDec());
+													 "Tx size too large, max available amount: " + maxAmount.getDec() + " sela");
 					}
 
 					return txn;
@@ -407,8 +407,8 @@ namespace Elastos {
 					} else {
 						BigInt maxAmount = totalInputAmount - feeAmount;
 						ErrorChecker::CheckCondition(true, Error::CreateTransactionExceedSize,
-													 "Tx size too large, max available amount: " + maxAmount.getDec() +
-													 ", fee amount: " + std::to_string(feeAmount));
+													 "Tx size too large, max available amount: " + maxAmount.getDec() + " sela" +
+													 ", fee amount: " + std::to_string(feeAmount) + " sela");
 					}
 
 					return txn;
@@ -421,9 +421,9 @@ namespace Elastos {
 			_parent->Unlock();
 
 			if (txn) {
-				if (txn->GetInputs().size() > 500) {
-					ErrorChecker::ThrowLogicException(Error::TooMuchInputs, "Too much inputs, need to consolidate first");
-				}
+//				if (txn->GetInputs().size() > 500) {
+//					ErrorChecker::ThrowLogicException(Error::TooMuchInputs, "Too much inputs, need to consolidate first");
+//				}
 
 				if (totalInputAmount < totalOutputAmount + feeAmount) {
 					BigInt maxAvailable(0);
@@ -433,11 +433,11 @@ namespace Elastos {
 					if (lastUTXOPending) {
 						ErrorChecker::ThrowLogicException(Error::TxPending,
 														  "Last transaction is pending, max available amount: " +
-														  maxAvailable.getDec());
+														  maxAvailable.getDec() + " sela");
 					} else {
 						ErrorChecker::ThrowLogicException(Error::BalanceNotEnough,
 														  "Available balance is not enough, max available amount: " +
-														  maxAvailable.getDec());
+														  maxAvailable.getDec() + " sela");
 					}
 				} else if (totalInputAmount > totalOutputAmount + feeAmount) {
 					uint256 assetID = txn->GetOutputs()[0]->AssetID();
@@ -514,7 +514,7 @@ namespace Elastos {
 
 					ErrorChecker::CheckCondition(true, Error::CreateTransactionExceedSize,
 												 "Tx size too large, max available amount for fee: " +
-												 totalInputAmount.getDec());
+												 totalInputAmount.getDec() + " sela");
 					_parent->Lock();
 					break;
 				}
@@ -542,7 +542,7 @@ namespace Elastos {
 
 					ErrorChecker::CheckCondition(true, Error::CreateTransactionExceedSize,
 												 "Tx size too large, max available amount for fee: " +
-												 totalInputAmount.getDec());
+												 totalInputAmount.getDec() + " sela");
 					_parent->Lock();
 					break;
 				}
@@ -558,11 +558,11 @@ namespace Elastos {
 				if (lastUTXOPending) {
 					ErrorChecker::ThrowLogicException(Error::TxPending,
 													  "Last transaction is pending, max available amount: " +
-													  totalInputAmount.getDec());
+													  totalInputAmount.getDec() + " sela");
 				} else {
 					ErrorChecker::ThrowLogicException(Error::BalanceNotEnough,
 													  "Available balance is not enough, max available amount: " +
-													  totalInputAmount.getDec());
+													  totalInputAmount.getDec() + " sela");
 				}
 			} else if (totalInputAmount > feeAmount) {
 				uint256 assetID = Asset::GetELAAssetID();
@@ -586,13 +586,24 @@ namespace Elastos {
 			if (_parent->_subAccount->IsDepositAddress(o->Output()->Addr()) || _parent->_subAccount->IsCRDepositAddress(o->Output()->Addr())) {
 				_balanceDeposit += o->Output()->Amount();
 				_utxosDeposit.push_back(o);
+				//SPVLOG_DEBUG("{} add deposit utxo {} n {} addr {} amount +{} = deposit {}", \
+							 _parent->_walletID, o->Hash().GetHex(), o->Index(), \
+							 o->Output()->Addr().String(), o->Output()->Amount().getDec(), _balanceDeposit.getDec());
 			} else {
 				_balance += o->Output()->Amount();
 				if (o->Output()->GetType() == TransactionOutput::Type::VoteOutput) {
 					_balanceVote += o->Output()->Amount();
 					_utxosVote.push_back(o);
+					//SPVLOG_DEBUG("{} add vote utxo {} n {} addr {} amount +{} = vote {} balance {}", \
+								 _parent->_walletID, o->Hash().GetHex(), o->Index(), \
+								 o->Output()->Addr().String(), o->Output()->Amount().getDec(), \
+								 _balanceVote.getDec(), _balance.getDec());
 				} else {
 					_utxos.push_back(o);
+					//SPVLOG_DEBUG("{} add utxo {} n {} addr {} amount +{} = balance {}", \
+								 _parent->_walletID, o->Hash().GetHex(), o->Index(), \
+								 o->Output()->Addr().String(), o->Output()->Amount().getDec(), \
+								 _balance.getDec());
 				}
 			}
 
@@ -606,9 +617,15 @@ namespace Elastos {
 			if (o->GetConfirms(_parent->_blockHeight) <= 100) {
 				_balanceLocked += o->Output()->Amount();
 				_utxosLocked.push_back(o);
+				//SPVLOG_DEBUG("{} add coinbase locked utxo {} n {} addr {} amount +{} = locked {}", \
+							 _parent->_walletID, o->Hash().GetHex(), o->Index(), \
+							 o->Output()->Addr().String(), o->Output()->Amount().getDec(), _balanceLocked.getDec());
 			} else {
 				_balance += o->Output()->Amount();
 				_utxosCoinbase.push_back(o);
+				//SPVLOG_DEBUG("{} add coinbase utxo {} n {} addr {} amount +{} = balance {}", \
+							 _parent->_walletID, o->Hash().GetHex(), o->Index(), \
+							 o->Output()->Addr().String(), o->Output()->Amount().getDec(), _balance.getDec());
 			}
 
 			return true;
@@ -635,6 +652,9 @@ namespace Elastos {
 					assert(_balance >= (*it)->Output()->Amount());
 					(*it)->SetSpent(true);
 					_balance -= (*it)->Output()->Amount();
+					//SPVLOG_DEBUG("{} remove coinbase utxo {} n {} addr {} amount -{} = balance {}", \
+								 _parent->_walletID, hash.GetHex(), n, (*it)->Output()->Addr().String(), \
+								 (*it)->Output()->Amount().getDec(), _balance.getDec());
 					_utxosCoinbase.erase(it);
 					return true;
 				}
@@ -646,6 +666,9 @@ namespace Elastos {
 					assert(_balance >= (*it)->Output()->Amount());
 					_balanceVote -= (*it)->Output()->Amount();
 					_balance -= (*it)->Output()->Amount();
+					//SPVLOG_DEBUG("{} remove vote utxo {} n {} addr {} amount -{} = vote balance {} balance {}", \
+								 _parent->_walletID, hash.GetHex(), n, (*it)->Output()->Addr().String(), \
+								 (*it)->Output()->Amount().getDec(), _balanceVote.getDec(), _balance.getDec());
 					_utxosVote.erase(it);
 					return true;
 				}
@@ -655,6 +678,9 @@ namespace Elastos {
 				if ((*it)->Equal(hash, n)) {
 					assert(_balance >= (*it)->Output()->Amount());
 					_balance -= (*it)->Output()->Amount();
+					//SPVLOG_DEBUG("{} remove utxo {} n {} addr {} amount -{} = balance {}", \
+								 _parent->_walletID, hash.GetHex(), n, (*it)->Output()->Addr().String(), \
+								 (*it)->Output()->Amount().getDec(), _balance.getDec());
 					_utxos.erase(it);
 					return true;
 				}
@@ -664,6 +690,9 @@ namespace Elastos {
 				if ((*it)->Equal(hash, n)) {
 					assert(_balanceDeposit >= (*it)->Output()->Amount());
 					_balanceDeposit -= (*it)->Output()->Amount();
+					//SPVLOG_DEBUG("{} remove deposit utxo {} n {} addr {} amount -{} = deposit balance {}", \
+								 _parent->_walletID, hash.GetHex(), n, (*it)->Output()->Addr().String(), \
+								 (*it)->Output()->Amount().getDec(), _balanceDeposit.getDec());
 					_utxosDeposit.erase(it);
 					return true;
 				}
@@ -699,6 +728,9 @@ namespace Elastos {
 					_balanceLocked -= (*locked)->Output()->Amount();
 					_balance += (*locked)->Output()->Amount();
 					_utxosCoinbase.push_back(*locked);
+					//SPVLOG_DEBUG("{} move locked utxo {} n {} amount {} locked balance {} balance {}", \
+								 _parent->_walletID, (*locked)->Hash().GetHex(), (*locked)->Index(), \
+								 (*locked)->Output()->Amount().getDec(), _balanceLocked.getDec(), _balance.getDec());
 					locked = _utxosLocked.erase(locked);
 					changed = true;
 				} else {

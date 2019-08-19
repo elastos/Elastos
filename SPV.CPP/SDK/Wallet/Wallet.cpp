@@ -54,7 +54,7 @@ namespace Elastos {
 			}
 
 			bool stripped = false, movedToCoinbase = false;
-			std::set<uint256> spentHashes;
+			InputArray spentInputs;
 			for (size_t i = 0; i < txns.size(); ++i) {
 				if (txns[i]->IsCoinBase()) {
 					movedToCoinbase = true;
@@ -82,7 +82,7 @@ namespace Elastos {
 						continue;
 
 					for (InputArray::iterator in = txns[i]->GetInputs().begin(); in != txns[i]->GetInputs().end(); ++in)
-						spentHashes.insert((*in)->TxHash());
+						spentInputs.push_back(*in);
 
 					_allTx.Insert(txns[i]);
 					InsertTx(txns[i]);
@@ -98,13 +98,18 @@ namespace Elastos {
 			_coinBaseUTXOs.insert(_coinBaseUTXOs.end(), cbUTXOs.begin(), cbUTXOs.end());
 
 			std::vector<uint256> updatedSpent;
-			for (std::set<uint256>::iterator it = spentHashes.begin(); it != spentHashes.end(); ++it) {
+			for (InputArray::iterator in = spentInputs.begin(); in != spentInputs.end(); ++in) {
 				for (UTXOArray::iterator cb = _coinBaseUTXOs.begin(); cb != _coinBaseUTXOs.end(); ++cb) {
-					if ((*it) == (*cb)->Hash()) {
+					if ((*cb)->Equal((*in))) {
 						(*cb)->SetSpent(true);
-						updatedSpent.push_back(*it);
+						updatedSpent.push_back((*cb)->Hash());
 						break;
 					}
+				}
+
+				for (GroupedAssetMap::iterator asset = _groupedAssets.begin(); asset != _groupedAssets.end(); ++asset) {
+					if (asset->second->RemoveSpentUTXO(*in))
+						break;
 				}
 			}
 

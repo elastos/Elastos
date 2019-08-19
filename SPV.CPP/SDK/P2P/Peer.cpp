@@ -524,10 +524,11 @@ namespace Elastos {
 		}
 
 		void Peer::CurrentBlockTxHashesRemove(const uint256 &hash) {
-			for (size_t i = 0; i < _currentBlockTxHashes.size(); ++i) {
-				if (hash == _currentBlockTxHashes[i]) {
-					_currentBlockTxHashes.erase(_currentBlockTxHashes.begin() + i);
-					break;
+			for (std::vector<uint256>::iterator it = _currentBlockTxHashes.begin(); it != _currentBlockTxHashes.end();) {
+				if (hash == (*it)) {
+					it = _currentBlockTxHashes.erase(it);
+				} else {
+					++it;
 				}
 			}
 		}

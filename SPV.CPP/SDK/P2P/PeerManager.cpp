@@ -944,6 +944,7 @@ namespace Elastos {
 			TransactionPeerList *peerList;
 			uint32_t reconnectSeconds = 1;
 			bool willReconnect = false;
+			Peer::ConnectStatus status = Peer::Disconnected;
 
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
@@ -1004,15 +1005,15 @@ namespace Elastos {
 					}
 				}
 
-				for (std::vector<PeerPtr>::iterator p = _connectedPeers.begin(); p != _connectedPeers.end();) {
-					if ((*p) == peer) {
-						p = _connectedPeers.erase(p);
-						break;
-					} else {
-						++p;
-					}
+				if (_isConnected != 0)
+					status = Peer::Connected;
+
+				for (size_t i = _connectedPeers.size(); i > 0 && status == Peer::Disconnected; i--) {
+					if (_connectedPeers[i - 1] == peer || _connectedPeers[i - 1]->GetConnectStatus() == Peer::Disconnected)
+						continue;
+					status = Peer::Connecting;
 				}
-				peer->info("connected peer size: {}", _connectedPeers.size());
+
 			}
 
 			FireConnectStatusChanged(GetConnectStatus());
@@ -1020,9 +1021,23 @@ namespace Elastos {
 				FireSavePeers(true, {});
 			if (willSave)
 				FireSyncStopped(error);
+			FireTxStatusUpdate();
+
+			lock.lock();
+			for (std::vector<PeerPtr>::iterator p = _connectedPeers.begin(); p != _connectedPeers.end();) {
+				if ((*p) == peer) {
+					p = _connectedPeers.erase(p);
+					break;
+				} else {
+					++p;
+				}
+			}
+
+			PEER_DEBUG(peer, "connected peer size: {}", _connectedPeers.size());
+			lock.unlock();
+
 			if (willReconnect)
 				ConnectLaster(reconnectSeconds);
-			FireTxStatusUpdate();
 		}
 
 		void PeerManager::OnRelayedPeers(const PeerPtr &peer, const std::vector<PeerInfo> &peers) {
@@ -1330,6 +1345,7 @@ namespace Elastos {
 							"bloom filter false positive rate {} too high after {} blocks, disconnecting...",
 							_fpRate, _lastBlock->GetHeight() + 1 - _filterUpdateHeight);
 						peer->Disconnect();
+						return;
 					} else if (_lastBlock->GetHeight() + 500 < peer->GetLastBlock() &&
 							   _fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE * 10.0) {
 						UpdateBloomFilter(); // rebuild bloom filter when it starts to degrade

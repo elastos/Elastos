@@ -55,6 +55,10 @@ namespace Elastos {
 			_peerManager->Disconnect();
 		}
 
+		void SpvService::ExecutorStop() {
+			_executor.StopThread();
+		}
+
 		void SpvService::PublishTransaction(const TransactionPtr &tx) {
 			if (getPeerManager()->GetConnectStatus() != Peer::Connected) {
 				getPeerManager()->ConnectLaster(0);
