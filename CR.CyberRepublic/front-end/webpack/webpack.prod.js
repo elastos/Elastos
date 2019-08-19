@@ -59,7 +59,7 @@ module.exports = merge(common, {
         filename: 'static/js/[name].js?[hash:8]',
         publicPath: '/',
     },
-    //devtool: 'inline-source-map',
+    devtool: 'hidden-source-map',
     stats: {
         //need it
         entrypoints: false,

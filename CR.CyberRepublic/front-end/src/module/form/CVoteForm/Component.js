@@ -7,6 +7,7 @@ import { CVOTE_STATUS } from '@/constant'
 import { convertToRaw } from 'draft-js'
 import DraftEditor from '@/module/common/DraftEditor'
 import CircularProgressbar from '@/module/common/CircularProgressbar'
+import { logger } from '@/util'
 
 // if using webpack
 import 'medium-draft/lib/index.css'
@@ -177,7 +178,7 @@ class C extends BaseComponent {
         await onEdit()
         message.success(I18N.get('proposal.msg.proposalPublished'))
       } catch (error) {
-        message.error(error.message)
+        logger.error(error)
         this.ord_loading(false)
       }
     })
