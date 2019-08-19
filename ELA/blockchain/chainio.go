@@ -540,6 +540,7 @@ func dbStoreBlockNode(dbTx database.Tx, header *types.Header) error {
 	blockHash := header.Hash()
 	blockIndexBucket := dbTx.Metadata().Bucket(blockIndexBucketName)
 	key := blockIndexKey(&blockHash, header.Height)
+	log.Info("### dbStoreBlockNode height:", header.Height)
 	return blockIndexBucket.Put(key, value)
 }
 

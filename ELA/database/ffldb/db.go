@@ -33,10 +33,8 @@ const (
 	// metadataDbName is the name used for the metadata database.
 	metadataDbName = "metadata"
 
-	// blockHdrSize is the size of a block header.  This is simply the
-	// constant from wire and is only provided here for convenience since
-	// wire.MaxBlockHeaderPayload is quite long.
-	blockHdrSize = wire.MaxBlockHeaderPayload
+	// blockHdrNoAuxSize is the size of block header without aux.
+	blockHdrNoAuxSize = 84
 
 	// blockHdrOffset defines the offsets into a block index row for the
 	// block header.
@@ -1260,7 +1258,7 @@ func (tx *transaction) FetchBlockHeader(hash *common.Uint256) ([]byte, error) {
 	return tx.FetchBlockRegion(&database.BlockRegion{
 		Hash:   hash,
 		Offset: 0,
-		Len:    blockHdrSize,
+		Len:    blockHdrNoAuxSize,
 	})
 }
 
@@ -1284,7 +1282,7 @@ func (tx *transaction) FetchBlockHeaders(hashes []common.Uint256) ([][]byte, err
 	for i := range hashes {
 		regions[i].Hash = &hashes[i]
 		regions[i].Offset = 0
-		regions[i].Len = blockHdrSize
+		regions[i].Len = blockHdrNoAuxSize
 	}
 	return tx.FetchBlockRegions(regions)
 }
