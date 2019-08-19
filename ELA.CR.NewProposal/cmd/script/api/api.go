@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,7 +21,6 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
-	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/crypto"
 	dlog "github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/state"
@@ -178,24 +178,33 @@ func initLedger(L *lua.LState) int {
 		fmt.Printf("Init chain store error: %s \n", err.Error())
 	}
 
-	arbiters, err := state.NewArbitrators(chainParams,
-		chainStore.GetHeight,
+	arbiters, err := state.NewArbitrators(chainParams, nil)
+	if err != nil {
+		fmt.Printf("New arbitrators error: %s \n", err.Error())
+	}
+	arbiters.RegisterFunction(chainStore.GetHeight,
 		func(height uint32) (*types.Block, error) {
 			hash, err := ledger.Blockchain.GetBlockHash(height)
 			if err != nil {
 				return nil, err
 			}
 			return chainStore.GetBlock(hash)
-		}, nil)
+		})
 
 	fflDB, err := blockchain.LoadBlockDB(test.DataPath)
 	if err != nil {
 		fmt.Printf("Init fflDB error: %s \n", err.Error())
 	}
-	defer fflDB.Close()
+	//defer fflDB.Close()
+
+	fdb, err := blockchain.NewFFLDBChainStore(test.DataPath, fflDB,
+		chainParams.GenesisBlock)
+	if err != nil {
+		fmt.Printf("Init fdb error: %s \n", err.Error())
+	}
 
 	var interrupt = signal.NewInterrupt()
-	chain, err := blockchain.New(chainStore, fflDB, chainParams,
+	chain, err := blockchain.New(chainStore, fdb, fflDB, chainParams,
 		state.NewState(chainParams, arbiters.GetArbitrators, nil), nil)
 	if err != nil {
 		fmt.Printf("Init block chain error: %s \n", err.Error())

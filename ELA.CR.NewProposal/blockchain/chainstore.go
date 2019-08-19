@@ -8,8 +8,6 @@ package blockchain
 import (
 	"bytes"
 	"errors"
-	"github.com/elastos/Elastos.ELA/database"
-	"github.com/elastos/btcd/wire"
 	"os"
 	"path/filepath"
 	"sync"
@@ -20,6 +18,10 @@ import (
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/database"
+	_ "github.com/elastos/Elastos.ELA/database/ffldb"
+
+	"github.com/btcsuite/btcd/wire"
 )
 
 const (
@@ -551,12 +553,12 @@ func (c *ChainStore) rollback(b *Block) error {
 
 func (c *ChainStore) persist(b *Block, confirm *payload.Confirm) error {
 	c.NewBatch()
-	if err := c.persistTrimmedBlock(b); err != nil {
-		return err
-	}
-	if err := c.persistBlockHash(b); err != nil {
-		return err
-	}
+	//if err := c.persistTrimmedBlock(b); err != nil {
+	//	return err
+	//}
+	//if err := c.persistBlockHash(b); err != nil {
+	//	return err
+	//}
 	if err := c.PersistTransactions(b); err != nil {
 		return err
 	}

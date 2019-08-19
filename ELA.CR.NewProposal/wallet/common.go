@@ -20,5 +20,6 @@ const (
 
 var (
 	Store blockchain.IChainStore
+	FFLDB blockchain.IFFLDBChainStore
 	Chain  *blockchain.BlockChain
 )

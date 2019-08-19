@@ -25,6 +25,7 @@ var (
 type Ledger struct {
 	Blockchain  *BlockChain
 	Store       IChainStore
+	FFLDB       IFFLDBChainStore
 	Arbitrators state.Arbitrators
 	Committee   *crstate.Committee
 }
@@ -52,7 +53,7 @@ func (l *Ledger) GetBlockWithHeight(height uint32) (*Block, error) {
 	if err != nil {
 		return nil, errors.New("[Ledger],GetBlockWithHeight failed with height=" + string(height))
 	}
-	bk, err := DefaultLedger.Blockchain.GetBlockByHash(temp)
+	bk, err := DefaultLedger.FFLDB.GetBlock(temp)
 	if err != nil {
 		return nil, errors.New("[Ledger],GetBlockWithHeight failed with hash=" + temp.String())
 	}
@@ -61,7 +62,7 @@ func (l *Ledger) GetBlockWithHeight(height uint32) (*Block, error) {
 
 //Get block with block hash.
 func (l *Ledger) GetBlockWithHash(hash Uint256) (*Block, error) {
-	bk, err := l.Blockchain.GetBlockByHash(hash)
+	bk, err := l.FFLDB.GetBlock(hash)
 	if err != nil {
 		return nil, errors.New("[Ledger],GetBlockWithHeight failed with hash=" + hash.String())
 	}
@@ -70,7 +71,7 @@ func (l *Ledger) GetBlockWithHash(hash Uint256) (*Block, error) {
 
 //Get transaction with hash.
 func (l *Ledger) GetTransactionWithHash(hash Uint256) (*Transaction, error) {
-	tx, _, err := l.Blockchain.GetTransaction(hash)
+	tx, _, err := l.Store.GetTransaction(hash)
 	if err != nil {
 		return nil, errors.New("[Ledger],GetTransactionWithHash failed with hash=" + hash.String())
 	}

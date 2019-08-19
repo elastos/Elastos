@@ -73,6 +73,7 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) ErrCode {
 		log.Warn("[TxPool CheckTransactionSanity] failed", tx.Hash())
 		return errCode
 	}
+
 	references, err := chain.UTXOCache.GetTxReferenceInfo(tx)
 	if err != nil {
 		log.Warn("[CheckTransactionContext] get transaction reference failed")
