@@ -43,7 +43,7 @@ class Sidebar extends Component {
             </div>
           </a>
           <a href="/" className="simple-text logo-normal">
-            Develop
+            Console
           </a>
         </div>
         <div className="sidebar-wrapper">
