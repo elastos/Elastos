@@ -257,7 +257,7 @@ func newRPCServer(port uint16, service *sv.HttpService) *jsonrpc.Server {
 	s.RegisterAction("listunspent", service.ListUnspent, "addresses")
 	s.RegisterAction("getillegalevidencebyheight", service.GetIllegalEvidenceByHeight, "height")
 	s.RegisterAction("checkillegalevidence", service.CheckIllegalEvidence, "evidence")
-	s.RegisterAction("getidentificationtxbyid", service.GetIdentificationTxById, "id", "getall")
+	s.RegisterAction("getidtxspayloads", service.GetIdTxsPayloads, "id", "getall")
 
 	return s
 }

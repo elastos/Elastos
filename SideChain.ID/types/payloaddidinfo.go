@@ -12,8 +12,6 @@ import (
 
 const DIDInfoVersion = 0x00
 
-const MasterKeyStr = "#master-key"
-
 // header of DID transaction payload
 type DIDHeaderInfo struct {
 	Specification string `json:"specification"`

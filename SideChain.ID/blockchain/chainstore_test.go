@@ -5,178 +5,44 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
+	mathrand "math/rand"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/elastos/Elastos.ELA.SideChain.ID/params"
 	"github.com/elastos/Elastos.ELA.SideChain.ID/types"
-
 	stype "github.com/elastos/Elastos.ELA.SideChain/types"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	ID1 = "did:elastos:iXZck7tte4V1F7THQ9Z4z7xuah6j4U33zo"
+	ID2 = "did:elastos:imfFhB5zNwTAMHh2RMpgRrZeSo7C5WtkzS"
+	ID3 = "did:elastos:ifawgWFmZRLXN1JVmqpXcNRurhB1zyHNcf"
+)
+
 var didPayloadBytes = []byte(
-	"{" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKey\": [{" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"zNxoZaZLdackZQNMas7sCkPRHZsJ3BtdjEvM2y5gNvKJ\"" +
-		"}, {" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#key2\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"273j8fQ1ZZVM6U6d5XE3X8SyULuJwjyYXbxNopXVuftBe\"" +
-		"}, {" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#recovery\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:ip7ntDo2metGnU8wGP4FnyKCUdbHm4BPDh\"," +
-		"\"publicKeyBase58\": \"zppy33i2r3uC1LT3RFcLqJJPFpYuZPDuKMeKZ5TdAskM\"" +
-		"}]," +
-		"\"authentication\": [" +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default\"," +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#key2\"," +
-		"{" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#keys3\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV\"" +
-		"}]," +
-		"\"authorization\": [" +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default\"," +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#key2\"," +
-		"{" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#keys3\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV\"" +
-		"}]," +
-		"\"expires\": \"2024-02-10T17:00:00Z\"" +
-		"}",
-)
-var didPayloadBytes1 = []byte(
-	"{" +
-		"\"id\": \"did:elastos:iXZck7tte4V1F7THQ9Z4z7xuah6j4U33zo\"," +
-		"\"publicKey\": [{" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"zNxoZaZLdackZQNMas7sCkPRHZsJ3BtdjEvM2y5gNvKJ\"" +
-		"}, {" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#key2\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"273j8fQ1ZZVM6U6d5XE3X8SyULuJwjyYXbxNopXVuftBe\"" +
-		"}, {" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#recovery\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:ip7ntDo2metGnU8wGP4FnyKCUdbHm4BPDh\"," +
-		"\"publicKeyBase58\": \"zppy33i2r3uC1LT3RFcLqJJPFpYuZPDuKMeKZ5TdAskM\"" +
-		"}]," +
-		"\"authentication\": [" +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default\"," +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#key2\"," +
-		"{" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#keys3\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV\"" +
-		"}]," +
-		"\"authorization\": [" +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default\"," +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#key2\"," +
-		"{" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#keys3\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV\"" +
-		"}]," +
-		"\"expires\": \"2024-02-10T17:00:00Z\"" +
-		"}",
-)
-var didPayloadBytes2 = []byte(
-	"{" +
-		"\"id\": \"did:elastos:imfFhB5zNwTAMHh2RMpgRrZeSo7C5WtkzS\"," +
-		"\"publicKey\": [{" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"zNxoZaZLdackZQNMas7sCkPRHZsJ3BtdjEvM2y5gNvKJ\"" +
-		"}, {" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#key2\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"273j8fQ1ZZVM6U6d5XE3X8SyULuJwjyYXbxNopXVuftBe\"" +
-		"}, {" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#recovery\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:ip7ntDo2metGnU8wGP4FnyKCUdbHm4BPDh\"," +
-		"\"publicKeyBase58\": \"zppy33i2r3uC1LT3RFcLqJJPFpYuZPDuKMeKZ5TdAskM\"" +
-		"}]," +
-		"\"authentication\": [" +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default\"," +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#key2\"," +
-		"{" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#keys3\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV\"" +
-		"}]," +
-		"\"authorization\": [" +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default\"," +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#key2\"," +
-		"{" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#keys3\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV\"" +
-		"}]," +
-		"\"expires\": \"2024-02-10T17:00:00Z\"" +
-		"}",
-)
-var didPayloadBytes3 = []byte(
-	"{" +
-		"\"id\": \"did:elastos:ifawgWFmZRLXN1JVmqpXcNRurhB1zyHNcf\"," +
-		"\"publicKey\": [{" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"zNxoZaZLdackZQNMas7sCkPRHZsJ3BtdjEvM2y5gNvKJ\"" +
-		"}, {" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#key2\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"273j8fQ1ZZVM6U6d5XE3X8SyULuJwjyYXbxNopXVuftBe\"" +
-		"}, {" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#recovery\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:ip7ntDo2metGnU8wGP4FnyKCUdbHm4BPDh\"," +
-		"\"publicKeyBase58\": \"zppy33i2r3uC1LT3RFcLqJJPFpYuZPDuKMeKZ5TdAskM\"" +
-		"}]," +
-		"\"authentication\": [" +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default\"," +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#key2\"," +
-		"{" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#keys3\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV\"" +
-		"}]," +
-		"\"authorization\": [" +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default\"," +
-		"\"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#key2\"," +
-		"{" +
-		"\"id\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#keys3\"," +
-		"\"type\": \"ECDSAsecp256r1\"," +
-		"\"controller\": \"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN\"," +
-		"\"publicKeyBase58\": \"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV\"" +
-		"}]," +
-		"\"expires\": \"2024-02-10T17:00:00Z\"" +
-		"}",
-)
+	`{
+        "id" : "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN",
+        "publicKey":[{ "id": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default",
+                       "type":"ECDSAsecp256r1",
+                       "controller":"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN",
+                       "publicKeyBase58":"27bqfhMew6TjL4NMz2u8b2cFCvGovaELqr19Xytt1rDmd"
+                      }
+                    ],
+        "authentication":["did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default",
+                          {
+                               "id": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default",
+                               "type":"ECDSAsecp256r1",
+                               "controller":"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN",
+                               "publicKeyBase58":"zNxoZaZLdackZQNMas7sCkPRHZsJ3BtdjEvM2y5gNvKJ"
+                           }
+                         ],
+        "authorization":["did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default"],
+        "expires" : "2023-02-10T17:00:00Z"
+	}`)
 
 func TestIDChainStore_PersistDIDTx(t *testing.T) {
 	idChainStore, err := NewChainStore(params.GenesisBlock, "Chain_UnitTest")
@@ -196,16 +62,16 @@ func TestIDChainStore_PersistDIDTx(t *testing.T) {
 	blockTimeStamp3 = blockTimeStamp2 + 1
 
 	// prepare data for test
-	regPayload1 := randomPayloadDIDNew1()
+	regPayload1 := getRandomPayloadDid(ID1)
 	buf1 := new(bytes.Buffer)
 	regPayload1.Serialize(buf1, types.DIDInfoVersion)
-	id1 := []byte(idChainStore.GetIDFromUri(regPayload1.PayloadInfo.ID))
 
+	id1 := []byte(idChainStore.GetIDFromUri(regPayload1.PayloadInfo.ID))
 	tx1 := &stype.Transaction{
 		Payload: regPayload1,
 	}
 
-	regPayload2 := randomPayloadDIDNew2()
+	regPayload2 := getRandomPayloadDid(ID2)
 	buf2 := new(bytes.Buffer)
 	regPayload2.Serialize(buf2, types.DIDInfoVersion)
 	id2 := []byte(idChainStore.GetIDFromUri(regPayload2.PayloadInfo.ID))
@@ -213,7 +79,7 @@ func TestIDChainStore_PersistDIDTx(t *testing.T) {
 		Payload: regPayload2,
 	}
 
-	regPayload3 := randomPayloadDIDNew3()
+	regPayload3 := getRandomPayloadDid(ID3)
 	buf3 := new(bytes.Buffer)
 	regPayload3.Serialize(buf3, types.DIDInfoVersion)
 	regPayload3.PayloadInfo.ID = regPayload2.PayloadInfo.ID
@@ -352,58 +218,25 @@ func TestIDChainStore_PersistDIDTx(t *testing.T) {
 
 }
 
-func randomPayloadDID() *types.PayloadDIDInfo {
-	info := &types.DIDPayloadInfo{
-		ID: randomString(),
-		PublicKey: []types.DIDPublicKeyInfo{
-			{
-				ID:              randomString(),
-				Type:            randomString(),
-				Controller:      randomString(),
-				PublicKeyBase58: randomString(),
-			},
-		},
-		Authentication: []interface{}{
-			randomString(),
-			randomString(),
-		},
-		Authorization: []interface{}{
-			randomString(),
-			randomString(),
-		},
-		Expires: "2020-02-10T17:00:00Z",
-	}
-	return &types.PayloadDIDInfo{
-		Header: types.DIDHeaderInfo{
-			Specification: randomString(),
-			Operation:     randomString(),
-		},
-		Payload: randomString(),
-		Proof: types.DIDProofInfo{
-			Type:               randomString(),
-			VerificationMethod: randomString(),
-			Signature:          randomString(),
-		},
-		PayloadInfo: info,
-	}
-}
-
 func randomString() string {
 	a := make([]byte, 20)
 	rand.Read(a)
 	return common.BytesToHexString(a)
 }
 
-func randomPayloadDIDNew1() *types.PayloadDIDInfo {
+func getRandomPayloadDid(id string) *types.PayloadDIDInfo {
 	info := new(types.DIDPayloadInfo)
-	json.Unmarshal(didPayloadBytes1, info)
+	json.Unmarshal(didPayloadBytes, info)
+	info.ID = id
+	info.Expires = getFourYearAfterUTCString()
+	data, _ := json.Marshal(info)
 
 	return &types.PayloadDIDInfo{
 		Header: types.DIDHeaderInfo{
-			Specification: randomString(),
-			Operation:     randomString(),
+			Specification: "elastos/did/1.0",
+			Operation:     getRandomOperation(),
 		},
-		Payload: hex.EncodeToString(didPayloadBytes1),
+		Payload: hex.EncodeToString(data),
 		Proof: types.DIDProofInfo{
 			Type:               randomString(),
 			VerificationMethod: randomString(),
@@ -412,48 +245,74 @@ func randomPayloadDIDNew1() *types.PayloadDIDInfo {
 		PayloadInfo: info,
 	}
 }
-func randomPayloadDIDNew2() *types.PayloadDIDInfo {
-	info := new(types.DIDPayloadInfo)
-	json.Unmarshal(didPayloadBytes2, info)
 
-	return &types.PayloadDIDInfo{
-		Header: types.DIDHeaderInfo{
-			Specification: randomString(),
-			Operation:     randomString(),
-		},
-		Payload: hex.EncodeToString(didPayloadBytes2),
-		Proof: types.DIDProofInfo{
-			Type:               randomString(),
-			VerificationMethod: randomString(),
-			Signature:          randomString(),
-		},
-		PayloadInfo: info,
-	}
+func getFourYearAfterUTCString() string {
+	timeUtc := time.Now().UTC()
+	fourYearLater := timeUtc.AddDate(4, 0, 0)
+	return fourYearLater.Format(time.RFC3339)
 }
-func randomPayloadDIDNew3() *types.PayloadDIDInfo {
-	info := new(types.DIDPayloadInfo)
-	json.Unmarshal(didPayloadBytes3, info)
 
-	return &types.PayloadDIDInfo{
+func getRandomOperation() string {
+	operations := []string{"create", "update"}
+	index := mathrand.Int() % 2
+	return operations[index]
+}
+
+func getDIDPayloadBytes(id string) []byte {
+	return []byte(
+		"{" +
+			"\"id\": \"did:elastos:" + id + "\"," +
+			"\"publicKey\": [{" +
+			"\"id\": \"did:elastos:" + id + "\"," +
+			"\"type\": \"ECDSAsecp256r1\"," +
+			"\"controller\": \"did:elastos:" + id + "\"," +
+			"\"publicKeyBase58\": \"zxt6NyoorFUFMXA8mDBULjnuH3v6iNdZm42PyG4c1YdC\"" +
+			"}]," +
+			"\"authentication\": [" +
+			"\"did:elastos:" + id + "\"" +
+			"]," +
+			"\"authorization\": [" +
+			"\"did:elastos:" + id + "\"" +
+			"]," +
+			"\"expires\": \"2020-08-15T17:00:00Z\"" +
+			"}",
+	)
+}
+
+func getPayloadDIDInfo(id string, didOperation string) *types.PayloadDIDInfo {
+	pBytes := getDIDPayloadBytes(id)
+	info := new(types.DIDPayloadInfo)
+	json.Unmarshal(pBytes, info)
+	p := &types.PayloadDIDInfo{
 		Header: types.DIDHeaderInfo{
-			Specification: randomString(),
-			Operation:     randomString(),
+			Specification: "elastos/did/1.0",
+			Operation:     didOperation,
 		},
-		Payload: hex.EncodeToString(didPayloadBytes3),
+		Payload: hex.EncodeToString(pBytes),
 		Proof: types.DIDProofInfo{
-			Type:               randomString(),
-			VerificationMethod: randomString(),
-			Signature:          randomString(),
+			Type:               "ECDSAsecp256r1",
+			VerificationMethod: "did:elastos:" + id,
 		},
 		PayloadInfo: info,
 	}
+	return p
+}
+
+//didOperation must be create or update
+func getDIDTx(id, didOperation string) *stype.Transaction {
+	payloadDidInfo := getPayloadDIDInfo(id, didOperation)
+	txn := new(stype.Transaction)
+	txn.TxType = types.RegisterDID
+	txn.Payload = payloadDidInfo
+	return txn
 }
 
 func didPayloadEqual(first *types.DIDPayloadInfo, second *types.DIDPayloadInfo) bool {
 	return first.ID == second.ID &&
 		didPublicKeysEqual(first.PublicKey, second.PublicKey) &&
 		didAuthEqual(first.Authentication, second.Authentication) &&
-		didAuthEqual(first.Authorization, second.Authorization)
+		didAuthEqual(first.Authorization, second.Authorization) &&
+		first.Expires == second.Expires
 }
 
 func didPublicKeysEqual(first []types.DIDPublicKeyInfo, second []types.DIDPublicKeyInfo) bool {
