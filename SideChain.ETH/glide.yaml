@@ -140,5 +140,7 @@ testImport:
   - assert
   - require
 - package: gopkg.in/check.v1
+ignore:
+  - github.com/russross/blackfriday/v2
 #ignore:
 #- crypto/ed25519
