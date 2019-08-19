@@ -1,14 +1,7 @@
 import React, { Component } from "react";
 import Dropzone from "react-dropzone";
 
-import {
-  Grid,
-  Row,
-  Col,
-  FormGroup,
-  ControlLabel,
-  FormControl
-} from "react-bootstrap";
+import { Grid, Row, Col, FormGroup } from "react-bootstrap";
 
 import { Card } from "components/Card/Card.jsx";
 import CustomButton from "components/CustomButton/CustomButton.jsx";
@@ -26,9 +19,7 @@ class UserProfile extends Component {
                   <form>
                     <Row>
                       <Col md={12}>
-                        <Dropzone
-                          onDrop={acceptedFiles => console.log(acceptedFiles)}
-                        >
+                        <Dropzone onDrop={acceptedFiles => console.log("test")}>
                           {({ getRootProps, getInputProps }) => (
                             <section>
                               <div {...getRootProps()}>

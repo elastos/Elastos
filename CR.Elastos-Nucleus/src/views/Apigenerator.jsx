@@ -1,8 +1,7 @@
 import React, { Component } from "react";
-import {Grid, Row, Col} from "react-bootstrap";
+import { Grid, Row, Col } from "react-bootstrap";
 import axios from "axios";
-import {baseUrl,headers} from "../utils/api.js"
-
+import { baseUrl } from "../utils/api.js";
 
 class ApiKeygenerator extends Component {
   constructor() {
@@ -16,16 +15,20 @@ class ApiKeygenerator extends Component {
     };
   }
 
-  getApiKeyFromServer(){
-      const endpoint = "common/generateAPIKey";
-      axios.get(baseUrl+endpoint, {
-            //mode: "cors",
-			params: {
-			}
-		}).then((response) => {
-			this.setState({isKeyGenerated:response.data.status === 200, apiKey: response.data["API Key"]})
-            console.log(this.state.apiKey)
-		});
+  getApiKeyFromServer() {
+    const endpoint = "common/generateAPIKey";
+    axios
+      .get(baseUrl + endpoint, {
+        //mode: "cors",
+        params: {}
+      })
+      .then(response => {
+        this.setState({
+          isKeyGenerated: response.data.status === 200,
+          apiKey: response.data["API Key"]
+        });
+        console.log(this.state.apiKey);
+      });
   }
 
   handleClick() {
@@ -38,57 +41,32 @@ class ApiKeygenerator extends Component {
 
     } else {
         console.log('key has already been generated. so do not call the api again')
-
     }
-
-    /*this.setState(prevState => ({
-       isKeyGenerated: !prevState.isKeyGenerated,
-    }));*/
   }
-
-
-
-  /*handleOutsideClick(e) {
-    // ignore clicks on the component itself
-    if (this.node.contains(e.target)) {
-      return;
-    }
-
-    this.handleClick();
-  }*/
 
   render() {
     return (
-        <div className="content">
+      <div className="content">
         <Grid fluid>
           <Row>
             <Col lg={6} sm={6}>
-             <div>
-                <button onClick={this.handleClick}>
-                  Generate key
-                </button>
+              <div>
+                <button onClick={this.handleClick}>Generate key</button>
                 {this.state.isKeyGenerated && (
-                    <div>
-                        <textarea value={this.state.apiKey} readOnly>
-
-                        </textarea>
-
-                    </div>
+                  <div>
+                    <textarea value={this.state.apiKey} readOnly />
+                  </div>
                 )}
-            </div>
+              </div>
             </Col>
           </Row>
-
         </Grid>
       </div>
-
     );
   }
 }
 
-export default ApiKeygenerator
-
-
+export default ApiKeygenerator;
 
 /*
 const {render} = ReactDOM;
