@@ -30,15 +30,15 @@ class ApiKeygenerator extends Component {
 
   handleClick() {
       //TODO:
-        //Do we need to generate a new key everytime the button gets clicked?
+        //Do we need to generate a new key every time the button gets clicked?
     if (!this.state.isKeyGenerated) {
 
         //console.log('key has not been generated yet.so call the api to get the key')
         this.getApiKeyFromServer()
-      //document.addEventListener('click', this.handleOutsideClick, false);
+
     } else {
         console.log('key has already been generated. so do not call the api again')
-      //document.removeEventListener('click', this.handleOutsideClick, false);
+
     }
 
     /*this.setState(prevState => ({
