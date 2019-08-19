@@ -25,6 +25,13 @@ const sidebarRoutes = [
     layout: "/admin"
   },
   {
+    path: "/show-file-content",
+    name: "Show File Content",
+    icon: "pe-7s-tools",
+    component: ShowFileContent,
+    layout: "/admin"
+  },
+  {
     path: "/upload-and-sign",
     name: "Upload and Sign",
     icon: "pe-7s-tools",
@@ -32,10 +39,10 @@ const sidebarRoutes = [
     layout: "/admin"
   },
   {
-    path: "/show-file-content",
-    name: "Show File Content",
+    path: "/servicefour",
+    name: "Verify and Show Content",
     icon: "pe-7s-tools",
-    component: ShowFileContent,
+    component: ServiceFour,
     layout: "/admin"
   },
   {
@@ -50,13 +57,6 @@ const sidebarRoutes = [
     name: "Verify A Message",
     icon: "pe-7s-tools",
     component: ServiceThree,
-    layout: "/admin"
-  },
-  {
-    path: "/servicefour",
-    name: "Verify and Show Content",
-    icon: "pe-7s-tools",
-    component: ServiceFour,
     layout: "/admin"
   },
   {

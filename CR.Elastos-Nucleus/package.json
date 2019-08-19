@@ -5,7 +5,7 @@
   "dependencies": {
     "@tenon-io/tenon-codeblock": "^1.0.0",
     "axios": "^0.19.0",
-    "bootstrap": "3.3.7",
+    "bootstrap": "3.4.0",
     "chartist": "0.10.1",
     "node-sass": "4.12.0",
     "react": "16.8.6",
