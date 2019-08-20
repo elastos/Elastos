@@ -25,5 +25,6 @@ import:
 - package: github.com/yuin/gopher-lua
 - package: gopkg.in/cheggaaa/pb.v1
 - package: gopkg.in/yaml.v2
+- package: github.com/btcsuite/btcd/wire
 ignore:
   - github.com/russross/blackfriday/v2

@@ -1,6 +1,8 @@
-// Copyright (c) 2015-2016 The btcsuite developers
-// Use of this source code is governed by an ISC
+// Copyright (c) 2013-2016 The btcsuite developers
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
+//
 
 // This file contains the implementation functions for reading, writing, and
 // otherwise working with the flat files that house the actual blocks.
@@ -17,10 +19,10 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/btcsuite/btcd/wire"
-
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/database"
+
+	"github.com/btcsuite/btcd/wire"
 )
 
 const (

@@ -127,19 +127,8 @@ func benchBegin() *BlockChain {
 	originAddress = FoundationAddress
 	FoundationAddress = params.Foundation
 
-	arbiters, err := state.NewArbitrators(params,
-		chainStore.GetHeight, func(height uint32) (*types.Block, error) {
-			hash, err := chainStore.GetBlockHash(height)
-			if err != nil {
-				return nil, err
-			}
-			block, err := chainStore.GetBlock(hash)
-			if err != nil {
-				return nil, err
-			}
-			CalculateTxsFee(block)
-			return block, nil
-		}, func(programHash common.Uint168) (common.Fixed64,
+	arbiters, _ := state.NewArbitrators(params,
+		func(programHash common.Uint168) (common.Fixed64,
 			error) {
 			amount := common.Fixed64(0)
 			utxos, err := DefaultLedger.Store.
@@ -152,8 +141,20 @@ func benchBegin() *BlockChain {
 			}
 			return amount, nil
 		})
+	arbiters.RegisterFunction(chainStore.GetHeight, func(height uint32) (*types.Block, error) {
+		hash, err := chainStore.GetBlockHash(height)
+		if err != nil {
+			return nil, err
+		}
+		block, err := chainStore.GetBlock(hash)
+		if err != nil {
+			return nil, err
+		}
+		CalculateTxsFee(block)
+		return block, nil
+	})
 
-	chain, _ := New(chainStore, params, arbiters.State, nil)
+	chain, _, _ := New(chainStore, params, arbiters.State, nil)
 	originLedger = DefaultLedger
 	DefaultLedger = &Ledger{
 		Blockchain:  chain,
