@@ -27,6 +27,7 @@ class ApiKeygenerator extends Component {
           isKeyGenerated: response.data.status === 200,
           apiKey: response.data["API Key"]
         });
+        window.apiKey = this.state.apiKey
         console.log(this.state.apiKey);
       });
   }

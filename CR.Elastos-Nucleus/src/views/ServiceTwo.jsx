@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import Dropzone from "react-dropzone";
+
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { gruvboxDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
@@ -15,23 +15,11 @@ class UserProfile extends Component {
           <Row>
             <Col md={12}>
               <Card
-                title="Upload Files"
+                title="Sign a Message"
                 content={
                   <form>
                     <Row>
                       <Col md={12}>
-                        <Dropzone
-                          onDrop={acceptedFiles => console.log("test1")}
-                        >
-                          {({ getRootProps, getInputProps }) => (
-                            <section>
-                              <div {...getRootProps()}>
-                                <input {...getInputProps()} />
-                                <p>Select or Drop your file here</p>
-                              </div>
-                            </section>
-                          )}
-                        </Dropzone>
                       </Col>
                     </Row>
                     <div className="clearfix" />
