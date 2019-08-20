@@ -34,4 +34,18 @@ Now let’s set up the app for development and start it:
 (venv) $ python master_api_service/app.py
 ```
 
+## PostgreSQL Setup
+Step 1: Install PostgreSQL server 11.3
+
+Step 2: Create a database name 'elastos_console'
+
+Step 3: Start the PostgreSQL Server
+
+```
+pg_ctl -D /usr/local/var/postgres start
+```
+
+Step 4: Execute the create table scripts at master-api-service/scripts/elastos_console_create_scripts.sql
+
+Step 5: Execute the insert scripts at master-api-service/scripts/elastos_insert_script.sql
 
