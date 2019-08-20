@@ -538,6 +538,7 @@ func (c *ChainStore) persist(b *Block, node *BlockNode,
 	if err := c.persistConfirm(confirm); err != nil {
 		return err
 	}
+	// todo save genesis block at same time
 	if b.Height != 0 {
 		if err := c.fflDB.SaveBlock(b, node, confirm, medianTimePast); err != nil {
 			return err

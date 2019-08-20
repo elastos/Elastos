@@ -1,6 +1,8 @@
-// Copyright (c) 2015-2016 The btcsuite developers
-// Use of this source code is governed by an ISC
+// Copyright (c) 2013-2016 The btcsuite developers
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
+//
 
 /*
 Package treap implements a treap data structure that is used to hold ordered
