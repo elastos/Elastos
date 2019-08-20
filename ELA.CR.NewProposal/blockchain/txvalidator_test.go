@@ -52,7 +52,7 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	if err != nil {
 		s.Error(err)
 	}
-	s.Chain, err = New(chainStore, params,
+	s.Chain, _, err = New(chainStore, params,
 		state.NewState(params, nil, nil),
 		crstate.NewCommittee(params))
 	if err != nil {
@@ -62,16 +62,18 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	s.OriginalLedger = DefaultLedger
 
 	arbiters, err := state.NewArbitrators(params,
-		chainStore.GetHeight, func(height uint32) (*types.Block, error) {
+		nil)
+	if err != nil {
+		s.Fail("initialize arbitrator failed")
+	}
+	arbiters.RegisterFunction(chainStore.GetHeight,
+		func(height uint32) (*types.Block, error) {
 			hash, err := chainStore.GetBlockHash(height)
 			if err != nil {
 				return nil, err
 			}
 			return chainStore.GetBlock(hash)
-		}, nil)
-	if err != nil {
-		s.Fail("initialize arbitrator failed")
-	}
+		})
 	DefaultLedger = &Ledger{Arbitrators: arbiters}
 }
 

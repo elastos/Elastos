@@ -441,6 +441,14 @@ func (tx *Transaction) IsCoinBaseTx() bool {
 	return tx.TxType == CoinBase
 }
 
+// SerializeSizeStripped returns the number of bytes it would take to serialize
+// the block, excluding any witness data (if any).
+func  (tx *Transaction) SerializeSizeStripped() int {
+	// todo add cache for size according to btcd
+	return tx.GetSize()
+}
+
+
 // Payload define the func for loading the payload data
 // base on payload type which have different structure
 type Payload interface {

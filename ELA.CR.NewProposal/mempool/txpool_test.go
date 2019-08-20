@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package mempool
 
@@ -64,7 +64,7 @@ func TestTxPoolInit(t *testing.T) {
 	}
 	arbitrators := state.NewArbitratorsMock(arbitersByte, 0, 3)
 
-	chain, err := blockchain.New(chainStore, params, state.NewState(params,
+	chain, _, err := blockchain.New(chainStore, params, state.NewState(params,
 		nil, nil), nil)
 	if err != nil {
 		t.Fatal(err, "BlockChain generate failed")
