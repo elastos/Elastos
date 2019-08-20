@@ -123,7 +123,7 @@ class UserProfile extends Component {
                             rows="3"
                             componentClass="textarea"
                             bsClass="form-control"
-                            name="pubKey"
+                            name="sign"
                             placeholder="Enter your signature here"
                             value = {this.state.inputs.sign.value}
                             onChange = {this.changeHandler}
