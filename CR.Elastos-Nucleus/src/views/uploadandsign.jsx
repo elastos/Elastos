@@ -15,7 +15,7 @@ class UserProfile extends Component {
           <Row>
             <Col md={12}>
               <Card
-                title="Upload Files"
+                title="Upload File and Sign"
                 content={
                   <form>
                     <Row>

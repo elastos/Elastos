@@ -15,7 +15,7 @@ class UserProfile extends Component {
           <Row>
             <Col md={12}>
               <Card
-                title="Upload Files"
+                title="Demostration of ELA Transfer"
                 content={
                   <form>
                     <Row>
@@ -111,7 +111,7 @@ Content-Type: application/json
                     <Row>
                       <Col md={12}>
                         <SyntaxHighlighter language="jsx" style={gruvboxDark}>
-                          {`api_key = request.headers.get('api_key')
+                          {`    api_key = request.headers.get('api_key')
     api_status = validate_api_key(api_key)
     if not api_status:
       data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
