@@ -249,7 +249,7 @@ func (c *ChainStore) RollbackUnspendUTXOs(b *Block) error {
 				var err error
 				unspendUTXOs[programHash][assetID][height], err = c.GetUnspentElementFromProgramHash(programHash, assetID, height)
 				if err != nil {
-					return errors.New(fmt.Sprintf("[persist] UTXOs programHash:%v, assetID:%v has no unspent UTXO.", programHash, assetID))
+					fmt.Println(fmt.Sprintf("[persist] UTXOs programHash:%v, assetID:%v has no unspent UTXO.", programHash, assetID))
 				}
 			}
 			u := UTXO{
