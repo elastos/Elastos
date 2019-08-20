@@ -171,15 +171,14 @@ private func onFriendRemoved(_: OpaquePointer?,
 
 private func onFriendMessage(_: OpaquePointer?, cfrom: UnsafePointer<Int8>?,
                              cmessage: UnsafePointer<Int8>?, len : Int,
-                             cctxt: UnsafeMutableRawPointer?) {
-    
+                             isOffline: CBool?, cctxt: UnsafeMutableRawPointer?) {
     let carrier = getCarrier(cctxt!)
     let handler = carrier.delegate!
     
     let from = String(cString: cfrom!)
     let msg  = Data(bytes: cmessage!, count: len)
-    
-    handler.didReceiveFriendMessage?(carrier, from, msg)
+
+    handler.didReceiveFriendMessage?(carrier, from, msg, isOffline ?? false)
 }
 
 private func onFriendInvite(_: OpaquePointer?, cfrom: UnsafePointer<Int8>?,

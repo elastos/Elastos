@@ -159,6 +159,61 @@ extern "C" {
  */
 typedef struct ElaCarrier ElaCarrier;
 
+/**
+ * \~English
+ * Carrier log level to control or filter log output.
+ */
+typedef enum ElaLogLevel {
+    /**
+     * \~English
+     * Log level None
+     * Indicate disable log output.
+     */
+    ElaLogLevel_None = 0,
+    /**
+     * \~English
+     * Log level fatal.
+     * Indicate output log with level 'Fatal' only.
+     */
+    ElaLogLevel_Fatal = 1,
+    /**
+     * \~English
+     * Log level error.
+     * Indicate output log above 'Error' level.
+     */
+    ElaLogLevel_Error = 2,
+    /**
+     * \~English
+     * Log level warning.
+     * Indicate output log above 'Warning' level.
+     */
+    ElaLogLevel_Warning = 3,
+    /**
+     * \~English
+     * Log level info.
+     * Indicate output log above 'Info' level.
+     */
+    ElaLogLevel_Info = 4,
+    /*
+     * \~English
+     * Log level debug.
+     * Indicate output log above 'Debug' level.
+     */
+    ElaLogLevel_Debug = 5,
+    /*
+     * \~English
+     * Log level trace.
+     * Indicate output log above 'Trace' level.
+     */
+    ElaLogLevel_Trace = 6,
+    /*
+     * \~English
+     * Log level verbose.
+     * Indicate output log above 'Verbose' level.
+     */
+    ElaLogLevel_Verbose = 7
+} ElaLogLevel;
+
 /******************************************************************************
  * Creation & destruction
  *****************************************************************************/
@@ -249,7 +304,28 @@ typedef struct ElaOptions {
 
     /**
      * \~English
-     * The total number of DHT bootstrap nodes to connect.
+     * Set the log level for Carrier logging output.
+     */
+    ElaLogLevel log_level;
+
+    /**
+     * \~English
+     * Set all logging messages from Carrier output to logfile.
+     * Default is NULL, all the logging message will output to stdout.
+     */
+    char *log_file;
+
+    /**
+     * \~English
+     * Set a customized log printer, all logging messages from Carrier
+     * will also output to this printer.
+     * Default is NULL.
+     */
+    void (*log_printer)(const char *format, va_list args);
+
+    /**
+     * \~English
+     * The total number of bootstrap nodes to connect.
      * There must have at least one bootstrap node for the very first time
      * to create carrier instance.
      */
@@ -282,61 +358,6 @@ typedef struct ElaOptions {
  */
 CARRIER_API
 const char *ela_get_version(void);
-
-/**
- * \~English
- * Carrier log level to control or filter log output.
- */
-typedef enum ElaLogLevel {
-    /**
-     * \~English
-     * Log level None
-     * Indicate disable log output.
-     */
-    ElaLogLevel_None = 0,
-    /**
-     * \~English
-     * Log level fatal.
-     * Indicate output log with level 'Fatal' only.
-     */
-    ElaLogLevel_Fatal = 1,
-    /**
-     * \~English
-     * Log level error.
-     * Indicate output log above 'Error' level.
-     */
-    ElaLogLevel_Error = 2,
-    /**
-     * \~English
-     * Log level warning.
-     * Indicate output log above 'Warning' level.
-     */
-    ElaLogLevel_Warning = 3,
-    /**
-     * \~English
-     * Log level info.
-     * Indicate output log above 'Info' level.
-     */
-    ElaLogLevel_Info = 4,
-    /*
-     * \~English
-     * Log level debug.
-     * Indicate output log above 'Debug' level.
-     */
-    ElaLogLevel_Debug = 5,
-    /*
-     * \~English
-     * Log level trace.
-     * Indicate output log above 'Trace' level.
-     */
-    ElaLogLevel_Trace = 6,
-    /*
-     * \~English
-     * Log level verbose.
-     * Indicate output log above 'Verbose' level.
-     */
-    ElaLogLevel_Verbose = 7
-} ElaLogLevel;
 
 /**
  * \~English
@@ -767,10 +788,13 @@ typedef struct ElaCallbacks {
      * @param
      *      len         [in] The message length in bytes.
      * @param
+     *      is_offline  [in] Which method does the sender use to send this message:
+     *                       true, offline; false, online.
+     * @param
      *      context     [in] The application defined context data.
      */
     void (*friend_message)(ElaCarrier *carrier, const char *from,
-                           const void *msg, size_t len, void *context);
+                           const void *msg, size_t len, bool is_offline, void *context);
 
     /**
      * \~English
@@ -1320,6 +1344,10 @@ int ela_remove_friend(ElaCarrier *carrier, const char *userid);
  *      msg         [in] The message content defined by application.
  * @param
  *      len         [in] The message length in bytes.
+ * @param
+ *      is_offline  [out] Whether the target user is offline when the message
+ *                        is sent: true, offline; false, online. This pointer
+ *                        can be NULL.
  *
  * @return
  *      0 if the text message successfully sent.
@@ -1328,7 +1356,7 @@ int ela_remove_friend(ElaCarrier *carrier, const char *userid);
  */
 CARRIER_API
 int ela_send_friend_message(ElaCarrier *carrier, const char *to,
-                            const void *msg, size_t len);
+                            const void *msg, size_t len, bool *is_offline);
 
 /**
  * \~English

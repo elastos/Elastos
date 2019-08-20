@@ -21,39 +21,29 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		111E0C572302CB4200167953 /* libcrystal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A4226F1C6300146D25 /* libcrystal.a */; };
-		111E0C582302CB4200167953 /* libelacarrier.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A5226F1C6300146D25 /* libelacarrier.a */; };
-		111E0C592302CB4200167953 /* libelafiletrans.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A1226F1C6300146D25 /* libelafiletrans.a */; };
-		111E0C5A2302CB4200167953 /* libelasession.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A2226F1C6300146D25 /* libelasession.a */; };
-		111E0C5B2302CB4200167953 /* libflatccrt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A09F226F1C6300146D25 /* libflatccrt.a */; };
-		111E0C5C2302CB4200167953 /* libpj.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A7226F1C6300146D25 /* libpj.a */; };
-		111E0C5D2302CB4200167953 /* libpjlib-util.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A6226F1C6300146D25 /* libpjlib-util.a */; };
-		111E0C5E2302CB4200167953 /* libpjmedia.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A09E226F1C6300146D25 /* libpjmedia.a */; };
-		111E0C5F2302CB4200167953 /* libpjnath.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A8226F1C6300146D25 /* libpjnath.a */; };
-		111E0C602302CB4200167953 /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A3226F1C6300146D25 /* libsodium.a */; };
-		111E0C612302CB4200167953 /* libsrtp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0B4226F1CFD00146D25 /* libsrtp.a */; };
-		111E0C622302CB4200167953 /* libtoxcore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A0226F1C6300146D25 /* libtoxcore.a */; };
-		111E0C672302CB4300167953 /* libhive-api++.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 111E0C632302CB4300167953 /* libhive-api++.a */; };
-		111E0C682302CB4300167953 /* libhive-api.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 111E0C642302CB4300167953 /* libhive-api.a */; };
-		111E0C692302CB4300167953 /* libcurl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 111E0C652302CB4300167953 /* libcurl.a */; };
-		111E0C6A2302CB4300167953 /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 111E0C662302CB4300167953 /* libz.a */; };
-		111E0C6E2302CB5000167953 /* libc++.1.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 111E0C6B2302CB4F00167953 /* libc++.1.tbd */; };
-		111E0C6F2302CB5000167953 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 111E0C6C2302CB4F00167953 /* libc++.tbd */; };
-		111E0C702302CB5000167953 /* libc++abi.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 111E0C6D2302CB4F00167953 /* libc++abi.tbd */; };
-		1155FC6122815C4E00F8E6A0 /* libc++.1.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155FC5E22815C4E00F8E6A0 /* libc++.1.tbd */; };
-		1155FC6222815C4E00F8E6A0 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155FC5F22815C4E00F8E6A0 /* libc++.tbd */; };
-		1155FC6322815C4E00F8E6A0 /* libc++abi.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155FC6022815C4E00F8E6A0 /* libc++abi.tbd */; };
-		1155FC6622815C8100F8E6A0 /* libhive-api.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155FC6422815C8100F8E6A0 /* libhive-api.a */; };
-		1155FC6722815C8100F8E6A0 /* libhive-api++.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155FC6522815C8100F8E6A0 /* libhive-api++.a */; };
-		1155FC6922815C8D00F8E6A0 /* libcurl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155FC6822815C8D00F8E6A0 /* libcurl.a */; };
-		1155FC6B22815C9800F8E6A0 /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155FC6A22815C9800F8E6A0 /* libz.a */; };
+		1155A256230BE2C400381137 /* libcrystal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A4226F1C6300146D25 /* libcrystal.a */; };
+		1155A257230BE2C400381137 /* libcurl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 111E0C652302CB4300167953 /* libcurl.a */; };
+		1155A258230BE2C400381137 /* libelacarrier.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A5226F1C6300146D25 /* libelacarrier.a */; };
+		1155A259230BE2C400381137 /* libelafiletrans.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A1226F1C6300146D25 /* libelafiletrans.a */; };
+		1155A25A230BE2C400381137 /* libelasession.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A2226F1C6300146D25 /* libelasession.a */; };
+		1155A25B230BE2C400381137 /* libflatccrt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A09F226F1C6300146D25 /* libflatccrt.a */; };
+		1155A25C230BE2C400381137 /* libhive-api.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 111E0C642302CB4300167953 /* libhive-api.a */; };
+		1155A25D230BE2C400381137 /* libpj.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A7226F1C6300146D25 /* libpj.a */; };
+		1155A25E230BE2C400381137 /* libpjlib-util.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A6226F1C6300146D25 /* libpjlib-util.a */; };
+		1155A25F230BE2C400381137 /* libpjmedia.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A09E226F1C6300146D25 /* libpjmedia.a */; };
+		1155A260230BE2C400381137 /* libpjnath.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A8226F1C6300146D25 /* libpjnath.a */; };
+		1155A261230BE2C400381137 /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A3226F1C6300146D25 /* libsodium.a */; };
+		1155A262230BE2C400381137 /* libsrtp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0B4226F1CFD00146D25 /* libsrtp.a */; };
+		1155A263230BE2C400381137 /* libtoxcore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A0226F1C6300146D25 /* libtoxcore.a */; };
+		1155A266230BE2C500381137 /* libhive-api++.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155A264230BE2C500381137 /* libhive-api++.a */; };
+		1155A267230BE2C500381137 /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155A265230BE2C500381137 /* libz.a */; };
+		1155A26B230BE2CF00381137 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155A268230BE2CE00381137 /* libc++.tbd */; };
+		1155A26C230BE2CF00381137 /* libc++.1.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155A269230BE2CE00381137 /* libc++.1.tbd */; };
+		1155A26D230BE2CF00381137 /* libc++abi.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155A26A230BE2CF00381137 /* libc++abi.tbd */; };
 		116061DB2268AB4A00BDCB9F /* ElastosCarrierSDK_macOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 116061D92268AB4A00BDCB9F /* ElastosCarrierSDK_macOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		116061DF2268AB6900BDCB9F /* CFileTransfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15B21BD43CF00AF4FE3 /* CFileTransfer.swift */; };
 		116061E02268AB6E00BDCB9F /* CCarrier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497F32003779300420421 /* CCarrier.swift */; };
 		116061E12268AB7100BDCB9F /* CSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497F22003779300420421 /* CSession.swift */; };
-		116061E22268AB7800BDCB9F /* ela_filetransfer.h in Headers */ = {isa = PBXBuildFile; fileRef = A35CE15921BD42B200AF4FE3 /* ela_filetransfer.h */; };
-		116061E32268AB7C00BDCB9F /* ela_carrier.h in Headers */ = {isa = PBXBuildFile; fileRef = A3B497D62003759400420421 /* ela_carrier.h */; };
-		116061E42268AB8000BDCB9F /* ela_session.h in Headers */ = {isa = PBXBuildFile; fileRef = A3B497D52003759400420421 /* ela_session.h */; };
 		116061E52268AB9300BDCB9F /* CarrierError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B498162003B3AE00420421 /* CarrierError.swift */; };
 		116061E62268AB9800BDCB9F /* CarrierGroupDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15421BBCDD200AF4FE3 /* CarrierGroupDelegate.swift */; };
 		116061E72268AB9C00BDCB9F /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15121BB4F3B00AF4FE3 /* Group.swift */; };
@@ -87,11 +77,35 @@
 		116062032268AC1800BDCB9F /* Base58.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497F82003B39800420421 /* Base58.swift */; };
 		116062042268AC1C00BDCB9F /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497F72003B39800420421 /* Log.swift */; };
 		116062052268AC2000BDCB9F /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497F62003B39800420421 /* String.swift */; };
+		11612D4D22F12978001179CD /* libcrystal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11612D3D22F12977001179CD /* libcrystal.a */; };
+		11612D4E22F12978001179CD /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11612D3E22F12977001179CD /* libz.a */; };
+		11612D4F22F12978001179CD /* libpjmedia.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11612D3F22F12977001179CD /* libpjmedia.a */; };
+		11612D5022F12978001179CD /* libpj.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11612D4022F12977001179CD /* libpj.a */; };
+		11612D5122F12978001179CD /* libelafiletrans.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11612D4122F12977001179CD /* libelafiletrans.a */; };
+		11612D5222F12978001179CD /* libsrtp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11612D4222F12977001179CD /* libsrtp.a */; };
+		11612D5322F12978001179CD /* libelasession.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11612D4322F12977001179CD /* libelasession.a */; };
+		11612D5422F12978001179CD /* libflatccrt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11612D4422F12977001179CD /* libflatccrt.a */; };
+		11612D5522F12978001179CD /* libelacarrier.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11612D4522F12978001179CD /* libelacarrier.a */; };
+		11612D5622F12978001179CD /* libhive-api++.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11612D4622F12978001179CD /* libhive-api++.a */; };
+		11612D5722F12978001179CD /* libpjlib-util.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11612D4722F12978001179CD /* libpjlib-util.a */; };
+		11612D5822F12978001179CD /* libhive-api.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11612D4822F12978001179CD /* libhive-api.a */; };
+		11612D5922F12978001179CD /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11612D4922F12978001179CD /* libsodium.a */; };
+		11612D5A22F12978001179CD /* libtoxcore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11612D4A22F12978001179CD /* libtoxcore.a */; };
+		11612D5B22F12978001179CD /* libcurl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11612D4B22F12978001179CD /* libcurl.a */; };
+		11612D5C22F12978001179CD /* libpjnath.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11612D4C22F12978001179CD /* libpjnath.a */; };
+		11612D5D22F12984001179CD /* libc++.1.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155FC5E22815C4E00F8E6A0 /* libc++.1.tbd */; };
+		11612D5E22F12984001179CD /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155FC5F22815C4E00F8E6A0 /* libc++.tbd */; };
+		11612D5F22F12984001179CD /* libc++abi.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155FC6022815C4E00F8E6A0 /* libc++abi.tbd */; };
+		11612D8922F1722D001179CD /* ela_carrier.h in Headers */ = {isa = PBXBuildFile; fileRef = 11612D8622F1722D001179CD /* ela_carrier.h */; };
+		11612D8A22F1722D001179CD /* ela_carrier.h in Headers */ = {isa = PBXBuildFile; fileRef = 11612D8622F1722D001179CD /* ela_carrier.h */; };
+		11612D8B22F1722D001179CD /* ela_session.h in Headers */ = {isa = PBXBuildFile; fileRef = 11612D8722F1722D001179CD /* ela_session.h */; };
+		11612D8C22F1722D001179CD /* ela_session.h in Headers */ = {isa = PBXBuildFile; fileRef = 11612D8722F1722D001179CD /* ela_session.h */; };
+		11612D8D22F1722D001179CD /* ela_filetransfer.h in Headers */ = {isa = PBXBuildFile; fileRef = 11612D8822F1722D001179CD /* ela_filetransfer.h */; };
+		11612D8E22F1722D001179CD /* ela_filetransfer.h in Headers */ = {isa = PBXBuildFile; fileRef = 11612D8822F1722D001179CD /* ela_filetransfer.h */; };
 		A35CE15221BB4F3C00AF4FE3 /* GroupPeer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15021BB4F3B00AF4FE3 /* GroupPeer.swift */; };
 		A35CE15321BB4F3C00AF4FE3 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15121BB4F3B00AF4FE3 /* Group.swift */; };
 		A35CE15521BBCDD200AF4FE3 /* CarrierGroupDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15421BBCDD200AF4FE3 /* CarrierGroupDelegate.swift */; };
 		A35CE15821BD428B00AF4FE3 /* FileTransferManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15721BD428B00AF4FE3 /* FileTransferManager.swift */; };
-		A35CE15A21BD42B200AF4FE3 /* ela_filetransfer.h in Headers */ = {isa = PBXBuildFile; fileRef = A35CE15921BD42B200AF4FE3 /* ela_filetransfer.h */; };
 		A35CE15C21BD43CF00AF4FE3 /* CFileTransfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15B21BD43CF00AF4FE3 /* CFileTransfer.swift */; };
 		A35CE15E21BE0D7200AF4FE3 /* FileTransferInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15D21BE0D7200AF4FE3 /* FileTransferInfo.swift */; };
 		A35CE16021BE413000AF4FE3 /* FileTransfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15F21BE413000AF4FE3 /* FileTransfer.swift */; };
@@ -101,8 +115,6 @@
 		A3B497C12003736300420421 /* ElastosCarrierSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B497B72003736200420421 /* ElastosCarrierSDK.framework */; };
 		A3B497C62003736300420421 /* ElastosCarrierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497C52003736300420421 /* ElastosCarrierTests.swift */; };
 		A3B497C82003736300420421 /* ElastosCarrierSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = A3B497BA2003736300420421 /* ElastosCarrierSDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		A3B497D72003759400420421 /* ela_session.h in Headers */ = {isa = PBXBuildFile; fileRef = A3B497D52003759400420421 /* ela_session.h */; };
-		A3B497D82003759400420421 /* ela_carrier.h in Headers */ = {isa = PBXBuildFile; fileRef = A3B497D62003759400420421 /* ela_carrier.h */; };
 		A3B497E82003763600420421 /* LogLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497DE2003763500420421 /* LogLevel.swift */; };
 		A3B497E92003763600420421 /* FriendInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497DF2003763500420421 /* FriendInfo.swift */; };
 		A3B497EB2003763600420421 /* UserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497E12003763500420421 /* UserInfo.swift */; };
@@ -129,17 +141,6 @@
 		A3B498142003B3A500420421 /* NetworkTopology.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B498072003B3A400420421 /* NetworkTopology.swift */; };
 		A3B498172003B3AF00420421 /* CarrierError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B498162003B3AE00420421 /* CarrierError.swift */; };
 		A3B4981920045F0A00420421 /* PresenceStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B4981820045F0A00420421 /* PresenceStatus.swift */; };
-		A3FB995E225ED83400C4361A /* libcrystal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3D41F4B225B7C330000D1A7 /* libcrystal.a */; };
-		A3FB995F225ED83400C4361A /* libelacarrier.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3D41F48225B7C320000D1A7 /* libelacarrier.a */; };
-		A3FB9960225ED83400C4361A /* libelafiletrans.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3D41F4E225B7C330000D1A7 /* libelafiletrans.a */; };
-		A3FB9961225ED83400C4361A /* libelasession.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3D41F51225B7C330000D1A7 /* libelasession.a */; };
-		A3FB9962225ED83400C4361A /* libflatccrt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3D41F4F225B7C330000D1A7 /* libflatccrt.a */; };
-		A3FB9963225ED83400C4361A /* libpj.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3D41F4D225B7C330000D1A7 /* libpj.a */; };
-		A3FB9964225ED83400C4361A /* libpjlib-util.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3D41F4C225B7C330000D1A7 /* libpjlib-util.a */; };
-		A3FB9965225ED83400C4361A /* libpjmedia.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3D41F50225B7C330000D1A7 /* libpjmedia.a */; };
-		A3FB9966225ED83400C4361A /* libpjnath.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3D41F49225B7C330000D1A7 /* libpjnath.a */; };
-		A3FB9967225ED83400C4361A /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3D41F4A225B7C330000D1A7 /* libsodium.a */; };
-		A3FB9968225ED83400C4361A /* libtoxcore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3D41F52225B7C330000D1A7 /* libtoxcore.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -153,13 +154,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		111E0C632302CB4300167953 /* libhive-api++.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libhive-api++.a"; path = "NativeDistributions/lib/macosx/libhive-api++.a"; sourceTree = "<group>"; };
 		111E0C642302CB4300167953 /* libhive-api.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libhive-api.a"; path = "NativeDistributions/lib/macosx/libhive-api.a"; sourceTree = "<group>"; };
 		111E0C652302CB4300167953 /* libcurl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcurl.a; path = NativeDistributions/lib/macosx/libcurl.a; sourceTree = "<group>"; };
-		111E0C662302CB4300167953 /* libz.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libz.a; path = NativeDistributions/lib/macosx/libz.a; sourceTree = "<group>"; };
-		111E0C6B2302CB4F00167953 /* libc++.1.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.1.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk/usr/lib/libc++.1.tbd"; sourceTree = DEVELOPER_DIR; };
-		111E0C6C2302CB4F00167953 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk/usr/lib/libc++.tbd"; sourceTree = DEVELOPER_DIR; };
-		111E0C6D2302CB4F00167953 /* libc++abi.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++abi.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk/usr/lib/libc++abi.tbd"; sourceTree = DEVELOPER_DIR; };
+		1155A264230BE2C500381137 /* libhive-api++.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libhive-api++.a"; path = "NativeDistributions/lib/macosx/libhive-api++.a"; sourceTree = "<group>"; };
+		1155A265230BE2C500381137 /* libz.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libz.a; path = NativeDistributions/lib/macosx/libz.a; sourceTree = "<group>"; };
+		1155A268230BE2CE00381137 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk/usr/lib/libc++.tbd"; sourceTree = DEVELOPER_DIR; };
+		1155A269230BE2CE00381137 /* libc++.1.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.1.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk/usr/lib/libc++.1.tbd"; sourceTree = DEVELOPER_DIR; };
+		1155A26A230BE2CF00381137 /* libc++abi.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++abi.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk/usr/lib/libc++abi.tbd"; sourceTree = DEVELOPER_DIR; };
 		1155FC5E22815C4E00F8E6A0 /* libc++.1.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.1.tbd"; path = "usr/lib/libc++.1.tbd"; sourceTree = SDKROOT; };
 		1155FC5F22815C4E00F8E6A0 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		1155FC6022815C4E00F8E6A0 /* libc++abi.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++abi.tbd"; path = "usr/lib/libc++abi.tbd"; sourceTree = SDKROOT; };
@@ -170,11 +171,29 @@
 		116061D72268AB4A00BDCB9F /* ElastosCarrierSDK_macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ElastosCarrierSDK_macOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		116061D92268AB4A00BDCB9F /* ElastosCarrierSDK_macOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ElastosCarrierSDK_macOS.h; sourceTree = "<group>"; };
 		116061DA2268AB4A00BDCB9F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		11612D3D22F12977001179CD /* libcrystal.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrystal.a; path = "NativeDistributions/lib/-iphonesimulator/libcrystal.a"; sourceTree = "<group>"; };
+		11612D3E22F12977001179CD /* libz.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libz.a; path = "NativeDistributions/lib/-iphonesimulator/libz.a"; sourceTree = "<group>"; };
+		11612D3F22F12977001179CD /* libpjmedia.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpjmedia.a; path = "NativeDistributions/lib/-iphonesimulator/libpjmedia.a"; sourceTree = "<group>"; };
+		11612D4022F12977001179CD /* libpj.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpj.a; path = "NativeDistributions/lib/-iphonesimulator/libpj.a"; sourceTree = "<group>"; };
+		11612D4122F12977001179CD /* libelafiletrans.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libelafiletrans.a; path = "NativeDistributions/lib/-iphonesimulator/libelafiletrans.a"; sourceTree = "<group>"; };
+		11612D4222F12977001179CD /* libsrtp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsrtp.a; path = "NativeDistributions/lib/-iphonesimulator/libsrtp.a"; sourceTree = "<group>"; };
+		11612D4322F12977001179CD /* libelasession.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libelasession.a; path = "NativeDistributions/lib/-iphonesimulator/libelasession.a"; sourceTree = "<group>"; };
+		11612D4422F12977001179CD /* libflatccrt.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libflatccrt.a; path = "NativeDistributions/lib/-iphonesimulator/libflatccrt.a"; sourceTree = "<group>"; };
+		11612D4522F12978001179CD /* libelacarrier.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libelacarrier.a; path = "NativeDistributions/lib/-iphonesimulator/libelacarrier.a"; sourceTree = "<group>"; };
+		11612D4622F12978001179CD /* libhive-api++.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libhive-api++.a"; path = "NativeDistributions/lib/-iphonesimulator/libhive-api++.a"; sourceTree = "<group>"; };
+		11612D4722F12978001179CD /* libpjlib-util.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libpjlib-util.a"; path = "NativeDistributions/lib/-iphonesimulator/libpjlib-util.a"; sourceTree = "<group>"; };
+		11612D4822F12978001179CD /* libhive-api.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libhive-api.a"; path = "NativeDistributions/lib/-iphonesimulator/libhive-api.a"; sourceTree = "<group>"; };
+		11612D4922F12978001179CD /* libsodium.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsodium.a; path = "NativeDistributions/lib/-iphonesimulator/libsodium.a"; sourceTree = "<group>"; };
+		11612D4A22F12978001179CD /* libtoxcore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtoxcore.a; path = "NativeDistributions/lib/-iphonesimulator/libtoxcore.a"; sourceTree = "<group>"; };
+		11612D4B22F12978001179CD /* libcurl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcurl.a; path = "NativeDistributions/lib/-iphonesimulator/libcurl.a"; sourceTree = "<group>"; };
+		11612D4C22F12978001179CD /* libpjnath.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpjnath.a; path = "NativeDistributions/lib/-iphonesimulator/libpjnath.a"; sourceTree = "<group>"; };
+		11612D8622F1722D001179CD /* ela_carrier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ela_carrier.h; path = NativeDistributions/include/ela_carrier.h; sourceTree = "<group>"; };
+		11612D8722F1722D001179CD /* ela_session.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ela_session.h; path = NativeDistributions/include/ela_session.h; sourceTree = "<group>"; };
+		11612D8822F1722D001179CD /* ela_filetransfer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ela_filetransfer.h; path = NativeDistributions/include/ela_filetransfer.h; sourceTree = "<group>"; };
 		A35CE15021BB4F3B00AF4FE3 /* GroupPeer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GroupPeer.swift; path = Carrier/GroupPeer.swift; sourceTree = "<group>"; };
 		A35CE15121BB4F3B00AF4FE3 /* Group.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Group.swift; path = Carrier/Group.swift; sourceTree = "<group>"; };
 		A35CE15421BBCDD200AF4FE3 /* CarrierGroupDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CarrierGroupDelegate.swift; path = Carrier/CarrierGroupDelegate.swift; sourceTree = "<group>"; };
 		A35CE15721BD428B00AF4FE3 /* FileTransferManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileTransferManager.swift; sourceTree = "<group>"; };
-		A35CE15921BD42B200AF4FE3 /* ela_filetransfer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ela_filetransfer.h; path = NativeDistributions/include/ela_filetransfer.h; sourceTree = "<group>"; };
 		A35CE15B21BD43CF00AF4FE3 /* CFileTransfer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CFileTransfer.swift; path = NativeDistributions/include/CFileTransfer.swift; sourceTree = "<group>"; };
 		A35CE15D21BE0D7200AF4FE3 /* FileTransferInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileTransferInfo.swift; sourceTree = "<group>"; };
 		A35CE15F21BE413000AF4FE3 /* FileTransfer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileTransfer.swift; sourceTree = "<group>"; };
@@ -195,8 +214,6 @@
 		A3B497C02003736300420421 /* ElastosCarrierSDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ElastosCarrierSDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A3B497C52003736300420421 /* ElastosCarrierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElastosCarrierTests.swift; sourceTree = "<group>"; };
 		A3B497C72003736300420421 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		A3B497D52003759400420421 /* ela_session.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ela_session.h; path = NativeDistributions/include/ela_session.h; sourceTree = "<group>"; };
-		A3B497D62003759400420421 /* ela_carrier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ela_carrier.h; path = NativeDistributions/include/ela_carrier.h; sourceTree = "<group>"; };
 		A3B497DE2003763500420421 /* LogLevel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LogLevel.swift; path = Carrier/LogLevel.swift; sourceTree = "<group>"; };
 		A3B497DF2003763500420421 /* FriendInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FriendInfo.swift; path = Carrier/FriendInfo.swift; sourceTree = "<group>"; };
 		A3B497E12003763500420421 /* UserInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = UserInfo.swift; path = Carrier/UserInfo.swift; sourceTree = "<group>"; };
@@ -256,25 +273,25 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				111E0C6E2302CB5000167953 /* libc++.1.tbd in Frameworks */,
-				111E0C6F2302CB5000167953 /* libc++.tbd in Frameworks */,
-				111E0C702302CB5000167953 /* libc++abi.tbd in Frameworks */,
-				111E0C672302CB4300167953 /* libhive-api++.a in Frameworks */,
-				111E0C682302CB4300167953 /* libhive-api.a in Frameworks */,
-				111E0C692302CB4300167953 /* libcurl.a in Frameworks */,
-				111E0C6A2302CB4300167953 /* libz.a in Frameworks */,
-				111E0C572302CB4200167953 /* libcrystal.a in Frameworks */,
-				111E0C582302CB4200167953 /* libelacarrier.a in Frameworks */,
-				111E0C592302CB4200167953 /* libelafiletrans.a in Frameworks */,
-				111E0C5A2302CB4200167953 /* libelasession.a in Frameworks */,
-				111E0C5B2302CB4200167953 /* libflatccrt.a in Frameworks */,
-				111E0C5C2302CB4200167953 /* libpj.a in Frameworks */,
-				111E0C5D2302CB4200167953 /* libpjlib-util.a in Frameworks */,
-				111E0C5E2302CB4200167953 /* libpjmedia.a in Frameworks */,
-				111E0C5F2302CB4200167953 /* libpjnath.a in Frameworks */,
-				111E0C602302CB4200167953 /* libsodium.a in Frameworks */,
-				111E0C612302CB4200167953 /* libsrtp.a in Frameworks */,
-				111E0C622302CB4200167953 /* libtoxcore.a in Frameworks */,
+				1155A26B230BE2CF00381137 /* libc++.tbd in Frameworks */,
+				1155A26C230BE2CF00381137 /* libc++.1.tbd in Frameworks */,
+				1155A26D230BE2CF00381137 /* libc++abi.tbd in Frameworks */,
+				1155A266230BE2C500381137 /* libhive-api++.a in Frameworks */,
+				1155A267230BE2C500381137 /* libz.a in Frameworks */,
+				1155A256230BE2C400381137 /* libcrystal.a in Frameworks */,
+				1155A257230BE2C400381137 /* libcurl.a in Frameworks */,
+				1155A258230BE2C400381137 /* libelacarrier.a in Frameworks */,
+				1155A259230BE2C400381137 /* libelafiletrans.a in Frameworks */,
+				1155A25A230BE2C400381137 /* libelasession.a in Frameworks */,
+				1155A25B230BE2C400381137 /* libflatccrt.a in Frameworks */,
+				1155A25C230BE2C400381137 /* libhive-api.a in Frameworks */,
+				1155A25D230BE2C400381137 /* libpj.a in Frameworks */,
+				1155A25E230BE2C400381137 /* libpjlib-util.a in Frameworks */,
+				1155A25F230BE2C400381137 /* libpjmedia.a in Frameworks */,
+				1155A260230BE2C400381137 /* libpjnath.a in Frameworks */,
+				1155A261230BE2C400381137 /* libsodium.a in Frameworks */,
+				1155A262230BE2C400381137 /* libsrtp.a in Frameworks */,
+				1155A263230BE2C400381137 /* libtoxcore.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -282,24 +299,25 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1155FC6B22815C9800F8E6A0 /* libz.a in Frameworks */,
-				1155FC6922815C8D00F8E6A0 /* libcurl.a in Frameworks */,
-				1155FC6622815C8100F8E6A0 /* libhive-api.a in Frameworks */,
-				1155FC6722815C8100F8E6A0 /* libhive-api++.a in Frameworks */,
-				1155FC6122815C4E00F8E6A0 /* libc++.1.tbd in Frameworks */,
-				1155FC6222815C4E00F8E6A0 /* libc++.tbd in Frameworks */,
-				1155FC6322815C4E00F8E6A0 /* libc++abi.tbd in Frameworks */,
-				A3FB995E225ED83400C4361A /* libcrystal.a in Frameworks */,
-				A3FB995F225ED83400C4361A /* libelacarrier.a in Frameworks */,
-				A3FB9960225ED83400C4361A /* libelafiletrans.a in Frameworks */,
-				A3FB9961225ED83400C4361A /* libelasession.a in Frameworks */,
-				A3FB9962225ED83400C4361A /* libflatccrt.a in Frameworks */,
-				A3FB9963225ED83400C4361A /* libpj.a in Frameworks */,
-				A3FB9964225ED83400C4361A /* libpjlib-util.a in Frameworks */,
-				A3FB9965225ED83400C4361A /* libpjmedia.a in Frameworks */,
-				A3FB9966225ED83400C4361A /* libpjnath.a in Frameworks */,
-				A3FB9967225ED83400C4361A /* libsodium.a in Frameworks */,
-				A3FB9968225ED83400C4361A /* libtoxcore.a in Frameworks */,
+				11612D5D22F12984001179CD /* libc++.1.tbd in Frameworks */,
+				11612D5E22F12984001179CD /* libc++.tbd in Frameworks */,
+				11612D5F22F12984001179CD /* libc++abi.tbd in Frameworks */,
+				11612D4D22F12978001179CD /* libcrystal.a in Frameworks */,
+				11612D4E22F12978001179CD /* libz.a in Frameworks */,
+				11612D4F22F12978001179CD /* libpjmedia.a in Frameworks */,
+				11612D5022F12978001179CD /* libpj.a in Frameworks */,
+				11612D5122F12978001179CD /* libelafiletrans.a in Frameworks */,
+				11612D5222F12978001179CD /* libsrtp.a in Frameworks */,
+				11612D5322F12978001179CD /* libelasession.a in Frameworks */,
+				11612D5422F12978001179CD /* libflatccrt.a in Frameworks */,
+				11612D5522F12978001179CD /* libelacarrier.a in Frameworks */,
+				11612D5622F12978001179CD /* libhive-api++.a in Frameworks */,
+				11612D5722F12978001179CD /* libpjlib-util.a in Frameworks */,
+				11612D5822F12978001179CD /* libhive-api.a in Frameworks */,
+				11612D5922F12978001179CD /* libsodium.a in Frameworks */,
+				11612D5A22F12978001179CD /* libtoxcore.a in Frameworks */,
+				11612D5B22F12978001179CD /* libcurl.a in Frameworks */,
+				11612D5C22F12978001179CD /* libpjnath.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -338,17 +356,33 @@
 		A38A7CC0214B6A9D0010D5EB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				111E0C6B2302CB4F00167953 /* libc++.1.tbd */,
-				111E0C6C2302CB4F00167953 /* libc++.tbd */,
-				111E0C6D2302CB4F00167953 /* libc++abi.tbd */,
+				1155A269230BE2CE00381137 /* libc++.1.tbd */,
+				1155A268230BE2CE00381137 /* libc++.tbd */,
+				1155A26A230BE2CF00381137 /* libc++abi.tbd */,
+				1155A264230BE2C500381137 /* libhive-api++.a */,
+				1155A265230BE2C500381137 /* libz.a */,
+				11612D4B22F12978001179CD /* libcurl.a */,
+				11612D4522F12978001179CD /* libelacarrier.a */,
+				11612D4122F12977001179CD /* libelafiletrans.a */,
+				11612D4322F12977001179CD /* libelasession.a */,
+				11612D4422F12977001179CD /* libflatccrt.a */,
+				11612D4822F12978001179CD /* libhive-api.a */,
+				11612D4622F12978001179CD /* libhive-api++.a */,
+				11612D4022F12977001179CD /* libpj.a */,
+				11612D4722F12978001179CD /* libpjlib-util.a */,
+				11612D3F22F12977001179CD /* libpjmedia.a */,
+				11612D4C22F12978001179CD /* libpjnath.a */,
+				11612D4922F12978001179CD /* libsodium.a */,
+				11612D4222F12977001179CD /* libsrtp.a */,
+				11612D4A22F12978001179CD /* libtoxcore.a */,
 				1155FC6A22815C9800F8E6A0 /* libz.a */,
 				1155FC6822815C8D00F8E6A0 /* libcurl.a */,
 				111E0C652302CB4300167953 /* libcurl.a */,
 				1155FC6422815C8100F8E6A0 /* libhive-api.a */,
 				111E0C642302CB4300167953 /* libhive-api.a */,
 				1155FC6522815C8100F8E6A0 /* libhive-api++.a */,
-				111E0C632302CB4300167953 /* libhive-api++.a */,
-				111E0C662302CB4300167953 /* libz.a */,
+				11612D3D22F12977001179CD /* libcrystal.a */,
+				11612D3E22F12977001179CD /* libz.a */,
 				1155FC5E22815C4E00F8E6A0 /* libc++.1.tbd */,
 				1155FC5F22815C4E00F8E6A0 /* libc++.tbd */,
 				1155FC6022815C4E00F8E6A0 /* libc++abi.tbd */,
@@ -446,12 +480,12 @@
 		A3B497D42003757A00420421 /* include */ = {
 			isa = PBXGroup;
 			children = (
+				11612D8622F1722D001179CD /* ela_carrier.h */,
+				11612D8822F1722D001179CD /* ela_filetransfer.h */,
+				11612D8722F1722D001179CD /* ela_session.h */,
 				A35CE15B21BD43CF00AF4FE3 /* CFileTransfer.swift */,
 				A3B497F32003779300420421 /* CCarrier.swift */,
 				A3B497F22003779300420421 /* CSession.swift */,
-				A35CE15921BD42B200AF4FE3 /* ela_filetransfer.h */,
-				A3B497D62003759400420421 /* ela_carrier.h */,
-				A3B497D52003759400420421 /* ela_session.h */,
 			);
 			name = include;
 			sourceTree = "<group>";
@@ -519,10 +553,10 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				116061E42268AB8000BDCB9F /* ela_session.h in Headers */,
-				116061E22268AB7800BDCB9F /* ela_filetransfer.h in Headers */,
+				11612D8A22F1722D001179CD /* ela_carrier.h in Headers */,
 				116061DB2268AB4A00BDCB9F /* ElastosCarrierSDK_macOS.h in Headers */,
-				116061E32268AB7C00BDCB9F /* ela_carrier.h in Headers */,
+				11612D8E22F1722D001179CD /* ela_filetransfer.h in Headers */,
+				11612D8C22F1722D001179CD /* ela_session.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -530,10 +564,10 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A3B497D72003759400420421 /* ela_session.h in Headers */,
+				11612D8922F1722D001179CD /* ela_carrier.h in Headers */,
 				A3B497C82003736300420421 /* ElastosCarrierSDK.h in Headers */,
-				A35CE15A21BD42B200AF4FE3 /* ela_filetransfer.h in Headers */,
-				A3B497D82003759400420421 /* ela_carrier.h in Headers */,
+				11612D8D22F1722D001179CD /* ela_filetransfer.h in Headers */,
+				11612D8B22F1722D001179CD /* ela_session.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

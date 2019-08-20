@@ -96,16 +96,6 @@ public class Carrier: NSObject {
         }
     }
     
-    /// Set log level for carrier node.
-    /// Default level to control log output is `CarrierLogLevel.Info`
-    ///
-    /// - Parameter level: The log level
-    @objc(setLogLevel:)
-    public static func setLogLevel(_ level: CarrierLogLevel) {
-        Log.setLevel(level)
-        ela_log_init(convertCarrierLogLevelToCLogLevel(level), nil, nil)
-    }
-    
     /// Create node singleton instance. After initialize the instance,
     /// it's ready to start and therefore connect to the carrier network.
     ///
@@ -612,8 +602,114 @@ public class Carrier: NSObject {
         
         Log.d(Carrier.TAG, "Friend \(friendId) was removed")
     }
-    
-    /// Send a message to the specified friend.
+
+    /// Send a message to target friend without intent to know whether the message
+    /// was sent as online message or offline message.
+    ///
+    /// The message length may not exceed `MAX_APP_MESSAGE_LEN`, and message
+    /// itself should be text-formatted. Larger messages must be splitted by
+    /// application and sent as separate messages. Other nodes can reassemble
+    /// the fragments.
+    ///
+    /// - Parameters:
+    ///   - target: The target id
+    ///   - msg: The message content defined by application in string type.
+    ///
+    /// - Throws: CarrierError
+    @objc(sendFriendMessage:withMessage:error:)
+    public func sendFriendMessage(to target: String, _ withMessage: String) throws {
+
+        let msgData = withMessage.data(using: .utf8)
+        try sendFriendMessage(to: target, msgData!)
+    }
+
+    /// Send a message to target friend without intent to know whether the message
+    /// was sent as online message or offline message.
+    ///
+    /// The message length may not exceed `MAX_APP_MESSAGE_LEN`, and message
+    /// itself should be text-formatted. Larger messages must be splitted by
+    /// application and sent as separate messages. Other nodes can reassemble
+    /// the fragments.
+    ///
+    /// - Parameters:
+    ///   - target: The target id
+    ///   - msg: The message content defined by application in string type.
+    ///
+    /// - Throws: CarrierError
+    @objc(sendFriendMessage:withData:error:)
+    public func sendFriendMessage(to target: String, _ withData: Data) throws {
+        var isOffline: CBool = false
+        let result = target.withCString { cto in
+            return withData.withUnsafeBytes{ cdata -> Int32 in
+                return ela_send_friend_message(ccarrier, cto, cdata, withData.count, &isOffline)
+            }
+        }
+
+        guard result >= 0 else {
+            let errno: Int = getErrorCode()
+            Log.e(Carrier.TAG, "Send message to \(target) error: 0x%X", errno)
+            throw CarrierError.FromErrorCode(errno: errno) as NSError
+        }
+
+        Log.d(Carrier.TAG, "Sended message: \(withData) to \(target).")
+    }
+
+    /// Send a message to target friend with intent to konw whether the message
+    /// was sent as online message or offline message.
+    ///
+    /// The message length may not exceed `MAX_APP_MESSAGE_LEN`, and message
+    /// itself should be text-formatted. Larger messages must be splitted by
+    /// application and sent as separate messages. Other nodes can reassemble
+    /// the fragments.
+    ///
+    /// - Parameters:
+    ///   - target: The target id
+    ///   - msg: The message content defined by application in string type.
+    ///
+    /// - Throws: CarrierError
+    /// - returns: The value of true means the message was sent as online message.
+    ///            Otherwise as offline message.
+    public func sendFriendMessage(to target: String, withMessage msg: String) throws -> Bool {
+
+        let msgData = msg.data(using: .utf8)
+        return try sendFriendMessage(to: target, withData: msgData!)
+    }
+
+    /// Send a message to target friend with intent to konw whether the message
+    /// was sent as online message or offline message.
+    ///
+    /// The message length may not exceed `MAX_APP_MESSAGE_LEN`, and message
+    /// itself should be text-formatted. Larger messages must be splitted by
+    /// application and sent as separate messages. Other nodes can reassemble
+    /// the fragments.
+    ///
+    /// - Parameters:
+    ///   - target: The target id
+    ///   - msg: The message content defined by application in string type.
+    ///
+    /// - Throws: CarrierError
+    /// - returns: The value of true means the message was sent as online message.
+    ///            Otherwise as offline message.
+    public func sendFriendMessage(to target: String, withData data: Data) throws -> Bool {
+        var isOffline: CBool = false
+        let result = target.withCString { cto in
+            return data.withUnsafeBytes{ cdata -> Int32 in
+                return ela_send_friend_message(ccarrier, cto, cdata, data.count, &isOffline)
+            }
+        }
+
+        guard result >= 0 else {
+            let errno: Int = getErrorCode()
+            Log.e(Carrier.TAG, "Send message to \(target) error: 0x%X", errno)
+            throw CarrierError.FromErrorCode(errno: errno) as NSError
+        }
+
+        Log.d(Carrier.TAG, "Sended message: \(data) to \(target).")
+        return Bool(!isOffline)
+    }
+
+    /// Send a message to target friend with intent to konw whether the message
+    /// was sent as online message or offline message.
     ///
     /// The message length may not exceed `MAX_APP_MESSAGE_LEN`, and message
     /// itself should be text-formatted. Larger messages must be splitted by
@@ -623,16 +719,18 @@ public class Carrier: NSObject {
     /// - Parameters:
     ///   - target: The target id
     ///   - msg: The message content defined by application in string type.
-    ///
-    /// - Throws: CarrierError
+    ///   - error: [out] CarrierError
+    /// - returns: The value of true means the message was sent as online message.
+    ///            Otherwise as offline message.
     @objc(sendFriendMessage:message:error:)
-    public func sendFriendMessage(to target: String, withMessage msg: String) throws {
+    public func sendFriendMessage(to target: String, withMessage msg: String, error: NSErrorPointer) -> Bool {
         
         let msgData = msg.data(using: .utf8)
-        try sendFriendMessage(to: target, withData: msgData!)
+      return sendFriendMessage(to: target, withData: msgData!, error: error)
     }
     
-    /// Send a message to the specified friend.
+    /// Send a message to target friend with intent to konw whether the message
+    /// was sent as online message or offline message.
     ///
     /// The message length may not exceed `MAX_APP_MESSAGE_LEN`, and message
     /// itself should be text-formatted. Larger messages must be splitted by
@@ -641,24 +739,28 @@ public class Carrier: NSObject {
     ///
     /// - Parameters:
     ///   - target: The target id
-    ///   - msg: The message content defined by application in Data type.
-    ///
-    /// - Throws: CarrierError
+    ///   - msg: The message content defined by application in string type.
+    ///   - error: [out] CarrierError
+    /// - returns: The value of true means the message was sent as online message.
+    ///            Otherwise as offline message.
     @objc(sendFriendMessage:data:error:)
-    public func sendFriendMessage(to target: String, withData data: Data) throws {
-        let result = target.withCString { (cto) in
-            return data.withUnsafeBytes{ (cdata) -> Int32 in
-                return ela_send_friend_message(ccarrier, cto, cdata, data.count)
+    public func sendFriendMessage(to target: String, withData data: Data, error: NSErrorPointer) -> Bool {
+        var isOffline: CBool = false
+        let result = target.withCString { cto in
+            return data.withUnsafeBytes { cdata -> Int32 in
+                return ela_send_friend_message(ccarrier, cto, cdata, data.count, &isOffline)
             }
         }
         
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Send message to \(target) error: 0x%X", errno)
-            throw CarrierError.FromErrorCode(errno: errno)
+            error?.pointee = CarrierError.FromErrorCode(errno: errno) as NSError
+            return Bool(false)
         }
         
         Log.d(Carrier.TAG, "Sended message: \(data) to \(target).")
+        return Bool(!isOffline)
     }
     
     /// Send invite request to the specified friend
