@@ -13,4 +13,5 @@
 /vendor/*
 elastos*/
 /ela*
+/bin
 *.csv
