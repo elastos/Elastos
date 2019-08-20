@@ -1,4 +1,4 @@
-import * as Rollbar from 'rollbar';
+import * as Rollbar from 'rollbar'
 
 export const rollbar = () => {
   let rollbar = undefined
