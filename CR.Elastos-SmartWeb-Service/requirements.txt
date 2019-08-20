@@ -2,5 +2,5 @@ flask-restplus==0.12.1
 flask-api==1.1
 Flask-SQLAlchemy==2.4.0
 requests==2.22.0
-psycopg2==2.8.2
 flask-cors
+psycopg2==2.8.2
