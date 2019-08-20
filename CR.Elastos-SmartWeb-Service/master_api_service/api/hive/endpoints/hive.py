@@ -20,7 +20,7 @@ ns = api.namespace('1/hive', description='Implements hive storage services')
 @ns.route('/add')
 class Add(Resource):
 
-	def get(self):
+	def post(self):
 		"""
 		Returns Hash key of the content added.
 		"""

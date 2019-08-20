@@ -20,7 +20,7 @@ ns = api.namespace('1/console', description='Implements console functionalities'
 @ns.route('/upload')
 class Upload(Resource):
 
-	def get(self):
+	def post(self):
 		"""
 		Upload a file to hive.
 		"""
@@ -56,7 +56,7 @@ class Upload(Resource):
 @ns.route('/uploadAndSign')
 class UploadAndSign(Resource):
 
-	def get(self):
+	def post(self):
 		"""
 		Returns Hash key of the content added.
 		"""
@@ -110,7 +110,7 @@ class UploadAndSign(Resource):
 @ns.route('/verifyAndShow')
 class VerifyAndShow(Resource):
 
-	def get(self):
+	def post(self):
 		"""
 		Returns content of the hash key.
 		"""
