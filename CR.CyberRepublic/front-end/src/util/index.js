@@ -6,6 +6,7 @@ import { loginRedirectWithQuery } from './login'
 import * as permissions from './permissions'
 import * as url from './url'
 import * as editor from './editor'
+import * as logger from './logger'
 
 /**
  * Helper for React-Redux connect
@@ -41,4 +42,5 @@ export {
   permissions,
   url,
   editor,
+  logger
 }

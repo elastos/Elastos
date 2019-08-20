@@ -3,7 +3,14 @@ let _rollbarConfig = {
   captureUncaught: true,
   captureUnhandledRejections: true,
   payload: {
-    environment: 'production'
+    environment: 'production',
+    client: {
+      javascript: {
+        code_version: 'production-1.3',
+        source_map_enabled: true,
+        guess_uncaught_frames: true
+      }
+    }
   }
 }
 // Rollbar Snippet

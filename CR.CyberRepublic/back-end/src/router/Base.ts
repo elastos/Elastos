@@ -3,6 +3,7 @@ import * as Session from 'express-session'
 import Service from '../service/Base'
 import * as _ from 'lodash'
 import DB from '../db'
+import { logger } from '../utility'
 
 interface RESULT {
     code: number
@@ -73,8 +74,7 @@ export default abstract class {
             }
 
         }catch(e){
-            // process.env.NODE_ENV === 'dev' &&
-            console.error(e)
+            logger.error(e)
             this.res.json(this.result(-1, e))
         }
     }

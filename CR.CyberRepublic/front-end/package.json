@@ -59,6 +59,7 @@
     "react-transition-group": "^2.3.1",
     "redux": "4.0.0",
     "redux-thunk": "^2.2.0",
+    "rollbar": "^2.12.0",
     "sanitize-html": "^1.18.5",
     "sass-extract": "^2.1.0",
     "sass-extract-loader": "^1.1.0",

@@ -6,3 +6,4 @@ coverage/
 dist/
 
 dev_dist/
+rollbar_dev.js
