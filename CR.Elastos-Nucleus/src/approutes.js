@@ -1,4 +1,4 @@
-import NewWallet from "views/GenerateWallet.jsx";
+import NewWallet from "views/fileupload.jsx";
 import Balance from "views/GetBalance.jsx";
 import TransactionHistory from "views/GetTransactionHistory.jsx";
 import Transactions from "views/GetTransactions.jsx";

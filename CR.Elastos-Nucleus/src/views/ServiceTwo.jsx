@@ -39,25 +39,15 @@ class UserProfile extends Component {
                         <FormGroup controlId="formControlsTextarea">
                           <p>
                             <span className="category" />
-                            Lorem ipsum dolor sit amet, consectetuer adipiscing
-                            elit, sed diem nonummy nibh euismod tincidunt ut
-                            lacreet dolore magna aliguam erat volutpat. Ut wisis
-                            enim ad minim veniam, quis nostrud exerci tution
-                            ullam corper suscipit lobortis nisi ut aliquip ex ea
-                            commodo consequat. Duis te feugi facilisi. Duis
-                            autem dolor in hendrerit in vulputate velit esse
-                            molestie consequat, vel illum dolore eu feugiat
-                            nulla facilisis at vero eros et accumsan et iusto
-                            odio dignissim qui blandit praesent luptatum zzril
-                            delenit au gue duis dolore te feugat nulla facilisi.
+                            Signs the message with DID sidechain using private key
                           </p>
                         </FormGroup>
                         <SyntaxHighlighter
                           language="javascript"
                           style={gruvboxDark}
                         >
-                          {`POST /api/1/sign HTTP/1.1
-Host: localhost:8090
+                          {`POST api/1/service/sidechain/did/sign HTTP/1.1
+Host: localhost:8888
 Content-Type: application/json
 
   {
@@ -100,28 +90,24 @@ Content-Type: application/json
                     <Row>
                       <Col md={12}>
                         <SyntaxHighlighter language="jsx" style={gruvboxDark}>
-                          {`import React from 'react';
-import ReactDOM from "react-dom";
+                          {`    api_key = request.headers.get('api_key')
+        api_status = validate_api_key(api_key)
+        if not api_status:
+            data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
+            return Response(json.dumps(data), 
+                status=401,
+                mimetype='application/json'
+            )
 
-import { BrowserRouter, Route, Switch, Redirect } from "react-router-dom";
-
-import "bootstrap/dist/css/bootstrap.min.css";
-import "./assets/css/animate.min.css";
-import "./assets/sass/light-bootstrap-dashboard-react.scss?v=1.3.0";
-import "./assets/css/demo.css";
-import "./assets/css/pe-icon-7-stroke.css";
-
-import AdminLayout from "layouts/Admin.jsx";
-
-ReactDOM.render(
-  <BrowserRouter>
-    <Switch>
-      <Route path="/admin" render={props => <AdminLayout {...props} />} />
-      <Redirect from="/" to="/admin/dashboard" />
-    </Switch>
-  </BrowserRouter>,
-  document.getElementById("root")
-);`}
+        api_url_base = settings.DID_SERVICE_URL + settings.DID_SERVICE_SIGN
+        headers = {'Content-type': 'application/json'}
+        req_data = request.get_json()
+        myResponse = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
+        return Response(json.dumps(myResponse), 
+                status=myResponse['status'],
+                mimetype='application/json'
+            )
+                          `}
                         </SyntaxHighlighter>
                       </Col>
                     </Row>
