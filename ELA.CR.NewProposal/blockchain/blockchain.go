@@ -10,7 +10,6 @@ import (
 	"container/list"
 	"errors"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/database"
 	"math/big"
 	"sort"
 	"sync"
@@ -22,6 +21,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	crstate "github.com/elastos/Elastos.ELA/cr/state"
+	"github.com/elastos/Elastos.ELA/database"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/events"
 )
@@ -119,6 +119,10 @@ func (b *BlockChain) InitFFLDBFromChainStore(interrupt <-chan struct{},
 	barStart func(total uint32), increase func()) (err error) {
 	endHeight := b.db.GetHeight()
 	startHeight := b.GetHeight() + 1
+	if endHeight < startHeight {
+		return nil
+	}
+
 	done := make(chan bool)
 
 	go func() {
@@ -970,12 +974,12 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block, confirm *pay
 	}
 
 	// Remove the block from the database which houses the main chain.
-	_, err := b.getPrevNodeFromNode(node)
+	prevNode, err := b.getPrevNodeFromNode(node)
 	if err != nil {
 		return err
 	}
 
-	err = b.db.RollbackBlock(block, node, confirm, b.MedianTimePast)
+	err = b.db.RollbackBlock(block, node, confirm, CalcPastMedianTime(prevNode))
 	if err != nil {
 		return err
 	}
@@ -1042,8 +1046,9 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payloa
 		return err
 	}
 
+	medianTime := CalcPastMedianTime(b.BestChain)
 	// Insert the block into the database which houses the main chain.
-	if err := b.db.SaveBlock(block, node, confirm, b.MedianTimePast); err != nil {
+	if err := b.db.SaveBlock(block, node, confirm, medianTime); err != nil {
 		return err
 	}
 
@@ -1057,7 +1062,7 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payloa
 
 	// This node is now the end of the best chain.
 	b.BestChain = node
-	b.MedianTimePast = CalcPastMedianTime(b.BestChain)
+	b.MedianTimePast = medianTime
 
 	// Notify the caller that the block was connected to the main chain.
 	// The caller would typically want to react with actions such as

@@ -1,9 +1,13 @@
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+//
+
 package blockchain
 
 import (
 	"bytes"
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"math/big"
 	"time"
@@ -392,11 +396,12 @@ func (b *BlockChain) initChainState() (bool, error) {
 	}
 
 	if !hasBlockIndex {
-		err = migrateBlockIndex(b.db.GetFFLDB())
-		if err != nil {
-			return initialized, nil
-		}
-		return initialized, errors.New("initChainState failed")
+		//err = migrateBlockIndex(b.db.GetFFLDB())
+		//if err != nil {
+		//	return initialized, nil
+		//}
+		//return initialized, errors.New("initChainState failed")
+		return initialized, nil
 	}
 
 	// Attempt to load the chain state from the database.
@@ -540,7 +545,6 @@ func dbStoreBlockNode(dbTx database.Tx, header *types.Header) error {
 	blockHash := header.Hash()
 	blockIndexBucket := dbTx.Metadata().Bucket(blockIndexBucketName)
 	key := blockIndexKey(&blockHash, header.Height)
-	log.Info("### dbStoreBlockNode height:", header.Height)
 	return blockIndexBucket.Put(key, value)
 }
 
