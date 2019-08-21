@@ -2132,7 +2132,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 
 	references := make(map[*types.Input]*types.Output)
 	outputs := []*types.Output{{Type: types.OTNone}}
-	s.NoError(checkVoteOutputs(outputs, references, nil, nil))
+	s.NoError(s.Chain.checkVoteOutputs(0, outputs, references, nil, nil))
 
 	publicKey1 := "023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a"
 	publicKey2 := "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9"
@@ -2166,7 +2166,8 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs1, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs1, references, producersMap,
+		crsMap),
 		"the output address of vote tx should exist in its input")
 
 	// Check vote output of v0 with crc type and with wrong output program hash
@@ -2186,7 +2187,8 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs2, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs2, references,
+		producersMap, crsMap),
 		"the output address of vote tx should exist in its input")
 
 	// Check vote output of v1 with wrong output program hash
@@ -2212,16 +2214,17 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs3, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs3, references, producersMap, crsMap),
 		"the output address of vote tx should exist in its input")
 
 	// Check vote output v0 with correct ouput program hash
 	references[&types.Input{}] = &types.Output{
 		ProgramHash: *hash,
 	}
-	s.NoError(checkVoteOutputs(outputs1, references, producersMap, crsMap))
-	s.NoError(checkVoteOutputs(outputs2, references, producersMap, crsMap))
-	s.NoError(checkVoteOutputs(outputs3, references, producersMap, crsMap))
+	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight,
+		outputs1, references, producersMap, crsMap))
+	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs2, references, producersMap, crsMap))
+	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs3, references, producersMap, crsMap))
 
 	// Check vote output of v0 with delegate type and invalid candidate
 	outputs4 := []*types.Output{{Type: types.OTNone}}
@@ -2240,7 +2243,8 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs4, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs4, references, producersMap,
+		crsMap),
 		"invalid vote output payload candidate: "+
 			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
 
@@ -2261,7 +2265,8 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs5, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs5, references, producersMap,
+		crsMap),
 		"payload VoteProducerVersion not support vote CR")
 
 	// Check vote output of v1 with crc type and invalid candidate
@@ -2281,7 +2286,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs6, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs6, references, producersMap, crsMap),
 		"invalid vote output payload candidate: "+
 			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
 
@@ -2308,7 +2313,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs7, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs7, references, producersMap, crsMap),
 		"invalid vote output payload candidate: "+
 			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
 
@@ -2332,7 +2337,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs8, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs8, references, producersMap, crsMap),
 		"votes larger than output amount")
 
 	// Check vote output of v1 with crc type and wrong votes
@@ -2354,7 +2359,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs9, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs9, references, producersMap, crsMap),
 		"total votes larger than output amount")
 
 	// Check vote output of v1 with wrong votes
@@ -2381,7 +2386,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs10, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs10, references, producersMap, crsMap),
 		"votes larger than output amount")
 
 	// Check vote output v1 with correct votes
@@ -2408,7 +2413,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.NoError(checkVoteOutputs(outputs11, references, producersMap, crsMap))
+	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs11, references, producersMap, crsMap))
 
 	// Check vote output of v1 with wrong votes
 	outputs12 := []*types.Output{{Type: types.OTNone}}
@@ -2434,7 +2439,8 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.NoError(checkVoteOutputs(outputs12, references, producersMap, crsMap))
+	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs12, references, producersMap,
+		crsMap))
 }
 
 func (s *txValidatorTestSuite) TestCheckOutputProgramHash() {
