@@ -43,13 +43,18 @@ type RewardData struct {
 type CheckPoint struct {
 	KeyFrame
 	StateKeyFrame
-	Height            uint32
-	DutyIndex         int
-	NextArbitrators   [][]byte
-	NextCandidates    [][]byte
-	CurrentCandidates [][]byte
-	CurrentReward     RewardData
-	NextReward        RewardData
+	Height                     uint32
+	DutyIndex                  int
+	NextArbitrators            [][]byte
+	NextCandidates             [][]byte
+	CurrentCandidates          [][]byte
+	CurrentReward              RewardData
+	NextReward                 RewardData
+	accumulativeReward         common.Fixed64
+	finalRoundChange           common.Fixed64
+	clearingHeight             uint32
+	arbitersRoundReward        map[common.Uint168]common.Fixed64
+	illegalBlocksPayloadHashes map[common.Uint256]interface{}
 }
 
 // snapshot takes a snapshot of current state and returns the copy.
@@ -494,8 +499,12 @@ func copyStringMap(src map[string]string) (dst map[string]string) {
 func copyVotesMap(src map[string]*types.Output) (dst map[string]*types.Output) {
 	dst = map[string]*types.Output{}
 	for k, v := range src {
-		p := *v
-		dst[k] = &p
+		if v == nil {
+			dst[k] = nil
+		} else {
+			p := *v
+			dst[k] = &p
+		}
 	}
 	return
 }
