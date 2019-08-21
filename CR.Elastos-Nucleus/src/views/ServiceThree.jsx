@@ -17,9 +17,10 @@ class UserProfile extends Component {
 
     this.state = {
       inputs: {
-        hashKey: '',
-        pubKey: '',
-        sign:''
+          hashKey: '',
+          pubKey: '',
+          sign:'',
+          apiKey:''
       },
       output: ''
 
@@ -42,8 +43,6 @@ class UserProfile extends Component {
             }
         }
       });
-
-
   }
 
   verifyMessage(){
@@ -54,7 +53,7 @@ class UserProfile extends Component {
       "sig" : this.state.inputs.sign.value
   },{
       headers:{
-        "api_key":window.apiKey,
+        "api_key":this.state.inputs.apiKey.value,
         "Content-Type": "application/json;"
       }
     })
@@ -74,12 +73,12 @@ class UserProfile extends Component {
   handleClick() {
       //TODO:
       //1.check for the api key
-         if (window.apiKey !== undefined) {
+         if (this.state.inputs.apiKey.value !== undefined) {
             this.verifyMessage()
          }
          else{
            this.setState({
-             output:'API key has not been generated yet. Please generate one and verify your message'
+             output:'Please enter an API Key to proceed further'
            })
            console.log('api key not present')
          }
@@ -98,6 +97,17 @@ class UserProfile extends Component {
                     <Row>
                       <Col md={12}>
                          <FormGroup controlId="formControlsTextarea">
+                          <ControlLabel>API Key</ControlLabel>
+                          <FormControl
+                            rows="3"
+                            componentClass="textarea"
+                            bsClass="form-control"
+                            placeholder="Enter your API Key here"
+                            name="apiKey"
+                            value = {this.state.inputs.apiKey.value}
+                            onChange = {this.changeHandler}
+                          />
+                          <br/>
                           <ControlLabel>Message Hash</ControlLabel>
                           <FormControl
                             rows="3"
@@ -108,6 +118,7 @@ class UserProfile extends Component {
                             value = {this.state.inputs.hashKey.value}
                             onChange = {this.changeHandler}
                           />
+                          <br/>
                           <ControlLabel>Public Key</ControlLabel>
                            <FormControl
                             rows="3"
@@ -118,6 +129,7 @@ class UserProfile extends Component {
                             value = {this.state.inputs.pubKey.value}
                             onChange = {this.changeHandler}
                           />
+                          <br/>
                           <ControlLabel>Signature</ControlLabel>
                            <FormControl
                             rows="3"
