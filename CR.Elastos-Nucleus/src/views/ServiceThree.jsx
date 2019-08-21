@@ -41,33 +41,42 @@ class UserProfile extends Component {
               ...this.state.inputs[key],
               value
             }
-        }
+        },
+        output:''
       });
   }
 
-  verifyMessage(){
-    const endpoint = "service/sidechain/did/verify";
-    axios.post(baseUrl+endpoint, {
-      "msg" : this.state.inputs.hashKey.value,
-      "pub" : this.state.inputs.pubKey.value,
-      "sig" : this.state.inputs.sign.value
-  },{
-      headers:{
-        "api_key":this.state.inputs.apiKey.value,
-        "Content-Type": "application/json;"
-      }
-    })
-  .then(function (response) {
-    console.log(response);
-    //TODO:
-    //1.set the output here
-      this.setState({
-        output: response.data
-      });
-  })
-  .catch(function (error) {
-    console.log(error);
-  });
+
+  verifyMessage() {
+      const endpoint = "service/sidechain/did/verify";
+      axios.post(baseUrl + endpoint, {
+          "msg": this.state.inputs.hashKey.value,
+          "pub": this.state.inputs.pubKey.value,
+          "sig": this.state.inputs.sign.value
+      }, {
+          headers: {
+              "api_key": this.state.inputs.apiKey.value,
+              "Content-Type": "application/json;"
+          }
+      })
+          .then(response => {
+              if(response.result === true){
+                  this.setState({
+                     output: "Your message has been verified."
+                  });
+              }
+          })
+          .catch(error =>
+              this.setState({
+              inputs:{
+                hashKey: '',
+                pubKey: '',
+                sign:'',
+                apiKey:''
+              },
+              output:error
+              })
+          );
   }
 
   handleClick() {
@@ -96,7 +105,7 @@ class UserProfile extends Component {
                   <form>
                     <Row>
                       <Col md={12}>
-                         <FormGroup controlId="formControlsTextarea">
+                         <FormGroup>
                           <ControlLabel>API Key</ControlLabel>
                           <FormControl
                             rows="3"
@@ -162,6 +171,7 @@ class UserProfile extends Component {
                             rows="3"
                             componentClass="textarea"
                             bsClass="form-control"
+                            name="output"
                             value = {this.state.output}
                             readOnly
                           />

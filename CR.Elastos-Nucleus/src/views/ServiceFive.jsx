@@ -1,13 +1,73 @@
 import React, { Component } from "react";
-import Dropzone from "react-dropzone";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { gruvboxDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
-import { Grid, Row, Col, FormGroup } from "react-bootstrap";
+import {Grid, Row, Col, FormGroup, Button, ControlLabel, FormControl} from "react-bootstrap";
 
 import { Card } from "components/Card/Card.jsx";
+import axios from "axios";
+import {baseUrl} from "../utils/api";
 
 class UserProfile extends Component {
+  constructor() {
+    super();
+    this.handleClick = this.handleClick.bind(this);
+    //this.handleOutsideClick = this.handleOutsideClick.bind(this);
+
+    this.state = {
+      isTransferred: false,
+      apiKey:'',
+      output: ''
+    };
+  }
+
+   changeHandler = event => {
+
+      const key = event.target.name;
+      const value = event.target.value;
+
+      this.setState({
+         [key]:value
+      });
+  }
+
+  transferELA() {
+    const endpoint = "console/transferELADemo";
+    axios
+      .get(baseUrl + endpoint, {
+        //mode: "cors",
+        params: {}
+      })
+      .then(response => {
+        this.setState({
+          isTransferred: response.data.status === 200,
+          output: response.data
+        });
+      })
+        .catch(error =>
+              this.setState(
+                  {
+                        output:error
+                  }
+                ));
+
+  }
+
+  handleClick() {
+      //TODO:
+        //Do we need to generate a new key every time the button gets clicked?
+    if (this.state.apiKey !== undefined)  {
+
+        this.transferELA()
+
+    } else {
+        this.setState({
+             output:'Please enter an API Key to proceed further'
+           })
+      console.log('api key not present')
+    }
+  }
+
   render() {
     return (
       <div className="content">
@@ -15,29 +75,50 @@ class UserProfile extends Component {
           <Row>
             <Col md={12}>
               <Card
-                title="Demostration of ELA Transfer"
+                title="Transfer ELA"
                 content={
-                  <form>
                     <Row>
                       <Col md={12}>
-                        <Dropzone
-                          onDrop={acceptedFiles => console.log("test1")}
-                        >
-                          {({ getRootProps, getInputProps }) => (
-                            <section>
-                              <div {...getRootProps()}>
-                                <input {...getInputProps()} />
-                                <p>Select or Drop your file here</p>
-                              </div>
-                            </section>
+                        <FormGroup>
+                          <ControlLabel>API Key</ControlLabel>
+                          <FormControl
+                            rows="3"
+                            componentClass="textarea"
+                            bsClass="form-control"
+                            placeholder="Enter your API Key here"
+                            name="apiKey"
+                            value = {this.state.apiKey}
+                            onChange = {this.changeHandler}
+                          />
+                          </FormGroup>
+
+                          {this.state.output !== '' && (
+                              <FormGroup>
+                              <ControlLabel>Transfer Status</ControlLabel>
+                              <FormControl
+                                      rows="3"
+                                      componentClass="textarea"
+                                      bsClass="form-control"
+                                      placeholder=""
+                                      name="output"
+                                      value = {this.state.output}
+                                      readOnly
+                              />
+                              </FormGroup>
+
                           )}
-                        </Dropzone>
+
+                      </Col>
+                      <Col md={12}>
+                          <Button variant="primary" size="lg" onClick={this.handleClick}>Transfer ELA</Button>
                       </Col>
                     </Row>
-                    <div className="clearfix" />
-                  </form>
+
                 }
               />
+              <div>
+
+              </div>
             </Col>
           </Row>
           <Row>

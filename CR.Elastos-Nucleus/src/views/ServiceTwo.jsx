@@ -3,29 +3,170 @@ import React, { Component } from "react";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { gruvboxDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
-import { Grid, Row, Col, FormGroup } from "react-bootstrap";
+import {Grid, Row, Col, FormGroup, ControlLabel, FormControl, Button} from "react-bootstrap";
 
 import { Card } from "components/Card/Card.jsx";
+import axios from "axios";
+import {baseUrl} from "../utils/api";
 
 class UserProfile extends Component {
+  constructor () {
+
+    super()
+
+    this.state = {
+      inputs: {
+          message: '',
+          privKey: '',
+          apiKey:''
+      },
+      output: ''
+    }
+
+    this.handleClick = this.handleClick.bind(this);
+  }
+
+  changeHandler = event => {
+
+      const key = event.target.name;
+      const value = event.target.value;
+
+      this.setState({
+        inputs:{
+          ...this.state.inputs,
+            [key]: {
+              ...this.state.inputs[key],
+              value
+            }
+        },
+        output:''
+      });
+  }
+
+
+  signTheMessage() {
+      const endpoint = "service/sidechain/did/sign";
+      axios.post(baseUrl + endpoint, {
+          "msg": this.state.inputs.message.value,
+          "privateKey": this.state.inputs.privKey.value
+      }, {
+          headers: {
+              "api_key": this.state.inputs.apiKey.value,
+              "Content-Type": "application/json;"
+          }
+      })
+          .then(response => {
+
+                  this.setState({
+                     output: response.data.result
+                  });
+
+          })
+          .catch(error =>
+              this.setState({
+                inputs:{
+                       message:'',
+                       apiKey:'',
+                       privKey:''
+                     },
+                output:error})
+
+          );
+  }
+
+  handleClick() {
+      //TODO:
+      //1.check for the api key
+         if (this.state.inputs.apiKey.value !== undefined) {
+            this.signTheMessage()
+         }
+         else{
+           this.setState({
+             output:'Please enter an API Key to proceed further'
+           })
+           console.log('api key not present')
+         }
+  }
   render() {
     return (
       <div className="content">
         <Grid fluid>
           <Row>
-            <Col md={12}>
+            <Col md={6}>
               <Card
                 title="Sign a Message"
                 content={
-                  <form>
+                 <form>
                     <Row>
                       <Col md={12}>
+                         <FormGroup controlId="formControlsTextarea">
+                          <ControlLabel>API Key</ControlLabel>
+                          <FormControl
+                            rows="3"
+                            componentClass="textarea"
+                            bsClass="form-control"
+                            placeholder="Enter your API Key here"
+                            name="apiKey"
+                            value = {this.state.inputs.apiKey.value}
+                            onChange = {this.changeHandler}
+                          />
+                          <br/>
+                          <ControlLabel>Your Message</ControlLabel>
+                          <FormControl
+                            rows="3"
+                            componentClass="textarea"
+                            bsClass="form-control"
+                            placeholder="Enter the message hash here"
+                            name="message"
+                            value = {this.state.inputs.message.value}
+                            onChange = {this.changeHandler}
+                          />
+                          <br/>
+                          <ControlLabel>Your Private Key</ControlLabel>
+                           <FormControl
+                            rows="3"
+                            componentClass="textarea"
+                            bsClass="form-control"
+                            name="pubKey"
+                            placeholder="Enter your private key here"
+                            value = {this.state.inputs.privKey.value}
+                            onChange = {this.changeHandler}
+                          />
+                          <br/>
+                          <Button onClick={this.handleClick} variant="primary" size="lg">Sign</Button>
+                        </FormGroup>
+
                       </Col>
                     </Row>
                     <div className="clearfix" />
                   </form>
                 }
               />
+            </Col>
+            <Col md={6}>
+              {this.state.output && (
+                  <Card
+                content={
+                  <form>
+                    <Row>
+                      <Col md={12}>
+                        <FormControl
+                            rows="3"
+                            componentClass="textarea"
+                            bsClass="form-control"
+                            name="output"
+                            value = {this.state.output}
+                            readOnly
+                          />
+
+                      </Col>
+                    </Row>
+                    <div className="clearfix" />
+                  </form>
+                }
+              />
+              )}
+
             </Col>
           </Row>
           <Row>

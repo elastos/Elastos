@@ -1,7 +1,8 @@
 import React, { Component } from "react";
-import { Grid, Row, Col } from "react-bootstrap";
+import {Grid, Row, Col, ControlLabel, FormControl, FormGroup, Button} from "react-bootstrap";
 import axios from "axios";
 import { baseUrl } from "../utils/api.js";
+import Card from "../components/Card/Card";
 
 class ApiKeygenerator extends Component {
   constructor() {
@@ -50,14 +51,40 @@ class ApiKeygenerator extends Component {
       <div className="content">
         <Grid fluid>
           <Row>
-            <Col lg={6} sm={6}>
-              <div>
-                <button onClick={this.handleClick}>Generate key</button>
+            <Col md={12}>
+              <Card
+                title="Generate an API Key"
+                content={
+
+                    <Row>
+                      <Col md={12}>
+                          <Button variant="primary" size="lg" onClick={this.handleClick}>Generate key</Button>
+                      </Col>
+                      <Col md={12}>
                 {this.state.isKeyGenerated && (
-                  <div>
-                    <textarea value={this.state.apiKey} readOnly />
-                  </div>
+                    <FormGroup>
+                    <ControlLabel>API Key</ControlLabel>
+                    <FormControl
+                            rows="3"
+                            componentClass="textarea"
+                            bsClass="form-control"
+                            placeholder=""
+                            name="apiKey"
+                            value = {this.state.apiKey}
+                            readOnly
+                          />
+                    </FormGroup>
+                  // <div>
+                  //   <textarea value={this.state.apiKey} readOnly />
+                  // </div>
                 )}
+                      </Col>
+                    </Row>
+
+                }
+              />
+              <div>
+
               </div>
             </Col>
           </Row>
