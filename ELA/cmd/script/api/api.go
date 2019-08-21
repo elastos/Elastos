@@ -9,7 +9,6 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/core/types"
 	"os"
 	"path/filepath"
 	"strings"
@@ -21,6 +20,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/crypto"
 	dlog "github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/state"
@@ -198,7 +198,10 @@ func initLedger(L *lua.LState) int {
 		fmt.Printf("Init block chain error: %s \n", err.Error())
 	}
 	if !initialized {
-		chain.InitFFLDBFromChainStore(interrupt.C, nil, nil)
+		err = chain.InitFFLDBFromChainStore(interrupt.C, nil, nil)
+		if err != nil {
+			fmt.Printf("Init fflDB error: %s \n", err.Error())
+		}
 	}
 
 	blockchain.FoundationAddress = chainParams.Foundation
