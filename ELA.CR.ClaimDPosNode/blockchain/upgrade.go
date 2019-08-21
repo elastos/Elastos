@@ -11,10 +11,10 @@ import (
 	"container/list"
 	"errors"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/core/types"
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/database"
 )
 
