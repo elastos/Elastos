@@ -1,7 +1,7 @@
 import Apigenerator from "views/Apigenerator.jsx";
 import Dashboard from "views/Dashboard.jsx";
 
-import ServiceOne from "views/GenerateWallet.jsx";
+import ServiceOne from "views/fileupload.jsx";
 import ServiceTwo from "views/ServiceTwo.jsx";
 import ServiceThree from "views/ServiceThree.jsx";
 import ServiceFour from "views/ServiceFour.jsx";
