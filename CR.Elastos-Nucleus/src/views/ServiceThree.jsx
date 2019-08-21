@@ -49,13 +49,13 @@ class UserProfile extends Component {
   verifyMessage(){
     const endpoint = "service/sidechain/did/verify";
     axios.post(baseUrl+endpoint, {
-      "msg": this.state.inputs.hashKey,
-      "pub" : this.state.inputs.pubKey,
-      "sig" : this.state.inputs.sign
+      "msg" : this.state.inputs.hashKey.value,
+      "pub" : this.state.inputs.pubKey.value,
+      "sig" : this.state.inputs.sign.value
   },{
       headers:{
         "api_key":window.apiKey,
-        "Content-Type": "application/json;charset=UTF-8"
+        "Content-Type": "application/json;"
       }
     })
   .then(function (response) {
