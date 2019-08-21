@@ -200,16 +200,16 @@ func (c *ChainStore) GetBlockHash(height uint32) (Uint256, error) {
 	err := WriteUint32(queryKey, height)
 
 	if err != nil {
-		return Uint256{}, err
+		return EmptyHash, err
 	}
 	blockHash, err := c.Get(queryKey.Bytes())
 	if err != nil {
 		//TODO: implement error process
-		return Uint256{}, err
+		return EmptyHash, err
 	}
 	blockHash256, err := Uint256FromBytes(blockHash)
 	if err != nil {
-		return Uint256{}, err
+		return EmptyHash, err
 	}
 
 	return *blockHash256, nil
@@ -218,7 +218,7 @@ func (c *ChainStore) GetBlockHash(height uint32) (Uint256, error) {
 func (c *ChainStore) GetCurrentBlockHash() Uint256 {
 	hash, err := c.GetBlockHash(c.currentBlockHeight)
 	if err != nil {
-		return Uint256{}
+		return EmptyHash
 	}
 
 	return hash

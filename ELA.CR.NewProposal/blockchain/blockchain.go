@@ -329,7 +329,7 @@ func (b *BlockChain) GetBlockHash(height uint32) (Uint256, error) {
 	defer b.IndexLock.RUnlock()
 
 	if height >= uint32(len(b.Nodes)) {
-		return Uint256{}, errors.New("not found block")
+		return EmptyHash, errors.New("not found block")
 	}
 	return *b.Nodes[height].Hash, nil
 }
@@ -384,7 +384,7 @@ func (b *BlockChain) GetCurrentBlockHash() Uint256 {
 	b.IndexLock.RLock()
 	defer b.IndexLock.RUnlock()
 
-	return *b.Nodes[len(b.Nodes)].Hash
+	return *b.Nodes[len(b.Nodes)-1].Hash
 }
 
 func (b *BlockChain) ProcessIllegalBlock(payload *payload.DPOSIllegalBlocks) {
