@@ -391,11 +391,8 @@ public class QRCodeUtils {
         while (i < content.length()) {
             int max = i + factor <= content.length() ? i + factor : content.length();
             String tempContent = content.substring(i, max);
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("type", type);
-            jsonObject.addProperty("max", Math.ceil(content.length() / (factor * 1f)));
-            jsonObject.addProperty("current", Math.ceil(max / (factor * 1f)));
-            jsonObject.addProperty("data", tempContent);
+            JsonObject jsonObject = getQrJson(0, "MultiQrContent", Math.ceil(content.length() / (factor * 1f))
+                    , Math.ceil(max / (factor * 1f)), tempContent, MD5Utils.md5Encode(content), type, "ELA");
             Bitmap bitmap = createQrCodeBitmap(jsonObject.toString(), width, height);
             bitmaps.add(bitmap);
             i = max;
@@ -403,34 +400,29 @@ public class QRCodeUtils {
         return bitmaps;
     }
 
-    /**
-     * 生成二维码图片
-     *
-     * @param content 原始数据
-     * @param width   指定图片宽度
-     * @param height  指定图片高度
-     * @param type    二维码的类型
-     * @return 生成的二维码图片
-     */
-    public static Bitmap createQrCodeBitmap(String content, int width, int height, int type) {
+    private static JsonObject getQrJson(int version, String name, double total, double index, String data, String md5, int type, String subWallet) {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("type", type);
-        jsonObject.addProperty("max", 1);
-        jsonObject.addProperty("current", 1);
-        jsonObject.addProperty("data", content);
-        return createQrCodeBitmap(jsonObject.toString(), width, height);
+        jsonObject.addProperty("version", version);
+        jsonObject.addProperty("name", name);
+        jsonObject.addProperty("total", total);
+        jsonObject.addProperty("index", index);
+        jsonObject.addProperty("data", data);
+        jsonObject.addProperty("md5", md5);
+        JsonObject extra = new JsonObject();
+        extra.addProperty("Type", type);
+        if (TextUtils.isEmpty(subWallet)) {
+            subWallet = "ELA";
+        }
+        extra.addProperty("SubWallet", subWallet);
+        jsonObject.add("extra", extra);
+        return jsonObject;
+
     }
 
+
     public static Bitmap createQrCodeBitmap(String content, int width, int height, int type, String chainID) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("type", type);
-        jsonObject.addProperty("max", 1);
-        jsonObject.addProperty("current", 1);
-        if (TextUtils.isEmpty(chainID)) {
-            chainID = "ELA";
-        }
-        jsonObject.addProperty("chainID", chainID);
-        jsonObject.addProperty("data", content);
+        JsonObject jsonObject = getQrJson(0, "MultiQrContent", 1
+                , 1, content, MD5Utils.md5Encode(content), type, chainID);
         return createQrCodeBitmap(jsonObject.toString(), width, height);
     }
 }

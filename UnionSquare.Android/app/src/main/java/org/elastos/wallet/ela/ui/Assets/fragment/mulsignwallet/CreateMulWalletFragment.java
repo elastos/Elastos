@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.alibaba.fastjson.JSON;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -35,6 +36,7 @@ import org.elastos.wallet.ela.utils.ClearEditText;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.Log;
+import org.elastos.wallet.ela.utils.QrBean;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.ScanQRcodeUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
@@ -254,10 +256,10 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
             String result = data.getStringExtra("result");
             if (!TextUtils.isEmpty(result)) {
                 try {
-                    JsonObject jsonObject = new JsonParser().parse(result).getAsJsonObject();
-                    int type = jsonObject.get("type").getAsInt();
+                    QrBean qrBean = JSON.parseObject(result, QrBean.class);
+                    int type = qrBean.getExtra().getType();
                     if (type == Constant.CREATEMUL) {
-                        rvEditText.setText(jsonObject.get("data").getAsString());
+                        rvEditText.setText(qrBean.getData());
                     } else {
                         rvEditText.setText(result);
                     }

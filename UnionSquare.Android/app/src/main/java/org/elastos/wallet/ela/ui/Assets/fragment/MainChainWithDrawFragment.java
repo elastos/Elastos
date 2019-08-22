@@ -9,6 +9,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.alibaba.fastjson.JSON;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -32,6 +33,7 @@ import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.MatcherUtil;
 import org.elastos.wallet.ela.utils.NumberiUtil;
+import org.elastos.wallet.ela.utils.QrBean;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.ScanQRcodeUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
@@ -145,10 +147,10 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
             if (!TextUtils.isEmpty(result) /*&& matcherUtil.isMatcherAddr(result)*/) {
                 address = result;
                 try {
-                    JsonObject jsonObject = new JsonParser().parse(result).getAsJsonObject();
-                    int type = jsonObject.get("type").getAsInt();
+                    QrBean qrBean = JSON.parseObject(result, QrBean.class);
+                    int type = qrBean.getExtra().getType();
                     if (type == Constant.TRANSFER) {
-                        address = jsonObject.get("data").getAsString();
+                        address =qrBean.getData();
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

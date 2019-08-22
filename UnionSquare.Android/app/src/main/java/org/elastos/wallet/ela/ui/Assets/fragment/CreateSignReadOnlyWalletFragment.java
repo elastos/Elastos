@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
+import com.alibaba.fastjson.JSON;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -22,6 +23,7 @@ import org.elastos.wallet.ela.ui.Assets.viewdata.CommonCreateSubWalletViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.ClearEditText;
+import org.elastos.wallet.ela.utils.QrBean;
 import org.elastos.wallet.ela.utils.RxEnum;
 
 import butterknife.BindView;
@@ -55,8 +57,8 @@ public class CreateSignReadOnlyWalletFragment extends BaseFragment implements Co
         super.setExtraData(data);
         result = data.getString("result");
         try {
-            JsonObject jsonObject = new JsonParser().parse(result).getAsJsonObject();
-            result = jsonObject.get("data").getAsString();
+            QrBean qrBean = JSON.parseObject(result, QrBean.class);
+            result = qrBean.getData();
         } catch (Exception e) {
             //showToast(getString(R.string.error_20007));
         }

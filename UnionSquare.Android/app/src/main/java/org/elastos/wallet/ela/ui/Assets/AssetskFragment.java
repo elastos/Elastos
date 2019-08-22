@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.alibaba.fastjson.JSON;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
@@ -40,6 +41,7 @@ import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.utils.Constant;
+import org.elastos.wallet.ela.utils.QrBean;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.ScanQRcodeUtil;
 import org.greenrobot.eventbus.Subscribe;
@@ -167,17 +169,16 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             String result = data.getStringExtra("result");//&& matcherUtil.isMatcherAddr(result)
             if (!TextUtils.isEmpty(result) /*&& matcherUtil.isMatcherAddr(result)*/) {
                 try {
-                    JsonObject jsonObject = new JsonParser().parse(result).getAsJsonObject();
-                    int type = jsonObject.get("type").getAsInt();
+                    QrBean qrBean = JSON.parseObject(result, QrBean.class);
+                    int type = qrBean.getExtra().getType();
                     Bundle bundle = new Bundle();
 
                     switch (type) {
                         case Constant.TRANSFER:
                             //扫描联系人到转账页面
                             bundle.putParcelable("wallet", wallet);
-                            bundle.putString("ChainID", jsonObject.get("chainID").getAsString());
-                            bundle.putString("ChainID", jsonObject.get("chainID").getAsString());
-                            bundle.putString("address", jsonObject.get("data").getAsString());
+                            bundle.putString("ChainID", qrBean.getExtra().getSubWallet());
+                            bundle.putString("address", qrBean.getData());
                             ((BaseFragment) getParentFragment()).start(TransferFragment.class, bundle);
                             break;
                         case Constant.CREATEREADONLY:
@@ -193,7 +194,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                         case Constant.SIGN:
                             //去签名
                             //数据完整后跳转//如果是其他数据  用新的数据
-                            String attribute = getData(jsonObject, Constant.SIGN);
+                            String attribute = getData(qrBean, Constant.SIGN);
                             if (!TextUtils.isEmpty(attribute)) {
                                 bundle.putParcelable("wallet", wallet);
                                 bundle.putString("attributes", attribute);
@@ -368,7 +369,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                         subWallet.setFiled1("Connected");
                     }
                     subWallet.setProgress(progress);
-                    if (progress==100){
+                    if (progress == 100) {
                         subWallet.setFiled2("true");
                     }
                     if (wallet.getWalletId().equals(MasterWalletID)) {
@@ -549,7 +550,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     private int currentType = -1;
     private Map<Integer, String> dataMap;
 
-    private String getData(JsonObject jsonObject, int type) {
+    private String getData(QrBean qrBean, int type) {
         if (dataMap == null) {
             dataMap = new TreeMap<>();
         }
@@ -557,26 +558,24 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             currentType = type;
             dataMap.clear();
         }
-        try {
-            String mydata = jsonObject.get("data").getAsString();
-            int max = jsonObject.get("max").getAsInt();
-            int current = jsonObject.get("current").getAsInt();
-            dataMap.put(current, mydata);
-            if (dataMap.size() == max) {
-                StringBuilder signData = new StringBuilder();
-                for (String s : dataMap.values()) {
-                    signData.append(s);
-                }
-                currentType = -1;
-                dataMap.clear();
-                return signData.toString();
+
+        String mydata = qrBean.getData();
+        int max = qrBean.getTotal();
+        int current = qrBean.getIndex();
+        dataMap.put(current, mydata);
+        if (dataMap.size() == max) {
+            StringBuilder signData = new StringBuilder();
+            for (String s : dataMap.values()) {
+                signData.append(s);
             }
-            String msg = String.format(getContext().getString(R.string.scanprocess), dataMap.size() + "/" + max);
-            showToast(msg);
-            requstManifestPermission(getString(R.string.needpermission));
-        } catch (Exception e) {
-            toErroScan(jsonObject.toString());
+            currentType = -1;
+            dataMap.clear();
+            return signData.toString();
         }
+        String msg = String.format(getContext().getString(R.string.scanprocess), dataMap.size() + "/" + max);
+        showToast(msg);
+        requstManifestPermission(getString(R.string.needpermission));
+
         return null;
     }
 
