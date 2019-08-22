@@ -24,6 +24,7 @@ class UserProfile extends Component {
         hashKey: "",
         apiKey: ""
       },
+      status: "",
       output: ""
     };
 
@@ -58,6 +59,7 @@ class UserProfile extends Component {
       .then(response => {
         this.setState({
           isTransferred: response.data.status === 200,
+          status: "SUCCESS",
           output: JSON.stringify(response.data, null, 2)
         });
       }).catch(error => {
@@ -69,7 +71,8 @@ class UserProfile extends Component {
                 //console.log(error.response.status);
                 // console.log(error.response.headers);
                 this.setState({
-                    output: error.response.data["error message"]
+                    status: "FAILURE",
+                    output: JSON.stringify(error.response.data, null, 2)
                 })
             } else if (error.request) {
                 // The request was made but no response was received
@@ -97,51 +100,62 @@ class UserProfile extends Component {
           <Row>
             <Col md={6}>
               <Card
-                title="Transfer ELA"
+                title="Transfer ELA Demostration"
                 content={
-                  <Row>
-                    <Col md={12}>
-                      <FormGroup>
-                        <ControlLabel>API Key</ControlLabel>
-                        <FormControl
-                          rows="3"
-                          componentClass="textarea"
-                          bsClass="form-control"
-                          placeholder="Enter your API Key here"
-                          name="apiKey"
-                          value={this.state.inputs.apiKey.value}
-                          onChange={this.changeHandler}
-                        />
-                      </FormGroup>
-                        <Button
-                        variant="primary"
-                        size="lg"
-                        onClick={this.handleClick}
-                      >
-                        Transfer ELA
-                      </Button>
-                    </Col>
-
-                     <Col md={12}>
-                      {this.state.output !== "" && (
+                  <form>
+                    <Row>
+                      <Col md={12}>
                         <FormGroup>
-                          <ControlLabel>Transfer Status</ControlLabel>
+                          <ControlLabel>API Key</ControlLabel>
                           <FormControl
-                            rows="10"
+                            rows="3"
                             componentClass="textarea"
                             bsClass="form-control"
-                            placeholder=""
+                            placeholder="Enter your API Key here"
+                            name="apiKey"
+                            value={this.state.inputs.apiKey.value}
+                            onChange={this.changeHandler}
+                          />
+                          <br />
+                          <Button
+                            onClick={this.handleClick}
+                            variant="primary"
+                            size="lg"
+                          >
+                            Transfer ELA
+                          </Button>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <div className="clearfix" />
+                  </form>
+                }
+              />
+            </Col>
+            <Col md={6}>
+              {this.state.output && (
+                <Card
+                  title="Output"
+                  content={
+                    <form>
+                      <Row>
+                        <Col md={12}>
+                          <ControlLabel>Status : {this.state.status}</ControlLabel>
+                          <FormControl
+                            rows="7"
+                            componentClass="textarea"
+                            bsClass="form-control"
                             name="output"
                             value={this.state.output}
                             readOnly
                           />
-                        </FormGroup>
-                      )}
-                    </Col>
-                  </Row>
-
-                }
-              />
+                        </Col>
+                      </Row>
+                      <div className="clearfix" />
+                    </form>
+                  }
+                />
+              )}
             </Col>
           </Row>
           <Row>
