@@ -26,6 +26,7 @@ class UserProfile extends Component {
         hashKey: "",
         apiKey: ""
       },
+      status: "",
       output: ""
     };
 
@@ -59,44 +60,47 @@ class UserProfile extends Component {
       })
       .then(response => {
         this.setState({
+          status: "SUCCESS",
           output: response.data
         });
       })
       .catch(error => {
         // Error
-        if (error.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
-          // console.log(error.response.data);
-          //console.log(error.response.status);
-          // console.log(error.response.headers);
-          this.setState({
-            output: error.response.data["error message"]
-          })
-        } else if (error.request) {
-          // The request was made but no response was received
-          // `error.request` is an instance of XMLHttpRequest in the
-          // browser and an instance of
-          // http.ClientRequest in node.js
-          console.log(error.request);
-        } else {
-          // Something happened in setting up the request that triggered an Error
-          console.log('Error', error.message);
-        }
+              if (error.response) {
+                  // The request was made and the server responded with a status code
+                  // that falls out of the range of 2xx
+                  // console.log(error.response.data);
+                  // console.log(error.response.status);
+                  // console.log(error.response.headers);
+                  this.setState({
+                      status: "FAILURE",
+                      output: JSON.stringify(error.response.data, null, 2)
+                  })
+              } else if (error.request) {
+                  // The request was made but no response was received
+                  // `error.request` is an instance of XMLHttpRequest in the
+                  // browser and an instance of
+                  // http.ClientRequest in node.js
+                  this.setState({
+                      status: "FAILURE",
+                      output: error.request
+                  })
+                  console.log(error.request);
+              } else {
+                  // Something happened in setting up the request that triggered an Error
+                  this.setState({
+                      status: "FAILURE",
+                      output: error.message
+                  })
+                  console.log('Error', error.message);
+              }
       });
   }
 
   handleClick() {
     //TODO:
     //1.check for the api key
-    if (this.state.inputs.apiKey.value !== undefined) {
-      this.verifyMessage();
-    } else {
-      this.setState({
-        output: "Please enter an API Key to proceed further"
-      });
-      console.log("api key not present");
-    }
+    this.verifyMessage();
   }
 
   render() {
@@ -139,7 +143,7 @@ class UserProfile extends Component {
                             variant="primary"
                             size="lg"
                           >
-                            Verify
+                            Display
                           </Button>
                         </FormGroup>
                       </Col>
@@ -157,8 +161,9 @@ class UserProfile extends Component {
                     <form>
                       <Row>
                         <Col md={12}>
+                          <ControlLabel>Status : {this.state.status}</ControlLabel>
                           <FormControl
-                            rows="3"
+                            rows="13"
                             componentClass="textarea"
                             bsClass="form-control"
                             name="output"

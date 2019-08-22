@@ -107,14 +107,7 @@ class UserProfile extends Component {
     handleClick() {
         //TODO:
         //1.check for the api key
-        if (this.state.inputs.apiKey.value !== undefined) {
-            this.signTheMessage()
-        } else {
-            this.setState({
-                output: 'Please enter an API Key to proceed further'
-            })
-            console.log('api key not present')
-        }
+        this.signTheMessage()
     }
 
     render() {
