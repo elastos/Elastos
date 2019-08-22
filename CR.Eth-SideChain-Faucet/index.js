@@ -31,7 +31,7 @@ app.configureWeb3(config)
 	require('./src/controllers/index')(app)
 
 	app.get('/', function(request, response) {
-	  response.send('Sokol POA Network faucet')
+	  response.send('ELA ETH Network faucet')
 	});
 
 	app.set('port', (process.env.PORT || 80))
