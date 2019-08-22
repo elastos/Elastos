@@ -19,14 +19,15 @@ import { baseUrl } from "../utils/api";
 class UserProfile extends Component {
   constructor() {
     super();
-    this.handleClick = this.handleClick.bind(this);
-    //this.handleOutsideClick = this.handleOutsideClick.bind(this);
-
     this.state = {
-      isTransferred: false,
-      apiKey: "",
+      inputs: {
+        hashKey: "",
+        apiKey: ""
+      },
       output: ""
     };
+
+    this.handleClick = this.handleClick.bind(this);
   }
 
   changeHandler = event => {
@@ -34,7 +35,14 @@ class UserProfile extends Component {
     const value = event.target.value;
 
     this.setState({
-      [key]: value
+      inputs: {
+        ...this.state.inputs,
+        [key]: {
+          ...this.state.inputs[key],
+          value
+        }
+      },
+      output: ""
     });
   };
 
@@ -42,13 +50,15 @@ class UserProfile extends Component {
     const endpoint = "console/transferELADemo";
     axios
       .get(baseUrl + endpoint, {
-        //mode: "cors",
-        params: {}
+        headers: {
+          api_key: this.state.inputs.apiKey.value,
+          "Content-Type": "application/json;"
+        }
       })
       .then(response => {
         this.setState({
           isTransferred: response.data.status === 200,
-          output: response.data
+          output: JSON.stringify(response.data)
         });
       })
       .catch(error =>
@@ -61,14 +71,7 @@ class UserProfile extends Component {
   handleClick() {
     //TODO:
     //Do we need to generate a new key every time the button gets clicked?
-    if (this.state.apiKey !== undefined) {
-      this.transferELA();
-    } else {
-      this.setState({
-        output: "Please enter an API Key to proceed further"
-      });
-      console.log("api key not present");
-    }
+    this.transferELA();
   }
 
   render() {
@@ -76,7 +79,7 @@ class UserProfile extends Component {
       <div className="content">
         <Grid fluid>
           <Row>
-            <Col md={12}>
+            <Col md={6}>
               <Card
                 title="Transfer ELA"
                 content={
@@ -90,25 +93,10 @@ class UserProfile extends Component {
                           bsClass="form-control"
                           placeholder="Enter your API Key here"
                           name="apiKey"
-                          value={this.state.apiKey}
+                          value={this.state.inputs.apiKey.value}
                           onChange={this.changeHandler}
                         />
                       </FormGroup>
-
-                      {this.state.output !== "" && (
-                        <FormGroup>
-                          <ControlLabel>Transfer Status</ControlLabel>
-                          <FormControl
-                            rows="3"
-                            componentClass="textarea"
-                            bsClass="form-control"
-                            placeholder=""
-                            name="output"
-                            value={this.state.output}
-                            readOnly
-                          />
-                        </FormGroup>
-                      )}
                     </Col>
                     <Col md={12}>
                       <Button
@@ -123,6 +111,30 @@ class UserProfile extends Component {
                 }
               />
               <div />
+            </Col>
+            <Col md={6}>
+              {this.state.output && (
+                <Card
+                  title="Output"
+                  content={
+                    <form>
+                      <Row>
+                        <Col md={12}>
+                          <FormControl
+                            rows="5"
+                            componentClass="textarea"
+                            bsClass="form-control"
+                            name="output"
+                            value={this.state.output}
+                            readOnly
+                          />
+                        </Col>
+                      </Row>
+                      <div className="clearfix" />
+                    </form>
+                  }
+                />
+              )}
             </Col>
           </Row>
           <Row>
