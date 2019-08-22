@@ -3,13 +3,22 @@ import React, {Component} from "react";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import {gruvboxDark} from "react-syntax-highlighter/dist/esm/styles/hljs";
 
-import {Grid, Row, Col, FormGroup, ControlLabel, FormControl, Button} from "react-bootstrap";
+import {
+  Grid,
+  Row,
+  Col,
+  FormGroup,
+  ControlLabel,
+  FormControl,
+  Button
+} from "react-bootstrap";
 
 import {Card} from "components/Card/Card.jsx";
 import axios from "axios";
-import {baseUrl} from "../utils/api";
+import { baseUrl } from "../utils/api";
 
 class UserProfile extends Component {
+
     constructor() {
 
         super()
