@@ -23,7 +23,7 @@ class Generate(Resource):
 		"""
 		Returns API key of length 20.
 		"""
-		stringLength = 20
+		stringLength = 32
 		api_key = ''.join(random.choice(string.ascii_letters + string.digits) for i in range(stringLength))
 		data = {"API Key":api_key,"status":200, "timestamp":getTime(),"path":request.url}
 		return Response(json.dumps(data), 
