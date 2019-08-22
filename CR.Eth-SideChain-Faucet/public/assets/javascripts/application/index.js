@@ -22,7 +22,7 @@ $(function() {
 			$("#receiver").val('');
 			loader.addClass("hidden");
 			swal("Success",
-			  `0.5 SPOA has been successfully transferred to <a href="https://blockscout.com/poa/sokol/tx/${data.success.txHash}" target="blank">${receiver}</a>`,
+			  `0.5 ETH has been successfully transferred to ${receiver}`,
 			  "success"
 			);
 		}).fail(function(err) {
