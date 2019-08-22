@@ -13,7 +13,7 @@ public class QrBean {
      */
 
     private int version;
-    private int name;
+    private String name;
     private int total;
     private int index;
     private String data;
@@ -28,11 +28,11 @@ public class QrBean {
         this.version = version;
     }
 
-    public int getName() {
+    public String getName() {
         return name;
     }
 
-    public void setName(int name) {
+    public void setName(String name) {
         this.name = name;
     }
 
