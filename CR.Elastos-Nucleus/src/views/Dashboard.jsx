@@ -22,7 +22,7 @@ class Dashboard extends Component {
           <Row>
             <Col md={12}>
               <Card
-                title="Documentation"
+                title="About Us"
                 content={
                   <form>
                     <Row>
@@ -30,28 +30,20 @@ class Dashboard extends Component {
                         <FormGroup controlId="formControlsTextarea">
                           <p>
                             <span className="category" />
-                            Lorem ipsum dolor sit amet, consectetuer adipiscing
-                            elit, sed diem nonummy nibh euismod tincidunt ut
-                            lacreet dolore magna aliguam erat volutpat. Ut wisis
-                            enim ad minim veniam, quis nostrud exerci tution
-                            ullam corper suscipit lobortis nisi ut aliquip ex ea
-                            commodo consequat. Duis te feugi facilisi. Duis
-                            autem dolor in hendrerit in vulputate velit esse
-                            molestie consequat, vel illum dolore eu feugiat
-                            nulla facilisis at vero eros et accumsan et iusto
-                            odio dignissim qui blandit praesent luptatum zzril
-                            delenit au gue duis dolore te feugat nulla facilisi.
+                            - Elastos Console: The prototype version of Elastos Console contains around 6 services where developers can go to the console website to interact with. 
+                            <br /><br />
+                            - Each service has a different page complete with full interactivity, documentation and samples of code in various languages that developers can easily “plug-and-play” into their own applications to quickly get started in integrating Elastos technology. 
+                            <br /><br />
+                            - The Console also contains documentation for every single endpoint exposed via Elastos Smartweb Services. 
+                            <br /><br />
+                            - The Elastos Console is the main product coming out of GMU collaboration as this will continue to mature over the next 6 months to 1 year before fully supporting not just GMU net, but also having the ability to easily deploy applications to mainnet(Eg. Deploying apps for Trinity, deploying to eth sidechain mainnet, or even interacting with other university nets around the world). 
+                            <br /><br />
+                            - The goal is to make Elastos Console one stop shop for all the developers who are interested in developing using Elastos Technology.
+
                           </p>
                         </FormGroup>
                       </Col>
                     </Row>
-                    <CustomButton
-                      text="Show Content"
-                      path="/admin/transactions"
-                      pullRight
-                      bsStyle="info"
-                      fill
-                    />
                     <div className="clearfix" />
                   </form>
                 }

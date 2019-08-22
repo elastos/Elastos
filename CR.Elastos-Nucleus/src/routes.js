@@ -77,7 +77,7 @@ const sidebarRoutes = [
   },
   {
     path: "/dashboard",
-    name: "Dashboard",
+    name: "About Us",
     icon: "pe-7s-tools",
     component: Dashboard,
     layout: "/admin"
