@@ -4,7 +4,7 @@ import random
 import string
 import datetime
 import json
-
+from flask_api import status
 from flask import request
 from flask import Response
 from flask_restplus import Resource
@@ -61,9 +61,9 @@ class ShowContent(Resource):
 		api_url_base = settings.GMU_NET_IP_ADDRESS + settings.HIVE_PORT + settings.SHOW_CONTENT + "{}"
 		myResponse = requests.get(api_url_base.format(hash_key))
 		return Response(myResponse, 
-				status=200,
-				mimetype='application/json'
-			)
+			status=myResponse.status_code,
+			mimetype='application/json'
+		)
 
 
   
