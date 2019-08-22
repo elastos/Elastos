@@ -9,8 +9,18 @@ export default class extends BaseService {
 
   async create(param) {
     return {
-      vid: 1,
+      vid: 13,
       title: 'additional meeting request',
+      author: 'Fay Li',
+      status: 'DRAFT',
+      created: '2019-8-22'
+    }
+  }
+
+  async update(param) {
+    return {
+      vid: 1,
+      title: 'CR100',
       author: 'Fay Li',
       status: 'DRAFT',
       created: '2019-8-22'

@@ -7,7 +7,8 @@ export default {
     title: 'Title',
     author: 'Ahthor',
     status: 'Status',
-    createdAt: 'Created'
+    createdAt: 'Created',
+    description: 'Description'
   },
   status: {
     [ELIP_STATUS.WAIT_FOR_REVIEW]: 'WAIT FOR REVIEW',
@@ -22,6 +23,20 @@ export default {
     [ELIP_FILTER.SUBMITTED_BY_ME]: 'Submitted by me'
   },
   button: {
-    add: 'Add ELIP'
+    add: 'Add ELIP',
+    cancel: 'Cancel',
+    submitForReview: 'Submit for Review'
+  },
+  msg: {
+    submitted: 'Submitted successfully',
+    rejected: 'Rejected successfully',
+    approved: 'Approved and published successfully',
+  },
+  form: {
+    error: {
+      required: 'This field is required',
+      tooLong: 'This field is too long',
+      limit200: 'You can only type 200 words max.'
+    }
   }
 }

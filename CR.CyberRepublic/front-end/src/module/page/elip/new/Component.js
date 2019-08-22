@@ -1,13 +1,39 @@
 import React from 'react'
-import BaseComponent from '@/model/BaseComponent'
-import I18N from '@/I18N'
+import styled from 'styled-components'
+import Footer from '@/module/layout/Footer/Container'
+import StandardPage from '@/module/page/StandardPage'
+import ElipForm from '@/module/form/ElipForm/Container'
+import BackLink from '@/module/shared/BackLink/Component'
+import { grid } from '../common/variable'
 
-export default class extends BaseComponent {
-  constructor(props) {
-    super(props)
+export default class extends StandardPage {
+  constructor(p) {
+    super(p)
+    this.state = {
+      loading: false
+    }
   }
 
-  ord_render() {
-    return <Container>add elip page</Container>
+  ord_renderContent() {
+    return (
+      <div>
+        <Container>
+          <BackLink link='/elips' />
+          <ElipForm />
+        </Container>
+        <Footer />
+      </div>
+    )
   }
 }
+
+const Container = styled.div`
+  padding: 0 50px 80px;
+  width: 70vw;
+  margin: 80px auto 0;
+  background: #ffffff;
+  text-align: left;
+  @media only screen and (max-width: ${grid.sm}) {
+    margin: 15px;
+  }
+`
