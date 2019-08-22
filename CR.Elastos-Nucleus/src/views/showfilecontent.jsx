@@ -202,7 +202,7 @@ class UserProfile extends Component {
 Host: localhost:8888
 
 headers:{
-    "api_key":564732BHU
+    "api_key": KHBOsth7b3WbOTVzZqGUEhOY8rPreYFM
 }
 `}
                         </SyntaxHighlighter>

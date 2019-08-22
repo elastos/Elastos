@@ -234,7 +234,11 @@ class UserProfile extends Component {
                           {`POST /api/1/service/sidechain/did/verify HTTP/1.1
 Host: localhost:8888
 Content-Type: application/json
+headers:{
+    "api_key":KHBOsth7b3WbOTVzZqGUEhOY8rPreYFM
+}
 
+request.body:
 {
     "msg": "E4BDA0E5A5BDEFBC8CE4B896E7958D",
     "pub": "02C3F59F337814C6715BBE684EC525B9A3CFCE55D9DEEC53E1EDDB0B352DBB4A54",

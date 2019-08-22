@@ -215,10 +215,15 @@ class UserProfile extends Component {
 Host: localhost:8888
 Content-Type: application/json
 
-  {
-      "privateKey":"0D5D7566CA36BC05CFF8E3287C43977DCBB492990EA1822643656D85B3CB0226",
-      "msg":"Hello World"
-  }`}
+headers:{
+    "api_key":KHBOsth7b3WbOTVzZqGUEhOY8rPreYFM
+}
+
+request.body:
+{
+    "privateKey":"0D5D7566CA36BC05CFF8E3287C43977DCBB492990EA1822643656D85B3CB0226",
+    "msg":"Hello World"
+}`}
                                                 </SyntaxHighlighter>
                                                 <SyntaxHighlighter
                                                     language="javascript"
