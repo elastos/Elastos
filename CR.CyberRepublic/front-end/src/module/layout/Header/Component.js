@@ -1,8 +1,6 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
-import {
-  Affix, Layout, Menu, Icon, Badge, Avatar, Modal, Dropdown, Popover, Select,
-} from 'antd'
+import { Layout, Menu, Icon,  Modal, Dropdown } from 'antd'
 import _ from 'lodash'
 import I18N from '@/I18N'
 import MediaQuery from 'react-responsive'
@@ -297,6 +295,10 @@ export default class extends BaseComponent {
               {I18N.get('navigation.suggestion')}
             </Menu.Item>
 
+            <Menu.Item className="c_MenuItem link" key="elip">
+              {I18N.get('navigation.elip')}
+            </Menu.Item>
+
             <Menu.Item className="c_MenuItem link" key="proposals">
               {I18N.get('navigation.proposal')}
             </Menu.Item>
@@ -419,6 +421,7 @@ export default class extends BaseComponent {
       'council',
       'constitution/1',
       'what-is-new',
+      'elip',
     ], key)) {
       if (key === 'landing') {
         this.props.history.push('/')

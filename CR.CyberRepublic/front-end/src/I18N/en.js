@@ -42,6 +42,7 @@ const en = {
     council: 'Council',
     constitution: 'Constitution',
     suggestion: 'Suggestions',
+    elip: 'ELIP',
     proposal: 'Proposals',
     whatsNew: "What's New",
     resources: {

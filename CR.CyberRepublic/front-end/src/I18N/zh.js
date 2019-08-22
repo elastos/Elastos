@@ -42,6 +42,7 @@ const zh = {
     council: '委员会',
     constitution: '章程',
     suggestion: '建议',
+    elip: '改进提案',
     proposal: '提案',
     whatsNew: '版本更新',
     resources: {
