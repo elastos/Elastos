@@ -54,24 +54,39 @@ class UserProfile extends Component {
               "api_key": this.state.inputs.apiKey.value,
               "Content-Type": "application/json;"
           }
-      })
-          .then(response => {
+      }).then((response) => {
 
                   this.setState({
-                     output: response.data.result
-                  });
-
-          })
-          .catch(error =>
-              this.setState({
-                inputs:{
+                    inputs:{
                        message:'',
                        apiKey:'',
                        privKey:''
                      },
-                output:error})
-
-          );
+                     output: ''
+                  });
+          })
+          .catch((error) => {
+              // Error
+              if (error.response) {
+                  // The request was made and the server responded with a status code
+                  // that falls out of the range of 2xx
+                  // console.log(error.response.data);
+                  // console.log(error.response.status);
+                  // console.log(error.response.headers);
+                  this.setState({
+                    output: error.response.data["error message"]
+                  })
+              } else if (error.request) {
+                  // The request was made but no response was received
+                  // `error.request` is an instance of XMLHttpRequest in the
+                  // browser and an instance of
+                  // http.ClientRequest in node.js
+                  console.log(error.request);
+              } else {
+                  // Something happened in setting up the request that triggered an Error
+                  console.log('Error', error.message);
+              }
+          });
   }
 
   handleClick() {
@@ -127,7 +142,7 @@ class UserProfile extends Component {
                             rows="3"
                             componentClass="textarea"
                             bsClass="form-control"
-                            name="pubKey"
+                            name="privKey"
                             placeholder="Enter your private key here"
                             value = {this.state.inputs.privKey.value}
                             onChange = {this.changeHandler}
@@ -150,14 +165,19 @@ class UserProfile extends Component {
                   <form>
                     <Row>
                       <Col md={12}>
+                        <SyntaxHighlighter
+                          language="javascript"
+                          style={gruvboxDark}
+                        >
                         <FormControl
                             rows="3"
                             componentClass="textarea"
                             bsClass="form-control"
                             name="output"
                             value = {this.state.output}
-                            readOnly
+
                           />
+                        </SyntaxHighlighter>
 
                       </Col>
                     </Row>

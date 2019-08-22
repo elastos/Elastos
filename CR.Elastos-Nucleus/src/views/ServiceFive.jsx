@@ -36,7 +36,10 @@ class UserProfile extends Component {
     axios
       .get(baseUrl + endpoint, {
         //mode: "cors",
-        params: {}
+        params: {},
+        headers: {
+              "api_key": this.state.apiKey
+          }
       })
       .then(response => {
         this.setState({
