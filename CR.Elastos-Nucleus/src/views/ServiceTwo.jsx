@@ -29,6 +29,7 @@ class UserProfile extends Component {
                 privKey: '',
                 apiKey: ''
             },
+            status: "",
             output: ''
         }
 
@@ -66,30 +67,40 @@ class UserProfile extends Component {
         }).then(response => {
             console.log(response)
             this.setState({
+                status: "SUCCESS",
                 output: JSON.stringify(response.data.result,null, 2)
             });
 
         }).catch(error => {
             // Error
-            if (error.response) {
-                // The request was made and the server responded with a status code
-                // that falls out of the range of 2xx
-                // console.log(error.response.data);
-                //console.log(error.response.status);
-                // console.log(error.response.headers);
-                 this.setState({
-                   output: error.response.data["error message"]
-                 })
-            } else if (error.request) {
-                // The request was made but no response was received
-                // `error.request` is an instance of XMLHttpRequest in the
-                // browser and an instance of
-                // http.ClientRequest in node.js
-                console.log(error.request);
-            } else {
-                // Something happened in setting up the request that triggered an Error
-                console.log('Error', error.message);
-            }
+              if (error.response) {
+                  // The request was made and the server responded with a status code
+                  // that falls out of the range of 2xx
+                  // console.log(error.response.data);
+                  // console.log(error.response.status);
+                  // console.log(error.response.headers);
+                  this.setState({
+                      status: "FAILURE",
+                      output: JSON.stringify(error.response.data, null, 2)
+                  })
+              } else if (error.request) {
+                  // The request was made but no response was received
+                  // `error.request` is an instance of XMLHttpRequest in the
+                  // browser and an instance of
+                  // http.ClientRequest in node.js
+                  this.setState({
+                      status: "FAILURE",
+                      output: error.request
+                  })
+                  console.log(error.request);
+              } else {
+                  // Something happened in setting up the request that triggered an Error
+                  this.setState({
+                      status: "FAILURE",
+                      output: error.message
+                  })
+                  console.log('Error', error.message);
+              }
         });
     }
 
@@ -164,35 +175,29 @@ class UserProfile extends Component {
                             />
                         </Col>
                         <Col md={6}>
-                            {this.state.output && (
-                                <Card
-                                    content={
-                                        <form>
-                                            <Row>
-                                                <Col md={12}>
-                                                    {/*<SyntaxHighlighter*/}
-                                                    {/*    language="javascript"*/}
-                                                    {/*    style={gruvboxDark}*/}
-                                                    {/*>*/}
-                                                        {/*{this.state.output}*/}
-                                                        <FormControl
-                            rows="10"
-                            componentClass="textarea"
-                            bsClass="form-control"
-                            name="output"
-                            value = {this.state.output}
-
-                          />
-                                                    {/*</SyntaxHighlighter>*/}
-
-                                                </Col>
-                                            </Row>
-                                            <div className="clearfix"/>
-                                        </form>
-                                    }
-                                />
-                            )}
-
+                          {this.state.output && (
+                            <Card
+                              title="Message content"
+                              content={
+                                <form>
+                                  <Row>
+                                    <Col md={12}>
+                                      <ControlLabel>Status : {this.state.status}</ControlLabel>
+                                      <FormControl
+                                        rows="5"
+                                        componentClass="textarea"
+                                        bsClass="form-control"
+                                        name="output"
+                                        value={this.state.output}
+                                        readOnly
+                                      />
+                                    </Col>
+                                  </Row>
+                                  <div className="clearfix" />
+                                </form>
+                              }
+                            />
+                          )}
                         </Col>
                     </Row>
                     <Row>

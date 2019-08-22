@@ -28,6 +28,7 @@ class UserProfile extends Component {
         sign: "",
         apiKey: ""
       },
+      status: "",
       output: ""
     };
 
@@ -68,7 +69,8 @@ class UserProfile extends Component {
         }
       ).then(response => {
                   this.setState({
-                     output: JSON.stringify(response.data,null, 2)
+                    status: "SUCCESS",
+                    output: JSON.stringify(response.data,null, 2)
                   });
           })
           .catch((error) => {
@@ -80,16 +82,25 @@ class UserProfile extends Component {
                   // console.log(error.response.status);
                   // console.log(error.response.headers);
                   this.setState({
-                      output: error.response.data["error message"]
+                      status: "FAILURE",
+                      output: JSON.stringify(error.response.data, null, 2)
                   })
               } else if (error.request) {
                   // The request was made but no response was received
                   // `error.request` is an instance of XMLHttpRequest in the
                   // browser and an instance of
                   // http.ClientRequest in node.js
+                  this.setState({
+                      status: "FAILURE",
+                      output: error.request
+                  })
                   console.log(error.request);
               } else {
                   // Something happened in setting up the request that triggered an Error
+                  this.setState({
+                      status: "FAILURE",
+                      output: error.message
+                  })
                   console.log('Error', error.message);
               }
 
@@ -101,14 +112,7 @@ class UserProfile extends Component {
   handleClick() {
     //TODO:
     //1.check for the api key
-    if (this.state.inputs.apiKey.value !== undefined) {
-      this.verifyMessage();
-    } else {
-      this.setState({
-        output: "Please enter an API Key to proceed further"
-      });
-      console.log("api key not present");
-    }
+    this.verifyMessage();
   }
 
   render() {
@@ -191,8 +195,9 @@ class UserProfile extends Component {
                     <form>
                       <Row>
                         <Col md={12}>
+                          <ControlLabel>Status : {this.state.status}</ControlLabel>
                           <FormControl
-                            rows="3"
+                            rows="5"
                             componentClass="textarea"
                             bsClass="form-control"
                             name="output"
