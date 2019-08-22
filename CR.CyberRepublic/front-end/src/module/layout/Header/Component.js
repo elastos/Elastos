@@ -295,7 +295,7 @@ export default class extends BaseComponent {
               {I18N.get('navigation.suggestion')}
             </Menu.Item>
 
-            <Menu.Item className="c_MenuItem link" key="elip">
+            <Menu.Item className="c_MenuItem link" key="elips">
               {I18N.get('navigation.elip')}
             </Menu.Item>
 
@@ -421,7 +421,7 @@ export default class extends BaseComponent {
       'council',
       'constitution/1',
       'what-is-new',
-      'elip',
+      'elips'
     ], key)) {
       if (key === 'landing') {
         this.props.history.push('/')

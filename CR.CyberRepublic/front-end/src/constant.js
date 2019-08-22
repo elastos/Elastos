@@ -295,3 +295,7 @@ export const SUGGESTION_STATUS = create(['ACTIVE', 'ABUSED', 'ARCHIVED'])
 export const SUGGESTION_ABUSED_STATUS = create(['REPORTED', 'HANDLED'])
 
 export const SUGGESTION_TAG_TYPE = create(['UNDER_CONSIDERATION', 'INFO_NEEDED'])
+
+// elip
+export const ELIP_STATUS = create(['WAIT_FOR_REVIEW', 'APPROVED', 'REJECTED'])
+export const ELIP_FILTER = create(['ALL', 'APPROVED', 'SUBMITTED_BY_ME', 'WAIT_FOR_REVIEW'])
