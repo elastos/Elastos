@@ -59,18 +59,10 @@ class UserProfile extends Component {
               "Content-Type": "application/json;"
           }
       })
-          .then((response) => {
-              if(response.result === true){
+          .then(response => {
                   this.setState({
-                      inputs:{
-                            hashKey: '',
-                            pubKey: '',
-                            sign:'',
-                            apiKey:''
-                        },
-                     output: "Your message has been verified."
+                     output: JSON.stringify(response.data,null, 2)
                   });
-              }
           })
           .catch((error) => {
               // Error
@@ -81,12 +73,6 @@ class UserProfile extends Component {
                   // console.log(error.response.status);
                   // console.log(error.response.headers);
                   this.setState({
-                      inputs: {
-                          hashKey: '',
-                          pubKey: '',
-                          sign: '',
-                          apiKey: ''
-                      },
                       output: error.response.data["error message"]
                   })
               } else if (error.request) {
