@@ -135,7 +135,7 @@ class VerifyAndShow(Resource):
     					"sig": req_data['sig']
 					}
 		myResponse1 = requests.post(api_url_base, data=json.dumps(json_data), headers=headers).json()
-		if not myResponse1['result']:
+		if myResponse1['result'] != True:
 			data = {"error message":"Hask key could not be verified","status":404, "timestamp":getTime(),"path":request.url}
 			return Response(json.dumps(data), 
 				status=404,
@@ -151,6 +151,13 @@ class VerifyAndShow(Resource):
       					"msg":req_data['hash']
   					}
 		myResponse2 = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
+		if myResponse2['status'] != 200:
+			data = {"error message":"Hash Key and messsage could not be verified","status":401, "timestamp":getTime(),"path":request.url}
+			return Response(json.dumps(data), 
+				status=401,
+				mimetype='application/json'
+			)
+
 		if myResponse2['result']['msg'] != signed_message:
 			data = {"error message":"Hash Key and messsage could not be verified","status":401, "timestamp":getTime(),"path":request.url}
 			return Response(json.dumps(data), 
