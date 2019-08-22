@@ -1,43 +1,242 @@
 import React, { Component } from "react";
-import Dropzone from "react-dropzone";
+
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { gruvboxDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
-import { Grid, Row, Col, FormGroup } from "react-bootstrap";
+import {
+  Grid,
+  Row,
+  Col,
+  FormGroup,
+  ControlLabel,
+  FormControl,
+  Button
+} from "react-bootstrap";
 
 import { Card } from "components/Card/Card.jsx";
+import axios from "axios";
+import { baseUrl } from "../utils/api";
 
 class UserProfile extends Component {
+  constructor() {
+    super();
+
+    this.state = {
+      inputs: {
+        prvKey: "",
+        message: "",
+        hashKey: "",
+        pubKey: "",
+        sign: "",
+        apiKey: ""
+      },
+      status: "",
+      output: ""
+    };
+
+    this.handleClick = this.handleClick.bind(this);
+  }
+
+  changeHandler = event => {
+    const key = event.target.name;
+    const value = event.target.value;
+
+    this.setState({
+      inputs: {
+        ...this.state.inputs,
+        [key]: {
+          ...this.state.inputs[key],
+          value
+        }
+      },
+      output: ""
+    });
+  };
+
+  verifyAndShowMessage() {
+    const endpoint = "console/verifyAndShow";
+    axios
+      .post(
+        baseUrl + endpoint,
+        {
+          msg: this.state.inputs.message.value,
+          pub: this.state.inputs.pubKey.value,
+          sig: this.state.inputs.sign.value,
+          hash: this.state.inputs.hashKey.value
+        },
+        {
+          headers: {
+            api_key: this.state.inputs.apiKey.value,
+            private_key: this.state.inputs.prvKey.value,
+            "Content-Type": "application/json;"
+          }
+        }
+      ).then(response => {
+                  this.setState({
+                    status: "SUCCESS",
+                    output: response.data
+                  });
+          })
+          .catch((error) => {
+              // Error
+              if (error.response) {
+                  // The request was made and the server responded with a status code
+                  // that falls out of the range of 2xx
+                  // console.log(error.response.data);
+                  // console.log(error.response.status);
+                  // console.log(error.response.headers);
+                  this.setState({
+                      status: "FAILURE",
+                      output: JSON.stringify(error.response.data, null, 2)
+                  })
+              } else if (error.request) {
+                  // The request was made but no response was received
+                  // `error.request` is an instance of XMLHttpRequest in the
+                  // browser and an instance of
+                  // http.ClientRequest in node.js
+                  this.setState({
+                      status: "FAILURE",
+                      output: error.request
+                  })
+                  console.log(error.request);
+              } else {
+                  // Something happened in setting up the request that triggered an Error
+                  this.setState({
+                      status: "FAILURE",
+                      output: error.message
+                  })
+                  console.log('Error', error.message);
+              }
+
+
+          });
+
+  }
+
+  handleClick() {
+    //TODO:
+    //1.check for the api key
+    this.verifyAndShowMessage();
+  }
+
   render() {
     return (
       <div className="content">
         <Grid fluid>
           <Row>
-            <Col md={12}>
+            <Col md={6}>
               <Card
                 title="Verify And Show File Content"
                 content={
                   <form>
                     <Row>
                       <Col md={12}>
-                        <Dropzone
-                          onDrop={acceptedFiles => console.log("test1")}
-                        >
-                          {({ getRootProps, getInputProps }) => (
-                            <section>
-                              <div {...getRootProps()}>
-                                <input {...getInputProps()} />
-                                <p>Select or Drop your file here</p>
-                              </div>
-                            </section>
-                          )}
-                        </Dropzone>
+                        <FormGroup>
+                          <ControlLabel>API Key</ControlLabel>
+                          <FormControl
+                            rows="3"
+                            componentClass="textarea"
+                            bsClass="form-control"
+                            placeholder="Enter your API Key here"
+                            name="apiKey"
+                            value={this.state.inputs.apiKey.value}
+                            onChange={this.changeHandler}
+                          />
+                          <br />
+                          <ControlLabel>Private Key</ControlLabel>
+                          <FormControl
+                            rows="3"
+                            componentClass="textarea"
+                            bsClass="form-control"
+                            placeholder="Enter your Private Key here"
+                            name="prvKey"
+                            value={this.state.inputs.prvKey.value}
+                            onChange={this.changeHandler}
+                          />
+                          <br />
+                          <ControlLabel>Message</ControlLabel>
+                          <FormControl
+                            rows="3"
+                            componentClass="textarea"
+                            bsClass="form-control"
+                            placeholder="Enter the message hash here"
+                            name="message"
+                            value={this.state.inputs.message.value}
+                            onChange={this.changeHandler}
+                          />
+                          <br />
+                          <ControlLabel>Public Key</ControlLabel>
+                          <FormControl
+                            rows="3"
+                            componentClass="textarea"
+                            bsClass="form-control"
+                            name="pubKey"
+                            placeholder="Enter your public key here"
+                            value={this.state.inputs.pubKey.value}
+                            onChange={this.changeHandler}
+                          />
+                          <br />
+                          <ControlLabel>Signature</ControlLabel>
+                          <FormControl
+                            rows="3"
+                            componentClass="textarea"
+                            bsClass="form-control"
+                            name="sign"
+                            placeholder="Enter your signature here"
+                            value={this.state.inputs.sign.value}
+                            onChange={this.changeHandler}
+                          />
+                          <br />
+                          <ControlLabel>Hash Key of File</ControlLabel>
+                          <FormControl
+                            rows="3"
+                            componentClass="textarea"
+                            bsClass="form-control"
+                            name="hashKey"
+                            placeholder="Enter your hash key of file here"
+                            value={this.state.inputs.hashKey.value}
+                            onChange={this.changeHandler}
+                          />
+                          <br />
+                          <Button
+                            onClick={this.handleClick}
+                            variant="primary"
+                            size="lg"
+                          >
+                            Verify
+                          </Button>
+                        </FormGroup>
                       </Col>
                     </Row>
                     <div className="clearfix" />
                   </form>
                 }
               />
+            </Col>
+            <Col md={6}>
+              {this.state.output && (
+                <Card
+                  title="Message content"
+                  content={
+                    <form>
+                      <Row>
+                        <Col md={12}>
+                          <ControlLabel>Status : {this.state.status}</ControlLabel>
+                          <FormControl
+                            rows="5"
+                            componentClass="textarea"
+                            bsClass="form-control"
+                            name="output"
+                            value={this.state.output}
+                            readOnly
+                          />
+                        </Col>
+                      </Row>
+                      <div className="clearfix" />
+                    </form>
+                  }
+                />
+              )}
             </Col>
           </Row>
           <Row>
@@ -63,7 +262,7 @@ Host: localhost:8888
 Content-Type: application/json
 
 headers:{
-    "api_key":564732BHU,
+    "api_key":KHBOsth7b3WbOTVzZqGUEhOY8rPreYFM,
     "private_key":039C9EF3BD38C8E677BFH398R32F40A998F8872ADC23R32UHR89DE2A21631310E2F200E43B3,
 }
 
