@@ -25,18 +25,24 @@ export default {
   button: {
     add: 'Add ELIP',
     cancel: 'Cancel',
-    submitForReview: 'Submit for Review'
+    submit: 'Submit for Review',
+    reject: 'Reject',
+    approve: 'Approve'
   },
   msg: {
     submitted: 'Submitted successfully',
     rejected: 'Rejected successfully',
-    approved: 'Approved and published successfully',
+    approved: 'Approved and published successfully'
   },
   form: {
     error: {
       required: 'This field is required',
       tooLong: 'This field is too long',
-      limit200: 'You can only type 200 words max.'
+      limit3000: 'You can only type 3000 words max.'
     }
-  }
+  },
+  modal: {
+    submit: 'Are you sure to submit this ELIP for review?'
+  },
+  note: 'Elastos Improvement Proposal (ELIP) is a design document that provides information, describes processes, introduces new features, or the environment to the Elastos Community. At the same time, ELIP should provide concise technical specifications and a rationale for the target characteristics.'
 }

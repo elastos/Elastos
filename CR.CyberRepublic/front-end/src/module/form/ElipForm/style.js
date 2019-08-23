@@ -4,7 +4,8 @@ import { Button } from 'antd'
 export const Container = styled.div`
   text-align: left;
   .ant-form-item-label {
-    text-align: left;
+    margin-right: 8px;
+    min-width: 120px;
   }
   .ant-form-item-required:before {
     display: none;
@@ -12,11 +13,13 @@ export const Container = styled.div`
   .ant-select-selection,
   .ant-input {
     border-radius: 0;
+    background: rgba(204, 204, 204, 0.2);
+    height: 42px;
   }
   .ant-form-item-label label {
     white-space: normal;
-    /* line-height: 1.4rem; */
     display: block;
+    font-size: 18px;
   }
   .md-RichEditor-root {
     padding: 15px 40px;
@@ -24,6 +27,7 @@ export const Container = styled.div`
     border: 1px solid #d9d9d9;
     .md-RichEditor-editor {
       padding: 8px 16px;
+      min-height: 320px;
     }
     .md-add-button {
       display: flex;
@@ -39,8 +43,7 @@ export const Container = styled.div`
   }
 `
 
-export const Title = styled.h2`
-`
+export const Title = styled.h2``
 
 export const Btn = styled(Button)`
   width: 100%;
@@ -49,7 +52,6 @@ export const Btn = styled(Button)`
   border-color: #009999;
   border-radius: 0;
 `
-
 export const CirContainer = styled.div`
   width: 18px;
   position: absolute;
@@ -57,15 +59,17 @@ export const CirContainer = styled.div`
   right: 6px;
   z-index: 10;
 `
-
 export const Text = styled.div`
   text-align: center;
 `
-
 export const Note = styled.div`
   margin-bottom: 15px;
 `
-
 export const NoteHighlight = styled.span`
   color: red;
+`
+export const Actions = styled.div`
+  margin-top: 60px;
+  display: flex;
+  justify-content: center;
 `
