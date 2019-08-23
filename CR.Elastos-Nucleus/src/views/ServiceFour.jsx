@@ -223,7 +223,7 @@ class UserProfile extends Component {
                         <Col md={12}>
                           <ControlLabel>Status : {this.state.status}</ControlLabel>
                           <FormControl
-                            rows="5"
+                            rows="14"
                             componentClass="textarea"
                             bsClass="form-control"
                             name="output"

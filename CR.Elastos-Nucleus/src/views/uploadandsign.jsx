@@ -1,43 +1,198 @@
 import React, { Component } from "react";
-import Dropzone from "react-dropzone";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { gruvboxDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
-import { Grid, Row, Col, FormGroup } from "react-bootstrap";
+import {Grid, Row, Col, FormGroup, Button, ControlLabel, FormControl, ProgressBar} from "react-bootstrap";
 
 import { Card } from "components/Card/Card.jsx";
 
+import "../assets/css/fileupload.css"
+import axios from "axios";
+import {baseUrl} from "../utils/api";
+
 class UserProfile extends Component {
+
+  constructor() {
+    super();
+      this.state = {
+        apiKey:'',
+        prvKey:'',
+        selectedFile: null,
+        output:'',
+        loaded:0
+      }
+
+    this.handleClick = this.handleClick.bind(this);
+  }
+
+  changeHandler = event=>{
+
+    if(event.target.name == "apiKey"){
+      this.setState({
+        apiKey: event.target.value
+      })
+    }
+    else if(event.target.name == "prvKey"){
+      this.setState({
+        prvKey: event.target.value
+      })
+    }
+    else{
+      this.setState({
+        selectedFile: event.target.files[0]
+      })
+    }
+
+  }
+
+  uploadFileToServer(){
+
+    let formdata = new FormData()
+    formdata.append('file', this.state.selectedFile)
+
+    const endpoint = "console/uploadAndSign";
+
+    axios
+      .post(
+        baseUrl + endpoint,
+          formdata,
+          {
+            onUploadProgress: ProgressEvent => {
+              this.setState({
+              loaded: (ProgressEvent.loaded / ProgressEvent.total*100),
+            })
+          },
+          headers: {
+            api_key: this.state.apiKey,
+            private_key: this.state.prvKey,
+            'Content-Type': 'multipart/form-data; boundary=--------------------------942705689964164935672351'
+          }
+    }).then(response => {
+                  this.setState({
+                    status: "SUCCESS",
+                    output: JSON.stringify(response.data,null, 2)
+                  });
+          })
+          .catch((error) => {
+              // Error
+              if (error.response) {
+                  // The request was made and the server responded with a status code
+                  // that falls out of the range of 2xx
+                  // console.log(error.response.data);
+                  // console.log(error.response.status);
+                  // console.log(error.response.headers);
+                  this.setState({
+                      status: "FAILURE",
+                      output: JSON.stringify(error.response.data, null, 2)
+                  })
+              } else if (error.request) {
+                  // The request was made but no response was received
+                  // `error.request` is an instance of XMLHttpRequest in the
+                  // browser and an instance of
+                  // http.ClientRequest in node.js
+                  this.setState({
+                      status: "FAILURE",
+                      output: error.request
+                  })
+                  console.log(error.request);
+              } else {
+                  // Something happened in setting up the request that triggered an Error
+                  this.setState({
+                      status: "FAILURE",
+                      output: error.message
+                  })
+                  console.log('Error', error.message);
+              }
+
+
+          });
+
+  }
+
+
+  handleClick() {
+    //TODO:
+    //1.check for the api key
+    this.uploadFileToServer();
+  }
+
   render() {
     return (
       <div className="content">
         <Grid fluid>
           <Row>
-            <Col md={12}>
+            <Col md={6}>
               <Card
-                title="Upload File and Sign"
+                title="File Upload"
                 content={
                   <form>
                     <Row>
                       <Col md={12}>
-                        <Dropzone
-                          onDrop={acceptedFiles => console.log("test1")}
-                        >
-                          {({ getRootProps, getInputProps }) => (
-                            <section>
-                              <div {...getRootProps()}>
-                                <input {...getInputProps()} />
-                                <p>Select or Drop your file here</p>
-                              </div>
-                            </section>
-                          )}
-                        </Dropzone>
+                        <form method="post" action="#" id="#">
+                          <ControlLabel>API Key</ControlLabel>
+                          <FormControl
+                            rows="3"
+                            componentClass="textarea"
+                            bsClass="form-control"
+                            placeholder="Enter your API Key here"
+                            name="apiKey"
+                            value={this.state.apiKey}
+                            onChange={this.changeHandler}
+                          />
+                          <br />
+
+                          <ControlLabel>Private Key</ControlLabel>
+                          <FormControl
+                            rows="3"
+                            componentClass="textarea"
+                            bsClass="form-control"
+                            placeholder="Enter your Private Key here"
+                            name="prvKey"
+                            value={this.state.prvKey}
+                            onChange={this.changeHandler}
+                          />
+                          <br />
+
+                          <ControlLabel>Upload Your File </ControlLabel>
+                          <div className="form-group files">
+                            <label></label>
+                            <input type="file" name="file" onChange={this.changeHandler}/>
+                          </div>
+                
+                          <ProgressBar striped variant="success" now={this.state.loaded}  label={`${ Math.round(this.state.loaded,2) }%`}>
+                          </ProgressBar>
+                          <br />
+                          <Button variant="primary"  size="lg" onClick={this.handleClick}>Upload
+                          </Button>
+
+                        </form>
                       </Col>
                     </Row>
                     <div className="clearfix" />
                   </form>
                 }
               />
+            </Col>
+            <Col md={6}>
+              {this.state.output && (
+                <Card
+                  title="Message content"
+                  content={
+                      <Row>
+                        <Col md={12}>
+                          <ControlLabel>Status : {this.state.status}</ControlLabel>
+                          <FormControl
+                            rows="10"
+                            componentClass="textarea"
+                            bsClass="form-control"
+                            name="output"
+                            value={this.state.output}
+                            readOnly
+                          />
+                        </Col>
+                      </Row>
+                  }
+                  />)}
             </Col>
           </Row>
           <Row>
@@ -63,7 +218,7 @@ Host: localhost:8888
 Content-Type: multipart/form-data; boundary=--------------------------942705689964164935672351
 
 headers:{
-    "api_key":564732BHU,
+    "api_key":KHBOsth7b3WbOTVzZqGUEhOY8rPreYFM,
     "private_key":039C9EF3BD38C8E677BFH398R32F40A998F8872ADC23R32UHR89DE2A21631310E2F200E43B3,
 }
 
