@@ -41,46 +41,44 @@ class ApiKeygenerator extends Component {
           isKeyGenerated: response.data.status === 200,
           apiKey: response.data["API Key"]
         });
-        window.apiKey = this.state.apiKey
+        window.apiKey = this.state.apiKey;
         console.log(this.state.apiKey);
       })
-      .catch((error) => {
-              // Error
-              if (error.response) {
-                  // The request was made and the server responded with a status code
-                  // that falls out of the range of 2xx
-                  // console.log(error.response.data);
-                  // console.log(error.response.status);
-                  // console.log(error.response.headers);
-                  this.setState({
-                      status: "FAILURE",
-                      output: JSON.stringify(error.response.data, null, 2)
-                  })
-              } else if (error.request) {
-                  // The request was made but no response was received
-                  // `error.request` is an instance of XMLHttpRequest in the
-                  // browser and an instance of
-                  // http.ClientRequest in node.js
-                  this.setState({
-                      output: error.request
-                  })
-                  console.log(error.request);
-              } else {
-                  // Something happened in setting up the request that triggered an Error
-                  this.setState({
-                      output: error.message
-                  })
-                  console.log('Error', error.message);
-              }
-
-
+      .catch(error => {
+        // Error
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          // console.log(error.response.data);
+          // console.log(error.response.status);
+          // console.log(error.response.headers);
+          this.setState({
+            status: "FAILURE",
+            output: JSON.stringify(error.response.data, null, 2)
           });
+        } else if (error.request) {
+          // The request was made but no response was received
+          // `error.request` is an instance of XMLHttpRequest in the
+          // browser and an instance of
+          // http.ClientRequest in node.js
+          this.setState({
+            output: error.request
+          });
+          console.log(error.request);
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          this.setState({
+            output: error.message
+          });
+          console.log("Error", error.message);
+        }
+      });
   }
 
   handleClick() {
-      //TODO:
-        //Do we need to generate a new key every time the button gets clicked?
-      this.getApiKeyFromServer()
+    //TODO:
+    //Do we need to generate a new key every time the button gets clicked?
+    this.getApiKeyFromServer();
   }
 
   render() {
@@ -92,34 +90,39 @@ class ApiKeygenerator extends Component {
               <Card
                 title="Generate an API Key"
                 content={
-
-                    <Row>
-                      <Col md={12}>
-                          <Button variant="primary" size="lg" onClick={this.handleClick}>Generate key</Button>
-                      </Col>
-                      <Col md={6}>
+                  <Row>
+                    <Col md={12}>
+                      <Button
+                        variant="primary"
+                        size="lg"
+                        onClick={this.handleClick}
+                      >
+                        Generate key
+                      </Button>
+                    </Col>
+                    <Col md={6}>
                       {this.state.isKeyGenerated && (
-                      <FormGroup>
-                      <br />
-                      <ControlLabel>API Key</ControlLabel>
-                      <FormControl
-                              rows="3"
-                              componentClass="textarea"
-                              bsClass="form-control"
-                              placeholder=""
-                              name="apiKey"
-                              value = {this.state.apiKey}
-                              readOnly
-                            />
-                      </FormGroup>
+                        <FormGroup>
+                          <br />
+                          <ControlLabel>API Key</ControlLabel>
+                          <FormControl
+                            rows="3"
+                            componentClass="textarea"
+                            bsClass="form-control"
+                            placeholder=""
+                            name="apiKey"
+                            value={this.state.apiKey}
+                            readOnly
+                          />
+                        </FormGroup>
                       )}
-                      </Col>
-                    </Row>
-                    }
-                  />
-                </Col>
-              </Row>
-              <Row>
+                    </Col>
+                  </Row>
+                }
+              />
+            </Col>
+          </Row>
+          <Row>
             <Col md={12}>
               <Card
                 title="Documentation"

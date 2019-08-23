@@ -1,29 +1,31 @@
-import Apigenerator from "views/Apigenerator.jsx";
+import ApiGenerator from "views/ApiGenerator.jsx";
 import Dashboard from "views/Dashboard.jsx";
 
-import ServiceOne from "views/fileupload.jsx";
-import ServiceTwo from "views/ServiceTwo.jsx";
-import ServiceThree from "views/ServiceThree.jsx";
-import ServiceFour from "views/ServiceFour.jsx";
-import ServiceFive from "views/ServiceFive.jsx";
-import ServiceSix from "views/ServiceSix.jsx";
+import FileUpload from "views/FileUpload.jsx";
+import SignMessage from "views/SignMessage.jsx";
 
-import UploadAndSign from "views/uploadandsign.jsx";
-import ShowFileContent from "views/showfilecontent.jsx";
+import VerifyMessage from "views/VerifyMessage.jsx";
+import VerifyShowContent from "views/VerifyShowContent.jsx";
+
+import TransferELA from "views/TransferELA.jsx";
+import Documentation from "views/Documentation.jsx";
+
+import UploadAndSign from "views/UploadAndSign.jsx";
+import ShowFileContent from "views/ShowFileContent.jsx";
 
 const sidebarRoutes = [
   {
     path: "/generate-api-key",
     name: "Generate API Key",
     icon: "pe-7s-tools",
-    component: Apigenerator,
+    component: ApiGenerator,
     layout: "/admin"
   },
   {
     path: "/file-upload",
     name: "File Upload",
     icon: "pe-7s-tools",
-    component: ServiceOne,
+    component: FileUpload,
     layout: "/admin"
   },
   {
@@ -44,35 +46,35 @@ const sidebarRoutes = [
     path: "/verify-content",
     name: "Verify and Show Content",
     icon: "pe-7s-tools",
-    component: ServiceFour,
+    component: VerifyShowContent,
     layout: "/admin"
   },
   {
     path: "/sign-message",
     name: "Sign A Message",
     icon: "pe-7s-tools",
-    component: ServiceTwo,
+    component: SignMessage,
     layout: "/admin"
   },
   {
     path: "/verify-message",
     name: "Verify A Message",
     icon: "pe-7s-tools",
-    component: ServiceThree,
+    component: VerifyMessage,
     layout: "/admin"
   },
   {
     path: "/transfer-ela",
     name: "Transfer ELA Demo",
     icon: "pe-7s-tools",
-    component: ServiceFive,
+    component: TransferELA,
     layout: "/admin"
   },
   {
     path: "/documentation",
     name: "Documentation",
     icon: "pe-7s-tools",
-    component: ServiceSix,
+    component: Documentation,
     layout: "/admin"
   },
   {

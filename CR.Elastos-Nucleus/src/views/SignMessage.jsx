@@ -23,7 +23,8 @@ class UserProfile extends Component {
 
     this.state = {
       inputs: {
-        hashKey: "",
+        message: "",
+        privKey: "",
         apiKey: ""
       },
       status: "",
@@ -49,19 +50,27 @@ class UserProfile extends Component {
     });
   };
 
-  verifyMessage() {
-    const endpoint = "hive/showContent/";
+  signTheMessage() {
+    const endpoint = "service/sidechain/did/sign";
     axios
-      .get(baseUrl + endpoint + this.state.inputs.hashKey.value, {
-        headers: {
-          api_key: this.state.inputs.apiKey.value,
-          "Content-Type": "application/json;"
+      .post(
+        baseUrl + endpoint,
+        {
+          msg: this.state.inputs.message.value,
+          privateKey: this.state.inputs.privKey.value
+        },
+        {
+          headers: {
+            api_key: this.state.inputs.apiKey.value,
+            "Content-Type": "application/json;"
+          }
         }
-      })
+      )
       .then(response => {
+        console.log(response);
         this.setState({
           status: "SUCCESS",
-          output: response.data
+          output: JSON.stringify(response.data.result, null, 2)
         });
       })
       .catch(error => {
@@ -100,7 +109,7 @@ class UserProfile extends Component {
   handleClick() {
     //TODO:
     //1.check for the api key
-    this.verifyMessage();
+    this.signTheMessage();
   }
 
   render() {
@@ -110,12 +119,12 @@ class UserProfile extends Component {
           <Row>
             <Col md={6}>
               <Card
-                title="Show file contents using an API Key"
+                title="Sign a Message"
                 content={
                   <form>
                     <Row>
                       <Col md={12}>
-                        <FormGroup>
+                        <FormGroup controlId="formControlsTextarea">
                           <ControlLabel>API Key</ControlLabel>
                           <FormControl
                             rows="3"
@@ -127,14 +136,25 @@ class UserProfile extends Component {
                             onChange={this.changeHandler}
                           />
                           <br />
-                          <ControlLabel>Hash Key</ControlLabel>
+                          <ControlLabel>Your Message</ControlLabel>
                           <FormControl
                             rows="3"
                             componentClass="textarea"
                             bsClass="form-control"
-                            placeholder="Enter your hash key here"
-                            name="hashKey"
-                            value={this.state.inputs.hashKey.value}
+                            placeholder="Enter the message hash here"
+                            name="message"
+                            value={this.state.inputs.message.value}
+                            onChange={this.changeHandler}
+                          />
+                          <br />
+                          <ControlLabel>Your Private Key</ControlLabel>
+                          <FormControl
+                            rows="3"
+                            componentClass="textarea"
+                            bsClass="form-control"
+                            name="privKey"
+                            placeholder="Enter your private key here"
+                            value={this.state.inputs.privKey.value}
                             onChange={this.changeHandler}
                           />
                           <br />
@@ -143,7 +163,7 @@ class UserProfile extends Component {
                             variant="primary"
                             size="lg"
                           >
-                            Display
+                            Sign
                           </Button>
                         </FormGroup>
                       </Col>
@@ -156,7 +176,7 @@ class UserProfile extends Component {
             <Col md={6}>
               {this.state.output && (
                 <Card
-                  title="File content"
+                  title="Message content"
                   content={
                     <form>
                       <Row>
@@ -165,7 +185,7 @@ class UserProfile extends Component {
                             Status : {this.state.status}
                           </ControlLabel>
                           <FormControl
-                            rows="13"
+                            rows="5"
                             componentClass="textarea"
                             bsClass="form-control"
                             name="output"
@@ -192,21 +212,27 @@ class UserProfile extends Component {
                         <FormGroup controlId="formControlsTextarea">
                           <p>
                             <span className="category" />
-                            Shows the content for the requested hash key from
-                            hive.
+                            Signs the message with DID sidechain using private
+                            key
                           </p>
                         </FormGroup>
                         <SyntaxHighlighter
                           language="javascript"
                           style={gruvboxDark}
                         >
-                          {`GET /api/1/hive/showContent/(string:'hash_key') HTTP/1.1
+                          {`POST api/1/service/sidechain/did/sign HTTP/1.1
 Host: localhost:8888
+Content-Type: application/json
 
 headers:{
-    "api_key": KHBOsth7b3WbOTVzZqGUEhOY8rPreYFM
+    "api_key":KHBOsth7b3WbOTVzZqGUEhOY8rPreYFM
 }
-`}
+
+request.body:
+{
+    "privateKey":"0D5D7566CA36BC05CFF8E3287C43977DCBB492990EA1822643656D85B3CB0226",
+    "msg":"Hello World"
+}`}
                         </SyntaxHighlighter>
                         <SyntaxHighlighter
                           language="javascript"
@@ -214,10 +240,16 @@ headers:{
                         >
                           {`HTTP/1.1 200 OK
 Vary: Accept
-Content-Type: Text
+Content-Type: application/json
 
-Hello World
-`}
+{
+    "result": {
+        "msg": "E4BDA0E5A5BDEFBC8CE4B896E7958C",
+        "pub": "02C3F59F337814C6715BBE684EC525B9A3CFCE55D9DEEC53E1EDDB0B352DBB4A54",
+        "sig": "E6BB279CBD4727B41F2AA8B18E99B3F99DECBB8737D284FFDD408B356C912EE21AD478BCC0ABD65246938F17DDE64258FD8A9684C0649B23AE1318F7B9CEEEC7"
+    },
+    "status": 200
+}`}
                         </SyntaxHighlighter>
                       </Col>
                     </Row>
@@ -238,21 +270,22 @@ Hello World
                       <Col md={12}>
                         <SyntaxHighlighter language="jsx" style={gruvboxDark}>
                           {`    api_key = request.headers.get('api_key')
-    api_status = validate_api_key(api_key)
-    if not api_status:
-      data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
-      return Response(json.dumps(data), 
-        status=401,
-        mimetype='application/json'
-      )
+        api_status = validate_api_key(api_key)
+        if not api_status:
+            data = {"error message":"API Key could not be verified","status":401, "timestamp":getTime(),"path":request.url}
+            return Response(json.dumps(data), 
+                status=401,
+                mimetype='application/json'
+            )
 
-    api_url_base = settings.GMU_NET_IP_ADDRESS + settings.HIVE_PORT + settings.SHOW_CONTENT + "{}"
-    myResponse = requests.get(api_url_base.format(hash_key))
-    return Response(myResponse, 
-        status=200,
-        mimetype='application/json'
-      )
-
+        api_url_base = settings.DID_SERVICE_URL + settings.DID_SERVICE_SIGN
+        headers = {'Content-type': 'application/json'}
+        req_data = request.get_json()
+        myResponse = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
+        return Response(json.dumps(myResponse), 
+                status=myResponse['status'],
+                mimetype='application/json'
+            )
                           `}
                         </SyntaxHighlighter>
                       </Col>

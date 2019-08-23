@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import { Grid, Row, Col, FormGroup } from "react-bootstrap";
 
 import { Card } from "components/Card/Card.jsx";
-import CustomButton from "components/CustomButton/CustomButton.jsx";
 
 class Dashboard extends Component {
   createLegend(json) {
@@ -45,14 +44,6 @@ class Dashboard extends Component {
                         </FormGroup>
                       </Col>
                     </Row>
-                    <CustomButton
-                      text="Show Content"
-                      path="/admin/transactions"
-                      pullRight
-                      bsStyle="info"
-                      fill
-                    />
-                    <div className="clearfix" />
                   </form>
                 }
               />

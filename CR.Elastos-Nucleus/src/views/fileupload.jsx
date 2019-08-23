@@ -2,106 +2,105 @@ import React, { Component } from "react";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { gruvboxDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
-import {Grid, Row, Col, FormGroup, Button, ControlLabel, FormControl, ProgressBar} from "react-bootstrap";
+import {
+  Grid,
+  Row,
+  Col,
+  FormGroup,
+  Button,
+  ControlLabel,
+  FormControl,
+  ProgressBar
+} from "react-bootstrap";
 
 import { Card } from "components/Card/Card.jsx";
 
-import "../assets/css/fileupload.css"
+import "../assets/css/fileupload.css";
 import axios from "axios";
-import {baseUrl} from "../utils/api";
-
+import { baseUrl } from "../utils/api";
 
 class UserProfile extends Component {
-
   constructor() {
     super();
-      this.state = {
-        apiKey:'',
-        selectedFile: null,
-        output:'',
-        loaded:0
-      }
+    this.state = {
+      apiKey: "",
+      selectedFile: null,
+      output: "",
+      loaded: 0
+    };
 
     this.handleClick = this.handleClick.bind(this);
   }
 
-  changeHandler = event=>{
-
-    if(event.target.name !== "apiKey"){
+  changeHandler = event => {
+    if (event.target.name !== "apiKey") {
       this.setState({
         selectedFile: event.target.files[0]
-      })
-    }else{
+      });
+    } else {
       this.setState({
         apiKey: event.target.value
-      })
+      });
     }
+  };
 
-  }
-
-  uploadFileToServer(){
-
-    let formdata = new FormData()
-    formdata.append('file', this.state.selectedFile)
+  uploadFileToServer() {
+    let formdata = new FormData();
+    formdata.append("file", this.state.selectedFile);
 
     const endpoint = "console/upload";
 
     axios
-      .post(
-        baseUrl + endpoint,
-          formdata,
-          {
-            onUploadProgress: ProgressEvent => {
-              this.setState({
-              loaded: (ProgressEvent.loaded / ProgressEvent.total*100),
-            })
-          },
-          headers: {
-            api_key: this.state.apiKey,
-            'Content-Type': 'multipart/form-data; boundary=--------------------------942705689964164935672351'
-          }
-    }).then(response => {
-                  this.setState({
-                    status: "SUCCESS",
-                    output: JSON.stringify(response.data,null, 2)
-                  });
-          })
-          .catch((error) => {
-              // Error
-              if (error.response) {
-                  // The request was made and the server responded with a status code
-                  // that falls out of the range of 2xx
-                  // console.log(error.response.data);
-                  // console.log(error.response.status);
-                  // console.log(error.response.headers);
-                  this.setState({
-                      status: "FAILURE",
-                      output: JSON.stringify(error.response.data, null, 2)
-                  })
-              } else if (error.request) {
-                  // The request was made but no response was received
-                  // `error.request` is an instance of XMLHttpRequest in the
-                  // browser and an instance of
-                  // http.ClientRequest in node.js
-                  this.setState({
-                      status: "FAILURE",
-                      output: error.request
-                  })
-                  console.log(error.request);
-              } else {
-                  // Something happened in setting up the request that triggered an Error
-                  this.setState({
-                      status: "FAILURE",
-                      output: error.message
-                  })
-                  console.log('Error', error.message);
-              }
-
-
+      .post(baseUrl + endpoint, formdata, {
+        onUploadProgress: ProgressEvent => {
+          this.setState({
+            loaded: (ProgressEvent.loaded / ProgressEvent.total) * 100
           });
-
+        },
+        headers: {
+          api_key: this.state.apiKey,
+          "Content-Type":
+            "multipart/form-data; boundary=--------------------------942705689964164935672351"
+        }
+      })
+      .then(response => {
+        this.setState({
+          status: "SUCCESS",
+          output: JSON.stringify(response.data, null, 2)
+        });
+      })
+      .catch(error => {
+        // Error
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          // console.log(error.response.data);
+          // console.log(error.response.status);
+          // console.log(error.response.headers);
+          this.setState({
+            status: "FAILURE",
+            output: JSON.stringify(error.response.data, null, 2)
+          });
+        } else if (error.request) {
+          // The request was made but no response was received
+          // `error.request` is an instance of XMLHttpRequest in the
+          // browser and an instance of
+          // http.ClientRequest in node.js
+          this.setState({
+            status: "FAILURE",
+            output: error.request
+          });
+          console.log(error.request);
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          this.setState({
+            status: "FAILURE",
+            output: error.message
+          });
+          console.log("Error", error.message);
+        }
+      });
   }
-
 
   handleClick() {
     //TODO:
@@ -136,16 +135,28 @@ class UserProfile extends Component {
 
                           <ControlLabel>Upload Your File </ControlLabel>
                           <div className="form-group files">
-                            <label></label>
-                            <input type="file" name="file" onChange={this.changeHandler}/>
+                            <label />
+                            <input
+                              type="file"
+                              name="file"
+                              onChange={this.changeHandler}
+                            />
                           </div>
-                
-                          <ProgressBar striped variant="success" now={this.state.loaded}  label={`${ Math.round(this.state.loaded,2) }%`}>
-                          </ProgressBar>
-                          <br />
-                          <Button variant="primary"  size="lg" onClick={this.handleClick}>Upload
-                          </Button>
 
+                          <ProgressBar
+                            striped
+                            variant="success"
+                            now={this.state.loaded}
+                            label={`${Math.round(this.state.loaded, 2)}%`}
+                          />
+                          <br />
+                          <Button
+                            variant="primary"
+                            size="lg"
+                            onClick={this.handleClick}
+                          >
+                            Upload
+                          </Button>
                         </form>
                       </Col>
                     </Row>
@@ -159,21 +170,24 @@ class UserProfile extends Component {
                 <Card
                   title="Message content"
                   content={
-                      <Row>
-                        <Col md={12}>
-                          <ControlLabel>Status : {this.state.status}</ControlLabel>
-                          <FormControl
-                            rows="10"
-                            componentClass="textarea"
-                            bsClass="form-control"
-                            name="output"
-                            value={this.state.output}
-                            readOnly
-                          />
-                        </Col>
-                      </Row>
+                    <Row>
+                      <Col md={12}>
+                        <ControlLabel>
+                          Status : {this.state.status}
+                        </ControlLabel>
+                        <FormControl
+                          rows="10"
+                          componentClass="textarea"
+                          bsClass="form-control"
+                          name="output"
+                          value={this.state.output}
+                          readOnly
+                        />
+                      </Col>
+                    </Row>
                   }
-                  />)}
+                />
+              )}
             </Col>
           </Row>
           <Row>

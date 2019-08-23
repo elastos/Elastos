@@ -8,7 +8,6 @@ import Sidebar from "components/Sidebar/Sidebar";
 
 import { style } from "variables/Variables.jsx";
 import sidebarRoutes from "routes.js";
-import appRoutes from "approutes.js";
 
 class Admin extends Component {
   constructor(props) {
@@ -29,26 +28,6 @@ class Admin extends Component {
               <prop.component
                 {...props}
                 handleClick={this.handleNotificationClick}
-              />
-            )}
-            key={key}
-          />
-        );
-      } else {
-        return null;
-      }
-    });
-  };
-  getAppRoutes = appRoutes => {
-    return appRoutes.map((prop, key) => {
-      if (prop.layout === "/admin") {
-        return (
-          <Route
-            path={prop.layout + prop.path}
-            render={props => (
-              <prop.component
-                {...props}
-                //handleClick={this.handleNotificationClick}
               />
             )}
             key={key}
@@ -101,10 +80,7 @@ class Admin extends Component {
         />
         <div id="main-panel" className="main-panel" ref="mainPanel">
           <AdminNavbar {...this.props} />
-          <Switch>
-            {this.getRoutes(sidebarRoutes)}
-            {this.getAppRoutes(appRoutes)}
-          </Switch>
+          <Switch>{this.getRoutes(sidebarRoutes)}</Switch>
           <Footer />
         </div>
       </div>
