@@ -1,7 +1,7 @@
 import ApiKeyGenerator from "views/Apigenerator.jsx";
 import Dashboard from "views/Dashboard.jsx";
 
-import FileUpload from "views/fileupload.jsx";
+import FileUpload from "views/FileUpload.jsx";
 import SignMessage from "views/SignMessage.jsx";
 
 import VerifyMessage from "views/VerifyMessage.jsx";
@@ -10,8 +10,8 @@ import VerifyShowContent from "views/VerifyShowContent.jsx";
 import TransferELA from "views/TransferELA.jsx";
 import Documentation from "views/Documentation.jsx";
 
-import UploadAndSign from "views/uploadandsign.jsx";
-import ShowFileContent from "views/showfilecontent.jsx";
+import UploadAndSign from "views/UploadAndSign.jsx";
+import ShowFileContent from "views/ShowFileContent.jsx";
 
 const sidebarRoutes = [
   {
