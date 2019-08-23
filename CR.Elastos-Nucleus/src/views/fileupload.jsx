@@ -41,23 +41,24 @@ class UserProfile extends Component {
 
   uploadFileToServer(){
 
-    const data = new FormData()
-    data.append('file', this.state.selectedFile)
+    let formdata = new FormData()
+    formdata.append('file', this.state.selectedFile)
 
     const endpoint = "console/upload";
 
     axios
       .post(
         baseUrl + endpoint,
-        {data},
+          formdata,
           {
-         onUploadProgress: ProgressEvent => {
-           this.setState({
-           loaded: (ProgressEvent.loaded / ProgressEvent.total*100),
-          })
-         },
-      headers: {
-            api_key: this.state.apiKey
+            onUploadProgress: ProgressEvent => {
+              this.setState({
+              loaded: (ProgressEvent.loaded / ProgressEvent.total*100),
+            })
+          },
+          headers: {
+            api_key: this.state.apiKey,
+            'Content-Type': 'multipart/form-data; boundary=--------------------------942705689964164935672351'
           }
     }).then(response => {
                   this.setState({
@@ -138,12 +139,13 @@ class UserProfile extends Component {
                             <label></label>
                             <input type="file" name="file" onChange={this.changeHandler}/>
                           </div>
-
+                
+                          <ProgressBar striped variant="success" now={this.state.loaded}  label={`${ Math.round(this.state.loaded,2) }%`}>
+                          </ProgressBar>
+                          <br />
                           <Button variant="primary"  size="lg" onClick={this.handleClick}>Upload
                           </Button>
 
-                          <ProgressBar striped variant="success" now={this.state.loaded}  label={`${ Math.round(this.state.loaded,2) }%`}>
-                          </ProgressBar>
                         </form>
                       </Col>
                     </Row>
@@ -197,11 +199,11 @@ Host: localhost:8888
 Content-Type: multipart/form-data; boundary=--------------------------942705689964164935672351
 
 headers:{
-    "api_key":564732BHU,
+    "api_key": KHBOsth7b3WbOTVzZqGUEhOY8rPreYFM,
 }
 
 request.files{
-    "file":"sample.txt"
+    "file": "sample.txt"
 }`}
                         </SyntaxHighlighter>
                         <SyntaxHighlighter
