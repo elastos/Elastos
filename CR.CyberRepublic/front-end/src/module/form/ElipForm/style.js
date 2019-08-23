@@ -4,7 +4,7 @@ import { Button } from 'antd'
 export const Container = styled.div`
   text-align: left;
   .ant-form-item-label {
-    margin-right: 8px;
+    margin-right: 20px;
     min-width: 120px;
   }
   .ant-form-item-required:before {

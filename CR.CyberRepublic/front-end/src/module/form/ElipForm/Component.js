@@ -25,6 +25,7 @@ class C extends BaseComponent {
   handleSubmit = e => {
     e.preventDefault()
     console.log('handle submit')
+    this.props.history.push('/elips/id')
   }
 
   ord_render() {

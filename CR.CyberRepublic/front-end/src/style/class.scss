@@ -186,6 +186,14 @@
   }
 }
 
+.ant-btn.cr-btn-danger {
+  background: $cr_btn_danger;
+  border-color: $cr_btn_danger;
+  > span {
+    color: white;
+  }
+}
+
 .ant-btn.cr-btn-black {
   background: $bg_obsidian;
   border-color: $bg_obsidian;

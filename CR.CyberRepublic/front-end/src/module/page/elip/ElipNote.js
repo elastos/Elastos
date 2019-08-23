@@ -5,7 +5,7 @@ import I18N from '@/I18N'
 import NoteIcon from './NoteIcon'
 
 const ElipNote = () => (
-  <Row>
+  <StyledRow>
     <StyledCol span={3} />
     <Col span={17}>
       <Wrapper>
@@ -15,10 +15,15 @@ const ElipNote = () => (
         <Text>{I18N.get('elip.note')}</Text>
       </Wrapper>
     </Col>
-  </Row>
+  </StyledRow>
 )
 
 export default ElipNote
+
+const StyledRow = styled(Row)`
+  margin-top: 24px;
+  margin-bottom: 24px;
+`
 
 const Wrapper = styled.div`
   background: #f6f9fd;
@@ -27,7 +32,6 @@ const Wrapper = styled.div`
   min-height: 140px;
   justify-content: center;
   align-items: center;
-  margin-bottom: 24px;
 `
 const Image = styled.div`
   flex-shrink: 1;
@@ -36,6 +40,6 @@ const Text = styled.div`
   margin-left: 32px;
 `
 const StyledCol = styled(Col)`
-  margin-right: 8px;
+  margin-right: 20px;
   min-width: 120px;
 `
