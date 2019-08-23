@@ -4,4 +4,4 @@ The Elastos Unity CLI allows developers to create a new React Native project int
 
 # Screenshot
 
-<img src="https://github.com/cyber-republic/elastos-unity-cli/blob/master/elastos_cli_screenshot.png" width="300" />
+<img src="https://github.com/cyber-republic/elastos-unity-cli/blob/master/elastos_cli_screenshot.png" width="500" />
