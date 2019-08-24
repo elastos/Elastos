@@ -29,6 +29,6 @@ export const Elip = {
   },
   status: {
     type: String,
-    enum: _.values(constant.CVOTE_STATUS)
+    enum: _.values(constant.ELIP_STATUS)
   }
 }

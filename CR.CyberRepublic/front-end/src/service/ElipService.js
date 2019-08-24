@@ -8,13 +8,13 @@ export default class extends BaseService {
   }
 
   async create(param) {
-    return {
-      vid: 13,
-      title: 'additional meeting request',
-      author: 'Fay Li',
-      status: 'DRAFT',
-      created: '2019-8-22'
-    }
+    const path = `${this.prefixPath}/create`
+    const rs = await api_request({
+      path,
+      method: 'post',
+      data: param
+    })
+    return rs
   }
 
   async update(param) {

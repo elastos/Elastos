@@ -1,6 +1,7 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
-import { Form, Input, Button, Popconfirm } from 'antd'
+import { Form, Input, Button, Popconfirm, message } from 'antd'
+import { convertToRaw } from 'draft-js'
 import I18N from '@/I18N'
 import DraftEditor from '@/module/common/DraftEditor'
 import ElipNote from '@/module/page/elip/ElipNote'
@@ -16,6 +17,29 @@ const formItemLayout = {
   },
   colon: false
 }
+const transform = value => {
+  // string or object
+  let result = value
+  if (_.isObject(value)) {
+    try {
+      result = value.getCurrentContent().getPlainText()
+    } catch (error) {
+      result = value
+    }
+  }
+  return result
+}
+const formatValue = value => {
+  let result
+  try {
+    result = _.isString(value)
+      ? value
+      : JSON.stringify(convertToRaw(value.getCurrentContent()))
+  } catch (error) {
+    result = _.toString(value)
+  }
+  return result
+}
 
 class C extends BaseComponent {
   constructor(p) {
@@ -24,8 +48,19 @@ class C extends BaseComponent {
 
   handleSubmit = e => {
     e.preventDefault()
-    console.log('handle submit')
-    this.props.history.push('/elips/id')
+    const { history, create, form } = this.props
+    form.validateFields(async (err, values) => {
+      if (err) {
+        return
+      }
+      const param = {
+        title: values.title,
+        description: formatValue(values.description)
+      }
+      const elip = await create(param)
+      message.info('elip was created')
+      history.push(`/elips/${elip._id}`)
+    })
   }
 
   ord_render() {
@@ -38,7 +73,7 @@ class C extends BaseComponent {
         </Title>
         <Form>
           <FormItem
-            label={`${I18N.get('elip.fields.title')}*`}
+            label={`${I18N.get('elip.fields.title')}`}
             {...formItemLayout}
           >
             {getFieldDecorator('title', {
@@ -52,7 +87,7 @@ class C extends BaseComponent {
           </FormItem>
           <ElipNote />
           <FormItem
-            label={`${I18N.get('elip.fields.description')}*`}
+            label={`${I18N.get('elip.fields.description')}`}
             {...formItemLayout}
           >
             {getFieldDecorator('description', {
