@@ -95,6 +95,7 @@ import SuggestionEditHistoryPage from '@/module/page/suggestion/edit_history/Con
 import ElipListPage from '@/module/page/elip/Container'
 import ElipNewPage from '@/module/page/elip/new/Container'
 import ElipDetailPage from '@/module/page/elip/detail/Container'
+import ElipEditPage from '@/module/page/elip/edit/Container'
 
 import ConstitutionPage from '@/module/page/constitution/Container'
 
@@ -298,6 +299,10 @@ export default [
   {
     path: '/elips/:id',
     page: ElipDetailPage,
+  },
+  {
+    path: '/elips/:id/edit',
+    page: ElipEditPage,
   },
   /*
     ********************************************************************************
