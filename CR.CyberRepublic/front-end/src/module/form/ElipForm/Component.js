@@ -5,9 +5,11 @@ import { convertToRaw } from 'draft-js'
 import I18N from '@/I18N'
 import DraftEditor from '@/module/common/DraftEditor'
 import ElipNote from '@/module/page/elip/ElipNote'
+import { CONTENT_TYPE } from '@/constant'
 import { Container, Title, Actions } from './style'
 
 const FormItem = Form.Item
+const WORD_LIMIT = 3000
 const formItemLayout = {
   labelCol: {
     span: 3
@@ -58,7 +60,7 @@ class C extends BaseComponent {
         description: formatValue(values.description)
       }
       const elip = await create(param)
-      message.info('elip was created')
+      message.info(I18N.get('elip.msg.submitted'))
       history.push(`/elips/${elip._id}`)
     })
   }
@@ -83,7 +85,7 @@ class C extends BaseComponent {
                   message: I18N.get('elip.form.error.required')
                 }
               ]
-            })(<Input />)}
+            })(<Input autoFocus />)}
           </FormItem>
           <ElipNote />
           <FormItem
@@ -94,10 +96,16 @@ class C extends BaseComponent {
               rules: [
                 {
                   required: true,
+                  transform,
                   message: I18N.get('elip.form.error.required')
+                },
+                {
+                  max: WORD_LIMIT,
+                  transform,
+                  message: I18N.get(`proposal.form.error.limit${WORD_LIMIT}`)
                 }
               ]
-            })(<DraftEditor contentType="MARKDOWN" />)}
+            })(<DraftEditor contentType={CONTENT_TYPE.MARKDOWN} />)}
           </FormItem>
           <Actions>
             <FormItem>

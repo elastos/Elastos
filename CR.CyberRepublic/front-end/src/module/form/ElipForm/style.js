@@ -27,7 +27,9 @@ export const Container = styled.div`
     border: 1px solid #d9d9d9;
     .md-RichEditor-editor {
       padding: 8px 16px;
-      min-height: 320px;
+      .public-DraftEditor-content {
+        min-height: 320px;
+      }
     }
     .md-add-button {
       display: flex;
