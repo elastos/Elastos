@@ -296,3 +296,10 @@ export const DB_SELECTED_FIELDS = {
     ID_STATUS: 'vid status'
   }
 }
+
+// elip
+export const ELIP_STATUS = create([
+  'WAIT_FOR_REVIEW',
+  'APPROVED',
+  'REJECTED',
+])
