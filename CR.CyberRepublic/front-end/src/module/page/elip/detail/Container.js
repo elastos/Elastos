@@ -1,6 +1,5 @@
 import { createContainer } from '@/util'
 import Component from './Component'
-import _ from 'lodash'
 import ElipService from '@/service/ElipService'
 
 const mapState = state => ({

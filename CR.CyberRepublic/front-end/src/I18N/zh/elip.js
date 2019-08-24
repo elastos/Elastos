@@ -27,7 +27,8 @@ export default {
     cancel: '取消',
     submit: '提交',
     reject: '拒绝',
-    approve: '批准'
+    approve: '批准',
+    edit: '编辑'
   },
   msg: {
     submitted: '提交成功',

@@ -78,4 +78,19 @@ export default class extends Base {
 
     mail.send(mailObj)
   }
+
+  public async getById(id): Promise<any> {
+    const db_elip = this.getDBModel('Elip')
+    const rs = await db_elip
+      .getDBInstance()
+      .findOne({ _id: id })
+      .populate('createdBy')
+
+    const isVisible =
+      rs.status === constant.ELIP_STATUS.APPROVED ||
+      rs.createdBy._id.equals(this.currentUser._id) ||
+      this.currentUser.role === constant.USER_ROLE.SECRETARY
+
+    return isVisible ? rs : {}
+  }
 }

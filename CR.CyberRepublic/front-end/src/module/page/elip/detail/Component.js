@@ -1,34 +1,66 @@
 import React from 'react'
 import { Row, Col, Spin, Button } from 'antd'
 import styled from 'styled-components'
+import DraftEditor from '@/module/common/DraftEditor'
 import I18N from '@/I18N'
 import StandardPage from '@/module/page/StandardPage'
 import Footer from '@/module/layout/Footer/Container'
 import BackLink from '@/module/shared/BackLink/Component'
+import { ELIP_STATUS } from '@/constant'
 import ElipNote from '../ElipNote'
 import { grid } from '../common/variable'
 
 class C extends StandardPage {
+  constructor(p) {
+    super(p)
+    this.state = {
+      elip: {},
+      loading: false
+    }
+  }
+
+  async componentDidMount() {
+    const { getData, match } = this.props
+    this.setState({ loading: true })
+    const elip = await getData(match.params)
+    this.setState({ elip, loading: false })
+  }
+
   ord_renderContent() {
-    const { isSecretary } = this.props
+    const { elip, loading } = this.state
+    if (loading) {
+      return <Spin />
+    }
+    if (!loading && !Object.keys(elip).length) {
+      return null
+    }
+    const { isLogin, isSecretary } = this.props
     return (
       <div>
         <BackLink link="/elips" />
         <Container>
-          <h2 className="komu-a cr-title-with-icon">ELIP #100</h2>
+          <h2 className="komu-a cr-title-with-icon">ELIP #{elip.vid}</h2>
           <Label>status</Label>
-          <Status>WAIT FOR REVIEW</Status>
+          <Status>{elip.status}</Status>
           <Row>
             <LabelCol span={3}>{I18N.get('elip.fields.title')}</LabelCol>
             <WrapperCol span={17}>
-              <Title>hello elip</Title>
+              <Title>{elip.title}</Title>
             </WrapperCol>
           </Row>
           <ElipNote />
           <Row>
             <LabelCol span={3}>{I18N.get('elip.fields.description')}</LabelCol>
             <WrapperCol span={17}>
-              <Dec>hello elip</Dec>
+              <Dec>
+                <StyledRichContent>
+                  <DraftEditor
+                    value={elip.description}
+                    contentType={elip.contentType}
+                    editorEnabled={false}
+                  />
+                </StyledRichContent>
+              </Dec>
             </WrapperCol>
           </Row>
           <Row>
@@ -42,7 +74,8 @@ class C extends StandardPage {
                 >
                   {I18N.get('elip.button.cancel')}
                 </Button>
-                {isSecretary && (
+                {this.renderEditBtn()}
+                {isLogin && isSecretary && (
                   <Button
                     className="cr-btn cr-btn-danger"
                     style={{ marginRight: 10 }}
@@ -50,7 +83,7 @@ class C extends StandardPage {
                     {I18N.get('elip.button.reject')}
                   </Button>
                 )}
-                {isSecretary && (
+                {isLogin && isSecretary && (
                   <Button className="cr-btn cr-btn-primary">
                     {I18N.get('elip.button.approve')}
                   </Button>
@@ -62,6 +95,24 @@ class C extends StandardPage {
         <Footer />
       </div>
     )
+  }
+
+  renderEditBtn() {
+    const { elip } = this.state
+    const { isLogin, currentUserId } = this.props
+    const isEditable = isLogin && elip.createdBy &&
+      elip.createdBy._id === currentUserId &&
+      elip.status === ELIP_STATUS.WAIT_FOR_REVIEW
+    if (isEditable) {
+      return (
+        <Button
+          onClick={() => this.props.history.push(`/elips/${elip._id}/edit`)}
+          className="cr-btn cr-btn-primary"
+        >
+          {I18N.get('elip.button.edit')}
+        </Button>
+      )
+    }
   }
 }
 
@@ -90,7 +141,7 @@ const Status = styled.div`
   text-transform: uppercase;
   color: #000000;
   margin-bottom: 42px;
-  background: #F2F6FB;
+  background: #f2f6fb;
   width: 159px;
   height: 27px;
   text-align: center;
@@ -125,4 +176,21 @@ const Actions = styled.div`
   margin-top: 60px;
   display: flex;
   justify-content: center;
+`
+
+export const StyledRichContent = styled.div`
+  .md-RichEditor-root {
+    background: none;
+    padding: 0;
+    .public-DraftEditor-content {
+      padding: 0;
+      margin: 0;
+    }
+    figure.md-block-image {
+      background: none;
+    }
+    figure.md-block-image figcaption .public-DraftStyleDefault-block {
+      text-align: left;
+    }
+  }
 `

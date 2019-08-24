@@ -28,14 +28,12 @@ export default class extends BaseService {
   }
 
   async getData(param) {
-    return {
-      vid: 14,
-      title: 'additional meeting request',
-      author: 'Fay Li',
-      status: 'WAIT_FOR_REREVIW',
-      description: 'cr elip',
-      created: '2019-8-22'
-    }
+    const path = `${this.prefixPath}/detail/${param.id}`
+    const rs = await api_request({
+      path,
+      method: 'get'
+    })
+    return rs
   }
 
   async listData(param, isSecretary) {

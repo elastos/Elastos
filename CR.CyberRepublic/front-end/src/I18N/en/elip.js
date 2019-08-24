@@ -27,7 +27,8 @@ export default {
     cancel: 'Cancel',
     submit: 'Submit for Review',
     reject: 'Reject',
-    approve: 'Approve'
+    approve: 'Approve',
+    edit: 'Edit'
   },
   msg: {
     submitted: 'Submitted successfully',
