@@ -23,6 +23,7 @@ import taskCandidate from './task_candidate'
 import teamCandidate from './team_candidate'
 import upload from './upload'
 import user from './user'
+import elip from './elip'
 
 
 /**
@@ -95,6 +96,7 @@ router.use('/suggestion', suggestion)
 router.use('/sso', sso)
 router.use('/user', user)
 router.use('/upload', upload)
+router.use('/elip', elip)
 
 router.use((req, res) => {
     return res.sendStatus(403)
