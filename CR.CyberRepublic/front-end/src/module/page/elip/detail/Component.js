@@ -41,7 +41,7 @@ class C extends StandardPage {
         <Container>
           <h2 className="komu-a cr-title-with-icon">ELIP #{elip.vid}</h2>
           <Label>status</Label>
-          <Status>{elip.status}</Status>
+          <Status status={elip.status}>{elip.status}</Status>
           <Row>
             <LabelCol span={3}>{I18N.get('elip.fields.title')}</LabelCol>
             <WrapperCol span={17}>
@@ -100,9 +100,13 @@ class C extends StandardPage {
   renderEditBtn() {
     const { elip } = this.state
     const { isLogin, currentUserId } = this.props
-    const isEditable = isLogin && elip.createdBy &&
+
+    const isEditable =
+      isLogin &&
+      elip.createdBy &&
       elip.createdBy._id === currentUserId &&
-      elip.status === ELIP_STATUS.WAIT_FOR_REVIEW
+      elip.status === ELIP_STATUS.REJECTED
+
     if (isEditable) {
       return (
         <Button
@@ -139,9 +143,20 @@ const Status = styled.div`
   font-size: 16px;
   line-height: 27px;
   text-transform: uppercase;
-  color: #000000;
+  color: ${props => {
+    return props.status === ELIP_STATUS.WAIT_FOR_REVIEW ? '#000' : '#fff'
+  }};
   margin-bottom: 42px;
-  background: #f2f6fb;
+  background: ${props => {
+    switch (props.status) {
+      case ELIP_STATUS.REJECTED:
+        return '#be1313'
+      case ELIP_STATUS.APPROVED:
+        return '#008d85'
+      default:
+        return '#f2f6fb'
+    }
+  }};
   width: 159px;
   height: 27px;
   text-align: center;

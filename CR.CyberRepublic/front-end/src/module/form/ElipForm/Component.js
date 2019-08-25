@@ -5,7 +5,7 @@ import { convertToRaw } from 'draft-js'
 import I18N from '@/I18N'
 import DraftEditor from '@/module/common/DraftEditor'
 import ElipNote from '@/module/page/elip/ElipNote'
-import { CONTENT_TYPE } from '@/constant'
+import { CONTENT_TYPE, ELIP_STATUS } from '@/constant'
 import { Container, Title, Actions } from './style'
 
 const FormItem = Form.Item
@@ -50,7 +50,7 @@ class C extends BaseComponent {
 
   handleSubmit = e => {
     e.preventDefault()
-    const { history, create, form } = this.props
+    const { history, create, form, data, update } = this.props
     form.validateFields(async (err, values) => {
       if (err) {
         return
@@ -59,14 +59,22 @@ class C extends BaseComponent {
         title: values.title,
         description: formatValue(values.description)
       }
-      const elip = await create(param)
-      message.info(I18N.get('elip.msg.submitted'))
-      history.push(`/elips/${elip._id}`)
+      if (!data) {
+        const elip = await create(param)
+        message.info(I18N.get('elip.msg.submitted'))
+        history.push(`/elips/${elip._id}`)
+      } else {
+        param._id = data._id
+        param.status = ELIP_STATUS.WAIT_FOR_REVIEW
+        await update(param)
+        message.info(I18N.get('elip.msg.updated'))
+        history.push(`/elips/${data._id}`)
+      }
     })
   }
 
   ord_render() {
-    const { form } = this.props
+    const { form, data } = this.props
     const { getFieldDecorator } = form
     return (
       <Container>
@@ -84,8 +92,9 @@ class C extends BaseComponent {
                   required: true,
                   message: I18N.get('elip.form.error.required')
                 }
-              ]
-            })(<Input autoFocus />)}
+              ],
+              initialValue: data && data.title ? data.title : ''
+            })(<Input />)}
           </FormItem>
           <ElipNote />
           <FormItem
@@ -104,7 +113,8 @@ class C extends BaseComponent {
                   transform,
                   message: I18N.get(`proposal.form.error.limit${WORD_LIMIT}`)
                 }
-              ]
+              ],
+              initialValue: data && data.description ? data.description : ''
             })(<DraftEditor contentType={CONTENT_TYPE.MARKDOWN} />)}
           </FormItem>
           <Actions>

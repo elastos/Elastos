@@ -1,11 +1,13 @@
 import { createContainer } from '@/util'
 import Component from './Component'
+import ElipService from '@/service/ElipService'
 
 export default createContainer(
   Component,
   state => ({
     user: state.user,
-    is_login: state.user.is_login
+    isLogin: state.user.is_login,
+    currentUserId: state.user.current_user_id
   }),
   () => {
     const service = new ElipService()
@@ -13,5 +15,6 @@ export default createContainer(
       async getData(param) {
         return service.getData(param)
       }
-    }}
+    }
+  }
 )

@@ -31,6 +31,7 @@ export default {
     edit: 'Edit'
   },
   msg: {
+    updated: 'Updated successfully',
     submitted: 'Submitted successfully',
     rejected: 'Rejected successfully',
     approved: 'Approved and published successfully'
@@ -45,5 +46,5 @@ export default {
   modal: {
     submit: 'Are you sure to submit this ELIP for review?'
   },
-  note: 'Elastos Improvement Proposal (ELIP) is a design document that provides information, describes processes, introduces new features, or the environment to the Elastos Community. At the same time, ELIP should provide concise technical specifications and a rationale for the target characteristics.'
+  note: 'is a design document that provides information, describes processes, introduces new features, or the environment to the Elastos Community. At the same time, ELIP should provide concise technical specifications and a rationale for the target characteristics.'
 }

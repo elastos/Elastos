@@ -31,6 +31,7 @@ export default {
     edit: '编辑'
   },
   msg: {
+    updated: '更新成功',
     submitted: '提交成功',
     rejected: '已驳回',
     approved: '已批准并发布'
@@ -39,11 +40,11 @@ export default {
     error: {
       required: '必填项',
       tooLong: '文字太长',
-      limit200: '不能超过3000字'
+      limit3000: '不能超过3000字'
     }
   },
   modal: {
     submit: '您确定要提交这份 ELIP 吗？'
   },
-  note: 'Elastos Improvement Proposal (ELIP)是一种设计文档，它用于向亦来云社区提供信息、描述流程、介绍新特性或者环境等。同时，ELIP应该提供目标特性的简明技术规范和基本原理。'
+  note: '是一种设计文档，它用于向亦来云社区提供信息、描述流程、介绍新特性或者环境等。同时，ELIP应该提供目标特性的简明技术规范和基本原理。'
 }

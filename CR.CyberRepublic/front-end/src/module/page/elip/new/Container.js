@@ -5,7 +5,7 @@ export default createContainer(
   Component,
   state => ({
     user: state.user,
-    is_login: state.user.is_login
+    isLogin: state.user.is_login
   }),
   () => {}
 )

@@ -12,7 +12,10 @@ const ElipNote = () => (
         <Image>
           <NoteIcon />
         </Image>
-        <Text>{I18N.get('elip.note')}</Text>
+        <Text>
+          <Term>Elastos Improvement Proposal (ELIP) </Term>
+          <span>{I18N.get('elip.note')}</span>
+        </Text>
       </Wrapper>
     </Col>
   </StyledRow>
@@ -38,6 +41,13 @@ const Image = styled.div`
 `
 const Text = styled.div`
   margin-left: 32px;
+  color: #434D72;
+  font-size: 14px;
+  font-style: italic;
+  line-height: 20px;
+`
+const Term = styled.span`
+  color: #000;
 `
 const StyledCol = styled(Col)`
   margin-right: 20px;
