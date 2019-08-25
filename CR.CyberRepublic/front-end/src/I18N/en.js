@@ -40,7 +40,7 @@ const en = {
   '0110': 'Blog',
   navigation: {
     council: 'Council',
-    constitution: 'Constitution',
+    constitution: 'WhitePaper',
     suggestion: 'Suggestions',
     proposal: 'Proposals',
     whatsNew: "What's New",
@@ -1181,7 +1181,7 @@ const en = {
   'from.CVoteForm.button.saveDraft': 'Save as Draft',
   'from.CVoteForm.button.saveAndPublish': 'Save & Publish',
   'from.CVoteForm.button.saveChanges': 'Save changes',
-  
+
   'from.CVoteForm.modal.publish': 'Are you sure to publish this proposal?',
   'from.CVoteForm.modal.title': 'Are you sure to complete this proposal?',
   'from.CVoteForm.modal.confirm': 'Confirm',

@@ -4,497 +4,290 @@ export default {
   '0003': 'Alpha Version',
 
   list: {
-    1: 'Elastos Cyber Republic Constitution',
-    2: 'Elastos Cyber Republic Council Founding Document',
-    3: 'Elastos Cyber Republic Voting Rules',
-    4: 'Elastos Cyber Republic Council Conflict of Interest Policy',
-    5: 'Elastos Cyber Republic Council Proposal and Voting Rules',
+    1: '1. Cyber Republic (CR)',
+    2: '2. Cyber Republic Consensus (CRC)',
+    3: '3. Motivation',
+    4: '4. Basic Principles of CRC',
+    5: '5. Two Major Roles of the CRC',
+    6: '6. CR Council',
+    7: '7. Proposals',
+    8: '8. CR Council Secretariat',
+    9: '9. CR Community Assets',
+    10: '10. Future Outlook',
+    A: 'Appendix A. Contents not Covered in the Whitepaper',
+    B: 'Appendix B. Improvements to CRC',
+  },
+  title: {
+    1: 'Cyber Republic (CR)',
+    2: 'Cyber Republic Consensus (CRC)',
+    3: 'Motivation',
+    4: 'Basic Principles of CRC',
+    5: 'Two Major Roles of the CRC',
+    6: 'CR Council',
+    7: 'Proposals',
+    8: 'CR Council Secretariat',
+    9: 'CR Community Assets',
+    10: 'Future Outlook',
+    A: 'Appendix A. Contents not Covered in the Whitepaper',
+    B: 'Appendix B. Improvements to CRC',
   },
   desc: {
     1: `
             This is an Alpha version of this document.
-            The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members.         
+            The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members.
         `,
     2: `
             This is an Alpha version of this document.
-            The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members. 
+            The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members.
         `,
     3: `
             This is an Alpha version of this document.
-            The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members. 
+            The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members.
         `,
     4: `
             This is an Alpha version of this document.
-            The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members. 
+            The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members.
         `,
     5: `
             This rules of proposals and voting are discussed and approved by the Cyber Republic Council(CRC) and supervised by the Secretariat.
 
             Recommended language of CRC is English. In case there is a conflict between languages, English prevails.
-        
+
         `,
   },
   article: {
-    1: `
-         
-        <strong>ARTICLE 1 - INTERIM PERIOD</strong>
-         
-        <ol>
-            <li>This is an Alpha version of this document.</li>
-            <li>The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members. </li>
-            <li>During the “Interim Period” between the first anniversary of Elastos (25 August 2018) and the second anniversary of Elastos (25 August 2019), the terms of the Constitution and the other Founding Documents will be continuously revised. </li>
-            <li>Cyber Republic governance will be managed by representatives of the Elastos Foundation, and the Constitution and voting rules will be continuously developed to reflect the practical needs and experiences of Cyber Republic governance.</li>
-            <li>There will be a full transition to community governance of the Cyber Republic by the end of the Interim Period.</li>
-            <li>At the end of the Interim Period, amendment of this document will follow a community voting process that shall be defined within the Elastos Community Voting Rules document.</li>
-        </ol>
-        
-        <strong>ARTICLE 2 - PURPOSE</strong>
-        The purpose of the Elastos Community Constitution (“Constitution”) is to
-        <ol>
-            <li>Provide the Elastos community with a document that outlines the values and vision of Elastos;</li>
-            <li>Provide a foundation for community participation in the governance of the Elastos Ecosystem; </li>
-            <li>Ensure the structure of the Elastos Community Governance system is suitable for and responsive to the needs of the Elastos community.</li>
-        </ol>
-         
-        <strong>ARTICLE 3 - VISION</strong>
-         
-        Elastos is creating a safe and reliable internet of the future. This internet of wealth will usher in a new era of innovative economy, fueled by the security of the Smart Web, the ownership and trade of digital assets and data, and the interoperability and scalability of blockchain technologies and decentralized applications.
-        
-        <strong>ARTICLE 4 - VALUES</strong>
-         
-        The values of the Elastos community are 
-        <ol>
-            <li>Innovative Economy;</li>
-            <li>Digital Wealth Generation;</li>
-            <li>Community Governance; </li>
-            <li>Transparency and Sharing.</li>
-        </ol>
-         
-        <strong>ARTICLE 5 - COMMUNITY GOVERNANCE</strong>
-         
-        <ol>
-            <li> Elastos is an open-sourced platform founded by the Elastos Foundation. As the project progresses and the community develops, the Elastos Foundation gradually brings community operations to community members and committees.</li>
-            <li>Of the 33,000,000 ELA coins created in the Elastos Genesis Block, the Elastos Foundation chose to commit 16,500,000 coins towards development of the Elastos Ecosystem. These coins will be used as rewards for contributions made to the Elastos ecosystem, and their allocation will be decided by the community itself through the Cyber Republic Council, described in Article 6 of this Constitution.</li>
-            <li>Every year, an additional 4% of the initial 33,000,000 ELA coins will be created, to ensure a healthy rate of coin supply inflation, incentivize network support, and to fund Cyber Republic projects. Of these additional coins, 30% will be given to the Cyber Republic Council as additional assets to manage in developing the Elastos Ecosystem.</li>
-            <li>The digital assets managed by the Elastos Foundation are limited to those NEO/ETH tokens raised during token sales, and the ELA allocated to the Elastos Foundation as described in the White Paper.</li>
-        </ol>
-         
-        <strong>ARTICLE 6 - CYBER REPUBLIC COUNCIL</strong>
-        <ol>
-            <li>The Cyber Republic Council is the vehicle through which the Elastos community decides how to manage the funds intended for the development the Elastos ecosystem. </li>
-            <li>The Cyber Republic Council is governed by two separate documents: the Cyber Republic Council Founding Document and the Cyber Republic Council Conflict of Interest Policy. </li>
-            <li>Community voting will be governed by a separate document, the Elastos Community Voting Rules, to be released by the end of the Interim Period.</li>
-        </ol>
-        
-        <strong>ARTICLE 7 - COMMUNITY VOTING</strong>
-         
-        While the Cyber Republic Council is presently composed of 3 representatives from the Elastos Foundation, the Cyber Republic Council shall consist of members elected by the Elastos community once the Interim Period is complete. There will be specific rules that specify the requirements for electing Cyber Republic Council members, amending the Constitution, and voting on projects to be funded by the Cyber Republic.
-         
-        <strong>ARTICLE 8 - AMENDING THE CONSTITUTION</strong>
-        
-        In the case of voting to amend the Constitution, voting shall follow the process as outlined in the Elastos Community Voting Rules, with the following exception. Amending the Constitution requires the following threshold:
-        <ol>
-            <li>ELA participating in voting accounting for more than 30% of circulated ELA by the deadline of such voting;</li>
-            <li>Support of 66.67% of the votes represented by ELA participating in voting.</li>
-        </ol>
-
-        <strong>ARTICLE 9 - MISCELLANEOUS</strong>
-        
-        <b>Consensus.</b> Elastos uses a hybrid POW / POS consensus model. The 4% annual inflation is allocated as follows: 35% to reward POW miners, 35% to reward DPoS stakers, and 30% to the Cyber Republic as funds for developing the Elastos Ecosystem.
-        <br/>
-        
-        <b>Cyber Republic.</b> The Cyber Republic is the engaged community of Elastos enthusiasts who help develop the Elastos Ecosystem.
-        <br/>
-        
-        <b>Founding Documents.</b> Other Founding Documents include the Elastos Community Voting Rules, the Cyber Republic Council Founding Document and the Cyber Republic Council Conflict of Interest Policy.
-        <br/>
-        
-        <b>Innovative Economy.</b> Elastos’ Innovative Economy refers to the concept of empowering individuals to own their own data and code through blockchain authentication to allow for the creation of new wealth - the internet of wealth.
-        <br/>
-        
-        <b>Interim Period.</b> The period of time between the first and second anniversaries of Elastos (25 August 2018 and 25 August 2019, respectively), during which Cyber Republic governance will be slowly and carefully transitioned to the community.
-        <br/>
-        
-        <b>Smart Web.</b> The Smart Web is a safer, more secure internet where applications do not have direct access to the internet and all communications are controlled by the Elastos Operating System and the Elastos Carrier.
-        <br/>
-        `,
-
+    1: `<p>Cyber Republic (CR) is the community that has naturally formed around Elastos. CR consists of ELA token holders, Elastos Foundation members, Elastos ecosystem partners, and any other teams and individuals that contribute to developing Elastos’ technologies and community.</p>`,
     2: `
-        <center>Chapter I   General Principles</center>
-        <strong>1 Interim Period</strong>
-        <ol>
-            <li>This is an Alpha version of this document.</li>
-            <li>The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members. </li>
-            <li>During the “Interim Period” between the first anniversary of Elastos (25 August 2018) and the second anniversary of Elastos (25 August 2019), the terms of the Constitution and the other Founding Documents will be continuously revised. </li>
-            <li>Cyber Republic governance will be managed by representatives of the Elastos Foundation, and the Constitution and voting rules will be continuously developed to reflect the practical needs and experiences of Cyber Republic governance.</li>
-            <li>There will be a full transition to community governance of the Cyber Republic by the end of the Interim Period.</li>
-            <li>At the end of the Interim Period, amendment of this document will follow a community voting process that shall be defined within the Elastos Community Voting Rules document.</li>
-        </ol>
-        
-        <strong>2 Purpose</strong>
-        The purpose of the Cyber Republic Council Found Document is to
-        <ol>
-            <li>Create the Cyber Republic Council as required by Article 6 of the Elastos Community Constitution (“Constitution”);</li>
-            <li>Delineate the structure of the Cyber Republic Council, the qualifications of its Members, and the responsibilities of its Members;</li>
-            <li>Create the Secretariat of the Cyber Republic Council (“Secretariat”);</li>
-            <li>Acknowledge the accompanying Cyber Republic Council Conflict of Interest Policy, which provides a system of checks and balances on the power of Cyber Republic Council Members; and</li>
-            <li>Encourage experienced and competent persons to seek and accept Cyber Republic Council positions.</li>
-        </ol>
-        
-        <strong>3 Selection</strong>
-        The Cyber Republic Council of the Elastos community is selected by community voting. The voting process will be defined in the Elastos Community Voting Rules
-        
-        <center>Chapter II   Structure and Procedure</center>
-        
-        <strong>4 Structure</strong>
-        <ol>
-            <li>The Cyber Republic Council has seven Members and five Alternate Members, who all represent community members. </li>
-            <li>Each term lasts for one year. </li>
-            <li>Cyber Republic Council Members may be re-elected to serve consecutive terms. </li>
-            <li>In the case a selection does not take place before a term ends, the Cyber Republic Council Members shall continue to shoulder their responsibility as Council members until new Cyber Republic Council Members are selected.</li>
-        </ol>
-
-        <strong>5 Selection of Cyber Republic Council Members</strong>
-
-        When selecting Cyber Republic Council Members or Alternate Members, the Secretariat shall publish a list of candidates and gather advice from the community. The proposal shall fully disclose the detailed information of the candidates, including but not limited to:
-        <ol>
-            <li>Personal information such as education background, working experience, part-time works, etc.;</li>
-            <li>Contributions made to the Elastos community;</li>
-            <li>Statements of interest for voluntarily running for the position;</li>
-            <li>Amount of locked-up ELA (include the locked-up ELA of the community members in support of the candidate); and</li>
-            <li>Relations with any other Council member (if any).</li>
-        </ol>
-        
-        <strong>6 Resignations</strong>
-
-        A Cyber Republic Council Member and Alternate Member may submit in writing their resignation to the Cyber Republic Council before the term ends.
-
-        <strong>7 Vacancies</strong>
-
-        A vacancy in the Cyber Republic Council shall be filled by an Alternate Member for the remaining time of the term. In the event that there are no remaining Alternate Members, a new vote shall be initiated to replace these Alternate Members. 
-
-
-        <center>Chapter III Qualifications and Responsibilities</center>
-
-        <strong>8 Qualifications</strong>
-        Qualifications of Cyber Republic Council Members and Alternate Members include but are not restricted to:
-        <ol>
-            <li>Having made contributions to the Elastos community, including but not limited to steadily holding full nodes, providing resources in support of major events and so on;</li>
-            <li>Having gained supporting votes represented by 10,000 ELA locked-up for one year; and</li>
-            <li>Voluntarily running for the Cyber Republic Council position and having time and energy to attend meetings.</li>
-        </ol>
-
-        <strong>9 Authority</strong>
-        The Cyber Republic Council shall make resolutions on the following matters:
-        <ol>
-            <li>The annual budget and its implementation;</li>
-            <li>Applications for Ongoing Expenditures or Single Expenditures as defined in Section 10.</li>
-            <li>Reviewing and evaluating the overall community operations, and providing rewards accordingly;</li>
-            <li>Deciding business plans and investment programs;</li>
-            <li>Payment for Cyber Republic Council members; and</li>
-            <li>Other matters required to be resolved according to the community.</li>
-        </ol>
-        
-        <strong>10 Expenditure Definitions</strong>
-        <ol>
-            <li>An Ongoing Expenditure is defined as one in which the annual cumulative expenditure represents less than 10% of the total assets managed by the Cyber Republic Council on behalf of the community.</li>
-            <li>A Single Expenditure is defined as one in which the expenditures represent less than 1% of the assets managed by the Cyber Republic Council on behalf of the community.</li>
-            <li>Ongoing expenditures larger than 10% of the total assets managed by the Cyber Republic Council on behalf of the community are not allowed.</li>
-            <li>If the remaining assets managed by the Cyber Republic Council on behalf of the community is smallerlarger than 4 million ELA, the application for Ongoing Expenditures must be less than 1% of the total assets managed by the Cyber Republic Council, while the application for Single ExpendituresExpenitures must be less than 0.5%.</li>
-        </ol>
-        
-        <strong>11 Compensation</strong>
-        The compensation of Cyber Republic Council Members shall be defined by the end of the Interim Period.
-
-        <center>Chapter IV The Secretariat of the Cyber Republic Council</center>
-
-        <strong>12 The Secretariat’s Responsibilities</strong>
-
-        The Secretariat of the Cyber Republic Council handles routine businesses of the Council. The responsibilities of the Secretariat include:
-        <ol>
-            <li>Convening Cyber Republic Council meetings;</li>
-            <li>Supervising the execution of Cyber Republic Council resolutions;</li>
-            <li>Disclosure of Cyber Republic Council proposal information;and</li>
-            <li>Ensure Cyber Republic Council fully understand the Key Documents</li>
-        </ol>
-        
-        <strong>13 Structure of the Secretariat </strong>
-        <ol>
-            <li>Members of the Secretariat are considered by the Cyber Republic Council.</li>
-            <li>Each member shall have a term of 1 years.</li>
-            <li>Secretariat Members may be renewed.</li>
-        </ol>
-        
-        <center>Chapter V Code of Conduct</center>
-        <strong>14 Statement of Values</strong>
-
-        Members of the Cyber Republic Council and the Secretariat shall abide by the following values:
-        <ol>
-            <li>Integrity</li>
-            <li>Professionalism</li>
-            <li>Transparency</li>
-            <li>Accountability</li>
-        </ol>
-
-        <strong>15 Objectives</strong>
-        Members of the Cyber Republic Council and the Secretariat shall always ensure that their decisions are ultimately guided by the objectives of:
-        <ol>
-            <li>Advancing the Elastos Ecosystem;</li>
-            <li>Reflecting the will of the Elastos Community.</li>
-        </ol>
-    
-        `,
-
+      <p>The Cyber Republic Consensus is the third Elastos consensus mechanism after PoW and DPoS. The purpose of CRC is to provide a consensus-based community governance mechanism that will drive Elastos’ technological and ecosystem development, dispute resolution, and management of community assets, and establish incentives to foster community participation in the governance of and contribution to the Elastos community.</p>
+      <p>The CRC can be viewed as the CR community's top-level governance model, but it is not intended to become a closed off, tightly knit, or compulsory organizational structure for the community; openness, dispersion, and spontaneity are essential characteristics of the community. Rather, the purpose of the CRC is to guide the process of grassroots growth through the power of collective decision making, and to provide assistance when necessary.</p>
+      <p>Additionally, the CRC is the basic infrastructure for developing the Elastos DApp ecosystem, as it provides a general community governance mechanism for truly decentralized applications.</p>`,
     3: `
-        <center>Chapter I   General Principles</center>
+      <h3>3.1. The Unique Features of Public Blockchains</h3>
+      <p>Blockchain development’s short history has already involved a number of significant intra-community disputes. Though often well-intentioned and thorough, attempts to mediate such disputes failed to achieve meaningful resolutions, and resulted in divisive hard forks - most notably that between BTC and BCH, which led to the break-up of the community. In reflecting on these divisions, it is important to acknowledge the unique characteristics that distinguish developing blockchain projects from traditional products being developed for the present internet:</p>
+      <ol>
+        <li>For blockchain projects, community is the driving force for development because the blockchain is different from other products. The blockchain is the shared property of the community, and should not be controlled by any one group or entity.</li>
+        <li>Within a blockchain community, consensus is not easily achieved, as various members and team may have different values and ideas.</li>
+        <li>Blockchain technology development can be slow. Two years elapsed between the Bitcoin Network’s initial scalability dispute and the final completion of its hard fork, whereas a similar upgrade to a traditional internet product would only take a few weeks.</li>
+      </ol>
+      <p>The reality of the present state of the blockchain industry is as follows: it is only ten years in development, and community and dApp ecosystems are still lacking in robustness, particularly in contrast with the platforms of the traditional internet.</p>
 
-        <strong>1 Interim Period</strong>
-        <ol>
-            <li>This is an Alpha version of this document.</li>
-            <li>The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members. </li>
-            <li>During the “Interim Period” between the first anniversary of Elastos (25 August 2018) and the second anniversary of Elastos (25 August 2019), the terms of the Constitution and the other Founding Documents will be continuously revised. </li>
-            <li>Cyber Republic governance will be managed by representatives of the Elastos Foundation, and the Constitution and voting rules will be continuously developed to reflect the practical needs and experiences of Cyber Republic governance.</li>
-            <li>There will be a full transition to community governance of the Cyber Republic by the end of the Interim Period.</li>
-            <li>At the end of the Interim Period, amendment of this document will follow a community voting process that shall be defined within the Elastos Community Voting Rules document.</li>
-        </ol>
+      <h3>3.2. Mechanism for Community Decision Making</h3>
+      <p>Additionally, many are familiar with BTC's Bitcoin Improvement Proposal (BIP) and ETH's Ethereum Improvement Proposal (EIP). These efforts aimed to advance each blockchain's respective process of technological development. However, the power to decide whether to adopt the improvement proposal was ultimately in the hands of the core development team. In these systems, the voices of core developers carried significant weight in addressing matters related to project development. Such imbalances highlight the centralized nature of this style of governance, which is incompatible with the values held by the blockchain paradigm.</p>
+      <p>With regard to public blockchains, the code is the consensus. There should be no team with the ability to exercise control by editing the code at will. Because the Elastos blockchain is a public blockchain, the launch of DPoS consensus signified the full decentralization of Elastos, as it prevented the Elastos Foundation from changing the blockchain code at will. Of course, such decentralization also makes it more difficult for a blockchain technology to evolve or to undergo upgrades.</p>
+      <p>Technical upgrade efficiency represents only one aspect of blockchain programmatic governance that has yet to be solved. There are still many others decisions to be made related to community decisions that require community participation, such as altering economic models or benefit allocation methods. These are dilemmas that cannot be solved by on-chain consensus alone.</p>
+      <p>There is a true need to utilize and reach a community consensus regarding these challenges. Rather than relying on a portion of existing work groups or factions to represent everyone during the decision making process, we must utilize blockchain technology to form and facilitate true community consensus.</p>
 
-        <strong>2 Purpose</strong>
-        The purpose of the Elastos Community Voting Rules (“the Rules”) are to
-        <ol>
-            <li>Standardize the governance of the Elastos community; </li>
-            <li>Fulfill the mandate of community participation as required by Article 5 of the Elastos Community Constitution (“Constitution”);</li>
-            <li>Ensure community voting is carried out in a logical and consistent way;</li>
-            <li>Ensure the governance of the community development funds benefits the overall Elastos Ecosystem.</li>
-        </ol>
-        
-        
-        <strong>3 Administration</strong>
-        The entire voting process takes places on Elastos Blockchain and is open to the community. 
-        
-        <center>Chapter II   Community Proposals and Opinions</center>
-
-        <strong>4 Community Proposals</strong>
-        The process for making community members proposals shall be defined by the end of the Interim Period.
-
-        <center>Chapter III  Proposals</center>
-        <strong>5 Fee</strong>
-        There may be an ELA fee associated with making a proposal, however this is to be finalized by the end of the Interim Period.
-        <strong>6 Content</strong>
-        The content of the proposals shall be defined by the end of the Interim Period.
-        <strong>7 Proposal Procedure</strong>
-        Proposals are to be raised by Cyber Republic Council and are published to the entire community.
-      
-        <center>Chapter IV  Voting</center>
-
-        <strong>8 Voting Types </strong>
-        <ol>
-            <li>There are four different types of community voting. </li>
-            <li>Selecting Cyber Republic Council Members;</li>
-            <li>Impeachment;</li>
-            <li>Ordinary proposal;</li>
-            <li>Amending Key Documents (Elastos Constitution, Cyber Republic Council Founding Document, Elastos Community Voting rules, Cyber Republic Council Conflict of Interest</li>
-        </ol>
-
-        <strong>9 Voting procedure</strong>
-        <ol>
-            <li>The election process for the re-election: Before the 30-day expiration of the current committee, the secretariat will initiate a general election notice.</li>
-            <li>Impeachment: Beginning with the election of CRC, the impeachment procedure is automatically initiated.</li>
-            <li>
-            The ordinary proposal and key document amendment voting procedures are as follows:
-            <ul>
-                <li>(a) The proposal is first voted by the CRC;</li>
-                <li>(b) After the CRC voting simple majority principle is passed, the community will vote in the publicity period.</li>
-            </ul>
-            </li>
-        </ol>
-        
-        
-        <strong>10 Voting principle</strong>
-        <ol>
-            <li>One ELA represents one vote.</li>
-            <li>Voters may vote in favor of a proposal, against a proposal, or abstain.</li>
-            <li>Voting shall be carried out through Elastos Wallet or other methods as notified by the Secretariat.</li>
-            <li>During the publicity period, if the community vote does not reach the threshold of negating the ordinary proposal, the ordinary proposal will take effect automatically.</li>
-            <li>Corresponding ELA participating in the voting shall remain locked-up until the deadline of the voting.</li>
-            <li>Cumulative voting is adopted in selecting the Cyber Republic Council Members. This process is described in Section 6(1) of this Document.</li>
-            <li>Uncirculated ELA represents no vote and shall not be calculated in the base. Uncirculated ELA are the unspent ELA for the purpose of ecosystem development, and the ELA account balance of the Elastos Foundation that have not been transferred to the accounts of cooperative parties or individuals for ecosystem development.</li>
-            
-        </ol>
-        
-        <strong>11 Voting Thresholds</strong>
-        There will be different thresholds required for each type of vote. These thresholds shall be defined by the end of the Interim Period.
-  
-        <ol>
-            <li>
-            The threshold for selecting Cyber Republic Council Members  is based on the following rules:
-            <ul>
-                <li>(a) The Selection of the Cyber Republic Council Members and Alternate Members for a new term shall use a cumulative voting process. In cumulative voting, the number of votes represented by 1 ELA participating in the vote shall be multiplied by the total number of Members and  Alternate Members positions being voted upon. The votes may then be distributed amongst the nominees according to the will of each voter, including assigning more than one vote to a single candidate.</li>
-                <li>(b) ELA participating in voting for the Cyber Republic Council Members shall account for more than 20% of circulated ELA by the deadline of the vote, and the Council Members and Alternative Members are appointed in sequence according to total votes gained by each.</li>
-            </ul>
-            </li>
-            <li>The threshold of Impeachment is 20% of circulated ELA.</li>
-            <li>
-            The threshold for vetoing a resolution of Cyber Republic Council is based on the following rules:
-            <ul>
-                <li>(a) The ELA participating in the voting accounted for more than 20% of circulated ELA;</li>
-                <li>(b) And participate in voting more than 50% against the ordinary proposal.</li>
-            </ul>
-            </li>
-            <li>The threshold for amending the Constitution can be found in Article 8 of the Constitution.</li>
-        </ol>
-
-        <center>Chapter VI Supplementary Provisions</center>
-        <strong>14 Miscellaneous</strong>
-        <ol>
-            <li>Where these rules come into conflict with the values entrenched in the Constitution, the Constitution shall prevail.</li>
-            <li>The first Election of the Cyber Republic Council shall take place by the end of the Interim Period. </li>
-        </ol>
-        
-        `,
-
+      <h3>3.3. Ecosystem Development and Community Contribution</h3>
+      <p>Decentralization is both an important value and technical characteristic of blockchains that ensures that power is decentralized (i.e., the control and operational power that the founding group has over the product). As such,​ ​the decentralization of power inevitably induces a decentralization of responsibility​.</p>
+      <p>Imagine a completely decentralized community: who would be responsible for expanding the community and for developing the app ecosystem? Completely relying on the spontaneity of community members necessitates that a lack of motivation would cause the development process to be extremely slow, and is a problem that the entire blockchain industry faces.</p>
+      <p>For this reason, we must incentivize individuals and groups to make contributions to the CR community and Elastos ecosystem based on the formation of community consensus. This will attract more people to join the community and become contributors, and accelerate the promotion of community and Dapp ecosystem development.</p>
+      <p>In order to solve the aforementioned challenges involving community decision-making and contributor incentives by integrating Elastos blockchain technology, we propose the third Elastos consensus mechanism: CRC.</p>`,
     4: `
-        <center>Chapter I   General Principles</center>
-        <strong>1 Interim Period</strong>
-        <ol>
-            <li>This is an Alpha version of this document.</li>
-            <li>The Constitution and other founding documents are intended to enshrine the rights and relationships of Cyber Republic community members. </li>
-            <li>During the “Interim Period” between the first anniversary of Elastos (25 August 2018) and the second anniversary of Elastos (25 August 2019), the terms of the Constitution and the other Founding Documents will be continuously revised. </li>
-            <li>Cyber Republic governance will be managed by representatives of the Elastos Foundation, and the Constitution and voting rules will be continuously developed to reflect the practical needs and experiences of Cyber Republic governance.</li>
-            <li>There will be a full transition to community governance of the Cyber Republic by the end of the Interim Period.</li>
-            <li>At the end of the Interim Period, amendment of this document will follow a community voting process that shall be defined within the Elastos Community Voting Rules document.</li>
-        </ol>
-        
-        <strong>2 Purpose</strong>
-        The purpose of the Cyber Republic Council Conflict of Interest Policy is to
-        <ol>
-            <li>Establish clear conflict of interest rules for Cyber Republic Council Members;</li>
-            <li>Minimize the possibility of conflicts arising between the private interests and Elastos governance duties of Cyber Republic Council Members;</li>
-            <li>Provide Cyber Republic Council Members with a mechanism to publicly disclose their private interests;</li>
-            <li>Provide the Elastos community with a mechanism to lodge complaints against Cyber Republic Council Members in the case of inadequate disclosures or clear conflicts of interest;</li>
-            <li>Provide for the resolution of those conflicts by the Elastos Community should they arise; </li>
-            <li>Encourage experienced and competent persons to seek and accept Cyber Republic Council positions.</li>
-        </ol>
-        
-        <strong>3 Conflict of Interest </strong>
-        For the purposes of this Policy, a Cyber Republic Council Member is in a conflict of interest when he or she exercises an official power, duty or function that provides an opportunity to further their private interests or those of their relatives or friends or to improperly further another person’s private interests.
-
-        <center>Chapter II   Duties of Cyber Republic Council Members</center>
-
-        <strong>4 General Duty</strong>
-        <ol>
-            <li>Every Cyber Republic Council Member shall make reasonable efforts to arrange their private affairs in a manner that will prevent the Cyber Republic Council Member from being in a conflict of interest.</li>
-            <li>Where conflicts arise, every Cyber Republic Council Member has a duty to disclose their personal interests that may conflict with the interests of the Cyber Republic and the wider Elastos community. This duty is described in detail in Section 12 of this Document.</li>
-            <li>It is expected, acceptable and reasonable that Cyber Republic Council Members may have conflicts of interests. What is important is that they disclose these conflicts. Hiding these conflicts is not acceptable.</li>
-            <li>If a Cyber Republic Council Member fails to disclose a conflict of interest, this shall be considered grounds for a complaint to be registered against that Cyber Republic Council Member, and the possibility of that Cyber Republic Council Member being removed from the Cyber Republic Council.</li>
-        </ol>
-        
-        
-        
-        
-        <strong>5 Decision Making</strong>
-        No Cyber Republic Council Member shall make a decision or participate in making a decision related to the exercise of an official power, duty or function if the Cyber Republic Council Member knows or reasonably should know that, in the making of the decision, he or she would be in a conflict of interest.
-        <strong>6 Preferential Treatment</strong> 
-        No Cyber Republic Council member shall, in the exercise of an official power, duty or function, give preferential treatment to any person or organization based on the identity of the person or organization that represents the first-mentioned person or organization.
-        <strong>7 Insider Information</strong>
-        No Cyber Republic Council member shall use information that is obtained in their position as a Cyber Republic Council member and that is not available to the public to further or seek to further the Cyber Republic Council Member’s private interests or those of the Cyber Republic Council Member’s relatives or friends, or to further another person’s private interests.
-        <strong>8 Influence</strong>
-        No Cyber Republic Council Member shall use their position as a Cyber Republic Council Member to seek to influence a decision of another person to further their own private interests or those of the Cyber Republic Council Member’s relatives or friends or to improperly further another person’s private interests.
-        <strong>9 Offers of Employment</strong>
-        No Cyber Republic Council Member shall allow himself or herself to be influenced in the exercise of an Cyber Republic Council power, duty or function by plans for, or offers of employment.
-        <strong>10 Gifts and other advantages</strong>
-        No Cyber Republic Council Member or member of their family shall accept any gift or other advantage, that might reasonably be seen to have been given to influence the Cyber Republic Council Member in the exercise of Cyber Republic Council power, duty or function.
-        <strong>11 Duty to Recuse</strong>
-        A Cyber Republic Council Member shall recuse himself or herself from any discussion, decision, debate or vote on any matter in respect of which he or she would be in a conflict of interest.
-        <strong>12 Duty to Disclose</strong>
-        Every Cyber Republic Council Member has a duty to disclose their personal interests that may conflict with the interests of the Cyber Republic and the wider Elastos community. These personal interests may include, but are not limited to:
-        <ol>
-        <li>Other Blockchain projects that a Cyber Republic Council Member has an interest in;</li>
-        <li>Other forms of employment or business activities that Cyber Republic Council Members engage in;</li>
-        <li>and Any other forms of income that a Cyber Republic Council Member receives.</li>
-        </ol>
-        <center>Chapter III Checks and Balances</center>
-       <strong> 13 Lodging a Complaint</strong>
-        In the event a community members believes a Cyber Republic Council Member may have an interest which conflicts with their responsibilities as a Cyber Republic Council Member, and where that community member feels there has either not been adequate disclosure or disclosure has failed to adequately mitigate the conflict, the community member may lodge a complaint against that Cyber Republic Council Member.
-        <strong>14 Complaint Reporting</strong>
-        Beginning with the CRC Inauguration, the impeachment program is automatically activated and community members can support the impeachment process at any time.A resolution to remove a Cyber Republic Council Member shall follow the community voting process contained within the Elastos Community Voting Rules
-        <strong>15 Complaint Voting</strong>
-        A resolution to remove a Cyber Republic Council Member shall follow the community voting process contained within the Elastos Community Voting Rules, to be released by the end of the Interim Period.
-        <strong>16 Vacancy</strong>
-        Any vacancy resulting from the removal of a Cyber Republic Council Member shall be filled by an Alternate Member. In the event that there are no remaining Alternate Members, a new vote shall be initiated to replace these Alternative Members.
-        
-        `,
-
+      <p>The goal of PoW and DPoS consensus is to securely and effectively record transactions on a blockchain ledger. Comparatively, the objective of CRC is to make community decisions using a consensus mechanism which draws on humans rather than computers and machines. Simply put, the CRC is a consensus mechanism in which humans - in particular, ELA holders - act as nodes, both by submitting proposals and voting on their outcomes to carry out community governance.</p>
+      <p>The problem here is that purely on-chain consensus mechanisms like DPoS or PoW have a very clear objective: record transactions and blocks on the blockchain. But the objective of the CRC is not necessarily clearly defined because "community affairs" are often broad and ambiguous, and thus decisions must be made by human beings.</p>
+      <p>Because the community’s scope and scale are ever-evolving and difficult to define, it is not possible for each community member to have the right to put forth a community proposal calling for the entire community’s consensus. As such, it is necessary to reduce the size of the group in possession of those powers by utilizing a delegate mechanism. First, the community will vote to elect a certain number of delegates; then the delegates will recommend proposals and vote on them. The delegates and their behaviors relating to the proposals’ recommendations will be supervised by the community via blockchain technology.</p>
+      <p>The CRC’s democratic form of consensus is analogous to DPoS, where delegate elections can likened to Supernode elections: humans vote to elect Council members based on their ELA tokenholdings, and utilize the blockchain as a trustless implementation mechanism. With regard to their functionalities, the greatest difference between the CRC Delegates and DPoS Supernodes is that CRC delegates are imbued with the power to raise and recommend community proposals at will.</p>
+      <p>It is of the highest priority that the blockchain's properties of openness, transparency, and immutability are successfully transferred to the human-operated processes of CRC. Thus, CRC delegate elections, proposal submissions and voting, implementation tracking, and all other processes must take place through blockchain transactions that are controlled by CRC blockchain code, meaning that they must use a digital signature to verify their identity. Community members can easily participate and supervise consensus progress using clients that support the CRC (a "client" refers to any blockchain client that supports CRC).</p>`,
     5: `
+      <p>First we must clearly define the two major roles in the CR community.</p>
 
-        <p>
-        1. This rules of proposals and voting are discussed and approved by the Cyber Republic Council(CRC) and supervised by the Secretariat.
-        </p>
+      <h3>5.1. CR Council Member</h3>
+      <p>A delegate elected by community vote during a blockchain election. According to the CRC, CR Council Members act as the "Supernodes" for all community members and make decisions related to community affairs. Their rights and responsibilities are as follows:</p>
+      <ol>
+        <li>The rights and responsibilities that all normal community members have;</li>
+        <li>The right to recommend proposals - that is, to put forth potential proposals originating from within the community (see: 7.1.);</li>
+        <li>The right to vote on proposals - that is, the right to vote for, against, or to abstain from voting on proposals.</li>
+      </ol>
 
-        <p>
-        2. Recommended language of CRC is English. In case there is a conflict between languages, English prevails.
-        </p>
+      <h3>5.2. Community Members</h3>
+      <p>All token holders in the CR community. Their rights and responsibilities are as follows:</p>
+      <ol>
+        <li>The right to vote in elections: the right to cast votes in support of any candidate running for CR Council Member.</li>
+        <li>The right to be elected - that is, the right to run in the election for CR Council Member.</li>
+        <li>The right to submit proposals to CR Council Members, who can recommend them as official CRC proposals, if they so choose.</li>
+        <li>The right to monitor the behaviors of CR Council Members and to vote to impeach them. Each community member can monitor the behaviors of CR Council Members and can vote to impeach Council Members who they find unfit.</li>
+        <li>The right to supervise the proposal process and to object to proposals. Community members can monitor the entire proposal process using the client, including the status of both voting and implementation. Proposals from CR Council Members that pass CR Council voting will be subject to a public referendum, during which time community members can object to proposals through community vote.</li>
+      </ol>
+      <p>These roles and processes do not necessitate the establishment of any additional roles or councils, including those designed for legal or supervisory purposes. CR Council Members may arbitrate community disputes by raising proposals, which itself includes the powers of a court. The processes of voting and raising proposals both operate on the blockchain, and all community members can monitor and affect the implementation of this process through the client by collectively voting against proposals or by impeaching council members.</p>
+      <p>The blockchain’s intrinsic characteristics of openness, transparency, and immutability expedite the transmission of information, thus simplifying the process of achieving community consensus without requiring excessive bureaucracy and representation.</p>`,
+    6: `
+      <h3>6.1. CR Council</h3>
+      <p>The CR Council is presently comprised of 12 seats which are filled by a community election conducted on the blockchain. As the community expands, the number of Council Members might change, though such a change would require that a consensus be reached by the community through CRC.</p>
+      <p>The CR Council differs from normal councils and boards of directors in that it is a distributed body of individuals. In principle, the CR Council Members do not need to know each other, communicate with each other, or have common goals because all consensus actions revolve around proposals and voting. The CR Council is not a regular organization per se, but a decentralized entity whose collective decision making is facilitated by blockchain in much the same way Supernodes operate within DPoS consensus.</p>
+      <p>The CR Council is represented by a permanent ELA wallet address set in the blockchain code. The ELA available to the current CR Council is stored at this address (see: 9.3.).</p>
 
-        <b>3. CRC Meeting</b>
-        <table>
-            <tr>
-                <td>Meeting time: </td>
-                <td>GMT+8 every Thursday at 13:00.</td>
-            </tr>
-            <tr>
-                <td>Conference format: </td>
-                <td>Zoom, Zoom link in meeting invitation</td>
-            </tr>
-            <tr>
-                <td>During time: </td>
-                <td>I hour</td>
-            </tr>
-            <tr>
-                <td>Meeting agenda: </td>
-                <td>Submitted by the CRC in the form of a proposal. </td>
-            </tr>
-            <tr>
-                <td>Minutes: </td>
-                <td>Recorded by the Secretariat and posted on the Cyber Republic website.
-                </td>
-            </tr>
-        </table>
+      <h3>6.2. Election Rules</h3>
+      <p>All community members that intend on participating in the CR Council Election must have Elastos DIDs. They can issue the election participation transaction in their wallets to notify the community of their participation in the CR Council Election and to make a 5,000 ELA deposit to verify their eligibility to participate. If a participant is not elected, the original deposit will be returned to him or her in full.</p>
+      <p>CR Council Members are elected through a voting process using ELA. All voting information will be recorded in real time on the blockchain and reflected in the client. At the time that voting concludes, the top 12 candidates who have obtained the most votes will become CR Council Members.</p>
 
-        <b>4. Proposals</b>
-        <ul style="padding-left:40px;">
-            <li>a. All the proposals are open to the community and published in CR website
-            </li>
-            <li>b. Only CRC members and the Secretariat have the right to raise a proposal.
-            </li>
-            <li>c. Only CRC members are able to vote on a proposal.
-            </li>
-            <li>d. The life cycle of a proposal is as follows:
-            <img src="/assets/images/council/img_1.png" style="display:block;margin: 5px 0 30px 0;"/>
-            </li>
-            <li>e. A proposal changes from PROPOSED to ACTIVE automatically  when it gets 2 consents by the deadline of vote. 
-            </li>
-            <li>f. A proposal changes from PROPOSED to REJECTED automatically when it gets 2 oppositions by the deadline of vote. </li>
-            <li>g. A proposal changes from PROPOSED to DEFERRED automatically when it fails to get 2 consents or 2 oppositions by the deadline of vote. 
-            </li>
-            <li>h. A proposal is changed  from ACTIVE to FINAL by the Secretariat when the proposal is executed and completed.
-            </li>
-            <li>i. An ACTIVE proposal is published to the community for community vote for 72 hours. Refer to the Voting Rules documents in KEY DOCUMENT.
-            </li>
-            <li>j. The REJECTED proposal cannot be resubmitted within 1 week
-            </li>
-            <li>k. Anyone can turn a REJECTED proposal to PROPOSED after one week. So that it can be discussed again.
-            </li>
-        </ul>
-        <b>5. Voting rules</b>
-        <ul style="padding-left:40px;">
-            <li>a. Each CRC member has one and only vote</li>
-            <li>b. Voting options are divided into consent, opposition and abstention</li>
-            <li>c. There is no veto power. </li>
-            <li>d. Once a proposal is raised, voting period starts and lasts for 48 hours. During voting period, CRC member can change their votes. </li>
-            <li>e. If a CRC member fails to vote before deadline, his vote will be treated as abstention</li>
-        </ul>
+      <h3>6.3. Impeachment of Council Members</h3>
+      <p>As CR Council Members serve their term, community members can at any time vote to impeach council members with whose performance they are unsatisfied. Once the number of votes to impeach a council member exceeds the equivalent of 20% of the circulating supply of ELA (the ELA circulating supply is defined as ELA outside of the CR assets address (see: 9.3.)), the impeached member will be automatically removed from the council.</p>
 
-        
-        `,
+      <h3>6.4. Rewards</h3>
+      <p>Being elected as a CR Council Member is an honor and a privilege, and it also carries the responsibility to govern the community and develop the Elastos ecosystem. In order to incentivize CR Council Members to better perform their roles, the Elastos DPoS Consensus has reserved the right for each CR Council Member to operate his or her own DPoS Supernode, which is also a responsibility and an obligation. This Supernode is an automatically active node; because it is not elected by voting, it does not receive voting rewards.</p>
+
+      <h3>6.5. Term in Council</h3>
+      <p>Generally, CR Council Members serve a term of one year (specifically, the time period of 262,800 main chain blocks). One month prior to the conclusion of the term (the time period of 21,900 main chain blocks), a new CR Council Member Election will be automatically initiated.</p>
+      <p>If a CR Council Member is successfully impeached, that council member will automatically be removed from council, and will be stripped of his of her roles and responsibilities.</p>
+      <p>Additionally, if a CR Council Member's DPoS Supernode goes into Inactive status, then his or her roles and responsibilities will be temporarily suspended until the DPoS Supernode returns to Active status. If a CR Council Member's DPoS Supernode goes into Illegal status, then that Council Member will also be removed from the council.</p>
+      <p>When the number of CR Council Members is less than 2/3 of the total number of available seats, Council Member Elections will be automatically initiated.</p>
+
+      <h3>6.6. Number of Votes</h3>
+      <p>The quantity of ELA held by a community member is equal to the number of votes that member has the right to cast, and is not necessarily an integer.</p>
+      <p>During an election, a tokenholder's votes can be cast for one or more candidates, based on the tokenholder’s preferences. The right to vote may also be used to impeach a council member or to vote against community proposals approved by the CR Council (see: 7.3.). Votes are calculated independently based on different voting scenarios, and can be reused.</p>
+      <p>For example, if a tokenholder has 18.5 ELA, then that member has the right to cast 18.5 votes during an election. Such a tokenholder may cast 10 votes for Candidate A, and cast the other 8.5 votes for Candidate B. In addition, the voter can also use a maximum of 18.5 votes to impeach a current Council Member. Of course, when voting to impeach council members, votes cannot be reused, meaning that votes cast to impeach Council Member A cannot also be cast to impeach Council Member B. None of these voting practices will affect the 18.5 votes that this tokenholder may cast during DPoS Elections.</p>
+      <p>Note that when tokenholders conduct transactions using ELA, the number of votes they may cast will be affected. If a certain transaction causes a tokenholder's remaining number of votes to fall below the number of votes cast in a certain voting scenario, then that tokenholder's votes are canceled.</p>
+
+      <h3>6.7. Making and Returning the Deposit</h3>
+      <p>During a term in council, a CR Council Member must make a deposit of 5,000 ELA. The 5,000 ELA deposit will also be used as each Council Member's Supernode deposit, which is a requirement of all Supernodes, and is forfeited in the case that malicious activity is committed by that node.</p>
+      <p>After the conclusion of a council member’s term (including cases of replacement during election and successful impeachment), an amount will be deducted from the ELA on deposit according to the ratio of the term that is not served and the number of proposals on which the Council Member failed to vote. The remaining sum of ELA will be returned to the council member's wallet. If a CR Council Member is removed from council because the member’s Supernode enters Illegal status, then the full amount of the ELA on deposit will be forfeited.</p>
+      <p>Suppose that a council member performed their duties normally until the ensuing election. For the duration of the member’s term, there were ​M ​number of proposals of which the council member voted on N number of proposals. The remaining amount on deposit is expressed as ​P (it is possible for the value of P to be reduced to less than 5,000 ELA in case of malicious activity committed by the DPoS Supernode). Then, the amount of the deposit to be returned is calculated as follows:</p>
+      <p>R = P * (N / M)</p>
+      <p>If the Council Member leaves his or her post early due to impeachment, suppose that the real block duration that member served in council is ​T.​ The deposit that should be returned is calculated as follows:</p>
+      <p>R = P * (T / 262,800) * (N / M)</p>
+      <p>The amount of the deposit forfeited will be permanently removed from circulation - the equivalent of being burned.</p>`,
+    7: `
+      <p>Proposals are subjects that need to go through the process of CR Consensus. A CRC proposal will normally include the following elements:</p>
+      <ul>
+        <li>The subject as it pertains to the CR community and Elastos technology development;</li>
+        <li>The problem it intends to solve and the goals it aims to achieve;</li>
+        <li>A specific method and process for reaching the goal;</li>
+        <li>The person or team designated to implement the proposal;</li>
+        <li>The anticipated period of time required for implementation and corresponding checkpoints; and</li>
+        <li>A budget for expenses and an expenditure plan - if required.</li>
+      </ul>
+      <p>All proposals after being recommended by CR Council Members will be structured as proposal transactions recorded on the blockchain, to be voted on by CR Council Members.</p>
+
+      <h3>7.1. The Right to Submit a Proposal</h3>
+      <p>All community members who use and disclose Elastos DIDs can submit a proposal to the CR Council members. The proposal's author needs to sign the proposal with his or her private key, and the content of the proposal cannot be changed. Then, the CR Council Member can recommend it to the CR Council or reject it.</p>
+
+      <h3>7.2. The Right to Introduce a Proposal</h3>
+      <p>CR Council Members sign a proposal with their private keys to recommend it. In the case where CR member is the proposal’s author the two signatures may be from the same individual. Once the CR Council Member has signed the proposal, it becomes an official proposal for the CRC, leaving it to be published on the blockchain and subject to a vote by CR Council Members when the consensus process begins.</p>
+      <p>A single CR member can recommend no more than 128 proposals during his or her term of service. During a CRC election, current CR Council Members will not be able to raise new proposals. However, they may still vote on proposals with voting in progress.</p>
+
+      <h3>7.3. Voting and Notification</h3>
+      <p>After a proposal is raised, CR Council Members will have a time period of 5,040 main chain blocks (approximately seven calendar days) to vote on the proposal via a wallet signature on the proposal transaction; each person has one vote. At the time when the voting period concludes, if the proposal obtains a minimum of 2/3 of total number of seats in the affirmative, then the proposal passes the vote by the CR Council (see: 6.5). Proposals that do not pass voting are invalid.</p>
+      <p>After a proposal passes voting by the CR Council, a public referendum spanning a time period of 5,040 main chain blocks (approximately seven calendar days) ensues. During the notification period, all community members can vote against proposals they oppose. Once the number of votes against a proposal exceeds the equivalent of 10% of all circulating ELA, the proposal becomes invalid. A single vote can be used against multiple proposals.</p>
+      <p>If a proposal passes voting and the ensuing Public Referendum, the proposal becomes valid, and can be implemented.</p>
+
+      <h3>7.4. Proposal Categories</h3>
+      <p>Some proposals require consensus code to carry out particular rules and conditions. For this reason, it is necessary to categorize proposals in order to identify each by code. These proposal categories include, but are not limited to the following:</p>
+      <ul>
+        <li>Code upgrades</li>
+        <li>Additions of sidechains</li>
+        <li>Replacing a Proposal Owner (see: 7.7.)</li>
+        <li>Terminate a proposal (see: 7.9.)</li>
+        <li>Proposals for new CR Council Secretary General (see: 8.1.)</li>
+      </ul>
+      <p>In addition to categories for special proposals related to the basic infrastructure of consensus, certain heavyweight DApps can also apply to CRC for proposal categories used for DApp consensus governance. For example, developers at DEX (a decentralized exchange) can apply to the CRC for a proposal category for decisions regarding the listing of new tokens.</p>
+      <p>CRC proposal categories will be maintained and published via an informational ELIP (Elastos Improvement Proposal).</p>
+
+      <h3>7.5. CR Council Secretariat</h3>
+      <p>While many proposals will seamlessly pass the consensus process and have short implementation periods, others will be rather complex, and produce the following challenges:</p>
+      <ul>
+        <li>Long implementation periods requiring tracking, supervision, and adjustments;</li>
+        <li>Rationale requiring professional insight to judge the proposal;</li>
+        <li>Trivialities requiring an excessive number of revisions.</li>
+      </ul>
+      <p>Ideally, it is possible to solve the problems described above by frequently submitting proposal revisions and drawing on past experience. However, in reality the constraints of time, capital, and communication costs are significant, and these revisions will likely prove too burdensome for CR Council Members, as administrative tasks will weigh upon their workload.</p>
+      <p>For this reason, the CR Council needs a supportive body to assist with decision making, implementation, tracking, and management of daily decisions and tasks. This body will be referred to as the CR Council Secretariat, which will be headed by a CR Council Secretary General.</p>
+
+      <h3>7.6. Proposal Owner and Implementation Tracking</h3>
+      <p>The original author of the proposal is also the default owner of the proposal. After the proposal has passed the CRC (including the public referendum), the Proposal Owner has the responsibility to track and provide feedback about the proposal’s implementation status in order to reach a consensus with the CR Council Secretariat regarding said implementation status. In more detail, the Proposal Owner submits the tracking messages of the proposal and the Secretariat reviews and verifies regarding the said implementation status, and then the consensus process between the Proposal Owner and the Secretariat can be complete.</p>
+      <p>Tracking messages about proposal implementation will be published to the blockchain after the Proposal Owner and the CR Council Secretariat both sign the transaction, serving to make public ancillary information about the proposal. The quantities of the tracking messages for a single proposal cannot exceed 128.</p>
+
+      <h3>7.7. Replacing the Proposal Owner</h3>
+      <p>In certain circumstances, the Proposal Owner may be unable to carry out the responsibility of tracking the proposal. In such cases, one of the following two methods may be used to replace the Proposal Owner:</p>
+      <ol>
+        <li>The original Proposal Owner submits a request to replace himself or herself. The request includes the signature of the original owner and the candidate owner of the proposal. After the Secretariat approves and signs the request, it establishes a consensus along with the original owner and the new owner (formerly the candidate owner). The request will be published on the blockchain as a three-party joint signature transaction. This is a lightweight update method based on the premise that the original Proposal Owner is still able to manage basic responsibilities and is willing to take the initiative to replace the Proposal Owner;</li>
+        <li>The candidate for the Proposal Owner submits a proposal to replace the current Proposal Owner to the CR Council. This method is relatively “heavyweight,” and is better suited to cases where the original Proposal Owner is unable or is unwilling to manage any responsibilities. Prior to submitting proposals, the CR Council Members or the Secretariat must conduct offline discussions with the team responsible for the implementation of the proposal and confirm the new candidate for Proposal Owner.</li>
+      </ol>
+
+      <h3>7.8. Budget and Payment</h3>
+      <p>If the implementation of a proposal requires funding denominated in ELA, a detailed budget and expenditure plan should be included in the proposal along with a specified ELA address where the funds are to be sent.</p>
+      <p>The expenditure plan typically lists one or more installments that correspond to the checkpoints in the proposal. The first installment will be approved along with the proposal. For the remaining installments, specific criteria for approval should be attached. While the proposal is being implemented, the tracking messages will be used as the basis for approval of upcoming installments. In other words, the approval of future installments only requires consensus between the Proposal Owner and the Secretariat. Therefore, a proposal with a multi-phase installments is generally only applicable to proposals with small periodic installments.</p>
+      <p>When the CR Council members believe that the phased project is important or the requested ELA in the expenditure plan is large, the Proposal Owner should submit proposals for each phase separately, which enables more people to participate in the consensus on budget approval and implementation status.</p>
+      <p>For approved expenditures in a proposal, the Proposal Owner can withdraw ELA from the CR Council Expense Address to the receiving address specified in the proposal during the term of the current CR Council.</p>
+
+      <h3>7.9. Conclusion/Termination of a Proposal</h3>
+      <p>After the proposal is completed, the Proposal Owner sends a request to the CR Secretariat to finalize the proposal. After the Secretariat verifies and approves it, they arrive at consensus to conclude the proposal. The request to end the proposal will be posted on the blockchain with a joint-signature transaction, and will be available to the community as subsidiary information of the proposal.</p>
+      <p>When the proposal is being implemented, there may be situations where a proposal cannot or is not supposed to continue. In these scenarios, the proposal should be terminated with a new proposal that is categorized in 7.4.</p>
+      <p>The consensus process for approving a new proposal in order to terminate a previous proposal is consistent with the consensus process for regular proposals. After the proposal is approved, the blockchain code will automatically execute it, thus terminating the previous proposal. No further tracking messages are required for the proposal.</p>
+
+      <h3>7.10. Status and Process</h3>
+      <p>Beginning with the submission of a proposal to the CR Council, the consensus statuses and process are as follows:</p>
+      <img src="/assets/images/whitepaper.png" width="100%" alt="">
+      <ul>
+        <li><em>Submitted:</em> A proposal’s status after the Proposal Owner completes the proposal and signs it. Proposals in this state cannot be public on the blockchain, which means that decentralized clients cannot see such proposals from the community.</li>
+        <li><em>Council </em>Voting: A proposal that has been recommended by the CR council member(s) and in the voting period. The proposal contains two signatures: the signature of the Proposal Owner and the signature of the person who recommends the proposal. This is an official CRC proposal posted on the blockchain.</li>
+        <li><em>Community </em>Review: A proposal that has entered the public referendum after the approval of the CR council.</li>
+        <li><em>Tracked:</em> After the notification period, a proposal that enters the implementation period during which the implementation of the proposal is conducted. For some proposals that are automatically executed by blockchain code, this status may not be applicable.</li>
+        <li><em>Finalized:</em> The final status of a proposal. This status generally indicates that the proposal has achieved the desired goal.</li>
+        <li><em>Rejected:</em>​ A proposal that is rejected during the voting period or public referendum.</li>
+        <li><em>Canceled:</em> A proposal that is terminated before it becomes finalized, despite earning approval from the CRC.</li>
+      </ul>
+      <p>A proposal is to be regarded as a public contract between the Proposal Owner and the CR community. Community consensus will be confirmed after the proposal is approved by the CRC. All CR members are to comply with the content of the proposal.</p>`,
+    8: `
+      <h3>8.1. Method of Selection</h3>
+      <p>The CR Council can propose and elect a new CR Council Secretary General - leader of the CR Council Secretariat - through the proposal process. Then, a proposal for an organizational plan will be put forth by the CR Council Secretary General in order to establish a new CR Council Secretariat.</p>
+      <p>The CR Council Secretary General must use and publicize his or her Elastos DID, and must commit to using and publicizing a single ELA wallet address.</p>
+
+      <h3>8.2. Rights and Responsibilities</h3>
+      <p>The CR Council Secretariat reports to the CR Council. The CR Secretariat’s responsibilities are defined by a proposal approved by the CRC during the CR Council Secretary General election. Under normal circumstances, such responsibilities may include, but are not limited to, the following:</p>
+      <ul>
+        <li>Submit a work plan and budget for the current Secretariat to the new CR Council Members after a new CR Council is elected;</li>
+        <li>Submit a Summary of Work and a Final Financial Statement to the CR Council before a CRC election begins. Otherwise, submit the Summary of Work and Final Financial Statement to the new CR Council after the CRC election ends.</li>
+        <li>Maintain CRC operations, such as CR website maintenance and improvement;</li>
+        <li>Convene necessary meetings according to the requirements of CR Council Members;</li>
+        <li>Hire professionals of specific expertise to assist with the decision making process and write evaluation reports on proposals according to the requirements of the council;</li>
+        <li>Review tracking and implementation for proposals and submit revised proposals when necessary;</li>
+        <li>Assist Council Members who have such requirements to operate and maintain their Supernodes (for which the Secretariat shall charge for the costs of operation and maintenance);</li>
+        <li>Maintain informational ELIPs about the CRC;</li>
+      </ul>
+      <p>As a subsidiary body of the CR Council, the CR Council Secretariat's main purpose is to support the operations of the CRC. Community and ecosystem development are not within its scope of responsibility.</p>
+
+      <h3>8.3. Term of Service</h3>
+      <p>In order to maintain the continuity of proposal implementation, the CR Council Secretariat is not replaced following a CR Council election. When CR Council members believe that there is a better choice for CR Council Secretary General, they may raise a proposal to nominate a new CR Council Secretary General.</p>`,
+    9: `
+      <h3>9.1. Necessity</h3>
+      <p>Some blockchain projects lose momentum after the rapid development experienced during the early stages and later devolves into stagnation. Because these projects have already completed their initial goals and the token allocation model is complete, a community without a perpetual economic incentive will lose the original drive of project development and expansion.</p>
+      <p>Hence, it is necessary to maintain community assets of a certain scale; in most cases, implementing a community consensus will require the support of tokens, independent of whether that involves CR Council operations, Elastos Improvement Proposals, or proposals for community events, as all will require an economic incentive.</p>
+
+      <h3>9.2. Source of Funds</h3>
+      <p>CR Community assets arise primarily come from three sources:</p>
+      <ol>
+        <li>Donations made by community teams or individuals;</li>
+        <li>The annual 1.2% increase in issuance of ELA;</li>
+        <li>Returns on investments, including ecosystem projects and foundations.</li>
+      </ol>
+      <p>Stemming from blockchain management requirements and safety considerations, the CR community assets are restricted to ELA; other digital assets should be exchanged into ELA using the buyback method.</p>
+      <p>After these assets have been received, they will be stored at a public address called the CR Assets Address. This is the address of a special ELA Wallet whose rules of use are written into the blockchain code.</p>
+
+      <h3>9.3. Rules</h3>
+      <p>CR community assets are controlled by two special ELA wallet addresses which are labelled CR Assets and CR Council Expenses, respectively. Their addresses are open to the entire community and are controlled by the blockchain code.</p>
+      <p>The total assets jointly held by the CR community are stored within the CR Assets Address. This wallet’s terms of use are set in the blockchain code. After each CR Council election has concluded, the new CR Council can withdraw 10% of the present wallet balance from CR Assets Address to the CR Council Expenses Address.</p>
+      <p>The ELA stored in the CR Council Expenses Address are used to support the operations of the current CR Council, and are under the control of blockchain code related to CRC proposals. The ELA at this address can only be approved to paid out and put into circulation through a proposal, and the CR Council is unable to create a transaction to transfer assets out independently.</p>
+      <p>The maximum amount that may be utilized by an individual proposal is set to 10% of the CR Council Expenses Address, as measured at the beginning of the current CR Council term.</p>`,
+    10: `
+      <p>CRC not only is a consensus-based community governance mechanism, but is one of the most important pieces of infrastructure in the Elastos ecosystem. Together with PoW and DPoS, it lays a strong foundation for truly decentralized applications and services.</p>
+      <p>By expanding the categories of proposals, CRC’s range of functions span not only across the blockchain sector, but to various areas including Elastos technology-based sidechains, cross chains, decentralized exchanges, decentralized gaming, digital asset management, and decentralized e-commerce.</p>
+      <p>Further expanding on the proposal categories, a new category that may potentiate is one designated exclusively to Smart Contracts. Unlike traditional open smart contracts that can be deployed unlimited. CRC Smart Contract Proposals must be signed by CR Council Members and the Proposal Owner, and monitored by the entire community. Such a process provides strong protection for the utility and security of Smart Contract Proposals.</p>`,
+    A: `
+      <h3>A.1. Provisions on the roles of the CRC</h3>
+      <p>This whitepaper addresses only the fundamental requirements for the individuals occupying essential roles in CRC, including but not limited to: CR Council Members, Secretariat, and Proposal Owners. It also describes the fundamental restrictions on the actions taken by these roles in the implementation of CRC. In reality, more restrictions may be placed on these roles as required by various scenarios.</p>
+      <h3>A.2. Formatting the content of a proposal</h3>
+      <p>The Implementation of some proposals requires automatic execution by blockchain code; therefore, it is necessary to format the proposal and its ancillary tracking messages. These designs should be defined and improved via ELIP.</p>
+      <h3>A.3. Code design and implementation of CRC</h3>
+      <p>The CRC is implemented by Elastos blockchain code; therefore, the detailed technical rationale and specifications shall be defined and improved by ELIP.</p>
+      <h3>A.4. Clients that support CRC</h3>
+      <p>Clients that claim to support CRC must follow the interface specifications of CRC in the Elastos blockchain, which are defined by the relevant ELIP. On this basis, Clients can be optimized as needed in order to improve elements of user experience. For example blockchain full node and cache services can be built in order to improve client response times.</p>
+      <h3>A.5. Subordinate bodies of the CR Council</h3>
+      <p>In the whitepaper, only the CR Council Secretariat is defined as the CR Council’s subordinate body for it acts an important role in CRC. However, this does not mean that the CR Council cannot establish other subordinate bodies. For example, a proposal can be implemented to establish a Technical Standards Committee. Upon the approval of the proposal, the Technical Standards Committee can review Elastos technical standards, thus improving the interoperability of platforms and services in the Elastos ecosystem.</p>`,
+    B: `
+      <h3>B.1. Whitepaper</h3>
+      <p>The CRC whitepaper is currently maintained and amended by a workgroup of the Elastos Foundation. The workgroup can be reached via email at crc-whitepaper@elastos.org, and any suggestions pertaining to the whitepaper should be forwarded to this email address. After the CRC is officially launched, maintenance responsibilities for the CRC whitepaper will be transferred to the community-elected CR Council.</p>
+      <h3>B.2. Related ELIPs</h3>
+      <p>ELIP (Elastos Improvement Proposal) is a CRC proposal category designated to the developer community that aims to promote improvements in Elastos’ technical infrastructure. The ELIP-1 (ELIP Purpose and Guidelines), which defines and outlines ELIP, is presently in the draft stage.</p>
+      <p>The CRC-related ELIP numbers and titles should be included in this appendix for reference purposes.</p>`,
   },
-
 }
