@@ -34,7 +34,7 @@ app.configureWeb3(config)
 	  response.send('ELA ETH Network faucet')
 	});
 
-	app.set('port', (process.env.PORT || 80))
+	app.set('port', (process.env.PORT || 8080))
 
 	app.listen(app.get('port'), function () {
 	    console.log('Sokol testnet POA Network faucet is running on port', app.get('port'))
