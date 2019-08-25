@@ -12,11 +12,8 @@ const mapState = state => ({
 const mapDispatch = () => {
   const service = new ElipService()
   return {
-    async listData(param, isSecretary) {
-      return service.listData(param, isSecretary)
-    },
-    async create(param) {
-      return service.create(param)
+    async listData(param) {
+      return service.listData(param)
     }
   }
 }

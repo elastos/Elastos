@@ -31,7 +31,6 @@ export default class extends BaseComponent {
   }
 
   async componentDidMount() {
-    console.log('this.state.page', this.state.page)
     this.refetch()
   }
 

@@ -5,8 +5,8 @@ import BaseComponent from '@/model/BaseComponent'
 import { Table, Row, Col, Button } from 'antd'
 import I18N from '@/I18N'
 import { ELIP_FILTER } from '@/constant'
-// style
 import { Container, StyledButton, StyledSearch, Filter } from './style'
+import { logger } from '@/util'
 
 export default class extends BaseComponent {
   constructor(props) {
@@ -17,6 +17,7 @@ export default class extends BaseComponent {
       filter: 'ALL',
       loading: true
     }
+    this.debouncedRefetch = _.debounce(this.refetch.bind(this), 300)
   }
 
   async componentDidMount() {
@@ -25,29 +26,39 @@ export default class extends BaseComponent {
 
   getQuery = () => {
     const query = {}
+    const searchStr = this.state.search
+    if (searchStr) {
+      query.search = searchStr
+    }
+
     return query
   }
 
   refetch = async () => {
     this.ord_loading(true)
-    const { listData, isSecretary } = this.props
+    const { listData } = this.props
     const param = this.getQuery()
     try {
-      const list = await listData(param, isSecretary)
+      const list = await listData(param)
+      console.log('list', list)
       this.setState({ list })
     } catch (error) {
-      console.log(error)
+      logger.error(error)
     }
     this.ord_loading(false)
   }
 
-  toDetailPage = () => {}
+  toDetailPage = (id) => {
+    this.props.history.push(`/elips/${id}`)
+  }
 
   addElip = () => {
     this.props.history.push('/elips/new')
   }
 
-  searchChangedHandler = () => {}
+  searchChangedHandler = (search) => {
+    this.setState({ search }, this.debouncedRefetch)
+  }
 
   setFilter = () => {}
 
@@ -83,7 +94,7 @@ export default class extends BaseComponent {
       },
       {
         title: I18N.get('elip.fields.author'),
-        dataIndex: 'author'
+        dataIndex: 'createdBy.username'
       },
       {
         title: I18N.get('elip.fields.status'),
@@ -184,7 +195,7 @@ export default class extends BaseComponent {
         >
           {title}
           {searchInput}
-          {filterBtns}
+          {isLogin && filterBtns}
         </Row>
         <Table
           columns={columns}

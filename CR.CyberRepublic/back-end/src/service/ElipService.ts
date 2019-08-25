@@ -4,6 +4,7 @@ import * as _ from 'lodash'
 import { constant } from '../constant'
 import { logger } from '../utility'
 import { mail, user as userUtil } from '../utility'
+import { isSecretary } from 'src/utility/permissions';
 
 export default class extends Base {
   public async update(param: any): Promise<Document> {
@@ -113,11 +114,58 @@ export default class extends Base {
       .getDBInstance()
       .findOne({ _id: id })
       .populate('createdBy')
+    if (!rs) {
+      throw 'ElipService.getById - invalid elip id'
+    }
+
+    const currentUserId = _.get(this.currentUser, '_id')
+    const userRole = _.get(this.currentUser, 'role')
 
     const isVisible = rs.status === constant.ELIP_STATUS.APPROVED ||
-      rs.createdBy._id.equals(this.currentUser._id) ||
-      this.currentUser.role === constant.USER_ROLE.SECRETARY
+      rs.createdBy._id.equals(currentUserId) ||
+      userRole === constant.USER_ROLE.SECRETARY
 
     return isVisible ? rs : {}
+  }
+
+  public async list(param: any): Promise<any> {
+    const db_elip = this.getDBModel('Elip')
+    const db_user = this.getDBModel('User')
+    const currentUserId = _.get(this.currentUser, '_id')
+    const userRole = _.get(this.currentUser, 'role')
+    const query: any = {}
+
+    if (!this.isLoggedIn()) {
+      query.status = constant.ELIP_STATUS.APPROVED
+    }
+
+    if (this.isLoggedIn() && userRole !== constant.USER_ROLE.SECRETARY) {
+      query.$or = [
+        { createdBy: currentUserId, 
+          status: { $in: [constant.ELIP_STATUS.REJECTED, constant.ELIP_STATUS.WAIT_FOR_REVIEW] }
+        },
+        { status: constant.ELIP_STATUS.APPROVED },
+      ]
+    }
+
+    if (param.$or && query.$or) {
+      query.$and= [
+        { $or: query.$or},
+        {$or: param.$or}
+      ]
+    }
+
+    if (param.$or && !query.$or) {
+      query.$or = param.$or
+    }
+    
+    const list = await db_elip.list(query, {vid: -1}, 100)
+    for (const item of list) {
+      if (item.createdBy) {
+        const user = await db_user.findOne({ _id: item.createdBy })
+        if (!_.isEmpty(user)) item.createdBy = user
+      }
+    }
+    return list
   }
 }

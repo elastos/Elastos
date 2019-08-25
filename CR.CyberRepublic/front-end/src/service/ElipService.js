@@ -36,18 +36,14 @@ export default class extends BaseService {
     return rs
   }
 
-  async listData(param, isSecretary) {
-    let result = []
-
-    for (let i = 0; i < 13; i++) {
-      result.push({
-        vid: i,
-        title: 'additional meeting request',
-        author: 'Fay Li',
-        status: 'WAIT_FOR_REVIEW',
-        created: '2019-8-22'
-      })
-    }
-    return result
+  async listData(param) {
+    let rs
+    const path = `${this.prefixPath}/list`
+    rs = await api_request({
+      path,
+      method: 'get',
+      data: param
+    })
+    return rs
   }
 }

@@ -2,6 +2,7 @@ import Base from '../Base'
 import create from './create'
 import detail from './detail'
 import update from './update'
+import list from './list'
 
 export default Base.setRouter([
   {
@@ -18,5 +19,10 @@ export default Base.setRouter([
     path: '/update',
     router: update,
     method: 'post'
-  }
+  },
+  {
+    path: '/list',
+    router: list,
+    method: 'get'
+  },
 ])
