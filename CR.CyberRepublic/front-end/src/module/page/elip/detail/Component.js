@@ -52,7 +52,7 @@ class C extends StandardPage {
           <Row>
             <LabelCol span={3}>{I18N.get('elip.fields.description')}</LabelCol>
             <WrapperCol span={17}>
-              <Dec>
+              <Dec status={elip.status}>
                 <StyledRichContent>
                   <DraftEditor
                     value={elip.description}
@@ -112,6 +112,7 @@ class C extends StandardPage {
         <Button
           onClick={() => this.props.history.push(`/elips/${elip._id}/edit`)}
           className="cr-btn cr-btn-primary"
+          style={{ marginRight: 10 }}
         >
           {I18N.get('elip.button.edit')}
         </Button>
@@ -185,6 +186,16 @@ const Dec = styled.div`
   font-size: 14px;
   line-height: 20px;
   color: #000;
+    background: ${props => {
+    switch (props.status) {
+      case ELIP_STATUS.REJECTED:
+        return 'rgba(252, 192, 192, 0.2)'
+      case ELIP_STATUS.APPROVED:
+        return 'rgba(29, 233, 182, 0.1)'
+      default:
+        return 'background: rgba(204, 204, 204, 0.2)'
+    }
+  }};
 `
 
 const Actions = styled.div`
