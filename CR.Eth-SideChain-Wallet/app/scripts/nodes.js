@@ -31,7 +31,7 @@ nodes.nodeList = {
         'tokenList': require('./tokens/ethTokens.json'),
         'abiList': require('./abiDefinitions/ethAbi.json'),
         'service': 'ELA',
-        'lib': new nodes.customNode('http://47.75.162.110:443', '')
+        'lib': new nodes.customNode('https://rpc.elaeth.io', '')
     },
 };
 
