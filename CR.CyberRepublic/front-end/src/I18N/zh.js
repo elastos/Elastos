@@ -40,7 +40,7 @@ const zh = {
   '0110': '博客',
   navigation: {
     council: '委员会',
-    constitution: '章程',
+    constitution: '白皮书',
     suggestion: '建议',
     proposal: '提案',
     whatsNew: '版本更新',

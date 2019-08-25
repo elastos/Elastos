@@ -36,6 +36,7 @@ export default class extends BaseComponent {
       'suggestion',
       'proposals',
       'constitution/1',
+      'whitepaper',
       'council',
       'what-is-new',
     ], key)) {
@@ -138,7 +139,7 @@ export default class extends BaseComponent {
                 {I18N.get('navigation.council')}
               </Menu.Item>
 
-              <Menu.Item key="constitution/1">
+              <Menu.Item key="whitepaper">
                 {I18N.get('navigation.constitution')}
               </Menu.Item>
 

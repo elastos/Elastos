@@ -20,8 +20,7 @@ export default class extends StandardPage {
   }
 
   ord_renderContent () {
-    const id = this.props.id
-    const text = I18N.get(`council.article.${id}`)
+    const id = _.get(this.props, 'location.state.id', 1);
 
     return (
       <div style={{marginTop: 80}}>
@@ -32,20 +31,20 @@ export default class extends StandardPage {
               <MediaQuery maxWidth={720}>
                 <Row>
                   <Col className="wrap-box-navigator">
-                    <Navigator selectedItem={`constitution/${id}`} />
+                    <Navigator />
                   </Col>
                 </Row>
               </MediaQuery>
               <Row>
                 <MediaQuery minWidth={720}>
                   <Col span={4} className="admin-left-column wrap-box-navigator">
-                    <Navigator selectedItem={`constitution/${id}`} />
+                    <Navigator />
                   </Col>
                 </MediaQuery>
                 <Col xs={{span: 24}} md={{span: 20}} className="c_ConstitutionContainer wrap-box-user">
                   <div className="content">
-                    <h1 className="title">{I18N.get(`counstitution.title${id}`)}</h1>
-                    <span dangerouslySetInnerHTML={{__html: sanitizeHtml(text)}} />
+                    <h1 className="title">{I18N.get(`council.title.${id}`)}</h1>
+                    <div dangerouslySetInnerHTML={{__html: I18N.get(`council.article.${id}`)}} />
                   </div>
                 </Col>
               </Row>
