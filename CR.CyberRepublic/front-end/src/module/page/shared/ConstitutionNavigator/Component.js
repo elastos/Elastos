@@ -7,6 +7,8 @@ import { Link } from 'react-router-dom'
 import './style.scss'
 import {MAX_WIDTH_MOBILE, MIN_WIDTH_PC} from '../../../../config/constant'
 
+const ITEM_LIST = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'A', 'B'];
+
 export default class extends BaseComponent {
 
   ord_states() {
@@ -16,60 +18,42 @@ export default class extends BaseComponent {
   }
 
   handleMenuClick(item, key, keyPath) {
-    const lookup = {
-      'constitution/1': '/constitution/1',
-      'constitution/2': '/constitution/2',
-      'constitution/3': '/constitution/3',
-      'constitution/4': '/constitution/4'
-    }
-
-    const route = lookup[item.key]
-    route && this.props.history.push(route)
+    this.props.history.replace({
+      state: { id: item.key }
+    })
   }
 
   ord_render () {
+    const id = _.get(this.props, 'location.state.id', '1');
+
     // TODO check why we can not use redirect use this.props.history
     return (
       <div className="navigator">
         <MediaQuery minWidth={MIN_WIDTH_PC}>
           <Menu
             className="no-padding-items"
-            defaultSelectedKeys={[this.props.selectedItem]}
+            defaultSelectedKeys={[id]}
             onClick={this.handleMenuClick.bind(this)}
             mode="inline"
           >
-            <Menu.Item key="constitution/1">
-              {I18N.get('counstitution.menu1')}
-            </Menu.Item>
-            <Menu.Item key="constitution/2">
-              {I18N.get('counstitution.menu2')}
-            </Menu.Item>
-            <Menu.Item key="constitution/3">
-              {I18N.get('counstitution.menu3')}
-            </Menu.Item>
-            <Menu.Item key="constitution/4">
-              {I18N.get('counstitution.menu4')}
-            </Menu.Item>
+            {ITEM_LIST.map(key => (
+              <Menu.Item key={key}>
+                {I18N.get(`council.list.${key}`)}
+              </Menu.Item>
+            ))}
           </Menu>
         </MediaQuery>
         <MediaQuery maxWidth={MAX_WIDTH_MOBILE}>
           <Menu
-            defaultSelectedKeys={[this.props.selectedItem]}
+            defaultSelectedKeys={[id]}
             onClick={this.handleMenuClick.bind(this)}
             mode="horizontal"
           >
-            <Menu.Item key="constitution/1">
-              {I18N.get('counstitution.menu1')}
-            </Menu.Item>
-            <Menu.Item key="constitution/2">
-              {I18N.get('counstitution.menu2')}
-            </Menu.Item>
-            <Menu.Item key="constitution/3">
-              {I18N.get('counstitution.menu3')}
-            </Menu.Item>
-            <Menu.Item key="constitution/4">
-              {I18N.get('counstitution.menu4')}
-            </Menu.Item>
+            {ITEM_LIST.map(key => (
+              <Menu.Item key={key}>
+                {I18N.get(`concil.list.${key}`)}
+              </Menu.Item>
+            ))}
           </Menu>
         </MediaQuery>
       </div>

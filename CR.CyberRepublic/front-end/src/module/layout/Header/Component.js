@@ -289,7 +289,7 @@ export default class extends BaseComponent {
               {I18N.get('navigation.council')}
             </Menu.Item>
 
-            <Menu.Item className="c_MenuItem link" key="constitution/1">
+            <Menu.Item className="c_MenuItem link" key="whitepaper">
               {I18N.get('navigation.constitution')}
             </Menu.Item>
 
@@ -418,6 +418,7 @@ export default class extends BaseComponent {
       'suggestion',
       'council',
       'constitution/1',
+      'whitepaper',
       'what-is-new',
     ], key)) {
       if (key === 'landing') {
