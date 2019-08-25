@@ -63,34 +63,36 @@ class C extends StandardPage {
               </Dec>
             </WrapperCol>
           </Row>
-          <Row>
-            <LabelCol span={3} />
-            <Col span={17}>
-              <Actions>
-                <Button
-                  onClick={() => this.props.history.push('/elips')}
-                  className="cr-btn cr-btn-default"
-                  style={{ marginRight: 10 }}
-                >
-                  {I18N.get('elip.button.cancel')}
-                </Button>
-                {this.renderEditBtn()}
-                {isLogin && isSecretary && (
+          {elip && elip.status !== ELIP_STATUS.APPROVED && (
+            <Row>
+              <LabelCol span={3} />
+              <Col span={17}>
+                <Actions>
                   <Button
-                    className="cr-btn cr-btn-danger"
+                    onClick={() => this.props.history.push('/elips')}
+                    className="cr-btn cr-btn-default"
                     style={{ marginRight: 10 }}
                   >
-                    {I18N.get('elip.button.reject')}
+                    {I18N.get('elip.button.cancel')}
                   </Button>
-                )}
-                {isLogin && isSecretary && (
-                  <Button className="cr-btn cr-btn-primary">
-                    {I18N.get('elip.button.approve')}
-                  </Button>
-                )}
-              </Actions>
-            </Col>
-          </Row>
+                  {this.renderEditBtn()}
+                  {isLogin && isSecretary && elip.status === ELIP_STATUS.WAIT_FOR_REVIEW && (
+                    <div>
+                      <Button
+                        className="cr-btn cr-btn-danger"
+                        style={{ marginRight: 10 }}
+                      >
+                        {I18N.get('elip.button.reject')}
+                      </Button>
+                      <Button className="cr-btn cr-btn-primary">
+                        {I18N.get('elip.button.approve')}
+                      </Button>
+                    </div>
+                  )}
+                </Actions>
+              </Col>
+            </Row>
+          )}
         </Container>
         <Footer />
       </div>
@@ -101,8 +103,7 @@ class C extends StandardPage {
     const { elip } = this.state
     const { isLogin, currentUserId } = this.props
 
-    const isEditable =
-      isLogin &&
+    const isEditable = isLogin &&
       elip.createdBy &&
       elip.createdBy._id === currentUserId &&
       elip.status === ELIP_STATUS.REJECTED
@@ -112,7 +113,6 @@ class C extends StandardPage {
         <Button
           onClick={() => this.props.history.push(`/elips/${elip._id}/edit`)}
           className="cr-btn cr-btn-primary"
-          style={{ marginRight: 10 }}
         >
           {I18N.get('elip.button.edit')}
         </Button>
@@ -186,7 +186,7 @@ const Dec = styled.div`
   font-size: 14px;
   line-height: 20px;
   color: #000;
-    background: ${props => {
+  background: ${props => {
     switch (props.status) {
       case ELIP_STATUS.REJECTED:
         return 'rgba(252, 192, 192, 0.2)'
