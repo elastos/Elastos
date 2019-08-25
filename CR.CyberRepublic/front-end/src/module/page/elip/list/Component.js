@@ -26,6 +26,7 @@ export default class extends BaseComponent {
 
   getQuery = () => {
     const query = {}
+    query.filter = this.state.filter
     const searchStr = this.state.search
     if (searchStr) {
       query.search = searchStr
@@ -40,7 +41,6 @@ export default class extends BaseComponent {
     const param = this.getQuery()
     try {
       const list = await listData(param)
-      console.log('list', list)
       this.setState({ list })
     } catch (error) {
       logger.error(error)
@@ -60,9 +60,9 @@ export default class extends BaseComponent {
     this.setState({ search }, this.debouncedRefetch)
   }
 
-  setFilter = () => {}
-
-  clearFilters = () => {}
+  setFilter = (filter) => {
+    this.setState({ filter }, this.refetch)
+  }
 
   ord_render() {
     const { isSecretary, isLogin } = this.props
@@ -145,7 +145,7 @@ export default class extends BaseComponent {
       <Button.Group className="filter-group">
         <StyledButton
           className={(this.state.filter === ELIP_FILTER.ALL && 'selected') || ''}
-          onClick={this.clearFilters}
+          onClick={() => this.setFilter(ELIP_FILTER.ALL)}
         >
           {I18N.get('elip.filter.ALL')}
         </StyledButton>
@@ -165,7 +165,7 @@ export default class extends BaseComponent {
         )}
         {isSecretary && (
           <StyledButton
-            className={(this.state.filter === ELIP_FILTER.SUBMITTED_BY_ME && 'selected') || ''}
+            className={(this.state.filter === ELIP_FILTER.WAIT_FOR_REVIEW && 'selected') || ''}
             onClick={() => this.setFilter(ELIP_FILTER.WAIT_FOR_REVIEW)}
           >
             {I18N.get('elip.filter.WAIT_FOR_REVIEW')}

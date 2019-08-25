@@ -139,7 +139,23 @@ export default class extends Base {
       query.status = constant.ELIP_STATUS.APPROVED
     }
 
-    if (this.isLoggedIn() && userRole !== constant.USER_ROLE.SECRETARY) {
+    if (param.filter === constant.ELIP_FILTER.APPROVED) {
+      query.status = constant.ELIP_STATUS.APPROVED
+    }
+
+    if (param.filter === constant.ELIP_FILTER.SUBMITTED_BY_ME) {
+      query.createdBy = currentUserId
+    }
+
+    if (param.filter === constant.ELIP_FILTER.WAIT_FOR_REVIEW) {
+      query.status = constant.ELIP_STATUS.WAIT_FOR_REVIEW
+    }
+
+    if (
+      this.isLoggedIn() &&
+      userRole !== constant.USER_ROLE.SECRETARY &&
+      param.filter === constant.ELIP_FILTER.ALL
+    ) {
       query.$or = [
         { createdBy: currentUserId, 
           status: { $in: [constant.ELIP_STATUS.REJECTED, constant.ELIP_STATUS.WAIT_FOR_REVIEW] }

@@ -303,3 +303,10 @@ export const ELIP_STATUS = create([
   'APPROVED',
   'REJECTED',
 ])
+
+export const ELIP_FILTER = create([
+  'ALL',
+  'APPROVED',
+  'SUBMITTED_BY_ME',
+  'WAIT_FOR_REVIEW'
+])
