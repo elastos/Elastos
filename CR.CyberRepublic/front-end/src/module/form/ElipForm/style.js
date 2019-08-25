@@ -75,3 +75,19 @@ export const Actions = styled.div`
   display: flex;
   justify-content: center;
 `
+export const Label = styled.div`
+  font-size: 11px;
+  line-height: 19px;
+  color: rgba(3, 30, 40, 0.4);
+`
+export const Status = styled.div`
+  font-size: 16px;
+  line-height: 27px;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 42px;
+  background: #be1313;
+  width: 159px;
+  height: 27px;
+  text-align: center;
+`

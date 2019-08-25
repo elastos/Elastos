@@ -40,7 +40,7 @@ class C extends StandardPage {
         <BackLink link="/elips" />
         <Container>
           <h2 className="komu-a cr-title-with-icon">ELIP #{elip.vid}</h2>
-          <Label>status</Label>
+          <Label>Status</Label>
           <Status status={elip.status}>{elip.status}</Status>
           <Row>
             <LabelCol span={3}>{I18N.get('elip.fields.title')}</LabelCol>

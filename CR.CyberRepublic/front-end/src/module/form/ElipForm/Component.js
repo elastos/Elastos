@@ -6,7 +6,7 @@ import I18N from '@/I18N'
 import DraftEditor from '@/module/common/DraftEditor'
 import ElipNote from '@/module/page/elip/ElipNote'
 import { CONTENT_TYPE, ELIP_STATUS } from '@/constant'
-import { Container, Title, Actions } from './style'
+import { Container, Title, Actions, Label, Status } from './style'
 
 const FormItem = Form.Item
 const WORD_LIMIT = 3000
@@ -79,8 +79,14 @@ class C extends BaseComponent {
     return (
       <Container>
         <Title className="komu-a cr-title-with-icon ">
-          {I18N.get('elip.button.add')}
+          {data ? `${I18N.get('elip.button.edit')} ELIP #${data.vid}` : I18N.get('elip.button.add')}
         </Title>
+        {data && data.status === ELIP_STATUS.REJECTED && (
+          <div>
+            <Label>Status</Label>
+            <Status>{data.status}</Status>
+          </div>
+        )}
         <Form>
           <FormItem
             label={`${I18N.get('elip.fields.title')}`}
