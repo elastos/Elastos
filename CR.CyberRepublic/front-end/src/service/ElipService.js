@@ -18,13 +18,13 @@ export default class extends BaseService {
   }
 
   async update(param) {
-    return {
-      vid: 1,
-      title: 'CR100',
-      author: 'Fay Li',
-      status: 'DRAFT',
-      created: '2019-8-22'
-    }
+    const path = `${this.prefixPath}/update`
+    const rs = await api_request({
+      path,
+      method: 'post',
+      data: param
+    })
+    return rs
   }
 
   async getData(param) {

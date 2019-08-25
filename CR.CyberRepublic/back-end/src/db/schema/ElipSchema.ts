@@ -23,10 +23,6 @@ export const Elip = {
     ref: 'users',
     required: true
   },
-  published: {
-    type: Boolean,
-    default: false
-  },
   status: {
     type: String,
     enum: _.values(constant.ELIP_STATUS)
