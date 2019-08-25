@@ -1,0 +1,25 @@
+@@include( '../includes/header.tpl', { "site": "cx" } )
+
+<br />
+
+<section class="container" style="min-height: 58%" ng-controller='viewCtrl'>
+
+  <div class="tab-content" >
+
+    @@include( '../includes/myWallet.tpl',           { "site": "cx" } )
+
+    @@include( '../includes/addWallet.tpl',          { "site": "cx" } )
+
+    @@include( '../includes/sendTx.tpl',             { "site": "cx" } )
+
+    @@include( '../includes/offlineTx.tpl',          { "site": "cx" } )
+
+    @@include( '../includes/contracts.tpl',          { "site": "cx" } )
+
+    @@include( '../includes/txStatus.tpl',           { "site": "cx" } )
+
+  </div>
+
+</section>
+
+@@include( '../includes/footer.tpl', { "site": "cx" } )
