@@ -44,7 +44,10 @@ export default {
     }
   },
   modal: {
-    submit: '您确定要提交这份 ELIP 吗？'
+    submit: '您确定要提交这份 ELIP 吗？',
+    confirm: '提交',
+    cancel: '取消',
+    reason: '理由'
   },
   note: '是一种设计文档，它用于向亦来云社区提供信息、描述流程、介绍新特性或者环境等。同时，ELIP应该提供目标特性的简明技术规范和基本原理。'
 }

@@ -9,6 +9,7 @@ import BackLink from '@/module/shared/BackLink/Component'
 import { ELIP_STATUS } from '@/constant'
 import ElipNote from '../ElipNote'
 import { grid } from '../common/variable'
+import ReviewButtons from './ReviewButtons'
 
 class C extends StandardPage {
   constructor(p) {
@@ -24,6 +25,17 @@ class C extends StandardPage {
     this.setState({ loading: true })
     const elip = await getData(match.params)
     this.setState({ elip, loading: false })
+  }
+
+  handleSubmit = async (data)  => {
+    const { review } = this.props
+    const { elip } = this.state
+    const param = {
+      comment: data.reason,
+      status: data.status,
+      elipId: elip._id
+    }
+    const comment = await review(param)
   }
 
   ord_renderContent() {
@@ -77,17 +89,7 @@ class C extends StandardPage {
                   </Button>
                   {this.renderEditBtn()}
                   {isLogin && isSecretary && elip.status === ELIP_STATUS.WAIT_FOR_REVIEW && (
-                    <div>
-                      <Button
-                        className="cr-btn cr-btn-danger"
-                        style={{ marginRight: 10 }}
-                      >
-                        {I18N.get('elip.button.reject')}
-                      </Button>
-                      <Button className="cr-btn cr-btn-primary">
-                        {I18N.get('elip.button.approve')}
-                      </Button>
-                    </div>
+                    <ReviewButtons onSubmit={this.handleSubmit} />
                   )}
                 </Actions>
               </Col>

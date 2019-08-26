@@ -1,6 +1,7 @@
 import { createContainer } from '@/util'
 import Component from './Component'
 import ElipService from '@/service/ElipService'
+import ElipReviewService from '@/service/ElipReviewService'
 
 const mapState = state => ({
   user: state.user,
@@ -11,12 +12,13 @@ const mapState = state => ({
 
 const mapDispatch = () => {
   const service = new ElipService()
+  const reviewService = new ElipReviewService()
   return {
     async getData(param) {
       return service.getData(param)
     },
-    async update(param) {
-      return service.update(param)
+    async review(param) {
+      return reviewService.create(param)
     }
   }
 }

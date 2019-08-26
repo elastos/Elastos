@@ -44,7 +44,10 @@ export default {
     }
   },
   modal: {
-    submit: 'Are you sure to submit this ELIP for review?'
+    submit: 'Are you sure to submit this ELIP for review?',
+    confirm: 'Confirm',
+    cancel: 'Cancel',
+    reason: 'Reason'
   },
   note: 'is a design document that provides information, describes processes, introduces new features, or the environment to the Elastos Community. At the same time, ELIP should provide concise technical specifications and a rationale for the target characteristics.'
 }

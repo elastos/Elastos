@@ -31,7 +31,6 @@ export default class extends Base {
     }
   }
 
-
   private async notifyElipCreator(review: any, elip: any, status: string) {
     const rejected = status === constant.ELIP_REVIEW_STATUS.REJECTED
     const subject = rejected ? 'ELIP Rejected' : 'ELIP Approved'
@@ -47,7 +46,7 @@ export default class extends Base {
       <p>Cyber Republic Team</p>
       <p>Thanks</p>
     `
-    
+
     const creator = this.getDBModel('User')
       .getDBInstance()
       .findOne({ _id: elip.createdBy })
