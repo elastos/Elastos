@@ -310,3 +310,8 @@ export const ELIP_FILTER = create([
   'SUBMITTED_BY_ME',
   'WAIT_FOR_REVIEW'
 ])
+
+export const ELIP_REVIEW_STATUS = create([
+  'APPROVED',
+  'REJECTED'
+])

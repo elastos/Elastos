@@ -2,9 +2,7 @@ import Base from './Base'
 import { Document } from 'mongoose'
 import * as _ from 'lodash'
 import { constant } from '../constant'
-import { logger } from '../utility'
-import { mail, user as userUtil } from '../utility'
-import { isSecretary } from 'src/utility/permissions';
+import { mail, logger } from '../utility'
 
 export default class extends Base {
   public async update(param: any): Promise<Document> {
@@ -76,7 +74,7 @@ export default class extends Base {
     )
     const toMails = _.map(toUsers, 'email')
 
-    const subject = `New ELIP created: ${elip.title}`
+    const subject = `New ELIP created`
     const body = `
       <p>This is a new ${elip.title} added and to be reviewed:</p>
       <br />
@@ -88,21 +86,10 @@ export default class extends Base {
       <p>Thanks</p>
     `
 
-    const recVariables = _.zipObject(
-      toMails,
-      _.map(toUsers, user => {
-        return {
-          _id: user._id,
-          username: userUtil.formatUsername(user)
-        }
-      })
-    )
-
     const mailObj = {
       to: toMails,
       subject,
-      body,
-      recVariables
+      body
     }
 
     mail.send(mailObj)
