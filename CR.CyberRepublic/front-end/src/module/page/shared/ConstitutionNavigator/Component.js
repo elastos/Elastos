@@ -51,7 +51,7 @@ export default class extends BaseComponent {
           >
             {ITEM_LIST.map(key => (
               <Menu.Item key={key}>
-                {I18N.get(`concil.list.${key}`)}
+                {I18N.get(`council.list.${key}`)}
               </Menu.Item>
             ))}
           </Menu>
