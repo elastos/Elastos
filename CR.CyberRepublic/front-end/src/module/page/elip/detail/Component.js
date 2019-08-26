@@ -6,10 +6,12 @@ import I18N from '@/I18N'
 import StandardPage from '@/module/page/StandardPage'
 import Footer from '@/module/layout/Footer/Container'
 import BackLink from '@/module/shared/BackLink/Component'
+// import Comments from '@/module/common/comments/Container'
 import { ELIP_STATUS } from '@/constant'
 import ElipNote from '../ElipNote'
 import { grid } from '../common/variable'
 import ReviewButtons from './ReviewButtons'
+import ReviewHistory from './ReviewHistory'
 
 class C extends StandardPage {
   constructor(p) {
@@ -98,6 +100,7 @@ class C extends StandardPage {
               </Col>
             </Row>
           )}
+          {elip && elip.status !== ELIP_STATUS.APPROVED && <ReviewHistory />}
         </Container>
         <Footer />
       </div>

@@ -50,5 +50,10 @@ export default {
     reason: 'Reason',
     approve: 'Are you sure to approve this ELIP?'
   },
-  note: 'is a design document that provides information, describes processes, introduces new features, or the environment to the Elastos Community. At the same time, ELIP should provide concise technical specifications and a rationale for the target characteristics.'
+  note: 'is a design document that provides information, describes processes, introduces new features, or the environment to the Elastos Community. At the same time, ELIP should provide concise technical specifications and a rationale for the target characteristics.',
+  text: {
+    reviewDetails: 'Review Details',
+    approved: 'Approved!',
+    rejected: 'Rejected!'
+  }
 }
