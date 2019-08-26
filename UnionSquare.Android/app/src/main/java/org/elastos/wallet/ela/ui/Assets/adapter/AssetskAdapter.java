@@ -68,7 +68,7 @@ public class AssetskAdapter extends RecyclerView.Adapter<AssetskAdapter.ViewHold
                 break;
             case "Connected":
                 viewHolder.tvTime.setVisibility(View.VISIBLE);
-                viewHolder.tvTime.setText(DateUtil.time(assetsItemEntity.getSyncTime()));
+                viewHolder.tvTime.setText(DateUtil.time(assetsItemEntity.getSyncTime(),context));
                 viewHolder.tvStatus.setText(context.getString(R.string.syncprogress));
                 viewHolder.tvProgress.setVisibility(View.VISIBLE);
                 viewHolder.tvProgress.setText(assetsItemEntity.getProgress() + "%");

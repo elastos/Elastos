@@ -144,7 +144,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
         new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), chainId, 2, this);
         //String synctime = new RealmUtil().querySubWalletSyncTime(wallet.getWalletId(), chainId);
         if (subWallet != null) {
-            tvSynctime.setText(getString(R.string.lastsynctime) + DateUtil.time(subWallet.getSyncTime()));
+            tvSynctime.setText(getString(R.string.lastsynctime) + DateUtil.time(subWallet.getSyncTime(),getContext()));
         }
 
         registReceiver();
@@ -330,7 +330,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
             SubWallet subWallet = (SubWallet) result.getObj();
             if (subWallet != null && subWallet.getBelongId().equals(wallet.getWalletId()) &&
                     subWallet.getChainId().equals(chainId)) {
-                tvSynctime.setText(getString(R.string.lastsynctime) + DateUtil.time(subWallet.getSyncTime()));
+                tvSynctime.setText(getString(R.string.lastsynctime) + DateUtil.time(subWallet.getSyncTime(), getContext()));
             }
         }
 

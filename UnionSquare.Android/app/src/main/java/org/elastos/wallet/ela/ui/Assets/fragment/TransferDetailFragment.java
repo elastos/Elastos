@@ -268,7 +268,7 @@ public class TransferDetailFragment extends BaseFragment implements CommonRvList
         if (transactionsBean.getStatus().equals("Pending")) {
             tvSuretime.setText("- -");
         } else {
-            tvSuretime.setText(DateUtil.time(transactionsBean.getTimestamp()));
+            tvSuretime.setText(DateUtil.time(transactionsBean.getTimestamp(),getContext()));
         }
         tvSuretimes.setText(transactionsBean.getConfirmStatus());
         tvRemark.setText(transactionsBean.getMemo());
@@ -428,7 +428,7 @@ public class TransferDetailFragment extends BaseFragment implements CommonRvList
         if (transactionsBean.getStatus().equals("Pending")) {
             tvSuretime.setText("- -");
         } else {
-            tvSuretime.setText(DateUtil.time(transactionsBean.getTimestamp()));
+            tvSuretime.setText(DateUtil.time(transactionsBean.getTimestamp(),getContext()));
         }
         tvSuretimes.setText(transactionsBean.getConfirmStatus());
         tvRemark.setVisibility(View.GONE);
