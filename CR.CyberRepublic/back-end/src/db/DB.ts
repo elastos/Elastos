@@ -16,6 +16,7 @@ import Permission from './Permission'
 import PermissionRole from './Permission_Role'
 import Release from './Release'
 import Elip from './Elip'
+import Elip_Review from './Elip_Review'
 
 import Log from './Log'
 
@@ -111,6 +112,7 @@ export default class {
         this.db.Permission_Role = new PermissionRole(db)
         this.db.Release = new Release(db)
         this.db.Elip = new Elip(db)
+        this.db.Elip_Review = new Elip_Review(db)
     }
 
     public getModel(name: string){
