@@ -22,7 +22,7 @@ $(function() {
 			$("#receiver").val('');
 			loader.addClass("hidden");
 			swal("Success",
-			  `0.1 ETH has been successfully transferred to ${receiver}`,
+			  `0.1 ETH has been successfully transferred to <a href="https://explorer.elaeth.io/tx/${data.success.txHash}" target="blank">${receiver}`,
 			  "success"
 			);
 		}).fail(function(err) {
