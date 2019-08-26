@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, Modal, Input } from 'antd'
+import { Button, Modal, Input, Popconfirm } from 'antd'
 import I18N from '@/I18N'
 const { TextArea } = Input
 import { ELIP_STATUS } from '@/constant'
@@ -28,6 +28,11 @@ class ReviewButtons extends React.Component {
     this.setState({ reason: '', visible: false })
   }
 
+  handleConfirm = async () => {
+    const { onSubmit } = this.props
+    await onSubmit({ reason: '', status: ELIP_STATUS.APPROVED })
+  }
+
   handleChange = e => {
     this.setState({ reason: e.target.value })
   }
@@ -42,9 +47,16 @@ class ReviewButtons extends React.Component {
         >
           {I18N.get('elip.button.reject')}
         </Button>
-        <Button className="cr-btn cr-btn-primary">
-          {I18N.get('elip.button.approve')}
-        </Button>
+        <Popconfirm
+          title={I18N.get('elip.modal.approve')}
+          onConfirm={this.handleConfirm}
+          okText={I18N.get('.yes')}
+          cancelText={I18N.get('.no')}
+        >
+          <Button className="cr-btn cr-btn-primary">
+            {I18N.get('elip.button.approve')}
+          </Button>
+        </Popconfirm>
         <Modal
           title={I18N.get('elip.modal.reason')}
           visible={this.state.visible}

@@ -4,8 +4,7 @@ import { constant } from '../../constant'
 
 export const Elip_Review = {
   comment: {
-    type: String,
-    required: true
+    type: String
   },
   status: {
     type: String,

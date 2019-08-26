@@ -36,6 +36,9 @@ class C extends StandardPage {
       elipId: elip._id
     }
     const comment = await review(param)
+    if(comment && comment.elipId === elip._id) {
+      this.setState({ elip: { ...elip, status: data.status } })
+    }
   }
 
   ord_renderContent() {
