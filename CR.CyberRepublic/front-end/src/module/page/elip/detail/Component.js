@@ -122,18 +122,20 @@ class C extends StandardPage {
           {isLogin && (isSecretary || elip.createdBy === currentUserId) && (
             <ReviewHistory reviews={reviews} />
           )}
-          <Row>
-            <LabelCol span={3} />
-            <Col span={17}>
-              <Comments
-                type="elip"
-                elip={elip}
-                canPost={true}
-                model={elip._id}
-                returnUrl={`/elips/${elip._id}`}
-              />
-            </Col>
-          </Row>
+          {elip.status === ELIP_STATUS.APPROVED && (
+            <Row>
+              <LabelCol span={3} />
+              <Col span={17}>
+                <Comments
+                  type="elip"
+                  elip={elip}
+                  canPost={true}
+                  model={elip._id}
+                  returnUrl={`/elips/${elip._id}`}
+                />
+              </Col>
+            </Row>
+          )}
         </Container>
         <Footer />
       </div>

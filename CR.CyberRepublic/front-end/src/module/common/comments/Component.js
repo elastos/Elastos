@@ -323,7 +323,7 @@ class C extends BaseComponent {
         </div>
       )
     }
-    console.log('comments.....', comments)
+
     const commentItems = _.map(comments, (comment, ind) => {
       const thread = _.first(comment)
       const createdByUsername = (thread.createdBy && thread.createdBy.username) || ''
