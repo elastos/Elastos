@@ -1,7 +1,6 @@
 package org.elastos.wallet.ela.ui.vote.ElectoralAffairs;
 
 import org.elastos.wallet.ela.base.BaseFragment;
-import org.elastos.wallet.ela.net.ApiServer;
 import org.elastos.wallet.ela.net.RetrofitManager;
 import org.elastos.wallet.ela.rxjavahelp.PresenterAbstract;
 
@@ -15,12 +14,12 @@ public class VoteListPresenter extends PresenterAbstract {
 
 
     public void votelistbean(String moreInfo, BaseFragment baseFragment) {
-       // initProgressDialog(baseFragment.getContext());
+        // initProgressDialog(baseFragment.getContext());
         Map<String, String> map = new HashMap();
         map.put("moreInfo", moreInfo);
-        Observable observable = RetrofitManager.create(ApiServer.class, baseFragment.getContext()).votelistbean(map);
+        Observable observable = RetrofitManager.getApiService(baseFragment.getContext()).votelistbean(map);
         Observer observer = createObserver(VotelistbeanListener.class, baseFragment);
-        subscriberObservable(observer, observable,baseFragment);
+        subscriberObservable(observer, observable, baseFragment);
     }
 
 }

@@ -21,9 +21,8 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.GetdePositcoinBean;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
-import org.elastos.wallet.ela.net.ApiServer;
-import org.elastos.wallet.ela.net.RetrofitManager;
 import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
+import org.elastos.wallet.ela.ui.common.viewdata.CommmonObjectWithMethNameViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
@@ -37,21 +36,16 @@ import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.NumberiUtil;
-import org.elastos.wallet.ela.utils.RxSchedulers;
 import org.elastos.wallet.ela.utils.klog.KLog;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import butterknife.BindView;
 import butterknife.OnClick;
-import io.reactivex.functions.Consumer;
 
 /**
  * 选举管理  getRegisteredProducerInfo
  */
-public class ElectoralAffairsFragment extends BaseFragment implements WarmPromptListener, CommmonStringWithMethNameViewData, VotelistViewData {
+public class ElectoralAffairsFragment extends BaseFragment implements WarmPromptListener, CommmonStringWithMethNameViewData, VotelistViewData, CommmonObjectWithMethNameViewData {
 
     @BindView(R.id.toolbar_title)
     TextView toolbarTitle;
@@ -217,7 +211,7 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
                 if (status.equals("Canceled")) {
                     //提取按钮
                     presenter.createRetrieveDepositTransaction(wallet.getWalletId(), MyWallet.ELA,
-                            Arith.sub(Arith.mul(available, MyWallet.RATE_S),"10000").toPlainString(), "", this);
+                            Arith.sub(Arith.mul(available, MyWallet.RATE_S), "10000").toPlainString(), "", this);
                 } else {
                     //注销按钮
                     presenter.createCancelProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", data, "", false, this);
@@ -246,35 +240,16 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
             //获取钱包owner公钥
             case "getPublicKeyForVote":
                 ownerPublicKey = data;
-                getdepositcoin();//获取赎回金额
+                //getdepositcoin();//获取赎回金额
+                presenter.getDepositcoin(ownerPublicKey, this);
                 break;
-
         }
     }
 
 
     String available;
 
-    public void getdepositcoin() {
-        Map<String, String> map = new HashMap();
-        map.put("ownerpublickey", ownerPublicKey);
-        RetrofitManager.create(ApiServer.class, getContext())
-                .getdepositcoin(map)
-                .compose(RxSchedulers.<GetdePositcoinBean>applySchedulers())
-                .subscribe(new Consumer<GetdePositcoinBean>() {
-                    @Override
-                    public void accept(GetdePositcoinBean dataResponse) {
-                        available = dataResponse.getData().getResult().getAvailable();
-                        //注销可提取
-                        sbtq.setVisibility(View.VISIBLE);
-                    }
-                }, new Consumer<Throwable>() {
-                    @Override
-                    public void accept(Throwable throwable) {
 
-                    }
-                });
-    }
 
     @Override
     public void onGetVoteList(VoteListBean dataResponse) {
@@ -297,4 +272,15 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
 
     }
 
+    @Override
+    public void onGetCommonData(String methodname, Object data) {
+        switch (methodname) {
+            case "getDepositcoin":
+                GetdePositcoinBean getdePositcoinBean = (GetdePositcoinBean) data;
+                available = getdePositcoinBean.getData().getResult().getAvailable();
+                //注销可提取
+                sbtq.setVisibility(View.VISIBLE);
+                break;
+        }
+    }
 }

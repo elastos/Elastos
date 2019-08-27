@@ -4,9 +4,6 @@ package org.elastos.wallet.ela.utils;
 import org.elastos.wallet.ela.MyApplication;
 
 public class Constant {
-
-    public static final String REQUEST_BASE_URL = getBaseUrl();
-
     public static final String CONTACTSHOW = "contact_show";
     public static final String CONTACTADD = "contact_add";
     public static final String CONTACTEDIT = "contact_edit";
@@ -20,22 +17,7 @@ public class Constant {
     public static final int CREATEMUL = 0x2;//打开创建多签钱包页面 已经打开了的情况直接填入
     public static final int SIGN = 0x3;//打开签名页面
     public static final int TRANSFER = 0x4;//打开转账页面
-
-
-    private static String getBaseUrl() {
-        String baseUrl = "https://unionsquare.elastos.org/";
-        switch (MyApplication.chainID) {
-
-            case 1:
-                baseUrl = "https://52.81.8.194:442/";
-                break;
-            case 2:
-                baseUrl = "https://54.223.244.60/";
-                break;
-
-        }
-        return baseUrl;
-
-    }
+    public static final String SERVERLIST_BASE = "http://54.223.158.189:5739/";
+    public static final String SERVERLIST = "api/dposNodeRPC/getProducerNodesList";
 
 }

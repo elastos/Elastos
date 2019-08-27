@@ -4,18 +4,19 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 
+import org.elastos.wallet.ela.MyApplication;
+
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Created by wangdongfeng on 2018/4/13.
- */
 
 public class SPUtil {
 
     private static final String detrust_fileName = "ela_sp";
     private static final String LANGUAGE = "language";
+    private static final String SERVER = "server";
+    private static final String SERVERLIST = "serverList";
     private Context context;
 
 
@@ -63,6 +64,22 @@ public class SPUtil {
     }
 
     /**
+     * 存储单个set数据
+     */
+    public void setSharedPreferencesKeyVale(String key, Set<String> value) {
+        SharedPreferences.Editor edit = getSharedPreferences(detrust_fileName).edit();
+        edit.putStringSet(key, value);
+        edit.commit();
+    }
+
+    /**
+     * 获取单个set数据
+     */
+    public Set<String> getSharedPreferencesKeyVale(String key, Set<String> defValue) {
+        return getSharedPreferences(detrust_fileName).getStringSet(key, defValue);
+    }
+
+    /**
      * 存储单个int数据
      */
     public void setSharedPreferencesKeyVale(String key, int value) {
@@ -86,6 +103,24 @@ public class SPUtil {
 
     public int getLanguage() {
         return getSharedPreferencesKeyVale(LANGUAGE, -1);
+    }
+
+    public void setDefaultServer(String value) {
+        setSharedPreferencesKeyVale(SERVER, value);
+    }
+
+
+    public String getDefaultServer() {
+        return getSharedPreferencesKeyVale(SERVER, MyApplication.serverList.iterator().next());
+    }
+
+    public void setDefaultServerList(Set<String> value) {
+        setSharedPreferencesKeyVale(SERVERLIST, value);
+    }
+
+
+    public Set<String> getDefaultServerList() {
+        return getSharedPreferencesKeyVale(SERVERLIST, MyApplication.serverList);
     }
 
 

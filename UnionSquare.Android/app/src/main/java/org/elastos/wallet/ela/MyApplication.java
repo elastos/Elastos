@@ -12,6 +12,10 @@ import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.di.component.ApplicationComponent;
 import org.elastos.wallet.ela.di.component.DaggerApplicationComponent;
 import org.elastos.wallet.ela.di.moudule.ApplicationModule;
+import org.elastos.wallet.ela.utils.SPUtil;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import io.realm.Realm;
 
@@ -23,13 +27,18 @@ public class MyApplication extends MultiDexApplication {
 
     protected static MyWallet myWallet;
     private ApplicationComponent mApplicationComponent;
-
+    public static Set<String> serverList = new HashSet<>();
+    public static String REQUEST_BASE_URL;
 
     @Override
     public void onCreate() {
         super.onCreate();
         new WebView(this).destroy();
         myApplication = this;
+        serverList.add("http://54.223.158.189");
+        serverList.add("https://unionsquare.elastos.org/");
+        serverList = new SPUtil(this.getApplicationContext()).getDefaultServerList();
+        REQUEST_BASE_URL = new SPUtil(this.getApplicationContext()).getDefaultServer();
         initApplicationComponent();
         Utils.init(this);
         Realm.init(getApplicationContext());
@@ -42,10 +51,12 @@ public class MyApplication extends MultiDexApplication {
         if (pachageName.endsWith("testnet")) {
             chainID = 1;
             useBugly();
+            REQUEST_BASE_URL = "https://52.81.8.194:442/";
         }
         if (pachageName.endsWith("regtest")) {
             chainID = 2;
             useBugly();
+            REQUEST_BASE_URL = "https://54.223.244.60/";
         }
 
 

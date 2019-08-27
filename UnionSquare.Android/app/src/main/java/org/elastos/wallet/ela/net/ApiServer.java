@@ -1,8 +1,10 @@
 package org.elastos.wallet.ela.net;
 
 import org.elastos.wallet.ela.bean.GetdePositcoinBean;
+import org.elastos.wallet.ela.ui.main.entity.ServerListEntity;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
+import org.elastos.wallet.ela.utils.Constant;
 
 import java.util.Map;
 
@@ -27,5 +29,8 @@ public interface ApiServer {
 
     // Observable<ResponseBody> getUrlJson();获得String类型用这个
     @GET
-    Observable<NodeInfoBean> getUrlJson(@Url String url);//不同baseurl用@Url
+    Observable<NodeInfoBean> getUrlJson(@Url String url);//不同baseurl用@Url @GET
+
+    @GET(Constant.SERVERLIST)
+    Observable<ServerListEntity> getServerList();//不同baseurl用@Url
 }

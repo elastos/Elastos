@@ -8,10 +8,13 @@ import com.chaychan.library.BottomBarItem;
 import com.chaychan.library.BottomBarLayout;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.SupportFragment;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.Assets.AssetskFragment;
+import org.elastos.wallet.ela.ui.common.viewdata.CommmonObjectWithMethNameViewData;
 import org.elastos.wallet.ela.ui.find.fragment.FindFragment;
+import org.elastos.wallet.ela.ui.main.presenter.MainPresenter;
 import org.elastos.wallet.ela.ui.mine.MineFragment;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.SPUtil;
@@ -22,7 +25,7 @@ import butterknife.BindView;
  *
  */
 
-public class MainFragment extends BaseFragment {
+public class MainFragment extends BaseFragment implements CommmonObjectWithMethNameViewData {
 
     @BindView(R.id.bottombar)
     BottomBarLayout mbottomBarLayout;
@@ -103,6 +106,7 @@ public class MainFragment extends BaseFragment {
         });
 
         initArea();
+        initServer();
     }
 
 
@@ -112,6 +116,15 @@ public class MainFragment extends BaseFragment {
             new SPUtil(getContext()).setFristLogin();
         }
         AppUtlis.getArea(getContext(), null);
+    }
+
+    private void initServer() {
+
+        if (MyApplication.chainID <= 0) {
+            //主网才有高可用
+            new MainPresenter().getServerList(this);
+        }
+
     }
 
 
@@ -124,4 +137,17 @@ public class MainFragment extends BaseFragment {
     }
 
 
+    @Override
+    public void onGetCommonData(String methodname, Object data) {
+
+        switch (methodname) {
+            case "ping":
+                String address = (String) data;
+                if (!address.equals(MyApplication.REQUEST_BASE_URL)) {
+                    new SPUtil(this.getContext()).setDefaultServer(address);
+                    //通过比较差异 sp和MyApplication.REQUEST_BASE_URL判断是否更新
+                }
+                break;
+        }
+    }
 }
