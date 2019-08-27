@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 
-import org.elastos.wallet.ela.MyApplication;
-
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -110,8 +108,8 @@ public class SPUtil {
     }
 
 
-    public String getDefaultServer() {
-        return getSharedPreferencesKeyVale(SERVER, MyApplication.serverList.iterator().next());
+    public String getDefaultServer(String defaultServer) {
+        return getSharedPreferencesKeyVale(SERVER, defaultServer);
     }
 
     public void setDefaultServerList(Set<String> value) {
@@ -119,8 +117,8 @@ public class SPUtil {
     }
 
 
-    public Set<String> getDefaultServerList() {
-        return getSharedPreferencesKeyVale(SERVERLIST, MyApplication.serverList);
+    public Set<String> getDefaultServerList(Set<String> defaultSet) {
+        return getSharedPreferencesKeyVale(SERVERLIST, defaultSet);
     }
 
 

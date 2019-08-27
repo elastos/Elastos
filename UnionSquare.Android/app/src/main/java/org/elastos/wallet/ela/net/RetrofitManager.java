@@ -48,7 +48,7 @@ public class RetrofitManager {
 
     public static synchronized ApiServer getApiService(Context context) {
         if (MyApplication.chainID <= 0) {
-            String address = new SPUtil(context).getDefaultServer();
+            String address = new SPUtil(context).getDefaultServer(MyApplication.serverList.iterator().next());
             if (!address.equals(MyApplication.REQUEST_BASE_URL)) {
                 //主网高可用导致差异 强制刷新apiService1
                 MyApplication.REQUEST_BASE_URL = address;

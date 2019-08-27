@@ -37,8 +37,8 @@ public class MyApplication extends MultiDexApplication {
         myApplication = this;
         serverList.add("http://54.223.158.189");
         serverList.add("https://unionsquare.elastos.org/");
-        serverList = new SPUtil(this.getApplicationContext()).getDefaultServerList();
-        REQUEST_BASE_URL = new SPUtil(this.getApplicationContext()).getDefaultServer();
+        serverList = new SPUtil(this.getApplicationContext()).getDefaultServerList(serverList);
+        REQUEST_BASE_URL = new SPUtil(this.getApplicationContext()).getDefaultServer(serverList.iterator().next());
         initApplicationComponent();
         Utils.init(this);
         Realm.init(getApplicationContext());
