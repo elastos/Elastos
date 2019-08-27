@@ -41,9 +41,8 @@ export default class extends BaseService {
   }
 
   async listData(param) {
-    let rs
     const path = `${this.prefixPath}/list`
-    rs = await api_request({
+    const rs = await api_request({
       path,
       method: 'get',
       data: param

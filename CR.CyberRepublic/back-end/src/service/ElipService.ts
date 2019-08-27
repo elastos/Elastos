@@ -179,11 +179,14 @@ export default class extends Base {
     if (param.$or && !query.$or) {
       query.$or = param.$or
     }
-    
-    const list = await db_elip.list(query, {vid: -1}, 100)
+
+    const fields = 'vid title createdBy createdAt status'
+    const list = await db_elip.list(query, {vid: -1}, 100, fields)
     for (const item of list) {
       if (item.createdBy) {
-        const user = await db_user.findOne({ _id: item.createdBy })
+        const user = await db_user.getDBInstance()
+          .findOne({ _id: item.createdBy })
+          .select(constant.DB_SELECTED_FIELDS.USER.NAME)
         if (!_.isEmpty(user)) item.createdBy = user
       }
     }

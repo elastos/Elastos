@@ -96,8 +96,8 @@ export default abstract class {
     public async count(query): Promise<number>{
         return await this.db.count(query)
     }
-    public async list(query, sort?, limit?): Promise<[Document]>{
-        return await this.db.find(query).sort(sort || {}).limit(_.toNumber(limit) || 1000)
+    public async list(query, sort?, limit?, select?: string): Promise<[Document]>{
+        return await this.db.find(query).select(select || '').sort(sort || {}).limit(_.toNumber(limit) || 1000)
     }
 
     public getAggregate(){
