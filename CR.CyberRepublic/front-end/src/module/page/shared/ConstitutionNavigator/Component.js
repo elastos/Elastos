@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 import './style.scss'
 import {MAX_WIDTH_MOBILE, MIN_WIDTH_PC} from '../../../../config/constant'
 
-const ITEM_LIST = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'A', 'B'];
+const ITEM_LIST = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'A', 'B'];
 
 export default class extends BaseComponent {
 
@@ -24,7 +24,7 @@ export default class extends BaseComponent {
   }
 
   ord_render () {
-    const id = _.get(this.props, 'location.state.id', '1');
+    const id = _.get(this.props, 'location.state.id', '0');
 
     // TODO check why we can not use redirect use this.props.history
     return (

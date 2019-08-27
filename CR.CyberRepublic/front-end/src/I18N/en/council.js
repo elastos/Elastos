@@ -4,6 +4,7 @@ export default {
   '0003': 'Alpha Version',
 
   list: {
+    0: 'Abstract',
     1: '1. Cyber Republic (CR)',
     2: '2. Cyber Republic Consensus (CRC)',
     3: '3. Motivation',
@@ -18,6 +19,7 @@ export default {
     B: 'Appendix B. Improvements to CRC',
   },
   title: {
+    0: 'Abstract',
     1: 'Cyber Republic (CR)',
     2: 'Cyber Republic Consensus (CRC)',
     3: 'Motivation',
@@ -56,6 +58,7 @@ export default {
         `,
   },
   article: {
+    0: `<p>In reflecting on historical community dynamics in the blockchain industry’s short history, we have identified that blockchain projects present a number of unique challenges that differentiate them from traditional Internet products; these issues are rooted and manifest in the realm of community governance. To resolve these challenges, we introduce a mechanism to achieve consensus across the entire Elastos community based on a delegate model. This mechanism enables community members to participate in decision-making through an electoral process. Besides, it incentivizes community members to contribute to community and ecosystem development by submitting proposals. All participants in consensus use digital signatures to confirm their actions and record those actions on the Elastos blockchain. The open, transparent, and immutable features of blockchain technology allow all community members to participate fairly. In addition, the design of proposal categories makes feasible more application scenarios and a broader development space for the consensus mechanism of Elastos community governance.</p>`,
     1: `<p>Cyber Republic (CR) is the community that has naturally formed around Elastos. CR consists of ELA token holders, Elastos Foundation members, Elastos ecosystem partners, and any other teams and individuals that contribute to developing Elastos’ technologies and community.</p>`,
     2: `
       <p>The Cyber Republic Consensus is the third Elastos consensus mechanism after PoW and DPoS. The purpose of CRC is to provide a consensus-based community governance mechanism that will drive Elastos’ technological and ecosystem development, dispute resolution, and management of community assets, and establish incentives to foster community participation in the governance of and contribution to the Elastos community.</p>
