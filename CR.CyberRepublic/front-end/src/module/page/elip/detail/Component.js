@@ -63,7 +63,7 @@ class C extends StandardPage {
   ord_renderContent() {
     const { elip, loading, reviews } = this.state
     if (loading) {
-      return <Spin />
+      return <StyledSpin><Spin /></StyledSpin>
     }
     if (!loading && !Object.keys(elip).length) {
       return null
@@ -165,6 +165,11 @@ class C extends StandardPage {
 }
 
 export default C
+
+const StyledSpin = styled.div`
+  text-align: center;
+  margin-top: 24px;
+`
 
 const Container = styled.div`
   padding: 0 50px 80px;

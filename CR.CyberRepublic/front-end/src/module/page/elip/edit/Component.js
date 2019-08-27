@@ -30,7 +30,7 @@ export default class extends StandardPage {
     }
     const { elip, loading } = this.state
     if (loading) {
-      return <Spin />
+      return <StyledSpin><Spin /></StyledSpin>
     }
     if (!loading && !Object.keys(elip).length) {
       return history.push('/elips')
@@ -54,6 +54,11 @@ export default class extends StandardPage {
     )
   }
 }
+
+const StyledSpin = styled.div`
+  text-align: center;
+  margin-top: 24px;
+`
 
 const Container = styled.div`
   padding: 0 50px 80px;
