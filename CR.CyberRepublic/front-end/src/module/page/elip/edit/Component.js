@@ -19,8 +19,8 @@ export default class extends StandardPage {
 
   async componentDidMount() {
     const { getData, match } = this.props
-    const elip = await getData(match.params)
-    this.setState({ elip, loading: false })
+    const data = await getData(match.params)
+    this.setState({ elip: data.elip, loading: false })
   }
 
   ord_renderContent() {
@@ -35,11 +35,14 @@ export default class extends StandardPage {
     if (!loading && !Object.keys(elip).length) {
       return history.push('/elips')
     }
-    const isVisible = !loading &&
+    const isVisible =
+      !loading &&
       elip.status === ELIP_STATUS.REJECTED &&
       elip.createdBy._id === currentUserId
-    if (!isVisible) { return history.push(`/elips/${elip._id}`) }
-    
+    if (!isVisible) {
+      return history.push(`/elips/${elip._id}`)
+    }
+
     return (
       <div>
         <Container>

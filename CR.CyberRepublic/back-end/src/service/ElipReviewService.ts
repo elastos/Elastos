@@ -24,7 +24,7 @@ export default class extends Base {
       const review = await db_elip_review.save(doc)
       await db_elip.update({ _id: elipId }, { status })
       this.notifyElipCreator(review, elip, status)
-      return review
+      return { ...review._doc, createdBy: this.currentUser}
     } catch (error) {
       logger.error(error)
       return

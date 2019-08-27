@@ -1,43 +1,50 @@
 import React from 'react'
 import styled from 'styled-components'
+import moment from 'moment/moment'
 import { Collapse, Row, Col } from 'antd'
 import I18N from '@/I18N'
-import { ELIP_STATUS } from '@/constant'
+import { ELIP_STATUS, DATE_FORMAT } from '@/constant'
+import userUtil from '@/util/user'
 const { Panel } = Collapse
 
-class ReviewHistory extends React.Component {
-  render() {
-    return (
-      <StyledCollapse expandIconPosition="right">
-        <Panel header={I18N.get('elip.text.reviewDetails')}>
-          <StyledRow>
-            <LabelCol span={3} />
-            <WrapperCol span={17} status="REJECTED">
-              <div style={{ padding: 20 }}>
-                <Comment>rejected</Comment>
-                <Meta>author</Meta>
-              </div>
-            </WrapperCol>
-            <Col span={2}>
-              <Status status="REJECTED">{I18N.get('elip.text.rejected')}</Status>
-            </Col>
-          </StyledRow>
-          <StyledRow>
-            <LabelCol span={3} />
-            <WrapperCol span={17} status="APPROVED">
-              <div style={{ padding: 20 }}>
-                <Comment>APPROVED</Comment>
-                <Meta>author</Meta>
-              </div>
-            </WrapperCol>
-            <Col span={2} status="APPROVED">
-              <Status>{I18N.get('elip.text.approved')}</Status>
-            </Col>
-          </StyledRow>
-        </Panel>
-      </StyledCollapse>
-    )
+const ReviewHistory = ({ reviews }) => {
+  if (!reviews.length) {
+    return null
   }
+  return (
+    <StyledCollapse expandIconPosition="right">
+      <Panel header={I18N.get('elip.text.reviewDetails')}>
+        {reviews.map(el => {
+          const commenterName = el.createdBy
+            ? `${userUtil.formatUsername(el.createdBy)}, `
+            : ''
+          return (
+            <StyledRow key={el._id}>
+              <LabelCol span={3} />
+              <WrapperCol span={17} status={el.status}>
+                <div style={{ padding: 20 }}>
+                  <Comment>
+                    {el.status === ELIP_STATUS.REJECTED
+                      ? el.comment
+                      : 'APPROVED'}
+                  </Comment>
+                  <Meta>
+                    {commenterName}
+                    {moment(el.createdAt).format(DATE_FORMAT)}
+                  </Meta>
+                </div>
+              </WrapperCol>
+              <Col span={2}>
+                <Status status={el.status}>
+                  {I18N.get(`elip.text.${el.status.toLowerCase()}`)}
+                </Status>
+              </Col>
+            </StyledRow>
+          )
+        })}
+      </Panel>
+    </StyledCollapse>
+  )
 }
 
 export default ReviewHistory

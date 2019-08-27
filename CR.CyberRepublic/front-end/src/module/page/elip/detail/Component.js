@@ -8,6 +8,7 @@ import Footer from '@/module/layout/Footer/Container'
 import BackLink from '@/module/shared/BackLink/Component'
 // import Comments from '@/module/common/comments/Container'
 import { ELIP_STATUS } from '@/constant'
+import { logger } from '@/util'
 import ElipNote from '../ElipNote'
 import { grid } from '../common/variable'
 import ReviewButtons from './ReviewButtons'
@@ -18,18 +19,27 @@ class C extends StandardPage {
     super(p)
     this.state = {
       elip: {},
-      loading: false
+      loading: false,
+      reviews: []
     }
   }
 
   async componentDidMount() {
     const { getData, match } = this.props
     this.setState({ loading: true })
-    const elip = await getData(match.params)
-    this.setState({ elip, loading: false })
+    try {
+      const data = await getData(match.params)
+      this.setState({
+        elip: data.elip,
+        loading: false,
+        reviews: data.reviews
+      })
+    } catch (err) {
+      logger.error(err)
+    }
   }
 
-  handleSubmit = async (data)  => {
+  handleSubmit = async data => {
     const { review } = this.props
     const { elip } = this.state
     const param = {
@@ -37,14 +47,21 @@ class C extends StandardPage {
       status: data.status,
       elipId: elip._id
     }
-    const comment = await review(param)
-    if(comment && comment.elipId === elip._id) {
-      this.setState({ elip: { ...elip, status: data.status } })
+    try {
+      const comment = await review(param)
+      if (comment && comment.elipId === elip._id) {
+        this.setState({
+          elip: { ...elip, status: data.status },
+          reviews: [...this.state.reviews, comment]
+        })
+      }
+    } catch (err) {
+      logger.error(err)
     }
   }
 
   ord_renderContent() {
-    const { elip, loading } = this.state
+    const { elip, loading, reviews } = this.state
     if (loading) {
       return <Spin />
     }
@@ -93,14 +110,18 @@ class C extends StandardPage {
                     {I18N.get('elip.button.cancel')}
                   </Button>
                   {this.renderEditBtn()}
-                  {isLogin && isSecretary && elip.status === ELIP_STATUS.WAIT_FOR_REVIEW && (
-                    <ReviewButtons onSubmit={this.handleSubmit} />
-                  )}
+                  {isLogin &&
+                    isSecretary &&
+                    elip.status === ELIP_STATUS.WAIT_FOR_REVIEW && (
+                      <ReviewButtons onSubmit={this.handleSubmit} />
+                    )}
                 </Actions>
               </Col>
             </Row>
           )}
-          {elip && elip.status !== ELIP_STATUS.APPROVED && <ReviewHistory />}
+          {elip && elip.status !== ELIP_STATUS.APPROVED && (
+            <ReviewHistory reviews={reviews} />
+          )}
         </Container>
         <Footer />
       </div>

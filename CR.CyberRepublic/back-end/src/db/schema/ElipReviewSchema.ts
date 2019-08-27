@@ -12,11 +12,11 @@ export const Elip_Review = {
   },
   elipId: {
     type: Schema.Types.ObjectId,
-    ref: 'Elip'
+    ref: 'elip'
   },
   createdBy: {
     type: Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'users'
   },
   createdAt: {
     type: Date,

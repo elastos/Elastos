@@ -104,6 +104,11 @@ export default class extends Base {
     if (!rs) {
       throw 'ElipService.getById - invalid elip id'
     }
+    const db_elip_review = this.getDBModel('Elip_Review')
+    const reviews = await db_elip_review
+      .getDBInstance()
+      .find({ elipId: id })
+      .populate('createdBy')
 
     const currentUserId = _.get(this.currentUser, '_id')
     const userRole = _.get(this.currentUser, 'role')
@@ -112,7 +117,7 @@ export default class extends Base {
       rs.createdBy._id.equals(currentUserId) ||
       userRole === constant.USER_ROLE.SECRETARY
 
-    return isVisible ? rs : {}
+    return isVisible ? { elip: rs, reviews } : {}
   }
 
   public async list(param: any): Promise<any> {
