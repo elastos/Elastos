@@ -99,8 +99,8 @@ export default class extends Base {
     const db_elip = this.getDBModel('Elip')
     const rs = await db_elip
       .getDBInstance()
-      .findOne({ _id: id })
-      .populate('createdBy')
+      .findById({ _id: id })
+      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
     if (!rs) {
       throw 'ElipService.getById - invalid elip id'
     }
@@ -108,7 +108,7 @@ export default class extends Base {
     const reviews = await db_elip_review
       .getDBInstance()
       .find({ elipId: id })
-      .populate('createdBy')
+      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
 
     const currentUserId = _.get(this.currentUser, '_id')
     const userRole = _.get(this.currentUser, 'role')
@@ -116,6 +116,19 @@ export default class extends Base {
     const isVisible = rs.status === constant.ELIP_STATUS.APPROVED ||
       rs.createdBy._id.equals(currentUserId) ||
       userRole === constant.USER_ROLE.SECRETARY
+
+    if (_.isEmpty(rs.comments)) {
+      return isVisible ? { elip: rs, reviews } : {}
+    }
+
+    for (const comment of rs.comments) {
+      for (const thread of comment) {
+        await db_elip.getDBInstance().populate(thread, {
+          path: 'createdBy',
+          select: `${constant.DB_SELECTED_FIELDS.USER.NAME} profile.avatar`
+        })
+      }
+    }
 
     return isVisible ? { elip: rs, reviews } : {}
   }
