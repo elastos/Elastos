@@ -29,6 +29,7 @@ export default class extends BaseService {
   }
 
   async getData(param) {
+    this.dispatch(this.selfRedux.actions.detail_reset())
     this.dispatch(this.selfRedux.actions.loading_update(true))
     const path = `${this.prefixPath}/detail/${param.id}`
     const rs = await api_request({
