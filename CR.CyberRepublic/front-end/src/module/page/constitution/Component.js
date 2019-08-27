@@ -20,7 +20,7 @@ export default class extends StandardPage {
   }
 
   ord_renderContent () {
-    const id = _.get(this.props, 'location.state.id', 1);
+    const id = _.get(this.props, 'location.state.id', 0);
 
     return (
       <div style={{marginTop: 80}}>
