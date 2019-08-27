@@ -6,7 +6,7 @@ import { message } from 'antd'
 import _ from 'lodash'
 
 export default createContainer(Component, (state) => {
-  const commentables = ['task', 'submission', 'team', 'member']
+  const commentables = ['task', 'submission', 'team', 'member', 'elip']
 
   const props = {
     currentUserId: state.user.current_user_id,

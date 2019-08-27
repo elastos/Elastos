@@ -6,7 +6,7 @@ import I18N from '@/I18N'
 import StandardPage from '@/module/page/StandardPage'
 import Footer from '@/module/layout/Footer/Container'
 import BackLink from '@/module/shared/BackLink/Component'
-// import Comments from '@/module/common/comments/Container'
+import Comments from '@/module/common/comments/Container'
 import { ELIP_STATUS } from '@/constant'
 import { logger } from '@/util'
 import ElipNote from '../ElipNote'
@@ -122,6 +122,18 @@ class C extends StandardPage {
           {isLogin && (isSecretary || elip.createdBy === currentUserId) && (
             <ReviewHistory reviews={reviews} />
           )}
+          <Row>
+            <LabelCol span={3} />
+            <Col span={17}>
+              <Comments
+                type="elip"
+                elip={elip}
+                canPost={true}
+                model={elip._id}
+                returnUrl={`/elips/${elip._id}`}
+              />
+            </Col>
+          </Row>
         </Container>
         <Footer />
       </div>

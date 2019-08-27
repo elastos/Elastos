@@ -3,6 +3,7 @@ import create from './create'
 import detail from './detail'
 import update from './update'
 import list from './list'
+import comment from './comment'
 
 export default Base.setRouter([
   {
@@ -25,4 +26,9 @@ export default Base.setRouter([
     router: list,
     method: 'get'
   },
+  {
+    path: '/:id/comment',
+    router: comment,
+    method: 'post'
+  }
 ])

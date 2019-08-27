@@ -4,6 +4,7 @@ import { api_request } from '@/util'
 export default class extends BaseService {
   constructor() {
     super()
+    this.selfRedux = this.store.getRedux('elip')
     this.prefixPath = '/api/elip'
   }
 
@@ -28,11 +29,14 @@ export default class extends BaseService {
   }
 
   async getData(param) {
+    this.dispatch(this.selfRedux.actions.loading_update(true))
     const path = `${this.prefixPath}/detail/${param.id}`
     const rs = await api_request({
       path,
       method: 'get'
     })
+    this.dispatch(this.selfRedux.actions.loading_update(false))
+    this.dispatch(this.selfRedux.actions.detail_update(rs.elip))
     return rs
   }
 

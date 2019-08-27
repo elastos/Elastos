@@ -1,6 +1,7 @@
 import { Schema } from 'mongoose'
 import * as _ from 'lodash'
 import { constant } from '../../constant'
+import { CommentSchema } from './CommentSchema'
 
 export const Elip = {
   title: {
@@ -26,5 +27,6 @@ export const Elip = {
   status: {
     type: String,
     enum: _.values(constant.ELIP_STATUS)
-  }
+  },
+  comments: [[CommentSchema]]
 }
