@@ -7,6 +7,7 @@ import I18N from '@/I18N'
 import { ELIP_FILTER } from '@/constant'
 import { Container, StyledButton, StyledSearch, Filter } from './style'
 import { logger } from '@/util'
+import userUtil from '@/util/user'
 
 export default class extends BaseComponent {
   constructor(props) {
@@ -70,7 +71,7 @@ export default class extends BaseComponent {
       {
         title: I18N.get('elip.fields.number'),
         dataIndex: 'vid',
-        render: (vid, item, index) => (
+        render: (vid, item) => (
           <a
             className="tableLink"
             onClick={this.toDetailPage.bind(this, item._id)}
@@ -94,11 +95,13 @@ export default class extends BaseComponent {
       },
       {
         title: I18N.get('elip.fields.author'),
-        dataIndex: 'createdBy.username'
+        dataIndex: 'createdBy',
+        render: createdBy => userUtil.formatUsername(createdBy)
       },
       {
         title: I18N.get('elip.fields.status'),
-        render: (status, item) => I18N.get(`elip.status.${item.status}`) || ''
+        dataIndex: 'status',
+        render: status => I18N.get(`elip.status.${status}`) || ''
       },
       {
         title: I18N.get('elip.fields.createdAt'),

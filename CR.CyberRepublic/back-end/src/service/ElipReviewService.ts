@@ -15,16 +15,23 @@ export default class extends Base {
       if (!elip) {
         throw 'ElipReviewService.create - invalid elip id'
       }
+      const user = this.currentUser
       const doc: any = {
         comment,
         status,
-        createdBy: this.currentUser._id,
+        createdBy: user._id,
         elipId
       }
       const review = await db_elip_review.save(doc)
       await db_elip.update({ _id: elipId }, { status })
       this.notifyElipCreator(review, elip, status)
-      return { ...review._doc, createdBy: this.currentUser}
+    
+      const createdBy = {
+        _id: user._id,
+        profile: { firstName: user.firstName, lastName: user.lastName},
+        username: user.username
+      }
+      return { ...review._doc, createdBy }
     } catch (error) {
       logger.error(error)
       return
