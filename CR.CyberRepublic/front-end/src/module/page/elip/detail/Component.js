@@ -68,7 +68,7 @@ class C extends StandardPage {
     if (!loading && !Object.keys(elip).length) {
       return null
     }
-    const { isLogin, isSecretary } = this.props
+    const { isLogin, isSecretary, currentUserId } = this.props
     return (
       <div>
         <BackLink link="/elips" />
@@ -119,7 +119,7 @@ class C extends StandardPage {
               </Col>
             </Row>
           )}
-          {elip && elip.status !== ELIP_STATUS.APPROVED && (
+          {isLogin && (isSecretary || elip.createdBy === currentUserId) && (
             <ReviewHistory reviews={reviews} />
           )}
         </Container>
