@@ -154,7 +154,7 @@ func benchBegin() *BlockChain {
 		return block, nil
 	})
 
-	chain, _, _ := New(chainStore, params, arbiters.State, nil)
+	chain, _ := New(chainStore, params, arbiters.State, nil)
 	originLedger = DefaultLedger
 	DefaultLedger = &Ledger{
 		Blockchain:  chain,

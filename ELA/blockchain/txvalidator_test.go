@@ -52,7 +52,7 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	if err != nil {
 		s.Error(err)
 	}
-	s.Chain, _, err = New(chainStore, params,
+	s.Chain, err = New(chainStore, params,
 		state.NewState(params, nil, nil),
 		crstate.NewCommittee(params))
 	if err != nil {

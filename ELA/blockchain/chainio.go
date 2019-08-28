@@ -307,7 +307,8 @@ func (b *BlockChain) createChainState() error {
 	numTxns := uint64(len(genesisBlock.Transactions))
 	blockSize := uint64(genesisBlock.GetSize())
 	blockWeight := uint64(GetBlockWeight(genesisBlock))
-	state := newBestState(node, blockSize, blockWeight, numTxns, b.MedianTimePast)
+	state := newBestState(node, blockSize, blockWeight, numTxns,
+		time.Unix(int64(genesisBlock.Timestamp), 0))
 	// Create the initial the database chain state including creating the
 	// necessary index buckets and inserting the genesis block.
 	err := b.db.GetFFLDB().Update(func(dbTx database.Tx) error {
@@ -377,7 +378,7 @@ func (b *BlockChain) createChainState() error {
 // initChainState attempts to load and initialize the chain state from the
 // database.  When the db does not yet contain any chain state, both it and the
 // chain state are initialized to the genesis block.
-func (b *BlockChain) initChainState() (bool, error) {
+func (b *BlockChain) initChainState() error {
 	// Determine the state of the chain database. We may need to initialize
 	// everything from scratch or upgrade certain buckets.
 	var initialized, hasBlockIndex bool
@@ -387,23 +388,25 @@ func (b *BlockChain) initChainState() (bool, error) {
 		return nil
 	})
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	if !initialized {
 		// At this point the database has not already been initialized, so
 		// initialize both it and the chain state to the genesis block.
-		return initialized, b.createChainState()
+		fmt.Println("not initialized")
+		return b.createChainState()
 	}
 
 	if !hasBlockIndex {
-		//err = migrateBlockIndex(b.db.GetFFLDB())
-		//if err != nil {
-		//	return initialized, nil
-		//}
-		//return initialized, errors.New("initChainState failed")
-		return initialized, nil
+		//	//err = migrateBlockIndex(b.db.GetFFLDB())
+		//	//if err != nil {
+		//	//	return initialized, nil
+		//	//}
+		//	//return initialized, errors.New("initChainState failed")
+		//	return nil
 	}
+	fmt.Println("initialized")
 
 	// Attempt to load the chain state from the database.
 	err = b.db.GetFFLDB().View(func(dbTx database.Tx) error {
@@ -434,6 +437,7 @@ func (b *BlockChain) initChainState() (bool, error) {
 		for ok := cursor.First(); ok; ok = cursor.Next() {
 			blockCount++
 		}
+		fmt.Println("block count:", blockCount)
 		blockNodes := make([]BlockNode, blockCount)
 
 		var i int32
@@ -506,14 +510,14 @@ func (b *BlockChain) initChainState() (bool, error) {
 		return nil
 	})
 	if err != nil {
-		return true, err
+		return err
 	}
 
 	//// As we might have updated the index after it was loaded, we'll
 	//// attempt to flush the index to the DB. This will only result in a
 	//// write if the elements are dirty, so it'll usually be a noop.
 	//return b.index.flushToDB()
-	return true, nil
+	return nil
 }
 
 // deserializeBlockRow parses a value in the block index bucket into a block
