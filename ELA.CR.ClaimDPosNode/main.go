@@ -193,18 +193,16 @@ func startNode(c *cli.Context) {
 	committee := crstate.NewCommittee(activeNetParams)
 	ledger.Committee = committee
 
-	chain, initialized, err := blockchain.New(chainStore, activeNetParams,
+	chain, err := blockchain.New(chainStore, activeNetParams,
 		arbiters.State, committee)
 	if err != nil {
 		printErrorAndExit(err)
 	}
-	if !initialized {
-		if err := chain.InitFFLDBFromChainStore(interrupt.C, pgBar.Start,
-			pgBar.Increase); err != nil {
-			printErrorAndExit(err)
-		}
-		pgBar.Stop()
+	if err := chain.InitFFLDBFromChainStore(interrupt.C, pgBar.Start,
+		pgBar.Increase); err != nil {
+		printErrorAndExit(err)
 	}
+	pgBar.Stop()
 	ledger.Blockchain = chain // fixme
 	blockMemPool.Chain = chain
 	arbiters.RegisterFunction(chain.GetHeight,
