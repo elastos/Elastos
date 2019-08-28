@@ -2,7 +2,7 @@ import Base from './Base'
 import { Document } from 'mongoose'
 import * as _ from 'lodash'
 import { constant } from '../constant'
-import { mail, logger } from '../utility'
+import { mail, logger, user as userUtil } from '../utility'
 
 export default class extends Base {
   public async update(param: any): Promise<Document> {
@@ -73,7 +73,6 @@ export default class extends Base {
       user => !user._id.equals(currentUserId)
     )
     const toMails = _.map(toUsers, 'email')
-
     const subject = `New ELIP created`
     const body = `
       <p>This is a new ${elip.title} added and to be reviewed:</p>
@@ -81,15 +80,26 @@ export default class extends Base {
       <p>Click this link to view more details: <a href="${
         process.env.SERVER_URL
       }/elips/${elip._id}">${process.env.SERVER_URL}/elips/${elip._id}</a></p>
-      <br /> <br />
+      <br />
       <p>Cyber Republic Team</p>
       <p>Thanks</p>
     `
 
+    const recVariables = _.zipObject(
+      toMails,
+      _.map(toUsers, user => {
+        return {
+          _id: user._id,
+          username: userUtil.formatUsername(user)
+        }
+      })
+    )
+
     const mailObj = {
       to: toMails,
       subject,
-      body
+      body,
+      recVariables
     }
 
     mail.send(mailObj)

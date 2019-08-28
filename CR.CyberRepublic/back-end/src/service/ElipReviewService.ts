@@ -1,7 +1,8 @@
-import Base from './Base'
+import * as _ from 'lodash'
 import { Document } from 'mongoose'
+import Base from './Base'
 import { constant } from '../constant'
-import { mail, logger } from '../utility'
+import { mail, logger, user as userUtil } from '../utility'
 
 export default class extends Base {
   public async create(param: any): Promise<Document> {
@@ -42,24 +43,25 @@ export default class extends Base {
     const rejected = status === constant.ELIP_REVIEW_STATUS.REJECTED
     const subject = rejected ? 'ELIP Rejected' : 'ELIP Approved'
     const body = `
-      <p>CR secretary has marked your ELIP <${elip.title}> as "${rejected ? 'Rejected' : 'Approved'}", ID <${elip.vid}>.</p>
+      <p>CR secretary has marked your ELIP <${elip.title}> as "${rejected ? 'Rejected' : 'Approved'}", ID <#${elip.vid}>.</p>
       <br />
-      ${rejected ? `<p>${review}<p>` : ''}
+      ${rejected ? `<p>${review.comment}<p>` : ''}
       <br />
       <p>Click this link to view more details: <a href="${
       process.env.SERVER_URL
       }/elips/${elip._id}">${process.env.SERVER_URL}/elips/${elip._id}</a></p>
-      <br /> <br />
+      <br />
       <p>Cyber Republic Team</p>
       <p>Thanks</p>
     `
 
-    const creator = this.getDBModel('User')
+    const creator = await this.getDBModel('User')
       .getDBInstance()
       .findOne({ _id: elip.createdBy })
 
     const mailObj = {
       to: creator.email,
+      toName: userUtil.formatUsername(creator),
       subject,
       body
     }
