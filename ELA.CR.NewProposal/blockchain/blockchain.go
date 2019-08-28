@@ -78,7 +78,7 @@ type BlockChain struct {
 }
 
 func New(db IChainStore, chainParams *config.Params, state *state.State,
-	committee *crstate.Committee) (*BlockChain, bool, error) {
+	committee *crstate.Committee) (*BlockChain, error) {
 
 	targetTimespan := int64(chainParams.TargetTimespan / time.Second)
 	targetTimePerBlock := int64(chainParams.TargetTimePerBlock / time.Second)
@@ -111,8 +111,11 @@ func New(db IChainStore, chainParams *config.Params, state *state.State,
 	// Initialize the chain state from the passed database.  When the db
 	// does not yet contain any chain state, both it and the chain state
 	// will be initialized to contain only the genesis block.
-	initialized, err := chain.initChainState()
-	return &chain, initialized, err
+	if err := chain.initChainState(); err != nil {
+		return nil, err
+	}
+
+	return &chain, nil
 }
 
 func (b *BlockChain) InitFFLDBFromChainStore(interrupt <-chan struct{},

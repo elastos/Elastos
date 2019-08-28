@@ -48,7 +48,7 @@ const (
 	// NOTE: The current code uses uint32 for all offsets, so this value
 	// must be less than 2^32 (4 GiB).  This is also why it's a typed
 	// constant.
-	maxBlockFileSize uint32 = 512 * 1024 * 1024 // 512 MiB
+	maxBlockFileSize uint32 = 128 * 1024 * 1024 // 512 MiB
 
 	// blockLocSize is the number of bytes the serialized block location
 	// data that is stored in the block index.

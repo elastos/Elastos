@@ -492,9 +492,9 @@ func (c *ChainStore) rollback(b *Block, node *BlockNode,
 	if err := c.RollbackUnspend(b); err != nil {
 		return err
 	}
-	if err := c.RollbackCurrentBlock(b); err != nil {
-		return err
-	}
+	//if err := c.RollbackCurrentBlock(b); err != nil {
+	//	return err
+	//}
 	if err := c.RollbackConfirm(b); err != nil {
 		return err
 	}
@@ -532,9 +532,9 @@ func (c *ChainStore) persist(b *Block, node *BlockNode,
 	if err := c.persistUnspend(b); err != nil {
 		return err
 	}
-	if err := c.persistCurrentBlock(b); err != nil {
-		return err
-	}
+	//if err := c.persistCurrentBlock(b); err != nil {
+	//	return err
+	//}
 	if err := c.persistConfirm(confirm); err != nil {
 		return err
 	}

@@ -60,7 +60,7 @@ func TestService_Init(t *testing.T) {
 		CurrentArbitrators: arbitrators,
 	}
 
-	chain, _, err := blockchain.New(chainStore, params, state.NewState(params,
+	chain, err := blockchain.New(chainStore, params, state.NewState(params,
 		nil, nil), nil)
 	if err != nil {
 		t.Error(err)
