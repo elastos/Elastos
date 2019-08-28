@@ -64,7 +64,8 @@ class ReviewButtons extends React.Component {
           onCancel={this.handleCancel}
           okText={I18N.get('elip.modal.confirm')}
           cancelText={I18N.get('elip.modal.cancel')}
-        >
+          okButtonProps={{ style: { color: '#fff', background: '#be1313', borderColor: '#be1313'} }}
+      >
           <TextArea
             onChange={this.handleChange}
             value={this.state.reason}
