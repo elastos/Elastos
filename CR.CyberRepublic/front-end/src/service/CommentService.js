@@ -13,7 +13,6 @@ export default class extends BaseService {
       createdAt: new Date().toISOString(),
       returnUrl,
     }
-
     this.dispatch(redux.actions.loading_update(true))
 
     const rs = await api_request({
@@ -22,7 +21,6 @@ export default class extends BaseService {
       data,
     })
     const curDetail = this.store.getState()[reduxType || type] && this.store.getState()[reduxType || type].detail
-
     if (!curDetail) {
       return
     }

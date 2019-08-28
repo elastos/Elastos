@@ -3,16 +3,18 @@ import council from './zh/council'
 import home from './zh/home'
 import release from './zh/release'
 import proposal from './zh/proposal'
-import getting_started from './en/getting_started'
 import suggestion from './zh/suggestion'
+import getting_started from './en/getting_started'
+import elip from './zh/elip'
 
 const zh = {
   council,
   home,
   release,
   proposal,
-  getting_started,
   suggestion,
+  getting_started,
+  elip,
   // Header
   '0000': 'ALPHA版本',
   '0001': '奖励计划',
@@ -42,6 +44,7 @@ const zh = {
     council: '委员会',
     constitution: '白皮书',
     suggestion: '建议',
+    elip: 'ELIP',
     proposal: '提案',
     whatsNew: '版本更新',
     resources: {

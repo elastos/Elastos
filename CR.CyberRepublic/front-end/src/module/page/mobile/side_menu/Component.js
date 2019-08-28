@@ -39,6 +39,7 @@ export default class extends BaseComponent {
       'whitepaper',
       'council',
       'what-is-new',
+      'elips'
     ], key)) {
       this.props.history.push(`/${ev.key}`)
     } else if (key === 'logout') {
@@ -146,6 +147,11 @@ export default class extends BaseComponent {
               <Menu.Item key="suggestion">
                 {I18N.get('navigation.suggestion')}
               </Menu.Item>
+
+              <Menu.Item key="elips">
+                {I18N.get('navigation.elip')}
+              </Menu.Item>
+
               <Menu.Item key="proposals">
                 {I18N.get('navigation.proposal')}
               </Menu.Item>

@@ -16,6 +16,7 @@ import language from './redux/language'
 import permission from './redux/permission'
 import permissionRole from './redux/permissionRole'
 import release from './redux/release'
+import elip from './redux/elip'
 
 const default_state = {
   init: false,
@@ -45,4 +46,5 @@ export default combineReducers({
   permission: permission.getReducer(),
   permissionRole: permissionRole.getReducer(),
   release: release.getReducer(),
+  elip: elip.getReducer()
 })

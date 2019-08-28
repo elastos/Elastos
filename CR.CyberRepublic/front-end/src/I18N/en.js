@@ -5,6 +5,7 @@ import release from './en/release'
 import proposal from './en/proposal'
 import suggestion from './en/suggestion'
 import getting_started from './en/getting_started'
+import elip from './en/elip'
 
 const en = {
   council,
@@ -13,6 +14,7 @@ const en = {
   proposal,
   suggestion,
   getting_started,
+  elip,
   // Header
   '0000': 'ALPHA',
   '0001': 'Bounty Programs',
@@ -42,6 +44,7 @@ const en = {
     council: 'Council',
     constitution: 'WhitePaper',
     suggestion: 'Suggestions',
+    elip: 'ELIP',
     proposal: 'Proposals',
     whatsNew: "What's New",
     resources: {

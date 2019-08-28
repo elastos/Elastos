@@ -91,6 +91,12 @@ import SuggestionEditPage from '@/module/page/suggestion/edit/Container'
 import SuggestionDetailPage from '@/module/page/suggestion/detail/Container'
 import SuggestionEditHistoryPage from '@/module/page/suggestion/edit_history/Container'
 
+// elips
+import ElipListPage from '@/module/page/elip/Container'
+import ElipNewPage from '@/module/page/elip/new/Container'
+import ElipDetailPage from '@/module/page/elip/detail/Container'
+import ElipEditPage from '@/module/page/elip/edit/Container'
+
 import ConstitutionPage from '@/module/page/constitution/Container'
 
 import NotFound from '@/module/page/error/NotFound'
@@ -275,6 +281,28 @@ export default [
   {
     path: '/suggestion/history/:id',
     page: SuggestionEditHistoryPage,
+  },
+
+  /*
+   ********************************************************************************
+   * ELIP page
+   ********************************************************************************
+   */
+  {
+    path: '/elips',
+    page: ElipListPage,
+  },
+  {
+    path: '/elips/new',
+    page: ElipNewPage,
+  },
+  {
+    path: '/elips/:id',
+    page: ElipDetailPage,
+  },
+  {
+    path: '/elips/:id/edit',
+    page: ElipEditPage,
   },
   /*
     ********************************************************************************

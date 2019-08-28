@@ -4,9 +4,10 @@ import CommentService from '@/service/CommentService'
 import CouncilService from '@/service/CouncilService'
 import { message } from 'antd'
 import _ from 'lodash'
+import { logger } from '@/util'
 
 export default createContainer(Component, (state) => {
-  const commentables = ['task', 'submission', 'team', 'member']
+  const commentables = ['task', 'submission', 'team', 'member', 'elip']
 
   const props = {
     currentUserId: state.user.current_user_id,
@@ -35,6 +36,7 @@ export default createContainer(Component, (state) => {
         }
       } catch (err) {
         message.error(err.message)
+        logger.error(err)
       }
     },
 
@@ -42,8 +44,8 @@ export default createContainer(Component, (state) => {
       try {
         return await councilService.getCouncilMembers()
       } catch (err) {
-        // console.error(err)
         message.error(err.message)
+        logger.error(err)
       }
     },
 
@@ -52,6 +54,7 @@ export default createContainer(Component, (state) => {
         await commentService.subscribe(type, parentId)
       } catch (err) {
         message.error(err.message)
+        logger.error(err)
       }
     },
 
@@ -60,6 +63,7 @@ export default createContainer(Component, (state) => {
         await commentService.unsubscribe(type, parentId)
       } catch (err) {
         message.error(err.message)
+        logger.error(err)
       }
     },
   }

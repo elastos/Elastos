@@ -31,7 +31,6 @@ export default class extends BaseComponent {
   }
 
   async componentDidMount() {
-    console.log('this.state.page', this.state.page)
     this.refetch()
   }
 
@@ -209,6 +208,10 @@ export default class extends BaseComponent {
   }
 
   createAndRedirect = async () => {
+    sessionStorage.removeItem('proposalPage')
+    sessionStorage.removeItem('voteResult')
+    sessionStorage.removeItem('proposalSearch')
+    
     const { _id, profile } = this.props.user
     const fullName = `${profile.firstName} ${profile.lastName}`
     const {createDraft } = this.props
