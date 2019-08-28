@@ -126,9 +126,9 @@ import:
 - package: github.com/elastos/Elastos.ELA.SideChain
   version: release_v0.1.4
 - package: github.com/elastos/Elastos.ELA.SPV
-  version: dpos_service
+  version: 7cd5d0711432c603e426021ed32ae5985d57b2e5
 - package: github.com/elastos/Elastos.ELA
-  version: release_v0.3.2
+  version: v0.3.2
 - package: github.com/gorilla/websocket
 - package: github.com/mattn/go-sqlite3
 testImport:
@@ -140,5 +140,7 @@ testImport:
   - assert
   - require
 - package: gopkg.in/check.v1
+ignore:
+  - github.com/russross/blackfriday/v2
 #ignore:
 #- crypto/ed25519

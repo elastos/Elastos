@@ -123,7 +123,7 @@ func TestNewSPVService(t *testing.T) {
 	test.SkipShort(t)
 	interrupt := signal.NewInterrupt()
 
-	backend := elalog.NewBackend(os.Stdout, elalog.Llongfile)
+	backend := elalog.NewBackend(os.Stdout, elalog.Lshortfile)
 	admrlog := backend.Logger("ADMR", elalog.LevelOff)
 	cmgrlog := backend.Logger("CMGR", elalog.LevelOff)
 	bcdblog := backend.Logger("BCDB", elalog.LevelDebug)
@@ -187,13 +187,15 @@ out:
 
 		case <-syncTicker.C:
 
-			best := service.GetHeight()
+			best, err := service.headers.GetBest()
+			if !assert.NoError(t, err) {
+				t.FailNow()
+			}
 
-			height := uint32(rand.Int31n(int32(best)))
+			height := uint32(rand.Int31n(int32(best.Height)))
 
 			t.Logf("GetBlock from height %d", height)
-			headers := service.HeaderStore()
-			_, err = headers.GetByHeight(height)
+			_, err = service.headers.GetByHeight(height)
 			if !assert.NoError(t, err) {
 				t.FailNow()
 			}
@@ -214,7 +216,7 @@ out:
 				}
 			}
 
-			if service.IsCurrent() {
+			if service.IService.IsCurrent() {
 				// Clear test data
 				err := service.ClearData()
 				if err != nil {

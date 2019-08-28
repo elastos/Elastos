@@ -3,6 +3,7 @@ package store
 import (
 	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"sync"
@@ -12,7 +13,6 @@ import (
 	"github.com/cevaris/ordered_map"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/syndtr/goleveldb/leveldb"
-	"github.com/syndtr/goleveldb/leveldb/errors"
 )
 
 var (
@@ -32,12 +32,7 @@ type headers struct {
 }
 
 func NewHeaderStore(dataDir string, newHeader func() util.BlockHeader) (*headers, error) {
-	file := filepath.Join(dataDir, "header")
-
-	db, err := leveldb.OpenFile(file, nil)
-	if _, corrupted := err.(*errors.ErrCorrupted); corrupted {
-		db, err = leveldb.RecoverFile(file, nil)
-	}
+	db, err := leveldb.OpenFile(filepath.Join(dataDir, "header"), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -221,7 +216,7 @@ func (cache *cache) set(header *util.Header) {
 func (cache *cache) get(hash *common.Uint256) (*util.Header, error) {
 	sh, ok := cache.headers.Get(hash.String())
 	if !ok {
-		return nil, fmt.Errorf("header %s not found in cache", hash)
+		return nil, errors.New("Header not found in cache ")
 	}
 	return sh.(*util.Header), nil
 }

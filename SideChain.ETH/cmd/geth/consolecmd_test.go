@@ -37,37 +37,37 @@ const (
 
 // Tests that a node embedded within a console can be started up properly and
 // then terminated by closing the input stream.
-func TestConsoleWelcome(t *testing.T) {
-	coinbase := "0x8605cdbbdb6d264aa742e77020dcbc58fcdce182"
-
-	// Start a geth console, make sure it's cleaned up and terminate the console
-	geth := runGeth(t,
-		"--port", "0", "--maxpeers", "0", "--nodiscover", "--nat", "none",
-		"--etherbase", coinbase, "--shh",
-		"console")
-
-	// Gather all the infos the welcome message needs to contain
-	geth.SetTemplateFunc("goos", func() string { return runtime.GOOS })
-	geth.SetTemplateFunc("goarch", func() string { return runtime.GOARCH })
-	geth.SetTemplateFunc("gover", runtime.Version)
-	geth.SetTemplateFunc("gethver", func() string { return params.VersionWithMeta })
-	geth.SetTemplateFunc("niltime", func() string { return time.Unix(1, 0).Format(time.RFC1123) })
-	geth.SetTemplateFunc("apis", func() string { return ipcAPIs })
-
-	// Verify the actual welcome message to the required template
-	geth.Expect(`
-Welcome to the Geth JavaScript console!
-
-instance: Geth/v{{gethver}}/{{goos}}-{{goarch}}/{{gover}}
-coinbase: {{.Etherbase}}
-at block: 0 ({{niltime}})
- datadir: {{.Datadir}}
- modules: {{apis}}
-
-> {{.InputLine "exit"}}
-`)
-	geth.ExpectExit()
-}
+//func TestConsoleWelcome(t *testing.T) {
+//	coinbase := "0x8605cdbbdb6d264aa742e77020dcbc58fcdce182"
+//
+//	// Start a geth console, make sure it's cleaned up and terminate the console
+//	geth := runGeth(t,
+//		"--port", "0", "--maxpeers", "0", "--nodiscover", "--nat", "none",
+//		"--etherbase", coinbase, "--shh",
+//		"console")
+//
+//	// Gather all the infos the welcome message needs to contain
+//	geth.SetTemplateFunc("goos", func() string { return runtime.GOOS })
+//	geth.SetTemplateFunc("goarch", func() string { return runtime.GOARCH })
+//	geth.SetTemplateFunc("gover", runtime.Version)
+//	geth.SetTemplateFunc("gethver", func() string { return params.VersionWithMeta })
+//	geth.SetTemplateFunc("niltime", func() string { return time.Unix(1, 0).Format(time.RFC1123) })
+//	geth.SetTemplateFunc("apis", func() string { return ipcAPIs })
+//
+//	// Verify the actual welcome message to the required template
+//	geth.Expect(`
+//Welcome to the Geth JavaScript console!
+//
+//instance: Geth/v{{gethver}}/{{goos}}-{{goarch}}/{{gover}}
+//coinbase: {{.Etherbase}}
+//at block: 0 ({{niltime}})
+// datadir: {{.Datadir}}
+// modules: {{apis}}
+//
+//> {{.InputLine "exit"}}
+//`)
+//	geth.ExpectExit()
+//}
 
 // Tests that a console can be attached to a running node via various means.
 func TestIPCAttachWelcome(t *testing.T) {

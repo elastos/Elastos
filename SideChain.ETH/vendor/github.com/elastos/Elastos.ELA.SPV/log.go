@@ -9,7 +9,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/peer"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/sync"
-	"github.com/elastos/Elastos.ELA.SPV/wallet"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/store"
 
 	"github.com/elastos/Elastos.ELA/p2p/addrmgr"
@@ -52,5 +51,4 @@ func init() {
 	server.UseLogger(srvrlog)
 	store.UseLogger(bcdblog)
 	sync.UseLogger(synclog)
-	wallet.UseLogger(waltlog)
 }

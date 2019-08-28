@@ -5,7 +5,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/peer"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/sync"
-	"github.com/elastos/Elastos.ELA.SPV/wallet"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/store"
 	"github.com/elastos/Elastos.ELA/utils/elalog"
 )
@@ -36,5 +35,4 @@ func UseLogger(logger elalog.Logger) {
 	peer.UseLogger(logger)
 	store.UseLogger(logger)
 	sync.UseLogger(logger)
-	wallet.UseLogger(logger)
 }

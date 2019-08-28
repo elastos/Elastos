@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/syndtr/goleveldb/leveldb"
-	"github.com/syndtr/goleveldb/leveldb/errors"
 )
 
 // Ensure dataStore implement DataStore interface.
@@ -21,11 +20,9 @@ type dataStore struct {
 }
 
 func NewDataStore(dataDir string) (*dataStore, error) {
-	file := filepath.Join(dataDir, "store")
-
-	db, err := leveldb.OpenFile(file, nil)
-	if _, corrupted := err.(*errors.ErrCorrupted); corrupted {
-		db, err = leveldb.RecoverFile(file, nil)
+	db, err := leveldb.OpenFile(filepath.Join(dataDir, "store"), nil)
+	if err != nil {
+		return nil, err
 	}
 	if err != nil {
 		return nil, err

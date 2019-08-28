@@ -174,20 +174,8 @@ func (s *spvservice) GetTransactionIds(height uint32) ([]*common.Uint256, error)
 	return s.db.Txs().GetIds(height)
 }
 
-func (s *spvservice) HeaderStore() store.HeaderStore {
+func (s *spvservice) HeaderStore() database.Headers {
 	return s.headers
-}
-
-func (s *spvservice) IsCurrent() bool {
-	return s.IService.IsCurrent()
-}
-
-func (s *spvservice) GetHeight() uint32 {
-	best, err := s.headers.GetBest()
-	if err != nil {
-		return 0
-	}
-	return best.Height
 }
 
 func (s *spvservice) GetFilter() *msg.TxFilterLoad {
