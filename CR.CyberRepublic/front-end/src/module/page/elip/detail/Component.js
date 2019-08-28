@@ -76,7 +76,9 @@ class C extends StandardPage {
         <Container>
           <h2 className="komu-a cr-title-with-icon">ELIP #{elip.vid}</h2>
           <Label>Status</Label>
-          <Status status={elip.status}>{elip.status}</Status>
+          <Status status={elip.status}>
+            {elip.status.split('_').join(' ')}
+          </Status>
           <Row>
             <LabelCol span={3}>{I18N.get('elip.fields.title')}</LabelCol>
             <WrapperCol span={17}>
@@ -207,9 +209,9 @@ const Status = styled.div`
         return '#f2f6fb'
     }
   }};
-  width: 159px;
-  height: 27px;
   text-align: center;
+  padding: 0 6px;
+  display: inline-block;
 `
 
 const LabelCol = styled(Col)`
