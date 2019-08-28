@@ -124,7 +124,7 @@ class C extends StandardPage {
             <ReviewHistory reviews={reviews} />
           )}
           {elip.status === ELIP_STATUS.APPROVED && (
-            <Row>
+            <Row style={{ marginTop: 48 }}>
               <LabelCol span={3} />
               <Col span={17}>
                 <Comments
