@@ -1,5 +1,5 @@
 import React from 'react'
-import { Row, Col, Spin, Button } from 'antd'
+import { Row, Col, Spin, Button, message} from 'antd'
 import styled from 'styled-components'
 import DraftEditor from '@/module/common/DraftEditor'
 import I18N from '@/I18N'
@@ -54,6 +54,7 @@ class C extends StandardPage {
           elip: { ...elip, status: data.status },
           reviews: [...this.state.reviews, comment]
         })
+        message.info(I18N.get(`elip.msg.${data.status.toLowerCase()}`))
       }
     } catch (err) {
       logger.error(err)

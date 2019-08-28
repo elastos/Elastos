@@ -34,7 +34,7 @@ export default {
     updated: 'Updated successfully',
     submitted: 'Submitted successfully',
     rejected: 'Rejected successfully',
-    approved: 'Approved and published successfully'
+    approved: 'Approved successfully'
   },
   form: {
     error: {

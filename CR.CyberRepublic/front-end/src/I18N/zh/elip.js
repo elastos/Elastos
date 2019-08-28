@@ -34,7 +34,7 @@ export default {
     updated: '更新成功',
     submitted: '提交成功',
     rejected: '已驳回',
-    approved: '已批准并发布'
+    approved: '已批准'
   },
   form: {
     error: {
