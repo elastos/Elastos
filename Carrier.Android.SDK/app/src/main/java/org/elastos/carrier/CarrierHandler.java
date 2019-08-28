@@ -157,8 +157,9 @@ public interface CarrierHandler {
 	 * @param
 	 * 		message   	The message content
 	 * @param
-	 *      isOffline   Which method does the sender use to send this message:
-	 *                  true, offline; false, online.
+	 *      isOffline	The boolean value means this message is received as offline message
+	 *                  or online message. The vlaue of true means the message is received
+	 *                  as offline message, otherwise as online message.
 	 */
 	void onFriendMessage(Carrier carrier, String from, byte[] message, boolean isOffline);
 

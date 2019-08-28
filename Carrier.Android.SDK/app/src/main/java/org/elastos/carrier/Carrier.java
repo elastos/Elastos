@@ -880,8 +880,9 @@ public class Carrier {
 	 * 		message		The message content defined by application
 	 *
 	 * @return
-	 *                	Whether the friend is online when the message
-	 *                  is sent: true, online; false, offline.
+	 *		Return boolean value whether this message sent as online message or
+	 *		offline message. The value of true means the message was sent as
+	 *		online message, otherwise as offline message.
 	 *
 	 * @throws
 	 * 		IllegalArgumentException
@@ -908,16 +909,16 @@ public class Carrier {
 	 * 		message		The message content defined by application
 	 *
 	 * @return
-	 *                  Whether the friend is online when the message
-	 *                  is sent: true, online; false, offline.
+	 *		Return boolean value whether this message sent as online message or
+	 *		offline message. The value of true means the message was sent as
+	 *		online message, otherwise as offline message.
 	 *
 	 * @throws
 	 * 		IllegalArgumentException
 	 * 		CarrierException
 	 */
 	public boolean sendFriendMessage(String to, byte[] message) throws CarrierException {
-		if (to == null || to.length() == 0 ||
-				message == null || message.length == 0)
+		if (to == null || to.length() == 0 || message == null || message.length == 0)
 			throw new IllegalArgumentException();
 
 		int ret = send_message(to, message);
