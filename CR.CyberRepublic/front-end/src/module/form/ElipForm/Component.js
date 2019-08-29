@@ -123,7 +123,12 @@ class C extends BaseComponent {
                 }
               ],
               initialValue: data && data.description ? data.description : ''
-            })(<DraftEditor contentType={CONTENT_TYPE.MARKDOWN} />)}
+            })(
+              <DraftEditor
+                contentType={CONTENT_TYPE.MARKDOWN}
+                autoFocus={false}
+              />
+            )}
           </FormItem>
           <Actions>
             <Button
