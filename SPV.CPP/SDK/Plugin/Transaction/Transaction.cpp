@@ -2,35 +2,38 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+
+#include "Program.h"
+#include "Attribute.h"
+#include "TransactionInput.h"
+#include "TransactionOutput.h"
 #include "Transaction.h"
-#include "Payload/PayloadCoinBase.h"
-#include "SDK/Plugin/Transaction/Payload/PayloadRechargeToSideChain.h"
-#include "Payload/PayloadWithDrawAsset.h"
-#include "Payload/PayloadRecord.h"
-#include "Payload/PayloadRegisterAsset.h"
-#include "Payload/PayloadSideMining.h"
-#include "Payload/PayloadTransferCrossChainAsset.h"
-#include "Payload/PayloadTransferAsset.h"
-#include "Payload/PayloadRegisterIdentification.h"
-#include "Payload/PayloadRegisterProducer.h"
-#include "Payload/PayloadCancelProducer.h"
-#include "Payload/PayloadUpdateProducer.h"
-#include "Payload/PayloadReturnDepositCoin.h"
+#include "SDK/Plugin/Transaction/Payload/CoinBase.h"
+#include "SDK/Plugin/Transaction/Payload/RechargeToSideChain.h"
+#include "SDK/Plugin/Transaction/Payload/WithdrawFromSideChain.h"
+#include "SDK/Plugin/Transaction/Payload/Record.h"
+#include "SDK/Plugin/Transaction/Payload/RegisterAsset.h"
+#include "SDK/Plugin/Transaction/Payload/SideChainPow.h"
+#include "SDK/Plugin/Transaction/Payload/TransferCrossChainAsset.h"
+#include "SDK/Plugin/Transaction/Payload/TransferAsset.h"
+#include "SDK/Plugin/Transaction/Payload/RegisterIdentification.h"
+#include "SDK/Plugin/Transaction/Payload/ProducerInfo.h"
+#include "SDK/Plugin/Transaction/Payload/CancelProducer.h"
+#include "SDK/Plugin/Transaction/Payload/ReturnDepositCoin.h"
+#include "SDK/Plugin/Transaction/Payload/CRInfo.h"
+#include "SDK/Plugin/Transaction/Payload/UnregisterCR.h"
+#include <SDK/Wallet/UTXO.h>
 
 #include <SDK/Common/Utils.h>
-#include <SDK/TransactionHub/TransactionHub.h>
+#include <SDK/Wallet/Wallet.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ErrorChecker.h>
-
-#include <Core/BRCrypto.h>
-#include <Core/BRAddress.h>
-#include <Core/BRTransaction.h>
 
 #include <boost/make_shared.hpp>
 #include <cstring>
 
 #define STANDARD_FEE_PER_KB 10000
-#define DEFAULT_PAYLOAD_TYPE  TransferAsset
+#define DEFAULT_PAYLOAD_TYPE  transferAsset
 #define TX_LOCKTIME          0x00000000
 
 namespace Elastos {
@@ -75,25 +78,24 @@ namespace Elastos {
 
 			_inputs.clear();
 			for (size_t i = 0; i < orig._inputs.size(); ++i) {
-				_inputs.push_back(orig._inputs[i]);
+				_inputs.push_back(InputPtr(new TransactionInput(*orig._inputs[i])));
 			}
 
 			_outputs.clear();
 			for (size_t i = 0; i < orig._outputs.size(); ++i) {
-				_outputs.push_back(orig._outputs[i]);
+				_outputs.push_back(OutputPtr(new TransactionOutput(*orig._outputs[i])));
 			}
 
 			_attributes.clear();
 			for (size_t i = 0; i < orig._attributes.size(); ++i) {
-				_attributes.push_back(orig._attributes[i]);
+				_attributes.push_back(AttributePtr(new Attribute(*orig._attributes[i])));
 			}
 
 			_programs.clear();
 			for (size_t i = 0; i < orig._programs.size(); ++i) {
-				_programs.push_back(orig._programs[i]);
+				_programs.push_back(ProgramPtr(new Program(*orig._programs[i])));
 			}
 
-			_remark = orig._remark;
 			return *this;
 		}
 
@@ -119,6 +121,10 @@ namespace Elastos {
 				_txHash = sha256_2(stream.GetBytes());
 			}
 			return _txHash;
+		}
+
+		void Transaction::SetHash(const uint256 &hash) {
+			_txHash = hash;
 		}
 
 		const Transaction::TxVersion &Transaction::GetVersion() const {
@@ -156,37 +162,59 @@ namespace Elastos {
 			_fee = 0;
 		}
 
-		const std::vector<TransactionOutput> &Transaction::GetOutputs() const {
+		const std::vector<OutputPtr> &Transaction::GetOutputs() const {
 			return _outputs;
 		}
 
-		std::vector<TransactionOutput> &Transaction::GetOutputs() {
-			return _outputs;
+		void Transaction::FixIndex() {
+			for (uint16_t i = 0; i < _outputs.size(); ++i)
+				_outputs[i]->SetFixedIndex(i);
 		}
 
-		void Transaction::SetOutputs(const std::vector<TransactionOutput> &outputs) {
+		OutputPtr Transaction::OutputOfIndex(uint16_t fixedIndex) const {
+			std::vector<OutputPtr>::const_iterator it;
+			for (it = _outputs.cbegin(); it != _outputs.cend(); ++it) {
+				if ((*it)->FixedIndex() == fixedIndex)
+					return (*it);
+			}
+
+			return nullptr;
+		}
+
+		void Transaction::SetOutputs(const std::vector<OutputPtr> &outputs) {
 			_outputs = outputs;
 		}
 
-		void Transaction::AddOutput(const TransactionOutput &output) {
+		void Transaction::AddOutput(const OutputPtr &output) {
 			_outputs.push_back(output);
 		}
 
-		const std::vector<TransactionInput> &Transaction::GetInputs() const {
+		void Transaction::RemoveOutput(const OutputPtr &output) {
+			for (std::vector<OutputPtr>::iterator it = _outputs.begin(); it != _outputs.end(); ) {
+				if (output == (*it)) {
+					it = _outputs.erase(it);
+					break;
+				} else {
+					++it;
+				}
+			}
+		}
+
+		const std::vector<InputPtr> &Transaction::GetInputs() const {
 			return _inputs;
 		}
 
-		std::vector<TransactionInput>& Transaction::GetInputs() {
+		std::vector<InputPtr>& Transaction::GetInputs() {
 			return _inputs;
 		}
 
-		void Transaction::AddInput(const TransactionInput &Input) {
+		void Transaction::AddInput(const InputPtr &Input) {
 			_inputs.push_back(Input);
 		}
 
 		bool Transaction::ContainInput(const uint256 &hash, uint32_t n) const {
 			for (size_t i = 0; i < _inputs.size(); ++i) {
-				if (_inputs[i].GetTransctionHash() == hash && n == _inputs[i].GetIndex()) {
+				if (_inputs[i]->TxHash() == hash && n == _inputs[i]->Index()) {
 					return true;
 				}
 			}
@@ -212,38 +240,66 @@ namespace Elastos {
 			_blockHeight = height;
 		}
 
-		uint32_t Transaction::GetTimestamp() const {
+		time_t Transaction::GetTimestamp() const {
 			return _timestamp;
 		}
 
-		void Transaction::SetTimestamp(uint32_t t) {
+		void Transaction::SetTimestamp(time_t t) {
 			_timestamp = t;
 		}
 
-		void Transaction::RemoveChangeOutput() {
-			if (_outputs.size() > 1) {
-				_outputs.erase(_outputs.begin() + _outputs.size() - 1);
-			}
+		size_t Transaction::EstimateSize() const {
+			size_t i, txSize = 0;
+			ByteStream stream;
+
+			if (_version >= TxVersion::V09)
+				txSize += 1;
+
+			// type, payloadversion
+			txSize += 2;
+
+			// payload
+			txSize += _payload->EstimateSize(_payloadVersion);
+
+			txSize += stream.WriteVarUint(_attributes.size());
+			for (i = 0; i < _attributes.size(); ++i)
+				txSize += _attributes[i]->EstimateSize();
+
+			txSize += stream.WriteVarUint(_inputs.size());
+			for (i = 0; i < _inputs.size(); ++i)
+				txSize += _inputs[i]->EstimateSize();
+
+			txSize += stream.WriteVarUint(_outputs.size());
+			for (i = 0; i < _outputs.size(); ++i)
+				txSize += _outputs[i]->EstimateSize();
+
+			txSize += sizeof(_lockTime);
+
+			txSize += stream.WriteVarUint(_programs.size());
+			for (i = 0; i < _programs.size(); ++i)
+				txSize += _programs[i]->EstimateSize();
+
+			return txSize;
 		}
 
-		size_t Transaction::GetSize() {
-			ByteStream ostream;
-			Serialize(ostream);
-			return ostream.GetBytes().size();
-		}
+//		size_t Transaction::GetSize() {
+//			ByteStream ostream;
+//			Serialize(ostream);
+//			return ostream.GetBytes().size();
+//		}
 
 		nlohmann::json Transaction::GetSignedInfo() const {
 			nlohmann::json info;
 			uint256 md = GetShaData();
 
 			for (size_t i = 0; i < _programs.size(); ++i) {
-				info.push_back(_programs[i].GetSignedInfo(md));
+				info.push_back(_programs[i]->GetSignedInfo(md));
 			}
 			return info;
 		}
 
 		bool Transaction::IsSigned() const {
-			if (_type == Type::RechargeToSideChain || _type == Type::CoinBase)
+			if (_type == Type::rechargeToSideChain || _type == Type::coinBase)
 				return true;
 
 			if (_programs.size() == 0)
@@ -252,11 +308,15 @@ namespace Elastos {
 			uint256 md = GetShaData();
 
 			for (size_t i = 0; i < _programs.size(); ++i) {
-				if (!_programs[i].VerifySignature(md))
+				if (!_programs[i]->VerifySignature(md))
 					return false;
 			}
 
 			return true;
+		}
+
+		bool Transaction::IsCoinBase() const {
+			return _type == Type::coinBase;
 		}
 
 		bool Transaction::IsValid() const {
@@ -266,7 +326,7 @@ namespace Elastos {
 			}
 
 			for (size_t i = 0; i < _attributes.size(); ++i) {
-				if (!_attributes[i].IsValid()) {
+				if (!_attributes[i]->IsValid()) {
 					Log::error("tx attribute is invalid");
 					return false;
 				}
@@ -283,7 +343,7 @@ namespace Elastos {
 			}
 
 			for (size_t i = 0; i < _outputs.size(); ++i) {
-				if (!_outputs[i].IsValid()) {
+				if (!_outputs[i]->IsValid()) {
 					Log::error("tx output is invalid");
 					return false;
 				}
@@ -309,23 +369,31 @@ namespace Elastos {
 			_payload = payload;
 		}
 
-		void Transaction::AddAttribute(const Attribute &attribute) {
+		void Transaction::AddAttribute(const AttributePtr &attribute) {
 			_attributes.push_back(attribute);
 		}
 
-		const std::vector<Attribute> &Transaction::GetAttributes() const {
+		const std::vector<AttributePtr> &Transaction::GetAttributes() const {
 			return _attributes;
 		}
 
-		void Transaction::AddProgram(const Program &program) {
+		bool Transaction::AddUniqueProgram(const ProgramPtr &program) {
+			for (size_t i = 0; i < _programs.size(); ++i) {
+				if (_programs[i]->GetCode() == program->GetCode()) {
+					return false;
+				}
+			}
+
+			_programs.push_back(program);
+
+			return true;
+		}
+
+		void Transaction::AddProgram(const ProgramPtr &program) {
 			_programs.push_back(program);
 		}
 
-		const std::vector<Program> &Transaction::GetPrograms() const {
-			return _programs;
-		}
-
-		std::vector<Program> &Transaction::GetPrograms() {
+		const std::vector<ProgramPtr> &Transaction::GetPrograms() const {
 			return _programs;
 		}
 
@@ -333,24 +401,16 @@ namespace Elastos {
 			_programs.clear();
 		}
 
-		const std::string Transaction::GetRemark() const {
-			return _remark;
-		}
-
-		void Transaction::SetRemark(const std::string &remark) {
-			_remark = remark;
-		}
-
-		void Transaction::Serialize(ByteStream &ostream) const {
-			SerializeUnsigned(ostream);
+		void Transaction::Serialize(ByteStream &ostream, bool extend) const {
+			SerializeUnsigned(ostream, extend);
 
 			ostream.WriteVarUint(_programs.size());
 			for (size_t i = 0; i < _programs.size(); i++) {
-				_programs[i].Serialize(ostream);
+				_programs[i]->Serialize(ostream, extend);
 			}
 		}
 
-		void Transaction::SerializeUnsigned(ByteStream &ostream) const {
+		void Transaction::SerializeUnsigned(ByteStream &ostream, bool extend) const {
 			if (_version >= TxVersion::V09) {
 				ostream.WriteByte(_version);
 			}
@@ -365,23 +425,23 @@ namespace Elastos {
 
 			ostream.WriteVarUint(_attributes.size());
 			for (size_t i = 0; i < _attributes.size(); i++) {
-				_attributes[i].Serialize(ostream);
+				_attributes[i]->Serialize(ostream);
 			}
 
 			ostream.WriteVarUint(_inputs.size());
 			for (size_t i = 0; i < _inputs.size(); i++) {
-				_inputs[i].Serialize(ostream);
+				_inputs[i]->Serialize(ostream);
 			}
 
 			ostream.WriteVarUint(_outputs.size());
 			for (size_t i = 0; i < _outputs.size(); i++) {
-				_outputs[i].Serialize(ostream, _version);
+				_outputs[i]->Serialize(ostream, _version, extend);
 			}
 
 			ostream.WriteUint32(_lockTime);
 		}
 
-		bool Transaction::Deserialize(const ByteStream &istream) {
+		bool Transaction::Deserialize(const ByteStream &istream, bool extend) {
 			Reinit();
 
 			uint8_t flagByte = 0;
@@ -420,8 +480,8 @@ namespace Elastos {
 				return false;
 
 			for (size_t i = 0; i < attributeLength; i++) {
-				Attribute attribute;
-				if (!attribute.Deserialize(istream)) {
+				AttributePtr attribute(new Attribute());
+				if (!attribute->Deserialize(istream)) {
 					Log::error("deserialize tx attribute[{}] error", i);
 					return false;
 				}
@@ -434,9 +494,15 @@ namespace Elastos {
 				return false;
 			}
 
+			if (inCount > UINT16_MAX) {
+				Log::error("deserialize tx: too much inputs: {}", inCount);
+				return false;
+			}
+
+			_inputs.reserve(inCount);
 			for (size_t i = 0; i < inCount; i++) {
-				TransactionInput input;
-				if (!input.Deserialize(istream)) {
+				InputPtr input(new TransactionInput());
+				if (!input->Deserialize(istream)) {
 					Log::error("deserialize tx input [{}] error", i);
 					return false;
 				}
@@ -449,11 +515,21 @@ namespace Elastos {
 				return false;
 			}
 
+			if (outputLength > UINT16_MAX) {
+				Log::error("deserialize tx: too much outputs: {}", outputLength);
+				return false;
+			}
+
+			_outputs.reserve(outputLength);
 			for (size_t i = 0; i < outputLength; i++) {
-				TransactionOutput output;
-				if (!output.Deserialize(istream, _version)) {
+				OutputPtr output(new TransactionOutput());
+				if (!output->Deserialize(istream, _version, extend)) {
 					Log::error("deserialize tx output[{}] error", i);
 					return false;
+				}
+
+				if (!extend) {
+					output->SetFixedIndex((uint16_t) i);
 				}
 				_outputs.push_back(output);
 			}
@@ -469,9 +545,14 @@ namespace Elastos {
 				return false;
 			}
 
+			if (programLength > UINT16_MAX) {
+				Log::error("deserialize tx: too much programs: {}", programLength);
+				return false;
+			}
+
 			for (size_t i = 0; i < programLength; i++) {
-				Program program;
-				if (!program.Deserialize(istream)) {
+				ProgramPtr program(new Program());
+				if (!program->Deserialize(istream, extend)) {
 					Log::error("deserialize program[{}] error", i);
 					return false;
 				}
@@ -486,189 +567,204 @@ namespace Elastos {
 		}
 
 		nlohmann::json Transaction::ToJson() const {
-			nlohmann::json jsonData;
+			nlohmann::json j;
 
-			jsonData["IsRegistered"] = _isRegistered;
+			j["IsRegistered"] = _isRegistered;
 
-			jsonData["TxHash"] = GetHash().GetHex();
-			jsonData["Version"] = _version;
-			jsonData["LockTime"] = _lockTime;
-			jsonData["BlockHeight"] = _blockHeight;
-			jsonData["Timestamp"] = _timestamp;
+			j["TxHash"] = GetHash().GetHex();
+			j["Version"] = _version;
+			j["LockTime"] = _lockTime;
+			j["BlockHeight"] = _blockHeight;
+			j["Timestamp"] = _timestamp;
 
 			std::vector<nlohmann::json> inputsJson(_inputs.size());
 			for (size_t i = 0; i < _inputs.size(); ++i) {
-				inputsJson[i] = _inputs[i].ToJson();
+				inputsJson[i] = _inputs[i]->ToJson();
 			}
-			jsonData["Inputs"] = inputsJson;
+			j["Inputs"] = inputsJson;
 
-			jsonData["Type"] = (uint8_t) _type;
-			jsonData["PayloadVersion"] = _payloadVersion;
-			jsonData["PayLoad"] = _payload->ToJson(_payloadVersion);
+			j["Type"] = (uint8_t) _type;
+			j["PayloadVersion"] = _payloadVersion;
+			j["PayLoad"] = _payload->ToJson(_payloadVersion);
 
 			std::vector<nlohmann::json> attributesJson(_attributes.size());
 			for (size_t i = 0; i < _attributes.size(); ++i) {
-				attributesJson[i] = _attributes[i].ToJson();
+				attributesJson[i] = _attributes[i]->ToJson();
 			}
-			jsonData["Attributes"] = attributesJson;
+			j["Attributes"] = attributesJson;
 
 			std::vector<nlohmann::json> programsJson(_programs.size());
 			for (size_t i = 0; i < _programs.size(); ++i) {
-				programsJson[i] = _programs[i].ToJson();
+				programsJson[i] = _programs[i]->ToJson();
 			}
-			jsonData["Programs"] = programsJson;
+			j["Programs"] = programsJson;
 
 			std::vector<nlohmann::json> outputsJson(_outputs.size());
 			for (size_t i = 0; i < _outputs.size(); ++i) {
-				outputsJson[i] = _outputs[i].ToJson(_version);
+				outputsJson[i] = _outputs[i]->ToJson(_version);
 			}
-			jsonData["Outputs"] = outputsJson;
+			j["Outputs"] = outputsJson;
 
-			jsonData["Fee"] = _fee;
+			j["Fee"] = _fee;
 
-			jsonData["Remark"] = _remark;
-
-			return jsonData;
+			return j;
 		}
 
-		void Transaction::FromJson(const nlohmann::json &jsonData) {
+		void Transaction::FromJson(const nlohmann::json &j) {
 			Reinit();
 
 			try {
-				_isRegistered = jsonData["IsRegistered"];
+				_isRegistered = j["IsRegistered"];
 
-				uint8_t version = jsonData["Version"].get<uint8_t>();
+				uint8_t version = j["Version"].get<uint8_t>();
 				_version = static_cast<TxVersion>(version);
-				_lockTime = jsonData["LockTime"].get<uint32_t>();
-				_blockHeight = jsonData["BlockHeight"].get<uint32_t>();
-				_timestamp = jsonData["Timestamp"].get<uint32_t>();
+				_lockTime = j["LockTime"].get<uint32_t>();
+				_blockHeight = j["BlockHeight"].get<uint32_t>();
+				_timestamp = j["Timestamp"].get<uint32_t>();
 
-				std::vector<nlohmann::json> inputJsons = jsonData["Inputs"];
+				std::vector<nlohmann::json> inputJsons = j["Inputs"];
 				for (size_t i = 0; i < inputJsons.size(); ++i) {
-					TransactionInput input;
-					input.FromJson(inputJsons[i]);
+					InputPtr input(new TransactionInput());
+					input->FromJson(inputJsons[i]);
 					_inputs.push_back(input);
 				}
 
-				_type = Type(jsonData["Type"].get<uint8_t>());
-				_payloadVersion = jsonData["PayloadVersion"];
+				_type = Type(j["Type"].get<uint8_t>());
+				_payloadVersion = j["PayloadVersion"];
 				InitPayloadFromType(_type);
 
 				if (_payload == nullptr) {
 					Log::error("_payload is nullptr when convert from json");
 				} else {
-					_payload->FromJson(jsonData["PayLoad"], _payloadVersion);
+					_payload->FromJson(j["PayLoad"], _payloadVersion);
 				}
 
-				std::vector<nlohmann::json> attributesJson = jsonData["Attributes"];
+				std::vector<nlohmann::json> attributesJson = j["Attributes"];
 				for (size_t i = 0; i < attributesJson.size(); ++i) {
-					Attribute attribute;
-					attribute.FromJson(attributesJson[i]);
+					AttributePtr attribute(new Attribute());
+					attribute->FromJson(attributesJson[i]);
 					_attributes.push_back(attribute);
 				}
 
-				std::vector<nlohmann::json> programsJson = jsonData["Programs"];
+				std::vector<nlohmann::json> programsJson = j["Programs"];
 				for (size_t i = 0; i < programsJson.size(); ++i) {
-					Program program;
-					program.FromJson(programsJson[i]);
+					ProgramPtr program(new Program());
+					program->FromJson(programsJson[i]);
 					_programs.push_back(program);
 				}
 
-				std::vector<nlohmann::json> outputsJson = jsonData["Outputs"];
+				std::vector<nlohmann::json> outputsJson = j["Outputs"];
 				for (size_t i = 0; i < outputsJson.size(); ++i) {
-					TransactionOutput output;
-					output.FromJson(outputsJson[i], _version);
+					OutputPtr output(new TransactionOutput());
+					output->FromJson(outputsJson[i], _version);
 					_outputs.push_back(output);
 				}
 
-				_fee = jsonData["Fee"].get<uint64_t>();
+				_fee = j["Fee"].get<uint64_t>();
 
-				_remark = jsonData["Remark"].get<std::string>();
-
-				_txHash = 0;
-				GetHash();
-			} catch (const std::bad_cast &e) {
+				_txHash.SetHex(j["TxHash"].get<std::string>());
+			} catch (const nlohmann::detail::exception &e) {
 				ErrorChecker::ThrowLogicException(Error::Code::JsonFormatError, "tx from json: " +
 																				std::string(e.what()));
 			}
 		}
 
 		uint64_t Transaction::CalculateFee(uint64_t feePerKb) {
-			return ((GetSize() + 999) / 1000) * feePerKb;
+			return ((EstimateSize() + 999) / 1000) * feePerKb;
 		}
 
-		uint64_t Transaction::GetTxFee(const boost::shared_ptr<TransactionHub> &wallet) {
-			uint64_t fee = 0, inputAmount = 0, outputAmount = 0;
+		uint64_t Transaction::GetTxFee(const WalletPtr &wallet) {
+			uint64_t fee = 0;
+			BigInt inputAmount(0), outputAmount(0);
 
 			for (size_t i = 0; i < _inputs.size(); ++i) {
-				const TransactionPtr &tx = wallet->TransactionForHash(_inputs[i].GetTransctionHash());
+				const TransactionPtr &tx = wallet->TransactionForHash(_inputs[i]->TxHash());
 				if (tx == nullptr) continue;
-				inputAmount += tx->GetOutputs()[_inputs[i].GetIndex()].GetAmount();
+				inputAmount += tx->GetOutputs()[_inputs[i]->Index()]->Amount();
 			}
 
 			for (size_t i = 0; i < _outputs.size(); ++i) {
-				outputAmount += _outputs[i].GetAmount();
+				outputAmount += _outputs[i]->Amount();
 			}
 
 			if (inputAmount >= outputAmount)
-				fee = inputAmount - outputAmount;
+				fee = (inputAmount - outputAmount).getUint64();
 
 			return fee;
 		}
 
 		nlohmann::json Transaction::GetSummary(const WalletPtr &wallet, uint32_t confirms, bool detail) {
-			std::string remark = wallet->GetRemark(GetHash().GetHex());
-			SetRemark(remark);
-
 			std::string addr;
 			nlohmann::json summary, outputPayload;
 			std::vector<nlohmann::json> outputPayloads;
 			std::string direction = "Received";
-			uint64_t inputAmount = 0, outputAmount = 0, changeAmount = 0, fee = 0;
+			BigInt inputAmount(0), outputAmount(0), changeAmount(0);
+			uint64_t fee = 0;
+			std::map<std::string, BigInt>::iterator it;
 
-			std::map<std::string, uint64_t> inputList;
-			for (size_t i = 0; i < _inputs.size(); i++) {
-				TransactionPtr tx = wallet->TransactionForHash(_inputs[i].GetTransctionHash());
+			std::map<std::string, BigInt> inputList;
+			for (InputArray::iterator in = _inputs.begin(); in != _inputs.end(); ++in) {
+				TransactionPtr tx = wallet->TransactionForHash((*in)->TxHash());
 				if (tx) {
-					uint64_t spentAmount = tx->GetOutputs()[_inputs[i].GetIndex()].GetAmount();
-					addr = tx->GetOutputs()[_inputs[i].GetIndex()].GetAddress().String();
+					const OutputPtr o = tx->OutputOfIndex((*in)->Index());
+					if (o && wallet->ContainsAddress(o->Addr()) && !wallet->IsVoteDepositAddress(o->Addr())) {
+						const BigInt &spentAmount = o->Amount();
+						addr = o->Addr().String();
 
-					if (detail) {
-						if (inputList.find(addr) == inputList.end()) {
-							inputList[addr] = spentAmount;
-						} else {
-							inputList[addr] += spentAmount;
+						if (detail) {
+							if (inputList.find(addr) == inputList.end()) {
+								inputList[addr] = spentAmount;
+							} else {
+								inputList[addr] += spentAmount;
+							}
 						}
-					}
 
-					if (wallet->ContainsAddress(addr) && !wallet->IsVoteDepositAddress(addr)) {
 						// sent or moved
+						direction = "Sent";
+						inputAmount += spentAmount;
+					}
+				} else {
+					UTXOPtr cb = wallet->CoinBaseTxForHash((*in)->TxHash());
+					if (cb) {
+						const BigInt &spentAmount = cb->Output()->Amount();
+						addr = Address(cb->Output()->ProgramHash()).String();
+
+						if (detail) {
+							if (inputList.find(addr) == inputList.end()) {
+								inputList[addr] = spentAmount;
+							} else {
+								inputList[addr] += spentAmount;
+							}
+						}
+
 						direction = "Sent";
 						inputAmount += spentAmount;
 					}
 				}
 			}
 
-			bool containAddress;
-			std::map<std::string, uint64_t> outputList;
-			for (size_t i = 0; i < _outputs.size(); ++i) {
-				uint64_t oAmount = _outputs[i].GetAmount();
-				addr = _outputs[i].GetAddress().String();
+			nlohmann::json inputJson;
+			if (direction == "Sent") {
+				for (it = inputList.begin(); it != inputList.end(); ++it) {
+					inputJson[it->first] = it->second.getDec();
+				}
+			}
 
-				if (_outputs[i].GetType() == TransactionOutput::VoteOutput) {
-					outputPayload = _outputs[i].GetPayload()->ToJson();
-					outputPayload["Amount"] = oAmount;
+			bool containAddress;
+			std::map<std::string, BigInt> outputList;
+			for (OutputArray::iterator o = _outputs.begin(); o != _outputs.end(); ++o) {
+				const BigInt &oAmount = (*o)->Amount();
+				addr = (*o)->Addr().String();
+
+				if ((*o)->GetType() == TransactionOutput::VoteOutput) {
+					outputPayload = (*o)->GetPayload()->ToJson();
+					outputPayload["Amount"] = oAmount.getDec();
 					outputPayloads.push_back(outputPayload);
 				}
 
-				containAddress = wallet->ContainsAddress(addr);
-				if (containAddress) {
-					if (wallet->IsVoteDepositAddress(addr)) {
-						direction = "Deposit";
-						outputAmount += oAmount;
-					} else {
-						changeAmount += oAmount;
-					}
+				containAddress = wallet->ContainsAddress((*o)->Addr());
+				if (containAddress && !wallet->IsVoteDepositAddress((*o)->Addr())) {
+					changeAmount += oAmount;
 				} else {
 					outputAmount += oAmount;
 				}
@@ -682,17 +778,25 @@ namespace Elastos {
 				}
 			}
 
-			if (direction != "Deposit" && direction == "Sent" && outputAmount == 0) {
+			nlohmann::json outputJson;
+			for (it = outputList.begin(); it != outputList.end(); ++it) {
+				outputJson[it->first] = it->second.getDec();
+			}
+
+			if (direction == "Sent" && outputAmount == BigInt(0)) {
 				direction = "Moved";
 			}
 
-			fee = inputAmount > (outputAmount + changeAmount) ? inputAmount - outputAmount - changeAmount : 0;
-			uint64_t amount = 0;
+			if (inputAmount > (outputAmount + changeAmount)) {
+				fee = (inputAmount - outputAmount - changeAmount).getUint64();
+			} else {
+				fee = 0;
+			}
+
+			BigInt amount(0);
 			if (direction == "Received") {
 				amount = changeAmount;
 			} else if (direction == "Sent") {
-				amount = outputAmount;
-			} else if (direction == "Deposit") {
 				amount = outputAmount;
 			} else {
 				amount = 0;
@@ -703,20 +807,42 @@ namespace Elastos {
 			summary["ConfirmStatus"] = confirms <= 6 ? std::to_string(confirms) : "6+";
 			summary["Timestamp"] = GetTimestamp();
 			summary["Direction"] = direction;
-			summary["Amount"] = amount;
+			summary["Amount"] = amount.getDec();
 			summary["Type"] = GetTransactionType();
 			summary["Height"] = GetBlockHeight();
 			if (detail) {
+				std::string memo;
+				for (size_t i = 0; i < _attributes.size(); ++i) {
+					if (_attributes[i]->GetUsage() == Attribute::Usage::Memo) {
+						const bytes_t &memoData = _attributes[i]->GetData();
+						memo = std::string((char *)memoData.data(), memoData.size());
+						try {
+							nlohmann::json memoJson = nlohmann::json::parse(memo);
+							if (memoJson.is_object() && memoJson.find("msg") != memoJson.end()) {
+								memo.clear();
+							}
+						} catch (const nlohmann::detail::exception &e) {
+							if (memo.find("type:") != std::string::npos &&
+								memo.find("text") != std::string::npos &&
+								memo.find("ciphertext") == std::string::npos &&
+								memo.find("msg:") != std::string::npos) {
+								memo = memo.substr(memo.find("msg:") + 4);
+							}
+						}
+						break;
+					}
+				}
+
 				summary["Fee"] = fee;
-				summary["Remark"] = GetRemark();
-				summary["Inputs"] = inputList;
-				summary["Outputs"] = outputList;
+				summary["Memo"] = memo;
+				summary["Inputs"] = inputJson;
+				summary["Outputs"] = outputJson;
 				summary["Payload"] = _payload->ToJson(_payloadVersion);
 				summary["OutputPayload"] = outputPayloads;
 
 				std::vector<nlohmann::json> attributes;
 				for (int i = 0; i < _attributes.size(); ++i) {
-					attributes.push_back(_attributes[i].ToJson());
+					attributes.push_back(_attributes[i]->ToJson());
 				}
 				summary["Attribute"] = attributes;
 			}
@@ -731,35 +857,39 @@ namespace Elastos {
 		}
 
 		void Transaction::InitPayloadFromType(Type type) {
-			if (type == CoinBase) {
-				_payload = PayloadPtr(new PayloadCoinBase());
-			} else if (type == RegisterAsset) {
-				_payload = PayloadPtr(new PayloadRegisterAsset());
-			} else if (type == TransferAsset) {
-				_payload = PayloadPtr(new PayloadTransferAsset());
-			} else if (type == Record) {
-				_payload = PayloadPtr(new PayloadRecord());
-			} else if (type == Deploy) {
+			if (type == coinBase) {
+				_payload = PayloadPtr(new CoinBase());
+			} else if (type == registerAsset) {
+				_payload = PayloadPtr(new RegisterAsset());
+			} else if (type == transferAsset) {
+				_payload = PayloadPtr(new TransferAsset());
+			} else if (type == record) {
+				_payload = PayloadPtr(new Record());
+			} else if (type == deploy) {
 				//todo add deploy _payload
 				//_payload = boost::shared_ptr<PayloadDeploy>(new PayloadDeploy());
-			} else if (type == SideChainPow) {
-				_payload = PayloadPtr(new PayloadSideMining());
-			} else if (type == RechargeToSideChain) { // side chain payload
-				_payload = PayloadPtr(new PayloadRechargeToSideChain());
-			} else if (type == WithdrawFromSideChain) {
-				_payload = PayloadPtr(new PayloadWithDrawAsset());
-			} else if (type == TransferCrossChainAsset) {
-				_payload = PayloadPtr(new PayloadTransferCrossChainAsset());
-			} else if (type == RegisterProducer) {
-				_payload = PayloadPtr(new PayloadRegisterProducer());
-			} else if (type == CancelProducer) {
-				_payload = PayloadPtr(new PayloadCancelProducer());
-			} else if (type == UpdateProducer) {
-				_payload = PayloadPtr(new PayloadUpdateProducer());
-			} else if (type == ReturnDepositCoin) {
-				_payload = PayloadPtr(new PayloadReturnDepositCoin());
-			} else if (type == RegisterIdentification) { // ID chain payload
-				_payload = PayloadPtr(new PayloadRegisterIdentification());
+			} else if (type == sideChainPow) {
+				_payload = PayloadPtr(new SideChainPow());
+			} else if (type == rechargeToSideChain) { // side chain payload
+				_payload = PayloadPtr(new RechargeToSideChain());
+			} else if (type == withdrawFromSideChain) {
+				_payload = PayloadPtr(new WithdrawFromSideChain());
+			} else if (type == transferCrossChainAsset) {
+				_payload = PayloadPtr(new TransferCrossChainAsset());
+			} else if (type == registerProducer || type == updateProducer) {
+				_payload = PayloadPtr(new ProducerInfo());
+			} else if (type == cancelProducer) {
+				_payload = PayloadPtr(new CancelProducer());
+			} else if (type == returnDepositCoin) {
+				_payload = PayloadPtr(new ReturnDepositCoin());
+			} else if (type == registerIdentification) { // ID chain payload
+				_payload = PayloadPtr(new RegisterIdentification());
+			} else if (type == registerCR || type == updateCR) {
+				_payload = PayloadPtr(new CRInfo());
+			} else if (type == unregisterCR) {
+				_payload = PayloadPtr(new UnregisterCR());
+			} else if (type == returnCRDepositCoin) {
+				_payload = PayloadPtr(new ReturnDepositCoin());
 			}
 		}
 
@@ -796,21 +926,6 @@ namespace Elastos {
 				return 0;
 
 			return walletBlockHeight >= _blockHeight ? walletBlockHeight - _blockHeight + 1 : 0;
-		}
-
-		uint256 Transaction::GetAssetID() const {
-			uint256 result;
-			if (!_outputs.empty())
-				result = _outputs.begin()->GetAssetId();
-			return result;
-		}
-
-		const std::string &Transaction::GetAssetTableID() const {
-			return _assetTableID;
-		}
-
-		void Transaction::SetAssetTableID(const std::string &assetTableID) {
-			_assetTableID = assetTableID;
 		}
 
 	}

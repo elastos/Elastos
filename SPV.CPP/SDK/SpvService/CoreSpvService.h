@@ -7,87 +7,95 @@
 
 #include "Executor.h"
 
-#include <SDK/TransactionHub/TransactionHub.h>
 #include <SDK/P2P/PeerManager.h>
-#include <SDK/P2P/ChainParams.h>
-#include <SDK/Account/ISubAccount.h>
+#include <SDK/Account/SubAccount.h>
+#include <SDK/Wallet/Wallet.h>
 
-#include <boost/thread.hpp>
+//#include <boost/thread.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {
 
+		class ChainParams;
+
+		typedef boost::shared_ptr<ChainParams> ChainParamsPtr;
+
 		class CoreSpvService :
-				public AssetTransactions::Listener,
+				public Wallet::Listener,
 				public PeerManager::Listener {
 
 		public:
-			CoreSpvService(const PluginType &pluginType, const ChainParams &chainParams);
+			CoreSpvService(const PluginType &pluginType, const ChainParamsPtr &chainParams);
 
 			virtual ~CoreSpvService();
 
-			void init(const SubAccountPtr &subAccount, uint32_t earliestPeerTime, uint32_t reconnectSeconds);
+			void init(const std::string &walletID,
+					  const SubAccountPtr &subAccount,
+					  time_t earliestPeerTime,
+					  uint32_t reconnectSeconds);
 
 			virtual const WalletPtr &getWallet();
 
 			virtual const PeerManagerPtr &getPeerManager();
 
 		public: //override from Wallet
-			virtual void balanceChanged(const uint256 &asset, uint64_t balance);
+			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
 
-			// func txAdded(_ tx: BRTxRef)
+			virtual void onCoinBaseTxAdded(const UTXOPtr &cb);
+
+			virtual void onCoinBaseUpdatedAll(const UTXOArray &cbs);
+
+			virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
+
+			virtual void onCoinBaseSpent(const std::vector<uint256> &spentHashes);
+
+			virtual void onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
+
 			virtual void onTxAdded(const TransactionPtr &transaction);
 
-			// func txUpdated(_ txHashes: [uint256], blockHeight: UInt32, timestamp: UInt32)
-			virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp);
+			virtual void onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp);
 
-			// func txDeleted(_ txHash: uint256, notifyUser: Bool, recommendRescan: Bool)
-			virtual void onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan);
+			virtual void onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
+
+			virtual void onTxUpdatedAll(const std::vector<TransactionPtr> &txns);
+
+			virtual void onAssetRegistered(const AssetPtr &asset, uint64_t amount, const uint168 &controller);
 
 		public: //override from PeerManager
-			// func syncStarted()
 			virtual void syncStarted();
 
 			virtual void syncProgress(uint32_t currentHeight, uint32_t estimatedHeight, time_t lastBlockTime);
 
-			// func syncStopped(_ error: BRPeerManagerError?)
 			virtual void syncStopped(const std::string &error);
 
-			// func txStatusUpdate()
 			virtual void txStatusUpdate();
 
-			// func saveBlocks(_ replace: Bool, _ blocks: [BRBlockRef?])
 			virtual void saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks);
 
-			// func savePeers(_ replace: Bool, _ peers: [BRPeer])
 			virtual void savePeers(bool replace, const std::vector<PeerInfo> &peers);
 
-			// func networkIsReachable() -> Bool
 			virtual bool networkIsReachable();
 
-			// Called on publishTransaction
 			virtual void txPublished(const std::string &hash, const nlohmann::json &result);
 
-			virtual void blockHeightIncreased(uint32_t blockHeight);
-
-			virtual void syncIsInactive(uint32_t time) {}
+			virtual void connectStatusChanged(const std::string &status);
 
 		protected:
+			virtual std::vector<UTXOPtr> loadCoinBaseUTXOs();
+
 			virtual std::vector<TransactionPtr> loadTransactions();
 
 			virtual std::vector<MerkleBlockPtr> loadBlocks();
 
 			virtual std::vector<PeerInfo> loadPeers();
 
-			virtual std::vector<Asset> loadAssets();
-
-			virtual int getForkId() const;
+			virtual std::vector<AssetPtr> loadAssets();
 
 			typedef boost::shared_ptr<PeerManager::Listener> PeerManagerListenerPtr;
 
 			virtual const PeerManagerListenerPtr &createPeerManagerListener();
 
-			typedef boost::shared_ptr<AssetTransactions::Listener> WalletListenerPtr;
+			typedef boost::shared_ptr<Wallet::Listener> WalletListenerPtr;
 
 			virtual const WalletListenerPtr &createWalletListener();
 
@@ -95,8 +103,7 @@ namespace Elastos {
 			SubAccountPtr _subAccount;
 
 			PluginType _pluginTypes;
-			ChainParams _chainParams;
-			uint32_t _earliestPeerTime;
+			ChainParamsPtr _chainParams;
 			uint32_t _reconnectSeconds;
 
 			WalletPtr _wallet; // Optional<BRCoreWallet>
@@ -112,7 +119,7 @@ namespace Elastos {
 		class WrappedExceptionPeerManagerListener :
 				public PeerManager::Listener {
 		public:
-			WrappedExceptionPeerManagerListener(PeerManager::Listener *listener, const PluginType &pluginType);
+			WrappedExceptionPeerManagerListener(PeerManager::Listener *listener);
 
 			virtual void syncStarted();
 
@@ -130,9 +137,7 @@ namespace Elastos {
 
 			virtual void txPublished(const std::string &hash, const nlohmann::json &result);
 
-			virtual void blockHeightIncreased(uint32_t blockHeight);
-
-			virtual void syncIsInactive(uint32_t time);
+			virtual void connectStatusChanged(const std::string &status);
 
 		private:
 			PeerManager::Listener *_listener;
@@ -145,7 +150,6 @@ namespace Elastos {
 		public:
 			WrappedExecutorPeerManagerListener(PeerManager::Listener *listener,
 											   Executor *executor,
-											   Executor *reconnectExecutor,
 											   const PluginType &pluginType);
 
 			virtual void syncStarted();
@@ -164,48 +168,71 @@ namespace Elastos {
 
 			virtual void txPublished(const std::string &hash, const nlohmann::json &result);
 
-			virtual void blockHeightIncreased(uint32_t blockHeight);
-
-			virtual void syncIsInactive(uint32_t time);
+			virtual void connectStatusChanged(const std::string &status);
 
 		private:
 			PeerManager::Listener *_listener;
 			Executor *_executor;
-			Executor *_reconnectExecutor;
 		};
 
-		class WrappedExceptionTransactionHubListener :
-				public AssetTransactions::Listener {
+		class WrappedExceptionWalletListener :
+				public Wallet::Listener {
 		public:
-			WrappedExceptionTransactionHubListener(AssetTransactions::Listener *listener);
+			WrappedExceptionWalletListener(Wallet::Listener *listener);
 
-			virtual void balanceChanged(const uint256 &asset, uint64_t balance);
+			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
+
+			virtual void onCoinBaseTxAdded(const UTXOPtr &cb);
+
+			virtual void onCoinBaseUpdatedAll(const UTXOArray &cbs);
+
+			virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
+
+			virtual void onCoinBaseSpent(const std::vector<uint256> &spentHashes);
+
+			virtual void onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
 
 			virtual void onTxAdded(const TransactionPtr &transaction);
 
-			virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp);
+			virtual void onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp);
 
-			virtual void onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan);
+			virtual void onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
 
+			virtual void onTxUpdatedAll(const std::vector<TransactionPtr> &txns);
+
+			virtual void onAssetRegistered(const AssetPtr &asset, uint64_t amount, const uint168 &controller);
 		private:
-			AssetTransactions::Listener *_listener;
+			Wallet::Listener *_listener;
 		};
 
-		class WrappedExecutorTransactionHubListener :
-				public AssetTransactions::Listener {
+		class WrappedExecutorWalletListener :
+				public Wallet::Listener {
 		public:
-			WrappedExecutorTransactionHubListener(AssetTransactions::Listener *listener, Executor *executor);
+			WrappedExecutorWalletListener(Wallet::Listener *listener, Executor *executor);
 
-			virtual void balanceChanged(const uint256 &asset, uint64_t balance);
+			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
+
+			virtual void onCoinBaseTxAdded(const UTXOPtr &cb);
+
+			virtual void onCoinBaseUpdatedAll(const UTXOArray &cbs);
+
+			virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
+
+			virtual void onCoinBaseSpent(const std::vector<uint256> &spentHashes);
+
+			virtual void onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
 
 			virtual void onTxAdded(const TransactionPtr &transaction);
 
-			virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp);
+			virtual void onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp);
 
-			virtual void onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan);
+			virtual void onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
 
+			virtual void onTxUpdatedAll(const std::vector<TransactionPtr> &txns);
+
+			virtual void onAssetRegistered(const AssetPtr &asset, uint64_t amount, const uint168 &controller);
 		private:
-			AssetTransactions::Listener *_listener;
+			Wallet::Listener *_listener;
 			Executor *_executor;
 		};
 

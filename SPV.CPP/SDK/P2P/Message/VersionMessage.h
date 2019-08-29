@@ -12,8 +12,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class VersionMessage :
-				public Message {
+		class VersionMessage : public Message {
 		public:
 			VersionMessage(const MessagePeerPtr &peer);
 

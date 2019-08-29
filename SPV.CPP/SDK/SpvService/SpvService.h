@@ -11,7 +11,6 @@
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Database/DatabaseManager.h>
 #include <SDK/WalletCore/KeyStore/KeyStore.h>
-#include <SDK/Plugin/Transaction/Transaction.h>
 
 #include <nlohmann/json.hpp>
 #include <boost/function.hpp>
@@ -21,46 +20,64 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		class Transaction;
+
+		typedef boost::shared_ptr<Transaction> TransactionPtr;
+
 		class SpvService :
 				public CoreSpvService {
 		public:
 
-			SpvService(const SpvService &proto);
-
-			SpvService(const SubAccountPtr &subAccount,
-						  const boost::filesystem::path &dbPath,
-						  uint32_t earliestPeerTime,
-						  uint32_t reconnectSeconds,
-						  int forkId,
-						  const PluginType &pluginTypes,
-						  const ChainParams &chainParams);
+			SpvService(const std::string &walletID,
+					   const SubAccountPtr &subAccount,
+					   const boost::filesystem::path &dbPath,
+					   time_t earliestPeerTime,
+					   uint32_t reconnectSeconds,
+					   const PluginType &pluginTypes,
+					   const ChainParamsPtr &chainParams);
 
 			virtual ~SpvService();
 
-			void Start();
+			void SyncStart();
 
-			void Stop();
+			void SyncStop();
+
+			void ExecutorStop();
 
 			size_t GetAllTransactionsCount();
 
-			void RegisterWalletListener(AssetTransactions::Listener *listener);
+			void RegisterWalletListener(Wallet::Listener *listener);
 
 			void RegisterPeerManagerListener(PeerManager::Listener *listener);
 
-			void PublishTransaction(const TransactionPtr &transaction);
+			void PublishTransaction(const TransactionPtr &tx);
+
+			void DatabaseFlush();
 
 			virtual const WalletPtr &getWallet();
 
-			Asset FindAsset(const std::string &assetID) const;
-
 		public:
-			virtual void balanceChanged(const uint256 &asset, uint64_t balance);
+			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
+
+			virtual void onCoinBaseTxAdded(const UTXOPtr &cb);
+
+			virtual void onCoinBaseUpdatedAll(const UTXOArray &cbs);
+
+			virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
+
+			virtual void onCoinBaseSpent(const std::vector<uint256> &spentHashes);
+
+			virtual void onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
 
 			virtual void onTxAdded(const TransactionPtr &tx);
 
-			virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp);
+			virtual void onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp);
 
-			virtual void onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan);
+			virtual void onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
+
+			virtual void onTxUpdatedAll(const std::vector<TransactionPtr> &txns);
+
+			virtual void onAssetRegistered(const AssetPtr &asset, uint64_t amount, const uint168 &controller);
 
 		public:
 			virtual void syncStarted();
@@ -79,41 +96,28 @@ namespace Elastos {
 
 			virtual void txPublished(const std::string &hash, const nlohmann::json &result);
 
-			virtual void blockHeightIncreased(uint32_t blockHeight);
-
-			virtual void syncIsInactive(uint32_t time);
+			virtual void connectStatusChanged(const std::string &status);
 
 		protected:
+			virtual std::vector<UTXOPtr> loadCoinBaseUTXOs();
+
 			virtual std::vector<TransactionPtr> loadTransactions();
 
 			virtual std::vector<MerkleBlockPtr> loadBlocks();
 
 			virtual std::vector<PeerInfo> loadPeers();
 
-			virtual std::vector<Asset> loadAssets();
-
-			virtual int getForkId() const;
+			virtual std::vector<AssetPtr> loadAssets();
 
 			virtual const PeerManagerListenerPtr &createPeerManagerListener();
 
 			virtual const WalletListenerPtr &createWalletListener();
 
-			void StartReconnect(uint32_t time);
-
-			void ResetReconnect();
-
-			void UpdateAssets();
-
 		private:
 			DatabaseManager _databaseManager;
 			BackgroundExecutor _executor;
-			BackgroundExecutor _reconnectExecutor;
-			int _forkId;
 
-			boost::asio::io_service _reconnectService;
-			boost::shared_ptr<boost::asio::deadline_timer> _reconnectTimer;
-
-			std::vector<AssetTransactions::Listener *> _walletListeners;
+			std::vector<Wallet::Listener *> _walletListeners;
 			std::vector<PeerManager::Listener *> _peerManagerListeners;
 		};
 

@@ -10,6 +10,7 @@
 
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ElementSet.h>
+#include <SDK/Common/uint256.h>
 
 #include <deque>
 #include <boost/shared_ptr.hpp>
@@ -38,6 +39,8 @@ namespace Elastos {
 		typedef boost::shared_ptr<Peer> PeerPtr;
 
 #define time_after(a,b)  ((long)(b) - (long)(a) < 0)
+#define PEER_DEBUG(p, ...) 	SPVLOG_DEBUG("{} {}:{} " __va_first(__VA_ARGS__, NULL), (p)->GetPeerManager()->GetID(), (p)->GetHost(), (p)->GetPort(), __va_rest(__VA_ARGS__, NULL))
+
 
 		class Peer : public boost::enable_shared_from_this<Peer> {
 		public:
@@ -64,7 +67,7 @@ namespace Elastos {
 
 				virtual void OnRelayedBlock(const PeerPtr &peer, const MerkleBlockPtr &block) = 0;
 
-				virtual void OnRelayedPingMsg(const PeerPtr &peer) = 0;
+				virtual void OnRelayedPing(const PeerPtr &peer) = 0;
 
 				virtual void
 				OnNotfound(const PeerPtr &peer, const std::vector<uint256> &txHashes,
@@ -72,7 +75,7 @@ namespace Elastos {
 
 				virtual void OnSetFeePerKb(const PeerPtr &peer, uint64_t feePerKb) = 0;
 
-				virtual const TransactionPtr OnRequestedTx(const PeerPtr &peer, const uint256 &txHash) = 0;
+				virtual TransactionPtr OnRequestedTx(const PeerPtr &peer, const uint256 &txHash) = 0;
 
 				virtual bool OnNetworkIsReachable(const PeerPtr &peer) = 0;
 
@@ -207,6 +210,8 @@ namespace Elastos {
 			const std::set<uint256> &KnownTxHashSet() const;
 
 			void AddKnownTxHashes(const std::vector<uint256> &txHashes);
+
+			void RemoveKnownTxHashes(const std::vector<uint256> &txHashes);
 
 			bool IsIPv4() const;
 

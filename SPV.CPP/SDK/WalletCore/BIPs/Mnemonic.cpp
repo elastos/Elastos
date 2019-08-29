@@ -27,7 +27,7 @@ namespace Elastos {
 			_rootPath(rootPath) {
 		}
 
-		std::string Mnemonic::Create(const std::string &language, WordCount words) {
+		std::string Mnemonic::Create(const std::string &language, WordCount words) const {
 			std::string lan = language;
 			size_t entropyBits = 0;
 
@@ -74,14 +74,14 @@ namespace Elastos {
 			return BIP39::Encode(wordLists, entropy);
 		}
 
-		uint512 Mnemonic::DeriveSeed(const std::string &mnemonic, const std::string &passphrase) {
+		bool Mnemonic::Validate(const std::string &mnemonic) const {
+			bool valid = false;
 			bytes_t entropy = BIP39::Decode(EnglistWordLists, mnemonic);
 
 			if (entropy.empty()) {
 				std::vector<std::string> wordLists;
 				wordLists.reserve(BIP39_WORDLIST_COUNT);
 				ErrorChecker::CheckPathExists(_rootPath);
-				bool valid = false;
 
 				for (fs::directory_iterator it{_rootPath}; it != fs::directory_iterator{}; ++it) {
 					fs::path filePath = *it;
@@ -96,17 +96,23 @@ namespace Elastos {
 						}
 					}
 				}
-
-				ErrorChecker::CheckLogic(!valid, Error::Mnemonic, "invalid mnemonic");
+			} else {
+				valid = true;
 			}
 
 			entropy.clean();
+
+			return valid;
+		}
+
+		uint512 Mnemonic::DeriveSeed(const std::string &mnemonic, const std::string &passphrase) const {
+			ErrorChecker::CheckLogic(!Validate(mnemonic), Error::Mnemonic, "invalid mnemonic");
 
 			return BIP39::DeriveSeed(mnemonic, passphrase);
 		}
 
 
-		void Mnemonic::LoadPath(const fs::path &filePath, std::vector<std::string> &wordLists) {
+		void Mnemonic::LoadPath(const fs::path &filePath, std::vector<std::string> &wordLists) const {
 			std::fstream in(filePath.string());
 			std::string line;
 

@@ -47,13 +47,13 @@ namespace Elastos {
 
 		bool Sqlite::BeginTransaction(SqliteTransactionType type) {
 			_lockMutex.lock();
-			return exec("BEGIN " + GetTxTypeString(type) + ";", nullptr, nullptr);
+			return exec("BEGIN " + GetTxTypeString(type) + " TRANSACTION;", nullptr, nullptr);
 		}
 
 		bool Sqlite::EndTransaction() {
-			bool r = exec("COMMIT;", nullptr, nullptr);
+			bool result = exec("COMMIT;", nullptr, nullptr);
 			_lockMutex.unlock();
-			return r;
+			return result;
 		}
 
 		bool Sqlite::Prepare(const std::string &sql, sqlite3_stmt **ppStmt, const char **pzTail) {
@@ -110,6 +110,25 @@ namespace Elastos {
 
 		bool Sqlite::BindText(sqlite3_stmt *pStmt, int idx, const std::string &text, BindCallBack callBack) {
 			return IsValid() && SQLITE_OK == sqlite3_bind_text(pStmt, idx, text.c_str(), text.length(), callBack);
+		}
+
+		void Sqlite::flush() {
+			if (SQLITE_OK != sqlite3_db_cacheflush(_dataBasePtr)) {
+				Log::error("sqlite flush to disk error");
+			}
+		}
+
+		bytes_ptr Sqlite::ColumnBlobBytes(sqlite3_stmt *pStmt, int iCol) {
+			uint8_t *data = (uint8_t *)ColumnBlob(pStmt, iCol);
+			size_t len = (size_t) ColumnBytes(pStmt, iCol);
+
+			if (len > 0) {
+				bytes_ptr blob(new bytes_t());
+				blob->assign(data, data + len);
+				return blob;
+			}
+
+			return nullptr;
 		}
 
 		const void *Sqlite::ColumnBlob(sqlite3_stmt *pStmt, int iCol) {

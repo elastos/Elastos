@@ -48,7 +48,7 @@ namespace Elastos {
 				inv_tx = 1,
 				inv_block = 2,
 				inv_filtered_block = 3,
-				inv_confirmd_block = 4,
+				inv_confirmed_block = 4,
 				inv_address = 5
 			} inv_type;
 		}
@@ -88,13 +88,13 @@ namespace Elastos {
 
 			void FireRelayedBlock(const MerkleBlockPtr &block);
 
-			void FireRelayedPingMsg();
+			void FireRelayedPing();
 
 			void FireNotfound(const std::vector<uint256> &txHashes, const std::vector<uint256> &blockHashes);
 
 			void FireSetFeePerKb(uint64_t feePerKb);
 
-			const TransactionPtr FireRequestedTx(const uint256 &txHash);
+			TransactionPtr FireRequestedTx(const uint256 &txHash);
 
 			bool FireNetworkIsReachable();
 

@@ -9,10 +9,8 @@
 #include "TransactionPeerList.h"
 #include "PublishedTransaction.h"
 
-#include <SDK/TransactionHub/TransactionHub.h>
 #include <SDK/Common/Lockable.h>
 #include <SDK/WalletCore/BIPs/BloomFilter.h>
-#include <SDK/P2P/ChainParams.h>
 #include <SDK/Plugin/Interface/IMerkleBlock.h>
 #include <SDK/Plugin/Block/MerkleBlock.h>
 #include <SDK/Plugin/Registry.h>
@@ -21,12 +19,20 @@
 #include <vector>
 #include <boost/weak_ptr.hpp>
 #include <boost/thread/mutex.hpp>
+#include <boost/function.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/asio.hpp>
 
 #define PEER_MAX_CONNECTIONS 1
 
 namespace Elastos {
 	namespace ElaWallet {
 
+		class Wallet;
+		class ChainParams;
+
+		typedef boost::shared_ptr<Wallet> WalletPtr;
+		typedef boost::shared_ptr<ChainParams> ChainParamsPtr;
 		typedef ElementSet<MerkleBlockPtr> BlockSet;
 
 		class PeerManager :
@@ -36,7 +42,7 @@ namespace Elastos {
 
 			class Listener {
 			public:
-				Listener(const PluginType &pluginTypes);
+				Listener();
 
 				virtual ~Listener() {}
 
@@ -63,20 +69,13 @@ namespace Elastos {
 				// Called on publishTransaction
 				virtual void txPublished(const std::string &hash, const nlohmann::json &result) = 0;
 
-				virtual void blockHeightIncreased(uint32_t blockHeight) = 0;
-
-				virtual void syncIsInactive(uint32_t time) = 0;
-
-				const PluginType &getPluginTypes() const { return _pluginTypes; }
-
-			protected:
-				PluginType _pluginTypes;
+				virtual void connectStatusChanged(const std::string &status) = 0;
 			};
 
 		public:
-			PeerManager(const ChainParams &params,
+			PeerManager(const ChainParamsPtr &params,
 						const WalletPtr &wallet,
-						uint32_t earliestKeyTime,
+						time_t earliestKeyTime,
 						uint32_t reconnectSeconds,
 						const std::vector<MerkleBlockPtr> &blocks,
 						const std::vector<PeerInfo> &peers,
@@ -85,11 +84,18 @@ namespace Elastos {
 
 			~PeerManager();
 
+			void SetWallet(const WalletPtr &wallet);
 			/**
 			* Connect to bitcoin peer-to-peer network (also call this whenever networkIsReachable()
 			* status changes)
 			*/
 			void Connect();
+
+			void AsyncConnect(const boost::system::error_code &error);
+
+			void ConnectLaster(time_t second);
+
+			void CancelTimer();
 
 			/**
 			* Disconnect from bitcoin peer-to-peer network (may cause syncFailed(), saveBlocks() or
@@ -114,6 +120,8 @@ namespace Elastos {
 			double GetSyncProgress(uint32_t startHeight);
 
 			Peer::ConnectStatus GetConnectStatus() const;
+
+			void ResetReconnectStep();
 
 			bool SyncSucceeded() const;
 
@@ -143,16 +151,6 @@ namespace Elastos {
 
 			uint64_t GetRelayCount(const uint256 &txHash) const;
 
-			void AsyncConnect(const boost::system::error_code &error);
-
-			const std::vector<PublishedTransaction> GetPublishedTransaction() const;
-
-			const std::vector<uint256> GetPublishedTransactionHashes() const;
-
-			int ReconnectTaskCount() const;
-
-			void SetReconnectTaskCount(int count);
-
 			const PluginType &GetPluginType() const;
 
 			const std::vector<PeerInfo> &GetPeers() const;
@@ -176,14 +174,14 @@ namespace Elastos {
 
 			virtual void OnRelayedBlock(const PeerPtr &peer, const MerkleBlockPtr &block);
 
-			virtual void OnRelayedPingMsg(const PeerPtr &peer);
+			virtual void OnRelayedPing(const PeerPtr &peer);
 
 			virtual void OnNotfound(const PeerPtr &peer, const std::vector<uint256> &txHashes,
 									const std::vector<uint256> &blockHashes);
 
 			virtual void OnSetFeePerKb(const PeerPtr &peer, uint64_t feePerKb);
 
-			virtual const TransactionPtr OnRequestedTx(const PeerPtr &peer, const uint256 &txHash);
+			virtual TransactionPtr OnRequestedTx(const PeerPtr &peer, const uint256 &txHash);
 
 			virtual bool OnNetworkIsReachable(const PeerPtr &peer);
 
@@ -206,13 +204,11 @@ namespace Elastos {
 
 			void FireTxPublished(const uint256 &hash, int code, const std::string &reason);
 
+			void FireConnectStatusChanged(Peer::ConnectStatus status);
+
 			void FireThreadCleanup();
 
-			void FireBlockHeightIncreased(uint32_t height);
-
-			void FireSyncIsInactive(uint32_t time);
-
-			int VerifyDifficulty(const ChainParams &params, const MerkleBlockPtr &block,
+			int VerifyDifficulty(const ChainParamsPtr &params, const MerkleBlockPtr &block,
 								 const BlockSet &blockSet);
 
 			int VerifyDifficultyInner(const MerkleBlockPtr &block, const MerkleBlockPtr &previous,
@@ -230,7 +226,7 @@ namespace Elastos {
 
 			void AddTxToPublishList(const TransactionPtr &tx, const Peer::PeerPubTxCallback &callback);
 
-			void PublishPendingTx(const PeerPtr &peer);
+			size_t PublishPendingTx(const PeerPtr &peer);
 
 			size_t
 			AddPeerToList(const PeerPtr &peer, const uint256 &txHash, std::vector<TransactionPeerList> &peerList);
@@ -247,8 +243,6 @@ namespace Elastos {
 			std::vector<uint256> GetBlockLocators();
 
 			void LoadMempools();
-
-			void ResendUnconfirmedTx(const PeerPtr &peer);
 
 			void RequestUnrelayedTx(const PeerPtr &peer);
 
@@ -273,9 +267,11 @@ namespace Elastos {
 
 			void FindPeersThreadRoutine(const std::string &hostname, uint64_t services);
 
+			void ReconnectLaster(time_t seconds);
+
 		private:
-			int _isConnected, _connectFailureCount, _misbehavinCount, _dnsThreadCount, _maxConnectCount, _reconnectTaskCount;
-			bool _syncSucceeded, _needGetAddr, _enableReconnectTask;
+			int _isConnected, _connectFailureCount, _misbehavinCount, _dnsThreadCount, _maxConnectCount;
+			bool _syncSucceeded, _needGetAddr, _enableReconnect;
 
 			std::vector<PeerInfo> _peers;
 			std::vector<PeerInfo> _fiexedPeers;
@@ -285,8 +281,8 @@ namespace Elastos {
 			PeerPtr _downloadPeer;
 
 			mutable std::string _downloadPeerName;
-			time_t _keepAliveTimestamp;
-			uint32_t _earliestKeyTime, _reconnectSeconds, _syncStartHeight, _filterUpdateHeight, _estimatedHeight;
+			time_t _keepAliveTimestamp, _earliestKeyTime;
+			uint32_t _reconnectSeconds, _syncStartHeight, _filterUpdateHeight, _estimatedHeight;
 			uint32_t _reconnectStep;
 			BloomFilterPtr _bloomFilter;
 			double _fpRate, _averageTxPerBlock;
@@ -300,7 +296,11 @@ namespace Elastos {
 
 			PluginType _pluginType;
 			WalletPtr _wallet;
-			ChainParams _chainParams;
+			ChainParamsPtr _chainParams;
+
+			boost::asio::io_service _reconnectService;
+			boost::shared_ptr<boost::asio::deadline_timer> _reconnectTimer;
+
 			boost::weak_ptr<Listener> _listener;
 		};
 

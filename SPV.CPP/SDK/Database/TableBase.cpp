@@ -11,7 +11,7 @@ namespace Elastos {
 
 		TableBase::TableBase(Sqlite *sqlite) :
 				_sqlite(sqlite),
-				_txType(EXCLUSIVE) {
+				_txType(IMMEDIATE) {
 		}
 
 		TableBase::TableBase(SqliteTransactionType type, Sqlite *sqlite) :
@@ -24,16 +24,15 @@ namespace Elastos {
 		}
 
 		bool TableBase::DoTransaction(const boost::function<void()> &fun) const {
+
 			bool result = true;
 			_sqlite->BeginTransaction(_txType);
 			try {
 				fun();
-			}
-			catch (std::exception ex) {
+			} catch (const std::exception &e) {
 				result = false;
-				Log::error("Data base error: ", ex.what());
-			}
-			catch (...) {
+				Log::error("Data base error: {}", e.what());
+			} catch (...) {
 				result = false;
 				Log::error("Unknown data base error.");
 			}

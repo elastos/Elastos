@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_TRANSACTIONSET_H__
 
 #include <set>
+#include <SDK/Common/uint256.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -15,8 +16,6 @@ namespace Elastos {
 		public:
 
 			T Get(const uint256 &hash) const {
-				if (!Contains(hash)) return nullptr;
-
 				typename std::set<T>::const_iterator it;
 				it = std::find_if(_elements.begin(), _elements.end(), [&hash](const T &e) {
 					return hash == e->GetHash();

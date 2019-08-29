@@ -8,40 +8,13 @@
 #include "Sqlite.h"
 #include "TableBase.h"
 
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/shared_mutex.hpp>
-#include <utility>
+#include <SDK/Common/uint256.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		struct TransactionEntity {
-			TransactionEntity() :
-				blockHeight(0),
-				timeStamp(0)
-			{
-			}
-
-			TransactionEntity(const bytes_t &buff, uint32_t blockHeight, uint32_t timeStamp,
-							  const std::string &assetID,
-							  const std::string &remark,
-							  const std::string &txHash) :
-				buff(buff),
-				blockHeight(blockHeight),
-				timeStamp(timeStamp),
-				assetID(assetID),
-				remark(remark),
-				txHash(txHash)
-			{
-			}
-
-			bytes_t buff;
-			uint32_t blockHeight;
-			uint32_t timeStamp;
-			std::string assetID;
-			std::string remark;
-			std::string txHash;
-		};
+		class Transaction;
+		typedef boost::shared_ptr<Transaction> TransactionPtr;
 
 		class TransactionDataStore : public TableBase {
 		public:
@@ -49,15 +22,20 @@ namespace Elastos {
 			TransactionDataStore(SqliteTransactionType type, Sqlite *sqlite);
 			~TransactionDataStore();
 
-			bool PutTransaction(const std::string &iso, const TransactionEntity &transactionEntity);
-			bool DeleteAllTransactions(const std::string &iso);
-			size_t GetAllTransactionsCount(const std::string &iso) const;
-			std::vector<TransactionEntity> GetAllTransactions(const std::string &iso) const;
-			bool UpdateTransaction(const std::string &iso, const TransactionEntity &transactionEntity);
-			bool DeleteTxByHash(const std::string &iso, const std::string &hash);
+			bool PutTransaction(const std::string &iso, const TransactionPtr &tx);
+			bool PutTransactions(const std::string &iso, const std::vector<TransactionPtr> &txns);
+			bool DeleteAllTransactions();
+			size_t GetAllTransactionsCount() const;
+			std::vector<TransactionPtr> GetAllTransactions() const;
+			bool UpdateTransaction(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
+			bool DeleteTxByHash(const uint256 &hash);
+			bool DeleteTxByHashes(const std::vector<uint256> &hashes);
 
+			void flush();
 		private:
-			bool SelectTxByHash(const std::string &iso, const std::string &hash, TransactionEntity &txEntity) const;
+			TransactionPtr SelectTxByHash(const std::string &hash) const;
+
+			void PutTransactionInternal(const std::string &iso, const TransactionPtr &tx);
 
 		private:
 			/*

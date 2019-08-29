@@ -6,9 +6,10 @@
 #define __ELASTOS_SDK_TABLEBASE_H__
 
 #include "Sqlite.h"
-#include <Config.h>
+#include <CMakeConfig.h>
 
 #include <boost/function.hpp>
+
 
 namespace Elastos {
 	namespace ElaWallet {

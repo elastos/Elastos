@@ -12,29 +12,34 @@ namespace Elastos {
 		}
 
 		ElaWebWalletJson::~ElaWebWalletJson() {
-
+			_mnemonic.resize(_mnemonic.size(), 0);
 		}
 
-		nlohmann::json &operator<<(nlohmann::json &j, const ElaWebWalletJson &p) {
-			j << *(BitcoreWalletClientJson *) &p;
+		nlohmann::json ElaWebWalletJson::ToJson(bool withPrivKey) const {
+			nlohmann::json j = BitcoreWalletClientJson::ToJson(withPrivKey);
 
-			to_json(j, p);
+			if (withPrivKey)
+				j["mnemonic"] = _mnemonic;
 
 			return j;
 		}
 
-		const nlohmann::json &operator>>(const nlohmann::json &j, ElaWebWalletJson &p) {
-			j >> *(BitcoreWalletClientJson *) &p;
+		void ElaWebWalletJson::FromJson(const nlohmann::json &j) {
+			BitcoreWalletClientJson::FromJson(j);
 
-			from_json(j, p);
-
-			return j;
+			if (j.find("mnemonic") != j.end())
+				_mnemonic = j["mnemonic"].get<std::string>();
 		}
 
 		void to_json(nlohmann::json &j, const ElaWebWalletJson &p) {
+			to_json(j, dynamic_cast<const BitcoreWalletClientJson &>(p));
+			j["mnemonic"] = p._mnemonic;
 		}
 
 		void from_json(const nlohmann::json &j, ElaWebWalletJson &p) {
+			from_json(j, dynamic_cast<BitcoreWalletClientJson &>(p));
+			if (j.find("mnemonic") != j.end())
+				p._mnemonic = j["mnemonic"].get<std::string>();
 		}
 	}
 }

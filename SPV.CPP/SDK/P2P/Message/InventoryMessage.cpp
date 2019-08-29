@@ -50,28 +50,15 @@ namespace Elastos {
 					return false;
 				}
 
-				if (type == inv_block || type == inv_confirmd_block) {
-					if (!stream.ReadBytes(hash)) {
-						_peer->error("inv msg read block hash fail");
-						return false;
-					}
+				if (!stream.ReadBytes(hash)) {
+					_peer->error("inv msg read hash fail, type = {}", type);
+					return false;
+				}
+
+				if (type == inv_block) {
 					blocks.push_back(hash);
 				} else if (type == inv_tx) {
-					if (!stream.ReadBytes(hash)) {
-						_peer->error("inv msg read tx hash fail");
-						return false;
-					}
 					transactions.push_back(hash);
-				} else if (type == inv_address) {
-					if (!stream.ReadBytes(hash)) {
-						_peer->error("inv msg read address hash fail");
-						return false;
-					}
-				} else {
-					if (!stream.ReadBytes(hash)) {
-						_peer->error("inv msg read other '{}' hash fail", type);
-						return false;
-					}
 				}
 			}
 
@@ -133,9 +120,8 @@ namespace Elastos {
 
 				if (transactions.size() > 0 && !_peer->GetMemPoolCallback().empty()) {
 					_peer->info("got initial mempool response");
-					PingParameter pingParameter;
-					pingParameter.callback = _peer->GetMemPoolCallback();
-					pingParameter.lastBlockHeight = _peer->GetPeerManager()->GetLastBlockHeight();
+					PingParameter pingParameter(_peer->GetPeerManager()->GetLastBlockHeight(),
+												_peer->GetMemPoolCallback());
 					_peer->SendMessage(MSG_PING, pingParameter);
 					_peer->ResetMemPool();
 				}
@@ -147,14 +133,13 @@ namespace Elastos {
 		void InventoryMessage::Send(const SendMessageParameter &param) {
 			const InventoryParameter &invParam = static_cast<const InventoryParameter &>(param);
 
-			size_t txCount = invParam.txHashes.size();
+			size_t txCount;
 			size_t knownCount = _peer->KnownTxHashes().size();
 
 			_peer->AddKnownTxHashes(invParam.txHashes);
 			txCount = _peer->KnownTxHashes().size() - knownCount;
 
 			if (txCount > 0) {
-				size_t i;
 				ByteStream stream;
 
 				stream.WriteUint32(uint32_t(txCount));

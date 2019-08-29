@@ -56,7 +56,7 @@ namespace Elastos {
 								const bytes_t &iv, const bytes_t &aad, int ks, int iter) {
 			bytes_t ciphertext;
 			if (plaintext.empty()) {
-				return plaintext;
+				return ciphertext;
 			}
 
 			bytes_t key;

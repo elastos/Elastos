@@ -413,10 +413,10 @@ do_extract_dir() {
 }
 
 BOOST_VER1=1
-BOOST_VER2=67
+BOOST_VER2=69
 BOOST_VER3=0
-BOOST_SUPPORT_LIST="1.67.0, 1.66.0, 1.65.1, 1.55.0, 1.54.0, 1.53.0, 1.49.0, 1.48.0, 1.45.0"
-register_option "--boost=<version>" boost_version "Boost version to be used, one of {$BOOST_SUPPORT_LIST}, default is 1.67.0."
+BOOST_SUPPORT_LIST="1.69.0 1.67.0, 1.66.0, 1.65.1, 1.55.0, 1.54.0, 1.53.0, 1.49.0, 1.48.0, 1.45.0"
+register_option "--boost=<version>" boost_version "Boost version to be used, one of {$BOOST_SUPPORT_LIST}, default is 1.69.0."
 boost_version() {
 	BOOST_VER1=`expr -- "$1" : '\([0-9]*\)\.[0-9]*\.[0-9]*'`
 	BOOST_VER2=`expr -- "$1" : '[0-9]*\.\([0-9]*\)\.[0-9]*'`

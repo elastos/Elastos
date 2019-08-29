@@ -43,8 +43,6 @@ namespace Elastos {
 					return false;
 				}
 
-				_peer->info("rejected {} code: 0x{:x} reason: {} txid: {}", type, code,
-							reason, txHash.GetHex());
 				FireRejectedTx(txHash, code, reason);
 			} else {
 				_peer->info("rejected {} code: {:x} reason: {}", type, code, reason);

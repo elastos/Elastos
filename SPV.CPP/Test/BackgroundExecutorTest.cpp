@@ -5,10 +5,13 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 #include <SDK/SpvService/BackgroundExecutor.h>
+#include <SDK/Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 
 TEST_CASE( "BackgroundExecutor simple test", "[Normal]" ) {
+	Log::registerMultiLogger();
+
 	SECTION("Single thread test (default)") {
 		BackgroundExecutor executor;
 

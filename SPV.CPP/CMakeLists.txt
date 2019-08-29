@@ -98,7 +98,8 @@ if(NOT DEFINED CMAKE_INSTALL_PREFIX)
 	set(CMAKE_INSTALL_PREFIX "/usr/local/" CACHE PATH "Install prefix prepended to target to create install location")
 endif(NOT DEFINED CMAKE_INSTALL_PREFIX)
 
-option(SPVSDK_DEBUG "SPV debug" OFF)
+option(ARGUMENT_LOG_ENABLE "Eenable print argument that caller pass through" ON)
+option(SPDSDK_DEBUG_ON "SPD debug" OFF)
 option(SPV_BUILD_TEST_CASES "Build test cases" OFF)
 option(SPV_BUILD_SAMPLE "Build sample" OFF)
 option(SPV_EXTRA_WARNINGS "Enable Maximum Warnings Level" OFF)
@@ -107,14 +108,9 @@ set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_RELEASE NDEBUG)
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL NDEBUG)
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO NDEBUG)
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	add_definitions(-DSPDLOG_DEBUG_ON)
-	add_definitions(-DSPDLOG_TRACE_ON)
-endif()
-
 configure_file(
-	${CMAKE_CURRENT_SOURCE_DIR}/Config.h.in
-	${CMAKE_CURRENT_BINARY_DIR}/Config.h
+	${CMAKE_CURRENT_SOURCE_DIR}/CMakeConfig.h.in
+	${CMAKE_CURRENT_BINARY_DIR}/CMakeConfig.h
 )
 
 add_subdirectory(ThirdParty)
@@ -134,12 +130,17 @@ add_library(${SPVSDK_OBJECT_TARGET} OBJECT
 	${SPVSDK_SOURCE_FILES}
 	${SPVCORE_SOURCE_FILES}
 )
-add_dependencies(${SPVSDK_OBJECT_TARGET} ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite walletcore fruit)
+add_dependencies(${SPVSDK_OBJECT_TARGET} ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite walletcore fruit config++ common)
 set_target_properties(${SPVSDK_OBJECT_TARGET} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-add_library(spvsdk $<TARGET_OBJECTS:${SPVSDK_OBJECT_TARGET}>)
+if("${BUILD_SHARED_LIBS}")
+	add_library(spvsdk SHARED $<TARGET_OBJECTS:${SPVSDK_OBJECT_TARGET}>)
+else()
+	add_library(spvsdk STATIC $<TARGET_OBJECTS:${SPVSDK_OBJECT_TARGET}>)
+endif()
+
 set_target_properties(spvsdk PROPERTIES POSITION_INDEPENDENT_CODE ON)
-target_link_libraries(spvsdk dl ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite walletcore fruit)
+target_link_libraries(spvsdk dl ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite walletcore fruit config++ common)
 if(ANDROID)
 	target_link_libraries(spvsdk log atomic)
 endif()
@@ -171,6 +172,8 @@ if(UNIX AND NOT BUILD_SHARED_LIBS)
 	foreach(OpenSSL_Library ${OpenSSL_LIBRARIES})
 		set(ALL_LIBRARIES ${ALL_LIBRARIES};$<TARGET_FILE:${OpenSSL_Library}>)
 	endforeach()
+	set(ALL_LIBRARIES ${ALL_LIBRARIES};$<TARGET_FILE:config++>)
+	set(ALL_LIBRARIES ${ALL_LIBRARIES};$<TARGET_FILE:common>)
 
 	string(REPLACE ";" "," ALL_LIBRARIES "${ALL_LIBRARIES}")
 	if(${SPV_PLATFORM} STREQUAL ${SPV_PLATFORM_IOS})
@@ -206,18 +209,14 @@ if(UNIX AND NOT BUILD_SHARED_LIBS)
 		${COMBIN_VERBOSE}
 	)
 
+	add_custom_target(spvsdk_combine_static ALL DEPENDS spvsdk)
+
 	add_custom_command(
+		TARGET spvsdk_combine_static
 		COMMENT "Generating a fat uber library..."
-		OUTPUT ${SPVSDK_OUTPUT_DIR}/libspvsdk.a
 		COMMAND ${COMPOSE_COMMAND}
 		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-		DEPENDS spvsdk
 	)
-
-	add_custom_target(spvsdk_combin_static ALL DEPENDS ${SPVSDK_OUTPUT_DIR}/libspvsdk.a)
-	add_library(spvsdk_static_uber STATIC IMPORTED GLOBAL)
-	set_target_properties(spvsdk_static_uber PROPERTIES IMPORTED_LOCATION ${SPVSDK_OUTPUT_DIR}/libspvsdk.a)
-	add_dependencies(spvsdk_static_uber spvsdk_combin_static)
 endif()
 
 file(GLOB INSTALL_HEADER_FILES "Interface/*.h")

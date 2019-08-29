@@ -18,10 +18,14 @@ namespace Elastos {
 		public:
 			virtual ~ELAMessageSerializable() {}
 
+			virtual size_t EstimateSize() const = 0;
+
 			virtual void Serialize(ByteStream &ostream) const = 0;
+
 			virtual bool Deserialize(const ByteStream &istream) = 0;
 
 			virtual nlohmann::json ToJson() const = 0;
+
 			virtual void FromJson(const nlohmann::json &j) = 0;
 		};
 

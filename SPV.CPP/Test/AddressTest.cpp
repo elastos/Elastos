@@ -9,10 +9,13 @@
 #include <SDK/WalletCore/BIPs/Mnemonic.h>
 #include <SDK/WalletCore/BIPs/HDKeychain.h>
 #include <SDK/WalletCore/BIPs/BIP39.h>
+#include <SDK/Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("Address test", "[Address]") {
+	Log::registerMultiLogger();
+
 	SECTION("Address with public key derived from mnemonic") {
 
 		std::string phrase = "闲 齿 兰 丹 请 毛 训 胁 浇 摄 县 诉";

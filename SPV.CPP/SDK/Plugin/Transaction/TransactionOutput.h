@@ -9,6 +9,7 @@
 #include <SDK/Plugin/Transaction/Payload/OutputPayload/IOutputPayload.h>
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/WalletCore/BIPs/Address.h>
+#include <SDK/Common/BigInt.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -17,8 +18,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class TransactionOutput :
-				public ELAMessageSerializable {
+		class TransactionOutput {
 
 		public:
 			enum Type {
@@ -31,39 +31,39 @@ namespace Elastos {
 
 			TransactionOutput(const TransactionOutput &output);
 
-			TransactionOutput(uint64_t amount, const Address &toAddress, const uint256 &assetID = Asset::GetELAAssetID(),
+			TransactionOutput &operator=(const TransactionOutput &tx);
+
+			TransactionOutput(const BigInt &amount, const Address &toAddress, const uint256 &assetID = Asset::GetELAAssetID(),
 							  Type type = Default, const OutputPayloadPtr &payload = nullptr);
 
-			TransactionOutput(uint64_t amount, const uint168 &programHash, const uint256 &assetID = Asset::GetELAAssetID(),
-							  Type type = Default, const OutputPayloadPtr &payload = nullptr);
+//			TransactionOutput(const BigInt &amount, const uint168 &programHash, const uint256 &assetID = Asset::GetELAAssetID(),
+//							  Type type = Default, const OutputPayloadPtr &payload = nullptr);
 
 			~TransactionOutput();
 
-			virtual void Serialize(ByteStream &ostream) const;
+			size_t EstimateSize() const;
 
-			virtual bool Deserialize(const ByteStream &istream);
+			void Serialize(ByteStream &ostream, uint8_t txVersion, bool extend = false) const;
 
-			void Serialize(ByteStream &ostream, uint8_t txVersion) const;
-
-			bool Deserialize(const ByteStream &istream, uint8_t txVersion);
+			bool Deserialize(const ByteStream &istream, uint8_t txVersion, bool extend = false);
 
 			bool IsValid() const;
 
-			Address GetAddress() const;
+			Address Addr() const;
 
-			uint64_t GetAmount() const;
+			const BigInt &Amount() const;
 
-			void SetAmount(uint64_t amount);
+			void SetAmount(const BigInt &amount);
 
-			const uint256 &GetAssetId() const;
+			const uint256 &AssetID() const;
 
-			void SetAssetId(const uint256 &assetId);
+			void SetAssetID(const uint256 &assetId);
 
-			uint32_t GetOutputLock() const;
+			uint32_t OutputLock() const;
 
 			void SetOutputLock(uint32_t outputLock);
 
-			const uint168 &GetProgramHash() const;
+			const uint168 &ProgramHash() const;
 
 			void SetProgramHash(const uint168 &hash);
 
@@ -79,19 +79,21 @@ namespace Elastos {
 
 			OutputPayloadPtr GeneratePayload(const Type &type);
 
-			virtual nlohmann::json ToJson() const;
-
-			virtual void FromJson(const nlohmann::json &j);
-
 			nlohmann::json ToJson(uint8_t txVersion) const;
 
 			void FromJson(const nlohmann::json &j, uint8_t txVersion);
 
 			size_t GetSize() const;
 
+			uint16_t FixedIndex() const;
+
+			void SetFixedIndex(uint16_t index);
+
 		private:
-			uint64_t _amount;
-			uint256 _assetId;
+			uint16_t _fixedIndex;
+
+			BigInt _amount; // to support token chain
+			uint256 _assetID;
 			uint32_t _outputLock;
 			uint168 _programHash;
 
@@ -100,7 +102,8 @@ namespace Elastos {
 			OutputPayloadPtr _payload;
 		};
 
-		typedef boost::shared_ptr<TransactionOutput> TransactionOutputPtr;
+		typedef boost::shared_ptr<TransactionOutput> OutputPtr;
+		typedef std::vector<OutputPtr> OutputArray;
 
 	}
 }

@@ -1,9 +1,0 @@
-#ifndef __SPVSDK_CONFIG_H__
-#define __SPVSDK_CONFIG_H__
-
-#define SPVSDK_VERSION_MESSAGE "@SPVSDK_VERSION_MESSAGE@"
-#define SPVSDK_SPDLOG_LEVEL "@SPDLOG_LEVEL@"
-#cmakedefine SPVSDK_DEBUG
-#cmakedefine BUILD_SHARED_LIBS
-
-#endif

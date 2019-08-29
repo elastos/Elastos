@@ -7,6 +7,7 @@
 
 #include "catch.hpp"
 #include <SDK/WalletCore/BIPs/Mnemonic.h>
+#include <SDK/Common/Log.h>
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/join.hpp>
@@ -68,6 +69,7 @@ TEST_CASE("Mnemonic words test", "[Mnemonic]") {
 }
 
 TEST_CASE("Mnemonic of English test", "[English]") {
+	Log::registerMultiLogger();
 	Mnemonic mnemonic(ROOT_PATH);
 
 	std::string phrase;

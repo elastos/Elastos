@@ -14,8 +14,7 @@ namespace Elastos {
 			TransactionPtr tx;
 		};
 
-		class TransactionMessage :
-				public Message {
+		class TransactionMessage : public Message {
 		public:
 			TransactionMessage(const MessagePeerPtr &peer);
 

@@ -71,6 +71,8 @@ namespace Elastos {
 
 			const bytes_t &RedeemScript() const;
 
+			void SetRedeemScript(Prefix prefix, const bytes_t &code);
+
 			bool operator<(const Address &address) const;
 
 			bool operator==(const Address &address) const;

@@ -10,8 +10,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class NotFoundMessage :
-				public Message {
+		class NotFoundMessage : public Message {
 		public:
 			NotFoundMessage(const MessagePeerPtr &peer);
 

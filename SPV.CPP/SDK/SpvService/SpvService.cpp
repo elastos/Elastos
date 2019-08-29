@@ -5,12 +5,14 @@
 
 #include "SpvService.h"
 
-#include <SDK/Plugin/Transaction/Payload/PayloadRegisterAsset.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Plugin/Registry.h>
 #include <SDK/Plugin/Block/MerkleBlock.h>
+#include <SDK/Wallet/UTXO.h>
+#include <SDK/Plugin/Transaction/TransactionOutput.h>
+#include <SDK/Plugin/Transaction/TransactionInput.h>
 
 #include <Core/BRMerkleBlock.h>
 #include <Core/BRTransaction.h>
@@ -19,78 +21,54 @@
 
 #define BACKGROUND_THREAD_COUNT 1
 
-#define DATABASE_PATH "spv_wallet.db"
-#define ISO "ela"
+#define ISO_OLD "ela"
+#define ISO "ela1"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		SpvService::SpvService(const SpvService &proto) :
-				CoreSpvService(proto._pluginTypes, proto._chainParams),
-				_executor(BACKGROUND_THREAD_COUNT),
-				_reconnectExecutor(BACKGROUND_THREAD_COUNT),
-				_databaseManager(proto._databaseManager.GetPath()),
-				_reconnectTimer(nullptr),
-				_forkId(proto._forkId) {
-			init(proto._subAccount, proto._earliestPeerTime, proto._reconnectSeconds);
-		}
-
-		SpvService::SpvService(const SubAccountPtr &subAccount, const boost::filesystem::path &dbPath,
-									 uint32_t earliestPeerTime, uint32_t reconnectSeconds, int forkId,
-									 const PluginType &pluginTypes, const ChainParams &chainParams) :
+		SpvService::SpvService(const std::string &walletID,
+							   const SubAccountPtr &subAccount,
+							   const boost::filesystem::path &dbPath,
+							   time_t earliestPeerTime,
+							   uint32_t reconnectSeconds,
+							   const PluginType &pluginTypes,
+							   const ChainParamsPtr &chainParams) :
 				CoreSpvService(pluginTypes, chainParams),
 				_executor(BACKGROUND_THREAD_COUNT),
-				_reconnectExecutor(BACKGROUND_THREAD_COUNT),
-				_databaseManager(dbPath),
-				_reconnectTimer(nullptr),
-				_forkId(forkId) {
-			init(subAccount, earliestPeerTime, reconnectSeconds);
+				_databaseManager(dbPath) {
+			init(walletID, subAccount, earliestPeerTime, reconnectSeconds);
 		}
 
 		SpvService::~SpvService() {
-
-		}
-
-		void SpvService::Start() {
-			getPeerManager()->SetReconnectEnableStatus(true);
-
-			getPeerManager()->Connect();
-		}
-
-		void SpvService::Stop() {
-			if (_reconnectTimer != nullptr) {
-				_reconnectTimer->cancel();
-				_reconnectTimer = nullptr;
-			}
-
-			getPeerManager()->SetReconnectTaskCount(0);
-			getPeerManager()->SetReconnectEnableStatus(false);
-
-			getPeerManager()->Disconnect();
-
 			_executor.StopThread();
-			_reconnectExecutor.StopThread();
 		}
 
-		void SpvService::PublishTransaction(const TransactionPtr &transaction) {
-			nlohmann::json sendingTx = transaction->ToJson();
-			ByteStream byteStream;
-			transaction->Serialize(byteStream);
+		void SpvService::SyncStart() {
+			_peerManager->SetKeepAliveTimestamp(time(NULL));
+			_peerManager->ResetReconnectStep();
+			_peerManager->ConnectLaster(0);
+		}
 
-			Log::debug("{} publish tx {}", _peerManager->GetID(), sendingTx.dump());
-			SPVLOG_DEBUG("raw tx {}", byteStream.GetBytes().getHex());
+		void SpvService::SyncStop() {
+			_peerManager->CancelTimer();
+			_peerManager->Disconnect();
+		}
 
+		void SpvService::ExecutorStop() {
+			_executor.StopThread();
+		}
+
+		void SpvService::PublishTransaction(const TransactionPtr &tx) {
 			if (getPeerManager()->GetConnectStatus() != Peer::Connected) {
-				getPeerManager()->SetReconnectEnableStatus(false);
-				if (_reconnectTimer != nullptr)
-					_reconnectTimer->cancel();
-				getPeerManager()->Disconnect();
-				getPeerManager()->SetReconnectEnableStatus(true);
-				getPeerManager()->Connect();
+				getPeerManager()->ConnectLaster(0);
 			}
 
-			getPeerManager()->PublishTransaction(transaction);
-			getWallet()->RegisterRemark(transaction);
+			getPeerManager()->PublishTransaction(tx);
+		}
+
+		void SpvService::DatabaseFlush() {
+			_databaseManager.flush();
 		}
 
 		const WalletPtr &SpvService::getWallet() {
@@ -98,71 +76,103 @@ namespace Elastos {
 		}
 
 		//override Wallet listener
-		void SpvService::balanceChanged(const uint256 &asset, uint64_t balance) {
+		void SpvService::balanceChanged(const uint256 &asset, const BigInt &balance) {
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&asset, &balance](AssetTransactions::Listener *listener) {
+						  [&asset, &balance](Wallet::Listener *listener) {
 							  listener->balanceChanged(asset, balance);
 						  });
 		}
 
-		void SpvService::onTxAdded(const TransactionPtr &tx) {
-			ByteStream stream;
-			tx->Serialize(stream);
+		void SpvService::onCoinBaseTxAdded(const UTXOPtr &cb) {
 
-			bytes_t data = stream.GetBytes();
-
-			std::string txHash = tx->GetHash().GetHex();
-			std::string remark = _wallet->GetRemark(txHash);
-			tx->SetRemark(remark);
-
-			TransactionEntity txEntity(data, tx->GetBlockHeight(), tx->GetTimestamp(), tx->GetAssetTableID(),
-									   tx->GetRemark(), txHash);
-			_databaseManager.PutTransaction(ISO, txEntity);
-
-			if (tx->GetTransactionType() == Transaction::RegisterAsset) {
-				PayloadRegisterAsset *registerAsset = static_cast<PayloadRegisterAsset *>(tx->GetPayload());
-
-				Asset asset = registerAsset->GetAsset();
-				std::string assetID = asset.GetHash().GetHex();
-				ByteStream stream;
-				asset.Serialize(stream);
-				AssetEntity assetEntity(assetID, registerAsset->GetAmount(), stream.GetBytes(), txHash);
-				_databaseManager.PutAsset(ISO, assetEntity);
-
-				UpdateAssets();
-			}
+			_databaseManager.PutCoinBase(cb);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&tx](AssetTransactions::Listener *listener) {
+						  [&cb](Wallet::Listener *listener) {
+							  listener->onCoinBaseTxAdded(cb);
+						  });
+		}
+
+		void SpvService::onCoinBaseUpdatedAll(const UTXOArray &cbs) {
+			_databaseManager.DeleteAllCoinBase();
+			_databaseManager.PutCoinBase(cbs);
+		}
+
+		void SpvService::onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight,
+											 time_t timestamp) {
+			_databaseManager.UpdateCoinBase(hashes, blockHeight, timestamp);
+
+			std::for_each(_walletListeners.begin(), _walletListeners.end(),
+						  [&hashes, &blockHeight, &timestamp](Wallet::Listener *listener) {
+							  listener->onCoinBaseTxUpdated(hashes, blockHeight, timestamp);
+						  });
+		}
+
+		void SpvService::onCoinBaseSpent(const std::vector<uint256> &spentHashes) {
+			_databaseManager.UpdateSpentCoinBase(spentHashes);
+
+			std::for_each(_walletListeners.begin(), _walletListeners.end(),
+						  [&spentHashes](Wallet::Listener *listener) {
+							  listener->onCoinBaseSpent(spentHashes);
+						  });
+		}
+
+		void SpvService::onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
+			_databaseManager.DeleteCoinBase(hash);
+
+			std::for_each(_walletListeners.begin(), _walletListeners.end(),
+						  [&hash, &notifyUser, &recommendRescan](Wallet::Listener *listener) {
+							  listener->onCoinBaseTxDeleted(hash, notifyUser, recommendRescan);
+						  });
+		}
+
+		void SpvService::onTxAdded(const TransactionPtr &tx) {
+			_databaseManager.PutTransaction(ISO, tx);
+
+			std::for_each(_walletListeners.begin(), _walletListeners.end(),
+						  [&tx](Wallet::Listener *listener) {
 							  listener->onTxAdded(tx);
 						  });
 		}
 
-		void SpvService::onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
-			TransactionEntity txEntity;
-
-			txEntity.blockHeight = blockHeight;
-			txEntity.timeStamp = timeStamp;
-			txEntity.txHash = hash;
-			_databaseManager.UpdateTransaction(ISO, txEntity);
+		void SpvService::onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp) {
+			_databaseManager.UpdateTransaction(hashes, blockHeight, timestamp);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&hash, blockHeight, timeStamp](AssetTransactions::Listener *listener) {
-							  listener->onTxUpdated(hash, blockHeight, timeStamp);
+						  [&hashes, &blockHeight, &timestamp](Wallet::Listener *listener) {
+							  listener->onTxUpdated(hashes, blockHeight, timestamp);
 						  });
 		}
 
-		void SpvService::onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser,
-										bool recommendRescan) {
-			_databaseManager.DeleteTxByHash(ISO, hash);
-			if (!assetID.empty()) {
-				_databaseManager.DeleteAsset(ISO, assetID);
-				UpdateAssets();
-			}
+		void SpvService::onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
+			_databaseManager.DeleteTxByHash(hash);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&hash, &assetID, notifyUser, recommendRescan](AssetTransactions::Listener *listener) {
-							  listener->onTxDeleted(hash, assetID, notifyUser, recommendRescan);
+						  [&hash, &notifyUser, &recommendRescan](Wallet::Listener *listener) {
+							  listener->onTxDeleted(hash, notifyUser, recommendRescan);
+						  });
+		}
+
+		void SpvService::onTxUpdatedAll(const std::vector<TransactionPtr> &txns) {
+			_databaseManager.DeleteAllTransactions();
+			_databaseManager.PutTransactions(ISO, txns);
+
+			std::for_each(_walletListeners.begin(), _walletListeners.end(),
+						  [&txns](Wallet::Listener *listener) {
+								listener->onTxUpdatedAll(txns);
+						  });
+		}
+
+		void SpvService::onAssetRegistered(const AssetPtr &asset, uint64_t amount, const uint168 &controller) {
+			std::string assetID = asset->GetHash().GetHex();
+			ByteStream stream;
+			asset->Serialize(stream);
+			AssetEntity assetEntity(assetID, amount, stream.GetBytes());
+			_databaseManager.PutAsset(asset->GetName(), assetEntity);
+
+			std::for_each(_walletListeners.begin(), _walletListeners.end(),
+						  [&asset, &amount, &controller](Wallet::Listener *listener) {
+							  listener->onAssetRegistered(asset, amount, controller);
 						  });
 		}
 
@@ -201,31 +211,18 @@ namespace Elastos {
 				_databaseManager.DeleteAllBlocks(ISO);
 			}
 
-			ByteStream ostream;
-			std::vector<MerkleBlockEntity> merkleBlockList;
-			MerkleBlockEntity blockEntity;
-			for (size_t i = 0; i < blocks.size(); ++i) {
-				if (blocks[i]->GetHeight() == 0)
-					continue;
-
 #ifndef NDEBUG
-				if (blocks.size() == 1) {
-					Log::debug("{} checkpoint ====> ({},  \"{}\", {}, {});",
-							_peerManager->GetID(),
-							   blocks[i]->GetHeight(),
-							   blocks[i]->GetHash().GetHex(),
-							   blocks[i]->GetTimestamp(),
-							   blocks[i]->GetTarget());
-				}
+			if (blocks.size() == 1) {
+				Log::debug("{} checkpoint ====> ({},  \"{}\", {}, {});",
+				           _peerManager->GetID(),
+				           blocks[0]->GetHeight(),
+				           blocks[0]->GetHash().GetHex(),
+				           blocks[0]->GetTimestamp(),
+				           blocks[0]->GetTarget());
+			}
 #endif
 
-				ostream.Reset();
-				blocks[i]->Serialize(ostream);
-				blockEntity.blockBytes = ostream.GetBytes();
-				blockEntity.blockHeight = blocks[i]->GetHeight();
-				merkleBlockList.push_back(blockEntity);
-			}
-			_databaseManager.PutMerkleBlocks(ISO, merkleBlockList);
+			_databaseManager.PutMerkleBlocks(ISO, blocks);
 
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
 						  [replace, &blocks](PeerManager::Listener *listener) {
@@ -236,7 +233,7 @@ namespace Elastos {
 		void SpvService::savePeers(bool replace, const std::vector<PeerInfo> &peers) {
 
 			if (replace) {
-				_databaseManager.DeleteAllPeers(ISO);
+				_databaseManager.DeleteAllPeers();
 			}
 
 			std::vector<PeerEntity> peerEntityList;
@@ -272,78 +269,28 @@ namespace Elastos {
 						  });
 		}
 
-		void SpvService::blockHeightIncreased(uint32_t blockHeight) {
-
+		void SpvService::connectStatusChanged(const std::string &status) {
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
-						  [blockHeight](PeerManager::Listener *listener) {
-							  listener->blockHeightIncreased(blockHeight);
+						  [&status](PeerManager::Listener *listener) {
+							  listener->connectStatusChanged(status);
 						  });
 		}
 
-		void SpvService::syncIsInactive(uint32_t time) {
-			if (_peerManager->GetReconnectEnableStatus() && _peerManager->ReconnectTaskCount() == 0) {
-				Log::info("{} disconnect, reconnect {}s later", _peerManager->GetID(), time);
-				if (_reconnectTimer != nullptr) {
-					_reconnectTimer->cancel();
-					_reconnectTimer = nullptr;
-				}
-
-				_peerManager->SetReconnectTaskCount(_peerManager->ReconnectTaskCount() + 1);
-
-				_executor.StopThread();
-				getPeerManager()->SetReconnectEnableStatus(false);
-				if (_peerManager->GetConnectStatus() == Peer::Connected) {
-					_peerManager->Disconnect();
-				}
-
-				_executor.InitThread(BACKGROUND_THREAD_COUNT);
-				getPeerManager()->SetReconnectEnableStatus(true);
-				StartReconnect(time);
-			}
+		size_t SpvService::GetAllTransactionsCount() {
+			return _databaseManager.GetAllTransactionsCount();
 		}
 
-		size_t SpvService::GetAllTransactionsCount() {
-			return _databaseManager.GetAllTransactionsCount(ISO);
+		std::vector<UTXOPtr> SpvService::loadCoinBaseUTXOs() {
+			return _databaseManager.GetAllCoinBase();
 		}
 
 		// override protected methods
 		std::vector<TransactionPtr> SpvService::loadTransactions() {
-			std::vector<TransactionPtr> txs;
-
-			std::vector<TransactionEntity> txsEntity = _databaseManager.GetAllTransactions(ISO);
-
-			for (size_t i = 0; i < txsEntity.size(); ++i) {
-				TransactionPtr tx(new Transaction());
-
-				ByteStream byteStream(txsEntity[i].buff);
-				tx->Deserialize(byteStream);
-				tx->SetRemark(txsEntity[i].remark);
-				tx->SetAssetTableID(txsEntity[i].assetID);
-				tx->SetBlockHeight(txsEntity[i].blockHeight);
-				tx->SetTimestamp(txsEntity[i].timeStamp);
-
-				txs.push_back(tx);
-			}
-
-			return txs;
+			return _databaseManager.GetAllTransactions();
 		}
 
 		std::vector<MerkleBlockPtr> SpvService::loadBlocks() {
-			std::vector<MerkleBlockPtr> blocks;
-
-			std::vector<MerkleBlockEntity> blocksEntity = _databaseManager.GetAllMerkleBlocks(ISO);
-
-			for (size_t i = 0; i < blocksEntity.size(); ++i) {
-				MerkleBlockPtr block(Registry::Instance()->CreateMerkleBlock(_pluginTypes));
-				block->SetHeight(blocksEntity[i].blockHeight);
-				ByteStream stream(blocksEntity[i].blockBytes);
-				if (!block->Deserialize(stream)) {
-					Log::error("{} block deserialize fail", _peerManager->GetID());
-				}
-				blocks.push_back(block);
-			}
-
-			return blocks;
+			return _databaseManager.GetAllMerkleBlocks(ISO, _pluginTypes);
 		}
 
 		std::vector<PeerInfo> SpvService::loadPeers() {
@@ -358,39 +305,16 @@ namespace Elastos {
 			return peers;
 		}
 
-		std::vector<Asset> SpvService::loadAssets() {
-			std::vector<Asset> assets;
+		std::vector<AssetPtr> SpvService::loadAssets() {
+			std::vector<AssetPtr> assets;
 
-			AssetEntity defaultAssetEntity;
-			uint256 defaultAssetID = Asset::GetELAAssetID();
-			std::string assetStringID = defaultAssetID.GetHex();
-			if (!_databaseManager.GetAssetDetails(ISO, assetStringID, defaultAssetEntity)) {
-				Asset defaultAsset;
-				defaultAsset.SetName("ELA");
-				defaultAsset.SetPrecision(0x08);
-				defaultAsset.SetAssetType(Asset::AssetType::Token);
-				defaultAsset.SetHash(defaultAssetID);
-
-				ByteStream stream;
-				defaultAsset.Serialize(stream);
-
-				defaultAssetEntity.AssetID = assetStringID;
-				defaultAssetEntity.Asset = stream.GetBytes();
-
-				// TODO how to set these two value?
-				defaultAssetEntity.Amount = 0;
-				defaultAssetEntity.TxHash = assetStringID;
-
-				_databaseManager.PutAsset(ISO, defaultAssetEntity);
-			}
-
-			std::vector<AssetEntity> assetsEntity = _databaseManager.GetAllAssets(ISO);
+			std::vector<AssetEntity> assetsEntity = _databaseManager.GetAllAssets();
 
 			for (size_t i = 0; i < assetsEntity.size(); ++i) {
-				Asset asset;
 				ByteStream stream(assetsEntity[i].Asset);
-				if (asset.Deserialize(stream)) {
-					asset.SetHash(uint256(assetsEntity[i].AssetID));
+				AssetPtr asset(new Asset());
+				if (asset->Deserialize(stream)) {
+					asset->SetHash(uint256(assetsEntity[i].AssetID));
 					assets.push_back(asset);
 				}
 			}
@@ -398,94 +322,27 @@ namespace Elastos {
 			return assets;
 		}
 
-		int SpvService::getForkId() const {
-			return _forkId;
-		}
-
 		const CoreSpvService::PeerManagerListenerPtr &SpvService::createPeerManagerListener() {
 			if (_peerManagerListener == nullptr) {
 				_peerManagerListener = PeerManagerListenerPtr(
-						new WrappedExecutorPeerManagerListener(this, &_executor, &_reconnectExecutor, _pluginTypes));
+						new WrappedExecutorPeerManagerListener(this, &_executor, _pluginTypes));
 			}
 			return _peerManagerListener;
 		}
 
 		const CoreSpvService::WalletListenerPtr &SpvService::createWalletListener() {
 			if (_walletListener == nullptr) {
-				_walletListener = WalletListenerPtr(new WrappedExecutorTransactionHubListener(this, &_executor));
+				_walletListener = WalletListenerPtr(new WrappedExecutorWalletListener(this, &_executor));
 			}
 			return _walletListener;
 		}
 
-		void SpvService::RegisterWalletListener(AssetTransactions::Listener *listener) {
+		void SpvService::RegisterWalletListener(Wallet::Listener *listener) {
 			_walletListeners.push_back(listener);
 		}
 
 		void SpvService::RegisterPeerManagerListener(PeerManager::Listener *listener) {
 			_peerManagerListeners.push_back(listener);
-		}
-
-		void SpvService::StartReconnect(uint32_t time) {
-			_reconnectTimer = boost::shared_ptr<boost::asio::deadline_timer>(new boost::asio::deadline_timer(
-					_reconnectService, boost::posix_time::seconds(time)));
-
-			_peerManager->Lock();
-			if (0 == _peerManager->GetPeers().size()) {
-				std::vector<PeerInfo> peers = loadPeers();
-				Log::info("{} load {} peers", _peerManager->GetID(), peers.size());
-				for (size_t i = 0; i < peers.size(); ++i) {
-					Log::debug("{} p[{}]: {}", _peerManager->GetID(), i, peers[i].GetHost());
-				}
-
-				_peerManager->SetPeers(peers);
-			}
-			_peerManager->Unlock();
-
-			_reconnectTimer->async_wait(
-					boost::bind(&PeerManager::AsyncConnect, _peerManager.get(), boost::asio::placeholders::error));
-			_reconnectService.restart();
-			_reconnectService.run_one();
-		}
-
-		void SpvService::ResetReconnect() {
-			_reconnectTimer->expires_at(_reconnectTimer->expires_at() + boost::posix_time::seconds(_reconnectSeconds));
-			_reconnectTimer->async_wait(
-					boost::bind(&PeerManager::AsyncConnect, _peerManager.get(), boost::asio::placeholders::error));
-		}
-
-		void SpvService::UpdateAssets() {
-			std::vector<AssetEntity> assets = _databaseManager.GetAllAssets(ISO);
-			std::vector<Asset> assetArray;
-			std::for_each(assets.begin(), assets.end(), [this, &assetArray](const AssetEntity &entity) {
-				Asset asset;
-				ByteStream stream(entity.Asset);
-				if (!asset.Deserialize(stream)) {
-					Log::error("{} Update assets deserialize fail", _peerManager->GetID());
-				} else {
-					asset.SetHash(uint256(entity.AssetID));
-					assetArray.push_back(asset);
-				}
-			});
-
-			_wallet->UpdateAssets(assetArray);
-		}
-
-		Asset SpvService::FindAsset(const std::string &assetID) const {
-			AssetEntity assetEntity;
-			Asset asset;
-			if (!_databaseManager.GetAssetDetails(ISO, assetID, assetEntity)) {
-				Log::warn("{} Asset {} not found", _peerManager->GetID(), assetID);
-				return asset;
-			}
-
-			ByteStream stream(assetEntity.Asset);
-			if (!asset.Deserialize(stream)) {
-				Log::error("{} Asset {} deserialize fail", _peerManager->GetID(), assetID);
-				return Asset();
-			}
-			asset.SetHash(uint256(assetEntity.AssetID));
-
-			return asset;
 		}
 
 	}

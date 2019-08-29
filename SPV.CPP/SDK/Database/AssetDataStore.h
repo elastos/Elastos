@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_ASSETDATASTORE_H__
 
 #include "TableBase.h"
+#include <SDK/Common/BigInt.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -16,17 +17,15 @@ namespace Elastos {
 
 			}
 
-			AssetEntity(const std::string &assetID, uint64_t amount, const bytes_t &Asset, const std::string &txHash) :
+			AssetEntity(const std::string &assetID, const BigInt &amount, const bytes_t &Asset) :
 					AssetID(assetID),
 					Amount(amount),
-					TxHash(txHash),
 					Asset(Asset) {
 			}
 
 			std::string AssetID;
-			uint64_t Amount;
+			BigInt Amount;
 			bytes_t Asset;
-			std::string TxHash;
 		};
 
 		class AssetDataStore : public TableBase {
@@ -39,18 +38,17 @@ namespace Elastos {
 
 			bool PutAsset(const std::string &iso, const AssetEntity &asset);
 
-			bool PutAssets(const std::string &iso, const std::vector<AssetEntity> &assets);
+			bool DeleteAsset(const std::string &assetID);
 
-			bool DeleteAsset(const std::string &iso, const std::string &assetID);
+			bool DeleteAllAssets();
 
-			bool DeleteAllAssets(const std::string &iso);
+			bool GetAssetDetails(const std::string &assetID, AssetEntity &asset) const;
 
-			bool GetAssetDetails(const std::string &iso, const std::string &assetID, AssetEntity &asset) const;
+			std::vector<AssetEntity> GetAllAssets() const;
 
-			std::vector<AssetEntity> GetAllAssets(const std::string &iso) const;
-
+			void flush();
 		private:
-			bool SelectAsset(const std::string &iso, const std::string &assetID, AssetEntity &asset) const;
+			bool SelectAsset(const std::string &assetID, AssetEntity &asset) const;
 
 			bool InsertAsset(const std::string &iso, const AssetEntity &asset);
 
@@ -60,18 +58,17 @@ namespace Elastos {
 			/*
 			 * asset data table
 			 */
-			const std::string ASSET_TABLE_NAME = "assetTable";
+			const std::string ASSET_OLD_TABLE_NAME = "assetTable";
+			const std::string ASSET_TABLE_NAME = "registeredAssetTable";
 			const std::string ASSET_COLUMN_ID = "_id";
 			const std::string ASSET_AMOUNT = "assetAmount";
 			const std::string ASSET_BUFF = "assetBuff";
-			const std::string ASSET_TXHASH = "assetTxHash";
 			const std::string ASSET_ISO = "assetISO";
 
 			const std::string ASSET_DATABASE_CREATE = "create table if not exists " + ASSET_TABLE_NAME + " (" +
 				ASSET_COLUMN_ID + " text not null, " +
-				ASSET_AMOUNT + " bigint, " +
+				ASSET_AMOUNT + " text DEFAULT '0', " +
 				ASSET_BUFF + " blob, " +
-				ASSET_TXHASH + " text not null, " +
 				ASSET_ISO + " text DEFAULT 'ELA');";
 		};
 

@@ -20,7 +20,7 @@ namespace Elastos {
 
 			void AddPeer(const PeerPtr &peer);
 
-			void RemovePeerAt(size_t index);
+			bool RemovePeer(const PeerPtr &peer);
 
 		private:
 			uint256 _txHash;

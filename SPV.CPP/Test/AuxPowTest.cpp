@@ -15,6 +15,7 @@
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("AuxPow test", "[AuxPow]") {
+	Log::registerMultiLogger();
 
 	srand((unsigned int) time(nullptr));
 

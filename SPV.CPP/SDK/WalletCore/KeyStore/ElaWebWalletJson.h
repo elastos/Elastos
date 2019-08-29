@@ -7,8 +7,6 @@
 
 #include "BitcoreWalletClientJson.h"
 
-#include <SDK/Common/Mstream.h>
-
 namespace Elastos {
 	namespace ElaWallet {
 		
@@ -18,11 +16,20 @@ namespace Elastos {
 
 			virtual ~ElaWebWalletJson();
 
-		private:
-			JSON_SM_LS(ElaWebWalletJson);
-			JSON_SM_RS(ElaWebWalletJson);
-			TO_JSON(ElaWebWalletJson);
-			FROM_JSON(ElaWebWalletJson);
+			const std::string &Mnemonic() const { return _mnemonic; }
+
+			void SetMnemonic(const std::string &m) { _mnemonic = m; }
+
+			virtual nlohmann::json ToJson(bool withPrivKey) const;
+
+			virtual void FromJson(const nlohmann::json &j);
+
+			friend void to_json(nlohmann::json &j, const ElaWebWalletJson &p);
+
+			friend void from_json(const nlohmann::json &j, ElaWebWalletJson &p);
+
+		protected:
+			std::string _mnemonic;
 		};
 	}
 }

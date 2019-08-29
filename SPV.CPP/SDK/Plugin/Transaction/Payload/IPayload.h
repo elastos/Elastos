@@ -18,10 +18,14 @@ namespace Elastos {
 
 			virtual bytes_t GetData(uint8_t versin) const;
 
+			virtual size_t EstimateSize(uint8_t version) const = 0;
+
 			virtual void Serialize(ByteStream &ostream, uint8_t version) const = 0;
+
 			virtual bool Deserialize(const ByteStream &istream, uint8_t version) = 0;
 
 			virtual nlohmann::json ToJson(uint8_t version) const = 0;
+
 			virtual void FromJson(const nlohmann::json &j, uint8_t version) = 0;
 
 			virtual bool IsValid() const;

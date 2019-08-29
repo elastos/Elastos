@@ -16,21 +16,23 @@ namespace Elastos {
 		class Mnemonic {
 		public:
 			enum WordCount {
-				WORDS_12,
-				WORDS_15,
-				WORDS_18,
-				WORDS_21,
-				WORDS_24
+				WORDS_12 = 12,
+				WORDS_15 = 15,
+				WORDS_18 = 18,
+				WORDS_21 = 21,
+				WORDS_24 = 24
 			};
 		public:
 			Mnemonic(const boost::filesystem::path &rootPath);
 
-			std::string Create(const std::string &language, WordCount words = WORDS_12);
+			std::string Create(const std::string &language, WordCount words = WORDS_12) const;
 
-			uint512 DeriveSeed(const std::string &mnemonic, const std::string &passphrase);
+			bool Validate(const std::string &mnemonic) const;
+
+			uint512 DeriveSeed(const std::string &mnemonic, const std::string &passphrase) const;
 
 		private:
-			void LoadPath(const boost::filesystem::path &filePath, std::vector<std::string> &wordLists);
+			void LoadPath(const boost::filesystem::path &filePath, std::vector<std::string> &wordLists) const;
 
 		private:
 			boost::filesystem::path _rootPath;

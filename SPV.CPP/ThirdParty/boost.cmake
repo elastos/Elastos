@@ -13,6 +13,7 @@ if(${SPV_PLATFORM} STREQUAL ${SPV_PLATFORM_ANDROID})
 		BUILD_COMMAND
 		./build.sh
 		--verbose
+		--boost=1.67.0
 		--with-libraries=${BUILD_WITH_LIBRARIES}
 		--build-dir=${BOOST_BUILD_DIR}
 		--prefix=${BOOST_INSTALL_DIR}
@@ -26,7 +27,7 @@ elseif(${SPV_PLATFORM} STREQUAL ${SPV_PLATFORM_IOS})
 	set(BOOST_BUILD_COMMENT "Building boost for ios...")
 	set(
 		BUILD_COMMAND
-		SRCDIR=${BOOST_EXTRACT_DIR} OUTPUT_DIR=${BOOST_BUILD_DIR} ./boost.sh --universal -ios --boost-libs "\"${BOOST_BUILD_COMPONENTS}\""
+		SRCDIR=${BOOST_EXTRACT_DIR} OUTPUT_DIR=${BOOST_BUILD_DIR} ./boost.sh --boost-version 1.69.0 --universal -ios --boost-libs "\"${BOOST_BUILD_COMPONENTS}\""
 	)
 	set(Boost_INCLUDE_DIRS ${BOOST_BUILD_DIR}/ios/prefix/include)
 else()

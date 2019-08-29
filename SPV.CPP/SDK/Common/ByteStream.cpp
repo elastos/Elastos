@@ -6,39 +6,34 @@
 
 namespace Elastos {
 	namespace ElaWallet {
+		ByteStream::ByteStream() : _rpos(0) {
 
-
-#define VAR_INT16_HEADER  0xfd
-#define VAR_INT32_HEADER  0xfe
-#define VAR_INT64_HEADER  0xff
-#define MAX_SCRIPT_LENGTH 0x100 // scripts over this size will not be parsed for an address
-
-		ByteStream::ByteStream()
-				: _rpos(0) {
 		}
 
-		ByteStream::ByteStream(size_t size)
-				: _rpos(0) {
-			_buf.reserve(size);
+		ByteStream::ByteStream(const void *buf, size_t size) : _rpos(0), _buf((const unsigned char *) buf, size) {
+
 		}
 
-		ByteStream::ByteStream(const void *buf, size_t size)
-				: _rpos(0), _buf((const unsigned char *)buf, size)  {
-		}
+		ByteStream::ByteStream(const bytes_t &buf) : _rpos(0), _buf(buf) {
 
-		ByteStream::ByteStream(const bytes_t &buf)
-				: _rpos(0), _buf(buf) {
 		}
 
 		ByteStream::~ByteStream() {
+
+		}
+
+		void ByteStream::Reset() {
+			_rpos = 0;
+			_buf.clear();
+		}
+
+		void ByteStream::clear() {
+			_rpos = 0;
+			_buf.clear();
 		}
 
 		uint64_t ByteStream::size() const {
 			return _buf.size();
-		}
-
-		const bytes_t &ByteStream::GetBytes() const {
-			return _buf;
 		}
 
 		void ByteStream::Skip(size_t bytes) const {
@@ -46,9 +41,8 @@ namespace Elastos {
 				_rpos += bytes;
 		}
 
-		void ByteStream::Reset() {
-			_rpos = 0;
-			_buf.clear();
+		const bytes_t &ByteStream::GetBytes() const {
+			return _buf;
 		}
 
 		bool ByteStream::ReadByte(uint8_t &val) const {
@@ -146,21 +140,21 @@ namespace Elastos {
 				case VAR_INT16_HEADER:
 					if (_rpos + 2 > _buf.size())
 						return false;
-					len = *(uint16_t *)&_buf[_rpos];
+					len = *(uint16_t *) &_buf[_rpos];
 					_rpos += 2;
 					break;
 
 				case VAR_INT32_HEADER:
 					if (_rpos + 4 > _buf.size())
 						return false;
-					len = *(uint32_t *)&_buf[_rpos];
+					len = *(uint32_t *) &_buf[_rpos];
 					_rpos += 4;
 					break;
 
 				case VAR_INT64_HEADER:
 					if (_rpos + 8 > _buf.size())
 						return false;
-					len = *(uint64_t *)&_buf[_rpos];
+					len = *(uint64_t *) &_buf[_rpos];
 					_rpos += 8;
 					break;
 
@@ -177,17 +171,16 @@ namespace Elastos {
 			if (!ReadVarBytes(bytes)) {
 				return false;
 			}
-			str = std::string((const char *)bytes.data(), bytes.size());
+			str = std::string((const char *) bytes.data(), bytes.size());
 
 			return true;
 		}
 
-
-		void ByteStream::WriteUint8(uint8_t val) {
+		void ByteStream::WriteByte(uint8_t val) {
 			_buf.push_back(val);
 		}
 
-		void ByteStream::WriteByte(uint8_t val) {
+		void ByteStream::WriteUint8(uint8_t val) {
 			_buf.push_back(val);
 		}
 
@@ -228,33 +221,38 @@ namespace Elastos {
 		}
 
 		void ByteStream::WriteVarBytes(const void *bytes, size_t len) {
-			WriteVarUint((uint64_t)len);
+			WriteVarUint((uint64_t) len);
 			WriteBytes(bytes, len);
 		}
 
 		void ByteStream::WriteVarBytes(const bytes_t &bytes) {
-			WriteVarUint((uint64_t)bytes.size());
+			WriteVarUint((uint64_t) bytes.size());
 			WriteBytes(bytes);
 		}
 
-		void ByteStream::WriteVarUint(uint64_t len) {
+		size_t ByteStream::WriteVarUint(uint64_t len) {
+			size_t count;
 			if (len < VAR_INT16_HEADER) {
-				_buf.push_back((uint8_t)len);
+				_buf.push_back((uint8_t) len);
+				count = 1;
 			} else if (len <= UINT16_MAX) {
 				_buf.push_back(VAR_INT16_HEADER);
-				_buf += bytes_t((unsigned char *)&len, 2);
+				_buf += bytes_t((unsigned char *) &len, 2);
+				count = 2;
 			} else if (len <= UINT32_MAX) {
 				_buf.push_back(VAR_INT32_HEADER);
-				_buf += bytes_t((unsigned char *)&len, 4);
+				_buf += bytes_t((unsigned char *) &len, 4);
+				count = 4;
 			} else {
 				_buf.push_back(VAR_INT64_HEADER);
-				_buf += bytes_t((unsigned char *)&len, 8);
+				_buf += bytes_t((unsigned char *) &len, 8);
+				count = 8;
 			}
+			return count;
 		}
 
 		void ByteStream::WriteVarString(const std::string &str) {
 			WriteVarBytes(str.c_str(), str.length());
 		}
-
 	}
 }

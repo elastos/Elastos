@@ -20,6 +20,10 @@ namespace Elastos {
 
 		}
 
+		size_t PayloadDefault::EstimateSize() const {
+			return 0;
+		}
+
 		void PayloadDefault::Serialize(ByteStream &ostream) const {
 		}
 

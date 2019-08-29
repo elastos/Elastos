@@ -8,6 +8,8 @@
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
+#include <SDK/WalletCore/BIPs/Address.h>
+#include <SDK/WalletCore/BIPs/Key.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -19,7 +21,8 @@ namespace Elastos {
 			operator=(program);
 		}
 
-		Program::Program(const bytes_t &code, const bytes_t &parameter) :
+		Program::Program(const std::string &path, const bytes_t &code, const bytes_t &parameter) :
+				_path(path),
 				_parameter(parameter),
 				_code(code) {
 
@@ -29,6 +32,7 @@ namespace Elastos {
 		}
 
 		Program &Program::operator=(const Program &p) {
+			_path = p._path;
 			_code = p._code;
 			_parameter = p._parameter;
 			return *this;
@@ -160,12 +164,47 @@ namespace Elastos {
 			_parameter = parameter;
 		}
 
-		void Program::Serialize(ByteStream &ostream) const {
-			ostream.WriteVarBytes(_parameter);
-			ostream.WriteVarBytes(_code);
+		void Program::SetPath(const std::string &path) {
+			_path = path;
 		}
 
-		bool Program::Deserialize(const ByteStream &istream) {
+		const std::string &Program::GetPath() const {
+			return _path;
+		}
+
+		size_t Program::EstimateSize() const {
+			size_t size = 0;
+			ByteStream stream;
+
+			if (_parameter.empty()) {
+				if (SignType(_code.back()) == SignTypeMultiSign) {
+					uint8_t m = (uint8_t)(_code[0] - OP_1 + 1);
+					uint64_t signLen = m * 64ul;
+					size += stream.WriteVarUint(signLen);
+					size += signLen;
+				} else if (SignType(_code.back()) == SignTypeStandard) {
+					size += 65;
+				}
+			} else {
+				size += stream.WriteVarUint(_parameter.size());
+				size += _parameter.size();
+			}
+
+			size += stream.WriteVarUint(_code.size());
+			size += _code.size();
+
+			return size;
+		}
+
+		void Program::Serialize(ByteStream &ostream, bool extend) const {
+			ostream.WriteVarBytes(_parameter);
+			ostream.WriteVarBytes(_code);
+			if (extend) {
+				ostream.WriteVarString(_path);
+			}
+		}
+
+		bool Program::Deserialize(const ByteStream &istream, bool extend) {
 			if (!istream.ReadVarBytes(_parameter)) {
 				Log::error("Program deserialize parameter fail");
 				return false;
@@ -176,6 +215,13 @@ namespace Elastos {
 				return false;
 			}
 
+			if (extend) {
+				if (!istream.ReadVarString(_path)) {
+					Log::error("Program deserialize path fail");
+					return false;
+				}
+			}
+
 			return true;
 		}
 
@@ -184,11 +230,15 @@ namespace Elastos {
 
 			jsonData["Parameter"] = _parameter.getHex();
 			jsonData["Code"] = _code.getHex();
+			jsonData["Path"] = _path;
 
 			return jsonData;
 		}
 
 		void Program::FromJson(const nlohmann::json &jsonData) {
+
+			_path = jsonData.find("Path") != jsonData.end() ? jsonData["Path"].get<std::string>() : "";
+
 			_parameter.setHex(jsonData["Parameter"].get<std::string>());
 			_code.setHex(jsonData["Code"].get<std::string>());
 		}

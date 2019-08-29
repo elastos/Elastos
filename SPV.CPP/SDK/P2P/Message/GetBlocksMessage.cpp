@@ -36,11 +36,11 @@ namespace Elastos {
 			msg.WriteBytes(getBlocksParameter.hashStop);
 
 			if (locatorsCount > 0) {
-				_peer->debug("calling getblocks with {} locators: [{},{} {}]",
-							 locatorsCount,
-							 getBlocksParameter.locators.front().GetHex(),
-							 (locatorsCount > 2 ? " ...," : ""),
-							 (locatorsCount > 1 ? getBlocksParameter.locators.back().GetHex() : ""));
+//				_peer->debug("calling getblocks with {} locators: [{},{} {}]",
+//							 locatorsCount,
+//							 getBlocksParameter.locators.front().GetHex(),
+//							 (locatorsCount > 2 ? " ...," : ""),
+//							 (locatorsCount > 1 ? getBlocksParameter.locators.back().GetHex() : ""));
 				SendMessage(msg.GetBytes(), Type());
 			}
 		}

@@ -27,6 +27,7 @@ namespace Elastos {
 		}
 
 		bool MerkleBlockMessage::Accept(const bytes_t &msg) {
+			std::vector<uint256> txHashes;
 			ByteStream stream(msg);
 
 			PeerManager *manager = _peer->GetPeerManager();
@@ -50,12 +51,9 @@ namespace Elastos {
 				_peer->error("got merkleblock message before loading a filter");
 				return false;
 			} else {
-				std::vector<uint256> txHashes;
 				block->MerkleBlockTxHashes(txHashes);
 
 				for (size_t i = txHashes.size(); i > 0; i--) { // reverse order for more efficient removal as tx arrive
-					if (_peer->KnownTxHashSet().find(txHashes[i - 1]) != _peer->KnownTxHashSet().end())
-						continue;
 					_peer->AddCurrentBlockTxHash(txHashes[i - 1]);
 				}
 			}

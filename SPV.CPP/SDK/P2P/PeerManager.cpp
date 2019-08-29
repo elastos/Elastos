@@ -11,6 +11,9 @@
 #include "Message/InventoryMessage.h"
 
 #include <SDK/Plugin/Transaction/Asset.h>
+#include <SDK/Plugin/Transaction/Transaction.h>
+#include <SDK/Plugin/Transaction/TransactionInput.h>
+#include <SDK/Plugin/Transaction/TransactionOutput.h>
 #include <SDK/Plugin/Block/ELAMerkleBlock.h>
 #include <SDK/Plugin/Registry.h>
 #include <SDK/Plugin/Block/MerkleBlock.h>
@@ -18,6 +21,9 @@
 #include <SDK/Common/Log.h>
 #include <SDK/WalletCore/BIPs/Base58.h>
 #include <SDK/WalletCore/BIPs/BloomFilter.h>
+#include <SDK/Wallet/Wallet.h>
+#include <SDK/Wallet/UTXO.h>
+#include <SDK/P2P/ChainParams.h>
 
 #include <netdb.h>
 #include <netinet/in.h>
@@ -25,8 +31,8 @@
 #include <boost/thread.hpp>
 #include <arpa/inet.h>
 
-#define PROTOCOL_TIMEOUT      50.0
-#define MAX_CONNECT_FAILURES  20 // notify user of network problems after this many connect failures in a row
+#define PROTOCOL_TIMEOUT      40.0
+#define MAX_CONNECT_FAILURES  40 // notify user of network problems after this many connect failures in a row
 #define PEER_FLAG_SYNCED      0x01
 #define PEER_FLAG_NEEDSUPDATE 0x02
 
@@ -88,30 +94,25 @@ namespace Elastos {
 			}
 		}
 
+		void PeerManager::FireConnectStatusChanged(Peer::ConnectStatus status) {
+			if (!_listener.expired()) {
+				std::string st = status == Peer::Connecting ? "Connecting" :
+								 (status == Peer::Connected ? "Connected" : "Disconnected");
+				_listener.lock()->connectStatusChanged(st);
+			}
+		}
+
 		void PeerManager::FireThreadCleanup() {
 			if (!_listener.expired()) {
 			}
 		}
 
-		void PeerManager::FireBlockHeightIncreased(uint32_t height) {
-			if (!_listener.expired()) {
-				_listener.lock()->blockHeightIncreased(height);
-			}
+		PeerManager::Listener::Listener() {
 		}
 
-		void PeerManager::FireSyncIsInactive(uint32_t time) {
-			if (!_listener.expired()) {
-				_listener.lock()->syncIsInactive(time);
-			}
-		}
-
-		PeerManager::Listener::Listener(const PluginType &pluginTypes) :
-				_pluginTypes(pluginTypes) {
-		}
-
-		PeerManager::PeerManager(const ChainParams &params,
+		PeerManager::PeerManager(const ChainParamsPtr &params,
 								 const WalletPtr &wallet,
-								 uint32_t earliestKeyTime,
+								 time_t earliestKeyTime,
 								 uint32_t reconnectSeconds,
 								 const std::vector<MerkleBlockPtr> &blocks,
 								 const std::vector<PeerInfo> &peers,
@@ -124,14 +125,13 @@ namespace Elastos {
 				_chainParams(params),
 
 				_syncSucceeded(false),
-				_enableReconnectTask(true),
+				_enableReconnect(true),
 
 				_isConnected(0),
 				_connectFailureCount(0),
 				_misbehavinCount(0),
 				_dnsThreadCount(0),
 				_maxConnectCount(PEER_MAX_CONNECTIONS),
-				_reconnectTaskCount(0),
 
 				_keepAliveTimestamp(0),
 				_earliestKeyTime(earliestKeyTime),
@@ -156,18 +156,16 @@ namespace Elastos {
 			_peers = peers;
 			SortPeers();
 
-			time_t now = time(nullptr);
-			const std::vector<CheckPoint> &Checkpoints = params.GetCheckpoints();
+			const std::vector<CheckPoint> &Checkpoints = params->Checkpoints();
 			for (size_t i = 0; i < Checkpoints.size(); i++) {
 				MerkleBlockPtr checkBlock = Registry::Instance()->CreateMerkleBlock(_pluginType);
-				checkBlock->SetHeight(Checkpoints[i].GetHeight());
-				checkBlock->SetHash(Checkpoints[i].GetHash());
-				checkBlock->SetTimestamp(Checkpoints[i].GetTimestamp());
-				checkBlock->SetTarget(Checkpoints[i].GetTarget());
+				checkBlock->SetHeight(Checkpoints[i].Height());
+				checkBlock->SetHash(Checkpoints[i].Hash());
+				checkBlock->SetTimestamp(Checkpoints[i].Timestamp());
+				checkBlock->SetTarget(Checkpoints[i].Target());
 				_checkpoints.Insert(checkBlock);
 				_blocks.Insert(checkBlock);
-				if (i == 0 || checkBlock->GetTimestamp() + 1 * 24 * 60 * 60 < earliestKeyTime ||
-					(earliestKeyTime == 0 && checkBlock->GetTimestamp() + 1 * 24 * 60 * 60 < now))
+				if (i == 0 || checkBlock->GetTimestamp() + 1 * 24 * 60 * 60 < earliestKeyTime)
 					_lastBlock = checkBlock;
 			}
 
@@ -211,11 +209,13 @@ namespace Elastos {
 					}
 				}
 			}
-			_wallet->SetBlockHeight(_lastBlock->GetHeight());
-			_wallet->UpdateBalance();
 		}
 
 		PeerManager::~PeerManager() {
+		}
+
+		void PeerManager::SetWallet(const WalletPtr &wallet) {
+			_wallet = wallet;
 		}
 
 		Peer::ConnectStatus PeerManager::GetConnectStatus() const {
@@ -233,29 +233,30 @@ namespace Elastos {
 			return status;
 		}
 
-		bool PeerManager::SyncSucceeded() const {
-			lock.lock();
-			bool status = _syncSucceeded;
-			lock.unlock();
+		void PeerManager::ResetReconnectStep() {
+			boost::mutex::scoped_lock scopedLock(lock);
+			_reconnectStep = 1;
+			_connectFailureCount = 0;
+		}
 
-			return status;
+		bool PeerManager::SyncSucceeded() const {
+			boost::mutex::scoped_lock scopedLock(lock);
+			return _syncSucceeded;
 		}
 
 		void PeerManager::SetSyncSucceeded(bool succeeded) {
-			lock.lock();
+			boost::mutex::scoped_lock scopedLock(lock);
 			_syncSucceeded = succeeded;
-			lock.unlock();
 		}
 
 		void PeerManager::SetReconnectEnableStatus(bool status) {
-			lock.lock();
-			_enableReconnectTask = status;
-			lock.unlock();
+			boost::mutex::scoped_lock scopedLock(lock);
+			_enableReconnect = status;
 		}
 
 		bool PeerManager::GetReconnectEnableStatus() const {
-			boost::mutex::scoped_lock scoped_lock(lock);
-			return _enableReconnectTask;
+			boost::mutex::scoped_lock scopedLock(lock);
+			return _enableReconnect;
 		}
 
 		void PeerManager::Connect() {
@@ -297,7 +298,7 @@ namespace Elastos {
 					}
 
 					if (i != SIZE_MAX) {
-						PeerPtr newPeer = PeerPtr(new Peer(this, _chainParams.GetMagicNumber()));
+						PeerPtr newPeer = PeerPtr(new Peer(this, _chainParams->MagicNumber()));
 						newPeer->InitDefaultMessages();
 						newPeer->SetPeerInfo(peers[i]);
 						newPeer->setEarliestKeyTime(_earliestKeyTime);
@@ -316,40 +317,78 @@ namespace Elastos {
 				FireSyncStopped(ENETUNREACH);
 			} else {
 				lock.unlock();
+				FireConnectStatusChanged(GetConnectStatus());
 			}
+		}
+
+		void PeerManager::AsyncConnect(const boost::system::error_code &e) {
+			if (e != boost::asio::error::operation_aborted) {
+				if (GetConnectStatus() != Peer::Connected)
+					Connect();
+			} else {
+				Log::warn("{} async connect err.value: {} err.msg: {}", GetID(), e.value(), e.message());
+			}
+		}
+
+		void PeerManager::ConnectLaster(time_t seconds) {
+			lock.lock();
+			_enableReconnect = true;
+			lock.unlock();
+
+			if (_reconnectTimer) {
+				_reconnectTimer->expires_from_now(boost::posix_time::seconds(seconds));
+				_reconnectService.restart();
+			} else {
+				_reconnectTimer = boost::shared_ptr<boost::asio::deadline_timer>(new boost::asio::deadline_timer(
+					_reconnectService, boost::posix_time::seconds(seconds)));
+			}
+
+			SPVLOG_DEBUG("{} connect {} seconds later", GetID(), seconds);
+			_reconnectTimer->async_wait(boost::bind(&PeerManager::AsyncConnect, this, boost::asio::placeholders::error));
+			_reconnectService.run();
+		}
+
+		void PeerManager::CancelTimer() {
+			boost::mutex::scoped_lock scopedLock(lock);
+			if (_reconnectTimer) {
+				_reconnectTimer->cancel();
+			}
+		}
+
+		void PeerManager::ReconnectLaster(time_t seconds) {
+			Disconnect();
+			ConnectLaster(seconds);
 		}
 
 		void PeerManager::Disconnect() {
 			struct timespec ts;
-			size_t peerCount = 0, dnsThreadCount;
+			size_t peerCount = 0;
+			int dnsThreadCount;
 
-			{
-				time_t expect = time(NULL) + 2;
-				while (peerCount == 0 && time(NULL) < expect) {
-					lock.lock();
-					peerCount = _connectedPeers.size();
-					lock.unlock();
-					usleep(100000);
-				}
+			lock.lock();
+			_enableReconnect = false;
+			lock.unlock();
 
-				boost::mutex::scoped_lock scoped_lock(lock);
-				dnsThreadCount = this->_dnsThreadCount;
+			usleep(1000);
 
-				for (size_t i = peerCount; i > 0; i--) {
-					_connectedPeers[i - 1]->Disconnect();
-				}
+			lock.lock();
+			peerCount = _connectedPeers.size();
+			dnsThreadCount = _dnsThreadCount;
+
+			for (size_t i = peerCount; i > 0; i--) {
+				_connectedPeers[i - 1]->Disconnect();
 			}
+			lock.unlock();
 
 			ts.tv_sec = 0;
-			ts.tv_nsec = 1;
+			ts.tv_nsec = 1000;
 
 			while (peerCount > 0 || dnsThreadCount > 0) {
 				nanosleep(&ts, NULL); // pthread_yield() isn't POSIX standard :(
-				{
-					boost::mutex::scoped_lock scoped_lock(lock);
-					peerCount = _connectedPeers.size();
-					dnsThreadCount = this->_dnsThreadCount;
-				}
+				lock.lock();
+				peerCount = _connectedPeers.size();
+				dnsThreadCount = _dnsThreadCount;
+				lock.unlock();
 			}
 		}
 
@@ -358,20 +397,24 @@ namespace Elastos {
 
 			if (_isConnected) {
 				// start the chain download from the most recent checkpoint that's at least a week older than earliestKeyTime
-				const std::vector<CheckPoint> &checkpoints = _chainParams.GetCheckpoints();
+				const std::vector<CheckPoint> &checkpoints = _chainParams->Checkpoints();
 				for (size_t i = checkpoints.size(); i > 0; i--) {
 					if (i - 1 == 0 ||
-						checkpoints[i - 1].GetTimestamp() + 7 * 24 * 60 * 60 < _earliestKeyTime) {
-						uint256 hash = checkpoints[i - 1].GetHash();
+						checkpoints[i - 1].Timestamp() + 7 * 24 * 60 * 60 < _earliestKeyTime) {
+						uint256 hash = checkpoints[i - 1].Hash();
 						_lastBlock = _blocks.Get(hash);
 						break;
 					}
 				}
 
 				if (_downloadPeer) { // disconnect the current download peer so a new random one will be selected
-					for (size_t i = _peers.size(); i > 0; i--) {
-						if (_peers[i - 1] == _downloadPeer->GetPeerInfo())
-							_peers.erase(_peers.begin() + i - 1);
+					for (std::vector<PeerInfo>::iterator p = _peers.begin(); p != _peers.end();) {
+						if ((*p) == _downloadPeer->GetPeerInfo()) {
+							p = _peers.erase(p);
+							break;
+						} else {
+							++p;
+						}
 					}
 
 					_downloadPeer->Disconnect();
@@ -398,13 +441,8 @@ namespace Elastos {
 		}
 
 		uint32_t PeerManager::GetLastBlockHeight() const {
-			uint32_t height;
-
-			{
-				boost::mutex::scoped_lock scoped_lock(lock);
-				height = _lastBlock->GetHeight();
-			}
-			return height;
+			boost::mutex::scoped_lock scoped_lock(lock);
+			return _lastBlock->GetHeight();
 		}
 
 		uint32_t PeerManager::GetLastBlockTimestamp() const {
@@ -476,7 +514,7 @@ namespace Elastos {
 				*(uint16_t *)&address.begin()[10] = 0xffff;
 				*(uint32_t *)&address.begin()[12] = addr.s_addr;
 				if (port == 0)
-					_port = _chainParams.GetStandardPort();
+					_port = _chainParams->StandardPort();
 			} else {
 				_port = 0;
 			}
@@ -525,7 +563,6 @@ namespace Elastos {
 		void PeerManager::PublishTransaction(const TransactionPtr &tx,
 											 const Peer::PeerPubTxCallback &callback) {
 
-			assert(tx != NULL && tx->IsSigned());
 			bool txValid = (tx != nullptr);
 			if (tx) lock.lock();
 
@@ -563,9 +600,8 @@ namespace Elastos {
 					if (peer != _downloadPeer || count == 1) {
 						PublishPendingTx(peer);
 
-						PingParameter pingParameter;
-						pingParameter.callback = boost::bind(&PeerManager::PublishTxInvDone, this, peer, _1);
-						pingParameter.lastBlockHeight = _lastBlock->GetHeight();
+						PingParameter pingParameter(_lastBlock->GetHeight(),
+													boost::bind(&PeerManager::PublishTxInvDone, this, peer, _1));
 						peer->SendMessage(MSG_PING, pingParameter);
 					}
 				}
@@ -592,12 +628,12 @@ namespace Elastos {
 			return count;
 		}
 
-		int PeerManager::VerifyDifficulty(const ChainParams &params, const MerkleBlockPtr &block,
+		int PeerManager::VerifyDifficulty(const ChainParamsPtr &params, const MerkleBlockPtr &block,
 										  const BlockSet &blockSet) {
 			MerkleBlockPtr previous, b = nullptr;
 			uint32_t i;
-			const uint32_t &targetTimeSpan = params.GetTargetTimeSpan();
-			const uint32_t &targetTimePerBlock = params.GetTargetTimePerBlock();
+			const uint32_t &targetTimeSpan = params->TargetTimeSpan();
+			const uint32_t &targetTimePerBlock = params->TargetTimePerBlock();
 
 			assert(block != nullptr);
 
@@ -664,73 +700,66 @@ namespace Elastos {
 			_filterUpdateHeight = _lastBlock->GetHeight();
 			_fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
 
-			Address ownerDepositAddress = _wallet->GetOwnerDepositAddress();
-			Address ownerAddress = _wallet->GetOwnerAddress();
-
+			std::vector<Address> specialAddresses = _wallet->GetAllSpecialAddresses();
 			std::vector<Address> addrs;
 			_wallet->GetAllAddresses(addrs, 0, size_t(-1), true);
-			std::vector<UTXO> utxos = _wallet->GetAllUTXOsSafe();
+			std::vector<UTXOPtr> utxos = _wallet->GetAllUTXO("");
 			uint32_t blockHeight = (_lastBlock->GetHeight() > 100) ? _lastBlock->GetHeight() - 100 : 0;
 
 			std::vector<TransactionPtr> transactions = _wallet->TxUnconfirmedBefore(blockHeight);
-			BloomFilterPtr filter = BloomFilterPtr(
-					new BloomFilter(_fpRate, 2 + addrs.size() + _wallet->GetListeningAddrs().size() +
-											 utxos.size() + transactions.size() + 100,
-									(uint32_t) peer->GetPeerInfo().GetHash(),
-									BLOOM_UPDATE_ALL)); // BUG: XXX txCount not the same as number of spent wallet outputs
+
+			size_t elementCount = specialAddresses.size() + addrs.size() + utxos.size() + transactions.size();
+			elementCount += _wallet->GetListeningAddrs().size();
+
+			BloomFilterPtr filter = BloomFilterPtr(new BloomFilter(_fpRate, elementCount + 100,
+																   (uint32_t) peer->GetPeerInfo().GetHash(),
+																   BLOOM_UPDATE_ALL)); // BUG: XXX txCount not the same as number of spent wallet outputs
 
 			bytes_t hash;
 
-			if (ownerDepositAddress.Valid()) {
-				hash = ownerDepositAddress.ProgramHash().bytes();
-				if (!filter->ContainsData(hash)) {
-					filter->InsertData(hash);
-				}
-			}
-
-			if (ownerAddress.Valid()) {
-				hash = ownerAddress.ProgramHash().bytes();
-				if (!filter->ContainsData(hash)) {
-					filter->InsertData(hash);
+			for (size_t i = 0; i < specialAddresses.size(); ++i) {
+				if (specialAddresses[i].Valid()) {
+					hash = specialAddresses[i].ProgramHash().bytes();
+					if (!filter->ContainsData(hash))
+						filter->InsertData(hash);
 				}
 			}
 
 			for (size_t i = 0; i < addrs.size(); i++) { // add addresses to watch for tx receiveing money to the wallet
-				hash = addrs[i].ProgramHash().bytes();
-
-				if (addrs[i].Valid() && !filter->ContainsData(hash)) {
-					filter->InsertData(hash);
+				if (addrs[i].Valid()) {
+					hash = addrs[i].ProgramHash().bytes();
+					if (!filter->ContainsData(hash))
+						filter->InsertData(hash);
 				}
 			}
 
 			for (size_t i = 0; i < _wallet->GetListeningAddrs().size(); ++i) {
 				hash = Address(_wallet->GetListeningAddrs()[i]).ProgramHash().bytes();
-
 				if (!filter->ContainsData(hash)) {
 					filter->InsertData(hash);
 				}
 			}
 
 			for (size_t i = 0; i < utxos.size(); i++) { // add UTXOs to watch for tx sending money from the wallet
-				bytes_t o = utxos[i].hash.bytes();
-				o.append(utxos[i].n);
+				bytes_t o = utxos[i]->Hash().bytes();
+				o.append(utxos[i]->Index());
 
 				if (!filter->ContainsData(o))
 					filter->InsertData(o);
 			}
 
 			for (size_t i = 0; i < transactions.size(); i++) { // also add TXOs spent within the last 100 blocks
-				for (size_t j = 0; j < transactions[i]->GetInputs().size(); j++) {
-					const TransactionInput &input = transactions[i]->GetInputs()[j];
-					const TransactionPtr &tx = _wallet->TransactionForHash(input.GetTransctionHash());
-
-					if (tx && input.GetIndex() < tx->GetOutputs().size() &&
-						_wallet->ContainsAddress(tx->GetOutputs()[input.GetIndex()].GetAddress())) {
-
-						bytes_t o = input.GetTransctionHash().bytes();
-						o.append(input.GetIndex());
-						if (!filter->ContainsData(o))
-							filter->InsertData(o);
+				const InputArray &inputs = transactions[i]->GetInputs();
+				for (InputArray::const_iterator in = inputs.cbegin(); in != inputs.cend(); ++in) {
+					const TransactionPtr &tx = _wallet->TransactionForHash((*in)->TxHash());
+					if (tx) {
+						OutputPtr output = tx->OutputOfIndex((*in)->Index());
+						if (output && _wallet->ContainsAddress(output->Addr())) {
+							bytes_t o = (*in)->TxHash().bytes();
+							o.append((*in)->Index());
+							if (!filter->ContainsData(o))
+								filter->InsertData(o);
+						}
 					}
 				}
 			}
@@ -750,7 +779,7 @@ namespace Elastos {
 		}
 
 		void PeerManager::FindPeers() {
-			uint64_t services = SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM | _chainParams.GetServices();
+			uint64_t services = SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM | _chainParams->Services();
 			time_t now = time(NULL);
 			struct timespec ts;
 
@@ -766,7 +795,7 @@ namespace Elastos {
 				_peers[0].Services = services;
 				_peers[0].Timestamp = now;
 			} else {
-				const std::vector<std::string> &dnsSeeds = _chainParams.GetDNSSeeds();
+				const std::vector<std::string> &dnsSeeds = _chainParams->DNSSeeds();
 				for (size_t i = 1; i < dnsSeeds.size(); i++) {
 					boost::thread workThread(boost::bind(&PeerManager::FindPeersThreadRoutine, this, dnsSeeds[i], services));
 					_dnsThreadCount++;
@@ -775,7 +804,7 @@ namespace Elastos {
 				std::vector<uint128> addrList = AddressLookup(dnsSeeds[0]);
 				for (std::vector<uint128>::iterator addr = addrList.begin();
 					 addr != addrList.end() && (*addr) != 0; addr++) {
-					_peers.emplace_back(*addr, _chainParams.GetStandardPort(), now, services);
+					_peers.emplace_back(*addr, _chainParams->StandardPort(), now, services);
 				}
 
 				ts.tv_sec = 0;
@@ -816,50 +845,24 @@ namespace Elastos {
 				_publishedTxHashes.push_back(tx->GetHash());
 
 				for (size_t i = 0; i < tx->GetInputs().size(); i++) {
-					AddTxToPublishList(_wallet->TransactionForHash(tx->GetInputs()[i].GetTransctionHash()),
+					AddTxToPublishList(_wallet->TransactionForHash(tx->GetInputs()[i]->TxHash()),
 									   Peer::PeerPubTxCallback());
 				}
-			}
-		}
-
-		void PeerManager::AsyncConnect(const boost::system::error_code &error) {
-			if (error.value() == 0) {
-				if (GetConnectStatus() != Peer::Connected) {
-					Log::info("{} Async connecting...", GetID());
-					Connect();
-				}
-			} else {
-				Log::warn("{} async connect err: {}", GetID(), error.message());
-			}
-
-			boost::mutex::scoped_lock scoped_lock(lock);
-			if (_reconnectTaskCount > 0) {
-				_reconnectTaskCount--;
 			}
 		}
 
 		void PeerManager::OnConnected(const PeerPtr &peerPtr) {
 			time_t now = time(nullptr);
 
-			boost::mutex::scoped_lock scopedLock(lock);
 			PeerPtr peer = peerPtr;
 
-			{
-				std::vector<uint256> recoverHashes;
-				for (size_t i = _publishedTx.size(); i > 0; i--) {
-					if (!_publishedTx[i - 1].HasCallback()) {
-						peer->info("recover tx {} to known tx list of peer", _publishedTxHashes[i - 1].GetHex());
-						recoverHashes.push_back(_publishedTxHashes[i - 1]);
-					}
-				}
-				peer->AddKnownTxHashes(recoverHashes);
-			}
+			lock.lock();
 
 			if (peer->GetTimestamp() > now + 2 * 60 * 60 || peer->GetTimestamp() < now - 2 * 60 * 60)
 				peer->SetTimestamp(now); // sanity check
 
 			// TODO: XXX does this work with 0.11 pruned nodes?
-			if ((peer->GetServices() & _chainParams.GetServices()) != _chainParams.GetServices()) {
+			if ((peer->GetServices() & _chainParams->Services()) != _chainParams->Services()) {
 				peer->warn("unsupported node type");
 				peer->Disconnect();
 			} else if ((peer->GetServices() & SERVICES_NODE_NETWORK) != SERVICES_NODE_NETWORK) {
@@ -882,9 +885,8 @@ namespace Elastos {
 					_connectFailureCount = 0; // also reset connect failure count if we're already synced
 					LoadBloomFilter(peer);
 					PublishPendingTx(peer);
-					PingParameter pingParameter;
-					pingParameter.callback = boost::bind(&PeerManager::LoadBloomFilterDone, this, peer, _1);
-					pingParameter.lastBlockHeight = _lastBlock->GetHeight();
+					PingParameter pingParameter(_lastBlock->GetHeight(),
+												boost::bind(&PeerManager::LoadBloomFilterDone, this, peer, _1));
 					peer->SendMessage(MSG_PING, pingParameter);
 				}
 			} else { // select the peer with the lowest ping time to download the chain from if we're behind
@@ -910,6 +912,7 @@ namespace Elastos {
 				_isConnected = 1;
 				_reconnectStep = 1;
 				_estimatedHeight = peer->GetLastBlock();
+				_connectFailureCount = 0; // reset connect failure count
 				LoadBloomFilter(peer);
 				peer->SetCurrentBlockHeight(_lastBlock->GetHeight());
 				PublishPendingTx(peer);
@@ -929,18 +932,19 @@ namespace Elastos {
 //						peer->SendMessage(MSG_GETHEADERS, GetHeadersParameter(getBlockLocators(), uint256_ZERO));
 //					}
 				} else { // we're already synced
-					_connectFailureCount = 0; // reset connect failure count
 					LoadMempools();
 				}
 			}
+			lock.unlock();
+			FireConnectStatusChanged(GetConnectStatus());
 		}
 
 		void PeerManager::OnDisconnected(const PeerPtr &peer, int error) {
 			int willSave = 0, txError = 0;
 			TransactionPeerList *peerList;
-			std::vector<PublishedTransaction> pubTx;
 			uint32_t reconnectSeconds = 1;
 			bool willReconnect = false;
+			Peer::ConnectStatus status = Peer::Disconnected;
 
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
@@ -949,9 +953,12 @@ namespace Elastos {
 					_connectFailureCount++;
 					PeerMisbehaving(peer);
 				} else if (error) { // timeout or some non-protocol related network error
-					for (size_t i = _peers.size(); i > 0; i--) {
-						if (_peers[i - 1] == peer->GetPeerInfo())
-							_peers.erase(_peers.begin() + i - 1);
+					for (std::vector<PeerInfo>::iterator p = _peers.begin(); p != _peers.cend();) {
+						if ((*p) == peer->GetPeerInfo()) {
+							p = _peers.erase(p);
+						} else {
+							++p;
+						}
 					}
 
 					_connectFailureCount++;
@@ -964,12 +971,7 @@ namespace Elastos {
 				}
 
 				for (size_t i = _txRelays.size(); i > 0; i--) {
-					peerList = &_txRelays[i - 1];
-
-					for (size_t j = peerList->GetPeers().size(); j > 0; j--) {
-						if (peerList->GetPeers()[j - 1]->IsEqual(peer.get()))
-							peerList->RemovePeerAt(j - 1);
-					}
+					_txRelays[i - 1].RemovePeer(peer);
 				}
 
 				if (peer == _downloadPeer) { // download peer disconnected
@@ -988,57 +990,54 @@ namespace Elastos {
 					willSave = 1;
 					_needGetAddr = true;
 					peer->warn("sync failed");
-				} else if (_enableReconnectTask && _connectFailureCount < MAX_CONNECT_FAILURES && _reconnectTaskCount == 0) {
+				} else if (_enableReconnect && _connectFailureCount < MAX_CONNECT_FAILURES) {
 					peer->info("will reconnect");
 					willReconnect = true;
 				}
 
-				peer->info("connect failure = {}, enable reconnect = {}, reconnect task count = {}",
-						_connectFailureCount, _enableReconnectTask, _reconnectTaskCount);
-				if (txError) {
-					for (size_t i = _publishedTx.size(); i > 0; i--) {
-						if (!_publishedTx[i - 1].HasCallback()) continue;
-						peer->error("transaction canceled: {}", strerror(txError));
-						pubTx.push_back(_publishedTx[i - 1]);
-//						_publishedTx[i - 1].ResetCallback();
-					}
-				}
-
-				for (size_t i = _connectedPeers.size(); i > 0; i--) {
-					if (_connectedPeers[i - 1] != peer)
-						continue;
-					_connectedPeers.erase(_connectedPeers.begin() + i - 1);
-					break;
-				}
-
+				peer->info("failure = {}, enable reconnect = {}", _connectFailureCount, _enableReconnect);
 
 				if (willReconnect) {
 					reconnectSeconds = _reconnectStep;
-					if (_reconnectStep < 60) {
+					if (_reconnectStep < 10) {
 						// doubling the step back each time
 						_reconnectStep <<= 1;
 					}
-
-					for (size_t i = 0; i < _publishedTx.size(); ++i) {
-						if (_publishedTx[i].HasCallback() && reconnectSeconds > 3) {
-							// have pending tx
-							reconnectSeconds = 3;
-							break;
-						}
-					}
 				}
+
+				if (_isConnected != 0)
+					status = Peer::Connected;
+
+				for (size_t i = _connectedPeers.size(); i > 0 && status == Peer::Disconnected; i--) {
+					if (_connectedPeers[i - 1] == peer || _connectedPeers[i - 1]->GetConnectStatus() == Peer::Disconnected)
+						continue;
+					status = Peer::Connecting;
+				}
+
 			}
 
-			if (willReconnect == false) {
-				for (size_t i = 0; i < pubTx.size(); i++) {
-					pubTx[i].FireCallback(txError, "tx canceled");
-				}
-			}
-
-			if (willSave) FireSavePeers(true, {});
-			if (willSave) FireSyncStopped(error);
-			if (willReconnect) FireSyncIsInactive(reconnectSeconds);
+			FireConnectStatusChanged(GetConnectStatus());
+			if (willSave)
+				FireSavePeers(true, {});
+			if (willSave)
+				FireSyncStopped(error);
 			FireTxStatusUpdate();
+
+			lock.lock();
+			for (std::vector<PeerPtr>::iterator p = _connectedPeers.begin(); p != _connectedPeers.end();) {
+				if ((*p) == peer) {
+					p = _connectedPeers.erase(p);
+					break;
+				} else {
+					++p;
+				}
+			}
+
+			PEER_DEBUG(peer, "connected peer size: {}", _connectedPeers.size());
+			lock.unlock();
+
+			if (willReconnect)
+				ConnectLaster(reconnectSeconds);
 		}
 
 		void PeerManager::OnRelayedPeers(const PeerPtr &peer, const std::vector<PeerInfo> &peers) {
@@ -1051,7 +1050,7 @@ namespace Elastos {
 				boost::mutex::scoped_lock scopedLock(lock);
 				peer->info("relayed {} peer(s)", peers.size());
 
-				if (_enableReconnectTask && _needGetAddr) {
+				if (_enableReconnect && _needGetAddr) {
 					_needGetAddr = false;
 					willReconnect = true;
 				}
@@ -1081,7 +1080,7 @@ namespace Elastos {
 				peersCount = _peers.size();
 
 				// remove peers more than 3 hours old, or until there are only 1000 left
-				while (peers.size() > 1000 && _peers.back().Timestamp + 3 * 60 * 60 < now) peersCount--;
+				while (peers.size() > 1000 && _peers[peersCount - 1].Timestamp + 3 * 60 * 60 < now) peersCount--;
 				_peers.resize(peersCount);
 				for (size_t i = 0; i < _peers.size(); ++i) {
 					save.push_back(_peers[i]);
@@ -1095,7 +1094,7 @@ namespace Elastos {
 
 			if (willReconnect) {
 				peer->info("use new addresses to reconnect");
-				FireSyncIsInactive(2);
+				boost::thread workThread(boost::bind(&PeerManager::ReconnectLaster, this, 1));
 			}
 		}
 
@@ -1103,11 +1102,13 @@ namespace Elastos {
 			int isWalletTx = 0, hasPendingCallbacks = 0;
 			size_t relayCount = 0;
 			TransactionPtr tx = transaction;
+			UTXOPtr coinBase;
 			PublishedTransaction pubTx;
 
 			{
+				_wallet->StripTransaction(tx);
 				boost::mutex::scoped_lock scopedLock(lock);
-				peer->info("relayed tx: {}", tx->GetHash().GetHex());
+				peer->info("relayed tx");
 
 				for (size_t i = _publishedTx.size(); i > 0; i--) { // see if tx is in list of published tx
 					if (_publishedTxHashes[i - 1] == tx->GetHash()) {
@@ -1124,7 +1125,14 @@ namespace Elastos {
 
 				if (_syncStartHeight == 0 || _wallet->ContainsTransaction(tx)) {
 					isWalletTx = _wallet->RegisterTransaction(tx);
-					if (isWalletTx) tx = _wallet->TransactionForHash(tx->GetHash());
+					if (isWalletTx) {
+						if (tx->IsCoinBase()) {
+							coinBase = _wallet->CoinBaseTxForHash(tx->GetHash());
+							tx = nullptr;
+						} else {
+							tx = _wallet->TransactionForHash(tx->GetHash());
+						}
+					}
 				} else {
 					tx = nullptr;
 				}
@@ -1135,7 +1143,7 @@ namespace Elastos {
 						peer->ScheduleDisconnect(PROTOCOL_TIMEOUT);
 					}
 
-					if (_syncSucceeded && _wallet->GetTransactionAmountSent(tx) > 0 &&
+					if (_syncSucceeded && _wallet->AmountSentByTx(tx) > 0 &&
 						_wallet->TransactionIsValid(tx)) {
 						AddTxToPublishList(tx, Peer::PeerPubTxCallback());  // add valid send tx to mempool
 					}
@@ -1184,7 +1192,9 @@ namespace Elastos {
 				// set timestamp when tx is verified
 				if (tx && relayCount >= _maxConnectCount && tx->GetBlockHeight() == TX_UNCONFIRMED &&
 					tx->GetTimestamp() == 0) {
-					_wallet->UpdateTransactions({tx->GetHash()}, TX_UNCONFIRMED, (uint32_t) time(NULL));
+					_wallet->UpdateTransactions({tx->GetHash()}, TX_UNCONFIRMED, time(NULL));
+				} else if (coinBase && coinBase->BlockHeight() == TX_UNCONFIRMED && coinBase->Timestamp() == 0) {
+					_wallet->UpdateTransactions({coinBase->Hash()}, TX_UNCONFIRMED, time(NULL));
 				}
 			}
 
@@ -1199,7 +1209,7 @@ namespace Elastos {
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
 				TransactionPtr tx = _wallet->TransactionForHash(txHash);
-				peer->info("has tx: {}", txHash.GetHex());
+				peer->info("has tx");
 
 				for (size_t i = _publishedTx.size(); i > 0; i--) { // see if tx is in list of published tx
 					if (_publishedTxHashes[i - 1] == txHash) {
@@ -1248,7 +1258,7 @@ namespace Elastos {
 			PublishedTransaction pubTx;
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
-				peer->info("rejected tx: {}", txHash.GetHex());
+				peer->info("rejected tx");
 				TransactionPtr tx = _wallet->TransactionForHash(txHash);
 				RemovePeerFromList(peer, txHash, _txRequests);
 
@@ -1259,6 +1269,7 @@ namespace Elastos {
 							_publishedTx[i - 1].ResetCallback();
 							_publishedTx.erase(_publishedTx.begin() + (i - 1));
 							_publishedTxHashes.erase(_publishedTxHashes.begin() + (i - 1));
+							break;
 						}
 					}
 				}
@@ -1300,7 +1311,6 @@ namespace Elastos {
 		void PeerManager::OnRelayedBlock(const PeerPtr &peer, const MerkleBlockPtr &block) {
 			size_t i, j, fpCount = 0, saveCount = 0;
 			MerkleBlockPtr b, b2, prev, next;
-			uint32_t txTime = 0;
 			std::vector<MerkleBlockPtr> saveBlocks;
 			std::vector<uint256> txHashes;
 			block->MerkleBlockTxHashes(txHashes);
@@ -1310,14 +1320,15 @@ namespace Elastos {
 				prev = _blocks.Get(block->GetPrevBlockHash());
 
 				if (prev) {
-					txTime = block->GetTimestamp();
 					block->SetHeight(prev->GetHeight() + 1);
 				}
 
 				// track the observed bloom filter false positive rate using a low pass filter to smooth out variance
 				if (peer == _downloadPeer && block->GetTransactionCount() > 0) {
 					for (i = 0; i < txHashes.size(); i++) { // wallet tx are not false-positives
-						if (_wallet->TransactionForHash(txHashes[i]) == nullptr) fpCount++;
+						if (_wallet->TransactionForHash(txHashes[i]) == nullptr &&
+							_wallet->CoinBaseTxForHash(txHashes[i]) == nullptr)
+							fpCount++;
 					}
 
 					// moving average number of tx-per-block
@@ -1334,6 +1345,7 @@ namespace Elastos {
 							"bloom filter false positive rate {} too high after {} blocks, disconnecting...",
 							_fpRate, _lastBlock->GetHeight() + 1 - _filterUpdateHeight);
 						peer->Disconnect();
+						return;
 					} else if (_lastBlock->GetHeight() + 500 < peer->GetLastBlock() &&
 							   _fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE * 10.0) {
 						UpdateBloomFilter(); // rebuild bloom filter when it starts to degrade
@@ -1388,10 +1400,9 @@ namespace Elastos {
 					_blocks.Insert(block);
 					_lastBlock = block;
 					_wallet->SetBlockHeight(_lastBlock->GetHeight());
-					FireBlockHeightIncreased(block->GetHeight());
 
 					if (txHashes.size() > 0)
-						_wallet->UpdateTransactions(txHashes, block->GetHeight(), txTime);
+						_wallet->UpdateTransactions(txHashes, block->GetHeight(), block->GetTimestamp());
 					if (_downloadPeer) _downloadPeer->SetCurrentBlockHeight(block->GetHeight());
 
 					if (block->GetHeight() < _estimatedHeight && peer == _downloadPeer) {
@@ -1418,7 +1429,7 @@ namespace Elastos {
 
 					if (b->IsEqual(block.get())) { // if it's not on a fork, set block heights for its transactions
 						if (txHashes.size() > 0)
-							_wallet->UpdateTransactions(txHashes, block->GetHeight(), txTime);
+							_wallet->UpdateTransactions(txHashes, block->GetHeight(), block->GetTimestamp());
 						if (block->GetHeight() == _lastBlock->GetHeight()) _lastBlock = block;
 					}
 
@@ -1441,7 +1452,7 @@ namespace Elastos {
 					peer->info("marking new block #{} as orphan until rescan completes", block->GetHeight());
 					_orphans.insert(block); // mark as orphan til we're caught up
 					_lastOrphan = block;
-				} else if (block->GetHeight() <= _chainParams.GetLastCheckpoint().GetHeight()) { // old fork
+				} else if (block->GetHeight() <= _chainParams->LastCheckpoint().Height()) { // old fork
 					peer->info("ignoring block on fork older than most recent checkpoint, block #{}, hash: {}",
 							   block->GetHeight(), block->GetHash().GetHex());
 				} else { // new block is on a fork
@@ -1477,9 +1488,6 @@ namespace Elastos {
 
 						_lastBlock = block;
 						_wallet->SetBlockHeight(_lastBlock->GetHeight());
-						for (int k = 1; k <= block->GetHeight() - b2->GetHeight(); ++k) {
-							FireBlockHeightIncreased(b2->GetHeight() + k);
-						}
 
 						if (block->GetHeight() == _estimatedHeight) { // chain download is complete
 							saveCount =
@@ -1527,19 +1535,27 @@ namespace Elastos {
 			if (saveBlocks.size() > 0)
 				FireSaveBlocks(saveBlocks.size() > 1, saveBlocks);
 
-			if (block && block->GetHeight() != BLOCK_UNKNOWN_HEIGHT && block->GetHeight() >= peer->GetLastBlock()) {
-				FireTxStatusUpdate(); // notify that transaction confirmations may have changed
-			}
-
-			if (block->GetHeight() == _estimatedHeight) {
-				_wallet->UpdateBalance();
+			if (block && block->GetHeight() != BLOCK_UNKNOWN_HEIGHT) {
+				_wallet->UpdateLockedBalance();
 			}
 
 			if (next) OnRelayedBlock(peer, next);
 		}
 
-		void PeerManager::OnRelayedPingMsg(const PeerPtr &peer) {
-			FireSyncIsInactive(_reconnectSeconds);
+		void PeerManager::OnRelayedPing(const PeerPtr &peer) {
+			bool needReconnect = false;
+			time_t seconds = 0;
+
+			lock.lock();
+			if (_syncSucceeded && time_after(time(NULL), _keepAliveTimestamp + 30) && 0 == PublishPendingTx(peer)) {
+				seconds = _reconnectSeconds;
+				needReconnect = true;
+			}
+			lock.unlock();
+
+			if (needReconnect) {
+				boost::thread workThread(boost::bind(&PeerManager::ReconnectLaster, this, seconds));
+			}
 		}
 
 		void PeerManager::OnNotfound(const PeerPtr &peer, const std::vector<uint256> &txHashes,
@@ -1563,25 +1579,26 @@ namespace Elastos {
 				}
 
 				if (secondFeePerKb * 3 / 2 > DEFAULT_FEE_PER_KB && secondFeePerKb * 3 / 2 <= MAX_FEE_PER_KB &&
-					secondFeePerKb * 3 / 2 > _wallet->GetFeePerKb(Asset::GetELAAssetID())) {
+					secondFeePerKb * 3 / 2 > _wallet->GetFeePerKb()) {
 					peer->info("increasing feePerKb to {} based on feefilter messages from peers",
 							   secondFeePerKb * 3 / 2);
-					_wallet->SetFeePerKb(Asset::GetELAAssetID(), secondFeePerKb * 3 / 2);
+					_wallet->SetFeePerKb(secondFeePerKb * 3 / 2);
 				}
 			}
 		}
 
-		const TransactionPtr PeerManager::OnRequestedTx(const PeerPtr &peer, const uint256 &txHash) {
+		TransactionPtr PeerManager::OnRequestedTx(const PeerPtr &peer, const uint256 &txHash) {
 			int hasPendingCallbacks = 0, error = 0;
 			PublishedTransaction pubTx;
 
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
 				for (size_t i = _publishedTx.size(); i > 0; i--) {
-					if (_publishedTxHashes[i - 1] == txHash) {
+					if (_publishedTx[i - 1].GetTransaction()->GetHash() == txHash) {
 						pubTx = _publishedTx[i - 1];
 //						_publishedTx[i - 1].ResetCallback();
-					} else if (_publishedTx[i - 1].HasCallback()) hasPendingCallbacks = 1;
+					} else if (_publishedTx[i - 1].HasCallback())
+						hasPendingCallbacks = 1;
 				}
 
 				// cancel tx publish timeout if no publish callbacks are pending, and syncing is done or this is not downloadPeer
@@ -1589,13 +1606,14 @@ namespace Elastos {
 					peer->ScheduleDisconnect(-1); // cancel publish tx timeout
 				}
 
-				AddPeerToList(peer, txHash, _txRelays);
-				if (pubTx.GetTransaction() != nullptr) _wallet->RegisterTransaction(pubTx.GetTransaction());
+				//AddPeerToList(peer, txHash, _txRelays);
+				if (pubTx.GetTransaction() != nullptr)
+					_wallet->RegisterTransaction(pubTx.GetTransaction());
 				if (pubTx.GetTransaction() != nullptr && !_wallet->TransactionIsValid(pubTx.GetTransaction()))
 					error = 0x10; // RejectInvalid by node
 			}
 
-			if (error && pubTx.HasCallback()) pubTx.FireCallback(error, "tx is invalid");
+			if (pubTx.HasCallback()) pubTx.FireCallback(error, "tx is requested");
 			return pubTx.GetTransaction();
 		}
 
@@ -1606,50 +1624,29 @@ namespace Elastos {
 		void PeerManager::OnThreadCleanup(const PeerPtr &peer) {
 		}
 
-		void PeerManager::PublishPendingTx(const PeerPtr &peer) {
+		size_t PeerManager::PublishPendingTx(const PeerPtr &peer) {
+			std::vector<uint256> pendingHashes;
+
 			for (size_t i = _publishedTx.size(); i > 0; i--) {
-				if (!_publishedTx[i - 1].HasCallback()) continue;
+				if (!_publishedTx[i - 1].HasCallback() ||
+					_publishedTx[i - 1].GetTransaction()->GetBlockHeight() != TX_UNCONFIRMED)
+					continue;
 				peer->ScheduleDisconnect(PROTOCOL_TIMEOUT);  // schedule publish timeout
-				break;
+				pendingHashes.push_back(_publishedTx[i - 1].GetTransaction()->GetHash());
 			}
 
 			InventoryParameter inventoryParameter;
-			inventoryParameter.txHashes = _publishedTxHashes;
+			inventoryParameter.txHashes = pendingHashes;
 			peer->SendMessage(MSG_INV, inventoryParameter);
-		}
 
-		const std::vector<PublishedTransaction> PeerManager::GetPublishedTransaction() const {
-			std::vector<PublishedTransaction> publishedTx;
-			{
-				boost::mutex::scoped_lock scoped_lock(lock);
-				publishedTx = _publishedTx;
-			}
-			return publishedTx;
-		}
-
-		const std::vector<uint256> PeerManager::GetPublishedTransactionHashes() const {
-			std::vector<uint256> publishedTxHashes;
-			{
-				boost::mutex::scoped_lock scoped_lock(lock);
-				publishedTxHashes = _publishedTxHashes;
-			}
-			return publishedTxHashes;
-		}
-
-		int PeerManager::ReconnectTaskCount() const {
-			boost::mutex::scoped_lock scopedLock(lock);
-			return _reconnectTaskCount;
-		}
-
-		void PeerManager::SetReconnectTaskCount(int count) {
-			boost::mutex::scoped_lock scopedLock(lock);
-			_reconnectTaskCount = count;
+			return pendingHashes.size();
 		}
 
 		size_t
 		PeerManager::AddPeerToList(const PeerPtr &peer, const uint256 &txHash, std::vector<TransactionPeerList> &list) {
 			for (size_t i = list.size(); i > 0; i--) {
-				if (list[i - 1].GetTransactionHash() != txHash) continue;
+				if (list[i - 1].GetTransactionHash() != txHash)
+					continue;
 
 				for (size_t j = list[i - 1].GetPeers().size(); j > 0; j--) {
 					if (list[i - 1].GetPeers()[j - 1]->IsEqual(peer.get()))
@@ -1666,25 +1663,24 @@ namespace Elastos {
 
 		bool PeerManager::RemovePeerFromList(const PeerPtr &peer, const uint256 &txHash,
 											 std::vector<TransactionPeerList> &list) {
+			bool removed = false;
 			for (size_t i = list.size(); i > 0; i--) {
-				if (list[i - 1].GetTransactionHash() != txHash) continue;
-
-				for (size_t j = list[i - 1].GetPeers().size(); j > 0; j--) {
-					if (!list[i - 1].GetPeers()[j - 1]->IsEqual(peer.get())) continue;
-					list[i - 1].RemovePeerAt(j - 1);
-					return true;
+				if (list[i - 1].GetTransactionHash() == txHash) {
+					removed = list[i - 1].RemovePeer(peer);
+					break;
 				}
-
-				break;
 			}
 
-			return false;
+			return removed;
 		}
 
 		void PeerManager::PeerMisbehaving(const PeerPtr &peer) {
-			for (size_t i = _peers.size(); i > 0; i--) {
-				if (_peers[i - 1] == peer->GetPeerInfo())
-					_peers.erase(_peers.begin() + i - 1);
+			for (std::vector<PeerInfo>::iterator p = _peers.begin(); p != _peers.end();) {
+				if ((*p) == peer->GetPeerInfo()) {
+					p = _peers.erase(p);
+				} else {
+					++p;
+				}
 			}
 
 			if (++_misbehavinCount >= 10) { // clear out stored peers so we get a fresh list from DNS for next connect
@@ -1720,10 +1716,9 @@ namespace Elastos {
 				_downloadPeer->SetFlags(_downloadPeer->GetFlags() | PEER_FLAG_NEEDSUPDATE);
 				_downloadPeer->info("filter update needed, waiting for pong");
 				// wait for pong so we're sure to include any tx already sent by the peer in the updated filter
-				PingParameter pingParameter;
-				pingParameter.callback = boost::bind(&PeerManager::UpdateFilterPingDone, this, _downloadPeer, _1);
-				pingParameter.lastBlockHeight = _lastBlock->GetHeight();
-				_downloadPeer->SendMessage(MSG_PING, pingParameter);
+				PingParameter pingParam(_lastBlock->GetHeight(),
+										boost::bind(&PeerManager::UpdateFilterPingDone, this, _downloadPeer, _1));
+				_downloadPeer->SendMessage(MSG_PING, pingParam);
 			}
 		}
 
@@ -1746,10 +1741,9 @@ namespace Elastos {
 
 			if (_lastBlock->GetHeight() < _estimatedHeight) { // if syncing, rerequest blocks
 				_downloadPeer->RerequestBlocks(_lastBlock->GetHash());
-				PingParameter pingParameter;
-				pingParameter.callback = boost::bind(&PeerManager::UpdateFilterRerequestDone, this, _downloadPeer, _1);
-				pingParameter.lastBlockHeight = _lastBlock->GetHeight();
-				_downloadPeer->SendMessage(MSG_PING, pingParameter);
+				PingParameter pingParam(_lastBlock->GetHeight(),
+										boost::bind(&PeerManager::UpdateFilterRerequestDone, this, _downloadPeer, _1));
+				_downloadPeer->SendMessage(MSG_PING, pingParam);
 			} else {
 				MempoolParameter mempoolParameter;
 				mempoolParameter.KnownTxHashes = {};
@@ -1765,23 +1759,22 @@ namespace Elastos {
 			peer->info("updating filter with newly created wallet addresses");
 			_bloomFilter = nullptr;
 
-			PingParameter pingParameter;
 			if (_lastBlock->GetHeight() < _estimatedHeight) { // if we're syncing, only update download peer
 				if (_downloadPeer) {
 					LoadBloomFilter(_downloadPeer);
-					pingParameter.callback = boost::bind(&PeerManager::UpdateFilterLoadDone, this, _downloadPeer, _1);
-					pingParameter.lastBlockHeight = _lastBlock->GetHeight();
-					_downloadPeer->SendMessage(MSG_PING, pingParameter);// wait for pong so filter is loaded
+					PingParameter pingParam(_lastBlock->GetHeight(),
+											boost::bind(&PeerManager::UpdateFilterLoadDone, this, _downloadPeer, _1));
+					_downloadPeer->SendMessage(MSG_PING, pingParam);// wait for pong so filter is loaded
 				}
 			} else {
 				for (size_t i = _connectedPeers.size(); i > 0; i--) {
-					if (_connectedPeers[i - 1]->GetConnectStatus() != Peer::Connected) continue;
-					pingParameter.callback = boost::bind(&PeerManager::UpdateFilterLoadDone, this,
-														 _connectedPeers[i - 1],
-														 _1);
-					pingParameter.lastBlockHeight = _lastBlock->GetHeight();
+					if (_connectedPeers[i - 1]->GetConnectStatus() != Peer::Connected)
+						continue;
+
+					PingParameter pingParam(_lastBlock->GetHeight(),
+											boost::bind(&PeerManager::UpdateFilterLoadDone, this, _connectedPeers[i - 1], _1));
 					LoadBloomFilter(peer);
-					_downloadPeer->SendMessage(MSG_PING, pingParameter);// wait for pong so filter is loaded
+					_downloadPeer->SendMessage(MSG_PING, pingParam);// wait for pong so filter is loaded
 				}
 			}
 		}
@@ -1909,7 +1902,7 @@ namespace Elastos {
 				}
 			}
 
-			locators.push_back(_chainParams.GetFirstCheckpoint().GetHash());
+			locators.push_back(_chainParams->FirstCheckpoint().Hash());
 			return locators;
 		}
 
@@ -1923,9 +1916,8 @@ namespace Elastos {
 				if (peer != _downloadPeer || _fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE * 5.0) {
 					LoadBloomFilter(peer);
 					PublishPendingTx(peer);
-					PingParameter pingParameter;
-					pingParameter.callback = boost::bind(&PeerManager::LoadBloomFilterDone, this, peer, _1);
-					pingParameter.lastBlockHeight = _lastBlock->GetHeight();
+					PingParameter pingParameter(_lastBlock->GetHeight(),
+												boost::bind(&PeerManager::LoadBloomFilterDone, this, peer, _1));
 					peer->SendMessage(MSG_PING, pingParameter);
 				} else {
 					MempoolParameter mempoolParameter;
@@ -1952,7 +1944,6 @@ namespace Elastos {
 						SyncStopped();
 					}
 
-//					ResendUnconfirmedTx(peer);
 					RequestUnrelayedTx(peer);
 					peer->SendMessage(MSG_GETADDR, Message::DefaultParam);
 				}
@@ -1960,36 +1951,6 @@ namespace Elastos {
 				FireTxStatusUpdate();
 				if (syncFinished) FireSyncStopped(0);
 			} else peer->info("mempool request failed");
-		}
-
-		void PeerManager::ResendUnconfirmedTx(const PeerPtr &peer) {
-			std::vector<TransactionPtr> tx = _wallet->TxUnconfirmedBefore(TX_UNCONFIRMED);
-			std::vector<uint256> txHashes;
-
-			for (size_t i = 0; i < tx.size(); i++) {
-				if (!PeerListHasPeer(_txRelays, tx[i]->GetHash(), peer) &&
-					!PeerListHasPeer(_txRequests, tx[i]->GetHash(), peer)) {
-					txHashes.push_back(tx[i]->GetHash());
-					AddPeerToList(peer, tx[i]->GetHash(), _txRequests);
-				}
-			}
-
-			if (!txHashes.empty()) {
-				lock.unlock();
-
-				for (size_t i = 0; i < tx.size(); ++i) {
-					PublishTransaction(tx[i]);
-				}
-
-				lock.lock();
-
-				if ((peer->GetPeerInfo().Flags & PEER_FLAG_SYNCED) == 0) {
-					PingParameter pingParameter;
-					pingParameter.callback = boost::bind(&PeerManager::RequestUnrelayedTxGetDataDone, this, peer, _1);
-					pingParameter.lastBlockHeight = _lastBlock->GetHeight();
-					peer->SendMessage(MSG_PING, pingParameter);
-				}
-			} else peer->SetFlags(peer->GetFlags() | PEER_FLAG_SYNCED);
 		}
 
 		void PeerManager::RequestUnrelayedTx(const PeerPtr &peer) {
@@ -2006,16 +1967,16 @@ namespace Elastos {
 
 			if (!txHashes.empty()) {
 				GetDataParameter getDataParameter(txHashes, {});
-				peer->info("request unrelayed {} tx", txHashes.size());
-				for (size_t i = 0; i < txHashes.size(); ++i) {
-					peer->info("tx[{}] {}", i, txHashes[i].GetHex());
-				}
+				peer->info("request unrelayed tx {}", txHashes.size());
+#ifdef SPDLOG_DEBUG_ON
+				for (size_t i = 0; i < txHashes.size(); ++i)
+					PEER_DEBUG(peer, "tx[{}] {}", i, txHashes[i].GetHex());
+#endif
 				peer->SendMessage(MSG_GETDATA, getDataParameter);
 
 				if ((peer->GetPeerInfo().Flags & PEER_FLAG_SYNCED) == 0) {
-					PingParameter pingParameter;
-					pingParameter.callback = boost::bind(&PeerManager::RequestUnrelayedTxGetDataDone, this, peer, _1);
-					pingParameter.lastBlockHeight = _lastBlock->GetHeight();
+					PingParameter pingParameter(_lastBlock->GetHeight(),
+												boost::bind(&PeerManager::RequestUnrelayedTxGetDataDone, this, peer, _1));
 					peer->SendMessage(MSG_PING, pingParameter);
 				}
 			} else peer->SetFlags(peer->GetFlags() | PEER_FLAG_SYNCED);
@@ -2027,7 +1988,8 @@ namespace Elastos {
 				if (peerList[i - 1].GetTransactionHash() != txhash) continue;
 
 				for (size_t j = peerList[i - 1].GetPeers().size(); j > 0; j--) {
-					if (peerList[i - 1].GetPeers()[j - 1]->IsEqual(peer.get())) return true;
+					if (peerList[i - 1].GetPeers()[j - 1]->IsEqual(peer.get()))
+						return true;
 				}
 
 				break;
@@ -2054,36 +2016,37 @@ namespace Elastos {
 
 			// don't remove transactions until we're connected to maxConnectCount peers, and all peers have finished
 			// relaying their mempools
-//			if (count >= _maxConnectCount) {
-//				uint256 hash;
-//				std::vector<TransactionPtr> tx = _wallet->TxUnconfirmedBefore(TX_UNCONFIRMED);
-//
-//				for (size_t i = tx.size(); i > 0; i--) {
-//					hash = tx[i - 1]->GetHash();
-//					isPublishing = false;
-//
-//					for (size_t j = _publishedTx.size(); !isPublishing && j > 0; j--) {
-//						if (_publishedTx[j - 1].GetTransaction()->IsEqual(tx[i - 1].get()) &&
-//							_publishedTx[j - 1].HasCallback())
-//							isPublishing = true;
-//					}
-//
-//					if (!isPublishing && PeerListCount(_txRelays, hash) == 0 &&
-//						PeerListCount(_txRequests, hash) == 0) {
-//						peer->info("removing tx unconfirmed at: {}, txHash: {}", _lastBlock->GetHeight(), hash.GetHex());
-//						assert(tx[i - 1]->GetBlockHeight() == TX_UNCONFIRMED);
-//						_wallet->RemoveTransaction(hash);
-//					} else if (!isPublishing && PeerListCount(_txRelays, hash) < _maxConnectCount) {
+			if (count >= _maxConnectCount) {
+				uint256 hash;
+				std::vector<TransactionPtr> tx = _wallet->TxUnconfirmedBefore(TX_UNCONFIRMED);
+
+				for (size_t i = tx.size(); i > 0; i--) {
+					hash = tx[i - 1]->GetHash();
+					isPublishing = false;
+
+					for (size_t j = _publishedTx.size(); !isPublishing && j > 0; j--) {
+						if (_publishedTx[j - 1].GetTransaction()->IsEqual(tx[i - 1].get()) &&
+							_publishedTx[j - 1].HasCallback())
+							isPublishing = true;
+						break;
+					}
+
+					if (!isPublishing && PeerListCount(_txRelays, hash) == 0 &&
+						PeerListCount(_txRequests, hash) == 0) {
+						peer->info("removing tx unconfirmed at: {}, txHash: {}", _lastBlock->GetHeight(), hash.GetHex());
+						_wallet->RemoveTransaction(hash);
+					} else if (!isPublishing && PeerListCount(_txRelays, hash) < _maxConnectCount) {
 						// set timestamp 0 to mark as unverified
-//						_wallet->UpdateTransactions({hash}, TX_UNCONFIRMED, 0);
-//					}
-//				}
-//			}
+						_wallet->UpdateTransactions({hash}, TX_UNCONFIRMED, 0);
+					}
+				}
+			}
 		}
 
 		size_t PeerManager::PeerListCount(const std::vector<TransactionPeerList> &list, const uint256 &txhash) {
 			for (size_t i = list.size(); i > 0; i--) {
-				if (list[i - 1].GetTransactionHash() == txhash) return list[i - 1].GetPeers().size();
+				if (list[i - 1].GetTransactionHash() == txhash)
+					return list[i - 1].GetPeers().size();
 			}
 
 			return 0;
@@ -2099,9 +2062,8 @@ namespace Elastos {
 			time_t now = time(NULL);
 
 			boost::mutex::scoped_lock scopedLock(lock);
-			for (std::vector<uint128>::iterator addr = addrList.begin();
-				 addr != addrList.end() && (*addr) != 0; addr++) {
-				_peers.emplace_back(*addr, _chainParams.GetStandardPort(), now, services);
+			for (std::vector<uint128>::iterator addr = addrList.begin(); addr != addrList.end() && (*addr) != 0; addr++) {
+				_peers.emplace_back(*addr, _chainParams->StandardPort(), now, services);
 			}
 			_dnsThreadCount--;
 		}

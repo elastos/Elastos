@@ -4,9 +4,7 @@
 #include "Asset.h"
 
 #include <SDK/Common/Log.h>
-#include <SDK/Plugin/Transaction/Transaction.h>
-
-#include <Core/BRCrypto.h>
+#include <SDK/Common/hash.h>
 
 #include <cstring>
 
@@ -16,56 +14,49 @@ namespace Elastos {
 		uint256 Asset::_elaAsset = 0;
 
 		Asset::Asset() :
-				_name(""),
-				_description(""),
-				_precision(0),
-				_assetType(AssetType::Share),
-				_recordType(AssetRecordType::Unspent) {
+			Asset("ELA", "", 8, AssetType::Token, AssetRecordType::Unspent) {
+			_hash = GetELAAssetID();
+		}
 
+		Asset::Asset(const std::string &name, const std::string &desc, uint8_t precision,
+					 AssetType assetType, AssetRecordType recordType) :
+				_name(name),
+				_description(desc),
+				_precision(precision),
+				_assetType(assetType),
+				_recordType(recordType) {
+
+		}
+
+		Asset::Asset(const Asset &asset) {
+			this->operator=(asset);
 		}
 
 		Asset::~Asset() {
 
 		}
 
-		void Asset::SetName(const std::string &name) {
-			_name = name;
+		Asset &Asset::operator=(const Asset &asset) {
+			this->_name = asset._name;
+			this->_description = asset._description;
+			this->_precision = asset._precision;
+			this->_assetType = asset._assetType;
+			this->_recordType = asset._recordType;
+			this->_hash = asset._hash;
+			return *this;
 		}
 
-		std::string Asset::GetName() const {
-			return _name;
-		}
+		size_t Asset::EstimateSize() const {
+			size_t size = 0;
+			ByteStream stream;
 
-		void Asset::SetDescription(const std::string &desc) {
-			_description = desc;
-		}
+			size += stream.WriteVarUint(_name.size());
+			size += _name.size();
+			size += stream.WriteVarUint(_description.size());
+			size += _description.size();
+			size += 3;
 
-		std::string Asset::GetDescription() const {
-			return _description;
-		}
-
-		void Asset::SetAssetType(Asset::AssetType type) {
-			_assetType = type;
-		}
-
-		Asset::AssetType Asset::GetAssetType() const {
-			return _assetType;
-		}
-
-		void Asset::SetAssetRecordType(Asset::AssetRecordType type) {
-			_recordType = type;
-		}
-
-		Asset::AssetRecordType Asset::GetAssetRecordType() const {
-			return _recordType;
-		}
-
-		void Asset::SetPrecision(uint8_t precision) {
-			_precision = precision;
-		}
-
-		uint8_t Asset::GetPrecision() const {
-			return _precision;
+			return size;
 		}
 
 		void Asset::Serialize(ByteStream &ostream) const {
@@ -102,6 +93,13 @@ namespace Elastos {
 				return false;
 			}
 
+			if (_name == "ELA") {
+				_hash = Asset::GetELAAssetID();
+			} else {
+				_hash = 0;
+				GetHash();
+			}
+
 			return true;
 		}
 
@@ -123,18 +121,23 @@ namespace Elastos {
 			_precision = j["Precision"].get<uint8_t>();
 			_assetType = j["AssetType"].get<AssetType>();
 			_recordType = j["RecordType"].get<AssetRecordType>();
+
+			if (_name == "ELA") {
+				_hash = Asset::GetELAAssetID();
+			} else {
+				_hash = 0;
+				GetHash();
+			}
 		}
 
 		const uint256 &Asset::GetELAAssetID() {
 			if (_elaAsset == 0) {
-				Transaction elaCoin;
-				elaCoin.SetTransactionType(Transaction::RegisterAsset);
-				_elaAsset = elaCoin.GetHash();
+				_elaAsset = uint256("a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0");
 			}
 			return _elaAsset;
 		}
 
-		uint256 &Asset::GetHash() const {
+		const uint256 &Asset::GetHash() const {
 			if (_hash == 0) {
 				ByteStream stream;
 				Serialize(stream);

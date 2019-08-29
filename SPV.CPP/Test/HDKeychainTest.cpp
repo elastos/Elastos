@@ -9,9 +9,6 @@
 
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
-#include <SDK/Account/HDSubAccount.h>
-#include <SDK/Account/StandardAccount.h>
-#include <SDK/Account/SubAccountGenerator.h>
 #include <SDK/Common/Lockable.h>
 #include <SDK/WalletCore/Crypto/AES.h>
 #include <SDK/WalletCore/BIPs/BIP39.h>
@@ -24,6 +21,7 @@
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("HDKeychain test", "[HDKeychain]") {
+	Log::registerMultiLogger();
 
 	SECTION("Web standard HD keystore") {
 		nlohmann::json keystore = R"({

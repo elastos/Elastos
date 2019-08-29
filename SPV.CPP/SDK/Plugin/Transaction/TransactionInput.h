@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_TRANSACTIONINPUT_H__
 
 #include <SDK/Common/ByteStream.h>
+#include <SDK/Plugin/Interface/ELAMessageSerializable.h>
 
 #include <nlohmann/json.hpp>
 
@@ -14,25 +15,31 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class TransactionInput {
+		class TransactionInput : public ELAMessageSerializable {
 		public:
 			TransactionInput();
+
+			TransactionInput(const TransactionInput &input);
+
+			TransactionInput &operator=(const TransactionInput &tx);
 
 			TransactionInput(const uint256 &txHash, uint32_t index);
 
 			~TransactionInput();
 
-			const uint256 &GetTransctionHash() const;
+			const uint256 &TxHash() const;
 
-			void SetTransactionHash(const uint256 &hash);
+			void SetTxHash(const uint256 &hash);
 
-			uint16_t GetIndex() const;
+			uint16_t Index() const;
 
 			void SetIndex(uint16_t index);
 
-			uint32_t GetSequence() const;
+			uint32_t Sequence() const;
 
 			void SetSequence(uint32_t sequence);
+
+			size_t EstimateSize() const;
 
 			void Serialize(ByteStream &ostream) const;
 
@@ -49,6 +56,9 @@ namespace Elastos {
 			uint16_t _index;
 			uint32_t _sequence;
 		};
+
+		typedef boost::shared_ptr<TransactionInput> InputPtr;
+		typedef std::vector<InputPtr> InputArray;
 
 	}
 }

@@ -50,6 +50,17 @@ namespace Elastos {
 					_usage == Attribute::Usage::Confirmations);
 		}
 
+		size_t Attribute::EstimateSize() const {
+			size_t size = 0;
+			ByteStream stream;
+
+			size += 1;
+			size += stream.WriteVarUint(_data.size());
+			size += _data.size();
+
+			return size;
+		}
+
 		void Attribute::Serialize(ByteStream &ostream) const {
 			ostream.WriteUint8(_usage);
 			ostream.WriteVarBytes(_data);

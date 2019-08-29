@@ -30,11 +30,6 @@ namespace Elastos {
 					uint32_t confirms) = 0;
 
 			/**
-			 * Callback method fired when block begin synchronizing with a peer. This callback could be used to show progress.
-			 */
-			virtual void OnBlockSyncStarted() = 0;
-
-			/**
 			 * Callback method fired when best block chain height increased. This callback could be used to show progress.
 			 * @param currentBlockHeight is the of current block when callback fired.
 			 * @param estimatedHeight is max height of blockchain.
@@ -43,15 +38,32 @@ namespace Elastos {
 			virtual void OnBlockSyncProgress(uint32_t currentBlockHeight, uint32_t estimatedHeight, time_t lastBlockTime) = 0;
 
 			/**
-			 * Callback method fired when block end synchronizing with a peer. This callback could be used to show progress.
+			 * Callback method fired when balance changed.
+			 * @param asset ID.
+			 * @param balance after changed.
 			 */
-			virtual void OnBlockSyncStopped() = 0;
+			virtual void OnBalanceChanged(const std::string &asset, const std::string &balance) = 0;
 
-			virtual void OnBalanceChanged(const std::string &asset, uint64_t balance) = 0;
-
+			/**
+			 * Callback method fired when tx published.
+			 * @param hash of published tx.
+			 * @param result in json format.
+			 */
 			virtual void OnTxPublished(const std::string &hash, const nlohmann::json &result) = 0;
 
-			virtual void OnTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) = 0;
+			/**
+			 * Callback method fired when a new asset registered.
+			 * @param asset ID.
+			 * @param information of asset.
+			 */
+			virtual void OnAssetRegistered(const std::string &asset, const nlohmann::json &info) = 0;
+
+			/**
+			 * Callback method fired when status of connection changed.
+			 * @param status value can be one of below: "Connecting", "Connected", "Disconnected"
+			 */
+			virtual void OnConnectStatusChanged(const std::string &status) = 0;
+
 		};
 
 	}

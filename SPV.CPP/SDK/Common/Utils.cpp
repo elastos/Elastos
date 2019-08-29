@@ -4,12 +4,18 @@
 
 #include "Utils.h"
 
-#include <stdlib.h>
-#include <algorithm>
-#include <iterator>
+#include <random>
 
 namespace Elastos {
 	namespace ElaWallet {
+
+		uint8_t Utils::getRandomByte() {
+			std::random_device rd;
+			std::mt19937_64 gen(rd());
+			std::uniform_int_distribution<> dis(0, 255);
+			auto dice = std::bind(dis, gen);
+			return dice();
+		}
 
 		bytes_t Utils::GetRandom(size_t bytes) {
 			bytes_t out(bytes);
@@ -23,3 +29,4 @@ namespace Elastos {
 
 	}
 }
+

@@ -19,29 +19,39 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		TransactionOutput::TransactionOutput() :
-				_amount(0),
+				_fixedIndex(0),
 				_outputLock(0),
 				_outputType(Type::Default) {
+			_amount.setWord(0);
 			_payload = GeneratePayload(_outputType);
 		}
 
 		TransactionOutput::TransactionOutput(const TransactionOutput &output) {
-			_amount = output.GetAmount();
-			_assetId = output.GetAssetId();
-			_programHash = output.GetProgramHash();
-			_outputLock = output.GetOutputLock();
-			_outputType = output.GetType();
-			_payload = GeneratePayload(_outputType);
-			*_payload = *output.GetPayload();
+			this->operator=(output);
 		}
 
-		TransactionOutput::TransactionOutput(uint64_t a, const Address &addr, const uint256 &assetID,
+		TransactionOutput &TransactionOutput::operator=(const TransactionOutput &o) {
+			_fixedIndex = o._fixedIndex;
+			_amount = o._amount;
+			_assetID = o._assetID;
+			_programHash = o._programHash;
+			_outputLock = o._outputLock;
+			_outputType = o._outputType;
+			_payload = GeneratePayload(o._outputType);
+			*_payload = *o._payload;
+			return *this;
+		}
+
+		TransactionOutput::TransactionOutput(const BigInt &a, const Address &addr, const uint256 &assetID,
 											 Type type, const OutputPayloadPtr &payload) :
-			_amount(a),
+			_fixedIndex(0),
 			_outputLock(0),
 			_outputType(type) {
-			_assetId = assetID;
+
+			_assetID = assetID;
+			_amount = a;
 			_programHash = addr.ProgramHash();
+
 			if (payload == nullptr) {
 				_payload = GeneratePayload(_outputType);
 			} else {
@@ -49,51 +59,101 @@ namespace Elastos {
 			}
 		}
 
-		TransactionOutput::TransactionOutput(uint64_t a, const uint168 &programHash, const uint256 &assetID,
-											 Type type, const OutputPayloadPtr &payload) :
-			_amount(a),
-			_outputLock(0),
-			_outputType(type) {
-			_assetId = assetID;
-			_programHash = programHash;
-			if (payload == nullptr) {
-				_payload = GeneratePayload(_outputType);
-			} else {
-				_payload = payload;
-			}
-		}
+//		TransactionOutput::TransactionOutput(const BigInt &a, const uint168 &programHash, const uint256 &assetID,
+//											 Type type, const OutputPayloadPtr &payload) :
+//			_outputLock(0),
+//			_outputType(type) {
+//
+//			_assetID = assetID;
+//			_amount = a;
+//			_programHash = programHash;
+//
+//			if (payload == nullptr) {
+//				_payload = GeneratePayload(_outputType);
+//			} else {
+//				_payload = payload;
+//			}
+//		}
 
 		TransactionOutput::~TransactionOutput() {
 		}
 
-		Address TransactionOutput::GetAddress() const {
+		Address TransactionOutput::Addr() const {
 			return Address(_programHash);
 		}
 
-		uint64_t TransactionOutput::GetAmount() const {
+		const BigInt &TransactionOutput::Amount() const {
 			return _amount;
 		}
 
-		void TransactionOutput::SetAmount(uint64_t a) {
+		void TransactionOutput::SetAmount(const BigInt &a) {
 			_amount = a;
 		}
 
-		void TransactionOutput::Serialize(ByteStream &ostream) const {
-			ostream.WriteBytes(_assetId);
-			ostream.WriteUint64(_amount);
-			ostream.WriteUint32(_outputLock);
-			ostream.WriteBytes(_programHash);
+		size_t TransactionOutput::EstimateSize() const {
+			size_t size = 0;
+			ByteStream stream;
+
+			size += _assetID.size();
+			if (_assetID == Asset::GetELAAssetID()) {
+				size += sizeof(uint64_t);
+			} else {
+				bytes_t amountBytes = _amount.getHexBytes();
+				size += stream.WriteVarUint(amountBytes.size());
+				size += amountBytes.size();
+			}
+
+			size += sizeof(_outputLock);
+			size += _programHash.size();
+
+			return size;
 		}
 
-		bool TransactionOutput::Deserialize(const ByteStream &istream) {
-			if (!istream.ReadBytes(_assetId)) {
+		void TransactionOutput::Serialize(ByteStream &ostream, uint8_t txVersion, bool extend) const {
+			ostream.WriteBytes(_assetID);
+
+			if (_assetID == Asset::GetELAAssetID()) {
+				bytes_t bytes = _amount.getHexBytes(true);
+				uint64_t amount = 0;
+				memcpy(&amount, &bytes[0], MIN(bytes.size(), sizeof(uint64_t)));
+				ostream.WriteUint64(amount);
+			} else {
+				ostream.WriteVarBytes(_amount.getHexBytes());
+			}
+
+			ostream.WriteUint32(_outputLock);
+			ostream.WriteBytes(_programHash);
+
+			if (txVersion >= Transaction::TxVersion::V09) {
+				ostream.WriteUint8(_outputType);
+				_payload->Serialize(ostream);
+			}
+
+			if (extend) {
+				ostream.WriteUint16(_fixedIndex);
+			}
+		}
+
+		bool TransactionOutput::Deserialize(const ByteStream &istream, uint8_t txVersion, bool extend) {
+			if (!istream.ReadBytes(_assetID)) {
 				Log::error("deserialize output assetid error");
 				return false;
 			}
 
-			if (!istream.ReadUint64(_amount)) {
-				Log::error("deserialize output _amount error");
-				return false;
+			if (_assetID == Asset::GetELAAssetID()) {
+				uint64_t amount;
+				if (!istream.ReadUint64(amount)) {
+					Log::error("deserialize output amount error");
+					return false;
+				}
+				_amount.setHexBytes(bytes_t(&amount, sizeof(amount)), true);
+			} else {
+				bytes_t bytes;
+				if (!istream.ReadVarBytes(bytes)) {
+					Log::error("deserialize output BN amount error");
+					return false;
+				}
+				_amount.setHexBytes(bytes);
 			}
 
 			if (!istream.ReadUint32(_outputLock)) {
@@ -103,24 +163,6 @@ namespace Elastos {
 
 			if (!istream.ReadBytes(_programHash)) {
 				Log::error("deserialize output program hash error");
-				return false;
-			}
-
-			return true;
-		}
-
-		void TransactionOutput::Serialize(ByteStream &ostream, uint8_t txVersion) const {
-			Serialize(ostream);
-
-			if (txVersion >= Transaction::TxVersion::V09) {
-				ostream.WriteUint8(_outputType);
-				_payload->Serialize(ostream);
-			}
-		}
-
-		bool TransactionOutput::Deserialize(const ByteStream &istream, uint8_t txVersion) {
-			if (!Deserialize(istream)) {
-				Log::error("tx output deserialize default part error");
 				return false;
 			}
 
@@ -140,6 +182,11 @@ namespace Elastos {
 				}
 			}
 
+			if (extend && !istream.ReadUint16(_fixedIndex)) {
+				Log::error("deserialize output index error");
+				return false;
+			}
+
 			return true;
 		}
 
@@ -147,15 +194,15 @@ namespace Elastos {
 			return true;
 		}
 
-		const uint256 &TransactionOutput::GetAssetId() const {
-			return _assetId;
+		const uint256 &TransactionOutput::AssetID() const {
+			return _assetID;
 		}
 
-		void TransactionOutput::SetAssetId(const uint256 &assetId) {
-			_assetId = assetId;
+		void TransactionOutput::SetAssetID(const uint256 &assetId) {
+			_assetID = assetId;
 		}
 
-		uint32_t TransactionOutput::GetOutputLock() const {
+		uint32_t TransactionOutput::OutputLock() const {
 			return _outputLock;
 		}
 
@@ -163,7 +210,7 @@ namespace Elastos {
 			_outputLock = lock;
 		}
 
-		const uint168 &TransactionOutput::GetProgramHash() const {
+		const uint168 &TransactionOutput::ProgramHash() const {
 			return _programHash;
 		}
 
@@ -210,26 +257,15 @@ namespace Elastos {
 			return payload;
 		}
 
-		nlohmann::json TransactionOutput::ToJson() const {
+		nlohmann::json TransactionOutput::ToJson(uint8_t txVersion) const {
 			nlohmann::json j;
 
-			j["Amount"] = _amount;
-			j["AssetId"] = _assetId.GetHex();
+			j["FixedIndex"] = _fixedIndex;
+			j["Amount"] = _amount.getDec();
+			j["AssetId"] = _assetID.GetHex();
 			j["OutputLock"] = _outputLock;
 			j["ProgramHash"] = _programHash.GetHex();
 			j["Address"] = Address(_programHash).String();
-			return j;
-		}
-
-		void TransactionOutput::FromJson(const nlohmann::json &j) {
-			_amount = j["Amount"].get<uint64_t>();
-			_assetId.SetHex(j["AssetId"].get<std::string>());
-			_outputLock = j["OutputLock"].get<uint32_t>();
-			_programHash.SetHex(j["ProgramHash"].get<std::string>());
-		}
-
-		nlohmann::json TransactionOutput::ToJson(uint8_t txVersion) const {
-			nlohmann::json j = ToJson();
 
 			if (txVersion >= Transaction::TxVersion::V09) {
 				j["OutputType"] = _outputType;
@@ -240,7 +276,15 @@ namespace Elastos {
 		}
 
 		void TransactionOutput::FromJson(const nlohmann::json &j, uint8_t txVersion) {
-			FromJson(j);
+			_fixedIndex = j["FixedIndex"].get<uint16_t>();
+			if (j["Amount"].is_number()) {
+				_amount.setWord(j["Amount"].get<uint64_t>());
+			} else if (j["Amount"].is_string()) {
+				_amount.setDec(j["Amount"].get<std::string>());
+			}
+			_assetID.SetHex(j["AssetId"].get<std::string>());
+			_outputLock = j["OutputLock"].get<uint32_t>();
+			_programHash.SetHex(j["ProgramHash"].get<std::string>());
 
 			if (txVersion >= Transaction::TxVersion::V09) {
 				_outputType = j["OutputType"];
@@ -250,7 +294,15 @@ namespace Elastos {
 		}
 
 		size_t TransactionOutput::GetSize() const {
-			return _assetId.size() + sizeof(_amount) + sizeof(_outputLock) + _programHash.size();
+			return _assetID.size() + sizeof(_amount) + sizeof(_outputLock) + _programHash.size();
+		}
+
+		uint16_t TransactionOutput::FixedIndex() const {
+			return _fixedIndex;
+		}
+
+		void TransactionOutput::SetFixedIndex(uint16_t index) {
+			_fixedIndex = index;
 		}
 
 	}

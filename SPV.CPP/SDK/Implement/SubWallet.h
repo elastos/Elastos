@@ -5,10 +5,9 @@
 #ifndef __ELASTOS_SDK_SUBWALLET_H__
 #define __ELASTOS_SDK_SUBWALLET_H__
 
-#include <SDK/SpvService/CoinInfo.h>
 #include <SDK/P2P/ChainParams.h>
 #include <SDK/SpvService/SpvService.h>
-#include <SDK/Account/ISubAccount.h>
+#include <SDK/Account/SubAccount.h>
 
 #include <Interface/ISubWallet.h>
 #include <Interface/ISubWalletCallback.h>
@@ -20,12 +19,19 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class MasterWallet;
+#define SELA_PER_ELA 100000000
 
+		class MasterWallet;
 		class Transaction;
+		class ChainConfig;
+		class CoinInfo;
+
+		typedef boost::shared_ptr<Transaction> TransactionPtr;
+		typedef boost::shared_ptr<ChainConfig> ChainConfigPtr;
+		typedef boost::shared_ptr<CoinInfo> CoinInfoPtr;
 
 		class SubWallet : public virtual ISubWallet,
-						  public AssetTransactions::Listener,
+						  public Wallet::Listener,
 						  public PeerManager::Listener,
 						  public Lockable {
 		public:
@@ -39,16 +45,20 @@ namespace Elastos {
 
 			void StopP2P();
 
+			void FlushData();
+
+			virtual const std::string &GetInfoChainID() const;
+
 		public: //implement ISubWallet
-			virtual std::string GetChainId() const;
+			virtual std::string GetChainID() const;
 
 			virtual nlohmann::json GetBasicInfo() const;
 
 			virtual nlohmann::json GetBalanceInfo() const;
 
-			virtual uint64_t GetBalance(BalanceType type = Default) const;
+			virtual std::string GetBalance(BalanceType type = Default) const;
 
-			virtual uint64_t GetBalanceWithAddress(const std::string &address, BalanceType type = Default) const;
+			virtual std::string GetBalanceWithAddress(const std::string &address, BalanceType type = Default) const;
 
 			virtual std::string CreateAddress();
 
@@ -62,42 +72,35 @@ namespace Elastos {
 			virtual nlohmann::json CreateTransaction(
 					const std::string &fromAddress,
 					const std::string &toAddress,
-					uint64_t amount,
+					const std::string &amount,
 					const std::string &memo,
-					const std::string &remark,
 					bool useVotedUTXO = false);
 
-			virtual nlohmann::json CreateMultiSignTransaction(
-					const std::string &fromAddress,
-					const std::string &toAddress,
-					uint64_t amount,
+			virtual nlohmann::json GetAllUTXOs(uint32_t start, uint32_t count, const std::string &address) const;
+
+			virtual nlohmann::json CreateConsolidateTransaction(
 					const std::string &memo,
-					const std::string &remark,
 					bool useVotedUTXO = false);
-
-			virtual uint64_t CalculateTransactionFee(
-					const nlohmann::json &rawTransaction,
-					uint64_t feePerKb);
-
-			virtual nlohmann::json UpdateTransactionFee(
-					const nlohmann::json &transactionJson,
-					uint64_t fee,
-					const std::string &fromAddress);
 
 			virtual nlohmann::json SignTransaction(
-					const nlohmann::json &rawTransaction,
+					const nlohmann::json &createdTx,
 					const std::string &payPassword);
 
-			virtual nlohmann::json GetTransactionSignedSigners(
+			virtual nlohmann::json GetTransactionSignedInfo(
 					const nlohmann::json &rawTransaction) const;
 
 			virtual nlohmann::json PublishTransaction(
-					const nlohmann::json &rawTransaction);
+					const nlohmann::json &signedTx);
 
 			virtual nlohmann::json GetAllTransaction(
 					uint32_t start,
 					uint32_t count,
 					const std::string &addressOrTxid) const;
+
+			virtual nlohmann::json GetAllCoinBaseTransaction(
+				uint32_t start,
+				uint32_t count,
+				const std::string &txID) const;
 
 			virtual std::string Sign(
 					const std::string &message,
@@ -108,20 +111,37 @@ namespace Elastos {
 					const std::string &message,
 					const std::string &signature);
 
-			virtual nlohmann::json GetAssetDetails(
+			virtual nlohmann::json GetAssetInfo(
 					const std::string &assetID) const;
 
 			virtual std::string GetPublicKey() const;
 
+			virtual void SyncStart();
+
+			virtual void SyncStop();
+
 		protected: //implement Wallet::Listener
-			virtual void balanceChanged(const uint256 &asset, uint64_t balance);
+			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
 
-			virtual void onTxAdded(const TransactionPtr &transaction);
+			virtual void onCoinBaseTxAdded(const UTXOPtr &cb);
 
-			virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp);
+			virtual void onCoinBaseUpdatedAll(const UTXOArray &cbs);
 
-			virtual void
-			onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan);
+			virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
+
+			virtual void onCoinBaseSpent(const std::vector<uint256> &spentHashes);
+
+			virtual void onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
+
+			virtual void onTxAdded(const TransactionPtr &tx);
+
+			virtual void onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp);
+
+			virtual void onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
+
+			virtual void onTxUpdatedAll(const std::vector<TransactionPtr> &txns);
+
+			virtual void onAssetRegistered(const AssetPtr &asset, uint64_t amount, const uint168 &controller);
 
 		protected: //implement PeerManager::Listener
 			virtual void syncStarted();
@@ -146,48 +166,45 @@ namespace Elastos {
 			// Called on publishTransaction
 			virtual void txPublished(const std::string &hash, const nlohmann::json &result);
 
-			virtual void blockHeightIncreased(uint32_t blockHeight);
-
 			virtual void syncIsInactive(uint32_t time) {}
+
+			virtual void connectStatusChanged(const std::string &status);
 
 		protected:
 			friend class MasterWallet;
 
-			SubWallet(const CoinInfo &info,
-					  const ChainParams &chainParams,
-					  const PluginType &pluginTypes,
+			SubWallet(const CoinInfoPtr &info,
+					  const ChainConfigPtr &config,
 					  MasterWallet *parent);
 
 			virtual TransactionPtr CreateTx(
 				const std::string &fromAddress,
-				const std::string &toAddress,
-				uint64_t amount,
-				const uint256 &assetID,
+				const std::vector<OutputPtr> &outputs,
 				const std::string &memo,
-				const std::string &remark,
 				bool useVotedUTXO = false) const;
 
-			virtual void publishTransaction(const TransactionPtr &transaction);
+			virtual void publishTransaction(const TransactionPtr &tx);
 
 			bool filterByAddressOrTxId(const TransactionPtr &transaction, const std::string &addressOrTxid) const;
 
-			virtual void fireTransactionStatusChanged(const std::string &txid,
-													  const std::string &status,
-													  const nlohmann::json &desc,
-													  uint32_t confirms);
+			virtual void fireTransactionStatusChanged(const uint256 &txid, const std::string &status,
+													  const nlohmann::json &desc, uint32_t confirms);
 
-			const CoinInfo &getCoinInfo();
+			const CoinInfoPtr &GetCoinInfo() const;
+
+			std::string GetBalanceTypeString(BalanceType type) const;
+
+			void EncodeTx(nlohmann::json &result, const TransactionPtr &tx) const;
+
+			TransactionPtr DecodeTx(const nlohmann::json &encodedTx) const;
 
 		protected:
 			WalletManagerPtr _walletManager;
 			std::vector<ISubWalletCallback *> _callbacks;
 			MasterWallet *_parent;
-			CoinInfo _info;
+			CoinInfoPtr _info;
+			ChainConfigPtr _config;
 			SubAccountPtr _subAccount;
-
-			typedef std::map<std::string, TransactionPtr> TransactionMap;
-			TransactionMap _confirmingTxs;
-			uint32_t _syncStartHeight;
 		};
 
 	}

@@ -5,12 +5,6 @@
 #ifndef __ELASTOS_SDK_TRANSACTION_H__
 #define __ELASTOS_SDK_TRANSACTION_H__
 
-#include "Program.h"
-#include "TransactionOutput.h"
-#include "Attribute.h"
-#include "TransactionInput.h"
-
-#include <SDK/WalletCore/BIPs/Key.h>
 #include <SDK/Plugin/Interface/ELAMessageSerializable.h>
 #include <SDK/Plugin/Transaction/Payload/IPayload.h>
 
@@ -19,32 +13,53 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class TransactionHub;
+		class Wallet;
+		class TransactionOutput;
+		class TransactionInput;
+		class Program;
+		class Attribute;
+		typedef boost::shared_ptr<Wallet> WalletPtr;
+		typedef boost::shared_ptr<TransactionOutput> OutputPtr;
+		typedef std::vector<OutputPtr> OutputArray;
+		typedef boost::shared_ptr<TransactionInput> InputPtr;
+		typedef std::vector<InputPtr> InputArray;
+		typedef boost::shared_ptr<Program> ProgramPtr;
+		typedef std::vector<ProgramPtr> ProgramArray;
+		typedef boost::shared_ptr<Attribute> AttributePtr;
+		typedef std::vector<AttributePtr> AttributeArray;
 
-		class Transaction :
-				public ELAMessageSerializable {
+		class Transaction {
 		public:
 			enum Type {
-				CoinBase                = 0x00,
-				RegisterAsset           = 0x01,
-				TransferAsset           = 0x02,
-				Record                  = 0x03,
-				Deploy                  = 0x04,
-				SideChainPow            = 0x05,
-				RechargeToSideChain     = 0x06,
-				WithdrawFromSideChain   = 0x07,
-				TransferCrossChainAsset = 0x08,
+				coinBase                 = 0x00,
+				registerAsset            = 0x01,
+				transferAsset            = 0x02,
+				record                   = 0x03,
+				deploy                   = 0x04,
+				sideChainPow             = 0x05,
+				rechargeToSideChain      = 0x06,
+				withdrawFromSideChain    = 0x07,
+				transferCrossChainAsset  = 0x08,
 
-				RegisterProducer        = 0x09,
-				CancelProducer          = 0x0a,
-				UpdateProducer          = 0x0b,
-				ReturnDepositCoin       = 0x0c,
+				registerProducer         = 0x09,
+				cancelProducer           = 0x0a,
+				updateProducer           = 0x0b,
+				returnDepositCoin        = 0x0c,
+				activateProducer         = 0x0d,
 
-				IllegalProposalEvidence = 0x0d,
-				IllegalVoteEvidence     = 0x0e,
-				IllegalBlockEvidence    = 0x0f,
+				IllegalProposalEvidence  = 0x0e,
+				IllegalVoteEvidence      = 0x0f,
+				IllegalBlockEvidence     = 0x10,
+				IllegalSidechainEvidence = 0x11,
+				InactiveArbitrators      = 0x12,
+				UpdateVersion            = 0x13,
 
-				RegisterIdentification  = 0xFF, // will refactor later
+				registerCR               = 0x21,
+				unregisterCR             = 0x22,
+				updateCR                 = 0x23,
+				returnCRDepositCoin      = 0x24,
+
+				registerIdentification   = 0xFF, // will refactor later
 				TypeMaxCount
 			};
 
@@ -62,13 +77,13 @@ namespace Elastos {
 
 			~Transaction();
 
-			virtual void Serialize(ByteStream &ostream) const;
+			void Serialize(ByteStream &ostream, bool extend = false) const;
 
-			virtual bool Deserialize(const ByteStream &istream);
+			bool Deserialize(const ByteStream &istream, bool extend = false);
 
 			uint64_t CalculateFee(uint64_t feePerKb);
 
-			uint64_t GetTxFee(const boost::shared_ptr<TransactionHub> &wallet);
+			uint64_t GetTxFee(const boost::shared_ptr<Wallet> &wallet);
 
 			bool IsRegistered() const;
 
@@ -76,25 +91,31 @@ namespace Elastos {
 
 			const uint256 &GetHash() const;
 
+			void SetHash(const uint256 &hash);
+
 			void ResetHash();
 
 			const TxVersion &GetVersion() const;
 
 			void SetVersion(const TxVersion &version);
 
-			const std::vector<TransactionOutput> &GetOutputs() const;
+			const std::vector<OutputPtr> &GetOutputs() const;
 
-			std::vector<TransactionOutput> &GetOutputs();
+			void FixIndex();
 
-			void SetOutputs(const std::vector<TransactionOutput> &outputs);
+			OutputPtr OutputOfIndex(uint16_t fixedIndex) const;
 
-			void AddOutput(const TransactionOutput &output);
+			void SetOutputs(const std::vector<OutputPtr> &outputs);
 
-			const std::vector<TransactionInput> &GetInputs() const;
+			void AddOutput(const OutputPtr &output);
 
-			std::vector<TransactionInput> &GetInputs();
+			void RemoveOutput(const OutputPtr &output);
 
-			void AddInput(const TransactionInput &Input);
+			const std::vector<InputPtr> &GetInputs() const;
+
+			std::vector<InputPtr> &GetInputs();
+
+			void AddInput(const InputPtr &Input);
 
 			bool ContainInput(const uint256 &hash, uint32_t n) const;
 
@@ -110,23 +131,25 @@ namespace Elastos {
 
 			void SetBlockHeight(uint32_t height);
 
-			uint32_t GetTimestamp() const;
+			time_t GetTimestamp() const;
 
-			void SetTimestamp(uint32_t timestamp);
+			void SetTimestamp(time_t timestamp);
 
-			void RemoveChangeOutput();
+			size_t EstimateSize() const;
 
-			size_t GetSize();
+//			size_t GetSize();
 
 			nlohmann::json GetSignedInfo() const;
 
 			bool IsSigned() const;
 
+			bool IsCoinBase() const;
+
 			bool IsValid() const;
 
 			virtual nlohmann::json ToJson() const;
 
-			virtual void FromJson(const nlohmann::json &jsonData);
+			virtual void FromJson(const nlohmann::json &j);
 
 			static uint64_t GetMinOutputAmount();
 
@@ -136,23 +159,19 @@ namespace Elastos {
 
 			void SetPayload(const PayloadPtr &payload);
 
-			void AddAttribute(const Attribute &attribute);
+			void AddAttribute(const AttributePtr &attribute);
 
-			void AddProgram(const Program &program);
+			bool AddUniqueProgram(const ProgramPtr &program);
+
+			void AddProgram(const ProgramPtr &program);
 
 			void ClearPrograms();
 
-			const std::vector<Attribute> &GetAttributes() const;
+			const std::vector<AttributePtr> &GetAttributes() const;
 
-			const std::vector<Program> &GetPrograms() const;
+			const std::vector<ProgramPtr> &GetPrograms() const;
 
-			std::vector<Program> &GetPrograms();
-
-			const std::string GetRemark() const;
-
-			void SetRemark(const std::string &remark);
-
-			nlohmann::json GetSummary(const boost::shared_ptr<TransactionHub> &wallet, uint32_t confirms, bool detail);
+			nlohmann::json GetSummary(const WalletPtr &wallet, uint32_t confirms, bool detail);
 
 			uint8_t	GetPayloadVersion() const;
 
@@ -162,15 +181,9 @@ namespace Elastos {
 
 			void SetFee(uint64_t fee);
 
-			const std::string &GetAssetTableID() const;
-
-			void SetAssetTableID(const std::string &assetTableID);
-
-			void SerializeUnsigned(ByteStream &ostream) const;
+			void SerializeUnsigned(ByteStream &ostream, bool extend = false) const;
 
 			uint256 GetShaData() const;
-
-			uint256 GetAssetID() const;
 
 			void Cleanup();
 
@@ -193,16 +206,15 @@ namespace Elastos {
 			TxVersion _version; // uint8_t
 			uint32_t _lockTime;
 			uint32_t _blockHeight;
-			uint32_t _timestamp; // time interval since unix epoch
+			time_t _timestamp; // time interval since unix epoch
 			Type _type; // uint8_t
 			uint8_t _payloadVersion;
 			uint64_t _fee;
 			PayloadPtr _payload;
-			std::vector<TransactionOutput> _outputs;
-			std::vector<TransactionInput> _inputs;
-			std::vector<Attribute> _attributes;
-			std::vector<Program> _programs;
-			std::string _remark;
+			OutputArray _outputs;
+			InputArray _inputs;
+			AttributeArray _attributes;
+			ProgramArray _programs;
 		};
 
 		typedef boost::shared_ptr<Transaction> TransactionPtr;

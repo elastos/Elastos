@@ -2,126 +2,138 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <BIPs/HDKeychain.h>
+#include <BIPs/BIP39.h>
+#include <BIPs/Base58.h>
 #include "ElaNewWalletJson.h"
+#include "CoinInfo.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		ElaNewWalletJson::ElaNewWalletJson(const std::string &rootPath) :
-				_rootPath(rootPath),
-				_requiredSignCount(0) {
+		ElaNewWalletJson::ElaNewWalletJson() :
+			_singleAddress(false) {
+
 		}
 
 		ElaNewWalletJson::~ElaNewWalletJson() {
-
+			_passphrase.resize(_passphrase.size(), 0);
 		}
 
-		void ElaNewWalletJson::AddCoinInfo(const CoinInfo &info) {
-			_coinInfoList.push_back(info);
-		}
-
-		void ElaNewWalletJson::ClearCoinInfo() {
-			_coinInfoList.clear();
-		}
-
-		const std::vector<CoinInfo> &ElaNewWalletJson::GetCoinInfoList() const {
-			return _coinInfoList;
-		}
-
-		nlohmann::json &operator<<(nlohmann::json &j, const ElaNewWalletJson &p) {
-			j << *(ElaWebWalletJson *) &p;
-
-			to_json(j, p);
-
+		nlohmann::json ElaNewWalletJson::ToJson(bool withPrivKey) const {
+			nlohmann::json j = ElaWebWalletJson::ToJson(withPrivKey);
+			ToJsonCommon(j);
 			return j;
 		}
 
-		const nlohmann::json &operator>>(const nlohmann::json &j, ElaNewWalletJson &p) {
-			j >> *(ElaWebWalletJson *) &p;
-
-			from_json(j, p);
-
-			return j;
+		void ElaNewWalletJson::FromJson(const nlohmann::json &j) {
+			ElaWebWalletJson::FromJson(j);
+			FromJsonCommon(j);
 		}
 
 		void to_json(nlohmann::json &j, const ElaNewWalletJson &p) {
-			j["CoinInfoList"] = p._coinInfoList;
-			j["Type"] = p._type;
-			j["Language"] = p._language;
-			j["CoSigners"] = p._coSigners;
-			j["RequiredSignCount"] = p._requiredSignCount;
-			j["PrivateKey"] = p._privateKey;
-			j["PhrasePassword"] = p._phrasePassword;
-			j["IsSingleAddress"] = p._isSingleAddress;
+			to_json(j, dynamic_cast<const ElaWebWalletJson &>(p));
+			p.ToJsonCommon(j);
 		}
 
 		void from_json(const nlohmann::json &j, ElaNewWalletJson &p) {
-			p._coinInfoList = j.find("CoinInfoList") != j.end() ? j["CoinInfoList"].get<std::vector<CoinInfo>>()
-																: std::vector<CoinInfo>();
-			p._type = j.find("Type") != j.end() ? j["Type"].get<std::string>() : "";
-			p._language = j.find("Language") != j.end() ? j["Language"].get<std::string>() : "english";
-			p._coSigners = j.find("CoSigners") != j.end() ? j["CoSigners"].get<std::vector<std::string>>()
-														  : std::vector<std::string>();
-			p._requiredSignCount = j.find("RequiredSignCount") != j.end() ? j["RequiredSignCount"].get<uint32_t>() : 0;
-			p._privateKey = j.find("PrivateKey") != j.end() ? j["PrivateKey"].get<std::string>() : "";
-			p._phrasePassword = j.find("PhrasePassword") != j.end() ? j["PhrasePassword"].get<std::string>() : "";
-			p._isSingleAddress = j.find("IsSingleAddress") != j.end() ? j["IsSingleAddress"].get<bool>() : false;
+			from_json(j, dynamic_cast<ElaWebWalletJson &>(p));
+			p.FromJsonCommon(j);
 		}
 
-		const std::string& ElaNewWalletJson::GetType() const {
-			return _type;
+		void ElaNewWalletJson::ToJsonCommon(nlohmann::json &j) const {
+			nlohmann::json coinInfoList;
+			for (size_t i = 0; i < _coinInfoList.size(); ++i)
+				coinInfoList.push_back(_coinInfoList[i]->ToJson());
+
+			j["CoinInfoList"] = coinInfoList;
+			j["SingleAddress"] = _singleAddress;
+			j["OwnerPubKey"] = _ownerPubKey;
 		}
 
-		void ElaNewWalletJson::SetType(const std::string &type) {
-			_type = type;
-		}
+		void ElaNewWalletJson::FromJsonCommon(const nlohmann::json &j) {
 
-		const std::string &ElaNewWalletJson::GetLanguage() const {
-			return _language;
-		}
+			bool old = false;
 
-		void ElaNewWalletJson::SetLanguage(const std::string &la) {
-			_language = la;
-		}
+			if (j.find("CoinInfoList") != j.end()) {
+				_coinInfoList.clear();
+				nlohmann::json coinInfoList = j["CoinInfoList"];
+				for (nlohmann::json::iterator it = coinInfoList.begin(); it != coinInfoList.end(); ++it) {
+					CoinInfoPtr coinInfo(new CoinInfo());
+					coinInfo->FromJson((*it));
+					_coinInfoList.push_back(coinInfo);
+				}
+			}
 
-		const std::vector<std::string> &ElaNewWalletJson::GetCoSigners() const {
-			return _coSigners;
-		}
+			if (j.find("CoSigners") != j.end() && j["Type"] == "MultiSign") {
+				old = true;
+				std::vector<std::string> coSigners;
+				coSigners = j["CoSigners"].get<std::vector<std::string>>();
+				for (size_t i = 0; i < coSigners.size(); ++i) {
+					_publicKeyRing.emplace_back(coSigners[i]);
+				}
+				_n = coSigners.size();
+				_singleAddress = true;
+			}
 
-		void ElaNewWalletJson::SetCoSigners(const std::vector<std::string> &coSigners) {
-			_coSigners = coSigners;
-		}
+			if (j.find("RequiredSignCount") != j.end()) {
+				old = true;
+				_m = j["RequiredSignCount"].get<int>();
+				if (_m == 0)
+					_m = 1;
+			}
 
-		uint32_t ElaNewWalletJson::GetRequiredSignCount() const {
-			return _requiredSignCount;
-		}
+			if (j.find("PhrasePassword") != j.end()) {
+				old = true;
+				_passphrase = j["PhrasePassword"].get<std::string>();
+				if (!_passphrase.empty())
+					_mnemonicHasPassphrase = true;
+			}
 
-		void ElaNewWalletJson::SetRequiredSignCount(uint32_t count) {
-			_requiredSignCount = count;
-		}
+			if (j.find("IsSingleAddress") != j.end()) {
+				old = true;
+				_singleAddress = j["IsSingleAddress"];
+			}
 
-		const std::string &ElaNewWalletJson::GetPrivateKey() const {
-			return _privateKey;
-		}
+			if (j.find("SingleAddress") != j.end()) {
+				_singleAddress = j["SingleAddress"].get<bool>();
+			}
 
-		void ElaNewWalletJson::SetPrivateKey(const std::string &key) {
-			_privateKey = key;
-		}
+			if (j.find("OwnerPubKey") != j.end()) {
+				_ownerPubKey = j["OwnerPubKey"].get<std::string>();
+			}
 
-		const std::string &ElaNewWalletJson::GetPhrasePassword() const {
-			return _phrasePassword;
-		}
+			if (!_mnemonic.empty() && old) {
+				HDSeed seed(BIP39::DeriveSeed(_mnemonic, _passphrase).bytes());
+				HDKeychain rootkey(seed.getExtendedKey(true));
 
-		void ElaNewWalletJson::SetPhrasePassword(const std::string &phrasePassword) {
-			_phrasePassword = phrasePassword;
-		}
+				_ownerPubKey = rootkey.getChild("44'/0'/1'/0/0").pubkey().getHex();
 
-		void ElaNewWalletJson::SetIsSingleAddress(bool value) {
-			_isSingleAddress = value;
-		}
+				_xPrivKey = Base58::CheckEncode(rootkey.extkey());
+				_xPubKey = Base58::CheckEncode(rootkey.getChild("44'/0'/0'").getPublic().extkey());
 
-		bool ElaNewWalletJson::GetIsSingleAddress() const {
-			return _isSingleAddress;
+				HDKeychain requestKey = rootkey.getChild("1'/0");
+				_requestPrivKey = requestKey.privkey().getHex();
+				_requestPubKey = requestKey.pubkey().getHex();
+
+				_publicKeyRing.emplace_back(_requestPubKey, _xPubKey);
+				if (_m == 0)
+					_m = 1;
+				_n = _publicKeyRing.size();
+
+				_passphrase.clear();
+			}
+
+			if (_ownerPubKey.empty() && !_xPrivKey.empty()) {
+				bytes_t bytes;
+				Base58::CheckDecode(_xPrivKey, bytes);
+				HDKeychain rootkey(bytes);
+				_ownerPubKey = rootkey.getChild("44'/0'/1'/0/0").pubkey().getHex();
+			}
+
+			if (_n > 1) {
+				_singleAddress = true;
+			}
 		}
 
 	}

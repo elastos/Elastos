@@ -22,8 +22,7 @@
 
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
-
-#include <Core/BRCrypto.h>
+#include <SDK/Common/hash.h>
 
 #include <arpa/inet.h>
 #include <cfloat>
@@ -34,8 +33,8 @@
 #define MAX_MSG_LENGTH     0x02000000
 #define MIN_PROTO_VERSION  70002 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
 #define LOCAL_HOST         ((UInt128) { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0x7f, 0x00, 0x00, 0x01 })
-#define CONNECT_TIMEOUT    5.0
-#define MESSAGE_TIMEOUT    60.0
+#define CONNECT_TIMEOUT    3.0
+#define MESSAGE_TIMEOUT    40.0
 
 #define PTHREAD_STACK_SIZE  (512 * 1024)
 
@@ -205,7 +204,7 @@ namespace Elastos {
 					}
 					if (n < 0 && errno != EWOULDBLOCK) error = errno;
 					gettimeofday(&tv, NULL);
-//					if (!error && tv.tv_sec + (double) tv.tv_usec / 1000000 >= _disconnectTime) error = ETIMEDOUT;
+					if (!error && tv.tv_sec + (double) tv.tv_usec / 1000000 >= _disconnectTime) error = ETIMEDOUT;
 					socket = _socket;
 				}
 
@@ -324,13 +323,11 @@ namespace Elastos {
 
 						gettimeofday(&tv, NULL);
 						time = tv.tv_sec + (double) tv.tv_usec / 1000000;
-//						if (!error && time >= _disconnectTime) error = ETIMEDOUT;
+						if (!error && time >= _disconnectTime) error = ETIMEDOUT;
 
 						if (!error && time >= _mempoolTime) {
 							info("done waiting for mempool response");
-							PingParameter pingParameter;
-							pingParameter.callback = _mempoolCallback;
-							pingParameter.lastBlockHeight = _manager->GetLastBlockHeight();
+							PingParameter pingParameter(_manager->GetLastBlockHeight(), _mempoolCallback);
 							SendMessage(MSG_PING, pingParameter);
 							_mempoolCallback = PeerCallback();
 							_mempoolTime = DBL_MAX;
@@ -527,10 +524,11 @@ namespace Elastos {
 		}
 
 		void Peer::CurrentBlockTxHashesRemove(const uint256 &hash) {
-			for (size_t i = 0; i < _currentBlockTxHashes.size(); ++i) {
-				if (hash == _currentBlockTxHashes[i]) {
-					_currentBlockTxHashes.erase(_currentBlockTxHashes.begin() + i);
-					break;
+			for (std::vector<uint256>::iterator it = _currentBlockTxHashes.begin(); it != _currentBlockTxHashes.end();) {
+				if (hash == (*it)) {
+					it = _currentBlockTxHashes.erase(it);
+				} else {
+					++it;
 				}
 			}
 		}
@@ -571,6 +569,22 @@ namespace Elastos {
 				if (_knownTxHashSet.find(txHashes[i]) == _knownTxHashSet.end()) {
 					_knownTxHashes.push_back(txHashes[i]);
 					_knownTxHashSet.insert(txHashes[i]);
+				}
+			}
+		}
+
+		void Peer::RemoveKnownTxHashes(const std::vector<uint256> &txHashes) {
+			for (size_t i = 0; i < txHashes.size(); ++i) {
+				if (_knownTxHashSet.find(txHashes[i]) != _knownTxHashSet.end()) {
+					_knownTxHashSet.erase(txHashes[i]);
+				}
+
+				for (std::vector<uint256>::iterator it = _knownTxHashes.begin(); it != _knownTxHashes.end();) {
+					if ((*it) == txHashes[i]) {
+						it = _knownTxHashes.erase(it);
+					} else {
+						++it;
+					}
 				}
 			}
 		}

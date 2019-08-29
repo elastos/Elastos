@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_TYPEDEFS_H__
 #define __ELASTOS_SDK_TYPEDEFS_H__
 
-#include <SDK/Common/uchar_vector.h>
+#include "uchar_vector.h"
 #include <vector>
 #include <set>
 #include <boost/shared_ptr.hpp>
@@ -14,5 +14,9 @@ typedef uchar_vector bytes_t;
 typedef std::set<bytes_t> hashset_t;
 
 typedef boost::shared_ptr<bytes_t> bytes_ptr;
+
+#ifndef MIN
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
 
 #endif //__ELASTOS_SDK_TYPEDEFS_H__

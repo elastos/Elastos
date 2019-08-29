@@ -5,10 +5,12 @@
 #ifndef __ELASTOS_SDK_PARAMCHECKER_H__
 #define __ELASTOS_SDK_PARAMCHECKER_H__
 
+#include "CommonConfig.h"
+#include "BigInt.h"
+
 #include <string>
 #include <boost/filesystem.hpp>
-
-#include "nlohmann/json.hpp"
+#include <nlohmann/json.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -57,7 +59,7 @@ namespace Elastos {
 				GetUnusedAddress = 20040,
 				AccountNotSupportVote = 20041,
 				WalletNotContainTx = 20042,
-				VoteDepositAmountInsufficient = 20043,
+				DepositAmountInsufficient = 20043,
 				PrivateKeyNotFound = 20044,
 				InvalidRedeemScript = 20045,
 				AlreadySigned = 20046,
@@ -65,6 +67,16 @@ namespace Elastos {
 				VerifyError = 20048,
 				TxPending = 20049,
 				InvalidMnemonicWordCount = 20050,
+				InvalidLocalStore = 20051,
+				MasterWalletNotExist = 20052,
+				InvalidAsset = 20053,
+				ReadConfigFileError = 20054,
+				InvalidChainID = 20055,
+				UnSupportOldTx = 20056,
+				UnsupportOperation = 20057,
+				BigInt = 20058,
+				DepositNotFound = 20059,
+				TooMuchInputs = 20060,
 				Other = 29999,
 			} Code;
 		}
@@ -81,7 +93,7 @@ namespace Elastos {
 
 			static nlohmann::json MakeErrorJson(Error::Code err, const std::string &msg);
 
-			static nlohmann::json MakeErrorJson(Error::Code err, const std::string &msg, uint64_t data);
+			static nlohmann::json MakeErrorJson(Error::Code err, const std::string &msg, const BigInt &data);
 
 			static void ThrowParamException(Error::Code err, const std::string &msg);
 
@@ -94,7 +106,7 @@ namespace Elastos {
 			static void CheckCondition(bool condition, Error::Code err, const std::string &msg,
 									   Exception::Type type = Exception::LogicError);
 
-			static void CheckCondition(bool condition, Error::Code err, const std::string &msg, uint64_t data,
+			static void CheckCondition(bool condition, Error::Code err, const std::string &msg, const BigInt &data,
 									   Exception::Type type = Exception::LogicError);
 
 			static void CheckPassword(const std::string &password, const std::string &msg);
@@ -103,16 +115,14 @@ namespace Elastos {
 
 			static void CheckParamNotEmpty(const std::string &argument, const std::string &msg);
 
-			static void CheckDecrypt(bool condition);
-
 			static void CheckJsonArray(const nlohmann::json &jsonData, size_t count, const std::string &msg);
 
 			static void CheckPathExists(const boost::filesystem::path &path);
 
-			static void CheckPubKeyJsonArray(const nlohmann::json &jsonArray, size_t checkCount,
-											 const std::string &msg);
+			static void CheckPubKeyJsonArray(const nlohmann::json &jsonArray, size_t checkCount, const std::string &msg);
 
 			static void CheckPrivateKey(const std::string &key);
+
 		};
 
 	}

@@ -18,10 +18,14 @@ namespace Elastos {
 
 			virtual bytes_t getData() const;
 
+			virtual size_t EstimateSize() const = 0;
+
 			virtual void Serialize(ByteStream &ostream) const = 0;
+
 			virtual bool Deserialize(const ByteStream &istream) = 0;
 
 			virtual nlohmann::json ToJson() const = 0;
+
 			virtual void FromJson(const nlohmann::json &j) = 0;
 
 			virtual IOutputPayload &operator=(const IOutputPayload &payload) = 0;

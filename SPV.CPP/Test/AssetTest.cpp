@@ -7,10 +7,12 @@
 #include "catch.hpp"
 #include "TestHelper.h"
 #include <SDK/Plugin/Transaction/Asset.h>
+#include <SDK/Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("Asset test", "[Asset]") {
+	Log::registerMultiLogger();
 
 	srand(time(nullptr));
 

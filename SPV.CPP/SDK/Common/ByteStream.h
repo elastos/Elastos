@@ -18,18 +18,22 @@ namespace Elastos {
 		class ByteStream {
 		public:
 
-			ByteStream();
+#define VAR_INT16_HEADER  0xfd
+#define VAR_INT32_HEADER  0xfe
+#define VAR_INT64_HEADER  0xff
+#define MAX_SCRIPT_LENGTH 0x100 // scripts over this size will not be parsed for an address
 
-			ByteStream(size_t size);
+			ByteStream();
 
 			ByteStream(const void *buf, size_t size);
 
-			ByteStream(const bytes_t &buf);
+			explicit ByteStream(const bytes_t &buf);
 
 			~ByteStream();
 
-		public:
 			void Reset();
+
+			void clear();
 
 			uint64_t size() const;
 
@@ -37,7 +41,6 @@ namespace Elastos {
 
 			const bytes_t &GetBytes() const;
 
-		public:
 			bool ReadByte(uint8_t &val) const;
 
 			bool ReadUint8(uint8_t &val) const;
@@ -66,7 +69,6 @@ namespace Elastos {
 
 			bool ReadVarString(std::string &str) const;
 
-
 			void WriteByte(uint8_t val);
 
 			void WriteUint8(uint8_t val);
@@ -93,7 +95,7 @@ namespace Elastos {
 
 			void WriteVarBytes(const bytes_t &bytes);
 
-			void WriteVarUint(uint64_t len);
+			size_t WriteVarUint(uint64_t len);
 
 			void WriteVarString(const std::string &str);
 

@@ -5,8 +5,13 @@
 #ifndef __ELASTOS_SDK_LOG_H__
 #define __ELASTOS_SDK_LOG_H__
 
-#include <Config.h>
+#include <CMakeConfig.h>
 #include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_sinks.h>
+#include <spdlog/sinks/file_sinks.h>
+#if defined(__ANDROID__)
+#include <spdlog/sinks/android_sink.h>
+#endif
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -14,83 +19,121 @@ namespace Elastos {
 		class Log {
 		public:
 
-			template<typename Arg1, typename... Args>
-			static void trace(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
-				_consoleLog->trace(fmt.c_str(), arg1, args...);
+#define SPV_LOG_NAME "spvsdk"
+#define SPV_DEFAULT_LOG SPV_LOG_NAME
+
+#define SPV_FILE_NAME "spvsdk.log"
+#define GetFunName() (std::string("<<< ") + (__FUNCTION__) + " >>>")
+
+			static inline void registerMultiLogger(const std::string &path = "") {
+				if (spdlog::get(SPV_DEFAULT_LOG) != nullptr)
+					return ;
+
+#if defined(__ANDROID__)
+				auto console_sink = std::make_shared<spdlog::sinks::android_sink>("spvsdk");
+#else
+				auto console_sink = std::make_shared<spdlog::sinks::ansicolor_stdout_sink_mt>();
+#endif
+				console_sink->set_level(spdlog::level::trace);
+
+				std::vector<spdlog::sink_ptr> sinks = {console_sink};
+
+				std::string filepath = SPV_FILE_NAME;
+				if (path != "") {
+					filepath = path + "/" + SPV_FILE_NAME;
+					auto file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(filepath, 1024*1024*2, 1);
+					file_sink->set_level(spdlog::level::debug);
+					sinks.push_back(file_sink);
+				}
+
+				auto logger = std::make_shared<spdlog::logger>(SPV_DEFAULT_LOG, sinks.begin(), sinks.end());
+				spdlog::register_logger(logger);
+
+				spdlog::get(SPV_DEFAULT_LOG)->set_pattern("%m-%d %T.%e %P %t %^%L%$ %n %v");
+				spdlog::get(SPV_DEFAULT_LOG)->flush_on(spdlog::level::warn);
 			}
 
 			template<typename Arg1, typename... Args>
-			static void debug(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
-				_consoleLog->debug(fmt.c_str(), arg1, args...);
+			static inline void trace(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
+				spdlog::get(SPV_DEFAULT_LOG)->trace(fmt.c_str(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
-			static void info(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
-				_consoleLog->info(fmt.c_str(), arg1, args...);
+			static inline void debug(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
+				spdlog::get(SPV_DEFAULT_LOG)->debug(fmt.c_str(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
-			static void warn(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
-				_consoleLog->warn(fmt.c_str(), arg1, args...);
+			static inline void info(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
+				spdlog::get(SPV_DEFAULT_LOG)->info(fmt.c_str(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
-			static void error(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
-				_consoleLog->error(fmt.c_str(), arg1, args...);
+			static inline void warn(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
+				spdlog::get(SPV_DEFAULT_LOG)->warn(fmt.c_str(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
-			static void critical(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
-				_consoleLog->critical(fmt.c_str(), arg1, args...);
+			static inline void error(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
+				spdlog::get(SPV_DEFAULT_LOG)->error(fmt.c_str(), arg1, args...);
+			}
+
+			template<typename Arg1, typename... Args>
+			static inline void critical(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
+				spdlog::get(SPV_DEFAULT_LOG)->critical(fmt.c_str(), arg1, args...);
 			}
 
 			template<typename T>
-			static void trace(const T &msg) {
-				_consoleLog->trace(msg);
+			static inline void trace(const T &msg) {
+				spdlog::get(SPV_DEFAULT_LOG)->trace(msg);
 			}
 
 			template<typename T>
-			static void debug(const T &msg) {
-				_consoleLog->debug(msg);
+			static inline void debug(const T &msg) {
+				spdlog::get(SPV_DEFAULT_LOG)->debug(msg);
 			}
 
 			template<typename T>
-			static void info(const T &msg) {
-				_consoleLog->info(msg);
+			static inline void info(const T &msg) {
+				spdlog::get(SPV_DEFAULT_LOG)->info(msg);
 			}
 
 			template<typename T>
-			static void warn(const T &msg) {
-				_consoleLog->warn(msg);
+			static inline void warn(const T &msg) {
+				spdlog::get(SPV_DEFAULT_LOG)->warn(msg);
 			}
 
 			template<typename T>
-			static void error(const T &msg) {
-				_consoleLog->error(msg);
+			static inline void error(const T &msg) {
+				spdlog::get(SPV_DEFAULT_LOG)->error(msg);
 			}
 
 			template<typename T>
-			static void critical(const T &msg) {
-				_consoleLog->critical(msg);
+			static inline void critical(const T &msg) {
+				spdlog::get(SPV_DEFAULT_LOG)->critical(msg);
 			}
 
-			static void setLevel(spdlog::level::level_enum level) {
-				_consoleLog->set_level(level);
+			static inline void setLevel(spdlog::level::level_enum level) {
+				spdlog::get(SPV_DEFAULT_LOG)->set_level(level);
 			}
 
-			static void setPattern(const std::string &fmt) {
-				_consoleLog->set_pattern(fmt);
+			static inline void setPattern(const std::string &fmt) {
+				spdlog::get(SPV_DEFAULT_LOG)->set_pattern(fmt);
 			}
 
-			static std::shared_ptr<spdlog::logger> &getLogger() {
-				return _consoleLog;
+			static inline void flush() {
+				spdlog::get(SPV_DEFAULT_LOG)->flush();
 			}
 
-		private:
-			static std::shared_ptr<spdlog::logger> _consoleLog;
 		};
 
-#define SPVLOG_DEBUG(...) SPDLOG_DEBUG(Log::getLogger(), __VA_ARGS__)
+#ifdef ARGUMENT_LOG_ENABLE
+#define __va_first(first, ...) first
+#define __va_rest(first, ...) __VA_ARGS__
+#define ArgInfo(...) Log::info(std::string("+++ ") + __va_first(__VA_ARGS__, NULL), __va_rest(__VA_ARGS__, NULL))
+#endif
+
+#define SPVLOG_DEBUG(...) SPDLOG_DEBUG(spdlog::get(SPV_DEFAULT_LOG), __VA_ARGS__)
 
 	}
 }

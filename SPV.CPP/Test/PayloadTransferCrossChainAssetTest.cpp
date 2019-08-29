@@ -6,37 +6,28 @@
 
 #include "catch.hpp"
 #include "TestHelper.h"
-#include <SDK/Plugin/Transaction/Payload/PayloadTransferCrossChainAsset.h>
+#include <SDK/Plugin/Transaction/Payload/TransferCrossChainAsset.h>
+#include <SDK/Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 
-static void verifyPayload(const PayloadTransferCrossChainAsset &p1, const PayloadTransferCrossChainAsset &p2) {
-	const std::vector<std::string> &addresses1 = p1.GetCrossChainAddress();
-	const std::vector<std::string> &addresses2 = p2.GetCrossChainAddress();
-	REQUIRE(addresses1.size() == addresses2.size());
-	for (size_t i = 0; i < addresses1.size(); ++i) {
-		REQUIRE(addresses1[i] == addresses2[i]);
-	}
+static void verifyPayload(const TransferCrossChainAsset &p1, const TransferCrossChainAsset &p2) {
+	const std::vector<TransferInfo> &info1 = p1.Info();
+	const std::vector<TransferInfo> &info2 = p2.Info();
 
-	const std::vector<uint64_t> &indexes1 = p1.GetOutputIndex();
-	const std::vector<uint64_t> &indexes2 = p2.GetOutputIndex();
-	REQUIRE(indexes1.size() == indexes2.size());
-	for (size_t i = 0; i < indexes1.size(); ++i) {
-		REQUIRE(indexes1[i] == indexes2[i]);
-	}
-
-	const std::vector<uint64_t> &amounts1 = p1.GetCrossChainAmout();
-	const std::vector<uint64_t> &amounts2 = p2.GetCrossChainAmout();
-	REQUIRE(amounts1.size() == amounts2.size());
-	for (size_t i = 0; i < amounts1.size(); ++i) {
-		REQUIRE(amounts1[i] == amounts2[i]);
+	REQUIRE(info1.size() == info2.size());
+	for (size_t i = 0; i < info1.size(); ++i) {
+		REQUIRE(info1[i].CrossChainAddress() == info2[i].CrossChainAddress());
+		REQUIRE(info1[i].OutputIndex() == info2[i].OutputIndex());
+		REQUIRE(info1[i].CrossChainAmount() == info2[i].CrossChainAmount());
 	}
 }
 
-TEST_CASE("PayloadTransferCrossChainAsset Test", "[PayloadTransferCrossChainAsset]") {
+TEST_CASE("TransferCrossChainAsset Test", "[TransferCrossChainAsset]") {
+	Log::registerMultiLogger();
 
 	SECTION("Default construct test") {
-		PayloadTransferCrossChainAsset p1, p2;
+		TransferCrossChainAsset p1, p2;
 
 		ByteStream stream1, stream2;
 		p1.Serialize(stream1, 0);
@@ -51,17 +42,17 @@ TEST_CASE("PayloadTransferCrossChainAsset Test", "[PayloadTransferCrossChainAsse
 	}
 
 	SECTION("Serialize and deserialize test") {
-		PayloadTransferCrossChainAsset p1, p2;
-
-		std::vector<std::string> crossChainAddress;
-		std::vector<uint64_t> crossChainIndex;
-		std::vector<uint64_t> crossChainAmount;
+		std::vector<TransferInfo> infos;
 		for (int i = 0; i < 10; ++i) {
-			crossChainAddress.push_back(getRandString(34));
-			crossChainIndex.push_back(getRandUInt64());
-			crossChainAmount.push_back(getRandUInt64());
+			std::string addr = getRandString(34);
+			uint16_t index = getRandUInt16();
+			BigInt amount;
+			amount.setUint64(getRandUInt64());
+
+			TransferInfo info(addr, index, amount);
+			infos.push_back(info);
 		}
-		p1.SetCrossChainData(crossChainAddress, crossChainIndex, crossChainAmount);
+		TransferCrossChainAsset p1(infos), p2;
 
 		ByteStream stream;
 		p1.Serialize(stream, 0);
@@ -76,18 +67,21 @@ TEST_CASE("PayloadTransferCrossChainAsset Test", "[PayloadTransferCrossChainAsse
 	}
 
 	SECTION("to json and from json") {
-		PayloadTransferCrossChainAsset p1, p2;
 
 		std::vector<std::string> crossChainAddress;
 		std::vector<uint64_t> crossChainIndex;
 		std::vector<uint64_t> crossChainAmount;
+		std::vector<TransferInfo> infos;
 		for (int i = 0; i < 10; ++i) {
-			crossChainAddress.push_back(getRandString(34));
-			crossChainIndex.push_back(getRandUInt64());
-			crossChainAmount.push_back(getRandUInt64());
-		}
+			std::string addr = getRandString(34);
+			uint16_t index = getRandUInt16();
+			BigInt amount;
+			amount.setUint64(getRandUInt64());
 
-		p1.SetCrossChainData(crossChainAddress, crossChainIndex, crossChainAmount);
+			TransferInfo info(addr, index, amount);
+			infos.push_back(info);
+		}
+		TransferCrossChainAsset p1(infos), p2;
 
 		nlohmann::json jsonData = p1.ToJson(0);
 
