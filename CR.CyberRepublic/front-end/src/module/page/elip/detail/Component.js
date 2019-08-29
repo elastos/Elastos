@@ -245,13 +245,15 @@ const WrapperCol = styled(Col)`
 `
 
 const Title = styled.div`
-  padding: 24px;
+  padding: 0 20px;
   color: #000;
+  height: 42px;
+  line-height: 42px;
 `
 
 const Dec = styled.div`
   min-height: 320px;
-  padding: 24px;
+  padding: 20px;
   font-size: 14px;
   line-height: 20px;
   color: #000;

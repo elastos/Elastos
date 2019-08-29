@@ -14,8 +14,9 @@ export const Container = styled.div`
   .ant-input {
     border-radius: 0;
     background: rgba(204, 204, 204, 0.2);
+    padding-left: 20px;
+    padding-right: 20px;
     height: 42px;
-    padding: 20px;
   }
   .ant-form-item-label label {
     white-space: normal;
