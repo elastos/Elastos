@@ -775,7 +775,7 @@ func (sm *SyncManager) handleBlockchainEvents(event *events.Event) {
 		sm.txMemPool.CleanSubmittedTransactions(block)
 
 		// Remove the spent UTXOs from cache when the transaction pool is cleaned.
-		sm.chain.UTXOCache.CleanSpentUTXOs(block)
+		sm.chain.UTXOCache.CleanSpent(block)
 
 		// Remove the block and its confirmation which is connected from
 		// the block pool.

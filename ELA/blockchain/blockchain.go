@@ -911,6 +911,9 @@ func (b *BlockChain) getReorganizeNodes(node *BlockNode) (*list.List, *list.List
 // the end of the chain) and nodes the are being attached must be in forwards
 // order (think pushing them onto the end of the chain).
 func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error {
+	// Clean the UTXO cache
+	b.UTXOCache.CleanCache()
+
 	// Ensure all of the needed side chain blocks are in the cache.
 	for e := attachNodes.Front(); e != nil; e = e.Next() {
 		n := e.Value.(*BlockNode)
