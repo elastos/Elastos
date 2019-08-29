@@ -24,7 +24,6 @@ export default createContainer(Component, state => ({
 
           const loginRedirect = sessionStorage.getItem('loginRedirect')
           if (loginRedirect) {
-            console.log('login redirect')
             this.history.push(loginRedirect)
             sessionStorage.setItem('loggedIn', '1')
             sessionStorage.setItem('loginRedirect', null)

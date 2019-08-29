@@ -7,14 +7,11 @@ import BackLink from '@/module/shared/BackLink/Component'
 import { grid } from '../common/variable'
 
 export default class extends StandardPage {
-  constructor(p) {
-    super(p)
-    this.state = {
-      loading: false
-    }
-  }
-
   ord_renderContent() {
+    const { isLogin, history } = this.props
+    if (!isLogin) {
+      history.push('/login')
+    }
     return (
       <div>
         <Container>

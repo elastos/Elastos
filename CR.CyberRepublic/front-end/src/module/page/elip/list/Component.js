@@ -54,7 +54,13 @@ export default class extends BaseComponent {
   }
 
   addElip = () => {
-    this.props.history.push('/elips/new')
+    const { isLogin, history } = this.props
+    if (!isLogin) {
+      sessionStorage.setItem('loginRedirect', '/elips/new')
+      history.push('/login')
+    } else {
+      history.push('/elips/new')
+    }
   }
 
   searchChangedHandler = (search) => {
@@ -110,7 +116,7 @@ export default class extends BaseComponent {
       }
     ]
 
-    const createBtn = isLogin && (
+    const createBtn = (
       <Row type="flex" align="middle" justify="end">
         <Col lg={8} md={12} sm={24} xs={24} style={{ textAlign: 'right' }}>
           <StyledButton
