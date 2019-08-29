@@ -394,19 +394,17 @@ func (b *BlockChain) initChainState() error {
 	if !initialized {
 		// At this point the database has not already been initialized, so
 		// initialize both it and the chain state to the genesis block.
-		fmt.Println("not initialized")
 		return b.createChainState()
 	}
 
 	if !hasBlockIndex {
-		//	//err = migrateBlockIndex(b.db.GetFFLDB())
-		//	//if err != nil {
-		//	//	return initialized, nil
-		//	//}
-		//	//return initialized, errors.New("initChainState failed")
-		//	return nil
+		//err = migrateBlockIndex(b.db.GetFFLDB())
+		//if err != nil {
+		//	return initialized, nil
+		//}
+		//return initialized, errors.New("initChainState failed")
+		return nil
 	}
-	fmt.Println("initialized")
 
 	// Attempt to load the chain state from the database.
 	err = b.db.GetFFLDB().View(func(dbTx database.Tx) error {
@@ -437,7 +435,7 @@ func (b *BlockChain) initChainState() error {
 		for ok := cursor.First(); ok; ok = cursor.Next() {
 			blockCount++
 		}
-		fmt.Println("block count:", blockCount)
+		log.Info("block count:", blockCount)
 		blockNodes := make([]BlockNode, blockCount)
 
 		var i int32
@@ -534,8 +532,8 @@ func deserializeBlockRow(blockRow []byte) (*types.Header, error) {
 	return &header, nil
 }
 
-// dbStoreBlockNode stores the block header and validation status to the block
-// index bucket. This overwrites the current entry if there exists one.
+// dbStoreBlockNode stores the block header to the block index bucket.
+// This overwrites the current entry if there exists one.
 func dbStoreBlockNode(dbTx database.Tx, header *types.Header) error {
 	// Serialize block data to be stored.
 
@@ -551,6 +549,16 @@ func dbStoreBlockNode(dbTx database.Tx, header *types.Header) error {
 	blockIndexBucket := dbTx.Metadata().Bucket(blockIndexBucketName)
 	key := blockIndexKey(&blockHash, header.Height)
 	return blockIndexBucket.Put(key, value)
+}
+
+// dbRemoveBlockNode remove the block header to the block index bucket.
+// This overwrites the current entry if there exists one.
+func dbRemoveBlockNode(dbTx database.Tx, blockHash *common.Uint256,
+	height uint32) error {
+	// Write block header data to block index bucket.
+	blockIndexBucket := dbTx.Metadata().Bucket(blockIndexBucketName)
+	key := blockIndexKey(blockHash, height)
+	return blockIndexBucket.Delete(key)
 }
 
 // blockIndexKey generates the binary key for an entry in the block index

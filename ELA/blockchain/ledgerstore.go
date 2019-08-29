@@ -60,13 +60,25 @@ type IChainStore interface {
 type IFFLDBChainStore interface {
 	database.DB
 
+	// SaveBlock will write block into file db.
 	SaveBlock(b *Block, node *BlockNode, confirm *payload.Confirm,
 		medianTimePast time.Time) error
+
+	// RollbackBlock only remove block state and block index.
 	RollbackBlock(b *Block, node *BlockNode,
 		confirm *payload.Confirm, medianTimePast time.Time) error
 
+	// Get block from file db.
 	GetBlock(hash Uint256) (*Block, error)
+
+	// Get block header from file db.
 	GetHeader(hash Uint256) (*Header, error)
 
+	// If already exist in main chain(exist in file db and exist block index),
+	// will return true.
+	BlockExists(hash *Uint256) (bool, error)
+
+	// If already exist in file db (rollback will not remove from file db), will
+	// return true.
 	IsBlockInStore(hash *Uint256) bool
 }

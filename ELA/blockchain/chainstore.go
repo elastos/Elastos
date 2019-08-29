@@ -64,7 +64,7 @@ func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
 		return nil, err
 	}
 
-	fdb, err := NewChainStoreFFLDB(dataDir, genesisBlock)
+	fdb, err := NewChainStoreFFLDB(dataDir)
 	if err != nil {
 		return nil, err
 	}
