@@ -81,17 +81,20 @@ namespace Elastos {
 					if (/*!txns[i]->IsSigned() || */_allTx.Contains(txns[i]))
 						continue;
 
-					for (InputArray::iterator in = txns[i]->GetInputs().begin(); in != txns[i]->GetInputs().end(); ++in)
-						spentInputs.push_back(*in);
-
 					_allTx.Insert(txns[i]);
 					InsertTx(txns[i]);
 
-					if (txns[i]->GetBlockHeight() != TX_UNCONFIRMED)
+					if (txns[i]->GetBlockHeight() != TX_UNCONFIRMED) {
+						for (InputArray::iterator in = txns[i]->GetInputs().begin(); in != txns[i]->GetInputs().end(); ++in)
+							spentInputs.push_back(*in);
+
 						BalanceAfterUpdatedTx(txns[i]);
-					else
+					} else {
+						for (InputArray::iterator in = txns[i]->GetInputs().begin(); in != txns[i]->GetInputs().end(); ++in)
+							_spendingOutputs.push_back(UTXOPtr(new UTXO(*in)));
 						SPVLOG_DEBUG("{} tx[{}]: {}, h: {}", _walletID, i,
 									 txns[i]->GetHash().GetHex(), txns[i]->GetBlockHeight());
+					}
 				}
 			}
 
