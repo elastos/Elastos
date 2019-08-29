@@ -12,7 +12,8 @@ export default class extends Base {
       const { comment, status, elipId } = param
       const elip = await db_elip
         .getDBInstance()
-        .findOne({ _id: elipId })
+        .findById({ _id: elipId })
+        .populate('createdBy')
       if (!elip) {
         throw 'ElipReviewService.create - invalid elip id'
       }
@@ -55,13 +56,9 @@ export default class extends Base {
       <p>Thanks</p>
     `
 
-    const creator = await this.getDBModel('User')
-      .getDBInstance()
-      .findOne({ _id: elip.createdBy })
-
     const mailObj = {
-      to: creator.email,
-      toName: userUtil.formatUsername(creator),
+      to: elip.createdBy.email,
+      toName: userUtil.formatUsername(elip.createdBy),
       subject,
       body
     }
