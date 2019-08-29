@@ -73,7 +73,7 @@ class C extends StandardPage {
     if (!loading && !Object.keys(elip).length) {
       return null
     }
-    const { isSecretary } = this.props
+
     return (
       <div>
         <BackLink link="/elips" />
@@ -104,20 +104,7 @@ class C extends StandardPage {
               </Dec>
             </WrapperCol>
           </Row>
-          {elip && elip.status !== ELIP_STATUS.APPROVED && (
-            <Row>
-              <LabelCol span={3} />
-              <Col span={17}>
-                <Actions>
-                  {this.renderCancelBtn()}
-                  {this.renderEditBtn()}
-                  {isSecretary && elip.status === ELIP_STATUS.WAIT_FOR_REVIEW && (
-                    <ReviewButtons onSubmit={this.handleSubmit} />
-                  )}
-                </Actions>
-              </Col>
-            </Row>
-          )}
+          {this.renderActionButtons()}
           {this.renderReviewHistory()}
           {elip.status === ELIP_STATUS.APPROVED && (
             <Row style={{ marginTop: 48 }}>
@@ -145,37 +132,9 @@ class C extends StandardPage {
     return elip.createdBy && elip.createdBy._id === currentUserId
   }
 
-  renderReviewHistory() {
-    const { reviews } = this.state
-    const { isSecretary } = this.props
-    if (this.isAuthor() || isSecretary) {
-      return <ReviewHistory reviews={reviews} />
-    }
-  }
-
-  renderCancelBtn() {
-    const { elip } = this.state
-    const { history, isSecretary } = this.props
-    const isVisible = (this.isAuthor() && elip.status === ELIP_STATUS.REJECTED) ||
-      (isSecretary && elip.status === ELIP_STATUS.WAIT_FOR_REVIEW)
-
-    if (isVisible) {
-      return (
-        <Button
-          onClick={() => history.push('/elips')}
-          className="cr-btn cr-btn-default"
-          style={{ marginRight: 10 }}
-        >
-          {I18N.get('elip.button.cancel')}
-        </Button>
-      )
-    }
-  }
-
   renderEditBtn() {
     const { elip } = this.state
     const isEditable = this.isAuthor() && elip.status === ELIP_STATUS.REJECTED
-
     if (isEditable) {
       return (
         <Button
@@ -185,6 +144,43 @@ class C extends StandardPage {
           {I18N.get('elip.button.edit')}
         </Button>
       )
+    }
+  }
+
+  renderActionButtons() {
+    const { elip } = this.state
+    const { isSecretary, history } = this.props
+    const isVisible = (this.isAuthor() && elip.status === ELIP_STATUS.REJECTED) ||
+      (isSecretary && elip.status === ELIP_STATUS.WAIT_FOR_REVIEW)
+    if (isVisible) {
+      return (
+        <Row>
+          <LabelCol span={3} />
+          <Col span={17}>
+            <Actions>
+              <Button
+                onClick={() => history.push('/elips')}
+                className="cr-btn cr-btn-default"
+                style={{ marginRight: 10 }}
+              >
+                {I18N.get('elip.button.cancel')}
+              </Button>
+              {this.renderEditBtn()}
+              {isSecretary && elip.status === ELIP_STATUS.WAIT_FOR_REVIEW && (
+                <ReviewButtons onSubmit={this.handleSubmit} />
+              )}
+            </Actions>
+          </Col>
+        </Row>
+      )
+    }
+  }
+
+  renderReviewHistory() {
+    const { reviews } = this.state
+    const { isSecretary } = this.props
+    if (this.isAuthor() || isSecretary) {
+      return <ReviewHistory reviews={reviews} />
     }
   }
 }
