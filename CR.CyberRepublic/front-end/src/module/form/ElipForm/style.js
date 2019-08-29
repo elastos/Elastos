@@ -81,13 +81,13 @@ export const Label = styled.div`
   color: rgba(3, 30, 40, 0.4);
 `
 export const Status = styled.div`
+  display: inline-block;
   font-size: 16px;
   line-height: 27px;
   text-transform: uppercase;
   color: #fff;
   margin-bottom: 42px;
   background: #be1313;
-  width: 159px;
   height: 27px;
-  text-align: center;
+  padding: 0 6px;
 `

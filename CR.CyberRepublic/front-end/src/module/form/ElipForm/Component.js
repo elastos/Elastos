@@ -79,7 +79,9 @@ class C extends BaseComponent {
     return (
       <Container>
         <Title className="komu-a cr-title-with-icon ">
-          {data ? `${I18N.get('elip.button.edit')} ELIP #${data.vid}` : I18N.get('elip.button.add')}
+          {data
+            ? `${I18N.get('elip.button.edit')} ELIP #${data.vid}`
+            : I18N.get('elip.button.add')}
         </Title>
         {data && data.status === ELIP_STATUS.REJECTED && (
           <div>
@@ -124,30 +126,27 @@ class C extends BaseComponent {
             })(<DraftEditor contentType={CONTENT_TYPE.MARKDOWN} />)}
           </FormItem>
           <Actions>
-            <FormItem>
+            <Button
+              onClick={() => this.props.history.push('/elips')}
+              className="cr-btn cr-btn-default"
+              style={{ marginRight: 10 }}
+            >
+              {I18N.get('elip.button.cancel')}
+            </Button>
+
+            <Popconfirm
+              title={I18N.get('elip.modal.submit')}
+              onConfirm={e => this.handleSubmit(e)}
+              okText={I18N.get('.yes')}
+              cancelText={I18N.get('.no')}
+            >
               <Button
-                onClick={() => this.props.history.push('/elips')}
-                className="cr-btn cr-btn-default"
-                style={{ marginRight: 10 }}
+                loading={this.state.loading}
+                className="cr-btn cr-btn-primary"
               >
-                {I18N.get('elip.button.cancel')}
+                {I18N.get('elip.button.submit')}
               </Button>
-            </FormItem>
-            <FormItem>
-              <Popconfirm
-                title={I18N.get('elip.modal.submit')}
-                onConfirm={e => this.handleSubmit(e)}
-                okText={I18N.get('.yes')}
-                cancelText={I18N.get('.no')}
-              >
-                <Button
-                  loading={this.state.loading}
-                  className="cr-btn cr-btn-primary"
-                >
-                  {I18N.get('elip.button.submit')}
-                </Button>
-              </Popconfirm>
-            </FormItem>
+            </Popconfirm>
           </Actions>
         </Form>
       </Container>
