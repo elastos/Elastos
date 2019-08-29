@@ -119,7 +119,7 @@ func TestUTXOCache_GetTxReferenceInfo(t *testing.T) {
 	}
 }
 
-func TestUTXOCache_CleanSpentUTXOs(t *testing.T) {
+func TestUTXOCache_CleanSpent(t *testing.T) {
 	block := &types.Block{
 		Header: types.Header{},
 		Transactions: []*types.Transaction{
@@ -130,7 +130,7 @@ func TestUTXOCache_CleanSpentUTXOs(t *testing.T) {
 			spendTx,
 		},
 	}
-	utxoCache.CleanSpentUTXOs(block)
+	utxoCache.CleanSpent(block)
 	_, err := utxoCache.GetTxReferenceInfo(spendTx)
 	assert.Equal(t, "GetTxReferenceInfo failed, previous transaction not found", err.Error())
 }
@@ -162,6 +162,51 @@ func TestUTXOCache_CleanCache(t *testing.T) {
 	utxoCache.CleanCache()
 	_, err = utxoCache.GetTxReferenceInfo(spendTx)
 	assert.Equal(t, "GetTxReferenceInfo failed, previous transaction not found", err.Error())
+}
+
+// Test for case that a map use pointer as a key
+func Test_PointerKeyForMap(t *testing.T) {
+	i1 := types.Input{
+		Previous: types.OutPoint{
+			TxID:  common.EmptyHash,
+			Index: 15,
+		},
+		Sequence: 10,
+	}
+
+	i2 := types.Input{
+		Previous: types.OutPoint{
+			TxID:  common.EmptyHash,
+			Index: 15,
+		},
+		Sequence: 10,
+	}
+	// ensure i1 and i2 have the same data
+	assert.Equal(t, i1, i2)
+
+	m1 := make(map[*types.Input]int)
+	m1[&i1] = 1
+	m1[&i2] = 2
+	assert.Equal(t, 2, len(m1))
+	//fmt.Println(m1)
+	// NOTE: &i1 and &i2 are different keys in m1
+	// map[{TxID: 0000000000000000000000000000000000000000000000000000000000000000 Index: 15 Sequence: 10}:1 {TxID: 0000000000000000000000000000000000000000000000000000000000000000 Index: 15 Sequence: 10}:2]
+
+	m2 := make(map[types.Input]int)
+	m2[i1] = 1
+	m2[i2] = 2
+	assert.Equal(t, 1, len(m2))
+	//fmt.Println(m2)
+	// map[{TxID: 0000000000000000000000000000000000000000000000000000000000000000 Index: 15 Sequence: 10}:2]
+
+	m4 := make(map[*int]int)
+	i3 := 0
+	i4 := 0
+	m4[&i3] = 3
+	m4[&i4] = 4
+	assert.Equal(t, 2, len(m4))
+	//fmt.Println(m4)
+	// map[0xc0000b43d8:3 0xc0000b4400:4]
 }
 
 func deleteTestDBTx(tx *types.Transaction) error {
