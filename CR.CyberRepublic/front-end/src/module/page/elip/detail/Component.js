@@ -62,7 +62,7 @@ class C extends StandardPage {
   }
 
   ord_renderContent() {
-    const { elip, loading, reviews } = this.state
+    const { elip, loading } = this.state
     if (loading) {
       return (
         <StyledSpin>
@@ -73,7 +73,7 @@ class C extends StandardPage {
     if (!loading && !Object.keys(elip).length) {
       return null
     }
-    const { isLogin, isSecretary, currentUserId } = this.props
+    const { isSecretary } = this.props
     return (
       <div>
         <BackLink link="/elips" />
@@ -111,18 +111,14 @@ class C extends StandardPage {
                 <Actions>
                   {this.renderCancelBtn()}
                   {this.renderEditBtn()}
-                  {isLogin &&
-                    isSecretary &&
-                    elip.status === ELIP_STATUS.WAIT_FOR_REVIEW && (
-                      <ReviewButtons onSubmit={this.handleSubmit} />
-                    )}
+                  {isSecretary && elip.status === ELIP_STATUS.WAIT_FOR_REVIEW && (
+                    <ReviewButtons onSubmit={this.handleSubmit} />
+                  )}
                 </Actions>
               </Col>
             </Row>
           )}
-          {isLogin && (isSecretary || elip.createdBy === currentUserId) && (
-            <ReviewHistory reviews={reviews} />
-          )}
+          {this.renderReviewHistory()}
           {elip.status === ELIP_STATUS.APPROVED && (
             <Row style={{ marginTop: 48 }}>
               <LabelCol span={3} />
@@ -143,13 +139,24 @@ class C extends StandardPage {
     )
   }
 
+  isAuthor() {
+    const { elip } = this.state
+    const { currentUserId } = this.props
+    return elip.createdBy && elip.createdBy._id === currentUserId
+  }
+
+  renderReviewHistory() {
+    const { reviews } = this.state
+    const { isSecretary } = this.props
+    if (this.isAuthor() || isSecretary) {
+      return <ReviewHistory reviews={reviews} />
+    }
+  }
+
   renderCancelBtn() {
     const { elip } = this.state
-    const { history, currentUserId, isSecretary } = this.props
-
-    const isAuthor = elip.createdBy && elip.createdBy._id === currentUserId
-
-    const isVisible = (isAuthor && elip.status === ELIP_STATUS.REJECTED) ||
+    const { history, isSecretary } = this.props
+    const isVisible = (this.isAuthor() && elip.status === ELIP_STATUS.REJECTED) ||
       (isSecretary && elip.status === ELIP_STATUS.WAIT_FOR_REVIEW)
 
     if (isVisible) {
@@ -167,12 +174,7 @@ class C extends StandardPage {
 
   renderEditBtn() {
     const { elip } = this.state
-    const { isLogin, currentUserId } = this.props
-
-    const isEditable = isLogin &&
-      elip.createdBy &&
-      elip.createdBy._id === currentUserId &&
-      elip.status === ELIP_STATUS.REJECTED
+    const isEditable = this.isAuthor() && elip.status === ELIP_STATUS.REJECTED
 
     if (isEditable) {
       return (
