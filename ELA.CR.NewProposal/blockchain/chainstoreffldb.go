@@ -37,7 +37,7 @@ type ChainStoreFFLDB struct {
 	blocksCache      map[Uint256]*Block
 }
 
-func NewChainStoreFFLDB(dataDir string, genesisBlock *Block) (IFFLDBChainStore, error) {
+func NewChainStoreFFLDB(dataDir string) (IFFLDBChainStore, error) {
 	fflDB, err := LoadBlockDB(dataDir)
 	if err != nil {
 		return nil, err
@@ -331,7 +331,7 @@ func (c *ChainStoreFFLDB) IsBlockInStore(hash *Uint256) bool {
 // the main chain or any side chains.
 //
 // This function is safe for concurrent access.
-func (c *ChainStoreFFLDB) blockExists(hash *Uint256) (bool, error) {
+func (c *ChainStoreFFLDB) BlockExists(hash *Uint256) (bool, error) {
 	// Check in the database.
 	var exists bool
 	err := c.db.View(func(dbTx database.Tx) error {

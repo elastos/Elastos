@@ -982,6 +982,17 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block, confirm *pay
 		return err
 	}
 
+	err = b.db.GetFFLDB().Update(func(dbTx database.Tx) error {
+		err := dbRemoveBlockNode(dbTx, node.Hash, node.Height)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
 	err = b.db.RollbackBlock(block, node, confirm, CalcPastMedianTime(prevNode))
 	if err != nil {
 		return err
@@ -1087,7 +1098,9 @@ func (b *BlockChain) BlockExists(hash *Uint256) bool {
 	}
 
 	// Check in database (rest of main chain not in memory).
-	return b.db.GetFFLDB().IsBlockInStore(hash)
+	exist, _ := b.db.GetFFLDB().BlockExists(hash)
+
+	return exist
 }
 
 // flushToDB writes all dirty block nodes to the database. If all writes

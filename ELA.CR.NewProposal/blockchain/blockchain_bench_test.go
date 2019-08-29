@@ -15,19 +15,20 @@
 package blockchain
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
 	"os"
 	"path"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/database"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"github.com/elastos/Elastos.ELA/utils/signal"
@@ -54,7 +55,81 @@ var (
 	randomBlockHashes     = initRandomBlockHashes()
 	continuousBlockHashes = initContinuousBlockHashes()
 	chain                 = benchBegin()
+	newChain              = newBlockChain()
 )
+
+func BenchmarkBlockChain_PersistBlocks(b *testing.B) {
+	chainStore := newChain.db.(*ChainStore)
+	for i := chainHeight - 30000; i < chainHeight; i++ {
+		blockHash, _ := DefaultLedger.Store.GetBlockHash(i)
+		block, _ := DefaultLedger.Store.GetBlock(blockHash)
+
+		chainStore.NewBatch()
+		if err := chainStore.persistTrimmedBlock(block); err != nil {
+			b.Error(err)
+		}
+		if err := chainStore.persistBlockHash(block); err != nil {
+			b.Error(err)
+		}
+		if err := chainStore.persistCurrentBlock(block); err != nil {
+			b.Error(err)
+		}
+		if err := chainStore.BatchCommit(); err != nil {
+			b.Error(err)
+		}
+	}
+}
+
+func BenchmarkBlockChain_FFLDBPersistBlocks(b *testing.B) {
+	newChain.Nodes = make([]*BlockNode, chainHeight-30000)
+	for i := chainHeight - 30000; i < chainHeight; i++ {
+		blockHash, _ := DefaultLedger.Store.GetBlockHash(i)
+		block, _ := DefaultLedger.Store.GetBlock(blockHash)
+
+		newNode := NewBlockNode(&block.Header, &blockHash)
+		if err := newChain.db.GetFFLDB().SaveBlock(block, newNode,
+			nil, time.Unix(int64(block.Timestamp), 0)); err != nil {
+			b.Error(err)
+		}
+		newChain.Nodes = append(newChain.Nodes, newNode)
+	}
+}
+
+func BenchmarkBlockChain_GetBlocks(b *testing.B) {
+	for i := chainHeight - 30000; i < chainHeight; i++ {
+		blockHash, _ := DefaultLedger.Store.GetBlockHash(i)
+		_, err := DefaultLedger.Store.GetBlock(blockHash)
+		if err != nil {
+			b.Error(err)
+		}
+	}
+}
+
+func BenchmarkBlockChain_FFLDBGetBlocks(b *testing.B) {
+	for i := chainHeight - 30000; i < chainHeight; i++ {
+		blockHash := DefaultLedger.Blockchain.Nodes[i].Hash
+		_, err := DefaultLedger.Store.GetFFLDB().GetBlock(*blockHash)
+		if err != nil {
+			b.Error(err)
+		}
+	}
+}
+
+func BenchmarkBlockChain_GetTransactions(b *testing.B) {
+	for i := chainHeight - 30000; i < chainHeight; i++ {
+		blockHash, _ := DefaultLedger.Store.GetBlockHash(i)
+		block, err := DefaultLedger.Store.GetBlock(blockHash)
+		if err != nil {
+			b.Error(err)
+		}
+		for _, tx := range block.Transactions {
+			_, _, err := DefaultLedger.Store.GetTransaction(tx.Hash())
+			if err != nil {
+				b.Error(err)
+			}
+		}
+	}
+}
 
 func BenchmarkBlockChain_CheckBlockContext(b *testing.B) {
 	block, _ := newBlock()
@@ -108,17 +183,56 @@ func BenchmarkBlockChain_End(b *testing.B) {
 	FoundationAddress = originAddress
 }
 
+func newChainStore(dataDir string, dbDir string, genesisBlock *types.Block) (IChainStore, error) {
+	db, err := NewLevelDB(filepath.Join(dataDir, dbDir, "chain"))
+	if err != nil {
+		return nil, err
+	}
+
+	fdb, err := NewChainStoreFFLDB(filepath.Join(dataDir, dbDir))
+	if err != nil {
+		return nil, err
+	}
+
+	s := &ChainStore{
+		IStore:           db,
+		fflDB:            fdb,
+		blockHashesCache: make([]common.Uint256, 0, BlocksCacheSize),
+		blocksCache:      make(map[common.Uint256]*types.Block),
+	}
+
+	s.init(genesisBlock)
+
+	return s, nil
+}
+
+func newBlockChain() *BlockChain {
+	params := config.DefaultParams.RegNet()
+	chainStore, err := newChainStore(test.DataPath, "ffldb", params.GenesisBlock)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	chain, err := New(chainStore, params, nil, nil)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	return chain
+}
+
 func benchBegin() *BlockChain {
 	if !hasWorkbenchOnlyFlag() {
 		return nil
 	}
 
-	store, _ := NewLevelDB(filepath.Join(test.DataPath, "chain"))
-	rollbackTo(chainHeight, &ChainStore{IStore: store})
+	log.NewDefault(test.NodeLogPath, 0, 0, 0)
+
+	params := config.DefaultParams.RegNet()
+	store, _ := NewChainStore(test.DataPath, params.GenesisBlock)
+	blockChain, _ := New(store, params, nil, nil)
+	rollbackTo(chainHeight, blockChain)
 	store.Close()
 
-	log.NewDefault(test.NodeLogPath, 0, 0, 0)
-	params := config.DefaultParams.RegNet()
 	chainStore, err := NewChainStore(test.DataPath, params.GenesisBlock)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -163,6 +277,7 @@ func benchBegin() *BlockChain {
 	}
 
 	var interrupt = signal.NewInterrupt()
+	chain.InitFFLDBFromChainStore(interrupt.C, nil, nil)
 	chain.InitCheckpoint(interrupt.C, nil, nil)
 
 	return chain
@@ -184,19 +299,17 @@ func newBlock() (*types.Block, *payload.Confirm) {
 	return block, confirm
 }
 
-func rollbackTo(targetHeight uint32, store *ChainStore) {
-	data, err := store.Get([]byte{byte(SYSCurrentBlock)})
-	if err != nil {
-		return
-	}
-	currentHeight, err := common.ReadUint32(bytes.NewReader(data[32:]))
-	if err != nil {
-		return
-	}
+func rollbackTo(targetHeight uint32, chain *BlockChain) {
+	store := chain.db.(*ChainStore)
+	currentHeight := uint32(len(chain.Nodes)) - 1
 	for i := currentHeight; i > targetHeight; i-- {
-		blockHash, _ := store.GetBlockHash(i)
-		block, _ := store.GetBlock(blockHash)
-
+		blockHash := chain.Nodes[i].Hash
+		block, _ := store.fflDB.GetBlock(*blockHash)
+		blockNode := NewBlockNode(&block.Header, blockHash)
+		confirm, _ := store.GetConfirm(*blockHash)
+		if parentNode, ok := chain.LookupNodeInIndex(blockNode.ParentHash); ok {
+			blockNode.Parent = parentNode
+		}
 		store.NewBatch()
 		store.RollbackTrimmedBlock(block)
 		store.RollbackBlockHash(block)
@@ -205,7 +318,20 @@ func rollbackTo(targetHeight uint32, store *ChainStore) {
 		store.RollbackUnspend(block)
 		store.RollbackCurrentBlock(block)
 		store.RollbackConfirm(block)
+		store.fflDB.RollbackBlock(block, blockNode, confirm, chain.MedianTimePast)
 		store.BatchCommit()
+
+		// Rollback block node.
+		err := chain.db.GetFFLDB().Update(func(dbTx database.Tx) error {
+			err := dbRemoveBlockNode(dbTx, blockNode.Hash, blockNode.Height)
+			if err != nil {
+				return err
+			}
+			return nil
+		})
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 }
 
