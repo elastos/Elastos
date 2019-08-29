@@ -1,5 +1,5 @@
 import React from 'react'
-import { Row, Col, Spin, Button, message} from 'antd'
+import { Row, Col, Spin, Button, message } from 'antd'
 import styled from 'styled-components'
 import DraftEditor from '@/module/common/DraftEditor'
 import I18N from '@/I18N'
@@ -64,7 +64,11 @@ class C extends StandardPage {
   ord_renderContent() {
     const { elip, loading, reviews } = this.state
     if (loading) {
-      return <StyledSpin><Spin /></StyledSpin>
+      return (
+        <StyledSpin>
+          <Spin />
+        </StyledSpin>
+      )
     }
     if (!loading && !Object.keys(elip).length) {
       return null
@@ -105,13 +109,7 @@ class C extends StandardPage {
               <LabelCol span={3} />
               <Col span={17}>
                 <Actions>
-                  <Button
-                    onClick={() => this.props.history.push('/elips')}
-                    className="cr-btn cr-btn-default"
-                    style={{ marginRight: 10 }}
-                  >
-                    {I18N.get('elip.button.cancel')}
-                  </Button>
+                  {this.renderCancelBtn()}
                   {this.renderEditBtn()}
                   {isLogin &&
                     isSecretary &&
@@ -143,6 +141,28 @@ class C extends StandardPage {
         <Footer />
       </div>
     )
+  }
+
+  renderCancelBtn() {
+    const { elip } = this.state
+    const { history, currentUserId, isSecretary } = this.props
+
+    const isAuthor = elip.createdBy && elip.createdBy._id === currentUserId
+
+    const isVisible = (isAuthor && elip.status === ELIP_STATUS.REJECTED) ||
+      (isSecretary && elip.status === ELIP_STATUS.WAIT_FOR_REVIEW)
+
+    if (isVisible) {
+      return (
+        <Button
+          onClick={() => history.push('/elips')}
+          className="cr-btn cr-btn-default"
+          style={{ marginRight: 10 }}
+        >
+          {I18N.get('elip.button.cancel')}
+        </Button>
+      )
+    }
   }
 
   renderEditBtn() {
