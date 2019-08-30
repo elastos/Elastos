@@ -33,6 +33,7 @@ import Tracking from '../tracking/Container'
 import Summary from '../summary/Container'
 import Meta from '@/module/common/Meta'
 import SocialShareButtons from '@/module/common/SocialShareButtons'
+import { logger } from '@/util'
 
 import {
   Container,
@@ -180,7 +181,7 @@ class C extends StandardPage {
         }
       }
     } catch (error) {
-      console.log('parse abstract err...', error)
+      logger.error(error)
     }
 
     return (
@@ -624,8 +625,9 @@ class C extends StandardPage {
       this.refetch()
       this.ord_loading(false)
     } catch (error) {
-      message.error(error.message)
       this.ord_loading(false)
+      message.error(error.message)
+      logger.error(error)
     }
   }
 
@@ -713,8 +715,9 @@ class C extends StandardPage {
       this.refetch()
       this.ord_loading(false)
     } catch (e) {
-      message.error(e.message)
       this.ord_loading(false)
+      message.error(e.message)
+      logger.error(e)
     }
   }
 
@@ -730,8 +733,9 @@ class C extends StandardPage {
       this.props.history.push('/proposals')
       this.ord_loading(false)
     } catch (e) {
-      message.error(e.message)
       this.ord_loading(false)
+      message.error(e.message)
+      logger.error(e)
     }
   }
 
@@ -748,8 +752,9 @@ class C extends StandardPage {
       this.refetch()
       this.ord_loading(false)
     } catch (e) {
-      message.error(e.message)
       this.ord_loading(false)
+      message.error(e.message)
+      logger.error(e) 
     }
   }
 
@@ -816,8 +821,9 @@ class C extends StandardPage {
             this.ord_loading(false)
           })
           .catch(e => {
-            message.error(e.message)
             this.ord_loading(false)
+            message.error(e.message)
+            logger.error(e)
           })
       }
     })
