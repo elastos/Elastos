@@ -189,7 +189,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 
 	case UnregisterCR:
 		if err := b.checkUnRegisterCRTransaction(txn, blockHeight); err != nil {
-			log.Warn("[checkRegisterCRTransaction],", err)
+			log.Warn("[checkUnRegisterCRTransaction],", err)
 			return ErrTransactionPayload
 		}
 	}
@@ -272,7 +272,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 			producers = append(producers, b.state.GetPendingCanceledProducers()...)
 		}
 		candidates := b.crCommittee.GetState().GetCandidates(crstate.Active)
-		err := checkVoteOutputs(txn.Outputs, references,
+		err := b.checkVoteOutputs(blockHeight, txn.Outputs, references,
 			getProducerPublicKeysMap(producers), getCRCodesMap(candidates))
 		if err != nil {
 			log.Warn("[CheckVoteProducerOutputs]", err)
@@ -283,7 +283,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 	return Success
 }
 
-func checkVoteOutputs(outputs []*Output, references map[*Input]*Output,
+func (b *BlockChain) checkVoteOutputs(blockHeight uint32, outputs []*Output, references map[*Input]*Output,
 	pds map[string]struct{}, crs map[string]struct{}) error {
 	programHashes := make(map[common.Uint168]struct{})
 	for _, v := range references {
@@ -304,13 +304,13 @@ func checkVoteOutputs(outputs []*Output, references map[*Input]*Output,
 		for _, content := range payload.Contents {
 			switch content.VoteType {
 			case outputpayload.Delegate:
-				err := checkVoteProducerContent(
+				err := b.checkVoteProducerContent(
 					content, pds, payload.Version, o.Value)
 				if err != nil {
 					return err
 				}
 			case outputpayload.CRC:
-				err := checkVoteCRContent(
+				err := b.checkVoteCRContent(blockHeight,
 					content, crs, payload.Version, o.Value)
 				if err != nil {
 					return err
@@ -322,7 +322,7 @@ func checkVoteOutputs(outputs []*Output, references map[*Input]*Output,
 	return nil
 }
 
-func checkVoteProducerContent(content outputpayload.VoteContent,
+func (b *BlockChain) checkVoteProducerContent(content outputpayload.VoteContent,
 	pds map[string]struct{}, payloadVersion byte, amount common.Fixed64) error {
 	for _, cv := range content.CandidateVotes {
 		if _, ok := pds[common.BytesToHexString(cv.Candidate)]; !ok {
@@ -341,8 +341,13 @@ func checkVoteProducerContent(content outputpayload.VoteContent,
 	return nil
 }
 
-func checkVoteCRContent(content outputpayload.VoteContent,
+func (b *BlockChain) checkVoteCRContent(blockHeight uint32, content outputpayload.VoteContent,
 	crs map[string]struct{}, payloadVersion byte, amount common.Fixed64) error {
+
+	if !b.crCommittee.IsInVotingPeriod(blockHeight) {
+		return errors.New("cr vote tx must during voting period")
+	}
+
 	if payloadVersion < outputpayload.VoteProducerAndCRVersion {
 		return errors.New("payload VoteProducerVersion not support vote CR")
 	}
