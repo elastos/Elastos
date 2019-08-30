@@ -1,0 +1,864 @@
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>API Reference</title>
+
+    <style>
+      .highlight table td { padding: 5px; }
+.highlight table pre { margin: 0; }
+.highlight .gh {
+  color: #999999;
+}
+.highlight .sr {
+  color: #f6aa11;
+}
+.highlight .go {
+  color: #888888;
+}
+.highlight .gp {
+  color: #555555;
+}
+.highlight .gs {
+}
+.highlight .gu {
+  color: #aaaaaa;
+}
+.highlight .nb {
+  color: #f6aa11;
+}
+.highlight .cm {
+  color: #75715e;
+}
+.highlight .cp {
+  color: #75715e;
+}
+.highlight .c1 {
+  color: #75715e;
+}
+.highlight .cs {
+  color: #75715e;
+}
+.highlight .c, .highlight .cd {
+  color: #75715e;
+}
+.highlight .err {
+  color: #960050;
+}
+.highlight .gr {
+  color: #960050;
+}
+.highlight .gt {
+  color: #960050;
+}
+.highlight .gd {
+  color: #49483e;
+}
+.highlight .gi {
+  color: #49483e;
+}
+.highlight .ge {
+  color: #49483e;
+}
+.highlight .kc {
+  color: #66d9ef;
+}
+.highlight .kd {
+  color: #66d9ef;
+}
+.highlight .kr {
+  color: #66d9ef;
+}
+.highlight .no {
+  color: #66d9ef;
+}
+.highlight .kt {
+  color: #66d9ef;
+}
+.highlight .mf {
+  color: #ae81ff;
+}
+.highlight .mh {
+  color: #ae81ff;
+}
+.highlight .il {
+  color: #ae81ff;
+}
+.highlight .mi {
+  color: #ae81ff;
+}
+.highlight .mo {
+  color: #ae81ff;
+}
+.highlight .m, .highlight .mb, .highlight .mx {
+  color: #ae81ff;
+}
+.highlight .sc {
+  color: #ae81ff;
+}
+.highlight .se {
+  color: #ae81ff;
+}
+.highlight .ss {
+  color: #ae81ff;
+}
+.highlight .sd {
+  color: #e6db74;
+}
+.highlight .s2 {
+  color: #e6db74;
+}
+.highlight .sb {
+  color: #e6db74;
+}
+.highlight .sh {
+  color: #e6db74;
+}
+.highlight .si {
+  color: #e6db74;
+}
+.highlight .sx {
+  color: #e6db74;
+}
+.highlight .s1 {
+  color: #e6db74;
+}
+.highlight .s {
+  color: #e6db74;
+}
+.highlight .na {
+  color: #a6e22e;
+}
+.highlight .nc {
+  color: #a6e22e;
+}
+.highlight .nd {
+  color: #a6e22e;
+}
+.highlight .ne {
+  color: #a6e22e;
+}
+.highlight .nf {
+  color: #a6e22e;
+}
+.highlight .vc {
+  color: #ffffff;
+}
+.highlight .nn {
+  color: #ffffff;
+}
+.highlight .nl {
+  color: #ffffff;
+}
+.highlight .ni {
+  color: #ffffff;
+}
+.highlight .bp {
+  color: #ffffff;
+}
+.highlight .vg {
+  color: #ffffff;
+}
+.highlight .vi {
+  color: #ffffff;
+}
+.highlight .nv {
+  color: #ffffff;
+}
+.highlight .w {
+  color: #ffffff;
+}
+.highlight {
+  color: #ffffff;
+}
+.highlight .n, .highlight .py, .highlight .nx {
+  color: #ffffff;
+}
+.highlight .ow {
+  color: #f92672;
+}
+.highlight .nt {
+  color: #f92672;
+}
+.highlight .k, .highlight .kv {
+  color: #f92672;
+}
+.highlight .kn {
+  color: #f92672;
+}
+.highlight .kp {
+  color: #f92672;
+}
+.highlight .o {
+  color: #f92672;
+}
+    </style>
+    <link href="stylesheets/screen.css" rel="stylesheet" media="screen" />
+    <link href="stylesheets/print.css" rel="stylesheet" media="print" />
+      <script src="javascripts/all.js"></script>
+  </head>
+
+  <body class="index" data-languages="[&quot;Usage&quot;]">
+    <a href="#" id="nav-button">
+      <span>
+        NAV
+        <img src="images/navbar.png" alt="Navbar" />
+      </span>
+    </a>
+    <div class="toc-wrapper">
+      <img src="images/logo.png" class="logo" alt="Logo" />
+        <div class="lang-selector">
+              <a href="#" data-language-name="Usage">Usage</a>
+        </div>
+        <div class="search">
+          <input type="text" class="search" id="input-search" placeholder="Search">
+        </div>
+        <ul class="search-results"></ul>
+      <ul id="toc" class="toc-list-h1">
+          <li>
+            <a href="#introduction" class="toc-h1 toc-link" data-title="Introduction">Introduction</a>
+          </li>
+          <li>
+            <a href="#carrier-bridges" class="toc-h1 toc-link" data-title="Carrier Bridges">Carrier Bridges</a>
+              <ul class="toc-list-h2">
+                  <li>
+                    <a href="#getversion" class="toc-h2 toc-link" data-title="getVersion">getVersion</a>
+                  </li>
+                  <li>
+                    <a href="#isvaliaddress" class="toc-h2 toc-link" data-title="isValiAddress">isValiAddress</a>
+                  </li>
+                  <li>
+                    <a href="#isvalidid" class="toc-h2 toc-link" data-title="isValidId">isValidId</a>
+                  </li>
+                  <li>
+                    <a href="#start" class="toc-h2 toc-link" data-title="start">start</a>
+                  </li>
+                  <li>
+                    <a href="#getaddress" class="toc-h2 toc-link" data-title="getAddress">getAddress</a>
+                  </li>
+                  <li>
+                    <a href="#getnodeid" class="toc-h2 toc-link" data-title="getNodeId">getNodeId</a>
+                  </li>
+                  <li>
+                    <a href="#getselfinfo" class="toc-h2 toc-link" data-title="getSelfInfo">getSelfInfo</a>
+                  </li>
+                  <li>
+                    <a href="#setselfinfo" class="toc-h2 toc-link" data-title="setSelfInfo">setSelfInfo</a>
+                  </li>
+                  <li>
+                    <a href="#setselfpresence" class="toc-h2 toc-link" data-title="setSelfPresence">setSelfPresence</a>
+                  </li>
+                  <li>
+                    <a href="#addfriend" class="toc-h2 toc-link" data-title="addFriend">addFriend</a>
+                  </li>
+                  <li>
+                    <a href="#acceptfriend" class="toc-h2 toc-link" data-title="acceptFriend">acceptFriend</a>
+                  </li>
+                  <li>
+                    <a href="#getfriendinfo" class="toc-h2 toc-link" data-title="getFriendInfo">getFriendInfo</a>
+                  </li>
+                  <li>
+                    <a href="#sendmessage" class="toc-h2 toc-link" data-title="sendMessage">sendMessage</a>
+                  </li>
+                  <li>
+                    <a href="#removefriend" class="toc-h2 toc-link" data-title="removeFriend">removeFriend</a>
+                  </li>
+                  <li>
+                    <a href="#setlabel" class="toc-h2 toc-link" data-title="setLabel">setLabel</a>
+                  </li>
+                  <li>
+                    <a href="#getfriendlist" class="toc-h2 toc-link" data-title="getFriendList">getFriendList</a>
+                  </li>
+                  <li>
+                    <a href="#close" class="toc-h2 toc-link" data-title="close">close</a>
+                  </li>
+                  <li>
+                    <a href="#clean" class="toc-h2 toc-link" data-title="clean">clean</a>
+                  </li>
+                  <li>
+                    <a href="#createsession" class="toc-h2 toc-link" data-title="createSession">createSession</a>
+                  </li>
+                  <li>
+                    <a href="#sessionrequest" class="toc-h2 toc-link" data-title="sessionRequest">sessionRequest</a>
+                  </li>
+                  <li>
+                    <a href="#sessionreplyrequest" class="toc-h2 toc-link" data-title="sessionReplyRequest">sessionReplyRequest</a>
+                  </li>
+                  <li>
+                    <a href="#writestream" class="toc-h2 toc-link" data-title="writeStream">writeStream</a>
+                  </li>
+                  <li>
+                    <a href="#removestream" class="toc-h2 toc-link" data-title="removeStream">removeStream</a>
+                  </li>
+                  <li>
+                    <a href="#closesession" class="toc-h2 toc-link" data-title="closeSession">closeSession</a>
+                  </li>
+                  <li>
+                    <a href="#addservice" class="toc-h2 toc-link" data-title="addService">addService</a>
+                  </li>
+                  <li>
+                    <a href="#removeservice" class="toc-h2 toc-link" data-title="removeService">removeService</a>
+                  </li>
+                  <li>
+                    <a href="#openportforwarding" class="toc-h2 toc-link" data-title="openPortForwarding">openPortForwarding</a>
+                  </li>
+                  <li>
+                    <a href="#closeportforwarding" class="toc-h2 toc-link" data-title="closePortForwarding">closePortForwarding</a>
+                  </li>
+                  <li>
+                    <a href="#openchannel" class="toc-h2 toc-link" data-title="openChannel">openChannel</a>
+                  </li>
+                  <li>
+                    <a href="#closechannel" class="toc-h2 toc-link" data-title="closeChannel">closeChannel</a>
+                  </li>
+                  <li>
+                    <a href="#writechannel" class="toc-h2 toc-link" data-title="writeChannel">writeChannel</a>
+                  </li>
+                  <li>
+                    <a href="#pendchannel" class="toc-h2 toc-link" data-title="pendChannel">pendChannel</a>
+                  </li>
+                  <li>
+                    <a href="#resumechannel" class="toc-h2 toc-link" data-title="resumeChannel">resumeChannel</a>
+                  </li>
+              </ul>
+          </li>
+      </ul>
+    </div>
+    <div class="page-wrapper">
+      <div class="dark-box"></div>
+      <div class="content">
+        <h1 id='introduction'>Introduction</h1>
+<p>Welcome to the React Native Elastos Carrier Bridges! You can use our bridges in javascript to access Elastos Carrier Core RPC endpoints, which can interact with Elastos Blockchain.</p>
+
+<p>You can view usage in the dark area to the right.</p>
+<h1 id='carrier-bridges'>Carrier Bridges</h1><h2 id='getversion'>getVersion</h2><pre class="highlight javascript tab-javascript"><code><span class="kr">static</span> <span class="nx">getVersion</span><span class="p">(){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'getVersion'</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<!-- > Output Example:
+```javascript
+cry mechanic bean they discover vendor couple adapt walk room edit dinner
+``` -->
+
+<p>Get current carrier version</p>
+<h2 id='isvaliaddress'>isValiAddress</h2><pre class="highlight javascript tab-javascript"><code><span class="kr">static</span> <span class="nx">isValidId</span><span class="p">(</span><span class="nx">nodeId</span><span class="p">){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'isValidId'</span><span class="p">,</span> <span class="nx">nodeId</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>check given address is a valid carrier address or not</p>
+<h3 id='parameters'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>address</td>
+<td>address to check</td>
+</tr>
+</tbody></table>
+<h2 id='isvalidid'>isValidId</h2><pre class="highlight javascript tab-javascript"><code><span class="kr">static</span> <span class="nx">isValidId</span><span class="p">(</span><span class="nx">nodeId</span><span class="p">){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'isValidId'</span><span class="p">,</span> <span class="nx">nodeId</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>Check given nodeId is a valid carrier node id or not</p>
+<h2 id='start'>start</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">start</span><span class="p">(){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'createObject'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">config</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>connect the local node to carrier network</p>
+<h2 id='getaddress'>getAddress</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">getAddress</span><span class="p">(){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'getAddress'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>get current node address</p>
+<h2 id='getnodeid'>getNodeId</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">getNodeId</span><span class="p">(){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'getNodeId'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>get current node id.</p>
+<h2 id='getselfinfo'>getSelfInfo</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">getSelfInfo</span><span class="p">(){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'getSelfInfo'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>get current node profile</p>
+<h2 id='setselfinfo'>setSelfInfo</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">setSelfInfo</span><span class="p">(</span><span class="nx">info</span><span class="p">){</span>
+    <span class="kr">const</span> <span class="nx">user_info</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+      <span class="na">name</span> <span class="p">:</span> <span class="s1">''</span><span class="p">,</span>
+      <span class="na">description</span> <span class="p">:</span> <span class="s1">''</span><span class="p">,</span>
+      <span class="na">email</span> <span class="p">:</span> <span class="s1">''</span><span class="p">,</span>
+      <span class="na">phone</span> <span class="p">:</span> <span class="s1">''</span><span class="p">,</span>
+      <span class="na">gender</span> <span class="p">:</span> <span class="s1">''</span><span class="p">,</span>
+      <span class="na">region</span> <span class="p">:</span> <span class="s1">''</span>
+    <span class="p">},</span> <span class="nx">info</span><span class="p">);</span>
+<span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'setSelfInfo'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">user_info</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>set value to node profile</p>
+<h2 id='setselfpresence'>setSelfPresence</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">setSelfPresence</span><span class="p">(</span><span class="nx">presence</span><span class="p">){</span>
+<span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'setSelfPresence'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">presence</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>set current node presence status</p>
+<h2 id='addfriend'>addFriend</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">addFriend</span><span class="p">(</span><span class="nx">address</span><span class="p">,</span> <span class="nx">msg</span><span class="p">){</span>
+<span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'addFriend'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">address</span><span class="p">,</span> <span class="nx">msg</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>compare with a node address as friend</p>
+<h2 id='acceptfriend'>acceptFriend</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">acceptFriend</span><span class="p">(</span><span class="nx">userId</span><span class="p">){</span>
+<span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'acceptFriend'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">userId</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>accept the friend compare request</p>
+<h3 id='parameters-2'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>userId</td>
+<td>friend&#39;s user ID</td>
+</tr>
+</tbody></table>
+<h2 id='getfriendinfo'>getFriendInfo</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">getFriendInfo</span><span class="p">(</span><span class="nx">friendId</span><span class="p">){</span>
+<span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'getFriendInfo'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">friendId</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>get friend info</p>
+<h3 id='parameters-3'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>friendId</td>
+<td>friend&#39;s user ID</td>
+</tr>
+</tbody></table>
+<h2 id='sendmessage'>sendMessage</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">sendMessage</span><span class="p">(</span><span class="nx">friendId</span><span class="p">,</span> <span class="nx">msg</span><span class="p">){</span>
+<span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'sendFriendMessageTo'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">friendId</span><span class="p">,</span> <span class="nx">msg</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>send message to friend node</p>
+<h3 id='parameters-4'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>friendId</td>
+<td>friend&#39;s user ID</td>
+</tr>
+<tr>
+<td>msg</td>
+<td>message to send</td>
+</tr>
+</tbody></table>
+<h2 id='removefriend'>removeFriend</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">removeFriend</span><span class="p">(</span><span class="nx">friendId</span><span class="p">){</span>
+<span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'removeFriend'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">friendId</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>remove friend from friend list</p>
+<h3 id='parameters-5'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>friendId</td>
+<td>friend&#39;s user ID</td>
+</tr>
+</tbody></table>
+<h2 id='setlabel'>setLabel</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">setLabel</span><span class="p">(</span><span class="nx">friendId</span><span class="p">,</span> <span class="nx">label</span><span class="p">){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'setLabel'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">friendId</span><span class="p">,</span> <span class="nx">label</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>set label for a friend</p>
+<h3 id='parameters-6'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>friendId</td>
+<td>friend&#39;s user ID</td>
+</tr>
+<tr>
+<td>label</td>
+<td>label to set</td>
+</tr>
+</tbody></table>
+<h2 id='getfriendlist'>getFriendList</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">getFriendList</span><span class="p">(){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'getFriendList'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>get friends info list</p>
+<h2 id='close'>close</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">close</span><span class="p">(){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'close'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>close carrier</p>
+<h2 id='clean'>clean</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">clean</span><span class="p">(){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'clean'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>clean carrier</p>
+<h2 id='createsession'>createSession</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">createSession</span><span class="p">(</span><span class="nx">friendId</span><span class="p">,</span> <span class="nx">streamType</span><span class="p">,</span> <span class="nx">streamMode</span><span class="p">){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'createSession'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">friendId</span><span class="p">,</span> <span class="nx">streamType</span><span class="p">,</span> <span class="nx">streamMode</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>create carrier session</p>
+<h3 id='parameters-7'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>friendId</td>
+<td>friend&#39;s user ID</td>
+</tr>
+<tr>
+<td>streamType</td>
+<td>stream type</td>
+</tr>
+<tr>
+<td>streamMode</td>
+<td>stream mode</td>
+</tr>
+</tbody></table>
+<h2 id='sessionrequest'>sessionRequest</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">sessionRequest</span><span class="p">(</span><span class="nx">friendId</span><span class="p">){</span>
+<span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'sessionRequest'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">friendId</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>request to connect as session</p>
+<h3 id='parameters-8'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>friendId</td>
+<td>friend&#39;s user ID</td>
+</tr>
+</tbody></table>
+<h2 id='sessionreplyrequest'>sessionReplyRequest</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">sessionReplyRequest</span><span class="p">(</span><span class="nx">friendId</span><span class="p">,</span> <span class="nx">status</span><span class="p">,</span> <span class="nx">reason</span><span class="p">){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'sessionReplyRequest'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">friendId</span><span class="p">,</span> <span class="nx">status</span><span class="p">,</span> <span class="nx">reason</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>reply the session request</p>
+<h3 id='parameters-9'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>friendId</td>
+<td>friend&#39;s user ID</td>
+</tr>
+<tr>
+<td>status</td>
+<td>status</td>
+</tr>
+<tr>
+<td>reason</td>
+<td>reason</td>
+</tr>
+</tbody></table>
+<h2 id='writestream'>writeStream</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">writeStream</span><span class="p">(</span><span class="nx">streamIdOrFriendId</span><span class="p">,</span> <span class="nx">data</span><span class="p">){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'writeStream'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">streamIdOrFriendId</span><span class="p">,</span> <span class="nx">data</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>send data to the session stream</p>
+<h3 id='parameters-10'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>streamIdOrFriendId</td>
+<td>friend&#39;s user ID</td>
+</tr>
+<tr>
+<td>data</td>
+<td>data to write</td>
+</tr>
+</tbody></table>
+<h2 id='removestream'>removeStream</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">removeStream</span><span class="p">(</span><span class="nx">friendId</span><span class="p">){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'removeStream'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">friendId</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>remove the session stream for friend node</p>
+<h3 id='parameters-11'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>friendId</td>
+<td>friend&#39;s user ID</td>
+</tr>
+</tbody></table>
+<h2 id='closesession'>closeSession</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">closeSession</span><span class="p">(</span><span class="nx">friendId</span><span class="p">){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'closeSession'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">friendId</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>close the session for friend node</p>
+<h3 id='parameters-12'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>friendId</td>
+<td>friend&#39;s user ID</td>
+</tr>
+<tr>
+<td>data</td>
+<td>data to write</td>
+</tr>
+</tbody></table>
+<h2 id='addservice'>addService</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">addService</span><span class="p">(</span><span class="nx">friendId</span><span class="p">,</span> <span class="nx">serviceName</span><span class="p">,</span> <span class="nx">host</span><span class="p">,</span> <span class="nx">port</span><span class="p">){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'addService'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">friendId</span><span class="p">,</span> <span class="nx">serviceName</span><span class="p">,</span> <span class="nx">host</span><span class="p">,</span> <span class="nx">port</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>add session service to friend node</p>
+<h3 id='parameters-13'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>friendId</td>
+<td>friend&#39;s user ID</td>
+</tr>
+<tr>
+<td>serviceName</td>
+<td>name of the service to add</td>
+</tr>
+<tr>
+<td>host</td>
+<td>host of the service</td>
+</tr>
+<tr>
+<td>port</td>
+<td>port of the service</td>
+</tr>
+</tbody></table>
+<h2 id='removeservice'>removeService</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">removeService</span><span class="p">(</span><span class="nx">friendId</span><span class="p">,</span> <span class="nx">serviceName</span><span class="p">){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'removeService'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">friendId</span><span class="p">,</span> <span class="nx">serviceName</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>remove session service</p>
+<h3 id='parameters-14'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>friendId</td>
+<td>friend&#39;s user ID</td>
+</tr>
+<tr>
+<td>serviceName</td>
+<td>name of the service to remove</td>
+</tr>
+</tbody></table>
+<h2 id='openportforwarding'>openPortForwarding</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">openPortFowarding</span><span class="p">(</span><span class="nx">friendId</span><span class="p">,</span> <span class="nx">serviceName</span><span class="p">,</span> <span class="nx">host</span><span class="p">,</span> <span class="nx">port</span><span class="p">){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'openPortFowarding'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">friendId</span><span class="p">,</span> <span class="nx">serviceName</span><span class="p">,</span> <span class="nx">host</span><span class="p">,</span> <span class="nx">port</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>connect the server with carrier port forwarding</p>
+<h3 id='parameters-15'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>friendId</td>
+<td>friend&#39;s user ID</td>
+</tr>
+<tr>
+<td>serviceName</td>
+<td>name of the service to forward</td>
+</tr>
+<tr>
+<td>host</td>
+<td>host of the service</td>
+</tr>
+<tr>
+<td>port</td>
+<td>port of the service</td>
+</tr>
+</tbody></table>
+<h2 id='closeportforwarding'>closePortForwarding</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">closePortForwarding</span><span class="p">(</span><span class="nx">friendId</span><span class="p">,</span> <span class="nx">portForwardingId</span><span class="p">){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'closePortForwarding'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">friendId</span><span class="p">,</span> <span class="nx">portForwardingId</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>close the server connection with carrier port forwaring</p>
+<h3 id='parameters-16'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>friendId</td>
+<td>friend&#39;s user ID</td>
+</tr>
+<tr>
+<td>portForwardingId</td>
+<td>port</td>
+</tr>
+</tbody></table>
+<h2 id='openchannel'>openChannel</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">openChannel</span><span class="p">(</span><span class="nx">friendId</span><span class="p">,</span> <span class="nx">cookie</span><span class="p">){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'openChannel'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">friendId</span><span class="p">,</span> <span class="nx">cookie</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>open the channel for friend node.</p>
+<h3 id='parameters-17'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>friendId</td>
+<td>friend&#39;s user ID</td>
+</tr>
+<tr>
+<td>cookie</td>
+<td>cookie</td>
+</tr>
+</tbody></table>
+<h2 id='closechannel'>closeChannel</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">closeChannel</span><span class="p">(</span><span class="nx">friendId</span><span class="p">,</span> <span class="nx">channelId</span><span class="p">){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'closeChannel'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">friendId</span><span class="p">,</span> <span class="nx">channelId</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>close the channel with channel id</p>
+<h3 id='parameters-18'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>friendId</td>
+<td>friend&#39;s user ID</td>
+</tr>
+<tr>
+<td>channelId</td>
+<td>ID of the channel</td>
+</tr>
+</tbody></table>
+<h2 id='writechannel'>writeChannel</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">writeChannel</span><span class="p">(</span><span class="nx">friendId</span><span class="p">,</span> <span class="nx">channelId</span><span class="p">,</span> <span class="nx">data</span><span class="p">){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'writeChannel'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">friendId</span><span class="p">,</span> <span class="nx">channelId</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre>
+<p>send data to the friend channel</p>
+<h3 id='parameters-19'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>friendId</td>
+<td>friend&#39;s user ID</td>
+</tr>
+<tr>
+<td>channelId</td>
+<td>ID of the channel</td>
+</tr>
+<tr>
+<td>data</td>
+<td>data to write</td>
+</tr>
+</tbody></table>
+<h2 id='pendchannel'>pendChannel</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">pendChannel</span><span class="p">(</span><span class="nx">friendId</span><span class="p">,</span> <span class="nx">channelId</span><span class="p">){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'pendChannel'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">friendId</span><span class="p">,</span> <span class="nx">channelId</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>pend the channel with channel id</p>
+<h3 id='parameters-20'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>friendId</td>
+<td>friend&#39;s user ID</td>
+</tr>
+<tr>
+<td>channelId</td>
+<td>ID of the channel</td>
+</tr>
+</tbody></table>
+<h2 id='resumechannel'>resumeChannel</h2><pre class="highlight javascript tab-javascript"><code><span class="nx">resumeChannel</span><span class="p">(</span><span class="nx">friendId</span><span class="p">,</span> <span class="nx">channelId</span><span class="p">){</span>
+  <span class="k">return</span> <span class="nx">exec</span><span class="p">(</span><span class="s1">'resumeChannel'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">friendId</span><span class="p">,</span> <span class="nx">channelId</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+<p>resume the channel with channel id</p>
+<h3 id='parameters-21'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>friendId</td>
+<td>friend&#39;s user ID</td>
+</tr>
+<tr>
+<td>ChannelId</td>
+<td>ID of the channel</td>
+</tr>
+</tbody></table>
+
+      </div>
+      <div class="dark-box">
+          <div class="lang-selector">
+                <a href="#" data-language-name="Usage">Usage</a>
+          </div>
+      </div>
+    </div>
+  </body>
+</html>

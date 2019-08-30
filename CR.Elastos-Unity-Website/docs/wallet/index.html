@@ -1,0 +1,629 @@
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>API Reference</title>
+
+    <style>
+      .highlight table td { padding: 5px; }
+.highlight table pre { margin: 0; }
+.highlight .gh {
+  color: #999999;
+}
+.highlight .sr {
+  color: #f6aa11;
+}
+.highlight .go {
+  color: #888888;
+}
+.highlight .gp {
+  color: #555555;
+}
+.highlight .gs {
+}
+.highlight .gu {
+  color: #aaaaaa;
+}
+.highlight .nb {
+  color: #f6aa11;
+}
+.highlight .cm {
+  color: #75715e;
+}
+.highlight .cp {
+  color: #75715e;
+}
+.highlight .c1 {
+  color: #75715e;
+}
+.highlight .cs {
+  color: #75715e;
+}
+.highlight .c, .highlight .cd {
+  color: #75715e;
+}
+.highlight .err {
+  color: #960050;
+}
+.highlight .gr {
+  color: #960050;
+}
+.highlight .gt {
+  color: #960050;
+}
+.highlight .gd {
+  color: #49483e;
+}
+.highlight .gi {
+  color: #49483e;
+}
+.highlight .ge {
+  color: #49483e;
+}
+.highlight .kc {
+  color: #66d9ef;
+}
+.highlight .kd {
+  color: #66d9ef;
+}
+.highlight .kr {
+  color: #66d9ef;
+}
+.highlight .no {
+  color: #66d9ef;
+}
+.highlight .kt {
+  color: #66d9ef;
+}
+.highlight .mf {
+  color: #ae81ff;
+}
+.highlight .mh {
+  color: #ae81ff;
+}
+.highlight .il {
+  color: #ae81ff;
+}
+.highlight .mi {
+  color: #ae81ff;
+}
+.highlight .mo {
+  color: #ae81ff;
+}
+.highlight .m, .highlight .mb, .highlight .mx {
+  color: #ae81ff;
+}
+.highlight .sc {
+  color: #ae81ff;
+}
+.highlight .se {
+  color: #ae81ff;
+}
+.highlight .ss {
+  color: #ae81ff;
+}
+.highlight .sd {
+  color: #e6db74;
+}
+.highlight .s2 {
+  color: #e6db74;
+}
+.highlight .sb {
+  color: #e6db74;
+}
+.highlight .sh {
+  color: #e6db74;
+}
+.highlight .si {
+  color: #e6db74;
+}
+.highlight .sx {
+  color: #e6db74;
+}
+.highlight .s1 {
+  color: #e6db74;
+}
+.highlight .s {
+  color: #e6db74;
+}
+.highlight .na {
+  color: #a6e22e;
+}
+.highlight .nc {
+  color: #a6e22e;
+}
+.highlight .nd {
+  color: #a6e22e;
+}
+.highlight .ne {
+  color: #a6e22e;
+}
+.highlight .nf {
+  color: #a6e22e;
+}
+.highlight .vc {
+  color: #ffffff;
+}
+.highlight .nn {
+  color: #ffffff;
+}
+.highlight .nl {
+  color: #ffffff;
+}
+.highlight .ni {
+  color: #ffffff;
+}
+.highlight .bp {
+  color: #ffffff;
+}
+.highlight .vg {
+  color: #ffffff;
+}
+.highlight .vi {
+  color: #ffffff;
+}
+.highlight .nv {
+  color: #ffffff;
+}
+.highlight .w {
+  color: #ffffff;
+}
+.highlight {
+  color: #ffffff;
+}
+.highlight .n, .highlight .py, .highlight .nx {
+  color: #ffffff;
+}
+.highlight .ow {
+  color: #f92672;
+}
+.highlight .nt {
+  color: #f92672;
+}
+.highlight .k, .highlight .kv {
+  color: #f92672;
+}
+.highlight .kn {
+  color: #f92672;
+}
+.highlight .kp {
+  color: #f92672;
+}
+.highlight .o {
+  color: #f92672;
+}
+    </style>
+    <link href="stylesheets/screen.css" rel="stylesheet" media="screen" />
+    <link href="stylesheets/print.css" rel="stylesheet" media="print" />
+      <script src="javascripts/all.js"></script>
+  </head>
+
+  <body class="index" data-languages="[&quot;Usage&quot;]">
+    <a href="#" id="nav-button">
+      <span>
+        NAV
+        <img src="images/navbar.png" alt="Navbar" />
+      </span>
+    </a>
+    <div class="toc-wrapper">
+      <img src="images/logo.png" class="logo" alt="Logo" />
+        <div class="lang-selector">
+              <a href="#" data-language-name="Usage">Usage</a>
+        </div>
+        <div class="search">
+          <input type="text" class="search" id="input-search" placeholder="Search">
+        </div>
+        <ul class="search-results"></ul>
+      <ul id="toc" class="toc-list-h1">
+          <li>
+            <a href="#introduction" class="toc-h1 toc-link" data-title="Introduction">Introduction</a>
+          </li>
+          <li>
+            <a href="#wallet-bridges" class="toc-h1 toc-link" data-title="Wallet Bridges">Wallet Bridges</a>
+              <ul class="toc-list-h2">
+                  <li>
+                    <a href="#generatemnemonic" class="toc-h2 toc-link" data-title="GenerateMnemonic">GenerateMnemonic</a>
+                  </li>
+                  <li>
+                    <a href="#importwalletwithmnemonic" class="toc-h2 toc-link" data-title="ImportWalletWithMnemonic">ImportWalletWithMnemonic</a>
+                  </li>
+                  <li>
+                    <a href="#exportwalletwithmnemonic" class="toc-h2 toc-link" data-title="ExportWalletWithMnemonic">ExportWalletWithMnemonic</a>
+                  </li>
+                  <li>
+                    <a href="#createwallet" class="toc-h2 toc-link" data-title="CreateWallet">CreateWallet</a>
+                  </li>
+                  <li>
+                    <a href="#createmultisignmasterwallet" class="toc-h2 toc-link" data-title="CreateMultiSignMasterWallet">CreateMultiSignMasterWallet</a>
+                  </li>
+                  <li>
+                    <a href="#createaddress" class="toc-h2 toc-link" data-title="CreateAddress">CreateAddress</a>
+                  </li>
+                  <li>
+                    <a href="#isaddressvalid" class="toc-h2 toc-link" data-title="IsAddressValid">IsAddressValid</a>
+                  </li>
+                  <li>
+                    <a href="#getpublickey" class="toc-h2 toc-link" data-title="GetPublicKey">GetPublicKey</a>
+                  </li>
+                  <li>
+                    <a href="#getmultisignpubkeywithmnemonic" class="toc-h2 toc-link" data-title="GetMultiSignPubKeyWithMnemonic">GetMultiSignPubKeyWithMnemonic</a>
+                  </li>
+                  <li>
+                    <a href="#getmultisignpubkeywithprivkey" class="toc-h2 toc-link" data-title="GetMultiSignPubKeyWithPrivKey">GetMultiSignPubKeyWithPrivKey</a>
+                  </li>
+                  <li>
+                    <a href="#getsupportedchains" class="toc-h2 toc-link" data-title="GetSupportedChains">GetSupportedChains</a>
+                  </li>
+                  <li>
+                    <a href="#changepassword" class="toc-h2 toc-link" data-title="ChangePassword">ChangePassword</a>
+                  </li>
+                  <li>
+                    <a href="#getbalance" class="toc-h2 toc-link" data-title="GetBalance">GetBalance</a>
+                  </li>
+                  <li>
+                    <a href="#getbalanceinfo" class="toc-h2 toc-link" data-title="GetBalanceInfo">GetBalanceInfo</a>
+                  </li>
+                  <li>
+                    <a href="#getbalancewithaddress" class="toc-h2 toc-link" data-title="GetBalanceWithAddress">GetBalanceWithAddress</a>
+                  </li>
+                  <li>
+                    <a href="#getalladdress" class="toc-h2 toc-link" data-title="GetAllAddress">GetAllAddress</a>
+                  </li>
+                  <li>
+                    <a href="#getalltransaction" class="toc-h2 toc-link" data-title="GetAllTransaction">GetAllTransaction</a>
+                  </li>
+                  <li>
+                    <a href="#send" class="toc-h2 toc-link" data-title="Send">Send</a>
+                  </li>
+              </ul>
+          </li>
+      </ul>
+    </div>
+    <div class="page-wrapper">
+      <div class="dark-box"></div>
+      <div class="content">
+        <h1 id='introduction'>Introduction</h1>
+<p>Welcome to the React Native Elastos Wallet Bridges! You can use our bridges in javascript to access Elastos Wallet Core RPC endpoints, which can interact with Elastos Blockchain.</p>
+
+<p>You can view usage in the dark area to the right.</p>
+<h1 id='wallet-bridges'>Wallet Bridges</h1><h2 id='generatemnemonic'>GenerateMnemonic</h2><pre class="highlight javascript tab-javascript"><code><span class="kr">import</span> <span class="nx">RNElastosMainchain</span> <span class="nx">from</span> <span class="s1">'react-native-elastos-wallet-core'</span><span class="p">;</span>
+
+<span class="c1">// Generate a new mnemonic (defaults to English)</span>
+<span class="nx">RNElastosMainchain</span><span class="p">.</span><span class="nx">GenerateMnemonic</span><span class="p">((</span><span class="nx">err</span><span class="p">,</span> <span class="nx">mnemonic</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">mnemonic</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre>
+<!-- > Output Example:
+```javascript
+cry mechanic bean they discover vendor couple adapt walk room edit dinner
+``` -->
+
+<p>This bridge returns a new mnemonic to create a new wallet.</p>
+<h2 id='importwalletwithmnemonic'>ImportWalletWithMnemonic</h2><pre class="highlight javascript tab-javascript"><code><span class="kr">import</span> <span class="nx">RNElastosMainchain</span> <span class="nx">from</span> <span class="s1">'react-native-elastos-wallet-core'</span><span class="p">;</span>
+
+<span class="nx">RNElastosMainchain</span><span class="p">.</span><span class="nx">ImportWalletWithMnemonic</span><span class="p">(</span><span class="nx">mnemonic</span><span class="p">,</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">res</span><span class="p">);</span> <span class="c1">//expect "success"</span>
+<span class="p">});</span>
+</code></pre>
+<p>This bridge imports existing wallet using its mnemonic. Every wallet have its mnemonic so you can import any wallet you already created in web wallet or everywhere.</p>
+<h3 id='parameters'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>mnemonic</td>
+<td>mnemonic of the wallet you&#39;re going to import</td>
+</tr>
+</tbody></table>
+<h2 id='exportwalletwithmnemonic'>ExportWalletWithMnemonic</h2><pre class="highlight javascript tab-javascript"><code><span class="kr">import</span> <span class="nx">RNElastosMainchain</span> <span class="nx">from</span> <span class="s1">'react-native-elastos-wallet-core'</span><span class="p">;</span>
+
+<span class="nx">RNElastosMainchain</span><span class="p">.</span><span class="nx">ExportWalletWithMnemonic</span><span class="p">(</span><span class="nx">payPassword</span><span class="p">,</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">walletStr</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">walletStr</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre>
+<p>This bridge exports current wallet.</p>
+<h3 id='parameters-2'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>payPassword</td>
+<td>payPassword of current wallet</td>
+</tr>
+</tbody></table>
+<h2 id='createwallet'>CreateWallet</h2><pre class="highlight javascript tab-javascript"><code><span class="kr">import</span> <span class="nx">RNElastosMainchain</span> <span class="nx">from</span> <span class="s1">'react-native-elastos-wallet-core'</span><span class="p">;</span>
+
+<span class="nx">RNElastosMainchain</span><span class="p">.</span><span class="nx">CreateWallet</span><span class="p">(</span><span class="nx">mnemonic</span><span class="p">,</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">res</span><span class="p">);</span> <span class="c1">//expect "success"</span>
+<span class="p">});</span>
+</code></pre>
+<p>This bridge creates a new wallet using given mnemonic.</p>
+<h3 id='parameters-3'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>mnemonic</td>
+<td>mnemonic of the wallet you&#39;re going to create</td>
+</tr>
+</tbody></table>
+<h2 id='createmultisignmasterwallet'>CreateMultiSignMasterWallet</h2><pre class="highlight javascript tab-javascript"><code><span class="kr">import</span> <span class="nx">RNElastosMainchain</span> <span class="nx">from</span> <span class="s1">'react-native-elastos-wallet-core'</span><span class="p">;</span>
+
+<span class="nx">RNElastosMainchain</span><span class="p">.</span><span class="nx">CreateMultiSignMasterWallet</span><span class="p">(</span><span class="nx">masterWallet</span><span class="p">,</span> <span class="nx">privKey</span><span class="p">,</span> <span class="nx">payPassword</span><span class="p">,</span> <span class="nx">coSigners</span><span class="p">,</span> <span class="nx">requiredSignCount</span><span class="p">,</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">res</span><span class="p">);</span> <span class="c1">//expect "success"</span>
+<span class="p">});</span>
+</code></pre>
+<p>This bridge creates a multi-sign wallet.</p>
+<h3 id='parameters-4'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>masterWallet</td>
+<td>string of one of masterWallet which is participated in Multi-Sign</td>
+</tr>
+<tr>
+<td>privKey</td>
+<td>masterWallet privKey</td>
+</tr>
+<tr>
+<td>payPassword</td>
+<td>masterWallet payPassword</td>
+</tr>
+<tr>
+<td>coSigners</td>
+<td>string of coSigners</td>
+</tr>
+<tr>
+<td>requiredSignCount</td>
+<td>count(int) of required Sign</td>
+</tr>
+</tbody></table>
+<h2 id='createaddress'>CreateAddress</h2><pre class="highlight javascript tab-javascript"><code><span class="kr">import</span> <span class="nx">RNElastosMainchain</span> <span class="nx">from</span> <span class="s1">'react-native-elastos-wallet-core'</span><span class="p">;</span>
+
+<span class="nx">RNElastosMainchain</span><span class="p">.</span><span class="nx">CreateAddress</span><span class="p">((</span><span class="nx">err</span><span class="p">,</span> <span class="nx">newAddress</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">newAddress</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre>
+<p>This bridge creates a new wallet address.</p>
+<h2 id='isaddressvalid'>IsAddressValid</h2><pre class="highlight javascript tab-javascript"><code><span class="kr">import</span> <span class="nx">RNElastosMainchain</span> <span class="nx">from</span> <span class="s1">'react-native-elastos-wallet-core'</span><span class="p">;</span>
+
+<span class="nx">RNElastosMainchain</span><span class="p">.</span><span class="nx">IsAddressValid</span><span class="p">(</span><span class="nx">address</span><span class="p">,</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">res</span><span class="p">);</span> <span class="c1">//expect "true" if the address is valid, "false" if it is invalid</span>
+<span class="p">});</span>
+</code></pre>
+<p>This bridge validates the given address.</p>
+<h3 id='parameters-5'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>address</td>
+<td>The address which should be validated</td>
+</tr>
+</tbody></table>
+<h2 id='getpublickey'>GetPublicKey</h2><pre class="highlight javascript tab-javascript"><code><span class="kr">import</span> <span class="nx">RNElastosMainchain</span> <span class="nx">from</span> <span class="s1">'react-native-elastos-wallet-core'</span><span class="p">;</span>
+
+<span class="nx">RNElastosMainchain</span><span class="p">.</span><span class="nx">GetPublicKey</span><span class="p">((</span><span class="nx">err</span><span class="p">,</span> <span class="nx">publicKey</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">publicKey</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre>
+<p>This bridge returns a public key of current wallet.</p>
+<h2 id='getmultisignpubkeywithmnemonic'>GetMultiSignPubKeyWithMnemonic</h2><pre class="highlight javascript tab-javascript"><code><span class="kr">import</span> <span class="nx">RNElastosMainchain</span> <span class="nx">from</span> <span class="s1">'react-native-elastos-wallet-core'</span><span class="p">;</span>
+
+<span class="nx">RNElastosMainchain</span><span class="p">.</span><span class="nx">GetMultiSignPubKeyWithMnemonic</span><span class="p">((</span><span class="nx">err</span><span class="p">,</span> <span class="nx">multiSignPubKey</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">multiSignPubKey</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre>
+<p>This bridge returns the multi-sign public key using current wallet mnemonic.</p>
+<h2 id='getmultisignpubkeywithprivkey'>GetMultiSignPubKeyWithPrivKey</h2><pre class="highlight javascript tab-javascript"><code><span class="kr">import</span> <span class="nx">RNElastosMainchain</span> <span class="nx">from</span> <span class="s1">'react-native-elastos-wallet-core'</span><span class="p">;</span>
+
+<span class="nx">RNElastosMainchain</span><span class="p">.</span><span class="nx">GetMultiSignPubKeyWithPrivKey</span><span class="p">(</span><span class="nx">privKey</span><span class="p">,</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">multiSignPubKey</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">multiSignPubKey</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre>
+<p>This bridge returns the multi-sign public key using given privKey.</p>
+<h3 id='parameters-6'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>privKey</td>
+<td>The private key which should be participated in multi-sign</td>
+</tr>
+</tbody></table>
+<h2 id='getsupportedchains'>GetSupportedChains</h2><pre class="highlight javascript tab-javascript"><code><span class="kr">import</span> <span class="nx">RNElastosMainchain</span> <span class="nx">from</span> <span class="s1">'react-native-elastos-wallet-core'</span><span class="p">;</span>
+
+<span class="nx">RNElastosMainchain</span><span class="p">.</span><span class="nx">GetSupportedChains</span><span class="p">((</span><span class="nx">err</span><span class="p">,</span> <span class="nx">supportedChains</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">supportedChains</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre>
+<p>This bridge returns the supported chains of the current wallet.
+The return value is the string of string array.</p>
+<h2 id='changepassword'>ChangePassword</h2><pre class="highlight javascript tab-javascript"><code><span class="kr">import</span> <span class="nx">RNElastosMainchain</span> <span class="nx">from</span> <span class="s1">'react-native-elastos-wallet-core'</span><span class="p">;</span>
+
+<span class="nx">RNElastosMainchain</span><span class="p">.</span><span class="nx">ChangePassword</span><span class="p">(</span><span class="nx">oldPassword</span><span class="p">,</span> <span class="nx">newPassword</span><span class="p">,</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">res</span><span class="p">);</span> <span class="c1">//expect "success"</span>
+<span class="p">});</span>
+</code></pre>
+<p>This bridge sets new password of the current wallet.</p>
+<h3 id='parameters-7'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>oldPassword</td>
+<td>current password of the wallet</td>
+</tr>
+<tr>
+<td>newPassword</td>
+<td>new password of the wallet</td>
+</tr>
+</tbody></table>
+<h2 id='getbalance'>GetBalance</h2><pre class="highlight javascript tab-javascript"><code><span class="kr">import</span> <span class="nx">RNElastosMainchain</span> <span class="nx">from</span> <span class="s1">'react-native-elastos-wallet-core'</span><span class="p">;</span>
+
+<span class="nx">RNElastosMainchain</span><span class="p">.</span><span class="nx">GetBalance</span><span class="p">(</span><span class="nx">balanceType</span><span class="p">,</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">balance</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">balance</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre>
+<p>This bridge returns the balance of the current wallet.</p>
+<h3 id='parameters-8'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>balanceType</td>
+<td>enum type -&gt; 0 : Default, 1 : Voted, 2 : Total</td>
+</tr>
+</tbody></table>
+<h2 id='getbalanceinfo'>GetBalanceInfo</h2><pre class="highlight javascript tab-javascript"><code><span class="kr">import</span> <span class="nx">RNElastosMainchain</span> <span class="nx">from</span> <span class="s1">'react-native-elastos-wallet-core'</span><span class="p">;</span>
+
+<span class="nx">RNElastosMainchain</span><span class="p">.</span><span class="nx">GetBalanceInfo</span><span class="p">((</span><span class="nx">err</span><span class="p">,</span> <span class="nx">balanceInfo</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">balanceInfo</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre>
+<p>This bridge returns the balance information of the current wallet.</p>
+<h2 id='getbalancewithaddress'>GetBalanceWithAddress</h2><pre class="highlight javascript tab-javascript"><code><span class="kr">import</span> <span class="nx">RNElastosMainchain</span> <span class="nx">from</span> <span class="s1">'react-native-elastos-wallet-core'</span><span class="p">;</span>
+
+<span class="nx">RNElastosMainchain</span><span class="p">.</span><span class="nx">GetBalanceWithAddress</span><span class="p">(</span><span class="nx">address</span><span class="p">,</span> <span class="nx">balanceType</span><span class="p">,</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">balance</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">balance</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre>
+<p>This bridge returns the balance of the address of the current wallet.</p>
+<h3 id='parameters-9'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>address</td>
+<td>address</td>
+</tr>
+<tr>
+<td>balanceType</td>
+<td>enum type -&gt; 0 : Default, 1 : Voted, 2 : Total</td>
+</tr>
+</tbody></table>
+<h2 id='getalladdress'>GetAllAddress</h2><pre class="highlight javascript tab-javascript"><code><span class="kr">import</span> <span class="nx">RNElastosMainchain</span> <span class="nx">from</span> <span class="s1">'react-native-elastos-wallet-core'</span><span class="p">;</span>
+
+<span class="nx">RNElastosMainchain</span><span class="p">.</span><span class="nx">GetAllAddress</span><span class="p">((</span><span class="nx">err</span><span class="p">,</span> <span class="nx">allAddress</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">allAddress</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre>
+<p>This bridge returns all addresses of the current wallet.
+The return value is the string of JSONArray.</p>
+<h2 id='getalltransaction'>GetAllTransaction</h2><pre class="highlight javascript tab-javascript"><code><span class="kr">import</span> <span class="nx">RNElastosMainchain</span> <span class="nx">from</span> <span class="s1">'react-native-elastos-wallet-core'</span><span class="p">;</span>
+
+<span class="nx">RNElastosMainchain</span><span class="p">.</span><span class="nx">GetAllTransaction</span><span class="p">((</span><span class="nx">err</span><span class="p">,</span> <span class="nx">transactionHistory</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">transactionHistory</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre>
+<p>This bridge returns all transactions of the current wallet.
+The return value is the string of JSONArray.</p>
+<h2 id='send'>Send</h2><pre class="highlight javascript tab-javascript"><code><span class="kr">import</span> <span class="nx">RNElastosMainchain</span> <span class="nx">from</span> <span class="s1">'react-native-elastos-wallet-core'</span><span class="p">;</span>
+
+<span class="nx">RNElastosMainchain</span><span class="p">.</span><span class="nx">CreateMultiSignMasterWallet</span><span class="p">(</span><span class="nx">amount</span><span class="p">,</span> <span class="nx">toAddress</span><span class="p">,</span> <span class="nx">useVotedUTXO</span><span class="p">,</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">transactionId</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">transactionId</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre>
+<p>This bridge sends given amount of tokens to the given address and returns the published transaction Id.</p>
+<h3 id='parameters-10'>Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>amount</td>
+<td>Send Amount</td>
+</tr>
+<tr>
+<td>toAddress</td>
+<td>Receiver&#39;s address</td>
+</tr>
+</tbody></table>
+
+<!-- ```javascript
+const kittn = require('kittn');
+
+let api = kittn.authorize('meowmeowmeow');
+let kittens = api.kittens.get();
+```
+
+> The above command returns JSON structured like this:
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Fluffums",
+    "breed": "calico",
+    "fluffiness": 6,
+    "cuteness": 7
+  },
+  {
+    "id": 2,
+    "name": "Max",
+    "breed": "unknown",
+    "fluffiness": 5,
+    "cuteness": 10
+  }
+]
+```
+
+This endpoint retrieves all kittens.
+
+### HTTP Request
+
+`GET http://example.com/api/kittens`
+
+### Query Parameters
+
+Parameter | Default | Description
+--------- | ------- | -----------
+include_cats | false | If set to true, the result will also include cats.
+available | true | If set to false, the result will include kittens that have already been adopted.
+
+<aside class="success">
+Remember — a happy kitten is an authenticated kitten!
+</aside> -->
+
+      </div>
+      <div class="dark-box">
+          <div class="lang-selector">
+                <a href="#" data-language-name="Usage">Usage</a>
+          </div>
+      </div>
+    </div>
+  </body>
+</html>
