@@ -2,8 +2,12 @@ VERSION := $(shell git describe --abbrev=4 --dirty --always --tags)
 BUILD = go build -ldflags "-X main.Version=$(VERSION) -X 'main.GoVersion=`go version`'" #-race
 
 all:
-	$(BUILD) -o ela log.go config.go main.go
+	$(BUILD) -o ela log.go settings.go main.go
 	$(BUILD) -o ela-cli cmd/ela-cli.go
+
+linux:
+	GOARCH=amd64 GOOS=linux $(BUILD) -o ela log.go settings.go main.go
+	GOARCH=amd64 GOOS=linux $(BUILD) -o ela-cli cmd/ela-cli.go
 
 cli:
 	$(BUILD) -o ela-cli cmd/ela-cli.go
