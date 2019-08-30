@@ -1567,8 +1567,8 @@ func (s *txValidatorTestSuite) TestCrInfoSanityCheck() {
 func (s *txValidatorTestSuite) TestCheckUpdateCRTransaction() {
 
 	// Generate a UpdateCR CR transaction
-	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
-	privateKeyStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
+	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
+	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
 
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
@@ -1682,8 +1682,8 @@ func (s *txValidatorTestSuite) TestCheckUpdateCRTransaction() {
 
 func (s *txValidatorTestSuite) TestCheckUnregisterCRTransaction() {
 
-	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
-	privateKeyStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
+	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
+	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
 
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
@@ -2132,7 +2132,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 
 	references := make(map[*types.Input]*types.Output)
 	outputs := []*types.Output{{Type: types.OTNone}}
-	s.NoError(checkVoteOutputs(outputs, references, nil, nil))
+	s.NoError(s.Chain.checkVoteOutputs(0, outputs, references, nil, nil))
 
 	publicKey1 := "023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a"
 	publicKey2 := "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9"
@@ -2166,7 +2166,8 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs1, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs1, references, producersMap,
+		crsMap),
 		"the output address of vote tx should exist in its input")
 
 	// Check vote output of v0 with crc type and with wrong output program hash
@@ -2186,7 +2187,8 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs2, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs2, references,
+		producersMap, crsMap),
 		"the output address of vote tx should exist in its input")
 
 	// Check vote output of v1 with wrong output program hash
@@ -2212,16 +2214,17 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs3, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs3, references, producersMap, crsMap),
 		"the output address of vote tx should exist in its input")
 
 	// Check vote output v0 with correct ouput program hash
 	references[&types.Input{}] = &types.Output{
 		ProgramHash: *hash,
 	}
-	s.NoError(checkVoteOutputs(outputs1, references, producersMap, crsMap))
-	s.NoError(checkVoteOutputs(outputs2, references, producersMap, crsMap))
-	s.NoError(checkVoteOutputs(outputs3, references, producersMap, crsMap))
+	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight,
+		outputs1, references, producersMap, crsMap))
+	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs2, references, producersMap, crsMap))
+	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs3, references, producersMap, crsMap))
 
 	// Check vote output of v0 with delegate type and invalid candidate
 	outputs4 := []*types.Output{{Type: types.OTNone}}
@@ -2240,7 +2243,8 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs4, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs4, references, producersMap,
+		crsMap),
 		"invalid vote output payload candidate: "+
 			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
 
@@ -2261,7 +2265,8 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs5, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs5, references, producersMap,
+		crsMap),
 		"payload VoteProducerVersion not support vote CR")
 
 	// Check vote output of v1 with crc type and invalid candidate
@@ -2281,7 +2286,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs6, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs6, references, producersMap, crsMap),
 		"invalid vote output payload candidate: "+
 			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
 
@@ -2308,7 +2313,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs7, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs7, references, producersMap, crsMap),
 		"invalid vote output payload candidate: "+
 			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
 
@@ -2332,7 +2337,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs8, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs8, references, producersMap, crsMap),
 		"votes larger than output amount")
 
 	// Check vote output of v1 with crc type and wrong votes
@@ -2354,7 +2359,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs9, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs9, references, producersMap, crsMap),
 		"total votes larger than output amount")
 
 	// Check vote output of v1 with wrong votes
@@ -2381,7 +2386,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs10, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs10, references, producersMap, crsMap),
 		"votes larger than output amount")
 
 	// Check vote output v1 with correct votes
@@ -2408,7 +2413,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.NoError(checkVoteOutputs(outputs11, references, producersMap, crsMap))
+	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs11, references, producersMap, crsMap))
 
 	// Check vote output of v1 with wrong votes
 	outputs12 := []*types.Output{{Type: types.OTNone}}
@@ -2434,7 +2439,8 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.NoError(checkVoteOutputs(outputs12, references, producersMap, crsMap))
+	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs12, references, producersMap,
+		crsMap))
 }
 
 func (s *txValidatorTestSuite) TestCheckOutputProgramHash() {

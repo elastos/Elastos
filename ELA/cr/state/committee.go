@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -196,6 +196,11 @@ func (c *Committee) getActiveCRCandidatesDesc() ([]*Candidate, error) {
 	}
 
 	sort.Slice(candidates, func(i, j int) bool {
+		if candidates[i].votes == candidates[j].votes {
+			iCRInfo := candidates[i].Info()
+			jCRInfo := candidates[j].Info()
+			return iCRInfo.GetCodeHash().Compare(jCRInfo.GetCodeHash()) < 0
+		}
 		return candidates[i].votes > candidates[j].votes
 	})
 	return candidates, nil
