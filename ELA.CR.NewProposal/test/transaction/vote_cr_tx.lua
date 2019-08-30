@@ -53,15 +53,19 @@ print("amount:", amount)
 print("fee:", fee)
 print("vote_candidates:", vote_candidates)
 print("-----------------------")
+local vote_candidates_num = 0
 for i, v in pairs(vote_candidates) do
     print(i, v)
+    vote_candidates_num = i
 end
 print("-----------------------")
 
 print("vote_candidate_votes:", vote_candidate_votes)
 print("-----------------------")
+local vote_candidate_votes_num = 0
 for i, v in pairs(vote_candidate_votes) do
     print(i, v)
+    vote_candidate_votes_num = i
 end
 print("-----------------------")
 
@@ -75,39 +79,43 @@ local tx = transaction.new(9, 0x02, 0, ta, 0)
 local charge = tx:appendenough(addr, (amount + fee) * 100000000)
 print("charge", charge)
 
+if vote_candidates_num == vote_candidate_votes_num then
 -- votecontent: vote_type, vote_candidates, vote_candidate_votes
-local vote_content = votecontent.new(vote_type, vote_candidates, vote_candidate_votes)
-print("vote_content", vote_content:get())
+    local vote_content = votecontent.new(vote_type, vote_candidates, vote_candidate_votes)
+    print("vote_content", vote_content:get())
 
--- outputpayload
-local vote_output = voteoutput.new(1, { vote_content })
-print("vote_output", vote_output:get())
+    -- outputpayload
+    local vote_output = voteoutput.new(1, { vote_content })
+    print("vote_output", vote_output:get())
 
-local default_output = defaultoutput.new()
+    local default_output = defaultoutput.new()
 
--- output: asset_id, value, recipient, output_paload_type, output_paload
-local charge_output = output.new(asset_id, charge, addr, 0, default_output)
-local amount_output = output.new(asset_id, amount * 100000000, addr, 1, vote_output)
--- print("txoutput", charge_output:get())
--- print("txoutput", amount_output:get())
-tx:appendtxout(charge_output)
-tx:appendtxout(amount_output)
+    -- output: asset_id, value, recipient, output_paload_type, output_paload
+    local charge_output = output.new(asset_id, charge, addr, 0, default_output)
+    local amount_output = output.new(asset_id, amount * 100000000, addr, 1, vote_output)
+    -- print("txoutput", charge_output:get())
+    -- print("txoutput", amount_output:get())
+    tx:appendtxout(charge_output)
+    tx:appendtxout(amount_output)
 
-print(tx:get())
+    print(tx:get())
 
--- sign
-tx:sign(wallet)
-print(tx:get())
+    -- sign
+    tx:sign(wallet)
+    print(tx:get())
 
--- send
-local hash = tx:hash()
-local res = m.send_tx(tx)
+    -- send
+    local hash = tx:hash()
+    local res = m.send_tx(tx)
 
-print("sending " .. hash)
+    print("sending " .. hash)
 
-if (res ~= hash)
-then
-    print(res)
-else
-    print("tx send success")
+    if (res ~= hash)
+        then
+            print(res)
+        else
+            print("tx send success")
+        end
+    else
+        print("The numerical candidates and candidateVotes are inconsistent!")
 end
