@@ -66,6 +66,8 @@ func main() {
 }
 
 func setupNode() *cli.App {
+	appSettings := newSettings()
+
 	app := cli.NewApp()
 	app.Name = "ela"
 	app.Version = Version
@@ -77,10 +79,13 @@ func setupNode() *cli.App {
 		cmdcom.DataDirFlag,
 		cmdcom.AccountPasswordFlag,
 	}
+	app.Flags = append(app.Flags, appSettings.Flags()...)
 	app.Action = func(c *cli.Context) {
-		setupConfig(c)
-		setupLog(c)
-		startNode(c)
+		appSettings.SetContext(c)
+		appSettings.SetupConfig()
+		appSettings.InitParamsValue()
+		setupLog(c, appSettings)
+		startNode(c, appSettings)
 	}
 	app.Before = func(c *cli.Context) error {
 		// Use all processor cores.
@@ -98,43 +103,24 @@ func setupNode() *cli.App {
 	return app
 }
 
-func setupConfig(c *cli.Context) {
-	configPath := c.String("conf")
-	var err error
-	file, err := loadConfigFile(configPath)
-	if err != nil {
-		if c.IsSet("conf") {
-			cmdcom.PrintErrorMsg(err.Error())
-			os.Exit(1)
-		}
-		file = &defaultConfig
-	}
-
-	cfg, err = loadConfigParams(file)
-	if err != nil {
-		cmdcom.PrintErrorMsg(err.Error())
-		os.Exit(1)
-	}
-}
-
-func startNode(c *cli.Context) {
+func startNode(c *cli.Context, st *settings) {
 	// Enable http profiling server if requested.
-	if cfg.ProfilePort != 0 {
-		go utils.StartPProf(cfg.ProfilePort)
+	if st.Config().ProfilePort != 0 {
+		go utils.StartPProf(st.Config().ProfilePort)
 	}
 
 	flagDataDir := c.String("datadir")
 	dataDir := filepath.Join(flagDataDir, dataPath)
-	activeNetParams.CkpManager.SetDataPath(
+	st.Params().CkpManager.SetDataPath(
 		filepath.Join(dataDir, checkpointPath))
 
-	var dposAccount account.Account
-	if cfg.DPoSConfiguration.EnableArbiter {
+	var act account.Account
+	if st.Config().DPoSConfiguration.EnableArbiter {
 		password, err := cmdcom.GetFlagPassword(c)
 		if err != nil {
 			printErrorAndExit(err)
 		}
-		dposAccount, err = account.Open(password)
+		act, err = account.Open(password)
 		if err != nil {
 			printErrorAndExit(err)
 		}
@@ -149,9 +135,9 @@ func startNode(c *cli.Context) {
 	ledger := blockchain.Ledger{}
 
 	// Initializes the foundation address
-	blockchain.FoundationAddress = activeNetParams.Foundation
-	blockchain.EnableUtxoDB = activeNetParams.EnableUtxoDB
-	chainStore, err := blockchain.NewChainStore(dataDir, activeNetParams.GenesisBlock)
+	blockchain.FoundationAddress = st.Params().Foundation
+	blockchain.EnableUtxoDB = st.Params().EnableUtxoDB
+	chainStore, err := blockchain.NewChainStore(dataDir, st.Params().GenesisBlock)
 	if err != nil {
 		printErrorAndExit(err)
 	}
@@ -159,19 +145,19 @@ func startNode(c *cli.Context) {
 	ledger.Store = chainStore // fixme
 
 	var dposStore store.IDposStore
-	dposStore, err = store.NewDposStore(dataDir, activeNetParams)
+	dposStore, err = store.NewDposStore(dataDir, st.Params())
 	if err != nil {
 		printErrorAndExit(err)
 	}
 	defer dposStore.Close()
 
-	txMemPool := mempool.NewTxPool(activeNetParams)
-	blockMemPool := mempool.NewBlockPool(activeNetParams)
+	txMemPool := mempool.NewTxPool(st.Params())
+	blockMemPool := mempool.NewBlockPool(st.Params())
 	blockMemPool.Store = chainStore
 
 	blockchain.DefaultLedger = &ledger // fixme
 
-	arbiters, err := state.NewArbitrators(activeNetParams,
+	arbiters, err := state.NewArbitrators(st.Params(),
 		chainStore.GetHeight, func(height uint32) (*types.Block, error) {
 			hash, err := chainStore.GetBlockHash(height)
 			if err != nil {
@@ -201,10 +187,10 @@ func startNode(c *cli.Context) {
 	}
 	ledger.Arbitrators = arbiters // fixme
 
-	committee := crstate.NewCommittee(activeNetParams)
+	committee := crstate.NewCommittee(st.Params())
 	ledger.Committee = committee
 
-	chain, err := blockchain.New(chainStore, activeNetParams, arbiters.State,
+	chain, err := blockchain.New(chainStore, st.Params(), arbiters.State,
 		committee)
 	if err != nil {
 		printErrorAndExit(err)
@@ -213,19 +199,19 @@ func startNode(c *cli.Context) {
 	blockMemPool.Chain = chain
 
 	routesCfg := &routes.Config{TimeSource: chain.TimeSource}
-	if dposAccount != nil {
-		routesCfg.PID = dposAccount.PublicKeyBytes()
+	if act != nil {
+		routesCfg.PID = act.PublicKeyBytes()
 		routesCfg.Addr = fmt.Sprintf("%s:%d",
-			cfg.DPoSConfiguration.IPAddress,
-			cfg.DPoSConfiguration.DPoSPort)
-		routesCfg.Sign = dposAccount.Sign
+			st.Config().DPoSConfiguration.IPAddress,
+			st.Config().DPoSConfiguration.DPoSPort)
+		routesCfg.Sign = act.Sign
 	}
 
 	route := routes.New(routesCfg)
 	server, err := elanet.NewServer(dataDir, &elanet.Config{
 		Chain:          chain,
-		ChainParams:    activeNetParams,
-		PermanentPeers: cfg.PermanentPeers,
+		ChainParams:    st.Params(),
+		PermanentPeers: st.Params().PermanentPeers,
 		TxMemPool:      txMemPool,
 		BlockMemPool:   blockMemPool,
 		Routes:         route,
@@ -238,13 +224,13 @@ func startNode(c *cli.Context) {
 	blockMemPool.IsCurrent = server.IsCurrent
 
 	var arbitrator *dpos.Arbitrator
-	if dposAccount != nil {
-		dlog.Init(uint8(cfg.PrintLevel), cfg.MaxPerLogSize, cfg.MaxLogsSize)
-		arbitrator, err = dpos.NewArbitrator(dposAccount, dpos.Config{
+	if act != nil {
+		dlog.Init(uint8(st.Config().PrintLevel), st.Config().MaxPerLogSize, st.Config().MaxLogsSize)
+		arbitrator, err = dpos.NewArbitrator(act, dpos.Config{
 			EnableEventLog:    true,
 			EnableEventRecord: false,
-			Localhost:         cfg.DPoSConfiguration.IPAddress,
-			ChainParams:       activeNetParams,
+			Localhost:         st.Config().DPoSConfiguration.IPAddress,
+			ChainParams:       st.Params(),
 			Arbitrators:       arbiters,
 			Store:             dposStore,
 			Server:            server,
@@ -266,11 +252,13 @@ func startNode(c *cli.Context) {
 
 	wal := wallet.NewWallet()
 	wallet.Store = chainStore
-	wallet.ChainParam = activeNetParams
+	wallet.ChainParam = st.Params()
+
+	st.Params().CkpManager.Register(wal)
 
 	servers.Compile = Version
-	servers.Config = cfg
-	servers.ChainParams = activeNetParams
+	servers.Config = st.Config()
+	servers.ChainParams = st.Params()
 	servers.Chain = chain
 	servers.Store = chainStore
 	servers.TxMemPool = txMemPool
@@ -278,10 +266,10 @@ func startNode(c *cli.Context) {
 	servers.Arbiters = arbiters
 	servers.Wallet = wal
 	servers.Pow = pow.NewService(&pow.Config{
-		PayToAddr:   cfg.PowConfiguration.PayToAddr,
-		MinerInfo:   cfg.PowConfiguration.MinerInfo,
+		PayToAddr:   st.Config().PowConfiguration.PayToAddr,
+		MinerInfo:   st.Config().PowConfiguration.MinerInfo,
 		Chain:       chain,
-		ChainParams: activeNetParams,
+		ChainParams: st.Params(),
 		TxMemPool:   txMemPool,
 		BlkMemPool:  blockMemPool,
 		BroadcastBlock: func(block *types.Block) {
@@ -303,16 +291,16 @@ func startNode(c *cli.Context) {
 	defer server.Stop()
 
 	log.Info("Start services")
-	if cfg.EnableRPC {
+	if st.Config().EnableRPC {
 		go httpjsonrpc.StartRPCServer()
 	}
-	if cfg.HttpRestStart {
+	if st.Config().HttpRestStart {
 		go httprestful.StartServer()
 	}
-	if cfg.HttpWsStart {
+	if st.Config().HttpWsStart {
 		go httpwebsocket.Start()
 	}
-	if cfg.HttpInfoStart {
+	if st.Config().HttpInfoStart {
 		go httpnodeinfo.StartServer()
 	}
 
@@ -323,7 +311,7 @@ func startNode(c *cli.Context) {
 		return
 	}
 	log.Info("Start consensus")
-	if cfg.PowConfiguration.AutoMining {
+	if st.Config().PowConfiguration.AutoMining {
 		log.Info("Start POW Services")
 		go servers.Pow.Start()
 	}
