@@ -257,6 +257,7 @@ class C extends BaseComponent {
         if (isShowMsg) message.success(I18N.get('proposal.msg.draftSaved'))
       } catch (error) {
         message.error(error.message)
+        logger.error(e)
       }
     })
   }
@@ -626,6 +627,7 @@ class C extends BaseComponent {
           .catch(e => {
             message.error(e.message)
             this.ord_loading(false)
+            logger.error(e)
           })
       },
       onCancel() {}
