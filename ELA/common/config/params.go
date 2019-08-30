@@ -167,7 +167,6 @@ var DefaultParams = Params{
 	GeneralArbiters:             24,
 	CandidateArbiters:           72,
 	PreConnectOffset:            360,
-	CheckPointNoFlatFile:        false,
 	CRMemberCount:               12,
 	CRVotingPeriod:              30 * 720,
 	CRDutyPeriod:                365 * 720,
@@ -297,6 +296,9 @@ type Params struct {
 	// The interface/port to listen for connections.
 	ListenAddrs []string
 
+	// PermanentPeers defines peers seeds for node to initialize p2p connection.
+	PermanentPeers []string
+
 	// Foundation defines the foundation address which receiving mining
 	// rewards.
 	Foundation common.Uint168
@@ -407,9 +409,6 @@ type Params struct {
 	// EmergencyInactivePenalty defines the penalty amount the emergency
 	// producer takes.
 	EmergencyInactivePenalty common.Fixed64
-
-	// CheckPointNoFlatFile defines if check point should store as flat file
-	CheckPointNoFlatFile bool
 
 	// CRMemberCount defines the number of CR committee members
 	CRMemberCount uint32
