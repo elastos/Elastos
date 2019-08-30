@@ -102,6 +102,10 @@ void ThrowWalletExceptionWithECode(JNIEnv *env, int errorcode, const char *error
     jthrowable throwable = (jthrowable) env->NewObject(walletException, methodId, errorcode, arg);
     env->ExceptionClear();
     env->Throw(throwable);
+
+    env->DeleteLocalRef(arg);
+    env->DeleteLocalRef(throwable);
+    env->DeleteLocalRef(walletException);
 }
 
 void ThrowWalletException(JNIEnv *env, const char *errorInfo) {
@@ -111,4 +115,8 @@ void ThrowWalletException(JNIEnv *env, const char *errorInfo) {
     jstring arg = env->NewStringUTF(errorInfo);
     jthrowable throwable = (jthrowable) env->NewObject(walletException, methodId, arg);
     env->Throw(throwable);
+
+    env->DeleteLocalRef(arg);
+    env->DeleteLocalRef(throwable);
+    env->DeleteLocalRef(walletException);
 }
