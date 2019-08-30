@@ -169,21 +169,22 @@ var (
 )
 
 // The default amount of logging is none.
-func setupLog(c *cli.Context) {
+func setupLog(c *cli.Context, s *settings) {
 	flagDataDir := c.String("datadir")
 	path := filepath.Join(flagDataDir, nodeLogPath)
 
-	logger = log.NewDefault(path, uint8(cfg.PrintLevel), cfg.MaxPerLogSize, cfg.MaxLogsSize)
+	logger = log.NewDefault(path, uint8(s.Config().PrintLevel),
+		s.Config().MaxPerLogSize, s.Config().MaxLogsSize)
 	pgBar = newProgress(logger.Writer())
 
 	admrlog := wrap(logger, elalog.LevelOff)
 	cmgrlog := wrap(logger, elalog.LevelOff)
-	synclog := wrap(logger, cfg.PrintLevel)
-	peerlog := wrap(logger, cfg.PrintLevel)
-	routlog := wrap(logger, cfg.PrintLevel)
-	elanlog := wrap(logger, cfg.PrintLevel)
-	statlog := wrap(logger, cfg.PrintLevel)
-	crstatlog := wrap(logger, cfg.PrintLevel)
+	synclog := wrap(logger, s.Config().PrintLevel)
+	peerlog := wrap(logger, s.Config().PrintLevel)
+	routlog := wrap(logger, s.Config().PrintLevel)
+	elanlog := wrap(logger, s.Config().PrintLevel)
+	statlog := wrap(logger, s.Config().PrintLevel)
+	crstatlog := wrap(logger, s.Config().PrintLevel)
 
 	addrmgr.UseLogger(admrlog)
 	connmgr.UseLogger(cmgrlog)
