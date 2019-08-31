@@ -112,6 +112,7 @@ export default class extends StandardPage {
               {I18N.get('suggestion.title.edit')}
             </h2>
             <SuggestionForm
+              {...this.props}
               initialValues={this.state.data}
               onSubmit={this.onSubmit}
               onCancel={this.historyBack}

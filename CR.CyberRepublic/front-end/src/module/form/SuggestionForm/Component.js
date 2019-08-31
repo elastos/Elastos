@@ -171,6 +171,15 @@ class C extends BaseComponent {
     }
   }
 
+  validateAbstract = (rule, value, cb) => {
+    const { language } = this.props
+    let count = value.length
+    if (language === 'en') {
+      count = value.split(' ').length
+    }
+    return count > WORD_LIMIT ? cb(true) : cb()
+  }
+
   getTextarea(id) {
     const { initialValues = {} } = this.props
     const { getFieldDecorator } = this.props.form
@@ -182,9 +191,9 @@ class C extends BaseComponent {
     }];
     if (id === 'abstract') {
       rules.push({
-        max: WORD_LIMIT,
         transform: editorTransform,
-        message: I18N.get(`suggestion.form.error.limit${WORD_LIMIT}`)
+        message: I18N.get(`suggestion.form.error.limit${WORD_LIMIT}`),
+        validator: this.validateAbstract
       })
     }
 
@@ -204,11 +213,13 @@ class C extends BaseComponent {
   }
 
   renderWordLimit() {
-    const { form } = this.props
+    const { form, language } = this.props
     const formValue = form.getFieldValue('abstract')
     const value = editorTransform(formValue)
-    const count = _.get(value, 'length', 0)
-
+    let count = value.length
+    if (language === 'en') {
+      count = value.split(' ').length
+    }
     return (
       <CirContainer>
         <CircularProgressbar count={count} />

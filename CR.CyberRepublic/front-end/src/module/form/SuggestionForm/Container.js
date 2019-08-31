@@ -8,6 +8,7 @@ import CouncilService from '@/service/CouncilService'
 const mapState = state => ({
   loading: state.suggestion.loading,
   councilMembers: state.council.council_members,
+  language: state.language.language
 })
 
 const mapDispatch = () => {
