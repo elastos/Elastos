@@ -9,6 +9,7 @@ import BackLink from '@/module/shared/BackLink/Component'
 import Comments from '@/module/common/comments/Container'
 import { ELIP_STATUS } from '@/constant'
 import { logger } from '@/util'
+import Meta from '@/module/common/Meta'
 import ElipNote from '../ElipNote'
 import { grid } from '../common/variable'
 import ReviewButtons from './ReviewButtons'
@@ -76,6 +77,10 @@ class C extends StandardPage {
 
     return (
       <div>
+        <Meta
+          title={`${elip.title} - ELIP Detail - Cyber Republic`}
+          url={this.props.location.pathname}
+        />
         <BackLink link="/elips" />
         <Container>
           <h2 className="komu-a cr-title-with-icon">ELIP #{elip.vid}</h2>
