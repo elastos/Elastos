@@ -6,6 +6,7 @@ const create = (list) => {
 
 export const DATE_FORMAT = 'MMM D, YYYY'
 export const ABSTRACT_MAX_WORDS = 200
+export const ELIP_DESC_MAX_WORDS = 3000
 
 export const CR_LINKS = {
   FACEBOOK: 'https://www.facebook.com/ElastosCyberRepublic',

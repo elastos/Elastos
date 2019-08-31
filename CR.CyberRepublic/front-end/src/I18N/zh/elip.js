@@ -1,4 +1,8 @@
-import { ELIP_STATUS, ELIP_FILTER } from '@/constant'
+import {
+  ELIP_STATUS,
+  ELIP_FILTER,
+  ELIP_DESC_MAX_WORDS
+} from '@/constant'
 
 export default {
   header: 'ELIPS',
@@ -40,7 +44,7 @@ export default {
     error: {
       required: '必填项',
       tooLong: '文字太长',
-      limit3000: '不能超过3000字'
+      [`limit${ELIP_DESC_MAX_WORDS}`]: `不能超过${ELIP_DESC_MAX_WORDS}字`
     }
   },
   modal: {

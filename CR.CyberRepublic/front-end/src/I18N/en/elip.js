@@ -1,4 +1,8 @@
-import { ELIP_STATUS, ELIP_FILTER } from '@/constant'
+import {
+  ELIP_STATUS,
+  ELIP_FILTER,
+  ELIP_DESC_MAX_WORDS
+} from '@/constant'
 
 export default {
   header: 'ELIPS',
@@ -40,7 +44,7 @@ export default {
     error: {
       required: 'This field is required',
       tooLong: 'This field is too long',
-      limit3000: 'You can only type 3000 words max.'
+      [`limit${ELIP_DESC_MAX_WORDS}`]: `You can only type ${ELIP_DESC_MAX_WORDS} words max.`
     }
   },
   modal: {

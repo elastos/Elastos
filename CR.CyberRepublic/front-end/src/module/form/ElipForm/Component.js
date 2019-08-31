@@ -5,11 +5,11 @@ import { convertToRaw } from 'draft-js'
 import I18N from '@/I18N'
 import DraftEditor from '@/module/common/DraftEditor'
 import ElipNote from '@/module/page/elip/ElipNote'
-import { CONTENT_TYPE, ELIP_STATUS } from '@/constant'
+import { CONTENT_TYPE, ELIP_STATUS, ELIP_DESC_MAX_WORDS } from '@/constant'
 import { Container, Title, Actions, Label, Status } from './style'
 
 const FormItem = Form.Item
-const WORD_LIMIT = 3000
+const WORD_LIMIT = ELIP_DESC_MAX_WORDS
 const formItemLayout = {
   labelCol: {
     span: 3
@@ -73,6 +73,15 @@ class C extends BaseComponent {
     })
   }
 
+  validateDesc = (rule, value, cb) => {
+    const { language } = this.props
+    let count = value.length
+    if (language === 'en') {
+      count = value.split(' ').length
+    }
+    return count > WORD_LIMIT ? cb(true) : cb()
+  }
+
   ord_render() {
     const { form, data } = this.props
     const { getFieldDecorator } = form
@@ -117,9 +126,9 @@ class C extends BaseComponent {
                   message: I18N.get('elip.form.error.required')
                 },
                 {
-                  max: WORD_LIMIT,
                   transform,
-                  message: I18N.get(`proposal.form.error.limit${WORD_LIMIT}`)
+                  message: I18N.get(`elip.form.error.limit${WORD_LIMIT}`),
+                  validator: this.validateDesc
                 }
               ],
               initialValue: data && data.description ? data.description : ''
