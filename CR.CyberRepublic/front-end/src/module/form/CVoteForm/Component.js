@@ -13,7 +13,7 @@ import {
 } from 'antd'
 import I18N from '@/I18N'
 import _ from 'lodash'
-import { CVOTE_STATUS } from '@/constant'
+import { CVOTE_STATUS, ABSTRACT_MAX_WORDS } from '@/constant'
 import { convertToRaw } from 'draft-js'
 import DraftEditor from '@/module/common/DraftEditor'
 import CircularProgressbar from '@/module/common/CircularProgressbar'
@@ -32,7 +32,7 @@ import {
   CirContainer
 } from './style'
 
-const WORD_LIMIT = 200
+const WORD_LIMIT = ABSTRACT_MAX_WORDS
 
 const FormItem = Form.Item
 const { TabPane } = Tabs

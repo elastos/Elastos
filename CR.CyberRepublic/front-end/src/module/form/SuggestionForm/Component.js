@@ -3,7 +3,7 @@ import BaseComponent from '@/model/BaseComponent'
 import { Form, Input, Button, Row, Tabs, Radio } from 'antd'
 import I18N from '@/I18N'
 import _ from 'lodash'
-import { CONTENT_TYPE } from '@/constant'
+import { CONTENT_TYPE, ABSTRACT_MAX_WORDS } from '@/constant'
 import { convertToRaw } from 'draft-js'
 import DraftEditor from '@/module/common/DraftEditor'
 import CircularProgressbar from '@/module/common/CircularProgressbar'
@@ -20,7 +20,7 @@ import {
 const FormItem = Form.Item
 const { TabPane } = Tabs
 
-const WORD_LIMIT = 200
+const WORD_LIMIT = ABSTRACT_MAX_WORDS
 const TAB_KEYS = ['type', 'abstract', 'goal', 'motivation', 'plan', 'relevance', 'budget']
 const editorTransform = value => {
   // string or object
@@ -182,9 +182,9 @@ class C extends BaseComponent {
     }];
     if (id === 'abstract') {
       rules.push({
-        max: 200,
+        max: WORD_LIMIT,
         transform: editorTransform,
-        message: I18N.get('proposal.form.error.limit200')
+        message: I18N.get(`suggestion.form.error.limit${WORD_LIMIT}`)
       })
     }
 
