@@ -179,6 +179,11 @@ func BenchmarkBlockChain_End(b *testing.B) {
 		chain = nil
 	}
 
+	if newChain != nil {
+		newChain.db.Close()
+		newChain = nil
+	}
+
 	DefaultLedger = originLedger
 	FoundationAddress = originAddress
 }
@@ -207,6 +212,8 @@ func newChainStore(dataDir string, dbDir string, genesisBlock *types.Block) (ICh
 }
 
 func newBlockChain() *BlockChain {
+	log.NewDefault(test.NodeLogPath, 0, 0, 0)
+
 	params := config.DefaultParams.RegNet()
 	chainStore, err := newChainStore(test.DataPath, "ffldb", params.GenesisBlock)
 	if err != nil {
@@ -224,8 +231,6 @@ func benchBegin() *BlockChain {
 	if !hasWorkbenchOnlyFlag() {
 		return nil
 	}
-
-	log.NewDefault(test.NodeLogPath, 0, 0, 0)
 
 	params := config.DefaultParams.RegNet()
 	store, _ := NewChainStore(test.DataPath, params.GenesisBlock)

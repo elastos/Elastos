@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"path/filepath"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -49,7 +50,8 @@ func TestCheckBlockSanity(t *testing.T) {
 	log.NewDefault(test.NodeLogPath, 0, 0, 0)
 	params := &config.DefaultParams
 	FoundationAddress = params.Foundation
-	chainStore, err := NewChainStore(test.DataPath, params.GenesisBlock)
+	chainStore, err := NewChainStore(filepath.Join(test.DataPath, "sanity"),
+		params.GenesisBlock)
 	if err != nil {
 		t.Error(err.Error())
 	}

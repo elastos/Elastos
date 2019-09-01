@@ -172,6 +172,13 @@ func (b *BlockChain) InitFFLDBFromChainStore(interrupt <-chan struct{},
 			if increase != nil {
 				increase()
 			}
+
+			chain := b.db.(*ChainStore)
+			chain.NewBatch()
+			chain.RollbackTrimmedBlock(block)
+			chain.RollbackBlockHash(block)
+			chain.BatchCommit()
+
 		}
 		done <- true
 	}()
