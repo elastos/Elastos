@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import moment from 'moment/moment'
 import { Collapse, Row, Col } from 'antd'
 import I18N from '@/I18N'
+import { breakPoint } from '@/constants/breakPoint'
 import { ELIP_STATUS, DATE_FORMAT } from '@/constant'
 import userUtil from '@/util/user'
 const { Panel } = Collapse
@@ -34,11 +35,11 @@ const ReviewHistory = ({ reviews }) => {
                   </Meta>
                 </div>
               </WrapperCol>
-              <Col span={2}>
+              <StatusCol span={2}>
                 <Status status={el.status}>
                   {I18N.get(`elip.text.${el.status.toLowerCase()}`)}
                 </Status>
-              </Col>
+              </StatusCol>
             </StyledRow>
           )
         })}
@@ -88,6 +89,9 @@ const LabelCol = styled(Col)`
   text-align: right;
   font-size: 18px;
   margin-right: 20px;
+  @media only screen and (max-width: ${breakPoint.mobile}) {
+    display: none !important;
+  }
 `
 const WrapperCol = styled(Col)`
   border: 1px solid rgba(0, 0, 0, 0.1);
@@ -101,6 +105,14 @@ const WrapperCol = styled(Col)`
       ? 'rgba(252, 192, 192, 0.2)'
       : 'rgba(29, 233, 182, 0.1)'
   }};
+  @media only screen and (max-width: ${breakPoint.mobile}) {
+    width: 100% !important;
+  }
+`
+const StatusCol = styled(Col)`
+  @media only screen and (max-width: ${breakPoint.mobile}) {
+    display: none !important;
+  }
 `
 const Status = styled.div`
   width: 63px;

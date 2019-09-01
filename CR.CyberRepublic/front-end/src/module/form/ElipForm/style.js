@@ -12,6 +12,9 @@ export const Container = styled.div`
   .ant-form-item-label {
     margin-right: 20px;
     min-width: 120px;
+    @media only screen and (max-width: ${breakPoint.mobile}) {
+      text-align: left;
+    }
   }
   .ant-form-item-required:before {
     display: none;
@@ -73,6 +76,9 @@ export const Label = styled.div`
   font-size: 11px;
   line-height: 19px;
   color: rgba(3, 30, 40, 0.4);
+  @media only screen and (max-width: ${breakPoint.mobile}) {
+    margin-left: 16px;
+  }
 `
 export const Status = styled.div`
   display: inline-block;
@@ -80,8 +86,13 @@ export const Status = styled.div`
   line-height: 27px;
   text-transform: uppercase;
   color: #fff;
-  margin-bottom: 42px;
+  margin-bottom: 48px;
   background: #be1313;
   height: 27px;
   padding: 0 6px;
+  @media only screen and (max-width: ${breakPoint.mobile}) {
+    margin-left: 16px;
+    margin-bottom: 32px;
+    font-size: 14px;
+  }
 `

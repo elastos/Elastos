@@ -30,7 +30,11 @@ export default class extends StandardPage {
     }
     const { elip, loading } = this.state
     if (loading) {
-      return <StyledSpin><Spin /></StyledSpin>
+      return (
+        <StyledSpin>
+          <Spin />
+        </StyledSpin>
+      )
     }
     if (!loading && !Object.keys(elip).length) {
       return history.push('/elips')
@@ -44,16 +48,25 @@ export default class extends StandardPage {
     }
 
     return (
-      <div>
+      <Wrapper>
+        <BackLink link="/elips" />
         <Container>
-          <BackLink link="/elips" />
           <ElipForm data={elip} />
         </Container>
         <Footer />
-      </div>
+      </Wrapper>
     )
   }
 }
+
+const Wrapper = styled.div`
+  margin-top: 64px;
+  position: relative;
+  .cr-backlink {
+    top: -32px;
+    left: 16px;
+  }
+`
 
 const StyledSpin = styled.div`
   text-align: center;
@@ -67,6 +80,8 @@ const Container = styled.div`
   background: #ffffff;
   text-align: left;
   @media only screen and (max-width: ${breakPoint.mobile}) {
-    margin: 15px;
+    margin-top: 48px;
+    padding: 0;
+    width: 100%;
   }
 `

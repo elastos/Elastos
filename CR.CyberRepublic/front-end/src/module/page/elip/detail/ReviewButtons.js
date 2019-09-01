@@ -39,7 +39,7 @@ class ReviewButtons extends React.Component {
 
   render() {
     return (
-      <div>
+      <React.Fragment>
         <Button
           className="cr-btn cr-btn-danger"
           style={{ marginRight: 10 }}
@@ -72,7 +72,7 @@ class ReviewButtons extends React.Component {
             autosize={{ minRows: 6 }}
           />
         </Modal>
-      </div>
+      </React.Fragment>
     )
   }
 }

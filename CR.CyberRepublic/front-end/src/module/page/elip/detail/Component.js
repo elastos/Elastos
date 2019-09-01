@@ -76,7 +76,7 @@ class C extends StandardPage {
     }
 
     return (
-      <div>
+      <Wrapper>
         <Meta
           title={`${elip.title} - ELIP Detail - Cyber Republic`}
           url={this.props.location.pathname}
@@ -112,7 +112,7 @@ class C extends StandardPage {
           {this.renderActionButtons()}
           {this.renderReviewHistory()}
           {elip.status === ELIP_STATUS.APPROVED && (
-            <Row style={{ marginTop: 48 }}>
+            <Row style={{ marginTop: 24 }}>
               <LabelCol span={3} />
               <Col span={17}>
                 <Comments
@@ -127,7 +127,7 @@ class C extends StandardPage {
           )}
         </Container>
         <Footer />
-      </div>
+      </Wrapper>
     )
   }
 
@@ -197,6 +197,15 @@ const StyledSpin = styled.div`
   margin-top: 24px;
 `
 
+const Wrapper = styled.div`
+  margin-top: 64px;
+  position: relative;
+  .cr-backlink {
+    top: -32px;
+    left: 16px;
+  }
+`
+
 const Container = styled.div`
   padding: 0 50px 80px;
   width: 70vw;
@@ -204,7 +213,14 @@ const Container = styled.div`
   background: #ffffff;
   text-align: left;
   @media only screen and (max-width: ${breakPoint.mobile}) {
-    margin: 15px;
+    margin-top: 48px;
+    padding: 16px;
+    width: 100%;
+  }
+  .ant-row .ant-col-17 {
+    @media only screen and (max-width: ${breakPoint.mobile}) {
+      width: 100%;
+    }
   }
 `
 
@@ -235,6 +251,10 @@ const Status = styled.div`
   text-align: center;
   padding: 0 6px;
   display: inline-block;
+  @media only screen and (max-width: ${breakPoint.mobile}) {
+    margin-bottom: 32px;
+    font-size: 14px;
+  }
 `
 
 const LabelCol = styled(Col)`
@@ -242,6 +262,10 @@ const LabelCol = styled(Col)`
   text-align: right;
   font-size: 18px;
   margin-right: 20px;
+  @media only screen and (max-width: ${breakPoint.mobile}) {
+    padding-bottom: 8px;
+    text-align: left;
+  }
 `
 
 const WrapperCol = styled(Col)`
@@ -275,9 +299,13 @@ const Dec = styled.div`
 `
 
 const Actions = styled.div`
-  margin-top: 60px;
+  margin-top: 52px;
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
+  button {
+    margin: 8px 0;
+  }
 `
 
 export const StyledRichContent = styled.div`
