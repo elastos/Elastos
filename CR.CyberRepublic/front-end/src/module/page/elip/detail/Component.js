@@ -10,8 +10,8 @@ import Comments from '@/module/common/comments/Container'
 import { ELIP_STATUS } from '@/constant'
 import { logger } from '@/util'
 import Meta from '@/module/common/Meta'
+import { breakPoint } from '@/constants/breakPoint'
 import ElipNote from '../ElipNote'
-import { grid } from '../common/variable'
 import ReviewButtons from './ReviewButtons'
 import ReviewHistory from './ReviewHistory'
 
@@ -203,7 +203,7 @@ const Container = styled.div`
   margin: 80px auto 0;
   background: #ffffff;
   text-align: left;
-  @media only screen and (max-width: ${grid.sm}) {
+  @media only screen and (max-width: ${breakPoint.mobile}) {
     margin: 15px;
   }
 `

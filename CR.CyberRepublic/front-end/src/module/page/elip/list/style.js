@@ -1,6 +1,5 @@
 import styled from 'styled-components'
 import { Button, Input } from 'antd'
-import { grid } from '../common/variable'
 import { breakPoint } from '@/constants/breakPoint'
 import { bg } from '@/constants/color'
 
@@ -9,7 +8,7 @@ const Search = Input.Search
 export const Container = styled.div`
   background: #ffffff;
   margin: 50px 108px 80px 108px;
-  @media only screen and (max-width: ${grid.sm}) {
+  @media only screen and (max-width: ${breakPoint.mobile}) {
     margin: 15px;
   }
 `
@@ -20,7 +19,7 @@ export const List = styled.div`
   flex: 0 1 300px;
   font-size: 14px;
   justify-content: flex-end;
-  @media only screen and (max-width: ${grid.sm}) {
+  @media only screen and (max-width: ${breakPoint.mobile}) {
     justify-content: flex-start;
   }
 `

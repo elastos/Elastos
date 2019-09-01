@@ -6,7 +6,7 @@ import StandardPage from '@/module/page/StandardPage'
 import ElipForm from '@/module/form/ElipForm/Container'
 import BackLink from '@/module/shared/BackLink/Component'
 import { ELIP_STATUS } from '@/constant'
-import { grid } from '../common/variable'
+import { breakPoint } from '@/constants/breakPoint'
 
 export default class extends StandardPage {
   constructor(p) {
@@ -66,7 +66,7 @@ const Container = styled.div`
   margin: 80px auto 0;
   background: #ffffff;
   text-align: left;
-  @media only screen and (max-width: ${grid.sm}) {
+  @media only screen and (max-width: ${breakPoint.mobile}) {
     margin: 15px;
   }
 `

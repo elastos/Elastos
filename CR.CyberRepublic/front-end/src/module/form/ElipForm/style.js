@@ -1,8 +1,14 @@
 import styled from 'styled-components'
-import { Button } from 'antd'
+import { breakPoint } from '@/constants/breakPoint'
 
 export const Container = styled.div`
   text-align: left;
+  .cr-title-with-icon {
+    @media only screen and (max-width: ${breakPoint.mobile}) {
+      padding-left: 26px;
+      background-position: left 16px top 10px;
+    }
+  }
   .ant-form-item-label {
     margin-right: 20px;
     min-width: 120px;
@@ -22,6 +28,11 @@ export const Container = styled.div`
     white-space: normal;
     display: block;
     font-size: 18px;
+  }
+  .ant-form .ant-row .ant-col-17 {
+    @media only screen and (max-width: ${breakPoint.mobile}) {
+      width: 100%;
+    }
   }
   .md-RichEditor-root {
     padding: 0;
