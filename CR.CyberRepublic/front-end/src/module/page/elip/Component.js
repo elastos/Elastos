@@ -1,6 +1,7 @@
 import React from 'react'
 import Footer from '@/module/layout/Footer/Container'
 import StandardPage from '@/module/page/StandardPage'
+import Meta from '@/module/common/Meta'
 import ElipList from './list/Container'
 
 export default class extends StandardPage {
@@ -13,10 +14,14 @@ export default class extends StandardPage {
 
   ord_renderContent() {
     return (
-      <div>
+      <React.Fragment>
+        <Meta
+          title="ELIP List - Cyber Republic"
+          url="/elips"
+        />
         <ElipList />
         <Footer />
-      </div>
+      </React.Fragment>
     )
   }
 }
