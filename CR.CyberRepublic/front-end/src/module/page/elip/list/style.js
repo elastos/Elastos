@@ -9,7 +9,7 @@ export const Container = styled.div`
   background: #ffffff;
   margin: 50px 108px 80px 108px;
   @media only screen and (max-width: ${breakPoint.mobile}) {
-    margin: 15px;
+    margin: 16px;
   }
 `
 
@@ -26,6 +26,7 @@ export const List = styled.div`
 
 export const StyledButton = styled(Button)`
   border-radius: 0 !important;
+  color: rgba(3, 30, 40, 0.3) !important;
   &.selected {
     color: white !important;
     background-color: ${bg.obsidian} !important;
@@ -38,9 +39,13 @@ export const StyledSearch = styled(Search)`
   }
 `
 export const Filter = styled.div`
-  margin: 20px 0;
-  text-align: right;
+  margin: 20px 0 20px 64px;
   @media only screen and (max-width: ${breakPoint.mobile}) {
-    text-align: left;
+    margin-left: 0;
   }
+`
+
+export const FilterLabel = styled.span`
+  padding-right: 16px;
+  color: rgba(3, 30, 40, 0.3);
 `

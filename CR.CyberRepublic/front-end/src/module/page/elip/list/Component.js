@@ -5,7 +5,7 @@ import BaseComponent from '@/model/BaseComponent'
 import { Table, Row, Col, Button } from 'antd'
 import I18N from '@/I18N'
 import { ELIP_FILTER } from '@/constant'
-import { Container, StyledButton, StyledSearch, Filter } from './style'
+import { Container, StyledButton, StyledSearch, Filter, FilterLabel } from './style'
 import { logger } from '@/util'
 import userUtil from '@/util/user'
 
@@ -117,16 +117,14 @@ export default class extends BaseComponent {
     ]
 
     const createBtn = (
-      <Row type="flex" align="middle" justify="end">
-        <Col lg={8} md={12} sm={24} xs={24} style={{ textAlign: 'right' }}>
-          <StyledButton
-            onClick={this.addElip}
-            className="cr-btn cr-btn-primary"
-          >
-            {I18N.get('elip.button.add')}
-          </StyledButton>
-        </Col>
-      </Row>
+      <Col lg={8} md={8} sm={12} xs={24} style={{ textAlign: 'right' }}>
+        <StyledButton
+          onClick={this.addElip}
+          className="cr-btn cr-btn-primary"
+        >
+          {I18N.get('elip.button.add')}
+        </StyledButton>
+      </Col>
     )
 
     const title = (
@@ -141,7 +139,7 @@ export default class extends BaseComponent {
     )
 
     const searchInput = (
-      <Col lg={8} md={8} sm={12} xs={24}>
+      <Col lg={8} md={12} sm={12} xs={24}>
         <StyledSearch
           defaultValue={this.state.search}
           onSearch={this.searchChangedHandler}
@@ -184,25 +182,25 @@ export default class extends BaseComponent {
     )
 
     const filterBtns = (
-      <Col lg={8} md={8} sm={12} xs={24}>
-        <Filter>
-          <span>{`${I18N.get('elip.show')}: `}</span>
-          {filterBtnGroup}
-        </Filter>
-      </Col>
+      <Filter>
+        <FilterLabel>{`${I18N.get('elip.show')}: `}</FilterLabel>
+        {filterBtnGroup}
+      </Filter>
     )
 
     const { list, loading } = this.state
     return (
       <Container>
-        {createBtn}
+        <Row type="flex" align="middle" justify="space-between">
+          {title}
+          {createBtn}
+        </Row>
         <Row
           type="flex"
           align="middle"
-          justify="space-between"
+          justify="end"
           style={{ marginTop: 20 }}
         >
-          {title}
           {searchInput}
           {isLogin && filterBtns}
         </Row>
