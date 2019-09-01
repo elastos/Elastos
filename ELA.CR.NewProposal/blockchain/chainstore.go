@@ -475,12 +475,6 @@ func (c *ChainStore) getBlockHeader(hash Uint256) (*Header, error) {
 func (c *ChainStore) rollback(b *Block, node *BlockNode,
 	confirm *payload.Confirm, medianTimePast time.Time) error {
 	c.NewBatch()
-	//if err := c.RollbackTrimmedBlock(b); err != nil {
-	//	return err
-	//}
-	//if err := c.RollbackBlockHash(b); err != nil {
-	//	return err
-	//}
 	if err := c.RollbackTransactions(b); err != nil {
 		return err
 	}
@@ -492,9 +486,6 @@ func (c *ChainStore) rollback(b *Block, node *BlockNode,
 	if err := c.RollbackUnspend(b); err != nil {
 		return err
 	}
-	//if err := c.RollbackCurrentBlock(b); err != nil {
-	//	return err
-	//}
 	if err := c.RollbackConfirm(b); err != nil {
 		return err
 	}
@@ -515,12 +506,6 @@ func (c *ChainStore) rollback(b *Block, node *BlockNode,
 func (c *ChainStore) persist(b *Block, node *BlockNode,
 	confirm *payload.Confirm, medianTimePast time.Time) error {
 	c.NewBatch()
-	//if err := c.persistTrimmedBlock(b); err != nil {
-	//	return err
-	//}
-	//if err := c.persistBlockHash(b); err != nil {
-	//	return err
-	//}
 	if err := c.PersistTransactions(b); err != nil {
 		return err
 	}
@@ -532,9 +517,6 @@ func (c *ChainStore) persist(b *Block, node *BlockNode,
 	if err := c.persistUnspend(b); err != nil {
 		return err
 	}
-	//if err := c.persistCurrentBlock(b); err != nil {
-	//	return err
-	//}
 	if err := c.persistConfirm(confirm); err != nil {
 		return err
 	}

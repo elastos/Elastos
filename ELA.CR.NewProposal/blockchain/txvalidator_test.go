@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"math"
 	mrand "math/rand"
+	"path/filepath"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -48,7 +49,8 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	FoundationAddress = params.Foundation
 	s.foundationAddress = params.Foundation
 
-	chainStore, err := NewChainStore(test.DataPath, params.GenesisBlock)
+	chainStore, err := NewChainStore(
+		filepath.Join(test.DataPath, "txvalidator"), params.GenesisBlock)
 	if err != nil {
 		s.Error(err)
 	}
