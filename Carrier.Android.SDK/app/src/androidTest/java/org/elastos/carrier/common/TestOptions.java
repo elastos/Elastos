@@ -1,16 +1,15 @@
 package org.elastos.carrier.common;
 
-import junit.framework.Test;
-
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import org.elastos.carrier.Carrier.Options;
 import org.elastos.carrier.Log;
 
 public class TestOptions extends Options {
+    private final String[] hiveAddresses = {"52.83.159.189","52.83.119.110","3.16.202.140","18.217.147.205","18.219.53.133"};
+    private final String hivePort = "9095" ;
+
     public TestOptions(String path) {
         super();
 
@@ -58,31 +57,12 @@ public class TestOptions extends Options {
 
             //Hive
             ArrayList<HiveBootstrapNode> hiveArrayList = new ArrayList<>();
-            HiveBootstrapNode hiveNode = new HiveBootstrapNode();
-            hiveNode.setIpv4("52.83.159.189");
-            hiveNode.setPort("9094");
-            hiveArrayList.add(hiveNode);
-
-            hiveNode = new HiveBootstrapNode();
-            hiveNode.setIpv4("52.83.119.110");
-            hiveNode.setPort("9094");
-            hiveArrayList.add(hiveNode);
-
-            hiveNode = new HiveBootstrapNode();
-            hiveNode.setIpv4("3.16.202.140");
-            hiveNode.setPort("9094");
-            hiveArrayList.add(hiveNode);
-
-            hiveNode = new HiveBootstrapNode();
-            hiveNode.setIpv4("18.217.147.205");
-            hiveNode.setPort("9094");
-            hiveArrayList.add(hiveNode);
-
-            hiveNode = new HiveBootstrapNode();
-            hiveNode.setIpv4("18.219.53.133");
-            hiveNode.setPort("9094");
-            hiveArrayList.add(hiveNode);
-
+            for (String hiveAdd : hiveAddresses){
+                HiveBootstrapNode hiveNode = new HiveBootstrapNode();
+                hiveNode.setIpv4(hiveAdd);
+                hiveNode.setPort(hivePort);
+                hiveArrayList.add(hiveNode);
+            }
             setHiveBootstrapNodes(hiveArrayList);
         } catch (Exception e){
             e.printStackTrace();
