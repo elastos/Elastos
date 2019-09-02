@@ -292,6 +292,7 @@ func (s *State) registerCR(tx *types.Transaction, height uint32) {
 			delete(s.PendingCandidates, info.DID)
 		})
 	} else {
+		candidate.votes = c.votes
 		s.history.Append(height, func() {
 			delete(s.CanceledCandidates, c.Info().DID)
 			s.Nicknames[nickname] = struct{}{}
