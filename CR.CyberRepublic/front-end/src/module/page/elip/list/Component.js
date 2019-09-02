@@ -64,7 +64,7 @@ export default class extends BaseComponent {
   }
 
   searchChangedHandler = (search) => {
-    this.setState({ search }, this.debouncedRefetch)
+    this.setState({ search: search.trim() }, this.debouncedRefetch)
   }
 
   setFilter = (filter) => {
