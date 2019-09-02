@@ -269,7 +269,7 @@ typedef struct HiveBootstrapNode {
     /**
      * \~English
      * The ip port.
-     * The default value is 9094.
+     * The default value is 9095
      */
     const char *port;
 } HiveBootstrapNode;
@@ -788,13 +788,15 @@ typedef struct ElaCallbacks {
      * @param
      *      len         [in] The message length in bytes.
      * @param
-     *      is_offline  [in] Which method does the sender use to send this message:
-     *                       true, offline; false, online.
+     *      offline     [in] The value tells whether this message is received
+     *                       as offline message or online message. The value of
+     *                       true means this message is received as offline
+     *                       message, otherwise as online message.
      * @param
      *      context     [in] The application defined context data.
      */
     void (*friend_message)(ElaCarrier *carrier, const char *from,
-                           const void *msg, size_t len, bool is_offline, void *context);
+                           const void *msg, size_t len, bool offline, void *context);
 
     /**
      * \~English
@@ -841,24 +843,6 @@ typedef struct ElaCallbacks {
      */
     ElaGroupCallbacks group_callbacks;
 } ElaCallbacks;
-
-/**
- * \~English
- * initialize log options for Carrier. The default level to control log output
- * is 'Info'.
- *
- * @param
- *      level       [in] The log level to control internal log output.
- * @param
- *      log_file    [in] the log file name.
- *                       If the log_file is NULL, Carrier will not write
- *                       log to file.
- * @param
- *      log_printer [in] the user defined log printer. can be NULL.
- */
-CARRIER_API
-void ela_log_init(ElaLogLevel level, const char *log_file,
-                  void (*log_printer)(const char *format, va_list args));
 
 /**
  * \~English
@@ -1345,9 +1329,11 @@ int ela_remove_friend(ElaCarrier *carrier, const char *userid);
  * @param
  *      len         [in] The message length in bytes.
  * @param
- *      is_offline  [out] Whether the target user is offline when the message
- *                        is sent: true, offline; false, online. This pointer
- *                        can be NULL.
+ *      offline     [out] The pointer to store the value that the message was
+ *                        sent as offline message or online message. The value
+ *                        of true means the message was sent as offline
+ *                        message, otherwise, the message was sent as online
+ *                        message. This pointer also can be set as NULL.
  *
  * @return
  *      0 if the text message successfully sent.
@@ -1356,7 +1342,7 @@ int ela_remove_friend(ElaCarrier *carrier, const char *userid);
  */
 CARRIER_API
 int ela_send_friend_message(ElaCarrier *carrier, const char *to,
-                            const void *msg, size_t len, bool *is_offline);
+                            const void *msg, size_t len, bool *offline);
 
 /**
  * \~English
