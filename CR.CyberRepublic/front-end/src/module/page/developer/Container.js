@@ -3,7 +3,7 @@ import Component from './Component'
 import _ from 'lodash'
 import { message } from 'antd/lib/index'
 import UserService from '@/service/UserService'
-
+import { logger } from '@/util'
 let userService
 
 export default createContainer(Component, (state) => {
@@ -20,10 +20,9 @@ export default createContainer(Component, (state) => {
       try {
         return await userService.getAll(query)
       } catch (err) {
-        console.error(err)
         message.error(err.message)
+        logger.error(err)
       }
     }
-
   }
 })

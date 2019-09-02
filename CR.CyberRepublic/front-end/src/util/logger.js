@@ -24,7 +24,7 @@ export const rollbar = () => {
         environment: env,
         client: {
           javascript: {
-            code_version: `${env}-1.3`,
+            code_version: env,
             source_map_enabled: true,
             guess_uncaught_frames: true
           }

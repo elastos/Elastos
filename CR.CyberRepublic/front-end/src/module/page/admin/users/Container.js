@@ -3,6 +3,7 @@ import Component from './Component'
 import UserService from '@/service/UserService'
 import { message } from 'antd/lib/index'
 import _ from 'lodash'
+import { logger } from '@/util'
 
 export default createContainer(Component, (state) => {
   if (!_.isArray(state.member.users)) {
@@ -22,8 +23,8 @@ export default createContainer(Component, (state) => {
       try {
         return await userService.getAll({ admin: true })
       } catch (err) {
-        console.error(err)
         message.error(err.message)
+        logger.error(err)
       }
     },
   }

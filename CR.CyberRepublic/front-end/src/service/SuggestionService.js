@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import { api_request } from '@/util'
+import { logger } from '@/util'
 import { message } from 'antd'
 import BaseService from '../model/BaseService'
 
@@ -117,6 +118,7 @@ export default class extends BaseService {
     } catch (error) {
       this.dispatch(this.selfRedux.actions.loading_update(false))
       message.error('Error happened, please try again later or contact admin.')
+      logger.error(error)
     }
     return res
   }
@@ -135,6 +137,7 @@ export default class extends BaseService {
     } catch (error) {
       this.dispatch(this.selfRedux.actions.loading_update(false))
       message.error('Error happened, please try again later or contact admin.')
+      logger.error(error)
     }
     return res
   }
@@ -153,6 +156,7 @@ export default class extends BaseService {
     } catch (error) {
       this.dispatch(this.selfRedux.actions.loading_update(false))
       message.error('Error happened, please try again later or contact admin.')
+      logger.error(error)
     }
     return res
   }

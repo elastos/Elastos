@@ -2,6 +2,7 @@ import React from 'react'
 import { addNewBlock, ImageSideButton, Block } from 'medium-draft'
 import { message } from 'antd'
 import I18N from '@/I18N'
+import { logger } from '@/util'
 
 const IMAGE_SIZE = {
   MAX_WIDTH: 720,
@@ -69,7 +70,7 @@ class ImageButton extends ImageSideButton {
           })
         )
       } catch (error) {
-        console.log('insert image error', error)
+        logger.error(error)
       }
     }
     this.props.close()

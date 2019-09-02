@@ -9,6 +9,7 @@ import Promise from 'bluebird'
 import MediaQuery from 'react-responsive'
 import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC } from '@/config/constant'
 import I18N from '@/I18N'
+import { logger } from '@/util'
 import '../style.scss'
 
 const TabPane = Tabs.TabPane
@@ -311,8 +312,8 @@ export default class extends StandardPage {
 
         this.loadCommunityMembers()
       }).catch((err) => {
-        console.error(err)
         message.error(I18N.get('community.message.error.joincommunity'))
+        logger.error(err)
       })
     }
 
@@ -682,6 +683,5 @@ export default class extends StandardPage {
       } else {
         message.error(I18N.get('community.message.error.apply'))
       }
-
     }
 }

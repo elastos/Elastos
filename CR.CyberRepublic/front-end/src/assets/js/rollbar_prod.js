@@ -6,7 +6,7 @@ let _rollbarConfig = {
     environment: 'production',
     client: {
       javascript: {
-        code_version: 'production-1.3',
+        code_version: 'production',
         source_map_enabled: true,
         guess_uncaught_frames: true
       }

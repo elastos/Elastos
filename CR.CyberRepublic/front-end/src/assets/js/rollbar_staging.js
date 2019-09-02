@@ -6,7 +6,7 @@ let _rollbarConfig = {
     environment: 'staging',
     client: {
       javascript: {
-        code_version: 'staging-1.3',
+        code_version: 'staging',
         source_map_enabled: true,
         guess_uncaught_frames: true
       }

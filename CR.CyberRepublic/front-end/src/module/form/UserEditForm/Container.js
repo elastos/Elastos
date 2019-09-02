@@ -3,6 +3,7 @@ import Component from './Component'
 import UserService from '@/service/UserService'
 import { message } from 'antd'
 import _ from 'lodash'
+import { logger } from '@/util'
 
 message.config({
   top: 100,
@@ -21,6 +22,7 @@ export default createContainer(Component, state => ({
         await userService.getCurrentUser()
       } catch (err) {
         message.error(err.message)
+        logger.error(err)
       }
     },
 

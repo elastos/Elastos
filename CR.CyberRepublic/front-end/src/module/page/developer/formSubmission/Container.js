@@ -3,6 +3,7 @@ import Component from './Component'
 import SubmissionService from '@/service/SubmissionService'
 import { message } from 'antd'
 import I18N from '@/I18N'
+import { logger } from '@/util'
 
 export default createContainer(Component, (state) => {
   return {
@@ -25,6 +26,7 @@ export default createContainer(Component, (state) => {
         }
       } catch (err) {
         message.error(err.message)
+        logger.error(err)
       }
     }
   }

@@ -6,6 +6,7 @@ import CommunityService from '@/service/CommunityService'
 import {message} from 'antd'
 import {TEAM_TYPE} from '@/constant'
 import _ from 'lodash'
+import { logger } from '@/util'
 
 message.config({
   top: 100
@@ -99,8 +100,8 @@ export default createContainer(Component, (state) => {
           taskService.path.push(`/profile/task-detail/${rs._id}`)
         }
       } catch (err) {
-        // message.error('There was an error creating this task')
-        message.error(err.message) // TODO: add rollbar?
+        message.error(err.message)
+        logger.error(err)
       }
     },
 
@@ -203,8 +204,8 @@ export default createContainer(Component, (state) => {
           // this.setState({editing: false})
         }
       } catch (err) {
-        // message.error('There was an error creating this task')
-        message.error(err.message) // TODO: add rollbar?
+        message.error(err.message)
+        logger.error(err)
       }
     },
 

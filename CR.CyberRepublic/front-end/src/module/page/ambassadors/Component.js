@@ -5,7 +5,7 @@ import './style.scss'
 import { Col, Row, Spin, Button, Modal, message } from 'antd'
 import LoginOrRegisterForm from '@/module/form/LoginOrRegisterForm/Container'
 import _ from 'lodash'
-
+import { logger } from '@/util'
 import StandardPage from '../StandardPage'
 
 export default class extends StandardPage {
@@ -285,8 +285,8 @@ export default class extends StandardPage {
           message.success(I18N.get('training.thanksForApplying'))
 
         }).catch((err) => {
-          console.error(err)
           message.error(I18N.get('training.applyError'))
+          logger.error(err)
         })
       })
     }

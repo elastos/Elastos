@@ -257,7 +257,7 @@ class C extends BaseComponent {
         if (isShowMsg) message.success(I18N.get('proposal.msg.draftSaved'))
       } catch (error) {
         message.error(error.message)
-        logger.error(e)
+        logger.error(error)
       }
     })
   }
