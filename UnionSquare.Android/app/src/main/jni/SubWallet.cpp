@@ -454,9 +454,9 @@ static jboolean JNICALL CheckSign(JNIEnv *env, jobject clazz, jlong jSubProxy,
     return result;
 }
 
-#define JNI_GetPublicKey "(J)Ljava/lang/String;"
+#define JNI_GetOwnerPublicKeyRing "(J)Ljava/lang/String;"
 
-static jstring JNICALL GetPublicKey(JNIEnv *env, jobject clazz, jlong jSubProxy) {
+static jstring JNICALL GetOwnerPublicKeyRing(JNIEnv *env, jobject clazz, jlong jSubProxy) {
     bool exception = false;
     std::string msgException;
 
@@ -464,8 +464,8 @@ static jstring JNICALL GetPublicKey(JNIEnv *env, jobject clazz, jlong jSubProxy)
 
     try {
         ISubWallet *subWallet = (ISubWallet *) jSubProxy;
-        std::string result = subWallet->GetPublicKey();
-        key = env->NewStringUTF(result.c_str());
+        nlohmann::json result = subWallet->GetOwnerPublicKeyRing();
+        key = env->NewStringUTF(result.dump().c_str());
     } catch (const std::exception &e) {
         ThrowWalletException(env, e.what());
     }
@@ -586,7 +586,7 @@ static const JNINativeMethod methods[] = {
         REGISTER_METHOD(GetAllTransaction),
         REGISTER_METHOD(Sign),
         REGISTER_METHOD(CheckSign),
-        REGISTER_METHOD(GetPublicKey),
+        REGISTER_METHOD(GetOwnerPublicKeyRing),
         REGISTER_METHOD(GetAllCoinBaseTransaction),
         REGISTER_METHOD(GetAssetInfo),
         REGISTER_METHOD(SyncStart),

@@ -126,15 +126,31 @@ static void JNICALL DestroyWallet(JNIEnv *env, jobject clazz, jlong jMasterInsta
     }
 }
 
-#define JNI_GetPublicKey "(J)Ljava/lang/String;"
+#define JNI_GetOwnerPublicKeyRing "(J)Ljava/lang/String;"
 
-static jstring JNICALL GetPublicKey(JNIEnv *env, jobject clazz, jlong instance) {
+static jstring JNICALL GetOwnerPublicKeyRing(JNIEnv *env, jobject clazz, jlong instance) {
     jstring key = NULL;
 
     try {
         IMasterWallet *masterWallet = (IMasterWallet *) instance;
-        std::string k = masterWallet->GetPublicKey();
-        key = env->NewStringUTF(k.c_str());
+        nlohmann::json k = masterWallet->GetOwnerPublicKeyRing();
+        key = env->NewStringUTF(k.dump().c_str());
+    } catch (const std::exception &e) {
+        ThrowWalletException(env, e.what());
+    }
+
+    return key;
+}
+
+#define JNI_GetPublicKeyRing "(J)Ljava/lang/String;"
+
+static jstring JNICALL GetPublicKeyRing(JNIEnv *env, jobject clazz, jlong instance) {
+    jstring key = NULL;
+
+    try {
+        IMasterWallet *masterWallet = (IMasterWallet *) instance;
+        nlohmann::json k = masterWallet->GetPublicKeyRing();
+        key = env->NewStringUTF(k.dump().c_str());
     } catch (const std::exception &e) {
         ThrowWalletException(env, e.what());
     }
@@ -290,7 +306,8 @@ static const JNINativeMethod methods[] = {
         REGISTER_METHOD(GetAllSubWallets),
         REGISTER_METHOD(CreateSubWallet),
         REGISTER_METHOD(DestroyWallet),
-        REGISTER_METHOD(GetPublicKey),
+        REGISTER_METHOD(GetOwnerPublicKeyRing),
+        REGISTER_METHOD(GetPublicKeyRing),
         REGISTER_METHOD(Sign),
         REGISTER_METHOD(CheckSign),
         REGISTER_METHOD(IsAddressValid),

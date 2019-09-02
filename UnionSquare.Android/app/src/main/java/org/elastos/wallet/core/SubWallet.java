@@ -112,8 +112,8 @@ public class SubWallet {
         return CheckSign(mInstance, publicKey, message, signature);
     }
 
-    public String GetPublicKey() throws WalletException {
-        return GetPublicKey(mInstance);
+    public String GetOwnerPublicKeyRing() throws WalletException {
+        return GetOwnerPublicKeyRing(mInstance);
     }
 
     public String GetAllCoinBaseTransaction(int start, int count, String txid) throws WalletException {
@@ -177,7 +177,7 @@ public class SubWallet {
 
     private native boolean CheckSign(long subProxy, String publicKey, String message, String signature);
 
-    private native String GetPublicKey(long subProxy);
+    private native String GetOwnerPublicKeyRing(long subProxy);
 
     private native String GetAllCoinBaseTransaction(long subProxy, int start, int count, String txid);
 

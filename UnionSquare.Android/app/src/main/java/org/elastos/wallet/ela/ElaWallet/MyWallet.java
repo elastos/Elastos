@@ -1509,5 +1509,53 @@ public class MyWallet {
             return exceptionProcess(e, "getTransactionSignedInfo " + formatWalletName(masterWalletID, chainID));
         }
     }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID (only main chain ID 'ELA')
+    public BaseEntity getVotedCRList(String masterWalletID, String chainID) {
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                return errorProcess("" + errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                return errorProcess("" + errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+
+            }
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+
+            String list = mainchainSubWallet.GetVotedCRList();
+
+            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, list, "getVotedCRList");
+
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + " get voted cr list");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID (only main chain ID 'ELA')
+    public BaseEntity getRegisteredCRInfo(String masterWalletID, String chainID) {
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
+
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                return errorProcess("" + errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String info = mainchainSubWallet.GetRegisteredCRInfo();
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + " get registerd cr info");
+        }
+    }
 }
 

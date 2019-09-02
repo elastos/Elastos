@@ -110,8 +110,12 @@ public class MasterWallet {
         DestroyWallet(mInstance, wallet.GetProxy());
     }
 
-    public String GetPublicKey() throws WalletException {
-        return GetPublicKey(mInstance);
+    public String GetOwnerPublicKeyRing() throws WalletException {
+        return GetOwnerPublicKeyRing(mInstance);
+    }
+
+    public String GetPublicKeyRing() throws WalletException {
+        return GetPublicKeyRing(mInstance);
     }
 
     public String Sign(String message, String payPassword) throws WalletException {
@@ -147,7 +151,9 @@ public class MasterWallet {
 
     private native long CreateSubWallet(long instance, String chainID, long feePerKb);
 
-    private native String GetPublicKey(long instance);
+    private native String GetOwnerPublicKeyRing(long instance);
+
+    private native String GetPublicKeyRing(long instance);
 
     private native void DestroyWallet(long instance, long subWalletProxy);
 
