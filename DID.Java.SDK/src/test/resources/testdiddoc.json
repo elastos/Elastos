@@ -1,0 +1,86 @@
+{
+  "id": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN",
+
+  "publicKey": [{
+    "id": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#key2",
+    "type": "ECDSAsecp256r1",
+    "controller": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN",
+    "publicKeyBase58": "273j8fQ1ZZVM6U6d5XE3X8SyULuJwjyYXbxNopXVuftBe"
+  }, {
+    "id": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#recovery",
+    "type": "ECDSAsecp256r1",
+    "controller": "did:elastos:ip7ntDo2metGnU8wGP4FnyKCUdbHm4BPDh",
+    "publicKeyBase58": "zppy33i2r3uC1LT3RFcLqJJPFpYuZPDuKMeKZ5TdAskM"
+  }, {
+    "id": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default",
+    "type": "ECDSAsecp256r1",
+    "controller": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN",
+    "publicKeyBase58": "zNxoZaZLdackZQNMas7sCkPRHZsJ3BtdjEvM2y5gNvKJ"
+  }],
+
+  "authentication": [
+    {
+      "id": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#keys3",
+      "type": "ECDSAsecp256r1",
+      "controller": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN",
+      "publicKeyBase58": "H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"
+    },
+    "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default",
+    "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#key2"
+  ],
+
+  "authorization": [
+    "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#recovery"
+  ],
+
+  "verifiableCredential": [{
+    "id": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#crdential-1",
+    "type": ["SelfProclaimedCredential", "BasicProfileCredential"],
+    "issuanceDate": "2019-01-01T19:20:18Z",
+    "credentialSubject": {
+      "Zoo": "hello",
+      "nickname": "woohah",
+      "nation": "Singapore",
+      "language": "English",
+      "Abc": "Foobar"
+    },
+    "proof": {
+      "type": "ECDSAsecp256r1",
+      "verificationMethod": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#master-key",
+      "signature": "pYw8XNi1..Cky6Ed="
+    }
+  }, {
+    "id": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#crdential-2",
+    "type": ["ElastosIDteriaCredential", "InternetAccountCredential"],
+    "issuer": "did:elastos:iY3PF8u1bYMujq6Z4bk2iAnmRFyD1cqbSw",
+    "issuanceDate": "2019-01-01T19:20:18Z",
+    "expirationDate": "2020-01-01T19:23:24Z",
+    "credentialSubject": {
+      "email": "woohah@example.com",
+      "phone": "+16693553638",
+      "googleAccount": "woohah@gmail.com",
+      "twitter": "@woohah"
+    },
+    "proof": {
+      "type": "ECDSAsecp256r1",
+      "verificationMethod": "did:elastos:iY3PF8u1bYMujq6Z4bk2iAnmRFyD1cqbSw#sign-key",
+      "signature": "BavEll0...W3JT24="
+    }
+  }],
+
+  "service": [{
+    "id": "#openid",
+    "type": "OpenIdConnectVersion1.0Service",
+    "serviceEndpoint": "https://openid.example.com/"
+  }, {
+    "id": "#vcr",
+    "type": "CredentialRepositoryService",
+    "serviceEndpoint": "https://did.elastos.org/credential"
+  }, {
+    "id": "#carrier",
+    "type": "CarrierAddress",
+    "serviceEndpoint": "carrier://X2tDd1ZTErwnHNot8pTdhp7C7Y9FxMPGD8ppiasUT4UsHH2BpF1d"
+  }],
+
+  "expires": "2020-02-10T17:00:00Z"
+}
