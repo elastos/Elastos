@@ -216,6 +216,8 @@ export default class extends BaseService {
 
       this.dispatch(userRedux.actions.is_admin_reset())
       this.dispatch(userRedux.actions.is_leader_reset())
+      this.dispatch(userRedux.actions.is_secretary_reset())
+      this.dispatch(userRedux.actions.is_council_reset())
 
       this.dispatch(userRedux.actions.email_reset())
       this.dispatch(userRedux.actions.username_reset())

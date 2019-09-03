@@ -194,7 +194,7 @@ export default class extends BaseComponent {
           pagination={{
             current: page,
             pageSize: 10,
-            total: list.length,
+            total: list && list.length,
             onChange: this.onPageChange,
           }}
         />
